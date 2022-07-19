@@ -1,0 +1,189 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{DEBF1B91-513C-495A-8D9E-5A2895399FFD}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>TFTV</RootNamespace>
+    <AssemblyName>TFTV</AssemblyName>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <Deterministic>true</Deterministic>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>..\Dist</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>..\Dist</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup>
+    <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="0Harmony">
+      <HintPath>..\ModSDK\0Harmony.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Assembly-CSharp">
+      <HintPath>..\ModSDK\Assembly-CSharp.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="UnityEngine.CoreModule">
+      <HintPath>..\ModSDK\UnityEngine.CoreModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="TFTVAirCombat.cs" />
+    <Compile Include="TFTVAmbushes.cs" />
+    <Compile Include="TFTVAugmentations.cs" />
+    <Compile Include="TFTVChangesToDLC1andDLC2Events.cs" />
+    <Compile Include="TFTVChangesToDLC3Events.cs" />
+    <Compile Include="TFTVChangesToDLC4Events.cs" />
+    <Compile Include="TFTVChangesToDLC5Events.cs" />
+    <Compile Include="TFTVCommonMethods.cs" />
+    <Compile Include="TFTVDelirium.cs" />
+    <Compile Include="TFTVDeliriumPerks.cs" />
+    <Compile Include="TFTVDiplomacyPenalties.cs" />
+    <Compile Include="TFTVGeoscape.cs" />
+    <Compile Include="TFTVConfig.cs" />
+    <Compile Include="TFTVHelper.cs" />
+    <Compile Include="TFTVInfestation.cs" />
+    <Compile Include="TFTVLogger.cs" />
+    <Compile Include="TFTVMain.cs" />
+    <Compile Include="TFTVNewPXCharacters.cs" />
+    <Compile Include="TFTVPandoranProgress.cs" />
+    <Compile Include="TFTVPassengerModules.cs" />
+    <Compile Include="TFTVResources.cs" />
+    <Compile Include="TFTVReverseEngineering.cs" />
+    <Compile Include="TFTVSDIandVoidOmenRoll.cs" />
+    <Compile Include="TFTVStamina.cs" />
+    <Compile Include="TFTVTactical.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TFTVTutorialAndStory.cs" />
+    <Compile Include="TFTVUmbra.cs" />
+    <Compile Include="TFTVVoidOmens.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Assets\Textures\alistair.png" />
+    <Content Include="Assets\Textures\BG_alistair_small.png" />
+    <Content Include="Assets\Textures\BG_HammerFall.jpg" />
+    <Content Include="Assets\Textures\BG_HammerFallAlt.jpg" />
+    <Content Include="Assets\Textures\BG_Hint_Delirium.png" />
+    <Content Include="Assets\Textures\BG_Intro_0.jpg" />
+    <Content Include="Assets\Textures\BG_Intro_1.jpg" />
+    <Content Include="Assets\Textures\BG_Olena.jpg" />
+    <Content Include="Assets\Textures\BG_Olena.png" />
+    <Content Include="Assets\Textures\BG_Olena_small.png" />
+    <Content Include="Assets\Textures\FesteringSkiesAfterHamerfall.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_CharacterAbility_AmplifyPain01.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_CharacterAbility_AmplifyPain02.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_CharacterAbility_Gunslinger-2.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_CharacterAbility_Gunslinger-3.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_CharacterAbility_JetpackProficiency-2.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_CharacterAbility_KillZone-2a.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_CharacterAbility_LaunchMissile-2.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_CharacterAbility_TargetLocation-2.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_EquipmentAbility_OverwatchFocus-2.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_Fishman_SenseLocate-2.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_HunkerDown_1-1.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_HunkerDown_1-2.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_HunkerDown_2-1.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_HunkerDown_2-2.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_HunkerDown_2-3.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_HunkerDown_2-4.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_KillNRun.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_PersonalTrack_AR_Targeting_1-1.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_PersonalTrack_AR_Targeting_1-2.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_PersonalTrack_AR_Targeting_1-3.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_PersonalTrack_AR_Targeting_1-4.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_PersonalTrack_AR_Targeting_2-1.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_PersonalTrack_AR_Targeting_2-2.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_PersonalTrack_ExpertHealer-2.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_PersonalTrack_FastLearner.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Gifted.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Guerilla.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_PersonalTrack_GymRat-2.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Heartless.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Hunter_1-1.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Hunter_2-1.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Hunter_2-2.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Hunter_2-3.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_PersonalTrack_NightOwl.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Pacifist.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Paranoid_1-1.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Paranoid_2-1.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Paranoid_3-1.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Paranoid_3-2.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Phantom_Protocol_1-1.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Phantom_Protocol_2-1.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Phantom_Protocol_2-2.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Plumber.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Privileged_1-1.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Privileged_1-2.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Privileged_2-1.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Privileged_2-2.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Sower_Of_Change_1-1.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Sower_Of_Change_1-2.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Sower_Of_Change_2-1.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Sower_Of_Change_3-1.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Sower_Of_Change_4-1.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_PersonalTrack_SpecOp-1.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_PersonalTrack_SpecOp-2.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_PersonalTrack_SpecOp-3.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Stimpack-2.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Strategist.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Survivor_1-1.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Survivor_2-1.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Survivor_3-1.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_PersonalTrack_TacticalAnalyst.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Thief.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Vampire.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Volunteered_1-1.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Volunteered_1-2.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Volunteered_2-1.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Volunteered_2-2.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_SneakerLegs_Stealth-2.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_SneakerLegs_Stealth.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_TentacularBody_MeleeAttackRetaliation-2.png" />
+    <Content Include="Assets\Textures\UI_Ability_GunAndRun.png" />
+    <Content Include="Assets\Textures\UI_StatusesIcons_CanBeRecruitedIntoPhoenix-2.png" />
+    <Content Include="Assets\Textures\Void-04P.png" />
+    <Content Include="Assets\Textures\VO_05.jpg" />
+    <Content Include="Assets\Textures\VO_11.jpg" />
+    <Content Include="Assets\Textures\VO_12.jpg" />
+    <Content Include="Assets\Textures\VO_13.jpg" />
+    <None Include="Assets\Localization\PR_BG_Localization.csv" />
+    <None Include="Assets\Localization\PR_CH_Story_Localization.csv" />
+    <None Include="Assets\Localization\PR_FS_Story_Localization.csv" />
+    <None Include="meta.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <Content Include="..\Data\**">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>RMDIR /S /Q "%25USERPROFILE%25\AppData\LocalLow\Snapshot Games Inc\Phoenix Point\Steam\WorkshopTool\TestMod"
+MKDIR "%25USERPROFILE%25\AppData\LocalLow\Snapshot Games Inc\Phoenix Point\Steam\WorkshopTool\TestMod"
+XCOPY /Y /S /Q "$(SolutionDir)\Dist\*" "%25USERPROFILE%25\AppData\LocalLow\Snapshot Games Inc\Phoenix Point\Steam\WorkshopTool\TestMod"
+</PostBuildEvent>
+  </PropertyGroup>
+</Project>

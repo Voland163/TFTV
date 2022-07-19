@@ -1,0 +1,24 @@
+{
+  "ID": "phoenixrising.tftv",
+  "AssemblyName": "TFTV.dll",
+  "Author": [
+    {
+      "Key": "English",
+      "Value": "PhoenixRising"
+    }
+  ],
+  "Version": "1.0",
+  "Name": [
+    {
+      "Key": "English",
+      "Value": "TFTV"
+    }
+  ],
+  "Description": [
+    {
+      "Key": "English",
+      "Value": "A gargantuan mod for Phoenix Point"
+    }
+  ],
+  "Dependencies": []
+}
