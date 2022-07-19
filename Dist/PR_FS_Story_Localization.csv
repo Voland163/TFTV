@@ -1,0 +1,124 @@
+Key,Type,Desc,English,Chinese (Simplified),French,German,Italian,Polish,Russian,Spanish,UI_Tester
+PROG_FS9_CHOICE_0_TEXT,Text,,OK.,,,,,,,,
+PROG_FS9_OUTCOME,Text,,"Anu havens join in a ritual to welcome the prophesized Trials and Tribulations, their incomprehensible chant reverberating across the airwaves.
+
+Synedrion, trapped in the complex web of its inner politics, fails to agree on a course of action, but one of their havens decides to send a mission to investigate the impact zone.
+
+New Jericho mobilizes its armed forces. ""Caught between the foolish and the mad, we must act"", proclaims West.",,,,,,,,
+PROG_FS9_TEXT_GENERAL_0,Text,,"Earlier today, an asteroid crashed into Earth. The release of kinetic energy was roughly equivalent to the limited nuclear exchange between India and Iran during WW3. The impact event has been dubbed ""Hammerfall"", the largest in Earth's recorded history.
+
+The asteroid hit deep inside a quarantine zone, where the Pandoravirus has aggressively mutated the surrounding ecology. However, traces of seismic activity have been detected in faraway coastal regions, coinciding with rumors of Pandoran hordes emerging from the mist.",,,,,,,,
+PROG_FS9_TITLE,Text,,Hammerfall,,,,,,,,
+PROG_FS0_CHOICE_0_TEXT,Text,,Watch the recording,,,,,,,,
+PROG_FS0_TEXT_OUTCOME_0,Text,,"You see a lush, but alien landscape, a basin covered in marine blue trees and twisting red, pulsating vines. The ground is sprinkled with thousands of egg shaped objects of various sizes.
+
+A Synedrion Helios hooks up one of them and carries it away.
+
+You hear radio comms through the static:
+
+<i>""This is Citizen Eileen. Package secured, now approaching source of previously reported signal... I'll be damned, that's a... Manticore?! Well, the scavs who were using it lately won't be needing it anymore. Poor bastards... Hey, the AI Core is back online and... It's requesting a handshake... Yes sleeping beauty, you are welcome to come along""</i>
+
+This must be the Synedrion expedition sent to investigate the Hammerfall Crater... But it can't be, where did all this vegetation come from?",,,,,,,,
+PROG_FS0_TEXT_GENERAL_0,Text,,"<i>""We have received data from M-AI-Core 12B/735, previously reported as lost. Likely hypothesis: found, repurposed and AI Core firewalled for use as non-sentient aerial vehicle. Parsing video and audio log""</i>
+
+One of our Manticores is back online? After all this time...",,,,,,,,
+PROG_FS0_TITLE,Text,,A Sleeping Beauty Awakes,,,,,,,,
+PROG_FS10_CHOICE_0_TEXT,Text,,"If NJ couldn't stop it, we have nothing that can put a dent on this thing. All we can do is intercept individual flyers as we work towards a solution.",,,,,,,,
+PROG_FS10_TEXT_GENERAL_0,Text,,"Using reports from public feeds and satellite imagery we can now piece together that New Jericho launched a massive rocket attack on the Hammerfall crater, presumably the “Operation Mongoose” that West had been planning. The strike force was in turn obliterated by a towering Pandoran monstrosity, surrounded by a myriad of flying creatures.
+
+The chronology of events and their causal relationship remains unclear, with some within Synedrion blaming NJ for provoking the Pandoran attack and NJ claiming that they merely acted in self defense.
+
+The Disciples of Anu insist that the emergence of what they call the “Behemoth” and the “Festering Skies” was preordained and inevitable.",,,,,,,,
+PROG_FS10_TITLE,Text,,Operation Mongoose,,,,,,,,
+PROG_FS1_CHOICE_0_TEXT,Text,,Seems like the Manticore recovered by Synedrion is attempting to communicate with us. Let's hear it.,,,,,,,,
+PROG_FS1_FAIL_CHOICE_0_OUTCOME_GENERAL,Text,,"An armed Manticore approaches our base. ""Your friends fought bravely in the raid on my home haven, but they didn't make it,"" says Citizen Eileen through the radio. ""I'm sorry, this is not the way it was meant to go down, but here is the Manticore I promised. And me, if you will have me. Perhaps this way I may come across some sort of... redemption.""",,,,,,,,
+PROG_FS1_FAIL_CHOICE_0_TEXT,Text,,"This is good news, we could ill afford to lose that Manticore!",,,,,,,,
+PROG_FS1_FAIL_TEXT_GENERAL_0,Text,,"The attack on [HavenName] came from the Hammerfall Crater. We speculate that this particular haven was targeted because it harbored the egg recovered by Citizen Eileen.
+
+Using reports from public feeds and satellite imagery we can now piece together that New Jericho launched a massive rocket attack on the Hammerfall Crater, presumably the “Operation Mongoose” that West had been planning. The NJ strike force was in turn obliterated by a towering Pandoran monstrosity, surrounded by a myriad of flying creatures.
+
+The chronology of events and their causal relationship remains unclear, with some within Synedrion blaming NJ for provoking the Pandoran attack and NJ claiming that they merely acted in self defense.
+
+The Disciples of Anu insist that the emergence of what they call the “Behemoth” and the “Festering Skies” was preordained and inevitable.",,,,,,,,
+PROG_FS1_FAIL_TITLE,Text,,A Sole Survivor,,,,,,,,
+PROG_FS1_MISS_CHOICE_0_TEXT,Text,,"Doesn't sound too difficult . Let's do it, and get samples of the egg for our labs.",,,,,,,,
+PROG_FS1_MISS_CHOICE_1_TEXT,Text,,We will be back.,,,,,,,,
+PROG_FS1_MISS_TEXT_GENERAL_0,Text,,"With the help of a few like-minded individuals and AIs, Eileen has assembled prototypes of aerial weapons and equipment that can be fitted on the Manticore that she recovered near the Hammerfall Crater. The prototypes are based on old Phoenix Project designs from a bygone time, squirreled away in the data banks of Sartorius, an avionics obsessed AI.
+
+As a result of Sartorius' casual proselytizing on the rights of artificial persons, M-AI-Core 12B/735 has renamed herself ""Aurora"".
+
+Eileen brings up a holo display of [HavenName]. <i>""This is where they are storing the egg I brought. Meet me there in fifteen, I will lure away Pete, who is not much of a guard. And a terrible poet. Remember: no one dies, the egg gets destroyed. In the meantime, my friends will finish refitting the Aurora”</i>",,,,,,,,
+PROG_FS1_MISS_TITLE,Text,,The Hatching,,,,,,,,
+PROG_FS1_OUTCOME,Text,,"<i>""This is Citizen Eileen. If you are getting this, I know that you saw what I saw: there were thousands of those… eggs. And I brought one of them here, and those fools are still ""working to achieve a consensus on a reasonable course of action"" instead of burning it. If... When it hatches it's going to get bad. Help me destroy it before whatever inside comes out, and this sleeping beauty is yours""</i>
+
+We should investigate this egg and collect samples of it if possible.",,,,,,,,
+PROG_FS1_TEXT_GENERAL_0,Text,,"Out of the findings of the Synedrion expedition, a hypothesis arises: Hammerfall has precipitated profound changes in the Pandoran ecology. Furthermore, the object extracted by Citizen Eileen appears to be an egg that will hatch a very large flying creature. An intense public debate follows across Synedrion public feeds, but the citizens can't agree on how to proceed; they settle on continuing to monitor the situation.
+
+New Jericho finalizes plans for its military operation to attack the Hammerfall Crater, now codenamed Mongoose.
+
+<b>***//We are receiving a communication from M-AI-Core 12B/735</b>",,,,,,,,
+PROG_FS1_TITLE,Text,,We Are Still Collating,,,,,,,,
+PROG_FS1_WIN_CHOICE_0_OUTCOME_GENERAL,Text,,"The attack on [HavenName] came from the Hammerfall Crater. We speculate that this particular haven was targeted because it harbored the egg recovered by Citizen Eileen.
+
+Using reports from public feeds and satellite imagery we can now piece together that New Jericho launched a massive rocket attack on the Hammerfall Crater, presumably the “Operation Mongoose” that West had been planning. The NJ strike force was in turn obliterated by a towering Pandoran monstrosity, surrounded by a myriad of flying creatures.
+
+The chronology of events and their causal relationship remains unclear, with some within Synedrion blaming NJ for provoking the Pandoran attack and NJ claiming that they merely acted in self defense.
+
+The Disciples of Anu insist that the emergence of what they call the “Behemoth” and the “Festering Skies” was preordained and inevitable.",,,,,,,,
+PROG_FS1_WIN_CHOICE_0_TEXT,Text,,OK.,,,,,,,,
+PROG_FS1_WIN_TEXT_GENERAL_0,Text,,"Our team has successfully reached the Aurora and managed to escape the raided haven below. The machine is fully operational and heavily armed. 
+
+Eileen is aboard. She is shaken, now that the adrenaline rush from the escape and the encounter with the flying monster has run its course.
+
+Eileen has lost everything and everyone that was dear to her. Perhaps she will find a new home with us.",,,,,,,,
+PROG_FS1_WIN_TEXT_GENERAL_1,Text,,"The attack on [HavenName] came from the Hammerfall Crater. We speculate that this particular haven was targeted because it harbored the egg recovered by Citizen Eileen.
+
+Using reports from public feeds and satellite imagery we can now piece together that New Jericho launched a massive rocket attack on the Hammerfall Crater, presumably the “Operation Mongoose” that West had been planning. The NJ strike force was in turn obliterated by a towering Pandoran monstrosity, surrounded by a myriad of flying creatures.
+
+The chronology of events and their causal relationship remains unclear, with some within Synedrion blaming NJ for provoking the Pandoran attack and NJ claiming that they merely acted in self defense.
+
+The Disciples of Anu insist that the emergence of what they call the “Behemoth” and the “Festering Skies” was preordained and inevitable.",,,,,,,,
+PROG_FS1_WIN_TITLE,Text,,Homecoming,,,,,,,,
+KEY_DLC3_MOUNTEGG_NAME,Text,,HAMMERFALL CRATER,,,,,,,,
+KEY_DLC3_TAC_HINT_EILEEN_STORY_WIN_DESCRIPTION,Text,,"""Is everybody on board? I'm afraid we can't afford to stay any longer. This was my home, until I brought that fragging egg here... Maybe if you had come earlier... forget it, I can't lay this on you. It's not your fault. Prepare for takeoff!""",,,,,,,,
+KEY_DLC3_TAC_HINT_MANTICORE_RUN_HURRY_DESCRIPTION,Text,,"""Phoenix? I'm almost done here, everyone else is... gone. More crabmen are approaching from all sides, so hurry up! I'm waiting for you inside the Manticore.""",,,,,,,,
+KEY_DLC3_TAC_HINT_MANTICORE_RUN_START_NAME,Text,,AURORA,,,,,,,,
+KEY_DLC3_TAC_HINT_MANTICORE_RUN_START_DESCRIPTION,Text,,"Your only chance is to reach the armed Manticore, Aurora, that Eileen and her friends were working on and hope that they had time to finish the job! Move, move, move!",,,,,,,,
+KEY_DLC3_TAC_HINT_MANTICORE_RUN_STORY_DESCRIPTION,Text,,"Your team was on their way to the egg when the haven was attacked from all sides. You are cut off from the transport that you arrived in, and surrounded by mayhem and destruction.",,,,,,,,
+KEY_DLC3_TAC_HINT_MANTICORE_RUN_STORY_NAME,Text,,CHANGE OF PLANS,,,,,,,,
+KEY_DLC3_THE_GIFT,Text,,AURORA,,,,,,,,
+KEY_FS_ALN_CORRUPTION_NODE_RESEARCHDEF_NAME,Text,,NODE,,,,,,,,
+KEY_FS_ALN_CORRUPTION_NODE_RESEARCHDEF_UNLOCK,Text,,A monstrous entity whose anatomy doesn't resemble any Pandoravirus mutation in our database able to take over machines and entire settlements by telepathic attacks.,,,,,,,,
+KEY_FS_ALN_CORRUPTION_NODE_RESEARCHDEF_COMPLETE,Text,,"Species classification CN-Alpha
+A highly evolved form of the Pandoravirus has been reported to attack human settlements by attaching itself to structures and machinery to form a powerful symbiotic connection. Affected havens are completely overtaken by the creature and all of their citizens are kept in a mindless state serving the Pandorans.
+Recent reports indicate Nodes are able to establish a similar telepathic connection with AI-operated aircraft and use it to attack other humans. Despite the evidence of high intelligence, no attempt at peaceful contact with the creature has been successful yet.",,,,,,,,
+KEY_FS_PX_ALIEN_CORRUPTION_NODE_RESEARCHDEF_COMPLETE,Text,,"Summary: What we have uncovered is deeply troubling. It is certain that the Node is not created through genetic aggregation and manipulation, either via cloning or aggressively mutating a live subject, as are all the other Pandoran species that we have encountered so far. Biologically, it is nothing but a random collection of cells: we are at a loss as to how it is even able to maintain a coherent shape. What we have autopsied is little more than a broken vessel that was previously inhabited by something that left no trace of itself upon leaving it.
+
+We are only left with the esoteric as a plausible explanation: the Node must be a physical manifestation of the Oneiric Delirium; it is quite literally the product of nightmares. We hypothesize that a Pandoran creature with telepathic ability provoked a massive OD event at the haven and that brought the Node into being. We can further hypothesize that this required a substantial amount of biomass and a period of time. Once the Node appeared, it took over the haven and everything and everyone in it at the time: the unfortunate inhabitants were somehow used to invoke the intelligence that subdued them.
+
+Genetic origins: none
+
+Function: unknown
+
+Offensive capabilities: Takes over and controls entire human settlements and technology, including aircraft. We speculate that the creature is somehow harnessing the Oneiric Delirium phenomenon. Should this speculation prove correct, the fact that the creature's control extends to inanimate objects such as terrestrial and aerial vehicles would have tremendous implications for our understanding of this phenomenon.
+
+Defensive capabilities: Spreads viral agents around its body to fend off attackers.
+
+Mobility: Once attached, the body remains completely immobile.
+
+Weakness: It seems to have a one-sided telepathic connection with its victims. Once the body is dead, all mind-control connection with all entities is broken.",,,,,,,,
+KEY_FS_PX_ALIEN_CORRUPTION_NODE_RESEARCHDEF_NAME,Text,,Node Autopsy,,,,,,,,
+KEY_FS_PX_ALIEN_CORRUPTION_NODE_RESEARCHDEF_UNLOCK,Text,,"Specimen: NODE
+A species that looks utterly alien, even compared to other highly mutated Pandorans. We must commence study as soon as possible to understand how the infestation occurred.",,,,,,,,
+PROG_FS20_TEXT_GENERAL_0,Text,,"It is clear that the Behemoth and the swarm of flying creatures arose out of the interaction between the asteroid and the Pandoran ecosystem. We speculate that the asteroid was carrying organic molecules that were incorporated into the Pandoravirus through a similar RDNA process as that suffered by Earth lifeforms.
+
+We have to treat the Behemoth as a viral strain, rather than a <i>kanji</i>. We need some sort of antibodies and a method of delivering them. We will come up with something, as we always do. But we must keep shooting down the flying cephalopods in the meantime.",,,,,,,,
+PROG_FS20_TITLE,Text,,Tribulations,,,,,,,,
+PROG_FS20_CHOICE_0_TEXT,Text,,Ask the Disciples of Anu for help,,,,,,,,
+PROG_FS20_CHOICE_1_TEXT,Text,,Ask New Jericho for help,,,,,,,,
+PROG_FS20_CHOICE_2_TEXT,Text,,Ask Synedrion for help,,,,,,,,
+PROG_FS20_CHOICE_3_TEXT,Text,,Try to convince all the factions to pull together,,,,,,,,
+PROG_FS20_CHOICE_0_OUTCOME_TEXT,Text,,,,,,,,,,
+PROG_FS20_CHOICE_1_OUTCOME_TEXT,Text,,,,,,,,,,
+PROG_FS20_CHOICE_2_OUTCOME_TEXT,Text,,,,,,,,,,
+PROG_FS20_CHOICE_3_OUTCOME_TEXT,Text,,,,,,,,,,

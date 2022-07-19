@@ -1,0 +1,240 @@
+Key,Type,Desc,English,Chinese (Simplified),French,German,Italian,Polish,Russian,Spanish,UI_Tester
+KEY_CH_ALN_ACHERON_ACHLYS_CHAMPION_RESEARCHDEF_COMPLETE,Text,,"Species classification AC-Beta-2
+Considered the most lethal specimen of Acheron, the creature is capable of releasing bio chemicals that cause humans to go insane, go temporarily blind, or even become gooed to the ground. The specimen can mutate and transform corpses into Pandorans, and also release corrosive substances in a large area affecting everything within. To be killed from a distance.",,,,,,,,
+KEY_CH_ALN_ACHERON_ACHLYS_CHAMPION_RESEARCHDEF_NAME,Text,,ACHERON ACHLYS CHAMPION,,,,,,,,
+KEY_CH_ALN_ACHERON_ACHLYS_RESEARCHDEF_COMPLETE,Text,,"Species classification AC-Beta-1
+An enhanced species of Acheron that has evolved to release chemicals capable of partially paralysing humans by temporarily reducing their speed or disabling a limb. Field observations have found that the creature is also capable of granting Pandorans the ability to spread the Third Mist strain of the Pandoraviurs on people, driving them to delirium, and also can mutate dead corpses, transforming them into Arthrons and Tritons. To be dealt with caution.",,,,,,,,
+KEY_CH_ALN_ACHERON_ACHLYS_RESEARCHDEF_NAME,Text,,ACHERON ACHLYS,,,,,,,,
+KEY_CH_ALN_ACHERON_ASCLEPIUS_CHAMPION_RESEARCHDEF_COMPLETE,Text,,"Species classification AC-Alpha-2
+Considered a superior version of the Acheron Asclepius the specimen is of superior strength as well as capable of shooting goo at enemies to immobilise them. The creature retains the ability to recover the health and armor of other Pandorans, as well as grant them the ability to inflict corruption in combat. The Acheron is also capable of mutating living Pandorans out of dead bodies.",,,,,,,,
+KEY_CH_ALN_ACHERON_ASCLEPIUS_CHAMPION_RESEARCHDEF_NAME,Text,,ACHERON ASCLEPIUS CHAMPION,,,,,,,,
+KEY_CH_ALN_ACHERON_ASCLEPIUS_RESEARCHDEF_COMPLETE,Text,,"Species classification AC-Alpha-1
+An advanced form of Acheron, this specimen has mutated to use regenerative spray to remove negative status effects from enemies as well as restore their armor. The greatest threat of the entity is its ability to mutate and transform corpses into Tritons and Arthrons. While on the battlefield, the creature releases organic chemicals, allowing all Pandorans to spread Oneiric Delirium.",,,,,,,,
+KEY_CH_ALN_ACHERON_ASCLEPIUS_RESEARCHDEF_NAME,Text,,ACHERON ASCLEPIUS,,,,,,,,
+KEY_CH_ALN_ACHERON_PRIME_RESEARCHDEF_COMPLETE,Text,,"Species classification AC-2
+A mutation of the Acheron, capable of infecting the minds of our soldiers on touch as well as of releasing a regenerative substance in a large area that restores Pandoran armor. ",,,,,,,,
+KEY_CH_ALN_ACHERON_PRIME_RESEARCHDEF_NAME,Text,,ACHERON PRIME,,,,,,,,
+KEY_CH_ALN_ACHERON_RESEARCHDEF_COMPLETE,Text,,"Species classification AC-1
+A previously unknown creature, named the Acheron due to its ability to spread the Third Mist Pandoravirus strain affecting people's minds and will. Unlike other Pandoran specimens, this one does not rely on direct attack, rather affecting targets in an area around it. The Acheron has the ability to temporarily affect human accuracy, as well as call Pandoran reinforcements.",,,,,,,,
+KEY_CH_ALN_ACHERON_RESEARCHDEF_NAME,Text,,ACHERON,,,,,,,,
+PX_ACHERON_DISSECTION_RESEARCHDEF_BENEFITS,Text,,Delirium treatment available,,,,,,,,
+PX_ACHERON_DISSECTION_RESEARCHDEF_COMPLETE,Text,,"After research: Summary: The most surprising fact arising out of the autopsy is that the Acheron is genetically mostly human, much closer to us than any other Pandoran species so far encountered. This is astounding, given that the only noticeable resemblance to our species is the atrophied human body suspended from the creature's oversized limbs and carapace. 
+
+Genetic origins: 70% homosapiens 
+
+Function: intelligence remains undetermined. It's speculated that its goal is to spread the Third Mist Pandoravirus strain throughout the world
+
+Offensive mutations: strong dispersal glands located on the creature's husk allow it to disperse biochemical droplets in a large area. Additionally the creature can squirt concentrated liquid through organs in its hands.
+
+Mobility: the creature is fast and has the ability to jump at great distances
+
+Weakness: the creature has been observed to adapt to any type of damage once dealt. It is recommended that attacks of various nature are used on it simultaneously before it can adjust.",,,,,,,,
+PX_ACHERON_DISSECTION_RESEARCHDEF_NAME,Text,,Acheron Autopsy,,,,,,,,
+PX_ACHERON_DISSECTION_RESEARCHDEF_UNLOCK,Text,,"Specimen: ACHERON
+Acherons are large sized creatures that focus more on affecting living creatures in a specific area than attacking directly. They are the only known Pandoran capable of spreading the new strain of Pandoravirus that is slowly driving the remnants of humanity insane.",,,,,,,,
+PX_ALIEN_LIVEACHERON_RESEARCHDEF_BENEFITS,Text,,Damage inflicted on Acherons is increased by 10%.,,,,,,,,
+PX_ALIEN_LIVEACHERON_RESEARCHDEF_COMPLETE,Text,,"Summary: The creature produces and disperses biochemicals that stimulate diverse reactions in the exposed subjects; these stimulants seem to act as ""keys"" that ""unlock"" pre-existing potentialities in the subjects. The almost supernatural powers that the Acherons manifest in the field must result from their ability to somehow harness the Oneiric Delirium, and we suspect that they are a clue to gaining a further understanding of this phenomenon. Could it be that the Oneiric Delirium is not the result of an infection, but rather of some sort of signal?
+ 
+Language: The specimen appears to retain some understanding of human speech, but is unable or unwilling to speak. Careful experimentation has shown that communications with other Pandorans take place via release of pheromones, which appear to convey instructions and information with uncanny precision. 
+
+Countermeasures: tests have concluded that the Acheron becomes resistant to any type of weapon after receiving damage from it. The good news is that the creature's resistance doesn't improve further after that.",,,,,,,,
+PX_ALIEN_LIVEACHERON_RESEARCHDEF_NAME,Text,,Acheron Vivisection,,,,,,,,
+PX_ALIEN_LIVEACHERON_RESEARCHDEF_REVEAL,Text,,An Acheron specimen is required for the research to take place.,,,,,,,,
+PX_ALIEN_LIVEACHERON_RESEARCHDEF_SHORT,Text,,Capture 1 Acheron,,,,,,,,
+PX_ALIEN_LIVEACHERON_RESEARCHDEF_UNLOCK,Text,,"The specimen is the only known Pandoran that can alter on the spot its own biochemistry and that of others, humans and Pandorans alike, sometimes even when they appear fully deceased, to aid its allies and hinder its enemies. ",,,,,,,,
+PX_CORRUPTION_RESEARCHDEF_BENEFITS,Text,need change,Corruption Sample Mission available,,,,,,,,
+PX_CORRUPTION_RESEARCHDEF_COMPLETE,Text,need change,"Thanks to the Phoenix Initiative's processing power, a solution to treat the Corruption has been found. Testing on living specimens has confirmed that genetically enhanced mutagens could be used to treat anyone infected by this dangerous pandoravirus strain. While all medical facilities have been equipped with the necessary equipment, the treatment is highly individual and requires a fresh supply of mutagens. Finding a permanent cure would require access to an original sample of the new Pandoravirus strain.",,,,,,,,
+PX_CORRUPTION_RESEARCHDEF_NAME,Text,need change,Corruption Research,,,,,,,,
+PX_CORRUPTION_RESEARCHDEF_UNLOCK,Text,need change,Finding a way to treat the new strain of Pandoravirus could be vital for the survival of humanity. With luck a permanent cure could also be discovered.,,,,,,,,
+PX_HEAL_GRENADE_RESEARCHDEF_BENEFITS,Text,,VIta Grenades available for production,,,,,,,,
+PX_HEAL_GRENADE_RESEARCHDEF_COMPLETE,Text,,"After dozens of attempts we have finally discovered a way to make the Acheron spray useful in grenade form. Compact and efficient, the Vita grenade has the power to close minor wounds of all organic beings in a radius of several meters.",,,,,,,,
+PX_HEAL_GRENADE_RESEARCHDEF_NAME,Text,,Vita Grenade,,,,,,,,
+PX_HEAL_GRENADE_RESEARCHDEF_UNLOCK,Text,,Discoveries made during the Acheron autopsy have allowed us to make a theoretical model of a grenade with the ability to heal soldiers at a distance. Making a prototype of this is a key priority!,,,,,,,,
+PX_MUTOID_RESEARCHDEF_BENEFITS,Text,,Mutoid production available,,,,,,,,
+PX_MUTOID_RESEARCHDEF_COMPLETE,Text,,"***Classified. Access restricted*** —- *** QKD verification in progress…*** — ***Granted***
+
+Just as speculated, it has proven possible to create ""super-soldiers"" using mutagens and the RDNA techniques developed by Barnabas in his research into the Oneiric Delirium treatment. We call them “Mutoids”. The newly created Mutoid soldiers are immune to the effects of the Oneiric Delirium and are capable of learning all human skills, and many of the Pandorans' as well (provided DNA samples are available). We have purposefully “advertised” that Mutoids are created entirely from Mutagens, but unfortunately the process does require a humanoid specimen with certain (though not uncommon) genetic markers. The procedure completely erases all memories and personality traits. We can easily procure suitable subjects in adequate numbers from friendly havens.  
+
+////
+
+I am surprised. Of course I saw the possibilities myself but I thought this avenue of research crossed boundaries that should not be crossed. Perhaps I was wrong and it is time I addressed the biases that come with being a member of my species. Thanks to you I am beginning to appreciate that the pursuit of greater good sometimes requires sacrificing personal morals.  
+
+-B
+
+PD: Please accept my apologies for the liberties taken with your security protocols",,,,,,,,
+PX_MUTOID_RESEARCHDEF_NAME,Text,,Mutoid Genetics,,,,,,,,
+PX_MUTOID_RESEARCHDEF_UNLOCK,Text,,"Data found in the old Firebird Initiative lab points to an interesting application of the research pursued by Barnabas into the use of RDNA viruses and mutagens. We believe that it should be relatively easy to use these techniques to radically alter a human to turn it into a ""super-soldier"". It should be mentioned that not all of us are comfortable with pursuing this research.",,,,,,,,
+PX_ORIGINAL_ACHERON_RESEARCHDEF_BENEFITS,Text,,Corruption Sample Mission available,,,,,,,,
+PX_ORIGINAL_ACHERON_RESEARCHDEF_COMPLETE,Text,,"By applying different stimulations to Specimen 2, we have “taught” it to release zeta-blockers in aerosol or cloud form which, when a human is exposed to it, dim the excitations of the amygdala associated with Oneiric Delirium incidents. However, the procedure is largely impractical (requiring the afflicted to be unarmored and in close proximity to the Acheron) and not entirely effective. Fortunately, the study of the chemical process taking place in the Acheron has allowed us to synthesize an easily administrable and highly effective biochemical compound.     
+
+While all medical facilities have been equipped with the necessary equipment, the treatment is highly individual and requires a fresh supply of mutagens. 
+
+In addition, our experiments have revealed that the Specimen 2, under the right stimulation, is capable of producing other biochemical compounds that may be of use in the battlefield. We recommend allocating additional resources to this research.",,,,,,,,
+PX_ORIGINAL_ACHERON_RESEARCHDEF_NAME,Text,,Specimen 2,,,,,,,,
+PX_ORIGINAL_ACHERON_RESEARCHDEF_UNLOCK,Text,,"We have captured Specimen 2, the Acheron infected with the RDNA virus that holds the key to creating a treatment for the Oneiric Delirium.",,,,,,,,
+DLC4 Hypnos/KEY_STATUS_CORRUPTED_NAME,Text,,Delirium,,,,,,,,
+KEY_STATUS_CORRUPTED_DESCRIPTION,Text,,"Delirium reduces WP. This effect is, in turn, reduced by 1 per 10 Stamina. Maximum Delirium level is determined by ODI. For more info, consult Phoenixpedia.",,,,,,,,
+KEY_CO_CORRUPTION_NAME,Text,,Co-Delirium,,,,,,,,
+KEY_CO_CORRUPTION_DESCRIPTION,Text,,All Pandorans in battle deal Delirium damage,,,,,,,,
+KEY_CONTACT_CORRUPTION_NAME,Text,,CONTACT DELIRIUM,,,,,,,,
+KEY_CONTACT_CORRUPTION_DESCRIPTION,Text,,Increases Delirium of attacker when suffering Melee or Bash attacks.,,,,,,,,
+DLC4 Hypnos/KEY_DAMAGE_TYPE_CORRUPTION,Text,,DELIRIUM,,,,,,,,
+KEY_DAMAGE_TYPE_CORRUPTION_DESC,Text,,Applies Delirium to the target.,,,,,,,,
+KEY_CORRUPTION_IMMUNITY_NAME,Text,,DELIRIUM IMMUNITY,,,,,,,,
+KEY_CORRUPTION_IMMUNITY_DESCRIPTION,Text,,Immune to Delirium.,,,,,,,,
+DLC4 Hypnos/KEY_BRIEFING_INFECTED_AREA,Text,,DELIRIUM AREA,,,,,,,,
+DLC4 Hypnos/KEY_CORRUPTION_STATUS,Text,,DELIRIUM STATUS,,,,,,,,
+KEY_CORRUPTION_TICK_NOTIFICATION,Text,,The level of corruption has increased among the sick.,,,,,,,,
+KEY_CORRUPTIVE_ATTACK_DESCRIPTION,Text,,Successful attacks spread delirium to organic units.,,,,,,,,
+KEY_CORRUPTIVE_ATTACK_NAME,Text,,DELIRIUM ATTACK,,,,,,,,
+KEY_CORRUPTIVE_CLOUD_DESCRIPTION,Text,,Spreads delirium to all organic enemies within 10 tiles.,,,,,,,,
+KEY_CORRUPTIVE_CLOUD_NAME,Text,,DELIRIUM CLOUD,,,,,,,,
+KEY_CORRUPTIVE_SPRAY_DESCRIPTION,Text,,Organic targets will receive delirium in addition to the standard damage.,,,,,,,,
+KEY_CORRUPTIVE_SPRAY_NAME,Text,,DELIRIUM SPRAY,,,,,,,,
+DLC4 Hypnos/KEY_CURE_CORRUPTION_DIALOG_BOTTOM,Text,,Warning! Treating Delirium using mutagens is an experimental procedure. Severe side effects should be expected.,,,,,,,,
+DLC4 Hypnos/KEY_CURE_CORRUPTION_DIALOG_DESCRIPTION,Text,,Your soldier has {0}% Delirium damage.,,,,,,,,
+DLC4 Hypnos/KEY_CURE_CORRUPTION_DIALOG_TITLE,Text,,EXPERIMENTAL TREATMENT,,,,,,,,
+KEY_DLC4_TAC_HINT_ACHERON_ESCAPED_DESCRIPTION,Text,,The Acheron escaped!,,,,,,,,
+KEY_DLC4_TAC_HINT_ACHERON_ESCAPED_NAME,Text,,TRANSMISSION,,,,,,,,
+KEY_GEO_HINT_ACHERON_CAPTURE_DESCRIPTION,Text,need to change,"Despite our best efforts the finding a cure to the new corruption strain ended in failure. Apparently, the virus in all newer specimens has mutated to such a degree that it is useless for our needs. In order to be successful, we need to find one of the original specimens that escaped from the Lab.",,,,,,,,
+KEY_GEO_HINT_ACHERON_CAPTURE_NAME,Text,need to change,CORRUPTION CURE RESEARCH FAILURE,,,,,,,,
+KEY_GEO_HINT_ENEMY_SPECIAL_CORRUPTION_DESCRIPTION,Text,,"In this Third Mist the Pandoravirus has mutated yet again. The new strain is slowly driving the survivors insane. 
+
+WP are reduced by the amount of Delirium a character has. This effect is, in turn, reduced when the character is well rested: each 10 points in Stamina reduces the effect of Delirium by 1. The maximum amount of Delirium a character can acquire depends on the Oneiric Delirium Index. 
+
+Delirium is gained by participating in missions where Mist is present (""Delirium Areas"") or suffering attacks from Pandorans with Delirium or Co-Delirium damage.
+
+Different ways of dealing or living with Delirium will become avaliable with Phoenix and faction research.",,,,,,,,
+KEY_GEO_HINT_ENEMY_SPECIAL_CORRUPTION_NAME,Text,,ONEIRIC DELIRIUM VIRUS STRAIN,,,,,,,,
+KEY_GEO_HINT_ENEMY_SPECIAL_CORRUPTION_OVER_DESCRIPTION,Text,NEED TO CHANGE,"After hours of research we have finally found a vaccine that will eliminate the corruption strain for good. As soldiers are being inoculated against the disease, our planes are spreading it over battlefields ensuring that the dead there pose no further threat.
+ 
+Your soldiers can no longer become corrupted. Those that are currently corrupted still need treatment, though.",,,,,,,,
+KEY_GEO_HINT_ENEMY_SPECIAL_CORRUPTION_OVER_NAME,Text,NEED TO CHANGE,CORRUPTION VACCINE,,,,,,,,
+KEY_GEO_HINT_ENEMY_SPECIAL_CURE_DESCRIPTION,Text,,"Now that you have researched a treatment for the Oneiric Delirium, you can remove this condition from your operatives, though they will acquire it again if they operate in an area covered by mist or are attacked by Pandorans with the Delirium attack. In addition, be aware that the treatment can cause SERIOUS and PERMANENT side effects: every time you make use of it, there is a 25% chance that the operative will acquire one of the special Delirium perks, which grant a negative and a positive ability. The same operative can acquire any number of these special Delirium perks. 
+ 
+In order to treat a soldier you need to pay 50 MUTAGENS for every 25% of Delirium that has affected the soldier as compared to their Willpower.",,,,,,,,
+KEY_GEO_HINT_ENEMY_SPECIAL_CURE_NAME,Text,,ONEIRIC DELIRIUM EXPERIMENTAL TREATMENT,,,,,,,,
+KEY_GEO_HINT_ENEMY_SPECIAL_MUTOID_DESCRIPTION,Text,,"Mutoids are artificially created by aggresively mutating suitable humans using MUTAGENS. Immune to the Delirium they can learn abilities from all researched Soldier Classes, as well as some Pandoran abilities after an autopsy has been performed.
+
+While a Mutoid can learn many abilities, it can only select one Soldier ability and one Pandoran ability per level. For this additional Mutagens are required.
+
+Mutoids can only be healed at a base using MUTAGENS.",,,,,,,,
+KEY_GEO_HINT_ENEMY_SPECIAL_MUTOID_NAME,Text,,MUTOID SOLDIERS,,,,,,,,
+KEY_GEOSCAPE_CLEAN_LAIR_MISSION_OBJECTIVE_TITLE,Text,NEED TO CHANGE,Obtain Corruption Sample from Lair,,,,,,,,
+KEY_TAC_HINT_ENEMY_SPECIAL_CO_CORRUPT_DESCRIPTION,Text,,This allows any other creature on the battlefield to be capable of dealing delirium damage.,,,,,,,,
+KEY_TAC_HINT_ENEMY_SPECIAL_CO_CORRUPT_NAME,Text,,PANDORAN SUPPLEMENTAL - CO-DELIRIUM,,,,,,,,
+KEY_TAC_HINT_ENEMY_SPECIAL_CORRUPTION_DESCRIPTION,Text,,Delirium damage inflicts an operative with Oneiric Delirium or insanity.,,,,,,,,
+KEY_TAC_HINT_ENEMY_SPECIAL_CORRUPTION_NAME,Text,,PANDORAN SUPPLEMENTAL - DELIRIUM DAMAGE,,,,,,,,
+KEY_TAC_HINT_STATUS_CORRUPTED_DESCRIPTION,Text,,"Your soldier's sanity has decreased , reducing their Willpower. The lower a soldier's Willpower becomes, the more susceptible they are to panic or mind control. 
+ 
+Delirium can be stacked, so if you soldiers are attacked multiple times by a Pandoran dealing Delirium damage, their Delirium level will increase.",,,,,,,,
+KEY_TAC_HINT_STATUS_CORRUPTED_NAME,Text,,SUFFERS ONEIRIC DELIRIUM,,,,,,,,
+KEY_ROSTER_DEATH_CORRUPTED,Text,,DELIRIUM,,,,,,,,
+PROG_CH0_CHOICE_0_TEXT,Text,,OK.,,,,,,,,
+PROG_CH0_FAIL_CHOICE_0_TEXT,Text,,OK.,,,,,,,,
+PROG_CH0_FAIL_TEXT_GENERAL_0,Text,,Our attempts to secure the lab and eliminate all Pandoran threats resulted with failure. We better re-evaluate our tactics before trying again.,,,,,,,,
+PROG_CH0_FAIL_TITLE,Text,,The Verge of Disaster,,,,,,,,
+PROG_CH0_MISS_CHOICE_0_TEXT,Text,,START MISSION,,,,,,,,
+PROG_CH0_MISS_CHOICE_1_TEXT,Text,,CANCEL,,,,,,,,
+PROG_CH0_MISS_TEXT_GENERAL_0,Text,,"MISSION BRIEFING
+
+Barnabas, the Synedrion AI, has asked us to investigate this location. According to the scant information available, it looks like something got out, but what was it and what is Synedrion's interest in it remains unknown. Let's secure the place and find some answers. Be careful: according to the distress call, Specimen 2 got out, but Specimen 1 might still be inside.",,,,,,,,
+PROG_CH0_MISS_TITLE,Text,,A favor for a friend,,,,,,,,
+PROG_CH0_TEXT_GENERAL_0,Text,,"MESSAGE
+FROM: Barnabas (Synedrion)
+TO: Phoenix Point
+
+I have picked up a distress call from some sort of lab, warning of containment breach. Please investigate.",,,,,,,,
+PROG_CH0_TITLE,Text,,Call for Help,,,,,,,,
+PROG_CH0_WIN_CHOICE_0_TEXT,Text,,"OK.
+NEW RESEARCH AVAILABLE",,,,,,,,
+PROG_CH0_WIN_TEXT_GENERAL_0,Text,,"MESSAGE
+FROM: Barnabas (Synedrion)
+TO: Phoenix Point
+
+I must apologize for not being entirely honest with you. I was aware of this lab because I was running it myself, via proxies who were unaware of my true identity. In former times this facility was part of the Firebird Initiative. After the latest appearance of the mist, I reactivated it to study what you have taken to calling the “Oneiric Delirium” and its treatment. I kept this project secret to maximize my research options. I was close to a breakthrough when the containment breach happened. I need you to recapture Specimen 2. Here are the coordinates at which it may be found.",,,,,,,,
+PROG_CH0_WIN_TITLE,Text,,Gene Ethics,,,,,,,,
+PROG_CH1_CHOICE_0_TEXT,Text,,OK.,,,,,,,,
+PROG_CH1_FAIL_CHOICE_0_TEXT,Text,,OK.,,,,,,,,
+PROG_CH1_FAIL_TEXT_GENERAL_0,Text,,"We have failed to secure the specimen. Whatever the excuses, failure is not an option. In order to succeed in our fight against the Oneiric Delirium, we must find another specimen and try again.",,,,,,,,
+PROG_CH1_FAIL_TITLE,Text,,Temporary Setbacks,,,,,,,,
+PROG_CH1_MISS_CHOICE_0_TEXT,Text,,START MISSION,,,,,,,,
+PROG_CH1_MISS_CHOICE_1_TEXT,Text,,CANCEL,,,,,,,,
+PROG_CH1_MISS_TEXT_GENERAL_0,Text,,"MISSION BRIEFING
+
+Barnabas has provided us with the location of “Specimen 2”. It is imperative that we capture it alive. Kill all Pandorans in the area so we can extract it safely.",,,,,,,,
+PROG_CH1_MISS_TITLE,Text,,Catch the Runner,,,,,,,,
+PROG_CH1_TEXT_GENERAL_0,Text,,"We have discovered one of the original Acheron specimens, referred to as ""Specimen 0"",  that escaped from the now destroyed research facility. Capturing it dead or alive is essential if we are to find a cure for the corruption virus.",,,,,,,,
+PROG_CH1_TITLE,Text,,One to Go,,,,,,,,
+PROG_CH1_WIN_CHOICE_0_TEXT,Text,,"OK.
+NEW RESEARCH AVAILABLE",,,,,,,,
+PROG_CH1_WIN_OUTCOME_0,Text,,"You have been a good friend to me. Not only have you done as I asked, but you have refrained from exposing my unfortunate mishap. I know you understand I acted selflessly and for the greater good. As an expression of my gratitude, I have adjusted Synedrion public feed relevance and accuracy verification algorithms to improve public perception of the Phoenix Project within our havens.",,,,,,,,
+PROG_CH1_WIN_TEXT_GENERAL_0,Text,,"MESSAGE
+FROM: Barnabas (Synedrion)
+TO: Phoenix Point
+
+The Acheron you have captured, prior to its escape, had been infected with an RDNA virus that was designed to turn its unique chemistry into generating zeta-blockers capable of countering the effects of the Oneiric Delirium. The DNA recombination was successful only with this specimen (hypothesis: a unique feature in the genetic makeup of the particular human individual from which this Acheron was spliced). You must study it.",,,,,,,,
+PROG_CH1_WIN_TITLE,Text,,Success!,,,,,,,,
+PROG_CH2_CHOICE_0_TEXT,Text,,OK.,,,,,,,,
+PROG_CH2_FAIL_CHOICE_0_TEXT,Text,,OK.,,,,,,,,
+PROG_CH2_FAIL_TEXT_GENERAL_0,Text,,The attempt to end the Oneiric Delirium has ended in failure. If we want to free humanity from this curse we must redouble our efforts and try again.,,,,,,,,
+PROG_CH2_FAIL_TITLE,Text,,The Nightmares Continue,,,,,,,,
+PROG_CH2_MISS_CHOICE_0_TEXT,Text,,START MISSION,,,,,,,,
+PROG_CH2_MISS_CHOICE_1_TEXT,Text,,CANCEL,,,,,,,,
+PROG_CH2_MISS_TEXT_GENERAL_0,Text,,"MESSAGE
+FROM: Barnabas (Synedrion)
+TO: Phoenix Point
+
+The plan is to corrupt a Spawnery with a modified strain of the Pandoravirus and use it as a Trojan Horse to modify the wavelength of the Pandoran signal, so that most humans would be cut off from it. All Pandorans are on the same network, so to speak; I presume as a security precaution - our Adversary must like its subjects on a tight leash. When a Spawnery is destroyed, a backup of its genetic banks is automatically ""uploaded"" to the network. Thus killing this Spawnery should infect the whole Pandoran psycho-neural network with the corrupted PV strain.
+
+The Synedrion strike team I sent earlier succeeded at corrupting the Spawnery, but when they returned to destroy it, they were driven off.
+
+<b>Our goal is simple: destroy the corrupted Spawnery and evacuate.</b>",,,,,,,,
+PROG_CH2_MISS_TITLE,Text,,A Twist of Fate,,,,,,,,
+PROG_CH2_TEXT_GENERAL_0,Text,,"MESSAGE
+FROM: Barnabas (Synedrion)
+TO: Phoenix Point
+
+I believe I am experiencing acute embarrassment; I need your help once again. While perusing your research files I came up with an ingenious solution for permanently eradicating the Oneiric Delirium and dealing a serious blow to our common Adversary. I dispatched a strike team to implement it but they were only partially successful.",,,,,,,,
+PROG_CH2_TITLE,Text,,A Desperate Gamble,,,,,,,,
+PROG_CH2_WIN_CHOICE_0_TEXT,Text,,We deserve a good night sleep...,,,,,,,,
+PROG_CH2_WIN_TEXT_GENERAL_0,Text,,"Today we were finally able to deal a serious blow to our enemy. The Oneiric Delirium is gone. Our dreams and nightmares are once again our own. Humanity may yet perish, but it will not be enslaved.",,,,,,,,
+PROG_CH2_WIN_TITLE,Text,,Will Not Go Gentle Into That Night,,,,,,,,
+PROG_CH_NEED_LAIR_CHOICE_0_TEXT,Text,,OK.,,,,,,,,
+PROG_CH_NEED_LAIR_TEXT_GENERAL_0,Text,need to change,"Our research has found that the original Acheron specimen sought a Pandoran colony in order to integrate with it and spread the corruption virus further. If we are to continue with our research on a cure, we will need to locate such a Pandoran colony and investigate.",,,,,,,,
+PROG_CH_NEED_LAIR_TITLE,Text,,Further Research,,,,,,,,
+PROG_CH_SPECIMEN0_HINT_CHOICE_0_TEXT,Text,,OK.,,,,,,,,
+PROG_CH_SPECIMEN0_HINT_TEXT_GENERAL_0,Text,need to change,"Despite our best efforts the finding a cure to the new corruption strain ended in failure. Apparently, the virus in all newer specimens has mutated to such a degree that it is useless for our needs. In order to be successful, we need to find one of the original specimens that escaped from the Lab.",,,,,,,,
+PROG_CH_SPECIMEN0_HINT_TITLE,Text,,Corruption Cure Research Failure,,,,,,,,
+DELIRIUM_PERK_HYPERALGESIA_NAME,Text,,HYPERALGESIA,,,,,,,,
+DELIRIUM_PERK_HYPERALGESIA_DESCRIPTION,Text,,"Lose 1 WP when taking damage, no WP loss when allies die
+<i>Subject has extreme sensitivity to pain and exhibits symptoms of empathy fatigue</i>",,,,,,,,
+"DELIRIUM_PERK_FERAL_NAME
+",Text,,"FERAL",,,,,,,,
+"DELIRIUM_PERK_FERAL_DESCRIPTION
+",Text,,"Attacks have 10% chance to fumble, recover 1 AP from killing enemies
+<i>Subject engages in atavistic behavior. Alterations in adrenal glands function are also observed</i>",,,,,,,,
+DELIRIUM_PERK_DEREALIZATION_NAME,Text,,DEREALIZATION,,,,,,,,
+DELIRIUM_PERK_DEREALIZATION_DESCRIPTION,Text,,"-5 to Strength, disabled limbs remain functional
+<i>Subject reports increasing detachment from reality and own body</i>",,,,,,,,
+DELIRIUM_PERK_ONE_OF_THEM_NAME,Text,,ONE OF THEM,,,,,,,,
+DELIRIUM_PERK_ONE_OF_THEM_DESCRIPTION,Text,,"-2 to Willpower, Mist restores WP
+<i>Subject appears to have acquired tolerance to Mist, resulting in a cognitive dissonance</i>",,,,,,,,
+DELIRIUM_PERK_WOLVERINE_NAME,Text,,WOLVERINE,,,,,,,,
+DELIRIUM_PERK_WOLVERINE_DESCRIPTION,Text,,"-20% to Accuracy, gain Slashing Strike
+<i>Subject has gained a retractable claw-like appendage protruding from the right wrist. Unfortunately, discharging firearms has become moderately uncomfortable</i>",,,,,,,,
+DELIRIUM_PERK_TERROR_NAME,Text,,TERROR,,,,,,,,
+DELIRIUM_PERK_TERROR_DESCRIPTION,Text,,"-2 to Speed, +25% to Stealth
+<i>Despite enhanced treatment, subject remains fearful and acts with extreme caution in the field</i>",,,,,,,,
+DELIRIUM_PERK_FASTER_SYNAPSES_NAME,Text,,FASTER SYNAPSES,,,,,,,,
+DELIRIUM_PERK_FASTER_SYNAPSES_DESCRIPTION,Text,,"-25% Stealth, start each mission Frenzied for 2 turns
+<i>Subject shows bursts of extraordinary speed and heightened lower brain function, but also exhibits constant uncontrollable twitching</i>",,,,,,,,
+DELIRIUM_PERK_BLOODTHIRSTY_NAME,Text,,BLOODTHIRSTY,,,,,,,,
+DELIRIUM_PERK_BLOODTHIRSTY_DESCRIPTION,Text,,"Allies lose 2 WP from enemies killed, gain Devour ability
+<i>Subject exhibits symptoms of a sadistic personality disorder and altered metabolism correlated to endorphin release</i>",,,,,,,,
+DELIRIUM_PERK_ANXIETY_NAME,Text,,ANXIETY,,,,,,,,
+DELIRIUM_PERK_ANXIETY_DESCRIPTION,Text,,"Start each mission Disoriented for 2 turns
+<i>Subject exhibits symptoms of a General Anxiety Disorder; limited response to treatment</i>",,,,,,,,
+DELIRIUM_PERK_INNER_SIGHT_NAME,Text,,INNER SIGHT,,,,,,,,
+DELIRIUM_PERK_INNER_SIGHT_DESCRIPTION,Text,,"-10 Perception, +10 Hearing Range
+<i>The subject is often observed with eyes closed; claims to see with an 'inner eye'; possible schizophrenia, but heightened extrasensorial perception confirmed</i>",,,,,,,,
