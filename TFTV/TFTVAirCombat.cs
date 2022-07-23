@@ -9,7 +9,10 @@ using PhoenixPoint.Geoscape.Entities.Research;
 using PhoenixPoint.Geoscape.Entities.Research.Requirement;
 using PhoenixPoint.Geoscape.Interception;
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace TFTV
 {
@@ -90,7 +93,7 @@ namespace TFTV
 
             catch (Exception e)
             {
-                TFTVLogger.Error(e);
+               TFTVLogger.Error(e);
             }
         }
 

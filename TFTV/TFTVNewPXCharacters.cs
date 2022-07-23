@@ -93,6 +93,7 @@ namespace TFTV
                     if (geoEvent.EventID == "PROG_FS9")
                     {
                         __result.EventBackground = Helper.CreateSpriteFromImageFile("BG_HammerFallAlt.jpg");
+
                     }
 
                     if (geoEvent.EventID.Contains("SDI"))

@@ -10,6 +10,9 @@ namespace TFTV
     /// </summary>
     public class TFTVConfig : ModConfig
     {
+        // For testing purposes
+        public int evolutionPointsLegend = 70;
+        // These settings determine amount of resources player can acquire:
 
         // These settings determine amount of resources player can acquire:
         [ConfigField(text: "Number of scavenging sites",

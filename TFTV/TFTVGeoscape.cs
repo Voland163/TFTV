@@ -126,11 +126,11 @@ namespace TFTV
 				{
 					if (scavSiteConf.MissionTags.Any(mt => mt.name.Equals("Contains_ResourceCrates_MissionTagDef")))
 					{
-                        if (main.Config.ChancesScavCrates == TFTVConfig.ScavengingWeight.High) 
+						if (main.Config.ChancesScavCrates == TFTVConfig.ScavengingWeight.High)
 						{
 							scavSiteConf.Weight = 4;
 						}
-						else if (main.Config.ChancesScavCrates == TFTVConfig.ScavengingWeight.Medium) 
+						else if (main.Config.ChancesScavCrates == TFTVConfig.ScavengingWeight.Medium)
 						{
 							scavSiteConf.Weight = 4;
 						}
@@ -141,7 +141,7 @@ namespace TFTV
 						else if (main.Config.ChancesScavCrates == TFTVConfig.ScavengingWeight.None)
 						{
 							scavSiteConf.Weight = 0;
-						}						
+						}
 					}
 
 					if (scavSiteConf.MissionTags.Any(mt => mt.name.Equals("Contains_RescueSoldier_MissionTagDef")))
