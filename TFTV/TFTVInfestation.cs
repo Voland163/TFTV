@@ -15,6 +15,7 @@ using PhoenixPoint.Geoscape.View.ViewControllers.Modal;
 using PhoenixPoint.Tactical.View.ViewModules;
 using System;
 using System.Linq;
+using System.Reflection;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -87,6 +88,7 @@ namespace TFTV
             public static void Postfix()
             {
                 DefenseMission = null;
+                                         
             }
         }
 
@@ -151,10 +153,10 @@ namespace TFTV
             {
                 try
                 {
+                    
                     if (GeoSiteForInfestation != null && entry.Parameters.Contains(GeoSiteForInfestation.SiteName))
                     {
                         entry.Text = new LocalizedTextBind(GeoSiteForInfestation.Owner + " " + DefenseMission.Haven.Site.Name + " has succumbed to Pandoran infestation!", true);
-
                     }
                 }
                 catch (Exception e)

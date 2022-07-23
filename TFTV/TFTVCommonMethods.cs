@@ -1,5 +1,6 @@
 ﻿using Base.Defs;
 using Base.UI;
+using HarmonyLib;
 using PhoenixPoint.Common.UI;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.Research;
@@ -8,6 +9,7 @@ using PhoenixPoint.Geoscape.Events.Eventus;
 using PhoenixPoint.Geoscape.Levels;
 using System;
 using System.Linq;
+using System.Reflection;
 
 namespace TFTV
 {
@@ -172,13 +174,35 @@ namespace TFTV
                 GeoFactionDef phoenixPoint = Repo.GetAllDefs<GeoFactionDef>().FirstOrDefault(ged => ged.name.Equals("Phoenix_GeoPhoenixFactionDef"));
                 GeoscapeEventDef eventDef = Repo.GetAllDefs<GeoscapeEventDef>().FirstOrDefault(ged => ged.name.Equals(eventIDRevealMission));
                 eventDef.GeoscapeEventData.Choices[0].Outcome.Diplomacy[0] = GenerateDiplomacyOutcome(partyFaction, phoenixPoint, value);
-
             }
             catch (Exception e)
             {
                 TFTVLogger.Error(e);
             }
         }
+
+        [HarmonyPatch(typeof(GeoSite), "CreateHavenDefenseMission")]
+        public static class GeoSite_CreateHavenDefenseMission_RevealHD_Patch
+        {
+            public static void Postfix(GeoSite __instance)
+            {
+                try 
+                { 
+                    __instance.RevealSite(__instance.GeoLevel.PhoenixFaction);
+                    GeoscapeLogEntry entry = new GeoscapeLogEntry
+                    {
+                        Text = new LocalizedTextBind(__instance.Owner + " " + __instance.LocalizedSiteName + " is broadcasting an SOS, they are under attack!", true)
+                    };
+                    typeof(GeoscapeLog).GetMethod("AddEntry", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(__instance.GeoLevel.Log, new object[] { entry, null });
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+        }
+
     }
 }
 

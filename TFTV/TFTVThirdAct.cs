@@ -1,7 +1,5 @@
 ﻿using HarmonyLib;
-using PhoenixPoint.Common.Core;
 using PhoenixPoint.Geoscape.Entities;
-using PhoenixPoint.Geoscape.Events.Eventus;
 using PhoenixPoint.Geoscape.Levels;
 using System;
 using System.Reflection;
@@ -50,16 +48,21 @@ namespace TFTV
                     Repo.GetAllDefs<FesteringSkiesSettingsDef>().FirstOrDefault(ged => ged.name.Equals("FesteringSkiesSettingsDef"));
                  festeringSkiesSettingsDef.NumOfHavensToDestroyBeforeSubmerge = 30;
                  festeringSkiesSettingsDef.DisruptionThreshholdBaseValue = 100;*/
-                if (geoLevel.EventSystem.GetVariable("ThirdActStarted") == 1 || geoLevel.EventSystem.GetVariable("ODI_Complete") == 1)
+                if (geoLevel.EventSystem.GetVariable("ThirdActStarted") == 1)
                 {
                     geoLevel.CurrentDifficultyLevel.DestroyHavenOutcomeChance = 100;
                     geoLevel.FesteringSkiesSettings.NumOfHavensToDestroyBeforeSubmerge = 30;
                     geoLevel.FesteringSkiesSettings.DisruptionThreshholdBaseValue = 100;
+                    geoLevel.CurrentDifficultyLevel.DamageHavenOutcomeChance = 0;
                 }
 
+                else
+                {
+                    geoLevel.CurrentDifficultyLevel.DestroyHavenOutcomeChance = 0;
+                    geoLevel.CurrentDifficultyLevel.DamageHavenOutcomeChance = 100;
+
+                }
             }
-
-
             catch (Exception e)
             {
                 TFTVLogger.Error(e);

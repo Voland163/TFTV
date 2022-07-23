@@ -10,6 +10,7 @@ using PhoenixPoint.Geoscape.Events;
 using PhoenixPoint.Geoscape.Events.Eventus;
 using PhoenixPoint.Geoscape.Events.Eventus.Filters;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace TFTV
@@ -94,7 +95,11 @@ namespace TFTV
                   FirstOrDefault(ged => ged.name.Equals("NJ_Bionics1_ResearchDef_EncounterVariableResearchRequirementDef_0"));
                 //Research to defeat Behemoth will become available after Behemoth starts the Rumpus
                 EncounterVariableResearchRequirementDef variableResReqBehemoth = Helper.CreateDefFromClone(sourceVarResReq, "BABAAC81-3855-4218-B747-4FE926F34F69", "IndependenceDayResReqDef");
-                variableResReqBehemoth.VariableName = "ThirdActStarted";
+                variableResReqBehemoth.VariableName = "BehemothDestroyedAHaven";
+                //This variable will be triggered by the event after Behemoth destroys a haven for the first time
+                GeoscapeEventDef geoEventFS20 = Repo.GetAllDefs<GeoscapeEventDef>().FirstOrDefault(ged => ged.name.Equals("PROG_FS20_GeoscapeEventDef"));
+                geoEventFS20.GeoscapeEventData.Choices[0].Outcome.VariablesChange.Add(TFTVCommonMethods.GenerateVariableChange("BehemothDestroyedAHaven", 1, true));                
+
                 //need to package the requirement in a new container
                 //research reveal requirements go like this: it's boxes within boxes.
                 //The big box is called ReseachRequirementDefContainer[], ResearchDef comes already with this box.

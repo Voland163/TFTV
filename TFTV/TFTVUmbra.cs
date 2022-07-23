@@ -300,7 +300,7 @@ namespace TFTV
                 TFTVLogger.Error(e);
             }
         }
-
+        
         //Patch to prevent Umbras from attacking characters without Delirium
         [HarmonyPatch(typeof(TacticalAbility), "GetTargetActors", new Type[] { typeof(TacticalTargetData), typeof(TacticalActorBase), typeof(Vector3) })]
         public static class TacticalAbility_GetTargetActors_Patch

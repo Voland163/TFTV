@@ -16,6 +16,8 @@ namespace TFTV
 	public class TFTVGSInstanceData
 	{
 		public List<int> charactersWithBrokenLimbs = new List<int>();
+		public List<GeoSite> targetsForBehemoth = new List<GeoSite>();
+		public Dictionary<int, List<GeoSite>> flyersAndHavens = new Dictionary<int, List<GeoSite>>();
 	}
 
 	/// <summary>
@@ -41,6 +43,7 @@ namespace TFTV
 			TFTVUmbra.CheckForUmbraResearch(gsController);
 			TFTVUmbra.SetUmbraEvolution(gsController);
 			TFTVThirdAct.SetBehemothOnRampageMod(gsController);
+			
 		}
 		/// <summary>
 		/// Called when Geoscape ends.
@@ -68,7 +71,8 @@ namespace TFTV
 		/// <returns>Object to serialize or null if not used.</returns>
 		public override object RecordGeoscapeInstanceData()
 		{
-			return new TFTVGSInstanceData() { charactersWithBrokenLimbs = TFTVStamina.charactersWithBrokenLimbs };
+			return new TFTVGSInstanceData() { charactersWithBrokenLimbs = TFTVStamina.charactersWithBrokenLimbs, targetsForBehemoth = TFTVAirCombat.targetsForBehemoth, 
+				flyersAndHavens = TFTVAirCombat.flyersAndHavens };
 		}
 		/// <summary>
 		/// Called when Geoscape save is being process. At this point level is already created, but GeoscapeStart is not called.
@@ -78,6 +82,8 @@ namespace TFTV
 		{
 			TFTVGSInstanceData data = (TFTVGSInstanceData)instanceData;
 			TFTVStamina.charactersWithBrokenLimbs = data.charactersWithBrokenLimbs;
+			TFTVAirCombat.targetsForBehemoth = data.targetsForBehemoth;
+			TFTVAirCombat.flyersAndHavens= data.flyersAndHavens;
 		}
 
 		/// <summary>
@@ -146,22 +152,6 @@ namespace TFTV
 
 					if (scavSiteConf.MissionTags.Any(mt => mt.name.Equals("Contains_RescueSoldier_MissionTagDef")))
 					{
-						if (main.Config.ChancesScavSoldiers == TFTVConfig.ScavengingWeight.High)
-						{
-							scavSiteConf.Weight = 4;
-						}
-						else if (main.Config.ChancesScavSoldiers == TFTVConfig.ScavengingWeight.Medium)
-						{
-							scavSiteConf.Weight = 4;
-						}
-						else if (main.Config.ChancesScavSoldiers == TFTVConfig.ScavengingWeight.Low)
-						{
-							scavSiteConf.Weight = 1;
-						}
-						else if (main.Config.ChancesScavSoldiers == TFTVConfig.ScavengingWeight.None)
-						{
-							scavSiteConf.Weight = 0;
-						}
 					}
 
 					if (scavSiteConf.MissionTags.Any(mt => mt.name.Equals("Contains_RescueVehicle_MissionTagDef")))
