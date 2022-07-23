@@ -10,7 +10,10 @@ using PhoenixPoint.Geoscape.Events;
 using PhoenixPoint.Geoscape.Events.Eventus;
 using PhoenixPoint.Geoscape.Events.Eventus.Filters;
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace TFTV
 {
@@ -42,7 +45,6 @@ namespace TFTV
                 timePassedFS9.TimePassedHours = UnityEngine.Random.Range(48, 72);
                 // set event timer for former Augury, now A Sleeping Beauty Awakens
                 GeoTimePassedEventFilterDef timePassedFS0 = Repo.GetAllDefs<GeoTimePassedEventFilterDef>().FirstOrDefault(ged => ged.name.Equals("E_PROG_FS0_TimePassed [GeoTimePassedEventFilterDef]"));
-                timePassedFS0.TimePassedHours = UnityEngine.Random.Range(200, 250);
                 // set background and leader images for A Sleeping Beauty Awakens and break the panel in 2
                 geoEventFS0.GeoscapeEventData.Flavour = "";
                 geoEventFS0.GeoscapeEventData.Leader = "SY_Eileen";
@@ -66,58 +68,6 @@ namespace TFTV
                 storyFS1_CustomMissionTypeDef.SkipDeploymentSelection = false;
 
                 // set event timer for the former The Gift mission reveal, now The Hatching
-                GeoTimePassedEventFilterDef timePassedFS1 = Repo.GetAllDefs<GeoTimePassedEventFilterDef>().FirstOrDefault(ged => ged.name.Equals("E_PROG_FS1_TimePassed [GeoTimePassedEventFilterDef]"));
-                timePassedFS1.TimePassedHours = UnityEngine.Random.Range(528, 600);
-
-                // set event timer for Behemoth Egg hatching without completing, The Hatching
-                GeoTimePassedEventFilterDef timePassedFS10 = Repo.GetAllDefs<GeoTimePassedEventFilterDef>().FirstOrDefault(ged => ged.name.Equals("E_PROG_FS10_TimePassed [GeoTimePassedEventFilterDef]"));
-                timePassedFS10.TimePassedHours = UnityEngine.Random.Range(725, 755);
-
-                //change event FS10 to add an Outcome panel
-                GeoscapeEventDef geoEventFS10 = Repo.GetAllDefs<GeoscapeEventDef>().FirstOrDefault(ged => ged.name.Equals("PROG_FS10_GeoscapeEventDef"));
-                geoEventFS10.GeoscapeEventData.Choices[0].Outcome.OutcomeText.General.LocalizationKey = "PROG_FS10_CHOICE_0_OUTCOME_GENERAL";
-
-                //change research needed to defeat Behemoth
-                //need to change the Corruption Node research, and remove reward 
-                ResearchDef nodeResearchDef = Repo.GetAllDefs<ResearchDef>().FirstOrDefault(ged => ged.name.Equals("PX_Alien_CorruptionNode_ResearchDef"));
-                nodeResearchDef.Unlocks = new ManufactureResearchRewardDef[] { };
-
-                //change the reward variable, in Vanilla this was node autopsy = 2, for later use
-                EncounterVarResearchRewardDef encounterVarNodeAutopsyReward = Repo.GetAllDefs<EncounterVarResearchRewardDef>().FirstOrDefault
-                    (ged => ged.name.Equals("PX_Alien_CorruptionNode_ResearchDef_EncounterVarResearchRewardDef_0"));
-                encounterVarNodeAutopsyReward.VariableName = "IndependenceDay";
-                encounterVarNodeAutopsyReward.VariableValue = 1;
-
-                //create new research requirement variable from a clone
-                EncounterVariableResearchRequirementDef sourceVarResReq =
-                  Repo.GetAllDefs<EncounterVariableResearchRequirementDef>().
-                  FirstOrDefault(ged => ged.name.Equals("NJ_Bionics1_ResearchDef_EncounterVariableResearchRequirementDef_0"));
-                //Research to defeat Behemoth will become available after Behemoth starts the Rumpus
-                EncounterVariableResearchRequirementDef variableResReqBehemoth = Helper.CreateDefFromClone(sourceVarResReq, "BABAAC81-3855-4218-B747-4FE926F34F69", "IndependenceDayResReqDef");
-                variableResReqBehemoth.VariableName = "ThirdActStarted";
-                //need to package the requirement in a new container
-                //research reveal requirements go like this: it's boxes within boxes.
-                //The big box is called ReseachRequirementDefContainer[], ResearchDef comes already with this box.
-                //The medium box (that goes inside the big box) is called ReseachRequirementDefOpContainer[],
-                //The small box (that goes inside the medium box) is called  ResearchRequirementDef[]
-                //The small box is the one that will actually carry the variable, which when changed will reveal the research
-                //So we start by creating the boxes and then we will put them inside each other in the right order
-
-                ReseachRequirementDefOpContainer[] reseachRequirementIndependenceDayContainer = new ReseachRequirementDefOpContainer[1];
-                ResearchRequirementDef[] researchRequirementDefs = new ResearchRequirementDef[1];
-                researchRequirementDefs[0] = variableResReqBehemoth; //small box
-                reseachRequirementIndependenceDayContainer[0].Requirements = researchRequirementDefs; //medium box
-
-                //create view element
-                ResearchViewElementDef independenceDayViewDef = TFTVCommonMethods.CreateNewResearchViewElement("IndependenceDayResearchViewElementDef",
-                    "DC11E258-76E2-4DC8-BB60-D62AEDB2F862", "KEY_INDEPENDENCE_DAY_NAME", "KEY_INDEPENDENCE_DAY_REVEAL", "KEY_INDEPENDENCE_DAY_UNLOCK", "KEY_INDEPENDENCE_DAY_COMPLETE");
-                //need to create a new research
-                ResearchDef independenceDayResearchDef = TFTVCommonMethods.CreateNewPXResearch("IndependenceDayResearch", 300, "CDDFDD4D-BD1B-4434-BDD4-E0650B0DB5F2", independenceDayViewDef);
-                //and add the reveal requirement we created earlier
-                independenceDayResearchDef.RevealRequirements.Container.AddRangeToArray(reseachRequirementIndependenceDayContainer);
-                independenceDayResearchDef.RevealRequirements.Operation = ResearchContainerOperation.ALL;
-                //now add the reward
-                independenceDayResearchDef.Unlocks.AddItem(encounterVarNodeAutopsyReward);
             }
             catch (Exception e)
             {

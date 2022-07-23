@@ -58,14 +58,11 @@ namespace TFTV
             PhoenixGame game = GetGame();
 
             //TFTV 
-            ModDirectory = Instance.Entry.Directory;
-            //Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
             //Path to localization CSVs
             LocalizationDirectory = Path.Combine(ModDirectory, "Assets", "Localization");
             //Texture Directory (for Dtony's DeliriumPerks)
             TexturesDirectory = Path.Combine(ModDirectory, "Assets", "Textures");
             // Initialize Logger
-            LogPath = Path.Combine(ModDirectory, "TFTV.log");
             TFTVLogger.Initialize(LogPath, Config.Debug, ModDirectory, nameof(TFTV));
             // Initialize Helper
             Helper.Initialize();
