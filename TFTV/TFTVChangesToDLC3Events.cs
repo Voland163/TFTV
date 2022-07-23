@@ -10,6 +10,7 @@ using PhoenixPoint.Geoscape.Events;
 using PhoenixPoint.Geoscape.Events.Eventus;
 using PhoenixPoint.Geoscape.Events.Eventus.Filters;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace TFTV

@@ -146,22 +146,6 @@ namespace TFTV
 
 					if (scavSiteConf.MissionTags.Any(mt => mt.name.Equals("Contains_RescueSoldier_MissionTagDef")))
 					{
-						if (main.Config.ChancesScavSoldiers == TFTVConfig.ScavengingWeight.High)
-						{
-							scavSiteConf.Weight = 4;
-						}
-						else if (main.Config.ChancesScavSoldiers == TFTVConfig.ScavengingWeight.Medium)
-						{
-							scavSiteConf.Weight = 4;
-						}
-						else if (main.Config.ChancesScavSoldiers == TFTVConfig.ScavengingWeight.Low)
-						{
-							scavSiteConf.Weight = 1;
-						}
-						else if (main.Config.ChancesScavSoldiers == TFTVConfig.ScavengingWeight.None)
-						{
-							scavSiteConf.Weight = 0;
-						}
 					}
 
 					if (scavSiteConf.MissionTags.Any(mt => mt.name.Equals("Contains_RescueVehicle_MissionTagDef")))
