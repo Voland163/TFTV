@@ -26,8 +26,6 @@ namespace TFTV
                         MethodInfo method_GenerateTargetData = AccessTools.Method(typeof(GeoBehemothActor), "CalculateDisruptionThreshhold");
                         method_GenerateTargetData.Invoke(__instance, null);
                     }
-
-
                 }
 
                 catch (Exception e)

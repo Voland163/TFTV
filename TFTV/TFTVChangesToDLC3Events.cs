@@ -123,6 +123,13 @@ namespace TFTV
                 independenceDayResearchDef.RevealRequirements.Operation = ResearchContainerOperation.ALL;
                 //now add the reward
                 independenceDayResearchDef.Unlocks.AddItem(encounterVarNodeAutopsyReward);
+
+                //Change research req for FS2 and add outcome text to FS2 Event
+                GeoResearchEventFilterDef geoEventFS2ResearchReq = Repo.GetAllDefs<GeoResearchEventFilterDef>().FirstOrDefault(ged => ged.name.Equals("E_PROG_FS2_ResearchCompleted [GeoResearchEventFilterDef]"));
+                geoEventFS2ResearchReq.ResearchID = "IndependenceDayResearch";
+                GeoscapeEventDef geoEventFS2 = Repo.GetAllDefs<GeoscapeEventDef>().FirstOrDefault(ged => ged.name.Equals("PROG_FS2_GeoscapeEventDef"));
+                geoEventFS2.GeoscapeEventData.Choices[0].Outcome.OutcomeText.General.LocalizationKey = "PROG_FS2_CHOICE_0_TEXT_OUTCOME";
+           
             }
             catch (Exception e)
             {

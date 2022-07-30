@@ -146,6 +146,7 @@ TO: Phoenix Point
 
 I have picked up a distress call from some sort of lab, warning of containment breach. Please investigate.",,,,,,,,
 PROG_CH0_TITLE,Text,,Call for Help,,,,,,,,
+KEY_ALISTAIRONBARNABAS_DESCRIPTION,Text,,"Do not underestimate Barnabas... Without AIs, Synedrion havens would be a collection of Chevengurs.",,,,,,,,
 PROG_CH0_WIN_CHOICE_0_TEXT,Text,,"OK.
 NEW RESEARCH AVAILABLE",,,,,,,,
 PROG_CH0_WIN_TEXT_GENERAL_0,Text,,"MESSAGE

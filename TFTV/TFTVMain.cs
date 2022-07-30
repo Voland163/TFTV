@@ -126,6 +126,8 @@ namespace TFTV
             TFTVUmbra.ChangeUmbra();
             //Create Dtony's delirium perks
             TFTVDeliriumPerks.Main();
+            //Modify Defs to introduce Alistair's events
+            TFTVNewPXCharacters.InjectAlistairAhsbyLines();
             //Run all harmony patches; some patches have config flags
             harmony.PatchAll();
 

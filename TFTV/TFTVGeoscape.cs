@@ -18,6 +18,7 @@ namespace TFTV
 		public List<int> charactersWithBrokenLimbs = new List<int>();
 		public List<GeoSite> targetsForBehemoth = new List<GeoSite>();
 		public Dictionary<int, List<GeoSite>> flyersAndHavens = new Dictionary<int, List<GeoSite>>();
+		public bool checkHammerfall = new bool();
 	}
 
 	/// <summary>
@@ -72,7 +73,7 @@ namespace TFTV
 		public override object RecordGeoscapeInstanceData()
 		{
 			return new TFTVGSInstanceData() { charactersWithBrokenLimbs = TFTVStamina.charactersWithBrokenLimbs, targetsForBehemoth = TFTVAirCombat.targetsForBehemoth, 
-				flyersAndHavens = TFTVAirCombat.flyersAndHavens };
+				flyersAndHavens = TFTVAirCombat.flyersAndHavens, checkHammerfall = TFTVAirCombat.checkHammerfall };
 		}
 		/// <summary>
 		/// Called when Geoscape save is being process. At this point level is already created, but GeoscapeStart is not called.
@@ -84,6 +85,7 @@ namespace TFTV
 			TFTVStamina.charactersWithBrokenLimbs = data.charactersWithBrokenLimbs;
 			TFTVAirCombat.targetsForBehemoth = data.targetsForBehemoth;
 			TFTVAirCombat.flyersAndHavens= data.flyersAndHavens;
+			TFTVAirCombat.checkHammerfall = data.checkHammerfall;
 		}
 
 		/// <summary>

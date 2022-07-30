@@ -9,6 +9,8 @@ using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.View.ViewModules;
 using System;
 using System.Linq;
+using UnityEngine;
+using UnityEngine.UI;
 
 namespace TFTV
 {
@@ -19,14 +21,14 @@ namespace TFTV
         [HarmonyPatch(typeof(UIModuleTutorialModal), "SetTutorialStep")]
         public static class UIModuleTutorialModal_SetTutorialStep_Hints_Patch
         {
-
-            public static void Postfix(UIModuleTutorialModal __instance, GeoscapeTutorialStep step)
+            
+            public static void Postfix(ref Image image, GeoscapeTutorialStep step)
             {
                 try
                 {
                     if (step.StepType == GeoscapeTutorialStepType.CorruptionActivated && step.Title.LocalizationKey == "KEY_GEO_HINT_ENEMY_SPECIAL_CORRUPTION_NAME")
                     {
-                        __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("BG_Hint_Delirium.png");
+                        image.sprite = Helper.CreateSpriteFromImageFile("BG_Hint_Delirium.png");
                     }
 
                 }
@@ -42,13 +44,13 @@ namespace TFTV
         public static class UIModuleContextHelp_Show_Hints_Patch
         {
 
-            public static void Postfix(LocalizedTextBind title, UIModuleContextHelp __instance)
+            public static void Postfix(LocalizedTextBind title, ref Sprite image)
             {
                 try
                 {
                     if (title.LocalizationKey == "UMBRA_SIGHTED_TITLE")
                     {
-                        __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("BG_alistair_small.png");
+                        image = Helper.CreateSpriteFromImageFile("BG_alistair_small.png");
                     }
                 }
                 catch (Exception e)

@@ -185,7 +185,7 @@ namespace TFTV
                     // And if a Void Omen has been rolled, a Void Omen will appear
                     if (voidOmenRolled && geoLevelController.EventSystem.GetVariable(voidOmen + difficulty) == voidOmenRoll && geoLevelController.EventSystem.GetVariable(voidOmen + (difficulty - 1)) == 0)
                     {
-                        GeoscapeEventDef voidOmenIntro = geoLevelController.EventSystem.GetEventByID("VoidOmen");
+                        GeoscapeEventDef voidOmenIntro = geoLevelController.EventSystem.GetEventByID("VoidOmenIntro");
                         voidOmenIntro.GeoscapeEventData.Title.LocalizationKey = "VOID_OMEN_INTRO_TITLE";
                         voidOmenIntro.GeoscapeEventData.Description[0].General.LocalizationKey = "VOID_OMEN_INTRO";
                         geoLevelController.EventSystem.TriggerGeoscapeEvent("VoidOmenIntro", geoscapeEventContext);
@@ -205,7 +205,6 @@ namespace TFTV
                     TFTVVoidOmens.ImplementVoidOmens(geoLevelController);
                 }
             }
-
             catch (Exception e)
             {
                 TFTVLogger.Error(e);

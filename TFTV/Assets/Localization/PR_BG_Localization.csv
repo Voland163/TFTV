@@ -102,6 +102,7 @@ SDI7_OUTCOME,Text,,Havens in the Mist can become infested instead of destroyed w
 SDI10_OUTCOME,Text,,"The Oneiric Delirium grows stronger.
 
 <b>Our operatives can now be afflicted with a Delirium status equal to their Willpower</b>",,,,,,,,
+SDI11_OUTCOME,Text,,<b> Berith are coming! </b>,,,,,,,,
 PROG_LE0_MISS_CHOICE_2_TEXT,Text,,Ask West to release Dr. Helena,,,,,,,,
 PROG_LE0_MISS_CHOICE_2_OUTCOME_GENERAL,Text,,"MESSAGE
 FROM: Tobias West (New Jericho) 
@@ -260,7 +261,7 @@ ALN_CRABMANUMBRA_RESEARCHDEF_COMPLETE,Text,,"""What are they? You ask me, but I 
 
 - Kalus, a Disciple gene-smith
 
-""Our soldiers are under immense stress, not to mention the drug cocktail and direct cortical simulation administered to them on a constant basis. If one or two of them start seeing 'oil monsters', I say it's a tolerable side effect"". 
+""Our soldiers are under immense stress, not to mention the drug cocktail and direct cortical stimulation administered to them on a constant basis. If one or two of them start seeing 'oil monsters', I say it's a tolerable side effect"". 
 
 - Dr. Abongameli Smith, New Jericho",,,,,,,,
 ALN_CRABMANUMBRA_RESEARCHDEF_NAME,Text,,ARTHRON UMBRA,,,,,,,,
@@ -268,7 +269,7 @@ ALN_FISHMANUMBRA_RESEARCHDEF_COMPLETE,Text,,"""It grew from the fishman’s pool
 
 - Citizen Brackman, sole survivor of recon team Echo, Synedrion 
 
-""Oh, but the Umbra are quite real, I assure you. Why wouldn't they, when we live in the age of horrors?"" 
+""Oh, but the Umbra are quite real, I assure you. Why wouldn't they be, when we live in the age of horrors?"" 
 
 - Alistair Ashby, Phoenix Project",,,,,,,,
 ALN_FISHMANUMBRA_RESEARCHDEF_NAME,Text,,TRITON UMBRA,,,,,,,,
@@ -282,9 +283,6 @@ BG_INTRO_1_DESCRIPTION,Text,,"I'm Alistair Ashby. Yes, the ""Mist Expert"". Than
 A few of us managed to get to this bunker and activate the emergency beacon before we were overrun by the creatures that followed us here. 
 
 We got this place mostly up and running... Thanks to Olena, she is quite the wunderkind.",,,,,,,,
-BG_INTRO_1_OUTCOME,Text,,"We will get this place up and running. The average IQ in our group is pretty high. Of course, Olena is largely to blame for that, she is quite the wunderkind.
-
-Anyway, we will take care of the day to day operations so that you can focus on the important stuff.",,,,,,,,
 BG_INTRO_2_TITLE,Text,,Olena Kim,,,,,,,,
 BG_INTRO_2_DESCRIPTION,Text,,"<i>Oppa</i> Alistair is good with people. I'm good with machines and software. This facility runs on a limited AI called Bennu. Once Bennu verifies your credentials as duly appointed Director, all functionality should be restored and you should be able to interface with the system. ",,,,,,,,
 BG_INTRO_2_CHOICE_0,Text,,Identify yourself and present your credentials ,,,,,,,,
@@ -297,3 +295,50 @@ KEY_MISSION_HAVEN_INFESTED_NAME,Text,,INFESTED HAVEN,,,,,,,,
 KEY_MISSION_HAVEN_INFESTED_DESCRIPTION,Text,,Cleanse the infestation,,,,,,,,
 UMBRA_SIGHTED_TITLE,Text,,Umbra!,,,,,,,,
 UMBRA_SIGHTED_TEXT,Text,,It's so scary!,,,,,,,,
+VO_HINT_TITLE,Text,,Void Omens!,,,,,,,,
+VO_HINT_TEXT,Text,,Terror!,,,,,,,,
+KEY_INDEPENDENCE_DAY_NAME,Text,,To Kill a Behemoth,,,,,,,,
+KEY_INDEPENDENCE_DAY_REVEAL,Text,,"The Virophage should be able to kill the Behemoth, but we still need a delivery system that would allow us to deploy it safely in sufficient quantities. Perhaps we can repurpose the injector designed by the Barnabas AI.",,,,,,,,
+KEY_INDEPENDENCE_DAY_UNLOCK,Text,,,,,,,,,,
+KEY_INDEPENDENCE_DAY_COMPLETE,Text,,"Repurposing the injector turned out to be the easy part. The rest of it is more... extravagant. Olena will explain. 
+
+/AA",,,,,,,,
+PROG_FS2_TITLE,Text,,That 1996 Extravaganza,,,,,,,,
+PROG_FS2_TEXT_GENERAL_0,Text,,"So... This foolproof plan comes from Oppa Alistair re-watching a 50 year old piece of pre-Collapse entertainment where the good guys defeat an alien invasion by flying a stolen alien craft into the alien mothership and uploading a computer virus into it. 
+
+The Behemoth is the Mothership, the virus is the Virophage and the alien craft is a modified Manticore covered in Mutagen-rich biomass, the ""Masked Manticore"". ",,,,,,,,
+PROG_FS2_CHOICE_0_TEXT,Text,,And you told me Alistair has no imagination. So we build this Masked Manticore. What's next?,,,,,,,,
+PROG_FS2_CHOICE_0_TEXT_OUTCOME,Text,,"I just told you: Oppa Alistair didn't come up with this idea, he stole it from a movie. 
+
+We will deploy a strike team on the surface of the Behemoth to locally inject the Virophage at pre-identified vital points. Hopefully it will kill it and we will be able to evacuate our team.",,,,,,,,
+KEY_ALISTAIRONSYMES_1_DESCRIPTION,Text,,"Symes... Symes fought for redemption... He sought to redeem the Phoenix Project, his family name and himself. A tragic figure writ large. But his story is not our story, we do not have to follow him and his trail of breadcrumbs.",,,,,,,,
+KEY_ALISTAIRONSYMES_2_DESCRIPTION,Text,,"So Randolph was right after all. Yes, Olena and I were with him when he started on his crazy trip. The how and the why of it is a long story... I suppose he was more interested in Olena's abilities and worth to the Project than in yours truly. It doesn't take a genius to see that the kid is special.",,,,,,,,
+KEY_ALISTAIRONWEST_DESCRIPTION,Text,,"I will give West that he built New Jericho, not just took it over as some two-bit military dictator of yore. But ultimately the only human will he cares about is his own. A lot depends on his retirement plans; bear in mind he might take the crazy cyborg route to defend his legacy. But then we have already dealt - DEALT - with one of those before...",,,,,,,,
+KEY_ALISTAIRONWEST_CHOICE,Text,,What do you make of New Jericho?,,,,,,,,
+KEY_ALISTAIRONSYNEDRION_DESCRIPTION,Text,,"Synedrion, they are not the naive fools everyone thinks that they are - and that they pretend to be. They have mastered the art of ruling while appearing not to rule: pulled a colegial Octavian, so to speak. It's the compact with the AIs that allows them to do that, relying on them for all bureaucratic functions and maintaining a soft censorship via adroit public feed algorithm manipulation... Anyway, remember those Pre-Collapse cautionary tales about AIs enslaving humanity? Yeah, me too.",,,,,,,,
+KEY_ALISTAIRONSYNEDRION_CHOICE,Text,,What about Synedrion?,,,,,,,,
+KEY_ALISTAIRONANU_DESCRIPTION,Text,,"The Disciples of Anu... They are the wild card. They have disguised as religious dogma human ascendancy through an alien rDNA virus. Well, not exactly alien, since apparently we are partly its product. Still, do we really want to take that road? Might there not be plans within plans within plans to lure us into an ascendancy that turns out to be the slavery we fought so hard to avoid?",,,,,,,,
+KEY_ALISTAIRONANU_CHOICE,Text,,What do you think of the Exalted?,,,,,,,,
+KEY_ALISTAIRONHELENA_DESCRIPTION,Text,,"Dr. Helena has spent her life working towards reviving the Ancients as our heritage, and what better way to honor our ancestors than using their WMDs. But what was that saying about doing the same thing over and over again expecting a different result? A lot of us will survive, I'm sure: those of us who remain now are good at surviving. But what if the Ancients were extinguished by the post-war political chaos, rather than by the biological weapon itself? What if reducing the number of casualties will not make a difference? Is the Phoenix Project up to the task of rebuilding a human civilization with the factions gone?",,,,,,,,
+KEY_ALISTAIRONHELENA_CHOICE,Text,,Do you trust that Dr. Helena's plan will work?,,,,,,,,
+KEY_ALISTAIRONVIROPHAGE_DESCRIPTION,Text,,The second worst outcome beats the hell out of the worst outcome. ,,,,,,,,
+KEY_ALISTAIRONVIROPHAGE_CHOICE,Text,,Should we build the Virophage Injector?,,,,,,,,
+KEY_ALISTAIR_ROADS_DESCRIPTION,Text,,"The history of our species is one of mistakes and accidents, some more fortunate than others. Now we come to yet another crossroads, where, to continue onwards, we need to choose a new mistake to make. ",,,,,,,,
+KEY_ALISTAIR_ROADS_TITLE,Text,,Roads,,,,,,,,
+KEY_ALISTAIR_ROADS_ALLDONE,Text,,"That will be all. Thank you, Alistair",,,,,,,,
+KEY_ALISTAIR_ROADS_DESCRIPTION_2,Text,,"Will that be all, Director?",,,,,,,,
+KEY_OLENA_HELENA_DESCRIPTION,Text,,"This... Can't be... Olena? You are alive. Your parents... We used to work together... We were friends. You probably don't remember me, you were so little... ",,,,,,,,
+KEY_OLENAONWEST_DESCRIPTION,Text,,"You know, that Vanadium neural link West has, it doesn't really make him any smarter. It gives him some limited augmented reality functionality and  easy access to external data, but that's about it. Interesting… if anything, at New Jericho they have the tech for much deeper neurological enhancement. I wouldn't be surprised if they could merge West's brain with a slaved AI. ",,,,,,,,
+KEY_OLENAONSYNOD_DESCRIPTION,Text,,Why would anyone create the Synod? And how did its... constituent parts feel about it? Perhaps the Exalted wanted to show everyone that the Disciples are concerned neither by ethics nor aesthetics when it comes to human gene manipulation.,,,,,,,,
+KEY_OLENAONANCIENTS_DESCRIPTION,Text,,"I always knew about the ""Ancients"". As a child, I have these memories of my parents talking about them... They weren't just real, they were more real to them than everything else.",,,,,,,,
+KEY_OLENAONANCIENTS_TITLE,Text,,Parents and Forefathers,,,,,,,,
+KEY_OLENAONBEHEMOTH_DESCRIPTION,Text,,I don't think it came from an egg. It was created by the Pandoravirus. We are likely seeing the result of super-charged genetic amalgamation of the flora and fauna inhabiting the Hammerfall impact zone. Oppa Alistair is on a marathon of pre-Collapse Kaiju entertainment... Expect his threat assessment memo shortly... ,,,,,,,,
+KEY_OLENAONALISTAIR_DESCRIPTION,Text,,"Oppa Alistair... He knows he's not very imaginative. And as he knows he can't be imagining things, he trusts what he sees. That's the best way I can put it, I guess.",,,,,,,,
+KEY_OLENAONSYMES_DESCRIPTION,Text,,"Symes wanted me out of the expedition. He hoped to return to Phoenix Point with a blueprint for a cure and he wanted me to help him make it. When it was you who arrived and without a shimmering blue vial, I admit I was disappointed. Not so Oppa Alistair, he didn't put much stake in what Symes was doing.",,,,,,,,
+KEY_OLENAONENDING_DESCRIPTION,Text,,"The choice you have to make... It's important, probably the most important a human being has ever had to make. Ending a war is easy: all you have to do is give up. We have to end this war the right way. I... I don't know what the right way is, but I hope you do. Otherwise it will all have been for nothing.",,,,,,,,
+PROG_LE3_WARN_TEXT_GENERAL_0,Text,,,,,,,,,,
+PROG_LE3_WARN_TITLE,Text,,,,,,,,,,
+PROG_LE2_WARN_TEXT_GENERAL_0,Text,,,,,,,,,,
+PROG_LE2_WARN_TITLE,Text,,,,,,,,,,
+PROG_LE1_WARN_TEXT_GENERAL_0,Text,,,,,,,,,,
+PROG_LE1_WARN_TITLE,Text,,,,,,,,,,

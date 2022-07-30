@@ -9,8 +9,6 @@ using PhoenixPoint.Tactical.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace TFTV
 {
@@ -21,6 +19,7 @@ namespace TFTV
         {
             try
             {
+                MakeLOTAAlternativeToSymes();
 
                 //ID all the factions for later
                 GeoFactionDef PhoenixPoint = Repo.GetAllDefs<GeoFactionDef>().FirstOrDefault(ged => ged.name.Equals("Phoenix_GeoPhoenixFactionDef"));
@@ -60,7 +59,7 @@ namespace TFTV
                         {
                             General = new LocalizedTextBind("PROG_LE0_MISS_CHOICE_2_OUTCOME_GENERAL")
                         },
-
+                        TriggerEncounterID = "HelenaOnOlena"
                     }
                 });
 
@@ -69,7 +68,7 @@ namespace TFTV
                 GeoscapeEventDef prog_PU2_Choice2Event = TFTVCommonMethods.CreateNewEvent("PROG_PU2_CHOICE2EVENT", "PROG_PU2_CHOICE2EVENT_TITLE", "PROG_PU2_CHOICE2EVENT_TEXT_GENERAL_0", null);
                 prog_PU2_Choice2Event.GeoscapeEventData.Leader = "NJ_TW";
 
-                prog_PU2_Choice2Event.GeoscapeEventData.Choices[0].Outcome.Diplomacy.Add(TFTVCommonMethods.GenerateDiplomacyOutcome(NewJericho, PhoenixPoint, 3)); 
+                prog_PU2_Choice2Event.GeoscapeEventData.Choices[0].Outcome.Diplomacy.Add(TFTVCommonMethods.GenerateDiplomacyOutcome(NewJericho, PhoenixPoint, 3));
                 prog_PU2_Choice2Event.GeoscapeEventData.Choices[0].Outcome.Resources.Add(new ResourceUnit()
 
                 {
@@ -78,13 +77,13 @@ namespace TFTV
                 });
 
                 //Publicly denounce NJ
-                GeoscapeEventDef prog_PU2_Choice3Event = TFTVCommonMethods.CreateNewEvent("PROG_PU2_CHOICE3EVENT", "PROG_PU2_CHOICE3EVENT_TITLE", "PROG_PU2_CHOICE3EVENT_TEXT_GENERAL_0", null);               
+                GeoscapeEventDef prog_PU2_Choice3Event = TFTVCommonMethods.CreateNewEvent("PROG_PU2_CHOICE3EVENT", "PROG_PU2_CHOICE3EVENT_TITLE", "PROG_PU2_CHOICE3EVENT_TEXT_GENERAL_0", null);
                 prog_PU2_Choice3Event.GeoscapeEventData.Leader = "SY_Nikolai";
                 prog_PU2_Choice3Event.GeoscapeEventData.Choices[0].Outcome.Diplomacy.Add(TFTVCommonMethods.GenerateDiplomacyOutcome(NewJericho, PhoenixPoint, -5));
                 prog_PU2_Choice3Event.GeoscapeEventData.Choices[0].Outcome.Diplomacy.Add(TFTVCommonMethods.GenerateDiplomacyOutcome(Synedrion, PhoenixPoint, 5));
                 prog_PU2_Choice3Event.GeoscapeEventData.Choices[0].Outcome.Diplomacy.Add(TFTVCommonMethods.GenerateDiplomacyOutcome(Synedrion, NewJericho, -5));
                 prog_PU2_Choice3Event.GeoscapeEventData.Choices[0].Outcome.Diplomacy.Add(TFTVCommonMethods.GenerateDiplomacyOutcome(NewJericho, Synedrion, -5));
-                
+
                 //Add the choices to the event
                 //New events have to be created rather than using Outcomes within each choice to replace leader pic
                 GeoscapeEventDef subject24offer = Repo.GetAllDefs<GeoscapeEventDef>().FirstOrDefault(ged => ged.name.Equals("PROG_PU2_GeoscapeEventDef"));
@@ -419,6 +418,22 @@ namespace TFTV
 
         }
 
+        public static void MakeLOTAAlternativeToSymes()
+        {
+            try
+            {
+                GeoscapeEventDef leFINAL = Repo.GetAllDefs<GeoscapeEventDef>().FirstOrDefault(ged => ged.name.Equals("PROG_LE_FINAL_GeoscapeEventDef"));
+                leFINAL.GeoscapeEventData.Choices[0].Outcome.GiveResearches.Add("PX_VirophageWeapons_ResearchDef");
+                leFINAL.GeoscapeEventData.Choices[0].Outcome.GiveResearches.Add("Pandoravirus");
+                leFINAL.GeoscapeEventData.Choices[0].Outcome.VariablesChange.Add(TFTVCommonMethods.GenerateVariableChange("Sphere", 1, true));
+                
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
 
     }
 }

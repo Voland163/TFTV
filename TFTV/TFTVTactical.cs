@@ -17,7 +17,8 @@ namespace TFTV
         public List<int> charactersWithBrokenLimbs = new List<int>();
         //VO#3 is WP cost +50%
         public bool VoidOmen3Active;
-        public bool VoidOmen3Activated;
+        //VO#5 is haven defenders hostil, needed for victory kludge
+        public bool VoidOmen5Active;
         //VO#7 is more mist in missions
         public bool VoidOmen7Active;
         //VO#10 is no limit to Delirium
@@ -71,6 +72,7 @@ namespace TFTV
             TFTVTacInstanceData data = (TFTVTacInstanceData)instanceData;
             TFTVStamina.charactersWithBrokenLimbs = data.charactersWithBrokenLimbs;
             TFTVVoidOmens.VoidOmen3Active = data.VoidOmen3Active;
+            TFTVVoidOmens.VoidOmen5Active = data.VoidOmen5Active;
             TFTVVoidOmens.VoidOmen7Active = data.VoidOmen7Active;
             TFTVVoidOmens.VoidOmen10Active = data.VoidOmen10Active;
             TFTVVoidOmens.VoidOmen15Active = data.VoidOmen15Active;
@@ -87,6 +89,7 @@ namespace TFTV
             {
                 charactersWithBrokenLimbs = TFTVStamina.charactersWithBrokenLimbs,
                 VoidOmen3Active = TFTVVoidOmens.VoidOmen3Active,
+                VoidOmen5Active = TFTVVoidOmens.VoidOmen5Active,
                 VoidOmen7Active = TFTVVoidOmens.VoidOmen7Active,
                 VoidOmen10Active = TFTVVoidOmens.VoidOmen10Active,
                 VoidOmen15Active = TFTVVoidOmens.VoidOmen15Active,

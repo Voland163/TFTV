@@ -194,9 +194,7 @@ namespace TFTV
                                 TFTVLogger.Always("The prevFaction is " + prevFaction.Faction.FactionDef.name);
                                 TFTVLogger.Always("Total Delirium on mission is " + totalDeliriumOnMission);
                                 TFTVLogger.Always("Number of characters with Delirium is " + totalCharactersWithDelirium);
-                                if (totalDeliriumOnMission >= 20 || totalCharactersWithDelirium >= 6)
-                                {
-
+                              
                                     DeathBelcherAbilityDef oilcrabDeathBelcherAbility =
                                    Repo.GetAllDefs<DeathBelcherAbilityDef>().FirstOrDefault
                                    (ged => ged.name.Equals("Oilcrab_Die_DeathBelcher_AbilityDef"));
@@ -214,12 +212,12 @@ namespace TFTV
 
                                         {
                                             int roll = UnityEngine.Random.Range(0, 100);
-                                            if (TFTVVoidOmens.VoidOmen15Active && roll >= 68)
+                                            if (TFTVVoidOmens.VoidOmen15Active && roll <= totalDeliriumOnMission * 2)
                                             {
                                                 TFTVLogger.Always("This Arthron here " + actor + ", got past the crabtag and the blecher ability check!");
                                                 AddArthronUmbraDeathBelcherAbility(actor);
                                             }
-                                            else if (!TFTVVoidOmens.VoidOmen15Active && roll >= 84)
+                                            else if (!TFTVVoidOmens.VoidOmen15Active && roll <= totalDeliriumOnMission)
                                             {
                                                 TFTVLogger.Always("This Arthron here " + actor + ", got past the crabtag and the blecher ability check!");
                                                 AddArthronUmbraDeathBelcherAbility(actor);
@@ -230,12 +228,12 @@ namespace TFTV
                                             && !actor.name.Contains("Oilfish"))
                                         {
                                             int roll = UnityEngine.Random.Range(0, 100);
-                                            if (TFTVVoidOmens.VoidOmen15Active && roll >= 68)
+                                            if (TFTVVoidOmens.VoidOmen15Active && roll <= totalDeliriumOnMission * 2)
                                             {
                                                 TFTVLogger.Always("This Triton here " + actor + ", got past the crabtag and the blecher ability check!");
                                                 AddTritonUmbraDeathBelcherAbility(actor);
                                             }
-                                            else if (!TFTVVoidOmens.VoidOmen15Active && roll >= 84)
+                                            else if (!TFTVVoidOmens.VoidOmen15Active && roll <= totalDeliriumOnMission)
                                             {
                                                 TFTVLogger.Always("This Triton here " + actor + ", got past the crabtag and the blecher ability check!");
                                                 AddTritonUmbraDeathBelcherAbility(actor);
@@ -251,7 +249,7 @@ namespace TFTV
                             FirstOrDefault(ged => ged.name.Equals("E_RandomValue [UmbralCrabmen_FactionEffectDef]"));
                             TFTVLogger.Always("The randon Crab Umbra value is " + randomValueCrabUmbra.ThresholdValue);
                         }
-                    }
+                    
                 }
                 catch (Exception e)
                 {

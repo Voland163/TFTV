@@ -33,8 +33,9 @@ namespace TFTV
                 // Put Barnabas in the [CHO] picture
                 GeoscapeEventDef CH0Event = Repo.GetAllDefs<GeoscapeEventDef>().FirstOrDefault(ged => ged.name.Equals("PROG_CH0_GeoscapeEventDef"));
                 CH0Event.GeoscapeEventData.Leader = "SY_Barnabas";
+               // CH0Event.GeoscapeEventData.Choices[0].Outcome.TriggerEncounterID = "AlistairOnBarnabas";
 
-                // Get corruption going from the start of the game... eh with Meteor.
+                // Get corruption going from the start of the game... eh with intro to SDI
                 GeoscapeEventDef geoEventCH0WIN = Repo.GetAllDefs<GeoscapeEventDef>().FirstOrDefault(ged => ged.name.Equals("PROG_CH0_WIN_GeoscapeEventDef"));
                 var corruption = geoEventCH0WIN.GeoscapeEventData.Choices[0].Outcome.VariablesChange[1];
                 GeoscapeEventDef sdi1 = Repo.GetAllDefs<GeoscapeEventDef>().FirstOrDefault(ged => ged.name.Equals("SDI_01_GeoscapeEventDef"));
@@ -59,7 +60,6 @@ namespace TFTV
                 triggerCH1.OR_Filters[1] = PP_ResearchConditionCH0_Miss;
                 GeoscapeEventDef CH0_Event = Repo.GetAllDefs<GeoscapeEventDef>().FirstOrDefault(ged => ged.name.Equals("PROG_CH0_GeoscapeEventDef"));
                 CH0Event.Filters[0] = triggerCH1;
-
 
                 // Make CH1 Mission appear when Player win CH0 Mission; CH1 Event will not be used!
                 GeoscapeEventDef CH1_Event = Repo.GetAllDefs<GeoscapeEventDef>().FirstOrDefault(ged => ged.name.Equals("PROG_CH1_GeoscapeEventDef"));
@@ -154,6 +154,10 @@ namespace TFTV
                 sdi09.GeoscapeEventData.Choices[0].Outcome.VariablesChange.Add(TFTVCommonMethods.GenerateVariableChange("Umbra_Encounter_Variable", 1, false));
                 GeoscapeEventDef sdi10 = Repo.GetAllDefs<GeoscapeEventDef>().FirstOrDefault(ged => ged.name.Equals("SDI_10_GeoscapeEventDef"));
                 sdi10.GeoscapeEventData.Choices[0].Outcome.OutcomeText.General.LocalizationKey = "SDI10_OUTCOME";
+                GeoscapeEventDef sdi11 = Repo.GetAllDefs<GeoscapeEventDef>().FirstOrDefault(ged => ged.name.Equals("SDI_11_GeoscapeEventDef"));
+                sdi11.GeoscapeEventData.Choices[0].Outcome.OutcomeText.General.LocalizationKey = "SDI11_OUTCOME";
+                sdi11.GeoscapeEventData.Choices[0].Outcome.VariablesChange.Add(TFTVCommonMethods.GenerateVariableChange("BerithAreComing", 1, true));
+
                 GeoscapeEventDef sdi20 = Repo.GetAllDefs<GeoscapeEventDef>().FirstOrDefault(ged => ged.name.Equals("SDI_20_GeoscapeEventDef"));
                 sdi20.GeoscapeEventData.Choices[0].Outcome.GameOverVictoryFaction = null;
                 sdi20.GeoscapeEventData.Choices[0].Outcome.VariablesChange.Add(TFTVCommonMethods.GenerateVariableChange("ODI_Complete", 1, true));
