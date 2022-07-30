@@ -1,4 +1,5 @@
 ﻿using Base.Defs;
+using Base.Eventus.Filters;
 using Base.UI;
 using HarmonyLib;
 using PhoenixPoint.Common.UI;
@@ -6,6 +7,7 @@ using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.Research;
 using PhoenixPoint.Geoscape.Events;
 using PhoenixPoint.Geoscape.Events.Eventus;
+using PhoenixPoint.Geoscape.Events.Eventus.Filters;
 using PhoenixPoint.Geoscape.Levels;
 using System;
 using System.Linq;
@@ -23,7 +25,7 @@ namespace TFTV
         {
             try
             {
-                if (__instance.Fatigue.Stamina != null && __instance.Fatigue.Stamina > 0)
+                if (__instance.Fatigue != null && __instance.Fatigue.Stamina > 0 && __instance.TemplateDef.IsHuman && __instance.TemplateDef.IsMutoid)
                 {
                     __instance.Fatigue.Stamina.SetToMin();
                 }
@@ -179,6 +181,43 @@ namespace TFTV
             {
                 TFTVLogger.Error(e);
             }
+        }
+
+
+        public static OrEventFilterDef CreateTriggerWithDelayedEventTimer(GeoLevelController level, string name, string gUID, float hours, string gUID2)
+        {
+
+            try
+            {
+                OrEventFilterDef sourceTrigger = Repo.GetAllDefs<OrEventFilterDef>().FirstOrDefault(ged => ged.name.Equals("E_PROG_FS9_MultipleTriggers [OrEventFilterDef]"));
+                OrEventFilterDef trigger = Helper.CreateDefFromClone(sourceTrigger, gUID, name);
+                trigger.OR_Filters[0] = CreateDelayedEventTimer(level, name + "timer", gUID2, hours);
+                return trigger;
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+            throw new InvalidOperationException();
+        }
+
+        public static GeoTimePassedEventFilterDef CreateDelayedEventTimer(GeoLevelController level, string name, string gUID, float hours) 
+        {
+
+            try
+            {
+                GeoTimePassedEventFilterDef sourceTimer = Repo.GetAllDefs<GeoTimePassedEventFilterDef>().FirstOrDefault(ged => ged.name.Equals("E_PROG_FS9_TimePassed [GeoTimePassedEventFilterDef]"));
+                GeoTimePassedEventFilterDef timer = Helper.CreateDefFromClone(sourceTimer, gUID, name);
+                timer.TimePassedHours = hours;
+                return timer;
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+            throw new InvalidOperationException();
         }
 
         [HarmonyPatch(typeof(GeoSite), "CreateHavenDefenseMission")]

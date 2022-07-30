@@ -5,6 +5,8 @@ using Base.UI;
 using Base.UI.MessageBox;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
+using PhoenixPoint.Common.Entities;
+using PhoenixPoint.Common.Levels.Missions;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.Interception.Equipments;
 using PhoenixPoint.Geoscape.Entities.Research;
@@ -13,6 +15,7 @@ using PhoenixPoint.Geoscape.Entities.Sites;
 using PhoenixPoint.Geoscape.Interception;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
+using PhoenixPoint.Tactical.Levels.FactionObjectives;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -30,6 +33,35 @@ namespace TFTV
         {
             try
             {
+                /* for testing purposes
+                foreach (CustomMissionTypeDef missionTypeDef in Repo.GetAllDefs<CustomMissionTypeDef>())
+                {
+
+                    if (missionTypeDef.name.Contains("Haven") && !missionTypeDef.name.Contains("Infestation"))
+                    {
+                        TacCrateDataDef cratesNotResources = Repo.GetAllDefs<TacCrateDataDef>().FirstOrDefault(ged => ged.name.Equals("Default_TacCrateDataDef"));
+                        if (missionTypeDef.name.Contains("Civ"))
+                        {
+                            missionTypeDef.ParticipantsRelations[1].MutualRelation = FactionRelation.Enemy;
+                        }
+                        else if (!missionTypeDef.name.Contains("Civ"))
+                        {
+                            missionTypeDef.ParticipantsRelations[2].MutualRelation = FactionRelation.Enemy;
+                        }
+                        missionTypeDef.ParticipantsData[1].PredeterminedFactionEffects = missionTypeDef.ParticipantsData[0].PredeterminedFactionEffects;
+                        missionTypeDef.MissionSpecificCrates = cratesNotResources;
+                        missionTypeDef.FactionItemsRange.Min = 2;
+                        missionTypeDef.FactionItemsRange.Max = 7;
+                        missionTypeDef.CratesDeploymentPointsRange.Min = 20;
+                        missionTypeDef.CratesDeploymentPointsRange.Max = 30;
+
+
+                        //WipeEnemyFactionObjectiveDef 50276
+                    }
+                }
+                */
+
+
                 //implementing Belial's proposal: 
 
                 // ALN_VoidChamber_VehicleWeaponDef  Fire rate increased 20s-> 10s, Damage decreased 400-> 200
@@ -103,7 +135,7 @@ namespace TFTV
             }
         }
 
-
+public static bool checkHammerfall= false;
 
         [HarmonyPatch(typeof(GeoAlienFaction), "SpawnEgg", new Type[] { typeof(Vector3) })]
 
@@ -120,61 +152,60 @@ namespace TFTV
             {
                 try
                 {
-                    TFTVLogger.Always("Egg Spawned");
-
-                    List<GeoHaven> geoHavens = __instance.GeoLevel.AnuFaction.Havens.ToList();
-                    geoHavens.AddRange(__instance.GeoLevel.NewJerichoFaction.Havens.ToList());
-                    geoHavens.AddRange(__instance.GeoLevel.SynedrionFaction.Havens.ToList());
-                    int count = 0;
-                    int damage = UnityEngine.Random.Range(25, 200);
-                    foreach (GeoHaven haven in geoHavens)
+                    if (!checkHammerfall)
                     {
-                        TFTVLogger.Always("Got Here");
-                        if (Vector3.Distance(haven.Site.WorldPosition, worldPos) <= 1)
+                        TFTVLogger.Always("Egg Spawned");
 
+                        List<GeoHaven> geoHavens = __instance.GeoLevel.AnuFaction.Havens.ToList();
+                        geoHavens.AddRange(__instance.GeoLevel.NewJerichoFaction.Havens.ToList());
+                        geoHavens.AddRange(__instance.GeoLevel.SynedrionFaction.Havens.ToList());
+                        int count = 0;
+                        int damage = UnityEngine.Random.Range(25, 200);
+
+                        foreach (GeoHaven haven in geoHavens)
                         {
-                            TFTVLogger.Always("This haven " + haven.Site.LocalizedSiteName + "is getting whacked by the asteroid");
-                            if (!haven.Site.HasActiveMission && count < 3 && Vector3.Distance(haven.Site.WorldPosition, worldPos) <= 0.4)
+                            TFTVLogger.Always("Got Here");
+                            if (Vector3.Distance(haven.Site.WorldPosition, worldPos) <= 1)
+
                             {
-                                GeoscapeLogEntry entry = new GeoscapeLogEntry
+                                TFTVLogger.Always("This haven " + haven.Site.LocalizedSiteName + "is getting whacked by the asteroid");
+                                if (!haven.Site.HasActiveMission && count < 3 && Vector3.Distance(haven.Site.WorldPosition, worldPos) <= 0.4)
                                 {
-                                    Text = new LocalizedTextBind(haven.Site.Owner + " " + haven.Site.LocalizedSiteName + " was destroyed by Hammerfall!", true)
-                                };
-                                typeof(GeoscapeLog).GetMethod("AddEntry", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(__instance.GeoLevel.Log, new object[] { entry, null });
-                                haven.Site.DestroySite();
-                                count++;
-                            }
-                            else 
-                            {
-                                int startingPopulation = haven.Population;
-                                float havenPopulation = haven.Population * (float)(Vector3.Distance(haven.Site.WorldPosition, worldPos));
-                                haven.Population = Mathf.CeilToInt(havenPopulation);
-                                int damageToZones = Mathf.CeilToInt(150 / (Vector3.Distance(haven.Site.WorldPosition, worldPos)));
-                                haven.Zones.ToArray().ForEach(zone => zone.AddDamage(UnityEngine.Random.Range(damageToZones-25, damageToZones+25)));
-                                string destructionDescription;
-                                if (haven.Zones.First().Health <= 500 || startingPopulation >= haven.Population + 1000) 
-                                {
-                                    destructionDescription = " suffered heavy damage from Harmmerfall!";
+                                    GeoscapeLogEntry entry = new GeoscapeLogEntry
+                                    {
+                                        Text = new LocalizedTextBind(haven.Site.Owner + " " + haven.Site.LocalizedSiteName + " was destroyed by Hammerfall!", true)
+                                    };
+                                    typeof(GeoscapeLog).GetMethod("AddEntry", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(__instance.GeoLevel.Log, new object[] { entry, null });
+                                    haven.Site.DestroySite();
+                                    count++;
                                 }
                                 else
                                 {
-                                    destructionDescription = " suffered some damage from Hammerfall";
+                                    int startingPopulation = haven.Population;
+                                    float havenPopulation = haven.Population * (float)(Vector3.Distance(haven.Site.WorldPosition, worldPos));
+                                    haven.Population = Mathf.CeilToInt(havenPopulation);
+                                    int damageToZones = Mathf.CeilToInt(150 / (Vector3.Distance(haven.Site.WorldPosition, worldPos)));
+                                    haven.Zones.ToArray().ForEach(zone => zone.AddDamage(UnityEngine.Random.Range(damageToZones - 25, damageToZones + 25)));
+                                    string destructionDescription;
+                                    if (haven.Zones.First().Health <= 500 || startingPopulation >= haven.Population + 1000)
+                                    {
+                                        destructionDescription = " suffered heavy damage from Harmmerfall!";
+                                    }
+                                    else
+                                    {
+                                        destructionDescription = " suffered some damage from Hammerfall";
 
+                                    }
+                                    GeoscapeLogEntry entry = new GeoscapeLogEntry
+                                    {
+                                        Text = new LocalizedTextBind(haven.Site.Owner + " " + haven.Site.LocalizedSiteName + destructionDescription, true)
+                                    };                                 
+                                        typeof(GeoscapeLog).GetMethod("AddEntry", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(__instance.GeoLevel.Log, new object[] { entry, null });
+                                    checkHammerfall = true;
                                 }
-                                GeoscapeLogEntry entry = new GeoscapeLogEntry
-                                {
-                                    Text = new LocalizedTextBind(haven.Site.Owner + " " + haven.Site.LocalizedSiteName + destructionDescription, true)
-                                };
-                                typeof(GeoscapeLog).GetMethod("AddEntry", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(__instance.GeoLevel.Log, new object[] { entry, null });
                             }
-                            
                         }
-
-
                     }
-
-                    /* (haven.Site.WorldPosition.x <= worldPos.x + 10 || haven.Site.WorldPosition.y <= worldPos.y + 100 ||
-                                haven.Site.WorldPosition.x <= worldPos.x - 10 || haven.Site.WorldPosition.y <= worldPos.y - 100)*/
                 }
                 catch (Exception e)
                 {
@@ -215,198 +246,6 @@ namespace TFTV
                 }
             }
         }
-
-        /*public static List<int> flyers = new List<int>();
-        public static Dictionary<GeoVehicle, List<GeoSite>> flyersAndHavens = new Dictionary<GeoVehicle, List<GeoSite>>();*/
-
-        /*
-        [HarmonyPatch(typeof(AlienRaidManager), "OnRaidGenerated")]
-        public static class AlienRaidManager_OnRaidGenerated_patch
-        {
-            public static bool Prepare()
-            {
-                TFTVConfig Config = new TFTVConfig();
-                return Config.ActivateAirCombatChanges;
-            }
-
-            public static void Postfix(GeoscapeRaid raid)
-            {
-                try
-                {
-                    if (raid.Type != 0)
-                    {                     
-                        foreach (GeoSite target in raid.Targets)
-                        {
-                            target.RevealSite(target.GeoLevel.PhoenixFaction);
-                        }
-                    }
-                }
-
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-            }
-        }*/
-        /*
-        [HarmonyPatch(typeof(GeoVehicle), "OnArrivedAtDestination")]
-
-        public static class GeoVehicle_OnArrivedAtDestination
-        {
-            public static bool Prepare()
-            {
-                //TFTVConfig Config = new TFTVConfig();
-                //return Config.ActivateAirCombatChanges;
-                return true;
-            }
-            public static void Postfix(GeoVehicle __instance, bool justPassing)
-            {
-                try
-                {
-                    TFTVLogger.Always("OnArrived method invoked");
-
-                    if (!justPassing && __instance.Owner.IsAlienFaction && __instance.CurrentSite.Type == GeoSiteType.Haven)
-                    {
-
-                        if (flyersAndHavens.Keys.Count>0 && flyersAndHavens.Keys.Any(f => f.VehicleID == __instance.VehicleID))
-                        {
-                            flyersAndHavens[__instance].Add(__instance.CurrentSite);
-                        }
-                        else
-                        {
-                            flyersAndHavens.Add(__instance, new List<GeoSite> { (__instance.CurrentSite) });
-                        }
-
-
-                        TFTVLogger.Always("Added to list of havens visisted " + __instance.CurrentSite);
-                    }
-
-                }
-
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-            }
-
-        }*/
-
-        /*
-                [HarmonyPatch(typeof(GeoVehicle), "OnArrivedAtDestination")]
-
-                public static class GeoVehicle_OnArrivedAtDestination
-                {
-                    public static bool Prepare()
-                    {
-                        TFTVConfig Config = new TFTVConfig();
-                        return Config.ActivateAirCombatChanges;
-                    }
-                    public static void Postfix(GeoVehicle __instance, bool justPassing)
-                    {
-                        try
-                        {
-                            TFTVLogger.Always("OnArrived method invoked");
-
-                            if (!justPassing && flyers.Contains(__instance.VehicleID) && __instance.CurrentSite.Type == GeoSiteType.Haven)
-                            {
-
-                                if (flyersAndHavens.Keys.Any(f => f.VehicleID == __instance.VehicleID))
-                                {
-                                    flyersAndHavens[__instance].Add(__instance.CurrentSite);
-                                }
-                                else
-                                {
-                                    flyersAndHavens.Add(__instance, new List<GeoSite> { (__instance.CurrentSite) });
-                                }
-
-
-                                TFTVLogger.Always("Added to list of havens visisted " + __instance.CurrentSite);
-                            }
-
-                        }
-
-                        catch (Exception e)
-                        {
-                            TFTVLogger.Error(e);
-                        }
-                    }
-
-                }
-        */
-        /*
-        [HarmonyPatch(typeof(GeoscapeRaid), "StopBehemothFollowing")]
-
-        public static class GeoscapeRaid_StopBehemothFollowing_patch
-        {
-            public static bool Prepare()
-            {
-                TFTVConfig Config = new TFTVConfig();
-                return Config.ActivateAirCombatChanges;
-            }
-            public static void Prefix(GeoscapeRaid __instance)
-            {
-                try
-                {
-                    if (flyersAndHavens.ContainsKey(__instance.GeoVehicle))
-                    {
-                        foreach (var haven in flyersAndHavens[__instance.GeoVehicle])
-                        {
-                            targetsForBehemoth.Add(haven);
-                            TFTVLogger.Always("Haven " + haven + " added to the list of targets");
-                        }
-                    }
-                }
-
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-            }
-        }
-        */
-
-        /*
-
-    [HarmonyPatch(typeof(AlienRaidManager), "OnRaidEnded")]
-    public static class InterceptionGameController_OnRaidEnded_patch
-    {
-        public static bool Prepare()
-        {
-            TFTVConfig Config = new TFTVConfig();
-            return Config.ActivateAirCombatChanges;
-        }
-
-        public static void Postfix(GeoscapeRaid raid, bool raidSuccessful)
-        {
-            try
-            {
-                TFTVLogger.Always("Check that Geoscape Raid method is invoked in a new way");
-
-                if (raidSuccessful)
-                {
-                    if (raid.Targets != null)
-                    {
-                        foreach (GeoSite target in raid.Targets)
-                        {
-                            TFTVLogger.Always("The target is" + target.LocalizedSiteName);
-                            TFTVLogger.Always("The type of raid is" + raid.Type.GetName());
-
-                            if (target.Type == GeoSiteType.Haven)
-                            {
-                                targetsForBehemoth.Add(target);
-                                TFTVLogger.Always("Haven " + target.LocalizedSiteName + " added to the list of targets");
-                            }
-                        }
-                    }
-
-                }
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-        }
-    }*/
 
         public static Dictionary<int, List<GeoSite>> flyersAndHavens = new Dictionary<int, List<GeoSite>>();
 

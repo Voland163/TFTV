@@ -19,7 +19,7 @@ namespace TFTV
         [HarmonyPatch(typeof(UIModuleTutorialModal), "SetTutorialStep")]
         public static class UIModuleTutorialModal_SetTutorialStep_Hints_Patch
         {
-
+            //This overrides too much!
             public static void Postfix(UIModuleTutorialModal __instance, GeoscapeTutorialStep step)
             {
                 try

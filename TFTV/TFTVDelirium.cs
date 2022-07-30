@@ -304,7 +304,7 @@ namespace TFTV
             }
         }
 
-
+        
         //This method changes how WP are displayed in the Edit personnel screen, to show effects of Delirium on WP
 
         [HarmonyPatch(typeof(UIModuleCharacterProgression), "GetStarBarValuesDisplayString")]

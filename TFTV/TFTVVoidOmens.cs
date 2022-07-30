@@ -19,9 +19,12 @@ using PhoenixPoint.Geoscape.Levels.Objectives;
 using PhoenixPoint.Geoscape.View.ViewStates;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
+using PhoenixPoint.Tactical.Levels;
 using PhoenixPoint.Tactical.Levels.FactionEffects;
+using PhoenixPoint.Tactical.Levels.FactionObjectives;
 using PhoenixPoint.Tactical.Levels.Mist;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
@@ -45,6 +48,8 @@ namespace TFTV
         //VO#3 is WP cost +50%
         public static bool VoidOmen3Active = false;
         public static bool VoidOmen4Active = false;
+        //VO#5 is haven defenders hostile; this is needed for victory kludge
+        public static bool VoidOmen5Active = false;
         //VO#7 is more mist in missions
         public static bool VoidOmen7Active = false;
         //VO#10 is no limit to Delirium
@@ -204,6 +209,7 @@ namespace TFTV
                                 missionTypeDef.FactionItemsRange.Max = 7;
                                 missionTypeDef.CratesDeploymentPointsRange.Min = 20;
                                 missionTypeDef.CratesDeploymentPointsRange.Max = 30;
+                               
                             }
                         }
                         // Logger.Always(voidOmen + j + " is now in effect, held in variable " + voidOmen + i);
@@ -724,6 +730,54 @@ namespace TFTV
             }
 
         }
+        
+        [HarmonyPatch(typeof(TacticalLevelController), "ActorDied")]
+        public static class PhoenixStatisticsManager_NewTurnEvent_CalculateDelirium_Patch
+        {
+            public static void Postfix(DeathReport deathReport, TacticalLevelController __instance)
+            {
+                try
+                {
+                    if (VoidOmen5Active)
+                    {
+
+                        // TFTVLogger.Always("ActorDied invoked, because " + deathReport.Actor.DisplayName + " died");
+
+                        if (deathReport.Actor.TacticalFaction.ParticipantKind == TacMissionParticipant.Intruder)
+                        {
+                            // TFTVLogger.Always("If ActorDied passed, because " + deathReport.Actor.DisplayName + " was intruder");
+                            TacticalFaction aliens = deathReport.Actor.TacticalFaction;
+                            if (deathReport.Actor.TacticalFaction.State == TacFactionState.Defeated)
+                            {
+                                //  TFTVLogger.Always("Check passed, aliens lost");
+
+                                List<TacticalFaction> factions = __instance.Factions.ToList();
+                                foreach (TacticalFaction faction in factions)
+                                {
+                                    if (faction.IsControlledByPlayer)
+                                    {
+                                        faction.State = TacFactionState.Won;
+                                        // TFTVLogger.Always("This " + faction.Faction.ToString() + " won");
+                                    }
+                                    else
+                                    {
+                                        faction.State = TacFactionState.Defeated;
+                                        //  TFTVLogger.Always("This " + faction.Faction.ToString() + " lost");
+                                    }
+
+                                }
+                            }
+
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+        }
+
 
         [HarmonyPatch(typeof(TacticalAbility), "get_WillPointCost")]
         public static class TacticalAbility_get_WillPointCost_VoidOmenExtraWPCost_Patch

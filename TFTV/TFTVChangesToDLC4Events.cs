@@ -34,7 +34,7 @@ namespace TFTV
                 GeoscapeEventDef CH0Event = Repo.GetAllDefs<GeoscapeEventDef>().FirstOrDefault(ged => ged.name.Equals("PROG_CH0_GeoscapeEventDef"));
                 CH0Event.GeoscapeEventData.Leader = "SY_Barnabas";
 
-                // Get corruption going from the start of the game... eh with Meteor.
+                // Get corruption going from the start of the game... eh with intro to SDI
                 GeoscapeEventDef geoEventCH0WIN = Repo.GetAllDefs<GeoscapeEventDef>().FirstOrDefault(ged => ged.name.Equals("PROG_CH0_WIN_GeoscapeEventDef"));
                 var corruption = geoEventCH0WIN.GeoscapeEventData.Choices[0].Outcome.VariablesChange[1];
                 GeoscapeEventDef sdi1 = Repo.GetAllDefs<GeoscapeEventDef>().FirstOrDefault(ged => ged.name.Equals("SDI_01_GeoscapeEventDef"));
@@ -59,7 +59,6 @@ namespace TFTV
                 triggerCH1.OR_Filters[1] = PP_ResearchConditionCH0_Miss;
                 GeoscapeEventDef CH0_Event = Repo.GetAllDefs<GeoscapeEventDef>().FirstOrDefault(ged => ged.name.Equals("PROG_CH0_GeoscapeEventDef"));
                 CH0Event.Filters[0] = triggerCH1;
-
 
                 // Make CH1 Mission appear when Player win CH0 Mission; CH1 Event will not be used!
                 GeoscapeEventDef CH1_Event = Repo.GetAllDefs<GeoscapeEventDef>().FirstOrDefault(ged => ged.name.Equals("PROG_CH1_GeoscapeEventDef"));
