@@ -746,6 +746,45 @@ namespace TFTV
                         if (deathReport.Actor.TacticalFaction.ParticipantKind == TacMissionParticipant.Intruder)
                         {
                             // TFTVLogger.Always("If ActorDied passed, because " + deathReport.Actor.DisplayName + " was intruder");
+                            TacticalFaction aliens = deathReport.Actor.TacticalFaction;
+                            if (deathReport.Actor.TacticalFaction.State == TacFactionState.Defeated)
+                            {
+                                //  TFTVLogger.Always("Check passed, aliens lost");
+
+                                List<TacticalFaction> factions = __instance.Factions.ToList();
+                                foreach (TacticalFaction faction in factions)
+                                {
+                                    if (faction.IsControlledByPlayer)
+                                    {
+                                        faction.State = TacFactionState.Won;
+                                        // TFTVLogger.Always("This " + faction.Faction.ToString() + " won");
+                                    }
+                                    else
+                                    {
+                                        faction.State = TacFactionState.Defeated;
+                                        //  TFTVLogger.Always("This " + faction.Faction.ToString() + " lost");
+                                    }
+
+                                }
+                            }
+
+        }
+        
+        [HarmonyPatch(typeof(TacticalLevelController), "ActorDied")]
+        public static class PhoenixStatisticsManager_NewTurnEvent_CalculateDelirium_Patch
+        {
+            public static void Postfix(DeathReport deathReport, TacticalLevelController __instance)
+            {
+                try
+                {
+                    if (VoidOmen5Active)
+                    {
+
+                        // TFTVLogger.Always("ActorDied invoked, because " + deathReport.Actor.DisplayName + " died");
+
+                        if (deathReport.Actor.TacticalFaction.ParticipantKind == TacMissionParticipant.Intruder)
+                        {
+                            // TFTVLogger.Always("If ActorDied passed, because " + deathReport.Actor.DisplayName + " was intruder");
                             
                             if (deathReport.Actor.TacticalFaction.State == TacFactionState.Defeated)
                             {
