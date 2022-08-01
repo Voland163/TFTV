@@ -730,7 +730,7 @@ namespace TFTV
             }
 
         }
-        
+                  
         [HarmonyPatch(typeof(TacticalLevelController), "ActorDied")]
         public static class PhoenixStatisticsManager_NewTurnEvent_CalculateDelirium_Patch
         {
