@@ -140,7 +140,7 @@ namespace TFTV
             }
         }
 
-public static bool checkHammerfall= false;
+        public static bool checkHammerfall = false;
 
         [HarmonyPatch(typeof(GeoAlienFaction), "SpawnEgg", new Type[] { typeof(Vector3) })]
 
