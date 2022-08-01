@@ -22,13 +22,13 @@ namespace TFTV
         public static class UIModuleTutorialModal_SetTutorialStep_Hints_Patch
         {
             
-            public static void Postfix(ref Image image, GeoscapeTutorialStep step)
+            public static void Postfix(UIModuleTutorialModal __instance, GeoscapeTutorialStep step)
             {
                 try
                 {
                     if (step.StepType == GeoscapeTutorialStepType.CorruptionActivated && step.Title.LocalizationKey == "KEY_GEO_HINT_ENEMY_SPECIAL_CORRUPTION_NAME")
                     {
-                        image.sprite = Helper.CreateSpriteFromImageFile("BG_Hint_Delirium.png");
+                        __instance.Image.sprite = Helper.CreateSpriteFromImageFile("BG_Hint_Delirium.png");
                     }
 
                 }

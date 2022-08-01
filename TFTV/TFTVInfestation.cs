@@ -3,6 +3,7 @@ using Base.Defs;
 using Base.UI;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
+using PhoenixPoint.Common.Entities.Items;
 using PhoenixPoint.Common.Levels.Missions;
 using PhoenixPoint.Common.View.ViewControllers;
 using PhoenixPoint.Geoscape.Core;
@@ -10,10 +11,12 @@ using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.Missions;
 using PhoenixPoint.Geoscape.Entities.Missions.Outcomes;
 using PhoenixPoint.Geoscape.Events;
+using PhoenixPoint.Geoscape.Events.Eventus;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.View.ViewControllers.Modal;
 using PhoenixPoint.Tactical.View.ViewModules;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
@@ -46,9 +49,6 @@ namespace TFTV
                 mutagenRewardInfestation.Resources.Values.Clear();
                 mutagenRewardInfestation.Resources.Values.Add(new ResourceUnit { Type = ResourceType.Mutagen, Value = 800 });
 
-
-
-
                 foreach (CustomMissionTypeDef missionTypeDef in Repo.GetAllDefs<CustomMissionTypeDef>())
                 {
                     if (missionTypeDef.name.Contains("Haven") && missionTypeDef.name.Contains("Infestation"))
@@ -62,6 +62,11 @@ namespace TFTV
                     }
                 }
 
+                GeoscapeEventDef rewardEvent = TFTVCommonMethods.CreateNewEvent("InfestationReward", "KEY_INFESTATION_REWARD_TITLE", "KEY_INFESTATION_REWARD_DESCRIPTION", null);
+                //Muting Living Weapons
+                GeoscapeEventDef lwstartingEvent = Repo.GetAllDefs<GeoscapeEventDef>().FirstOrDefault(ged => ged.name.Equals("PROG_LW1_GeoscapeEventDef"));
+                lwstartingEvent.GeoscapeEventData.Mute = true;
+
             }
             catch (Exception e)
             {
@@ -70,11 +75,47 @@ namespace TFTV
             }
         }
 
+        public static List<ItemUnit> InfestationRewardGenerator(int num)
+        {
+            try 
+            {
+                GeoscapeEventDef LW1Miss = Repo.GetAllDefs<GeoscapeEventDef>().FirstOrDefault(ged => ged.name.Equals("PROG_LW1_WIN_GeoscapeEventDef"));
+                GeoscapeEventDef LW2Miss = Repo.GetAllDefs<GeoscapeEventDef>().FirstOrDefault(ged => ged.name.Equals("PROG_LW2_WIN_GeoscapeEventDef"));
+                GeoscapeEventDef LW3Miss = Repo.GetAllDefs<GeoscapeEventDef>().FirstOrDefault(ged => ged.name.Equals("PROG_LW3_WIN_GeoscapeEventDef"));
+
+                if (num == 1) 
+                {
+                    List<ItemUnit> reward = LW1Miss.GeoscapeEventData.Choices[0].Outcome.Items;
+                    return reward;
+                }
+                else if (num == 2) 
+                {
+                    List<ItemUnit> reward = LW2Miss.GeoscapeEventData.Choices[0].Outcome.Items;
+                    return reward;
+                }
+                else if (num == 3)
+                {
+                    List<ItemUnit> reward = LW3Miss.GeoscapeEventData.Choices[0].Outcome.Items;
+                    return reward;
+                }
+                
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+            throw new InvalidOperationException();
+
+        } 
+        
+
+
         // Copied and adapted from Mad´s Assorted Adjustments
         internal static GeoHavenDefenseMission DefenseMission = null;
         internal static GeoSite GeoSiteForInfestation = null;
         internal static GeoSite GeoSiteForScavenging = null;
         public static string InfestedHavensVariable = "Number_of_Infested_Havens";
+        public static string LivingWeaponsAcquired = "Living_Weapons_Acquired";
 
         // Store mission for other patches
         [HarmonyPatch(typeof(GeoHavenDefenseMission), "UpdateGeoscapeMissionState")]
@@ -191,6 +232,7 @@ namespace TFTV
             }
         }
 
+        
 
         [HarmonyPatch(typeof(InfestedHavenOutcomeDataBind), "ModalShowHandler")]
 
@@ -220,7 +262,7 @@ namespace TFTV
 
                         GeoInfestationCleanseMission geoInfestationCleanseMission = (GeoInfestationCleanseMission)modal.Data;
                         GeoSite site = geoInfestationCleanseMission.Site;
-                        __instance.Background.sprite = Helper.CreateSpriteFromImageFile("BG_Intro_1.jpg");
+                        __instance.Background.sprite = Helper.CreateSpriteFromImageFile("NodeAlt.jpg");
                         Sprite icon = __instance.CommonResources.GetFactionInfo(site.Owner).Icon;
                         __instance.TopBar.Icon.sprite = icon;
                         __instance.TopBar.Subtitle.text = site.LocalizedSiteName;
@@ -230,6 +272,15 @@ namespace TFTV
                         TFTVLogger.Always("InfestedHavensVariable before method is " + site.GeoLevel.EventSystem.GetVariable(InfestedHavensVariable));
                         site.GeoLevel.EventSystem.SetVariable(InfestedHavensVariable, site.GeoLevel.EventSystem.GetVariable(InfestedHavensVariable) - 1);
                         TFTVLogger.Always("InfestedHavensVariable is " + site.GeoLevel.EventSystem.GetVariable(InfestedHavensVariable));
+                        site.GeoLevel.EventSystem.SetVariable(LivingWeaponsAcquired, site.GeoLevel.EventSystem.GetVariable(LivingWeaponsAcquired) + 1);
+                        GeoscapeEventDef reward = Repo.GetAllDefs<GeoscapeEventDef>().FirstOrDefault(ged => ged.name.Equals("InfestationReward"));
+                        GeoscapeEventContext geoscapeEventContext = new GeoscapeEventContext(site.GeoLevel.PhoenixFaction, site.GeoLevel.ViewerFaction);
+                        if (site.GeoLevel.EventSystem.GetVariable(LivingWeaponsAcquired) > 0 && site.GeoLevel.EventSystem.GetVariable(LivingWeaponsAcquired) < 4) 
+                        {
+                            reward.GeoscapeEventData.Choices[0].Outcome.Items = InfestationRewardGenerator(site.GeoLevel.EventSystem.GetVariable(LivingWeaponsAcquired));
+                            site.GeoLevel.EventSystem.TriggerGeoscapeEvent("InfestationReward", geoscapeEventContext);
+                        }
+
                     }
 
                     return false;

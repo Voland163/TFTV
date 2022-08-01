@@ -705,6 +705,8 @@ namespace TFTV
                     Description = new LocalizedTextBind(description),
                 };
                 level.PhoenixFaction.AddObjective(voidOmenObjective);
+                
+
             }
             catch (Exception e)
             {
@@ -718,11 +720,12 @@ namespace TFTV
             try
             {
                 DiplomaticGeoFactionObjective voidOmenObjective =
-            (DiplomaticGeoFactionObjective)level.PhoenixFaction.Objectives.FirstOrDefault(ged => ged.Title.LocalizationKey.Equals(title));
+                (DiplomaticGeoFactionObjective)level.PhoenixFaction.Objectives.FirstOrDefault(ged => ged.Title.LocalizationKey.Equals(title));
                 string checktitle = voidOmenObjective.GetTitle();
                 TFTVLogger.Always("the title in the RemoveVoidOmenObjective method is " + title);
                 TFTVLogger.Always("if we found the objective, there should be something here " + checktitle);
                 level.PhoenixFaction.RemoveObjective(voidOmenObjective);
+               
             }
             catch (Exception e)
             {

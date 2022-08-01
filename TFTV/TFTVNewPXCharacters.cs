@@ -288,6 +288,10 @@ namespace TFTV
                     {
                         __instance.TriggerGeoscapeEvent("OlenaOnSymes", context);
                     }
+                    if(eventId== "PROG_CH2_WIN") 
+                    {
+                        TFTVChangesToDLC3Events.ActivateFS3Event(context.Level);
+                    }
                 }
 
                 catch (Exception e)
@@ -297,7 +301,6 @@ namespace TFTV
 
             }
         }
-
 
         [HarmonyPatch(typeof(SiteEncountersArtCollectionDef), "GetEventArt")]
         public static class SiteEncountersArtCollectionDef_GetEventArt_InjectArt_patch
@@ -335,7 +338,7 @@ namespace TFTV
 
                     if (geoEvent.EventID.Equals("PROG_FS0"))
                     {
-                        __result.EventBackground = Helper.CreateSpriteFromImageFile("FesteringSkiesAfterHamerfall.png");
+                        __result.EventBackground = Helper.CreateSpriteFromImageFile("BG_Hammerfall_impact2.jpg");
                     }
 
                     if (geoEvent.EventID.Equals("VoidOmen") && (geoEvent.EventData.Title.LocalizationKey == "VOID_OMEN_TITLE_02"

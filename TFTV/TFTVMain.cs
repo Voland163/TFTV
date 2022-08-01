@@ -44,8 +44,6 @@ namespace TFTV
 
             /// All mod dependencies are accessible and always loaded.
             int c = Dependencies.Count();
-            /// Mods have their own logger. Message through this logger will appear in game console and Unity log file.
-            Logger.LogInfo($"Just shut up.");
             /// Metadata is whatever is written in meta.json
             string v = MetaData.Version.ToString();
             /// Game creates Harmony object for each mod. Accessible if needed.

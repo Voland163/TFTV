@@ -3,14 +3,15 @@ using Base.Defs;
 using HarmonyLib;
 using PhoenixPoint.Common.Levels.Missions;
 using PhoenixPoint.Common.UI;
+using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.Research;
 using PhoenixPoint.Geoscape.Entities.Research.Requirement;
 using PhoenixPoint.Geoscape.Entities.Research.Reward;
 using PhoenixPoint.Geoscape.Events;
 using PhoenixPoint.Geoscape.Events.Eventus;
 using PhoenixPoint.Geoscape.Events.Eventus.Filters;
+using PhoenixPoint.Geoscape.Levels;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 
 namespace TFTV
@@ -98,7 +99,7 @@ namespace TFTV
                 variableResReqBehemoth.VariableName = "BehemothDestroyedAHaven";
                 //This variable will be triggered by the event after Behemoth destroys a haven for the first time
                 GeoscapeEventDef geoEventFS20 = Repo.GetAllDefs<GeoscapeEventDef>().FirstOrDefault(ged => ged.name.Equals("PROG_FS20_GeoscapeEventDef"));
-                geoEventFS20.GeoscapeEventData.Choices[0].Outcome.VariablesChange.Add(TFTVCommonMethods.GenerateVariableChange("BehemothDestroyedAHaven", 1, true));                
+                geoEventFS20.GeoscapeEventData.Choices[0].Outcome.VariablesChange.Add(TFTVCommonMethods.GenerateVariableChange("BehemothDestroyedAHaven", 1, true));
 
                 //need to package the requirement in a new container
                 //research reveal requirements go like this: it's boxes within boxes.
@@ -129,13 +130,58 @@ namespace TFTV
                 geoEventFS2ResearchReq.ResearchID = "IndependenceDayResearch";
                 GeoscapeEventDef geoEventFS2 = Repo.GetAllDefs<GeoscapeEventDef>().FirstOrDefault(ged => ged.name.Equals("PROG_FS2_GeoscapeEventDef"));
                 geoEventFS2.GeoscapeEventData.Choices[0].Outcome.OutcomeText.General.LocalizationKey = "PROG_FS2_CHOICE_0_TEXT_OUTCOME";
-           
+
+                //Change FS3 event
+                GeoscapeEventDef geoEventFS3 = Repo.GetAllDefs<GeoscapeEventDef>().FirstOrDefault(ged => ged.name.Equals("PROG_FS3_GeoscapeEventDef"));
+                geoEventFS3.GeoscapeEventData.Mute = true;
+                geoEventFS3.GeoscapeEventData.Choices[0].Outcome.VariablesChange.Add(TFTVCommonMethods.GenerateVariableChange("Mobilization", 1, true));
+
             }
             catch (Exception e)
             {
                 TFTVLogger.Error(e);
             }
         }
+
+        public static void ActivateFS3Event(GeoLevelController level)
+        {
+            try
+            {
+                GeoTimePassedEventFilterDef timePassedFS3 = Repo.GetAllDefs<GeoTimePassedEventFilterDef>().FirstOrDefault(ged => ged.name.Equals("E_PROG_FS3_TimePassed [GeoTimePassedEventFilterDef]"));
+                timePassedFS3.TimePassedHours = UnityEngine.Random.Range(25, 38) + level.ElaspedTime.TimeSpan.Hours;
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+        public static void ChangeHavenDeploymentDefense(GeoLevelController level)
+        {
+            try
+            {
+                GeoHavenDef havendef = Repo.GetAllDefs<GeoHavenDef>().FirstOrDefault(ged => ged.name.Equals("GeoHavenDef"));
+                if (level.EventSystem.GetVariable("Mobilization") ==1)
+                {
+                    
+                    havendef.PopulationAsDeployment = 0.5f;
+                }
+                else 
+                {
+                    havendef.PopulationAsDeployment = 0.1f;
+                }
+
+            }
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+
+
     }
+
 
 }

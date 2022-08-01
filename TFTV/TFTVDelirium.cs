@@ -315,7 +315,7 @@ namespace TFTV
             private static void Postfix(GeoCharacter ____character, ref string __result, CharacterBaseAttribute attribute, int currentAttributeValue)
             {
                 try
-                {
+                {               
                     if (____character.CharacterStats.Corruption > CalculateStaminaEffectOnDelirium(____character) && attribute.Equals(CharacterBaseAttribute.Will))
                     {
                         __result = $"<color=#da5be3>{currentAttributeValue - ____character.CharacterStats.Corruption.Value + CalculateStaminaEffectOnDelirium(____character)}</color>" + $"({currentAttributeValue}) / " +

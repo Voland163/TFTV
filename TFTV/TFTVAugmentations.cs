@@ -4,6 +4,8 @@ using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Geoscape.Entities;
+using PhoenixPoint.Geoscape.Entities.PhoenixBases;
+using PhoenixPoint.Geoscape.Entities.Sites;
 using PhoenixPoint.Geoscape.Events;
 using PhoenixPoint.Geoscape.Events.Eventus;
 using PhoenixPoint.Geoscape.Levels;
@@ -13,9 +15,7 @@ using PhoenixPoint.Geoscape.View.ViewModules;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
+using UnityEngine;
 
 namespace TFTV
 {
@@ -50,7 +50,7 @@ namespace TFTV
                 GeoscapeEventDef anuReallyPissedAtBionics = TFTVCommonMethods.CreateNewEvent("Anu_Pissed2", "ANU_REALLY_PISSED_BIONICS_TITLE", "ANU_REALLY_PISSED_BIONICS_TEXT_GENERAL_0", "ANU_PISSED_BIONICS_CHOICE_0_OUTCOME");
                 anuReallyPissedAtBionics.GeoscapeEventData.Leader = "AN_Synod";
                 anuReallyPissedAtBionics.GeoscapeEventData.Choices[0].Text.LocalizationKey = "ANU_REALLY_PISSED_BIONICS_CHOICE_0";
-                anuReallyPissedAtBionics.GeoscapeEventData.Choices[0].Outcome.Diplomacy.Add(TFTVCommonMethods.GenerateDiplomacyOutcome(anu, phoenixPoint, -10));
+                anuReallyPissedAtBionics.GeoscapeEventData.Choices[0].Outcome.Diplomacy.Add(TFTVCommonMethods.GenerateDiplomacyOutcome(anu, phoenixPoint, -6));
 
                 //NJ pissed at player for doing Mutations
                 GeoscapeEventDef nJPissedAtMutations = TFTVCommonMethods.CreateNewEvent("NJ_Pissed1", "NJ_PISSED_MUTATIONS_TITLE", "NJ_PISSED_MUTATIONS_TEXT_GENERAL_0", "NJ_PISSED_MUTATIONS_CHOICE_0_OUTCOME");
@@ -67,7 +67,7 @@ namespace TFTV
                 GeoscapeEventDef nJReallyPissedAtMutations = TFTVCommonMethods.CreateNewEvent("NJ_Pissed2", "NJ_REALLY_PISSED_MUTATIONS_TITLE", "NJ_REALLY_PISSED_MUTATIONS_TEXT_GENERAL_0", "NJ_PISSED_MUTATIONS_CHOICE_0_OUTCOME");
                 nJReallyPissedAtMutations.GeoscapeEventData.Leader = "NJ_TW";
                 nJReallyPissedAtMutations.GeoscapeEventData.Choices[0].Text.LocalizationKey = "NJ_REALLY_PISSED_MUTATIONS_CHOICE_0";
-                nJReallyPissedAtMutations.GeoscapeEventData.Choices[0].Outcome.Diplomacy.Add(TFTVCommonMethods.GenerateDiplomacyOutcome(newJericho, phoenixPoint, -10));
+                nJReallyPissedAtMutations.GeoscapeEventData.Choices[0].Outcome.Diplomacy.Add(TFTVCommonMethods.GenerateDiplomacyOutcome(newJericho, phoenixPoint, -6));
             }
             catch (Exception e)
             {
@@ -100,7 +100,8 @@ namespace TFTV
                                 bionics += 1;
                         }
                     }
-                    if (bionics > 2 && geoLevelController.EventSystem.GetVariable("BG_Anu_Pissed_Over_Bionics") == 0)
+                    if (bionics > 6 && geoLevelController.EventSystem.GetVariable("BG_Anu_Pissed_Over_Bionics") == 0 
+                        && CheckForFacility(__instance.GeoLevel, "KEY_BASE_FACILITY_BIONICSLAB_NAME"))
                     {
                         geoLevelController.EventSystem.TriggerGeoscapeEvent("Anu_Pissed1", geoscapeEventContext);
                         geoLevelController.EventSystem.SetVariable("BG_Anu_Pissed_Over_Bionics", 1);
@@ -111,6 +112,7 @@ namespace TFTV
                     {
                         geoLevelController.EventSystem.TriggerGeoscapeEvent("Anu_Pissed2", geoscapeEventContext);
                         geoLevelController.EventSystem.SetVariable("BG_Anu_Really_Pissed_Over_Bionics", 1);
+                        DestroyFacilitiesOnPXBases("KEY_BASE_FACILITY_BIONICSLAB_NAME", __instance.GeoLevel);
                     }
                 }
                 catch (Exception e)
@@ -141,7 +143,8 @@ namespace TFTV
                                 mutations += 1;
                         }
                     }
-                    if (mutations > 2 && geoLevelController.EventSystem.GetVariable("BG_NJ_Pissed_Over_Mutations") == 0)
+                    if (mutations > 6 && geoLevelController.EventSystem.GetVariable("BG_NJ_Pissed_Over_Mutations") == 0 
+                        && CheckForFacility(__instance.GeoLevel, "KEY_BASE_FACILITY_MUTATION_LAB_NAME"))
                     {
                         geoLevelController.EventSystem.TriggerGeoscapeEvent("NJ_Pissed1", geoscapeEventContext);
                         geoLevelController.EventSystem.SetVariable("BG_NJ_Pissed_Over_Mutations", 1);
@@ -151,6 +154,7 @@ namespace TFTV
                     {
                         geoLevelController.EventSystem.TriggerGeoscapeEvent("NJ_Pissed2", geoscapeEventContext);
                         geoLevelController.EventSystem.SetVariable("BG_NJ_Really_Pissed_Over_Mutations", 1);
+                        DestroyFacilitiesOnPXBases("KEY_BASE_FACILITY_MUTATION_LAB_NAME", __instance.GeoLevel);
                     }
 
                 }
@@ -204,6 +208,127 @@ namespace TFTV
                     TFTVLogger.Error(e);
                 }
             }
+        }
+
+        public static bool CheckForFacility(GeoLevelController level, string facilityName)
+        {
+            try
+            {
+                List<GeoPhoenixBase> phoenixBases = level.PhoenixFaction.Bases.ToList();
+
+                foreach (GeoPhoenixBase pxBase in phoenixBases)
+                {
+
+                    List<GeoPhoenixFacility> facilities = pxBase.Layout.Facilities.ToList();
+
+                    foreach (GeoPhoenixFacility facility in facilities)
+                    {
+                        if (facility.ViewElementDef.DisplayName1.LocalizationKey == facilityName)
+                        {
+                            return true;
+                        }
+                    }
+                }
+                return false;
+            }
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+            throw new InvalidOperationException();
+        }
+
+        public static void DestroyFacilitiesOnPXBases (string nameOfFacility, GeoLevelController level)
+        {
+            try 
+            {        
+               List<GeoPhoenixBase> phoenixBases = level.PhoenixFaction.Bases.ToList();
+
+                foreach(GeoPhoenixBase pxBase in phoenixBases) 
+                {
+                    
+                    List<GeoPhoenixFacility> facilities = pxBase.Layout.Facilities.ToList();
+
+                    foreach(GeoPhoenixFacility facility in facilities) 
+                    { 
+                    if (facility.ViewElementDef.DisplayName1.LocalizationKey == nameOfFacility) 
+                        
+                        { 
+                        facility.DestroyFacility();
+                        
+                        }
+                    
+                    }                             
+                }
+
+            }
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+  
+        }
+
+
+        public static void AttackPhoenixBase(GeoLevelController level)
+        {
+            try
+            {
+                /*
+
+                List<GeoPhoenixFacility> list = GeoVehicle.CurrentSite.GetComponent<GeoPhoenixBase>().Layout.Facilities.Where((GeoPhoenixFacility z) => z.HealthPercentage > 0f).ToList();
+                if (list.Any())
+                {
+                    GeoPhoenixFacility randomElement = list.GetRandomElement();
+                    int damagePercent = _raidManager.RaidsSetup.LargeFlyeirDamage;
+                    if ((GeoVehicle.AircraftType & AircraftType.Small) != 0)
+                    {
+                        damagePercent = _raidManager.RaidsSetup.SmallFlyerDamage;
+                    }
+                    else if ((GeoVehicle.AircraftType & AircraftType.Medium) != 0)
+                    {
+                        damagePercent = _raidManager.RaidsSetup.MediumFlierDamage;
+                    }
+
+                    randomElement.DamageFacility(damagePercent);
+                }
+
+                */
+
+
+
+                List<GeoSite> phoenixBases = level.PhoenixFaction.Sites.ToList();
+               TimeUnit timeUnit = TimeUnit.FromHours(6);
+              
+                foreach (GeoSite site in phoenixBases)
+                {
+                    if (site.Type == GeoSiteType.PhoenixBase)
+                    {
+                        foreach (GeoHaven haven in level.SynedrionFaction.Havens)
+                        {
+                          //  if (Vector3.Distance(site.WorldPosition, haven.Site.WorldPosition) < 1)
+                          //  {
+                                foreach (GeoVehicle vehicle in level.SynedrionFaction.Vehicles.Where(vehicle => vehicle.CurrentSite.Type == GeoSiteType.Haven))
+
+                                {
+                                level.SynedrionFaction.ScheduleAttackOnSite(site, timeUnit);
+                                    level.SynedrionFaction.AttackPhoenixBaseFromVehicle(vehicle, site);
+                                }
+
+//                            }
+                        }
+
+
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
         }
 
     }

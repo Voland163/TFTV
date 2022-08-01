@@ -33,7 +33,7 @@ namespace TFTV
                 // Put Barnabas in the [CHO] picture
                 GeoscapeEventDef CH0Event = Repo.GetAllDefs<GeoscapeEventDef>().FirstOrDefault(ged => ged.name.Equals("PROG_CH0_GeoscapeEventDef"));
                 CH0Event.GeoscapeEventData.Leader = "SY_Barnabas";
-               // CH0Event.GeoscapeEventData.Choices[0].Outcome.TriggerEncounterID = "AlistairOnBarnabas";
+              
 
                 // Get corruption going from the start of the game... eh with intro to SDI
                 GeoscapeEventDef geoEventCH0WIN = Repo.GetAllDefs<GeoscapeEventDef>().FirstOrDefault(ged => ged.name.Equals("PROG_CH0_WIN_GeoscapeEventDef"));
@@ -53,7 +53,7 @@ namespace TFTV
                 ResearchDef ALN_AcheronResearch1 = Repo.GetAllDefs<ResearchDef>().FirstOrDefault(ged => ged.name.Equals("ALN_Acheron1_ResearchDef"));
                 ALN_AcheronResearch1.RevealRequirements.Container[0] = requirementForAlienAcheronResearch;
 
-                // Make CH0 Mission appear when Player completes Acheron Autopsy and Capture and Containment doesn't work atmo
+                // Make CH0 Mission appear when Player completes Acheron Autopsy and Capture and Containment 
                 GeoResearchEventFilterDef PP_ResearchConditionCH0_Miss = Repo.GetAllDefs<GeoResearchEventFilterDef>().FirstOrDefault(ged => ged.name.Equals("E_PROG_CH0_ResearchCompleted [GeoResearchEventFilterDef]"));
 
                 OrEventFilterDef triggerCH1 = Repo.GetAllDefs<OrEventFilterDef>().FirstOrDefault(ged => ged.name.Equals("E_PROG_CH1_MultipleTriggers [OrEventFilterDef]"));

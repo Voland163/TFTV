@@ -5,17 +5,15 @@ using Base.UI;
 using Base.UI.MessageBox;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
-using PhoenixPoint.Common.Entities;
-using PhoenixPoint.Common.Levels.Missions;
+using PhoenixPoint.Common.Entities.Items;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.Interception.Equipments;
 using PhoenixPoint.Geoscape.Entities.Research;
 using PhoenixPoint.Geoscape.Entities.Research.Requirement;
-using PhoenixPoint.Geoscape.Entities.Sites;
+using PhoenixPoint.Geoscape.Entities.Research.Reward;
 using PhoenixPoint.Geoscape.Interception;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
-using PhoenixPoint.Tactical.Levels.FactionObjectives;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -106,8 +104,35 @@ namespace TFTV
                 flaresMDef.AmmoCount = 3;
                 jammerMDef.AmmoCount = 3;
 
+                //This is testing Belial's suggestions, unlocking flares via PX Aerial Warfare, etc.
+                AddItemToManufacturingReward("PX_Flares_GeoVehicleModuleDef",
+                    "PX_AerialWarfare_ResearchDef_ManufactureResearchRewardDef_0", "PX_Aircraft_Flares_ResearchDef");
+                AddItemToManufacturingReward("PX_VirophageGunFenrirRC7_VehicleWeaponDef",
+                    "PX_VirophageWeapons_ResearchDef_ManufactureResearchRewardDef_0", "PX_Aircraft_VirophageGun_ResearchDef");
+                AddItemToManufacturingReward("PX_ElectrolaserThunderboltHC9_VehicleWeaponDef",
+                    "PX_AdvancedLaserTech_ResearchDef_ManufactureResearchRewardDef_0", "PX_Aircraft_Electrolaser_ResearchDef");
+                CreateManufacturingReward("PX_AutocannonBrokkrAC3_VehicleWeaponDef", "SY_SecurityStations_GeoVehicleModuleDef",
+                    "PX_Aircraft_Autocannon_ResearchDef_ManufactureResearchRewardDef_0", "PX_Aircraft_Autocannon_ResearchDef",
+                     "PX_Alien_Spawnery_ResearchDef");
+                AddItemToManufacturingReward("PX_HypersonicMissileHandOfTyr_VehicleWeaponDef",
+                    "PX_AdvancedShreddingTech_ResearchDef_ManufactureResearchRewardDef_0", "PX_Aircraft_HypersonicMissile_ResearchDef");
+                AddItemToManufacturingReward("NJ_TacticalNuclearMissileArmageddonAAM_VehicleWeaponDef",
+                    "NJ_GuidanceTech_ResearchDef_ManufactureResearchRewardDef_0", "NJ_Aircraft_TacticalNuke_ResearchDef");
+                AddItemToManufacturingReward("NJ_FuelTanks_GeoVehicleModuleDef",
+                    "NJ_VehicleTech_ResearchDef_ManufactureResearchRewardDef_0", "NJ_Aircraft_FuelTank_ResearchDef");
+                AddItemToManufacturingReward("NJ_CruiseControl_GeoVehicleModuleDef",
+                    "SYN_Rover_ResearchDef_ManufactureResearchRewardDef_0", "NJ_Aircraft_CruiseControl_ResearchDef");
+                AddItemToManufacturingReward("SY_EMPMissileMedusaAAM_VehicleWeaponDef",
+                    "SYN_NanoTech_ResearchDef_ManufactureResearchRewardDef_0", "SYN_Aircraft_EMPMissile_ResearchDef");
+                AddItemToManufacturingReward("AN_Oracle_GeoVehicleModuleDef",
+                    "ANU_AnuWarfare_ResearchDef_ManufactureResearchRewardDef_0", "ANU_Aircraft_Oracle_ResearchDef");
+                CreateManufacturingReward("AN_ECMJammer_GeoVehicleModuleDef", "AN_MutogCatapultIsharasBane_VehicleWeaponDef",
+                    "ANU_Aircraft_ECMJammer_ResearchDef_ManufactureResearchRewardDef_0", "ANU_Aircraft_ECMJammer_ResearchDef",
+                    "ANU_AdvancedBlimp_ResearchDef");
+
+
                 //Changing ALN Berith research req so that they only appear after certain ODI event
-                EncounterVariableResearchRequirementDef berithEncounterVariable= Repo.GetAllDefs<EncounterVariableResearchRequirementDef>().
+                EncounterVariableResearchRequirementDef berithEncounterVariable = Repo.GetAllDefs<EncounterVariableResearchRequirementDef>().
                    FirstOrDefault(ged => ged.name.Equals("ALN_Medium_Flyer_ResearchDef_EncounterVariableResearchRequirementDef_0"));
                 berithEncounterVariable.VariableName = "BerithAreComing";
 
@@ -140,7 +165,89 @@ namespace TFTV
             }
         }
 
-public static bool checkHammerfall= false;
+        public static void RemoveHardFlyersTemplates()
+        {
+            try
+            { /*
+               AlienFlyerResearchRewardDef aLN_Small_FlyerLoadouts= Repo.GetAllDefs<AlienFlyerResearchRewardDef>().FirstOrDefault(gvw => gvw.name.Equals("ALN_Small_Flyer_ResearchDef_FlyerLoadoutResearchRewardDef_0"));
+                AL_Small1_VehicleLoadout: ALN_AcidSpit_VehicleWeaponDef, ALN_Spikes_VehicleWeaponDef
+                AL_Small2_VehicleLoadout: ALN_NapalmBreath_VehicleWeaponDef, ALN_AcidSpit_VehicleWeaponDef
+                AL_Small3_VehicleLoadout: ALN_Ram_VehicleWeaponDef, ALN_Spikes_VehicleWeaponDef
+
+                AlienFlyerResearchRewardDef aLN_Medium_FlyerLoadouts = Repo.GetAllDefs<AlienFlyerResearchRewardDef>().FirstOrDefault(gvw => gvw.name.Equals("ALN_Medium_Flyer_ResearchDef_FlyerLoadoutResearchRewardDef_0"));
+                AL_Medium1_VehicleLoadout: ALN_AcidSpit_VehicleWeaponDef, ALN_Spikes_VehicleWeaponDef, ALN_Spikes_VehicleWeaponDef, ALN_Tick_VehicleWeaponDef
+                AL_Medium2_VehicleLoadout: ALN_NapalmBreath_VehicleWeaponDef, ALN_NapalmBreath_VehicleWeaponDef, ALN_Ram_VehicleWeaponDef, ALN_Ram_VehicleWeaponDef
+                AL_Medium3_VehicleLoadout: ALN_AcidSpit_VehicleWeaponDef, ALN_Spikes_VehicleWeaponDef, ALN_Tick_VehicleWeaponDef, ALN_Ram_VehicleWeaponDef
+                AL_Small4_VehicleLoadout: ALN_NapalmBreath_VehicleWeaponDef, ALN_Tick_VehicleWeaponDef
+
+                AlienFlyerResearchRewardDef aLN_Large_FlyerLoadouts = Repo.GetAllDefs<AlienFlyerResearchRewardDef>().FirstOrDefault(gvw => gvw.name.Equals("ALN_Large_Flyer_ResearchDef_FlyerLoadoutResearchRewardDef_0"));
+                AL_Large1_VehicleLoadout: ALN_VoidChamber_VehicleWeaponDef, ALN_VoidChamber_VehicleWeaponDef, ALN_NapalmBreath_VehicleWeaponDef, ALN_NapalmBreath_VehicleWeaponDef, ALN_Tick_VehicleWeaponDef, ALN_Tick_VehicleWeaponDef
+                AL_Large2_VehicleLoadout: ALN_AcidSpit_VehicleWeaponDef, ALN_AcidSpit_VehicleWeaponDef, ALN_AcidSpit_VehicleWeaponDef, ALN_Spikes_VehicleWeaponDef, ALN_Spikes_VehicleWeaponDef, ALN_Spikes_VehicleWeaponDef
+                AL_Large3_VehicleLoadout: ALN_NapalmBreath_VehicleWeaponDef, ALN_Tick_VehicleWeaponDef, ALN_Ram_VehicleWeaponDef, ALN_VoidChamber_VehicleWeaponDef, ALN_AcidSpit_VehicleWeaponDef, ALN_Spikes_VehicleWeaponDef
+                AL_Small5_VehicleLoadout: ALN_Ram_VehicleWeaponDef, ALN_VoidChamber_VehicleWeaponDef
+                AL_Medium4_VehicleLoadout: ALN_AcidSpit_VehicleWeaponDef, ALN_Spikes_VehicleWeaponDef, ALN_VoidChamber_VehicleWeaponDef, ALN_Tick_VehicleWeaponDef
+
+                */
+
+
+            }
+
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+        }
+
+        public static void AddItemToManufacturingReward(string module, string reward, string research)
+        {
+
+            try
+            {
+                ItemDef moduleDef = Repo.GetAllDefs<GeoVehicleModuleDef>().FirstOrDefault(gvw => gvw.name.Equals(module));
+                ManufactureResearchRewardDef rewardDef = Repo.GetAllDefs<ManufactureResearchRewardDef>().FirstOrDefault(gvw => gvw.name.Equals(reward));
+                ResearchDef researchDef = Repo.GetAllDefs<ResearchDef>().FirstOrDefault(gvw => gvw.name.Equals(research));
+                List<ItemDef> rewards = rewardDef.Items.ToList();
+                rewards.Add(moduleDef);
+                rewardDef.Items = rewards.ToArray();
+                researchDef.HideInUI = true;
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+        }
+
+        public static void CreateManufacturingReward(string module1, string module2, string reward, string research, string newResearch)
+        {
+            try
+            {
+                ItemDef moduleDef = Repo.GetAllDefs<GeoVehicleModuleDef>().FirstOrDefault(gvw => gvw.name.Equals(module1));
+                ItemDef moduleDef2 = Repo.GetAllDefs<GeoVehicleModuleDef>().FirstOrDefault(gvw => gvw.name.Equals(module2));
+                ManufactureResearchRewardDef rewardDef = Repo.GetAllDefs<ManufactureResearchRewardDef>().FirstOrDefault(gvw => gvw.name.Equals(reward));
+                ResearchDef researchDef = Repo.GetAllDefs<ResearchDef>().FirstOrDefault(gvw => gvw.name.Equals(research));
+                ResearchDef newResearchDef = Repo.GetAllDefs<ResearchDef>().FirstOrDefault(gvw => gvw.name.Equals(newResearch));
+                List<ItemDef> rewards = rewardDef.Items.ToList();
+                rewards.Add(moduleDef2);
+                rewardDef.Items = rewards.ToArray();
+                newResearchDef.Unlocks = researchDef.Unlocks;
+                newResearchDef.Unlocks[0] = rewardDef;
+                researchDef.HideInUI = true;
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+        }
+
+
+
+        public static bool checkHammerfall = false;
 
         [HarmonyPatch(typeof(GeoAlienFaction), "SpawnEgg", new Type[] { typeof(Vector3) })]
 
@@ -159,6 +266,7 @@ public static bool checkHammerfall= false;
                 {
                     if (!checkHammerfall)
                     {
+                      
                         TFTVLogger.Always("Egg Spawned");
 
                         List<GeoHaven> geoHavens = __instance.GeoLevel.AnuFaction.Havens.ToList();
@@ -173,7 +281,7 @@ public static bool checkHammerfall= false;
                             if (Vector3.Distance(haven.Site.WorldPosition, worldPos) <= 1)
 
                             {
-                               // TFTVLogger.Always("This haven " + haven.Site.LocalizedSiteName + "is getting whacked by the asteroid");
+                                // TFTVLogger.Always("This haven " + haven.Site.LocalizedSiteName + "is getting whacked by the asteroid");
                                 if (!haven.Site.HasActiveMission && count < 3 && Vector3.Distance(haven.Site.WorldPosition, worldPos) <= 0.4)
                                 {
                                     GeoscapeLogEntry entry = new GeoscapeLogEntry
@@ -204,8 +312,8 @@ public static bool checkHammerfall= false;
                                     GeoscapeLogEntry entry = new GeoscapeLogEntry
                                     {
                                         Text = new LocalizedTextBind(haven.Site.Owner + " " + haven.Site.LocalizedSiteName + destructionDescription, true)
-                                    };                                 
-                                        typeof(GeoscapeLog).GetMethod("AddEntry", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(__instance.GeoLevel.Log, new object[] { entry, null });
+                                    };
+                                    typeof(GeoscapeLog).GetMethod("AddEntry", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(__instance.GeoLevel.Log, new object[] { entry, null });
                                     checkHammerfall = true;
                                 }
                             }
@@ -375,7 +483,7 @@ public static bool checkHammerfall= false;
             }
         }
 
-
+         
 
         [HarmonyPatch(typeof(InterceptionGameController), "DisengagePlayer")]
         public static class InterceptionGameController_DisengagePlayer_DisengageDestroyRandomWeapon_patch

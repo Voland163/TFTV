@@ -434,7 +434,7 @@ namespace TFTV
                 ExistingResearchRequirementDef PX_AN_acidnadeResearchReq = Helper.CreateDefFromClone(sourceResearchReq, "50EC71CB-D3AD-43E7-866D-69AC818152A9", "PX_AN_AcidNDefReq");
                 ExistingResearchRequirementDef PX_AN_acidGunResearchReq = Helper.CreateDefFromClone(sourceResearchReq, "BF480655-C453-4CC6-92BE-58DFBC24F311", "PX_AN_AcidGDefReq");
 
-                PX_AN_acidnadeResearchReq.ResearchID = "PX_AN_AcidGrenade_WeaponDef_ResearchDef ";
+                PX_AN_acidnadeResearchReq.ResearchID = "PX_AN_AcidGrenade_WeaponDef_ResearchDef";
                 PX_AN_acidGunResearchReq.ResearchID = "PX_AN_AcidHandGun_WeaponDef_ResearchDef";
 
                 ReseachRequirementDefOpContainer[] defOpContainerAcidWep = ANacid.RevealRequirements.Container;
@@ -504,12 +504,70 @@ namespace TFTV
                     }
                 }
 
+                AdjustCosts();
+            }
+
+            
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+        public static void AdjustCosts()
+        {
+            try
+            {
+                AdjustRPCostOfReverseEngineering("PX_SY_Laser", 300);
+                AdjustRPCostOfReverseEngineering("PX_AN_Mace", 300);
+                AdjustRPCostOfReverseEngineering("PX_AN_Berserker",100);
+                AdjustRPCostOfReverseEngineering("PX_AN_Priest",500);
+                AdjustRPCostOfReverseEngineering("PX_AN_Assault",100);
+                AdjustRPCostOfReverseEngineering("PX_NJ_Gauss",200);
+                AdjustRPCostOfReverseEngineering("PX_NJ_IncindieryGrenade",400);
+                AdjustRPCostOfReverseEngineering("PX_NJ_PRCR_AssaultRifle", 600);
+                AdjustRPCostOfReverseEngineering("PX_NJ_PRCRTechTurretItem",800);
+                AdjustRPCostOfReverseEngineering("PX_NJ_TechTurretItem",250);
+                AdjustRPCostOfReverseEngineering("PX_NJ_Technician",250);
+                AdjustRPCostOfReverseEngineering("PX_SY_SonicGrenade_WeaponDef_ResearchDef",1300);
+                AdjustRPCostOfReverseEngineering("PX_SY_Crossbow",800);
+                AdjustRPCostOfReverseEngineering("PX_SY_Infiltrator",800);
+                AdjustRPCostOfReverseEngineering("PX_NJ_Sniper",150);
+                AdjustRPCostOfReverseEngineering("PX_NJ_Assault",150);
+                AdjustRPCostOfReverseEngineering("PX_NJ_Heavy",150);
+                AdjustRPCostOfReverseEngineering("PX_SY_Sniper",150);
+                AdjustRPCostOfReverseEngineering("PX_SY_Assault",150);
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+
+
+        }
+
+        public static void AdjustRPCostOfReverseEngineering(string keyword, int cost) 
+        {
+            try 
+            {
+                foreach (ResearchDef research in Repo.GetAllDefs<ResearchDef>()) 
+                {
+                    if (research.Id.Contains(keyword)) 
+                    { 
+                    research.ResearchCost=cost;
+                    
+                    }              
+                }
             }
 
             catch (Exception e)
             {
                 TFTVLogger.Error(e);
             }
+
         }
 
     }

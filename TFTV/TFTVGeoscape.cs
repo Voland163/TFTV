@@ -44,7 +44,8 @@ namespace TFTV
 			TFTVUmbra.CheckForUmbraResearch(gsController);
 			TFTVUmbra.SetUmbraEvolution(gsController);
 			TFTVThirdAct.SetBehemothOnRampageMod(gsController);
-			
+			TFTVChangesToDLC3Events.ChangeHavenDeploymentDefense(gsController);
+						
 		}
 		/// <summary>
 		/// Called when Geoscape ends.

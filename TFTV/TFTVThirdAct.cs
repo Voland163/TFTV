@@ -1,5 +1,8 @@
-﻿using HarmonyLib;
+﻿using Base.Core;
+using HarmonyLib;
+using PhoenixPoint.Common.Core;
 using PhoenixPoint.Geoscape.Entities;
+using PhoenixPoint.Geoscape.Entities.Missions;
 using PhoenixPoint.Geoscape.Levels;
 using System;
 using System.Reflection;
@@ -9,6 +12,7 @@ namespace TFTV
     internal class TFTVThirdAct
     {
         //private static readonly DefRepository Repo = TFTVMain.Repo;
+        public static SharedData sharedData = GameUtl.GameComponent<SharedData>();
 
         [HarmonyPatch(typeof(GeoBehemothActor), "StartTravel")]
         public static class GeoBehemothActor_ThirdAct_Patch
@@ -35,7 +39,6 @@ namespace TFTV
 
             }
         }
-
 
         public static void SetBehemothOnRampageMod(GeoLevelController geoLevel)
 
