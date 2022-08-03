@@ -94,6 +94,10 @@
     <Compile Include="TFTVVoidOmens.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="BG_Hammerfall_impact.jpg" />
+    <Content Include="BG_Hammerfall_impact2.jpg" />
+    <Content Include="Node.jpg" />
+    <Content Include="NodeAlt.jpg" />
     <None Include="meta.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

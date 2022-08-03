@@ -28,6 +28,7 @@ namespace TFTV
                 GeoscapeEventDef alistairOnSymes2 = TFTVCommonMethods.CreateNewEvent("AlistairOnSymes2", "PROG_PX1_WIN_TITLE", "KEY_ALISTAIRONSYMES_2_DESCRIPTION", null);
                 alistairOnSymes2.GeoscapeEventData.Flavour = "AntarcticSite_Victory";
 
+
                 AlistairRoadsEvent();
                 InjectOlenaKimLines();
 
@@ -62,7 +63,10 @@ namespace TFTV
                 GeoscapeEventDef olenaOnSymes = TFTVCommonMethods.CreateNewEvent("OlenaOnSymes", "PROG_PX1_WIN_TITLE", "KEY_OLENAONSYMES_DESCRIPTION", null);
                 //Olena about ending 
                 GeoscapeEventDef olenaOnEnding = TFTVCommonMethods.CreateNewEvent("OlenaOnEnding", "KEY_ALISTAIR_ROADS_TITLE", "KEY_OLENAONENDING_DESCRIPTION", null);
-                
+                //Olena about Bionics Lab sabotage
+                GeoscapeEventDef olenaOnBionicsLabSabotage = TFTVCommonMethods.CreateNewEvent("OlenaOnBionicsLabSabotage", "ANU_REALLY_PISSED_BIONICS_TITLE", "ANU_REALLY_PISSED_BIONICS_CHOICE_0_OUTCOME", null);
+                //Olena about Mutations Lab sabotage
+                GeoscapeEventDef olenaOnMutationsLabSabotage = TFTVCommonMethods.CreateNewEvent("OlenaOnMutationsLabSabotage", "NJ_REALLY_PISSED_MUTATIONS_TITLE", "NJ_REALLY_PISSED_MUTATIONS_CHOICE_0_OUTCOME", null);
 
             }
             catch (Exception e)
@@ -288,10 +292,23 @@ namespace TFTV
                     {
                         __instance.TriggerGeoscapeEvent("OlenaOnSymes", context);
                     }
-                    if(eventId== "PROG_CH2_WIN") 
+
+                    if (eventId == "Anu_Pissed2")
+                    {
+                        __instance.TriggerGeoscapeEvent("OlenaOnBionicsLabSabotage", context);
+                    }
+
+                    if (eventId == "NJ_Pissed2")
+                    {
+                        __instance.TriggerGeoscapeEvent("OlenaOnMutationsLabSabotage", context);
+                    }
+
+                    if (eventId== "PROG_CH2_WIN") 
                     {
                         TFTVChangesToDLC3Events.ActivateFS3Event(context.Level);
                     }
+
+
                 }
 
                 catch (Exception e)

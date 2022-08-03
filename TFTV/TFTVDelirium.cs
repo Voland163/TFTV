@@ -11,6 +11,7 @@ using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.Characters;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.UI;
+using PhoenixPoint.Common.View.ViewModules;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.View.DataObjects;
 using PhoenixPoint.Geoscape.View.ViewControllers.AugmentationScreen;
@@ -304,30 +305,228 @@ namespace TFTV
             }
         }
 
-        
+
         //This method changes how WP are displayed in the Edit personnel screen, to show effects of Delirium on WP
+
+
 
         [HarmonyPatch(typeof(UIModuleCharacterProgression), "GetStarBarValuesDisplayString")]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051")]
         internal static class BG_UIModuleCharacterProgression_RefreshStatPanel_patch
         {
 
-            private static void Postfix(GeoCharacter ____character, ref string __result, CharacterBaseAttribute attribute, int currentAttributeValue)
+            private static void Postfix(GeoCharacter ____character, ref string __result, CharacterBaseAttribute attribute, int currentAttributeValue, UIModuleCharacterProgression __instance)
             {
                 try
-                {               
-                    if (____character.CharacterStats.Corruption > CalculateStaminaEffectOnDelirium(____character) && attribute.Equals(CharacterBaseAttribute.Will))
+                {
+                    float bonusSpeed = 0;
+                    float bonusWillpower = 0;
+                    float bonusStrength = 0;
+
+                    foreach (ICommonItem armorItem in ____character.ArmourItems)
                     {
-                        __result = $"<color=#da5be3>{currentAttributeValue - ____character.CharacterStats.Corruption.Value + CalculateStaminaEffectOnDelirium(____character)}</color>" + $"({currentAttributeValue}) / " +
-                        $"{____character.Progression.GetMaxBaseStat(CharacterBaseAttribute.Will)}";
+                        TacticalItemDef tacticalItemDef = armorItem.ItemDef as TacticalItemDef;
+                        if (!(tacticalItemDef == null) && !(tacticalItemDef.BodyPartAspectDef == null))
+                        {
+                            bonusSpeed += tacticalItemDef.BodyPartAspectDef.Speed;
+                            bonusWillpower += tacticalItemDef.BodyPartAspectDef.WillPower;
+                            bonusStrength += tacticalItemDef.BodyPartAspectDef.Endurance;
+                        }
                     }
+
+                    if (____character.Progression != null)
+                    {
+                        foreach (TacticalAbilityDef ability in ____character.Progression.Abilities)
+                        {
+                            PassiveModifierAbilityDef passiveModifierAbilityDef = ability as PassiveModifierAbilityDef;
+                            if (!(passiveModifierAbilityDef == null))
+                            {
+                                ItemStatModification[] statModifications = passiveModifierAbilityDef.StatModifications;
+                                foreach (ItemStatModification statModifier in statModifications)
+                                {
+                                    if (statModifier.TargetStat == StatModificationTarget.Endurance)
+                                    {
+                                        bonusStrength += statModifier.Value;
+                                    }
+                                    else if (statModifier.TargetStat == StatModificationTarget.Willpower)
+                                    {
+                                        bonusWillpower += statModifier.Value;
+                                    }
+                                    else if (statModifier.TargetStat == StatModificationTarget.Speed)
+                                    {
+                                        bonusSpeed += statModifier.Value;
+                                    }
+
+                                }
+                            }
+                        }
+                    }
+
+                    foreach (PassiveModifierAbilityDef passiveModifier in ____character.PassiveModifiers)
+                    {
+                        ItemStatModification[] statModifications = passiveModifier.StatModifications;
+                        foreach (ItemStatModification statModifier2 in statModifications)
+                        {
+                            if (statModifier2.TargetStat == StatModificationTarget.Endurance)
+                            {
+                                bonusStrength += statModifier2.Value;
+                            }
+                            else if (statModifier2.TargetStat == StatModificationTarget.Willpower)
+                            {
+                                bonusWillpower += statModifier2.Value;
+                            }
+                            else if (statModifier2.TargetStat == StatModificationTarget.Speed)
+                            {
+                                bonusSpeed += statModifier2.Value;
+                            }
+
+                        }
+                    }
+
+                    if (attribute.Equals(CharacterBaseAttribute.Strength))
+                    {
+                        if (bonusStrength > 0)
+                        {
+                            __result = $"{currentAttributeValue} / {____character.Progression.GetMaxBaseStat(attribute)}" +
+                                    $" (<color=#50c878>{____character.Strength.Value.EndValueInt}</color>)";
+                        }
+                        else if (bonusStrength < 0)
+                        {
+                            __result = $"{currentAttributeValue} / {____character.Progression.GetMaxBaseStat(attribute)}" +
+                                    $" (<color=#cc0000>{____character.Strength.Value.EndValueInt}</color>)";
+                        }
+                        else
+                        {
+                            __result = $"{currentAttributeValue} / {____character.Progression.GetMaxBaseStat(attribute)}";
+                        }
+
+                    }
+
+
+                    if (attribute.Equals(CharacterBaseAttribute.Speed))
+                    {
+
+                        if (bonusSpeed > 0)
+                        {
+                            __result = $"{currentAttributeValue} / {____character.Progression.GetMaxBaseStat(attribute)}" +
+                                    $" (<color=#50c878>{currentAttributeValue + bonusSpeed}</color>)";
+                        }
+                        else if (bonusSpeed < 0)
+                        {
+                            __result = $"{currentAttributeValue} / {____character.Progression.GetMaxBaseStat(attribute)}" +
+                                    $" (<color=#cc0000>{currentAttributeValue + bonusSpeed}</color>)";
+                        }
+                        else
+                        {
+                            __result = $"{currentAttributeValue} / {____character.Progression.GetMaxBaseStat(attribute)}";
+                        }
+                    }
+
+                    if (attribute.Equals(CharacterBaseAttribute.Will))
+                    {
+                        if (____character.CharacterStats.Corruption > CalculateStaminaEffectOnDelirium(____character))
+                        {
+                            __result = $"{currentAttributeValue} / {____character.Progression.GetMaxBaseStat(CharacterBaseAttribute.Will)}" +
+                                $"<color=#da5be3> ({____character.Willpower.Value.EndValue - ____character.CharacterStats.Corruption.Value + CalculateStaminaEffectOnDelirium(____character)}</color>)";
+                        }
+                        else
+                        {
+                            if (bonusWillpower > 0)
+                            {
+
+                                __result = $"{currentAttributeValue} / {____character.Progression.GetMaxBaseStat(attribute)}" +
+                                            $" (<color=#50c878>{____character.Willpower.Value.EndValueInt}</color>)";
+
+                            }
+                            else if (bonusWillpower < 0)
+                            {
+                                __result = $"{currentAttributeValue} / {____character.Progression.GetMaxBaseStat(attribute)}" +
+                                        $" (<color=#cc0000>{____character.Willpower.Value.EndValueInt}</color>)";
+                            }
+                            else
+                            {
+                                __result = $"{currentAttributeValue} / {____character.Progression.GetMaxBaseStat(attribute)}";
+                            }
+                        }
+                    }
+
                 }
                 catch (Exception e)
                 {
                     TFTVLogger.Error(e);
                 }
+
+            }
+
+        }
+        public static UIModuleCharacterProgression hookToProgressionModule = null;
+
+        [HarmonyPatch(typeof(UIModuleCharacterProgression), "Awake")]
+
+        internal static class UIModuleCharacterProgression_Awake_patch
+
+        {
+            public static void Postfix(UIModuleCharacterProgression __instance)
+            {
+                try
+                {
+                    hookToProgressionModule = __instance;
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+
             }
         }
+
+
+
+        [HarmonyPatch(typeof(UIModuleSoldierEquip), "RefreshPrimarySoldierWeight")]
+        internal static class UIModuleSoldierEquip_RefreshWeightSlider_Patch
+        {
+            private static void Postfix()
+            {
+                try
+                {
+                   
+                    if (hookToProgressionModule != null)
+                    {
+                        TFTVLogger.Always("If passed");
+                        //  hookToProgressionModule.RefreshStats();
+                        hookToProgressionModule.SetStatusesPanel();
+                        hookToProgressionModule.RefreshStatPanel();
+                        hookToProgressionModule.StatChanged();
+
+                        /*  CharacterBaseAttribute speed = CharacterBaseAttribute.Speed;
+                          CharacterBaseAttribute willpower = CharacterBaseAttribute.Will;
+                          CharacterBaseAttribute strength = CharacterBaseAttribute.Strength;*/
+
+                        /*  AccessTools.Method(typeof(UIModuleCharacterProgression), "ChangeCharacterStat").Invoke(hookToProgressionModule, new object[] {speed, null, null, false   });
+                         */
+                        /*
+
+                        AccessTools.Method(typeof(UIModuleCharacterProgression), "SetMainStatPanel").Invoke(hookToProgressionModule, new object[] {});
+                        AccessTools.Method(typeof(UIModuleCharacterProgression), "SetCharacterClass").Invoke(hookToProgressionModule, new object[] { });
+                        AccessTools.Method(typeof(UIModuleCharacterProgression), "SetAbilityTracks").Invoke(hookToProgressionModule, new object[] { });*/
+
+
+
+                    }
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+
+            }
+
+
+        }
+
+
+
 
         //This changes display of Delirium bar in personnel edit screen to show current Delirium value vs max delirium value the character can have
         // taking into account ODI level and bionics
@@ -563,19 +762,48 @@ namespace TFTV
 
                         if (stamina == 40)
                         {
-                            wpReduction = base_TacticalActor.CharacterStats.Corruption - 4;
+                            if (base_TacticalActor.CharacterStats.Corruption >= 4)
+                            {
+                                wpReduction = base_TacticalActor.CharacterStats.Corruption - 4;
+                            }
+                            else
+                            {
+                                wpReduction = 0;
+                            }
                         }
                         else if (stamina >= 30 && stamina < 40)
                         {
-                            wpReduction = base_TacticalActor.CharacterStats.Corruption - 3;
+                            if (base_TacticalActor.CharacterStats.Corruption >= 3)
+                            {
+                                wpReduction = base_TacticalActor.CharacterStats.Corruption - 3;
+                            }
+                            else
+                            {
+                                wpReduction = 0;
+                            }
                         }
                         else if (stamina >= 20 && stamina < 30)
                         {
-                            wpReduction = base_TacticalActor.CharacterStats.Corruption - 2;
+                            if (base_TacticalActor.CharacterStats.Corruption >= 2)
+                            {
+                                wpReduction = base_TacticalActor.CharacterStats.Corruption - 2;
+                            }
+                            else
+                            {
+                                wpReduction = 0;
+                            }
                         }
                         else if (stamina >= 10 && stamina < 20)
                         {
-                            wpReduction = base_TacticalActor.CharacterStats.Corruption - 1;
+                            if (base_TacticalActor.CharacterStats.Corruption >= 1)
+                            {
+                                wpReduction = base_TacticalActor.CharacterStats.Corruption - 1;
+                            }
+                            else
+                            {
+                                wpReduction = 0;
+                            }
+
                         }
                     }
 
