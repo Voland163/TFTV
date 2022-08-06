@@ -1,5 +1,4 @@
 ﻿using Base.Defs;
-using Base.Eventus.Filters;
 using Base.UI;
 using HarmonyLib;
 using PhoenixPoint.Common.UI;
@@ -7,8 +6,8 @@ using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.Research;
 using PhoenixPoint.Geoscape.Events;
 using PhoenixPoint.Geoscape.Events.Eventus;
-using PhoenixPoint.Geoscape.Events.Eventus.Filters;
 using PhoenixPoint.Geoscape.Levels;
+using PhoenixPoint.Geoscape.View;
 using System;
 using System.Linq;
 using System.Reflection;
@@ -25,7 +24,7 @@ namespace TFTV
         {
             try
             {
-                if (__instance.Fatigue != null && __instance.Fatigue.Stamina > 0 && __instance.TemplateDef.IsHuman && __instance.TemplateDef.IsMutoid)
+                if (__instance.Fatigue != null && __instance.Fatigue.Stamina > 0 && (__instance.TemplateDef.IsHuman || __instance.TemplateDef.IsMutoid))
                 {
                     __instance.Fatigue.Stamina.SetToMin();
                 }
@@ -132,11 +131,14 @@ namespace TFTV
                 ResearchDef researchDef = Helper.CreateDefFromClone(sourceResearchDef, gUID, id);
                 ResearchDef secondarySourceResearchDef = Repo.GetAllDefs<ResearchDef>().FirstOrDefault(ged => ged.name.Equals("PX_AlienGoo_ResearchDef"));
 
-
+                ResearchDbDef researchDB = Repo.GetAllDefs<ResearchDbDef>().FirstOrDefault(ged => ged.name.Equals("pp_ResearchDB"));
+                researchDef.Id = id;
+                researchDef.InitialStates[0].State = ResearchState.Hidden;
                 researchDef.ResearchCost = cost;
                 researchDef.ViewElementDef = researchViewElementDef;
                 researchDef.Unlocks = secondarySourceResearchDef.Unlocks;
                 researchDef.Tags = secondarySourceResearchDef.Tags;
+                researchDB.Researches.Add(researchDef);
                 return researchDef;
             }
 
@@ -159,7 +161,7 @@ namespace TFTV
                 researchViewDef.RevealText.LocalizationKey = reveal;
                 researchViewDef.UnlockText.LocalizationKey = unlock;
                 researchViewDef.CompleteText.LocalizationKey = complete;
-                return researchViewDef; 
+                return researchViewDef;
             }
 
             catch (Exception e)
@@ -180,15 +182,20 @@ namespace TFTV
 
             public static void Postfix(GeoSite __instance)
             {
-                try 
-                { 
-                    __instance.RevealSite(__instance.GeoLevel.PhoenixFaction);
-                    GeoscapeLogEntry entry = new GeoscapeLogEntry
-                    {
-                        Text = new LocalizedTextBind(__instance.Owner + " " + __instance.LocalizedSiteName + " is broadcasting an SOS, they are under attack!", true)
-                    };
-                    typeof(GeoscapeLog).GetMethod("AddEntry", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(__instance.GeoLevel.Log, new object[] { entry, null });
-
+                try
+                {
+                   // if (__instance.GetVisible(__instance.GeoLevel.PhoenixFaction)==false)
+                   // {
+                        __instance.RevealSite(__instance.GeoLevel.PhoenixFaction);
+                        
+                        GeoscapeLogEntry entry = new GeoscapeLogEntry
+                        {
+                            Text = new LocalizedTextBind(__instance.Owner + " " + __instance.LocalizedSiteName + " is broadcasting an SOS, they are under attack!", true)
+                        };
+                        typeof(GeoscapeLog).GetMethod("AddEntry", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(__instance.GeoLevel.Log, new object[] { entry, null });                        
+                 
+                    __instance.GeoLevel.View.SetGamePauseState(true);
+                  //  }
                 }
                 catch (Exception e)
                 {

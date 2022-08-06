@@ -88,7 +88,7 @@ namespace TFTV
 
                 ProgAnuPact.GeoscapeEventData.Choices[0].Outcome.Diplomacy.Add(TFTVCommonMethods.GenerateDiplomacyOutcome(Synedrion, PhoenixPoint, -15));
                 ProgAnuPact.GeoscapeEventData.Choices[0].Outcome.Diplomacy.Add(TFTVCommonMethods.GenerateDiplomacyOutcome(NewJericho, PhoenixPoint, -15));
-                TFTVCommonMethods.GenerateGeoEventChoice(ProgAnuPact, "PROG_AN2_CHOICE_0_TEXT", "PROG_AN2_CHOICE_0_OUTCOME_GENERAL");
+                TFTVCommonMethods.GenerateGeoEventChoice(ProgAnuPact, "PROG_AN4_CHOICE_1_TEXT", "PROG_AN4_CHOICE_1_OUTCOME_GENERAL");
                 ProgAnuPact.GeoscapeEventData.Choices[1].Outcome.Diplomacy.Add(TFTVCommonMethods.GenerateDiplomacyOutcome(Anu, PhoenixPoint, -6));
                 ProgAnuPact.GeoscapeEventData.Choices[1].Outcome.ReEneableEvent = true;
                 ProgAnuPact.GeoscapeEventData.Choices[1].Outcome.VariablesChange.Add(TFTVCommonMethods.GenerateVariableChange("RefusedAnu", 1, true));
@@ -96,10 +96,9 @@ namespace TFTV
                 ProgAnuAlliance.GeoscapeEventData.Choices[0].Outcome.Diplomacy.Add(TFTVCommonMethods.GenerateDiplomacyOutcome(NewJericho, PhoenixPoint, -10));
                 ProgAnuAlliance.GeoscapeEventData.Choices[1].Outcome.Diplomacy.Add(TFTVCommonMethods.GenerateDiplomacyOutcome(NewJericho, PhoenixPoint, -20));
                 ProgAnuAlliance.GeoscapeEventData.Choices[1].Outcome.Diplomacy.Add(TFTVCommonMethods.GenerateDiplomacyOutcome(Synedrion, PhoenixPoint, -15));
-                TFTVCommonMethods.GenerateGeoEventChoice(ProgAnuAlliance, "PROG_AN2_CHOICE_0_TEXT", "PROG_AN2_CHOICE_0_OUTCOME_GENERAL");
+                TFTVCommonMethods.GenerateGeoEventChoice(ProgAnuAlliance, "PROG_AN4_CHOICE_1_TEXT", "PROG_AN4_CHOICE_1_OUTCOME_GENERAL");
                 ProgAnuAlliance.GeoscapeEventData.Choices[2].Outcome.Diplomacy.Add(TFTVCommonMethods.GenerateDiplomacyOutcome(Anu, PhoenixPoint, -8));
                 ProgAnuAlliance.GeoscapeEventData.Choices[2].Outcome.VariablesChange.Add(TFTVCommonMethods.GenerateVariableChange("RefusedAnu", 1, true));
-
 
                 //Synedrion
                 //Supportive Polyphonic
@@ -183,10 +182,7 @@ namespace TFTV
             {
                 try
                 {
- 
-                    TFTVLogger.Always("Diplomacy changed");
-                    CheckPostponedFactionMissions(__instance, relation, newValue);
-
+                     CheckPostponedFactionMissions(__instance, relation, newValue);
                 }
                 catch (Exception e)
                 {

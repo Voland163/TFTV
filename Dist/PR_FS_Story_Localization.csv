@@ -23,7 +23,8 @@ PROG_FS0_TEXT_GENERAL_0,Text,,"<i>""We have received data from M-AI-Core 12B/735
 
 One of our Manticores is back online? After all this time...",,,,,,,,
 PROG_FS0_TITLE,Text,,A Sleeping Beauty Awakes,,,,,,,,
-PROG_FS10_CHOICE_0_TEXT,Text,,"If NJ couldn't stop it, we have nothing that can put a dent on this thing. All we can do is intercept individual flyers as we work towards a solution.",,,,,,,,
+PROG_FS10_CHOICE_0_OUTCOME_GENERAL,Text,,"If NJ couldn't stop it, we have nothing that can put a dent on this thing. All we can do is intercept individual flyers as we work towards a solution.",,,,,,,,
+PROG_FS10_CHOICE_0_TEXT,Text,,OK. What do you make of it Alistair?,,,,,,,,
 PROG_FS10_TEXT_GENERAL_0,Text,,"Using reports from public feeds and satellite imagery we can now piece together that New Jericho launched a massive rocket attack on the Hammerfall crater, presumably the “Operation Mongoose” that West had been planning. The strike force was in turn obliterated by a towering Pandoran monstrosity, surrounded by a myriad of flying creatures.
 
 The chronology of events and their causal relationship remains unclear, with some within Synedrion blaming NJ for provoking the Pandoran attack and NJ claiming that they merely acted in self defense.
@@ -45,7 +46,7 @@ PROG_FS1_MISS_CHOICE_0_TEXT,Text,,"Doesn't sound too difficult . Let's do it, an
 PROG_FS1_MISS_CHOICE_1_TEXT,Text,,We will be back.,,,,,,,,
 PROG_FS1_MISS_TEXT_GENERAL_0,Text,,"With the help of a few like-minded individuals and AIs, Eileen has assembled prototypes of aerial weapons and equipment that can be fitted on the Manticore that she recovered near the Hammerfall Crater. The prototypes are based on old Phoenix Project designs from a bygone time, squirreled away in the data banks of Sartorius, an avionics obsessed AI.
 
-As a result of Sartorius' casual proselytizing on the rights of artificial persons, M-AI-Core 12B/735 has renamed herself ""Aurora"".
+As a result of Sartorius' casual proselytizing of the rights of artificial persons, M-AI-Core 12B/735 has renamed herself ""Aurora"".
 
 Eileen brings up a holo display of [HavenName]. <i>""This is where they are storing the egg I brought. Meet me there in fifteen, I will lure away Pete, who is not much of a guard. And a terrible poet. Remember: no one dies, the egg gets destroyed. In the meantime, my friends will finish refitting the Aurora”</i>",,,,,,,,
 PROG_FS1_MISS_TITLE,Text,,The Hatching,,,,,,,,
@@ -80,7 +81,7 @@ The chronology of events and their causal relationship remains unclear, with som
 The Disciples of Anu insist that the emergence of what they call the “Behemoth” and the “Festering Skies” was preordained and inevitable.",,,,,,,,
 PROG_FS1_WIN_TITLE,Text,,Homecoming,,,,,,,,
 KEY_DLC3_MOUNTEGG_NAME,Text,,HAMMERFALL CRATER,,,,,,,,
-KEY_DLC3_TAC_HINT_EILEEN_STORY_WIN_DESCRIPTION,Text,,"""Is everybody on board? I'm afraid we can't afford to stay any longer. This was my home, until I brought that fragging egg here... Maybe if you had come earlier... forget it, I can't lay this on you. It's not your fault. Prepare for takeoff!""",,,,,,,,
+KEY_DLC3_TAC_HINT_EILEEN_STORY_WIN_DESCRIPTION,Text,,"""Is everybody on board? I'm afraid we can't stay any longer. This was my home, until I brought that fragging egg here... Maybe if you had come earlier... forget it, I can't lay this on you. It's not your fault. Prepare for takeoff!""",,,,,,,,
 KEY_DLC3_TAC_HINT_MANTICORE_RUN_HURRY_DESCRIPTION,Text,,"""Phoenix? I'm almost done here, everyone else is... gone. More crabmen are approaching from all sides, so hurry up! I'm waiting for you inside the Manticore.""",,,,,,,,
 KEY_DLC3_TAC_HINT_MANTICORE_RUN_START_NAME,Text,,AURORA,,,,,,,,
 KEY_DLC3_TAC_HINT_MANTICORE_RUN_START_DESCRIPTION,Text,,"Your only chance is to reach the armed Manticore, Aurora, that Eileen and her friends were working on and hope that they had time to finish the job! Move, move, move!",,,,,,,,
@@ -110,15 +111,20 @@ Weakness: It seems to have a one-sided telepathic connection with its victims. O
 KEY_FS_PX_ALIEN_CORRUPTION_NODE_RESEARCHDEF_NAME,Text,,Node Autopsy,,,,,,,,
 KEY_FS_PX_ALIEN_CORRUPTION_NODE_RESEARCHDEF_UNLOCK,Text,,"Specimen: NODE
 A species that looks utterly alien, even compared to other highly mutated Pandorans. We must commence study as soon as possible to understand how the infestation occurred.",,,,,,,,
-PROG_FS20_TEXT_GENERAL_0,Text,,"It is clear that the Behemoth and the swarm of flying creatures arose out of the interaction between the asteroid and the Pandoran ecosystem. We speculate that the asteroid was carrying organic molecules that were incorporated into the Pandoravirus through a similar RDNA process as that suffered by Earth lifeforms.
+PROG_FS20_TEXT_GENERAL_0,Text,,"So... this Behemoth has just destroyed a haven. However, we have to think of it as a highly resilient colony of pathogens, or a self-propelled ecosystem of extremophiles, rather than as a <i>Kaiju</i>.  
 
-We have to treat the Behemoth as a viral strain, rather than a <i>kanji</i>. We need some sort of antibodies and a method of delivering them. We will come up with something, as we always do. But we must keep shooting down the flying cephalopods in the meantime.",,,,,,,,
-PROG_FS20_TITLE,Text,,Tribulations,,,,,,,,
-PROG_FS20_CHOICE_0_TEXT,Text,,Ask the Disciples of Anu for help,,,,,,,,
-PROG_FS20_CHOICE_1_TEXT,Text,,Ask New Jericho for help,,,,,,,,
-PROG_FS20_CHOICE_2_TEXT,Text,,Ask Synedrion for help,,,,,,,,
-PROG_FS20_CHOICE_3_TEXT,Text,,Try to convince all the factions to pull together,,,,,,,,
-PROG_FS20_CHOICE_0_OUTCOME_TEXT,Text,,,,,,,,,,
-PROG_FS20_CHOICE_1_OUTCOME_TEXT,Text,,,,,,,,,,
-PROG_FS20_CHOICE_2_OUTCOME_TEXT,Text,,,,,,,,,,
-PROG_FS20_CHOICE_3_OUTCOME_TEXT,Text,,,,,,,,,,
+We need the right antibodies... or more like the right biological WMD... and a method of delivering it. We will come up with something, as we always do. But you must keep shooting down the flying... cephalopods?... in the meantime.",,,,,,,,
+PROG_FS20_TITLE,Text,,Trials and Tribulations,,,,,,,,
+PROG_FS3_TEXT_GENERAL_0,Text,,"<i>""To keep the Synedrion dream alive, we must keep our people alive. Join the volunteer militia today! Service guarantees basic alimentary allocation."" </i>
+
+- Public notice on a Synedrion feed
+
+<i>""We are proceeding with total mobilization as per West's orders.
+The war against the Pandoravirus is entering its most active phase. The number and intensity of attacks on our havens is staggering. We need to shift all available resources towards defensive measures, there is no other choice.""</i>
+
+- From an intercept of New Jericho comms
+
+<i>""The Disciples have accelerated their directed evolution program... They are injecting the Mutagens into the slum dwellers, breeding an army to withstand the Pandoran hordes... Personal note: I can't tell if the Anu are being guided by their Scriptures or pre-collapse mass entertainment.""</i>
+
+- Excerpts from intelligence report 634b/47/AA.",,,,,,,,
+PROG_FS3_TITLE,Text,,The Falling Veil,,,,,,,,

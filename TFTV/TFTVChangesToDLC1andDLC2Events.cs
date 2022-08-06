@@ -20,6 +20,8 @@ namespace TFTV
             try
             {
                 MakeLOTAAlternativeToSymes();
+               // TFTVRevenant.CreateRevenantTemplate("Scylla1_FrenzyMistSmasherAgileSpawner_AlienMutationVariationDef");
+
 
                 //ID all the factions for later
                 GeoFactionDef PhoenixPoint = Repo.GetAllDefs<GeoFactionDef>().FirstOrDefault(ged => ged.name.Equals("Phoenix_GeoPhoenixFactionDef"));

@@ -97,7 +97,7 @@ namespace TFTV
                 hibernationModuleResearch.Faction = PhoenixPoint;
                 hibernationModuleResearch.RevealRequirements = sourcePX_SDI_ResearchDef.RevealRequirements;
                 hibernationModuleResearch.ResearchCost = 100;
-                hibernationmodule.GeoVehicleModuleBonusValue = 0.35f;
+                
 
             }
             catch (Exception e)
@@ -108,14 +108,24 @@ namespace TFTV
         }
 
 
-        public static void Disable_HibernationModuleStaminaRecuperation()
+        public static void HibernationModuleStaminaRecuperation()
         {
 
             try
             {
+                TFTVConfig config = TFTVMain.Main.Config;
                 GeoVehicleModuleDef hibernationmodule = Repo.GetAllDefs<GeoVehicleModuleDef>().FirstOrDefault(ged => ged.name.Equals("SY_HibernationPods_GeoVehicleModuleDef"));
-                hibernationmodule.GeoVehicleModuleBonusValue = 0;
 
+                if (config.ActivateStaminaRecuperatonModule) 
+                { 
+                hibernationmodule.GeoVehicleModuleBonusValue = 0.35f;
+                
+                }
+                else 
+                { 
+                hibernationmodule.GeoVehicleModuleBonusValue = 0;
+                }
+                     
             }
 
             catch (Exception e)

@@ -212,12 +212,12 @@ namespace TFTV
 
                                         {
                                             int roll = UnityEngine.Random.Range(0, 100);
-                                            if (TFTVVoidOmens.VoidOmen15Active && roll <= totalDeliriumOnMission * 2)
+                                            if (TFTVVoidOmens.VoidOmen15Active && roll <= totalDeliriumOnMission)
                                             {
                                                 TFTVLogger.Always("This Arthron here " + actor + ", got past the crabtag and the blecher ability check!");
                                                 AddArthronUmbraDeathBelcherAbility(actor);
                                             }
-                                            else if (!TFTVVoidOmens.VoidOmen15Active && roll <= totalDeliriumOnMission)
+                                            else if (!TFTVVoidOmens.VoidOmen15Active && roll <= totalDeliriumOnMission/2)
                                             {
                                                 TFTVLogger.Always("This Arthron here " + actor + ", got past the crabtag and the blecher ability check!");
                                                 AddArthronUmbraDeathBelcherAbility(actor);
@@ -228,12 +228,12 @@ namespace TFTV
                                             && !actor.name.Contains("Oilfish"))
                                         {
                                             int roll = UnityEngine.Random.Range(0, 100);
-                                            if (TFTVVoidOmens.VoidOmen15Active && roll <= totalDeliriumOnMission * 2)
+                                            if (TFTVVoidOmens.VoidOmen15Active && roll <= totalDeliriumOnMission)
                                             {
                                                 TFTVLogger.Always("This Triton here " + actor + ", got past the crabtag and the blecher ability check!");
                                                 AddTritonUmbraDeathBelcherAbility(actor);
                                             }
-                                            else if (!TFTVVoidOmens.VoidOmen15Active && roll <= totalDeliriumOnMission)
+                                            else if (!TFTVVoidOmens.VoidOmen15Active && roll <= totalDeliriumOnMission/2)
                                             {
                                                 TFTVLogger.Always("This Triton here " + actor + ", got past the crabtag and the blecher ability check!");
                                                 AddTritonUmbraDeathBelcherAbility(actor);

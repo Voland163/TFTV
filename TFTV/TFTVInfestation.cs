@@ -215,7 +215,6 @@ namespace TFTV
             {
                 try
                 {
-                    TFTVLogger.Always("Method is invoked");
 
                     if (GeoSiteForInfestation != null && site == GeoSiteForInfestation && mission is GeoHavenDefenseMission)
                     {

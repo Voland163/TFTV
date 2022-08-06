@@ -92,6 +92,8 @@ namespace TFTV
                     int difficulty = geoLevelController.CurrentDifficultyLevel.Order;
                     string triggeredVoidOmens = "TriggeredVoidOmen_";
                     string voidOmen = "VoidOmen_";
+                    string voidOmenTitle = "VOID_OMEN_TITLE_";
+                    string voidOmenDescription = "VOID_OMEN_DESCRIPTION_TEXT_";
 
                     if (geoLevelController.EventSystem.GetVariable("BC_SDI") > 0)
                     {
@@ -128,21 +130,20 @@ namespace TFTV
                             }
 
                             // Check for already rolled Void Omens
-                            int[] allVoidOmensAlreadyRolled = TFTVVoidOmens.CheckForAlreadyRolledVoidOmens(geoLevelController);
+                            List<int> allVoidOmensAlreadyRolled = TFTVVoidOmens.CheckForAlreadyRolledVoidOmens(geoLevelController);
                             //Remove already rolled Void Omens from the list of available Void Omens
-                            for (int i = 1; i < allVoidOmensAlreadyRolled.Length; i++)
+                            if (allVoidOmensAlreadyRolled.Count > 0)
                             {
-                                if (voidOmensList.Contains(allVoidOmensAlreadyRolled[i]) && allVoidOmensAlreadyRolled[i] != 0)
+                                foreach (int i in allVoidOmensAlreadyRolled)
                                 {
-                                    voidOmensList.Remove(allVoidOmensAlreadyRolled[i]);
+                                    voidOmensList.Remove(i);
+
                                 }
                             }
-                            
 
                             // Get a random dark event from the available Void Omens list
                             voidOmenRoll = voidOmensList.GetRandomElement();
-                            
-
+   
                             // We can have as many simulateneous Void Omens in play as the mathematical expression of the difficulty level
                             // Lets check how many Void Omens are already in play and if there is space for more
                             int[] voidOmensInPlay = TFTVVoidOmens.CheckFordVoidOmensInPlay(geoLevelController);
@@ -183,23 +184,24 @@ namespace TFTV
                     geoLevelController.EventSystem.SetVariable("BC_SDI", CurrentODI_Level);
                     //UpdateODITracker(CurrentODI_Level, geoLevelController); not used currently, because clogs the UI
                     // And if a Void Omen has been rolled, a Void Omen will appear
-                    if (voidOmenRolled && geoLevelController.EventSystem.GetVariable(voidOmen + difficulty) == voidOmenRoll && geoLevelController.EventSystem.GetVariable(voidOmen + (difficulty - 1)) == 0)
+                    if (voidOmenRolled && TFTVVoidOmens.CheckForAlreadyRolledVoidOmens(geoLevelController).Count==1)
                     {
                         GeoscapeEventDef voidOmenIntro = geoLevelController.EventSystem.GetEventByID("VoidOmenIntro");
                         voidOmenIntro.GeoscapeEventData.Title.LocalizationKey = "VOID_OMEN_INTRO_TITLE";
                         voidOmenIntro.GeoscapeEventData.Description[0].General.LocalizationKey = "VOID_OMEN_INTRO";
                         geoLevelController.EventSystem.TriggerGeoscapeEvent("VoidOmenIntro", geoscapeEventContext);
                     }
-                    // This adds the Void Omen to the objective list, for now still called Dark Events in the code because don't want to mess with existing savegames
+                    // This adds the Void Omen to the objective list
                     if (voidOmenRolled)
                     {
-                        string title = (string)TFTVVoidOmens.VoidOmens_Title.GetValue(voidOmenRoll - 1);
-                        string description = (string)TFTVVoidOmens.VoidOmens_Description.GetValue(voidOmenRoll - 1);
+                      //  string title = TFTVVoidOmens.VoidOmens_Title.GetValue(voidOmenRoll - 1).ToString();
+                      //  string description = TFTVVoidOmens.VoidOmens_Description.GetValue(voidOmenRoll - 1).ToString();
                         GeoscapeEventDef voidOmenEvent = geoLevelController.EventSystem.GetEventByID("VoidOmen");
-                        voidOmenEvent.GeoscapeEventData.Title.LocalizationKey = title;
-                        voidOmenEvent.GeoscapeEventData.Description[0].General.LocalizationKey = description;
+                                      
+                        voidOmenEvent.GeoscapeEventData.Title.LocalizationKey = voidOmenTitle + voidOmenRoll;
+                        voidOmenEvent.GeoscapeEventData.Description[0].General.LocalizationKey = voidOmenDescription + voidOmenRoll;
                         geoLevelController.EventSystem.TriggerGeoscapeEvent("VoidOmen", geoscapeEventContext);
-                        TFTVVoidOmens.CreateVoidOmenObjective(title, description, geoLevelController);
+                        TFTVVoidOmens.CreateVoidOmenObjective(voidOmenTitle + voidOmenRoll, voidOmenDescription + voidOmenRoll, geoLevelController);
                     }
                     // Implement the new Void Omen situation
                     TFTVVoidOmens.ImplementVoidOmens(geoLevelController);

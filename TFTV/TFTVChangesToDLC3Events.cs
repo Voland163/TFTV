@@ -49,6 +49,8 @@ namespace TFTV
                 geoEventFS0.GeoscapeEventData.Flavour = "";
                 geoEventFS0.GeoscapeEventData.Leader = "SY_Eileen";
                 geoEventFS0.GeoscapeEventData.Choices[0].Outcome.OutcomeText.General.LocalizationKey = "PROG_FS0_TEXT_OUTCOME_0";
+                // Give Charun research to aliens
+                geoEventFS0.GeoscapeEventData.Choices[0].Outcome.VariablesChange.Add(TFTVCommonMethods.GenerateVariableChange("CharunAreComing", 1, true));
                 // change leader image from Athena to Eileen for We Are Still Collating (former the Invitation)
                 GeoscapeEventDef geoEventFS1 = Repo.GetAllDefs<GeoscapeEventDef>().FirstOrDefault(ged => ged.name.Equals("PROG_FS1_GeoscapeEventDef"));
                 geoEventFS1.GeoscapeEventData.Leader = "SY_Eileen";
@@ -60,6 +62,7 @@ namespace TFTV
                     TimerID = "PROG_FS1_MISS"
                 };
                 geoEventFS1.GeoscapeEventData.Choices[0].Outcome.ActivateTimers[0] = outcomeActivateTimer;
+                
                 // Destroy Haven after mission
                 GeoscapeEventDef geoEventFS1WIN = Repo.GetAllDefs<GeoscapeEventDef>().FirstOrDefault(ged => ged.name.Equals("PROG_FS1_WIN_GeoscapeEventDef"));
                 geoEventFS1WIN.GeoscapeEventData.Choices[0].Outcome.HavenPopulationChange = -20000;
@@ -97,6 +100,7 @@ namespace TFTV
                 //Research to defeat Behemoth will become available after Behemoth starts the Rumpus
                 EncounterVariableResearchRequirementDef variableResReqBehemoth = Helper.CreateDefFromClone(sourceVarResReq, "BABAAC81-3855-4218-B747-4FE926F34F69", "IndependenceDayResReqDef");
                 variableResReqBehemoth.VariableName = "BehemothDestroyedAHaven";
+                variableResReqBehemoth.Value = 1;
                 //This variable will be triggered by the event after Behemoth destroys a haven for the first time
                 GeoscapeEventDef geoEventFS20 = Repo.GetAllDefs<GeoscapeEventDef>().FirstOrDefault(ged => ged.name.Equals("PROG_FS20_GeoscapeEventDef"));
                 geoEventFS20.GeoscapeEventData.Choices[0].Outcome.VariablesChange.Add(TFTVCommonMethods.GenerateVariableChange("BehemothDestroyedAHaven", 1, true));
@@ -120,16 +124,18 @@ namespace TFTV
                 //need to create a new research
                 ResearchDef independenceDayResearchDef = TFTVCommonMethods.CreateNewPXResearch("IndependenceDayResearch", 300, "CDDFDD4D-BD1B-4434-BDD4-E0650B0DB5F2", independenceDayViewDef);
                 //and add the reveal requirement we created earlier
-                independenceDayResearchDef.RevealRequirements.Container.AddRangeToArray(reseachRequirementIndependenceDayContainer);
+                independenceDayResearchDef.RevealRequirements.Container = reseachRequirementIndependenceDayContainer;
                 independenceDayResearchDef.RevealRequirements.Operation = ResearchContainerOperation.ALL;
                 //now add the reward
                 independenceDayResearchDef.Unlocks.AddItem(encounterVarNodeAutopsyReward);
 
+             
                 //Change research req for FS2 and add outcome text to FS2 Event
                 GeoResearchEventFilterDef geoEventFS2ResearchReq = Repo.GetAllDefs<GeoResearchEventFilterDef>().FirstOrDefault(ged => ged.name.Equals("E_PROG_FS2_ResearchCompleted [GeoResearchEventFilterDef]"));
                 geoEventFS2ResearchReq.ResearchID = "IndependenceDayResearch";
                 GeoscapeEventDef geoEventFS2 = Repo.GetAllDefs<GeoscapeEventDef>().FirstOrDefault(ged => ged.name.Equals("PROG_FS2_GeoscapeEventDef"));
                 geoEventFS2.GeoscapeEventData.Choices[0].Outcome.OutcomeText.General.LocalizationKey = "PROG_FS2_CHOICE_0_TEXT_OUTCOME";
+
 
                 //Change FS3 event
                 GeoscapeEventDef geoEventFS3 = Repo.GetAllDefs<GeoscapeEventDef>().FirstOrDefault(ged => ged.name.Equals("PROG_FS3_GeoscapeEventDef"));

@@ -308,8 +308,6 @@ namespace TFTV
 
         //This method changes how WP are displayed in the Edit personnel screen, to show effects of Delirium on WP
 
-
-
         [HarmonyPatch(typeof(UIModuleCharacterProgression), "GetStarBarValuesDisplayString")]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051")]
         internal static class BG_UIModuleCharacterProgression_RefreshStatPanel_patch
@@ -322,6 +320,7 @@ namespace TFTV
                     float bonusSpeed = 0;
                     float bonusWillpower = 0;
                     float bonusStrength = 0;
+
 
                     foreach (ICommonItem armorItem in ____character.ArmourItems)
                     {
@@ -344,11 +343,11 @@ namespace TFTV
                                 ItemStatModification[] statModifications = passiveModifierAbilityDef.StatModifications;
                                 foreach (ItemStatModification statModifier in statModifications)
                                 {
-                                    if (statModifier.TargetStat == StatModificationTarget.Endurance)
-                                    {
+                                    if (statModifier.TargetStat == StatModificationTarget.Endurance && statModifier.Modification == StatModificationType.AddMax)
+                                    {                                    
                                         bonusStrength += statModifier.Value;
                                     }
-                                    else if (statModifier.TargetStat == StatModificationTarget.Willpower)
+                                    else if (statModifier.TargetStat == StatModificationTarget.Willpower && statModifier.Modification == StatModificationType.AddMax)
                                     {
                                         bonusWillpower += statModifier.Value;
                                     }
@@ -360,40 +359,40 @@ namespace TFTV
                                 }
                             }
                         }
-                    }
 
-                    foreach (PassiveModifierAbilityDef passiveModifier in ____character.PassiveModifiers)
-                    {
-                        ItemStatModification[] statModifications = passiveModifier.StatModifications;
-                        foreach (ItemStatModification statModifier2 in statModifications)
+
+                        foreach (PassiveModifierAbilityDef passiveModifier in ____character.PassiveModifiers)
                         {
-                            if (statModifier2.TargetStat == StatModificationTarget.Endurance)
+                            ItemStatModification[] statModifications = passiveModifier.StatModifications;
+                            foreach (ItemStatModification statModifier2 in statModifications)
                             {
-                                bonusStrength += statModifier2.Value;
-                            }
-                            else if (statModifier2.TargetStat == StatModificationTarget.Willpower)
-                            {
-                                bonusWillpower += statModifier2.Value;
-                            }
-                            else if (statModifier2.TargetStat == StatModificationTarget.Speed)
-                            {
-                                bonusSpeed += statModifier2.Value;
-                            }
+                                if (statModifier2.TargetStat == StatModificationTarget.Endurance)
+                                {                               
+                                    bonusStrength += statModifier2.Value;
+                                }
+                                else if (statModifier2.TargetStat == StatModificationTarget.Willpower)
+                                {
+                                    bonusWillpower += statModifier2.Value;
+                                }
+                                else if (statModifier2.TargetStat == StatModificationTarget.Speed)
+                                {
+                                    bonusSpeed += statModifier2.Value;
+                                }
 
+                            }
                         }
                     }
-
                     if (attribute.Equals(CharacterBaseAttribute.Strength))
                     {
                         if (bonusStrength > 0)
                         {
                             __result = $"{currentAttributeValue} / {____character.Progression.GetMaxBaseStat(attribute)}" +
-                                    $" (<color=#50c878>{____character.Strength.Value.EndValueInt}</color>)";
+                                    $" (<color=#50c878>{currentAttributeValue + bonusStrength}</color>)";
                         }
                         else if (bonusStrength < 0)
                         {
                             __result = $"{currentAttributeValue} / {____character.Progression.GetMaxBaseStat(attribute)}" +
-                                    $" (<color=#cc0000>{____character.Strength.Value.EndValueInt}</color>)";
+                                    $" (<color=#cc0000>{currentAttributeValue + bonusStrength}</color>)";
                         }
                         else
                         {
@@ -427,7 +426,7 @@ namespace TFTV
                         if (____character.CharacterStats.Corruption > CalculateStaminaEffectOnDelirium(____character))
                         {
                             __result = $"{currentAttributeValue} / {____character.Progression.GetMaxBaseStat(CharacterBaseAttribute.Will)}" +
-                                $"<color=#da5be3> ({____character.Willpower.Value.EndValue - ____character.CharacterStats.Corruption.Value + CalculateStaminaEffectOnDelirium(____character)}</color>)";
+                                $"<color=#da5be3> ({currentAttributeValue + bonusWillpower - ____character.CharacterStats.Corruption.Value + CalculateStaminaEffectOnDelirium(____character)}</color>)";
                         }
                         else
                         {
@@ -435,13 +434,13 @@ namespace TFTV
                             {
 
                                 __result = $"{currentAttributeValue} / {____character.Progression.GetMaxBaseStat(attribute)}" +
-                                            $" (<color=#50c878>{____character.Willpower.Value.EndValueInt}</color>)";
+                                            $" (<color=#50c878>{currentAttributeValue + bonusWillpower}</color>)";
 
                             }
                             else if (bonusWillpower < 0)
                             {
                                 __result = $"{currentAttributeValue} / {____character.Progression.GetMaxBaseStat(attribute)}" +
-                                        $" (<color=#cc0000>{____character.Willpower.Value.EndValueInt}</color>)";
+                                        $" (<color=#cc0000>{currentAttributeValue + bonusWillpower}</color>)";
                             }
                             else
                             {
@@ -460,6 +459,8 @@ namespace TFTV
 
         }
         public static UIModuleCharacterProgression hookToProgressionModule = null;
+        public static GeoCharacter hookToCharacter = null;
+ 
 
         [HarmonyPatch(typeof(UIModuleCharacterProgression), "Awake")]
 
@@ -483,16 +484,18 @@ namespace TFTV
 
 
         [HarmonyPatch(typeof(UIModuleSoldierEquip), "RefreshPrimarySoldierWeight")]
-        internal static class UIModuleSoldierEquip_RefreshWeightSlider_Patch
+        internal static class UIModuleSoldierEquip_RefreshPrimarySoldierWeight_Patch
         {
-            private static void Postfix()
+
+
+
+            private static void Postfix(UIModuleSoldierEquip __instance)
             {
                 try
                 {
-                   
-                    if (hookToProgressionModule != null)
+
+                    if (hookToProgressionModule != null && !__instance.IsVehicle)
                     {
-                        TFTVLogger.Always("If passed");
                         //  hookToProgressionModule.RefreshStats();
                         hookToProgressionModule.SetStatusesPanel();
                         hookToProgressionModule.RefreshStatPanel();
@@ -524,103 +527,198 @@ namespace TFTV
 
 
         }
-
-
-
-
-        //This changes display of Delirium bar in personnel edit screen to show current Delirium value vs max delirium value the character can have
-        // taking into account ODI level and bionics
-        [HarmonyPatch(typeof(UIModuleCharacterProgression), "SetStatusesPanel")]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051")]
-        internal static class BG_UIModuleCharacterProgression_SetStatusesPanel_patch
+        
+        [HarmonyPatch(typeof(UIModuleSoldierEquip), "RefreshWeightSlider")]
+        internal static class UIModuleSoldierEquip_RefreshWeightSlider_Patch
         {
 
-            private static void Postfix(UIModuleCharacterProgression __instance, GeoCharacter ____character)
+            private static void Prefix(ref int maxWeight, UIModuleSoldierEquip __instance)
             {
                 try
                 {
-                    if (____character.CharacterStats.Corruption > 0f)
 
+
+                    if (hookToCharacter != null && !__instance.IsVehicle)
                     {
-                        __instance.CorruptionSlider.minValue = 0f;
-                        __instance.CorruptionSlider.maxValue = CalculateMaxCorruption(____character);
-                        __instance.CorruptionSlider.value = ____character.CharacterStats.Corruption.IntValue;
-                        __instance.CorruptionStatText.text = $"{____character.CharacterStats.Corruption.IntValue}/{Mathf.RoundToInt(__instance.CorruptionSlider.maxValue)}";
 
-                        int num = (int)(float)____character.Fatigue.Stamina;
-                        int num2 = (int)(float)____character.Fatigue.Stamina.Max;
-                        __instance.StaminaSlider.minValue = 0f;
-                        __instance.StaminaSlider.maxValue = num2;
-                        __instance.StaminaSlider.value = num;
-                        if (num != num2)
+                        float bonusStrength = 0;
+                        float bonusToCarry = 0;
+
+                        foreach (ICommonItem armorItem in hookToCharacter.ArmourItems)
                         {
-                            string deliriumReducedStamina = "";
-                            for (int i = 0; i < CalculateStaminaEffectOnDelirium(____character); i++)
-                            {
-                                deliriumReducedStamina += "-";
-
+                            TacticalItemDef tacticalItemDef = armorItem.ItemDef as TacticalItemDef;
+                            if (!(tacticalItemDef == null) && !(tacticalItemDef.BodyPartAspectDef == null))
+                            {                        
+                                bonusStrength += tacticalItemDef.BodyPartAspectDef.Endurance;
                             }
-                            __instance.StaminaStatText.text = $"<color=#da5be3>{deliriumReducedStamina}</color>" + num + "/" + num2;
                         }
-                        else
+
+                        if (hookToCharacter.Progression != null)
                         {
-                            __instance.StaminaStatText.text = "<color=#da5be3> ---- </color>" + num.ToString();
+                            foreach (TacticalAbilityDef ability in hookToCharacter.Progression.Abilities)
+                            {
+                                PassiveModifierAbilityDef passiveModifierAbilityDef = ability as PassiveModifierAbilityDef;
+                                if (!(passiveModifierAbilityDef == null))
+                                {
+                                    ItemStatModification[] statModifications = passiveModifierAbilityDef.StatModifications;
+                                    foreach (ItemStatModification statModifier in statModifications)
+                                    {
+                                        if (statModifier.TargetStat == StatModificationTarget.Endurance && statModifier.Modification == StatModificationType.AddMax)
+                                        {
+                                            bonusStrength += statModifier.Value;
+                                        }
+                                        if (statModifier.TargetStat == StatModificationTarget.CarryWeight && statModifier.Modification == StatModificationType.MultiplyMax)
+                                        {
+
+                                            bonusToCarry+= statModifier.Value;
+                                            
+                                        }
+                                    }
+                                }
+                            }
                         }
+
+
+                        maxWeight += (int)(bonusStrength * bonusToCarry);
+                                             
                     }
+
                 }
+
                 catch (Exception e)
                 {
                     TFTVLogger.Error(e);
                 }
             }
         }
+    
 
-        // Harmony patch to change the result of CorruptionStatus.CalculateValueIncrement() to be capped by ODI
-        // When ODI is <25%, max corruption is 1/3, between 25 and 50% ODI, max corruption is 2/3, and ODI >50%, corruption can be 100%
-        // Tell Harmony what original method in what class should get patched, the following class after this directive will be used to perform own code by injection
-        [HarmonyPatch(typeof(CorruptionStatus), "CalculateValueIncrement")]
+    //This changes display of Delirium bar in personnel edit screen to show current Delirium value vs max delirium value the character can have
+    // taking into account ODI level and bionics
+    [HarmonyPatch(typeof(UIModuleCharacterProgression), "SetStatusesPanel")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051")]
+    internal static class BG_UIModuleCharacterProgression_SetStatusesPanel_patch
+    {
 
-        // The class that holds the code we want to inject, the name can be anything, but the more accurate the better it is for bug hunting
-        internal static class BC_CorruptionStatus_CalculateValueIncrement_patch
+        private static void Postfix(UIModuleCharacterProgression __instance, GeoCharacter ____character)
         {
-            // This directive is only to prevent a VS message that the following method is never called (it will be called, but through Harmony and not our mod code)
-            [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051")]
-
-            // Finally the method that is called before (Prefix) or after (Postfix) the original method
-            // In our case we use Postfix that is called after 'CalculateValueIncrement' was executed
-            // The parameters are special variables with their names defined by Harmony:
-            // 'ref int __result' is the return value of the original method 'CalculateValueIncrement' and with the prefix 'ref' we get write access to change it (without it would be readonly)
-            // 'CorruptionStatus __instance' is status object that holds the original method, each character will have its own instance of this status and so we have access to their individual stats
-            private static void Postfix(ref int __result, CorruptionStatus __instance)
+            try
             {
-                // 'try ... catch' to make the code more stable, errors will most likely not result in game crashes or freezes but log an error message in the mods log file
-                try
+                hookToCharacter = ____character;
+
+                if (____character.CharacterStats.Corruption > 0f)
+
                 {
-                    // With Harmony patches we cannot directly access base.TacticalActor, Harmony's AccessTools uses Reflection to get it through the backdoor
-                    TacticalActor base_TacticalActor = (TacticalActor)AccessTools.Property(typeof(TacStatus), "TacticalActor").GetValue(__instance, null);
+                    __instance.CorruptionSlider.minValue = 0f;
+                    __instance.CorruptionSlider.maxValue = CalculateMaxCorruption(____character);
+                    __instance.CorruptionSlider.value = ____character.CharacterStats.Corruption.IntValue;
+                    __instance.CorruptionStatText.text = $"{____character.CharacterStats.Corruption.IntValue}/{Mathf.RoundToInt(__instance.CorruptionSlider.maxValue)}";
 
-                    //Check for bionics
-                    int numberOfBionics = 0;
-                    GameTagDef bionicalTag = GameUtl.GameComponent<SharedData>().SharedGameTags.BionicalTag;
-
-                    foreach (TacticalItem armourItem in base_TacticalActor.BodyState.GetArmourItems())
+                    int num = (int)(float)____character.Fatigue.Stamina;
+                    int num2 = (int)(float)____character.Fatigue.Stamina.Max;
+                    __instance.StaminaSlider.minValue = 0f;
+                    __instance.StaminaSlider.maxValue = num2;
+                    __instance.StaminaSlider.value = num;
+                    if (num != num2)
                     {
-                        if (armourItem.GameTags.Contains(bionicalTag))
+                        string deliriumReducedStamina = "";
+                        for (int i = 0; i < CalculateStaminaEffectOnDelirium(____character); i++)
                         {
-                            numberOfBionics++;
+                            deliriumReducedStamina += "-";
+
                         }
+                        __instance.StaminaStatText.text = $"<color=#da5be3>{deliriumReducedStamina}</color>" + num + "/" + num2;
                     }
-
-                    // Calculate the percentage of current ODI level, these two variables are globally set by our ODI event patches
-                    int odiPerc = TFTVSDIandVoidOmenRoll.CurrentODI_Level * 100 / TFTVSDIandVoidOmenRoll.ODI_EventIDs.Length;
-                    int maxCorruption = 0;
-                    // Get max corruption dependent on max WP of the selected actor
-                    if (!TFTVVoidOmens.VoidOmen10Active)
+                    else
                     {
+                        __instance.StaminaStatText.text = "<color=#da5be3> ---- </color>" + num.ToString();
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+    }
 
-                        if (odiPerc < 25)
+    // Harmony patch to change the result of CorruptionStatus.CalculateValueIncrement() to be capped by ODI
+    // When ODI is <25%, max corruption is 1/3, between 25 and 50% ODI, max corruption is 2/3, and ODI >50%, corruption can be 100%
+    // Tell Harmony what original method in what class should get patched, the following class after this directive will be used to perform own code by injection
+    [HarmonyPatch(typeof(CorruptionStatus), "CalculateValueIncrement")]
+
+    // The class that holds the code we want to inject, the name can be anything, but the more accurate the better it is for bug hunting
+    internal static class BC_CorruptionStatus_CalculateValueIncrement_patch
+    {
+        // This directive is only to prevent a VS message that the following method is never called (it will be called, but through Harmony and not our mod code)
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051")]
+
+        // Finally the method that is called before (Prefix) or after (Postfix) the original method
+        // In our case we use Postfix that is called after 'CalculateValueIncrement' was executed
+        // The parameters are special variables with their names defined by Harmony:
+        // 'ref int __result' is the return value of the original method 'CalculateValueIncrement' and with the prefix 'ref' we get write access to change it (without it would be readonly)
+        // 'CorruptionStatus __instance' is status object that holds the original method, each character will have its own instance of this status and so we have access to their individual stats
+        private static void Postfix(ref int __result, CorruptionStatus __instance)
+        {
+            // 'try ... catch' to make the code more stable, errors will most likely not result in game crashes or freezes but log an error message in the mods log file
+            try
+            {
+                // With Harmony patches we cannot directly access base.TacticalActor, Harmony's AccessTools uses Reflection to get it through the backdoor
+                TacticalActor base_TacticalActor = (TacticalActor)AccessTools.Property(typeof(TacStatus), "TacticalActor").GetValue(__instance, null);
+
+                //Check for bionics
+                int numberOfBionics = 0;
+                GameTagDef bionicalTag = GameUtl.GameComponent<SharedData>().SharedGameTags.BionicalTag;
+
+                foreach (TacticalItem armourItem in base_TacticalActor.BodyState.GetArmourItems())
+                {
+                    if (armourItem.GameTags.Contains(bionicalTag))
+                    {
+                        numberOfBionics++;
+                    }
+                }
+
+                // Calculate the percentage of current ODI level, these two variables are globally set by our ODI event patches
+                int odiPerc = TFTVSDIandVoidOmenRoll.CurrentODI_Level * 100 / TFTVSDIandVoidOmenRoll.ODI_EventIDs.Length;
+                int maxCorruption = 0;
+                // Get max corruption dependent on max WP of the selected actor
+                if (!TFTVVoidOmens.VoidOmen10Active)
+                {
+
+                    if (odiPerc < 25)
+                    {
+                        maxCorruption = base_TacticalActor.CharacterStats.Willpower.IntMax / 3;
+
+                        if (numberOfBionics == 1)
                         {
-                            maxCorruption = base_TacticalActor.CharacterStats.Willpower.IntMax / 3;
+                            maxCorruption -= (int)(maxCorruption * 0.33);
+                        }
+
+                        if (numberOfBionics == 2)
+                        {
+                            maxCorruption -= (int)(maxCorruption * 0.66);
+                        }
+
+                    }
+                    else
+                    {
+                        if (odiPerc < 50)
+                        {
+                            maxCorruption = base_TacticalActor.CharacterStats.Willpower.IntMax * 1 / 2;
+
+                            if (numberOfBionics == 1)
+                            {
+                                maxCorruption -= (int)(maxCorruption * 0.33);
+                            }
+
+                            if (numberOfBionics == 2)
+                            {
+                                maxCorruption -= (int)(maxCorruption * 0.66);
+                            }
+                        }
+                        else // > 75%
+                        {
+                            maxCorruption = base_TacticalActor.CharacterStats.Willpower.IntMax;
 
                             if (numberOfBionics == 1)
                             {
@@ -633,380 +731,349 @@ namespace TFTV
                             }
 
                         }
+                    }
+                }
+                if (TFTVVoidOmens.VoidOmen10Active)
+                {
+                    maxCorruption = base_TacticalActor.CharacterStats.Willpower.IntMax;
+
+                    if (numberOfBionics == 1)
+                    {
+                        maxCorruption -= (int)(maxCorruption * 0.33);
+                    }
+
+                    if (numberOfBionics == 2)
+                    {
+                        maxCorruption -= (int)(maxCorruption * 0.66);
+                    }
+                }
+                // Like the original calculation, but adapted with 'maxCorruption'
+                // Also '__result' for 'return', '__instance' for 'this' and 'base_TacticalActor' for 'base.TacticalActor'
+                __result = Mathf.Min(__instance.CorruptionStatusDef.ValueIncrement, maxCorruption - base_TacticalActor.CharacterStats.Corruption.IntValue);
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+    }
+
+
+    // Dictionary to transfer the characters geoscape stamina to tactical level by actor ID
+    public static Dictionary<GeoTacUnitId, int> StaminaMap = new Dictionary<GeoTacUnitId, int>();
+
+    // Harmony patch to save the characters geoscape stamina by acor ID, this mehtod is called in the deployment phase before switching to tactical mode
+    [HarmonyPatch(typeof(CharacterFatigue), "ApplyToTacticalInstance")]
+
+    internal static class BC_CharacterFatigue_ApplyToTacticalInstance_Patch
+    {
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051")]
+        private static void Postfix(CharacterFatigue __instance, TacCharacterData data)
+        {
+            try
+            {
+                //Logger.Always($"BC_CharacterFatigue_ApplyToTacticalInstance_Patch.POSTFIX called, GeoUnitID {data.Id} with {__instance.Stamina.IntValue} stamina added to dictionary.", false);
+                if (StaminaMap.ContainsKey(data.Id))
+                {
+                    StaminaMap[data.Id] = __instance.Stamina.IntValue;
+                }
+                else
+                {
+                    StaminaMap.Add(data.Id, __instance.Stamina.IntValue);
+                }
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+    }
+
+
+    // Harmony patch to change the result of CorruptionStatus.GetStatModification() to take Stamina into account
+    // Corruption application get reduced by 100% when Stamina is between 35-40, by 75% between 30-35, by 50% between 25-30.
+    [HarmonyPatch(typeof(CorruptionStatus), "GetStatModification")]
+    internal static class BC_CorruptionStatus_GetStatModification_patch
+    {
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051")]
+        // We use again Postfix that is called after 'GetStatModification' was executed
+        // 'ref StatModification __result' is the return value of the original method 'GetStatModification'
+        // 'CorruptionStatus __instance' again like above the status object that holds the original method for each character
+        private static void Postfix(ref StatModification __result, CorruptionStatus __instance)
+        {
+            try
+            {
+                // With Harmony patches we cannot directly access base.TacticalActor, Harmony's AccessTools uses Reflection to get it through the backdoor
+                TacticalActor base_TacticalActor = (TacticalActor)AccessTools.Property(typeof(TacStatus), "TacticalActor").GetValue(__instance, null);
+
+                // Get characters geoscape stamina by his actor ID
+
+                int stamina = 40;
+                if (StaminaMap.ContainsKey(base_TacticalActor.GeoUnitId))
+                {
+                    stamina = StaminaMap[base_TacticalActor.GeoUnitId];
+                }
+
+                // Calculate WP reduction dependent on stamina
+                float wpReduction = base_TacticalActor.CharacterStats.Corruption;
+
+                if (TFTVVoidOmens.VoidOmen3Active)
+                {
+                    wpReduction = 0;
+                }
+                else
+                {
+                    wpReduction = base_TacticalActor.CharacterStats.Corruption; // stamina between 0 and 10
+
+                    if (stamina == 40)
+                    {
+                        if (base_TacticalActor.CharacterStats.Corruption >= 4)
+                        {
+                            wpReduction = base_TacticalActor.CharacterStats.Corruption - 4;
+                        }
                         else
                         {
-                            if (odiPerc < 50)
-                            {
-                                maxCorruption = base_TacticalActor.CharacterStats.Willpower.IntMax * 1 / 2;
-
-                                if (numberOfBionics == 1)
-                                {
-                                    maxCorruption -= (int)(maxCorruption * 0.33);
-                                }
-
-                                if (numberOfBionics == 2)
-                                {
-                                    maxCorruption -= (int)(maxCorruption * 0.66);
-                                }
-                            }
-                            else // > 75%
-                            {
-                                maxCorruption = base_TacticalActor.CharacterStats.Willpower.IntMax;
-
-                                if (numberOfBionics == 1)
-                                {
-                                    maxCorruption -= (int)(maxCorruption * 0.33);
-                                }
-
-                                if (numberOfBionics == 2)
-                                {
-                                    maxCorruption -= (int)(maxCorruption * 0.66);
-                                }
-
-                            }
+                            wpReduction = 0;
                         }
                     }
-                    if (TFTVVoidOmens.VoidOmen10Active)
+                    else if (stamina >= 30 && stamina < 40)
                     {
-                        maxCorruption = base_TacticalActor.CharacterStats.Willpower.IntMax;
-
-                        if (numberOfBionics == 1)
+                        if (base_TacticalActor.CharacterStats.Corruption >= 3)
                         {
-                            maxCorruption -= (int)(maxCorruption * 0.33);
+                            wpReduction = base_TacticalActor.CharacterStats.Corruption - 3;
                         }
-
-                        if (numberOfBionics == 2)
+                        else
                         {
-                            maxCorruption -= (int)(maxCorruption * 0.66);
+                            wpReduction = 0;
                         }
                     }
-                    // Like the original calculation, but adapted with 'maxCorruption'
-                    // Also '__result' for 'return', '__instance' for 'this' and 'base_TacticalActor' for 'base.TacticalActor'
-                    __result = Mathf.Min(__instance.CorruptionStatusDef.ValueIncrement, maxCorruption - base_TacticalActor.CharacterStats.Corruption.IntValue);
+                    else if (stamina >= 20 && stamina < 30)
+                    {
+                        if (base_TacticalActor.CharacterStats.Corruption >= 2)
+                        {
+                            wpReduction = base_TacticalActor.CharacterStats.Corruption - 2;
+                        }
+                        else
+                        {
+                            wpReduction = 0;
+                        }
+                    }
+                    else if (stamina >= 10 && stamina < 20)
+                    {
+                        if (base_TacticalActor.CharacterStats.Corruption >= 1)
+                        {
+                            wpReduction = base_TacticalActor.CharacterStats.Corruption - 1;
+                        }
+                        else
+                        {
+                            wpReduction = 0;
+                        }
 
+                    }
                 }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
+
+                // Like the original calculation, but adapted with 'maxCorruption'
+                __result = new StatModification(StatModificationType.Add,
+                                                StatModificationTarget.Willpower.ToString(),
+                                                -wpReduction,
+                                                __instance.CorruptionStatusDef,
+                                                -wpReduction);
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
             }
         }
+    }
 
-
-        // Dictionary to transfer the characters geoscape stamina to tactical level by actor ID
-        public static Dictionary<GeoTacUnitId, int> StaminaMap = new Dictionary<GeoTacUnitId, int>();
-
-        // Harmony patch to save the characters geoscape stamina by acor ID, this mehtod is called in the deployment phase before switching to tactical mode
-        [HarmonyPatch(typeof(CharacterFatigue), "ApplyToTacticalInstance")]
-
-        internal static class BC_CharacterFatigue_ApplyToTacticalInstance_Patch
+    [HarmonyPatch(typeof(GeoCharacter), "CureCorruption")]
+    public static class GeoCharacter_CureCorruption_SetStaminaTo0_patch
+    {
+        public static void Postfix(GeoCharacter __instance)
         {
-            [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051")]
-            private static void Postfix(CharacterFatigue __instance, TacCharacterData data)
-            {
-                try
-                {
-                    //Logger.Always($"BC_CharacterFatigue_ApplyToTacticalInstance_Patch.POSTFIX called, GeoUnitID {data.Id} with {__instance.Stamina.IntValue} stamina added to dictionary.", false);
-                    if (StaminaMap.ContainsKey(data.Id))
-                    {
-                        StaminaMap[data.Id] = __instance.Stamina.IntValue;
-                    }
-                    else
-                    {
-                        StaminaMap.Add(data.Id, __instance.Stamina.IntValue);
-                    }
 
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-            }
-        }
-
-
-        // Harmony patch to change the result of CorruptionStatus.GetStatModification() to take Stamina into account
-        // Corruption application get reduced by 100% when Stamina is between 35-40, by 75% between 30-35, by 50% between 25-30.
-        [HarmonyPatch(typeof(CorruptionStatus), "GetStatModification")]
-        internal static class BC_CorruptionStatus_GetStatModification_patch
-        {
-            [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051")]
-            // We use again Postfix that is called after 'GetStatModification' was executed
-            // 'ref StatModification __result' is the return value of the original method 'GetStatModification'
-            // 'CorruptionStatus __instance' again like above the status object that holds the original method for each character
-            private static void Postfix(ref StatModification __result, CorruptionStatus __instance)
-            {
-                try
-                {
-                    // With Harmony patches we cannot directly access base.TacticalActor, Harmony's AccessTools uses Reflection to get it through the backdoor
-                    TacticalActor base_TacticalActor = (TacticalActor)AccessTools.Property(typeof(TacStatus), "TacticalActor").GetValue(__instance, null);
-
-                    // Get characters geoscape stamina by his actor ID
-
-                    int stamina = 40;
-                    if (StaminaMap.ContainsKey(base_TacticalActor.GeoUnitId))
-                    {
-                        stamina = StaminaMap[base_TacticalActor.GeoUnitId];
-                    }
-
-                    // Calculate WP reduction dependent on stamina
-                    float wpReduction = base_TacticalActor.CharacterStats.Corruption;
-
-                    if (TFTVVoidOmens.VoidOmen3Active)
-                    {
-                        wpReduction = 0;
-                    }
-                    else
-                    {
-                        wpReduction = base_TacticalActor.CharacterStats.Corruption; // stamina between 0 and 10
-
-                        if (stamina == 40)
-                        {
-                            if (base_TacticalActor.CharacterStats.Corruption >= 4)
-                            {
-                                wpReduction = base_TacticalActor.CharacterStats.Corruption - 4;
-                            }
-                            else
-                            {
-                                wpReduction = 0;
-                            }
-                        }
-                        else if (stamina >= 30 && stamina < 40)
-                        {
-                            if (base_TacticalActor.CharacterStats.Corruption >= 3)
-                            {
-                                wpReduction = base_TacticalActor.CharacterStats.Corruption - 3;
-                            }
-                            else
-                            {
-                                wpReduction = 0;
-                            }
-                        }
-                        else if (stamina >= 20 && stamina < 30)
-                        {
-                            if (base_TacticalActor.CharacterStats.Corruption >= 2)
-                            {
-                                wpReduction = base_TacticalActor.CharacterStats.Corruption - 2;
-                            }
-                            else
-                            {
-                                wpReduction = 0;
-                            }
-                        }
-                        else if (stamina >= 10 && stamina < 20)
-                        {
-                            if (base_TacticalActor.CharacterStats.Corruption >= 1)
-                            {
-                                wpReduction = base_TacticalActor.CharacterStats.Corruption - 1;
-                            }
-                            else
-                            {
-                                wpReduction = 0;
-                            }
-
-                        }
-                    }
-
-                    // Like the original calculation, but adapted with 'maxCorruption'
-                    __result = new StatModification(StatModificationType.Add,
-                                                    StatModificationTarget.Willpower.ToString(),
-                                                    -wpReduction,
-                                                    __instance.CorruptionStatusDef,
-                                                    -wpReduction);
-
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-            }
-        }
-
-        [HarmonyPatch(typeof(GeoCharacter), "CureCorruption")]
-        public static class GeoCharacter_CureCorruption_SetStaminaTo0_patch
-        {
-            public static void Postfix(GeoCharacter __instance)
+            try
             {
 
-                try
-                {
+                PassiveModifierAbilityDef shutEye_Ability = Repo.GetAllDefs<PassiveModifierAbilityDef>().FirstOrDefault(ged => ged.name.Equals("ShutEye_AbilityDef"));
 
-                    PassiveModifierAbilityDef shutEye_Ability = Repo.GetAllDefs<PassiveModifierAbilityDef>().FirstOrDefault(ged => ged.name.Equals("ShutEye_AbilityDef"));
+                PassiveModifierAbilityDef hallucinating_AbilityDef = Repo.GetAllDefs<PassiveModifierAbilityDef>().FirstOrDefault(ged => ged.name.Equals("Hallucinating_AbilityDef"));
 
-                    PassiveModifierAbilityDef hallucinating_AbilityDef = Repo.GetAllDefs<PassiveModifierAbilityDef>().FirstOrDefault(ged => ged.name.Equals("Hallucinating_AbilityDef"));
+                PassiveModifierAbilityDef solipsism_AbilityDef = Repo.GetAllDefs<PassiveModifierAbilityDef>().FirstOrDefault(ged => ged.name.Equals("Solipsism_AbilityDef"));
 
-                    PassiveModifierAbilityDef solipsism_AbilityDef = Repo.GetAllDefs<PassiveModifierAbilityDef>().FirstOrDefault(ged => ged.name.Equals("Solipsism_AbilityDef"));
+                PassiveModifierAbilityDef angerIssues_AbilityDef = Repo.GetAllDefs<PassiveModifierAbilityDef>().FirstOrDefault(ged => ged.name.Equals("AngerIssues_AbilityDef"));
 
-                    PassiveModifierAbilityDef angerIssues_AbilityDef = Repo.GetAllDefs<PassiveModifierAbilityDef>().FirstOrDefault(ged => ged.name.Equals("AngerIssues_AbilityDef"));
+                PassiveModifierAbilityDef photophobia_AbilityDef = Repo.GetAllDefs<PassiveModifierAbilityDef>().FirstOrDefault(ged => ged.name.Equals("Photophobia_AbilityDef"));
 
-                    PassiveModifierAbilityDef photophobia_AbilityDef = Repo.GetAllDefs<PassiveModifierAbilityDef>().FirstOrDefault(ged => ged.name.Equals("Photophobia_AbilityDef"));
+                ApplyStatusAbilityDef nails_AbilityDef = Repo.GetAllDefs<ApplyStatusAbilityDef>().FirstOrDefault(ged => ged.name.Equals("Nails_AbilityDef"));
 
-                    ApplyStatusAbilityDef nails_AbilityDef = Repo.GetAllDefs<ApplyStatusAbilityDef>().FirstOrDefault(ged => ged.name.Equals("Nails_AbilityDef"));
+                PassiveModifierAbilityDef immortality_AbilityDef = Repo.GetAllDefs<PassiveModifierAbilityDef>().FirstOrDefault(ged => ged.name.Equals("Immortality_AbilityDef"));
 
-                    PassiveModifierAbilityDef immortality_AbilityDef = Repo.GetAllDefs<PassiveModifierAbilityDef>().FirstOrDefault(ged => ged.name.Equals("Immortality_AbilityDef"));
+                ApplyStatusAbilityDef feral_AbilityDef = Repo.GetAllDefs<ApplyStatusAbilityDef>().FirstOrDefault(ged => ged.name.Equals("Feral_AbilityDef"));
 
-                    ApplyStatusAbilityDef feral_AbilityDef = Repo.GetAllDefs<ApplyStatusAbilityDef>().FirstOrDefault(ged => ged.name.Equals("Feral_AbilityDef"));
+                DamageMultiplierAbilityDef oneOfUs_AbilityDef = Repo.GetAllDefs<DamageMultiplierAbilityDef>().FirstOrDefault(ged => ged.name.Equals("OneOfUs_AbilityDef"));
 
-                    DamageMultiplierAbilityDef oneOfUs_AbilityDef = Repo.GetAllDefs<DamageMultiplierAbilityDef>().FirstOrDefault(ged => ged.name.Equals("OneOfUs_AbilityDef"));
-
-                    ApplyStatusAbilityDef fleshEater_AbilityDef = Repo.GetAllDefs<ApplyStatusAbilityDef>().FirstOrDefault(ged => ged.name.Equals("FleshEater_AbilityDef"));
+                ApplyStatusAbilityDef fleshEater_AbilityDef = Repo.GetAllDefs<ApplyStatusAbilityDef>().FirstOrDefault(ged => ged.name.Equals("FleshEater_AbilityDef"));
 
 
-                    List<TacticalAbilityDef> abilityList = new List<TacticalAbilityDef>
+                List<TacticalAbilityDef> abilityList = new List<TacticalAbilityDef>
                     { shutEye_Ability, hallucinating_AbilityDef, solipsism_AbilityDef, angerIssues_AbilityDef, photophobia_AbilityDef, nails_AbilityDef, immortality_AbilityDef, feral_AbilityDef,
                     oneOfUs_AbilityDef, fleshEater_AbilityDef
                     };
 
-                    int num = UnityEngine.Random.Range(0, 200);
-                    // GeoscapeTutorialStepsDef stepTest = Repo.GetAllDefs<GeoscapeTutorialStepsDef>().FirstOrDefault(ged => ged.name.Equals("GeoscapeTutorialStepsDef"));
-                    // GeoscapeTutorialStep test = new GeoscapeTutorialStep();
-                    // test.Title.LocalizationKey = $"test";
-                    // test.Description.LocalizationKey = $"testing";
-                    TFTVLogger.Always("Treatment rolled " + num);
+                int num = UnityEngine.Random.Range(0, 200);
+                // GeoscapeTutorialStepsDef stepTest = Repo.GetAllDefs<GeoscapeTutorialStepsDef>().FirstOrDefault(ged => ged.name.Equals("GeoscapeTutorialStepsDef"));
+                // GeoscapeTutorialStep test = new GeoscapeTutorialStep();
+                // test.Title.LocalizationKey = $"test";
+                // test.Description.LocalizationKey = $"testing";
+                TFTVLogger.Always("Treatment rolled " + num);
 
-                    if (num >= 0 && num <= 50)
+                if (num >= 0 && num <= 50)
+                {
+                    for (int i = 0; i < 100; i++)
                     {
-                        for (int i = 0; i < 100; i++)
+                        TacticalAbilityDef abilityToAdd = abilityList.GetRandomElement();
+                        TFTVLogger.Always("The randomly chosen ability is " + abilityToAdd.name);
+                        if (!__instance.Progression.Abilities.Contains(abilityToAdd))
                         {
-                            TacticalAbilityDef abilityToAdd = abilityList.GetRandomElement();
-                            TFTVLogger.Always("The randomly chosen ability is " + abilityToAdd.name);
-                            if (!__instance.Progression.Abilities.Contains(abilityToAdd))
-                            {
 
-                                __instance.Progression.AddAbility(abilityToAdd);
-                                //__instance.Faction.GeoLevel.View.GeoscapeModules.TutorialModule.SetTutorialStep(test, false);
-                                GameUtl.GetMessageBox().ShowSimplePrompt($"{__instance.GetName()}" + " appears to be afflicted with " + $"<b>{abilityToAdd.ViewElementDef.DisplayName1.LocalizeEnglish()}</b>"
-                                    + " as a result of the experimental mutagen treatment. This condition is likely to be permanent."
-                                    + "\n\n" + $"<i>{abilityToAdd.ViewElementDef.Description.LocalizeEnglish()}</i>", MessageBoxIcon.None, MessageBoxButtons.OK, null);
-                                TFTVLogger.Always("Added ability " + abilityToAdd.ViewElementDef.DisplayName1.LocalizeEnglish());
-                                i = 100;
-                            }
-                        }
-                    }
-                    else if (num > 50 && num <= 125)
-                    {
-                        TFTVCommonMethods.SetStaminaToZero(__instance);
-                        GameUtl.GetMessageBox().ShowSimplePrompt($"{__instance.GetName()}" + " did not suffer any lasting side effects, but had to be heavily sedated"
-                                    + "\n\n" + $"<i>STAMINA reduced to zero</i>", MessageBoxIcon.None, MessageBoxButtons.OK, null);
-                    }
-                }
-
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-            }
-        }
-
-        [HarmonyPatch(typeof(TacticalAbility), "FumbleActionCheck")]
-        public static class TacticalAbility_FumbleActionCheck_Patch
-        {
-            public static void Postfix(TacticalAbility __instance, ref bool __result)
-            {
-                DefRepository Repo = GameUtl.GameComponent<DefRepository>();
-
-                try
-                {
-                    TacticalAbilityDef abilityDef9 = Repo.GetAllDefs<TacticalAbilityDef>().FirstOrDefault(tad => tad.name.Equals("Feral_AbilityDef"));
-                    if (__instance.TacticalActor.GetAbilityWithDef<TacticalAbility>(abilityDef9) != null && __instance.Source is Equipment)
-                    {
-                        __result = UnityEngine.Random.Range(0, 100) < 10;
-                    }
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-            }
-        }
-        //Dtony's Delirium perks patch
-        [HarmonyPatch(typeof(RecruitsListElementController), "SetRecruitElement")]
-        public static class RecruitsListElementController_SetRecruitElement_Patch
-        {
-            public static bool Prefix(RecruitsListElementController __instance, RecruitsListEntryData entryData, List<RowIconTextController> ____abilityIcons)
-            {
-                try
-                {
-                    if (____abilityIcons == null)
-                    {
-                        ____abilityIcons = new List<RowIconTextController>();
-                        if (__instance.PersonalTrackRoot.transform.childCount < entryData.PersonalTrackAbilities.Count())
-                        {
-                            RectTransform parent = __instance.PersonalTrackRoot.GetComponent<RectTransform>();
-                            RowIconTextController source = parent.GetComponentInChildren<RowIconTextController>();
-                            parent.DetachChildren();
-                            source.Icon.GetComponent<RectTransform>().sizeDelta = new Vector2(95f, 95f);
-                            for (int i = 0; i < entryData.PersonalTrackAbilities.Count(); i++)
-                            {
-                                RowIconTextController entry = UnityEngine.Object.Instantiate(source, parent, true);
-                            }
-                        }
-                        UIUtil.GetComponentsFromContainer(__instance.PersonalTrackRoot.transform, ____abilityIcons);
-                    }
-                    __instance.RecruitData = entryData;
-                    __instance.RecruitName.SetSoldierData(entryData.Recruit);
-                    BC_SetAbilityIcons(entryData.PersonalTrackAbilities.ToList(), ____abilityIcons);
-                    if (entryData.SuppliesCost != null && __instance.CostText != null && __instance.CostColorController != null)
-                    {
-                        __instance.CostText.text = entryData.SuppliesCost.ByResourceType(ResourceType.Supplies).RoundedValue.ToString();
-                        __instance.CostColorController.SetWarningActive(!entryData.IsAffordable, true);
-                    }
-                    __instance.NavHolder.RefreshNavigation();
-                    return false;
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                    return true;
-                }
-            }
-
-
-            private static void BC_SetAbilityIcons(List<TacticalAbilityViewElementDef> abilities, List<RowIconTextController> abilityIcons)
-            {
-                foreach (RowIconTextController rowIconTextController in abilityIcons)
-                {
-                    rowIconTextController.gameObject.SetActive(false);
-                }
-                for (int i = 0; i < abilities.Count; i++)
-                {
-                    abilityIcons[i].gameObject.SetActive(true);
-                    abilityIcons[i].SetController(abilities[i].LargeIcon, abilities[i].DisplayName1, abilities[i].Description);
-                }
-            }
-        }
-
-        //When getting an augment, each augment reduces corruption by a 1/3
-        [HarmonyPatch(typeof(UIModuleBionics), "OnAugmentApplied")]
-        public static class UIModuleBionics_OnAugmentApplied_SetStaminaTo0_patch
-        {
-            public static void Postfix(UIModuleBionics __instance)
-            {
-                try
-                {
-                    //check number of augments the character has
-                    GameTagDef bionicalTag = GameUtl.GameComponent<SharedData>().SharedGameTags.BionicalTag;
-                    int numberOfBionics = AugmentScreenUtilities.GetNumberOfBionicsAugmentations(__instance.CurrentCharacter);
-
-                    for (int i = 0; i < numberOfBionics; i++)
-                    {
-                        if (__instance.CurrentCharacter.CharacterStats.Corruption - __instance.CurrentCharacter.CharacterStats.Willpower * 0.33 >= 0)
-                        {
-                            __instance.CurrentCharacter.CharacterStats.Corruption.Set((float)(__instance.CurrentCharacter.CharacterStats.Corruption - __instance.CurrentCharacter.CharacterStats.Willpower * 0.33));
-                        }
-                        else
-                        {
-                            __instance.CurrentCharacter.CharacterStats.Corruption.Set(0);
+                            __instance.Progression.AddAbility(abilityToAdd);
+                            //__instance.Faction.GeoLevel.View.GeoscapeModules.TutorialModule.SetTutorialStep(test, false);
+                            GameUtl.GetMessageBox().ShowSimplePrompt($"{__instance.GetName()}" + " appears to be afflicted with " + $"<b>{abilityToAdd.ViewElementDef.DisplayName1.LocalizeEnglish()}</b>"
+                                + " as a result of the experimental mutagen treatment. This condition is likely to be permanent."
+                                + "\n\n" + $"<i>{abilityToAdd.ViewElementDef.Description.LocalizeEnglish()}</i>", MessageBoxIcon.None, MessageBoxButtons.OK, null);
+                            TFTVLogger.Always("Added ability " + abilityToAdd.ViewElementDef.DisplayName1.LocalizeEnglish());
+                            i = 100;
                         }
                     }
                 }
-                catch (Exception e)
+                else if (num > 50 && num <= 125)
                 {
-                    TFTVLogger.Error(e);
+                    TFTVCommonMethods.SetStaminaToZero(__instance);
+                    GameUtl.GetMessageBox().ShowSimplePrompt($"{__instance.GetName()}" + " did not suffer any lasting side effects, but had to be heavily sedated"
+                                + "\n\n" + $"<i>STAMINA reduced to zero</i>", MessageBoxIcon.None, MessageBoxButtons.OK, null);
                 }
             }
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
         }
-
-
     }
+
+    [HarmonyPatch(typeof(TacticalAbility), "FumbleActionCheck")]
+    public static class TacticalAbility_FumbleActionCheck_Patch
+    {
+        public static void Postfix(TacticalAbility __instance, ref bool __result)
+        {
+            DefRepository Repo = GameUtl.GameComponent<DefRepository>();
+
+            try
+            {
+                TacticalAbilityDef abilityDef9 = Repo.GetAllDefs<TacticalAbilityDef>().FirstOrDefault(tad => tad.name.Equals("Feral_AbilityDef"));
+                if (__instance.TacticalActor.GetAbilityWithDef<TacticalAbility>(abilityDef9) != null && __instance.Source is Equipment)
+                {
+                    __result = UnityEngine.Random.Range(0, 100) < 10;
+                }
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+    }
+    //Dtony's Delirium perks patch
+    [HarmonyPatch(typeof(RecruitsListElementController), "SetRecruitElement")]
+    public static class RecruitsListElementController_SetRecruitElement_Patch
+    {
+        public static bool Prefix(RecruitsListElementController __instance, RecruitsListEntryData entryData, List<RowIconTextController> ____abilityIcons)
+        {
+            try
+            {
+                if (____abilityIcons == null)
+                {
+                    ____abilityIcons = new List<RowIconTextController>();
+                    if (__instance.PersonalTrackRoot.transform.childCount < entryData.PersonalTrackAbilities.Count())
+                    {
+                        RectTransform parent = __instance.PersonalTrackRoot.GetComponent<RectTransform>();
+                        RowIconTextController source = parent.GetComponentInChildren<RowIconTextController>();
+                        parent.DetachChildren();
+                        source.Icon.GetComponent<RectTransform>().sizeDelta = new Vector2(95f, 95f);
+                        for (int i = 0; i < entryData.PersonalTrackAbilities.Count(); i++)
+                        {
+                            RowIconTextController entry = UnityEngine.Object.Instantiate(source, parent, true);
+                        }
+                    }
+                    UIUtil.GetComponentsFromContainer(__instance.PersonalTrackRoot.transform, ____abilityIcons);
+                }
+                __instance.RecruitData = entryData;
+                __instance.RecruitName.SetSoldierData(entryData.Recruit);
+                BC_SetAbilityIcons(entryData.PersonalTrackAbilities.ToList(), ____abilityIcons);
+                if (entryData.SuppliesCost != null && __instance.CostText != null && __instance.CostColorController != null)
+                {
+                    __instance.CostText.text = entryData.SuppliesCost.ByResourceType(ResourceType.Supplies).RoundedValue.ToString();
+                    __instance.CostColorController.SetWarningActive(!entryData.IsAffordable, true);
+                }
+                __instance.NavHolder.RefreshNavigation();
+                return false;
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                return true;
+            }
+        }
+
+
+        private static void BC_SetAbilityIcons(List<TacticalAbilityViewElementDef> abilities, List<RowIconTextController> abilityIcons)
+        {
+            foreach (RowIconTextController rowIconTextController in abilityIcons)
+            {
+                rowIconTextController.gameObject.SetActive(false);
+            }
+            for (int i = 0; i < abilities.Count; i++)
+            {
+                abilityIcons[i].gameObject.SetActive(true);
+                abilityIcons[i].SetController(abilities[i].LargeIcon, abilities[i].DisplayName1, abilities[i].Description);
+            }
+        }
+    }
+
+    //When getting an augment, each augment reduces corruption by a 1/3
+    [HarmonyPatch(typeof(UIModuleBionics), "OnAugmentApplied")]
+    public static class UIModuleBionics_OnAugmentApplied_SetStaminaTo0_patch
+    {
+        public static void Postfix(UIModuleBionics __instance)
+        {
+            try
+            {
+                //check number of augments the character has
+                GameTagDef bionicalTag = GameUtl.GameComponent<SharedData>().SharedGameTags.BionicalTag;
+                int numberOfBionics = AugmentScreenUtilities.GetNumberOfBionicsAugmentations(__instance.CurrentCharacter);
+
+                for (int i = 0; i < numberOfBionics; i++)
+                {
+                    if (__instance.CurrentCharacter.CharacterStats.Corruption - __instance.CurrentCharacter.CharacterStats.Willpower * 0.33 >= 0)
+                    {
+                        __instance.CurrentCharacter.CharacterStats.Corruption.Set((float)(__instance.CurrentCharacter.CharacterStats.Corruption - __instance.CurrentCharacter.CharacterStats.Willpower * 0.33));
+                    }
+                    else
+                    {
+                        __instance.CurrentCharacter.CharacterStats.Corruption.Set(0);
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+    }
+
+
 }
+    }

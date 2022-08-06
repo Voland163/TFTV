@@ -39,7 +39,6 @@ namespace TFTV
                 TFTVLogger.Error(e);
             }
 
-
         }
 
         public static void InjectOlenaKimLines()

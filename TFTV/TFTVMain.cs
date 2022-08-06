@@ -6,7 +6,6 @@ using PhoenixPoint.Common.Game;
 using PhoenixPoint.Modding;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using UnityEngine;
 
 namespace TFTV
@@ -44,7 +43,7 @@ namespace TFTV
         /// </summary>
         public override void OnModEnabled()
         {
-
+            Main = this;
             /// All mod dependencies are accessible and always loaded.
             int c = Dependencies.Count();
             /// Metadata is whatever is written in meta.json
@@ -58,13 +57,15 @@ namespace TFTV
             /// PhoenixGame is accessible at any time.
             PhoenixGame game = GetGame();
 
+            Logger.LogInfo("TFTV August 12 night release #2");
+
             //TFTV 
             ModDirectory = Instance.Entry.Directory;
             //Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
             //Path to localization CSVs
-            LocalizationDirectory = Path.Combine(ModDirectory, "Assets", "Localization");
+            LocalizationDirectory = Path.Combine(ModDirectory); //, "Assets", "Localization"
             //Texture Directory (for Dtony's DeliriumPerks)
-            TexturesDirectory = Path.Combine(ModDirectory, "Assets", "Textures");
+            TexturesDirectory = Path.Combine(ModDirectory); //, "Assets", "Textures");
             // Initialize Logger
             LogPath = Path.Combine(ModDirectory, "TFTV.log");
             TFTVLogger.Initialize(LogPath, Config.Debug, ModDirectory, nameof(TFTV));
@@ -112,12 +113,8 @@ namespace TFTV
             TFTVPandoranProgress.Apply_Changes();
             //Modifies air vehicles 
             TFTVPassengerModules.Apply_Changes();
-            //Disables HybernationModuleStaminaRecuperation, if selected in config
-            if (!Config.ActivateStaminaRecuperatonModule)
-            {
-                TFTVPassengerModules.Disable_HibernationModuleStaminaRecuperation();
-            }
-
+            //HybernationModuleStaminaRecuperation, adjusts if selected in config       
+            TFTVPassengerModules.HibernationModuleStaminaRecuperation();
             //Makes reverse engineering grant access to underlying research. Pending unifying research cost of RE items.
             if (Config.ActivateReverseEngineeringResearch)
             {
@@ -154,6 +151,53 @@ namespace TFTV
         /// </summary>
         public override void OnConfigChanged()
         {
+
+            if (Config.defaultSettings)
+            {
+                Config.InitialScavSites = 8;
+                Config.ChancesScavCrates = TFTVConfig.ScavengingWeight.High;
+                Config.ChancesScavSoldiers = TFTVConfig.ScavengingWeight.Low;
+                Config.ChancesScavGroundVehicleRescue = TFTVConfig.ScavengingWeight.Low;
+                Config.ResourceMultiplier = 0.8f;
+                Config.DiplomaticPenalties = true;
+                Config.StaminaPenaltyFromInjury = true;
+                Config.StaminaPenaltyFromMutation = true;
+                Config.StaminaPenaltyFromBionics = true;
+                Config.MoreAmbushes = true;
+                Config.ActivateStaminaRecuperatonModule = true;
+                Config.ActivateReverseEngineeringResearch = true;
+                Config.ActivateAirCombatChanges = true;
+                Config.ActivateKERework = true;
+                Config.HavenSOS = true;
+                Config.Debug = true;
+
+            }
+            if (Config.InitialScavSites != 8 ||
+               Config.ChancesScavCrates != TFTVConfig.ScavengingWeight.High ||
+               Config.ChancesScavSoldiers != TFTVConfig.ScavengingWeight.Low ||
+               Config.ChancesScavGroundVehicleRescue != TFTVConfig.ScavengingWeight.Low ||
+            Config.ResourceMultiplier != 0.8f ||
+            Config.DiplomaticPenalties != true ||
+            Config.StaminaPenaltyFromInjury != true ||
+            Config.StaminaPenaltyFromMutation != true ||
+            Config.StaminaPenaltyFromBionics != true ||
+            Config.MoreAmbushes != true ||
+            Config.ActivateStaminaRecuperatonModule != true ||
+            Config.ActivateReverseEngineeringResearch != true ||
+            Config.ActivateAirCombatChanges != true ||
+            Config.ActivateKERework != true ||
+            Config.HavenSOS != true ||
+            Config.Debug != true)
+            {
+
+                Config.defaultSettings = false;
+
+            }
+
+            HarmonyLib.Harmony harmony = (HarmonyLib.Harmony)HarmonyInstance;
+            harmony.UnpatchAll();
+            harmony.PatchAll();
+
             /// Config is accessible at any time.
         }
 
@@ -168,8 +212,7 @@ namespace TFTV
         /// <param name="state">New state of the level.</param>
         public override void OnLevelStateChanged(Level level, Level.State prevState, Level.State state)
         {
-            //Reinject Dtony's delirium perks, because assuming degradation will happen based on BetterClasses experience
-            TFTVDeliriumPerks.Main();
+
 
             /// Alternative way to access current level at any time.
             Level l = GetLevel();
@@ -182,6 +225,10 @@ namespace TFTV
         /// <param name="level">Level that starts.</param>
         public override void OnLevelStart(Level level)
         {
+            //Reinject Dtony's delirium perks, because assuming degradation will happen based on BetterClasses experience
+            TFTVDeliriumPerks.Main();
+
+
         }
 
         /// <summary>

@@ -40,12 +40,14 @@ namespace TFTV
 
 			TFTVMain main = (TFTVMain)Main;
 			TFTVNewPXCharacters.PlayIntro(gsController);
+			
 			TFTVVoidOmens.ImplementVoidOmens(gsController);
 			TFTVUmbra.CheckForUmbraResearch(gsController);
 			TFTVUmbra.SetUmbraEvolution(gsController);
 			TFTVThirdAct.SetBehemothOnRampageMod(gsController);
 			TFTVChangesToDLC3Events.ChangeHavenDeploymentDefense(gsController);
-						
+			
+
 		}
 		/// <summary>
 		/// Called when Geoscape ends.
@@ -65,6 +67,7 @@ namespace TFTV
 			{
 				TFTVUmbra.SetUmbraRandomValue(0.16f);
 			}
+			TFTVDelirium.hookToCharacter = null;
 		}
 
 		/// <summary>
@@ -74,7 +77,7 @@ namespace TFTV
 		public override object RecordGeoscapeInstanceData()
 		{
 			return new TFTVGSInstanceData() { charactersWithBrokenLimbs = TFTVStamina.charactersWithBrokenLimbs, targetsForBehemoth = TFTVAirCombat.targetsForBehemoth, 
-				flyersAndHavens = TFTVAirCombat.flyersAndHavens, checkHammerfall = TFTVAirCombat.checkHammerfall };
+				flyersAndHavens = TFTVAirCombat.flyersAndHavens, checkHammerfall = TFTVAirCombat.checkHammerfall};
 		}
 		/// <summary>
 		/// Called when Geoscape save is being process. At this point level is already created, but GeoscapeStart is not called.
@@ -97,9 +100,67 @@ namespace TFTV
 		/// <param name="worldSites">Sites to spawn and start simulating.</param>
 		public override void OnGeoscapeNewWorldInit(GeoInitialWorldSetup setup, IList<GeoSiteSceneDef.SiteInfo> worldSites)
 		{
+			TFTVMain main = (TFTVMain)Main;
+			GeoLevelController gsController = Controller;
 
 			try
 			{
+				/*
+				if (main.Config.MoreAmbushes)
+				{
+					TFTVAmbushes.Apply_Changes_Ambush_Chances(gsController.EventSystem);
+				}
+				*/
+
+				setup.InitialScavengingSiteCount = (uint)main.Config.InitialScavSites;
+
+				// ScavengingSitesDistribution is an array with the weights for scav, rescue soldier and vehicle
+				foreach (GeoInitialWorldSetup.ScavengingSiteConfiguration scavSiteConf in setup.ScavengingSitesDistribution)
+				{
+					if (scavSiteConf.MissionTags.Any(mt => mt.name.Equals("Contains_ResourceCrates_MissionTagDef")))
+					{
+						if (main.Config.ChancesScavCrates == TFTVConfig.ScavengingWeight.High)
+						{
+							scavSiteConf.Weight = 4;
+						}
+						else if (main.Config.ChancesScavCrates == TFTVConfig.ScavengingWeight.Medium)
+						{
+							scavSiteConf.Weight = 4;
+						}
+						else if (main.Config.ChancesScavCrates == TFTVConfig.ScavengingWeight.Low)
+						{
+							scavSiteConf.Weight = 1;
+						}
+						else if (main.Config.ChancesScavCrates == TFTVConfig.ScavengingWeight.None)
+						{
+							scavSiteConf.Weight = 0;
+						}
+					}
+
+					if (scavSiteConf.MissionTags.Any(mt => mt.name.Equals("Contains_RescueSoldier_MissionTagDef")))
+					{
+					}
+
+					if (scavSiteConf.MissionTags.Any(mt => mt.name.Equals("Contains_RescueVehicle_MissionTagDef")))
+					{
+						if (main.Config.ChancesScavGroundVehicleRescue == TFTVConfig.ScavengingWeight.High)
+						{
+							scavSiteConf.Weight = 4;
+						}
+						else if (main.Config.ChancesScavGroundVehicleRescue == TFTVConfig.ScavengingWeight.Medium)
+						{
+							scavSiteConf.Weight = 4;
+						}
+						else if (main.Config.ChancesScavGroundVehicleRescue == TFTVConfig.ScavengingWeight.Low)
+						{
+							scavSiteConf.Weight = 1;
+						}
+						else if (main.Config.ChancesScavGroundVehicleRescue == TFTVConfig.ScavengingWeight.None)
+						{
+							scavSiteConf.Weight = 0;
+						}
+					}
+				}
 
 
 			}
@@ -122,10 +183,10 @@ namespace TFTV
 			{
 				TFTVMain main = (TFTVMain)Main;
 				GeoLevelController gsController = Controller;
-				if (main.Config.MoreAmbushes)
+			/*	if (main.Config.MoreAmbushes)
 				{
 					TFTVAmbushes.Apply_Changes_Ambush_Chances(gsController.EventSystem);
-				}
+				}*/
 
 
 				setup.InitialScavengingSiteCount = (uint)main.Config.InitialScavSites;

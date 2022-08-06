@@ -8,9 +8,16 @@ namespace TFTV
     /// Only one config can exist per mod assembly.
     /// Config is serialized on disk as json.
     /// </summary>
+        
     public class TFTVConfig : ModConfig
     {
+        //Default settings
+        [ConfigField(text: "DEFAULT TFTV SETTINGS",
+            description: "Sets all settings to default, to provide the Terror from the Void experience as envisioned by its creators")]
+        public bool defaultSettings = true;
+
         // For testing purposes
+        
         public int evolutionPointsLegend = 70;
         // These settings determine amount of resources player can acquire:
 
@@ -23,7 +30,7 @@ namespace TFTV
         
         public enum ScavengingWeight 
         { 
-        High, Medium, Low, None 
+        None, Low, Medium, High
         }
 
         [ConfigField(text: "Chances of sites with resource crates",
@@ -109,7 +116,7 @@ namespace TFTV
         [ConfigField(text: "Changes to DLC5 Marketplace (in progress)",
        description: "Removes cutscenes and missions, all items available at lowest prices 24 hours after discovering Marketplace.")]
         public bool ActivateKERework = true;
-
+ 
         // If set to true, unrevealed havens will be revealed when attacked
         [ConfigField(text: "Havens under attack revealed",
        description: "Havens under attack will send an SOS, revealing their location to the player.")]
@@ -118,7 +125,7 @@ namespace TFTV
         //If set to 1, shows when any error ocurrs. Do not change unless you know what you are doing.
         [ConfigField(text: "Debug log & messages",
        description: "Shows when any error ocurrs. Please, do not change unless you know what you are doing.")]
-        public int Debug = 1;
+        public bool Debug = true;
 
     }
 }

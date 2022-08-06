@@ -58,6 +58,7 @@ namespace TFTV
 
                     if (charactersWithBrokenLimbs.Contains(__instance.Id))
                     {
+
                         TFTVCommonMethods.SetStaminaToZero(__instance);
                         charactersWithBrokenLimbs.Remove(__instance.Id);
                     }

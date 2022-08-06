@@ -105,6 +105,7 @@ namespace TFTV
         /// <param name="turnNumber">Current turn number</param>
         public override void OnNewTurn(int turnNumber)
         {
+           
         }
     }
 }

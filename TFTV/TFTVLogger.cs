@@ -12,10 +12,18 @@ namespace TFTV
         private static string _modName;
         private static bool _awake;
 
-        public static void Initialize(string logPath, int debugLevel, string modDirectory, string modName)
+        public static void Initialize(string logPath, bool debugLevel, string modDirectory, string modName)
         {
             _logPath = logPath;
-            _debugLevel = debugLevel;
+            if (debugLevel) 
+            {
+                _debugLevel = 1;
+            }
+            else 
+            {
+                _debugLevel = 0;
+            }
+            ;
             _modName = modName;
             _awake = true;
 
