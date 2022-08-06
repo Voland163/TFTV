@@ -120,8 +120,7 @@ PROG_PU2_CHOICE_1_OUTCOME_GENERAL,Text,,"MESSAGE
 
 When I contacted you I thought I was dealing with intelligent people, aware of the stakes. Instead, I found spineless cowards whose convictions are as hollow as the module in Tobias West’s head! 
 
-We'll find a way to obtain the research data, but the chance of alliance between the Pure and the Phoenix Project is gone forever.
-",,,,,,,,
+We'll find a way to obtain the research data, but the chance of alliance between the Pure and the Phoenix Project is gone forever.",,,,,,,,
 PROG_PU2_CHOICE_1_TEXT,Text,,Refuse to help Subject 24.,,,,,,,,
 PROG_PU2_TEXT_GENERAL_0,Text,,"MESSAGE
 
@@ -207,14 +206,14 @@ NJ_PISSED_MUTATIONS_CHOICE_1,Text,,"Our humanity is in our souls, not our genes"
 NJ_PISSED_MUTATIONS_CHOICE_1_OUTCOME,Text,,"I expect this nonsense from religious fanatics and cultists, not rational individuals. No matter, even if Phoenix Project has succumbed to the malady of our times, we shall persevere.",,,,,,,,
 NJ_PISSED_MUTATIONS_CHOICE_2,Text,,The procedure is entirely safe and strictly voluntary,,,,,,,,
 NJ_PISSED_MUTATIONS_CHOICE_2_OUTCOME,Text,,"I shall take you at your word. Some of our citizens may join you to fight the Pandoravirus. Should I find out that any of them have been subjected to gene altering procedures against their will, we will respond. Do not mistake this for an idle threat.",,,,,,,,
-ANU_REALLY_PISSED_BIONICS_TEXT_GENERAL_0,Text,,I am now truly upset,,,,,,,,
-ANU_REALLY_PISSED_BIONICS_TITLE,Text,,Tantrum,,,,,,,,
-ANU_REALLY_PISSED_BIONICS_CHOICE_0,Text,,"Ok, whatever",,,,,,,,
-ANU_REALLY_PISSED_BIONICS_CHOICE_0_OUTCOME,Text,,,,,,,,,,
-NJ_REALLY_PISSED_MUTATIONS_TEXT_GENERAL_0,Text,,I hate you I hate you I hate you,,,,,,,,
-NJ_REALLY_PISSED_MUTATIONS_TITLE,Text,,Anger Issues,,,,,,,,
-NJ_REALLY_PISSED_MUTATIONS_CHOICE_0,Text,,O-kaaay,,,,,,,,
-NJ_REALLY_PISSED_MUTATIONS_CHOICE_0_OUTCOME,Text,,,,,,,,,,
+ANU_REALLY_PISSED_BIONICS_TEXT_GENERAL_0,Text,,"What an arrogant fool you are for indulging in the notion that we could be deceived. We have long sequenced you and your organization, and nothing can be hidden from us for long. Yes, our agents have done their work... The facilities you have been using to turn humans into robots lie in ruins.",,,,,,,,
+ANU_REALLY_PISSED_BIONICS_TITLE,Text,,Sabotage!,,,,,,,,
+ANU_REALLY_PISSED_BIONICS_CHOICE_0,Text,,OK,,,,,,,,
+ANU_REALLY_PISSED_BIONICS_CHOICE_0_OUTCOME,Text,,"Director, our bionic labs have been destroyed in a series of explosions! It must have have been the Disciples of Anu, but how did they do it? Could there be a traitor among our operatives?",,,,,,,,
+NJ_REALLY_PISSED_MUTATIONS_TEXT_GENERAL_0,Text,,"I thought I had myself clear: you shall not disfigure our men and women like if they were livestock, turn them into monstrosities to satisfy your delusions of grandeur.  ",,,,,,,,
+NJ_REALLY_PISSED_MUTATIONS_TITLE,Text,,Sabotage!,,,,,,,,
+NJ_REALLY_PISSED_MUTATIONS_CHOICE_0,Text,,OK,,,,,,,,
+NJ_REALLY_PISSED_MUTATIONS_CHOICE_0_OUTCOME,Text,,"Director, something happened in the mutation labs... There was a containment breach and we had to purge the entire facility. Some deaths among assisting personnel have ocurred. Was this the work New Jericho?",,,,,,,,
 VOID_OMEN_TITLE_01,Text,,"Ambushes more dangerous and more likely, but have more crates",,,,,,,,
 VOID_OMEN_TITLE_02,Text,,All diplomatic penalties and rewards halved,,,,,,,,
 VOID_OMEN_TITLE_03,Text,,"All abilities cost +50% WP, but Delirium has no effect on WP",,,,,,,,
@@ -336,11 +335,25 @@ KEY_OLENAONBEHEMOTH_DESCRIPTION,Text,,I don't think it came from an egg. It was 
 KEY_OLENAONALISTAIR_DESCRIPTION,Text,,"Oppa Alistair... He knows he's not very imaginative. And as he knows he can't be imagining things, he trusts what he sees. That's the best way I can put it, I guess.",,,,,,,,
 KEY_OLENAONSYMES_DESCRIPTION,Text,,"Symes wanted me out of the expedition. He hoped to return to Phoenix Point with a blueprint for a cure and he wanted me to help him make it. When it was you who arrived and without a shimmering blue vial, I admit I was disappointed. Not so Oppa Alistair, he didn't put much stake in what Symes was doing.",,,,,,,,
 KEY_OLENAONENDING_DESCRIPTION,Text,,"The choice you have to make... It's important, probably the most important a human being has ever had to make. Ending a war is easy: all you have to do is give up. We have to end this war the right way. I... I don't know what the right way is, but I hope you do. Otherwise it will all have been for nothing.",,,,,,,,
-PROG_LE3_WARN_TEXT_GENERAL_0,Text,,,,,,,,,,
-PROG_LE3_WARN_TITLE,Text,,,,,,,,,,
-PROG_LE2_WARN_TEXT_GENERAL_0,Text,,,,,,,,,,
-PROG_LE2_WARN_TITLE,Text,,,,,,,,,,
-PROG_LE1_WARN_TEXT_GENERAL_0,Text,,,,,,,,,,
-PROG_LE1_WARN_TITLE,Text,,,,,,,,,,
-PROG_AN2_CHOICE_0_TEXT,Text,,Maybe later.,,,,,,,,
-PROG_AN2_CHOICE_0_OUTCOME_GENERAL,Text,,"That's... disappointing. Very well, I hope you will change your mind.",,,,,,,,
+PROG_AN2_CHOICE_1_TEXT,Text,,Maybe later.,,,,,,,,
+PROG_AN2_CHOICE_1_OUTCOME_GENERAL,Text,,"That's... disappointing. Very well, I hope you will change your mind.",,,,,,,,
+PROG_LE3_WARN_TEXT_GENERAL_0,Text,,"Make no mistake: for the ancients, our ancestors were little more than curious animals. Perhaps they had laws to ensure our protection along with that of the other primates. Maybe they came from somewhere else and brought their own primordial soup with them… 
+
+These are gods we are talking about, only they cleaned their roadside picnic pretty well when they left. Fortunately for us, we were able to grow without the burden of familiarity with our precursors' magic. 
+
+Can you imagine how long it would have taken us to invent the lever had we been cursed with the power of ""protean mutane"" in our infancy?",,,,,,,,
+PROG_LE3_WARN_TITLE,Text,,Children of gods,,,,,,,,
+PROG_LE2_WARN_TEXT_GENERAL_0,Text,,"Their technology… It's so advanced as to be indistinguishable from magic. Take the Orichalcum: it shows an ability to manipulate matter and energy that is orders of magnitude higher than anything imaginable on such a small scale. Where did they come from and what could have happened to them? 
+
+These things they have left behind: the automata, the exotic materials… I suspect that is only part of their legacy. I believe they also passed on to us a terrifying fear of the unknown and the means of defeating it. It's all there: we only need to find it. ",,,,,,,,
+PROG_LE2_WARN_TITLE,Text,,A legacy of hope and fear,,,,,,,,
+PROG_LE1_WARN_TEXT_GENERAL_0,Text,,"I have always known about the ""Ancients"". I have these memories of my parents talking about them when I was a child... They weren't just real, they were more real to them than everything else. 
+
+And I have seen the ""Living Crystal"" before. My dad kept a small notebook with brown leather covers. Every page was crammed with Hangul writing and sketches. Sometimes I would sit on his lap and he would show me the drawings and explain what they were. The crystal stuck with me because dad joked that it would make my toys come alive. ",,,,,,,,
+PROG_LE1_WARN_TITLE,Text,,Parents and Forefathers,,,,,,,,
+PROG_SY_POSTPONE_CHOICE,Text,,Maybe later.,,,,,,,,
+PROG_SY_POSTPONE_TEXT,Text,,"That's... disappointing. Very well, I hope you will change your mind.",,,,,,,,
+PROG_NJ_POSTPONE_CHOICE,Text,,Maybe later.,,,,,,,,
+PROG_NJ_POSTPONE_TEXT,Text,,"That's... disappointing. Very well, I hope you will change your mind.",,,,,,,,
+KEY_INFESTATION_REWARD_TITLE,Text,,Rewards!,,,,,,,,
+KEY_INFESTATION_REWARD_DESCRIPTION,Text,,Nice things!,,,,,,,,

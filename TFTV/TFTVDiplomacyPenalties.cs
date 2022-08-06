@@ -172,6 +172,12 @@ namespace TFTV
         [HarmonyPatch(typeof(GeoFaction), "OnDiplomacyChanged")]
         public static class GeoBehemothActor_OnDiplomacyChanged_patch
         {
+            public static bool Prepare()
+            {
+                TFTVConfig config = TFTVMain.Main.Config;
+                return config.DiplomaticPenalties;
+            }
+
             public static void Postfix(GeoFaction __instance, PartyDiplomacy.Relation relation, int newValue)
 
             {

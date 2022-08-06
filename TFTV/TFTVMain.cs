@@ -20,6 +20,9 @@ namespace TFTV
         /// Config is accessible at any time, if any is declared.
         public new TFTVConfig Config => (TFTVConfig)base.Config;
 
+        public static TFTVMain Main { get; private set; }
+
+
         //TFTV Adding references to DefRepo and SharedData
         internal static readonly DefRepository Repo = GameUtl.GameComponent<DefRepository>();
         internal static readonly SharedData Shared = GameUtl.GameComponent<SharedData>();
@@ -141,6 +144,7 @@ namespace TFTV
         /// </summary>
         public override void OnModDisabled()
         {
+            Main = null;
             /// Undo any game modifications if possible. Else "CanSafelyDisable" must be set to false.
             /// ModGO will be destroyed after OnModDisabled.
         }

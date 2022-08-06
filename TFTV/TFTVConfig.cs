@@ -110,6 +110,11 @@ namespace TFTV
        description: "Removes cutscenes and missions, all items available at lowest prices 24 hours after discovering Marketplace.")]
         public bool ActivateKERework = true;
 
+        // If set to true, unrevealed havens will be revealed when attacked
+        [ConfigField(text: "Havens under attack revealed",
+       description: "Havens under attack will send an SOS, revealing their location to the player.")]
+        public bool HavenSOS = true;
+
         //If set to 1, shows when any error ocurrs. Do not change unless you know what you are doing.
         [ConfigField(text: "Debug log & messages",
        description: "Shows when any error ocurrs. Please, do not change unless you know what you are doing.")]

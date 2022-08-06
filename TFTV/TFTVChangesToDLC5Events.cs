@@ -154,6 +154,12 @@ namespace TFTV
 
         public static class GeoMarketplace_UpdateOptions_MarketPlace_patch
         {
+            public static bool Prepare()
+            {
+                TFTVConfig config = TFTVMain.Main.Config;
+                return config.ActivateKERework;
+            }
+
             public static void Prefix(GeoLevelController ____level)
             {
                 try
@@ -192,8 +198,8 @@ namespace TFTV
         {
             public static bool Prepare()
             {
-                TFTVConfig Config = new TFTVConfig();
-                return Config.ActivateKERework;
+                TFTVConfig config = TFTVMain.Main.Config;
+                return config.ActivateKERework;
             }
 
             public static void Prefix(GeoMarketplace __instance, GeoLevelController ____level, TheMarketplaceSettingsDef ____settings)
@@ -207,10 +213,6 @@ namespace TFTV
                         ____level.EventSystem.SetVariable(____settings.DLC5FinalMovieCompletedVariable, 1);
                         __instance.UpdateOptions(____level.Timing);
                     }
-
-                   
-                   
-
 
                 }
                 catch (Exception e)

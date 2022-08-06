@@ -76,36 +76,6 @@ namespace TFTV
             }
         }
 
-        public static int CheckForStatBonus(string stat, GeoCharacter geoCharacter)
-        {
-            try
-            {/*
-                List<PassiveModifierAbilityDef> passiveModifiers = geoCharacter.PassiveModifiers.ToList();
-                List<PassiveModifierAbilityDef> passiveModifiersFromItems = geoCharacter.PassiveModifiersFromItems.ToList();
-
-                foreach(PassiveModifierAbilityDef modifier in passiveModifiers) 
-                {
-                    for(int i = 0; i < modifier.StatModifications.Count(); i++) 
-                    {
-                        modifier.StatModifications[i].TargetStat
-                    
-                    }
-                
-                }*/
-              
-
-
-
-            }
-
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-            throw new InvalidOperationException();
-        }
-
-
         private static readonly DefRepository Repo = TFTVMain.Repo;
 
         [HarmonyPatch(typeof(GeoAlienFaction), "UpdateFactionDaily")]

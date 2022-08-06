@@ -21,8 +21,8 @@ namespace TFTV
         {
             public static bool Prepare()
             {
-                TFTVConfig Config = new TFTVConfig();
-                return Config.StaminaPenaltyFromInjury;
+                TFTVConfig config = TFTVMain.Main.Config;
+                return config.StaminaPenaltyFromInjury;
             }
 
             [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051")]
@@ -47,8 +47,8 @@ namespace TFTV
         {
             public static bool Prepare()
             {
-                TFTVConfig Config = new TFTVConfig();
-                return Config.StaminaPenaltyFromInjury;
+                TFTVConfig config = TFTVMain.Main.Config;
+                return config.StaminaPenaltyFromInjury;
             }
 
             public static void Postfix(GeoCharacter __instance)
@@ -76,8 +76,8 @@ namespace TFTV
 
             public static bool Prepare()
             {
-                TFTVConfig Config = new TFTVConfig();
-                return Config.StaminaPenaltyFromMutation;
+                TFTVConfig config = TFTVMain.Main.Config;
+                return config.StaminaPenaltyFromMutation;
             }
 
             public static void Postfix(IAugmentationUIModule ____parentModule)
@@ -99,8 +99,8 @@ namespace TFTV
         {
             public static bool Prepare()
             {
-                TFTVConfig Config = new TFTVConfig();
-                return Config.StaminaPenaltyFromBionics;
+                TFTVConfig config = TFTVMain.Main.Config;
+                return config.StaminaPenaltyFromBionics;
             }
 
 

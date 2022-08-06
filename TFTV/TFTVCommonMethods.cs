@@ -172,6 +172,12 @@ namespace TFTV
         [HarmonyPatch(typeof(GeoSite), "CreateHavenDefenseMission")]
         public static class GeoSite_CreateHavenDefenseMission_RevealHD_Patch
         {
+            public static bool Prepare()
+            {
+                TFTVConfig config = TFTVMain.Main.Config;
+                return config.HavenSOS;
+            }
+
             public static void Postfix(GeoSite __instance)
             {
                 try 

@@ -7,6 +7,7 @@ using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities.Items;
 using PhoenixPoint.Geoscape.Entities;
+using PhoenixPoint.Geoscape.Entities.Interception;
 using PhoenixPoint.Geoscape.Entities.Interception.Equipments;
 using PhoenixPoint.Geoscape.Entities.Research;
 using PhoenixPoint.Geoscape.Entities.Research.Requirement;
@@ -26,39 +27,13 @@ namespace TFTV
     {
 
         private static readonly DefRepository Repo = TFTVMain.Repo;
+        
 
         public static void ModifyAirCombatDefs()
         {
             try
             {
-                /* for testing purposes
-                foreach (CustomMissionTypeDef missionTypeDef in Repo.GetAllDefs<CustomMissionTypeDef>())
-                {
-
-                    if (missionTypeDef.name.Contains("Haven") && !missionTypeDef.name.Contains("Infestation"))
-                    {
-                        TacCrateDataDef cratesNotResources = Repo.GetAllDefs<TacCrateDataDef>().FirstOrDefault(ged => ged.name.Equals("Default_TacCrateDataDef"));
-                        if (missionTypeDef.name.Contains("Civ"))
-                        {
-                            missionTypeDef.ParticipantsRelations[1].MutualRelation = FactionRelation.Enemy;
-                        }
-                        else if (!missionTypeDef.name.Contains("Civ"))
-                        {
-                            missionTypeDef.ParticipantsRelations[2].MutualRelation = FactionRelation.Enemy;
-                        }
-                        missionTypeDef.ParticipantsData[1].PredeterminedFactionEffects = missionTypeDef.ParticipantsData[0].PredeterminedFactionEffects;
-                        missionTypeDef.MissionSpecificCrates = cratesNotResources;
-                        missionTypeDef.FactionItemsRange.Min = 2;
-                        missionTypeDef.FactionItemsRange.Max = 7;
-                        missionTypeDef.CratesDeploymentPointsRange.Min = 20;
-                        missionTypeDef.CratesDeploymentPointsRange.Max = 30;
-
-
-                        //WipeEnemyFactionObjectiveDef 50276
-                    }
-                }
-                */
-
+                
 
                 //implementing Belial's proposal: 
 
@@ -84,9 +59,10 @@ namespace TFTV
                 GeoVehicleWeaponDef railGunWDef = Repo.GetAllDefs<GeoVehicleWeaponDef>().FirstOrDefault(gvw => gvw.name.Equals("NJ_RailgunMaradeurAC4_VehicleWeaponDef"));
                 GeoVehicleWeaponDef laserGunWDef = Repo.GetAllDefs<GeoVehicleWeaponDef>().FirstOrDefault(gvw => gvw.name.Equals("SY_LaserGunArtemisMkI_VehicleWeaponDef"));
 
-                GeoVehicleModuleDef afterburnerMDef = Repo.GetAllDefs<GeoVehicleModuleDef>().FirstOrDefault(gvw => gvw.name.Equals("PX_Afterburner_GeoVehicleModuleDef"));
-                GeoVehicleModuleDef flaresMDef = Repo.GetAllDefs<GeoVehicleModuleDef>().FirstOrDefault(gvw => gvw.name.Equals("PX_Flares_GeoVehicleModuleDef"));
-                GeoVehicleModuleDef jammerMDef = Repo.GetAllDefs<GeoVehicleModuleDef>().FirstOrDefault(gvw => gvw.name.Equals("AN_ECMJammer_GeoVehicleModuleDef"));
+                //Design decision
+             //   GeoVehicleModuleDef afterburnerMDef = Repo.GetAllDefs<GeoVehicleModuleDef>().FirstOrDefault(gvw => gvw.name.Equals("PX_Afterburner_GeoVehicleModuleDef"));
+             //   GeoVehicleModuleDef flaresMDef = Repo.GetAllDefs<GeoVehicleModuleDef>().FirstOrDefault(gvw => gvw.name.Equals("PX_Flares_GeoVehicleModuleDef"));
+             //   GeoVehicleModuleDef jammerMDef = Repo.GetAllDefs<GeoVehicleModuleDef>().FirstOrDefault(gvw => gvw.name.Equals("AN_ECMJammer_GeoVehicleModuleDef"));
 
                 voidChamberWDef.ChargeTime = 10.0f;
                 var voidDamagePayload = voidChamberWDef.DamagePayloads[0].Damage;
@@ -100,9 +76,9 @@ namespace TFTV
                 railGunWDef.Accuracy = 70;
                 laserGunWDef.Accuracy = 85;
 
-                afterburnerMDef.AmmoCount = 3;
-                flaresMDef.AmmoCount = 3;
-                jammerMDef.AmmoCount = 3;
+                //afterburnerMDef.AmmoCount = 3;
+                //flaresMDef.AmmoCount = 3;
+                //jammerMDef.AmmoCount = 3;
 
                 //This is testing Belial's suggestions, unlocking flares via PX Aerial Warfare, etc.
                 AddItemToManufacturingReward("PX_Flares_GeoVehicleModuleDef",
@@ -156,6 +132,16 @@ namespace TFTV
 
                 reseachRequirementDefOpContainers[0].Requirements = researchRequirementDefs;
                 aLN_Large_Flyer_ResearchDef.RevealRequirements.Container.AddRangeToArray(reseachRequirementDefOpContainers);
+
+                //Changes to FesteringSkies settings
+                FesteringSkiesSettingsDef festeringSkiesSettingsDef = Repo.GetAllDefs<FesteringSkiesSettingsDef>().FirstOrDefault(gvw => gvw.name.Equals("FesteringSkiesSettingsDef"));
+                festeringSkiesSettingsDef.SpawnInfestedAircraftChance = 0;
+                festeringSkiesSettingsDef.InfestedAircraftChance = 0;
+
+                InterceptionGameDataDef interceptionGameDataDef = Repo.GetAllDefs<InterceptionGameDataDef>().FirstOrDefault(gvw => gvw.name.Equals("InterceptionGameDataDef"));
+                interceptionGameDataDef.DisengageDuration = 0;
+
+                RemoveHardFlyersTemplates();
             }
 
 
@@ -168,7 +154,81 @@ namespace TFTV
         public static void RemoveHardFlyersTemplates()
         {
             try
-            { /*
+            {
+                GeoVehicleWeaponDef acidSpit = Repo.GetAllDefs<GeoVehicleWeaponDef>().FirstOrDefault(gvw => gvw.name.Equals("ALN_AcidSpit_VehicleWeaponDef"));
+                GeoVehicleWeaponDef spikes = Repo.GetAllDefs<GeoVehicleWeaponDef>().FirstOrDefault(gvw => gvw.name.Equals("ALN_Spikes_VehicleWeaponDef"));
+                GeoVehicleWeaponDef napalmBreath = Repo.GetAllDefs<GeoVehicleWeaponDef>().FirstOrDefault(gvw => gvw.name.Equals("ALN_NapalmBreath_VehicleWeaponDef"));
+                GeoVehicleWeaponDef ram = Repo.GetAllDefs<GeoVehicleWeaponDef>().FirstOrDefault(gvw => gvw.name.Equals("ALN_Ram_VehicleWeaponDef"));
+                GeoVehicleWeaponDef tick = Repo.GetAllDefs<GeoVehicleWeaponDef>().FirstOrDefault(gvw => gvw.name.Equals("ALN_Tick_VehicleWeaponDef"));
+                GeoVehicleWeaponDef voidChamber = Repo.GetAllDefs<GeoVehicleWeaponDef>().FirstOrDefault(gvw => gvw.name.Equals("ALN_VoidChamber_VehicleWeaponDef"));
+
+               /* GeoVehicleWeaponDamageDef shredDamage = Repo.GetAllDefs<GeoVehicleWeaponDamageDef>().FirstOrDefault(gvw => gvw.name.Equals("Shred_GeoVehicleWeaponDamageDef")); 
+                GeoVehicleWeaponDamageDef regularDamage= Repo.GetAllDefs<GeoVehicleWeaponDamageDef>().FirstOrDefault(gvw => gvw.name.Equals("Regular_GeoVehicleWeaponDamageDef"));
+
+                tick.DamagePayloads[0] = new GeoWeaponDamagePayload { Damage = shredDamage, Amount = 20 };
+                tick.DamagePayloads.Add(new GeoWeaponDamagePayload { Damage = regularDamage, Amount = 60 });*/
+
+
+                GeoVehicleLoadoutDef charun2 = Repo.GetAllDefs<GeoVehicleLoadoutDef>().FirstOrDefault(gvw => gvw.name.Equals("AL_Small2_VehicleLoadout"));
+                GeoVehicleLoadoutDef charun4 = Repo.GetAllDefs<GeoVehicleLoadoutDef>().FirstOrDefault(gvw => gvw.name.Equals("AL_Small4_VehicleLoadout"));
+                GeoVehicleLoadoutDef berith1 = Repo.GetAllDefs<GeoVehicleLoadoutDef>().FirstOrDefault(gvw => gvw.name.Equals("AL_Medium1_VehicleLoadout"));
+                GeoVehicleLoadoutDef berith2 = Repo.GetAllDefs<GeoVehicleLoadoutDef>().FirstOrDefault(gvw => gvw.name.Equals("AL_Medium2_VehicleLoadout"));
+                GeoVehicleLoadoutDef berith3 = Repo.GetAllDefs<GeoVehicleLoadoutDef>().FirstOrDefault(gvw => gvw.name.Equals("AL_Medium3_VehicleLoadout"));
+                GeoVehicleLoadoutDef berith4 = Repo.GetAllDefs<GeoVehicleLoadoutDef>().FirstOrDefault(gvw => gvw.name.Equals("AL_Medium4_VehicleLoadout"));
+                GeoVehicleLoadoutDef abbadon1 = Repo.GetAllDefs<GeoVehicleLoadoutDef>().FirstOrDefault(gvw => gvw.name.Equals("AL_Large1_VehicleLoadout"));
+                GeoVehicleLoadoutDef abbadon2 = Repo.GetAllDefs<GeoVehicleLoadoutDef>().FirstOrDefault(gvw => gvw.name.Equals("AL_Large2_VehicleLoadout"));
+                GeoVehicleLoadoutDef abbadon3 = Repo.GetAllDefs<GeoVehicleLoadoutDef>().FirstOrDefault(gvw => gvw.name.Equals("AL_Large3_VehicleLoadout"));
+
+                charun2.EquippedItems[0] = napalmBreath;
+                charun2.EquippedItems[1] = ram;
+
+                charun4.EquippedItems[0] = voidChamber;
+                charun4.EquippedItems[1] = spikes;
+
+                berith1.EquippedItems[0] = acidSpit;
+                berith1.EquippedItems[1] = acidSpit;
+                berith1.EquippedItems[2] = spikes;
+                berith1.EquippedItems[3] = ram;
+
+                berith2.EquippedItems[0] = tick;
+                berith2.EquippedItems[1] = ram;
+                berith2.EquippedItems[2] = ram;
+                berith2.EquippedItems[3] = spikes;
+
+                berith3.EquippedItems[0] = napalmBreath;
+                berith3.EquippedItems[1] = spikes;
+                berith3.EquippedItems[2] = spikes;
+                berith3.EquippedItems[3] = ram;
+
+                berith4.EquippedItems[0] = voidChamber;
+                berith4.EquippedItems[1] = napalmBreath;
+                berith4.EquippedItems[2] = ram;
+                berith4.EquippedItems[3] = ram;
+
+                abbadon1.EquippedItems[0] = acidSpit;
+                abbadon1.EquippedItems[1] = acidSpit;
+                abbadon1.EquippedItems[2] = acidSpit;
+                abbadon1.EquippedItems[3] = spikes;
+                abbadon1.EquippedItems[4] = spikes;
+                abbadon1.EquippedItems[5] = spikes;
+
+                abbadon2.EquippedItems[0] = voidChamber;
+                abbadon2.EquippedItems[1] = napalmBreath;
+                abbadon2.EquippedItems[2] = ram;
+                abbadon2.EquippedItems[3] = ram;
+                abbadon2.EquippedItems[4] = ram;
+                abbadon2.EquippedItems[5] = ram;
+
+                abbadon3.EquippedItems[0] = voidChamber;
+                abbadon3.EquippedItems[1] = voidChamber;
+                abbadon3.EquippedItems[2] = ram;
+                abbadon3.EquippedItems[3] = ram;
+                abbadon3.EquippedItems[4] = spikes;
+                abbadon3.EquippedItems[5] = spikes;
+
+
+
+                /* Info about Vanilla loadouts:
                AlienFlyerResearchRewardDef aLN_Small_FlyerLoadouts= Repo.GetAllDefs<AlienFlyerResearchRewardDef>().FirstOrDefault(gvw => gvw.name.Equals("ALN_Small_Flyer_ResearchDef_FlyerLoadoutResearchRewardDef_0"));
                 AL_Small1_VehicleLoadout: ALN_AcidSpit_VehicleWeaponDef, ALN_Spikes_VehicleWeaponDef
                 AL_Small2_VehicleLoadout: ALN_NapalmBreath_VehicleWeaponDef, ALN_AcidSpit_VehicleWeaponDef
@@ -253,20 +313,14 @@ namespace TFTV
 
         public static class GeoAlienFaction_SpawnEgg_DestroyHavens_Patch
         {
-            public static bool Prepare()
-            {
-                TFTVConfig Config = new TFTVConfig();
-                return Config.ActivateAirCombatChanges;
-            }
-
-
+           
             public static void Postfix(GeoAlienFaction __instance, Vector3 worldPos)
             {
                 try
                 {
                     if (!checkHammerfall)
                     {
-                      
+
                         TFTVLogger.Always("Egg Spawned");
 
                         List<GeoHaven> geoHavens = __instance.GeoLevel.AnuFaction.Havens.ToList();
@@ -336,8 +390,8 @@ namespace TFTV
         {
             public static bool Prepare()
             {
-                TFTVConfig Config = new TFTVConfig();
-                return Config.ActivateAirCombatChanges;
+                TFTVConfig config = TFTVMain.Main.Config;
+                return config.HavenSOS;
             }
 
             public static void Postfix(GeoscapeRaid __instance)
@@ -366,6 +420,11 @@ namespace TFTV
 
         public static class GeoVehicle_OnArrivedAtDestination
         {
+            public static bool Prepare()
+            {
+                TFTVConfig config = TFTVMain.Main.Config;
+                return config.ActivateAirCombatChanges;
+            }
 
             public static void Postfix(GeoVehicle __instance, bool justPassing)
             {
@@ -404,6 +463,11 @@ namespace TFTV
         [HarmonyPatch(typeof(GeoBehemothActor), "PickSubmergeLocation")]
         public static class GeoBehemothActor_PickSubmergeLocation_patch
         {
+            public static bool Prepare()
+            {
+                TFTVConfig config = TFTVMain.Main.Config;
+                return config.ActivateAirCombatChanges;
+            }
             public static void Postfix()
 
             {
@@ -430,7 +494,11 @@ namespace TFTV
 
         public static class GeoscapeRaid_StopBehemothFollowing_patch
         {
-
+            public static bool Prepare()
+            {
+                TFTVConfig config = TFTVMain.Main.Config;
+                return config.ActivateAirCombatChanges;
+            }
             public static void Prefix(GeoscapeRaid __instance)
             {
                 try
@@ -456,6 +524,11 @@ namespace TFTV
         [HarmonyPatch(typeof(GeoBehemothActor), "IsValidTarget")]
         public static class GeoBehemothActor_AttemptToPickTargetHaven_BehemothTargetting_Patch
         {
+            public static bool Prepare()
+            {
+                TFTVConfig config = TFTVMain.Main.Config;
+                return config.ActivateAirCombatChanges;
+            }
             public static bool Prefix(ref bool __result, GeoSite site)
             {
                 try
@@ -483,15 +556,15 @@ namespace TFTV
             }
         }
 
-         
+
 
         [HarmonyPatch(typeof(InterceptionGameController), "DisengagePlayer")]
         public static class InterceptionGameController_DisengagePlayer_DisengageDestroyRandomWeapon_patch
         {
             public static bool Prepare()
             {
-                TFTVConfig Config = new TFTVConfig();
-                return Config.ActivateAirCombatChanges;
+                TFTVConfig config = TFTVMain.Main.Config;
+                return config.ActivateAirCombatChanges;
             }
 
 
@@ -500,6 +573,7 @@ namespace TFTV
                 try
                 {
                     int numberOfActiveWeaponsEnemy = 0;
+                    int num = 0;
 
                     for (int i = 0; i < __instance.EnemyAircraft.Weapons.Count(); i++)
                     {
@@ -512,17 +586,31 @@ namespace TFTV
                     }
 
                     TFTVLogger.Always("Number of active enemy weapons: " + numberOfActiveWeaponsEnemy);
-
-                    int num = UnityEngine.Random.Range(0, 100 + 25 * numberOfActiveWeaponsEnemy);
-                    TFTVLogger.Always("Rol: " + num);
-                    if (num > 100)
+                    if (numberOfActiveWeaponsEnemy > 0)
                     {
+                        num = UnityEngine.Random.Range(0, 100 + 25 * numberOfActiveWeaponsEnemy);
+                        TFTVLogger.Always("Rol: " + num);
+
+                        // if (num > 100)
+                        // {
                         GeoVehicle playerCraft = __instance.CurrentMission.PlayerAircraft.Vehicle;
-                        GeoVehicleEquipment randomWeapon = playerCraft.Weapons.ToList().GetRandomElement();
-                        playerCraft.RemoveEquipment(randomWeapon);
-                        GameUtl.GetMessageBox().ShowSimplePrompt($"<b>{randomWeapon.EquipmentDef.GetDisplayName().LocalizeEnglish()}</b>" + " was destroyed "
-                                        + " during " + $"{playerCraft.Name}" + "'s" + " disengagement maneuvers.", MessageBoxIcon.None, MessageBoxButtons.OK, null);
+                        if (playerCraft.Stats.HitPoints > num || playerCraft.Stats.HitPoints < 10)
+                        {
+
+                            // GeoVehicleEquipment randomWeapon = playerCraft.Weapons.ToList().GetRandomElement();
+                            playerCraft.DamageAircraft(num);
+                        }
+                        else
+                        {
+                            int hitpoints = playerCraft.Stats.HitPoints;
+                            playerCraft.DamageAircraft(hitpoints - 1);
+                        }
+
+                        //   playerCraft.RemoveEquipment(randomWeapon);
+                        GameUtl.GetMessageBox().ShowSimplePrompt($"{playerCraft.Name}" + " suffered damage "
+                                        + " during " + "disengagement maneuvers.", MessageBoxIcon.None, MessageBoxButtons.OK, null);
                     }
+                    
                 }
                 catch (Exception e)
                 {
