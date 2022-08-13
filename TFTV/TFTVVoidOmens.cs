@@ -581,6 +581,7 @@ namespace TFTV
                 string triggeredVoidOmens = "TriggeredVoidOmen_";
                 string voidOmen = "VoidOmen_";
                 string voidOmenTitle = "VOID_OMEN_TITLE_";
+                string voidOmenDescription = "VOID_OMEN_DESCRIPTION_TEXT_";
 
                 // And an array to record which variables hold which Dark Events
                 int[] voidOmensinPlay = CheckFordVoidOmensInPlay(geoLevelController);
@@ -616,9 +617,8 @@ namespace TFTV
 
                 if (replacedVoidOmen != 0)
                 {
-                    string objectiveToBeReplaced = voidOmenTitle + replacedVoidOmen;
-                    TFTVLogger.Always("The target event that will be replaced is " + objectiveToBeReplaced);
-                    RemoveVoidOmenObjective(objectiveToBeReplaced, geoLevelController);
+                    TFTVLogger.Always("The target event that will be replaced is " + voidOmenTitle + replacedVoidOmen);
+                    RemoveVoidOmenObjective(voidOmenTitle + replacedVoidOmen, voidOmenDescription + replacedVoidOmen, geoLevelController);
                 }
             }
             catch (Exception e)
@@ -635,6 +635,7 @@ namespace TFTV
                 string triggeredVoidOmens = "TriggeredVoidOmen_";
                 string voidOmen = "VoidOmen_";
                 string voidOmenTitle = "VOID_OMEN_TITLE_";
+                string voidOmenDescription = "VOID_OMEN_DESCRIPTION_TEXT_";
 
                 // And an array to record which variables hold which Dark Events
                 int[] voidOmensinPlay = CheckFordVoidOmensInPlay(geoLevelController);
@@ -665,9 +666,8 @@ namespace TFTV
                     }
                     if (replacedVoidOmen != 0)
                     {
-                        string objectiveToBeReplaced = voidOmenTitle + replacedVoidOmen;
-                        TFTVLogger.Always("The target event that will be replaced is " + objectiveToBeReplaced);
-                        RemoveVoidOmenObjective(objectiveToBeReplaced, geoLevelController);
+                        TFTVLogger.Always("The target event that will be replaced is " + voidOmenTitle + replacedVoidOmen);
+                        RemoveVoidOmenObjective(voidOmenTitle + replacedVoidOmen, voidOmenDescription + replacedVoidOmen, geoLevelController);
                     }
                 }
             }
@@ -689,7 +689,7 @@ namespace TFTV
                 };
                 level.PhoenixFaction.AddObjective(voidOmenObjective);
 
-   
+
             }
             catch (Exception e)
             {
@@ -698,37 +698,100 @@ namespace TFTV
 
         }
 
-        public static void RemoveVoidOmenObjective(string title, GeoLevelController level)
+        public static void RemoveVoidOmenObjective(string title, string description, GeoLevelController level)
         {
             try
             {
-                if (level.PhoenixFaction.Objectives != null && level.PhoenixFaction.Objectives.Count > 0)
+
+                List<GeoFactionObjective> listOfObjectives = level.PhoenixFaction.Objectives.ToList();
+
+                foreach (GeoFactionObjective objective1 in listOfObjectives)
                 {
-                    GeoFactionObjective objective = level.PhoenixFaction.Objectives.ToList().FirstOrDefault(gfo => gfo.Title.LocalizationKey.Equals(title));
-                    if (objective != null)
+                    if (objective1.Title == null)
                     {
-                        level.PhoenixFaction.RemoveObjective(objective);
+                        TFTVLogger.Always("objective1.Title is missing!");
                     }
+                    else
+                    {
+                        if (objective1.Title.LocalizationKey == null)
+                        {
+                            TFTVLogger.Always("objective1.Title.LocalizationKey is missing!");
+                        }
+                        else
+                        {
+                            if (objective1.Title.LocalizationKey == title)
+                            {
+                                level.PhoenixFaction.RemoveObjective(objective1);
+                            }
+                        }
+                    }
+
                 }
+                    /*
 
-                /*
-                                List<GeoFactionObjective> listOfObjectives = level.PhoenixFaction.Objectives.ToList();
+                    foreach (GeoFactionObjective objective1 in level.PhoenixFaction.Objectives)
+                {
+                    if (objective1.Title != null)
+                    {
+                        TFTVLogger.Always(objective1.Title.ToString());
+                        if (objective1.Title.LocalizationKey != null)
+                        {
+                            TFTVLogger.Always(objective1.Title.LocalizationKey);
+                        }
+                        else
+                        {
+                            TFTVLogger.Always("objective1.Title.LocalizationKey is missing!");
+                        }
+                    }
+                    else
+                    {
+                        TFTVLogger.Always("objective1.Title is missing!");
+                    }
 
-                                foreach (GeoFactionObjective objective in listOfObjectives)
-                                {
-                                    TFTVLogger.Always(objective.Title.LocalizationKey);
+
+
+                    foreach (GeoFactionObjective geoFactionObjective in level.PhoenixFaction.Objectives)
+                    {
+                        if (geoFactionObjective.Title.LocalizationKey == title || geoFactionObjective.Description.LocalizationKey == description)
+                        {
+                            level.PhoenixFaction.RemoveObjective(geoFactionObjective);
+
+                        }
+
+                    }*/
+
+                    /*
+                                    GeoFactionObjective objective = level.PhoenixFaction.Objectives.ToList().FirstOrDefault(gfo => gfo.Title.LocalizationKey.Equals(title));
+
+
+                                    TFTVLogger.Always("Objective title is " + objective.Title.LocalizationKey);
+
                                     if (objective.Title.LocalizationKey == title)
                                     {
-                                        level.PhoenixFaction.RemoveObjective(objective);
-                                    }
-                                }*/
-                /*
-                                GeoFactionObjective voidOmenObjective = level.PhoenixFaction.Objectives.FirstOrDefault(ged => ged.Title.LocalizationKey.Equals(title));
-                                string checktitle = voidOmenObjective.GetTitle();
-                                TFTVLogger.Always("the title in the RemoveVoidOmenObjective method is " + title);
-                                TFTVLogger.Always("if we found the objective, there should be something here " + checktitle);*/
+                                        TFTVLogger.Always("Second check, objective title is " + objective.Title.LocalizationKey);
+
+                                    }*/
 
 
+                    /*
+                                    List<GeoFactionObjective> listOfObjectives = level.PhoenixFaction.Objectives.ToList();
+
+                                    foreach (GeoFactionObjective objective in listOfObjectives)
+                                    {
+                                        TFTVLogger.Always(objective.Title.LocalizationKey);
+                                        if (objective.Title.LocalizationKey == title)
+                                        {
+                                            level.PhoenixFaction.RemoveObjective(objective);
+                                        }
+                                    }*/
+                    /*
+                                    GeoFactionObjective voidOmenObjective = level.PhoenixFaction.Objectives.FirstOrDefault(ged => ged.Title.LocalizationKey.Equals(title));
+                                    string checktitle = voidOmenObjective.GetTitle();
+                                    TFTVLogger.Always("the title in the RemoveVoidOmenObjective method is " + title);
+                                    TFTVLogger.Always("if we found the objective, there should be something here " + checktitle);*/
+
+
+                
             }
             catch (Exception e)
             {

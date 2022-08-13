@@ -81,20 +81,38 @@ namespace TFTV
                 //jammerMDef.AmmoCount = 3;
 
                 //This is testing Belial's suggestions, unlocking flares via PX Aerial Warfare, etc.
-                AddItemToManufacturingReward("PX_Flares_GeoVehicleModuleDef",
+                AddItemToManufacturingReward("PX_Aircraft_Flares_ResearchDef_ManufactureResearchRewardDef_0",
                     "PX_AerialWarfare_ResearchDef_ManufactureResearchRewardDef_0", "PX_Aircraft_Flares_ResearchDef");
-                AddItemToManufacturingReward("PX_VirophageGunFenrirRC7_VehicleWeaponDef",
-                    "PX_VirophageWeapons_ResearchDef_ManufactureResearchRewardDef_0", "PX_Aircraft_VirophageGun_ResearchDef");
-                AddItemToManufacturingReward("PX_ElectrolaserThunderboltHC9_VehicleWeaponDef",
-                    "PX_AdvancedLaserTech_ResearchDef_ManufactureResearchRewardDef_0", "PX_Aircraft_Electrolaser_ResearchDef");
 
-                AddItemToManufacturingReward("PX_HypersonicMissileHandOfTyr_VehicleWeaponDef",
-                    "PX_AdvancedShreddingTech_ResearchDef_ManufactureResearchRewardDef_0", "PX_Aircraft_HypersonicMissile_ResearchDef");
-                AddItemToManufacturingReward("NJ_TacticalNuclearMissileArmageddonAAM_VehicleWeaponDef",
+                ManufactureResearchRewardDef fenrirReward = Repo.GetAllDefs<ManufactureResearchRewardDef>().FirstOrDefault(gvw => gvw.name.Equals("PX_Aircraft_VirophageGun_ResearchDef_ManufactureResearchRewardDef_0"));
+                ManufactureResearchRewardDef virophageWeaponsReward = Repo.GetAllDefs<ManufactureResearchRewardDef>().FirstOrDefault(gvw => gvw.name.Equals("PX_VirophageWeapons_ResearchDef_ManufactureResearchRewardDef_0"));
+                List<ItemDef> rewardsVirophage = virophageWeaponsReward.Items.ToList();
+                rewardsVirophage.Add(fenrirReward.Items[0]);
+                virophageWeaponsReward.Items = rewardsVirophage.ToArray();
+                ResearchDef fenrirResearch = Repo.GetAllDefs<ResearchDef>().FirstOrDefault(gvw => gvw.name.Equals("PX_Aircraft_VirophageGun_ResearchDef"));
+                fenrirResearch.HideInUI = true;
+
+                ManufactureResearchRewardDef thunderboltReward = Repo.GetAllDefs<ManufactureResearchRewardDef>().FirstOrDefault(gvw => gvw.name.Equals("PX_Aircraft_Electrolaser_ResearchDef_ManufactureResearchRewardDef_0"));
+                ManufactureResearchRewardDef advancedLasersReward = Repo.GetAllDefs<ManufactureResearchRewardDef>().FirstOrDefault(gvw => gvw.name.Equals("PX_AdvancedLaserTech_ResearchDef_ManufactureResearchRewardDef_0"));
+                List<ItemDef> rewardsAdvancedLasers = advancedLasersReward.Items.ToList();
+                rewardsAdvancedLasers.Add(thunderboltReward.Items[0]);
+                advancedLasersReward.Items = rewardsAdvancedLasers.ToArray();
+                ResearchDef electroLaserResearch = Repo.GetAllDefs<ResearchDef>().FirstOrDefault(gvw => gvw.name.Equals("PX_Aircraft_Electrolaser_ResearchDef"));
+                electroLaserResearch.HideInUI = true;
+
+                ManufactureResearchRewardDef handOfTyrReward = Repo.GetAllDefs<ManufactureResearchRewardDef>().FirstOrDefault(gvw => gvw.name.Equals("PX_Aircraft_HypersonicMissile_ResearchDef_ManufactureResearchRewardDef_0"));
+                ManufactureResearchRewardDef advancedShreddingReward = Repo.GetAllDefs<ManufactureResearchRewardDef>().FirstOrDefault(gvw => gvw.name.Equals("PX_AdvancedShreddingTech_ResearchDef_ManufactureResearchRewardDef_0"));
+                List<ItemDef> rewardsAdvancedShredding = advancedShreddingReward.Items.ToList();
+                rewardsAdvancedShredding.Add(handOfTyrReward.Items[0]);
+                advancedShreddingReward.Items = rewardsAdvancedShredding.ToArray();
+                ResearchDef handOfTyrResearch = Repo.GetAllDefs<ResearchDef>().FirstOrDefault(gvw => gvw.name.Equals("PX_Aircraft_HypersonicMissile_ResearchDef"));
+                handOfTyrResearch.HideInUI = true;
+
+                AddItemToManufacturingReward("NJ_Aircraft_TacticalNuke_ResearchDef_ManufactureResearchRewardDef_0",
                     "NJ_GuidanceTech_ResearchDef_ManufactureResearchRewardDef_0", "NJ_Aircraft_TacticalNuke_ResearchDef");
-                AddItemToManufacturingReward("NJ_FuelTanks_GeoVehicleModuleDef",
+                AddItemToManufacturingReward("NJ_Aircraft_FuelTank_ResearchDef_ManufactureResearchRewardDef_0",
                     "NJ_VehicleTech_ResearchDef_ManufactureResearchRewardDef_0", "NJ_Aircraft_FuelTank_ResearchDef");
-                AddItemToManufacturingReward("NJ_CruiseControl_GeoVehicleModuleDef",
+                AddItemToManufacturingReward("NJ_Aircraft_CruiseControl_ResearchDef_ManufactureResearchRewardDef_0",
                     "SYN_Rover_ResearchDef_ManufactureResearchRewardDef_0", "NJ_Aircraft_CruiseControl_ResearchDef");
 
                 ManufactureResearchRewardDef medusaAAM = Repo.GetAllDefs<ManufactureResearchRewardDef>().FirstOrDefault(gvw => gvw.name.Equals("SYN_Aircraft_EMPMissile_ResearchDef_ManufactureResearchRewardDef_0"));
@@ -108,13 +126,13 @@ namespace TFTV
                 //This one is the source of the gamebreaking bug:
                 /* AddItemToManufacturingReward("SY_EMPMissileMedusaAAM_VehicleWeaponDef",
                          "SYN_AerialWarfare_ResearchDef_ManufactureResearchRewardDef_0", "SYN_Aircraft_EMPMissile_ResearchDef");*/
-                AddItemToManufacturingReward("AN_Oracle_GeoVehicleModuleDef",
+                AddItemToManufacturingReward("ANU_Aircraft_Oracle_ResearchDef_ManufactureResearchRewardDef_0",
                     "ANU_AerialWarfare_ResearchDef_ManufactureResearchRewardDef_0", "ANU_Aircraft_Oracle_ResearchDef");
-                CreateManufacturingReward("AN_ECMJammer_GeoVehicleModuleDef", "AN_MutogCatapultIsharasBane_VehicleWeaponDef",
-                    "ANU_Aircraft_ECMJammer_ResearchDef_ManufactureResearchRewardDef_0", "ANU_Aircraft_ECMJammer_ResearchDef",
+                CreateManufacturingReward("ANU_Aircraft_MutogCatapult_ResearchDef_ManufactureResearchRewardDef_0",
+                    "ANU_Aircraft_ECMJammer_ResearchDef_ManufactureResearchRewardDef_0", "ANU_Aircraft_ECMJammer_ResearchDef", "ANU_Aircraft_MutogCatapult_ResearchDef",
                     "ANU_AdvancedBlimp_ResearchDef");
-                CreateManufacturingReward("PX_AutocannonBrokkrAC3_VehicleWeaponDef", "SY_SecurityStations_GeoVehicleModuleDef",
-                      "PX_Aircraft_Autocannon_ResearchDef_ManufactureResearchRewardDef_0", "PX_Aircraft_Autocannon_ResearchDef",
+                CreateManufacturingReward("PX_Aircraft_Autocannon_ResearchDef_ManufactureResearchRewardDef_0", "SYN_Aircraft_SecurityStation_ResearchDef_ManufactureResearchRewardDef_0",
+                      "SYN_Aircraft_SecurityStation_ResearchDef", "PX_Aircraft_Autocannon_ResearchDef",
                       "PX_Alien_Spawnery_ResearchDef");
 
 
@@ -154,7 +172,7 @@ namespace TFTV
                 festeringSkiesSettingsDef.InfestedAircraftChance = 0;
 
                 InterceptionGameDataDef interceptionGameDataDef = Repo.GetAllDefs<InterceptionGameDataDef>().FirstOrDefault(gvw => gvw.name.Equals("InterceptionGameDataDef"));
-                interceptionGameDataDef.DisengageDuration = 0;
+             //   interceptionGameDataDef.DisengageDuration = 1;
 
                 RemoveHardFlyersTemplates();
             }
@@ -275,16 +293,18 @@ namespace TFTV
 
         }
 
-        public static void AddItemToManufacturingReward(string module, string reward, string research)
+        public static void AddItemToManufacturingReward(string researchReward, string reward, string research)
         {
 
             try
             {
-                ItemDef moduleDef = Repo.GetAllDefs<GeoVehicleModuleDef>().FirstOrDefault(gvw => gvw.name.Equals(module));
+
+                ManufactureResearchRewardDef researchRewardDef = Repo.GetAllDefs<ManufactureResearchRewardDef>().FirstOrDefault(gvw => gvw.name.Equals(researchReward));
                 ManufactureResearchRewardDef rewardDef = Repo.GetAllDefs<ManufactureResearchRewardDef>().FirstOrDefault(gvw => gvw.name.Equals(reward));
+
                 ResearchDef researchDef = Repo.GetAllDefs<ResearchDef>().FirstOrDefault(gvw => gvw.name.Equals(research));
                 List<ItemDef> rewards = rewardDef.Items.ToList();
-                rewards.Add(moduleDef);
+                rewards.Add(researchRewardDef.Items[0]);
                 rewardDef.Items = rewards.ToArray();
                 researchDef.HideInUI = true;
 
@@ -296,21 +316,24 @@ namespace TFTV
 
         }
 
-        public static void CreateManufacturingReward(string module1, string module2, string reward, string research, string newResearch)
+        public static void CreateManufacturingReward(string researchReward1, string researchReward2, string research, string research2, string newResearch)
         {
+
             try
             {
-                ItemDef moduleDef = Repo.GetAllDefs<GeoVehicleModuleDef>().FirstOrDefault(gvw => gvw.name.Equals(module1));
-                ItemDef moduleDef2 = Repo.GetAllDefs<GeoVehicleModuleDef>().FirstOrDefault(gvw => gvw.name.Equals(module2));
-                ManufactureResearchRewardDef rewardDef = Repo.GetAllDefs<ManufactureResearchRewardDef>().FirstOrDefault(gvw => gvw.name.Equals(reward));
+
+                ManufactureResearchRewardDef researchReward1Def = Repo.GetAllDefs<ManufactureResearchRewardDef>().FirstOrDefault(gvw => gvw.name.Equals(researchReward1));
+                ManufactureResearchRewardDef researchReward2Def = Repo.GetAllDefs<ManufactureResearchRewardDef>().FirstOrDefault(gvw => gvw.name.Equals(researchReward2));
                 ResearchDef researchDef = Repo.GetAllDefs<ResearchDef>().FirstOrDefault(gvw => gvw.name.Equals(research));
+                ResearchDef research2Def = Repo.GetAllDefs<ResearchDef>().FirstOrDefault(gvw => gvw.name.Equals(research2));
                 ResearchDef newResearchDef = Repo.GetAllDefs<ResearchDef>().FirstOrDefault(gvw => gvw.name.Equals(newResearch));
-                List<ItemDef> rewards = rewardDef.Items.ToList();
-                rewards.Add(moduleDef2);
-                rewardDef.Items = rewards.ToArray();
+                List<ItemDef> rewards = researchReward2Def.Items.ToList();
+                rewards.Add(researchReward1Def.Items[0]);
+                researchReward2Def.Items = rewards.ToArray();
                 newResearchDef.Unlocks = researchDef.Unlocks;
-                newResearchDef.Unlocks[0] = rewardDef;
+                newResearchDef.Unlocks[0] = researchReward2Def;
                 researchDef.HideInUI = true;
+                research2Def.HideInUI = true;
 
             }
             catch (Exception e)
@@ -396,6 +419,7 @@ namespace TFTV
         }
 
         public static List<GeoSite> targetsForBehemoth = new List<GeoSite>();
+        public static List<GeoSite> targetsVisitedByBehemoth = new List<GeoSite>();
 
         //patch to reveal havens under attack
         [HarmonyPatch(typeof(GeoscapeRaid), "StartAttackEffect")]
@@ -428,8 +452,6 @@ namespace TFTV
         }
 
         public static Dictionary<int, List<GeoSite>> flyersAndHavens = new Dictionary<int, List<GeoSite>>();
-        public static bool BehemothFirstMove = false;
-
 
         [HarmonyPatch(typeof(GeoVehicle), "OnArrivedAtDestination")]
 
@@ -458,7 +480,7 @@ namespace TFTV
                         }
 
 
-                        TFTVLogger.Always("Added to list of havens visisted " + __instance.CurrentSite);
+                        TFTVLogger.Always("Added to list of havens visisted " + __instance.CurrentSite.LocalizedSiteName);
                     }
 
                 }
@@ -471,7 +493,7 @@ namespace TFTV
 
         }
 
-        //  public static bool BehemothSubmerging; 
+        //public static bool BehemothSubmerging; 
 
         [HarmonyPatch(typeof(GeoBehemothActor), "PickSubmergeLocation")]
         public static class GeoBehemothActor_PickSubmergeLocation_patch
@@ -481,16 +503,16 @@ namespace TFTV
                 TFTVConfig config = TFTVMain.Main.Config;
                 return config.ActivateAirCombatChanges;
             }
-            public static void Postfix()
+            public static void Postfix(GeoBehemothActor __instance)
 
             {
                 try
                 {
                     TFTVLogger.Always("Behemoth submerging");
-                    // BehemothSubmerging = true;
+                    //  BehemothSubmerging = true;
                     flyersAndHavens.Clear();
                     targetsForBehemoth.Clear();
-                    BehemothFirstMove = false;
+                    Behemoth = __instance;
 
                 }
                 catch (Exception e)
@@ -502,6 +524,7 @@ namespace TFTV
 
         }
 
+        public static GeoBehemothActor Behemoth = null;
 
 
         [HarmonyPatch(typeof(GeoscapeRaid), "StopBehemothFollowing")]
@@ -522,11 +545,11 @@ namespace TFTV
                         foreach (GeoSite haven in flyersAndHavens[__instance.GeoVehicle.VehicleID])
                         {
 
-                            if (haven.State != GeoSiteState.Destroyed)
+                            if (!targetsForBehemoth.Contains(haven) && !targetsVisitedByBehemoth.Contains(haven) && haven.State != GeoSiteState.Destroyed && (Behemoth == null || Behemoth != null && !Behemoth.IsSubmerging && Behemoth.CurrentBehemothStatus != GeoBehemothActor.BehemothStatus.Dormant))
                             {
                                 targetsForBehemoth.Add(haven);
 
-                                TFTVLogger.Always("Haven " + haven + " added to the list of targets");
+                                TFTVLogger.Always("Haven " + haven.LocalizedSiteName + " added to the list of targets");
                             }
                         }
                     }
@@ -581,23 +604,51 @@ namespace TFTV
         [HarmonyPatch(typeof(GeoBehemothActor), "UpdateHourly")]
         public static class GeoBehemothActor_UpdateHourly_Patch
         {
-            public static void Prefix(GeoBehemothActor __instance)
+            public static void Postfix(GeoBehemothActor __instance)
             {
                 try
                 {
-                    TFTVLogger.Always("UpdateHourly method invoked");
-
-                    if (targetsForBehemoth.Count > 0) //&& (__instance.TargetSite.Type != GeoSiteType.Haven || !__instance.HasTargetHaven))                     
+                    if (!__instance.IsSubmerging && __instance.CurrentBehemothStatus != GeoBehemothActor.BehemothStatus.Dormant && targetsForBehemoth.Count > 0)
                     {
                         if (!__instance.HasTargetHaven)
                         {
-
-                            TFTVLogger.Always("UpdateHourly method invoked and passed if check");
                             GeoSite chosenHaven = targetsForBehemoth.GetRandomElement();
-                            typeof(GeoBehemothActor).GetMethod("TargetHaven", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(__instance, new object[] { chosenHaven });
-                            // __instance.InitiateTravelling();
                             targetsForBehemoth.Remove(chosenHaven);
+                            if (!targetsVisitedByBehemoth.Contains(chosenHaven))
+                            {
+                                TFTVLogger.Always("The target haven is " + chosenHaven.LocalizedSiteName);
+
+                                typeof(GeoBehemothActor).GetMethod("TargetHaven", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(__instance, new object[] { chosenHaven });
+                                targetsVisitedByBehemoth.Add(chosenHaven);
+                            }
+
                         }
+                    }
+                    if (__instance.HasTargetHaven && __instance.TargetSite.State == GeoSiteState.Destroyed)
+                    {
+                        if (targetsForBehemoth.Count > 0)
+                        {
+                            GeoSite chosenHaven = targetsForBehemoth.GetRandomElement();
+                            targetsForBehemoth.Remove(chosenHaven);
+                            if (!targetsVisitedByBehemoth.Contains(chosenHaven))
+                            {
+                                TFTVLogger.Always("The target haven is " + chosenHaven.LocalizedSiteName);
+
+                                typeof(GeoBehemothActor).GetMethod("TargetHaven", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(__instance, new object[] { chosenHaven });
+                                targetsVisitedByBehemoth.Add(chosenHaven);
+                            }
+                        }
+                        else
+                        {
+                            GetBehemothToMoveSomewhere(__instance);
+                        }
+                    }
+
+                    if (__instance.CurrentBehemothStatus == GeoBehemothActor.BehemothStatus.Dormant)
+                    {
+                        Behemoth = null;
+                        targetsForBehemoth.Clear();
+                        targetsVisitedByBehemoth.Clear();
                     }
                 }
                 catch (Exception e)
@@ -616,50 +667,14 @@ namespace TFTV
             {
                 try
                 {
-                    if (targetsForBehemoth.Count > 0)
+                    if (targetsForBehemoth.Count == 0)
                     {
-                        TFTVLogger.Always("How long is targetsForBehemoth list " + targetsForBehemoth.Count);
-                        GeoSite chosenHaven = targetsForBehemoth.GetRandomElement();
-
-                        if (chosenHaven != null)
-                        {
-
-                            typeof(GeoBehemothActor).GetMethod("TargetHaven", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(__instance, new object[] { chosenHaven });
-                            targetsForBehemoth.Remove(chosenHaven);
-
-                        }
+                        GetBehemothToMoveSomewhere(__instance);
 
                         return false;
                     }
-                    else 
+                    else
                     {
-                        TFTVLogger.Always("TargetsForBehemoth must be 0, so we are here");
-
-                        List<GeoHaven> geoHavens = __instance.GeoLevel.AnuFaction.Havens.ToList();
-                        geoHavens.AddRange(__instance.GeoLevel.NewJerichoFaction.Havens.ToList());
-                        geoHavens.AddRange(__instance.GeoLevel.SynedrionFaction.Havens.ToList());
-                        List<GeoSite> geoSites = new List<GeoSite>();
-
-                        foreach (GeoHaven haven in geoHavens)
-                        {
-                           if (Vector3.Distance(haven.Site.WorldPosition, __instance.WorldPosition) <= 1)
-                            {
-                                geoSites.Add(haven.Site);
-                            }
-                        }
-
-                        GeoSite targetReference = geoSites.GetRandomElement();
-                                              
-                        IOrderedEnumerable<GeoSite> orderedEnumerable = from s in __instance.GeoLevel.Map.GetConnectedSitesOfType_Land(targetReference, GeoSiteType.Exploration, activeOnly: false)
-                                                                        orderby GeoMap.Distance(targetReference, s)
-                                                                        select s;
-                      
-                        GeoSite chosenTarget = orderedEnumerable.First();
-                        TFTVLogger.Always("The count of possible explo sites is " + orderedEnumerable.Count());
-                        TFTVLogger.Always("The chosen site is " + chosenTarget.Name);
-
-                        typeof(GeoBehemothActor).GetMethod("TargetHaven", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(__instance, new object[] { chosenTarget });
-
                         return false;
                     }
                 }
@@ -671,7 +686,78 @@ namespace TFTV
             }
         }
 
-        
+        public static void GetBehemothToMoveSomewhere(GeoBehemothActor geoBehemothActor)
+
+        {
+            try
+            {
+                TFTVLogger.Always("TargetsForBehemoth must be 0, so we are here");
+
+                List<GeoHaven> geoHavens = geoBehemothActor.GeoLevel.AnuFaction.Havens.ToList();
+                geoHavens.AddRange(geoBehemothActor.GeoLevel.NewJerichoFaction.Havens.ToList());
+                geoHavens.AddRange(geoBehemothActor.GeoLevel.SynedrionFaction.Havens.ToList());
+                List<GeoSite> geoSites = new List<GeoSite>();
+
+                foreach (GeoHaven haven in geoHavens)
+                {
+                    if (Vector3.Distance(haven.Site.WorldPosition, geoBehemothActor.WorldPosition) <= 5)
+                    {
+                        geoSites.Add(haven.Site);
+                    }
+                }
+
+                if (geoSites.Count > 0)
+                {
+
+                    GeoSite targetReference = geoSites.GetRandomElement();
+
+                    IOrderedEnumerable<GeoSite> orderedEnumerable = from s in geoBehemothActor.GeoLevel.Map.GetConnectedSitesOfType_Land(targetReference, GeoSiteType.Exploration, activeOnly: false)
+                                                                    orderby GeoMap.Distance(targetReference, s)
+                                                                    select s;
+
+                    GeoSite chosenTarget = orderedEnumerable.First();
+                    TFTVLogger.Always("The count of possible explo sites is " + orderedEnumerable.Count());
+                    TFTVLogger.Always("The chosen site is " + chosenTarget.Name);
+
+                    typeof(GeoBehemothActor).GetMethod("TargetHaven", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(geoBehemothActor, new object[] { chosenTarget });
+                }
+                else
+                {
+                    foreach (GeoHaven haven in geoHavens)
+                    {
+                        if (Vector3.Distance(haven.Site.WorldPosition, geoBehemothActor.WorldPosition) <= 15)
+                        {
+                            geoSites.Add(haven.Site);
+                        }
+                    }
+                    if (geoSites.Count > 0)
+                    {
+
+                        GeoSite targetReference = geoSites.GetRandomElement();
+
+                        IOrderedEnumerable<GeoSite> orderedEnumerable = from s in geoBehemothActor.GeoLevel.Map.GetConnectedSitesOfType_Land(targetReference, GeoSiteType.Exploration, activeOnly: false)
+                                                                        orderby GeoMap.Distance(targetReference, s)
+                                                                        select s;
+
+                        GeoSite chosenTarget = orderedEnumerable.First();
+                        TFTVLogger.Always("The count of possible explo sites is " + orderedEnumerable.Count());
+                        TFTVLogger.Always("The chosen site is " + chosenTarget.Name);
+
+                        typeof(GeoBehemothActor).GetMethod("TargetHaven", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(geoBehemothActor, new object[] { chosenTarget });
+                    }
+
+
+
+                }
+            }
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+        }
+
 
         /*        [HarmonyPatch(typeof(GeoBehemothActor), "IsValidTarget")]
                 public static class GeoBehemothActor_AttemptToPickTargetHaven_BehemothTargetting_Patch
@@ -709,6 +795,40 @@ namespace TFTV
                 }
 
                 */
+       /* public static InterceptionAircraft PlayerVehicle = null;
+        
+
+        [HarmonyPatch(typeof(InterceptionAircraft), "get_CurrentHitPoints")]
+        public static class InterceptionAircraft_TransferStatsToVehicle_DisengageDestroyRandomWeapon_patch
+        {
+            public static bool Prepare()
+            {
+                TFTVConfig config = TFTVMain.Main.Config;
+                return config.ActivateAirCombatChanges;
+            }
+
+
+            public static void Postfix(ref float __result, InterceptionAircraft __instance)
+            {
+                try
+                {
+                    TFTVLogger.Always("Method get hitpoints is called");
+
+                    if (PlayerVehicle!=null && __instance == PlayerVehicle)
+                    {
+                        TFTVLogger.Always("PlayerVehicle HP in second method are " + PlayerVehicle.CurrentHitPoints);
+                        __result = PlayerVehicle.CurrentHitPoints;
+                        PlayerVehicle = null;
+
+                    }
+  
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+        }
 
         [HarmonyPatch(typeof(InterceptionGameController), "DisengagePlayer")]
         public static class InterceptionGameController_DisengagePlayer_DisengageDestroyRandomWeapon_patch
@@ -741,25 +861,29 @@ namespace TFTV
                     if (numberOfActiveWeaponsEnemy > 0)
                     {
                         num = UnityEngine.Random.Range(0, 100 + 25 * numberOfActiveWeaponsEnemy);
-                        TFTVLogger.Always("Rol: " + num);
+                        TFTVLogger.Always("Roll: " + num);
 
                         // if (num > 100)
                         // {
                         GeoVehicle playerCraft = __instance.CurrentMission.PlayerAircraft.Vehicle;
+                        TFTVLogger.Always("Hitpoints are " + playerCraft.Stats.HitPoints);
                         if (playerCraft.Stats.HitPoints > num || playerCraft.Stats.HitPoints < 10)
                         {
 
                             // GeoVehicleEquipment randomWeapon = playerCraft.Weapons.ToList().GetRandomElement();
                             playerCraft.DamageAircraft(num);
+                            TFTVLogger.Always("We pass the if test and current Hitpoints are" + playerCraft.Stats.HitPoints);
                         }
                         else
                         {
                             int hitpoints = playerCraft.Stats.HitPoints;
                             playerCraft.DamageAircraft(hitpoints - 1);
+                            TFTVLogger.Always("We pass the else test and current Hitpoints are" + playerCraft.Stats.HitPoints);
                         }
-
+                        PlayerVehicle=__instance.PlayerAircraft;
+                        TFTVLogger.Always("PlayerVehicle HP in first method are " + PlayerVehicle.CurrentHitPoints);
                         //   playerCraft.RemoveEquipment(randomWeapon);
-                        GameUtl.GetMessageBox().ShowSimplePrompt($"{playerCraft.Name}" + " suffered damage "
+                        GameUtl.GetMessageBox().ShowSimplePrompt($"{playerCraft.Name}" + " suffered " + num + " damage " 
                                         + " during " + "disengagement maneuvers.", MessageBoxIcon.None, MessageBoxButtons.OK, null);
                     }
 
@@ -769,7 +893,7 @@ namespace TFTV
                     TFTVLogger.Error(e);
                 }
             }
-        }
+        }*/
     }
 }
 

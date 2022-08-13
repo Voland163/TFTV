@@ -123,12 +123,14 @@ namespace TFTV
         internal static class BC_GeoAlienFaction_UpdateFactionDaily_patch
         {
             [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051")]
-            private static void Postfix(GeoAlienFaction __instance, List<GeoAlienBase> ____bases)
+            private static void Postfix(GeoAlienFaction __instance)//, List<GeoAlienBase> ____bases)
             {
+
+                List<GeoAlienBase> listOfAlienBases = __instance.Bases.ToList();
 
                 GeoAlienBaseTypeDef nestType = Repo.GetAllDefs<GeoAlienBaseTypeDef>().FirstOrDefault(a => a.name.Equals("Nest_GeoAlienBaseTypeDef"));
                 GeoAlienBaseTypeDef lairType = Repo.GetAllDefs<GeoAlienBaseTypeDef>().FirstOrDefault(a => a.name.Equals("Lair_GeoAlienBaseTypeDef"));
-                GeoAlienBaseTypeDef citadelType = Repo.GetAllDefs<GeoAlienBaseTypeDef>().FirstOrDefault(a => a.name.Equals("Citadel_GeoAlienBaseTypeDefv"));
+                GeoAlienBaseTypeDef citadelType = Repo.GetAllDefs<GeoAlienBaseTypeDef>().FirstOrDefault(a => a.name.Equals("Citadel_GeoAlienBaseTypeDef"));
                 GeoAlienBaseTypeDef palaceType = Repo.GetAllDefs<GeoAlienBaseTypeDef>().FirstOrDefault(a => a.name.Equals("Palace_GeoAlienBaseTypeDef"));
 
                 int nests = 0;
@@ -136,7 +138,7 @@ namespace TFTV
                 int citadels = 0;
                 int palace = 0;
 
-                foreach (GeoAlienBase alienBase in ____bases)
+                foreach (GeoAlienBase alienBase in listOfAlienBases)
                 {
                     if (alienBase.AlienBaseTypeDef.Equals(nestType))
                     {

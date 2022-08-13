@@ -141,21 +141,21 @@ namespace TFTV
                 try
                 {
                     TFTVLogger.Always("DestroySite method called");
+                    TFTVLogger.Always("infestation variable is " + __instance.GeoLevel.EventSystem.GetVariable("Infestation_Encounter_Variable"));
                     string faction = __instance.Owner.GetPPName();
                     TFTVLogger.Always(faction);
                     if (DefenseMission == null)
                     {
-                        TFTVLogger.Always("Defense mission is gone, so this will return true");
+
                         return true;
                     }
-                    TFTVLogger.Always("Defense mission is not null, so the method carries on");
+
                     IGeoFactionMissionParticipant attacker = DefenseMission.GetEnemyFaction();
 
-
-
                     int roll = UnityEngine.Random.Range(0, 6 + __instance.GeoLevel.CurrentDifficultyLevel.Order);
+                    TFTVLogger.Always("Infestation roll is " + roll);
                     int[] rolledVoidOmens = TFTVVoidOmens.CheckFordVoidOmensInPlay(__instance.GeoLevel);
-                    if (attacker.PPFactionDef == sharedData.AlienFactionDef && __instance.IsInMist && __instance.GeoLevel.EventSystem.GetVariable("Infestation_Encounter_Variable") == 1
+                    if (attacker.PPFactionDef == sharedData.AlienFactionDef && __instance.IsInMist && __instance.GeoLevel.EventSystem.GetVariable("Infestation_Encounter_Variable") > 0
                      && (roll >= 6 || rolledVoidOmens.Contains(17)))
                     {
                         GeoSiteForInfestation = __instance;
@@ -169,11 +169,11 @@ namespace TFTV
                         return false;
                     }
                     int roll2 = UnityEngine.Random.Range(0, 10);
-                    if (!__instance.IsInMist && rolledVoidOmens.Contains(12) && roll2 > 5)
+                 /*   if (!__instance.IsInMist && rolledVoidOmens.Contains(12) && roll2 > 5)
                     {
                         GeoSiteForScavenging = __instance;
                         TFTVLogger.Always(__instance.SiteName.LocalizeEnglish() + "ready to spawn a scavenging site");
-                    }
+                    }*/
 
                     TFTVLogger.Always("Defense mission is not null, the conditions for infestation were not fulfilled, so return true");
                     return true;
