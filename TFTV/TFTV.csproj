@@ -86,6 +86,7 @@
     <Compile Include="TFTVRevenant.cs" />
     <Compile Include="TFTVReverseEngineering.cs" />
     <Compile Include="TFTVSDIandVoidOmenRoll.cs" />
+    <Compile Include="TFTVSmallChanges.cs" />
     <Compile Include="TFTVStamina.cs" />
     <Compile Include="TFTVTactical.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

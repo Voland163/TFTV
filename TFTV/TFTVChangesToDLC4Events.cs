@@ -149,6 +149,7 @@ namespace TFTV
                 GeoscapeEventDef sdi7 = Repo.GetAllDefs<GeoscapeEventDef>().FirstOrDefault(ged => ged.name.Equals("SDI_07_GeoscapeEventDef"));
                 //Need to fix a broken SDI event!
                 sdi7.GeoscapeEventData.Choices = Repo.GetAllDefs<GeoscapeEventDef>().FirstOrDefault(ged => ged.name.Equals("SDI_06_GeoscapeEventDef")).GeoscapeEventData.Choices;
+                sdi7.GeoscapeEventData.Choices[0].Outcome.VariablesChange.Add(TFTVCommonMethods.GenerateVariableChange("Infestation_Encounter_Variable", 1, true));
                 sdi7.GeoscapeEventData.Choices[0].Outcome.OutcomeText.General.LocalizationKey = "SDI7_OUTCOME";               
                 GeoscapeEventDef sdi09 = Repo.GetAllDefs<GeoscapeEventDef>().FirstOrDefault(ged => ged.name.Equals("SDI_09_GeoscapeEventDef"));
                 sdi09.GeoscapeEventData.Choices[0].Outcome.VariablesChange.Add(TFTVCommonMethods.GenerateVariableChange("Umbra_Encounter_Variable", 1, false));

@@ -131,7 +131,7 @@ namespace TFTV
             PassiveModifierAbilityDef source = Repo.GetAllDefs<PassiveModifierAbilityDef>().FirstOrDefault(p => p.name.Equals("SelfDefenseSpecialist_AbilityDef"));
             PassiveModifierAbilityDef hallucinating = Helper.CreateDefFromClone(
                 source,
-                "5d3421cb-9e22-4cdf-bcac-3beac61b2713",
+                "5d3421cb-9e22-4cdf-bcac-3beac61b2713", 
                 skillName);
             hallucinating.CharacterProgressionData = Helper.CreateDefFromClone(
                 source.CharacterProgressionData,

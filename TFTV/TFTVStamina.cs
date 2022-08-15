@@ -34,7 +34,7 @@ namespace TFTV
                 // 'AccessTools.Property' are tools from Harmony to make such an access easier, the usual way through Reflections is a bit more complicated.
                 TacticalItem base_OwnerItem = (TacticalItem)AccessTools.Property(typeof(TacticalItemAspectBase), "OwnerItem").GetValue(__instance, null);
 
-                if (!charactersWithBrokenLimbs.Contains(base_OwnerItem.TacticalActorBase.GeoUnitId))
+                if (!charactersWithBrokenLimbs.Contains(base_OwnerItem.TacticalActorBase.GeoUnitId) && base_OwnerItem.TacticalActor.IsAlive)
                 {
                     charactersWithBrokenLimbs.Add(base_OwnerItem.TacticalActorBase.GeoUnitId);
                 }

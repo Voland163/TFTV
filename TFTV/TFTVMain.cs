@@ -1,11 +1,16 @@
 using Base.Core;
 using Base.Defs;
 using Base.Levels;
+using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Game;
+using PhoenixPoint.Common.View.ViewControllers;
+using PhoenixPoint.Home.View.ViewModules;
 using PhoenixPoint.Modding;
+using System;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using UnityEngine;
 
 namespace TFTV
@@ -57,7 +62,7 @@ namespace TFTV
             /// PhoenixGame is accessible at any time.
             PhoenixGame game = GetGame();
 
-            Logger.LogInfo("TFTV August 12 night release #2");
+            Logger.LogInfo("TFTV August 15 afternoon release #1");
 
             //TFTV 
             ModDirectory = Instance.Entry.Directory;
@@ -77,6 +82,9 @@ namespace TFTV
             TFTVNewPXCharacters.CreateIntro();
             //This creates the Void Omen events
             TFTVVoidOmens.Create_VoidOmen_Events();
+
+            //Medbay
+            TFTVSmallChanges.ChangesToMedbay();
 
             //Load changes to Defs, on the assumption that they will not degrade over time
             TFTVResources.Apply_Changes(Config.ResourceMultiplier);
@@ -151,6 +159,7 @@ namespace TFTV
         /// </summary>
         public override void OnConfigChanged()
         {
+            
 
             if (Config.defaultSettings)
             {
@@ -170,6 +179,10 @@ namespace TFTV
                 Config.ActivateKERework = true;
                 Config.HavenSOS = true;
                 Config.Debug = true;
+             /*   UIModuleModManager uIModuleModManager = (UIModuleModManager)UnityEngine.Object.FindObjectOfType(typeof(UIModuleModManager));
+                PhoenixGeneralButton activeModTab = uIModuleModManager.ModSettingsSections.First(pgb => pgb.IsSelected);
+                MethodInfo SelectModSettings_Info = AccessTools.Method(typeof(UIModuleModManager), "SelectModSettings", new Type[] { typeof(PhoenixGeneralButton) });
+                SelectModSettings_Info.Invoke(uIModuleModManager, new object[] { activeModTab });*/
 
             }
             if (Config.InitialScavSites != 8 ||
@@ -191,12 +204,15 @@ namespace TFTV
             {
 
                 Config.defaultSettings = false;
-
+                
             }
+          
 
-            HarmonyLib.Harmony harmony = (HarmonyLib.Harmony)HarmonyInstance;
+            Harmony harmony = (Harmony)HarmonyInstance;
             harmony.UnpatchAll();
             harmony.PatchAll();
+
+            
 
             /// Config is accessible at any time.
         }

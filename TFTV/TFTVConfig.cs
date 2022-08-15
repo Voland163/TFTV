@@ -1,3 +1,4 @@
+using PhoenixPoint.Home.View.ViewModules;
 using PhoenixPoint.Modding;
 
 namespace TFTV
@@ -16,9 +17,6 @@ namespace TFTV
             description: "Sets all settings to default, to provide the Terror from the Void experience as envisioned by its creators")]
         public bool defaultSettings = true;
 
-        // For testing purposes
-        
-        public int evolutionPointsLegend = 70;
         // These settings determine amount of resources player can acquire:
 
         // These settings determine amount of resources player can acquire:
@@ -126,6 +124,9 @@ namespace TFTV
         [ConfigField(text: "Debug log & messages",
        description: "Shows when any error ocurrs. Please, do not change unless you know what you are doing.")]
         public bool Debug = true;
+
+         
+        
 
     }
 }

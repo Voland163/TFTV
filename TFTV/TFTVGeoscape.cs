@@ -1,4 +1,5 @@
 using Base.Serialization.General;
+using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Modding;
@@ -15,13 +16,12 @@ namespace TFTV
 
     public class TFTVGSInstanceData
     {
-        public List<int> charactersWithBrokenLimbs = new List<int>();
-        public List<GeoSite> targetsForBehemoth = new List<GeoSite>();
-        public List<GeoSite> targetsVisitedByBehemoth = new List<GeoSite>();
-        public Dictionary<int, List<GeoSite>> flyersAndHavens = new Dictionary<int, List<GeoSite>>();
-        public bool checkHammerfall = new bool();
-        public GeoBehemothActor Behemoth = null;
-
+        public List<int> charactersWithBrokenLimbs = TFTVStamina.charactersWithBrokenLimbs;
+        public List<int> targetsForBehemoth = TFTVAirCombat.targetsForBehemoth;
+        public List<int> targetsVisitedByBehemoth = TFTVAirCombat.targetsVisitedByBehemoth;
+        public Dictionary<int, List<int>> flyersAndHavens = TFTVAirCombat.flyersAndHavens;
+        public bool checkHammerfall = TFTVAirCombat.checkHammerfall;
+        public Dictionary<int, int> DeadSoldiersDelirium = TFTVRevenant.DeadSoldiersDelirium;
     }
 
     /// <summary>
@@ -31,12 +31,12 @@ namespace TFTV
     public class TFTVGeoscape : ModGeoscape
     {
 
-
         /// <summary>
         /// Called when Geoscape starts.
         /// </summary>
         public override void OnGeoscapeStart()
         {
+           
             /// Geoscape level controller is accessible at any time.
             GeoLevelController gsController = Controller;
             /// ModMain is accesible at any time
@@ -49,8 +49,10 @@ namespace TFTV
             TFTVUmbra.SetUmbraEvolution(gsController);
             TFTVThirdAct.SetBehemothOnRampageMod(gsController);
             TFTVChangesToDLC3Events.ChangeHavenDeploymentDefense(gsController);
-
-
+         /*   if (TFTVRevenant.DeadSoldiersDelirium.Count != 0 && TFTVRevenant.DeadSoldiersDelirium.Count>TFTVRevenant.GeoDeadSoldiersDelirium.Count)
+            {
+                TFTVRevenant.GeoDeadSoldiersDelirium = TFTVRevenant.DeadSoldiersDelirium;
+            }*/
         }
         /// <summary>
         /// Called when Geoscape ends.
@@ -71,6 +73,12 @@ namespace TFTV
                 TFTVUmbra.SetUmbraRandomValue(0.16f);
             }
             TFTVDelirium.hookToCharacter = null;
+          /*  if (TFTVRevenant.GeoDeadSoldiersDelirium.Count != 0 && TFTVRevenant.DeadSoldiersDelirium.Count < TFTVRevenant.GeoDeadSoldiersDelirium.Count)
+            {
+                TFTVRevenant.DeadSoldiersDelirium = TFTVRevenant.GeoDeadSoldiersDelirium;
+            }*/
+            TFTVRevenant.timeOfMissionStart = Controller.Timing.Now;
+            TFTVLogger.Always("The time is " + TFTVRevenant.timeOfMissionStart.DateTime);
         }
 
         /// <summary>
@@ -86,7 +94,8 @@ namespace TFTV
                 targetsVisitedByBehemoth = TFTVAirCombat.targetsForBehemoth,
                 flyersAndHavens = TFTVAirCombat.flyersAndHavens,
                 checkHammerfall = TFTVAirCombat.checkHammerfall,
-                Behemoth = TFTVAirCombat.Behemoth
+                DeadSoldiersDelirium = TFTVRevenant.DeadSoldiersDelirium,
+              //  Behemoth = TFTVAirCombat.Behemoth,
             };
 
         }
@@ -102,7 +111,20 @@ namespace TFTV
             TFTVAirCombat.targetsVisitedByBehemoth = data.targetsVisitedByBehemoth;
             TFTVAirCombat.flyersAndHavens = data.flyersAndHavens;
             TFTVAirCombat.checkHammerfall = data.checkHammerfall;
-            TFTVAirCombat.Behemoth = data.Behemoth;
+            TFTVRevenant.DeadSoldiersDelirium = data.DeadSoldiersDelirium;
+            Main.Logger.LogInfo("# Characters with broken limbs: " + TFTVStamina.charactersWithBrokenLimbs.Count);
+            Main.Logger.LogInfo("# Behemoth targets for this emergence: " + TFTVAirCombat.targetsForBehemoth.Count);
+            Main.Logger.LogInfo("# Targets already hit by Behemoth on this emergence: " + TFTVAirCombat.targetsVisitedByBehemoth.Count);
+            Main.Logger.LogInfo("# Pandoran flyers that have visited havens on this emergence:  " + TFTVAirCombat.flyersAndHavens.Count);
+            Main.Logger.LogInfo("Hammerfall: " + TFTVAirCombat.checkHammerfall);
+            Main.Logger.LogInfo("# Lost operatives: " + TFTVRevenant.DeadSoldiersDelirium.Count);
+            TFTVLogger.Always("# Characters with broken limbs: " + TFTVStamina.charactersWithBrokenLimbs.Count);
+            TFTVLogger.Always("# Behemoth targets for this emergence: " + TFTVAirCombat.targetsForBehemoth.Count);
+            TFTVLogger.Always("# Targets already hit by Behemoth on this emergence: " + TFTVAirCombat.targetsVisitedByBehemoth.Count);
+            TFTVLogger.Always("# Pandoran flyers that have visited havens on this emergence:  " + TFTVAirCombat.flyersAndHavens.Count);
+            TFTVLogger.Always("Hammerfall: " + TFTVAirCombat.checkHammerfall);
+            TFTVLogger.Always("# Lost operatives: " + TFTVRevenant.DeadSoldiersDelirium.Count);
+
         }
 
         /// <summary>

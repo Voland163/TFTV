@@ -62,24 +62,6 @@ namespace TFTV
         //VO#16 is Umbras can appear anywhere and attack anyone
         public static bool VoidOmen16Active = false;
 
-        /*
-        public static readonly string[] VoidOmens_Title = new string[]
-        {
-        "VOID_OMEN_TITLE_01","VOID_OMEN_TITLE_02","VOID_OMEN_TITLE_03","VOID_OMEN_TITLE_04","VOID_OMEN_TITLE_05","VOID_OMEN_TITLE_06",
-        "VOID_OMEN_TITLE_07","VOID_OMEN_TITLE_08","VOID_OMEN_TITLE_09","VOID_OMEN_TITLE_10","VOID_OMEN_TITLE_11","VOID_OMEN_TITLE_12",
-        "VOID_OMEN_TITLE_13","VOID_OMEN_TITLE_14","VOID_OMEN_TITLE_15","VOID_OMEN_TITLE_16","VOID_OMEN_TITLE_17","VOID_OMEN_TITLE_18",
-        "VOID_OMEN_TITLE_19","VOID_OMEN_TITLE_20"
-        };
-        public static readonly string[] VoidOmens_Description = new string[]
-        {
-        "VOID_OMEN_DESCRIPTION_TEXT_01","VOID_OMEN_DESCRIPTION_TEXT_02","VOID_OMEN_DESCRIPTION_TEXT_03","VOID_OMEN_DESCRIPTION_TEXT_04",
-        "VOID_OMEN_DESCRIPTION_TEXT_05","VOID_OMEN_DESCRIPTION_TEXT_06","VOID_OMEN_DESCRIPTION_TEXT_07","VOID_OMEN_DESCRIPTION_TEXT_08",
-        "VOID_OMEN_DESCRIPTION_TEXT_09","VOID_OMEN_DESCRIPTION_TEXT_10","VOID_OMEN_DESCRIPTION_TEXT_11","VOID_OMEN_DESCRIPTION_TEXT_12",
-        "VOID_OMEN_DESCRIPTION_TEXT_13","VOID_OMEN_DESCRIPTION_TEXT_14","VOID_OMEN_DESCRIPTION_TEXT_15","VOID_OMEN_DESCRIPTION_TEXT_16",
-        "VOID_OMEN_DESCRIPTION_TEXT_17","VOID_OMEN_DESCRIPTION_TEXT_18","VOID_OMEN_DESCRIPTION_TEXT_19","VOID_OMEN_DESCRIPTION_TEXT_20"
-        };*/
-
-
         public static void ImplementVoidOmens(GeoLevelController level)
         {
             try
@@ -209,6 +191,7 @@ namespace TFTV
                                 missionTypeDef.FactionItemsRange.Max = 7;
                                 missionTypeDef.CratesDeploymentPointsRange.Min = 20;
                                 missionTypeDef.CratesDeploymentPointsRange.Max = 30;
+                                missionTypeDef.DontRecoverItems = true;
 
                             }
                         }
@@ -237,6 +220,7 @@ namespace TFTV
                                 missionTypeDef.FactionItemsRange.Max = 0;
                                 missionTypeDef.CratesDeploymentPointsRange.Min = 0;
                                 missionTypeDef.CratesDeploymentPointsRange.Max = 0;
+                                missionTypeDef.DontRecoverItems = false;
                             }
                         }
                         voidOmensCheck[5] = false;
@@ -299,7 +283,7 @@ namespace TFTV
                                     if (choice.Outcome.Diplomacy[t].Value <= 0 && choice.Outcome.Diplomacy[t].TargetFaction != phoenixPoint)
                                     {
                                         OutcomeDiplomacyChange diplomacyChange = choice.Outcome.Diplomacy[t];
-                                        diplomacyChange.Value = Mathf.RoundToInt(diplomacyChange.Value * 0.5f);
+                                        diplomacyChange.Value = Mathf.RoundToInt(diplomacyChange.Value * 1.5f);
                                         choice.Outcome.Diplomacy[t] = diplomacyChange;
                                     }
                                 }
@@ -476,6 +460,7 @@ namespace TFTV
             {
 
                 VoidOmen3Active = false;
+                VoidOmen5Active = false;
                 VoidOmen7Active = false;
                 VoidOmen10Active = false;
                 VoidOmen15Active = false;
@@ -487,6 +472,12 @@ namespace TFTV
                 {
                     VoidOmen3Active = true;
                 }
+
+                if (rolledVoidOmens.Contains(5))
+                {
+                    VoidOmen5Active = true;
+                }
+
                 if (rolledVoidOmens.Contains(7))
                 {
                     VoidOmen7Active = true;
@@ -727,70 +718,6 @@ namespace TFTV
                     }
 
                 }
-                    /*
-
-                    foreach (GeoFactionObjective objective1 in level.PhoenixFaction.Objectives)
-                {
-                    if (objective1.Title != null)
-                    {
-                        TFTVLogger.Always(objective1.Title.ToString());
-                        if (objective1.Title.LocalizationKey != null)
-                        {
-                            TFTVLogger.Always(objective1.Title.LocalizationKey);
-                        }
-                        else
-                        {
-                            TFTVLogger.Always("objective1.Title.LocalizationKey is missing!");
-                        }
-                    }
-                    else
-                    {
-                        TFTVLogger.Always("objective1.Title is missing!");
-                    }
-
-
-
-                    foreach (GeoFactionObjective geoFactionObjective in level.PhoenixFaction.Objectives)
-                    {
-                        if (geoFactionObjective.Title.LocalizationKey == title || geoFactionObjective.Description.LocalizationKey == description)
-                        {
-                            level.PhoenixFaction.RemoveObjective(geoFactionObjective);
-
-                        }
-
-                    }*/
-
-                    /*
-                                    GeoFactionObjective objective = level.PhoenixFaction.Objectives.ToList().FirstOrDefault(gfo => gfo.Title.LocalizationKey.Equals(title));
-
-
-                                    TFTVLogger.Always("Objective title is " + objective.Title.LocalizationKey);
-
-                                    if (objective.Title.LocalizationKey == title)
-                                    {
-                                        TFTVLogger.Always("Second check, objective title is " + objective.Title.LocalizationKey);
-
-                                    }*/
-
-
-                    /*
-                                    List<GeoFactionObjective> listOfObjectives = level.PhoenixFaction.Objectives.ToList();
-
-                                    foreach (GeoFactionObjective objective in listOfObjectives)
-                                    {
-                                        TFTVLogger.Always(objective.Title.LocalizationKey);
-                                        if (objective.Title.LocalizationKey == title)
-                                        {
-                                            level.PhoenixFaction.RemoveObjective(objective);
-                                        }
-                                    }*/
-                    /*
-                                    GeoFactionObjective voidOmenObjective = level.PhoenixFaction.Objectives.FirstOrDefault(ged => ged.Title.LocalizationKey.Equals(title));
-                                    string checktitle = voidOmenObjective.GetTitle();
-                                    TFTVLogger.Always("the title in the RemoveVoidOmenObjective method is " + title);
-                                    TFTVLogger.Always("if we found the objective, there should be something here " + checktitle);*/
-
-
                 
             }
             catch (Exception e)
@@ -801,7 +728,7 @@ namespace TFTV
         }
 
         [HarmonyPatch(typeof(TacticalLevelController), "ActorDied")]
-        public static class PhoenixStatisticsManager_NewTurnEvent_CalculateDelirium_Patch
+        public static class TacticalLevelController_ActorDied_HostileDefenders_Patch
         {
             public static void Postfix(DeathReport deathReport, TacticalLevelController __instance)
             {
