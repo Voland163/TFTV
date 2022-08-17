@@ -138,7 +138,7 @@ namespace TFTV
                         }
                     }
                 }
-            TFTVLogger.Always(kaosWeapons.ToString());
+
             return kaosWeapons;
 
 

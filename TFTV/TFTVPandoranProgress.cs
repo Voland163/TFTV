@@ -29,6 +29,12 @@ namespace TFTV
                     // All sources of evolution due to scaling removed, leaving only evolution per day
                     // Additional source of evolution will be number of surviving Pandoran colonies, modulated by difficulty level
                     GameDifficultyLevelDef veryhard = Repo.GetAllDefs<GameDifficultyLevelDef>().FirstOrDefault(a => a.name.Equals("VeryHard_GameDifficultyLevelDef"));
+                    //Hero
+                    GameDifficultyLevelDef hard = Repo.GetAllDefs<GameDifficultyLevelDef>().FirstOrDefault(a => a.name.Equals("Hard_GameDifficultyLevelDef"));
+                    //Standard
+                    GameDifficultyLevelDef standard = Repo.GetAllDefs<GameDifficultyLevelDef>().FirstOrDefault(a => a.name.Equals("Standard_GameDifficultyLevelDef"));
+                    //Easy
+                    GameDifficultyLevelDef easy = Repo.GetAllDefs<GameDifficultyLevelDef>().FirstOrDefault(a => a.name.Equals("Easy_GameDifficultyLevelDef"));
 
                     veryhard.NestLimitations.MaxNumber = 3; //vanilla 6
                     veryhard.NestLimitations.HoursBuildTime = 90; //vanilla 45
@@ -42,12 +48,19 @@ namespace TFTV
                     veryhard.AlienBaseTypeEvolutionParams[2].EvolutionPerDestroyedBase = 0; //vanilla 40
                     veryhard.ApplyInfestationOutcomeChange = 0;
                     veryhard.ApplyDamageHavenOutcomeChange = 0;
+                    veryhard.StartingSquadTemplate[0] = hard.TutorialStartingSquadTemplate[1];
+                    veryhard.StartingSquadTemplate[1] = hard.TutorialStartingSquadTemplate[2];
+                    
+
+                    
+
+                    // PX_Jacob_Tutorial2_TacCharacterDef replace [3], with hard starting squad [1]
+                    // PX_Sophia_Tutorial2_TacCharacterDef replace [1], with hard starting squad [2]
 
                     //reducing evolution per day because there other sources of evolution points now
                     veryhard.EvolutionProgressPerDay = 70; //vanilla 100
 
-                    //Hero
-                    GameDifficultyLevelDef hard = Repo.GetAllDefs<GameDifficultyLevelDef>().FirstOrDefault(a => a.name.Equals("Hard_GameDifficultyLevelDef"));
+                   
 
                     hard.NestLimitations.MaxNumber = 3; //vanilla 5
                     hard.NestLimitations.HoursBuildTime = 90; //vanilla 50
@@ -61,13 +74,14 @@ namespace TFTV
                     hard.AlienBaseTypeEvolutionParams[2].EvolutionPerDestroyedBase = 0; //vanilla 40
                     hard.ApplyInfestationOutcomeChange = 0;
                     hard.ApplyDamageHavenOutcomeChange = 0;
+                    hard.StartingSquadTemplate[1] = hard.TutorialStartingSquadTemplate[1];
+                    hard.StartingSquadTemplate[3] = hard.TutorialStartingSquadTemplate[2];
+
 
                     //reducing evolution per day because there other sources of evolution points now
                     hard.EvolutionProgressPerDay = 60; //vanilla 70
 
-                    //Standard
-                    GameDifficultyLevelDef standard = Repo.GetAllDefs<GameDifficultyLevelDef>().FirstOrDefault(a => a.name.Equals("Standard_GameDifficultyLevelDef"));
-
+                  
                     standard.NestLimitations.MaxNumber = 3; //vanilla 4
                     standard.NestLimitations.HoursBuildTime = 90; //vanilla 55
                     standard.LairLimitations.MaxNumber = 3; // vanilla 3
@@ -80,12 +94,11 @@ namespace TFTV
                     standard.AlienBaseTypeEvolutionParams[2].EvolutionPerDestroyedBase = 0; //vanilla 40
                     standard.ApplyDamageHavenOutcomeChange = 0;
                     standard.ApplyInfestationOutcomeChange = 0;
+                    standard.StartingSquadTemplate[1] = hard.TutorialStartingSquadTemplate[1];
+                    standard.StartingSquadTemplate[3] = hard.TutorialStartingSquadTemplate[2];
 
                     //reducing evolution per day because there other sources of evolution points now
                     standard.EvolutionProgressPerDay = 40; //vanilla 55
-
-                    //Easy
-                    GameDifficultyLevelDef easy = Repo.GetAllDefs<GameDifficultyLevelDef>().FirstOrDefault(a => a.name.Equals("Easy_GameDifficultyLevelDef"));
 
                     easy.EvolutionPointsGainOnMissionLoss = 0; //vanilla 10
                     easy.AlienBaseTypeEvolutionParams[0].EvolutionPerDestroyedBase = 0; //vanilla 10
@@ -93,6 +106,8 @@ namespace TFTV
                     easy.AlienBaseTypeEvolutionParams[2].EvolutionPerDestroyedBase = 0; //vanilla 40
                     easy.ApplyInfestationOutcomeChange = 0;
                     easy.ApplyDamageHavenOutcomeChange = 0;
+                    easy.StartingSquadTemplate[1] = hard.TutorialStartingSquadTemplate[1];
+                    easy.StartingSquadTemplate[3] = hard.TutorialStartingSquadTemplate[2];
 
                     //keeping evolution per day because low enough already
                     easy.EvolutionProgressPerDay = 35; //vanilla 35

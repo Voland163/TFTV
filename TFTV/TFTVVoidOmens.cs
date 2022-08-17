@@ -186,6 +186,11 @@ namespace TFTV
                                     missionTypeDef.ParticipantsRelations[2].MutualRelation = FactionRelation.Enemy;
                                 }
                                 missionTypeDef.ParticipantsData[1].PredeterminedFactionEffects = missionTypeDef.ParticipantsData[0].PredeterminedFactionEffects;
+                                missionTypeDef.ParticipantsData[1].ReinforcementsTurns.Max = 2;
+                                missionTypeDef.ParticipantsData[1].ReinforcementsTurns.Min = 2;
+                                missionTypeDef.ParticipantsData[1].InfiniteReinforcements = true;
+                                missionTypeDef.ParticipantsData[1].ReinforcementsDeploymentPart.Max = 0.5f;
+                                missionTypeDef.ParticipantsData[1].ReinforcementsDeploymentPart.Min = 0.5f;
                                 missionTypeDef.MissionSpecificCrates = cratesNotResources;
                                 missionTypeDef.FactionItemsRange.Min = 2;
                                 missionTypeDef.FactionItemsRange.Max = 7;
@@ -221,6 +226,11 @@ namespace TFTV
                                 missionTypeDef.CratesDeploymentPointsRange.Min = 0;
                                 missionTypeDef.CratesDeploymentPointsRange.Max = 0;
                                 missionTypeDef.DontRecoverItems = false;
+                                missionTypeDef.ParticipantsData[1].ReinforcementsTurns.Max = 0;
+                                missionTypeDef.ParticipantsData[1].ReinforcementsTurns.Min = 0;
+                                missionTypeDef.ParticipantsData[1].InfiniteReinforcements =false;
+                                missionTypeDef.ParticipantsData[1].ReinforcementsDeploymentPart.Max = 0;
+                                missionTypeDef.ParticipantsData[1].ReinforcementsDeploymentPart.Min = 0;
                             }
                         }
                         voidOmensCheck[5] = false;

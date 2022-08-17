@@ -276,12 +276,21 @@ BG_INTRO_0_TITLE,Text,,A Cold Reboot,,,,,,,,
 BG_INTRO_0_DESCRIPTION,Text,,"After all these years, you finally got the call. It meant that Symes and his deputies were dead or unreachable. Phoenix Project had gone dark. 
 
 The trek to Phoenix Point was long and dangerous, but when you reached it, somebody was already home...",,,,,,,,
+BG_INTRO_CHOICE_0,Text,,Side with PX,,,,,,,,
+BG_INTRO_OUTCOME_0,Text,,You sided with PX,,,,,,,,
+BG_INTRO_CHOICE_1,Text,,Side with Anu,,,,,,,,
+BG_INTRO_OUTCOME_1,Text,,You sided with Anu,,,,,,,,
+BG_INTRO_CHOICE_2,Text,,Side with NJ,,,,,,,,
+BG_INTRO_OUTCOME_2,Text,,You sided with NJ,,,,,,,,
+BG_INTRO_CHOICE_3,Text,,Side with SYN,,,,,,,,
+BG_INTRO_OUTCOME_3,Text,,You sided with SYN,,,,,,,,
 BG_INTRO_1_TITLE,Text,,Homecoming,,,,,,,,
 BG_INTRO_1_DESCRIPTION,Text,,"I'm Alistair Ashby. Yes, the ""Mist Expert"". Thanks for watching me back in the day, I guess... 
 
 A few of us managed to get to this bunker and activate the emergency beacon before we were overrun by the creatures that followed us here. 
 
 We got this place mostly up and running... Thanks to Olena, she is quite the wunderkind.",,,,,,,,
+BG_INTRO1_CHOICE_1,Text,,"Yes, I remember you. Surprising to meet you here.",,,,,,,,
 BG_INTRO_2_TITLE,Text,,Olena Kim,,,,,,,,
 BG_INTRO_2_DESCRIPTION,Text,,"<i>Oppa</i> Alistair is good with people. I'm good with machines and software. This facility runs on a limited AI called Bennu. Once Bennu verifies your credentials as duly appointed Director, all functionality should be restored and you should be able to interface with the system. ",,,,,,,,
 BG_INTRO_2_CHOICE_0,Text,,Identify yourself and present your credentials ,,,,,,,,

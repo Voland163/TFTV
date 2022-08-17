@@ -43,6 +43,7 @@ namespace TFTV
             Create_Feral();
             Create_Solipsism();
             Clone_ArmorBuffStatus();
+            Create_HallucinatingStatus();
         }
 
         public static void AddAnimation()

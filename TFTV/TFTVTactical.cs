@@ -1,9 +1,15 @@
 using Base.Core;
+using Base.Entities.Statuses;
+using Base.ParticleSystems;
 using Base.Serialization.General;
-using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Modding;
+using PhoenixPoint.Tactical.Entities;
+using PhoenixPoint.Tactical.Entities.Statuses;
 using PhoenixPoint.Tactical.Levels;
 using System.Collections.Generic;
+using System.Linq;
+using UnityEngine;
+
 
 namespace TFTV
 {
@@ -30,8 +36,9 @@ namespace TFTV
         public bool VoidOmen16Active = TFTVVoidOmens.VoidOmen16Active;
         //Check if Umbra can be spawned in tactical
         public bool UmbraResearched = TFTVUmbra.UmbraResearched;
-        public Dictionary<int, int> DeadSoldiersDelirium = TFTVRevenant.DeadSoldiersDelirium;
+        public Dictionary<string, int> DeadSoldiersDelirium = TFTVRevenant.DeadSoldiersDelirium;
         public TimeUnit timeOfMissionStart = TFTVRevenant.timeOfMissionStart;
+        public int RevenantCounter = TFTVRevenant.RevenantCounter;
 
     }
     //TFTV Things we want to save:
@@ -57,12 +64,74 @@ namespace TFTV
             TFTVMain main = (TFTVMain)Main;
             //TFTV give Dtony's Delirium Perks
             TFTVDelirium.DeliriumPerksOnTactical(tacController);
-         /*   if (TFTVRevenant.GeoDeadSoldiersDelirium.Count != 0 && TFTVRevenant.DeadSoldiersDelirium.Count < TFTVRevenant.GeoDeadSoldiersDelirium.Count)
-            {
-                TFTVRevenant.DeadSoldiersDelirium = TFTVRevenant.GeoDeadSoldiersDelirium;
-            }*/
 
+            /*
+                        Controller.ActorEnteredPlayEvent += SubscribeActorEvents;
+                        Controller.ActorExitedPlayEvent += UnsubscribeActorEvents;*/
         }
+/*
+        private void SubscribeActorEvents(TacticalActorBase actorBase)
+        {
+            TacStatusComponent tacStatusComponent = actorBase.Status as TacStatusComponent;
+            if (tacStatusComponent == null)
+            {
+                return;
+            }
+
+            tacStatusComponent.OnStatusApplied += OnStatusApplied;
+        }
+
+        private void UnsubscribeActorEvents(TacticalActorBase actorBase)
+        {
+            TacStatusComponent tacStatusComponent = actorBase.Status as TacStatusComponent;
+            if (tacStatusComponent == null)
+            {
+                return;
+            }
+
+            tacStatusComponent.OnStatusApplied -= OnStatusApplied;
+        }
+
+        private void OnStatusApplied(Status status)
+        {
+            TFTVLogger.Always("OnStatusApplied Invoked");
+
+            if (status is TacStatus tacStatus == false)
+            {
+                return;
+            }
+
+            if (tacStatus.TacStatusDef.ParticleEffectPrefab == null)
+            {
+                return;
+            }
+
+            TFTVLogger.Always("OnStatusApplied got until string initiation");
+
+            string targetVfxName = "VFX_OilCrabman_Breath";
+           // string targetVfxName = tacStatus.TacStatusDef.ParticleEffectPrefab.GetComponent<ParticleSpawnSettings>().name;
+
+            var pssArray = tacStatus.TacticalActorBase.AddonsManager
+                .RigRoot.GetComponentsInChildren<ParticleSpawnSettings>()
+                .Where(pss => pss.name == targetVfxName);
+
+            var particleSystems = pssArray
+                .SelectMany(pss => pss.GetComponentsInChildren<UnityEngine.ParticleSystem>());
+
+            foreach (var ps in particleSystems)
+            {
+                var mainModule = ps.main;
+                UnityEngine.ParticleSystem.MinMaxGradient minMaxGradient = mainModule.startColor;
+                minMaxGradient.colorMin = Color.red;
+                minMaxGradient.colorMax = Color.red;
+                mainModule.startColor = minMaxGradient;
+                TFTVLogger.Always("OnStatusApplied Did something here at the bottom");
+            }
+        }
+
+        */
+
+
         /// <summary>
         /// Called when Tactical ends.
         /// </summary>
@@ -92,6 +161,7 @@ namespace TFTV
             TFTVUmbra.UmbraResearched = data.UmbraResearched;
             TFTVRevenant.DeadSoldiersDelirium = data.DeadSoldiersDelirium;
             TFTVRevenant.timeOfMissionStart = data.timeOfMissionStart;
+            TFTVRevenant.RevenantCounter = data.RevenantCounter;
         }
         /// <summary>
         /// Called when Tactical save is going to be generated, giving mod option for custom save data.
@@ -111,6 +181,7 @@ namespace TFTV
                 UmbraResearched = TFTVUmbra.UmbraResearched,
                 DeadSoldiersDelirium = TFTVRevenant.DeadSoldiersDelirium,
                 timeOfMissionStart = TFTVRevenant.timeOfMissionStart,
+                RevenantCounter = TFTVRevenant.RevenantCounter,
 
             };
         }

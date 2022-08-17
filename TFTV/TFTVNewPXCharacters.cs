@@ -1,17 +1,21 @@
-﻿using HarmonyLib;
+﻿using Base.Defs;
+using HarmonyLib;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Events;
 using PhoenixPoint.Geoscape.Events.Eventus;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Objectives;
+using PhoenixPoint.Tactical.Entities;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace TFTV
 {
     internal class TFTVNewPXCharacters
     {
-
+        private static readonly DefRepository Repo = TFTVMain.Repo;
         public static void InjectAlistairAhsbyLines()
         {
             try
@@ -201,10 +205,9 @@ namespace TFTV
                     introEvent_0, "BG_INTRO_0_TITLE", "BG_INTRO_0_DESCRIPTION", null);
                 GeoscapeEventDef intro1 = TFTVCommonMethods.CreateNewEvent(
                     introEvent_1, "BG_INTRO_1_TITLE", "BG_INTRO_1_DESCRIPTION", null);
-                // intro1.GeoscapeEventData.Choices[0].Outcome.TriggerEncounterID = introEvent_0;
                 GeoscapeEventDef intro2 = TFTVCommonMethods.CreateNewEvent(
                     introEvent_2, "BG_INTRO_2_TITLE", "BG_INTRO_2_DESCRIPTION", null);
-                // intro2.GeoscapeEventData.Choices[0].Outcome.TriggerEncounterID = introEvent_1;
+
 
             }
             catch (Exception e)
@@ -241,6 +244,7 @@ namespace TFTV
                 TFTVLogger.Error(e);
             }
         }
+
 
         //This is a patch to trigger events that introduce lines from characters;
         //needs to be done this way because if TriggerEncounter is assigned to only Outcome, that event is triggered before the Outcome! 

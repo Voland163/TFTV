@@ -62,7 +62,7 @@ namespace TFTV
             /// PhoenixGame is accessible at any time.
             PhoenixGame game = GetGame();
 
-            Logger.LogInfo("TFTV August 15 afternoon release #1");
+            Logger.LogInfo("TFTV August 19 afternoon release #1");
 
             //TFTV 
             ModDirectory = Instance.Entry.Directory;
@@ -78,8 +78,7 @@ namespace TFTV
             Helper.Initialize();
 
             //TFTV Stuff that needs to happen ASAP
-            //This creates the intro events when a new game is started
-            TFTVNewPXCharacters.CreateIntro();
+            TFTVStarts.MakeJacobIntoSniper();
             //This creates the Void Omen events
             TFTVVoidOmens.Create_VoidOmen_Events();
 
@@ -134,6 +133,10 @@ namespace TFTV
             TFTVDeliriumPerks.Main();
             //Modify Defs to introduce Alistair's events
             TFTVNewPXCharacters.InjectAlistairAhsbyLines();
+            //Create Revenant defs
+            TFTVRevenant.CreateRevenantDefs();
+            //This creates the intro events when a new game is started
+            TFTVNewPXCharacters.CreateIntro();
             //Run all harmony patches; some patches have config flags
             harmony.PatchAll();
 
@@ -179,11 +182,7 @@ namespace TFTV
                 Config.ActivateKERework = true;
                 Config.HavenSOS = true;
                 Config.Debug = true;
-             /*   UIModuleModManager uIModuleModManager = (UIModuleModManager)UnityEngine.Object.FindObjectOfType(typeof(UIModuleModManager));
-                PhoenixGeneralButton activeModTab = uIModuleModManager.ModSettingsSections.First(pgb => pgb.IsSelected);
-                MethodInfo SelectModSettings_Info = AccessTools.Method(typeof(UIModuleModManager), "SelectModSettings", new Type[] { typeof(PhoenixGeneralButton) });
-                SelectModSettings_Info.Invoke(uIModuleModManager, new object[] { activeModTab });*/
-
+             
             }
             if (Config.InitialScavSites != 8 ||
                Config.ChancesScavCrates != TFTVConfig.ScavengingWeight.High ||
@@ -211,8 +210,11 @@ namespace TFTV
             Harmony harmony = (Harmony)HarmonyInstance;
             harmony.UnpatchAll();
             harmony.PatchAll();
-
-            
+            /*
+            UIModuleModManager uIModuleModManager = (UIModuleModManager)UnityEngine.Object.FindObjectOfType(typeof(UIModuleModManager));
+            PhoenixGeneralButton activeModTab = uIModuleModManager.ModSettingsSections.First(pgb => pgb.IsSelected);
+            MethodInfo SelectModSettings_Info = AccessTools.Method(typeof(UIModuleModManager), "SelectModSettings", new Type[] { typeof(PhoenixGeneralButton) });
+            SelectModSettings_Info.Invoke(uIModuleModManager, new object[] { activeModTab });*/
 
             /// Config is accessible at any time.
         }
@@ -243,8 +245,7 @@ namespace TFTV
         {
             //Reinject Dtony's delirium perks, because assuming degradation will happen based on BetterClasses experience
             TFTVDeliriumPerks.Main();
-
-
+   
         }
 
         /// <summary>

@@ -21,7 +21,7 @@ namespace TFTV
         public List<int> targetsVisitedByBehemoth = TFTVAirCombat.targetsVisitedByBehemoth;
         public Dictionary<int, List<int>> flyersAndHavens = TFTVAirCombat.flyersAndHavens;
         public bool checkHammerfall = TFTVAirCombat.checkHammerfall;
-        public Dictionary<int, int> DeadSoldiersDelirium = TFTVRevenant.DeadSoldiersDelirium;
+        public Dictionary<string, int> DeadSoldiersDelirium = TFTVRevenant.DeadSoldiersDelirium;
     }
 
     /// <summary>
@@ -43,16 +43,13 @@ namespace TFTV
 
             TFTVMain main = (TFTVMain)Main;
             TFTVNewPXCharacters.PlayIntro(gsController);
-
             TFTVVoidOmens.ImplementVoidOmens(gsController);
             TFTVUmbra.CheckForUmbraResearch(gsController);
             TFTVUmbra.SetUmbraEvolution(gsController);
             TFTVThirdAct.SetBehemothOnRampageMod(gsController);
             TFTVChangesToDLC3Events.ChangeHavenDeploymentDefense(gsController);
-         /*   if (TFTVRevenant.DeadSoldiersDelirium.Count != 0 && TFTVRevenant.DeadSoldiersDelirium.Count>TFTVRevenant.GeoDeadSoldiersDelirium.Count)
-            {
-                TFTVRevenant.GeoDeadSoldiersDelirium = TFTVRevenant.DeadSoldiersDelirium;
-            }*/
+            TFTVStamina.charactersWithBrokenLimbs = new List<int>();
+
         }
         /// <summary>
         /// Called when Geoscape ends.
@@ -79,6 +76,8 @@ namespace TFTV
             }*/
             TFTVRevenant.timeOfMissionStart = Controller.Timing.Now;
             TFTVLogger.Always("The time is " + TFTVRevenant.timeOfMissionStart.DateTime);
+            
+            
         }
 
         /// <summary>
@@ -137,6 +136,7 @@ namespace TFTV
         {
             TFTVMain main = (TFTVMain)Main;
             GeoLevelController gsController = Controller;
+            TFTVStarts.MakeJacobIntoSniper();
 
             try
             {
@@ -146,7 +146,7 @@ namespace TFTV
 					TFTVAmbushes.Apply_Changes_Ambush_Chances(gsController.EventSystem);
 				}
 				*/
-
+                
                 setup.InitialScavengingSiteCount = (uint)main.Config.InitialScavSites;
 
                 // ScavengingSitesDistribution is an array with the weights for scav, rescue soldier and vehicle
@@ -196,7 +196,7 @@ namespace TFTV
                         }
                     }
                 }
-
+                
 
             }
             catch (Exception e)
@@ -218,6 +218,7 @@ namespace TFTV
             {
                 TFTVMain main = (TFTVMain)Main;
                 GeoLevelController gsController = Controller;
+                
                 /*	if (main.Config.MoreAmbushes)
                     {
                         TFTVAmbushes.Apply_Changes_Ambush_Chances(gsController.EventSystem);

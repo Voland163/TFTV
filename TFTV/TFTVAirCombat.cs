@@ -1,8 +1,6 @@
 ﻿using Base;
-using Base.Core;
 using Base.Defs;
 using Base.UI;
-using Base.UI.MessageBox;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities.Items;
@@ -12,7 +10,6 @@ using PhoenixPoint.Geoscape.Entities.Interception.Equipments;
 using PhoenixPoint.Geoscape.Entities.Research;
 using PhoenixPoint.Geoscape.Entities.Research.Requirement;
 using PhoenixPoint.Geoscape.Entities.Research.Reward;
-using PhoenixPoint.Geoscape.Interception;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
 using System;
@@ -172,7 +169,7 @@ namespace TFTV
                 festeringSkiesSettingsDef.InfestedAircraftChance = 0;
 
                 InterceptionGameDataDef interceptionGameDataDef = Repo.GetAllDefs<InterceptionGameDataDef>().FirstOrDefault(gvw => gvw.name.Equals("InterceptionGameDataDef"));
-             //   interceptionGameDataDef.DisengageDuration = 1;
+                //   interceptionGameDataDef.DisengageDuration = 1;
 
                 RemoveHardFlyersTemplates();
             }
@@ -418,7 +415,7 @@ namespace TFTV
 
         }
 
-       
+
 
         //patch to reveal havens under attack
         [HarmonyPatch(typeof(GeoscapeRaid), "StartAttackEffect")]
@@ -450,7 +447,7 @@ namespace TFTV
             }
         }
 
-        
+
 
         [HarmonyPatch(typeof(GeoVehicle), "OnArrivedAtDestination")]
 
@@ -475,7 +472,7 @@ namespace TFTV
                         }
                         else
                         {
-                            flyersAndHavens.Add(__instance.VehicleID, new List<int> { __instance.CurrentSite.SiteId});
+                            flyersAndHavens.Add(__instance.VehicleID, new List<int> { __instance.CurrentSite.SiteId });
                         }
 
 
@@ -492,7 +489,7 @@ namespace TFTV
 
         }
 
-      //  public static bool BehemothSubmerging = false; 
+        //  public static bool BehemothSubmerging = false; 
 
         [HarmonyPatch(typeof(GeoBehemothActor), "PickSubmergeLocation")]
         public static class GeoBehemothActor_PickSubmergeLocation_patch
@@ -502,7 +499,7 @@ namespace TFTV
                 TFTVConfig config = TFTVMain.Main.Config;
                 return config.ActivateAirCombatChanges;
             }
-            public static void Postfix(GeoBehemothActor __instance)
+            public static void Postfix()
 
             {
                 try
@@ -511,7 +508,7 @@ namespace TFTV
                     //  BehemothSubmerging = true;
                     flyersAndHavens.Clear();
                     targetsForBehemoth.Clear();
-                  //  BehemothSubmerging = true;
+                    //  BehemothSubmerging = true;
 
                 }
                 catch (Exception e)
@@ -560,45 +557,39 @@ namespace TFTV
                 }
             }
         }
+             
 
-        /*
-        [HarmonyPatch(typeof(GeoBehemothActor), "TargetHaven")]
-        public static class GeoBehemothActor_TargetHaven_Patch
+        public static GeoSite GetTargetHaven(GeoLevelController level)
         {
-            public static void  Prefix(GeoBehemothActor __instance, ref GeoSite chosenHaven)
+            try 
             {
-                try
+                List<GeoHaven> geoHavens = level.AnuFaction.Havens.ToList();
+                geoHavens.AddRange(level.NewJerichoFaction.Havens.ToList());
+                geoHavens.AddRange(level.SynedrionFaction.Havens.ToList());
+
+                int idOfHaven = targetsForBehemoth.First();
+                GeoSite target = new GeoSite();
+                foreach (GeoHaven haven in geoHavens)
                 {
-                    if (targetsForBehemoth.Count > 0)
+                    if (haven.Site.SiteId == idOfHaven)
                     {
-
-                        chosenHaven = targetsForBehemoth.GetRandomElement();
-
-                        if (chosenHaven != null)
-                        {
-
-                            typeof(GeoBehemothActor).GetMethod("TargetHaven", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(__instance, new object[] { chosenHaven });
-                            targetsForBehemoth.Remove(chosenHaven);
-
-                        }
-                    }
-                    else 
-                    {
-                        IOrderedEnumerable<GeoSite> orderedEnumerable = from s in __instance.GeoLevel.Map.GetConnectedSitesOfType_Land(__instance.CurrentSite, GeoSiteType.Exploration, activeOnly: false)
-                                                                        orderby GeoMap.Distance(__instance.CurrentSite, s)
-                                                                       select s;
-                        chosenHaven = orderedEnumerable.First();
+                        target = haven.Site;
 
                     }
                 }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-               
+                return target;
+
+
             }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+            throw new InvalidOperationException();
         }
-        */
+
+
+
 
         [HarmonyPatch(typeof(GeoBehemothActor), "UpdateHourly")]
         public static class GeoBehemothActor_UpdateHourly_Patch
@@ -611,74 +602,52 @@ namespace TFTV
                     {
                         if (!__instance.HasTargetHaven)
                         {
-                            List<GeoHaven> geoHavens = __instance.GeoLevel.AnuFaction.Havens.ToList();
-                            geoHavens.AddRange(__instance.GeoLevel.NewJerichoFaction.Havens.ToList());
-                            geoHavens.AddRange(__instance.GeoLevel.SynedrionFaction.Havens.ToList());
-                           
-                            int idOfHaven = targetsForBehemoth.First();
-                            GeoSite target = new GeoSite();
-                            foreach(GeoHaven haven in geoHavens) 
-                            { 
-                            if(haven.Site.SiteId == idOfHaven) 
-                                {
-                                    target = haven.Site;
-                                
-                                }                                                   
-                            }
-
-                            GeoSite chosenHaven = target;
-                            targetsForBehemoth.Remove(chosenHaven.SiteId);
-                            if (!targetsVisitedByBehemoth.Contains(chosenHaven.SiteId))
+                            if (__instance.CurrentSite == null || __instance.CurrentSite.Type != GeoSiteType.Haven)
                             {
-                                TFTVLogger.Always("The target haven is " + chosenHaven.LocalizedSiteName);
-
-                                typeof(GeoBehemothActor).GetMethod("TargetHaven", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(__instance, new object[] { chosenHaven });
-                                targetsVisitedByBehemoth.Add(chosenHaven.SiteId);
-                            }
-
-                        }
-                    }
-                    if (__instance.HasTargetHaven && __instance.TargetSite.State == GeoSiteState.Destroyed)
-                    {
-                        if (targetsForBehemoth.Count > 0)
-                        {
-                            List<GeoHaven> geoHavens = __instance.GeoLevel.AnuFaction.Havens.ToList();
-                            geoHavens.AddRange(__instance.GeoLevel.NewJerichoFaction.Havens.ToList());
-                            geoHavens.AddRange(__instance.GeoLevel.SynedrionFaction.Havens.ToList());
-
-                            int idOfHaven = targetsForBehemoth.First();
-                            GeoSite target = new GeoSite();
-                            foreach (GeoHaven haven in geoHavens)
-                            {
-                                if (haven.Site.SiteId == idOfHaven)
+                                GeoSite chosenHaven = GetTargetHaven(__instance.GeoLevel);
+                                targetsForBehemoth.Remove(chosenHaven.SiteId);
+                                if (!targetsVisitedByBehemoth.Contains(chosenHaven.SiteId))
                                 {
-                                    target = haven.Site;
+                                    TFTVLogger.Always("The target haven is " + chosenHaven.LocalizedSiteName);
 
+                                    typeof(GeoBehemothActor).GetMethod("TargetHaven", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(__instance, new object[] { chosenHaven });
+                                    targetsVisitedByBehemoth.Add(chosenHaven.SiteId);
                                 }
                             }
-
-                            GeoSite chosenHaven = target;
-                            targetsForBehemoth.Remove(chosenHaven.SiteId);
-                            if (!targetsVisitedByBehemoth.Contains(chosenHaven.SiteId))
+                            else 
                             {
-                                TFTVLogger.Always("The target haven is " + chosenHaven.LocalizedSiteName + ", because the previously targeted haven was destroyed");
-
-                                typeof(GeoBehemothActor).GetMethod("TargetHaven", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(__instance, new object[] { chosenHaven });
-                                targetsVisitedByBehemoth.Add(chosenHaven.SiteId);
+                                GetBehemothToMoveSomewhere(__instance);
                             }
                         }
-                        else
-                        {
-                            GetBehemothToMoveSomewhere(__instance);
-                        }
-                    }
 
-                    if (__instance.CurrentBehemothStatus == GeoBehemothActor.BehemothStatus.Dormant)
-                    {
-                        TFTVLogger.Always("Behemoth's target lists are cleared because he went to sleep");
-                        //Behemoth = null;
-                        targetsForBehemoth.Clear();
-                        targetsVisitedByBehemoth.Clear();
+                        else if (__instance.HasTargetHaven && __instance.TargetSite.State == GeoSiteState.Destroyed)
+                        {
+                            if (targetsForBehemoth.Count > 0)
+                            {
+                                
+                                GeoSite chosenHaven = GetTargetHaven(__instance.GeoLevel);
+                                targetsForBehemoth.Remove(chosenHaven.SiteId);
+                                if (!targetsVisitedByBehemoth.Contains(chosenHaven.SiteId))
+                                {
+                                    TFTVLogger.Always("The target haven is " + chosenHaven.LocalizedSiteName + ", because the previously targeted haven was destroyed");
+
+                                    typeof(GeoBehemothActor).GetMethod("TargetHaven", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(__instance, new object[] { chosenHaven });
+                                    targetsVisitedByBehemoth.Add(chosenHaven.SiteId);
+                                }
+                            }
+                            else
+                            {
+                                GetBehemothToMoveSomewhere(__instance);
+                            }
+                        }
+
+                        if (__instance.CurrentBehemothStatus == GeoBehemothActor.BehemothStatus.Dormant)
+                        {
+                            TFTVLogger.Always("Behemoth's target lists are cleared because he went to sleep");
+                            //Behemoth = null;
+                            targetsForBehemoth.Clear();
+                            targetsVisitedByBehemoth.Clear();
+                        }
                     }
                 }
                 catch (Exception e)
@@ -789,141 +758,103 @@ namespace TFTV
         }
 
 
-        /*        [HarmonyPatch(typeof(GeoBehemothActor), "IsValidTarget")]
-                public static class GeoBehemothActor_AttemptToPickTargetHaven_BehemothTargetting_Patch
-                {
-                    public static bool Prepare()
-                    {
-                        TFTVConfig config = TFTVMain.Main.Config;
-                        return config.ActivateAirCombatChanges;
-                    }
-                    public static bool Prefix(ref bool __result, GeoSite site)
-                    {
-                        try
-                        {
-                            //  TFTVLogger.Always("IsValidTarget Method invoked for GeoSite " + site.LocalizedSiteName);
-
-                            if (targetsForBehemoth != null && targetsForBehemoth.Contains(site))
-                            {
-                                TFTVLogger.Always("Site is in the list and a valid target for B");
-                                __result = true;
-                                return true;
-
-                            }
-                            // TFTVLogger.Always("Site is not in the list and not a valid target for B");
-                            return false;
-
-                        }
-
-                        catch (Exception e)
-                        {
-                            TFTVLogger.Error(e);
-                            return false;
-                        }
-
-                    }
-                }
-
-                */
-       /* public static InterceptionAircraft PlayerVehicle = null;
-        
-
-        [HarmonyPatch(typeof(InterceptionAircraft), "get_CurrentHitPoints")]
-        public static class InterceptionAircraft_TransferStatsToVehicle_DisengageDestroyRandomWeapon_patch
-        {
-            public static bool Prepare()
-            {
-                TFTVConfig config = TFTVMain.Main.Config;
-                return config.ActivateAirCombatChanges;
-            }
+        /*
+         [HarmonyPatch(typeof(InterceptionAircraft), "get_CurrentHitPoints")]
+         public static class InterceptionAircraft_TransferStatsToVehicle_DisengageDestroyRandomWeapon_patch
+         {
+             public static bool Prepare()
+             {
+                 TFTVConfig config = TFTVMain.Main.Config;
+                 return config.ActivateAirCombatChanges;
+             }
 
 
-            public static void Postfix(ref float __result, InterceptionAircraft __instance)
-            {
-                try
-                {
-                    TFTVLogger.Always("Method get hitpoints is called");
+             public static void Postfix(ref float __result, InterceptionAircraft __instance)
+             {
+                 try
+                 {
+                     TFTVLogger.Always("Method get hitpoints is called");
 
-                    if (PlayerVehicle!=null && __instance == PlayerVehicle)
-                    {
-                        TFTVLogger.Always("PlayerVehicle HP in second method are " + PlayerVehicle.CurrentHitPoints);
-                        __result = PlayerVehicle.CurrentHitPoints;
-                        PlayerVehicle = null;
+                     if (PlayerVehicle!=null && __instance == PlayerVehicle)
+                     {
+                         TFTVLogger.Always("PlayerVehicle HP in second method are " + PlayerVehicle.CurrentHitPoints);
+                         __result = PlayerVehicle.CurrentHitPoints;
+                         PlayerVehicle = null;
 
-                    }
-  
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-            }
-        }
+                     }
 
-        [HarmonyPatch(typeof(InterceptionGameController), "DisengagePlayer")]
-        public static class InterceptionGameController_DisengagePlayer_DisengageDestroyRandomWeapon_patch
-        {
-            public static bool Prepare()
-            {
-                TFTVConfig config = TFTVMain.Main.Config;
-                return config.ActivateAirCombatChanges;
-            }
+                 }
+                 catch (Exception e)
+                 {
+                     TFTVLogger.Error(e);
+                 }
+             }
+         }
+
+         [HarmonyPatch(typeof(InterceptionGameController), "DisengagePlayer")]
+         public static class InterceptionGameController_DisengagePlayer_DisengageDestroyRandomWeapon_patch
+         {
+             public static bool Prepare()
+             {
+                 TFTVConfig config = TFTVMain.Main.Config;
+                 return config.ActivateAirCombatChanges;
+             }
 
 
-            public static void Postfix(InterceptionGameController __instance)
-            {
-                try
-                {
-                    int numberOfActiveWeaponsEnemy = 0;
-                    int num = 0;
+             public static void Postfix(InterceptionGameController __instance)
+             {
+                 try
+                 {
+                     int numberOfActiveWeaponsEnemy = 0;
+                     int num = 0;
 
-                    for (int i = 0; i < __instance.EnemyAircraft.Weapons.Count(); i++)
-                    {
-                        InterceptionAircraftWeapon enemyWeapon = __instance.EnemyAircraft.GetWeapon(i);
-                        if (enemyWeapon != null && !enemyWeapon.IsDisabled)
-                        {
-                            TFTVLogger.Always("Weapon " + i + "is " + enemyWeapon.WeaponDef.GetDisplayName().LocalizeEnglish());
-                            numberOfActiveWeaponsEnemy++;
-                        }
-                    }
+                     for (int i = 0; i < __instance.EnemyAircraft.Weapons.Count(); i++)
+                     {
+                         InterceptionAircraftWeapon enemyWeapon = __instance.EnemyAircraft.GetWeapon(i);
+                         if (enemyWeapon != null && !enemyWeapon.IsDisabled)
+                         {
+                             TFTVLogger.Always("Weapon " + i + "is " + enemyWeapon.WeaponDef.GetDisplayName().LocalizeEnglish());
+                             numberOfActiveWeaponsEnemy++;
+                         }
+                     }
 
-                    TFTVLogger.Always("Number of active enemy weapons: " + numberOfActiveWeaponsEnemy);
-                    if (numberOfActiveWeaponsEnemy > 0)
-                    {
-                        num = UnityEngine.Random.Range(0, 100 + 25 * numberOfActiveWeaponsEnemy);
-                        TFTVLogger.Always("Roll: " + num);
+                     TFTVLogger.Always("Number of active enemy weapons: " + numberOfActiveWeaponsEnemy);
+                     if (numberOfActiveWeaponsEnemy > 0)
+                     {
+                         num = UnityEngine.Random.Range(0, 100 + 25 * numberOfActiveWeaponsEnemy);
+                         TFTVLogger.Always("Roll: " + num);
 
-                        // if (num > 100)
-                        // {
-                        GeoVehicle playerCraft = __instance.CurrentMission.PlayerAircraft.Vehicle;
-                        TFTVLogger.Always("Hitpoints are " + playerCraft.Stats.HitPoints);
-                        if (playerCraft.Stats.HitPoints > num || playerCraft.Stats.HitPoints < 10)
-                        {
+                         // if (num > 100)
+                         // {
+                         GeoVehicle playerCraft = __instance.CurrentMission.PlayerAircraft.Vehicle;
+                         TFTVLogger.Always("Hitpoints are " + playerCraft.Stats.HitPoints);
+                         if (playerCraft.Stats.HitPoints > num || playerCraft.Stats.HitPoints < 10)
+                         {
 
-                            // GeoVehicleEquipment randomWeapon = playerCraft.Weapons.ToList().GetRandomElement();
-                            playerCraft.DamageAircraft(num);
-                            TFTVLogger.Always("We pass the if test and current Hitpoints are" + playerCraft.Stats.HitPoints);
-                        }
-                        else
-                        {
-                            int hitpoints = playerCraft.Stats.HitPoints;
-                            playerCraft.DamageAircraft(hitpoints - 1);
-                            TFTVLogger.Always("We pass the else test and current Hitpoints are" + playerCraft.Stats.HitPoints);
-                        }
-                        PlayerVehicle=__instance.PlayerAircraft;
-                        TFTVLogger.Always("PlayerVehicle HP in first method are " + PlayerVehicle.CurrentHitPoints);
-                        //   playerCraft.RemoveEquipment(randomWeapon);
-                        GameUtl.GetMessageBox().ShowSimplePrompt($"{playerCraft.Name}" + " suffered " + num + " damage " 
-                                        + " during " + "disengagement maneuvers.", MessageBoxIcon.None, MessageBoxButtons.OK, null);
-                    }
+                             // GeoVehicleEquipment randomWeapon = playerCraft.Weapons.ToList().GetRandomElement();
+                             playerCraft.DamageAircraft(num);
+                             TFTVLogger.Always("We pass the if test and current Hitpoints are" + playerCraft.Stats.HitPoints);
+                         }
+                         else
+                         {
+                             int hitpoints = playerCraft.Stats.HitPoints;
+                             playerCraft.DamageAircraft(hitpoints - 1);
+                             TFTVLogger.Always("We pass the else test and current Hitpoints are" + playerCraft.Stats.HitPoints);
+                         }
+                         PlayerVehicle=__instance.PlayerAircraft;
+                         TFTVLogger.Always("PlayerVehicle HP in first method are " + PlayerVehicle.CurrentHitPoints);
+                         //   playerCraft.RemoveEquipment(randomWeapon);
+                         GameUtl.GetMessageBox().ShowSimplePrompt($"{playerCraft.Name}" + " suffered " + num + " damage " 
+                                         + " during " + "disengagement maneuvers.", MessageBoxIcon.None, MessageBoxButtons.OK, null);
+                     }
 
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-            }
-        }*/
+                 }
+                 catch (Exception e)
+                 {
+                     TFTVLogger.Error(e);
+                 }
+             }
+         }*/
     }
 }
 
