@@ -48,7 +48,7 @@ namespace TFTV
             TFTVUmbra.SetUmbraEvolution(gsController);
             TFTVThirdAct.SetBehemothOnRampageMod(gsController);
             TFTVChangesToDLC3Events.ChangeHavenDeploymentDefense(gsController);
-            TFTVStamina.charactersWithBrokenLimbs = new List<int>();
+            TFTVStamina.CheckBrokenLimbs(gsController.PhoenixFaction.Soldiers.ToList());
 
         }
         /// <summary>
@@ -69,7 +69,7 @@ namespace TFTV
             {
                 TFTVUmbra.SetUmbraRandomValue(0.16f);
             }
-            TFTVDelirium.hookToCharacter = null;
+            TFTVUI.hookToCharacter = null;
           /*  if (TFTVRevenant.GeoDeadSoldiersDelirium.Count != 0 && TFTVRevenant.DeadSoldiersDelirium.Count < TFTVRevenant.GeoDeadSoldiersDelirium.Count)
             {
                 TFTVRevenant.DeadSoldiersDelirium = TFTVRevenant.GeoDeadSoldiersDelirium;
@@ -94,7 +94,6 @@ namespace TFTV
                 flyersAndHavens = TFTVAirCombat.flyersAndHavens,
                 checkHammerfall = TFTVAirCombat.checkHammerfall,
                 DeadSoldiersDelirium = TFTVRevenant.DeadSoldiersDelirium,
-              //  Behemoth = TFTVAirCombat.Behemoth,
             };
 
         }

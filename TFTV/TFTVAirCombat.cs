@@ -534,7 +534,7 @@ namespace TFTV
                 try
                 {
                     GeoBehemothActor behemoth = (GeoBehemothActor)UnityEngine.Object.FindObjectOfType(typeof(GeoBehemothActor));
-                    TFTVLogger.Always("Behemoth is submerging? " + behemoth.IsSubmerging);
+                   // TFTVLogger.Always("Behemoth is submerging? " + behemoth.IsSubmerging);
 
                     if (flyersAndHavens.ContainsKey(__instance.GeoVehicle.VehicleID))
                     {
@@ -715,8 +715,8 @@ namespace TFTV
                                                                     select s;
 
                     GeoSite chosenTarget = orderedEnumerable.First();
-                    TFTVLogger.Always("The count of possible explo sites is " + orderedEnumerable.Count());
-                    TFTVLogger.Always("The chosen site is " + chosenTarget.Name);
+                   // TFTVLogger.Always("The count of possible explo sites is " + orderedEnumerable.Count());
+                   // TFTVLogger.Always("The chosen site is " + chosenTarget.Name);
 
                     typeof(GeoBehemothActor).GetMethod("TargetHaven", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(geoBehemothActor, new object[] { chosenTarget });
                 }
@@ -739,8 +739,8 @@ namespace TFTV
                                                                         select s;
 
                         GeoSite chosenTarget = orderedEnumerable.First();
-                        TFTVLogger.Always("The count of possible explo sites is " + orderedEnumerable.Count());
-                        TFTVLogger.Always("The chosen site is " + chosenTarget.Name);
+                      //  TFTVLogger.Always("The count of possible explo sites is " + orderedEnumerable.Count());
+                      //  TFTVLogger.Always("The chosen site is " + chosenTarget.Name);
 
                         typeof(GeoBehemothActor).GetMethod("TargetHaven", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(geoBehemothActor, new object[] { chosenTarget });
                     }

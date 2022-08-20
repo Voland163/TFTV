@@ -1,0 +1,374 @@
+﻿
+using Base.Defs;
+using Base.Entities.Statuses;
+using HarmonyLib;
+using PhoenixPoint.Common.Entities;
+using PhoenixPoint.Common.Entities.Characters;
+using PhoenixPoint.Common.View.ViewModules;
+using PhoenixPoint.Geoscape.Entities;
+using PhoenixPoint.Geoscape.View.ViewModules;
+using PhoenixPoint.Tactical.Entities.Abilities;
+using PhoenixPoint.Tactical.Entities.Equipments;
+using System;
+using System.Linq;
+using UnityEngine;
+
+namespace TFTV
+{
+    internal class TFTVUI
+    {
+        private static readonly DefRepository Repo = TFTVMain.Repo;
+        //This method changes how WP are displayed in the Edit personnel screen, to show effects of Delirium on WP
+
+        [HarmonyPatch(typeof(UIModuleCharacterProgression), "GetStarBarValuesDisplayString")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051")]
+        internal static class BG_UIModuleCharacterProgression_RefreshStatPanel_patch
+        {
+
+            private static void Postfix(GeoCharacter ____character, ref string __result, CharacterBaseAttribute attribute, int currentAttributeValue)
+            {
+                try
+                {
+                    float bonusSpeed = 0;
+                    float bonusWillpower = 0;
+                    float bonusStrength = 0;
+
+                    //  GeoLevelController level = (GeoLevelController)UnityEngine.Object.FindObjectOfType(typeof(GeoLevelController));
+
+                    foreach (ICommonItem armorItem in ____character.ArmourItems)
+                    {
+                        TacticalItemDef tacticalItemDef = armorItem.ItemDef as TacticalItemDef;
+                        if (!(tacticalItemDef == null) && !(tacticalItemDef.BodyPartAspectDef == null))
+                        {
+                            bonusSpeed += tacticalItemDef.BodyPartAspectDef.Speed;
+                            bonusWillpower += tacticalItemDef.BodyPartAspectDef.WillPower;
+                            bonusStrength += tacticalItemDef.BodyPartAspectDef.Endurance;
+                        }
+                    }
+
+                    if (____character.Progression != null)
+                    {
+                        foreach (TacticalAbilityDef ability in ____character.Progression.Abilities)
+                        {
+                            PassiveModifierAbilityDef passiveModifierAbilityDef = ability as PassiveModifierAbilityDef;
+                            if (!(passiveModifierAbilityDef == null))
+                            {
+                                ItemStatModification[] statModifications = passiveModifierAbilityDef.StatModifications;
+                                foreach (ItemStatModification statModifier in statModifications)
+                                {
+                                    if (statModifier.TargetStat == StatModificationTarget.Endurance && statModifier.Modification == StatModificationType.AddMax)
+                                    {
+                                        bonusStrength += statModifier.Value;
+                                    }
+                                    else if (statModifier.TargetStat == StatModificationTarget.Willpower && statModifier.Modification == StatModificationType.AddMax)
+                                    {
+                                        bonusWillpower += statModifier.Value;
+                                    }
+                                    else if (statModifier.TargetStat == StatModificationTarget.Speed)
+                                    {
+                                        bonusSpeed += statModifier.Value;
+                                    }
+
+                                }
+                            }
+
+                            TacticalAbilityDef derealizationDef = Repo.GetAllDefs<TacticalAbilityDef>().FirstOrDefault(tad => tad.name.Equals("DerealizationIgnorePain_AbilityDef"));
+                            if (ability == derealizationDef)
+                            {
+                                bonusStrength -= 5;
+                            }
+
+                        }
+
+
+                        foreach (PassiveModifierAbilityDef passiveModifier in ____character.PassiveModifiers)
+                        {
+                            ItemStatModification[] statModifications = passiveModifier.StatModifications;
+                            foreach (ItemStatModification statModifier2 in statModifications)
+                            {
+                                if (statModifier2.TargetStat == StatModificationTarget.Endurance)
+                                {
+                                    bonusStrength += statModifier2.Value;
+                                }
+                                else if (statModifier2.TargetStat == StatModificationTarget.Willpower)
+                                {
+                                    bonusWillpower += statModifier2.Value;
+                                }
+                                else if (statModifier2.TargetStat == StatModificationTarget.Speed)
+                                {
+                                    bonusSpeed += statModifier2.Value;
+                                }
+
+                            }
+                        }
+                    }
+
+                    if (attribute.Equals(CharacterBaseAttribute.Strength))
+                    {
+                        if (bonusStrength > 0)
+                        {
+                            __result = $"{currentAttributeValue} / {____character.Progression.GetMaxBaseStat(attribute)}" +
+                                    $" (<color=#50c878>{currentAttributeValue + bonusStrength}</color>)";
+                        }
+                        else if (bonusStrength < 0)
+                        {
+                            __result = $"{currentAttributeValue} / {____character.Progression.GetMaxBaseStat(attribute)}" +
+                                    $" (<color=#cc0000>{currentAttributeValue + bonusStrength}</color>)";
+                        }
+                        else
+                        {
+                            __result = $"{currentAttributeValue} / {____character.Progression.GetMaxBaseStat(attribute)}";
+                        }
+
+                    }
+
+
+                    if (attribute.Equals(CharacterBaseAttribute.Speed))
+                    {
+
+                        if (bonusSpeed > 0)
+                        {
+                            __result = $"{currentAttributeValue} / {____character.Progression.GetMaxBaseStat(attribute)}" +
+                                    $" (<color=#50c878>{currentAttributeValue + bonusSpeed}</color>)";
+                        }
+                        else if (bonusSpeed < 0)
+                        {
+                            __result = $"{currentAttributeValue} / {____character.Progression.GetMaxBaseStat(attribute)}" +
+                                    $" (<color=#cc0000>{currentAttributeValue + bonusSpeed}</color>)";
+                        }
+                        else
+                        {
+                            __result = $"{currentAttributeValue} / {____character.Progression.GetMaxBaseStat(attribute)}";
+                        }
+                    }
+
+                    if (attribute.Equals(CharacterBaseAttribute.Will))
+                    {
+                        if (____character.CharacterStats.Corruption > TFTVDelirium.CalculateStaminaEffectOnDelirium(____character) && TFTVVoidOmens.voidOmensCheck[3] == false)
+                        {
+                            __result = $"{currentAttributeValue} / {____character.Progression.GetMaxBaseStat(CharacterBaseAttribute.Will)}" +
+                                $"<color=#da5be3> ({currentAttributeValue + bonusWillpower - ____character.CharacterStats.Corruption.Value + TFTVDelirium.CalculateStaminaEffectOnDelirium(____character)}</color>)";
+                        }
+                        else
+                        {
+                            if (bonusWillpower > 0)
+                            {
+
+                                __result = $"{currentAttributeValue} / {____character.Progression.GetMaxBaseStat(attribute)}" +
+                                            $" (<color=#50c878>{currentAttributeValue + bonusWillpower}</color>)";
+
+                            }
+                            else if (bonusWillpower < 0)
+                            {
+                                __result = $"{currentAttributeValue} / {____character.Progression.GetMaxBaseStat(attribute)}" +
+                                        $" (<color=#cc0000>{currentAttributeValue + bonusWillpower}</color>)";
+                            }
+                            else
+                            {
+                                __result = $"{currentAttributeValue} / {____character.Progression.GetMaxBaseStat(attribute)}";
+                            }
+                        }
+                    }
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+
+            }
+
+        }
+        public static UIModuleCharacterProgression hookToProgressionModule = null;
+        public static GeoCharacter hookToCharacter = null;
+
+
+        [HarmonyPatch(typeof(UIModuleCharacterProgression), "Awake")]
+
+        internal static class UIModuleCharacterProgression_Awake_patch
+
+        {
+            public static void Postfix(UIModuleCharacterProgression __instance)
+            {
+                try
+                {
+                    hookToProgressionModule = __instance;
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+
+            }
+        }
+
+
+
+        [HarmonyPatch(typeof(UIModuleSoldierEquip), "RefreshPrimarySoldierWeight")]
+        internal static class UIModuleSoldierEquip_RefreshPrimarySoldierWeight_Patch
+        {
+
+
+
+            private static void Postfix(UIModuleSoldierEquip __instance)
+            {
+                try
+                {
+
+                    if (hookToProgressionModule != null && !__instance.IsVehicle)
+                    {
+                        //  hookToProgressionModule.RefreshStats();
+                        hookToProgressionModule.SetStatusesPanel();
+                        hookToProgressionModule.RefreshStatPanel();
+                        hookToProgressionModule.StatChanged();
+
+                    }
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+        }
+
+        [HarmonyPatch(typeof(UIModuleSoldierEquip), "RefreshWeightSlider")]
+        internal static class UIModuleSoldierEquip_RefreshWeightSlider_Patch
+        {
+
+            private static void Prefix(ref int maxWeight, UIModuleSoldierEquip __instance)
+            {
+                try
+                {
+                    if (hookToCharacter != null && !__instance.IsVehicle)
+                    {
+
+                        float bonusStrength = 0;
+                        float bonusToCarry = 1;
+
+                        foreach (ICommonItem armorItem in hookToCharacter.ArmourItems)
+                        {
+                            TacticalItemDef tacticalItemDef = armorItem.ItemDef as TacticalItemDef;
+                            if (!(tacticalItemDef == null) && !(tacticalItemDef.BodyPartAspectDef == null))
+                            {
+                                bonusStrength += tacticalItemDef.BodyPartAspectDef.Endurance;
+                            }
+                        }
+
+                        if (hookToCharacter.Progression != null)
+                        {
+                            foreach (TacticalAbilityDef ability in hookToCharacter.Progression.Abilities)
+                            {
+                                PassiveModifierAbilityDef passiveModifierAbilityDef = ability as PassiveModifierAbilityDef;
+                                if (!(passiveModifierAbilityDef == null))
+                                {
+                                    ItemStatModification[] statModifications = passiveModifierAbilityDef.StatModifications;
+                                    foreach (ItemStatModification statModifier in statModifications)
+                                    {
+                                        if (statModifier.TargetStat == StatModificationTarget.Endurance && statModifier.Modification == StatModificationType.AddMax)
+                                        {
+                                            bonusStrength += statModifier.Value;
+                                            // TFTVLogger.Always("The TacticalAbilityDef is " + ability.name + ". It modifies Endurance, giving " + statModifier.Value + ", " +
+                                            //    "making the total bonus to Strength " + bonusStrength);
+                                        }
+
+
+                                        if (statModifier.TargetStat == StatModificationTarget.CarryWeight && statModifier.Modification == StatModificationType.MultiplyMax)
+                                        {
+                                            bonusToCarry += statModifier.Value - 1;
+                                        }
+                                    }
+                                }
+                                TacticalAbilityDef derealizationDef = Repo.GetAllDefs<TacticalAbilityDef>().FirstOrDefault(tad => tad.name.Equals("DerealizationIgnorePain_AbilityDef"));
+                                if (ability == derealizationDef) 
+                                { 
+                                bonusStrength -= 5;
+                                
+                                }
+                            }
+
+                            foreach (PassiveModifierAbilityDef passiveModifier in hookToCharacter.PassiveModifiers)
+                            {
+                                ItemStatModification[] statModifications = passiveModifier.StatModifications;
+                                foreach (ItemStatModification statModifier2 in statModifications)
+                                {
+                                    if (statModifier2.TargetStat == StatModificationTarget.Endurance)
+                                    {
+                                        bonusStrength += statModifier2.Value;
+                                    }
+                                    if (statModifier2.TargetStat == StatModificationTarget.CarryWeight)
+                                    {
+                                        bonusToCarry += statModifier2.Value;
+                                    }
+
+                                }
+                            }
+
+                        }
+
+                        maxWeight += (int)(bonusStrength * bonusToCarry);
+                        //TFTVLogger.Always("Max weight is " + maxWeight + ". Bonus Strength is " + bonusStrength + ". Bonus to carry is " + bonusToCarry);
+
+                    }
+
+                }
+
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+        }
+
+
+        //This changes display of Delirium bar in personnel edit screen to show current Delirium value vs max delirium value the character can have
+        // taking into account ODI level and bionics
+        [HarmonyPatch(typeof(UIModuleCharacterProgression), "SetStatusesPanel")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051")]
+        internal static class BG_UIModuleCharacterProgression_SetStatusesPanel_patch
+        {
+
+            private static void Postfix(UIModuleCharacterProgression __instance, GeoCharacter ____character)
+            {
+                try
+                {
+                    hookToCharacter = ____character;
+
+                    if (____character.CharacterStats.Corruption > 0f)
+
+                    {
+                        __instance.CorruptionSlider.minValue = 0f;
+                        __instance.CorruptionSlider.maxValue = TFTVDelirium.CalculateMaxCorruption(____character);
+                        __instance.CorruptionSlider.value = ____character.CharacterStats.Corruption.IntValue;
+                        __instance.CorruptionStatText.text = $"{____character.CharacterStats.Corruption.IntValue}/{Mathf.RoundToInt(__instance.CorruptionSlider.maxValue)}";
+
+                        int num = (int)(float)____character.Fatigue.Stamina;
+                        int num2 = (int)(float)____character.Fatigue.Stamina.Max;
+                        __instance.StaminaSlider.minValue = 0f;
+                        __instance.StaminaSlider.maxValue = num2;
+                        __instance.StaminaSlider.value = num;
+                        if (num != num2)
+                        {
+                            string deliriumReducedStamina = "";
+                            for (int i = 0; i < TFTVDelirium.CalculateStaminaEffectOnDelirium(____character); i++)
+                            {
+                                deliriumReducedStamina += "-";
+
+                            }
+                            __instance.StaminaStatText.text = $"<color=#da5be3>{deliriumReducedStamina}</color>" + num + "/" + num2;
+                        }
+                        else
+                        {
+                            __instance.StaminaStatText.text = "<color=#da5be3> ---- </color>" + num.ToString();
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+        }
+
+    }
+}

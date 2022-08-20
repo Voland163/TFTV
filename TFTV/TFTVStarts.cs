@@ -207,7 +207,7 @@ namespace TFTV
                 Repo.GetAllDefs<TacticalItemDef>().First(tad => tad.name.Contains("AN_Priest_Torso_BodyPartDef")),
                 Repo.GetAllDefs<TacticalItemDef>().First(tad => tad.name.Contains("AN_Priest_Legs_ItemDef"))
                 };
-                TFTVLogger.Always(startingPriest.Data.EquipmentItems.Count().ToString());
+            //    TFTVLogger.Always(startingPriest.Data.EquipmentItems.Count().ToString());
 
               /*  ItemDef[] inventoryList = new ItemDef[]
 

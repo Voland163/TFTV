@@ -41,6 +41,29 @@ namespace TFTV
             }
         }
 
+
+        public static void CheckBrokenLimbs(List<GeoCharacter> geoCharacters)
+        {
+            try
+            {
+                foreach (GeoCharacter geoCharacter in geoCharacters)
+                {
+                    if (charactersWithBrokenLimbs.Contains(geoCharacter.Id))
+                    {
+                        TFTVCommonMethods.SetStaminaToZero(geoCharacter);
+                    }
+                }
+                charactersWithBrokenLimbs = new List<int>();
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+
+
+        /*
         // This second patch reads from the list and drains Stamina from everyone who is in it. 
         [HarmonyPatch(typeof(GeoCharacter), "Init")]
         internal static class GeoCharacter_Init_StaminaToZeroIfBodyPartDisabled_patch
@@ -70,6 +93,7 @@ namespace TFTV
                 }
             }
         }
+        */
         //When getting a mutation, the character's Stamina is to 0
         [HarmonyPatch(typeof(UIModuleMutationSection), "ApplyMutation")]
         public static class UIModuleMutationSection_ApplyMutation_SetStaminaTo0_patch

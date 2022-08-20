@@ -63,7 +63,8 @@ namespace TFTV
             /// ModMain is accesible at any time
             TFTVMain main = (TFTVMain)Main;
             //TFTV give Dtony's Delirium Perks
-            TFTVDelirium.DeliriumPerksOnTactical(tacController);
+          //  TFTVDelirium.DeliriumPerksOnTactical(tacController);
+            TFTVRevenant.CreateRevenantDefs();
 
             /*
                         Controller.ActorEnteredPlayEvent += SubscribeActorEvents;

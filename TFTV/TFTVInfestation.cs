@@ -141,10 +141,10 @@ namespace TFTV
                 {
                     if(__instance.Type == GeoSiteType.Haven)
                     {
-                        TFTVLogger.Always("DestroySite method called");
-                    TFTVLogger.Always("infestation variable is " + __instance.GeoLevel.EventSystem.GetVariable("Infestation_Encounter_Variable"));
+                   // TFTVLogger.Always("DestroySite method called");
+                  //  TFTVLogger.Always("infestation variable is " + __instance.GeoLevel.EventSystem.GetVariable("Infestation_Encounter_Variable"));
                     string faction = __instance.Owner.GetPPName();
-                    TFTVLogger.Always(faction);
+                  //  TFTVLogger.Always(faction);
                     if (DefenseMission == null)
                     {
 
@@ -197,29 +197,29 @@ namespace TFTV
             {
                 try
                 {
-                    TFTVLogger.Always("AddEntry method invoked");
+                    //TFTVLogger.Always("AddEntry method invoked");
                     
 
 
                     if (GeoSiteForInfestation != null && GeoSiteForInfestation.SiteName != null && entry != null && entry.Parameters!=null && entry.Parameters.Contains(GeoSiteForInfestation.SiteName))
                     {
-                        TFTVLogger.Always("Attempting to add infestation entry to Log");
+                      //  TFTVLogger.Always("Attempting to add infestation entry to Log");
                         if (entry == null)
                         {
-                            TFTVLogger.Always("Failed because entry is null");
+                        //    TFTVLogger.Always("Failed because entry is null");
                         }
                         else 
                         { 
                             if(entry.Text == null) 
                             {
-                                TFTVLogger.Always("Failed because entry.text is null");
+                            //    TFTVLogger.Always("Failed because entry.text is null");
 
                             }
                             else
                             {
-                                TFTVLogger.Always("Entry.text is not null");
+                               // TFTVLogger.Always("Entry.text is not null");
                                 entry.Text = new LocalizedTextBind(GeoSiteForInfestation.Owner + " " + DefenseMission.Haven.Site.Name + " has succumbed to Pandoran infestation!", true);
-                                TFTVLogger.Always("The folliwing entry to Log was added" + GeoSiteForInfestation.Owner + " " + DefenseMission.Haven.Site.Name + " has succumbed to Pandoran infestation!");
+                                TFTVLogger.Always("The following entry to Log was added" + GeoSiteForInfestation.Owner + " " + DefenseMission.Haven.Site.Name + " has succumbed to Pandoran infestation!");
 
                             }
                         

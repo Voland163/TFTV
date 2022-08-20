@@ -147,6 +147,8 @@ namespace TFTV
                 {
                     GeoVehicle geoVehicle = __instance.Vehicles.First();
                     geoVehicle.AddEquipment(Repo.GetAllDefs<GeoVehicleEquipmentDef>().FirstOrDefault(gve => gve.name.Equals("SY_HibernationPods_GeoVehicleModuleDef")));
+                    
+
 
                     GameDifficultyLevelDef currentDifficultyLevel = __instance.GeoLevel.CurrentDifficultyLevel;
                     GameDifficultyLevelDef hardDifficultyLevel = Repo.GetAllDefs<GameDifficultyLevelDef>().FirstOrDefault(a => a.name.Equals("Hard_GameDifficultyLevelDef"));
@@ -206,12 +208,13 @@ namespace TFTV
                     GeoCharacter character3 = geoUnitDescriptor3.SpawnAsCharacter();
                     geoVehicle.AddCharacter(character3);*/
 
+
                     ItemUnit[] startingStorage = currentDifficultyLevel.StartingStorage;
                     foreach (ItemUnit itemUnit in startingStorage)
                     {
                         if (__instance.FactionDef.UseGlobalStorage)
                         {
-                            site.ItemStorage.AddItem(new GeoItem(itemUnit));
+                            __instance.ItemStorage.AddItem(new GeoItem(itemUnit));
                         }
                         else
                         {

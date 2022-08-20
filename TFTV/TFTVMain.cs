@@ -41,7 +41,7 @@ namespace TFTV
         /// This property indicates if mod can be Safely Disabled from the game.
         /// Safely sisabled mods can be reenabled again. Unsafely disabled mods will need game restart ot take effect.
         /// Unsafely disabled mods usually cannot revert thier changes in OnModDisabled
-        public override bool CanSafelyDisable => true;
+        public override bool CanSafelyDisable => false;
 
         /// <summary>
         /// Callback for when mod is enabled. Called even on game starup.
@@ -153,6 +153,7 @@ namespace TFTV
         public override void OnModDisabled()
         {
             Main = null;
+            
             /// Undo any game modifications if possible. Else "CanSafelyDisable" must be set to false.
             /// ModGO will be destroyed after OnModDisabled.
         }
