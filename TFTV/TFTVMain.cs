@@ -4,13 +4,9 @@ using Base.Levels;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Game;
-using PhoenixPoint.Common.View.ViewControllers;
-using PhoenixPoint.Home.View.ViewModules;
 using PhoenixPoint.Modding;
-using System;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using UnityEngine;
 
 namespace TFTV
@@ -37,6 +33,7 @@ namespace TFTV
         internal static string LocalizationDirectory;
         internal static string TexturesDirectory;
 
+        // internal static bool injectionComplete = false;
 
         /// This property indicates if mod can be Safely Disabled from the game.
         /// Safely sisabled mods can be reenabled again. Unsafely disabled mods will need game restart ot take effect.
@@ -62,7 +59,8 @@ namespace TFTV
             /// PhoenixGame is accessible at any time.
             PhoenixGame game = GetGame();
 
-            Logger.LogInfo("TFTV August 19 afternoon release #1");
+            Logger.LogInfo("TFTV August 25 afternoon release #3");
+
 
             //TFTV 
             ModDirectory = Instance.Entry.Directory;
@@ -74,11 +72,22 @@ namespace TFTV
             // Initialize Logger
             LogPath = Path.Combine(ModDirectory, "TFTV.log");
             TFTVLogger.Initialize(LogPath, Config.Debug, ModDirectory, nameof(TFTV));
+            TFTVLogger.Always("TFTV August 25 afternoon release #3");
             // Initialize Helper
             Helper.Initialize();
+            
+
+
+            // if (!injectionComplete)
+            // {
 
             //TFTV Stuff that needs to happen ASAP
-            TFTVStarts.MakeJacobIntoSniper();
+
+            if (Config.tutorialCharacters == TFTVConfig.StartingSquadCharacters.UNBUFFED)
+            {
+                TFTVStarts.MakeJacobIntoSniper();
+            }
+
             //This creates the Void Omen events
             TFTVVoidOmens.Create_VoidOmen_Events();
 
@@ -138,8 +147,14 @@ namespace TFTV
             //This creates the intro events when a new game is started
             TFTVNewPXCharacters.CreateIntro();
             //Run all harmony patches; some patches have config flags
-            harmony.PatchAll();
 
+            TFTVStarts.CreateInitialInfiltrator();
+            TFTVStarts.CreateInitialPriest();
+            TFTVStarts.CreateInitialTechnician();
+
+            harmony.PatchAll();
+            //       injectionComplete = true;
+            //  }
 
         }
 
@@ -153,7 +168,7 @@ namespace TFTV
         public override void OnModDisabled()
         {
             Main = null;
-            
+
             /// Undo any game modifications if possible. Else "CanSafelyDisable" must be set to false.
             /// ModGO will be destroyed after OnModDisabled.
         }
@@ -163,7 +178,7 @@ namespace TFTV
         /// </summary>
         public override void OnConfigChanged()
         {
-            
+
 
             if (Config.defaultSettings)
             {
@@ -183,7 +198,7 @@ namespace TFTV
                 Config.ActivateKERework = true;
                 Config.HavenSOS = true;
                 Config.Debug = true;
-             
+
             }
             if (Config.InitialScavSites != 8 ||
                Config.ChancesScavCrates != TFTVConfig.ScavengingWeight.High ||
@@ -204,19 +219,20 @@ namespace TFTV
             {
 
                 Config.defaultSettings = false;
-                
+
             }
-          
+
 
             Harmony harmony = (Harmony)HarmonyInstance;
+            //  injectionComplete = false;
             harmony.UnpatchAll();
             harmony.PatchAll();
-            /*
-            UIModuleModManager uIModuleModManager = (UIModuleModManager)UnityEngine.Object.FindObjectOfType(typeof(UIModuleModManager));
-            PhoenixGeneralButton activeModTab = uIModuleModManager.ModSettingsSections.First(pgb => pgb.IsSelected);
-            MethodInfo SelectModSettings_Info = AccessTools.Method(typeof(UIModuleModManager), "SelectModSettings", new Type[] { typeof(PhoenixGeneralButton) });
-            SelectModSettings_Info.Invoke(uIModuleModManager, new object[] { activeModTab });*/
-
+            /*  
+              UIModuleModManager uIModuleModManager = (UIModuleModManager)UnityEngine.Object.FindObjectOfType(typeof(UIModuleModManager));
+              PhoenixGeneralButton activeModTab = uIModuleModManager.ModSettingsSections.First(pgb => pgb.IsSelected);
+              MethodInfo SelectModSettings_Info = AccessTools.Method(typeof(UIModuleModManager), "SelectModSettings", new Type[] { typeof(PhoenixGeneralButton) });
+              SelectModSettings_Info.Invoke(uIModuleModManager, new object[] { activeModTab });
+            */
             /// Config is accessible at any time.
         }
 
@@ -235,6 +251,7 @@ namespace TFTV
 
             /// Alternative way to access current level at any time.
             Level l = GetLevel();
+
         }
 
         /// <summary>
@@ -246,7 +263,7 @@ namespace TFTV
         {
             //Reinject Dtony's delirium perks, because assuming degradation will happen based on BetterClasses experience
             TFTVDeliriumPerks.Main();
-   
+
         }
 
         /// <summary>

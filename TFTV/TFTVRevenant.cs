@@ -2,6 +2,7 @@
 using Base.Defs;
 using Base.Entities.Abilities;
 using Base.Entities.Statuses;
+using Base.ParticleSystems;
 using Base.UI;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
@@ -10,8 +11,10 @@ using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
+using PhoenixPoint.Tactical.Entities.Effects.DamageTypes;
 using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.Entities.Statuses;
+using PhoenixPoint.Tactical.Entities.Weapons;
 using PhoenixPoint.Tactical.Levels;
 using System;
 using System.Collections.Generic;
@@ -41,6 +44,7 @@ namespace TFTV
                 CreateRevenantAbilityForInfiltrator();
                 CreateRevenantAbilityForPriest();
                 CreateRevenantAbilityForSniper();
+              //  CreateRevenantResistanceAbility();
             }
             catch (Exception e)
             {
@@ -76,6 +80,8 @@ namespace TFTV
         }
 
 
+
+
         [HarmonyPatch(typeof(TacticalLevelController), "ActorEnteredPlay")]
         public static class TacticalLevelController_ActorEnteredPlay_RevenantGenerator_Patch
         {
@@ -87,7 +93,7 @@ namespace TFTV
                     if (actor.TacticalFaction.Faction.BaseDef == sharedData.AlienFactionDef && DeadSoldiersDelirium.Count > 0 && RevenantCounter < 3
                         && !actor.GameTags.Contains(Repo.GetAllDefs<GameTagDef>().FirstOrDefault(p => p.name.Equals("Revenant_GameTagDef"))))
                     {
-
+                       // ModifyRevenantResistanceAbility(__instance);
                         //First lets check time of death to create a first list of dead soldiers
                         List<GeoTacUnitId> allDeadSoldiers = __instance.TacticalGameParams.Statistics.DeadSoldiers.Keys.ToList();
 
@@ -110,7 +116,7 @@ namespace TFTV
                             TFTVLogger.Always("The time unit when character died is " + timeUnit.DateTime.ToString());
                             TFTVLogger.Always("Current time is " + timeOfMissionStart.DateTime.ToString());
                             TFTVLogger.Always((timeOfMissionStart - timeUnit).TimeSpan.Days.ToString());
-                            if ((timeOfMissionStart - timeUnit).TimeSpan.Days >= 3)
+                            if ((timeOfMissionStart - timeUnit).TimeSpan.Days >= 1)
                             {
                                 deadLongEnoughSoldiers.Add(candidate);
                             }
@@ -172,20 +178,25 @@ namespace TFTV
                             SetDeathTime(theChosen, __instance, timeOfMissionStart);
                             TFTVLogger.Always("The time of death has been reset to " + CheckTimerFromDeath(theChosen, __instance).DateTime.ToString());
                             SetRevenantClassAbility(theChosen, __instance, tacticalActor);
+                         //   AddRevenantResistanceAbility(tacticalActor);
+                            actor.UpdateStats();
+                           // ModifyMistBreath(actor);
                             RevenantCounter++;
+
                         }
 
                         if (actor.GameTags.Contains(fishmanTag) && eligibleForTriton.Count > 0 && !CheckForActorWithTag(fishmanTag, __instance))
                         {
                             GeoTacUnitId theChosen = eligibleForTriton.First();
-
-
                             TFTVLogger.Always("Here is an eligible fishman: " + actor.GetDisplayName());
                             TacticalActor tacticalActor = actor as TacticalActor;
                             AddRevenantStatusEffect(tacticalActor);
+                            actor.name = GetDeadSoldiersNameFromID(theChosen, __instance);
                             SetDeathTime(theChosen, __instance, timeOfMissionStart);
                             TFTVLogger.Always("The time of death has been reset to " + CheckTimerFromDeath(theChosen, __instance).DateTime.ToString());
                             SetRevenantClassAbility(theChosen, __instance, tacticalActor);
+                            actor.UpdateStats();
+                          //  ModifyMistBreath(actor);
                             RevenantCounter++;
                         }
 
@@ -195,6 +206,7 @@ namespace TFTV
                             TFTVLogger.Always("Here is an eligible Siren: " + actor.GetDisplayName());
                             TacticalActor tacticalActor = actor as TacticalActor;
                             AddRevenantStatusEffect(tacticalActor);
+                            actor.name = GetDeadSoldiersNameFromID(theChosen, __instance);
                             SetDeathTime(theChosen, __instance, timeOfMissionStart);
                             TFTVLogger.Always("The time of death has been reset to " + CheckTimerFromDeath(theChosen, __instance).DateTime.ToString());
                             SetRevenantClassAbility(theChosen, __instance, tacticalActor);
@@ -206,9 +218,11 @@ namespace TFTV
                             TFTVLogger.Always("Here is an eligible Chiron: " + actor.GetDisplayName());
                             TacticalActor tacticalActor = actor as TacticalActor;
                             AddRevenantStatusEffect(tacticalActor);
+                            actor.name = GetDeadSoldiersNameFromID(theChosen, __instance);
                             SetDeathTime(theChosen, __instance, timeOfMissionStart);
                             TFTVLogger.Always("The time of death has been reset to " + CheckTimerFromDeath(theChosen, __instance).DateTime.ToString());
                             SetRevenantClassAbility(theChosen, __instance, tacticalActor);
+                            actor.UpdateStats();
                             RevenantCounter++;
                         }
                         if (actor.GameTags.Contains(acheronTag) && eligibleForAcheron.Count > 0 && !CheckForActorWithTag(acheronTag, __instance))
@@ -217,9 +231,11 @@ namespace TFTV
                             TFTVLogger.Always("Here is an eligible Chiron: " + actor.GetDisplayName());
                             TacticalActor tacticalActor = actor as TacticalActor;
                             AddRevenantStatusEffect(tacticalActor);
+                            actor.name = GetDeadSoldiersNameFromID(theChosen, __instance);
                             SetDeathTime(theChosen, __instance, timeOfMissionStart);
                             TFTVLogger.Always("The time of death has been reset to " + CheckTimerFromDeath(theChosen, __instance).DateTime.ToString());
                             SetRevenantClassAbility(theChosen, __instance, tacticalActor);
+                            actor.UpdateStats();
                             RevenantCounter++;
                         }
                         if (actor.GameTags.Contains(queenTag) && eligibleForScylla.Count > 0 && !CheckForActorWithTag(queenTag, __instance))
@@ -228,9 +244,11 @@ namespace TFTV
                             TFTVLogger.Always("Here is an eligible Chiron: " + actor.GetDisplayName());
                             TacticalActor tacticalActor = actor as TacticalActor;
                             AddRevenantStatusEffect(tacticalActor);
+                            actor.name = GetDeadSoldiersNameFromID(theChosen, __instance);
                             SetDeathTime(theChosen, __instance, timeOfMissionStart);
                             TFTVLogger.Always("The time of death has been reset to " + CheckTimerFromDeath(theChosen, __instance).DateTime.ToString());
                             SetRevenantClassAbility(theChosen, __instance, tacticalActor);
+                            actor.UpdateStats();
                             RevenantCounter++;
                         }
 
@@ -383,7 +401,7 @@ namespace TFTV
                 {
                     if (level.TacticalGameParams.Statistics.DeadSoldiers.TryGetValue(soldier, out deadSoldier))
                     {
-                       // TFTVLogger.Always("The soldier is " + soldier);
+                        // TFTVLogger.Always("The soldier is " + soldier);
                         return soldier;
 
                     }
@@ -458,7 +476,7 @@ namespace TFTV
             }
             throw new InvalidOperationException();
         }
-  
+
         public static void SetRevenantClassAbility(GeoTacUnitId deadSoldier, TacticalLevelController level, TacticalActor tacticalActor)
         {
             try
@@ -692,6 +710,132 @@ namespace TFTV
             }
         }
 
+        public static DamageTypeBaseEffectDef GetPreferredDamageType(TacticalLevelController controller)
+        {
+            try
+            {
+                List<SoldierStats> allSoldierStats = controller.TacticalGameParams.Statistics.LivingSoldiers.Values.ToList();
+                allSoldierStats.AddRange(controller.TacticalGameParams.Statistics.DeadSoldiers.Values.ToList());
+                List<UsedWeaponStat> usedWeapons = new List<UsedWeaponStat>();
+
+                DamageOverTimeDamageTypeEffectDef virusDamage = Repo.GetAllDefs<DamageOverTimeDamageTypeEffectDef>().FirstOrDefault(p => p.name.Equals("Virus_DamageOverTimeDamageTypeEffectDef"));
+                DamageOverTimeDamageTypeEffectDef acidDamage = Repo.GetAllDefs<DamageOverTimeDamageTypeEffectDef>().FirstOrDefault(p => p.name.Equals("Acid_DamageOverTimeDamageTypeEffectDef"));
+                DamageOverTimeDamageTypeEffectDef paralysisDamage = Repo.GetAllDefs<DamageOverTimeDamageTypeEffectDef>().FirstOrDefault(p => p.name.Equals("Paralysis_DamageOverTimeDamageTypeEffectDef"));
+                DamageOverTimeDamageTypeEffectDef poisonDamage = Repo.GetAllDefs<DamageOverTimeDamageTypeEffectDef>().FirstOrDefault(p => p.name.Equals("Poison_DamageOverTimeDamageTypeEffectDef"));
+                StandardDamageTypeEffectDef fireDamage = Repo.GetAllDefs<StandardDamageTypeEffectDef>().FirstOrDefault(p => p.name.Equals("Fire_StandardDamageTypeEffectDef"));
+                StandardDamageTypeEffectDef projectileDamage = Repo.GetAllDefs<StandardDamageTypeEffectDef>().FirstOrDefault(p => p.name.Equals("Projectile_StandardDamageTypeEffectDef"));
+                StandardDamageTypeEffectDef shredDamage = Repo.GetAllDefs<StandardDamageTypeEffectDef>().FirstOrDefault(p => p.name.Equals("Shred_StandardDamageTypeEffectDef"));
+                StandardDamageTypeEffectDef blastDamage = Repo.GetAllDefs<StandardDamageTypeEffectDef>().FirstOrDefault(p => p.name.Equals("Blast_StandardDamageTypeEffectDef"));
+
+
+
+                int scoreFireDamage = 0;
+                int scoreProjectileDamage = 0;
+                int scoreBlastDamage = 0;
+                int scoreAcidDamage = 0;
+
+                foreach (SoldierStats stat in allSoldierStats)
+                {
+                    if (stat.ItemsUsed.Count > 0)
+                    {
+                        usedWeapons.AddRange(stat.ItemsUsed);
+                    }
+                }
+
+                foreach (UsedWeaponStat stat in usedWeapons)
+                {
+                    WeaponDef weaponDef = stat.UsedItem as WeaponDef;
+
+                    if (weaponDef.DamagePayload.DamageType == fireDamage)
+                    {
+                        scoreFireDamage += stat.UsedCount;
+                    }
+                    if (weaponDef.DamagePayload.DamageType == projectileDamage)
+                    {
+                        scoreProjectileDamage += stat.UsedCount;
+                    }
+                    if (weaponDef.DamagePayload.DamageType == blastDamage)
+                    {
+                        scoreBlastDamage += stat.UsedCount;
+                    }
+                    if (weaponDef.DamagePayload.DamageType == acidDamage)
+                    {
+                        scoreAcidDamage += stat.UsedCount;
+                    }
+                }
+                List<int> scoreList = new List<int> { scoreFireDamage, scoreAcidDamage, scoreBlastDamage, scoreProjectileDamage };
+                int winner = scoreList.Max();
+                DamageTypeBaseEffectDef damageTypeDef = new DamageTypeBaseEffectDef();
+                if (winner == scoreFireDamage)
+                {
+                    damageTypeDef = fireDamage;
+                }
+                if (winner == scoreAcidDamage)
+                {
+                    damageTypeDef = acidDamage;
+                }
+                if (winner == scoreBlastDamage)
+                {
+                    damageTypeDef = blastDamage;
+                }
+                if (winner == scoreProjectileDamage)
+                {
+                    damageTypeDef = projectileDamage;
+                }
+                return damageTypeDef;
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+            throw new InvalidOperationException();
+        }
+
+        public static void CreateRevenantResistanceAbility()
+        {
+            try
+            {             
+                string skillName = "RevenantResistance_AbilityDef";
+                DamageMultiplierAbilityDef source = Repo.GetAllDefs<DamageMultiplierAbilityDef>().FirstOrDefault(p => p.name.Equals("FireResistant_DamageMultiplierAbilityDef"));
+                DamageMultiplierAbilityDef revenantResistance = Helper.CreateDefFromClone(
+                    source,
+                    "A7F8113B-B281-4ECD-99FE-3125FCE029C4",
+                    skillName);
+                revenantResistance.CharacterProgressionData = Helper.CreateDefFromClone(
+                    source.CharacterProgressionData,
+                    "C298F900-A7D5-4EEC-96E1-50D017614396",
+                    skillName);
+                revenantResistance.ViewElementDef = Helper.CreateDefFromClone(
+                    source.ViewElementDef,
+                    "B737C223-52D0-413B-B48F-978AD5D5BB33",
+                    skillName);
+
+                revenantResistance.ViewElementDef.DisplayName1 = new LocalizedTextBind("Revenant Resistance", true);
+                revenantResistance.ViewElementDef.Description = new LocalizedTextBind("Resistance gained from knowledge of PX ways to " + revenantResistance.DamageTypeDef.Visuals.DisplayName1.LocalizeEnglish(), true);
+                Sprite icon = Helper.CreateSpriteFromImageFile("Void-04P.png");
+                revenantResistance.ViewElementDef.LargeIcon = icon;
+                revenantResistance.ViewElementDef.SmallIcon = icon;
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+        public static void ModifyRevenantResistanceAbility(TacticalLevelController controller) 
+        {
+            DamageMultiplierAbilityDef revenantResistanceAbilityDef = Repo.GetAllDefs<DamageMultiplierAbilityDef>().FirstOrDefault(p => p.name.Equals("RevenantResistance_AbilityDef"));
+            revenantResistanceAbilityDef.DamageTypeDef = GetPreferredDamageType(controller);
+        }
+
+        public static void AddRevenantResistanceAbility(TacticalActor tacticalActor) 
+        {
+            tacticalActor.AddAbility(Repo.GetAllDefs<DamageMultiplierAbilityDef>().FirstOrDefault(p => p.name.Equals("RevenantResistance_AbilityDef")), tacticalActor);
+              
+        }
+
         public static void CreateRevenantAbilityForInfiltrator()
         {
             try
@@ -920,6 +1064,10 @@ namespace TFTV
                 GameTagDef revenantTag = Repo.GetAllDefs<GameTagDef>().FirstOrDefault(p => p.name.Equals("Revenant_GameTagDef"));
                 tacticalActor.GameTags.Add((revenantTag), GameTagAddMode.ReplaceExistingExclusive);
 
+
+                //Controller.ActorEnteredPlayEvent += 
+                //Controller.ActorExitedPlayEvent += UnsubscribeActorEvents;
+
             }
             catch (Exception e)
             {
@@ -927,6 +1075,42 @@ namespace TFTV
             }
         }
 
+
+
+
+
+        public static void ModifyMistBreath(TacticalActorBase actorBase)
+        {
+            //Things to check: first, try this with a real Umbra
+
+            AddAbilityStatusDef revenantAbility =
+                    Repo.GetAllDefs<AddAbilityStatusDef>().FirstOrDefault
+                    (ged => ged.name.Equals("Revenant_StatusEffectDef"));
+
+            // string targetVfxName = "VFX_OilCrabman_Breath";
+            string targetVfxName = revenantAbility.ParticleEffectPrefab.GetComponent<ParticleSpawnSettings>().name;
+
+            TFTVLogger.Always("number of children " + actorBase.AddonsManager
+                .RigRoot.GetComponents<ParticleSpawnSettings>().Count());
+
+            var pssArray = actorBase.AddonsManager
+                .RigRoot.GetComponentsInChildren<ParticleSpawnSettings>()
+                .Where(pss => pss.name == targetVfxName);
+
+            var particleSystems = pssArray
+                .SelectMany(pss => pss.GetComponentsInChildren<UnityEngine.ParticleSystem>());
+
+            foreach (var ps in particleSystems)
+            {
+                var mainModule = ps.main;
+                UnityEngine.ParticleSystem.MinMaxGradient minMaxGradient = mainModule.startColor;
+                minMaxGradient.colorMin = Color.red;
+                minMaxGradient.colorMax = Color.red;
+                mainModule.startColor = minMaxGradient;
+                TFTVLogger.Always("OnStatusApplied Did something here at the bottom");
+            }
+
+        }
 
 
     }

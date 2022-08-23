@@ -22,13 +22,8 @@ namespace TFTV
         public static void MakeJacobIntoSniper()
         {
             try
-            {
+            {               
                 
-                
-
-                CreateInitialInfiltrator();
-                CreateInitialPriest();
-                CreateInitialTechnician();
 
                 // Get Jacobs definition for the 1st part of the tutorial
                 TacCharacterDef Jacob1 = Repo.GetAllDefs<TacCharacterDef>().First(tcd => tcd.name.Contains("PX_Jacob_Tutorial_TacCharacterDef"));

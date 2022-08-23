@@ -28,6 +28,12 @@ namespace TFTV
     {
         public static SharedData sharedData = GameUtl.GameComponent<SharedData>();
         private static readonly DefRepository Repo = TFTVMain.Repo;
+
+        internal static GeoHavenDefenseMission DefenseMission = null;
+        internal static GeoSite GeoSiteForInfestation = null;
+        internal static GeoSite GeoSiteForScavenging = null;
+        public static string InfestedHavensVariable = "Number_of_Infested_Havens";
+        public static string LivingWeaponsAcquired = "Living_Weapons_Acquired";
         public static void Apply_Infestation_Changes()
         {
             try
@@ -110,11 +116,7 @@ namespace TFTV
         
 
         // Copied and adapted from Mad´s Assorted Adjustments
-        internal static GeoHavenDefenseMission DefenseMission = null;
-        internal static GeoSite GeoSiteForInfestation = null;
-        internal static GeoSite GeoSiteForScavenging = null;
-        public static string InfestedHavensVariable = "Number_of_Infested_Havens";
-        public static string LivingWeaponsAcquired = "Living_Weapons_Acquired";
+        
 
         // Store mission for other patches
         [HarmonyPatch(typeof(GeoHavenDefenseMission), "UpdateGeoscapeMissionState")]

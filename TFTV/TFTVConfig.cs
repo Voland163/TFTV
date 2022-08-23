@@ -1,5 +1,6 @@
-using PhoenixPoint.Home.View.ViewModules;
 using PhoenixPoint.Modding;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace TFTV
 {
@@ -9,26 +10,62 @@ namespace TFTV
     /// Only one config can exist per mod assembly.
     /// Config is serialized on disk as json.
     /// </summary>
-        
+
     public class TFTVConfig : ModConfig
     {
+      /*  public readonly Dictionary<string, StartingSquadFaction> StartingSquad= new Dictionary<string, StartingSquadFaction>();
+
+        public override List<ModConfigField> GetConfigFields()
+        {
+            return StartingSquad.Select(s => new ModConfigField(s.Key, s.Value.GetType())
+            {
+                GetValue = () => s.Value,
+                SetValue = (StartingSquadFaction) => StartingSquad[s.Key] = (StartingSquadFaction)StartingSquadFaction,
+                GetDescription = () => "<<custom description>>"
+            }).ToList();
+        }
+      */
+
         //Default settings
         [ConfigField(text: "DEFAULT TFTV SETTINGS",
             description: "Sets all settings to default, to provide the Terror from the Void experience as envisioned by its creators")]
         public bool defaultSettings = true;
 
-        // These settings determine amount of resources player can acquire:
+        //Starting squad
+      
+       public enum StartingSquadFaction
+        {
+            PHOENIX, ANU, NJ, SYNEDRION
+        }
+        [ConfigField(text: "Starting squad",
+         description: "You can choose a different starting squad. If you do, one of your Assaults and your starting Heavy on Legend and Hero, " +
+            "Assault on Veteran, or Sniper on Rookie will be replaced by a Faction class of your choice. " +
+            "You will also get the corresponding faction technology once the faction researches it.")]
+        public StartingSquadFaction startingSquad = StartingSquadFaction.PHOENIX;
 
+        
+        public enum StartingSquadCharacters
+        {
+            UNBUFFED, BUFFED, RANDOM
+        }
+        [ConfigField(text: "Tutorial characters in your starting squad",
+   description: "You can choose to get a completely random squad (as in Vanilla without doing the tutorial), " +
+            "the Vanilla tutorial starting squad (with higher stats), " +
+            "or a squad that will include Sophia Brown and Jacob with unbuffed stats (default on TFTV). " +
+            "Note that Jacob is a sniper, as in the title screen :)")]
+
+        public StartingSquadCharacters tutorialCharacters = StartingSquadCharacters.UNBUFFED;
+       
         // These settings determine amount of resources player can acquire:
         [ConfigField(text: "Number of scavenging sites",
             description: "Total number of scavenging sites generated on game start, not counting overgrown sites\n" +
             "(Vanilla: 16, TFTV default 8, because Ambushes generate additional resources)\n" +
             "Will not have any effect on a game in progress.")]
         public int InitialScavSites = 8; // 16 on Vanilla
-        
-        public enum ScavengingWeight 
-        { 
-        None, Low, Medium, High
+
+        public enum ScavengingWeight
+        {
+            None, Low, Medium, High
         }
 
         [ConfigField(text: "Chances of sites with resource crates",
@@ -45,7 +82,7 @@ namespace TFTV
            description: "Of the total number of scavenging sites, choose the relative chances of a vehile rescue site being generated.\n" +
             "Choose none to have 0 scavenging sites of this type (Vanilla and TFTV default: low)\n" +
             "Will not have any effect on a game in progress.")]
-        public ScavengingWeight ChancesScavGroundVehicleRescue =ScavengingWeight.Low;
+        public ScavengingWeight ChancesScavGroundVehicleRescue = ScavengingWeight.Low;
 
         // Determines amount of resources gained in Events. 1f = 100% if Azazoth level.
         // 0.8f = 80% of Azazoth = Pre-Azazoth level (default on BetterGeoscape).
@@ -68,7 +105,7 @@ namespace TFTV
 
         // If set to false, a disabled limb in tactical will not set character's Stamina to zero in geo
         [ConfigField(text: "Stamina drained on injury",
-           description: "The stamina of any operative that sustains an injury in combat that results in a disabled body part will be set to zero after the mission.\n" +  
+           description: "The stamina of any operative that sustains an injury in combat that results in a disabled body part will be set to zero after the mission.\n" +
             "Can be applied to a game in progress.")]
         public bool StaminaPenaltyFromInjury = true;
 
@@ -114,7 +151,7 @@ namespace TFTV
         [ConfigField(text: "Changes to DLC5 Marketplace (in progress)",
        description: "Removes cutscenes and missions, all items available at lowest prices 24 hours after discovering Marketplace.")]
         public bool ActivateKERework = true;
- 
+
         // If set to true, unrevealed havens will be revealed when attacked
         [ConfigField(text: "Havens under attack revealed",
        description: "Havens under attack will send an SOS, revealing their location to the player.")]
@@ -125,8 +162,8 @@ namespace TFTV
        description: "Shows when any error ocurrs. Please, do not change unless you know what you are doing.")]
         public bool Debug = true;
 
-         
-        
+
+
 
     }
 }

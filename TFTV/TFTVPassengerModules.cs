@@ -9,11 +9,10 @@ using PhoenixPoint.Geoscape.Entities.Research;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
 using PhoenixPoint.Tactical.Entities;
+using PhoenixPoint.Tactical.Entities.Equipments;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace TFTV
 {
@@ -98,7 +97,7 @@ namespace TFTV
                 hibernationModuleResearch.Faction = PhoenixPoint;
                 hibernationModuleResearch.RevealRequirements = sourcePX_SDI_ResearchDef.RevealRequirements;
                 hibernationModuleResearch.ResearchCost = 100;
-                
+
 
             }
             catch (Exception e)
@@ -117,16 +116,16 @@ namespace TFTV
                 TFTVConfig config = TFTVMain.Main.Config;
                 GeoVehicleModuleDef hibernationmodule = Repo.GetAllDefs<GeoVehicleModuleDef>().FirstOrDefault(ged => ged.name.Equals("SY_HibernationPods_GeoVehicleModuleDef"));
 
-                if (config.ActivateStaminaRecuperatonModule) 
-                { 
-                hibernationmodule.GeoVehicleModuleBonusValue = 0.35f;
-                
+                if (config.ActivateStaminaRecuperatonModule)
+                {
+                    hibernationmodule.GeoVehicleModuleBonusValue = 0.35f;
+
                 }
-                else 
-                { 
-                hibernationmodule.GeoVehicleModuleBonusValue = 0;
+                else
+                {
+                    hibernationmodule.GeoVehicleModuleBonusValue = 0;
                 }
-                     
+
             }
 
             catch (Exception e)
@@ -147,37 +146,88 @@ namespace TFTV
                 {
                     GeoVehicle geoVehicle = __instance.Vehicles.First();
                     geoVehicle.AddEquipment(Repo.GetAllDefs<GeoVehicleEquipmentDef>().FirstOrDefault(gve => gve.name.Equals("SY_HibernationPods_GeoVehicleModuleDef")));
-                    
-
+                    TFTVConfig config = TFTVMain.Main.Config;
+                    List<TacCharacterDef> startingTemplates = new List<TacCharacterDef>();
 
                     GameDifficultyLevelDef currentDifficultyLevel = __instance.GeoLevel.CurrentDifficultyLevel;
                     GameDifficultyLevelDef hardDifficultyLevel = Repo.GetAllDefs<GameDifficultyLevelDef>().FirstOrDefault(a => a.name.Equals("Hard_GameDifficultyLevelDef"));
+                    GameDifficultyLevelDef standardDifficultyLevel = Repo.GetAllDefs<GameDifficultyLevelDef>().FirstOrDefault(a => a.name.Equals("Standard_GameDifficultyLevelDef"));
+
+                  
                     TacCharacterDef assault = Repo.GetAllDefs<TacCharacterDef>().FirstOrDefault(a => a.name.Equals("PX_AssaultStarting_TacCharacterDef"));
                     TacCharacterDef heavy = Repo.GetAllDefs<TacCharacterDef>().FirstOrDefault(a => a.name.Equals("PX_HeavyStarting_TacCharacterDef"));
                     TacCharacterDef sniper = Repo.GetAllDefs<TacCharacterDef>().FirstOrDefault(a => a.name.Equals("PX_SniperStarting_TacCharacterDef"));
 
-                    TFTVStarts.AdjustStatsDifficulty(__instance.GeoLevel);
-                 
-                    List<TacCharacterDef> startingTemplates = new List<TacCharacterDef>
-                    {
-                        hardDifficultyLevel.TutorialStartingSquadTemplate[2],
-                        hardDifficultyLevel.TutorialStartingSquadTemplate[1],
-                        heavy,
-                        assault
-                    };
+                    TacCharacterDef priest = Repo.GetAllDefs<TacCharacterDef>().FirstOrDefault(a => a.name.Equals("PX_Starting_Priest_TacCharacterDef"));
+                    TacCharacterDef technician = Repo.GetAllDefs<TacCharacterDef>().FirstOrDefault(a => a.name.Equals("PX_Starting_Technician_TacCharacterDef"));
+                    TacCharacterDef infiltrator = Repo.GetAllDefs<TacCharacterDef>().FirstOrDefault(a => a.name.Equals("PX_Starting_Infiltrator_TacCharacterDef"));
 
-                    if (currentDifficultyLevel.StartingSquadTemplate.Length > 4) 
+
+                    TacticalItemDef redeemerAmmo = Repo.GetAllDefs<TacticalItemDef>().FirstOrDefault(a => a.name.Equals("AN_Redemptor_AmmoClip_ItemDef"));
+               
+                    TacticalItemDef pdwAmmo = Repo.GetAllDefs<TacticalItemDef>().FirstOrDefault(a => a.name.Equals("NJ_Gauss_PDW_AmmoClip_ItemDef"));
+                    TacticalItemDef mechArmsAmmo = Repo.GetAllDefs<TacticalItemDef>().FirstOrDefault(a => a.name.Equals("MechArms_AmmoClip_ItemDef"));
+
+                    TacticalItemDef boltsAmmo = Repo.GetAllDefs<TacticalItemDef>().FirstOrDefault(a => a.name.Equals("SY_Crossbow_AmmoClip_ItemDef"));
+                    TacticalItemDef spidersAmmo = Repo.GetAllDefs<TacticalItemDef>().FirstOrDefault(a => a.name.Equals("SY_SpiderDroneLauncher_AmmoClip_ItemDef"));
+
+
+                    if (config.tutorialCharacters == TFTVConfig.StartingSquadCharacters.UNBUFFED)
                     {
-                        startingTemplates.Add(sniper); 
+                        TFTVStarts.AdjustStatsDifficulty(__instance.GeoLevel);
+                        startingTemplates.Add(hardDifficultyLevel.TutorialStartingSquadTemplate[2]);
+                        startingTemplates.Add(hardDifficultyLevel.TutorialStartingSquadTemplate[1]);
                     }
-                    if(currentDifficultyLevel.StartingSquadTemplate.Length > 5) 
+                    else if (config.tutorialCharacters == TFTVConfig.StartingSquadCharacters.RANDOM)
+                    {
+                        startingTemplates.Add(assault);
+                        startingTemplates.Add(sniper);
+                    }
+                    else //if buffed
+                    {
+                        if (currentDifficultyLevel.Order != 4)
+                        {
+                            startingTemplates.AddRange(currentDifficultyLevel.TutorialStartingSquadTemplate);
+                        }
+                        else
+                        {
+                            startingTemplates.AddRange(hardDifficultyLevel.TutorialStartingSquadTemplate);
+                        }
+                    }
+
+                    if (config.startingSquad == TFTVConfig.StartingSquadFaction.PHOENIX && config.tutorialCharacters != TFTVConfig.StartingSquadCharacters.BUFFED)
+                    {
+                        startingTemplates.Add(heavy);
+                        startingTemplates.Add(assault);
+                    }
+                    else if (config.startingSquad == TFTVConfig.StartingSquadFaction.ANU)
+                    {
+                        startingTemplates.Add(priest);
+                        __instance.GeoLevel.EventSystem.SetVariable("BG_Start_Faction", 1);
+                    }
+                    else if (config.startingSquad == TFTVConfig.StartingSquadFaction.NJ)
+                    {
+                        startingTemplates.Add(technician);
+                        __instance.GeoLevel.EventSystem.SetVariable("BG_Start_Faction", 2);
+                    }
+                    else if (config.startingSquad == TFTVConfig.StartingSquadFaction.SYNEDRION)
+                    {
+                        startingTemplates.Add(infiltrator);
+                        __instance.GeoLevel.EventSystem.SetVariable("BG_Start_Faction", 3);
+                    }
+
+                    if (currentDifficultyLevel.StartingSquadTemplate.Length > 4 && config.tutorialCharacters != TFTVConfig.StartingSquadCharacters.BUFFED)
+                    {
+                        startingTemplates.Add(sniper);
+                    }
+                    if (currentDifficultyLevel.StartingSquadTemplate.Length > 5 && config.tutorialCharacters != TFTVConfig.StartingSquadCharacters.BUFFED)
                     {
                         startingTemplates.Add(assault);
                     }
-                    
+
                     foreach (TacCharacterDef template in startingTemplates)
                     {
-                        if (template != hardDifficultyLevel.TutorialStartingSquadTemplate[2] && template != hardDifficultyLevel.TutorialStartingSquadTemplate[1])
+                        if (!standardDifficultyLevel.TutorialStartingSquadTemplate.Contains(template))
                         {
                             GeoUnitDescriptor geoUnitDescriptor = __instance.GeoLevel.CharacterGenerator.GenerateUnit(__instance, template);
                             __instance.GeoLevel.CharacterGenerator.ApplyGenerationParameters(geoUnitDescriptor, currentDifficultyLevel.StartingSquadGenerationParams);
@@ -186,22 +236,26 @@ namespace TFTV
                             GeoCharacter character = geoUnitDescriptor.SpawnAsCharacter();
                             geoVehicle.AddCharacter(character);
                         }
-                        else 
-                        {                      
-                            GeoCharacter character = __instance.GeoLevel.CreateCharacterFromTemplate(template, __instance);                     
-                            geoVehicle.AddCharacter(character);
+                        else
+                        {
+                            GeoCharacter character = __instance.GeoLevel.CreateCharacterFromTemplate(template, __instance);
+                            geoVehicle.AddCharacter(character);                          
                         }
                     }
-                   // Pending config
+
+
+                    // Pending config
+
+
                     /*
-                    GeoUnitDescriptor geoUnitDescriptor1 = __instance.GeoLevel.CharacterGenerator.GenerateUnit(__instance, Repo.GetAllDefs<TacCharacterDef>().First(tcd => tcd.name.Contains("PX_Starting_Infiltrator_TacCharacterDef")));
+                    GeoUnitDescriptor geoUnitDescriptor1 = __instance.GeoLevel.CharacterGenerator.GenerateUnit(__instance, Repo.GetAllDefs<TacCharacterDef>().First(tcd => tcd.name.Contains("")));
                     __instance.GeoLevel.CharacterGenerator.ApplyGenerationParameters(geoUnitDescriptor1, currentDifficultyLevel.StartingSquadGenerationParams);
                     __instance.GeoLevel.CharacterGenerator.RandomizeIdentity(geoUnitDescriptor1);
 
                     GeoCharacter character1 = geoUnitDescriptor1.SpawnAsCharacter();
                     geoVehicle.AddCharacter(character1);                    
 
-                    GeoUnitDescriptor geoUnitDescriptor3 = __instance.GeoLevel.CharacterGenerator.GenerateUnit(__instance, Repo.GetAllDefs<TacCharacterDef>().First(tcd => tcd.name.Contains("PX_Starting_Technician_TacCharacterDef")));
+                    GeoUnitDescriptor geoUnitDescriptor3 = __instance.GeoLevel.CharacterGenerator.GenerateUnit(__instance, Repo.GetAllDefs<TacCharacterDef>().First(tcd => tcd.name.Contains("")));
                     __instance.GeoLevel.CharacterGenerator.ApplyGenerationParameters(geoUnitDescriptor3, currentDifficultyLevel.StartingSquadGenerationParams);
                     __instance.GeoLevel.CharacterGenerator.RandomizeIdentity(geoUnitDescriptor3);
 
@@ -209,7 +263,26 @@ namespace TFTV
                     geoVehicle.AddCharacter(character3);*/
 
 
-                    ItemUnit[] startingStorage = currentDifficultyLevel.StartingStorage;
+                    List <ItemUnit> startingStorage = currentDifficultyLevel.StartingStorage.ToList();
+
+
+                    if (config.startingSquad == TFTVConfig.StartingSquadFaction.ANU)
+                    {
+                        startingStorage.Add(new ItemUnit(redeemerAmmo, 10));
+                    }
+                    else if (config.startingSquad == TFTVConfig.StartingSquadFaction.NJ)
+                    {                        
+                        startingStorage.Add(new ItemUnit (pdwAmmo, 10));
+                        startingStorage.Add(new ItemUnit(mechArmsAmmo, 5));
+
+                    }
+                    else if (config.startingSquad == TFTVConfig.StartingSquadFaction.SYNEDRION)
+                    {
+                        startingStorage.Add(new ItemUnit(boltsAmmo, 20));
+                        startingStorage.Add(new ItemUnit(spidersAmmo, 5));
+                    }
+
+
                     foreach (ItemUnit itemUnit in startingStorage)
                     {
                         if (__instance.FactionDef.UseGlobalStorage)
@@ -221,7 +294,8 @@ namespace TFTV
                             site.ItemStorage.AddItem(new GeoItem(itemUnit));
                         }
                     }
-                   
+                    
+
 
                     return false;
                 }

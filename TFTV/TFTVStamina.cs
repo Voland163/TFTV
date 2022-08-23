@@ -15,6 +15,7 @@ namespace TFTV
         //A list of operatives that get disabled limbs. This list is cleared when the game is exited, so saving a game in tactical, exiting the game and reloading will probably make the game "forget" the character was ever injured.
         public static List<int> charactersWithBrokenLimbs = new List<int>();
 
+
         // This first patch is to "register" the injury in the above list
         [HarmonyPatch(typeof(BodyPartAspect), "OnSetToDisabled")]
         internal static class BodyPartAspect_OnSetToDisabled_patch

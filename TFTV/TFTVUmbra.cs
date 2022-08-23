@@ -265,13 +265,25 @@ namespace TFTV
             {
                 try
                 {
-                    //  Logger.Always("Research patch invoked, research is " + research.ResearchID);
+                    TFTVLogger.Always("Research completed " + research.ResearchID);
 
                     if (research.ResearchID == "ALN_CrabmanUmbra_ResearchDef")
                     {
                         research.Faction.GeoLevel.EventSystem.SetVariable("UmbraResearched", 1);
                         TFTVLogger.Always("Umbra Researched variable is set to " + research.Faction.GeoLevel.EventSystem.GetVariable("UmbraResearched"));
-
+                    }
+                    else if(research.ResearchID == "ANU_AnuPriest_ResearchDef" && research.Faction.GeoLevel.EventSystem.GetVariable("BG_Start_Faction") == 1) 
+                    {
+                        research.Faction.GeoLevel.PhoenixFaction.Research.GiveResearch(research, true);                           
+                    }
+                    else if (research.ResearchID == "NJ_Technician_ResearchDef" && research.Faction.GeoLevel.EventSystem.GetVariable("BG_Start_Faction") == 2)
+                    {
+                        TFTVLogger.Always("Research completed " + research.ResearchID + " and corresponding flag triggered");
+                        research.Faction.GeoLevel.PhoenixFaction.Research.GiveResearch(research, true);
+                    }
+                    else if (research.ResearchID == "SYN_InfiltratorTech_ResearchDef" && research.Faction.GeoLevel.EventSystem.GetVariable("BG_Start_Faction") == 3)
+                    {
+                        research.Faction.GeoLevel.PhoenixFaction.Research.GiveResearch(research, true);
                     }
 
                 }

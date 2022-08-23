@@ -1,15 +1,22 @@
 ﻿
+using Base.Core;
 using Base.Defs;
 using Base.Entities.Statuses;
 using HarmonyLib;
+using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.Characters;
+using PhoenixPoint.Common.Entities.GameTags;
+using PhoenixPoint.Common.Saves;
 using PhoenixPoint.Common.View.ViewModules;
 using PhoenixPoint.Geoscape.Entities;
+using PhoenixPoint.Geoscape.View.DataObjects;
+using PhoenixPoint.Geoscape.View.ViewControllers.Roster;
 using PhoenixPoint.Geoscape.View.ViewModules;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.Equipments;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
@@ -19,6 +26,9 @@ namespace TFTV
     {
         private static readonly DefRepository Repo = TFTVMain.Repo;
         //This method changes how WP are displayed in the Edit personnel screen, to show effects of Delirium on WP
+
+        public static UIModuleCharacterProgression hookToProgressionModule = null;
+        public static GeoCharacter hookToCharacter = null;
 
         [HarmonyPatch(typeof(UIModuleCharacterProgression), "GetStarBarValuesDisplayString")]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051")]
@@ -72,11 +82,11 @@ namespace TFTV
                                 }
                             }
 
-                            TacticalAbilityDef derealizationDef = Repo.GetAllDefs<TacticalAbilityDef>().FirstOrDefault(tad => tad.name.Equals("DerealizationIgnorePain_AbilityDef"));
-                            if (ability == derealizationDef)
-                            {
-                                bonusStrength -= 5;
-                            }
+                            /*  TacticalAbilityDef derealizationDef = Repo.GetAllDefs<TacticalAbilityDef>().FirstOrDefault(tad => tad.name.Equals("DerealizationIgnorePain_AbilityDef"));
+                              if (ability == derealizationDef)
+                              {
+                                  bonusStrength -= 5;
+                              }*/
 
                         }
 
@@ -179,8 +189,7 @@ namespace TFTV
             }
 
         }
-        public static UIModuleCharacterProgression hookToProgressionModule = null;
-        public static GeoCharacter hookToCharacter = null;
+        
 
 
         [HarmonyPatch(typeof(UIModuleCharacterProgression), "Awake")]
@@ -204,33 +213,33 @@ namespace TFTV
 
 
 
-        [HarmonyPatch(typeof(UIModuleSoldierEquip), "RefreshPrimarySoldierWeight")]
-        internal static class UIModuleSoldierEquip_RefreshPrimarySoldierWeight_Patch
-        {
+        /*  [HarmonyPatch(typeof(UIModuleSoldierEquip), "RefreshPrimarySoldierWeight")]
+          internal static class UIModuleSoldierEquip_RefreshPrimarySoldierWeight_Patch
+          {
 
 
 
-            private static void Postfix(UIModuleSoldierEquip __instance)
-            {
-                try
-                {
+              private static void Postfix(UIModuleSoldierEquip __instance)
+              {
+                  try
+                  {
 
-                    if (hookToProgressionModule != null && !__instance.IsVehicle)
-                    {
-                        //  hookToProgressionModule.RefreshStats();
-                        hookToProgressionModule.SetStatusesPanel();
-                        hookToProgressionModule.RefreshStatPanel();
-                        hookToProgressionModule.StatChanged();
+                      if (hookToProgressionModule != null && !__instance.IsVehicle)
+                      {
+                          //  hookToProgressionModule.RefreshStats();
+                        //  hookToProgressionModule.SetStatusesPanel();
+                        //  hookToProgressionModule.RefreshStatPanel();
+                          hookToProgressionModule.StatChanged();
 
-                    }
+                      }
 
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-            }
-        }
+                  }
+                  catch (Exception e)
+                  {
+                      TFTVLogger.Error(e);
+                  }
+              }
+          }*/
 
         [HarmonyPatch(typeof(UIModuleSoldierEquip), "RefreshWeightSlider")]
         internal static class UIModuleSoldierEquip_RefreshWeightSlider_Patch
@@ -279,12 +288,12 @@ namespace TFTV
                                         }
                                     }
                                 }
-                                TacticalAbilityDef derealizationDef = Repo.GetAllDefs<TacticalAbilityDef>().FirstOrDefault(tad => tad.name.Equals("DerealizationIgnorePain_AbilityDef"));
-                                if (ability == derealizationDef) 
-                                { 
-                                bonusStrength -= 5;
-                                
-                                }
+                                /* TacticalAbilityDef derealizationDef = Repo.GetAllDefs<TacticalAbilityDef>().FirstOrDefault(tad => tad.name.Equals("DerealizationIgnorePain_AbilityDef"));
+                                 if (ability == derealizationDef) 
+                                 { 
+                                 bonusStrength -= 5;
+
+                                 }*/
                             }
 
                             foreach (PassiveModifierAbilityDef passiveModifier in hookToCharacter.PassiveModifiers)
@@ -307,10 +316,12 @@ namespace TFTV
                         }
 
                         maxWeight += (int)(bonusStrength * bonusToCarry);
+                        hookToProgressionModule.StatChanged();
+                       // hookToProgressionModule.RefreshStats();
+                        //hookToProgressionModule.SetStatusesPanel();
+                        hookToProgressionModule.RefreshStatPanel();
                         //TFTVLogger.Always("Max weight is " + maxWeight + ". Bonus Strength is " + bonusStrength + ". Bonus to carry is " + bonusToCarry);
-
                     }
-
                 }
 
                 catch (Exception e)
@@ -319,6 +330,85 @@ namespace TFTV
                 }
             }
         }
+
+
+        [HarmonyPatch(typeof(UIModuleActorCycle), "DisplaySoldier", new Type[] { typeof(GeoCharacter), typeof(bool), typeof(bool), typeof(bool) })]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051")]
+        internal static class BG_UIModuleActorCycle_DisplaySoldier_patch
+        {
+
+            private static bool Prefix(UIModuleActorCycle __instance, List<UnitDisplayData> ____units,
+                CharacterClassWorldDisplay ____classWorldDisplay,
+                GeoCharacter character, bool showHelmet, bool resetAnimation, bool addWeapon)
+            {
+                try
+                {
+                    if (character != null && !character.IsMutoid)
+                    {
+                        GameTagDef bionicalTag = GameUtl.GameComponent<SharedData>().SharedGameTags.BionicalTag;
+                        GameTagDef mutationTag = GameUtl.GameComponent<SharedData>().SharedGameTags.AnuMutationTag;
+                        ItemSlotDef headSlot = Repo.GetAllDefs<ItemSlotDef>().FirstOrDefault(ged => ged.name.Equals("Human_Head_SlotDef"));
+                        bool hasAugmentedHead = false;
+
+                       foreach (GeoItem bionic in character.ArmourItems)
+                        {
+                           
+                            
+                            if ((bionic.CommonItemData.ItemDef.Tags.Contains(bionicalTag) || bionic.CommonItemData.ItemDef.Tags.Contains(mutationTag)) 
+                                && bionic.CommonItemData.ItemDef.RequiredSlotBinds[0].RequiredSlot==headSlot)
+                            {
+                                hasAugmentedHead = true;
+                                
+                            }
+                        }
+
+                        if (!hasAugmentedHead)
+                        {
+                            UnitDisplayData unitDisplayData = ____units.FirstOrDefault((UnitDisplayData u) => u.BaseObject == character);
+                            if (unitDisplayData == null)
+                            {
+                                return true;
+                            }
+
+
+                            ____classWorldDisplay.SetDisplay(character.GetClassViewElementDefs(), (float)character.CharacterStats.Corruption > 0f);
+
+                            __instance.DisplaySoldier(unitDisplayData, resetAnimation, addWeapon, showHelmet = false);
+                            return false;
+                        }
+                        else
+                        {
+                            return true;
+                        }
+                    }
+                    return true;
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+                return true;
+            }
+        }
+
+        [HarmonyPatch(typeof(PhoenixSaveManager), "LoadGame")]
+        internal static class BG_PhoenixSaveManager_ClearInternalData_patch
+        {
+
+            private static void Postfix()
+            {
+                try
+                {
+                    TFTVCommonMethods.ClearInternalVariables();
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+        }
+
 
 
         //This changes display of Delirium bar in personnel edit screen to show current Delirium value vs max delirium value the character can have

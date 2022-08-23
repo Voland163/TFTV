@@ -346,11 +346,13 @@ namespace TFTV
                     if (i == 10 && CheckFordVoidOmensInPlay(level).Contains(i) && !voidOmensCheck[i])
                     {
                         // Logger.Always(voidOmen + j + " is now in effect, held in variable " + voidOmen + i);
+                        VoidOmen10Active = true;
                         voidOmensCheck[i] = true;
                     }
                     else if (i == 10 && !CheckFordVoidOmensInPlay(level).Contains(i) && voidOmensCheck[i])
                     {
                         voidOmensCheck[10] = false;
+                        VoidOmen10Active = false;
                         TFTVLogger.Always("The check for VO#10 went ok");
 
                     }

@@ -7,8 +7,8 @@ using PhoenixPoint.Geoscape.Entities.Research;
 using PhoenixPoint.Geoscape.Events;
 using PhoenixPoint.Geoscape.Events.Eventus;
 using PhoenixPoint.Geoscape.Levels;
-using PhoenixPoint.Geoscape.View;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
@@ -18,7 +18,45 @@ namespace TFTV
     {
         private static readonly DefRepository Repo = TFTVMain.Repo;
 
-
+        public static void ClearInternalVariables()
+        {
+            try
+            {
+                TFTVAirCombat.targetsForBehemoth = new List<int>();
+                TFTVAirCombat.targetsVisitedByBehemoth = new List<int>();
+                TFTVAirCombat.flyersAndHavens = new Dictionary<int, List<int>>();
+                TFTVAirCombat.checkHammerfall = false;
+                TFTVRevenant.DeadSoldiersDelirium = new Dictionary<string, int>();
+                TFTVVoidOmens.voidOmensCheck = new bool[18];
+                //VO#1 is harder ambushes
+                TFTVVoidOmens.VoidOmen1Active = false;
+                //VO#3 is WP cost +50%
+                TFTVVoidOmens.VoidOmen3Active = false;
+                TFTVVoidOmens.VoidOmen4Active = false;
+                //VO#5 is haven defenders hostile; this is needed for victory kludge
+                TFTVVoidOmens.VoidOmen5Active = false;
+                //VO#7 is more mist in missions
+                TFTVVoidOmens.VoidOmen7Active = false;
+                //VO#10 is no limit to Delirium
+                TFTVVoidOmens.VoidOmen10Active = false;
+                //VO#12 is +50% strength of alien attacks on Havens
+                TFTVVoidOmens.VoidOmen12Active = false;
+                //VO#15 is more Umbra
+                TFTVVoidOmens.VoidOmen15Active = false;
+                //VO#16 is Umbras can appear anywhere and attack anyone
+                TFTVVoidOmens.VoidOmen16Active = false;
+                TFTVUmbra.UmbraResearched = false;
+                TFTVRevenant.timeOfMissionStart = new Base.Core.TimeUnit();
+                TFTVRevenant.RevenantCounter = new int();
+                TFTVStamina.charactersWithBrokenLimbs = new List<int>();
+                TFTVUI.hookToProgressionModule = null;
+                TFTVUI.hookToCharacter = null;
+    }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
 
         public static void SetStaminaToZero(GeoCharacter __instance)
         {
@@ -184,18 +222,18 @@ namespace TFTV
             {
                 try
                 {
-                   // if (__instance.GetVisible(__instance.GeoLevel.PhoenixFaction)==false)
-                   // {
-                        __instance.RevealSite(__instance.GeoLevel.PhoenixFaction);
-                        
-                        GeoscapeLogEntry entry = new GeoscapeLogEntry
-                        {
-                            Text = new LocalizedTextBind(__instance.Owner + " " + __instance.LocalizedSiteName + " is broadcasting an SOS, they are under attack!", true)
-                        };
-                        typeof(GeoscapeLog).GetMethod("AddEntry", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(__instance.GeoLevel.Log, new object[] { entry, null });                        
-                 
+                    // if (__instance.GetVisible(__instance.GeoLevel.PhoenixFaction)==false)
+                    // {
+                    __instance.RevealSite(__instance.GeoLevel.PhoenixFaction);
+
+                    GeoscapeLogEntry entry = new GeoscapeLogEntry
+                    {
+                        Text = new LocalizedTextBind(__instance.Owner + " " + __instance.LocalizedSiteName + " is broadcasting an SOS, they are under attack!", true)
+                    };
+                    typeof(GeoscapeLog).GetMethod("AddEntry", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(__instance.GeoLevel.Log, new object[] { entry, null });
+
                     __instance.GeoLevel.View.SetGamePauseState(true);
-                  //  }
+                    //  }
                 }
                 catch (Exception e)
                 {

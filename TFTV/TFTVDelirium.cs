@@ -165,9 +165,8 @@ namespace TFTV
                             }
                         }
                     }
-
                 }
-                if (TFTVVoidOmens.VoidOmen10Active)
+                else
                 {
                     maxCorruption = character.CharacterStats.Willpower.IntMax;
 

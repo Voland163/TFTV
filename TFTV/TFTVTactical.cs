@@ -66,11 +66,11 @@ namespace TFTV
           //  TFTVDelirium.DeliriumPerksOnTactical(tacController);
             TFTVRevenant.CreateRevenantDefs();
 
-            /*
-                        Controller.ActorEnteredPlayEvent += SubscribeActorEvents;
-                        Controller.ActorExitedPlayEvent += UnsubscribeActorEvents;*/
+            // Controller.ActorEnteredPlayEvent += SubscribeActorEvents;
+             //Controller.ActorExitedPlayEvent += UnsubscribeActorEvents;
+                       
         }
-/*
+
         private void SubscribeActorEvents(TacticalActorBase actorBase)
         {
             TacStatusComponent tacStatusComponent = actorBase.Status as TacStatusComponent;
@@ -130,7 +130,7 @@ namespace TFTV
             }
         }
 
-        */
+        
 
 
         /// <summary>

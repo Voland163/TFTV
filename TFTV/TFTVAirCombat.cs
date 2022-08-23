@@ -598,58 +598,69 @@ namespace TFTV
             {
                 try
                 {
-                    if (!__instance.IsSubmerging && __instance.CurrentBehemothStatus != GeoBehemothActor.BehemothStatus.Dormant && targetsForBehemoth.Count > 0)
+                    if (__instance.CurrentBehemothStatus != GeoBehemothActor.BehemothStatus.Dead && __instance.CurrentBehemothStatus != GeoBehemothActor.BehemothStatus.None)
                     {
-                        if (!__instance.HasTargetHaven)
-                        {
-                            if (__instance.CurrentSite == null || __instance.CurrentSite.Type != GeoSiteType.Haven)
-                            {
-                                GeoSite chosenHaven = GetTargetHaven(__instance.GeoLevel);
-                                targetsForBehemoth.Remove(chosenHaven.SiteId);
-                                if (!targetsVisitedByBehemoth.Contains(chosenHaven.SiteId))
-                                {
-                                    TFTVLogger.Always("The target haven is " + chosenHaven.LocalizedSiteName);
 
-                                    typeof(GeoBehemothActor).GetMethod("TargetHaven", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(__instance, new object[] { chosenHaven });
-                                    targetsVisitedByBehemoth.Add(chosenHaven.SiteId);
+                        if (!__instance.IsSubmerging && __instance.CurrentBehemothStatus != GeoBehemothActor.BehemothStatus.Dormant && targetsForBehemoth.Count > 0)
+                        {
+                            if (!__instance.HasTargetHaven)
+                            {
+                                if (__instance.CurrentSite == null || __instance.CurrentSite.Type != GeoSiteType.Haven)
+                                {
+                                    GeoSite chosenHaven = GetTargetHaven(__instance.GeoLevel);
+                                    targetsForBehemoth.Remove(chosenHaven.SiteId);
+                                    if (!targetsVisitedByBehemoth.Contains(chosenHaven.SiteId))
+                                    {
+                                        TFTVLogger.Always("The target haven is " + chosenHaven.LocalizedSiteName);
+
+                                        typeof(GeoBehemothActor).GetMethod("TargetHaven", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(__instance, new object[] { chosenHaven });
+                                        targetsVisitedByBehemoth.Add(chosenHaven.SiteId);
+                                    }
+                                }
+                                else
+                                {
+                                    GetBehemothToMoveSomewhere(__instance);
                                 }
                             }
-                            else 
-                            {
-                                GetBehemothToMoveSomewhere(__instance);
-                            }
-                        }
 
-                        else if (__instance.HasTargetHaven && __instance.TargetSite.State == GeoSiteState.Destroyed)
-                        {
-                            if (targetsForBehemoth.Count > 0)
+                            else if (__instance.HasTargetHaven && __instance.TargetSite.State == GeoSiteState.Destroyed)
                             {
-                                
-                                GeoSite chosenHaven = GetTargetHaven(__instance.GeoLevel);
-                                targetsForBehemoth.Remove(chosenHaven.SiteId);
-                                if (!targetsVisitedByBehemoth.Contains(chosenHaven.SiteId))
+                                if (targetsForBehemoth.Count > 0)
                                 {
-                                    TFTVLogger.Always("The target haven is " + chosenHaven.LocalizedSiteName + ", because the previously targeted haven was destroyed");
 
-                                    typeof(GeoBehemothActor).GetMethod("TargetHaven", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(__instance, new object[] { chosenHaven });
-                                    targetsVisitedByBehemoth.Add(chosenHaven.SiteId);
+                                    GeoSite chosenHaven = GetTargetHaven(__instance.GeoLevel);
+                                    targetsForBehemoth.Remove(chosenHaven.SiteId);
+                                    if (!targetsVisitedByBehemoth.Contains(chosenHaven.SiteId))
+                                    {
+                                        TFTVLogger.Always("The target haven is " + chosenHaven.LocalizedSiteName + ", because the previously targeted haven was destroyed");
+
+                                        typeof(GeoBehemothActor).GetMethod("TargetHaven", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(__instance, new object[] { chosenHaven });
+                                        targetsVisitedByBehemoth.Add(chosenHaven.SiteId);
+                                    }
+                                }
+                                else
+                                {
+                                    GetBehemothToMoveSomewhere(__instance);
                                 }
                             }
-                            else
-                            {
-                                GetBehemothToMoveSomewhere(__instance);
-                            }
-                        }
 
-                        if (__instance.CurrentBehemothStatus == GeoBehemothActor.BehemothStatus.Dormant)
-                        {
-                            TFTVLogger.Always("Behemoth's target lists are cleared because he went to sleep");
-                            //Behemoth = null;
-                            targetsForBehemoth.Clear();
-                            targetsVisitedByBehemoth.Clear();
+                            if (__instance.CurrentBehemothStatus == GeoBehemothActor.BehemothStatus.Dormant)
+                            {
+                                TFTVLogger.Always("Behemoth's target lists are cleared because he went to sleep");
+                                //Behemoth = null;
+                                targetsForBehemoth.Clear();
+                                targetsVisitedByBehemoth.Clear();
+                            }
                         }
                     }
+                    else
+                    {
+                        targetsForBehemoth.Clear();
+                        targetsVisitedByBehemoth.Clear();
+
+                    }
                 }
+                
                 catch (Exception e)
                 {
                     TFTVLogger.Error(e);
