@@ -100,7 +100,7 @@ namespace TFTV
             }
 
         }
-        public static void Apply_Changes_Ambush_Chances(GeoscapeEventSystem eventSystem)
+       /* public static void Apply_Changes_Ambush_Chances(GeoscapeEventSystem eventSystem)
         {
             try
             {
@@ -114,15 +114,20 @@ namespace TFTV
             {
                 TFTVLogger.Error(e);
             }
-        }
+        }*/
 
         [HarmonyPatch(typeof(GeoscapeEventSystem), "OnLevelStart")]
 
         public static class GeoscapeEventSystem_PhoenixFaction_OnLevelStart_Patch
         {
-            public static void Prefix(GeoscapeEventSystem __instance)
+            public static bool Prepare()
             {
+                TFTVConfig config = TFTVMain.Main.Config;
+                return config.MoreAmbushes;
+            }
 
+            public static void Prefix(GeoscapeEventSystem __instance)
+            {                
                 try
                 {                    
                     __instance.AmbushExploredSitesProtection = 0;
@@ -144,8 +149,6 @@ namespace TFTV
                 }
             }
         }
-
-
     }
 
 }

@@ -271,7 +271,7 @@ namespace TFTV
 
         }
 
-
+        /*
         public static void AttackPhoenixBase(GeoLevelController level)
         {
             try
@@ -298,7 +298,7 @@ namespace TFTV
                 */
 
 
-
+        /*
                 List<GeoSite> phoenixBases = level.PhoenixFaction.Sites.ToList();
                 TimeUnit timeUnit = TimeUnit.FromHours(6);
 
@@ -329,7 +329,7 @@ namespace TFTV
                 TFTVLogger.Error(e);
             }
 
-        }
+        }*/
 
     }
 

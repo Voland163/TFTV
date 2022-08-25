@@ -2,10 +2,13 @@ using Base.Core;
 using Base.Entities.Statuses;
 using Base.ParticleSystems;
 using Base.Serialization.General;
+using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Modding;
 using PhoenixPoint.Tactical.Entities;
+using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.Statuses;
 using PhoenixPoint.Tactical.Levels;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -38,8 +41,8 @@ namespace TFTV
         public bool UmbraResearched = TFTVUmbra.UmbraResearched;
         public Dictionary<string, int> DeadSoldiersDelirium = TFTVRevenant.DeadSoldiersDelirium;
         public TimeUnit timeOfMissionStart = TFTVRevenant.timeOfMissionStart;
-        public int RevenantCounter = TFTVRevenant.RevenantCounter;
-
+        public int [] RevenantCounter = TFTVRevenant.RevenantCounter;
+        
     }
     //TFTV Things we want to save:
     //
@@ -65,73 +68,8 @@ namespace TFTV
             //TFTV give Dtony's Delirium Perks
           //  TFTVDelirium.DeliriumPerksOnTactical(tacController);
             TFTVRevenant.CreateRevenantDefs();
-
-            // Controller.ActorEnteredPlayEvent += SubscribeActorEvents;
-             //Controller.ActorExitedPlayEvent += UnsubscribeActorEvents;
-                       
+            TFTVRevenant.ModifyRevenantResistanceAbility(Controller);
         }
-
-        private void SubscribeActorEvents(TacticalActorBase actorBase)
-        {
-            TacStatusComponent tacStatusComponent = actorBase.Status as TacStatusComponent;
-            if (tacStatusComponent == null)
-            {
-                return;
-            }
-
-            tacStatusComponent.OnStatusApplied += OnStatusApplied;
-        }
-
-        private void UnsubscribeActorEvents(TacticalActorBase actorBase)
-        {
-            TacStatusComponent tacStatusComponent = actorBase.Status as TacStatusComponent;
-            if (tacStatusComponent == null)
-            {
-                return;
-            }
-
-            tacStatusComponent.OnStatusApplied -= OnStatusApplied;
-        }
-
-        private void OnStatusApplied(Status status)
-        {
-            TFTVLogger.Always("OnStatusApplied Invoked");
-
-            if (status is TacStatus tacStatus == false)
-            {
-                return;
-            }
-
-            if (tacStatus.TacStatusDef.ParticleEffectPrefab == null)
-            {
-                return;
-            }
-
-            TFTVLogger.Always("OnStatusApplied got until string initiation");
-
-            string targetVfxName = "VFX_OilCrabman_Breath";
-           // string targetVfxName = tacStatus.TacStatusDef.ParticleEffectPrefab.GetComponent<ParticleSpawnSettings>().name;
-
-            var pssArray = tacStatus.TacticalActorBase.AddonsManager
-                .RigRoot.GetComponentsInChildren<ParticleSpawnSettings>()
-                .Where(pss => pss.name == targetVfxName);
-
-            var particleSystems = pssArray
-                .SelectMany(pss => pss.GetComponentsInChildren<UnityEngine.ParticleSystem>());
-
-            foreach (var ps in particleSystems)
-            {
-                var mainModule = ps.main;
-                UnityEngine.ParticleSystem.MinMaxGradient minMaxGradient = mainModule.startColor;
-                minMaxGradient.colorMin = Color.red;
-                minMaxGradient.colorMax = Color.red;
-                mainModule.startColor = minMaxGradient;
-                TFTVLogger.Always("OnStatusApplied Did something here at the bottom");
-            }
-        }
-
-        
-
 
         /// <summary>
         /// Called when Tactical ends.
@@ -192,7 +130,29 @@ namespace TFTV
         /// <param name="turnNumber">Current turn number</param>
         public override void OnNewTurn(int turnNumber)
         {
-           
+            List<TacticalActorBase> pandorans = Controller.GetFactionByCommandName("aln").Actors.ToList();
+            bool revenantPresent = false;
+
+            foreach(TacticalActorBase actor in pandorans) 
+            { 
+            if(actor.HasGameTag(TFTVMain.Repo.GetAllDefs<GameTagDef>().FirstOrDefault(p => p.name.Equals("RevenantTier_1_GameTagDef")))) 
+                {
+                    revenantPresent = true;
+                }
+            
+            }
+
+            if(revenantPresent == true)
+            {
+                foreach (TacticalActorBase actor in pandorans)
+                {
+                    if (!Controller.TacticalGameParams.Statistics.LivingSoldiers.ContainsKey(actor.GeoUnitId)
+                         && !actor.GameTags.Contains(TFTVMain.Repo.GetAllDefs<GameTagDef>().FirstOrDefault(p => p.name.Contains("Revenant")))
+                         && actor.GetAbilityWithDef<DamageMultiplierAbility>(TFTVMain.Repo.GetAllDefs<DamageMultiplierAbilityDef>().FirstOrDefault(p => p.name.Equals("RevenantResistance_AbilityDef"))) == null)           
+
+                   TFTVRevenant.AddRevenantResistanceAbility(actor);
+                }
+            }          
         }
     }
 }

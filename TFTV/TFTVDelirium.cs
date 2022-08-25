@@ -127,7 +127,7 @@ namespace TFTV
                     }
                     else
                     {
-                        if (odiPerc < 50)
+                        if (odiPerc <= 50)
                         {
                             maxCorruption = character.CharacterStats.Willpower.IntMax * 1 / 2;
 
@@ -204,30 +204,34 @@ namespace TFTV
 
                 try
                 {
+                    if (character.Fatigue != null && (character.TemplateDef.IsHuman || character.TemplateDef.IsMutoid))
+                    {
 
-
-                    if (character.Fatigue.Stamina == 40)
-                    {
-                        return 4;
+                        if (character.Fatigue.Stamina == 40)
+                        {
+                            return 4;
+                        }
+                        else if (character.Fatigue.Stamina < 40 && character.Fatigue.Stamina >= 30)
+                        {
+                            return 3;
+                        }
+                        else if (character.Fatigue.Stamina < 30 && character.Fatigue.Stamina >= 20)
+                        {
+                            return 2;
+                        }
+                        else if (character.Fatigue.Stamina < 20 && character.Fatigue.Stamina >= 10)
+                        {
+                            return 1;
+                        }
+                        else
+                        {
+                            return 0;
+                        }
                     }
-                    else if (character.Fatigue.Stamina < 40 && character.Fatigue.Stamina >= 30)
-                    {
-                        return 3;
-                    }
-                    else if (character.Fatigue.Stamina < 30 && character.Fatigue.Stamina >= 20)
-                    {
-                        return 2;
-                    }
-                    else if (character.Fatigue.Stamina < 20 && character.Fatigue.Stamina >= 10)
-                    {
-                        return 1;
-                    }
-                    else
+                    else 
                     {
                         return 0;
-                    }
-
-
+                    } 
                 }
                 catch (System.Exception e)
                 {
@@ -305,7 +309,7 @@ namespace TFTV
                     }
                     else
                     {
-                        if (odiPerc < 50)
+                        if (odiPerc <= 50)
                         {
                             maxCorruption = base_TacticalActor.CharacterStats.Willpower.IntMax * 1 / 2;
 
@@ -526,16 +530,7 @@ namespace TFTV
                     OneOfThem_AbilityDef, bloodthirsty_AbilityDef
                     };
 
-                    //Reduced list for testing
-
-                   /* List<TacticalAbilityDef> abilityList = new List<TacticalAbilityDef>
-                    { Derealization_AbilityDef};*/
-
                 int num = UnityEngine.Random.Range(0, 200);
-                // GeoscapeTutorialStepsDef stepTest = Repo.GetAllDefs<GeoscapeTutorialStepsDef>().FirstOrDefault(ged => ged.name.Equals("GeoscapeTutorialStepsDef"));
-                // GeoscapeTutorialStep test = new GeoscapeTutorialStep();
-                // test.Title.LocalizationKey = $"test";
-                // test.Description.LocalizationKey = $"testing";
                 TFTVLogger.Always("Treatment rolled " + num);
 
                 if (num >= 0 && num <= 50)

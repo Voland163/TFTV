@@ -59,7 +59,7 @@ namespace TFTV
             /// PhoenixGame is accessible at any time.
             PhoenixGame game = GetGame();
 
-            Logger.LogInfo("TFTV August 25 afternoon release #3");
+            Logger.LogInfo("TFTV August 27 evening release #1");
 
 
             //TFTV 
@@ -72,7 +72,7 @@ namespace TFTV
             // Initialize Logger
             LogPath = Path.Combine(ModDirectory, "TFTV.log");
             TFTVLogger.Initialize(LogPath, Config.Debug, ModDirectory, nameof(TFTV));
-            TFTVLogger.Always("TFTV August 25 afternoon release #3");
+            TFTVLogger.Always("TFTV August 27 evening release #1");
             // Initialize Helper
             Helper.Initialize();
             
@@ -82,11 +82,6 @@ namespace TFTV
             // {
 
             //TFTV Stuff that needs to happen ASAP
-
-            if (Config.tutorialCharacters == TFTVConfig.StartingSquadCharacters.UNBUFFED)
-            {
-                TFTVStarts.MakeJacobIntoSniper();
-            }
 
             //This creates the Void Omen events
             TFTVVoidOmens.Create_VoidOmen_Events();

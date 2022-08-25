@@ -343,7 +343,7 @@ namespace TFTV
             {
                 try
                 {
-                    if (character != null && !character.IsMutoid)
+                    if (character != null && !character.IsMutoid && character.TemplateDef.IsHuman && !character.TemplateDef.IsMutog && !character.TemplateDef.IsVehicle)
                     {
                         GameTagDef bionicalTag = GameUtl.GameComponent<SharedData>().SharedGameTags.BionicalTag;
                         GameTagDef mutationTag = GameUtl.GameComponent<SharedData>().SharedGameTags.AnuMutationTag;
@@ -408,8 +408,6 @@ namespace TFTV
                 }
             }
         }
-
-
 
         //This changes display of Delirium bar in personnel edit screen to show current Delirium value vs max delirium value the character can have
         // taking into account ODI level and bionics

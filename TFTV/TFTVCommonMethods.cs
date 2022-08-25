@@ -47,8 +47,8 @@ namespace TFTV
                 TFTVVoidOmens.VoidOmen16Active = false;
                 TFTVUmbra.UmbraResearched = false;
                 TFTVRevenant.timeOfMissionStart = new Base.Core.TimeUnit();
-                TFTVRevenant.RevenantCounter = new int();
-                TFTVStamina.charactersWithBrokenLimbs = new List<int>();
+                TFTVRevenant.RevenantCounter = new int[6];
+               // TFTVStamina.charactersWithBrokenLimbs = new List<int>();
                 TFTVUI.hookToProgressionModule = null;
                 TFTVUI.hookToCharacter = null;
     }

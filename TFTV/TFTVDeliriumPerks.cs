@@ -661,7 +661,7 @@ namespace TFTV
             {
                 try
                 {
-
+                    
                     if (actor.TacticalFaction.Faction.BaseDef == sharedData.PhoenixFactionDef)
                     {
                         TacticalActor tacticalActor = actor as TacticalActor;

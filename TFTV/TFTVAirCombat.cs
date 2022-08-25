@@ -594,6 +594,13 @@ namespace TFTV
         [HarmonyPatch(typeof(GeoBehemothActor), "UpdateHourly")]
         public static class GeoBehemothActor_UpdateHourly_Patch
         {
+
+            public static bool Prepare()
+            {
+                TFTVConfig config = TFTVMain.Main.Config;
+                return config.ActivateAirCombatChanges;
+            }
+
             public static void Postfix(GeoBehemothActor __instance)
             {
                 try
@@ -673,6 +680,12 @@ namespace TFTV
 
         public static class GeoBehemothActor_ChooseNextHavenTarget_Patch
         {
+            public static bool Prepare()
+            {
+                TFTVConfig config = TFTVMain.Main.Config;
+                return config.ActivateAirCombatChanges;
+            }
+
             public static bool Prefix(GeoBehemothActor __instance)
             {
                 try

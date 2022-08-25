@@ -48,7 +48,8 @@ namespace TFTV
             TFTVUmbra.SetUmbraEvolution(gsController);
             TFTVThirdAct.SetBehemothOnRampageMod(gsController);
             TFTVChangesToDLC3Events.ChangeHavenDeploymentDefense(gsController);
-            TFTVStamina.CheckBrokenLimbs(gsController.PhoenixFaction.Soldiers.ToList());           
+            TFTVStamina.CheckBrokenLimbs(gsController.PhoenixFaction.Soldiers.ToList());
+            
         }
         /// <summary>
         /// Called when Geoscape ends.
@@ -162,13 +163,7 @@ namespace TFTV
 
             try
             {
-                /*
-				if (main.Config.MoreAmbushes)
-				{
-					TFTVAmbushes.Apply_Changes_Ambush_Chances(gsController.EventSystem);
-				}
-				*/
-                
+                                
                 setup.InitialScavengingSiteCount = (uint)main.Config.InitialScavSites;
 
                 // ScavengingSitesDistribution is an array with the weights for scav, rescue soldier and vehicle

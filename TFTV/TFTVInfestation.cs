@@ -144,7 +144,7 @@ namespace TFTV
                     if(__instance.Type == GeoSiteType.Haven)
                     {
                    // TFTVLogger.Always("DestroySite method called");
-                  //  TFTVLogger.Always("infestation variable is " + __instance.GeoLevel.EventSystem.GetVariable("Infestation_Encounter_Variable"));
+                    TFTVLogger.Always("infestation variable is " + __instance.GeoLevel.EventSystem.GetVariable("Infestation_Encounter_Variable"));
                     string faction = __instance.Owner.GetPPName();
                   //  TFTVLogger.Always(faction);
                     if (DefenseMission == null)

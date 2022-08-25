@@ -799,7 +799,7 @@ namespace TFTV
                         if (VoidOmen3Active && __instance.TacticalActor.IsControlledByPlayer)
                         {
                             __result += Mathf.RoundToInt(__result * 0.5f);
-                            TFTVLogger.Always("WP cost increased to " + __result);
+                            //TFTVLogger.Always("WP cost increased to " + __result);
                         }
                     }
                 }

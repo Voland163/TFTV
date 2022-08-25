@@ -2,6 +2,7 @@
 using Base.Entities.Effects.ApplicationConditions;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
+using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Geoscape.Entities.Research;
 using PhoenixPoint.Geoscape.Entities.Research.Requirement;
@@ -208,7 +209,7 @@ namespace TFTV
                                         TFTVLogger.Always("The next faction is " + nextFaction.Faction.FactionDef.name);
                                         TFTVLogger.Always("The actor is " + actor.name);
                                         if (actor.GameTags.Contains(crabTag) && actor.GetAbilityWithDef<DeathBelcherAbility>(oilcrabDeathBelcherAbility) == null
-                                            && !actor.name.Contains("Oilcrab"))
+                                            && !actor.name.Contains("Oilcrab") && !actor.GameTags.Contains(Repo.GetAllDefs<GameTagDef>().FirstOrDefault(p => p.name.Equals("Revenant_GameTagDef"))))
 
                                         {
                                             int roll = UnityEngine.Random.Range(0, 100);
@@ -225,7 +226,7 @@ namespace TFTV
 
                                         }
                                         if (actor.GameTags.Contains(fishTag) && actor.GetAbilityWithDef<DeathBelcherAbility>(oilfishDeathBelcherAbility) == null
-                                            && !actor.name.Contains("Oilfish"))
+                                            && !actor.name.Contains("Oilfish") && !actor.GameTags.Contains(Repo.GetAllDefs<GameTagDef>().FirstOrDefault(p => p.name.Equals("Revenant_GameTagDef"))))
                                         {
                                             int roll = UnityEngine.Random.Range(0, 100);
                                             if (TFTVVoidOmens.VoidOmen15Active && roll <= totalDeliriumOnMission)
