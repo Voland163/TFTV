@@ -50,7 +50,7 @@ namespace TFTV
                 {
                     if (title.LocalizationKey == "UMBRA_SIGHTED_TITLE")
                     {
-                        image = Helper.CreateSpriteFromImageFile("BG_alistair_small.png");
+                        image = Helper.CreateSpriteFromImageFile("Umbra_hint.jpg");
                     }
                 }
                 catch (Exception e)

@@ -1,5 +1,4 @@
 using Base.Serialization.General;
-using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Modding;
@@ -18,10 +17,13 @@ namespace TFTV
     {
         public List<int> charactersWithBrokenLimbs = TFTVStamina.charactersWithBrokenLimbs;
         public List<int> targetsForBehemoth = TFTVAirCombat.targetsForBehemoth;
-        public List<int> targetsVisitedByBehemoth = TFTVAirCombat.targetsVisitedByBehemoth;
+        //   public List<int> targetsVisitedByBehemoth = TFTVAirCombat.targetsVisitedByBehemoth;
         public Dictionary<int, List<int>> flyersAndHavens = TFTVAirCombat.flyersAndHavens;
         public bool checkHammerfall = TFTVAirCombat.checkHammerfall;
         public Dictionary<string, int> DeadSoldiersDelirium = TFTVRevenant.DeadSoldiersDelirium;
+        public List<int> behemothScenicRoute = TFTVAirCombat.behemothScenicRoute;
+        public int behemothTarget = TFTVAirCombat.behemothTarget;
+        public int behemothWaitHours = TFTVAirCombat.behemothWaitHours;
     }
 
     /// <summary>
@@ -36,12 +38,15 @@ namespace TFTV
         /// </summary>
         public override void OnGeoscapeStart()
         {
-           
+
             /// Geoscape level controller is accessible at any time.
             GeoLevelController gsController = Controller;
             /// ModMain is accesible at any time
 
             TFTVMain main = (TFTVMain)Main;
+            TFTVStarts.CreateInitialInfiltrator();
+            TFTVStarts.CreateInitialPriest();
+            TFTVStarts.CreateInitialTechnician();
             TFTVNewPXCharacters.PlayIntro(gsController);
             TFTVVoidOmens.ImplementVoidOmens(gsController);
             TFTVUmbra.CheckForUmbraResearch(gsController);
@@ -49,7 +54,8 @@ namespace TFTV
             TFTVThirdAct.SetBehemothOnRampageMod(gsController);
             TFTVChangesToDLC3Events.ChangeHavenDeploymentDefense(gsController);
             TFTVStamina.CheckBrokenLimbs(gsController.PhoenixFaction.Soldiers.ToList());
-            
+
+
         }
         /// <summary>
         /// Called when Geoscape ends.
@@ -73,8 +79,8 @@ namespace TFTV
 
             TFTVRevenant.timeOfMissionStart = Controller.Timing.Now;
             TFTVLogger.Always("The time is " + TFTVRevenant.timeOfMissionStart.DateTime);
-            
-            
+
+
         }
 
         /// <summary>
@@ -87,10 +93,13 @@ namespace TFTV
             {
                 charactersWithBrokenLimbs = TFTVStamina.charactersWithBrokenLimbs,
                 targetsForBehemoth = TFTVAirCombat.targetsForBehemoth,
-                targetsVisitedByBehemoth = TFTVAirCombat.targetsForBehemoth,
+                //    targetsVisitedByBehemoth = TFTVAirCombat.targetsForBehemoth,
                 flyersAndHavens = TFTVAirCombat.flyersAndHavens,
                 checkHammerfall = TFTVAirCombat.checkHammerfall,
                 DeadSoldiersDelirium = TFTVRevenant.DeadSoldiersDelirium,
+                behemothScenicRoute = TFTVAirCombat.behemothScenicRoute,
+                behemothTarget = TFTVAirCombat.behemothTarget,
+                behemothWaitHours = TFTVAirCombat.behemothWaitHours,
             };
 
         }
@@ -102,48 +111,40 @@ namespace TFTV
         {
             TFTVGSInstanceData data = (TFTVGSInstanceData)instanceData;
 
-            Main.Logger.LogInfo("# Characters with broken limbs in the save: " + data.charactersWithBrokenLimbs.Count);
-            Main.Logger.LogInfo("# Behemoth targets for this emergence in the save: " + data.targetsForBehemoth.Count);
-            Main.Logger.LogInfo("# Targets already hit by Behemoth on this emergence in the save: " + data.targetsVisitedByBehemoth.Count);
-            Main.Logger.LogInfo("# Pandoran flyers that have visited havens on this emergence in the save:  " + data.flyersAndHavens.Count);
-            Main.Logger.LogInfo("Hammerfall in the save: " + data.checkHammerfall);
-            Main.Logger.LogInfo("# Lost operatives in the save: " + data.DeadSoldiersDelirium.Count);
-            TFTVLogger.Always("# Characters with broken limbs in the save: " + data.charactersWithBrokenLimbs.Count);
-            TFTVLogger.Always("# Behemoth targets for this emergence in the save: " + data.targetsForBehemoth.Count);
-            TFTVLogger.Always("# Targets already hit by Behemoth on this emergence in the save: " + data.targetsVisitedByBehemoth.Count);
-            TFTVLogger.Always("# Pandoran flyers that have visited havens on this emergence in the save:  " + data.flyersAndHavens.Count);
-            TFTVLogger.Always("Hammerfall in the save: " + data.checkHammerfall);
-            TFTVLogger.Always("# Lost operatives in the save: " + data.DeadSoldiersDelirium.Count);
+           
+            TFTVStamina.charactersWithBrokenLimbs = data.charactersWithBrokenLimbs;
+            TFTVAirCombat.targetsForBehemoth = data.targetsForBehemoth;
+            // TFTVAirCombat.targetsVisitedByBehemoth = data.targetsVisitedByBehemoth;
+            TFTVAirCombat.flyersAndHavens = data.flyersAndHavens;
+            TFTVAirCombat.checkHammerfall = data.checkHammerfall;
+            TFTVRevenant.DeadSoldiersDelirium = data.DeadSoldiersDelirium;
 
-             TFTVStamina.charactersWithBrokenLimbs = data.charactersWithBrokenLimbs;
-             TFTVAirCombat.targetsForBehemoth = data.targetsForBehemoth;
-             TFTVAirCombat.targetsVisitedByBehemoth = data.targetsVisitedByBehemoth;
-             TFTVAirCombat.flyersAndHavens = data.flyersAndHavens;
-             TFTVAirCombat.checkHammerfall = data.checkHammerfall;
-             TFTVRevenant.DeadSoldiersDelirium = data.DeadSoldiersDelirium;
+            TFTVAirCombat.behemothScenicRoute = data.behemothScenicRoute;
+            TFTVAirCombat.behemothTarget = data.behemothTarget;
+            TFTVAirCombat.behemothWaitHours = data.behemothWaitHours;
 
-           /* TFTVAirCombat.targetsForBehemoth = new List<int>();
-            TFTVAirCombat.targetsVisitedByBehemoth = new List<int>();
-            TFTVAirCombat.flyersAndHavens = new Dictionary<int, List<int>>();
-            TFTVAirCombat.checkHammerfall = true;
-            TFTVRevenant.DeadSoldiersDelirium = new Dictionary<string, int>();*/
-
-            
             Main.Logger.LogInfo("# Characters with broken limbs: " + TFTVStamina.charactersWithBrokenLimbs.Count);
             Main.Logger.LogInfo("# Behemoth targets for this emergence: " + TFTVAirCombat.targetsForBehemoth.Count);
-            Main.Logger.LogInfo("# Targets already hit by Behemoth on this emergence: " + TFTVAirCombat.targetsVisitedByBehemoth.Count);
+            //    Main.Logger.LogInfo("# Targets already hit by Behemoth on this emergence: " + TFTVAirCombat.targetsVisitedByBehemoth.Count);
             Main.Logger.LogInfo("# Pandoran flyers that have visited havens on this emergence:  " + TFTVAirCombat.flyersAndHavens.Count);
             Main.Logger.LogInfo("Hammerfall: " + TFTVAirCombat.checkHammerfall);
             Main.Logger.LogInfo("# Lost operatives: " + TFTVRevenant.DeadSoldiersDelirium.Count);
+            Main.Logger.LogInfo("# sites on Behemoth scenic route" + TFTVAirCombat.behemothScenicRoute.Count);
+            Main.Logger.LogInfo("Behemoth target id number is " + TFTVAirCombat.behemothTarget);
+            Main.Logger.LogInfo("Behemoth will wait for another  " + TFTVAirCombat.behemothWaitHours + " before moving");
+
             TFTVLogger.Always("# Characters with broken limbs: " + TFTVStamina.charactersWithBrokenLimbs.Count);
             TFTVLogger.Always("# Behemoth targets for this emergence: " + TFTVAirCombat.targetsForBehemoth.Count);
-            TFTVLogger.Always("# Targets already hit by Behemoth on this emergence: " + TFTVAirCombat.targetsVisitedByBehemoth.Count);
+            //   TFTVLogger.Always("# Targets already hit by Behemoth on this emergence: " + TFTVAirCombat.targetsVisitedByBehemoth.Count);
             TFTVLogger.Always("# Pandoran flyers that have visited havens on this emergence:  " + TFTVAirCombat.flyersAndHavens.Count);
             TFTVLogger.Always("Hammerfall: " + TFTVAirCombat.checkHammerfall);
             TFTVLogger.Always("# Lost operatives: " + TFTVRevenant.DeadSoldiersDelirium.Count);
+            TFTVLogger.Always("# sites on Behemoth scenic route" + TFTVAirCombat.behemothScenicRoute.Count);
+            TFTVLogger.Always("Behemoth target id number is " + TFTVAirCombat.behemothTarget);
+            TFTVLogger.Always("Behemoth will wait for another  " + TFTVAirCombat.behemothWaitHours + " before moving");
         }
 
-        
+
         /// <summary>
         /// Called when new Geoscape world is generating. This only happens on new game.
         /// Useful to modify initial spawned sites.
@@ -153,17 +154,18 @@ namespace TFTV
         public override void OnGeoscapeNewWorldInit(GeoInitialWorldSetup setup, IList<GeoSiteSceneDef.SiteInfo> worldSites)
         {
             TFTVMain main = (TFTVMain)Main;
-            GeoLevelController gsController = Controller;          
+            GeoLevelController gsController = Controller;
             TFTVAirCombat.targetsForBehemoth = new List<int>();
-            TFTVAirCombat.targetsVisitedByBehemoth = new List<int>();
+            //   TFTVAirCombat.targetsVisitedByBehemoth = new List<int>();
             TFTVAirCombat.flyersAndHavens = new Dictionary<int, List<int>>();
             TFTVAirCombat.checkHammerfall = false;
             TFTVRevenant.DeadSoldiersDelirium = new Dictionary<string, int>();
 
 
+
             try
             {
-                                
+
                 setup.InitialScavengingSiteCount = (uint)main.Config.InitialScavSites;
 
                 // ScavengingSitesDistribution is an array with the weights for scav, rescue soldier and vehicle
@@ -213,7 +215,7 @@ namespace TFTV
                         }
                     }
                 }
-                
+
 
             }
             catch (Exception e)
@@ -235,7 +237,7 @@ namespace TFTV
             {
                 TFTVMain main = (TFTVMain)Main;
                 GeoLevelController gsController = Controller;
-                
+
                 /*	if (main.Config.MoreAmbushes)
                     {
                         TFTVAmbushes.Apply_Changes_Ambush_Chances(gsController.EventSystem);

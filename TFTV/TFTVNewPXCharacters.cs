@@ -258,7 +258,7 @@ namespace TFTV
                 try
                 {
                     TFTVLogger.Always("TriggerGeoscapeEvent triggered for event " + eventId);
-
+                                                  
                     if (eventId == "PROG_PX10_WIN")
                     {
                         __instance.TriggerGeoscapeEvent("AlistairOnSymes1", context);
@@ -329,14 +329,18 @@ namespace TFTV
             {
                 try
                 {
+                    if (geoEvent.EventID.Equals("HelenaOnOlena"))
+                    {
+                        __result.EventLeader = Helper.CreateSpriteFromImageFile("Helena_fire2_closeup.jpg");
+                        __result.EventBackground = Helper.CreateSpriteFromImageFile("Helena_fire2.jpg");
+                    }
 
-                    if (geoEvent.EventID.Equals("VoidOmen") || geoEvent.EventID == "PROG_FS10" || geoEvent.EventID.Contains("Alistair")
-                        )
+                    if (geoEvent.EventID.Equals("VoidOmen") || geoEvent.EventID == "PROG_FS10" || geoEvent.EventID.Contains("Alistair"))
                     {
                         __result.EventLeader = Helper.CreateSpriteFromImageFile("BG_alistair_small.png");
                     }
 
-                    if (geoEvent.EventID == "PROG_FS2" || geoEvent.EventID.Contains("Olena"))
+                    if (geoEvent.EventID == "PROG_FS2" || (geoEvent.EventID.Contains("Olena") && !geoEvent.EventID.Contains("Helena")))
                     {
                         __result.EventLeader = Helper.CreateSpriteFromImageFile("BG_Olena_small.png");
                     }
@@ -380,7 +384,10 @@ namespace TFTV
                     {
                         __result.EventBackground = Helper.CreateSpriteFromImageFile("VO_13.jpg");
                     }
-
+                    if (geoEvent.EventID.Equals("VoidOmen") && (geoEvent.EventData.Title.LocalizationKey == "VOID_OMEN_TITLE_15" || geoEvent.EventData.Title.LocalizationKey == "VOID_OMEN_TITLE_16"))
+                    {
+                        __result.EventBackground = Helper.CreateSpriteFromImageFile("VO_15.jpg");
+                    }
 
                     if (geoEvent.EventID.Equals("IntroBetterGeo_2"))
                     {

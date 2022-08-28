@@ -103,10 +103,15 @@
     <Compile Include="TFTVVoidOmens.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="839770_20220829153727_1.png" />
     <Content Include="BG_Hammerfall_impact.jpg" />
     <Content Include="BG_Hammerfall_impact2.jpg" />
+    <Content Include="Helena_fire2.jpg" />
+    <Content Include="Helena_fire2_closeup.jpg" />
     <Content Include="Node.jpg" />
     <Content Include="NodeAlt.jpg" />
+    <Content Include="Umbra_hint.jpg" />
+    <Content Include="VO_15.jpg" />
     <None Include="meta.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

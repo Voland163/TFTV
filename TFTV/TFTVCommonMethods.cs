@@ -23,7 +23,7 @@ namespace TFTV
             try
             {
                 TFTVAirCombat.targetsForBehemoth = new List<int>();
-                TFTVAirCombat.targetsVisitedByBehemoth = new List<int>();
+              //  TFTVAirCombat.targetsVisitedByBehemoth = new List<int>();
                 TFTVAirCombat.flyersAndHavens = new Dictionary<int, List<int>>();
                 TFTVAirCombat.checkHammerfall = false;
                 TFTVRevenant.DeadSoldiersDelirium = new Dictionary<string, int>();
@@ -48,10 +48,13 @@ namespace TFTV
                 TFTVUmbra.UmbraResearched = false;
                 TFTVRevenant.timeOfMissionStart = new Base.Core.TimeUnit();
                 TFTVRevenant.RevenantCounter = new int[6];
-               // TFTVStamina.charactersWithBrokenLimbs = new List<int>();
+                TFTVStamina.charactersWithBrokenLimbs = new List<int>();
                 TFTVUI.hookToProgressionModule = null;
                 TFTVUI.hookToCharacter = null;
-    }
+                TFTVAirCombat.behemothScenicRoute = new List<int>();
+                TFTVAirCombat.behemothTarget = 0;
+                TFTVAirCombat.behemothWaitHours = 12;
+            }
             catch (Exception e)
             {
                 TFTVLogger.Error(e);
