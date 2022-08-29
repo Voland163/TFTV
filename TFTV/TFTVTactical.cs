@@ -42,14 +42,10 @@ namespace TFTV
         public Dictionary<string, int> DeadSoldiersDelirium = TFTVRevenant.DeadSoldiersDelirium;
         public TimeUnit timeOfMissionStart = TFTVRevenant.timeOfMissionStart;
         public int [] RevenantCounter = TFTVRevenant.RevenantCounter;
-        
+        public List<string> revenantSpecialResistance = TFTVRevenant.revenantSpecialResistance;
+
     }
-    //TFTV Things we want to save:
-    //
-    // 
-    //public static Dictionary<GeoTacUnitId, int> StaminaMap = new Dictionary<GeoTacUnitId, int>();
-
-
+   
     /// <summary>
     /// Represents a mod instance specific for Tactical game.
     /// Each time Tactical level is loaded, new mod's ModTactical is created. 
@@ -69,6 +65,7 @@ namespace TFTV
           //  TFTVDelirium.DeliriumPerksOnTactical(tacController);
             TFTVRevenant.CreateRevenantDefs();
             TFTVRevenant.ModifyRevenantResistanceAbility(Controller);
+            TFTVRevenant.RevenantCheckAndSpawn(Controller);
         }
 
         /// <summary>
@@ -101,6 +98,7 @@ namespace TFTV
             TFTVRevenant.DeadSoldiersDelirium = data.DeadSoldiersDelirium;
             TFTVRevenant.timeOfMissionStart = data.timeOfMissionStart;
             TFTVRevenant.RevenantCounter = data.RevenantCounter;
+            TFTVRevenant.revenantSpecialResistance = data.revenantSpecialResistance;
         }
         /// <summary>
         /// Called when Tactical save is going to be generated, giving mod option for custom save data.
@@ -121,6 +119,7 @@ namespace TFTV
                 DeadSoldiersDelirium = TFTVRevenant.DeadSoldiersDelirium,
                 timeOfMissionStart = TFTVRevenant.timeOfMissionStart,
                 RevenantCounter = TFTVRevenant.RevenantCounter,
+                revenantSpecialResistance = TFTVRevenant.revenantSpecialResistance,
 
             };
         }
@@ -130,29 +129,9 @@ namespace TFTV
         /// <param name="turnNumber">Current turn number</param>
         public override void OnNewTurn(int turnNumber)
         {
-            List<TacticalActorBase> pandorans = Controller.GetFactionByCommandName("aln").Actors.ToList();
-            bool revenantPresent = false;
-
-            foreach(TacticalActorBase actor in pandorans) 
-            { 
-            if(actor.HasGameTag(TFTVMain.Repo.GetAllDefs<GameTagDef>().FirstOrDefault(p => p.name.Equals("RevenantTier_1_GameTagDef")))) 
-                {
-                    revenantPresent = true;
-                }
-            
-            }
-
-            if(revenantPresent == true)
-            {
-                foreach (TacticalActorBase actor in pandorans)
-                {
-                    if (!Controller.TacticalGameParams.Statistics.LivingSoldiers.ContainsKey(actor.GeoUnitId)
-                         && !actor.GameTags.Contains(TFTVMain.Repo.GetAllDefs<GameTagDef>().FirstOrDefault(p => p.name.Contains("Revenant")))
-                         && actor.GetAbilityWithDef<DamageMultiplierAbility>(TFTVMain.Repo.GetAllDefs<DamageMultiplierAbilityDef>().FirstOrDefault(p => p.name.Equals("RevenantResistance_AbilityDef"))) == null)           
-
-                   TFTVRevenant.AddRevenantResistanceAbility(actor);
-                }
-            }          
+            TFTVRevenant.revenantSpecialResistance.Clear();            
+            TFTVUmbra.SpawnUmbra(Controller);
+                    
         }
     }
 }

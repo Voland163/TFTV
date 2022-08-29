@@ -54,7 +54,8 @@ namespace TFTV
                 TFTVAirCombat.behemothScenicRoute = new List<int>();
                 TFTVAirCombat.behemothTarget = 0;
                 TFTVAirCombat.behemothWaitHours = 12;
-            }
+                TFTVRevenant.revenantSpecialResistance = new List<string>();
+    }
             catch (Exception e)
             {
                 TFTVLogger.Error(e);
