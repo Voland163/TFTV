@@ -1,17 +1,8 @@
 using Base.Core;
-using Base.Entities.Statuses;
-using Base.ParticleSystems;
 using Base.Serialization.General;
-using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Modding;
-using PhoenixPoint.Tactical.Entities;
-using PhoenixPoint.Tactical.Entities.Abilities;
-using PhoenixPoint.Tactical.Entities.Statuses;
 using PhoenixPoint.Tactical.Levels;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using UnityEngine;
 
 
 namespace TFTV
@@ -41,11 +32,10 @@ namespace TFTV
         public bool UmbraResearched = TFTVUmbra.UmbraResearched;
         public Dictionary<string, int> DeadSoldiersDelirium = TFTVRevenant.DeadSoldiersDelirium;
         public TimeUnit timeOfMissionStart = TFTVRevenant.timeOfMissionStart;
-        public int [] RevenantCounter = TFTVRevenant.RevenantCounter;
         public List<string> revenantSpecialResistance = TFTVRevenant.revenantSpecialResistance;
-
+        public bool revenantSpawned = TFTVRevenant.revenantSpawned;
     }
-   
+
     /// <summary>
     /// Represents a mod instance specific for Tactical game.
     /// Each time Tactical level is loaded, new mod's ModTactical is created. 
@@ -62,7 +52,7 @@ namespace TFTV
             /// ModMain is accesible at any time
             TFTVMain main = (TFTVMain)Main;
             //TFTV give Dtony's Delirium Perks
-          //  TFTVDelirium.DeliriumPerksOnTactical(tacController);
+            //  TFTVDelirium.DeliriumPerksOnTactical(tacController);
             TFTVRevenant.CreateRevenantDefs();
             TFTVRevenant.ModifyRevenantResistanceAbility(Controller);
             TFTVRevenant.RevenantCheckAndSpawn(Controller);
@@ -73,10 +63,10 @@ namespace TFTV
         /// </summary>
         public override void OnTacticalEnd()
         {
-          /*  if (TFTVRevenant.DeadSoldiersDelirium.Count != 0 && TFTVRevenant.DeadSoldiersDelirium.Count > TFTVRevenant.GeoDeadSoldiersDelirium.Count)
-            {
-                TFTVRevenant.DeadSoldiersDelirium = TFTVRevenant.DeadSoldiersDelirium;
-            }*/
+            /*  if (TFTVRevenant.DeadSoldiersDelirium.Count != 0 && TFTVRevenant.DeadSoldiersDelirium.Count > TFTVRevenant.GeoDeadSoldiersDelirium.Count)
+              {
+                  TFTVRevenant.DeadSoldiersDelirium = TFTVRevenant.DeadSoldiersDelirium;
+              }*/
 
             base.OnTacticalEnd();
         }
@@ -97,7 +87,7 @@ namespace TFTV
             TFTVUmbra.UmbraResearched = data.UmbraResearched;
             TFTVRevenant.DeadSoldiersDelirium = data.DeadSoldiersDelirium;
             TFTVRevenant.timeOfMissionStart = data.timeOfMissionStart;
-            TFTVRevenant.RevenantCounter = data.RevenantCounter;
+            TFTVRevenant.revenantSpawned = data.revenantSpawned;
             TFTVRevenant.revenantSpecialResistance = data.revenantSpecialResistance;
         }
         /// <summary>
@@ -118,7 +108,7 @@ namespace TFTV
                 UmbraResearched = TFTVUmbra.UmbraResearched,
                 DeadSoldiersDelirium = TFTVRevenant.DeadSoldiersDelirium,
                 timeOfMissionStart = TFTVRevenant.timeOfMissionStart,
-                RevenantCounter = TFTVRevenant.RevenantCounter,
+                revenantSpawned = TFTVRevenant.revenantSpawned,
                 revenantSpecialResistance = TFTVRevenant.revenantSpecialResistance,
 
             };
@@ -129,9 +119,9 @@ namespace TFTV
         /// <param name="turnNumber">Current turn number</param>
         public override void OnNewTurn(int turnNumber)
         {
-            TFTVRevenant.revenantSpecialResistance.Clear();            
+            TFTVRevenant.revenantSpecialResistance.Clear();
             TFTVUmbra.SpawnUmbra(Controller);
-                    
+
         }
     }
 }

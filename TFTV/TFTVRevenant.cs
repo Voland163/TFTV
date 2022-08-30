@@ -30,10 +30,10 @@ namespace TFTV
         public static Dictionary<string, int> DeadSoldiersDelirium = new Dictionary<string, int>();
         private static readonly SharedData sharedData = GameUtl.GameComponent<SharedData>();
         public static TimeUnit timeOfMissionStart = 0;
+        public static TimeUnit timeLastRevenantSpawned = 0;
         public static bool revenantSpawned = false;
-        public static int[] RevenantCounter = new int[6];
-        // public static Dictionary<int, bool> revenantSpecialResistance = new Dictionary<int, bool>();
         public static List<string> revenantSpecialResistance = new List<string>();
+
         public static void CreateRevenantDefs()
         {
             try
@@ -60,7 +60,10 @@ namespace TFTV
         {
             try
             {
-                if (revenantSpawned == false && DeadSoldiersDelirium.Count > 0)
+
+
+
+                if (revenantSpawned == false && DeadSoldiersDelirium.Count > 0 && (timeLastRevenantSpawned == 0 || (timeLastRevenantSpawned - timeOfMissionStart).TimeSpan.Days >= 3))
                 {
                     TFTVLogger.Always("RevenantCheckAndSpawn invoked");
                     TryToSpawnRevenant(controller);
@@ -74,44 +77,44 @@ namespace TFTV
             }
         }
 
-/*        public static void RevenantResistanceCheck(TacticalLevelController controller)
-        {
-            try
-            {
-
-                List<TacticalActorBase> pandorans = controller.GetFactionByCommandName("aln").Actors.ToList();
-                bool revenantPresent = false;
-
-                foreach (TacticalActorBase actor in pandorans)
+        /*        public static void RevenantResistanceCheck(TacticalLevelController controller)
                 {
-                    if (actor.HasGameTag(TFTVMain.Repo.GetAllDefs<GameTagDef>().FirstOrDefault(p => p.name.Contains("Revenant"))))
+                    try
                     {
-                        revenantPresent = true;
-                        TFTVLogger.Always("On new turn, revenant is found");
+
+                        List<TacticalActorBase> pandorans = controller.GetFactionByCommandName("aln").Actors.ToList();
+                        bool revenantPresent = false;
+
+                        foreach (TacticalActorBase actor in pandorans)
+                        {
+                            if (actor.HasGameTag(TFTVMain.Repo.GetAllDefs<GameTagDef>().FirstOrDefault(p => p.name.Contains("Revenant"))))
+                            {
+                                revenantPresent = true;
+                                TFTVLogger.Always("On new turn, revenant is found");
+                            }
+                        }
+
+                        if (revenantPresent == true)
+                        {
+
+
+                            foreach (TacticalActorBase actor in pandorans)
+                            {
+                                if (!controller.TacticalGameParams.Statistics.LivingSoldiers.ContainsKey(actor.GeoUnitId)
+                                     && !actor.GameTags.Contains(TFTVMain.Repo.GetAllDefs<GameTagDef>().FirstOrDefault(p => p.name.Contains("Revenant")))
+                                     && actor.GetAbilityWithDef<DamageMultiplierAbility>(TFTVMain.Repo.GetAllDefs<DamageMultiplierAbilityDef>().FirstOrDefault(p => p.name.Equals("RevenantResistance_AbilityDef"))) == null)
+
+                                    AddRevenantResistanceAbility(actor);
+                                    TFTVLogger.Always(actor.name + " received the revenant resistance ability.");
+
+                            }
+                        }
                     }
-                }
-
-                if (revenantPresent == true)
-                {
-                    
-
-                    foreach (TacticalActorBase actor in pandorans)
+                    catch (Exception e)
                     {
-                        if (!controller.TacticalGameParams.Statistics.LivingSoldiers.ContainsKey(actor.GeoUnitId)
-                             && !actor.GameTags.Contains(TFTVMain.Repo.GetAllDefs<GameTagDef>().FirstOrDefault(p => p.name.Contains("Revenant")))
-                             && actor.GetAbilityWithDef<DamageMultiplierAbility>(TFTVMain.Repo.GetAllDefs<DamageMultiplierAbilityDef>().FirstOrDefault(p => p.name.Equals("RevenantResistance_AbilityDef"))) == null)
-
-                            AddRevenantResistanceAbility(actor);
-                            TFTVLogger.Always(actor.name + " received the revenant resistance ability.");
-
+                        TFTVLogger.Error(e);
                     }
-                }
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-        }*/
+                }*/
 
         public static GeoTacUnitId RevenantRoll(TacticalLevelController controller)
         {
@@ -215,7 +218,7 @@ namespace TFTV
                     return;
                 }
 
-                TFTVLogger.Always("Here is an eligible Pandoran to be a Revnant: " + actor.GetDisplayName());
+                TFTVLogger.Always("Here is an eligible Pandoran to be a Revenant: " + actor.GetDisplayName());
                 TacticalActor tacticalActor = actor as TacticalActor;
                 AddRevenantStatusEffect(actor);
                 SetRevenantTierTag(theChosen, actor, controller);
@@ -229,6 +232,7 @@ namespace TFTV
                 //  SpreadResistance(__instance);
                 actor.UpdateStats();
                 revenantSpawned = true;
+                timeLastRevenantSpawned = timeOfMissionStart;
 
                 foreach (TacticalActorBase pandoran in pandorans.Actors)
                 {

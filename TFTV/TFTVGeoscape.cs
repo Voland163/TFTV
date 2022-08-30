@@ -1,3 +1,4 @@
+using Base.Core;
 using Base.Serialization.General;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Levels;
@@ -24,6 +25,7 @@ namespace TFTV
         public List<int> behemothScenicRoute = TFTVAirCombat.behemothScenicRoute;
         public int behemothTarget = TFTVAirCombat.behemothTarget;
         public int behemothWaitHours = TFTVAirCombat.behemothWaitHours;
+        public TimeUnit timeLastRevenantSpawned = TFTVRevenant.timeLastRevenantSpawned;
     }
 
     /// <summary>
@@ -100,6 +102,7 @@ namespace TFTV
                 behemothScenicRoute = TFTVAirCombat.behemothScenicRoute,
                 behemothTarget = TFTVAirCombat.behemothTarget,
                 behemothWaitHours = TFTVAirCombat.behemothWaitHours,
+                timeLastRevenantSpawned = TFTVRevenant.timeLastRevenantSpawned,
             };
 
         }
@@ -111,14 +114,14 @@ namespace TFTV
         {
             TFTVGSInstanceData data = (TFTVGSInstanceData)instanceData;
 
-           
+
             TFTVStamina.charactersWithBrokenLimbs = data.charactersWithBrokenLimbs;
             TFTVAirCombat.targetsForBehemoth = data.targetsForBehemoth;
             // TFTVAirCombat.targetsVisitedByBehemoth = data.targetsVisitedByBehemoth;
             TFTVAirCombat.flyersAndHavens = data.flyersAndHavens;
             TFTVAirCombat.checkHammerfall = data.checkHammerfall;
             TFTVRevenant.DeadSoldiersDelirium = data.DeadSoldiersDelirium;
-
+            TFTVRevenant.timeLastRevenantSpawned = data.timeLastRevenantSpawned;
             TFTVAirCombat.behemothScenicRoute = data.behemothScenicRoute;
             TFTVAirCombat.behemothTarget = data.behemothTarget;
             TFTVAirCombat.behemothWaitHours = data.behemothWaitHours;
@@ -132,6 +135,7 @@ namespace TFTV
             Main.Logger.LogInfo("# sites on Behemoth scenic route" + TFTVAirCombat.behemothScenicRoute.Count);
             Main.Logger.LogInfo("Behemoth target id number is " + TFTVAirCombat.behemothTarget);
             Main.Logger.LogInfo("Behemoth will wait for another  " + TFTVAirCombat.behemothWaitHours + " before moving");
+            Main.Logger.LogInfo("Last time revenant spawned  " + TFTVRevenant.timeLastRevenantSpawned);
 
             TFTVLogger.Always("# Characters with broken limbs: " + TFTVStamina.charactersWithBrokenLimbs.Count);
             TFTVLogger.Always("# Behemoth targets for this emergence: " + TFTVAirCombat.targetsForBehemoth.Count);
@@ -142,6 +146,7 @@ namespace TFTV
             TFTVLogger.Always("# sites on Behemoth scenic route" + TFTVAirCombat.behemothScenicRoute.Count);
             TFTVLogger.Always("Behemoth target id number is " + TFTVAirCombat.behemothTarget);
             TFTVLogger.Always("Behemoth will wait for another  " + TFTVAirCombat.behemothWaitHours + " before moving");
+            TFTVLogger.Always("Last time revenant spawned  " + TFTVRevenant.timeLastRevenantSpawned);
         }
 
 

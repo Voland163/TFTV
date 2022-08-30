@@ -47,7 +47,6 @@ namespace TFTV
                 TFTVVoidOmens.VoidOmen16Active = false;
                 TFTVUmbra.UmbraResearched = false;
                 TFTVRevenant.timeOfMissionStart = new Base.Core.TimeUnit();
-                TFTVRevenant.RevenantCounter = new int[6];
                 TFTVStamina.charactersWithBrokenLimbs = new List<int>();
                 TFTVUI.hookToProgressionModule = null;
                 TFTVUI.hookToCharacter = null;
@@ -55,6 +54,7 @@ namespace TFTV
                 TFTVAirCombat.behemothTarget = 0;
                 TFTVAirCombat.behemothWaitHours = 12;
                 TFTVRevenant.revenantSpecialResistance = new List<string>();
+                TFTVRevenant.revenantSpawned = false;
     }
             catch (Exception e)
             {

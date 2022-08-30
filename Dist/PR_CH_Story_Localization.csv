@@ -215,13 +215,13 @@ DELIRIUM_PERK_HYPERALGESIA_DESCRIPTION,Text,,"Lose 1 WP when taking damage, no W
 "DELIRIUM_PERK_FERAL_NAME
 ",Text,,"FERAL",,,,,,,,
 "DELIRIUM_PERK_FERAL_DESCRIPTION
-",Text,,"Attacks have 10% chance to fumble, recover 1 AP from killing enemies
+",Text,,"All actions have 10% chance to fumble, recover 1 AP from killing enemies
 <i>Subject engages in atavistic behavior. Alterations in adrenal glands function are also observed</i>",,,,,,,,
 DELIRIUM_PERK_DEREALIZATION_NAME,Text,,DEREALIZATION,,,,,,,,
 DELIRIUM_PERK_DEREALIZATION_DESCRIPTION,Text,,"-5 to Strength, disabled limbs remain functional
 <i>Subject reports increasing detachment from reality and own body</i>",,,,,,,,
 DELIRIUM_PERK_ONE_OF_THEM_NAME,Text,,ONE OF THEM,,,,,,,,
-DELIRIUM_PERK_ONE_OF_THEM_DESCRIPTION,Text,,"-2 to Willpower, Mist restores WP
+DELIRIUM_PERK_ONE_OF_THEM_DESCRIPTION,Text,,"-2 to Willpower, immune to Mist
 <i>Subject appears to have acquired tolerance to Mist, resulting in a cognitive dissonance</i>",,,,,,,,
 DELIRIUM_PERK_WOLVERINE_NAME,Text,,WOLVERINE,,,,,,,,
 DELIRIUM_PERK_WOLVERINE_DESCRIPTION,Text,,"-20% to Accuracy, gain Slashing Strike
