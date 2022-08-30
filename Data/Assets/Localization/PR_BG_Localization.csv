@@ -366,3 +366,7 @@ PROG_NJ_POSTPONE_CHOICE,Text,,Maybe later.,,,,,,,,
 PROG_NJ_POSTPONE_TEXT,Text,,"That's... disappointing. Very well, I hope you will change your mind.",,,,,,,,
 KEY_INFESTATION_REWARD_TITLE,Text,,Rewards!,,,,,,,,
 KEY_INFESTATION_REWARD_DESCRIPTION,Text,,Nice things!,,,,,,,,
+REVENANT_SIGHTED_TITLE,Text,,Revenant,,,,,,,,
+REVENANT_SIGHTED_TEXT,Text,,"<i>""The Pandorans were somehow stealing our dead and splicing them into new monstrosities. We would recognize them in the field because of some small, inconsequential detail - an involuntary spasm, betraying a familiar gesture, a terrifying scream, bearing the echo of a beloved voice.""</i>
+
+We should try capturing it.",,,,,,,,

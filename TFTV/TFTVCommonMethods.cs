@@ -1,9 +1,11 @@
 ﻿using Base.Defs;
 using Base.UI;
 using HarmonyLib;
+using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.UI;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.Research;
+using PhoenixPoint.Geoscape.Entities.Research.Requirement;
 using PhoenixPoint.Geoscape.Events;
 using PhoenixPoint.Geoscape.Events.Eventus;
 using PhoenixPoint.Geoscape.Levels;
@@ -23,7 +25,7 @@ namespace TFTV
             try
             {
                 TFTVAirCombat.targetsForBehemoth = new List<int>();
-              //  TFTVAirCombat.targetsVisitedByBehemoth = new List<int>();
+                //  TFTVAirCombat.targetsVisitedByBehemoth = new List<int>();
                 TFTVAirCombat.flyersAndHavens = new Dictionary<int, List<int>>();
                 TFTVAirCombat.checkHammerfall = false;
                 TFTVRevenant.DeadSoldiersDelirium = new Dictionary<string, int>();
@@ -46,7 +48,7 @@ namespace TFTV
                 //VO#16 is Umbras can appear anywhere and attack anyone
                 TFTVVoidOmens.VoidOmen16Active = false;
                 TFTVUmbra.UmbraResearched = false;
-                TFTVRevenant.timeOfMissionStart = new Base.Core.TimeUnit();
+                TFTVRevenant.daysRevenantLastSeen = 0;
                 TFTVStamina.charactersWithBrokenLimbs = new List<int>();
                 TFTVUI.hookToProgressionModule = null;
                 TFTVUI.hookToCharacter = null;
@@ -55,6 +57,8 @@ namespace TFTV
                 TFTVAirCombat.behemothWaitHours = 12;
                 TFTVRevenant.revenantSpecialResistance = new List<string>();
                 TFTVRevenant.revenantSpawned = false;
+                TFTVRevenant.revenantCanSpawn = false;
+              //  TFTVRevenant.timeLastRevenantSpawned = new TimeSpan();
     }
             catch (Exception e)
             {
@@ -211,6 +215,70 @@ namespace TFTV
                 TFTVLogger.Error(e);
             }
             throw new InvalidOperationException();
+        }
+
+        public static ResearchViewElementDef CreateNewResearchViewElementNoKeys(string def, string gUID, string name, string reveal, string unlock, string complete)
+
+        {
+            try
+            {
+
+                ResearchViewElementDef sourceResearchViewDef = Repo.GetAllDefs<ResearchViewElementDef>().FirstOrDefault(ged => ged.name.Equals("PX_Alien_CorruptionNode_ViewElementDef"));
+                ResearchViewElementDef researchViewDef = Helper.CreateDefFromClone(sourceResearchViewDef, gUID, def);
+                researchViewDef.DisplayName1 = new LocalizedTextBind (name, true);
+                researchViewDef.RevealText = new LocalizedTextBind(reveal, true);
+                researchViewDef.UnlockText = new LocalizedTextBind(unlock, true);
+                researchViewDef.CompleteText = new LocalizedTextBind(complete, true);
+                return researchViewDef;
+            }
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+            throw new InvalidOperationException();
+        }
+
+
+
+        public static CaptureActorResearchRequirementDef CreateNewTagCaptureActorResearchRequirementDef(string gUID, string defName, string revealText)
+        {
+            try
+            {
+                CaptureActorResearchRequirementDef captureActorResearchRequirementDef 
+                    = Repo.GetAllDefs<CaptureActorResearchRequirementDef>().FirstOrDefault(ged => ged.name.Equals("PX_Alien_EvolvedAliens_ResearchDef_CaptureActorResearchRequirementDef_0"));
+                CaptureActorResearchRequirementDef newCaptureActorResearchRequirementDef = Helper.CreateDefFromClone(captureActorResearchRequirementDef, gUID, defName);
+                newCaptureActorResearchRequirementDef.RequirementText = new LocalizedTextBind (revealText, true);
+                return newCaptureActorResearchRequirementDef;
+            }
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+            throw new InvalidOperationException();
+
+        }
+
+        public static EncounterVariableResearchRequirementDef CreateNewEncounterVariableResearchRequirementDef(string nameDef, string gUID, string variable, int value)
+        {
+            try
+            {
+                EncounterVariableResearchRequirementDef sourceVarResReq =
+                      Repo.GetAllDefs<EncounterVariableResearchRequirementDef>().
+                      FirstOrDefault(ged => ged.name.Equals("NJ_Bionics1_ResearchDef_EncounterVariableResearchRequirementDef_0"));
+                
+                EncounterVariableResearchRequirementDef newResReq = Helper.CreateDefFromClone(sourceVarResReq, gUID, nameDef);
+                newResReq.VariableName = variable;
+                newResReq.Value = value;
+                return newResReq;
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+            throw new InvalidOperationException();
+
         }
 
         [HarmonyPatch(typeof(GeoSite), "CreateHavenDefenseMission")]

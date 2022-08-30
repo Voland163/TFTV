@@ -9,6 +9,8 @@ using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
+using PhoenixPoint.Common.Levels.Missions;
+using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.DamageKeywords;
@@ -29,8 +31,9 @@ namespace TFTV
         private static readonly DefRepository Repo = TFTVMain.Repo;
         public static Dictionary<string, int> DeadSoldiersDelirium = new Dictionary<string, int>();
         private static readonly SharedData sharedData = GameUtl.GameComponent<SharedData>();
-        public static TimeUnit timeOfMissionStart = 0;
-        public static TimeUnit timeLastRevenantSpawned = 0;
+        public static int daysRevenantLastSeen = 0;
+        // public static  timeLastRevenantSpawned = new TimeUnit();
+        public static bool revenantCanSpawn = false;
         public static bool revenantSpawned = false;
         public static List<string> revenantSpecialResistance = new List<string>();
 
@@ -56,14 +59,53 @@ namespace TFTV
             }
         }
 
+        public static void CheckRevenantTime(GeoLevelController controller)
+
+        {
+            try
+            {
+                TFTVLogger.Always("Last time a Revenant was seen was " + daysRevenantLastSeen + " days ago, and now it is " + controller.Timing.Now.DateTime);
+                if (DeadSoldiersDelirium.Count > 0 && (daysRevenantLastSeen == 0 || (controller.Timing.Now - daysRevenantLastSeen).TimeSpan.Days >= 3)) //+ UnityEngine.Random.Range(-1, 3))) 
+                { 
+                   revenantCanSpawn = true;
+                   TFTVLogger.Always("Therefore, a Revenant can spawn is " + revenantCanSpawn);
+                }
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+        }
+
+        public static void UpdateRevenantTimer(GeoLevelController controller) 
+        {
+            try 
+            {
+                if (revenantSpawned) 
+                { 
+                daysRevenantLastSeen = controller.Timing.Now.TimeSpan.Days;
+                controller.EventSystem.SetVariable("Revenant_Spotted", controller.EventSystem.GetVariable("Revenant_Spotted")+1);
+                revenantSpawned = false;
+                TFTVLogger.Always("Last time a Revenant was seen was " + daysRevenantLastSeen + " days ago, and now it is " + controller.Timing.Now.DateTime);
+                TFTVLogger.Always("# Revenants spotted " + controller.EventSystem.GetVariable("Revenant_Spotted"));
+                }        
+            }
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+
         public static void RevenantCheckAndSpawn(TacticalLevelController controller)
         {
             try
             {
 
-
-
-                if (revenantSpawned == false && DeadSoldiersDelirium.Count > 0 && (timeLastRevenantSpawned == 0 || (timeLastRevenantSpawned - timeOfMissionStart).TimeSpan.Days >= 3))
+                if (!revenantSpawned && revenantCanSpawn) //&& (timeLastRevenantSpawned == 0 || )
                 {
                     TFTVLogger.Always("RevenantCheckAndSpawn invoked");
                     TryToSpawnRevenant(controller);
@@ -232,7 +274,6 @@ namespace TFTV
                 //  SpreadResistance(__instance);
                 actor.UpdateStats();
                 revenantSpawned = true;
-                timeLastRevenantSpawned = timeOfMissionStart;
 
                 foreach (TacticalActorBase pandoran in pandorans.Actors)
                 {
@@ -243,6 +284,11 @@ namespace TFTV
                         AddRevenantResistanceAbility(pandoran);
                     TFTVLogger.Always(pandoran.name + " received the revenant resistance ability.");
                 }
+                //   GameTagDef anyRevenantGameTag = Repo.GetAllDefs<GameTagDef>().FirstOrDefault(p => p.name.Equals("Any_Revenant_TagDef"));
+                //   GameTagDef revenantTier1GameTag = Repo.GetAllDefs<GameTagDef>().FirstOrDefault(p => p.name.Equals("RevenantTier_1_GameTagDef"));
+
+                // TFTVLogger.Always("Actor has tag any revenant? " + actor.HasGameTag(anyRevenantGameTag));
+                // TFTVLogger.Always("Actor has tag tier 1 revenant? " + actor.HasGameTag(revenantTier1GameTag));
             }
 
 
@@ -268,8 +314,7 @@ namespace TFTV
                     {
                         AddtoListOfDeadSoldiers(deathReport.Actor);
                         TFTVStamina.charactersWithBrokenLimbs.Remove(deathReport.Actor.GeoUnitId);
-                        TFTVLogger.Always(deathReport.Actor.DisplayName + " died at" + timeOfMissionStart.DateTime.ToString() +
-                            ". The deathlist now has " + DeadSoldiersDelirium.Count);
+                        TFTVLogger.Always(deathReport.Actor.DisplayName + " died at. The deathlist now has " + DeadSoldiersDelirium.Count);
                     }
 
                 }
@@ -422,6 +467,7 @@ namespace TFTV
                 GameTagDef revenantTier1GameTag = Repo.GetAllDefs<GameTagDef>().FirstOrDefault(p => p.name.Equals("RevenantTier_1_GameTagDef"));
                 GameTagDef revenantTier2GameTag = Repo.GetAllDefs<GameTagDef>().FirstOrDefault(p => p.name.Equals("RevenantTier_2_GameTagDef"));
                 GameTagDef revenantTier3GameTag = Repo.GetAllDefs<GameTagDef>().FirstOrDefault(p => p.name.Equals("RevenantTier_3_GameTagDef"));
+                GameTagDef anyRevenantGameTag = Repo.GetAllDefs<GameTagDef>().FirstOrDefault(p => p.name.Equals("Any_Revenant_TagDef"));
 
 
                 SoldierStats deadSoldierStats = level.TacticalGameParams.Statistics.DeadSoldiers.TryGetValue(deadSoldier, out deadSoldierStats) ? deadSoldierStats : null;
@@ -445,6 +491,7 @@ namespace TFTV
                     tag = revenantTier3GameTag;
                 }
                 actor.GameTags.Add(tag, GameTagAddMode.ReplaceExistingExclusive);
+                actor.GameTags.Add(anyRevenantGameTag);
             }
             catch (Exception e)
             {
@@ -727,7 +774,7 @@ namespace TFTV
                         }
                         if (winner == scoreHighDamage)
                         {
-                            damageTypeDef = projectileDamage;
+                            damageTypeDef = null; //projectileDamage;
                         }
 
                         return damageTypeDef;
@@ -785,7 +832,7 @@ namespace TFTV
                 descriptionDamage = "<b>shred damage</b>";
             }
 
-            else if (revenantResistanceAbilityDef.DamageTypeDef == projectileDamage)
+            else if (revenantResistanceAbilityDef.DamageTypeDef == null)
             {
                 descriptionDamage = "<b>high damage attacks </b>";
                 revenantResistanceAbilityDef.Multiplier = 1f;
@@ -1209,7 +1256,7 @@ namespace TFTV
                     DamageMultiplierAbilityDef searchedAbilityDef = Repo.GetAllDefs<DamageMultiplierAbilityDef>().FirstOrDefault(dma => dma.name.Equals("RevenantResistance_AbilityDef"));
                     StandardDamageTypeEffectDef projectileDamage = Repo.GetAllDefs<StandardDamageTypeEffectDef>().FirstOrDefault(p => p.name.Equals("Projectile_StandardDamageTypeEffectDef"));
 
-                    if (searchedAbilityDef.DamageTypeDef == projectileDamage && __instance.GetAbilityWithDef<DamageMultiplierAbility>(searchedAbilityDef) != null && !revenantSpecialResistance.Contains(__instance.name))
+                    if (searchedAbilityDef.DamageTypeDef == null && __instance.GetAbilityWithDef<DamageMultiplierAbility>(searchedAbilityDef) != null && !revenantSpecialResistance.Contains(__instance.name))
                     {
                         TFTVLogger.Always(__instance.name + " has the Revenant Resistance ability and it's the first time it is triggered");
                         revenantSpecialResistance.Add(__instance.name);
@@ -1239,7 +1286,7 @@ namespace TFTV
                     DamageMultiplierAbilityDef searchedAbilityDef = Repo.GetAllDefs<DamageMultiplierAbilityDef>().FirstOrDefault(dma => dma.name.Equals("RevenantResistance_AbilityDef"));
                     StandardDamageTypeEffectDef projectileDamage = Repo.GetAllDefs<StandardDamageTypeEffectDef>().FirstOrDefault(p => p.name.Equals("Projectile_StandardDamageTypeEffectDef"));
 
-                    if (searchedAbilityDef.DamageTypeDef == projectileDamage && actor != null && actor.GetAbilityWithDef<DamageMultiplierAbility>(searchedAbilityDef) != null && !revenantSpecialResistance.Contains(actor.name))
+                    if (searchedAbilityDef.DamageTypeDef == null && actor != null && actor.GetAbilityWithDef<DamageMultiplierAbility>(searchedAbilityDef) != null && !revenantSpecialResistance.Contains(actor.name))
                     {
                         //  TFTVLogger.Always("This check was passed");
                         data.DamageResult.HealthDamage = Mathf.Floor(data.DamageResult.HealthDamage * multiplier);
@@ -1253,6 +1300,29 @@ namespace TFTV
                 }
             }
 
+        }
+
+        [HarmonyPatch(typeof(TacticalLevelController), "ActorDied")]
+        public static class TacticalLevelController_ActorDied_Revenant_Patch
+        {
+            public static void Postfix(DeathReport deathReport, TacticalLevelController __instance)
+            {
+                try
+                {
+                    GameTagDef revenantTag = Repo.GetAllDefs<GameTagDef>().FirstOrDefault(p => p.name.Equals("Any_Revenant_TagDef"));
+
+                    if (deathReport.Actor.HasGameTag(revenantTag))
+                        {
+                        revenantSpawned = true;
+
+                        }
+                    
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
         }
 
         /*

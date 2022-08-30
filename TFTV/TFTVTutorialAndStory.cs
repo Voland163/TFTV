@@ -2,6 +2,7 @@
 using Base.UI;
 using HarmonyLib;
 using PhoenixPoint.Common.ContextHelp;
+using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.View.ViewModules;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Tactical.ContextHelp.HintConditions;
@@ -43,12 +44,19 @@ namespace TFTV
         [HarmonyPatch(typeof(UIModuleContextHelp), "Show")]
         public static class UIModuleContextHelp_Show_Hints_Patch
         {
-
+            
             public static void Postfix(LocalizedTextBind title, ref Sprite image)
             {
                 try
                 {
+                    TFTVLogger.Always("Show hint method invoked");
+
                     if (title.LocalizationKey == "UMBRA_SIGHTED_TITLE")
+                    {
+                        image = Helper.CreateSpriteFromImageFile("Umbra_hint.jpg");
+                    }
+
+                    if (title.LocalizationKey == "REVENANT_SIGHTED_TITLE")
                     {
                         image = Helper.CreateSpriteFromImageFile("Umbra_hint.jpg");
                     }
@@ -65,7 +73,8 @@ namespace TFTV
         {
             try
             {
-                CreateNewTacticalHint("UmbraSighted", HintTrigger.ActorSeen, "Oilcrab_TacCharacterDef", "UMBRA_SIGHTED_TITLE", "UMBRA_SIGHTED_TEXT");
+                CreateNewTacticalHint("UmbraSighted", HintTrigger.ActorSeen, "Oilcrab_TacCharacterDef", "UMBRA_SIGHTED_TITLE", "UMBRA_SIGHTED_TEXT",0);
+                CreateNewTacticalHint("RevenantSighted", HintTrigger.ActorSeen, "RevenantTier_1_GameTagDef", "REVENANT_SIGHTED_TITLE", "REVENANT_SIGHTED_TEXT", 1);
             }
             catch (Exception e)
             {
@@ -93,7 +102,33 @@ namespace TFTV
             }
         }
 
-        public static void CreateNewTacticalHint(string name, HintTrigger trigger, string conditionName, string title, string text)
+        public static ActorHasTagHintConditionDef ActorHasTagCreateNewConditionForTacticalHint(string name)
+        {
+            try
+
+            {
+                string gUID = Guid.NewGuid().ToString();
+
+                
+                ActorHasTagHintConditionDef sourceActorHasTemplateHintConditionDef = Repo.GetAllDefs<ActorHasTagHintConditionDef>().FirstOrDefault(ged => ged.name.Equals("ActorHasTag_Takeshi_Tutorial3_GameTagDef_HintConditionDef"));
+                ActorHasTagHintConditionDef newActorHasTemplateHintConditionDef = Helper.CreateDefFromClone(sourceActorHasTemplateHintConditionDef, gUID, "ActorHasTag_" + name + "_HintConditionDef");
+                GameTagDef gameTagDef = Repo.GetAllDefs<GameTagDef>().FirstOrDefault(ged => ged.name.Equals(name));
+                newActorHasTemplateHintConditionDef.GameTagDef = gameTagDef;
+
+                return newActorHasTemplateHintConditionDef;
+            }
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw new InvalidOperationException();
+            }
+        }
+
+
+
+
+        public static void CreateNewTacticalHint(string name, HintTrigger trigger, string conditionName, string title, string text, int typeHint)
         {
             try
 
@@ -102,7 +137,14 @@ namespace TFTV
                 ContextHelpHintDef sourceContextHelpHintDef = Repo.GetAllDefs<ContextHelpHintDef>().FirstOrDefault(ged => ged.name.Equals("TUT_DLC3_MissionStartStory_HintDef"));
                 ContextHelpHintDef newContextHelpHintDef = Helper.CreateDefFromClone(sourceContextHelpHintDef, gUID, name);
                 newContextHelpHintDef.Trigger = trigger;
-                newContextHelpHintDef.Conditions[0] = ActorHasTemplateCreateNewConditionForTacticalHint(conditionName);
+                if (typeHint == 0)
+                {
+                    newContextHelpHintDef.Conditions[0] = ActorHasTemplateCreateNewConditionForTacticalHint(conditionName);
+                }
+                else 
+                {
+                    newContextHelpHintDef.Conditions[0] = ActorHasTagCreateNewConditionForTacticalHint(conditionName);
+                }
                 newContextHelpHintDef.Title.LocalizationKey = title;
                 newContextHelpHintDef.Text.LocalizationKey = text;
 

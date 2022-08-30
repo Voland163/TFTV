@@ -22,6 +22,22 @@ namespace TFTV
 
         private static readonly DefRepository Repo = TFTVMain.Repo;
 
+        public static void CreateNewDefsForTFTVStart()
+        {
+            try
+            {
+                CreateNewSophiaAndJacob();
+                CreateInitialInfiltrator();
+                CreateInitialPriest();
+                CreateInitialTechnician();
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+        }
+
         public static void ModifyIntroForSpecialStart(GeoFaction geoFaction, GeoSite site)
         {
             try
@@ -69,32 +85,16 @@ namespace TFTV
             throw new InvalidOperationException();
         }
 
-        //Adapted from MadSkunky's TutorialTweaks: https://github.com/MadSkunky/PP-Mods-TutorialTweaks
-        public static List<TacCharacterDef> SetInitialSquadUnbuffed(GeoLevelController level)
+        public static void CreateNewSophiaAndJacob()
         {
             try
             {
-                TFTVConfig config = TFTVMain.Main.Config;
-              
-                List<TacCharacterDef> startingTemplates = new List<TacCharacterDef>();
-
-                GameDifficultyLevelDef hardDifficultyLevel = Repo.GetAllDefs<GameDifficultyLevelDef>().FirstOrDefault(a => a.name.Equals("Hard_GameDifficultyLevelDef"));
-                GameDifficultyLevelDef standardDifficultyLevel = Repo.GetAllDefs<GameDifficultyLevelDef>().FirstOrDefault(a => a.name.Equals("Standard_GameDifficultyLevelDef"));
-
                 TacCharacterDef Jacob2 = Repo.GetAllDefs<TacCharacterDef>().First(tcd => tcd.name.Contains("PX_Jacob_Tutorial2_TacCharacterDef"));
                 TacCharacterDef Sophia2 = Repo.GetAllDefs<TacCharacterDef>().First(tcd => tcd.name.Contains("PX_Sophia_Tutorial2_TacCharacterDef"));
 
-                TacCharacterDef assault = Repo.GetAllDefs<TacCharacterDef>().FirstOrDefault(a => a.name.Equals("PX_AssaultStarting_TacCharacterDef"));
-                TacCharacterDef heavy = Repo.GetAllDefs<TacCharacterDef>().FirstOrDefault(a => a.name.Equals("PX_HeavyStarting_TacCharacterDef"));
-                TacCharacterDef sniper = Repo.GetAllDefs<TacCharacterDef>().FirstOrDefault(a => a.name.Equals("PX_SniperStarting_TacCharacterDef"));
-
-                TacCharacterDef priest = Repo.GetAllDefs<TacCharacterDef>().FirstOrDefault(a => a.name.Equals("PX_Starting_Priest_TacCharacterDef"));
-                TacCharacterDef technician = Repo.GetAllDefs<TacCharacterDef>().FirstOrDefault(a => a.name.Equals("PX_Starting_Technician_TacCharacterDef"));
-                TacCharacterDef infiltrator = Repo.GetAllDefs<TacCharacterDef>().FirstOrDefault(a => a.name.Equals("PX_Starting_Infiltrator_TacCharacterDef"));
-
                 TacCharacterDef newJacob = Helper.CreateDefFromClone(Jacob2, "DDA13436-40BE-4096-9C69-19A3BF6658E6", "PX_Jacob_TFTV_TacCharacterDef");
                 TacCharacterDef newSophia = Helper.CreateDefFromClone(Sophia2, "D9EC7144-6EB5-451C-9015-3E67F194AB1B", "PX_Sophia_TFTV_TacCharacterDef");
-                
+
                 newJacob.Data.ViewElementDef = Repo.GetAllDefs<ViewElementDef>().First(ved => ved.name.Equals("E_View [PX_Sniper_ActorViewDef]"));
                 GameTagDef Sniper_CTD = Repo.GetAllDefs<GameTagDef>().First(gtd => gtd.name.Equals("Sniper_ClassTagDef"));
                 for (int i = 0; i < newJacob.Data.GameTags.Length; i++)
@@ -105,8 +105,6 @@ namespace TFTV
                     }
                 }
 
-                // Creating new arrays for Abilities, BodypartItems (armor), EquipmentItems (ready slots) and InventoryItems (backpack)
-                // -> Overwrite old sets completely
                 newJacob.Data.Abilites = new TacticalAbilityDef[] // abilities -> Class proficiency
                 {
                 Repo.GetAllDefs<ClassProficiencyAbilityDef>().First(cpad => cpad.name.Equals("Sniper_ClassProficiency_AbilityDef"))
@@ -119,18 +117,17 @@ namespace TFTV
                 Repo.GetAllDefs<TacticalItemDef>().First(tad => tad.name.Equals("PX_Sniper_Legs_ItemDef"))
                 };
 
-
                 newJacob.Data.EquipmentItems = new ItemDef[] // Ready slots
-                { Repo.GetAllDefs<WeaponDef>().First(wd => wd.name.Equals("PX_SniperRifle_WeaponDef")),
+               { Repo.GetAllDefs<WeaponDef>().First(wd => wd.name.Equals("PX_SniperRifle_WeaponDef")),
                     Repo.GetAllDefs<WeaponDef>().First(wd => wd.name.Equals("PX_Pistol_WeaponDef")),
                 Repo.GetAllDefs<TacticalItemDef>().First(tad => tad.name.Equals("Medkit_EquipmentDef"))
-                };
+               };
                 newJacob.Data.InventoryItems = new ItemDef[] // Backpack
                 {
                 newJacob.Data.EquipmentItems[0].CompatibleAmmunition[0],
                 newJacob.Data.EquipmentItems[1].CompatibleAmmunition[0]
                 };
-               
+
                 newJacob.Data.Strength = 0;
                 newJacob.Data.Will = 0;
                 newJacob.Data.Speed = 0;
@@ -139,7 +136,78 @@ namespace TFTV
                 newSophia.Data.Strength = 0;
                 newSophia.Data.Will = 0;
                 newSophia.Data.Speed = 0;
-                newSophia.Data.CurrentHealth = -1;
+                newSophia.Data.CurrentHealth = -1;            
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+        public static void ModifySophiaAndJacobStats(GeoLevelController level)
+        {
+            try
+            {
+                TacCharacterDef newJacob = Repo.GetAllDefs<TacCharacterDef>().First(tcd => tcd.name.Contains("PX_Jacob_TFTV_TacCharacterDef"));
+                TacCharacterDef newSophia = Repo.GetAllDefs<TacCharacterDef>().First(tcd => tcd.name.Contains("PX_Sophia_TFTV_TacCharacterDef"));
+
+
+                int strengthBonus = 0;
+                int willBonus = 0;
+
+                if (level.CurrentDifficultyLevel.Order == 3)
+                {
+                    strengthBonus = 4;
+                    willBonus = 1;
+                }
+                else if (level.CurrentDifficultyLevel.Order == 2)
+                {
+                    strengthBonus = 6;
+                    willBonus = 2;
+                }
+                else if (level.CurrentDifficultyLevel.Order == 1)
+                {
+                    strengthBonus = 8;
+                    willBonus = 3;
+                }
+
+                newJacob.Data.Strength += strengthBonus;
+                newJacob.Data.Will += willBonus;
+
+                newSophia.Data.Strength += strengthBonus;
+                newSophia.Data.Will += willBonus;
+            }
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+        }
+
+
+        //Adapted from MadSkunky's TutorialTweaks: https://github.com/MadSkunky/PP-Mods-TutorialTweaks
+        public static List<TacCharacterDef> SetInitialSquadUnbuffed(GeoLevelController level)
+        {
+            try
+            {
+                TFTVConfig config = TFTVMain.Main.Config;
+
+                List<TacCharacterDef> startingTemplates = new List<TacCharacterDef>();
+
+                GameDifficultyLevelDef hardDifficultyLevel = Repo.GetAllDefs<GameDifficultyLevelDef>().FirstOrDefault(a => a.name.Equals("Hard_GameDifficultyLevelDef"));
+                GameDifficultyLevelDef standardDifficultyLevel = Repo.GetAllDefs<GameDifficultyLevelDef>().FirstOrDefault(a => a.name.Equals("Standard_GameDifficultyLevelDef"));
+
+                TacCharacterDef newJacob = Repo.GetAllDefs<TacCharacterDef>().First(tcd => tcd.name.Contains("PX_Jacob_TFTV_TacCharacterDef"));
+                TacCharacterDef newSophia = Repo.GetAllDefs<TacCharacterDef>().First(tcd => tcd.name.Contains("PX_Sophia_TFTV_TacCharacterDef"));
+
+                TacCharacterDef assault = Repo.GetAllDefs<TacCharacterDef>().FirstOrDefault(a => a.name.Equals("PX_AssaultStarting_TacCharacterDef"));
+                TacCharacterDef heavy = Repo.GetAllDefs<TacCharacterDef>().FirstOrDefault(a => a.name.Equals("PX_HeavyStarting_TacCharacterDef"));
+                TacCharacterDef sniper = Repo.GetAllDefs<TacCharacterDef>().FirstOrDefault(a => a.name.Equals("PX_SniperStarting_TacCharacterDef"));
+
+                TacCharacterDef priest = Repo.GetAllDefs<TacCharacterDef>().FirstOrDefault(a => a.name.Equals("PX_Starting_Priest_TacCharacterDef"));
+                TacCharacterDef technician = Repo.GetAllDefs<TacCharacterDef>().FirstOrDefault(a => a.name.Equals("PX_Starting_Technician_TacCharacterDef"));
+                TacCharacterDef infiltrator = Repo.GetAllDefs<TacCharacterDef>().FirstOrDefault(a => a.name.Equals("PX_Starting_Infiltrator_TacCharacterDef"));
 
                 startingTemplates.Add(newSophia);
                 startingTemplates.Add(newJacob);
@@ -165,35 +233,20 @@ namespace TFTV
                     level.EventSystem.SetVariable("BG_Start_Faction", 3);
                 }
 
-                int strengthBonus = 0;
-                int willBonus = 0;
 
-                if (level.CurrentDifficultyLevel.Order == 3)
-                {
-                    strengthBonus = 4;
-                    willBonus = 1;
-                }
-                else if (level.CurrentDifficultyLevel.Order == 2)
+                if (level.CurrentDifficultyLevel.Order == 2)
                 {
                     startingTemplates.Add(assault);
-                    strengthBonus = 6;
-                    willBonus = 2;
+
                 }
                 else if (level.CurrentDifficultyLevel.Order == 1)
                 {
                     startingTemplates.Add(assault);
                     startingTemplates.Add(sniper);
-                    strengthBonus = 8;
-                    willBonus = 3;
+
                 }
 
-                newJacob.Data.Strength = strengthBonus;
-                newJacob.Data.Will = willBonus;
 
-                newSophia.Data.Strength = strengthBonus;
-                newSophia.Data.Will = willBonus;
-
-   
                 return startingTemplates;
 
 
@@ -336,81 +389,81 @@ namespace TFTV
 
 
 
-      
-/*
-        public static void MakeJacobSniper()
-        {
-            try
-            {
-                TacCharacterDef Jacob2 = Repo.GetAllDefs<TacCharacterDef>().First(tcd => tcd.name.Equals("PX_Jacob_Tutorial2_TacCharacterDef"));
-                
 
-                // Get Jacobs definition for the 1st part of the tutorial
-                TacCharacterDef Jacob1 = Repo.GetAllDefs<TacCharacterDef>().First(tcd => tcd.name.Equals("PX_Jacob_Tutorial_TacCharacterDef"));
-                // Set class related definition for actor view
-                
-                // Switch the given Assault ClassTagDef in Jacobs GameTags to Sniper (keep both ClassTagDefs would make him dual classed rigth from scratch)
-                
-                
-                
-                
-                GameTagDef Sniper_CTD = Repo.GetAllDefs<GameTagDef>().First(gtd => gtd.name.Equals("Sniper_ClassTagDef"));
-                for (int i = 0; i < Jacob1.Data.GameTags.Length; i++)
+        /*
+                public static void MakeJacobSniper()
                 {
-                    if (Jacob1.Data.GameTags[i].GetType() == Sniper_CTD.GetType())
+                    try
                     {
-                        Jacob1.Data.GameTags[i] = Sniper_CTD;
+                        TacCharacterDef Jacob2 = Repo.GetAllDefs<TacCharacterDef>().First(tcd => tcd.name.Equals("PX_Jacob_Tutorial2_TacCharacterDef"));
+
+
+                        // Get Jacobs definition for the 1st part of the tutorial
+                        TacCharacterDef Jacob1 = Repo.GetAllDefs<TacCharacterDef>().First(tcd => tcd.name.Equals("PX_Jacob_Tutorial_TacCharacterDef"));
+                        // Set class related definition for actor view
+
+                        // Switch the given Assault ClassTagDef in Jacobs GameTags to Sniper (keep both ClassTagDefs would make him dual classed rigth from scratch)
+
+
+
+
+                        GameTagDef Sniper_CTD = Repo.GetAllDefs<GameTagDef>().First(gtd => gtd.name.Equals("Sniper_ClassTagDef"));
+                        for (int i = 0; i < Jacob1.Data.GameTags.Length; i++)
+                        {
+                            if (Jacob1.Data.GameTags[i].GetType() == Sniper_CTD.GetType())
+                            {
+                                Jacob1.Data.GameTags[i] = Sniper_CTD;
+                            }
+                        }
+
+                        // Creating new arrays for Abilities, BodypartItems (armor), EquipmentItems (ready slots) and InventoryItems (backpack)
+                        // -> Overwrite old sets completely
+                        Jacob1.Data.Abilites = new TacticalAbilityDef[] // abilities -> Class proficiency
+                        {
+                        Repo.GetAllDefs<ClassProficiencyAbilityDef>().First(cpad => cpad.name.Equals("Sniper_ClassProficiency_AbilityDef"))
+
+                        };
+                        Jacob1.Data.BodypartItems = new ItemDef[] // Armour
+                        {
+                        Repo.GetAllDefs<TacticalItemDef>().First(tad => tad.name.Equals("PX_Sniper_Helmet_BodyPartDef")),
+                        Repo.GetAllDefs<TacticalItemDef>().First(tad => tad.name.Equals("PX_Sniper_Torso_BodyPartDef")),
+                        Repo.GetAllDefs<TacticalItemDef>().First(tad => tad.name.Equals("PX_Sniper_Legs_ItemDef"))
+                        };
+
+
+                        Jacob1.Data.EquipmentItems = new ItemDef[] // Ready slots
+                        { Repo.GetAllDefs<WeaponDef>().First(wd => wd.name.Equals("PX_SniperRifle_WeaponDef")),
+                            Repo.GetAllDefs<WeaponDef>().First(wd => wd.name.Equals("PX_Pistol_WeaponDef")),
+                        Repo.GetAllDefs<TacticalItemDef>().First(tad => tad.name.Equals("Medkit_EquipmentDef"))
+                        };
+                        Jacob1.Data.InventoryItems = new ItemDef[] // Backpack
+                        {
+                        Jacob1.Data.EquipmentItems[0].CompatibleAmmunition[0],
+                        Jacob1.Data.EquipmentItems[1].CompatibleAmmunition[0]
+                        };
+                        // Get Jacobs definition for the 2nd and following parts of the tutorial
+                        TacCharacterDef Jacob2 = Repo.GetAllDefs<TacCharacterDef>().First(tcd => tcd.name.Equals("PX_Jacob_Tutorial2_TacCharacterDef"));
+                        // Copy changes from Jabobs 1st to his 2nd definition
+                        Jacob2.Data.ViewElementDef = Jacob1.Data.ViewElementDef;
+                        Jacob2.Data.GameTags = Jacob1.Data.GameTags;
+                        Jacob2.Data.Abilites = Jacob1.Data.Abilites;
+                        Jacob2.Data.BodypartItems = Jacob1.Data.BodypartItems;
+                        Jacob2.Data.EquipmentItems = Jacob1.Data.EquipmentItems;
+                        Jacob2.Data.InventoryItems = Jacob1.Data.InventoryItems;
                     }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                    }
+
                 }
-
-                // Creating new arrays for Abilities, BodypartItems (armor), EquipmentItems (ready slots) and InventoryItems (backpack)
-                // -> Overwrite old sets completely
-                Jacob1.Data.Abilites = new TacticalAbilityDef[] // abilities -> Class proficiency
-                {
-                Repo.GetAllDefs<ClassProficiencyAbilityDef>().First(cpad => cpad.name.Equals("Sniper_ClassProficiency_AbilityDef"))
-
-                };
-                Jacob1.Data.BodypartItems = new ItemDef[] // Armour
-                {
-                Repo.GetAllDefs<TacticalItemDef>().First(tad => tad.name.Equals("PX_Sniper_Helmet_BodyPartDef")),
-                Repo.GetAllDefs<TacticalItemDef>().First(tad => tad.name.Equals("PX_Sniper_Torso_BodyPartDef")),
-                Repo.GetAllDefs<TacticalItemDef>().First(tad => tad.name.Equals("PX_Sniper_Legs_ItemDef"))
-                };
-
-
-                Jacob1.Data.EquipmentItems = new ItemDef[] // Ready slots
-                { Repo.GetAllDefs<WeaponDef>().First(wd => wd.name.Equals("PX_SniperRifle_WeaponDef")),
-                    Repo.GetAllDefs<WeaponDef>().First(wd => wd.name.Equals("PX_Pistol_WeaponDef")),
-                Repo.GetAllDefs<TacticalItemDef>().First(tad => tad.name.Equals("Medkit_EquipmentDef"))
-                };
-                Jacob1.Data.InventoryItems = new ItemDef[] // Backpack
-                {
-                Jacob1.Data.EquipmentItems[0].CompatibleAmmunition[0],
-                Jacob1.Data.EquipmentItems[1].CompatibleAmmunition[0]
-                };
-                // Get Jacobs definition for the 2nd and following parts of the tutorial
-                TacCharacterDef Jacob2 = Repo.GetAllDefs<TacCharacterDef>().First(tcd => tcd.name.Equals("PX_Jacob_Tutorial2_TacCharacterDef"));
-                // Copy changes from Jabobs 1st to his 2nd definition
-                Jacob2.Data.ViewElementDef = Jacob1.Data.ViewElementDef;
-                Jacob2.Data.GameTags = Jacob1.Data.GameTags;
-                Jacob2.Data.Abilites = Jacob1.Data.Abilites;
-                Jacob2.Data.BodypartItems = Jacob1.Data.BodypartItems;
-                Jacob2.Data.EquipmentItems = Jacob1.Data.EquipmentItems;
-                Jacob2.Data.InventoryItems = Jacob1.Data.InventoryItems;
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-
-        }
-*/
+        */
 
         public static void AdjustStatsDifficulty(GameDifficultyLevelDef gameDifficultyLevel)
         {
             try
             {
-               
+
             }
             catch (Exception e)
             {
@@ -419,7 +472,7 @@ namespace TFTV
         }
 
 
-       
+
 
         public static void CreateInitialInfiltrator()
         {

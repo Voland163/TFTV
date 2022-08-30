@@ -2,6 +2,7 @@ using Base.Core;
 using Base.Serialization.General;
 using PhoenixPoint.Modding;
 using PhoenixPoint.Tactical.Levels;
+using System;
 using System.Collections.Generic;
 
 
@@ -31,9 +32,11 @@ namespace TFTV
         //Check if Umbra can be spawned in tactical
         public bool UmbraResearched = TFTVUmbra.UmbraResearched;
         public Dictionary<string, int> DeadSoldiersDelirium = TFTVRevenant.DeadSoldiersDelirium;
-        public TimeUnit timeOfMissionStart = TFTVRevenant.timeOfMissionStart;
+    //    public TimeUnit timeRevenantLastSeenSaveData = TFTVRevenant.timeRevenantLastSeen;
+    //    public TimeSpan timeLastRevenantSpawned = TFTVRevenant.timeLastRevenantSpawned;
         public List<string> revenantSpecialResistance = TFTVRevenant.revenantSpecialResistance;
         public bool revenantSpawned = TFTVRevenant.revenantSpawned;
+        public bool revenantCanSpawnSaveDate = TFTVRevenant.revenantCanSpawn;
     }
 
     /// <summary>
@@ -56,6 +59,7 @@ namespace TFTV
             TFTVRevenant.CreateRevenantDefs();
             TFTVRevenant.ModifyRevenantResistanceAbility(Controller);
             TFTVRevenant.RevenantCheckAndSpawn(Controller);
+           
         }
 
         /// <summary>
@@ -63,12 +67,20 @@ namespace TFTV
         /// </summary>
         public override void OnTacticalEnd()
         {
+            base.OnTacticalEnd();
+
+          /*  if (TFTVRevenant.revenantSpawned)
+            {
+                TFTVLogger.Always("revenant Spawned is true and " + TFTVRevenant.timeLastRevenantSpawned.DateTime);
+                TFTVRevenant.timeLastRevenantSpawned = TFTVRevenant.timeOfMissionStart;
+                TFTVLogger.Always("revenant Spawned is true and " + TFTVRevenant.timeLastRevenantSpawned.DateTime);
+            }*/
             /*  if (TFTVRevenant.DeadSoldiersDelirium.Count != 0 && TFTVRevenant.DeadSoldiersDelirium.Count > TFTVRevenant.GeoDeadSoldiersDelirium.Count)
               {
                   TFTVRevenant.DeadSoldiersDelirium = TFTVRevenant.DeadSoldiersDelirium;
               }*/
 
-            base.OnTacticalEnd();
+            
         }
         /// <summary>
         /// Called when Tactical save is being process. At this point level is already created, but TacticalStart is not called.
@@ -86,9 +98,11 @@ namespace TFTV
             TFTVVoidOmens.VoidOmen16Active = data.VoidOmen16Active;
             TFTVUmbra.UmbraResearched = data.UmbraResearched;
             TFTVRevenant.DeadSoldiersDelirium = data.DeadSoldiersDelirium;
-            TFTVRevenant.timeOfMissionStart = data.timeOfMissionStart;
+          //  TFTVRevenant.timeRevenantLastSeen = data.timeRevenantLastSeenSaveData;
+           // TFTVRevenant.timeLastRevenantSpawned = data.timeLastRevenantSpawned;
             TFTVRevenant.revenantSpawned = data.revenantSpawned;
             TFTVRevenant.revenantSpecialResistance = data.revenantSpecialResistance;
+            TFTVRevenant.revenantCanSpawn = data.revenantCanSpawnSaveDate;
         }
         /// <summary>
         /// Called when Tactical save is going to be generated, giving mod option for custom save data.
@@ -107,10 +121,11 @@ namespace TFTV
                 VoidOmen16Active = TFTVVoidOmens.VoidOmen16Active,
                 UmbraResearched = TFTVUmbra.UmbraResearched,
                 DeadSoldiersDelirium = TFTVRevenant.DeadSoldiersDelirium,
-                timeOfMissionStart = TFTVRevenant.timeOfMissionStart,
+             //   timeRevenantLastSeenSaveData = TFTVRevenant.timeRevenantLastSeen,
                 revenantSpawned = TFTVRevenant.revenantSpawned,
                 revenantSpecialResistance = TFTVRevenant.revenantSpecialResistance,
-
+                revenantCanSpawnSaveDate = TFTVRevenant.revenantCanSpawn,
+              //  timeLastRevenantSpawned = TFTVRevenant.timeLastRevenantSpawned,
             };
         }
         /// <summary>

@@ -19,8 +19,7 @@ namespace TFTV
     internal class TFTVRevenantDefs
     {
         private static readonly DefRepository Repo = TFTVMain.Repo;
-        public static Dictionary<string, int> DeadSoldiersDelirium = new Dictionary<string, int>();
-        private static readonly SharedData sharedData = GameUtl.GameComponent<SharedData>();
+       
 
         public static void CreateRevenantStatusEffect()
         {
@@ -381,6 +380,10 @@ namespace TFTV
                 source,
                 "B4BD3091-8522-4F3C-8A0F-9EE522E0E6B4",
                 skillName + "_3_" + "GameTagDef");
+            GameTagDef anyRevenantGameTag = Helper.CreateDefFromClone(
+                source,
+                "D2904A22-FE23-45B3-8879-9236E389C9E4",
+                "Any_Revenant_TagDef");
         }
 
     }

@@ -70,7 +70,7 @@ namespace TFTV
                 voidChamberWDef.DamagePayloads[0] = new GeoWeaponDamagePayload { Damage = voidDamagePayload, Amount = 200 };
 
                 spikesWDef.Guidence = GeoVehicleWeaponGuidence.Psychic;
-                ramWDef.Guidence = GeoVehicleWeaponGuidence.Psychic;
+               // ramWDef.Guidence = GeoVehicleWeaponGuidence.Psychic;
                 ramWDef.HitPoints = 350;
                 thunderboltWDef.Accuracy = 85;
                 nomadWDef.Accuracy = 70;

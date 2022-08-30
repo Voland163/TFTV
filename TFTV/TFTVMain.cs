@@ -59,7 +59,7 @@ namespace TFTV
             /// PhoenixGame is accessible at any time.
             PhoenixGame game = GetGame();
 
-            Logger.LogInfo("TFTV August 30 midnight release #1");
+            Logger.LogInfo("TFTV August 31 morning release #1");
 
 
             //TFTV 
@@ -72,10 +72,10 @@ namespace TFTV
             // Initialize Logger
             LogPath = Path.Combine(ModDirectory, "TFTV.log");
             TFTVLogger.Initialize(LogPath, Config.Debug, ModDirectory, nameof(TFTV));
-            TFTVLogger.Always("TFTV August 30 midnight release #1");
+            TFTVLogger.Always("TFTV August 31 morning release #1");
             // Initialize Helper
             Helper.Initialize();
-            
+
 
 
             // if (!injectionComplete)
@@ -143,9 +143,9 @@ namespace TFTV
             TFTVNewPXCharacters.CreateIntro();
             //Run all harmony patches; some patches have config flags
 
-            TFTVStarts.CreateInitialInfiltrator();
-            TFTVStarts.CreateInitialPriest();
-            TFTVStarts.CreateInitialTechnician();
+            TFTVStarts.CreateNewDefsForTFTVStart();
+            TFTVTutorialAndStory.CreateHints();
+           // TFTVRevenantResearch.CreateDefs();
 
             harmony.PatchAll();
             //       injectionComplete = true;
@@ -216,7 +216,7 @@ namespace TFTV
                 Config.defaultSettings = false;
 
             }
-
+        
 
             Harmony harmony = (Harmony)HarmonyInstance;
             //  injectionComplete = false;
@@ -242,7 +242,7 @@ namespace TFTV
         /// <param name="state">New state of the level.</param>
         public override void OnLevelStateChanged(Level level, Level.State prevState, Level.State state)
         {
-
+           
 
             /// Alternative way to access current level at any time.
             Level l = GetLevel();
@@ -258,6 +258,7 @@ namespace TFTV
         {
             //Reinject Dtony's delirium perks, because assuming degradation will happen based on BetterClasses experience
             TFTVDeliriumPerks.Main();
+           
 
         }
 
