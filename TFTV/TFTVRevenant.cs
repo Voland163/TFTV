@@ -64,8 +64,8 @@ namespace TFTV
         {
             try
             {
-                TFTVLogger.Always("Last time a Revenant was seen was " + daysRevenantLastSeen + " days ago, and now it is " + controller.Timing.Now.DateTime);
-                if (DeadSoldiersDelirium.Count > 0 && (daysRevenantLastSeen == 0 || (controller.Timing.Now - daysRevenantLastSeen).TimeSpan.Days >= 3)) //+ UnityEngine.Random.Range(-1, 3))) 
+                TFTVLogger.Always("Last time a Revenant was seen was on day " + daysRevenantLastSeen + ", and now it is day " + controller.Timing.Now.TimeSpan.Days);
+                if (DeadSoldiersDelirium.Count > 0 && (daysRevenantLastSeen == 0 || controller.Timing.Now.TimeSpan.Days - daysRevenantLastSeen >= 3)) //+ UnityEngine.Random.Range(-1, 3))) 
                 { 
                    revenantCanSpawn = true;
                    TFTVLogger.Always("Therefore, a Revenant can spawn is " + revenantCanSpawn);
@@ -88,7 +88,7 @@ namespace TFTV
                 daysRevenantLastSeen = controller.Timing.Now.TimeSpan.Days;
                 controller.EventSystem.SetVariable("Revenant_Spotted", controller.EventSystem.GetVariable("Revenant_Spotted")+1);
                 revenantSpawned = false;
-                TFTVLogger.Always("Last time a Revenant was seen was " + daysRevenantLastSeen + " days ago, and now it is " + controller.Timing.Now.DateTime);
+                TFTVLogger.Always("Last time a Revenant was seen was on day " + daysRevenantLastSeen + ", and now it is day " + controller.Timing.Now.TimeSpan.Days);
                 TFTVLogger.Always("# Revenants spotted " + controller.EventSystem.GetVariable("Revenant_Spotted"));
                 }        
             }
@@ -273,7 +273,7 @@ namespace TFTV
                 AddRevenantResistanceAbility(actor);
                 //  SpreadResistance(__instance);
                 actor.UpdateStats();
-                revenantSpawned = true;
+                revenantCanSpawn = false;
 
                 foreach (TacticalActorBase pandoran in pandorans.Actors)
                 {
