@@ -105,10 +105,16 @@ namespace TFTV
                             {
                                 for (int t = 0; t < choice.Outcome.Diplomacy.Count; t++)
                                 {
-                                    if (choice.Outcome.Diplomacy[t].Value != 0)
+                                    if (choice.Outcome.Diplomacy[t].Value > 0)
                                     {
                                         OutcomeDiplomacyChange diplomacyChange = choice.Outcome.Diplomacy[t];
-                                        diplomacyChange.Value = Mathf.RoundToInt(diplomacyChange.Value * 0.5f);
+                                        diplomacyChange.Value -= Mathf.RoundToInt(diplomacyChange.Value * 0.5f);
+                                        choice.Outcome.Diplomacy[t] = diplomacyChange;
+                                    }
+                                    else if (choice.Outcome.Diplomacy[t].Value < 0)
+                                    {
+                                        OutcomeDiplomacyChange diplomacyChange = choice.Outcome.Diplomacy[t];
+                                        diplomacyChange.Value += Mathf.RoundToInt(diplomacyChange.Value * 0.5f);
                                         choice.Outcome.Diplomacy[t] = diplomacyChange;
                                     }
                                 }

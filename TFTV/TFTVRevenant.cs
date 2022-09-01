@@ -240,58 +240,59 @@ namespace TFTV
         {
             try
             {
-                TacticalFaction pandorans = controller.GetFactionByCommandName("aln");
-                GeoTacUnitId theChosen = RevenantRoll(controller);
-                ClassTagDef classTagDef = GetRevenantClassTag(controller, theChosen);
-                List<TacticalActorBase> candidates = new List<TacticalActorBase>();
-                TacticalActorBase actor = new TacticalActorBase();
-
-                foreach (TacticalActorBase tacticalActorBase in pandorans.Actors.Where(tab => tab.GameTags.Contains(classTagDef)))
+                if (controller.GetFactionByCommandName("aln") != null)
                 {
-                    candidates.Add(tacticalActorBase);
+                    TacticalFaction pandorans = controller.GetFactionByCommandName("aln");
+                    GeoTacUnitId theChosen = RevenantRoll(controller);
+                    ClassTagDef classTagDef = GetRevenantClassTag(controller, theChosen);
+                    List<TacticalActorBase> candidates = new List<TacticalActorBase>();
+                    TacticalActorBase actor = new TacticalActorBase();
+
+                    foreach (TacticalActorBase tacticalActorBase in pandorans.Actors.Where(tab => tab.GameTags.Contains(classTagDef)))
+                    {
+                        candidates.Add(tacticalActorBase);
+                    }
+
+                    if (candidates.Count > 0)
+                    {
+                        actor = candidates.First();
+                    }
+                    else
+                    {
+                        return;
+                    }
+
+                    TFTVLogger.Always("Here is an eligible Pandoran to be a Revenant: " + actor.GetDisplayName());
+                    TacticalActor tacticalActor = actor as TacticalActor;
+                    AddRevenantStatusEffect(actor);
+                    SetRevenantTierTag(theChosen, actor, controller);
+                    actor.name = GetDeadSoldiersNameFromID(theChosen, controller);
+                    //  TFTVLogger.Always("Crab's name has been changed to " + actor.GetDisplayName());
+                    // SetDeathTime(theChosen, __instance, timeOfMissionStart);
+                    DeadSoldiersDelirium[actor.name] += 1;
+                    //  TFTVLogger.Always("The time of death has been reset to " + CheckTimerFromDeath(theChosen, __instance).DateTime.ToString());
+                    SetRevenantClassAbility(theChosen, controller, tacticalActor);
+                    AddRevenantResistanceAbility(actor);
+                    //  SpreadResistance(__instance);
+                    actor.UpdateStats();
+                    revenantCanSpawn = false;
+
+                    foreach (TacticalActorBase pandoran in pandorans.Actors)
+                    {
+                        if (!controller.TacticalGameParams.Statistics.LivingSoldiers.ContainsKey(pandoran.GeoUnitId)
+                             && !pandoran.GameTags.Contains(TFTVMain.Repo.GetAllDefs<GameTagDef>().FirstOrDefault(p => p.name.Contains("Revenant")))
+                             && pandoran.GetAbilityWithDef<DamageMultiplierAbility>(TFTVMain.Repo.GetAllDefs<DamageMultiplierAbilityDef>().FirstOrDefault(p => p.name.Equals("RevenantResistance_AbilityDef"))) == null)
+
+                            AddRevenantResistanceAbility(pandoran);
+                        TFTVLogger.Always(pandoran.name + " received the revenant resistance ability.");
+                    }
+                    //   GameTagDef anyRevenantGameTag = Repo.GetAllDefs<GameTagDef>().FirstOrDefault(p => p.name.Equals("Any_Revenant_TagDef"));
+                    //   GameTagDef revenantTier1GameTag = Repo.GetAllDefs<GameTagDef>().FirstOrDefault(p => p.name.Equals("RevenantTier_1_GameTagDef"));
+
+                    // TFTVLogger.Always("Actor has tag any revenant? " + actor.HasGameTag(anyRevenantGameTag));
+                    // TFTVLogger.Always("Actor has tag tier 1 revenant? " + actor.HasGameTag(revenantTier1GameTag));
                 }
-
-                if (candidates.Count > 0)
-                {
-                    actor = candidates.First();
-                }
-                else
-                {
-                    return;
-                }
-
-                TFTVLogger.Always("Here is an eligible Pandoran to be a Revenant: " + actor.GetDisplayName());
-                TacticalActor tacticalActor = actor as TacticalActor;
-                AddRevenantStatusEffect(actor);
-                SetRevenantTierTag(theChosen, actor, controller);
-                actor.name = GetDeadSoldiersNameFromID(theChosen, controller);
-                //  TFTVLogger.Always("Crab's name has been changed to " + actor.GetDisplayName());
-                // SetDeathTime(theChosen, __instance, timeOfMissionStart);
-                DeadSoldiersDelirium[actor.name] += 1;
-                //  TFTVLogger.Always("The time of death has been reset to " + CheckTimerFromDeath(theChosen, __instance).DateTime.ToString());
-                SetRevenantClassAbility(theChosen, controller, tacticalActor);
-                AddRevenantResistanceAbility(actor);
-                //  SpreadResistance(__instance);
-                actor.UpdateStats();
-                revenantCanSpawn = false;
-
-                foreach (TacticalActorBase pandoran in pandorans.Actors)
-                {
-                    if (!controller.TacticalGameParams.Statistics.LivingSoldiers.ContainsKey(pandoran.GeoUnitId)
-                         && !pandoran.GameTags.Contains(TFTVMain.Repo.GetAllDefs<GameTagDef>().FirstOrDefault(p => p.name.Contains("Revenant")))
-                         && pandoran.GetAbilityWithDef<DamageMultiplierAbility>(TFTVMain.Repo.GetAllDefs<DamageMultiplierAbilityDef>().FirstOrDefault(p => p.name.Equals("RevenantResistance_AbilityDef"))) == null)
-
-                        AddRevenantResistanceAbility(pandoran);
-                    TFTVLogger.Always(pandoran.name + " received the revenant resistance ability.");
-                }
-                //   GameTagDef anyRevenantGameTag = Repo.GetAllDefs<GameTagDef>().FirstOrDefault(p => p.name.Equals("Any_Revenant_TagDef"));
-                //   GameTagDef revenantTier1GameTag = Repo.GetAllDefs<GameTagDef>().FirstOrDefault(p => p.name.Equals("RevenantTier_1_GameTagDef"));
-
-                // TFTVLogger.Always("Actor has tag any revenant? " + actor.HasGameTag(anyRevenantGameTag));
-                // TFTVLogger.Always("Actor has tag tier 1 revenant? " + actor.HasGameTag(revenantTier1GameTag));
             }
-
-
 
             catch (Exception e)
             {
@@ -846,10 +847,10 @@ namespace TFTV
             revenantResistanceAbilityDef.ViewElementDef.DisplayName1 = new LocalizedTextBind("Revenant Resistance", true);
             revenantResistanceAbilityDef.ViewElementDef.Description = new LocalizedTextBind((1 - revenantResistanceAbilityDef.Multiplier) * 100 + "%" + " resistance gained to " + descriptionDamage + " from knowledge of Phoenix ways", true);
 
-            if (revenantResistanceAbilityDef.DamageTypeDef == projectileDamage)
+            if (revenantResistanceAbilityDef.DamageTypeDef == null)
             {
                 revenantResistanceAbilityDef.ViewElementDef.DisplayName1 = new LocalizedTextBind("Revenant Resistance", true);
-                revenantResistanceAbilityDef.ViewElementDef.Description = new LocalizedTextBind("This Pandoran has developed a unique active armor protection that reduces to 25% the first damage received during the turn " +
+                revenantResistanceAbilityDef.ViewElementDef.Description = new LocalizedTextBind("This Pandoran has developed a unique active armor protection: <b>damage from first hit in a turn is reduced by 75%</b> " +
                     "as a response to Phoenix Project overwhelming use of weapons with high damage per projectile/strike", true);
             }
         }

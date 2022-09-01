@@ -342,8 +342,14 @@ namespace TFTV
                 GeoCharacter character, bool showHelmet, bool resetAnimation, bool addWeapon)
             {
                 try
-                {
-                    if (character != null && !character.IsMutoid && character.TemplateDef.IsHuman && !character.TemplateDef.IsMutog && !character.TemplateDef.IsVehicle)
+                { 
+                    if (character.TemplateDef.IsMutog || character.TemplateDef.IsMutoid || character.TemplateDef.IsVehicle) 
+                    {
+                        return true;
+                    }
+
+
+                    if (character != null && character.TemplateDef.IsHuman) //!character.IsMutoid &&  && !character.TemplateDef.IsMutog && !character.TemplateDef.IsVehicle)
                     {
                         GameTagDef bionicalTag = GameUtl.GameComponent<SharedData>().SharedGameTags.BionicalTag;
                         GameTagDef mutationTag = GameUtl.GameComponent<SharedData>().SharedGameTags.AnuMutationTag;

@@ -2,6 +2,7 @@
 using Base.UI;
 using HarmonyLib;
 using PhoenixPoint.Common.ContextHelp;
+using PhoenixPoint.Common.ContextHelp.HintConditions;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.View.ViewModules;
 using PhoenixPoint.Geoscape.Levels;
@@ -73,8 +74,8 @@ namespace TFTV
         {
             try
             {
-                CreateNewTacticalHint("UmbraSighted", HintTrigger.ActorSeen, "Oilcrab_TacCharacterDef", "UMBRA_SIGHTED_TITLE", "UMBRA_SIGHTED_TEXT",0);
-                CreateNewTacticalHint("RevenantSighted", HintTrigger.ActorSeen, "RevenantTier_1_GameTagDef", "REVENANT_SIGHTED_TITLE", "REVENANT_SIGHTED_TEXT", 1);
+                CreateNewTacticalHint("UmbraSighted", HintTrigger.ActorSeen, "Oilcrab_TacCharacterDef", "UMBRA_SIGHTED_TITLE", "UMBRA_SIGHTED_TEXT",0, true);
+                CreateNewTacticalHint("RevenantSighted", HintTrigger.ActorSeen, "RevenantTier_1_GameTagDef", "REVENANT_SIGHTED_TITLE", "REVENANT_SIGHTED_TEXT", 1, true);
             }
             catch (Exception e)
             {
@@ -128,7 +129,7 @@ namespace TFTV
 
 
 
-        public static void CreateNewTacticalHint(string name, HintTrigger trigger, string conditionName, string title, string text, int typeHint)
+        public static void CreateNewTacticalHint(string name, HintTrigger trigger, string conditionName, string title, string text, int typeHint, bool oneTime)
         {
             try
 
@@ -148,9 +149,21 @@ namespace TFTV
                 newContextHelpHintDef.Title.LocalizationKey = title;
                 newContextHelpHintDef.Text.LocalizationKey = text;
 
+                if (oneTime) 
+                
+                {
+                    string gUID2 = Guid.NewGuid().ToString();
+                    HasSeenHintHintConditionDef sourceHasSeenHintConditionDef= Repo.GetAllDefs<HasSeenHintHintConditionDef>().FirstOrDefault(ged => ged.name.Equals("HasSeenHint_TUT2_Overwatch_HintDef-False_HintConditionDef"));
+                    HasSeenHintHintConditionDef newHasSeenHintConditionDef = Helper.CreateDefFromClone(sourceHasSeenHintConditionDef, gUID2, name + "HasSeenHintConditionDef");
+                    newHasSeenHintConditionDef.HintDef = newContextHelpHintDef;
+                    newContextHelpHintDef.Conditions.Add(newHasSeenHintConditionDef);
+                }
+
+
                 ContextHelpHintDbDef alwaysDisplayedTacticalHintsDbDef = Repo.GetAllDefs<ContextHelpHintDbDef>().FirstOrDefault(ged => ged.name.Equals("AlwaysDisplayedTacticalHintsDbDef"));
                 alwaysDisplayedTacticalHintsDbDef.Hints.Add(newContextHelpHintDef);
 
+                
 
                 //newContextHelpHintDef.NextHint = null;
 
