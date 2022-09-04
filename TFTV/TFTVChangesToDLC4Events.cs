@@ -117,7 +117,7 @@ namespace TFTV
                 GeoResearchEventFilterDef newResearchTrigger2CH2 = Helper.CreateDefFromClone(sourceResearchTriggerCH2, "2FE2EC90-CBA4-4473-84D7-B343277B2225", "E_PROG_CH2_ResearchCompleted [GeoResearchEventFilterDef]");
                 // Set new research triggers to complete virophage research and Scylla vivisection 
                 newResearchTrigger1CH2.ResearchID = "PX_VirophageWeapons_ResearchDef";
-                newResearchTrigger2CH2.ResearchID = "PX_Alien_LiveQueen_ResearchDef";
+                newResearchTrigger2CH2.ResearchID = "PX_Alien_Citadel_ResearchDef";
                 // Add new Research triggers to CH2 event trigger;
                 OrEventFilterDef triggerCH2 = Repo.GetAllDefs<OrEventFilterDef>().FirstOrDefault(ged => ged.name.Equals("E_PROG_CH2_MultipleTriggers [OrEventFilterDef]"));
                 triggerCH2.OR_Filters[0] = newResearchTrigger1CH2;
@@ -128,7 +128,7 @@ namespace TFTV
                 FactionConditionDef newCond2CH2E = Helper.CreateDefFromClone(sourceConditionCH2Research, "FDD644C8-A209-4B23-B3A6-C05545E6DAC7", "[PROG_CH2] Condition 5");
                 // Set new conditions to complete virophage research and Scylla vivisection               
                 newCond1CH2E.CompletedResearchID = "PX_VirophageWeapons_ResearchDef";
-                newCond2CH2E.CompletedResearchID = "PX_Alien_LiveQueen_ResearchDef";
+                newCond2CH2E.CompletedResearchID = "PX_Alien_Citadel_ResearchDef";
                 // Add the new conditions to CH2Event
                 GeoscapeEventDef CH2_Event = Repo.GetAllDefs<GeoscapeEventDef>().FirstOrDefault(ged => ged.name.Equals("PROG_CH2_GeoscapeEventDef"));
                 CH2_Event.GeoscapeEventData.Conditions.Add(newCond1CH2E);

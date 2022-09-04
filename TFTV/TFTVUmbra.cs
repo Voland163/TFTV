@@ -157,7 +157,7 @@ namespace TFTV
         {
             try
             {
-                if (controller.GetFactionByCommandName("aln") != null)
+                if (controller.Factions.Any(f => f.Faction.FactionDef.MatchesShortName("aln")))
                 {
                     if (UmbraResearched)
                     {
@@ -379,6 +379,12 @@ namespace TFTV
                     else if (research.ResearchID == "SYN_InfiltratorTech_ResearchDef" && research.Faction.GeoLevel.EventSystem.GetVariable("BG_Start_Faction") == 3)
                     {
                         research.Faction.GeoLevel.PhoenixFaction.Research.GiveResearch(research, true);
+                    }
+                    //To trigger change of rate in Pandoran Evolution
+                    else if (research.ResearchID == "ALN_Citadel_ResearchDef") 
+                    {
+                        research.Faction.GeoLevel.EventSystem.SetVariable("Pandorans_Researched_Citadel", 1);
+                        research.Faction.GeoLevel.AlienFaction.SpawnNewAlienBase();
                     }
 
                 }

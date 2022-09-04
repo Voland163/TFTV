@@ -59,7 +59,7 @@ namespace TFTV
             /// PhoenixGame is accessible at any time.
             PhoenixGame game = GetGame();
 
-            Logger.LogInfo("TFTV September 4 evening release #1");
+            Logger.LogInfo("TFTV September 5 midnight release #2");
 
 
             //TFTV 
@@ -72,7 +72,7 @@ namespace TFTV
             // Initialize Logger
             LogPath = Path.Combine(ModDirectory, "TFTV.log");
             TFTVLogger.Initialize(LogPath, Config.Debug, ModDirectory, nameof(TFTV));
-            TFTVLogger.Always("TFTV September 4 evening release #1");
+            TFTVLogger.Always("TFTV September 5 midnight release #2");
             // Initialize Helper
             Helper.Initialize();
 
@@ -145,7 +145,13 @@ namespace TFTV
 
             TFTVStarts.CreateNewDefsForTFTVStart();
             TFTVTutorialAndStory.CreateHints();
-           // TFTVRevenantResearch.CreateDefs();
+            TFTVSmallChanges.MistOnAllMissions();
+            TFTVHumanEnemiesDefs.CreateHumanEnemiesTags();
+            TFTVHumanEnemiesDefs.ModifyMissionDefsToReplaceNeutralWithBandit();
+            TFTVHumanEnemiesNames.CreateNamesDictionary();
+            
+             
+            // TFTVRevenantResearch.CreateDefs();
 
             harmony.PatchAll();
             //       injectionComplete = true;

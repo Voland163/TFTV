@@ -25,6 +25,23 @@ namespace TFTV
             }
         }
 
+        public static void MistOnAllMissions()
+        {
+            try
+            {
+                foreach (CustomMissionTypeDef missionTypeDef in Repo.GetAllDefs<CustomMissionTypeDef>())
+                {
+                    missionTypeDef.SpawnMistAtLevelStart = true;
+                }
+            }
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+        }
+
         public static void ChangesToHD()
         {
             try

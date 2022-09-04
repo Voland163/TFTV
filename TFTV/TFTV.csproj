@@ -79,6 +79,9 @@
     <Compile Include="TFTVGeoscape.cs" />
     <Compile Include="TFTVConfig.cs" />
     <Compile Include="TFTVHelper.cs" />
+    <Compile Include="TFTVHumanEnemies.cs" />
+    <Compile Include="TFTVHumanEnemiesDefs.cs" />
+    <Compile Include="TFTVHumanEnemiesNames.cs" />
     <Compile Include="TFTVInfestation.cs" />
     <Compile Include="TFTVLogger.cs" />
     <Compile Include="TFTVMain.cs" />

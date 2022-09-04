@@ -47,25 +47,25 @@ namespace TFTV
 
                 string skillName = "Revenant_AbilityDef";
                 PassiveModifierAbilityDef source = Repo.GetAllDefs<PassiveModifierAbilityDef>().FirstOrDefault(p => p.name.Equals("SelfDefenseSpecialist_AbilityDef"));
-                PassiveModifierAbilityDef hallucinating = Helper.CreateDefFromClone(
+                PassiveModifierAbilityDef revenantAbility = Helper.CreateDefFromClone(
                     source,
                     "8A62302E-9C2D-4AFA-AFF3-2F526BF82252",
                     skillName);
-                hallucinating.CharacterProgressionData = Helper.CreateDefFromClone(
+                revenantAbility.CharacterProgressionData = Helper.CreateDefFromClone(
                     source.CharacterProgressionData,
                     "FECD4DD8-5E1A-4A0F-BC3A-C2F0AA30E41F",
                     skillName);
-                hallucinating.ViewElementDef = Helper.CreateDefFromClone(
+                revenantAbility.ViewElementDef = Helper.CreateDefFromClone(
                     source.ViewElementDef,
                     "75B1017A-0455-4B44-91F0-3E1446899B42",
                     skillName);
-                hallucinating.StatModifications = new ItemStatModification[0];
-                hallucinating.ItemTagStatModifications = new EquipmentItemTagStatModification[0];
-                hallucinating.ViewElementDef.DisplayName1 = new LocalizedTextBind("Revenant", true);
-                hallucinating.ViewElementDef.Description = new LocalizedTextBind("Nothing because fail", true);
+                revenantAbility.StatModifications = new ItemStatModification[0];
+                revenantAbility.ItemTagStatModifications = new EquipmentItemTagStatModification[0];
+                revenantAbility.ViewElementDef.DisplayName1 = new LocalizedTextBind("Revenant", true);
+                revenantAbility.ViewElementDef.Description = new LocalizedTextBind("Nothing because fail", true);
                 Sprite icon = Helper.CreateSpriteFromImageFile("Void-04P.png");
-                hallucinating.ViewElementDef.LargeIcon = icon;
-                hallucinating.ViewElementDef.SmallIcon = icon;
+                revenantAbility.ViewElementDef.LargeIcon = icon;
+                revenantAbility.ViewElementDef.SmallIcon = icon;
 
             }
             catch (Exception e)

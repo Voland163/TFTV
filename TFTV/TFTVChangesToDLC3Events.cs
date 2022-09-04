@@ -85,7 +85,7 @@ namespace TFTV
                 //change research needed to defeat Behemoth
                 //need to change the Corruption Node research, and remove reward 
                 ResearchDef nodeResearchDef = Repo.GetAllDefs<ResearchDef>().FirstOrDefault(ged => ged.name.Equals("PX_Alien_CorruptionNode_ResearchDef"));
-                nodeResearchDef.Unlocks = new ManufactureResearchRewardDef[] { };
+                nodeResearchDef.Unlocks = new ResearchRewardDef[] { };
 
                 //change the reward variable, in Vanilla this was node autopsy = 2, for later use
                 EncounterVarResearchRewardDef encounterVarNodeAutopsyReward = Repo.GetAllDefs<EncounterVarResearchRewardDef>().FirstOrDefault
@@ -139,7 +139,7 @@ namespace TFTV
 
                 //Change FS3 event
                 GeoscapeEventDef geoEventFS3 = Repo.GetAllDefs<GeoscapeEventDef>().FirstOrDefault(ged => ged.name.Equals("PROG_FS3_GeoscapeEventDef"));
-                geoEventFS3.GeoscapeEventData.Mute = true;
+                geoEventFS3.GeoscapeEventData.Mute = false;
                 geoEventFS3.GeoscapeEventData.Choices[0].Outcome.VariablesChange.Add(TFTVCommonMethods.GenerateVariableChange("Mobilization", 1, true));
 
             }

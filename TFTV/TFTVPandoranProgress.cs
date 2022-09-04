@@ -1,13 +1,12 @@
-﻿using System;
-using Base.Defs;
+﻿using Base.Defs;
+using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using HarmonyLib;
-using PhoenixPoint.Modding;
 
 namespace TFTV
 {
@@ -16,15 +15,15 @@ namespace TFTV
 
         private static readonly DefRepository Repo = TFTVMain.Repo;
         private static bool ApplyChangeDifficultyLevel = true;
-        
+
         public static void Apply_Changes()
         {
-            
+
             try
             {
                 if (ApplyChangeDifficultyLevel)
                 {
-                    
+
 
                     // All sources of evolution due to scaling removed, leaving only evolution per day
                     // Additional source of evolution will be number of surviving Pandoran colonies, modulated by difficulty level
@@ -50,9 +49,9 @@ namespace TFTV
                     veryhard.ApplyDamageHavenOutcomeChange = 0;
                     veryhard.StartingSquadTemplate[0] = hard.TutorialStartingSquadTemplate[1];
                     veryhard.StartingSquadTemplate[1] = hard.TutorialStartingSquadTemplate[2];
-                    
 
-                    
+
+
 
                     // PX_Jacob_Tutorial2_TacCharacterDef replace [3], with hard starting squad [1]
                     // PX_Sophia_Tutorial2_TacCharacterDef replace [1], with hard starting squad [2]
@@ -60,7 +59,7 @@ namespace TFTV
                     //reducing evolution per day because there other sources of evolution points now
                     veryhard.EvolutionProgressPerDay = 70; //vanilla 100
 
-                   
+
 
                     hard.NestLimitations.MaxNumber = 3; //vanilla 5
                     hard.NestLimitations.HoursBuildTime = 90; //vanilla 50
@@ -81,7 +80,7 @@ namespace TFTV
                     //reducing evolution per day because there other sources of evolution points now
                     hard.EvolutionProgressPerDay = 60; //vanilla 70
 
-                  
+
                     standard.NestLimitations.MaxNumber = 3; //vanilla 4
                     standard.NestLimitations.HoursBuildTime = 90; //vanilla 55
                     standard.LairLimitations.MaxNumber = 3; // vanilla 3
@@ -140,46 +139,91 @@ namespace TFTV
             [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051")]
             private static void Postfix(GeoAlienFaction __instance)//, List<GeoAlienBase> ____bases)
             {
-
-                List<GeoAlienBase> listOfAlienBases = __instance.Bases.ToList();
-
-                GeoAlienBaseTypeDef nestType = Repo.GetAllDefs<GeoAlienBaseTypeDef>().FirstOrDefault(a => a.name.Equals("Nest_GeoAlienBaseTypeDef"));
-                GeoAlienBaseTypeDef lairType = Repo.GetAllDefs<GeoAlienBaseTypeDef>().FirstOrDefault(a => a.name.Equals("Lair_GeoAlienBaseTypeDef"));
-                GeoAlienBaseTypeDef citadelType = Repo.GetAllDefs<GeoAlienBaseTypeDef>().FirstOrDefault(a => a.name.Equals("Citadel_GeoAlienBaseTypeDef"));
-                GeoAlienBaseTypeDef palaceType = Repo.GetAllDefs<GeoAlienBaseTypeDef>().FirstOrDefault(a => a.name.Equals("Palace_GeoAlienBaseTypeDef"));
-
-                int nests = 0;
-                int lairs = 0;
-                int citadels = 0;
-                int palace = 0;
-
-                foreach (GeoAlienBase alienBase in listOfAlienBases)
+                try
                 {
-                    if (alienBase.AlienBaseTypeDef.Equals(nestType))
+                    List<GeoAlienBase> listOfAlienBases = __instance.Bases.ToList();
+
+                    GeoAlienBaseTypeDef nestType = Repo.GetAllDefs<GeoAlienBaseTypeDef>().FirstOrDefault(a => a.name.Equals("Nest_GeoAlienBaseTypeDef"));
+                    GeoAlienBaseTypeDef lairType = Repo.GetAllDefs<GeoAlienBaseTypeDef>().FirstOrDefault(a => a.name.Equals("Lair_GeoAlienBaseTypeDef"));
+                    GeoAlienBaseTypeDef citadelType = Repo.GetAllDefs<GeoAlienBaseTypeDef>().FirstOrDefault(a => a.name.Equals("Citadel_GeoAlienBaseTypeDef"));
+                    GeoAlienBaseTypeDef palaceType = Repo.GetAllDefs<GeoAlienBaseTypeDef>().FirstOrDefault(a => a.name.Equals("Palace_GeoAlienBaseTypeDef"));
+
+                    int nests = 0;
+                    int lairs = 0;
+                    int citadels = 0;
+                    int palace = 0;
+
+                    foreach (GeoAlienBase alienBase in listOfAlienBases)
                     {
-                        nests++;
+                        if (alienBase.AlienBaseTypeDef.Equals(nestType))
+                        {
+                            nests++;
+                        }
+                        else if (alienBase.AlienBaseTypeDef.Equals(lairType))
+                        {
+                            lairs++;
+                        }
+                        else if (alienBase.AlienBaseTypeDef.Equals(citadelType))
+                        {
+                            citadels++;
+                        }
+                        else if (alienBase.AlienBaseTypeDef.Equals(palaceType))
+                        {
+                            palace++;
+                        }
                     }
-                    else if (alienBase.AlienBaseTypeDef.Equals(lairType))
+                    int difficulty = __instance.GeoLevel.CurrentDifficultyLevel.Order;
+                    if (__instance.GeoLevel.EventSystem.GetVariable("Pandorans_Researched_Citadel") == 1)
                     {
-                        lairs++;
+                        __instance.AddEvolutionProgress(nests * 5 + lairs * 10 + citadels * 15);
+                        __instance.AddEvolutionProgress(__instance.GeoLevel.EventSystem.GetVariable(TFTVInfestation.InfestedHavensVariable) * 10);
+                        TFTVLogger.Always("There are " + nests + " nests, " + lairs + " lairs and " + citadels + " citadels on " + __instance.GeoLevel.ElaspedTime);
+                        TFTVLogger.Always("The evolution points per day from Pandoran Colonies are " + (nests * 5 + lairs * 10 + citadels * 15)
+                            + " And from Infested Havens " + __instance.GeoLevel.EventSystem.GetVariable(TFTVInfestation.InfestedHavensVariable) * 10);
                     }
-                    else if (alienBase.AlienBaseTypeDef.Equals(citadelType))
+                    else
                     {
-                        citadels++;
-                    }
-                    else if (alienBase.AlienBaseTypeDef.Equals(palaceType))
-                    {
-                        palace++;
+                        __instance.AddEvolutionProgress(nests * 10 + lairs * 20 + citadels * 30);
+                        __instance.AddEvolutionProgress(__instance.GeoLevel.EventSystem.GetVariable(TFTVInfestation.InfestedHavensVariable) * 20);
+                        TFTVLogger.Always("There are " + nests + " nests, " + lairs + " lairs and " + citadels + " citadels on " + __instance.GeoLevel.ElaspedTime);
+                        TFTVLogger.Always("The evolution points per day from Pandoran Colonies are " + (nests * 10 + lairs * 20 + citadels * 30)
+                            + " And from Infested Havens " + __instance.GeoLevel.EventSystem.GetVariable(TFTVInfestation.InfestedHavensVariable) * 20);
                     }
                 }
-                int difficulty = __instance.GeoLevel.CurrentDifficultyLevel.Order;
-                __instance.AddEvolutionProgress(nests * 10 + lairs * 20 + citadels * 30);
-                __instance.AddEvolutionProgress(__instance.GeoLevel.EventSystem.GetVariable(TFTVInfestation.InfestedHavensVariable) * 20);
-                TFTVLogger.Always("There are " + nests + " nests, " + lairs + " lairs and " + citadels + " citadels on " + __instance.GeoLevel.ElaspedTime);
-                TFTVLogger.Always("The evolution points per day from Pandoran Colonies are " + (nests * 10 + lairs * 20 + citadels * 30)
-                    + " And from Infested Havens " + __instance.GeoLevel.EventSystem.GetVariable(TFTVInfestation.InfestedHavensVariable) * 20);
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
             }
         }
+
+        [HarmonyPatch(typeof(GeoAlienFaction), "ProgressEvolution")]
+        internal static class GameDifficultyLevelDef_get_evolutionProgress_patch
+        {
+            [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051")]
+            private static bool Prefix(GeoAlienFaction __instance)
+            {
+                try
+                {
+                    if (__instance.GeoLevel.EventSystem.GetVariable("Pandorans_Researched_Citadel") == 1)
+                    {
+                        __instance.AddEvolutionProgress(__instance.GeoLevel.CurrentDifficultyLevel.EvolutionProgressPerDay / 2);
+                        TFTVLogger.Always("Evolution progress is reduced to " + __instance.GeoLevel.CurrentDifficultyLevel.EvolutionProgressPerDay / 2 + " per day");
+                        return false;
+                    }
+                    else
+                        return true;
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+                throw new InvalidOperationException();
+            }
+        }
+
+
+
 
 
         // Harmony patch to change the reveal of alien bases when in scanner range, so increases the reveal chance instead of revealing it right away
@@ -189,27 +233,36 @@ namespace TFTV
             [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051")]
             private static bool Prefix(ref bool __result, GeoSite site, GeoFaction revealToFaction, GeoLevelController ____level)
             {
-                if (!site.GetVisible(revealToFaction))
+                try
                 {
-                    GeoAlienBase component = site.GetComponent<GeoAlienBase>();
-                    if (revealToFaction is GeoPhoenixFaction && ((GeoPhoenixFaction)revealToFaction).IsSiteInBaseScannerRange(site, true))
+                    if (!site.GetVisible(revealToFaction))
                     {
+                        GeoAlienBase component = site.GetComponent<GeoAlienBase>();
+                        if (revealToFaction is GeoPhoenixFaction && ((GeoPhoenixFaction)revealToFaction).IsSiteInBaseScannerRange(site, true))
+                        {
+                            component.IncrementBaseAttacksRevealCounter();
+                            // original code:
+                            //site.RevealSite(____level.PhoenixFaction);
+                            //__result = true;
+                            //return false;
+                        }
+                        if (component.CheckForBaseReveal())
+                        {
+                            site.RevealSite(____level.PhoenixFaction);
+                            __result = true;
+                            return false;
+                        }
                         component.IncrementBaseAttacksRevealCounter();
-                        // original code:
-                        //site.RevealSite(____level.PhoenixFaction);
-                        //__result = true;
-                        //return false;
                     }
-                    if (component.CheckForBaseReveal())
-                    {
-                        site.RevealSite(____level.PhoenixFaction);
-                        __result = true;
-                        return false;
-                    }
-                    component.IncrementBaseAttacksRevealCounter();
+                    __result = false;
+                    return false; // Return without calling the original method
                 }
-                __result = false;
-                return false; // Return without calling the original method
+
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+                throw new InvalidOperationException();
             }
         }
     }

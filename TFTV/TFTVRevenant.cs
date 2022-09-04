@@ -104,12 +104,14 @@ namespace TFTV
         {
             try
             {
-
-                if (!revenantSpawned && revenantCanSpawn) //&& (timeLastRevenantSpawned == 0 || )
+                if (controller.Factions.Any(f => f.Faction.FactionDef.MatchesShortName("aln")))
                 {
-                    TFTVLogger.Always("RevenantCheckAndSpawn invoked");
-                    TryToSpawnRevenant(controller);
+                    if (!revenantSpawned && revenantCanSpawn) //&& (timeLastRevenantSpawned == 0 || )
+                    {
+                        TFTVLogger.Always("RevenantCheckAndSpawn invoked");
+                        TryToSpawnRevenant(controller);
 
+                    }
                 }
 
             }
@@ -162,18 +164,21 @@ namespace TFTV
         {
             try
             {
-                //First lets check time of death to create a first list of dead soldiers
+               
                 List<string> allDeadSoldiers = DeadSoldiersDelirium.Keys.ToList();
                 List<GeoTacUnitId> candidates = new List<GeoTacUnitId>();
 
                 foreach (string deadSoldier in allDeadSoldiers)
-                {
+                {                    
                     candidates.Add(GetDeadSoldiersIdFromName(deadSoldier, controller));
-
+                    TFTVLogger.Always("deadSoldier " + deadSoldier + " with GeoTacUnitId " 
+                        + GetDeadSoldiersIdFromName(deadSoldier, controller) +  "is added to the list of Revenant candidates");
                 }
                 int roll = UnityEngine.Random.Range(0, candidates.Count());
+                TFTVLogger.Always("The total number of candidates is " + candidates.Count() + " and the roll is " + roll);
 
                 GeoTacUnitId theChosen = candidates[roll];
+                TFTVLogger.Always("The Chosen is " + GetDeadSoldiersNameFromID(theChosen, controller));
                 return theChosen;
             }
 
@@ -202,7 +207,7 @@ namespace TFTV
                     (ged => ged.name.Equals("Queen_ClassTagDef"));
 
                 int delirium = DeadSoldiersDelirium[GetDeadSoldiersNameFromID(theChosen, controller)];
-
+                TFTVLogger.Always("The Chosen, " + GetDeadSoldiersNameFromID(theChosen, controller) + ", has " + delirium + " Delirium");
                 if (delirium >= 10)
                 {
                     return queenTag;
@@ -223,7 +228,7 @@ namespace TFTV
                 {
                     return fishmanTag;
                 }
-                else if (delirium < 3) //&& delirium >= 1 for testing
+                else //&& delirium >= 1 for testing
                 {
                     return crabTag;
                 }
@@ -240,6 +245,7 @@ namespace TFTV
         {
             try
             {
+
                 if (controller.GetFactionByCommandName("aln") != null)
                 {
                     TacticalFaction pandorans = controller.GetFactionByCommandName("aln");
@@ -269,8 +275,9 @@ namespace TFTV
                     actor.name = GetDeadSoldiersNameFromID(theChosen, controller);
                     //  TFTVLogger.Always("Crab's name has been changed to " + actor.GetDisplayName());
                     // SetDeathTime(theChosen, __instance, timeOfMissionStart);
-                    DeadSoldiersDelirium[actor.name] += 1;
-                    //  TFTVLogger.Always("The time of death has been reset to " + CheckTimerFromDeath(theChosen, __instance).DateTime.ToString());
+                    DeadSoldiersDelirium[GetDeadSoldiersNameFromID(theChosen, controller)] += 1;
+                    TFTVLogger.Always("The accumulated delirium for  " + GetDeadSoldiersNameFromID(theChosen, controller) 
+                        + " is now " + DeadSoldiersDelirium[GetDeadSoldiersNameFromID(theChosen, controller)]);
                     SetRevenantClassAbility(theChosen, controller, tacticalActor);
                     AddRevenantResistanceAbility(actor);
                     //  SpreadResistance(__instance);
@@ -479,18 +486,19 @@ namespace TFTV
 
                 GameTagDef tag = new GameTagDef();
 
-                if (score <= 30)
-                {
-                    tag = revenantTier1GameTag;
-                }
-                else if (score <= 60)
-                {
-                    tag = revenantTier2GameTag;
-                }
-                else if (score >= 60)
+                if (score >= 30)
                 {
                     tag = revenantTier3GameTag;
                 }
+                else if (score <= 30 && score >20)
+                {
+                    tag = revenantTier2GameTag;
+                }
+                else if (score <= 10)
+                {
+                    tag = revenantTier1GameTag;
+                }
+                             
                 actor.GameTags.Add(tag, GameTagAddMode.ReplaceExistingExclusive);
                 actor.GameTags.Add(anyRevenantGameTag);
             }
@@ -573,7 +581,6 @@ namespace TFTV
                 if (specializations.Contains(Repo.GetAllDefs<SpecializationDef>().FirstOrDefault(p => p.name.Equals("SniperSpecializationDef"))))
                 {
                     description += " All seeing";
-
                 }
                 else if (specializations.Contains(Repo.GetAllDefs<SpecializationDef>().FirstOrDefault(p => p.name.Equals("TechnicianSpecializationDef"))))
                 {
@@ -635,6 +642,7 @@ namespace TFTV
 
                 TacticalActor tacticalActor = (TacticalActor)deadSoldier;
                 int delirium = tacticalActor.CharacterStats.Corruption.IntValue;
+                TFTVLogger.Always("The character that died has " + delirium + " Delirium");
                 if (delirium > 0)
                 {
                     DeadSoldiersDelirium.Add(deadSoldier.DisplayName, delirium);
@@ -687,17 +695,17 @@ namespace TFTV
 
                     }
                 }
-                TFTVLogger.Always("Number of times weapons or other items were used " + usedWeapons.Count());
+              //  TFTVLogger.Always("Number of times weapons or other items were used " + usedWeapons.Count());
                 if (usedWeapons.Count() > 0)
                 {
-                    TFTVLogger.Always("Checking use of each weapon... ");
+                   // TFTVLogger.Always("Checking use of each weapon... ");
                     foreach (UsedWeaponStat stat in usedWeapons)
                     {
-                        TFTVLogger.Always("This item is  " + stat.UsedItem.ViewElementDef.DisplayName1.LocalizeEnglish());
+                       // TFTVLogger.Always("This item is  " + stat.UsedItem.ViewElementDef.DisplayName1.LocalizeEnglish());
                         if (Repo.GetAllDefs<WeaponDef>().FirstOrDefault(p => p.name.Contains(stat.UsedItem.ToString())))
                         {
                             WeaponDef weaponDef = stat.UsedItem as WeaponDef;
-                            TFTVLogger.Always("This item, as weapon is  " + weaponDef.ViewElementDef.DisplayName1.LocalizeEnglish());
+                           // TFTVLogger.Always("This item, as weapon is  " + weaponDef.ViewElementDef.DisplayName1.LocalizeEnglish());
 
                             if (weaponDef != null && weaponDef.DamagePayload.DamageType == fireDamage)
                             {
@@ -719,14 +727,14 @@ namespace TFTV
                             if (weaponDef != null && weaponDef.DamagePayload.DamageKeywords[0].Value >= 70)
                             {
 
-                                TFTVLogger.Always("This weapon is considered high damage  " + weaponDef.ViewElementDef.DisplayName1.LocalizeEnglish());
+                               // TFTVLogger.Always("This weapon is considered high damage  " + weaponDef.ViewElementDef.DisplayName1.LocalizeEnglish());
                                 scoreHighDamage += stat.UsedCount;
 
 
                             }
                             if (weaponDef != null && weaponDef.DamagePayload.DamageType == projectileDamage && (weaponDef.DamagePayload.ProjectilesPerShot >= 2 || weaponDef.DamagePayload.AutoFireShotCount >= 3))
                             {
-                                TFTVLogger.Always("This weapon is considered high burst  " + weaponDef.ViewElementDef.DisplayName1.LocalizeEnglish());
+                              //  TFTVLogger.Always("This weapon is considered high burst  " + weaponDef.ViewElementDef.DisplayName1.LocalizeEnglish());
                                 scoreBurstDamage += stat.UsedCount;
                             }
 
@@ -746,7 +754,7 @@ namespace TFTV
                     scoreHighDamage = (int)(scoreHighDamage * 0.25); //for testing
                     TFTVLogger.Always("Number of high damage weapons used after adjustment  " + scoreHighDamage);
                     scoreBurstDamage = (int)(scoreBurstDamage * 0.10);
-                    TFTVLogger.Always("Number of shred weapons used after adjustment  " + scoreBurstDamage);
+                    TFTVLogger.Always("Number of burst weapons used after adjustment  " + scoreBurstDamage);
                     /*    scoreBashDamage = (int)(scoreBurstDamage * 100); //for testing
                         TFTVLogger.Always("Number of melee weapons used after adjustment  " + scoreBashDamage);*/
 
@@ -1021,6 +1029,7 @@ namespace TFTV
                         sniper.StatModifications = new ItemStatModification[]
                         {
                             new ItemStatModification {TargetStat = StatModificationTarget.Perception, Modification = StatModificationType.AddMax, Value = 15},
+                            new ItemStatModification {TargetStat = StatModificationTarget.Perception, Modification = StatModificationType.Add, Value = 15},
                         };
 
                         sniper.ViewElementDef.Description = new LocalizedTextBind("+15 Perception", true);
@@ -1032,7 +1041,9 @@ namespace TFTV
                         sniper.StatModifications = new ItemStatModification[]
                         {
                             new ItemStatModification {TargetStat = StatModificationTarget.Perception, Modification = StatModificationType.AddMax, Value = 20 },
+                            new ItemStatModification {TargetStat = StatModificationTarget.Perception, Modification = StatModificationType.Add, Value = 20},
                             new ItemStatModification {TargetStat = StatModificationTarget.Accuracy, Modification = StatModificationType.Add, Value = 20},
+                            new ItemStatModification {TargetStat = StatModificationTarget.Accuracy, Modification = StatModificationType.AddMax, Value = 20},
                         };
 
                         sniper.ViewElementDef.Description = new LocalizedTextBind("+20 Perception, +20% Accuracy", true);
@@ -1119,7 +1130,6 @@ namespace TFTV
         {
             try
             {
-
                 AddAbilityStatusDef revenantAbility =
                      Repo.GetAllDefs<AddAbilityStatusDef>().FirstOrDefault
                      (ged => ged.name.Equals("Revenant_StatusEffectDef"));

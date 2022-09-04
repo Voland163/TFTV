@@ -59,6 +59,7 @@ namespace TFTV
             TFTVRevenant.CreateRevenantDefs();
             TFTVRevenant.ModifyRevenantResistanceAbility(Controller);
             TFTVRevenant.RevenantCheckAndSpawn(Controller);
+            
            
         }
 
@@ -136,6 +137,9 @@ namespace TFTV
         {
             TFTVRevenant.revenantSpecialResistance.Clear();
             TFTVUmbra.SpawnUmbra(Controller);
+            if (turnNumber == 0)
+            { TFTVHumanEnemies.AssignHumanEnemiesTags(Controller); }
+            TFTVHumanEnemies.TestingAura(Controller);
 
         }
     }

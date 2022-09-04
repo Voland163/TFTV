@@ -46,9 +46,10 @@ namespace TFTV
             /// ModMain is accesible at any time
 
             TFTVMain main = (TFTVMain)Main;
+
             
             TFTVStarts.CreateNewDefsForTFTVStart();
-            TFTVStarts.ModifySophiaAndJacobStats(gsController);
+            //TFTVStarts.ModifySophiaAndJacobStats(gsController);
             TFTVNewPXCharacters.PlayIntro(gsController);
             TFTVVoidOmens.ImplementVoidOmens(gsController);
             TFTVUmbra.CheckForUmbraResearch(gsController);
@@ -93,6 +94,8 @@ namespace TFTV
             TFTVUI.hookToCharacter = null;
 
             TFTVRevenant.CheckRevenantTime(gsController);
+            TFTVHumanEnemies.difficultyLevel = gsController.CurrentDifficultyLevel.Order;
+
             
         }
 

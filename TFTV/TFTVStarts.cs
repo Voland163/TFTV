@@ -30,6 +30,7 @@ namespace TFTV
                 CreateInitialInfiltrator();
                 CreateInitialPriest();
                 CreateInitialTechnician();
+                CreateStartingTemplatesBuffed();
             }
             catch (Exception e)
             {
@@ -84,6 +85,22 @@ namespace TFTV
             }
             throw new InvalidOperationException();
         }
+
+        public static void CreateStartingTemplatesBuffed() 
+        {
+            TacCharacterDef Jacob2 = Repo.GetAllDefs<TacCharacterDef>().First(tcd => tcd.name.Contains("PX_Jacob_Tutorial2_TacCharacterDef"));
+            TacCharacterDef Sophia2 = Repo.GetAllDefs<TacCharacterDef>().First(tcd => tcd.name.Contains("PX_Sophia_Tutorial2_TacCharacterDef"));
+            TacCharacterDef Omar3 = Repo.GetAllDefs<TacCharacterDef>().First(tcd => tcd.name.Contains("PX_Omar_Tutorial3_TacCharacterDef"));
+            TacCharacterDef Takeshi3 = Repo.GetAllDefs<TacCharacterDef>().First(tcd => tcd.name.Contains("PX_Takeshi_Tutorial3_TacCharacterDef"));
+            TacCharacterDef Irina3 = Repo.GetAllDefs<TacCharacterDef>().First(tcd => tcd.name.Contains("PX_Irina_Tutorial3_TacCharacterDef"));
+
+            TacCharacterDef newJacobBuffed = Helper.CreateDefFromClone(Jacob2, "B1968124-ABDD-4A2C-9CBC-33DBC0EE3EE5", "PX_JacobBuffed_TFTV_TacCharacterDef");
+            TacCharacterDef newSophiaBuffed = Helper.CreateDefFromClone(Sophia2, "B3EA411B-DE35-4B63-874A-553D816C06BC", "PX_SophiaBuffed_TFTV_TacCharacterDef");
+            TacCharacterDef newOmarBuffed = Helper.CreateDefFromClone(Omar3, "024AB8C6-A2CD-4B81-A927-C8713A008EF2", "PX_OmarBuffed_TFTV_TacCharacterDef");
+            TacCharacterDef newTakeshiBuffed = Helper.CreateDefFromClone(Takeshi3, "4230D9B4-6D88-4545-8680-BBCAE463356B", "PX_TakeshiBuffed_TFTV_TacCharacterDef");
+            TacCharacterDef newIrinaBuffed = Helper.CreateDefFromClone(Irina3, "8E57C25C-7289-4F7C-9D0C-5F8E55601B49", "PX_IrinaBuffed_TFTV_TacCharacterDef");
+        }
+
 
         public static void CreateNewSophiaAndJacob()
         {
@@ -144,7 +161,7 @@ namespace TFTV
             }
         }
 
-        public static void ModifySophiaAndJacobStats(GeoLevelController level)
+     /*   public static void ModifySophiaAndJacobStats(GeoLevelController level)
         {
             try
             {
@@ -183,7 +200,7 @@ namespace TFTV
                 TFTVLogger.Error(e);
             }
 
-        }
+        }*/
 
 
         //Adapted from MadSkunky's TutorialTweaks: https://github.com/MadSkunky/PP-Mods-TutorialTweaks
@@ -194,9 +211,6 @@ namespace TFTV
                 TFTVConfig config = TFTVMain.Main.Config;
 
                 List<TacCharacterDef> startingTemplates = new List<TacCharacterDef>();
-
-                GameDifficultyLevelDef hardDifficultyLevel = Repo.GetAllDefs<GameDifficultyLevelDef>().FirstOrDefault(a => a.name.Equals("Hard_GameDifficultyLevelDef"));
-                GameDifficultyLevelDef standardDifficultyLevel = Repo.GetAllDefs<GameDifficultyLevelDef>().FirstOrDefault(a => a.name.Equals("Standard_GameDifficultyLevelDef"));
 
                 TacCharacterDef newJacob = Repo.GetAllDefs<TacCharacterDef>().First(tcd => tcd.name.Contains("PX_Jacob_TFTV_TacCharacterDef"));
                 TacCharacterDef newSophia = Repo.GetAllDefs<TacCharacterDef>().First(tcd => tcd.name.Contains("PX_Sophia_TFTV_TacCharacterDef"));
@@ -234,17 +248,49 @@ namespace TFTV
                 }
 
 
-                if (level.CurrentDifficultyLevel.Order == 2)
+                if (level.CurrentDifficultyLevel.Order == 2 && config.startingSquad == TFTVConfig.StartingSquadFaction.PHOENIX)
                 {
                     startingTemplates.Add(assault);
-
                 }
-                else if (level.CurrentDifficultyLevel.Order == 1)
+                else if (level.CurrentDifficultyLevel.Order == 2 && config.startingSquad != TFTVConfig.StartingSquadFaction.PHOENIX)
+                {
+                    startingTemplates.Add(heavy);
+                }
+                else if (level.CurrentDifficultyLevel.Order == 1 && config.startingSquad == TFTVConfig.StartingSquadFaction.PHOENIX)
                 {
                     startingTemplates.Add(assault);
                     startingTemplates.Add(sniper);
-
                 }
+                else if (level.CurrentDifficultyLevel.Order == 1 && config.startingSquad != TFTVConfig.StartingSquadFaction.PHOENIX)
+                {
+                    startingTemplates.Add(heavy);
+                    startingTemplates.Add(assault);
+                }
+
+                int strengthBonus = 0;
+                int willBonus = 0;
+
+                if (level.CurrentDifficultyLevel.Order == 3)
+                {
+                    strengthBonus = 4;
+                    willBonus = 1;
+                }
+                else if (level.CurrentDifficultyLevel.Order == 2)
+                {
+                    strengthBonus = 6;
+                    willBonus = 2;
+                }
+                else if (level.CurrentDifficultyLevel.Order == 1)
+                {
+                    strengthBonus = 8;
+                    willBonus = 3;
+                }
+
+                newJacob.Data.Strength += strengthBonus;
+                newJacob.Data.Will += willBonus;
+
+                newSophia.Data.Strength += strengthBonus;
+                newSophia.Data.Will += willBonus;
 
 
                 return startingTemplates;
@@ -285,17 +331,20 @@ namespace TFTV
             try
             {
                 TFTVConfig config = TFTVMain.Main.Config;
-
-                GameDifficultyLevelDef hardDifficultyLevel = Repo.GetAllDefs<GameDifficultyLevelDef>().FirstOrDefault(a => a.name.Equals("Hard_GameDifficultyLevelDef"));
-
+  
+                TacCharacterDef Jacob2 = Repo.GetAllDefs<TacCharacterDef>().First(tcd => tcd.name.Contains("PX_JacobBuffed_TFTV_TacCharacterDef"));
+                TacCharacterDef Sophia2 = Repo.GetAllDefs<TacCharacterDef>().First(tcd => tcd.name.Contains("PX_SophiaBuffed_TFTV_TacCharacterDef"));
+                TacCharacterDef Omar3 = Repo.GetAllDefs<TacCharacterDef>().First(tcd => tcd.name.Contains("PX_OmarBuffed_TFTV_TacCharacterDef"));
+                TacCharacterDef Takeshi3 = Repo.GetAllDefs<TacCharacterDef>().First(tcd => tcd.name.Contains("PX_TakeshiBuffed_TFTV_TacCharacterDef"));
+                TacCharacterDef Irina3 = Repo.GetAllDefs<TacCharacterDef>().First(tcd => tcd.name.Contains("PX_IrinaBuffed_TFTV_TacCharacterDef"));
+               
                 TacCharacterDef sniper = Repo.GetAllDefs<TacCharacterDef>().FirstOrDefault(a => a.name.Equals("PX_SniperStarting_TacCharacterDef"));
-
                 TacCharacterDef priest = Repo.GetAllDefs<TacCharacterDef>().FirstOrDefault(a => a.name.Equals("PX_Starting_Priest_TacCharacterDef"));
                 TacCharacterDef technician = Repo.GetAllDefs<TacCharacterDef>().FirstOrDefault(a => a.name.Equals("PX_Starting_Technician_TacCharacterDef"));
                 TacCharacterDef infiltrator = Repo.GetAllDefs<TacCharacterDef>().FirstOrDefault(a => a.name.Equals("PX_Starting_Infiltrator_TacCharacterDef"));
 
-                List<TacCharacterDef> startingTemplates = new List<TacCharacterDef>();
-                startingTemplates.AddRange(hardDifficultyLevel.TutorialStartingSquadTemplate);
+                List<TacCharacterDef> startingTemplates = new List<TacCharacterDef>{Jacob2,Sophia2,Omar3,Takeshi3,Irina3};
+
 
                 if (config.startingSquad == TFTVConfig.StartingSquadFaction.ANU)
                 {
@@ -341,37 +390,54 @@ namespace TFTV
                 TacCharacterDef technician = Repo.GetAllDefs<TacCharacterDef>().FirstOrDefault(a => a.name.Equals("PX_Starting_Technician_TacCharacterDef"));
                 TacCharacterDef infiltrator = Repo.GetAllDefs<TacCharacterDef>().FirstOrDefault(a => a.name.Equals("PX_Starting_Infiltrator_TacCharacterDef"));
 
-                List<TacCharacterDef> startingTemplates = new List<TacCharacterDef>();
-                startingTemplates.Add(heavy);
-                startingTemplates.Add(assault);
-                startingTemplates.Add(assault);
-                startingTemplates.Add(sniper);
+                List<TacCharacterDef> startingTemplates = new List<TacCharacterDef>
+                {
+                    heavy,
+                    assault,
+                    assault,
+                    sniper
+                };
 
                 if (config.startingSquad == TFTVConfig.StartingSquadFaction.ANU)
                 {
+                    startingTemplates.Remove(heavy);
+                    startingTemplates.Remove(assault);
                     startingTemplates.Add(priest);
                     level.EventSystem.SetVariable("BG_Start_Faction", 1);
                 }
                 else if (config.startingSquad == TFTVConfig.StartingSquadFaction.NJ)
                 {
+                    startingTemplates.Remove(heavy);
+                    startingTemplates.Remove(assault);
                     startingTemplates.Add(technician);
                     level.EventSystem.SetVariable("BG_Start_Faction", 2);
                 }
                 else if (config.startingSquad == TFTVConfig.StartingSquadFaction.SYNEDRION)
                 {
+                    startingTemplates.Remove(heavy);
+                    startingTemplates.Remove(assault);
                     startingTemplates.Add(infiltrator);
                     level.EventSystem.SetVariable("BG_Start_Faction", 3);
                 }
 
 
-                if (difficultyLevel.Order == 2)
+                if (level.CurrentDifficultyLevel.Order == 2 && config.startingSquad == TFTVConfig.StartingSquadFaction.PHOENIX)
                 {
                     startingTemplates.Add(assault);
                 }
-                else if (difficultyLevel.Order == 1)
+                else if (level.CurrentDifficultyLevel.Order == 2 && config.startingSquad != TFTVConfig.StartingSquadFaction.PHOENIX)
+                {
+                    startingTemplates.Add(heavy);
+                }
+                else if (level.CurrentDifficultyLevel.Order == 1 && config.startingSquad == TFTVConfig.StartingSquadFaction.PHOENIX)
                 {
                     startingTemplates.Add(assault);
                     startingTemplates.Add(sniper);
+                }
+                else if (level.CurrentDifficultyLevel.Order == 1 && config.startingSquad != TFTVConfig.StartingSquadFaction.PHOENIX)
+                {
+                    startingTemplates.Add(heavy);
+                    startingTemplates.Add(assault);
                 }
 
                 return startingTemplates;

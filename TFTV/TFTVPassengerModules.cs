@@ -181,7 +181,7 @@ namespace TFTV
 
                     foreach (TacCharacterDef template in startingTemplates)
                     {
-                        if (!standardDifficultyLevel.TutorialStartingSquadTemplate.Contains(template) && 
+                        if (!template.name.Contains("Buffed") && 
                             template!= Repo.GetAllDefs<TacCharacterDef>().FirstOrDefault(a => a.name.Equals("PX_Jacob_TFTV_TacCharacterDef")) &&
                             template != Repo.GetAllDefs<TacCharacterDef>().FirstOrDefault(a => a.name.Equals("PX_Sophia_TFTV_TacCharacterDef")))
                         {

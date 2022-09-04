@@ -105,17 +105,13 @@ namespace TFTV
                             {
                                 for (int t = 0; t < choice.Outcome.Diplomacy.Count; t++)
                                 {
-                                    if (choice.Outcome.Diplomacy[t].Value > 0)
+                                    if (choice.Outcome.Diplomacy[t].Value != 0)
                                     {
                                         OutcomeDiplomacyChange diplomacyChange = choice.Outcome.Diplomacy[t];
-                                        diplomacyChange.Value -= Mathf.RoundToInt(diplomacyChange.Value * 0.5f);
+                                        TFTVLogger.Always("Original value was " + diplomacyChange.Value);
+                                        diplomacyChange.Value = Mathf.CeilToInt(diplomacyChange.Value * 0.5f);
                                         choice.Outcome.Diplomacy[t] = diplomacyChange;
-                                    }
-                                    else if (choice.Outcome.Diplomacy[t].Value < 0)
-                                    {
-                                        OutcomeDiplomacyChange diplomacyChange = choice.Outcome.Diplomacy[t];
-                                        diplomacyChange.Value += Mathf.RoundToInt(diplomacyChange.Value * 0.5f);
-                                        choice.Outcome.Diplomacy[t] = diplomacyChange;
+                                        TFTVLogger.Always("New value is " + diplomacyChange.Value);
                                     }
                                 }
                             }
@@ -137,10 +133,10 @@ namespace TFTV
                                 for (int t = 0; t < choice.Outcome.Diplomacy.Count; t++)
                                 {
                                     if (choice.Outcome.Diplomacy[t].Value != 0)
-                                    {
-                                        OutcomeDiplomacyChange diplomacyChange = choice.Outcome.Diplomacy[t];
-                                        diplomacyChange.Value = Mathf.RoundToInt(diplomacyChange.Value * 2f);
-                                        choice.Outcome.Diplomacy[t] = diplomacyChange;
+                                    {                                      
+                                        OutcomeDiplomacyChange diplomacyChange = choice.Outcome.Diplomacy[t];                                       
+                                        diplomacyChange.Value = Mathf.CeilToInt(diplomacyChange.Value * 2f);
+                                        choice.Outcome.Diplomacy[t] = diplomacyChange;                                                     
                                     }
                                 }
                             }

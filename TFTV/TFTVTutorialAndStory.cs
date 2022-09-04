@@ -157,6 +157,8 @@ namespace TFTV
                     HasSeenHintHintConditionDef newHasSeenHintConditionDef = Helper.CreateDefFromClone(sourceHasSeenHintConditionDef, gUID2, name + "HasSeenHintConditionDef");
                     newHasSeenHintConditionDef.HintDef = newContextHelpHintDef;
                     newContextHelpHintDef.Conditions.Add(newHasSeenHintConditionDef);
+                    newContextHelpHintDef.AnyCondition = false;
+                    
                 }
 
 
