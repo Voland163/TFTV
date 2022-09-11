@@ -4,6 +4,7 @@ using PhoenixPoint.Common.Core;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.Missions;
 using PhoenixPoint.Geoscape.Levels;
+using PhoenixPoint.Geoscape.Levels.Factions;
 using System;
 using System.Reflection;
 
@@ -11,6 +12,7 @@ namespace TFTV
 {
     internal class TFTVThirdAct
     {
+        
         //private static readonly DefRepository Repo = TFTVMain.Repo;
         public static SharedData sharedData = GameUtl.GameComponent<SharedData>();
 
@@ -26,9 +28,12 @@ namespace TFTV
                     {
                         TFTVLogger.Always("Behemoth rumpus has begun! Let the Third Act roll!");
                         __instance.GeoLevel.EventSystem.SetVariable("ThirdActStarted", 1);
+
                         SetBehemothOnRampageMod(__instance.GeoLevel);
                         MethodInfo method_GenerateTargetData = AccessTools.Method(typeof(GeoBehemothActor), "CalculateDisruptionThreshhold");
                         method_GenerateTargetData.Invoke(__instance, null);
+                        MethodInfo method_GenerateTargetData2 = AccessTools.Method(typeof(AlienRaidManager), "RollForRaid");
+                        method_GenerateTargetData2.Invoke(__instance.GeoLevel.AlienFaction.AlienRaidManager, null);                    
                     }
                 }
 
@@ -39,6 +44,29 @@ namespace TFTV
 
             }
         }
+
+
+        [HarmonyPatch(typeof(GeoBehemothActor), "get_DisruptionMax")]
+        public static class GeoBehemothActor_get_DisruptionMax_RampageStart_Patch
+        {
+            public static void Postfix(ref int __result, GeoBehemothActor __instance)
+            {
+                try
+                {
+                    if (__instance.GeoLevel.EventSystem.GetVariable("ThirdActStarted") == 1)
+                    {
+                        __result = 200;
+                    }
+                }
+
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+
+            }
+        }
+
 
         public static void SetBehemothOnRampageMod(GeoLevelController geoLevel)
 
@@ -52,7 +80,7 @@ namespace TFTV
                 if (geoLevel.EventSystem.GetVariable("ThirdActStarted") == 1)
                 {
                     geoLevel.CurrentDifficultyLevel.DestroyHavenOutcomeChance = 100;
-                    geoLevel.FesteringSkiesSettings.NumOfHavensToDestroyBeforeSubmerge = 30;
+                    geoLevel.FesteringSkiesSettings.NumOfHavensToDestroyBeforeSubmerge = 100;
                     geoLevel.FesteringSkiesSettings.DisruptionThreshholdBaseValue = 100;
                     geoLevel.CurrentDifficultyLevel.DamageHavenOutcomeChance = 0;
                 }

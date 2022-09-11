@@ -139,7 +139,7 @@ namespace TFTV
             TFTVUmbra.SpawnUmbra(Controller);
             if (turnNumber == 0)
             { TFTVHumanEnemies.AssignHumanEnemiesTags(Controller); }
-            TFTVHumanEnemies.TestingAura(Controller);
+            TFTVHumansEnemiesTactics.ChampRecoverWPAura(Controller);
 
         }
     }

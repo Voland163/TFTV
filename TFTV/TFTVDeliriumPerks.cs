@@ -826,8 +826,7 @@ namespace TFTV
 
                     if (hyperAlgesia != null)
                     {
-                        TacticalFaction tacticalFaction = death.Actor.TacticalFaction;
-                        int num = (int)__instance.RelationTo(tacticalFaction);
+                        TacticalFaction tacticalFaction = death.Actor.TacticalFaction;                        
                         int willPointWorth = death.Actor.TacticalActorBaseDef.WillPointWorth;
                         if (death.Actor.TacticalFaction == __instance.TacticalFaction)
                         {

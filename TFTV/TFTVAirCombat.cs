@@ -171,9 +171,11 @@ namespace TFTV
                 FesteringSkiesSettingsDef festeringSkiesSettingsDef = Repo.GetAllDefs<FesteringSkiesSettingsDef>().FirstOrDefault(gvw => gvw.name.Equals("FesteringSkiesSettingsDef"));
                 festeringSkiesSettingsDef.SpawnInfestedAircraftChance = 0;
                 festeringSkiesSettingsDef.InfestedAircraftChance = 0;
+                festeringSkiesSettingsDef.InfestedAircrafts.Clear();
+                festeringSkiesSettingsDef.InfestedAircraftRebuildHours = 100000;
 
                 InterceptionGameDataDef interceptionGameDataDef = Repo.GetAllDefs<InterceptionGameDataDef>().FirstOrDefault(gvw => gvw.name.Equals("InterceptionGameDataDef"));
-                //   interceptionGameDataDef.DisengageDuration = 1;
+                interceptionGameDataDef.DisengageDuration = 3;
 
                 RemoveHardFlyersTemplates();
             }
@@ -651,7 +653,7 @@ namespace TFTV
                         behemothScenicRoute.Clear();
                         behemothTarget = 0;
                         return;
-                    }
+                    }                    
 
                     if (behemothTarget != 0 && ConvertIntIDToGeosite(__instance.GeoLevel, behemothTarget) != null && ConvertIntIDToGeosite(__instance.GeoLevel, behemothTarget).State == GeoSiteState.Destroyed)
                     {

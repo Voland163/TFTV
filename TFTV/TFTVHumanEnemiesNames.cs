@@ -50,26 +50,28 @@ namespace TFTV
             "Deepdog","Fuk-Ushima","Fifi Macaffe","Sol","Gutgash","Ironbar","Morsov","Mudguts","Papagallo","Sarse","Sav","Roop","Blackfinger","Scrooloose",
             "Scuttle","Starbuck","Slit","Slake","Tenderloin","Toadie","Toecutter","Toast","Kane","Splitear","Brainrot","Maddog","Coyote","Birdsheet",
             "Gearhead","Yo-yo","Madskunky","Walker","Charlie","Wez","Ziggy","Alex","Max","Miller","Kenzo","Karal","Katoa","Okoye","Fagan","Avery",
-            "Parker","Joyce","Kai","Angel","Jesse","Riley","Ash","Finley","Shaw","Vickers","Jarno","Mikkola","Kris","Strid","Showalter","Grimsrud"};
+            "Parker","Joyce","Kai","Angel","Jesse","Riley","Ash","Finley","Shaw","Vickers","Marno","Jikkola","Kris","Strid","Showalter","Grimsrud"};
 
         public static List<string> nj_Names = new List<string> {"Rockatansky","Bryant","Richter",
             "Ripley","Amos" ,"Draper","Caleb" ,"Hunter","Tempest","Kruger","Sinclair","Morgan","Musk","Jackson","Hicks","Vasquez","Hudson","Ferro","Spunkmeyer",
             "Dietrich","Frost","Drake","Wierzbowski","Payne","Ventura","Dutch","Dillon","Hawkins","Mac","Poncho","Walker","Charlie","Wez","Ziggy",
             "Alex","Max","Miller","Kenzo","Karal","Katoa","Okoye","Fagan","Avery","Parker","Joyce","Kai","Angel","Jesse","Riley","Ash",
-            "Finley","Shaw","Vickers","Jarno","Mikkola","Kris","Strid","Showalter","Grimsrud"};
+            "Finley","Shaw","Vickers","Marno","Jikkola","Kris","Strid","Showalter","Grimsrud"};
         public static List<string> anu_Names = new List<string> {"Walker","Charlie","Wez","Ziggy","Alex","Max","Miller","Kenzo","Karal","Katoa",
-            "Okoye","Fagan","Avery","Parker","Joyce","Kai","Angel","Jesse","Riley","Ash","Finley","Shaw","Vickers","Jarno","Mikkola",
+            "Okoye","Fagan","Avery","Parker","Joyce","Kai","Angel","Jesse","Riley","Ash","Finley","Shaw","Vickers","Marno","Jikkola",
             "Kris","Strid","Showalter","Grimsrud"};
         public static List<string> syn_Names = new List<string> {"Nagata","Inaros","Avasarala","Liberty","Fraternity","Equality","Lenin","Tenet",
             "Campion","Meseeks","Squanchy","Nimbus","Mojo","Nostromo","Odyssey","Bono","Eli","Naru","Taabe","Sanchez","Walker","Charlie",
             "Wez","Ziggy","Alex","Max","Miller","Kenzo","Karal","Katoa","Okoye","Fagan","Avery","Parker","Joyce","Kai","Angel","Jesse",
-            "Riley","Ash","Finley","Shaw","Vickers","Jarno","Mikkola","Kris","Strid","Showalter","Grimsrud"};
+            "Riley","Ash","Finley","Shaw","Vickers","Marno","Jikkola","Kris","Strid","Showalter","Grimsrud"};
         public static List<string> pu_Names = new List<string> {"Walker","Charlie","Wez","Ziggy","Alex","Max","Miller","Kenzo","Karal","Katoa",
-            "Okoye","Fagan","Avery","Parker","Joyce","Kai","Angel","Jesse","Riley","Ash","Finley","Shaw","Vickers","Jarno","Mikkola",
-            "Kris","Strid","Showalter","Grimsrud"};
+            "Okoye","Fagan","Avery","Parker","Joyce","Kai","Angel","Jesse","Riley","Ash","Finley","Shaw","Vickers", "Showalter","Grimsrud", "AirKris",
+"AndyP","Brunks","Dante","Geda","GeoDao","Hokken","Gollop","Kal","Millioneigher","NoobCaptain","Origami","Ravenoid","Bobby","Stridtul",
+"Tyraenon","Ikobot","Valygar","E.E.","BFIG","Sheepy","Conductiv","mad2342","Pantolomin"
+};
         public static List<string> fo_Names = new List<string> {"Thriceborn","Shai-Hulud","Shorr Kan","Yurtle","Lorax","Seer","Belial","Torinus",
             "Voland","Yar-Shalak","Ghul","Gheist","Melachot","Xelot","Nacht-Zur'acht","Bane","Oshazahul","Slithering","Azelot",
-            "Ursuk","Hottaku","Weirdling","Outsider","Tleilaxu","Tuek","Whisperblade","Bladehands"};
+            "Ursuk","Hottaku","Weirdling","Outsider","Tleilaxu","Tuek","Whisperblade","Bladehands", "Yokes"};
 
         public static List<string> ban_NameRanks = new List<string> { "Boss", "Enforcer", "Raider", "Carrion" };
         public static List<string> nj_NameRanks = new List<string> { "Leader", "Veteran", "Jackboot", "Greenhorn"};
@@ -79,7 +81,7 @@ namespace TFTV
         public static List<string> fo_NameRanks = new List<string> { "Scourge", "Evolved", "Reborn", "Fledgling" };
 
         public static string tier1description = "While alive, creates special effect on allies and/or enemies (Tactics). Allies lose 4 WP if character dies.";
-        public static string tier2description = "Allies within range gain +1 WP per turn and lose 2WP if character dies.";
+        public static string tier2description = "Allies who can see the character gain +1 WP per turn and lose 3WP if character dies.";
         public static string tier3description = "Allies lose 2 WP if character dies.";
         public static string tier4description = "Allies do not lose WP if character dies. Nobody expects them to live long anyway.";
 

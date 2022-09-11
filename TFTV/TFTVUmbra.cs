@@ -3,6 +3,7 @@ using Base.Entities.Effects.ApplicationConditions;
 using HarmonyLib;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
+using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.Research;
 using PhoenixPoint.Geoscape.Entities.Research.Requirement;
 using PhoenixPoint.Geoscape.Levels;
@@ -244,114 +245,8 @@ namespace TFTV
             {
                 TFTVLogger.Error(e);
             }
-
-
         }
 
-        /*
-        [HarmonyPatch(typeof(PhoenixStatisticsManager), "NewTurnEvent")]
-        public static class PhoenixStatisticsManager_NewTurnEvent_CalculateDelirium_Patch
-        {
-            public static void Postfix(TacticalFaction prevFaction, TacticalFaction nextFaction)
-            {
-
-                try
-                {
-                    if (UmbraResearched)
-                    {
-
-                        if (!TFTVVoidOmens.VoidOmen16Active)
-                        {
-                            ClassTagDef crabTag = Repo.GetAllDefs<ClassTagDef>().FirstOrDefault
-                           (ged => ged.name.Equals("Crabman_ClassTagDef"));
-                            ClassTagDef fishTag = Repo.GetAllDefs<ClassTagDef>().FirstOrDefault
-                           (ged => ged.name.Equals("Fishman_ClassTagDef"));
-
-                            if (prevFaction.IsControlledByPlayer)
-                            {
-                                totalCharactersWithDelirium = 0;
-                                totalDeliriumOnMission = 0;
-
-                                foreach (TacticalActor actor in nextFaction.TacticalActors)
-                                {
-                                    if (actor.CharacterStats.Corruption.Value > 0)
-                                    {
-                                        totalCharactersWithDelirium++;
-                                        totalDeliriumOnMission += (int)actor.CharacterStats.Corruption.Value.BaseValue;
-
-                                    }
-                                }
-                            }
-                            TFTVLogger.Always("Total Delirium on mission is " + totalDeliriumOnMission);
-                            TFTVLogger.Always("Number of characters with Delirium is " + totalCharactersWithDelirium);
-                            if (!prevFaction.IsControlledByPlayer)
-                            {
-                                TFTVLogger.Always("The prevFaction is " + prevFaction.Faction.FactionDef.name);
-                                TFTVLogger.Always("Total Delirium on mission is " + totalDeliriumOnMission);
-                                TFTVLogger.Always("Number of characters with Delirium is " + totalCharactersWithDelirium);
-
-                                DeathBelcherAbilityDef oilcrabDeathBelcherAbility =
-                               Repo.GetAllDefs<DeathBelcherAbilityDef>().FirstOrDefault
-                               (ged => ged.name.Equals("Oilcrab_Die_DeathBelcher_AbilityDef"));
-
-                                DeathBelcherAbilityDef oilfishDeathBelcherAbility =
-                               Repo.GetAllDefs<DeathBelcherAbilityDef>().FirstOrDefault
-                               (ged => ged.name.Equals("Oilfish_Die_DeathBelcher_AbilityDef"));
-
-                                foreach (TacticalActor actor in nextFaction.TacticalActors)
-                                {
-                                    TFTVLogger.Always("The next faction is " + nextFaction.Faction.FactionDef.name);
-                                    TFTVLogger.Always("The actor is " + actor.name);
-                                    if (actor.GameTags.Contains(crabTag) && actor.GetAbilityWithDef<DeathBelcherAbility>(oilcrabDeathBelcherAbility) == null
-                                        && !actor.name.Contains("Oilcrab") && !actor.GameTags.Contains(Repo.GetAllDefs<GameTagDef>().FirstOrDefault(p => p.name.Equals("Revenant_GameTagDef"))))
-
-                                    {
-                                        int roll = UnityEngine.Random.Range(0, 100);
-                                        if (TFTVVoidOmens.VoidOmen15Active && roll <= totalDeliriumOnMission)
-                                        {
-                                            TFTVLogger.Always("This Arthron here " + actor + ", got past the crabtag and the blecher ability check!");
-                                            AddArthronUmbraDeathBelcherAbility(actor);
-                                        }
-                                        else if (!TFTVVoidOmens.VoidOmen15Active && roll <= totalDeliriumOnMission / 2)
-                                        {
-                                            TFTVLogger.Always("This Arthron here " + actor + ", got past the crabtag and the blecher ability check!");
-                                            AddArthronUmbraDeathBelcherAbility(actor);
-                                        }
-
-                                    }
-                                    if (actor.GameTags.Contains(fishTag) && actor.GetAbilityWithDef<DeathBelcherAbility>(oilfishDeathBelcherAbility) == null
-                                        && !actor.name.Contains("Oilfish") && !actor.GameTags.Contains(Repo.GetAllDefs<GameTagDef>().FirstOrDefault(p => p.name.Equals("Revenant_GameTagDef"))))
-                                    {
-                                        int roll = UnityEngine.Random.Range(0, 100);
-                                        if (TFTVVoidOmens.VoidOmen15Active && roll <= totalDeliriumOnMission)
-                                        {
-                                            TFTVLogger.Always("This Triton here " + actor + ", got past the crabtag and the blecher ability check!");
-                                            AddTritonUmbraDeathBelcherAbility(actor);
-                                        }
-                                        else if (!TFTVVoidOmens.VoidOmen15Active && roll <= totalDeliriumOnMission / 2)
-                                        {
-                                            TFTVLogger.Always("This Triton here " + actor + ", got past the crabtag and the blecher ability check!");
-                                            AddTritonUmbraDeathBelcherAbility(actor);
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    else
-                    {
-                        RandomValueEffectConditionDef randomValueCrabUmbra = Repo.GetAllDefs<RandomValueEffectConditionDef>().
-                        FirstOrDefault(ged => ged.name.Equals("E_RandomValue [UmbralCrabmen_FactionEffectDef]"));
-                        TFTVLogger.Always("The randon Crab Umbra value is " + randomValueCrabUmbra.ThresholdValue);
-                    }
-
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-            }
-        }*/
 
         [HarmonyPatch(typeof(Research), "CompleteResearch")]
         public static class Research_NewTurnEvent_CalculateDelirium_Patch
@@ -385,8 +280,9 @@ namespace TFTV
                     {
                         research.Faction.GeoLevel.EventSystem.SetVariable("Pandorans_Researched_Citadel", 1);
                         research.Faction.GeoLevel.AlienFaction.SpawnNewAlienBase();
+                        GeoAlienBase citadel = research.Faction.GeoLevel.AlienFaction.Bases.FirstOrDefault(ab => ab.AlienBaseTypeDef.name == "Citadel_GeoAlienBaseTypeDef");
+                        citadel.SpawnMonster(Repo.GetAllDefs<ClassTagDef>().FirstOrDefault(ctf => ctf.name.Equals("Queen_ClassTagDef")), true);
                     }
-
                 }
                 catch (Exception e)
                 {
