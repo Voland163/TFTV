@@ -174,6 +174,7 @@ namespace TFTV
                     TFTVLogger.Always("deadSoldier " + deadSoldier + " with GeoTacUnitId " 
                         + GetDeadSoldiersIdFromName(deadSoldier, controller) +  "is added to the list of Revenant candidates");
                 }
+                UnityEngine.Random.InitState((int)DateTime.Now.Ticks);
                 int roll = UnityEngine.Random.Range(0, candidates.Count());
                 TFTVLogger.Always("The total number of candidates is " + candidates.Count() + " and the roll is " + roll);
 

@@ -1,13 +1,11 @@
 ﻿using Base.Core;
 using Base.Defs;
-using Base.UI;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities.Items;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.Interception.Equipments;
 using PhoenixPoint.Geoscape.Entities.Research;
-using PhoenixPoint.Geoscape.Events.Eventus;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
 using PhoenixPoint.Tactical.Entities;
@@ -15,7 +13,6 @@ using PhoenixPoint.Tactical.Entities.Equipments;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine;
 
 namespace TFTV
 {
@@ -149,7 +146,7 @@ namespace TFTV
                 {
                     GeoVehicle geoVehicle = __instance.Vehicles.First();
                     geoVehicle.AddEquipment(Repo.GetAllDefs<GeoVehicleEquipmentDef>().FirstOrDefault(gve => gve.name.Equals("SY_HibernationPods_GeoVehicleModuleDef")));
-                    
+
                     TFTVConfig config = TFTVMain.Main.Config;
 
                     List<TacCharacterDef> startingTemplates = new List<TacCharacterDef>();
@@ -168,7 +165,7 @@ namespace TFTV
 
                     if (config.tutorialCharacters == TFTVConfig.StartingSquadCharacters.UNBUFFED)
                     {
-                        startingTemplates= TFTVStarts.SetInitialSquadUnbuffed(__instance.GeoLevel);                       
+                        startingTemplates = TFTVStarts.SetInitialSquadUnbuffed(__instance.GeoLevel);
                     }
                     else if (config.tutorialCharacters == TFTVConfig.StartingSquadCharacters.RANDOM)
                     {
@@ -181,25 +178,46 @@ namespace TFTV
 
                     foreach (TacCharacterDef template in startingTemplates)
                     {
-                        if (!template.name.Contains("Buffed") && 
-                            template!= Repo.GetAllDefs<TacCharacterDef>().FirstOrDefault(a => a.name.Equals("PX_Jacob_TFTV_TacCharacterDef")) &&
+                        GeoFaction geoFaction = new GeoFaction();
+
+                        if (template.name.Equals("PX_Starting_Infiltrator_TacCharacterDef"))
+                        {
+                            geoFaction = __instance.GeoLevel.SynedrionFaction;
+
+                        }
+                        else if (template.name.Equals("PX_Starting_Priest_TacCharacterDef"))
+                        {
+                            geoFaction = __instance.GeoLevel.AnuFaction;
+                        }
+                        else if (template.name.Equals("PX_Starting_Technician_TacCharacterDef"))
+                        {
+                            geoFaction = __instance.GeoLevel.NewJerichoFaction;
+                        }
+                        else
+                        {
+                            geoFaction = __instance;
+
+                        }
+
+                        if (!template.name.Contains("Buffed") &&
+                            template != Repo.GetAllDefs<TacCharacterDef>().FirstOrDefault(a => a.name.Equals("PX_Jacob_TFTV_TacCharacterDef")) &&
                             template != Repo.GetAllDefs<TacCharacterDef>().FirstOrDefault(a => a.name.Equals("PX_Sophia_TFTV_TacCharacterDef")))
                         {
-                            GeoUnitDescriptor geoUnitDescriptor = __instance.GeoLevel.CharacterGenerator.GenerateUnit(__instance, template);
-                            __instance.GeoLevel.CharacterGenerator.ApplyGenerationParameters(geoUnitDescriptor, currentDifficultyLevel.StartingSquadGenerationParams);
-                            __instance.GeoLevel.CharacterGenerator.RandomizeIdentity(geoUnitDescriptor);
+                            GeoUnitDescriptor geoUnitDescriptor = geoFaction.GeoLevel.CharacterGenerator.GenerateUnit(geoFaction, template);
+                            geoFaction.GeoLevel.CharacterGenerator.ApplyGenerationParameters(geoUnitDescriptor, currentDifficultyLevel.StartingSquadGenerationParams);
+                            geoFaction.GeoLevel.CharacterGenerator.RandomizeIdentity(geoUnitDescriptor);
 
                             GeoCharacter character = geoUnitDescriptor.SpawnAsCharacter();
                             geoVehicle.AddCharacter(character);
                         }
                         else
                         {
-                            GeoCharacter character = __instance.GeoLevel.CreateCharacterFromTemplate(template, __instance);
+                            GeoCharacter character = geoFaction.GeoLevel.CreateCharacterFromTemplate(template, __instance);
                             geoVehicle.AddCharacter(character);
                         }
                     }
 
-                    if (__instance.GeoLevel.EventSystem.GetVariable("BG_Start_Faction")==1) 
+                    if (__instance.GeoLevel.EventSystem.GetVariable("BG_Start_Faction") == 1)
                     {
                         TFTVStarts.ModifyIntroForSpecialStart(__instance.GeoLevel.AnuFaction, site);
                     }

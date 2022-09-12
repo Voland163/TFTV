@@ -1,6 +1,8 @@
 ﻿using Base.Defs;
+using Base.Entities.Statuses;
 using Base.UI;
 using PhoenixPoint.Common.Core;
+using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Levels.Missions;
 using PhoenixPoint.Tactical.Entities.Abilities;
@@ -23,13 +25,15 @@ namespace TFTV
         {
             try
             {
+
+
                 string tagName = "HumanEnemy";
                 string anu = "anu";
                 string bandit = "ban";
                 string newJericho = "nj";
                 string synedrion = "syn";
                 string forsaken = "fo";
-                string pure = "pu";
+                string pure = "Purists";
 
                 GameTagDef source = Repo.GetAllDefs<GameTagDef>().FirstOrDefault(p => p.name.Equals("Takeshi_Tutorial3_GameTagDef"));
                 GameTagDef tier1GameTag = Helper.CreateDefFromClone(
@@ -51,7 +55,7 @@ namespace TFTV
                 GameTagDef anuGameTag = Helper.CreateDefFromClone(
                     source,
                     "1C8EC6EF-CE51-4AC5-B799-128FDE6ABF14",
-                    tagName + "Faction_" + anu + "_FactionGameTagDef");
+                    tagName + "Faction_" + anu + "_GameTagDef");
                 GameTagDef banditGameTag = Helper.CreateDefFromClone(
                     source,
                     "78993F15-9233-4C49-B8C3-13144156E438",
@@ -135,6 +139,46 @@ namespace TFTV
             }
 
         }
+
+
+        public static void CreateAmbushAbility()
+        {
+            try
+            {
+
+                string skillName = "HumanEnemiesTacticsAmbush_AbilityDef";
+                PassiveModifierAbilityDef source = Repo.GetAllDefs<PassiveModifierAbilityDef>().FirstOrDefault(p => p.name.Equals("SelfDefenseSpecialist_AbilityDef"));
+                PassiveModifierAbilityDef ambushAbility = Helper.CreateDefFromClone(
+                    source,
+                    "31785839-0687-4065-ACFB-255C1A1CE63D",
+                    skillName);
+                ambushAbility.CharacterProgressionData = Helper.CreateDefFromClone(
+                    source.CharacterProgressionData,
+                    "136290BA-D672-4EEF-822E-F3B8FF27496C",
+                    skillName);
+                ambushAbility.ViewElementDef = Helper.CreateDefFromClone(
+                    source.ViewElementDef,
+                    "6D47E347-35DE-4E8E-B6FF-9B9DF0598175",
+                    skillName);
+                ambushAbility.StatModifications = new ItemStatModification[]
+                { new ItemStatModification {TargetStat = StatModificationTarget.BonusAttackDamage, Modification = StatModificationType.Multiply, Value = 1.10f},
+                };
+                ambushAbility.ItemTagStatModifications = new EquipmentItemTagStatModification[0];
+                ambushAbility.ViewElementDef.DisplayName1 = new LocalizedTextBind("Ambush (Tactics)", true);
+                ambushAbility.ViewElementDef.Description = new LocalizedTextBind
+                    ("+10% damage. Received ability because Leader is alive and there were no enemies in sight within 10 tiles at the start of the turn.", true);
+                Sprite icon = Helper.CreateSpriteFromImageFile("UI_AbilitiesIcon_PersonalTrack_TacticalAnalyst.png");
+                ambushAbility.ViewElementDef.LargeIcon = icon;
+                ambushAbility.ViewElementDef.SmallIcon = icon;
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+
         /* Don't need as will patch in to add the text 
         public static void CreateHumanEnemiesRanks()
         {

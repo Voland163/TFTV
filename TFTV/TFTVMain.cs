@@ -148,6 +148,7 @@ namespace TFTV
             TFTVSmallChanges.MistOnAllMissions();
             TFTVHumanEnemiesDefs.CreateHumanEnemiesTags();
             TFTVHumanEnemiesDefs.ModifyMissionDefsToReplaceNeutralWithBandit();
+            TFTVHumanEnemiesDefs.CreateAmbushAbility();
             TFTVHumanEnemiesNames.CreateNamesDictionary();
             
              
@@ -264,7 +265,8 @@ namespace TFTV
         {
             //Reinject Dtony's delirium perks, because assuming degradation will happen based on BetterClasses experience
             TFTVDeliriumPerks.Main();
-           
+            TFTVHumanEnemiesDefs.CreateAmbushAbility();
+
 
         }
 

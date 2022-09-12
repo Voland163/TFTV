@@ -8,13 +8,13 @@ namespace TFTV
         public static string[] adjectives = new string[] {"Crazy", "Mad", "Sneaky", "Bloody", "Inglorious", "Glorious", "Somber", "Wasteland",
           "Red", "Green", "Blue", "Golden", "Dead", "Bullet", "Laser", "Shredding", "Acid", "Toxic", "Rampaging", "Festering", "Corrupted", "Kaos",
           "Explosive", "Broken", "Lewd", "Fierce", "Fire", "Ice", "Mean", "Mech", "War", "Suicide", "Snapshot", "Jagged", "Jaded", "Bloodied",
-          "Shredded", "Cursed", "Blessed", "Alpha", "Bravo", "Charlie", "Tango", "Zulu", "Black", "White", "Zombie", "Hungry", "Thirsty"};
+          "Shredded", "Cursed", "Blessed", "Alpha", "Bravo", "Charlie", "Tango", "Zulu", "Black", "White", "Zombie", "Hungry", "Thirsty", "Death"};
 
         public static string[] nouns = new string[] { "Vipers", "Monkeys", "Goats", "Crabmen", "Fishmen", "Mindfraggers", "Chirons",
             "Sirens", "Scyllas", "Acherons", "Locusts", "Buzzards", "Vultures", "Eagles", "Basterds", "Bastards", "Killers", "Echoes",
             "Rabbits", "Mice", "Bulls", "Behemoths", "Dillos", "Mantis", "Warriors", "Soldiers", "Dogs", "Panthers", "Turtles", "Boys",
             "Bugs", "Jokers", "Razors", "Rascals", "Raiders", "Alligators", "Gators", "Raptors", "Monks", "Barbarians", "Seals", "Crabs",
-            "Fighters", "Revenants", "Beriths", "Charuns", "Abbadons", "Lords" };
+            "Fighters", "Revenants", "Beriths", "Charuns", "Abbadons", "Lords", "Hawks", "Dealers" };
 
         public static Dictionary<string, List<string>> names = new Dictionary<string, List<string>>();
         public static Dictionary<string, List<string>> ranks = new Dictionary<string, List<string>>();
@@ -27,14 +27,14 @@ namespace TFTV
                 names.Add("nj", nj_Names);
                 names.Add("anu", anu_Names);
                 names.Add("syn", syn_Names);
-                names.Add("pu", pu_Names);
+                names.Add("Purists", pu_Names);
                 names.Add("fo", fo_Names);
 
                 ranks.Add("ban", ban_NameRanks);
                 ranks.Add("nj", nj_NameRanks);
                 ranks.Add("anu", anu_NameRanks);
                 ranks.Add("syn", syn_NameRanks);
-                ranks.Add("pu", pu_NameRanks);
+                ranks.Add("Purists", pu_NameRanks);
                 ranks.Add("fo", fo_NameRanks);
 
             }
@@ -60,10 +60,12 @@ namespace TFTV
         public static List<string> anu_Names = new List<string> {"Walker","Charlie","Wez","Ziggy","Alex","Max","Miller","Kenzo","Karal","Katoa",
             "Okoye","Fagan","Avery","Parker","Joyce","Kai","Angel","Jesse","Riley","Ash","Finley","Shaw","Vickers","Marno","Jikkola",
             "Kris","Strid","Showalter","Grimsrud"};
+
         public static List<string> syn_Names = new List<string> {"Nagata","Inaros","Avasarala","Liberty","Fraternity","Equality","Lenin","Tenet",
             "Campion","Meseeks","Squanchy","Nimbus","Mojo","Nostromo","Odyssey","Bono","Eli","Naru","Taabe","Sanchez","Walker","Charlie",
             "Wez","Ziggy","Alex","Max","Miller","Kenzo","Karal","Katoa","Okoye","Fagan","Avery","Parker","Joyce","Kai","Angel","Jesse",
             "Riley","Ash","Finley","Shaw","Vickers","Marno","Jikkola","Kris","Strid","Showalter","Grimsrud"};
+
         public static List<string> pu_Names = new List<string> {"Walker","Charlie","Wez","Ziggy","Alex","Max","Miller","Kenzo","Karal","Katoa",
             "Okoye","Fagan","Avery","Parker","Joyce","Kai","Angel","Jesse","Riley","Ash","Finley","Shaw","Vickers", "Showalter","Grimsrud", "AirKris",
 "AndyP","Brunks","Dante","Geda","GeoDao","Hokken","Gollop","Kal","Millioneigher","NoobCaptain","Origami","Ravenoid","Bobby","Stridtul",

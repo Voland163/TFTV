@@ -19,6 +19,7 @@ namespace TFTV
     internal class TFTVTutorialAndStory
     {
         private static readonly DefRepository Repo = TFTVMain.Repo;
+      // public static string hintShow = "";
 
         [HarmonyPatch(typeof(UIModuleTutorialModal), "SetTutorialStep")]
         public static class UIModuleTutorialModal_SetTutorialStep_Hints_Patch
@@ -41,26 +42,46 @@ namespace TFTV
             }
         }
 
+       
 
         [HarmonyPatch(typeof(UIModuleContextHelp), "Show")]
         public static class UIModuleContextHelp_Show_Hints_Patch
         {
             
-            public static void Postfix(LocalizedTextBind title, ref Sprite image)
+            public static void Postfix(LocalizedTextBind title, UIModuleContextHelp __instance)
             {
                 try
                 {
                     TFTVLogger.Always("Show hint method invoked");
+                   ContextHelpHintDef leaderSightedHint = Repo.GetAllDefs<ContextHelpHintDef>().FirstOrDefault(ged => ged.name.Equals("LeaderSighted"));
+                    TFTVLogger.Always(leaderSightedHint.Title.LocalizeEnglish());
+                    TFTVLogger.Always(title.LocalizeEnglish());
 
                     if (title.LocalizationKey == "UMBRA_SIGHTED_TITLE")
                     {
-                        image = Helper.CreateSpriteFromImageFile("Umbra_hint.jpg");
+                        __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("Umbra_hint.jpg");
                     }
 
                     if (title.LocalizationKey == "REVENANT_SIGHTED_TITLE")
                     {
-                        image = Helper.CreateSpriteFromImageFile("Umbra_hint.jpg");
+                        __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("Umbra_hint.jpg");
                     }
+
+                    foreach (string name in TFTVHumanEnemiesNames.nouns) 
+                    {
+                        if (title.LocalizeEnglish().Contains(name)) 
+                        {
+
+                       
+                            TFTVLogger.Always("leaderSightedHint if check passed");
+                         //   image = Helper.CreateSpriteFromImageFile("Umbra_family.png");
+                            __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile(TFTVHumanEnemies.FileNameSquadPic);
+                           leaderSightedHint.AnyCondition = false;
+
+                        }
+                    
+                    }
+
                 }
                 catch (Exception e)
                 {
@@ -76,6 +97,10 @@ namespace TFTV
             {
                 CreateNewTacticalHint("UmbraSighted", HintTrigger.ActorSeen, "Oilcrab_TacCharacterDef", "UMBRA_SIGHTED_TITLE", "UMBRA_SIGHTED_TEXT",0, true);
                 CreateNewTacticalHint("RevenantSighted", HintTrigger.ActorSeen, "RevenantTier_1_GameTagDef", "REVENANT_SIGHTED_TITLE", "REVENANT_SIGHTED_TEXT", 1, true);
+                CreateNewTacticalHint("LeaderSighted", HintTrigger.ActorSeen, "HumanEnemyTier_1_GameTagDef", "Should not appear", "Should not appear", 1, false);
+               // ContextHelpHintDef leaderSightedHint = Repo.GetAllDefs<ContextHelpHintDef>().FirstOrDefault(ged => ged.name.Equals("LeaderSighted"));
+               // leaderSightedHint.AnyCondition = false;
+
             }
             catch (Exception e)
             {
@@ -113,9 +138,9 @@ namespace TFTV
                 
                 ActorHasTagHintConditionDef sourceActorHasTemplateHintConditionDef = Repo.GetAllDefs<ActorHasTagHintConditionDef>().FirstOrDefault(ged => ged.name.Equals("ActorHasTag_Takeshi_Tutorial3_GameTagDef_HintConditionDef"));
                 ActorHasTagHintConditionDef newActorHasTemplateHintConditionDef = Helper.CreateDefFromClone(sourceActorHasTemplateHintConditionDef, gUID, "ActorHasTag_" + name + "_HintConditionDef");
-                GameTagDef gameTagDef = Repo.GetAllDefs<GameTagDef>().FirstOrDefault(ged => ged.name.Equals(name));
+                GameTagDef gameTagDef = Repo.GetAllDefs<GameTagDef>().FirstOrDefault(ged => ged.name.Contains(name));
                 newActorHasTemplateHintConditionDef.GameTagDef = gameTagDef;
-
+               
                 return newActorHasTemplateHintConditionDef;
             }
 
@@ -148,17 +173,16 @@ namespace TFTV
                 }
                 newContextHelpHintDef.Title.LocalizationKey = title;
                 newContextHelpHintDef.Text.LocalizationKey = text;
+                //  newContextHelpHintDef.AnyCondition = false;
+                string gUID2 = Guid.NewGuid().ToString();
+                HasSeenHintHintConditionDef sourceHasSeenHintConditionDef = Repo.GetAllDefs<HasSeenHintHintConditionDef>().FirstOrDefault(ged => ged.name.Equals("HasSeenHint_TUT2_Overwatch_HintDef-False_HintConditionDef"));
+                HasSeenHintHintConditionDef newHasSeenHintConditionDef = Helper.CreateDefFromClone(sourceHasSeenHintConditionDef, gUID2, name + "HasSeenHintConditionDef");
+                newHasSeenHintConditionDef.HintDef = newContextHelpHintDef;
+                newContextHelpHintDef.Conditions.Add(newHasSeenHintConditionDef);
 
                 if (oneTime) 
-                
                 {
-                    string gUID2 = Guid.NewGuid().ToString();
-                    HasSeenHintHintConditionDef sourceHasSeenHintConditionDef= Repo.GetAllDefs<HasSeenHintHintConditionDef>().FirstOrDefault(ged => ged.name.Equals("HasSeenHint_TUT2_Overwatch_HintDef-False_HintConditionDef"));
-                    HasSeenHintHintConditionDef newHasSeenHintConditionDef = Helper.CreateDefFromClone(sourceHasSeenHintConditionDef, gUID2, name + "HasSeenHintConditionDef");
-                    newHasSeenHintConditionDef.HintDef = newContextHelpHintDef;
-                    newContextHelpHintDef.Conditions.Add(newHasSeenHintConditionDef);
-                    newContextHelpHintDef.AnyCondition = false;
-                    
+                       newContextHelpHintDef.AnyCondition = false;   
                 }
 
 

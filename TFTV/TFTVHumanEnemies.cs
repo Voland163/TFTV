@@ -2,6 +2,7 @@
 using Base.Entities.Abilities;
 using Base.UI;
 using HarmonyLib;
+using PhoenixPoint.Common.ContextHelp;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Statuses;
@@ -22,12 +23,14 @@ namespace TFTV
         private static readonly DefRepository Repo = TFTVMain.Repo;
 
         public static int difficultyLevel = 0;
+        public static string FileNameSquadPic = "";
         public static string GenerateGangName()
         {
             try
             {
-
+                UnityEngine.Random.InitState((int)DateTime.Now.Ticks);
                 int adjectivesNumber = UnityEngine.Random.Range(0, TFTVHumanEnemiesNames.adjectives.Length);
+                UnityEngine.Random.InitState((int)DateTime.Now.Ticks);
                 int nounsNumber = UnityEngine.Random.Range(0, TFTVHumanEnemiesNames.nouns.Length);
                 string name = TFTVHumanEnemiesNames.adjectives[adjectivesNumber] + " " + TFTVHumanEnemiesNames.nouns[nounsNumber];
                 return name;
@@ -40,7 +43,123 @@ namespace TFTV
             throw new InvalidOperationException();
         }
 
+        public static void GenerateHumanEnemyUnit(TacticalFaction enemyHumanFaction, string nameOfLeader, int roll)
+        {
+            try 
+            {
+                string nameOfGang = GenerateGangName();
+                string unitType = "";
 
+                string tactic = "";
+                string description = "";
+                if (roll == 1)
+                {
+                    description = "Enemies who can see the character lose 1 WP";
+                    tactic = "Fearsome";
+                }
+                else if (roll == 2)
+                {
+                    description = "Allies first attack with firearms costs 1 AP less";
+                    tactic = "Starting volley";
+                }
+                else if (roll == 3)
+                {
+                    description = "All lowest tier friendlies gain 10 regeneration";
+                    tactic = "Experimental drugs";
+                }
+                else if (roll == 4)
+                {
+                    description = "Character and allies within 12 tiles get +100% stealth";
+                    tactic = "Active camo";
+                }
+                else if (roll == 5)
+                {
+                    description = "Allies within 20 tiles have return fire ability";
+                    tactic = "Fire discipline";
+                }
+                else if (roll == 6)
+                {
+                    description = "When any high ranking character dies, allies gain frenzy status";
+                    tactic = "Blood frenzy";
+                }
+                else if (roll == 7)
+                {
+                    description = "Enemy that attacks character becomes Marked for Death";
+                    tactic = "Retribution";
+                }
+                else if (roll == 8)
+                {
+                    description = "While leader is alive and there are no enemies in sight within 10 tiles at start of the turn, all allies do +10% damage";
+                    tactic = "Ambush";
+                }
+                else if (roll == 9)
+                {
+                    description = "While leader is alive each ally gains +15% accuracy per ally within 12 tiles, up to +60%";
+                    tactic = "Assisted targeting";
+                }
+
+                string nameOfTactic = tactic;
+                string descriptionOfTactic = description;
+
+                if (enemyHumanFaction.TacticalFactionDef.ShortName.Equals("ban"))
+                {
+                    unitType = "a gang";
+                    FileNameSquadPic = "ban_squad.png";
+                }
+                else if (enemyHumanFaction.TacticalFactionDef.ShortName.Equals("nj") || enemyHumanFaction.Faction.FactionDef.ShortName.Equals("anu") || enemyHumanFaction.Faction.FactionDef.ShortName.Equals("syn")) 
+                {
+                    string factionName = "";
+                    if (enemyHumanFaction.TacticalFactionDef.ShortName.Equals("nj")) 
+                    {
+                        factionName = "New Jericho";
+                        FileNameSquadPic = "nj_squad.jpg";
+                    }
+                    else if (enemyHumanFaction.TacticalFactionDef.ShortName.Equals("anu")) 
+                    {
+                        factionName = "Disciples of Anu";
+                        FileNameSquadPic = "anu_squad.jpg";
+                    }
+                    else 
+                    {
+                        factionName = "Synedrion";
+                        FileNameSquadPic = "syn_squad.jpg";
+                    }
+
+                    unitType = "a " + factionName + " squad";               
+                }
+                else if (enemyHumanFaction.TacticalFactionDef.ShortName.Equals("fo")) 
+                {
+                    unitType = "a pack of Forsaken";
+                    FileNameSquadPic = "fo_squad.png";
+                }
+                else if (enemyHumanFaction.TacticalFactionDef.ShortName.Equals("Purists"))
+                {
+                    unitType = "an array of the Pure";
+                    FileNameSquadPic = "pu_squad.jpg";
+                }
+
+                string descriptionHint = "You are facing " + unitType +", called the " + nameOfGang +
+                    ". Their leader is " + nameOfLeader + ", using the tactic " + nameOfTactic + ": " + descriptionOfTactic;
+ 
+                ContextHelpHintDef leaderSightedHint = Repo.GetAllDefs<ContextHelpHintDef>().FirstOrDefault(ged => ged.name.Equals("LeaderSighted"));
+
+
+               //LocalizedTextBind title = new LocalizedTextBind(nameOfGang, true);
+               // LocalizedTextBind text = new LocalizedTextBind(descriptionHint, true);
+              //  Sprite sprite = Helper.CreateSpriteFromImageFile(TFTVHumanEnemies.FileNameSquadPic);
+                leaderSightedHint.Title = new LocalizedTextBind(nameOfGang, true);
+                leaderSightedHint.Text = new LocalizedTextBind(descriptionHint, true);
+                leaderSightedHint.AnyCondition = true;
+
+              //  UIModuleContextHelp uIModuleContextHelp = (UIModuleContextHelp)UnityEngine.Object.FindObjectOfType(typeof(UIModuleContextHelp));
+              //  uIModuleContextHelp.Show(title, text, sprite, leaderSightedHint.VideoDef, false, leaderSightedHint, false);
+               // TFTVLogger.Always("The hint should have appeared");
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
 
         public static void AssignHumanEnemiesTags(TacticalLevelController controller)
         {
@@ -84,7 +203,7 @@ namespace TFTV
                     }
 
                     TacticalActor leader = orderedListOfHumanEnemies[0];
-
+                    
 
                     orderedListOfHumanEnemies.Remove(leader);
 
@@ -97,6 +216,7 @@ namespace TFTV
 
                     TacticalActorBase leaderBase = leader;
                     string nameOfFaction = faction.Faction.FactionDef.ShortName;
+                    TFTVLogger.Always("The short name of the faction is " + nameOfFaction);
                     GameTagDef gameTagDef = Repo.GetAllDefs<GameTagDef>().FirstOrDefault
                            (p => p.name.Equals("HumanEnemyFaction_" + nameOfFaction + "_GameTagDef"));
 
@@ -105,16 +225,20 @@ namespace TFTV
 
 
                     List<string> factionNames = TFTVHumanEnemiesNames.names.GetValueSafe(nameOfFaction);
+                    UnityEngine.Random.InitState((int)DateTime.Now.Ticks);
                     leader.name = factionNames[UnityEngine.Random.Range(0, factionNames.Count)];
                     factionNames.Remove(leader.name);
                     TFTVLogger.Always("Leader now has GameTag and their name is " + leader.name);
                     AdjustStatsAndSkills(leader);
+                    TFTVHumansEnemiesTactics.RollTactic();
+                    GenerateHumanEnemyUnit(faction, leader.name, TFTVHumansEnemiesTactics.roll);
 
                     for (int i = 0; i < champs; i++)
                     {
                         TacticalActorBase champ = orderedListOfHumanEnemies[i];
                         champ.GameTags.Add(HumanEnemyTier2GameTag);
                         champ.GameTags.Add(gameTagDef);
+                        UnityEngine.Random.InitState((int)DateTime.Now.Ticks);
                         champ.name = factionNames[UnityEngine.Random.Range(0, factionNames.Count)];
                         TacticalActor tacticalActor = champ as TacticalActor;
                         AdjustStatsAndSkills(tacticalActor);
@@ -127,6 +251,7 @@ namespace TFTV
                         TacticalActorBase ganger = orderedListOfHumanEnemies[i];
                         ganger.GameTags.Add(HumanEnemyTier3GameTag);
                         ganger.GameTags.Add(gameTagDef);
+                        UnityEngine.Random.InitState((int)DateTime.Now.Ticks);
                         ganger.name = factionNames[UnityEngine.Random.Range(0, factionNames.Count)];
                         TacticalActor tacticalActor = ganger as TacticalActor;
                         AdjustStatsAndSkills(tacticalActor);
@@ -139,6 +264,7 @@ namespace TFTV
                         TacticalActorBase juve = orderedListOfHumanEnemies[i];
                         juve.GameTags.Add(HumanEnemyTier4GameTag);
                         juve.GameTags.Add(gameTagDef);
+                        UnityEngine.Random.InitState((int)DateTime.Now.Ticks);
                         juve.name = factionNames[UnityEngine.Random.Range(0, factionNames.Count)];
                         TacticalActor tacticalActor = juve as TacticalActor;
                         AdjustStatsAndSkills(tacticalActor);
@@ -146,6 +272,8 @@ namespace TFTV
                         TFTVLogger.Always("This " + juve.name + " is now a juve");
 
                     }
+
+                    
                 }
             }
             catch (Exception e)
@@ -168,7 +296,7 @@ namespace TFTV
                     {
                         if (faction.Faction.FactionDef.ShortName.Equals("ban")
                                 || faction.Faction.FactionDef.ShortName.Equals("nj") || faction.Faction.FactionDef.ShortName.Equals("anu")
-                                || faction.Faction.FactionDef.ShortName.Equals("syn") || faction.Faction.FactionDef.ShortName.Equals("pu")
+                                || faction.Faction.FactionDef.ShortName.Equals("syn") || faction.Faction.FactionDef.ShortName.Equals("Purists")
                                 || faction.Faction.FactionDef.ShortName.Equals("fo"))
                         {
                             TFTVLogger.Always("The short name of the faction is " + faction.Faction.FactionDef.ShortName);
@@ -185,54 +313,7 @@ namespace TFTV
                 TFTVLogger.Error(e);
             }
             throw new InvalidOperationException();
-        }
-
-
-        public static void TestingAura(TacticalLevelController controller)
-        {
-            try
-            {
-                List<TacticalFaction> enemyHumanFactions = GetHumanEnemyFactions(controller);
-                
-                foreach (TacticalFaction faction in enemyHumanFactions)
-                {
-                    foreach (TacticalActorBase tacticalActorBase in faction.Actors)
-                    {
-                        TacticalActor tacticalActor = tacticalActorBase as TacticalActor;
-
-                        if (tacticalActorBase.HasGameTag(Repo.GetAllDefs<GameTagDef>().FirstOrDefault(p => p.name.Equals("HumanEnemyTier_1_GameTagDef"))))
-                        {
-                            foreach (TacticalActorBase allyTacticalActorBase in faction.Actors)
-                            {
-                                // TFTVLogger.Always("Ally pos " + allyTacticalActorBase.Pos);
-                                //   TFTVLogger.Always("Actor pos " + tacticalActor.Pos);
-                                // TFTVLogger.Always("ActorBase pos " + tacticalActorBase.Pos);
-                                float magnitude = 24;
-
-                                if ((allyTacticalActorBase.Pos - tacticalActorBase.Pos).magnitude < magnitude
-                                    && allyTacticalActorBase.BaseDef.name == "Soldier_ActorDef" && allyTacticalActorBase.InPlay
-                                    && TacticalFactionVision.CheckVisibleLineBetweenActors(allyTacticalActorBase, allyTacticalActorBase.Pos, tacticalActor, true))
-                                {
-                                    TFTVLogger.Always("Actor in range and has LoS");
-                                    ItemSlotStatsModifyStatusDef eRStatusEffect = Repo.GetAllDefs<ItemSlotStatsModifyStatusDef>().FirstOrDefault(p => p.name.Equals("E_Status [ElectricReinforcement_AbilityDef]"));
-                                    allyTacticalActorBase.Status.ApplyStatus(eRStatusEffect);
-                                }
-
-                            }
-                        }
-
-                    }
-                }
-
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-        }
-
-
-
+        }   
 
         [HarmonyPatch(typeof(TacticalActorBase), "get_DisplayName")]
         public static class TacticalActorBase_GetDisplayName_HumanEnemiesGenerator_Patch
@@ -241,8 +322,6 @@ namespace TFTV
             {
                 try
                 {
-
-
                     if (GetFactionTierAndClassTags(__instance.GameTags.ToList())[0] != null)
                     {
                         __result = __instance.name + GetRankName(GetFactionTierAndClassTags(__instance.GameTags.ToList()));
@@ -348,6 +427,9 @@ namespace TFTV
                             {
                                 __instance.CharacterLevel.text = "6";
                             }
+                            ____abilitiesList.AddRow<CharacterStatusAbilityRowController>
+                               (__instance.AbilitiesListAbilityPrototype).SetData(AddTacticsDescription(TFTVHumansEnemiesTactics.roll));
+
                         }
                         else if (factionAndTier[1] == HumanEnemyTier2GameTag)
                         {
@@ -423,6 +505,77 @@ namespace TFTV
             throw new InvalidOperationException();
         }
 
+        public static AbilityData AddTacticsDescription(int roll)
+        {
+            try 
+            {
+                string name = "Tactic";
+                string tactic = "";
+                string description = "";
+                if(roll == 1) 
+                {
+                    description = "Enemies who can see the character lose 1 WP";
+                    tactic = " - Fearsome"; 
+                }
+                else if (roll == 2)
+                {
+                    description = "Allies first attack with firearms costs 1 AP less";
+                    tactic = " - Starting volley";
+                }
+                else if (roll == 3)
+                {
+                    description = "All lowest tier friendlies gain 10 regeneration";
+                    tactic = " - Experimental drugs";
+                }
+
+                else if (roll == 4)
+                {
+                    description = "Character and allies within 12 tiles get +100% stealth";
+                    tactic = " - Active camo";
+                }
+                else if (roll == 5)
+                {
+                    description = "Allies within 20 tiles have return fire ability";
+                    tactic = " - Fire discipline";
+                }
+                else if (roll == 6)
+                {
+                    description = "When any high ranking character dies, allies gain frenzy status";
+                    tactic = " - Blood frenzy";
+                }
+                else if (roll == 7)
+                {
+                    description = "Enemy that attacks character becomes Marked for Death";
+                    tactic = " - Retribution";
+                }
+                else if (roll == 8)
+                {
+                    description = "While leader is alive and there are no enemies in sight within 10 tiles at start of the turn, all allies do +10% damage";
+                    tactic = " - Ambush";
+                }
+                else if (roll == 9)
+                {
+                    description = "While leader is alive each ally gains +15% accuracy per ally within 12 tiles, up to +60%";
+                    tactic = "Assisted targeting";
+                }
+
+
+                AbilityData abilityData = new AbilityData();
+                abilityData.Name = new LocalizedTextBind(name + tactic, true);
+                abilityData.LocalizedDescription = description;
+                abilityData.Icon = Helper.CreateSpriteFromImageFile("UI_AbilitiesIcon_PersonalTrack_SpecOp-1.png");
+                return abilityData;
+            }
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+            throw new InvalidOperationException();
+
+        }
+
+
         public static int GetAdjustedLevel(TacticalActor tacticalActor)
         {
             try
@@ -454,7 +607,7 @@ namespace TFTV
                     {
                         return 5;
                     }
-                    else if (startingLevel > 6)
+                    else 
                     {
                         return 6;
 
@@ -466,14 +619,14 @@ namespace TFTV
                     {
                         return 3;
                     }
-                    else if (startingLevel > 4)
+                    else 
                     {
                         return 4;
                     }
                 }
                 else if (rankOrder == 4)
                 {
-                    if (startingLevel > 2)
+                    if (startingLevel >= 2)
                     {
                         return 2;
                     }
@@ -878,8 +1031,9 @@ namespace TFTV
             {
                 try
                 {
-                    if (__instance.TurnNumber > 1 && actor.BaseDef.name == "Soldier_ActorDef" && actor.InPlay)
-                    {
+                    if (TFTVHumansEnemiesTactics.roll>0 && actor.BaseDef.name == "Soldier_ActorDef" && actor.InPlay 
+                        && __instance.CurrentFaction!=__instance.GetFactionByCommandName("PX"))
+                    {TFTVLogger.Always("The turn number is " + __instance.TurnNumber);
                         if (GetHumanEnemyFactions(__instance) != null)
                         {
                             GameTagDef HumanEnemyTier2GameTag = Repo.GetAllDefs<GameTagDef>().FirstOrDefault(p => p.name.Equals("HumanEnemyTier_2_GameTagDef"));
@@ -1026,7 +1180,7 @@ namespace TFTV
                     {
                         if (faction.Faction.FactionDef.ShortName.Equals("neut") || faction.Faction.FactionDef.ShortName.Equals("ban")
                                 || faction.Faction.FactionDef.ShortName.Equals("nj") || faction.Faction.FactionDef.ShortName.Equals("anu")
-                                || faction.Faction.FactionDef.ShortName.Equals("syn") || faction.Faction.FactionDef.ShortName.Equals("pu")
+                                || faction.Faction.FactionDef.ShortName.Equals("syn") || faction.Faction.FactionDef.ShortName.Equals("Purists")
                                 || faction.Faction.FactionDef.ShortName.Equals("fo"))
                         {
                             enemyHumanFactions++;

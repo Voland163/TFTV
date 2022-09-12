@@ -530,7 +530,8 @@ namespace TFTV
                     OneOfThem_AbilityDef, bloodthirsty_AbilityDef
                     };
 
-                int num = UnityEngine.Random.Range(0, 200);
+                    UnityEngine.Random.InitState((int)DateTime.Now.Ticks);
+                    int num = UnityEngine.Random.Range(0, 200);
                 TFTVLogger.Always("Treatment rolled " + num);
 
                 if (num >= 0 && num <= 50)

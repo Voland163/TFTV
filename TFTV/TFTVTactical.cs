@@ -140,7 +140,7 @@ namespace TFTV
             if (turnNumber == 0)
             { TFTVHumanEnemies.AssignHumanEnemiesTags(Controller); }
             TFTVHumansEnemiesTactics.ChampRecoverWPAura(Controller);
-
+            TFTVHumansEnemiesTactics.ApplyTactic(Controller, TFTVHumansEnemiesTactics.roll);
         }
     }
 }
