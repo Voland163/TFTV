@@ -28,14 +28,14 @@ namespace TFTV
                 names.Add("anu", anu_Names);
                 names.Add("syn", syn_Names);
                 names.Add("Purists", pu_Names);
-                names.Add("fo", fo_Names);
+                names.Add("FallenOnes", fo_Names);
 
                 ranks.Add("ban", ban_NameRanks);
                 ranks.Add("nj", nj_NameRanks);
                 ranks.Add("anu", anu_NameRanks);
                 ranks.Add("syn", syn_NameRanks);
                 ranks.Add("Purists", pu_NameRanks);
-                ranks.Add("fo", fo_NameRanks);
+                ranks.Add("FallenOnes", fo_NameRanks);
 
             }
             catch (Exception e)

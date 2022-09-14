@@ -99,7 +99,6 @@ namespace TFTV
             }
         }
 
-
         public static void RevenantCheckAndSpawn(TacticalLevelController controller)
         {
             try

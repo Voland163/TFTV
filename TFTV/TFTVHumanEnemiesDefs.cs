@@ -32,7 +32,7 @@ namespace TFTV
                 string bandit = "ban";
                 string newJericho = "nj";
                 string synedrion = "syn";
-                string forsaken = "fo";
+                string forsaken = "FallenOnes";
                 string pure = "Purists";
 
                 GameTagDef source = Repo.GetAllDefs<GameTagDef>().FirstOrDefault(p => p.name.Equals("Takeshi_Tutorial3_GameTagDef"));

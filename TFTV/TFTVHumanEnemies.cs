@@ -5,7 +5,6 @@ using HarmonyLib;
 using PhoenixPoint.Common.ContextHelp;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Tactical.Entities;
-using PhoenixPoint.Tactical.Entities.Statuses;
 using PhoenixPoint.Tactical.Levels;
 using PhoenixPoint.Tactical.View.ViewControllers;
 using PhoenixPoint.Tactical.View.ViewModules;
@@ -45,7 +44,7 @@ namespace TFTV
 
         public static void GenerateHumanEnemyUnit(TacticalFaction enemyHumanFaction, string nameOfLeader, int roll)
         {
-            try 
+            try
             {
                 string nameOfGang = GenerateGangName();
                 string unitType = "";
@@ -106,28 +105,28 @@ namespace TFTV
                     unitType = "a gang";
                     FileNameSquadPic = "ban_squad.png";
                 }
-                else if (enemyHumanFaction.TacticalFactionDef.ShortName.Equals("nj") || enemyHumanFaction.Faction.FactionDef.ShortName.Equals("anu") || enemyHumanFaction.Faction.FactionDef.ShortName.Equals("syn")) 
+                else if (enemyHumanFaction.TacticalFactionDef.ShortName.Equals("nj") || enemyHumanFaction.Faction.FactionDef.ShortName.Equals("anu") || enemyHumanFaction.Faction.FactionDef.ShortName.Equals("syn"))
                 {
                     string factionName = "";
-                    if (enemyHumanFaction.TacticalFactionDef.ShortName.Equals("nj")) 
+                    if (enemyHumanFaction.TacticalFactionDef.ShortName.Equals("nj"))
                     {
                         factionName = "New Jericho";
                         FileNameSquadPic = "nj_squad.jpg";
                     }
-                    else if (enemyHumanFaction.TacticalFactionDef.ShortName.Equals("anu")) 
+                    else if (enemyHumanFaction.TacticalFactionDef.ShortName.Equals("anu"))
                     {
                         factionName = "Disciples of Anu";
                         FileNameSquadPic = "anu_squad.jpg";
                     }
-                    else 
+                    else
                     {
                         factionName = "Synedrion";
                         FileNameSquadPic = "syn_squad.jpg";
                     }
 
-                    unitType = "a " + factionName + " squad";               
+                    unitType = "a " + factionName + " squad";
                 }
-                else if (enemyHumanFaction.TacticalFactionDef.ShortName.Equals("fo")) 
+                else if (enemyHumanFaction.TacticalFactionDef.ShortName.Equals("FallenOnes"))
                 {
                     unitType = "a pack of Forsaken";
                     FileNameSquadPic = "fo_squad.png";
@@ -138,22 +137,22 @@ namespace TFTV
                     FileNameSquadPic = "pu_squad.jpg";
                 }
 
-                string descriptionHint = "You are facing " + unitType +", called the " + nameOfGang +
+                string descriptionHint = "You are facing " + unitType + ", called the " + nameOfGang +
                     ". Their leader is " + nameOfLeader + ", using the tactic " + nameOfTactic + ": " + descriptionOfTactic;
- 
+
                 ContextHelpHintDef leaderSightedHint = Repo.GetAllDefs<ContextHelpHintDef>().FirstOrDefault(ged => ged.name.Equals("LeaderSighted"));
 
 
-               //LocalizedTextBind title = new LocalizedTextBind(nameOfGang, true);
-               // LocalizedTextBind text = new LocalizedTextBind(descriptionHint, true);
-              //  Sprite sprite = Helper.CreateSpriteFromImageFile(TFTVHumanEnemies.FileNameSquadPic);
+                //  LocalizedTextBind title = new LocalizedTextBind(nameOfGang, true);
+                //  LocalizedTextBind text = new LocalizedTextBind(descriptionHint, true);
+                //  Sprite sprite = Helper.CreateSpriteFromImageFile(FileNameSquadPic);
                 leaderSightedHint.Title = new LocalizedTextBind(nameOfGang, true);
                 leaderSightedHint.Text = new LocalizedTextBind(descriptionHint, true);
-                leaderSightedHint.AnyCondition = true;
+                //  leaderSightedHint.AnyCondition = true;
 
-              //  UIModuleContextHelp uIModuleContextHelp = (UIModuleContextHelp)UnityEngine.Object.FindObjectOfType(typeof(UIModuleContextHelp));
-              //  uIModuleContextHelp.Show(title, text, sprite, leaderSightedHint.VideoDef, false, leaderSightedHint, false);
-               // TFTVLogger.Always("The hint should have appeared");
+                // UIModuleContextHelp uIModuleContextHelp = (UIModuleContextHelp)UnityEngine.Object.FindObjectOfType(typeof(UIModuleContextHelp));
+                // uIModuleContextHelp.Show(title, text, sprite, leaderSightedHint.VideoDef, false, leaderSightedHint, true);
+                //  TFTVLogger.Always("The hint should have appeared");
             }
             catch (Exception e)
             {
@@ -203,7 +202,7 @@ namespace TFTV
                     }
 
                     TacticalActor leader = orderedListOfHumanEnemies[0];
-                    
+
 
                     orderedListOfHumanEnemies.Remove(leader);
 
@@ -216,6 +215,7 @@ namespace TFTV
 
                     TacticalActorBase leaderBase = leader;
                     string nameOfFaction = faction.Faction.FactionDef.ShortName;
+
                     TFTVLogger.Always("The short name of the faction is " + nameOfFaction);
                     GameTagDef gameTagDef = Repo.GetAllDefs<GameTagDef>().FirstOrDefault
                            (p => p.name.Equals("HumanEnemyFaction_" + nameOfFaction + "_GameTagDef"));
@@ -273,7 +273,7 @@ namespace TFTV
 
                     }
 
-                    
+
                 }
             }
             catch (Exception e)
@@ -297,7 +297,7 @@ namespace TFTV
                         if (faction.Faction.FactionDef.ShortName.Equals("ban")
                                 || faction.Faction.FactionDef.ShortName.Equals("nj") || faction.Faction.FactionDef.ShortName.Equals("anu")
                                 || faction.Faction.FactionDef.ShortName.Equals("syn") || faction.Faction.FactionDef.ShortName.Equals("Purists")
-                                || faction.Faction.FactionDef.ShortName.Equals("fo"))
+                                || faction.Faction.FactionDef.ShortName.Equals("FallenOnes"))
                         {
                             TFTVLogger.Always("The short name of the faction is " + faction.Faction.FactionDef.ShortName);
 
@@ -313,7 +313,7 @@ namespace TFTV
                 TFTVLogger.Error(e);
             }
             throw new InvalidOperationException();
-        }   
+        }
 
         [HarmonyPatch(typeof(TacticalActorBase), "get_DisplayName")]
         public static class TacticalActorBase_GetDisplayName_HumanEnemiesGenerator_Patch
@@ -507,15 +507,15 @@ namespace TFTV
 
         public static AbilityData AddTacticsDescription(int roll)
         {
-            try 
+            try
             {
                 string name = "Tactic";
                 string tactic = "";
                 string description = "";
-                if(roll == 1) 
+                if (roll == 1)
                 {
                     description = "Enemies who can see the character lose 1 WP";
-                    tactic = " - Fearsome"; 
+                    tactic = " - Fearsome";
                 }
                 else if (roll == 2)
                 {
@@ -607,7 +607,7 @@ namespace TFTV
                     {
                         return 5;
                     }
-                    else 
+                    else
                     {
                         return 6;
 
@@ -619,7 +619,7 @@ namespace TFTV
                     {
                         return 3;
                     }
-                    else 
+                    else
                     {
                         return 4;
                     }
@@ -1031,9 +1031,10 @@ namespace TFTV
             {
                 try
                 {
-                    if (TFTVHumansEnemiesTactics.roll>0 && actor.BaseDef.name == "Soldier_ActorDef" && actor.InPlay 
-                        && __instance.CurrentFaction!=__instance.GetFactionByCommandName("PX"))
-                    {TFTVLogger.Always("The turn number is " + __instance.TurnNumber);
+                    if (TFTVHumansEnemiesTactics.roll > 0 && actor.BaseDef.name == "Soldier_ActorDef" && actor.InPlay
+                        && __instance.CurrentFaction != __instance.GetFactionByCommandName("PX"))
+                    {
+                        TFTVLogger.Always("The turn number is " + __instance.TurnNumber);
                         if (GetHumanEnemyFactions(__instance) != null)
                         {
                             GameTagDef HumanEnemyTier2GameTag = Repo.GetAllDefs<GameTagDef>().FirstOrDefault(p => p.name.Equals("HumanEnemyTier_2_GameTagDef"));
@@ -1048,46 +1049,49 @@ namespace TFTV
                                 List<string> factionNames = TFTVHumanEnemiesNames.names.GetValueSafe(nameOfFaction);
 
                                 if (faction.Actors.Contains(actor))
+                                    UnityEngine.Random.InitState((int)DateTime.Now.Ticks);
+                                int rankNumber = UnityEngine.Random.Range(1, 6);
+                                if (rankNumber == 6)
                                 {
-                                    int rankNumber = UnityEngine.Random.Range(1, 6);
-                                    if (rankNumber == 6) 
-                                    {
-                                        actor.GameTags.Add(HumanEnemyTier2GameTag);
-                                        actor.GameTags.Add(gameTagDef);
-                                        actor.name = factionNames[UnityEngine.Random.Range(0, factionNames.Count)];
-                                        TacticalActor tacticalActor = actor as TacticalActor;
-                                        AdjustStatsAndSkills(tacticalActor);
-                                        factionNames.Remove(actor.name);
-                                        TFTVLogger.Always(actor.name + " is now a champ");
-                                    }
-                                    else if (rankNumber >=4 && rankNumber <6) 
-                                    {
-                                        actor.GameTags.Add(HumanEnemyTier3GameTag);
-                                        actor.GameTags.Add(gameTagDef);
-                                        actor.name = factionNames[UnityEngine.Random.Range(0, factionNames.Count)];
-                                        TacticalActor tacticalActor = actor as TacticalActor;
-                                        AdjustStatsAndSkills(tacticalActor);
-                                        factionNames.Remove(actor.name);
-                                        TFTVLogger.Always(actor.name + " is now a ganger");
+                                    actor.GameTags.Add(HumanEnemyTier2GameTag);
+                                    actor.GameTags.Add(gameTagDef);
+                                    UnityEngine.Random.InitState((int)DateTime.Now.Ticks);
+                                    actor.name = factionNames[UnityEngine.Random.Range(0, factionNames.Count)];
+                                    TacticalActor tacticalActor = actor as TacticalActor;
+                                    AdjustStatsAndSkills(tacticalActor);
+                                    factionNames.Remove(actor.name);
+                                    TFTVLogger.Always(actor.name + " is now a champ");
+                                }
+                                else if (rankNumber >= 4 && rankNumber < 6)
+                                {
+                                    actor.GameTags.Add(HumanEnemyTier3GameTag);
+                                    actor.GameTags.Add(gameTagDef);
+                                    UnityEngine.Random.InitState((int)DateTime.Now.Ticks);
+                                    actor.name = factionNames[UnityEngine.Random.Range(0, factionNames.Count)];
+                                    TacticalActor tacticalActor = actor as TacticalActor;
+                                    AdjustStatsAndSkills(tacticalActor);
+                                    factionNames.Remove(actor.name);
+                                    TFTVLogger.Always(actor.name + " is now a ganger");
 
-                                    }
-                                    else 
-                                    {
-                                        actor.GameTags.Add(HumanEnemyTier4GameTag);
-                                        actor.GameTags.Add(gameTagDef);
-                                        actor.name = factionNames[UnityEngine.Random.Range(0, factionNames.Count)];
-                                        TacticalActor tacticalActor = actor as TacticalActor;
-                                        AdjustStatsAndSkills(tacticalActor);
-                                        factionNames.Remove(actor.name);
-                                        TFTVLogger.Always(actor.name + " is now a juve");
-                                    }
-
+                                }
+                                else
+                                {
+                                    actor.GameTags.Add(HumanEnemyTier4GameTag);
+                                    actor.GameTags.Add(gameTagDef);
+                                    UnityEngine.Random.InitState((int)DateTime.Now.Ticks);
+                                    actor.name = factionNames[UnityEngine.Random.Range(0, factionNames.Count)];
+                                    TacticalActor tacticalActor = actor as TacticalActor;
+                                    AdjustStatsAndSkills(tacticalActor);
+                                    factionNames.Remove(actor.name);
+                                    TFTVLogger.Always(actor.name + " is now a juve");
                                 }
 
                             }
-                        }
 
+                        }
                     }
+
+
                 }
                 catch (Exception e)
                 {
@@ -1181,7 +1185,7 @@ namespace TFTV
                         if (faction.Faction.FactionDef.ShortName.Equals("neut") || faction.Faction.FactionDef.ShortName.Equals("ban")
                                 || faction.Faction.FactionDef.ShortName.Equals("nj") || faction.Faction.FactionDef.ShortName.Equals("anu")
                                 || faction.Faction.FactionDef.ShortName.Equals("syn") || faction.Faction.FactionDef.ShortName.Equals("Purists")
-                                || faction.Faction.FactionDef.ShortName.Equals("fo"))
+                                || faction.Faction.FactionDef.ShortName.Equals("FallenOnes"))
                         {
                             enemyHumanFactions++;
 

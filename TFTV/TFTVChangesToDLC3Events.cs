@@ -41,7 +41,7 @@ namespace TFTV
                 geoEventFS9.GeoscapeEventData.Choices[0].Outcome.OutcomeText.General.LocalizationKey = "PROG_FS9_OUTCOME";
                 //set event timer for meteor arrival (Mount Egg)
                 GeoTimePassedEventFilterDef timePassedFS9 = Repo.GetAllDefs<GeoTimePassedEventFilterDef>().FirstOrDefault(ged => ged.name.Equals("E_PROG_FS9_TimePassed [GeoTimePassedEventFilterDef]"));
-                timePassedFS9.TimePassedHours = UnityEngine.Random.Range(48, 72);
+                timePassedFS9.TimePassedHours = UnityEngine.Random.Range(48, 72); 
                 // set event timer for former Augury, now A Sleeping Beauty Awakens
                 GeoTimePassedEventFilterDef timePassedFS0 = Repo.GetAllDefs<GeoTimePassedEventFilterDef>().FirstOrDefault(ged => ged.name.Equals("E_PROG_FS0_TimePassed [GeoTimePassedEventFilterDef]"));
                 timePassedFS0.TimePassedHours = UnityEngine.Random.Range(200, 250);
@@ -76,7 +76,7 @@ namespace TFTV
 
                 // set event timer for Behemoth Egg hatching without completing, The Hatching
                 GeoTimePassedEventFilterDef timePassedFS10 = Repo.GetAllDefs<GeoTimePassedEventFilterDef>().FirstOrDefault(ged => ged.name.Equals("E_PROG_FS10_TimePassed [GeoTimePassedEventFilterDef]"));
-                timePassedFS10.TimePassedHours = UnityEngine.Random.Range(725, 755);
+                timePassedFS10.TimePassedHours = UnityEngine.Random.Range(725, 755); 
 
                 //change event FS10 to add an Outcome panel
                 GeoscapeEventDef geoEventFS10 = Repo.GetAllDefs<GeoscapeEventDef>().FirstOrDefault(ged => ged.name.Equals("PROG_FS10_GeoscapeEventDef"));
@@ -139,9 +139,11 @@ namespace TFTV
 
                 //Change FS3 event
                 GeoscapeEventDef geoEventFS3 = Repo.GetAllDefs<GeoscapeEventDef>().FirstOrDefault(ged => ged.name.Equals("PROG_FS3_GeoscapeEventDef"));
-                geoEventFS3.GeoscapeEventData.Mute = false;
+                geoEventFS3.GeoscapeEventData.Mute = true;
                 geoEventFS3.GeoscapeEventData.Choices[0].Outcome.VariablesChange.Add(TFTVCommonMethods.GenerateVariableChange("Mobilization", 1, true));
-
+                geoEventFS3.GeoscapeEventData.Choices[0].Outcome.SetEvents.Clear();
+                GeoTimePassedEventFilterDef timePassedFS3 = Repo.GetAllDefs<GeoTimePassedEventFilterDef>().FirstOrDefault(ged => ged.name.Equals("E_PROG_FS3_TimePassed [GeoTimePassedEventFilterDef]"));
+                timePassedFS3.TimePassedHours = 100000;
             }
             catch (Exception e)
             {
@@ -154,7 +156,9 @@ namespace TFTV
             try
             {
                 GeoTimePassedEventFilterDef timePassedFS3 = Repo.GetAllDefs<GeoTimePassedEventFilterDef>().FirstOrDefault(ged => ged.name.Equals("E_PROG_FS3_TimePassed [GeoTimePassedEventFilterDef]"));
+                GeoscapeEventDef geoEventFS3 = Repo.GetAllDefs<GeoscapeEventDef>().FirstOrDefault(ged => ged.name.Equals("PROG_FS3_GeoscapeEventDef"));
                 timePassedFS3.TimePassedHours = UnityEngine.Random.Range(25, 38) + level.ElaspedTime.TimeSpan.Hours;
+                geoEventFS3.GeoscapeEventData.Mute = false;
             }
             catch (Exception e)
             {

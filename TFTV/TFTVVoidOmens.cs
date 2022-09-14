@@ -108,10 +108,10 @@ namespace TFTV
                                     if (choice.Outcome.Diplomacy[t].Value != 0)
                                     {
                                         OutcomeDiplomacyChange diplomacyChange = choice.Outcome.Diplomacy[t];
-                                        TFTVLogger.Always("Original value was " + diplomacyChange.Value);
+                                        //TFTVLogger.Always("Original value was " + diplomacyChange.Value);
                                         diplomacyChange.Value = Mathf.CeilToInt(diplomacyChange.Value * 0.5f);
                                         choice.Outcome.Diplomacy[t] = diplomacyChange;
-                                        TFTVLogger.Always("New value is " + diplomacyChange.Value);
+                                        //TFTVLogger.Always("New value is " + diplomacyChange.Value);
                                     }
                                 }
                             }

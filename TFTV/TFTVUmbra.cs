@@ -202,6 +202,7 @@ namespace TFTV
                                     && !actor.name.Contains("Oilcrab") && !actor.GameTags.Contains(Repo.GetAllDefs<GameTagDef>().FirstOrDefault(p => p.name.Equals("Revenant_GameTagDef"))))
 
                                 {
+                                    UnityEngine.Random.InitState((int)DateTime.Now.Ticks);
                                     int roll = UnityEngine.Random.Range(0, 100);
                                     if (TFTVVoidOmens.VoidOmen15Active && roll <= totalDeliriumOnMission)
                                     {
@@ -218,6 +219,7 @@ namespace TFTV
                                 if (actor.GameTags.Contains(fishTag) && actor.GetAbilityWithDef<DeathBelcherAbility>(oilfishDeathBelcherAbility) == null
                                     && !actor.name.Contains("Oilfish") && !actor.GameTags.Contains(Repo.GetAllDefs<GameTagDef>().FirstOrDefault(p => p.name.Equals("Revenant_GameTagDef"))))
                                 {
+                                    UnityEngine.Random.InitState((int)DateTime.Now.Ticks);
                                     int roll = UnityEngine.Random.Range(0, 100);
                                     if (TFTVVoidOmens.VoidOmen15Active && roll <= totalDeliriumOnMission)
                                     {

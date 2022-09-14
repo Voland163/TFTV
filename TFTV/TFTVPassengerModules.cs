@@ -183,7 +183,6 @@ namespace TFTV
                         if (template.name.Equals("PX_Starting_Infiltrator_TacCharacterDef"))
                         {
                             geoFaction = __instance.GeoLevel.SynedrionFaction;
-
                         }
                         else if (template.name.Equals("PX_Starting_Priest_TacCharacterDef"))
                         {
@@ -196,7 +195,6 @@ namespace TFTV
                         else
                         {
                             geoFaction = __instance;
-
                         }
 
                         if (!template.name.Contains("Buffed") &&

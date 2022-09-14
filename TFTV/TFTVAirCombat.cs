@@ -1,4 +1,5 @@
 ﻿using Base;
+using Base.Core;
 using Base.Defs;
 using Base.UI;
 using HarmonyLib;
@@ -626,33 +627,60 @@ namespace TFTV
         [HarmonyPatch(typeof(GeoBehemothActor), "UpdateHourly")]
         public static class GeoBehemothActor_UpdateHourly_Patch
         {
-
+            
             public static bool Prepare()
             {
                 TFTVConfig config = TFTVMain.Main.Config;
                 return config.ActivateAirCombatChanges;
             }
 
-            public static void Postfix(GeoBehemothActor __instance)
+            public static bool Prefix(GeoBehemothActor __instance, int ____disruptionThreshhold, int ____disruptionPoints, int ____nextActionHoursLeft)
             {
                 try
                 {
+
+                    if (____disruptionThreshhold <= 0)
+                    {
+                        MethodInfo method_GenerateTargetData = AccessTools.Method(typeof(GeoBehemothActor), "CalculateDisruptionThreshhold");
+                       
+                        ____disruptionThreshhold = (int)method_GenerateTargetData.Invoke(__instance, null);
+                        TFTVLogger.Always("Behemoth hourly update, disruption threshold set to " + ____disruptionThreshhold);
+                    }
+
+                    if (!__instance.IsSubmerging && ____disruptionPoints >= ____disruptionThreshhold)
+                    {
+                        MethodInfo method_GenerateTargetData = AccessTools.Method(typeof(GeoBehemothActor), "PickSubmergeLocation");
+
+                        method_GenerateTargetData.Invoke(__instance, null);
+                        TFTVLogger.Always("Behemoth hourly update, disruption points at " + ____disruptionPoints + ", while threshold set to " + ____disruptionThreshhold + ". Behemoth should submerge");
+                        return false;
+                    }
+
+                    ____nextActionHoursLeft = Mathf.Clamp(____nextActionHoursLeft - 1, 0, int.MaxValue);
+                    if (____nextActionHoursLeft <= 0)
+                    {
+                        MethodInfo method_GenerateTargetData = AccessTools.Method(typeof(GeoBehemothActor), "PerformAction");
+                        method_GenerateTargetData.Invoke(__instance, null);
+                        TFTVLogger.Always("Behemoth hourly update, " + ____nextActionHoursLeft + " hours left to move, so time to move");
+
+                    }
+
                     if (__instance.CurrentBehemothStatus == GeoBehemothActor.BehemothStatus.Dormant)//first check
                     {
-                        TFTVLogger.Always("Behemoth's target lists are cleared because he is sleeping");
+                     //   TFTVLogger.Always("Behemoth's target lists are cleared because he is sleeping");
                         targetsForBehemoth.Clear();
                       //  targetsVisitedByBehemoth.Clear();
                         behemothScenicRoute.Clear();
                         behemothTarget = 0;
-                        return;
+                        return false;
                     }
                     if (__instance.IsSubmerging)//second check
                     {
-                        TFTVLogger.Always("Behemoth's target lists are cleared because he is going to sleep");
+                       // TFTVLogger.Always("Behemoth's target lists are cleared because he is going to sleep");
                         targetsForBehemoth.Clear();
                         behemothScenicRoute.Clear();
                         behemothTarget = 0;
-                        return;
+                        return false;
                     }                    
 
                     if (behemothTarget != 0 && ConvertIntIDToGeosite(__instance.GeoLevel, behemothTarget) != null && ConvertIntIDToGeosite(__instance.GeoLevel, behemothTarget).State == GeoSiteState.Destroyed)
@@ -679,11 +707,11 @@ namespace TFTV
                         {
                             TFTVLogger.Always("Behemoth is at a haven, the target is the haven and has no other targets: has to move somewhere");
                             typeof(GeoBehemothActor).GetMethod("TargetHaven", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(__instance, new object[] { GetSiteForBehemothToMoveTo(__instance) });
-                            return;
+                            return false;
                         }
 
                         typeof(GeoBehemothActor).GetMethod("TargetHaven", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(__instance, new object[] { chosenHaven });
-                        return;
+                        return false;
                         
                     }
                     else if (behemothTarget == 0 && targetsForBehemoth.Count == 0) // no potential targets, set Behemoth to roam
@@ -699,14 +727,14 @@ namespace TFTV
                             behemothWaitHours--;
                         }
                     }
-
+                    return false;
                 }//end of try
 
                 catch (Exception e)
                 {
                     TFTVLogger.Error(e);
                 }
-
+                return true;
             }
         }
 
@@ -775,7 +803,7 @@ namespace TFTV
         {
             try
             {
-                TFTVLogger.Always("TargetsForBehemoth counts " + targetsForBehemoth + " and/but counted as 0, so here we are");
+                TFTVLogger.Always("TargetsForBehemoth counts " + targetsForBehemoth.Count() + " and/but counted as 0, so here we are");
                 List<GeoHaven> geoHavens = geoBehemothActor.GeoLevel.AnuFaction.Havens.ToList();
                 geoHavens.AddRange(geoBehemothActor.GeoLevel.NewJerichoFaction.Havens.ToList());
                 geoHavens.AddRange(geoBehemothActor.GeoLevel.SynedrionFaction.Havens.ToList());

@@ -100,8 +100,6 @@ namespace TFTV
             TacCharacterDef newTakeshiBuffed = Helper.CreateDefFromClone(Takeshi3, "4230D9B4-6D88-4545-8680-BBCAE463356B", "PX_TakeshiBuffed_TFTV_TacCharacterDef");
             TacCharacterDef newIrinaBuffed = Helper.CreateDefFromClone(Irina3, "8E57C25C-7289-4F7C-9D0C-5F8E55601B49", "PX_IrinaBuffed_TFTV_TacCharacterDef");
         }
-
-
         public static void CreateNewSophiaAndJacob()
         {
             try
@@ -160,48 +158,6 @@ namespace TFTV
                 TFTVLogger.Error(e);
             }
         }
-
-     /*   public static void ModifySophiaAndJacobStats(GeoLevelController level)
-        {
-            try
-            {
-                TacCharacterDef newJacob = Repo.GetAllDefs<TacCharacterDef>().First(tcd => tcd.name.Contains("PX_Jacob_TFTV_TacCharacterDef"));
-                TacCharacterDef newSophia = Repo.GetAllDefs<TacCharacterDef>().First(tcd => tcd.name.Contains("PX_Sophia_TFTV_TacCharacterDef"));
-
-
-                int strengthBonus = 0;
-                int willBonus = 0;
-
-                if (level.CurrentDifficultyLevel.Order == 3)
-                {
-                    strengthBonus = 4;
-                    willBonus = 1;
-                }
-                else if (level.CurrentDifficultyLevel.Order == 2)
-                {
-                    strengthBonus = 6;
-                    willBonus = 2;
-                }
-                else if (level.CurrentDifficultyLevel.Order == 1)
-                {
-                    strengthBonus = 8;
-                    willBonus = 3;
-                }
-
-                newJacob.Data.Strength += strengthBonus;
-                newJacob.Data.Will += willBonus;
-
-                newSophia.Data.Strength += strengthBonus;
-                newSophia.Data.Will += willBonus;
-            }
-
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-
-        }*/
-
 
         //Adapted from MadSkunky's TutorialTweaks: https://github.com/MadSkunky/PP-Mods-TutorialTweaks
         public static List<TacCharacterDef> SetInitialSquadUnbuffed(GeoLevelController level)
@@ -324,7 +280,6 @@ namespace TFTV
             }
             throw new InvalidOperationException();
         }
-
 
         public static List<TacCharacterDef> SetInitialSquadBuffed(GameDifficultyLevelDef difficultyLevel, GeoLevelController level)
         {
@@ -449,97 +404,6 @@ namespace TFTV
             throw new InvalidOperationException();
         }
 
-
-
-
-
-
-
-
-        /*
-                public static void MakeJacobSniper()
-                {
-                    try
-                    {
-                        TacCharacterDef Jacob2 = Repo.GetAllDefs<TacCharacterDef>().First(tcd => tcd.name.Equals("PX_Jacob_Tutorial2_TacCharacterDef"));
-
-
-                        // Get Jacobs definition for the 1st part of the tutorial
-                        TacCharacterDef Jacob1 = Repo.GetAllDefs<TacCharacterDef>().First(tcd => tcd.name.Equals("PX_Jacob_Tutorial_TacCharacterDef"));
-                        // Set class related definition for actor view
-
-                        // Switch the given Assault ClassTagDef in Jacobs GameTags to Sniper (keep both ClassTagDefs would make him dual classed rigth from scratch)
-
-
-
-
-                        GameTagDef Sniper_CTD = Repo.GetAllDefs<GameTagDef>().First(gtd => gtd.name.Equals("Sniper_ClassTagDef"));
-                        for (int i = 0; i < Jacob1.Data.GameTags.Length; i++)
-                        {
-                            if (Jacob1.Data.GameTags[i].GetType() == Sniper_CTD.GetType())
-                            {
-                                Jacob1.Data.GameTags[i] = Sniper_CTD;
-                            }
-                        }
-
-                        // Creating new arrays for Abilities, BodypartItems (armor), EquipmentItems (ready slots) and InventoryItems (backpack)
-                        // -> Overwrite old sets completely
-                        Jacob1.Data.Abilites = new TacticalAbilityDef[] // abilities -> Class proficiency
-                        {
-                        Repo.GetAllDefs<ClassProficiencyAbilityDef>().First(cpad => cpad.name.Equals("Sniper_ClassProficiency_AbilityDef"))
-
-                        };
-                        Jacob1.Data.BodypartItems = new ItemDef[] // Armour
-                        {
-                        Repo.GetAllDefs<TacticalItemDef>().First(tad => tad.name.Equals("PX_Sniper_Helmet_BodyPartDef")),
-                        Repo.GetAllDefs<TacticalItemDef>().First(tad => tad.name.Equals("PX_Sniper_Torso_BodyPartDef")),
-                        Repo.GetAllDefs<TacticalItemDef>().First(tad => tad.name.Equals("PX_Sniper_Legs_ItemDef"))
-                        };
-
-
-                        Jacob1.Data.EquipmentItems = new ItemDef[] // Ready slots
-                        { Repo.GetAllDefs<WeaponDef>().First(wd => wd.name.Equals("PX_SniperRifle_WeaponDef")),
-                            Repo.GetAllDefs<WeaponDef>().First(wd => wd.name.Equals("PX_Pistol_WeaponDef")),
-                        Repo.GetAllDefs<TacticalItemDef>().First(tad => tad.name.Equals("Medkit_EquipmentDef"))
-                        };
-                        Jacob1.Data.InventoryItems = new ItemDef[] // Backpack
-                        {
-                        Jacob1.Data.EquipmentItems[0].CompatibleAmmunition[0],
-                        Jacob1.Data.EquipmentItems[1].CompatibleAmmunition[0]
-                        };
-                        // Get Jacobs definition for the 2nd and following parts of the tutorial
-                        TacCharacterDef Jacob2 = Repo.GetAllDefs<TacCharacterDef>().First(tcd => tcd.name.Equals("PX_Jacob_Tutorial2_TacCharacterDef"));
-                        // Copy changes from Jabobs 1st to his 2nd definition
-                        Jacob2.Data.ViewElementDef = Jacob1.Data.ViewElementDef;
-                        Jacob2.Data.GameTags = Jacob1.Data.GameTags;
-                        Jacob2.Data.Abilites = Jacob1.Data.Abilites;
-                        Jacob2.Data.BodypartItems = Jacob1.Data.BodypartItems;
-                        Jacob2.Data.EquipmentItems = Jacob1.Data.EquipmentItems;
-                        Jacob2.Data.InventoryItems = Jacob1.Data.InventoryItems;
-                    }
-                    catch (Exception e)
-                    {
-                        TFTVLogger.Error(e);
-                    }
-
-                }
-        */
-
-        public static void AdjustStatsDifficulty(GameDifficultyLevelDef gameDifficultyLevel)
-        {
-            try
-            {
-
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-        }
-
-
-
-
         public static void CreateInitialInfiltrator()
         {
             try
@@ -549,26 +413,12 @@ namespace TFTV
                 startingInfiltrator.Data.Strength = 0;
                 startingInfiltrator.Data.Will = 0;
 
-                startingInfiltrator.Data.BodypartItems = new ItemDef[] // Armour
+             /*   startingInfiltrator.Data.BodypartItems = new ItemDef[] // Armour
                 {
                 Repo.GetAllDefs<TacticalItemDef>().First(tad => tad.name.Contains("SY_Infiltrator_Bonus_Helmet_BodyPartDef")),
                 Repo.GetAllDefs<TacticalItemDef>().First(tad => tad.name.Contains("SY_Infiltrator_Bonus_Torso_BodyPartDef")),
                 Repo.GetAllDefs<TacticalItemDef>().First(tad => tad.name.Contains("SY_Infiltrator_Bonus_Legs_ItemDef"))
-                };
-
-                /*
-                startingInfiltrator.Data.EquipmentItems = new ItemDef[] // Ready slots
-                                { Repo.GetAllDefs<WeaponDef>().First(wd => wd.name.Contains("SY_Crossbow_Bonus_WeaponDef")),
-                                    Repo.GetAllDefs<WeaponDef>().First(wd => wd.name.Contains("SY_SpiderDroneLauncher_WeaponDef")),
-                                Repo.GetAllDefs<TacticalItemDef>().First(tad => tad.name.Contains("Medkit_EquipmentDef"))
-                                };
-                startingInfiltrator.Data.InventoryItems = new ItemDef[] // Backpack
-                                {
-                                startingInfiltrator.Data.EquipmentItems[0].CompatibleAmmunition[0],
-                                startingInfiltrator.Data.EquipmentItems[1].CompatibleAmmunition[0],
-
-                                 };
-                */
+                };           */
             }
             catch (Exception e)
             {
@@ -621,26 +471,7 @@ namespace TFTV
                 startingTechnician.Data.Strength = 0;
                 startingTechnician.Data.Will = 0;
                 startingTechnician.Data.LevelProgression.Experience = 0;
-                /*
-                startingTechnician.Data.BodypartItems = new ItemDef[] // Armour
-                {
-                Repo.GetAllDefs<TacticalItemDef>().First(tad => tad.name.Contains("NJ_Technician_Helmet_ALN_BodyPartDef")),
-                Repo.GetAllDefs<TacticalItemDef>().First(tad => tad.name.Contains("NJ_Technician_Torso_ALN_BodyPartDef")),
-                Repo.GetAllDefs<TacticalItemDef>().First(tad => tad.name.Contains("NJ_Technician_Legs_ALN_ItemDef")),
-                Repo.GetAllDefs<TacticalItemDef>().First(tad => tad.name.Contains("NJ_Technician_MechArms_ALN_WeaponDef"))
-                };*/
-
-                /*
-                startingTechnician.Data.EquipmentItems = new ItemDef[] // Ready slots
-                { Repo.GetAllDefs<WeaponDef>().First(wd => wd.name.Contains("NJ_Gauss_PDW_WeaponDef")),
-                  Repo.GetAllDefs<WeaponDef>().First(wd => wd.name.Contains("NJ_TechTurretGun_WeaponDef")),
-                  Repo.GetAllDefs<WeaponDef>().First(wd => wd.name.Contains("NJ_TechTurretGun_WeaponDef"))
-                };
-                startingTechnician.Data.InventoryItems = new ItemDef[] // Backpack
-                {
-                startingTechnician.Data.EquipmentItems[0].CompatibleAmmunition[0],
-                startingTechnician.Data.EquipmentItems[1].CompatibleAmmunition[0]
-                };*/
+                
             }
             catch (Exception e)
             {
