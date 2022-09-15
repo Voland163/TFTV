@@ -7,6 +7,7 @@ using PhoenixPoint.Common.Game;
 using PhoenixPoint.Modding;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using UnityEngine;
 
 namespace TFTV
@@ -59,7 +60,7 @@ namespace TFTV
             /// PhoenixGame is accessible at any time.
             PhoenixGame game = GetGame();
 
-            Logger.LogInfo("TFTV September 14 midnight release #1");
+            Logger.LogInfo("TFTV September 16 past midnight release #1");
 
 
             //TFTV 
@@ -72,89 +73,16 @@ namespace TFTV
             // Initialize Logger
             LogPath = Path.Combine(ModDirectory, "TFTV.log");
             TFTVLogger.Initialize(LogPath, Config.Debug, ModDirectory, nameof(TFTV));
-            TFTVLogger.Always("TFTV September 14 midnight release #1");
+            TFTVLogger.Always("TFTV September 16 past midnight release #1");
             // Initialize Helper
             Helper.Initialize();
 
-
+            harmony.PatchAll();
 
             // if (!injectionComplete)
             // {
 
-            //TFTV Stuff that needs to happen ASAP
 
-            //This creates the Void Omen events
-            TFTVVoidOmens.Create_VoidOmen_Events();
-
-            //Medbay
-            TFTVSmallChanges.ChangesToMedbay();
-
-            //Load changes to Defs, on the assumption that they will not degrade over time
-            TFTVResources.Apply_Changes(Config.ResourceMultiplier);
-            //Check if player chose to have more ambushes and crates, and if Void Omen changing Ambushes is not in play
-            if (Config.MoreAmbushes)
-            {
-                TFTVAmbushes.Apply_Changes_Ambush_Missions();
-            }
-            //Creates events where factions upset because of augmentations
-            TFTVAugmentations.ApplyChanges();
-            //Changes to DLC events
-            TFTVChangesToDLC1andDLC2Events.Apply_Changes();
-            TFTVChangesToDLC3Events.ApplyChanges();
-            TFTVChangesToDLC4Events.Apply_Changes();
-            if (Config.ActivateKERework)
-            {
-                TFTVChangesToDLC5Events.Apply_Changes();
-            }
-            //Sets bonus to damage from Delirium to 0
-            TFTVDelirium.ApplyChanges();
-            //Modifies weapons/modules stats as per Belial's doc
-            if (Config.ActivateAirCombatChanges)
-            {
-                TFTVAirCombat.ModifyAirCombatDefs();
-            }
-            //Doubles penalties from factions
-            if (Config.DiplomaticPenalties)
-            {
-                TFTVDiplomacyPenalties.Apply_Changes();
-            }
-            //Applies changes to infestation mission/rewards
-            TFTVInfestation.Apply_Infestation_Changes();
-            //Pending config, modifes evo points per day depending on difficulty level, etc
-            TFTVPandoranProgress.Apply_Changes();
-            //Modifies air vehicles 
-            TFTVPassengerModules.Apply_Changes();
-            //HybernationModuleStaminaRecuperation, adjusts if selected in config       
-            TFTVPassengerModules.HibernationModuleStaminaRecuperation();
-            //Makes reverse engineering grant access to underlying research. Pending unifying research cost of RE items.
-            if (Config.ActivateReverseEngineeringResearch)
-            {
-                TFTVReverseEngineering.Apply_Changes();
-            }
-            //Changes when Umbra will appear
-            TFTVUmbra.ChangeUmbra();
-            //Create Dtony's delirium perks
-            TFTVDeliriumPerks.Main();
-            //Modify Defs to introduce Alistair's events
-            TFTVNewPXCharacters.InjectAlistairAhsbyLines();
-            //Create Revenant defs
-            TFTVRevenant.CreateRevenantDefs();
-            //This creates the intro events when a new game is started
-            TFTVNewPXCharacters.CreateIntro();
-            //Run all harmony patches; some patches have config flags
-
-            TFTVStarts.CreateNewDefsForTFTVStart();
-            TFTVTutorialAndStory.CreateHints();
-            TFTVSmallChanges.MistOnAllMissions();
-            TFTVHumanEnemiesDefs.CreateHumanEnemiesTags();
-            TFTVHumanEnemiesDefs.ModifyMissionDefsToReplaceNeutralWithBandit();
-            TFTVHumanEnemiesDefs.CreateAmbushAbility();
-            TFTVHumanEnemiesNames.CreateNamesDictionary();
-            
-             
-            // TFTVRevenantResearch.CreateDefs();
-
-            harmony.PatchAll();
             //       injectionComplete = true;
             //  }
 
@@ -223,8 +151,8 @@ namespace TFTV
                 Config.defaultSettings = false;
 
             }
-        
 
+            
             Harmony harmony = (Harmony)HarmonyInstance;
             //  injectionComplete = false;
             harmony.UnpatchAll();
@@ -249,10 +177,88 @@ namespace TFTV
         /// <param name="state">New state of the level.</param>
         public override void OnLevelStateChanged(Level level, Level.State prevState, Level.State state)
         {
+            Level l = GetLevel();
+
+            Logger.LogInfo($"{MethodBase.GetCurrentMethod().Name} called for level '{level}' with old state '{prevState}' and new state '{state}'");
+            if (level.name.Contains("Intro") && prevState == Level.State.Uninitialized && state == Level.State.NotLoaded)
+            {
+                Logger.LogInfo($"TFTV should do Def stuff here to make sure BC stuff is ready");
            
+                //TFTV Stuff that needs to happen ASAP
+
+                //This creates the Void Omen events
+                TFTVVoidOmens.Create_VoidOmen_Events();
+
+                //Medbay
+                TFTVSmallChanges.ChangesToMedbay();
+
+                //Load changes to Defs, on the assumption that they will not degrade over time
+                TFTVResources.Apply_Changes(Config.ResourceMultiplier);
+                //Check if player chose to have more ambushes and crates, and if Void Omen changing Ambushes is not in play
+                if (Config.MoreAmbushes)
+                {
+                    TFTVAmbushes.Apply_Changes_Ambush_Missions();
+                }
+                //Creates events where factions upset because of augmentations
+                TFTVAugmentations.ApplyChanges();
+                //Changes to DLC events
+                TFTVChangesToDLC1andDLC2Events.Apply_Changes();
+                TFTVChangesToDLC3Events.ApplyChanges();
+                TFTVChangesToDLC4Events.Apply_Changes();
+                if (Config.ActivateKERework)
+                {
+                    TFTVChangesToDLC5Events.Apply_Changes();
+                }
+                //Sets bonus to damage from Delirium to 0
+                TFTVDelirium.ApplyChanges();
+                //Modifies weapons/modules stats as per Belial's doc
+                if (Config.ActivateAirCombatChanges)
+                {
+                    TFTVAirCombat.ModifyAirCombatDefs();
+                }
+                //Doubles penalties from factions
+                if (Config.DiplomaticPenalties)
+                {
+                    TFTVDiplomacyPenalties.Apply_Changes();
+                }
+                //Applies changes to infestation mission/rewards
+                TFTVInfestation.Apply_Infestation_Changes();
+                //Pending config, modifes evo points per day depending on difficulty level, etc
+                TFTVPandoranProgress.Apply_Changes();
+                //Modifies air vehicles 
+                TFTVPassengerModules.Apply_Changes();
+                //HybernationModuleStaminaRecuperation, adjusts if selected in config       
+                TFTVPassengerModules.HibernationModuleStaminaRecuperation();
+                //Makes reverse engineering grant access to underlying research. Pending unifying research cost of RE items.
+                if (Config.ActivateReverseEngineeringResearch)
+                {
+                    TFTVReverseEngineering.Apply_Changes();
+                }
+                //Changes when Umbra will appear
+                TFTVUmbra.ChangeUmbra();
+                //Create Dtony's delirium perks
+                TFTVDeliriumPerks.Main();
+                //Modify Defs to introduce Alistair's events
+                TFTVNewPXCharacters.InjectAlistairAhsbyLines();
+                //Create Revenant defs
+                TFTVRevenant.CreateRevenantDefs();
+                //This creates the intro events when a new game is started
+                TFTVNewPXCharacters.CreateIntro();
+                //Run all harmony patches; some patches have config flags
+
+
+                TFTVTutorialAndStory.CreateHints();
+                TFTVSmallChanges.MistOnAllMissions();
+                TFTVHumanEnemiesDefs.CreateHumanEnemiesTags();
+                TFTVHumanEnemiesDefs.ModifyMissionDefsToReplaceNeutralWithBandit();
+                TFTVHumanEnemiesDefs.CreateAmbushAbility();
+                TFTVHumanEnemiesNames.CreateNamesDictionary();
+                TFTVStarts.CreateNewDefsForTFTVStart();
+                // TFTVRevenantResearch.CreateDefs();
+            }
 
             /// Alternative way to access current level at any time.
-            Level l = GetLevel();
+            
 
         }
 

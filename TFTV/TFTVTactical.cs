@@ -37,6 +37,8 @@ namespace TFTV
         public List<string> revenantSpecialResistance = TFTVRevenant.revenantSpecialResistance;
         public bool revenantSpawned = TFTVRevenant.revenantSpawned;
         public bool revenantCanSpawnSaveDate = TFTVRevenant.revenantCanSpawn;
+        public int humanEnemiesRollSaveData = TFTVHumansEnemiesTactics.roll;
+        public int difficultyLevelForTacticalSaveData = TFTVHumanEnemies.difficultyLevel;
     }
 
     /// <summary>
@@ -58,9 +60,8 @@ namespace TFTV
             //  TFTVDelirium.DeliriumPerksOnTactical(tacController);
             TFTVRevenant.CreateRevenantDefs();
             TFTVRevenant.ModifyRevenantResistanceAbility(Controller);
-            TFTVRevenant.RevenantCheckAndSpawn(Controller);
-            
-           
+            TFTVRevenant.CheckForNotDeadSoldiers(tacController);
+            TFTVRevenant.RevenantCheckAndSpawn(Controller);                  
         }
 
         /// <summary>
@@ -68,6 +69,7 @@ namespace TFTV
         /// </summary>
         public override void OnTacticalEnd()
         {
+            TFTVRevenant.CheckForNotDeadSoldiers(Controller);
             base.OnTacticalEnd();
 
           /*  if (TFTVRevenant.revenantSpawned)
@@ -104,6 +106,9 @@ namespace TFTV
             TFTVRevenant.revenantSpawned = data.revenantSpawned;
             TFTVRevenant.revenantSpecialResistance = data.revenantSpecialResistance;
             TFTVRevenant.revenantCanSpawn = data.revenantCanSpawnSaveDate;
+            TFTVHumansEnemiesTactics.roll = data.humanEnemiesRollSaveData;
+            TFTVHumanEnemies.difficultyLevel = data.difficultyLevelForTacticalSaveData;
+
         }
         /// <summary>
         /// Called when Tactical save is going to be generated, giving mod option for custom save data.
@@ -126,6 +131,8 @@ namespace TFTV
                 revenantSpawned = TFTVRevenant.revenantSpawned,
                 revenantSpecialResistance = TFTVRevenant.revenantSpecialResistance,
                 revenantCanSpawnSaveDate = TFTVRevenant.revenantCanSpawn,
+                humanEnemiesRollSaveData = TFTVHumansEnemiesTactics.roll,
+                difficultyLevelForTacticalSaveData = TFTVHumanEnemies.difficultyLevel,
               //  timeLastRevenantSpawned = TFTVRevenant.timeLastRevenantSpawned,
             };
         }
@@ -139,8 +146,9 @@ namespace TFTV
             TFTVUmbra.SpawnUmbra(Controller);
             if (turnNumber == 0)
             { TFTVHumanEnemies.AssignHumanEnemiesTags(Controller); }
-            TFTVHumansEnemiesTactics.ChampRecoverWPAura(Controller);
+            TFTVHumansEnemiesTactics.ChampRecoverWPAura(Controller);           
             TFTVHumansEnemiesTactics.ApplyTactic(Controller, TFTVHumansEnemiesTactics.roll);
+          
         }
     }
 }

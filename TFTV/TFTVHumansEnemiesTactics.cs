@@ -2,6 +2,7 @@
 using Base.Entities.Abilities;
 using Base.Entities.Statuses;
 using HarmonyLib;
+using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
@@ -65,7 +66,12 @@ namespace TFTV
             try
             {
                 UnityEngine.Random.InitState((int)DateTime.Now.Ticks);
-                roll = UnityEngine.Random.Range(1, 9);
+                roll = UnityEngine.Random.Range(1, 10);
+                if(roll == 2) 
+                {
+                    UnityEngine.Random.InitState((int)DateTime.Now.Ticks);
+                    roll = UnityEngine.Random.Range(3, 10);
+                }
 
             }
             catch (Exception e)
@@ -89,7 +95,7 @@ namespace TFTV
                 }
                 else if (roll == 2)
                 {
-                    StartingVolley(controller);
+                   // StartingVolley(controller);
                 }
                 else if (roll == 3)
                 {
@@ -98,7 +104,6 @@ namespace TFTV
                 else if (roll == 4)
                 {
                     OpticalShield(controller);
-
                 }
                 else if (roll == 5)
                 {
@@ -193,14 +198,16 @@ namespace TFTV
                                 {
                                     if (allyTacticalActorBase.BaseDef.name == "Soldier_ActorDef" && allyTacticalActorBase.InPlay && allyTacticalActorBase.HasGameTag(Repo.GetAllDefs<GameTagDef>().FirstOrDefault(p => p.name.Equals("HumanEnemyTier_4_GameTagDef"))))
                                     {
-
-
                                         TacticalActor actor = allyTacticalActorBase as TacticalActor;
 
-                                        TFTVLogger.Always("Actor is getting the experimental drugs");
-                                        actor.AddAbility(Repo.GetAllDefs<AbilityDef>().FirstOrDefault(p => p.name.Equals("Regeneration_Torso_Passive_AbilityDef")), actor);
-                                        actor.Status.ApplyStatus(Repo.GetAllDefs<HealthChangeStatusDef>().FirstOrDefault(p => p.name.Equals("Regeneration_Torso_Constant_StatusDef")));
+                                        if (actor.GetAbilityWithDef<Ability>(Repo.GetAllDefs<AbilityDef>().FirstOrDefault(p => p.name.Equals("Regeneration_Torso_Passive_AbilityDef"))) == null
+                                            && !actor.HasStatus(Repo.GetAllDefs<HealthChangeStatusDef>().FirstOrDefault(p => p.name.Equals("Regeneration_Torso_Constant_StatusDef"))))
+                                        {
 
+                                            TFTVLogger.Always("Actor is getting the experimental drugs");
+                                            actor.AddAbility(Repo.GetAllDefs<AbilityDef>().FirstOrDefault(p => p.name.Equals("Regeneration_Torso_Passive_AbilityDef")), actor);
+                                            actor.Status.ApplyStatus(Repo.GetAllDefs<HealthChangeStatusDef>().FirstOrDefault(p => p.name.Equals("Regeneration_Torso_Constant_StatusDef")));
+                                        }
                                     }
                                 }
                             }
@@ -220,6 +227,7 @@ namespace TFTV
             try
             {
                 List<TacticalFaction> enemyHumanFactions = TFTVHumanEnemies.GetHumanEnemyFactions(controller);
+                TacticalFaction phoenix = controller.GetFactionByCommandName("PX");
                 if (enemyHumanFactions.Count != 0)
                 {
                     foreach (TacticalFaction faction in enemyHumanFactions)
@@ -230,7 +238,6 @@ namespace TFTV
 
                             if (tacticalActorBase.HasGameTag(Repo.GetAllDefs<GameTagDef>().FirstOrDefault(p => p.name.Equals("HumanEnemyTier_1_GameTagDef"))))
                             {
-
                                 foreach (TacticalActorBase allyTacticalActorBase in faction.Actors)
                                 {
                                     if (allyTacticalActorBase.BaseDef.name == "Soldier_ActorDef" && allyTacticalActorBase.InPlay)
@@ -238,15 +245,24 @@ namespace TFTV
                                         if (tacticalActor.IsAlive)
                                         {
                                             TacticalActor actor = allyTacticalActorBase as TacticalActor;
+                                            float SelectedWeaponRange = actor.Equipments.SelectedWeapon.MaximumRange;
 
-                                            TFTVLogger.Always("Actor is getting quick aim status");
-                                            //  actor.AddAbility(Repo.GetAllDefs<AbilityDef>().FirstOrDefault(p => p.name.Equals("Regeneration_Torso_Passive_AbilityDef")), actor);
-                                            actor.Status.ApplyStatus(Repo.GetAllDefs<AddAttackBoostStatusDef>().FirstOrDefault(p => p.name.Equals("E_Status [QuickAim_AbilityDef]")));
+                                            foreach (TacticalActorBase phoenixSoldierBase in phoenix.Actors)
+                                            {
+                                                if (phoenixSoldierBase.BaseDef.name == "Soldier_ActorDef" && phoenixSoldierBase.InPlay && (phoenixSoldierBase.Pos - tacticalActorBase.Pos).magnitude < SelectedWeaponRange / 2
+                                                && TacticalFactionVision.CheckVisibleLineBetweenActors(phoenixSoldierBase, phoenixSoldierBase.Pos, tacticalActor, true))
+                                                {
+                                                    TFTVLogger.Always("Actor is getting quick aim status");
+                                                    //  actor.AddAbility(Repo.GetAllDefs<AbilityDef>().FirstOrDefault(p => p.name.Equals("Regeneration_Torso_Passive_AbilityDef")), actor);
+                                                    actor.Status.ApplyStatus(Repo.GetAllDefs<AddAttackBoostStatusDef>().FirstOrDefault(p => p.name.Equals("E_Status [QuickAim_AbilityDef]")));
+                                                    //  actor.AddAbility(Repo.GetAllDefs<ApplyStatusAbilityDef>().FirstOrDefault(p => p.name.Equals("QuickAim_AbilityDef")), actor);
+
+                                                }
+                                            }
                                         }
                                     }
                                 }
                             }
-
                         }
                     }
                 }
@@ -338,12 +354,12 @@ namespace TFTV
                                         StatModification accuracyBuff2 = new StatModification() { Modification = StatModificationType.Add, Value = 0.3f, StatName = "Accuracy" };
                                         StatModification accuracyBuff3 = new StatModification() { Modification = StatModificationType.Add, Value = 0.45f, StatName = "Accuracy" };
                                         StatModification accuracyBuff4 = new StatModification() { Modification = StatModificationType.Add, Value = 0.6f, StatName = "Accuracy" };
-                                       
+
                                         TacticalActor actor = allyTacticalActorBase as TacticalActor;
                                         float magnitude = 12;
                                         int numberOAssists = 0;
 
-                                        
+
                                         if (actor.CharacterStats.Accuracy.Modifications.Contains(accuracyBuff1))
                                         {
                                             actor.CharacterStats.Accuracy.RemoveStatModification(accuracyBuff1);
@@ -362,7 +378,7 @@ namespace TFTV
                                         }
 
                                         if (leader.IsAlive)
-                                        {                                           
+                                        {
                                             foreach (TacticalActorBase assist in faction.Actors)
 
                                                 if ((allyTacticalActorBase.Pos - assist.Pos).magnitude <= magnitude
@@ -370,7 +386,7 @@ namespace TFTV
                                                 {
                                                     numberOAssists++;
                                                 }
-                                            if(numberOAssists >= 4) 
+                                            if (numberOAssists >= 4)
                                             {
                                                 actor.CharacterStats.Accuracy.AddStatModification(accuracyBuff4);
                                             }
@@ -382,12 +398,12 @@ namespace TFTV
                                             {
                                                 actor.CharacterStats.Accuracy.AddStatModification(accuracyBuff2);
                                             }
-                                            if (numberOAssists ==1)
+                                            if (numberOAssists == 1)
                                             {
                                                 actor.CharacterStats.Accuracy.AddStatModification(accuracyBuff1);
                                             }
 
-                                        }          
+                                        }
                                     }
                                 }
                             }
@@ -547,10 +563,13 @@ namespace TFTV
         }
 
 
+
+
+
         [HarmonyPatch(typeof(TacticalLevelController), "ActorDied")]
         public static class TacticalLevelController_ActorDied_HumanEnemiesTactics_BloodRush_Patch
         {
-            public static void Postfix(DeathReport deathReport, TacticalLevelController __instance)
+            public static void Postfix(DeathReport deathReport)
             {
                 try
                 {
@@ -563,7 +582,10 @@ namespace TFTV
                         {
                             foreach (TacticalActorBase allyTacticalActorBase in deathReport.Actor.TacticalFaction.Actors)
                             {
-                                if (allyTacticalActorBase.BaseDef.name == "Soldier_ActorDef" && allyTacticalActorBase.InPlay)
+                                TacticalActor tacticalActor = allyTacticalActorBase as TacticalActor;
+
+                                if (allyTacticalActorBase.BaseDef.name == "Soldier_ActorDef" && allyTacticalActorBase.InPlay
+                                    && !tacticalActor.HasStatus(Repo.GetAllDefs<HealthChangeStatusDef>().FirstOrDefault(p => p.name.Equals("Frenzy_StatusDef"))))
                                 {
                                     allyTacticalActorBase.Status.ApplyStatus(Repo.GetAllDefs<StatusDef>().FirstOrDefault(sd => sd.name.Equals("Frenzy_StatusDef")));
 
@@ -588,10 +610,8 @@ namespace TFTV
         {
             public static void Postfix(TacticalActor actor, IDamageDealer damageDealer)
             {
-
                 try
                 {
-
                     if (roll == 7)
                     {
                         GameTagDef leaderTag = Repo.GetAllDefs<GameTagDef>().FirstOrDefault(p => p.name.Equals("HumanEnemyTier_1_GameTagDef"));
@@ -600,7 +620,10 @@ namespace TFTV
                         {
                             TacticalActorBase attackerBase = damageDealer.GetTacticalActorBase();
                             TacticalActor attacker = attackerBase as TacticalActor;
-                            attacker.Status.ApplyStatus(Repo.GetAllDefs<HitPenaltyStatusDef>().FirstOrDefault(p => p.name.Equals("E_PureDamageBonusStatus [MarkedForDeath_AbilityDef]")));
+                            if (!attacker.HasStatus(Repo.GetAllDefs<HealthChangeStatusDef>().FirstOrDefault(p => p.name.Equals("E_PureDamageBonusStatus [MarkedForDeath_AbilityDef]"))))
+                            {
+                                attacker.Status.ApplyStatus(Repo.GetAllDefs<HitPenaltyStatusDef>().FirstOrDefault(p => p.name.Equals("E_PureDamageBonusStatus [MarkedForDeath_AbilityDef]")));
+                            }
                         }
                     }
 
@@ -612,7 +635,25 @@ namespace TFTV
             }
         }
 
-
+      /*  [HarmonyPatch(typeof(PhoenixStatisticsManager), "NewTurnEvent")]
+        public static class PhoenixStatisticsManager_NewTurnEvent_StartingVolleyTactic_Patch
+        {
+            public static void Postfix(TacticalFaction prevFaction, TacticalFaction nextFaction)
+            {
+                try
+                {
+                    if (roll ==2 && prevFaction.TacticalLevel.TurnNumber>1 && prevFaction.IsControlledByPlayer)
+                    {
+                        TFTVLogger.Always("NewTurnEvent, now turn" + prevFaction.TacticalLevel.TurnNumber + " Phoenix finished turn");
+                        StartingVolley(prevFaction.TacticalLevel);
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+        }*/
 
         public static void TestingAura(TacticalLevelController controller)
         {

@@ -144,6 +144,7 @@ namespace TFTV
             {
                 try
                 {
+                    
                     GeoVehicle geoVehicle = __instance.Vehicles.First();
                     geoVehicle.AddEquipment(Repo.GetAllDefs<GeoVehicleEquipmentDef>().FirstOrDefault(gve => gve.name.Equals("SY_HibernationPods_GeoVehicleModuleDef")));
 

@@ -2,6 +2,7 @@
 using Base.Defs;
 using Base.Entities.Abilities;
 using Base.Entities.Statuses;
+using Base.Levels;
 using Base.ParticleSystems;
 using Base.UI;
 using HarmonyLib;
@@ -22,7 +23,9 @@ using PhoenixPoint.Tactical.Levels;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Web;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace TFTV
 {
@@ -36,6 +39,52 @@ namespace TFTV
         public static bool revenantCanSpawn = false;
         public static bool revenantSpawned = false;
         public static List<string> revenantSpecialResistance = new List<string>();
+
+
+        public static void CheckForNotDeadSoldiers(TacticalLevelController level)
+        {
+            try 
+            {
+                List<string> soldiersReallyDead = new List<string>();
+                List<string> soldiersNotReallyDead = new List<string>();
+
+                TFTVLogger.Always("Soldiers in the DeadSoldiersDelirium are " + DeadSoldiersDelirium.Count());
+
+                foreach (SoldierStats assumedDeadSoldier in level.TacticalGameParams.Statistics.DeadSoldiers.Values)
+                {
+                    foreach (string name in DeadSoldiersDelirium.Keys)
+                    {
+                        if (assumedDeadSoldier.Name == name)
+                        {
+                            soldiersReallyDead.Add(name);
+                        }
+                    }
+                }
+
+                foreach(string name in DeadSoldiersDelirium.Keys) 
+                {
+                    if (!soldiersReallyDead.Contains(name)) 
+                    {
+                        TFTVLogger.Always(name + "? This one ain't dead!");
+                        soldiersNotReallyDead.Add(name);                
+                    }         
+                }
+
+                foreach(string name in soldiersNotReallyDead) 
+                {
+                    DeadSoldiersDelirium.Remove(name);                    
+                }
+   
+                TFTVLogger.Always("Soldiers in the DeadSoldiersDelirium after cleanup are " + DeadSoldiersDelirium.Count());
+            }
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+        }
+
 
         public static void CreateRevenantDefs()
         {
@@ -398,62 +447,6 @@ namespace TFTV
             }
         }
 
-        public static bool CheckForActorWithTag(ClassTagDef classTagDef, TacticalLevelController level)
-        {
-            try
-            {
-                TacticalFaction alienFaction = level.GetTacticalFaction(sharedData.AlienFactionDef);
-                // GameTagDef revenantTag = Repo.GetAllDefs<GameTagDef>().FirstOrDefault(p => p.name.Contains("Revenant"));
-
-                foreach (TacticalActor actor in alienFaction.TacticalActors)
-                {
-                    if (actor.tag.Contains(classTagDef.name) && actor.GameTags.Contains(Repo.GetAllDefs<GameTagDef>().FirstOrDefault(p => p.name.Contains("Revenant"))))
-                    {
-                        return true;
-
-                    }
-                }
-                return false;
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-            throw new InvalidOperationException();
-        }
-
-        public static void SetDeathTime(GeoTacUnitId deadSoldier, TacticalLevelController level, TimeUnit currentTime)
-        {
-            try
-            {
-                SoldierStats deadSoldierStats = level.TacticalGameParams.Statistics.DeadSoldiers.TryGetValue(deadSoldier, out deadSoldierStats) ? deadSoldierStats : null;
-                deadSoldierStats.DeathCause.DateOfDeath = currentTime;
-
-
-            }
-
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-
-        }
-
-        public static TimeUnit CheckTimerFromDeath(GeoTacUnitId deadSoldier, TacticalLevelController level)
-        {
-            try
-            {
-                SoldierStats deadSoldierStats = level.TacticalGameParams.Statistics.DeadSoldiers.TryGetValue(deadSoldier, out deadSoldierStats) ? deadSoldierStats : null;
-                return deadSoldierStats.DeathCause.DateOfDeath;
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-            throw new InvalidOperationException();
-        }
-
-
         public static string GetDeadSoldiersNameFromID(GeoTacUnitId deadSoldier, TacticalLevelController level)
         {
             try
@@ -512,20 +505,22 @@ namespace TFTV
         {
             try
             {
-                //TFTVLogger.Always("the name is " + name);
-                List<SoldierStats> deadSoldiersNames = level.TacticalGameParams.Statistics.DeadSoldiers.Values.Where(s => s.Name == name).ToList();
-                SoldierStats deadSoldier = deadSoldiersNames.FirstOrDefault();
-                //TFTVLogger.Always("the name of the soldier extracted from death list is " + deadSoldier.Name);
-                List<GeoTacUnitId> deadSoldiersList = level.TacticalGameParams.Statistics.DeadSoldiers.Keys.ToList();
-
-                foreach (GeoTacUnitId soldier in deadSoldiersList)
+                foreach (SoldierStats deadSoldier in level.TacticalGameParams.Statistics.DeadSoldiers.Values)
                 {
-                    if (level.TacticalGameParams.Statistics.DeadSoldiers.TryGetValue(soldier, out deadSoldier))
-                    {
-                        // TFTVLogger.Always("The soldier is " + soldier);
-                        return soldier;
+                    if (deadSoldier.Name == name) 
+                    { 
+                        foreach(GeoTacUnitId idOfDeadSoldier in level.TacticalGameParams.Statistics.DeadSoldiers.Keys) 
+                        {
 
-                    }
+                            if (level.TacticalGameParams.Statistics.DeadSoldiers.GetValueSafe(idOfDeadSoldier) == deadSoldier) 
+                            {
+                                TFTVLogger.Always("The soldier is " + deadSoldier.Name + " with GeoTacUnitID " + idOfDeadSoldier.ToString());
+                                return idOfDeadSoldier;
+                            }
+                        
+                        }
+                  
+                    }                   
                 }
             }
             catch (Exception e)
@@ -533,9 +528,6 @@ namespace TFTV
                 TFTVLogger.Error(e);
             }
             throw new InvalidOperationException();
-
-
-
         }
 
         public static string GetDescriptionOfRevenantClassAbility(string name, TacticalLevelController level)
@@ -621,10 +613,8 @@ namespace TFTV
         {
             try
             {
-
                 int Delirium = DeadSoldiersDelirium.TryGetValue(GetDeadSoldiersNameFromID(deadSoldier, level), out Delirium) ? Delirium : 0;
                 return Delirium;
-
 
             }
             catch (Exception e)
@@ -656,14 +646,14 @@ namespace TFTV
 
         }
 
-
-
         public static DamageTypeBaseEffectDef GetPreferredDamageType(TacticalLevelController controller)
         {
             try
             {
                 List<SoldierStats> allSoldierStats = controller.TacticalGameParams.Statistics.LivingSoldiers.Values.ToList();
+                TFTVLogger.Always("AllSoldierStats count is " + allSoldierStats.Count());
                 allSoldierStats.AddRange(controller.TacticalGameParams.Statistics.DeadSoldiers.Values.ToList());
+                TFTVLogger.Always("AllSoldierStats, including dead soldiers, count is " + allSoldierStats.Count());
                 List<UsedWeaponStat> usedWeapons = new List<UsedWeaponStat>();
 
                 DamageOverTimeDamageTypeEffectDef virusDamage = Repo.GetAllDefs<DamageOverTimeDamageTypeEffectDef>().FirstOrDefault(p => p.name.Equals("Virus_DamageOverTimeDamageTypeEffectDef"));
@@ -692,21 +682,24 @@ namespace TFTV
                     if (stat.ItemsUsed.Count > 0)
                     {
                         usedWeapons.AddRange(stat.ItemsUsed);
-
                     }
                 }
-              //  TFTVLogger.Always("Number of times weapons or other items were used " + usedWeapons.Count());
+
+               TFTVLogger.Always("Number of times weapons or other items were used " + usedWeapons.Count());
+               
                 if (usedWeapons.Count() > 0)
                 {
-                   // TFTVLogger.Always("Checking use of each weapon... ");
+                   TFTVLogger.Always("Checking use of each weapon... ");
                     foreach (UsedWeaponStat stat in usedWeapons)
                     {
-                       // TFTVLogger.Always("This item is  " + stat.UsedItem.ViewElementDef.DisplayName1.LocalizeEnglish());
+                     //  TFTVLogger.Always("This item is  " + stat.UsedItem.ViewElementDef.DisplayName1.LocalizeEnglish());
                         if (Repo.GetAllDefs<WeaponDef>().FirstOrDefault(p => p.name.Contains(stat.UsedItem.ToString())))
                         {
                             WeaponDef weaponDef = stat.UsedItem as WeaponDef;
-                           // TFTVLogger.Always("This item, as weapon is  " + weaponDef.ViewElementDef.DisplayName1.LocalizeEnglish());
-
+                          /*  if (weaponDef != null && weaponDef.DamagePayload. == null)
+                            {
+                                TFTVLogger.Always("This item, as weapon is  " + weaponDef.ViewElementDef.DisplayName1.LocalizeEnglish());
+                            }*/
                             if (weaponDef != null && weaponDef.DamagePayload.DamageType == fireDamage)
                             {
                                 scoreFireDamage += stat.UsedCount;
@@ -724,21 +717,16 @@ namespace TFTV
                             {
                                 scoreAcidDamage += stat.UsedCount;
                             }
-                            if (weaponDef != null && weaponDef.DamagePayload.DamageKeywords[0].Value >= 70)
+                            if (weaponDef != null && weaponDef.DamagePayload.GenerateDamageValue()>= 70) //&& weaponDef.DamagePayload.DamageKeywords != null 
                             {
-
-                               // TFTVLogger.Always("This weapon is considered high damage  " + weaponDef.ViewElementDef.DisplayName1.LocalizeEnglish());
+                             TFTVLogger.Always("This weapon is considered high damage  " + weaponDef.ViewElementDef.DisplayName1.LocalizeEnglish());
                                 scoreHighDamage += stat.UsedCount;
-
-
                             }
                             if (weaponDef != null && weaponDef.DamagePayload.DamageType == projectileDamage && (weaponDef.DamagePayload.ProjectilesPerShot >= 2 || weaponDef.DamagePayload.AutoFireShotCount >= 3))
                             {
-                              //  TFTVLogger.Always("This weapon is considered high burst  " + weaponDef.ViewElementDef.DisplayName1.LocalizeEnglish());
+                            //  TFTVLogger.Always("This weapon is considered high burst  " + weaponDef.ViewElementDef.DisplayName1.LocalizeEnglish());
                                 scoreBurstDamage += stat.UsedCount;
                             }
-
-
                         }
                     }
                     TFTVLogger.Always("Number of fire weapons used " + scoreFireDamage);
@@ -1090,41 +1078,7 @@ namespace TFTV
                 TFTVLogger.Error(e);
             }
         }
-
-        public static void SpreadResistance(TacticalLevelController level)
-        {
-            try
-            {
-                TFTVLogger.Always("Spread Resistance invoked ");
-                List<TacticalFaction> factions = level.Factions.ToList();
-                foreach (TacticalFaction faction in factions)
-                {
-                    if (faction.Faction.FactionDef.Equals(sharedData.AlienFactionDef))
-                    {
-                        foreach (TacticalActorBase actor in faction.Actors.ToList())
-                        {
-                            TFTVLogger.Always("looking at actor " + actor.name);
-
-                            if (!level.TacticalGameParams.Statistics.LivingSoldiers.ContainsKey(actor.GeoUnitId)
-                            && !actor.GameTags.Contains(Repo.GetAllDefs<GameTagDef>().FirstOrDefault(p => p.name.Contains("Revenant"))))
-                            {
-                                TFTVLogger.Always("Got passed the if checks");
-                                AddRevenantResistanceAbility(actor);
-                                TFTVLogger.Always("revenantSpecialResistance now contains " + revenantSpecialResistance.Count);
-                            }
-                        }
-                    }
-                }
-
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-
-
-        }
-
+  
         public static void AddRevenantStatusEffect(TacticalActorBase actor)
 
         {
@@ -1551,7 +1505,64 @@ namespace TFTV
                             TFTVLogger.Error(e);
                         }
                     }
-                }*/
+                }
+        
+         public static void SpreadResistance(TacticalLevelController level)
+        {
+            try
+            {
+                TFTVLogger.Always("Spread Resistance invoked ");
+                List<TacticalFaction> factions = level.Factions.ToList();
+                foreach (TacticalFaction faction in factions)
+                {
+                    if (faction.Faction.FactionDef.Equals(sharedData.AlienFactionDef))
+                    {
+                        foreach (TacticalActorBase actor in faction.Actors.ToList())
+                        {
+                            TFTVLogger.Always("looking at actor " + actor.name);
+
+                            if (!level.TacticalGameParams.Statistics.LivingSoldiers.ContainsKey(actor.GeoUnitId)
+                            && !actor.GameTags.Contains(Repo.GetAllDefs<GameTagDef>().FirstOrDefault(p => p.name.Contains("Revenant"))))
+                            {
+                                TFTVLogger.Always("Got passed the if checks");
+                                AddRevenantResistanceAbility(actor);
+                                TFTVLogger.Always("revenantSpecialResistance now contains " + revenantSpecialResistance.Count);
+                            }
+                        }
+                    }
+                }
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+
+        }
+         public static bool CheckForActorWithTag(ClassTagDef classTagDef, TacticalLevelController level)
+        {
+            try
+            {
+                TacticalFaction alienFaction = level.GetTacticalFaction(sharedData.AlienFactionDef);
+                // GameTagDef revenantTag = Repo.GetAllDefs<GameTagDef>().FirstOrDefault(p => p.name.Contains("Revenant"));
+
+                foreach (TacticalActor actor in alienFaction.TacticalActors)
+                {
+                    if (actor.tag.Contains(classTagDef.name) && actor.GameTags.Contains(Repo.GetAllDefs<GameTagDef>().FirstOrDefault(p => p.name.Contains("Revenant"))))
+                    {
+                        return true;
+
+                    }
+                }
+                return false;
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+            throw new InvalidOperationException();
+        }*/
 
     }
 }

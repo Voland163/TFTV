@@ -59,7 +59,6 @@ namespace TFTV
 
         }
 
-
         public static string FindNearestHaven(GeoFaction geoFaction, GeoSite phoenixPoint)
         {
             try
@@ -88,11 +87,11 @@ namespace TFTV
 
         public static void CreateStartingTemplatesBuffed() 
         {
-            TacCharacterDef Jacob2 = Repo.GetAllDefs<TacCharacterDef>().First(tcd => tcd.name.Contains("PX_Jacob_Tutorial2_TacCharacterDef"));
-            TacCharacterDef Sophia2 = Repo.GetAllDefs<TacCharacterDef>().First(tcd => tcd.name.Contains("PX_Sophia_Tutorial2_TacCharacterDef"));
-            TacCharacterDef Omar3 = Repo.GetAllDefs<TacCharacterDef>().First(tcd => tcd.name.Contains("PX_Omar_Tutorial3_TacCharacterDef"));
-            TacCharacterDef Takeshi3 = Repo.GetAllDefs<TacCharacterDef>().First(tcd => tcd.name.Contains("PX_Takeshi_Tutorial3_TacCharacterDef"));
-            TacCharacterDef Irina3 = Repo.GetAllDefs<TacCharacterDef>().First(tcd => tcd.name.Contains("PX_Irina_Tutorial3_TacCharacterDef"));
+            TacCharacterDef Jacob2 = Repo.GetAllDefs<TacCharacterDef>().First(tcd => tcd.name.Equals("PX_Jacob_Tutorial2_TacCharacterDef"));
+            TacCharacterDef Sophia2 = Repo.GetAllDefs<TacCharacterDef>().First(tcd => tcd.name.Equals("PX_Sophia_Tutorial2_TacCharacterDef"));
+            TacCharacterDef Omar3 = Repo.GetAllDefs<TacCharacterDef>().First(tcd => tcd.name.Equals("PX_Omar_Tutorial3_TacCharacterDef"));
+            TacCharacterDef Takeshi3 = Repo.GetAllDefs<TacCharacterDef>().First(tcd => tcd.name.Equals("PX_Takeshi_Tutorial3_TacCharacterDef"));
+            TacCharacterDef Irina3 = Repo.GetAllDefs<TacCharacterDef>().First(tcd => tcd.name.Equals("PX_Irina_Tutorial3_TacCharacterDef"));
 
             TacCharacterDef newJacobBuffed = Helper.CreateDefFromClone(Jacob2, "B1968124-ABDD-4A2C-9CBC-33DBC0EE3EE5", "PX_JacobBuffed_TFTV_TacCharacterDef");
             TacCharacterDef newSophiaBuffed = Helper.CreateDefFromClone(Sophia2, "B3EA411B-DE35-4B63-874A-553D816C06BC", "PX_SophiaBuffed_TFTV_TacCharacterDef");
@@ -104,8 +103,8 @@ namespace TFTV
         {
             try
             {
-                TacCharacterDef Jacob2 = Repo.GetAllDefs<TacCharacterDef>().First(tcd => tcd.name.Contains("PX_Jacob_Tutorial2_TacCharacterDef"));
-                TacCharacterDef Sophia2 = Repo.GetAllDefs<TacCharacterDef>().First(tcd => tcd.name.Contains("PX_Sophia_Tutorial2_TacCharacterDef"));
+                TacCharacterDef Jacob2 = Repo.GetAllDefs<TacCharacterDef>().First(tcd => tcd.name.Equals("PX_Jacob_Tutorial2_TacCharacterDef"));
+                TacCharacterDef Sophia2 = Repo.GetAllDefs<TacCharacterDef>().First(tcd => tcd.name.Equals("PX_Sophia_Tutorial2_TacCharacterDef"));
 
                 TacCharacterDef newJacob = Helper.CreateDefFromClone(Jacob2, "DDA13436-40BE-4096-9C69-19A3BF6658E6", "PX_Jacob_TFTV_TacCharacterDef");
                 TacCharacterDef newSophia = Helper.CreateDefFromClone(Sophia2, "D9EC7144-6EB5-451C-9015-3E67F194AB1B", "PX_Sophia_TFTV_TacCharacterDef");
@@ -168,8 +167,8 @@ namespace TFTV
 
                 List<TacCharacterDef> startingTemplates = new List<TacCharacterDef>();
 
-                TacCharacterDef newJacob = Repo.GetAllDefs<TacCharacterDef>().First(tcd => tcd.name.Contains("PX_Jacob_TFTV_TacCharacterDef"));
-                TacCharacterDef newSophia = Repo.GetAllDefs<TacCharacterDef>().First(tcd => tcd.name.Contains("PX_Sophia_TFTV_TacCharacterDef"));
+                TacCharacterDef newJacob = Repo.GetAllDefs<TacCharacterDef>().First(tcd => tcd.name.Equals("PX_Jacob_TFTV_TacCharacterDef"));
+                TacCharacterDef newSophia = Repo.GetAllDefs<TacCharacterDef>().First(tcd => tcd.name.Equals("PX_Sophia_TFTV_TacCharacterDef"));
 
                 TacCharacterDef assault = Repo.GetAllDefs<TacCharacterDef>().FirstOrDefault(a => a.name.Equals("PX_AssaultStarting_TacCharacterDef"));
                 TacCharacterDef heavy = Repo.GetAllDefs<TacCharacterDef>().FirstOrDefault(a => a.name.Equals("PX_HeavyStarting_TacCharacterDef"));
@@ -287,11 +286,11 @@ namespace TFTV
             {
                 TFTVConfig config = TFTVMain.Main.Config;
   
-                TacCharacterDef Jacob2 = Repo.GetAllDefs<TacCharacterDef>().First(tcd => tcd.name.Contains("PX_JacobBuffed_TFTV_TacCharacterDef"));
-                TacCharacterDef Sophia2 = Repo.GetAllDefs<TacCharacterDef>().First(tcd => tcd.name.Contains("PX_SophiaBuffed_TFTV_TacCharacterDef"));
-                TacCharacterDef Omar3 = Repo.GetAllDefs<TacCharacterDef>().First(tcd => tcd.name.Contains("PX_OmarBuffed_TFTV_TacCharacterDef"));
-                TacCharacterDef Takeshi3 = Repo.GetAllDefs<TacCharacterDef>().First(tcd => tcd.name.Contains("PX_TakeshiBuffed_TFTV_TacCharacterDef"));
-                TacCharacterDef Irina3 = Repo.GetAllDefs<TacCharacterDef>().First(tcd => tcd.name.Contains("PX_IrinaBuffed_TFTV_TacCharacterDef"));
+                TacCharacterDef Jacob2 = Repo.GetAllDefs<TacCharacterDef>().First(tcd => tcd.name.Equals("PX_JacobBuffed_TFTV_TacCharacterDef"));
+                TacCharacterDef Sophia2 = Repo.GetAllDefs<TacCharacterDef>().First(tcd => tcd.name.Equals("PX_SophiaBuffed_TFTV_TacCharacterDef"));
+                TacCharacterDef Omar3 = Repo.GetAllDefs<TacCharacterDef>().First(tcd => tcd.name.Equals("PX_OmarBuffed_TFTV_TacCharacterDef"));
+                TacCharacterDef Takeshi3 = Repo.GetAllDefs<TacCharacterDef>().First(tcd => tcd.name.Equals("PX_TakeshiBuffed_TFTV_TacCharacterDef"));
+                TacCharacterDef Irina3 = Repo.GetAllDefs<TacCharacterDef>().First(tcd => tcd.name.Equals("PX_IrinaBuffed_TFTV_TacCharacterDef"));
                
                 TacCharacterDef sniper = Repo.GetAllDefs<TacCharacterDef>().FirstOrDefault(a => a.name.Equals("PX_SniperStarting_TacCharacterDef"));
                 TacCharacterDef priest = Repo.GetAllDefs<TacCharacterDef>().FirstOrDefault(a => a.name.Equals("PX_Starting_Priest_TacCharacterDef"));

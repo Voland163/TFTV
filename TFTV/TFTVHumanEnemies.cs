@@ -139,8 +139,10 @@ namespace TFTV
 
                 string descriptionHint = "You are facing " + unitType + ", called the " + nameOfGang +
                     ". Their leader is " + nameOfLeader + ", using the tactic " + nameOfTactic + ": " + descriptionOfTactic;
+                TFTVTutorialAndStory.CreateNewTacticalHint(nameOfGang, HintTrigger.ActorSeen, "HumanEnemy_GameTagDef", "Should not appear", "Should not appear", 1, true);
 
-                ContextHelpHintDef leaderSightedHint = Repo.GetAllDefs<ContextHelpHintDef>().FirstOrDefault(ged => ged.name.Equals("LeaderSighted"));
+
+                ContextHelpHintDef leaderSightedHint = Repo.GetAllDefs<ContextHelpHintDef>().FirstOrDefault(ged => ged.name.Equals(nameOfGang));
 
 
                 //  LocalizedTextBind title = new LocalizedTextBind(nameOfGang, true);
@@ -219,9 +221,12 @@ namespace TFTV
                     TFTVLogger.Always("The short name of the faction is " + nameOfFaction);
                     GameTagDef gameTagDef = Repo.GetAllDefs<GameTagDef>().FirstOrDefault
                            (p => p.name.Equals("HumanEnemyFaction_" + nameOfFaction + "_GameTagDef"));
+                    GameTagDef humanEnemyTagDef = Repo.GetAllDefs<GameTagDef>().FirstOrDefault
+                           (p => p.name.Equals("HumanEnemy_GameTagDef"));
 
                     leaderBase.GameTags.Add(HumanEnemyTier1GameTag);
                     leaderBase.GameTags.Add(gameTagDef);
+                    leaderBase.GameTags.Add(humanEnemyTagDef, GameTagAddMode.ReplaceExistingExclusive);
 
 
                     List<string> factionNames = TFTVHumanEnemiesNames.names.GetValueSafe(nameOfFaction);
@@ -238,6 +243,7 @@ namespace TFTV
                         TacticalActorBase champ = orderedListOfHumanEnemies[i];
                         champ.GameTags.Add(HumanEnemyTier2GameTag);
                         champ.GameTags.Add(gameTagDef);
+                        champ.GameTags.Add(humanEnemyTagDef, GameTagAddMode.ReplaceExistingExclusive);
                         UnityEngine.Random.InitState((int)DateTime.Now.Ticks);
                         champ.name = factionNames[UnityEngine.Random.Range(0, factionNames.Count)];
                         TacticalActor tacticalActor = champ as TacticalActor;
@@ -251,6 +257,7 @@ namespace TFTV
                         TacticalActorBase ganger = orderedListOfHumanEnemies[i];
                         ganger.GameTags.Add(HumanEnemyTier3GameTag);
                         ganger.GameTags.Add(gameTagDef);
+                        ganger.GameTags.Add(humanEnemyTagDef, GameTagAddMode.ReplaceExistingExclusive);
                         UnityEngine.Random.InitState((int)DateTime.Now.Ticks);
                         ganger.name = factionNames[UnityEngine.Random.Range(0, factionNames.Count)];
                         TacticalActor tacticalActor = ganger as TacticalActor;
@@ -264,6 +271,7 @@ namespace TFTV
                         TacticalActorBase juve = orderedListOfHumanEnemies[i];
                         juve.GameTags.Add(HumanEnemyTier4GameTag);
                         juve.GameTags.Add(gameTagDef);
+                        juve.GameTags.Add(humanEnemyTagDef, GameTagAddMode.ReplaceExistingExclusive);
                         UnityEngine.Random.InitState((int)DateTime.Now.Ticks);
                         juve.name = factionNames[UnityEngine.Random.Range(0, factionNames.Count)];
                         TacticalActor tacticalActor = juve as TacticalActor;
@@ -787,7 +795,7 @@ namespace TFTV
                         }
                     }
                 }
-                if (classTagDef.name.Contains("Berseker"))
+                if (classTagDef.name.Contains("Berserker"))
                 {
                     if (level >= 6)
                     {

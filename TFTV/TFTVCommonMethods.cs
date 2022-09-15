@@ -58,6 +58,8 @@ namespace TFTV
                 TFTVRevenant.revenantSpecialResistance = new List<string>();
                 TFTVRevenant.revenantSpawned = false;
                 TFTVRevenant.revenantCanSpawn = false;
+                TFTVHumanEnemies.difficultyLevel = 0;
+                TFTVHumansEnemiesTactics.roll = 0;
               //  TFTVRevenant.timeLastRevenantSpawned = new TimeSpan();
     }
             catch (Exception e)

@@ -76,6 +76,10 @@ namespace TFTV
                     source,
                     "DDDAB7AC-1317-4B37-AB18-1E57F8D30147",
                     tagName + "Faction_" + pure + "_GameTagDef");
+                GameTagDef humanEnemyTag = Helper.CreateDefFromClone(
+                    source,
+                    "BF6F6546-AE38-47E0-B581-FDB8F8F5171D",
+                    tagName + "_GameTagDef");
             }
 
             catch (Exception e)

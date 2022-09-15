@@ -52,10 +52,7 @@ namespace TFTV
                 try
                 {
                     TFTVLogger.Always("Show hint method invoked");
-                    TFTVLogger.Always("This context object is " + context.ToString());
-                    ContextHelpHintDef leaderSightedHint = Repo.GetAllDefs<ContextHelpHintDef>().FirstOrDefault(ged => ged.name.Equals("LeaderSighted"));
-                    TFTVLogger.Always(leaderSightedHint.Title.LocalizeEnglish());
-                    TFTVLogger.Always(title.LocalizeEnglish());
+                    
 
                     if (title.LocalizationKey == "UMBRA_SIGHTED_TITLE")
                     {
@@ -74,7 +71,9 @@ namespace TFTV
                             TFTVLogger.Always("leaderSightedHint if check passed");
                             //   image = Helper.CreateSpriteFromImageFile("Umbra_family.png");
                             __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile(TFTVHumanEnemies.FileNameSquadPic);
-                           // leaderSightedHint.AnyCondition = false;
+                            // leaderSightedHint.AnyCondition = false;
+                            ContextHelpHintDbDef alwaysDisplayedTacticalHintsDbDef = Repo.GetAllDefs<ContextHelpHintDbDef>().FirstOrDefault(ged => ged.name.Equals("AlwaysDisplayedTacticalHintsDbDef"));
+                            alwaysDisplayedTacticalHintsDbDef.Hints.Remove((ContextHelpHintDef)context);
 
                         }
 
@@ -95,15 +94,15 @@ namespace TFTV
             {
                 CreateNewTacticalHint("UmbraSighted", HintTrigger.ActorSeen, "Oilcrab_TacCharacterDef", "UMBRA_SIGHTED_TITLE", "UMBRA_SIGHTED_TEXT", 0, true);
                 CreateNewTacticalHint("RevenantSighted", HintTrigger.ActorSeen, "RevenantTier_1_GameTagDef", "REVENANT_SIGHTED_TITLE", "REVENANT_SIGHTED_TEXT", 1, true);
-                CreateNewTacticalHint("LeaderSighted", HintTrigger.ActorSeen, "", "Should not appear", "Should not appear", 2, false);
-                ContextHelpHintDef leaderSightedHint = Repo.GetAllDefs<ContextHelpHintDef>().FirstOrDefault(ged => ged.name.Equals("LeaderSighted"));
-                leaderSightedHint.AnyCondition = true;
-                leaderSightedHint.Conditions[0] = ActorIsOfFactionCreateNewConditionForTacticalHint("AN_FallenOnes_TacticalFactionDef");
-                leaderSightedHint.Conditions.Add(ActorIsOfFactionCreateNewConditionForTacticalHint("Anu_TacticalFactionDef"));
-                leaderSightedHint.Conditions.Add(ActorIsOfFactionCreateNewConditionForTacticalHint("NEU_Bandits_TacticalFactionDef"));
-                leaderSightedHint.Conditions.Add(ActorIsOfFactionCreateNewConditionForTacticalHint("NJ_Purists_TacticalFactionDef"));
-                leaderSightedHint.Conditions.Add(ActorIsOfFactionCreateNewConditionForTacticalHint("NewJericho_TacticalFactionDef"));
-                leaderSightedHint.Conditions.Add(ActorIsOfFactionCreateNewConditionForTacticalHint("Synedrion_TacticalFactionDef"));
+              //  CreateNewTacticalHint("LeaderSighted", HintTrigger.ActorSeen, "HumanEnemy_GameTagDef", "Should not appear", "Should not appear", 1, false);
+             //   ContextHelpHintDef leaderSightedHint = Repo.GetAllDefs<ContextHelpHintDef>().FirstOrDefault(ged => ged.name.Equals("LeaderSighted"));
+             //   leaderSightedHint.AnyCondition = false;
+              //  leaderSightedHint.Conditions[0] = ActorIsOfFactionCreateNewConditionForTacticalHint("AN_FallenOnes_TacticalFactionDef");
+              //  leaderSightedHint.Conditions.Add(ActorIsOfFactionCreateNewConditionForTacticalHint("Anu_TacticalFactionDef"));
+              //  leaderSightedHint.Conditions.Add(ActorIsOfFactionCreateNewConditionForTacticalHint("NEU_Bandits_TacticalFactionDef"));
+              //  leaderSightedHint.Conditions.Add(ActorIsOfFactionCreateNewConditionForTacticalHint("NJ_Purists_TacticalFactionDef"));
+              //  leaderSightedHint.Conditions.Add(ActorIsOfFactionCreateNewConditionForTacticalHint("NewJericho_TacticalFactionDef"));
+              //  leaderSightedHint.Conditions.Add(ActorIsOfFactionCreateNewConditionForTacticalHint("Synedrion_TacticalFactionDef"));
             }
             catch (Exception e)
             {
@@ -141,7 +140,7 @@ namespace TFTV
 
                 ActorHasTagHintConditionDef sourceActorHasTemplateHintConditionDef = Repo.GetAllDefs<ActorHasTagHintConditionDef>().FirstOrDefault(ged => ged.name.Equals("ActorHasTag_Takeshi_Tutorial3_GameTagDef_HintConditionDef"));
                 ActorHasTagHintConditionDef newActorHasTemplateHintConditionDef = Helper.CreateDefFromClone(sourceActorHasTemplateHintConditionDef, gUID, "ActorHasTag_" + name + "_HintConditionDef");
-                GameTagDef gameTagDef = Repo.GetAllDefs<GameTagDef>().FirstOrDefault(ged => ged.name.Contains(name));
+                GameTagDef gameTagDef = Repo.GetAllDefs<GameTagDef>().FirstOrDefault(ged => ged.name.Equals(name));
                 newActorHasTemplateHintConditionDef.GameTagDef = gameTagDef;
 
                 return newActorHasTemplateHintConditionDef;
@@ -203,7 +202,7 @@ namespace TFTV
                 }
                 newContextHelpHintDef.Title.LocalizationKey = title;
                 newContextHelpHintDef.Text.LocalizationKey = text;
-                newContextHelpHintDef.AnyCondition = false;
+               // newContextHelpHintDef.AnyCondition = false;
 
                 if (oneTime)
                 {
