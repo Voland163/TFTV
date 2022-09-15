@@ -52,7 +52,8 @@ namespace TFTV
                 try
                 {
                     TFTVLogger.Always("Show hint method invoked");
-                    
+
+                    ContextHelpHintDef hintDef = context as ContextHelpHintDef;
 
                     if (title.LocalizationKey == "UMBRA_SIGHTED_TITLE")
                     {
@@ -64,20 +65,41 @@ namespace TFTV
                         __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("Umbra_hint.jpg");
                     }
 
-                    foreach (string name in TFTVHumanEnemiesNames.nouns)
-                    {
-                        if (title.LocalizeEnglish().Contains(name))
-                        {
+                  //  foreach (string name in TFTVHumanEnemiesNames.nouns)
+                  //  {
+                        if (hintDef.Text.LocalizeEnglish().Contains("Their leader is"))
+                        {                   
                             TFTVLogger.Always("leaderSightedHint if check passed");
-                            //   image = Helper.CreateSpriteFromImageFile("Umbra_family.png");
-                            __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile(TFTVHumanEnemies.FileNameSquadPic);
-                            // leaderSightedHint.AnyCondition = false;
+
+                            if (hintDef.Text.LocalizeEnglish().Contains("Synedrion"))
+                            {
+                                __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("syn_squad.jpg");
+                            }
+                            else if (hintDef.Text.LocalizeEnglish().Contains("a pack of Forsaken"))
+                            {
+                                __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("fo_squad.png");
+                            }
+                            else if (hintDef.Text.LocalizeEnglish().Contains("New Jericho"))
+                            {
+                                __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("nj_squad.jpg");
+                            }
+                            else if (hintDef.Text.LocalizeEnglish().Contains("Disciples of Anu"))
+                            {
+                                __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("anu_squad.jpg");
+                            }
+                            else if (hintDef.Text.LocalizeEnglish().Contains("an array of the Pure"))
+                            {
+                                __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("pu_squad.jpg");
+                            }
+                            else if (hintDef.Text.LocalizeEnglish().Contains("a gang"))
+                            {
+                                __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("ban_squad.png");
+                            }
+                           
                             ContextHelpHintDbDef alwaysDisplayedTacticalHintsDbDef = Repo.GetAllDefs<ContextHelpHintDbDef>().FirstOrDefault(ged => ged.name.Equals("AlwaysDisplayedTacticalHintsDbDef"));
                             alwaysDisplayedTacticalHintsDbDef.Hints.Remove((ContextHelpHintDef)context);
-
                         }
-
-                    }
+                 //   }
 
                 }
                 catch (Exception e)
@@ -85,6 +107,7 @@ namespace TFTV
                     TFTVLogger.Error(e);
                 }
             }
+
         }
 
         public static void CreateHints()
@@ -94,15 +117,15 @@ namespace TFTV
             {
                 CreateNewTacticalHint("UmbraSighted", HintTrigger.ActorSeen, "Oilcrab_TacCharacterDef", "UMBRA_SIGHTED_TITLE", "UMBRA_SIGHTED_TEXT", 0, true);
                 CreateNewTacticalHint("RevenantSighted", HintTrigger.ActorSeen, "RevenantTier_1_GameTagDef", "REVENANT_SIGHTED_TITLE", "REVENANT_SIGHTED_TEXT", 1, true);
-              //  CreateNewTacticalHint("LeaderSighted", HintTrigger.ActorSeen, "HumanEnemy_GameTagDef", "Should not appear", "Should not appear", 1, false);
-             //   ContextHelpHintDef leaderSightedHint = Repo.GetAllDefs<ContextHelpHintDef>().FirstOrDefault(ged => ged.name.Equals("LeaderSighted"));
-             //   leaderSightedHint.AnyCondition = false;
-              //  leaderSightedHint.Conditions[0] = ActorIsOfFactionCreateNewConditionForTacticalHint("AN_FallenOnes_TacticalFactionDef");
-              //  leaderSightedHint.Conditions.Add(ActorIsOfFactionCreateNewConditionForTacticalHint("Anu_TacticalFactionDef"));
-              //  leaderSightedHint.Conditions.Add(ActorIsOfFactionCreateNewConditionForTacticalHint("NEU_Bandits_TacticalFactionDef"));
-              //  leaderSightedHint.Conditions.Add(ActorIsOfFactionCreateNewConditionForTacticalHint("NJ_Purists_TacticalFactionDef"));
-              //  leaderSightedHint.Conditions.Add(ActorIsOfFactionCreateNewConditionForTacticalHint("NewJericho_TacticalFactionDef"));
-              //  leaderSightedHint.Conditions.Add(ActorIsOfFactionCreateNewConditionForTacticalHint("Synedrion_TacticalFactionDef"));
+                //  CreateNewTacticalHint("LeaderSighted", HintTrigger.ActorSeen, "HumanEnemy_GameTagDef", "Should not appear", "Should not appear", 1, false);
+                //   ContextHelpHintDef leaderSightedHint = Repo.GetAllDefs<ContextHelpHintDef>().FirstOrDefault(ged => ged.name.Equals("LeaderSighted"));
+                //   leaderSightedHint.AnyCondition = false;
+                //  leaderSightedHint.Conditions[0] = ActorIsOfFactionCreateNewConditionForTacticalHint("AN_FallenOnes_TacticalFactionDef");
+                //  leaderSightedHint.Conditions.Add(ActorIsOfFactionCreateNewConditionForTacticalHint("Anu_TacticalFactionDef"));
+                //  leaderSightedHint.Conditions.Add(ActorIsOfFactionCreateNewConditionForTacticalHint("NEU_Bandits_TacticalFactionDef"));
+                //  leaderSightedHint.Conditions.Add(ActorIsOfFactionCreateNewConditionForTacticalHint("NJ_Purists_TacticalFactionDef"));
+                //  leaderSightedHint.Conditions.Add(ActorIsOfFactionCreateNewConditionForTacticalHint("NewJericho_TacticalFactionDef"));
+                //  leaderSightedHint.Conditions.Add(ActorIsOfFactionCreateNewConditionForTacticalHint("Synedrion_TacticalFactionDef"));
             }
             catch (Exception e)
             {
@@ -192,17 +215,17 @@ namespace TFTV
                 {
                     newContextHelpHintDef.Conditions[0] = ActorHasTemplateCreateNewConditionForTacticalHint(conditionName);
                 }
-                else if(typeHint ==1) 
+                else if (typeHint == 1)
                 {
                     newContextHelpHintDef.Conditions[0] = ActorHasTagCreateNewConditionForTacticalHint(conditionName);
                 }
-                else 
-                { 
-                
+                else
+                {
+
                 }
                 newContextHelpHintDef.Title.LocalizationKey = title;
                 newContextHelpHintDef.Text.LocalizationKey = text;
-               // newContextHelpHintDef.AnyCondition = false;
+                // newContextHelpHintDef.AnyCondition = false;
 
                 if (oneTime)
                 {
@@ -224,42 +247,42 @@ namespace TFTV
 
 
                 /*
-									string m_Name = "TUT_DLC3_MissionStartStory_HintDef"
-					string Guid = "cacf2bbc-50c9-9144-6922-39ac7712e719"
-					string ResourcePath = "Defs/Gameplay/ContextHelp/TUT_DLC3_MissionStartStory_HintDef"
-					SInt32 Trigger = 40
-					bool AnyCondition = True
-					List`1 Conditions
-						Array Array
-						int size = 1
-							[0]
-							PPtr<HintConditionDef> data
-								int m_FileID = 0
-								SInt64 m_PathID = 37133
-					LocalizedTextBind Title
-						string LocalizationKey = "KEY_DLC3_TAC_HINT_MANTICORE_RUN_STORY_NAME"
-					LocalizedTextBind Text
-						string LocalizationKey = "KEY_DLC3_TAC_HINT_MANTICORE_RUN_STORY_DESCRIPTION"
-					LocalizedTextBind ControllerText
-						string LocalizationKey = ""
-					AssetReferenceSprite Image
-						string m_AssetGUID = "3c3d998d6c26dfc4990f5a1ce67007f5"
-						string m_SubObjectName = ""
-						string m_SubObjectType = ""
-					PPtr<VideoPlaybackSourceDef> VideoDef
-						int m_FileID = 0
-						SInt64 m_PathID = 0
-					bool DisplayAsModal = False
-					bool KeepUiInBackground = False
-					bool DelayUntilActorSelected = False
-					bool DiscardIfContextDies = False
-					bool IsTutorialHint = False
-					PPtr<BaseEventDef> EventusEventDef
-						int m_FileID = 0
-						SInt64 m_PathID = 0
-					PPtr<ContextHelpHintDef> NextHint
-						int m_FileID = 0
-						SInt64 m_PathID = 37247*/
+                                    string m_Name = "TUT_DLC3_MissionStartStory_HintDef"
+                    string Guid = "cacf2bbc-50c9-9144-6922-39ac7712e719"
+                    string ResourcePath = "Defs/Gameplay/ContextHelp/TUT_DLC3_MissionStartStory_HintDef"
+                    SInt32 Trigger = 40
+                    bool AnyCondition = True
+                    List`1 Conditions
+                        Array Array
+                        int size = 1
+                            [0]
+                            PPtr<HintConditionDef> data
+                                int m_FileID = 0
+                                SInt64 m_PathID = 37133
+                    LocalizedTextBind Title
+                        string LocalizationKey = "KEY_DLC3_TAC_HINT_MANTICORE_RUN_STORY_NAME"
+                    LocalizedTextBind Text
+                        string LocalizationKey = "KEY_DLC3_TAC_HINT_MANTICORE_RUN_STORY_DESCRIPTION"
+                    LocalizedTextBind ControllerText
+                        string LocalizationKey = ""
+                    AssetReferenceSprite Image
+                        string m_AssetGUID = "3c3d998d6c26dfc4990f5a1ce67007f5"
+                        string m_SubObjectName = ""
+                        string m_SubObjectType = ""
+                    PPtr<VideoPlaybackSourceDef> VideoDef
+                        int m_FileID = 0
+                        SInt64 m_PathID = 0
+                    bool DisplayAsModal = False
+                    bool KeepUiInBackground = False
+                    bool DelayUntilActorSelected = False
+                    bool DiscardIfContextDies = False
+                    bool IsTutorialHint = False
+                    PPtr<BaseEventDef> EventusEventDef
+                        int m_FileID = 0
+                        SInt64 m_PathID = 0
+                    PPtr<ContextHelpHintDef> NextHint
+                        int m_FileID = 0
+                        SInt64 m_PathID = 37247*/
 
 
 

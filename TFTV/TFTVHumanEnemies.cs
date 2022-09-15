@@ -22,7 +22,39 @@ namespace TFTV
         private static readonly DefRepository Repo = TFTVMain.Repo;
 
         public static int difficultyLevel = 0;
-        public static string FileNameSquadPic = "";
+       // public static Dictionary <string, string> FileNameSquadPic = new Dictionary<string, string>();
+
+        public static Dictionary <string, int> HumanEnemiesAndTactics = new Dictionary<string, int>();
+
+       // public static List <TacticalFaction> HumanEnemyTacticalFactions = new List<TacticalFaction>();
+
+
+        public static void RollTactic(string nameOfFaction)
+        {
+            try
+            {    
+                UnityEngine.Random.InitState((int)DateTime.Now.Ticks);
+                int roll = UnityEngine.Random.Range(1, 10);
+                if (HumanEnemiesAndTactics.ContainsKey(nameOfFaction))
+                {
+                    HumanEnemiesAndTactics[nameOfFaction] = roll;
+                }
+                else
+                {
+                    HumanEnemiesAndTactics.Add(nameOfFaction, roll);
+                }
+                /*  if(roll == 2) 
+                  {
+                      UnityEngine.Random.InitState((int)DateTime.Now.Ticks);
+                      roll = UnityEngine.Random.Range(3, 10);
+                  }*/
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
         public static string GenerateGangName()
         {
             try
@@ -88,7 +120,7 @@ namespace TFTV
                 }
                 else if (roll == 8)
                 {
-                    description = "While leader is alive and there are no enemies in sight within 10 tiles at start of the turn, all allies do +10% damage";
+                    description = "Each ally does +10% damage while leader is alive if there are no enemies in sight within 10 tiles at the start of its turn";
                     tactic = "Ambush";
                 }
                 else if (roll == 9)
@@ -103,7 +135,7 @@ namespace TFTV
                 if (enemyHumanFaction.TacticalFactionDef.ShortName.Equals("ban"))
                 {
                     unitType = "a gang";
-                    FileNameSquadPic = "ban_squad.png";
+                  //  FileNameSquadPic = "ban_squad.png";
                 }
                 else if (enemyHumanFaction.TacticalFactionDef.ShortName.Equals("nj") || enemyHumanFaction.Faction.FactionDef.ShortName.Equals("anu") || enemyHumanFaction.Faction.FactionDef.ShortName.Equals("syn"))
                 {
@@ -111,17 +143,17 @@ namespace TFTV
                     if (enemyHumanFaction.TacticalFactionDef.ShortName.Equals("nj"))
                     {
                         factionName = "New Jericho";
-                        FileNameSquadPic = "nj_squad.jpg";
+                       // FileNameSquadPic = "nj_squad.jpg";
                     }
                     else if (enemyHumanFaction.TacticalFactionDef.ShortName.Equals("anu"))
                     {
                         factionName = "Disciples of Anu";
-                        FileNameSquadPic = "anu_squad.jpg";
+                      //  FileNameSquadPic = "anu_squad.jpg";
                     }
                     else
                     {
                         factionName = "Synedrion";
-                        FileNameSquadPic = "syn_squad.jpg";
+                      //  FileNameSquadPic = "syn_squad.jpg";
                     }
 
                     unitType = "a " + factionName + " squad";
@@ -129,12 +161,12 @@ namespace TFTV
                 else if (enemyHumanFaction.TacticalFactionDef.ShortName.Equals("FallenOnes"))
                 {
                     unitType = "a pack of Forsaken";
-                    FileNameSquadPic = "fo_squad.png";
+                  //  FileNameSquadPic = "fo_squad.png";
                 }
                 else if (enemyHumanFaction.TacticalFactionDef.ShortName.Equals("Purists"))
                 {
                     unitType = "an array of the Pure";
-                    FileNameSquadPic = "pu_squad.jpg";
+                  //  FileNameSquadPic = "pu_squad.jpg";
                 }
 
                 string descriptionHint = "You are facing " + unitType + ", called the " + nameOfGang +
@@ -183,6 +215,11 @@ namespace TFTV
                             TacticalActor tacticalActor = tacticalActorBase as TacticalActor;
                             listOfHumansEnemies.Add(tacticalActor);
                         }
+                    }
+
+                    if(listOfHumansEnemies.Count == 0) 
+                    {
+                        return;
                     }
 
                     TFTVLogger.Always("There are " + listOfHumansEnemies.Count() + " human enemies");
@@ -235,8 +272,8 @@ namespace TFTV
                     factionNames.Remove(leader.name);
                     TFTVLogger.Always("Leader now has GameTag and their name is " + leader.name);
                     AdjustStatsAndSkills(leader);
-                    TFTVHumansEnemiesTactics.RollTactic();
-                    GenerateHumanEnemyUnit(faction, leader.name, TFTVHumansEnemiesTactics.roll);
+                    RollTactic(nameOfFaction);
+                    GenerateHumanEnemyUnit(faction, leader.name, HumanEnemiesAndTactics.GetValueSafe(nameOfFaction));
 
                     for (int i = 0; i < champs; i++)
                     {
@@ -280,8 +317,6 @@ namespace TFTV
                         TFTVLogger.Always("This " + juve.name + " is now a juve");
 
                     }
-
-
                 }
             }
             catch (Exception e)
@@ -313,6 +348,7 @@ namespace TFTV
                         }
                     }
                 }
+                
                 return enemyHumanFactions;
 
             }
@@ -411,7 +447,6 @@ namespace TFTV
             throw new InvalidOperationException();
         }
 
-
         [HarmonyPatch(typeof(UIModuleCharacterStatus), "SetData")]
         public static class UIModuleCharacterStatus_SetData_AdjustLevel_Patch
         {
@@ -435,8 +470,10 @@ namespace TFTV
                             {
                                 __instance.CharacterLevel.text = "6";
                             }
+
+                            string factionName = factionAndTier[0].name.Split('_')[1];
                             ____abilitiesList.AddRow<CharacterStatusAbilityRowController>
-                               (__instance.AbilitiesListAbilityPrototype).SetData(AddTacticsDescription(TFTVHumansEnemiesTactics.roll));
+                               (__instance.AbilitiesListAbilityPrototype).SetData(AddTacticsDescription(HumanEnemiesAndTactics.GetValueSafe(factionName)));
 
                         }
                         else if (factionAndTier[1] == HumanEnemyTier2GameTag)
@@ -483,7 +520,6 @@ namespace TFTV
             }
         }
 
-
         public static AbilityData ApplyTextChanges(GameTagDef factionTag, GameTagDef tierTag)
         {
 
@@ -522,7 +558,7 @@ namespace TFTV
                 string description = "";
                 if (roll == 1)
                 {
-                    description = "Enemies who can see the character lose 1 WP";
+                    description = "Enemies who can see the character lose 1 WP at the start of their turn";
                     tactic = " - Fearsome";
                 }
                 else if (roll == 2)
@@ -548,7 +584,7 @@ namespace TFTV
                 }
                 else if (roll == 6)
                 {
-                    description = "When any high ranking character dies, allies gain frenzy status";
+                    description = "When any high ranking character dies (level 4 and above), allies gain frenzy status";
                     tactic = " - Blood frenzy";
                 }
                 else if (roll == 7)
@@ -558,7 +594,7 @@ namespace TFTV
                 }
                 else if (roll == 8)
                 {
-                    description = "While leader is alive and there are no enemies in sight within 10 tiles at start of the turn, all allies do +10% damage";
+                    description = "Each ally does +10% damage while leader is alive if there are no enemies in sight within 10 tiles at the start of its turn";
                     tactic = " - Ambush";
                 }
                 else if (roll == 9)
@@ -582,7 +618,6 @@ namespace TFTV
             throw new InvalidOperationException();
 
         }
-
 
         public static int GetAdjustedLevel(TacticalActor tacticalActor)
         {
@@ -652,8 +687,7 @@ namespace TFTV
             }
             throw new InvalidOperationException();
         }
-
-
+       
         public static void AdjustStatsAndSkills(TacticalActor tacticalActor)
         {
             try
@@ -1033,13 +1067,13 @@ namespace TFTV
         }
 
         [HarmonyPatch(typeof(TacticalLevelController), "ActorEnteredPlay")]
-        public static class TacticalLevelController_ActorEnteredPlay_RevenantGenerator_Patch
+        public static class TacticalLevelController_ActorEnteredPlay_HumanEnemies_Patch
         {
             public static void Postfix(TacticalActorBase actor, TacticalLevelController __instance)
             {
                 try
                 {
-                    if (TFTVHumansEnemiesTactics.roll > 0 && actor.BaseDef.name == "Soldier_ActorDef" && actor.InPlay
+                    if (HumanEnemiesAndTactics!= null && actor.BaseDef.name == "Soldier_ActorDef" && actor.InPlay
                         && __instance.CurrentFaction != __instance.GetFactionByCommandName("PX"))
                     {
                         TFTVLogger.Always("The turn number is " + __instance.TurnNumber);

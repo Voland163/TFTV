@@ -1,6 +1,7 @@
 ﻿using Base.Core;
 using Base.Defs;
 using Base.Entities.Effects;
+using Base.Input;
 using Base.UI;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
@@ -21,6 +22,7 @@ using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Levels;
 using PhoenixPoint.Tactical.Levels.FactionEffects;
+using PhoenixPoint.Tactical.Levels.FactionObjectives;
 using PhoenixPoint.Tactical.Levels.Mist;
 using System;
 using System.Collections.Generic;
@@ -173,33 +175,34 @@ namespace TFTV
                     }
                     if (i == 5 && CheckFordVoidOmensInPlay(level).Contains(i) && !voidOmensCheck[i])
                     {
-                        foreach (CustomMissionTypeDef missionTypeDef in Repo.GetAllDefs<CustomMissionTypeDef>())
+                       // TFTVHavenDefense.VO5ChangesToHD();
+                          foreach (CustomMissionTypeDef missionTypeDef in Repo.GetAllDefs<CustomMissionTypeDef>())
                         {
 
                             if (missionTypeDef.name.Contains("Haven") && !missionTypeDef.name.Contains("Infestation"))
                             {
+                            //    List<FactionObjectiveDef> objectiveDefs = missionTypeDef.CustomObjectives.ToList();
+                                FactionObjectiveDef killAllObjective = Repo.GetAllDefs<FactionObjectiveDef>().FirstOrDefault(ged => ged.name.Equals("E_DefeatEnemies [HavenDefence_CustomMissionTypeDef]"));
+                                FactionObjectiveDef protectCivilians = Repo.GetAllDefs<FactionObjectiveDef>().FirstOrDefault(ged => ged.name.Equals("E_ProtectCivilians [HavenDefence_CustomMissionTypeDef]"));
                                 TacCrateDataDef cratesNotResources = Repo.GetAllDefs<TacCrateDataDef>().FirstOrDefault(ged => ged.name.Equals("Default_TacCrateDataDef"));
                                 if (missionTypeDef.name.Contains("Civ"))
                                 {
                                     missionTypeDef.ParticipantsRelations[1].MutualRelation = FactionRelation.Enemy;
+                                   // objectiveDefs.Remove(protectCivilians);
                                 }
                                 else if (!missionTypeDef.name.Contains("Civ"))
                                 {
                                     missionTypeDef.ParticipantsRelations[2].MutualRelation = FactionRelation.Enemy;
                                 }
                                 missionTypeDef.ParticipantsData[1].PredeterminedFactionEffects = missionTypeDef.ParticipantsData[0].PredeterminedFactionEffects;
-                                missionTypeDef.ParticipantsData[1].ReinforcementsTurns.Max = 2;
-                                missionTypeDef.ParticipantsData[1].ReinforcementsTurns.Min = 2;
-                                missionTypeDef.ParticipantsData[1].InfiniteReinforcements = true;
-                                missionTypeDef.ParticipantsData[1].ReinforcementsDeploymentPart.Max = 0.5f;
-                                missionTypeDef.ParticipantsData[1].ReinforcementsDeploymentPart.Min = 0.5f;
                                 missionTypeDef.MissionSpecificCrates = cratesNotResources;
                                 missionTypeDef.FactionItemsRange.Min = 2;
                                 missionTypeDef.FactionItemsRange.Max = 7;
                                 missionTypeDef.CratesDeploymentPointsRange.Min = 20;
                                 missionTypeDef.CratesDeploymentPointsRange.Max = 30;
                                 missionTypeDef.DontRecoverItems = true;
-
+                              //  objectiveDefs.Remove(killAllObjective);                
+                              //  missionTypeDef.CustomObjectives = objectiveDefs.ToArray();
                             }
                         }
                         // Logger.Always(voidOmen + j + " is now in effect, held in variable " + voidOmen + i);
@@ -741,6 +744,7 @@ namespace TFTV
 
         }
 
+        // public void GameOver() for later 
         [HarmonyPatch(typeof(TacticalLevelController), "ActorDied")]
         public static class TacticalLevelController_ActorDied_HostileDefenders_Patch
         {
@@ -750,32 +754,38 @@ namespace TFTV
                 {
                     if (VoidOmen5Active)
                     {
+                        TacticalFaction phoenix = __instance.GetFactionByCommandName("PX");
 
                         // TFTVLogger.Always("ActorDied invoked, because " + deathReport.Actor.DisplayName + " died");
 
                         if (deathReport.Actor.TacticalFaction.ParticipantKind == TacMissionParticipant.Intruder)
                         {
+                                                 
                             // TFTVLogger.Always("If ActorDied passed, because " + deathReport.Actor.DisplayName + " was intruder");
 
                             if (deathReport.Actor.TacticalFaction.State == TacFactionState.Defeated)
                             {
-                                //  TFTVLogger.Always("Check passed, aliens lost");
-
-                                List<TacticalFaction> factions = __instance.Factions.ToList();
-                                foreach (TacticalFaction faction in factions)
+                                foreach (TacticalFaction tacticalFaction in __instance.Factions)
                                 {
-                                    if (faction.IsControlledByPlayer)
+                                    if (tacticalFaction.GetRelationTo(phoenix) == FactionRelation.Enemy)
                                     {
-                                        faction.State = TacFactionState.Won;
-                                        // TFTVLogger.Always("This " + faction.Faction.ToString() + " won");
-                                    }
-                                    else
-                                    {
-                                        faction.State = TacFactionState.Defeated;
-                                        //  TFTVLogger.Always("This " + faction.Faction.ToString() + " lost");
-                                    }
+                                        tacticalFaction.ParticipantKind = TacMissionParticipant.Player;
 
+                                    }
                                 }
+                                phoenix.State = TacFactionState.Won;
+                                
+                                __instance.GameOver();
+
+                                //  TFTVLogger.Always("Check passed, aliens lost");
+                                //  TFTVHavenDefense.ConvertDefendersToPX(__instance);
+                                //  TFTVHavenDefense.ConvertCiviliansToPX(__instance);
+
+
+                                //  
+
+                                // TFTVLogger.Always("This " + faction.Faction.ToString() + " won");
+
                             }
 
                         }

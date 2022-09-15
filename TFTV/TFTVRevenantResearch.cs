@@ -60,6 +60,32 @@ namespace TFTV
             {
                 TFTVLogger.Error(e);
             }
+
+            /*
+             * 
+             * for later 
+             *  PhoenixStatisticsManager
+             *  private void OnCaptureUnit(GeoUnitDescriptor unit)
+        {
+            _geoAchievementsTracker.CaptureAllAlienTypesProgress(unit);
+            if (CurrentGameStats.GeoscapeStats.CapturedAliens == null)
+            {
+                CurrentGameStats.GeoscapeStats.CapturedAliens = new Dictionary<ClassTagDef, int>();
+            }
+
+            if (CurrentGameStats.GeoscapeStats.CapturedAliens.ContainsKey(unit.ClassTag))
+            {
+                CurrentGameStats.GeoscapeStats.CapturedAliens[unit.ClassTag]++;
+            }
+            else
+            {
+                CurrentGameStats.GeoscapeStats.CapturedAliens[unit.ClassTag] = 1;
+            }
+        }
+             * 
+             * 
+             * */
+
         }
     }
 }

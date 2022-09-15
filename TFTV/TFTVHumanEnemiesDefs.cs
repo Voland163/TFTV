@@ -170,7 +170,7 @@ namespace TFTV
                 ambushAbility.ItemTagStatModifications = new EquipmentItemTagStatModification[0];
                 ambushAbility.ViewElementDef.DisplayName1 = new LocalizedTextBind("Ambush (Tactics)", true);
                 ambushAbility.ViewElementDef.Description = new LocalizedTextBind
-                    ("+10% damage. Received ability because Leader is alive and there were no enemies in sight within 10 tiles at the start of the turn.", true);
+                    ("+10% damage. Received ability because Leader was alive and there were no enemies in sight within 10 tiles at the start of the turn.", true);
                 Sprite icon = Helper.CreateSpriteFromImageFile("UI_AbilitiesIcon_PersonalTrack_TacticalAnalyst.png");
                 ambushAbility.ViewElementDef.LargeIcon = icon;
                 ambushAbility.ViewElementDef.SmallIcon = icon;

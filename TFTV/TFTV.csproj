@@ -78,6 +78,7 @@
     <Compile Include="TFTVDiplomacyPenalties.cs" />
     <Compile Include="TFTVGeoscape.cs" />
     <Compile Include="TFTVConfig.cs" />
+    <Compile Include="TFTVHavenDefense.cs" />
     <Compile Include="TFTVHelper.cs" />
     <Compile Include="TFTVHumanEnemies.cs" />
     <Compile Include="TFTVHumanEnemiesDefs.cs" />
