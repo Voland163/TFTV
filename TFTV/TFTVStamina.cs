@@ -64,37 +64,6 @@ namespace TFTV
 
 
 
-        /*
-        // This second patch reads from the list and drains Stamina from everyone who is in it. 
-        [HarmonyPatch(typeof(GeoCharacter), "Init")]
-        internal static class GeoCharacter_Init_StaminaToZeroIfBodyPartDisabled_patch
-        {
-            public static bool Prepare()
-            {
-                TFTVConfig config = TFTVMain.Main.Config;
-                return config.StaminaPenaltyFromInjury;
-            }
-
-            public static void Postfix(GeoCharacter __instance)
-            {
-                try
-                {
-
-                    if (charactersWithBrokenLimbs.Contains(__instance.Id))
-                    {
-
-                        TFTVCommonMethods.SetStaminaToZero(__instance);
-                        charactersWithBrokenLimbs.Remove(__instance.Id);
-                    }
-
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-            }
-        }
-        */
         //When getting a mutation, the character's Stamina is to 0
         [HarmonyPatch(typeof(UIModuleMutationSection), "ApplyMutation")]
         public static class UIModuleMutationSection_ApplyMutation_SetStaminaTo0_patch

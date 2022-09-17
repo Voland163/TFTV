@@ -156,7 +156,6 @@ namespace TFTV
             }
 
         }
-
         public static Sprite CreateSpriteFromImageFile(string imageFileName, int width = 128, int height = 128, TextureFormat textureFormat = TextureFormat.RGBA32, bool mipChain = true)
         {
             try

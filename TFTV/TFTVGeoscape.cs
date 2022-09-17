@@ -46,9 +46,7 @@ namespace TFTV
             /// ModMain is accesible at any time
 
             TFTVMain main = (TFTVMain)Main;
-
-            
-            TFTVStarts.CreateNewDefsForTFTVStart();
+            TFTVDefsCreatedOnLevelChanged.CreateNewDefsForTFTVStart();
             //TFTVStarts.ModifySophiaAndJacobStats(gsController);
             TFTVNewPXCharacters.PlayIntro(gsController);
             TFTVVoidOmens.ImplementVoidOmens(gsController);
@@ -128,7 +126,7 @@ namespace TFTV
         public override void ProcessGeoscapeInstanceData(object instanceData)
         {
             TFTVGSInstanceData data = (TFTVGSInstanceData)instanceData;
-            TFTVStarts.CreateNewDefsForTFTVStart();
+          //  TFTVDefsCreatedOnLevelChanged.CreateNewDefsForTFTVStart();
             TFTVStamina.charactersWithBrokenLimbs = data.charactersWithBrokenLimbs;
             TFTVAirCombat.targetsForBehemoth = data.targetsForBehemoth;
             // TFTVAirCombat.targetsVisitedByBehemoth = data.targetsVisitedByBehemoth;

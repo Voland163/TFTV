@@ -66,6 +66,15 @@ namespace TFTV
              * for later 
              *  PhoenixStatisticsManager
              *  private void OnCaptureUnit(GeoUnitDescriptor unit)
+             *  
+             *  GeoPhoenixFaction
+             *  public void CaptureUnit(GeoUnitDescriptor unit)
+        {
+            _capturedUnits.Add(unit);
+            EvaluateContaimentState();
+            this.OnCaptureUnit?.Invoke(unit);
+        }
+             *  
         {
             _geoAchievementsTracker.CaptureAllAlienTypesProgress(unit);
             if (CurrentGameStats.GeoscapeStats.CapturedAliens == null)

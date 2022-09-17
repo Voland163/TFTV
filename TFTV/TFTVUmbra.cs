@@ -26,54 +26,36 @@ namespace TFTV
         private static readonly DefRepository Repo = TFTVMain.Repo;
         public static string variableUmbraALNResReq = "Umbra_Encounter_Variable";
         public static bool UmbraResearched = false;
+        public static RandomValueEffectConditionDef randomValueFishUmbra = Repo.GetAllDefs<RandomValueEffectConditionDef>().FirstOrDefault(ged => ged.name.Equals("E_RandomValue [UmbralFishmen_FactionEffectDef]"));
+        public static RandomValueEffectConditionDef randomValueCrabUmbra = Repo.GetAllDefs<RandomValueEffectConditionDef>().FirstOrDefault(ged => ged.name.Equals("E_RandomValue [UmbralCrabmen_FactionEffectDef]"));
+        private static readonly AddAbilityStatusDef oilCrabAbility = Repo.GetAllDefs<AddAbilityStatusDef>().FirstOrDefault(ged => ged.name.Equals("OilCrab_AddAbilityStatusDef"));
+        private static readonly AddAbilityStatusDef oilTritonAbility = Repo.GetAllDefs<AddAbilityStatusDef>().FirstOrDefault(ged => ged.name.Equals("OilFish_AddAbilityStatusDef"));
 
-        public static void ChangeUmbra()
+        public static WeaponDef umbraCrab = Repo.GetAllDefs<WeaponDef>().FirstOrDefault(ged => ged.name.Equals("Oilcrab_Torso_BodyPartDef"));
 
-        {
-            try
-            {
-                //Need to change to take account of VoidOmen!!!:
-                SetUmbraRandomValue(0);
-                EncounterVariableResearchRequirementDef sourceVarResReq =
-                   Repo.GetAllDefs<EncounterVariableResearchRequirementDef>().
-                   FirstOrDefault(ged => ged.name.Equals("NJ_Bionics1_ResearchDef_EncounterVariableResearchRequirementDef_0"));
-                //Changing Umbra Crab and Triton to appear after SDI event 3;
-                ResearchDef umbraCrabResearch = Repo.GetAllDefs<ResearchDef>().FirstOrDefault(ged => ged.name.Equals("ALN_CrabmanUmbra_ResearchDef"));
+        public static BodyPartAspectDef umbraCrabBodyAspect = Repo.GetAllDefs<BodyPartAspectDef>(). FirstOrDefault(ged => ged.name.Equals("E_BodyPartAspect [Oilcrab_Torso_BodyPartDef]"));
 
-                //Creating new Research Requirement, requiring a variable to be triggered  
-                EncounterVariableResearchRequirementDef variableResReqUmbra = Helper.CreateDefFromClone(sourceVarResReq, "0CCC30E0-4DB1-44CD-9A60-C1C8F6588C8A", "UmbraResReqDef");
-                variableResReqUmbra.VariableName = variableUmbraALNResReq;
-                // This changes the Umbra reserach so that 2 conditions have to be fulfilled: 1) a) nest has to be researched, or b) exotic material has to be found
-                // (because 1)a) is fufilled at start of the game, b)) is redundant but harmless), and 2) a special variable has to be triggered, assigned to event sdi3
-                umbraCrabResearch.RevealRequirements.Operation = ResearchContainerOperation.ALL;
-                umbraCrabResearch.RevealRequirements.Container[0].Operation = ResearchContainerOperation.ANY;
-                umbraCrabResearch.RevealRequirements.Container[1].Requirements[0] = variableResReqUmbra;
-                //Now same thing for Triton Umbra, but it will use same variable because we want them to appear at the same time
-                ResearchDef umbraFishResearch = Repo.GetAllDefs<ResearchDef>().FirstOrDefault(ged => ged.name.Equals("ALN_FishmanUmbra_ResearchDef"));
-                umbraFishResearch.RevealRequirements.Operation = ResearchContainerOperation.ALL;
-                umbraFishResearch.RevealRequirements.Container[0].Operation = ResearchContainerOperation.ANY;
-                umbraFishResearch.RevealRequirements.Container[1].Requirements[0] = variableResReqUmbra;
-                //Because Triton research has 2 requirements in the second container, we set them to any
-                umbraFishResearch.RevealRequirements.Container[1].Operation = ResearchContainerOperation.ANY;
+        public static WeaponDef umbraFish = Repo.GetAllDefs<WeaponDef>().FirstOrDefault(ged => ged.name.Equals("Oilfish_Torso_BodyPartDef"));
 
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
+        public static BodyPartAspectDef umbraFishBodyAspect = Repo.GetAllDefs<BodyPartAspectDef>().FirstOrDefault(ged => ged.name.Equals("E_BodyPartAspect [Oilfish_Torso_BodyPartDef]"));
 
+        private static readonly ClassTagDef crabTag = Repo.GetAllDefs<ClassTagDef>().FirstOrDefault (ged => ged.name.Equals("Crabman_ClassTagDef"));
+        private static readonly ClassTagDef fishTag = Repo.GetAllDefs<ClassTagDef>().FirstOrDefault(ged => ged.name.Equals("Fishman_ClassTagDef"));
 
-        }
+        private static readonly DeathBelcherAbilityDef oilcrabDeathBelcherAbility = Repo.GetAllDefs<DeathBelcherAbilityDef>().FirstOrDefault(ged => ged.name.Equals("Oilcrab_Die_DeathBelcher_AbilityDef"));
+        private static readonly  DeathBelcherAbilityDef oilfishDeathBelcherAbility = Repo.GetAllDefs<DeathBelcherAbilityDef>().FirstOrDefault(ged => ged.name.Equals("Oilfish_Die_DeathBelcher_AbilityDef"));
+
+        private static readonly GameTagDef anyRevenantGameTag = Repo.GetAllDefs<GameTagDef>().FirstOrDefault(p => p.name.Equals("Any_Revenant_TagDef"));
+        
+        
 
         public static void SetUmbraRandomValue(float value)
         {
             try
             {
-                RandomValueEffectConditionDef randomValueFishUmbra = Repo.GetAllDefs<RandomValueEffectConditionDef>().
-                FirstOrDefault(ged => ged.name.Equals("E_RandomValue [UmbralFishmen_FactionEffectDef]"));
+
                 randomValueFishUmbra.ThresholdValue = value;
-                RandomValueEffectConditionDef randomValueCrabUmbra = Repo.GetAllDefs<RandomValueEffectConditionDef>().
-                FirstOrDefault(ged => ged.name.Equals("E_RandomValue [UmbralCrabmen_FactionEffectDef]"));
+
                 randomValueCrabUmbra.ThresholdValue = value;
             }
             catch (Exception e)
@@ -89,9 +71,7 @@ namespace TFTV
         {
             try
             {
-                AddAbilityStatusDef oilCrabAbility =
-                      Repo.GetAllDefs<AddAbilityStatusDef>().FirstOrDefault
-                      (ged => ged.name.Equals("OilCrab_AddAbilityStatusDef"));
+
                 tacticalActor.Status.ApplyStatus(oilCrabAbility);
             }
             catch (Exception e)
@@ -106,9 +86,7 @@ namespace TFTV
         {
             try
             {
-                AddAbilityStatusDef oilTritonAbility =
-                     Repo.GetAllDefs<AddAbilityStatusDef>().FirstOrDefault
-                     (ged => ged.name.Equals("OilFish_AddAbilityStatusDef"));
+                
                 tacticalActor.Status.ApplyStatus(oilTritonAbility);
             }
             catch (Exception e)
@@ -119,21 +97,16 @@ namespace TFTV
 
         public static void UmbraEvolution(int healthPoints, int standardDamageAttack, int pierceDamageAttack)
         {
-            WeaponDef umbraCrab = Repo.GetAllDefs<WeaponDef>().
-            FirstOrDefault(ged => ged.name.Equals("Oilcrab_Torso_BodyPartDef"));
+            
             umbraCrab.HitPoints = healthPoints;
             umbraCrab.DamagePayload.DamageKeywords[0].Value = standardDamageAttack;
             umbraCrab.DamagePayload.DamageKeywords[1].Value = pierceDamageAttack;
-            BodyPartAspectDef umbraCrabBodyAspect = Repo.GetAllDefs<BodyPartAspectDef>().
-            FirstOrDefault(ged => ged.name.Equals("E_BodyPartAspect [Oilcrab_Torso_BodyPartDef]"));
+            
             umbraCrabBodyAspect.Endurance = (healthPoints / 10);
-            WeaponDef umbraFish = Repo.GetAllDefs<WeaponDef>().
-            FirstOrDefault(ged => ged.name.Equals("Oilfish_Torso_BodyPartDef"));
+           
             umbraFish.HitPoints = healthPoints;
             umbraFish.DamagePayload.DamageKeywords[0].Value = standardDamageAttack;
-            umbraFish.DamagePayload.DamageKeywords[1].Value = pierceDamageAttack;
-            BodyPartAspectDef umbraFishBodyAspect = Repo.GetAllDefs<BodyPartAspectDef>().
-            FirstOrDefault(ged => ged.name.Equals("E_BodyPartAspect [Oilfish_Torso_BodyPartDef]"));
+            umbraFish.DamagePayload.DamageKeywords[1].Value = pierceDamageAttack;          
             umbraFishBodyAspect.Endurance = (healthPoints / 10);
         }
 
@@ -164,17 +137,7 @@ namespace TFTV
                     {
                         if (!TFTVVoidOmens.VoidOmen16Active)
                         {
-                            ClassTagDef crabTag = Repo.GetAllDefs<ClassTagDef>().FirstOrDefault
-                           (ged => ged.name.Equals("Crabman_ClassTagDef"));
-                            ClassTagDef fishTag = Repo.GetAllDefs<ClassTagDef>().FirstOrDefault
-                           (ged => ged.name.Equals("Fishman_ClassTagDef"));
-
-                            DeathBelcherAbilityDef oilcrabDeathBelcherAbility =
-                           Repo.GetAllDefs<DeathBelcherAbilityDef>().FirstOrDefault
-                           (ged => ged.name.Equals("Oilcrab_Die_DeathBelcher_AbilityDef"));
-                            DeathBelcherAbilityDef oilfishDeathBelcherAbility =
-                           Repo.GetAllDefs<DeathBelcherAbilityDef>().FirstOrDefault
-                           (ged => ged.name.Equals("Oilfish_Die_DeathBelcher_AbilityDef"));
+                            
 
                             TacticalFaction phoenix = controller.GetFactionByCommandName("px");
                             TacticalFaction pandorans = controller.GetFactionByCommandName("aln");
@@ -199,7 +162,7 @@ namespace TFTV
 
                                 TFTVLogger.Always("The actor is " + actor.name);
                                 if (actor.GameTags.Contains(crabTag) && actor.GetAbilityWithDef<DeathBelcherAbility>(oilcrabDeathBelcherAbility) == null
-                                    && !actor.name.Contains("Oilcrab") && !actor.GameTags.Contains(Repo.GetAllDefs<GameTagDef>().FirstOrDefault(p => p.name.Equals("Revenant_GameTagDef"))))
+                                    && !actor.name.Contains("Oilcrab") && !actor.GameTags.Contains(anyRevenantGameTag))
 
                                 {
                                     UnityEngine.Random.InitState((int)DateTime.Now.Ticks);
@@ -217,7 +180,7 @@ namespace TFTV
 
                                 }
                                 if (actor.GameTags.Contains(fishTag) && actor.GetAbilityWithDef<DeathBelcherAbility>(oilfishDeathBelcherAbility) == null
-                                    && !actor.name.Contains("Oilfish") && !actor.GameTags.Contains(Repo.GetAllDefs<GameTagDef>().FirstOrDefault(p => p.name.Equals("Revenant_GameTagDef"))))
+                                    && !actor.name.Contains("Oilfish") && !actor.GameTags.Contains(anyRevenantGameTag))
                                 {
                                     UnityEngine.Random.InitState((int)DateTime.Now.Ticks);
                                     int roll = UnityEngine.Random.Range(0, 100);
@@ -238,9 +201,8 @@ namespace TFTV
                 }
                 else
                 {
-                    RandomValueEffectConditionDef randomValueCrabUmbra = Repo.GetAllDefs<RandomValueEffectConditionDef>().
-                    FirstOrDefault(ged => ged.name.Equals("E_RandomValue [UmbralCrabmen_FactionEffectDef]"));
-                    TFTVLogger.Always("The randon Crab Umbra value is " + randomValueCrabUmbra.ThresholdValue);
+                   
+                    TFTVLogger.Always("The random Crab Umbra value is " + randomValueCrabUmbra.ThresholdValue);
                 }
             }
             catch (Exception e)
@@ -250,48 +212,7 @@ namespace TFTV
         }
 
 
-        [HarmonyPatch(typeof(Research), "CompleteResearch")]
-        public static class Research_NewTurnEvent_CalculateDelirium_Patch
-        {
-            public static void Postfix(ResearchElement research)
-            {
-                try
-                {
-                    TFTVLogger.Always("Research completed " + research.ResearchID);
-
-                    if (research.ResearchID == "ALN_CrabmanUmbra_ResearchDef")
-                    {
-                        research.Faction.GeoLevel.EventSystem.SetVariable("UmbraResearched", 1);
-                        TFTVLogger.Always("Umbra Researched variable is set to " + research.Faction.GeoLevel.EventSystem.GetVariable("UmbraResearched"));
-                    }
-                    else if (research.ResearchID == "ANU_AnuPriest_ResearchDef" && research.Faction.GeoLevel.EventSystem.GetVariable("BG_Start_Faction") == 1)
-                    {
-                        research.Faction.GeoLevel.PhoenixFaction.Research.GiveResearch(research, true);
-                    }
-                    else if (research.ResearchID == "NJ_Technician_ResearchDef" && research.Faction.GeoLevel.EventSystem.GetVariable("BG_Start_Faction") == 2)
-                    {
-                        TFTVLogger.Always("Research completed " + research.ResearchID + " and corresponding flag triggered");
-                        research.Faction.GeoLevel.PhoenixFaction.Research.GiveResearch(research, true);
-                    }
-                    else if (research.ResearchID == "SYN_InfiltratorTech_ResearchDef" && research.Faction.GeoLevel.EventSystem.GetVariable("BG_Start_Faction") == 3)
-                    {
-                        research.Faction.GeoLevel.PhoenixFaction.Research.GiveResearch(research, true);
-                    }
-                    //To trigger change of rate in Pandoran Evolution
-                    else if (research.ResearchID == "ALN_Citadel_ResearchDef") 
-                    {
-                        research.Faction.GeoLevel.EventSystem.SetVariable("Pandorans_Researched_Citadel", 1);
-                        research.Faction.GeoLevel.AlienFaction.SpawnNewAlienBase();
-                        GeoAlienBase citadel = research.Faction.GeoLevel.AlienFaction.Bases.FirstOrDefault(ab => ab.AlienBaseTypeDef.name == "Citadel_GeoAlienBaseTypeDef");
-                        citadel.SpawnMonster(Repo.GetAllDefs<ClassTagDef>().FirstOrDefault(ctf => ctf.name.Equals("Queen_ClassTagDef")), true);
-                    }
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-            }
-        }
+        
 
 
         public static void CheckForUmbraResearch(GeoLevelController level)

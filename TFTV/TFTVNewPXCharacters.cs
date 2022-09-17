@@ -15,154 +15,29 @@ namespace TFTV
 {
     internal class TFTVNewPXCharacters
     {
-        private static readonly DefRepository Repo = TFTVMain.Repo;
-        public static void InjectAlistairAhsbyLines()
+       
+        public static void PlayIntro(GeoLevelController level)
         {
             try
             {
-                //Alistair speaks about Symes after completing Symes Retreat
-                GeoscapeEventDef alistairOnSymes1 = TFTVCommonMethods.CreateNewEvent("AlistairOnSymes1", "PROG_PX10_WIN_TITLE", "KEY_ALISTAIRONSYMES_1_DESCRIPTION", null);
-                alistairOnSymes1.GeoscapeEventData.Flavour = "IntroducingSymes";
-
-                //Alistair speaks about Barnabas after Barnabas asks for help
-                GeoscapeEventDef alistairOnBarnabas = TFTVCommonMethods.CreateNewEvent("AlistairOnBarnabas", "PROG_CH0_TITLE", "KEY_ALISTAIRONBARNABAS_DESCRIPTION", null);
-                alistairOnBarnabas.GeoscapeEventData.Flavour = "DLC4_Generic_NJ";
-
-                //Alistair speaks about Symes after Antarctica discovery
-                GeoscapeEventDef alistairOnSymes2 = TFTVCommonMethods.CreateNewEvent("AlistairOnSymes2", "PROG_PX1_WIN_TITLE", "KEY_ALISTAIRONSYMES_2_DESCRIPTION", null);
-                alistairOnSymes2.GeoscapeEventData.Flavour = "AntarcticSite_Victory";
-
-
-                AlistairRoadsEvent();
-                InjectOlenaKimLines();
-
-
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-
-        }
-
-        public static void InjectOlenaKimLines()
-
-        {
-            try
-            {
-                //Helena reveal about Olena
-                GeoscapeEventDef helenaOnOlena = TFTVCommonMethods.CreateNewEvent("HelenaOnOlena", "PROG_LE0_WIN_TITLE", "KEY_OLENA_HELENA_DESCRIPTION", null);
-                //Olena about West
-                GeoscapeEventDef olenaOnWest = TFTVCommonMethods.CreateNewEvent("OlenaOnWest", "PROG_NJ1_WIN_TITLE", "KEY_OLENAONWEST_DESCRIPTION", null);
-                //Olena about Synod
-                GeoscapeEventDef olenaOnSynod = TFTVCommonMethods.CreateNewEvent("OlenaOnSynod", "PROG_AN6_WIN2_TITLE", "KEY_OLENAONSYNOD_DESCRIPTION", null);
-                //Olena about the Ancients
-                GeoscapeEventDef olenaOnAncients = TFTVCommonMethods.CreateNewEvent("OlenaOnAncients", "KEY_OLENAONANCIENTS_TITLE", "KEY_OLENAONANCIENTS_DESCRIPTION", null);
-                //Olena about the Behemeoth
-                GeoscapeEventDef olenaOnBehemoth = TFTVCommonMethods.CreateNewEvent("OlenaOnBehemoth", "PROG_FS1_WIN_TITLE", "KEY_OLENAONBEHEMOTH_DESCRIPTION", null);
-                //Olena about Alistair - missing an event hook!!
-                GeoscapeEventDef olenaOnAlistair = TFTVCommonMethods.CreateNewEvent("OlenaOnAlistair", "", "KEY_OLENAONALISTAIR_DESCRIPTION", null);
-                //Olena about Symes
-                GeoscapeEventDef olenaOnSymes = TFTVCommonMethods.CreateNewEvent("OlenaOnSymes", "PROG_PX1_WIN_TITLE", "KEY_OLENAONSYMES_DESCRIPTION", null);
-                //Olena about ending 
-                GeoscapeEventDef olenaOnEnding = TFTVCommonMethods.CreateNewEvent("OlenaOnEnding", "KEY_ALISTAIR_ROADS_TITLE", "KEY_OLENAONENDING_DESCRIPTION", null);
-                //Olena about Bionics Lab sabotage
-                GeoscapeEventDef olenaOnBionicsLabSabotage = TFTVCommonMethods.CreateNewEvent("OlenaOnBionicsLabSabotage", "ANU_REALLY_PISSED_BIONICS_TITLE", "ANU_REALLY_PISSED_BIONICS_CHOICE_0_OUTCOME", null);
-                //Olena about Mutations Lab sabotage
-                GeoscapeEventDef olenaOnMutationsLabSabotage = TFTVCommonMethods.CreateNewEvent("OlenaOnMutationsLabSabotage", "NJ_REALLY_PISSED_MUTATIONS_TITLE", "NJ_REALLY_PISSED_MUTATIONS_CHOICE_0_OUTCOME", null);
-
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-        }
-
-        public static void AlistairRoadsEvent()
-        {
-            try
-            {
-                string title = "KEY_ALISTAIR_ROADS_TITLE";
-                string description = "KEY_ALISTAIR_ROADS_DESCRIPTION";
-                string passToOlena = "OlenaOnEnding";
-
-                string startingEvent = "AlistairRoads";
-                string afterWest = "AlistairRoadsNoWest";
-                string afterSynedrion = "AlistairRoadsNoSynedrion";
-                string afterAnu = "AlistairRoadsNoAnu";
-                string afterVirophage = "AlistairRoadsNoVirophage";
-
-                string questionAboutWest = "KEY_ALISTAIRONWEST_CHOICE";
-                string questionAboutSynedrion = "KEY_ALISTAIRONSYNEDRION_CHOICE";
-                string questionAboutAnu = "KEY_ALISTAIRONANU_CHOICE";
-                string questionAboutVirophage = "KEY_ALISTAIRONVIROPHAGE_CHOICE";
-                //   string questionAboutHelena = "KEY_ALISTAIRONHELENA_CHOICE";
-                string noMoreQuestions = "KEY_ALISTAIR_ROADS_ALLDONE";
-
-                string answerAboutWest = "KEY_ALISTAIRONWEST_DESCRIPTION";
-                string answerAboutSynedrion = "KEY_ALISTAIRONSYNEDRION_DESCRIPTION";
-                string answerAboutAnu = "KEY_ALISTAIRONANU_DESCRIPTION";
-                string answerAboutVirophage = "KEY_ALISTAIRONVIROPHAGE_DESCRIPTION";
-                //   string answerAboutHelena = "KEY_ALISTAIRONHELENA_DESCRIPTION";
-                string promptMoreQuestions = "KEY_ALISTAIR_ROADS_DESCRIPTION_2";
-
-                GeoscapeEventDef alistairRoads = TFTVCommonMethods.CreateNewEvent(startingEvent, title, description, null);
-                GeoscapeEventDef alistairRoadsAfterWest = TFTVCommonMethods.CreateNewEvent(afterWest, title, promptMoreQuestions, null);
-                GeoscapeEventDef alistairRoadsAfterSynedrion = TFTVCommonMethods.CreateNewEvent(afterSynedrion, title, promptMoreQuestions, null);
-                GeoscapeEventDef alistairRoadsAfterAnu = TFTVCommonMethods.CreateNewEvent(afterAnu, title, promptMoreQuestions, null);
-                GeoscapeEventDef alistairRoadsAfterVirophage = TFTVCommonMethods.CreateNewEvent(afterVirophage, title, promptMoreQuestions, null);
-
-                alistairRoads.GeoscapeEventData.Choices[0].Text.LocalizationKey = noMoreQuestions;
-                alistairRoads.GeoscapeEventData.Choices[0].Outcome.TriggerEncounterID = passToOlena;
-                TFTVCommonMethods.GenerateGeoEventChoice(alistairRoads, questionAboutWest, answerAboutWest);
-                TFTVCommonMethods.GenerateGeoEventChoice(alistairRoads, questionAboutSynedrion, answerAboutSynedrion);
-                TFTVCommonMethods.GenerateGeoEventChoice(alistairRoads, questionAboutAnu, answerAboutAnu);
-
-                alistairRoadsAfterWest.GeoscapeEventData.Choices[0].Text.LocalizationKey = noMoreQuestions;
-                alistairRoadsAfterWest.GeoscapeEventData.Choices[0].Outcome.TriggerEncounterID = passToOlena;
-                TFTVCommonMethods.GenerateGeoEventChoice(alistairRoadsAfterWest, questionAboutSynedrion, answerAboutSynedrion);
-                TFTVCommonMethods.GenerateGeoEventChoice(alistairRoadsAfterWest, questionAboutAnu, answerAboutAnu);
-                TFTVCommonMethods.GenerateGeoEventChoice(alistairRoadsAfterWest, questionAboutVirophage, answerAboutVirophage);
-
-                alistairRoadsAfterSynedrion.GeoscapeEventData.Choices[0].Text.LocalizationKey = noMoreQuestions;
-                alistairRoadsAfterSynedrion.GeoscapeEventData.Choices[0].Outcome.TriggerEncounterID = passToOlena;
-                TFTVCommonMethods.GenerateGeoEventChoice(alistairRoadsAfterSynedrion, questionAboutWest, answerAboutWest);
-                TFTVCommonMethods.GenerateGeoEventChoice(alistairRoadsAfterSynedrion, questionAboutAnu, answerAboutAnu);
-                TFTVCommonMethods.GenerateGeoEventChoice(alistairRoadsAfterSynedrion, questionAboutVirophage, answerAboutVirophage);
-
-                alistairRoadsAfterAnu.GeoscapeEventData.Choices[0].Text.LocalizationKey = noMoreQuestions;
-                alistairRoadsAfterAnu.GeoscapeEventData.Choices[0].Outcome.TriggerEncounterID = passToOlena;
-                TFTVCommonMethods.GenerateGeoEventChoice(alistairRoadsAfterAnu, questionAboutWest, answerAboutWest);
-                TFTVCommonMethods.GenerateGeoEventChoice(alistairRoadsAfterAnu, questionAboutSynedrion, answerAboutSynedrion);
-                TFTVCommonMethods.GenerateGeoEventChoice(alistairRoadsAfterAnu, questionAboutVirophage, answerAboutVirophage);
-
-                alistairRoadsAfterVirophage.GeoscapeEventData.Choices[0].Text.LocalizationKey = noMoreQuestions;
-                alistairRoadsAfterVirophage.GeoscapeEventData.Choices[0].Outcome.TriggerEncounterID = passToOlena;
-                TFTVCommonMethods.GenerateGeoEventChoice(alistairRoadsAfterVirophage, questionAboutWest, answerAboutWest);
-                TFTVCommonMethods.GenerateGeoEventChoice(alistairRoadsAfterVirophage, questionAboutSynedrion, answerAboutSynedrion);
-                TFTVCommonMethods.GenerateGeoEventChoice(alistairRoadsAfterVirophage, questionAboutAnu, answerAboutAnu);
-
-
-                alistairRoads.GeoscapeEventData.Choices[1].Outcome.TriggerEncounterID = afterWest;
-                alistairRoads.GeoscapeEventData.Choices[2].Outcome.TriggerEncounterID = afterSynedrion;
-                alistairRoads.GeoscapeEventData.Choices[3].Outcome.TriggerEncounterID = afterAnu;
-
-                alistairRoadsAfterWest.GeoscapeEventData.Choices[1].Outcome.TriggerEncounterID = afterSynedrion;
-                alistairRoadsAfterWest.GeoscapeEventData.Choices[2].Outcome.TriggerEncounterID = afterAnu;
-                alistairRoadsAfterWest.GeoscapeEventData.Choices[3].Outcome.TriggerEncounterID = afterVirophage;
-
-                alistairRoadsAfterSynedrion.GeoscapeEventData.Choices[1].Outcome.TriggerEncounterID = afterWest;
-                alistairRoadsAfterSynedrion.GeoscapeEventData.Choices[2].Outcome.TriggerEncounterID = afterAnu;
-                alistairRoadsAfterSynedrion.GeoscapeEventData.Choices[3].Outcome.TriggerEncounterID = afterVirophage;
-
-                alistairRoadsAfterAnu.GeoscapeEventData.Choices[1].Outcome.TriggerEncounterID = afterWest;
-                alistairRoadsAfterAnu.GeoscapeEventData.Choices[2].Outcome.TriggerEncounterID = afterSynedrion;
-                alistairRoadsAfterAnu.GeoscapeEventData.Choices[3].Outcome.TriggerEncounterID = afterVirophage;
-
-                alistairRoadsAfterVirophage.GeoscapeEventData.Choices[1].Outcome.TriggerEncounterID = afterWest;
-                alistairRoadsAfterVirophage.GeoscapeEventData.Choices[2].Outcome.TriggerEncounterID = afterSynedrion;
-                alistairRoadsAfterVirophage.GeoscapeEventData.Choices[3].Outcome.TriggerEncounterID = afterAnu;
-
+                if (level.EventSystem.GetVariable("BG_Intro_Played") == 0)
+                {
+                    GeoscapeEventContext geoscapeEventContext = new GeoscapeEventContext(level.PhoenixFaction, level.ViewerFaction);
+                    level.EventSystem.TriggerGeoscapeEvent("IntroBetterGeo_0", geoscapeEventContext);
+                    level.EventSystem.SetVariable("BG_Intro_Played", 1);
+                }
+                if (level.EventSystem.GetVariable("BG_Intro_Played") == 1)
+                {
+                    GeoscapeEventContext geoscapeEventContext = new GeoscapeEventContext(level.PhoenixFaction, level.ViewerFaction);
+                    level.EventSystem.TriggerGeoscapeEvent("IntroBetterGeo_1", geoscapeEventContext);
+                    level.EventSystem.SetVariable("BG_Intro_Played", 2);
+                }
+                if (level.EventSystem.GetVariable("BG_Intro_Played") == 2)
+                {
+                    GeoscapeEventContext geoscapeEventContext = new GeoscapeEventContext(level.PhoenixFaction, level.ViewerFaction);
+                    level.EventSystem.TriggerGeoscapeEvent("IntroBetterGeo_2", geoscapeEventContext);
+                    level.EventSystem.SetVariable("BG_Intro_Played", 3);
+                }
             }
             catch (Exception e)
             {
@@ -191,57 +66,6 @@ namespace TFTV
                 {
                     TFTVLogger.Error(e);
                 }
-            }
-        }
-
-        public static void CreateIntro()
-        {
-            try
-            {
-                string introEvent_0 = "IntroBetterGeo_0";
-                string introEvent_1 = "IntroBetterGeo_1";
-                string introEvent_2 = "IntroBetterGeo_2";
-                GeoscapeEventDef intro0 = TFTVCommonMethods.CreateNewEvent(
-                    introEvent_0, "BG_INTRO_0_TITLE", "BG_INTRO_0_DESCRIPTION", null);
-                GeoscapeEventDef intro1 = TFTVCommonMethods.CreateNewEvent(
-                    introEvent_1, "BG_INTRO_1_TITLE", "BG_INTRO_1_DESCRIPTION", null);
-                GeoscapeEventDef intro2 = TFTVCommonMethods.CreateNewEvent(
-                    introEvent_2, "BG_INTRO_2_TITLE", "BG_INTRO_2_DESCRIPTION", null);
-
-
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-        }
-
-        public static void PlayIntro(GeoLevelController level)
-        {
-            try
-            {
-                if (level.EventSystem.GetVariable("BG_Intro_Played") == 0)
-                {
-                    GeoscapeEventContext geoscapeEventContext = new GeoscapeEventContext(level.PhoenixFaction, level.ViewerFaction);
-                    level.EventSystem.TriggerGeoscapeEvent("IntroBetterGeo_0", geoscapeEventContext);
-                    level.EventSystem.SetVariable("BG_Intro_Played", 1);
-                }
-                if (level.EventSystem.GetVariable("BG_Intro_Played") == 1)
-                {
-                    GeoscapeEventContext geoscapeEventContext = new GeoscapeEventContext(level.PhoenixFaction, level.ViewerFaction);
-                    level.EventSystem.TriggerGeoscapeEvent("IntroBetterGeo_1", geoscapeEventContext);
-                    level.EventSystem.SetVariable("BG_Intro_Played", 2);
-                }
-                if (level.EventSystem.GetVariable("BG_Intro_Played") == 2)
-                {
-                    GeoscapeEventContext geoscapeEventContext = new GeoscapeEventContext(level.PhoenixFaction, level.ViewerFaction);
-                    level.EventSystem.TriggerGeoscapeEvent("IntroBetterGeo_2", geoscapeEventContext);
-                    level.EventSystem.SetVariable("BG_Intro_Played", 3);
-                }
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
             }
         }
 

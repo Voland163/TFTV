@@ -2,6 +2,8 @@
 using Base.UI;
 using HarmonyLib;
 using PhoenixPoint.Common.Entities.GameTags;
+using PhoenixPoint.Common.Entities.GameTagsTypes;
+using PhoenixPoint.Common.Saves;
 using PhoenixPoint.Common.UI;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.Research;
@@ -19,7 +21,7 @@ namespace TFTV
     internal class TFTVCommonMethods
     {
         private static readonly DefRepository Repo = TFTVMain.Repo;
-
+     
         public static void ClearInternalVariables()
         {
             try
@@ -68,6 +70,67 @@ namespace TFTV
             }
         }
 
+       [HarmonyPatch(typeof(PhoenixSaveManager), "LoadGame")]
+        internal static class BG_PhoenixSaveManager_ClearInternalData_patch
+        {
+            private static void Postfix()
+            {
+                try
+                {
+                    ClearInternalVariables();
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+        }
+
+        [HarmonyPatch(typeof(Research), "CompleteResearch")]
+        public static class Research_NewTurnEvent_CalculateDelirium_Patch
+        {
+           private static readonly ClassTagDef queenTag = Repo.GetAllDefs<ClassTagDef>().FirstOrDefault(ctf => ctf.name.Equals("Queen_ClassTagDef"));
+            public static void Postfix(ResearchElement research)
+            {
+                try
+                {
+                    TFTVLogger.Always("Research completed " + research.ResearchID);
+
+                    if (research.ResearchID == "ALN_CrabmanUmbra_ResearchDef")
+                    {
+                        research.Faction.GeoLevel.EventSystem.SetVariable("UmbraResearched", 1);
+                        TFTVLogger.Always("Umbra Researched variable is set to " + research.Faction.GeoLevel.EventSystem.GetVariable("UmbraResearched"));
+                    }
+                    else if (research.ResearchID == "ANU_AnuPriest_ResearchDef" && research.Faction.GeoLevel.EventSystem.GetVariable("BG_Start_Faction") == 1)
+                    {
+                        research.Faction.GeoLevel.PhoenixFaction.Research.GiveResearch(research, true);
+                    }
+                    else if (research.ResearchID == "NJ_Technician_ResearchDef" && research.Faction.GeoLevel.EventSystem.GetVariable("BG_Start_Faction") == 2)
+                    {
+                        TFTVLogger.Always("Research completed " + research.ResearchID + " and corresponding flag triggered");
+                        research.Faction.GeoLevel.PhoenixFaction.Research.GiveResearch(research, true);
+                    }
+                    else if (research.ResearchID == "SYN_InfiltratorTech_ResearchDef" && research.Faction.GeoLevel.EventSystem.GetVariable("BG_Start_Faction") == 3)
+                    {
+                        research.Faction.GeoLevel.PhoenixFaction.Research.GiveResearch(research, true);
+                    }
+                    //To trigger change of rate in Pandoran Evolution
+                    else if (research.ResearchID == "ALN_Citadel_ResearchDef")
+                    {
+                        research.Faction.GeoLevel.EventSystem.SetVariable("Pandorans_Researched_Citadel", 1);
+                        research.Faction.GeoLevel.AlienFaction.SpawnNewAlienBase();
+                        GeoAlienBase citadel = research.Faction.GeoLevel.AlienFaction.Bases.FirstOrDefault(ab => ab.AlienBaseTypeDef.name == "Citadel_GeoAlienBaseTypeDef");
+                        citadel.SpawnMonster(queenTag, true);
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+        }
+
         public static void SetStaminaToZero(GeoCharacter __instance)
         {
             try
@@ -106,7 +169,6 @@ namespace TFTV
                 TFTVLogger.Error(e);
             }
         }
-
         public static OutcomeDiplomacyChange GenerateDiplomacyOutcome(GeoFactionDef partyFaction, GeoFactionDef targetFaction, int value)
         {
             try
@@ -125,7 +187,6 @@ namespace TFTV
             }
             throw new InvalidOperationException();
         }
-
         public static OutcomeVariableChange GenerateVariableChange(string variableName, int value, bool isSet)
         {
             try
@@ -143,7 +204,6 @@ namespace TFTV
             }
             throw new InvalidOperationException();
         }
-
         public static GeoscapeEventDef CreateNewEvent(string name, string title, string description, string outcome)
         {
             try
@@ -169,7 +229,6 @@ namespace TFTV
             }
             throw new InvalidOperationException();
         }
-
         public static ResearchDef CreateNewPXResearch(string id, int cost, string gUID, ResearchViewElementDef researchViewElementDef)
 
         {
@@ -196,7 +255,6 @@ namespace TFTV
             }
             throw new InvalidOperationException();
         }
-
         public static ResearchViewElementDef CreateNewResearchViewElement(string def, string gUID, string name, string reveal, string unlock, string complete)
 
         {
@@ -218,7 +276,6 @@ namespace TFTV
             }
             throw new InvalidOperationException();
         }
-
         public static ResearchViewElementDef CreateNewResearchViewElementNoKeys(string def, string gUID, string name, string reveal, string unlock, string complete)
 
         {
@@ -240,9 +297,6 @@ namespace TFTV
             }
             throw new InvalidOperationException();
         }
-
-
-
         public static CaptureActorResearchRequirementDef CreateNewTagCaptureActorResearchRequirementDef(string gUID, string defName, string revealText)
         {
             try
@@ -261,7 +315,6 @@ namespace TFTV
             throw new InvalidOperationException();
 
         }
-
         public static EncounterVariableResearchRequirementDef CreateNewEncounterVariableResearchRequirementDef(string nameDef, string gUID, string variable, int value)
         {
             try

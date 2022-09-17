@@ -100,22 +100,7 @@ namespace TFTV
             }
 
         }
-       /* public static void Apply_Changes_Ambush_Chances(GeoscapeEventSystem eventSystem)
-        {
-            try
-            {
-                TFTVLogger.Always("Ambush chances modified");
-                eventSystem.ExplorationAmbushChance = 70;
-                eventSystem.AmbushExploredSitesProtection = 0;
-                eventSystem.StartingAmbushProtection = 0;
-           
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-        }*/
-
+      
         [HarmonyPatch(typeof(GeoscapeEventSystem), "OnLevelStart")]
 
         public static class GeoscapeEventSystem_PhoenixFaction_OnLevelStart_Patch

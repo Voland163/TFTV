@@ -153,20 +153,26 @@ namespace TFTV
         [HarmonyPatch(typeof(GeoMarketplace), "UpdateOptions",  new Type[] { })]
 
         public static class GeoMarketplace_UpdateOptions_MarketPlace_patch
-        {
+        { 
+            
+            private static readonly List<GeoMarketplaceItemOptionDef> geoMarketplaceItemOptionDefs = Repo.GetAllDefs<GeoMarketplaceItemOptionDef>().ToList();
+           
             public static bool Prepare()
             {
                 TFTVConfig config = TFTVMain.Main.Config;
                 return config.ActivateKERework;
             }
 
+
+
             public static void Prefix(GeoLevelController ____level)
             {
+               
                 try
                 {
                     List<string>kaosWeapons = CheckForKaosWepaons(____level);
 
-                    foreach (GeoMarketplaceItemOptionDef geoMarketplaceItemOptionDef in Repo.GetAllDefs<GeoMarketplaceItemOptionDef>())
+                    foreach (GeoMarketplaceItemOptionDef geoMarketplaceItemOptionDef in geoMarketplaceItemOptionDefs)
                     {
                        // TFTVLogger.Always(geoMarketplaceItemOptionDef.ItemDef.GetDisplayName().LocalizationKey);
 

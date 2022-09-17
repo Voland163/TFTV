@@ -1,7 +1,6 @@
 ﻿using Base.Core;
 using Base.Defs;
 using Base.Entities.Effects;
-using Base.Input;
 using Base.UI;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
@@ -22,7 +21,6 @@ using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Levels;
 using PhoenixPoint.Tactical.Levels.FactionEffects;
-using PhoenixPoint.Tactical.Levels.FactionObjectives;
 using PhoenixPoint.Tactical.Levels.Mist;
 using System;
 using System.Collections.Generic;
@@ -34,16 +32,15 @@ namespace TFTV
     internal class TFTVVoidOmens
     {
         public static readonly TFTVConfig Config = new TFTVConfig();
-
-        public static void Create_VoidOmen_Events()
-
-        {
-            GeoscapeEventDef voidOmenEvent = TFTVCommonMethods.CreateNewEvent("VoidOmen", "", "", null);
-            GeoscapeEventDef voidOmenIntro = TFTVCommonMethods.CreateNewEvent("VoidOmenIntro", "", "", null);
-
-        }
-
         private static readonly DefRepository Repo = TFTVMain.Repo;
+
+        private static readonly FesteringSkiesSettingsDef festeringSkiesSettingsDef = Repo.GetAllDefs<FesteringSkiesSettingsDef>().FirstOrDefault(ged => ged.name.Equals("FesteringSkiesSettingsDef"));
+        private static readonly TacticalPerceptionDef tacticalPerceptionDef = Repo.GetAllDefs<TacticalPerceptionDef>().FirstOrDefault((TacticalPerceptionDef a) => a.name.Equals("Soldier_PerceptionDef"));
+        private static readonly CustomMissionTypeDef AmbushALN = Repo.GetAllDefs<CustomMissionTypeDef>().FirstOrDefault(ged => ged.name.Equals("AmbushAlien_CustomMissionTypeDef"));
+        private static readonly TacCrateDataDef cratesNotResources = Repo.GetAllDefs<TacCrateDataDef>().FirstOrDefault(ged => ged.name.Equals("Default_TacCrateDataDef"));
+        private static readonly TacticalFactionEffectDef defendersCanBeRecruited = Repo.GetAllDefs<TacticalFactionEffectDef>().FirstOrDefault(ged => ged.name.Equals("CanBeRecruitedByPhoenix_FactionEffectDef"));
+        private static readonly GeoHavenZoneDef havenLab = Repo.GetAllDefs<GeoHavenZoneDef>().FirstOrDefault(ged => ged.name.Equals("Research_GeoHavenZoneDef"));
+        private static readonly GeoFactionDef phoenixPoint = Repo.GetAllDefs<GeoFactionDef>().FirstOrDefault(ged => ged.name.Equals("Phoenix_GeoPhoenixFactionDef"));
 
         public static bool[] voidOmensCheck = new bool[18];
         //VO#1 is harder ambushes
@@ -71,6 +68,8 @@ namespace TFTV
                 string voidOmen = "VoidOmen_";
                 // TFTVLogger.Always("Checking if method invocation is working, these are the Void Omens in play " + voidOmensInPlay[0] + " "
                 //   + voidOmensInPlay[1] + " " + voidOmensInPlay[2] + " " + voidOmensInPlay[3]);
+                
+
 
                 for (int i = 1; i < voidOmensCheck.Count() - 1; i++)
                 {
@@ -78,7 +77,7 @@ namespace TFTV
                     {
 
                         VoidOmen1Active = true;
-                        CustomMissionTypeDef AmbushALN = Repo.GetAllDefs<CustomMissionTypeDef>().FirstOrDefault(ged => ged.name.Equals("AmbushAlien_CustomMissionTypeDef"));
+
                         AmbushALN.ParticipantsData[0].ReinforcementsTurns.Max = 1;
                         AmbushALN.ParticipantsData[0].ReinforcementsTurns.Min = 1;
                         AmbushALN.CratesDeploymentPointsRange.Min = 50;
@@ -89,7 +88,6 @@ namespace TFTV
                     else if (i == 1 && !CheckFordVoidOmensInPlay(level).Contains(1) && voidOmensCheck[1])
                     {
                         VoidOmen1Active = false;
-                        CustomMissionTypeDef AmbushALN = Repo.GetAllDefs<CustomMissionTypeDef>().FirstOrDefault(ged => ged.name.Equals("AmbushAlien_CustomMissionTypeDef"));
                         AmbushALN.ParticipantsData[0].ReinforcementsTurns.Max = 2;
                         AmbushALN.ParticipantsData[0].ReinforcementsTurns.Min = 2;
                         AmbushALN.CratesDeploymentPointsRange.Min = 30;
@@ -135,10 +133,10 @@ namespace TFTV
                                 for (int t = 0; t < choice.Outcome.Diplomacy.Count; t++)
                                 {
                                     if (choice.Outcome.Diplomacy[t].Value != 0)
-                                    {                                      
-                                        OutcomeDiplomacyChange diplomacyChange = choice.Outcome.Diplomacy[t];                                       
+                                    {
+                                        OutcomeDiplomacyChange diplomacyChange = choice.Outcome.Diplomacy[t];
                                         diplomacyChange.Value = Mathf.CeilToInt(diplomacyChange.Value * 2f);
-                                        choice.Outcome.Diplomacy[t] = diplomacyChange;                                                     
+                                        choice.Outcome.Diplomacy[t] = diplomacyChange;
                                     }
                                 }
                             }
@@ -175,20 +173,19 @@ namespace TFTV
                     }
                     if (i == 5 && CheckFordVoidOmensInPlay(level).Contains(i) && !voidOmensCheck[i])
                     {
-                       // TFTVHavenDefense.VO5ChangesToHD();
-                          foreach (CustomMissionTypeDef missionTypeDef in Repo.GetAllDefs<CustomMissionTypeDef>())
+                        // TFTVHavenDefense.VO5ChangesToHD();
+                        foreach (CustomMissionTypeDef missionTypeDef in Repo.GetAllDefs<CustomMissionTypeDef>())
                         {
 
                             if (missionTypeDef.name.Contains("Haven") && !missionTypeDef.name.Contains("Infestation"))
                             {
-                            //    List<FactionObjectiveDef> objectiveDefs = missionTypeDef.CustomObjectives.ToList();
-                                FactionObjectiveDef killAllObjective = Repo.GetAllDefs<FactionObjectiveDef>().FirstOrDefault(ged => ged.name.Equals("E_DefeatEnemies [HavenDefence_CustomMissionTypeDef]"));
-                                FactionObjectiveDef protectCivilians = Repo.GetAllDefs<FactionObjectiveDef>().FirstOrDefault(ged => ged.name.Equals("E_ProtectCivilians [HavenDefence_CustomMissionTypeDef]"));
-                                TacCrateDataDef cratesNotResources = Repo.GetAllDefs<TacCrateDataDef>().FirstOrDefault(ged => ged.name.Equals("Default_TacCrateDataDef"));
+                                //    List<FactionObjectiveDef> objectiveDefs = missionTypeDef.CustomObjectives.ToList();
+
+
                                 if (missionTypeDef.name.Contains("Civ"))
                                 {
                                     missionTypeDef.ParticipantsRelations[1].MutualRelation = FactionRelation.Enemy;
-                                   // objectiveDefs.Remove(protectCivilians);
+                                    // objectiveDefs.Remove(protectCivilians);
                                 }
                                 else if (!missionTypeDef.name.Contains("Civ"))
                                 {
@@ -201,8 +198,8 @@ namespace TFTV
                                 missionTypeDef.CratesDeploymentPointsRange.Min = 20;
                                 missionTypeDef.CratesDeploymentPointsRange.Max = 30;
                                 missionTypeDef.DontRecoverItems = true;
-                              //  objectiveDefs.Remove(killAllObjective);                
-                              //  missionTypeDef.CustomObjectives = objectiveDefs.ToArray();
+                                //  objectiveDefs.Remove(killAllObjective);                
+                                //  missionTypeDef.CustomObjectives = objectiveDefs.ToArray();
                             }
                         }
                         // Logger.Always(voidOmen + j + " is now in effect, held in variable " + voidOmen + i);
@@ -214,7 +211,7 @@ namespace TFTV
                         {
                             if (missionTypeDef.name.Contains("Haven") && !missionTypeDef.name.Contains("Infestation"))
                             {
-                                TacticalFactionEffectDef defendersCanBeRecruited = Repo.GetAllDefs<TacticalFactionEffectDef>().FirstOrDefault(ged => ged.name.Equals("CanBeRecruitedByPhoenix_FactionEffectDef"));
+
 
                                 if (missionTypeDef.name.Contains("Civ"))
                                 {
@@ -233,7 +230,7 @@ namespace TFTV
                                 missionTypeDef.DontRecoverItems = false;
                                 missionTypeDef.ParticipantsData[1].ReinforcementsTurns.Max = 0;
                                 missionTypeDef.ParticipantsData[1].ReinforcementsTurns.Min = 0;
-                                missionTypeDef.ParticipantsData[1].InfiniteReinforcements =false;
+                                missionTypeDef.ParticipantsData[1].InfiniteReinforcements = false;
                                 missionTypeDef.ParticipantsData[1].ReinforcementsDeploymentPart.Max = 0;
                                 missionTypeDef.ParticipantsData[1].ReinforcementsDeploymentPart.Min = 0;
                             }
@@ -288,7 +285,7 @@ namespace TFTV
                     }
                     if (i == 8 && CheckFordVoidOmensInPlay(level).Contains(i) && !voidOmensCheck[i])
                     {
-                        GeoFactionDef phoenixPoint = Repo.GetAllDefs<GeoFactionDef>().FirstOrDefault(ged => ged.name.Equals("Phoenix_GeoPhoenixFactionDef"));
+
                         foreach (GeoscapeEventDef geoEvent in Repo.GetAllDefs<GeoscapeEventDef>())
                         {
                             foreach (GeoEventChoice choice in geoEvent.GeoscapeEventData.Choices)
@@ -304,14 +301,14 @@ namespace TFTV
                                 }
                             }
                         }
-                        GeoHavenZoneDef havenLab = Repo.GetAllDefs<GeoHavenZoneDef>().FirstOrDefault(ged => ged.name.Equals("Research_GeoHavenZoneDef"));
+
                         havenLab.ProvidesResearch = 2;
                         // Logger.Always(voidOmen + j + " is now in effect, held in variable " + voidOmen + i);
                         voidOmensCheck[i] = true;
                     }
                     else if (i == 8 && !CheckFordVoidOmensInPlay(level).Contains(i) && voidOmensCheck[i])
                     {
-                        GeoFactionDef phoenixPoint = Repo.GetAllDefs<GeoFactionDef>().FirstOrDefault(ged => ged.name.Equals("Phoenix_GeoPhoenixFactionDef"));
+
                         foreach (GeoscapeEventDef geoEvent in Repo.GetAllDefs<GeoscapeEventDef>())
                         {
                             foreach (GeoEventChoice choice in geoEvent.GeoscapeEventData.Choices)
@@ -327,7 +324,7 @@ namespace TFTV
                                 }
                             }
                         }
-                        GeoHavenZoneDef havenLab = Repo.GetAllDefs<GeoHavenZoneDef>().FirstOrDefault(ged => ged.name.Equals("Research_GeoHavenZoneDef"));
+
                         havenLab.ProvidesResearch = 1;
                         TFTVLogger.Always("The check for VO#8 went ok");
                         voidOmensCheck[8] = false;
@@ -335,14 +332,14 @@ namespace TFTV
                     }
                     if (i == 9 && CheckFordVoidOmensInPlay(level).Contains(i) && !voidOmensCheck[i])
                     {
-                        FesteringSkiesSettingsDef festeringSkiesSettingsDef = Repo.GetAllDefs<FesteringSkiesSettingsDef>().FirstOrDefault(ged => ged.name.Equals("FesteringSkiesSettingsDef"));
+
                         festeringSkiesSettingsDef.HavenAttackCounterModifier = 0.66f;
                         //  Logger.Always(voidOmen + j + " is now in effect, held in variable " + voidOmen + i);
                         voidOmensCheck[i] = true;
                     }
                     else if (i == 9 && !CheckFordVoidOmensInPlay(level).Contains(i) && voidOmensCheck[i])
                     {
-                        FesteringSkiesSettingsDef festeringSkiesSettingsDef = Repo.GetAllDefs<FesteringSkiesSettingsDef>().FirstOrDefault(ged => ged.name.Equals("FesteringSkiesSettingsDef"));
+
                         festeringSkiesSettingsDef.HavenAttackCounterModifier = 1.33f;
                         voidOmensCheck[9] = false;
                         TFTVLogger.Always("The check for VO#9 went ok");
@@ -407,14 +404,14 @@ namespace TFTV
                     }
                     if (i == 14 && CheckFordVoidOmensInPlay(level).Contains(i) && !voidOmensCheck[i])
                     {
-                        TacticalPerceptionDef tacticalPerceptionDef = Repo.GetAllDefs<TacticalPerceptionDef>().FirstOrDefault((TacticalPerceptionDef a) => a.name.Equals("Soldier_PerceptionDef"));
+
                         tacticalPerceptionDef.PerceptionRange = 20;
                         // Logger.Always(voidOmen + j + " is now in effect, held in variable " + voidOmen + i);
                         voidOmensCheck[i] = true;
                     }
                     else if (i == 14 && !CheckFordVoidOmensInPlay(level).Contains(i) && voidOmensCheck[i])
                     {
-                        TacticalPerceptionDef tacticalPerceptionDef = Repo.GetAllDefs<TacticalPerceptionDef>().FirstOrDefault((TacticalPerceptionDef a) => a.name.Equals("Soldier_PerceptionDef"));
+
                         tacticalPerceptionDef.PerceptionRange = 30;
                         voidOmensCheck[14] = false;
                         TFTVLogger.Always("The check for VO#14 went ok");
@@ -580,8 +577,7 @@ namespace TFTV
             throw new InvalidOperationException();
         }
 
-        public static void RemoveEarliestVoidOmen
-        (GeoLevelController geoLevelController)
+        public static void RemoveEarliestVoidOmen(GeoLevelController geoLevelController)
         {
             try
             {
@@ -589,7 +585,6 @@ namespace TFTV
                 string triggeredVoidOmens = "TriggeredVoidOmen_";
                 string voidOmen = "VoidOmen_";
                 string voidOmenTitle = "VOID_OMEN_TITLE_";
-                string voidOmenDescription = "VOID_OMEN_DESCRIPTION_TEXT_";
 
                 // And an array to record which variables hold which Dark Events
                 int[] voidOmensinPlay = CheckFordVoidOmensInPlay(geoLevelController);
@@ -626,7 +621,7 @@ namespace TFTV
                 if (replacedVoidOmen != 0)
                 {
                     TFTVLogger.Always("The target event that will be replaced is " + voidOmenTitle + replacedVoidOmen);
-                    RemoveVoidOmenObjective(voidOmenTitle + replacedVoidOmen, voidOmenDescription + replacedVoidOmen, geoLevelController);
+                    RemoveVoidOmenObjective(voidOmenTitle + replacedVoidOmen, geoLevelController);
                 }
             }
             catch (Exception e)
@@ -643,7 +638,7 @@ namespace TFTV
                 string triggeredVoidOmens = "TriggeredVoidOmen_";
                 string voidOmen = "VoidOmen_";
                 string voidOmenTitle = "VOID_OMEN_TITLE_";
-                string voidOmenDescription = "VOID_OMEN_DESCRIPTION_TEXT_";
+
 
                 // And an array to record which variables hold which Dark Events
                 int[] voidOmensinPlay = CheckFordVoidOmensInPlay(geoLevelController);
@@ -675,7 +670,7 @@ namespace TFTV
                     if (replacedVoidOmen != 0)
                     {
                         TFTVLogger.Always("The target event that will be replaced is " + voidOmenTitle + replacedVoidOmen);
-                        RemoveVoidOmenObjective(voidOmenTitle + replacedVoidOmen, voidOmenDescription + replacedVoidOmen, geoLevelController);
+                        RemoveVoidOmenObjective(voidOmenTitle + replacedVoidOmen, geoLevelController);
                     }
                 }
             }
@@ -706,7 +701,7 @@ namespace TFTV
 
         }
 
-        public static void RemoveVoidOmenObjective(string title, string description, GeoLevelController level)
+        public static void RemoveVoidOmenObjective(string title, GeoLevelController level)
         {
             try
             {
@@ -735,7 +730,7 @@ namespace TFTV
                     }
 
                 }
-                
+
             }
             catch (Exception e)
             {
@@ -760,7 +755,7 @@ namespace TFTV
 
                         if (deathReport.Actor.TacticalFaction.ParticipantKind == TacMissionParticipant.Intruder)
                         {
-                                                 
+
                             // TFTVLogger.Always("If ActorDied passed, because " + deathReport.Actor.DisplayName + " was intruder");
 
                             if (deathReport.Actor.TacticalFaction.State == TacFactionState.Defeated)
@@ -774,7 +769,7 @@ namespace TFTV
                                     }
                                 }
                                 phoenix.State = TacFactionState.Won;
-                                
+
                                 __instance.GameOver();
 
                                 //  TFTVLogger.Always("Check passed, aliens lost");

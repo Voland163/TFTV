@@ -88,7 +88,7 @@ namespace TFTV
                     int bionics = 0;
                     GeoLevelController geoLevelController = __instance.GeoLevel;
                     GeoscapeEventContext geoscapeEventContext = new GeoscapeEventContext(__instance, geoLevelController.ViewerFaction);
-                    GeoFactionDef Anu = Repo.GetAllDefs<GeoFactionDef>().FirstOrDefault(ged => ged.name.Equals("Anu_GeoFactionDef"));
+                    
                     //check number of bionics player has
                     GameTagDef bionicalTag = GameUtl.GameComponent<SharedData>().SharedGameTags.BionicalTag;
                     foreach (GeoCharacter geoCharacter in __instance.GeoLevel.PhoenixFaction.Soldiers)
@@ -132,7 +132,7 @@ namespace TFTV
                     int mutations = 0;
                     GeoLevelController geoLevelController = __instance.GeoLevel;
                     GeoscapeEventContext geoscapeEventContext = new GeoscapeEventContext(__instance, geoLevelController.ViewerFaction);
-                    GeoFactionDef newJericho = Repo.GetAllDefs<GeoFactionDef>().FirstOrDefault(ged => ged.name.Equals("NewJericho_GeoFactionDef"));
+                 
                     //check number of mutations player has
                     GameTagDef mutationTag = GameUtl.GameComponent<SharedData>().SharedGameTags.AnuMutationTag;
                     foreach (GeoCharacter geoCharacter in __instance.GeoLevel.PhoenixFaction.Soldiers)
@@ -169,12 +169,13 @@ namespace TFTV
         public static class UIModuleMutationSection_ApplyMutation_PissedEvents_patch
         {
             private static readonly DefRepository Repo = TFTVMain.Repo;
+            private static readonly GeoFactionDef newJerico = Repo.GetAllDefs<GeoFactionDef>().FirstOrDefault(ged => ged.name.Equals("NewJericho_GeoFactionDef"));
+
             public static void Postfix(IAugmentationUIModule ____parentModule)
             {
                 try
                 {
-                    GeoFactionDef newJerico = Repo.GetAllDefs<GeoFactionDef>().FirstOrDefault(ged => ged.name.Equals("NewJericho_GeoFactionDef"));
-
+                  
                     //check if player made promise to New Jericho not to apply more mutations
                     if (____parentModule.Context.Level.EventSystem.GetVariable("BG_NJ_Pissed_Made_Promise") == 1 && ____parentModule.CurrentCharacter.OriginalFactionDef == newJerico)
                     {

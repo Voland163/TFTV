@@ -30,6 +30,10 @@ namespace TFTV
         public static UIModuleCharacterProgression hookToProgressionModule = null;
         public static GeoCharacter hookToCharacter = null;
 
+        private static readonly GameTagDef bionicalTag = GameUtl.GameComponent<SharedData>().SharedGameTags.BionicalTag;
+        private static readonly GameTagDef mutationTag = GameUtl.GameComponent<SharedData>().SharedGameTags.AnuMutationTag;
+        private static readonly ItemSlotDef headSlot = Repo.GetAllDefs<ItemSlotDef>().FirstOrDefault(ged => ged.name.Equals("Human_Head_SlotDef"));
+
         [HarmonyPatch(typeof(UIModuleCharacterProgression), "GetStarBarValuesDisplayString")]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051")]
         internal static class BG_UIModuleCharacterProgression_RefreshStatPanel_patch
@@ -351,9 +355,7 @@ namespace TFTV
 
                     if (character != null && character.TemplateDef.IsHuman) //!character.IsMutoid &&  && !character.TemplateDef.IsMutog && !character.TemplateDef.IsVehicle)
                     {
-                        GameTagDef bionicalTag = GameUtl.GameComponent<SharedData>().SharedGameTags.BionicalTag;
-                        GameTagDef mutationTag = GameUtl.GameComponent<SharedData>().SharedGameTags.AnuMutationTag;
-                        ItemSlotDef headSlot = Repo.GetAllDefs<ItemSlotDef>().FirstOrDefault(ged => ged.name.Equals("Human_Head_SlotDef"));
+                        
                         bool hasAugmentedHead = false;
 
                        foreach (GeoItem bionic in character.ArmourItems)
@@ -397,23 +399,7 @@ namespace TFTV
             }
         }
 
-        [HarmonyPatch(typeof(PhoenixSaveManager), "LoadGame")]
-        internal static class BG_PhoenixSaveManager_ClearInternalData_patch
-        {
-
-            private static void Postfix()
-            {
-                try
-                {
-                    TFTVCommonMethods.ClearInternalVariables();
-
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-            }
-        }
+       
 
         //This changes display of Delirium bar in personnel edit screen to show current Delirium value vs max delirium value the character can have
         // taking into account ODI level and bionics

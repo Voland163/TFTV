@@ -55,14 +55,16 @@ namespace TFTV
             /// Tactical level controller is accessible at any time.
             TacticalLevelController tacController = Controller;
             /// ModMain is accesible at any time
-            TFTVMain main = (TFTVMain)Main;
+           // TFTVMain main = (TFTVMain)Main;
             //TFTV give Dtony's Delirium Perks
             //  TFTVDelirium.DeliriumPerksOnTactical(tacController);
-            TFTVRevenant.CreateRevenantDefs();
+            TFTVHumanEnemies.HumanEnemiesAndTactics.Clear();
+            TFTVHumanEnemies.RollCount = 0;
+            TFTVDefsCreatedOnLevelChanged.CreateRevenantDefs();
             TFTVRevenant.ModifyRevenantResistanceAbility(Controller);
             TFTVRevenant.CheckForNotDeadSoldiers(tacController);
             TFTVRevenant.RevenantCheckAndSpawn(Controller);
-            TFTVRevenant.CheckForRevenantResistance(tacController);
+            
         }
 
         /// <summary>
@@ -71,6 +73,8 @@ namespace TFTV
         public override void OnTacticalEnd()
         {
             TFTVRevenant.CheckForNotDeadSoldiers(Controller);
+            
+            TFTVLogger.Always("OnTacticalEnd check");
             base.OnTacticalEnd();
 
           /*  if (TFTVRevenant.revenantSpawned)
@@ -147,8 +151,8 @@ namespace TFTV
             TFTVUmbra.SpawnUmbra(Controller);
             if (turnNumber == 0)
             { TFTVHumanEnemies.AssignHumanEnemiesTags(Controller); }
-            TFTVHumansEnemiesTactics.ChampRecoverWPAura(Controller);           
-            TFTVHumansEnemiesTactics.ApplyTactic(Controller);
+            TFTVHumanEnemies.ChampRecoverWPAura(Controller);           
+            TFTVHumanEnemies.ApplyTactic(Controller);
           
         }
     }

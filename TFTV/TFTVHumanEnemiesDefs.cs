@@ -19,8 +19,7 @@ namespace TFTV
     internal class TFTVHumanEnemiesDefs
     {
         private static readonly DefRepository Repo = TFTVMain.Repo;
-
-       
+   
         public static void CreateHumanEnemiesTags()
         {
             try
@@ -88,8 +87,6 @@ namespace TFTV
             }
 
         }
-
-
         public static void ModifyMissionDefsToReplaceNeutralWithBandit()
         {
             try 
@@ -123,7 +120,7 @@ namespace TFTV
                                                 missionTypeDef.name == "StoryNJ_Chain1_CustomMissionTypeDef" ||
                                                 missionTypeDef.name == "StoryPX13_CustomMissionTypeDef" ||
                                                 missionTypeDef.name == "SYN4_CustomMissionTypeDef" ||
-                                                missionTypeDef.name == "StorySYN0_CustomMissionTypeDef")
+                                                missionTypeDef.name == "StorySYN4_CustomMissionTypeDef")
                                             {
                                                 data.FactionDef = banditFaction;
                                                 TFTVLogger.Always("In mission " + missionTypeDef.name + " the enemy faction is " + data.FactionDef.name);
@@ -143,8 +140,6 @@ namespace TFTV
             }
 
         }
-
-
         public static void CreateAmbushAbility()
         {
             try
@@ -181,42 +176,6 @@ namespace TFTV
                 TFTVLogger.Error(e);
             }
         }
-
-
-        /* Don't need as will patch in to add the text 
-        public static void CreateHumanEnemiesRanks()
-        {
-            try
-            {
-                string skillName = "HumanEnemy_AbilityDef";
-                PassiveModifierAbilityDef source = Repo.GetAllDefs<PassiveModifierAbilityDef>().FirstOrDefault(p => p.name.Equals("SelfDefenseSpecialist_AbilityDef"));
-                PassiveModifierAbilityDef hallucinating = Helper.CreateDefFromClone(
-                    source,
-                    "B1DD1BB0-D504-4E96-BAAC-F99D53853231",
-                    skillName);
-                hallucinating.CharacterProgressionData = Helper.CreateDefFromClone(
-                    source.CharacterProgressionData,
-                    "44282C23-3546-4EB6-AFB6-85EB280973E5",
-                    skillName);
-                hallucinating.ViewElementDef = Helper.CreateDefFromClone(
-                    source.ViewElementDef,
-                    "F48DC754-728D-43EA-B69A-BE8F3F225513",
-                    skillName);
-                hallucinating.StatModifications = new ItemStatModification[0];
-                hallucinating.ItemTagStatModifications = new EquipmentItemTagStatModification[0];
-                hallucinating.ViewElementDef.DisplayName1 = new LocalizedTextBind("Revenant", true);
-                hallucinating.ViewElementDef.Description = new LocalizedTextBind("Nothing because fail", true);
-                Sprite icon = Helper.CreateSpriteFromImageFile("UI_StatusesIcons_CanBeRecruitedIntoPhoenix-2.png");
-                hallucinating.ViewElementDef.LargeIcon = icon;
-                hallucinating.ViewElementDef.SmallIcon = icon;
-            }
-
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-
-        }*/
 
     }
 

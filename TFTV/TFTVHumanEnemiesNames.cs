@@ -56,6 +56,7 @@ namespace TFTV
             "Dietrich","Frost","Drake","Wierzbowski","Payne","Ventura","Dutch","Dillon","Hawkins","Mac","Poncho","Walker","Charlie","Wez","Ziggy",
             "Alex","Max","Miller","Kenzo","Karal","Katoa","Okoye","Fagan","Avery","Parker","Joyce","Kai","Angel","Jesse","Riley","Ash",
             "Finley","Shaw","Vickers","Marno","Jikkola","Kris","Strid","Showalter","Grimsrud"};
+
         public static List<string> anu_Names = new List<string> {"Walker","Charlie","Wez","Ziggy","Alex","Max","Miller","Kenzo","Karal","Katoa",
             "Okoye","Fagan","Avery","Parker","Joyce","Kai","Angel","Jesse","Riley","Ash","Finley","Shaw","Vickers","Marno","Jikkola",
             "Kris","Strid","Showalter","Grimsrud"};
@@ -68,7 +69,7 @@ namespace TFTV
         public static List<string> pu_Names = new List<string> {"Walker","Charlie","Wez","Ziggy","Alex","Max","Miller","Kenzo","Karal","Katoa",
             "Okoye","Fagan","Avery","Parker","Joyce","Kai","Angel","Jesse","Riley","Ash","Finley","Shaw","Vickers", "Showalter","Grimsrud", "AirKris",
             "AndyP","Brunks","Dante","Geda","GeoDao","Hokken","Gollop","Kal","Millioneigher","NoobCaptain","Origami","Ravenoid","Bobby","Stridtul",
-            "Tyraenon","Ikobot","Valygar","E.E.","BFIG","Sheepy","Conductiv","mad2342","Pantolomin"};
+            "Tyraenon","Ikobot","Valygar","E.E.","BFIG","Sheepy","Conductiv","mad2342","Pantolomin", "Etermes"};
 
         public static List<string> fo_Names = new List<string> {"Thriceborn","Shai-Hulud","Shorr Kan","Yurtle","Lorax","Seer","Belial","Torinus",
             "Voland","Yar-Shalak","Ghul","Gheist","Melachot","Xelot","Nacht-Zur'acht","Bane","Oshazahul","Slithering","Azelot",
@@ -78,7 +79,7 @@ namespace TFTV
         public static List<string> nj_NameRanks = new List<string> { "Leader", "Veteran", "Jackboot", "Greenhorn"};
         public static List<string> syn_NameRanks = new List<string> { "Warden", "Ranger", "Peacekeeper", "Citizen" };
         public static List<string> anu_NameRanks = new List<string> { "Taxiarch", "Adept", "Acolyte", "Neophyte"};
-        public static List<string> pu_NameRanks = new List<string> { "Etermes", "Metalheart", "Cleansed", "Meathead"};
+        public static List<string> pu_NameRanks = new List<string> { "Machina", "Metalheart", "Cleansed", "Meathead"};
         public static List<string> fo_NameRanks = new List<string> { "Scourge", "Evolved", "Reborn", "Fledgling" };
 
         public static string tier1description = "While alive, creates special effect on allies and/or enemies (Tactics). Allies lose 4 WP if character dies.";

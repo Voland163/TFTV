@@ -68,7 +68,7 @@ namespace TFTV
                     }
                 }
 
-                GeoscapeEventDef rewardEvent = TFTVCommonMethods.CreateNewEvent("InfestationReward", "KEY_INFESTATION_REWARD_TITLE", "KEY_INFESTATION_REWARD_DESCRIPTION", null);
+               // GeoscapeEventDef rewardEvent = TFTVCommonMethods.CreateNewEvent("InfestationReward", "KEY_INFESTATION_REWARD_TITLE", "KEY_INFESTATION_REWARD_DESCRIPTION", null);
                 //Muting Living Weapons
                 GeoscapeEventDef lwstartingEvent = Repo.GetAllDefs<GeoscapeEventDef>().FirstOrDefault(ged => ged.name.Equals("PROG_LW1_GeoscapeEventDef"));
                 lwstartingEvent.GeoscapeEventData.Mute = true;
@@ -221,7 +221,7 @@ namespace TFTV
                             {
                                // TFTVLogger.Always("Entry.text is not null");
                                 entry.Text = new LocalizedTextBind(GeoSiteForInfestation.Owner + " " + DefenseMission.Haven.Site.Name + " has succumbed to Pandoran infestation!", true);
-                                TFTVLogger.Always("The following entry to Log was added" + GeoSiteForInfestation.Owner + " " + DefenseMission.Haven.Site.Name + " has succumbed to Pandoran infestation!");
+                               // TFTVLogger.Always("The following entry to Log was added" + GeoSiteForInfestation.Owner + " " + DefenseMission.Haven.Site.Name + " has succumbed to Pandoran infestation!");
 
                             }
                         
@@ -303,11 +303,11 @@ namespace TFTV
                         site.GeoLevel.EventSystem.SetVariable(LivingWeaponsAcquired, site.GeoLevel.EventSystem.GetVariable(LivingWeaponsAcquired) + 1);
                         GeoscapeEventDef reward = Repo.GetAllDefs<GeoscapeEventDef>().FirstOrDefault(ged => ged.name.Equals("InfestationReward"));
                         GeoscapeEventContext geoscapeEventContext = new GeoscapeEventContext(site.GeoLevel.PhoenixFaction, site.GeoLevel.ViewerFaction);
-                        if (site.GeoLevel.EventSystem.GetVariable(LivingWeaponsAcquired) > 0 && site.GeoLevel.EventSystem.GetVariable(LivingWeaponsAcquired) < 4) 
+                       /* if (site.GeoLevel.EventSystem.GetVariable(LivingWeaponsAcquired) > 0 && site.GeoLevel.EventSystem.GetVariable(LivingWeaponsAcquired) < 4) 
                         {
                             reward.GeoscapeEventData.Choices[0].Outcome.Items = InfestationRewardGenerator(site.GeoLevel.EventSystem.GetVariable(LivingWeaponsAcquired));
                             site.GeoLevel.EventSystem.TriggerGeoscapeEvent("InfestationReward", geoscapeEventContext);
-                        }
+                        }*/
 
                     }
 

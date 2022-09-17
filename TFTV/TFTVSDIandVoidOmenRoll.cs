@@ -98,7 +98,7 @@ namespace TFTV
                     if (geoLevelController.EventSystem.GetVariable("BC_SDI") > 0)
                     {
                         // Here comes the roll, for testing purposes with 1/10 chance of no VO happening    
-                        int roll = UnityEngine.Random.Range(1, 10);
+                        int roll = UnityEngine.Random.Range(1, 11);
                         TFTVLogger.Always("The roll on the 1D10 is " + roll);
                         if (roll == 1)
                         {

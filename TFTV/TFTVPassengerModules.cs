@@ -1,5 +1,6 @@
 ﻿using Base.Core;
 using Base.Defs;
+using Epic.OnlineServices;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities.Items;
@@ -10,6 +11,7 @@ using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Equipments;
+using PhoenixPoint.Tactical.Levels;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,162 +22,86 @@ namespace TFTV
     {
         private static readonly DefRepository Repo = TFTVMain.Repo;
 
-        public static void Apply_Changes()
+
+        private static readonly TacticalItemDef redeemerAmmo = Repo.GetAllDefs<TacticalItemDef>().FirstOrDefault(a => a.name.Equals("AN_Redemptor_AmmoClip_ItemDef"));
+
+        private static readonly TacticalItemDef pdwAmmo = Repo.GetAllDefs<TacticalItemDef>().FirstOrDefault(a => a.name.Equals("NJ_Gauss_PDW_AmmoClip_ItemDef"));
+        private static readonly TacticalItemDef mechArmsAmmo = Repo.GetAllDefs<TacticalItemDef>().FirstOrDefault(a => a.name.Equals("MechArms_AmmoClip_ItemDef"));
+
+        private static readonly TacticalItemDef boltsAmmo = Repo.GetAllDefs<TacticalItemDef>().FirstOrDefault(a => a.name.Equals("SY_Crossbow_AmmoClip_ItemDef"));
+        private static readonly TacticalItemDef spidersAmmo = Repo.GetAllDefs<TacticalItemDef>().FirstOrDefault(a => a.name.Equals("SY_SpiderDroneLauncher_AmmoClip_ItemDef"));
+
+        private static readonly TacCharacterDef jacob = Repo.GetAllDefs<TacCharacterDef>().FirstOrDefault(a => a.name.Equals("PX_Jacob_TFTV_TacCharacterDef"));
+        private static readonly TacCharacterDef sophia = Repo.GetAllDefs<TacCharacterDef>().FirstOrDefault(a => a.name.Equals("PX_Sophia_TFTV_TacCharacterDef"));
+        private static readonly GeoVehicleEquipmentDef hibernationModule = Repo.GetAllDefs<GeoVehicleEquipmentDef>().FirstOrDefault(gve => gve.name.Equals("SY_HibernationPods_GeoVehicleModuleDef"));
+
+        private static readonly GeoVehicleDef manticore6slots = Repo.GetAllDefs<GeoVehicleDef>().FirstOrDefault(ged => ged.name.Equals("PP_Manticore_Def_6_Slots"));
+        private static readonly GeoVehicleDef manticore = Repo.GetAllDefs<GeoVehicleDef>().FirstOrDefault(ged => ged.name.Equals("PP_Manticore_Def"));
+        private static readonly GeoVehicleDef helios5slots = Repo.GetAllDefs<GeoVehicleDef>().FirstOrDefault(ged => ged.name.Equals("SYN_Helios_Def_5_Slots"));
+        private static readonly GeoVehicleDef helios = Repo.GetAllDefs<GeoVehicleDef>().FirstOrDefault(ged => ged.name.Equals("SYN_Helios_Def"));
+        private static readonly GeoVehicleDef thunderbird7slots = Repo.GetAllDefs<GeoVehicleDef>().FirstOrDefault(ged => ged.name.Equals("NJ_Thunderbird_Def_7_Slots"));
+        private static readonly GeoVehicleDef thunderbird = Repo.GetAllDefs<GeoVehicleDef>().FirstOrDefault(ged => ged.name.Equals("NJ_Thunderbird_Def"));
+        private static readonly GeoVehicleDef blimp12slots = Repo.GetAllDefs<GeoVehicleDef>().FirstOrDefault(ged => ged.name.Equals("ANU_Blimp_Def_12_Slots"));
+        private static readonly GeoVehicleDef blimp8slots = Repo.GetAllDefs<GeoVehicleDef>().FirstOrDefault(ged => ged.name.Equals("ANU_Blimp_Def"));
+        private static readonly GeoVehicleDef maskedManticore8slots = Repo.GetAllDefs<GeoVehicleDef>().FirstOrDefault(ged => ged.name.Equals("PP_ManticoreMasked_Def_8_Slots"));
+        private static readonly GeoVehicleDef maskedManticore = Repo.GetAllDefs<GeoVehicleDef>().FirstOrDefault(ged => ged.name.Equals("PP_MaskedManticore_Def"));
+
+       
+        public static List<TacCharacterDef> CreateStartingSquad(GeoLevelController levelController)
         {
-
-            try
+            try 
             {
-                //ID all the factions for later
-                GeoFactionDef PhoenixPoint = Repo.GetAllDefs<GeoFactionDef>().FirstOrDefault(ged => ged.name.Equals("Phoenix_GeoPhoenixFactionDef"));
-                GeoFactionDef NewJericho = Repo.GetAllDefs<GeoFactionDef>().FirstOrDefault(ged => ged.name.Equals("NewJericho_GeoFactionDef"));
-                GeoFactionDef Anu = Repo.GetAllDefs<GeoFactionDef>().FirstOrDefault(ged => ged.name.Equals("Anu_GeoFactionDef"));
-                GeoFactionDef Synedrion = Repo.GetAllDefs<GeoFactionDef>().FirstOrDefault(ged => ged.name.Equals("Synedrion_GeoFactionDef"));
-
-                //ID all craft for later
-                GeoVehicleDef manticore = Repo.GetAllDefs<GeoVehicleDef>().FirstOrDefault(ged => ged.name.Equals("PP_Manticore_Def"));
-                GeoVehicleDef helios = Repo.GetAllDefs<GeoVehicleDef>().FirstOrDefault(ged => ged.name.Equals("SYN_Helios_Def"));
-                GeoVehicleDef thunderbird = Repo.GetAllDefs<GeoVehicleDef>().FirstOrDefault(ged => ged.name.Equals("NJ_Thunderbird_Def"));
-                GeoVehicleDef blimp = Repo.GetAllDefs<GeoVehicleDef>().FirstOrDefault(ged => ged.name.Equals("ANU_Blimp_Def"));
-                GeoVehicleDef manticoreMasked = Repo.GetAllDefs<GeoVehicleDef>().FirstOrDefault(ged => ged.name.Equals("PP_MaskedManticore_Def"));
-
-                //Reduce all craft seating (except blimp) by 4 and create clones with previous seating
-
-                GeoVehicleDef manticoreNew = Helper.CreateDefFromClone(manticore, "83A7FD03-DB85-4CEE-BAED-251F5415B82B", "PP_Manticore_Def_6_Slots");
-                manticore.BaseStats.SpaceForUnits = 2;
-                GeoVehicleDef heliosNew = Helper.CreateDefFromClone(helios, "4F9026CB-EF42-44B8-B9C3-21181EC4E2AB", "SYN_Helios_Def_5_Slots");
-                helios.BaseStats.SpaceForUnits = 1;
-                GeoVehicleDef thunderbirdNew = Helper.CreateDefFromClone(thunderbird, "FDE7F0C2-8BA7-4046-92EB-F3462F204B2B", "NJ_Thunderbird_Def_7_Slots");
-                thunderbird.BaseStats.SpaceForUnits = 3;
-                GeoVehicleDef blimpNew = Helper.CreateDefFromClone(blimp, "B857B76D-BDDB-4CA9-A1CA-895A540B17C8", "ANU_Blimp_Def_12_Slots");
-                blimpNew.BaseStats.SpaceForUnits = 12;
-                GeoVehicleDef manticoreMaskedNew = Helper.CreateDefFromClone(manticoreMasked, "19B82FD8-67EE-4277-B982-F352A53ADE72", "PP_ManticoreMasked_Def_8_Slots");
-                manticoreMasked.BaseStats.SpaceForUnits = 4;
-
-                //Change Hibernation module
-                GeoVehicleModuleDef hibernationmodule = Repo.GetAllDefs<GeoVehicleModuleDef>().FirstOrDefault(ged => ged.name.Equals("SY_HibernationPods_GeoVehicleModuleDef"));
-                //Increase cost to 50% of Vanilla Manti
-                hibernationmodule.ManufactureMaterials = 600;
-                hibernationmodule.ManufactureTech = 75;
-                hibernationmodule.ManufacturePointsCost = 505;
-                //Change Cruise Control module
-                GeoVehicleModuleDef cruisecontrolmodule = Repo.GetAllDefs<GeoVehicleModuleDef>().FirstOrDefault(ged => ged.name.Equals("NJ_CruiseControl_GeoVehicleModuleDef"));
-                //Increase cost to 50% of Vanilla Manti
-                cruisecontrolmodule.ManufactureMaterials = 600;
-                cruisecontrolmodule.ManufactureTech = 75;
-                cruisecontrolmodule.ManufacturePointsCost = 505;
-                //Change Fuel Tank module
-                GeoVehicleModuleDef fueltankmodule = Repo.GetAllDefs<GeoVehicleModuleDef>().FirstOrDefault(ged => ged.name.Equals("NJ_FuelTanks_GeoVehicleModuleDef"));
-                //Increase cost to 50% of Vanilla Manti
-                fueltankmodule.ManufactureMaterials = 600;
-                fueltankmodule.ManufactureTech = 75;
-                fueltankmodule.ManufacturePointsCost = 505;
-
-
-                //Make Hibernation module available for manufacture from start of game - doesn't work because HM is not an ItemDef
-                //GeoPhoenixFactionDef phoenixFactionDef = Repo.GetAllDefs<GeoPhoenixFactionDef>().FirstOrDefault(ged => ged.name.Equals("Phoenix_GeoPhoenixFactionDef"));
-                //EntitlementDef festeringSkiesEntitlementDef = Repo.GetAllDefs<EntitlementDef>().FirstOrDefault(ged => ged.name.Equals("FesteringSkiesEntitlementDef"));
-                // phoenixFactionDef.AdditionalDLCItems.Add(new GeoFactionDef.DLCStartItems { DLC = festeringSkiesEntitlementDef, StartingManufacturableItems = hibernationmodule };               
-                //Change cost of Manti to 50% of Vanilla
-                VehicleItemDef mantiVehicle = Repo.GetAllDefs<VehicleItemDef>().FirstOrDefault(ged => ged.name.Equals("PP_Manticore_VehicleItemDef"));
-                mantiVehicle.ManufactureMaterials = 600;
-                mantiVehicle.ManufactureTech = 75;
-                mantiVehicle.ManufacturePointsCost = 505;
-                //Change cost of Helios to Vanilla minus cost of passenger module
-                VehicleItemDef heliosVehicle = Repo.GetAllDefs<VehicleItemDef>().FirstOrDefault(ged => ged.name.Equals("SYN_Helios_VehicleItemDef"));
-                heliosVehicle.ManufactureMaterials = 555;
-                heliosVehicle.ManufactureTech = 173;
-                heliosVehicle.ManufacturePointsCost = 510;
-                //Change cost of Thunderbird to Vanilla minus cost of passenger module
-                VehicleItemDef thunderbirdVehicle = Repo.GetAllDefs<VehicleItemDef>().FirstOrDefault(ged => ged.name.Equals("NJ_Thunderbird_VehicleItemDef"));
-                thunderbirdVehicle.ManufactureMaterials = 900;
-                thunderbirdVehicle.ManufactureTech = 113;
-                thunderbirdVehicle.ManufacturePointsCost = 660;
-
-                //Make HM research for PX, available after completing Phoenix Archives
-                ResearchDef hibernationModuleResearch = Repo.GetAllDefs<ResearchDef>().FirstOrDefault(ged => ged.name.Equals("SYN_Aircraft_HybernationPods_ResearchDef"));
-                ResearchDef sourcePX_SDI_ResearchDef = Repo.GetAllDefs<ResearchDef>().FirstOrDefault(ged => ged.name.Equals("PX_SDI_ResearchDef"));
-                hibernationModuleResearch.Faction = PhoenixPoint;
-                hibernationModuleResearch.RevealRequirements = sourcePX_SDI_ResearchDef.RevealRequirements;
-                hibernationModuleResearch.ResearchCost = 100;
-
-
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-
-        }
-
-
-        public static void HibernationModuleStaminaRecuperation()
-        {
-
-            try
-            {
+                List<TacCharacterDef> startingTemplates = new List<TacCharacterDef>();
                 TFTVConfig config = TFTVMain.Main.Config;
-                GeoVehicleModuleDef hibernationmodule = Repo.GetAllDefs<GeoVehicleModuleDef>().FirstOrDefault(ged => ged.name.Equals("SY_HibernationPods_GeoVehicleModuleDef"));
+                GameDifficultyLevelDef currentDifficultyLevel = levelController.CurrentDifficultyLevel;
 
-                if (config.ActivateStaminaRecuperatonModule)
-                {
-                    hibernationmodule.GeoVehicleModuleBonusValue = 0.35f;
 
-                }
-                else
+
+                if (config.tutorialCharacters == TFTVConfig.StartingSquadCharacters.UNBUFFED)
                 {
-                    hibernationmodule.GeoVehicleModuleBonusValue = 0;
+                    startingTemplates = TFTVStarts.SetInitialSquadUnbuffed(levelController);
                 }
+                else if (config.tutorialCharacters == TFTVConfig.StartingSquadCharacters.RANDOM)
+                {
+                    startingTemplates = TFTVStarts.SetInitialSquadRandom(levelController);
+                }
+                else //if buffed
+                {
+                    startingTemplates = TFTVStarts.SetInitialSquadBuffed(currentDifficultyLevel, levelController);
+                }
+
+              return startingTemplates;
 
             }
-
             catch (Exception e)
             {
                 TFTVLogger.Error(e);
             }
-
+            throw new InvalidOperationException();
         }
 
+  
 
         [HarmonyPatch(typeof(GeoPhoenixFaction), "CreateInitialSquad")]
         internal static class BG_GeoPhoenixFaction_CreateInitialSquad_patch
         {
+            
+
             [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051")]
             private static bool Prefix(GeoPhoenixFaction __instance, GeoSite site)
             {
                 try
                 {
-                    
+
                     GeoVehicle geoVehicle = __instance.Vehicles.First();
-                    geoVehicle.AddEquipment(Repo.GetAllDefs<GeoVehicleEquipmentDef>().FirstOrDefault(gve => gve.name.Equals("SY_HibernationPods_GeoVehicleModuleDef")));
+                    geoVehicle.AddEquipment(hibernationModule);
 
                     TFTVConfig config = TFTVMain.Main.Config;
 
-                    List<TacCharacterDef> startingTemplates = new List<TacCharacterDef>();
+                    List<TacCharacterDef> startingTemplates = CreateStartingSquad(__instance.GeoLevel);
 
                     GameDifficultyLevelDef currentDifficultyLevel = __instance.GeoLevel.CurrentDifficultyLevel;
-                    GameDifficultyLevelDef standardDifficultyLevel = Repo.GetAllDefs<GameDifficultyLevelDef>().FirstOrDefault(a => a.name.Equals("Standard_GameDifficultyLevelDef"));
 
-                    TacticalItemDef redeemerAmmo = Repo.GetAllDefs<TacticalItemDef>().FirstOrDefault(a => a.name.Equals("AN_Redemptor_AmmoClip_ItemDef"));
-
-                    TacticalItemDef pdwAmmo = Repo.GetAllDefs<TacticalItemDef>().FirstOrDefault(a => a.name.Equals("NJ_Gauss_PDW_AmmoClip_ItemDef"));
-                    TacticalItemDef mechArmsAmmo = Repo.GetAllDefs<TacticalItemDef>().FirstOrDefault(a => a.name.Equals("MechArms_AmmoClip_ItemDef"));
-
-                    TacticalItemDef boltsAmmo = Repo.GetAllDefs<TacticalItemDef>().FirstOrDefault(a => a.name.Equals("SY_Crossbow_AmmoClip_ItemDef"));
-                    TacticalItemDef spidersAmmo = Repo.GetAllDefs<TacticalItemDef>().FirstOrDefault(a => a.name.Equals("SY_SpiderDroneLauncher_AmmoClip_ItemDef"));
-
-
-                    if (config.tutorialCharacters == TFTVConfig.StartingSquadCharacters.UNBUFFED)
-                    {
-                        startingTemplates = TFTVStarts.SetInitialSquadUnbuffed(__instance.GeoLevel);
-                    }
-                    else if (config.tutorialCharacters == TFTVConfig.StartingSquadCharacters.RANDOM)
-                    {
-                        startingTemplates = TFTVStarts.SetInitialSquadRandom(currentDifficultyLevel, __instance.GeoLevel);
-                    }
-                    else //if buffed
-                    {
-                        startingTemplates = TFTVStarts.SetInitialSquadBuffed(currentDifficultyLevel, __instance.GeoLevel);
-                    }
 
                     foreach (TacCharacterDef template in startingTemplates)
                     {
@@ -198,9 +124,7 @@ namespace TFTV
                             geoFaction = __instance;
                         }
 
-                        if (!template.name.Contains("Buffed") &&
-                            template != Repo.GetAllDefs<TacCharacterDef>().FirstOrDefault(a => a.name.Equals("PX_Jacob_TFTV_TacCharacterDef")) &&
-                            template != Repo.GetAllDefs<TacCharacterDef>().FirstOrDefault(a => a.name.Equals("PX_Sophia_TFTV_TacCharacterDef")))
+                        if (!template.name.Contains("Buffed") && template != jacob && template != sophia)
                         {
                             GeoUnitDescriptor geoUnitDescriptor = geoFaction.GeoLevel.CharacterGenerator.GenerateUnit(geoFaction, template);
                             geoFaction.GeoLevel.CharacterGenerator.ApplyGenerationParameters(geoUnitDescriptor, currentDifficultyLevel.StartingSquadGenerationParams);
@@ -327,11 +251,11 @@ namespace TFTV
                     {
                         if (hybernationPods != null || cruiseControl != null || fuelTank != null)
                         {
-                            __instance.BaseDef = Repo.GetAllDefs<GeoVehicleDef>().FirstOrDefault(ged => ged.name.Equals("PP_Manticore_Def_6_Slots"));
+                            __instance.BaseDef = manticore6slots;
                         }
                         else
                         {
-                            __instance.BaseDef = Repo.GetAllDefs<GeoVehicleDef>().FirstOrDefault(ged => ged.name.Equals("PP_Manticore_Def"));
+                            __instance.BaseDef = manticore;
 
                         }
                     }
@@ -339,11 +263,11 @@ namespace TFTV
                     {
                         if (hybernationPods != null || cruiseControl != null || fuelTank != null)
                         {
-                            __instance.BaseDef = Repo.GetAllDefs<GeoVehicleDef>().FirstOrDefault(ged => ged.name.Equals("SYN_Helios_Def_5_Slots"));
+                            __instance.BaseDef = helios5slots;
                         }
                         else
                         {
-                            __instance.BaseDef = Repo.GetAllDefs<GeoVehicleDef>().FirstOrDefault(ged => ged.name.Equals("SYN_Helios_Def"));
+                            __instance.BaseDef = helios;
 
                         }
                     }
@@ -351,11 +275,11 @@ namespace TFTV
                     {
                         if (hybernationPods != null || cruiseControl != null || fuelTank != null)
                         {
-                            __instance.BaseDef = Repo.GetAllDefs<GeoVehicleDef>().FirstOrDefault(ged => ged.name.Equals("NJ_Thunderbird_Def_7_Slots"));
+                            __instance.BaseDef = thunderbird7slots;
                         }
                         else
                         {
-                            __instance.BaseDef = Repo.GetAllDefs<GeoVehicleDef>().FirstOrDefault(ged => ged.name.Equals("NJ_Thunderbird_Def"));
+                            __instance.BaseDef = thunderbird;
 
                         }
                     }
@@ -363,11 +287,11 @@ namespace TFTV
                     {
                         if (hybernationPods != null || cruiseControl != null || fuelTank != null)
                         {
-                            __instance.BaseDef = Repo.GetAllDefs<GeoVehicleDef>().FirstOrDefault(ged => ged.name.Equals("ANU_Blimp_Def_12_Slots"));
+                            __instance.BaseDef = blimp12slots;
                         }
                         else
                         {
-                            __instance.BaseDef = Repo.GetAllDefs<GeoVehicleDef>().FirstOrDefault(ged => ged.name.Equals("ANU_Blimp_Def"));
+                            __instance.BaseDef = blimp8slots;
 
                         }
                     }
@@ -375,11 +299,11 @@ namespace TFTV
                     {
                         if (hybernationPods != null || cruiseControl != null || fuelTank != null)
                         {
-                            __instance.BaseDef = Repo.GetAllDefs<GeoVehicleDef>().FirstOrDefault(ged => ged.name.Equals("PP_ManticoreMasked_Def_8_Slots"));
+                            __instance.BaseDef = maskedManticore8slots;
                         }
                         else
                         {
-                            __instance.BaseDef = Repo.GetAllDefs<GeoVehicleDef>().FirstOrDefault(ged => ged.name.Equals("PP_MaskedManticore_Def"));
+                            __instance.BaseDef = maskedManticore;
 
                         }
                     }
