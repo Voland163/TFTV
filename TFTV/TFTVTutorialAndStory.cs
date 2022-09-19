@@ -63,14 +63,14 @@ namespace TFTV
 
                     ContextHelpHintDef hintDef = context as ContextHelpHintDef;
                     bool tacticsHintWasShown = false;
-                    TFTVLogger.Always("Show hint method invoked, the hint is " + hintDef.name);
-                    TFTVLogger.Always("There are " + TFTVHumanEnemies.TacticsHint.Count + " hints in the human tactics list");
+                  //  TFTVLogger.Always("Show hint method invoked, the hint is " + hintDef.name);
+                  //  TFTVLogger.Always("There are " + TFTVHumanEnemies.TacticsHint.Count + " hints in the human tactics list");
 
-                    for (int i = 0; i < TFTVHumanEnemies.TacticsHint.Count; i++) 
+                   /* for (int i = 0; i < TFTVHumanEnemies.TacticsHint.Count; i++) 
                     {
                         TFTVLogger.Always("The hint # " + (i+1) + " is " + TFTVHumanEnemies.TacticsHint[i].name);
 
-                    }
+                    }*/
                     
                     if (title.LocalizationKey == "UMBRA_SIGHTED_TITLE")
                     {
@@ -84,9 +84,9 @@ namespace TFTV
 
                     foreach(ContextHelpHintDef tacticsHint in TFTVHumanEnemies.TacticsHint) 
                     {
-                        if (tacticsHint.name==hintDef.name)  //hintDef.Text.LocalizeEnglish().Contains("Their leader is"))
+                        if (tacticsHint.name==hintDef.name && !tacticsHint.Text.LocalizeEnglish().Contains("Should not appear"))  //hintDef.Text.LocalizeEnglish().Contains("Their leader is"))
                         {
-                            TFTVLogger.Always("leaderSightedHint if check passed");
+                          //  TFTVLogger.Always("leaderSightedHint if check passed");
 
                             if (hintDef.Text.LocalizeEnglish().Contains("Synedrion"))
                             {
@@ -113,12 +113,11 @@ namespace TFTV
                                 __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("ban_squad.png");
                             }
                             tacticsHintWasShown = true;
+                            alwaysDisplayedTacticalHintsDbDef.Hints.Remove(hintDef);
                         }
                     }
                     if (tacticsHintWasShown)
-                    {
-                       
-                        alwaysDisplayedTacticalHintsDbDef.Hints.Remove(hintDef);
+                    {                                          
                         TFTVHumanEnemies.TacticsHint.Remove(hintDef);
                     }
                 }
@@ -334,8 +333,8 @@ namespace TFTV
                 newHasSeenHintConditionDef.HintDef = newContextHelpHintDef;
                 newContextHelpHintDef.Conditions.Add(newHasSeenHintConditionDef);
 
-                newContextHelpHintDef.Title.LocalizationKey = title;
-                newContextHelpHintDef.Text.LocalizationKey = text;
+                newContextHelpHintDef.Title = new LocalizedTextBind( title,true);
+                newContextHelpHintDef.Text = new LocalizedTextBind(text, true);
 
 
                 newContextHelpHintDef.AnyCondition = false;

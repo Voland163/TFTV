@@ -319,8 +319,9 @@ namespace TFTV
 
 
                 AlistairRoadsEvent();
+                CreateEventMessagesFromTheVoid();
                 InjectOlenaKimLines();
-
+                CreateBehemothPattern();
 
             }
             catch (Exception e)
@@ -355,6 +356,9 @@ namespace TFTV
                 GeoscapeEventDef olenaOnBionicsLabSabotage = TFTVCommonMethods.CreateNewEvent("OlenaOnBionicsLabSabotage", "ANU_REALLY_PISSED_BIONICS_TITLE", "ANU_REALLY_PISSED_BIONICS_CHOICE_0_OUTCOME", null);
                 //Olena about Mutations Lab sabotage
                 GeoscapeEventDef olenaOnMutationsLabSabotage = TFTVCommonMethods.CreateNewEvent("OlenaOnMutationsLabSabotage", "NJ_REALLY_PISSED_MUTATIONS_TITLE", "NJ_REALLY_PISSED_MUTATIONS_CHOICE_0_OUTCOME", null);
+                CreateEventFirstFlyer();
+                CreateEventFirstHavenTarget();
+                CreateEventFirstHavenAttack();
 
             }
             catch (Exception e)
@@ -1420,7 +1424,6 @@ namespace TFTV
                 TFTVLogger.Error(e);
             }
         }
-
         public static void CreateRevenantDefs()
         {
             try
@@ -1442,8 +1445,6 @@ namespace TFTV
                 TFTVLogger.Error(e);
             }
         }
-
-
         public static void CreateRevenantStatusEffect()
         {
             try
@@ -1462,7 +1463,6 @@ namespace TFTV
                 TFTVLogger.Error(e);
             }
         }
-
         public static void CreateRevenantAbility()
         {
             try
@@ -1496,7 +1496,6 @@ namespace TFTV
                 TFTVLogger.Error(e);
             }
         }
-
         public static void CreateRevenantAbilityForAssault()
         {
             try
@@ -1532,7 +1531,6 @@ namespace TFTV
                 TFTVLogger.Error(e);
             }
         }
-
         public static void CreateRevenantAbilityForBerserker()
         {
             try
@@ -1569,7 +1567,6 @@ namespace TFTV
                 TFTVLogger.Error(e);
             }
         }
-
         public static void CreateRevenantAbilityForHeavy()
         {
             try
@@ -1607,7 +1604,6 @@ namespace TFTV
                 TFTVLogger.Error(e);
             }
         }
-
         public static void CreateRevenantAbilityForInfiltrator()
         {
             try
@@ -1643,7 +1639,6 @@ namespace TFTV
                 TFTVLogger.Error(e);
             }
         }
-
         public static void CreateRevenantAbilityForPriest()
         {
             try
@@ -1680,7 +1675,6 @@ namespace TFTV
                 TFTVLogger.Error(e);
             }
         }
-
         public static void CreateRevenantAbilityForSniper()
         {
             try
@@ -1716,7 +1710,6 @@ namespace TFTV
                 TFTVLogger.Error(e);
             }
         }
-
         public static void CreateRevenantAbilityForTechnician()
         {
             try
@@ -1784,7 +1777,6 @@ namespace TFTV
                 TFTVLogger.Error(e);
             }
         }
-
         public static void CreateRevenantGameTags()
         {
             string skillName = "RevenantTier";
@@ -1806,8 +1798,6 @@ namespace TFTV
                 "D2904A22-FE23-45B3-8879-9236E389C9E4",
                 "Any_Revenant_TagDef");
         }
-
-
         public static void ChangesToMedbay()
         {
             try
@@ -1821,7 +1811,6 @@ namespace TFTV
                 TFTVLogger.Error(e);
             }
         }
-
         public static void MistOnAllMissions()
         {
             try
@@ -1838,7 +1827,6 @@ namespace TFTV
             }
 
         }
-
         public static void CreateNewDefsForTFTVStart()
         {
             try
@@ -2039,7 +2027,6 @@ namespace TFTV
 
 
         }
-
         public static void Create_VoidOmen_Events()
 
         {
@@ -2047,6 +2034,85 @@ namespace TFTV
             TFTVCommonMethods.CreateNewEvent("VoidOmenIntro", "", "", null);
 
         }
+
+        
+        public static void CreateEventFirstFlyer()
+        {
+            try
+            {
+                string eventID = "OlenaOnFirstFlyer";
+                GeoscapeEventDef newEvent = TFTVCommonMethods.CreateNewEvent(eventID + "_GeoscapeEventDef", "OLENA_ON_FIRST_FLYER_TITLE", "OLENA_ON_FIRST_FLYER_TEXT", null);
+                newEvent.GeoscapeEventData.EventID = eventID;
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+        public static void CreateEventFirstHavenTarget()
+        {
+            try
+            {
+                string eventID = "OlenaOnFirstHavenTarget";
+                GeoscapeEventDef newEvent = TFTVCommonMethods.CreateNewEvent(eventID + "_GeoscapeEventDef", "OLENA_ON_HAVEN_TARGET_TITLE", "OLENA_ON_HAVEN_TARGET_TEXT", null);
+                newEvent.GeoscapeEventData.EventID = eventID;
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+        public static void CreateEventFirstHavenAttack()
+        {
+            try
+            {
+                string eventID = "OlenaOnFirstHavenAttack";
+                GeoscapeEventDef newEvent = TFTVCommonMethods.CreateNewEvent(eventID + "_GeoscapeEventDef", "FIRST_HAVEN_ATTACK_TITLE", "FIRST_HAVEN_ATTACK_TEXT", "FIRST_HAVEN_ATTACK_OUTCOME");
+                newEvent.GeoscapeEventData.EventID = eventID;
+
+              
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+        public static void CreateEventMessagesFromTheVoid()
+        {
+            try
+            {
+                string eventID = "AlistairOnMessagesFromTheVoid";
+                GeoscapeEventDef newEvent = TFTVCommonMethods.CreateNewEvent(eventID + "_GeoscapeEventDef", "AFTER_YE_SIGNAL_TITLE", "AFTER_YE_SIGNAL_TEXT", "AFTER_YE_SIGNAL_OUTCOME");
+                newEvent.GeoscapeEventData.EventID = eventID;
+                newEvent.GeoscapeEventData.Choices[0].Text.LocalizationKey = "AFTER_YE_SIGNAL_CHOICE";
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+        public static void CreateBehemothPattern()
+        {
+            try
+            {
+                string eventID = "OlenaOnBehemothPattern";
+                GeoscapeEventDef newEvent = TFTVCommonMethods.CreateNewEvent(eventID + "_GeoscapeEventDef", "BEHEMOTH_PATTERN_TITLE", "BEHEMOTH_PATTERN_TEXT", null);
+                newEvent.GeoscapeEventData.EventID = eventID;
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
 
     }
 

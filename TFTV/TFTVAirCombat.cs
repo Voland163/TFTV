@@ -4,23 +4,15 @@ using Base.Defs;
 using Base.UI;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
-using PhoenixPoint.Common.Entities.Items;
 using PhoenixPoint.Geoscape.Entities;
-using PhoenixPoint.Geoscape.Entities.Interception;
-using PhoenixPoint.Geoscape.Entities.Interception.Equipments;
-using PhoenixPoint.Geoscape.Entities.Research;
-using PhoenixPoint.Geoscape.Entities.Research.Requirement;
-using PhoenixPoint.Geoscape.Entities.Research.Reward;
+using PhoenixPoint.Geoscape.Events;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
-using PhoenixPoint.Geoscape.View.ViewControllers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
-using PhoenixPoint.Common.View.ViewControllers;
-using PhoenixPoint.Home.View.ViewModules;
 
 namespace TFTV
 {
@@ -30,13 +22,72 @@ namespace TFTV
         private static readonly DefRepository Repo = TFTVMain.Repo;
         public static Dictionary<int, List<int>> flyersAndHavens = new Dictionary<int, List<int>>();
         public static List<int> targetsForBehemoth = new List<int>();
-      //  public static List<int> targetsVisitedByBehemoth = new List<int>();
+        //  public static List<int> targetsVisitedByBehemoth = new List<int>();
 
         public static List<int> behemothScenicRoute = new List<int>();
         public static int behemothTarget = 0;
         public static int behemothWaitHours = 12;
+        public static int roaming = 0;
+        //public static bool firstPandoranFlyerSpawned = false;
 
         public static bool checkHammerfall = false;
+
+
+        [HarmonyPatch(typeof(GeoFaction), "CreateVehicleAtPosition")]
+        public static class GeoFaction_CreateVehicleAtPosition_patch
+        {
+            public static void Postfix(ComponentSetDef vehicleDef, GeoFaction __instance)
+            {
+                try
+                {
+                    if (vehicleDef.name == "ALN_GeoscapeFlyer_Small_Def" && __instance.GeoLevel.EventSystem.GetVariable("FirstPandoranFlyerSpawned") == 0)
+                    {
+                        // firstPandoranFlyerSpawned=true;
+                        GeoscapeEventContext geoscapeEventContext = new GeoscapeEventContext(__instance, __instance.GeoLevel.ViewerFaction);
+                        __instance.GeoLevel.EventSystem.TriggerGeoscapeEvent("OlenaOnFirstFlyer", geoscapeEventContext);
+                        __instance.GeoLevel.EventSystem.SetVariable("FirstPandoranFlyerSpawned", 1);
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+
+        }
+
+
+
+
+
+        [HarmonyPatch(typeof(GeoBehemothActor), "OnBehemothEmerged")]
+        public static class GeoBehemothActor_OnBehemothEmerged_patch
+        {
+            public static bool Prepare()
+            {
+                TFTVConfig config = TFTVMain.Main.Config;
+                return config.ActivateAirCombatChanges;
+            }
+            public static void Postfix()
+
+            {
+                try
+                {
+                    TFTVLogger.Always("Behemoth emerging");
+                    roaming += 1;
+
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+
+            }
+
+        }
+
+
 
         [HarmonyPatch(typeof(GeoAlienFaction), "SpawnEgg", new Type[] { typeof(Vector3) })]
         public static class GeoAlienFaction_SpawnEgg_DestroyHavens_Patch
@@ -188,7 +239,7 @@ namespace TFTV
                 TFTVConfig config = TFTVMain.Main.Config;
                 return config.ActivateAirCombatChanges;
             }
-            public static void Postfix()
+            public static void Postfix(GeoBehemothActor __instance)
 
             {
                 try
@@ -199,6 +250,27 @@ namespace TFTV
                     targetsForBehemoth.Clear();
                     behemothScenicRoute.Clear();
                     //  BehemothSubmerging = true;
+                    if (roaming < 1)//4 - __instance.GeoLevel.CurrentDifficultyLevel.Order <= roaming) 
+                    {
+                        __instance.GeoLevel.AlienFaction.Research.GetResearchById("ALN_Medium_Flyer_ResearchDef");
+                        TFTVLogger.Always("Aliens should now have Beriths");
+                    }
+                    else if (roaming == 2)//4 - __instance.GeoLevel.CurrentDifficultyLevel.Order <= roaming) 
+                    {
+                        __instance.GeoLevel.AlienFaction.Research.GetResearchById("ALN_Large_Flyer_ResearchDef");
+                        TFTVLogger.Always("Aliens should now have Abbadons");
+                    }
+                    else if (roaming == 3)//4 - __instance.GeoLevel.CurrentDifficultyLevel.Order <= roaming) 
+                    {
+                        if (__instance.GeoLevel.EventSystem.GetVariable("BehemothPatternEventTriggered") == 0)
+                        {
+                            GeoscapeEventContext context = new GeoscapeEventContext(__instance.GeoLevel.AlienFaction, __instance.GeoLevel.PhoenixFaction);
+                            __instance.GeoLevel.EventSystem.TriggerGeoscapeEvent("OlenaOnBehemothPattern", context);
+                            __instance.GeoLevel.EventSystem.SetVariable("BehemothPatternEventTriggered", 1);
+                            TFTVLogger.Always("Event on Behemoth pattern should trigger");
+                                  
+                        }
+                    }
 
                 }
                 catch (Exception e)
@@ -288,7 +360,7 @@ namespace TFTV
                 List<GeoSite> allGeoSites = controller.Map.AllSites.ToList();
                 foreach (GeoSite site in allGeoSites)
                 {
-                    if (site!=null && site.SiteId == siteID)
+                    if (site != null && site.SiteId == siteID)
                     {
                         return site;
                     }
@@ -302,12 +374,12 @@ namespace TFTV
                 TFTVLogger.Error(e);
             }
             throw new InvalidOperationException();
-        }    
+        }
 
         [HarmonyPatch(typeof(GeoBehemothActor), "UpdateHourly")]
         public static class GeoBehemothActor_UpdateHourly_Patch
         {
-            
+
             public static bool Prepare()
             {
                 TFTVConfig config = TFTVMain.Main.Config;
@@ -318,6 +390,7 @@ namespace TFTV
             {
                 try
                 {
+
                     if (__instance.CurrentBehemothStatus == GeoBehemothActor.BehemothStatus.Dormant)//first check
                     {
                         //   TFTVLogger.Always("Behemoth's target lists are cleared because he is sleeping");
@@ -328,12 +401,17 @@ namespace TFTV
                         return true;
                     }
 
+                  /*  if (__instance.GeoLevel.EventSystem.GetVariable("ThirdActStarted") == 1)
+                    {
+                        ____disruptionThreshhold = 200;
+                    }*/
+
                     if (____disruptionThreshhold <= 0)
                     {
                         FesteringSkiesSettingsDef festeringSkiesSettings = __instance.GeoLevel.FesteringSkiesSettings;
                         GameDifficultyLevelDef currentDifficultyLevel = __instance.GeoLevel.CurrentDifficultyLevel;
                         int num = festeringSkiesSettings.DisruptionThreshholdBaseValue + currentDifficultyLevel.DisruptionDueToDifficulty;
-                      //  TFTVLogger.Always("The num is " + num);
+                        //  TFTVLogger.Always("The num is " + num);
 
                         foreach (BonusesToDisruptionMeter researchDisruptionBonuse in festeringSkiesSettings.ResearchDisruptionBonuses)
                         {
@@ -344,9 +422,9 @@ namespace TFTV
                         }
                         ____disruptionThreshhold = num;
 
-                      BehemothDisplayController behemothDisplayController = (BehemothDisplayController)UnityEngine.Object.FindObjectOfType(typeof(BehemothDisplayController));
+                        // BehemothDisplayController behemothDisplayController = (BehemothDisplayController)UnityEngine.Object.FindObjectOfType(typeof(BehemothDisplayController));
                         // behemothDisplayController.UpdateDisruptionMeter(____disruptionPoints, ____disruptionThreshhold);
-                                         
+
 
                         TFTVLogger.Always("Behemoth hourly update, disruption threshold set to " + ____disruptionThreshhold + ", disruption points are " + ____disruptionPoints);
                     }
@@ -369,19 +447,29 @@ namespace TFTV
 
                     }
 
-                    
+
                     if (__instance.IsSubmerging)//second check
                     {
-                       // TFTVLogger.Always("Behemoth's target lists are cleared because he is going to sleep");
+                        // TFTVLogger.Always("Behemoth's target lists are cleared because he is going to sleep");
                         targetsForBehemoth.Clear();
                         behemothScenicRoute.Clear();
                         behemothTarget = 0;
                         return false;
-                    }                    
+                    }
 
                     if (behemothTarget != 0 && ConvertIntIDToGeosite(__instance.GeoLevel, behemothTarget) != null && ConvertIntIDToGeosite(__instance.GeoLevel, behemothTarget).State == GeoSiteState.Destroyed)
                     {
                         behemothTarget = 0;
+                    }
+                    else if (behemothTarget != 0)
+                    {
+                        if (__instance.GeoLevel.EventSystem.GetVariable("BehemothAttackedFirstHaven") == 0)
+                        {
+                            GeoscapeEventContext geoscapeEventContext = new GeoscapeEventContext(__instance.GeoLevel.AlienFaction, __instance.GeoLevel.ViewerFaction);
+                            __instance.GeoLevel.EventSystem.TriggerGeoscapeEvent("OlenaOnFirstHavenTarget", geoscapeEventContext);
+                            __instance.GeoLevel.EventSystem.SetVariable("BehemothAttackedFirstHaven", 1);
+                            TFTVLogger.Always("OlenaOnFirstHavenTarget event triggered");
+                        }
                     }
 
                     if (behemothTarget == 0 && targetsForBehemoth.Count > 0)
@@ -397,9 +485,9 @@ namespace TFTV
                             chosenHaven = GetTargetHaven(__instance.GeoLevel);
                             targetsForBehemoth.Remove(chosenHaven.SiteId);
                             behemothTarget = chosenHaven.SiteId;
-                        
+
                         }
-                        else if(__instance.CurrentSite != null && __instance.CurrentSite == chosenHaven && targetsForBehemoth.Count == 0) 
+                        else if (__instance.CurrentSite != null && __instance.CurrentSite == chosenHaven && targetsForBehemoth.Count == 0)
                         {
                             TFTVLogger.Always("Behemoth is at a haven, the target is the haven and has no other targets: has to move somewhere");
                             typeof(GeoBehemothActor).GetMethod("TargetHaven", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(__instance, new object[] { GetSiteForBehemothToMoveTo(__instance) });
@@ -408,15 +496,22 @@ namespace TFTV
 
                         typeof(GeoBehemothActor).GetMethod("TargetHaven", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(__instance, new object[] { chosenHaven });
                         return false;
-                        
+
                     }
                     else if (behemothTarget == 0 && targetsForBehemoth.Count == 0) // no potential targets, set Behemoth to roam
                     {
                         if (behemothWaitHours == 0)
                         {
                             TFTVLogger.Always("No targets, waiting time is up, Behemoth moves somewhere");
-                            typeof(GeoBehemothActor).GetMethod("TargetHaven", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(__instance, new object[] { GetSiteForBehemothToMoveTo(__instance) });
-                            behemothWaitHours = 12;
+                            if (GetSiteForBehemothToMoveTo(__instance) != null)
+                            {
+                                typeof(GeoBehemothActor).GetMethod("TargetHaven", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(__instance, new object[] { GetSiteForBehemothToMoveTo(__instance) });
+                                behemothWaitHours = 12;
+                            }
+                            else
+                            {
+                                return false;
+                            }
                         }
                         else
                         {
@@ -444,12 +539,20 @@ namespace TFTV
                 return config.ActivateAirCombatChanges;
             }
 
-            public static void Postfix()
+            public static void Postfix(GeoBehemothActor __instance)
             {
                 try
                 {
                     behemothTarget = 0;
-                   // TFTVLogger.Always("DamageHavenOutcome method invoked and Behemoth target is now " + behemothTarget);
+
+                    if (__instance.GeoLevel.EventSystem.GetVariable("BehemothAttackedFirstHaven") == 0)
+                    {
+                        GeoscapeEventContext geoscapeEventContext = new GeoscapeEventContext(__instance.GeoLevel.AlienFaction, __instance.GeoLevel.ViewerFaction);
+                        __instance.GeoLevel.EventSystem.TriggerGeoscapeEvent("OlenaOnFirstHavenAttack", geoscapeEventContext);
+                        __instance.GeoLevel.EventSystem.SetVariable("BehemothAttackedFirstHaven", 1);
+                        TFTVLogger.Always("FirstHavenTarget event triggered");
+                    }
+                    // TFTVLogger.Always("DamageHavenOutcome method invoked and Behemoth target is now " + behemothTarget);
                 }
 
                 catch (Exception e)
@@ -547,19 +650,19 @@ namespace TFTV
                 if (behemothScenicRoute.Count > 0)
                 {
                     TFTVLogger.Always("Actually got to the scenic Route count, and it's " + behemothScenicRoute.Count);
-                   
+
                     foreach (GeoSite site in geoBehemothActor.GeoLevel.Map.AllSites)
                     {
                         if (behemothScenicRoute.Contains(site.SiteId))
                         {
                             chosenTarget = site;
-                            TFTVLogger.Always("The site is " + site.LocalizedSiteName);                           
+                            TFTVLogger.Always("The site is " + site.Name);
                             behemothScenicRoute.Remove(site.SiteId);
                             return chosenTarget;
                         }
                     }
                 }
-
+                TFTVLogger.Always("Didn't find a site on the scenic route, so defaulting to nearest site, which is " + chosenTarget.Name);
                 return chosenTarget;
             }
 

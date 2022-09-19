@@ -68,9 +68,9 @@ namespace TFTV
                 // Get the GeoLevelController to get access to the event system and the variable
                 GeoLevelController geoLevelController = geoAlienFaction.GeoLevel;
                 // If current calculated level is different to last saved one then new ODI level is reached, show the new ODI event
-                if (geoLevelController.EventSystem.GetVariable("CorruptionActive") == 0 && geoLevelController.EventSystem.GetVariable("PandoraVirus") == 1)
+                if (geoLevelController.EventSystem.GetVariable("CorruptedLairDestroyed") == 1)
                 {
-                    TFTVVoidOmens.RemoveAllVoidOmens(geoLevelController);
+                    return;
                 }
 
                 else

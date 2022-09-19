@@ -30,7 +30,7 @@ namespace TFTV
                 //  TFTVAirCombat.targetsVisitedByBehemoth = new List<int>();
                 TFTVAirCombat.flyersAndHavens = new Dictionary<int, List<int>>();
                 TFTVAirCombat.checkHammerfall = false;
-                TFTVRevenant.DeadSoldiersDelirium = new Dictionary<string, int>();
+                TFTVRevenant.DeadSoldiersDelirium = new Dictionary<int, int>();
                 TFTVVoidOmens.voidOmensCheck = new bool[18];
                 //VO#1 is harder ambushes
                 TFTVVoidOmens.VoidOmen1Active = false;
@@ -62,8 +62,8 @@ namespace TFTV
                 TFTVRevenant.revenantCanSpawn = false;
                 TFTVHumanEnemies.difficultyLevel = 0;
                 TFTVHumanEnemies.HumanEnemiesAndTactics = new Dictionary<string, int>();
-              //  TFTVRevenant.timeLastRevenantSpawned = new TimeSpan();
-    }
+                //  TFTVRevenant.timeLastRevenantSpawned = new TimeSpan();
+            }
             catch (Exception e)
             {
                 TFTVLogger.Error(e);
@@ -122,6 +122,12 @@ namespace TFTV
                         research.Faction.GeoLevel.AlienFaction.SpawnNewAlienBase();
                         GeoAlienBase citadel = research.Faction.GeoLevel.AlienFaction.Bases.FirstOrDefault(ab => ab.AlienBaseTypeDef.name == "Citadel_GeoAlienBaseTypeDef");
                         citadel.SpawnMonster(queenTag, true);
+                    }
+                    else if (research.ResearchID == "PX_YuggothianEntity_ResearchDef") 
+                    {
+                        GeoscapeEventContext context = new GeoscapeEventContext(research.Faction.GeoLevel.PhoenixFaction, research);
+                        research.Faction.GeoLevel.EventSystem.TriggerGeoscapeEvent("AlistairOnMessagesFromTheVoid", context);
+                                     
                     }
                 }
                 catch (Exception e)

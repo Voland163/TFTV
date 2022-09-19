@@ -105,16 +105,18 @@ namespace TFTV
             try
             {
                 UnityEngine.Random.InitState((int)DateTime.Now.Ticks);
-                float dieRoll = UnityEngine.Random.Range(1, 9);
-
-                int roll = (int)dieRoll;
+                int roll = UnityEngine.Random.Range(1, 10);
 
                 TFTVLogger.Always("The tactics roll is " + roll);
+
                 if (!HumanEnemiesAndTactics.ContainsKey(nameOfFaction))
                 {
                     HumanEnemiesAndTactics.Add(nameOfFaction, roll);
                     RollCount++;
                 }
+
+
+
                 TFTVLogger.Always("Tactics have been rolled " + RollCount + " times, and there are currently " + HumanEnemiesAndTactics.Count + " tactics in play.");
 
             }
@@ -249,10 +251,10 @@ namespace TFTV
                     ". Their leader is " + nameOfLeader + ", using the tactic " + nameOfTactic + ": " + descriptionOfTactic;
 
 
-                TFTVTutorialAndStory.CreateNewTacticalHintForHumanEnemies(nameOfGang, HintTrigger.ActorSeen, "HumanEnemyFaction_" + enemyHumanFaction.TacticalFactionDef.ShortName + "_GameTagDef", "Should not appear", "Should not appear");
-                ContextHelpHintDef leaderSightedHint = Repo.GetAllDefs<ContextHelpHintDef>().FirstOrDefault(ged => ged.name.Equals(nameOfGang));
-                leaderSightedHint.Title = new LocalizedTextBind(nameOfGang, true);
-                leaderSightedHint.Text = new LocalizedTextBind(descriptionHint, true);
+                TFTVTutorialAndStory.CreateNewTacticalHintForHumanEnemies(nameOfGang, HintTrigger.ActorSeen, "HumanEnemyFaction_" + enemyHumanFaction.TacticalFactionDef.ShortName + "_GameTagDef", nameOfGang, descriptionHint);
+               ContextHelpHintDef leaderSightedHint = Repo.GetAllDefs<ContextHelpHintDef>().FirstOrDefault(ged => ged.name.Equals(nameOfGang));
+              //  leaderSightedHint.Title = new LocalizedTextBind(nameOfGang, true);
+              //  leaderSightedHint.Text = new LocalizedTextBind(descriptionHint, true);
                 TacticsHint.Add(leaderSightedHint);
 
                 //  LocalizedTextBind title = new LocalizedTextBind(nameOfGang, true);
@@ -537,8 +539,10 @@ namespace TFTV
                             }
 
                             string factionName = factionAndTier[0].name.Split('_')[1];
+                            int roll = HumanEnemiesAndTactics[factionName];
+                            TFTVLogger.Always("factionName is " + factionName + " and the roll is " + roll);
                             ____abilitiesList.AddRow<CharacterStatusAbilityRowController>
-                               (__instance.AbilitiesListAbilityPrototype).SetData(AddTacticsDescription(HumanEnemiesAndTactics.GetValueSafe(factionName)));
+                               (__instance.AbilitiesListAbilityPrototype).SetData(AddTacticsDescription(roll));
 
                         }
                         else if (factionAndTier[1] == HumanEnemyTier2GameTag)
@@ -675,6 +679,7 @@ namespace TFTV
                     LocalizedDescription = description,
                     Icon = Helper.CreateSpriteFromImageFile("UI_AbilitiesIcon_PersonalTrack_SpecOp-1.png")
                 };
+
                 return abilityData;
             }
 
@@ -1168,7 +1173,8 @@ namespace TFTV
                                         float magnitude = actor.GetAdjustedPerceptionValue();
 
                                         if ((allyTacticalActorBase.Pos - tacticalActorBase.Pos).magnitude < magnitude
-                                            && TacticalFactionVision.CheckVisibleLineBetweenActors(allyTacticalActorBase, allyTacticalActorBase.Pos, tacticalActor, true))
+                                            && TacticalFactionVision.CheckVisibleLineBetweenActors(allyTacticalActorBase, allyTacticalActorBase.Pos, tacticalActor, true) 
+                                            && tacticalActorBase!=allyTacticalActorBase)
                                         {
                                             TFTVLogger.Always("Actor in range and has LoS");
                                             actor.CharacterStats.WillPoints.AddRestrictedToMax(1);
@@ -1619,7 +1625,7 @@ namespace TFTV
 
                                 if (tacticalActorBase.HasGameTag(HumanEnemyTier1GameTag))
                                 {
-                                  
+
                                     foreach (TacticalActorBase allyTacticalActorBase in faction.Actors)
                                     {
                                         if (allyTacticalActorBase.BaseDef.name == "Soldier_ActorDef" && allyTacticalActorBase.InPlay)
@@ -1696,7 +1702,7 @@ namespace TFTV
                     if (HumanEnemiesAndTactics.ContainsKey(deathReport.Actor.TacticalFaction.Faction.FactionDef.ShortName)
                         && HumanEnemiesAndTactics.GetValueSafe(deathReport.Actor.TacticalFaction.Faction.FactionDef.ShortName) == 6)
                     {
-                       
+
 
                         if (deathReport.Actor.HasGameTag(HumanEnemyTier2GameTag) || deathReport.Actor.HasGameTag(HumanEnemyTier1GameTag))
                         {
@@ -1731,7 +1737,7 @@ namespace TFTV
             {
                 try
                 {
-     
+
                     if (actor.HasGameTag(HumanEnemyTier1GameTag) && damageDealer != null && HumanEnemiesAndTactics.ContainsKey(actor.TacticalFaction.Faction.FactionDef.ShortName)
                     && HumanEnemiesAndTactics.GetValueSafe(actor.TacticalFaction.Faction.FactionDef.ShortName) == 7)
                     {
@@ -1743,7 +1749,7 @@ namespace TFTV
                             attacker.Status.ApplyStatus(mFDStatus);
 
                         }
-                       
+
                     }
                 }
                 catch (Exception e)
@@ -1805,7 +1811,7 @@ namespace TFTV
                 try
                 {
                     if (HumanEnemiesAndTactics.ContainsKey(__instance.Faction.FactionDef.ShortName)
-                        && HumanEnemiesAndTactics.GetValueSafe(__instance.Faction.FactionDef.ShortName) == 2 
+                        && HumanEnemiesAndTactics.GetValueSafe(__instance.Faction.FactionDef.ShortName) == 2
                         && __instance.TacticalLevel.TurnNumber > 0 && __instance.TacticalLevel.GetFactionByCommandName("PX") == __instance)
                     {
                         StartingVolley(__instance.TacticalLevel, __instance.Faction.FactionDef.ShortName);

@@ -157,6 +157,9 @@ namespace TFTV
                 //Change Reward introductory mission Synedrion
                 GeoscapeEventDef ProgSynIntroWin = Repo.GetAllDefs<GeoscapeEventDef>().FirstOrDefault(ged => ged.name.Equals("PROG_SY0_WIN_GeoscapeEventDef"));
                 ProgSynIntroWin.GeoscapeEventData.Choices[1].Outcome.Diplomacy.Clear();
+                
+                //remove Pirate King mission
+                RemovePirateKing();
             }
 
             catch (Exception e)
@@ -276,6 +279,23 @@ namespace TFTV
 
         }
 
+        public static void RemovePirateKing()
+        {
+            try
+            {
+                GeoscapeEventDef fireBirdMiss = Repo.GetAllDefs<GeoscapeEventDef>().FirstOrDefault(ged => ged.name.Equals("PROG_SY2_MISS_GeoscapeEventDef"));
+                fireBirdMiss.GeoscapeEventData.Choices[0].Outcome.StartMission.WonEventID = "PROG_SY3_WIN";
+
+                GeoscapeEventDef pirateKingWin = Repo.GetAllDefs<GeoscapeEventDef>().FirstOrDefault(ged => ged.name.Equals("PROG_SY3_WIN_GeoscapeEventDef"));
+                pirateKingWin.GeoscapeEventData.Title.LocalizationKey = "PROG_SY2_WIN_TITLE";
+
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
 
     }
 }

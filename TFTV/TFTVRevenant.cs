@@ -28,7 +28,7 @@ namespace TFTV
     internal class TFTVRevenant
     {
         private static readonly DefRepository Repo = TFTVMain.Repo;
-        public static Dictionary<string, int> DeadSoldiersDelirium = new Dictionary<string, int>();
+        public static Dictionary<int, int> DeadSoldiersDelirium = new Dictionary<int, int>();
 
         public static int daysRevenantLastSeen = 0;
         // public static  timeLastRevenantSpawned = new TimeUnit();
@@ -93,7 +93,7 @@ namespace TFTV
         //private static readonly DamageKeywordDef paralisingDamageKeywordDef = Repo.GetAllDefs<DamageKeywordDef>().FirstOrDefault(p => p.name.Equals("Paralysing_DamageKeywordDataDef"));
 
 
-
+        /*
         public static void CheckForNotDeadSoldiers(TacticalLevelController level)
         {
             try
@@ -133,9 +133,9 @@ namespace TFTV
                 TFTVLogger.Error(e);
             }
 
-        }
+        }*/
 
-       
+
 
         public static void CheckRevenantTime(GeoLevelController controller)
 
@@ -203,14 +203,14 @@ namespace TFTV
             try
             {
 
-                List<string> allDeadSoldiers = DeadSoldiersDelirium.Keys.ToList();
+                List<int> allDeadSoldiers = DeadSoldiersDelirium.Keys.ToList();
                 List<GeoTacUnitId> candidates = new List<GeoTacUnitId>();
 
-                foreach (string deadSoldier in allDeadSoldiers)
+                foreach (int deadSoldier in allDeadSoldiers)
                 {
-                    candidates.Add(GetDeadSoldiersIdFromName(deadSoldier, controller));
+                    candidates.Add(GetDeadSoldiersIdFromInt(deadSoldier, controller));
                     TFTVLogger.Always("deadSoldier " + deadSoldier + " with GeoTacUnitId "
-                        + GetDeadSoldiersIdFromName(deadSoldier, controller) + "is added to the list of Revenant candidates");
+                        + GetDeadSoldiersIdFromInt(deadSoldier, controller) + "is added to the list of Revenant candidates");
                 }
                 UnityEngine.Random.InitState((int)DateTime.Now.Ticks);
                 int roll = UnityEngine.Random.Range(0, candidates.Count());
@@ -234,7 +234,7 @@ namespace TFTV
             {
 
 
-                int delirium = DeadSoldiersDelirium[GetDeadSoldiersNameFromID(theChosen, controller)];
+                int delirium = DeadSoldiersDelirium[theChosen];
                 TFTVLogger.Always("The Chosen, " + GetDeadSoldiersNameFromID(theChosen, controller) + ", has " + delirium + " Delirium");
                 if (delirium >= 10)
                 {
@@ -301,9 +301,9 @@ namespace TFTV
                     actor.name = GetDeadSoldiersNameFromID(theChosen, controller);
                     //  TFTVLogger.Always("Crab's name has been changed to " + actor.GetDisplayName());
                     // SetDeathTime(theChosen, __instance, timeOfMissionStart);
-                    DeadSoldiersDelirium[GetDeadSoldiersNameFromID(theChosen, controller)] += 1;
+                    DeadSoldiersDelirium[theChosen] += 1;
                     TFTVLogger.Always("The accumulated delirium for  " + GetDeadSoldiersNameFromID(theChosen, controller)
-                        + " is now " + DeadSoldiersDelirium[GetDeadSoldiersNameFromID(theChosen, controller)]);
+                        + " is now " + DeadSoldiersDelirium[theChosen]);
                     SetRevenantClassAbility(theChosen, controller, tacticalActor);
                     AddRevenantResistanceAbility(actor);
                     //  SpreadResistance(__instance);
@@ -339,7 +339,7 @@ namespace TFTV
 
                     if (__instance.TacticalGameParams.Statistics.LivingSoldiers.ContainsKey(deathReport.Actor.GeoUnitId)
                         && !__instance.TacticalGameParams.Statistics.DeadSoldiers.ContainsKey(deathReport.Actor.GeoUnitId)
-                        && !DeadSoldiersDelirium.ContainsKey(deathReport.Actor.DisplayName))
+                        && !DeadSoldiersDelirium.ContainsKey(deathReport.Actor.GeoUnitId))
                     {
                         AddtoListOfDeadSoldiers(deathReport.Actor);
                         TFTVStamina.charactersWithBrokenLimbs.Remove(deathReport.Actor.GeoUnitId);
@@ -457,6 +457,25 @@ namespace TFTV
             {
                 TFTVLogger.Error(e);
             }
+        }
+
+        public static GeoTacUnitId GetDeadSoldiersIdFromInt(int id, TacticalLevelController level)
+        {
+            try
+            {
+                foreach (GeoTacUnitId deadSoldier in level.TacticalGameParams.Statistics.DeadSoldiers.Keys)
+                {
+                    if (deadSoldier == id)
+                    {
+                        return deadSoldier;
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+            throw new InvalidOperationException();
         }
 
         public static GeoTacUnitId GetDeadSoldiersIdFromName(string name, TacticalLevelController level)
@@ -578,7 +597,7 @@ namespace TFTV
                 TFTVLogger.Always("The character that died has " + delirium + " Delirium");
                 if (delirium > 0)
                 {
-                    DeadSoldiersDelirium.Add(deadSoldier.DisplayName, delirium);
+                    DeadSoldiersDelirium.Add(deadSoldier.GeoUnitId, delirium);
                 }
             }
 

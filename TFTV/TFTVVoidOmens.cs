@@ -68,7 +68,7 @@ namespace TFTV
                 string voidOmen = "VoidOmen_";
                 // TFTVLogger.Always("Checking if method invocation is working, these are the Void Omens in play " + voidOmensInPlay[0] + " "
                 //   + voidOmensInPlay[1] + " " + voidOmensInPlay[2] + " " + voidOmensInPlay[3]);
-                
+
 
 
                 for (int i = 1; i < voidOmensCheck.Count() - 1; i++)
@@ -885,13 +885,15 @@ namespace TFTV
         [HarmonyPatch(typeof(GeoSite), "CreateHavenDefenseMission")]
         public static class GeoSite_CreateHavenDefenseMission_IncreaseAttackHavenVoidOmen_patch
         {
-            public static void Prefix(ref HavenAttacker attacker)
+            private static readonly SharedData sharedData = GameUtl.GameComponent<SharedData>();
+
+            public static void Prefix(ref HavenAttacker attacker, GeoSite __instance)
             {
                 try
                 {
+                    //TFTVThirdAct.ChangeHavenDeploymentDefense(__instance.GeoLevel);
                     if (VoidOmen12Active)
                     {
-                        SharedData sharedData = GameUtl.GameComponent<SharedData>();
                         if (attacker.Faction.PPFactionDef == sharedData.AlienFactionDef)
                         {
                             TFTVLogger.Always("Alien deployment was " + attacker.Deployment);
@@ -899,6 +901,7 @@ namespace TFTV
                             TFTVLogger.Always("Alien deployment is now " + attacker.Deployment);
                         }
                     }
+
                 }
                 catch (Exception e)
                 {
@@ -907,6 +910,33 @@ namespace TFTV
             }
         }
 
+
+
+        [HarmonyPatch(typeof(GeoHavenDefenseMission), "GetDefenseDeployment")]
+        public static class GeoHavenDefenseMission_GetDefenseDeployment_Mobilization_Patch
+        {
+            public static bool Prefix(GeoHavenDefenseMission __instance, GeoHaven haven, ref int __result)
+            {
+                try
+                {
+                    if (__instance.Level.EventSystem.GetVariable("Mobilization") == 1)
+                    {
+                        __result = (int)(((float)haven.ZonesStats.GetTotalHavenOutput().Deployment * 1.5 * haven.Site.Owner.FactionStatModifiers?.HavenDefenseModifier) ?? 1f);
+                        return false;
+                    }
+                    else
+                    {
+                        return true;
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+                return true;
+            }
+
+        }
 
         [HarmonyPatch(typeof(GeoAlienFaction), "AlienBaseDestroyed")]
         public static class GeoAlienFaction_AlienBaseDestroyed_RemoveVoidOmenDestroyedPC_patch

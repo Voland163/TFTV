@@ -540,10 +540,10 @@ namespace TFTV
                 {
                     //check number of augments the character has
                     
-                    int numberOfBionics = AugmentScreenUtilities.GetNumberOfBionicsAugmentations(__instance.CurrentCharacter);
+                   // int numberOfBionics = AugmentScreenUtilities.GetNumberOfBionicsAugmentations(__instance.CurrentCharacter);
 
-                    for (int i = 0; i < numberOfBionics; i++)
-                    {
+                  //  for (int i = 0; i < numberOfBionics; i++)
+                    //{
                         if (__instance.CurrentCharacter.CharacterStats.Corruption - __instance.CurrentCharacter.CharacterStats.Willpower * 0.33 >= 0)
                         {
                             __instance.CurrentCharacter.CharacterStats.Corruption.Set((float)(__instance.CurrentCharacter.CharacterStats.Corruption - __instance.CurrentCharacter.CharacterStats.Willpower * 0.33));
@@ -552,7 +552,7 @@ namespace TFTV
                         {
                             __instance.CurrentCharacter.CharacterStats.Corruption.Set(0);
                         }
-                    }
+                //    }
                 }
                 catch (Exception e)
                 {

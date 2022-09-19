@@ -60,7 +60,7 @@ namespace TFTV
             /// PhoenixGame is accessible at any time.
             PhoenixGame game = GetGame();
 
-            Logger.LogInfo("TFTV September 18 release #2");
+            Logger.LogInfo("TFTV September 21 release #1");
 
 
             //TFTV 
@@ -73,7 +73,7 @@ namespace TFTV
             // Initialize Logger
             LogPath = Path.Combine(ModDirectory, "TFTV.log");
             TFTVLogger.Initialize(LogPath, Config.Debug, ModDirectory, nameof(TFTV));
-            TFTVLogger.Always("TFTV September 18 release #2");
+            TFTVLogger.Always("TFTV September 21 release #1");
             // Initialize Helper
             Helper.Initialize();
             //This creates the Void Omen events
@@ -202,6 +202,7 @@ namespace TFTV
                 //Changes to DLC events
                 TFTVChangesToDLC1andDLC2Events.Apply_Changes();
                 TFTVChangesToDLC3Events.ApplyChanges();
+                TFTVChangesToDLC3Events.ModifyMaskedManticoreResearch();
                 TFTVChangesToDLC4Events.Apply_Changes();
                 if (Config.ActivateKERework)
                 {
@@ -252,6 +253,7 @@ namespace TFTV
                 TFTVHumanEnemiesDefs.CreateAmbushAbility();
                 TFTVHumanEnemiesNames.CreateNamesDictionary();
                 TFTVDefsCreatedOnLevelChanged.CreateNewDefsForTFTVStart();
+                TFTVDefsCreatedOnLevelChanged.
                 // TFTVRevenantResearch.CreateDefs();
             }
             TFTVDefsCreatedOnLevelChanged.CreateNewDefsForTFTVStart();

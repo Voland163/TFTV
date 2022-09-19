@@ -3,14 +3,12 @@ using Base.Defs;
 using HarmonyLib;
 using PhoenixPoint.Common.Levels.Missions;
 using PhoenixPoint.Common.UI;
-using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.Research;
 using PhoenixPoint.Geoscape.Entities.Research.Requirement;
 using PhoenixPoint.Geoscape.Entities.Research.Reward;
 using PhoenixPoint.Geoscape.Events;
 using PhoenixPoint.Geoscape.Events.Eventus;
 using PhoenixPoint.Geoscape.Events.Eventus.Filters;
-using PhoenixPoint.Geoscape.Levels;
 using System;
 using System.Linq;
 
@@ -41,7 +39,7 @@ namespace TFTV
                 geoEventFS9.GeoscapeEventData.Choices[0].Outcome.OutcomeText.General.LocalizationKey = "PROG_FS9_OUTCOME";
                 //set event timer for meteor arrival (Mount Egg)
                 GeoTimePassedEventFilterDef timePassedFS9 = Repo.GetAllDefs<GeoTimePassedEventFilterDef>().FirstOrDefault(ged => ged.name.Equals("E_PROG_FS9_TimePassed [GeoTimePassedEventFilterDef]"));
-                timePassedFS9.TimePassedHours = UnityEngine.Random.Range(48, 72); 
+                timePassedFS9.TimePassedHours = UnityEngine.Random.Range(48, 72);
                 // set event timer for former Augury, now A Sleeping Beauty Awakens
                 GeoTimePassedEventFilterDef timePassedFS0 = Repo.GetAllDefs<GeoTimePassedEventFilterDef>().FirstOrDefault(ged => ged.name.Equals("E_PROG_FS0_TimePassed [GeoTimePassedEventFilterDef]"));
                 timePassedFS0.TimePassedHours = UnityEngine.Random.Range(200, 250);
@@ -62,7 +60,7 @@ namespace TFTV
                     TimerID = "PROG_FS1_MISS"
                 };
                 geoEventFS1.GeoscapeEventData.Choices[0].Outcome.ActivateTimers[0] = outcomeActivateTimer;
-                
+
                 // Destroy Haven after mission
                 GeoscapeEventDef geoEventFS1WIN = Repo.GetAllDefs<GeoscapeEventDef>().FirstOrDefault(ged => ged.name.Equals("PROG_FS1_WIN_GeoscapeEventDef"));
                 geoEventFS1WIN.GeoscapeEventData.Choices[0].Outcome.HavenPopulationChange = -20000;
@@ -76,7 +74,7 @@ namespace TFTV
 
                 // set event timer for Behemoth Egg hatching without completing, The Hatching
                 GeoTimePassedEventFilterDef timePassedFS10 = Repo.GetAllDefs<GeoTimePassedEventFilterDef>().FirstOrDefault(ged => ged.name.Equals("E_PROG_FS10_TimePassed [GeoTimePassedEventFilterDef]"));
-                timePassedFS10.TimePassedHours = UnityEngine.Random.Range(725, 755); 
+                timePassedFS10.TimePassedHours = UnityEngine.Random.Range(725, 755);
 
                 //change event FS10 to add an Outcome panel
                 GeoscapeEventDef geoEventFS10 = Repo.GetAllDefs<GeoscapeEventDef>().FirstOrDefault(ged => ged.name.Equals("PROG_FS10_GeoscapeEventDef"));
@@ -129,7 +127,7 @@ namespace TFTV
                 //now add the reward
                 independenceDayResearchDef.Unlocks.AddItem(encounterVarNodeAutopsyReward);
 
-             
+
                 //Change research req for FS2 and add outcome text to FS2 Event
                 GeoResearchEventFilterDef geoEventFS2ResearchReq = Repo.GetAllDefs<GeoResearchEventFilterDef>().FirstOrDefault(ged => ged.name.Equals("E_PROG_FS2_ResearchCompleted [GeoResearchEventFilterDef]"));
                 geoEventFS2ResearchReq.ResearchID = "IndependenceDayResearch";
@@ -151,45 +149,55 @@ namespace TFTV
             }
         }
 
-        public static void ActivateFS3Event(GeoLevelController level)
+       
+
+
+        public static void ModifyMaskedManticoreResearch()
         {
             try
             {
-                GeoTimePassedEventFilterDef timePassedFS3 = Repo.GetAllDefs<GeoTimePassedEventFilterDef>().FirstOrDefault(ged => ged.name.Equals("E_PROG_FS3_TimePassed [GeoTimePassedEventFilterDef]"));
-                GeoscapeEventDef geoEventFS3 = Repo.GetAllDefs<GeoscapeEventDef>().FirstOrDefault(ged => ged.name.Equals("PROG_FS3_GeoscapeEventDef"));
-                timePassedFS3.TimePassedHours = UnityEngine.Random.Range(25, 38) + level.ElaspedTime.TimeSpan.Hours;
-                geoEventFS3.GeoscapeEventData.Mute = false;
+                ResearchDef maskedManticoreResearchDef = Repo.GetAllDefs<ResearchDef>().FirstOrDefault(ged => ged.name.Equals("PX_Aircraft_MaskedManticore_ResearchDef"));
+
+                //In Vanilla Masked Manticore research requires researching Virophage weapons(PX_Aircraft_MaskedManticore_ResearchDef_ExistingResearchRequirementDef_0)
+                //and Node autopsy(PX_Aircraft_MaskedManticore_ResearchDef_ExistingResearchRequirementDef_1), 
+                //It unlocks building the Masked Manticore, PX_Aircraft_MaskedManticore_ResearchDef_ManufactureResearchRewardDef_0
+                //
+                //We want player to be able to build the Masked Manticore after
+                //a) Node autopsy (already in)
+                //b) Virophage weapons (already in)
+                //c) Citadel ("PX_Alien_Citadel_ResearchDef");
+
+
+                //So, let's just clone one of the ResearchReqDef and stick it to Masked Manticore ResearchDef
+                string nameNewResearchReq = "PX_Aircraft_MaskedManticore_ResearchDef_ExistingResearchRequirementDef_2";
+                ExistingResearchRequirementDef sourceExistingResearchRequirementDef = Repo.GetAllDefs<ExistingResearchRequirementDef>().FirstOrDefault(ged => ged.name.Equals("PX_Aircraft_MaskedManticore_ResearchDef_ExistingResearchRequirementDef_0"));
+                ExistingResearchRequirementDef newExistingResearchRequirementDef = Helper.CreateDefFromClone(sourceExistingResearchRequirementDef, "A69F9835-21D1-47D6-B89D-AB966AE818D5", nameNewResearchReq);
+
+                //We need to extract the reveal requirement box, add a new element to it, and put it back in
+
+                ReseachRequirementDefOpContainer[] reseachRequirementMaskedManticoreContainer = new ReseachRequirementDefOpContainer[1];
+                ResearchRequirementDef[] researchRequirementDefs = new ResearchRequirementDef[3];
+                researchRequirementDefs[0] = maskedManticoreResearchDef.RevealRequirements.Container[0].Requirements[0];
+                researchRequirementDefs[1] = maskedManticoreResearchDef.RevealRequirements.Container[0].Requirements[1];
+                researchRequirementDefs[2] = newExistingResearchRequirementDef;
+
+                reseachRequirementMaskedManticoreContainer[0].Requirements = researchRequirementDefs;
+                maskedManticoreResearchDef.RevealRequirements.Container = reseachRequirementMaskedManticoreContainer;
+
+                //create new research requirement variable from a clone
+                EncounterVariableResearchRequirementDef sourceVarResReq =
+                  Repo.GetAllDefs<EncounterVariableResearchRequirementDef>().
+                  FirstOrDefault(ged => ged.name.Equals("NJ_Bionics1_ResearchDef_EncounterVariableResearchRequirementDef_0"));
+                //Research to defeat Behemoth will become available after Behemoth starts the Rumpus
+                EncounterVariableResearchRequirementDef variableResReqBehemoth = Helper.CreateDefFromClone(sourceVarResReq, "BABAAC81-3855-4218-B747-4FE926F34F69", "IndependenceDayResReqDef");
+                variableResReqBehemoth.VariableName = "BehemothDestroyedAHaven";
+                variableResReqBehemoth.Value = 1;
+
             }
             catch (Exception e)
             {
                 TFTVLogger.Error(e);
             }
         }
-
-        public static void ChangeHavenDeploymentDefense(GeoLevelController level)
-        {
-            try
-            {
-                GeoHavenDef havendef = Repo.GetAllDefs<GeoHavenDef>().FirstOrDefault(ged => ged.name.Equals("GeoHavenDef"));
-                if (level.EventSystem.GetVariable("Mobilization") ==1)
-                {
-                    
-                    havendef.PopulationAsDeployment = 0.5f;
-                }
-                else 
-                {
-                    havendef.PopulationAsDeployment = 0.1f;
-                }
-
-            }
-
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-        }
-
     }
-
-
 }

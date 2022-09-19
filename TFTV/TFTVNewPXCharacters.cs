@@ -1,4 +1,5 @@
 ﻿using Base.Defs;
+using EnviroSamples;
 using HarmonyLib;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Events;
@@ -87,55 +88,51 @@ namespace TFTV
                     {
                         __instance.TriggerGeoscapeEvent("AlistairOnSymes1", context);
                     }
-                    if (eventId == "PROG_CH0_WIN")
+                    else if (eventId == "PROG_CH0_WIN")
                     {
                         __instance.TriggerGeoscapeEvent("AlistairOnBarnabas", context);
                     }
-                    if (eventId == "PROG_PX1_WIN")
+                    else if (eventId == "PROG_PX1_WIN")
                     {
                         __instance.TriggerGeoscapeEvent("AlistairOnSymes2", context);
                     }
-                    if(eventId == "PROG_LE0_WIN") 
+                    else if(eventId == "PROG_LE0_WIN") 
                     {
                         __instance.TriggerGeoscapeEvent("HelenaOnOlena", context);
                     }
-                    if (eventId == "PROG_NJ1_WIN")
+                    else if (eventId == "PROG_NJ1_WIN")
                     {
                         __instance.TriggerGeoscapeEvent("OlenaOnWest", context);
                     }
-                    if (eventId == "PROG_AN6_WIN2")
+                    else if (eventId == "PROG_AN6_WIN2")
                     {
                         __instance.TriggerGeoscapeEvent("OlenaOnSynod", context);
                     }
-                    if(eventId == "PROG_LE_FINAL") 
+                    else if(eventId == "PROG_LE_FINAL") 
                     {
                         __instance.TriggerGeoscapeEvent("OlenaOnAncients", context);
                     }
-                    if (eventId == "PROG_FS1_WIN")
+                    else if (eventId == "PROG_FS1_WIN")
                     {
                         __instance.TriggerGeoscapeEvent("OlenaOnBehemoth", context);
                     }
-                    if (eventId == "AlistairOnSymes2")
+                    else if (eventId == "AlistairOnSymes2")
                     {
                         __instance.TriggerGeoscapeEvent("OlenaOnSymes", context);
                     }
-
-                    if (eventId == "Anu_Pissed2")
+                    else if (eventId == "Anu_Pissed2")
                     {
                         __instance.TriggerGeoscapeEvent("OlenaOnBionicsLabSabotage", context);
                     }
-
-                    if (eventId == "NJ_Pissed2")
+                    else if (eventId == "NJ_Pissed2")
                     {
                         __instance.TriggerGeoscapeEvent("OlenaOnMutationsLabSabotage", context);
                     }
-
-                    if (eventId== "PROG_CH2_WIN") 
+                    else if (eventId== "PROG_CH2_WIN") 
                     {
-                        TFTVChangesToDLC3Events.ActivateFS3Event(context.Level);
+                         TFTVThirdAct.ActivateFS3Event(context.Level);
+                        TFTVVoidOmens.RemoveAllVoidOmens(context.Level);
                     }
-
-
                 }
 
                 catch (Exception e)
@@ -153,6 +150,12 @@ namespace TFTV
             {
                 try
                 {
+                   /* if (geoEvent.EventID.Equals("OlenaOnFirstFlyer") || geoEvent.EventID.Equals("OlenaOnFirstHavenTarget")) 
+                    { 
+                        __result.EventLeader = Helper.CreateSpriteFromImageFile("BG_Olena_small.png");
+                        //__result.EventBackground
+                    }*/
+
                     if (geoEvent.EventID.Equals("HelenaOnOlena"))
                     {
                         __result.EventLeader = Helper.CreateSpriteFromImageFile("Helena_fire2_closeup.jpg");

@@ -31,13 +31,13 @@ namespace TFTV
         public bool VoidOmen16Active = TFTVVoidOmens.VoidOmen16Active;
         //Check if Umbra can be spawned in tactical
         public bool UmbraResearched = TFTVUmbra.UmbraResearched;
-        public Dictionary<string, int> DeadSoldiersDelirium = TFTVRevenant.DeadSoldiersDelirium;
+        public Dictionary<int, int> DeadSoldiersDelirium = TFTVRevenant.DeadSoldiersDelirium;
     //    public TimeUnit timeRevenantLastSeenSaveData = TFTVRevenant.timeRevenantLastSeen;
     //    public TimeSpan timeLastRevenantSpawned = TFTVRevenant.timeLastRevenantSpawned;
         public List<string> revenantSpecialResistance = TFTVRevenant.revenantSpecialResistance;
         public bool revenantSpawned = TFTVRevenant.revenantSpawned;
         public bool revenantCanSpawnSaveDate = TFTVRevenant.revenantCanSpawn;
-        public Dictionary <string, int> humanEnemiesRollSaveData = TFTVHumanEnemies.HumanEnemiesAndTactics;
+        public Dictionary <string, int> humanEnemiesLeaderTacticsSaveData = TFTVHumanEnemies.HumanEnemiesAndTactics;
         public int difficultyLevelForTacticalSaveData = TFTVHumanEnemies.difficultyLevel;
     }
 
@@ -58,11 +58,11 @@ namespace TFTV
            // TFTVMain main = (TFTVMain)Main;
             //TFTV give Dtony's Delirium Perks
             //  TFTVDelirium.DeliriumPerksOnTactical(tacController);
-            TFTVHumanEnemies.HumanEnemiesAndTactics.Clear();
+            TFTVLogger.Always("The count of tactics in play is " + TFTVHumanEnemies.HumanEnemiesAndTactics.Count);        
             TFTVHumanEnemies.RollCount = 0;
             TFTVDefsCreatedOnLevelChanged.CreateRevenantDefs();
             TFTVRevenant.ModifyRevenantResistanceAbility(Controller);
-            TFTVRevenant.CheckForNotDeadSoldiers(tacController);
+            //TFTVRevenant.CheckForNotDeadSoldiers(tacController);
             TFTVRevenant.RevenantCheckAndSpawn(Controller);
             
         }
@@ -72,7 +72,7 @@ namespace TFTV
         /// </summary>
         public override void OnTacticalEnd()
         {
-            TFTVRevenant.CheckForNotDeadSoldiers(Controller);
+         //   TFTVRevenant.CheckForNotDeadSoldiers(Controller);
             
             TFTVLogger.Always("OnTacticalEnd check");
             base.OnTacticalEnd();
@@ -96,6 +96,8 @@ namespace TFTV
         /// <param name="data">Instance data serialized for this mod. Cannot be null.</param>
         public override void ProcessTacticalInstanceData(object instanceData)
         {
+            
+            TFTVHumanEnemies.HumanEnemiesAndTactics.Clear();
             TFTVTacInstanceData data = (TFTVTacInstanceData)instanceData;
             TFTVStamina.charactersWithBrokenLimbs = data.charactersWithBrokenLimbs;
             TFTVVoidOmens.VoidOmen3Active = data.VoidOmen3Active;
@@ -111,8 +113,9 @@ namespace TFTV
             TFTVRevenant.revenantSpawned = data.revenantSpawned;
             TFTVRevenant.revenantSpecialResistance = data.revenantSpecialResistance;
             TFTVRevenant.revenantCanSpawn = data.revenantCanSpawnSaveDate;
-            TFTVHumanEnemies.HumanEnemiesAndTactics = data.humanEnemiesRollSaveData;
+            
             TFTVHumanEnemies.difficultyLevel = data.difficultyLevelForTacticalSaveData;
+            TFTVHumanEnemies.HumanEnemiesAndTactics = data.humanEnemiesLeaderTacticsSaveData;
 
         }
         /// <summary>
@@ -136,8 +139,9 @@ namespace TFTV
                 revenantSpawned = TFTVRevenant.revenantSpawned,
                 revenantSpecialResistance = TFTVRevenant.revenantSpecialResistance,
                 revenantCanSpawnSaveDate = TFTVRevenant.revenantCanSpawn,
-                humanEnemiesRollSaveData = TFTVHumanEnemies.HumanEnemiesAndTactics,
+                
                 difficultyLevelForTacticalSaveData = TFTVHumanEnemies.difficultyLevel,
+                humanEnemiesLeaderTacticsSaveData = TFTVHumanEnemies.HumanEnemiesAndTactics,
               //  timeLastRevenantSpawned = TFTVRevenant.timeLastRevenantSpawned,
             };
         }

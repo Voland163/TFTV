@@ -21,11 +21,12 @@ namespace TFTV
         //   public List<int> targetsVisitedByBehemoth = TFTVAirCombat.targetsVisitedByBehemoth;
         public Dictionary<int, List<int>> flyersAndHavens = TFTVAirCombat.flyersAndHavens;
         public bool checkHammerfall = TFTVAirCombat.checkHammerfall;
-        public Dictionary<string, int> DeadSoldiersDelirium = TFTVRevenant.DeadSoldiersDelirium;
+        public Dictionary<int, int> DeadSoldiersDelirium = TFTVRevenant.DeadSoldiersDelirium;
         public List<int> behemothScenicRoute = TFTVAirCombat.behemothScenicRoute;
         public int behemothTarget = TFTVAirCombat.behemothTarget;
         public int behemothWaitHours = TFTVAirCombat.behemothWaitHours;
         public int timeRevenantLasteSeenSaveData = TFTVRevenant.daysRevenantLastSeen;
+        public int behemothRoamingSaveData = TFTVAirCombat.roaming;
     }
 
     /// <summary>
@@ -53,7 +54,6 @@ namespace TFTV
             TFTVUmbra.CheckForUmbraResearch(gsController);
             TFTVUmbra.SetUmbraEvolution(gsController);
             TFTVThirdAct.SetBehemothOnRampageMod(gsController);
-            TFTVChangesToDLC3Events.ChangeHavenDeploymentDefense(gsController);
             TFTVStamina.CheckBrokenLimbs(gsController.PhoenixFaction.Soldiers.ToList());
             TFTVRevenant.UpdateRevenantTimer(gsController);
           /*  if (TFTVRevenant.revenantSpawned)
@@ -116,6 +116,7 @@ namespace TFTV
                 behemothTarget = TFTVAirCombat.behemothTarget,
                 behemothWaitHours = TFTVAirCombat.behemothWaitHours,
                 timeRevenantLasteSeenSaveData = TFTVRevenant.daysRevenantLastSeen,
+                behemothRoamingSaveData = TFTVAirCombat.roaming,
             };
 
         }
@@ -137,6 +138,7 @@ namespace TFTV
             TFTVAirCombat.behemothScenicRoute = data.behemothScenicRoute;
             TFTVAirCombat.behemothTarget = data.behemothTarget;
             TFTVAirCombat.behemothWaitHours = data.behemothWaitHours;
+            TFTVAirCombat.roaming = data.behemothRoamingSaveData;
 
             Main.Logger.LogInfo("# Characters with broken limbs: " + TFTVStamina.charactersWithBrokenLimbs.Count);
             Main.Logger.LogInfo("# Behemoth targets for this emergence: " + TFTVAirCombat.targetsForBehemoth.Count);
@@ -147,6 +149,7 @@ namespace TFTV
             Main.Logger.LogInfo("# sites on Behemoth scenic route " + TFTVAirCombat.behemothScenicRoute.Count);
             Main.Logger.LogInfo("Behemoth target id number is " + TFTVAirCombat.behemothTarget);
             Main.Logger.LogInfo("Behemoth will wait for another  " + TFTVAirCombat.behemothWaitHours + " before moving");
+            Main.Logger.LogInfo("Behemoth roaming #  " + TFTVAirCombat.roaming);
             Main.Logger.LogInfo("Last time a Revenant was seen was on day " + TFTVRevenant.daysRevenantLastSeen + ", and now it is day " + Controller.Timing.Now.TimeSpan.Days);
 
             TFTVLogger.Always("# Characters with broken limbs: " + TFTVStamina.charactersWithBrokenLimbs.Count);
@@ -158,6 +161,7 @@ namespace TFTV
             TFTVLogger.Always("# sites on Behemoth scenic route " + TFTVAirCombat.behemothScenicRoute.Count);
             TFTVLogger.Always("Behemoth target id number is " + TFTVAirCombat.behemothTarget);
             TFTVLogger.Always("Behemoth will wait for another  " + TFTVAirCombat.behemothWaitHours + " before moving");
+            TFTVLogger.Always("Behemoth roaming #  " + TFTVAirCombat.roaming);
             TFTVLogger.Always("Last time a Revenant was seen was on day " + TFTVRevenant.daysRevenantLastSeen + ", and now it is day " + Controller.Timing.Now.TimeSpan.Days);
         }
 
@@ -176,9 +180,7 @@ namespace TFTV
             //   TFTVAirCombat.targetsVisitedByBehemoth = new List<int>();
             TFTVAirCombat.flyersAndHavens = new Dictionary<int, List<int>>();
             TFTVAirCombat.checkHammerfall = false;
-            TFTVRevenant.DeadSoldiersDelirium = new Dictionary<string, int>();
-
-
+            TFTVRevenant.DeadSoldiersDelirium = new Dictionary<int, int>();
 
             try
             {
