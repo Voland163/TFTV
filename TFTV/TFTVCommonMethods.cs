@@ -123,12 +123,14 @@ namespace TFTV
                         GeoAlienBase citadel = research.Faction.GeoLevel.AlienFaction.Bases.FirstOrDefault(ab => ab.AlienBaseTypeDef.name == "Citadel_GeoAlienBaseTypeDef");
                         citadel.SpawnMonster(queenTag, true);
                     }
-                    else if (research.ResearchID == "PX_YuggothianEntity_ResearchDef") 
+                    else if (research.ResearchID == "PX_YuggothianEntity_ResearchDef")
                     {
-                        GeoscapeEventContext context = new GeoscapeEventContext(research.Faction.GeoLevel.PhoenixFaction, research);
+                        GeoscapeEventContext context = new GeoscapeEventContext(research.Faction.GeoLevel.AlienFaction, research.Faction.GeoLevel.PhoenixFaction);
                         research.Faction.GeoLevel.EventSystem.TriggerGeoscapeEvent("AlistairOnMessagesFromTheVoid", context);
-                                     
                     }
+
+
+
                 }
                 catch (Exception e)
                 {

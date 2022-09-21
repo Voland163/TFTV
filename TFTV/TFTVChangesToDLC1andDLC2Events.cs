@@ -2,6 +2,7 @@
 using Base.UI;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Levels.Missions;
+using PhoenixPoint.Common.UI;
 using PhoenixPoint.Geoscape.Events;
 using PhoenixPoint.Geoscape.Events.Eventus;
 using PhoenixPoint.Geoscape.Levels;
@@ -20,6 +21,13 @@ namespace TFTV
             try
             {
                 MakeLOTAAlternativeToSymes();
+                ResearchViewElementDef njBionicsVEDef = Repo.GetAllDefs<ResearchViewElementDef>().FirstOrDefault(ged => ged.name.Equals("NJ_Bionics1_ViewElementDef"));
+                njBionicsVEDef.CompleteText.LocalizationKey = "TFTV_BIONICS_RESEARCHDEF_COMPLETE";
+
+                ResearchViewElementDef anuBionicsVEDef = Repo.GetAllDefs<ResearchViewElementDef>().FirstOrDefault(ged => ged.name.Equals("ANU_MutationTech_ViewElementDef"));
+                anuBionicsVEDef.CompleteText.LocalizationKey = "TFTV_MUTATIONTECH_RESEARCHDEF_COMPLETE";
+                
+
 
                 //ID all the factions for later
                 GeoFactionDef PhoenixPoint = Repo.GetAllDefs<GeoFactionDef>().FirstOrDefault(ged => ged.name.Equals("Phoenix_GeoPhoenixFactionDef"));

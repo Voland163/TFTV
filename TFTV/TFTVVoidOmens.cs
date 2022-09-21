@@ -21,6 +21,7 @@ using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Levels;
 using PhoenixPoint.Tactical.Levels.FactionEffects;
+using PhoenixPoint.Tactical.Levels.FactionObjectives;
 using PhoenixPoint.Tactical.Levels.Mist;
 using System;
 using System.Collections.Generic;
@@ -162,6 +163,7 @@ namespace TFTV
                     if (i == 4 && CheckFordVoidOmensInPlay(level).Contains(i) && !voidOmensCheck[i])
                     {
                         VoidOmen4Active = true;
+
                         voidOmensCheck[i] = true;
                     }
                     else if (i == 4 && !CheckFordVoidOmensInPlay(level).Contains(i) && voidOmensCheck[i])
@@ -738,6 +740,33 @@ namespace TFTV
             }
 
         }
+
+
+        [HarmonyPatch(typeof(FactionObjective), "GetCompletion")]
+        public static class FactionObjective_GetCompletion_VO4_Patch
+        { 
+            public static void Postfix(ref float __result)
+            {
+                try 
+                {
+                    if (VoidOmen4Active)
+                    {
+                        __result *= 2;
+                    }
+                
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+
+            }
+  
+        }
+
+
+
+
 
         // public void GameOver() for later 
         [HarmonyPatch(typeof(TacticalLevelController), "ActorDied")]

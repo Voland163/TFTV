@@ -109,6 +109,10 @@ namespace TFTV
                 GeoscapeEventDef CH_Event_NeedLair = Repo.GetAllDefs<GeoscapeEventDef>().FirstOrDefault(ged => ged.name.Equals("PROG_CH_NEED_LAIR_GeoscapeEventDef"));
                 CH_Event_NeedLair.GeoscapeEventData.Mute = true;
 
+                //CH2 miss removed completely in TFTVChangesToDLC3
+                /*
+                GeoscapeEventDef CH2_Event = Repo.GetAllDefs<GeoscapeEventDef>().FirstOrDefault(ged => ged.name.Equals("PROG_CH2_GeoscapeEventDef"));
+                
                 // Change requirements for appearance of CH2MISS works!
                 // Create new research requirements
                 // Clone trigger for CH2 re Research of Specimen 2 twice
@@ -139,7 +143,9 @@ namespace TFTV
                 GeoscapeEventDef winCH2 = Repo.GetAllDefs<GeoscapeEventDef>().FirstOrDefault(ged => ged.name.Equals("PROG_CH2_WIN_GeoscapeEventDef"));
                 winCH2.GeoscapeEventData.Choices[0].Outcome.Cinematic = CH_Event_NeedLair.GeoscapeEventData.Choices[0].Outcome.Cinematic;
                 winCH2.GeoscapeEventData.Choices[0].Outcome.VariablesChange.Add(TFTVCommonMethods.GenerateVariableChange("CorruptedLairDestroyed", 1, true));
-                
+                */
+
+
                 //Changes to SDI Events
                 sdi1.GeoscapeEventData.Choices[0].Outcome.OutcomeText.General.LocalizationKey = "SDI1_OUTCOME";
                 GeoscapeEventDef sdi3 = Repo.GetAllDefs<GeoscapeEventDef>().FirstOrDefault(ged => ged.name.Equals("SDI_03_GeoscapeEventDef"));

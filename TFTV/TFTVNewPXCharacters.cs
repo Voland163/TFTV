@@ -128,9 +128,9 @@ namespace TFTV
                     {
                         __instance.TriggerGeoscapeEvent("OlenaOnMutationsLabSabotage", context);
                     }
-                    else if (eventId== "PROG_CH2_WIN") 
+                    else if (eventId== "PROG_FS2_WIN") 
                     {
-                         TFTVThirdAct.ActivateFS3Event(context.Level);
+                        // TFTVThirdAct.ActivateFS3Event(context.Level);
                         TFTVVoidOmens.RemoveAllVoidOmens(context.Level);
                     }
                 }

@@ -499,6 +499,7 @@ namespace TFTV
                     {
                         for (int i = 0; i < 100; i++)
                         {
+                            UnityEngine.Random.InitState((int)DateTime.Now.Ticks);
                             TacticalAbilityDef abilityToAdd = abilityList.GetRandomElement();
                             TFTVLogger.Always("The randomly chosen ability is " + abilityToAdd.name);
                             if (!__instance.Progression.Abilities.Contains(abilityToAdd))

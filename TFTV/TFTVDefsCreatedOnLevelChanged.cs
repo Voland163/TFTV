@@ -322,6 +322,7 @@ namespace TFTV
                 CreateEventMessagesFromTheVoid();
                 InjectOlenaKimLines();
                 CreateBehemothPattern();
+                CreateTrappedInMist();
 
             }
             catch (Exception e)
@@ -482,10 +483,6 @@ namespace TFTV
         }
 
        
-
-
-
-
         public static void ModifyAirCombatDefs()
         {
             try
@@ -599,7 +596,7 @@ namespace TFTV
                 //Changing ALN Berith research req so that they only appear after certain ODI event
                 EncounterVariableResearchRequirementDef berithEncounterVariable = Repo.GetAllDefs<EncounterVariableResearchRequirementDef>().
                    FirstOrDefault(ged => ged.name.Equals("ALN_Medium_Flyer_ResearchDef_EncounterVariableResearchRequirementDef_0"));
-                berithEncounterVariable.VariableName = "BerithAreComing";
+                berithEncounterVariable.VariableName = "BerithResearchVariable";
 
                 //Changing ALN Abbadon research so they appear only in Third Act, or After ODI reaches apex
                 EncounterVariableResearchRequirementDef sourceVarResReq =
@@ -608,16 +605,16 @@ namespace TFTV
 
                 //Creating new Research Requirements, each requiring a variable to be triggered  
                 EncounterVariableResearchRequirementDef variableResReqAbbadon = Helper.CreateDefFromClone(sourceVarResReq, "F8D9463A-69C5-47B1-B52A-061D898CEEF8", "AbbadonResReqDef");
-                variableResReqAbbadon.VariableName = "ThirdActStarted";
-                EncounterVariableResearchRequirementDef variableResReqAbbadonAlt = Helper.CreateDefFromClone(sourceVarResReq, "F8D9463A-69C5-47B1-B52A-061D898CEEF8", "AbbadonResReqAltDef");
-                variableResReqAbbadonAlt.VariableName = "ODI_Complete";
+                variableResReqAbbadon.VariableName = "AbbadonResearchVariable";
+              //  EncounterVariableResearchRequirementDef variableResReqAbbadonAlt = Helper.CreateDefFromClone(sourceVarResReq, "F8D9463A-69C5-47B1-B52A-061D898CEEF8", "AbbadonResReqAltDef");
+              //  variableResReqAbbadonAlt.VariableName = "ODI_Complete";
                 //Altering researchDef, requiring Third Act to have started and adding an alternative way of revealing research if ODI is completed 
                 ResearchDef aLN_Large_Flyer_ResearchDef = Repo.GetAllDefs<ResearchDef>().FirstOrDefault(gvw => gvw.name.Equals("ALN_Large_Flyer_ResearchDef"));
-                aLN_Large_Flyer_ResearchDef.RevealRequirements.Operation = ResearchContainerOperation.ANY;
-                aLN_Large_Flyer_ResearchDef.RevealRequirements.Container[0].Requirements.AddItem(variableResReqAbbadon);
+              //  aLN_Large_Flyer_ResearchDef.RevealRequirements.Operation = ResearchContainerOperation.ANY;
+              
                 ReseachRequirementDefOpContainer[] reseachRequirementDefOpContainers = new ReseachRequirementDefOpContainer[1];
                 ResearchRequirementDef[] researchRequirementDefs = new ResearchRequirementDef[1];
-                researchRequirementDefs[0] = variableResReqAbbadonAlt;
+                researchRequirementDefs[0] = variableResReqAbbadon;
 
                 reseachRequirementDefOpContainers[0].Requirements = researchRequirementDefs;
                 aLN_Large_Flyer_ResearchDef.RevealRequirements.Container = reseachRequirementDefOpContainers;
@@ -2033,9 +2030,7 @@ namespace TFTV
             TFTVCommonMethods.CreateNewEvent("VoidOmen", "", "", null);
             TFTVCommonMethods.CreateNewEvent("VoidOmenIntro", "", "", null);
 
-        }
-
-        
+        } 
         public static void CreateEventFirstFlyer()
         {
             try
@@ -2056,7 +2051,7 @@ namespace TFTV
             try
             {
                 string eventID = "OlenaOnFirstHavenTarget";
-                GeoscapeEventDef newEvent = TFTVCommonMethods.CreateNewEvent(eventID + "_GeoscapeEventDef", "OLENA_ON_HAVEN_TARGET_TITLE", "OLENA_ON_HAVEN_TARGET_TEXT", null);
+                GeoscapeEventDef newEvent = TFTVCommonMethods.CreateNewEvent(eventID + "_GeoscapeEventDef", "OLENA_ON_FIRST_HAVEN_TARGET_TITLE", "OLENA_ON_FIRST_HAVEN_TARGET_TEXT", null);
                 newEvent.GeoscapeEventData.EventID = eventID;
 
             }
@@ -2074,7 +2069,6 @@ namespace TFTV
                 GeoscapeEventDef newEvent = TFTVCommonMethods.CreateNewEvent(eventID + "_GeoscapeEventDef", "FIRST_HAVEN_ATTACK_TITLE", "FIRST_HAVEN_ATTACK_TEXT", "FIRST_HAVEN_ATTACK_OUTCOME");
                 newEvent.GeoscapeEventData.EventID = eventID;
 
-              
             }
             catch (Exception e)
             {
@@ -2104,6 +2098,21 @@ namespace TFTV
             {
                 string eventID = "OlenaOnBehemothPattern";
                 GeoscapeEventDef newEvent = TFTVCommonMethods.CreateNewEvent(eventID + "_GeoscapeEventDef", "BEHEMOTH_PATTERN_TITLE", "BEHEMOTH_PATTERN_TEXT", null);
+                newEvent.GeoscapeEventData.EventID = eventID;
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+        public static void CreateTrappedInMist()
+        {
+            try
+            {
+                string eventID = "OlenaOnHavenInfested";
+                GeoscapeEventDef newEvent = TFTVCommonMethods.CreateNewEvent(eventID + "_GeoscapeEventDef", "OLENA_ON_HAVEN_INFESTED_TITLE", "OLENA_ON_HAVEN_INFESTED_TEXT", null);
                 newEvent.GeoscapeEventData.EventID = eventID;
 
             }

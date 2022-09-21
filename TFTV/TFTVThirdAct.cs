@@ -64,7 +64,7 @@ namespace TFTV
             }
         }*/
 
-
+        /*
         [HarmonyPatch(typeof(GeoBehemothActor), "StartTravel")]
         public static class GeoBehemothActor_ThirdAct_Patch
         {
@@ -79,8 +79,8 @@ namespace TFTV
                         __instance.GeoLevel.EventSystem.SetVariable("ThirdActStarted", 1);
 
                         SetBehemothOnRampageMod(__instance.GeoLevel);
-                      /*  MethodInfo method_GenerateTargetData = AccessTools.Method(typeof(GeoBehemothActor), "CalculateDisruptionThreshhold");
-                        method_GenerateTargetData.Invoke(__instance, null);*/
+                        MethodInfo method_GenerateTargetData = AccessTools.Method(typeof(GeoBehemothActor), "CalculateDisruptionThreshhold");
+                        method_GenerateTargetData.Invoke(__instance, null);
                         MethodInfo method_GenerateTargetData2 = AccessTools.Method(typeof(AlienRaidManager), "RollForRaid");
                         method_GenerateTargetData2.Invoke(__instance.GeoLevel.AlienFaction.AlienRaidManager, null);
                         TFTVLogger.Always("Alien raid rolled");
@@ -93,7 +93,7 @@ namespace TFTV
                 }
 
             }
-        }
+        }*/
 
 /*
         [HarmonyPatch(typeof(GeoBehemothActor), "get_DisruptionMax")]

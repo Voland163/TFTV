@@ -111,10 +111,8 @@ Weakness: It seems to have a one-sided telepathic connection with its victims. O
 KEY_FS_PX_ALIEN_CORRUPTION_NODE_RESEARCHDEF_NAME,Text,,Node Autopsy,,,,,,,,
 KEY_FS_PX_ALIEN_CORRUPTION_NODE_RESEARCHDEF_UNLOCK,Text,,"Specimen: NODE
 A species that looks utterly alien, even compared to other highly mutated Pandorans. We must commence study as soon as possible to understand how the infestation occurred.",,,,,,,,
-PROG_FS20_TEXT_GENERAL_0,Text,,"So... this Behemoth has just destroyed a haven. However, we have to think of it as a highly resilient colony of pathogens, or a self-propelled ecosystem of extremophiles, rather than as a <i>Kaiju</i>.  
-
-We need the right antibodies... or more like the right biological WMD... and a method of delivering it. We will come up with something, as we always do. But you must keep shooting down the flying... cephalopods?... in the meantime.",,,,,,,,
-PROG_FS20_TITLE,Text,,Trials and Tribulations,,,,,,,,
+PROG_FS20_TEXT_GENERAL_0,Text,,"Why did the Behemoth destroy that haven? I believe our Adversary is trying to send us a message, “behave, or else…”",,,,,,,,
+PROG_FS20_TITLE,Text,,An Education into the Consequences of Resistance,,,,,,,,
 PROG_FS3_TEXT_GENERAL_0,Text,,"<i>""To keep the Synedrion dream alive, we must keep our people alive. Join the volunteer militia today! Service guarantees basic alimentary allocation."" </i>
 
 - Public notice on a Synedrion feed
@@ -128,3 +126,36 @@ The war against the Pandoravirus is entering its most active phase. The number a
 
 - Excerpts from intelligence report 634b/47/AA.",,,,,,,,
 PROG_FS3_TITLE,Text,,The Falling Veil,,,,,,,,
+OLENA_ON_FIRST_FLYER_TITLE,Text,,Bogey!,,,,,,,,
+OLENA_ON_FIRST_FLYER_TEXT,Text,,One of the flyers is detaching itself from the swarm! If it reaches a haven it will wreak havoc on the civilians. We should attempt to triangulate its destination and set an armed aircraft on course to intercept.,,,,,,,,
+OLENA_ON_FIRST_HAVEN_TARGET_TITLE,Text,,Moving!,,,,,,,,
+OLENA_ON_FIRST_HAVEN_TARGET_TEXT,Text,,The Behemoth is on the move! It's targeting a haven previously visited by one of the stray flyers that returned to the Festering Skies.,,,,,,,,
+FIRST_HAVEN_ATTACK_TITLE,Text,,Grim Harvest,,,,,,,,
+FIRST_HAVEN_ATTACK_TEXT,Text,,"<i>""It was hard to tell the Kaiju apart from the winged creatures that surrounded it… Together they were one, and the horror they wrought was complete. A machine fueled by life. It devoured without mercy or pleasure.""</i>
+
+Akari Ito, excerpt from ""Interviews with survivors of Incident #ZGB12/68""
+
+<i>""It's a fragging gargantuan biomass harvester, what's so hard to understand about it?! How should I know why it destroyed only half of the frigging haven!""</i>
+
+Dr. Philemon Stavropoulos, Non-Executive Chairman of the Extraordinary Advisory Committee on Suspected Pandoravirus Related Aerial Phenomena Commonly Known as Festering Skies",,,,,,,,
+FIRST_HAVEN_ATTACK_OUTCOME,Text,,"We have to think of the Behemoth as a highly resilient colony of pathogens, or a self-propelled ecosystem of extremophiles, rather than as a <i>Kaiju</i>.
+
+If we want to destroy it we need the right antibodies... or more like the right biological WMD... and a method of delivering it. We will come up with something, as we always do. But in the meantime you must keep shooting down the… airborne cephalopods? If they reach a haven and return to the Behemoth, that haven will be targeted for “harvesting”.
+",,,,,,,,
+AFTER_YE_SIGNAL_TITLE,Text,,Messages from the Void,,,,,,,,
+AFTER_YE_SIGNAL_TEXT,Text,,"Director, the Oneiric Delirium is a signal, a signal that has to cross at least 90 billion kilometers to reach us. That would take days traveling at the speed of light. The energy cost of delivering this signal to every infected human on the planet is… It's impossible.",,,,,,,,
+AFTER_YE_SIGNAL_OUTCOME,Text,,"There must be infrastructure here, on Earth. Something to receive the signal, transform it, augment it… A network of relays that is powered locally, using our planet's resources.",,,,,,,,
+AFTER_YE_SIGNAL_CHOICE,Text,,How do you explain it then?,,,,,,,,
+BEHEMOTH_PATTERN_TITLE,Text,,A Method to the Carnage,,,,,,,,
+BEHEMOTH_PATTERN_TEXT,Text,,"There is a pattern.. I didn’t see it at first, but then it occurred to me to check the old marine surveys from the times of the First Mist. The Behemoth <i>always</i> submerges and emerges near a <i>different</i> cluster of the undersea colonies, the first recorded manifestations of the Pandoravirus over 20 years ago. It’s delivering the harvested biomass to them. 
+
+And we know what they need it for: to amplify the Oneiric Delirium signal from Yuggoth. 
+
+If we take out the Behemoth, we will weaken its grip on us, maybe even neutralize it completely. ",,,,,,,,
+PROG_FS2_WIN_CHOICE_0_TEXT,Text,,We deserve a good night sleep...,,,,,,,,
+PROG_FS2_WIN_TEXT_GENERAL_0,Text,,"Today we were finally able to deal a serious blow to our enemy. The Oneiric Delirium is gone. Our dreams and nightmares are once again our own. Humanity may yet perish, but it will not be enslaved.",,,,,,,,
+PROG_FS2_WIN_TITLE,Text,,Will Not Go Gentle Into That Night,,,,,,,,
+MASKED_MANTICORE_RESEARCHDEF_TFTV,Text,,"""See, I think the Manti was designed in different times, when aircraft needed to be certified for flight and such… Long story short, it has many in-built redundancies to satisfy safety inspectors who have long turned to crab. We can get rid of <i>that</i> stuff and then we will have space to put in <i>other</i> stuff, know what I'm saying? Beats me why you want to cover it in slime, but you're the boss… or the Director… or whatever"".
+
+Ralph ""Wrench"" Mulligan, Phoenix Project
+",,,,,,,,

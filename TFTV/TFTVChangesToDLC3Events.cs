@@ -85,56 +85,6 @@ namespace TFTV
                 ResearchDef nodeResearchDef = Repo.GetAllDefs<ResearchDef>().FirstOrDefault(ged => ged.name.Equals("PX_Alien_CorruptionNode_ResearchDef"));
                 nodeResearchDef.Unlocks = new ResearchRewardDef[] { };
 
-                //change the reward variable, in Vanilla this was node autopsy = 2, for later use
-                EncounterVarResearchRewardDef encounterVarNodeAutopsyReward = Repo.GetAllDefs<EncounterVarResearchRewardDef>().FirstOrDefault
-                    (ged => ged.name.Equals("PX_Alien_CorruptionNode_ResearchDef_EncounterVarResearchRewardDef_0"));
-                encounterVarNodeAutopsyReward.VariableName = "IndependenceDay";
-                encounterVarNodeAutopsyReward.VariableValue = 1;
-
-                //create new research requirement variable from a clone
-                EncounterVariableResearchRequirementDef sourceVarResReq =
-                  Repo.GetAllDefs<EncounterVariableResearchRequirementDef>().
-                  FirstOrDefault(ged => ged.name.Equals("NJ_Bionics1_ResearchDef_EncounterVariableResearchRequirementDef_0"));
-                //Research to defeat Behemoth will become available after Behemoth starts the Rumpus
-                EncounterVariableResearchRequirementDef variableResReqBehemoth = Helper.CreateDefFromClone(sourceVarResReq, "BABAAC81-3855-4218-B747-4FE926F34F69", "IndependenceDayResReqDef");
-                variableResReqBehemoth.VariableName = "BehemothDestroyedAHaven";
-                variableResReqBehemoth.Value = 1;
-                //This variable will be triggered by the event after Behemoth destroys a haven for the first time
-                GeoscapeEventDef geoEventFS20 = Repo.GetAllDefs<GeoscapeEventDef>().FirstOrDefault(ged => ged.name.Equals("PROG_FS20_GeoscapeEventDef"));
-                geoEventFS20.GeoscapeEventData.Choices[0].Outcome.VariablesChange.Add(TFTVCommonMethods.GenerateVariableChange("BehemothDestroyedAHaven", 1, true));
-
-                //need to package the requirement in a new container
-                //research reveal requirements go like this: it's boxes within boxes.
-                //The big box is called ReseachRequirementDefContainer[], ResearchDef comes already with this box.
-                //The medium box (that goes inside the big box) is called ReseachRequirementDefOpContainer[],
-                //The small box (that goes inside the medium box) is called  ResearchRequirementDef[]
-                //The small box is the one that will actually carry the variable, which when changed will reveal the research
-                //So we start by creating the boxes and then we will put them inside each other in the right order
-
-                ReseachRequirementDefOpContainer[] reseachRequirementIndependenceDayContainer = new ReseachRequirementDefOpContainer[1];
-                ResearchRequirementDef[] researchRequirementDefs = new ResearchRequirementDef[1];
-                researchRequirementDefs[0] = variableResReqBehemoth; //small box
-                reseachRequirementIndependenceDayContainer[0].Requirements = researchRequirementDefs; //medium box
-
-                //create view element
-                ResearchViewElementDef independenceDayViewDef = TFTVCommonMethods.CreateNewResearchViewElement("IndependenceDayResearchViewElementDef",
-                    "DC11E258-76E2-4DC8-BB60-D62AEDB2F862", "KEY_INDEPENDENCE_DAY_NAME", "KEY_INDEPENDENCE_DAY_REVEAL", "KEY_INDEPENDENCE_DAY_UNLOCK", "KEY_INDEPENDENCE_DAY_COMPLETE");
-                //need to create a new research
-                ResearchDef independenceDayResearchDef = TFTVCommonMethods.CreateNewPXResearch("IndependenceDayResearch", 300, "CDDFDD4D-BD1B-4434-BDD4-E0650B0DB5F2", independenceDayViewDef);
-                //and add the reveal requirement we created earlier
-                independenceDayResearchDef.RevealRequirements.Container = reseachRequirementIndependenceDayContainer;
-                independenceDayResearchDef.RevealRequirements.Operation = ResearchContainerOperation.ALL;
-                //now add the reward
-                independenceDayResearchDef.Unlocks.AddItem(encounterVarNodeAutopsyReward);
-
-
-                //Change research req for FS2 and add outcome text to FS2 Event
-                GeoResearchEventFilterDef geoEventFS2ResearchReq = Repo.GetAllDefs<GeoResearchEventFilterDef>().FirstOrDefault(ged => ged.name.Equals("E_PROG_FS2_ResearchCompleted [GeoResearchEventFilterDef]"));
-                geoEventFS2ResearchReq.ResearchID = "IndependenceDayResearch";
-                GeoscapeEventDef geoEventFS2 = Repo.GetAllDefs<GeoscapeEventDef>().FirstOrDefault(ged => ged.name.Equals("PROG_FS2_GeoscapeEventDef"));
-                geoEventFS2.GeoscapeEventData.Choices[0].Outcome.OutcomeText.General.LocalizationKey = "PROG_FS2_CHOICE_0_TEXT_OUTCOME";
-
-
                 //Change FS3 event
                 GeoscapeEventDef geoEventFS3 = Repo.GetAllDefs<GeoscapeEventDef>().FirstOrDefault(ged => ged.name.Equals("PROG_FS3_GeoscapeEventDef"));
                 geoEventFS3.GeoscapeEventData.Mute = true;
@@ -142,6 +92,18 @@ namespace TFTV
                 geoEventFS3.GeoscapeEventData.Choices[0].Outcome.SetEvents.Clear();
                 GeoTimePassedEventFilterDef timePassedFS3 = Repo.GetAllDefs<GeoTimePassedEventFilterDef>().FirstOrDefault(ged => ged.name.Equals("E_PROG_FS3_TimePassed [GeoTimePassedEventFilterDef]"));
                 timePassedFS3.TimePassedHours = 100000;
+
+                //Remove CH2 miss and assign variable change to Behemoth destruction completely
+                GeoscapeEventDef CH2_Event = Repo.GetAllDefs<GeoscapeEventDef>().FirstOrDefault(ged => ged.name.Equals("PROG_CH2_GeoscapeEventDef"));
+                CH2_Event.GeoscapeEventData.Mute = true;
+                GeoscapeEventDef CH2WIN_Event = Repo.GetAllDefs<GeoscapeEventDef>().FirstOrDefault(ged => ged.name.Equals("PROG_CH2_WIN_GeoscapeEventDef"));
+
+                GeoscapeEventDef FS2WIN_Event = Repo.GetAllDefs<GeoscapeEventDef>().FirstOrDefault(ged => ged.name.Equals("PROG_FS2_WIN_GeoscapeEventDef"));
+                FS2WIN_Event.GeoscapeEventData.Choices[0].Outcome.VariablesChange = CH2WIN_Event.GeoscapeEventData.Choices[0].Outcome.VariablesChange;
+
+                //All the stuff below was removed after new implementation, 23/9/2022
+
+
             }
             catch (Exception e)
             {
@@ -149,7 +111,7 @@ namespace TFTV
             }
         }
 
-       
+
 
 
         public static void ModifyMaskedManticoreResearch()
@@ -157,41 +119,69 @@ namespace TFTV
             try
             {
                 ResearchDef maskedManticoreResearchDef = Repo.GetAllDefs<ResearchDef>().FirstOrDefault(ged => ged.name.Equals("PX_Aircraft_MaskedManticore_ResearchDef"));
-
+                ResearchViewElementDef maskedManticoreViewElementDef = Repo.GetAllDefs<ResearchViewElementDef>().FirstOrDefault(ged => ged.name.Equals("PX_Aircraft_MaskedManticore_ViewElementDef"));
+                maskedManticoreViewElementDef.CompleteText.LocalizationKey = "MASKED_MANTICORE_RESEARCHDEF_TFTV"; 
+                
+                
                 //In Vanilla Masked Manticore research requires researching Virophage weapons(PX_Aircraft_MaskedManticore_ResearchDef_ExistingResearchRequirementDef_0)
                 //and Node autopsy(PX_Aircraft_MaskedManticore_ResearchDef_ExistingResearchRequirementDef_1), 
                 //It unlocks building the Masked Manticore, PX_Aircraft_MaskedManticore_ResearchDef_ManufactureResearchRewardDef_0
                 //
                 //We want player to be able to build the Masked Manticore after
-                //a) Node autopsy (already in)
-                //b) Virophage weapons (already in)
-                //c) Citadel ("PX_Alien_Citadel_ResearchDef");
+                //a) Node autopsy (already in) / Behemoth roaming
+                //b) YuggothianEntity (PX_YuggothianEntity_ResearchDef) instead of Virophage weapons (already in)
+                //C) + Citadel research if before Roaming
 
 
-                //So, let's just clone one of the ResearchReqDef and stick it to Masked Manticore ResearchDef
+                //So, first let's change ResearchReqDef to replace virophage weaponry with YuggothianEntity research
                 string nameNewResearchReq = "PX_Aircraft_MaskedManticore_ResearchDef_ExistingResearchRequirementDef_2";
-                ExistingResearchRequirementDef sourceExistingResearchRequirementDef = Repo.GetAllDefs<ExistingResearchRequirementDef>().FirstOrDefault(ged => ged.name.Equals("PX_Aircraft_MaskedManticore_ResearchDef_ExistingResearchRequirementDef_0"));
-                ExistingResearchRequirementDef newExistingResearchRequirementDef = Helper.CreateDefFromClone(sourceExistingResearchRequirementDef, "A69F9835-21D1-47D6-B89D-AB966AE818D5", nameNewResearchReq);
+                ExistingResearchRequirementDef virophageResearchRequirementDef = Repo.GetAllDefs<ExistingResearchRequirementDef>().FirstOrDefault(ged => ged.name.Equals("PX_Aircraft_MaskedManticore_ResearchDef_ExistingResearchRequirementDef_0"));
+                virophageResearchRequirementDef.ResearchID = "PX_YuggothianEntity_ResearchDef";
+                //Next,let's clone ResearchReqDef to create the AlienCitadel ReserachReq           
+                ExistingResearchRequirementDef newExistingResearchRequirementDef = Helper.CreateDefFromClone(virophageResearchRequirementDef, "769F336B-DBA6-4401-BAC2-152854336DF0", nameNewResearchReq);
+                newExistingResearchRequirementDef.ResearchID = "PX_Alien_Citadel_ResearchDef";
+
+                //Now, we need to create 2 separate reveal requirement containers
+                //But first we need a box to put them all in
+                ReseachRequirementDefOpContainer[] reseachRequirementsMaskedManticoreContainer = new ReseachRequirementDefOpContainer[1];
+
+               // ReseachRequirementDefContainer reseachRequirementDefContainer = new ReseachRequirementDefContainer();
+               // reseachRequirementDefContainer.Container = reseachRequirementsMaskedManticoreContainer;
+
+                //Now the box with node autopsy, ye and citadel 
 
                 //We need to extract the reveal requirement box, add a new element to it, and put it back in
+                ResearchRequirementDef[] researchRequirementWithNodeDefs = new ResearchRequirementDef[3];
+                researchRequirementWithNodeDefs[0] = maskedManticoreResearchDef.RevealRequirements.Container[0].Requirements[0];
+                researchRequirementWithNodeDefs[1] = maskedManticoreResearchDef.RevealRequirements.Container[0].Requirements[1];
+                researchRequirementWithNodeDefs[2] = newExistingResearchRequirementDef;
 
-                ReseachRequirementDefOpContainer[] reseachRequirementMaskedManticoreContainer = new ReseachRequirementDefOpContainer[1];
-                ResearchRequirementDef[] researchRequirementDefs = new ResearchRequirementDef[3];
-                researchRequirementDefs[0] = maskedManticoreResearchDef.RevealRequirements.Container[0].Requirements[0];
-                researchRequirementDefs[1] = maskedManticoreResearchDef.RevealRequirements.Container[0].Requirements[1];
-                researchRequirementDefs[2] = newExistingResearchRequirementDef;
+                reseachRequirementsMaskedManticoreContainer[0].Requirements = researchRequirementWithNodeDefs;
 
-                reseachRequirementMaskedManticoreContainer[0].Requirements = researchRequirementDefs;
-                maskedManticoreResearchDef.RevealRequirements.Container = reseachRequirementMaskedManticoreContainer;
 
+                //Next the box with Behemoth rampage or whatever
+                //First need to create new encounterVariableReq
                 //create new research requirement variable from a clone
-                EncounterVariableResearchRequirementDef sourceVarResReq =
-                  Repo.GetAllDefs<EncounterVariableResearchRequirementDef>().
-                  FirstOrDefault(ged => ged.name.Equals("NJ_Bionics1_ResearchDef_EncounterVariableResearchRequirementDef_0"));
-                //Research to defeat Behemoth will become available after Behemoth starts the Rumpus
-                EncounterVariableResearchRequirementDef variableResReqBehemoth = Helper.CreateDefFromClone(sourceVarResReq, "BABAAC81-3855-4218-B747-4FE926F34F69", "IndependenceDayResReqDef");
-                variableResReqBehemoth.VariableName = "BehemothDestroyedAHaven";
-                variableResReqBehemoth.Value = 1;
+              /*  EncounterVariableResearchRequirementDef sourceVarResReq =
+                    Repo.GetAllDefs<EncounterVariableResearchRequirementDef>().
+                    FirstOrDefault(ged => ged.name.Equals("NJ_Bionics1_ResearchDef_EncounterVariableResearchRequirementDef_0"));
+                string name = "BehemothPatternEventTriggered";
+                EncounterVariableResearchRequirementDef variableResReqBehemoth = Helper.CreateDefFromClone(sourceVarResReq, "9515C87C-0AE1-493A-ABFC-31F9B6D5B3E3", name + "ResReqDef");
+                variableResReqBehemoth.VariableName = name;
+
+
+                //now let's create the second container
+                ResearchRequirementDef[] researchRequirementWithAbbadonsDefs = new ResearchRequirementDef[2];
+                researchRequirementWithNodeDefs[0] = maskedManticoreResearchDef.RevealRequirements.Container[0].Requirements[0];
+                researchRequirementWithNodeDefs[1] = variableResReqBehemoth;
+
+                //now let's put both containers in the big box
+                reseachRequirementsMaskedManticoreContainer[0].Requirements = researchRequirementWithNodeDefs;
+                reseachRequirementsMaskedManticoreContainer[1].Requirements = researchRequirementWithAbbadonsDefs;
+                reseachRequirementDefContainer.Container = reseachRequirementsMaskedManticoreContainer;
+                reseachRequirementDefContainer.Operation = ResearchContainerOperation.ANY;*/
+
+                maskedManticoreResearchDef.RevealRequirements.Container = reseachRequirementsMaskedManticoreContainer;
 
             }
             catch (Exception e)

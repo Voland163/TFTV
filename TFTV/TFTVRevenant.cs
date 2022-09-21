@@ -29,12 +29,14 @@ namespace TFTV
     {
         private static readonly DefRepository Repo = TFTVMain.Repo;
         public static Dictionary<int, int> DeadSoldiersDelirium = new Dictionary<int, int>();
+       
 
         public static int daysRevenantLastSeen = 0;
         // public static  timeLastRevenantSpawned = new TimeUnit();
         public static bool revenantCanSpawn = false;
         public static bool revenantSpawned = false;
         public static List<string> revenantSpecialResistance = new List<string>();
+        public static int revenantID = 0;
 
         private static bool revenantPresent = false;
 
@@ -142,7 +144,7 @@ namespace TFTV
         {
             try
             {
-                TFTVLogger.Always("Last time a Revenant was seen was on day " + daysRevenantLastSeen + ", and now it is day " + controller.Timing.Now.TimeSpan.Days);
+                TFTVLogger.Always("DeadSoldierDeliriumCount is " + DeadSoldiersDelirium.Count +  " and last time a Revenant was seen was on day " + daysRevenantLastSeen + ", and now it is day " + controller.Timing.Now.TimeSpan.Days);
                 if (DeadSoldiersDelirium.Count > 0 && (daysRevenantLastSeen == 0 || controller.Timing.Now.TimeSpan.Days - daysRevenantLastSeen >= 3)) //+ UnityEngine.Random.Range(-1, 3))) 
                 {
                     revenantCanSpawn = true;
@@ -210,7 +212,7 @@ namespace TFTV
                 {
                     candidates.Add(GetDeadSoldiersIdFromInt(deadSoldier, controller));
                     TFTVLogger.Always("deadSoldier " + deadSoldier + " with GeoTacUnitId "
-                        + GetDeadSoldiersIdFromInt(deadSoldier, controller) + "is added to the list of Revenant candidates");
+                        + GetDeadSoldiersIdFromInt(deadSoldier, controller) + " is added to the list of Revenant candidates");
                 }
                 UnityEngine.Random.InitState((int)DateTime.Now.Ticks);
                 int roll = UnityEngine.Random.Range(0, candidates.Count());
@@ -301,7 +303,7 @@ namespace TFTV
                     actor.name = GetDeadSoldiersNameFromID(theChosen, controller);
                     //  TFTVLogger.Always("Crab's name has been changed to " + actor.GetDisplayName());
                     // SetDeathTime(theChosen, __instance, timeOfMissionStart);
-                    DeadSoldiersDelirium[theChosen] += 1;
+                    revenantID = theChosen;
                     TFTVLogger.Always("The accumulated delirium for  " + GetDeadSoldiersNameFromID(theChosen, controller)
                         + " is now " + DeadSoldiersDelirium[theChosen]);
                     SetRevenantClassAbility(theChosen, controller, tacticalActor);
@@ -429,12 +431,12 @@ namespace TFTV
         {
             try
             {
-                SoldierStats deadSoldierStats = level.TacticalGameParams.Statistics.DeadSoldiers.TryGetValue(deadSoldier, out deadSoldierStats) ? deadSoldierStats : null;
+                SoldierStats deadSoldierStats = level.TacticalGameParams.Statistics.DeadSoldiers[deadSoldier];
                 int numMissions = deadSoldierStats.MissionsParticipated;
                 int enemiesKilled = deadSoldierStats.EnemiesKilled.Count;
                 int soldierLevel = deadSoldierStats.Level;
                 int score = (numMissions + enemiesKilled + soldierLevel) / 2;
-
+                TFTVLogger.Always("#of Missions: " + numMissions + ". #enemies killed: " + enemiesKilled + ". level: " + soldierLevel + ". The score is " + score);
                 GameTagDef tag = new GameTagDef();
 
                 if (score >= 30)

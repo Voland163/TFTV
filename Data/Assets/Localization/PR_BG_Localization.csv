@@ -210,14 +210,14 @@ ANU_REALLY_PISSED_BIONICS_TEXT_GENERAL_0,Text,,"What an arrogant fool you are fo
 ANU_REALLY_PISSED_BIONICS_TITLE,Text,,Sabotage!,,,,,,,,
 ANU_REALLY_PISSED_BIONICS_CHOICE_0,Text,,OK,,,,,,,,
 ANU_REALLY_PISSED_BIONICS_CHOICE_0_OUTCOME,Text,,"Director, our bionic labs have been destroyed in a series of explosions! It must have have been the Disciples of Anu, but how did they do it? Could there be a traitor among our operatives?",,,,,,,,
-NJ_REALLY_PISSED_MUTATIONS_TEXT_GENERAL_0,Text,,"I thought I had myself clear: you shall not disfigure our men and women like if they were livestock, turn them into monstrosities to satisfy your delusions of grandeur.  ",,,,,,,,
+NJ_REALLY_PISSED_MUTATIONS_TEXT_GENERAL_0,Text,,"I thought I had made myself clear: you shall not disfigure our men and women like if they were livestock, turn them into monstrosities to satisfy your delusions of grandeur.  ",,,,,,,,
 NJ_REALLY_PISSED_MUTATIONS_TITLE,Text,,Sabotage!,,,,,,,,
 NJ_REALLY_PISSED_MUTATIONS_CHOICE_0,Text,,OK,,,,,,,,
 NJ_REALLY_PISSED_MUTATIONS_CHOICE_0_OUTCOME,Text,,"Director, something happened in the mutation labs... There was a containment breach and we had to purge the entire facility. Some deaths among assisting personnel have ocurred. Was this the work New Jericho?",,,,,,,,
 VOID_OMEN_TITLE_1,Text,,"Ambushes more dangerous and more likely, but have more crates",,,,,,,,
 VOID_OMEN_TITLE_2,Text,,All diplomatic penalties and rewards halved,,,,,,,,
 VOID_OMEN_TITLE_3,Text,,"All abilities cost +50% WP, but Delirium has no effect on WP",,,,,,,,
-VOID_OMEN_TITLE_4,Text,,"Max 6 operatives can be deployed on any mission, but experience +25%",,,,,,,,
+VOID_OMEN_TITLE_4,Text,,"Max 6 operatives can be deployed on any mission, but +100% experience ",,,,,,,,
 VOID_OMEN_TITLE_5,Text,,"Haven defenders always hostile, but crates available for looting ",,,,,,,,
 VOID_OMEN_TITLE_6,Text,,Pandorans evolve as they lose missions and colonies,,,,,,,,
 VOID_OMEN_TITLE_7,Text,,More Mist in missions,,,,,,,,
@@ -276,14 +276,6 @@ BG_INTRO_0_TITLE,Text,,A Cold Reboot,,,,,,,,
 BG_INTRO_0_DESCRIPTION,Text,,"After all these years, you finally got the call. It meant that Symes and his deputies were dead or unreachable. Phoenix Project had gone dark. 
 
 The trek to Phoenix Point was long and dangerous, but when you reached it, somebody was already home...",,,,,,,,
-BG_INTRO_CHOICE_0,Text,,Side with PX,,,,,,,,
-BG_INTRO_OUTCOME_0,Text,,You sided with PX,,,,,,,,
-BG_INTRO_CHOICE_1,Text,,Side with Anu,,,,,,,,
-BG_INTRO_OUTCOME_1,Text,,You sided with Anu,,,,,,,,
-BG_INTRO_CHOICE_2,Text,,Side with NJ,,,,,,,,
-BG_INTRO_OUTCOME_2,Text,,You sided with NJ,,,,,,,,
-BG_INTRO_CHOICE_3,Text,,Side with SYN,,,,,,,,
-BG_INTRO_OUTCOME_3,Text,,You sided with SYN,,,,,,,,
 BG_INTRO_1_TITLE,Text,,Homecoming,,,,,,,,
 BG_INTRO_1_DESCRIPTION,Text,,"I'm Alistair Ashby. Yes, the ""Mist Expert"". Thanks for watching me back in the day, I guess... 
 
@@ -311,11 +303,12 @@ KEY_INDEPENDENCE_DAY_UNLOCK,Text,,,,,,,,,,
 KEY_INDEPENDENCE_DAY_COMPLETE,Text,,"Repurposing the injector turned out to be the easy part. The rest of it is more... extravagant. Olena will explain. 
 
 /AA",,,,,,,,
-PROG_FS2_TITLE,Text,,That 1996 Extravaganza,,,,,,,,
-PROG_FS2_TEXT_GENERAL_0,Text,,"So... This foolproof plan comes from Oppa Alistair re-watching a 50 year old piece of pre-Collapse entertainment where the good guys defeat an alien invasion by flying a stolen alien craft into the alien mothership and uploading a computer virus into it. 
+PROG_FS2_TITLE,Text,,Operation Dreamcatcher,,,,,,,,
+PROG_FS2_TEXT_GENERAL_0,Text,,"We have examined different options for delivering the virophage to the Behemoth, from rockets to aerosols. However, the Festering Skies form an impenetrable air defense system and to succeed we need not only strike the Behemoth with the virophage; we need to contaminate the whole ecosystem. 
 
-The Behemoth is the Mothership, the virus is the Virophage and the alien craft is a modified Manticore covered in Mutagen-rich biomass, the ""Masked Manticore"". ",,,,,,,,
-PROG_FS2_CHOICE_0_TEXT,Text,,And you told me Alistair has no imagination. So we build this Masked Manticore. What's next?,,,,,,,,
+We have come up with a plan but I don’t think you will like it, Director: a modified Manticore, covered in Mutagen-rich biomass, will deploy a strike team on the surface of the Behemoth to locally inject the Virophage at pre-identified vital points. Hopefully it will kill the Behemoth and its death will provoke a cascade failure on the Festering Skies ecology. 
+",,,,,,,,
+PROG_FS2_CHOICE_0_TEXT,Text,,"You are right, I don't like it. Make sure that our team makes it out.",,,,,,,,
 PROG_FS2_CHOICE_0_TEXT_OUTCOME,Text,,"I just told you: Oppa Alistair didn't come up with this idea, he stole it from a movie. 
 
 We will deploy a strike team on the surface of the Behemoth to locally inject the Virophage at pre-identified vital points. Hopefully it will kill it and we will be able to evacuate our team.",,,,,,,,
@@ -340,7 +333,7 @@ KEY_OLENAONWEST_DESCRIPTION,Text,,"You know, that Vanadium neural link West has,
 KEY_OLENAONSYNOD_DESCRIPTION,Text,,Why would anyone create the Synod? And how did its... constituent parts feel about it? Perhaps the Exalted wanted to show everyone that the Disciples are concerned neither by ethics nor aesthetics when it comes to human gene manipulation.,,,,,,,,
 KEY_OLENAONANCIENTS_DESCRIPTION,Text,,"I always knew about the ""Ancients"". As a child, I have these memories of my parents talking about them... They weren't just real, they were more real to them than everything else.",,,,,,,,
 KEY_OLENAONANCIENTS_TITLE,Text,,Parents and Forefathers,,,,,,,,
-KEY_OLENAONBEHEMOTH_DESCRIPTION,Text,,I don't think it came from an egg. It was created by the Pandoravirus. We are likely seeing the result of super-charged genetic amalgamation of the flora and fauna inhabiting the Hammerfall impact zone. Oppa Alistair is on a marathon of pre-Collapse Kaiju entertainment... Expect his threat assessment memo shortly... ,,,,,,,,
+KEY_OLENAONBEHEMOTH_DESCRIPTION,Text,,It didn't come from an egg. It was created by the Pandoravirus. We are likely seeing the result of super-charged genetic amalgamation of the flora and fauna inhabiting the Hammerfall impact zone; instead of being vaporized it turned into something else. ,,,,,,,,
 KEY_OLENAONALISTAIR_DESCRIPTION,Text,,"Oppa Alistair... He knows he's not very imaginative. And as he knows he can't be imagining things, he trusts what he sees. That's the best way I can put it, I guess.",,,,,,,,
 KEY_OLENAONSYMES_DESCRIPTION,Text,,"Symes wanted me out of the expedition. He hoped to return to Phoenix Point with a blueprint for a cure and he wanted me to help him make it. When it was you who arrived and without a shimmering blue vial, I admit I was disappointed. Not so Oppa Alistair, he didn't put much stake in what Symes was doing.",,,,,,,,
 KEY_OLENAONENDING_DESCRIPTION,Text,,"The choice you have to make... It's important, probably the most important a human being has ever had to make. Ending a war is easy: all you have to do is give up. We have to end this war the right way. I... I don't know what the right way is, but I hope you do. Otherwise it will all have been for nothing.",,,,,,,,
@@ -370,3 +363,22 @@ REVENANT_SIGHTED_TITLE,Text,,Revenant,,,,,,,,
 REVENANT_SIGHTED_TEXT,Text,,"<i>""The Pandorans were somehow stealing our dead and splicing them into new monstrosities. We would recognize them in the field because of some small, inconsequential detail - an involuntary spasm, betraying a familiar gesture, a terrifying scream, bearing the echo of a beloved voice.""</i>
 
 We should try capturing it.",,,,,,,,
+OLENA_ON_HAVEN_INFESTED_TITLE,Text,,Trapped in the Mist,,,,,,,,
+OLENA_ON_HAVEN_INFESTED_TEXT,Text,,We are receiving reports of survivors trapped in a haven in the Mist that succumbed to a recent Pandoran attack. We should send a well-prepared team to investigate.,,,,,,,,
+KEY_AC_DEATHBELCH_DESCRIPTION,Text,,How we shiver with affright,,,,,,,,
+KEY_AC_DEATHBELCH_NAME,Text,,Touched by the Void,,,,,,,,
+TFTV_BIONICS_RESEARCHDEF_COMPLETE,Text,,"<i>""Which brings us back to Project Purity... This PV strain is even worse than the previous ones. In the Second Mist, we knew the human from the abomination. But now... We all have those nightmares. The chems may dull them, but they never go away. Even West has them, I'm sure. We don't fully understand how or why it happens, but the correlation is undeniable: the users of substantial bionic prosthetics are outperforming their non-augmented peers in psycho-evaluations by 30 to 60 percent. It's the opposite of what we expected! Want another interesting data point? They dream less.""</i>
+
+- Dr. Abongameli Smith, New Jericho
+
+Vastly improved from the first New Jericho attempts, the technology no longer leaves the subjects dead or crippled. A new set of bio-implants have successfully been developed thanks to advancements in neural co-processors and light metal alloy development. The new implants allow personnel to withstand heavy amounts of damage, land safely from great heights, and even run through walls if needed.",,,,,,,,
+ANU_MUTATIONTECH_RESEARCHDEF_COMPLETE,Text,,"<i>""Those that partake of the Waters of Life, say that as their dreams become more vivid, their waking life becomes more dreamlike, till they know not when they are asleep and when they awake. And always they feel most capable of incredible feats of arms and of vanquishing their enemies. 
+
+I'm exhilarated by their confidence, yet I also fear their brutality.""</i>
+
+- Neophyte Ryodik, Disciples of Anu 
+
+This technology represents a first step towards mastering the mutation mechanics of the Pandoravirus. Test subjects have been injected with modified strains of the infection under carefully-controlled conditions, and with the additional of a chemical cocktail intended to keep the virus from asserting control over the subject. 
+
+The process is still experimental and there may be some side effects, but the potential benefits to our soldiers are worth the risk.
+",,,,,,,,

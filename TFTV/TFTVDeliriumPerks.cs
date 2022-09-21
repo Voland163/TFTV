@@ -9,6 +9,7 @@ using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.UI;
+using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.View.DataObjects;
 using PhoenixPoint.Geoscape.View.ViewControllers.BaseRecruits;
 using PhoenixPoint.Tactical.Entities;
@@ -48,9 +49,43 @@ namespace TFTV
         private static readonly StatusDef anxiety = Repo.GetAllDefs<StatusDef>().FirstOrDefault(sd => sd.name.Equals("Anxiety_StatusDef"));
         private static readonly StatusDef mistResistance = Repo.GetAllDefs<StatusDef>().FirstOrDefault(sd => sd.name.Equals("MistResistance_StatusDef"));
         private static readonly GameTagDef mistResistanceTag = Repo.GetAllDefs<GameTagDef>().FirstOrDefault(sd => sd.name.Equals("OneOfUsMistResistance_GameTagDef"));
-      
+
+
+
+
 
         
+       /* [HarmonyPatch(typeof(TacticalAbility), "PlayAction")]
+        public static class TacticalAbility_getFumbledAction_Patch
+        {
+            private static readonly TacticalAbilityDef feral = Repo.GetAllDefs<TacticalAbilityDef>().FirstOrDefault(tad => tad.name.Equals("Feral_AbilityDef"));
+
+            public static void Postfix(TacticalAbility __instance, ref bool __result)
+            {
+
+                try
+                {
+                    TFTVLogger.Always("get_FumbleActionCheck " + __instance.Source);
+
+                    TFTVLogger.Always("The actor is " + __instance.TacticalActor.DisplayName);
+
+                    if (__instance.TacticalActor.GetAbilityWithDef<TacticalAbility>(feral) != null && __instance.Source is Equipment)
+                    {
+                        UnityEngine.Random.InitState((int)DateTime.Now.Ticks);
+                        __result = UnityEngine.Random.Range(0, 100) > 10;
+                        TFTVLogger.Always("FumbleActionCheck result is " + __result);
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+        }
+        
+
+        */
+
 
         [HarmonyPatch(typeof(TacticalLevelController), "ActorEnteredPlay")]
         public static class TacticalLevelController_ActorEnteredPlay_DeliriumPerks_Patch
@@ -112,29 +147,41 @@ namespace TFTV
                 }
             }
         }
-
-        [HarmonyPatch(typeof(TacticalAbility), "FumbleActionCheck")]
+        
+       [HarmonyPatch(typeof(TacticalAbility), "get_FumbledAction")]
         public static class TacticalAbility_FumbleActionCheck_Patch
         {
-            private static readonly TacticalAbilityDef feral = Repo.GetAllDefs<TacticalAbilityDef>().FirstOrDefault(tad => tad.name.Equals("Feral_AbilityDef"));
+           private static readonly TacticalAbilityDef feral = Repo.GetAllDefs<TacticalAbilityDef>().FirstOrDefault(tad => tad.name.Equals("Feral_AbilityDef"));
 
             public static void Postfix(TacticalAbility __instance, ref bool __result)
             {
                
                 try
                 {
-                    
+                   
+                  //  TFTVLogger.Always("get_FumbledAction " + __instance.Source);
+
+                  //  TFTVLogger.Always("The actor is " + __instance.TacticalActor.DisplayName);
+
                     if (__instance.TacticalActor.GetAbilityWithDef<TacticalAbility>(feral) != null && __instance.Source is Equipment)
                     {
-                        __result = UnityEngine.Random.Range(0, 100) < 10;
+                        // UnityEngine.Random.InitState((int)DateTime.Now.Ticks);
+                        //  int roll = ;
+
+                        //  if(roll > 10)  
+                        // { 
+                        __result = UnityEngine.Random.Range(0, 100)<10;
+                    //    TFTVLogger.Always("FumbleActionCheck result is " + __result);
                     }
                 }
                 catch (Exception e)
                 {
                     TFTVLogger.Error(e);
                 }
+                
             }
         }
+        
         //Dtony's Delirium perks patch
         [HarmonyPatch(typeof(RecruitsListElementController), "SetRecruitElement")]
         public static class RecruitsListElementController_SetRecruitElement_Patch

@@ -1,9 +1,13 @@
-﻿using Base.Defs;
+﻿using Base.Core;
+using Base.Defs;
+using Base.Levels;
+using Base.Platforms.PS4;
 using Base.UI;
 using HarmonyLib;
 using PhoenixPoint.Common.ContextHelp;
 using PhoenixPoint.Common.ContextHelp.HintConditions;
 using PhoenixPoint.Common.Entities.GameTags;
+using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.View.ViewModules;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Tactical.ContextHelp.HintConditions;
@@ -26,6 +30,8 @@ namespace TFTV
         private static readonly ActorHasTagHintConditionDef sourceActorHasTagHintConditionDef = Repo.GetAllDefs<ActorHasTagHintConditionDef>().FirstOrDefault(ged => ged.name.Equals("ActorHasTag_Takeshi_Tutorial3_GameTagDef_HintConditionDef"));
         private static readonly ContextHelpHintDef sourceContextHelpHintDef = Repo.GetAllDefs<ContextHelpHintDef>().FirstOrDefault(ged => ged.name.Equals("TUT_DLC3_MissionStartStory_HintDef"));
         private static readonly HasSeenHintHintConditionDef sourceHasSeenHintConditionDef = Repo.GetAllDefs<HasSeenHintHintConditionDef>().FirstOrDefault(ged => ged.name.Equals("HasSeenHint_TUT2_Overwatch_HintDef-False_HintConditionDef"));
+        private static readonly LevelHasTagHintConditionDef sourceInfestationMission = Repo.GetAllDefs<LevelHasTagHintConditionDef>().FirstOrDefault(ged => ged.name.Equals("LevelHasTag_MissionTypeBaseInfestation_MissionTagDef_HintConditionDef"));
+        private static readonly MissionTypeTagDef infestationMissionTagDef = Repo.GetAllDefs<MissionTypeTagDef>().FirstOrDefault(p => p.name.Equals("HavenInfestation_MissionTypeTagDef"));
 
 
         [HarmonyPatch(typeof(UIModuleTutorialModal), "SetTutorialStep")]
@@ -59,66 +65,85 @@ namespace TFTV
             {
                 try
                 {
-                    
-
+ 
                     ContextHelpHintDef hintDef = context as ContextHelpHintDef;
-                    bool tacticsHintWasShown = false;
-                  //  TFTVLogger.Always("Show hint method invoked, the hint is " + hintDef.name);
-                  //  TFTVLogger.Always("There are " + TFTVHumanEnemies.TacticsHint.Count + " hints in the human tactics list");
 
-                   /* for (int i = 0; i < TFTVHumanEnemies.TacticsHint.Count; i++) 
+                    if (hintDef != null)
                     {
-                        TFTVLogger.Always("The hint # " + (i+1) + " is " + TFTVHumanEnemies.TacticsHint[i].name);
+                       
+                        bool tacticsHintWasShown = false;
+                        TFTVLogger.Always("Show hint method invoked, the hint is " + hintDef.name);
+                        //  TFTVLogger.Always("There are " + TFTVHumanEnemies.TacticsHint.Count + " hints in the human tactics list");
 
-                    }*/
-                    
-                    if (title.LocalizationKey == "UMBRA_SIGHTED_TITLE")
-                    {
-                        __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("Umbra_hint.jpg");
-                    }
+                        /* for (int i = 0; i < TFTVHumanEnemies.TacticsHint.Count; i++) 
+                         {
+                             TFTVLogger.Always("The hint # " + (i+1) + " is " + TFTVHumanEnemies.TacticsHint[i].name);
 
-                    if (title.LocalizationKey == "REVENANT_SIGHTED_TITLE")
-                    {
-                        __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("Umbra_hint.jpg");
-                    }
+                         }*/
 
-                    foreach(ContextHelpHintDef tacticsHint in TFTVHumanEnemies.TacticsHint) 
-                    {
-                        if (tacticsHint.name==hintDef.name && !tacticsHint.Text.LocalizeEnglish().Contains("Should not appear"))  //hintDef.Text.LocalizeEnglish().Contains("Their leader is"))
+                        if (hintDef.name.Contains("InfestationMissionIntro")) 
                         {
-                          //  TFTVLogger.Always("leaderSightedHint if check passed");
+                            __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("px_squad.jpg");
+                        }
 
-                            if (hintDef.Text.LocalizeEnglish().Contains("Synedrion"))
+                        else if (hintDef.name.Contains("InfestationMissionOutro"))
+                        {
+                            __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("px_squad.jpg");
+                        }
+
+                        else if (title.LocalizationKey == "UMBRA_SIGHTED_TITLE")
+                        {
+                            __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("Umbra_hint.jpg");
+                        }
+
+                        else if (title.LocalizationKey == "REVENANT_SIGHTED_TITLE")
+                        {
+                            __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("Umbra_hint.jpg");
+                        }
+
+                        foreach (ContextHelpHintDef tacticsHint in TFTVHumanEnemies.TacticsHint)
+                        {
+                            if (tacticsHint.name == hintDef.name && !title.LocalizationKey.Contains("Should not appear"))  //hintDef.Text.LocalizeEnglish().Contains("Their leader is"))
                             {
-                                __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("syn_squad.jpg");
+                                //  TFTVLogger.Always("leaderSightedHint if check passed");
+
+                                if (hintDef.Text.LocalizeEnglish().Contains("Synedrion"))
+                                {
+                                    __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("syn_squad.jpg");
+                                }
+                                else if (hintDef.Text.LocalizeEnglish().Contains("a pack of Forsaken"))
+                                {
+                                    __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("fo_squad.png");
+                                }
+                                else if (hintDef.Text.LocalizeEnglish().Contains("New Jericho"))
+                                {
+                                    __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("nj_squad.jpg");
+                                }
+                                else if (hintDef.Text.LocalizeEnglish().Contains("Disciples of Anu"))
+                                {
+                                    __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("anu_squad.jpg");
+                                }
+                                else if (hintDef.Text.LocalizeEnglish().Contains("an array of the Pure"))
+                                {
+                                    __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("pu_squad.jpg");
+                                }
+                                else if (hintDef.Text.LocalizeEnglish().Contains("a gang"))
+                                {
+                                    __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("ban_squad.png");
+                                }
+                                tacticsHintWasShown = true;
+                                alwaysDisplayedTacticalHintsDbDef.Hints.Remove(hintDef);
                             }
-                            else if (hintDef.Text.LocalizeEnglish().Contains("a pack of Forsaken"))
-                            {
-                                __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("fo_squad.png");
-                            }
-                            else if (hintDef.Text.LocalizeEnglish().Contains("New Jericho"))
-                            {
-                                __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("nj_squad.jpg");
-                            }
-                            else if (hintDef.Text.LocalizeEnglish().Contains("Disciples of Anu"))
-                            {
-                                __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("anu_squad.jpg");
-                            }
-                            else if (hintDef.Text.LocalizeEnglish().Contains("an array of the Pure"))
-                            {
-                                __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("pu_squad.jpg");
-                            }
-                            else if (hintDef.Text.LocalizeEnglish().Contains("a gang"))
-                            {
-                                __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("ban_squad.png");
-                            }
-                            tacticsHintWasShown = true;
-                            alwaysDisplayedTacticalHintsDbDef.Hints.Remove(hintDef);
+
+                        }
+                        if (tacticsHintWasShown)
+                        {
+                            TFTVHumanEnemies.TacticsHint.Remove(hintDef);
                         }
                     }
-                    if (tacticsHintWasShown)
-                    {                                          
-                        TFTVHumanEnemies.TacticsHint.Remove(hintDef);
+                    else 
+                    {
+                        __instance.Image.overrideSprite = null;
                     }
                 }
                 catch (Exception e)
@@ -136,6 +161,17 @@ namespace TFTV
             {
                 CreateNewTacticalHint("UmbraSighted", HintTrigger.ActorSeen, "Oilcrab_TacCharacterDef", "UMBRA_SIGHTED_TITLE", "UMBRA_SIGHTED_TEXT", 0, true);
                 CreateNewTacticalHint("RevenantSighted", HintTrigger.ActorSeen, "RevenantTier_1_GameTagDef", "REVENANT_SIGHTED_TITLE", "REVENANT_SIGHTED_TEXT", 1, true);
+
+
+                CreateNewTacticalHintInfestationMission("InfestationMissionIntro"); 
+                CreateNewTacticalHintInfestationMission("InfestationMissionIntro2");
+                CreateNewTacticalHintInfestationMissionEnd("InfestationMissionEnd");
+
+                ContextHelpHintDef infestationIntro2 = Repo.GetAllDefs<ContextHelpHintDef>().FirstOrDefault(ged => ged.name.Equals("InfestationMissionIntro2"));
+                ContextHelpHintDef infestationIntro = Repo.GetAllDefs<ContextHelpHintDef>().FirstOrDefault(ged => ged.name.Equals("InfestationMissionIntro"));
+                infestationIntro.NextHint = infestationIntro2;
+
+
                 //  CreateNewTacticalHint("LeaderSighted", HintTrigger.ActorSeen, "HumanEnemy_GameTagDef", "Should not appear", "Should not appear", 1, false);
                 //   ContextHelpHintDef leaderSightedHint = Repo.GetAllDefs<ContextHelpHintDef>().FirstOrDefault(ged => ged.name.Equals("LeaderSighted"));
                 //   leaderSightedHint.AnyCondition = false;
@@ -313,6 +349,72 @@ namespace TFTV
             }
         }
 
+        public static void CreateNewTacticalHintInfestationMission(string name)
+        {
+            try
+
+            {
+                string gUID = Guid.NewGuid().ToString();
+
+                ContextHelpHintDef newContextHelpHintDef = Helper.CreateDefFromClone(sourceContextHelpHintDef, gUID, name);
+                newContextHelpHintDef.Trigger = HintTrigger.MissionStart;
+
+                string gUID2 = Guid.NewGuid().ToString();
+                LevelHasTagHintConditionDef infestedHavenMissionTagCondition = Helper.CreateDefFromClone(sourceInfestationMission, gUID2, name + "_HintConditionDef");
+                infestedHavenMissionTagCondition.GameTagDef = infestationMissionTagDef;
+                newContextHelpHintDef.Conditions[0] = infestedHavenMissionTagCondition;
+
+
+                string gUID3 = Guid.NewGuid().ToString();
+                HasSeenHintHintConditionDef newHasSeenHintConditionDef = Helper.CreateDefFromClone(sourceHasSeenHintConditionDef, gUID3, name + "HasSeenHintConditionDef");
+                newHasSeenHintConditionDef.HintDef = newContextHelpHintDef;
+                newContextHelpHintDef.Conditions.Add(newHasSeenHintConditionDef);
+
+                newContextHelpHintDef.AnyCondition = false;
+
+
+                alwaysDisplayedTacticalHintsDbDef.Hints.Add(newContextHelpHintDef);
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+        public static void CreateNewTacticalHintInfestationMissionEnd(string name)
+        {
+            try
+
+            {
+                string gUID = Guid.NewGuid().ToString();
+
+                ContextHelpHintDef newContextHelpHintDef = Helper.CreateDefFromClone(sourceContextHelpHintDef, gUID, name);
+                newContextHelpHintDef.Trigger = HintTrigger.MissionOver;
+
+                string gUID2 = Guid.NewGuid().ToString();
+                LevelHasTagHintConditionDef infestedHavenMissionTagCondition = Helper.CreateDefFromClone(sourceInfestationMission, gUID2, name + "_HintConditionDef");
+                infestedHavenMissionTagCondition.GameTagDef = infestationMissionTagDef;
+                newContextHelpHintDef.Conditions[0] = infestedHavenMissionTagCondition;
+
+
+                string gUID3 = Guid.NewGuid().ToString();
+                HasSeenHintHintConditionDef newHasSeenHintConditionDef = Helper.CreateDefFromClone(sourceHasSeenHintConditionDef, gUID3, name + "HasSeenHintConditionDef");
+                newHasSeenHintConditionDef.HintDef = newContextHelpHintDef;
+                newContextHelpHintDef.Conditions.Add(newHasSeenHintConditionDef);
+
+                newContextHelpHintDef.AnyCondition = false;
+
+                alwaysDisplayedTacticalHintsDbDef.Hints.Add(newContextHelpHintDef);
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+
+
+
         public static void CreateNewTacticalHintForHumanEnemies(string name, HintTrigger trigger, string conditionName, string title, string text)
         {
             try
@@ -333,7 +435,7 @@ namespace TFTV
                 newHasSeenHintConditionDef.HintDef = newContextHelpHintDef;
                 newContextHelpHintDef.Conditions.Add(newHasSeenHintConditionDef);
 
-                newContextHelpHintDef.Title = new LocalizedTextBind( title,true);
+                newContextHelpHintDef.Title = new LocalizedTextBind(title,true);
                 newContextHelpHintDef.Text = new LocalizedTextBind(text, true);
 
 
@@ -341,10 +443,6 @@ namespace TFTV
 
                
                 alwaysDisplayedTacticalHintsDbDef.Hints.Add(newContextHelpHintDef);
-
-
-
-
             }
             catch (Exception e)
             {

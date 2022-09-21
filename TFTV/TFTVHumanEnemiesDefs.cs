@@ -119,7 +119,7 @@ namespace TFTV
                                             if (missionTypeDef.name == "StoryAN1_CustomMissionTypeDef" ||
                                                 missionTypeDef.name == "StoryNJ_Chain1_CustomMissionTypeDef" ||
                                                 missionTypeDef.name == "StoryPX13_CustomMissionTypeDef" ||
-                                                missionTypeDef.name == "SYN4_CustomMissionTypeDef" ||
+                                                missionTypeDef.name == "StorySYN0_CustomMissionTypeDef" ||
                                                 missionTypeDef.name == "StorySYN4_CustomMissionTypeDef")
                                             {
                                                 data.FactionDef = banditFaction;

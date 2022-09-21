@@ -5,6 +5,8 @@ using Base.UI;
 using HarmonyLib;
 using PhoenixPoint.Common.ContextHelp;
 using PhoenixPoint.Common.Entities.GameTags;
+using PhoenixPoint.Common.Levels.Missions;
+using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.Statuses;
@@ -100,6 +102,52 @@ namespace TFTV
         public static List<ContextHelpHintDef> TacticsHint = new List<ContextHelpHintDef>();
         // public static List <TacticalFaction> HumanEnemyTacticalFactions = new List<TacticalFaction>();
 
+       /* [HarmonyPatch(typeof(GeoMission), "Launch")]
+        public static class GeoMission_Launch_InfestationStory_Patch
+        {
+            public static void Postfix(GeoMission __instance)
+            {
+                try
+                {
+
+                    List<string> enemyFactionNames = new List<string>();
+                    List<int> enemyParticpants = new List<int>();
+                    foreach (MutualParticipantsRelations relations in __instance.MissionDef.ParticipantsRelations)
+                    {
+                        if (relations.HasParticipant(TacMissionParticipant.Player) && relations.MutualRelation == PhoenixPoint.Common.Core.FactionRelation.Enemy)
+                        {
+                            enemyParticpants.Add((int)relations.SecondParticipant);
+                        }
+                    }
+
+                    foreach (TacMissionTypeParticipantData participantData in __instance.MissionDef.ParticipantsData)
+                    {
+                        if (enemyParticpants.Contains((int)participantData.ParticipantKind))
+                        {
+                            if (participantData.FactionDef.ShortName.Equals("ban")
+                               || participantData.FactionDef.ShortName.Equals("nj") || participantData.FactionDef.ShortName.Equals("anu")
+                               || participantData.FactionDef.ShortName.Equals("syn") || participantData.FactionDef.ShortName.Equals("Purists")
+                               || participantData.FactionDef.ShortName.Equals("FallenOnes"))
+                                TFTVLogger.Always("On GeoMission launch, the short name of the faction is " + participantData.FactionDef.ShortName);
+                            enemyFactionNames.Add(participantData.FactionDef.ShortName);
+                        }
+                    }
+
+                    foreach (string name in enemyFactionNames)
+                    {
+                        RollTactic(name);
+                    }
+
+
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+        }*/
+
         public static void RollTactic(string nameOfFaction)
         {
             try
@@ -109,13 +157,12 @@ namespace TFTV
 
                 TFTVLogger.Always("The tactics roll is " + roll);
 
+
                 if (!HumanEnemiesAndTactics.ContainsKey(nameOfFaction))
                 {
                     HumanEnemiesAndTactics.Add(nameOfFaction, roll);
                     RollCount++;
                 }
-
-
 
                 TFTVLogger.Always("Tactics have been rolled " + RollCount + " times, and there are currently " + HumanEnemiesAndTactics.Count + " tactics in play.");
 
@@ -130,10 +177,11 @@ namespace TFTV
             try
             {
                 UnityEngine.Random.InitState((int)DateTime.Now.Ticks);
-                int adjectivesNumber = UnityEngine.Random.Range(0, TFTVHumanEnemiesNames.adjectives.Length);
+                int adjectivesNumber = UnityEngine.Random.Range(0, TFTVHumanEnemiesNames.adjectives.Count());
                 UnityEngine.Random.InitState((int)DateTime.Now.Ticks);
-                int nounsNumber = UnityEngine.Random.Range(0, TFTVHumanEnemiesNames.nouns.Length);
+                int nounsNumber = UnityEngine.Random.Range(0, TFTVHumanEnemiesNames.nouns.Count());
                 string name = TFTVHumanEnemiesNames.adjectives[adjectivesNumber] + " " + TFTVHumanEnemiesNames.nouns[nounsNumber];
+                TFTVLogger.Always("The gang names is" + name);
                 return name;
             }
 
@@ -252,10 +300,10 @@ namespace TFTV
 
 
                 TFTVTutorialAndStory.CreateNewTacticalHintForHumanEnemies(nameOfGang, HintTrigger.ActorSeen, "HumanEnemyFaction_" + enemyHumanFaction.TacticalFactionDef.ShortName + "_GameTagDef", nameOfGang, descriptionHint);
-               ContextHelpHintDef leaderSightedHint = Repo.GetAllDefs<ContextHelpHintDef>().FirstOrDefault(ged => ged.name.Equals(nameOfGang));
-              //  leaderSightedHint.Title = new LocalizedTextBind(nameOfGang, true);
-              //  leaderSightedHint.Text = new LocalizedTextBind(descriptionHint, true);
-                TacticsHint.Add(leaderSightedHint);
+                ContextHelpHintDef humanEnemySightedHint = Repo.GetAllDefs<ContextHelpHintDef>().FirstOrDefault(ged => ged.name.Equals(nameOfGang));
+                //humanEnemySightedHint.Title = new LocalizedTextBind(nameOfGang, true);
+                //humanEnemySightedHint.Text = new LocalizedTextBind(descriptionHint, true);
+                TacticsHint.Add(humanEnemySightedHint);
 
                 //  LocalizedTextBind title = new LocalizedTextBind(nameOfGang, true);
                 //  LocalizedTextBind text = new LocalizedTextBind(descriptionHint, true);
@@ -346,7 +394,7 @@ namespace TFTV
                     TFTVLogger.Always("Leader now has GameTag and their name is " + leader.name);
                     AdjustStatsAndSkills(leader);
                     RollTactic(nameOfFaction);
-                    GenerateHumanEnemyUnit(faction, leader.name, HumanEnemiesAndTactics.GetValueSafe(nameOfFaction));
+                    GenerateHumanEnemyUnit(faction, leader.name, HumanEnemiesAndTactics[nameOfFaction]);
 
                     for (int i = 0; i < champs; i++)
                     {
@@ -1173,8 +1221,7 @@ namespace TFTV
                                         float magnitude = actor.GetAdjustedPerceptionValue();
 
                                         if ((allyTacticalActorBase.Pos - tacticalActorBase.Pos).magnitude < magnitude
-                                            && TacticalFactionVision.CheckVisibleLineBetweenActors(allyTacticalActorBase, allyTacticalActorBase.Pos, tacticalActor, true) 
-                                            && tacticalActorBase!=allyTacticalActorBase)
+                                            && TacticalFactionVision.CheckVisibleLineBetweenActors(allyTacticalActorBase, allyTacticalActorBase.Pos, tacticalActor, true))
                                         {
                                             TFTVLogger.Always("Actor in range and has LoS");
                                             actor.CharacterStats.WillPoints.AddRestrictedToMax(1);
@@ -1427,13 +1474,23 @@ namespace TFTV
                                             if (leader.IsAlive)
                                             {
 
-                                                if ((allyTacticalActorBase.Pos - tacticalActorBase.Pos).magnitude < magnitude
-                                                    && !actor.CharacterStats.Stealth.Modifications.Contains(stealthBuff))
+                                                if ((allyTacticalActorBase.Pos - tacticalActorBase.Pos).magnitude < magnitude)
                                                 {
-                                                    TFTVLogger.Always("Actor in range, optical shield");
-                                                    actor.CharacterStats.Stealth.AddStatModification(stealthBuff);
+                                                    if (!actor.CharacterStats.Stealth.Modifications.Contains(stealthBuff))
+                                                    {
+                                                        TFTVLogger.Always("Actor in range, has no optical shield, acquiring optical shield");
+                                                        actor.CharacterStats.Stealth.AddStatModification(stealthBuff);
+
+                                                    }
+                                                    else
+                                                    {
+                                                        TFTVLogger.Always("Actor in range, has optical shield and keeps it");
+                                                    }
+
                                                 }
-                                                else if (actor.CharacterStats.Stealth.Modifications.Contains(stealthBuff) && actor != leader)
+
+                                                else if ((allyTacticalActorBase.Pos - tacticalActorBase.Pos).magnitude >= magnitude
+                                                    && actor.CharacterStats.Stealth.Modifications.Contains(stealthBuff))
                                                 {
                                                     actor.CharacterStats.Stealth.RemoveStatModification(stealthBuff);
                                                 }

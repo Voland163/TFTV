@@ -169,6 +169,15 @@ namespace TFTV
                         __instance.GeoLevel.EventSystem.SetVariable("Number_of_Infested_Havens", __instance.GeoLevel.EventSystem.GetVariable(InfestedHavensVariable) + 1);
 
                         __instance.RefreshVisuals();
+
+                            if (__instance.GeoLevel.EventSystem.GetVariable("TrappedInTheMistTriggered") != 1) 
+                            {
+                                GeoscapeEventContext geoscapeEventContext = new GeoscapeEventContext(__instance.GeoLevel.AlienFaction, __instance.GeoLevel.PhoenixFaction);
+                                __instance.GeoLevel.EventSystem.SetVariable("TrappedInTheMistTriggered", 1);
+                                __instance.GeoLevel.EventSystem.TriggerGeoscapeEvent("OlenaOnHavenInfested", geoscapeEventContext);
+                            }
+
+
                         return false;
                     }
                     int roll2 = UnityEngine.Random.Range(0, 10);

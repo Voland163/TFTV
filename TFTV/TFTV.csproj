@@ -84,6 +84,7 @@
     <Compile Include="TFTVHumanEnemiesDefs.cs" />
     <Compile Include="TFTVHumanEnemiesNames.cs" />
     <Compile Include="TFTVInfestation.cs" />
+    <Compile Include="TFTVInfestationStory.cs" />
     <Compile Include="TFTVLogger.cs" />
     <Compile Include="TFTVMain.cs" />
     <Compile Include="TFTVNewPXCharacters.cs" />

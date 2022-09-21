@@ -1,10 +1,13 @@
+using Base;
 using Base.Core;
 using Base.Serialization.General;
+using PhoenixPoint.Common.Entities;
+using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Modding;
 using PhoenixPoint.Tactical.Levels;
 using System;
 using System.Collections.Generic;
-
+using UnityEngine;
 
 namespace TFTV
 {
@@ -52,10 +55,11 @@ namespace TFTV
         /// </summary>
         public override void OnTacticalStart()
         {
+
             /// Tactical level controller is accessible at any time.
             TacticalLevelController tacController = Controller;
             /// ModMain is accesible at any time
-           // TFTVMain main = (TFTVMain)Main;
+            // TFTVMain main = (TFTVMain)Main;
             //TFTV give Dtony's Delirium Perks
             //  TFTVDelirium.DeliriumPerksOnTactical(tacController);
             TFTVLogger.Always("The count of tactics in play is " + TFTVHumanEnemies.HumanEnemiesAndTactics.Count);        
@@ -64,7 +68,10 @@ namespace TFTV
             TFTVRevenant.ModifyRevenantResistanceAbility(Controller);
             //TFTVRevenant.CheckForNotDeadSoldiers(tacController);
             TFTVRevenant.RevenantCheckAndSpawn(Controller);
+
             
+
+
         }
 
         /// <summary>
@@ -75,6 +82,7 @@ namespace TFTV
          //   TFTVRevenant.CheckForNotDeadSoldiers(Controller);
             
             TFTVLogger.Always("OnTacticalEnd check");
+            
             base.OnTacticalEnd();
 
           /*  if (TFTVRevenant.revenantSpawned)
