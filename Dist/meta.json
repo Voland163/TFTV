@@ -7,7 +7,7 @@
       "Value": "PhoenixRising"
     }
   ],
-  "Version": "1.0.4.8",
+  "Version": "1.0.5.0",
   "Name": [
     {
       "Key": "English",
@@ -20,5 +20,5 @@
       "Value": "A gargantuan mod for Phoenix Point"
     }
   ],
-  "Dependencies": [ "PhoenixRisingMod.BetterClasses" ]
+  "Dependencies": [ ]
 }

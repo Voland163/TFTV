@@ -157,7 +157,6 @@ namespace TFTV
 
         }
 
-
         public static void HibernationModuleStaminaRecuperation()
         {
 
@@ -184,8 +183,6 @@ namespace TFTV
             }
 
         }
-
-
 
         public static void ModifyPandoranProgress()
         {
@@ -298,8 +295,6 @@ namespace TFTV
                 TFTVLogger.Error(e);
             }
         }
-
-
 
         public static void InjectAlistairAhsbyLines()
         {
@@ -481,8 +476,7 @@ namespace TFTV
                 TFTVLogger.Error(e);
             }
         }
-
-       
+   
         public static void ModifyAirCombatDefs()
         {
             try
@@ -533,6 +527,11 @@ namespace TFTV
                 //flaresMDef.AmmoCount = 3;
                 //jammerMDef.AmmoCount = 3;
 
+                ResearchDbDef ppResearchDB = Repo.GetAllDefs<ResearchDbDef>().FirstOrDefault(gvw => gvw.name.Equals("pp_ResearchDB"));
+                ResearchDbDef anuResearchDB = Repo.GetAllDefs<ResearchDbDef>().FirstOrDefault(gvw => gvw.name.Equals("anu_ResearchDB"));
+                ResearchDbDef njResearchDB = Repo.GetAllDefs<ResearchDbDef>().FirstOrDefault(gvw => gvw.name.Equals("nj_ResearchDB"));
+                ResearchDbDef synResearchDB = Repo.GetAllDefs<ResearchDbDef>().FirstOrDefault(gvw => gvw.name.Equals("syn_ResearchDB"));
+
                 //This is testing Belial's suggestions, unlocking flares via PX Aerial Warfare, etc.
                 AddItemToManufacturingReward("PX_Aircraft_Flares_ResearchDef_ManufactureResearchRewardDef_0",
                     "PX_AerialWarfare_ResearchDef_ManufactureResearchRewardDef_0", "PX_Aircraft_Flares_ResearchDef");
@@ -543,7 +542,8 @@ namespace TFTV
                 rewardsVirophage.Add(fenrirReward.Items[0]);
                 virophageWeaponsReward.Items = rewardsVirophage.ToArray();
                 ResearchDef fenrirResearch = Repo.GetAllDefs<ResearchDef>().FirstOrDefault(gvw => gvw.name.Equals("PX_Aircraft_VirophageGun_ResearchDef"));
-                fenrirResearch.HideInUI = true;
+                ppResearchDB.Researches.Remove(fenrirResearch);
+              
 
                 ManufactureResearchRewardDef thunderboltReward = Repo.GetAllDefs<ManufactureResearchRewardDef>().FirstOrDefault(gvw => gvw.name.Equals("PX_Aircraft_Electrolaser_ResearchDef_ManufactureResearchRewardDef_0"));
                 ManufactureResearchRewardDef advancedLasersReward = Repo.GetAllDefs<ManufactureResearchRewardDef>().FirstOrDefault(gvw => gvw.name.Equals("PX_AdvancedLaserTech_ResearchDef_ManufactureResearchRewardDef_0"));
@@ -551,7 +551,7 @@ namespace TFTV
                 rewardsAdvancedLasers.Add(thunderboltReward.Items[0]);
                 advancedLasersReward.Items = rewardsAdvancedLasers.ToArray();
                 ResearchDef electroLaserResearch = Repo.GetAllDefs<ResearchDef>().FirstOrDefault(gvw => gvw.name.Equals("PX_Aircraft_Electrolaser_ResearchDef"));
-                electroLaserResearch.HideInUI = true;
+                ppResearchDB.Researches.Remove(electroLaserResearch);
 
                 ManufactureResearchRewardDef handOfTyrReward = Repo.GetAllDefs<ManufactureResearchRewardDef>().FirstOrDefault(gvw => gvw.name.Equals("PX_Aircraft_HypersonicMissile_ResearchDef_ManufactureResearchRewardDef_0"));
                 ManufactureResearchRewardDef advancedShreddingReward = Repo.GetAllDefs<ManufactureResearchRewardDef>().FirstOrDefault(gvw => gvw.name.Equals("PX_AdvancedShreddingTech_ResearchDef_ManufactureResearchRewardDef_0"));
@@ -559,12 +559,20 @@ namespace TFTV
                 rewardsAdvancedShredding.Add(handOfTyrReward.Items[0]);
                 advancedShreddingReward.Items = rewardsAdvancedShredding.ToArray();
                 ResearchDef handOfTyrResearch = Repo.GetAllDefs<ResearchDef>().FirstOrDefault(gvw => gvw.name.Equals("PX_Aircraft_HypersonicMissile_ResearchDef"));
-                handOfTyrResearch.HideInUI = true;
+                ppResearchDB.Researches.Remove(handOfTyrResearch);
 
                 AddItemToManufacturingReward("NJ_Aircraft_TacticalNuke_ResearchDef_ManufactureResearchRewardDef_0",
                     "NJ_GuidanceTech_ResearchDef_ManufactureResearchRewardDef_0", "NJ_Aircraft_TacticalNuke_ResearchDef");
+                ResearchDef tacticalNukeResearch = Repo.GetAllDefs<ResearchDef>().FirstOrDefault(gvw => gvw.name.Equals("NJ_Aircraft_TacticalNuke_ResearchDef"));
+                ResearchDef njGuidanceResearch = Repo.GetAllDefs<ResearchDef>().FirstOrDefault(gvw => gvw.name.Equals("NJ_GuidanceTech_ResearchDef"));
+                List <ResearchRewardDef> guidanceUnlocks = njGuidanceResearch.Unlocks.ToList();
+                guidanceUnlocks.Add(tacticalNukeResearch.Unlocks[1]);
+                njGuidanceResearch.Unlocks=guidanceUnlocks.ToArray();
+                
+
                 AddItemToManufacturingReward("NJ_Aircraft_FuelTank_ResearchDef_ManufactureResearchRewardDef_0",
                     "NJ_VehicleTech_ResearchDef_ManufactureResearchRewardDef_0", "NJ_Aircraft_FuelTank_ResearchDef");
+
                 AddItemToManufacturingReward("NJ_Aircraft_CruiseControl_ResearchDef_ManufactureResearchRewardDef_0",
                     "SYN_Rover_ResearchDef_ManufactureResearchRewardDef_0", "NJ_Aircraft_CruiseControl_ResearchDef");
 
@@ -573,22 +581,49 @@ namespace TFTV
                 List<ItemDef> rewards = synAirCombat.Items.ToList();
                 rewards.Add(medusaAAM.Items[0]);
                 synAirCombat.Items = rewards.ToArray();
+
+                ResearchDef nanotechResearch = Repo.GetAllDefs<ResearchDef>().FirstOrDefault(gvw => gvw.name.Equals("SYN_NanoTech_ResearchDef"));
                 ResearchDef medusaAAMResearch = Repo.GetAllDefs<ResearchDef>().FirstOrDefault(gvw => gvw.name.Equals("SYN_Aircraft_EMPMissile_ResearchDef"));
-                medusaAAMResearch.HideInUI = true;
+                synResearchDB.Researches.Remove(medusaAAMResearch);
+                if (ppResearchDB.Researches.Contains(medusaAAMResearch))
+                {
+                    ppResearchDB.Researches.Remove(medusaAAMResearch);
+                }
+                List<ResearchRewardDef> nanotechUnlocks = nanotechResearch.Unlocks.ToList();
+                nanotechUnlocks.Add(medusaAAMResearch.Unlocks[1]);
+                nanotechResearch.Unlocks = nanotechUnlocks.ToArray();
 
                 //This one is the source of the gamebreaking bug:
                 /* AddItemToManufacturingReward("SY_EMPMissileMedusaAAM_VehicleWeaponDef",
                          "SYN_AerialWarfare_ResearchDef_ManufactureResearchRewardDef_0", "SYN_Aircraft_EMPMissile_ResearchDef");*/
                 AddItemToManufacturingReward("ANU_Aircraft_Oracle_ResearchDef_ManufactureResearchRewardDef_0",
                     "ANU_AerialWarfare_ResearchDef_ManufactureResearchRewardDef_0", "ANU_Aircraft_Oracle_ResearchDef");
+
+                ResearchDef anuAWResearch = Repo.GetAllDefs<ResearchDef>().FirstOrDefault(gvw => gvw.name.Equals("ANU_AerialWarfare_ResearchDef"));
+                ResearchDef oracleResearch = Repo.GetAllDefs<ResearchDef>().FirstOrDefault(gvw => gvw.name.Equals("ANU_Aircraft_Oracle_ResearchDef"));
+              
+                List<ResearchRewardDef> anuAWUnlocks = anuAWResearch.Unlocks.ToList();
+                anuAWUnlocks.Add(oracleResearch.Unlocks[1]);
+                anuAWResearch.Unlocks = anuAWUnlocks.ToArray();
+
+
                 CreateManufacturingReward("ANU_Aircraft_MutogCatapult_ResearchDef_ManufactureResearchRewardDef_0",
                     "ANU_Aircraft_ECMJammer_ResearchDef_ManufactureResearchRewardDef_0", "ANU_Aircraft_ECMJammer_ResearchDef", "ANU_Aircraft_MutogCatapult_ResearchDef",
                     "ANU_AdvancedBlimp_ResearchDef");
+               
+                ResearchDef advancedBlimpResearch = Repo.GetAllDefs<ResearchDef>().FirstOrDefault(gvw => gvw.name.Equals("ANU_AdvancedBlimp_ResearchDef"));
+                ResearchDef ecmResearch = Repo.GetAllDefs<ResearchDef>().FirstOrDefault(gvw => gvw.name.Equals("ANU_Aircraft_ECMJammer_ResearchDef"));
+                ResearchDef mutogCatapultResearch = Repo.GetAllDefs<ResearchDef>().FirstOrDefault(gvw => gvw.name.Equals("ANU_Aircraft_MutogCatapult_ResearchDef"));
+
+                List<ResearchRewardDef> advancedBlimpUnlocks = advancedBlimpResearch.Unlocks.ToList();
+                advancedBlimpUnlocks.Add(ecmResearch.Unlocks[1]);
+                advancedBlimpUnlocks.Add(mutogCatapultResearch.Unlocks[1]);
+                advancedBlimpResearch.Unlocks = advancedBlimpUnlocks.ToArray();
+
                 CreateManufacturingReward("PX_Aircraft_Autocannon_ResearchDef_ManufactureResearchRewardDef_0", "SYN_Aircraft_SecurityStation_ResearchDef_ManufactureResearchRewardDef_0",
                       "SYN_Aircraft_SecurityStation_ResearchDef", "PX_Aircraft_Autocannon_ResearchDef",
                       "PX_Alien_Spawnery_ResearchDef");
-
-
+            
                 EncounterVariableResearchRequirementDef charunEncounterVariableResearchRequirement = Repo.GetAllDefs<EncounterVariableResearchRequirementDef>().
                    FirstOrDefault(ged => ged.name.Equals("ALN_Small_Flyer_ResearchDef_EncounterVariableResearchRequirementDef_0"));
                 charunEncounterVariableResearchRequirement.VariableName = "CharunAreComing";
@@ -754,6 +789,11 @@ namespace TFTV
             try
             {
 
+                ResearchDbDef ppResearchDB = Repo.GetAllDefs<ResearchDbDef>().FirstOrDefault(gvw => gvw.name.Equals("pp_ResearchDB"));
+                ResearchDbDef anuResearchDB = Repo.GetAllDefs<ResearchDbDef>().FirstOrDefault(gvw => gvw.name.Equals("anu_ResearchDB"));
+                ResearchDbDef njResearchDB = Repo.GetAllDefs<ResearchDbDef>().FirstOrDefault(gvw => gvw.name.Equals("nj_ResearchDB"));
+                ResearchDbDef synResearchDB = Repo.GetAllDefs<ResearchDbDef>().FirstOrDefault(gvw => gvw.name.Equals("syn_ResearchDB"));
+
                 ManufactureResearchRewardDef researchRewardDef = Repo.GetAllDefs<ManufactureResearchRewardDef>().FirstOrDefault(gvw => gvw.name.Equals(researchReward));
                 ManufactureResearchRewardDef rewardDef = Repo.GetAllDefs<ManufactureResearchRewardDef>().FirstOrDefault(gvw => gvw.name.Equals(reward));
 
@@ -761,7 +801,23 @@ namespace TFTV
                 List<ItemDef> rewards = rewardDef.Items.ToList();
                 rewards.Add(researchRewardDef.Items[0]);
                 rewardDef.Items = rewards.ToArray();
-                researchDef.HideInUI = true;
+                if (ppResearchDB.Researches.Contains(researchDef)) 
+                {
+                    ppResearchDB.Researches.Remove(researchDef);
+                }
+                if (anuResearchDB.Researches.Contains(researchDef))
+                {
+                    anuResearchDB.Researches.Remove(researchDef);
+                }
+                if (njResearchDB.Researches.Contains(researchDef))
+                {
+                    anuResearchDB.Researches.Remove(researchDef);
+                }
+                if (synResearchDB.Researches.Contains(researchDef))
+                {
+                    anuResearchDB.Researches.Remove(researchDef);
+                }
+
 
             }
             catch (Exception e)
@@ -776,6 +832,10 @@ namespace TFTV
 
             try
             {
+                ResearchDbDef ppResearchDB = Repo.GetAllDefs<ResearchDbDef>().FirstOrDefault(gvw => gvw.name.Equals("pp_ResearchDB"));
+                ResearchDbDef anuResearchDB = Repo.GetAllDefs<ResearchDbDef>().FirstOrDefault(gvw => gvw.name.Equals("anu_ResearchDB"));
+                ResearchDbDef njResearchDB = Repo.GetAllDefs<ResearchDbDef>().FirstOrDefault(gvw => gvw.name.Equals("nj_ResearchDB"));
+                ResearchDbDef synResearchDB = Repo.GetAllDefs<ResearchDbDef>().FirstOrDefault(gvw => gvw.name.Equals("syn_ResearchDB"));
 
                 ManufactureResearchRewardDef researchReward1Def = Repo.GetAllDefs<ManufactureResearchRewardDef>().FirstOrDefault(gvw => gvw.name.Equals(researchReward1));
                 ManufactureResearchRewardDef researchReward2Def = Repo.GetAllDefs<ManufactureResearchRewardDef>().FirstOrDefault(gvw => gvw.name.Equals(researchReward2));
@@ -787,9 +847,39 @@ namespace TFTV
                 researchReward2Def.Items = rewards.ToArray();
                 newResearchDef.Unlocks = researchDef.Unlocks;
                 newResearchDef.Unlocks[0] = researchReward2Def;
-                researchDef.HideInUI = true;
-                research2Def.HideInUI = true;
 
+                if (ppResearchDB.Researches.Contains(researchDef))
+                {
+                    ppResearchDB.Researches.Remove(researchDef);
+                }
+                if (anuResearchDB.Researches.Contains(researchDef))
+                {
+                    anuResearchDB.Researches.Remove(researchDef);
+                }
+                if (njResearchDB.Researches.Contains(researchDef))
+                {
+                    anuResearchDB.Researches.Remove(researchDef);
+                }
+                if (synResearchDB.Researches.Contains(researchDef))
+                {
+                    anuResearchDB.Researches.Remove(researchDef);
+                }
+                if (ppResearchDB.Researches.Contains(research2Def))
+                {
+                    ppResearchDB.Researches.Remove(research2Def);
+                }
+                if (anuResearchDB.Researches.Contains(research2Def))
+                {
+                    anuResearchDB.Researches.Remove(research2Def);
+                }
+                if (njResearchDB.Researches.Contains(research2Def))
+                {
+                    anuResearchDB.Researches.Remove(research2Def);
+                }
+                if (synResearchDB.Researches.Contains(research2Def))
+                {
+                    anuResearchDB.Researches.Remove(research2Def);
+                }
             }
             catch (Exception e)
             {

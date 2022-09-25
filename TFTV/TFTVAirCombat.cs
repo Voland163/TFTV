@@ -551,7 +551,7 @@ namespace TFTV
                 return config.ActivateAirCombatChanges;
             }
 
-            public static void Postfix(GeoBehemothActor __instance)
+            public static void Postfix(GeoBehemothActor __instance, ref int ____disruptionPoints)
             {
                 try
                 {
@@ -564,10 +564,11 @@ namespace TFTV
                         __instance.GeoLevel.EventSystem.SetVariable("BehemothAttackedFirstHaven", 1);
                         TFTVLogger.Always("FirstHavenTarget event triggered");
                     }
+
                     
                     behemothTarget = 0;
-
-
+                    ____disruptionPoints +=1;
+                    TFTVLogger.Always("The DP are " + ____disruptionPoints);
                     // TFTVLogger.Always("DamageHavenOutcome method invoked and Behemoth target is now " + behemothTarget);
                 }
 

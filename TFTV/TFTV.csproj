@@ -46,6 +46,9 @@
       <HintPath>..\ModSDK\Assembly-CSharp.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\..\..\Downloads\AssetStudio.v0.16.8\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="UnityEngine.CoreModule">
@@ -65,6 +68,28 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BCSettings.cs" />
+    <Compile Include="ConfigHelpers.cs" />
+    <Compile Include="Helper.cs" />
+    <Compile Include="MainSpecModification.cs" />
+    <Compile Include="PersonalSpecModification.cs" />
+    <Compile Include="PRMLogger.cs" />
+    <Compile Include="RFaLaCarte.cs" />
+    <Compile Include="SkillModifications\AssaultSkills.cs" />
+    <Compile Include="SkillModifications\BackgroundPerks.cs" />
+    <Compile Include="SkillModifications\BerserkerSkills.cs" />
+    <Compile Include="SkillModifications\FactionPerks.cs" />
+    <Compile Include="SkillModifications\HeavySkills.cs" />
+    <Compile Include="SkillModifications\InfiltratorSkills.cs" />
+    <Compile Include="SkillModifications\PriestSkills.cs" />
+    <Compile Include="SkillModifications\SkillModsMain.cs" />
+    <Compile Include="SkillModifications\SniperSkills.cs" />
+    <Compile Include="SkillModifications\TechnicianSkills.cs" />
+    <Compile Include="Tactical\Entities\DamageKeywords\SharedSoloEffectorDamageKeywordsDataDef.cs" />
+    <Compile Include="Tactical\Entities\Statuses\ActionpointsRelatedStatus.cs" />
+    <Compile Include="Tactical\Entities\Statuses\ActionpointsRelatedStatusDef.cs" />
+    <Compile Include="Tactical\Entities\Statuses\AddDependentDamageKeywordsStatus.cs" />
+    <Compile Include="Tactical\Entities\Statuses\AddDependentDamageKeywordsStatusDef.cs" />
     <Compile Include="TFTVAirCombat.cs" />
     <Compile Include="TFTVAmbushes.cs" />
     <Compile Include="TFTVAugmentations.cs" />
@@ -87,6 +112,7 @@
     <Compile Include="TFTVInfestationStory.cs" />
     <Compile Include="TFTVLogger.cs" />
     <Compile Include="TFTVMain.cs" />
+    <Compile Include="TFTVNewGameMenu.cs" />
     <Compile Include="TFTVNewPXCharacters.cs" />
     <Compile Include="TFTVPandoranProgress.cs" />
     <Compile Include="TFTVPassengerModules.cs" />
@@ -103,296 +129,124 @@
     <Compile Include="TFTVUI.cs" />
     <Compile Include="TFTVUmbra.cs" />
     <Compile Include="TFTVVoidOmens.cs" />
+    <Compile Include="VariousAdjustments\VariousAdjustments.cs" />
+    <Compile Include="VariousAdjustments\VariousAdjustmentsMain.cs" />
+    <Compile Include="VariousAdjustments\WeaponModifications.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="ban_squad.png" />
-    <Content Include="BG_Hammerfall_impact.jpg" />
-    <Content Include="BG_Hammerfall_impact2.jpg" />
-    <Content Include="Helena_fire2.jpg" />
-    <Content Include="Helena_fire2_closeup.jpg" />
-    <Content Include="nj_squad.jpg" />
-    <Content Include="nj_squad2.jpg" />
-    <Content Include="Node.jpg" />
-    <Content Include="NodeAlt.jpg" />
-    <Content Include="pu_squad.jpg" />
-    <Content Include="squad_pu.jpg" />
-    <Content Include="Umbra_family.png" />
-    <Content Include="umbra_fishman.jpg" />
-    <Content Include="Umbra_hint.jpg" />
-    <Content Include="VO_15.jpg" />
+    <None Include="Assets\Localization\PR_BC_Localization.csv" />
+    <None Include="Assets\Localization\PR_BG_Localization.csv" />
+    <None Include="Assets\Localization\PR_CH_Story_Localization.csv" />
+    <None Include="Assets\Localization\PR_FS_Story_Localization.csv" />
+    <None Include="Assets\Presets\AbilityDefToNameDict.json" />
+    <None Include="Assets\Presets\NotLocalizedTextMap.json" />
     <None Include="meta.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <Content Include="..\Data\Assets\Localization\PR_BG_Localization.csv">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Data\Assets\Localization\PR_CH_Story_Localization.csv">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Data\Assets\Localization\PR_FS_Story_Localization.csv">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Data\Assets\Textures\alistair.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Data\Assets\Textures\BG_alistair_small.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Data\Assets\Textures\BG_HammerFall.jpg">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Data\Assets\Textures\BG_HammerFallAlt.jpg">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Data\Assets\Textures\BG_Hint_Delirium.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Data\Assets\Textures\BG_Intro_0.jpg">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Data\Assets\Textures\BG_Intro_1.jpg">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Data\Assets\Textures\BG_Olena.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Data\Assets\Textures\BG_Olena_small.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Data\Assets\Textures\FesteringSkiesAfterHamerfall.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Data\Assets\Textures\UI_AbilitiesIcon_CharacterAbility_AmplifyPain01.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Data\Assets\Textures\UI_AbilitiesIcon_CharacterAbility_AmplifyPain02.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Data\Assets\Textures\UI_AbilitiesIcon_CharacterAbility_Gunslinger-2.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Data\Assets\Textures\UI_AbilitiesIcon_CharacterAbility_Gunslinger-3.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Data\Assets\Textures\UI_AbilitiesIcon_CharacterAbility_JetpackProficiency-2.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Data\Assets\Textures\UI_AbilitiesIcon_CharacterAbility_KillZone-2a.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Data\Assets\Textures\UI_AbilitiesIcon_CharacterAbility_LaunchMissile-2.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Data\Assets\Textures\UI_AbilitiesIcon_CharacterAbility_TargetLocation-2.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Data\Assets\Textures\UI_AbilitiesIcon_EquipmentAbility_OverwatchFocus-2.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Data\Assets\Textures\UI_AbilitiesIcon_Fishman_SenseLocate-2.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Data\Assets\Textures\UI_AbilitiesIcon_HunkerDown_1-1.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Data\Assets\Textures\UI_AbilitiesIcon_HunkerDown_1-2.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Data\Assets\Textures\UI_AbilitiesIcon_HunkerDown_2-1.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Data\Assets\Textures\UI_AbilitiesIcon_HunkerDown_2-2.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Data\Assets\Textures\UI_AbilitiesIcon_HunkerDown_2-3.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Data\Assets\Textures\UI_AbilitiesIcon_HunkerDown_2-4.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Data\Assets\Textures\UI_AbilitiesIcon_KillNRun.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Data\Assets\Textures\UI_AbilitiesIcon_PersonalTrack_AR_Targeting_1-1.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Data\Assets\Textures\UI_AbilitiesIcon_PersonalTrack_AR_Targeting_1-2.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Data\Assets\Textures\UI_AbilitiesIcon_PersonalTrack_AR_Targeting_1-3.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Data\Assets\Textures\UI_AbilitiesIcon_PersonalTrack_AR_Targeting_1-4.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Data\Assets\Textures\UI_AbilitiesIcon_PersonalTrack_AR_Targeting_2-1.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Data\Assets\Textures\UI_AbilitiesIcon_PersonalTrack_AR_Targeting_2-2.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Data\Assets\Textures\UI_AbilitiesIcon_PersonalTrack_ExpertHealer-2.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Data\Assets\Textures\UI_AbilitiesIcon_PersonalTrack_FastLearner.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Data\Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Gifted.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Data\Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Guerilla.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Data\Assets\Textures\UI_AbilitiesIcon_PersonalTrack_GymRat-2.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Data\Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Heartless.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Data\Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Hunter_1-1.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Data\Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Hunter_2-1.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Data\Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Hunter_2-2.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Data\Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Hunter_2-3.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Data\Assets\Textures\UI_AbilitiesIcon_PersonalTrack_NightOwl.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Data\Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Pacifist.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Data\Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Paranoid_1-1.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Data\Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Paranoid_2-1.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Data\Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Paranoid_3-1.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Data\Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Paranoid_3-2.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Data\Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Phantom_Protocol_1-1.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Data\Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Phantom_Protocol_2-1.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Data\Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Phantom_Protocol_2-2.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Data\Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Plumber.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Data\Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Privileged_1-1.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Data\Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Privileged_1-2.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Data\Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Privileged_2-1.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Data\Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Privileged_2-2.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Data\Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Sower_Of_Change_1-1.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Data\Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Sower_Of_Change_1-2.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Data\Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Sower_Of_Change_2-1.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Data\Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Sower_Of_Change_3-1.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Data\Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Sower_Of_Change_4-1.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Data\Assets\Textures\UI_AbilitiesIcon_PersonalTrack_SpecOp-1.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Data\Assets\Textures\UI_AbilitiesIcon_PersonalTrack_SpecOp-2.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Data\Assets\Textures\UI_AbilitiesIcon_PersonalTrack_SpecOp-3.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Data\Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Stimpack-2.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Data\Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Strategist.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Data\Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Survivor_1-1.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Data\Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Survivor_2-1.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Data\Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Survivor_3-1.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Data\Assets\Textures\UI_AbilitiesIcon_PersonalTrack_TacticalAnalyst.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Data\Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Thief.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Data\Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Vampire.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Data\Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Volunteered_1-1.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Data\Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Volunteered_1-2.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Data\Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Volunteered_2-1.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Data\Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Volunteered_2-2.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Data\Assets\Textures\UI_AbilitiesIcon_SneakerLegs_Stealth-2.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Data\Assets\Textures\UI_AbilitiesIcon_SneakerLegs_Stealth.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Data\Assets\Textures\UI_AbilitiesIcon_TentacularBody_MeleeAttackRetaliation-2.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Data\Assets\Textures\UI_Ability_GunAndRun.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Data\Assets\Textures\UI_StatusesIcons_CanBeRecruitedIntoPhoenix-2.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Data\Assets\Textures\Void-04P.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Data\Assets\Textures\VO_05.jpg">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Data\Assets\Textures\VO_11.jpg">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Data\Assets\Textures\VO_12.jpg">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\Data\Assets\Textures\VO_13.jpg">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Assets\Textures\alistair.png" />
+    <Content Include="Assets\Textures\ban_squad.png" />
+    <Content Include="Assets\Textures\BG_alistair_small.png" />
+    <Content Include="Assets\Textures\BG_HammerFall.jpg" />
+    <Content Include="Assets\Textures\BG_HammerFallAlt.jpg" />
+    <Content Include="Assets\Textures\BG_Hammerfall_impact.jpg" />
+    <Content Include="Assets\Textures\BG_Hammerfall_impact2.jpg" />
+    <Content Include="Assets\Textures\BG_Hint_Delirium.png" />
+    <Content Include="Assets\Textures\BG_Intro_0.jpg" />
+    <Content Include="Assets\Textures\BG_Intro_1.jpg" />
+    <Content Include="Assets\Textures\BG_Olena.png" />
+    <Content Include="Assets\Textures\BG_Olena_small.png" />
+    <Content Include="Assets\Textures\FesteringSkiesAfterHamerfall.png" />
+    <Content Include="Assets\Textures\Helena_fire2.jpg" />
+    <Content Include="Assets\Textures\Helena_fire2_closeup.jpg" />
+    <Content Include="Assets\Textures\nj_squad.jpg" />
+    <Content Include="Assets\Textures\nj_squad2.jpg" />
+    <Content Include="Assets\Textures\Node.jpg" />
+    <Content Include="Assets\Textures\NodeAlt.jpg" />
+    <Content Include="Assets\Textures\pu_squad.jpg" />
+    <Content Include="Assets\Textures\squad_pu.jpg" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_CharacterAbility_AmplifyPain01.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_CharacterAbility_AmplifyPain02.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_CharacterAbility_Gunslinger-2.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_CharacterAbility_Gunslinger-3.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_CharacterAbility_JetpackProficiency-2.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_CharacterAbility_KillZone-2a.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_CharacterAbility_LaunchMissile-2.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_CharacterAbility_TargetLocation-2.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_EquipmentAbility_OverwatchFocus-2.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_Fishman_SenseLocate-2.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_HunkerDown_1-1.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_HunkerDown_1-2.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_HunkerDown_2-1.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_HunkerDown_2-2.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_HunkerDown_2-3.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_HunkerDown_2-4.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_KillNRun.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_PersonalTrack_AR_Targeting_1-1.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_PersonalTrack_AR_Targeting_1-2.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_PersonalTrack_AR_Targeting_1-3.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_PersonalTrack_AR_Targeting_1-4.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_PersonalTrack_AR_Targeting_2-1.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_PersonalTrack_AR_Targeting_2-2.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_PersonalTrack_ExpertHealer-2.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_PersonalTrack_FastLearner.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Gifted.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Guerilla.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_PersonalTrack_GymRat-2.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Heartless.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Hunter_1-1.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Hunter_2-1.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Hunter_2-2.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Hunter_2-3.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_PersonalTrack_NightOwl.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Pacifist.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Paranoid_1-1.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Paranoid_2-1.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Paranoid_3-1.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Paranoid_3-2.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Phantom_Protocol_1-1.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Phantom_Protocol_2-1.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Phantom_Protocol_2-2.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Plumber.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Privileged_1-1.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Privileged_1-2.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Privileged_2-1.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Privileged_2-2.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Sower_Of_Change_1-1.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Sower_Of_Change_1-2.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Sower_Of_Change_2-1.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Sower_Of_Change_3-1.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Sower_Of_Change_4-1.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_PersonalTrack_SpecOp-1.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_PersonalTrack_SpecOp-2.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_PersonalTrack_SpecOp-3.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Stimpack-2.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Strategist.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Survivor_1-1.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Survivor_2-1.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Survivor_3-1.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_PersonalTrack_TacticalAnalyst.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Thief.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Vampire.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Volunteered_1-1.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Volunteered_1-2.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Volunteered_2-1.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Volunteered_2-2.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_SneakerLegs_Stealth-2.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_SneakerLegs_Stealth.png" />
+    <Content Include="Assets\Textures\UI_AbilitiesIcon_TentacularBody_MeleeAttackRetaliation-2.png" />
+    <Content Include="Assets\Textures\UI_Ability_GunAndRun.png" />
+    <Content Include="Assets\Textures\UI_StatusesIcons_CanBeRecruitedIntoPhoenix-2.png" />
+    <Content Include="Assets\Textures\Umbra_family.png" />
+    <Content Include="Assets\Textures\umbra_fishman.jpg" />
+    <Content Include="Assets\Textures\Umbra_hint.jpg" />
+    <Content Include="Assets\Textures\Void-04P.png" />
+    <Content Include="Assets\Textures\VO_05.jpg" />
+    <Content Include="Assets\Textures\VO_11.jpg" />
+    <Content Include="Assets\Textures\VO_12.jpg" />
+    <Content Include="Assets\Textures\VO_13.jpg" />
+    <Content Include="Assets\Textures\VO_15.jpg" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

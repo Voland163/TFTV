@@ -162,7 +162,23 @@ namespace TFTV
        description: "Shows when any error ocurrs. Please, do not change unless you know what you are doing.")]
         public bool Debug = true;
 
+        [ConfigField(text: "Learn the first personal skill",
+           description: "If enabled, the first personal skill (level 1) is set rigth after a character is created (starting soldiers, new recruits on haven, rewards ect)")]
+        public bool LearnFirstPersonalSkill = true;
 
+        // Deactivate auto standy in tactical missions
+        [ConfigField(text: "Deactivate tactical auto standby",
+            description: "Disables or enables the vanilla behavior of automatically putting an actor into standby mode and thus switching to the next actor when all AP are used.\n"
+                         + "ATTENTION: This function is WIP, i.e. currently still experimental!")]
+        public bool DeactivateTacticalAutoStandby = false;
+
+        // Infiltrator Crossbow Ammo changes
+        [ConfigField(text: "Eros ammo",
+            description: "Set the amount of bolts for the magazine of the base crossbows (Eros CRB III)")]
+        public int BaseCrossbow_Ammo = 3;
+        [ConfigField(text: "Psyche ammo",
+            description: "Set the amount of bolts for the magazine of the advanced crossbow (Psyche CRB IV)")]
+        public int VenomCrossbow_Ammo = 3;
 
 
     }

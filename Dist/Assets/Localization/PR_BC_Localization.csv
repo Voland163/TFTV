@@ -1,0 +1,180 @@
+Key,Type,Desc,English,Chinese (Simplified),French,German,Italian,Polish,Russian,,UI_Tester
+PR_BC_MOUNTED_ITEMS_PROF,Text,,MOUNTED ITEM PROFICIENCY,,,,,,ОБРАЩЕНИЕ С НЕЙРО-ИНТЕРФЕЙСОМ,,
+PR_BC_MOUNTED_ITEMS_PROF_DESC,Text,,Proficiency with Robotic Arms and Mounted Weapons.,,,,,,Умение пользоваться механизированными манипуляторами техника и пусковыми установками,,
+PR_BC_STIMPACK_ITEM_DESC,Text,,A potent stimulant that regnerate body parts and instils Frenzy.,,,,,,"Мощный стимулятор, который залечивает травмы и вводит цель в Буйство",,
+PR_BC_STIMPACK_ABILITY_DESC,Text,,"Re-enables and restores 20 Hit Points on Body Parts, also instills Frenzy on target, increasing movement by 33% for 2 turns, with panic immunity.",,,,,,"Лечит 20 ОЗ поврежденным конечностям и восстанавливает их, также внушает Буйство, увеличивая скорость на 33% и дает иммунитет к панике на 2 хода",,
+PR_BC_PSYCHIC_WARD_DESC,Text,,Allies within 10 tiles are immune to panic and psychic scream damage.,,,,,,Союзники в радиусе 10 клеток иммунны к панике и психическому урону,,
+PR_BC_POISON_STATUS_DESC,Text,,"At start of turn poison is subtracted from Hit Points and Willpoints reduced by 3, then poison value is reduced by 10. Poison causes trembling (-50% Accuracy).",,,,,,"В начале хода значение яда вычитается из ОЗ а воля уменьшается на 3, затем значение яда снижается на 10. Яд вызывает Трепет (-50% точности)",,
+PR_BC_RECOVER_DESC,Text,,Recover Will Points equal to half Willpower. Divide any Viral damage by 2 and become immune to Panic for 1 turn. End the actor's current turn.,,,,,,Восстанавливает Очки Воли равные половине максимальной Воли. Сокращает значение Вируса наполовину и дает иммунитет к панике на 1 ход. Заканчивает ход.,,
+PR_BC_HIDDEN,Text,,UNREVEALED,,,,,,СПРЯТАН,,
+PR_BC_HIDDEN_DESC,Text,,Indicates when the character is unrevealed and not spotted.,,,,,,Персонаж не раскрыт и не замечен,,
+PR_BC_INFILTRATOR_HIDDEN,Text,,HIDDEN: +25% stealth and completely undetected.,,,,,,СПРЯТАН: +25% скрытности и полностью не замечен врагом,,
+PR_BC_INFILTRATOR_LOCATED,Text,,"LOCATED: +25% stealth and still invisible, but enemies know the characters position and can target him.",,,,,,"УСЛЫШАН: +25% скрытности и все еще невидим, но враги знают ваше расположение и могут пытаться попасть по вам",,
+PR_BC_INFILTRATOR_REVEALED,Text,,REVEALED: No Stealth bonus!,,,,,,РАСКРЫТ: Нет бонуса скрытности,,
+PR_BC_BATTLE_FOCUS,Text,,BATTLE FOCUS,,,,,,БОЕВАЯ КОНЦЕНТРАЦИЯ,,
+PR_BC_BATTLE_FOCUS_DESC,Text,,If there are enemies within 10 tiles your attacks gain +20% damage,,,,,,"Если в 10 клетках от вас есть враги, ваши атаки наносят +20% урона",,
+PR_BC_QUICK_AIM,Text,,QUICK AIM,,,,,,Выстрел навскидку,,
+PR_BC_QUICK_AIM_DESC,Text,,The action point cost of the next shot with proficient weapon is reduced by 1 with -30% accuracy. Limited to 2 uses per turn.,,,,,,"Следующий выстрел стоит -1 ОД, но имеет штраф к точности -30%. Два использования в ход.",,
+PR_BC_KILL_N_RUN,Text,,KILL'N'RUN,,,,,,УБЕЙ И БЕГИ,,
+PR_BC_KILL_N_RUN_DESC,Text,,"Once per turn, take a free move after killing an enemy",,,,,,"Если вы убили противника, то переместитесь на 7 клеток. Один раз в ход.",,
+PR_BC_RAPID_CLEARANCE,Text,,RAPID CLEARANCE,,,,,,БЫСТРАЯ ЗАЧИСТКА,,
+PR_BC_RAPID_CLEARANCE_DESC,Text,,"Until end of turn, after killing an enemy next attack cost -2 AP",,,,,,Эффект до конца хода: после убийства соперника следующая атака стоит на 2 ОД меньше.,,
+PR_BC_AIMED_BURST,Text,,AIMED BURST,,,,,,ПРИЦЕЛЬНАЯ ОЧЕРЕДЬ,,
+PR_BC_AIMED_BURST_DESC,Text,,Next shot with Assault Rifle uses double burst and gains +30% accuracy,,,,,,Двойной выстрел из штурмовой винтовки с бонусом точности +30%,,
+PR_BC_EXTREME_FOCUS,Text,,EXTREME FOCUS,,,,,,ПРЕДЕЛЬНАЯ КОНЦЕНТРАЦИЯ,,
+PR_BC_EXTREME_FOCUS_DESC,Text,,Overwatch cost is set to 1 Action Point for all weapons,,,,,,Режим наблюдения стоит 1 ОД для любого оружия,,
+PR_BC_ARMOR_BREAK,Text,,ARMOR BREAK,,,,,,РАЗЛОМ БРОНИ,,
+PR_BC_ARMOR_BREAK_DESC,Text,,Next shot has 15 Shred but -25% Damage,,,,,,"Следующий выстрел наносит на -25% меньше урона, но получает 15 очков разрыва брони",,
+PR_BC_GUNSLINGER,Text,,GUNSLINGER,,,,,,СТРЕЛОК,,
+PR_BC_GUNSLINGER_DESC,Text,,Shoot handgun 3 times at -50% accuracy,,,,,,Три выстрела из пистолета со штрафом точности -50%,,
+PR_BC_KILL_ZONE,Text,,KILL ZONE,,,,,,СМЕРТЕЛЬНАЯ ЗОНА,,
+PR_BC_KILL_ZONE_DESC,Text,,When you take an Overwatch shot you fire twice at the target,,,,,,"Когда вы стреляете в режиме наблюдения, совершите два выстрела по цели",,
+PR_BC_HUNKER_DOWN,Text,,HUNKER DOWN,,,,,,ПРИГНУТЬСЯ,,
+PR_BC_HUNKER_DOWN_DESC,Text,,Gain 25% damage resistance until your next turn. Ends turn.,,,,,,До конца хода получите 25% сопротивления урону и ваши конечности не могут быть повреждены. Заканчивает ход.,,
+PR_BC_SKIRMISHER,Text,,SKIRMISHER,,,,,,НА ПЕРЕДОВОЙ,,
+PR_BC_SKIRMISHER_DESC,Text,,If you take damage during enemy turn your attacks deal 25% more damage until end of turn,,,,,,"При получении урона во время вражеского хода, получите +25% бонус урона на свой следующий ход",,
+PR_BC_SHRED_RESISTANCE,Text,,SHRED RESISTANCE,,,,,,УСИЛЕННАЯ БРОНЯ,,
+PR_BC_SHRED_RESISTANCE_DESC,Text,,Shred Damage is reduced by half,,,,,,Урон от атак истончающих броню снижен вдвое,,
+PR_BC_RAGE_BURST,Text,,RAGE BURST,,,,,,ЯРОСТНАЯ ОЧЕРЕДЬ,,
+PR_BC_RAGE_BURST_DESC,Text,,Shoot 5 times across a wide arc with increased accuracy,,,,,,Совершите 5 выстрелов по площади с повышенной точностью,,
+PR_BC_JETPACK_CONTROL,Text,,JETPACK CONTROL,,,,,,КОНТРОЛЬ ТЯГИ,,
+PR_BC_JETPACK_CONTROL_DESC,Text,,Jump to a location within 12 tiles,,,,,,Совершите прыжок на 12 клеток (требуется реактивный ранец),,
+PR_BC_BOOM_BLAST,Text,,BOOM BLAST,,,,,,БОЛЬШОЙ БАБАХ,,
+PR_BC_BOOM_BLAST_DESC,Text,,Until end of turn your Explosives gain +50% range. Grenade and Rocket Launcher AP cost is reduced by 1,,,,,,До конца хода дальность ваших атак взрывным оружие повышена на +50%. Также стоимость ракетных установок и гранатометов снижена на -1 ОД,,
+PR_BC_ADRENALINE,Text,,ADRENALINE,,,,,,АДРЕНАЛИН,,
+PR_BC_ADRENALINE_DESC,Text,,"Until end of turn one-handed weapons and all non-weapon skills cost 1AP, except Recover",,,,,,"Одноручное вооружение и не стрелковые навыки стоят 1 ОД. Не действует на ""восстановление""",,
+PR_BC_BLOODLUST_DESC,Text,,Gain up to 25% Speed and Damage based on lost Health.,,,,,,,,
+PR_BC_GUN_KATA,Text,,GUN KATA,,,,,,ПИСТОЛЕТНЫЙ БОЙ,,
+PR_BC_GUN_KATA_DESC,Text,,Shoot with your handgun for free. Limited to 2 uses per turn.,,,,,,Выстрелите из пистолета за 0 ОД. 2 раза в ход.,,
+PR_BC_EXERTION,Text,,EXERTION,,,,,,НАПРЯЖЕНИЕ,,
+PR_BC_EXERTION_DESC,Text,,Recover 2AP. Limited to 1 use per turn.,,,,,,Восстановите 2 ОД. Один раз в ход.,,
+PR_BC_SNEAK_ATTACK,Text,,SNEAK ATTACK,,,,,,СКРЫТАЯ АТАКА,,
+PR_BC_SNEAK_ATTACK_DESC,Text,,Attacks while hidden deal +50% and while located +25% damage,,,,,,"Если вы спрятаны, ваши атаки наносят +50% урона. Если вас услышали, но не раскрыли, то лишь +25% урона",,
+PR_BC_SA_HIDDEN_DESC,Text,,HIDDEN: Deal +50% damage,,,,,,СПРЯТАН: Урон увеличен на 50%,,
+PR_BC_SA_LOCATED_DESC,Text,,LOCATED: Deal +25% damage,,,,,,УСЛЫШАН: Урон увеличен на 25%,,
+PR_BC_HOMING_DRONE,Text,,HOMING DRONE,,,,,,,,
+PR_BC_HOMING_DRONE_DESC,Text,,Shoot your Spider Drone at the target. Next time the target takes damage the drone will explode causing blast damage in the area,,,,,,,,
+PR_BC_CAUTIOUS,Text,,CAUTIOUS,,,,,,,,
+PR_BC_CAUTIOUS_DESC,Text,,"Gain +20% accuracy and +10% stealth",,,,,,,,
+PR_BC_ELECTRIC_REINFORCEMENT,Text,,ELECTRIC REINFORCEMENT,,,,,,ЭЛЕКТРО-УКРЕПЛЕНИЕ,,
+PR_BC_ELECTRIC_REINFORCEMENT_DESC,Text,,Give yourself and allies within 10 tiles a bonus of 10 armor for 1 turn. This effect does not stack,,,,,,Техник и союзники в радиусе 10 клеток получают 10 брони до начала следующего хода. Использование более одного раза не увеличивает броню.,,
+PR_BC_STABILITY,Text,,STABILITY,,,,,,УСТОЙЧИВОСТЬ,,
+PR_BC_STABILITY_DESC,Text,,Gain 5% extra accuracy per remaining AP up to 20%,,,,,,Каждое не использованное ОД добавляет 10% точности (макс 40% при 4 ОД),,
+PR_BC_AMPLIFY_PAIN,Text,,AMPLIFY,,,,,,УСИЛЕНИЕ,,
+PR_BC_AMPLIFY_PAIN_DESC,Text,,"Until End of Turn gain +100% to healing and +50% to special damage (Acid, Paralysis, Viral, Poison)",,,,,,"До конца хода все лечение на 100% более эффективно. Атаки кислотой, вирусом, ядом и параличом эффективнее на 50%.",,
+PR_BC_BIOCHEMIST,Text,,BIOCHEMIST,,,,,,БИОХИМИК,,
+PR_BC_BIOCHEMIST_DESC,Text,,"Viral, Paralysis, Poison and Acid damage increased by 25% for direct damage and 5% for poison grenades on each hit body part",,,,,,"Атаки кислотой, вирусом, ядом и параличом эффективнее на 25%.",,
+PR_BC_LAY_WASTE,Text,,LAY WASTE,,,,,,ОПУСТОШИТЬ,,
+PR_BC_LAY_WASTE_DESC,Text,,If your current Willpower score is higher than target's deal 10 damage for each point of WP difference,,,,,,Наносит 10 урона цели за каждое очко разницы между вашими ОВ. Максимум 200 урона.,,
+PR_BC_ENDURANCE,Text,,ENDURANCE,,,,,,ВЫНОСЛИВОСТЬ,,
+PR_BC_ENDURANCE_DESC,Text,,Recover restores additional 25% Willpower and removes Acid, Poison and Bleeding effects.,,,,,,"""Восстановление"" возвращает 75% воли, вместо 50%. Также помимо вируса, уменьшает наполовину любые другие негативные эффекты (кислота, яд, кровотечение)",,
+PR_BC_SABOTEUR,Text,,SABOTEUR,,,,,,ДИВЕРСАНТ,,
+PR_BC_SABOTEUR_DESC,Text,,When you are hidden AP cost of non-weapon skills and spider drone skills decreased by 1 AP,,,,,,"Пока вы спрятаны, стоимость не атакующих навыков и паучьих дронов уменьшена на 1 ОД",,
+PR_BC_BATTLEHARDENED,Text,,BATTLE HARDENED,,,,,,ЗАКАЛЕННЫЙ,,
+PR_BC_BATTLEHARDENED_DESC,Text,,"Gain +2 to all primary stats, +10% to accuracy and +4 to perception",,,,,,"Бонус +2 к основным характеристикам, а также +10% точности и +4 восприятия",,
+PR_BC_TAKEDOWN,Text,,TAKEDOWN,,,,,,ЗАХВАТ,,
+PR_BC_TAKEDOWN_DESC,Text,,Deal 60 damage and 160 shock damage to an adjacent target. Replaces Bash.,,,,,,Рукопашная атака наносящая 80 урона и 160 урона оглушением. Заменяет удар прикладом.,,
+PR_BC_PUNISHER,Text,,PUNISHER,,,,,,КАРАТЕЛЬ,,
+PR_BC_PUNISHER_DESC,Text,,"When you kill an enemy, his allies lose 2 additional Will Points",,,,,,"Когда вы убиваете врага, все враги теряют 2 ОВ дополнительно.",,
+PR_BC_PEPPER_CLOUD,Text,,PEPPER CLOUD,,,,,,,,
+PR_BC_PEPPER_CLOUD_DESC,Text,,Enemies in 8 tile radius suffer -50% accuracy,,,,,,,,
+PR_BC_AR_TARGETTING,Text,,AR TARGETTING,,,,,,ВИРТУАЛЬНЫЙ ПРИЦЕЛ,,
+PR_BC_AR_TARGETTING_DESC,Text,,Target ally within 10 tiles gains +20% accuracy,,,,,,Союзная цель в радиусе 10 клеток получает +30% точности,,
+PR_BC_PHANTOM_PROTOCOL,Text,,PHANTOM PROTOCOL,,,,,,ФАНТОМ,,
+PR_BC_PHANTOM_PROTOCOL_DESC,Text,,"Gain +15% stealth and accuracy, provides immunity to Sentinels surveillance ability",,,,,,Получите +15% точности и скрытности. Также Стражи не реагируют при вашем приближении.,,
+PR_BC_SOWER_OF_CHANGE,Text,,SOWER OF CHANGE,,,,,,СЕЯТЕЛЬ ПЕРЕМЕН,,
+PR_BC_SOWER_OF_CHANGE_DESC,Text,,Returns 10% of damage as Viral to the attacker,,,,,,Возвращает атакующему 25% урона в виде вируса,,
+PR_BC_SURVIVOR,Text,,SURVIVOR,,,,,,ВЫЖИВШИЙ,,
+PR_BC_SURVIVOR_DESC,Text,,"<b>WP +4, but -4 STR</b>
+<i>You have had it tougher than most, and that's saying a lot. Your body took a toll, but your mind grew stronger</i>",,,,,,"<b>Воля +4, Сила -4</b>
+<i>Вам досталось больше других и это о многом говорит. Но все, что не убивает нас, делает сильнее</i>",,
+PR_BC_NURSE,Text,,NURSE,,,,,,СИДЕЛКА,,
+PR_BC_NURSE_DESC,Text,,"<b>WP +2. Healing +30%</b>
+<i>Yes, there is a gentler side to you. But people have to get hurt to experience it</i>",,,,,,"<b>Воля +2, Лечение +30%</b>
+<i>Да, в вас есть и мягкая сторона. Но знают о ней только те, кто познал боль</i>",,
+PR_BC_SCAV,Text,,SCAV,,,,,,ПАДАЛЬЩИК,,
+PR_BC_SCAV_DESC,Text,,"<b>WP +2, Perception +4</b>
+<i>The Old World left behind all sorts of interesting things. It takes patience and a keen eye to find them</i>",,,,,,"<b>Воля +2, Восприятие +4</b>
+<i>Старый Мир оставил после себя множество вещей, чтобы разыскать их нужно терпение и зоркий глаз</i>",,
+PR_BC_CORPSE_DISPOSER,Text,,CORPSE DISPOSER,,,,,,СЖИГАТЕЛЬ ТРУПОВ,,
+PR_BC_CORPSE_DISPOSER_DESC,Text,,"<b>Fire Resistance</b>
+<i>There were too many to bury, so you had to burn them. Day after day, week after week. It's not the fire that scares you</i>",,,,,,"<b>Защита от огня</b>
+<i>Тел было слишком много, чтобы похоронить всех, так что вы сожгли их. Вовсе не огонь страшит вас</i>",,
+PR_BC_HARD_LABOR,Text,,HARD LABOR,,,,,,РАЗНОРАБОЧИЙ,,
+PR_BC_HARD_LABOR_DESC,Text,,"<b>STR +4, Perception -10</b>
+<i>The New World didn't just build itself. There was lot of digging, lifting and carrying, and dust and noise everywhere</i>",,,,,,"<b>Сила +4, Восприятие -5</b>
+<i>Новый Мир не возник сам по себе. Пришлось много копать, таскать и поднимать. И повсюду шум и пыль</i>",,
+PR_BC_SQUATTER,Text,,SQUATTER,,,,,,СКИТАЛЕЦ,,
+PR_BC_SQUATTER_DESC,Text,,"<b>STR +2, Carry Weight +25%</b>
+<i>In the camps you carried everything on your person at all times. And sometimes you had to take things from other people</i>",,,,,,"<b>Сила +2, Допустимый вес +25%</b>
+<i>В лагерях все приходилось держать при себе. А иногда отбирать вещи у других</i>",,
+PR_BC_VOLUNTEERED,Text,,VOLUNTEERED,,,,,,ДОБРОВОЛЕЦ,,
+PR_BC_VOLUNTEERED_DESC,Text,,"<b>Nightvision, +2 SPD, -2WP</b>
+<i>They gave you cat eyes and reflex enhancers, and nothing for the headaches that came after</i>",,,,,,"<b>Ночное видение. Скорость +2, Воля -2</b>
+<i>Они дали тебе глаза и рефлексы кошки. Но ничего, чтобы заглушить головные боли, которые пришли позже</i>",,
+PR_BC_CONDO_RAIDER,Text,,CONDO RAIDER,,,,,,ФОРТОЧНИК,,
+PR_BC_CONDO_RAIDER_DESC,Text,,"<b>Jump up or down one building level</b>
+<i>The world is full of broken elevators and collapsed staircases, and the pros in this business don't use ladders</i>",,,,,,"<b>Может прыгать на 1 уровень вверх не используя лестницы</b>
+<i>Мир полон сломанных лифтов и обвалившихся пролетов. И профи в нашем деле не пользуются лестницами</i>",,
+PR_BC_TUNNEL_RAT,Text,,TUNNEL RAT,,,,,,ТУННЕЛЬНАЯ КРЫСА,,
+PR_BC_TUNNEL_RAT_DESC,Text,,"<b>Stealth +15%, SPD +1</b>
+<i>You spent a good spell in the sewers. You had to be quiet, real quiet... And then run like hell!</i>",,,,,,"<b>Скрытность +15%, Скорость +1</b>
+<i>Вы много времени провели в канализации. Приходилось быть тихим, очень тихим... а затем бежать сломя голову</i>",,
+PR_BC_HUNTER,Text,,HUNTER,,,,,,ОХОТНИК,,
+PR_BC_HUNTER_DESC,Text,,"<b>Accuracy +10%</b>
+<i>There used to be game and hunger around these parts</i>",,,,,,"<b>Точность +10%</b>
+<i>Когда-то в этих краях не люди были добычей</i>",,
+PR_BC_TROUBLEMAKER,Text,,TROUBLEMAKER,,,,,,БЕДОКУР,,
+PR_BC_TROUBLEMAKER_DESC,Text,,"<b>Grenades deal +10% damage</b>
+<i>You have a knack for irritating the authorities. Maybe that's why you are here? Think about it</i>",,,,,,"<b>Гранаты наносят +10% урона</b>
+<i>У вас талант раздражать власть имущих. Может поэтому вы оказались здесь? Подумайте об этом</i>",,
+PR_BC_PARANOID,Text,,PARANOID,,,,,,ПАРАНОИК,,
+PR_BC_PARANOID_DESC,Text,,"<b>Perception +4, Hearing Range +10</b>
+<i>But you are not, because the monsters are real!</i>",,,,,,"<b>Восприятие +4, слух +10</b>
+<i>Но это не значит, что монстров не существует</i>",,
+PR_BC_TRUE_GRIT,Text,,TRUE GRIT,,,,,,КРЕПКИЙ ОРЕШЕК,,
+PR_BC_TRUE_GRIT_DESC,Text,,"<b>-10% damage from adjacent enemies</b>
+<i>The end of civilization wasn't kind to you, but when things get up close and personal, you just suck it up</i>",,,,,,"<b>-10% урона в рукопашной</b>
+<i>Конец цивилизации не был к вам добр и когда дела приобретают скверный оборот, вы к этому готовы</i>",,
+PR_BC_HISTORY_OF_VIOLENCE,Text,,HISTORY OF VIOLENCE,,,,,,БУЙНОЕ ПРОШЛОЕ,,
+PR_BC_HISTORY_OF_VIOLENCE_DESC,Text,,"<b>Damage +10%, Willpower -3</b>
+<i>In the past, you hurt some people. They probably deserved it</i>",,,,,,"<b>Урон +10%, воля -3</b>
+<i>В прошлой жизни вам приходилось убивать. Они это заслужили, наверное</i>",,
+PR_BC_DAREDEVIL,Text,,DAREDEVIL,,,,,,СОРВИГОЛОВА,,
+PR_BC_DAREDEVIL_DESC,Text,,"<b>Damage +10%, Accuracy -10%</b>
+<i>In the world you were born to, you have to live dangerously if at all. Strike first, strike hard, aim not</i>",,,,,,"<b>Урон +10%, точность -10%</b>
+<i>В мире, где вы родились, приходится всегда ходить по краю. Бей первым, бей сильно. Не думай</i>",,
+PR_BC_DAMAGED_AMYGDALA,Text,,DAMAGED AMYGDALA,,,,,,ТРАВМИРОВАННЫЙ,,
+PR_BC_DAMAGED_AMYGDALA_DESC,Text,,"<b>Gain 'Psychic Scream Immunity'</b>
+<i>All brains are different, and yours couldn't take seeing your family return as sea monsters</i>",,,,,,"<b>Иммунитет к психическому крику</b>
+<i>Все мозги устроены по разному и ваши просто не справились с видом родных вернувшихся с того света в виде монстров</i>",,
+PR_BC_SANITATION_EXPERT,Text,,SANITATION EXPERT,,,,,,ДЕЗИНФЕКТОР,,
+PR_BC_SANITATION_EXPERT_DESC,Text,,"<b>Immune to goo</b>
+<i>Robots can't do everything. Grime, dirt, slime, ooze, yuck, sludge: you have been through it all and come on the other side</i>",,,,,,"<b>Иммунитет к слизи</b>
+<i>Роботы не могут делать все. Грязь, слизь, сажа: вы знаете как удалить любой засор!</i>",,
+PR_BC_LAB_ASSISTANT,Text,,LAB ASSISTANT,,,,,,ЛАБОРАНТ,,
+PR_BC_LAB_ASSISTANT_DESC,Text,,"<b>Acid Resistance</b>
+<i>All those little accidents throughout the years have taught you a lot about safely dealing with acid spills</i>",,,,,,"<b>Защита от кислоты</b>
+<i>Годы в лаборатории многому научили вас о мерах предосторожности при работе с кислотой</i>",,
+PR_BC_ROCKETEER,Text,,ROCKETEER,,,,,,РАКЕТЧИК,,
+PR_BC_ROCKETEER_DESC,Text,,"<b>Jetpack Proficiency</b>
+<i>Since you were a child you dreamt of flying rockets. Perhaps now you can!</i>",,,,,,"<b>Умеет использовать ракетный ранец </b>
+<i>С самого детства вы мечтали летать. Может теперь получится!</i>",,
+PR_BC_PRIVILEGED,Text,,PRIVILEGED,,,,,,МАЖОР,,
+PR_BC_PRIVILEGED_DESC,Text,,"<b>Speed +2, Perception +4, Carry Weight -25%</b>
+<i>You were riding out the Apocalypse in First Class and letting others carry your load for you. It didn't last, and the run for your life that followed gave you a new awareness.</i>",,,,,,"<b>Скорость +2, Восприятие +4, Допустимый вес -25%</b>
+<i>Вы улетали от апокалипсиса в первом классе, а прислуга таскала ваш багаж. Но роскошная жизнь длилась недолго и последующее бегство от монстров открыло в вас новые таланты</i>",,
+PR_BC_FRENZY,Text,,FRENZY,,,,,,БУЙСТВО,,
+PR_BC_FRENZY_DESC,Text,,"Instils Frenzy in friendly characters within 20 tiles for two turns, increasing their Speed by 33% and making them immune to panic",,,,,,"Союзники в радиусе 20 клеток впадают в Буйство на 2 хода, их скорость увеличивается на 33% и они получают иммунитет к панике",,
+PR_BC_FRENZY_STATUS_DESC,Text,,Speed increased by 33% and immune to panic,,,,,,Скорость увеличена на 33% и иммунитет к панике,,
+PX_HAVENRECRUITS_RESEARCHDEF_UNLOCK,Text,,"We need recruits and there is no lack of candidates. However, very few of them fulfill the operational requirements. We should put in place a proper selection process.",,,,,,Нам нужны рекруты и нет недостатка в кандидатах. Тем не менее лишь немногие отвечают нашим стандартам. Нам следует разработать подходящие протоколы для отбора.,,
+PX_HAVENRECRUITS_RESEARCHDEF_COMPLETE,Text,,"We have created a set of biometric and psych-eval tests in order to select potential recruits. We hope to pick at least one suitable individual every few days. On signing up with us the recruit or their dependents receive a single allotment of comestibles as compensation for their services. 
+
+We can also recruit in havens with leaders favorable to our cause. We expect that the candidates the havens will offer will not be exactly the pick of the litter; they will want to get rid of people they don't want to have. In addition, they will insist on us buying the equipment for the recruit with a mark-up. 
+
+On the upside, we can expect the recruits to be completely loyal to our cause. However, if necessary, a reliable indoctrination program can be implemented to supplement any deficiencies in that aspect.",,,,,,"Мы создали набор биометрических и психологических тестов для отбора потенциальных рекрутов. Мы надеемся, что удастся отбирать хотя бы одного подходящего каждые несколько дней. При подписании контакта рекрут или его родственники получают единовременную выдачу пищевых пайков, в качестве компенсации за услуги.
+
+Мы также можем рекрутировать новобранцев в убежищах, в случае установления хороших отношений с главой поселения. Мы ожидаем, что рекруты, которых нам предоставляют убежища, едва ли будут лучшими из лучших, напротив, вероятно они попытаются сбагрить нам отбросов. В дополнение, они настаивают, чтобы мы оплатили экипировку рекрута с очевидной накруткой.
+
+И к хорошим новостям - вероятнее всего рекруты будут абсолютно лояльны нам. Тем не менее, при необходимости, пропаганда может быть использована в случае каких-либо отклонений от курса и ценностей проекта Феникс",,
+PX_HAVENRECRUITS_RESEARCHDEF_BENEFITS,Text,,We can now recruit soldiers from havens and among candidates found elsewhere by our agents.,,,,,,"Теперь в убежищах мы можем нанимать солдат, и иных кандидатов, которых нашли наши агенты",,

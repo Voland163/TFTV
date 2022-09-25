@@ -66,10 +66,8 @@ namespace TFTV
             TFTVHumanEnemies.RollCount = 0;
             TFTVDefsCreatedOnLevelChanged.CreateRevenantDefs();
             TFTVRevenant.ModifyRevenantResistanceAbility(Controller);
-            //TFTVRevenant.CheckForNotDeadSoldiers(tacController);
+            TFTVRevenant.CheckForNotDeadSoldiers(tacController);
             TFTVRevenant.RevenantCheckAndSpawn(Controller);
-
-            
 
 
         }

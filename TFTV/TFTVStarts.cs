@@ -1,16 +1,10 @@
 ﻿using Base.Defs;
 using Base.UI;
 using PhoenixPoint.Common.Core;
-using PhoenixPoint.Common.Entities.GameTags;
-using PhoenixPoint.Common.Entities.Items;
-using PhoenixPoint.Common.UI;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Events.Eventus;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Tactical.Entities;
-using PhoenixPoint.Tactical.Entities.Abilities;
-using PhoenixPoint.Tactical.Entities.Equipments;
-using PhoenixPoint.Tactical.Entities.Weapons;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,18 +15,6 @@ namespace TFTV
     {
 
         private static readonly DefRepository Repo = TFTVMain.Repo;
-
-
-
-
-       
-        
-
-      
-
-
-
-       
 
         public static void ModifyIntroForSpecialStart(GeoFaction geoFaction, GeoSite site)
         {
@@ -54,7 +36,6 @@ namespace TFTV
             }
 
         }
-
         public static string FindNearestHaven(GeoFaction geoFaction, GeoSite phoenixPoint)
         {
             try
@@ -81,7 +62,7 @@ namespace TFTV
             throw new InvalidOperationException();
         }
 
-       
+
 
         //Adapted from MadSkunky's TutorialTweaks: https://github.com/MadSkunky/PP-Mods-TutorialTweaks
         public static List<TacCharacterDef> SetInitialSquadUnbuffed(GeoLevelController level)
@@ -182,13 +163,11 @@ namespace TFTV
                 Omar2.Data.Will = 0;
                 Omar2.Data.Speed = 0;
                 Omar2.Data.CurrentHealth = -1;
-
                 TacCharacterDef Takeshi3 = Repo.GetAllDefs<TacCharacterDef>().First(tcd => tcd.name.Contains("PX_Takeshi_Tutorial3_TacCharacterDef"));
                 Takeshi3.Data.Strength = 0;
                 Takeshi3.Data.Will = 0;
                 Takeshi3.Data.Speed = 0;
                 Takeshi3.Data.CurrentHealth = -1;
-
                 TacCharacterDef Irina3 = Repo.GetAllDefs<TacCharacterDef>().First(tcd => tcd.name.Contains("PX_Irina_Tutorial3_TacCharacterDef"));
                 Irina3.Data.Strength = 0;
                 Irina3.Data.Will = 0;
@@ -225,6 +204,10 @@ namespace TFTV
 
                 List<TacCharacterDef> startingTemplates = new List<TacCharacterDef> { Jacob2buffed, Sophia2buffed, Omar3buffed, Takeshi3buffed, Irina3buffed };
 
+                if (difficultyLevel.Order == 1)
+                {
+                    startingTemplates.Add(sniper);
+                }
 
                 if (config.startingSquad == TFTVConfig.StartingSquadFaction.ANU)
                 {
@@ -242,10 +225,7 @@ namespace TFTV
                     level.EventSystem.SetVariable("BG_Start_Faction", 3);
                 }
 
-                if (difficultyLevel.Order == 1)
-                {
-                    startingTemplates.Add(sniper);
-                }
+               
 
                 return startingTemplates;
             }
@@ -328,6 +308,9 @@ namespace TFTV
             }
             throw new InvalidOperationException();
         }
+
+
+
 
 
     }

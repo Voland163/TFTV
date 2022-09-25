@@ -25,6 +25,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices.WindowsRuntime;
 using UnityEngine;
 
 namespace TFTV
@@ -51,40 +52,6 @@ namespace TFTV
         private static readonly GameTagDef mistResistanceTag = Repo.GetAllDefs<GameTagDef>().FirstOrDefault(sd => sd.name.Equals("OneOfUsMistResistance_GameTagDef"));
 
 
-
-
-
-        
-       /* [HarmonyPatch(typeof(TacticalAbility), "PlayAction")]
-        public static class TacticalAbility_getFumbledAction_Patch
-        {
-            private static readonly TacticalAbilityDef feral = Repo.GetAllDefs<TacticalAbilityDef>().FirstOrDefault(tad => tad.name.Equals("Feral_AbilityDef"));
-
-            public static void Postfix(TacticalAbility __instance, ref bool __result)
-            {
-
-                try
-                {
-                    TFTVLogger.Always("get_FumbleActionCheck " + __instance.Source);
-
-                    TFTVLogger.Always("The actor is " + __instance.TacticalActor.DisplayName);
-
-                    if (__instance.TacticalActor.GetAbilityWithDef<TacticalAbility>(feral) != null && __instance.Source is Equipment)
-                    {
-                        UnityEngine.Random.InitState((int)DateTime.Now.Ticks);
-                        __result = UnityEngine.Random.Range(0, 100) > 10;
-                        TFTVLogger.Always("FumbleActionCheck result is " + __result);
-                    }
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-            }
-        }
-        
-
-        */
 
 
         [HarmonyPatch(typeof(TacticalLevelController), "ActorEnteredPlay")]
@@ -147,41 +114,113 @@ namespace TFTV
                 }
             }
         }
-        
-       [HarmonyPatch(typeof(TacticalAbility), "get_FumbledAction")]
+
+        [HarmonyPatch(typeof(TacticalAbility), "FumbleActionCheck")]
         public static class TacticalAbility_FumbleActionCheck_Patch
         {
-           private static readonly TacticalAbilityDef feral = Repo.GetAllDefs<TacticalAbilityDef>().FirstOrDefault(tad => tad.name.Equals("Feral_AbilityDef"));
-
+            private static TacticalAbilityDef feral = Repo.GetAllDefs<TacticalAbilityDef>().FirstOrDefault(tad => tad.name.Equals("Feral_AbilityDef"));
             public static void Postfix(TacticalAbility __instance, ref bool __result)
             {
-               
+                DefRepository Repo = GameUtl.GameComponent<DefRepository>();
+
                 try
                 {
-                   
-                  //  TFTVLogger.Always("get_FumbledAction " + __instance.Source);
-
-                  //  TFTVLogger.Always("The actor is " + __instance.TacticalActor.DisplayName);
-
+                    
                     if (__instance.TacticalActor.GetAbilityWithDef<TacticalAbility>(feral) != null && __instance.Source is Equipment)
                     {
-                        // UnityEngine.Random.InitState((int)DateTime.Now.Ticks);
-                        //  int roll = ;
-
-                        //  if(roll > 10)  
-                        // { 
-                        __result = UnityEngine.Random.Range(0, 100)<10;
-                    //    TFTVLogger.Always("FumbleActionCheck result is " + __result);
+                        __result = UnityEngine.Random.Range(0, 100) > 10;
+                        TFTVLogger.Always("The fumble action is " + __instance.GetAbilityDescription() + " and the fumble result is " + __result);
                     }
                 }
                 catch (Exception e)
                 {
                     TFTVLogger.Error(e);
                 }
-                
             }
         }
-        
+
+
+        /*
+                [HarmonyPatch(typeof(TacticalLevelController), "ActorDied")]
+                public static class TacticalLevelController_ActorDied_HumanEnemiesTactics_BloodRush_Patch
+                {
+                    private static readonly TacticalAbilityDef feral = Repo.GetAllDefs<TacticalAbilityDef>().FirstOrDefault(tad => tad.name.Equals("Feral_AbilityDef"));
+
+                    public static void Postfix(DeathReport deathReport)
+                    {
+                        try
+                        {
+                            TacticalActorBase killer = deathReport.Killer;
+
+                            if(killer.GetAbilityWithDef<TacticalAbility>(feral) != null) 
+                            {
+                                UnityEngine.Random.InitState((int)DateTime.Now.Ticks);
+                                int roll = UnityEngine.Random.Range(0, 100);
+                                TFTVLogger.Always("FumbleActionCheck roll is " + roll);
+
+                                if (roll < 10) 
+                                {
+                                    TacticalActor tacticalActor = killer as TacticalActor;
+                                    TFTVLogger.Always("Max action points are " + tacticalActor.CharacterStats.ActionPoints.Max);
+                                    float maxActionPoints = tacticalActor.CharacterStats.ActionPoints.Max;
+                                    tacticalActor.CharacterStats.ActionPoints.Subtract((maxActionPoints/4)*2);
+                                    TFTVLogger.Always("Action points now " + tacticalActor.CharacterStats.ActionPoints.Value.EndValue);
+                                }
+
+
+                            }
+
+                        }
+                        catch (Exception e)
+                        {
+                            TFTVLogger.Error(e);
+                        }
+                    }
+                }
+        */
+        /*
+        [HarmonyPatch(typeof(TacticalAbility), "get_FumbledAction")]
+        public static class TacticalAbility_FumbleActionCheck_Patch
+        {
+           private static readonly TacticalAbilityDef feral = Repo.GetAllDefs<TacticalAbilityDef>().FirstOrDefault(tad => tad.name.Equals("Feral_AbilityDef"));
+
+            public static bool Prefix(TacticalAbility __instance, ref bool __result)
+            {
+               
+                try
+                {
+                   
+                    TFTVLogger.Always("get_FumbledAction " + __instance.Source);
+
+                    TFTVLogger.Always("The actor is " + __instance.TacticalActor.DisplayName + " and the ability is " + __instance.GetAbilityDescription());
+
+                    if (__instance.TacticalActor.GetAbilityWithDef<TacticalAbility>(feral) != null && __instance.Source is Equipment)
+                    {
+                        
+                         UnityEngine.Random.InitState((int)DateTime.Now.Ticks);
+                          int roll = UnityEngine.Random.Range(0, 100);
+                        TFTVLogger.Always("FumbleActionCheck roll is " + roll);
+
+                        if (roll > 10)
+                        {
+                            // typeof(TacticalAbility).GetMethod("FumbleAction", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(__instance, new object[] { __instance.ActionComponent. });
+                            __result = true;
+                            return false;
+                        }
+                        
+                        return true;
+
+                    }
+                    return true;
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+                return true;
+            }
+        }
+        */
         //Dtony's Delirium perks patch
         [HarmonyPatch(typeof(RecruitsListElementController), "SetRecruitElement")]
         public static class RecruitsListElementController_SetRecruitElement_Patch

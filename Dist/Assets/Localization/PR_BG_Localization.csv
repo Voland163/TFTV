@@ -1,0 +1,382 @@
+Key,Type,Desc,English,Chinese (Simplified),French,German,Italian,Polish,Russian,Spanish,UI_Tester
+PROG_LE1_WIN_CHOICE_2_OUTCOME_GENERAL,Text,,"MESSAGE 
+From:Colonel Jack Harlson (New Jericho) 
+To: Phoenix Point
+
+The Pandorans grow ever more cunning and deliberate in their attacks. We need more and better weapons. West is right: whatever the wishful thinkers may be dreaming, any feasible solution to this menace requires force and the willingness to use it.",,,,,,,,
+PROG_LE1_WIN_CHOICE_2_TEXT,Text,,"The Pandorans did it, all of it!",,,,,,,,
+PROG_LE1_WIN_CHOICE_1_OUTCOME_GENERAL,Text,,"MESSAGE 
+From: Colonel Jack Harlson (New Jericho) 
+To: Phoenix Point
+
+I wanted to thank you personally for delivering this information. It is crucial that all of us understand the peril we are facing. Over the years we have gathered a lot of evidence showing how the Anu cultists are collaborating with the enemy. In due time, they will pay for their crimes against humanity.",,,,,,,,
+PROG_LE1_WIN_CHOICE_1_TEXT,Text,,Provide New Jericho with intelligence <i>proving</i> that Anu instigated the Pandoran attack,,,,,,,,
+PROG_LE1_WIN_CHOICE_0_OUTCOME_GENERAL,Text,,"MESSAGE 
+From: Colonel Jack Harlson (New Jericho) 
+To: Phoenix Point 
+
+It has been reported that your organization is in the possession of an armored vehicle stolen from a New Jericho facility that came under heavy attack by Pandorans and unknown human or pseudo-human assailants. 
+
+I'll be looking into this matter personally. 
+
+West is showing great leniency to your organization in the expectation of the role it will play in the delivery of our species. For my part, sometimes I'm not so sure that we need you at all.",,,,,,,,
+PROG_LE1_WIN_CHOICE_0_TEXT,Text,,Keep the Armadillo,,,,,,,,
+PROG_LE1_WIN_TEXT_GENERAL_0,Text,,We succeeded in our mission despite the unexpected appearance of Pandorans on the scene. Now we have to decide on our response to New Jericho.,,,,,,,,
+PROG_LE1_WIN_TITLE,Text,,Playing the Blame Game,,,,,,,,
+PROG_LE1_MISS_CHOICE_0_TEXT,Text,,START MISSION,,,,,,,,
+PROG_LE1_MISS_CHOICE_1_TEXT,Text,,CANCEL,,,,,,,,
+PROG_LE1_MISS_TEXT_GENERAL_0,Text,,"MISSION BRIEFING
+
+We have come up with a simple plan to obtain the NG+ Weapon Systems research without prejudicing our relations with New Jericho or drawing their attention to the value of the data in their possession. 
+
+Your team will be inserted outside the operational perimeter and proceed to the objective on foot. After obtaining a copy of the data, they will steal an armored vehicle from the garrison and make their getaway in it. They will subsequently abandon and destroy the vehicle. We will present the facts to New Jericho as a raid by an unknown third party. As long as we can maintain plausible deniability, our relations with NJ should not be affected.",,,,,,,,
+PROG_LE1_MISS_TITLE,Text,,Grand Theft Auto,,,,,,,,
+PROG_LE1_TEXT_GENERAL_0,Text,,"Impossible Weapons 
+
+Vanadium Co had an R & D division, Next Generation+ Weapon Systems, focused on designing armaments that required as of yet undiscovered technologies, energy sources or materials with impossible tensile strengths or conductivity. 
+
+Though at the time it was deemed little more than a publicity stunt and part of Vanadium's talent retention strategy, we speculate that these weapons could be indeed developed using the materials harnessed by the Ancients.
+
+We have located a New Jericho archive facility harboring the NG+ Weapon Systems research.",,,,,,,,
+PROG_LE1_TITLE,Text,,Impossible Weapons,,,,,,,,
+PX_CRYSTALCROSSBOW_RESEARCHDEF_COMPLETE,Text,,"At a first glance it seemed to us that Kristian Luft came up with a design for a very high air powered bow; a long shot from the marvels of the other projects of the NG+ Vanadium division. This until we realized that Prof. Luft did away with the glaring deficiency of all crossbows: that they require bolts. The Crystal Crossbow does not shoot bolts at all, but rather air particles accelerated to incredible speeds!",,,,,,,,
+PX_CRYSTALCROSSBOW_RESEARCHDEF_NAME,Text,,Crystal Crossbow,,,,,,,,
+PX_CRYSTALCROSSBOW_RESEARCHDEF_UNLOCK,Text,,"A design for what appears to be a high powered pneumatic crossbow by Kristian Luft, acclaimed particle physicist and medieval history buff.",,,,,,,,
+PX_MATTOCKOFTHEANCIENTS_RESEARCHDEF_COMPLETE,Text,,"The Mattock appears to have been designed by Valygar Prazac to address in hand to hand combat a variety of diverse hypothetical adversaries such as Golems, Gargoyles and (interestingly enough) intelligent crustaceans from outer space.",,,,,,,,
+PX_MATTOCKOFTHEANCIENTS_RESEARCHDEF_NAME,Text,,Mattock of the Ancients,,,,,,,,
+PX_MATTOCKOFTHEANCIENTS_RESEARCHDEF_UNLOCK,Text,,"An impossible melee weapon dreamt up by Valygar Prazac of the NG+ Weapon Systems at Vanadium Co., and former professor in the experimental physics department of the Taras Shevchenko University of Kyiv.",,,,,,,,
+PX_REBUKE_RESEARCHDEF_COMPLETE,Text,,"Mr. Stridrahen was an imminently practical man and this practicality paradoxically shows throughout the impracticable (before the Antediluvian materials) Rebuke. It is somewhat of a misnomer to describe this weapon as a grenade launcher, and what happens when it is activated as an explosion, but it will have to do until we are ready to update our physics models to account for the Antediluvian materials.",,,,,,,,
+PX_REBUKE_RESEARCHDEF_NAME,Text,,Rebuke,,,,,,,,
+PX_REBUKE_RESEARCHDEF_UNLOCK,Text,,"Hristos Stridrahen, the mind behind the Rebuke, rose from Vanadium Mining and Rare Earths division to NG+ Weapon Systems through his passion for high explosives.",,,,,,,,
+PX_SCORPION_RESEARCHDEF_COMPLETE,Text,,"The ultimate purpose of the Scorpion is to make all forms of armor obsolete. Surprisingly, it seems like Mr. Antonasov’s work has provided a foundational basis for a lot of technologies with practical applications developed first by Vanadium and later New Jericho.",,,,,,,,
+PX_SCORPION_RESEARCHDEF_NAME,Text,,Scorpion,,,,,,,,
+PX_SCORPION_RESEARCHDEF_UNLOCK,Text,,This blueprint by renowned rocket engineer John Antonasov is for some sort of long rifle with incredible penetration and damage capacity.,,,,,,,,
+PX_SCYTHER_RESEARCHDEF_COMPLETE,Text,,"According to the notes accompanying the recovered data, Jules Godfry designed the Scyther after his disappointing performance in some sort of corporate ludic e-competition called ""Chaos Reborn 2022 Annual Tournament”. In psychological terms it is the expression of unfathomable anger directed at all things, living and inanimate, though its practical military applications in the real world were doubtful until the appearance of the Pandoran monstrosities.",,,,,,,,
+PX_SCYTHER_RESEARCHDEF_NAME,Text,,Scyther,,,,,,,,
+PX_SCYTHER_RESEARCHDEF_UNLOCK,Text,,"A curious design by Jules Godfry, head of NG+ Weapon Systems at Vanadium, that looks like an electro blade powered by a miniaturized fusion reactor.",,,,,,,,
+PX_SHARDGUN_RESEARCHDEF_COMPLETE,Text,,"The Shard Gun is perhaps the less theoretically impressive of the NG+ Weapon Systems designs. But what it lacks in mathematical panache, it compensates in sheer effectiveness; in the words of its promoter, Emmanuel ""SG"" Erickson, ""it will be a bad*** shotgun that will **** you up, you trespassing ***********"" (Mr. Erickson's streams were notable for their profanity. They tragically ended at the beginning of the First Mist, when a Triton invaded Emmanuel's Malibu beachfront, ironically vindicating the streamer's plea for a next generation home defense weapon).",,,,,,,,
+PX_SHARDGUN_RESEARCHDEF_NAME,Text,,Shard Gun,,,,,,,,
+PX_SHARDGUN_RESEARCHDEF_UNLOCK,Text,,"Emmanuel ""Shotgun"" Erickson, publicist, streaming celebrity and the face of NG+ Weapon Systems, advertised the work of his team as ""the next generation home defense weapons against next generation home invaders"".",,,,,,,,
+KEY_K2_MISSION_FLAVOUR_TEXT,Text,,DOWNLOAD IMPOSSIBLE WEAPONS RESEARCH,,,,,,,,
+KEY_MARKETPLACE_HAVEN_ADDITIONAL_HEADER,Text,,The Bazaar,,,,,,,,
+KEY_MARKETPLACE_DESCRIPTION_1,Text,,"The leader of the haven, Sol ""Maker"" Markus, is fascinated by the esoteric and the occult. He has requested that we retrieve a Drop-Ka stone that he has located in a Pre-War collection. ",,,,,,,,
+KEY_MARKETPLACE_DESCRIPTION_2,Text,,Sol is happy and reminds us to do as we are told if we want to receive further blessings,,,,,,,,
+KEY_MARKETPLACE_DESCRIPTION_3,Text,,Sol has received the Bionics tech. He hints that Subject 24 should be destroyed.,,,,,,,,
+KEY_MARKETPLACE_DESCRIPTION_4,Text,,Sol is happy because we destroyed the fortress,,,,,,,,
+KEY_MARKETPLACE_DESCRIPTION_5,Text,,Enjoy the sights and pungent smells! ,,,,,,,,
+DLC5/KEY_MARKETPLACE_HAVEN_HEADER,Text,,BAZAAR HAVEN,,,,,,,,
+DLC5/KEY_KAOS_SYNDICATE,Text,,The Bazaar,,,,,,,,
+PROG_KE1_TITLE,Text,,Mind Tricks,,,,,,,,
+PROG_KE1_CHOICE_0_TEXT,Text,,Enter the crypt and retrieve the Drop-Ka stone. ,,,,,,,,
+PROG_KE1_TEXT_GENERAL_0,Text,,"The coordinates provided by the Maker take you to the overgrown ruins of the collector's estate. It would have taken you weeks to find the Drop-Ka stone, but for the precise instructions given by Markus, directing you towards the ancient family crypt. ",,,,,,,,
+PROG_KE1_TEXT_OUTCOME_0,Text,,"As you step inside the crypt, alien thoughts are projected into your mind. You are *listening* to a *voice* you cannot *hear*.
+
+<i>""Soon you will be contacted by string Subject integer twenty four. Accept proposal. Share data. Satisfactory outcome will lead to much preferred customer status. Beware of your Amygdala, it reeks of betrayal.""</i>
+
+There is no Drop-Ka stone to be found, but you suspect that's not why you were sent here anyway.",,,,,,,,
+DLC5/KEY_MARKETPLACE_ACCEPT_MISSION,Text,,ACCEPT ,,,,,,,,
+DLC5/KEY_MARKETPLACE_LOCATE_MISSION,Text,,DO NOT TRY SOL'S PATIENCE,,,,,,,,
+DLC5/KEY_MARKETPLACE_MISSION_AVAILABLE,Text,,NEW MISSION AVAILABLE,,,,,,,,
+DLC5/KEY_MARKETPLACE_MISSION_IN_PROGRESS,Text,,DO AS SOL COMMANDS,,,,,,,,
+DLC5/KEY_MARKETPLACE_NO_MISSIONS,Text,,SOL IS PLEASED,,,,,,,,
+SDI_01_TEXT_GENERAL_0,Text,,"We are ready to share our preliminary findings regarding the new Pandoravirus outbreak.
+
+The viral mist is an extremely unusual phenomenon. It is in fact a highly complex aerosol, capable of moving with deliberation and transporting viral DNA and other microbes.
+
+It is our belief that the vast waves of mist that helped cause the destruction of civilization were generated underwater by gigantic, mutated structures. Each wave, including the current one (referred to by the population as the Third Mist) has slightly different properties.",,,,,,,,
+SDI1_OUTCOME,Text,,"We have received reports of a variety of afflictions suffered by individuals who have traveled or reside in areas covered by the mist: tiredness, lack of energy, brain fog, anguish and sometimes hallucinations.
+
+So far we can conclude the following:
+
+1) Symptoms never fully disappear, but are negligible when the subjects are fully rested, and progressively become worse as they exert themselves. 
+2) Symptoms get worse if the subject stays or returns to locations where mist is present. 
+
+We have termed this condition ""Oneiric Delirium"", on account of the subjects complaining of nightmares, or ""crazy dreams"", with similar themes of monstrosities and smothering. 
+
+<b>Our operatives can now be afflicted with a Delirium status of up to a third of their Willpower</b>",,,,,,,,
+SDI_01_TITLE,Text,,The Third Mist,,,,,,,,
+SDI6_OUTCOME,Text,,"The Oneiric Delirium grows stronger.
+
+<b>Our operatives can now be afflicted with a Delirium status of up to half of their Willpower</b>",,,,,,,,
+SDI7_OUTCOME,Text,,Havens in the Mist can become infested instead of destroyed when attacked by Pandorans. Infested havens accelerate Pandoran evolution.,,,,,,,,
+SDI10_OUTCOME,Text,,"The Oneiric Delirium grows stronger.
+
+<b>Our operatives can now be afflicted with a Delirium status equal to their Willpower</b>",,,,,,,,
+SDI11_OUTCOME,Text,,<b> Berith are coming! </b>,,,,,,,,
+PROG_LE0_MISS_CHOICE_2_TEXT,Text,,Ask West to release Dr. Helena,,,,,,,,
+PROG_LE0_MISS_CHOICE_2_OUTCOME_GENERAL,Text,,"MESSAGE
+FROM: Tobias West (New Jericho) 
+TO: Phoenix Point 
+
+We are passing on the custody of Dr. Helena to the Phoenix Project. I trust your judgment on the matter, but I advise you against diverting too many resources on digging into the past. 
+
+The war of extermination against our species is in the present.",,,,,,,,
+PROG_PU2_CHOICE_0_OUTCOME_GENERAL,Text,,"MESSAGE
+
+Subject 24 has requested that we perform the raid on a New Jericho facility. Should we agree, he will send us specific details, including the exact location of the facility and potentially its security defences. 
+",,,,,,,,
+PROG_PU2_CHOICE_0_TEXT,Text,,Agree to help Subject 24.,,,,,,,,
+PROG_PU2_CHOICE_1_OUTCOME_GENERAL,Text,,"MESSAGE
+
+When I contacted you I thought I was dealing with intelligent people, aware of the stakes. Instead, I found spineless cowards whose convictions are as hollow as the module in Tobias West’s head! 
+
+We'll find a way to obtain the research data, but the chance of alliance between the Pure and the Phoenix Project is gone forever.",,,,,,,,
+PROG_PU2_CHOICE_1_TEXT,Text,,Refuse to help Subject 24.,,,,,,,,
+PROG_PU2_TEXT_GENERAL_0,Text,,"MESSAGE
+
+Subject 24 has requested that we perform the raid on a New Jericho facility. Should we agree, he will send us specific details, including the exact location of the facility and potentially its security defences. ",,,,,,,,
+PROG_PU2_CHOICE2EVENT_TEXT_GENERAL_0,Text,,"MESSAGE
+FROM: Tobias West (New Jericho) 
+TO: Phoenix Point
+
+I appreciate your discretion in this matter. Rest assured that all necessary precautions will be taken. I trust you will not pay any attention to the ravings of this lunatic. ",,,,,,,,
+PROG_PU2_CHOICE2EVENT_TITLE,Text,,The Rewards of Silence,,,,,,,,
+PROG_PU2_CHOICE_2_TEXT,Text,,Inform New Jericho,,,,,,,,
+PROG_PU2_CHOICE3EVENT_TEXT_GENERAL_0,Text,,"MESSAGE 
+FROM: Nikolai (Synedrion) 
+TO: Phoenix Point 
+
+So another dirty little secret from West's not-so-distant past emerges. I hope that your actions in this matter reflect a new found belief in transparency and in the free exchange of information, rather than political opportunism.",,,,,,,,
+PROG_PU2_CHOICE3EVENT_TITLE,Text,,Disclose and Denounce,,,,,,,,
+PROG_PU2_CHOICE_3_TEXT,Text,,Publicly denounce New Jericho's covert bionics program,,,,,,,,
+PROG_PU4_WIN_TEXT_GENERAL_0,Text,,"New Jericho is not happy with our raid on their clandestine research facility. But we may be able to repair some of the damage to our relations. A lot depends on how we describe what happened; sometimes words are more important than actions.
+
+So what was it?",,,,,,,,
+PROG_PU4_WIN_CHOICE_0_OUTCOME_GENERAL,Text,,Anu's leadership seeks to distance itself from the raid to avoid provoking New Jericho. We do succeed in attracting the attention of some zealots. One of them decides to join our cause.,,,,,,,,
+PROG_PU4_WIN_CHOICE_0_TEXT,Text,,A righteous purge of dangerous technology,,,,,,,,
+PROG_PU4_WIN_CHOICE_1_OUTCOME_GENERAL,Text,,"Synedrion and New Jericho netizens endlessly debate the raid and Phoenix Project actions. Interestingly, the debate is not drawn strictly across faction lines, with some in New Jericho justifying our raid as a legitimate police action against extraneous rogue elements and some in Synedrion criticizing us for overreach. 
+
+West is naturally upset, but we have gained some traction among Synedrion public opinion and fostered some much needed interaction between the members of both factions.",,,,,,,,
+PROG_PU4_WIN_CHOICE_1_TEXT,Text,,"An exercise in civic duty, with some unfortunate casualties",,,,,,,,
+PROG_PU4_WIN_CHOICE_2_OUTCOME_GENERAL,Text,,"We are not entirely in the clear, but New Jericho doesn't want to draw attention to its secret research and therefore avoids making an issue of the raid.
+
+At the same time, our strenuous denials result in West suspecting the involvement of other factions.",,,,,,,,
+PROG_PU4_WIN_CHOICE_2_TEXT,Text,,"What was what? Deny, deny, deny",,,,,,,,
+PROG_PU12_NEWNJOPT_GENERAL,Text,,"MESSAGE 
+From: Abongameli Smith (New Jericho)
+To: Phoenix Point
+
+I won't ask you how you came across this intelligence, but it is much appreciated. Unlike others, I'm not even a little surprised that Synedrion would be engaging in this kind of research. 
+
+They preach about ""radical transparency"" and ""non-hierarchical societal structures founded on absence of material scarcity"", but humans are humans and if there is one thing they can never get enough of, it's power, power over their fellow human beings.
+
+It is part of our nature. We have to acknowledge it, and institute checks and balances to preserve our freedoms. It's the only way.  ",,,,,,,,
+PROG_PU12_NEWNJOPT_TITLE,Text,,Of Human Bondage,,,,,,,,
+PROG_PU12_MISS_CHOICE_3_TEXT,Text,,Sell the information about the secret Synedrion lab at [HavenName] to New Jericho,,,,,,,,
+PROG_PU12_MISS_CHOICE_2_TEXT,Text,,Join Synedrion in the defense against the raid by the Pure,,,,,,,,
+PROG_PU12_MISS_CHOICE_1_TEXT,Text,,Return later,,,,,,,,
+PROG_PU12_MISS_CHOICE_0_TEXT,Text,,Wait for the Pure raid to start and attack the Synedrion lab,,,,,,,,
+PROG_PU12_WIN_CHOICE_0_TEXT,Text,,Our secrets are our own,,,,,,,,
+PROG_PU12_WIN_CHOICE_1_TEXT,Text,,Share the research with New Jericho,,,,,,,,
+PROG_PU12_MISS_TEXT_GENERAL_0,Text,,"[AircraftName] is overflying [HavenName]. 
+
+This is where Synedrion's clandestine lab doing advanced research into bionics is located. It is well guarded. 
+
+The leader of [HavenName], [HavenLeaderForename] [HavenLeaderSurname], will not allow our operatives anywhere near the lab grounds, unless, or until, they come under attack by the Pure. Then we can probably use the confusion to break in, but we will have to fight both the Pure and Synedrion. 
+
+There might be other options as well.",,,,,,,,
+PROG_PU12_WIN2_TITLE,Text,,Just Doing Our Job,,,,,,,,
+PROG_PU12_WIN2_CHOICE_0_TEXT,Text,,OK,,,,,,,,
+PROG_PU12_WIN2_TEXT_GENERAL_0,Text,,"Given the good relations between Phoenix Project and Synedrion, [HavenLeaderForename] [HavenLeaderSurname] was not surprised at the presence of [AircraftName] in the [HavenName] at the time of the attack, and [HavenLeaderForename] assumed that you were aware of the research going on in the restricted research campus. After defending [HavenName] from the raid, Phoenix operatives stole the secrets to Synderion bionics research.",,,,,,,,
+PROG_PU12_FAIL2_TITLE,Text,,Miserable Failure!,,,,,,,,
+PROG_PU12_FAIL2_TEXT_GENERAL_0,Text,,You suck!,,,,,,,,
+PROG_PU12_FAIL2_CHOICE_0_TEXT,Text,,:(,,,,,,,,
+KEY_FS_SYN_HYBERNATION_PODS_MODULE_RESEARCHDEF_BENEFITS,Text,,First Assault Recon (FAR) module is available for production,,,,,,,,
+KEY_FS_SYN_HYBERNATION_PODS_MODULE_RESEARCHDEF_COMPLETE,Text,,"The First Assault Recon (FAR) module was conceived to give the Manticore a personnel transport, insertion and evacuation role, but thanks to its modular design it can be fitted on any craft to increase its passenger capacity. In addition, the FAR module accelerates recuperation from combat fatigue: targeted alterations in the ordinary metabolic processes of our operatives are introduced via a complex drug cocktail, external sensory stimulus and direct brain-wave manipulation.",,,,,,,,
+KEY_FS_SYN_HYBERNATION_PODS_MODULE_RESEARCHDEF_NAME,Text,,First Assault Recon (FAR) Module,,,,,,,,
+KEY_FS_SYN_HYBERNATION_PODS_MODULE_RESEARCHDEF_UNLOCK,Text,,"Among the Phoenix Archives we have found the original designs for the First Assault Recon (FAR) Module, to carry up to four additional operatives in any aircraft. The FAR module also allows soldiers to effectively rest and recuperate mid-air.",,,,,,,,
+KEY_DLC3_GEOBONUS_STAMINA,Text,,Onboard personnel recovers Stamina and increases carrying capacity by four,,,,,,,,
+KEY_FS_SYN_HYBERNATION_PODS_MODULE_DESCRIPTION,Text,,Extra Crew and Recuperation Module,,,,,,,,
+KEY_FS_SYN_HYBERNATION_PODS_MODULE_NAME,Text,,FAR-M,,,,,,,,
+ANU_PISSED_BIONICS_TEXT_GENERAL_0,Text,,"Your clumsy experiments with bionics have not gone unnoticed. We are sorely disappointed. You are shredding the Imperfect Double Helix to replace it with mean metal. An evolutionary deadend, beyond the Salvation of the Evermutable. O! But how do you try Our patience, yes...",,,,,,,,
+ANU_PISSED_BIONICS_TITLE,Text,,Genes and Metals,,,,,,,,
+ANU_PISSED_BIONICS_CHOICE_0_OUTCOME,Text,,"You dare preach to Us, the Synod of Yearning? What a fool you must be. We seek to uplift our phenotypes to match the perfection of our souls, you would have us confined to a data stream and call it life.",,,,,,,,
+ANU_PISSED_BIONICS_CHOICE_0,Text,,"Our bodies are but shells. You Disciples claim to understand this, but apparently you do not",,,,,,,,
+ANU_PISSED_BIONICS_CHOICE_1_OUTCOME,Text,,"They are the junkyard detritus of the Old World, that shall rust into nothingness after the Great Evolutionary Leap, and perhaps so will you, lest you learn better. ",,,,,,,,
+ANU_PISSED_BIONICS_CHOICE_1,Text,,They are soldiers; triumph is their salvation and triumph they shall,,,,,,,,
+ANU_PISSED_BIONICS_CHOICE_2_OUTCOME,Text,,"That is good, yes... Repentance, such strength in it, yes... But do not try to deceive Us; there is little that we do not know. ",,,,,,,,
+ANU_PISSED_BIONICS_CHOICE_2,Text,,"You are right, and we shall not do it again",,,,,,,,
+NJ_PISSED_MUTATIONS_TEXT_GENERAL_0,Text,,"I have received a troubling report about how your organization has started to use Anu gene splicing technologies on your operatives. 
+
+For the love of humanity, what are you thinking? You are supposed to be the scientists, and more: the guardians of our species. Are you adolescents, that you must, because you can?",,,,,,,,
+NJ_PISSED_MUTATIONS_TITLE,Text,,Teenage Wasteland,,,,,,,,
+NJ_PISSED_MUTATIONS_CHOICE_0,Text,,We have to face the facts: this is what it takes to save humanity,,,,,,,,
+NJ_PISSED_MUTATIONS_CHOICE_0_OUTCOME,Text,,"Yes, and as you are well aware, I have sometimes taken that line of reasoning myself. Yet there must be limits: how are we to beat our enemy if we do its work?",,,,,,,,
+NJ_PISSED_MUTATIONS_CHOICE_1,Text,,"Our humanity is in our souls, not our genes",,,,,,,,
+NJ_PISSED_MUTATIONS_CHOICE_1_OUTCOME,Text,,"I expect this nonsense from religious fanatics and cultists, not rational individuals. No matter, even if Phoenix Project has succumbed to the malady of our times, we shall persevere.",,,,,,,,
+NJ_PISSED_MUTATIONS_CHOICE_2,Text,,The procedure is entirely safe and strictly voluntary,,,,,,,,
+NJ_PISSED_MUTATIONS_CHOICE_2_OUTCOME,Text,,"I shall take you at your word. Some of our citizens may join you to fight the Pandoravirus. Should I find out that any of them have been subjected to gene altering procedures against their will, we will respond. Do not mistake this for an idle threat.",,,,,,,,
+ANU_REALLY_PISSED_BIONICS_TEXT_GENERAL_0,Text,,"What an arrogant fool you are for indulging in the notion that we could be deceived. We have long sequenced you and your organization, and nothing can be hidden from us for long. Yes, our agents have done their work... The facilities you have been using to turn humans into robots lie in ruins.",,,,,,,,
+ANU_REALLY_PISSED_BIONICS_TITLE,Text,,Sabotage!,,,,,,,,
+ANU_REALLY_PISSED_BIONICS_CHOICE_0,Text,,OK,,,,,,,,
+ANU_REALLY_PISSED_BIONICS_CHOICE_0_OUTCOME,Text,,"Director, our bionic labs have been destroyed in a series of explosions! It must have have been the Disciples of Anu, but how did they do it? Could there be a traitor among our operatives?",,,,,,,,
+NJ_REALLY_PISSED_MUTATIONS_TEXT_GENERAL_0,Text,,"I thought I had made myself clear: you shall not disfigure our men and women like if they were livestock, turn them into monstrosities to satisfy your delusions of grandeur.  ",,,,,,,,
+NJ_REALLY_PISSED_MUTATIONS_TITLE,Text,,Sabotage!,,,,,,,,
+NJ_REALLY_PISSED_MUTATIONS_CHOICE_0,Text,,OK,,,,,,,,
+NJ_REALLY_PISSED_MUTATIONS_CHOICE_0_OUTCOME,Text,,"Director, something happened in the mutation labs... There was a containment breach and we had to purge the entire facility. Some deaths among assisting personnel have ocurred. Was this the work New Jericho?",,,,,,,,
+VOID_OMEN_TITLE_1,Text,,"Ambushes more dangerous and more likely, but have more crates",,,,,,,,
+VOID_OMEN_TITLE_2,Text,,All diplomatic penalties and rewards halved,,,,,,,,
+VOID_OMEN_TITLE_3,Text,,"All abilities cost +50% WP, but Delirium has no effect on WP",,,,,,,,
+VOID_OMEN_TITLE_4,Text,,"Max 6 operatives can be deployed on any mission, but +100% experience ",,,,,,,,
+VOID_OMEN_TITLE_5,Text,,"Haven defenders always hostile, but crates available for looting ",,,,,,,,
+VOID_OMEN_TITLE_6,Text,,Pandorans evolve as they lose missions and colonies,,,,,,,,
+VOID_OMEN_TITLE_7,Text,,More Mist in missions,,,,,,,,
+VOID_OMEN_TITLE_8,Text,,"Diplomatic penalties among factions +50%, but double faction research",,,,,,,,
+VOID_OMEN_TITLE_9,Text,,Attacks on havens twice as frequent,,,,,,,,
+VOID_OMEN_TITLE_10,Text,,"No limit to Delirium, regardless of ODI level",,,,,,,,
+VOID_OMEN_TITLE_11,Text,,Behemoth disruption threshold increased,,,,,,,,
+VOID_OMEN_TITLE_12,Text,,Strength of Pandoran attacks on Havens increased by 50%,,,,,,,,
+VOID_OMEN_TITLE_13,Text,,New Pandoran Colonies are built 100% faster,,,,,,,,
+VOID_OMEN_TITLE_14,Text,,Human perception lowered to 20 from 35,,,,,,,,
+VOID_OMEN_TITLE_15,Text,,More Umbras,,,,,,,,
+VOID_OMEN_TITLE_16,Text,,Umbras can appear anywhere and attack anyone,,,,,,,,
+VOID_OMEN_TITLE_17,Text,,Destroyed havens in Mist always become infested ,,,,,,,,
+VOID_OMEN_DESCRIPTION_TEXT_1,Text,,"<i>""The reports we are intercepting from both faction and independent scavenging teams is that it's getting more dangerous out there… But we will probably see more loot, because… fewer competitors.""</i> ",,,,,,,,
+VOID_OMEN_DESCRIPTION_TEXT_2,Text,,"<i>""We are losing our moral compass, if we ever had one.""</i> ",,,,,,,,
+VOID_OMEN_DESCRIPTION_TEXT_3,Text,,"<i>""It's a waking nightmare. Can you get used to nightmares?""</i> ",,,,,,,,
+VOID_OMEN_DESCRIPTION_TEXT_4,Text,,"<i>""Have you seen the latest psych-evals? 'Trust issues' is putting it mildly: they can start shooting each other any minute. If you want my advice, keep the combat units small, at least for a while.""</i>",,,,,,,,
+VOID_OMEN_DESCRIPTION_TEXT_5,Text,,"<i>""They went Paranoid cuckoo! They think we are not there to defend them, but to take their stuff. Honestly, I think we should, just to teach them a lesson.""</i>",,,,,,,,
+VOID_OMEN_DESCRIPTION_TEXT_6,Text,,"<i> ""What did you expect? They too are capable of learning from their mistakes.""</i>",,,,,,,,
+VOID_OMEN_DESCRIPTION_TEXT_7,Text,,"<i> ""It has nothing to do with meteorology. We know nothing about the Mist: why it moves, where to, why there is so much more of it all of a sudden. Yes, as a ""Mist Expert"" I admit I'm a fraud."" </i>",,,,,,,,
+VOID_OMEN_DESCRIPTION_TEXT_8,Text,,"<i> ""Them and us, we can't help but see the world that way. Odd how sometimes that peaks and we forget that we are all part of the same species. A species that is currently facing extinction.""</i>",,,,,,,,
+VOID_OMEN_DESCRIPTION_TEXT_9,Text,,"<i> ""I would say they are off the leash now, but, if so, who was holding it?""</i>",,,,,,,,
+VOID_OMEN_DESCRIPTION_TEXT_10,Text,,<i>I can't wake up I can't wake up I can't wake up <b> I CAN'T WAKE UP</b></i>,,,,,,,,
+VOID_OMEN_DESCRIPTION_TEXT_11,Text,,<i>It just won't quit</i>,,,,,,,,
+VOID_OMEN_DESCRIPTION_TEXT_12,Text,,<i>They are throwing everything they have at us</i>,,,,,,,,
+VOID_OMEN_DESCRIPTION_TEXT_13,Text,,"<i>""Look, the Pandron Colonies don't just happen… They follow some pattern; I can't tell you what it is because we don't understand it… yet. But I can tell you that something has changed. </i>",,,,,,,,
+VOID_OMEN_DESCRIPTION_TEXT_14,Text,,"<i>Have you noticed how things look less substantial these days? Like they were covered in fog, or made of cotton candy. Maybe it's just me.</i>",,,,,,,,
+VOID_OMEN_DESCRIPTION_TEXT_15,Text,,"<i>""Our people are seeing <b>more</b> oil monsters in the field. I look forward to the strict adherents of the scientific method explaining this away as our operatives going <b>more</b> crazy.""</i>",,,,,,,,
+VOID_OMEN_DESCRIPTION_TEXT_16,Text,,<i>It just isn't fair! Demons are supposed to follow rules too!</i>,,,,,,,,
+VOID_OMEN_DESCRIPTION_TEXT_17,Text,,<i>What if this is their end game? To turn us all into the puppets of an alien intelligence?</i>,,,,,,,,
+VOID_OMEN_INTRO,Text,,"We believe we are observing the first effects of the Oneiric Delirium on a collective scale. The phenomenon is akin to mass hysteria. 
+
+Synedrion psycho-sociologists are rationalizing the documented instances of widespread psychosis as the result of stresses to which our communities are subjected when our species is facing the possibility of extinction. 
+
+However, the global scale and eerie thematic homogeneity of these events suggests a different causal relationship. 
+
+Given what we know about the Oneiric Delirium and its connection to the Mist, there is little room for doubt: our collective psyche has become another battleground in our struggle with the Pandoravirus.",,,,,,,,
+VOID_OMEN_INTRO_TITLE,Text,,Omens of the Void,,,,,,,,
+ALN_CRABMANUMBRA_RESEARCHDEF_COMPLETE,Text,,"""What are they? You ask me, but I do not know; there is nothing in them to sequence. Perhaps you should talk to Martika the Priest... These 'purple shadows' our warriors speak of sound like her field of expertise.""
+
+- Kalus, a Disciple gene-smith
+
+""Our soldiers are under immense stress, not to mention the drug cocktail and direct cortical stimulation administered to them on a constant basis. If one or two of them start seeing 'oil monsters', I say it's a tolerable side effect"". 
+
+- Dr. Abongameli Smith, New Jericho",,,,,,,,
+ALN_CRABMANUMBRA_RESEARCHDEF_NAME,Text,,ARTHRON UMBRA,,,,,,,,
+ALN_FISHMANUMBRA_RESEARCHDEF_COMPLETE,Text,,"""It grew from the fishman’s pool of blood in the ground... Like water from a spigot... flowing in reverse. I shot it! We all shot it, we emptied our mags into the fragging thing!... Then it just melted... There was nothing left... I don't know what got the rest of the squad, maybe there was more of... those things, maybe it was the regular crabbies. I lost it, I ran away, never looking back.""
+
+- Citizen Brackman, sole survivor of recon team Echo, Synedrion 
+
+""Oh, but the Umbra are quite real, I assure you. Why wouldn't they be, when we live in the age of horrors?"" 
+
+- Alistair Ashby, Phoenix Project",,,,,,,,
+ALN_FISHMANUMBRA_RESEARCHDEF_NAME,Text,,TRITON UMBRA,,,,,,,,
+BG_INTRO_0_TITLE,Text,,A Cold Reboot,,,,,,,,
+BG_INTRO_0_DESCRIPTION,Text,,"After all these years, you finally got the call. It meant that Symes and his deputies were dead or unreachable. Phoenix Project had gone dark. 
+
+The trek to Phoenix Point was long and dangerous, but when you reached it, somebody was already home...",,,,,,,,
+BG_INTRO_1_TITLE,Text,,Homecoming,,,,,,,,
+BG_INTRO_1_DESCRIPTION,Text,,"I'm Alistair Ashby. Yes, the ""Mist Expert"". Thanks for watching me back in the day, I guess... 
+
+A few of us managed to get to this bunker and activate the emergency beacon before we were overrun by the creatures that followed us here. 
+
+We got this place mostly up and running... Thanks to Olena, she is quite the wunderkind.",,,,,,,,
+BG_INTRO1_CHOICE_1,Text,,"Yes, I remember you. Surprising to meet you here.",,,,,,,,
+BG_INTRO_2_TITLE,Text,,Olena Kim,,,,,,,,
+BG_INTRO_2_DESCRIPTION,Text,,"<i>Oppa</i> Alistair is good with people. I'm good with machines and software. This facility runs on a limited AI called Bennu. Once Bennu verifies your credentials as duly appointed Director, all functionality should be restored and you should be able to interface with the system. ",,,,,,,,
+BG_INTRO_2_CHOICE_0,Text,,Identify yourself and present your credentials ,,,,,,,,
+KEY_MISSION_HAVEN_INFESTED_VICTORY_NAME,Text,,MISSION COMPLETE,,,,,,,,
+KEY_MISSION_HAVEN_INFESTED_VICTORY_DESCRIPTION,Text,,NODE DESTROYED,,,,,,,,
+KEY_MISSION_HAVEN_INFESTED_DEFEAT_NAME,Text,,DEFEAT,,,,,,,,
+KEY_MISSION_HAVEN_INFESTED_DEFEAT_DESCRIPTION,Text,,Infestation remains.,,,,,,,,
+KEY_GEOSCAPE_HAVEN_INFESTED,Text,,"A haven in the Mist, has succumbed to Pandoran infestation!",,,,,,,,
+KEY_MISSION_HAVEN_INFESTED_NAME,Text,,INFESTED HAVEN,,,,,,,,
+KEY_MISSION_HAVEN_INFESTED_DESCRIPTION,Text,,Cleanse the infestation,,,,,,,,
+UMBRA_SIGHTED_TITLE,Text,,Umbra!,,,,,,,,
+UMBRA_SIGHTED_TEXT,Text,,It's so scary!,,,,,,,,
+VO_HINT_TITLE,Text,,Void Omens!,,,,,,,,
+VO_HINT_TEXT,Text,,Terror!,,,,,,,,
+KEY_INDEPENDENCE_DAY_NAME,Text,,To Kill a Behemoth,,,,,,,,
+KEY_INDEPENDENCE_DAY_REVEAL,Text,,"The Virophage should be able to kill the Behemoth, but we still need a delivery system that would allow us to deploy it safely in sufficient quantities. Perhaps we can repurpose the injector designed by the Barnabas AI.",,,,,,,,
+KEY_INDEPENDENCE_DAY_UNLOCK,Text,,,,,,,,,,
+KEY_INDEPENDENCE_DAY_COMPLETE,Text,,"Repurposing the injector turned out to be the easy part. The rest of it is more... extravagant. Olena will explain. 
+
+/AA",,,,,,,,
+PROG_FS2_TITLE,Text,,Operation Dreamcatcher,,,,,,,,
+PROG_FS2_TEXT_GENERAL_0,Text,,"We have examined different options for delivering the virophage to the Behemoth, from rockets to aerosols. However, the Festering Skies form an impenetrable air defense system and to succeed we need not only strike the Behemoth with the virophage; we need to contaminate the whole ecosystem. 
+
+We have come up with a plan but I don’t think you will like it, Director: a modified Manticore, covered in Mutagen-rich biomass, will deploy a strike team on the surface of the Behemoth to locally inject the Virophage at pre-identified vital points. Hopefully it will kill the Behemoth and its death will provoke a cascade failure on the Festering Skies ecology. 
+",,,,,,,,
+PROG_FS2_CHOICE_0_TEXT,Text,,"You are right, I don't like it. Make sure that our team makes it out.",,,,,,,,
+PROG_FS2_CHOICE_0_TEXT_OUTCOME,Text,,"I just told you: Oppa Alistair didn't come up with this idea, he stole it from a movie. 
+
+We will deploy a strike team on the surface of the Behemoth to locally inject the Virophage at pre-identified vital points. Hopefully it will kill it and we will be able to evacuate our team.",,,,,,,,
+KEY_ALISTAIRONSYMES_1_DESCRIPTION,Text,,"Symes... Symes fought for redemption... He sought to redeem the Phoenix Project, his family name and himself. A tragic figure writ large. But his story is not our story, we do not have to follow him and his trail of breadcrumbs.",,,,,,,,
+KEY_ALISTAIRONSYMES_2_DESCRIPTION,Text,,"So Randolph was right after all. Yes, Olena and I were with him when he started on his crazy trip. The how and the why of it is a long story... I suppose he was more interested in Olena's abilities and worth to the Project than in yours truly. It doesn't take a genius to see that the kid is special.",,,,,,,,
+KEY_ALISTAIRONWEST_DESCRIPTION,Text,,"I will give West that he built New Jericho, not just took it over as some two-bit military dictator of yore. But ultimately the only human will he cares about is his own. A lot depends on his retirement plans; bear in mind he might take the crazy cyborg route to defend his legacy. But then we have already dealt - DEALT - with one of those before...",,,,,,,,
+KEY_ALISTAIRONWEST_CHOICE,Text,,What do you make of New Jericho?,,,,,,,,
+KEY_ALISTAIRONSYNEDRION_DESCRIPTION,Text,,"Synedrion, they are not the naive fools everyone thinks that they are - and that they pretend to be. They have mastered the art of ruling while appearing not to rule: pulled a colegial Octavian, so to speak. It's the compact with the AIs that allows them to do that, relying on them for all bureaucratic functions and maintaining a soft censorship via adroit public feed algorithm manipulation... Anyway, remember those Pre-Collapse cautionary tales about AIs enslaving humanity? Yeah, me too.",,,,,,,,
+KEY_ALISTAIRONSYNEDRION_CHOICE,Text,,What about Synedrion?,,,,,,,,
+KEY_ALISTAIRONANU_DESCRIPTION,Text,,"The Disciples of Anu... They are the wild card. They have disguised as religious dogma human ascendancy through an alien rDNA virus. Well, not exactly alien, since apparently we are partly its product. Still, do we really want to take that road? Might there not be plans within plans within plans to lure us into an ascendancy that turns out to be the slavery we fought so hard to avoid?",,,,,,,,
+KEY_ALISTAIRONANU_CHOICE,Text,,What do you think of the Exalted?,,,,,,,,
+KEY_ALISTAIRONHELENA_DESCRIPTION,Text,,"Dr. Helena has spent her life working towards reviving the Ancients as our heritage, and what better way to honor our ancestors than using their WMDs. But what was that saying about doing the same thing over and over again expecting a different result? A lot of us will survive, I'm sure: those of us who remain now are good at surviving. But what if the Ancients were extinguished by the post-war political chaos, rather than by the biological weapon itself? What if reducing the number of casualties will not make a difference? Is the Phoenix Project up to the task of rebuilding a human civilization with the factions gone?",,,,,,,,
+KEY_ALISTAIRONHELENA_CHOICE,Text,,Do you trust that Dr. Helena's plan will work?,,,,,,,,
+KEY_ALISTAIRONVIROPHAGE_DESCRIPTION,Text,,The second worst outcome beats the hell out of the worst outcome. ,,,,,,,,
+KEY_ALISTAIRONVIROPHAGE_CHOICE,Text,,Should we build the Virophage Injector?,,,,,,,,
+KEY_ALISTAIR_ROADS_DESCRIPTION,Text,,"The history of our species is one of mistakes and accidents, some more fortunate than others. Now we come to yet another crossroads, where, to continue onwards, we need to choose a new mistake to make. ",,,,,,,,
+KEY_ALISTAIR_ROADS_TITLE,Text,,Roads,,,,,,,,
+KEY_ALISTAIR_ROADS_ALLDONE,Text,,"That will be all. Thank you, Alistair",,,,,,,,
+KEY_ALISTAIR_ROADS_DESCRIPTION_2,Text,,"Will that be all, Director?",,,,,,,,
+KEY_OLENA_HELENA_DESCRIPTION,Text,,"This... Can't be... Olena? You are alive. Your parents... We used to work together... We were friends. You probably don't remember me, you were so little... ",,,,,,,,
+KEY_OLENAONWEST_DESCRIPTION,Text,,"You know, that Vanadium neural link West has, it doesn't really make him any smarter. It gives him some limited augmented reality functionality and  easy access to external data, but that's about it. Interesting… if anything, at New Jericho they have the tech for much deeper neurological enhancement. I wouldn't be surprised if they could merge West's brain with a slaved AI. ",,,,,,,,
+KEY_OLENAONSYNOD_DESCRIPTION,Text,,Why would anyone create the Synod? And how did its... constituent parts feel about it? Perhaps the Exalted wanted to show everyone that the Disciples are concerned neither by ethics nor aesthetics when it comes to human gene manipulation.,,,,,,,,
+KEY_OLENAONANCIENTS_DESCRIPTION,Text,,"I always knew about the ""Ancients"". As a child, I have these memories of my parents talking about them... They weren't just real, they were more real to them than everything else.",,,,,,,,
+KEY_OLENAONANCIENTS_TITLE,Text,,Parents and Forefathers,,,,,,,,
+KEY_OLENAONBEHEMOTH_DESCRIPTION,Text,,It didn't come from an egg. It was created by the Pandoravirus. We are likely seeing the result of super-charged genetic amalgamation of the flora and fauna inhabiting the Hammerfall impact zone; instead of being vaporized it turned into something else. ,,,,,,,,
+KEY_OLENAONALISTAIR_DESCRIPTION,Text,,"Oppa Alistair... He knows he's not very imaginative. And as he knows he can't be imagining things, he trusts what he sees. That's the best way I can put it, I guess.",,,,,,,,
+KEY_OLENAONSYMES_DESCRIPTION,Text,,"Symes wanted me out of the expedition. He hoped to return to Phoenix Point with a blueprint for a cure and he wanted me to help him make it. When it was you who arrived and without a shimmering blue vial, I admit I was disappointed. Not so Oppa Alistair, he didn't put much stake in what Symes was doing.",,,,,,,,
+KEY_OLENAONENDING_DESCRIPTION,Text,,"The choice you have to make... It's important, probably the most important a human being has ever had to make. Ending a war is easy: all you have to do is give up. We have to end this war the right way. I... I don't know what the right way is, but I hope you do. Otherwise it will all have been for nothing.",,,,,,,,
+PROG_AN4_CHOICE_1_TEXT,Text,,Maybe later.,,,,,,,,
+PROG_AN4_CHOICE_1_OUTCOME_GENERAL,Text,,"That's... disappointing. Very well, I hope you will change your mind.",,,,,,,,
+PROG_LE3_WARN_TEXT_GENERAL_0,Text,,"Make no mistake: for the ancients, our ancestors were little more than curious animals. Perhaps they had laws to ensure our protection along with that of the other primates. Maybe they came from somewhere else and brought their own primordial soup with them… 
+
+These are gods we are talking about, only they cleaned their roadside picnic pretty well when they left. Fortunately for us, we were able to grow without the burden of familiarity with our precursors' magic. 
+
+Can you imagine how long it would have taken us to invent the lever had we been cursed with the power of ""protean mutane"" in our infancy?",,,,,,,,
+PROG_LE3_WARN_TITLE,Text,,Children of gods,,,,,,,,
+PROG_LE2_WARN_TEXT_GENERAL_0,Text,,"Their technology… It's so advanced as to be indistinguishable from magic. Take the Orichalcum: it shows an ability to manipulate matter and energy that is orders of magnitude higher than anything imaginable on such a small scale. Where did they come from and what could have happened to them? 
+
+These things they have left behind: the automata, the exotic materials… I suspect that is only part of their legacy. I believe they also passed on to us a terrifying fear of the unknown and the means of defeating it. It's all there: we only need to find it. ",,,,,,,,
+PROG_LE2_WARN_TITLE,Text,,A legacy of hope and fear,,,,,,,,
+PROG_LE1_WARN_TEXT_GENERAL_0,Text,,"I have always known about the ""Ancients"". I have these memories of my parents talking about them when I was a child... They weren't just real, they were more real to them than everything else. 
+
+And I have seen the ""Living Crystal"" before. My dad kept a small notebook with brown leather covers. Every page was crammed with Hangul writing and sketches. Sometimes I would sit on his lap and he would show me the drawings and explain what they were. The crystal stuck with me because dad joked that it would make my toys come alive. ",,,,,,,,
+PROG_LE1_WARN_TITLE,Text,,Parents and Forefathers,,,,,,,,
+PROG_SY_POSTPONE_CHOICE,Text,,Maybe later.,,,,,,,,
+PROG_SY_POSTPONE_TEXT,Text,,"That's... disappointing. Very well, I hope you will change your mind.",,,,,,,,
+PROG_NJ_POSTPONE_CHOICE,Text,,Maybe later.,,,,,,,,
+PROG_NJ_POSTPONE_TEXT,Text,,"That's... disappointing. Very well, I hope you will change your mind.",,,,,,,,
+KEY_INFESTATION_REWARD_TITLE,Text,,Rewards!,,,,,,,,
+KEY_INFESTATION_REWARD_DESCRIPTION,Text,,Nice things!,,,,,,,,
+REVENANT_SIGHTED_TITLE,Text,,Revenant,,,,,,,,
+REVENANT_SIGHTED_TEXT,Text,,"<i>""The Pandorans were somehow stealing our dead and splicing them into new monstrosities. We would recognize them in the field because of some small, inconsequential detail - an involuntary spasm, betraying a familiar gesture, a terrifying scream, bearing the echo of a beloved voice.""</i>
+
+We should try capturing it.",,,,,,,,
+OLENA_ON_HAVEN_INFESTED_TITLE,Text,,Trapped in the Mist,,,,,,,,
+OLENA_ON_HAVEN_INFESTED_TEXT,Text,,We are receiving reports of survivors trapped in a haven in the Mist that succumbed to a recent Pandoran attack. We should send a well-prepared team to investigate.,,,,,,,,
+KEY_AC_DEATHBELCH_DESCRIPTION,Text,,How we shiver with affright,,,,,,,,
+KEY_AC_DEATHBELCH_NAME,Text,,Touched by the Void,,,,,,,,
+TFTV_BIONICS_RESEARCHDEF_COMPLETE,Text,,"<i>""Which brings us back to Project Purity... This PV strain is even worse than the previous ones. In the Second Mist, we knew the human from the abomination. But now... We all have those nightmares. The chems may dull them, but they never go away. Even West has them, I'm sure. We don't fully understand how or why it happens, but the correlation is undeniable: the users of substantial bionic prosthetics are outperforming their non-augmented peers in psycho-evaluations by 30 to 60 percent. It's the opposite of what we expected! Want another interesting data point? They dream less.""</i>
+
+- Dr. Abongameli Smith, New Jericho
+
+Vastly improved from the first New Jericho attempts, the technology no longer leaves the subjects dead or crippled. A new set of bio-implants have successfully been developed thanks to advancements in neural co-processors and light metal alloy development. The new implants allow personnel to withstand heavy amounts of damage, land safely from great heights, and even run through walls if needed.",,,,,,,,
+TFTV_MUTATIONTECH_RESEARCHDEF_COMPLETE,Text,,"<i>""Those that partake of the Waters of Life say that, as their dreams become more vivid, their waking life becomes more dreamlike, till they know not when they are asleep and when they are awake. And always they feel most capable of incredible feats of arms and of vanquishing their enemies. I'm exhilarated by their confidence, yet I also fear their brutality.""</i>
+
+- Neophyte Ryodik, Disciples of Anu 
+
+This technology represents a first step towards mastering the mutation mechanics of the Pandoravirus. Test subjects have been injected with modified strains of the infection under carefully-controlled conditions, and with the additional of a chemical cocktail intended to keep the virus from asserting control over the subject. 
+
+The process is still experimental and there may be some side effects, but the potential benefits to our soldiers are worth the risk.
+",,,,,,,,

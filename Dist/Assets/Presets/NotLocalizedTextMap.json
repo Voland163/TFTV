@@ -1,0 +1,52 @@
+{
+  "E_ViewElement [AssaultRiflesTalent_AbilityDef]": {
+    "DisplayName1": "ASSAULT RIFLE PROFICIENCY",
+    "DisplayName2": "",
+    "Description": "Proficiency with Assault Rifles"
+  },
+  "E_ViewElement [GrenadesTalent_AbilityDef]": {
+    "DisplayName1": "GRENADE PROFICIENCY",
+    "DisplayName2": "",
+    "Description": "Proficiency with Grenades"
+  },
+  "E_ViewElement [HandgunsTalent_AbilityDef]": {
+    "DisplayName1": "HANDGUN PROFICIENCY",
+    "DisplayName2": "",
+    "Description": "Proficiency with Handguns"
+  },
+  "E_ViewElement [HeavyWeaponsTalent_AbilityDef]": {
+    "DisplayName1": "HEAVY WEAPON PROFICIENCY",
+    "DisplayName2": "",
+    "Description": "Proficiency with Heavy Weapons"
+  },
+  "E_ViewElement [MeleeWeaponTalent_AbilityDef]": {
+    "DisplayName1": "MELEE WEAPON PROFICIENCY",
+    "DisplayName2": "",
+    "Description": "Proficiency with Melee Weapons"
+  },
+  "E_ViewElement [MountedWeaponTalent_AbilityDef]": {
+    "DisplayName1": "MOUNTED WEAPON PROFICIENCY",
+    "DisplayName2": "",
+    "Description": "Proficiency with Mounted Weapons"
+  },
+  "E_ViewElement [PDWTalent_AbilityDef]": {
+    "DisplayName1": "PDW PROFICIENCY",
+    "DisplayName2": "",
+    "Description": "Proficiency with PDWs"
+  },
+  "E_ViewElement [ShotgunTalent_AbilityDef]": {
+    "DisplayName1": "SHOTGUN PROFICIENCY",
+    "DisplayName2": "",
+    "Description": "Proficiency with Shotguns"
+  },
+  "E_ViewElement [SilencedWeaponTalent_AbilityDef]": {
+    "DisplayName1": "SILENCED WEAPON PROFICIENCY",
+    "DisplayName2": "",
+    "Description": "Proficiency with Silenced Weapons"
+  },
+  "E_ViewElement [SniperTalent_AbilityDef]": {
+    "DisplayName1": "SNIPER RIFLE PROFICIENCY",
+    "DisplayName2": "",
+    "Description": "Proficiency with Sniper Rifles"
+  }
+}

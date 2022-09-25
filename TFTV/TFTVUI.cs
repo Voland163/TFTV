@@ -394,10 +394,16 @@ namespace TFTV
                     if (____character.CharacterStats.Corruption > 0f)
 
                     {
+                        float delirium = ____character.CharacterStats.Corruption.IntValue;
+                        if(TFTVDelirium.CalculateMaxCorruption(____character) < ____character.CharacterStats.Corruption.IntValue) 
+                        {
+                            delirium = (TFTVDelirium.CalculateMaxCorruption(____character));
+                        }
+
                         __instance.CorruptionSlider.minValue = 0f;
                         __instance.CorruptionSlider.maxValue = TFTVDelirium.CalculateMaxCorruption(____character);
-                        __instance.CorruptionSlider.value = ____character.CharacterStats.Corruption.IntValue;
-                        __instance.CorruptionStatText.text = $"{____character.CharacterStats.Corruption.IntValue}/{Mathf.RoundToInt(__instance.CorruptionSlider.maxValue)}";
+                        __instance.CorruptionSlider.value = delirium;
+                        __instance.CorruptionStatText.text = $"{delirium}/{Mathf.RoundToInt(__instance.CorruptionSlider.maxValue)}";
 
                         int num = (int)(float)____character.Fatigue.Stamina;
                         int num2 = (int)(float)____character.Fatigue.Stamina.Max;

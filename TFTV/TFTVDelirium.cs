@@ -27,9 +27,10 @@ namespace TFTV
     {
         private static readonly DefRepository Repo = TFTVMain.Repo;
         private static readonly GameTagDef bionicalTag = GameUtl.GameComponent<SharedData>().SharedGameTags.BionicalTag;
+        private static readonly GameTagDef mutationTag = GameUtl.GameComponent<SharedData>().SharedGameTags.AnuMutationTag;
         // Patch to increase damage by 2% per mutated body part per Delirium point
 
-        
+
 
         [HarmonyPatch(typeof(CorruptionStatus), "GetMultiplier")]
         internal static class BG_CorruptionStatus_GetMultiplier_Mutations_patch
@@ -46,7 +47,7 @@ namespace TFTV
 
                     foreach (TacticalItem armourItem in base_TacticalActor.BodyState.GetArmourItems())
                     {
-                        if (armourItem.GameTags.Contains(bionicalTag))
+                        if (armourItem.GameTags.Contains(mutationTag))
                         {
                             numberOfMutations++;
                         }

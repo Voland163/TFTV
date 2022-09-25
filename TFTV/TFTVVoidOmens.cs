@@ -281,6 +281,7 @@ namespace TFTV
                     }
                     else if (i == 7 && !CheckFordVoidOmensInPlay(level).Contains(i) && voidOmensCheck[i])
                     {
+                        VoidOmen7Active = false;
                         voidOmensCheck[7] = false;
                         TFTVLogger.Always("The check for VO#7 went ok");
 
@@ -487,28 +488,34 @@ namespace TFTV
                 if (rolledVoidOmens.Contains(3))
                 {
                     VoidOmen3Active = true;
+                    TFTVLogger.Always("All abilities cost +50% WP, but Delirium has no effect on WP");
                 }
 
                 if (rolledVoidOmens.Contains(5))
                 {
                     VoidOmen5Active = true;
+                    TFTVLogger.Always("Haven defenders always hostile, but crates available for looting");
                 }
 
                 if (rolledVoidOmens.Contains(7))
                 {
                     VoidOmen7Active = true;
+                    TFTVLogger.Always("More Mist in missions");
                 }
                 if (rolledVoidOmens.Contains(10))
                 {
                     VoidOmen10Active = true;
+                    TFTVLogger.Always("No limit to Delirium, regardless of ODI level");
                 }
                 if (rolledVoidOmens.Contains(15))
                 {
                     VoidOmen15Active = true;
+                    TFTVLogger.Always("More Umbras");
                 }
                 if (rolledVoidOmens.Contains(16))
                 {
                     VoidOmen16Active = true;
+                    TFTVLogger.Always("Umbras can appear anywhere and attack anyone");
                 }
 
             }

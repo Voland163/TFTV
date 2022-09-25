@@ -29,7 +29,7 @@ namespace TFTV
     {
         private static readonly DefRepository Repo = TFTVMain.Repo;
         public static Dictionary<int, int> DeadSoldiersDelirium = new Dictionary<int, int>();
-       
+
 
         public static int daysRevenantLastSeen = 0;
         // public static  timeLastRevenantSpawned = new TimeUnit();
@@ -95,36 +95,36 @@ namespace TFTV
         //private static readonly DamageKeywordDef paralisingDamageKeywordDef = Repo.GetAllDefs<DamageKeywordDef>().FirstOrDefault(p => p.name.Equals("Paralysing_DamageKeywordDataDef"));
 
 
-        /*
+
         public static void CheckForNotDeadSoldiers(TacticalLevelController level)
         {
             try
             {
-                List<string> soldiersReallyDead = new List<string>();
-                List<string> soldiersNotReallyDead = new List<string>();
+                List<int> soldiersReallyDead = new List<int>();
+                List<int> soldiersNotReallyDead = new List<int>();
                 SoldierStats soldierStats = new SoldierStats();
 
                 TFTVLogger.Always("Soldiers in the DeadSoldiersDelirium are " + DeadSoldiersDelirium.Count());
 
-                foreach (SoldierStats reallyDeadSoldier in level.TacticalGameParams.Statistics.DeadSoldiers.Values)
+                foreach (GeoTacUnitId reallyDeadSoldier in level.TacticalGameParams.Statistics.DeadSoldiers.Keys)
                 {
-                    TFTVLogger.Always("This on is really dead: " + reallyDeadSoldier.Name);
-                    soldiersReallyDead.Add(reallyDeadSoldier.Name);
+                    TFTVLogger.Always("This one is really dead: " + reallyDeadSoldier);
+                    soldiersReallyDead.Add(reallyDeadSoldier);
 
                 }
 
-                foreach (string name in DeadSoldiersDelirium.Keys)
+                foreach (int id in DeadSoldiersDelirium.Keys)
                 {
-                    if (!soldiersReallyDead.Contains(name))
+                    if (!soldiersReallyDead.Contains(id))
                     {
-                        TFTVLogger.Always(name + "? This one ain't dead!");
-                        soldiersNotReallyDead.Add(name);
+                        TFTVLogger.Always(id + " ? This one ain't dead!");
+                        soldiersNotReallyDead.Add(id);
                     }
                 }
 
-                foreach (string name in soldiersNotReallyDead)
+                foreach (int id in soldiersNotReallyDead)
                 {
-                    DeadSoldiersDelirium.Remove(name);
+                    DeadSoldiersDelirium.Remove(id);
                 }
 
                 TFTVLogger.Always("Soldiers in the DeadSoldiersDelirium after cleanup are " + DeadSoldiersDelirium.Count());
@@ -135,7 +135,7 @@ namespace TFTV
                 TFTVLogger.Error(e);
             }
 
-        }*/
+        }
 
 
 
@@ -144,7 +144,7 @@ namespace TFTV
         {
             try
             {
-                TFTVLogger.Always("DeadSoldierDeliriumCount is " + DeadSoldiersDelirium.Count +  " and last time a Revenant was seen was on day " + daysRevenantLastSeen + ", and now it is day " + controller.Timing.Now.TimeSpan.Days);
+                TFTVLogger.Always("DeadSoldierDeliriumCount is " + DeadSoldiersDelirium.Count + " and last time a Revenant was seen was on day " + daysRevenantLastSeen + ", and now it is day " + controller.Timing.Now.TimeSpan.Days);
                 if (DeadSoldiersDelirium.Count > 0 && (daysRevenantLastSeen == 0 || controller.Timing.Now.TimeSpan.Days - daysRevenantLastSeen >= 3)) //+ UnityEngine.Random.Range(-1, 3))) 
                 {
                     revenantCanSpawn = true;
@@ -207,6 +207,7 @@ namespace TFTV
 
                 List<int> allDeadSoldiers = DeadSoldiersDelirium.Keys.ToList();
                 List<GeoTacUnitId> candidates = new List<GeoTacUnitId>();
+                TFTVLogger.Always("Total count in DeadSoldiersDelirium is " + allDeadSoldiers.Count);
 
                 foreach (int deadSoldier in allDeadSoldiers)
                 {
@@ -214,6 +215,7 @@ namespace TFTV
                     TFTVLogger.Always("deadSoldier " + deadSoldier + " with GeoTacUnitId "
                         + GetDeadSoldiersIdFromInt(deadSoldier, controller) + " is added to the list of Revenant candidates");
                 }
+
                 UnityEngine.Random.InitState((int)DateTime.Now.Ticks);
                 int roll = UnityEngine.Random.Range(0, candidates.Count());
                 TFTVLogger.Always("The total number of candidates is " + candidates.Count() + " and the roll is " + roll);
@@ -1205,21 +1207,23 @@ namespace TFTV
 
         // Harmony Patch to calculate damage resistance
         [HarmonyPatch(typeof(DamageKeyword), "ProcessKeywordDataInternal")]
-        internal static class BC_DamageKeyword_ProcessKeywordDataInternal_DamageResistant_patch
+        internal static class TFTV_DamageKeyword_ProcessKeywordDataInternal_DamageResistant_patch
         {
 
             public static void Postfix(ref DamageAccumulation.TargetData data)
             {
                 try
                 {
-                    float multiplier = 0.25f;
-                    TacticalActorBase actor = data.Target.GetActor();
-
-                    if (revenantResistanceAbility.DamageTypeDef == null && actor != null && actor.GetAbilityWithDef<DamageMultiplierAbility>(revenantResistanceAbility) != null && !revenantSpecialResistance.Contains(actor.name))
+                    if (revenantResistanceAbility.DamageTypeDef == null)
                     {
-                        //  TFTVLogger.Always("This check was passed");
-                        data.DamageResult.HealthDamage = Mathf.Floor(data.DamageResult.HealthDamage * multiplier);
-                        data.AmountApplied = Mathf.Floor(data.AmountApplied * multiplier);
+                        float multiplier = 0.25f;
+
+                        if (data.Target.GetActor() != null && data.Target.GetActor().GetAbilityWithDef<DamageMultiplierAbility>(revenantResistanceAbility) != null && !revenantSpecialResistance.Contains(data.Target.GetActor().name))
+                        {
+                            //  TFTVLogger.Always("This check was passed");
+                            data.DamageResult.HealthDamage = Mathf.Floor(data.DamageResult.HealthDamage * multiplier);
+                            data.AmountApplied = Mathf.Floor(data.AmountApplied * multiplier);
+                        }
                     }
 
                 }

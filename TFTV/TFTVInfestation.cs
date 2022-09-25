@@ -34,6 +34,8 @@ namespace TFTV
         internal static GeoSite GeoSiteForScavenging = null;
         public static string InfestedHavensVariable = "Number_of_Infested_Havens";
         public static string LivingWeaponsAcquired = "Living_Weapons_Acquired";
+        public static int roll = 0;
+
         public static void Apply_Infestation_Changes()
         {
             try
@@ -122,21 +124,27 @@ namespace TFTV
         [HarmonyPatch(typeof(GeoHavenDefenseMission), "UpdateGeoscapeMissionState")]
         public static class GeoHavenDefenseMission_UpdateGeoscapeMissionState_StoreMission_Patch
         {
+            
+
             public static void Prefix(GeoHavenDefenseMission __instance)
             {
                 DefenseMission = __instance;
+               
             }
 
             public static void Postfix()
             {
                 DefenseMission = null;
-                                         
-            }
+                roll = 0;
+
+        }
         }
 
         [HarmonyPatch(typeof(GeoSite), "DestroySite")]
         public static class GeoSite_DestroySite_Patch_ConvertDestructionToInfestation
         {
+
+            
             public static bool Prefix(GeoSite __instance)
             {
                 try
@@ -154,10 +162,13 @@ namespace TFTV
                     }
 
                     IGeoFactionMissionParticipant attacker = DefenseMission.GetEnemyFaction();
+                        if (roll == 0)
+                        {
+                            roll = UnityEngine.Random.Range(1, 7 + __instance.GeoLevel.CurrentDifficultyLevel.Order);
+                            TFTVLogger.Always("Infestation roll is " + roll);
+                        }
 
-                    int roll = UnityEngine.Random.Range(0, 6 + __instance.GeoLevel.CurrentDifficultyLevel.Order);
-                    TFTVLogger.Always("Infestation roll is " + roll);
-                    int[] rolledVoidOmens = TFTVVoidOmens.CheckFordVoidOmensInPlay(__instance.GeoLevel);
+                        int[] rolledVoidOmens = TFTVVoidOmens.CheckFordVoidOmensInPlay(__instance.GeoLevel);
                     if (attacker.PPFactionDef == sharedData.AlienFactionDef && __instance.IsInMist && __instance.GeoLevel.EventSystem.GetVariable("Infestation_Encounter_Variable") > 0
                      && (roll >= 6 || rolledVoidOmens.Contains(17)))
                     {
@@ -180,7 +191,7 @@ namespace TFTV
 
                         return false;
                     }
-                    int roll2 = UnityEngine.Random.Range(0, 10);
+                 //   int roll2 = UnityEngine.Random.Range(0, 10);
                  /*   if (!__instance.IsInMist && rolledVoidOmens.Contains(12) && roll2 > 5)
                     {
                         GeoSiteForScavenging = __instance;
