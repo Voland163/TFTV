@@ -98,7 +98,9 @@
     <Compile Include="TFTVChangesToDLC4Events.cs" />
     <Compile Include="TFTVChangesToDLC5Events.cs" />
     <Compile Include="TFTVCommonMethods.cs" />
-    <Compile Include="TFTVDefsCreatedOnLevelChanged.cs" />
+    <Compile Include="TFTVDefsInjectedOnlyOnce.cs" />
+    <Compile Include="TFTVDefsRequiringReinjection.cs" />
+    <Compile Include="TFTVDefsWithConfigDependency.cs" />
     <Compile Include="TFTVDelirium.cs" />
     <Compile Include="TFTVDeliriumPerks.cs" />
     <Compile Include="TFTVDiplomacyPenalties.cs" />
@@ -106,7 +108,6 @@
     <Compile Include="TFTVConfig.cs" />
     <Compile Include="TFTVHelper.cs" />
     <Compile Include="TFTVHumanEnemies.cs" />
-    <Compile Include="TFTVHumanEnemiesDefs.cs" />
     <Compile Include="TFTVHumanEnemiesNames.cs" />
     <Compile Include="TFTVInfestation.cs" />
     <Compile Include="TFTVInfestationStory.cs" />
@@ -146,6 +147,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Assets\Textures\alistair.png" />
+    <Content Include="Assets\Textures\anu_squad.jpg" />
     <Content Include="Assets\Textures\ban_squad.png" />
     <Content Include="Assets\Textures\BG_alistair_small.png" />
     <Content Include="Assets\Textures\BG_HammerFall.jpg" />
@@ -168,6 +170,7 @@
     <Content Include="Assets\Textures\pu_squad.jpg" />
     <Content Include="Assets\Textures\px_squad.jpg" />
     <Content Include="Assets\Textures\squad_pu.jpg" />
+    <Content Include="Assets\Textures\syn_squad.jpg" />
     <Content Include="Assets\Textures\UI_AbilitiesIcon_CharacterAbility_AmplifyPain01.png" />
     <Content Include="Assets\Textures\UI_AbilitiesIcon_CharacterAbility_AmplifyPain02.png" />
     <Content Include="Assets\Textures\UI_AbilitiesIcon_CharacterAbility_Gunslinger-2.png" />

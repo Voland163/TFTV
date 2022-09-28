@@ -380,12 +380,14 @@ namespace TFTV
                     TFTVLogger.Always("The short name of the faction is " + nameOfFaction);
                     GameTagDef gameTagDef = Repo.GetAllDefs<GameTagDef>().FirstOrDefault
                            (p => p.name.Equals("HumanEnemyFaction_" + nameOfFaction + "_GameTagDef"));
-
+                    TFTVLogger.Always("gameTagDef found");
 
                     leaderBase.GameTags.Add(HumanEnemyTier1GameTag);
+                    TFTVLogger.Always("Tier1GameTag assigned");
                     leaderBase.GameTags.Add(gameTagDef);
+                    TFTVLogger.Always("GameTagDef assigned");
                     leaderBase.GameTags.Add(humanEnemyTagDef, GameTagAddMode.ReplaceExistingExclusive);
-
+                    TFTVLogger.Always("humanEnemyTagDef assigned");
 
                     List<string> factionNames = TFTVHumanEnemiesNames.names.GetValueSafe(nameOfFaction);
                     UnityEngine.Random.InitState((int)DateTime.Now.Ticks);

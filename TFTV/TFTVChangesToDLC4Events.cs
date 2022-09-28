@@ -20,7 +20,7 @@ namespace TFTV
     {
         private static readonly DefRepository Repo = TFTVMain.Repo;
 
-        public static void Apply_Changes()
+        public static void ChangesToDLC4Defs()
         {
 
             try

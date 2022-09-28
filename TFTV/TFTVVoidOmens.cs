@@ -1,4 +1,5 @@
-﻿using Base.Core;
+﻿using Assets.Code.PhoenixPoint.Geoscape.Entities.Sites.TheMarketplace;
+using Base.Core;
 using Base.Defs;
 using Base.Entities.Effects;
 using Base.UI;
@@ -43,7 +44,7 @@ namespace TFTV
         private static readonly GeoHavenZoneDef havenLab = Repo.GetAllDefs<GeoHavenZoneDef>().FirstOrDefault(ged => ged.name.Equals("Research_GeoHavenZoneDef"));
         private static readonly GeoFactionDef phoenixPoint = Repo.GetAllDefs<GeoFactionDef>().FirstOrDefault(ged => ged.name.Equals("Phoenix_GeoPhoenixFactionDef"));
 
-        public static bool[] voidOmensCheck = new bool[18];
+        public static bool[] voidOmensCheck = new bool[20];
         //VO#1 is harder ambushes
         public static bool VoidOmen1Active = false;
         //VO#3 is WP cost +50%
@@ -61,6 +62,10 @@ namespace TFTV
         public static bool VoidOmen15Active = false;
         //VO#16 is Umbras can appear anywhere and attack anyone
         public static bool VoidOmen16Active = false;
+        //V0#18 is extra defense points, less rewards
+        public static bool VoidOmen18Active = false;
+        //V0#19 is reactive evoltion
+        public static bool VoidOmen19Active = false;
 
         public static void ImplementVoidOmens(GeoLevelController level)
         {
@@ -460,8 +465,86 @@ namespace TFTV
                     {
                         voidOmensCheck[17] = false;
                         TFTVLogger.Always("The check for VO#17 went ok");
-
                     }
+                    if (i == 18 && CheckFordVoidOmensInPlay(level).Contains(i) && !voidOmensCheck[i])
+                    {                    
+                        foreach (ResourceMissionOutcomeDef resourceMissionOutcomeDef in Repo.GetAllDefs<ResourceMissionOutcomeDef>())
+                        {
+                            if (resourceMissionOutcomeDef.name.Contains("Haven"))
+                            {
+                                for (int i2 = 0; i2 < 2; i2++)
+                                {
+                                    ResourceUnit resourceUnit = resourceMissionOutcomeDef.Resources[i2];
+                                    resourceMissionOutcomeDef.Resources[i2] = new ResourceUnit(resourceUnit.Type, resourceUnit.Value * 0.5f);
+                                }
+                            }
+                        }
+                        VoidOmen18Active = true;
+                        // Logger.Always(voidOmen + j + " is now in effect, held in variable " + voidOmen + i);
+                        voidOmensCheck[i] = true;
+                    }
+                    else if (i == 18 && !CheckFordVoidOmensInPlay(level).Contains(i) && voidOmensCheck[i])
+                    {
+                        foreach (ResourceMissionOutcomeDef resourceMissionOutcomeDef in Repo.GetAllDefs<ResourceMissionOutcomeDef>())
+                        {
+                            if (resourceMissionOutcomeDef.name.Contains("Haven"))
+                            {
+                                for (int i2 = 0; i2 < 2; i2++)
+                                {
+                                    ResourceUnit resourceUnit = resourceMissionOutcomeDef.Resources[i2];
+                                    resourceMissionOutcomeDef.Resources[i2] = new ResourceUnit(resourceUnit.Type, resourceUnit.Value * 2f);
+                                }
+                            }
+                        }
+                        voidOmensCheck[18] = false;
+                        VoidOmen18Active = false;
+                        TFTVLogger.Always("The check for VO#18 went ok");
+                    }
+                    if (i == 19 && CheckFordVoidOmensInPlay(level).Contains(i) && !voidOmensCheck[i])
+                    {
+                        foreach (GeoMarketplaceResearchOptionDef geoMarketplaceResearchOptionDef in Repo.GetAllDefs<GeoMarketplaceResearchOptionDef>())
+                        {
+                            geoMarketplaceResearchOptionDef.MinPrice *= 0.80f;
+                            geoMarketplaceResearchOptionDef.MaxPrice *= 0.80f;
+                        }
+
+                        // Logger.Always(voidOmen + j + " is now in effect, held in variable " + voidOmen + i);
+                        voidOmensCheck[i] = true;
+                    }
+                    else if (i == 19 && !CheckFordVoidOmensInPlay(level).Contains(i) && voidOmensCheck[i])
+                    {
+                        foreach (GeoMarketplaceResearchOptionDef geoMarketplaceResearchOptionDef in Repo.GetAllDefs<GeoMarketplaceResearchOptionDef>())
+                        {
+                            geoMarketplaceResearchOptionDef.MinPrice *= 1.25f;
+                            geoMarketplaceResearchOptionDef.MaxPrice *= 1.25f;
+                        }
+                        voidOmensCheck[19] = false;
+                        TFTVLogger.Always("The check for VO#19 went ok");
+                    }
+                 //pending baby abbadons
+                    /*  if (i == 20 && CheckFordVoidOmensInPlay(level).Contains(i) && !voidOmensCheck[i])
+                    {
+                        foreach (GeoMarketplaceResearchOptionDef geoMarketplaceResearchOptionDef in Repo.GetAllDefs<GeoMarketplaceResearchOptionDef>())
+                        {
+                            geoMarketplaceResearchOptionDef.MinPrice *= 0.80f;
+                            geoMarketplaceResearchOptionDef.MaxPrice *= 0.80f;
+                        }
+
+                        // Logger.Always(voidOmen + j + " is now in effect, held in variable " + voidOmen + i);
+                        voidOmensCheck[i] = true;
+                    }
+                    else if (i == 20 && !CheckFordVoidOmensInPlay(level).Contains(i) && voidOmensCheck[i])
+                    {
+                        foreach (GeoMarketplaceResearchOptionDef geoMarketplaceResearchOptionDef in Repo.GetAllDefs<GeoMarketplaceResearchOptionDef>())
+                        {
+                            geoMarketplaceResearchOptionDef.MinPrice *= 1.25f;
+                            geoMarketplaceResearchOptionDef.MaxPrice *= 1.25f;
+                        }
+                        voidOmensCheck[20] = false;
+                        TFTVLogger.Always("The check for VO#19 went ok");
+                    }
+                  */
+
                 }
 
             }
@@ -482,6 +565,7 @@ namespace TFTV
                 VoidOmen10Active = false;
                 VoidOmen15Active = false;
                 VoidOmen16Active = false;
+                VoidOmen19Active = false;
 
                 int[] rolledVoidOmens = CheckFordVoidOmensInPlay(level);
 
@@ -516,6 +600,11 @@ namespace TFTV
                 {
                     VoidOmen16Active = true;
                     TFTVLogger.Always("Umbras can appear anywhere and attack anyone");
+                }
+                if (rolledVoidOmens.Contains(19))
+                {
+                    VoidOmen19Active = true;
+                    TFTVLogger.Always("Reactive evolution");
                 }
 
             }
@@ -927,7 +1016,7 @@ namespace TFTV
             {
                 try
                 {
-                    //TFTVThirdAct.ChangeHavenDeploymentDefense(__instance.GeoLevel);
+                   
                     if (VoidOmen12Active)
                     {
                         if (attacker.Faction.PPFactionDef == sharedData.AlienFactionDef)
@@ -937,6 +1026,7 @@ namespace TFTV
                             TFTVLogger.Always("Alien deployment is now " + attacker.Deployment);
                         }
                     }
+
 
                 }
                 catch (Exception e)
@@ -955,15 +1045,14 @@ namespace TFTV
             {
                 try
                 {
-                    if (__instance.Level.EventSystem.GetVariable("Mobilization") == 1)
+                    if (VoidOmen18Active)
                     {
                         __result = (int)(((float)haven.ZonesStats.GetTotalHavenOutput().Deployment * 1.5 * haven.Site.Owner.FactionStatModifiers?.HavenDefenseModifier) ?? 1f);
                         return false;
                     }
-                    else
-                    {
-                        return true;
-                    }
+                   
+                    return true;
+                    
                 }
                 catch (Exception e)
                 {

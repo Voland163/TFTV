@@ -39,52 +39,7 @@ namespace TFTV
         public static string LivingWeaponsAcquired = "Living_Weapons_Acquired";
         public static int roll = 0;
 
-        public static void Apply_Infestation_Changes()
-        {
-            try
-            {
-                AlienRaidsSetupDef raidsSetup = Repo.GetAllDefs<AlienRaidsSetupDef>().FirstOrDefault(ged => ged.name.Equals("_AlienRaidsSetupDef"));
-                raidsSetup.RaidBands[0].RollResultMax = 60;
-                raidsSetup.RaidBands[1].RollResultMax = 80;
-                raidsSetup.RaidBands[2].RollResultMax = 100;
-                raidsSetup.RaidBands[3].RollResultMax = 130;
-                raidsSetup.RaidBands[4].RollResultMax = 9999;
-                raidsSetup.RaidBands[4].AircraftTypesAllowed = 0;
-
-                CustomMissionTypeDef Anu_Infestation = Repo.GetAllDefs<CustomMissionTypeDef>().FirstOrDefault(ged => ged.name.Equals("HavenInfestationAN_CustomMissionTypeDef"));
-                CustomMissionTypeDef NewJericho_Infestation = Repo.GetAllDefs<CustomMissionTypeDef>().FirstOrDefault(ged => ged.name.Equals("HavenInfestationSY_CustomMissionTypeDef"));
-                CustomMissionTypeDef Synderion_Infestation = Repo.GetAllDefs<CustomMissionTypeDef>().FirstOrDefault(ged => ged.name.Equals("HavenInfestationNJ_CustomMissionTypeDef"));
-
-                ResourceMissionOutcomeDef sourceMissonResourceReward = Repo.GetAllDefs<ResourceMissionOutcomeDef>().FirstOrDefault(ged => ged.name.Equals("HavenDefAN_ResourceMissionOutcomeDef"));
-                ResourceMissionOutcomeDef mutagenRewardInfestation = Helper.CreateDefFromClone(sourceMissonResourceReward, "2E579AB8-3744-4994-8036-B5018B5E2E15", "InfestationReward");
-                mutagenRewardInfestation.Resources.Values.Clear();
-                mutagenRewardInfestation.Resources.Values.Add(new ResourceUnit { Type = ResourceType.Mutagen, Value = 800 });
-
-                foreach (CustomMissionTypeDef missionTypeDef in Repo.GetAllDefs<CustomMissionTypeDef>())
-                {
-                    if (missionTypeDef.name.Contains("Haven") && missionTypeDef.name.Contains("Infestation"))
-                    {
-                        missionTypeDef.Outcomes[0].DestroySite = true;
-                        missionTypeDef.Outcomes[0].Outcomes[2] = mutagenRewardInfestation;
-                        missionTypeDef.Outcomes[0].BriefingModalBind.Title.LocalizationKey = "KEY_MISSION_HAVEN_INFESTED_VICTORY_NAME";
-                        missionTypeDef.Outcomes[0].BriefingModalBind.Description.LocalizationKey = "KEY_MISSION_HAVEN_INFESTED_VICTORY_DESCRIPTION";
-                        missionTypeDef.BriefingModalBind.Title.LocalizationKey = "KEY_MISSION_HAVEN_INFESTED_NAME";
-                        missionTypeDef.BriefingModalBind.Description.LocalizationKey = "KEY_MISSION_HAVEN_INFESTED_DESCRIPTION";
-                    }
-                }
-
-               // GeoscapeEventDef rewardEvent = TFTVCommonMethods.CreateNewEvent("InfestationReward", "KEY_INFESTATION_REWARD_TITLE", "KEY_INFESTATION_REWARD_DESCRIPTION", null);
-                //Muting Living Weapons
-                GeoscapeEventDef lwstartingEvent = Repo.GetAllDefs<GeoscapeEventDef>().FirstOrDefault(ged => ged.name.Equals("PROG_LW1_GeoscapeEventDef"));
-                lwstartingEvent.GeoscapeEventData.Mute = true;
-
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-
-            }
-        }
+       
 
         public static List<ItemUnit> InfestationRewardGenerator(int num)
         {

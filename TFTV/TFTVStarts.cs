@@ -23,9 +23,9 @@ namespace TFTV
                 GeoscapeEventDef intro = Repo.GetAllDefs<GeoscapeEventDef>().FirstOrDefault(ged => ged.name.Equals("IntroBetterGeo_0"));
 
                 intro.GeoscapeEventData.Description[0].General = new LocalizedTextBind("After all these years, you finally got the call. It meant that Symes and his deputies were dead or unreachable. Phoenix Project had gone dark. " +
-                            "You spent many years waiting, dreading for it to happen, leading a discrete existence at " + FindNearestHaven(geoFaction, site) + ", a " + geoFaction.Name.LocalizeEnglish()
+                            "You had spent many years waiting, dreading that this would happen, living a discrete and simple life at " + FindNearestHaven(geoFaction, site) + ", a " + geoFaction.Name.LocalizeEnglish()
                             + " haven.\n\nThe trek to Phoenix Point was long and dangerous, and you wouldn't have made it without " + geoFaction.GeoLevel.PhoenixFaction.Vehicles.First().Soldiers.Last().DisplayName + ", a " + geoFaction.Name.LocalizeEnglish()
-                            + " " + geoFaction.GeoLevel.PhoenixFaction.Vehicles.First().Soldiers.Last().ClassTag.className + ".\n\nBut when you reached Phoenix Point, somebody was already home...", true);
+                            + " " + geoFaction.GeoLevel.PhoenixFaction.Vehicles.First().Soldiers.Last().ClassTag.className + ".\n\nWhen you reached Phoenix Point, somebody was already home...", true);
 
             }
 
@@ -36,6 +36,27 @@ namespace TFTV
             }
 
         }
+
+        public static void RevertIntroToNormalStart()
+        {
+            try
+            {
+                GeoscapeEventDef intro = Repo.GetAllDefs<GeoscapeEventDef>().FirstOrDefault(ged => ged.name.Equals("IntroBetterGeo_0"));
+
+                intro.GeoscapeEventData.Description[0].General = new LocalizedTextBind("After all these years, you finally got the call. It meant that Symes and his deputies were dead or unreachable. " +
+                    "Phoenix Project had gone dark. \n\nThe trek to Phoenix Point was long and dangerous, and when you finally reached it, somebody was already home…", true);
+
+            }
+
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+        }
+
+
         public static string FindNearestHaven(GeoFaction geoFaction, GeoSite phoenixPoint)
         {
             try

@@ -32,6 +32,8 @@ namespace TFTV
         public bool VoidOmen15Active = TFTVVoidOmens.VoidOmen15Active;
         //VO#16 is Umbras can appear anywhere and attack anyone
         public bool VoidOmen16Active = TFTVVoidOmens.VoidOmen16Active;
+        //VO#19 is reactive evolution
+        public bool VoidOmen19Active = TFTVVoidOmens.VoidOmen19Active;
         //Check if Umbra can be spawned in tactical
         public bool UmbraResearched = TFTVUmbra.UmbraResearched;
         public Dictionary<int, int> DeadSoldiersDelirium = TFTVRevenant.DeadSoldiersDelirium;
@@ -57,19 +59,20 @@ namespace TFTV
         /// </summary>
         public override void OnTacticalStart()
         {
-
+           
             /// Tactical level controller is accessible at any time.
             TacticalLevelController tacController = Controller;
+          //  TFTVDefsRequiringReinjection.InjectDefsRequiringReinjection();
             /// ModMain is accesible at any time
             // TFTVMain main = (TFTVMain)Main;
             //TFTV give Dtony's Delirium Perks
             //  TFTVDelirium.DeliriumPerksOnTactical(tacController);
             TFTVLogger.Always("The count of tactics in play is " + TFTVHumanEnemies.HumanEnemiesAndTactics.Count);        
             TFTVHumanEnemies.RollCount = 0;
-            TFTVDefsCreatedOnLevelChanged.CreateRevenantDefs();
             TFTVRevenant.ModifyRevenantResistanceAbility(Controller);
             TFTVRevenant.CheckForNotDeadSoldiers(tacController);
             TFTVRevenant.RevenantCheckAndSpawn(Controller);
+            TFTVRevenant.ImplementVO19(Controller);
 
 
         }
@@ -114,6 +117,7 @@ namespace TFTV
             TFTVVoidOmens.VoidOmen10Active = data.VoidOmen10Active;
             TFTVVoidOmens.VoidOmen15Active = data.VoidOmen15Active;
             TFTVVoidOmens.VoidOmen16Active = data.VoidOmen16Active;
+            TFTVVoidOmens.VoidOmen19Active = data.VoidOmen19Active;
             TFTVUmbra.UmbraResearched = data.UmbraResearched;
             TFTVRevenant.DeadSoldiersDelirium = data.DeadSoldiersDelirium;
           //  TFTVRevenant.timeRevenantLastSeen = data.timeRevenantLastSeenSaveData;
@@ -143,6 +147,7 @@ namespace TFTV
                 VoidOmen10Active = TFTVVoidOmens.VoidOmen10Active,
                 VoidOmen15Active = TFTVVoidOmens.VoidOmen15Active,
                 VoidOmen16Active = TFTVVoidOmens.VoidOmen16Active,
+                VoidOmen19Active = TFTVVoidOmens.VoidOmen19Active,
                 UmbraResearched = TFTVUmbra.UmbraResearched,
                 DeadSoldiersDelirium = TFTVRevenant.DeadSoldiersDelirium,
              //   timeRevenantLastSeenSaveData = TFTVRevenant.timeRevenantLastSeen,

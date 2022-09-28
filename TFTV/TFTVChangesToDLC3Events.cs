@@ -20,7 +20,7 @@ namespace TFTV
 
         private static Event AugeryChant = null;
 
-        public static void ApplyChanges()
+        public static void ChangesToDLC3Defs()
         {
             try
             {

@@ -45,17 +45,19 @@ namespace TFTV
 
         }
 
+        public static List<string> pu_Adjectives = new List<string> { "Metal", "Junk", "Titanium", "Oil", "Servo", "Mech", "Wire", "Mesh", "Robo", "Quantum", "Cyber", "Death", "Wire", "Bit", "Gear" };
+
         public static List <string> ban_Names = new List <string> {"Nuka-Cola","Kessar","Viper","Rictus","Nux","Dag","Ace","Barry","Mohawk","Bearclaw","Clunk",
             "Deepdog","Fuk-Ushima","Fifi Macaffe","Sol","Gutgash","Ironbar","Morsov","Mudguts","Papagallo","Sarse","Sav","Roop","Blackfinger","Scrooloose",
             "Scuttle","Starbuck","Slit","Slake","Tenderloin","Toadie","Toecutter","Toast","Kane","Splitear","Brainrot","Maddog","Coyote","Birdsheet",
-            "Gearhead","Yo-yo","Madskunky","Walker","Charlie","Wez","Ziggy","Alex","Max","Miller","Kenzo","Karal","Katoa","Okoye","Fagan","Avery",
-            "Parker","Joyce","Kai","Angel","Jesse","Riley","Ash","Finley","Shaw","Vickers","Marno","Jikkola","Kris","Strid","Showalter","Grimsrud"};
+            "Gearhead","Yo-yo","Madskunky","Showalter","Grimsrud", "Cobra", "Cyrus", "Cochise", "Rembrandt", "Luther", "Vermin", "D.J.","Orphan",
+             "Buzzsaw", "Dynamo", "Fireball", "Subzero"};
 
-        public static List<string> nj_Names = new List<string> {"Rockatansky","Bryant","Richter",
-            "Ripley","Amos" ,"Draper","Caleb" ,"Hunter","Tempest","Kruger","Sinclair","Morgan","Musk","Jackson","Hicks","Vasquez","Hudson","Ferro","Spunkmeyer",
-            "Dietrich","Frost","Drake","Wierzbowski","Payne","Ventura","Dutch","Dillon","Hawkins","Mac","Poncho","Walker","Charlie","Wez","Ziggy",
-            "Alex","Max","Miller","Kenzo","Karal","Katoa","Okoye","Fagan","Avery","Parker","Joyce","Kai","Angel","Jesse","Riley","Ash",
-            "Finley","Shaw","Vickers","Marno","Jikkola","Kris","Strid","Showalter","Grimsrud"};
+        public static List<string> nj_Names = new List<string> {"Rockatansky","Bryant","Richter", "Ripley","Amos" ,"Draper","Caleb" ,"Hunter","Tempest","Kruger",
+            "Sinclair","Morgan","Musk","Jackson","Hicks","Vasquez","Hudson","Ferro","Spunkmeyer", "Dietrich","Frost","Drake","Wierzbowski","Payne","Ventura","Dutch",
+            "Dillon","Hawkins","Mac","Poncho","Walker","Charlie","Wez","Ziggy", "Alex","Max","Miller","Kenzo","Karal","Katoa","Okoye","Fagan","Avery","Parker",
+            "Joyce","Kai","Angel","Jesse","Riley","Ash", "Finley","Shaw","Vickers","Marno","Jikkola","Kris","Strid","Showalter","Grimsrud","Cox","J. Matrix","Blaine",
+            "Quaid","Cohaagen","Rasczak","Diz Flores","Duderino","Justo","Zander", "Ace Levy", "Shujimi","Sugar Watkins","Deladier","Lumbreiser","Kitten Smith","Ibanez","Zim"};
 
         public static List<string> anu_Names = new List<string> {"Walker","Charlie","Wez","Ziggy","Alex","Max","Miller","Kenzo","Karal","Katoa",
             "Okoye","Fagan","Avery","Parker","Joyce","Kai","Angel","Jesse","Riley","Ash","Finley","Shaw","Vickers","Marno","Jikkola",
@@ -64,7 +66,8 @@ namespace TFTV
         public static List<string> syn_Names = new List<string> {"Nagata","Inaros","Avasarala","Liberty","Fraternity","Equality","Lenin","Tenet",
             "Campion","Meseeks","Squanchy","Nimbus","Mojo","Nostromo","Odyssey","Bono","Eli","Naru","Taabe","Sanchez","Walker","Charlie",
             "Wez","Ziggy","Alex","Max","Miller","Kenzo","Karal","Katoa","Okoye","Fagan","Avery","Parker","Joyce","Kai","Angel","Jesse",
-            "Riley","Ash","Finley","Shaw","Vickers","Marno","Jikkola","Kris","Strid","Showalter","Grimsrud"};
+            "Riley","Ash","Finley","Shaw","Vickers","Marno","Jikkola","Kris","Strid","Showalter","Grimsrud","Scruggs","L. Gopnik","S. Ableman","R. Marshak",
+            "Ulysses","La Boeuf","Reuben","Cogburn", "Constanza", "Grant", "Lebowksi", "Sobchak"};
 
         public static List<string> pu_Names = new List<string> {"Walker","Charlie","Wez","Ziggy","Alex","Max","Miller","Kenzo","Karal","Katoa",
             "Okoye","Fagan","Avery","Parker","Joyce","Kai","Angel","Jesse","Riley","Ash","Finley","Shaw","Vickers", "Showalter","Grimsrud", "AirKris",
@@ -82,7 +85,7 @@ namespace TFTV
         public static List<string> pu_NameRanks = new List<string> { "Machina", "Metalheart", "Cleansed", "Meathead"};
         public static List<string> fo_NameRanks = new List<string> { "Scourge", "Evolved", "Reborn", "Fledgling" };
 
-        public static string tier1description = "While alive, creates special effect on allies and/or enemies (Tactics). Allies lose 4 WP if character dies.";
+        public static string tier1description = "Creates special effect on allies and/or enemies (Tactic). Allies lose 4 WP if character dies.";
         public static string tier2description = "Allies who can see the character gain +1 WP per turn and lose 3WP if character dies.";
         public static string tier3description = "Allies lose 2 WP if character dies.";
         public static string tier4description = "Allies do not lose WP if character dies. Nobody expects them to live long anyway.";

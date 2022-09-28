@@ -83,15 +83,15 @@ SDI_01_TEXT_GENERAL_0,Text,,"We are ready to share our preliminary findings rega
 
 The viral mist is an extremely unusual phenomenon. It is in fact a highly complex aerosol, capable of moving with deliberation and transporting viral DNA and other microbes.
 
-It is our belief that the vast waves of mist that helped cause the destruction of civilization were generated underwater by gigantic, mutated structures. Each wave, including the current one (referred to by the population as the Third Mist) has slightly different properties.",,,,,,,,
-SDI1_OUTCOME,Text,,"We have received reports of a variety of afflictions suffered by individuals who have traveled or reside in areas covered by the mist: tiredness, lack of energy, brain fog, anguish and sometimes hallucinations.
+It is our belief that the vast waves of mist that helped cause the destruction of civilization were generated underwater by gigantic, mutated structures. Each wave, including the current one (referred to by the population as the Third Mist), has slightly different properties.",,,,,,,,
+SDI1_OUTCOME,Text,,"We have received reports of a variety of afflictions suffered by individuals who have traveled or reside in areas covered by the mist: tiredness, lack of energy, brain fog, anguish, and sometimes hallucinations.
 
 So far we can conclude the following:
 
-1) Symptoms never fully disappear, but are negligible when the subjects are fully rested, and progressively become worse as they exert themselves. 
-2) Symptoms get worse if the subject stays or returns to locations where mist is present. 
+1) Symptoms never fully disappear, but are negligible when the subjects are fully rested, and progressively become worse as they exert themselves.
+2) Symptoms get worse if the subject stays or returns to locations where mist is present.
 
-We have termed this condition ""Oneiric Delirium"", on account of the subjects complaining of nightmares, or ""crazy dreams"", with similar themes of monstrosities and smothering. 
+We have termed this condition ""Oneiric Delirium"", on account of the subjects complaining of nightmares, or ""crazy dreams"", with similar themes of monstrous degeneration and smothering.
 
 <color=#ec9006><b>Our operatives can now be afflicted with a Delirium status of up to a third of their Willpower</b></color>",,,,,,,,
 SDI_01_TITLE,Text,,The Third Mist,,,,,,,,
@@ -249,11 +249,11 @@ VOID_OMEN_DESCRIPTION_TEXT_14,Text,,"<i>Have you noticed how things look less su
 VOID_OMEN_DESCRIPTION_TEXT_15,Text,,"<i>""Our people are seeing <b>more</b> oil monsters in the field. I look forward to the strict adherents of the scientific method explaining this away as our operatives going <b>more</b> crazy.""</i>",,,,,,,,
 VOID_OMEN_DESCRIPTION_TEXT_16,Text,,<i>It just isn't fair! Demons are supposed to follow rules too!</i>,,,,,,,,
 VOID_OMEN_DESCRIPTION_TEXT_17,Text,,<i>What if this is their end game? To turn us all into the puppets of an alien intelligence?</i>,,,,,,,,
-VOID_OMEN_INTRO,Text,,"We believe we are observing the first effects of the Oneiric Delirium on a collective scale. The phenomenon is akin to mass hysteria. 
+VOID_OMEN_INTRO,Text,,"We believe we are observing the first effects of the Oneiric Delirium on a collective scale. The phenomenon is akin to mass hysteria.
 
-Synedrion psycho-sociologists are rationalizing the documented instances of widespread psychosis as the result of stresses to which our communities are subjected when our species is facing the possibility of extinction. 
+Synedrion psycho-sociologists are rationalizing the documented instances of widespread psychosis as the result of stresses to which our communities are subjected when our species is facing the possibility of extinction.
 
-However, the global scale and eerie thematic homogeneity of these events suggests a different causal relationship. 
+However, the global scale and eerie thematic homogeneity of these events suggests a different causal relationship.
 
 Given what we know about the Oneiric Delirium and its connection to the Mist, there is little room for doubt: our collective psyche has become another battleground in our struggle with the Pandoravirus.",,,,,,,,
 VOID_OMEN_INTRO_TITLE,Text,,Omens of the Void,,,,,,,,
@@ -276,16 +276,16 @@ ALN_FISHMANUMBRA_RESEARCHDEF_NAME,Text,,TRITON UMBRA,,,,,,,,
 BG_INTRO_0_TITLE,Text,,A Cold Reboot,,,,,,,,
 BG_INTRO_0_DESCRIPTION,Text,,"After all these years, you finally got the call. It meant that Symes and his deputies were dead or unreachable. Phoenix Project had gone dark. 
 
-The trek to Phoenix Point was long and dangerous, but when you reached it, somebody was already home...",,,,,,,,
+The trek to Phoenix Point was long and dangerous, and when you finally reached it, somebody was already home…",,,,,,,,
 BG_INTRO_1_TITLE,Text,,Homecoming,,,,,,,,
-BG_INTRO_1_DESCRIPTION,Text,,"I'm Alistair Ashby. Yes, the ""Mist Expert"". Thanks for watching me back in the day, I guess... 
+BG_INTRO_1_DESCRIPTION,Text,,"I'm Alistair Ashby. Yes, the ""Mist Expert"". Thanks for watching my content back in the day, I guess... 
 
 A few of us managed to get to this bunker and activate the emergency beacon before we were overrun by the creatures that followed us here. 
 
-We got this place mostly up and running... Thanks to Olena, she is quite the wunderkind.",,,,,,,,
+We've got this place mostly up and running... Thanks to Olena, she is quite the wunderkind.",,,,,,,,
 BG_INTRO1_CHOICE_1,Text,,"Yes, I remember you. Surprising to meet you here.",,,,,,,,
 BG_INTRO_2_TITLE,Text,,Olena Kim,,,,,,,,
-BG_INTRO_2_DESCRIPTION,Text,,"<i>Oppa</i> Alistair is good with people. I'm good with machines and software. This facility runs on a limited AI called Bennu. Once Bennu verifies your credentials as duly appointed Director, all functionality should be restored and you should be able to interface with the system. ",,,,,,,,
+BG_INTRO_2_DESCRIPTION,Text,,"<i>Oppa</i> Alistair is good with people. I'm good with machines and software. This facility runs on a limited AI called Bennu. Once Bennu verifies your credentials as duly appointed Director, all functionality should be restored and you should be able to interface with the system.",,,,,,,,
 BG_INTRO_2_CHOICE_0,Text,,Identify yourself and present your credentials ,,,,,,,,
 KEY_MISSION_HAVEN_INFESTED_VICTORY_NAME,Text,,MISSION COMPLETE,,,,,,,,
 KEY_MISSION_HAVEN_INFESTED_VICTORY_DESCRIPTION,Text,,NODE DESTROYED,,,,,,,,

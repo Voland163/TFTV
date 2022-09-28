@@ -16,7 +16,7 @@ namespace TFTV
     internal class TFTVChangesToDLC1andDLC2Events
     {
         private static readonly DefRepository Repo = TFTVMain.Repo;
-        public static void Apply_Changes()
+        public static void ChangesToDLC1andDLC2Defs()
         {
             try
             {
@@ -309,6 +309,8 @@ namespace TFTV
                         TriggerEncounterID = "PROG_PU12NewNJOption",
                     },
                 });
+
+                sourceWinGeoEvent.GeoscapeEventData.Choices[1].Outcome.VariablesChange = sourceWinGeoEvent.GeoscapeEventData.Choices[0].Outcome.VariablesChange;
 
                 //Replace all LOTA Schemata missions with KE2 mission
                 GeoscapeEventDef geoEventFS9 = Repo.GetAllDefs<GeoscapeEventDef>().FirstOrDefault(ged => ged.name.Equals("PROG_FS9_GeoscapeEventDef"));

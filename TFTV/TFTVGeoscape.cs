@@ -48,14 +48,7 @@ namespace TFTV
             /// ModMain is accesible at any time
 
             TFTVMain main = (TFTVMain)Main;
-
-/*            TFTVRevenant.DeadSoldiersDelirium.Add(2, 2);
-            TFTVRevenant.DeadSoldiersDelirium.Add(3, 3);
-            TFTVRevenant.DeadSoldiersDelirium.Add(8, 4);*/
-
-
-            TFTVDefsCreatedOnLevelChanged.CreateNewDefsForTFTVStart();
-            //TFTVStarts.ModifySophiaAndJacobStats(gsController);
+           // TFTVDefsRequiringReinjection.InjectDefsRequiringReinjection();
             TFTVNewPXCharacters.PlayIntro(gsController);
             TFTVVoidOmens.ImplementVoidOmens(gsController);
             TFTVUmbra.CheckForUmbraResearch(gsController);
@@ -68,18 +61,20 @@ namespace TFTV
                 TFTVRevenant.DeadSoldiersDelirium[TFTVRevenant.revenantID] += 1;
             
             }
-          /*  if (TFTVRevenant.revenantSpawned)
-            {
-                TFTVLogger.Always("revenant Spawned is true and " + TFTVRevenant.timeLastRevenantSpawned);
-                TFTVRevenant.timeLastRevenantSpawned = gsController.Timing.Now;
-                TFTVLogger.Always("revenant Spawned is true and " + TFTVRevenant.timeLastRevenantSpawned);
-            }*/
+            TFTVDefsWithConfigDependency.InjectDefsWithConfigDependency();
+            //  TFTVRevenant.CreateBionicMan(Controller);
+            /*  if (TFTVRevenant.revenantSpawned)
+              {
+                  TFTVLogger.Always("revenant Spawned is true and " + TFTVRevenant.timeLastRevenantSpawned);
+                  TFTVRevenant.timeLastRevenantSpawned = gsController.Timing.Now;
+                  TFTVLogger.Always("revenant Spawned is true and " + TFTVRevenant.timeLastRevenantSpawned);
+              }*/
 
-           /* if (TFTVRevenant.timeLastRevenantSpawned.TotalHours !=0 && Controller.EventSystem.GetVariable("Revenant_Encountered_Variable") == 0) 
-            {
-                Controller.EventSystem.SetVariable("Revenant_Encountered_Variable", 1);
-            }
-            TFTVLogger.Always("Revenant_Encountered_Variable is " + Controller.EventSystem.GetVariable("Revenant_Encountered_Variable"));*/
+            /* if (TFTVRevenant.timeLastRevenantSpawned.TotalHours !=0 && Controller.EventSystem.GetVariable("Revenant_Encountered_Variable") == 0) 
+             {
+                 Controller.EventSystem.SetVariable("Revenant_Encountered_Variable", 1);
+             }
+             TFTVLogger.Always("Revenant_Encountered_Variable is " + Controller.EventSystem.GetVariable("Revenant_Encountered_Variable"));*/
 
 
         }

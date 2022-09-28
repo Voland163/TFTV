@@ -4,7 +4,7 @@ PROG_FS9_OUTCOME,Text,,"Anu havens join in a ritual to welcome the prophesized T
 
 Synedrion, trapped in the complex web of its inner politics, fails to agree on a course of action, but one of their havens decides to send a mission to investigate the impact zone.
 
-New Jericho mobilizes its armed forces. ""Caught between the foolish and the mad, we must act"", proclaims West.",,,,,,,,
+New Jericho mobilizes its armed forces. ""Caught between the foolish and the mad, we must act!"", proclaims West.",,,,,,,,
 PROG_FS9_TEXT_GENERAL_0,Text,,"Earlier today, an asteroid crashed into Earth. The release of kinetic energy was roughly equivalent to the limited nuclear exchange between India and Iran during WW3. The impact event has been dubbed ""Hammerfall"", the largest in Earth's recorded history.
 
 The asteroid hit deep inside a quarantine zone, where the Pandoravirus has aggressively mutated the surrounding ecology. However, traces of seismic activity have been detected in faraway coastal regions, coinciding with rumors of Pandoran hordes emerging from the mist.",,,,,,,,
@@ -27,7 +27,7 @@ PROG_FS10_CHOICE_0_OUTCOME_GENERAL,Text,,"If NJ couldn't stop it, we have nothin
 PROG_FS10_CHOICE_0_TEXT,Text,,OK. What do you make of it Alistair?,,,,,,,,
 PROG_FS10_TEXT_GENERAL_0,Text,,"Using reports from public feeds and satellite imagery we can now piece together that New Jericho launched a massive rocket attack on the Hammerfall crater, presumably the “Operation Mongoose” that West had been planning. The strike force was in turn obliterated by a towering Pandoran monstrosity, surrounded by a myriad of flying creatures.
 
-The chronology of events and their causal relationship remains unclear, with some within Synedrion blaming NJ for provoking the Pandoran attack and NJ claiming that they merely acted in self defense.
+The chronology of events and their causal relationship remains unclear, with some within Synedrion blaming NJ for provoking the Pandoran attack and NJ claiming that they acted in self defense.
 
 The Disciples of Anu insist that the emergence of what they call the “Behemoth” and the “Festering Skies” was preordained and inevitable.",,,,,,,,
 PROG_FS10_TITLE,Text,,Operation Mongoose,,,,,,,,
@@ -36,9 +36,9 @@ PROG_FS1_FAIL_CHOICE_0_OUTCOME_GENERAL,Text,,"An armed Manticore approaches our 
 PROG_FS1_FAIL_CHOICE_0_TEXT,Text,,"This is good news, we could ill afford to lose that Manticore!",,,,,,,,
 PROG_FS1_FAIL_TEXT_GENERAL_0,Text,,"The attack on [HavenName] came from the Hammerfall Crater. We speculate that this particular haven was targeted because it harbored the egg recovered by Citizen Eileen.
 
-Using reports from public feeds and satellite imagery we can now piece together that New Jericho launched a massive rocket attack on the Hammerfall Crater, presumably the “Operation Mongoose” that West had been planning. The NJ strike force was in turn obliterated by a towering Pandoran monstrosity, surrounded by a myriad of flying creatures.
+Using reports from public feeds and satellite imagery we can now piece together that New Jericho launched a massive rocket attack on the Hammerfall Crater, presumably the “Operation Mongoose” that West had been planning. The New Jericho strike force was in turn obliterated by a towering Pandoran monstrosity, surrounded by a myriad of flying creatures.
 
-The chronology of events and their causal relationship remains unclear, with some within Synedrion blaming NJ for provoking the Pandoran attack and NJ claiming that they merely acted in self defense.
+The chronology of events and their causal relationship remains unclear, with some within Synedrion blaming New Jericho for provoking the Pandoran attack, and New Jericho themselves claiming that they acted in self defense.
 
 The Disciples of Anu insist that the emergence of what they call the “Behemoth” and the “Festering Skies” was preordained and inevitable.",,,,,,,,
 PROG_FS1_FAIL_TITLE,Text,,A Sole Survivor,,,,,,,,
@@ -48,12 +48,13 @@ PROG_FS1_MISS_TEXT_GENERAL_0,Text,,"With the help of a few like-minded individua
 
 As a result of Sartorius' casual proselytizing of the rights of artificial persons, M-AI-Core 12B/735 has renamed herself ""Aurora"".
 
-Eileen brings up a holo display of [HavenName]. <i>""This is where they are storing the egg I brought. Meet me there in fifteen, I will lure away Pete, who is not much of a guard. And a terrible poet. Remember: no one dies, the egg gets destroyed. In the meantime, my friends will finish refitting the Aurora”</i>",,,,,,,,
+Eileen brings up a holo display of [HavenName]. <i>""This is where they are storing the egg I brought. Meet me there in fifteen, I’ll figure out how to get Pete away from the area. He’s not much of a guard, and a terrible poet. Remember: no one dies, the egg gets destroyed. In the meantime, my friends will finish refitting the Aurora”</i>",,,,,,,,
 PROG_FS1_MISS_TITLE,Text,,The Hatching,,,,,,,,
-PROG_FS1_OUTCOME,Text,,"<i>""This is Citizen Eileen. If you are getting this, I know that you saw what I saw: there were thousands of those… eggs. And I brought one of them here, and those fools are still ""working to achieve a consensus on a reasonable course of action"" instead of burning it. If... When it hatches it's going to get bad. Help me destroy it before whatever inside comes out, and this sleeping beauty is yours""</i>
+PROG_FS1_OUTCOME,Text,,"<i>""This is Citizen Eileen. If you are getting this, I know that you saw what I saw: there were thousands of those… eggs. And I brought one of them here, and those fools are still ""working to achieve a consensus on a reasonable course of action"" instead of burning it. If... When it hatches it's going to get bad. Help me destroy it before whatever inside comes out, and I’ll give you use of this Manticore.""</i>
 
-We should investigate this egg and collect samples of it if possible.",,,,,,,,
-PROG_FS1_TEXT_GENERAL_0,Text,,"Out of the findings of the Synedrion expedition, a hypothesis arises: Hammerfall has precipitated profound changes in the Pandoran ecology. Furthermore, the object extracted by Citizen Eileen appears to be an egg that will hatch a very large flying creature. An intense public debate follows across Synedrion public feeds, but the citizens can't agree on how to proceed; they settle on continuing to monitor the situation.
+We should investigate this egg and collect samples of it if possible.
+",,,,,,,,
+PROG_FS1_TEXT_GENERAL_0,Text,,"From the findings of the Synedrion expedition, a hypothesis arises: Hammerfall has precipitated profound changes in the Pandoran ecology. Furthermore, the object extracted by Citizen Eileen appears to be an egg that will hatch a very large flying creature. An intense public debate follows across Synedrion public feeds, but the citizens can't agree on how to proceed; they settle on continuing to monitor the situation.
 
 New Jericho finalizes plans for its military operation to attack the Hammerfall Crater, now codenamed Mongoose.
 
@@ -61,9 +62,9 @@ New Jericho finalizes plans for its military operation to attack the Hammerfall 
 PROG_FS1_TITLE,Text,,We Are Still Collating,,,,,,,,
 PROG_FS1_WIN_CHOICE_0_OUTCOME_GENERAL,Text,,"The attack on [HavenName] came from the Hammerfall Crater. We speculate that this particular haven was targeted because it harbored the egg recovered by Citizen Eileen.
 
-Using reports from public feeds and satellite imagery we can now piece together that New Jericho launched a massive rocket attack on the Hammerfall Crater, presumably the “Operation Mongoose” that West had been planning. The NJ strike force was in turn obliterated by a towering Pandoran monstrosity, surrounded by a myriad of flying creatures.
+Using reports from public feeds and satellite imagery we can now piece together that New Jericho launched a massive rocket attack on the Hammerfall Crater, presumably the “Operation Mongoose” that West had been planning. The New Jericho strike force was in turn obliterated by a towering Pandoran monstrosity, surrounded by a myriad of flying creatures.
 
-The chronology of events and their causal relationship remains unclear, with some within Synedrion blaming NJ for provoking the Pandoran attack and NJ claiming that they merely acted in self defense.
+The chronology of events and their causal relationship remains unclear, with some within Synedrion blaming New Jericho for provoking the Pandoran attack, and New Jericho themselves claiming that they acted in self defense.
 
 The Disciples of Anu insist that the emergence of what they call the “Behemoth” and the “Festering Skies” was preordained and inevitable.",,,,,,,,
 PROG_FS1_WIN_CHOICE_0_TEXT,Text,,OK.,,,,,,,,
@@ -74,9 +75,9 @@ Eileen is aboard. She is shaken, now that the adrenaline rush from the escape an
 Eileen has lost everything and everyone that was dear to her. Perhaps she will find a new home with us.",,,,,,,,
 PROG_FS1_WIN_TEXT_GENERAL_1,Text,,"The attack on [HavenName] came from the Hammerfall Crater. We speculate that this particular haven was targeted because it harbored the egg recovered by Citizen Eileen.
 
-Using reports from public feeds and satellite imagery we can now piece together that New Jericho launched a massive rocket attack on the Hammerfall Crater, presumably the “Operation Mongoose” that West had been planning. The NJ strike force was in turn obliterated by a towering Pandoran monstrosity, surrounded by a myriad of flying creatures.
+Using reports from public feeds and satellite imagery we can now piece together that New Jericho launched a massive rocket attack on the Hammerfall Crater, presumably the “Operation Mongoose” that West had been planning. The New Jericho strike force was in turn obliterated by a towering Pandoran monstrosity, surrounded by a myriad of flying creatures.
 
-The chronology of events and their causal relationship remains unclear, with some within Synedrion blaming NJ for provoking the Pandoran attack and NJ claiming that they merely acted in self defense.
+The chronology of events and their causal relationship remains unclear, with some within Synedrion blaming New Jericho for provoking the Pandoran attack, and New Jericho themselves claiming that they acted in self defense.
 
 The Disciples of Anu insist that the emergence of what they call the “Behemoth” and the “Festering Skies” was preordained and inevitable.",,,,,,,,
 PROG_FS1_WIN_TITLE,Text,,Homecoming,,,,,,,,

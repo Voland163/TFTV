@@ -111,7 +111,7 @@ namespace PRMBetterClasses.SkillModifications
         internal static float wpCost = 3.0f;
         private static void Create_LayWaste()
         {
-            float apCost = 0.5f;
+            float apCost = 0.25f;
             float baseDamage = 10;
             float range = 25.0f;
 
@@ -208,7 +208,7 @@ namespace PRMBetterClasses.SkillModifications
                         PRMLogger.Debug("----------------------------------------------------", false);
                         PRMLogger.Debug($"POSTFIX ApplyEffectAbility.TargetFilterPredicate(..) with 'LayWaste_AbilityDef' detected and __result is true ...");
                         BaseStat targetWP = targetActor.Status.GetStat(StatModificationTarget.WillPoints.ToString(), null);
-                        StatusStat sourceWP = ((TacticalActor)AccessTools.Property(typeof(TacticalAbility), "TacticalActor").GetValue(__instance, null)).CharacterStats.WillPoints;
+                        StatusStat sourceWP = __instance.TacticalActor.CharacterStats.WillPoints; //((TacticalActor)AccessTools.Property(typeof(TacticalAbility), "TacticalActor").GetValue(__instance, null)).CharacterStats.WillPoints;
                         __result = Utl.LesserThan(targetWP, sourceWP, 1E-05f);
                         PRMLogger.Debug($"Target actor WP {targetWP} vs source WP {sourceWP}, result after WP check: {__result}");
                         PRMLogger.Debug("----------------------------------------------------", false);
@@ -234,6 +234,9 @@ namespace PRMBetterClasses.SkillModifications
                         PRMLogger.Debug("----------------------------------------------------", false);
                         PRMLogger.Debug($"POSTFIX DamageEffect.OnApply(..) from '{__instance.EffectDef.name}' detected with {target} as target");
 
+                        int damagePerWPDif = 20;
+                        int maxDamage = 200;
+
                         object base_Source = AccessTools.Property(typeof(Effect), "Source").GetValue(__instance, null);
                         object source = base_Source ?? __instance;
                         IDamageReceiver damageReceiver = DamageEffect.GetDamageReceiver(target);
@@ -255,13 +258,13 @@ namespace PRMBetterClasses.SkillModifications
                             float sourceWP = __instance.IsSimulation(target)
                                 ? sourceActor.Status.GetStat(StatModificationTarget.WillPoints.ToString(), null).Value
                                 : sourceActor.Status.GetStat(StatModificationTarget.WillPoints.ToString(), null).Value + wpCost;
-                            int damageMult = (int)(sourceWP - targetWP);
-                            damageAccumulation.InitialAmount *= damageMult;
-                            damageAccumulation.Amount *= damageMult;
+                            int damage = (int)(sourceWP - targetWP) * damagePerWPDif > maxDamage ? maxDamage : (int)(sourceWP - targetWP) * damagePerWPDif;
+                            damageAccumulation.InitialAmount = damage;
+                            damageAccumulation.Amount = damage;
 
                             PRMLogger.Debug($"  Target Actor: {targetActor} with {targetWP} WP");
                             PRMLogger.Debug($"  Source Actor: {sourceActor} with {sourceWP} WP");
-                            PRMLogger.Debug($"  Damage multiplicator: {damageMult}");
+                            PRMLogger.Debug($"  Damage multiplicator: {(int)(sourceWP - targetWP) * damagePerWPDif}");
                             PRMLogger.Debug($"  DamageAccum initial amount: {damageAccumulation.InitialAmount}");
                             PRMLogger.Debug($"                      amount: {damageAccumulation.Amount}");
                             PRMLogger.Debug($"  Is simulation: {__instance.IsSimulation(target)}");

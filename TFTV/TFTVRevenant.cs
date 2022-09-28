@@ -29,6 +29,7 @@ namespace TFTV
     {
         private static readonly DefRepository Repo = TFTVMain.Repo;
         public static Dictionary<int, int> DeadSoldiersDelirium = new Dictionary<int, int>();
+        public static Dictionary<int, int> RevenantsKilled = new Dictionary<int, int>();
 
 
         public static int daysRevenantLastSeen = 0;
@@ -94,8 +95,6 @@ namespace TFTV
 
         //private static readonly DamageKeywordDef paralisingDamageKeywordDef = Repo.GetAllDefs<DamageKeywordDef>().FirstOrDefault(p => p.name.Equals("Paralysing_DamageKeywordDataDef"));
 
-
-
         public static void CheckForNotDeadSoldiers(TacticalLevelController level)
         {
             try
@@ -136,9 +135,6 @@ namespace TFTV
             }
 
         }
-
-
-
         public static void CheckRevenantTime(GeoLevelController controller)
 
         {
@@ -158,7 +154,6 @@ namespace TFTV
             }
 
         }
-
         public static void UpdateRevenantTimer(GeoLevelController controller)
         {
             try
@@ -178,7 +173,6 @@ namespace TFTV
                 TFTVLogger.Error(e);
             }
         }
-
         public static void RevenantCheckAndSpawn(TacticalLevelController controller)
         {
             try
@@ -199,7 +193,6 @@ namespace TFTV
                 TFTVLogger.Error(e);
             }
         }
-
         public static GeoTacUnitId RevenantRoll(TacticalLevelController controller)
         {
             try
@@ -231,7 +224,6 @@ namespace TFTV
             }
             throw new InvalidOperationException();
         }
-
         public static ClassTagDef GetRevenantClassTag(TacticalLevelController controller, GeoTacUnitId theChosen)
         {
             try
@@ -271,7 +263,6 @@ namespace TFTV
             }
             throw new InvalidOperationException();
         }
-
         public static void TryToSpawnRevenant(TacticalLevelController controller)
         {
             try
@@ -303,7 +294,7 @@ namespace TFTV
                     AddRevenantStatusEffect(actor);
                     SetRevenantTierTag(theChosen, actor, controller);
                     actor.name = GetDeadSoldiersNameFromID(theChosen, controller);
-                    //  TFTVLogger.Always("Crab's name has been changed to " + actor.GetDisplayName());
+                    TFTVLogger.Always("Crab's name has been changed to " + actor.GetDisplayName());
                     // SetDeathTime(theChosen, __instance, timeOfMissionStart);
                     revenantID = theChosen;
                     TFTVLogger.Always("The accumulated delirium for  " + GetDeadSoldiersNameFromID(theChosen, controller)
@@ -327,6 +318,31 @@ namespace TFTV
                 }
             }
 
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+        public static void ImplementVO19(TacticalLevelController controller)
+        {
+            try
+            {
+                if (controller.Factions.Any(f => f.Faction.FactionDef.MatchesShortName("aln")) && TFTVVoidOmens.VoidOmen19Active)
+                {
+                    TacticalFaction pandorans = controller.GetFactionByCommandName("aln");
+
+                    foreach (TacticalActorBase pandoran in pandorans.Actors)
+                    {
+                        if (!controller.TacticalGameParams.Statistics.LivingSoldiers.ContainsKey(pandoran.GeoUnitId)
+                             && !pandoran.GameTags.Contains(anyRevenantGameTag)
+                             && pandoran.GetAbilityWithDef<DamageMultiplierAbility>(revenantResistanceAbility) == null)
+
+                            AddRevenantResistanceAbility(pandoran);
+                        TFTVLogger.Always(pandoran.name + " received the revenant resistance ability.");
+                    }
+                }
+            }
             catch (Exception e)
             {
                 TFTVLogger.Error(e);
@@ -428,7 +444,6 @@ namespace TFTV
             }
             throw new InvalidOperationException();
         }
-
         public static void SetRevenantTierTag(GeoTacUnitId deadSoldier, TacticalActorBase actor, TacticalLevelController level)
         {
             try
@@ -462,7 +477,6 @@ namespace TFTV
                 TFTVLogger.Error(e);
             }
         }
-
         public static GeoTacUnitId GetDeadSoldiersIdFromInt(int id, TacticalLevelController level)
         {
             try
@@ -481,7 +495,6 @@ namespace TFTV
             }
             throw new InvalidOperationException();
         }
-
         public static GeoTacUnitId GetDeadSoldiersIdFromName(string name, TacticalLevelController level)
         {
             try
@@ -510,7 +523,6 @@ namespace TFTV
             }
             throw new InvalidOperationException();
         }
-
         public static string GetDescriptionOfRevenantClassAbility(string name, TacticalLevelController level)
         {
             try
@@ -569,7 +581,6 @@ namespace TFTV
             }
             throw new InvalidOperationException();
         }
-
         public static void SetRevenantClassAbility(GeoTacUnitId deadSoldier, TacticalLevelController level, TacticalActor tacticalActor)
         {
             try
@@ -589,7 +600,6 @@ namespace TFTV
                 TFTVLogger.Error(e);
             }
         }
-
         public static void AddtoListOfDeadSoldiers(TacticalActorBase deadSoldier)//, TacticalLevelController level)
         {
 
@@ -611,7 +621,6 @@ namespace TFTV
             }
 
         }
-
         public static DamageTypeBaseEffectDef GetPreferredDamageType(TacticalLevelController controller)
         {
             try
@@ -746,7 +755,6 @@ namespace TFTV
             }
             throw new InvalidOperationException();
         }
-
         public static void ModifyRevenantResistanceAbility(TacticalLevelController controller)
         {
             DamageMultiplierAbilityDef revenantResistanceAbilityDef = Repo.GetAllDefs<DamageMultiplierAbilityDef>().FirstOrDefault(p => p.name.Equals("RevenantResistance_AbilityDef"));
@@ -794,13 +802,11 @@ namespace TFTV
                     "as a response to Phoenix Project overwhelming use of weapons with high damage per projectile/strike", true);
             }
         }
-
         public static void AddRevenantResistanceAbility(TacticalActorBase tacticalActor)
         {
             tacticalActor.AddAbility(revenantResistanceAbility, tacticalActor);
 
         }
-
         public static void AddRevenantClassAbility(TacticalActor tacticalActor, SpecializationDef specialization)
 
         {
@@ -1042,7 +1048,6 @@ namespace TFTV
                 TFTVLogger.Error(e);
             }
         }
-
         private static IEnumerator<NextUpdate> RunOnNextFrame(Action action)
         {
             yield return NextUpdate.NextFrame;
@@ -1242,20 +1247,67 @@ namespace TFTV
             {
                 try
                 {
-
-
                     if (deathReport.Actor.HasGameTag(anyRevenantGameTag))
                     {
                         revenantSpawned = true;
-
+                        if (!RevenantsKilled.Keys.Contains(revenantID))
+                        {
+                            RevenantsKilled.Add(revenantID, 0);
+                        }
                     }
-
                 }
                 catch (Exception e)
                 {
                     TFTVLogger.Error(e);
                 }
             }
+        }
+
+        public static void CreateBionicMan(GeoLevelController levelController)
+        {
+            try
+            {
+                int idChosen = 0;
+
+                foreach (int id in RevenantsKilled.Keys)
+                {
+                    if (RevenantsKilled[id] == 0)
+                    {
+                        idChosen = id;
+
+                    }
+                }
+
+                GeoTacUnitId bionicMan = new GeoTacUnitId();
+                if (idChosen != 0)
+                {
+                    foreach (GeoTacUnitId deadSoldier in levelController.DeadSoldiers.Keys)
+                    {
+                        if (deadSoldier == idChosen)
+                        {
+                            TFTVLogger.Always("The chosen dead soldier is " + levelController.DeadSoldiers[deadSoldier].GetName());
+                            bionicMan = deadSoldier;
+                        }
+                    }
+                }
+                if (bionicMan == null)
+                {
+                    levelController.DeadSoldiers[bionicMan].SpawnAsCharacter();
+                }
+
+
+                /*
+                TacCharacterDef characterDef = Repo.GetAllDefs<TacCharacterDef>().FirstOrDefault(p => p.name.Equals("NJ_Jugg_TacCharacterDef"));
+                TacCharacterDef bionicManDef = Helper.CreateDefFromClone(characterDef, "36B01740-2E05-4D5A-9C2E-24D506C6F584", "BionicManDef");
+                bionicManDef.Data.Name = levelController.DeadSoldiers[bionicMan].GetName();
+                bionicManDef.Data.CharacterProgression.AddSkillPoints(levelController.DeadSoldiers[bionicMan].Level * 20);*/
+            }
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
         }
 
         /*

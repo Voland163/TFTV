@@ -19,6 +19,8 @@ using System.Linq;
 
 namespace TFTV
 {
+    //for future hints: TUT4_BodyPartDisabled_HintDef can be used to teach about Stamina
+
     internal class TFTVTutorialAndStory
     {
         private static readonly DefRepository Repo = TFTVMain.Repo;
@@ -154,39 +156,7 @@ namespace TFTV
 
         }
 
-        public static void CreateHints()
-
-        {
-            try
-            {
-                CreateNewTacticalHint("UmbraSighted", HintTrigger.ActorSeen, "Oilcrab_TacCharacterDef", "UMBRA_SIGHTED_TITLE", "UMBRA_SIGHTED_TEXT", 0, true);
-                CreateNewTacticalHint("RevenantSighted", HintTrigger.ActorSeen, "RevenantTier_1_GameTagDef", "REVENANT_SIGHTED_TITLE", "REVENANT_SIGHTED_TEXT", 1, true);
-
-
-                CreateNewTacticalHintInfestationMission("InfestationMissionIntro"); 
-                CreateNewTacticalHintInfestationMission("InfestationMissionIntro2");
-                CreateNewTacticalHintInfestationMissionEnd("InfestationMissionEnd");
-
-                ContextHelpHintDef infestationIntro2 = Repo.GetAllDefs<ContextHelpHintDef>().FirstOrDefault(ged => ged.name.Equals("InfestationMissionIntro2"));
-                ContextHelpHintDef infestationIntro = Repo.GetAllDefs<ContextHelpHintDef>().FirstOrDefault(ged => ged.name.Equals("InfestationMissionIntro"));
-                infestationIntro.NextHint = infestationIntro2;
-
-
-                //  CreateNewTacticalHint("LeaderSighted", HintTrigger.ActorSeen, "HumanEnemy_GameTagDef", "Should not appear", "Should not appear", 1, false);
-                //   ContextHelpHintDef leaderSightedHint = Repo.GetAllDefs<ContextHelpHintDef>().FirstOrDefault(ged => ged.name.Equals("LeaderSighted"));
-                //   leaderSightedHint.AnyCondition = false;
-                //  leaderSightedHint.Conditions[0] = ActorIsOfFactionCreateNewConditionForTacticalHint("AN_FallenOnes_TacticalFactionDef");
-                //  leaderSightedHint.Conditions.Add(ActorIsOfFactionCreateNewConditionForTacticalHint("Anu_TacticalFactionDef"));
-                //  leaderSightedHint.Conditions.Add(ActorIsOfFactionCreateNewConditionForTacticalHint("NEU_Bandits_TacticalFactionDef"));
-                //  leaderSightedHint.Conditions.Add(ActorIsOfFactionCreateNewConditionForTacticalHint("NJ_Purists_TacticalFactionDef"));
-                //  leaderSightedHint.Conditions.Add(ActorIsOfFactionCreateNewConditionForTacticalHint("NewJericho_TacticalFactionDef"));
-                //  leaderSightedHint.Conditions.Add(ActorIsOfFactionCreateNewConditionForTacticalHint("Synedrion_TacticalFactionDef"));
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-        }
+       
 
         public static ActorHasTemplateHintConditionDef ActorHasTemplateCreateNewConditionForTacticalHint(string name)
         {

@@ -110,7 +110,7 @@ namespace TFTV
 
                             // If a Void Omen rolls
                             // Create list of Void Omens currently implemented
-                            List<int> voidOmensList = new List<int> { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 13, 14 };
+                            List<int> voidOmensList = new List<int> { 1, 2, 4, 5, 6, 7, 8, 9, 10, 12, 13, 14, 18 };
                             
                             if (geoAlienFaction.Research.HasCompleted("ALN_CrabmanUmbra_ResearchDef"))
                             {
@@ -127,6 +127,14 @@ namespace TFTV
                             {
                                 voidOmensList.Add(17);
                                 
+                            }
+                            if (TFTVVoidOmens.CheckForAlreadyRolledVoidOmens(geoLevelController).Count >= 8) 
+                            {
+                                voidOmensList.Add(3);                           
+                            }
+                            if (TFTVVoidOmens.CheckForAlreadyRolledVoidOmens(geoLevelController).Count >= 5 && TFTVRevenant.DeadSoldiersDelirium.Keys.Count==0)
+                            {
+                                voidOmensList.Add(19);
                             }
 
                             // Check for already rolled Void Omens

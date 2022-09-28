@@ -29,7 +29,7 @@ namespace TFTV
         //Default settings
         [ConfigField(text: "DEFAULT TFTV SETTINGS",
             description: "Sets all settings to default, to provide the Terror from the Void experience as envisioned by its creators")]
-        public bool defaultSettings = true;
+        public bool defaultSettings = false;
 
         //Starting squad
       
@@ -90,7 +90,7 @@ namespace TFTV
         // Can be applied to game in progress
         [ConfigField(text: "Amount of resources gained in events",
            description: "For current (post Azazoth patch) Vanilla, set to 1. For default TFTV and Vanilla pre-Azazoth patch, set to 0.8.\n" +
-            "Can be applied to a game in progress.")]
+            "Can be applied to a game in progress")]
         public float ResourceMultiplier = 0.8f;
 
         // Changing the settings below will make the game easier:
@@ -99,7 +99,7 @@ namespace TFTV
         // Can be applied to game in progress
         [ConfigField(text: "Higher diplomatic penalties",
            description: "Diplomatic penalties from choices in events are doubled and revealing diplomatic missions for one faction gives a diplomatic penalty with the other factions.\n" +
-                        "Can be applied to a game in progress.")]
+                        "Can be applied to a game in progress, BUT IF YOU CHANGE THIS SETTING, QUIT THE GAME TO DESKTOP AND RESTART FOR CHANGES TO TAKE EFFECT")]
         public bool DiplomaticPenalties = true;
 
 
@@ -123,7 +123,7 @@ namespace TFTV
 
         // If set to false, ambushes will happen as rarely as in Vanilla, and will not have crates in them
         [ConfigField(text: "New ambush",
-          description: "Ambushes will happen more often, will be harder and will have crates in them.")]
+          description: "Ambushes will happen more often and will be harder. Regardless of this setting, all ambushes will have crates in them.")]
         public bool MoreAmbushes = true;
 
         // Changing the settings below will make the game harder:
@@ -137,14 +137,14 @@ namespace TFTV
 
         // If set to true reversing engineering an item allows to research the faction technology that allows manufacturing the item 
         [ConfigField(text: "Enhanced Reverse Engineering",
-        description: "Reversing engineering an item allows to research the faction technology that allows manufacturing the item.")]
+        description: "Reversing engineering an item allows to research the faction technology that allows manufacturing the item. IF YOU CHANGE THIS SETTING, QUIT THE GAME TO DESKTOP AND RESTART FOR CHANGES TO TAKE EFFECT")]
         public bool ActivateReverseEngineeringResearch = true;
 
         // Below are advanced settings. The mod was designed to be played with all of them turned on
 
         //If set to true, modifes stats of some weapons and modules, and adds random chance that weapon will be lost when disengaging
         [ConfigField(text: "Changes to air combat",
-       description: "Modifes stats of some weapons and modules, and adds random chance that weapon will be lost when disengaging.")]
+       description: "Modifes stats of some weapons and modules.")]
         public bool ActivateAirCombatChanges = true;
 
         // If set to true activates DLC5 Kaos Engines story rework (in progress)
@@ -163,7 +163,7 @@ namespace TFTV
         public bool Debug = true;
 
         [ConfigField(text: "Learn the first personal skill",
-           description: "If enabled, the first personal skill (level 1) is set rigth after a character is created (starting soldiers, new recruits on haven, rewards ect)")]
+           description: "If enabled, the first personal skill (level 1) is set right after a character is created (starting soldiers, new recruits on haven, rewards ect)")]
         public bool LearnFirstPersonalSkill = true;
 
         // Deactivate auto standy in tactical missions

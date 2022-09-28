@@ -1,6 +1,7 @@
 using Base.Core;
 using Base.Defs;
 using Base.Levels;
+using Epic.OnlineServices;
 using HarmonyLib;
 using Newtonsoft.Json;
 using PhoenixPoint.Common.Core;
@@ -69,7 +70,7 @@ namespace TFTV
             /// Metadata is whatever is written in meta.json
             string v = MetaData.Version.ToString();
             /// Game creates Harmony object for each mod. Accessible if needed.
-            HarmonyLib.Harmony harmony = (HarmonyLib.Harmony)HarmonyInstance;
+            Harmony harmony = (Harmony)HarmonyInstance;
             /// Mod instance is mod's runtime representation in game.
             string id = Instance.ID;
             /// Game creates Game Object for each mod. 
@@ -77,82 +78,18 @@ namespace TFTV
             /// PhoenixGame is accessible at any time.
             PhoenixGame game = GetGame();
 
-            Logger.LogInfo("TFTV September 28 release #1");
+            Logger.LogInfo("TFTV October 2 release #4");
 
             //BC stuff
-            ApplyInGameConfig();
-            ApplyDefChanges();
-            //TFTV Stuff that needs to happen ASAP
-            TFTVDefsCreatedOnLevelChanged.Create_VoidOmen_Events();
-            //Medbay
-            TFTVDefsCreatedOnLevelChanged.ChangesToMedbay();
-
-            //Load changes to Defs, on the assumption that they will not degrade over time
-            TFTVDefsCreatedOnLevelChanged.ModifyAmountResourcesEvents(Config.ResourceMultiplier);
-            //Check if player chose to have more ambushes and crates, and if Void Omen changing Ambushes is not in play
-            if (Config.MoreAmbushes)
-            {
-                TFTVAmbushes.Apply_Changes_Ambush_Missions();
-            }
-            //Creates events where factions upset because of augmentations
-            TFTVAugmentations.ApplyChanges();
-            //Changes to DLC events
-            TFTVChangesToDLC1andDLC2Events.Apply_Changes();
-            TFTVChangesToDLC3Events.ApplyChanges();
-            TFTVChangesToDLC3Events.ModifyMaskedManticoreResearch();
-            TFTVChangesToDLC4Events.Apply_Changes();
-            if (Config.ActivateKERework)
-            {
-                TFTVChangesToDLC5Events.Apply_Changes();
-            }
-            //Sets bonus to damage from Delirium to 0
-            TFTVDefsCreatedOnLevelChanged.RemoveCorruptionDamageBuff();
-            //Modifies weapons/modules stats as per Belial's doc
-            if (Config.ActivateAirCombatChanges)
-            {
-                TFTVDefsCreatedOnLevelChanged.ModifyAirCombatDefs();
-            }
-            //Doubles penalties from factions
-            if (Config.DiplomaticPenalties)
-            {
-                TFTVDiplomacyPenalties.Apply_Changes();
-            }
-            //Applies changes to infestation mission/rewards
-            TFTVInfestation.Apply_Infestation_Changes();
-            //Pending config, modifes evo points per day depending on difficulty level, etc
-            TFTVDefsCreatedOnLevelChanged.ModifyPandoranProgress();
-            //Modifies air vehicles 
-            TFTVDefsCreatedOnLevelChanged.ModifyDefsForPassengerModules();
-            //HybernationModuleStaminaRecuperation, adjusts if selected in config       
-            TFTVDefsCreatedOnLevelChanged.HibernationModuleStaminaRecuperation();
-            //Makes reverse engineering grant access to underlying research. Pending unifying research cost of RE items.
-            if (Config.ActivateReverseEngineeringResearch)
-            {
-                TFTVReverseEngineering.ModifyReverseEngineering();
-            }
-            //Changes when Umbra will appear
-            TFTVDefsCreatedOnLevelChanged.ChangeUmbra();
-            //Create Dtony's delirium perks
-            TFTVDefsCreatedOnLevelChanged.CreateDeliriumPerks();
-            //Modify Defs to introduce Alistair's events
-            TFTVDefsCreatedOnLevelChanged.InjectAlistairAhsbyLines();
-            //Create Revenant defs
-            TFTVDefsCreatedOnLevelChanged.CreateRevenantDefs();
-            //This creates the intro events when a new game is started
-            TFTVDefsCreatedOnLevelChanged.CreateIntro();
-            //Run all harmony patches; some patches have config flags
-
-
-            TFTVTutorialAndStory.CreateHints();
-            TFTVDefsCreatedOnLevelChanged.MistOnAllMissions();
-            TFTVHumanEnemiesDefs.CreateHumanEnemiesTags();
-            TFTVHumanEnemiesDefs.ModifyMissionDefsToReplaceNeutralWithBandit();
-            TFTVHumanEnemiesDefs.CreateAmbushAbility();
-            TFTVHumanEnemiesNames.CreateNamesDictionary();
-            TFTVDefsCreatedOnLevelChanged.CreateNewDefsForTFTVStart();
-
+            BCApplyInGameConfig();
+            BCApplyDefChanges();
 
             //TFTV 
+          //  TFTVDefsWithConfigDependency.PopulateResourceRewardsDictionary();
+
+            TFTVDefsWithConfigDependency.InjectDefsWithConfigDependency();
+
+            TFTVDefsRequiringReinjection.InjectDefsRequiringReinjection();
             ModDirectory = Instance.Entry.Directory;
             //Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
             //Path to localization CSVs
@@ -164,7 +101,7 @@ namespace TFTV
             TFTVLogger.Initialize(LogPath, Config.Debug, ModDirectory, nameof(TFTV));
             PRMLogger.Initialize(LogPath, Settings.Debug, ModDirectory, nameof(PRMBetterClasses));
 
-            TFTVLogger.Always("TFTV September 28 release #1");
+            TFTVLogger.Always("TFTV October 2 release #4");
             
             PRMBetterClasses.Helper.Initialize();
             // Initialize Helper
@@ -202,10 +139,12 @@ namespace TFTV
         /// </summary>
         public override void OnConfigChanged()
         {
-            ApplyInGameConfig();
-            WeaponModifications.Change_Crossbows();
-
-            /*
+            
+            BCApplyInGameConfig();
+        //    BCApplyDefChanges();
+          //  WeaponModifications.Change_Crossbows();
+          
+            
             if (Config.defaultSettings)
             {
                 Config.InitialScavSites = 8;
@@ -247,23 +186,7 @@ namespace TFTV
                 Config.defaultSettings = false;
 
             }
-            */
-            ApplyDefChanges();
-            TFTVDefsCreatedOnLevelChanged.CreateNewDefsForTFTVStart();
-          /*  if (Config.tutorialCharacters == TFTVConfig.StartingSquadCharacters.UNBUFFED) 
-            {
-               startingTemplates = TFTVStarts.SetInitialSquadUnbuffed();     
-            }
-            else if(Config.tutorialCharacters == TFTVConfig.StartingSquadCharacters.BUFFED) 
-            {
-                startingTemplates = TFTVStarts.SetInitialSquadBuffed();          
-            }
-            else if(Config.tutorialCharacters == TFTVConfig.StartingSquadCharacters.RANDOM) 
-            {
-                startingTemplates = TFTVStarts.SetInitialSquadRandom();          *
-            }
-
-            
+                          
             Harmony harmony = (Harmony)HarmonyInstance;
             //  injectionComplete = false;
             harmony.UnpatchAll();
@@ -289,28 +212,32 @@ namespace TFTV
         public override void OnLevelStateChanged(Level level, Level.State prevState, Level.State state)
         {
             //Level l = GetLevel();
-                ApplyDefChanges();
-                TFTVDefsCreatedOnLevelChanged.CreateNewDefsForTFTVStart();
-            /*
-                if (Config.tutorialCharacters == TFTVConfig.StartingSquadCharacters.UNBUFFED)
-                {
-                    startingTemplates = TFTVStarts.SetInitialSquadUnbuffed();
-                }
-                else if (Config.tutorialCharacters == TFTVConfig.StartingSquadCharacters.BUFFED)
-                {
-                    startingTemplates = TFTVStarts.SetInitialSquadBuffed();
-                }
-                else if (Config.tutorialCharacters == TFTVConfig.StartingSquadCharacters.RANDOM)
-                {
-                    startingTemplates = TFTVStarts.SetInitialSquadRandom();
-                }*/
-
-                // TFTVRevenantResearch.CreateDefs();
-            
+            BCApplyDefChanges();
+        //    TFTVDefsRequiringReinjection.InjectDefsRequiringReinjection();
+         
            
+            Logger.LogInfo($"{MethodBase.GetCurrentMethod().Name} called for level '{level}' with old state '{prevState}' and new state '{state}'");
+            if (level.name.Contains("Intro") && prevState == Level.State.Uninitialized && state == Level.State.NotLoaded)
+            {
+                Logger.LogInfo($"TFTV should do Def stuff here to make sure BC stuff is ready");
+               
+                TFTVDefsInjectedOnlyOnce.InjectDefsInjectedOnlyOnce();
+                // TFTVDefsRequiringReinjection.InjectDefsRequiringReinjection();
+               
+                TFTVHumanEnemiesNames.CreateNamesDictionary();
+                TFTVDefsWithConfigDependency.PopulateResourceRewardsDictionary();
+                TFTVDefsWithConfigDependency.PopulateDiplomacyRewardsDictionary();
+                if (Config.ActivateReverseEngineeringResearch)
+                {
+                    TFTVReverseEngineering.ModifyReverseEngineering();
+                }
+
+            }
+
             /// Alternative way to access current level at any time.
+            //Level l = GetLevel();
 
-
+            /// Alternative way to access current level at any time.
         }
 
         /// <summary>
@@ -321,11 +248,9 @@ namespace TFTV
         public override void OnLevelStart(Level level)
         {
             //Reinject Dtony's delirium perks, because assuming degradation will happen based on BetterClasses experience
-            ApplyDefChanges();
-            TFTVDefsCreatedOnLevelChanged.CreateDeliriumPerks();
-            TFTVHumanEnemiesDefs.CreateAmbushAbility();
-            TFTVDefsCreatedOnLevelChanged.CreateNewDefsForTFTVStart();
-            
+            BCApplyDefChanges();
+            TFTVDefsRequiringReinjection.InjectDefsRequiringReinjection();
+        
         }
 
         /// <summary>
@@ -335,9 +260,10 @@ namespace TFTV
         /// <param name="level">Level that ends.</param>
         public override void OnLevelEnd(Level level)
         {
+
         }
 
-        private void ApplyInGameConfig()
+        private void BCApplyInGameConfig()
         {
             Settings.LearnFirstPersonalSkill = Config.LearnFirstPersonalSkill;
             Settings.DeactivateTacticalAutoStandby = Config.DeactivateTacticalAutoStandby;
@@ -375,7 +301,7 @@ namespace TFTV
         /// <summary>
         /// Applies all changes to Definables (Defs), uses RunTimeDefs and for this needs to be refreshed
         /// </summary>
-        public void ApplyDefChanges()
+        public void BCApplyDefChanges()
         {
             // Apply skill modifications
             SkillModsMain.ApplyChanges();

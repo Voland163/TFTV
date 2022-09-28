@@ -17,7 +17,7 @@ namespace TFTV
         private static readonly DefRepository Repo = TFTVMain.Repo;
 
 
-        public static void Apply_Changes()
+        public static void ChangesToDLC5Defs()
         {
             try
             {
@@ -151,7 +151,6 @@ namespace TFTV
         }
 
         [HarmonyPatch(typeof(GeoMarketplace), "UpdateOptions",  new Type[] { })]
-
         public static class GeoMarketplace_UpdateOptions_MarketPlace_patch
         { 
             
@@ -199,7 +198,6 @@ namespace TFTV
 
 
         [HarmonyPatch(typeof(GeoMarketplace), "OnSiteVisited")]
-
         public static class GeoMarketplace_OnSiteVisited_MarketPlace_patch
         {
             public static bool Prepare()

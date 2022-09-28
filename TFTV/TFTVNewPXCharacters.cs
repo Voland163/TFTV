@@ -133,6 +133,7 @@ namespace TFTV
                         // TFTVThirdAct.ActivateFS3Event(context.Level);
                         TFTVVoidOmens.RemoveAllVoidOmens(context.Level);
                     }
+
                 }
 
                 catch (Exception e)
@@ -150,11 +151,17 @@ namespace TFTV
             {
                 try
                 {
-                   /* if (geoEvent.EventID.Equals("OlenaOnFirstFlyer") || geoEvent.EventID.Equals("OlenaOnFirstHavenTarget")) 
-                    { 
-                        __result.EventLeader = Helper.CreateSpriteFromImageFile("BG_Olena_small.png");
-                        //__result.EventBackground
-                    }*/
+                    /* if (geoEvent.EventID.Equals("OlenaOnFirstFlyer") || geoEvent.EventID.Equals("OlenaOnFirstHavenTarget")) 
+                     { 
+                         __result.EventLeader = Helper.CreateSpriteFromImageFile("BG_Olena_small.png");
+                         //__result.EventBackground
+                     }*/
+
+                    if (geoEvent.EventID.Equals("PROG_LE2_WARN"))
+                    {
+                        __result.EventLeader = null;                    
+                    }
+
 
                     if (geoEvent.EventID.Equals("HelenaOnOlena"))
                     {
@@ -162,12 +169,13 @@ namespace TFTV
                         __result.EventBackground = Helper.CreateSpriteFromImageFile("Helena_fire2.jpg");
                     }
 
-                    if (geoEvent.EventID.Equals("VoidOmen") || geoEvent.EventID == "PROG_FS10" || geoEvent.EventID.Contains("Alistair"))
+                    if (geoEvent.EventID.Equals("VoidOmen") || geoEvent.EventID == "PROG_FS10" || geoEvent.EventID.Contains("Alistair")
+                            || geoEvent.EventID.Equals("PROG_LE3_WARN"))
                     {
                         __result.EventLeader = Helper.CreateSpriteFromImageFile("BG_alistair_small.png");
                     }
 
-                    if (geoEvent.EventID == "PROG_FS2" || (geoEvent.EventID.Contains("Olena") && !geoEvent.EventID.Contains("Helena")))
+                    if (geoEvent.EventID == "PROG_FS2" || geoEvent.EventID == "PROG_LE1_WARN" || (geoEvent.EventID.Contains("Olena") && !geoEvent.EventID.Contains("Helena")))
                     {
                         __result.EventLeader = Helper.CreateSpriteFromImageFile("BG_Olena_small.png");
                     }

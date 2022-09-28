@@ -49,6 +49,8 @@ namespace TFTV
                 TFTVVoidOmens.VoidOmen15Active = false;
                 //VO#16 is Umbras can appear anywhere and attack anyone
                 TFTVVoidOmens.VoidOmen16Active = false;
+                //VO#19 is reactive evolution
+                TFTVVoidOmens.VoidOmen19Active = false;
                 TFTVUmbra.UmbraResearched = false;
                 TFTVRevenant.daysRevenantLastSeen = 0;
                 TFTVStamina.charactersWithBrokenLimbs = new List<int>();

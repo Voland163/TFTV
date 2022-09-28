@@ -20,59 +20,7 @@ namespace TFTV
 {
     internal class TFTVAugmentations
     {
-        public static void ApplyChanges()
-        {
-            try
-            {
-                //ID all the factions for later
-                GeoFactionDef phoenixPoint = Repo.GetAllDefs<GeoFactionDef>().FirstOrDefault(ged => ged.name.Equals("Phoenix_GeoPhoenixFactionDef"));
-                GeoFactionDef newJericho = Repo.GetAllDefs<GeoFactionDef>().FirstOrDefault(ged => ged.name.Equals("NewJericho_GeoFactionDef"));
-                GeoFactionDef anu = Repo.GetAllDefs<GeoFactionDef>().FirstOrDefault(ged => ged.name.Equals("Anu_GeoFactionDef"));
-                GeoFactionDef synedrion = Repo.GetAllDefs<GeoFactionDef>().FirstOrDefault(ged => ged.name.Equals("Synedrion_GeoFactionDef"));
-
-                //Anu pissed at player for doing Bionics
-                GeoscapeEventDef anuPissedAtBionics = TFTVCommonMethods.CreateNewEvent("Anu_Pissed1", "ANU_PISSED_BIONICS_TITLE", "ANU_PISSED_BIONICS_TEXT_GENERAL_0", "ANU_PISSED_BIONICS_CHOICE_0_OUTCOME");
-                anuPissedAtBionics.GeoscapeEventData.Leader = "AN_Synod";
-
-                anuPissedAtBionics.GeoscapeEventData.Choices[0].Text.LocalizationKey = "ANU_PISSED_BIONICS_CHOICE_0";
-
-                anuPissedAtBionics.GeoscapeEventData.Choices[0].Outcome.Diplomacy.Add(TFTVCommonMethods.GenerateDiplomacyOutcome(anu, phoenixPoint, -8));
-                anuPissedAtBionics.GeoscapeEventData.Choices[0].Outcome.Diplomacy.Add(TFTVCommonMethods.GenerateDiplomacyOutcome(synedrion, phoenixPoint, +2));
-                TFTVCommonMethods.GenerateGeoEventChoice(anuPissedAtBionics, "ANU_PISSED_BIONICS_CHOICE_1", "ANU_PISSED_BIONICS_CHOICE_1_OUTCOME");
-                anuPissedAtBionics.GeoscapeEventData.Choices[1].Outcome.Diplomacy.Add(TFTVCommonMethods.GenerateDiplomacyOutcome(anu, phoenixPoint, -8));
-                anuPissedAtBionics.GeoscapeEventData.Choices[1].Outcome.Diplomacy.Add(TFTVCommonMethods.GenerateDiplomacyOutcome(newJericho, phoenixPoint, +2));
-                TFTVCommonMethods.GenerateGeoEventChoice(anuPissedAtBionics, "ANU_PISSED_BIONICS_CHOICE_2", "ANU_PISSED_BIONICS_CHOICE_2_OUTCOME");
-                anuPissedAtBionics.GeoscapeEventData.Choices[2].Outcome.VariablesChange.Add(TFTVCommonMethods.GenerateVariableChange("BG_Anu_Pissed_Made_Promise", 1, true));
-
-
-                //Anu really pissed at player for doing Bionics
-                GeoscapeEventDef anuReallyPissedAtBionics = TFTVCommonMethods.CreateNewEvent("Anu_Pissed2", "ANU_REALLY_PISSED_BIONICS_TITLE", "ANU_REALLY_PISSED_BIONICS_TEXT_GENERAL_0", null);
-                anuReallyPissedAtBionics.GeoscapeEventData.Leader = "AN_Synod";
-                anuReallyPissedAtBionics.GeoscapeEventData.Choices[0].Text.LocalizationKey = "ANU_REALLY_PISSED_BIONICS_CHOICE_0";
-                anuReallyPissedAtBionics.GeoscapeEventData.Choices[0].Outcome.Diplomacy.Add(TFTVCommonMethods.GenerateDiplomacyOutcome(anu, phoenixPoint, -6));
-
-                //NJ pissed at player for doing Mutations
-                GeoscapeEventDef nJPissedAtMutations = TFTVCommonMethods.CreateNewEvent("NJ_Pissed1", "NJ_PISSED_MUTATIONS_TITLE", "NJ_PISSED_MUTATIONS_TEXT_GENERAL_0", "NJ_PISSED_MUTATIONS_CHOICE_0_OUTCOME");
-                nJPissedAtMutations.GeoscapeEventData.Leader = "NJ_TW";
-                nJPissedAtMutations.GeoscapeEventData.Choices[0].Text.LocalizationKey = "NJ_PISSED_MUTATIONS_CHOICE_0";
-                nJPissedAtMutations.GeoscapeEventData.Choices[0].Outcome.Diplomacy.Add(TFTVCommonMethods.GenerateDiplomacyOutcome(newJericho, phoenixPoint, -5));
-                TFTVCommonMethods.GenerateGeoEventChoice(nJPissedAtMutations, "NJ_PISSED_MUTATIONS_CHOICE_1", "NJ_PISSED_MUTATIONS_CHOICE_1_OUTCOME");
-                nJPissedAtMutations.GeoscapeEventData.Choices[1].Outcome.Diplomacy.Add(TFTVCommonMethods.GenerateDiplomacyOutcome(newJericho, phoenixPoint, -8));
-                nJPissedAtMutations.GeoscapeEventData.Choices[1].Outcome.Diplomacy.Add(TFTVCommonMethods.GenerateDiplomacyOutcome(anu, phoenixPoint, +2));
-                TFTVCommonMethods.GenerateGeoEventChoice(nJPissedAtMutations, "NJ_PISSED_MUTATIONS_CHOICE_2", "NJ_PISSED_MUTATIONS_CHOICE_2_OUTCOME");
-                nJPissedAtMutations.GeoscapeEventData.Choices[2].Outcome.VariablesChange.Add(TFTVCommonMethods.GenerateVariableChange("BG_NJ_Pissed_Made_Promise", 1, true));
-
-                //NJ really pissed at player for doing Mutations
-                GeoscapeEventDef nJReallyPissedAtMutations = TFTVCommonMethods.CreateNewEvent("NJ_Pissed2", "NJ_REALLY_PISSED_MUTATIONS_TITLE", "NJ_REALLY_PISSED_MUTATIONS_TEXT_GENERAL_0", null);
-                nJReallyPissedAtMutations.GeoscapeEventData.Leader = "NJ_TW";
-                nJReallyPissedAtMutations.GeoscapeEventData.Choices[0].Text.LocalizationKey = "NJ_REALLY_PISSED_MUTATIONS_CHOICE_0";
-                nJReallyPissedAtMutations.GeoscapeEventData.Choices[0].Outcome.Diplomacy.Add(TFTVCommonMethods.GenerateDiplomacyOutcome(newJericho, phoenixPoint, -6));
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-        }
+        
 
         private static readonly DefRepository Repo = TFTVMain.Repo;
 
@@ -163,47 +111,6 @@ namespace TFTV
             }
         }
 
-        /*
-        [HarmonyPatch(typeof(UIModuleMutationSection), "Awake")]
-        public static class UIModuleMutationSection_ApplyMutation_PissedEvents_CaptureCharacter_patch
-        {
-            private static readonly DefRepository Repo = TFTVMain.Repo;
-            private static readonly GeoFactionDef newJerico = Repo.GetAllDefs<GeoFactionDef>().FirstOrDefault(ged => ged.name.Equals("NewJericho_GeoFactionDef"));
-            private static readonly GameTagDef mutationTag = GameUtl.GameComponent<SharedData>().SharedGameTags.AnuMutationTag;
-
-            public static Dictionary<GeoCharacter, int> characterAndMutations = new Dictionary<GeoCharacter, int>();
-
-            public static void Prefix(IAugmentationUIModule ____parentModule)
-            {
-                try
-                {//check if player made promise to New Jericho not to apply more mutations
-                    if (____parentModule.Context.Level.EventSystem.GetVariable("BG_NJ_Pissed_Made_Promise") == 1)
-                    {
-                        if (____parentModule.CurrentCharacter.OriginalFactionDef == newJerico)
-                        {
-                            if (!characterAndMutations.ContainsKey(____parentModule.CurrentCharacter))
-                            {
-                                characterAndMutations.Add(____parentModule.CurrentCharacter, 0);
-                            }
-
-                            foreach (GeoItem mutation in ____parentModule.CurrentCharacter.ArmourItems)
-                            {
-                                if (mutation.ItemDef.Tags.Contains(mutationTag))
-                                    characterAndMutations[____parentModule.CurrentCharacter] += 1;
-                            }
-                            TFTVLogger.Always("The character has " + characterAndMutations[____parentModule.CurrentCharacter] + " mutations");
-                        }
-                    }
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-            }
-
-
-
-        */
         //Used for triggering NJ Pissed events 
         [HarmonyPatch(typeof(UIModuleMutationSection), "ApplyMutation")]
         public static class UIModuleMutationSection_ApplyMutation_PissedEvents_patch
@@ -212,36 +119,6 @@ namespace TFTV
             private static readonly GeoFactionDef newJerico = Repo.GetAllDefs<GeoFactionDef>().FirstOrDefault(ged => ged.name.Equals("NewJericho_GeoFactionDef"));
             private static readonly GameTagDef mutationTag = GameUtl.GameComponent<SharedData>().SharedGameTags.AnuMutationTag;
 
-            /*  public static Dictionary<GeoCharacter, int> characterAndMutations = new Dictionary<GeoCharacter, int>();
-
-              public static void Prefix(IAugmentationUIModule ____parentModule)
-              {
-                  try
-                  {//check if player made promise to New Jericho not to apply more mutations
-                      if (____parentModule.Context.Level.EventSystem.GetVariable("BG_NJ_Pissed_Made_Promise") == 1)
-                      {
-                          if (____parentModule.CurrentCharacter.OriginalFactionDef == newJerico)
-                          {
-                              if (!characterAndMutations.ContainsKey(____parentModule.CurrentCharacter))
-                              {
-                                  characterAndMutations.Add(____parentModule.CurrentCharacter, 0);
-                              }
-
-                              foreach (GeoItem mutation in ____parentModule.CurrentCharacter.ArmourItems)
-                              {
-                                  if (mutation.ItemDef.Tags.Contains(mutationTag))
-                                      characterAndMutations[____parentModule.CurrentCharacter] += 1;
-                              }
-                              TFTVLogger.Always("The character has " + characterAndMutations[____parentModule.CurrentCharacter] + " mutations");
-                          }
-                      }
-                  }
-                  catch (Exception e)
-                  {
-                      TFTVLogger.Error(e);
-                  }
-              }
-            */
             public static void Postfix(UIModuleMutationSection __instance, IAugmentationUIModule ____parentModule)
             {
                 try
