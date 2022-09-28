@@ -1,5 +1,7 @@
-﻿using Base.Core;
+﻿using Base;
+using Base.Core;
 using Base.Defs;
+using Base.Levels;
 using Base.UI;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
@@ -14,6 +16,7 @@ using PhoenixPoint.Geoscape.Events;
 using PhoenixPoint.Geoscape.Events.Eventus;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.View.ViewControllers.Modal;
+using PhoenixPoint.Tactical.Tutorial;
 using PhoenixPoint.Tactical.View.ViewModules;
 using System;
 using System.Collections.Generic;
@@ -286,12 +289,13 @@ namespace TFTV
 
         public static class InfestedHavenOutcomeDataBind_Patch_ConvertDestructionToInfestation
         {
+            [Obsolete]
             public static bool Prefix(InfestedHavenOutcomeDataBind __instance, UIModal modal, bool ____shown, UIModal ____modal)
             {
 
                 try
                 {
-                   
+
                     if (!____shown)
                     {
                         ____shown = true;
@@ -301,15 +305,51 @@ namespace TFTV
                             ____modal.OnModalHide += __instance.ModalHideHandler;
                         }
 
+                        GeoInfestationCleanseMission geoInfestationCleanseMission = (GeoInfestationCleanseMission)modal.Data;
+                        GeoSite site = geoInfestationCleanseMission.Site;
+
+                        GeoFaction originalOwner = null;
+                        foreach (GeoFaction faction in site.GeoLevel.Factions)
+                        {
+                            if (faction.PPFactionDef.ShortName == TFTVInfestationStory.OriginalOwner)
+                            {
+                                originalOwner = faction;
+                            }
+
+                        }
+
+                        List<GeoHaven> geoHavens = originalOwner.Havens.ToList();
+
+                        int populationSaved = (int)(TFTVInfestationStory.HavenPopulation * 0.2);
+                        List<GeoHaven> havenToReceiveRefugees = new List<GeoHaven>();
+
+                        foreach (GeoHaven haven in geoHavens)
+                        {
+                            if (Vector3.Distance(haven.Site.WorldPosition, site.WorldPosition) <= 1.5
+                                && haven.isActiveAndEnabled && !haven.IsInfested && haven.Site != site)
+                            {
+                                havenToReceiveRefugees.Add(haven);
+                            }
+                        }
+
+
+                        string dynamicDescription = "";
+
+                        if (havenToReceiveRefugees.Count > 0) 
+                        {
+                            dynamicDescription = " Around " + (Mathf.RoundToInt(populationSaved / 100)) * 100 + " of them were fortunate enough to survive and have relocated to friendly nearby havens.";
+
+                        }
+
+
                         Text description = __instance.GetComponentInChildren<DescriptionController>().Description;
                         description.GetComponent<I2.Loc.Localize>().enabled = false;
-                        description.text = "We destroyed the monstrosity that had taken over the remaining inhabitants of the haven, delivering them from a fate worse than death";
+                        description.text = "We destroyed the monstrosity that had taken over the inhabitants of the haven, delivering them from a fate worse than death." + dynamicDescription;
                         Text title = __instance.TopBar.Title;
                         title.GetComponent<I2.Loc.Localize>().enabled = false;
                         title.text = "NODE DESTOYED";
 
-                        GeoInfestationCleanseMission geoInfestationCleanseMission = (GeoInfestationCleanseMission)modal.Data;
-                        GeoSite site = geoInfestationCleanseMission.Site;
+                       
                         __instance.Background.sprite = Helper.CreateSpriteFromImageFile("NodeAlt.jpg");
                         Sprite icon = __instance.CommonResources.GetFactionInfo(site.Owner).Icon;
                         __instance.TopBar.Icon.sprite = icon;
@@ -320,19 +360,35 @@ namespace TFTV
                         TFTVLogger.Always("InfestedHavensVariable before method is " + site.GeoLevel.EventSystem.GetVariable(InfestedHavensVariable));
                         site.GeoLevel.EventSystem.SetVariable(InfestedHavensVariable, site.GeoLevel.EventSystem.GetVariable(InfestedHavensVariable) - 1);
                         TFTVLogger.Always("InfestedHavensVariable is " + site.GeoLevel.EventSystem.GetVariable(InfestedHavensVariable));
-                        site.GeoLevel.EventSystem.SetVariable(LivingWeaponsAcquired, site.GeoLevel.EventSystem.GetVariable(LivingWeaponsAcquired) + 1);
-                        GeoscapeEventDef reward = Repo.GetAllDefs<GeoscapeEventDef>().FirstOrDefault(ged => ged.name.Equals("InfestationReward"));
-                        GeoscapeEventContext geoscapeEventContext = new GeoscapeEventContext(site.GeoLevel.PhoenixFaction, site.GeoLevel.ViewerFaction);
-                       /* if (site.GeoLevel.EventSystem.GetVariable(LivingWeaponsAcquired) > 0 && site.GeoLevel.EventSystem.GetVariable(LivingWeaponsAcquired) < 4) 
+                        site.GeoLevel.EventSystem.SetVariable(LivingWeaponsAcquired, site.GeoLevel.EventSystem.GetVariable(LivingWeaponsAcquired) + 1);                       
+
+                        if(havenToReceiveRefugees.Count > 0) 
                         {
-                            reward.GeoscapeEventData.Choices[0].Outcome.Items = InfestationRewardGenerator(site.GeoLevel.EventSystem.GetVariable(LivingWeaponsAcquired));
-                            site.GeoLevel.EventSystem.TriggerGeoscapeEvent("InfestationReward", geoscapeEventContext);
-                        }*/
+                            TFTVLogger.Always("There are havens that can receive refugees");
+
+                            foreach(GeoHaven haven in havenToReceiveRefugees) 
+                            {
+                                int refugeesToHaven = populationSaved / havenToReceiveRefugees.Count() - UnityEngine.Random.Range(0, 50);
+                                if( refugeesToHaven> 0) 
+                                { 
+                                    haven.Population += refugeesToHaven;
+                                    GeoscapeLogEntry entry = new GeoscapeLogEntry
+                                    {
+                                        Text = new LocalizedTextBind(refugeesToHaven + " survivors from " + site.LocalizedSiteName + " have fled to  " + haven.Site.LocalizedSiteName, true)
+                                    };
+                                    typeof(GeoscapeLog).GetMethod("AddEntry", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(site.GeoLevel.Log, new object[] { entry, null });
+
+                                }
+             
+                            }               
+                        }
+
+                        TFTVInfestationStory.HavenPopulation = 0;
+                        TFTVInfestationStory.OriginalOwner = "";
 
                     }
-
+                  
                     return false;
-
                 }
                 catch (Exception e)
                 {

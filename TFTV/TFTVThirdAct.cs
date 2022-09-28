@@ -127,12 +127,12 @@ namespace TFTV
                     Repo.GetAllDefs<FesteringSkiesSettingsDef>().FirstOrDefault(ged => ged.name.Equals("FesteringSkiesSettingsDef"));
                  festeringSkiesSettingsDef.NumOfHavensToDestroyBeforeSubmerge = 30;
                  festeringSkiesSettingsDef.DisruptionThreshholdBaseValue = 100;*/
-                if (geoLevel.EventSystem.GetVariable("ThirdActStarted") == 1)
+                if (geoLevel.EventSystem.GetVariable("BehemothRoamings") >= 3)
                 {
-                    geoLevel.CurrentDifficultyLevel.DestroyHavenOutcomeChance = 100;
-                    geoLevel.FesteringSkiesSettings.NumOfHavensToDestroyBeforeSubmerge = 100;
+                    geoLevel.CurrentDifficultyLevel.DestroyHavenOutcomeChance = 50;
+                    geoLevel.FesteringSkiesSettings.NumOfHavensToDestroyBeforeSubmerge = 4;
                    // geoLevel.FesteringSkiesSettings.DisruptionThreshholdBaseValue = 100;
-                    geoLevel.CurrentDifficultyLevel.DamageHavenOutcomeChance = 0;
+                    geoLevel.CurrentDifficultyLevel.DamageHavenOutcomeChance = 50;
                 }
 
                 else

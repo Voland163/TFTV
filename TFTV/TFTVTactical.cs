@@ -42,6 +42,8 @@ namespace TFTV
         public bool revenantCanSpawnSaveDate = TFTVRevenant.revenantCanSpawn;
         public Dictionary <string, int> humanEnemiesLeaderTacticsSaveData = TFTVHumanEnemies.HumanEnemiesAndTactics;
         public int difficultyLevelForTacticalSaveData = TFTVHumanEnemies.difficultyLevel;
+        public int infestedHavenPopulationSaveData = TFTVInfestationStory.HavenPopulation;
+        public string infestedHavenOriginalOwnerSaveData = TFTVInfestationStory.OriginalOwner;
     }
 
     /// <summary>
@@ -122,6 +124,8 @@ namespace TFTV
             
             TFTVHumanEnemies.difficultyLevel = data.difficultyLevelForTacticalSaveData;
             TFTVHumanEnemies.HumanEnemiesAndTactics = data.humanEnemiesLeaderTacticsSaveData;
+            TFTVInfestationStory.HavenPopulation = data.infestedHavenPopulationSaveData;
+            TFTVInfestationStory.OriginalOwner = data.infestedHavenOriginalOwnerSaveData;
 
         }
         /// <summary>
@@ -148,6 +152,8 @@ namespace TFTV
                 
                 difficultyLevelForTacticalSaveData = TFTVHumanEnemies.difficultyLevel,
                 humanEnemiesLeaderTacticsSaveData = TFTVHumanEnemies.HumanEnemiesAndTactics,
+                infestedHavenPopulationSaveData = TFTVInfestationStory.HavenPopulation,
+                infestedHavenOriginalOwnerSaveData = TFTVInfestationStory.OriginalOwner,
               //  timeLastRevenantSpawned = TFTVRevenant.timeLastRevenantSpawned,
             };
         }

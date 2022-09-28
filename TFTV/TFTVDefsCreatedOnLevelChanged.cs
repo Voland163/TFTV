@@ -466,8 +466,10 @@ namespace TFTV
                     introEvent_0, "BG_INTRO_0_TITLE", "BG_INTRO_0_DESCRIPTION", null);
                 GeoscapeEventDef intro1 = TFTVCommonMethods.CreateNewEvent(
                     introEvent_1, "BG_INTRO_1_TITLE", "BG_INTRO_1_DESCRIPTION", null);
+                intro1.GeoscapeEventData.Choices[0].Text.LocalizationKey = "BG_INTRO1_CHOICE_1";
                 GeoscapeEventDef intro2 = TFTVCommonMethods.CreateNewEvent(
                     introEvent_2, "BG_INTRO_2_TITLE", "BG_INTRO_2_DESCRIPTION", null);
+                intro2.GeoscapeEventData.Choices[0].Text.LocalizationKey = "BG_INTRO_2_CHOICE_0";
 
 
             }

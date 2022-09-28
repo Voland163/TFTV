@@ -158,6 +158,7 @@
     <Content Include="Assets\Textures\BG_Olena.png" />
     <Content Include="Assets\Textures\BG_Olena_small.png" />
     <Content Include="Assets\Textures\FesteringSkiesAfterHamerfall.png" />
+    <Content Include="Assets\Textures\fo_squad.png" />
     <Content Include="Assets\Textures\Helena_fire2.jpg" />
     <Content Include="Assets\Textures\Helena_fire2_closeup.jpg" />
     <Content Include="Assets\Textures\nj_squad.jpg" />
@@ -165,6 +166,7 @@
     <Content Include="Assets\Textures\Node.jpg" />
     <Content Include="Assets\Textures\NodeAlt.jpg" />
     <Content Include="Assets\Textures\pu_squad.jpg" />
+    <Content Include="Assets\Textures\px_squad.jpg" />
     <Content Include="Assets\Textures\squad_pu.jpg" />
     <Content Include="Assets\Textures\UI_AbilitiesIcon_CharacterAbility_AmplifyPain01.png" />
     <Content Include="Assets\Textures\UI_AbilitiesIcon_CharacterAbility_AmplifyPain02.png" />

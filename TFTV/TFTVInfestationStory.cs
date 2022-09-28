@@ -12,7 +12,9 @@ using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Levels;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
+using System.Security.Policy;
 
 
 namespace TFTV
@@ -24,7 +26,8 @@ namespace TFTV
         private static readonly GameTagDef nodeTag = Repo.GetAllDefs<GameTagDef>().FirstOrDefault(p => p.name.Equals("CorruptionNode_ClassTagDef"));
         
         private static readonly MissionTypeTagDef infestationMissionTagDef = Repo.GetAllDefs<MissionTypeTagDef>().FirstOrDefault(p => p.name.Equals("HavenInfestation_MissionTypeTagDef"));
-
+        public static int HavenPopulation = 0;
+        public static string OriginalOwner = "";
 
         [HarmonyPatch(typeof(TacticalLevelController), "ActorDied")]
         public static class TacticalLevelController_ActorDied_InfestationOutro_Patch
@@ -55,9 +58,25 @@ namespace TFTV
             {
                 try
                 {
-                    if (__instance.MissionDef.Tags.Contains(infestationMissionTagDef)) 
+                    if (__instance.MissionDef.Tags.Contains(infestationMissionTagDef))
                     {
-                        
+
+                        List<GeoHaven> geoHavens = __instance.Site.GeoLevel.AlienFaction.Havens.ToList();
+                        GeoHaven geoHaven = new GeoHaven();
+
+                        foreach (GeoHaven haven in geoHavens)
+                        {
+                            if (haven.Site.SiteId == __instance.Site.SiteId)
+                            {
+                                geoHaven = haven;
+
+                            }
+                        }
+                        TFTVLogger.Always("The haven is " + geoHaven.Site.LocalizedSiteName + " and its population is " + geoHaven.Population);
+                                           
+                        HavenPopulation = geoHaven.Population;
+                        OriginalOwner = geoHaven.OriginalOwner.PPFactionDef.ShortName;
+
                         List<GeoCharacter> operatives = new List<GeoCharacter>();
 
                         foreach (GeoCharacter geoCharacter in squad.Soldiers)

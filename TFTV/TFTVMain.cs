@@ -77,7 +77,7 @@ namespace TFTV
             /// PhoenixGame is accessible at any time.
             PhoenixGame game = GetGame();
 
-            Logger.LogInfo("TFTV September 27 release #1");
+            Logger.LogInfo("TFTV September 28 release #1");
 
             //BC stuff
             ApplyInGameConfig();
@@ -164,7 +164,7 @@ namespace TFTV
             TFTVLogger.Initialize(LogPath, Config.Debug, ModDirectory, nameof(TFTV));
             PRMLogger.Initialize(LogPath, Settings.Debug, ModDirectory, nameof(PRMBetterClasses));
 
-            TFTVLogger.Always("TFTV September 27 release #1");
+            TFTVLogger.Always("TFTV September 28 release #1");
             
             PRMBetterClasses.Helper.Initialize();
             // Initialize Helper

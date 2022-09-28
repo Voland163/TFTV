@@ -121,14 +121,12 @@ namespace TFTV
             private static TacticalAbilityDef feral = Repo.GetAllDefs<TacticalAbilityDef>().FirstOrDefault(tad => tad.name.Equals("Feral_AbilityDef"));
             public static void Postfix(TacticalAbility __instance, ref bool __result)
             {
-                DefRepository Repo = GameUtl.GameComponent<DefRepository>();
-
                 try
                 {
                     
                     if (__instance.TacticalActor.GetAbilityWithDef<TacticalAbility>(feral) != null && __instance.Source is Equipment)
                     {
-                        __result = UnityEngine.Random.Range(0, 100) > 10;
+                        __result = UnityEngine.Random.Range(0, 100) < 20;
                         TFTVLogger.Always("The fumble action is " + __instance.GetAbilityDescription() + " and the fumble result is " + __result);
                     }
                 }

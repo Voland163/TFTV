@@ -26,7 +26,8 @@ namespace TFTV
         public int behemothTarget = TFTVAirCombat.behemothTarget;
         public int behemothWaitHours = TFTVAirCombat.behemothWaitHours;
         public int timeRevenantLasteSeenSaveData = TFTVRevenant.daysRevenantLastSeen;
-        
+        public int infestedHavenPopulationSaveData = TFTVInfestationStory.HavenPopulation;
+        public string infestedHavenOriginalOwnerSaveData = TFTVInfestationStory.OriginalOwner;
     }
 
     /// <summary>
@@ -127,6 +128,8 @@ namespace TFTV
                 behemothTarget = TFTVAirCombat.behemothTarget,
                 behemothWaitHours = TFTVAirCombat.behemothWaitHours,
                 timeRevenantLasteSeenSaveData = TFTVRevenant.daysRevenantLastSeen,
+                infestedHavenOriginalOwnerSaveData = TFTVInfestationStory.OriginalOwner,
+                infestedHavenPopulationSaveData = TFTVInfestationStory.HavenPopulation,
                 
             };
 
@@ -149,8 +152,9 @@ namespace TFTV
             TFTVAirCombat.behemothScenicRoute = data.behemothScenicRoute;
             TFTVAirCombat.behemothTarget = data.behemothTarget;
             TFTVAirCombat.behemothWaitHours = data.behemothWaitHours;
+            TFTVInfestationStory.HavenPopulation = data.infestedHavenPopulationSaveData;
+            TFTVInfestationStory.OriginalOwner = data.infestedHavenOriginalOwnerSaveData;
           
-
             Main.Logger.LogInfo("# Characters with broken limbs: " + TFTVStamina.charactersWithBrokenLimbs.Count);
             Main.Logger.LogInfo("# Behemoth targets for this emergence: " + TFTVAirCombat.targetsForBehemoth.Count);
             //    Main.Logger.LogInfo("# Targets already hit by Behemoth on this emergence: " + TFTVAirCombat.targetsVisitedByBehemoth.Count);

@@ -1144,11 +1144,11 @@ namespace TFTV
                                 string nameOfFaction = faction.Faction.FactionDef.ShortName;
                                 GameTagDef gameTagDef = Repo.GetAllDefs<GameTagDef>().FirstOrDefault
                                        (p => p.name.Equals("HumanEnemyFaction_" + nameOfFaction + "_GameTagDef"));
-                                List<string> factionNames = TFTVHumanEnemiesNames.names.GetValueSafe(nameOfFaction);
+                                List<string> factionNames = TFTVHumanEnemiesNames.names[nameOfFaction];
 
                                 if (faction.Actors.Contains(actor))
                                     UnityEngine.Random.InitState((int)DateTime.Now.Ticks);
-                                int rankNumber = UnityEngine.Random.Range(1, 6);
+                                int rankNumber = UnityEngine.Random.Range(1, 7);
                                 if (rankNumber == 6)
                                 {
                                     actor.GameTags.Add(HumanEnemyTier2GameTag);

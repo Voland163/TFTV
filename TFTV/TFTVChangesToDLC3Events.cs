@@ -140,6 +140,16 @@ namespace TFTV
                 //Next,let's clone ResearchReqDef to create the AlienCitadel ReserachReq           
                 ExistingResearchRequirementDef newExistingResearchRequirementDef = Helper.CreateDefFromClone(virophageResearchRequirementDef, "769F336B-DBA6-4401-BAC2-152854336DF0", nameNewResearchReq);
                 newExistingResearchRequirementDef.ResearchID = "PX_Alien_Citadel_ResearchDef";
+                //Next the box with Behemoth rampage or whatever
+                //First need to create new encounterVariableReq
+                //create new research requirement variable from a clone
+                EncounterVariableResearchRequirementDef sourceVarResReq =
+                      Repo.GetAllDefs<EncounterVariableResearchRequirementDef>().
+                      FirstOrDefault(ged => ged.name.Equals("NJ_Bionics1_ResearchDef_EncounterVariableResearchRequirementDef_0"));
+                string name = "BehemothPatternEventTriggered";
+                EncounterVariableResearchRequirementDef variableResReqBehemoth = Helper.CreateDefFromClone(sourceVarResReq, "9515C87C-0AE1-493A-ABFC-31F9B6D5B3E3", name + "ResReqDef");
+                variableResReqBehemoth.VariableName = name;
+
 
                 //Now, we need to create 2 separate reveal requirement containers
                 //But first we need a box to put them all in
@@ -151,25 +161,18 @@ namespace TFTV
                 //Now the box with node autopsy, ye and citadel 
 
                 //We need to extract the reveal requirement box, add a new element to it, and put it back in
-                ResearchRequirementDef[] researchRequirementWithNodeDefs = new ResearchRequirementDef[3];
+                ResearchRequirementDef[] researchRequirementWithNodeDefs = new ResearchRequirementDef[4];
                 researchRequirementWithNodeDefs[0] = maskedManticoreResearchDef.RevealRequirements.Container[0].Requirements[0];
                 researchRequirementWithNodeDefs[1] = maskedManticoreResearchDef.RevealRequirements.Container[0].Requirements[1];
                 researchRequirementWithNodeDefs[2] = newExistingResearchRequirementDef;
+                researchRequirementWithNodeDefs[3] = variableResReqBehemoth;
 
                 reseachRequirementsMaskedManticoreContainer[0].Requirements = researchRequirementWithNodeDefs;
 
 
-                //Next the box with Behemoth rampage or whatever
-                //First need to create new encounterVariableReq
-                //create new research requirement variable from a clone
-              /*  EncounterVariableResearchRequirementDef sourceVarResReq =
-                    Repo.GetAllDefs<EncounterVariableResearchRequirementDef>().
-                    FirstOrDefault(ged => ged.name.Equals("NJ_Bionics1_ResearchDef_EncounterVariableResearchRequirementDef_0"));
-                string name = "BehemothPatternEventTriggered";
-                EncounterVariableResearchRequirementDef variableResReqBehemoth = Helper.CreateDefFromClone(sourceVarResReq, "9515C87C-0AE1-493A-ABFC-31F9B6D5B3E3", name + "ResReqDef");
-                variableResReqBehemoth.VariableName = name;
+               
 
-
+                /*
                 //now let's create the second container
                 ResearchRequirementDef[] researchRequirementWithAbbadonsDefs = new ResearchRequirementDef[2];
                 researchRequirementWithNodeDefs[0] = maskedManticoreResearchDef.RevealRequirements.Container[0].Requirements[0];

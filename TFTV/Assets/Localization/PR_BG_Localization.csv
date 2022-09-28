@@ -93,15 +93,16 @@ So far we can conclude the following:
 
 We have termed this condition ""Oneiric Delirium"", on account of the subjects complaining of nightmares, or ""crazy dreams"", with similar themes of monstrosities and smothering. 
 
-<b>Our operatives can now be afflicted with a Delirium status of up to a third of their Willpower</b>",,,,,,,,
+<color=#ec9006><b>Our operatives can now be afflicted with a Delirium status of up to a third of their Willpower</b></color>",,,,,,,,
 SDI_01_TITLE,Text,,The Third Mist,,,,,,,,
 SDI6_OUTCOME,Text,,"The Oneiric Delirium grows stronger.
 
-<b>Our operatives can now be afflicted with a Delirium status of up to half of their Willpower</b>",,,,,,,,
-SDI7_OUTCOME,Text,,Havens in the Mist can become infested instead of destroyed when attacked by Pandorans. Infested havens accelerate Pandoran evolution.,,,,,,,,
+<color=#e8bcf0><b>Our operatives can now be afflicted with a Delirium status of up to half of their Willpower</b></color>",,,,,,,,
+SDI7_OUTCOME,Text,,<color=#e8bcf0><b>Havens in the Mist can become infested instead of destroyed when attacked by Pandorans. Infested havens accelerate Pandoran evolution.</b></color>,,,,,,,,
+SDI09_OUTCOME,Text,,<color=#e8bcf0><b>The Umbra grow in strength</b></color>,,,,,,,,
 SDI10_OUTCOME,Text,,"The Oneiric Delirium grows stronger.
 
-<b>Our operatives can now be afflicted with a Delirium status equal to their Willpower</b>",,,,,,,,
+<color=#e8bcf0><b>Our operatives can now be afflicted with a Delirium status equal to their Willpower</b></color>",,,,,,,,
 SDI11_OUTCOME,Text,,<b> Berith are coming! </b>,,,,,,,,
 PROG_LE0_MISS_CHOICE_2_TEXT,Text,,Ask West to release Dr. Helena,,,,,,,,
 PROG_LE0_MISS_CHOICE_2_OUTCOME_GENERAL,Text,,"MESSAGE
