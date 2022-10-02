@@ -69,6 +69,7 @@ namespace TFTV
             TFTVChangesToDLC3Events.ChangesToDLC3Defs();
             TFTVChangesToDLC4Events.ChangesToDLC4Defs();
             TFTVChangesToDLC5Events.ChangesToDLC5Defs();
+            TFTVDefsWithConfigDependency.HarderDiplomacy();
 
         }
 
@@ -1324,7 +1325,8 @@ namespace TFTV
             }
         }
 
-       
+
+     
 
     }
 

@@ -12,6 +12,8 @@ using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.UI;
+using PhoenixPoint.Geoscape.Events;
+using PhoenixPoint.Geoscape.Events.Eventus;
 using PhoenixPoint.Tactical;
 using PhoenixPoint.Tactical.Cameras.Filters;
 using PhoenixPoint.Tactical.Entities;
@@ -23,6 +25,7 @@ using PhoenixPoint.Tactical.Entities.Statuses;
 using PhoenixPoint.Tactical.Levels;
 using PRMBetterClasses.Tactical.Entities.Statuses;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using TFTV;
 using UnityEngine;
@@ -108,7 +111,7 @@ namespace PRMBetterClasses.SkillModifications
             statusDef.BonusDamagePerc = damageMod;
         }
 
-        internal static float wpCost = 3.0f;
+        internal static float wpCost = 5.0f;
         private static void Create_LayWaste()
         {
             float apCost = 0.25f;

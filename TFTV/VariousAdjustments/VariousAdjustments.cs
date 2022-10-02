@@ -52,13 +52,11 @@ namespace PRMBetterClasses.VariousAdjustments
             // Mutoid Worms: limit each worm ability to 5 ammo (worms)
             Change_MutoidWorms();
             // Screaming Head: Mind Control Immunity
-            Change_ScreamingHead();
-            // Grenades: All grenades are produced instantly
-            Change_Grenades();
+            Change_PriestsHeadMutations();
             // Spider Drones: Armor down to 10 (from 30)
             Change_SpiderDrones();
             // Danchev MG: ER buff to 14 (up from 9)
-            Change_DanchevMG();
+            Change_VariousWeapons(shared);
             // Venom Torso: Add Weapon Tag to Poison Arm 
             Change_VenomTorso();
             // Haven Recruits: Come with Armour and Weapons on all difficulties
@@ -233,7 +231,7 @@ namespace PRMBetterClasses.VariousAdjustments
 
             FrenzyStatusDef frenzy = Repo.GetAllDefs<FrenzyStatusDef>().FirstOrDefault(p => p.name.Equals("Frenzy_StatusDef"));
             frenzy.SpeedCoefficient = frenzySpeed;
-            //LocalizedTextBind description = new LocalizedTextBind("", TFTVMain.Main.Settings.DoNotLocalizeChangedTexts);
+            //LocalizedTextBind description = new LocalizedTextBind("", PRMBetterClassesMain.Main.Settings.DoNotLocalizeChangedTexts);
             foreach (ViewElementDef visuals in Repo.GetAllDefs<ViewElementDef>().Where(tav => tav.name.Contains("Frenzy_")))
             {
                 visuals.Description.LocalizationKey = visuals.name.Contains("Status") ? "PR_BC_FRENZY_STATUS_DESC" : "PR_BC_FRENZY_DESC";
@@ -259,42 +257,26 @@ namespace PRMBetterClasses.VariousAdjustments
             mPWorm.ChargesMax = mutoidWormCharges;
             mPWorm.DamagePayload.Range = range;
         }
-        public static void Change_ScreamingHead()
+        public static void Change_PriestsHeadMutations()
         {
-            TacticalItemDef screamingHead = Repo.GetAllDefs<TacticalItemDef>().FirstOrDefault(p => p.name.Equals("AN_Priest_Head03_BodyPartDef"));
-
-            screamingHead.Abilities = new AbilityDef[]
+            foreach (TacticalItemDef tacticalItem in Repo.GetAllDefs<TacticalItemDef>())
             {
-              screamingHead.Abilities[0],
-              Repo.GetAllDefs<AbilityDef>().FirstOrDefault(p => p.name.Equals("MindControlImmunity_AbilityDef"))
-            };
-        }
-        public static void Change_Grenades()
-        {
-            SharedDamageKeywordsDataDef damageKeywords = GameUtl.GameComponent<SharedData>().SharedDamageKeywords;
-            float grenadeManufacturePoints = 0;
-
-            WeaponDef handGrenade = Repo.GetAllDefs<WeaponDef>().FirstOrDefault(p => p.name.Equals("PX_HandGrenade_WeaponDef"));
-            WeaponDef virophage = Repo.GetAllDefs<WeaponDef>().FirstOrDefault(p => p.name.Equals("PX_VirophageGrenade_WeaponDef"));
-            WeaponDef emp = Repo.GetAllDefs<WeaponDef>().FirstOrDefault(p => p.name.Equals("SY_EMPGrenade_WeaponDef"));
-            WeaponDef poison = Repo.GetAllDefs<WeaponDef>().FirstOrDefault(p => p.name.Equals("SY_PoisonGrenade_WeaponDef"));
-            WeaponDef sonic = Repo.GetAllDefs<WeaponDef>().FirstOrDefault(p => p.name.Equals("SY_SonicGrenade_WeaponDef"));
-            WeaponDef shredding = Repo.GetAllDefs<WeaponDef>().FirstOrDefault(p => p.name.Equals("PX_ShredderGrenade_WeaponDef"));
-            WeaponDef acid = Repo.GetAllDefs<WeaponDef>().FirstOrDefault(p => p.name.Equals("AN_AcidGrenade_WeaponDef"));
-            WeaponDef fire = Repo.GetAllDefs<WeaponDef>().FirstOrDefault(p => p.name.Equals("NJ_IncindieryGrenade_WeaponDef"));
-
-            handGrenade.ManufacturePointsCost = grenadeManufacturePoints;
-            virophage.ManufacturePointsCost = grenadeManufacturePoints;
-            emp.ManufacturePointsCost = grenadeManufacturePoints;
-            poison.ManufacturePointsCost = grenadeManufacturePoints;
-            sonic.ManufacturePointsCost = grenadeManufacturePoints;
-            shredding.ManufacturePointsCost = grenadeManufacturePoints;
-            acid.ManufacturePointsCost = grenadeManufacturePoints;
-            fire.ManufacturePointsCost = grenadeManufacturePoints;
-            fire.ManufactureMaterials = 26;
-            fire.ManufactureTech = 10;
-            DamageKeywordPair damageKeywordPair = fire.DamagePayload.DamageKeywords.Find(dkp => dkp.DamageKeywordDef == damageKeywords.ShreddingKeyword);
-            _ = fire.DamagePayload.DamageKeywords.Remove(damageKeywordPair);
+                // Screaming Head mutation
+                if (tacticalItem.name.Equals("AN_Priest_Head03_BodyPartDef"))
+                {
+                    tacticalItem.BodyPartAspectDef.WillPower = 8;
+                    tacticalItem.Abilities = new AbilityDef[]
+                    {
+                        tacticalItem.Abilities[0],
+                        Repo.GetAllDefs<AbilityDef>().FirstOrDefault(p => p.name.Equals("MindControlImmunity_AbilityDef"))
+                    };
+                }
+                // Judgement Head mutation
+                if (tacticalItem.name.Equals("AN_Priest_Head02_BodyPartDef"))
+                {
+                    tacticalItem.BodyPartAspectDef.WillPower = 4;
+                }
+            }
         }
         public static void Change_SpiderDrones()
         {
@@ -303,12 +285,48 @@ namespace PRMBetterClasses.VariousAdjustments
             TacticalItemDef spiderDrone = Repo.GetAllDefs<TacticalItemDef>().FirstOrDefault(p => p.name.Equals("SpiderDrone_Torso_BodyPartDef"));
             spiderDrone.Armor = spiderDroneArmor;
         }
-        public static void Change_DanchevMG()
+        public static void Change_VariousWeapons(SharedData shared)
         {
-            float danchevMGSpreadDegrees = 2.86240523f;
-
-            WeaponDef danchevMG = Repo.GetAllDefs<WeaponDef>().FirstOrDefault(p => p.name.Equals("PX_PoisonMachineGun_WeaponDef"));
-            danchevMG.SpreadDegrees = danchevMGSpreadDegrees;
+            SharedDamageKeywordsDataDef damageKeywords = GameUtl.GameComponent<SharedData>().SharedDamageKeywords;
+            foreach (WeaponDef weaponDef in Repo.GetAllDefs<WeaponDef>())
+            {
+                // Danchev MG
+                if (weaponDef.name.Equals("PX_PoisonMachineGun_WeaponDef"))
+                {
+                    weaponDef.DamagePayload.DamageKeywords.Add(new DamageKeywordPair { DamageKeywordDef = shared.SharedDamageKeywords.ShreddingKeyword, Value = 3 });
+                    weaponDef.SpreadDegrees = 40.99f / 17;
+                }
+                // Danchev AR
+                if (weaponDef.name.Equals("PX_AcidAssaultRifle_WeaponDef"))
+                {
+                    weaponDef.DamagePayload.DamageKeywords.Add(new DamageKeywordPair { DamageKeywordDef = shared.SharedDamageKeywords.ShreddingKeyword, Value = 1 });
+                    weaponDef.DamagePayload.DamageKeywords.Find(dkp => dkp.DamageKeywordDef == shared.SharedDamageKeywords.AcidKeyword).Value = 10;
+                }
+                // Slamstrike Shotgun
+                if (weaponDef.name.Equals("FS_SlamstrikeShotgun_WeaponDef"))
+                {
+                    weaponDef.DamagePayload.DamageKeywords.Find(dkp => dkp.DamageKeywordDef == shared.SharedDamageKeywords.ShockKeyword).Value = 180;
+                }
+                // Grenades
+                if (weaponDef.name.EndsWith("Grenade_WeaponDef") && weaponDef.Tags.Contains(shared.SharedGameTags.StandaloneTag))
+                {
+                    // Manufature intantly
+                    weaponDef.ManufacturePointsCost = 0;
+                    // Imhullu Acid grenade
+                    if (weaponDef.name.Equals("AN_AcidGrenade_WeaponDef"))
+                    {
+                        weaponDef.DamagePayload.DamageKeywords.Add(new DamageKeywordPair { DamageKeywordDef = damageKeywords.ShockKeyword, Value = 240 });
+                    }
+                    // Fire grenade
+                    if (weaponDef.name.Equals("NJ_IncindieryGrenade_WeaponDef"))
+                    {
+                        weaponDef.ManufactureMaterials = 26;
+                        weaponDef.ManufactureTech = 10;
+                        DamageKeywordPair damageKeywordPair = weaponDef.DamagePayload.DamageKeywords.Find(dkp => dkp.DamageKeywordDef == damageKeywords.ShreddingKeyword);
+                        _ = weaponDef.DamagePayload.DamageKeywords.Remove(damageKeywordPair);
+                    }
+                }
+            }
         }
         public static void Change_VenomTorso()
         {
@@ -359,7 +377,7 @@ namespace PRMBetterClasses.VariousAdjustments
             // Change ammo cost for MechArms
             TacticalItemDef mechArmsAmmo = Repo.GetAllDefs<TacticalItemDef>().FirstOrDefault(a => a.name.Equals("MechArms_AmmoClip_ItemDef"));
             mechArmsAmmo.ManufactureMaterials = 55;
-            mechArmsAmmo.ManufactureTech = 25;
+            mechArmsAmmo.ManufactureTech = 15;
         }
         public static void Change_VengeanceTorso()
         {
@@ -375,6 +393,9 @@ namespace PRMBetterClasses.VariousAdjustments
 
             shadowLegs.DamagePayload.DamageKeywords[0].DamageKeywordDef = shared.SharedDamageKeywords.SonicKeyword;
             shadowLegs.DamagePayload.DamageKeywords[0].Value = shadowLegsSonicDamage;
+
+            BodyPartAspectDef shadowLegsAspectDef = Repo.GetAllDefs<BodyPartAspectDef>().FirstOrDefault(bpa => bpa.name.Equals("E_BodyPartAspect [AN_Berserker_Shooter_Legs_ItemDef]"));
+            shadowLegsAspectDef.Speed = 1;
         }
         public static void Change_VidarGL(SharedData shared)
         {

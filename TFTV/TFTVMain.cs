@@ -78,7 +78,7 @@ namespace TFTV
             /// PhoenixGame is accessible at any time.
             PhoenixGame game = GetGame();
 
-            Logger.LogInfo("TFTV October 2 release #4");
+            Logger.LogInfo("TFTV October 2 release #5");
 
             //BC stuff
             BCApplyInGameConfig();
@@ -101,7 +101,7 @@ namespace TFTV
             TFTVLogger.Initialize(LogPath, Config.Debug, ModDirectory, nameof(TFTV));
             PRMLogger.Initialize(LogPath, Settings.Debug, ModDirectory, nameof(PRMBetterClasses));
 
-            TFTVLogger.Always("TFTV October 2 release #4");
+            TFTVLogger.Always("TFTV October 2 release #5");
             
             PRMBetterClasses.Helper.Initialize();
             // Initialize Helper
@@ -226,7 +226,7 @@ namespace TFTV
                
                 TFTVHumanEnemiesNames.CreateNamesDictionary();
                 TFTVDefsWithConfigDependency.PopulateResourceRewardsDictionary();
-                TFTVDefsWithConfigDependency.PopulateDiplomacyRewardsDictionary();
+               
                 if (Config.ActivateReverseEngineeringResearch)
                 {
                     TFTVReverseEngineering.ModifyReverseEngineering();

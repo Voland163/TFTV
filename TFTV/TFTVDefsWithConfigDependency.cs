@@ -138,7 +138,7 @@ namespace TFTV
             }
         }
 
-        public static void PopulateDiplomacyRewardsDictionary()
+      /*  public static void PopulateDiplomacyRewardsDictionary()
         {
             try
             {
@@ -191,11 +191,11 @@ namespace TFTV
 
         }
 
-
+        */
 
         public static void InjectDefsWithConfigDependency()
         {
-            HarderDiplomacy();
+        
             HibernationModuleStaminaRecuperation();
             ModifyAmountResourcesEvents(config.ResourceMultiplier);
 
@@ -258,7 +258,7 @@ namespace TFTV
         }
 
 
-      //  private static bool ApplyChangeDiplomacy = true;
+      private static bool ApplyChangeDiplomacy = true;
 
         public static void HarderDiplomacy()
         {
@@ -279,8 +279,8 @@ namespace TFTV
                     //Testing increasing diplomacy penalties 
                     GeoPhoenixFactionDef geoPhoenixFaction = Repo.GetAllDefs<GeoPhoenixFactionDef>().FirstOrDefault(ged => ged.name.Equals("Phoenix_GeoPhoenixFactionDef"));
 
-                    //  if (ApplyChangeDiplomacy)
-                    //  {
+                      if (ApplyChangeDiplomacy)
+                     {
                     foreach (GeoscapeEventDef geoEvent in Repo.GetAllDefs<GeoscapeEventDef>())
                     {
 
@@ -293,16 +293,16 @@ namespace TFTV
                             && geoEvent.GeoscapeEventData.EventID != "PROG_NJ8")
                         {
                             int geoChoiceNumber = 0;
+                            string eventID = geoEvent.GeoscapeEventData.EventID;
                             foreach (GeoEventChoice choice in geoEvent.GeoscapeEventData.Choices)
                             {
-
-
                                 for (int i = 0; i < choice.Outcome.Diplomacy.Count; i++)
                                 {
-                                    if (choice.Outcome.Diplomacy[i].TargetFaction == geoPhoenixFaction && choice.Outcome.Diplomacy[i].Value <= 0)
+                                    if (choice.Outcome.Diplomacy[i].TargetFaction == geoPhoenixFaction && choice.Outcome.Diplomacy[i].Value <= 0 
+                                        && DiplomacyRewardsFromEvents.Keys.Contains(eventID))
                                     {
                                         OutcomeDiplomacyChange diplomacyChange = choice.Outcome.Diplomacy[i];
-                                        diplomacyChange.Value = DiplomacyRewardsFromEvents[geoEvent.GeoscapeEventData.EventID][geoChoiceNumber, i] * 2;
+                                        diplomacyChange.Value *= 2;
                                         choice.Outcome.Diplomacy[i] = diplomacyChange;
                                         TFTVLogger.Always("GeoEvent " + geoEvent.GeoscapeEventData.EventID + " diplomacy change value is " + diplomacyChange.Value);
                                     }
@@ -311,8 +311,8 @@ namespace TFTV
                             }
                         }
                     }
-                    // ApplyChangeDiplomacy = false;
-                    // }
+                     ApplyChangeDiplomacy = false;
+                     }
 
 
                     //Increase diplo penalties in 25, 50 and 75 diplo missions
