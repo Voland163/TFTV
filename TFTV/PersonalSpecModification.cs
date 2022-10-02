@@ -89,12 +89,29 @@ namespace PRMBetterClasses
                             PersonalPerksDef personalPerksDef = Config.PersonalPerks.FirstOrDefault(pp => pp.PerkKey.Equals(ppOrder[i]));
                             if (!personalPerksDef.IsDefaultValue())
                             {
+                               
+                                string name = __result.UnitType.TemplateDef.Data.Name;
+
+                                TFTVLogger.Always("(__result.GetName() returns " + name);
                                 PRMLogger.Debug("           Key: " + personalPerksDef.PerkKey);
-                                (ability, spCost) = personalPerksDef.GetPerk(Config, className, faction, exclusionList);
+                                if (Config.SpecialCharacterPersonalSkills.ContainsKey(name) && Config.SpecialCharacterPersonalSkills[name].ContainsKey(i))
+                                {
+                                    TFTVLogger.Always("Got inside MadSkunky method");
+                                    ability = Config.SpecialCharacterPersonalSkills[name][i];
+                                    TFTVLogger.Always("The ability is " + ability);
+                                }
+                                else
+                                {
+                                    (ability, spCost) = personalPerksDef.GetPerk(Config, className, faction, exclusionList);
+                                }
                                 if (ability != null)
                                 {
                                     PRMLogger.Debug("       Ability: " + ability);
                                     tacticalAbilityDef = Repo.GetAllDefs<TacticalAbilityDef>().FirstOrDefault(tad => tad.name.Equals(ability));
+                                    if (spCost == 0)
+                                    {
+                                        spCost = tacticalAbilityDef.CharacterProgressionData.SkillPointCost;
+                                    }
                                     if (i >= 0 && i < 7 && tacticalAbilityDef != null)
                                     {
                                         PRMLogger.Debug("  Ability name: " + tacticalAbilityDef.name);

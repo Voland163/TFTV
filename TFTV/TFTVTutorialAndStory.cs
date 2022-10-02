@@ -319,23 +319,23 @@ namespace TFTV
             }
         }
 
-        public static void CreateNewTacticalHintInfestationMission(string name)
+        public static void CreateNewTacticalHintInfestationMission(string name, string gUID, string gUID2, string gUID3)
         {
             try
 
             {
-                string gUID = Guid.NewGuid().ToString();
+              //  string gUID = Guid.NewGuid().ToString();
 
                 ContextHelpHintDef newContextHelpHintDef = Helper.CreateDefFromClone(sourceContextHelpHintDef, gUID, name);
                 newContextHelpHintDef.Trigger = HintTrigger.MissionStart;
 
-                string gUID2 = Guid.NewGuid().ToString();
+              //  string gUID2 = Guid.NewGuid().ToString();
                 LevelHasTagHintConditionDef infestedHavenMissionTagCondition = Helper.CreateDefFromClone(sourceInfestationMission, gUID2, name + "_HintConditionDef");
                 infestedHavenMissionTagCondition.GameTagDef = infestationMissionTagDef;
                 newContextHelpHintDef.Conditions[0] = infestedHavenMissionTagCondition;
 
 
-                string gUID3 = Guid.NewGuid().ToString();
+              //  string gUID3 = Guid.NewGuid().ToString();
                 HasSeenHintHintConditionDef newHasSeenHintConditionDef = Helper.CreateDefFromClone(sourceHasSeenHintConditionDef, gUID3, name + "HasSeenHintConditionDef");
                 newHasSeenHintConditionDef.HintDef = newContextHelpHintDef;
                 newContextHelpHintDef.Conditions.Add(newHasSeenHintConditionDef);

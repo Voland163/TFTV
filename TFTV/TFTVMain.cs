@@ -1,18 +1,15 @@
 using Base.Core;
 using Base.Defs;
 using Base.Levels;
-using Epic.OnlineServices;
 using HarmonyLib;
 using Newtonsoft.Json;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Game;
 using PhoenixPoint.Modding;
-using PhoenixPoint.Tactical.Entities;
 using PRMBetterClasses;
 using PRMBetterClasses.SkillModifications;
 using PRMBetterClasses.VariousAdjustments;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -26,7 +23,7 @@ namespace TFTV
     /// </summary>
     public class TFTVMain : ModMain
     {
-      
+
 
         /// Old Modnix configuration now used to hold all settings
         public BCSettings Settings = new BCSettings();
@@ -34,13 +31,13 @@ namespace TFTV
         /// Name of config file for all settings
         public const string PRMBC_ConfigFileName = "PRM_BC_Config.json";
 
-      
+
         /// Config is accessible at any time, if any is declared.
         public new TFTVConfig Config => (TFTVConfig)base.Config;
 
         public static TFTVMain Main { get; private set; }
 
-     //   public static List<TacCharacterDef> startingTemplates = new List<TacCharacterDef>();
+        //   public static List<TacCharacterDef> startingTemplates = new List<TacCharacterDef>();
 
         //TFTV Adding references to DefRepo and SharedData
         internal static readonly DefRepository Repo = GameUtl.GameComponent<DefRepository>();
@@ -78,14 +75,14 @@ namespace TFTV
             /// PhoenixGame is accessible at any time.
             PhoenixGame game = GetGame();
 
-            Logger.LogInfo("TFTV October 2 release #5");
+            Logger.LogInfo("TFTV October 4 release #1");
 
             //BC stuff
             BCApplyInGameConfig();
             BCApplyDefChanges();
 
             //TFTV 
-          //  TFTVDefsWithConfigDependency.PopulateResourceRewardsDictionary();
+            //  TFTVDefsWithConfigDependency.PopulateResourceRewardsDictionary();
 
             TFTVDefsWithConfigDependency.InjectDefsWithConfigDependency();
 
@@ -101,13 +98,13 @@ namespace TFTV
             TFTVLogger.Initialize(LogPath, Config.Debug, ModDirectory, nameof(TFTV));
             PRMLogger.Initialize(LogPath, Settings.Debug, ModDirectory, nameof(PRMBetterClasses));
 
-            TFTVLogger.Always("TFTV October 2 release #5");
-            
+            TFTVLogger.Always("TFTV October 4 release #1");
+
             PRMBetterClasses.Helper.Initialize();
             // Initialize Helper
             Helper.Initialize();
             //This creates the Void Omen events
-            
+
             harmony.PatchAll();
 
             // if (!injectionComplete)
@@ -139,12 +136,12 @@ namespace TFTV
         /// </summary>
         public override void OnConfigChanged()
         {
-            
+
             BCApplyInGameConfig();
-        //    BCApplyDefChanges();
-          //  WeaponModifications.Change_Crossbows();
-          
-            
+            //    BCApplyDefChanges();
+            //  WeaponModifications.Change_Crossbows();
+
+
             if (Config.defaultSettings)
             {
                 Config.InitialScavSites = 8;
@@ -186,7 +183,7 @@ namespace TFTV
                 Config.defaultSettings = false;
 
             }
-                          
+
             Harmony harmony = (Harmony)HarmonyInstance;
             //  injectionComplete = false;
             harmony.UnpatchAll();
@@ -212,26 +209,27 @@ namespace TFTV
         public override void OnLevelStateChanged(Level level, Level.State prevState, Level.State state)
         {
             //Level l = GetLevel();
-            BCApplyDefChanges();
-        //    TFTVDefsRequiringReinjection.InjectDefsRequiringReinjection();
-         
-           
+            // BCApplyDefChanges();
+            //    TFTVDefsRequiringReinjection.InjectDefsRequiringReinjection();
+
+            //  TFTVProjectRobocop.CreateRoboCopDef();
             Logger.LogInfo($"{MethodBase.GetCurrentMethod().Name} called for level '{level}' with old state '{prevState}' and new state '{state}'");
             if (level.name.Contains("Intro") && prevState == Level.State.Uninitialized && state == Level.State.NotLoaded)
             {
                 Logger.LogInfo($"TFTV should do Def stuff here to make sure BC stuff is ready");
-               
+                BCApplyDefChanges();
                 TFTVDefsInjectedOnlyOnce.InjectDefsInjectedOnlyOnce();
-                // TFTVDefsRequiringReinjection.InjectDefsRequiringReinjection();
-               
                 TFTVHumanEnemiesNames.CreateNamesDictionary();
                 TFTVDefsWithConfigDependency.PopulateResourceRewardsDictionary();
-               
+
+                TFTVDefsRequiringReinjection.InjectDefsRequiringReinjection();
+
                 if (Config.ActivateReverseEngineeringResearch)
                 {
                     TFTVReverseEngineering.ModifyReverseEngineering();
                 }
-
+                   TFTVProjectRobocop.CreateRoboCopDef();
+                  TFTVProjectRobocop.CreateRoboCopDeliveryEvent();
             }
 
             /// Alternative way to access current level at any time.
@@ -248,9 +246,10 @@ namespace TFTV
         public override void OnLevelStart(Level level)
         {
             //Reinject Dtony's delirium perks, because assuming degradation will happen based on BetterClasses experience
-            BCApplyDefChanges();
-            TFTVDefsRequiringReinjection.InjectDefsRequiringReinjection();
-        
+            //  BCApplyDefChanges();
+            //  TFTVDefsRequiringReinjection.InjectDefsRequiringReinjection();
+
+
         }
 
         /// <summary>

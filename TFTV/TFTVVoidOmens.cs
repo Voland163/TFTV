@@ -49,6 +49,7 @@ namespace TFTV
         public static bool VoidOmen1Active = false;
         //VO#3 is WP cost +50%
         public static bool VoidOmen3Active = false;
+        //VO#4 is limited deplyoment, extra XP
         public static bool VoidOmen4Active = false;
         //VO#5 is haven defenders hostile; this is needed for victory kludge
         public static bool VoidOmen5Active = false;

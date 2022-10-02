@@ -367,9 +367,9 @@ namespace TFTV
 
                     orderedListOfHumanEnemies.Remove(leader);
 
-                    int champs = Mathf.FloorToInt(orderedListOfHumanEnemies.Count / 3);
+                    int champs = Mathf.FloorToInt(orderedListOfHumanEnemies.Count / (5 -(difficultyLevel/2)));
                     TFTVLogger.Always("There is space for " + champs + " champs");
-                    int gangers = Mathf.FloorToInt((orderedListOfHumanEnemies.Count - champs) / 2);
+                    int gangers = Mathf.FloorToInt((orderedListOfHumanEnemies.Count - champs) / (4 -(difficultyLevel/2)));
                     TFTVLogger.Always("There is space for " + gangers + " gangers");
                     int juves = orderedListOfHumanEnemies.Count - champs - gangers;
                     TFTVLogger.Always("There is space for " + juves + " juves");

@@ -220,7 +220,7 @@ namespace TFTV
         }
         */
         //Dtony's Delirium perks patch
-        [HarmonyPatch(typeof(RecruitsListElementController), "SetRecruitElement")]
+    /*    [HarmonyPatch(typeof(RecruitsListElementController), "SetRecruitElement")]
         public static class RecruitsListElementController_SetRecruitElement_Patch
         {
             public static bool Prefix(RecruitsListElementController __instance, RecruitsListEntryData entryData, List<RowIconTextController> ____abilityIcons)
@@ -260,7 +260,7 @@ namespace TFTV
                     return true;
                 }
             }
-
+            
 
             private static void BC_SetAbilityIcons(List<TacticalAbilityViewElementDef> abilities, List<RowIconTextController> abilityIcons)
             {
@@ -274,7 +274,7 @@ namespace TFTV
                     abilityIcons[i].SetController(abilities[i].LargeIcon, abilities[i].DisplayName1, abilities[i].Description);
                 }
             }
-        }
+        }*/
 
         [HarmonyPatch(typeof(TacticalActor), "OnAnotherActorDeath")]
         public static class TacticalActor_OnAnotherActorDeath_Patch

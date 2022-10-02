@@ -16,6 +16,7 @@ using PhoenixPoint.Geoscape.Events;
 using PhoenixPoint.Geoscape.Events.Eventus;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.View.ViewControllers.Modal;
+using PhoenixPoint.Tactical.AI.Considerations;
 using PhoenixPoint.Tactical.Tutorial;
 using PhoenixPoint.Tactical.View.ViewModules;
 using System;
@@ -41,7 +42,7 @@ namespace TFTV
 
        
 
-        public static List<ItemUnit> InfestationRewardGenerator(int num)
+        public static ItemStorage InfestationRewardGenerator(int num)
         {
             try 
             {
@@ -49,20 +50,30 @@ namespace TFTV
                 GeoscapeEventDef LW2Miss = Repo.GetAllDefs<GeoscapeEventDef>().FirstOrDefault(ged => ged.name.Equals("PROG_LW2_WIN_GeoscapeEventDef"));
                 GeoscapeEventDef LW3Miss = Repo.GetAllDefs<GeoscapeEventDef>().FirstOrDefault(ged => ged.name.Equals("PROG_LW3_WIN_GeoscapeEventDef"));
 
+               
+
+
                 if (num == 1) 
                 {
                     List<ItemUnit> reward = LW1Miss.GeoscapeEventData.Choices[0].Outcome.Items;
-                    return reward;
+                    ItemStorage itemStorage = new ItemStorage();
+                   
+                    itemStorage.AddItems((IEnumerable<GeoItem>)reward);
+                    return itemStorage;
                 }
                 else if (num == 2) 
                 {
                     List<ItemUnit> reward = LW2Miss.GeoscapeEventData.Choices[0].Outcome.Items;
-                    return reward;
+                    ItemStorage itemStorage = new ItemStorage();
+                    itemStorage.AddItems((IEnumerable<GeoItem>)reward);
+                    return itemStorage;
                 }
                 else if (num == 3)
                 {
                     List<ItemUnit> reward = LW3Miss.GeoscapeEventData.Choices[0].Outcome.Items;
-                    return reward;
+                    ItemStorage itemStorage = new ItemStorage();
+                    itemStorage.AddItems((IEnumerable<GeoItem>)reward);
+                    return itemStorage;
                 }
                 
             }
@@ -238,7 +249,36 @@ namespace TFTV
             }
         }
 
-        
+/*
+        [HarmonyPatch(typeof(RewardsController), "SetReward")]
+
+        public static class RewardsController_SetReward_patch
+        {
+            public static void Postfix(GeoFactionReward reward)
+
+            {
+                try 
+                {
+                    
+
+                    reward.Items.AddItems((IEnumerable<GeoItem>)InfestationRewardGenerator(1));
+
+                
+                                 
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+
+                }
+
+            }
+
+
+
+        }
+
+        */
 
         [HarmonyPatch(typeof(InfestedHavenOutcomeDataBind), "ModalShowHandler")]
 
@@ -311,11 +351,13 @@ namespace TFTV
                         __instance.TopBar.Subtitle.text = site.LocalizedSiteName;
                         GeoFactionRewardApplyResult applyResult = geoInfestationCleanseMission.Reward.ApplyResult;
                         __instance.AttitudeChange.SetAttitudes(applyResult.Diplomacy);
+                      //  __instance.Rewards.SetItems(InfestationRewardGenerator(1));
                         __instance.Rewards.SetReward(geoInfestationCleanseMission.Reward);
+                        
                         TFTVLogger.Always("InfestedHavensVariable before method is " + site.GeoLevel.EventSystem.GetVariable(InfestedHavensVariable));
                         site.GeoLevel.EventSystem.SetVariable(InfestedHavensVariable, site.GeoLevel.EventSystem.GetVariable(InfestedHavensVariable) - 1);
                         TFTVLogger.Always("InfestedHavensVariable is " + site.GeoLevel.EventSystem.GetVariable(InfestedHavensVariable));
-                        site.GeoLevel.EventSystem.SetVariable(LivingWeaponsAcquired, site.GeoLevel.EventSystem.GetVariable(LivingWeaponsAcquired) + 1);                       
+                      //  site.GeoLevel.EventSystem.SetVariable(LivingWeaponsAcquired, site.GeoLevel.EventSystem.GetVariable(LivingWeaponsAcquired) + 1);                       
 
                         if(havenToReceiveRefugees.Count > 0) 
                         {
@@ -337,10 +379,29 @@ namespace TFTV
              
                             }               
                         }
-
+                        
                         TFTVInfestationStory.HavenPopulation = 0;
                         TFTVInfestationStory.OriginalOwner = "";
+                        TFTVLogger.Always("LivingWeaponsAcquired variables is " + site.GeoLevel.EventSystem.GetVariable(LivingWeaponsAcquired));
+                        if (site.GeoLevel.EventSystem.GetVariable(LivingWeaponsAcquired) == 0)
+                        {
+                            GeoscapeEventContext context = new GeoscapeEventContext(site, site.GeoLevel.PhoenixFaction);
+                            site.GeoLevel.EventSystem.TriggerGeoscapeEvent("PROG_LW1_WIN", context);
+                            site.GeoLevel.EventSystem.SetVariable(LivingWeaponsAcquired, 1);
+                        }
+                        else if(site.GeoLevel.EventSystem.GetVariable(LivingWeaponsAcquired) == 1) 
+                        {
+                            GeoscapeEventContext context = new GeoscapeEventContext(site, site.GeoLevel.PhoenixFaction);
+                            site.GeoLevel.EventSystem.TriggerGeoscapeEvent("PROG_LW2_WIN", context);
+                            site.GeoLevel.EventSystem.SetVariable(LivingWeaponsAcquired, 2);
 
+                        }
+                        else if(site.GeoLevel.EventSystem.GetVariable(LivingWeaponsAcquired) == 2) 
+                        {
+                            GeoscapeEventContext context = new GeoscapeEventContext(site, site.GeoLevel.PhoenixFaction);
+                            site.GeoLevel.EventSystem.TriggerGeoscapeEvent("PROG_LW3_WIN", context);
+                            site.GeoLevel.EventSystem.SetVariable(LivingWeaponsAcquired, 3);
+                        }
                     }
                   
                     return false;

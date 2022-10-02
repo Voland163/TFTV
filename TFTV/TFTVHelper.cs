@@ -1,12 +1,8 @@
-﻿using Base.Core;
-using Base.Defs;
+﻿using Base.Defs;
 using I2.Loc;
-using PhoenixPoint.Common.Core;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using UnityEngine;
 
 
@@ -140,10 +136,16 @@ namespace TFTV
                     resultName = name;
                     TFTVLogger.Debug($"CreateDefFromClone, name '{resultName}' created, start creating Def of type <{typeof(T).Name}> ...");
                 }
-                T result = (T)Repo.CreateRuntimeDef(
-                    source,
-                    type,
-                    guid);
+
+                T result = (T)Repo.CreateDef(
+     guid,
+     source,
+     type);
+
+                /*  T result = (T)Repo.CreateRuntimeDef(
+                      source,
+                      type,
+                      guid);*/
                 result.name = resultName;
                 TFTVLogger.Debug($"CreateDefFromClone, <{result.name}> of type <{result.GetType().Name}> sucessful created.");
                 TFTVLogger.Debug("----------------------------------------------------", false);

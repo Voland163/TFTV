@@ -4,6 +4,12 @@ namespace PRMBetterClasses
 {
     public class BCSettings
     {
+        // Dictionary of special Characters identified by their name to give them a special skill set on the 3rd row (personal perk row)
+        // The string key for the outer dictionary is the name of the character
+        // The int key of the inner dictionary (value of the outer dictionary) is the level spot where the ability should get on
+        // The string value of the inner dictionagy is finally the ability def name of the skill
+        public Dictionary<string, Dictionary<int, string>> SpecialCharacterPersonalSkills = new Dictionary<string, Dictionary<int, string>>();
+
         public Dictionary<string, float> BuffsForAdditionalProficiency = new Dictionary<string, float>
         {
             { Proficiency.Buff, 0.0f }

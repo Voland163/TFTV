@@ -293,8 +293,7 @@ namespace TFTV
                     TacticalActor tacticalActor = actor as TacticalActor;
                     AddRevenantStatusEffect(actor);
                     SetRevenantTierTag(theChosen, actor, controller);
-                    actor.name = GetDeadSoldiersNameFromID(theChosen, controller);
-                    TFTVLogger.Always("Crab's name has been changed to " + actor.GetDisplayName());
+                    actor.name = GetDeadSoldiersNameFromID(theChosen, controller);                                
                     // SetDeathTime(theChosen, __instance, timeOfMissionStart);
                     revenantID = theChosen;
                     TFTVLogger.Always("The accumulated delirium for  " + GetDeadSoldiersNameFromID(theChosen, controller)
@@ -303,6 +302,7 @@ namespace TFTV
                     AddRevenantResistanceAbility(actor);
                     //  SpreadResistance(__instance);
                     actor.UpdateStats();
+                    TFTVLogger.Always("Crab's name has been changed to " + actor.GetDisplayName());
                     revenantCanSpawn = false;
 
                     foreach (TacticalActorBase pandoran in pandorans.Actors)
@@ -408,6 +408,7 @@ namespace TFTV
 
                     if (__instance.GameTags.Contains(revenantTier1GameTag))
                     {
+                        
                         string name = __instance.name + " Mimic";
                         __result = name;
                     }
@@ -435,8 +436,8 @@ namespace TFTV
         {
             try
             {
-                SoldierStats deadSoldierStats = level.TacticalGameParams.Statistics.DeadSoldiers.TryGetValue(deadSoldier, out deadSoldierStats) ? deadSoldierStats : null;
-                return deadSoldierStats.Name;
+                string name = level.TacticalGameParams.Statistics.DeadSoldiers[deadSoldier].Name;
+                return name;
             }
             catch (Exception e)
             {
@@ -460,7 +461,7 @@ namespace TFTV
                 {
                     tag = revenantTier3GameTag;
                 }
-                else if (score <= 30 && score > 20)
+                else if (score <= 30 && score > 10)
                 {
                     tag = revenantTier2GameTag;
                 }
@@ -469,7 +470,7 @@ namespace TFTV
                     tag = revenantTier1GameTag;
                 }
 
-                actor.GameTags.Add(tag, GameTagAddMode.ReplaceExistingExclusive);
+                actor.GameTags.Add(tag);
                 actor.GameTags.Add(anyRevenantGameTag);
             }
             catch (Exception e)
@@ -1263,52 +1264,7 @@ namespace TFTV
             }
         }
 
-        public static void CreateBionicMan(GeoLevelController levelController)
-        {
-            try
-            {
-                int idChosen = 0;
-
-                foreach (int id in RevenantsKilled.Keys)
-                {
-                    if (RevenantsKilled[id] == 0)
-                    {
-                        idChosen = id;
-
-                    }
-                }
-
-                GeoTacUnitId bionicMan = new GeoTacUnitId();
-                if (idChosen != 0)
-                {
-                    foreach (GeoTacUnitId deadSoldier in levelController.DeadSoldiers.Keys)
-                    {
-                        if (deadSoldier == idChosen)
-                        {
-                            TFTVLogger.Always("The chosen dead soldier is " + levelController.DeadSoldiers[deadSoldier].GetName());
-                            bionicMan = deadSoldier;
-                        }
-                    }
-                }
-                if (bionicMan == null)
-                {
-                    levelController.DeadSoldiers[bionicMan].SpawnAsCharacter();
-                }
-
-
-                /*
-                TacCharacterDef characterDef = Repo.GetAllDefs<TacCharacterDef>().FirstOrDefault(p => p.name.Equals("NJ_Jugg_TacCharacterDef"));
-                TacCharacterDef bionicManDef = Helper.CreateDefFromClone(characterDef, "36B01740-2E05-4D5A-9C2E-24D506C6F584", "BionicManDef");
-                bionicManDef.Data.Name = levelController.DeadSoldiers[bionicMan].GetName();
-                bionicManDef.Data.CharacterProgression.AddSkillPoints(levelController.DeadSoldiers[bionicMan].Level * 20);*/
-            }
-
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-
-        }
+       
 
         /*
                 [HarmonyPatch(typeof(TacticalLevelController), "ActorEnteredPlay")]

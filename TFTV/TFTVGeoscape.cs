@@ -1,4 +1,3 @@
-using Base.Core;
 using Base.Serialization.General;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Levels;
@@ -48,7 +47,7 @@ namespace TFTV
             /// ModMain is accesible at any time
 
             TFTVMain main = (TFTVMain)Main;
-           // TFTVDefsRequiringReinjection.InjectDefsRequiringReinjection();
+            // TFTVDefsRequiringReinjection.InjectDefsRequiringReinjection();
             TFTVNewPXCharacters.PlayIntro(gsController);
             TFTVVoidOmens.ImplementVoidOmens(gsController);
             TFTVUmbra.CheckForUmbraResearch(gsController);
@@ -56,12 +55,15 @@ namespace TFTV
             TFTVThirdAct.SetBehemothOnRampageMod(gsController);
             TFTVStamina.CheckBrokenLimbs(gsController.PhoenixFaction.Soldiers.ToList());
             TFTVRevenant.UpdateRevenantTimer(gsController);
-            if(TFTVRevenant.revenantID != 0) 
+            if (TFTVRevenant.revenantID != 0)
             {
                 TFTVRevenant.DeadSoldiersDelirium[TFTVRevenant.revenantID] += 1;
-            
+
             }
             TFTVDefsWithConfigDependency.InjectDefsWithConfigDependency();
+            TFTVProjectRobocop.CreateBionicMan(gsController);
+        //    TFTVProjectRobocop.CreateRoboCopDef();
+            //   TFTVProjectRobocop.CreateRoboCopDef();
             //  TFTVRevenant.CreateBionicMan(Controller);
             /*  if (TFTVRevenant.revenantSpawned)
               {
@@ -101,7 +103,7 @@ namespace TFTV
             TFTVRevenant.CheckRevenantTime(gsController);
             TFTVHumanEnemies.difficultyLevel = gsController.CurrentDifficultyLevel.Order;
 
-            
+
         }
 
         /// <summary>
@@ -125,7 +127,7 @@ namespace TFTV
                 timeRevenantLasteSeenSaveData = TFTVRevenant.daysRevenantLastSeen,
                 infestedHavenOriginalOwnerSaveData = TFTVInfestationStory.OriginalOwner,
                 infestedHavenPopulationSaveData = TFTVInfestationStory.HavenPopulation,
-                
+
             };
 
         }
@@ -136,7 +138,7 @@ namespace TFTV
         public override void ProcessGeoscapeInstanceData(object instanceData)
         {
             TFTVGSInstanceData data = (TFTVGSInstanceData)instanceData;
-          //  TFTVDefsCreatedOnLevelChanged.CreateNewDefsForTFTVStart();
+            //  TFTVDefsCreatedOnLevelChanged.CreateNewDefsForTFTVStart();
             TFTVStamina.charactersWithBrokenLimbs = data.charactersWithBrokenLimbs;
             TFTVAirCombat.targetsForBehemoth = data.targetsForBehemoth;
             // TFTVAirCombat.targetsVisitedByBehemoth = data.targetsVisitedByBehemoth;
@@ -149,7 +151,7 @@ namespace TFTV
             TFTVAirCombat.behemothWaitHours = data.behemothWaitHours;
             TFTVInfestationStory.HavenPopulation = data.infestedHavenPopulationSaveData;
             TFTVInfestationStory.OriginalOwner = data.infestedHavenOriginalOwnerSaveData;
-          
+
             Main.Logger.LogInfo("# Characters with broken limbs: " + TFTVStamina.charactersWithBrokenLimbs.Count);
             Main.Logger.LogInfo("# Behemoth targets for this emergence: " + TFTVAirCombat.targetsForBehemoth.Count);
             //    Main.Logger.LogInfo("# Targets already hit by Behemoth on this emergence: " + TFTVAirCombat.targetsVisitedByBehemoth.Count);
@@ -159,7 +161,7 @@ namespace TFTV
             Main.Logger.LogInfo("# sites on Behemoth scenic route " + TFTVAirCombat.behemothScenicRoute.Count);
             Main.Logger.LogInfo("Behemoth target id number is " + TFTVAirCombat.behemothTarget);
             Main.Logger.LogInfo("Behemoth will wait for another  " + TFTVAirCombat.behemothWaitHours + " before moving");
-       
+
             Main.Logger.LogInfo("Last time a Revenant was seen was on day " + TFTVRevenant.daysRevenantLastSeen + ", and now it is day " + Controller.Timing.Now.TimeSpan.Days);
 
             TFTVLogger.Always("# Characters with broken limbs: " + TFTVStamina.charactersWithBrokenLimbs.Count);
@@ -186,11 +188,7 @@ namespace TFTV
         {
             TFTVMain main = (TFTVMain)Main;
             GeoLevelController gsController = Controller;
-            TFTVAirCombat.targetsForBehemoth = new List<int>();
-            //   TFTVAirCombat.targetsVisitedByBehemoth = new List<int>();
-            TFTVAirCombat.flyersAndHavens = new Dictionary<int, List<int>>();
-            TFTVAirCombat.checkHammerfall = false;
-            TFTVRevenant.DeadSoldiersDelirium = new Dictionary<int, int>();
+            TFTVCommonMethods.ClearInternalVariables();
 
             try
             {
@@ -204,7 +202,7 @@ namespace TFTV
                     {
                         if (main.Config.ChancesScavCrates == TFTVConfig.ScavengingWeight.High)
                         {
-                            scavSiteConf.Weight = 4;
+                            scavSiteConf.Weight = 6;
                         }
                         else if (main.Config.ChancesScavCrates == TFTVConfig.ScavengingWeight.Medium)
                         {
@@ -222,13 +220,31 @@ namespace TFTV
 
                     if (scavSiteConf.MissionTags.Any(mt => mt.name.Equals("Contains_RescueSoldier_MissionTagDef")))
                     {
+                        if (main.Config.ChancesScavSoldiers == TFTVConfig.ScavengingWeight.High)
+                        {
+                            scavSiteConf.Weight = 6;
+                        }
+                        else if (main.Config.ChancesScavSoldiers == TFTVConfig.ScavengingWeight.Medium)
+                        {
+                            scavSiteConf.Weight = 4;
+                        }
+                        else if (main.Config.ChancesScavSoldiers == TFTVConfig.ScavengingWeight.Low)
+                        {
+                            scavSiteConf.Weight = 1;
+                        }
+                        else if (main.Config.ChancesScavSoldiers == TFTVConfig.ScavengingWeight.None)
+                        {
+                            scavSiteConf.Weight = 0;
+                        }
+
+
                     }
 
                     if (scavSiteConf.MissionTags.Any(mt => mt.name.Equals("Contains_RescueVehicle_MissionTagDef")))
                     {
                         if (main.Config.ChancesScavGroundVehicleRescue == TFTVConfig.ScavengingWeight.High)
                         {
-                            scavSiteConf.Weight = 4;
+                            scavSiteConf.Weight = 6;
                         }
                         else if (main.Config.ChancesScavGroundVehicleRescue == TFTVConfig.ScavengingWeight.Medium)
                         {
@@ -264,15 +280,11 @@ namespace TFTV
 
             try
             {
-               
+
                 TFTVMain main = (TFTVMain)Main;
                 GeoLevelController gsController = Controller;
 
-                /*	if (main.Config.MoreAmbushes)
-                    {
-                        TFTVAmbushes.Apply_Changes_Ambush_Chances(gsController.EventSystem);
-                    }*/
-
+            
 
                 setup.InitialScavengingSiteCount = (uint)main.Config.InitialScavSites;
 
@@ -283,7 +295,7 @@ namespace TFTV
                     {
                         if (main.Config.ChancesScavCrates == TFTVConfig.ScavengingWeight.High)
                         {
-                            scavSiteConf.Weight = 4;
+                            scavSiteConf.Weight = 6;
                         }
                         else if (main.Config.ChancesScavCrates == TFTVConfig.ScavengingWeight.Medium)
                         {
@@ -301,13 +313,31 @@ namespace TFTV
 
                     if (scavSiteConf.MissionTags.Any(mt => mt.name.Equals("Contains_RescueSoldier_MissionTagDef")))
                     {
+                        if (main.Config.ChancesScavSoldiers == TFTVConfig.ScavengingWeight.High)
+                        {
+                            scavSiteConf.Weight = 6;
+                        }
+                        else if (main.Config.ChancesScavSoldiers == TFTVConfig.ScavengingWeight.Medium)
+                        {
+                            scavSiteConf.Weight = 4;
+                        }
+                        else if (main.Config.ChancesScavSoldiers == TFTVConfig.ScavengingWeight.Low)
+                        {
+                            scavSiteConf.Weight = 1;
+                        }
+                        else if (main.Config.ChancesScavSoldiers == TFTVConfig.ScavengingWeight.None)
+                        {
+                            scavSiteConf.Weight = 0;
+                        }
+
+
                     }
 
                     if (scavSiteConf.MissionTags.Any(mt => mt.name.Equals("Contains_RescueVehicle_MissionTagDef")))
                     {
                         if (main.Config.ChancesScavGroundVehicleRescue == TFTVConfig.ScavengingWeight.High)
                         {
-                            scavSiteConf.Weight = 4;
+                            scavSiteConf.Weight = 6;
                         }
                         else if (main.Config.ChancesScavGroundVehicleRescue == TFTVConfig.ScavengingWeight.Medium)
                         {

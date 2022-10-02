@@ -26,7 +26,7 @@ PR_BC_EXTREME_FOCUS_DESC,Text,,Overwatch cost is set to 1 Action Point for all w
 PR_BC_ARMOR_BREAK,Text,,ARMOR BREAK,,,,,,РАЗЛОМ БРОНИ,,
 PR_BC_ARMOR_BREAK_DESC,Text,,Next shot has 15 Shred but -25% Damage,,,,,,"Следующий выстрел наносит на -25% меньше урона, но получает 15 очков разрыва брони",,
 PR_BC_GUNSLINGER,Text,,GUNSLINGER,,,,,,СТРЕЛОК,,
-PR_BC_GUNSLINGER_DESC,Text,,Shoot handgun 3 times at -50% accuracy,,,,,,Три выстрела из пистолета со штрафом точности -50%,,
+PR_BC_GUNSLINGER_DESC,Text,,Shoot handgun 3 times at -50% accuracy. Uses AP cost of the weapon.,,,,,,Три выстрела из пистолета со штрафом точности -50%. Использует ОД оружия.,,
 PR_BC_KILL_ZONE,Text,,KILL ZONE,,,,,,СМЕРТЕЛЬНАЯ ЗОНА,,
 PR_BC_KILL_ZONE_DESC,Text,,When you take an Overwatch shot you fire twice at the target,,,,,,"Когда вы стреляете в режиме наблюдения, совершите два выстрела по цели",,
 PR_BC_HUNKER_DOWN,Text,,HUNKER DOWN,,,,,,ПРИГНУТЬСЯ,,
@@ -36,11 +36,11 @@ PR_BC_SKIRMISHER_DESC,Text,,If you take damage during enemy turn your attacks de
 PR_BC_SHRED_RESISTANCE,Text,,SHRED RESISTANCE,,,,,,УСИЛЕННАЯ БРОНЯ,,
 PR_BC_SHRED_RESISTANCE_DESC,Text,,Shred Damage is reduced by half,,,,,,Урон от атак истончающих броню снижен вдвое,,
 PR_BC_RAGE_BURST,Text,,RAGE BURST,,,,,,ЯРОСТНАЯ ОЧЕРЕДЬ,,
-PR_BC_RAGE_BURST_DESC,Text,,Shoot 5 times across a wide arc with increased accuracy,,,,,,Совершите 5 выстрелов по площади с повышенной точностью,,
+PR_BC_RAGE_BURST_DESC,Text,,Shoot 5 times across a wide arc with increased accuracy. Uses AP cost of the weapon.,,,,,,Совершите 5 выстрелов по площади с повышенной точностью. Использует ОД оружия.,,
 PR_BC_JETPACK_CONTROL,Text,,JETPACK CONTROL,,,,,,КОНТРОЛЬ ТЯГИ,,
 PR_BC_JETPACK_CONTROL_DESC,Text,,Jump to a location within 12 tiles,,,,,,Совершите прыжок на 12 клеток (требуется реактивный ранец),,
 PR_BC_BOOM_BLAST,Text,,BOOM BLAST,,,,,,БОЛЬШОЙ БАБАХ,,
-PR_BC_BOOM_BLAST_DESC,Text,,Until end of turn your Explosives gain +50% range. Grenade and Rocket Launcher AP cost is reduced by 1,,,,,,До конца хода дальность ваших атак взрывным оружие повышена на +50%. Также стоимость ракетных установок и гранатометов снижена на -1 ОД,,
+PR_BC_BOOM_BLAST_DESC,Text,,"Until end of turn your Explosives gain +50% range. Uses AP cost of the weapon, Grenade and Rocket Launcher AP cost is reduced by 1.",,,,,,"До конца хода дальность ваших атак взрывным оружие повышена на +50%. Использует ОД оружия. ОД ракетных установок и гранатометов снижены на 1.",,
 PR_BC_ADRENALINE,Text,,ADRENALINE,,,,,,АДРЕНАЛИН,,
 PR_BC_ADRENALINE_DESC,Text,,"Until end of turn one-handed weapons and all non-weapon skills cost 1AP, except Recover",,,,,,"Одноручное вооружение и не стрелковые навыки стоят 1 ОД. Не действует на ""восстановление""",,
 PR_BC_BLOODLUST_DESC,Text,,Gain up to 25% Speed and Damage based on lost Health.,,,,,,,,
@@ -65,7 +65,7 @@ PR_BC_AMPLIFY_PAIN_DESC,Text,,"Until End of Turn gain +100% to healing and +50% 
 PR_BC_BIOCHEMIST,Text,,BIOCHEMIST,,,,,,БИОХИМИК,,
 PR_BC_BIOCHEMIST_DESC,Text,,"Viral, Paralysis, Poison and Acid damage increased by 25% for direct damage and 5% for poison grenades on each hit body part",,,,,,"Атаки кислотой, вирусом, ядом и параличом эффективнее на 25%.",,
 PR_BC_LAY_WASTE,Text,,LAY WASTE,,,,,,ОПУСТОШИТЬ,,
-PR_BC_LAY_WASTE_DESC,Text,,If your current Willpower score is higher than target's deal 10 damage for each point of WP difference,,,,,,Наносит 10 урона цели за каждое очко разницы между вашими ОВ. Максимум 200 урона.,,
+PR_BC_LAY_WASTE_DESC,Text,,If your current Willpower score is higher than target's deal 20 damage for each point of WP difference to a maximum of 200 damage,,,,,,Наносит 20 урона цели за каждое очко разницы между вашими ОВ. Максимум 200 урона.,,
 PR_BC_ENDURANCE,Text,,ENDURANCE,,,,,,ВЫНОСЛИВОСТЬ,,
 PR_BC_ENDURANCE_DESC,Text,,"Recover restores additional 25% Willpower and removes Acid, Poison and Bleeding effects.",,,,,,"Восстановление возвращает на 25% больше воли, а также снимает эффекты кислоты, яда и кровотечения",,
 PR_BC_SABOTEUR,Text,,SABOTEUR,,,,,,ДИВЕРСАНТ,,
@@ -101,8 +101,8 @@ PR_BC_CORPSE_DISPOSER_DESC,Text,,"<b>Fire Resistance</b>
 <i>There were too many to bury, so you had to burn them. Day after day, week after week. It's not the fire that scares you</i>",,,,,,"<b>Защита от огня</b>
 <i>Тел было слишком много, чтобы похоронить всех, так что вы сожгли их. Вовсе не огонь страшит вас</i>",,
 PR_BC_HARD_LABOR,Text,,HARD LABOR,,,,,,РАЗНОРАБОЧИЙ,,
-PR_BC_HARD_LABOR_DESC,Text,,"<b>STR +4, Perception -10</b>
-<i>The New World didn't just build itself. There was lot of digging, lifting and carrying, and dust and noise everywhere</i>",,,,,,"<b>Сила +4, Восприятие -5</b>
+PR_BC_HARD_LABOR_DESC,Text,,"<b>STR +2, Perception -4</b>
+<i>The New World didn't just build itself. There was lot of digging, lifting and carrying, and dust and noise everywhere</i>",,,,,,"<b>Сила +2, Восприятие -4</b>
 <i>Новый Мир не возник сам по себе. Пришлось много копать, таскать и поднимать. И повсюду шум и пыль</i>",,
 PR_BC_SQUATTER,Text,,SQUATTER,,,,,,СКИТАЛЕЦ,,
 PR_BC_SQUATTER_DESC,Text,,"<b>STR +2, Carry Weight +25%</b>

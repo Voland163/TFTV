@@ -21,7 +21,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using static Base.Audio.WwiseIDs.SWITCHES;
 
 namespace TFTV
 {
@@ -219,7 +218,7 @@ namespace TFTV
         [HarmonyPatch(typeof(UIModuleSoldierEquip), "RefreshWeightSlider")]
         internal static class UIModuleSoldierEquip_RefreshWeightSlider_Patch
         {
-            private static readonly ApplyStatusAbilityDef derealization = Repo.GetAllDefs<ApplyStatusAbilityDef>().FirstOrDefault(p => p.name.Equals("DerealizationIgnorePain_AbilityDef"));
+           private static readonly ApplyStatusAbilityDef derealization = Repo.GetAllDefs<ApplyStatusAbilityDef>().FirstOrDefault(p => p.name.Equals("DerealizationIgnorePain_AbilityDef"));
             private static void Prefix(ref int maxWeight, UIModuleSoldierEquip __instance)
             {
                 try
@@ -241,7 +240,7 @@ namespace TFTV
                             }
                         }
 
-                        if (hookToCharacter.Progression != null)
+                      if (hookToCharacter.Progression != null)
                         {
                             foreach (TacticalAbilityDef ability in hookToCharacter.Progression.Abilities)
                             {
@@ -294,9 +293,9 @@ namespace TFTV
 
                         maxWeight += (int)(bonusStrength * bonusToCarry);
                         hookToProgressionModule.StatChanged();
-                       // hookToProgressionModule.RefreshStats();
+                     //   hookToProgressionModule.RefreshStats();
                         //hookToProgressionModule.SetStatusesPanel();
-                        hookToProgressionModule.RefreshStatPanel();
+                       hookToProgressionModule.RefreshStatPanel();
                         //TFTVLogger.Always("Max weight is " + maxWeight + ". Bonus Strength is " + bonusStrength + ". Bonus to carry is " + bonusToCarry);
                     }
                 }

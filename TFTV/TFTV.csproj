@@ -117,6 +117,7 @@
     <Compile Include="TFTVNewPXCharacters.cs" />
     <Compile Include="TFTVPandoranProgress.cs" />
     <Compile Include="TFTVPassengerModules.cs" />
+    <Compile Include="TFTVProjectRobocop.cs" />
     <Compile Include="TFTVRevenant.cs" />
     <Compile Include="TFTVRevenantResearch.cs" />
     <Compile Include="TFTVReverseEngineering.cs" />

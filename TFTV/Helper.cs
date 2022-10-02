@@ -148,10 +148,15 @@ namespace PRMBetterClasses
                     resultName = name;
                     PRMLogger.Debug($"CreateDefFromClone, name '{resultName}' created, start creating Def of type <{typeof(T).Name}> ...");
                 }
-                T result = (T)Repo.CreateRuntimeDef(
+                T result = (T)Repo.CreateDef(
+    guid,
+    source,
+    type);
+
+                /* T result = (T)Repo.CreateRuntimeDef(
                     source,
                     type,
-                    guid);
+                    guid);*/
                 result.name = resultName;
                 PRMLogger.Debug($"CreateDefFromClone, <{result.name}> of type <{result.GetType().Name}> sucessful created.");
                 PRMLogger.Debug("----------------------------------------------------", false);
