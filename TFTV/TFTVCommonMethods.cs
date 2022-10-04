@@ -20,8 +20,9 @@ namespace TFTV
 {
     internal class TFTVCommonMethods
     {
-        private static readonly DefRepository Repo = TFTVMain.Repo;
-     
+       
+        private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
+
         public static void ClearInternalVariables()
         {
             try
@@ -92,7 +93,7 @@ namespace TFTV
         [HarmonyPatch(typeof(Research), "CompleteResearch")]
         public static class Research_NewTurnEvent_CalculateDelirium_Patch
         {
-           private static readonly ClassTagDef queenTag = Repo.GetAllDefs<ClassTagDef>().FirstOrDefault(ctf => ctf.name.Equals("Queen_ClassTagDef"));
+           private static readonly ClassTagDef queenTag = DefCache.GetDef<ClassTagDef>("Queen_ClassTagDef");
             public static void Postfix(ResearchElement research)
             {
                 try
@@ -220,7 +221,7 @@ namespace TFTV
             {
 
                 string gUID = Guid.NewGuid().ToString();
-                GeoscapeEventDef sourceLoseGeoEvent = Repo.GetAllDefs<GeoscapeEventDef>().FirstOrDefault(ged => ged.name.Equals("PROG_PU12_FAIL_GeoscapeEventDef"));
+                GeoscapeEventDef sourceLoseGeoEvent = DefCache.GetDef<GeoscapeEventDef>("PROG_PU12_FAIL_GeoscapeEventDef");
                 GeoscapeEventDef newEvent = Helper.CreateDefFromClone(sourceLoseGeoEvent, gUID, name);
                 newEvent.GeoscapeEventData.Choices[0].Outcome.ReEneableEvent = false;
                 newEvent.GeoscapeEventData.Choices[0].Outcome.ReactiveEncounters.Clear();
@@ -244,11 +245,11 @@ namespace TFTV
         {
             try
             {
-                ResearchDef sourceResearchDef = Repo.GetAllDefs<ResearchDef>().FirstOrDefault(ged => ged.name.Equals("PX_AtmosphericAnalysis_ResearchDef"));
+                ResearchDef sourceResearchDef = DefCache.GetDef<ResearchDef>("PX_AtmosphericAnalysis_ResearchDef");
                 ResearchDef researchDef = Helper.CreateDefFromClone(sourceResearchDef, gUID, id);
-                ResearchDef secondarySourceResearchDef = Repo.GetAllDefs<ResearchDef>().FirstOrDefault(ged => ged.name.Equals("PX_AlienGoo_ResearchDef"));
+                ResearchDef secondarySourceResearchDef = DefCache.GetDef<ResearchDef>("PX_AlienGoo_ResearchDef");
 
-                ResearchDbDef researchDB = Repo.GetAllDefs<ResearchDbDef>().FirstOrDefault(ged => ged.name.Equals("pp_ResearchDB"));
+                ResearchDbDef researchDB = DefCache.GetDef<ResearchDbDef>("pp_ResearchDB");
                 researchDef.Id = id;
                 researchDef.InitialStates[0].State = ResearchState.Hidden;
                 researchDef.ResearchCost = cost;
@@ -271,7 +272,7 @@ namespace TFTV
             try
             {
 
-                ResearchViewElementDef sourceResearchViewDef = Repo.GetAllDefs<ResearchViewElementDef>().FirstOrDefault(ged => ged.name.Equals("PX_Alien_CorruptionNode_ViewElementDef"));
+                ResearchViewElementDef sourceResearchViewDef = DefCache.GetDef<ResearchViewElementDef>("PX_Alien_CorruptionNode_ViewElementDef");
                 ResearchViewElementDef researchViewDef = Helper.CreateDefFromClone(sourceResearchViewDef, gUID, def);
                 researchViewDef.DisplayName1.LocalizationKey = name;
                 researchViewDef.RevealText.LocalizationKey = reveal;
@@ -292,7 +293,7 @@ namespace TFTV
             try
             {
 
-                ResearchViewElementDef sourceResearchViewDef = Repo.GetAllDefs<ResearchViewElementDef>().FirstOrDefault(ged => ged.name.Equals("PX_Alien_CorruptionNode_ViewElementDef"));
+                ResearchViewElementDef sourceResearchViewDef = DefCache.GetDef<ResearchViewElementDef>("PX_Alien_CorruptionNode_ViewElementDef");
                 ResearchViewElementDef researchViewDef = Helper.CreateDefFromClone(sourceResearchViewDef, gUID, def);
                 researchViewDef.DisplayName1 = new LocalizedTextBind (name, true);
                 researchViewDef.RevealText = new LocalizedTextBind(reveal, true);
@@ -312,7 +313,7 @@ namespace TFTV
             try
             {
                 CaptureActorResearchRequirementDef captureActorResearchRequirementDef 
-                    = Repo.GetAllDefs<CaptureActorResearchRequirementDef>().FirstOrDefault(ged => ged.name.Equals("PX_Alien_EvolvedAliens_ResearchDef_CaptureActorResearchRequirementDef_0"));
+                    = DefCache.GetDef<CaptureActorResearchRequirementDef>("PX_Alien_EvolvedAliens_ResearchDef_CaptureActorResearchRequirementDef_0");
                 CaptureActorResearchRequirementDef newCaptureActorResearchRequirementDef = Helper.CreateDefFromClone(captureActorResearchRequirementDef, gUID, defName);
                 newCaptureActorResearchRequirementDef.RequirementText = new LocalizedTextBind (revealText, true);
                 return newCaptureActorResearchRequirementDef;
@@ -330,8 +331,7 @@ namespace TFTV
             try
             {
                 EncounterVariableResearchRequirementDef sourceVarResReq =
-                      Repo.GetAllDefs<EncounterVariableResearchRequirementDef>().
-                      FirstOrDefault(ged => ged.name.Equals("NJ_Bionics1_ResearchDef_EncounterVariableResearchRequirementDef_0"));
+                      DefCache.GetDef<EncounterVariableResearchRequirementDef>("NJ_Bionics1_ResearchDef_EncounterVariableResearchRequirementDef_0");
                 
                 EncounterVariableResearchRequirementDef newResReq = Helper.CreateDefFromClone(sourceVarResReq, gUID, nameDef);
                 newResReq.VariableName = variable;

@@ -25,7 +25,8 @@ namespace TFTV
 {
     internal class TFTVDelirium
     {
-        private static readonly DefRepository Repo = TFTVMain.Repo;
+      //  private static readonly DefRepository Repo = TFTVMain.Repo;
+        private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
         private static readonly GameTagDef bionicalTag = GameUtl.GameComponent<SharedData>().SharedGameTags.BionicalTag;
         private static readonly GameTagDef mutationTag = GameUtl.GameComponent<SharedData>().SharedGameTags.AnuMutationTag;
         // Patch to increase damage by 2% per mutated body part per Delirium point
@@ -472,16 +473,16 @@ namespace TFTV
         [HarmonyPatch(typeof(GeoCharacter), "CureCorruption")]
         public static class GeoCharacter_CureCorruption_SetStaminaTo0_patch
         {
-            private static readonly PassiveModifierAbilityDef InnerSight_AbilityDef = Repo.GetAllDefs<PassiveModifierAbilityDef>().FirstOrDefault(ged => ged.name.Equals("InnerSight_AbilityDef"));
-            private static readonly PassiveModifierAbilityDef AnxietyAbilityDef = Repo.GetAllDefs<PassiveModifierAbilityDef>().FirstOrDefault(ged => ged.name.Equals("AnxietyAbilityDef"));
-            private static readonly PassiveModifierAbilityDef Hyperalgesia_AbilityDef = Repo.GetAllDefs<PassiveModifierAbilityDef>().FirstOrDefault(ged => ged.name.Equals("Hyperalgesia_AbilityDef"));
-            private static readonly PassiveModifierAbilityDef FasterSynapses_AbilityDef = Repo.GetAllDefs<PassiveModifierAbilityDef>().FirstOrDefault(ged => ged.name.Equals("FasterSynapses_AbilityDef"));
-            private static readonly PassiveModifierAbilityDef Terror_AbilityDef = Repo.GetAllDefs<PassiveModifierAbilityDef>().FirstOrDefault(ged => ged.name.Equals("Terror_AbilityDef"));
-            private static readonly ApplyStatusAbilityDef Wolverine_AbilityDef = Repo.GetAllDefs<ApplyStatusAbilityDef>().FirstOrDefault(ged => ged.name.Equals("Wolverine_AbilityDef"));
-            private static readonly TacticalAbilityDef Derealization_AbilityDef = Repo.GetAllDefs<TacticalAbilityDef>().FirstOrDefault(ged => ged.name.Equals("DerealizationIgnorePain_AbilityDef"));
-            private static readonly ApplyStatusAbilityDef feral_AbilityDef = Repo.GetAllDefs<ApplyStatusAbilityDef>().FirstOrDefault(ged => ged.name.Equals("Feral_AbilityDef"));
-            private static readonly PassiveModifierAbilityDef OneOfThem_AbilityDef = Repo.GetAllDefs<PassiveModifierAbilityDef>().FirstOrDefault(ged => ged.name.Equals("OneOfThemPassive_AbilityDef"));
-            private static readonly ApplyStatusAbilityDef bloodthirsty_AbilityDef = Repo.GetAllDefs<ApplyStatusAbilityDef>().FirstOrDefault(ged => ged.name.Equals("Bloodthirsty_AbilityDef"));
+            private static readonly PassiveModifierAbilityDef InnerSight_AbilityDef =DefCache.GetDef<PassiveModifierAbilityDef>("InnerSight_AbilityDef");
+            private static readonly PassiveModifierAbilityDef AnxietyAbilityDef =DefCache.GetDef<PassiveModifierAbilityDef>("AnxietyAbilityDef");
+            private static readonly PassiveModifierAbilityDef Hyperalgesia_AbilityDef =DefCache.GetDef<PassiveModifierAbilityDef>("Hyperalgesia_AbilityDef");
+            private static readonly PassiveModifierAbilityDef FasterSynapses_AbilityDef =DefCache.GetDef<PassiveModifierAbilityDef>("FasterSynapses_AbilityDef");
+            private static readonly PassiveModifierAbilityDef Terror_AbilityDef =DefCache.GetDef<PassiveModifierAbilityDef>("Terror_AbilityDef");
+            private static readonly ApplyStatusAbilityDef Wolverine_AbilityDef =DefCache.GetDef<ApplyStatusAbilityDef>("Wolverine_AbilityDef");
+            private static readonly TacticalAbilityDef Derealization_AbilityDef =DefCache.GetDef<TacticalAbilityDef>("DerealizationIgnorePain_AbilityDef");
+            private static readonly ApplyStatusAbilityDef feral_AbilityDef =DefCache.GetDef<ApplyStatusAbilityDef>("Feral_AbilityDef");
+            private static readonly PassiveModifierAbilityDef OneOfThem_AbilityDef =DefCache.GetDef<PassiveModifierAbilityDef>("OneOfThemPassive_AbilityDef");
+            private static readonly ApplyStatusAbilityDef bloodthirsty_AbilityDef =DefCache.GetDef<ApplyStatusAbilityDef>("Bloodthirsty_AbilityDef");
 
             public static void Postfix(GeoCharacter __instance)
             {

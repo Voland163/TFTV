@@ -34,15 +34,16 @@ namespace TFTV
     internal class TFTVVoidOmens
     {
         public static readonly TFTVConfig Config = new TFTVConfig();
+        private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
         private static readonly DefRepository Repo = TFTVMain.Repo;
 
-        private static readonly FesteringSkiesSettingsDef festeringSkiesSettingsDef = Repo.GetAllDefs<FesteringSkiesSettingsDef>().FirstOrDefault(ged => ged.name.Equals("FesteringSkiesSettingsDef"));
-        private static readonly TacticalPerceptionDef tacticalPerceptionDef = Repo.GetAllDefs<TacticalPerceptionDef>().FirstOrDefault((TacticalPerceptionDef a) => a.name.Equals("Soldier_PerceptionDef"));
-        private static readonly CustomMissionTypeDef AmbushALN = Repo.GetAllDefs<CustomMissionTypeDef>().FirstOrDefault(ged => ged.name.Equals("AmbushAlien_CustomMissionTypeDef"));
-        private static readonly TacCrateDataDef cratesNotResources = Repo.GetAllDefs<TacCrateDataDef>().FirstOrDefault(ged => ged.name.Equals("Default_TacCrateDataDef"));
-        private static readonly TacticalFactionEffectDef defendersCanBeRecruited = Repo.GetAllDefs<TacticalFactionEffectDef>().FirstOrDefault(ged => ged.name.Equals("CanBeRecruitedByPhoenix_FactionEffectDef"));
-        private static readonly GeoHavenZoneDef havenLab = Repo.GetAllDefs<GeoHavenZoneDef>().FirstOrDefault(ged => ged.name.Equals("Research_GeoHavenZoneDef"));
-        private static readonly GeoFactionDef phoenixPoint = Repo.GetAllDefs<GeoFactionDef>().FirstOrDefault(ged => ged.name.Equals("Phoenix_GeoPhoenixFactionDef"));
+        private static readonly FesteringSkiesSettingsDef festeringSkiesSettingsDef = DefCache.GetDef<FesteringSkiesSettingsDef>("FesteringSkiesSettingsDef");
+        private static readonly TacticalPerceptionDef tacticalPerceptionDef = DefCache.GetDef<TacticalPerceptionDef>("Soldier_PerceptionDef");
+        private static readonly CustomMissionTypeDef AmbushALN = DefCache.GetDef<CustomMissionTypeDef>("AmbushAlien_CustomMissionTypeDef");
+        private static readonly TacCrateDataDef cratesNotResources = DefCache.GetDef<TacCrateDataDef>("Default_TacCrateDataDef");
+        private static readonly TacticalFactionEffectDef defendersCanBeRecruited = DefCache.GetDef<TacticalFactionEffectDef>("CanBeRecruitedByPhoenix_FactionEffectDef");
+        private static readonly GeoHavenZoneDef havenLab = DefCache.GetDef<GeoHavenZoneDef>("Research_GeoHavenZoneDef");
+        private static readonly GeoFactionDef phoenixPoint = DefCache.GetDef<GeoFactionDef>("Phoenix_GeoPhoenixFactionDef");
 
         public static bool[] voidOmensCheck = new bool[20];
         //VO#1 is harder ambushes
@@ -373,7 +374,7 @@ namespace TFTV
                     }
                     else if (i == 11 && !CheckFordVoidOmensInPlay(level).Contains(i) && voidOmensCheck[i])
                     {
-                        /*   FesteringSkiesSettingsDef festeringSkiesSettingsDef = Repo.GetAllDefs<FesteringSkiesSettingsDef>().FirstOrDefault(ged => ged.name.Equals("FesteringSkiesSettingsDef"));
+                        /*   FesteringSkiesSettingsDef festeringSkiesSettingsDef = DefCache.GetDef<FesteringSkiesSettingsDef>("FesteringSkiesSettingsDef"));
                            festeringSkiesSettingsDef.DisruptionThreshholdBaseValue = 3;*/
                         voidOmensCheck[11] = false;
                         TFTVLogger.Always("The check for VO#11 went ok");
@@ -525,7 +526,7 @@ namespace TFTV
                  //pending baby abbadons
                     /*  if (i == 20 && CheckFordVoidOmensInPlay(level).Contains(i) && !voidOmensCheck[i])
                     {
-                        foreach (GeoMarketplaceResearchOptionDef geoMarketplaceResearchOptionDef in Repo.GetAllDefs<GeoMarketplaceResearchOptionDef>())
+                        foreach (GeoMarketplaceResearchOptionDef geoMarketplaceResearchOptionDef in DefCache.GetDef<GeoMarketplaceResearchOptionDef>())
                         {
                             geoMarketplaceResearchOptionDef.MinPrice *= 0.80f;
                             geoMarketplaceResearchOptionDef.MaxPrice *= 0.80f;
@@ -536,7 +537,7 @@ namespace TFTV
                     }
                     else if (i == 20 && !CheckFordVoidOmensInPlay(level).Contains(i) && voidOmensCheck[i])
                     {
-                        foreach (GeoMarketplaceResearchOptionDef geoMarketplaceResearchOptionDef in Repo.GetAllDefs<GeoMarketplaceResearchOptionDef>())
+                        foreach (GeoMarketplaceResearchOptionDef geoMarketplaceResearchOptionDef in DefCache.GetDef<GeoMarketplaceResearchOptionDef>())
                         {
                             geoMarketplaceResearchOptionDef.MinPrice *= 1.25f;
                             geoMarketplaceResearchOptionDef.MaxPrice *= 1.25f;
@@ -946,7 +947,7 @@ namespace TFTV
         [HarmonyPatch(typeof(TacticalVoxelMatrix), "SpawnAndPropagateMist")]
         public static class TacticalVoxelMatrix_SpawnAndPropagateMist_VoidOmenMoreMistOnTactical_Patch
         {
-            public static void Prefix(TacticalVoxelMatrix __instance)
+            public static bool Prefix(TacticalVoxelMatrix __instance)
             {
                 try
                 {
@@ -954,11 +955,19 @@ namespace TFTV
                     {
                         __instance.VoxelMatrixData.InitialMistEntitiesToSpawn.Min = 30;
                         __instance.VoxelMatrixData.InitialMistEntitiesToSpawn.Max = 40;
+                        return true;
+                    }
+                    else 
+                    {
+                        __instance.VoxelMatrixData.InitialMistEntitiesToSpawn.Min = 1;
+                        __instance.VoxelMatrixData.InitialMistEntitiesToSpawn.Max = 3;
+                        return true;
                     }
                 }
                 catch (Exception e)
                 {
                     TFTVLogger.Error(e);
+                    return true;
                 }
             }
         }
@@ -1013,7 +1022,7 @@ namespace TFTV
         {
             private static readonly SharedData sharedData = GameUtl.GameComponent<SharedData>();
 
-            public static void Prefix(ref HavenAttacker attacker, GeoSite __instance)
+            public static void Prefix(ref HavenAttacker attacker)
             {
                 try
                 {
@@ -1042,7 +1051,7 @@ namespace TFTV
         [HarmonyPatch(typeof(GeoHavenDefenseMission), "GetDefenseDeployment")]
         public static class GeoHavenDefenseMission_GetDefenseDeployment_Mobilization_Patch
         {
-            public static bool Prefix(GeoHavenDefenseMission __instance, GeoHaven haven, ref int __result)
+            public static bool Prefix(GeoHaven haven, ref int __result)
             {
                 try
                 {

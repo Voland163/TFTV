@@ -13,8 +13,8 @@ namespace TFTV
     internal class TFTVDefsWithConfigDependency
     {
         private static readonly DefRepository Repo = TFTVMain.Repo;
+        private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
 
-    
         private static readonly TFTVConfig config = TFTVMain.Main.Config;
         public static Dictionary<string, float[,]> ResourceRewardsFromEvents = new Dictionary<string, float[,]>();
         public static Dictionary<string, int[,]> DiplomacyRewardsFromEvents = new Dictionary<string, int[,]>();
@@ -24,38 +24,38 @@ namespace TFTV
         {
             try
             {
-               // TFTVLogger.Always("PopulateResourceRewardsDictionary is running");
+                //  TFTVLogger.Always("PopulateResourceRewardsDictionary is running");
 
                 foreach (GeoscapeEventDef geoEvent in Repo.GetAllDefs<GeoscapeEventDef>())
                 {
                     int geoEventChoice = 0;
-          
+
                     foreach (GeoEventChoice choice in geoEvent.GeoscapeEventData.Choices)
                     {
 
                         if (choice.Outcome.Resources != null && !choice.Outcome.Resources.IsEmpty)
                         {
-                           
+
                             string EventID = geoEvent.GeoscapeEventData.EventID;
 
                             if (!ResourceRewardsFromEvents.ContainsKey(EventID))
                             {
-                              //  TFTVLogger.Always("geoEvent is " + geoEvent.GeoscapeEventData.EventID + " and we got here, step 2");
-                           
-                                ResourceRewardsFromEvents.Add(EventID, new float [geoEvent.GeoscapeEventData.Choices.Count,4]);
+                                //  TFTVLogger.Always("geoEvent is " + geoEvent.GeoscapeEventData.EventID + " and we got here, step 2");
+
+                                ResourceRewardsFromEvents.Add(EventID, new float[geoEvent.GeoscapeEventData.Choices.Count, 4]);
                             }
 
-                       //     TFTVLogger.Always("geoEvent is " + geoEvent.GeoscapeEventData.EventID + " and we got here, step 3");
+                            //    TFTVLogger.Always("geoEvent is " + geoEvent.GeoscapeEventData.EventID + " and we got here, step 3");
                             for (int i = 0; i < choice.Outcome.Resources.Count; i++)
                             {
-                               
-                                    ResourceRewardsFromEvents[EventID][geoEventChoice, i] = choice.Outcome.Resources[i].Value;
 
-                               //     TFTVLogger.Always("Event " + EventID + " Choice # " + geoEventChoice + " gives " + ResourceRewardsFromEvents[EventID][geoEventChoice, i]
-                                 //       + " of some resource");
-                               
+                                ResourceRewardsFromEvents[EventID][geoEventChoice, i] = choice.Outcome.Resources[i].Value;
+
+                             //   TFTVLogger.Always("Event " + EventID + " Choice # " + geoEventChoice + " gives " + ResourceRewardsFromEvents[EventID][geoEventChoice, i]
+                             //      + " of some resource");
+
                             }
-                            
+
 
 
                         }
@@ -77,109 +77,70 @@ namespace TFTV
         {
             try
             {
-                
-
-                    TFTVLogger.Always("ModifyAmountResourcesEvents running");
-
-                  /*  foreach (GeoscapeEventDef geoEvent in Repo.GetAllDefs<GeoscapeEventDef>())
-                    {
-                        string eventID = geoEvent.GeoscapeEventData.EventID;
-                        int geoEventChoice = 0;
-
-                        foreach (GeoEventChoice choice in geoEvent.GeoscapeEventData.Choices)
-                        {
-                            if (choice.Outcome.Resources != null && !choice.Outcome.Resources.IsEmpty)
-                            {
-                                for (int i = 0; i < choice.Outcome.Resources.Count; i++)
-                                {
-                                    choice.Outcome.Resources[i] =
-                                    new PhoenixPoint.Common.Core.ResourceUnit(choice.Outcome.Resources[i].Type,
-                                    ResourceRewardsFromEvents[eventID][geoEventChoice, i]);
-                                    TFTVLogger.Always("Before adjutmen, event " + eventID + " Choice # " + geoEventChoice + " gives " + ResourceRewardsFromEvents[eventID][geoEventChoice, i]
-                                    + " of some resource");
-                                }
-                            }
-                            geoEventChoice++;
-
-                        }
-                    }*/
 
 
+              //  TFTVLogger.Always("ModifyAmountResourcesEvents running");
 
-                    foreach (GeoscapeEventDef geoEvent in Repo.GetAllDefs<GeoscapeEventDef>())
-                    {
-                        string eventID = geoEvent.GeoscapeEventData.EventID;
-                        int geoEventChoice = 0;
+                /*  foreach (GeoscapeEventDef geoEvent in Repo.GetAllDefs<GeoscapeEventDef>())
+                  {
+                      string eventID = geoEvent.GeoscapeEventData.EventID;
+                      int geoEventChoice = 0;
 
-                        foreach (GeoEventChoice choice in geoEvent.GeoscapeEventData.Choices)
-                        {
-                            if (choice.Outcome.Resources != null && !choice.Outcome.Resources.IsEmpty)
-                            {
-                                for (int i = 0; i < choice.Outcome.Resources.Count; i++)
-                                {
-                                    choice.Outcome.Resources[i] =
-                                    new PhoenixPoint.Common.Core.ResourceUnit(choice.Outcome.Resources[i].Type,
-                                    ResourceRewardsFromEvents[eventID][geoEventChoice, i]*resourceMultiplier);
-                                   //     TFTVLogger.Always("After adjustment, event " + eventID + " Choice # " + geoEventChoice + " gives " + choice.Outcome.Resources[i].Value
-                                  //    + " of some resource");
-                                }
-                            }
-                            geoEventChoice++;
-                        }
-                    }
+                      foreach (GeoEventChoice choice in geoEvent.GeoscapeEventData.Choices)
+                      {
+                          if (choice.Outcome.Resources != null && !choice.Outcome.Resources.IsEmpty)
+                          {
+                              for (int i = 0; i < choice.Outcome.Resources.Count; i++)
+                              {
+                                  choice.Outcome.Resources[i] =
+                                  new PhoenixPoint.Common.Core.ResourceUnit(choice.Outcome.Resources[i].Type,
+                                  ResourceRewardsFromEvents[eventID][geoEventChoice, i]);
+                                  TFTVLogger.Always("Before adjutmen, event " + eventID + " Choice # " + geoEventChoice + " gives " + ResourceRewardsFromEvents[eventID][geoEventChoice, i]
+                                  + " of some resource");
+                              }
+                          }
+                          geoEventChoice++;
 
-                
+                      }
+                  }*/
 
-            }
 
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-        }
-
-      /*  public static void PopulateDiplomacyRewardsDictionary()
-        {
-            try
-            {
-                TFTVLogger.Always("PopulateDiplomacyRewardsDictionary is running");
 
                 foreach (GeoscapeEventDef geoEvent in Repo.GetAllDefs<GeoscapeEventDef>())
                 {
+                    string eventID = geoEvent.GeoscapeEventData.EventID;
                     int geoEventChoice = 0;
 
-                    foreach (GeoEventChoice choice in geoEvent.GeoscapeEventData.Choices)
+                    if (ResourceRewardsFromEvents.ContainsKey(eventID))
                     {
 
-                        if (choice.Outcome.Diplomacy != null && choice.Outcome.Diplomacy.Count>0)
+                        foreach (GeoEventChoice choice in geoEvent.GeoscapeEventData.Choices)
                         {
-
-                            string EventID = geoEvent.GeoscapeEventData.EventID;
-
-                            if (!DiplomacyRewardsFromEvents.ContainsKey(EventID))
+                            if (choice.Outcome.Resources != null && !choice.Outcome.Resources.IsEmpty)
                             {
-                                // TFTVLogger.Always("geoEvent is " + geoEvent.GeoscapeEventData.EventID + " and we got here, step 2");
+                                for (int i = 0; i < choice.Outcome.Resources.Count; i++)
+                                {
 
-                                DiplomacyRewardsFromEvents.Add(EventID, new int[geoEvent.GeoscapeEventData.Choices.Count, 8]);
+
+
+                                    choice.Outcome.Resources[i] =
+                                    new PhoenixPoint.Common.Core.ResourceUnit(choice.Outcome.Resources[i].Type,
+                                    ResourceRewardsFromEvents[eventID][geoEventChoice, i] * resourceMultiplier);
+                                 //   TFTVLogger.Always("After adjustment, event " + eventID + " Choice # " + geoEventChoice + " gives " + choice.Outcome.Resources[i].Value
+                                 //  + " of some resource");
+
+
+                                }
                             }
-
-                            //     TFTVLogger.Always("geoEvent is " + geoEvent.GeoscapeEventData.EventID + " and we got here, step 3");
-                            for (int i = 0; i < choice.Outcome.Diplomacy.Count; i++)
-                            {
-
-                                DiplomacyRewardsFromEvents[EventID][geoEventChoice, i] = choice.Outcome.Diplomacy[i].Value;
-
-                                //     TFTVLogger.Always("Event " + EventID + " Choice # " + geoEventChoice + " gives " + ResourceRewardsFromEvents[EventID][geoEventChoice, i]
-                                //       + " of some resource");
-
-                            }
-
-
-
+                            geoEventChoice++;
                         }
-                        geoEventChoice++;
+                    }
+                    else
+                    {
+                      //  TFTVLogger.Always("Event " + eventID + " not found");
 
                     }
+
                 }
 
             }
@@ -188,18 +149,70 @@ namespace TFTV
             {
                 TFTVLogger.Error(e);
             }
-
         }
 
-        */
+        /*  public static void PopulateDiplomacyRewardsDictionary()
+          {
+              try
+              {
+                  TFTVLogger.Always("PopulateDiplomacyRewardsDictionary is running");
+
+                  foreach (GeoscapeEventDef geoEvent in Repo.GetAllDefs<GeoscapeEventDef>())
+                  {
+                      int geoEventChoice = 0;
+
+                      foreach (GeoEventChoice choice in geoEvent.GeoscapeEventData.Choices)
+                      {
+
+                          if (choice.Outcome.Diplomacy != null && choice.Outcome.Diplomacy.Count>0)
+                          {
+
+                              string EventID = geoEvent.GeoscapeEventData.EventID;
+
+                              if (!DiplomacyRewardsFromEvents.ContainsKey(EventID))
+                              {
+                                  // TFTVLogger.Always("geoEvent is " + geoEvent.GeoscapeEventData.EventID + " and we got here, step 2");
+
+                                  DiplomacyRewardsFromEvents.Add(EventID, new int[geoEvent.GeoscapeEventData.Choices.Count, 8]);
+                              }
+
+                              //     TFTVLogger.Always("geoEvent is " + geoEvent.GeoscapeEventData.EventID + " and we got here, step 3");
+                              for (int i = 0; i < choice.Outcome.Diplomacy.Count; i++)
+                              {
+
+                                  DiplomacyRewardsFromEvents[EventID][geoEventChoice, i] = choice.Outcome.Diplomacy[i].Value;
+
+                                  //     TFTVLogger.Always("Event " + EventID + " Choice # " + geoEventChoice + " gives " + ResourceRewardsFromEvents[EventID][geoEventChoice, i]
+                                  //       + " of some resource");
+
+                              }
+
+
+
+                          }
+                          geoEventChoice++;
+
+                      }
+                  }
+
+              }
+
+              catch (Exception e)
+              {
+                  TFTVLogger.Error(e);
+              }
+
+          }
+
+          */
 
         public static void InjectDefsWithConfigDependency()
         {
-        
+
             HibernationModuleStaminaRecuperation();
             ModifyAmountResourcesEvents(config.ResourceMultiplier);
 
-            
+
         }
 
         /*  public static void ModifyAmountResourcesEvents(float resourceMultiplier)
@@ -236,7 +249,7 @@ namespace TFTV
             try
             {
                 TFTVConfig config = TFTVMain.Main.Config;
-                GeoVehicleModuleDef hibernationmodule = Repo.GetAllDefs<GeoVehicleModuleDef>().FirstOrDefault(ged => ged.name.Equals("SY_HibernationPods_GeoVehicleModuleDef"));
+                GeoVehicleModuleDef hibernationmodule = DefCache.GetDef<GeoVehicleModuleDef>("SY_HibernationPods_GeoVehicleModuleDef");
 
                 if (config.ActivateStaminaRecuperatonModule)
                 {
@@ -258,7 +271,7 @@ namespace TFTV
         }
 
 
-      private static bool ApplyChangeDiplomacy = true;
+        private static bool ApplyChangeDiplomacy = true;
 
         public static void HarderDiplomacy()
         {
@@ -268,67 +281,67 @@ namespace TFTV
                 {
 
                     //ID all the factions for later
-                    GeoFactionDef PhoenixPoint = Repo.GetAllDefs<GeoFactionDef>().FirstOrDefault(ged => ged.name.Equals("Phoenix_GeoPhoenixFactionDef"));
-                    GeoFactionDef NewJericho = Repo.GetAllDefs<GeoFactionDef>().FirstOrDefault(ged => ged.name.Equals("NewJericho_GeoFactionDef"));
-                    GeoFactionDef Anu = Repo.GetAllDefs<GeoFactionDef>().FirstOrDefault(ged => ged.name.Equals("Anu_GeoFactionDef"));
-                    GeoFactionDef Synedrion = Repo.GetAllDefs<GeoFactionDef>().FirstOrDefault(ged => ged.name.Equals("Synedrion_GeoFactionDef"));
+                    GeoFactionDef PhoenixPoint = DefCache.GetDef<GeoFactionDef>("Phoenix_GeoPhoenixFactionDef");
+                    GeoFactionDef NewJericho = DefCache.GetDef<GeoFactionDef>("NewJericho_GeoFactionDef");
+                    GeoFactionDef Anu = DefCache.GetDef<GeoFactionDef>("Anu_GeoFactionDef");
+                    GeoFactionDef Synedrion = DefCache.GetDef<GeoFactionDef>("Synedrion_GeoFactionDef");
 
                     //Source for creating new events
-                    GeoscapeEventDef sourceLoseGeoEvent = Repo.GetAllDefs<GeoscapeEventDef>().FirstOrDefault(ged => ged.name.Equals("PROG_PU12_FAIL_GeoscapeEventDef"));
+                    GeoscapeEventDef sourceLoseGeoEvent = DefCache.GetDef<GeoscapeEventDef>("PROG_PU12_FAIL_GeoscapeEventDef");
 
                     //Testing increasing diplomacy penalties 
-                    GeoPhoenixFactionDef geoPhoenixFaction = Repo.GetAllDefs<GeoPhoenixFactionDef>().FirstOrDefault(ged => ged.name.Equals("Phoenix_GeoPhoenixFactionDef"));
+                    GeoPhoenixFactionDef geoPhoenixFaction = DefCache.GetDef<GeoPhoenixFactionDef>("Phoenix_GeoPhoenixFactionDef");
 
-                      if (ApplyChangeDiplomacy)
-                     {
-                    foreach (GeoscapeEventDef geoEvent in Repo.GetAllDefs<GeoscapeEventDef>())
+                    if (ApplyChangeDiplomacy)
                     {
-
-                        if (geoEvent.GeoscapeEventData.EventID != "PROG_PU4_WIN"
-                            && geoEvent.GeoscapeEventData.EventID != "PROG_SY7"
-                            && geoEvent.GeoscapeEventData.EventID != "PROG_SY8"
-                            && geoEvent.GeoscapeEventData.EventID != "PROG_AN3"
-                            && geoEvent.GeoscapeEventData.EventID != "PROG_AN5"
-                            && geoEvent.GeoscapeEventData.EventID != "PROG_NJ7"
-                            && geoEvent.GeoscapeEventData.EventID != "PROG_NJ8")
+                        foreach (GeoscapeEventDef geoEvent in Repo.GetAllDefs<GeoscapeEventDef>())
                         {
-                            int geoChoiceNumber = 0;
-                            string eventID = geoEvent.GeoscapeEventData.EventID;
-                            foreach (GeoEventChoice choice in geoEvent.GeoscapeEventData.Choices)
+
+                            if (geoEvent.GeoscapeEventData.EventID != "PROG_PU4_WIN"
+                                && geoEvent.GeoscapeEventData.EventID != "PROG_SY7"
+                                && geoEvent.GeoscapeEventData.EventID != "PROG_SY8"
+                                && geoEvent.GeoscapeEventData.EventID != "PROG_AN3"
+                                && geoEvent.GeoscapeEventData.EventID != "PROG_AN5"
+                                && geoEvent.GeoscapeEventData.EventID != "PROG_NJ7"
+                                && geoEvent.GeoscapeEventData.EventID != "PROG_NJ8")
                             {
-                                for (int i = 0; i < choice.Outcome.Diplomacy.Count; i++)
+                                int geoChoiceNumber = 0;
+                                string eventID = geoEvent.GeoscapeEventData.EventID;
+                                foreach (GeoEventChoice choice in geoEvent.GeoscapeEventData.Choices)
                                 {
-                                    if (choice.Outcome.Diplomacy[i].TargetFaction == geoPhoenixFaction && choice.Outcome.Diplomacy[i].Value <= 0 
-                                        && DiplomacyRewardsFromEvents.Keys.Contains(eventID))
+                                    for (int i = 0; i < choice.Outcome.Diplomacy.Count; i++)
                                     {
-                                        OutcomeDiplomacyChange diplomacyChange = choice.Outcome.Diplomacy[i];
-                                        diplomacyChange.Value *= 2;
-                                        choice.Outcome.Diplomacy[i] = diplomacyChange;
-                                        TFTVLogger.Always("GeoEvent " + geoEvent.GeoscapeEventData.EventID + " diplomacy change value is " + diplomacyChange.Value);
+                                        if (choice.Outcome.Diplomacy[i].TargetFaction == geoPhoenixFaction && choice.Outcome.Diplomacy[i].Value <= 0
+                                            && DiplomacyRewardsFromEvents.Keys.Contains(eventID))
+                                        {
+                                            OutcomeDiplomacyChange diplomacyChange = choice.Outcome.Diplomacy[i];
+                                            diplomacyChange.Value *= 2;
+                                            choice.Outcome.Diplomacy[i] = diplomacyChange;
+                                            TFTVLogger.Always("GeoEvent " + geoEvent.GeoscapeEventData.EventID + " diplomacy change value is " + diplomacyChange.Value);
+                                        }
                                     }
+                                    geoChoiceNumber++;
                                 }
-                                geoChoiceNumber++;
                             }
                         }
+                        ApplyChangeDiplomacy = false;
                     }
-                     ApplyChangeDiplomacy = false;
-                     }
 
 
                     //Increase diplo penalties in 25, 50 and 75 diplo missions
-                    GeoscapeEventDef ProgAnuSupportive = Repo.GetAllDefs<GeoscapeEventDef>().FirstOrDefault(ged => ged.name.Equals("PROG_AN2_GeoscapeEventDef"));
-                    GeoscapeEventDef ProgNJSupportive = Repo.GetAllDefs<GeoscapeEventDef>().FirstOrDefault(ged => ged.name.Equals("PROG_NJ1_GeoscapeEventDef"));
-                    GeoscapeEventDef ProgSynSupportive = Repo.GetAllDefs<GeoscapeEventDef>().FirstOrDefault(ged => ged.name.Equals("PROG_SY1_GeoscapeEventDef"));
+                    GeoscapeEventDef ProgAnuSupportive = DefCache.GetDef<GeoscapeEventDef>("PROG_AN2_GeoscapeEventDef");
+                    GeoscapeEventDef ProgNJSupportive = DefCache.GetDef<GeoscapeEventDef>("PROG_NJ1_GeoscapeEventDef");
+                    GeoscapeEventDef ProgSynSupportive = DefCache.GetDef<GeoscapeEventDef>("PROG_SY1_GeoscapeEventDef");
 
-                    GeoscapeEventDef ProgAnuPact = Repo.GetAllDefs<GeoscapeEventDef>().FirstOrDefault(ged => ged.name.Equals("PROG_AN4_GeoscapeEventDef"));
-                    GeoscapeEventDef ProgNJPact = Repo.GetAllDefs<GeoscapeEventDef>().FirstOrDefault(ged => ged.name.Equals("PROG_NJ2_GeoscapeEventDef"));
-                    GeoscapeEventDef ProgSynPact = Repo.GetAllDefs<GeoscapeEventDef>().FirstOrDefault(ged => ged.name.Equals("PROG_SY3_WIN_GeoscapeEventDef"));
+                    GeoscapeEventDef ProgAnuPact = DefCache.GetDef<GeoscapeEventDef>("PROG_AN4_GeoscapeEventDef");
+                    GeoscapeEventDef ProgNJPact = DefCache.GetDef<GeoscapeEventDef>("PROG_NJ2_GeoscapeEventDef");
+                    GeoscapeEventDef ProgSynPact = DefCache.GetDef<GeoscapeEventDef>("PROG_SY3_WIN_GeoscapeEventDef");
 
 
-                    GeoscapeEventDef ProgAnuAlliance = Repo.GetAllDefs<GeoscapeEventDef>().FirstOrDefault(ged => ged.name.Equals("PROG_AN6_GeoscapeEventDef"));
-                    GeoscapeEventDef ProgNJAlliance = Repo.GetAllDefs<GeoscapeEventDef>().FirstOrDefault(ged => ged.name.Equals("PROG_NJ3_GeoscapeEventDef"));
-                    GeoscapeEventDef ProgSynAllianceTerra = Repo.GetAllDefs<GeoscapeEventDef>().FirstOrDefault(ged => ged.name.Equals("PROG_SY4_T_GeoscapeEventDef"));
-                    GeoscapeEventDef ProgSynAlliancePoly = Repo.GetAllDefs<GeoscapeEventDef>().FirstOrDefault(ged => ged.name.Equals("PROG_SY4_P_GeoscapeEventDef"));
+                    GeoscapeEventDef ProgAnuAlliance = DefCache.GetDef<GeoscapeEventDef>("PROG_AN6_GeoscapeEventDef");
+                    GeoscapeEventDef ProgNJAlliance = DefCache.GetDef<GeoscapeEventDef>("PROG_NJ3_GeoscapeEventDef");
+                    GeoscapeEventDef ProgSynAllianceTerra = DefCache.GetDef<GeoscapeEventDef>("PROG_SY4_T_GeoscapeEventDef");
+                    GeoscapeEventDef ProgSynAlliancePoly = DefCache.GetDef<GeoscapeEventDef>("PROG_SY4_P_GeoscapeEventDef");
 
                     //Anu
                     ProgAnuSupportive.GeoscapeEventData.Choices[0].Outcome.SetDiplomaticObjectives.Clear();
@@ -408,11 +421,11 @@ namespace TFTV
                     ProgNJAlliance.GeoscapeEventData.Choices[1].Outcome.VariablesChange.Add(TFTVCommonMethods.GenerateVariableChange("RefusedNewJericho", 1, true));
 
                     //Change Reward introductory mission Synedrion
-                    GeoscapeEventDef ProgSynIntroWin = Repo.GetAllDefs<GeoscapeEventDef>().FirstOrDefault(ged => ged.name.Equals("PROG_SY0_WIN_GeoscapeEventDef"));
+                    GeoscapeEventDef ProgSynIntroWin = DefCache.GetDef<GeoscapeEventDef>("PROG_SY0_WIN_GeoscapeEventDef");
                     ProgSynIntroWin.GeoscapeEventData.Choices[1].Outcome.Diplomacy.Clear();
 
                 }
-              
+
 
                 //remove Pirate King mission
                 RemovePirateKing();
@@ -428,10 +441,10 @@ namespace TFTV
         {
             try
             {
-                GeoscapeEventDef fireBirdMiss = Repo.GetAllDefs<GeoscapeEventDef>().FirstOrDefault(ged => ged.name.Equals("PROG_SY2_MISS_GeoscapeEventDef"));
+                GeoscapeEventDef fireBirdMiss = DefCache.GetDef<GeoscapeEventDef>("PROG_SY2_MISS_GeoscapeEventDef");
                 fireBirdMiss.GeoscapeEventData.Choices[0].Outcome.StartMission.WonEventID = "PROG_SY3_WIN";
 
-                GeoscapeEventDef pirateKingWin = Repo.GetAllDefs<GeoscapeEventDef>().FirstOrDefault(ged => ged.name.Equals("PROG_SY3_WIN_GeoscapeEventDef"));
+                GeoscapeEventDef pirateKingWin = DefCache.GetDef<GeoscapeEventDef>("PROG_SY3_WIN_GeoscapeEventDef");
                 pirateKingWin.GeoscapeEventData.Title.LocalizationKey = "PROG_SY2_WIN_TITLE";
 
 

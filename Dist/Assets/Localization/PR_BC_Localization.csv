@@ -59,7 +59,7 @@ PR_BC_CAUTIOUS_DESC,Text,,"Gain +20% accuracy and +10% stealth",,,,,,,,
 PR_BC_ELECTRIC_REINFORCEMENT,Text,,ELECTRIC REINFORCEMENT,,,,,,ЭЛЕКТРО-УКРЕПЛЕНИЕ,,
 PR_BC_ELECTRIC_REINFORCEMENT_DESC,Text,,Give yourself and allies within 10 tiles a bonus of 10 armor for 1 turn. This effect does not stack,,,,,,Техник и союзники в радиусе 10 клеток получают 10 брони до начала следующего хода. Использование более одного раза не увеличивает броню.,,
 PR_BC_STABILITY,Text,,STABILITY,,,,,,УСТОЙЧИВОСТЬ,,
-PR_BC_STABILITY_DESC,Text,,Gain 5% extra accuracy per remaining AP up to 20%,,,,,,Каждое не использованное ОД добавляет 10% точности (макс 40% при 4 ОД),,
+PR_BC_STABILITY_DESC,Text,,Gain 10% extra accuracy per remaining AP up to 40%,,,,,,Каждое не использованное ОД добавляет 10% точности (макс 40% при 4 ОД),,
 PR_BC_AMPLIFY_PAIN,Text,,AMPLIFY,,,,,,УСИЛЕНИЕ,,
 PR_BC_AMPLIFY_PAIN_DESC,Text,,"Until End of Turn gain +100% to healing and +50% to special damage (Acid, Paralysis, Viral, Poison)",,,,,,"До конца хода все лечение на 100% более эффективно. Атаки кислотой, вирусом, ядом и параличом эффективнее на 50%.",,
 PR_BC_BIOCHEMIST,Text,,BIOCHEMIST,,,,,,БИОХИМИК,,
@@ -83,7 +83,7 @@ PR_BC_AR_TARGETTING_DESC,Text,,Target ally within 10 tiles gains +20% accuracy,,
 PR_BC_PHANTOM_PROTOCOL,Text,,PHANTOM PROTOCOL,,,,,,ФАНТОМ,,
 PR_BC_PHANTOM_PROTOCOL_DESC,Text,,"Gain +15% stealth and accuracy, provides immunity to Sentinels surveillance ability",,,,,,Получите +15% точности и скрытности. Также Стражи не реагируют при вашем приближении.,,
 PR_BC_SOWER_OF_CHANGE,Text,,SOWER OF CHANGE,,,,,,СЕЯТЕЛЬ ПЕРЕМЕН,,
-PR_BC_SOWER_OF_CHANGE_DESC,Text,,Returns 10% of damage as Viral to the attacker,,,,,,Возвращает атакующему 25% урона в виде вируса,,
+PR_BC_SOWER_OF_CHANGE_DESC,Text,,Returns 25% of damage as Viral to the attacker,,,,,,Возвращает атакующему 25% урона в виде вируса,,
 PR_BC_SURVIVOR,Text,,SURVIVOR,,,,,,ВЫЖИВШИЙ,,
 PR_BC_SURVIVOR_DESC,Text,,"<b>WP +4, but -4 STR</b>
 <i>You have had it tougher than most, and that's saying a lot. Your body took a toll, but your mind grew stronger</i>",,,,,,"<b>Воля +4, Сила -4</b>
@@ -101,8 +101,8 @@ PR_BC_CORPSE_DISPOSER_DESC,Text,,"<b>Fire Resistance</b>
 <i>There were too many to bury, so you had to burn them. Day after day, week after week. It's not the fire that scares you</i>",,,,,,"<b>Защита от огня</b>
 <i>Тел было слишком много, чтобы похоронить всех, так что вы сожгли их. Вовсе не огонь страшит вас</i>",,
 PR_BC_HARD_LABOR,Text,,HARD LABOR,,,,,,РАЗНОРАБОЧИЙ,,
-PR_BC_HARD_LABOR_DESC,Text,,"<b>STR +2, Perception -4</b>
-<i>The New World didn't just build itself. There was lot of digging, lifting and carrying, and dust and noise everywhere</i>",,,,,,"<b>Сила +2, Восприятие -4</b>
+PR_BC_HARD_LABOR_DESC,Text,,"<b>STR +4, Perception -4</b>
+<i>The New World didn't just build itself. There was lot of digging, lifting and carrying, and dust and noise everywhere</i>",,,,,,"<b>Сила +4, Восприятие -4</b>
 <i>Новый Мир не возник сам по себе. Пришлось много копать, таскать и поднимать. И повсюду шум и пыль</i>",,
 PR_BC_SQUATTER,Text,,SQUATTER,,,,,,СКИТАЛЕЦ,,
 PR_BC_SQUATTER_DESC,Text,,"<b>STR +2, Carry Weight +25%</b>
@@ -137,8 +137,8 @@ PR_BC_TRUE_GRIT_DESC,Text,,"<b>-10% damage from adjacent enemies</b>
 <i>The end of civilization wasn't kind to you, but when things get up close and personal, you just suck it up</i>",,,,,,"<b>-10% урона в рукопашной</b>
 <i>Конец цивилизации не был к вам добр и когда дела приобретают скверный оборот, вы к этому готовы</i>",,
 PR_BC_HISTORY_OF_VIOLENCE,Text,,HISTORY OF VIOLENCE,,,,,,БУЙНОЕ ПРОШЛОЕ,,
-PR_BC_HISTORY_OF_VIOLENCE_DESC,Text,,"<b>Damage +10%, Willpower -3</b>
-<i>In the past, you hurt some people. They probably deserved it</i>",,,,,,"<b>Урон +10%, воля -3</b>
+PR_BC_HISTORY_OF_VIOLENCE_DESC,Text,,"<b>Damage +10%, Willpower -2</b>
+<i>In the past, you hurt some people. They probably deserved it</i>",,,,,,"<b>Урон +10%, воля -2</b>
 <i>В прошлой жизни вам приходилось убивать. Они это заслужили, наверное</i>",,
 PR_BC_DAREDEVIL,Text,,DAREDEVIL,,,,,,СОРВИГОЛОВА,,
 PR_BC_DAREDEVIL_DESC,Text,,"<b>Damage +10%, Accuracy -10%</b>

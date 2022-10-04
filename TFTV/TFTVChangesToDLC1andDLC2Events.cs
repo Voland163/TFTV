@@ -15,32 +15,33 @@ namespace TFTV
 {
     internal class TFTVChangesToDLC1andDLC2Events
     {
-        private static readonly DefRepository Repo = TFTVMain.Repo;
+       
+        private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
         public static void ChangesToDLC1andDLC2Defs()
         {
             try
             {
                 MakeLOTAAlternativeToSymes();
-                ResearchViewElementDef njBionicsVEDef = Repo.GetAllDefs<ResearchViewElementDef>().FirstOrDefault(ged => ged.name.Equals("NJ_Bionics1_ViewElementDef"));
+                ResearchViewElementDef njBionicsVEDef = DefCache.GetDef<ResearchViewElementDef>("NJ_Bionics1_ViewElementDef");
                 njBionicsVEDef.CompleteText.LocalizationKey = "TFTV_BIONICS_RESEARCHDEF_COMPLETE";
 
-                ResearchViewElementDef anuBionicsVEDef = Repo.GetAllDefs<ResearchViewElementDef>().FirstOrDefault(ged => ged.name.Equals("ANU_MutationTech_ViewElementDef"));
+                ResearchViewElementDef anuBionicsVEDef = DefCache.GetDef<ResearchViewElementDef>("ANU_MutationTech_ViewElementDef");
                 anuBionicsVEDef.CompleteText.LocalizationKey = "TFTV_MUTATIONTECH_RESEARCHDEF_COMPLETE";
                 
 
 
                 //ID all the factions for later
-                GeoFactionDef PhoenixPoint = Repo.GetAllDefs<GeoFactionDef>().FirstOrDefault(ged => ged.name.Equals("Phoenix_GeoPhoenixFactionDef"));
-                GeoFactionDef NewJericho = Repo.GetAllDefs<GeoFactionDef>().FirstOrDefault(ged => ged.name.Equals("NewJericho_GeoFactionDef"));
-                GeoFactionDef Anu = Repo.GetAllDefs<GeoFactionDef>().FirstOrDefault(ged => ged.name.Equals("Anu_GeoFactionDef"));
-                GeoFactionDef Synedrion = Repo.GetAllDefs<GeoFactionDef>().FirstOrDefault(ged => ged.name.Equals("Synedrion_GeoFactionDef"));
+                GeoFactionDef PhoenixPoint = DefCache.GetDef<GeoFactionDef>("Phoenix_GeoPhoenixFactionDef");
+                GeoFactionDef NewJericho = DefCache.GetDef<GeoFactionDef>("NewJericho_GeoFactionDef");
+                GeoFactionDef Anu = DefCache.GetDef<GeoFactionDef>("Anu_GeoFactionDef");
+                GeoFactionDef Synedrion = DefCache.GetDef<GeoFactionDef>("Synedrion_GeoFactionDef");
 
                 //Source for creating new events
-                GeoscapeEventDef sourceLoseGeoEvent = Repo.GetAllDefs<GeoscapeEventDef>().FirstOrDefault(ged => ged.name.Equals("PROG_PU12_FAIL_GeoscapeEventDef"));
+                GeoscapeEventDef sourceLoseGeoEvent = DefCache.GetDef<GeoscapeEventDef>("PROG_PU12_FAIL_GeoscapeEventDef");
 
                 //Adding peaceful option for Saving Helena
-                GeoscapeEventDef savingHelenaWin = Repo.GetAllDefs<GeoscapeEventDef>().FirstOrDefault(ged => ged.name.Equals("PROG_LE0_WIN_GeoscapeEventDef"));
-                GeoscapeEventDef savingHelenaMiss = Repo.GetAllDefs<GeoscapeEventDef>().FirstOrDefault(ged => ged.name.Equals("PROG_LE0_MISS_GeoscapeEventDef"));
+                GeoscapeEventDef savingHelenaWin = DefCache.GetDef<GeoscapeEventDef>("PROG_LE0_WIN_GeoscapeEventDef");
+                GeoscapeEventDef savingHelenaMiss = DefCache.GetDef<GeoscapeEventDef>("PROG_LE0_MISS_GeoscapeEventDef");
                 savingHelenaMiss.GeoscapeEventData.Choices.Add(new GeoEventChoice()
                 {
                     Text = new LocalizedTextBind("PROG_LE0_MISS_CHOICE_2_TEXT"),
@@ -94,7 +95,7 @@ namespace TFTV
 
                 //Add the choices to the event
                 //New events have to be created rather than using Outcomes within each choice to replace leader pic
-                GeoscapeEventDef subject24offer = Repo.GetAllDefs<GeoscapeEventDef>().FirstOrDefault(ged => ged.name.Equals("PROG_PU2_GeoscapeEventDef"));
+                GeoscapeEventDef subject24offer = DefCache.GetDef<GeoscapeEventDef>("PROG_PU2_GeoscapeEventDef");
                 subject24offer.GeoscapeEventData.Choices.Add(new GeoEventChoice()
                 {
                     Text = (new LocalizedTextBind("PROG_PU2_CHOICE_2_TEXT")),
@@ -114,10 +115,10 @@ namespace TFTV
                 });
 
                 //Add options for DLC1MISS WIN
-                GeoscapeEventDef DLC1missWIN = Repo.GetAllDefs<GeoscapeEventDef>().FirstOrDefault(ged => ged.name.Equals("PROG_PU4_WIN_GeoscapeEventDef"));
+                GeoscapeEventDef DLC1missWIN = DefCache.GetDef<GeoscapeEventDef>("PROG_PU4_WIN_GeoscapeEventDef");
 
                 //Anu option
-                GeoscapeEventDef an28event = Repo.GetAllDefs<GeoscapeEventDef>().FirstOrDefault(ged => ged.name.Equals("AN28_GeoscapeEventDef"));
+                GeoscapeEventDef an28event = DefCache.GetDef<GeoscapeEventDef>("AN28_GeoscapeEventDef");
                 DLC1missWIN.GeoscapeEventData.Choices[0].Outcome.Units = an28event.GeoscapeEventData.Choices[0].Outcome.Units;
                 DLC1missWIN.GeoscapeEventData.Choices[0].Outcome.OutcomeText.General.LocalizationKey = "PROG_PU4_WIN_CHOICE_0_OUTCOME_GENERAL";
 
@@ -205,7 +206,7 @@ namespace TFTV
                 //Add options to Guided by Whispers
                 //If relations with Synedrion Aligned, can opt for HD vs Pure
                 //Event if HD successful
-                GeoscapeEventDef sourceWinGeoEvent = Repo.GetAllDefs<GeoscapeEventDef>().FirstOrDefault(ged => ged.name.Equals("PROG_PU12_WIN_GeoscapeEventDef"));
+                GeoscapeEventDef sourceWinGeoEvent = DefCache.GetDef<GeoscapeEventDef>("PROG_PU12_WIN_GeoscapeEventDef");
                 var pu12miss = sourceWinGeoEvent.GeoscapeEventData.Choices[0].Outcome.UntrackEncounters[0];
                 GeoscapeEventDef newWinPU12 = Helper.CreateDefFromClone(sourceWinGeoEvent, "23435C5E-B933-484D-990E-5B4C0B2B32FE", "PROG_PU12_WIN2_GeoscapeEventDef");
                 newWinPU12.GeoscapeEventData.EventID = "PROG_PU12WIN2";
@@ -253,10 +254,10 @@ namespace TFTV
                 newPU12NJOption.GeoscapeEventData.Choices[0].Outcome.RemoveTimers.Add(pu12miss);
 
                 //Adding options to the original event, fetching it first
-                GeoscapeEventDef guidedByWhispers = Repo.GetAllDefs<GeoscapeEventDef>().FirstOrDefault(ged => ged.name.Equals("PROG_PU12_MISS_GeoscapeEventDef"));
+                GeoscapeEventDef guidedByWhispers = DefCache.GetDef<GeoscapeEventDef>("PROG_PU12_MISS_GeoscapeEventDef");
 
                 //Fetching Syn HD vs Pure with protect civillians type, to use as alternative mission
-                CustomMissionTypeDef havenDefPureSY_CustomMissionTypeDef = Repo.GetAllDefs<CustomMissionTypeDef>().FirstOrDefault(ged => ged.name.Equals("HavenDefPureSY_Civ_CustomMissionTypeDef"));
+                CustomMissionTypeDef havenDefPureSY_CustomMissionTypeDef = DefCache.GetDef<CustomMissionTypeDef>("HavenDefPureSY_Civ_CustomMissionTypeDef");
 
                 //Adding Syn Aligned options
                 guidedByWhispers.GeoscapeEventData.Choices.Add(new GeoEventChoice()
@@ -313,21 +314,21 @@ namespace TFTV
                 sourceWinGeoEvent.GeoscapeEventData.Choices[1].Outcome.VariablesChange = sourceWinGeoEvent.GeoscapeEventData.Choices[0].Outcome.VariablesChange;
 
                 //Replace all LOTA Schemata missions with KE2 mission
-                GeoscapeEventDef geoEventFS9 = Repo.GetAllDefs<GeoscapeEventDef>().FirstOrDefault(ged => ged.name.Equals("PROG_FS9_GeoscapeEventDef"));
-                GeoscapeEventDef KE2Miss = Repo.GetAllDefs<GeoscapeEventDef>().FirstOrDefault(ged => ged.name.Equals("PROG_KE2_GeoscapeEventDef"));
-                GeoscapeEventDef LE1Miss = Repo.GetAllDefs<GeoscapeEventDef>().FirstOrDefault(ged => ged.name.Equals("PROG_LE1_MISS_GeoscapeEventDef"));
+                GeoscapeEventDef geoEventFS9 = DefCache.GetDef<GeoscapeEventDef>("PROG_FS9_GeoscapeEventDef");
+                GeoscapeEventDef KE2Miss = DefCache.GetDef<GeoscapeEventDef>("PROG_KE2_GeoscapeEventDef");
+                GeoscapeEventDef LE1Miss = DefCache.GetDef<GeoscapeEventDef>("PROG_LE1_MISS_GeoscapeEventDef");
                 LE1Miss.GeoscapeEventData.Choices[0].Outcome.StartMission.MissionTypeDef = KE2Miss.GeoscapeEventData.Choices[0].Outcome.StartMission.MissionTypeDef;
                 //Don't generate next Schemata mission
-                GeoscapeEventDef LE1Win = Repo.GetAllDefs<GeoscapeEventDef>().FirstOrDefault(ged => ged.name.Equals("PROG_LE1_WIN_GeoscapeEventDef"));
-                //GeoscapeEventDef geoEventFS9 = Repo.GetAllDefs<GeoscapeEventDef>().FirstOrDefault(ged => ged.name.Equals("PROG_FS9_GeoscapeEventDef"));
+                GeoscapeEventDef LE1Win = DefCache.GetDef<GeoscapeEventDef>("PROG_LE1_WIN_GeoscapeEventDef");
+                //GeoscapeEventDef geoEventFS9 = DefCache.GetDef<GeoscapeEventDef>("PROG_FS9_GeoscapeEventDef"));
                 LE1Win.GeoscapeEventData.Choices[0].Outcome.SetEvents.Clear();
                 LE1Win.GeoscapeEventData.Choices[0].Outcome.TrackEncounters.Clear();
                 //Unlock all ancient weapons research and add hidden variable to unlock final cinematic
-                GeoscapeEventDef LE2Win = Repo.GetAllDefs<GeoscapeEventDef>().FirstOrDefault(ged => ged.name.Equals("PROG_LE2_WIN_GeoscapeEventDef"));
-                GeoscapeEventDef LE3Win = Repo.GetAllDefs<GeoscapeEventDef>().FirstOrDefault(ged => ged.name.Equals("PROG_LE3_WIN_GeoscapeEventDef"));
-                GeoscapeEventDef LE4Win = Repo.GetAllDefs<GeoscapeEventDef>().FirstOrDefault(ged => ged.name.Equals("PROG_LE4_WIN_GeoscapeEventDef"));
-                GeoscapeEventDef LE5Win = Repo.GetAllDefs<GeoscapeEventDef>().FirstOrDefault(ged => ged.name.Equals("PROG_LE5_WIN_GeoscapeEventDef"));
-                GeoscapeEventDef LE6Win = Repo.GetAllDefs<GeoscapeEventDef>().FirstOrDefault(ged => ged.name.Equals("PROG_LE6_WIN_GeoscapeEventDef"));
+                GeoscapeEventDef LE2Win = DefCache.GetDef<GeoscapeEventDef>("PROG_LE2_WIN_GeoscapeEventDef");
+                GeoscapeEventDef LE3Win = DefCache.GetDef<GeoscapeEventDef>("PROG_LE3_WIN_GeoscapeEventDef");
+                GeoscapeEventDef LE4Win = DefCache.GetDef<GeoscapeEventDef>("PROG_LE4_WIN_GeoscapeEventDef");
+                GeoscapeEventDef LE5Win = DefCache.GetDef<GeoscapeEventDef>("PROG_LE5_WIN_GeoscapeEventDef");
+                GeoscapeEventDef LE6Win = DefCache.GetDef<GeoscapeEventDef>("PROG_LE6_WIN_GeoscapeEventDef");
                 OutcomeVariableChange Schemata2Res = LE2Win.GeoscapeEventData.Choices[0].Outcome.VariablesChange[0];
                 OutcomeVariableChange Schemata3Res = LE3Win.GeoscapeEventData.Choices[0].Outcome.VariablesChange[0];
                 OutcomeVariableChange Schemata4Res = LE4Win.GeoscapeEventData.Choices[0].Outcome.VariablesChange[0];
@@ -345,9 +346,9 @@ namespace TFTV
                 LE1Win.GeoscapeEventData.Leader = "Jack_Harlson01";
 
                 //Require capturing ancient site for LOTA Schemata missions
-                //GeoscapeEventDef LE1Event = Repo.GetAllDefs<GeoscapeEventDef>().FirstOrDefault(ged => ged.name.Equals("PROG_LE1_GeoscapeEventDef"));
-                //GeoscapeEventDef LEFinalEvent = Repo.GetAllDefs<GeoscapeEventDef>().FirstOrDefault(ged => ged.name.Equals("PROG_LE_FINAL_GeoscapeEventDef"));
-                //GeoLevelConditionDef sourceCondition = Repo.GetAllDefs<GeoLevelConditionDef>().FirstOrDefault(ged => ged.name.Equals("[PROG_LE_FINAL] Condition 1"));
+                //GeoscapeEventDef LE1Event = DefCache.GetDef<GeoscapeEventDef>("PROG_LE1_GeoscapeEventDef"));
+                //GeoscapeEventDef LEFinalEvent = DefCache.GetDef<GeoscapeEventDef>("PROG_LE_FINAL_GeoscapeEventDef"));
+                //GeoLevelConditionDef sourceCondition = DefCache.GetDef<GeoLevelConditionDef>("[PROG_LE_FINAL] Condition 1"));
                 //GeoLevelConditionDef newCondition = Helper.CreateDefFromClone(sourceCondition, "0358D502-421D-4D9A-9505-491FC80F1C56", "[PROG_LE_1] Condition 2");
                 //newCondition.VariableCompareToNumber = 1;
                 //LE1Event.GeoscapeEventData.Conditions.Add(newCondition);
@@ -387,7 +388,7 @@ namespace TFTV
                     }
                 });
                 LE1Win.GeoscapeEventData.Choices[0].Outcome.OutcomeText.General.LocalizationKey = "PROG_LE1_WIN_CHOICE_0_OUTCOME_GENERAL";
-                TacCharacterDef armadillo = Repo.GetAllDefs<TacCharacterDef>().FirstOrDefault(ged => ged.name.Equals("NJ_Armadillo_CharacterTemplateDef"));
+                TacCharacterDef armadillo = DefCache.GetDef<TacCharacterDef>("NJ_Armadillo_CharacterTemplateDef");
                 LE1Win.GeoscapeEventData.Choices[0].Outcome.Units.Add(armadillo);
                 LE1Win.GeoscapeEventData.Choices[0].Outcome.Diplomacy.Add(new OutcomeDiplomacyChange()
                 {
@@ -432,7 +433,7 @@ namespace TFTV
         {
             try
             {
-                GeoscapeEventDef leFINAL = Repo.GetAllDefs<GeoscapeEventDef>().FirstOrDefault(ged => ged.name.Equals("PROG_LE_FINAL_GeoscapeEventDef"));
+                GeoscapeEventDef leFINAL = DefCache.GetDef<GeoscapeEventDef>("PROG_LE_FINAL_GeoscapeEventDef");
                 leFINAL.GeoscapeEventData.Choices[0].Outcome.GiveResearches.Add("PX_VirophageWeapons_ResearchDef");
                 leFINAL.GeoscapeEventData.Choices[0].Outcome.GiveResearches.Add("Pandoravirus");
                 leFINAL.GeoscapeEventData.Choices[0].Outcome.VariablesChange.Add(TFTVCommonMethods.GenerateVariableChange("Sphere", 1, true));

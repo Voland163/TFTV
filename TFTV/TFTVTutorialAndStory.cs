@@ -1,6 +1,7 @@
 ﻿using Base.Core;
 using Base.Defs;
 using Base.Levels;
+using Base.Levels.Nav.Tiled;
 using Base.Platforms.PS4;
 using Base.UI;
 using HarmonyLib;
@@ -10,6 +11,8 @@ using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.View.ViewModules;
 using PhoenixPoint.Geoscape.Levels;
+using PhoenixPoint.Geoscape.Levels.ContextHelp;
+using PhoenixPoint.Geoscape.Levels.ContextHelp.HintConditions;
 using PhoenixPoint.Tactical.ContextHelp.HintConditions;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Levels;
@@ -20,21 +23,41 @@ using System.Linq;
 namespace TFTV
 {
     //for future hints: TUT4_BodyPartDisabled_HintDef can be used to teach about Stamina
-
+    //disable hint diplomacy effect of Pandoran bases
     internal class TFTVTutorialAndStory
     {
         private static readonly DefRepository Repo = TFTVMain.Repo;
-        public static ContextHelpHintDbDef alwaysDisplayedTacticalHintsDbDef = Repo.GetAllDefs<ContextHelpHintDbDef>().FirstOrDefault(ged => ged.name.Equals("AlwaysDisplayedTacticalHintsDbDef"));
+        private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
+        public static ContextHelpHintDbDef alwaysDisplayedTacticalHintsDbDef = DefCache.GetDef<ContextHelpHintDbDef>("AlwaysDisplayedTacticalHintsDbDef");
         // public static string hintShow = "";
 
 
-        private static readonly ActorHasTemplateHintConditionDef sourceActorHasTemplateHintConditionDef = Repo.GetAllDefs<ActorHasTemplateHintConditionDef>().FirstOrDefault(ged => ged.name.Equals("ActorHasTemplate_Fishman2_Sneaker_AlienMutationVariationDef_HintConditionDef"));
-        private static readonly ActorHasTagHintConditionDef sourceActorHasTagHintConditionDef = Repo.GetAllDefs<ActorHasTagHintConditionDef>().FirstOrDefault(ged => ged.name.Equals("ActorHasTag_Takeshi_Tutorial3_GameTagDef_HintConditionDef"));
-        private static readonly ContextHelpHintDef sourceContextHelpHintDef = Repo.GetAllDefs<ContextHelpHintDef>().FirstOrDefault(ged => ged.name.Equals("TUT_DLC3_MissionStartStory_HintDef"));
-        private static readonly HasSeenHintHintConditionDef sourceHasSeenHintConditionDef = Repo.GetAllDefs<HasSeenHintHintConditionDef>().FirstOrDefault(ged => ged.name.Equals("HasSeenHint_TUT2_Overwatch_HintDef-False_HintConditionDef"));
-        private static readonly LevelHasTagHintConditionDef sourceInfestationMission = Repo.GetAllDefs<LevelHasTagHintConditionDef>().FirstOrDefault(ged => ged.name.Equals("LevelHasTag_MissionTypeBaseInfestation_MissionTagDef_HintConditionDef"));
-        private static readonly MissionTypeTagDef infestationMissionTagDef = Repo.GetAllDefs<MissionTypeTagDef>().FirstOrDefault(p => p.name.Equals("HavenInfestation_MissionTypeTagDef"));
+        private static readonly ActorHasTemplateHintConditionDef sourceActorHasTemplateHintConditionDef = DefCache.GetDef<ActorHasTemplateHintConditionDef>("ActorHasTemplate_Fishman2_Sneaker_AlienMutationVariationDef_HintConditionDef");
+        private static readonly ActorHasTagHintConditionDef sourceActorHasTagHintConditionDef = DefCache.GetDef<ActorHasTagHintConditionDef>("ActorHasTag_Takeshi_Tutorial3_GameTagDef_HintConditionDef");
+        private static readonly ContextHelpHintDef sourceContextHelpHintDef = DefCache.GetDef<ContextHelpHintDef>("TUT_DLC3_MissionStartStory_HintDef");
+        private static readonly HasSeenHintHintConditionDef sourceHasSeenHintConditionDef = DefCache.GetDef<HasSeenHintHintConditionDef>("HasSeenHint_TUT2_Overwatch_HintDef-False_HintConditionDef");
+        private static readonly LevelHasTagHintConditionDef sourceInfestationMission = DefCache.GetDef<LevelHasTagHintConditionDef>("LevelHasTag_MissionTypeBaseInfestation_MissionTagDef_HintConditionDef");
+        private static readonly MissionTypeTagDef infestationMissionTagDef = DefCache.GetDef<MissionTypeTagDef>("HavenInfestation_MissionTypeTagDef");
 
+        public static void RemoveHints() 
+        {
+            try
+            {
+                ContextHelpHintDef corruptionDamageHint = DefCache.GetDef<ContextHelpHintDef>("TUT_DLC4_CorruptionDamage_HintDef");
+
+
+                ContextHelpHintDbDef tacticalHintsDbDef = DefCache.GetDef<ContextHelpHintDbDef>("TacticalHintsDbDef");
+                tacticalHintsDbDef.Hints.Remove(corruptionDamageHint);
+
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+       
 
         [HarmonyPatch(typeof(UIModuleTutorialModal), "SetTutorialStep")]
         public static class UIModuleTutorialModal_SetTutorialStep_Hints_Patch
@@ -48,7 +71,15 @@ namespace TFTV
                     {
                         __instance.Image.sprite = Helper.CreateSpriteFromImageFile("BG_Hint_Delirium.png");
                     }
+                    else if(step.StepType == GeoscapeTutorialStepType.Customization && step.Title.LocalizationKey == "KEY_GEO_HINT_CUSTOMIZE_TITLE") 
+                    {
+                        __instance.Image.sprite = Helper.CreateSpriteFromImageFile("Hint_DeliriumUI.png");
 
+                    }
+                    else if (step.StepType == GeoscapeTutorialStepType.AlienBaseDiplomacyPenalty && step.Title.LocalizationKey == "KEY_GEO_HINT_PANDORAN_BASE_DIPLOMACY_EFFECTS_TITLE")
+                    {
+                        __instance.Image.sprite = Helper.CreateSpriteFromImageFile("Hint_PandoranEvolution.png");
+                    }                
                 }
                 catch (Exception e)
                 {
@@ -56,7 +87,6 @@ namespace TFTV
                 }
             }
         }
-
 
 
         [HarmonyPatch(typeof(UIModuleContextHelp), "Show")]
@@ -82,7 +112,6 @@ namespace TFTV
                              TFTVLogger.Always("The hint # " + (i+1) + " is " + TFTVHumanEnemies.TacticsHint[i].name);
 
                          }*/
-
                         if (hintDef.name.Contains("InfestationMissionIntro")) 
                         {
                             __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("px_squad.jpg");
@@ -95,12 +124,21 @@ namespace TFTV
 
                         else if (title.LocalizationKey == "UMBRA_SIGHTED_TITLE")
                         {
-                            __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("Umbra_hint.jpg");
+                            __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("Umbra_base.png");
                         }
 
                         else if (title.LocalizationKey == "REVENANT_SIGHTED_TITLE")
                         {
-                            __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("Umbra_hint.jpg");
+                            __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("Hint_Revenant.png");
+                        }
+
+                        else if (hintDef.name.Contains("TFTV_StaminaHintDef"))
+                        {
+                            __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("broken_limb_stamina.png");
+                        }
+                        else 
+                        {
+                            __instance.Image.overrideSprite = null;
                         }
 
                         foreach (ContextHelpHintDef tacticsHint in TFTVHumanEnemies.TacticsHint)
@@ -156,7 +194,7 @@ namespace TFTV
 
         }
 
-       
+      
 
         public static ActorHasTemplateHintConditionDef ActorHasTemplateCreateNewConditionForTacticalHint(string name)
         {
@@ -166,7 +204,7 @@ namespace TFTV
                 string gUID = Guid.NewGuid().ToString();
                 
                 ActorHasTemplateHintConditionDef newActorHasTemplateHintConditionDef = Helper.CreateDefFromClone(sourceActorHasTemplateHintConditionDef, gUID, "ActorHasTemplate_" + name + "_HintConditionDef");
-                TacCharacterDef tacCharacterDef = Repo.GetAllDefs<TacCharacterDef>().FirstOrDefault(ged => ged.name.Equals(name));
+                TacCharacterDef tacCharacterDef = DefCache.GetDef<TacCharacterDef>(name);
                 newActorHasTemplateHintConditionDef.TacActorDef = tacCharacterDef;
                 return newActorHasTemplateHintConditionDef;
             }
@@ -209,9 +247,9 @@ namespace TFTV
                 string gUID = Guid.NewGuid().ToString();
 
 
-                ActorIsOfFactionHintConditionDef sourceActorIsOfFactionConditionDef = Repo.GetAllDefs<ActorIsOfFactionHintConditionDef>().FirstOrDefault(ged => ged.name.Equals("ActorHasTag_Takeshi_Tutorial3_GameTagDef_HintConditionDef"));
+                ActorIsOfFactionHintConditionDef sourceActorIsOfFactionConditionDef = DefCache.GetDef<ActorIsOfFactionHintConditionDef>("ActorHasTag_Takeshi_Tutorial3_GameTagDef_HintConditionDef");
                 ActorIsOfFactionHintConditionDef newActorIsOfFactionHintConditionDef = Helper.CreateDefFromClone(sourceActorIsOfFactionConditionDef, gUID, "ActorIsOfFaction_" + name + "_HintConditionDef");
-                TacticalFactionDef tacticalFactionDef = Repo.GetAllDefs<TacticalFactionDef>().FirstOrDefault(ged => ged.name.Contains(name));
+                TacticalFactionDef tacticalFactionDef = DefCache.GetDef<TacticalFactionDef>(name);
                 newActorIsOfFactionHintConditionDef.TacticalFactionDef = tacticalFactionDef;
 
                 return newActorIsOfFactionHintConditionDef;
@@ -263,7 +301,7 @@ namespace TFTV
                 }
 
 
-                ContextHelpHintDbDef alwaysDisplayedTacticalHintsDbDef = Repo.GetAllDefs<ContextHelpHintDbDef>().FirstOrDefault(ged => ged.name.Equals("AlwaysDisplayedTacticalHintsDbDef"));
+                ContextHelpHintDbDef alwaysDisplayedTacticalHintsDbDef = DefCache.GetDef<ContextHelpHintDbDef>("AlwaysDisplayedTacticalHintsDbDef");
                 alwaysDisplayedTacticalHintsDbDef.Hints.Add(newContextHelpHintDef);
 
 

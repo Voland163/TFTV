@@ -18,22 +18,23 @@ namespace TFTV
 {
     internal class TFTVProjectRobocop
     {
-        private static readonly DefRepository Repo = TFTVMain.Repo;
+        //private static readonly DefRepository Repo = TFTVMain.Repo;
         private static readonly BCSettings bCSettings = TFTVMain.Main.Settings;
+        private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
 
         private static readonly string RobocopEvent = "RoboCopDeliveryEvent";
 
-        private static readonly TacCharacterDef characterDef = Repo.GetAllDefs<TacCharacterDef>().FirstOrDefault(p => p.name.Equals("NJ_Jugg_TacCharacterDef"));
+        private static readonly TacCharacterDef characterDef =DefCache.GetDef<TacCharacterDef>("NJ_Jugg_TacCharacterDef");
 
-        private static readonly TacticalItemDef juggHead = Repo.GetAllDefs<TacticalItemDef>().FirstOrDefault(p => p.name.Equals("NJ_Jugg_BIO_Helmet_BodyPartDef"));
-        private static readonly TacticalItemDef juggLegs = Repo.GetAllDefs<TacticalItemDef>().FirstOrDefault(p => p.name.Equals("NJ_Jugg_BIO_Legs_ItemDef"));
-        private static readonly TacticalItemDef juggTorso = Repo.GetAllDefs<TacticalItemDef>().FirstOrDefault(p => p.name.Equals("NJ_Jugg_BIO_Torso_BodyPartDef"));
-        private static readonly TacticalItemDef exoHead = Repo.GetAllDefs<TacticalItemDef>().FirstOrDefault(p => p.name.Equals("NJ_Exo_BIO_Helmet_BodyPartDef"));
-        private static readonly TacticalItemDef exoLegs = Repo.GetAllDefs<TacticalItemDef>().FirstOrDefault(p => p.name.Equals("NJ_Exo_BIO_Legs_ItemDef"));
-        private static readonly TacticalItemDef exoTorso = Repo.GetAllDefs<TacticalItemDef>().FirstOrDefault(p => p.name.Equals("NJ_Exo_BIO_Torso_BodyPartDef"));
-        private static readonly TacticalItemDef shinobiHead = Repo.GetAllDefs<TacticalItemDef>().FirstOrDefault(p => p.name.Equals("SY_Shinobi_BIO_Helmet_BodyPartDef"));
-        private static readonly TacticalItemDef shinobiLegs = Repo.GetAllDefs<TacticalItemDef>().FirstOrDefault(p => p.name.Equals("SY_Shinobi_BIO_Legs_ItemDef"));
-        private static readonly TacticalItemDef shinobiTorso = Repo.GetAllDefs<TacticalItemDef>().FirstOrDefault(p => p.name.Equals("SY_Shinobi_BIO_Torso_BodyPartDef"));
+        private static readonly TacticalItemDef juggHead =DefCache.GetDef<TacticalItemDef>("NJ_Jugg_BIO_Helmet_BodyPartDef");
+        private static readonly TacticalItemDef juggLegs =DefCache.GetDef<TacticalItemDef>("NJ_Jugg_BIO_Legs_ItemDef");
+        private static readonly TacticalItemDef juggTorso =DefCache.GetDef<TacticalItemDef>("NJ_Jugg_BIO_Torso_BodyPartDef");
+        private static readonly TacticalItemDef exoHead =DefCache.GetDef<TacticalItemDef>("NJ_Exo_BIO_Helmet_BodyPartDef");
+        private static readonly TacticalItemDef exoLegs =DefCache.GetDef<TacticalItemDef>("NJ_Exo_BIO_Legs_ItemDef");
+        private static readonly TacticalItemDef exoTorso =DefCache.GetDef<TacticalItemDef>("NJ_Exo_BIO_Torso_BodyPartDef");
+        private static readonly TacticalItemDef shinobiHead =DefCache.GetDef<TacticalItemDef>("SY_Shinobi_BIO_Helmet_BodyPartDef");
+        private static readonly TacticalItemDef shinobiLegs =DefCache.GetDef<TacticalItemDef>("SY_Shinobi_BIO_Legs_ItemDef");
+        private static readonly TacticalItemDef shinobiTorso =DefCache.GetDef<TacticalItemDef>("SY_Shinobi_BIO_Torso_BodyPartDef");
 
 
         public static void CreateRoboCopDef()
@@ -83,7 +84,7 @@ namespace TFTV
         {
             try
             {
-                TFTVLogger.Always("Robocop def real " + Repo.GetAllDefs<TacCharacterDef>().FirstOrDefault(p => p.name.Equals("RoboCop")).name);
+                TFTVLogger.Always("Robocop def real " +DefCache.GetDef<TacCharacterDef>("RoboCop").name);
 
 
 
@@ -99,7 +100,7 @@ namespace TFTV
 
 
                 GeoscapeEventDef roboCopDeliveryEvent = TFTVCommonMethods.CreateNewEvent(RobocopEvent, "ROBOCOP_DELIVERY_TITLE", "ROBOCOP_DELIVERY_TEXT", "ROBOCOP_DELIVERY_OUTCOME");
-                TacCharacterDef roboCopDef = Repo.GetAllDefs<TacCharacterDef>().FirstOrDefault(p => p.name.Equals("RoboCop"));
+                TacCharacterDef roboCopDef =DefCache.GetDef<TacCharacterDef>("RoboCop");
 
 
                 // characterDef.Data.Name = "Murphy";
@@ -154,7 +155,7 @@ namespace TFTV
                     // ...
                 });
 
-                        TacCharacterDef roboCopDef = Repo.GetAllDefs<TacCharacterDef>().FirstOrDefault(p => p.name.Equals("RoboCop"));
+                        TacCharacterDef roboCopDef =DefCache.GetDef<TacCharacterDef>("RoboCop");
                         roboCopDef.Data.Name = levelController.DeadSoldiers[bionicMan].Identity.Name;
                         roboCopDef.Data.LocalizeName = false;
 

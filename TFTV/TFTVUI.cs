@@ -26,7 +26,8 @@ namespace TFTV
 {
     internal class TFTVUI
     {
-        private static readonly DefRepository Repo = TFTVMain.Repo;
+      // private static readonly DefRepository Repo = TFTVMain.Repo;
+        private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
         //This method changes how WP are displayed in the Edit personnel screen, to show effects of Delirium on WP
 
 
@@ -40,7 +41,7 @@ namespace TFTV
         [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051")]
         internal static class BG_UIModuleCharacterProgression_RefreshStatPanel_patch
         {
-            private static readonly ApplyStatusAbilityDef derealization = Repo.GetAllDefs<ApplyStatusAbilityDef>().FirstOrDefault(p => p.name.Equals("DerealizationIgnorePain_AbilityDef"));
+            private static readonly ApplyStatusAbilityDef derealization = DefCache.GetDef<ApplyStatusAbilityDef>("DerealizationIgnorePain_AbilityDef");
             private static void Postfix(GeoCharacter ____character, ref string __result, CharacterBaseAttribute attribute, int currentAttributeValue)
             {
                 try
@@ -218,7 +219,7 @@ namespace TFTV
         [HarmonyPatch(typeof(UIModuleSoldierEquip), "RefreshWeightSlider")]
         internal static class UIModuleSoldierEquip_RefreshWeightSlider_Patch
         {
-           private static readonly ApplyStatusAbilityDef derealization = Repo.GetAllDefs<ApplyStatusAbilityDef>().FirstOrDefault(p => p.name.Equals("DerealizationIgnorePain_AbilityDef"));
+           private static readonly ApplyStatusAbilityDef derealization = DefCache.GetDef<ApplyStatusAbilityDef>("DerealizationIgnorePain_AbilityDef");
             private static void Prefix(ref int maxWeight, UIModuleSoldierEquip __instance)
             {
                 try
@@ -314,7 +315,7 @@ namespace TFTV
         {
             private static readonly GameTagDef bionicalTag = GameUtl.GameComponent<SharedData>().SharedGameTags.BionicalTag;
             private static readonly GameTagDef mutationTag = GameUtl.GameComponent<SharedData>().SharedGameTags.AnuMutationTag;
-            private static readonly ItemSlotDef headSlot = Repo.GetAllDefs<ItemSlotDef>().FirstOrDefault(ged => ged.name.Equals("Human_Head_SlotDef"));
+            private static readonly ItemSlotDef headSlot = DefCache.GetDef<ItemSlotDef>("Human_Head_SlotDef");
 
 
             private static bool Prefix(UIModuleActorCycle __instance, List<UnitDisplayData> ____units,

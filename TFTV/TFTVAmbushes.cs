@@ -11,8 +11,6 @@ namespace TFTV
 {
     internal class TFTVAmbushes
     {
-        private static readonly DefRepository Repo = TFTVMain.Repo;
-       
       
         [HarmonyPatch(typeof(GeoscapeEventSystem), "OnLevelStart")]
 

@@ -12,8 +12,7 @@ namespace TFTV
 {
     internal class TFTVDiplomacyPenalties
     {
-        private static readonly DefRepository Repo = TFTVMain.Repo;
-       
+     
 
 
         [HarmonyPatch(typeof(GeoFaction), "OnDiplomacyChanged")]

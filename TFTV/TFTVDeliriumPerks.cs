@@ -32,24 +32,25 @@ namespace TFTV
 {
     internal class TFTVDeliriumPerks
     {
-        private static readonly DefRepository Repo = TFTVMain.Repo;
+       // private static readonly DefRepository Repo = TFTVMain.Repo;
+        private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
         internal static bool doNotLocalize = false;
         private static readonly SharedData sharedData = GameUtl.GameComponent<SharedData>();
 
-        private static readonly TacticalAbilityDef hyperalgesiaAbilityDef = Repo.GetAllDefs<TacticalAbilityDef>().FirstOrDefault(tad => tad.name.Equals("Hyperalgesia_AbilityDef"));
-        private static readonly TacticalAbilityDef feralAbilityDef = Repo.GetAllDefs<TacticalAbilityDef>().FirstOrDefault(tad => tad.name.Equals("Feral_AbilityDef"));
-        private static readonly TacticalAbilityDef bloodthirstyAbilityDef = Repo.GetAllDefs<TacticalAbilityDef>().FirstOrDefault(tad => tad.name.Equals("Bloodthirsty_AbilityDef"));
+        private static readonly TacticalAbilityDef hyperalgesiaAbilityDef =DefCache.GetDef<TacticalAbilityDef>("Hyperalgesia_AbilityDef");
+        private static readonly TacticalAbilityDef feralAbilityDef =DefCache.GetDef<TacticalAbilityDef>("Feral_AbilityDef");
+        private static readonly TacticalAbilityDef bloodthirstyAbilityDef =DefCache.GetDef<TacticalAbilityDef>("Bloodthirsty_AbilityDef");
 
-        private static readonly TacticalAbilityDef fasterSynapsesDef = Repo.GetAllDefs<TacticalAbilityDef>().FirstOrDefault(tad => tad.name.Equals("FasterSynapses_AbilityDef"));
-        private static readonly TacticalAbilityDef anxietyDef = Repo.GetAllDefs<TacticalAbilityDef>().FirstOrDefault(tad => tad.name.Equals("AnxietyAbilityDef"));
+        private static readonly TacticalAbilityDef fasterSynapsesDef =DefCache.GetDef<TacticalAbilityDef>("FasterSynapses_AbilityDef");
+        private static readonly TacticalAbilityDef anxietyDef =DefCache.GetDef<TacticalAbilityDef>("AnxietyAbilityDef");
       
-        private static readonly TacticalAbilityDef oneOfThemDef = Repo.GetAllDefs<TacticalAbilityDef>().FirstOrDefault(tad => tad.name.Equals("OneOfThemPassive_AbilityDef"));
-        private static readonly TacticalAbilityDef wolverineDef = Repo.GetAllDefs<TacticalAbilityDef>().FirstOrDefault(tad => tad.name.Equals("Wolverine_AbilityDef"));
-        private static readonly TacticalAbilityDef derealizationDef = Repo.GetAllDefs<TacticalAbilityDef>().FirstOrDefault(tad => tad.name.Equals("DerealizationIgnorePain_AbilityDef"));
-        private static readonly StatusDef frenzy = Repo.GetAllDefs<StatusDef>().FirstOrDefault(sd => sd.name.Equals("Frenzy_StatusDef"));
-        private static readonly StatusDef anxiety = Repo.GetAllDefs<StatusDef>().FirstOrDefault(sd => sd.name.Equals("Anxiety_StatusDef"));
-        private static readonly StatusDef mistResistance = Repo.GetAllDefs<StatusDef>().FirstOrDefault(sd => sd.name.Equals("MistResistance_StatusDef"));
-        private static readonly GameTagDef mistResistanceTag = Repo.GetAllDefs<GameTagDef>().FirstOrDefault(sd => sd.name.Equals("OneOfUsMistResistance_GameTagDef"));
+        private static readonly TacticalAbilityDef oneOfThemDef =DefCache.GetDef<TacticalAbilityDef>("OneOfThemPassive_AbilityDef");
+        private static readonly TacticalAbilityDef wolverineDef =DefCache.GetDef<TacticalAbilityDef>("Wolverine_AbilityDef");
+        private static readonly TacticalAbilityDef derealizationDef =DefCache.GetDef<TacticalAbilityDef>("DerealizationIgnorePain_AbilityDef");
+        private static readonly StatusDef frenzy =DefCache.GetDef<StatusDef>("Frenzy_StatusDef");
+        private static readonly StatusDef anxiety =DefCache.GetDef<StatusDef>("Anxiety_StatusDef");
+        private static readonly StatusDef mistResistance =DefCache.GetDef<StatusDef>("MistResistance_StatusDef");
+        private static readonly GameTagDef mistResistanceTag =DefCache.GetDef<GameTagDef>("OneOfUsMistResistance_GameTagDef");
 
 
 
@@ -99,7 +100,7 @@ namespace TFTV
                             tacticalActor.UpdateStats();
 
 
-                            // tacticalActor.AddAbility(Repo.GetAllDefs<TacticalAbilityDef>().FirstOrDefault(sd => sd.name.Equals("IgnorePain_AbilityDef")), actor);
+                            // tacticalActor.AddAbility(Repo.GetAllDefs<TacticalAbilityDef>("IgnorePain_AbilityDef")), actor);
 
                             TFTVLogger.Always(actor.DisplayName + " with " + derealizationDef.name);
 
@@ -118,7 +119,7 @@ namespace TFTV
         [HarmonyPatch(typeof(TacticalAbility), "FumbleActionCheck")]
         public static class TacticalAbility_FumbleActionCheck_Patch
         {
-            private static TacticalAbilityDef feral = Repo.GetAllDefs<TacticalAbilityDef>().FirstOrDefault(tad => tad.name.Equals("Feral_AbilityDef"));
+            private static readonly TacticalAbilityDef feral =DefCache.GetDef<TacticalAbilityDef>("Feral_AbilityDef");
             public static void Postfix(TacticalAbility __instance, ref bool __result)
             {
                 try
@@ -142,7 +143,7 @@ namespace TFTV
                 [HarmonyPatch(typeof(TacticalLevelController), "ActorDied")]
                 public static class TacticalLevelController_ActorDied_HumanEnemiesTactics_BloodRush_Patch
                 {
-                    private static readonly TacticalAbilityDef feral = Repo.GetAllDefs<TacticalAbilityDef>().FirstOrDefault(tad => tad.name.Equals("Feral_AbilityDef"));
+                    private static readonly TacticalAbilityDef feral =DefCache.GetDef<TacticalAbilityDef>("Feral_AbilityDef"));
 
                     public static void Postfix(DeathReport deathReport)
                     {
@@ -180,7 +181,7 @@ namespace TFTV
         [HarmonyPatch(typeof(TacticalAbility), "get_FumbledAction")]
         public static class TacticalAbility_FumbleActionCheck_Patch
         {
-           private static readonly TacticalAbilityDef feral = Repo.GetAllDefs<TacticalAbilityDef>().FirstOrDefault(tad => tad.name.Equals("Feral_AbilityDef"));
+           private static readonly TacticalAbilityDef feral =DefCache.GetDef<TacticalAbilityDef>("Feral_AbilityDef"));
 
             public static bool Prefix(TacticalAbility __instance, ref bool __result)
             {
@@ -282,7 +283,7 @@ namespace TFTV
             
             public static void Postfix(TacticalActor __instance, DeathReport death)
             {
-                DefRepository Repo = GameUtl.GameComponent<DefRepository>();
+               
                 try
                 {
                    
@@ -318,10 +319,10 @@ namespace TFTV
         [HarmonyPatch(typeof(TacticalActor), "TriggerHurt")]
         public static class TacticalActor_TriggerHurt_Patch
         {
-            public static void Postfix(TacticalActor __instance, DamageResult damageResult)
+            public static void Postfix(TacticalActor __instance)
             {
 
-                DefRepository Repo = GameUtl.GameComponent<DefRepository>();
+               
                 try
                 {
                     bool receivedDamage = false;

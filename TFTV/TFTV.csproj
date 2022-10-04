@@ -70,6 +70,7 @@
   <ItemGroup>
     <Compile Include="BCSettings.cs" />
     <Compile Include="ConfigHelpers.cs" />
+    <Compile Include="DefCache.cs" />
     <Compile Include="Helper.cs" />
     <Compile Include="MainSpecModification.cs" />
     <Compile Include="PersonalSpecModification.cs" />
@@ -160,10 +161,16 @@
     <Content Include="Assets\Textures\BG_Intro_1.jpg" />
     <Content Include="Assets\Textures\BG_Olena.png" />
     <Content Include="Assets\Textures\BG_Olena_small.png" />
+    <Content Include="Assets\Textures\broken_limb_stamina.png" />
     <Content Include="Assets\Textures\FesteringSkiesAfterHamerfall.png" />
     <Content Include="Assets\Textures\fo_squad.png" />
     <Content Include="Assets\Textures\Helena_fire2.jpg" />
     <Content Include="Assets\Textures\Helena_fire2_closeup.jpg" />
+    <Content Include="Assets\Textures\Hint_PandoranEvolution.png" />
+    <Content Include="Assets\Textures\Hint_Revenant.png" />
+    <Content Include="Assets\Textures\Hint_Revenant_2.png" />
+    <Content Include="Assets\Textures\Hint_Umbra.png" />
+    <Content Include="Assets\Textures\makeshift_lab.png" />
     <Content Include="Assets\Textures\nj_squad.jpg" />
     <Content Include="Assets\Textures\nj_squad2.jpg" />
     <Content Include="Assets\Textures\Node.jpg" />

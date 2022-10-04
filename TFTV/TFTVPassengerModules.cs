@@ -18,10 +18,9 @@ namespace TFTV
     internal class TFTVPassengerModules
     {
         private static readonly DefRepository Repo = TFTVMain.Repo;
+        private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
 
-
-
-        private static readonly GeoVehicleEquipmentDef hibernationModule = Repo.GetAllDefs<GeoVehicleEquipmentDef>().FirstOrDefault(gve => gve.name.Equals("SY_HibernationPods_GeoVehicleModuleDef"));
+      /*  private static readonly GeoVehicleEquipmentDef hibernationModule = Repo.GetAllDefs<GeoVehicleEquipmentDef>().FirstOrDefault(gve => gve.name.Equals("SY_HibernationPods_GeoVehicleModuleDef"));
 
         private static readonly GeoVehicleDef manticore6slots = Repo.GetAllDefs<GeoVehicleDef>().FirstOrDefault(ged => ged.name.Equals("PP_Manticore_Def_6_Slots"));
         private static readonly GeoVehicleDef manticore = Repo.GetAllDefs<GeoVehicleDef>().FirstOrDefault(ged => ged.name.Equals("PP_Manticore_Def"));
@@ -32,7 +31,22 @@ namespace TFTV
         private static readonly GeoVehicleDef blimp12slots = Repo.GetAllDefs<GeoVehicleDef>().FirstOrDefault(ged => ged.name.Equals("ANU_Blimp_Def_12_Slots"));
         private static readonly GeoVehicleDef blimp8slots = Repo.GetAllDefs<GeoVehicleDef>().FirstOrDefault(ged => ged.name.Equals("ANU_Blimp_Def"));
         private static readonly GeoVehicleDef maskedManticore8slots = Repo.GetAllDefs<GeoVehicleDef>().FirstOrDefault(ged => ged.name.Equals("PP_ManticoreMasked_Def_8_Slots"));
-        private static readonly GeoVehicleDef maskedManticore = Repo.GetAllDefs<GeoVehicleDef>().FirstOrDefault(ged => ged.name.Equals("PP_MaskedManticore_Def"));
+        private static readonly GeoVehicleDef maskedManticore = Repo.GetAllDefs<GeoVehicleDef>().FirstOrDefault(ged => ged.name.Equals("PP_MaskedManticore_Def"));*/
+
+
+        
+        private static readonly GeoVehicleEquipmentDef hibernationModule = DefCache.GetDef<GeoVehicleEquipmentDef>("SY_HibernationPods_GeoVehicleModuleDef");
+
+        private static readonly GeoVehicleDef manticore6slots = DefCache.GetDef<GeoVehicleDef>("PP_Manticore_Def_6_Slots");
+        private static readonly GeoVehicleDef manticore = DefCache.GetDef<GeoVehicleDef>("PP_Manticore_Def");
+        private static readonly GeoVehicleDef helios5slots = DefCache.GetDef<GeoVehicleDef>("SYN_Helios_Def_5_Slots");
+        private static readonly GeoVehicleDef helios = DefCache.GetDef<GeoVehicleDef>("SYN_Helios_Def");
+        private static readonly GeoVehicleDef thunderbird7slots = DefCache.GetDef<GeoVehicleDef>("NJ_Thunderbird_Def_7_Slots");
+        private static readonly GeoVehicleDef thunderbird = DefCache.GetDef<GeoVehicleDef>("NJ_Thunderbird_Def");
+        private static readonly GeoVehicleDef blimp12slots = DefCache.GetDef<GeoVehicleDef>("ANU_Blimp_Def_12_Slots");
+        private static readonly GeoVehicleDef blimp8slots = DefCache.GetDef<GeoVehicleDef>("ANU_Blimp_Def");
+        private static readonly GeoVehicleDef maskedManticore8slots = DefCache.GetDef<GeoVehicleDef>("PP_ManticoreMasked_Def_8_Slots");
+        private static readonly GeoVehicleDef maskedManticore = DefCache.GetDef<GeoVehicleDef>("PP_MaskedManticore_Def");
 
 
         public static List<TacCharacterDef> CreateStartingSquad(GeoLevelController levelController)
@@ -74,22 +88,45 @@ namespace TFTV
         [HarmonyPatch(typeof(GeoPhoenixFaction), "CreateInitialSquad")]
         internal static class BG_GeoPhoenixFaction_CreateInitialSquad_patch
         {
-            private static readonly TacticalItemDef redeemerAmmo = Repo.GetAllDefs<TacticalItemDef>().FirstOrDefault(a => a.name.Equals("AN_Redemptor_AmmoClip_ItemDef"));
+            /* private static readonly TacticalItemDef redeemerAmmo = Repo.GetAllDefs<TacticalItemDef>().FirstOrDefault(a => a.name.Equals("AN_Redemptor_AmmoClip_ItemDef"));
 
-            private static readonly TacticalItemDef pdwAmmo = Repo.GetAllDefs<TacticalItemDef>().FirstOrDefault(a => a.name.Equals("NJ_Gauss_PDW_AmmoClip_ItemDef"));
-            private static readonly TacticalItemDef mechArmsAmmo = Repo.GetAllDefs<TacticalItemDef>().FirstOrDefault(a => a.name.Equals("MechArms_AmmoClip_ItemDef"));
+             private static readonly TacticalItemDef pdwAmmo = Repo.GetAllDefs<TacticalItemDef>().FirstOrDefault(a => a.name.Equals("NJ_Gauss_PDW_AmmoClip_ItemDef"));
+             private static readonly TacticalItemDef mechArmsAmmo = Repo.GetAllDefs<TacticalItemDef>().FirstOrDefault(a => a.name.Equals("MechArms_AmmoClip_ItemDef"));
 
-            private static readonly TacticalItemDef boltsAmmo = Repo.GetAllDefs<TacticalItemDef>().FirstOrDefault(a => a.name.Equals("SY_Crossbow_AmmoClip_ItemDef"));
-            private static readonly TacticalItemDef spidersAmmo = Repo.GetAllDefs<TacticalItemDef>().FirstOrDefault(a => a.name.Equals("SY_SpiderDroneLauncher_AmmoClip_ItemDef"));
+             private static readonly TacticalItemDef boltsAmmo = Repo.GetAllDefs<TacticalItemDef>().FirstOrDefault(a => a.name.Equals("SY_Crossbow_AmmoClip_ItemDef"));
+             private static readonly TacticalItemDef spidersAmmo = Repo.GetAllDefs<TacticalItemDef>().FirstOrDefault(a => a.name.Equals("SY_SpiderDroneLauncher_AmmoClip_ItemDef"));
 
-            private static readonly TacCharacterDef jacob = Repo.GetAllDefs<TacCharacterDef>().FirstOrDefault(a => a.name.Equals("PX_Jacob_TFTV_TacCharacterDef"));
-            private static readonly TacCharacterDef sophia = Repo.GetAllDefs<TacCharacterDef>().FirstOrDefault(a => a.name.Equals("PX_Sophia_TFTV_TacCharacterDef"));
+             private static readonly TacCharacterDef jacob = Repo.GetAllDefs<TacCharacterDef>().FirstOrDefault(a => a.name.Equals("PX_Jacob_TFTV_TacCharacterDef"));
+             private static readonly TacCharacterDef sophia = Repo.GetAllDefs<TacCharacterDef>().FirstOrDefault(a => a.name.Equals("PX_Sophia_TFTV_TacCharacterDef"));*/
+
+            /*
+            private static readonly TacticalItemDef redeemerAmmo = DefCache.GetDef<TacticalItemDef>("AN_Redemptor_AmmoClip_ItemDef");
+
+            private static readonly TacticalItemDef pdwAmmo = DefCache.GetDef<TacticalItemDef>("NJ_Gauss_PDW_AmmoClip_ItemDef");
+            private static readonly TacticalItemDef mechArmsAmmo = DefCache.GetDef<TacticalItemDef>("MechArms_AmmoClip_ItemDef");
+
+            private static readonly TacticalItemDef boltsAmmo = DefCache.GetDef<TacticalItemDef>("SY_Crossbow_AmmoClip_ItemDef");
+            private static readonly TacticalItemDef spidersAmmo = DefCache.GetDef<TacticalItemDef>("SY_SpiderDroneLauncher_AmmoClip_ItemDef");
+
+            private static readonly TacCharacterDef jacob = DefCache.GetDef<TacCharacterDef>("PX_Jacob_TFTV_TacCharacterDef");
+            private static readonly TacCharacterDef sophia = DefCache.GetDef<TacCharacterDef>("PX_Sophia_TFTV_TacCharacterDef");*/
 
             [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051")]
             private static bool Prefix(GeoPhoenixFaction __instance, GeoSite site)
             {
                 try
                 {
+                    TacticalItemDef redeemerAmmo = DefCache.GetDef<TacticalItemDef>("AN_Redemptor_AmmoClip_ItemDef");
+
+                    TacticalItemDef pdwAmmo = DefCache.GetDef<TacticalItemDef>("NJ_Gauss_PDW_AmmoClip_ItemDef");
+                    TacticalItemDef mechArmsAmmo = DefCache.GetDef<TacticalItemDef>("MechArms_AmmoClip_ItemDef");
+
+                    TacticalItemDef boltsAmmo = DefCache.GetDef<TacticalItemDef>("SY_Crossbow_AmmoClip_ItemDef");
+                    TacticalItemDef spidersAmmo = DefCache.GetDef<TacticalItemDef>("SY_SpiderDroneLauncher_AmmoClip_ItemDef");
+
+                    TacCharacterDef jacob = DefCache.GetDef<TacCharacterDef>("PX_Jacob_TFTV_TacCharacterDef");
+                    TacCharacterDef sophia = DefCache.GetDef<TacCharacterDef>("PX_Sophia_TFTV_TacCharacterDef");
+
 
                     GeoVehicle geoVehicle = __instance.Vehicles.First();
                     geoVehicle.AddEquipment(hibernationModule);
@@ -150,8 +187,8 @@ namespace TFTV
                     {
                         TFTVStarts.ModifyIntroForSpecialStart(__instance.GeoLevel.SynedrionFaction, site);
                     }
-                    else 
-                    { 
+                    else
+                    {
                         TFTVStarts.RevertIntroToNormalStart();
                     }
 
@@ -341,7 +378,7 @@ namespace TFTV
                     {
                         componentName = "SYN_Helios";
                     }
-                    ComponentSetDef sourceAircraftComponentDef = Repo.GetAllDefs<ComponentSetDef>().FirstOrDefault(csd => csd.name.Equals(componentName));
+                    ComponentSetDef sourceAircraftComponentDef = DefCache.GetDef<ComponentSetDef>(componentName);
                     clonedAircraft = __instance.PhoenixFaction.CreateVehicle(geoVehicle.CurrentSite, sourceAircraftComponentDef);
                     clonedAircraft.RenameVehicle(geoVehicle.Name);
                     foreach (GeoVehicleEquipment equipment in geoVehicle.Equipments)

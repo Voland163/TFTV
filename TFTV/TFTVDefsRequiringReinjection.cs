@@ -28,6 +28,7 @@ namespace TFTV
     internal class TFTVDefsRequiringReinjection
     {
         private static readonly DefRepository Repo = TFTVMain.Repo;
+        private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
 
         public static void InjectDefsRequiringReinjection() 
         {
@@ -76,8 +77,8 @@ namespace TFTV
 
         public static void AddAnimation()
         {
-            ApplyStatusAbilityDef devour = Repo.GetAllDefs<ApplyStatusAbilityDef>().FirstOrDefault(p => p.name.Equals("Mutog_Devour_AbilityDef"));
-            PlayActionAnimationAbilityDef devourAnim = Repo.GetAllDefs<PlayActionAnimationAbilityDef>().FirstOrDefault(p => p.name.Equals("Mutog_PlayDevourAnimation_AbilityDef"));
+            ApplyStatusAbilityDef devour = DefCache.GetDef<ApplyStatusAbilityDef>("Mutog_Devour_AbilityDef");
+            PlayActionAnimationAbilityDef devourAnim = DefCache.GetDef<PlayActionAnimationAbilityDef>("Mutog_PlayDevourAnimation_AbilityDef");
 
             //OnActorDeathEffectStatusDef devourStatus = (OnActorDeathEffectStatusDef)devour.StatusDef;
             //devourStatus.Range = 99;
@@ -103,13 +104,13 @@ namespace TFTV
         public static void Clone_GameTag()
         {
             string skillName = "OneOfUsMistResistance_GameTagDef";
-            GameTagDef source = Repo.GetAllDefs<GameTagDef>().FirstOrDefault(p => p.name.Equals("Takeshi_Tutorial3_GameTagDef"));
+            GameTagDef source = DefCache.GetDef<GameTagDef>("Takeshi_Tutorial3_GameTagDef");
             GameTagDef Takashi = Helper.CreateDefFromClone(
                 source,
                 "F9FF0EF9-4800-4355-B6F4-5543994C129F",
                 skillName);
 
-            TacticalVoxelMatrixDataDef tVMDD = Repo.GetAllDefs<TacticalVoxelMatrixDataDef>().FirstOrDefault(dtb => dtb.name.Equals("TacticalVoxelMatrixDataDef"));
+            TacticalVoxelMatrixDataDef tVMDD = DefCache.GetDef<TacticalVoxelMatrixDataDef>("TacticalVoxelMatrixDataDef");
             tVMDD.MistImmunityTags = new GameTagsList()
             {
                 Takashi,
@@ -118,7 +119,7 @@ namespace TFTV
         public static void Create_InnerSight()
         {
             string skillName = "InnerSight_AbilityDef";
-            PassiveModifierAbilityDef source = Repo.GetAllDefs<PassiveModifierAbilityDef>().FirstOrDefault(p => p.name.Equals("SelfDefenseSpecialist_AbilityDef"));
+            PassiveModifierAbilityDef source = DefCache.GetDef<PassiveModifierAbilityDef>("SelfDefenseSpecialist_AbilityDef");
             PassiveModifierAbilityDef shutEye = Helper.CreateDefFromClone(
                 source,
                 "95431c82-a525-4975-a8da-9add9799a340",
@@ -156,7 +157,7 @@ namespace TFTV
         public static void Create_Anxiety()
         {
             string skillName = "AnxietyAbilityDef";
-            PassiveModifierAbilityDef source = Repo.GetAllDefs<PassiveModifierAbilityDef>().FirstOrDefault(p => p.name.Equals("SelfDefenseSpecialist_AbilityDef"));
+            PassiveModifierAbilityDef source = DefCache.GetDef<PassiveModifierAbilityDef>("SelfDefenseSpecialist_AbilityDef");
             PassiveModifierAbilityDef hallucinating = Helper.CreateDefFromClone(
                 source,
                 "5d3421cb-9e22-4cdf-bcac-3beac61b2713",
@@ -180,7 +181,7 @@ namespace TFTV
         public static void Create_Bloodthirsty()
         {
             string skillName = "Bloodthirsty_AbilityDef";
-            ApplyStatusAbilityDef source = Repo.GetAllDefs<ApplyStatusAbilityDef>().FirstOrDefault(p => p.name.Equals("Inspire_AbilityDef"));
+            ApplyStatusAbilityDef source = DefCache.GetDef<ApplyStatusAbilityDef>("Inspire_AbilityDef");
             ApplyStatusAbilityDef bloodthirsty = Helper.CreateDefFromClone(
                 source,
                 "0319cf53-65d2-4964-98d2-08c1acb54b24",
@@ -227,14 +228,17 @@ namespace TFTV
 
             bloodthirsty.ViewElementDef.DisplayName1.LocalizationKey = "DELIRIUM_PERK_BLOODTHIRSTY_NAME";
             bloodthirsty.ViewElementDef.Description.LocalizationKey = "DELIRIUM_PERK_BLOODTHIRSTY_DESCRIPTION";
-            Sprite icon = Repo.GetAllDefs<TacticalAbilityViewElementDef>().FirstOrDefault(tav => tav.name.Equals("E_ViewElement [Mutog_Devour_AbilityDef]")).LargeIcon;
+
+
+            TacticalAbilityViewElementDef viewElementDef = DefCache.GetDef<TacticalAbilityViewElementDef>("E_ViewElement [Mutog_Devour_AbilityDef]");
+            Sprite icon = viewElementDef.LargeIcon;
             bloodthirsty.ViewElementDef.LargeIcon = icon;
             bloodthirsty.ViewElementDef.SmallIcon = icon;
         }
         public static void Create_FasterSynapses()
         {
             string skillName = "FasterSynapses_AbilityDef";
-            PassiveModifierAbilityDef source = Repo.GetAllDefs<PassiveModifierAbilityDef>().FirstOrDefault(p => p.name.Equals("Thief_AbilityDef"));
+            PassiveModifierAbilityDef source = DefCache.GetDef<PassiveModifierAbilityDef>("Thief_AbilityDef");
             PassiveModifierAbilityDef angerIssues = Helper.CreateDefFromClone(
                 source,
                 "c1a545b3-eb5d-47f0-bf59-82710415d559",
@@ -259,14 +263,14 @@ namespace TFTV
             angerIssues.ItemTagStatModifications = new EquipmentItemTagStatModification[0];
             angerIssues.ViewElementDef.DisplayName1.LocalizationKey = "DELIRIUM_PERK_FASTER_SYNAPSES_NAME";
             angerIssues.ViewElementDef.Description.LocalizationKey = "DELIRIUM_PERK_FASTER_SYNAPSES_DESCRIPTION";
-            Sprite icon = Repo.GetAllDefs<TacticalAbilityViewElementDef>().FirstOrDefault(tav => tav.name.Equals("E_View [WarCry_AbilityDef]")).LargeIcon;
+            Sprite icon = DefCache.GetDef<TacticalAbilityViewElementDef>("E_View [WarCry_AbilityDef]").LargeIcon;
             angerIssues.ViewElementDef.LargeIcon = icon;
             angerIssues.ViewElementDef.SmallIcon = icon;
         }
         public static void Create_Terror()
         {
             string skillName = "Terror_AbilityDef";
-            PassiveModifierAbilityDef source = Repo.GetAllDefs<PassiveModifierAbilityDef>().FirstOrDefault(p => p.name.Equals("Thief_AbilityDef"));
+            PassiveModifierAbilityDef source = DefCache.GetDef<PassiveModifierAbilityDef>("Thief_AbilityDef");
             PassiveModifierAbilityDef photophobia = Helper.CreateDefFromClone(
                 source,
                 "42399bdf-b43b-40f4-a471-89d082a31fde",
@@ -304,7 +308,7 @@ namespace TFTV
         public static void Create_WolverinePassive()
         {
             string skillName = "WolverinePassive_AbilityDef";
-            PassiveModifierAbilityDef source = Repo.GetAllDefs<PassiveModifierAbilityDef>().FirstOrDefault(p => p.name.Equals("Cautious_AbilityDef"));
+            PassiveModifierAbilityDef source = DefCache.GetDef<PassiveModifierAbilityDef>("Cautious_AbilityDef");
             PassiveModifierAbilityDef nailsPassive = Helper.CreateDefFromClone(
                 source,
                 "b3185867-ca87-4e59-af6d-012267a7bd25",
@@ -329,14 +333,15 @@ namespace TFTV
             nailsPassive.ItemTagStatModifications = new EquipmentItemTagStatModification[0];
             nailsPassive.ViewElementDef.DisplayName1.LocalizationKey = "DELIRIUM_PERK_WOLVERINE_NAME";
             nailsPassive.ViewElementDef.Description.LocalizationKey = "DELIRIUM_PERK_WOLVERINE_DESCRIPTION";
-            Sprite icon = Repo.GetAllDefs<TacticalAbilityViewElementDef>().FirstOrDefault(tav => tav.name.Equals("E_ViewElement [Mutoid_SlashingStrike_AbilityDef]")).SmallIcon;
+            TacticalAbilityViewElementDef tacticalAbilityViewElementDef = DefCache.GetDef<TacticalAbilityViewElementDef>("E_ViewElement [Mutoid_SlashingStrike_AbilityDef]");
+            Sprite icon = tacticalAbilityViewElementDef.SmallIcon;
             nailsPassive.ViewElementDef.LargeIcon = icon;
             nailsPassive.ViewElementDef.SmallIcon = icon;
         }
         public static void Create_Wolverine()
         {
             string skillName = "Wolverine_AbilityDef";
-            ApplyStatusAbilityDef source = Repo.GetAllDefs<ApplyStatusAbilityDef>().FirstOrDefault(p => p.name.Equals("Mutoid_Adapt_RightArm_Slasher_AbilityDef"));
+            ApplyStatusAbilityDef source = DefCache.GetDef<ApplyStatusAbilityDef>("Mutoid_Adapt_RightArm_Slasher_AbilityDef");
             ApplyStatusAbilityDef nails = Helper.CreateDefFromClone(
                 source,
                 "bb65ab9c-94ae-4878-b999-e04946f720aa",
@@ -352,14 +357,14 @@ namespace TFTV
 
             nails.ViewElementDef.DisplayName1.LocalizationKey = "DELIRIUM_PERK_WOLVERINE_NAME";
             nails.ViewElementDef.Description.LocalizationKey = "DELIRIUM_PERK_WOLVERINE_DESCRIPTION";
-            Sprite icon = Repo.GetAllDefs<TacticalAbilityViewElementDef>().FirstOrDefault(tav => tav.name.Equals("E_ViewElement [Mutoid_SlashingStrike_AbilityDef]")).SmallIcon;
+            Sprite icon = DefCache.GetDef<TacticalAbilityViewElementDef>("E_ViewElement [Mutoid_SlashingStrike_AbilityDef]").SmallIcon;
             nails.ViewElementDef.LargeIcon = icon;
             nails.ViewElementDef.SmallIcon = icon;
         }
         public static void Create_OneOfThem()
         {
             string skillName = "OneOfThem_AbilityDef";
-            DamageMultiplierAbilityDef source = Repo.GetAllDefs<DamageMultiplierAbilityDef>().FirstOrDefault(p => p.name.Equals("VirusResistant_DamageMultiplierAbilityDef"));
+            DamageMultiplierAbilityDef source = DefCache.GetDef<DamageMultiplierAbilityDef>("VirusResistant_DamageMultiplierAbilityDef");
             DamageMultiplierAbilityDef oneOfUs = Helper.CreateDefFromClone(
                 source,
                 "d4f5f9f2-43b6-4c3e-a5db-78a7a9cccd3e",
@@ -373,7 +378,7 @@ namespace TFTV
                 "3cc4d8c8-739c-403b-92c9-7a6f5c54abb5",
                 skillName);
 
-            oneOfUs.DamageTypeDef = Repo.GetAllDefs<DamageTypeBaseEffectDef>().FirstOrDefault(dtb => dtb.name.Equals("Mist_SpawnVoxelDamageTypeEffectDef"));
+            oneOfUs.DamageTypeDef = DefCache.GetDef<DamageTypeBaseEffectDef>("Mist_SpawnVoxelDamageTypeEffectDef");
             oneOfUs.Multiplier = 0;
 
             oneOfUs.ViewElementDef.DisplayName1.LocalizationKey = "DELIRIUM_PERK_ONE_OF_THEM_NAME";
@@ -385,7 +390,7 @@ namespace TFTV
         public static void Create_OneOfThemPassive()
         {
             string skillName = "OneOfThemPassive_AbilityDef";
-            PassiveModifierAbilityDef source = Repo.GetAllDefs<PassiveModifierAbilityDef>().FirstOrDefault(p => p.name.Equals("Thief_AbilityDef"));
+            PassiveModifierAbilityDef source = DefCache.GetDef<PassiveModifierAbilityDef>("Thief_AbilityDef");
             PassiveModifierAbilityDef oneOfThemPassive = Helper.CreateDefFromClone(
                 source,
                 "ff35f9ef-ad67-42ff-9dcd-0288dba4d636",
@@ -415,7 +420,7 @@ namespace TFTV
                 },
               };
 
-            DamageMultiplierStatusDef mistResistance = Repo.GetAllDefs<DamageMultiplierStatusDef>().FirstOrDefault(a => a.name.Contains("MistResistance_StatusDef"));
+            DamageMultiplierStatusDef mistResistance = DefCache.GetDef<DamageMultiplierStatusDef>("MistResistance_StatusDef");
             mistResistance.Multiplier = 0.0f;
             oneOfThemPassive.ItemTagStatModifications = new EquipmentItemTagStatModification[0];
             oneOfThemPassive.ViewElementDef.DisplayName1.LocalizationKey = "DELIRIUM_PERK_ONE_OF_THEM_NAME";
@@ -429,8 +434,8 @@ namespace TFTV
             try
             {
                 string skillName = "Feral_AbilityDef";
-                ApplyStatusAbilityDef source = Repo.GetAllDefs<ApplyStatusAbilityDef>().FirstOrDefault(p => p.name.Equals("RapidClearance_AbilityDef"));
-                ProcessDeathReportEffectDef sourceEffect = Repo.GetAllDefs<ProcessDeathReportEffectDef>().FirstOrDefault(p => p.name.Equals("E_Effect [RapidClearance_AbilityDef]"));
+                ApplyStatusAbilityDef source = DefCache.GetDef<ApplyStatusAbilityDef>("RapidClearance_AbilityDef");
+                ProcessDeathReportEffectDef sourceEffect = DefCache.GetDef<ProcessDeathReportEffectDef>("E_Effect [RapidClearance_AbilityDef]");
                 ApplyStatusAbilityDef feral = Helper.CreateDefFromClone(
                     source,
                     "34612505-8512-4eb3-8429-ef087c07c764",
@@ -464,7 +469,7 @@ namespace TFTV
 
                 feral.ViewElementDef.DisplayName1.LocalizationKey = "DELIRIUM_PERK_FERAL_NAME";
                 feral.ViewElementDef.Description.LocalizationKey = "DELIRIUM_PERK_FERAL_DESCRIPTION";
-                Sprite icon = Repo.GetAllDefs<TacticalAbilityViewElementDef>().FirstOrDefault(tav => tav.name.Equals("E_ViewElement [Mutog_PrimalInstinct_AbilityDef]")).LargeIcon;
+                Sprite icon = DefCache.GetDef<TacticalAbilityViewElementDef>("E_ViewElement [Mutog_PrimalInstinct_AbilityDef]").LargeIcon;
                 feral.ViewElementDef.LargeIcon = icon;
                 feral.ViewElementDef.SmallIcon = icon;
                 feralStatusDef.ExpireOnEndOfTurn = false;
@@ -478,7 +483,7 @@ namespace TFTV
         public static void Create_Hyperalgesia()
         {
             string skillName = "Hyperalgesia_AbilityDef";
-            PassiveModifierAbilityDef source = Repo.GetAllDefs<PassiveModifierAbilityDef>().FirstOrDefault(p => p.name.Equals("Thief_AbilityDef"));
+            PassiveModifierAbilityDef source = DefCache.GetDef<PassiveModifierAbilityDef>("Thief_AbilityDef");
             PassiveModifierAbilityDef solipsism = Helper.CreateDefFromClone(
                 source,
                 "ccd66e53-6258-4fa6-a185-66ba0f5bc4b7",
@@ -505,7 +510,7 @@ namespace TFTV
         public static void Create_AnxietyStatus()
         {
             string skillName = "Anxiety_StatusDef";
-            SilencedStatusDef source = Repo.GetAllDefs<SilencedStatusDef>().FirstOrDefault(p => p.name.Equals("ActorSilenced_StatusDef"));
+            SilencedStatusDef source = DefCache.GetDef<SilencedStatusDef>("ActorSilenced_StatusDef");
             SilencedStatusDef hallucinatingStatus = Helper.CreateDefFromClone(
                 source,
                 "2d5ed7eb-f4f3-42bf-8589-1d50ec99fa8b",
@@ -516,7 +521,7 @@ namespace TFTV
         public static void Create_DerealizationIgnorePain()
         {
             string skillName = "DerealizationIgnorePain_AbilityDef";
-            ApplyStatusAbilityDef source = Repo.GetAllDefs<ApplyStatusAbilityDef>().FirstOrDefault(p => p.name.Equals("IgnorePain_AbilityDef"));
+            ApplyStatusAbilityDef source = DefCache.GetDef<ApplyStatusAbilityDef>("IgnorePain_AbilityDef");
             ApplyStatusAbilityDef derealizationIgnorePain = Helper.CreateDefFromClone(
                 source,
                 "eea26659-d54f-48d8-8025-cb7ca53c1749",
@@ -562,11 +567,27 @@ namespace TFTV
         {
             try
             {
-                AddAbilityStatusDef sourceAbilityStatusDef =
-                     Repo.GetAllDefs<AddAbilityStatusDef>().FirstOrDefault
-                     (ged => ged.name.Equals("OilCrab_AddAbilityStatusDef"));
+               /* AddAbilityStatusDef sourceAbilityStatusDef =
+                    Repo.GetAllDefs<AddAbilityStatusDef>().FirstOrDefault
+                    (ged => ged.name.Equals("OilCrab_AddAbilityStatusDef"));
                 PassiveModifierAbilityDef Revenant_Ability =
                     Repo.GetAllDefs<PassiveModifierAbilityDef>().FirstOrDefault(ged => ged.name.Equals("Revenant_AbilityDef"));
+                AddAbilityStatusDef newAbilityStatusDef = Helper.CreateDefFromClone(sourceAbilityStatusDef, "68EE5958-D977-4BD4-9018-CAE03C5A6579", "Revenant_StatusEffectDef");
+                newAbilityStatusDef.AbilityDef = Revenant_Ability;
+                newAbilityStatusDef.ApplicationConditions = new EffectConditionDef[] { };*/
+
+
+                AddAbilityStatusDef sourceAbilityStatusDef =
+                    
+                Repo.GetAllDefs<AddAbilityStatusDef>().FirstOrDefault
+                    (ged => ged.name.Equals("OilCrab_AddAbilityStatusDef"));
+
+              //  DefCache.GetDef<AddAbilityStatusDef>("OilCrab_AddAbilityStatusDef");
+
+                PassiveModifierAbilityDef Revenant_Ability = Repo.GetAllDefs<PassiveModifierAbilityDef>().FirstOrDefault(ged => ged.name.Equals("Revenant_AbilityDef"));
+
+
+                //  DefCache.GetDef<PassiveModifierAbilityDef>("Revenant_AbilityDef");
                 AddAbilityStatusDef newAbilityStatusDef = Helper.CreateDefFromClone(sourceAbilityStatusDef, "68EE5958-D977-4BD4-9018-CAE03C5A6579", "Revenant_StatusEffectDef");
                 newAbilityStatusDef.AbilityDef = Revenant_Ability;
                 newAbilityStatusDef.ApplicationConditions = new EffectConditionDef[] { };
@@ -582,7 +603,7 @@ namespace TFTV
             {
 
                 string skillName = "Revenant_AbilityDef";
-                PassiveModifierAbilityDef source = Repo.GetAllDefs<PassiveModifierAbilityDef>().FirstOrDefault(p => p.name.Equals("SelfDefenseSpecialist_AbilityDef"));
+                PassiveModifierAbilityDef source = DefCache.GetDef<PassiveModifierAbilityDef>("SelfDefenseSpecialist_AbilityDef");
                 PassiveModifierAbilityDef revenantAbility = Helper.CreateDefFromClone(
                     source,
                     "8A62302E-9C2D-4AFA-AFF3-2F526BF82252",
@@ -615,7 +636,7 @@ namespace TFTV
             {
 
                 string skillName = "RevenantAssault_AbilityDef";
-                PassiveModifierAbilityDef source = Repo.GetAllDefs<PassiveModifierAbilityDef>().FirstOrDefault(p => p.name.Equals("SelfDefenseSpecialist_AbilityDef"));
+                PassiveModifierAbilityDef source = DefCache.GetDef<PassiveModifierAbilityDef>("SelfDefenseSpecialist_AbilityDef");
                 PassiveModifierAbilityDef revenantAssault = Helper.CreateDefFromClone(
                     source,
                     "1045EB8D-1916-428F-92EF-A15FD2807818",
@@ -650,7 +671,7 @@ namespace TFTV
             {
 
                 string skillName = "RevenantBerserker_AbilityDef";
-                PassiveModifierAbilityDef source = Repo.GetAllDefs<PassiveModifierAbilityDef>().FirstOrDefault(p => p.name.Equals("SelfDefenseSpecialist_AbilityDef"));
+                PassiveModifierAbilityDef source = DefCache.GetDef<PassiveModifierAbilityDef>("SelfDefenseSpecialist_AbilityDef");
                 PassiveModifierAbilityDef revenantBerserker = Helper.CreateDefFromClone(
                     source,
                     "FD3FE516-25BA-44F2-9770-3AA4AD1DCB91",
@@ -686,7 +707,7 @@ namespace TFTV
             {
 
                 string skillName = "RevenantHeavy_AbilityDef";
-                PassiveModifierAbilityDef source = Repo.GetAllDefs<PassiveModifierAbilityDef>().FirstOrDefault(p => p.name.Equals("SelfDefenseSpecialist_AbilityDef"));
+                PassiveModifierAbilityDef source = DefCache.GetDef<PassiveModifierAbilityDef>("SelfDefenseSpecialist_AbilityDef");
                 PassiveModifierAbilityDef heavy = Helper.CreateDefFromClone(
                     source,
                     "A8603522-3472-4A95-9ADF-F27E8B287D15",
@@ -723,7 +744,7 @@ namespace TFTV
             {
 
                 string skillName = "RevenantInfiltrator_AbilityDef";
-                PassiveModifierAbilityDef source = Repo.GetAllDefs<PassiveModifierAbilityDef>().FirstOrDefault(p => p.name.Equals("SelfDefenseSpecialist_AbilityDef"));
+                PassiveModifierAbilityDef source = DefCache.GetDef<PassiveModifierAbilityDef>("SelfDefenseSpecialist_AbilityDef");
                 PassiveModifierAbilityDef infiltrator = Helper.CreateDefFromClone(
                     source,
                     "6C56E0F9-56BB-41D2-AFB1-08C8A49F69FA",
@@ -758,7 +779,7 @@ namespace TFTV
             {
 
                 string skillName = "RevenantPriest_AbilityDef";
-                PassiveModifierAbilityDef source = Repo.GetAllDefs<PassiveModifierAbilityDef>().FirstOrDefault(p => p.name.Equals("SelfDefenseSpecialist_AbilityDef"));
+                PassiveModifierAbilityDef source = DefCache.GetDef<PassiveModifierAbilityDef>("SelfDefenseSpecialist_AbilityDef");
                 PassiveModifierAbilityDef priest = Helper.CreateDefFromClone(
                     source,
                     "0816E671-D396-4212-910F-87B5DEC6ADE2",
@@ -794,7 +815,7 @@ namespace TFTV
             {
 
                 string skillName = "RevenantSniper_AbilityDef";
-                PassiveModifierAbilityDef source = Repo.GetAllDefs<PassiveModifierAbilityDef>().FirstOrDefault(p => p.name.Equals("SelfDefenseSpecialist_AbilityDef"));
+                PassiveModifierAbilityDef source = DefCache.GetDef<PassiveModifierAbilityDef>("SelfDefenseSpecialist_AbilityDef");
                 PassiveModifierAbilityDef sniper = Helper.CreateDefFromClone(
                     source,
                     "4A2C53A3-D9DB-456A-8B88-AB2D90BE1DB5",
@@ -829,7 +850,7 @@ namespace TFTV
             {
 
                 string skillName = "RevenantTechnician_AbilityDef";
-                PassiveModifierAbilityDef source = Repo.GetAllDefs<PassiveModifierAbilityDef>().FirstOrDefault(p => p.name.Equals("SelfDefenseSpecialist_AbilityDef"));
+                PassiveModifierAbilityDef source = DefCache.GetDef<PassiveModifierAbilityDef>("SelfDefenseSpecialist_AbilityDef");
                 PassiveModifierAbilityDef hallucinating = Helper.CreateDefFromClone(
                     source,
                     "04A284AC-545A-455F-8843-54056D68022E",
@@ -866,7 +887,7 @@ namespace TFTV
             try
             {
                 string skillName = "RevenantResistance_AbilityDef";
-                DamageMultiplierAbilityDef source = Repo.GetAllDefs<DamageMultiplierAbilityDef>().FirstOrDefault(p => p.name.Equals("FireResistant_DamageMultiplierAbilityDef"));
+                DamageMultiplierAbilityDef source = DefCache.GetDef<DamageMultiplierAbilityDef>("FireResistant_DamageMultiplierAbilityDef");
                 DamageMultiplierAbilityDef revenantResistance = Helper.CreateDefFromClone(
                     source,
                     "A7F8113B-B281-4ECD-99FE-3125FCE029C4",
@@ -893,7 +914,7 @@ namespace TFTV
         public static void CreateRevenantGameTags()
         {
             string skillName = "RevenantTier";
-            GameTagDef source = Repo.GetAllDefs<GameTagDef>().FirstOrDefault(p => p.name.Equals("Takeshi_Tutorial3_GameTagDef"));
+            GameTagDef source = DefCache.GetDef<GameTagDef>("Takeshi_Tutorial3_GameTagDef");
             GameTagDef revenantTier1GameTag = Helper.CreateDefFromClone(
                 source,
                 "1677F9F4-5B45-47FA-A119-83A76EF0EC70",
@@ -931,11 +952,11 @@ namespace TFTV
         {
             try
             {
-                TacCharacterDef Jacob2 = Repo.GetAllDefs<TacCharacterDef>().First(tcd => tcd.name.Equals("PX_Jacob_Tutorial2_TacCharacterDef"));
-                TacCharacterDef Sophia2 = Repo.GetAllDefs<TacCharacterDef>().First(tcd => tcd.name.Equals("PX_Sophia_Tutorial2_TacCharacterDef"));
-                TacCharacterDef Omar3 = Repo.GetAllDefs<TacCharacterDef>().First(tcd => tcd.name.Equals("PX_Omar_Tutorial3_TacCharacterDef"));
-                TacCharacterDef Takeshi3 = Repo.GetAllDefs<TacCharacterDef>().First(tcd => tcd.name.Equals("PX_Takeshi_Tutorial3_TacCharacterDef"));
-                TacCharacterDef Irina3 = Repo.GetAllDefs<TacCharacterDef>().First(tcd => tcd.name.Equals("PX_Irina_Tutorial3_TacCharacterDef"));
+                TacCharacterDef Jacob2 = DefCache.GetDef<TacCharacterDef>("PX_Jacob_Tutorial2_TacCharacterDef");
+                TacCharacterDef Sophia2 = DefCache.GetDef<TacCharacterDef>("PX_Sophia_Tutorial2_TacCharacterDef");
+                TacCharacterDef Omar3 = DefCache.GetDef<TacCharacterDef>("PX_Omar_Tutorial3_TacCharacterDef");
+                TacCharacterDef Takeshi3 = DefCache.GetDef<TacCharacterDef>("PX_Takeshi_Tutorial3_TacCharacterDef");
+                TacCharacterDef Irina3 = DefCache.GetDef<TacCharacterDef>("PX_Irina_Tutorial3_TacCharacterDef");
 
 
                 Helper.CreateDefFromClone(Jacob2, "B1968124-ABDD-4A2C-9CBC-33DBC0EE3EE5", "PX_JacobBuffed_TFTV_TacCharacterDef");
@@ -953,20 +974,20 @@ namespace TFTV
         {
             try
             {
-                TacCharacterDef Jacob2 = Repo.GetAllDefs<TacCharacterDef>().First(tcd => tcd.name.Equals("PX_Jacob_Tutorial2_TacCharacterDef"));
-                TacCharacterDef Sophia2 = Repo.GetAllDefs<TacCharacterDef>().First(tcd => tcd.name.Equals("PX_Sophia_Tutorial2_TacCharacterDef"));
+                TacCharacterDef Jacob2 = DefCache.GetDef<TacCharacterDef>("PX_Jacob_Tutorial2_TacCharacterDef");
+                TacCharacterDef Sophia2 = DefCache.GetDef<TacCharacterDef>("PX_Sophia_Tutorial2_TacCharacterDef");
                 TacCharacterDef newJacob = Helper.CreateDefFromClone(Jacob2, "DDA13436-40BE-4096-9C69-19A3BF6658E6", "PX_Jacob_TFTV_TacCharacterDef");
                 TacCharacterDef newSophia = Helper.CreateDefFromClone(Sophia2, "D9EC7144-6EB5-451C-9015-3E67F194AB1B", "PX_Sophia_TFTV_TacCharacterDef");
 
               //  TFTVLogger.Always("TacCharacterDefs found");
 
-                ViewElementDef pX_SniperViewElementDef = Repo.GetAllDefs<ViewElementDef>().First(ved => ved.name.Equals("E_View [PX_Sniper_ActorViewDef]"));
+                ViewElementDef pX_SniperViewElementDef = DefCache.GetDef<ViewElementDef>("E_View [PX_Sniper_ActorViewDef]");
              //   TFTVLogger.Always("ViewElement Found");
                 if (newJacob.Data != null)
                 {
                     newJacob.Data.ViewElementDef = pX_SniperViewElementDef;
 
-                    GameTagDef Sniper_CTD = Repo.GetAllDefs<GameTagDef>().First(gtd => gtd.name.Equals("Sniper_ClassTagDef"));
+                    GameTagDef Sniper_CTD = DefCache.GetDef<GameTagDef>("Sniper_ClassTagDef");
                  //   TFTVLogger.Always("SniperCTD");
                     for (int i = 0; i < newJacob.Data.GameTags.Length; i++)
                     {
@@ -978,22 +999,22 @@ namespace TFTV
 
                     newJacob.Data.Abilites = new TacticalAbilityDef[] // abilities -> Class proficiency
                     {
-                Repo.GetAllDefs<ClassProficiencyAbilityDef>().First(cpad => cpad.name.Equals("Sniper_ClassProficiency_AbilityDef"))
+                DefCache.GetDef<ClassProficiencyAbilityDef>("Sniper_ClassProficiency_AbilityDef")
 
                     };
                  //   TFTVLogger.Always("got passed abilities thingy");
 
                     newJacob.Data.BodypartItems = new ItemDef[] // Armour
                     {
-                Repo.GetAllDefs<TacticalItemDef>().First(tad => tad.name.Equals("PX_Sniper_Helmet_BodyPartDef")),
-                Repo.GetAllDefs<TacticalItemDef>().First(tad => tad.name.Equals("PX_Sniper_Torso_BodyPartDef")),
-                Repo.GetAllDefs<TacticalItemDef>().First(tad => tad.name.Equals("PX_Sniper_Legs_ItemDef"))
+                DefCache.GetDef<TacticalItemDef>("PX_Sniper_Helmet_BodyPartDef"),
+                DefCache.GetDef<TacticalItemDef>("PX_Sniper_Torso_BodyPartDef"),
+                DefCache.GetDef<TacticalItemDef>("PX_Sniper_Legs_ItemDef")
                     };
                //     TFTVLogger.Always("got passed abilities thingy");
                     newJacob.Data.EquipmentItems = new ItemDef[] // Ready slots
-                   { Repo.GetAllDefs<WeaponDef>().First(wd => wd.name.Equals("PX_SniperRifle_WeaponDef")),
-                    Repo.GetAllDefs<WeaponDef>().First(wd => wd.name.Equals("PX_Pistol_WeaponDef")),
-                Repo.GetAllDefs<TacticalItemDef>().First(tad => tad.name.Equals("Medkit_EquipmentDef"))
+                   { DefCache.GetDef<WeaponDef>("PX_SniperRifle_WeaponDef"),
+                    DefCache.GetDef<WeaponDef>("PX_Pistol_WeaponDef"),
+                DefCache.GetDef<TacticalItemDef>("Medkit_EquipmentDef")
                    };
                     newJacob.Data.InventoryItems = new ItemDef[] // Backpack
                     {
@@ -1021,16 +1042,16 @@ namespace TFTV
         {
             try
             {
-                TacCharacterDef sourceInfiltrator = Repo.GetAllDefs<TacCharacterDef>().First(tcd => tcd.name.Contains("S_SY_Infiltrator_TacCharacterDef"));
+                TacCharacterDef sourceInfiltrator = DefCache.GetDef<TacCharacterDef>("S_SY_Infiltrator_TacCharacterDef");
                 TacCharacterDef startingInfiltrator = Helper.CreateDefFromClone(sourceInfiltrator, "8835621B-CFCA-41EF-B480-241D506BD742", "PX_Starting_Infiltrator_TacCharacterDef");
                 startingInfiltrator.Data.Strength = 0;
                 startingInfiltrator.Data.Will = 0;
 
                 /*   startingInfiltrator.Data.BodypartItems = new ItemDef[] // Armour
                    {
-                   Repo.GetAllDefs<TacticalItemDef>().First(tad => tad.name.Contains("SY_Infiltrator_Bonus_Helmet_BodyPartDef")),
-                   Repo.GetAllDefs<TacticalItemDef>().First(tad => tad.name.Contains("SY_Infiltrator_Bonus_Torso_BodyPartDef")),
-                   Repo.GetAllDefs<TacticalItemDef>().First(tad => tad.name.Contains("SY_Infiltrator_Bonus_Legs_ItemDef"))
+                   DefCache.GetDef<TacticalItemDef>("SY_Infiltrator_Bonus_Helmet_BodyPartDef")),
+                   DefCache.GetDef<TacticalItemDef>("SY_Infiltrator_Bonus_Torso_BodyPartDef")),
+                   DefCache.GetDef<TacticalItemDef>("SY_Infiltrator_Bonus_Legs_ItemDef"))
                    };           */
             }
             catch (Exception e)
@@ -1042,16 +1063,16 @@ namespace TFTV
         {
             try
             {
-                TacCharacterDef sourcePriest = Repo.GetAllDefs<TacCharacterDef>().First(tcd => tcd.name.Contains("S_AN_Priest_TacCharacterDef"));
+                TacCharacterDef sourcePriest = DefCache.GetDef<TacCharacterDef>("S_AN_Priest_TacCharacterDef");
                 TacCharacterDef startingPriest = Helper.CreateDefFromClone(sourcePriest, "B1C9385B-05D1-453D-8665-4102CCBA77BE", "PX_Starting_Priest_TacCharacterDef");
                 startingPriest.Data.Strength = 0;
                 startingPriest.Data.Will = 0;
 
                 startingPriest.Data.BodypartItems = new ItemDef[] // Armour
                 {
-              //  Repo.GetAllDefs<TacticalItemDef>().First(tad => tad.name.Contains("AN_Priest_Head02_BodyPartDef")),
-                Repo.GetAllDefs<TacticalItemDef>().First(tad => tad.name.Contains("AN_Priest_Torso_BodyPartDef")),
-                Repo.GetAllDefs<TacticalItemDef>().First(tad => tad.name.Contains("AN_Priest_Legs_ItemDef"))
+              //  DefCache.GetDef<TacticalItemDef>("AN_Priest_Head02_BodyPartDef")),
+                DefCache.GetDef<TacticalItemDef>("AN_Priest_Torso_BodyPartDef"),
+                DefCache.GetDef<TacticalItemDef>("AN_Priest_Legs_ItemDef")
                 };
                 //    TFTVLogger.Always(startingPriest.Data.EquipmentItems.Count().ToString());
 
@@ -1063,8 +1084,8 @@ namespace TFTV
                   };*/
 
                 startingPriest.Data.EquipmentItems = new ItemDef[] // Ready slots
-                { Repo.GetAllDefs<WeaponDef>().First(wd => wd.name.Contains("AN_Redemptor_WeaponDef")),
-                  //  Repo.GetAllDefs<WeaponDef>().First(wd => wd.name.Contains("Medkit_EquipmentDef"))
+                { DefCache.GetDef<WeaponDef>("AN_Redemptor_WeaponDef"),
+                  //  DefCache.GetDef<WeaponDef>("Medkit_EquipmentDef"))
                 };
                 // startingPriest.Data.InventoryItems = inventoryList;
             }
@@ -1077,7 +1098,7 @@ namespace TFTV
         {
             try
             {
-                TacCharacterDef sourceTechnician = Repo.GetAllDefs<TacCharacterDef>().First(tcd => tcd.name.Contains("NJ_Technician_TacCharacterDef"));
+                TacCharacterDef sourceTechnician = DefCache.GetDef<TacCharacterDef>("NJ_Technician_TacCharacterDef");
                 TacCharacterDef startingTechnician = Helper.CreateDefFromClone(sourceTechnician, "1D0463F9-6684-4CE1-82CA-386FC2CE18E3", "PX_Starting_Technician_TacCharacterDef");
                 startingTechnician.Data.Strength = 0;
                 startingTechnician.Data.Will = 0;
@@ -1103,7 +1124,7 @@ namespace TFTV
                 string forsaken = "FallenOnes";
                 string pure = "Purists";
 
-                GameTagDef source = Repo.GetAllDefs<GameTagDef>().FirstOrDefault(p => p.name.Equals("Takeshi_Tutorial3_GameTagDef"));
+                GameTagDef source = DefCache.GetDef<GameTagDef>("Takeshi_Tutorial3_GameTagDef");
                 GameTagDef tier1GameTag = Helper.CreateDefFromClone(
                     source,
                     "11F227E3-A45A-44EE-8B93-94E59D8C7B53",
@@ -1166,7 +1187,7 @@ namespace TFTV
             {
 
                 string skillName = "HumanEnemiesTacticsAmbush_AbilityDef";
-                PassiveModifierAbilityDef source = Repo.GetAllDefs<PassiveModifierAbilityDef>().FirstOrDefault(p => p.name.Equals("SelfDefenseSpecialist_AbilityDef"));
+                PassiveModifierAbilityDef source = DefCache.GetDef<PassiveModifierAbilityDef>("SelfDefenseSpecialist_AbilityDef");
                 PassiveModifierAbilityDef ambushAbility = Helper.CreateDefFromClone(
                     source,
                     "31785839-0687-4065-ACFB-255C1A1CE63D",

@@ -14,13 +14,14 @@ namespace TFTV
     internal class TFTVStarts
     {
 
-        private static readonly DefRepository Repo = TFTVMain.Repo;
+       // private static readonly DefRepository Repo = TFTVMain.Repo;
+        private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
 
         public static void ModifyIntroForSpecialStart(GeoFaction geoFaction, GeoSite site)
         {
             try
             {
-                GeoscapeEventDef intro = Repo.GetAllDefs<GeoscapeEventDef>().FirstOrDefault(ged => ged.name.Equals("IntroBetterGeo_0"));
+                GeoscapeEventDef intro =DefCache.GetDef<GeoscapeEventDef>("IntroBetterGeo_0");
 
                 intro.GeoscapeEventData.Description[0].General = new LocalizedTextBind("After all these years, you finally got the call. It meant that Symes and his deputies were dead or unreachable. Phoenix Project had gone dark. " +
                             "You had spent many years waiting, dreading that this would happen, living a discrete and simple life at " + FindNearestHaven(geoFaction, site) + ", a " + geoFaction.Name.LocalizeEnglish()
@@ -41,7 +42,7 @@ namespace TFTV
         {
             try
             {
-                GeoscapeEventDef intro = Repo.GetAllDefs<GeoscapeEventDef>().FirstOrDefault(ged => ged.name.Equals("IntroBetterGeo_0"));
+                GeoscapeEventDef intro =DefCache.GetDef<GeoscapeEventDef>("IntroBetterGeo_0");
 
                 intro.GeoscapeEventData.Description[0].General = new LocalizedTextBind("After all these years, you finally got the call. It meant that Symes and his deputies were dead or unreachable. " +
                     "Phoenix Project had gone dark. \n\nThe trek to Phoenix Point was long and dangerous, and when you finally reached it, somebody was already home…", true);
@@ -90,15 +91,15 @@ namespace TFTV
         {
             try
             {
-                TacCharacterDef newJacob = Repo.GetAllDefs<TacCharacterDef>().First(tcd => tcd.name.Equals("PX_Jacob_TFTV_TacCharacterDef"));
-                TacCharacterDef newSophia = Repo.GetAllDefs<TacCharacterDef>().First(tcd => tcd.name.Equals("PX_Sophia_TFTV_TacCharacterDef"));
-                TacCharacterDef priest = Repo.GetAllDefs<TacCharacterDef>().FirstOrDefault(a => a.name.Equals("PX_Starting_Priest_TacCharacterDef"));
-                TacCharacterDef technician = Repo.GetAllDefs<TacCharacterDef>().FirstOrDefault(a => a.name.Equals("PX_Starting_Technician_TacCharacterDef"));
-                TacCharacterDef infiltrator = Repo.GetAllDefs<TacCharacterDef>().FirstOrDefault(a => a.name.Equals("PX_Starting_Infiltrator_TacCharacterDef"));
+                TacCharacterDef newJacob =DefCache.GetDef<TacCharacterDef>("PX_Jacob_TFTV_TacCharacterDef");
+                TacCharacterDef newSophia =DefCache.GetDef<TacCharacterDef>("PX_Sophia_TFTV_TacCharacterDef");
+                TacCharacterDef priest =DefCache.GetDef<TacCharacterDef>("PX_Starting_Priest_TacCharacterDef");
+                TacCharacterDef technician =DefCache.GetDef<TacCharacterDef>("PX_Starting_Technician_TacCharacterDef");
+                TacCharacterDef infiltrator =DefCache.GetDef<TacCharacterDef>("PX_Starting_Infiltrator_TacCharacterDef");
 
-                TacCharacterDef assault = Repo.GetAllDefs<TacCharacterDef>().FirstOrDefault(a => a.name.Equals("PX_AssaultStarting_TacCharacterDef"));
-                TacCharacterDef heavy = Repo.GetAllDefs<TacCharacterDef>().FirstOrDefault(a => a.name.Equals("PX_HeavyStarting_TacCharacterDef"));
-                TacCharacterDef sniper = Repo.GetAllDefs<TacCharacterDef>().FirstOrDefault(a => a.name.Equals("PX_SniperStarting_TacCharacterDef"));
+                TacCharacterDef assault =DefCache.GetDef<TacCharacterDef>("PX_AssaultStarting_TacCharacterDef");
+                TacCharacterDef heavy =DefCache.GetDef<TacCharacterDef>("PX_HeavyStarting_TacCharacterDef");
+                TacCharacterDef sniper =DefCache.GetDef<TacCharacterDef>("PX_SniperStarting_TacCharacterDef");
 
                 TFTVConfig config = TFTVMain.Main.Config;
 
@@ -179,17 +180,17 @@ namespace TFTV
 
 
                 /*
-                TacCharacterDef Omar2 = Repo.GetAllDefs<TacCharacterDef>().First(tcd => tcd.name.Contains("PX_Omar_Tutorial2_TacCharacterDef"));
+                TacCharacterDef Omar2 =DefCache.GetDef<TacCharacterDef>().First(tcd => tcd.name.Contains("PX_Omar_Tutorial2_TacCharacterDef"));
                 Omar2.Data.Strength = 0;
                 Omar2.Data.Will = 0;
                 Omar2.Data.Speed = 0;
                 Omar2.Data.CurrentHealth = -1;
-                TacCharacterDef Takeshi3 = Repo.GetAllDefs<TacCharacterDef>().First(tcd => tcd.name.Contains("PX_Takeshi_Tutorial3_TacCharacterDef"));
+                TacCharacterDef Takeshi3 =DefCache.GetDef<TacCharacterDef>().First(tcd => tcd.name.Contains("PX_Takeshi_Tutorial3_TacCharacterDef"));
                 Takeshi3.Data.Strength = 0;
                 Takeshi3.Data.Will = 0;
                 Takeshi3.Data.Speed = 0;
                 Takeshi3.Data.CurrentHealth = -1;
-                TacCharacterDef Irina3 = Repo.GetAllDefs<TacCharacterDef>().First(tcd => tcd.name.Contains("PX_Irina_Tutorial3_TacCharacterDef"));
+                TacCharacterDef Irina3 =DefCache.GetDef<TacCharacterDef>().First(tcd => tcd.name.Contains("PX_Irina_Tutorial3_TacCharacterDef"));
                 Irina3.Data.Strength = 0;
                 Irina3.Data.Will = 0;
                 Irina3.Data.Speed = 0;
@@ -209,17 +210,17 @@ namespace TFTV
         {
             try
             {
-                TacCharacterDef Jacob2buffed = Repo.GetAllDefs<TacCharacterDef>().First(tcd => tcd.name.Equals("PX_JacobBuffed_TFTV_TacCharacterDef"));
-                TacCharacterDef Sophia2buffed = Repo.GetAllDefs<TacCharacterDef>().First(tcd => tcd.name.Equals("PX_SophiaBuffed_TFTV_TacCharacterDef"));
-                TacCharacterDef Omar3buffed = Repo.GetAllDefs<TacCharacterDef>().First(tcd => tcd.name.Equals("PX_OmarBuffed_TFTV_TacCharacterDef"));
-                TacCharacterDef Takeshi3buffed = Repo.GetAllDefs<TacCharacterDef>().First(tcd => tcd.name.Equals("PX_TakeshiBuffed_TFTV_TacCharacterDef"));
-                TacCharacterDef Irina3buffed = Repo.GetAllDefs<TacCharacterDef>().First(tcd => tcd.name.Equals("PX_IrinaBuffed_TFTV_TacCharacterDef"));
+                TacCharacterDef Jacob2buffed =DefCache.GetDef<TacCharacterDef>("PX_JacobBuffed_TFTV_TacCharacterDef");
+                TacCharacterDef Sophia2buffed =DefCache.GetDef<TacCharacterDef>("PX_SophiaBuffed_TFTV_TacCharacterDef");
+                TacCharacterDef Omar3buffed =DefCache.GetDef<TacCharacterDef>("PX_OmarBuffed_TFTV_TacCharacterDef");
+                TacCharacterDef Takeshi3buffed =DefCache.GetDef<TacCharacterDef>("PX_TakeshiBuffed_TFTV_TacCharacterDef");
+                TacCharacterDef Irina3buffed =DefCache.GetDef<TacCharacterDef>("PX_IrinaBuffed_TFTV_TacCharacterDef");
 
-                TacCharacterDef priest = Repo.GetAllDefs<TacCharacterDef>().FirstOrDefault(a => a.name.Equals("PX_Starting_Priest_TacCharacterDef"));
-                TacCharacterDef technician = Repo.GetAllDefs<TacCharacterDef>().FirstOrDefault(a => a.name.Equals("PX_Starting_Technician_TacCharacterDef"));
-                TacCharacterDef infiltrator = Repo.GetAllDefs<TacCharacterDef>().FirstOrDefault(a => a.name.Equals("PX_Starting_Infiltrator_TacCharacterDef"));
+                TacCharacterDef priest =DefCache.GetDef<TacCharacterDef>("PX_Starting_Priest_TacCharacterDef");
+                TacCharacterDef technician =DefCache.GetDef<TacCharacterDef>("PX_Starting_Technician_TacCharacterDef");
+                TacCharacterDef infiltrator =DefCache.GetDef<TacCharacterDef>("PX_Starting_Infiltrator_TacCharacterDef");
 
-                TacCharacterDef sniper = Repo.GetAllDefs<TacCharacterDef>().FirstOrDefault(a => a.name.Equals("PX_SniperStarting_TacCharacterDef"));
+                TacCharacterDef sniper =DefCache.GetDef<TacCharacterDef>("PX_SniperStarting_TacCharacterDef");
 
                 TFTVConfig config = TFTVMain.Main.Config;
 
@@ -263,12 +264,12 @@ namespace TFTV
             {
                 TFTVConfig config = TFTVMain.Main.Config;
 
-                TacCharacterDef priest = Repo.GetAllDefs<TacCharacterDef>().FirstOrDefault(a => a.name.Equals("PX_Starting_Priest_TacCharacterDef"));
-                TacCharacterDef technician = Repo.GetAllDefs<TacCharacterDef>().FirstOrDefault(a => a.name.Equals("PX_Starting_Technician_TacCharacterDef"));
-                TacCharacterDef infiltrator = Repo.GetAllDefs<TacCharacterDef>().FirstOrDefault(a => a.name.Equals("PX_Starting_Infiltrator_TacCharacterDef"));
-                TacCharacterDef assault = Repo.GetAllDefs<TacCharacterDef>().FirstOrDefault(a => a.name.Equals("PX_AssaultStarting_TacCharacterDef"));
-                TacCharacterDef heavy = Repo.GetAllDefs<TacCharacterDef>().FirstOrDefault(a => a.name.Equals("PX_HeavyStarting_TacCharacterDef"));
-                TacCharacterDef sniper = Repo.GetAllDefs<TacCharacterDef>().FirstOrDefault(a => a.name.Equals("PX_SniperStarting_TacCharacterDef"));
+                TacCharacterDef priest =DefCache.GetDef<TacCharacterDef>("PX_Starting_Priest_TacCharacterDef");
+                TacCharacterDef technician =DefCache.GetDef<TacCharacterDef>("PX_Starting_Technician_TacCharacterDef");
+                TacCharacterDef infiltrator =DefCache.GetDef<TacCharacterDef>("PX_Starting_Infiltrator_TacCharacterDef");
+                TacCharacterDef assault =DefCache.GetDef<TacCharacterDef>("PX_AssaultStarting_TacCharacterDef");
+                TacCharacterDef heavy =DefCache.GetDef<TacCharacterDef>("PX_HeavyStarting_TacCharacterDef");
+                TacCharacterDef sniper =DefCache.GetDef<TacCharacterDef>("PX_SniperStarting_TacCharacterDef");
 
 
                 List<TacCharacterDef> startingTemplates = new List<TacCharacterDef>

@@ -24,7 +24,7 @@ namespace TFTV
     public class TFTVMain : ModMain
     {
 
-
+        public DefCache DefCache = new DefCache();
         /// Old Modnix configuration now used to hold all settings
         public BCSettings Settings = new BCSettings();
 
@@ -34,6 +34,7 @@ namespace TFTV
 
         /// Config is accessible at any time, if any is declared.
         public new TFTVConfig Config => (TFTVConfig)base.Config;
+
 
         public static TFTVMain Main { get; private set; }
 
@@ -61,58 +62,79 @@ namespace TFTV
         /// </summary>
         public override void OnModEnabled()
         {
-            Main = this;
-            /// All mod dependencies are accessible and always loaded.
-            int c = Dependencies.Count();
-            /// Metadata is whatever is written in meta.json
-            string v = MetaData.Version.ToString();
-            /// Game creates Harmony object for each mod. Accessible if needed.
-            Harmony harmony = (Harmony)HarmonyInstance;
-            /// Mod instance is mod's runtime representation in game.
-            string id = Instance.ID;
-            /// Game creates Game Object for each mod. 
-            GameObject go = ModGO;
-            /// PhoenixGame is accessible at any time.
-            PhoenixGame game = GetGame();
+            try
+            {
+                Main = this;
+                /// All mod dependencies are accessible and always loaded.
+                int c = Dependencies.Count();
+                /// Metadata is whatever is written in meta.json
+                string v = MetaData.Version.ToString();
+                /// Game creates Harmony object for each mod. Accessible if needed.
+                Harmony harmony = (Harmony)HarmonyInstance;
+                /// Mod instance is mod's runtime representation in game.
+                string id = Instance.ID;
+                /// Game creates Game Object for each mod. 
+                GameObject go = ModGO;
+                /// PhoenixGame is accessible at any time.
+                PhoenixGame game = GetGame();
 
-            Logger.LogInfo("TFTV October 4 release #1");
+                Logger.LogInfo("TFTV October 5 release #1");
 
-            //BC stuff
-            BCApplyInGameConfig();
-            BCApplyDefChanges();
+                ModDirectory = Instance.Entry.Directory;
+                //Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+                //Path to localization CSVs
+                LocalizationDirectory = Path.Combine(ModDirectory, "Assets", "Localization");
+                //Texture Directory (for Dtony's DeliriumPerks)
+                TexturesDirectory = Path.Combine(ModDirectory, "Assets", "Textures");
+                // Initialize Logger
+                LogPath = Path.Combine(ModDirectory, "TFTV.log");
+                TFTVLogger.Initialize(LogPath, Config.Debug, ModDirectory, nameof(TFTV));
+                PRMLogger.Initialize(LogPath, Settings.Debug, ModDirectory, nameof(PRMBetterClasses));
+                // DefCache.Initialize();
+                TFTVLogger.Always("TFTV October 5 release #1");
 
-            //TFTV 
-            //  TFTVDefsWithConfigDependency.PopulateResourceRewardsDictionary();
+                PRMBetterClasses.Helper.Initialize();
+                // Initialize Helper
+                Helper.Initialize();
+                //This creates the Void Omen events
 
-            TFTVDefsWithConfigDependency.InjectDefsWithConfigDependency();
+                //BC stuff
+                Logger.LogInfo("BC stuff loading");
+                BCApplyInGameConfig();
+                BCApplyDefChanges();
+                Logger.LogInfo("BC stuff loaded");
+                //TFTV 
+                Logger.LogInfo("TFTV stuff loading");
+                
+                TFTVDefsInjectedOnlyOnce.InjectDefsInjectedOnlyOnce();
+                Logger.LogInfo("First batch of Defs injected");
+                TFTVDefsRequiringReinjection.InjectDefsRequiringReinjection();
+                Logger.LogInfo("Second batch of Defs injected");
+                //  TFTVDefsWithConfigDependency.InjectDefsWithConfigDependency();
 
-            TFTVDefsRequiringReinjection.InjectDefsRequiringReinjection();
-            ModDirectory = Instance.Entry.Directory;
-            //Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-            //Path to localization CSVs
-            LocalizationDirectory = Path.Combine(ModDirectory, "Assets", "Localization");
-            //Texture Directory (for Dtony's DeliriumPerks)
-            TexturesDirectory = Path.Combine(ModDirectory, "Assets", "Textures");
-            // Initialize Logger
-            LogPath = Path.Combine(ModDirectory, "TFTV.log");
-            TFTVLogger.Initialize(LogPath, Config.Debug, ModDirectory, nameof(TFTV));
-            PRMLogger.Initialize(LogPath, Settings.Debug, ModDirectory, nameof(PRMBetterClasses));
+                TFTVHumanEnemiesNames.CreateNamesDictionary();
+                Logger.LogInfo("Names for human enemies created");
+                if (Config.ActivateReverseEngineeringResearch)
+                {
+                    TFTVReverseEngineering.ModifyReverseEngineering();
+                    Logger.LogInfo("Reverse Engineering changes to Defs injected");
+                }
+                TFTVDefsWithConfigDependency.PopulateResourceRewardsDictionary();
+                Logger.LogInfo("ResoucesRewardDictionary populated");
 
-            TFTVLogger.Always("TFTV October 4 release #1");
+                harmony.PatchAll();
 
-            PRMBetterClasses.Helper.Initialize();
-            // Initialize Helper
-            Helper.Initialize();
-            //This creates the Void Omen events
-
-            harmony.PatchAll();
-
-            // if (!injectionComplete)
-            // {
+                // if (!injectionComplete)
+                // {
 
 
-            //       injectionComplete = true;
-            //  }
+                //       injectionComplete = true;
+                //  }
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
 
         }
 
@@ -216,20 +238,19 @@ namespace TFTV
             Logger.LogInfo($"{MethodBase.GetCurrentMethod().Name} called for level '{level}' with old state '{prevState}' and new state '{state}'");
             if (level.name.Contains("Intro") && prevState == Level.State.Uninitialized && state == Level.State.NotLoaded)
             {
-                Logger.LogInfo($"TFTV should do Def stuff here to make sure BC stuff is ready");
-                BCApplyDefChanges();
-                TFTVDefsInjectedOnlyOnce.InjectDefsInjectedOnlyOnce();
-                TFTVHumanEnemiesNames.CreateNamesDictionary();
-                TFTVDefsWithConfigDependency.PopulateResourceRewardsDictionary();
+                //  Logger.LogInfo($"TFTV should do Def stuff here to make sure BC stuff is ready");
+                /*  BCApplyDefChanges();
+                  TFTVDefsInjectedOnlyOnce.InjectDefsInjectedOnlyOnce();
+                  TFTVHumanEnemiesNames.CreateNamesDictionary();
+                  TFTVDefsWithConfigDependency.PopulateResourceRewardsDictionary();
+                  TFTVDefsRequiringReinjection.InjectDefsRequiringReinjection();
 
-                TFTVDefsRequiringReinjection.InjectDefsRequiringReinjection();
-
-                if (Config.ActivateReverseEngineeringResearch)
-                {
-                    TFTVReverseEngineering.ModifyReverseEngineering();
-                }
-                   TFTVProjectRobocop.CreateRoboCopDef();
-                  TFTVProjectRobocop.CreateRoboCopDeliveryEvent();
+                  if (Config.ActivateReverseEngineeringResearch)
+                  {
+                      TFTVReverseEngineering.ModifyReverseEngineering();
+                  }*/
+                //  TFTVProjectRobocop.CreateRoboCopDef();
+                // TFTVProjectRobocop.CreateRoboCopDeliveryEvent();
             }
 
             /// Alternative way to access current level at any time.

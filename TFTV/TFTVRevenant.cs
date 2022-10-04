@@ -28,6 +28,7 @@ namespace TFTV
     internal class TFTVRevenant
     {
         private static readonly DefRepository Repo = TFTVMain.Repo;
+        private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
         public static Dictionary<int, int> DeadSoldiersDelirium = new Dictionary<int, int>();
         public static Dictionary<int, int> RevenantsKilled = new Dictionary<int, int>();
 
@@ -41,59 +42,59 @@ namespace TFTV
 
         private static bool revenantPresent = false;
 
-        private static readonly GameTagDef revenantTier1GameTag = Repo.GetAllDefs<GameTagDef>().FirstOrDefault(p => p.name.Equals("RevenantTier_1_GameTagDef"));
-        private static readonly GameTagDef revenantTier2GameTag = Repo.GetAllDefs<GameTagDef>().FirstOrDefault(p => p.name.Equals("RevenantTier_2_GameTagDef"));
-        private static readonly GameTagDef revenantTier3GameTag = Repo.GetAllDefs<GameTagDef>().FirstOrDefault(p => p.name.Equals("RevenantTier_3_GameTagDef"));
-        private static readonly GameTagDef anyRevenantGameTag = Repo.GetAllDefs<GameTagDef>().FirstOrDefault(p => p.name.Equals("Any_Revenant_TagDef"));
+        private static readonly GameTagDef revenantTier1GameTag =DefCache.GetDef<GameTagDef>("RevenantTier_1_GameTagDef");
+        private static readonly GameTagDef revenantTier2GameTag =DefCache.GetDef<GameTagDef>("RevenantTier_2_GameTagDef");
+        private static readonly GameTagDef revenantTier3GameTag =DefCache.GetDef<GameTagDef>("RevenantTier_3_GameTagDef");
+        private static readonly GameTagDef anyRevenantGameTag =DefCache.GetDef<GameTagDef>("Any_Revenant_TagDef");
 
-        private static readonly PassiveModifierAbilityDef revenantAssault = Repo.GetAllDefs<PassiveModifierAbilityDef>().FirstOrDefault(sd => sd.name.Equals("RevenantAssault_AbilityDef"));
-        private static readonly PassiveModifierAbilityDef revenantBerserker = Repo.GetAllDefs<PassiveModifierAbilityDef>().FirstOrDefault(sd => sd.name.Equals("RevenantBerserker_AbilityDef"));
-        private static readonly PassiveModifierAbilityDef revenantInfiltrator = Repo.GetAllDefs<PassiveModifierAbilityDef>().FirstOrDefault(sd => sd.name.Equals("RevenantInfiltrator_AbilityDef"));
-        private static readonly PassiveModifierAbilityDef revenantTechnician = Repo.GetAllDefs<PassiveModifierAbilityDef>().FirstOrDefault(sd => sd.name.Equals("RevenantTechnician_AbilityDef"));
-        private static readonly PassiveModifierAbilityDef revenantHeavy = Repo.GetAllDefs<PassiveModifierAbilityDef>().FirstOrDefault(sd => sd.name.Equals("RevenantHeavy_AbilityDef"));
-        private static readonly PassiveModifierAbilityDef revenantPriest = Repo.GetAllDefs<PassiveModifierAbilityDef>().FirstOrDefault(sd => sd.name.Equals("RevenantPriest_AbilityDef"));
-        private static readonly PassiveModifierAbilityDef revenantSniper = Repo.GetAllDefs<PassiveModifierAbilityDef>().FirstOrDefault(sd => sd.name.Equals("RevenantSniper_AbilityDef"));
-
-
-
-        private static readonly SpecializationDef assaultSpecialization = Repo.GetAllDefs<SpecializationDef>().FirstOrDefault(p => p.name.Equals("AssaultSpecializationDef"));
-        private static readonly SpecializationDef berserkerSpecialization = Repo.GetAllDefs<SpecializationDef>().FirstOrDefault(p => p.name.Equals("BerserkerSpecializationDef"));
-        private static readonly SpecializationDef heavySpecialization = Repo.GetAllDefs<SpecializationDef>().FirstOrDefault(p => p.name.Equals("HeavySpecializationDef"));
-        private static readonly SpecializationDef infiltratorSpecialization = Repo.GetAllDefs<SpecializationDef>().FirstOrDefault(p => p.name.Equals("InfiltratorSpecializationDef"));
-        private static readonly SpecializationDef priestSpecialization = Repo.GetAllDefs<SpecializationDef>().FirstOrDefault(p => p.name.Equals("PriestSpecializationDef"));
-        private static readonly SpecializationDef sniperSpecialization = Repo.GetAllDefs<SpecializationDef>().FirstOrDefault(p => p.name.Equals("SniperSpecializationDef"));
-        private static readonly SpecializationDef technicianSpecialization = Repo.GetAllDefs<SpecializationDef>().FirstOrDefault(p => p.name.Equals("TechnicianSpecializationDef"));
-
-
-        private static readonly ClassTagDef crabTag = Repo.GetAllDefs<ClassTagDef>().FirstOrDefault(ged => ged.name.Equals("Crabman_ClassTagDef"));
-        private static readonly ClassTagDef fishmanTag = Repo.GetAllDefs<ClassTagDef>().FirstOrDefault(ged => ged.name.Equals("Fishman_ClassTagDef"));
-        private static readonly ClassTagDef sirenTag = Repo.GetAllDefs<ClassTagDef>().FirstOrDefault(ged => ged.name.Equals("Siren_ClassTagDef"));
-        private static readonly ClassTagDef chironTag = Repo.GetAllDefs<ClassTagDef>().FirstOrDefault(ged => ged.name.Equals("Chiron_ClassTagDef"));
-        private static readonly ClassTagDef acheronTag = Repo.GetAllDefs<ClassTagDef>().FirstOrDefault(ged => ged.name.Equals("Acheron_ClassTagDef"));
-        private static readonly ClassTagDef queenTag = Repo.GetAllDefs<ClassTagDef>().FirstOrDefault(ged => ged.name.Equals("Queen_ClassTagDef"));
+        private static readonly PassiveModifierAbilityDef revenantAssault =DefCache.GetDef<PassiveModifierAbilityDef>("RevenantAssault_AbilityDef");
+        private static readonly PassiveModifierAbilityDef revenantBerserker =DefCache.GetDef<PassiveModifierAbilityDef>("RevenantBerserker_AbilityDef");
+        private static readonly PassiveModifierAbilityDef revenantInfiltrator =DefCache.GetDef<PassiveModifierAbilityDef>("RevenantInfiltrator_AbilityDef");
+        private static readonly PassiveModifierAbilityDef revenantTechnician =DefCache.GetDef<PassiveModifierAbilityDef>("RevenantTechnician_AbilityDef");
+        private static readonly PassiveModifierAbilityDef revenantHeavy =DefCache.GetDef<PassiveModifierAbilityDef>("RevenantHeavy_AbilityDef");
+        private static readonly PassiveModifierAbilityDef revenantPriest =DefCache.GetDef<PassiveModifierAbilityDef>("RevenantPriest_AbilityDef");
+        private static readonly PassiveModifierAbilityDef revenantSniper =DefCache.GetDef<PassiveModifierAbilityDef>("RevenantSniper_AbilityDef");
 
 
 
+        private static readonly SpecializationDef assaultSpecialization =DefCache.GetDef<SpecializationDef>("AssaultSpecializationDef");
+        private static readonly SpecializationDef berserkerSpecialization =DefCache.GetDef<SpecializationDef>("BerserkerSpecializationDef");
+        private static readonly SpecializationDef heavySpecialization =DefCache.GetDef<SpecializationDef>("HeavySpecializationDef");
+        private static readonly SpecializationDef infiltratorSpecialization =DefCache.GetDef<SpecializationDef>("InfiltratorSpecializationDef");
+        private static readonly SpecializationDef priestSpecialization =DefCache.GetDef<SpecializationDef>("PriestSpecializationDef");
+        private static readonly SpecializationDef sniperSpecialization =DefCache.GetDef<SpecializationDef>("SniperSpecializationDef");
+        private static readonly SpecializationDef technicianSpecialization =DefCache.GetDef<SpecializationDef>("TechnicianSpecializationDef");
 
 
-        private static readonly AddAbilityStatusDef revenantStatusAbility = Repo.GetAllDefs<AddAbilityStatusDef>().FirstOrDefault(ged => ged.name.Equals("Revenant_StatusEffectDef"));
-        private static readonly PassiveModifierAbilityDef revenantAbility = Repo.GetAllDefs<PassiveModifierAbilityDef>().FirstOrDefault(ged => ged.name.Equals("Revenant_AbilityDef"));
+        private static readonly ClassTagDef crabTag =DefCache.GetDef<ClassTagDef>("Crabman_ClassTagDef");
+        private static readonly ClassTagDef fishmanTag =DefCache.GetDef<ClassTagDef>("Fishman_ClassTagDef");
+        private static readonly ClassTagDef sirenTag =DefCache.GetDef<ClassTagDef>("Siren_ClassTagDef");
+        private static readonly ClassTagDef chironTag =DefCache.GetDef<ClassTagDef>("Chiron_ClassTagDef");
+        private static readonly ClassTagDef acheronTag =DefCache.GetDef<ClassTagDef>("Acheron_ClassTagDef");
+        private static readonly ClassTagDef queenTag =DefCache.GetDef<ClassTagDef>("Queen_ClassTagDef");
 
-        private static readonly DamageMultiplierAbilityDef revenantResistanceAbility = Repo.GetAllDefs<DamageMultiplierAbilityDef>().FirstOrDefault(p => p.name.Equals("RevenantResistance_AbilityDef"));
 
 
 
-        // private static readonly DamageOverTimeDamageTypeEffectDef virusDamage = Repo.GetAllDefs<DamageOverTimeDamageTypeEffectDef>().FirstOrDefault(p => p.name.Equals("Virus_DamageOverTimeDamageTypeEffectDef"));
-        private static readonly DamageOverTimeDamageTypeEffectDef acidDamage = Repo.GetAllDefs<DamageOverTimeDamageTypeEffectDef>().FirstOrDefault(p => p.name.Equals("Acid_DamageOverTimeDamageTypeEffectDef"));
-        // private static readonly DamageOverTimeDamageTypeEffectDef paralysisDamage = Repo.GetAllDefs<DamageOverTimeDamageTypeEffectDef>().FirstOrDefault(p => p.name.Equals("Paralysis_DamageOverTimeDamageTypeEffectDef"));
-        // private static readonly DamageOverTimeDamageTypeEffectDef poisonDamage = Repo.GetAllDefs<DamageOverTimeDamageTypeEffectDef>().FirstOrDefault(p => p.name.Equals("Poison_DamageOverTimeDamageTypeEffectDef"));
-        private static readonly StandardDamageTypeEffectDef fireDamage = Repo.GetAllDefs<StandardDamageTypeEffectDef>().FirstOrDefault(p => p.name.Equals("Fire_StandardDamageTypeEffectDef"));
-        private static readonly StandardDamageTypeEffectDef projectileDamage = Repo.GetAllDefs<StandardDamageTypeEffectDef>().FirstOrDefault(p => p.name.Equals("Projectile_StandardDamageTypeEffectDef"));
-        private static readonly StandardDamageTypeEffectDef shredDamage = Repo.GetAllDefs<StandardDamageTypeEffectDef>().FirstOrDefault(p => p.name.Equals("Shred_StandardDamageTypeEffectDef"));
-        private static readonly StandardDamageTypeEffectDef blastDamage = Repo.GetAllDefs<StandardDamageTypeEffectDef>().FirstOrDefault(p => p.name.Equals("Blast_StandardDamageTypeEffectDef"));
-        // private static readonly StandardDamageTypeEffectDef bashDamage = Repo.GetAllDefs<StandardDamageTypeEffectDef>().FirstOrDefault(p => p.name.Equals("Bash_StandardDamageTypeEffectDef"));
 
-        //private static readonly DamageKeywordDef paralisingDamageKeywordDef = Repo.GetAllDefs<DamageKeywordDef>().FirstOrDefault(p => p.name.Equals("Paralysing_DamageKeywordDataDef"));
+        private static readonly AddAbilityStatusDef revenantStatusAbility =DefCache.GetDef<AddAbilityStatusDef>("Revenant_StatusEffectDef");
+        private static readonly PassiveModifierAbilityDef revenantAbility =DefCache.GetDef<PassiveModifierAbilityDef>("Revenant_AbilityDef");
+
+        private static readonly DamageMultiplierAbilityDef revenantResistanceAbility =DefCache.GetDef<DamageMultiplierAbilityDef>("RevenantResistance_AbilityDef");
+
+
+
+        // private static readonly DamageOverTimeDamageTypeEffectDef virusDamage =DefCache.GetDef<DamageOverTimeDamageTypeEffectDef>("Virus_DamageOverTimeDamageTypeEffectDef"));
+        private static readonly DamageOverTimeDamageTypeEffectDef acidDamage =DefCache.GetDef<DamageOverTimeDamageTypeEffectDef>("Acid_DamageOverTimeDamageTypeEffectDef");
+        // private static readonly DamageOverTimeDamageTypeEffectDef paralysisDamage =DefCache.GetDef<DamageOverTimeDamageTypeEffectDef>("Paralysis_DamageOverTimeDamageTypeEffectDef"));
+        // private static readonly DamageOverTimeDamageTypeEffectDef poisonDamage =DefCache.GetDef<DamageOverTimeDamageTypeEffectDef>("Poison_DamageOverTimeDamageTypeEffectDef"));
+        private static readonly StandardDamageTypeEffectDef fireDamage =DefCache.GetDef<StandardDamageTypeEffectDef>("Fire_StandardDamageTypeEffectDef");
+        private static readonly StandardDamageTypeEffectDef projectileDamage =DefCache.GetDef<StandardDamageTypeEffectDef>("Projectile_StandardDamageTypeEffectDef");
+        private static readonly StandardDamageTypeEffectDef shredDamage =DefCache.GetDef<StandardDamageTypeEffectDef>("Shred_StandardDamageTypeEffectDef");
+        private static readonly StandardDamageTypeEffectDef blastDamage =DefCache.GetDef<StandardDamageTypeEffectDef>("Blast_StandardDamageTypeEffectDef");
+        // private static readonly StandardDamageTypeEffectDef bashDamage =DefCache.GetDef<StandardDamageTypeEffectDef>("Bash_StandardDamageTypeEffectDef"));
+
+        //private static readonly DamageKeywordDef paralisingDamageKeywordDef =DefCache.GetDef<DamageKeywordDef>("Paralysing_DamageKeywordDataDef"));
 
         public static void CheckForNotDeadSoldiers(TacticalLevelController level)
         {
@@ -654,10 +655,10 @@ namespace TFTV
 
                 if (usedWeapons.Count() > 0)
                 {
-                    TFTVLogger.Always("Checking use of each weapon... ");
+                   // TFTVLogger.Always("Checking use of each weapon... ");
                     foreach (UsedWeaponStat stat in usedWeapons)
                     {
-                        //  TFTVLogger.Always("This item is  " + stat.UsedItem.ViewElementDef.DisplayName1.LocalizeEnglish());
+                       //   TFTVLogger.Always("This item is  " + stat.UsedItem.ViewElementDef.DisplayName1.LocalizeEnglish());
                         if (Repo.GetAllDefs<WeaponDef>().FirstOrDefault(p => p.name.Contains(stat.UsedItem.ToString())))
                         {
                             WeaponDef weaponDef = stat.UsedItem as WeaponDef;
@@ -684,7 +685,7 @@ namespace TFTV
                             }
                             if (weaponDef != null && weaponDef.DamagePayload.GenerateDamageValue() >= 70) //&& weaponDef.DamagePayload.DamageKeywords != null 
                             {
-                                TFTVLogger.Always("This weapon is considered high damage  " + weaponDef.ViewElementDef.DisplayName1.LocalizeEnglish());
+                             //   TFTVLogger.Always("This weapon is considered high damage  " + weaponDef.ViewElementDef.DisplayName1.LocalizeEnglish());
                                 scoreHighDamage += stat.UsedCount;
                             }
                             if (weaponDef != null && weaponDef.DamagePayload.DamageType == projectileDamage && (weaponDef.DamagePayload.ProjectilesPerShot >= 2 || weaponDef.DamagePayload.AutoFireShotCount >= 3))
@@ -758,7 +759,7 @@ namespace TFTV
         }
         public static void ModifyRevenantResistanceAbility(TacticalLevelController controller)
         {
-            DamageMultiplierAbilityDef revenantResistanceAbilityDef = Repo.GetAllDefs<DamageMultiplierAbilityDef>().FirstOrDefault(p => p.name.Equals("RevenantResistance_AbilityDef"));
+            DamageMultiplierAbilityDef revenantResistanceAbilityDef =DefCache.GetDef<DamageMultiplierAbilityDef>("RevenantResistance_AbilityDef");
             revenantResistanceAbilityDef.DamageTypeDef = GetPreferredDamageType(controller);
 
 
@@ -820,19 +821,19 @@ namespace TFTV
 
                     tacticalActor.AddAbility(revenantAssault, tacticalActor);
 
-                    if (tacticalActor.GameTags.Contains(Repo.GetAllDefs<GameTagDef>().FirstOrDefault(p => p.name.Equals("RevenantTier_2_GameTagDef"))))
+                    if (tacticalActor.GameTags.Contains(DefCache.GetDef<GameTagDef>("RevenantTier_2_GameTagDef")))
                     {
-                        tacticalActor.AddAbility(Repo.GetAllDefs<AbilityDef>().FirstOrDefault(sd => sd.name.Equals("Pitcher_AbilityDef")), tacticalActor);
+                        tacticalActor.AddAbility(DefCache.GetDef<AbilityDef>("Pitcher_AbilityDef"), tacticalActor);
                         revenantAssault.StatModifications = new ItemStatModification[]
                         {
                             new ItemStatModification {TargetStat = StatModificationTarget.BonusAttackDamage, Modification = StatModificationType.Multiply, Value = 1.15f},
                         };
                         revenantAssault.ViewElementDef.Description = new LocalizedTextBind("+15% Damage", true);
                     }
-                    else if (tacticalActor.GameTags.Contains(Repo.GetAllDefs<GameTagDef>().FirstOrDefault(p => p.name.Equals("RevenantTier_3_GameTagDef"))))
+                    else if (tacticalActor.GameTags.Contains(DefCache.GetDef<GameTagDef>("RevenantTier_3_GameTagDef")))
                     {
-                        tacticalActor.AddAbility(Repo.GetAllDefs<AbilityDef>().FirstOrDefault(sd => sd.name.Equals("Pitcher_AbilityDef")), tacticalActor);
-                        tacticalActor.AddAbility(Repo.GetAllDefs<AbilityDef>().FirstOrDefault(sd => sd.name.Equals("Mutog_PrimalInstinct_AbilityDef")), tacticalActor);
+                        tacticalActor.AddAbility(DefCache.GetDef<AbilityDef>("Pitcher_AbilityDef"), tacticalActor);
+                        tacticalActor.AddAbility(DefCache.GetDef<AbilityDef>("Mutog_PrimalInstinct_AbilityDef"), tacticalActor);
                         revenantAssault.StatModifications = new ItemStatModification[]
                         {
                             new ItemStatModification {TargetStat = StatModificationTarget.BonusAttackDamage, Modification = StatModificationType.Multiply, Value = 1.25f},
@@ -845,9 +846,9 @@ namespace TFTV
 
 
                     TFTVLogger.Always("Deceased had Berserker specialization");
-                    if (tacticalActor.GameTags.Contains(Repo.GetAllDefs<GameTagDef>().FirstOrDefault(p => p.name.Equals("RevenantTier_2_GameTagDef"))))
+                    if (tacticalActor.GameTags.Contains(DefCache.GetDef<GameTagDef>("RevenantTier_2_GameTagDef")))
                     {
-                        tacticalActor.AddAbility(Repo.GetAllDefs<AbilityDef>().FirstOrDefault(sd => sd.name.Equals("BloodLust_AbilityDef")), tacticalActor);
+                        tacticalActor.AddAbility(DefCache.GetDef<AbilityDef>("BloodLust_AbilityDef"), tacticalActor);
                         revenantBerserker.StatModifications = new ItemStatModification[]
                         {
                             new ItemStatModification {TargetStat = StatModificationTarget.Speed, Modification = StatModificationType.AddMax, Value = 6},
@@ -856,10 +857,10 @@ namespace TFTV
 
                         revenantBerserker.ViewElementDef.Description = new LocalizedTextBind("+6 Speed", true);
                     }
-                    else if (tacticalActor.GameTags.Contains(Repo.GetAllDefs<GameTagDef>().FirstOrDefault(p => p.name.Equals("RevenantTier_3_GameTagDef"))))
+                    else if (tacticalActor.GameTags.Contains(DefCache.GetDef<GameTagDef>("RevenantTier_3_GameTagDef")))
                     {
-                        tacticalActor.AddAbility(Repo.GetAllDefs<AbilityDef>().FirstOrDefault(sd => sd.name.Equals("BloodLust_AbilityDef")), tacticalActor);
-                        tacticalActor.AddAbility(Repo.GetAllDefs<AbilityDef>().FirstOrDefault(sd => sd.name.Equals("CloseQuarters_AbilityDef")), tacticalActor);
+                        tacticalActor.AddAbility(DefCache.GetDef<AbilityDef>("BloodLust_AbilityDef"), tacticalActor);
+                        tacticalActor.AddAbility(DefCache.GetDef<AbilityDef>("CloseQuarters_AbilityDef"), tacticalActor);
                         revenantBerserker.StatModifications = new ItemStatModification[]
                         {
                             new ItemStatModification {TargetStat = StatModificationTarget.Speed, Modification = StatModificationType.AddMax, Value = 10},
@@ -876,7 +877,7 @@ namespace TFTV
                     TFTVLogger.Always("Deceased had Heavy specialization");
                     if (tacticalActor.GameTags.Contains(revenantTier2GameTag))
                     {
-                        tacticalActor.AddAbility(Repo.GetAllDefs<AbilityDef>().FirstOrDefault(sd => sd.name.Equals("ReturnFire_AbilityDef")), tacticalActor);
+                        tacticalActor.AddAbility(DefCache.GetDef<AbilityDef>("ReturnFire_AbilityDef"), tacticalActor);
                         revenantHeavy.StatModifications = new ItemStatModification[]
                         {
                             new ItemStatModification {TargetStat = StatModificationTarget.Endurance, Modification = StatModificationType.AddMax, Value = 20},
@@ -887,8 +888,8 @@ namespace TFTV
                     }
                     else if (tacticalActor.GameTags.Contains(revenantTier3GameTag))
                     {
-                        tacticalActor.AddAbility(Repo.GetAllDefs<AbilityDef>().FirstOrDefault(sd => sd.name.Equals("ReturnFire_AbilityDef")), tacticalActor);
-                        tacticalActor.AddAbility(Repo.GetAllDefs<AbilityDef>().FirstOrDefault(sd => sd.name.Equals("Skirmisher_AbilityDef")), tacticalActor);
+                        tacticalActor.AddAbility(DefCache.GetDef<AbilityDef>("ReturnFire_AbilityDef"), tacticalActor);
+                        tacticalActor.AddAbility(DefCache.GetDef<AbilityDef>("Skirmisher_AbilityDef"), tacticalActor);
                         revenantHeavy.StatModifications = new ItemStatModification[]
                         {
                             new ItemStatModification {TargetStat = StatModificationTarget.Endurance, Modification = StatModificationType.AddMax, Value = 30},
@@ -904,7 +905,7 @@ namespace TFTV
 
                     if (tacticalActor.GameTags.Contains(revenantTier2GameTag))
                     {
-                        tacticalActor.AddAbility(Repo.GetAllDefs<AbilityDef>().FirstOrDefault(sd => sd.name.Equals("SurpriseAttack_AbilityDef")), tacticalActor);
+                        tacticalActor.AddAbility(DefCache.GetDef<AbilityDef>("SurpriseAttack_AbilityDef"), tacticalActor);
                         revenantInfiltrator.StatModifications = new ItemStatModification[]
                         {
                             new ItemStatModification {TargetStat = StatModificationTarget.Stealth, Modification = StatModificationType.AddMax, Value = 30},
@@ -914,8 +915,8 @@ namespace TFTV
                     }
                     else if (tacticalActor.GameTags.Contains(revenantTier3GameTag))
                     {
-                        tacticalActor.AddAbility(Repo.GetAllDefs<AbilityDef>().FirstOrDefault(sd => sd.name.Equals("SurpriseAttack_AbilityDef")), tacticalActor);
-                        tacticalActor.AddAbility(Repo.GetAllDefs<AbilityDef>().FirstOrDefault(sd => sd.name.Equals("WeakSpot_AbilityDef")), tacticalActor);
+                        tacticalActor.AddAbility(DefCache.GetDef<AbilityDef>("SurpriseAttack_AbilityDef"), tacticalActor);
+                        tacticalActor.AddAbility(DefCache.GetDef<AbilityDef>("WeakSpot_AbilityDef"), tacticalActor);
                         revenantInfiltrator.StatModifications = new ItemStatModification[]
                         {
                             new ItemStatModification {TargetStat = StatModificationTarget.Endurance, Modification = StatModificationType.AddMax, Value = 30},
@@ -932,7 +933,7 @@ namespace TFTV
 
                     if (tacticalActor.GameTags.Contains(revenantTier2GameTag))
                     {
-                        tacticalActor.AddAbility(Repo.GetAllDefs<AbilityDef>().FirstOrDefault(sd => sd.name.Equals("MindSense_AbilityDef")), tacticalActor);
+                        tacticalActor.AddAbility(DefCache.GetDef<AbilityDef>("MindSense_AbilityDef"), tacticalActor);
                         revenantPriest.StatModifications = new ItemStatModification[]
                         {
                             new ItemStatModification {TargetStat = StatModificationTarget.Willpower, Modification = StatModificationType.AddMax, Value = 20},
@@ -942,8 +943,8 @@ namespace TFTV
                     }
                     else if (tacticalActor.GameTags.Contains(revenantTier3GameTag))
                     {
-                        tacticalActor.AddAbility(Repo.GetAllDefs<AbilityDef>().FirstOrDefault(sd => sd.name.Equals("MindSense_AbilityDef")), tacticalActor);
-                        tacticalActor.AddAbility(Repo.GetAllDefs<AbilityDef>().FirstOrDefault(sd => sd.name.Equals("PsychicWard_AbilityDef")), tacticalActor);
+                        tacticalActor.AddAbility(DefCache.GetDef<AbilityDef>("MindSense_AbilityDef"), tacticalActor);
+                        tacticalActor.AddAbility(DefCache.GetDef<AbilityDef>("PsychicWard_AbilityDef"), tacticalActor);
                         revenantPriest.StatModifications = new ItemStatModification[]
                         {
                             new ItemStatModification {TargetStat = StatModificationTarget.Willpower, Modification = StatModificationType.AddMax, Value = 40},
@@ -957,9 +958,9 @@ namespace TFTV
                 {
                     TFTVLogger.Always("Deceased had Sniper specialization");
 
-                    if (tacticalActor.GameTags.Contains(Repo.GetAllDefs<GameTagDef>().FirstOrDefault(p => p.name.Equals("RevenantTier_2_GameTagDef"))))
+                    if (tacticalActor.GameTags.Contains(DefCache.GetDef<GameTagDef>("RevenantTier_2_GameTagDef")))
                     {
-                        tacticalActor.AddAbility(Repo.GetAllDefs<AbilityDef>().FirstOrDefault(sd => sd.name.Equals("OverwatchFocus_AbilityDef")), tacticalActor);
+                        tacticalActor.AddAbility(DefCache.GetDef<AbilityDef>("OverwatchFocus_AbilityDef"), tacticalActor);
                         revenantSniper.StatModifications = new ItemStatModification[]
                         {
                             new ItemStatModification {TargetStat = StatModificationTarget.Perception, Modification = StatModificationType.AddMax, Value = 15},
@@ -968,10 +969,10 @@ namespace TFTV
 
                         revenantSniper.ViewElementDef.Description = new LocalizedTextBind("+15 Perception", true);
                     }
-                    else if (tacticalActor.GameTags.Contains(Repo.GetAllDefs<GameTagDef>().FirstOrDefault(p => p.name.Equals("RevenantTier_3_GameTagDef"))))
+                    else if (tacticalActor.GameTags.Contains(DefCache.GetDef<GameTagDef>("RevenantTier_3_GameTagDef")))
                     {
-                        tacticalActor.AddAbility(Repo.GetAllDefs<AbilityDef>().FirstOrDefault(sd => sd.name.Equals("OverwatchFocus_AbilityDef")), tacticalActor);
-                        tacticalActor.AddAbility(Repo.GetAllDefs<AbilityDef>().FirstOrDefault(sd => sd.name.Equals("MasterMarksman_AbilityDef")), tacticalActor);
+                        tacticalActor.AddAbility(DefCache.GetDef<AbilityDef>("OverwatchFocus_AbilityDef"), tacticalActor);
+                        tacticalActor.AddAbility(DefCache.GetDef<AbilityDef>("MasterMarksman_AbilityDef"), tacticalActor);
                         revenantSniper.StatModifications = new ItemStatModification[]
                         {
                             new ItemStatModification {TargetStat = StatModificationTarget.Perception, Modification = StatModificationType.AddMax, Value = 20 },
@@ -990,7 +991,7 @@ namespace TFTV
 
                     if (tacticalActor.GameTags.Contains(revenantTier2GameTag))
                     {
-                        tacticalActor.AddAbility(Repo.GetAllDefs<AbilityDef>().FirstOrDefault(sd => sd.name.Equals("Stability_AbilityDef")), tacticalActor);
+                        tacticalActor.AddAbility(DefCache.GetDef<AbilityDef>("Stability_AbilityDef"), tacticalActor);
                         revenantTechnician.StatModifications = new ItemStatModification[]
                         {
                             new ItemStatModification {TargetStat = StatModificationTarget.Endurance, Modification = StatModificationType.Add, Value = 5},
@@ -1003,8 +1004,8 @@ namespace TFTV
                     }
                     else if (tacticalActor.GameTags.Contains(revenantTier3GameTag))
                     {
-                        tacticalActor.AddAbility(Repo.GetAllDefs<AbilityDef>().FirstOrDefault(sd => sd.name.Equals("Stability_AbilityDef")), tacticalActor);
-                        tacticalActor.AddAbility(Repo.GetAllDefs<AbilityDef>().FirstOrDefault(sd => sd.name.Equals("BioChemist_AbilityDef")), tacticalActor);
+                        tacticalActor.AddAbility(DefCache.GetDef<AbilityDef>("Stability_AbilityDef"), tacticalActor);
+                        tacticalActor.AddAbility(DefCache.GetDef<AbilityDef>("BioChemist_AbilityDef"), tacticalActor);
                         revenantTechnician.StatModifications = new ItemStatModification[]
                         {
                             new ItemStatModification {TargetStat = StatModificationTarget.Endurance, Modification = StatModificationType.Add, Value = 10},
@@ -1278,7 +1279,7 @@ namespace TFTV
                             {
 
                                 if (actor.TacticalFaction.Faction.BaseDef == sharedData.AlienFactionDef && DeadSoldiersDelirium.Count > 0
-                                    && !actor.GameTags.Contains(Repo.GetAllDefs<GameTagDef>().FirstOrDefault(p => p.name.Contains("Revenant"))))
+                                    && !actor.GameTags.Contains(DefCache.GetDef<GameTagDef>().FirstOrDefault(p => p.name.Contains("Revenant"))))
                                 {
 
                                     //First lets check time of death to create a first list of dead soldiers
@@ -1341,17 +1342,17 @@ namespace TFTV
                                     }
 
 
-                                    ClassTagDef crabTag = Repo.GetAllDefs<ClassTagDef>().FirstOrDefault
+                                    ClassTagDef crabTag =DefCache.GetDef<ClassTagDef>().FirstOrDefault
                                         (ged => ged.name.Equals("Crabman_ClassTagDef"));
-                                    ClassTagDef fishmanTag = Repo.GetAllDefs<ClassTagDef>().FirstOrDefault
+                                    ClassTagDef fishmanTag =DefCache.GetDef<ClassTagDef>().FirstOrDefault
                                         (ged => ged.name.Equals("Fishman_ClassTagDef"));
-                                    ClassTagDef sirenTag = Repo.GetAllDefs<ClassTagDef>().FirstOrDefault
+                                    ClassTagDef sirenTag =DefCache.GetDef<ClassTagDef>().FirstOrDefault
                                         (ged => ged.name.Equals("Siren_ClassTagDef"));
-                                    ClassTagDef chironTag = Repo.GetAllDefs<ClassTagDef>().FirstOrDefault
+                                    ClassTagDef chironTag =DefCache.GetDef<ClassTagDef>().FirstOrDefault
                                         (ged => ged.name.Equals("Chiron_ClassTagDef"));
-                                    ClassTagDef acheronTag = Repo.GetAllDefs<ClassTagDef>().FirstOrDefault
+                                    ClassTagDef acheronTag =DefCache.GetDef<ClassTagDef>().FirstOrDefault
                                         (ged => ged.name.Equals("Acheron_ClassTagDef"));
-                                    ClassTagDef queenTag = Repo.GetAllDefs<ClassTagDef>().FirstOrDefault
+                                    ClassTagDef queenTag =DefCache.GetDef<ClassTagDef>().FirstOrDefault
                                         (ged => ged.name.Equals("Queen_ClassTagDef"));
 
                                     if (actor.GameTags.Contains(crabTag) && eligibleForArthron.Count > 0 && !CheckForActorWithTag(crabTag, __instance)
@@ -1498,7 +1499,7 @@ namespace TFTV
                             TFTVLogger.Always("looking at actor " + actor.name);
 
                             if (!level.TacticalGameParams.Statistics.LivingSoldiers.ContainsKey(actor.GeoUnitId)
-                            && !actor.GameTags.Contains(Repo.GetAllDefs<GameTagDef>().FirstOrDefault(p => p.name.Contains("Revenant"))))
+                            && !actor.GameTags.Contains(DefCache.GetDef<GameTagDef>().FirstOrDefault(p => p.name.Contains("Revenant"))))
                             {
                                 TFTVLogger.Always("Got passed the if checks");
                                 AddRevenantResistanceAbility(actor);
@@ -1521,11 +1522,11 @@ namespace TFTV
             try
             {
                 TacticalFaction alienFaction = level.GetTacticalFaction(sharedData.AlienFactionDef);
-                // GameTagDef revenantTag = Repo.GetAllDefs<GameTagDef>().FirstOrDefault(p => p.name.Contains("Revenant"));
+                // GameTagDef revenantTag =DefCache.GetDef<GameTagDef>().FirstOrDefault(p => p.name.Contains("Revenant"));
 
                 foreach (TacticalActor actor in alienFaction.TacticalActors)
                 {
-                    if (actor.tag.Contains(classTagDef.name) && actor.GameTags.Contains(Repo.GetAllDefs<GameTagDef>().FirstOrDefault(p => p.name.Contains("Revenant"))))
+                    if (actor.tag.Contains(classTagDef.name) && actor.GameTags.Contains(DefCache.GetDef<GameTagDef>().FirstOrDefault(p => p.name.Contains("Revenant"))))
                     {
                         return true;
 
@@ -1565,7 +1566,7 @@ namespace TFTV
 
                         foreach (TacticalActorBase actor in pandorans)
                         {
-                            if (actor.HasGameTag(TFTVMain.Repo.GetAllDefs<GameTagDef>().FirstOrDefault(p => p.name.Contains("Revenant"))))
+                            if (actor.HasGameTag(TFTVMain.DefCache.GetDef<GameTagDef>().FirstOrDefault(p => p.name.Contains("Revenant"))))
                             {
                                 revenantPresent = true;
                                 TFTVLogger.Always("On new turn, revenant is found");
@@ -1579,8 +1580,8 @@ namespace TFTV
                             foreach (TacticalActorBase actor in pandorans)
                             {
                                 if (!controller.TacticalGameParams.Statistics.LivingSoldiers.ContainsKey(actor.GeoUnitId)
-                                     && !actor.GameTags.Contains(TFTVMain.Repo.GetAllDefs<GameTagDef>().FirstOrDefault(p => p.name.Contains("Revenant")))
-                                     && actor.GetAbilityWithDef<DamageMultiplierAbility>(TFTVMain.Repo.GetAllDefs<DamageMultiplierAbilityDef>().FirstOrDefault(p => p.name.Equals("RevenantResistance_AbilityDef"))) == null)
+                                     && !actor.GameTags.Contains(TFTVMain.DefCache.GetDef<GameTagDef>().FirstOrDefault(p => p.name.Contains("Revenant")))
+                                     && actor.GetAbilityWithDef<DamageMultiplierAbility>(TFTVMain.DefCache.GetDef<DamageMultiplierAbilityDef>("RevenantResistance_AbilityDef"))) == null)
 
                                     AddRevenantResistanceAbility(actor);
                                     TFTVLogger.Always(actor.name + " received the revenant resistance ability.");

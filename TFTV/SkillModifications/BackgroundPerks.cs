@@ -212,11 +212,11 @@ namespace PRMBetterClasses.SkillModifications
             {
                 if (HardLabor.StatModifications[i].TargetStat == StatModificationTarget.Perception)
                 {
-                    HardLabor.StatModifications[i].Value = -5.0f;
+                    HardLabor.StatModifications[i].Value = -4.0f;
                 }
                 if (HardLabor.StatModifications[i].TargetStat == StatModificationTarget.Endurance)
                 {
-                    HardLabor.StatModifications[i].Value = 2.0f;
+                    HardLabor.StatModifications[i].Value = 4.0f;
                 }
             }
             HardLabor.ItemTagStatModifications = new EquipmentItemTagStatModification[0]; // delete weapon buff and proficiency
@@ -520,7 +520,7 @@ namespace PRMBetterClasses.SkillModifications
                 skillName);
 
             // Set necessary fields
-            float willpower = -3.0f;
+            float willpower = -2.0f;
             float bonusDamage = 1.1f;
             aHistoryOfViolence.StatModifications = new ItemStatModification[]
             {

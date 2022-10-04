@@ -232,6 +232,9 @@ VOID_OMEN_TITLE_14,Text,,Human perception lowered to 20 from 35,,,,,,,,
 VOID_OMEN_TITLE_15,Text,,More Umbras,,,,,,,,
 VOID_OMEN_TITLE_16,Text,,Umbras can appear anywhere and attack anyone,,,,,,,,
 VOID_OMEN_TITLE_17,Text,,Destroyed havens in Mist always become infested ,,,,,,,,
+VOID_OMEN_TITLE_18,Text,,"Havens defense rating higher, rewards from haven defense missions lower",,,,,,,,
+VOID_OMEN_TITLE_19,Text,,"Pandorans gain reactive evolutionary resistance, cost of faction tech in Bazaar reduced",,,,,,,,
+VOID_OMEN_TITLE_20,Text,,Behemoth can deploy experimental (lower strength) Abbadons,,,,,,,,
 VOID_OMEN_DESCRIPTION_TEXT_1,Text,,"<i>""The reports we are intercepting from both faction and independent scavenging teams is that it's getting more dangerous out there… But we will probably see more loot, because… fewer competitors.""</i> ",,,,,,,,
 VOID_OMEN_DESCRIPTION_TEXT_2,Text,,"<i>""We are losing our moral compass, if we ever had one.""</i> ",,,,,,,,
 VOID_OMEN_DESCRIPTION_TEXT_3,Text,,"<i>""It's a waking nightmare. Can you get used to nightmares?""</i> ",,,,,,,,
@@ -249,6 +252,11 @@ VOID_OMEN_DESCRIPTION_TEXT_14,Text,,"<i>Have you noticed how things look less su
 VOID_OMEN_DESCRIPTION_TEXT_15,Text,,"<i>""Our people are seeing <b>more</b> oil monsters in the field. I look forward to the strict adherents of the scientific method explaining this away as our operatives going <b>more</b> crazy.""</i>",,,,,,,,
 VOID_OMEN_DESCRIPTION_TEXT_16,Text,,<i>It just isn't fair! Demons are supposed to follow rules too!</i>,,,,,,,,
 VOID_OMEN_DESCRIPTION_TEXT_17,Text,,<i>What if this is their end game? To turn us all into the puppets of an alien intelligence?</i>,,,,,,,,
+VOID_OMEN_DESCRIPTION_TEXT_18,Text,,"<i>""To keep the Synedrion dream alive, we must keep our people alive. Join the volunteer militia today! Service guarantees basic alimentary allocation."" </i>
+
+- Public notice on a Synedrion feed",,,,,,,,
+VOID_OMEN_DESCRIPTION_TEXT_19,Text,,"<i>They *know* us. Is it really all that surprsing? We are seeing their nightmares, they learn our tactics""</i>",,,,,,,,
+VOID_OMEN_DESCRIPTION_TEXT_20,Text,,<i>They are always coming up with something new</i>,,,,,,,,
 VOID_OMEN_INTRO,Text,,"We believe we are observing the first effects of the Oneiric Delirium on a collective scale. The phenomenon is akin to mass hysteria.
 
 Synedrion psycho-sociologists are rationalizing the documented instances of widespread psychosis as the result of stresses to which our communities are subjected when our species is facing the possibility of extinction.
@@ -295,7 +303,13 @@ KEY_GEOSCAPE_HAVEN_INFESTED,Text,,"A haven in the Mist, has succumbed to Pandora
 KEY_MISSION_HAVEN_INFESTED_NAME,Text,,INFESTED HAVEN,,,,,,,,
 KEY_MISSION_HAVEN_INFESTED_DESCRIPTION,Text,,Cleanse the infestation,,,,,,,,
 UMBRA_SIGHTED_TITLE,Text,,Umbra!,,,,,,,,
-UMBRA_SIGHTED_TEXT,Text,,It's so scary!,,,,,,,,
+UMBRA_SIGHTED_TEXT,Text,,"<i>""They say an Umbra doesn't just kill you: it steals your soul""</i>
+
+In TFTV, the Umbra will spawn in place of a dead Arthron or Triton with the <b>Touched by the Void</b> ability, which they have a chance to roll at the start of each complete turn. The chance to roll is the total amount of Delirium of all your operatives on the mission divided by two.
+
+The Umbra can only attack characters with Delirium, but they can be attacked by all characters.",,,,,,,,
+UMBRA_SIGHTED2_TEXT,Text,,"
+",,,,,,,,
 VO_HINT_TITLE,Text,,Void Omens!,,,,,,,,
 VO_HINT_TEXT,Text,,Terror!,,,,,,,,
 KEY_INDEPENDENCE_DAY_NAME,Text,,To Kill a Behemoth,,,,,,,,
@@ -381,3 +395,59 @@ This technology represents a first step towards mastering the mutation mechanics
 
 The process is still experimental and there may be some side effects, but the potential benefits to our soldiers are worth the risk.
 ",,,,,,,,
+TFTV_STAMINAHINT_TEXT,Text,,"In TFTV, when one of your operatives gets a bodypart disabled in Tactical, once back in Geoscape its stamina will be reduced to 0. <b>Healing the injured bodypart in Tactical will not prevent this effect</b>. Stamina will also be set to 0 when the character gets a mutation or a bionic augmentation.",,,,,,,,
+TFTV_STAMINAHINT_TITLE,Text,,STAMINA LOSS FROM DISABLED LIMBS,,,,,,,,
+KEY_GEO_HINT_CUSTOMIZE_DESC,Text,,"Maybe it's time to introduce all these purple numbers and pibs!
+
+Example: Margareta has 12 Willpower and 5 Delirium. Because she has 36 Stamina, and each 10 points in Stamina reduce effects of Delirium by 1, effect of Delirium on Margareta's Willpower is reduced by 3. Therefore she has 12-(5-3)=10 Willpower available.
+
+1) This is character's actual Willpower. Number in <color=#A020F0>() in purple</color> means Willpower is being reduced by Delirium.
+2) This shows the Delirium character has over the total Delirium character can have, depending on progress of Oneiric Delirium. At first, character may not have Delirium in excess of one third of their Willpower. By midgame this is increased to a half, and by late game there is no cap. <b>Pay attention to Oneiric Delirium events to learn when the cap is changed</b>.
+3) Stamina is reducing effects of Delirium on Willpower: each <color=#A020F0><b> -</b></color> signifies that effect is reduced by 1. ",,,,,,,,
+KEY_GEO_HINT_CUSTOMIZE_TITLE,Text,,DELIRIUM,,,,,,,,
+KEY_GEO_HINT_PANDORAN_BASE_DIPLOMACY_EFFECTS_DESCRIPTION,Text,,"In TFTV, Factions will <b>not</b> react negatively to revealed Pandoran Colonies if you fail to destroy them. However, you will suffer a small penalty with the leaders of the nearby havens.
+
+Each Pandoran colony contributes to Pandoran evolution: the more active Pandoran colonies there are, the faster the enemy will field more advanced units and the faster the Oneiric Delirium will grow. 
+
+In addition, destroying a more advanced Pandoran colony (a Lair or a Citadel) removes the earliest <b>Void Omen</b> currently in play. (On Rookie difficulty, destroying Nests also removes Void Omens). ",,,,,,,,
+KEY_GEO_HINT_PANDORAN_BASE_DIPLOMACY_EFFECTS_TITLE,Text,,"PANDORAN COLONIES: DIPLOMACY, EVOLUTION AND VOID OMENS",,,,,,,,
+KEY_GEO_HINT_MORE_AIRCRAFT_DESC,Text,,"In TFTV, all aircraft, except Anu Blimp, seat 4 less passengers than in Vanilla. To increase the space for units by 4, you need to equip your craft with one of the passenger modules. The starting Manticore comes with the FAR passenger module, which also (very slowly) recuperates the Stamina of all those on board. To manufacture additional FAR modules, you need to research the corresponding technology, which is unlocked after you research Phoenix Archives. There are two additional passenger modules that you may unlock in the course of the game.
+
+Passenger modules cost half the resources and take half as much time to manufacture as a Manticore in Vanilla. The cost of all craft in the game has been, in turn, reduced by this amount. Therefore, a Manticore now costs only half the amount of resources and takes twice as fast to be manufactured.
+
+The aircraft have a modular design, and you will want to use some of them for interception (and trading), and others for exploration (because of the risk of ambushes) and transporting operatives to tactical missions.",,,,,,,,
+KEY_GEO_HINT_MORE_AIRCRAFT_TITLE,Text,,AIRCRAFT AND PASSENGER MODULES,,,,,,,,
+KEY_DLC3_TUT_SUPPLY_DESCRIPTION,Text,,"A Pandoran flyer has separated itself from the Festering Skies. It may come upon a haven and attack it. If the haven is not yet revealed, it will send an SOS disclosing its postion. 
+
+Should the stray Pandoran flyer return to the swarm, the haven will be targeted by the Behemoth. Once a haven is targeted for attack, nothing can be done to prevent it: once the Behemoth reaches the haven, it will damage all its facilities and harvest about half of its population. 
+
+Destroy Pandoran flyers to protect the havens, to colllect rewards from factions and to force the Behemoth to submerge.",,,,,,,,
+KEY_DLC3_TUT_SUPPLY_NAME,Text,,PANDORAN FLYER,,,,,,,,
+KEY_DLC3_TUT_BOMBARDMENT_DESCRIPTION,Text,,"A Pandoran flyer has separated itself from the Festering Skies. It may come upon a haven and attack it. If the haven is not yet revealed, it will send an SOS disclosing its postion. 
+
+Should the stray Pandoran flyer return to the swarm, the haven will be targeted by the Behemoth. Once a haven is targeted for attack, nothing can be done to prevent it: once the Behemoth reaches the haven, it will damage all its facilities and harvest about half of its population. 
+
+Destroy Pandoran flyers to protect the havens, to colllect rewards from factions and to force the Behemoth to submerge.",,,,,,,,
+KEY_DLC3_TUT_BOMBARDMENT_NAME,Text,,PANDORAN FLYER,,,,,,,,
+KEY_DLC3_TUT_RAID_DESCRIPTION,Text,,"A Pandoran flyer has separated itself from the Festering Skies. It may come upon a haven and attack it. If the haven is not yet revealed, it will send an SOS disclosing its postion. 
+
+Should the stray Pandoran flyer return to the swarm, the haven will be targeted by the Behemoth. Once a haven is targeted for attack, nothing can be done to prevent it: once the Behemoth reaches the haven, it will damage all its facilities and harvest about half of its population. 
+
+Destroy Pandoran flyers to protect the havens, to colllect rewards from factions and to force the Behemoth to submerge.",,,,,,,,
+KEY_DLC3_TUT_RAID_NAME,Text,,PANDORAN FLYER,,,,,,,,
+KEY_DLC3_TUT_RECON_DESCRIPTION,Text,,"A Pandoran flyer has separated itself from the Festering Skies. It may come upon a haven and attack it. If the haven is not yet revealed, it will send an SOS disclosing its postion. 
+
+Should the stray Pandoran flyer return to the swarm, the haven will be targeted by the Behemoth. Once a haven is targeted for attack, nothing can be done to prevent it: once the Behemoth reaches the haven, it will damage all its facilities and harvest about half of its population. 
+
+Destroy Pandoran flyers to protect the havens, to colllect rewards from factions and to force the Behemoth to submerge.",,,,,,,,
+KEY_DLC3_TUT_RECON_NAME,Text,,PANDORAN FLYER,,,,,,,,
+KEY_DLC3_TUT_BEHEMOTH_DISRUPTION_DESCRIPTION,Text,,"The Behemoth harvests all the biomass it encounters on its path, showing particular predilection for human havens. Any haven visited by a Pandoran flyer that successfully returns to the Festering Skies will be targeted for harvesting by the Behemoth. Once the Behemoth has collected enough biomass, it will submerge in the ocean. It will emerge again at a different point, sometimes fielding stronger flyers. 
+
+The Behemoth will submerge sooner if it is able to harvest havens or if its harvesting operations are disrupted. The Behemoth will gain Disruption Points (DP) when:
+- a haven is harvested (1 DP)
+- a Pandoran flyer is destroyed (1 DP if Charun, 2 DP if Berith, and 4 DP if Abaddon)
+- a Node is destroyed (5 DP)
+
+Once the Disruption Threshold is reached, the Behemoth will go back to the ocean.",,,,,,,,
+KEY_DLC3_TUT_BEHEMOTH_DISRUPTION_NAME,Text,,BEHEMOTH BEHAVIOR,,,,,,,,
+KEY_DLC3_TUT_BEHEMOTH_DESCRIPTION,Text,,"The Behemoth will inexorably attack any haven that has been visited by a Pandoran flyer that has successfully returned to the Festering Skies. Once the Behemoth reaches the haven, it will harvest about half of its population and severely damage all of its facilities. To prevent Behemoth's attacks on havens, destroy all Pandoran flyers.",,,,,,,,

@@ -1,3 +1,4 @@
+using Base.Levels;
 using Base.Serialization.General;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Levels;
@@ -61,7 +62,7 @@ namespace TFTV
 
             }
             TFTVDefsWithConfigDependency.InjectDefsWithConfigDependency();
-            TFTVProjectRobocop.CreateBionicMan(gsController);
+         //   TFTVProjectRobocop.CreateBionicMan(gsController);
         //    TFTVProjectRobocop.CreateRoboCopDef();
             //   TFTVProjectRobocop.CreateRoboCopDef();
             //  TFTVRevenant.CreateBionicMan(Controller);
@@ -152,6 +153,7 @@ namespace TFTV
             TFTVInfestationStory.HavenPopulation = data.infestedHavenPopulationSaveData;
             TFTVInfestationStory.OriginalOwner = data.infestedHavenOriginalOwnerSaveData;
 
+            Main.Logger.LogInfo("UmbraEvoltion variable is " + Controller.EventSystem.GetVariable(TFTVUmbra.variableUmbraALNResReq));
             Main.Logger.LogInfo("# Characters with broken limbs: " + TFTVStamina.charactersWithBrokenLimbs.Count);
             Main.Logger.LogInfo("# Behemoth targets for this emergence: " + TFTVAirCombat.targetsForBehemoth.Count);
             //    Main.Logger.LogInfo("# Targets already hit by Behemoth on this emergence: " + TFTVAirCombat.targetsVisitedByBehemoth.Count);
@@ -164,6 +166,7 @@ namespace TFTV
 
             Main.Logger.LogInfo("Last time a Revenant was seen was on day " + TFTVRevenant.daysRevenantLastSeen + ", and now it is day " + Controller.Timing.Now.TimeSpan.Days);
 
+            TFTVLogger.Always("UmbraEvoltion variable is " + Controller.EventSystem.GetVariable(TFTVUmbra.variableUmbraALNResReq));
             TFTVLogger.Always("# Characters with broken limbs: " + TFTVStamina.charactersWithBrokenLimbs.Count);
             TFTVLogger.Always("# Behemoth targets for this emergence: " + TFTVAirCombat.targetsForBehemoth.Count);
             //   TFTVLogger.Always("# Targets already hit by Behemoth on this emergence: " + TFTVAirCombat.targetsVisitedByBehemoth.Count);

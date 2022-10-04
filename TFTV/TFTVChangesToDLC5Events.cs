@@ -15,7 +15,7 @@ namespace TFTV
     internal class TFTVChangesToDLC5Events
     {
         private static readonly DefRepository Repo = TFTVMain.Repo;
-
+        //private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
 
         public static void ChangesToDLC5Defs()
         {

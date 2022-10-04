@@ -25,70 +25,71 @@ namespace TFTV
     internal class TFTVHumanEnemies
     {
         private static readonly DefRepository Repo = TFTVMain.Repo;
-        private static readonly GameTagDef HumanEnemyTier1GameTag = Repo.GetAllDefs<GameTagDef>().FirstOrDefault(p => p.name.Equals("HumanEnemyTier_1_GameTagDef"));
-        private static readonly GameTagDef HumanEnemyTier2GameTag = Repo.GetAllDefs<GameTagDef>().FirstOrDefault(p => p.name.Equals("HumanEnemyTier_2_GameTagDef"));
-        private static readonly GameTagDef HumanEnemyTier3GameTag = Repo.GetAllDefs<GameTagDef>().FirstOrDefault(p => p.name.Equals("HumanEnemyTier_3_GameTagDef"));
-        private static readonly GameTagDef HumanEnemyTier4GameTag = Repo.GetAllDefs<GameTagDef>().FirstOrDefault(p => p.name.Equals("HumanEnemyTier_4_GameTagDef"));
-        private static readonly GameTagDef humanEnemyTagDef = Repo.GetAllDefs<GameTagDef>().FirstOrDefault(p => p.name.Equals("HumanEnemy_GameTagDef"));
+        private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
+        private static readonly GameTagDef HumanEnemyTier1GameTag = DefCache.GetDef<GameTagDef>("HumanEnemyTier_1_GameTagDef");
+        private static readonly GameTagDef HumanEnemyTier2GameTag = DefCache.GetDef<GameTagDef>("HumanEnemyTier_2_GameTagDef");
+        private static readonly GameTagDef HumanEnemyTier3GameTag = DefCache.GetDef<GameTagDef>("HumanEnemyTier_3_GameTagDef");
+        private static readonly GameTagDef HumanEnemyTier4GameTag = DefCache.GetDef<GameTagDef>("HumanEnemyTier_4_GameTagDef");
+        private static readonly GameTagDef humanEnemyTagDef = DefCache.GetDef<GameTagDef>("HumanEnemy_GameTagDef");
 
-        private static readonly GameTagDef heavy = Repo.GetAllDefs<GameTagDef>().FirstOrDefault(p => p.name.Equals("Heavy_ClassTagDef"));
+        private static readonly GameTagDef heavy = DefCache.GetDef<GameTagDef>("Heavy_ClassTagDef");
 
-        private static readonly AbilityDef regeneration = Repo.GetAllDefs<AbilityDef>().FirstOrDefault(p => p.name.Equals("Regeneration_Torso_Passive_AbilityDef"));
-        private static readonly HealthChangeStatusDef regenerationStatus = Repo.GetAllDefs<HealthChangeStatusDef>().FirstOrDefault(p => p.name.Equals("Regeneration_Torso_Constant_StatusDef"));
-        private static readonly AddAttackBoostStatusDef quickAimStatus = Repo.GetAllDefs<AddAttackBoostStatusDef>().FirstOrDefault(p => p.name.Equals("E_Status [QuickAim_AbilityDef]"));
-        private static readonly PassiveModifierAbilityDef ambush = Repo.GetAllDefs<PassiveModifierAbilityDef>().FirstOrDefault(p => p.name.Equals("HumanEnemiesTacticsAmbush_AbilityDef"));
-        private static readonly StatusDef frenzy = Repo.GetAllDefs<StatusDef>().FirstOrDefault(sd => sd.name.Equals("Frenzy_StatusDef"));
-        private static readonly HitPenaltyStatusDef mFDStatus = Repo.GetAllDefs<HitPenaltyStatusDef>().FirstOrDefault(p => p.name.Equals("E_PureDamageBonusStatus [MarkedForDeath_AbilityDef]"));
+        private static readonly AbilityDef regeneration = DefCache.GetDef<AbilityDef>("Regeneration_Torso_Passive_AbilityDef");
+        private static readonly HealthChangeStatusDef regenerationStatus = DefCache.GetDef<HealthChangeStatusDef>("Regeneration_Torso_Constant_StatusDef");
+        private static readonly AddAttackBoostStatusDef quickAimStatus = DefCache.GetDef<AddAttackBoostStatusDef>("E_Status [QuickAim_AbilityDef]");
+        private static readonly PassiveModifierAbilityDef ambush = DefCache.GetDef<PassiveModifierAbilityDef>("HumanEnemiesTacticsAmbush_AbilityDef");
+        private static readonly StatusDef frenzy = DefCache.GetDef<StatusDef>("Frenzy_StatusDef");
+        private static readonly HitPenaltyStatusDef mFDStatus = DefCache.GetDef<HitPenaltyStatusDef>("E_PureDamageBonusStatus [MarkedForDeath_AbilityDef]");
 
         //Assault abilites
-        private static readonly AbilityDef killAndRun = Repo.GetAllDefs<AbilityDef>().FirstOrDefault(p => p.name.Equals("KillAndRun_AbilityDef"));
-        private static readonly AbilityDef quickAim = Repo.GetAllDefs<AbilityDef>().FirstOrDefault(p => p.name.Equals("BC_QuickAim_AbilityDef"));
-        private static readonly AbilityDef onslaught = Repo.GetAllDefs<AbilityDef>().FirstOrDefault(p => p.name.Equals("DeterminedAdvance_AbilityDef"));
-        private static readonly AbilityDef readyForAction = Repo.GetAllDefs<AbilityDef>().FirstOrDefault(p => p.name.Equals("ReadyForAction_AbilityDef"));
-        private static readonly AbilityDef rapidClearance = Repo.GetAllDefs<AbilityDef>().FirstOrDefault(p => p.name.Equals("RapidClearance_AbilityDef"));
+        private static readonly AbilityDef killAndRun = DefCache.GetDef<AbilityDef>("KillAndRun_AbilityDef");
+        private static readonly AbilityDef quickAim = DefCache.GetDef<AbilityDef>("BC_QuickAim_AbilityDef");
+        private static readonly AbilityDef onslaught = DefCache.GetDef<AbilityDef>("DeterminedAdvance_AbilityDef");
+        private static readonly AbilityDef readyForAction = DefCache.GetDef<AbilityDef>("ReadyForAction_AbilityDef");
+        private static readonly AbilityDef rapidClearance = DefCache.GetDef<AbilityDef>("RapidClearance_AbilityDef");
 
         //Berseker abilities
-        private static readonly AbilityDef dash = Repo.GetAllDefs<AbilityDef>().FirstOrDefault(p => p.name.Equals("Dash_AbilityDef"));
-        private static readonly AbilityDef cqc = Repo.GetAllDefs<AbilityDef>().FirstOrDefault(p => p.name.Equals("CloseQuarters_AbilityDef"));
-        private static readonly AbilityDef bloodlust = Repo.GetAllDefs<AbilityDef>().FirstOrDefault(p => p.name.Equals("BloodLust_AbilityDef"));
-        private static readonly AbilityDef ignorePain = Repo.GetAllDefs<AbilityDef>().FirstOrDefault(p => p.name.Equals("IgnorePain_AbilityDef"));
-        private static readonly AbilityDef adrenalineRush = Repo.GetAllDefs<AbilityDef>().FirstOrDefault(p => p.name.Equals("AdrenalineRush_AbilityDef"));
+        private static readonly AbilityDef dash = DefCache.GetDef<AbilityDef>("Dash_AbilityDef");
+        private static readonly AbilityDef cqc = DefCache.GetDef<AbilityDef>("CloseQuarters_AbilityDef");
+        private static readonly AbilityDef bloodlust = DefCache.GetDef<AbilityDef>("BloodLust_AbilityDef");
+        private static readonly AbilityDef ignorePain = DefCache.GetDef<AbilityDef>("IgnorePain_AbilityDef");
+        private static readonly AbilityDef adrenalineRush = DefCache.GetDef<AbilityDef>("AdrenalineRush_AbilityDef");
 
         //Heavy
-        private static readonly AbilityDef returnFire = Repo.GetAllDefs<AbilityDef>().FirstOrDefault(p => p.name.Equals("ReturnFire_AbilityDef"));
-        private static readonly AbilityDef hunkerDown = Repo.GetAllDefs<AbilityDef>().FirstOrDefault(p => p.name.Equals("HunkerDown_AbilityDef"));
-        private static readonly AbilityDef skirmisher = Repo.GetAllDefs<AbilityDef>().FirstOrDefault(p => p.name.Equals("Skirmisher_AbilityDef"));
-        private static readonly AbilityDef shredResistant = Repo.GetAllDefs<AbilityDef>().FirstOrDefault(p => p.name.Equals("ShredResistant_DamageMultiplierAbilityDef"));
-        private static readonly AbilityDef rageBurst = Repo.GetAllDefs<AbilityDef>().FirstOrDefault(p => p.name.Equals("RageBurst_RageBurstInConeAbilityDef"));
+        private static readonly AbilityDef returnFire = DefCache.GetDef<AbilityDef>("ReturnFire_AbilityDef");
+        private static readonly AbilityDef hunkerDown = DefCache.GetDef<AbilityDef>("HunkerDown_AbilityDef");
+        private static readonly AbilityDef skirmisher = DefCache.GetDef<AbilityDef>("Skirmisher_AbilityDef");
+        private static readonly AbilityDef shredResistant = DefCache.GetDef<AbilityDef>("ShredResistant_DamageMultiplierAbilityDef");
+        private static readonly AbilityDef rageBurst = DefCache.GetDef<AbilityDef>("RageBurst_RageBurstInConeAbilityDef");
 
         //infiltrator
-        private static readonly AbilityDef surpriseAttack = Repo.GetAllDefs<AbilityDef>().FirstOrDefault(p => p.name.Equals("SurpriseAttack_AbilityDef"));
-        private static readonly AbilityDef decoy = Repo.GetAllDefs<AbilityDef>().FirstOrDefault(p => p.name.Equals("Decoy_AbilityDef"));
-        private static readonly AbilityDef weakspot = Repo.GetAllDefs<AbilityDef>().FirstOrDefault(p => p.name.Equals("WeakSpot_AbilityDef"));
-        private static readonly AbilityDef vanish = Repo.GetAllDefs<AbilityDef>().FirstOrDefault(p => p.name.Equals("Vanish_AbilityDef"));
-        private static readonly AbilityDef sneakAttack = Repo.GetAllDefs<AbilityDef>().FirstOrDefault(p => p.name.Equals("SneakAttack_AbilityDef"));
+        private static readonly AbilityDef surpriseAttack = DefCache.GetDef<AbilityDef>("SurpriseAttack_AbilityDef");
+        private static readonly AbilityDef decoy = DefCache.GetDef<AbilityDef>("Decoy_AbilityDef");
+        private static readonly AbilityDef weakspot = DefCache.GetDef<AbilityDef>("WeakSpot_AbilityDef");
+        private static readonly AbilityDef vanish = DefCache.GetDef<AbilityDef>("Vanish_AbilityDef");
+        private static readonly AbilityDef sneakAttack = DefCache.GetDef<AbilityDef>("SneakAttack_AbilityDef");
 
         //priest
 
-        private static readonly AbilityDef mindControl = Repo.GetAllDefs<AbilityDef>().FirstOrDefault(p => p.name.Equals("Priest_MindControl_AbilityDef"));
-        private static readonly AbilityDef inducePanic = Repo.GetAllDefs<AbilityDef>().FirstOrDefault(p => p.name.Equals("InducePanic_AbilityDef"));
-        private static readonly AbilityDef mindSense = Repo.GetAllDefs<AbilityDef>().FirstOrDefault(p => p.name.Equals("MindSense_AbilityDef"));
-        private static readonly AbilityDef psychicWard = Repo.GetAllDefs<AbilityDef>().FirstOrDefault(p => p.name.Equals("PsychicWard_AbilityDef"));
-        private static readonly AbilityDef mindCrush = Repo.GetAllDefs<AbilityDef>().FirstOrDefault(p => p.name.Equals("MindCrush_AbilityDef"));
+        private static readonly AbilityDef mindControl = DefCache.GetDef<AbilityDef>("Priest_MindControl_AbilityDef");
+        private static readonly AbilityDef inducePanic = DefCache.GetDef<AbilityDef>("InducePanic_AbilityDef");
+        private static readonly AbilityDef mindSense = DefCache.GetDef<AbilityDef>("MindSense_AbilityDef");
+        private static readonly AbilityDef psychicWard = DefCache.GetDef<AbilityDef>("PsychicWard_AbilityDef");
+        private static readonly AbilityDef mindCrush = DefCache.GetDef<AbilityDef>("MindCrush_AbilityDef");
 
         //sniper
-        private static readonly AbilityDef extremeFocus = Repo.GetAllDefs<AbilityDef>().FirstOrDefault(p => p.name.Equals("ExtremeFocus_AbilityDef"));
-        private static readonly AbilityDef armorBreak = Repo.GetAllDefs<AbilityDef>().FirstOrDefault(p => p.name.Equals("ArmourBreak_AbilityDef"));
-        private static readonly AbilityDef masterMarksman = Repo.GetAllDefs<AbilityDef>().FirstOrDefault(p => p.name.Equals("MasterMarksman_AbilityDef"));
-        private static readonly AbilityDef inspire = Repo.GetAllDefs<AbilityDef>().FirstOrDefault(p => p.name.Equals("Inspire_AbilityDef"));
-        private static readonly AbilityDef markedForDeath = Repo.GetAllDefs<AbilityDef>().FirstOrDefault(p => p.name.Equals("MarkedForDeath_AbilityDef"));
+        private static readonly AbilityDef extremeFocus = DefCache.GetDef<AbilityDef>("ExtremeFocus_AbilityDef");
+        private static readonly AbilityDef armorBreak = DefCache.GetDef<AbilityDef>("ArmourBreak_AbilityDef");
+        private static readonly AbilityDef masterMarksman = DefCache.GetDef<AbilityDef>("MasterMarksman_AbilityDef");
+        private static readonly AbilityDef inspire = DefCache.GetDef<AbilityDef>("Inspire_AbilityDef");
+        private static readonly AbilityDef markedForDeath = DefCache.GetDef<AbilityDef>("MarkedForDeath_AbilityDef");
 
         //Technician
-        private static readonly AbilityDef fastUse = Repo.GetAllDefs<AbilityDef>().FirstOrDefault(p => p.name.Equals("FastUse_AbilityDef"));
-        private static readonly AbilityDef electricReinforcement = Repo.GetAllDefs<AbilityDef>().FirstOrDefault(p => p.name.Equals("ElectricReinforcement_AbilityDef"));
-        private static readonly AbilityDef stability = Repo.GetAllDefs<AbilityDef>().FirstOrDefault(p => p.name.Equals("Stability_AbilityDef"));
-        private static readonly AbilityDef fieldMedic = Repo.GetAllDefs<AbilityDef>().FirstOrDefault(p => p.name.Equals("FieldMedic_AbilityDef"));
-        private static readonly AbilityDef amplifyPain = Repo.GetAllDefs<AbilityDef>().FirstOrDefault(p => p.name.Equals("AmplifyPain_AbilityDef"));
+        private static readonly AbilityDef fastUse = DefCache.GetDef<AbilityDef>("FastUse_AbilityDef");
+        private static readonly AbilityDef electricReinforcement = DefCache.GetDef<AbilityDef>("ElectricReinforcement_AbilityDef");
+        private static readonly AbilityDef stability = DefCache.GetDef<AbilityDef>("Stability_AbilityDef");
+        private static readonly AbilityDef fieldMedic = DefCache.GetDef<AbilityDef>("FieldMedic_AbilityDef");
+        private static readonly AbilityDef amplifyPain = DefCache.GetDef<AbilityDef>("AmplifyPain_AbilityDef");
 
 
 
@@ -378,8 +379,7 @@ namespace TFTV
                     string nameOfFaction = faction.Faction.FactionDef.ShortName;
 
                     TFTVLogger.Always("The short name of the faction is " + nameOfFaction);
-                    GameTagDef gameTagDef = Repo.GetAllDefs<GameTagDef>().FirstOrDefault
-                           (p => p.name.Equals("HumanEnemyFaction_" + nameOfFaction + "_GameTagDef"));
+                    GameTagDef gameTagDef = DefCache.GetDef<GameTagDef>("HumanEnemyFaction_" + nameOfFaction + "_GameTagDef");
                     TFTVLogger.Always("gameTagDef found");
 
                     leaderBase.GameTags.Add(HumanEnemyTier1GameTag);
@@ -1144,8 +1144,7 @@ namespace TFTV
                             foreach (TacticalFaction faction in GetHumanEnemyFactions(__instance))
                             {
                                 string nameOfFaction = faction.Faction.FactionDef.ShortName;
-                                GameTagDef gameTagDef = Repo.GetAllDefs<GameTagDef>().FirstOrDefault
-                                       (p => p.name.Equals("HumanEnemyFaction_" + nameOfFaction + "_GameTagDef"));
+                                GameTagDef gameTagDef = DefCache.GetDef<GameTagDef>("HumanEnemyFaction_" + nameOfFaction + "_GameTagDef");
                                 List<string> factionNames = TFTVHumanEnemiesNames.names[nameOfFaction];
 
                                 if (faction.Actors.Contains(actor))
@@ -1360,7 +1359,7 @@ namespace TFTV
                                 {
                                     foreach (TacticalActorBase allyTacticalActorBase in faction.Actors)
                                     {
-                                        if (allyTacticalActorBase.BaseDef.name == "Soldier_ActorDef" && allyTacticalActorBase.InPlay && allyTacticalActorBase.HasGameTag(Repo.GetAllDefs<GameTagDef>().FirstOrDefault(p => p.name.Equals("HumanEnemyTier_4_GameTagDef"))))
+                                        if (allyTacticalActorBase.BaseDef.name == "Soldier_ActorDef" && allyTacticalActorBase.InPlay && allyTacticalActorBase.HasGameTag(DefCache.GetDef<GameTagDef>("HumanEnemyTier_4_GameTagDef")))
                                         {
                                             TacticalActor actor = allyTacticalActorBase as TacticalActor;
 
@@ -1425,9 +1424,9 @@ namespace TFTV
                                                         && !actor.Status.HasStatus(quickAimStatus))
                                                         {
                                                             TFTVLogger.Always("Actor is getting quick aim status");
-                                                            //  actor.AddAbility(Repo.GetAllDefs<AbilityDef>().FirstOrDefault(p => p.name.Equals("Regeneration_Torso_Passive_AbilityDef")), actor);
+                                                            //  actor.AddAbility(DefCache.GetDef<AbilityDef>("Regeneration_Torso_Passive_AbilityDef")), actor);
                                                             actor.Status.ApplyStatus(quickAimStatus);
-                                                            //  actor.AddAbility(Repo.GetAllDefs<ApplyStatusAbilityDef>().FirstOrDefault(p => p.name.Equals("QuickAim_AbilityDef")), actor);
+                                                            //  actor.AddAbility(DefCache.GetDef<ApplyStatusAbilityDef>("QuickAim_AbilityDef")), actor);
 
                                                         }
                                                     }
@@ -1830,7 +1829,7 @@ namespace TFTV
                     {
                         TacticalActor tacticalActor = tacticalActorBase as TacticalActor;
 
-                        if (tacticalActorBase.HasGameTag(Repo.GetAllDefs<GameTagDef>().FirstOrDefault(p => p.name.Equals("HumanEnemyTier_1_GameTagDef"))))
+                        if (tacticalActorBase.HasGameTag(DefCache.GetDef<GameTagDef>("HumanEnemyTier_1_GameTagDef")))
                         {
                             foreach (TacticalActorBase allyTacticalActorBase in faction.Actors)
                             {
@@ -1844,7 +1843,7 @@ namespace TFTV
                                     && TacticalFactionVision.CheckVisibleLineBetweenActors(allyTacticalActorBase, allyTacticalActorBase.Pos, tacticalActor, true))
                                 {
                                     TFTVLogger.Always("Actor in range and has LoS");
-                                    ItemSlotStatsModifyStatusDef eRStatusEffect = Repo.GetAllDefs<ItemSlotStatsModifyStatusDef>().FirstOrDefault(p => p.name.Equals("E_Status [ElectricReinforcement_AbilityDef]"));
+                                    ItemSlotStatsModifyStatusDef eRStatusEffect = DefCache.GetDef<ItemSlotStatsModifyStatusDef>("E_Status [ElectricReinforcement_AbilityDef]");
                                     allyTacticalActorBase.Status.ApplyStatus(eRStatusEffect);
                                 }
 

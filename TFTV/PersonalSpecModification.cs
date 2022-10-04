@@ -92,13 +92,13 @@ namespace PRMBetterClasses
                                
                                 string name = __result.UnitType.TemplateDef.Data.Name;
 
-                                TFTVLogger.Always("(__result.GetName() returns " + name);
+                               // TFTVLogger.Always("(__result.GetName() returns " + name);
                                 PRMLogger.Debug("           Key: " + personalPerksDef.PerkKey);
                                 if (Config.SpecialCharacterPersonalSkills.ContainsKey(name) && Config.SpecialCharacterPersonalSkills[name].ContainsKey(i))
                                 {
-                                    TFTVLogger.Always("Got inside MadSkunky method");
+                                  //  TFTVLogger.Always("Got inside MadSkunky method");
                                     ability = Config.SpecialCharacterPersonalSkills[name][i];
-                                    TFTVLogger.Always("The ability is " + ability);
+                                  //  TFTVLogger.Always("The ability is " + ability);
                                 }
                                 else
                                 {

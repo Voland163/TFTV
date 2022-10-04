@@ -32,23 +32,25 @@ namespace PRMBetterClasses.SkillModifications
 
         public static void ApplyChanges()
         {
+            DefCache DefCache = TFTVMain.Main.DefCache;
+        
             // Quick Aim: Adding accuracy modification
-            Create_BC_QuickAim();
+            Create_BC_QuickAim(DefCache);
 
             // Kill'n'Run: Recive one free Dash move when killing an enemy, once per turn
-            Create_KillAndRun();
+            Create_KillAndRun(DefCache);
 
             // Onslaught (DeterminedAdvance_AbilityDef): Receiver can get only 1 onslaught per turn.
-            Change_Onslaught();
+            Change_Onslaught(DefCache);
 
             // Rapid Clearance: Until end of turn, after killing an enemy next attack cost -2AP
-            Change_RapidClearance();
+            Change_RapidClearance(DefCache);
 
             // AIMED BURST: 2 bursts with increased accuracy for 3 AP and 4 WP, AR only
-            Create_AimedBurst();
+            Create_AimedBurst(DefCache);
         }
 
-        private static void Create_BC_QuickAim()
+        private static void Create_BC_QuickAim(DefCache defCache)
         {
             string skillName = "BC_QuickAim_AbilityDef";
             float qaAccMultiplier = 0.7f;
@@ -59,7 +61,7 @@ namespace PRMBetterClasses.SkillModifications
             //    $"The Action Point cost of the next shot with a proficient weapon is reduced by 1 with {(qaAccMultiplier * 100) - 100}% accuracy. Limited to {qaUsesPerTurn} uses per turn.",
             //    TFTVMain.Main.Settings.DoNotLocalizeChangedTexts);
 
-            ApplyStatusAbilityDef source = Repo.GetAllDefs<ApplyStatusAbilityDef>().FirstOrDefault(a => a.name.Equals("QuickAim_AbilityDef"));
+            ApplyStatusAbilityDef source = defCache.GetDef<ApplyStatusAbilityDef>("QuickAim_AbilityDef");
             ApplyStatusAbilityDef quickAim = Helper.CreateDefFromClone(
                 source,
                 "a92d0cab-60a8-4a42-aeed-b5415906b39d",
@@ -77,7 +79,7 @@ namespace PRMBetterClasses.SkillModifications
                 "c60511db-2785-4932-8654-086adc8e9e1b",
                 skillName);
             StatMultiplierStatusDef qaAccMod = Helper.CreateDefFromClone(
-                Repo.GetAllDefs<StatMultiplierStatusDef>().FirstOrDefault(sms => sms.name.Equals("Trembling_StatusDef")),
+                defCache.GetDef<StatMultiplierStatusDef>("Trembling_StatusDef"),
                 "4a6f7cc4-1bd6-45a5-b572-053963966b07",
                 $"E AccuracyMultiplier [{skillName}]");
 
@@ -111,13 +113,13 @@ namespace PRMBetterClasses.SkillModifications
             }
         }
 
-        public static void Create_KillAndRun()
+        public static void Create_KillAndRun(DefCache defCache)
         {
             string skillName = "KillAndRun_AbilityDef";
             DefRepository Repo = TFTVMain.Repo;
 
             // Source to clone from for main ability: Inspire
-            ApplyStatusAbilityDef inspireAbility = Repo.GetAllDefs<ApplyStatusAbilityDef>().FirstOrDefault(a => a.name.Equals("Inspire_AbilityDef"));
+            ApplyStatusAbilityDef inspireAbility = defCache.GetDef<ApplyStatusAbilityDef>(("Inspire_AbilityDef"));
 
             // Create Neccessary RuntimeDefs
             ApplyStatusAbilityDef killAndRunAbility = Helper.CreateDefFromClone(
@@ -137,31 +139,31 @@ namespace PRMBetterClasses.SkillModifications
                 "7cfcb266-6730-4642-88d5-8a212104b9cc",
                 "E_KillListenerStatus [" + skillName + "]");
             RepositionAbilityDef dashAbility = Helper.CreateDefFromClone( // Create an own Dash ability from standard Dash
-                Repo.GetAllDefs<RepositionAbilityDef>().FirstOrDefault(r => r.name.Equals("Dash_AbilityDef")),
+                defCache.GetDef<RepositionAbilityDef>("Dash_AbilityDef"),
                 "de8cd8a9-f2eb-4b8a-a408-a2a1913930c4",
                 "KillAndRun_Dash_AbilityDef");
             TacticalTargetingDataDef dashTargetingData = Helper.CreateDefFromClone( // ... and clone its targeting data
-                Repo.GetAllDefs<TacticalTargetingDataDef>().FirstOrDefault(t => t.name.Equals("E_TargetingData [Dash_AbilityDef]")),
+                defCache.GetDef<TacticalTargetingDataDef>("E_TargetingData [Dash_AbilityDef]"),
                 "18e86a2b-6031-4c84-a2a0-cb6ad2423b56",
                 "KillAndRun_Dash_AbilityDef");
             StatusRemoverEffectDef statusRemoverEffect = Helper.CreateDefFromClone( // Borrow effect from Manual Control
-                Repo.GetAllDefs<StatusRemoverEffectDef>().FirstOrDefault(a => a.name.Equals("E_RemoveStandBy [ManualControlStatus]")),
+                defCache.GetDef<StatusRemoverEffectDef>("E_RemoveStandBy [ManualControlStatus]"),
                 "77b65001-7b75-4fbc-a89e-cf3e3e8ca69f",
                 "E_StatusRemoverEffect [" + skillName + "]");
             AddAbilityStatusDef addAbiltyStatus = Helper.CreateDefFromClone( // Borrow status from Deplay Beacon (final mission)
-                Repo.GetAllDefs<AddAbilityStatusDef>().FirstOrDefault(a => a.name.Equals("E_AddAbilityStatus [DeployBeacon_StatusDef]")),
+                defCache.GetDef<AddAbilityStatusDef>("E_AddAbilityStatus [DeployBeacon_StatusDef]"),
                 "ac18e0d8-530d-4077-b372-71c9f82e2b88",
                 skillName);
             MultiStatusDef multiStatus = Helper.CreateDefFromClone( // Borrow multi status from Rapid Clearance
-                Repo.GetAllDefs<MultiStatusDef>().FirstOrDefault(m => m.name.Equals("E_MultiStatus [RapidClearance_AbilityDef]")),
+                defCache.GetDef<MultiStatusDef>("E_MultiStatus [RapidClearance_AbilityDef]"),
                 "be7115e5-ce6b-47da-bead-311f3978f242",
                 skillName);
             FirstMatchExecutionDef cameraAbility = Helper.CreateDefFromClone(
-                Repo.GetAllDefs<FirstMatchExecutionDef>().FirstOrDefault(bd => bd.name.Equals("E_DashCameraAbility [NoDieCamerasTacticalCameraDirectorDef]")),
+                defCache.GetDef<FirstMatchExecutionDef>("E_DashCameraAbility [NoDieCamerasTacticalCameraDirectorDef]"),
                 "75d8137e-06f7-4840-8156-23366c4daea7",
                 "E_KnR_Dash_CameraAbility [NoDieCamerasTacticalCameraDirectorDef]");
             cameraAbility.FilterDef = Helper.CreateDefFromClone(
-                Repo.GetAllDefs<TacCameraAbilityFilterDef>().FirstOrDefault(c => c.name.Equals("E_DashAbilityFilter [NoDieCamerasTacticalCameraDirectorDef]")),
+                defCache.GetDef<TacCameraAbilityFilterDef>("E_DashAbilityFilter [NoDieCamerasTacticalCameraDirectorDef]"),
                 "bf422b08-5b84-4b6a-a0cd-74ce1bfbc2fc",
                 "E_KnR_Dash_CameraAbilityFilter [NoDieCamerasTacticalCameraDirectorDef]");
             (cameraAbility.FilterDef as TacCameraAbilityFilterDef).TacticalAbilityDef = dashAbility;
@@ -244,7 +246,7 @@ namespace PRMBetterClasses.SkillModifications
             }
         }
 
-        private static void Change_Onslaught()
+        private static void Change_Onslaught(DefCache defCache)
         {
             // This below works on the target but he can be targeted again from another Assault without any response => the Assault loses 2 AP and the target gets nothing
             // Looking for a solution, maybe MC fuctionality could be a solution (thx to Iko)
@@ -255,24 +257,24 @@ namespace PRMBetterClasses.SkillModifications
             PRMLogger.Debug("----------------------------------------------------", false);
         }
 
-        private static void Change_RapidClearance()
+        private static void Change_RapidClearance(DefCache defCache)
         {
             DefRepository Repo = TFTVMain.Repo;
 
             // Get Rapid Clearance ability def
-            ApplyStatusAbilityDef rapidClearance = Repo.GetAllDefs<ApplyStatusAbilityDef>().FirstOrDefault(a => a.name.Equals("RapidClearance_AbilityDef"));
+            ApplyStatusAbilityDef rapidClearance = defCache.GetDef<ApplyStatusAbilityDef>("RapidClearance_AbilityDef");
             // Clone status apply effect from Vanish
             StatusEffectDef applyStatusEffect = Helper.CreateDefFromClone(
-                Repo.GetAllDefs<StatusEffectDef>().FirstOrDefault(s => s.name.Equals("E_ApplyVanishStatusEffect [Vanish_AbilityDef]")),
+                defCache.GetDef<StatusEffectDef>("E_ApplyVanishStatusEffect [Vanish_AbilityDef]"),
                 "8ea85920-588b-4e1d-a8e6-31ffbe9d3a02",
                 "E_ApplyStatusEffect [RapidClearance_AbilityDef]");
             // Clone AP reduction statuses from QA
             AddAttackBoostStatusDef addAttackBoostStatus = Helper.CreateDefFromClone( // applies the AP reduction status only for the next attack
-                Repo.GetAllDefs<AddAttackBoostStatusDef>().FirstOrDefault(s => s.name.Equals("E_Status [QuickAim_AbilityDef]")),
+                defCache.GetDef<AddAttackBoostStatusDef>("E_Status [QuickAim_AbilityDef]"),
                 "9385a73f-8d20-4022-acc1-9210e2e29b8f",
                 "E_AttackBoostStatus [RapidClearance_AbilityDef]");
             ChangeAbilitiesCostStatusDef apReductionStatusEffect = Helper.CreateDefFromClone(
-                Repo.GetAllDefs<ChangeAbilitiesCostStatusDef>().FirstOrDefault(s => s.name.Equals("E_AbilityCostModifier [QuickAim_AbilityDef]")),
+                defCache.GetDef<ChangeAbilitiesCostStatusDef>("E_AbilityCostModifier [QuickAim_AbilityDef]"),
                 "e3062779-8f2f-4407-bc4f-a20f5c2d267b",
                 "E_AbilityCostModifier [RapidClearance_AbilityDef]");
             // change properties and references
@@ -288,14 +290,14 @@ namespace PRMBetterClasses.SkillModifications
             (rapidClearance.StatusDef as OnActorDeathEffectStatusDef).EffectDef = applyStatusEffect;
         }
 
-        public static void Create_AimedBurst()
+        public static void Create_AimedBurst(DefCache defCache)
         {
             string skillName = "AimedBurst_AbilityDef";
             DefRepository Repo = TFTVMain.Repo;
 
             // Source to clone from
-            //ShootAbilityDef source = Repo.GetAllDefs<ShootAbilityDef>().FirstOrDefault(p => p.name.Equals("RageBurst_ShootAbilityDef"));
-            ShootAbilityDef source = Repo.GetAllDefs<ShootAbilityDef>().FirstOrDefault(p => p.name.Equals("Gunslinger_AbilityDef"));
+            //ShootAbilityDef source = defCache.GetDef<ShootAbilityDef>().FirstOrDefault(p => p.name.Equals("RageBurst_ShootAbilityDef"));
+            ShootAbilityDef source = defCache.GetDef<ShootAbilityDef>("Gunslinger_AbilityDef");
 
             // Create Neccessary RuntimeDefs
             ShootAbilityDef aimedBurstAbility = Helper.CreateDefFromClone(
@@ -322,8 +324,8 @@ namespace PRMBetterClasses.SkillModifications
             //aimedBurstAbility.SkillTags = new SkillTagDef[] { rageBurst.SkillTags[0] };
             aimedBurstAbility.ActionPointCost = 0.75f;
             aimedBurstAbility.WillPointCost = 4.0f;
-            aimedBurstAbility.ActorTags = new GameTagDef[] { Repo.GetAllDefs<GameTagDef>().FirstOrDefault(t => t.name.Equals("Assault_ClassTagDef")) };
-            aimedBurstAbility.EquipmentTags = new GameTagDef[] { Repo.GetAllDefs<GameTagDef>().FirstOrDefault(t => t.name.Equals("AssaultRifleItem_TagDef")) };
+            aimedBurstAbility.ActorTags = new GameTagDef[] { defCache.GetDef<GameTagDef>("Assault_ClassTagDef") };
+            aimedBurstAbility.EquipmentTags = new GameTagDef[] { defCache.GetDef<GameTagDef>("AssaultRifleItem_TagDef") };
             aimedBurstAbility.ExecutionsCount = 2;
             aimedBurstAbility.TraitsToApply = new string[] {
                 "attack",
@@ -340,7 +342,7 @@ namespace PRMBetterClasses.SkillModifications
             viewElement.DisplayName1.LocalizationKey = "PR_BC_AIMED_BURST"; // new LocalizedTextBind("AIMED BURST", doNotLocalize);
             viewElement.Description.LocalizationKey = "PR_BC_AIMED_BURST_DESC"; // new LocalizedTextBind("Next shot with Assault Rifle uses double burst and gains +30% acc", doNotLocalize);
             // TODO: Maybe change to own Icon, current borrowed from Deadly Dou, for now we stick with it
-            Sprite aimedBurst_IconSprite = Repo.GetAllDefs<TacticalAbilityViewElementDef>().FirstOrDefault(t => t.name.Equals("E_View [DeadlyDuo_ShootAbilityDef]")).LargeIcon;
+            Sprite aimedBurst_IconSprite = defCache.GetDef<TacticalAbilityViewElementDef>("E_View [DeadlyDuo_ShootAbilityDef]").LargeIcon;
             viewElement.LargeIcon = aimedBurst_IconSprite;
             viewElement.SmallIcon = aimedBurst_IconSprite;
             //viewElement.MultiTargetSelectionButtonTexts = new string[0];

@@ -60,7 +60,7 @@ namespace PRMBetterClasses.SkillModifications
 
         private static void Create_Stability()
         {
-            float maxAccBoost = 0.2f;
+            float maxAccBoost = 0.4f;
             string skillName = "Stability_AbilityDef";
             ApplyStatusAbilityDef source = Repo.GetAllDefs<ApplyStatusAbilityDef>().FirstOrDefault(asa => asa.name.Equals("BloodLust_AbilityDef"));
             Sprite icon = Helper.CreateSpriteFromImageFile("UI_AbilitiesIcon_PersonalTrack_Strategist.png");

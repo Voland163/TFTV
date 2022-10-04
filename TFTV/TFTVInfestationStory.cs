@@ -21,11 +21,13 @@ namespace TFTV
 {
     internal class TFTVInfestationStory
     {
-        private static readonly DefRepository Repo = TFTVMain.Repo;
-        private static readonly GameTagDef mutoidTag = Repo.GetAllDefs<GameTagDef>().FirstOrDefault(p => p.name.Equals("Mutoid_TagDef"));
-        private static readonly GameTagDef nodeTag = Repo.GetAllDefs<GameTagDef>().FirstOrDefault(p => p.name.Equals("CorruptionNode_ClassTagDef"));
+      //  private static readonly DefRepository Repo = TFTVMain.Repo;
+        private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
+
+        private static readonly GameTagDef mutoidTag = DefCache.GetDef<GameTagDef>("Mutoid_TagDef");
+        private static readonly GameTagDef nodeTag = DefCache.GetDef<GameTagDef>("CorruptionNode_ClassTagDef");
         
-        private static readonly MissionTypeTagDef infestationMissionTagDef = Repo.GetAllDefs<MissionTypeTagDef>().FirstOrDefault(p => p.name.Equals("HavenInfestation_MissionTypeTagDef"));
+        private static readonly MissionTypeTagDef infestationMissionTagDef = DefCache.GetDef<MissionTypeTagDef>("HavenInfestation_MissionTypeTagDef");
         public static int HavenPopulation = 0;
         public static string OriginalOwner = "";
 
@@ -113,8 +115,8 @@ namespace TFTV
                                 "Scans show that there are survivors out there. Stay frosty and be ready for anything. " + orderedOperatives[0].DisplayName + " out.";
 
 
-                            ContextHelpHintDef infestationIntro2 = Repo.GetAllDefs<ContextHelpHintDef>().FirstOrDefault(ged => ged.name.Equals(name + "2"));
-                            ContextHelpHintDef infestationIntro = Repo.GetAllDefs<ContextHelpHintDef>().FirstOrDefault(ged => ged.name.Equals(name));
+                            ContextHelpHintDef infestationIntro2 = DefCache.GetDef<ContextHelpHintDef>(name + "2");
+                            ContextHelpHintDef infestationIntro = DefCache.GetDef<ContextHelpHintDef>(name);
                             
                             infestationIntro.Text = new Base.UI.LocalizedTextBind(text, true);
                             infestationIntro.Title = new Base.UI.LocalizedTextBind(title, true);
@@ -150,7 +152,7 @@ namespace TFTV
                         "the Pandorans didn’t want to exterminate us. That would have been too merciful. They wanted us for something else.”</i>\n\n" + nameOfOperative
                         + ", Phoenix Project";
 
-                    ContextHelpHintDef infestationOutro = Repo.GetAllDefs<ContextHelpHintDef>().FirstOrDefault(ged => ged.name.Equals("InfestationMissionEnd"));
+                    ContextHelpHintDef infestationOutro = DefCache.GetDef<ContextHelpHintDef>("InfestationMissionEnd");
 
 
                     infestationOutro.Text = new Base.UI.LocalizedTextBind(text, true);

@@ -31,7 +31,8 @@ namespace TFTV
     internal class TFTVInfestation
     {
         public static SharedData sharedData = GameUtl.GameComponent<SharedData>();
-        private static readonly DefRepository Repo = TFTVMain.Repo;
+      //  private static readonly DefRepository Repo = TFTVMain.Repo;
+        private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
 
         internal static GeoHavenDefenseMission DefenseMission = null;
         internal static GeoSite GeoSiteForInfestation = null;
@@ -46,9 +47,9 @@ namespace TFTV
         {
             try 
             {
-                GeoscapeEventDef LW1Miss = Repo.GetAllDefs<GeoscapeEventDef>().FirstOrDefault(ged => ged.name.Equals("PROG_LW1_WIN_GeoscapeEventDef"));
-                GeoscapeEventDef LW2Miss = Repo.GetAllDefs<GeoscapeEventDef>().FirstOrDefault(ged => ged.name.Equals("PROG_LW2_WIN_GeoscapeEventDef"));
-                GeoscapeEventDef LW3Miss = Repo.GetAllDefs<GeoscapeEventDef>().FirstOrDefault(ged => ged.name.Equals("PROG_LW3_WIN_GeoscapeEventDef"));
+                GeoscapeEventDef LW1Miss = DefCache.GetDef<GeoscapeEventDef>("PROG_LW1_WIN_GeoscapeEventDef");
+                GeoscapeEventDef LW2Miss = DefCache.GetDef<GeoscapeEventDef>("PROG_LW2_WIN_GeoscapeEventDef");
+                GeoscapeEventDef LW3Miss = DefCache.GetDef<GeoscapeEventDef>("PROG_LW3_WIN_GeoscapeEventDef");
 
                
 

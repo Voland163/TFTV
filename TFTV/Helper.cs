@@ -2,12 +2,10 @@
 using HarmonyLib;
 using I2.Loc;
 using Newtonsoft.Json;
-using PhoenixPoint.Common.Core;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using TFTV;
 using UnityEngine;
 
@@ -152,12 +150,9 @@ namespace PRMBetterClasses
     guid,
     source,
     type);
-
-                /* T result = (T)Repo.CreateRuntimeDef(
-                    source,
-                    type,
-                    guid);*/
+                
                 result.name = resultName;
+                TFTVMain.Main.DefCache.AddDef(result.name, result.Guid);
                 PRMLogger.Debug($"CreateDefFromClone, <{result.name}> of type <{result.GetType().Name}> sucessful created.");
                 PRMLogger.Debug("----------------------------------------------------", false);
                 return result;

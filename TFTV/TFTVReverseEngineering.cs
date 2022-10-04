@@ -11,7 +11,8 @@ namespace TFTV
     internal class TFTVReverseEngineering
     {
         private static readonly DefRepository Repo = TFTVMain.Repo;
- 
+        private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
+
         public static void ModifyReverseEngineering()
         {
 
@@ -507,7 +508,8 @@ namespace TFTV
                 AdjustCosts();
             }
 
-            
+
+
 
             catch (Exception e)
             {
@@ -555,7 +557,7 @@ namespace TFTV
             {
                 foreach (ResearchDef research in Repo.GetAllDefs<ResearchDef>()) 
                 {
-                    if (research.Id.Contains(keyword)) 
+                    if (research.Id.Contains(keyword))
                     { 
                     research.ResearchCost=cost;
                     

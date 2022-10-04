@@ -115,8 +115,8 @@ namespace TFTV
         [HarmonyPatch(typeof(UIModuleMutationSection), "ApplyMutation")]
         public static class UIModuleMutationSection_ApplyMutation_PissedEvents_patch
         {
-            private static readonly DefRepository Repo = TFTVMain.Repo;
-            private static readonly GeoFactionDef newJerico = Repo.GetAllDefs<GeoFactionDef>().FirstOrDefault(ged => ged.name.Equals("NewJericho_GeoFactionDef"));
+            private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
+            private static readonly GeoFactionDef newJerico = DefCache.GetDef<GeoFactionDef>("NewJericho_GeoFactionDef");
             private static readonly GameTagDef mutationTag = GameUtl.GameComponent<SharedData>().SharedGameTags.AnuMutationTag;
 
             public static void Postfix(UIModuleMutationSection __instance, IAugmentationUIModule ____parentModule)

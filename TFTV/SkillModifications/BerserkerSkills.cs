@@ -1,4 +1,5 @@
 ﻿using Base.Defs;
+using Base.Entities.Abilities;
 using Base.UI;
 using com.ootii.Collections;
 using HarmonyLib;
@@ -7,6 +8,7 @@ using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.UI;
 using PhoenixPoint.Tactical.Entities.Abilities;
+using PhoenixPoint.Tactical.Entities.Animations;
 using PhoenixPoint.Tactical.Entities.Statuses;
 using System;
 using System.Collections.Generic;
@@ -186,6 +188,21 @@ namespace PRMBetterClasses.SkillModifications
             Exertion.ViewElementDef.DisplayName1.LocalizationKey = "PR_BC_EXERTION"; // name;
             Exertion.ViewElementDef.Description.LocalizationKey = "PR_BC_EXERTION_DESC"; // = description;
             Exertion.ActionPointsReturnedPerc = apMod;
+
+            //AbilityDef animSource = Repo.GetAllDefs<AbilityDef>().FirstOrDefault(ad => ad.name.Equals("Priest_InstilFrenzy_AbilityDef"));
+            //foreach (TacActorSimpleAbilityAnimActionDef animActionDef in Repo.GetAllDefs<TacActorSimpleAbilityAnimActionDef>().Where(aad => aad.name.Contains("Soldier_Utka_AnimActionsDef")))
+            //{
+            //    if (animActionDef.AbilityDefs != null && animActionDef.AbilityDefs.Contains(animSource) && !animActionDef.AbilityDefs.Contains(Exertion))
+            //    {
+            //        animActionDef.AbilityDefs = animActionDef.AbilityDefs.Append(Exertion).ToArray();
+            //        PRMLogger.Debug("Anim Action '" + animActionDef.name + "' set for abilities:");
+            //        foreach (AbilityDef ad in animActionDef.AbilityDefs)
+            //        {
+            //            PRMLogger.Debug("  " + ad.name);
+            //        }
+            //        PRMLogger.Debug("----------------------------------------------------", false);
+            //    }
+            //}
         }
     }
 }

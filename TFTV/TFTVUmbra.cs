@@ -23,29 +23,32 @@ namespace TFTV
     internal class TFTVUmbra
     {
 
-        private static readonly DefRepository Repo = TFTVMain.Repo;
+      //  private static readonly DefRepository Repo = TFTVMain.Repo;
+        private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
+
+
         public static string variableUmbraALNResReq = "Umbra_Encounter_Variable";
         public static bool UmbraResearched = false;
-        public static RandomValueEffectConditionDef randomValueFishUmbra = Repo.GetAllDefs<RandomValueEffectConditionDef>().FirstOrDefault(ged => ged.name.Equals("E_RandomValue [UmbralFishmen_FactionEffectDef]"));
-        public static RandomValueEffectConditionDef randomValueCrabUmbra = Repo.GetAllDefs<RandomValueEffectConditionDef>().FirstOrDefault(ged => ged.name.Equals("E_RandomValue [UmbralCrabmen_FactionEffectDef]"));
-        private static readonly AddAbilityStatusDef oilCrabAbility = Repo.GetAllDefs<AddAbilityStatusDef>().FirstOrDefault(ged => ged.name.Equals("OilCrab_AddAbilityStatusDef"));
-        private static readonly AddAbilityStatusDef oilTritonAbility = Repo.GetAllDefs<AddAbilityStatusDef>().FirstOrDefault(ged => ged.name.Equals("OilFish_AddAbilityStatusDef"));
+        public static RandomValueEffectConditionDef randomValueFishUmbra = DefCache.GetDef<RandomValueEffectConditionDef>("E_RandomValue [UmbralFishmen_FactionEffectDef]");
+        public static RandomValueEffectConditionDef randomValueCrabUmbra = DefCache.GetDef<RandomValueEffectConditionDef>("E_RandomValue [UmbralCrabmen_FactionEffectDef]");
+        private static readonly AddAbilityStatusDef oilCrabAbility = DefCache.GetDef<AddAbilityStatusDef>("OilCrab_AddAbilityStatusDef");
+        private static readonly AddAbilityStatusDef oilTritonAbility = DefCache.GetDef<AddAbilityStatusDef>("OilFish_AddAbilityStatusDef");
 
-        public static WeaponDef umbraCrab = Repo.GetAllDefs<WeaponDef>().FirstOrDefault(ged => ged.name.Equals("Oilcrab_Torso_BodyPartDef"));
+        public static WeaponDef umbraCrab = DefCache.GetDef<WeaponDef>("Oilcrab_Torso_BodyPartDef");
 
-        public static BodyPartAspectDef umbraCrabBodyAspect = Repo.GetAllDefs<BodyPartAspectDef>(). FirstOrDefault(ged => ged.name.Equals("E_BodyPartAspect [Oilcrab_Torso_BodyPartDef]"));
+        public static BodyPartAspectDef umbraCrabBodyAspect = DefCache.GetDef<BodyPartAspectDef>("E_BodyPartAspect [Oilcrab_Torso_BodyPartDef]");
 
-        public static WeaponDef umbraFish = Repo.GetAllDefs<WeaponDef>().FirstOrDefault(ged => ged.name.Equals("Oilfish_Torso_BodyPartDef"));
+        public static WeaponDef umbraFish = DefCache.GetDef<WeaponDef>("Oilfish_Torso_BodyPartDef");
 
-        public static BodyPartAspectDef umbraFishBodyAspect = Repo.GetAllDefs<BodyPartAspectDef>().FirstOrDefault(ged => ged.name.Equals("E_BodyPartAspect [Oilfish_Torso_BodyPartDef]"));
+        public static BodyPartAspectDef umbraFishBodyAspect = DefCache.GetDef<BodyPartAspectDef>("E_BodyPartAspect [Oilfish_Torso_BodyPartDef]");
 
-        private static readonly ClassTagDef crabTag = Repo.GetAllDefs<ClassTagDef>().FirstOrDefault (ged => ged.name.Equals("Crabman_ClassTagDef"));
-        private static readonly ClassTagDef fishTag = Repo.GetAllDefs<ClassTagDef>().FirstOrDefault(ged => ged.name.Equals("Fishman_ClassTagDef"));
+        private static readonly ClassTagDef crabTag = DefCache.GetDef<ClassTagDef>("Crabman_ClassTagDef");
+        private static readonly ClassTagDef fishTag = DefCache.GetDef<ClassTagDef>("Fishman_ClassTagDef");
 
-        private static readonly DeathBelcherAbilityDef oilcrabDeathBelcherAbility = Repo.GetAllDefs<DeathBelcherAbilityDef>().FirstOrDefault(ged => ged.name.Equals("Oilcrab_Die_DeathBelcher_AbilityDef"));
-        private static readonly  DeathBelcherAbilityDef oilfishDeathBelcherAbility = Repo.GetAllDefs<DeathBelcherAbilityDef>().FirstOrDefault(ged => ged.name.Equals("Oilfish_Die_DeathBelcher_AbilityDef"));
+        private static readonly DeathBelcherAbilityDef oilcrabDeathBelcherAbility = DefCache.GetDef<DeathBelcherAbilityDef>("Oilcrab_Die_DeathBelcher_AbilityDef");
+        private static readonly  DeathBelcherAbilityDef oilfishDeathBelcherAbility = DefCache.GetDef<DeathBelcherAbilityDef>("Oilfish_Die_DeathBelcher_AbilityDef");
 
-        private static readonly GameTagDef anyRevenantGameTag = Repo.GetAllDefs<GameTagDef>().FirstOrDefault(p => p.name.Equals("Any_Revenant_TagDef"));
+        private static readonly GameTagDef anyRevenantGameTag = DefCache.GetDef<GameTagDef>("Any_Revenant_TagDef");
         
         
 
@@ -114,7 +117,7 @@ namespace TFTV
         {
 
             if (level.EventSystem.GetVariable(variableUmbraALNResReq) == 2)
-            {
+            {              
                 UmbraEvolution(125 * level.CurrentDifficultyLevel.Order, 20 * level.CurrentDifficultyLevel.Order, 20);
             }
             else if (level.EventSystem.GetVariable(variableUmbraALNResReq) == 1)
