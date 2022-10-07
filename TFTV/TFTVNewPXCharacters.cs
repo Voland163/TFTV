@@ -159,13 +159,12 @@ namespace TFTV
 
                     if (geoEvent.EventID.Equals("PROG_LE2_WARN"))
                     {
-                        __result.EventLeader = null;                    
+                        __result.EventLeader = Helper.CreateSpriteFromImageFile("helena.png");
                     }
-
 
                     if (geoEvent.EventID.Equals("HelenaOnOlena"))
                     {
-                        __result.EventLeader = Helper.CreateSpriteFromImageFile("Helena_fire2_closeup.jpg");
+                        __result.EventLeader = Helper.CreateSpriteFromImageFile("helena.png");
                         __result.EventBackground = Helper.CreateSpriteFromImageFile("Helena_fire2.jpg");
                     }
 
@@ -235,9 +234,14 @@ namespace TFTV
                         __result.EventLeader = Helper.CreateSpriteFromImageFile("BG_alistair_small.png");
                     }
                     if (geoEvent.EventID.Equals("IntroBetterGeo_0"))
-                    {
-                        __result.EventBackground = Helper.CreateSpriteFromImageFile("BG_Intro_0.jpg");
+                    {                      
+                        __result.EventBackground = Helper.CreateSpriteFromImageFile("BG_Intro_0.jpg");                                      
                     }
+                    if (geoEvent.EventID == "PROG_LW1_WIN")
+                    {
+                        __result.EventBackground = Helper.CreateSpriteFromImageFile("makeshift_lab.png");
+                    }
+
                 }
                 catch (Exception e)
                 {

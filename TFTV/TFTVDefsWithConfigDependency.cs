@@ -120,15 +120,11 @@ namespace TFTV
                             {
                                 for (int i = 0; i < choice.Outcome.Resources.Count; i++)
                                 {
-
-
-
                                     choice.Outcome.Resources[i] =
                                     new PhoenixPoint.Common.Core.ResourceUnit(choice.Outcome.Resources[i].Type,
                                     ResourceRewardsFromEvents[eventID][geoEventChoice, i] * resourceMultiplier);
                                  //   TFTVLogger.Always("After adjustment, event " + eventID + " Choice # " + geoEventChoice + " gives " + choice.Outcome.Resources[i].Value
                                  //  + " of some resource");
-
 
                                 }
                             }
@@ -151,7 +147,7 @@ namespace TFTV
             }
         }
 
-        /*  public static void PopulateDiplomacyRewardsDictionary()
+      /*  public static void PopulateDiplomacyRewardsDictionary()
           {
               try
               {
@@ -166,7 +162,6 @@ namespace TFTV
 
                           if (choice.Outcome.Diplomacy != null && choice.Outcome.Diplomacy.Count>0)
                           {
-
                               string EventID = geoEvent.GeoscapeEventData.EventID;
 
                               if (!DiplomacyRewardsFromEvents.ContainsKey(EventID))
@@ -182,7 +177,7 @@ namespace TFTV
 
                                   DiplomacyRewardsFromEvents[EventID][geoEventChoice, i] = choice.Outcome.Diplomacy[i].Value;
 
-                                  //     TFTVLogger.Always("Event " + EventID + " Choice # " + geoEventChoice + " gives " + ResourceRewardsFromEvents[EventID][geoEventChoice, i]
+                                 // TFTVLogger.Always("Event " + EventID + " Choice # " + geoEventChoice + " gives " + ResourceRewardsFromEvents[EventID][geoEventChoice, i]
                                   //       + " of some resource");
 
                               }
@@ -203,16 +198,14 @@ namespace TFTV
               }
 
           }
+      */
+          
 
-          */
-
-        public static void InjectDefsWithConfigDependency()
+        public static void InjectDefsWithDynamicConfigDependency()
         {
 
             HibernationModuleStaminaRecuperation();
             ModifyAmountResourcesEvents(config.ResourceMultiplier);
-
-
         }
 
         /*  public static void ModifyAmountResourcesEvents(float resourceMultiplier)
@@ -243,6 +236,12 @@ namespace TFTV
               }
           }
         */
+
+        public static void InjectDefsWithStaticConfigDependency() 
+        {
+            HarderDiplomacy();  
+        }
+
         public static void HibernationModuleStaminaRecuperation()
         {
 
@@ -271,7 +270,7 @@ namespace TFTV
         }
 
 
-        private static bool ApplyChangeDiplomacy = true;
+       private static bool ApplyChangeDiplomacy = true;
 
         public static void HarderDiplomacy()
         {
@@ -294,7 +293,8 @@ namespace TFTV
 
                     if (ApplyChangeDiplomacy)
                     {
-                        foreach (GeoscapeEventDef geoEvent in Repo.GetAllDefs<GeoscapeEventDef>())
+                    int count = 0;
+                    foreach (GeoscapeEventDef geoEvent in Repo.GetAllDefs<GeoscapeEventDef>())
                         {
 
                             if (geoEvent.GeoscapeEventData.EventID != "PROG_PU4_WIN"
@@ -305,27 +305,29 @@ namespace TFTV
                                 && geoEvent.GeoscapeEventData.EventID != "PROG_NJ7"
                                 && geoEvent.GeoscapeEventData.EventID != "PROG_NJ8")
                             {
-                                int geoChoiceNumber = 0;
-                                string eventID = geoEvent.GeoscapeEventData.EventID;
+                            // int geoChoiceNumber = 0;
+
+                            
                                 foreach (GeoEventChoice choice in geoEvent.GeoscapeEventData.Choices)
                                 {
                                     for (int i = 0; i < choice.Outcome.Diplomacy.Count; i++)
                                     {
-                                        if (choice.Outcome.Diplomacy[i].TargetFaction == geoPhoenixFaction && choice.Outcome.Diplomacy[i].Value <= 0
-                                            && DiplomacyRewardsFromEvents.Keys.Contains(eventID))
+                                        if (choice.Outcome.Diplomacy[i].TargetFaction == geoPhoenixFaction && choice.Outcome.Diplomacy[i].Value <= 0)
                                         {
                                             OutcomeDiplomacyChange diplomacyChange = choice.Outcome.Diplomacy[i];
                                             diplomacyChange.Value *= 2;
                                             choice.Outcome.Diplomacy[i] = diplomacyChange;
-                                            TFTVLogger.Always("GeoEvent " + geoEvent.GeoscapeEventData.EventID + " diplomacy change value is " + diplomacyChange.Value);
+                                        count++;
+                                          //  TFTVLogger.Always("GeoEvent " + geoEvent.GeoscapeEventData.EventID + " diplomacy change value is " + diplomacyChange.Value);
                                         }
                                     }
-                                    geoChoiceNumber++;
+                                   // geoChoiceNumber++;
                                 }
                             }
                         }
-                        ApplyChangeDiplomacy = false;
-                    }
+                    TFTVLogger.Always("Harder Diplomacy is switched on, so " + count + " diplomacy penalties of Faction vs PX have been doubled");
+                    ApplyChangeDiplomacy = false;
+                   }
 
 
                     //Increase diplo penalties in 25, 50 and 75 diplo missions
@@ -425,8 +427,6 @@ namespace TFTV
                     ProgSynIntroWin.GeoscapeEventData.Choices[1].Outcome.Diplomacy.Clear();
 
                 }
-
-
                 //remove Pirate King mission
                 RemovePirateKing();
             }

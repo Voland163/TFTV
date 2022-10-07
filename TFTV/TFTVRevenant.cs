@@ -42,56 +42,56 @@ namespace TFTV
 
         private static bool revenantPresent = false;
 
-        private static readonly GameTagDef revenantTier1GameTag =DefCache.GetDef<GameTagDef>("RevenantTier_1_GameTagDef");
-        private static readonly GameTagDef revenantTier2GameTag =DefCache.GetDef<GameTagDef>("RevenantTier_2_GameTagDef");
-        private static readonly GameTagDef revenantTier3GameTag =DefCache.GetDef<GameTagDef>("RevenantTier_3_GameTagDef");
-        private static readonly GameTagDef anyRevenantGameTag =DefCache.GetDef<GameTagDef>("Any_Revenant_TagDef");
+        private static readonly GameTagDef revenantTier1GameTag = DefCache.GetDef<GameTagDef>("RevenantTier_1_GameTagDef");
+        private static readonly GameTagDef revenantTier2GameTag = DefCache.GetDef<GameTagDef>("RevenantTier_2_GameTagDef");
+        private static readonly GameTagDef revenantTier3GameTag = DefCache.GetDef<GameTagDef>("RevenantTier_3_GameTagDef");
+        private static readonly GameTagDef anyRevenantGameTag = DefCache.GetDef<GameTagDef>("Any_Revenant_TagDef");
 
-        private static readonly PassiveModifierAbilityDef revenantAssault =DefCache.GetDef<PassiveModifierAbilityDef>("RevenantAssault_AbilityDef");
-        private static readonly PassiveModifierAbilityDef revenantBerserker =DefCache.GetDef<PassiveModifierAbilityDef>("RevenantBerserker_AbilityDef");
-        private static readonly PassiveModifierAbilityDef revenantInfiltrator =DefCache.GetDef<PassiveModifierAbilityDef>("RevenantInfiltrator_AbilityDef");
-        private static readonly PassiveModifierAbilityDef revenantTechnician =DefCache.GetDef<PassiveModifierAbilityDef>("RevenantTechnician_AbilityDef");
-        private static readonly PassiveModifierAbilityDef revenantHeavy =DefCache.GetDef<PassiveModifierAbilityDef>("RevenantHeavy_AbilityDef");
-        private static readonly PassiveModifierAbilityDef revenantPriest =DefCache.GetDef<PassiveModifierAbilityDef>("RevenantPriest_AbilityDef");
-        private static readonly PassiveModifierAbilityDef revenantSniper =DefCache.GetDef<PassiveModifierAbilityDef>("RevenantSniper_AbilityDef");
-
-
-
-        private static readonly SpecializationDef assaultSpecialization =DefCache.GetDef<SpecializationDef>("AssaultSpecializationDef");
-        private static readonly SpecializationDef berserkerSpecialization =DefCache.GetDef<SpecializationDef>("BerserkerSpecializationDef");
-        private static readonly SpecializationDef heavySpecialization =DefCache.GetDef<SpecializationDef>("HeavySpecializationDef");
-        private static readonly SpecializationDef infiltratorSpecialization =DefCache.GetDef<SpecializationDef>("InfiltratorSpecializationDef");
-        private static readonly SpecializationDef priestSpecialization =DefCache.GetDef<SpecializationDef>("PriestSpecializationDef");
-        private static readonly SpecializationDef sniperSpecialization =DefCache.GetDef<SpecializationDef>("SniperSpecializationDef");
-        private static readonly SpecializationDef technicianSpecialization =DefCache.GetDef<SpecializationDef>("TechnicianSpecializationDef");
-
-
-        private static readonly ClassTagDef crabTag =DefCache.GetDef<ClassTagDef>("Crabman_ClassTagDef");
-        private static readonly ClassTagDef fishmanTag =DefCache.GetDef<ClassTagDef>("Fishman_ClassTagDef");
-        private static readonly ClassTagDef sirenTag =DefCache.GetDef<ClassTagDef>("Siren_ClassTagDef");
-        private static readonly ClassTagDef chironTag =DefCache.GetDef<ClassTagDef>("Chiron_ClassTagDef");
-        private static readonly ClassTagDef acheronTag =DefCache.GetDef<ClassTagDef>("Acheron_ClassTagDef");
-        private static readonly ClassTagDef queenTag =DefCache.GetDef<ClassTagDef>("Queen_ClassTagDef");
+        private static readonly PassiveModifierAbilityDef revenantAssault = DefCache.GetDef<PassiveModifierAbilityDef>("RevenantAssault_AbilityDef");
+        private static readonly PassiveModifierAbilityDef revenantBerserker = DefCache.GetDef<PassiveModifierAbilityDef>("RevenantBerserker_AbilityDef");
+        private static readonly PassiveModifierAbilityDef revenantInfiltrator = DefCache.GetDef<PassiveModifierAbilityDef>("RevenantInfiltrator_AbilityDef");
+        private static readonly PassiveModifierAbilityDef revenantTechnician = DefCache.GetDef<PassiveModifierAbilityDef>("RevenantTechnician_AbilityDef");
+        private static readonly PassiveModifierAbilityDef revenantHeavy = DefCache.GetDef<PassiveModifierAbilityDef>("RevenantHeavy_AbilityDef");
+        private static readonly PassiveModifierAbilityDef revenantPriest = DefCache.GetDef<PassiveModifierAbilityDef>("RevenantPriest_AbilityDef");
+        private static readonly PassiveModifierAbilityDef revenantSniper = DefCache.GetDef<PassiveModifierAbilityDef>("RevenantSniper_AbilityDef");
 
 
 
+        private static readonly SpecializationDef assaultSpecialization = DefCache.GetDef<SpecializationDef>("AssaultSpecializationDef");
+        private static readonly SpecializationDef berserkerSpecialization = DefCache.GetDef<SpecializationDef>("BerserkerSpecializationDef");
+        private static readonly SpecializationDef heavySpecialization = DefCache.GetDef<SpecializationDef>("HeavySpecializationDef");
+        private static readonly SpecializationDef infiltratorSpecialization = DefCache.GetDef<SpecializationDef>("InfiltratorSpecializationDef");
+        private static readonly SpecializationDef priestSpecialization = DefCache.GetDef<SpecializationDef>("PriestSpecializationDef");
+        private static readonly SpecializationDef sniperSpecialization = DefCache.GetDef<SpecializationDef>("SniperSpecializationDef");
+        private static readonly SpecializationDef technicianSpecialization = DefCache.GetDef<SpecializationDef>("TechnicianSpecializationDef");
 
 
-        private static readonly AddAbilityStatusDef revenantStatusAbility =DefCache.GetDef<AddAbilityStatusDef>("Revenant_StatusEffectDef");
-        private static readonly PassiveModifierAbilityDef revenantAbility =DefCache.GetDef<PassiveModifierAbilityDef>("Revenant_AbilityDef");
+        private static readonly ClassTagDef crabTag = DefCache.GetDef<ClassTagDef>("Crabman_ClassTagDef");
+        private static readonly ClassTagDef fishmanTag = DefCache.GetDef<ClassTagDef>("Fishman_ClassTagDef");
+        private static readonly ClassTagDef sirenTag = DefCache.GetDef<ClassTagDef>("Siren_ClassTagDef");
+        private static readonly ClassTagDef chironTag = DefCache.GetDef<ClassTagDef>("Chiron_ClassTagDef");
+        private static readonly ClassTagDef acheronTag = DefCache.GetDef<ClassTagDef>("Acheron_ClassTagDef");
+        private static readonly ClassTagDef queenTag = DefCache.GetDef<ClassTagDef>("Queen_ClassTagDef");
 
-        private static readonly DamageMultiplierAbilityDef revenantResistanceAbility =DefCache.GetDef<DamageMultiplierAbilityDef>("RevenantResistance_AbilityDef");
+
+
+
+
+        private static readonly AddAbilityStatusDef revenantStatusAbility = DefCache.GetDef<AddAbilityStatusDef>("Revenant_StatusEffectDef");
+        private static readonly PassiveModifierAbilityDef revenantAbility = DefCache.GetDef<PassiveModifierAbilityDef>("Revenant_AbilityDef");
+
+        private static readonly DamageMultiplierAbilityDef revenantResistanceAbility = DefCache.GetDef<DamageMultiplierAbilityDef>("RevenantResistance_AbilityDef");
 
 
 
         // private static readonly DamageOverTimeDamageTypeEffectDef virusDamage =DefCache.GetDef<DamageOverTimeDamageTypeEffectDef>("Virus_DamageOverTimeDamageTypeEffectDef"));
-        private static readonly DamageOverTimeDamageTypeEffectDef acidDamage =DefCache.GetDef<DamageOverTimeDamageTypeEffectDef>("Acid_DamageOverTimeDamageTypeEffectDef");
+        private static readonly DamageOverTimeDamageTypeEffectDef acidDamage = DefCache.GetDef<DamageOverTimeDamageTypeEffectDef>("Acid_DamageOverTimeDamageTypeEffectDef");
         // private static readonly DamageOverTimeDamageTypeEffectDef paralysisDamage =DefCache.GetDef<DamageOverTimeDamageTypeEffectDef>("Paralysis_DamageOverTimeDamageTypeEffectDef"));
         // private static readonly DamageOverTimeDamageTypeEffectDef poisonDamage =DefCache.GetDef<DamageOverTimeDamageTypeEffectDef>("Poison_DamageOverTimeDamageTypeEffectDef"));
-        private static readonly StandardDamageTypeEffectDef fireDamage =DefCache.GetDef<StandardDamageTypeEffectDef>("Fire_StandardDamageTypeEffectDef");
-        private static readonly StandardDamageTypeEffectDef projectileDamage =DefCache.GetDef<StandardDamageTypeEffectDef>("Projectile_StandardDamageTypeEffectDef");
-        private static readonly StandardDamageTypeEffectDef shredDamage =DefCache.GetDef<StandardDamageTypeEffectDef>("Shred_StandardDamageTypeEffectDef");
-        private static readonly StandardDamageTypeEffectDef blastDamage =DefCache.GetDef<StandardDamageTypeEffectDef>("Blast_StandardDamageTypeEffectDef");
+        private static readonly StandardDamageTypeEffectDef fireDamage = DefCache.GetDef<StandardDamageTypeEffectDef>("Fire_StandardDamageTypeEffectDef");
+        private static readonly StandardDamageTypeEffectDef projectileDamage = DefCache.GetDef<StandardDamageTypeEffectDef>("Projectile_StandardDamageTypeEffectDef");
+        private static readonly StandardDamageTypeEffectDef shredDamage = DefCache.GetDef<StandardDamageTypeEffectDef>("Shred_StandardDamageTypeEffectDef");
+        private static readonly StandardDamageTypeEffectDef blastDamage = DefCache.GetDef<StandardDamageTypeEffectDef>("Blast_StandardDamageTypeEffectDef");
         // private static readonly StandardDamageTypeEffectDef bashDamage =DefCache.GetDef<StandardDamageTypeEffectDef>("Bash_StandardDamageTypeEffectDef"));
 
         //private static readonly DamageKeywordDef paralisingDamageKeywordDef =DefCache.GetDef<DamageKeywordDef>("Paralysing_DamageKeywordDataDef"));
@@ -294,7 +294,7 @@ namespace TFTV
                     TacticalActor tacticalActor = actor as TacticalActor;
                     AddRevenantStatusEffect(actor);
                     SetRevenantTierTag(theChosen, actor, controller);
-                    actor.name = GetDeadSoldiersNameFromID(theChosen, controller);                                
+                    actor.name = GetDeadSoldiersNameFromID(theChosen, controller);
                     // SetDeathTime(theChosen, __instance, timeOfMissionStart);
                     revenantID = theChosen;
                     TFTVLogger.Always("The accumulated delirium for  " + GetDeadSoldiersNameFromID(theChosen, controller)
@@ -350,6 +350,27 @@ namespace TFTV
             }
         }
 
+        /*  [HarmonyPatch(typeof(PhoenixStatisticsManager), "OnActorKilled", new Type[] { typeof(GeoTacUnitId), typeof(DeathDetails)})]
+
+          public static class PhoenixStatisticsManager_OnActorKilled_DeathRipper_Patch
+          {
+              public static void Prefix(GeoTacUnitId activeActorId, DeathDetails cause)
+              {
+                  try
+                  {
+                      TFTVLogger.Always("OnActorKilled method invoked");
+
+
+
+                  }
+                  catch (Exception e)
+                  {
+                      TFTVLogger.Error(e);
+                  }
+              }
+
+          */
+
         [HarmonyPatch(typeof(TacticalLevelController), "ActorDied")]
         public static class TacticalLevelController_ActorDied_DeathRipper_Patch
         {
@@ -365,6 +386,16 @@ namespace TFTV
                         AddtoListOfDeadSoldiers(deathReport.Actor);
                         TFTVStamina.charactersWithBrokenLimbs.Remove(deathReport.Actor.GeoUnitId);
                         TFTVLogger.Always(deathReport.Actor.DisplayName + " died at. The deathlist now has " + DeadSoldiersDelirium.Count);
+                        if (deathReport.Actor.DisplayName != __instance.TacticalGameParams.Statistics.LivingSoldiers[deathReport.Actor.GeoUnitId].Name)
+                        {
+                            TFTVLogger.Always("Dead actor " + deathReport.Actor.DisplayName + " is " + __instance.TacticalGameParams.Statistics.LivingSoldiers[deathReport.Actor.GeoUnitId].Name +
+                                " in the files. Files will be updated");
+                            PhoenixStatisticsManager statisticsManager = (PhoenixStatisticsManager)UnityEngine.Object.FindObjectOfType(typeof(PhoenixStatisticsManager));
+                            statisticsManager.CurrentGameStats.DeadSoldiers[deathReport.Actor.GeoUnitId].Name = deathReport.Actor.DisplayName;
+                            __instance.TacticalGameParams.Statistics.LivingSoldiers[deathReport.Actor.GeoUnitId].Name = deathReport.Actor.DisplayName;
+                            TFTVLogger.Always("Name in files of Living Soldiers changed to " + __instance.TacticalGameParams.Statistics.LivingSoldiers[deathReport.Actor.GeoUnitId].Name);
+                            TFTVLogger.Always("Name in files of currentstats changed to " + statisticsManager.CurrentGameStats.DeadSoldiers[deathReport.Actor.GeoUnitId].Name);
+                        }
                     }
 
                 }
@@ -409,7 +440,7 @@ namespace TFTV
 
                     if (__instance.GameTags.Contains(revenantTier1GameTag))
                     {
-                        
+
                         string name = __instance.name + " Mimic";
                         __result = name;
                     }
@@ -655,10 +686,10 @@ namespace TFTV
 
                 if (usedWeapons.Count() > 0)
                 {
-                   // TFTVLogger.Always("Checking use of each weapon... ");
+                    // TFTVLogger.Always("Checking use of each weapon... ");
                     foreach (UsedWeaponStat stat in usedWeapons)
                     {
-                       //   TFTVLogger.Always("This item is  " + stat.UsedItem.ViewElementDef.DisplayName1.LocalizeEnglish());
+                        //   TFTVLogger.Always("This item is  " + stat.UsedItem.ViewElementDef.DisplayName1.LocalizeEnglish());
                         if (Repo.GetAllDefs<WeaponDef>().FirstOrDefault(p => p.name.Contains(stat.UsedItem.ToString())))
                         {
                             WeaponDef weaponDef = stat.UsedItem as WeaponDef;
@@ -685,7 +716,7 @@ namespace TFTV
                             }
                             if (weaponDef != null && weaponDef.DamagePayload.GenerateDamageValue() >= 70) //&& weaponDef.DamagePayload.DamageKeywords != null 
                             {
-                             //   TFTVLogger.Always("This weapon is considered high damage  " + weaponDef.ViewElementDef.DisplayName1.LocalizeEnglish());
+                                //   TFTVLogger.Always("This weapon is considered high damage  " + weaponDef.ViewElementDef.DisplayName1.LocalizeEnglish());
                                 scoreHighDamage += stat.UsedCount;
                             }
                             if (weaponDef != null && weaponDef.DamagePayload.DamageType == projectileDamage && (weaponDef.DamagePayload.ProjectilesPerShot >= 2 || weaponDef.DamagePayload.AutoFireShotCount >= 3))
@@ -759,7 +790,7 @@ namespace TFTV
         }
         public static void ModifyRevenantResistanceAbility(TacticalLevelController controller)
         {
-            DamageMultiplierAbilityDef revenantResistanceAbilityDef =DefCache.GetDef<DamageMultiplierAbilityDef>("RevenantResistance_AbilityDef");
+            DamageMultiplierAbilityDef revenantResistanceAbilityDef = DefCache.GetDef<DamageMultiplierAbilityDef>("RevenantResistance_AbilityDef");
             revenantResistanceAbilityDef.DamageTypeDef = GetPreferredDamageType(controller);
 
 
@@ -1265,7 +1296,7 @@ namespace TFTV
             }
         }
 
-       
+
 
         /*
                 [HarmonyPatch(typeof(TacticalLevelController), "ActorEnteredPlay")]
@@ -1483,7 +1514,7 @@ namespace TFTV
                         }
                     }
                 }
-        
+
          public static void SpreadResistance(TacticalLevelController level)
         {
             try
@@ -1540,8 +1571,8 @@ namespace TFTV
             }
             throw new InvalidOperationException();
         }
-        
-         
+
+
         public static int CheckDeliriumAtDeath(GeoTacUnitId deadSoldier, TacticalLevelController level)
         {
             try

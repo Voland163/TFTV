@@ -20,6 +20,7 @@ using PhoenixPoint.Geoscape.Levels.Objectives;
 using PhoenixPoint.Geoscape.View.ViewStates;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
+using PhoenixPoint.Tactical.Entities.Statuses;
 using PhoenixPoint.Tactical.Levels;
 using PhoenixPoint.Tactical.Levels.FactionEffects;
 using PhoenixPoint.Tactical.Levels.FactionObjectives;
@@ -469,7 +470,7 @@ namespace TFTV
                         TFTVLogger.Always("The check for VO#17 went ok");
                     }
                     if (i == 18 && CheckFordVoidOmensInPlay(level).Contains(i) && !voidOmensCheck[i])
-                    {                    
+                    {
                         foreach (ResourceMissionOutcomeDef resourceMissionOutcomeDef in Repo.GetAllDefs<ResourceMissionOutcomeDef>())
                         {
                             if (resourceMissionOutcomeDef.name.Contains("Haven"))
@@ -523,7 +524,7 @@ namespace TFTV
                         voidOmensCheck[19] = false;
                         TFTVLogger.Always("The check for VO#19 went ok");
                     }
-                 //pending baby abbadons
+                    //pending baby abbadons
                     /*  if (i == 20 && CheckFordVoidOmensInPlay(level).Contains(i) && !voidOmensCheck[i])
                     {
                         foreach (GeoMarketplaceResearchOptionDef geoMarketplaceResearchOptionDef in DefCache.GetDef<GeoMarketplaceResearchOptionDef>())
@@ -842,16 +843,16 @@ namespace TFTV
 
         [HarmonyPatch(typeof(FactionObjective), "GetCompletion")]
         public static class FactionObjective_GetCompletion_VO4_Patch
-        { 
+        {
             public static void Postfix(ref float __result)
             {
-                try 
+                try
                 {
                     if (VoidOmen4Active)
                     {
                         __result *= 2;
                     }
-                
+
                 }
                 catch (Exception e)
                 {
@@ -859,10 +860,111 @@ namespace TFTV
                 }
 
             }
-  
+
         }
 
 
+        public static void CheckIfAnyIntrudersLeft(TacticalLevelController controller)
+        {
+            try
+            {
+                TacticalFaction phoenix = controller.GetFactionByCommandName("PX");
+                TacticalFaction intruderFaction = new TacticalFaction();
+                string MissionType = controller.TacticalGameParams.MissionData.MissionType.SaveDefaultName;
+                int countEnemies = 0;
+                if (MissionType == "HavenDefense")
+                {
+                    foreach (TacticalFaction faction in controller.Factions)
+                    {
+                        if (faction.ParticipantKind == TacMissionParticipant.Intruder)
+                        {
+                            TFTVLogger.Always("The faction is " + faction.TacticalFactionDef.name);
+                            intruderFaction = faction;
+
+                            foreach (TacticalActorBase enemy in faction.Actors)
+                            {
+                                TFTVLogger.Always("Checking each enemy " + enemy.name);
+                                TacticalActor tacticalActor = enemy as TacticalActor;
+
+                                if (enemy.IsAlive && !tacticalActor.IsEvacuated && tacticalActor.Status.GetStatus<ParalysedStatus>(DefCache.GetDef<ParalysedStatusDef>("Paralysed_StatusDef")) == null)
+                                {
+                                    TFTVLogger.Always("This enemy is alive and not offmap " + enemy.DisplayName);
+                                    countEnemies++;
+                                }
+                            }
+                            TFTVLogger.Always("There are " + countEnemies + " enemies alive");
+                        }
+                    }
+
+                    // Paralysis_DamageOverTimeDamageTypeEffectDef
+
+                    if (countEnemies == 0 && intruderFaction != null)
+                    {
+                        intruderFaction.State = TacFactionState.Defeated;
+                        {
+                            foreach (TacticalFaction tacticalFaction in controller.Factions)
+                            {
+                                if (tacticalFaction.GetRelationTo(phoenix) == FactionRelation.Enemy)
+                                {
+                                    tacticalFaction.ParticipantKind = TacMissionParticipant.Player;
+                                }
+                            }
+                            phoenix.State = TacFactionState.Won;
+
+                            controller.GameOver();
+                        }
+                    }
+                }
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+
+        [HarmonyPatch(typeof(TacticalLevelController), "ActorFinishedMoving")]
+        public static class TacticalLevelController_ActorFinishedMoving_HostileDefendersVO5_Patch
+        {
+            public static void Postfix(TacticalLevelController __instance)
+            {
+                try
+                {
+
+                    if (VoidOmen5Active)
+                    {
+                        CheckIfAnyIntrudersLeft(__instance);
+                   }
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+        }
+
+        [HarmonyPatch(typeof(TacticalLevelController), "ActorDamageDealt")]
+        public static class TacticalLevelController_ActorDamageDealt_HostileDefendersVO5_Patch
+        {
+            public static void Postfix(TacticalLevelController __instance)
+            {
+                try
+                {
+
+                    if (VoidOmen5Active)
+                    {
+                        CheckIfAnyIntrudersLeft(__instance);
+                    }
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+        }
 
 
 
@@ -957,7 +1059,7 @@ namespace TFTV
                         __instance.VoxelMatrixData.InitialMistEntitiesToSpawn.Max = 40;
                         return true;
                     }
-                    else 
+                    else
                     {
                         __instance.VoxelMatrixData.InitialMistEntitiesToSpawn.Min = 1;
                         __instance.VoxelMatrixData.InitialMistEntitiesToSpawn.Max = 3;
@@ -1026,7 +1128,7 @@ namespace TFTV
             {
                 try
                 {
-                   
+
                     if (VoidOmen12Active)
                     {
                         if (attacker.Faction.PPFactionDef == sharedData.AlienFactionDef)
@@ -1060,9 +1162,9 @@ namespace TFTV
                         __result = (int)(((float)haven.ZonesStats.GetTotalHavenOutput().Deployment * 1.5 * haven.Site.Owner.FactionStatModifiers?.HavenDefenseModifier) ?? 1f);
                         return false;
                     }
-                   
+
                     return true;
-                    
+
                 }
                 catch (Exception e)
                 {

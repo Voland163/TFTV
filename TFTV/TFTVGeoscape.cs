@@ -28,6 +28,8 @@ namespace TFTV
         public int timeRevenantLasteSeenSaveData = TFTVRevenant.daysRevenantLastSeen;
         public int infestedHavenPopulationSaveData = TFTVInfestationStory.HavenPopulation;
         public string infestedHavenOriginalOwnerSaveData = TFTVInfestationStory.OriginalOwner;
+       
+
     }
 
     /// <summary>
@@ -61,7 +63,9 @@ namespace TFTV
                 TFTVRevenant.DeadSoldiersDelirium[TFTVRevenant.revenantID] += 1;
 
             }
-            TFTVDefsWithConfigDependency.InjectDefsWithConfigDependency();
+            TFTVInfestation.RecordResultInfestationMission(Controller);
+
+         //   TFTVDefsWithConfigDependency.InjectDefsWithConfigDependency();
          //   TFTVProjectRobocop.CreateBionicMan(gsController);
         //    TFTVProjectRobocop.CreateRoboCopDef();
             //   TFTVProjectRobocop.CreateRoboCopDef();
@@ -128,6 +132,7 @@ namespace TFTV
                 timeRevenantLasteSeenSaveData = TFTVRevenant.daysRevenantLastSeen,
                 infestedHavenOriginalOwnerSaveData = TFTVInfestationStory.OriginalOwner,
                 infestedHavenPopulationSaveData = TFTVInfestationStory.HavenPopulation,
+               
 
             };
 
@@ -139,7 +144,6 @@ namespace TFTV
         public override void ProcessGeoscapeInstanceData(object instanceData)
         {
             TFTVGSInstanceData data = (TFTVGSInstanceData)instanceData;
-            //  TFTVDefsCreatedOnLevelChanged.CreateNewDefsForTFTVStart();
             TFTVStamina.charactersWithBrokenLimbs = data.charactersWithBrokenLimbs;
             TFTVAirCombat.targetsForBehemoth = data.targetsForBehemoth;
             // TFTVAirCombat.targetsVisitedByBehemoth = data.targetsVisitedByBehemoth;
@@ -152,6 +156,7 @@ namespace TFTV
             TFTVAirCombat.behemothWaitHours = data.behemothWaitHours;
             TFTVInfestationStory.HavenPopulation = data.infestedHavenPopulationSaveData;
             TFTVInfestationStory.OriginalOwner = data.infestedHavenOriginalOwnerSaveData;
+         
 
             Main.Logger.LogInfo("UmbraEvoltion variable is " + Controller.EventSystem.GetVariable(TFTVUmbra.variableUmbraALNResReq));
             Main.Logger.LogInfo("# Characters with broken limbs: " + TFTVStamina.charactersWithBrokenLimbs.Count);
@@ -163,8 +168,8 @@ namespace TFTV
             Main.Logger.LogInfo("# sites on Behemoth scenic route " + TFTVAirCombat.behemothScenicRoute.Count);
             Main.Logger.LogInfo("Behemoth target id number is " + TFTVAirCombat.behemothTarget);
             Main.Logger.LogInfo("Behemoth will wait for another  " + TFTVAirCombat.behemothWaitHours + " before moving");
-
             Main.Logger.LogInfo("Last time a Revenant was seen was on day " + TFTVRevenant.daysRevenantLastSeen + ", and now it is day " + Controller.Timing.Now.TimeSpan.Days);
+            Main.Logger.LogInfo("Phoenix lost last mission " + TFTVInfestation.PhoenixDefeated);
 
             TFTVLogger.Always("UmbraEvoltion variable is " + Controller.EventSystem.GetVariable(TFTVUmbra.variableUmbraALNResReq));
             TFTVLogger.Always("# Characters with broken limbs: " + TFTVStamina.charactersWithBrokenLimbs.Count);
@@ -176,8 +181,8 @@ namespace TFTV
             TFTVLogger.Always("# sites on Behemoth scenic route " + TFTVAirCombat.behemothScenicRoute.Count);
             TFTVLogger.Always("Behemoth target id number is " + TFTVAirCombat.behemothTarget);
             TFTVLogger.Always("Behemoth will wait for another  " + TFTVAirCombat.behemothWaitHours + " before moving");
-
             TFTVLogger.Always("Last time a Revenant was seen was on day " + TFTVRevenant.daysRevenantLastSeen + ", and now it is day " + Controller.Timing.Now.TimeSpan.Days);
+            TFTVLogger.Always("Phoenix lost last mission " + TFTVInfestation.PhoenixDefeated);
         }
 
 

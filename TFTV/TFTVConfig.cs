@@ -31,9 +31,14 @@ namespace TFTV
             description: "Sets all settings to default, to provide the Terror from the Void experience as envisioned by its creators")]
         public bool defaultSettings = false;
 
+        [ConfigField(text: "DISPLAY OPERATIVES WITHOUT HELMETS",
+            description: "Faces of operatives will always be fully displayed in Geoscape, even when they are wearing helmets. If you prefer to see your operatives with helmets, as in Vanilla, " +
+            "turn this option off")]
+        public bool helmentsOff = true;
+
         //Starting squad
-      
-       public enum StartingSquadFaction
+
+        public enum StartingSquadFaction
         {
             PHOENIX, ANU, NJ, SYNEDRION
         }

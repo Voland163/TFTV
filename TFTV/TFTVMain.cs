@@ -104,14 +104,12 @@ namespace TFTV
                 BCApplyDefChanges();
                 Logger.LogInfo("BC stuff loaded");
                 //TFTV 
-                Logger.LogInfo("TFTV stuff loading");
-                
+                Logger.LogInfo("TFTV stuff loading");                
                 TFTVDefsInjectedOnlyOnce.InjectDefsInjectedOnlyOnce();
                 Logger.LogInfo("First batch of Defs injected");
                 TFTVDefsRequiringReinjection.InjectDefsRequiringReinjection();
                 Logger.LogInfo("Second batch of Defs injected");
-                //  TFTVDefsWithConfigDependency.InjectDefsWithConfigDependency();
-
+               
                 TFTVHumanEnemiesNames.CreateNamesDictionary();
                 Logger.LogInfo("Names for human enemies created");
                 if (Config.ActivateReverseEngineeringResearch)
@@ -121,6 +119,11 @@ namespace TFTV
                 }
                 TFTVDefsWithConfigDependency.PopulateResourceRewardsDictionary();
                 Logger.LogInfo("ResoucesRewardDictionary populated");
+
+                TFTVDefsWithConfigDependency.InjectDefsWithStaticConfigDependency();
+                Logger.LogInfo("Defs with Static Config dependency injected");
+                TFTVDefsWithConfigDependency.InjectDefsWithDynamicConfigDependency();
+                Logger.LogInfo("Defs with Dynamic Config dependency injected");
 
                 harmony.PatchAll();
 
@@ -205,7 +208,7 @@ namespace TFTV
                 Config.defaultSettings = false;
 
             }
-
+            TFTVDefsWithConfigDependency.InjectDefsWithDynamicConfigDependency();
             Harmony harmony = (Harmony)HarmonyInstance;
             //  injectionComplete = false;
             harmony.UnpatchAll();

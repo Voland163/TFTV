@@ -67,7 +67,15 @@ namespace TFTV
             // TFTVMain main = (TFTVMain)Main;
             //TFTV give Dtony's Delirium Perks
             //  TFTVDelirium.DeliriumPerksOnTactical(tacController);
-            TFTVLogger.Always("The count of tactics in play is " + TFTVHumanEnemies.HumanEnemiesAndTactics.Count);        
+            TFTVLogger.Always("The count of tactics in play is " + TFTVHumanEnemies.HumanEnemiesAndTactics.Count);
+            TFTVLogger.Always("VO3 Active " + TFTVVoidOmens.VoidOmen3Active);
+            TFTVLogger.Always("VO5 Active " + TFTVVoidOmens.VoidOmen5Active);
+            TFTVLogger.Always("VO7 Active " + TFTVVoidOmens.VoidOmen7Active);
+            TFTVLogger.Always("VO10 Active " + TFTVVoidOmens.VoidOmen10Active);
+            TFTVLogger.Always("VO15 Active " + TFTVVoidOmens.VoidOmen15Active);
+            TFTVLogger.Always("VO16 Active " + TFTVVoidOmens.VoidOmen16Active);
+            TFTVLogger.Always("VO19 Active " + TFTVVoidOmens.VoidOmen19Active);
+
             TFTVHumanEnemies.RollCount = 0;
             TFTVRevenant.ModifyRevenantResistanceAbility(Controller);
             TFTVRevenant.CheckForNotDeadSoldiers(tacController);
@@ -85,7 +93,9 @@ namespace TFTV
          //   TFTVRevenant.CheckForNotDeadSoldiers(Controller);
             
             TFTVLogger.Always("OnTacticalEnd check");
-            
+            TFTVInfestation.CheckIfPhoenixLost(Controller);
+
+
             base.OnTacticalEnd();
 
           /*  if (TFTVRevenant.revenantSpawned)
@@ -174,6 +184,7 @@ namespace TFTV
             { TFTVHumanEnemies.AssignHumanEnemiesTags(Controller); }
             TFTVHumanEnemies.ChampRecoverWPAura(Controller);           
             TFTVHumanEnemies.ApplyTactic(Controller);
+           
           
         }
     }

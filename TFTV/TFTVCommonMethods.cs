@@ -11,6 +11,7 @@ using PhoenixPoint.Geoscape.Entities.Research.Requirement;
 using PhoenixPoint.Geoscape.Events;
 using PhoenixPoint.Geoscape.Events.Eventus;
 using PhoenixPoint.Geoscape.Levels;
+using PhoenixPoint.Tactical.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -65,6 +66,7 @@ namespace TFTV
                 TFTVRevenant.revenantCanSpawn = false;
                 TFTVHumanEnemies.difficultyLevel = 0;
                 TFTVHumanEnemies.HumanEnemiesAndTactics = new Dictionary<string, int>();
+                TFTVInfestation.PhoenixDefeated = false;
                 //  TFTVRevenant.timeLastRevenantSpawned = new TimeSpan();
             }
             catch (Exception e)
@@ -80,6 +82,7 @@ namespace TFTV
             {
                 try
                 {
+                    TFTVLogger.Always("LoadGame method invoked");
                     ClearInternalVariables();
 
                 }
@@ -93,7 +96,7 @@ namespace TFTV
         [HarmonyPatch(typeof(Research), "CompleteResearch")]
         public static class Research_NewTurnEvent_CalculateDelirium_Patch
         {
-           private static readonly ClassTagDef queenTag = DefCache.GetDef<ClassTagDef>("Queen_ClassTagDef");
+         
             public static void Postfix(ResearchElement research)
             {
                 try
@@ -124,7 +127,12 @@ namespace TFTV
                         research.Faction.GeoLevel.EventSystem.SetVariable("Pandorans_Researched_Citadel", 1);
                         research.Faction.GeoLevel.AlienFaction.SpawnNewAlienBase();
                         GeoAlienBase citadel = research.Faction.GeoLevel.AlienFaction.Bases.FirstOrDefault(ab => ab.AlienBaseTypeDef.name == "Citadel_GeoAlienBaseTypeDef");
-                        citadel.SpawnMonster(queenTag, true);
+                        ClassTagDef queenTag = DefCache.GetDef<ClassTagDef>("Queen_ClassTagDef");
+                        TacCharacterDef startingScylla=DefCache.GetDef<TacCharacterDef>("Scylla1_FrenzyMistSmasherAgileSpawner_AlienMutationVariationDef");
+
+                     
+                        citadel.SpawnMonster(queenTag, startingScylla);
+                       
                     }
                     else if (research.ResearchID == "PX_YuggothianEntity_ResearchDef")
                     {

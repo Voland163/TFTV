@@ -151,7 +151,11 @@ namespace PRMBetterClasses.SkillModifications
             skirmisher.ViewElementDef.LargeIcon = skirmisherIcon;
             skirmisher.ViewElementDef.SmallIcon = skirmisherIcon;
 
-            StanceStatusDef skirmisherDamageModification = DefCache.GetDef<StanceStatusDef>("E_SneakAttackStatus [SneakAttack_AbilityDef]");
+            StanceStatusDef skirmisherDamageModification = Helper.CreateDefFromClone(
+                DefCache.GetDef<StanceStatusDef>("E_SneakAttackStatus [SneakAttack_AbilityDef]"),
+                "728f321f-3a9d-4e63-a160-660c2a2c4664",
+                $"E_DamageModificationStatus [{skillName}]");
+
             skirmisherDamageModification.DurationTurns = 1;
             skirmisherDamageModification.SingleInstance = true;
             skirmisherDamageModification.Visuals = skirmisher.ViewElementDef;
