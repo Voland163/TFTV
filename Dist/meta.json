@@ -7,7 +7,7 @@
       "Value": "PhoenixRising"
     }
   ],
-  "Version": "1.0.6.0",
+  "Version": "1.0.0.0",
   "Name": [
     {
       "Key": "English",
@@ -17,7 +17,7 @@
   "Description": [
     {
       "Key": "English",
-      "Value": "A gargantuan mod for Phoenix Point"
+      "Value": "Open Beta of TFTV"
     }
   ],
   "Dependencies": [ ]
