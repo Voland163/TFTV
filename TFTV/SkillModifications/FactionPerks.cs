@@ -34,6 +34,7 @@ namespace PRMBetterClasses.SkillModifications
     internal class FactionPerks
     {
         private static readonly DefRepository Repo = TFTVMain.Repo;
+        private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
 
         public static void ApplyChanges()
         {
@@ -69,7 +70,7 @@ namespace PRMBetterClasses.SkillModifications
         {
             string skillName = "Saboteur_AbilityDef";
 
-            ApplyStatusAbilityDef SneakAttack = Repo.GetAllDefs<ApplyStatusAbilityDef>().FirstOrDefault(asa => asa.name.Equals("SneakAttack_AbilityDef"));
+            ApplyStatusAbilityDef SneakAttack = DefCache.GetDef<ApplyStatusAbilityDef>("SneakAttack_AbilityDef");
             ApplyStatusAbilityDef Saboteur = Helper.CreateDefFromClone(
                 SneakAttack,
                 "F42B72D2-D1B8-4F9E-B0C5-FAAF81ED1234",
@@ -92,7 +93,7 @@ namespace PRMBetterClasses.SkillModifications
                 "40B1D998-7F46-4AF4-B671-7E639967E4E0",
                 $"E_Status [{skillName}]");
 
-            ChangeAbilitiesCostStatusDef changeAbilitiesCostSource = Repo.GetAllDefs<ChangeAbilitiesCostStatusDef>().FirstOrDefault(cac => cac.name.Equals("E_MedkitAbilitiesCostChange [FastUse_AbilityDef]"));
+            ChangeAbilitiesCostStatusDef changeAbilitiesCostSource = DefCache.GetDef<ChangeAbilitiesCostStatusDef>("E_MedkitAbilitiesCostChange [FastUse_AbilityDef]");
             
             ChangeAbilitiesCostStatusDef deployDroneChangeAbilitiesCostStatus = Helper.CreateDefFromClone(
                 changeAbilitiesCostSource,
@@ -101,15 +102,15 @@ namespace PRMBetterClasses.SkillModifications
             deployDroneChangeAbilitiesCostStatus.Visuals = Saboteur.ViewElementDef;
             deployDroneChangeAbilitiesCostStatus.AbilityCostModification.TargetAbilityTagDef = null;
             deployDroneChangeAbilitiesCostStatus.AbilityCostModification.SkillTagCullFilter = null;
-            deployDroneChangeAbilitiesCostStatus.AbilityCostModification.EquipmentTagDef = Repo.GetAllDefs<GameTagDef>().FirstOrDefault(gtd => gtd.name.Equals("DroneLauncherItem_TagDef"));
+            deployDroneChangeAbilitiesCostStatus.AbilityCostModification.EquipmentTagDef = DefCache.GetDef<GameTagDef>("DroneLauncherItem_TagDef");
             deployDroneChangeAbilitiesCostStatus.AbilityCostModification.AbilityCullFilter = null;
 
             // Drone Pack Tweak, it does not come from the drone launcher and only has the usual attack ability tag, needs a special tag to work
             SkillTagDef dronePackTag = Helper.CreateDefFromClone(
-                Repo.GetAllDefs<SkillTagDef>().FirstOrDefault(std => std.name.Equals("AttackAbility_SkillTagDef")),
+                DefCache.GetDef<SkillTagDef>("AttackAbility_SkillTagDef"),
                 "C1B51EC8-4E0A-42EF-98C0-F15A62032981",
                 "DronePack_SkillTagDef");
-            TacticalAbilityDef deployDronePack = Repo.GetAllDefs<TacticalAbilityDef>().FirstOrDefault(tad => tad.name.Equals("DeployDronePack_ShootAbilityDef"));
+            TacticalAbilityDef deployDronePack = DefCache.GetDef<TacticalAbilityDef>("DeployDronePack_ShootAbilityDef");
             //TacticalAbilityDef deployDrone = Repo.GetAllDefs<TacticalAbilityDef>().FirstOrDefault(tad => tad.name.Equals("DeployDrone_ShootAbilityDef"));
             //deployDrone.SkillTags = deployDrone.SkillTags.AddToArray(dronePackTag);
             deployDronePack.SkillTags = deployDronePack.SkillTags.AddToArray(dronePackTag);
@@ -127,7 +128,7 @@ namespace PRMBetterClasses.SkillModifications
             // List of all abilities that should not get AP reduction
             List<TacticalAbilityDef> excludedAbilities = new List<TacticalAbilityDef>()
             {
-                Repo.GetAllDefs<TacticalAbilityDef>().FirstOrDefault(tad1 => tad1.name.Equals("Overwatch_AbilityDef")),
+                DefCache.GetDef < TacticalAbilityDef >("Overwatch_AbilityDef"),
                 //Repo.GetAllDefs<TacticalAbilityDef>().FirstOrDefault(tad2 => tad2.name.Equals("RecoverWill_AbilityDef")),
             };
 
@@ -138,13 +139,13 @@ namespace PRMBetterClasses.SkillModifications
             noneAttackChangeAbilitiesCostStatus.Visuals = Saboteur.ViewElementDef;
             noneAttackChangeAbilitiesCostStatus.AbilityCostModification.TargetAbilityTagDef = null;
             noneAttackChangeAbilitiesCostStatus.AbilityCostModification.SkillTagCullFilter = new SkillTagDef[] {
-                Repo.GetAllDefs<SkillTagDef>().FirstOrDefault(std => std.name.Equals("AttackAbility_SkillTagDef"))
+                DefCache.GetDef < SkillTagDef >("AttackAbility_SkillTagDef")
             };
             noneAttackChangeAbilitiesCostStatus.AbilityCostModification.EquipmentTagDef = null;
             noneAttackChangeAbilitiesCostStatus.AbilityCostModification.AbilityCullFilter = excludedAbilities;
 
             MultiStatusDef multiStatusDef = Helper.CreateDefFromClone(
-                Repo.GetAllDefs<MultiStatusDef>().FirstOrDefault(msd => msd.name.Equals("E_Status [FastUse_AbilityDef]")),
+                DefCache.GetDef<MultiStatusDef>("E_Status [FastUse_AbilityDef]"),
                 "057B1342-B7AA-42F4-BD5C-578B19B1F5CA",
                 $"E_MultiStatuses [{skillName}]");
             multiStatusDef.Statuses = new StatusDef[] {
@@ -164,7 +165,7 @@ namespace PRMBetterClasses.SkillModifications
             // Harmony patch RecoverWillAbility.GetWillpowerRecover
             // Adding an ability that get checked in the patched method (see below)
             string skillName = "Punisher_AbilityDef";
-            PassiveModifierAbilityDef source = Repo.GetAllDefs<PassiveModifierAbilityDef>().FirstOrDefault(p => p.name.Contains("Talent"));
+            PassiveModifierAbilityDef source = DefCache.GetDef<PassiveModifierAbilityDef>("SniperTalent_AbilityDef");
             PassiveModifierAbilityDef punisher = Helper.CreateDefFromClone(
                 source,
                 "5D896CB2-2472-48D8-9A3C-86F8B28435B9",
@@ -215,7 +216,7 @@ namespace PRMBetterClasses.SkillModifications
                     }
                     // end copy
 
-                    TacticalAbilityDef punisherAbilityDef = Repo.GetAllDefs<TacticalAbilityDef>().FirstOrDefault(tad => tad.name.Equals("Punisher_AbilityDef"));
+                    TacticalAbilityDef punisherAbilityDef = DefCache.GetDef<TacticalAbilityDef>("Punisher_AbilityDef");
                     if (death.Killer != null && death.Killer.GetAbilityWithDef<TacticalAbility>(punisherAbilityDef) != null)
                     {
                         TacticalFaction tacticalFaction = death.Actor.TacticalFaction;
@@ -234,7 +235,7 @@ namespace PRMBetterClasses.SkillModifications
 
         private static void Change_OWFocus()
         {
-            OverwatchFocusAbilityDef overwatchFocus = Repo.GetAllDefs<OverwatchFocusAbilityDef>().FirstOrDefault(of => of.name.Equals("OverwatchFocus_AbilityDef"));
+            OverwatchFocusAbilityDef overwatchFocus = DefCache.GetDef<OverwatchFocusAbilityDef>("OverwatchFocus_AbilityDef");
             Sprite owSprite = Helper.CreateSpriteFromImageFile("UI_AbilitiesIcon_EquipmentAbility_OverwatchFocus-2.png");
             overwatchFocus.ViewElementDef.LargeIcon = owSprite;
             overwatchFocus.ViewElementDef.SmallIcon = owSprite;
@@ -243,7 +244,7 @@ namespace PRMBetterClasses.SkillModifications
         private static void Create_BattleHardened()
         {
             string skillName = "BattleHardened_AbilityDef";
-            PassiveModifierAbilityDef source = Repo.GetAllDefs<PassiveModifierAbilityDef>().FirstOrDefault(p => p.name.Equals("EagleEyed_AbilityDef"));
+            PassiveModifierAbilityDef source = DefCache.GetDef<PassiveModifierAbilityDef>("EagleEyed_AbilityDef");
             PassiveModifierAbilityDef BattleHardened = Helper.CreateDefFromClone(
                 source,
                 "F25B325D-FBD3-4060-BF89-347DA0DF92C4",
@@ -321,9 +322,9 @@ namespace PRMBetterClasses.SkillModifications
             //float meleeShockAddition = 100.0f;
             //LocalizedTextBind displayName = new LocalizedTextBind("TAKEDOWN", PRMBetterClassesMain.Main.Settings.DoNotLocalizeChangedTexts);
             //LocalizedTextBind description = new LocalizedTextBind($"Deal {(int)bashDamage} damage and {(int)bashShock} shock damage to an adjacent target. Replaces Bash.", PRMBetterClassesMain.Main.Settings.DoNotLocalizeChangedTexts);
-            Sprite icon = Repo.GetAllDefs<TacticalAbilityViewElementDef>().FirstOrDefault(tave => tave.name.Equals("E_ViewElement [Brawler_AbilityDef]")).LargeIcon;
+            Sprite icon = DefCache.GetDef<TacticalAbilityViewElementDef>("E_ViewElement [Brawler_AbilityDef]").LargeIcon;
 
-            ApplyStatusAbilityDef source = Repo.GetAllDefs<ApplyStatusAbilityDef>().FirstOrDefault(asa => asa.name.Equals("WeakSpot_AbilityDef"));
+            ApplyStatusAbilityDef source = DefCache.GetDef<ApplyStatusAbilityDef>("WeakSpot_AbilityDef");
             ApplyStatusAbilityDef takedown = Helper.CreateDefFromClone(
                 source,
                 "d2711bfc-b4cb-46dd-bb9f-599a88c1ebff",
@@ -346,7 +347,7 @@ namespace PRMBetterClasses.SkillModifications
             takedown.ViewElementDef.SmallIcon = icon;
 
             // Create a new Bash ability by cloning from standard Bash with fixed damage and shock values
-            BashAbilityDef bashToRemoveAbility = Repo.GetAllDefs<BashAbilityDef>().FirstOrDefault(gt => gt.name.Equals("Bash_WithWhateverYouCan_AbilityDef"));
+            BashAbilityDef bashToRemoveAbility = DefCache.GetDef<BashAbilityDef>("Bash_WithWhateverYouCan_AbilityDef");
             BashAbilityDef bashAbility = Helper.CreateDefFromClone(
                 bashToRemoveAbility,
                 "b2e1ecee-ad51-445f-afc4-6d2f629a8422",
@@ -378,7 +379,7 @@ namespace PRMBetterClasses.SkillModifications
 
             // Create a status to apply the bash ability to the actor
             AddAbilityStatusDef addNewBashAbiltyStatus = Helper.CreateDefFromClone( // Borrow status from Deplay Beacon (final mission)
-                Repo.GetAllDefs<AddAbilityStatusDef>().FirstOrDefault(a => a.name.Equals("E_AddAbilityStatus [DeployBeacon_StatusDef]")),
+                DefCache.GetDef<AddAbilityStatusDef>("E_AddAbilityStatus [DeployBeacon_StatusDef]"),
                 "f084d230-9ad4-4315-a49d-d5e73c954254",
                 $"E_ApplyNewBashAbilityEffect [{skillName}]");
             addNewBashAbiltyStatus.DurationTurns = -1;
@@ -388,14 +389,14 @@ namespace PRMBetterClasses.SkillModifications
 
             // Create an effect that removes the standard Bash from the actors abilities
             RemoveAbilityEffectDef removeRegularBashAbilityEffect = Helper.CreateDefFromClone(
-                Repo.GetAllDefs<RemoveAbilityEffectDef>().FirstOrDefault(rae => rae.name.Equals("RemoveAuraAbilities_EffectDef")),
+                DefCache.GetDef<RemoveAbilityEffectDef>("RemoveAuraAbilities_EffectDef"),
                 "b4bba4bf-f568-42b5-8baf-0169b7aa218a",
                 $"E_RemoveRegularBashAbilityEffect [{skillName}]");
             removeRegularBashAbilityEffect.AbilityDefs = new AbilityDef[] { bashToRemoveAbility };
 
             // Create a status that applies the remove ability effect to the actor
             TacEffectStatusDef applyRemoveAbilityEffectStatus = Helper.CreateDefFromClone(
-                Repo.GetAllDefs<TacEffectStatusDef>().FirstOrDefault(tes => tes.name.Equals("Mist_spawning_StatusDef")),
+                DefCache.GetDef<TacEffectStatusDef>("Mist_spawning_StatusDef"),
                 "1a9ba75a-8075-4e07-8a13-b23798eda4a0",
                 $"E_ApplyRemoveAbilityEffect [{skillName}]");
             applyRemoveAbilityEffectStatus.EffectName = "";
@@ -409,7 +410,7 @@ namespace PRMBetterClasses.SkillModifications
 
             // Create a multi status to hold all statuses that Takedown applies to the actor
             MultiStatusDef multiStatus = Helper.CreateDefFromClone( // Borrow multi status from Rapid Clearance
-                Repo.GetAllDefs<MultiStatusDef>().FirstOrDefault(m => m.name.Equals("E_MultiStatus [RapidClearance_AbilityDef]")),
+                DefCache.GetDef<MultiStatusDef>("E_MultiStatus [RapidClearance_AbilityDef]"),
                 "f4bc1190-c87c-4162-bf86-aa797c82d5d2",
                 skillName);
             multiStatus.Statuses = new StatusDef[] { addNewBashAbiltyStatus, applyRemoveAbilityEffectStatus };
@@ -456,13 +457,13 @@ namespace PRMBetterClasses.SkillModifications
             //LocalizedTextBind name = new LocalizedTextBind("SOWER OF CHANGE", PRMBetterClassesMain.Main.Settings.DoNotLocalizeChangedTexts);
             //LocalizedTextBind description = new LocalizedTextBind("Returns 25% of damage as Viral to the attacker within 10 tiles", PRMBetterClassesMain.Main.Settings.DoNotLocalizeChangedTexts);
             Sprite icon = Helper.CreateSpriteFromImageFile("UI_AbilitiesIcon_PersonalTrack_Sower_Of_Change_1-1.png");
-            ApplyStatusAbilityDef source = Repo.GetAllDefs<ApplyStatusAbilityDef>().FirstOrDefault(oad => oad.name.Equals("Acheron_ContactCorruption_ApplyStatusAbilityDef"));
+            ApplyStatusAbilityDef source = DefCache.GetDef<ApplyStatusAbilityDef>("Acheron_ContactCorruption_ApplyStatusAbilityDef");
             ApplyStatusAbilityDef SowerOfChange = Helper.CreateDefFromClone(
                 source,
                 "40d9f907-a5a4-4f9a-bc12-e1a3f5459b3e",
                 skillName);
             SowerOfChange.CharacterProgressionData = Helper.CreateDefFromClone(
-                Repo.GetAllDefs<ApplyStatusAbilityDef>().FirstOrDefault(p => p.name.Equals("MasterMarksman_AbilityDef")).CharacterProgressionData,
+                DefCache.GetDef<ApplyStatusAbilityDef>("MasterMarksman_AbilityDef").CharacterProgressionData,
                 "008272c9-2431-4681-a0a1-3bf61f3462bb",
                 skillName);
             SowerOfChange.TargetingDataDef = Helper.CreateDefFromClone(
@@ -491,10 +492,10 @@ namespace PRMBetterClasses.SkillModifications
             RawVirausDamageKeyword.ApplyOnlyOnHealthDamage = false;
 
             DamagePayloadEffectDef DamageEffect = Helper.CreateDefFromClone(
-                Repo.GetAllDefs<DamagePayloadEffectDef>().FirstOrDefault(dpe => dpe.name.Equals("E_Element0 [SwarmerPoisonExplosion_Die_AbilityDef]")),
+                DefCache.GetDef<DamagePayloadEffectDef>("E_Element0 [SwarmerPoisonExplosion_Die_AbilityDef]"),
                 "d9870608-797c-428a-8b56-17c1bdadbe27",
                 $"E_DamagePayloadEffectDef {skillName}");
-            DamageEffect.DamagePayload = Repo.GetAllDefs<ApplyDamageEffectAbilityDef>().FirstOrDefault(ade => ade.name.Equals("Mutoid_ViralExplode_AbilityDef")).DamagePayload;
+            DamageEffect.DamagePayload = DefCache.GetDef<ApplyDamageEffectAbilityDef>("Mutoid_ViralExplode_AbilityDef").DamagePayload;
             DamageEffect.DamagePayload.DamageKeywords = new List<DamageKeywordPair>()
             {
                 //new DamageKeywordPair()
@@ -518,7 +519,7 @@ namespace PRMBetterClasses.SkillModifications
                     Value = 1
                 }
             };
-            DamageEffect.DamagePayload.DamageType = Repo.GetAllDefs<DamageTypeBaseEffectDef>().FirstOrDefault(dt => dt.name.Equals("Virus_DamageOverTimeDamageTypeEffectDef"));
+            DamageEffect.DamagePayload.DamageType = DefCache.GetDef<DamageTypeBaseEffectDef>("Virus_DamageOverTimeDamageTypeEffectDef");
             DamageEffect.DamagePayload.DamageValue = 2333.0f;
             DamageEffect.DamagePayload.ArmourPiercing = 123.0f;
             DamageEffect.DamagePayload.Speed = 200.0f;
@@ -534,8 +535,8 @@ namespace PRMBetterClasses.SkillModifications
             SocStatus.DamageDeliveryTypeFilter = new List<DamageDeliveryType>();
             SocStatus.TargetApplicationConditions = new EffectConditionDef[]
             {
-                Repo.GetAllDefs<EffectConditionDef>().FirstOrDefault(ec1 => ec1.name.Equals("NotOfPhoenixFaction_ApplicationCondition")),
-                Repo.GetAllDefs<EffectConditionDef>().FirstOrDefault(ec1 => ec1.name.Equals("HasCombatantTag_ApplicationCondition"))
+                DefCache.GetDef < EffectConditionDef >("NotOfPhoenixFaction_ApplicationCondition"),
+                DefCache.GetDef < EffectConditionDef >("HasCombatantTag_ApplicationCondition")
             };
 
             SocStatus.EffectForAttacker = DamageEffect;
@@ -603,7 +604,7 @@ namespace PRMBetterClasses.SkillModifications
                         float timingScale = 0.8f;
                         //blastDamage = effectDef.DamagePayload.DamageKeywords.Find(dk => dk.DamageKeywordDef == Shared.SharedDamageKeywords.BlastKeyword).Value;
                         viralDamage = damageResult.HealthDamage >= 4 ? damageResult.HealthDamage / 4 : 1.0f;
-                        AddStatusDamageKeywordDataDef RawVirausDamageKeyword = Repo.GetAllDefs<AddStatusDamageKeywordDataDef>().FirstOrDefault(asd => asd.name.Equals("RawViral_DamageKeywordDataDef"));
+                        AddStatusDamageKeywordDataDef RawVirausDamageKeyword = DefCache.GetDef<AddStatusDamageKeywordDataDef>("RawViral_DamageKeywordDataDef");
                         effectDef.DamagePayload.DamageKeywords.Find(dk => dk.DamageKeywordDef == RawVirausDamageKeyword).Value = viralDamage;
                         //effectDef.DamagePayload.DamageKeywords.Find(dk => dk.DamageKeywordDef == Shared.SharedDamageKeywords.ViralKeyword).Value = viralDamage;
                         ___TacticalActor.Timing.Scale = timingScale;
@@ -629,9 +630,9 @@ namespace PRMBetterClasses.SkillModifications
         private static void Change_BreatheMist()
         {
             // Breathe Mist adding progression def
-            ApplyEffectAbilityDef mistBreather = Repo.GetAllDefs<ApplyEffectAbilityDef>().FirstOrDefault(a => a.name.Equals("MistBreather_AbilityDef"));
+            ApplyEffectAbilityDef mistBreather = DefCache.GetDef<ApplyEffectAbilityDef>("MistBreather_AbilityDef");
             AbilityCharacterProgressionDef mbProgressionDef = Helper.CreateDefFromClone(
-                Repo.GetAllDefs<ApplyStatusAbilityDef>().FirstOrDefault(p => p.name.Equals("MasterMarksman_AbilityDef")).CharacterProgressionData,
+                DefCache.GetDef<ApplyStatusAbilityDef>("MasterMarksman_AbilityDef").CharacterProgressionData,
                 "9eaf8809-01d9-4582-89e0-78c8596f5e7d",
                 "MistBreather_AbilityDef");
             mbProgressionDef.RequiredStrength = 0;
@@ -641,7 +642,7 @@ namespace PRMBetterClasses.SkillModifications
         }
         private static void Change_Resurrect()
         {
-            ResurrectAbilityDef resurrect = Repo.GetAllDefs<ResurrectAbilityDef>().FirstOrDefault(a => a.name.Equals("Mutoid_ResurrectAbilityDef"));
+            ResurrectAbilityDef resurrect = DefCache.GetDef<ResurrectAbilityDef>("Mutoid_ResurrectAbilityDef");
             resurrect.ActionPointCost = 0.75f;
             resurrect.WillPointCost = 10;
             resurrect.UsesPerTurn = 1;
@@ -650,7 +651,7 @@ namespace PRMBetterClasses.SkillModifications
         private static void Change_PepperCloud()
         {
             float pcRange = 8.0f;
-            ApplyStatusAbilityDef pepperCloud = Repo.GetAllDefs<ApplyStatusAbilityDef>().FirstOrDefault(p => p.name.Equals("Mutoid_PepperCloud_ApplyStatusAbilityDef"));
+            ApplyStatusAbilityDef pepperCloud = DefCache.GetDef<ApplyStatusAbilityDef>("Mutoid_PepperCloud_ApplyStatusAbilityDef");
             pepperCloud.TargetingDataDef.Origin.Range = pcRange;
             pepperCloud.ViewElementDef.Description.LocalizationKey = "PR_BC_PEPPER_CLOUD_DESC"; // new LocalizedTextBind($"Reduces Accuracy by 50% of all organic enemies within {pcRange} tiles for 1 turn.", PRMBetterClassesMain.Main.Settings.DoNotLocalizeChangedTexts);
             // change Pepper Cloud to reduce accuracy and perception to 25%
@@ -675,7 +676,7 @@ namespace PRMBetterClasses.SkillModifications
         private static void Create_AR_Targeting()
         {
             string skillName = "BC_ARTargeting_AbilityDef";
-            ApplyStatusAbilityDef source = Repo.GetAllDefs<ApplyStatusAbilityDef>().FirstOrDefault(p => p.name.Equals("DeterminedAdvance_AbilityDef"));
+            ApplyStatusAbilityDef source = DefCache.GetDef<ApplyStatusAbilityDef>("DeterminedAdvance_AbilityDef");
             ApplyStatusAbilityDef arTargeting = Helper.CreateDefFromClone(
                 source,
                 "ad95d7cb-b172-4e0d-acc5-e7e514fcb824",
@@ -689,7 +690,7 @@ namespace PRMBetterClasses.SkillModifications
                 "7019bd7f-d30d-4ce8-9c3d-0b6161bd4ee0",
                 skillName);
             StanceStatusDef artStatus = Helper.CreateDefFromClone(
-                Repo.GetAllDefs<StanceStatusDef>().FirstOrDefault(p => p.name.Equals("StomperLegs_StabilityStance_StatusDef")),
+                DefCache.GetDef<StanceStatusDef>("StomperLegs_StabilityStance_StatusDef"),
                 "56b4ea0e-d0cc-4fc9-b6cf-26e45b2dc81c",
                 "ARTargeting_Stance_StatusDef");
             artStatus.DurationTurns = 0;
@@ -740,7 +741,7 @@ namespace PRMBetterClasses.SkillModifications
             // Harmony patch RecoverWillAbility.GetWillpowerRecover
             // Adding an ability that get checked in the patched method (see below)
             string skillName = "Endurance_AbilityDef";
-            PassiveModifierAbilityDef source = Repo.GetAllDefs<PassiveModifierAbilityDef>().FirstOrDefault(p => p.name.Contains("Talent"));
+            PassiveModifierAbilityDef source = DefCache.GetDef<PassiveModifierAbilityDef>("SniperTalent_AbilityDef");
             PassiveModifierAbilityDef endurance = Helper.CreateDefFromClone(
                 source,
                 "4e9712b6-8a46-489d-9553-fdc1380c334a",
@@ -763,7 +764,7 @@ namespace PRMBetterClasses.SkillModifications
             endurance.CharacterProgressionData.RequiredWill = 0;
             endurance.ViewElementDef.DisplayName1.LocalizationKey = "PR_BC_ENDURANCE"; // new LocalizedTextBind("ENDURANCE", PRMBetterClassesMain.Main.Settings.DoNotLocalizeChangedTexts);
             endurance.ViewElementDef.Description.LocalizationKey = "PR_BC_ENDURANCE_DESC"; // new LocalizedTextBind("Recover restores 75% WP", PRMBetterClassesMain.Main.Settings.DoNotLocalizeChangedTexts);
-            Sprite enduranceIcon = Repo.GetAllDefs<TacticalAbilityViewElementDef>().FirstOrDefault(ve => ve.name.Equals("E_ViewElement [Reckless_AbilityDef]")).LargeIcon;
+            Sprite enduranceIcon = DefCache.GetDef<TacticalAbilityViewElementDef>("E_ViewElement [Reckless_AbilityDef]").LargeIcon;
             endurance.ViewElementDef.LargeIcon = enduranceIcon;
             endurance.ViewElementDef.SmallIcon = enduranceIcon;
         }

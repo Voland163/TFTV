@@ -23,6 +23,7 @@ namespace PRMBetterClasses.SkillModifications
     internal class InfiltratorSkills
     {
         private static readonly DefRepository Repo = TFTVMain.Repo;
+        private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
         public static ModLogger Logger = TFTVMain.Main.Logger;
 
 
@@ -50,7 +51,7 @@ namespace PRMBetterClasses.SkillModifications
             float apCost = 0.75f;
             float wpCost = 3.0f;
 
-            ShootAbilityDef DeployDronePack = Repo.GetAllDefs<ShootAbilityDef>().FirstOrDefault(s => s.name.Equals("DeployDronePack_ShootAbilityDef"));
+            ShootAbilityDef DeployDronePack = DefCache.GetDef<ShootAbilityDef>("DeployDronePack_ShootAbilityDef");
             DeployDronePack.ActionPointCost = apCost;
             DeployDronePack.WillPointCost = wpCost;
         }
@@ -60,7 +61,7 @@ namespace PRMBetterClasses.SkillModifications
             float hiddenDamageMod = 1.5f;
             float locatedDamageMod = 1.25f;
 
-            ApplyStatusAbilityDef SneakAttack = Repo.GetAllDefs<ApplyStatusAbilityDef>().FirstOrDefault(asa => asa.name.Equals("SneakAttack_AbilityDef"));
+            ApplyStatusAbilityDef SneakAttack = DefCache.GetDef<ApplyStatusAbilityDef>("SneakAttack_AbilityDef");
             FactionVisibilityConditionStatusDef factionVisibilityConditionStatus = (FactionVisibilityConditionStatusDef)SneakAttack.StatusDef;
             StanceStatusDef hiddenStateStatus = (StanceStatusDef)factionVisibilityConditionStatus.HiddenStateStatusDef;
             hiddenStateStatus.Visuals = Helper.CreateDefFromClone(
@@ -98,7 +99,7 @@ namespace PRMBetterClasses.SkillModifications
             //float damageMod = 0.9f;
             float accuracyMod = 0.2f;
             float stealthMod = 0.1f;
-            PassiveModifierAbilityDef cautious = Repo.GetAllDefs<PassiveModifierAbilityDef>().FirstOrDefault(asa => asa.name.Equals("Cautious_AbilityDef"));
+            PassiveModifierAbilityDef cautious = DefCache.GetDef<PassiveModifierAbilityDef>("Cautious_AbilityDef");
             cautious.StatModifications = new ItemStatModification[]
             {
                 new ItemStatModification()
@@ -123,7 +124,7 @@ namespace PRMBetterClasses.SkillModifications
             float mod = 0.15f;
             string skillName = "BC2_PhantomProtocol_AbilityDef";
 
-            PassiveModifierAbilityDef source = Repo.GetAllDefs<PassiveModifierAbilityDef>().FirstOrDefault(p => p.name.Equals("Cautious_AbilityDef"));
+            PassiveModifierAbilityDef source = DefCache.GetDef<PassiveModifierAbilityDef>("Cautious_AbilityDef");
             PhantomProtocolDef = Helper.CreateDefFromClone(
                 source,
                 "B503271D-CB9F-41B2-82C4-60D4F73DA417",
@@ -165,7 +166,7 @@ namespace PRMBetterClasses.SkillModifications
             PhantomProtocolDef.ViewElementDef.SmallIcon = PP_Icon;
 
             // Grant immunity to Sentinels surveillance ability
-            GameTagDef surveillanceImmunity = Repo.GetAllDefs<GameTagDef>().FirstOrDefault(gtd => gtd.name.Equals("InvisibleToSentinels_SkillTagDef"));
+            GameTagDef surveillanceImmunity = DefCache.GetDef<GameTagDef>("InvisibleToSentinels_SkillTagDef");
             PhantomProtocolDef.ActorTags = new GameTagDef[] { surveillanceImmunity };
 
             // Clear list of actors to rescue for rescue mission patch (see below)
@@ -272,7 +273,7 @@ namespace PRMBetterClasses.SkillModifications
         {
             float mod = 0.25f;
             string skillName = "BC_PhantomProtocol_AbilityDef";
-            ApplyStatusAbilityDef source = Repo.GetAllDefs<ApplyStatusAbilityDef>().FirstOrDefault(p => p.name.Equals("QuickAim_AbilityDef"));
+            ApplyStatusAbilityDef source = DefCache.GetDef<ApplyStatusAbilityDef>("QuickAim_AbilityDef");
             ApplyStatusAbilityDef phantomProtocol = Helper.CreateDefFromClone(
                 source,
                 "5f3e257c-aff7-4296-9992-f6728bfa8af8",
@@ -286,7 +287,7 @@ namespace PRMBetterClasses.SkillModifications
                 "c312e7f4-3339-4ee8-9717-d1f9c8bd2b32",
                 skillName);
             phantomProtocol.StatusDef = Helper.CreateDefFromClone(
-                Repo.GetAllDefs<StanceStatusDef>().FirstOrDefault(sms => sms.name.Equals("E_VanishedStatus [Vanish_AbilityDef]")),
+                DefCache.GetDef<StanceStatusDef>("E_VanishedStatus [Vanish_AbilityDef]"),
                 "06ca77ea-223b-4ec0-a7e6-734e6b7fefe9",
                 "E_AccAnd StealthMultiplier [BC_PhantomProtocol_AbilityDef]");
 

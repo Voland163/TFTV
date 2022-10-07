@@ -89,16 +89,16 @@ namespace PRMBetterClasses.SkillModifications
         internal static ChangeStatusValueEffectDef ViralValueChange_EffectDef;
         private static void Change_RecoverToReduceViral()
         {
-            DefRepository Repo = TFTVMain.Repo;
+            DefCache DefCache = TFTVMain.Main.DefCache;
             // Change description of Recover ability to reflect that it reduces Virus by half
-            RecoverWillAbilityDef recover = Repo.GetAllDefs<RecoverWillAbilityDef>().FirstOrDefault(rw => rw.name.Equals("RecoverWill_AbilityDef"));
+            RecoverWillAbilityDef recover = DefCache.GetDef<RecoverWillAbilityDef>("RecoverWill_AbilityDef");
             recover.ViewElementDef.Description.LocalizationKey = "PR_BC_RECOVER_DESC";
             // Create a new effect to change the virus value, cloned from 'ParalysisValueChange_0.5_EffectDef'
             ViralValueChange_EffectDef = Helper.CreateDefFromClone(
-                Repo.GetAllDefs<ChangeStatusValueEffectDef>().FirstOrDefault(csv => csv.name.Equals("ParalysisValueChange_0.5_EffectDef")),
+                DefCache.GetDef<ChangeStatusValueEffectDef>("ParalysisValueChange_0.5_EffectDef"),
                 "1bb3b06f-55d5-44a0-8cf7-e5382577c4df",
                 "ViralValueChange_0.5_EffectDef");
-            ViralValueChange_EffectDef.StatusDef = Repo.GetAllDefs<TacStatusDef>().FirstOrDefault(ts => ts.name.Equals("Infected_StatusDef")); // Infected_StatusDef = virus applied
+            ViralValueChange_EffectDef.StatusDef = DefCache.GetDef<TacStatusDef>("Infected_StatusDef"); // Infected_StatusDef = virus applied
         }
         // Recover ability: Patching GetWillpowerRecover when character uses Recover to also reduce viral value by half
         [HarmonyPatch(typeof(RecoverWillAbility), "GetStatusSource")]
@@ -107,9 +107,7 @@ namespace PRMBetterClasses.SkillModifications
             [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051")]
             private static void Postfix(RecoverWillAbility __instance)
             {
-                TacticalActorBase Base_TacticalActorBase = (TacticalActor)AccessTools.Property(typeof(TacticalAbility), "TacticalActorBase").GetValue(__instance, null);
-                DefRepository Repo = TFTVMain.Repo;
-                Effect.Apply(Repo, ViralValueChange_EffectDef, TacUtil.GetActorEffectTarget(Base_TacticalActorBase, null));
+                Effect.Apply(TFTVMain.Repo, ViralValueChange_EffectDef, TacUtil.GetActorEffectTarget(__instance.TacticalActorBase, null));
             }
         }
 
@@ -119,9 +117,9 @@ namespace PRMBetterClasses.SkillModifications
         internal static string InfiltratorStealthDescriptionLocKey = string.Empty;
         private static void Apply_StealthIndicator_AllClasses()
         {
-            DefRepository Repo = TFTVMain.Repo;
+            DefCache DefCache = TFTVMain.Main.DefCache;
             // Get stealth indicator ability
-            ApplyStatusAbilityDef baseForAll = Repo.GetAllDefs<ApplyStatusAbilityDef>().FirstOrDefault(asa => asa.name.Equals("Stealth_AbilityDef"));
+            ApplyStatusAbilityDef baseForAll = DefCache.GetDef<ApplyStatusAbilityDef>("Stealth_AbilityDef");
             // Save icon and localization keys for subsequent calls, the base ones get overwritten (see below)
             if (InfiltratorStealthIcon == null)
             {
@@ -207,14 +205,14 @@ namespace PRMBetterClasses.SkillModifications
             baseForAll.ViewElementDef.Description.LocalizationKey = "PR_BC_HIDDEN_DESC";
 
             // Add stealth indicator ability to Soldier_ActorDef.Abilities if it does not already contains it (set it for all characters)
-            TacticalActorDef soldierActorDef = Repo.GetAllDefs<TacticalActorDef>().FirstOrDefault(ta => ta.name.Equals("Soldier_ActorDef"));
+            TacticalActorDef soldierActorDef = DefCache.GetDef<TacticalActorDef>("Soldier_ActorDef");
             if (!soldierActorDef.Abilities.Contains(baseForAll))
             {
                 soldierActorDef.Abilities = soldierActorDef.Abilities.Append(baseForAll).ToArray();
             }
 
             // Replace base stealth inidcator ability on Infiltrator_ClassProficiency_AbilityDef with new ctreated stealth buff ability
-            ClassProficiencyAbilityDef infiltratorCPAD = Repo.GetAllDefs<ClassProficiencyAbilityDef>().FirstOrDefault(cp => cp.name.Equals("Infiltrator_ClassProficiency_AbilityDef"));
+            ClassProficiencyAbilityDef infiltratorCPAD = DefCache.GetDef<ClassProficiencyAbilityDef>("Infiltrator_ClassProficiency_AbilityDef");
             if (!infiltratorCPAD.AbilityDefs.Contains(stealthInfiltrator))
             {
                 List<AbilityDef> abilityDefs = infiltratorCPAD.AbilityDefs.ToList();
@@ -231,8 +229,8 @@ namespace PRMBetterClasses.SkillModifications
             PRMLogger.Debug("----------------------------------------------------------------------------------------------------", false);
 
             BCSettings Config = TFTVMain.Main.Settings;
-            DefRepository Repo = TFTVMain.Repo;
-            string abilityName = "";
+            DefCache DefCache = TFTVMain.Main.DefCache;
+            string abilityName;
             // Main spec
             foreach (ClassSpecDef classSpec in Config.ClassSpecializations)
             {
@@ -241,7 +239,7 @@ namespace PRMBetterClasses.SkillModifications
                     if (i != 0 && i != 3 && Helper.AbilityNameToDefMap.ContainsKey(classSpec.MainSpec[i]))
                     {
                         abilityName = Helper.AbilityNameToDefMap[classSpec.MainSpec[i]];
-                        TacticalAbilityDef tacticalAbility = Repo.GetAllDefs<TacticalAbilityDef>().FirstOrDefault(ta => ta.name.Equals(abilityName));
+                        TacticalAbilityDef tacticalAbility = DefCache.GetDef<TacticalAbilityDef>(abilityName);
                         if (tacticalAbility != null && tacticalAbility.CharacterProgressionData != null)
                         {
                             tacticalAbility.CharacterProgressionData.SkillPointCost = Helper.SPperLevel[i];
@@ -259,7 +257,7 @@ namespace PRMBetterClasses.SkillModifications
                         foreach (string skillName in ppd.UnrelatedRandomPerks)
                         {
                             abilityName = Helper.AbilityNameToDefMap[skillName];
-                            TacticalAbilityDef tacticalAbility = Repo.GetAllDefs<TacticalAbilityDef>().FirstOrDefault(ta => ta.name.Equals(abilityName));
+                            TacticalAbilityDef tacticalAbility = DefCache.GetDef<TacticalAbilityDef>(abilityName);
                             if (tacticalAbility != null && tacticalAbility.CharacterProgressionData != null)
                             {
                                 tacticalAbility.CharacterProgressionData.SkillPointCost = ppd.SPcost;
@@ -276,7 +274,7 @@ namespace PRMBetterClasses.SkillModifications
                             foreach (KeyValuePair<string, string> innerRelation in outerRelation.Value)
                             {
                                 abilityName = Helper.AbilityNameToDefMap[innerRelation.Value];
-                                TacticalAbilityDef tacticalAbility = Repo.GetAllDefs<TacticalAbilityDef>().FirstOrDefault(ta => ta.name.Equals(abilityName));
+                                TacticalAbilityDef tacticalAbility = DefCache.GetDef<TacticalAbilityDef>(abilityName);
                                 if (tacticalAbility != null && tacticalAbility.CharacterProgressionData != null)
                                 {
                                     tacticalAbility.CharacterProgressionData.SkillPointCost = ppd.SPcost;
@@ -296,47 +294,45 @@ namespace PRMBetterClasses.SkillModifications
         {
             BCSettings Config = TFTVMain.Main.Settings;
             DefRepository Repo = TFTVMain.Repo;
-            foreach (PassiveModifierAbilityDef pmad in Repo.GetAllDefs<PassiveModifierAbilityDef>())
+            DefCache DefCache = TFTVMain.Main.DefCache;
+            foreach (PassiveModifierAbilityDef pmad in Repo.GetAllDefs<PassiveModifierAbilityDef>().Where(p => p.CharacterProgressionData != null && p.name.Contains("Talent")))
             {
-                if (pmad.CharacterProgressionData != null && pmad.name.Contains("Talent"))
+                // Assault rifle proficiency fix, was set to shotguns
+                if (pmad.name.Contains("Assault"))
                 {
-                    // Assault rifle proficiency fix, was set to shotguns
-                    if (pmad.name.Contains("Assault"))
-                    {
-                        GameTagDef ARtagDef = Repo.GetAllDefs<GameTagDef>().FirstOrDefault(gtd => gtd.name.Equals("AssaultRifleItem_TagDef"));
-                        pmad.ItemTagStatModifications[0].ItemTag = ARtagDef;
-                    }
-
-                    // Change description text, not localized (currently), old one mentions fixed buffs that are taken away or set differently by this mod
-                    string newText = Helper.NotLocalizedTextMap[pmad.ViewElementDef.name][ViewElement.Description];
-                    pmad.ViewElementDef.Description = new LocalizedTextBind(newText, Config.DoNotLocalizeChangedTexts);
-
-                    PRMLogger.Debug("Proficiency def name: " + pmad.name);
-                    PRMLogger.Debug("Viewelement name:     " + pmad.ViewElementDef.name);
-                    PRMLogger.Debug("Display1 name:        " + pmad.ViewElementDef.DisplayName1.Localize());
-                    PRMLogger.Debug("Description:          " + pmad.ViewElementDef.Description.Localize());
-
-                    // Get modification from config, but first -0.1 to normalise to 0.0 (proficiency perks are all set to +0.1 buff)
-                    float newStatModification = -0.1f + Config.BuffsForAdditionalProficiency[Proficiency.Buff];
-                    // Loop through all subsequent item stat modifications
-                    if (pmad.ItemTagStatModifications.Length > 0)
-                    {
-                        for (int i = 0; i < pmad.ItemTagStatModifications.Length; i++)
-                        {
-                            if (pmad.ItemTagStatModifications[i].EquipmentStatModification.Value != (0 + Config.BuffsForAdditionalProficiency[Proficiency.Buff])
-                                && pmad.ItemTagStatModifications[i].EquipmentStatModification.Value != (1 + Config.BuffsForAdditionalProficiency[Proficiency.Buff]))
-                            {
-                                pmad.ItemTagStatModifications[i].EquipmentStatModification.Value += newStatModification;
-                            }
-
-                            PRMLogger.Debug("  Target item: " + pmad.ItemTagStatModifications[i].ItemTag.name);
-                            PRMLogger.Debug("  Target stat: " + pmad.ItemTagStatModifications[i].EquipmentStatModification.TargetStat);
-                            PRMLogger.Debug(" Modification: " + pmad.ItemTagStatModifications[i].EquipmentStatModification.Modification);
-                            PRMLogger.Debug("        Value: " + pmad.ItemTagStatModifications[i].EquipmentStatModification.Value);
-                        }
-                    }
-                    PRMLogger.Debug("----------------------------------------------------", false);
+                    GameTagDef ARtagDef = DefCache.GetDef<GameTagDef>("AssaultRifleItem_TagDef");
+                    pmad.ItemTagStatModifications[0].ItemTag = ARtagDef;
                 }
+
+                // Change description text, not localized (currently), old one mentions fixed buffs that are taken away or set differently by this mod
+                string newText = Helper.NotLocalizedTextMap[pmad.ViewElementDef.name][ViewElement.Description];
+                pmad.ViewElementDef.Description = new LocalizedTextBind(newText, Config.DoNotLocalizeChangedTexts);
+
+                PRMLogger.Debug("Proficiency def name: " + pmad.name);
+                PRMLogger.Debug("Viewelement name:     " + pmad.ViewElementDef.name);
+                PRMLogger.Debug("Display1 name:        " + pmad.ViewElementDef.DisplayName1.Localize());
+                PRMLogger.Debug("Description:          " + pmad.ViewElementDef.Description.Localize());
+
+                // Get modification from config, but first -0.1 to normalise to 0.0 (proficiency perks are all set to +0.1 buff)
+                float newStatModification = -0.1f + Config.BuffsForAdditionalProficiency[Proficiency.Buff];
+                // Loop through all subsequent item stat modifications
+                if (pmad.ItemTagStatModifications.Length > 0)
+                {
+                    for (int i = 0; i < pmad.ItemTagStatModifications.Length; i++)
+                    {
+                        if (pmad.ItemTagStatModifications[i].EquipmentStatModification.Value != (0 + Config.BuffsForAdditionalProficiency[Proficiency.Buff])
+                            && pmad.ItemTagStatModifications[i].EquipmentStatModification.Value != (1 + Config.BuffsForAdditionalProficiency[Proficiency.Buff]))
+                        {
+                            pmad.ItemTagStatModifications[i].EquipmentStatModification.Value += newStatModification;
+                        }
+
+                        PRMLogger.Debug("  Target item: " + pmad.ItemTagStatModifications[i].ItemTag.name);
+                        PRMLogger.Debug("  Target stat: " + pmad.ItemTagStatModifications[i].EquipmentStatModification.TargetStat);
+                        PRMLogger.Debug(" Modification: " + pmad.ItemTagStatModifications[i].EquipmentStatModification.Modification);
+                        PRMLogger.Debug("        Value: " + pmad.ItemTagStatModifications[i].EquipmentStatModification.Value);
+                    }
+                }
+                PRMLogger.Debug("----------------------------------------------------", false);
             }
         }
 
@@ -346,10 +342,10 @@ namespace PRMBetterClasses.SkillModifications
             float damageMod = 1.2f;
             float range = 10.0f;
             string skillName = "BattleFocus_AbilityDef";
-            DefRepository Repo = TFTVMain.Repo;
+            DefCache DefCache = TFTVMain.Main.DefCache;
 
             // Source to clone from
-            ApplyStatusAbilityDef masterMarksman = Repo.GetAllDefs<ApplyStatusAbilityDef>().FirstOrDefault(p => p.name.Equals("MasterMarksman_AbilityDef"));
+            ApplyStatusAbilityDef masterMarksman = DefCache.GetDef<ApplyStatusAbilityDef>("MasterMarksman_AbilityDef");
 
             // Create Neccessary RuntimeDefs
             ApplyStatusAbilityDef battleFocusAbility = Helper.CreateDefFromClone(
@@ -369,7 +365,7 @@ namespace PRMBetterClasses.SkillModifications
                 "b498b9de-f10b-464c-a9f9-29a293568b04",
                 skillName);
             StanceStatusDef stanceStatus = Helper.CreateDefFromClone( // Borrow status from Sneak Attack, Master Marksman status does not fit
-                Repo.GetAllDefs<StanceStatusDef>().FirstOrDefault(p => p.name.Equals("E_SneakAttackStatus [SneakAttack_AbilityDef]")),
+                DefCache.GetDef<StanceStatusDef>("E_SneakAttackStatus [SneakAttack_AbilityDef]"),
                 "05929419-7d20-47aa-b700-fa6bc6602716",
                 "E_Status [" + skillName + "]");
             VisibleActorsInRangeEffectConditionDef visibleActorsInRangeEffectCondition = Helper.CreateDefFromClone(

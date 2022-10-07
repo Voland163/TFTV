@@ -22,6 +22,7 @@ namespace PRMBetterClasses.SkillModifications
     internal class TechnicianSkills
     {
         private static readonly DefRepository Repo = TFTVMain.Repo;
+        private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
 
         public static void ApplyChanges()
         {
@@ -40,14 +41,14 @@ namespace PRMBetterClasses.SkillModifications
 
         private static void Change_RemoteDeployment()
         {
-            TacticalAbilityDef throwTurret = Repo.GetAllDefs<TacticalAbilityDef>().FirstOrDefault(t => t.name.Equals("ThrowTurret_AbilityDef"));
+            TacticalAbilityDef throwTurret = DefCache.GetDef<TacticalAbilityDef>("ThrowTurret_AbilityDef");
             throwTurret.WillPointCost = 2;
         }
 
         private static void Change_ElectricReinforcements()
         {
             float armorBonus = 10f;
-            ApplyStatusAbilityDef eR = Repo.GetAllDefs<ApplyStatusAbilityDef>().FirstOrDefault(asa => asa.name.Equals("ElectricReinforcement_AbilityDef"));
+            ApplyStatusAbilityDef eR = DefCache.GetDef<ApplyStatusAbilityDef>("ElectricReinforcement_AbilityDef");
             ItemSlotStatsModifyStatusDef eRStatus = (ItemSlotStatsModifyStatusDef)eR.StatusDef;
 
             eR.TargetingDataDef.Origin.Range = 10;
@@ -62,7 +63,7 @@ namespace PRMBetterClasses.SkillModifications
         {
             float maxAccBoost = 0.4f;
             string skillName = "Stability_AbilityDef";
-            ApplyStatusAbilityDef source = Repo.GetAllDefs<ApplyStatusAbilityDef>().FirstOrDefault(asa => asa.name.Equals("BloodLust_AbilityDef"));
+            ApplyStatusAbilityDef source = DefCache.GetDef<ApplyStatusAbilityDef>("BloodLust_AbilityDef");
             Sprite icon = Helper.CreateSpriteFromImageFile("UI_AbilitiesIcon_PersonalTrack_Strategist.png");
 
             ApplyStatusAbilityDef Stability = Helper.CreateDefFromClone(
@@ -115,7 +116,7 @@ namespace PRMBetterClasses.SkillModifications
             float healMultiplier = 2f;
             float additionalDamageMultiplier = 0.5f;
             float wpCost = 4f;
-            ApplyStatusAbilityDef source = Repo.GetAllDefs<ApplyStatusAbilityDef>().FirstOrDefault(a => a.name.Equals("QuickAim_AbilityDef"));
+            ApplyStatusAbilityDef source = DefCache.GetDef<ApplyStatusAbilityDef>("QuickAim_AbilityDef");
             Sprite icon = Helper.CreateSpriteFromImageFile("UI_AbilitiesIcon_CharacterAbility_AmplifyPain01.png");
 
             ApplyStatusAbilityDef AmplifyPain = Helper.CreateDefFromClone(
@@ -135,7 +136,7 @@ namespace PRMBetterClasses.SkillModifications
                 "d3ce1f20-3503-4dfb-a836-6bdc78064d4e",
                 skillName);
             StanceStatusDef HealMod = Helper.CreateDefFromClone(
-                Repo.GetAllDefs<StanceStatusDef>().FirstOrDefault(sd => sd.name.Equals("E_Status [ImprovedMedkit_FactionEffectDef]")),
+                DefCache.GetDef<StanceStatusDef>("E_Status [ImprovedMedkit_FactionEffectDef]"),
                 "66cf66aa-c0f5-4711-b8de-52a5a478b389",
                 $"E_HealMultiplier [{skillName}]");
             AddDependentDamageKeywordsStatusDef DamageMod = Helper.CreateDefFromClone<AddDependentDamageKeywordsStatusDef>(
@@ -162,7 +163,7 @@ namespace PRMBetterClasses.SkillModifications
             {
                 new EquipmentItemTagStatModification()
                 {
-                    ItemTag = Repo.GetAllDefs<GameTagDef>().FirstOrDefault(gt1 => gt1.name.Equals("MedkitItem_TagDef")),
+                    ItemTag = DefCache.GetDef < GameTagDef >("MedkitItem_TagDef"),
                     EquipmentStatModification = new ItemStatModification()
                     {
                         TargetStat = StatModificationTarget.BonusHealValue,
@@ -172,7 +173,7 @@ namespace PRMBetterClasses.SkillModifications
                 },
                 new EquipmentItemTagStatModification()
                 {
-                    ItemTag = Repo.GetAllDefs<GameTagDef>().FirstOrDefault(gt2 => gt2.name.Equals("RoboticArmItem_TagDef")),
+                    ItemTag = DefCache.GetDef < GameTagDef >("RoboticArmItem_TagDef"),
                     EquipmentStatModification = new ItemStatModification()
                     {
                         TargetStat = StatModificationTarget.BonusHealValue,

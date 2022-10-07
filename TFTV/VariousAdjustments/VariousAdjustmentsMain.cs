@@ -15,6 +15,7 @@ namespace PRMBetterClasses.VariousAdjustments
     internal class VariousAdjustmentsMain
     {
         private static readonly DefRepository Repo = TFTVMain.Repo;
+        private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
 
         public static void ApplyChanges()
         {
@@ -101,9 +102,9 @@ namespace PRMBetterClasses.VariousAdjustments
             [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051")]
             private static void Postfix(TacticalActorBase __instance, ref bool __result)
             {
-                StatusDef panicked = Repo.GetAllDefs<StatusDef>().FirstOrDefault(sd2 => sd2.name.Equals("Panic_StatusDef"));
-                StatusDef overWatch = Repo.GetAllDefs<StatusDef>().FirstOrDefault(sd1 => sd1.name.Equals("Overwatch_StatusDef"));
-                StatusDef hunkerDown = Repo.GetAllDefs<StatusDef>().FirstOrDefault(sd2 => sd2.name.Equals("E_CloseQuatersStatus [HunkerDown_AbilityDef]"));
+                StatusDef panicked = DefCache.GetDef<StatusDef>("Panic_StatusDef");
+                StatusDef overWatch = DefCache.GetDef<StatusDef>("Overwatch_StatusDef");
+                StatusDef hunkerDown = DefCache.GetDef<StatusDef>("E_CloseQuatersStatus [HunkerDown_AbilityDef]");
                 // Check if actor is from viewer faction (= player) and several conditions are not met
                 SharedData Shared = GameUtl.GameComponent<SharedData>();
                 if (__instance.IsFromViewerFaction && !(__instance.IsDead

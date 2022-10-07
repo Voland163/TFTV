@@ -1,13 +1,11 @@
 ﻿using Base.Core;
 using Base.Defs;
 using Base.Entities.Abilities;
-using Base.Entities.Statuses;
 using Base.UI;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.UI;
-using PhoenixPoint.Geoscape.Entities.Research;
 using PhoenixPoint.Geoscape.Entities.Research.Requirement;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
@@ -16,7 +14,6 @@ using PhoenixPoint.Tactical.Entities.DamageKeywords;
 using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.Entities.Statuses;
 using PhoenixPoint.Tactical.Entities.Weapons;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using TFTV;
@@ -28,6 +25,7 @@ namespace PRMBetterClasses.VariousAdjustments
     internal class VariousAdjustments
     {
         private static readonly DefRepository Repo = TFTVMain.Repo;
+        private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
 
         public static void ApplyChanges()
         {
@@ -75,13 +73,13 @@ namespace PRMBetterClasses.VariousAdjustments
 
         private static void Change_AdvLaserResearch()
         {
-            ExistingResearchRequirementDef advLaserResearchRequirement = Repo.GetAllDefs<ExistingResearchRequirementDef>().FirstOrDefault(rrd => rrd.name.Equals("PX_AdvancedLaserTech_ResearchDef_ExistingResearchRequirementDef_1"));
+            ExistingResearchRequirementDef advLaserResearchRequirement = DefCache.GetDef<ExistingResearchRequirementDef>("PX_AdvancedLaserTech_ResearchDef_ExistingResearchRequirementDef_1");
             advLaserResearchRequirement.ResearchID = "NJ_PRCRTechTurret_ResearchDef";
         }
 
         private static void Change_Stimpack()
         {
-            EquipmentDef stimpack = Repo.GetAllDefs<EquipmentDef>().FirstOrDefault(ed => ed.name.Equals("Stimpack_EquipmentDef"));
+            EquipmentDef stimpack = DefCache.GetDef<EquipmentDef>("Stimpack_EquipmentDef");
             stimpack.ViewElementDef.Description.LocalizationKey = "PR_BC_STIMPACK_ITEM_DESC";
 
             HealAbilityDef stimpackAbility = stimpack.GetAbilityDef<HealAbilityDef>();
@@ -92,17 +90,17 @@ namespace PRMBetterClasses.VariousAdjustments
             //stimpackAbility.HealEffects.Add(Repo.GetAllDefs<HealAbilityDef>().FirstOrDefault(has => has.name.Equals("FieldMedic_AbilityDef")).HealEffects[0]);
 
             TacActorSimpleInteractionAnimActionDef healAnimActionDef =
-                Repo.GetAllDefs<TacActorSimpleInteractionAnimActionDef>().FirstOrDefault(aa => aa.name.Equals("E_MedkitHeal [Soldier_Utka_AnimActionsDef]"));
+                DefCache.GetDef<TacActorSimpleInteractionAnimActionDef>("E_MedkitHeal [Soldier_Utka_AnimActionsDef]");
             healAnimActionDef.Items = healAnimActionDef.Items.AddToArray(stimpack);
         }
 
         private static void Change_Poison()
         {
-            DamageOverTimeStatusDef poisonDOT = Repo.GetAllDefs<DamageOverTimeStatusDef>().FirstOrDefault(dot => dot.name.Equals("Poison_DamageOverTimeStatusDef"));
+            DamageOverTimeStatusDef poisonDOT = DefCache.GetDef<DamageOverTimeStatusDef>("Poison_DamageOverTimeStatusDef");
             poisonDOT.Visuals.Description.LocalizationKey = "PR_BC_POISON_STATUS_DESC";
         }
         // Make Trembling status accessible for Harmony patches to avoid time critical Repo calls in them.
-        public static StatMultiplierStatusDef trembling = Repo.GetAllDefs<StatMultiplierStatusDef>().FirstOrDefault(sms => sms.name.Equals("Trembling_StatusDef"));
+        public static StatMultiplierStatusDef trembling = DefCache.GetDef<StatMultiplierStatusDef>("Trembling_StatusDef");
         // Harmony patch for Poison DOT to additionally apply -50% accuracy (Trembling status) and -3 WP per turn
         [HarmonyPatch(typeof(DamageOverTimeStatus), "ApplyEffect")]
         internal static class BC_DamageOverTimeStatus_ApplyEffect_Patch
@@ -159,22 +157,22 @@ namespace PRMBetterClasses.VariousAdjustments
         private static void Change_VariousBionics()
         {
             // Juggernaut Torso & Armadillo Legs: Speed -1 -> 0
-            BodyPartAspectDef juggTorsoAspect = Repo.GetAllDefs<BodyPartAspectDef>().FirstOrDefault(bpa1 => bpa1.name.Equals("E_BodyPartAspect [NJ_Jugg_BIO_Torso_BodyPartDef]"));
-            BodyPartAspectDef juggLegsAspect = Repo.GetAllDefs<BodyPartAspectDef>().FirstOrDefault(bpa2 => bpa2.name.Equals("E_BodyPartAspect [NJ_Jugg_BIO_Legs_ItemDef]"));
+            BodyPartAspectDef juggTorsoAspect = DefCache.GetDef<BodyPartAspectDef>("E_BodyPartAspect [NJ_Jugg_BIO_Torso_BodyPartDef]");
+            BodyPartAspectDef juggLegsAspect = DefCache.GetDef<BodyPartAspectDef>("E_BodyPartAspect [NJ_Jugg_BIO_Legs_ItemDef]");
             juggTorsoAspect.Speed = juggLegsAspect.Speed = 0;
 
             // Give mounted weapon slot to Juggernaut Torso 
-            TacticalItemDef juggTorso = Repo.GetAllDefs<TacticalItemDef>().FirstOrDefault(ti1 => ti1.name.Equals("NJ_Jugg_BIO_Torso_BodyPartDef"));
-            TacticalItemDef neuralTorso = Repo.GetAllDefs<TacticalItemDef>().FirstOrDefault(ti2 => ti2.name.Equals("NJ_Exo_BIO_Torso_BodyPartDef"));
+            TacticalItemDef juggTorso = DefCache.GetDef<TacticalItemDef>("NJ_Jugg_BIO_Torso_BodyPartDef");
+            TacticalItemDef neuralTorso = DefCache.GetDef<TacticalItemDef>("NJ_Exo_BIO_Torso_BodyPartDef");
             juggTorso.ProvidedSlots = neuralTorso.ProvidedSlots;
 
             // shield deploy AP cost 1 -> 0
-            TacticalAbilityDef deployJuggShield = Repo.GetAllDefs<TacticalAbilityDef>().FirstOrDefault(tad => tad.name.Equals("DeployShield_Bionic_AbilityDef"));
+            TacticalAbilityDef deployJuggShield = DefCache.GetDef<TacticalAbilityDef>("DeployShield_Bionic_AbilityDef");
             deployJuggShield.ActionPointCost = 0;
 
             // Neural Torso: Grants Mounted Weapons and Tech Arms Proficiency (MountedWeaponTalent_AbilityDef = MountedItem_TagDef = proficiency with all mounted equipment)
             // First fix name and description of given mounted weapon talent that in fact gives mounted item proficiency also for robotic arms
-            PassiveModifierAbilityDef mountedItemsProficiency = Repo.GetAllDefs<PassiveModifierAbilityDef>().FirstOrDefault(pma => pma.name.Equals("MountedWeaponTalent_AbilityDef"));
+            PassiveModifierAbilityDef mountedItemsProficiency = DefCache.GetDef<PassiveModifierAbilityDef>("MountedWeaponTalent_AbilityDef");
             mountedItemsProficiency.ViewElementDef.DisplayName1.LocalizationKey = "PR_BC_MOUNTED_ITEMS_PROF";
             mountedItemsProficiency.ViewElementDef.Description = new LocalizedTextBind("PR_BC_MOUNTED_ITEMS_PROF_DESC");
             //Sprite icon = Repo.GetAllDefs<ViewElementDef>().FirstOrDefault(ve => ve.name.Equals("E_View [NJ_Technician_MechArms_WeaponDef]")).LargeIcon;
@@ -188,7 +186,7 @@ namespace PRMBetterClasses.VariousAdjustments
             }
 
             // Mirage Legs: Speed +1 -> +2
-            BodyPartAspectDef mirageLegsAspect = Repo.GetAllDefs<BodyPartAspectDef>().FirstOrDefault(bpa2 => bpa2.name.Equals("E_BodyPartAspect [SY_Shinobi_BIO_Legs_ItemDef]"));
+            BodyPartAspectDef mirageLegsAspect = DefCache.GetDef<BodyPartAspectDef>("E_BodyPartAspect [SY_Shinobi_BIO_Legs_ItemDef]");
             mirageLegsAspect.Speed = 2;
         }
 
@@ -198,17 +196,17 @@ namespace PRMBetterClasses.VariousAdjustments
             int turretArmor = 10;
             int turretAutoFireShotCount = 4;
 
-            WeaponDef turret = Repo.GetAllDefs<WeaponDef>().FirstOrDefault(p => p.name.Equals("NJ_TechTurretGun_WeaponDef"));
+            WeaponDef turret = DefCache.GetDef<WeaponDef>("NJ_TechTurretGun_WeaponDef");
             turret.APToUsePerc = turretAPToUsePerc;
             turret.Armor = turretArmor;
             turret.DamagePayload.AutoFireShotCount = turretAutoFireShotCount;
 
-            WeaponDef prcrTurret = Repo.GetAllDefs<WeaponDef>().FirstOrDefault(p => p.name.Equals("NJ_PRCRTechTurretGun_WeaponDef"));
+            WeaponDef prcrTurret = DefCache.GetDef<WeaponDef>("NJ_PRCRTechTurretGun_WeaponDef");
             prcrTurret.APToUsePerc = turretAPToUsePerc;
             prcrTurret.Armor = turretArmor;
             prcrTurret.DamagePayload.AutoFireShotCount = turretAutoFireShotCount;
 
-            WeaponDef laserTurret = Repo.GetAllDefs<WeaponDef>().FirstOrDefault(p => p.name.Equals("PX_LaserTechTurretGun_WeaponDef"));
+            WeaponDef laserTurret = DefCache.GetDef<WeaponDef>("PX_LaserTechTurretGun_WeaponDef");
             laserTurret.APToUsePerc = turretAPToUsePerc;
             laserTurret.Armor = turretArmor;
             laserTurret.DamagePayload.AutoFireShotCount = turretAutoFireShotCount;
@@ -218,7 +216,7 @@ namespace PRMBetterClasses.VariousAdjustments
             int StompShockValue = 200;
             int StompBlastValue = 50;
 
-            ApplyDamageEffectAbilityDef stomp = Repo.GetAllDefs<ApplyDamageEffectAbilityDef>().FirstOrDefault(p => p.name.Equals("StomperLegs_Stomp_AbilityDef"));
+            ApplyDamageEffectAbilityDef stomp = DefCache.GetDef<ApplyDamageEffectAbilityDef>("StomperLegs_Stomp_AbilityDef");
             stomp.DamagePayload.DamageKeywords = new List<DamageKeywordPair>()
                 {
                 new DamageKeywordPair{DamageKeywordDef = shared.SharedDamageKeywords.ShockKeyword, Value = StompShockValue },
@@ -229,7 +227,7 @@ namespace PRMBetterClasses.VariousAdjustments
         {
             float frenzySpeed = 0.33f;
 
-            FrenzyStatusDef frenzy = Repo.GetAllDefs<FrenzyStatusDef>().FirstOrDefault(p => p.name.Equals("Frenzy_StatusDef"));
+            FrenzyStatusDef frenzy = DefCache.GetDef<FrenzyStatusDef>("Frenzy_StatusDef");
             frenzy.SpeedCoefficient = frenzySpeed;
             //LocalizedTextBind description = new LocalizedTextBind("", PRMBetterClassesMain.Main.Settings.DoNotLocalizeChangedTexts);
             foreach (ViewElementDef visuals in Repo.GetAllDefs<ViewElementDef>().Where(tav => tav.name.Contains("Frenzy_")))
@@ -246,9 +244,9 @@ namespace PRMBetterClasses.VariousAdjustments
             int mutoidWormCharges = 5;
             float range = 25.0f;
 
-            WeaponDef mAWorm = Repo.GetAllDefs<WeaponDef>().FirstOrDefault(p => p.name.Equals("Mutoid_Arm_AcidWorm_WeaponDef"));
-            WeaponDef mFWorm = Repo.GetAllDefs<WeaponDef>().FirstOrDefault(p => p.name.Equals("Mutoid_Arm_FireWorm_WeaponDef"));
-            WeaponDef mPWorm = Repo.GetAllDefs<WeaponDef>().FirstOrDefault(p => p.name.Equals("Mutoid_Arm_PoisonWorm_WeaponDef"));
+            WeaponDef mAWorm = DefCache.GetDef<WeaponDef>("Mutoid_Arm_AcidWorm_WeaponDef");
+            WeaponDef mFWorm = DefCache.GetDef<WeaponDef>("Mutoid_Arm_FireWorm_WeaponDef");
+            WeaponDef mPWorm = DefCache.GetDef<WeaponDef>("Mutoid_Arm_PoisonWorm_WeaponDef");
 
             mAWorm.ChargesMax = mutoidWormCharges;
             mAWorm.DamagePayload.Range = range;
@@ -268,7 +266,7 @@ namespace PRMBetterClasses.VariousAdjustments
                     tacticalItem.Abilities = new AbilityDef[]
                     {
                         tacticalItem.Abilities[0],
-                        Repo.GetAllDefs<AbilityDef>().FirstOrDefault(p => p.name.Equals("MindControlImmunity_AbilityDef"))
+                        DefCache.GetDef < AbilityDef >("MindControlImmunity_AbilityDef")
                     };
                 }
                 // Judgement Head mutation
@@ -282,7 +280,7 @@ namespace PRMBetterClasses.VariousAdjustments
         {
             int spiderDroneArmor = 10;
 
-            TacticalItemDef spiderDrone = Repo.GetAllDefs<TacticalItemDef>().FirstOrDefault(p => p.name.Equals("SpiderDrone_Torso_BodyPartDef"));
+            TacticalItemDef spiderDrone = DefCache.GetDef<TacticalItemDef>("SpiderDrone_Torso_BodyPartDef");
             spiderDrone.Armor = spiderDroneArmor;
         }
         public static void Change_VariousWeapons(SharedData shared)
@@ -330,14 +328,14 @@ namespace PRMBetterClasses.VariousAdjustments
         }
         public static void Change_VenomTorso()
         {
-            WeaponDef venomTorso = Repo.GetAllDefs<WeaponDef>().FirstOrDefault(p => p.name.Equals("AN_Berserker_Shooter_LeftArm_WeaponDef"));
+            WeaponDef venomTorso = DefCache.GetDef<WeaponDef>("AN_Berserker_Shooter_LeftArm_WeaponDef");
 
             venomTorso.Tags = new GameTagsList()
             {
                 venomTorso.Tags[0],
                 venomTorso.Tags[1],
                 venomTorso.Tags[2],
-                Repo.GetAllDefs<GameTagDef>().FirstOrDefault(p => p.name.Equals("GunWeapon_TagDef"))
+                DefCache.GetDef<GameTagDef>("GunWeapon_TagDef")
             };
         }
         public static void Change_HavenRecruits()
@@ -345,10 +343,10 @@ namespace PRMBetterClasses.VariousAdjustments
             bool hasArmor = true;
             bool hasWeapon = true;
 
-            GameDifficultyLevelDef easy = Repo.GetAllDefs<GameDifficultyLevelDef>().FirstOrDefault(a => a.name.Equals("Easy_GameDifficultyLevelDef"));
-            GameDifficultyLevelDef standard = Repo.GetAllDefs<GameDifficultyLevelDef>().FirstOrDefault(a => a.name.Equals("Standard_GameDifficultyLevelDef"));
-            GameDifficultyLevelDef hard = Repo.GetAllDefs<GameDifficultyLevelDef>().FirstOrDefault(a => a.name.Equals("Hard_GameDifficultyLevelDef"));
-            GameDifficultyLevelDef veryhard = Repo.GetAllDefs<GameDifficultyLevelDef>().FirstOrDefault(a => a.name.Equals("VeryHard_GameDifficultyLevelDef"));
+            GameDifficultyLevelDef easy = DefCache.GetDef<GameDifficultyLevelDef>("Easy_GameDifficultyLevelDef");
+            GameDifficultyLevelDef standard = DefCache.GetDef<GameDifficultyLevelDef>("Standard_GameDifficultyLevelDef");
+            GameDifficultyLevelDef hard = DefCache.GetDef<GameDifficultyLevelDef>("Hard_GameDifficultyLevelDef");
+            GameDifficultyLevelDef veryhard = DefCache.GetDef<GameDifficultyLevelDef>("VeryHard_GameDifficultyLevelDef");
 
             easy.RecruitsGenerationParams.HasArmor = hasArmor;
             easy.RecruitsGenerationParams.HasWeapons = hasWeapon;
@@ -365,36 +363,36 @@ namespace PRMBetterClasses.VariousAdjustments
             int mechArmsEMPDamage = 200;
             int usesPerTurn = 1;
 
-            WeaponDef mechArms = Repo.GetAllDefs<WeaponDef>().FirstOrDefault(p => p.name.Equals("NJ_Technician_MechArms_WeaponDef"));
-            DamageKeywordDef emp = Repo.GetAllDefs<DamageKeywordDef>().FirstOrDefault(p => p.name.Equals("EMP_DamageKeywordDataDef"));
+            WeaponDef mechArms = DefCache.GetDef<WeaponDef>("NJ_Technician_MechArms_WeaponDef");
+            DamageKeywordDef emp = DefCache.GetDef<DamageKeywordDef>("EMP_DamageKeywordDataDef");
             mechArms.DamagePayload.DamageKeywords = new List<DamageKeywordPair>()
             {
                 new DamageKeywordPair{DamageKeywordDef = shared.SharedDamageKeywords.ShockKeyword, Value = mechArmsShockDamage },
                 new DamageKeywordPair{DamageKeywordDef = emp, Value = mechArmsEMPDamage }
             };
-            ShootAbilityDef techArmStrike = Repo.GetAllDefs<ShootAbilityDef>().FirstOrDefault(s => s.name.Equals("TechnicianStrike_ShootAbilityDef"));
+            ShootAbilityDef techArmStrike = DefCache.GetDef<ShootAbilityDef>("TechnicianStrike_ShootAbilityDef");
             techArmStrike.UsesPerTurn = usesPerTurn;
             // Change ammo cost for MechArms
-            TacticalItemDef mechArmsAmmo = Repo.GetAllDefs<TacticalItemDef>().FirstOrDefault(a => a.name.Equals("MechArms_AmmoClip_ItemDef"));
+            TacticalItemDef mechArmsAmmo = DefCache.GetDef<TacticalItemDef>("MechArms_AmmoClip_ItemDef");
             mechArmsAmmo.ManufactureMaterials = 55;
             mechArmsAmmo.ManufactureTech = 15;
         }
         public static void Change_VengeanceTorso()
         {
-            TacticalItemDef vTorso = Repo.GetAllDefs<TacticalItemDef>().FirstOrDefault(p => p.name.Equals("SY_Shinobi_BIO_Torso_BodyPartDef"));
+            TacticalItemDef vTorso = DefCache.GetDef<TacticalItemDef>("SY_Shinobi_BIO_Torso_BodyPartDef");
 
-            vTorso.Abilities[1] = Repo.GetAllDefs<AbilityDef>().FirstOrDefault(p => p.name.Equals("BattleFocus_AbilityDef"));
+            vTorso.Abilities[1] = DefCache.GetDef<AbilityDef>("BattleFocus_AbilityDef");
         }
         public static void Change_ShadowLegs(SharedData shared)
         {
             int shadowLegsSonicDamage = 20;
 
-            BashAbilityDef shadowLegs = Repo.GetAllDefs<BashAbilityDef>().FirstOrDefault(p => p.name.Equals("ElectricKick_AbilityDef"));
+            BashAbilityDef shadowLegs = DefCache.GetDef<BashAbilityDef>("ElectricKick_AbilityDef");
 
             shadowLegs.DamagePayload.DamageKeywords[0].DamageKeywordDef = shared.SharedDamageKeywords.SonicKeyword;
             shadowLegs.DamagePayload.DamageKeywords[0].Value = shadowLegsSonicDamage;
 
-            BodyPartAspectDef shadowLegsAspectDef = Repo.GetAllDefs<BodyPartAspectDef>().FirstOrDefault(bpa => bpa.name.Equals("E_BodyPartAspect [AN_Berserker_Shooter_Legs_ItemDef]"));
+            BodyPartAspectDef shadowLegsAspectDef = DefCache.GetDef<BodyPartAspectDef>("E_BodyPartAspect [AN_Berserker_Shooter_Legs_ItemDef]");
             shadowLegsAspectDef.Speed = 1;
         }
         public static void Change_VidarGL(SharedData shared)
@@ -404,7 +402,7 @@ namespace PRMBetterClasses.VariousAdjustments
             int vGLAcid = 10;
             int vGlAPCost = 50;
 
-            WeaponDef vGL = Repo.GetAllDefs<WeaponDef>().FirstOrDefault(p => p.name.Equals("FS_AssaultGrenadeLauncher_WeaponDef"));
+            WeaponDef vGL = DefCache.GetDef<WeaponDef>("FS_AssaultGrenadeLauncher_WeaponDef");
 
             vGL.DamagePayload.DamageKeywords = new List<DamageKeywordPair>
             {
@@ -418,7 +416,7 @@ namespace PRMBetterClasses.VariousAdjustments
         }
         public static void Change_Destiny()
         {
-            WeaponDef destiny3 = Repo.GetAllDefs<WeaponDef>().FirstOrDefault(p => p.name.Equals("PX_LaserArrayPack_WeaponDef"));
+            WeaponDef destiny3 = DefCache.GetDef<WeaponDef>("PX_LaserArrayPack_WeaponDef");
             destiny3.FumblePerc = 50;
         }
     }

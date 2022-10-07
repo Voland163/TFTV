@@ -35,6 +35,7 @@ namespace PRMBetterClasses.SkillModifications
     internal class PriestSkills
     {
         private static readonly DefRepository Repo = TFTVMain.Repo;
+        private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
 
         public static void ApplyChanges()
         {
@@ -50,7 +51,7 @@ namespace PRMBetterClasses.SkillModifications
 
         public static void Change_PsychicWard()
         {
-            ApplyStatusAbilityDef psychicWard = Repo.GetAllDefs<ApplyStatusAbilityDef>().FirstOrDefault(p => p.name.Equals("PsychicWard_AbilityDef"));
+            ApplyStatusAbilityDef psychicWard = DefCache.GetDef<ApplyStatusAbilityDef>("PsychicWard_AbilityDef");
             psychicWard.ViewElementDef.Description.LocalizationKey = "PR_BC_PSYCHIC_WARD_DESC";
         }
 
@@ -59,8 +60,8 @@ namespace PRMBetterClasses.SkillModifications
             float damageMod = 0.25f;
             string skillName = "BC_Biochemist_AbilityDef";
 
-            ApplyStatusAbilityDef source = Repo.GetAllDefs<ApplyStatusAbilityDef>().FirstOrDefault(dma => dma.name.Equals("BodypartDamageMultiplier_AbilityDef"));
-            Sprite icon = Repo.GetAllDefs<TacticalAbilityDef>().FirstOrDefault(ta => ta.name.Equals("BioChemist_AbilityDef")).ViewElementDef.LargeIcon;
+            ApplyStatusAbilityDef source = DefCache.GetDef<ApplyStatusAbilityDef>("BodypartDamageMultiplier_AbilityDef");
+            Sprite icon = DefCache.GetDef<TacticalAbilityDef>("BioChemist_AbilityDef").ViewElementDef.LargeIcon;
 
             ApplyStatusAbilityDef Biochemist = Helper.CreateDefFromClone(
                 source,
@@ -119,9 +120,9 @@ namespace PRMBetterClasses.SkillModifications
             float range = 25.0f;
 
             string skillName = "LayWaste_AbilityDef";
-            Sprite icon = Repo.GetAllDefs<TacticalAbilityViewElementDef>().FirstOrDefault(tav => tav.name.Equals("E_ViewElement [Mutoid_PoisonExplosion_ApplyStatusAbilityDef]")).LargeIcon;
+            Sprite icon = DefCache.GetDef<TacticalAbilityViewElementDef>("E_ViewElement [Mutoid_PoisonExplosion_ApplyStatusAbilityDef]").LargeIcon;
 
-            ApplyEffectAbilityDef source = Repo.GetAllDefs<ApplyEffectAbilityDef>().FirstOrDefault(aea => aea.name.Equals("MindCrush_AbilityDef"));
+            ApplyEffectAbilityDef source = DefCache.GetDef<ApplyEffectAbilityDef>("MindCrush_AbilityDef");
 
             ApplyEffectAbilityDef LayWaste = Helper.CreateDefFromClone(
                 source,
@@ -152,7 +153,7 @@ namespace PRMBetterClasses.SkillModifications
             LayWaste.TargetingDataDef.Target.TargetResult = TargetResult.Actor;
             LayWaste.TargetingDataDef.Target.TargetTags = new GameTagsList
             {
-                Repo.GetAllDefs<SubstanceTypeTagDef>().FirstOrDefault(tav => tav.name.Equals("Organic_SubstanceTypeTagDef")),
+                DefCache.GetDef < SubstanceTypeTagDef >("Organic_SubstanceTypeTagDef"),
             };
 
             LayWaste.ViewElementDef.DisplayName1.LocalizationKey = "PR_BC_LAY_WASTE";
@@ -173,16 +174,16 @@ namespace PRMBetterClasses.SkillModifications
 
             // Animation related stuff
             FirstMatchExecutionDef cameraAbility = Helper.CreateDefFromClone(
-                Repo.GetAllDefs<FirstMatchExecutionDef>().FirstOrDefault(bd => bd.name.Equals("E_MindControlAbility [NoDieCamerasTacticalCameraDirectorDef]")),
+                DefCache.GetDef<FirstMatchExecutionDef>("E_MindControlAbility [NoDieCamerasTacticalCameraDirectorDef]"),
                 "51f0a0d0-7cab-4a6a-b511-51ba91e699fd",
                 "E_LayWaste_CameraAbility [NoDieCamerasTacticalCameraDirectorDef]");
             cameraAbility.FilterDef = Helper.CreateDefFromClone(
-                Repo.GetAllDefs<TacCameraAbilityFilterDef>().FirstOrDefault(c => c.name.Equals("E_MindControlFilter [NoDieCamerasTacticalCameraDirectorDef]")),
+                DefCache.GetDef<TacCameraAbilityFilterDef>("E_MindControlFilter [NoDieCamerasTacticalCameraDirectorDef]"),
                 "77f7e07a-a0b2-40b1-90c7-b8e86b70a5fd",
                 "E_LayWaste_CameraAbilityFilter [NoDieCamerasTacticalCameraDirectorDef]");
             (cameraAbility.FilterDef as TacCameraAbilityFilterDef).TacticalAbilityDef = LayWaste;
 
-            TacticalAbilityDef animSource = Repo.GetAllDefs<TacticalAbilityDef>().FirstOrDefault(ta => ta.name.Equals("Priest_MindControl_AbilityDef"));
+            TacticalAbilityDef animSource = DefCache.GetDef<TacticalAbilityDef>("Priest_MindControl_AbilityDef");
             foreach (TacActorSimpleAbilityAnimActionDef animActionDef in Repo.GetAllDefs<TacActorSimpleAbilityAnimActionDef>().Where(aad => aad.name.Contains("Soldier_Utka_AnimActionsDef")))
             {
                 if (animActionDef.AbilityDefs != null && animActionDef.AbilityDefs.Contains(animSource) && !animActionDef.AbilityDefs.Contains(LayWaste))

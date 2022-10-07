@@ -19,7 +19,7 @@ namespace PRMBetterClasses.SkillModifications
 {
     internal class SniperSkills
     {
-        private static readonly DefRepository Repo = TFTVMain.Repo;
+        private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
 
         public static void ApplyChanges()
         {
@@ -38,7 +38,7 @@ namespace PRMBetterClasses.SkillModifications
 
         private static void Change_ExtremeFocus()
         {
-            ChangeAbilitiesCostStatusDef extremeFocusAPcostMod = Repo.GetAllDefs<ChangeAbilitiesCostStatusDef>().FirstOrDefault(c => c.name.Contains("ExtremeFocus_AbilityDef"));
+            ChangeAbilitiesCostStatusDef extremeFocusAPcostMod = DefCache.GetDef<ChangeAbilitiesCostStatusDef>("E_ExtremeFocusStatus [ExtremeFocus_AbilityDef]");
             extremeFocusAPcostMod.AbilityCostModification.ActionPointModType = TacticalAbilityModificationType.Set;
             extremeFocusAPcostMod.AbilityCostModification.ActionPointMod = 0.25f;
             extremeFocusAPcostMod.Visuals.Description.LocalizationKey = "PR_BC_EXTREME_FOCUS_DESC"; // new LocalizedTextBind("Overwatch cost is set to 1 Action Point cost for all weapons", TFTVMain.Main.Settings.DoNotLocalizeChangedTexts);
@@ -46,13 +46,13 @@ namespace PRMBetterClasses.SkillModifications
 
         private static void Change_ArmourBreak()
         {
-            ApplyStatusAbilityDef armourBreak = Repo.GetAllDefs<ApplyStatusAbilityDef>().FirstOrDefault(ad => ad.name.Equals("ArmourBreak_AbilityDef"));
+            ApplyStatusAbilityDef armourBreak = DefCache.GetDef<ApplyStatusAbilityDef>("ArmourBreak_AbilityDef");
             armourBreak.WillPointCost = 2.0f;
             armourBreak.ViewElementDef.Description.LocalizationKey = "PR_BC_ARMOR_BREAK_DESC"; // new LocalizedTextBind("Next shot has 15 shred but -25% damage", TFTVMain.Main.Settings.DoNotLocalizeChangedTexts);
             AddAttackBoostStatusDef armourBreakShredMod = armourBreak.StatusDef as AddAttackBoostStatusDef;
             armourBreakShredMod.DamageKeywordPairs[0].Value = 15.0f;
             StanceStatusDef armourBreakDamageReduction = Helper.CreateDefFromClone( // Borrow status from Sneak Attack for damage reduction
-                Repo.GetAllDefs<StanceStatusDef>().FirstOrDefault(p => p.name.Equals("E_SneakAttackStatus [SneakAttack_AbilityDef]")),
+                DefCache.GetDef<StanceStatusDef>("E_SneakAttackStatus [SneakAttack_AbilityDef]"),
                 "e0dcd2aa-0262-41ff-9be0-c7671a6a11e0",
                 "E_DamageReductionStatus [ArmourBreak_AbilityDef]");
             armourBreakDamageReduction.EffectName = "ArmourBreak";
@@ -75,7 +75,7 @@ namespace PRMBetterClasses.SkillModifications
             //LocalizedTextBind name = new LocalizedTextBind("GUNSLINGER", TFTVMain.Main.Settings.DoNotLocalizeChangedTexts);
             //LocalizedTextBind description = new LocalizedTextBind("Shoot handgun 3 times at -50% accuracy", TFTVMain.Main.Settings.DoNotLocalizeChangedTexts);
 
-            ShootAbilityDef source = Repo.GetAllDefs<ShootAbilityDef>().FirstOrDefault(s => s.name.Equals("Gunslinger_AbilityDef"));
+            ShootAbilityDef source = DefCache.GetDef<ShootAbilityDef>("Gunslinger_AbilityDef");
             ShootAbilityDef gunslinger = Helper.CreateDefFromClone(
                 source,
                 "c6fdce21-fd70-4c8c-a92a-b623715c8762",
@@ -99,7 +99,7 @@ namespace PRMBetterClasses.SkillModifications
             gunslinger.ActionPointCost = apCost;
             gunslinger.WillPointCost = wpCost;
             gunslinger.EquipmentTags = new GameTagDef[] {
-                Repo.GetAllDefs<GameTagDef>().FirstOrDefault(g => g.name.Equals("HandgunItem_TagDef"))
+                DefCache.GetDef < GameTagDef >("HandgunItem_TagDef")
             };
             gunslinger.ExecutionsCount = burst;
             gunslinger.ProjectileSpreadMultiplier = accPenalty;
@@ -110,7 +110,7 @@ namespace PRMBetterClasses.SkillModifications
             // Harmony patch PhoenixPoint.Tactical.Entities.Weapons.Weapon.GetNumberOfShots
             // Adding an ability that get checked in the patched method (see below)
             string skillName = "KillZone_AbilityDef";
-            PassiveModifierAbilityDef source = Repo.GetAllDefs<PassiveModifierAbilityDef>().FirstOrDefault(p => p.name.Contains("Talent"));
+            PassiveModifierAbilityDef source = DefCache.GetDef<PassiveModifierAbilityDef>("SniperTalent_AbilityDef");
             PassiveModifierAbilityDef killZone = Helper.CreateDefFromClone(
                 source,
                 "a5f9cf13-595b-4f54-8737-063e9219b4b0",
@@ -149,24 +149,21 @@ namespace PRMBetterClasses.SkillModifications
                 {
                     if (attackType == AttackType.Overwatch)
                     {
-                        TacticalActor ___TacticalActor = (TacticalActor)AccessTools.Property(typeof(TacticalItem), "TacticalActor").GetValue(__instance, null);
-                        TacticalAbility killzoneAbility = ___TacticalActor.GetAbilities<TacticalAbility>().FirstOrDefault(s => s.AbilityDef.name.Equals("KillZone_AbilityDef"));
+                        TacticalAbility killzoneAbility = __instance.TacticalActor.GetAbilities<TacticalAbility>().FirstOrDefault(s => s.AbilityDef.name.Equals("KillZone_AbilityDef"));
                         if (killzoneAbility != null)
                         {
-                            bool ___InfiniteCharges = (bool)AccessTools.Property(typeof(TacticalItem), "InfiniteCharges").GetValue(__instance, null);
-                            CommonItemData ___CommonItemData = (CommonItemData)AccessTools.Property(typeof(TacticalItem), "CommonItemData").GetValue(__instance, null);
-                            if (___TacticalActor.IsProficientWithEquipment(__instance)
-                                && (___InfiniteCharges || ___CommonItemData.CurrentCharges >= __result * 2))
+                            if (__instance.TacticalActor.IsProficientWithEquipment(__instance)
+                                && (__instance.InfiniteCharges || __instance.CommonItemData.CurrentCharges >= __result * 2))
                             {
                                 __result *= 2;
                             }
                             PRMLogger.Debug("Overwatch called GetNumberOfShots by ...");
-                            PRMLogger.Debug("  Actor           : " + ___TacticalActor.DisplayName);
+                            PRMLogger.Debug("  Actor           : " + __instance.TacticalActor.DisplayName);
                             PRMLogger.Debug("  Ability checked : " + killzoneAbility.AbilityDef.name);
                             PRMLogger.Debug("  Weapon          : " + __instance.DisplayName);
-                            PRMLogger.Debug("  Actor is prof.  : " + ___TacticalActor.IsProficientWithEquipment(__instance));
-                            PRMLogger.Debug("  Infinite charges: " + ___InfiniteCharges);
-                            PRMLogger.Debug("  Current charges : " + ___CommonItemData.CurrentCharges);
+                            PRMLogger.Debug("  Actor is prof.  : " + __instance.TacticalActor.IsProficientWithEquipment(__instance));
+                            PRMLogger.Debug("  Infinite charges: " + __instance.InfiniteCharges);
+                            PRMLogger.Debug("  Current charges : " + __instance.CommonItemData.CurrentCharges);
                             PRMLogger.Debug("  Result shots    : " + __result);
                             PRMLogger.Debug("----------------------------------------------------", false);
                         }

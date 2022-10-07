@@ -13,6 +13,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using TFTV;
 using UnityEngine;
 
 namespace PRMBetterClasses.Tactical.Entities.Statuses
@@ -45,7 +46,7 @@ namespace PRMBetterClasses.Tactical.Entities.Statuses
             foreach (DamageKeywordDef dependentKeywordDef in _dependentDamageKeywordDefs)
             {
                 string searchName = dependentKeywordDef.name.Replace(prefix, string.Empty);
-                DamageKeywordDef keywordDef = Repo.GetAllDefs<DamageKeywordDef>().FirstOrDefault(dk => dk.name.Equals(searchName));
+                DamageKeywordDef keywordDef = TFTVMain.Main.DefCache.GetDef<DamageKeywordDef>(searchName);
                 _keywordMap.Add(keywordDef, dependentKeywordDef);
             }
             _appliedDamageKeywordValues = new Dictionary<DamageKeywordDef, float>();

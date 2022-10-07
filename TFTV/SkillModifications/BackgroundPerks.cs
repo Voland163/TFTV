@@ -18,7 +18,8 @@ namespace PRMBetterClasses.SkillModifications
     {
         // Get config, definition repository and shared data
         //private static readonly Settings Config = TFTVMain.Main.Config;
-        private static readonly DefRepository Repo = TFTVMain.Repo;
+        //private static readonly DefRepository Repo = TFTVMain.Repo;
+        private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
         //private static readonly SharedData Shared = BetterClassesMain.Shared;
 
         //private static readonly bool doNotLocalize = BetterClassesMain.doNotLocalize;
@@ -69,13 +70,13 @@ namespace PRMBetterClasses.SkillModifications
         private static void Create_Survivor()
         {
             string skillName = "Survivor_AbilityDef";
-            PassiveModifierAbilityDef source = Repo.GetAllDefs<PassiveModifierAbilityDef>().FirstOrDefault(p => p.name.Contains("Talent"));
+            PassiveModifierAbilityDef source = DefCache.GetDef<PassiveModifierAbilityDef>("SniperTalent_AbilityDef");
             PassiveModifierAbilityDef Survivor = Helper.CreateDefFromClone(
                 source,
                 "8e907b1f-f94e-4047-b27a-4de7022868b9",
                 skillName);
             Survivor.CharacterProgressionData = Helper.CreateDefFromClone(
-                Repo.GetAllDefs<ApplyStatusAbilityDef>().FirstOrDefault(p => p.name.Equals("MasterMarksman_AbilityDef")).CharacterProgressionData,
+                DefCache.GetDef<ApplyStatusAbilityDef>("MasterMarksman_AbilityDef").CharacterProgressionData,
                 "90919b90-e7a6-47fc-9bd1-609e254f53eb",
                 skillName);
             Survivor.ViewElementDef = Helper.CreateDefFromClone(
@@ -138,7 +139,7 @@ namespace PRMBetterClasses.SkillModifications
         }
         private static void Change_Nurse()
         {
-            PassiveModifierAbilityDef Nurse = Repo.GetAllDefs<PassiveModifierAbilityDef>().FirstOrDefault(p => p.name.Equals("Helpful_AbilityDef"));
+            PassiveModifierAbilityDef Nurse = DefCache.GetDef<PassiveModifierAbilityDef>("Helpful_AbilityDef");
             for (int i = 0; i < Nurse.StatModifications.Length; i++)
             {
                 if (Nurse.StatModifications[i].TargetStat == StatModificationTarget.BonusHealValue)
@@ -159,7 +160,7 @@ namespace PRMBetterClasses.SkillModifications
         }
         private static void Change_Scav()
         {
-            PassiveModifierAbilityDef scav = Repo.GetAllDefs<PassiveModifierAbilityDef>().FirstOrDefault(p => p.name.Equals("Brainiac_AbilityDef"));
+            PassiveModifierAbilityDef scav = DefCache.GetDef<PassiveModifierAbilityDef>("Brainiac_AbilityDef");
             for (int i = 0; i < scav.StatModifications.Length; i++)
             {
                 if (scav.StatModifications[i].TargetStat == StatModificationTarget.Perception)
@@ -173,7 +174,7 @@ namespace PRMBetterClasses.SkillModifications
         private static void Create_CorpseDisposer()
         {
             string skillName = "CorpseDisposer_AbilityDef";
-            DamageMultiplierAbilityDef source = Repo.GetAllDefs<DamageMultiplierAbilityDef>().FirstOrDefault(p => p.name.Equals("FireResistant_DamageMultiplierAbilityDef"));
+            DamageMultiplierAbilityDef source = DefCache.GetDef<DamageMultiplierAbilityDef>("FireResistant_DamageMultiplierAbilityDef");
             DamageMultiplierAbilityDef CorpseDisposer = Helper.CreateDefFromClone(
                 source,
                 "8647a3e3-1fb0-44ca-9d6d-352613068070",
@@ -207,7 +208,7 @@ namespace PRMBetterClasses.SkillModifications
         }
         private static void Change_HardLabor()
         {
-            PassiveModifierAbilityDef HardLabor = Repo.GetAllDefs<PassiveModifierAbilityDef>().FirstOrDefault(p => p.name.Equals("Strongman_AbilityDef"));
+            PassiveModifierAbilityDef HardLabor = DefCache.GetDef<PassiveModifierAbilityDef>("Strongman_AbilityDef");
             for (int i = 0; i < HardLabor.StatModifications.Length; i++)
             {
                 if (HardLabor.StatModifications[i].TargetStat == StatModificationTarget.Perception)
@@ -225,24 +226,24 @@ namespace PRMBetterClasses.SkillModifications
         }
         private static void Change_Squatter()
         {
-            PassiveModifierAbilityDef Squatter = Repo.GetAllDefs<PassiveModifierAbilityDef>().FirstOrDefault(p => p.name.Equals("Resourceful_AbilityDef"));
-            Squatter.StatModifications = Repo.GetAllDefs<PassiveModifierAbilityDef>().FirstOrDefault(p => p.name.Equals("Resourceful_AbilityDef")).StatModifications;
+            PassiveModifierAbilityDef Squatter = DefCache.GetDef<PassiveModifierAbilityDef>("Resourceful_AbilityDef");
+            Squatter.StatModifications = DefCache.GetDef<PassiveModifierAbilityDef>("Resourceful_AbilityDef").StatModifications;
             Squatter.ViewElementDef.DisplayName1.LocalizationKey = "PR_BC_SQUATTER"; //new LocalizedTextBind("SQUATTER", TFTVMain.Main.Settings.DoNotLocalizeChangedTexts);
             Squatter.ViewElementDef.Description.LocalizationKey = "PR_BC_SQUATTER_DESC"; //new LocalizedTextBind("<b>+2 Strength, +25% carry weight</b>\n<i>In the camps you carried everything on your person at all times. And sometimes you had to take things from other people.</i>", TFTVMain.Main.Settings.DoNotLocalizeChangedTexts);
-            Sprite SquatterIcon = Repo.GetAllDefs<TacticalAbilityViewElementDef>().FirstOrDefault(tav => tav.name.Equals("E_ViewElement [ExpertPacker_AbilityDef]")).LargeIcon;
+            Sprite SquatterIcon = DefCache.GetDef<TacticalAbilityViewElementDef>("E_ViewElement [ExpertPacker_AbilityDef]").LargeIcon;
             Squatter.ViewElementDef.LargeIcon = SquatterIcon;
             Squatter.ViewElementDef.SmallIcon = SquatterIcon;
         }
         private static void Create_Volunteered()
         {
             string skillName = "Volunteered_AbilityDef";
-            PassiveModifierAbilityDef source = Repo.GetAllDefs<PassiveModifierAbilityDef>().FirstOrDefault(p => p.name.Equals("EnhancedVision_AbilityDef"));
+            PassiveModifierAbilityDef source = DefCache.GetDef<PassiveModifierAbilityDef>("EnhancedVision_AbilityDef");
             PassiveModifierAbilityDef Volunteered = Helper.CreateDefFromClone(
                 source,
                 "9ca95f13-49d9-49fd-90bc-f1f59c99003b",
                 skillName);
             Volunteered.CharacterProgressionData = Helper.CreateDefFromClone(
-                Repo.GetAllDefs<ApplyStatusAbilityDef>().FirstOrDefault(p => p.name.Equals("MasterMarksman_AbilityDef")).CharacterProgressionData,
+                DefCache.GetDef<ApplyStatusAbilityDef>("MasterMarksman_AbilityDef").CharacterProgressionData,
                 "ff169374-0ec6-481d-a071-2e8abd407755",
                 skillName);
             Volunteered.ViewElementDef = Helper.CreateDefFromClone(
@@ -306,7 +307,7 @@ namespace PRMBetterClasses.SkillModifications
         private static void Create_CondoRaider()
         {
             string skillName = "CondoRaider_AbilityDef";
-            AddNavAreasAbilityDef source = Repo.GetAllDefs<AddNavAreasAbilityDef>().FirstOrDefault(p => p.name.Equals("Humanoid_HighJump_AbilityDef"));
+            AddNavAreasAbilityDef source = DefCache.GetDef<AddNavAreasAbilityDef>("Humanoid_HighJump_AbilityDef");
             AddNavAreasAbilityDef CondoRaider = Helper.CreateDefFromClone(
                 source,
                 "5e2e7ad9-164d-4ac0-ae6f-23570bcfa525",
@@ -343,7 +344,7 @@ namespace PRMBetterClasses.SkillModifications
         }
         private static void Change_TunnelRat()
         {
-            PassiveModifierAbilityDef TunnelRat = Repo.GetAllDefs<PassiveModifierAbilityDef>().FirstOrDefault(p => p.name.Equals("Thief_AbilityDef"));
+            PassiveModifierAbilityDef TunnelRat = DefCache.GetDef<PassiveModifierAbilityDef>("Thief_AbilityDef");
             for (int i = 0; i < TunnelRat.StatModifications.Length; i++)
             {
                 if (TunnelRat.StatModifications[i].TargetStat == StatModificationTarget.Stealth)
@@ -357,7 +358,7 @@ namespace PRMBetterClasses.SkillModifications
         private static void Create_Hunter()
         {
             string skillName = "Hunter_AbilityDef";
-            PassiveModifierAbilityDef source = Repo.GetAllDefs<PassiveModifierAbilityDef>().FirstOrDefault(p => p.name.Equals("EagleEyed_AbilityDef"));
+            PassiveModifierAbilityDef source = DefCache.GetDef<PassiveModifierAbilityDef>("EagleEyed_AbilityDef");
             PassiveModifierAbilityDef Hunter = Helper.CreateDefFromClone(
                 source,
                 "15150fb6-0088-4124-bf7c-31146a2006ed",
@@ -391,7 +392,7 @@ namespace PRMBetterClasses.SkillModifications
         private static void Create_Troublemaker()
         {
             string skillName = "Troublemaker_AbilityDef";
-            PassiveModifierAbilityDef source = Repo.GetAllDefs<PassiveModifierAbilityDef>().FirstOrDefault(p => p.name.Equals("ExpertThrower_AbilityDef"));
+            PassiveModifierAbilityDef source = DefCache.GetDef<PassiveModifierAbilityDef>("ExpertThrower_AbilityDef");
             PassiveModifierAbilityDef Troublemaker = Helper.CreateDefFromClone(
                 source,
                 "a35b7814-1b64-4ce6-ab31-ab4a70ad1732",
@@ -423,7 +424,7 @@ namespace PRMBetterClasses.SkillModifications
         private static void Create_Paranoid()
         {
             string skillName = "Paranoid_AbilityDef";
-            PassiveModifierAbilityDef source = Repo.GetAllDefs<PassiveModifierAbilityDef>().FirstOrDefault(p => p.name.Equals("SelfDefenseSpecialist_AbilityDef"));
+            PassiveModifierAbilityDef source = DefCache.GetDef<PassiveModifierAbilityDef>("SelfDefenseSpecialist_AbilityDef");
             PassiveModifierAbilityDef paranoid = Helper.CreateDefFromClone(
                 source,
                 "7da2f9bc-8175-4b62-81ef-af66c6cd8a58",
@@ -461,7 +462,7 @@ namespace PRMBetterClasses.SkillModifications
         private static void Create_Privileged()
         {
             string skillName = "Privileged_AbilityDef";
-            PassiveModifierAbilityDef source = Repo.GetAllDefs<PassiveModifierAbilityDef>().FirstOrDefault(p => p.name.Equals("SelfDefenseSpecialist_AbilityDef"));
+            PassiveModifierAbilityDef source = DefCache.GetDef<PassiveModifierAbilityDef>("SelfDefenseSpecialist_AbilityDef");
             PassiveModifierAbilityDef Privileged = Helper.CreateDefFromClone(
                 source,
                 "d2c9867d-faea-4b69-a503-3a00928d1ba7",
@@ -505,7 +506,7 @@ namespace PRMBetterClasses.SkillModifications
         private static void Create_AHistoryOfViolence()
         {
             string skillName = "AHistoryOfViolence_AbilityDef";
-            PassiveModifierAbilityDef source = Repo.GetAllDefs<PassiveModifierAbilityDef>().FirstOrDefault(p => p.name.Equals("Focused_AbilityDef"));
+            PassiveModifierAbilityDef source = DefCache.GetDef<PassiveModifierAbilityDef>("Focused_AbilityDef");
             PassiveModifierAbilityDef aHistoryOfViolence = Helper.CreateDefFromClone(
                 source,
                 "0d856da5-b098-4e88-a09b-480f71e9470e",
@@ -550,14 +551,14 @@ namespace PRMBetterClasses.SkillModifications
             aHistoryOfViolence.CharacterProgressionData.RequiredWill = 0;
             aHistoryOfViolence.ViewElementDef.DisplayName1.LocalizationKey = "PR_BC_HISTORY_OF_VIOLENCE"; // new LocalizedTextBind("A HISTORY OF VIOLENCE", TFTVMain.Main.Settings.DoNotLocalizeChangedTexts);
             aHistoryOfViolence.ViewElementDef.Description.LocalizationKey = "PR_BC_HISTORY_OF_VIOLENCE_DESC"; // new LocalizedTextBind("<b>+10% Damage, -3 Willpower</b>\n<i>In the past, you hurt some people. They probably deserved it.</i>", TFTVMain.Main.Settings.DoNotLocalizeChangedTexts);
-            Sprite ahofIcon = Repo.GetAllDefs<PassiveModifierAbilityDef>().FirstOrDefault(pm => pm.name.Equals("SilencedWeaponTalent_AbilityDef")).ViewElementDef.LargeIcon;
+            Sprite ahofIcon = DefCache.GetDef<PassiveModifierAbilityDef>("SilencedWeaponTalent_AbilityDef").ViewElementDef.LargeIcon;
             aHistoryOfViolence.ViewElementDef.LargeIcon = ahofIcon;
             aHistoryOfViolence.ViewElementDef.SmallIcon = ahofIcon;
         }
         private static void Create_Daredevil()
         {
             string skillName = "Daredevil_AbilityDef";
-            PassiveModifierAbilityDef source = Repo.GetAllDefs<PassiveModifierAbilityDef>().FirstOrDefault(p => p.name.Equals("Reckless_AbilityDef"));
+            PassiveModifierAbilityDef source = DefCache.GetDef<PassiveModifierAbilityDef>("Reckless_AbilityDef");
             PassiveModifierAbilityDef daredevil = Helper.CreateDefFromClone(
                 source,
                 "a1bb97ba-862f-4c0d-98b7-efbcd6f9021d",
@@ -581,14 +582,14 @@ namespace PRMBetterClasses.SkillModifications
         private static void Create_DamagedAmygdala()
         {
             string skillName = "DamagedAmygdala_AbilityDef";
-            DamageMultiplierAbilityDef source = Repo.GetAllDefs<DamageMultiplierAbilityDef>().FirstOrDefault(p => p.name.Equals("PsychicResistant_DamageMultiplierAbilityDef"));
+            DamageMultiplierAbilityDef source = DefCache.GetDef<DamageMultiplierAbilityDef>("PsychicResistant_DamageMultiplierAbilityDef");
             source.Multiplier = 0.0f; // Set to 0.0 because 0.5 = resistance did not work.
             DamageMultiplierAbilityDef damagedAmygdala = Helper.CreateDefFromClone(
                 source,
                 "5fe50c69-3081-4502-98bf-1ba9d6911c99",
                 skillName);
             damagedAmygdala.CharacterProgressionData = Helper.CreateDefFromClone(
-                Repo.GetAllDefs<ApplyStatusAbilityDef>().FirstOrDefault(p => p.name.Equals("MasterMarksman_AbilityDef")).CharacterProgressionData,
+                DefCache.GetDef<ApplyStatusAbilityDef>("MasterMarksman_AbilityDef").CharacterProgressionData,
                 "ed634d13-34ec-43ef-9940-04400369535f",
                 skillName);
             damagedAmygdala.ViewElementDef = Helper.CreateDefFromClone(
@@ -606,7 +607,7 @@ namespace PRMBetterClasses.SkillModifications
         private static void Create_SanitationExpert()
         {
             string skillName = "SanitationExpert_AbilityDef";
-            GooDamageMultiplierAbilityDef source = Repo.GetAllDefs<GooDamageMultiplierAbilityDef>().FirstOrDefault(p => p.name.Equals("GooImmunity_AbilityDef"));
+            GooDamageMultiplierAbilityDef source = DefCache.GetDef<GooDamageMultiplierAbilityDef>("GooImmunity_AbilityDef");
             GooDamageMultiplierAbilityDef sanitationExpert = Helper.CreateDefFromClone(
                 source,
                 "f3aa9070-fbba-4fe7-8909-4b098e53187c",
@@ -628,13 +629,13 @@ namespace PRMBetterClasses.SkillModifications
         private static void Create_LabAssistant()
         {
             string skillName = "LabAssistant_AbilityDef";
-            DamageMultiplierAbilityDef source = Repo.GetAllDefs<DamageMultiplierAbilityDef>().FirstOrDefault(p => p.name.Equals("AcidResistant_DamageMultiplierAbilityDef"));
+            DamageMultiplierAbilityDef source = DefCache.GetDef<DamageMultiplierAbilityDef>("AcidResistant_DamageMultiplierAbilityDef");
             DamageMultiplierAbilityDef labAssistant = Helper.CreateDefFromClone(
                 source,
                 "610c2c16-3572-4c5b-b75d-a05f2520266e",
                 skillName);
             labAssistant.CharacterProgressionData = Helper.CreateDefFromClone(
-                Repo.GetAllDefs<ApplyStatusAbilityDef>().FirstOrDefault(p => p.name.Equals("MasterMarksman_AbilityDef")).CharacterProgressionData,
+                DefCache.GetDef<ApplyStatusAbilityDef>("MasterMarksman_AbilityDef").CharacterProgressionData,
                 "fe81789d-940a-497e-bc2e-847a2ecadc05",
                 skillName);
             labAssistant.ViewElementDef = Helper.CreateDefFromClone(
@@ -647,7 +648,7 @@ namespace PRMBetterClasses.SkillModifications
         private static void Create_Rockteer()
         {
             string skillName = "Rocketeer_AbilityDef";
-            ClassProficiencyAbilityDef source = Repo.GetAllDefs<ClassProficiencyAbilityDef>().FirstOrDefault(p => p.name.Equals("UseAttachedEquipment_AbilityDef"));
+            ClassProficiencyAbilityDef source = DefCache.GetDef<ClassProficiencyAbilityDef>("UseAttachedEquipment_AbilityDef");
             ClassProficiencyAbilityDef rocketeer = Helper.CreateDefFromClone(
                 source,
                 "52a59fad-179c-4126-a28e-2de988137a78",
@@ -684,7 +685,7 @@ namespace PRMBetterClasses.SkillModifications
             //Fix_MeleeWeaponDamageType(meleeDamageTypes);
 
             string skillName = "TrueGrit_AbilityDef";
-            ApplyStatusAbilityDef source = Repo.GetAllDefs<ApplyStatusAbilityDef>().FirstOrDefault(p => p.name.Equals("CloseQuarters_AbilityDef"));
+            ApplyStatusAbilityDef source = DefCache.GetDef<ApplyStatusAbilityDef>("CloseQuarters_AbilityDef");
             ApplyStatusAbilityDef trueGrit = Helper.CreateDefFromClone(
                 source,
                 "1a688a8d-96df-41f4-83ea-c554de05a7a4",

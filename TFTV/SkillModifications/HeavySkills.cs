@@ -29,6 +29,7 @@ namespace PRMBetterClasses.SkillModifications
         // Get config, definition repository and shared data
         //private static readonly Settings Config = BetterClassesMain.Config;
         private static readonly DefRepository Repo = TFTVMain.Repo;
+        private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
         //private static readonly SharedData Shared = BetterClassesMain.Shared;
 
         //private static readonly bool doNotLocalize = BetterClassesMain.doNotLocalize;
@@ -62,13 +63,13 @@ namespace PRMBetterClasses.SkillModifications
 
         private static void Change_ReturnFire()
         {
-            TacticalAbilityDef returnFire = Repo.GetAllDefs<TacticalAbilityDef>().FirstOrDefault(tad => tad.name.Equals("ReturnFire_AbilityDef"));
+            TacticalAbilityDef returnFire = DefCache.GetDef<TacticalAbilityDef>("ReturnFire_AbilityDef"); // Repo.GetAllDefs<TacticalAbilityDef>().FirstOrDefault(tad => tad.name.Equals("ReturnFire_AbilityDef"));
             returnFire.ActorTags = new GameTagDef[0]; // Deletes all given tags => no restriction for any class
         }
         private static void Create_HunkerDown()
         {
             string skillName = "HunkerDown_AbilityDef";
-            ApplyStatusAbilityDef source = Repo.GetAllDefs<ApplyStatusAbilityDef>().FirstOrDefault(asa => asa.name.Equals("CloseQuarters_AbilityDef"));
+            ApplyStatusAbilityDef source = DefCache.GetDef<ApplyStatusAbilityDef>("CloseQuarters_AbilityDef"); //Repo.GetAllDefs<ApplyStatusAbilityDef>().FirstOrDefault(asa => asa.name.Equals("CloseQuarters_AbilityDef"));
             ApplyStatusAbilityDef hunkerDown = Helper.CreateDefFromClone(
                 source,
                 "a3d841c5-b3dd-440b-ae4e-629dcabd14df",
@@ -77,7 +78,7 @@ namespace PRMBetterClasses.SkillModifications
                 source.CharacterProgressionData,
                 "64add472-da6f-4584-b5e9-f204b7d3c735",
                 skillName);
-            hunkerDown.TargetingDataDef = Repo.GetAllDefs<ApplyStatusAbilityDef>().FirstOrDefault(a => a.name.Equals("QuickAim_AbilityDef")).TargetingDataDef;
+            hunkerDown.TargetingDataDef = DefCache.GetDef<ApplyStatusAbilityDef>("QuickAim_AbilityDef").TargetingDataDef; //Repo.GetAllDefs<ApplyStatusAbilityDef>().FirstOrDefault(a => a.name.Equals("QuickAim_AbilityDef")).TargetingDataDef;
             hunkerDown.ViewElementDef = Helper.CreateDefFromClone(
                 source.ViewElementDef,
                 "c0b8b645-b1b7-4f4e-87ea-3f6bacc2dc4f",
@@ -106,7 +107,7 @@ namespace PRMBetterClasses.SkillModifications
             (hunkerDown.StatusDef as DamageMultiplierStatusDef).Visuals = hunkerDown.ViewElementDef;
             (hunkerDown.StatusDef as DamageMultiplierStatusDef).DamageTypeDefs = new DamageTypeBaseEffectDef[0]; // Empty = all damage types
             (hunkerDown.StatusDef as DamageMultiplierStatusDef).Range = -1.0f; // -1 = no range restriction
-            AbilityDef animationSearchDef = Repo.GetAllDefs<AbilityDef>().FirstOrDefault(ad => ad.name.Equals("QuickAim_AbilityDef"));
+            AbilityDef animationSearchDef = DefCache.GetDef<AbilityDef>("QuickAim_AbilityDef");
             foreach (TacActorSimpleAbilityAnimActionDef animActionDef in Repo.GetAllDefs<TacActorSimpleAbilityAnimActionDef>().Where(aad => aad.name.Contains("Soldier_Utka_AnimActionsDef")))
             {
                 if (animActionDef.AbilityDefs != null && animActionDef.AbilityDefs.Contains(animationSearchDef) && !animActionDef.AbilityDefs.Contains(hunkerDown))
@@ -126,13 +127,13 @@ namespace PRMBetterClasses.SkillModifications
             float damageMod = 1.25f;
             string skillName = "Skirmisher_AbilityDef";
 
-            ApplyStatusAbilityDef source = Repo.GetAllDefs<ApplyStatusAbilityDef>().FirstOrDefault(asa => asa.name.Equals("Acheron_DynamicResistance_AbilityDef"));
+            ApplyStatusAbilityDef source = DefCache.GetDef<ApplyStatusAbilityDef>("Acheron_DynamicResistance_AbilityDef");
             ApplyStatusAbilityDef skirmisher = Helper.CreateDefFromClone(
                 source,
                 "d6d9041b-9763-4673-a057-2bbefd96aa67",
                 skillName);
             skirmisher.CharacterProgressionData = Helper.CreateDefFromClone(
-                Repo.GetAllDefs<ApplyStatusAbilityDef>().FirstOrDefault(p => p.name.Equals("MasterMarksman_AbilityDef")).CharacterProgressionData,
+                DefCache.GetDef<ApplyStatusAbilityDef>("MasterMarksman_AbilityDef").CharacterProgressionData, //Repo.GetAllDefs<ApplyStatusAbilityDef>().FirstOrDefault(p => p.name.Equals("MasterMarksman_AbilityDef")).CharacterProgressionData,
                 "657f3e2b-08c0-4234-b16f-3f6d57d049e1",
                 skillName);
             skirmisher.ViewElementDef = Helper.CreateDefFromClone(
@@ -150,10 +151,7 @@ namespace PRMBetterClasses.SkillModifications
             skirmisher.ViewElementDef.LargeIcon = skirmisherIcon;
             skirmisher.ViewElementDef.SmallIcon = skirmisherIcon;
 
-            StanceStatusDef skirmisherDamageModification = Helper.CreateDefFromClone( // Borrow status from Sneak Attack for damage modification
-                Repo.GetAllDefs<StanceStatusDef>().FirstOrDefault(p => p.name.Equals("E_SneakAttackStatus [SneakAttack_AbilityDef]")),
-                "728f321f-3a9d-4e63-a160-660c2a2c4664",
-                $"E_DamageModificationStatus [{skillName}]");
+            StanceStatusDef skirmisherDamageModification = DefCache.GetDef<StanceStatusDef>("E_SneakAttackStatus [SneakAttack_AbilityDef]");
             skirmisherDamageModification.DurationTurns = 1;
             skirmisherDamageModification.SingleInstance = true;
             skirmisherDamageModification.Visuals = skirmisher.ViewElementDef;
@@ -172,22 +170,22 @@ namespace PRMBetterClasses.SkillModifications
             {
                 new DynamicResistanceStatusDef.ResistancePerDamageType()
                 {
-                    DamageTypeBaseEffectDef = Repo.GetAllDefs<DamageTypeBaseEffectDef>().FirstOrDefault(dtb => dtb.name.Equals("Projectile_StandardDamageTypeEffectDef")),
+                    DamageTypeBaseEffectDef = DefCache.GetDef<DamageTypeBaseEffectDef>("Projectile_StandardDamageTypeEffectDef"), //Repo.GetAllDefs<DamageTypeBaseEffectDef>().FirstOrDefault(dtb => dtb.name.Equals("Projectile_StandardDamageTypeEffectDef")),
                     ResistanceStatusDef = skirmisherDamageModification
                 },
                 new DynamicResistanceStatusDef.ResistancePerDamageType()
                 {
-                    DamageTypeBaseEffectDef = Repo.GetAllDefs<DamageTypeBaseEffectDef>().FirstOrDefault(dtb => dtb.name.Equals("Bash_StandardDamageTypeEffectDef")),
+                    DamageTypeBaseEffectDef = DefCache.GetDef<DamageTypeBaseEffectDef>("Bash_StandardDamageTypeEffectDef"), //Repo.GetAllDefs<DamageTypeBaseEffectDef>().FirstOrDefault(dtb => dtb.name.Equals("Bash_StandardDamageTypeEffectDef")),
                     ResistanceStatusDef = skirmisherDamageModification
                 },
                 new DynamicResistanceStatusDef.ResistancePerDamageType()
                 {
-                    DamageTypeBaseEffectDef = Repo.GetAllDefs<DamageTypeBaseEffectDef>().FirstOrDefault(dtb => dtb.name.Equals("MeleeBash_StandardDamageTypeEffectDef")),
+                    DamageTypeBaseEffectDef = DefCache.GetDef < DamageTypeBaseEffectDef >("MeleeBash_StandardDamageTypeEffectDef"),
                     ResistanceStatusDef = skirmisherDamageModification
                 },
                 new DynamicResistanceStatusDef.ResistancePerDamageType()
                 {
-                    DamageTypeBaseEffectDef = Repo.GetAllDefs<DamageTypeBaseEffectDef>().FirstOrDefault(dtb => dtb.name.Equals("Blast_StandardDamageTypeEffectDef")),
+                    DamageTypeBaseEffectDef = DefCache.GetDef < DamageTypeBaseEffectDef >("Blast_StandardDamageTypeEffectDef"),
                     ResistanceStatusDef = skirmisherDamageModification
                 }
             };
@@ -224,7 +222,7 @@ namespace PRMBetterClasses.SkillModifications
         private static void Create_ShredResistance()
         {
             string skillName = "ShredResistant_DamageMultiplierAbilityDef";
-            DamageMultiplierAbilityDef source = Repo.GetAllDefs<DamageMultiplierAbilityDef>().FirstOrDefault(dma => dma.name.Equals("PoisonResistant_DamageMultiplierAbilityDef"));
+            DamageMultiplierAbilityDef source = DefCache.GetDef<DamageMultiplierAbilityDef>("PoisonResistant_DamageMultiplierAbilityDef");
             DamageMultiplierAbilityDef shredRes = Helper.CreateDefFromClone(
                 source,
                 "da32f3c3-74d4-440c-9197-8fcccaf66da8",
@@ -237,7 +235,7 @@ namespace PRMBetterClasses.SkillModifications
                 source.ViewElementDef,
                 "487acaef-7908-436b-b458-b0a670382663",
                 skillName);
-            shredRes.DamageTypeDef = Repo.GetAllDefs<DamageTypeBaseEffectDef>().FirstOrDefault(dtb => dtb.name.Equals("Shred_StandardDamageTypeEffectDef"));
+            shredRes.DamageTypeDef = DefCache.GetDef<DamageTypeBaseEffectDef>("Shred_StandardDamageTypeEffectDef"); //Repo.GetAllDefs<DamageTypeBaseEffectDef>().FirstOrDefault(dtb => dtb.name.Equals("Shred_StandardDamageTypeEffectDef"));
             shredRes.ViewElementDef.DisplayName1.LocalizationKey = "PR_BC_SHRED_RESISTANCE"; // new LocalizedTextBind("SHRED RESISTANCE", TFTVMain.Main.Settings.DoNotLocalizeChangedTexts);
             shredRes.ViewElementDef.Description.LocalizationKey = "PR_BC_SHRED_RESISTANCE_DESC"; // new LocalizedTextBind("Shred Resistance", TFTVMain.Main.Settings.DoNotLocalizeChangedTexts);
             TacticalAbilityViewElementDef pr_ViewElement = (TacticalAbilityViewElementDef)Repo.GetDef("00431749-6f3f-d7e3-41a1-56e07706bd5a");
@@ -251,10 +249,11 @@ namespace PRMBetterClasses.SkillModifications
         [HarmonyPatch(typeof(ShreddingDamageKeywordData), "ProcessKeywordDataInternal")]
         internal static class BC_ShreddingDamageKeywordData_ProcessKeywordDataInternal_ShredResistant_patch
         {
-            public static DamageMultiplierAbilityDef shredResistanceAbilityDef = Repo.GetAllDefs<DamageMultiplierAbilityDef>().FirstOrDefault(dma => dma.name.Equals("ShredResistant_DamageMultiplierAbilityDef"));
+            //public static DamageMultiplierAbilityDef shredResistanceAbilityDef = DefCache.GetDef<DamageMultiplierAbilityDef>("ShredResistant_DamageMultiplierAbilityDef");
             public static void Postfix(ref DamageAccumulation.TargetData data)
             {
                 TacticalActorBase actor = data.Target.GetActor();
+                DamageMultiplierAbilityDef shredResistanceAbilityDef = DefCache.GetDef<DamageMultiplierAbilityDef>("ShredResistant_DamageMultiplierAbilityDef");
                 if (actor != null && actor.GetAbilityWithDef<DamageMultiplierAbility>(shredResistanceAbilityDef) != null)
                 {
                     data.DamageResult.ArmorDamage = Mathf.Floor(data.DamageResult.ArmorDamage * shredResistanceAbilityDef.Multiplier);
@@ -264,7 +263,7 @@ namespace PRMBetterClasses.SkillModifications
 
         private static void Change_RageBurst()
         {
-            RageBurstInConeAbilityDef rageBurst = Repo.GetAllDefs<RageBurstInConeAbilityDef>().FirstOrDefault(p => p.name.Equals("RageBurst_RageBurstInConeAbilityDef"));
+            RageBurstInConeAbilityDef rageBurst = DefCache.GetDef<RageBurstInConeAbilityDef>("RageBurst_RageBurstInConeAbilityDef");
             rageBurst.ProjectileSpreadMultiplier = 0.4f; // acc buff calculation: 1 / value - 100 = +acc%, 1 / 0.4 - 100 = +150%
             rageBurst.ConeSpread = 15.0f;
             rageBurst.ViewElementDef.Description.LocalizationKey = "PR_BC_RAGE_BURST_DESC"; // new LocalizedTextBind("Shoot 5 times across a wide arc with increased accuracy", TFTVMain.Main.Settings.DoNotLocalizeChangedTexts);
@@ -275,13 +274,13 @@ namespace PRMBetterClasses.SkillModifications
             float jetpackControlAPCost = 0.5f;
             float jetpackControlWPCost = 3f;
             float jetpackControlRange = 12f;
-            JetJumpAbilityDef source = Repo.GetAllDefs<JetJumpAbilityDef>().FirstOrDefault(jj => jj.name.Equals("JetJump_AbilityDef"));
+            JetJumpAbilityDef source = DefCache.GetDef<JetJumpAbilityDef>("JetJump_AbilityDef");
             JetJumpAbilityDef jetpackControl = Helper.CreateDefFromClone(
                 source,
                 "ddbb58e8-9ea4-417c-bddb-8ed62837bb10",
                 skillName);
             jetpackControl.CharacterProgressionData = Helper.CreateDefFromClone(
-                Repo.GetAllDefs<ApplyStatusAbilityDef>().FirstOrDefault(p => p.name.Equals("MasterMarksman_AbilityDef")).CharacterProgressionData,
+                DefCache.GetDef<ApplyStatusAbilityDef>("MasterMarksman_AbilityDef").CharacterProgressionData,
                 "f330ce45-361a-4444-bd69-04b3e6350a0e",
                 skillName);
             jetpackControl.ViewElementDef = Helper.CreateDefFromClone(
@@ -298,7 +297,7 @@ namespace PRMBetterClasses.SkillModifications
             jetpackControl.ViewElementDef.DisplayName1.LocalizationKey = "PR_BC_JETPACK_CONTROL"; // new LocalizedTextBind("JETPACK CONTROL", TFTVMain.Main.Settings.DoNotLocalizeChangedTexts);
             //string description = $"Jet jump to a location within {jetpackControlRange} tiles";
             jetpackControl.ViewElementDef.Description.LocalizationKey = "PR_BC_JETPACK_CONTROL_DESC"; // new LocalizedTextBind(description, TFTVMain.Main.Settings.DoNotLocalizeChangedTexts);
-            Sprite jetpackControlIcon = Repo.GetAllDefs<ClassProficiencyAbilityDef>().FirstOrDefault(cp => cp.name.Equals("UseAttachedEquipment_AbilityDef")).ViewElementDef.LargeIcon;
+            Sprite jetpackControlIcon = DefCache.GetDef<ClassProficiencyAbilityDef>("UseAttachedEquipment_AbilityDef").ViewElementDef.LargeIcon; //Repo.GetAllDefs<ClassProficiencyAbilityDef>().FirstOrDefault(cp => cp.name.Equals("UseAttachedEquipment_AbilityDef")).ViewElementDef.LargeIcon;
             jetpackControl.ViewElementDef.LargeIcon = jetpackControlIcon;
             jetpackControl.ViewElementDef.SmallIcon = jetpackControlIcon;
             jetpackControl.ActionPointCost = jetpackControlAPCost;
@@ -307,7 +306,7 @@ namespace PRMBetterClasses.SkillModifications
             jetpackControl.TargetingDataDef.Origin.Range = jetpackControlRange;
 
             // Animation related stuff
-            TacCameraAbilityFilterDef tacCameraAbilityFilter1 = Repo.GetAllDefs<TacCameraAbilityFilterDef>().FirstOrDefault(c => c.name.Equals("E_JetJumpAbilityFilter"));
+            TacCameraAbilityFilterDef tacCameraAbilityFilter1 = DefCache.GetDef<TacCameraAbilityFilterDef>("E_JetJumpAbilityFilter");
             FirstMatchExecutionDef cameraAbility1 = Helper.CreateDefFromClone(
                 Repo.GetAllDefs<FirstMatchExecutionDef>().FirstOrDefault(fme => fme.FilterDef == tacCameraAbilityFilter1),
                 "1f6b1ee0-0e11-4985-ab69-4266f40c9117",
@@ -318,7 +317,7 @@ namespace PRMBetterClasses.SkillModifications
                 "E_JetpackControl_CameraAbilityFilter1 [NoDieCamerasTacticalCameraDirectorDef]");
             (cameraAbility1.FilterDef as TacCameraAbilityFilterDef).TacticalAbilityDef = jetpackControl;
 
-            TacCameraAbilityFilterDef tacCameraAbilityFilter2 = Repo.GetAllDefs<TacCameraAbilityFilterDef>().FirstOrDefault(c => c.name.Equals("E_JetJumpAbilityFilter [NoDieCamerasTacticalCameraDirectorDef]"));
+            TacCameraAbilityFilterDef tacCameraAbilityFilter2 = DefCache.GetDef<TacCameraAbilityFilterDef>("E_JetJumpAbilityFilter [NoDieCamerasTacticalCameraDirectorDef]");
             FirstMatchExecutionDef cameraAbility2 = Helper.CreateDefFromClone(
                 Repo.GetAllDefs<FirstMatchExecutionDef>().FirstOrDefault(fme => fme.FilterDef == tacCameraAbilityFilter2),
                 "34095bd0-ccf5-48cb-ba73-7689a5d45e7e",
@@ -347,7 +346,7 @@ namespace PRMBetterClasses.SkillModifications
         {
             float wpCost = 4.0f;
             bool setNewStats = false;
-            ApplyStatusAbilityDef boomBlast = Repo.GetAllDefs<ApplyStatusAbilityDef>().FirstOrDefault(asa => asa.name.Equals("BigBooms_AbilityDef"));
+            ApplyStatusAbilityDef boomBlast = DefCache.GetDef<ApplyStatusAbilityDef>("BigBooms_AbilityDef");
             boomBlast.ViewElementDef.Description.LocalizationKey = "PR_BC_BOOM_BLAST_DESC"; // new LocalizedTextBind($"Until end of turn your explosives gain +50% range, in addtion Rocket and Grenade Launchers cost - 1AP.", TFTVMain.Main.Settings.DoNotLocalizeChangedTexts);
             boomBlast.WillPointCost = wpCost;
 
@@ -355,7 +354,7 @@ namespace PRMBetterClasses.SkillModifications
             List<TacStatusDef> bbAdditionalStatusesToApply = (boomBlast.StatusDef as AddAttackBoostStatusDef).AdditionalStatusesToApply.ToList();
 
             // Fix AP cost to only affect grenade launcher, incl set the right tag for them (not used and set in vanilla)
-            GameTagDef glTag = Repo.GetAllDefs<GameTagDef>().FirstOrDefault(gt => gt.name.Equals("GrenadeLauncherItem_TagDef"));
+            GameTagDef glTag = DefCache.GetDef<GameTagDef>("GrenadeLauncherItem_TagDef");
             foreach (WeaponDef wd in Repo.GetAllDefs<WeaponDef>())
             {
                 if ((wd.name.Equals("PX_GrenadeLauncher_WeaponDef")
@@ -383,10 +382,7 @@ namespace PRMBetterClasses.SkillModifications
                 float bbProjectileMod = 7.0f;
                 boomBlast.ViewElementDef.Description = new LocalizedTextBind($"Until end of turn your explosives get {(bbDamageMod * 100) - 100}% damage, {(bbRangeMod * 100) - 100}% range, {(bbAccuracyMod * 100) - 100}% accuracy. Launcher with multiple explosives per magazine gain +{bbProjectileMod} projectiles per shot.", TFTVMain.Main.Settings.DoNotLocalizeChangedTexts);
 
-                StatMultiplierStatusDef bbAccModStatus = Helper.CreateDefFromClone(
-                   Repo.GetAllDefs<StatMultiplierStatusDef>().FirstOrDefault(sms => sms.name.Equals("Trembling_StatusDef")),
-                   "4a6f7cc4-1bd6-45a5-b572-053963966b07",
-                   $"E AccuracyMultiplier [Boom Blast]");
+                StatMultiplierStatusDef bbAccModStatus = DefCache.GetDef<StatMultiplierStatusDef>("Trembling_StatusDef");
                 bbAccModStatus.EffectName = "";
                 bbAccModStatus.ShowNotification = false;
                 bbAccModStatus.VisibleOnHealthbar = 0;
@@ -394,11 +390,12 @@ namespace PRMBetterClasses.SkillModifications
                 bbAccModStatus.Visuals = null;
                 bbAccModStatus.StatsMultipliers[0].StatName = "Accuracy";
                 bbAccModStatus.StatsMultipliers[0].Multiplier = bbAccuracyMod;
+                GameTagDef explosiveWeaponTag = DefCache.GetDef<GameTagDef>("ExplosiveWeapon_TagDef");
                 EquipmentItemTagStatModification[] bbMods = new EquipmentItemTagStatModification[]
                 {
                     new EquipmentItemTagStatModification()
                     {
-                        ItemTag = Repo.GetAllDefs<GameTagDef>().FirstOrDefault(gt => gt.name.Equals("ExplosiveWeapon_TagDef")),
+                        ItemTag = explosiveWeaponTag,
                         EquipmentStatModification = new ItemStatModification()
                         {
                             TargetStat = StatModificationTarget.BonusAttackDamage,
@@ -408,7 +405,7 @@ namespace PRMBetterClasses.SkillModifications
                     },
                     new EquipmentItemTagStatModification()
                     {
-                        ItemTag = Repo.GetAllDefs<GameTagDef>().FirstOrDefault(gt => gt.name.Equals("ExplosiveWeapon_TagDef")),
+                        ItemTag = explosiveWeaponTag,
                         EquipmentStatModification = new ItemStatModification()
                         {
                             TargetStat = StatModificationTarget.BonusAttackRange,
@@ -418,7 +415,7 @@ namespace PRMBetterClasses.SkillModifications
                     },
                     new EquipmentItemTagStatModification()
                     {
-                        ItemTag = Repo.GetAllDefs<GameTagDef>().FirstOrDefault(gt => gt.name.Equals("ExplosiveWeapon_TagDef")),
+                        ItemTag = explosiveWeaponTag,
                         EquipmentStatModification = new ItemStatModification()
                         {
                             TargetStat = StatModificationTarget.BonusProjectilesPerShot,

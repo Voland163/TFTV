@@ -260,6 +260,7 @@
     <Content Include="Assets\Textures\VO_12.jpg" />
     <Content Include="Assets\Textures\VO_13.jpg" />
     <Content Include="Assets\Textures\VO_15.jpg" />
+    <Content Include="Assets\thumbnail.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

@@ -21,7 +21,7 @@ namespace PRMBetterClasses.SkillModifications
 {
     internal class BerserkerSkills
     {
-        private static readonly DefRepository Repo = TFTVMain.Repo;
+        private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
 
         public static void ApplyChanges()
         {
@@ -47,8 +47,8 @@ namespace PRMBetterClasses.SkillModifications
         private static void Change_Bloodlust()
         {
             float maxBoost = 0.25f;
-            ViewElementDef blView = Repo.GetAllDefs<ViewElementDef>().FirstOrDefault(ve => ve.name.Equals("E_ViewElement [BloodLust_AbilityDef]"));
-            BloodLustStatusDef blStatus = Repo.GetAllDefs<BloodLustStatusDef>().FirstOrDefault(bl => bl.name.Equals("E_Status [BloodLust_AbilityDef]"));
+            ViewElementDef blView = DefCache.GetDef<ViewElementDef>("E_ViewElement [BloodLust_AbilityDef]");
+            BloodLustStatusDef blStatus = DefCache.GetDef<BloodLustStatusDef>("E_Status [BloodLust_AbilityDef]");
             blStatus.MaxBoost = maxBoost;
             blView.Description.LocalizationKey = "PR_BC_BLOODLUST_DESC"; // new LocalizedTextBind($"Gain up to {maxBoost * 100}% Speed and Damage based on lost Health", TFTVMain.Main.Settings.DoNotLocalizeChangedTexts);
         }
@@ -58,9 +58,9 @@ namespace PRMBetterClasses.SkillModifications
             //float dashRange = 13f;
             //int dashUsesPerTurn = 1;
             //string dashDescription = $"Move up to {(int)dashRange} tiles. Limited to {dashUsesPerTurn} use per turn";
-            Sprite dashIcon = Repo.GetAllDefs<TacticalAbilityViewElementDef>().FirstOrDefault(tave => tave.name.Equals("E_View [BodySlam_AbilityDef]")).LargeIcon;
+            Sprite dashIcon = DefCache.GetDef<TacticalAbilityViewElementDef>("E_View [BodySlam_AbilityDef]").LargeIcon;
             //
-            RepositionAbilityDef dash = Repo.GetAllDefs<RepositionAbilityDef>().FirstOrDefault(r => r.name.Equals("Dash_AbilityDef"));
+            RepositionAbilityDef dash = DefCache.GetDef<RepositionAbilityDef>("Dash_AbilityDef");
             //dash.TargetingDataDef.Origin.Range = dashRange;
             //dash.ViewElementDef.Description = new LocalizedTextBind(dashDescription, doNotLocalize);
             dash.ViewElementDef.LargeIcon = dashIcon;
@@ -87,8 +87,8 @@ namespace PRMBetterClasses.SkillModifications
 
         private static void Change_AdrenalineRush()
         {
-            ApplyStatusAbilityDef adrenalineRush = Repo.GetAllDefs<ApplyStatusAbilityDef>().FirstOrDefault(asa => asa.name.Equals("AdrenalineRush_AbilityDef"));
-            adrenalineRush.StatusDef = Repo.GetAllDefs<ChangeAbilitiesCostStatusDef>().FirstOrDefault(sd => sd.name.Equals("E_SetAbilitiesTo1AP [AdrenalineRush_AbilityDef]"));
+            ApplyStatusAbilityDef adrenalineRush = DefCache.GetDef<ApplyStatusAbilityDef>("AdrenalineRush_AbilityDef");
+            adrenalineRush.StatusDef = DefCache.GetDef<ChangeAbilitiesCostStatusDef>("E_SetAbilitiesTo1AP [AdrenalineRush_AbilityDef]");
             adrenalineRush.ViewElementDef.Description.LocalizationKey = "PR_BC_ADRENALINE_DESC"; // new LocalizedTextBind("Until end of turn one-handed weapon and all non-weapon skills cost 1AP, except Recover.", TFTVMain.Main.Settings.DoNotLocalizeChangedTexts);
         }
         // Adrenaline Rush: Patching AbilityQualifies of ARs TacticalAbilityCostModification to determine which ability should get modified
@@ -100,17 +100,19 @@ namespace PRMBetterClasses.SkillModifications
                 "RecoverWill_AbilityDef",
                 "Overwatch_AbilityDef"
             };
-            internal static SkillTagDef attackAbility_Tag = Repo.GetAllDefs<SkillTagDef>().FirstOrDefault(st => st.name.Equals("AttackAbility_SkillTagDef"));
-            internal static ApplyStatusAbilityDef adrenalineRush = Repo.GetAllDefs<ApplyStatusAbilityDef>().FirstOrDefault(asa => asa.name.Equals("AdrenalineRush_AbilityDef"));
-            internal static ChangeAbilitiesCostStatusDef arStatus = Repo.GetAllDefs<ChangeAbilitiesCostStatusDef>().FirstOrDefault(sd => sd.name.Equals("E_SetAbilitiesTo1AP [AdrenalineRush_AbilityDef]"));
+            //internal static SkillTagDef attackAbility_Tag = DefCache.GetDef<SkillTagDef>("AttackAbility_SkillTagDef");
+            //internal static ApplyStatusAbilityDef adrenalineRush = DefCache.GetDef<ApplyStatusAbilityDef>("AdrenalineRush_AbilityDef");
+            //internal static ChangeAbilitiesCostStatusDef arStatus = DefCache.GetDef<ChangeAbilitiesCostStatusDef>("E_SetAbilitiesTo1AP [AdrenalineRush_AbilityDef]");
 
             [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051")]
             private static void Postfix(TacticalAbilityCostModification __instance, ref bool __result, TacticalAbility ability)
             {
                 try
                 {
+                    ChangeAbilitiesCostStatusDef arStatus = DefCache.GetDef<ChangeAbilitiesCostStatusDef>("E_SetAbilitiesTo1AP [AdrenalineRush_AbilityDef]");
                     if (ability.TacticalActor.Status.HasStatus(arStatus) && __instance == arStatus.AbilityCostModification)
                     {
+                        SkillTagDef attackAbility_Tag = DefCache.GetDef<SkillTagDef>("AttackAbility_SkillTagDef");
                         __result = ability.TacticalAbilityDef.SkillTags.Contains(attackAbility_Tag)
                             ? ability.Equipment == null || ability.Equipment.HandsToUse == 1
                             : !arExcludeList.Contains(ability.TacticalAbilityDef.name);
@@ -134,8 +136,8 @@ namespace PRMBetterClasses.SkillModifications
             //LocalizedTextBind description = new LocalizedTextBind("Shoot your handgun for free. Limited to 2 uses per turn.", TFTVMain.Main.Settings.DoNotLocalizeChangedTexts);
 
             // Get some basics from repo
-            ShootAbilityDef source = Repo.GetAllDefs<ShootAbilityDef>().FirstOrDefault(sa => sa.name.Equals("Gunslinger_AbilityDef"));
-            GameTagDef handgunWeaponTag = Repo.GetAllDefs<GameTagDef>().FirstOrDefault(gt => gt.name.Equals("HandgunItem_TagDef"));
+            ShootAbilityDef source = DefCache.GetDef<ShootAbilityDef>("Gunslinger_AbilityDef");
+            GameTagDef handgunWeaponTag = DefCache.GetDef<GameTagDef>("HandgunItem_TagDef");
 
             ShootAbilityDef GunKata = Helper.CreateDefFromClone(
                 source,
@@ -168,7 +170,7 @@ namespace PRMBetterClasses.SkillModifications
             //LocalizedTextBind description = new LocalizedTextBind("Recover 1AP. Limited to 1 use per turn.", TFTVMain.Main.Settings.DoNotLocalizeChangedTexts);
 
             // Get some basics from repo
-            ExtraMoveAbilityDef source = Repo.GetAllDefs<ExtraMoveAbilityDef>().FirstOrDefault(asa => asa.name.Equals("ExtraMove_AbilityDef"));
+            ExtraMoveAbilityDef source = DefCache.GetDef<ExtraMoveAbilityDef>("ExtraMove_AbilityDef");
             //ExtraMoveAbilityDef Exertion = Repo.GetAllDefs<ExtraMoveAbilityDef>().FirstOrDefault(asa => asa.name.Equals("ExtraMove_AbilityDef"));
 
             ExtraMoveAbilityDef Exertion = Helper.CreateDefFromClone(

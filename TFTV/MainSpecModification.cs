@@ -2,7 +2,6 @@
 using System.Linq;
 using Base.Defs;
 using HarmonyLib;
-using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities.Characters;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using TFTV;
@@ -16,9 +15,10 @@ namespace PRMBetterClasses
             try
             {
                 DefRepository Repo = TFTVMain.Repo;
+                DefCache DefCache = TFTVMain.Main.DefCache;
                 BCSettings Config = TFTVMain.Main.Settings;
 
-                LevelProgressionDef levelProgressionDef = Repo.GetAllDefs<LevelProgressionDef>().FirstOrDefault(lpd => lpd.name.Equals("LevelProgressionDef"));
+                LevelProgressionDef levelProgressionDef = DefCache.GetDef<LevelProgressionDef>(("LevelProgressionDef"));
                 int secondaryClassLevel = levelProgressionDef.SecondSpecializationLevel;
                 int secondaryClassCost = levelProgressionDef.SecondSpecializationSpCost;
                 string ability;
@@ -49,7 +49,7 @@ namespace PRMBetterClasses
                                     if (Helper.AbilityNameToDefMap.ContainsKey(configMainSpec[i]))
                                     {
                                         ability = Helper.AbilityNameToDefMap[configMainSpec[i]];
-                                        abilityTrackDef.AbilitiesByLevel[i].Ability = Repo.GetAllDefs<TacticalAbilityDef>().FirstOrDefault(tad => tad.name.Equals(ability));
+                                        abilityTrackDef.AbilitiesByLevel[i].Ability = DefCache.GetDef<TacticalAbilityDef>(ability);
                                         abilityTrackDef.AbilitiesByLevel[i].Ability.CharacterProgressionData.SkillPointCost = Helper.SPperLevel[i];
                                         abilityTrackDef.AbilitiesByLevel[i].Ability.CharacterProgressionData.MutagenCost = Helper.SPperLevel[i];
                                         PRMLogger.Debug($"Class '{classSpec.ClassName}' level {i + 1} skill set to: {abilityTrackDef.AbilitiesByLevel[i].Ability.ViewElementDef.DisplayName1.LocalizeEnglish()} ({abilityTrackDef.AbilitiesByLevel[i].Ability.name})");
