@@ -39,6 +39,7 @@ namespace TFTV
         public static bool revenantSpawned = false;
         public static List<string> revenantSpecialResistance = new List<string>();
         public static int revenantID = 0;
+        
 
         private static bool revenantPresent = false;
 
@@ -398,6 +399,10 @@ namespace TFTV
                         }
                     }
 
+                    if (TFTVRevenantResearch.ProjectOsiris) 
+                    {
+                        TFTVRevenantResearch.RecordStatsOfDeadSoldier(deathReport.Actor);             
+                    }
                 }
                 catch (Exception e)
                 {
@@ -1287,6 +1292,20 @@ namespace TFTV
                         {
                             RevenantsKilled.Add(revenantID, 0);
                         }
+
+                        if (deathReport.Actor.HasGameTag(revenantTier1GameTag))
+                        {
+                            TFTVRevenantResearch.RevenantPoints = 15; // testing 1
+                        }
+                        else if (deathReport.Actor.HasGameTag(revenantTier2GameTag))
+                        {
+                            TFTVRevenantResearch.RevenantPoints = 15; // testing 5
+                        }
+                        else if (deathReport.Actor.HasGameTag(revenantTier3GameTag))
+                        {
+                            TFTVRevenantResearch.RevenantPoints = 10;
+                        }
+
                     }
                 }
                 catch (Exception e)

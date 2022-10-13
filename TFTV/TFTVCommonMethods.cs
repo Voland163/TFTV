@@ -67,18 +67,20 @@ namespace TFTV
                 TFTVHumanEnemies.difficultyLevel = 0;
                 TFTVHumanEnemies.HumanEnemiesAndTactics = new Dictionary<string, int>();
                 TFTVInfestation.PhoenixDefeated = false;
-                //  TFTVRevenant.timeLastRevenantSpawned = new TimeSpan();
+                TFTVRevenantResearch.ProjectOsirisStats = new Dictionary<int, int[]>();
+                TFTVRevenantResearch.ProjectOsiris = false;
+               // TFTVRevenant.timeLastRevenantSpawned = new TimeSpan();
             }
             catch (Exception e)
             {
                 TFTVLogger.Error(e);
             }
         }
-
+/*
        [HarmonyPatch(typeof(PhoenixSaveManager), "LoadGame")]
         internal static class BG_PhoenixSaveManager_ClearInternalData_patch
         {
-            private static void Postfix()
+            private static void Prefix()
             {
                 try
                 {
@@ -91,7 +93,7 @@ namespace TFTV
                     TFTVLogger.Error(e);
                 }
             }
-        }
+        }*/
 
         [HarmonyPatch(typeof(Research), "CompleteResearch")]
         public static class Research_NewTurnEvent_CalculateDelirium_Patch
@@ -295,18 +297,18 @@ namespace TFTV
             }
             throw new InvalidOperationException();
         }
-        public static ResearchViewElementDef CreateNewResearchViewElementNoKeys(string def, string gUID, string name, string reveal, string unlock, string complete)
+        public static ResearchViewElementDef CreateNewResearchViewElementNoKeys(string def, string gUID)
 
         {
             try
             {
-
+                string shouldNotAppear = "Should Not Appear";
                 ResearchViewElementDef sourceResearchViewDef = DefCache.GetDef<ResearchViewElementDef>("PX_Alien_CorruptionNode_ViewElementDef");
                 ResearchViewElementDef researchViewDef = Helper.CreateDefFromClone(sourceResearchViewDef, gUID, def);
-                researchViewDef.DisplayName1 = new LocalizedTextBind (name, true);
-                researchViewDef.RevealText = new LocalizedTextBind(reveal, true);
-                researchViewDef.UnlockText = new LocalizedTextBind(unlock, true);
-                researchViewDef.CompleteText = new LocalizedTextBind(complete, true);
+                researchViewDef.DisplayName1.LocalizationKey = shouldNotAppear;
+                researchViewDef.RevealText.LocalizationKey = shouldNotAppear;
+                researchViewDef.UnlockText.LocalizationKey = shouldNotAppear;
+                researchViewDef.CompleteText.LocalizationKey = shouldNotAppear;
                 return researchViewDef;
             }
 

@@ -91,10 +91,17 @@ namespace PRMBetterClasses
                             if (!personalPerksDef.IsDefaultValue())
                             {
                                 PRMLogger.Debug("           Key: " + personalPerksDef.PerkKey);
-                                if (Config.SpecialCharacterPersonalSkills.ContainsKey(__result.UnitType.TemplateDef.Data.Name) && Config.SpecialCharacterPersonalSkills[__result.GetName()].ContainsKey(i))
+
+                                if (Config.SpecialCharacterPersonalSkills.ContainsKey(__result.UnitType.TemplateDef.Data.Name) && Config.SpecialCharacterPersonalSkills[__result.UnitType.TemplateDef.Data.Name].ContainsKey(i))
                                 {
-                                    ability = Config.SpecialCharacterPersonalSkills[__result.GetName()][i];
+                                    ability = Config.SpecialCharacterPersonalSkills[__result.UnitType.TemplateDef.Data.Name][i];
                                 }
+
+                                /*  if (Config.SpecialCharacterPersonalSkills.ContainsKey(__result.UnitType.TemplateDef.Data.Name) && Config.SpecialCharacterPersonalSkills[__result.GetName()].ContainsKey(i))
+                                {
+                                    ability = Config.SpecialCharacterPersonalSkills[__result.UnitType.TemplateDef.Data.Name][i];
+                                }*/
+
                                 else
                                 {
                                     (ability, spCost) = personalPerksDef.GetPerk(Config, className, faction, exclusionList);

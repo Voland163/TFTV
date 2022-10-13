@@ -17,7 +17,7 @@ namespace TFTV
 {
     internal class TFTVPassengerModules
     {
-        private static readonly DefRepository Repo = TFTVMain.Repo;
+        
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
 
       /*  private static readonly GeoVehicleEquipmentDef hibernationModule = Repo.GetAllDefs<GeoVehicleEquipmentDef>().FirstOrDefault(gve => gve.name.Equals("SY_HibernationPods_GeoVehicleModuleDef"));

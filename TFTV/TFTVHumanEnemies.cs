@@ -5,8 +5,6 @@ using Base.UI;
 using HarmonyLib;
 using PhoenixPoint.Common.ContextHelp;
 using PhoenixPoint.Common.Entities.GameTags;
-using PhoenixPoint.Common.Levels.Missions;
-using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.Statuses;
@@ -103,51 +101,51 @@ namespace TFTV
         public static List<ContextHelpHintDef> TacticsHint = new List<ContextHelpHintDef>();
         // public static List <TacticalFaction> HumanEnemyTacticalFactions = new List<TacticalFaction>();
 
-       /* [HarmonyPatch(typeof(GeoMission), "Launch")]
-        public static class GeoMission_Launch_InfestationStory_Patch
-        {
-            public static void Postfix(GeoMission __instance)
-            {
-                try
-                {
+        /* [HarmonyPatch(typeof(GeoMission), "Launch")]
+         public static class GeoMission_Launch_InfestationStory_Patch
+         {
+             public static void Postfix(GeoMission __instance)
+             {
+                 try
+                 {
 
-                    List<string> enemyFactionNames = new List<string>();
-                    List<int> enemyParticpants = new List<int>();
-                    foreach (MutualParticipantsRelations relations in __instance.MissionDef.ParticipantsRelations)
-                    {
-                        if (relations.HasParticipant(TacMissionParticipant.Player) && relations.MutualRelation == PhoenixPoint.Common.Core.FactionRelation.Enemy)
-                        {
-                            enemyParticpants.Add((int)relations.SecondParticipant);
-                        }
-                    }
+                     List<string> enemyFactionNames = new List<string>();
+                     List<int> enemyParticpants = new List<int>();
+                     foreach (MutualParticipantsRelations relations in __instance.MissionDef.ParticipantsRelations)
+                     {
+                         if (relations.HasParticipant(TacMissionParticipant.Player) && relations.MutualRelation == PhoenixPoint.Common.Core.FactionRelation.Enemy)
+                         {
+                             enemyParticpants.Add((int)relations.SecondParticipant);
+                         }
+                     }
 
-                    foreach (TacMissionTypeParticipantData participantData in __instance.MissionDef.ParticipantsData)
-                    {
-                        if (enemyParticpants.Contains((int)participantData.ParticipantKind))
-                        {
-                            if (participantData.FactionDef.ShortName.Equals("ban")
-                               || participantData.FactionDef.ShortName.Equals("nj") || participantData.FactionDef.ShortName.Equals("anu")
-                               || participantData.FactionDef.ShortName.Equals("syn") || participantData.FactionDef.ShortName.Equals("Purists")
-                               || participantData.FactionDef.ShortName.Equals("FallenOnes"))
-                                TFTVLogger.Always("On GeoMission launch, the short name of the faction is " + participantData.FactionDef.ShortName);
-                            enemyFactionNames.Add(participantData.FactionDef.ShortName);
-                        }
-                    }
+                     foreach (TacMissionTypeParticipantData participantData in __instance.MissionDef.ParticipantsData)
+                     {
+                         if (enemyParticpants.Contains((int)participantData.ParticipantKind))
+                         {
+                             if (participantData.FactionDef.ShortName.Equals("ban")
+                                || participantData.FactionDef.ShortName.Equals("nj") || participantData.FactionDef.ShortName.Equals("anu")
+                                || participantData.FactionDef.ShortName.Equals("syn") || participantData.FactionDef.ShortName.Equals("Purists")
+                                || participantData.FactionDef.ShortName.Equals("FallenOnes"))
+                                 TFTVLogger.Always("On GeoMission launch, the short name of the faction is " + participantData.FactionDef.ShortName);
+                             enemyFactionNames.Add(participantData.FactionDef.ShortName);
+                         }
+                     }
 
-                    foreach (string name in enemyFactionNames)
-                    {
-                        RollTactic(name);
-                    }
+                     foreach (string name in enemyFactionNames)
+                     {
+                         RollTactic(name);
+                     }
 
 
 
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-            }
-        }*/
+                 }
+                 catch (Exception e)
+                 {
+                     TFTVLogger.Error(e);
+                 }
+             }
+         }*/
 
         public static void RollTactic(string nameOfFaction)
         {
@@ -368,9 +366,9 @@ namespace TFTV
 
                     orderedListOfHumanEnemies.Remove(leader);
 
-                    int champs = Mathf.FloorToInt(orderedListOfHumanEnemies.Count / (5 -(difficultyLevel/2)));
+                    int champs = Mathf.FloorToInt(orderedListOfHumanEnemies.Count / (5 - (difficultyLevel / 2)));
                     TFTVLogger.Always("There is space for " + champs + " champs");
-                    int gangers = Mathf.FloorToInt((orderedListOfHumanEnemies.Count - champs) / (4 -(difficultyLevel/2)));
+                    int gangers = Mathf.FloorToInt((orderedListOfHumanEnemies.Count - champs) / (4 - (difficultyLevel / 2)));
                     TFTVLogger.Always("There is space for " + gangers + " gangers");
                     int juves = orderedListOfHumanEnemies.Count - champs - gangers;
                     TFTVLogger.Always("There is space for " + juves + " juves");
@@ -381,63 +379,82 @@ namespace TFTV
                     TFTVLogger.Always("The short name of the faction is " + nameOfFaction);
                     GameTagDef gameTagDef = DefCache.GetDef<GameTagDef>("HumanEnemyFaction_" + nameOfFaction + "_GameTagDef");
                     TFTVLogger.Always("gameTagDef found");
-
-                    leaderBase.GameTags.Add(HumanEnemyTier1GameTag);
-                    TFTVLogger.Always("Tier1GameTag assigned");
-                    leaderBase.GameTags.Add(gameTagDef);
-                    TFTVLogger.Always("GameTagDef assigned");
-                    leaderBase.GameTags.Add(humanEnemyTagDef, GameTagAddMode.ReplaceExistingExclusive);
-                    TFTVLogger.Always("humanEnemyTagDef assigned");
-
                     List<string> factionNames = TFTVHumanEnemiesNames.names.GetValueSafe(nameOfFaction);
-                    UnityEngine.Random.InitState((int)DateTime.Now.Ticks);
-                    leader.name = factionNames[UnityEngine.Random.Range(0, factionNames.Count)];
-                    factionNames.Remove(leader.name);
-                    TFTVLogger.Always("Leader now has GameTag and their name is " + leader.name);
-                    AdjustStatsAndSkills(leader);
+
+                    if (!leaderBase.GameTags.Contains(HumanEnemyTier1GameTag))
+                    {
+                        leaderBase.GameTags.Add(HumanEnemyTier1GameTag);
+                        TFTVLogger.Always("Tier1GameTag assigned");
+                        leaderBase.GameTags.Add(gameTagDef);
+                        TFTVLogger.Always("GameTagDef assigned");
+                        leaderBase.GameTags.Add(humanEnemyTagDef, GameTagAddMode.ReplaceExistingExclusive);
+                        TFTVLogger.Always("humanEnemyTagDef assigned");
+
+                        UnityEngine.Random.InitState((int)DateTime.Now.Ticks);
+                        leader.name = factionNames[UnityEngine.Random.Range(0, factionNames.Count)];
+                        factionNames.Remove(leader.name);
+                        TFTVLogger.Always("Leader now has GameTag and their name is " + leader.name);
+                        AdjustStatsAndSkills(leader);
+                    }
+
                     RollTactic(nameOfFaction);
                     GenerateHumanEnemyUnit(faction, leader.name, HumanEnemiesAndTactics[nameOfFaction]);
+
 
                     for (int i = 0; i < champs; i++)
                     {
                         TacticalActorBase champ = orderedListOfHumanEnemies[i];
-                        champ.GameTags.Add(HumanEnemyTier2GameTag);
-                        champ.GameTags.Add(gameTagDef);
-                        champ.GameTags.Add(humanEnemyTagDef, GameTagAddMode.ReplaceExistingExclusive);
-                        UnityEngine.Random.InitState((int)DateTime.Now.Ticks);
-                        champ.name = factionNames[UnityEngine.Random.Range(0, factionNames.Count)];
-                        TacticalActor tacticalActor = champ as TacticalActor;
-                        AdjustStatsAndSkills(tacticalActor);
-                        factionNames.Remove(champ.name);
+                        if (!champ.GameTags.Contains(gameTagDef))
+                        {
+
+                            champ.GameTags.Add(HumanEnemyTier2GameTag);
+                            champ.GameTags.Add(gameTagDef);
+                            champ.GameTags.Add(humanEnemyTagDef, GameTagAddMode.ReplaceExistingExclusive);
+                            UnityEngine.Random.InitState((int)DateTime.Now.Ticks);
+                            champ.name = factionNames[UnityEngine.Random.Range(0, factionNames.Count)];
+                            TacticalActor tacticalActor = champ as TacticalActor;
+                            AdjustStatsAndSkills(tacticalActor);
+                            factionNames.Remove(champ.name);
+                        }
                         TFTVLogger.Always("This " + champ.name + " is now a champ");
                     }
 
                     for (int i = champs; i < champs + gangers; i++)
                     {
                         TacticalActorBase ganger = orderedListOfHumanEnemies[i];
-                        ganger.GameTags.Add(HumanEnemyTier3GameTag);
-                        ganger.GameTags.Add(gameTagDef);
-                        ganger.GameTags.Add(humanEnemyTagDef, GameTagAddMode.ReplaceExistingExclusive);
-                        UnityEngine.Random.InitState((int)DateTime.Now.Ticks);
-                        ganger.name = factionNames[UnityEngine.Random.Range(0, factionNames.Count)];
-                        TacticalActor tacticalActor = ganger as TacticalActor;
-                        AdjustStatsAndSkills(tacticalActor);
-                        factionNames.Remove(ganger.name);
+                        if (!ganger.GameTags.Contains(gameTagDef))
+                        {
+
+                            ganger.GameTags.Add(HumanEnemyTier3GameTag);
+                            ganger.GameTags.Add(gameTagDef);
+                            ganger.GameTags.Add(humanEnemyTagDef, GameTagAddMode.ReplaceExistingExclusive);
+                            UnityEngine.Random.InitState((int)DateTime.Now.Ticks);
+                            ganger.name = factionNames[UnityEngine.Random.Range(0, factionNames.Count)];
+                            TacticalActor tacticalActor = ganger as TacticalActor;
+                            AdjustStatsAndSkills(tacticalActor);
+                            factionNames.Remove(ganger.name);
+
+                        }
                         TFTVLogger.Always("This " + ganger.name + " is now a ganger");
+
                     }
 
                     for (int i = champs + gangers; i < champs + gangers + juves; i++)
                     {
                         TacticalActorBase juve = orderedListOfHumanEnemies[i];
-                        juve.GameTags.Add(HumanEnemyTier4GameTag);
-                        juve.GameTags.Add(gameTagDef);
-                        juve.GameTags.Add(humanEnemyTagDef, GameTagAddMode.ReplaceExistingExclusive);
-                        UnityEngine.Random.InitState((int)DateTime.Now.Ticks);
-                        juve.name = factionNames[UnityEngine.Random.Range(0, factionNames.Count)];
-                        TacticalActor tacticalActor = juve as TacticalActor;
-                        AdjustStatsAndSkills(tacticalActor);
-                        factionNames.Remove(juve.name);
+                        if (!juve.GameTags.Contains(gameTagDef))
+                        {
+                            juve.GameTags.Add(HumanEnemyTier4GameTag);
+                            juve.GameTags.Add(gameTagDef);
+                            juve.GameTags.Add(humanEnemyTagDef, GameTagAddMode.ReplaceExistingExclusive);
+                            UnityEngine.Random.InitState((int)DateTime.Now.Ticks);
+                            juve.name = factionNames[UnityEngine.Random.Range(0, factionNames.Count)];
+                            TacticalActor tacticalActor = juve as TacticalActor;
+                            AdjustStatsAndSkills(tacticalActor);
+                            factionNames.Remove(juve.name);
+                        }
                         TFTVLogger.Always("This " + juve.name + " is now a juve");
+
 
                     }
                 }

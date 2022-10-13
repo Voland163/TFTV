@@ -169,11 +169,11 @@ namespace TFTV
                     willBonus = 3;
                 }
 
-                newJacob.Data.Strength += strengthBonus;
-                newJacob.Data.Will += willBonus;
+                newJacob.Data.Strength = assault.Data.Strength + strengthBonus;
+                newJacob.Data.Will = assault.Data.Will + willBonus;
 
-                newSophia.Data.Strength += strengthBonus;
-                newSophia.Data.Will += willBonus;
+                newSophia.Data.Strength = assault.Data.Strength + strengthBonus;
+                newSophia.Data.Will = assault.Data.Will + willBonus;
 
 
                 return startingTemplates;

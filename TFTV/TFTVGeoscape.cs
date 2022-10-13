@@ -28,6 +28,7 @@ namespace TFTV
         public int timeRevenantLasteSeenSaveData = TFTVRevenant.daysRevenantLastSeen;
         public int infestedHavenPopulationSaveData = TFTVInfestationStory.HavenPopulation;
         public string infestedHavenOriginalOwnerSaveData = TFTVInfestationStory.OriginalOwner;
+        public Dictionary<int, int[]> ProjectOsirisStatsSaveData = TFTVRevenantResearch.ProjectOsirisStats;
        
 
     }
@@ -64,7 +65,11 @@ namespace TFTV
 
             }
             TFTVInfestation.RecordResultInfestationMission(Controller);
-
+            // TFTVProjectRobocop.ResurrectDeadSoldier(Controller);
+            TFTVRevenantResearch.CheckRevenantResearchRequirements(Controller);
+            TFTVProjectOsiris.RunProjectOsiris(gsController);
+            
+            
          //   TFTVDefsWithConfigDependency.InjectDefsWithConfigDependency();
          //   TFTVProjectRobocop.CreateBionicMan(gsController);
         //    TFTVProjectRobocop.CreateRoboCopDef();
@@ -107,7 +112,7 @@ namespace TFTV
 
             TFTVRevenant.CheckRevenantTime(gsController);
             TFTVHumanEnemies.difficultyLevel = gsController.CurrentDifficultyLevel.Order;
-
+            TFTVRevenantResearch.CheckProjectOsiris(gsController);
 
         }
 
@@ -132,7 +137,7 @@ namespace TFTV
                 timeRevenantLasteSeenSaveData = TFTVRevenant.daysRevenantLastSeen,
                 infestedHavenOriginalOwnerSaveData = TFTVInfestationStory.OriginalOwner,
                 infestedHavenPopulationSaveData = TFTVInfestationStory.HavenPopulation,
-               
+                ProjectOsirisStatsSaveData = TFTVRevenantResearch.ProjectOsirisStats,
 
             };
 
@@ -143,6 +148,8 @@ namespace TFTV
         /// <param name="instanceData">Instance data serialized for this mod. Cannot be null.</param>
         public override void ProcessGeoscapeInstanceData(object instanceData)
         {
+
+            TFTVCommonMethods.ClearInternalVariables();
             TFTVGSInstanceData data = (TFTVGSInstanceData)instanceData;
             TFTVStamina.charactersWithBrokenLimbs = data.charactersWithBrokenLimbs;
             TFTVAirCombat.targetsForBehemoth = data.targetsForBehemoth;
@@ -156,6 +163,7 @@ namespace TFTV
             TFTVAirCombat.behemothWaitHours = data.behemothWaitHours;
             TFTVInfestationStory.HavenPopulation = data.infestedHavenPopulationSaveData;
             TFTVInfestationStory.OriginalOwner = data.infestedHavenOriginalOwnerSaveData;
+            TFTVRevenantResearch.ProjectOsirisStats = data.ProjectOsirisStatsSaveData;
          
 
             Main.Logger.LogInfo("UmbraEvoltion variable is " + Controller.EventSystem.GetVariable(TFTVUmbra.variableUmbraALNResReq));
@@ -170,8 +178,10 @@ namespace TFTV
             Main.Logger.LogInfo("Behemoth will wait for another  " + TFTVAirCombat.behemothWaitHours + " before moving");
             Main.Logger.LogInfo("Last time a Revenant was seen was on day " + TFTVRevenant.daysRevenantLastSeen + ", and now it is day " + Controller.Timing.Now.TimeSpan.Days);
             Main.Logger.LogInfo("Phoenix lost last mission " + TFTVInfestation.PhoenixDefeated);
+            Main.Logger.LogInfo("Project Osiris stats count " + TFTVRevenantResearch.ProjectOsirisStats.Count);
 
-            TFTVLogger.Always("UmbraEvoltion variable is " + Controller.EventSystem.GetVariable(TFTVUmbra.variableUmbraALNResReq));
+
+           TFTVLogger.Always("UmbraEvoltion variable is " + Controller.EventSystem.GetVariable(TFTVUmbra.variableUmbraALNResReq));
             TFTVLogger.Always("# Characters with broken limbs: " + TFTVStamina.charactersWithBrokenLimbs.Count);
             TFTVLogger.Always("# Behemoth targets for this emergence: " + TFTVAirCombat.targetsForBehemoth.Count);
             //   TFTVLogger.Always("# Targets already hit by Behemoth on this emergence: " + TFTVAirCombat.targetsVisitedByBehemoth.Count);
@@ -183,6 +193,7 @@ namespace TFTV
             TFTVLogger.Always("Behemoth will wait for another  " + TFTVAirCombat.behemothWaitHours + " before moving");
             TFTVLogger.Always("Last time a Revenant was seen was on day " + TFTVRevenant.daysRevenantLastSeen + ", and now it is day " + Controller.Timing.Now.TimeSpan.Days);
             TFTVLogger.Always("Phoenix lost last mission " + TFTVInfestation.PhoenixDefeated);
+            TFTVLogger.Always("Project Osiris stats count " + TFTVRevenantResearch.ProjectOsirisStats.Count);
         }
 
 

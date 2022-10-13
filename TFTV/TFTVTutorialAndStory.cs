@@ -288,7 +288,7 @@ namespace TFTV
                 }
                 newContextHelpHintDef.Title.LocalizationKey = title;
                 newContextHelpHintDef.Text.LocalizationKey = text;
-                // newContextHelpHintDef.AnyCondition = false;
+                 newContextHelpHintDef.AnyCondition = false;
 
                 if (oneTime)
                 {

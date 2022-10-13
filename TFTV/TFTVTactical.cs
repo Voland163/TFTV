@@ -46,6 +46,8 @@ namespace TFTV
         public int difficultyLevelForTacticalSaveData = TFTVHumanEnemies.difficultyLevel;
         public int infestedHavenPopulationSaveData = TFTVInfestationStory.HavenPopulation;
         public string infestedHavenOriginalOwnerSaveData = TFTVInfestationStory.OriginalOwner;
+        public Dictionary <int, int[]> ProjectOsirisStatsTacticalSaveData = TFTVRevenantResearch.ProjectOsirisStats;
+        public bool ProjectOrisisCompletedSaveData = TFTVRevenantResearch.ProjectOsiris;
     }
 
     /// <summary>
@@ -75,6 +77,7 @@ namespace TFTV
             TFTVLogger.Always("VO15 Active " + TFTVVoidOmens.VoidOmen15Active);
             TFTVLogger.Always("VO16 Active " + TFTVVoidOmens.VoidOmen16Active);
             TFTVLogger.Always("VO19 Active " + TFTVVoidOmens.VoidOmen19Active);
+            TFTVLogger.Always("Project Osiris researched " + TFTVRevenantResearch.ProjectOsiris);
 
             TFTVHumanEnemies.RollCount = 0;
             TFTVRevenant.ModifyRevenantResistanceAbility(Controller);
@@ -94,7 +97,8 @@ namespace TFTV
             
             TFTVLogger.Always("OnTacticalEnd check");
             TFTVInfestation.CheckIfPhoenixLost(Controller);
-
+            TFTVRevenantResearch.CheckRevenantCapturedOrKilled(Controller);
+            TFTVVoidOmens.GameOverMethodInvoked = false;
 
             base.OnTacticalEnd();
 
@@ -117,7 +121,7 @@ namespace TFTV
         /// <param name="data">Instance data serialized for this mod. Cannot be null.</param>
         public override void ProcessTacticalInstanceData(object instanceData)
         {
-            
+            TFTVCommonMethods.ClearInternalVariables();          
             TFTVHumanEnemies.HumanEnemiesAndTactics.Clear();
             TFTVTacInstanceData data = (TFTVTacInstanceData)instanceData;
             TFTVStamina.charactersWithBrokenLimbs = data.charactersWithBrokenLimbs;
@@ -135,7 +139,8 @@ namespace TFTV
             TFTVRevenant.revenantSpawned = data.revenantSpawned;
             TFTVRevenant.revenantSpecialResistance = data.revenantSpecialResistance;
             TFTVRevenant.revenantCanSpawn = data.revenantCanSpawnSaveDate;
-            
+            TFTVRevenantResearch.ProjectOsirisStats = data.ProjectOsirisStatsTacticalSaveData;
+            TFTVRevenantResearch.ProjectOsiris = data.ProjectOrisisCompletedSaveData;
             TFTVHumanEnemies.difficultyLevel = data.difficultyLevelForTacticalSaveData;
             TFTVHumanEnemies.HumanEnemiesAndTactics = data.humanEnemiesLeaderTacticsSaveData;
             TFTVInfestationStory.HavenPopulation = data.infestedHavenPopulationSaveData;
@@ -164,7 +169,8 @@ namespace TFTV
                 revenantSpawned = TFTVRevenant.revenantSpawned,
                 revenantSpecialResistance = TFTVRevenant.revenantSpecialResistance,
                 revenantCanSpawnSaveDate = TFTVRevenant.revenantCanSpawn,
-                
+                ProjectOsirisStatsTacticalSaveData = TFTVRevenantResearch.ProjectOsirisStats,
+                ProjectOrisisCompletedSaveData = TFTVRevenantResearch.ProjectOsiris,
                 difficultyLevelForTacticalSaveData = TFTVHumanEnemies.difficultyLevel,
                 humanEnemiesLeaderTacticsSaveData = TFTVHumanEnemies.HumanEnemiesAndTactics,
                 infestedHavenPopulationSaveData = TFTVInfestationStory.HavenPopulation,

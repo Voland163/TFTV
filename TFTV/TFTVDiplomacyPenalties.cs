@@ -48,21 +48,21 @@ namespace TFTV
                 GeoscapeEventContext geoscapeEventContext = new GeoscapeEventContext(targetFaction, faction.GeoLevel.ViewerFaction);
 
                 if (faction.GetParticipatingFaction() == faction.GeoLevel.AnuFaction
-                       && targetFaction == faction.GeoLevel.PhoenixFaction && faction.GeoLevel.EventSystem.GetVariable("RefusedAnu") == 1)
+                       && targetFaction == faction.GeoLevel.PhoenixFaction && faction.GeoLevel.EventSystem.GetVariable("RefusedAnu") > 0)
                 {
-                    if (newValue == 24)
+                    if (newValue == 24 && faction.GeoLevel.EventSystem.GetVariable("RefusedAnu")==1)
                     {
                         faction.GeoLevel.EventSystem.SetVariable("RefusedAnu", 0);
                         faction.GeoLevel.EventSystem.TriggerGeoscapeEvent("PROG_AN2", geoscapeEventContext);
                     }
-                    else if (newValue == 49)
+                    else if (newValue == 49 && faction.GeoLevel.EventSystem.GetVariable("RefusedAnu") == 2)
                     {
 
                         faction.GeoLevel.EventSystem.SetVariable("RefusedAnu", 0);
                         faction.GeoLevel.EventSystem.TriggerGeoscapeEvent("PROG_AN4", geoscapeEventContext);
 
                     }
-                    else if (newValue == 74)
+                    else if (newValue == 74 && faction.GeoLevel.EventSystem.GetVariable("RefusedAnu") == 3)
                     {
                         faction.GeoLevel.EventSystem.SetVariable("RefusedAnu", 0);
                         faction.GeoLevel.EventSystem.TriggerGeoscapeEvent("PROG_AN6", geoscapeEventContext);
@@ -70,36 +70,36 @@ namespace TFTV
                     }
                 }
                 else if (faction.GetParticipatingFaction() == faction.GeoLevel.NewJerichoFaction
-                      && targetFaction == faction.GeoLevel.PhoenixFaction && faction.GeoLevel.EventSystem.GetVariable("RefusedNewJericho") == 1)
+                      && targetFaction == faction.GeoLevel.PhoenixFaction && faction.GeoLevel.EventSystem.GetVariable("RefusedNewJericho") > 0)
                 {
-                    if (newValue == 24)
+                    if (newValue == 24 && faction.GeoLevel.EventSystem.GetVariable("RefusedNewJericho") == 1)
                     {
                         faction.GeoLevel.EventSystem.SetVariable("RefusedNewJericho", 0);
                         faction.GeoLevel.EventSystem.TriggerGeoscapeEvent("PROG_NJ1", geoscapeEventContext);
                     }
-                    else if (newValue == 49)
+                    else if (newValue == 49 && faction.GeoLevel.EventSystem.GetVariable("RefusedNewJericho") == 2)
                     {
 
                         faction.GeoLevel.EventSystem.SetVariable("RefusedNewJericho", 0);
                         faction.GeoLevel.EventSystem.TriggerGeoscapeEvent("PROG_NJ2", geoscapeEventContext);
 
                     }
-                    else if (newValue == 74)
+                    else if (newValue == 74 && faction.GeoLevel.EventSystem.GetVariable("RefusedNewJericho") == 3)
                     {
                         faction.GeoLevel.EventSystem.SetVariable("RefusedNewJericho", 0);
                         faction.GeoLevel.EventSystem.TriggerGeoscapeEvent("PROG_NJ3", geoscapeEventContext);
                     }
                 }
                 else if (faction.GetParticipatingFaction() == faction.GeoLevel.SynedrionFaction
-                      && targetFaction == faction.GeoLevel.PhoenixFaction && faction.GeoLevel.EventSystem.GetVariable("RefusedSynedrion") == 1)
+                      && targetFaction == faction.GeoLevel.PhoenixFaction && faction.GeoLevel.EventSystem.GetVariable("RefusedSynedrion") > 0)
                 {
-                    if (newValue == 24)
+                    if (newValue == 24 && faction.GeoLevel.EventSystem.GetVariable("RefusedSynedrion") == 1)
                     {
                         faction.GeoLevel.EventSystem.SetVariable("RefusedSynedrion", 0);
                         faction.GeoLevel.EventSystem.TriggerGeoscapeEvent("PROG_SY1", geoscapeEventContext);
                     }
 
-                    else if (newValue == 74)
+                    else if (newValue == 74 && faction.GeoLevel.EventSystem.GetVariable("RefusedSynedrion") == 3)
                     {
                         if (faction.GeoLevel.EventSystem.GetVariable("Polyphonic") > faction.GeoLevel.EventSystem.GetVariable("Terraformers"))
                         {

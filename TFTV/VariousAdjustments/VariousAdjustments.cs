@@ -364,14 +364,21 @@ namespace PRMBetterClasses.VariousAdjustments
             int usesPerTurn = 1;
 
             WeaponDef mechArms = DefCache.GetDef<WeaponDef>("NJ_Technician_MechArms_WeaponDef");
+            // Bonus mech arms (has the same visuals, no need to change them)
+            WeaponDef bonusMechArms = DefCache.GetDef<WeaponDef>("NJ_Technician_MechArms_ALN_WeaponDef");
             DamageKeywordDef emp = DefCache.GetDef<DamageKeywordDef>("EMP_DamageKeywordDataDef");
             mechArms.DamagePayload.DamageKeywords = new List<DamageKeywordPair>()
             {
                 new DamageKeywordPair{DamageKeywordDef = shared.SharedDamageKeywords.ShockKeyword, Value = mechArmsShockDamage },
                 new DamageKeywordPair{DamageKeywordDef = emp, Value = mechArmsEMPDamage }
             };
-            ShootAbilityDef techArmStrike = DefCache.GetDef<ShootAbilityDef>("TechnicianStrike_ShootAbilityDef");
-            techArmStrike.UsesPerTurn = usesPerTurn;
+            bonusMechArms.DamagePayload.DamageKeywords = mechArms.DamagePayload.DamageKeywords;
+            // Set ability description and usage per turn TechnicianStrike_ShootAbilityDef
+            BashAbilityDef techArmBashStrike = DefCache.GetDef<BashAbilityDef>("TechnicianBashStrike_AbilityDef");
+            //techArmBashStrike.ViewElementDef.Description = new LocalizedTextBind("PR_BC_ELECTRIC_STRIKE_DESCRIPTION");
+            //TFTVMain.Main.Logger.LogInfo($"TechnicianBashStrike_AbilityDef description: '{techArmBashStrike.ViewElementDef.Description.Localize()}'");
+            //TFTVMain.Main.Logger.LogInfo($"TechnicianBashStrike_AbilityDef category: '{techArmBashStrike.ViewElementDef.Description.}'");
+            techArmBashStrike.UsesPerTurn = usesPerTurn;
             // Change ammo cost for MechArms
             TacticalItemDef mechArmsAmmo = DefCache.GetDef<TacticalItemDef>("MechArms_AmmoClip_ItemDef");
             mechArmsAmmo.ManufactureMaterials = 55;
@@ -392,7 +399,7 @@ namespace PRMBetterClasses.VariousAdjustments
             shadowLegs.DamagePayload.DamageKeywords[0].DamageKeywordDef = shared.SharedDamageKeywords.SonicKeyword;
             shadowLegs.DamagePayload.DamageKeywords[0].Value = shadowLegsSonicDamage;
 
-            BodyPartAspectDef shadowLegsAspectDef = DefCache.GetDef<BodyPartAspectDef>("E_BodyPartAspect [AN_Berserker_Shooter_Legs_ItemDef]");
+            BodyPartAspectDef shadowLegsAspectDef = DefCache.GetDef<BodyPartAspectDef>("E_BodyPartAspect [AN_Berserker_Watcher_Legs_ItemDef]");
             shadowLegsAspectDef.Speed = 1;
         }
         public static void Change_VidarGL(SharedData shared)

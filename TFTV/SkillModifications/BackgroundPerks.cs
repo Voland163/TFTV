@@ -85,7 +85,7 @@ namespace PRMBetterClasses.SkillModifications
                 skillName);
 
             // Set necessary fields
-            float strength = -4.0f;
+            float strength = -2.0f;
             float willpower = 4.0f;
             Survivor.StatModifications = new ItemStatModification[]
             {

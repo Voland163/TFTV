@@ -462,3 +462,19 @@ PROG_LW2_WIN_CHOICE_0_TEXT,Text,,Get the weapon and take the man outside where h
 PROG_LW2_WIN_TITLE,Text,,The Gift,,,,,,,,
 PROG_LW3_WIN_CHOICE_0_TEXT,Text,,Have the team follow the man,,,,,,,,
 PROG_LW3_WIN_TITLE,Text,,Somebody Up There Really Likes Me,,,,,,,,
+PX_REVENANT_LIVE_RESEARCH_TITLE,Text,,Captured Revenant,,,,,,,,
+PX_REVENANT_LIVE_RESEARCH_REVEAL,Text,,"The operatives who captured this creature claim that it is a former comrade, returned as a Pandoran monstrosity. We should examine it as soon as possible.",,,,,,,,
+PX_REVENANT_LIVE_RESEARCH_COMPLETE,Text,,"There is no room for doubt: this creature is, or used to be one of our operatives. What has been done to our friend and how... I would rather not try to imagine it. I wanted to hope that there was no shred of consciousness of the former self left in that monstrosity, but... I could swear it recognized me.
+
+There is nothing we can do for our comrade now, and I'm afraid that killing it won't provide any release.We might encounter it again and again: the Pandorans splice and clone their victims ad infinitum.
+
+We have to defeat the Pandoravirus once and for all. It's the only way to be sure.",,,,,,,,
+PX_PROJECT_OSIRIS_TITLE,Text,,Project Osiris,,,,,,,,
+PX_PROJECT_OSIRIS_REVEAL,Text,,Defeating Revenants in the field has brought us closer to understanding how they are created. We may yet harness this knowledge in the war for the future of our species.,,,,,,,,
+PX_PROJECT_OSIRIS_COMPLETE,Text,,"The Pandorans use the Oneiric Delirium to tap into our consciousness and partially replicate it. 
+
+At first we assumed that they could only access information stored in our genes. However, subsequent encounters with Revenants demonstrated that they retained memories of their former lives. Furthermore, we have evidence that the act of remembering triggers an emotional response in them. 
+
+All this leads us to conclude that the Oneiric Delirium taps into a variety of data streams or information centers of the infected. It's a process that we cannot even begin to understand, even as it puts into question our basic notions of consciousness. 
+
+Nevertheless, we have managed to extract some practical applications from our research into Revenants. We believe we are  now capable of sometimes saving critically wounded operatives by giving them new, artificial bodies.",,,,,,,,

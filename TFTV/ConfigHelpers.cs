@@ -1,6 +1,7 @@
 ﻿using Base;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace PRMBetterClasses
@@ -190,7 +191,7 @@ namespace PRMBetterClasses
                 }
                 else
                 {
-                    Random rnd = new Random((int)DateTime.Now.Ticks);
+                    Random rnd = new Random((int)Stopwatch.GetTimestamp());
                     int safeguard = 0;
                     bool usedFound;
                     bool proficienyAlreadySet = false;

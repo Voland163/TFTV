@@ -1,3 +1,4 @@
+using Base.Build;
 using Base.Core;
 using Base.Defs;
 using Base.Levels;
@@ -5,6 +6,7 @@ using HarmonyLib;
 using Newtonsoft.Json;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Game;
+using PhoenixPoint.Home.View.ViewModules;
 using PhoenixPoint.Modding;
 using PRMBetterClasses;
 using PRMBetterClasses.SkillModifications;
@@ -50,6 +52,8 @@ namespace TFTV
         internal static string LocalizationDirectory;
         internal static string TexturesDirectory;
 
+        internal static string TFTVversion;
+
         // internal static bool injectionComplete = false;
 
         /// This property indicates if mod can be Safely Disabled from the game.
@@ -77,6 +81,8 @@ namespace TFTV
                 GameObject go = ModGO;
                 /// PhoenixGame is accessible at any time.
                 PhoenixGame game = GetGame();
+
+                TFTVversion = $"TFTV October 13 release #1 v{MetaData.Version}";
 
                 Logger.LogInfo("TFTV October 13 release #1");
 
@@ -124,6 +130,8 @@ namespace TFTV
                 Logger.LogInfo("Defs with Static Config dependency injected");
                 TFTVDefsWithConfigDependency.InjectDefsWithDynamicConfigDependency();
                 Logger.LogInfo("Defs with Dynamic Config dependency injected");
+                TFTVRevenantResearch.CreateRevenantRewardsDefs();
+                TFTVProjectOsiris.CreateProjectOsirisDefs();
 
                 harmony.PatchAll();
 
@@ -342,5 +350,13 @@ namespace TFTV
             VariousAdjustmentsMain.ApplyChanges();
         }
 
+        [HarmonyPatch(typeof(UIModuleBuildRevision), "SetRevisionNumber")]
+        internal static class UIModuleBuildRevision_SetRevisionNumber
+        {
+            private static void Postfix(UIModuleBuildRevision __instance)
+            {
+                __instance.BuildRevisionNumber.text = $"{RuntimeBuildInfo.UserVersion} w/{TFTVMain.TFTVversion} ";
+            }
+        }
     }
 }
