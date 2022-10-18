@@ -48,6 +48,7 @@ namespace TFTV
         public string infestedHavenOriginalOwnerSaveData = TFTVInfestationStory.OriginalOwner;
         public Dictionary <int, int[]> ProjectOsirisStatsTacticalSaveData = TFTVRevenantResearch.ProjectOsirisStats;
         public bool ProjectOrisisCompletedSaveData = TFTVRevenantResearch.ProjectOsiris;
+       // public bool PhoenixWonInfestationMissionTacticalSaveData = TFTVInfestation.PhoenixWon;
     }
 
     /// <summary>
@@ -93,12 +94,12 @@ namespace TFTV
         /// </summary>
         public override void OnTacticalEnd()
         {
-         //   TFTVRevenant.CheckForNotDeadSoldiers(Controller);
-            
-            TFTVLogger.Always("OnTacticalEnd check");
-            TFTVInfestation.CheckIfPhoenixLost(Controller);
+            //   TFTVRevenant.CheckForNotDeadSoldiers(Controller);
+              TFTVLogger.Always("OnTacticalEnd check");
+          //  TFTVInfestation.CheckIfPhoenixLost(Controller);
             TFTVRevenantResearch.CheckRevenantCapturedOrKilled(Controller);
             TFTVVoidOmens.GameOverMethodInvoked = false;
+            
 
             base.OnTacticalEnd();
 
@@ -145,6 +146,7 @@ namespace TFTV
             TFTVHumanEnemies.HumanEnemiesAndTactics = data.humanEnemiesLeaderTacticsSaveData;
             TFTVInfestationStory.HavenPopulation = data.infestedHavenPopulationSaveData;
             TFTVInfestationStory.OriginalOwner = data.infestedHavenOriginalOwnerSaveData;
+           // TFTVInfestation.PhoenixWon = data.PhoenixWonInfestationMissionTacticalSaveData;
 
         }
         /// <summary>
@@ -175,6 +177,7 @@ namespace TFTV
                 humanEnemiesLeaderTacticsSaveData = TFTVHumanEnemies.HumanEnemiesAndTactics,
                 infestedHavenPopulationSaveData = TFTVInfestationStory.HavenPopulation,
                 infestedHavenOriginalOwnerSaveData = TFTVInfestationStory.OriginalOwner,
+               // PhoenixWonInfestationMissionTacticalSaveData = TFTVInfestation.PhoenixWon,
               //  timeLastRevenantSpawned = TFTVRevenant.timeLastRevenantSpawned,
             };
         }

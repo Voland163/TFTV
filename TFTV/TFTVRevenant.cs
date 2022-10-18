@@ -1295,11 +1295,11 @@ namespace TFTV
 
                         if (deathReport.Actor.HasGameTag(revenantTier1GameTag))
                         {
-                            TFTVRevenantResearch.RevenantPoints = 15; // testing 1
+                            TFTVRevenantResearch.RevenantPoints = 1; // testing 1
                         }
                         else if (deathReport.Actor.HasGameTag(revenantTier2GameTag))
                         {
-                            TFTVRevenantResearch.RevenantPoints = 15; // testing 5
+                            TFTVRevenantResearch.RevenantPoints = 5; // testing 5
                         }
                         else if (deathReport.Actor.HasGameTag(revenantTier3GameTag))
                         {

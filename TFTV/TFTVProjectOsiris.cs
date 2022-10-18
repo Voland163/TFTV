@@ -1,4 +1,7 @@
 ﻿using Base;
+using Base.Core;
+using Base.UI;
+using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.GameTags;
@@ -14,6 +17,7 @@ using PhoenixPoint.Tactical.Entities.Equipments;
 using PRMBetterClasses;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.Design.Serialization;
 using System.Linq;
 
 namespace TFTV
@@ -24,13 +28,19 @@ namespace TFTV
         private static readonly BCSettings bCSettings = TFTVMain.Main.Settings;
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
 
-        private static readonly string RobocopEvent = "RoboCopDeliveryEvent";
-        private static readonly string ProjectOsirisEvent = "ProjectOsirisEvent";
-        private static readonly string FullMutantEvent = "FullMutantEvent";
-        private static readonly string DeliveryEvent = "DeliveryEvent";
+        public static readonly string RobocopEvent = "RoboCopDeliveryEvent";
+        public static readonly string ProjectOsirisEvent = "ProjectOsirisEvent";
+        public static readonly string FullMutantEvent = "FullMutantEvent";
+        public static readonly string RoboCopDeliveryEvent = "DeliveryEvent";
+        public static readonly string ScoutDeliveryEvent = "ScoutDeliveryEvent";
+        public static readonly string ShinobiDeliveryEvent = "ShinobiDeliveryEvent";
+        public static readonly string HeavyMutantDeliveryEvent = "HeavyMutantDeliveryEvent";
+        public static readonly string WatcherMutantDeliveryEvent = "WatcherMutantDeliveryEvent";
+        public static readonly string ShooterMutantDeliveryEvent = "ShooterMutantDeliveryEvent";
+        public static readonly List <string> ProjectOsirisDeliveryEvents= new List<string>() 
+        {RobocopEvent, ProjectOsirisEvent, FullMutantEvent, RoboCopDeliveryEvent, ScoutDeliveryEvent, HeavyMutantDeliveryEvent, ShinobiDeliveryEvent, 
+            WatcherMutantDeliveryEvent, ShinobiDeliveryEvent};
 
-
-        private static readonly TacCharacterDef characterDef = DefCache.GetDef<TacCharacterDef>("NJ_Jugg_TacCharacterDef");
 
         private static readonly TacticalItemDef juggHead = DefCache.GetDef<TacticalItemDef>("NJ_Jugg_BIO_Helmet_BodyPartDef");
         private static readonly TacticalItemDef juggLegs = DefCache.GetDef<TacticalItemDef>("NJ_Jugg_BIO_Legs_ItemDef");
@@ -42,88 +52,44 @@ namespace TFTV
         private static readonly TacticalItemDef shinobiLegs = DefCache.GetDef<TacticalItemDef>("SY_Shinobi_BIO_Legs_ItemDef");
         private static readonly TacticalItemDef shinobiTorso = DefCache.GetDef<TacticalItemDef>("SY_Shinobi_BIO_Torso_BodyPartDef");
 
+        private static readonly TacticalItemDef heavyHead = DefCache.GetDef<TacticalItemDef>("AN_Berserker_Heavy_Helmet_BodyPartDef");
+        private static readonly TacticalItemDef heavyLegs = DefCache.GetDef<TacticalItemDef>("AN_Berserker_Heavy_Legs_ItemDef");
+        private static readonly TacticalItemDef heavyTorso = DefCache.GetDef<TacticalItemDef>("AN_Berserker_Heavy_Torso_BodyPartDef");
+        private static readonly TacticalItemDef watcherHead = DefCache.GetDef<TacticalItemDef>("AN_Berserker_Watcher_Helmet_BodyPartDef");
+        private static readonly TacticalItemDef watcherLegs = DefCache.GetDef<TacticalItemDef>("AN_Berserker_Watcher_Legs_ItemDef");
+        private static readonly TacticalItemDef watcherTorso = DefCache.GetDef<TacticalItemDef>("AN_Berserker_Watcher_Torso_BodyPartDef");
+        private static readonly TacticalItemDef shooterHead = DefCache.GetDef<TacticalItemDef>("AN_Berserker_Shooter_Helmet_BodyPartDef");
+        private static readonly TacticalItemDef shooterLegs = DefCache.GetDef<TacticalItemDef>("AN_Berserker_Shooter_Legs_ItemDef");
+        private static readonly TacticalItemDef shooterTorso = DefCache.GetDef<TacticalItemDef>("AN_Berserker_Shooter_Torso_BodyPartDef");
+
+        public static TacCharacterData SaveTemplateData = new TacCharacterData();
+        public static GeoTacUnitId IdProjectOsirisCandidate = new GeoTacUnitId();
 
         public static void CreateProjectOsirisDefs()
         {
-            // CreateRoboCopDef();
+
             CreateProjectOsirisEvents();
 
 
-
         }
 
-
-        public static void CreateRoboCopDef()
-        {
-            try
-            {
-
-                TacCharacterDef roboCopDef = Helper.CreateDefFromClone(characterDef, "36B01740-2E05-4D5A-9C2E-24D506C6F584", "RoboCop");
-                //   roboCopDef.name = "RoboCop";
-                //   roboCopDef.SpawnCommandId = "DeadOrAliveYouAreComingWithMe";
-                roboCopDef.Data.EquipmentItems = new ItemDef[] { };
-                roboCopDef.Data.InventoryItems = new ItemDef[] { };
-                roboCopDef.Data.Abilites = new TacticalAbilityDef[] { };
-                roboCopDef.Data.GameTags = new GameTagDef[] { };
-                //  roboCopDef.Data.BodypartItems = new ItemDef[] { juggHead, juggTorso, juggLegs };
-
-                TacCharacterDef roboCopScoutDef = Helper.CreateDefFromClone(characterDef, "BF7FDA63-18BA-4B1B-9AD6-A17643471530", "RoboCopScoutDef");
-                roboCopScoutDef.Data.EquipmentItems = new ItemDef[] { };
-                roboCopScoutDef.Data.InventoryItems = new ItemDef[] { };
-                roboCopScoutDef.Data.Abilites = new TacticalAbilityDef[] { };
-                roboCopScoutDef.Data.GameTags = new GameTagDef[] { };
-                roboCopScoutDef.Data.BodypartItems = new ItemDef[] { exoHead, exoTorso, exoLegs };
-
-                TacCharacterDef roboCopShinobiDef = Helper.CreateDefFromClone(characterDef, "90C338B9-BA40-44AE-8CAA-2F988D300E08", "RoboCopShinobiDef");
-                roboCopShinobiDef.Data.EquipmentItems = new ItemDef[] { };
-                roboCopShinobiDef.Data.InventoryItems = new ItemDef[] { };
-                roboCopShinobiDef.Data.Abilites = new TacticalAbilityDef[] { };
-                roboCopShinobiDef.Data.GameTags = new GameTagDef[] { };
-                roboCopShinobiDef.Data.BodypartItems = new ItemDef[] { shinobiHead, shinobiTorso, shinobiLegs };
-
-                TFTVLogger.Always("RoboCop Defs created");
-
-
-                //need to change name, and class (roboCopDef.Data.Abilites and roboCopDef.Data.GameTags)
-                //to add different equipment sets roboCopDef.Data.BodypartItems
-
-
-
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-        }
 
         public static void CreateProjectOsirisEvents()
         {
             try
             {
-                // TFTVLogger.Always("Robocop def real " + DefCache.GetDef<TacCharacterDef>("RoboCop").name);
-
-
-
-                // TFTVLogger.Always("Check that Murphy is in the list " + bCSettings.SpecialCharacterPersonalSkills.Keys.Contains("Murphy"));
-                //NJ_Exo_BIO_Helmet_BodyPartDef
-                //NJ_Exo_BIO_Legs_ItemDef
-                //NJ_Exo_BIO_Torso_BodyPartDef
-
-
-                //SY_Shinobi_BIO_Helmet_BodyPartDef
-                //SY_Shinobi_BIO_Legs_ItemDef
-                //SY_Shinobi_BIO_Torso_BodyPartDef
-
-                GeoscapeEventDef projectOsirisEvent = TFTVCommonMethods.CreateNewEvent(ProjectOsirisEvent, "PROJECT_OSIRIS_TITLE", "PROJECT_OSIRIS_TEXT", "PROJECT_OSIRIS_OUTCOME");
+                GeoscapeEventDef projectOsirisEvent = TFTVCommonMethods.CreateNewEvent(ProjectOsirisEvent, "PROJECT_OSIRIS_TITLE", "PROJECT_OSIRIS_TEXT", null);
                 TFTVCommonMethods.GenerateGeoEventChoice(projectOsirisEvent, "PROJECT_OSIRIS_CHOOSE_MUTANT", null);
                 projectOsirisEvent.GeoscapeEventData.Choices[0].Text.LocalizationKey = "PROJECT_OSIRIS_CHOOSE_ROBOCOP";
-                projectOsirisEvent.GeoscapeEventData.Choices[0].Outcome.TriggerEncounterID = RobocopEvent;
-                projectOsirisEvent.GeoscapeEventData.Choices[0].Outcome.TriggerEncounterID = FullMutantEvent;
 
-                TFTVCommonMethods.CreateNewEvent(RobocopEvent, "ROBOCOP_DELIVERY_TITLE", "ROBOCOP_DELIVERY_TEXT", "ROBOCOP_DELIVERY_OUTCOME");
-                TFTVCommonMethods.CreateNewEvent(FullMutantEvent, "FULL_MUTANT_TITLE", "FULL_MUTANT_TEXT", "FULL_MUTANT_OUTCOME");
-                
-
+                TFTVCommonMethods.CreateNewEvent(RobocopEvent, "ROBOCOP_DELIVERY_TITLE", "ROBOCOP_DELIVERY_TEXT", null);
+                TFTVCommonMethods.CreateNewEvent(FullMutantEvent, "FULL_MUTANT_TITLE", "FULL_MUTANT_TEXT", null);
+                TFTVCommonMethods.CreateNewEvent(RoboCopDeliveryEvent, "ROBOCOP_DELIVERY_TITLE", "HEAVY_DELIVERY_TEXT", null);
+                TFTVCommonMethods.CreateNewEvent(ScoutDeliveryEvent, "ROBOCOP_DELIVERY_TITLE", "SCOUT_DELIVERY_TEXT", null);
+                TFTVCommonMethods.CreateNewEvent(ShinobiDeliveryEvent, "ROBOCOP_DELIVERY_TITLE", "SHINOBI_DELIVERY_TEXT", null);
+                TFTVCommonMethods.CreateNewEvent(HeavyMutantDeliveryEvent, "FULL_MUTANT_TITLE", "HEAVY_MUTANT_DELIVERY_TEXT", null);
+                TFTVCommonMethods.CreateNewEvent(WatcherMutantDeliveryEvent, "FULL_MUTANT_TITLE", "WATCHER_MUTANT_DELIVERY_TEXT", null);
+                TFTVCommonMethods.CreateNewEvent(ShooterMutantDeliveryEvent, "FULL_MUTANT_TITLE", "SHOOTER_MUTANT_DELIVERY_TEXT", null);
 
             }
             catch (Exception e)
@@ -141,14 +107,14 @@ namespace TFTV
                 labTypes[0] = false;
                 labTypes[1] = false;
 
-                if (TFTVAugmentations.CheckForFacility(controller, "BionicsLab_PhoenixFacilityDef"))
+                if (TFTVAugmentations.CheckForFacility(controller, "KEY_BASE_FACILITY_BIONICSLAB_NAME"))
                 {
 
                     labTypes[0] = true;
 
                 };
 
-                if (TFTVAugmentations.CheckForFacility(controller, "MutationLab_PhoenixFacilityDef"))
+                if (TFTVAugmentations.CheckForFacility(controller, "KEY_BASE_FACILITY_MUTATION_LAB_NAME"))
                 {
 
                     labTypes[1] = true;
@@ -165,6 +131,242 @@ namespace TFTV
 
         }
 
+        public static void CheckCompletedBionicsAndMutationResearches(GeoLevelController controller)
+        {
+            try
+            {
+                GeoscapeEventDef roboCopEvent = controller.EventSystem.GetEventByID(RobocopEvent);
+                GeoscapeEventDef fullMutantEvent = controller.EventSystem.GetEventByID(FullMutantEvent);
+
+                roboCopEvent.GeoscapeEventData.Choices[0].Outcome.TriggerEncounterID = RoboCopDeliveryEvent;
+                roboCopEvent.GeoscapeEventData.Choices[0].Text.LocalizationKey = "HEAVY_DELIVERY_CHOICE";
+
+                fullMutantEvent.GeoscapeEventData.Choices[0].Outcome.TriggerEncounterID = HeavyMutantDeliveryEvent;
+                fullMutantEvent.GeoscapeEventData.Choices[0].Text.LocalizationKey = "HEAVY_MUTANT_DELIVERY_CHOICE";
+
+                if (controller.PhoenixFaction.Research.HasCompleted("NJ_Bionics2_ResearchDef") && roboCopEvent.GeoscapeEventData.Choices.Count == 1)
+                {
+                    TFTVCommonMethods.GenerateGeoEventChoice(roboCopEvent, "SCOUT_DELIVERY_CHOICE", null);
+                    roboCopEvent.GeoscapeEventData.Choices[1].Outcome.TriggerEncounterID = ScoutDeliveryEvent;
+                }
+
+                if (controller.PhoenixFaction.Research.HasCompleted("SYN_Bionics3_ResearchDef") && roboCopEvent.GeoscapeEventData.Choices.Count == 2)
+                {
+                    TFTVCommonMethods.GenerateGeoEventChoice(roboCopEvent, "SHINOBI_DELIVERY_CHOICE", null);
+                    roboCopEvent.GeoscapeEventData.Choices[2].Outcome.TriggerEncounterID = ShinobiDeliveryEvent;
+                }
+
+                if (controller.PhoenixFaction.Research.HasCompleted("ANU_MutationTech2_ResearchDef") && fullMutantEvent.GeoscapeEventData.Choices.Count == 1)
+                {
+                    TFTVCommonMethods.GenerateGeoEventChoice(fullMutantEvent, "WATCHER_MUTANT_DELIVERY_CHOICE", null);
+                    fullMutantEvent.GeoscapeEventData.Choices[1].Outcome.TriggerEncounterID = WatcherMutantDeliveryEvent;
+
+                }
+                if (controller.PhoenixFaction.Research.HasCompleted("ANU_MutationTech3_ResearchDef") && fullMutantEvent.GeoscapeEventData.Choices.Count == 2)
+                {
+                    TFTVCommonMethods.GenerateGeoEventChoice(fullMutantEvent, "SHOOTER_MUTANT_DELIVERY_CHOICE", null);
+                    fullMutantEvent.GeoscapeEventData.Choices[2].Outcome.TriggerEncounterID = ShooterMutantDeliveryEvent;
+                }
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+        }
+
+        public static string CreateDescriptionForEvent(GeoLevelController controller, GeoUnitDescriptor deadSoldierDescriptor)
+        {
+            try
+            {
+
+                string name = deadSoldierDescriptor.Identity.Name;
+                string pronoun = "";
+                string possesivePronoun = "";
+                if (deadSoldierDescriptor.Identity.Sex == GeoCharacterSex.Male)
+                {
+                    pronoun = "He";
+                    possesivePronoun = "him";
+                }
+                else if (deadSoldierDescriptor.Identity.Sex == GeoCharacterSex.Female)
+                {
+                    pronoun = "She";
+                    possesivePronoun = "her";
+                }
+                else
+                {
+                    pronoun = "They";
+                    pronoun = "them";
+                }
+
+                string typeOfBodyAvailable = "";
+                string buildAdditionalLab = "";
+                string and1 = "";
+                string and2 = "";
+
+                if (CheckLabs(controller)[0] && CheckLabs(controller)[1])
+                {
+                    typeOfBodyAvailable = "made of titanium or of mutagen flesh";
+                }
+                else if (CheckLabs(controller)[0] && !CheckLabs(controller)[1])
+                {
+                    typeOfBodyAvailable = "made of titanium";
+                    buildAdditionalLab = " build a mutation lab ";
+                }
+                else if (!CheckLabs(controller)[0] && CheckLabs(controller)[1])
+                {
+                    typeOfBodyAvailable = "made of mutagen flesh";
+                    buildAdditionalLab = " build a bionics lab ";
+                }
+
+                string increaseOptions = "";
+
+                string researchAdditionalTech1 = "";
+                string researchAdditionalTech2 = "";
+                string anyAdditionalResearch = "";
+
+                if (!controller.PhoenixFaction.Research.HasCompleted("NJ_Bionics2_ResearchDef") || !controller.PhoenixFaction.Research.HasCompleted("SYN_Bionics3_ResearchDef"))
+                {
+                    researchAdditionalTech1 = "acquire new bionic";
+                }
+
+                if (!controller.PhoenixFaction.Research.HasCompleted("ANU_MutationTech2_ResearchDef") || !controller.PhoenixFaction.Research.HasCompleted("ANU_MutationTech3_ResearchDef"))
+                {
+                    researchAdditionalTech2 = "acquire new mutation";
+                }
+
+                if (buildAdditionalLab != "" || researchAdditionalTech1 != "" || researchAdditionalTech2 != "")
+                {
+                    increaseOptions = "\nTo enhance Project Osiris and increase our options we should ";
+                } 
+
+                if ((researchAdditionalTech1 != "" || researchAdditionalTech2 != "") && buildAdditionalLab != "")
+                {
+                    and1 = " and ";
+
+                }
+                if (researchAdditionalTech1 != "" && researchAdditionalTech2 != "")
+                {
+                    and2 = " and ";
+                }
+                if (researchAdditionalTech1 != "" || researchAdditionalTech2 != "")
+                {
+                    anyAdditionalResearch = " research.";
+                }
+
+                string modularEventText = "<i>-''I'm... a mess.''\n-''They will fix you. They fix everything.''</i>\n\nWe have recovered " + name + " from the battlefield. "
+                    + pronoun + " is clinically dead, but with the Project Osiris now operational we can bring " + possesivePronoun + " back with a new body " + typeOfBodyAvailable + ". " +
+                    increaseOptions + buildAdditionalLab + and1 + researchAdditionalTech1 + and2 + researchAdditionalTech2 + anyAdditionalResearch;
+
+                return modularEventText;
+
+            }
+
+
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+            throw new InvalidOperationException();
+        }
+
+
+        public static void CompleteProjectOsiris(GeoTacUnitId idProjectOsirisCandidate, GeoLevelController controller, GeoscapeEventDef geoscapeEventDef)
+        {
+            try
+            {
+                GeoUnitDescriptor deadSoldierDescriptor = controller.DeadSoldiers[idProjectOsirisCandidate];
+                string name = deadSoldierDescriptor.Identity.Name;
+                GeoCharacter geoCharacterCloneFromDead = controller.DeadSoldiers[idProjectOsirisCandidate].SpawnAsCharacter();
+                TacCharacterDef deadTemplateDef = geoCharacterCloneFromDead.TemplateDef;
+                SaveTemplateData = deadTemplateDef.Data.Clone();
+                deadTemplateDef.Data.EquipmentItems = new ItemDef[] { };
+                deadTemplateDef.Data.InventoryItems = new ItemDef[] { };
+                deadTemplateDef.Data.LocalizeName = false;
+                deadTemplateDef.Data.Name = name;
+
+                TFTVLogger.Always("Candidate name is" + name + " and it is level " + deadSoldierDescriptor.Level);
+
+                bCSettings.SpecialCharacterPersonalSkills.Add(name, new Dictionary<int, string>()
+                        {
+                            {0,deadSoldierDescriptor.Progression.PersonalAbilities[0].name},
+                            {3,deadSoldierDescriptor.Progression.PersonalAbilities[3].name},
+                            {4,deadSoldierDescriptor.Progression.PersonalAbilities[4].name}
+                        });
+
+                TFTVLogger.Always(name + " added to BC special list is " + bCSettings.SpecialCharacterPersonalSkills.Keys.Contains(name));
+
+                List<GameTagDef> deadSoldiersTags = new List<GameTagDef>();
+
+                deadSoldiersTags.AddRange(deadSoldierDescriptor.GetGameTags());
+                GameTagDef[] gameTagDefs = deadSoldiersTags.ToArray();
+                deadTemplateDef.Data.GameTags = gameTagDefs;
+
+                List<TacticalAbilityDef> abilityDefs = deadSoldierDescriptor.GetTacticalAbilities().ToList();
+                TacticalAbilityDef[] tacticalAbilities = abilityDefs.ToArray();
+                deadTemplateDef.Data.Abilites = tacticalAbilities;
+
+                //  deadTemplateDef.Data.LevelProgression.SetLevel(level);
+
+                if (geoscapeEventDef == controller.EventSystem.GetEventByID(ScoutDeliveryEvent))
+                {
+                    deadTemplateDef.Data.BodypartItems = new ItemDef[] { exoHead, exoTorso, exoLegs };
+                }
+                else if (geoscapeEventDef == controller.EventSystem.GetEventByID(ShinobiDeliveryEvent))
+                {
+                    deadTemplateDef.Data.BodypartItems = new ItemDef[] { shinobiHead, shinobiTorso, shinobiLegs };
+                }
+                else if (geoscapeEventDef == controller.EventSystem.GetEventByID(RoboCopDeliveryEvent))
+                {
+                    deadTemplateDef.Data.BodypartItems = new ItemDef[] { juggHead, juggTorso, juggLegs };
+                }
+                else if (geoscapeEventDef == controller.EventSystem.GetEventByID(HeavyMutantDeliveryEvent))
+                {
+                    deadTemplateDef.Data.BodypartItems = new ItemDef[] { heavyHead, heavyTorso, heavyLegs };
+                }
+                else if (geoscapeEventDef == controller.EventSystem.GetEventByID(WatcherMutantDeliveryEvent))
+                {
+                    deadTemplateDef.Data.BodypartItems = new ItemDef[] { watcherHead, watcherTorso, watcherLegs };
+                }
+                else if (geoscapeEventDef == controller.EventSystem.GetEventByID(ShooterMutantDeliveryEvent))
+                {
+                    deadTemplateDef.Data.BodypartItems = new ItemDef[] { shooterHead, shooterTorso, shooterLegs };
+                }
+                             
+                LocalizedTextBind projectOsirisDescription = new LocalizedTextBind(CreateDescriptionForEvent(controller,deadSoldierDescriptor)+"\n\nProject Osiris has given " + name + " a new body.", true);
+
+                GeoscapeEventDef deliveryEvent = controller.EventSystem.GetEventByID(RoboCopDeliveryEvent);
+                GeoscapeEventDef scoutDeliveryEvent = controller.EventSystem.GetEventByID(ScoutDeliveryEvent);
+                GeoscapeEventDef shinobiDeliveryEvent = controller.EventSystem.GetEventByID(ShinobiDeliveryEvent);
+                GeoscapeEventDef heavyMutantDeliveryEvent = controller.EventSystem.GetEventByID(HeavyMutantDeliveryEvent);
+                GeoscapeEventDef watcherMutantDeliveryEvent = controller.EventSystem.GetEventByID(WatcherMutantDeliveryEvent);
+                GeoscapeEventDef shooterMutantDeliveryEvent = controller.EventSystem.GetEventByID(ShooterMutantDeliveryEvent);
+
+                List<GeoscapeEventDef> allDeliveryEvents = new List<GeoscapeEventDef> {deliveryEvent, scoutDeliveryEvent, shinobiDeliveryEvent,
+                    heavyMutantDeliveryEvent, watcherMutantDeliveryEvent, shooterMutantDeliveryEvent };
+
+                foreach (GeoscapeEventDef eventDef in allDeliveryEvents)
+                {
+                    eventDef.GeoscapeEventData.Choices[0].Outcome.CustomCharacters.Add(deadTemplateDef);
+                    eventDef.GeoscapeEventData.Description[0].General = projectOsirisDescription;
+
+                }
+
+                /* deliveryEvent.GeoscapeEventData.Choices[0].Outcome.CustomCharacters.Add(deadTemplateDef);
+                 scoutDeliveryEvent.GeoscapeEventData.Choices[0].Outcome.CustomCharacters.Add(deadTemplateDef);
+                 shinobiDeliveryEvent.GeoscapeEventData.Choices[0].Outcome.CustomCharacters.Add(deadTemplateDef);
+                 heavyMutantDeliveryEvent.GeoscapeEventData.Choices[0].Outcome.CustomCharacters.Add(deadTemplateDef);
+                 watcherMutantDeliveryEvent.GeoscapeEventData.Choices[0].Outcome.CustomCharacters.Add(deadTemplateDef);
+                 shooterMutantDeliveryEvent.GeoscapeEventData.Choices[0].Outcome.CustomCharacters.Add(deadTemplateDef);*/
+            }
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
 
         public static void RunProjectOsiris(GeoLevelController controller)
         {
@@ -172,6 +374,7 @@ namespace TFTV
             {
                 if (TFTVRevenantResearch.ProjectOsirisStats.Count > 0 && (CheckLabs(controller)[0] || CheckLabs(controller)[1]))
                 {
+                    TFTVLogger.Always("ProjectOsirisStats has people in it and player has a bionic or a mutation lab");
                     PhoenixStatisticsManager statisticsManager = (PhoenixStatisticsManager)UnityEngine.Object.FindObjectOfType(typeof(PhoenixStatisticsManager));
 
                     Dictionary<GeoTacUnitId, int> allProjectOsirisCandidates = new Dictionary<GeoTacUnitId, int>();
@@ -201,7 +404,7 @@ namespace TFTV
 
                     List<int> orderedList = allProjectOsirisCandidates.Values.OrderBy(x => x).ToList();
 
-                    GeoTacUnitId idProjectOsirisCandidate = new GeoTacUnitId();
+
 
                     UnityEngine.Random.InitState((int)DateTime.Now.Ticks);
                     int roll = UnityEngine.Random.Range(0, 100);
@@ -217,105 +420,95 @@ namespace TFTV
                         {
                             if (allProjectOsirisCandidates[id] == allProjectOsirisCandidates.First().Value)
                             {
-                                idProjectOsirisCandidate = id;
+                                IdProjectOsirisCandidate = id;
 
                             }
                         }
-
-                        GeoUnitDescriptor deadSoldierDescriptor = controller.DeadSoldiers[idProjectOsirisCandidate];
-                        string name = deadSoldierDescriptor.Identity.Name;
-                        GeoCharacter geoCharacterCloneFromDead = controller.DeadSoldiers[idProjectOsirisCandidate].SpawnAsCharacter();
+                        GeoCharacter geoCharacterCloneFromDead = controller.DeadSoldiers[IdProjectOsirisCandidate].SpawnAsCharacter();
                         TacCharacterDef deadTemplateDef = geoCharacterCloneFromDead.TemplateDef;
-                        TacCharacterData saveTemplateData = deadTemplateDef.Data.Clone();
-                        deadTemplateDef.Data.EquipmentItems = new ItemDef[] { };
-                        deadTemplateDef.Data.InventoryItems = new ItemDef[] { };
-                      //  templateDef.Data.BodypartItems = new ItemDef[] { juggHead, juggTorso, juggLegs };
-                        deadTemplateDef.Data.LocalizeName = false;
-                        deadTemplateDef.Data.Name = name;
+                        string name = geoCharacterCloneFromDead.DisplayName;
+                        LocalizedTextBind projectOsirisDescription = new LocalizedTextBind(CreateDescriptionForEvent(controller, controller.DeadSoldiers[IdProjectOsirisCandidate]), true);
 
-                        //  templateDef.Data.LevelProgression.Experience = geoCharacter.Progression.LevelProgression.Experience;
+                        GeoscapeEventDef deliveryEvent = controller.EventSystem.GetEventByID(RoboCopDeliveryEvent);
+
+                        deadTemplateDef.Data.Strength = TFTVRevenantResearch.ProjectOsirisStats[IdProjectOsirisCandidate][0];
+                        deadTemplateDef.Data.Will = TFTVRevenantResearch.ProjectOsirisStats[IdProjectOsirisCandidate][1];
+                        deadTemplateDef.Data.Speed = TFTVRevenantResearch.ProjectOsirisStats[IdProjectOsirisCandidate][2];
 
 
-                        TFTVLogger.Always("deadSoldierDescriptor.Progression.PersonalAbilities[0].name is " + deadSoldierDescriptor.Progression.PersonalAbilities[0].name +
-                            " and deadSoldierDescriptor.Progression.PersonalAbilities[4].name is " + deadSoldierDescriptor.Progression.PersonalAbilities[4].name);
-
-                        bCSettings.SpecialCharacterPersonalSkills.Add(name, new Dictionary<int, string>()
-                        {
-                            {0,deadSoldierDescriptor.Progression.PersonalAbilities[0].name},
-                            {4,deadSoldierDescriptor.Progression.PersonalAbilities[4].name}
-                        });
-
-                        TFTVLogger.Always(name + " added to BC special list is " + bCSettings.SpecialCharacterPersonalSkills.Keys.Contains(name));
-
-                        List<GameTagDef> deadSoldiersTags = new List<GameTagDef>();
-
-                        deadSoldiersTags.AddRange(deadSoldierDescriptor.GetGameTags());
-                        GameTagDef[] gameTagDefs = deadSoldiersTags.ToArray();
-                        deadTemplateDef.Data.GameTags = gameTagDefs;
-
-                        List<TacticalAbilityDef> abilityDefs = deadSoldierDescriptor.GetTacticalAbilities().ToList();
-                        TacticalAbilityDef[] tacticalAbilities = abilityDefs.ToArray();
-                        deadTemplateDef.Data.Abilites = tacticalAbilities;
-                        deadTemplateDef.Data.LevelProgression.SetLevel(geoCharacterCloneFromDead.LevelProgression.Level);
-                        //  templateDef.Data.LevelProgression.CurrentLevelExperience = geoCharacter.Progression.LevelProgression.CurrentLevelExperience;
-                     
                         GeoSite phoenixBase = controller.PhoenixFaction.Bases.First().Site;
                         GeoscapeEventContext context = new GeoscapeEventContext(phoenixBase, controller.PhoenixFaction);
+                        GeoscapeEventDef projectOsirisEvent = controller.EventSystem.GetEventByID(ProjectOsirisEvent);
+                        projectOsirisEvent.GeoscapeEventData.Description[0].General = projectOsirisDescription;
+                        GeoscapeEventDef roboCopEvent = controller.EventSystem.GetEventByID(RobocopEvent);
+                        roboCopEvent.GeoscapeEventData.Description[0].General = projectOsirisDescription;
+                        GeoscapeEventDef fullMutantEvent = controller.EventSystem.GetEventByID(FullMutantEvent);
+                        fullMutantEvent.GeoscapeEventData.Description[0].General = projectOsirisDescription;
 
-                        if (CheckLabs(controller)[0] && CheckLabs(controller)[1]) 
+                        CheckCompletedBionicsAndMutationResearches(controller);
+
+                        if (CheckLabs(controller)[0] && CheckLabs(controller)[1])
                         {
+                            TFTVLogger.Always("Player has both labs");
+
+                            if (controller.PhoenixFaction.Research.HasCompleted("NJ_Bionics2_ResearchDef")
+                            || controller.PhoenixFaction.Research.HasCompleted("SYN_Bionics3_ResearchDef"))
+                            {
+                                TFTVLogger.Always("Player has researched additional Bionic tech");
+                                projectOsirisEvent.GeoscapeEventData.Choices[0].Outcome.TriggerEncounterID = RobocopEvent;
+
+                            }
+                            else
+                            {
+                                TFTVLogger.Always("Player has only basic Bionic tech");
+                                projectOsirisEvent.GeoscapeEventData.Choices[0].Outcome.TriggerEncounterID = RoboCopDeliveryEvent;
+                            }
+                            if (controller.PhoenixFaction.Research.HasCompleted("ANU_MutationTech2_ResearchDef")
+                            || controller.PhoenixFaction.Research.HasCompleted("ANU_MutationTech3_ResearchDef"))
+                            {
+                                TFTVLogger.Always("Player has researched additional Mutation tech");
+                                projectOsirisEvent.GeoscapeEventData.Choices[1].Outcome.TriggerEncounterID = FullMutantEvent;
+
+                            }
+                            else
+                            {
+                                TFTVLogger.Always("Player has only basic Mutation tech");
+                                projectOsirisEvent.GeoscapeEventData.Choices[1].Outcome.TriggerEncounterID = HeavyMutantDeliveryEvent;
+                            }
+
                             controller.EventSystem.TriggerGeoscapeEvent(ProjectOsirisEvent, context);
-
                         }
-
-                        GeoscapeEventDef roboCopDeliveryEvent = controller.EventSystem.GetEventByID(RobocopEvent);
-
-
-                        roboCopDeliveryEvent.GeoscapeEventData.Choices[0].Outcome.CustomCharacters.Add(deadTemplateDef);
-                        TFTVLogger.Always("RobocopDef added as customCharacter reward");
-
-
-                        if (controller.PhoenixFaction.Research.HasCompleted("NJ_Bionics2_ResearchDef"))
+                        else if (CheckLabs(controller)[0] && !CheckLabs(controller)[1])
                         {
-                            TFTVCommonMethods.GenerateGeoEventChoice(roboCopDeliveryEvent, "ROBOCOP_DELIVERY_SCOUT", "ROBOCOP_DELIVERY_OUTCOME");
-                            // TacCharacterDef scout = templateDef;
-                            //  scout.Data.BodypartItems = new ItemDef[] { exoHead, exoTorso, exoLegs };
-                            // roboCopDeliveryEvent.GeoscapeEventData.Choices[1].Outcome.CustomCharacters.Add(templateDef);
-                            roboCopDeliveryEvent.GeoscapeEventData.Choices[1].Outcome.VariablesChange.Add(TFTVCommonMethods.GenerateVariableChange("ProjectOsirisBodyChoice", 1, true));
+                            TFTVLogger.Always("Player has only Bionics lab");
+                            if (controller.PhoenixFaction.Research.HasCompleted("NJ_Bionics2_ResearchDef")
+                            || controller.PhoenixFaction.Research.HasCompleted("SYN_Bionics3_ResearchDef"))
+                            {
+                                TFTVLogger.Always("Player has researched additional Bionic tech");
+                                controller.EventSystem.TriggerGeoscapeEvent(RobocopEvent, context);
+                            }
+                            else
+                            {
+                                TFTVLogger.Always("Player has only basic Bionic tech");
+                                controller.EventSystem.TriggerGeoscapeEvent(RoboCopDeliveryEvent, context);
+                            }
                         }
-                        if (controller.PhoenixFaction.Research.HasCompleted("SYN_Bionics3_ResearchDef"))
+                        else if (!CheckLabs(controller)[0] && CheckLabs(controller)[1])
                         {
-                            TFTVCommonMethods.GenerateGeoEventChoice(roboCopDeliveryEvent, "ROBOCOP_DELIVERY_SHINOBI", "ROBOCOP_DELIVERY_OUTCOME");
-                            //  roboCopDeliveryEvent.GeoscapeEventData.Choices[2].Outcome.CustomCharacters.Add(templateDef);
-                            roboCopDeliveryEvent.GeoscapeEventData.Choices[2].Outcome.VariablesChange.Add(TFTVCommonMethods.GenerateVariableChange("ProjectOsirisBodyChoice", 2, true));
-                            //  TacCharacterDef shinobi = templateDef;
-                            //  shinobi.Data.BodypartItems = new ItemDef[] { shinobiHead, shinobiTorso, shinobiLegs };
-                            // roboCopDeliveryEvent.GeoscapeEventData.Choices[2].Outcome.CustomCharacters.Add(shinobi);
+                            TFTVLogger.Always("Player has only Mutation lab");
+                            if (controller.PhoenixFaction.Research.HasCompleted("ANU_MutationTech2_ResearchDef")
+                                || controller.PhoenixFaction.Research.HasCompleted("ANU_MutationTech3_ResearchDef"))
+                            {
+                                TFTVLogger.Always("Player has researched additional Mutation tech");
+                                controller.EventSystem.TriggerGeoscapeEvent(FullMutantEvent, context);
+                            }
+                            else
+                            {
+                                TFTVLogger.Always("Player has only basic Mutation tech");
+                                controller.EventSystem.TriggerGeoscapeEvent(HeavyMutantDeliveryEvent, context);
+                            }
                         }
-
-                        TFTVLogger.Always(RobocopEvent + " options added");
-                        
-                       
-                        TFTVLogger.Always("Event will be triggered");
-                        controller.EventSystem.TriggerGeoscapeEvent(RobocopEvent, context);
-
-                        GeoTacUnitId geoTacUnitNewCharacter = statisticsManager.CurrentGameStats.LivingSoldiers.Last().Key;
-                        statisticsManager.CurrentGameStats.LivingSoldiers.Remove(geoTacUnitNewCharacter);
-                        statisticsManager.CurrentGameStats.LivingSoldiers.Add(geoTacUnitNewCharacter, statisticsManager.CurrentGameStats.DeadSoldiers[idProjectOsirisCandidate]);
-                        controller.DeadSoldiers.Remove(idProjectOsirisCandidate);
-                        statisticsManager.CurrentGameStats.DeadSoldiers.Remove(idProjectOsirisCandidate);
-                        controller.PhoenixFaction.Soldiers.Last().CharacterStats.Endurance.Set(TFTVRevenantResearch.ProjectOsirisStats[idProjectOsirisCandidate][0]);
-                        controller.PhoenixFaction.Soldiers.Last().CharacterStats.Endurance.SetMax(TFTVRevenantResearch.ProjectOsirisStats[idProjectOsirisCandidate][0]);
-                        controller.PhoenixFaction.Soldiers.Last().CharacterStats.Willpower.Set(TFTVRevenantResearch.ProjectOsirisStats[idProjectOsirisCandidate][1]);
-                        controller.PhoenixFaction.Soldiers.Last().CharacterStats.Willpower.SetMax(TFTVRevenantResearch.ProjectOsirisStats[idProjectOsirisCandidate][1]);
-                        controller.PhoenixFaction.Soldiers.Last().CharacterStats.Speed.Set(TFTVRevenantResearch.ProjectOsirisStats[idProjectOsirisCandidate][2]);
-                        controller.PhoenixFaction.Soldiers.Last().CharacterStats.Speed.SetMax(TFTVRevenantResearch.ProjectOsirisStats[idProjectOsirisCandidate][2]);
-                        controller.PhoenixFaction.Soldiers.Last().Identity.CopyFrom(geoCharacterCloneFromDead.Identity, PhoenixPoint.Common.Entities.Characters.CharacterIdentity.EmptyReplaceOperation.Default);
-                        controller.PhoenixFaction.Soldiers.Last().Progression.SkillPoints = 0;
-                        deadTemplateDef.Data = saveTemplateData;
                     }
-
-
                 }
             }
 
@@ -324,6 +517,97 @@ namespace TFTV
                 TFTVLogger.Error(e);
             }
 
+        }
+
+        [HarmonyPatch(typeof(GeoscapeEventSystem), "TriggerGeoscapeEvent")]
+
+        public static class GeoscapeEventSystem_TriggerGeoscapeEvent_ProjectOsiris_patch
+        {
+            public static void Prefix(string eventId, GeoscapeEventSystem __instance)
+            {
+                try
+                {
+                    TFTVLogger.Always("TriggerGeoscapeEvent prefix triggered for event " + eventId);
+
+                    if (eventId == RoboCopDeliveryEvent || eventId == ScoutDeliveryEvent || eventId == ShinobiDeliveryEvent ||
+                        eventId == HeavyMutantDeliveryEvent || eventId == WatcherMutantDeliveryEvent || eventId == ShooterMutantDeliveryEvent)
+                    {
+
+                        GeoLevelController controller = (GeoLevelController)UnityEngine.Object.FindObjectOfType(typeof(GeoLevelController));
+                        CompleteProjectOsiris(IdProjectOsirisCandidate, controller, __instance.GetEventByID(eventId));
+
+                    }
+
+                }
+
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+
+            }
+            public static void Postfix(string eventId)
+            {
+                try
+                {
+
+                    if (eventId == RoboCopDeliveryEvent || eventId == ScoutDeliveryEvent || eventId == ShinobiDeliveryEvent ||
+                        eventId == HeavyMutantDeliveryEvent || eventId == WatcherMutantDeliveryEvent || eventId == ShooterMutantDeliveryEvent)
+                    {
+
+                        GeoLevelController controller = (GeoLevelController)UnityEngine.Object.FindObjectOfType(typeof(GeoLevelController));
+                        PhoenixStatisticsManager statisticsManager = (PhoenixStatisticsManager)UnityEngine.Object.FindObjectOfType(typeof(PhoenixStatisticsManager));
+                        GeoCharacter geoCharacterCloneFromDead = controller.DeadSoldiers[IdProjectOsirisCandidate].SpawnAsCharacter();
+                        TacCharacterDef deadTemplateDef = geoCharacterCloneFromDead.TemplateDef;
+
+
+                        GeoTacUnitId geoTacUnitNewCharacter = statisticsManager.CurrentGameStats.LivingSoldiers.Last().Key;
+                        statisticsManager.CurrentGameStats.LivingSoldiers.Remove(geoTacUnitNewCharacter);
+                        statisticsManager.CurrentGameStats.LivingSoldiers.Add(geoTacUnitNewCharacter, statisticsManager.CurrentGameStats.DeadSoldiers[IdProjectOsirisCandidate]);
+                        controller.DeadSoldiers.Remove(IdProjectOsirisCandidate);
+                        statisticsManager.CurrentGameStats.DeadSoldiers.Remove(IdProjectOsirisCandidate);
+
+                        if (TFTVRevenant.DeadSoldiersDelirium.Keys.Contains(IdProjectOsirisCandidate))
+                        {
+                            TFTVRevenant.DeadSoldiersDelirium.Remove(IdProjectOsirisCandidate);
+                        }
+
+                        int level = geoCharacterCloneFromDead.Progression.LevelProgression.Level;
+                        
+                        controller.PhoenixFaction.Soldiers.Last().Identity.CopyFrom(geoCharacterCloneFromDead.Identity, PhoenixPoint.Common.Entities.Characters.CharacterIdentity.EmptyReplaceOperation.Default);
+                        controller.PhoenixFaction.Soldiers.Last().LevelProgression.SetLevel(level);
+                        controller.PhoenixFaction.Soldiers.Last().Progression.SkillPoints = 0;
+                        controller.PhoenixFaction.Soldiers.Last().Fatigue.Stamina.SetToMin();
+
+                        deadTemplateDef.Data = SaveTemplateData;
+                        bCSettings.SpecialCharacterPersonalSkills.Clear();
+                        IdProjectOsirisCandidate = new GeoTacUnitId();
+                        SaveTemplateData = new TacCharacterData();
+                        TFTVRevenantResearch.ProjectOsirisStats.Clear();
+
+                        GeoscapeEventDef deliveryEvent = controller.EventSystem.GetEventByID(RoboCopDeliveryEvent);
+                        GeoscapeEventDef scoutDeliveryEvent = controller.EventSystem.GetEventByID(ScoutDeliveryEvent);
+                        GeoscapeEventDef shinobiDeliveryEvent = controller.EventSystem.GetEventByID(ShinobiDeliveryEvent);
+                        GeoscapeEventDef heavyMutantDeliveryEvent = controller.EventSystem.GetEventByID(HeavyMutantDeliveryEvent);
+                        GeoscapeEventDef watcherMutantDeliveryEvent = controller.EventSystem.GetEventByID(WatcherMutantDeliveryEvent);
+                        GeoscapeEventDef shooterMutantDeliveryEvent = controller.EventSystem.GetEventByID(ShooterMutantDeliveryEvent);
+
+                        List<GeoscapeEventDef> allDeliveryEvents = new List<GeoscapeEventDef> {deliveryEvent, scoutDeliveryEvent, shinobiDeliveryEvent,
+                    heavyMutantDeliveryEvent, watcherMutantDeliveryEvent, shooterMutantDeliveryEvent };
+
+                        foreach (GeoscapeEventDef eventDef in allDeliveryEvents)
+                        {
+                            eventDef.GeoscapeEventData.Choices[0].Outcome.CustomCharacters.Remove(deadTemplateDef);
+
+                        }
+
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
         }
 
 

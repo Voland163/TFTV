@@ -354,6 +354,8 @@ namespace TFTV
                             }
                         }
 
+                     
+
                         havenLab.ProvidesResearch = 1;
                         TFTVLogger.Always("The check for VO#8 went ok");
                         voidOmensCheck[8] = false;

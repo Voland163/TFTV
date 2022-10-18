@@ -1,47 +1,60 @@
-﻿using Base.Defs;
-using Base.Entities;
-using Base.Levels;
-using HarmonyLib;
+﻿using HarmonyLib;
 using PhoenixPoint.Common.ContextHelp;
-using PhoenixPoint.Common.Core;
-using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Levels;
+using PhoenixPoint.Tactical.View.ViewStates;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
-using System.Security.Policy;
 
 
 namespace TFTV
 {
     internal class TFTVInfestationStory
     {
-      //  private static readonly DefRepository Repo = TFTVMain.Repo;
+        //  private static readonly DefRepository Repo = TFTVMain.Repo;
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
 
         private static readonly GameTagDef mutoidTag = DefCache.GetDef<GameTagDef>("Mutoid_TagDef");
         private static readonly GameTagDef nodeTag = DefCache.GetDef<GameTagDef>("CorruptionNode_ClassTagDef");
-        
+
         private static readonly MissionTypeTagDef infestationMissionTagDef = DefCache.GetDef<MissionTypeTagDef>("HavenInfestation_MissionTypeTagDef");
+       
         public static int HavenPopulation = 0;
         public static string OriginalOwner = "";
+      
 
         [HarmonyPatch(typeof(TacticalLevelController), "ActorDied")]
         public static class TacticalLevelController_ActorDied_InfestationOutro_Patch
         {
-            public static void Postfix(DeathReport deathReport, TacticalLevelController __instance)
+            public static void Prefix(DeathReport deathReport, TacticalLevelController __instance)
             {
                 try
                 {
                     if (deathReport.Actor.HasGameTag(nodeTag))
                     {
-                        CreateOutroInfestation(__instance);
+                        CreateOutroInfestation(__instance);   
+                                       
+                    }
 
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+
+            public static void Postfix(DeathReport deathReport)
+            {
+                try
+                {
+                    if (deathReport.Actor.HasGameTag(nodeTag))
+                    {
+                       // CreateOutroInfestation(__instance);
+                       
                     }
 
                 }
@@ -51,6 +64,7 @@ namespace TFTV
                 }
             }
         }
+
 
 
         [HarmonyPatch(typeof(GeoMission), "Launch")]
@@ -75,7 +89,7 @@ namespace TFTV
                             }
                         }
                         TFTVLogger.Always("The haven is " + geoHaven.Site.LocalizedSiteName + " and its population is " + geoHaven.Population);
-                                           
+
                         HavenPopulation = geoHaven.Population;
                         OriginalOwner = geoHaven.OriginalOwner.PPFactionDef.ShortName;
 
@@ -84,18 +98,20 @@ namespace TFTV
                         foreach (GeoCharacter geoCharacter in squad.Soldiers)
                         {
                             if (!geoCharacter.IsMutoid)
-                            {                              
+                            {
                                 operatives.Add(geoCharacter);
                             }
                         }
 
                         if (operatives.Count < 2)
                         {
-                           
+
                         }
                         else
                         {
-                       
+                           
+
+
                             TFTVLogger.Always("There are " + operatives.Count() + " phoenix operatives");
                             List<GeoCharacter> orderedOperatives = operatives.OrderByDescending(e => e.LevelProgression.Experience).ToList();
                             for (int i = 0; i < operatives.Count; i++)
@@ -108,16 +124,18 @@ namespace TFTV
                             string title = "Search and Rescue";
                             string text = "Director, " + orderedOperatives[1].DisplayName + " reporting. We are at " + __instance.Site.LocalizedSiteName + ". Are you seeing this? The green shimmering…  I… I feel like I have been here before…";
 
-          
+
 
                             string reply = orderedOperatives[1].DisplayName.Split()[1] + " snap out of it! " +
                                 "We are still Phoenix operatives and we got a job to do. " +
                                 "Scans show that there are survivors out there. Stay frosty and be ready for anything. " + orderedOperatives[0].DisplayName + " out.";
 
-
                             ContextHelpHintDef infestationIntro2 = DefCache.GetDef<ContextHelpHintDef>(name + "2");
                             ContextHelpHintDef infestationIntro = DefCache.GetDef<ContextHelpHintDef>(name);
-                            
+                            infestationIntro.Trigger = HintTrigger.MissionStart;
+                            infestationIntro.NextHint = infestationIntro2;
+
+
                             infestationIntro.Text = new Base.UI.LocalizedTextBind(text, true);
                             infestationIntro.Title = new Base.UI.LocalizedTextBind(title, true);
                             infestationIntro2.Text = new Base.UI.LocalizedTextBind(reply, true);
@@ -127,7 +145,7 @@ namespace TFTV
                         }
 
                     }
-                        
+
                 }
                 catch (Exception e)
                 {
@@ -135,7 +153,7 @@ namespace TFTV
                 }
             }
 
-    
+
         }
 
         public static void CreateOutroInfestation(TacticalLevelController level)
@@ -153,7 +171,7 @@ namespace TFTV
                         + ", Phoenix Project";
 
                     ContextHelpHintDef infestationOutro = DefCache.GetDef<ContextHelpHintDef>("InfestationMissionEnd");
-
+                    infestationOutro.Trigger = HintTrigger.MissionOver;
 
                     infestationOutro.Text = new Base.UI.LocalizedTextBind(text, true);
                     infestationOutro.Title = new Base.UI.LocalizedTextBind(title, true);
@@ -167,7 +185,7 @@ namespace TFTV
                 TFTVLogger.Error(e);
             }
         }
-       
+
 
 
         public static List<TacticalActor> GetTacticalActorsPhoenix(TacticalLevelController level)
@@ -185,7 +203,7 @@ namespace TFTV
                     if (tacticalActorBase.BaseDef.name == "Soldier_ActorDef" && tacticalActorBase.InPlay && !tacticalActorBase.HasGameTag(mutoidTag)
                         && tacticalActorBase.IsAlive && level.TacticalGameParams.Statistics.LivingSoldiers.ContainsKey(tacticalActor.GeoUnitId))
                     {
-                       
+
                         operatives.Add(tacticalActor);
                     }
                 }

@@ -582,8 +582,7 @@ namespace PRMBetterClasses.SkillModifications
         private static void Create_DamagedAmygdala()
         {
             string skillName = "DamagedAmygdala_AbilityDef";
-            DamageMultiplierAbilityDef source = DefCache.GetDef<DamageMultiplierAbilityDef>("PsychicResistant_DamageMultiplierAbilityDef");
-            source.Multiplier = 0.0f; // Set to 0.0 because 0.5 = resistance did not work.
+            DamageMultiplierAbilityDef source = DefCache.GetDef<DamageMultiplierAbilityDef>("PsychicImmunity_DamageMultiplierAbilityDef");
             DamageMultiplierAbilityDef damagedAmygdala = Helper.CreateDefFromClone(
                 source,
                 "5fe50c69-3081-4502-98bf-1ba9d6911c99",

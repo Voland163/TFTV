@@ -466,7 +466,7 @@ PX_REVENANT_LIVE_RESEARCH_TITLE,Text,,Captured Revenant,,,,,,,,
 PX_REVENANT_LIVE_RESEARCH_REVEAL,Text,,"The operatives who captured this creature claim that it is a former comrade, returned as a Pandoran monstrosity. We should examine it as soon as possible.",,,,,,,,
 PX_REVENANT_LIVE_RESEARCH_COMPLETE,Text,,"There is no room for doubt: this creature is, or used to be one of our operatives. What has been done to our friend and how... I would rather not try to imagine it. I wanted to hope that there was no shred of consciousness of the former self left in that monstrosity, but... I could swear it recognized me.
 
-There is nothing we can do for our comrade now, and I'm afraid that killing it won't provide any release.We might encounter it again and again: the Pandorans splice and clone their victims ad infinitum.
+There is nothing we can do for our comrade now, and I'm afraid that killing it won't provide any release. We might encounter it again and again: the Pandorans splice and clone their victims ad infinitum.
 
 We have to defeat the Pandoravirus once and for all. It's the only way to be sure.",,,,,,,,
 PX_PROJECT_OSIRIS_TITLE,Text,,Project Osiris,,,,,,,,
@@ -478,3 +478,17 @@ At first we assumed that they could only access information stored in our genes.
 All this leads us to conclude that the Oneiric Delirium taps into a variety of data streams or information centers of the infected. It's a process that we cannot even begin to understand, even as it puts into question our basic notions of consciousness. 
 
 Nevertheless, we have managed to extract some practical applications from our research into Revenants. We believe we are  now capable of sometimes saving critically wounded operatives by giving them new, artificial bodies.",,,,,,,,
+PROJECT_OSIRIS_TITLE,Text,,Project Osiris,,,,,,,,
+PROJECT_OSIRIS_TEXT,Text,,We have a candidate for Project Osiris,,,,,,,,
+PROJECT_OSIRIS_CHOOSE_ROBOCOP,Text,,Bionics,,,,,,,,
+PROJECT_OSIRIS_CHOOSE_MUTANT,Text,,Mutations,,,,,,,,
+ROBOCOP_DELIVERY_TITLE,Text,,Project Osiris - Bionics,,,,,,,,
+ROBOCOP_DELIVERY_TEXT,Text,,Choose the chasis,,,,,,,,
+FULL_MUTANT_TITLE,Text,,Project Osiris - Mutations,,,,,,,,
+FULL_MUTANT_TEXT,Text,,Choose the mutation,,,,,,,,
+HEAVY_DELIVERY_CHOICE,Text,,"""Juggernaut"" ",,,,,,,,
+SCOUT_DELIVERY_CHOICE,Text,,"""Technomancer""",,,,,,,,
+SHINOBI_DELIVERY_CHOICE,Text,,"""Shinobi""",,,,,,,,
+HEAVY_MUTANT_DELIVERY_CHOICE,Text,,"""Heavy""",,,,,,,,
+WATCHER_MUTANT_DELIVERY_CHOICE,Text,,"""Watcher""",,,,,,,,
+SHOOTER_MUTANT_DELIVERY_CHOICE,Text,,"""Shooter""",,,,,,,,

@@ -115,11 +115,14 @@ namespace TFTV
                         if (hintDef.name.Contains("InfestationMissionIntro")) 
                         {
                             __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("px_squad.jpg");
+                            hintDef.Trigger = HintTrigger.Manual;
                         }
 
-                        else if (hintDef.name.Contains("InfestationMissionOutro"))
+                        else if (hintDef.name.Contains("InfestationMissionEnd"))
                         {
                             __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("px_squad.jpg");
+                            hintDef.Trigger = HintTrigger.Manual;
+
                         }
 
                         else if (title.LocalizationKey == "UMBRA_SIGHTED_TITLE")
@@ -365,7 +368,7 @@ namespace TFTV
               //  string gUID = Guid.NewGuid().ToString();
 
                 ContextHelpHintDef newContextHelpHintDef = Helper.CreateDefFromClone(sourceContextHelpHintDef, gUID, name);
-                newContextHelpHintDef.Trigger = HintTrigger.MissionStart;
+                newContextHelpHintDef.Trigger = HintTrigger.Manual;
 
               //  string gUID2 = Guid.NewGuid().ToString();
                 LevelHasTagHintConditionDef infestedHavenMissionTagCondition = Helper.CreateDefFromClone(sourceInfestationMission, gUID2, name + "_HintConditionDef");
@@ -397,7 +400,7 @@ namespace TFTV
                 string gUID = Guid.NewGuid().ToString();
 
                 ContextHelpHintDef newContextHelpHintDef = Helper.CreateDefFromClone(sourceContextHelpHintDef, gUID, name);
-                newContextHelpHintDef.Trigger = HintTrigger.MissionOver;
+                newContextHelpHintDef.Trigger = HintTrigger.Manual;
 
                 string gUID2 = Guid.NewGuid().ToString();
                 LevelHasTagHintConditionDef infestedHavenMissionTagCondition = Helper.CreateDefFromClone(sourceInfestationMission, gUID2, name + "_HintConditionDef");

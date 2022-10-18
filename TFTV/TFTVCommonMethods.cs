@@ -66,7 +66,7 @@ namespace TFTV
                 TFTVRevenant.revenantCanSpawn = false;
                 TFTVHumanEnemies.difficultyLevel = 0;
                 TFTVHumanEnemies.HumanEnemiesAndTactics = new Dictionary<string, int>();
-                TFTVInfestation.PhoenixDefeated = false;
+              
                 TFTVRevenantResearch.ProjectOsirisStats = new Dictionary<int, int[]>();
                 TFTVRevenantResearch.ProjectOsiris = false;
                // TFTVRevenant.timeLastRevenantSpawned = new TimeSpan();

@@ -34,8 +34,7 @@ namespace TFTV
         public static int RevenantPoints = 0;
         public static bool ProjectOsiris = false;
         public static Dictionary<int, int[]> ProjectOsirisStats = new Dictionary<int, int[]>();
-        public static List<int> testingStats = new List<int>();
-
+      
 
 
 
@@ -231,11 +230,11 @@ namespace TFTV
                                 RevenantCaptured = true;
                                 if (pandoranActor.HasGameTag(revenantTier1GameTag))
                                 {
-                                    RevenantPoints = 15; //testing 1
+                                    RevenantPoints = 1; //testing 1
                                 }
                                 else if (pandoranActor.HasGameTag(revenantTier2GameTag))
                                 {
-                                    RevenantPoints = 15; //testing 5
+                                    RevenantPoints = 5; //testing 5
                                 }
                                 else if (pandoranActor.HasGameTag(revenantTier3GameTag))
                                 {

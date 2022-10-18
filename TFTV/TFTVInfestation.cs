@@ -36,7 +36,8 @@ namespace TFTV
         public static string InfestedHavensVariable = "Number_of_Infested_Havens";
         public static string LivingWeaponsAcquired = "Living_Weapons_Acquired";
         public static int roll = 0;
-        public static bool PhoenixDefeated = false;
+      
+        public static string InfestationMissionWon = "InfestationMissionWon";
 
 
         public static ItemStorage InfestationRewardGenerator(int num)
@@ -119,6 +120,11 @@ namespace TFTV
                     {
                         // TFTVLogger.Always("DestroySite method called");
                         TFTVLogger.Always("infestation variable is " + __instance.GeoLevel.EventSystem.GetVariable("Infestation_Encounter_Variable"));
+
+                        if (TFTVInfestationStory.HavenPopulation!=0)
+                        {
+                            __instance.GeoLevel.EventSystem.SetVariable(InfestationMissionWon, 1);
+                        }
                         string faction = __instance.Owner.GetPPName();
                         //  TFTVLogger.Always(faction);
                         if (DefenseMission == null)
@@ -284,10 +290,12 @@ namespace TFTV
             {
                 if (controller.TacMission.MissionData.MissionType.Tags.Contains(DefCache.GetDef<MissionTypeTagDef>("HavenInfestation_MissionTypeTagDef")))
                 {
-                    if (controller.GetFactionByCommandName("PX").State == TacFactionState.Defeated)
+                    TFTVLogger.Always("Passed the MissionTypeTagDef check");
+
+                    if (controller.GetFactionByCommandName("PX").State != TacFactionState.Won)
                     {
-                        PhoenixDefeated = true;
-                        TFTVLogger.Always("Phoenix lost!");
+                       
+                       
 
                     }
                 }
@@ -300,16 +308,18 @@ namespace TFTV
             }
         }
 
-        public static void RecordResultInfestationMission(GeoLevelController controller)
+     
+        public static void SetInfestationMissionVariableToZero(GeoLevelController controller) 
         {
             try 
             {
-                if (PhoenixDefeated) 
+                if (controller.EventSystem.GetVariable(InfestationMissionWon) != 0)
                 {
-                    controller.EventSystem.SetVariable("InfestationMissionLost", 1);               
-                }        
+                    controller.EventSystem.SetVariable(InfestationMissionWon, 0);
+                }
             }
-            catch (Exception e)
+
+         catch (Exception e)
             {
                 TFTVLogger.Error(e);
             }
@@ -327,9 +337,9 @@ namespace TFTV
                 try
                 {
                     GeoLevelController controller = (GeoLevelController)UnityEngine.Object.FindObjectOfType(typeof(GeoLevelController));
-                    
 
-                    if (controller.EventSystem.GetVariable("InfestationMissionLost")==0)
+                    TFTVLogger.Always("Geo Variable InfestationMissionWon set to " + controller.EventSystem.GetVariable(InfestationMissionWon));
+                    if (controller.EventSystem.GetVariable(InfestationMissionWon) ==1)
                     {
                         if (!____shown)
                         {
@@ -499,6 +509,8 @@ namespace TFTV
                                 site.GeoLevel.EventSystem.SetVariable(LivingWeaponsAcquired, 3);
                             }
                         }
+                        controller.EventSystem.SetVariable(InfestationMissionWon, 0);
+                      
 
                         return false;
                     }
@@ -513,8 +525,8 @@ namespace TFTV
 
 
                         __instance.Background.sprite = Helper.CreateSpriteFromImageFile("Node.jpg");
-                        PhoenixDefeated = false;
-                        controller.EventSystem.SetVariable("InfestationMissionLost", 0);
+                     
+                        
 
                         return true;
 

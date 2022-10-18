@@ -30,6 +30,7 @@ namespace TFTV
         public string infestedHavenOriginalOwnerSaveData = TFTVInfestationStory.OriginalOwner;
         public Dictionary<int, int[]> ProjectOsirisStatsSaveData = TFTVRevenantResearch.ProjectOsirisStats;
        
+       
 
     }
 
@@ -64,7 +65,7 @@ namespace TFTV
                 TFTVRevenant.DeadSoldiersDelirium[TFTVRevenant.revenantID] += 1;
 
             }
-            TFTVInfestation.RecordResultInfestationMission(Controller);
+            
             // TFTVProjectRobocop.ResurrectDeadSoldier(Controller);
             TFTVRevenantResearch.CheckRevenantResearchRequirements(Controller);
             TFTVProjectOsiris.RunProjectOsiris(gsController);
@@ -113,7 +114,7 @@ namespace TFTV
             TFTVRevenant.CheckRevenantTime(gsController);
             TFTVHumanEnemies.difficultyLevel = gsController.CurrentDifficultyLevel.Order;
             TFTVRevenantResearch.CheckProjectOsiris(gsController);
-
+            TFTVInfestation.SetInfestationMissionVariableToZero(gsController);
         }
 
         /// <summary>
@@ -138,6 +139,7 @@ namespace TFTV
                 infestedHavenOriginalOwnerSaveData = TFTVInfestationStory.OriginalOwner,
                 infestedHavenPopulationSaveData = TFTVInfestationStory.HavenPopulation,
                 ProjectOsirisStatsSaveData = TFTVRevenantResearch.ProjectOsirisStats,
+                
 
             };
 
@@ -177,7 +179,7 @@ namespace TFTV
             Main.Logger.LogInfo("Behemoth target id number is " + TFTVAirCombat.behemothTarget);
             Main.Logger.LogInfo("Behemoth will wait for another  " + TFTVAirCombat.behemothWaitHours + " before moving");
             Main.Logger.LogInfo("Last time a Revenant was seen was on day " + TFTVRevenant.daysRevenantLastSeen + ", and now it is day " + Controller.Timing.Now.TimeSpan.Days);
-            Main.Logger.LogInfo("Phoenix lost last mission " + TFTVInfestation.PhoenixDefeated);
+  
             Main.Logger.LogInfo("Project Osiris stats count " + TFTVRevenantResearch.ProjectOsirisStats.Count);
 
 
@@ -192,7 +194,7 @@ namespace TFTV
             TFTVLogger.Always("Behemoth target id number is " + TFTVAirCombat.behemothTarget);
             TFTVLogger.Always("Behemoth will wait for another  " + TFTVAirCombat.behemothWaitHours + " before moving");
             TFTVLogger.Always("Last time a Revenant was seen was on day " + TFTVRevenant.daysRevenantLastSeen + ", and now it is day " + Controller.Timing.Now.TimeSpan.Days);
-            TFTVLogger.Always("Phoenix lost last mission " + TFTVInfestation.PhoenixDefeated);
+       
             TFTVLogger.Always("Project Osiris stats count " + TFTVRevenantResearch.ProjectOsirisStats.Count);
         }
 

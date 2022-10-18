@@ -1,4 +1,6 @@
 Key,Type,Desc,English,Chinese (Simplified),French,German,Italian,Polish,Russian,,UI_Tester
+KEY_PSYCHIC_IMMUNITY_DESCRIPTION,Text,,Immune to Psychic Scream,,,,,,,,
+KEY_ELECTRIC_STRIKE_DESCRIPTION,Text,,Inflict Shock and EMP damage on target once per turn,,,,,,,,
 PR_BC_MOUNTED_ITEMS_PROF,Text,,MOUNTED ITEM PROFICIENCY,,,,,,ОБРАЩЕНИЕ С НЕЙРО-ИНТЕРФЕЙСОМ,,
 PR_BC_MOUNTED_ITEMS_PROF_DESC,Text,,Proficiency with Robotic Arms and Mounted Weapons.,,,,,,Умение пользоваться механизированными манипуляторами техника и пусковыми установками,,
 PR_BC_STIMPACK_ITEM_DESC,Text,,A potent stimulant that regnerate body parts and instils Frenzy.,,,,,,"Мощный стимулятор, который залечивает травмы и вводит цель в Буйство",,

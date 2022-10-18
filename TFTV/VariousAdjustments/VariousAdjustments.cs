@@ -237,7 +237,11 @@ namespace PRMBetterClasses.VariousAdjustments
         }
         public static void Change_PsychicResistance()
         {
-
+            DamageMultiplierAbilityDef psychicResistant = DefCache.GetDef<DamageMultiplierAbilityDef>("PsychicResistant_DamageMultiplierAbilityDef");
+            psychicResistant.Multiplier = 0.0f; // Set to 0.0 because 0.5 = resistance don't work.
+            // Burrow view element aka name, description and icon from psychic immunity
+            DamageMultiplierAbilityDef psychicImmunity = DefCache.GetDef<DamageMultiplierAbilityDef>("PsychicImmunity_DamageMultiplierAbilityDef");
+            psychicResistant.ViewElementDef = psychicImmunity.ViewElementDef;
         }
         public static void Change_MutoidWorms()
         {

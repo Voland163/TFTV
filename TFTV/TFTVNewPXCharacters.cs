@@ -241,6 +241,50 @@ namespace TFTV
                     {
                         __result.EventBackground = Helper.CreateSpriteFromImageFile("makeshift_lab.png");
                     }
+                    if (TFTVProjectOsiris.ProjectOsirisDeliveryEvents.Contains(geoEvent.EventID)) 
+                    {
+                        __result.EventBackground = Helper.CreateSpriteFromImageFile("Project_Osiris_Bionics.png");
+
+                        /* if (geoEvent.EventID == TFTVProjectOsiris.ProjectOsirisEvent)
+                         {
+                             __result.EventBackground = Helper.CreateSpriteFromImageFile("Project_Osiris.png");
+                          //   __result.EventLeader = Helper.CreateSpriteFromImageFile("BG_alistair_small.png");
+                         }
+                         else if(geoEvent.EventID == TFTVProjectOsiris.RoboCopDeliveryEvent || geoEvent.EventID == TFTVProjectOsiris.RobocopEvent) 
+                         {
+                             __result.EventBackground = Helper.CreateSpriteFromImageFile("Project_Osiris_Juggernaut.png");
+
+                         }
+                         else if (geoEvent.EventID == TFTVProjectOsiris.FullMutantEvent)
+                         {
+                             __result.EventBackground = Helper.CreateSpriteFromImageFile("Project_Osiris_Mutation.png");
+
+                         }
+                         else if (geoEvent.EventID == TFTVProjectOsiris.HeavyMutantDeliveryEvent)
+                         {
+                             __result.EventBackground = Helper.CreateSpriteFromImageFile("Project_Osiris_Heavy_Mutant.png");
+
+                         }
+                         else if (geoEvent.EventID == TFTVProjectOsiris.WatcherMutantDeliveryEvent)
+                         {
+                             __result.EventBackground = Helper.CreateSpriteFromImageFile("Project_Osiris_Watcher.png");
+
+                         }
+                         else if (geoEvent.EventID == TFTVProjectOsiris.ShooterMutantDeliveryEvent)
+                         {
+                             __result.EventBackground = Helper.CreateSpriteFromImageFile("Project_Osiris_Shooter.png");
+
+                         }
+                         else if (geoEvent.EventID == TFTVProjectOsiris.ScoutDeliveryEvent)
+                         {
+                             __result.EventBackground = Helper.CreateSpriteFromImageFile("Project_Osiris_Exo.png");
+                         }
+                         else if (geoEvent.EventID == TFTVProjectOsiris.ShinobiDeliveryEvent)
+                         {
+                             __result.EventBackground = Helper.CreateSpriteFromImageFile("Project_Osiris_Shinobi.png");
+                         }*/
+
+                    }
 
                 }
                 catch (Exception e)
