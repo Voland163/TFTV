@@ -1,5 +1,6 @@
 using Base.Levels;
 using Base.Serialization.General;
+using EnviroSamples;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Modding;
@@ -115,6 +116,7 @@ namespace TFTV
             TFTVHumanEnemies.difficultyLevel = gsController.CurrentDifficultyLevel.Order;
             TFTVRevenantResearch.CheckProjectOsiris(gsController);
             TFTVInfestation.SetInfestationMissionVariableToZero(gsController);
+            TFTVDiplomacyPenalties.VoidOmensImplemented = false;
         }
 
         /// <summary>
@@ -166,7 +168,6 @@ namespace TFTV
             TFTVInfestationStory.HavenPopulation = data.infestedHavenPopulationSaveData;
             TFTVInfestationStory.OriginalOwner = data.infestedHavenOriginalOwnerSaveData;
             TFTVRevenantResearch.ProjectOsirisStats = data.ProjectOsirisStatsSaveData;
-         
 
             Main.Logger.LogInfo("UmbraEvoltion variable is " + Controller.EventSystem.GetVariable(TFTVUmbra.variableUmbraALNResReq));
             Main.Logger.LogInfo("# Characters with broken limbs: " + TFTVStamina.charactersWithBrokenLimbs.Count);
@@ -196,6 +197,7 @@ namespace TFTV
             TFTVLogger.Always("Last time a Revenant was seen was on day " + TFTVRevenant.daysRevenantLastSeen + ", and now it is day " + Controller.Timing.Now.TimeSpan.Days);
        
             TFTVLogger.Always("Project Osiris stats count " + TFTVRevenantResearch.ProjectOsirisStats.Count);
+            
         }
 
 

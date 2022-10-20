@@ -205,7 +205,7 @@ namespace TFTV
         {
 
             HibernationModuleStaminaRecuperation();
-            ModifyAmountResourcesEvents(config.ResourceMultiplier);
+           // ModifyAmountResourcesEvents(config.ResourceMultiplier);
         }
 
         /*  public static void ModifyAmountResourcesEvents(float resourceMultiplier)

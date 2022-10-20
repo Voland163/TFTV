@@ -104,7 +104,7 @@ namespace TFTV
         // Can be applied to game in progress
         [ConfigField(text: "Higher diplomatic penalties",
            description: "Diplomatic penalties from choices in events are doubled and revealing diplomatic missions for one faction gives a diplomatic penalty with the other factions.\n" +
-                        "Can be applied to a game in progress, BUT IF YOU CHANGE THIS SETTING, QUIT THE GAME TO DESKTOP AND RESTART FOR CHANGES TO TAKE EFFECT")]
+                        "Can be applied to a game in progress")]
         public bool DiplomaticPenalties = true;
 
 

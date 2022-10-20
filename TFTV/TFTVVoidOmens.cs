@@ -48,7 +48,7 @@ namespace TFTV
         private static readonly TacCrateDataDef cratesNotResources = DefCache.GetDef<TacCrateDataDef>("Default_TacCrateDataDef");
         private static readonly TacticalFactionEffectDef defendersCanBeRecruited = DefCache.GetDef<TacticalFactionEffectDef>("CanBeRecruitedByPhoenix_FactionEffectDef");
         private static readonly GeoHavenZoneDef havenLab = DefCache.GetDef<GeoHavenZoneDef>("Research_GeoHavenZoneDef");
-        private static readonly GeoFactionDef phoenixPoint = DefCache.GetDef<GeoFactionDef>("Phoenix_GeoPhoenixFactionDef");
+      
 
         public static bool[] voidOmensCheck = new bool[20];
         //VO#1 is harder ambushes
@@ -112,7 +112,7 @@ namespace TFTV
                     }
                     if (i == 2 && CheckFordVoidOmensInPlay(level).Contains(i) && !voidOmensCheck[i])
                     {
-                        foreach (GeoscapeEventDef geoEvent in Repo.GetAllDefs<GeoscapeEventDef>())
+                      /*  foreach (GeoscapeEventDef geoEvent in Repo.GetAllDefs<GeoscapeEventDef>())
                         {
                             foreach (GeoEventChoice choice in geoEvent.GeoscapeEventData.Choices)
                             {
@@ -128,7 +128,7 @@ namespace TFTV
                                     }
                                 }
                             }
-                        }
+                        }*/
                         
                         foreach (DiplomacyMissionOutcomeDef diplomacyMissionOutcomeDef in Repo.GetAllDefs<DiplomacyMissionOutcomeDef>())
                         {
@@ -147,7 +147,7 @@ namespace TFTV
                     }
                     else if (i == 2 && !CheckFordVoidOmensInPlay(level).Contains(i) && voidOmensCheck[i])
                     {
-                        foreach (GeoscapeEventDef geoEvent in Repo.GetAllDefs<GeoscapeEventDef>())
+                      /*  foreach (GeoscapeEventDef geoEvent in Repo.GetAllDefs<GeoscapeEventDef>())
                         {
                             foreach (GeoEventChoice choice in geoEvent.GeoscapeEventData.Choices)
                             {
@@ -161,7 +161,7 @@ namespace TFTV
                                     }
                                 }
                             }
-                        }
+                        }*/
                         foreach (DiplomacyMissionOutcomeDef diplomacyMissionOutcomeDef in Repo.GetAllDefs<DiplomacyMissionOutcomeDef>())
                         {
                             diplomacyMissionOutcomeDef.DiplomacyToFaction.Max = Mathf.RoundToInt(diplomacyMissionOutcomeDef.DiplomacyToFaction.Max * 2f);
@@ -315,7 +315,7 @@ namespace TFTV
                     if (i == 8 && CheckFordVoidOmensInPlay(level).Contains(i) && !voidOmensCheck[i])
                     {
 
-                        foreach (GeoscapeEventDef geoEvent in Repo.GetAllDefs<GeoscapeEventDef>())
+                     /*   foreach (GeoscapeEventDef geoEvent in Repo.GetAllDefs<GeoscapeEventDef>())
                         {
                             foreach (GeoEventChoice choice in geoEvent.GeoscapeEventData.Choices)
                             {
@@ -329,7 +329,7 @@ namespace TFTV
                                     }
                                 }
                             }
-                        }
+                        }*/
 
                         havenLab.ProvidesResearch = 2;
                         // Logger.Always(voidOmen + j + " is now in effect, held in variable " + voidOmen + i);
@@ -338,7 +338,7 @@ namespace TFTV
                     else if (i == 8 && !CheckFordVoidOmensInPlay(level).Contains(i) && voidOmensCheck[i])
                     {
 
-                        foreach (GeoscapeEventDef geoEvent in Repo.GetAllDefs<GeoscapeEventDef>())
+                      /*  foreach (GeoscapeEventDef geoEvent in Repo.GetAllDefs<GeoscapeEventDef>())
                         {
                             foreach (GeoEventChoice choice in geoEvent.GeoscapeEventData.Choices)
                             {
@@ -352,7 +352,7 @@ namespace TFTV
                                     }
                                 }
                             }
-                        }
+                        }*/
 
                      
 

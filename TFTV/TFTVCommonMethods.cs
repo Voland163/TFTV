@@ -69,6 +69,7 @@ namespace TFTV
               
                 TFTVRevenantResearch.ProjectOsirisStats = new Dictionary<int, int[]>();
                 TFTVRevenantResearch.ProjectOsiris = false;
+                TFTVDiplomacyPenalties.VoidOmensImplemented = false;
                // TFTVRevenant.timeLastRevenantSpawned = new TimeSpan();
             }
             catch (Exception e)
