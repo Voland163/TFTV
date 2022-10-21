@@ -85,7 +85,7 @@ namespace TFTV
             TFTVRevenant.CheckForNotDeadSoldiers(tacController);
             TFTVRevenant.RevenantCheckAndSpawn(Controller);
             TFTVRevenant.ImplementVO19(Controller);
-
+            
 
         }
 
@@ -98,7 +98,7 @@ namespace TFTV
               TFTVLogger.Always("OnTacticalEnd check");
           //  TFTVInfestation.CheckIfPhoenixLost(Controller);
             TFTVRevenantResearch.CheckRevenantCapturedOrKilled(Controller);
-            TFTVVoidOmens.GameOverMethodInvoked = false;
+         //   TFTVVoidOmens.GameOverMethodInvoked = false;
             
 
             base.OnTacticalEnd();
@@ -194,7 +194,8 @@ namespace TFTV
             TFTVHumanEnemies.ChampRecoverWPAura(Controller);           
             TFTVHumanEnemies.ApplyTactic(Controller);
            
-          
+
+
         }
     }
 }
