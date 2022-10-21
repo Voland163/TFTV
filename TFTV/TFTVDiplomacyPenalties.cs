@@ -14,7 +14,7 @@ namespace TFTV
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
         public static bool VoidOmensImplemented = false;
 
-        private static List<string> ExcludedEventsDiplomacyPenalty = new List<string>
+        private static readonly List<string> ExcludedEventsDiplomacyPenalty = new List<string>
         {
             "PROG_PU4_WIN", "PROG_SY7", "PROG_SY8", "PROG_AN3", "PROG_AN5", "PROG_NJ7", "PROG_NJ8",
         "PROG_AN2", "PROG_NJ1", "PROG_SY1", "PROG_AN4", "PROG_NJ2", "PROG_SY3_WIN", "PROG_AN6", "PROG_NJ3", "PROG_SY4_T", "PROG_SY4_P",

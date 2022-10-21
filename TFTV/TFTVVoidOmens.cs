@@ -22,6 +22,7 @@ using PhoenixPoint.Tactical.Entities.Statuses;
 using PhoenixPoint.Tactical.Levels;
 using PhoenixPoint.Tactical.Levels.FactionEffects;
 using PhoenixPoint.Tactical.Levels.FactionObjectives;
+using PhoenixPoint.Tactical.Levels.Mist;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -203,15 +204,15 @@ namespace TFTV
                                 //    List<FactionObjectiveDef> objectiveDefs = missionTypeDef.CustomObjectives.ToList();
 
 
-                                   if (missionTypeDef.name.Contains("Civ"))
-                                   {
-                                       missionTypeDef.ParticipantsRelations[1].MutualRelation = FactionRelation.Enemy;
-                                       // objectiveDefs.Remove(protectCivilians);
-                                   }
-                                   else if (!missionTypeDef.name.Contains("Civ"))
-                                   {
-                                       missionTypeDef.ParticipantsRelations[2].MutualRelation = FactionRelation.Enemy;
-                                   }
+                                if (missionTypeDef.name.Contains("Civ"))
+                                {
+                                    missionTypeDef.ParticipantsRelations[1].MutualRelation = FactionRelation.Enemy;
+                                    // objectiveDefs.Remove(protectCivilians);
+                                }
+                                else if (!missionTypeDef.name.Contains("Civ"))
+                                {
+                                    missionTypeDef.ParticipantsRelations[2].MutualRelation = FactionRelation.Enemy;
+                                }
                                 missionTypeDef.ParticipantsData[1].PredeterminedFactionEffects = missionTypeDef.ParticipantsData[0].PredeterminedFactionEffects;
                                 missionTypeDef.MissionSpecificCrates = cratesNotResources;
                                 missionTypeDef.FactionItemsRange.Min = 2;
@@ -234,16 +235,16 @@ namespace TFTV
                             {
 
 
-                                 if (missionTypeDef.name.Contains("Civ"))
-                                 {
-                                     missionTypeDef.ParticipantsRelations[1].MutualRelation = FactionRelation.Friend;
-                                 }
-                                 else if (!missionTypeDef.name.Contains("Civ"))
-                                 {
-                                     missionTypeDef.ParticipantsRelations[2].MutualRelation = FactionRelation.Friend;
-                                 }
-                                 EffectDef[] predeterminedFactionEffects = new EffectDef[1] { defendersCanBeRecruited };
-                                 missionTypeDef.ParticipantsData[1].PredeterminedFactionEffects = predeterminedFactionEffects;
+                                if (missionTypeDef.name.Contains("Civ"))
+                                {
+                                    missionTypeDef.ParticipantsRelations[1].MutualRelation = FactionRelation.Friend;
+                                }
+                                else if (!missionTypeDef.name.Contains("Civ"))
+                                {
+                                    missionTypeDef.ParticipantsRelations[2].MutualRelation = FactionRelation.Friend;
+                                }
+                                EffectDef[] predeterminedFactionEffects = new EffectDef[1] { defendersCanBeRecruited };
+                                missionTypeDef.ParticipantsData[1].PredeterminedFactionEffects = predeterminedFactionEffects;
                                 missionTypeDef.FactionItemsRange.Min = 0;
                                 missionTypeDef.FactionItemsRange.Max = 0;
                                 missionTypeDef.CratesDeploymentPointsRange.Min = 0;
@@ -1055,8 +1056,8 @@ namespace TFTV
             {
                 try
                 {
-                    //if (VoidOmen5Active)
-                  //  {
+                    if (VoidOmen5Active)
+                    {
 
                         TacticalFaction phoenix = __instance.GetFactionByCommandName("PX");
                         TacticalFaction intruderFaction = new TacticalFaction();
@@ -1101,11 +1102,11 @@ namespace TFTV
                                 }
                                 phoenix.State = TacFactionState.Won;
 
-                               
+
                                 TFTVLogger.Always("Got here, GameOver method invoked");
                             }
                         }
-                  //  }
+                    }
                 }
                 catch (Exception e)
                 {
@@ -1138,7 +1139,7 @@ namespace TFTV
             }
         }
 
-        /*   [HarmonyPatch(typeof(TacticalVoxelMatrix), "SpawnAndPropagateMist")]
+           [HarmonyPatch(typeof(TacticalVoxelMatrix), "SpawnAndPropagateMist")]
            public static class TacticalVoxelMatrix_SpawnAndPropagateMist_VoidOmenMoreMistOnTactical_Patch
            {
                public static bool Prefix(TacticalVoxelMatrix __instance)
@@ -1164,7 +1165,7 @@ namespace TFTV
                        return true;
                    }
                }
-           }*/
+           }
 
         [HarmonyPatch(typeof(UIStateRosterDeployment), "get__squadMaxDeployment")]
         public static class UIStateRosterDeployment_get_SquadMaxDeployment_VoidOmenLimitedDeployment_Patch

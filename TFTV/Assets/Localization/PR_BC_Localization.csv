@@ -87,8 +87,8 @@ PR_BC_PHANTOM_PROTOCOL_DESC,Text,,"Gain +15% stealth and accuracy, provides immu
 PR_BC_SOWER_OF_CHANGE,Text,,SOWER OF CHANGE,,,,,,СЕЯТЕЛЬ ПЕРЕМЕН,,
 PR_BC_SOWER_OF_CHANGE_DESC,Text,,Returns 25% of damage as Viral to the attacker,,,,,,Возвращает атакующему 25% урона в виде вируса,,
 PR_BC_SURVIVOR,Text,,SURVIVOR,,,,,,ВЫЖИВШИЙ,,
-PR_BC_SURVIVOR_DESC,Text,,"<b>WP +4, but -4 STR</b>
-<i>You have had it tougher than most, and that's saying a lot. Your body took a toll, but your mind grew stronger</i>",,,,,,"<b>Воля +4, Сила -4</b>
+PR_BC_SURVIVOR_DESC,Text,,"<b>WP +4, but -2 STR</b>
+<i>You have had it tougher than most, and that's saying a lot. Your body took a toll, but your mind grew stronger</i>",,,,,,"<b>Воля +4, Сила -2</b>
 <i>Вам досталось больше других и это о многом говорит. Но все, что не убивает нас, делает сильнее</i>",,
 PR_BC_NURSE,Text,,NURSE,,,,,,СИДЕЛКА,,
 PR_BC_NURSE_DESC,Text,,"<b>WP +2. Healing +30%</b>
