@@ -222,7 +222,7 @@ namespace TFTV
                 {
                     Modification = StatModificationType.AddRestrictedToBounds,
                     StatName = "WillPoints",
-                    Value = -2,
+                    Value = -1,
                 }
             };
 

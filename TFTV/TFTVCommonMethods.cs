@@ -56,8 +56,8 @@ namespace TFTV
                 TFTVUmbra.UmbraResearched = false;
                 TFTVRevenant.daysRevenantLastSeen = 0;
                 TFTVStamina.charactersWithBrokenLimbs = new List<int>();
-           //     TFTVUI.hookToProgressionModule = null;
-           //     TFTVUI.hookToCharacter = null;
+                //     TFTVUI.hookToProgressionModule = null;
+                //     TFTVUI.hookToCharacter = null;
                 TFTVAirCombat.behemothScenicRoute = new List<int>();
                 TFTVAirCombat.behemothTarget = 0;
                 TFTVAirCombat.behemothWaitHours = 12;
@@ -70,7 +70,8 @@ namespace TFTV
                 TFTVRevenantResearch.ProjectOsirisStats = new Dictionary<int, int[]>();
                 TFTVRevenantResearch.ProjectOsiris = false;
                 TFTVDiplomacyPenalties.VoidOmensImplemented = false;
-               // TFTVRevenant.timeLastRevenantSpawned = new TimeSpan();
+                // TFTVRevenant.timeLastRevenantSpawned = new TimeSpan();
+                TFTVLogger.Always("Internal variables cleared");
             }
             catch (Exception e)
             {

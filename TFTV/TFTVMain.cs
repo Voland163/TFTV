@@ -84,7 +84,7 @@ namespace TFTV
 
                 TFTVversion = $"TFTV October 22 release #1 v{MetaData.Version}";
 
-                Logger.LogInfo("TFTV October 22 release #1");
+                Logger.LogInfo("TFTV October 22 release #1 check");
 
                 ModDirectory = Instance.Entry.Directory;
                 //Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
