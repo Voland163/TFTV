@@ -1,10 +1,12 @@
 ﻿using Base.Core;
+using com.ootii.Collections;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Geoscape.Events;
 using PhoenixPoint.Geoscape.Levels;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace TFTV
@@ -48,17 +50,15 @@ namespace TFTV
             {
                 try
                 {
-                    if (!VoidOmensImplemented)
-                    {
+                   // if (!VoidOmensImplemented)
+                   // {
                         GeoLevelController controller = (GeoLevelController)UnityEngine.Object.FindObjectOfType(typeof(GeoLevelController));
-                        TFTVVoidOmens.ImplementVoidOmens(controller);
-                        VoidOmensImplemented = true;
-                    }
+                      //  TFTVVoidOmens.ImplementVoidOmens(controller);
+                      //  VoidOmensImplemented = true;
+                   // }
 
                     TFTVConfig config = TFTVMain.Main.Config;
-                    TFTVLogger.Always("VoidOmen2 check is " + TFTVVoidOmens.voidOmensCheck[2]);
-                    TFTVLogger.Always("VoidOmen8 check is " + TFTVVoidOmens.voidOmensCheck[8]);
-
+                  
                     if (config.DiplomaticPenalties)
                     {
                         if (!ExcludedEventsDiplomacyPenalty.Contains(eventID) && __instance.Diplomacy.Count > 0)
@@ -77,9 +77,8 @@ namespace TFTV
                             }
                         }
                     }
-                    if (TFTVVoidOmens.voidOmensCheck[2])
+                    if (TFTVVoidOmens.CheckFordVoidOmensInPlay(controller).Contains(2))
                     {
-                        TFTVLogger.Always("VoidOmen2 check passed");
                         if (__instance.Diplomacy.Count > 0)
                         {
                             for (int t = 0; t < __instance.Diplomacy.Count; t++)
@@ -95,7 +94,7 @@ namespace TFTV
                             }
                         }
                     }
-                    if (TFTVVoidOmens.voidOmensCheck[8])
+                    if (TFTVVoidOmens.CheckFordVoidOmensInPlay(controller).Contains(8))
                     {
                         if (__instance.Diplomacy.Count > 0)
                         {
@@ -140,7 +139,8 @@ namespace TFTV
                 {
                     
                     TFTVConfig config = TFTVMain.Main.Config;
-                  
+                    GeoLevelController controller = (GeoLevelController)UnityEngine.Object.FindObjectOfType(typeof(GeoLevelController));
+
                     if (config.DiplomaticPenalties)
                     {
                         if (!ExcludedEventsDiplomacyPenalty.Contains(eventID) && __instance.Diplomacy.Count > 0)
@@ -159,7 +159,7 @@ namespace TFTV
                             }
                         }
                     }
-                    if (TFTVVoidOmens.voidOmensCheck[2])
+                    if (TFTVVoidOmens.CheckFordVoidOmensInPlay(controller).Contains(2))
                     {
                         TFTVLogger.Always("VoidOmen2 check passed");
                         if (__instance.Diplomacy.Count > 0)
@@ -177,7 +177,7 @@ namespace TFTV
                             }
                         }
                     }
-                    if (TFTVVoidOmens.voidOmensCheck[8])
+                    if (TFTVVoidOmens.CheckFordVoidOmensInPlay(controller).Contains(8))
                     {
                         if (__instance.Diplomacy.Count > 0)
                         {
@@ -245,6 +245,79 @@ namespace TFTV
 
         }
 
+        public static void CheckPostponedFactionMissions(GeoFaction faction, PartyDiplomacy.Relation relation, int newValue)
+        {
+            GeoscapeEventSystem eventSystem = faction.GeoLevel.EventSystem; // endless dereferencing hurts my poor soul
+
+            try
+            {
+                GeoFaction targetFaction = faction.GeoLevel.GetFaction((PPFactionDef)relation.WithParty);
+                GeoscapeEventContext geoscapeEventContext = new GeoscapeEventContext(targetFaction, faction.GeoLevel.ViewerFaction);
+
+                if (faction.GetParticipatingFaction() == faction.GeoLevel.AnuFaction && targetFaction == faction.GeoLevel.PhoenixFaction)
+                {
+                    // GetEventRecord can return null, implying that this event has never spawned. Not sure that should happen in postpone check, but the choice conditional will be false either way
+                    if (newValue == 24 && eventSystem.GetEventRecord("PROG_AN2")?.SelectedChoice == 0) // choice 0 is postpone for this event, according to TFTVDefsWithConfigDependency.cs
+                    {
+                        eventSystem.TriggerGeoscapeEvent("PROG_AN2", geoscapeEventContext);
+                    }
+                    else if (newValue == 49 && eventSystem.GetEventRecord("PROG_AN4")?.SelectedChoice == 1)
+                    {
+                        eventSystem.TriggerGeoscapeEvent("PROG_AN4", geoscapeEventContext);
+                    }
+                    else if (newValue == 74 && eventSystem.GetEventRecord("PROG_AN6")?.SelectedChoice == 2)
+                    {
+                        eventSystem.TriggerGeoscapeEvent("PROG_AN6", geoscapeEventContext);
+                    }
+                }
+                else if (faction.GetParticipatingFaction() == faction.GeoLevel.NewJerichoFaction && targetFaction == faction.GeoLevel.PhoenixFaction)
+                {
+                    if (newValue == 24 && eventSystem.GetEventRecord("PROG_NJ1")?.SelectedChoice == 1)
+                    {
+                        eventSystem.TriggerGeoscapeEvent("PROG_NJ1", geoscapeEventContext);
+                    }
+                    else if (newValue == 49 && eventSystem.GetEventRecord("PROG_NJ2")?.SelectedChoice == 1)
+                    {
+                        eventSystem.TriggerGeoscapeEvent("PROG_NJ2", geoscapeEventContext);
+                    }
+                    else if (newValue == 74 && eventSystem.GetEventRecord("PROG_NJ3")?.SelectedChoice == 1)
+                    {
+                        eventSystem.TriggerGeoscapeEvent("PROG_NJ3", geoscapeEventContext);
+                    }
+                }
+                else if (faction.GetParticipatingFaction() == faction.GeoLevel.SynedrionFaction && targetFaction == faction.GeoLevel.PhoenixFaction)
+                {
+                    if (newValue == 24 && eventSystem.GetEventRecord("PROG_SY1")?.SelectedChoice == 2)
+                    {
+                        eventSystem.TriggerGeoscapeEvent("PROG_SY1", geoscapeEventContext);
+                    }
+                    else if (newValue == 74)
+                    {
+                        if (eventSystem.GetVariable("Polyphonic") > eventSystem.GetVariable("Terraformers"))
+                        {
+                            if (eventSystem.GetEventRecord("PROG_SY4_P")?.SelectedChoice == 1)
+                            {
+                                eventSystem.TriggerGeoscapeEvent("PROG_SY4_P", geoscapeEventContext);
+                            }
+                        }
+                        else
+                        {
+                            if (eventSystem.GetEventRecord("PROG_SY4_T")?.SelectedChoice == 1)
+                            {
+                                eventSystem.TriggerGeoscapeEvent("PROG_SY4_T", geoscapeEventContext);
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+
+/*
         public static void CheckPostponedFactionMissions(GeoFaction faction, PartyDiplomacy.Relation relation, int newValue)
         {
             try
@@ -326,7 +399,7 @@ namespace TFTV
                 TFTVLogger.Error(e);
             }
 
-        }
+        }*/
 
     }
 }

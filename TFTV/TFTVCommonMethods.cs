@@ -1,7 +1,5 @@
-﻿using Base.Defs;
-using Base.UI;
+﻿using Base.UI;
 using HarmonyLib;
-using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.Saves;
 using PhoenixPoint.Common.UI;
@@ -21,7 +19,7 @@ namespace TFTV
 {
     internal class TFTVCommonMethods
     {
-       
+
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
 
         public static void ClearInternalVariables()
@@ -66,7 +64,7 @@ namespace TFTV
                 TFTVRevenant.revenantCanSpawn = false;
                 TFTVHumanEnemies.difficultyLevel = 0;
                 TFTVHumanEnemies.HumanEnemiesAndTactics = new Dictionary<string, int>();
-              
+
                 TFTVRevenantResearch.ProjectOsirisStats = new Dictionary<int, int[]>();
                 TFTVRevenantResearch.ProjectOsiris = false;
                 TFTVDiplomacyPenalties.VoidOmensImplemented = false;
@@ -78,29 +76,28 @@ namespace TFTV
                 TFTVLogger.Error(e);
             }
         }
-/*
-       [HarmonyPatch(typeof(PhoenixSaveManager), "LoadGame")]
-        internal static class BG_PhoenixSaveManager_ClearInternalData_patch
+
+        [HarmonyPatch(typeof(PhoenixSaveManager), "LoadGame")]
+        public static class BG_PhoenixSaveManager_ClearInternalData_patch
         {
-            private static void Prefix()
+            public static void Prefix()
             {
                 try
                 {
                     TFTVLogger.Always("LoadGame method invoked");
                     ClearInternalVariables();
-
                 }
                 catch (Exception e)
                 {
                     TFTVLogger.Error(e);
                 }
             }
-        }*/
+        }
 
         [HarmonyPatch(typeof(Research), "CompleteResearch")]
         public static class Research_NewTurnEvent_CalculateDelirium_Patch
         {
-         
+
             public static void Postfix(ResearchElement research)
             {
                 try
@@ -132,11 +129,11 @@ namespace TFTV
                         research.Faction.GeoLevel.AlienFaction.SpawnNewAlienBase();
                         GeoAlienBase citadel = research.Faction.GeoLevel.AlienFaction.Bases.FirstOrDefault(ab => ab.AlienBaseTypeDef.name == "Citadel_GeoAlienBaseTypeDef");
                         ClassTagDef queenTag = DefCache.GetDef<ClassTagDef>("Queen_ClassTagDef");
-                        TacCharacterDef startingScylla=DefCache.GetDef<TacCharacterDef>("Scylla1_FrenzyMistSmasherAgileSpawner_AlienMutationVariationDef");
+                        TacCharacterDef startingScylla = DefCache.GetDef<TacCharacterDef>("Scylla1_FrenzyMistSmasherAgileSpawner_AlienMutationVariationDef");
 
-                     
+
                         citadel.SpawnMonster(queenTag, startingScylla);
-                       
+
                     }
                     else if (research.ResearchID == "PX_YuggothianEntity_ResearchDef")
                     {
@@ -324,10 +321,10 @@ namespace TFTV
         {
             try
             {
-                CaptureActorResearchRequirementDef captureActorResearchRequirementDef 
+                CaptureActorResearchRequirementDef captureActorResearchRequirementDef
                     = DefCache.GetDef<CaptureActorResearchRequirementDef>("PX_Alien_EvolvedAliens_ResearchDef_CaptureActorResearchRequirementDef_0");
                 CaptureActorResearchRequirementDef newCaptureActorResearchRequirementDef = Helper.CreateDefFromClone(captureActorResearchRequirementDef, gUID, defName);
-                newCaptureActorResearchRequirementDef.RequirementText = new LocalizedTextBind (revealText, true);
+                newCaptureActorResearchRequirementDef.RequirementText = new LocalizedTextBind(revealText, true);
                 return newCaptureActorResearchRequirementDef;
             }
 
@@ -344,7 +341,7 @@ namespace TFTV
             {
                 EncounterVariableResearchRequirementDef sourceVarResReq =
                       DefCache.GetDef<EncounterVariableResearchRequirementDef>("NJ_Bionics1_ResearchDef_EncounterVariableResearchRequirementDef_0");
-                
+
                 EncounterVariableResearchRequirementDef newResReq = Helper.CreateDefFromClone(sourceVarResReq, gUID, nameDef);
                 newResReq.VariableName = variable;
                 newResReq.Value = value;

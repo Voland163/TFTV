@@ -1,56 +1,39 @@
 ﻿using Base.Core;
-using Base.Defs;
 using Base.Entities.Abilities;
-using Base.Entities.Effects;
 using Base.Entities.Statuses;
-using Base.UI;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
-using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.GameTags;
-using PhoenixPoint.Common.UI;
-using PhoenixPoint.Geoscape.Entities;
-using PhoenixPoint.Geoscape.View.DataObjects;
-using PhoenixPoint.Geoscape.View.ViewControllers.BaseRecruits;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
-using PhoenixPoint.Tactical.Entities.Animations;
-using PhoenixPoint.Tactical.Entities.Effects;
-using PhoenixPoint.Tactical.Entities.Effects.DamageTypes;
 using PhoenixPoint.Tactical.Entities.Equipments;
-using PhoenixPoint.Tactical.Entities.Statuses;
 using PhoenixPoint.Tactical.Levels;
-using PhoenixPoint.Tactical.Levels.Mist;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Runtime.InteropServices.WindowsRuntime;
-using UnityEngine;
+
 
 namespace TFTV
 {
     internal class TFTVDeliriumPerks
     {
-       // private static readonly DefRepository Repo = TFTVMain.Repo;
+        // private static readonly DefRepository Repo = TFTVMain.Repo;
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
         internal static bool doNotLocalize = false;
         private static readonly SharedData sharedData = GameUtl.GameComponent<SharedData>();
 
-        private static readonly TacticalAbilityDef hyperalgesiaAbilityDef =DefCache.GetDef<TacticalAbilityDef>("Hyperalgesia_AbilityDef");
-        private static readonly TacticalAbilityDef feralAbilityDef =DefCache.GetDef<TacticalAbilityDef>("Feral_AbilityDef");
-        private static readonly TacticalAbilityDef bloodthirstyAbilityDef =DefCache.GetDef<TacticalAbilityDef>("Bloodthirsty_AbilityDef");
+        private static readonly TacticalAbilityDef hyperalgesiaAbilityDef = DefCache.GetDef<TacticalAbilityDef>("Hyperalgesia_AbilityDef");
+        private static readonly TacticalAbilityDef feralAbilityDef = DefCache.GetDef<TacticalAbilityDef>("Feral_AbilityDef");
+        private static readonly TacticalAbilityDef bloodthirstyAbilityDef = DefCache.GetDef<TacticalAbilityDef>("Bloodthirsty_AbilityDef");
 
-        private static readonly TacticalAbilityDef fasterSynapsesDef =DefCache.GetDef<TacticalAbilityDef>("FasterSynapses_AbilityDef");
-        private static readonly TacticalAbilityDef anxietyDef =DefCache.GetDef<TacticalAbilityDef>("AnxietyAbilityDef");
-      
-        private static readonly TacticalAbilityDef oneOfThemDef =DefCache.GetDef<TacticalAbilityDef>("OneOfThemPassive_AbilityDef");
-        private static readonly TacticalAbilityDef wolverineDef =DefCache.GetDef<TacticalAbilityDef>("Wolverine_AbilityDef");
-        private static readonly TacticalAbilityDef derealizationDef =DefCache.GetDef<TacticalAbilityDef>("DerealizationIgnorePain_AbilityDef");
-        private static readonly StatusDef frenzy =DefCache.GetDef<StatusDef>("Frenzy_StatusDef");
-        private static readonly StatusDef anxiety =DefCache.GetDef<StatusDef>("Anxiety_StatusDef");
-        private static readonly StatusDef mistResistance =DefCache.GetDef<StatusDef>("MistResistance_StatusDef");
-        private static readonly GameTagDef mistResistanceTag =DefCache.GetDef<GameTagDef>("OneOfUsMistResistance_GameTagDef");
+        private static readonly TacticalAbilityDef fasterSynapsesDef = DefCache.GetDef<TacticalAbilityDef>("FasterSynapses_AbilityDef");
+        private static readonly TacticalAbilityDef anxietyDef = DefCache.GetDef<TacticalAbilityDef>("AnxietyAbilityDef");
+
+        private static readonly TacticalAbilityDef oneOfThemDef = DefCache.GetDef<TacticalAbilityDef>("OneOfThemPassive_AbilityDef");
+        private static readonly TacticalAbilityDef wolverineDef = DefCache.GetDef<TacticalAbilityDef>("Wolverine_AbilityDef");
+        private static readonly TacticalAbilityDef derealizationDef = DefCache.GetDef<TacticalAbilityDef>("DerealizationIgnorePain_AbilityDef");
+        private static readonly StatusDef frenzy = DefCache.GetDef<StatusDef>("Frenzy_StatusDef");
+        private static readonly StatusDef anxiety = DefCache.GetDef<StatusDef>("Anxiety_StatusDef");
+        private static readonly StatusDef mistResistance = DefCache.GetDef<StatusDef>("MistResistance_StatusDef");
+        private static readonly GameTagDef mistResistanceTag = DefCache.GetDef<GameTagDef>("OneOfUsMistResistance_GameTagDef");
 
 
 
@@ -58,11 +41,11 @@ namespace TFTV
         [HarmonyPatch(typeof(TacticalLevelController), "ActorEnteredPlay")]
         public static class TacticalLevelController_ActorEnteredPlay_DeliriumPerks_Patch
         {
-                     
+
             public static void Postfix(TacticalActorBase actor)
             {
                 try
-                {             
+                {
                     if (actor.TacticalFaction.Faction.BaseDef == sharedData.PhoenixFactionDef)
                     {
                         TacticalActor tacticalActor = actor as TacticalActor;
@@ -79,7 +62,7 @@ namespace TFTV
                             TFTVLogger.Always(actor.DisplayName + " with " + anxietyDef.name);
                         }
 
-                        if (actor.GetAbilityWithDef<Ability>(oneOfThemDef) != null)
+                        if (actor.GetAbilityWithDef<Ability>(oneOfThemDef) != null && !actor.HasGameTag(mistResistanceTag))
                         {
                             tacticalActor.Status.ApplyStatus(mistResistance);
                             tacticalActor.GameTags.Add(mistResistanceTag, GameTagAddMode.ReplaceExistingExclusive);
@@ -94,7 +77,7 @@ namespace TFTV
 
                         if (actor.GetAbilityWithDef<Ability>(derealizationDef) != null)
                         {
-                            
+
                             tacticalActor.CharacterStats.Endurance.Value.ModificationValue -= 5;
                             tacticalActor.CharacterStats.Endurance.Max.ModificationValue -= 5;
                             tacticalActor.UpdateStats();
@@ -119,12 +102,12 @@ namespace TFTV
         [HarmonyPatch(typeof(TacticalAbility), "FumbleActionCheck")]
         public static class TacticalAbility_FumbleActionCheck_Patch
         {
-            private static readonly TacticalAbilityDef feral =DefCache.GetDef<TacticalAbilityDef>("Feral_AbilityDef");
+            private static readonly TacticalAbilityDef feral = DefCache.GetDef<TacticalAbilityDef>("Feral_AbilityDef");
             public static void Postfix(TacticalAbility __instance, ref bool __result)
             {
                 try
                 {
-                    
+
                     if (__instance.TacticalActor.GetAbilityWithDef<TacticalAbility>(feral) != null && __instance.Source is Equipment)
                     {
                         __result = UnityEngine.Random.Range(0, 100) < 20;
@@ -221,79 +204,79 @@ namespace TFTV
         }
         */
         //Dtony's Delirium perks patch
-    /*    [HarmonyPatch(typeof(RecruitsListElementController), "SetRecruitElement")]
-        public static class RecruitsListElementController_SetRecruitElement_Patch
-        {
-            public static bool Prefix(RecruitsListElementController __instance, RecruitsListEntryData entryData, List<RowIconTextController> ____abilityIcons)
+        /*    [HarmonyPatch(typeof(RecruitsListElementController), "SetRecruitElement")]
+            public static class RecruitsListElementController_SetRecruitElement_Patch
             {
-                try
+                public static bool Prefix(RecruitsListElementController __instance, RecruitsListEntryData entryData, List<RowIconTextController> ____abilityIcons)
                 {
-                    if (____abilityIcons == null)
+                    try
                     {
-                        ____abilityIcons = new List<RowIconTextController>();
-                        if (__instance.PersonalTrackRoot.transform.childCount < entryData.PersonalTrackAbilities.Count())
+                        if (____abilityIcons == null)
                         {
-                            RectTransform parent = __instance.PersonalTrackRoot.GetComponent<RectTransform>();
-                            RowIconTextController source = parent.GetComponentInChildren<RowIconTextController>();
-                            parent.DetachChildren();
-                            source.Icon.GetComponent<RectTransform>().sizeDelta = new Vector2(95f, 95f);
-                            for (int i = 0; i < entryData.PersonalTrackAbilities.Count(); i++)
+                            ____abilityIcons = new List<RowIconTextController>();
+                            if (__instance.PersonalTrackRoot.transform.childCount < entryData.PersonalTrackAbilities.Count())
                             {
-                                RowIconTextController entry = UnityEngine.Object.Instantiate(source, parent, true);
+                                RectTransform parent = __instance.PersonalTrackRoot.GetComponent<RectTransform>();
+                                RowIconTextController source = parent.GetComponentInChildren<RowIconTextController>();
+                                parent.DetachChildren();
+                                source.Icon.GetComponent<RectTransform>().sizeDelta = new Vector2(95f, 95f);
+                                for (int i = 0; i < entryData.PersonalTrackAbilities.Count(); i++)
+                                {
+                                    RowIconTextController entry = UnityEngine.Object.Instantiate(source, parent, true);
+                                }
                             }
+                            UIUtil.GetComponentsFromContainer(__instance.PersonalTrackRoot.transform, ____abilityIcons);
                         }
-                        UIUtil.GetComponentsFromContainer(__instance.PersonalTrackRoot.transform, ____abilityIcons);
+                        __instance.RecruitData = entryData;
+                        __instance.RecruitName.SetSoldierData(entryData.Recruit);
+                        BC_SetAbilityIcons(entryData.PersonalTrackAbilities.ToList(), ____abilityIcons);
+                        if (entryData.SuppliesCost != null && __instance.CostText != null && __instance.CostColorController != null)
+                        {
+                            __instance.CostText.text = entryData.SuppliesCost.ByResourceType(ResourceType.Supplies).RoundedValue.ToString();
+                            __instance.CostColorController.SetWarningActive(!entryData.IsAffordable, true);
+                        }
+                        __instance.NavHolder.RefreshNavigation();
+                        return false;
                     }
-                    __instance.RecruitData = entryData;
-                    __instance.RecruitName.SetSoldierData(entryData.Recruit);
-                    BC_SetAbilityIcons(entryData.PersonalTrackAbilities.ToList(), ____abilityIcons);
-                    if (entryData.SuppliesCost != null && __instance.CostText != null && __instance.CostColorController != null)
+                    catch (Exception e)
                     {
-                        __instance.CostText.text = entryData.SuppliesCost.ByResourceType(ResourceType.Supplies).RoundedValue.ToString();
-                        __instance.CostColorController.SetWarningActive(!entryData.IsAffordable, true);
+                        TFTVLogger.Error(e);
+                        return true;
                     }
-                    __instance.NavHolder.RefreshNavigation();
-                    return false;
                 }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                    return true;
-                }
-            }
-            
 
-            private static void BC_SetAbilityIcons(List<TacticalAbilityViewElementDef> abilities, List<RowIconTextController> abilityIcons)
-            {
-                foreach (RowIconTextController rowIconTextController in abilityIcons)
+
+                private static void BC_SetAbilityIcons(List<TacticalAbilityViewElementDef> abilities, List<RowIconTextController> abilityIcons)
                 {
-                    rowIconTextController.gameObject.SetActive(false);
+                    foreach (RowIconTextController rowIconTextController in abilityIcons)
+                    {
+                        rowIconTextController.gameObject.SetActive(false);
+                    }
+                    for (int i = 0; i < abilities.Count; i++)
+                    {
+                        abilityIcons[i].gameObject.SetActive(true);
+                        abilityIcons[i].SetController(abilities[i].LargeIcon, abilities[i].DisplayName1, abilities[i].Description);
+                    }
                 }
-                for (int i = 0; i < abilities.Count; i++)
-                {
-                    abilityIcons[i].gameObject.SetActive(true);
-                    abilityIcons[i].SetController(abilities[i].LargeIcon, abilities[i].DisplayName1, abilities[i].Description);
-                }
-            }
-        }*/
+            }*/
 
         [HarmonyPatch(typeof(TacticalActor), "OnAnotherActorDeath")]
         public static class TacticalActor_OnAnotherActorDeath_Patch
         {
-            
+
             public static void Postfix(TacticalActor __instance, DeathReport death)
             {
-               
+
                 try
                 {
-                   
+
                     TacticalAbility hyperAlgesia = __instance.GetAbilityWithDef<TacticalAbility>(hyperalgesiaAbilityDef);
                     TacticalAbility feral = __instance.GetAbilityWithDef<TacticalAbility>(feralAbilityDef);
                     TacticalAbility bloodthirsty = __instance.GetAbilityWithDef<TacticalAbility>(bloodthirstyAbilityDef);
 
                     if (hyperAlgesia != null)
                     {
-                        TacticalFaction tacticalFaction = death.Actor.TacticalFaction;                        
+                        TacticalFaction tacticalFaction = death.Actor.TacticalFaction;
                         int willPointWorth = death.Actor.TacticalActorBaseDef.WillPointWorth;
                         if (death.Actor.TacticalFaction == __instance.TacticalFaction)
                         {
@@ -302,11 +285,11 @@ namespace TFTV
                     }
                     if (feral != null && __instance == death.Killer)
                     {
-                        __instance.CharacterStats.ActionPoints.Add(__instance.CharacterStats.ActionPoints.Max/4);
+                        __instance.CharacterStats.ActionPoints.Add(__instance.CharacterStats.ActionPoints.Max / 4);
                     }
                     if (bloodthirsty != null && __instance == death.Killer)
                     {
-                        __instance.CharacterStats.Health.AddRestrictedToMax(death.Actor.Health.Max/2);
+                        __instance.CharacterStats.Health.AddRestrictedToMax(death.Actor.Health.Max / 2);
                     }
                 }
                 catch (Exception e)
@@ -322,19 +305,19 @@ namespace TFTV
             public static void Postfix(TacticalActor __instance)
             {
 
-               
+
                 try
                 {
                     bool receivedDamage = false;
-    
+
                     TacticalAbility hyperalgesia = __instance.GetAbilityWithDef<TacticalAbility>(hyperalgesiaAbilityDef);
-                  //  TacticalAbility derealization = __instance.GetAbilityWithDef<TacticalAbility>(derealizationDef);
+                    //  TacticalAbility derealization = __instance.GetAbilityWithDef<TacticalAbility>(derealizationDef);
                     if (__instance.IsAlive && hyperalgesia != null && !receivedDamage)
                     {
                         __instance.CharacterStats.WillPoints.Subtract(1);
                         receivedDamage = true;
                     }
-                 
+
                 }
                 catch (Exception e)
                 {

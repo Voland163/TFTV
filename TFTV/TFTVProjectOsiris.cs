@@ -225,15 +225,16 @@ namespace TFTV
                 string researchAdditionalTech1 = "";
                 string researchAdditionalTech2 = "";
                 string anyAdditionalResearch = "";
+                string anyAdditionalResearch2 = "";
 
                 if (!controller.PhoenixFaction.Research.HasCompleted("NJ_Bionics2_ResearchDef") || !controller.PhoenixFaction.Research.HasCompleted("SYN_Bionics3_ResearchDef"))
                 {
-                    researchAdditionalTech1 = "acquire new bionic";
+                    researchAdditionalTech1 = "new bionic";
                 }
 
                 if (!controller.PhoenixFaction.Research.HasCompleted("ANU_MutationTech2_ResearchDef") || !controller.PhoenixFaction.Research.HasCompleted("ANU_MutationTech3_ResearchDef"))
                 {
-                    researchAdditionalTech2 = "acquire new mutation";
+                    researchAdditionalTech2 = "new mutation";
                 }
 
                 if (buildAdditionalLab != "" || researchAdditionalTech1 != "" || researchAdditionalTech2 != "")
@@ -243,7 +244,7 @@ namespace TFTV
 
                 if ((researchAdditionalTech1 != "" || researchAdditionalTech2 != "") && buildAdditionalLab != "")
                 {
-                    and1 = " and ";
+                    and1 = "and";
 
                 }
                 if (researchAdditionalTech1 != "" && researchAdditionalTech2 != "")
@@ -252,12 +253,13 @@ namespace TFTV
                 }
                 if (researchAdditionalTech1 != "" || researchAdditionalTech2 != "")
                 {
-                    anyAdditionalResearch = " research.";
+                    anyAdditionalResearch = " acquire ";
+                    anyAdditionalResearch2 = " research.";
                 }
 
                 string modularEventText = "<i>-''I'm... a mess.''\n-''They will fix you. They fix everything.''</i>\n\nWe have recovered " + name + " from the battlefield. "
                     + pronoun + " is clinically dead, but with the Project Osiris now operational we can bring " + possesivePronoun + " back with a new body " + typeOfBodyAvailable + ". " +
-                    increaseOptions + buildAdditionalLab + and1 + researchAdditionalTech1 + and2 + researchAdditionalTech2 + anyAdditionalResearch;
+                    increaseOptions + buildAdditionalLab + and1 + anyAdditionalResearch + researchAdditionalTech1 + and2 + researchAdditionalTech2 + anyAdditionalResearch2;
 
                 return modularEventText;
 
@@ -402,112 +404,123 @@ namespace TFTV
                         }
                     }
 
-                    List<int> orderedList = allProjectOsirisCandidates.Values.OrderBy(x => x).ToList();
-
-
-
-                    UnityEngine.Random.InitState((int)DateTime.Now.Ticks);
-                    int roll = UnityEngine.Random.Range(0, 100);
-                    int rollTo = orderedList.Count * 10 + orderedList[0];
-                    if (rollTo > 90)
+                    if (allProjectOsirisCandidates.Count > 0) //it can happen that this list is empty because savescumming
                     {
-                        rollTo = 90;
-                    }
 
-                    if (roll <= 100) //testing, real rollTo instead of 100
-                    {
-                        foreach (GeoTacUnitId id in allProjectOsirisCandidates.Keys)
+                        List<int> orderedList = allProjectOsirisCandidates.Values.OrderBy(x => x).ToList();
+
+
+
+                        UnityEngine.Random.InitState((int)DateTime.Now.Ticks);
+                        int roll = UnityEngine.Random.Range(0, 100);
+                        int rollTo = orderedList.Count * 10 + orderedList[0];
+                        if (rollTo > 90)
                         {
-                            if (allProjectOsirisCandidates[id] == allProjectOsirisCandidates.First().Value)
-                            {
-                                IdProjectOsirisCandidate = id;
-
-                            }
+                            rollTo = 90;
                         }
-                        GeoCharacter geoCharacterCloneFromDead = controller.DeadSoldiers[IdProjectOsirisCandidate].SpawnAsCharacter();
-                        TacCharacterDef deadTemplateDef = geoCharacterCloneFromDead.TemplateDef;
-                        string name = geoCharacterCloneFromDead.DisplayName;
-                        LocalizedTextBind projectOsirisDescription = new LocalizedTextBind(CreateDescriptionForEvent(controller, controller.DeadSoldiers[IdProjectOsirisCandidate]), true);
 
-                        GeoscapeEventDef deliveryEvent = controller.EventSystem.GetEventByID(RoboCopDeliveryEvent);
-
-                        deadTemplateDef.Data.Strength = TFTVRevenantResearch.ProjectOsirisStats[IdProjectOsirisCandidate][0];
-                        deadTemplateDef.Data.Will = TFTVRevenantResearch.ProjectOsirisStats[IdProjectOsirisCandidate][1];
-                        deadTemplateDef.Data.Speed = TFTVRevenantResearch.ProjectOsirisStats[IdProjectOsirisCandidate][2];
-
-
-                        GeoSite phoenixBase = controller.PhoenixFaction.Bases.First().Site;
-                        GeoscapeEventContext context = new GeoscapeEventContext(phoenixBase, controller.PhoenixFaction);
-                        GeoscapeEventDef projectOsirisEvent = controller.EventSystem.GetEventByID(ProjectOsirisEvent);
-                        projectOsirisEvent.GeoscapeEventData.Description[0].General = projectOsirisDescription;
-                        GeoscapeEventDef roboCopEvent = controller.EventSystem.GetEventByID(RobocopEvent);
-                        roboCopEvent.GeoscapeEventData.Description[0].General = projectOsirisDescription;
-                        GeoscapeEventDef fullMutantEvent = controller.EventSystem.GetEventByID(FullMutantEvent);
-                        fullMutantEvent.GeoscapeEventData.Description[0].General = projectOsirisDescription;
-
-                        CheckCompletedBionicsAndMutationResearches(controller);
-
-                        if (CheckLabs(controller)[0] && CheckLabs(controller)[1])
+                        if (roll <= rollTo) //testing, real rollTo instead of 100
                         {
-                            TFTVLogger.Always("Player has both labs");
+                            foreach (GeoTacUnitId id in allProjectOsirisCandidates.Keys)
+                            {
+                                if (allProjectOsirisCandidates[id] == allProjectOsirisCandidates.First().Value)
+                                {
+                                    IdProjectOsirisCandidate = id;
 
-                            if (controller.PhoenixFaction.Research.HasCompleted("NJ_Bionics2_ResearchDef")
-                            || controller.PhoenixFaction.Research.HasCompleted("SYN_Bionics3_ResearchDef"))
-                            {
-                                TFTVLogger.Always("Player has researched additional Bionic tech");
-                                projectOsirisEvent.GeoscapeEventData.Choices[0].Outcome.TriggerEncounterID = RobocopEvent;
+                                }
+                            }
+                            GeoCharacter geoCharacterCloneFromDead = controller.DeadSoldiers[IdProjectOsirisCandidate].SpawnAsCharacter();
+                            TacCharacterDef deadTemplateDef = geoCharacterCloneFromDead.TemplateDef;
+                            string name = geoCharacterCloneFromDead.DisplayName;
+                            LocalizedTextBind projectOsirisDescription = new LocalizedTextBind(CreateDescriptionForEvent(controller, controller.DeadSoldiers[IdProjectOsirisCandidate]), true);
 
-                            }
-                            else
-                            {
-                                TFTVLogger.Always("Player has only basic Bionic tech");
-                                projectOsirisEvent.GeoscapeEventData.Choices[0].Outcome.TriggerEncounterID = RoboCopDeliveryEvent;
-                            }
-                            if (controller.PhoenixFaction.Research.HasCompleted("ANU_MutationTech2_ResearchDef")
-                            || controller.PhoenixFaction.Research.HasCompleted("ANU_MutationTech3_ResearchDef"))
-                            {
-                                TFTVLogger.Always("Player has researched additional Mutation tech");
-                                projectOsirisEvent.GeoscapeEventData.Choices[1].Outcome.TriggerEncounterID = FullMutantEvent;
+                            GeoscapeEventDef deliveryEvent = controller.EventSystem.GetEventByID(RoboCopDeliveryEvent);
 
-                            }
-                            else
-                            {
-                                TFTVLogger.Always("Player has only basic Mutation tech");
-                                projectOsirisEvent.GeoscapeEventData.Choices[1].Outcome.TriggerEncounterID = HeavyMutantDeliveryEvent;
-                            }
+                            deadTemplateDef.Data.Strength = TFTVRevenantResearch.ProjectOsirisStats[IdProjectOsirisCandidate][0];
+                            deadTemplateDef.Data.Will = TFTVRevenantResearch.ProjectOsirisStats[IdProjectOsirisCandidate][1];
+                            deadTemplateDef.Data.Speed = TFTVRevenantResearch.ProjectOsirisStats[IdProjectOsirisCandidate][2];
 
-                            controller.EventSystem.TriggerGeoscapeEvent(ProjectOsirisEvent, context);
-                        }
-                        else if (CheckLabs(controller)[0] && !CheckLabs(controller)[1])
-                        {
-                            TFTVLogger.Always("Player has only Bionics lab");
-                            if (controller.PhoenixFaction.Research.HasCompleted("NJ_Bionics2_ResearchDef")
-                            || controller.PhoenixFaction.Research.HasCompleted("SYN_Bionics3_ResearchDef"))
+
+                            GeoSite phoenixBase = controller.PhoenixFaction.Bases.First().Site;
+                            GeoscapeEventContext context = new GeoscapeEventContext(phoenixBase, controller.PhoenixFaction);
+                            GeoscapeEventDef projectOsirisEvent = controller.EventSystem.GetEventByID(ProjectOsirisEvent);
+                            projectOsirisEvent.GeoscapeEventData.Description[0].General = projectOsirisDescription;
+                            GeoscapeEventDef roboCopEvent = controller.EventSystem.GetEventByID(RobocopEvent);
+                            roboCopEvent.GeoscapeEventData.Description[0].General = projectOsirisDescription;
+                            GeoscapeEventDef fullMutantEvent = controller.EventSystem.GetEventByID(FullMutantEvent);
+                            fullMutantEvent.GeoscapeEventData.Description[0].General = projectOsirisDescription;
+
+                            CheckCompletedBionicsAndMutationResearches(controller);
+
+                            if (CheckLabs(controller)[0] && CheckLabs(controller)[1])
                             {
-                                TFTVLogger.Always("Player has researched additional Bionic tech");
-                                controller.EventSystem.TriggerGeoscapeEvent(RobocopEvent, context);
-                            }
-                            else
-                            {
-                                TFTVLogger.Always("Player has only basic Bionic tech");
-                                controller.EventSystem.TriggerGeoscapeEvent(RoboCopDeliveryEvent, context);
-                            }
-                        }
-                        else if (!CheckLabs(controller)[0] && CheckLabs(controller)[1])
-                        {
-                            TFTVLogger.Always("Player has only Mutation lab");
-                            if (controller.PhoenixFaction.Research.HasCompleted("ANU_MutationTech2_ResearchDef")
+                                TFTVLogger.Always("Player has both labs");
+
+                                if (controller.PhoenixFaction.Research.HasCompleted("NJ_Bionics2_ResearchDef")
+                                || controller.PhoenixFaction.Research.HasCompleted("SYN_Bionics3_ResearchDef"))
+                                {
+                                    TFTVLogger.Always("Player has researched additional Bionic tech");
+                                    projectOsirisEvent.GeoscapeEventData.Choices[0].Outcome.TriggerEncounterID = RobocopEvent;
+
+                                }
+                                else
+                                {
+                                    TFTVLogger.Always("Player has only basic Bionic tech");
+                                    projectOsirisEvent.GeoscapeEventData.Choices[0].Outcome.TriggerEncounterID = RoboCopDeliveryEvent;
+                                }
+                                if (controller.PhoenixFaction.Research.HasCompleted("ANU_MutationTech2_ResearchDef")
                                 || controller.PhoenixFaction.Research.HasCompleted("ANU_MutationTech3_ResearchDef"))
-                            {
-                                TFTVLogger.Always("Player has researched additional Mutation tech");
-                                controller.EventSystem.TriggerGeoscapeEvent(FullMutantEvent, context);
+                                {
+                                    TFTVLogger.Always("Player has researched additional Mutation tech");
+                                    projectOsirisEvent.GeoscapeEventData.Choices[1].Outcome.TriggerEncounterID = FullMutantEvent;
+
+                                }
+                                else
+                                {
+                                    TFTVLogger.Always("Player has only basic Mutation tech");
+                                    projectOsirisEvent.GeoscapeEventData.Choices[1].Outcome.TriggerEncounterID = HeavyMutantDeliveryEvent;
+                                }
+
+                                controller.EventSystem.TriggerGeoscapeEvent(ProjectOsirisEvent, context);
                             }
-                            else
+                            else if (CheckLabs(controller)[0] && !CheckLabs(controller)[1])
                             {
-                                TFTVLogger.Always("Player has only basic Mutation tech");
-                                controller.EventSystem.TriggerGeoscapeEvent(HeavyMutantDeliveryEvent, context);
+                                TFTVLogger.Always("Player has only Bionics lab");
+                                if (controller.PhoenixFaction.Research.HasCompleted("NJ_Bionics2_ResearchDef")
+                                || controller.PhoenixFaction.Research.HasCompleted("SYN_Bionics3_ResearchDef"))
+                                {
+                                    TFTVLogger.Always("Player has researched additional Bionic tech");
+                                    controller.EventSystem.TriggerGeoscapeEvent(RobocopEvent, context);
+                                }
+                                else
+                                {
+                                    TFTVLogger.Always("Player has only basic Bionic tech");
+                                    controller.EventSystem.TriggerGeoscapeEvent(RoboCopDeliveryEvent, context);
+                                }
+                            }
+                            else if (!CheckLabs(controller)[0] && CheckLabs(controller)[1])
+                            {
+                                TFTVLogger.Always("Player has only Mutation lab");
+                                if (controller.PhoenixFaction.Research.HasCompleted("ANU_MutationTech2_ResearchDef")
+                                    || controller.PhoenixFaction.Research.HasCompleted("ANU_MutationTech3_ResearchDef"))
+                                {
+                                    TFTVLogger.Always("Player has researched additional Mutation tech");
+                                    controller.EventSystem.TriggerGeoscapeEvent(FullMutantEvent, context);
+                                }
+                                else
+                                {
+                                    TFTVLogger.Always("Player has only basic Mutation tech");
+                                    controller.EventSystem.TriggerGeoscapeEvent(HeavyMutantDeliveryEvent, context);
+                                }
                             }
                         }
+                    }
+                    else //this is in case a GeoTacUnitId is present in the stats list, but is not actually dead, because savescumming 
+                    {
+
+                        TFTVRevenantResearch.ProjectOsirisStats.Clear();
+
+
                     }
                 }
             }

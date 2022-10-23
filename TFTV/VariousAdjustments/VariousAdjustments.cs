@@ -14,6 +14,7 @@ using PhoenixPoint.Tactical.Entities.DamageKeywords;
 using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.Entities.Statuses;
 using PhoenixPoint.Tactical.Entities.Weapons;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using TFTV;
@@ -31,6 +32,8 @@ namespace PRMBetterClasses.VariousAdjustments
         {
             SharedData shared = GameUtl.GameComponent<SharedData>();
 
+            // Fix for Triton Elite bloodsucker arms
+            Fix_TritonElite();
             // Change Advanced Laser research to require advanced technician weapons
             Change_AdvLaserResearch();
             // Change Stimpack: Restores 2AP, Heal 1HP to every body part. Disabled Body Parts are restored.
@@ -69,6 +72,25 @@ namespace PRMBetterClasses.VariousAdjustments
             Change_VidarGL(shared);
             // Destiny III - Give chance to fumble when non-proficient
             Change_Destiny();
+        }
+
+        private static void Fix_TritonElite()
+        {
+            GameTagDef gameTag = (GameTagDef)Repo.GetDef("498a2ab2-cd1a-d104-f8fc-f37e875f76dc"); //DefCache.GetDef<GameTagDef>("CombinedWeaponBodyPart_TagDef");
+            TacticalItemDef EBloodsucker = (TacticalItemDef)Repo.GetDef("cb294fe3-a30b-5bc4-2ad0-3361cb1d0d84"); //DefCache.GetDef<TacticalItemDef>("FishmanElite_UpperArms_BloodSucker_BodyPartDef");
+            TacticalItemDef LEBloodsucker = (TacticalItemDef)Repo.GetDef("ed323004-0282-a354-3ae0-053791ad17c6"); //DefCache.GetDef<TacticalItemDef>("FishmanElite_Upper_LeftArm_BloodSucker_BodyPartDef");
+            TacticalItemDef REBloodsucker = (TacticalItemDef)Repo.GetDef("b5361644-9ac1-9fd4-d931-b144c1c7d329"); //DefCache.GetDef<TacticalItemDef>("FishmanElite_Upper_RightArm_BloodSucker_BodyPartDef");
+            EBloodsucker.HandsToUse = 0;
+            EBloodsucker.Tags.Add(gameTag);
+            LEBloodsucker.Tags.Add(gameTag);
+            REBloodsucker.Tags.Add(gameTag);
+            TacticalItemDef EParalysing = (TacticalItemDef)Repo.GetDef("32a6dd8e-0abb-3224-6b4b-33847fd67804"); //DefCache.GetDef<TacticalItemDef>("FishmanElite_UpperArms_Paralyzing_BodyPartDef");
+            TacticalItemDef LEParalysing = (TacticalItemDef)Repo.GetDef("9b96a46e-8b84-7b64-fa18-71ee51afa0dd"); //DefCache.GetDef<TacticalItemDef>("FishmanElite_Upper_LeftArm_Paralyzing_BodyPartDef");
+            TacticalItemDef REParalysing = (TacticalItemDef)Repo.GetDef("3cedbaa9-1574-5f94-e8b9-1afec1f57903"); //DefCache.GetDef<TacticalItemDef>("FishmanElite_Upper_RightArm_Paralyzing_BodyPartDef");
+            EParalysing.HandsToUse = 0;
+            EParalysing.Tags.Add(gameTag);
+            LEParalysing.Tags.Add(gameTag);
+            REParalysing.Tags.Add(gameTag);
         }
 
         private static void Change_AdvLaserResearch()

@@ -4,6 +4,7 @@ using EnviroSamples;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Modding;
+using PhoenixPoint.Tactical.Entities.Statuses;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -95,6 +96,7 @@ namespace TFTV
             TFTVRevenantResearch.CheckProjectOsiris(gsController);
             TFTVInfestation.SetInfestationMissionVariableToZero(gsController);
             TFTVDiplomacyPenalties.VoidOmensImplemented = false;
+           // TFTVDefsRequiringReinjection.CheckUmbraCondition();
         }
 
         /// <summary>

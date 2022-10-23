@@ -230,21 +230,36 @@ namespace PRMBetterClasses.SkillModifications
             addAbiltyStatus.SingleInstance = true;
             addAbiltyStatus.AbilityDef = dashAbility;
         }
-        // Harmony Patch to diplay the KnR Dash ability after kill has been achieved
-        [HarmonyPatch(typeof(TacticalAbility), "get_ShouldDisplay")]
-        internal static class BC_TacticalAbility_get_ShouldDisplay_Patch
-        {
-            [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051")]
-            private static void Postfix(TacticalAbility __instance, ref bool __result)
-            {
-                // Check if instance is KnR ability
-                if (__instance.TacticalAbilityDef.name.Equals("KillAndRun_Dash_AbilityDef"))
-                {
-                    //  Set return value __result = true when ability is not disabled => show
-                    __result = __instance.GetDisabledState() == AbilityDisabledState.NotDisabled;
-                }
-            }
-        }
+        // Harmony Patch to flash the KnR Dash ability icon after kill has been achieved
+        //[HarmonyPatch(typeof(TacticalAbility), "get_ShouldFlash")]
+        //internal static class BC_TacticalAbility_get_ShouldDisplay_Patch
+        //{
+        //    [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051")]
+        //    private static void Postfix(TacticalAbility __instance, ref bool __result)
+        //    {
+        //        // Check if instance is KnR ability
+        //        if (__instance.TacticalAbilityDef.name.Equals("KillAndRun_Dash_AbilityDef"))
+        //        {
+        //            //  Set return value __result = true when ability is not disabled => show
+        //            __result = __instance.IsEnabled();
+        //        }
+        //    }
+        //}
+        // Harmony Patch to display the KnR Dash ability after kill has been achieved
+        //[HarmonyPatch(typeof(TacticalAbility), "get_ShouldDisplay")]
+        //internal static class BC_TacticalAbility_get_ShouldDisplay_Patch
+        //{
+        //    [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051")]
+        //    private static void Postfix(TacticalAbility __instance, ref bool __result)
+        //    {
+        //        // Check if instance is KnR ability
+        //        if (__instance.TacticalAbilityDef.name.Equals("KillAndRun_Dash_AbilityDef"))
+        //        {
+        //            //  Set return value __result = true when ability is not disabled => show
+        //            __result = __instance.GetDisabledState() == AbilityDisabledState.NotDisabled;
+        //        }
+        //    }
+        //}
 
         private static void Change_Onslaught(DefCache defCache)
         {

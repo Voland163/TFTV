@@ -380,6 +380,15 @@ namespace TFTV
                 try
                 {
 
+                    if (TFTVRevenantResearch.ProjectOsiris)
+                    {
+                        if (__instance.TacticalGameParams.Statistics.LivingSoldiers.ContainsKey(deathReport.Actor.GeoUnitId)
+                        && !__instance.TacticalGameParams.Statistics.DeadSoldiers.ContainsKey(deathReport.Actor.GeoUnitId))
+
+                            TFTVRevenantResearch.RecordStatsOfDeadSoldier(deathReport.Actor);
+                    }
+
+
                     if (__instance.TacticalGameParams.Statistics.LivingSoldiers.ContainsKey(deathReport.Actor.GeoUnitId)
                         && !__instance.TacticalGameParams.Statistics.DeadSoldiers.ContainsKey(deathReport.Actor.GeoUnitId)
                         && !DeadSoldiersDelirium.ContainsKey(deathReport.Actor.GeoUnitId))
@@ -399,10 +408,7 @@ namespace TFTV
                         }
                     }
 
-                    if (TFTVRevenantResearch.ProjectOsiris) 
-                    {
-                        TFTVRevenantResearch.RecordStatsOfDeadSoldier(deathReport.Actor);             
-                    }
+                   
                 }
                 catch (Exception e)
                 {

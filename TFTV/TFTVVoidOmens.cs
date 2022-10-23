@@ -9,6 +9,7 @@ using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Levels.Missions;
 using PhoenixPoint.Geoscape.Core;
 using PhoenixPoint.Geoscape.Entities;
+using PhoenixPoint.Geoscape.Entities.Missions;
 using PhoenixPoint.Geoscape.Entities.Missions.Outcomes;
 using PhoenixPoint.Geoscape.Entities.PhoenixBases.FacilityComponents;
 using PhoenixPoint.Geoscape.Entities.Sites;
@@ -72,6 +73,7 @@ namespace TFTV
         {
             try
             {
+
                 string voidOmen = "VoidOmen_";
                 // TFTVLogger.Always("Checking if method invocation is working, these are the Void Omens in play " + voidOmensInPlay[0] + " "
                 //   + voidOmensInPlay[1] + " " + voidOmensInPlay[2] + " " + voidOmensInPlay[3]);
@@ -124,13 +126,13 @@ namespace TFTV
                               }
                           }*/
 
-                        foreach (DiplomacyMissionOutcomeDef diplomacyMissionOutcomeDef in Repo.GetAllDefs<DiplomacyMissionOutcomeDef>())
-                        {
+                        /*    foreach (DiplomacyMissionOutcomeDef diplomacyMissionOutcomeDef in Repo.GetAllDefs<DiplomacyMissionOutcomeDef>())
+                            {
 
-                            diplomacyMissionOutcomeDef.DiplomacyToFaction.Max = Mathf.RoundToInt(diplomacyMissionOutcomeDef.DiplomacyToFaction.Max * 0.5f);
-                            diplomacyMissionOutcomeDef.DiplomacyToFaction.Min = Mathf.RoundToInt(diplomacyMissionOutcomeDef.DiplomacyToFaction.Min * 0.5f);
+                                diplomacyMissionOutcomeDef.DiplomacyToFaction.Max = Mathf.RoundToInt(diplomacyMissionOutcomeDef.DiplomacyToFaction.Max * 0.5f);
+                                diplomacyMissionOutcomeDef.DiplomacyToFaction.Min = Mathf.RoundToInt(diplomacyMissionOutcomeDef.DiplomacyToFaction.Min * 0.5f);
 
-                        }
+                            }*/
                         PartyDiplomacySettingsDef partyDiplomacySettingsDef = DefCache.GetDef<PartyDiplomacySettingsDef>("PartyDiplomacySettingsDef");
                         partyDiplomacySettingsDef.InfiltrationFactionMultiplier = 0.5f;
                         partyDiplomacySettingsDef.InfiltrationLeaderMultiplier = 0.75f;
@@ -156,12 +158,12 @@ namespace TFTV
                                   }
                               }
                           }*/
-                        foreach (DiplomacyMissionOutcomeDef diplomacyMissionOutcomeDef in Repo.GetAllDefs<DiplomacyMissionOutcomeDef>())
-                        {
-                            diplomacyMissionOutcomeDef.DiplomacyToFaction.Max = Mathf.RoundToInt(diplomacyMissionOutcomeDef.DiplomacyToFaction.Max * 2f);
-                            diplomacyMissionOutcomeDef.DiplomacyToFaction.Min = Mathf.RoundToInt(diplomacyMissionOutcomeDef.DiplomacyToFaction.Min * 2f);
-                        }
-
+                        /*  foreach (DiplomacyMissionOutcomeDef diplomacyMissionOutcomeDef in Repo.GetAllDefs<DiplomacyMissionOutcomeDef>())
+                          {
+                              diplomacyMissionOutcomeDef.DiplomacyToFaction.Max = Mathf.RoundToInt(diplomacyMissionOutcomeDef.DiplomacyToFaction.Max * 2f);
+                              diplomacyMissionOutcomeDef.DiplomacyToFaction.Min = Mathf.RoundToInt(diplomacyMissionOutcomeDef.DiplomacyToFaction.Min * 2f);
+                          }
+                        */
                         PartyDiplomacySettingsDef partyDiplomacySettingsDef = DefCache.GetDef<PartyDiplomacySettingsDef>("PartyDiplomacySettingsDef");
                         partyDiplomacySettingsDef.InfiltrationFactionMultiplier = 1f;
                         partyDiplomacySettingsDef.InfiltrationLeaderMultiplier = 1.5f;
@@ -410,17 +412,17 @@ namespace TFTV
                     }
                     if (i == 13 && CheckFordVoidOmensInPlay(level).Contains(i) && !voidOmensCheck[i])
                     {
-                        level.CurrentDifficultyLevel.NestLimitations.HoursBuildTime /= 2;
-                        level.CurrentDifficultyLevel.LairLimitations.HoursBuildTime /= 2;
-                        level.CurrentDifficultyLevel.CitadelLimitations.HoursBuildTime /= 2;
+                        level.CurrentDifficultyLevel.NestLimitations.HoursBuildTime = 45;
+                        level.CurrentDifficultyLevel.LairLimitations.HoursBuildTime = 50;
+                        level.CurrentDifficultyLevel.CitadelLimitations.HoursBuildTime = 90;
                         TFTVLogger.Always(voidOmen + i + " is now in effect, held in variable " + voidOmen + i + ", so Pandoran nests take " + level.CurrentDifficultyLevel.NestLimitations.HoursBuildTime + " hours");
                         voidOmensCheck[i] = true;
                     }
                     else if (i == 13 && !CheckFordVoidOmensInPlay(level).Contains(i) && voidOmensCheck[i])
                     {
-                        level.CurrentDifficultyLevel.NestLimitations.HoursBuildTime *= 2;
-                        level.CurrentDifficultyLevel.LairLimitations.HoursBuildTime *= 2;
-                        level.CurrentDifficultyLevel.CitadelLimitations.HoursBuildTime *= 2;
+                        level.CurrentDifficultyLevel.NestLimitations.HoursBuildTime = 90;
+                        level.CurrentDifficultyLevel.LairLimitations.HoursBuildTime *= 100;
+                        level.CurrentDifficultyLevel.CitadelLimitations.HoursBuildTime *= 180;
 
                         voidOmensCheck[13] = false;
 
@@ -485,34 +487,34 @@ namespace TFTV
                     }
                     if (i == 18 && CheckFordVoidOmensInPlay(level).Contains(i) && !voidOmensCheck[i])
                     {
-                        foreach (ResourceMissionOutcomeDef resourceMissionOutcomeDef in Repo.GetAllDefs<ResourceMissionOutcomeDef>())
-                        {
-                            if (resourceMissionOutcomeDef.name.Contains("Haven"))
-                            {
-                                for (int i2 = 0; i2 < 2; i2++)
-                                {
-                                    ResourceUnit resourceUnit = resourceMissionOutcomeDef.Resources[i2];
-                                    resourceMissionOutcomeDef.Resources[i2] = new ResourceUnit(resourceUnit.Type, resourceUnit.Value * 0.5f);
-                                }
-                            }
-                        }
+                        /*  foreach (ResourceMissionOutcomeDef resourceMissionOutcomeDef in Repo.GetAllDefs<ResourceMissionOutcomeDef>())
+                          {
+                              if (resourceMissionOutcomeDef.name.Contains("Haven"))
+                              {
+                                  for (int i2 = 0; i2 < 2; i2++)
+                                  {
+                                      ResourceUnit resourceUnit = resourceMissionOutcomeDef.Resources[i2];
+                                      resourceMissionOutcomeDef.Resources[i2] = new ResourceUnit(resourceUnit.Type, resourceUnit.Value * 0.5f);
+                                  }
+                              }
+                          }*/
                         VoidOmen18Active = true;
                         // Logger.Always(voidOmen + j + " is now in effect, held in variable " + voidOmen + i);
                         voidOmensCheck[i] = true;
                     }
                     else if (i == 18 && !CheckFordVoidOmensInPlay(level).Contains(i) && voidOmensCheck[i])
                     {
-                        foreach (ResourceMissionOutcomeDef resourceMissionOutcomeDef in Repo.GetAllDefs<ResourceMissionOutcomeDef>())
-                        {
-                            if (resourceMissionOutcomeDef.name.Contains("Haven"))
-                            {
-                                for (int i2 = 0; i2 < 2; i2++)
-                                {
-                                    ResourceUnit resourceUnit = resourceMissionOutcomeDef.Resources[i2];
-                                    resourceMissionOutcomeDef.Resources[i2] = new ResourceUnit(resourceUnit.Type, resourceUnit.Value * 2f);
-                                }
-                            }
-                        }
+                        /*  foreach (ResourceMissionOutcomeDef resourceMissionOutcomeDef in Repo.GetAllDefs<ResourceMissionOutcomeDef>())
+                          {
+                              if (resourceMissionOutcomeDef.name.Contains("Haven"))
+                              {
+                                  for (int i2 = 0; i2 < 2; i2++)
+                                  {
+                                      ResourceUnit resourceUnit = resourceMissionOutcomeDef.Resources[i2];
+                                      resourceMissionOutcomeDef.Resources[i2] = new ResourceUnit(resourceUnit.Type, resourceUnit.Value * 2f);
+                                  }
+                              }
+                          }*/
                         voidOmensCheck[18] = false;
                         VoidOmen18Active = false;
                         TFTVLogger.Always("The check for VO#18 went ok");
@@ -538,6 +540,9 @@ namespace TFTV
                         voidOmensCheck[19] = false;
                         TFTVLogger.Always("The check for VO#19 went ok");
                     }
+
+
+
                     //pending baby abbadons
                     /*  if (i == 20 && CheckFordVoidOmensInPlay(level).Contains(i) && !voidOmensCheck[i])
                     {
@@ -563,6 +568,7 @@ namespace TFTV
                   */
 
                 }
+                TFTVLogger.Always("Void Omens implemented");
 
             }
             catch (Exception e)
@@ -855,6 +861,138 @@ namespace TFTV
         }
 
 
+        [HarmonyPatch(typeof(ResourceMissionOutcomeDef), "FillPotentialReward")]
+
+        public static class ResourceMissionOutcomeDef_FillPotentialReward_V18
+
+        {
+            public static void Postfix(GeoMission mission, ref MissionRewardDescription rewardDescription, ResourceMissionOutcomeDef __instance)
+            {
+                try
+                {
+                    GeoLevelController geoLevel = mission.Site.GeoLevel;
+
+                    if (__instance.name.Contains("Haven") && CheckFordVoidOmensInPlay(geoLevel).Contains(18))
+                    {
+                        ResourcePack resources = __instance.Resources;
+
+                        for (int i = 0; i < 2; i++)
+                        {
+                            ResourceUnit resourceUnit = __instance.Resources[i];
+                            resources[i] = new ResourceUnit(resourceUnit.Type, resourceUnit.Value * 0.5f);
+                        }
+
+                        rewardDescription.Resources.Clear();
+                        rewardDescription.Resources.AddRange(resources);
+                        TFTVLogger.Always("Original resource reward from mission " + mission.MissionName.LocalizeEnglish() + " was  "
+                            + __instance.Resources[0].Value + ", " + __instance.Resources[1].Value + " and " + __instance.Resources[2].Value +
+                             "; now it is  " + resources[0].Value + ", " + resources[1].Value + " and " + resources[2].Value);
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+
+            }
+        }
+
+        [HarmonyPatch(typeof(ResourceMissionOutcomeDef), "ApplyOutcome")]
+
+        public static class ResourceMissionOutcomeDef_ApplyOutcome_V18
+
+        {
+            public static void Postfix(GeoMission mission, ref MissionRewardDescription rewardDescription, ResourceMissionOutcomeDef __instance)
+            {
+                try
+                {
+                    GeoLevelController geoLevel = mission.Site.GeoLevel;
+                    if (__instance.name.Contains("Haven") && CheckFordVoidOmensInPlay(geoLevel).Contains(18))
+                    {
+                        ResourcePack resources = __instance.Resources;
+
+
+                        for (int i = 0; i <= 2; i++)
+                        {
+                            ResourceUnit resourceUnit = __instance.Resources[i];
+                            resources[i] = new ResourceUnit(resourceUnit.Type, resourceUnit.Value * 0.5f);
+
+                        }
+                        rewardDescription.Resources.Clear();
+                        rewardDescription.Resources.AddRange(resources);
+                        TFTVLogger.Always("Original resource reward from mission " + mission.MissionName.LocalizeEnglish() + " was  "
+                            + __instance.Resources[0].Value + ", " + __instance.Resources[1].Value + " and " + __instance.Resources[2].Value +
+                             "; now it is  " + resources[0].Value + ", " + resources[1].Value + " and " + resources[2].Value);
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+
+            }
+        }
+
+
+
+        [HarmonyPatch(typeof(DiplomacyMissionOutcomeDef), "FillPotentialReward")]
+
+        public static class DiplomacyMissionOutcomeDef_FillPotentialReward_VO2
+
+        {
+            public static void Postfix(GeoMission mission, ref MissionRewardDescription rewardDescription, DiplomacyMissionOutcomeDef __instance)
+            {
+                try
+                {
+                    GeoLevelController geoLevel = mission.Site.GeoLevel;
+
+                    if (CheckFordVoidOmensInPlay(geoLevel).Contains(2))
+                    {
+                        GeoFaction viewerFaction = mission.Site.GeoLevel.ViewerFaction;
+                        GeoFaction faction = geoLevel.GetFaction(__instance.ToFaction);
+                        rewardDescription.SetDiplomacyChange(faction, viewerFaction, Mathf.RoundToInt(__instance.DiplomacyToFaction.Min * 0.5f));
+                        TFTVLogger.Always("In preview, original diplo reward from mission " + mission.MissionName + " was " + __instance.DiplomacyToFaction.Min
+                            + "; now it is  " + __instance.DiplomacyToFaction.Min * 0.5f);
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+
+            }
+        }
+
+        [HarmonyPatch(typeof(DiplomacyMissionOutcomeDef), "ApplyOutcome")]
+
+        public static class DiplomacyMissionOutcomeDef_ApplyOutcome_VO2
+
+        {
+            public static void Postfix(GeoMission mission, ref MissionRewardDescription rewardDescription, DiplomacyMissionOutcomeDef __instance)
+            {
+                try
+                {
+                    GeoLevelController geoLevel = mission.Site.GeoLevel;
+                    if (CheckFordVoidOmensInPlay(geoLevel).Contains(2))
+                    {
+                        GeoFaction viewerFaction = mission.Site.GeoLevel.ViewerFaction;
+                        GeoFaction faction = geoLevel.GetFaction(__instance.ToFaction);
+                        rewardDescription.SetDiplomacyChange(faction, viewerFaction, Mathf.RoundToInt(__instance.DiplomacyToFaction.RandomValue() * 0.5f));
+                        TFTVLogger.Always("Original diplo reward from mission " + mission.MissionName.LocalizeEnglish() + " was at the least " + __instance.DiplomacyToFaction.Min
+                            + "; now it is at the least  " + __instance.DiplomacyToFaction.Min * 0.5f);
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+
+            }
+        }
+
+
+
+
         [HarmonyPatch(typeof(FactionObjective), "GetCompletion")]
         public static class FactionObjective_GetCompletion_VO4_Patch
         {
@@ -1115,7 +1253,7 @@ namespace TFTV
             }
         }
 
-
+        //NEED TO TEST
         [HarmonyPatch(typeof(TacticalAbility), "get_WillPointCost")]
         public static class TacticalAbility_get_WillPointCost_VoidOmenExtraWPCost_Patch
         {
@@ -1125,10 +1263,13 @@ namespace TFTV
                 {
                     if (__result > 0)
                     {
-                        if (VoidOmen3Active && __instance.TacticalActor.IsControlledByPlayer)
+                        if (VoidOmen3Active && __instance.TacticalActor != null)
                         {
-                            __result += Mathf.RoundToInt(__result * 0.5f);
-                            //TFTVLogger.Always("WP cost increased to " + __result);
+                            if (__instance.TacticalActor.IsControlledByPlayer)
+                            {
+                                __result += Mathf.RoundToInt(__result * 0.5f);
+                                //TFTVLogger.Always("WP cost increased to " + __result);
+                            }
                         }
                     }
                 }
@@ -1139,33 +1280,33 @@ namespace TFTV
             }
         }
 
-           [HarmonyPatch(typeof(TacticalVoxelMatrix), "SpawnAndPropagateMist")]
-           public static class TacticalVoxelMatrix_SpawnAndPropagateMist_VoidOmenMoreMistOnTactical_Patch
-           {
-               public static bool Prefix(TacticalVoxelMatrix __instance)
-               {
-                   try
-                   {
-                       if (VoidOmen7Active)
-                       {
-                           __instance.VoxelMatrixData.InitialMistEntitiesToSpawn.Min = 30;
-                           __instance.VoxelMatrixData.InitialMistEntitiesToSpawn.Max = 40;
-                           return true;
-                       }
-                       else
-                       {
-                           __instance.VoxelMatrixData.InitialMistEntitiesToSpawn.Min = 1;
-                           __instance.VoxelMatrixData.InitialMistEntitiesToSpawn.Max = 3;
-                           return true;
-                       }
-                   }
-                   catch (Exception e)
-                   {
-                       TFTVLogger.Error(e);
-                       return true;
-                   }
-               }
-           }
+        [HarmonyPatch(typeof(TacticalVoxelMatrix), "SpawnAndPropagateMist")]
+        public static class TacticalVoxelMatrix_SpawnAndPropagateMist_VoidOmenMoreMistOnTactical_Patch
+        {
+            public static bool Prefix(TacticalVoxelMatrix __instance)
+            {
+                try
+                {
+                    if (VoidOmen7Active)
+                    {
+                        __instance.VoxelMatrixData.InitialMistEntitiesToSpawn.Min = 30;
+                        __instance.VoxelMatrixData.InitialMistEntitiesToSpawn.Max = 40;
+                        return true;
+                    }
+                    else
+                    {
+                        __instance.VoxelMatrixData.InitialMistEntitiesToSpawn.Min = 1;
+                        __instance.VoxelMatrixData.InitialMistEntitiesToSpawn.Max = 3;
+                        return true;
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    return true;
+                }
+            }
+        }
 
         [HarmonyPatch(typeof(UIStateRosterDeployment), "get__squadMaxDeployment")]
         public static class UIStateRosterDeployment_get_SquadMaxDeployment_VoidOmenLimitedDeployment_Patch
