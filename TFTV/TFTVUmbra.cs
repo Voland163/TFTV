@@ -56,7 +56,6 @@ namespace TFTV
         {
             try
             {
-
                 randomValueFishUmbra.ThresholdValue = value;
 
                 randomValueCrabUmbra.ThresholdValue = value;
@@ -74,7 +73,6 @@ namespace TFTV
         {
             try
             {
-
                 tacticalActor.Status.ApplyStatus(oilCrabAbility);
             }
             catch (Exception e)
@@ -88,8 +86,7 @@ namespace TFTV
 
         {
             try
-            {
-                
+            {                
                 tacticalActor.Status.ApplyStatus(oilTritonAbility);
             }
             catch (Exception e)
@@ -200,13 +197,14 @@ namespace TFTV
                                 }
                             }
                         }
+                        else
+                        {
+
+                            TFTVLogger.Always("The random Crab Umbra value is " + randomValueCrabUmbra.ThresholdValue);
+                        }
                     }
                 }
-                else
-                {
-                   
-                    TFTVLogger.Always("The random Crab Umbra value is " + randomValueCrabUmbra.ThresholdValue);
-                }
+               
             }
             catch (Exception e)
             {
@@ -265,6 +263,70 @@ namespace TFTV
                 }
             }
         }
+
+        [HarmonyPatch(typeof(TacticalLevelController), "ActorEnteredPlay")]
+        public static class TacticalLevelController_ActorEnteredPlay_HumanEnemies_Patch
+        {
+            public static void Postfix(TacticalActorBase actor, TacticalLevelController __instance)
+            {
+                try
+                {
+                   // TFTVLogger.Always("ActorEnteredPlay invoked");
+
+                    if (__instance.Factions.Any(f => f.Faction.FactionDef.MatchesShortName("aln")) && TFTVVoidOmens.VoidOmen16Active)
+                    {
+                     //   TFTVLogger.Always("found aln faction and checked that VO is in place");
+
+                        if (actor.GameTags.Contains(crabTag) && actor.GetAbilityWithDef<DeathBelcherAbility>(oilcrabDeathBelcherAbility) == null
+                                    && !actor.name.Contains("Oilcrab") && !actor.GameTags.Contains(anyRevenantGameTag))
+
+                        {
+                            TacticalActor tacticalActor = actor as TacticalActor;
+
+                            UnityEngine.Random.InitState((int)DateTime.Now.Ticks);
+                            int roll = UnityEngine.Random.Range(0, 101);
+                           // TFTVLogger.Always("The roll is " + roll);
+                            if (TFTVVoidOmens.VoidOmen15Active && roll <=32)
+                            {
+                                TFTVLogger.Always("VO16+VO15 This Arthron here " + actor + ", got past the crabtag and the blecher ability check!");
+                                AddArthronUmbraDeathBelcherAbility(tacticalActor);
+                            }
+                            else if (!TFTVVoidOmens.VoidOmen15Active && roll <= 16)
+                            {
+                                TFTVLogger.Always("VO16 This Arthron here " + actor + ", got past the crabtag and the blecher ability check!");
+                                AddArthronUmbraDeathBelcherAbility(tacticalActor);
+                            }
+
+                        }
+                        if (actor.GameTags.Contains(fishTag) && actor.GetAbilityWithDef<DeathBelcherAbility>(oilfishDeathBelcherAbility) == null
+                            && !actor.name.Contains("Oilfish") && !actor.GameTags.Contains(anyRevenantGameTag))
+                        {
+                            TacticalActor tacticalActor = actor as TacticalActor;
+
+                            UnityEngine.Random.InitState((int)DateTime.Now.Ticks);
+                            int roll = UnityEngine.Random.Range(0, 101);
+                            if (TFTVVoidOmens.VoidOmen15Active && roll <= 32)
+                            {
+                                TFTVLogger.Always("VO16+VO15 This Triton here " + actor + ", got past the crabtag and the blecher ability check!");
+                                AddTritonUmbraDeathBelcherAbility(tacticalActor);
+                            }
+                            else if (!TFTVVoidOmens.VoidOmen15Active && roll <= 16)
+                            {
+                                TFTVLogger.Always("VO16 This Triton here " + actor + ", got past the crabtag and the blecher ability check!");
+                                AddTritonUmbraDeathBelcherAbility(tacticalActor);
+                            }
+                        }                        
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+        }
+
+
+
     }
 
 }

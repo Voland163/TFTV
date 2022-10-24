@@ -118,6 +118,9 @@ namespace TFTV
                
                 TFTVHumanEnemiesNames.CreateNamesDictionary();
                 Logger.LogInfo("Names for human enemies created");
+                TFTVHumanEnemiesNames.CreateRanksDictionary();
+                Logger.LogInfo("Ranks for human enemies created");
+
                 if (Config.ActivateReverseEngineeringResearch)
                 {
                     TFTVReverseEngineering.ModifyReverseEngineering();

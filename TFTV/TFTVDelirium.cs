@@ -297,7 +297,7 @@ namespace TFTV
                                     maxCorruption -= (int)(maxCorruption * 0.66);
                                 }
                             }
-                            else // > 75%
+                            else // > 50%
                             {
                                 maxCorruption = base_TacticalActor.CharacterStats.Willpower.IntMax;
 

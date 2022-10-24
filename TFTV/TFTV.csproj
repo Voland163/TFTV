@@ -100,6 +100,7 @@
     <Compile Include="TFTVAirCombat.cs" />
     <Compile Include="TFTVAmbushes.cs" />
     <Compile Include="TFTVAugmentations.cs" />
+    <Compile Include="TFTVBetaSaveGamesFixes.cs" />
     <Compile Include="TFTVChangesToDLC1andDLC2Events.cs" />
     <Compile Include="TFTVChangesToDLC3Events.cs" />
     <Compile Include="TFTVChangesToDLC4Events.cs" />

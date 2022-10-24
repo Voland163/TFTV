@@ -30,6 +30,19 @@ namespace TFTV
                 names.Add("Purists", pu_Names);
                 names.Add("FallenOnes", fo_Names);
 
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+        }
+
+        public static void CreateRanksDictionary() 
+        {
+            try
+            {
+             
                 ranks.Add("ban", ban_NameRanks);
                 ranks.Add("nj", nj_NameRanks);
                 ranks.Add("anu", anu_NameRanks);
@@ -43,7 +56,9 @@ namespace TFTV
                 TFTVLogger.Error(e);
             }
 
+
         }
+
 
         public static List<string> pu_Adjectives = new List<string> { "Metal", "Junk", "Titanium", "Oil", "Servo", "Mech", "Wire", "Mesh", "Robo", "Quantum", "Cyber", "Death", "Wire", "Bit", "Gear" };
 

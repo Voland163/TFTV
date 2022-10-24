@@ -179,7 +179,7 @@ namespace TFTV
         {
             try
             {
-                if (controller.Factions.Any(f => f.Faction.FactionDef.MatchesShortName("aln")))
+                if (controller.Factions.Any(f => f.Faction.FactionDef.MatchesShortName("aln")) && DeadSoldiersDelirium.Count>0)
                 {
                     if (!revenantSpawned && revenantCanSpawn) //&& (timeLastRevenantSpawned == 0 || )
                     {

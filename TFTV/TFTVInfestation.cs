@@ -37,9 +37,9 @@ namespace TFTV
         public static string LivingWeaponsAcquired = "Living_Weapons_Acquired";
         public static int roll = 0;
       
-        public static string InfestationMissionWon = "InfestationMissionWon";
+        public static bool InfestationMissionWon = false;
 
-
+        /*
         public static ItemStorage InfestationRewardGenerator(int num)
         {
             try
@@ -47,9 +47,6 @@ namespace TFTV
                 GeoscapeEventDef LW1Miss = DefCache.GetDef<GeoscapeEventDef>("PROG_LW1_WIN_GeoscapeEventDef");
                 GeoscapeEventDef LW2Miss = DefCache.GetDef<GeoscapeEventDef>("PROG_LW2_WIN_GeoscapeEventDef");
                 GeoscapeEventDef LW3Miss = DefCache.GetDef<GeoscapeEventDef>("PROG_LW3_WIN_GeoscapeEventDef");
-
-
-
 
                 if (num == 1)
                 {
@@ -82,7 +79,7 @@ namespace TFTV
             throw new InvalidOperationException();
 
         }
-
+        */
 
         // Copied and adapted from Mad´s Assorted Adjustments
 
@@ -123,7 +120,7 @@ namespace TFTV
 
                         if (TFTVInfestationStory.HavenPopulation!=0)
                         {
-                            __instance.GeoLevel.EventSystem.SetVariable(InfestationMissionWon, 1);
+                            InfestationMissionWon=true;
                         }
                         string faction = __instance.Owner.GetPPName();
                         //  TFTVLogger.Always(faction);
@@ -284,7 +281,7 @@ namespace TFTV
                 */
 
 
-        public static void CheckIfPhoenixLost(TacticalLevelController controller)
+      /*  public static void CheckIfPhoenixLost(TacticalLevelController controller)
         {
             try
             {
@@ -306,10 +303,10 @@ namespace TFTV
             {
                 TFTVLogger.Error(e);
             }
-        }
+        }*/
 
      
-        public static void SetInfestationMissionVariableToZero(GeoLevelController controller) 
+      /*  public static void SetInfestationMissionVariableToZero(GeoLevelController controller) 
         {
             try 
             {
@@ -323,7 +320,7 @@ namespace TFTV
             {
                 TFTVLogger.Error(e);
             }
-        }
+        }*/
 
 
         [HarmonyPatch(typeof(InfestedHavenOutcomeDataBind), "ModalShowHandler")]
@@ -338,8 +335,8 @@ namespace TFTV
                 {
                     GeoLevelController controller = (GeoLevelController)UnityEngine.Object.FindObjectOfType(typeof(GeoLevelController));
 
-                    TFTVLogger.Always("Geo Variable InfestationMissionWon set to " + controller.EventSystem.GetVariable(InfestationMissionWon));
-                    if (controller.EventSystem.GetVariable(InfestationMissionWon) ==1)
+                    TFTVLogger.Always("InfestationMissionWon is " + InfestationMissionWon);
+                    if (InfestationMissionWon)
                     {
                         if (!____shown)
                         {
@@ -509,7 +506,7 @@ namespace TFTV
                                 site.GeoLevel.EventSystem.SetVariable(LivingWeaponsAcquired, 3);
                             }
                         }
-                        controller.EventSystem.SetVariable(InfestationMissionWon, 0);
+                        InfestationMissionWon=false;
                       
 
                         return false;

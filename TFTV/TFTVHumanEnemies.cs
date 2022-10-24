@@ -1165,41 +1165,46 @@ namespace TFTV
                                 List<string> factionNames = TFTVHumanEnemiesNames.names[nameOfFaction];
 
                                 if (faction.Actors.Contains(actor))
-                                    UnityEngine.Random.InitState((int)DateTime.Now.Ticks);
-                                int rankNumber = UnityEngine.Random.Range(1, 7);
-                                if (rankNumber == 6)
                                 {
-                                    actor.GameTags.Add(HumanEnemyTier2GameTag);
-                                    actor.GameTags.Add(gameTagDef);
                                     UnityEngine.Random.InitState((int)DateTime.Now.Ticks);
-                                    actor.name = factionNames[UnityEngine.Random.Range(0, factionNames.Count)];
-                                    TacticalActor tacticalActor = actor as TacticalActor;
-                                    AdjustStatsAndSkills(tacticalActor);
-                                    factionNames.Remove(actor.name);
-                                    TFTVLogger.Always(actor.name + " is now a champ");
-                                }
-                                else if (rankNumber >= 4 && rankNumber < 6)
-                                {
-                                    actor.GameTags.Add(HumanEnemyTier3GameTag);
-                                    actor.GameTags.Add(gameTagDef);
-                                    UnityEngine.Random.InitState((int)DateTime.Now.Ticks);
-                                    actor.name = factionNames[UnityEngine.Random.Range(0, factionNames.Count)];
-                                    TacticalActor tacticalActor = actor as TacticalActor;
-                                    AdjustStatsAndSkills(tacticalActor);
-                                    factionNames.Remove(actor.name);
-                                    TFTVLogger.Always(actor.name + " is now a ganger");
+                                    int rankNumber = UnityEngine.Random.Range(1, 7);
+                                    if (rankNumber == 6)
+                                    {
+                                        actor.GameTags.Add(HumanEnemyTier2GameTag);
+                                        actor.GameTags.Add(gameTagDef);
+                                        UnityEngine.Random.InitState((int)DateTime.Now.Ticks);
+                                        actor.name = factionNames[UnityEngine.Random.Range(0, factionNames.Count)];
+                                        TFTVLogger.Always("Name of new enemy is " + actor.name);
+                                        TacticalActor tacticalActor = actor as TacticalActor;
+                                        AdjustStatsAndSkills(tacticalActor);
+                                        factionNames.Remove(actor.name);
+                                        TFTVLogger.Always(actor.name + " is now a champ");
+                                    }
+                                    else if (rankNumber >= 4 && rankNumber < 6)
+                                    {
+                                        actor.GameTags.Add(HumanEnemyTier3GameTag);
+                                        actor.GameTags.Add(gameTagDef);
+                                        UnityEngine.Random.InitState((int)DateTime.Now.Ticks);
+                                        actor.name = factionNames[UnityEngine.Random.Range(0, factionNames.Count)];
+                                        TFTVLogger.Always("Name of new enemy is " + actor.name);
+                                        TacticalActor tacticalActor = actor as TacticalActor;
+                                        AdjustStatsAndSkills(tacticalActor);
+                                        factionNames.Remove(actor.name);
+                                        TFTVLogger.Always(actor.name + " is now a ganger");
 
-                                }
-                                else
-                                {
-                                    actor.GameTags.Add(HumanEnemyTier4GameTag);
-                                    actor.GameTags.Add(gameTagDef);
-                                    UnityEngine.Random.InitState((int)DateTime.Now.Ticks);
-                                    actor.name = factionNames[UnityEngine.Random.Range(0, factionNames.Count)];
-                                    TacticalActor tacticalActor = actor as TacticalActor;
-                                    AdjustStatsAndSkills(tacticalActor);
-                                    factionNames.Remove(actor.name);
-                                    TFTVLogger.Always(actor.name + " is now a juve");
+                                    }
+                                    else
+                                    {
+                                        actor.GameTags.Add(HumanEnemyTier4GameTag);
+                                        actor.GameTags.Add(gameTagDef);
+                                        UnityEngine.Random.InitState((int)DateTime.Now.Ticks);
+                                        actor.name = factionNames[UnityEngine.Random.Range(0, factionNames.Count)];
+                                        TFTVLogger.Always("Name of new enemy is " + actor.name);
+                                        TacticalActor tacticalActor = actor as TacticalActor;
+                                        AdjustStatsAndSkills(tacticalActor);
+                                        factionNames.Remove(actor.name);
+                                        TFTVLogger.Always(actor.name + " is now a juve");
+                                    }
                                 }
 
                             }

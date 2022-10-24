@@ -68,6 +68,9 @@ namespace TFTV
                 TFTVRevenantResearch.ProjectOsirisStats = new Dictionary<int, int[]>();
                 TFTVRevenantResearch.ProjectOsiris = false;
                 TFTVDiplomacyPenalties.VoidOmensImplemented = false;
+                TFTVHumanEnemiesNames.names.Clear();
+                TFTVHumanEnemiesNames.CreateNamesDictionary();
+                TFTVInfestation.InfestationMissionWon = false;
                 // TFTVRevenant.timeLastRevenantSpawned = new TimeSpan();
                 TFTVLogger.Always("Internal variables cleared");
             }

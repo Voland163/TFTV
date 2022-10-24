@@ -49,7 +49,8 @@ namespace TFTV
         public string infestedHavenOriginalOwnerSaveData;// = TFTVInfestationStory.OriginalOwner;
         public Dictionary<int, int[]> ProjectOsirisStatsTacticalSaveData;// = TFTVRevenantResearch.ProjectOsirisStats;
         public bool ProjectOrisisCompletedSaveData;// = TFTVRevenantResearch.ProjectOsiris;
-       // public bool PhoenixWonInfestationMissionTacticalSaveData = TFTVInfestation.PhoenixWon;
+        public List<string> ShownHintsSaveData;
+        // public bool PhoenixWonInfestationMissionTacticalSaveData = TFTVInfestation.PhoenixWon;
     }
 
     /// <summary>
@@ -81,14 +82,15 @@ namespace TFTV
             TFTVLogger.Always("VO16 Active " + TFTVVoidOmens.VoidOmen16Active);
             TFTVLogger.Always("VO19 Active " + TFTVVoidOmens.VoidOmen19Active);
             TFTVLogger.Always("Project Osiris researched " + TFTVRevenantResearch.ProjectOsiris);
-
+            TFTVLogger.Always("# of already shown tactical hints " + TFTVTutorialAndStory.ShownTacticalHints);
+            TFTVTutorialAndStory.RemoveAlreadyShownTacticalHints();
             TFTVHumanEnemies.RollCount = 0;
             TFTVRevenant.ModifyRevenantResistanceAbility(Controller);
             TFTVRevenant.CheckForNotDeadSoldiers(tacController);
             TFTVRevenant.RevenantCheckAndSpawn(Controller);
             TFTVRevenant.ImplementVO19(Controller);
             TFTVLogger.Always("Tactical start completed");
-
+            TFTVLogger.Always("Difficulty level is " + tacController.Difficulty.Order);
         }
 
         /// <summary>
@@ -151,6 +153,8 @@ namespace TFTV
                 TFTVHumanEnemies.HumanEnemiesAndTactics = data.humanEnemiesLeaderTacticsSaveData;
                 TFTVInfestationStory.HavenPopulation = data.infestedHavenPopulationSaveData;
                 TFTVInfestationStory.OriginalOwner = data.infestedHavenOriginalOwnerSaveData;
+                TFTVTutorialAndStory.ShownTacticalHints = data.ShownHintsSaveData;
+
                 // TFTVInfestation.PhoenixWon = data.PhoenixWonInfestationMissionTacticalSaveData;
             }
             catch (Exception e)
@@ -188,8 +192,9 @@ namespace TFTV
                 humanEnemiesLeaderTacticsSaveData = TFTVHumanEnemies.HumanEnemiesAndTactics,
                 infestedHavenPopulationSaveData = TFTVInfestationStory.HavenPopulation,
                 infestedHavenOriginalOwnerSaveData = TFTVInfestationStory.OriginalOwner,
-               // PhoenixWonInfestationMissionTacticalSaveData = TFTVInfestation.PhoenixWon,
-              //  timeLastRevenantSpawned = TFTVRevenant.timeLastRevenantSpawned,
+                ShownHintsSaveData = TFTVTutorialAndStory.ShownTacticalHints,
+                // PhoenixWonInfestationMissionTacticalSaveData = TFTVInfestation.PhoenixWon,
+                //  timeLastRevenantSpawned = TFTVRevenant.timeLastRevenantSpawned,
             };
             
         }

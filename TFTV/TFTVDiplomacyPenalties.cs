@@ -245,10 +245,11 @@ namespace TFTV
 
         }
 
+        //The Strates Solution
         public static void CheckPostponedFactionMissions(GeoFaction faction, PartyDiplomacy.Relation relation, int newValue)
         {
             GeoscapeEventSystem eventSystem = faction.GeoLevel.EventSystem; // endless dereferencing hurts my poor soul
-
+          //  TFTVLogger.Always("Diplomacy changed, CheckPostponedFactionMissions invoked");
             try
             {
                 GeoFaction targetFaction = faction.GeoLevel.GetFaction((PPFactionDef)relation.WithParty);
@@ -256,6 +257,11 @@ namespace TFTV
 
                 if (faction.GetParticipatingFaction() == faction.GeoLevel.AnuFaction && targetFaction == faction.GeoLevel.PhoenixFaction)
                 {
+                    TFTVLogger.Always("The record for event PROG_AN2 states that choice " + eventSystem.GetEventRecord("PROG_AN2")?.SelectedChoice + " was chosen");
+                    TFTVLogger.Always("The record for event PROG_AN4 states that choice " + eventSystem.GetEventRecord("PROG_AN4")?.SelectedChoice + " was chosen");
+                    TFTVLogger.Always("The record for event PROG_AN6 states that choice " + eventSystem.GetEventRecord("PROG_AN6")?.SelectedChoice + " was chosen");
+                    TFTVLogger.Always("The record shows PROG_AN4 was completed on " + eventSystem.GetEventRecord("PROG_AN4").CompletedAt + " it is now " + faction.GeoLevel.Timing.Now);
+                    
                     // GetEventRecord can return null, implying that this event has never spawned. Not sure that should happen in postpone check, but the choice conditional will be false either way
                     if (newValue == 24 && eventSystem.GetEventRecord("PROG_AN2")?.SelectedChoice == 0) // choice 0 is postpone for this event, according to TFTVDefsWithConfigDependency.cs
                     {
@@ -272,6 +278,10 @@ namespace TFTV
                 }
                 else if (faction.GetParticipatingFaction() == faction.GeoLevel.NewJerichoFaction && targetFaction == faction.GeoLevel.PhoenixFaction)
                 {
+                    TFTVLogger.Always("The record for event PROG_NJ1 states that choice " + eventSystem.GetEventRecord("PROG_NJ1")?.SelectedChoice + " was chosen");
+                    TFTVLogger.Always("The record for event PROG_NJ2 states that choice " + eventSystem.GetEventRecord("PROG_NJ2")?.SelectedChoice + " was chosen");
+                    TFTVLogger.Always("The record for event PROG_NJ3 states that choice " + eventSystem.GetEventRecord("PROG_NJ3")?.SelectedChoice + " was chosen");
+
                     if (newValue == 24 && eventSystem.GetEventRecord("PROG_NJ1")?.SelectedChoice == 1)
                     {
                         eventSystem.TriggerGeoscapeEvent("PROG_NJ1", geoscapeEventContext);
@@ -287,7 +297,12 @@ namespace TFTV
                 }
                 else if (faction.GetParticipatingFaction() == faction.GeoLevel.SynedrionFaction && targetFaction == faction.GeoLevel.PhoenixFaction)
                 {
-                    if (newValue == 24 && eventSystem.GetEventRecord("PROG_SY1")?.SelectedChoice == 2)
+                    TFTVLogger.Always("The record for event PROG_SY1 states that choice " + eventSystem.GetEventRecord("PROG_SY1")?.SelectedChoice + " was chosen");
+                    TFTVLogger.Always("The record for event PROG_SY4_P states that choice " + eventSystem.GetEventRecord("PROG_SY4_P")?.SelectedChoice + " was chosen");
+                    TFTVLogger.Always("The record for event PROG_SY4_T states that choice " + eventSystem.GetEventRecord("PROG_SY4_T")?.SelectedChoice + " was chosen");
+
+
+                    if (newValue == 24 && eventSystem.GetEventRecord("PROG_SY1")?.SelectedChoice ==2)
                     {
                         eventSystem.TriggerGeoscapeEvent("PROG_SY1", geoscapeEventContext);
                     }

@@ -235,8 +235,6 @@ namespace TFTV
                         {
                             if (missionTypeDef.name.Contains("Haven") && !missionTypeDef.name.Contains("Infestation"))
                             {
-
-
                                 if (missionTypeDef.name.Contains("Civ"))
                                 {
                                     missionTypeDef.ParticipantsRelations[1].MutualRelation = FactionRelation.Friend;
@@ -457,20 +455,20 @@ namespace TFTV
                     }
                     if (i == 16 && CheckFordVoidOmensInPlay(level).Contains(i) && !voidOmensCheck[i])
                     {
-                        if (!voidOmensCheck[15])
+                       /* if (!voidOmensCheck[15])
                         {
                             TFTVUmbra.SetUmbraRandomValue(0.16f);
                         }
                         if (voidOmensCheck[15])
                         {
                             TFTVUmbra.SetUmbraRandomValue(0.32f);
-                        }
+                        }*/
                         //  Logger.Always(voidOmen + j + " is now in effect, held in variable " + voidOmen + i);
                         voidOmensCheck[i] = true;
                     }
                     else if (i == 16 && !CheckFordVoidOmensInPlay(level).Contains(i) && voidOmensCheck[i])
                     {
-                        TFTVUmbra.SetUmbraRandomValue(0);
+                       // TFTVUmbra.SetUmbraRandomValue(0);
 
                         voidOmensCheck[16] = false;
                         TFTVLogger.Always("The check for VO#16 went ok");
@@ -743,6 +741,7 @@ namespace TFTV
                 {
                     TFTVLogger.Always("The target event that will be replaced is " + voidOmenTitle + replacedVoidOmen);
                     RemoveVoidOmenObjective(voidOmenTitle + replacedVoidOmen, geoLevelController);
+                    voidOmensCheck[replacedVoidOmen] = true;
                 }
             }
             catch (Exception e)
@@ -792,6 +791,7 @@ namespace TFTV
                     {
                         TFTVLogger.Always("The target event that will be replaced is " + voidOmenTitle + replacedVoidOmen);
                         RemoveVoidOmenObjective(voidOmenTitle + replacedVoidOmen, geoLevelController);
+                        voidOmensCheck[replacedVoidOmen] = true;
                     }
                 }
             }
@@ -884,9 +884,8 @@ namespace TFTV
 
                         rewardDescription.Resources.Clear();
                         rewardDescription.Resources.AddRange(resources);
-                        TFTVLogger.Always("Original resource reward from mission " + mission.MissionName.LocalizeEnglish() + " was  "
-                            + __instance.Resources[0].Value + ", " + __instance.Resources[1].Value + " and " + __instance.Resources[2].Value +
-                             "; now it is  " + resources[0].Value + ", " + resources[1].Value + " and " + resources[2].Value);
+                        TFTVLogger.Always("Resource reward from mission " + mission.MissionName.LocalizeEnglish() + " modified to "
+                            + resources[0].Value + ", " + resources[1].Value + " and " + resources[2].Value);
                     }
                 }
                 catch (Exception e)
@@ -920,9 +919,8 @@ namespace TFTV
                         }
                         rewardDescription.Resources.Clear();
                         rewardDescription.Resources.AddRange(resources);
-                        TFTVLogger.Always("Original resource reward from mission " + mission.MissionName.LocalizeEnglish() + " was  "
-                            + __instance.Resources[0].Value + ", " + __instance.Resources[1].Value + " and " + __instance.Resources[2].Value +
-                             "; now it is  " + resources[0].Value + ", " + resources[1].Value + " and " + resources[2].Value);
+                        TFTVLogger.Always("Resource reward from mission " + mission.MissionName.LocalizeEnglish() + " modified to "
+                           + resources[0].Value + ", " + resources[1].Value + " and " + resources[2].Value);
                     }
                 }
                 catch (Exception e)
@@ -989,9 +987,6 @@ namespace TFTV
 
             }
         }
-
-
-
 
         [HarmonyPatch(typeof(FactionObjective), "GetCompletion")]
         public static class FactionObjective_GetCompletion_VO4_Patch
@@ -1289,8 +1284,21 @@ namespace TFTV
                 {
                     if (VoidOmen7Active)
                     {
-                        __instance.VoxelMatrixData.InitialMistEntitiesToSpawn.Min = 30;
-                        __instance.VoxelMatrixData.InitialMistEntitiesToSpawn.Max = 40;
+
+                        float missionTypeModifer = 1;
+                        string saveDefaultName = __instance.TacticalLevel.TacMission.MissionData.MissionType.SaveDefaultName;
+
+                        if (saveDefaultName.Contains("Nest") || saveDefaultName.Contains("Lair"))
+                        {
+                            missionTypeModifer = 0.25f;
+                        }
+                        else if (saveDefaultName.Contains("Citadel"))
+                        {
+                            missionTypeModifer = 0.5f;
+                        }
+
+                        __instance.VoxelMatrixData.InitialMistEntitiesToSpawn.Min = 0 + TFTVHumanEnemies.difficultyLevel * (int)(7 * missionTypeModifer);
+                        __instance.VoxelMatrixData.InitialMistEntitiesToSpawn.Max = 10 + TFTVHumanEnemies.difficultyLevel * (int)(7 * missionTypeModifer);
                         return true;
                     }
                     else
@@ -1311,13 +1319,24 @@ namespace TFTV
         [HarmonyPatch(typeof(UIStateRosterDeployment), "get__squadMaxDeployment")]
         public static class UIStateRosterDeployment_get_SquadMaxDeployment_VoidOmenLimitedDeployment_Patch
         {
-            public static void Postfix(ref int __result)
+            public static void Postfix(ref int __result, UIStateRosterDeployment __instance)
             {
                 try
                 {
+
+
+
+                    if (VoidOmen7Active && __instance.Mission.MissionDef.MaxPlayerUnits == 8)
+                    {
+                        __result += 1;
+                    }
                     if (VoidOmen4Active)
                     {
                         __result -= 2;
+                    }
+                    if (__instance.Mission.MissionDef.name.Equals("StoryFS2_CustomMissionTypeDef"))
+                    {
+                        __result = 8;
                     }
                 }
 
