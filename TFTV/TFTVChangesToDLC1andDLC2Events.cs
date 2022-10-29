@@ -21,15 +21,13 @@ namespace TFTV
         {
             try
             {
-                MakeLOTAAlternativeToSymes();
+               // MakeLOTAAlternativeToSymes();
                 ResearchViewElementDef njBionicsVEDef = DefCache.GetDef<ResearchViewElementDef>("NJ_Bionics1_ViewElementDef");
                 njBionicsVEDef.CompleteText.LocalizationKey = "TFTV_BIONICS_RESEARCHDEF_COMPLETE";
 
                 ResearchViewElementDef anuBionicsVEDef = DefCache.GetDef<ResearchViewElementDef>("ANU_MutationTech_ViewElementDef");
                 anuBionicsVEDef.CompleteText.LocalizationKey = "TFTV_MUTATIONTECH_RESEARCHDEF_COMPLETE";
                 
-
-
                 //ID all the factions for later
                 GeoFactionDef PhoenixPoint = DefCache.GetDef<GeoFactionDef>("Phoenix_GeoPhoenixFactionDef");
                 GeoFactionDef NewJericho = DefCache.GetDef<GeoFactionDef>("NewJericho_GeoFactionDef");

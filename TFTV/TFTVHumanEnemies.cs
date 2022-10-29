@@ -92,7 +92,7 @@ namespace TFTV
 
 
 
-        public static int difficultyLevel = 0;
+       // public static int difficultyLevel = 0;
         // public static Dictionary <string, string> FileNameSquadPic = new Dictionary<string, string>();
 
         public static Dictionary<string, int> HumanEnemiesAndTactics = new Dictionary<string, int>();
@@ -323,7 +323,7 @@ namespace TFTV
             try
             {
                 TacticalFaction phoenix = controller.GetFactionByCommandName("PX");
-
+                int difficultyLevel = controller.Difficulty.Order;
 
                 foreach (TacticalFaction faction in GetHumanEnemyFactions(controller))
                 {
@@ -829,6 +829,8 @@ namespace TFTV
 
         public static void AdjustStatsAndSkills(TacticalActor tacticalActor)
         {
+            int difficultyLevel = tacticalActor.TacticalLevel.Difficulty.Order;
+
             try
             {
 
@@ -1083,6 +1085,8 @@ namespace TFTV
 
         public static int GetStatBuffForTier(TacticalActor tacticalActor)
         {
+            int difficultyLevel = tacticalActor.TacticalLevel.Difficulty.Order;
+
             try
             {
 

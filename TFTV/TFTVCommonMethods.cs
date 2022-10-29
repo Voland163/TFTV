@@ -1,8 +1,10 @@
 ﻿using Base.UI;
 using HarmonyLib;
+using PhoenixPoint.Common.ContextHelp;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.Saves;
 using PhoenixPoint.Common.UI;
+using PhoenixPoint.Common.View.ViewModules;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.Research;
 using PhoenixPoint.Geoscape.Entities.Research.Requirement;
@@ -19,7 +21,6 @@ namespace TFTV
 {
     internal class TFTVCommonMethods
     {
-
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
 
         public static void ClearInternalVariables()
@@ -27,42 +28,18 @@ namespace TFTV
             try
             {
                 TFTVAirCombat.targetsForBehemoth = new List<int>();
-                //  TFTVAirCombat.targetsVisitedByBehemoth = new List<int>();
                 TFTVAirCombat.flyersAndHavens = new Dictionary<int, List<int>>();
                 TFTVAirCombat.checkHammerfall = false;
                 TFTVRevenant.DeadSoldiersDelirium = new Dictionary<int, int>();
-                TFTVVoidOmens.voidOmensCheck = new bool[18];
-                //VO#1 is harder ambushes
-                TFTVVoidOmens.VoidOmen1Active = false;
-                //VO#3 is WP cost +50%
-                TFTVVoidOmens.VoidOmen3Active = false;
-                TFTVVoidOmens.VoidOmen4Active = false;
-                //VO#5 is haven defenders hostile; this is needed for victory kludge
-                TFTVVoidOmens.VoidOmen5Active = false;
-                //VO#7 is more mist in missions
-                TFTVVoidOmens.VoidOmen7Active = false;
-                //VO#10 is no limit to Delirium
-                TFTVVoidOmens.VoidOmen10Active = false;
-                //VO#12 is +50% strength of alien attacks on Havens
-                TFTVVoidOmens.VoidOmen12Active = false;
-                //VO#15 is more Umbra
-                TFTVVoidOmens.VoidOmen15Active = false;
-                //VO#16 is Umbras can appear anywhere and attack anyone
-                TFTVVoidOmens.VoidOmen16Active = false;
-                //VO#19 is reactive evolution
-                TFTVVoidOmens.VoidOmen19Active = false;
+                TFTVVoidOmens.VoidOmensCheck = new bool[20];
                 TFTVUmbra.UmbraResearched = false;
                 TFTVRevenant.daysRevenantLastSeen = 0;
                 TFTVStamina.charactersWithBrokenLimbs = new List<int>();
-                //     TFTVUI.hookToProgressionModule = null;
-                //     TFTVUI.hookToCharacter = null;
                 TFTVAirCombat.behemothScenicRoute = new List<int>();
                 TFTVAirCombat.behemothTarget = 0;
                 TFTVAirCombat.behemothWaitHours = 12;
                 TFTVRevenant.revenantSpecialResistance = new List<string>();
-                TFTVRevenant.revenantSpawned = false;
                 TFTVRevenant.revenantCanSpawn = false;
-                TFTVHumanEnemies.difficultyLevel = 0;
                 TFTVHumanEnemies.HumanEnemiesAndTactics = new Dictionary<string, int>();
                 TFTVRevenantResearch.ProjectOsirisStats = new Dictionary<int, int[]>();
                 TFTVRevenantResearch.ProjectOsiris = false;
@@ -70,8 +47,7 @@ namespace TFTV
                 TFTVHumanEnemiesNames.names.Clear();
                 TFTVHumanEnemiesNames.CreateNamesDictionary();
                 TFTVInfestation.InfestationMissionWon = false;
-              //  TFTVTutorialAndStory.TacticalHintsToShow = new List<string>();
-                // TFTVRevenant.timeLastRevenantSpawned = new TimeSpan();
+                ClearHints();
                 TFTVLogger.Always("Internal variables cleared");
             }
             catch (Exception e)
@@ -79,6 +55,99 @@ namespace TFTV
                 TFTVLogger.Error(e);
             }
         }
+
+        public static void ClearHints()
+        {
+            try
+            {
+                ContextHelpHintDbDef alwaysDisplayedTacticalHintsDbDef = DefCache.GetDef<ContextHelpHintDbDef>("AlwaysDisplayedTacticalHintsDbDef");
+
+                foreach (ContextHelpHintDef contextHelpHintDef in TFTVHumanEnemies.TacticsHint)
+                {
+                    if (alwaysDisplayedTacticalHintsDbDef.Hints.Contains(contextHelpHintDef))
+                    {
+                        alwaysDisplayedTacticalHintsDbDef.Hints.Remove(contextHelpHintDef);
+                        TFTVLogger.Always("Squad hint " + contextHelpHintDef.name + " removed");
+                    }
+
+                }
+                TFTVHumanEnemies.TacticsHint.Clear();
+                if (TFTVRevenant.revenantResistanceHintCreated)
+                {
+                    ContextHelpHintDef revenantResistanceHint = DefCache.GetDef<ContextHelpHintDef>("RevenantResistanceSighted");
+                    if (alwaysDisplayedTacticalHintsDbDef.Hints.Contains(revenantResistanceHint))
+                    {
+                        alwaysDisplayedTacticalHintsDbDef.Hints.Remove(revenantResistanceHint);
+                        TFTVLogger.Always("Revenant resistance hint removed");
+                    }
+                }
+
+            }
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+        public static void VariablesClearedOnlyOnLoad()
+        {
+            try
+            {
+                TFTVRevenant.revenantSpawned = false;
+                TFTVRevenant.revenantID = 0;
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+        }
+
+        public static void VariablesClearedOnMissionRestart()
+        {
+            try
+            {
+                TFTVRevenant.revenantSpawned = false;
+                TFTVRevenant.revenantID = 0;
+                TFTVHumanEnemies.HumanEnemiesAndTactics = new Dictionary<string, int>();
+                TFTVRevenantResearch.ProjectOsirisStats = new Dictionary<int, int[]>();
+                TFTVStamina.charactersWithBrokenLimbs = new List<int>();
+                TFTVHumanEnemiesNames.names.Clear();
+                TFTVHumanEnemiesNames.CreateNamesDictionary();
+                ClearHints();
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+        }
+
+
+
+
+        [HarmonyPatch(typeof(UIModulePauseScreen), "OnRestartConfirmed")]
+        public static class TFTV_UIModulePauseScreen_OnRestartConfirmed_RestartMission_patch
+        {
+            public static void Postfix()
+            {
+                try
+                {
+                    VariablesClearedOnMissionRestart();
+                    TFTVLogger.Always("Game restarted");
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+        }
+
+
 
         [HarmonyPatch(typeof(PhoenixSaveManager), "LoadGame")]
         public static class BG_PhoenixSaveManager_ClearInternalData_patch
@@ -89,6 +158,7 @@ namespace TFTV
                 {
                     TFTVLogger.Always("LoadGame method invoked");
                     ClearInternalVariables();
+                    VariablesClearedOnlyOnLoad();
                 }
                 catch (Exception e)
                 {

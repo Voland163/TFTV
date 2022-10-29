@@ -5,6 +5,7 @@ using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.GameTags;
+using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.Entities.Items;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Events;
@@ -257,7 +258,7 @@ namespace TFTV
                     anyAdditionalResearch2 = " research.";
                 }
 
-                string modularEventText = "<i>-''I'm... a mess.''\n-''They will fix you. They fix everything.''</i>\n\nWe have recovered " + name + " from the battlefield. "
+                string modularEventText = "<i>-''I'm... a mess.''\n-''They will fix you. They fix everything.''</i>\n\nWe have recovered " + name + "(a " + deadSoldierDescriptor.GetClassViewElementDefs().First().Name + ") from the battlefield. "
                     + pronoun + " is clinically dead, but with the Project Osiris now operational we can bring " + possesivePronoun + " back with a new body " + typeOfBodyAvailable + ". " +
                     increaseOptions + buildAdditionalLab + and1 + anyAdditionalResearch + researchAdditionalTech1 + and2 + researchAdditionalTech2 + anyAdditionalResearch2;
 
@@ -294,13 +295,18 @@ namespace TFTV
                 bCSettings.SpecialCharacterPersonalSkills.Add(name, new Dictionary<int, string>()
                         {
                             {0,deadSoldierDescriptor.Progression.PersonalAbilities[0].name},
+                            {1,deadSoldierDescriptor.Progression.PersonalAbilities[1].name},
+                            {2,deadSoldierDescriptor.Progression.PersonalAbilities[2].name},
                             {3,deadSoldierDescriptor.Progression.PersonalAbilities[3].name},
-                            {4,deadSoldierDescriptor.Progression.PersonalAbilities[4].name}
+                            {4,deadSoldierDescriptor.Progression.PersonalAbilities[4].name},
+                            {5,deadSoldierDescriptor.Progression.PersonalAbilities[5].name},
+                            {6,deadSoldierDescriptor.Progression.PersonalAbilities[6].name}
                         });
 
                 TFTVLogger.Always(name + " added to BC special list is " + bCSettings.SpecialCharacterPersonalSkills.Keys.Contains(name));
 
                 List<GameTagDef> deadSoldiersTags = new List<GameTagDef>();
+                List<ClassTagDef> deadSoldierClassTags = new List<ClassTagDef>();
 
                 deadSoldiersTags.AddRange(deadSoldierDescriptor.GetGameTags());
                 GameTagDef[] gameTagDefs = deadSoldiersTags.ToArray();
@@ -309,6 +315,7 @@ namespace TFTV
                 List<TacticalAbilityDef> abilityDefs = deadSoldierDescriptor.GetTacticalAbilities().ToList();
                 TacticalAbilityDef[] tacticalAbilities = abilityDefs.ToArray();
                 deadTemplateDef.Data.Abilites = tacticalAbilities;
+               
 
                 //  deadTemplateDef.Data.LevelProgression.SetLevel(level);
 
@@ -406,10 +413,7 @@ namespace TFTV
 
                     if (allProjectOsirisCandidates.Count > 0) //it can happen that this list is empty because savescumming
                     {
-
                         List<int> orderedList = allProjectOsirisCandidates.Values.OrderBy(x => x).ToList();
-
-
 
                         UnityEngine.Random.InitState((int)DateTime.Now.Ticks);
                         int roll = UnityEngine.Random.Range(0, 100);
@@ -514,13 +518,14 @@ namespace TFTV
                                 }
                             }
                         }
+                        else//this is in case the roll is not made, so that list is cleared for when Project Osiris is run again 
+                        {
+                            TFTVRevenantResearch.ProjectOsirisStats.Clear();
+                        }
                     }
                     else //this is in case a GeoTacUnitId is present in the stats list, but is not actually dead, because savescumming 
                     {
-
                         TFTVRevenantResearch.ProjectOsirisStats.Clear();
-
-
                     }
                 }
             }
@@ -586,11 +591,22 @@ namespace TFTV
                         }
 
                         int level = geoCharacterCloneFromDead.Progression.LevelProgression.Level;
-                        
-                        controller.PhoenixFaction.Soldiers.Last().Identity.CopyFrom(geoCharacterCloneFromDead.Identity, PhoenixPoint.Common.Entities.Characters.CharacterIdentity.EmptyReplaceOperation.Default);
-                        controller.PhoenixFaction.Soldiers.Last().LevelProgression.SetLevel(level);
-                        controller.PhoenixFaction.Soldiers.Last().Progression.SkillPoints = 0;
-                        controller.PhoenixFaction.Soldiers.Last().Fatigue.Stamina.SetToMin();
+
+                        GeoCharacter returned = controller.PhoenixFaction.Soldiers.FirstOrDefault(s => s.Id.Equals(geoTacUnitNewCharacter));
+                      //  TFTVLogger.Always("The returned is " + returned.DisplayName);
+
+                        returned.Identity.CopyFrom(geoCharacterCloneFromDead.Identity, PhoenixPoint.Common.Entities.Characters.CharacterIdentity.EmptyReplaceOperation.Default);
+                        returned.LevelProgression.SetLevel(level);
+                        returned.Progression.SkillPoints = 0;
+                        returned.Fatigue.Stamina.SetToMin();
+
+                        // TFTVLogger.Always("The clone is level " + geoCharacterCloneFromDead.LevelProgression.Level);
+                        // TFTVLogger.Always("The clone has a secondary class " + geoCharacterCloneFromDead.Progression.SecondarySpecDef.name);
+
+                        if (geoCharacterCloneFromDead.Progression.SecondarySpecDef != null)
+                        {
+                            returned.Progression.AddSecondaryClass(geoCharacterCloneFromDead.Progression.SecondarySpecDef);
+                        }
 
                         deadTemplateDef.Data = SaveTemplateData;
                         bCSettings.SpecialCharacterPersonalSkills.Clear();

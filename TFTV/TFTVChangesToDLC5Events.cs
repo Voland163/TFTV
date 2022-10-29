@@ -15,7 +15,7 @@ namespace TFTV
     internal class TFTVChangesToDLC5Events
     {
         private static readonly DefRepository Repo = TFTVMain.Repo;
-        //private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
+        private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
 
         public static void ChangesToDLC5Defs()
         {
@@ -29,6 +29,12 @@ namespace TFTV
 
                     }
                 }
+
+
+                GeoMarketplaceResearchOptionDef randomMarketResearch = DefCache.GetDef<GeoMarketplaceResearchOptionDef>("Random_MarketplaceResearchOptionDef");
+                randomMarketResearch.DisallowDuplicates = true;
+                randomMarketResearch.Availability = 8;
+
             }
 
             catch (Exception e)
@@ -44,14 +50,14 @@ namespace TFTV
             {
 
                 List<string> kaosWeapons = new List<string>();
-         
+
                 List<GeoItem> phoenixStorageItems = level.PhoenixFaction.ItemStorage.ToList();
                 List<GeoCharacter> phoenixSoldiers = level.PhoenixFaction.Soldiers.ToList();
                 GameTagDef dlc5Tag = GameUtl.GameComponent<SharedData>().SharedGameTags.Dlc5TagDef;
 
-                foreach (GeoItem item in phoenixStorageItems) 
+                foreach (GeoItem item in phoenixStorageItems)
                 {
-                    if (item.ItemDef.Tags.Contains(dlc5Tag)) 
+                    if (item.ItemDef.Tags.Contains(dlc5Tag))
                     {
                         //TFTVLogger.Always(item.CommonItemData.GetDisplayName());
 
@@ -76,7 +82,7 @@ namespace TFTV
                             kaosWeapons.Add("KEY_KS_TORMENTOR");
                         }
 
-                    }    
+                    }
                 }
 
 
@@ -113,7 +119,7 @@ namespace TFTV
                     {
                         if (equipmentItem.ItemDef.Tags.Contains(dlc5Tag))
                         {
-                           // TFTVLogger.Always(equipmentItem.CommonItemData.GetDisplayName());
+                            // TFTVLogger.Always(equipmentItem.CommonItemData.GetDisplayName());
 
                             if (equipmentItem.CommonItemData.GetDisplayName() == "Obliterator")
                             {
@@ -139,7 +145,7 @@ namespace TFTV
                     }
                 }
 
-            return kaosWeapons;
+                return kaosWeapons;
 
 
             }
@@ -150,12 +156,12 @@ namespace TFTV
             throw new InvalidOperationException();
         }
 
-        [HarmonyPatch(typeof(GeoMarketplace), "UpdateOptions",  new Type[] { })]
+        [HarmonyPatch(typeof(GeoMarketplace), "UpdateOptions", new Type[] { })]
         public static class GeoMarketplace_UpdateOptions_MarketPlace_patch
-        { 
-            
+        {
+
             private static readonly List<GeoMarketplaceItemOptionDef> geoMarketplaceItemOptionDefs = Repo.GetAllDefs<GeoMarketplaceItemOptionDef>().ToList();
-           
+
             public static bool Prepare()
             {
                 TFTVConfig config = TFTVMain.Main.Config;
@@ -166,20 +172,20 @@ namespace TFTV
 
             public static void Prefix(GeoLevelController ____level)
             {
-               
+
                 try
                 {
-                    List<string>kaosWeapons = CheckForKaosWepaons(____level);
+                    List<string> kaosWeapons = CheckForKaosWepaons(____level);
 
                     foreach (GeoMarketplaceItemOptionDef geoMarketplaceItemOptionDef in geoMarketplaceItemOptionDefs)
                     {
-                       // TFTVLogger.Always(geoMarketplaceItemOptionDef.ItemDef.GetDisplayName().LocalizationKey);
+                        // TFTVLogger.Always(geoMarketplaceItemOptionDef.ItemDef.GetDisplayName().LocalizationKey);
 
                         if (kaosWeapons.Contains(geoMarketplaceItemOptionDef.ItemDef.GetDisplayName().LocalizationKey))
                         {
                             geoMarketplaceItemOptionDef.Availability = 10;
                         }
-                        else 
+                        else
                         {
                             geoMarketplaceItemOptionDef.Availability = 0;
                         }

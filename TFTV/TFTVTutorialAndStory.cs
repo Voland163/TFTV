@@ -1,5 +1,6 @@
 ﻿using Base;
 using Base.Defs;
+using Base.Entities.Statuses;
 using Base.UI;
 using HarmonyLib;
 using PhoenixPoint.Common.ContextHelp;
@@ -36,7 +37,7 @@ namespace TFTV
         private static readonly HasSeenHintHintConditionDef sourceHasSeenHintConditionDef = DefCache.GetDef<HasSeenHintHintConditionDef>("HasSeenHint_TUT2_Overwatch_HintDef-False_HintConditionDef");
         private static readonly LevelHasTagHintConditionDef sourceInfestationMission = DefCache.GetDef<LevelHasTagHintConditionDef>("LevelHasTag_MissionTypeBaseInfestation_MissionTagDef_HintConditionDef");
         private static readonly MissionTypeTagDef infestationMissionTagDef = DefCache.GetDef<MissionTypeTagDef>("HavenInfestation_MissionTypeTagDef");
-        
+        private static readonly ActorHasStatusHintConditionDef sourceActorHasStatusHintConditionDef = DefCache.GetDef<ActorHasStatusHintConditionDef>("ActorHasStatus_CorruptionAttack_StatusDef_HintConditionDef");
 
       /*  public static void RemoveAlreadyShownTacticalHints()
         {
@@ -145,6 +146,13 @@ namespace TFTV
                             __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("broken_limb_stamina.png");
                            // TacticalHintsToShow.Add(hintDef.name);
                         }
+
+                        else if (hintDef.name.Contains("RevenantResistanceSighted")) 
+                        {
+                            __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("Hint_Revenant.png");
+                            alwaysDisplayedTacticalHintsDbDef.Hints.Remove(hintDef);
+                        }
+
                         else
                         {
                             __instance.Image.overrideSprite = null;
@@ -248,6 +256,28 @@ namespace TFTV
             }
         }
 
+        public static ActorHasStatusHintConditionDef ActorHasStatusHintConditionDefCreateNewConditionForTacticalHint(string name)
+        {
+            try
+
+            {
+                string gUID = Guid.NewGuid().ToString();
+
+
+
+                ActorHasStatusHintConditionDef newActorHasStatusHintConditionDef = Helper.CreateDefFromClone(sourceActorHasStatusHintConditionDef, gUID, "ActorHasStatus_" + name + "_HintConditionDef");
+                StatusDef statusDef = Repo.GetAllDefs<StatusDef>().FirstOrDefault(ged => ged.name.Equals(name));
+                newActorHasStatusHintConditionDef.StatusDef = statusDef;
+
+                return newActorHasStatusHintConditionDef;
+            }
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw new InvalidOperationException();
+            }
+        }
         public static ActorIsOfFactionHintConditionDef ActorIsOfFactionCreateNewConditionForTacticalHint(string name)
         {
             try
@@ -277,10 +307,8 @@ namespace TFTV
         public static void CreateNewTacticalHint(string name, HintTrigger trigger, string conditionName, string title, string text, int typeHint, bool oneTime, string gUID)
         {
             try
-
             {
-               
-
+              
                 ContextHelpHintDef newContextHelpHintDef = Helper.CreateDefFromClone(sourceContextHelpHintDef, gUID, name);
                 newContextHelpHintDef.Trigger = trigger;
                 if (typeHint == 0)
@@ -291,9 +319,9 @@ namespace TFTV
                 {
                     newContextHelpHintDef.Conditions[0] = ActorHasTagCreateNewConditionForTacticalHint(conditionName);
                 }
-                else
+                else if (typeHint == 2)
                 {
-
+                    newContextHelpHintDef.Conditions[0] = ActorHasStatusHintConditionDefCreateNewConditionForTacticalHint(conditionName);
                 }
                 newContextHelpHintDef.Title.LocalizationKey = title;
                 newContextHelpHintDef.Text.LocalizationKey = text;
@@ -431,7 +459,40 @@ namespace TFTV
             }
         }
 
+        public static void CreateNewTacticalHintForRevenantResistance(string name, HintTrigger trigger, string conditionName, string title, string text)
+        {
+            try
 
+            {
+                string gUID = Guid.NewGuid().ToString();
+
+                ContextHelpHintDef newContextHelpHintDef = Helper.CreateDefFromClone(sourceContextHelpHintDef, gUID, name);
+                newContextHelpHintDef.Trigger = trigger;
+
+                newContextHelpHintDef.Conditions[0] = ActorHasTagCreateNewConditionForTacticalHint(conditionName);
+
+                newContextHelpHintDef.Conditions.Add(ActorHasTagCreateNewConditionForTacticalHint("RevenantResistance_GameTagDef"));
+
+                string gUID2 = Guid.NewGuid().ToString();
+
+                HasSeenHintHintConditionDef newHasSeenHintConditionDef = Helper.CreateDefFromClone(sourceHasSeenHintConditionDef, gUID2, name + "HasSeenHintConditionDef");
+                newHasSeenHintConditionDef.HintDef = newContextHelpHintDef;
+                newContextHelpHintDef.Conditions.Add(newHasSeenHintConditionDef);
+
+                newContextHelpHintDef.Title = new LocalizedTextBind(title, true);
+                newContextHelpHintDef.Text = new LocalizedTextBind(text, true);
+
+
+                newContextHelpHintDef.AnyCondition = false;
+
+
+                alwaysDisplayedTacticalHintsDbDef.Hints.Add(newContextHelpHintDef);
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
 
 
         public static void CreateNewTacticalHintForHumanEnemies(string name, HintTrigger trigger, string conditionName, string title, string text)

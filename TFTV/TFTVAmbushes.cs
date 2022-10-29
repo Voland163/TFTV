@@ -28,7 +28,7 @@ namespace TFTV
                 {                    
                     __instance.AmbushExploredSitesProtection = 0;
                     __instance.StartingAmbushProtection = 0;
-                    if (TFTVVoidOmens.VoidOmen1Active)
+                    if (TFTVVoidOmens.VoidOmensCheck[1])
                     {
                         __instance.ExplorationAmbushChance = 100;
 

@@ -21,21 +21,6 @@ namespace TFTV
         // public int ExampleData;
         // Dictionary to transfer the characters geoscape stamina to tactical level by actor ID
         public List<int> charactersWithBrokenLimbs; // = TFTVStamina.charactersWithBrokenLimbs;
-        //VO#3 is WP cost +50%
-        public bool VoidOmen3Active; //= TFTVVoidOmens.VoidOmen3Active;
-        //VO#5 is haven defenders hostil, needed for victory kludge
-        public bool VoidOmen5Active; //= TFTVVoidOmens.VoidOmen5Active;
-        //VO#7 is more mist in missions
-        public bool VoidOmen7Active;// = TFTVVoidOmens.VoidOmen7Active;
-        //VO#10 is no limit to Delirium
-        public bool VoidOmen10Active;// = TFTVVoidOmens.VoidOmen10Active;
-        //VO#15 is more Umbra
-        public bool VoidOmen15Active;// = TFTVVoidOmens.VoidOmen15Active;
-        //VO#16 is Umbras can appear anywhere and attack anyone
-        public bool VoidOmen16Active;// = TFTVVoidOmens.VoidOmen16Active;
-        //VO#19 is reactive evolution
-        public bool VoidOmen19Active;// = TFTVVoidOmens.VoidOmen19Active;
-        //Check if Umbra can be spawned in tactical
         public bool UmbraResearched;// = TFTVUmbra.UmbraResearched;
         public Dictionary<int, int> DeadSoldiersDelirium;// = TFTVRevenant.DeadSoldiersDelirium;
                                                          //    public TimeUnit timeRevenantLastSeenSaveData = TFTVRevenant.timeRevenantLastSeen;
@@ -49,7 +34,8 @@ namespace TFTV
         public string infestedHavenOriginalOwnerSaveData;// = TFTVInfestationStory.OriginalOwner;
         public Dictionary<int, int[]> ProjectOsirisStatsTacticalSaveData;// = TFTVRevenantResearch.ProjectOsirisStats;
         public bool ProjectOrisisCompletedSaveData;// = TFTVRevenantResearch.ProjectOsiris;
-        public List<string> TacticalHintsToShow;
+        public int RevenantId;
+        public bool [] VoidOmensCheck = TFTVVoidOmens.VoidOmensCheck;
         // public bool PhoenixWonInfestationMissionTacticalSaveData = TFTVInfestation.PhoenixWon;
     }
 
@@ -74,13 +60,13 @@ namespace TFTV
             //  TFTVDelirium.DeliriumPerksOnTactical(tacController);
             TFTVLogger.Always("Tactical Started");
             TFTVLogger.Always("The count of tactics in play is " + TFTVHumanEnemies.HumanEnemiesAndTactics.Count);
-            TFTVLogger.Always("VO3 Active " + TFTVVoidOmens.VoidOmen3Active);
-            TFTVLogger.Always("VO5 Active " + TFTVVoidOmens.VoidOmen5Active);
-            TFTVLogger.Always("VO7 Active " + TFTVVoidOmens.VoidOmen7Active);
-            TFTVLogger.Always("VO10 Active " + TFTVVoidOmens.VoidOmen10Active);
-            TFTVLogger.Always("VO15 Active " + TFTVVoidOmens.VoidOmen15Active);
-            TFTVLogger.Always("VO16 Active " + TFTVVoidOmens.VoidOmen16Active);
-            TFTVLogger.Always("VO19 Active " + TFTVVoidOmens.VoidOmen19Active);
+            TFTVLogger.Always("VO3 Active " + TFTVVoidOmens.VoidOmensCheck[3]);
+            TFTVLogger.Always("VO5 Active " + TFTVVoidOmens.VoidOmensCheck[5]);
+            TFTVLogger.Always("VO7 Active " + TFTVVoidOmens.VoidOmensCheck[7]);
+            TFTVLogger.Always("VO10 Active " + TFTVVoidOmens.VoidOmensCheck[10]);
+            TFTVLogger.Always("VO15 Active " + TFTVVoidOmens.VoidOmensCheck[15]);
+            TFTVLogger.Always("VO16 Active " + TFTVVoidOmens.VoidOmensCheck[16]);
+            TFTVLogger.Always("VO19 Active " + TFTVVoidOmens.VoidOmensCheck[19]);
             TFTVLogger.Always("Project Osiris researched " + TFTVRevenantResearch.ProjectOsiris);
           //  TFTVLogger.Always("# of already shown tactical hints is " + TFTVTutorialAndStory.TacticalHintsToShow.Count);
            // TFTVTutorialAndStory.RemoveAlreadyShownTacticalHints();
@@ -100,6 +86,7 @@ namespace TFTV
         {
             //   TFTVRevenant.CheckForNotDeadSoldiers(Controller);
               TFTVLogger.Always("OnTacticalEnd check");
+            TFTVRevenant.revenantCanSpawn=false;
           //  TFTVInfestation.CheckIfPhoenixLost(Controller);
             TFTVRevenantResearch.CheckRevenantCapturedOrKilled(Controller);
          //   TFTVVoidOmens.GameOverMethodInvoked = false;
@@ -133,13 +120,7 @@ namespace TFTV
                 TFTVCommonMethods.ClearInternalVariables();
                 TFTVTacInstanceData data = (TFTVTacInstanceData)instanceData;
                 TFTVStamina.charactersWithBrokenLimbs = data.charactersWithBrokenLimbs;
-                TFTVVoidOmens.VoidOmen3Active = data.VoidOmen3Active;
-                TFTVVoidOmens.VoidOmen5Active = data.VoidOmen5Active;
-                TFTVVoidOmens.VoidOmen7Active = data.VoidOmen7Active;
-                TFTVVoidOmens.VoidOmen10Active = data.VoidOmen10Active;
-                TFTVVoidOmens.VoidOmen15Active = data.VoidOmen15Active;
-                TFTVVoidOmens.VoidOmen16Active = data.VoidOmen16Active;
-                TFTVVoidOmens.VoidOmen19Active = data.VoidOmen19Active;
+                TFTVVoidOmens.VoidOmensCheck = data.VoidOmensCheck;
                 TFTVUmbra.UmbraResearched = data.UmbraResearched;
                 TFTVRevenant.DeadSoldiersDelirium = data.DeadSoldiersDelirium;
                 //  TFTVRevenant.timeRevenantLastSeen = data.timeRevenantLastSeenSaveData;
@@ -149,10 +130,11 @@ namespace TFTV
                 TFTVRevenant.revenantCanSpawn = data.revenantCanSpawnSaveDate;
                 TFTVRevenantResearch.ProjectOsirisStats = data.ProjectOsirisStatsTacticalSaveData;
                 TFTVRevenantResearch.ProjectOsiris = data.ProjectOrisisCompletedSaveData;
-                TFTVHumanEnemies.difficultyLevel = data.difficultyLevelForTacticalSaveData;
+               // TFTVHumanEnemies.difficultyLevel = data.difficultyLevelForTacticalSaveData;
                 TFTVHumanEnemies.HumanEnemiesAndTactics = data.humanEnemiesLeaderTacticsSaveData;
                 TFTVInfestationStory.HavenPopulation = data.infestedHavenPopulationSaveData;
                 TFTVInfestationStory.OriginalOwner = data.infestedHavenOriginalOwnerSaveData;
+                TFTVRevenant.revenantID = data.RevenantId;
              //   TFTVTutorialAndStory.TacticalHintsToShow = data.TacticalHintsToShow;
 
                 // TFTVInfestation.PhoenixWon = data.PhoenixWonInfestationMissionTacticalSaveData;
@@ -173,28 +155,20 @@ namespace TFTV
             return new TFTVTacInstanceData()
             {
                 charactersWithBrokenLimbs = TFTVStamina.charactersWithBrokenLimbs,
-                VoidOmen3Active = TFTVVoidOmens.VoidOmen3Active,
-                VoidOmen5Active = TFTVVoidOmens.VoidOmen5Active,
-                VoidOmen7Active = TFTVVoidOmens.VoidOmen7Active,
-                VoidOmen10Active = TFTVVoidOmens.VoidOmen10Active,
-                VoidOmen15Active = TFTVVoidOmens.VoidOmen15Active,
-                VoidOmen16Active = TFTVVoidOmens.VoidOmen16Active,
-                VoidOmen19Active = TFTVVoidOmens.VoidOmen19Active,
+                VoidOmensCheck = TFTVVoidOmens.VoidOmensCheck,
                 UmbraResearched = TFTVUmbra.UmbraResearched,
                 DeadSoldiersDelirium = TFTVRevenant.DeadSoldiersDelirium,
-             //   timeRevenantLastSeenSaveData = TFTVRevenant.timeRevenantLastSeen,
+                //   timeRevenantLastSeenSaveData = TFTVRevenant.timeRevenantLastSeen,
                 revenantSpawned = TFTVRevenant.revenantSpawned,
                 revenantSpecialResistance = TFTVRevenant.revenantSpecialResistance,
                 revenantCanSpawnSaveDate = TFTVRevenant.revenantCanSpawn,
                 ProjectOsirisStatsTacticalSaveData = TFTVRevenantResearch.ProjectOsirisStats,
                 ProjectOrisisCompletedSaveData = TFTVRevenantResearch.ProjectOsiris,
-                difficultyLevelForTacticalSaveData = TFTVHumanEnemies.difficultyLevel,
                 humanEnemiesLeaderTacticsSaveData = TFTVHumanEnemies.HumanEnemiesAndTactics,
                 infestedHavenPopulationSaveData = TFTVInfestationStory.HavenPopulation,
                 infestedHavenOriginalOwnerSaveData = TFTVInfestationStory.OriginalOwner,
-              //  TacticalHintsToShow = TFTVTutorialAndStory.TacticalHintsToShow,
-                // PhoenixWonInfestationMissionTacticalSaveData = TFTVInfestation.PhoenixWon,
-                //  timeLastRevenantSpawned = TFTVRevenant.timeLastRevenantSpawned,
+                RevenantId = TFTVRevenant.revenantID,
+            
             };
             
         }

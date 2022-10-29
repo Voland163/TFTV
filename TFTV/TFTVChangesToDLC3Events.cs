@@ -111,9 +111,6 @@ namespace TFTV
             }
         }
 
-
-
-
         public static void ModifyMaskedManticoreResearch()
         {
             try

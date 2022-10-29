@@ -34,9 +34,9 @@ namespace TFTV
 
             public static bool Prepare()
             {
-
+                GeoLevelController controller = (GeoLevelController)UnityEngine.Object.FindObjectOfType(typeof(GeoLevelController));
                 TFTVConfig config = TFTVMain.Main.Config;
-                if (config.DiplomaticPenalties || config.ResourceMultiplier != 1 || TFTVVoidOmens.voidOmensCheck[2] || TFTVVoidOmens.voidOmensCheck[8])
+                if (config.DiplomaticPenalties || config.ResourceMultiplier != 1 || TFTVVoidOmens.CheckFordVoidOmensInPlay(controller).Contains(2) || TFTVVoidOmens.CheckFordVoidOmensInPlay(controller).Contains(8))
                 {
                     return true;
                 }

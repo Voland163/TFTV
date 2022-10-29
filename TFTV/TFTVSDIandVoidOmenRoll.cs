@@ -146,7 +146,7 @@ namespace TFTV
 
                                 }
                             }
-                            TFTVLogger.Always("The number of remaining VOs is" + voidOmensList.Count);
+                            TFTVLogger.Always("The number of remaining VOs is " + voidOmensList.Count);
 
                             // Get a random dark event from the available Void Omens list
                             voidOmenRoll = voidOmensList.GetRandomElement();

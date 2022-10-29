@@ -30,8 +30,9 @@ namespace TFTV
         public int infestedHavenPopulationSaveData = TFTVInfestationStory.HavenPopulation;
         public string infestedHavenOriginalOwnerSaveData = TFTVInfestationStory.OriginalOwner;
         public Dictionary<int, int[]> ProjectOsirisStatsSaveData = TFTVRevenantResearch.ProjectOsirisStats;
-       // public List<string> TacticalHintsToShow = TFTVTutorialAndStory.TacticalHintsToShow;
-       
+        public bool[] VoidOmensCheck = TFTVVoidOmens.VoidOmensCheck;
+        // public List<string> TacticalHintsToShow = TFTVTutorialAndStory.TacticalHintsToShow;
+
 
     }
 
@@ -61,7 +62,7 @@ namespace TFTV
             TFTVThirdAct.SetBehemothOnRampageMod(gsController);
             TFTVStamina.CheckBrokenLimbs(gsController.PhoenixFaction.Soldiers.ToList());
             TFTVRevenant.UpdateRevenantTimer(gsController);
-            if (TFTVRevenant.revenantID != 0)
+            if (TFTVRevenant.revenantID != 0 && TFTVRevenant.DeadSoldiersDelirium.ContainsKey(TFTVRevenant.revenantID))
             {
                 TFTVRevenant.DeadSoldiersDelirium[TFTVRevenant.revenantID] += 1;
 
@@ -82,22 +83,11 @@ namespace TFTV
             TFTVUmbra.CheckForUmbraResearch(gsController);
             TFTVUmbra.SetUmbraEvolution(gsController);
             TFTVVoidOmens.CheckForVoidOmensRequiringTacticalPatching(gsController);
-           /* if (TFTVVoidOmens.VoidOmen16Active && TFTVVoidOmens.VoidOmen15Active)
-            {
-                TFTVUmbra.SetUmbraRandomValue(0.32f);
-            }
-            if (TFTVVoidOmens.VoidOmen16Active && !TFTVVoidOmens.VoidOmen15Active)
-            {
-                TFTVUmbra.SetUmbraRandomValue(0.16f);
-            }*/
             TFTVUI.hookToCharacter = null;
-
             TFTVRevenant.CheckRevenantTime(gsController);
-            TFTVHumanEnemies.difficultyLevel = gsController.CurrentDifficultyLevel.Order;
             TFTVRevenantResearch.CheckProjectOsiris(gsController);         
             TFTVDiplomacyPenalties.VoidOmensImplemented = false;
 
-         //  TFTVDefsRequiringReinjection.CheckUmbraCondition();
         }
 
         /// <summary>
@@ -106,12 +96,12 @@ namespace TFTV
         /// <returns>Object to serialize or null if not used.</returns>
         public override object RecordGeoscapeInstanceData()
         {
+            TFTVLogger.Always("Geoscape data will be saved");
             TFTVRevenant.UpdateRevenantTimer(Controller);
             return new TFTVGSInstanceData()
             {
                 charactersWithBrokenLimbs = TFTVStamina.charactersWithBrokenLimbs,
                 targetsForBehemoth = TFTVAirCombat.targetsForBehemoth,
-                //    targetsVisitedByBehemoth = TFTVAirCombat.targetsForBehemoth,
                 flyersAndHavens = TFTVAirCombat.flyersAndHavens,
                 checkHammerfall = TFTVAirCombat.checkHammerfall,
                 DeadSoldiersDelirium = TFTVRevenant.DeadSoldiersDelirium,
@@ -122,8 +112,7 @@ namespace TFTV
                 infestedHavenOriginalOwnerSaveData = TFTVInfestationStory.OriginalOwner,
                 infestedHavenPopulationSaveData = TFTVInfestationStory.HavenPopulation,
                 ProjectOsirisStatsSaveData = TFTVRevenantResearch.ProjectOsirisStats,
-             //  TacticalHintsToShow = TFTVTutorialAndStory.TacticalHintsToShow,
-               
+                VoidOmensCheck = TFTVVoidOmens.VoidOmensCheck,              
             };
 
         }
@@ -148,6 +137,7 @@ namespace TFTV
             TFTVInfestationStory.HavenPopulation = data.infestedHavenPopulationSaveData;
             TFTVInfestationStory.OriginalOwner = data.infestedHavenOriginalOwnerSaveData;
             TFTVRevenantResearch.ProjectOsirisStats = data.ProjectOsirisStatsSaveData;
+            TFTVVoidOmens.VoidOmensCheck = data.VoidOmensCheck;
           //  TFTVTutorialAndStory.TacticalHintsToShow = data.TacticalHintsToShow;
 
             Main.Logger.LogInfo("UmbraEvoltion variable is " + Controller.EventSystem.GetVariable(TFTVUmbra.variableUmbraALNResReq));

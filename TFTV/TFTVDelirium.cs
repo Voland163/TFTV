@@ -88,7 +88,7 @@ namespace TFTV
                         bionics += 1;
                 }
 
-                if (!TFTVVoidOmens.VoidOmen10Active)
+                if (!TFTVVoidOmens.VoidOmensCheck[10])
                 {
                     if (odiPerc < 25)
                     {
@@ -261,10 +261,10 @@ namespace TFTV
 
                     // Calculate the percentage of current ODI level, these two variables are globally set by our ODI event patches
                     int odiPerc = TFTVSDIandVoidOmenRoll.CurrentODI_Level * 100 / TFTVSDIandVoidOmenRoll.ODI_EventIDs.Length;
-                    TFTVLogger.Always("ODI is " + odiPerc);
+                  
                     int maxCorruption = 0;
                     // Get max corruption dependent on max WP of the selected actor
-                    if (!TFTVVoidOmens.VoidOmen10Active)
+                    if (!TFTVVoidOmens.VoidOmensCheck[10])
                     {
 
                         if (odiPerc < 25)
@@ -315,7 +315,7 @@ namespace TFTV
                             }
                         }
                     }
-                    if (TFTVVoidOmens.VoidOmen10Active)
+                    if (TFTVVoidOmens.VoidOmensCheck[10])
                     {
                         maxCorruption = base_TacticalActor.CharacterStats.Willpower.IntMax;
 
@@ -401,7 +401,7 @@ namespace TFTV
                     // Calculate WP reduction dependent on stamina
                     float wpReduction = tacticalActor.CharacterStats.Corruption;
 
-                    if (TFTVVoidOmens.VoidOmen3Active)
+                    if (TFTVVoidOmens.VoidOmensCheck[3])
                     {
                         wpReduction = 0;
                     }

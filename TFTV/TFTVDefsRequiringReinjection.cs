@@ -919,6 +919,7 @@ namespace TFTV
                 revenantResistance.ViewElementDef.LargeIcon = icon;
                 revenantResistance.ViewElementDef.SmallIcon = icon;
 
+                
             }
             catch (Exception e)
             {
@@ -929,22 +930,27 @@ namespace TFTV
         {
             string skillName = "RevenantTier";
             GameTagDef source = DefCache.GetDef<GameTagDef>("Takeshi_Tutorial3_GameTagDef");
-            GameTagDef revenantTier1GameTag = Helper.CreateDefFromClone(
+            Helper.CreateDefFromClone(
                 source,
                 "1677F9F4-5B45-47FA-A119-83A76EF0EC70",
                 skillName + "_1_" + "GameTagDef");
-            GameTagDef revenantTier2GameTag = Helper.CreateDefFromClone(
+            Helper.CreateDefFromClone(
                 source,
                 "9A807A62-D51D-404E-ADCF-ABB4A888202E",
                 skillName + "_2_" + "GameTagDef");
-            GameTagDef revenantTier3GameTag = Helper.CreateDefFromClone(
+            Helper.CreateDefFromClone(
                 source,
                 "B4BD3091-8522-4F3C-8A0F-9EE522E0E6B4",
                 skillName + "_3_" + "GameTagDef");
-            GameTagDef anyRevenantGameTag = Helper.CreateDefFromClone(
+            Helper.CreateDefFromClone(
                 source,
                 "D2904A22-FE23-45B3-8879-9236E389C9E4",
                 "Any_Revenant_TagDef");
+            string tagName = "RevenantResistance";
+            Helper.CreateDefFromClone(
+                source,
+                "D424B077-6731-40AD-BFA8-7020BD3A9F9A",
+                tagName + "_GameTagDef");
         }
         public static void CreateNewDefsForTFTVStart()
         {

@@ -151,6 +151,8 @@ namespace TFTV
             {
                 try
                 {
+
+
                     /* if (geoEvent.EventID.Equals("OlenaOnFirstFlyer") || geoEvent.EventID.Equals("OlenaOnFirstHavenTarget")) 
                      { 
                          __result.EventLeader = Helper.CreateSpriteFromImageFile("BG_Olena_small.png");
@@ -164,8 +166,17 @@ namespace TFTV
 
                     if (geoEvent.EventID.Equals("HelenaOnOlena"))
                     {
-                        __result.EventLeader = Helper.CreateSpriteFromImageFile("helena.png");
-                        __result.EventBackground = Helper.CreateSpriteFromImageFile("Helena_fire2.jpg");
+                        GeoLevelController controller = (GeoLevelController)UnityEngine.Object.FindObjectOfType(typeof(GeoLevelController));
+                        if (controller.EventSystem.GetEventRecord("PROG_LE0_MISS").SelectedChoice == 2) 
+                        {
+                            __result.EventBackground = Helper.CreateSpriteFromImageFile("Helena_peace.jpg");
+                        }
+                        else 
+                        { 
+                            __result.EventBackground = Helper.CreateSpriteFromImageFile("Helena_fire2.jpg");
+                        }
+
+                        __result.EventLeader = Helper.CreateSpriteFromImageFile("helena.png");                    
                     }
 
                     if (geoEvent.EventID.Equals("VoidOmen") || geoEvent.EventID == "PROG_FS10" || geoEvent.EventID.Contains("Alistair")
@@ -222,7 +233,6 @@ namespace TFTV
                     {
                         __result.EventBackground = Helper.CreateSpriteFromImageFile("VO_15.jpg");
                     }
-
                     if (geoEvent.EventID.Equals("IntroBetterGeo_2"))
                     {
                         __result.EventBackground = Helper.CreateSpriteFromImageFile("BG_Intro_1.jpg");
