@@ -7,8 +7,6 @@ using PhoenixPoint.Geoscape.Levels.Factions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 
 namespace TFTV
@@ -68,14 +66,14 @@ namespace TFTV
                 // Get the GeoLevelController to get access to the event system and the variable
                 GeoLevelController geoLevelController = geoAlienFaction.GeoLevel;
                 // If current calculated level is different to last saved one then new ODI level is reached, show the new ODI event
-                if (geoLevelController.EventSystem.GetVariable("CorruptedLairDestroyed") == 1)
+
+                if (geoLevelController.EventSystem.GetEventRecord("PROG_FS2_WIN") != null && geoLevelController.EventSystem.GetEventRecord("PROG_FS2_WIN").Completed)
                 {
+                    TFTVLogger.Always("Behemoth defeated, so no more ODI");
                     return;
                 }
-                
-                else
 
-                    if (CurrentODI_Level != geoLevelController.EventSystem.GetVariable("BC_SDI", -1))
+                else if (CurrentODI_Level != geoLevelController.EventSystem.GetVariable("BC_SDI", -1))
                 {
                     // Get the Event ID from array dependent on calculated level index
 
@@ -111,28 +109,28 @@ namespace TFTV
                             // If a Void Omen rolls
                             // Create list of Void Omens currently implemented
                             List<int> voidOmensList = new List<int> { 1, 2, 4, 5, 6, 7, 8, 9, 10, 12, 13, 14, 18 };
-                            
+
                             if (geoAlienFaction.Research.HasCompleted("ALN_CrabmanUmbra_ResearchDef"))
                             {
                                 voidOmensList.Add(15);
                                 voidOmensList.Add(16);
-                                
+
                             }
                             if (geoAlienFaction.GeoLevel.EventSystem.GetVariable("BehemothEggHatched") == 1)
                             {
                                 voidOmensList.Add(11);
-                                
+
                             }
                             if (geoAlienFaction.GeoLevel.EventSystem.GetVariable("Infestation_Encounter_Variable") == 1)
                             {
                                 voidOmensList.Add(17);
-                                
+
                             }
-                            if (TFTVVoidOmens.CheckForAlreadyRolledVoidOmens(geoLevelController).Count >= 8) 
+                            if (TFTVVoidOmens.CheckForAlreadyRolledVoidOmens(geoLevelController).Count >= 8)
                             {
-                                voidOmensList.Add(3);                           
+                                voidOmensList.Add(3);
                             }
-                            if (TFTVVoidOmens.CheckForAlreadyRolledVoidOmens(geoLevelController).Count >= 5 && TFTVRevenant.DeadSoldiersDelirium.Keys.Count==0)
+                            if (TFTVVoidOmens.CheckForAlreadyRolledVoidOmens(geoLevelController).Count >= 5 && TFTVRevenant.DeadSoldiersDelirium.Keys.Count == 0)
                             {
                                 voidOmensList.Add(19);
                             }
@@ -152,11 +150,11 @@ namespace TFTV
 
                             // Get a random dark event from the available Void Omens list
                             voidOmenRoll = voidOmensList.GetRandomElement();
-   
+
                             // We can have as many simulateneous Void Omens in play as the mathematical expression of the difficulty level
                             // Lets check how many Void Omens are already in play and if there is space for more
                             int[] voidOmensInPlay = TFTVVoidOmens.CheckFordVoidOmensInPlay(geoLevelController);
-                            
+
                             //If there is no space, we have to remove the earliest one
                             if (!voidOmensInPlay.Contains(0))
                             {
@@ -193,7 +191,7 @@ namespace TFTV
                     geoLevelController.EventSystem.SetVariable("BC_SDI", CurrentODI_Level);
                     //UpdateODITracker(CurrentODI_Level, geoLevelController); not used currently, because clogs the UI
                     // And if a Void Omen has been rolled, a Void Omen will appear
-                    if (voidOmenRolled && TFTVVoidOmens.CheckForAlreadyRolledVoidOmens(geoLevelController).Count==1)
+                    if (voidOmenRolled && TFTVVoidOmens.CheckForAlreadyRolledVoidOmens(geoLevelController).Count == 1)
                     {
                         GeoscapeEventDef voidOmenIntro = geoLevelController.EventSystem.GetEventByID("VoidOmenIntro");
                         voidOmenIntro.GeoscapeEventData.Title.LocalizationKey = "VOID_OMEN_INTRO_TITLE";
@@ -203,10 +201,10 @@ namespace TFTV
                     // This adds the Void Omen to the objective list
                     if (voidOmenRolled)
                     {
-                      //  string title = TFTVVoidOmens.VoidOmens_Title.GetValue(voidOmenRoll - 1).ToString();
-                      //  string description = TFTVVoidOmens.VoidOmens_Description.GetValue(voidOmenRoll - 1).ToString();
+                        //  string title = TFTVVoidOmens.VoidOmens_Title.GetValue(voidOmenRoll - 1).ToString();
+                        //  string description = TFTVVoidOmens.VoidOmens_Description.GetValue(voidOmenRoll - 1).ToString();
                         GeoscapeEventDef voidOmenEvent = geoLevelController.EventSystem.GetEventByID("VoidOmen");
-                                      
+
                         voidOmenEvent.GeoscapeEventData.Title.LocalizationKey = voidOmenTitle + voidOmenRoll;
                         voidOmenEvent.GeoscapeEventData.Description[0].General.LocalizationKey = voidOmenDescription + voidOmenRoll;
                         geoLevelController.EventSystem.TriggerGeoscapeEvent("VoidOmen", geoscapeEventContext);

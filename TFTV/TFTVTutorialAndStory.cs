@@ -1,4 +1,5 @@
-﻿using Base.Defs;
+﻿using Base;
+using Base.Defs;
 using Base.UI;
 using HarmonyLib;
 using PhoenixPoint.Common.ContextHelp;
@@ -21,6 +22,8 @@ namespace TFTV
     //disable hint diplomacy effect of Pandoran bases
     internal class TFTVTutorialAndStory
     {
+
+       // public static List<string> TacticalHintsToShow = new List<string>();
         private static readonly DefRepository Repo = TFTVMain.Repo;
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
         public static ContextHelpHintDbDef alwaysDisplayedTacticalHintsDbDef = DefCache.GetDef<ContextHelpHintDbDef>("AlwaysDisplayedTacticalHintsDbDef");
@@ -33,19 +36,22 @@ namespace TFTV
         private static readonly HasSeenHintHintConditionDef sourceHasSeenHintConditionDef = DefCache.GetDef<HasSeenHintHintConditionDef>("HasSeenHint_TUT2_Overwatch_HintDef-False_HintConditionDef");
         private static readonly LevelHasTagHintConditionDef sourceInfestationMission = DefCache.GetDef<LevelHasTagHintConditionDef>("LevelHasTag_MissionTypeBaseInfestation_MissionTagDef_HintConditionDef");
         private static readonly MissionTypeTagDef infestationMissionTagDef = DefCache.GetDef<MissionTypeTagDef>("HavenInfestation_MissionTypeTagDef");
-        public static List<string> ShownTacticalHints = new List<string>();
+        
 
-        public static void RemoveAlreadyShownTacticalHints()
+      /*  public static void RemoveAlreadyShownTacticalHints()
         {
             try
             {
-                if (ShownTacticalHints.Count > 0)
+                if (TacticalHintsToShow.Count > 0)
                 {
-                    foreach (string hintDefName in ShownTacticalHints)
+                    foreach (string hintDefName in TacticalHintsToShow)
                     {
-                        if (alwaysDisplayedTacticalHintsDbDef.Hints.Contains(DefCache.GetDef<ContextHelpHintDef>(hintDefName)))
+                        ContextHelpHintDef hint = DefCache.GetDef<ContextHelpHintDef>(hintDefName);
+                        TFTVLogger.Always("Hint already shown is " + hintDefName);
+
+                        if (alwaysDisplayedTacticalHintsDbDef.Hints.Contains(hint))
                         {
-                            alwaysDisplayedTacticalHintsDbDef.Hints.Remove(DefCache.GetDef<ContextHelpHintDef>(hintDefName));
+                            alwaysDisplayedTacticalHintsDbDef.Hints.Remove(hint);
                         }
                     }
                 }
@@ -54,7 +60,7 @@ namespace TFTV
             {
                 TFTVLogger.Error(e);
             }
-        }
+        }*/
 
 
 
@@ -108,36 +114,36 @@ namespace TFTV
                              TFTVLogger.Always("The hint # " + (i+1) + " is " + TFTVHumanEnemies.TacticsHint[i].name);
 
                          }*/
-                        if (hintDef.name.Contains("InfestationMissionIntro") && !ShownTacticalHints.Contains(hintDef.name))
+                        if (hintDef.name.Contains("InfestationMissionIntro"))// && !TacticalHintsToShow.Contains(hintDef.name))
                         {
                             __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("px_squad.jpg");
                             hintDef.Trigger = HintTrigger.Manual;
-                            ShownTacticalHints.Add(hintDef.name);
+                           // TacticalHintsToShow.Add(hintDef.name);
                         }
 
-                        else if (hintDef.name.Contains("InfestationMissionEnd") && !ShownTacticalHints.Contains(hintDef.name))
+                        else if (hintDef.name.Contains("InfestationMissionEnd"))// && !TacticalHintsToShow.Contains(hintDef.name))
                         {
                             __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("px_squad.jpg");
                             hintDef.Trigger = HintTrigger.Manual;
-                            ShownTacticalHints.Add(hintDef.name);
+                           // TacticalHintsToShow.Add(hintDef.name);
                         }
 
-                        else if (title.LocalizationKey == "UMBRA_SIGHTED_TITLE" && !ShownTacticalHints.Contains(hintDef.name))
+                        else if (title.LocalizationKey == "UMBRA_SIGHTED_TITLE")// && !TacticalHintsToShow.Contains(hintDef.name))
                         {
                             __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("Umbra_base.png");
-                            ShownTacticalHints.Add(hintDef.name);
+                           // TacticalHintsToShow.Add(hintDef.name);
                         }
 
-                        else if (title.LocalizationKey == "REVENANT_SIGHTED_TITLE" && !ShownTacticalHints.Contains(hintDef.name))
+                        else if (title.LocalizationKey == "REVENANT_SIGHTED_TITLE")// && !TacticalHintsToShow.Contains(hintDef.name))
                         {
                             __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("Hint_Revenant.png");
-                            ShownTacticalHints.Add(hintDef.name);
+                           // TacticalHintsToShow.Add(hintDef.name);
                         }
 
-                        else if (hintDef.name.Contains("TFTV_StaminaHintDef") && !ShownTacticalHints.Contains(hintDef.name))
+                        else if (hintDef.name.Contains("TFTV_StaminaHintDef"))// && !TacticalHintsToShow.Contains(hintDef.name))
                         {
                             __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("broken_limb_stamina.png");
-                            ShownTacticalHints.Add(hintDef.name);
+                           // TacticalHintsToShow.Add(hintDef.name);
                         }
                         else
                         {
@@ -268,12 +274,12 @@ namespace TFTV
 
 
 
-        public static void CreateNewTacticalHint(string name, HintTrigger trigger, string conditionName, string title, string text, int typeHint, bool oneTime)
+        public static void CreateNewTacticalHint(string name, HintTrigger trigger, string conditionName, string title, string text, int typeHint, bool oneTime, string gUID)
         {
             try
 
             {
-                string gUID = Guid.NewGuid().ToString();
+               
 
                 ContextHelpHintDef newContextHelpHintDef = Helper.CreateDefFromClone(sourceContextHelpHintDef, gUID, name);
                 newContextHelpHintDef.Trigger = trigger;
@@ -304,9 +310,9 @@ namespace TFTV
                 }
 
 
-                ContextHelpHintDbDef alwaysDisplayedTacticalHintsDbDef = DefCache.GetDef<ContextHelpHintDbDef>("AlwaysDisplayedTacticalHintsDbDef");
+              
                 alwaysDisplayedTacticalHintsDbDef.Hints.Add(newContextHelpHintDef);
-
+                
 
 
                 //newContextHelpHintDef.NextHint = null;
@@ -385,6 +391,7 @@ namespace TFTV
 
 
                 alwaysDisplayedTacticalHintsDbDef.Hints.Add(newContextHelpHintDef);
+                
             }
             catch (Exception e)
             {
@@ -416,6 +423,7 @@ namespace TFTV
                 newContextHelpHintDef.AnyCondition = false;
 
                 alwaysDisplayedTacticalHintsDbDef.Hints.Add(newContextHelpHintDef);
+           
             }
             catch (Exception e)
             {

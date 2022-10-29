@@ -64,13 +64,13 @@ namespace TFTV
                 TFTVRevenant.revenantCanSpawn = false;
                 TFTVHumanEnemies.difficultyLevel = 0;
                 TFTVHumanEnemies.HumanEnemiesAndTactics = new Dictionary<string, int>();
-
                 TFTVRevenantResearch.ProjectOsirisStats = new Dictionary<int, int[]>();
                 TFTVRevenantResearch.ProjectOsiris = false;
                 TFTVDiplomacyPenalties.VoidOmensImplemented = false;
                 TFTVHumanEnemiesNames.names.Clear();
                 TFTVHumanEnemiesNames.CreateNamesDictionary();
                 TFTVInfestation.InfestationMissionWon = false;
+              //  TFTVTutorialAndStory.TacticalHintsToShow = new List<string>();
                 // TFTVRevenant.timeLastRevenantSpawned = new TimeSpan();
                 TFTVLogger.Always("Internal variables cleared");
             }

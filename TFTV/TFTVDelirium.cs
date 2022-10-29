@@ -77,8 +77,9 @@ namespace TFTV
                 float maxCorruption = 0;
                 int bionics = 0;
                 int currentODIlevel = character.Faction.GeoLevel.EventSystem.GetVariable("BC_SDI");
+               // TFTVLogger.Always("CurrentODIlevel is " + currentODIlevel);
                 int odiPerc = currentODIlevel * 100 / TFTVSDIandVoidOmenRoll.ODI_EventIDs.Length;
-
+              //  TFTVLogger.Always("odiPerc is " + odiPerc);
 
                 foreach (GeoItem bionic in character.ArmourItems)
                 {
@@ -109,7 +110,7 @@ namespace TFTV
                     }
                     else
                     {
-                        if (odiPerc <= 50)
+                        if (odiPerc < 45)
                         {
                             maxCorruption = character.CharacterStats.Willpower.IntMax * 1 / 2;
 
@@ -170,7 +171,7 @@ namespace TFTV
                 }
 
             }
-            catch (System.Exception e)
+            catch (Exception e)
             {
                 TFTVLogger.Error(e);
             }
@@ -182,7 +183,6 @@ namespace TFTV
         public static int CalculateStaminaEffectOnDelirium(GeoCharacter character)
         {
             {
-
                 try
                 {
                     if (character.Fatigue != null && (character.TemplateDef.IsHuman || character.TemplateDef.IsMutoid))
@@ -261,6 +261,7 @@ namespace TFTV
 
                     // Calculate the percentage of current ODI level, these two variables are globally set by our ODI event patches
                     int odiPerc = TFTVSDIandVoidOmenRoll.CurrentODI_Level * 100 / TFTVSDIandVoidOmenRoll.ODI_EventIDs.Length;
+                    TFTVLogger.Always("ODI is " + odiPerc);
                     int maxCorruption = 0;
                     // Get max corruption dependent on max WP of the selected actor
                     if (!TFTVVoidOmens.VoidOmen10Active)
@@ -283,7 +284,7 @@ namespace TFTV
                         }
                         else
                         {
-                            if (odiPerc <= 50)
+                            if (odiPerc < 45)
                             {
                                 maxCorruption = base_TacticalActor.CharacterStats.Willpower.IntMax * 1 / 2;
 

@@ -49,7 +49,7 @@ namespace TFTV
         public string infestedHavenOriginalOwnerSaveData;// = TFTVInfestationStory.OriginalOwner;
         public Dictionary<int, int[]> ProjectOsirisStatsTacticalSaveData;// = TFTVRevenantResearch.ProjectOsirisStats;
         public bool ProjectOrisisCompletedSaveData;// = TFTVRevenantResearch.ProjectOsiris;
-        public List<string> ShownHintsSaveData;
+        public List<string> TacticalHintsToShow;
         // public bool PhoenixWonInfestationMissionTacticalSaveData = TFTVInfestation.PhoenixWon;
     }
 
@@ -82,8 +82,8 @@ namespace TFTV
             TFTVLogger.Always("VO16 Active " + TFTVVoidOmens.VoidOmen16Active);
             TFTVLogger.Always("VO19 Active " + TFTVVoidOmens.VoidOmen19Active);
             TFTVLogger.Always("Project Osiris researched " + TFTVRevenantResearch.ProjectOsiris);
-            TFTVLogger.Always("# of already shown tactical hints " + TFTVTutorialAndStory.ShownTacticalHints);
-            TFTVTutorialAndStory.RemoveAlreadyShownTacticalHints();
+          //  TFTVLogger.Always("# of already shown tactical hints is " + TFTVTutorialAndStory.TacticalHintsToShow.Count);
+           // TFTVTutorialAndStory.RemoveAlreadyShownTacticalHints();
             TFTVHumanEnemies.RollCount = 0;
             TFTVRevenant.ModifyRevenantResistanceAbility(Controller);
             TFTVRevenant.CheckForNotDeadSoldiers(tacController);
@@ -153,7 +153,7 @@ namespace TFTV
                 TFTVHumanEnemies.HumanEnemiesAndTactics = data.humanEnemiesLeaderTacticsSaveData;
                 TFTVInfestationStory.HavenPopulation = data.infestedHavenPopulationSaveData;
                 TFTVInfestationStory.OriginalOwner = data.infestedHavenOriginalOwnerSaveData;
-                TFTVTutorialAndStory.ShownTacticalHints = data.ShownHintsSaveData;
+             //   TFTVTutorialAndStory.TacticalHintsToShow = data.TacticalHintsToShow;
 
                 // TFTVInfestation.PhoenixWon = data.PhoenixWonInfestationMissionTacticalSaveData;
             }
@@ -192,7 +192,7 @@ namespace TFTV
                 humanEnemiesLeaderTacticsSaveData = TFTVHumanEnemies.HumanEnemiesAndTactics,
                 infestedHavenPopulationSaveData = TFTVInfestationStory.HavenPopulation,
                 infestedHavenOriginalOwnerSaveData = TFTVInfestationStory.OriginalOwner,
-                ShownHintsSaveData = TFTVTutorialAndStory.ShownTacticalHints,
+              //  TacticalHintsToShow = TFTVTutorialAndStory.TacticalHintsToShow,
                 // PhoenixWonInfestationMissionTacticalSaveData = TFTVInfestation.PhoenixWon,
                 //  timeLastRevenantSpawned = TFTVRevenant.timeLastRevenantSpawned,
             };
