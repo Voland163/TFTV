@@ -16,7 +16,9 @@ namespace TFTV
 {
     internal class TFTVNewPXCharacters
     {
-       
+        private static readonly Sprite OlenaPic = Helper.CreateSpriteFromImageFile("BG_Olena_small.png");
+        private static readonly Sprite AlistairPic = Helper.CreateSpriteFromImageFile("BG_alistair_small.png");
+
         public static void PlayIntro(GeoLevelController level)
         {
             try
@@ -58,7 +60,7 @@ namespace TFTV
 
                     if (__instance.Title != null && __instance.Title.LocalizationKey.Contains("VOID_OMEN_TITLE_"))
                     {
-                        __result = Helper.CreateSpriteFromImageFile("Void-04P.png");
+                        __result = TFTVDefsRequiringReinjection.VoidIcon;
 
                     }
 
@@ -182,17 +184,17 @@ namespace TFTV
                     if (geoEvent.EventID.Equals("VoidOmen") || geoEvent.EventID == "PROG_FS10" || geoEvent.EventID.Contains("Alistair")
                             || geoEvent.EventID.Equals("PROG_LE3_WARN"))
                     {
-                        __result.EventLeader = Helper.CreateSpriteFromImageFile("BG_alistair_small.png");
+                        __result.EventLeader = AlistairPic;
                     }
 
                     if (geoEvent.EventID == "PROG_FS2" || geoEvent.EventID == "PROG_LE1_WARN" || (geoEvent.EventID.Contains("Olena") && !geoEvent.EventID.Contains("Helena")))
                     {
-                        __result.EventLeader = Helper.CreateSpriteFromImageFile("BG_Olena_small.png");
+                        __result.EventLeader = OlenaPic;
                     }
 
                     if (geoEvent.EventID == "PROG_FS20")
                     {
-                        __result.EventLeader = Helper.CreateSpriteFromImageFile("BG_Olena_small.png");
+                        __result.EventLeader = OlenaPic;
                     }
 
                     if (geoEvent.EventID == "PROG_FS9")
@@ -202,7 +204,7 @@ namespace TFTV
 
                     if (geoEvent.EventID.Contains("SDI"))
                     {
-                        __result.EventLeader = Helper.CreateSpriteFromImageFile("BG_alistair_small.png");
+                        __result.EventLeader = AlistairPic;
                     }
 
                     if (geoEvent.EventID.Equals("PROG_FS0"))
@@ -236,12 +238,12 @@ namespace TFTV
                     if (geoEvent.EventID.Equals("IntroBetterGeo_2"))
                     {
                         __result.EventBackground = Helper.CreateSpriteFromImageFile("BG_Intro_1.jpg");
-                        __result.EventLeader = Helper.CreateSpriteFromImageFile("BG_Olena_small.png");
+                        __result.EventLeader = OlenaPic;
                     }
                     if (geoEvent.EventID.Equals("IntroBetterGeo_1"))
                     {
                         __result.EventBackground = Helper.CreateSpriteFromImageFile("BG_Intro_1.jpg");
-                        __result.EventLeader = Helper.CreateSpriteFromImageFile("BG_alistair_small.png");
+                        __result.EventLeader = AlistairPic;
                     }
                     if (geoEvent.EventID.Equals("IntroBetterGeo_0"))
                     {                      

@@ -19,10 +19,13 @@ using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.Entities.Statuses;
 using PhoenixPoint.Tactical.Entities.Weapons;
 using PhoenixPoint.Tactical.Levels;
+using PhoenixPoint.Tactical.View.ViewControllers;
+using PhoenixPoint.Tactical.View.ViewModules;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+
 
 namespace TFTV
 {
@@ -50,7 +53,7 @@ namespace TFTV
         private static readonly GameTagDef revenantTier3GameTag = DefCache.GetDef<GameTagDef>("RevenantTier_3_GameTagDef");
         private static readonly GameTagDef anyRevenantGameTag = DefCache.GetDef<GameTagDef>("Any_Revenant_TagDef");
         private static readonly GameTagDef revenantResistanceGameTag = DefCache.GetDef<GameTagDef>("RevenantResistance_GameTagDef");
-     
+
         private static readonly PassiveModifierAbilityDef revenantAssault = DefCache.GetDef<PassiveModifierAbilityDef>("RevenantAssault_AbilityDef");
         private static readonly PassiveModifierAbilityDef revenantBerserker = DefCache.GetDef<PassiveModifierAbilityDef>("RevenantBerserker_AbilityDef");
         private static readonly PassiveModifierAbilityDef revenantInfiltrator = DefCache.GetDef<PassiveModifierAbilityDef>("RevenantInfiltrator_AbilityDef");
@@ -80,8 +83,8 @@ namespace TFTV
 
         private static readonly AddAbilityStatusDef revenantStatusAbility = DefCache.GetDef<AddAbilityStatusDef>("Revenant_StatusEffectDef");
         private static readonly PassiveModifierAbilityDef revenantAbility = DefCache.GetDef<PassiveModifierAbilityDef>("Revenant_AbilityDef");
-
-        private static readonly DamageMultiplierAbilityDef revenantResistanceAbility = DefCache.GetDef<DamageMultiplierAbilityDef>("RevenantResistance_AbilityDef");
+        private static readonly DamageMultiplierStatusDef revenantResistanceStatus = DefCache.GetDef<DamageMultiplierStatusDef>("RevenantResistance_StatusDef");
+        //private static readonly DamageMultiplierAbilityDef revenantResistanceAbility = DefCache.GetDef<DamageMultiplierAbilityDef>("RevenantResistance_AbilityDef");
 
 
 
@@ -309,24 +312,31 @@ namespace TFTV
                     // SetDeathTime(theChosen, __instance, timeOfMissionStart);
                     revenantID = theChosen;
                     SetRevenantClassAbility(theChosen, controller, tacticalActor);
-                    AddRevenantResistanceAbility(actor);
+                    AddRevenantResistanceStatus(actor);
                     //  SpreadResistance(__instance);
                     actor.UpdateStats();
-                    TFTVLogger.Always("Crab's name has been changed to " + actor.GetDisplayName());
-                   // revenantCanSpawn = false;
+                  //  TFTVLogger.Always("Crab's name has been changed to " + actor.GetDisplayName());
+                    // revenantCanSpawn = false;
 
-                    foreach (TacticalActorBase pandoran in pandorans.Actors)
+                    foreach (TacticalActorBase pandoranBase in pandorans.Actors)
                     {
-                        if (!controller.TacticalGameParams.Statistics.LivingSoldiers.ContainsKey(pandoran.GeoUnitId)
-                             && !pandoran.GameTags.Contains(anyRevenantGameTag)
-                             && pandoran.GetAbilityWithDef<DamageMultiplierAbility>(revenantResistanceAbility) == null)
+                        TacticalActor pandoran = pandoranBase as TacticalActor;
+                        if (pandoran != null)
+                        {
+                            TFTVLogger.Always("The Pandoran is " + pandoran.DisplayName);
 
-                            AddRevenantResistanceAbility(pandoran);
-                        TFTVLogger.Always(pandoran.name + " received the revenant resistance ability.");
+                            if (!controller.TacticalGameParams.Statistics.LivingSoldiers.ContainsKey(pandoran.GeoUnitId)
+                                 && !pandoran.GameTags.Contains(anyRevenantGameTag)
+                                 && !pandoran.Status.HasStatus(revenantResistanceStatus))
+
+                                AddRevenantResistanceStatus(pandoran);
+                            TFTVLogger.Always(pandoran.name + " received the revenant resistance ability.");
+                        }
                     }
                     string newGuid = Guid.NewGuid().ToString();
-                    string hintDescription = revenantResistanceAbility.ViewElementDef.Description.LocalizeEnglish() + ".\nKilling the Revenant will not remove this resistance from any Pandoran that already has it.";
+                    string hintDescription = revenantResistanceStatus.Visuals.Description.LocalizeEnglish() + ".\nKilling the Revenant will not remove this resistance from any Pandoran that already has it.";
 
+                   // TFTVLogger.Always("Got to before hint");
 
                     TFTVTutorialAndStory.CreateNewTacticalHintForRevenantResistance("RevenantResistanceSighted", HintTrigger.ActorSeen, "RevenantResistance_GameTagDef", "Revenant resistance", hintDescription);
                     revenantResistanceHintCreated = true;
@@ -351,9 +361,9 @@ namespace TFTV
                     {
                         if (!controller.TacticalGameParams.Statistics.LivingSoldiers.ContainsKey(pandoran.GeoUnitId)
                              && !pandoran.GameTags.Contains(anyRevenantGameTag)
-                             && pandoran.GetAbilityWithDef<DamageMultiplierAbility>(revenantResistanceAbility) == null)
+                             && pandoran.Status.HasStatus(revenantResistanceStatus))
 
-                            AddRevenantResistanceAbility(pandoran);
+                            AddRevenantResistanceStatus(pandoran);
                         TFTVLogger.Always(pandoran.name + " received the revenant resistance ability.");
                     }
                 }
@@ -681,7 +691,37 @@ namespace TFTV
 
 
 
+     /*   [HarmonyPatch(typeof(UIModuleCharacterStatus), "SetData")]
+        public static class UIModuleCharacterStatus_SetData_RevenantResistance_Patch
+        {
+            public static void Postfix(CharacterData data, UIModuleCharacterStatus __instance, ListControl ____statusIconsList)
+            {
+                try
+                {
 
+                    if (data.Tags.Contains(revenantResistanceGameTag))
+                    {
+
+                        Sprite icon = Helper.CreateSpriteFromImageFile("Void-04P.png");
+                        StatusData statusData = new StatusData
+                        {
+                            Name = new LocalizedTextBind("Revenant Resistance", true),
+
+                            Icon = icon
+                        };
+
+                        ____statusIconsList.AddRow<CharacterStatusAbilityRowController>(__instance.StatusPrototype).SetData(statusData);
+                    }
+                }
+
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+
+            }
+        }
+     */
 
         public static DamageTypeBaseEffectDef GetPreferredDamageType(TacticalLevelController controller)
         {
@@ -746,7 +786,7 @@ namespace TFTV
                             if (weaponDef != null && weaponDef.DamagePayload.DamageType == paralysisDamage)
                             {
                                 scoreParalysisDamage += stat.UsedCount;
-                              //  TFTVLogger.Always("This weapon " + weaponDef.name + " has paralysis damage");
+                                //  TFTVLogger.Always("This weapon " + weaponDef.name + " has paralysis damage");
                             }
                             if (weaponDef != null && weaponDef.DamagePayload.DamageType == virusDamage)
                             {
@@ -876,41 +916,41 @@ namespace TFTV
         }
         public static void ModifyRevenantResistanceAbility(TacticalLevelController controller)
         {
-            DamageMultiplierAbilityDef revenantResistanceAbilityDef = DefCache.GetDef<DamageMultiplierAbilityDef>("RevenantResistance_AbilityDef");
-            revenantResistanceAbilityDef.DamageTypeDef = GetPreferredDamageType(controller);
-            revenantResistanceAbilityDef.Multiplier = 0.5f;
+            //DamageMultiplierStatusDef revenantResistanceStatus = DefCache.GetDef<DamageMultiplierStatusDef>("RevenantResistance_StatusDef"); // Repo.GetAllDefs<DamageMultiplierAbilityDef>().FirstOrDefault(dm=>dm.name.Equals("RevenantResistance_StatusDef"));
+            revenantResistanceStatus.DamageTypeDefs[0] = GetPreferredDamageType(controller);
+            revenantResistanceStatus.Multiplier = 0.5f;
 
 
             string descriptionDamage = "";
 
-            if (revenantResistanceAbilityDef.DamageTypeDef == acidDamage)
+            if (revenantResistanceStatus.DamageTypeDefs[0] == acidDamage)
             {
                 descriptionDamage = "<b>acid damage</b>";
             }
-            else if (revenantResistanceAbilityDef.DamageTypeDef == blastDamage)
+            else if (revenantResistanceStatus.DamageTypeDefs[0] == blastDamage)
             {
                 descriptionDamage = "<b>blast damage</b>";
             }
-            else if (revenantResistanceAbilityDef.DamageTypeDef == fireDamage)
+            else if (revenantResistanceStatus.DamageTypeDefs[0] == fireDamage)
             {
                 descriptionDamage = "<b>fire damage</b>";
             }
-            else if (revenantResistanceAbilityDef.DamageTypeDef == shredDamage)
+            else if (revenantResistanceStatus.DamageTypeDefs[0] == shredDamage)
             {
                 descriptionDamage = "<b>shred damage</b>";
             }
-            else if (revenantResistanceAbilityDef.DamageTypeDef == virusDamage)
+            else if (revenantResistanceStatus.DamageTypeDefs[0] == virusDamage)
             {
                 descriptionDamage = "<b>virus damage</b>";
             }
-            else if (revenantResistanceAbilityDef.DamageTypeDef == paralysisDamage)
+            else if (revenantResistanceStatus.DamageTypeDefs[0] == paralysisDamage)
             {
                 descriptionDamage = "<b>paralysis damage</b>";
             }
-            else if (revenantResistanceAbilityDef.DamageTypeDef == null)
+            else if (revenantResistanceStatus.DamageTypeDefs[0] == null)
             {
                 descriptionDamage = "<b>high damage attacks </b>";
-                revenantResistanceAbilityDef.Multiplier = 1f;
+                revenantResistanceStatus.Multiplier = 1f;
             }
             /*   else if (revenantResistanceAbilityDef.DamageTypeDef == projectileDamage)
                {
@@ -918,19 +958,22 @@ namespace TFTV
                    revenantResistanceAbilityDef.Multiplier = 1f;
                }*/
 
-            revenantResistanceAbilityDef.ViewElementDef.DisplayName1 = new LocalizedTextBind("Revenant Resistance", true);
-            revenantResistanceAbilityDef.ViewElementDef.Description = new LocalizedTextBind((1 - revenantResistanceAbilityDef.Multiplier) * 100 + "%" + " resistance gained to " + descriptionDamage + " from knowledge of Phoenix ways", true);
+            revenantResistanceStatus.Visuals.DisplayName1 = new LocalizedTextBind("REVENANT RESISTANCE - " +descriptionDamage.ToUpper(), true);
+            revenantResistanceStatus.Visuals.Description = new LocalizedTextBind((1 - revenantResistanceStatus.Multiplier) * 100 + "%" + " resistance gained to " + descriptionDamage + " from knowledge of Phoenix ways", true);
 
-            if (revenantResistanceAbilityDef.DamageTypeDef == null)
+            if (revenantResistanceStatus.DamageTypeDefs[0] == null)
             {
-                revenantResistanceAbilityDef.ViewElementDef.DisplayName1 = new LocalizedTextBind("Revenant Resistance", true);
-                revenantResistanceAbilityDef.ViewElementDef.Description = new LocalizedTextBind("This Pandoran has developed a unique active armor protection: <b>damage from first hit in a turn is reduced by 75%</b> " +
+                revenantResistanceStatus.Visuals.DisplayName1 = new LocalizedTextBind("REVENANT RESISTANCE - " + descriptionDamage.ToUpper(), true);
+                revenantResistanceStatus.Visuals.Description = new LocalizedTextBind("This Pandoran has developed a unique active armor protection: <b>damage from first hit in a turn is reduced by 75%</b> " +
                     "as a response to Phoenix Project overwhelming use of weapons with high damage per projectile/strike", true);
             }
         }
-        public static void AddRevenantResistanceAbility(TacticalActorBase tacticalActor)
+        public static void AddRevenantResistanceStatus(TacticalActorBase tacticalActor)
         {
-            tacticalActor.AddAbility(revenantResistanceAbility, tacticalActor);
+            TacticalActor tacticalActor1 = tacticalActor as TacticalActor;
+            tacticalActor1.Status.ApplyStatus<DamageMultiplierStatus>(revenantResistanceStatus);
+
+          //  tacticalActor.Status(revenantResistanceStatus);
             tacticalActor.GameTags.Add(revenantResistanceGameTag);
 
         }
@@ -1271,7 +1314,7 @@ namespace TFTV
                     foreach (TacticalActorBase actorBase in aliens.Actors)
                     {
                         //  TacticalActor tacticalActor = actorBase as TacticalActor;
-                        if (actorBase.GetAbilityWithDef<DamageMultiplierAbility>(revenantResistanceAbility) != null)
+                        if (actorBase.Status.HasStatus(revenantResistanceStatus))
                         {
                             revenantPresent = true;
                         }
@@ -1302,9 +1345,9 @@ namespace TFTV
             {
                 TacticalActorBase actor = data.Target.GetActor();
 
-                if (actor != null && actor.GetAbilityWithDef<DamageMultiplierAbility>(revenantResistanceAbility) != null && revenantResistanceAbility.DamageTypeDef == shredDamage)
+                if (actor != null && actor.Status.HasStatus(revenantResistanceStatus) && revenantResistanceStatus.DamageTypeDefs[0] == shredDamage)
                 {
-                    data.DamageResult.ArmorDamage = Mathf.Floor(data.DamageResult.ArmorDamage * revenantResistanceAbility.Multiplier);
+                    data.DamageResult.ArmorDamage = Mathf.Floor(data.DamageResult.ArmorDamage * revenantResistanceStatus.Multiplier);
                 }
             }
         }
@@ -1320,7 +1363,7 @@ namespace TFTV
 
                     //  TFTVLogger.Always("Actor who has received damage is " + __instance.name);
 
-                    if (revenantResistanceAbility.DamageTypeDef == null && __instance.GetAbilityWithDef<DamageMultiplierAbility>(revenantResistanceAbility) != null && !revenantSpecialResistance.Contains(__instance.name))
+                    if (revenantResistanceStatus.DamageTypeDefs[0] == null && __instance.Status.HasStatus(revenantResistanceStatus) && !revenantSpecialResistance.Contains(__instance.name))
                     {
                         //  TFTVLogger.Always(__instance.name + " has the Revenant Resistance ability and it's the first time it is triggered");
                         revenantSpecialResistance.Add(__instance.name);
@@ -1345,11 +1388,11 @@ namespace TFTV
             {
                 try
                 {
-                    if (revenantResistanceAbility.DamageTypeDef == null)
+                    if (revenantResistanceStatus.DamageTypeDefs[0] == null)
                     {
                         float multiplier = 0.25f;
 
-                        if (data.Target.GetActor() != null && data.Target.GetActor().GetAbilityWithDef<DamageMultiplierAbility>(revenantResistanceAbility) != null && !revenantSpecialResistance.Contains(data.Target.GetActor().name))
+                        if (data.Target.GetActor() != null && data.Target.GetActor().Status.HasStatus(revenantResistanceStatus) && !revenantSpecialResistance.Contains(data.Target.GetActor().name))
                         {
                             //  TFTVLogger.Always("This check was passed");
                             data.DamageResult.HealthDamage = Math.Min(data.Target.GetHealth(), data.DamageResult.HealthDamage * multiplier);

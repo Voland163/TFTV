@@ -211,8 +211,6 @@ namespace TFTV
 
         }
 
-
-
         public static ActorHasTemplateHintConditionDef ActorHasTemplateCreateNewConditionForTacticalHint(string name)
         {
             try

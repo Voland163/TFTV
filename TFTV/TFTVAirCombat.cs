@@ -407,6 +407,7 @@ namespace TFTV
             {
                 try
                 {
+                    //TFTVLogger.Always("Total sites count is " + __instance.GeoLevel.Map.AllSites.Count);
 
                     if (__instance.CurrentBehemothStatus == GeoBehemothActor.BehemothStatus.Dormant)//first check
                     {
@@ -650,8 +651,9 @@ namespace TFTV
                     }
                 }
 
-                if (behemothScenicRoute.Count > geoBehemothActor.GeoLevel.Map.AllSites.Count)
+                if (behemothScenicRoute.Count > geoBehemothActor.GeoLevel.Map.AllSites.Count / 2)
                 {
+                    TFTVLogger.Always("Total sites count is " + geoBehemothActor.GeoLevel.Map.AllSites.Count + " and scenic route has " + behemothScenicRoute.Count + " sites.");
                     behemothScenicRoute.Clear();
                 }
 
@@ -679,7 +681,7 @@ namespace TFTV
                         if (behemothScenicRoute.Contains(site.SiteId))
                         {
                             chosenTarget = site;
-                            TFTVLogger.Always("The site is " + site.Name);
+                           // TFTVLogger.Always("The site is " + site.Name);
                             behemothScenicRoute.Remove(site.SiteId);
                             return chosenTarget;
                         }

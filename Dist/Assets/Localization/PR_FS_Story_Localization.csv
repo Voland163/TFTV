@@ -257,3 +257,10 @@ Ralph ""Wrench"" Mulligan, Phoenix Project
 
 Ralph Wrench Mulligan, Projet Phoenix
 ",,,,,,
+KEY_FS_ALN_SMALL_FLYER_RESEARCHDEF_COMPLETE,Text,,"<i>""A flying stingray bigger than our haven? And did you guys see that before or after you scavenged the marijuana dispensary?""</i>
+
+We are getting unconfirmed reports of dorsoventrally flattened flying creatures, some claiming them to be of improbable size. We will continue to monitor the situation until we can confirm or discard these rumors.",,,,,,,,
+KEY_FS_NJ_CRUISE_CONTROL_MODULE_DESCRIPTION,Text,,Extra crew and increased speed module,,,,,,,,
+KEY_FS_NJ_CRUISE_CONTROL_MODULE_NAME,Text,,Quick Response Module,,,,,,,,
+KEY_FS_NJ_FUEL_TANK_MODULE_DESCRIPTION,Text,,Extra crew and increased range module,,,,,,,,
+KEY_FS_NJ_FUEL_TANK_MODULE_NAME,Text,,Extended Range Module,,,,,,,,

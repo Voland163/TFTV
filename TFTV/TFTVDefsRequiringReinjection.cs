@@ -29,6 +29,7 @@ namespace TFTV
     {
         private static readonly DefRepository Repo = TFTVMain.Repo;
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
+        public static Sprite VoidIcon = Helper.CreateSpriteFromImageFile("Void-04P.png");
 
         public static void CheckUmbraCondition()
         {
@@ -634,9 +635,8 @@ namespace TFTV
                 revenantAbility.ItemTagStatModifications = new EquipmentItemTagStatModification[0];
                 revenantAbility.ViewElementDef.DisplayName1 = new LocalizedTextBind("Revenant", true);
                 revenantAbility.ViewElementDef.Description = new LocalizedTextBind("Nothing because fail", true);
-                Sprite icon = Helper.CreateSpriteFromImageFile("Void-04P.png");
-                revenantAbility.ViewElementDef.LargeIcon = icon;
-                revenantAbility.ViewElementDef.SmallIcon = icon;
+                revenantAbility.ViewElementDef.LargeIcon = VoidIcon;
+                revenantAbility.ViewElementDef.SmallIcon = VoidIcon;
 
             }
             catch (Exception e)
@@ -669,9 +669,9 @@ namespace TFTV
                 revenantAssault.ItemTagStatModifications = new EquipmentItemTagStatModification[0];
                 revenantAssault.ViewElementDef.DisplayName1 = new LocalizedTextBind("Assault Revenant", true);
                 revenantAssault.ViewElementDef.Description = new LocalizedTextBind("+10% Damage", true);
-                Sprite icon = Helper.CreateSpriteFromImageFile("Void-04P.png");
-                revenantAssault.ViewElementDef.LargeIcon = icon;
-                revenantAssault.ViewElementDef.SmallIcon = icon;
+                
+                revenantAssault.ViewElementDef.LargeIcon = VoidIcon;
+                revenantAssault.ViewElementDef.SmallIcon = VoidIcon;
 
             }
             catch (Exception e)
@@ -705,9 +705,9 @@ namespace TFTV
                 revenantBerserker.ItemTagStatModifications = new EquipmentItemTagStatModification[0];
                 revenantBerserker.ViewElementDef.DisplayName1 = new LocalizedTextBind("Berserker Revenant", true);
                 revenantBerserker.ViewElementDef.Description = new LocalizedTextBind("+4 Speed", true);
-                Sprite icon = Helper.CreateSpriteFromImageFile("Void-04P.png");
-                revenantBerserker.ViewElementDef.LargeIcon = icon;
-                revenantBerserker.ViewElementDef.SmallIcon = icon;
+               
+                revenantBerserker.ViewElementDef.LargeIcon = VoidIcon;
+                revenantBerserker.ViewElementDef.SmallIcon = VoidIcon;
 
             }
             catch (Exception e)
@@ -742,9 +742,9 @@ namespace TFTV
                 heavy.ItemTagStatModifications = new EquipmentItemTagStatModification[0];
                 heavy.ViewElementDef.DisplayName1 = new LocalizedTextBind("Heavy Revenant", true);
                 heavy.ViewElementDef.Description = new LocalizedTextBind("+10 Strength", true);
-                Sprite icon = Helper.CreateSpriteFromImageFile("Void-04P.png");
-                heavy.ViewElementDef.LargeIcon = icon;
-                heavy.ViewElementDef.SmallIcon = icon;
+              
+                heavy.ViewElementDef.LargeIcon = VoidIcon;
+                heavy.ViewElementDef.SmallIcon = VoidIcon;
 
             }
             catch (Exception e)
@@ -777,9 +777,9 @@ namespace TFTV
                 infiltrator.ItemTagStatModifications = new EquipmentItemTagStatModification[0];
                 infiltrator.ViewElementDef.DisplayName1 = new LocalizedTextBind("Infiltrator Revenant", true);
                 infiltrator.ViewElementDef.Description = new LocalizedTextBind("+15% Stealth", true);
-                Sprite icon = Helper.CreateSpriteFromImageFile("Void-04P.png");
-                infiltrator.ViewElementDef.LargeIcon = icon;
-                infiltrator.ViewElementDef.SmallIcon = icon;
+                
+                infiltrator.ViewElementDef.LargeIcon = VoidIcon;
+                infiltrator.ViewElementDef.SmallIcon = VoidIcon;
 
             }
             catch (Exception e)
@@ -813,9 +813,9 @@ namespace TFTV
                 priest.ItemTagStatModifications = new EquipmentItemTagStatModification[0];
                 priest.ViewElementDef.DisplayName1 = new LocalizedTextBind("Priest Revenant", true);
                 priest.ViewElementDef.Description = new LocalizedTextBind("+10 Willpower", true);
-                Sprite icon = Helper.CreateSpriteFromImageFile("Void-04P.png");
-                priest.ViewElementDef.LargeIcon = icon;
-                priest.ViewElementDef.SmallIcon = icon;
+  
+                priest.ViewElementDef.LargeIcon = VoidIcon;
+                priest.ViewElementDef.SmallIcon = VoidIcon;
 
             }
             catch (Exception e)
@@ -848,9 +848,9 @@ namespace TFTV
                 sniper.ItemTagStatModifications = new EquipmentItemTagStatModification[0];
                 sniper.ViewElementDef.DisplayName1 = new LocalizedTextBind("Sniper Revenant", true);
                 sniper.ViewElementDef.Description = new LocalizedTextBind("+10 Perception", true);
-                Sprite icon = Helper.CreateSpriteFromImageFile("Void-04P.png");
-                sniper.ViewElementDef.LargeIcon = icon;
-                sniper.ViewElementDef.SmallIcon = icon;
+             
+                sniper.ViewElementDef.LargeIcon = VoidIcon;
+                sniper.ViewElementDef.SmallIcon = VoidIcon;
 
             }
             catch (Exception e)
@@ -886,9 +886,9 @@ namespace TFTV
                 hallucinating.ItemTagStatModifications = new EquipmentItemTagStatModification[0];
                 hallucinating.ViewElementDef.DisplayName1 = new LocalizedTextBind("Technician Revenant", true);
                 hallucinating.ViewElementDef.Description = new LocalizedTextBind("+5 Strength, +5 Willpower", true);
-                Sprite icon = Helper.CreateSpriteFromImageFile("Void-04P.png");
-                hallucinating.ViewElementDef.LargeIcon = icon;
-                hallucinating.ViewElementDef.SmallIcon = icon;
+         
+                hallucinating.ViewElementDef.LargeIcon = VoidIcon;
+                hallucinating.ViewElementDef.SmallIcon = VoidIcon;
 
             }
             catch (Exception e)
@@ -900,25 +900,30 @@ namespace TFTV
         {
             try
             {
-                string skillName = "RevenantResistance_AbilityDef";
-                DamageMultiplierAbilityDef source = DefCache.GetDef<DamageMultiplierAbilityDef>("FireResistant_DamageMultiplierAbilityDef");
-                DamageMultiplierAbilityDef revenantResistance = Helper.CreateDefFromClone(
+                string skillName = "RevenantResistance_StatusDef";
+                DamageMultiplierStatusDef source = DefCache.GetDef<DamageMultiplierStatusDef>("BionicResistances_StatusDef");
+                DamageMultiplierStatusDef revenantResistance = Helper.CreateDefFromClone(
                     source,
                     "A7F8113B-B281-4ECD-99FE-3125FCE029C4",
                     skillName);
-                revenantResistance.CharacterProgressionData = Helper.CreateDefFromClone(
-                    source.CharacterProgressionData,
-                    "C298F900-A7D5-4EEC-96E1-50D017614396",
-                    skillName);
-                revenantResistance.ViewElementDef = Helper.CreateDefFromClone(
-                    source.ViewElementDef,
+                revenantResistance.EffectName = "RevenantResistance";
+                revenantResistance.VisibleOnHealthbar = TacStatusDef.HealthBarVisibility.AlwaysVisible;
+                revenantResistance.VisibleOnPassiveBar = true;
+                revenantResistance.VisibleOnStatusScreen = TacStatusDef.StatusScreenVisibility.VisibleOnStatusesList;
+                
+              //  revenantResistance.CharacterProgressionData = Helper.CreateDefFromClone(
+              //      source.CharacterProgressionData,
+              //      "C298F900-A7D5-4EEC-96E1-50D017614396",
+               //     skillName);
+                revenantResistance.Visuals = Helper.CreateDefFromClone(
+                    source.Visuals,
                     "B737C223-52D0-413B-B48F-978AD5D5BB33",
                     skillName);
-
-                Sprite icon = Helper.CreateSpriteFromImageFile("Void-04P.png");
-                revenantResistance.ViewElementDef.LargeIcon = icon;
-                revenantResistance.ViewElementDef.SmallIcon = icon;
-
+                revenantResistance.DamageTypeDefs = new DamageTypeBaseEffectDef[1];
+             
+                revenantResistance.Visuals.LargeIcon = VoidIcon;
+                revenantResistance.Visuals.SmallIcon = VoidIcon;
+              
                 
             }
             catch (Exception e)
