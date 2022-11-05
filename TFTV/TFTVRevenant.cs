@@ -1422,7 +1422,7 @@ namespace TFTV
                 {
                
                     if (data.Target.GetActor() != null && revenantResistanceStatus.DamageTypeDefs[0] == null 
-                        &&  data.Target.GetActor().Status.HasStatus(revenantResistanceStatus))
+                        && data.Target.GetActor().Status != null && data.Target.GetActor().Status.HasStatus(revenantResistanceStatus))
                     {
                         float multiplier = 0.25f;
 

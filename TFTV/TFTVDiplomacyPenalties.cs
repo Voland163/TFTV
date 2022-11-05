@@ -32,7 +32,7 @@ namespace TFTV
             private static readonly GeoFactionDef PhoenixFaction = DefCache.GetDef<GeoFactionDef>("Phoenix_GeoPhoenixFactionDef");
  
 
-            public static bool Prepare()
+          /*  public static bool Prepare()
             {
                 GeoLevelController controller = (GeoLevelController)UnityEngine.Object.FindObjectOfType(typeof(GeoLevelController));
                 TFTVConfig config = TFTVMain.Main.Config;
@@ -44,7 +44,7 @@ namespace TFTV
                 {
                     return false;
                 }
-            }
+            }*/
 
             public static void Prefix(GeoEventChoiceOutcome __instance, string eventID)
             {
