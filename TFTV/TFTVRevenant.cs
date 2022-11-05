@@ -45,7 +45,6 @@ namespace TFTV
         public static int revenantID = 0;
         public static bool revenantResistanceHintCreated = false;
 
-
         private static bool revenantPresent = false;
 
         private static readonly GameTagDef revenantTier1GameTag = DefCache.GetDef<GameTagDef>("RevenantTier_1_GameTagDef");
@@ -828,12 +827,12 @@ namespace TFTV
                     //highBurstWeapons 12 ARs + SGs + 6 HWs + 1 Sanctifier + 1 Tormentor + 1 Redeemer + 3 PDWs 24 total
                     //modified by AP cost: 24 + 6 + 3 + 3 + 2 + 9 = 47  
 
-                    scoreAcidDamage = (int)(scoreAcidDamage * (47 / 4));
-                    scoreVirusDamage = (int)(scoreVirusDamage * (47 / 5));
-                    scoreParalysisDamage = (int)(scoreParalysisDamage * (47 / 7));
-                    scoreFireDamage = (int)(scoreFireDamage * (47 / 4));
-                    scoreBlastDamage = (int)(scoreBlastDamage * (47 / 26));
-                    scoreHighDamage = (int)(scoreHighDamage * (47 / 31));
+                    scoreAcidDamage *= 47 / 4;
+                    scoreVirusDamage *= 47 / 5;
+                    scoreParalysisDamage *= 47 / 7;
+                    scoreFireDamage *=47 / 4;
+                    scoreBlastDamage *= 47 / 26;
+                    scoreHighDamage *= 47 / 31;
 
                     TFTVLogger.Always("Number of acid damage weapons used after adjustment  " + scoreAcidDamage);
                     TFTVLogger.Always("Number of virus damage weapons used after adjustment  " + scoreVirusDamage);
@@ -1343,15 +1342,19 @@ namespace TFTV
 
             public static void Postfix(ref DamageAccumulation.TargetData data)
             {
-                TacticalActorBase actor = data.Target.GetActor();
 
-                if (actor != null && actor.Status.HasStatus(revenantResistanceStatus) && revenantResistanceStatus.DamageTypeDefs[0] == shredDamage)
+                if (data.Target.GetActor() != null)
                 {
-                    data.DamageResult.ArmorDamage = Mathf.Floor(data.DamageResult.ArmorDamage * revenantResistanceStatus.Multiplier);
+                    TacticalActorBase actor = data.Target.GetActor();
+
+                    if (actor != null && actor.Status.HasStatus(revenantResistanceStatus) && revenantResistanceStatus.DamageTypeDefs[0] == shredDamage)
+                    {
+                        data.DamageResult.ArmorDamage = Mathf.Floor(data.DamageResult.ArmorDamage * revenantResistanceStatus.Multiplier);
+                    }
                 }
             }
         }
-
+        
         [HarmonyPatch(typeof(TacticalActorBase), "ApplyDamageInternal")]
         internal static class TacticalActorBase_ApplyDamage_DamageResistant_patch
         {
@@ -1379,7 +1382,36 @@ namespace TFTV
             }
 
         }
+        
 
+        /*
+        [HarmonyPatch(typeof(DamageMultiplierStatus), "GetIncomingMultiplier")]
+
+        internal static class TFTV_DamageMultiplierStatus_GetIncomingMultiplier_DamageResistant_patch
+        {
+            public static void Postfix(ref float __result, DamageMultiplierStatus __instance)
+            {
+                try
+                {
+                    
+           
+                    if (__instance.TacticalActor != null && revenantResistanceStatus.DamageTypeDefs[0] == null
+                        && __instance.TacticalActor.Status.HasStatus(revenantResistanceStatus) && 
+                        !revenantSpecialResistance.Contains(__instance.TacticalActor.name))
+                    {
+                       
+                      // revenantSpecialResistance.Add(__instance.TacticalActor.name);
+                        __result = 0.25f;
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+        }*/
+        
+      
         // Harmony Patch to calculate damage resistance
         [HarmonyPatch(typeof(DamageKeyword), "ProcessKeywordDataInternal")]
         internal static class TFTV_DamageKeyword_ProcessKeywordDataInternal_DamageResistant_patch
@@ -1388,11 +1420,13 @@ namespace TFTV
             {
                 try
                 {
-                    if (revenantResistanceStatus.DamageTypeDefs[0] == null)
+               
+                    if (data.Target.GetActor() != null && revenantResistanceStatus.DamageTypeDefs[0] == null 
+                        &&  data.Target.GetActor().Status.HasStatus(revenantResistanceStatus))
                     {
                         float multiplier = 0.25f;
 
-                        if (data.Target.GetActor() != null && data.Target.GetActor().Status.HasStatus(revenantResistanceStatus) && !revenantSpecialResistance.Contains(data.Target.GetActor().name))
+                        if (!revenantSpecialResistance.Contains(data.Target.GetActor().name))
                         {
                             //  TFTVLogger.Always("This check was passed");
                             data.DamageResult.HealthDamage = Math.Min(data.Target.GetHealth(), data.DamageResult.HealthDamage * multiplier);
@@ -1410,7 +1444,7 @@ namespace TFTV
                 }
             }
         }
-
+        
         [HarmonyPatch(typeof(TacticalLevelController), "ActorDied")]
         public static class TacticalLevelController_ActorDied_Revenant_Patch
         {

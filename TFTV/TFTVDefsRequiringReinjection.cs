@@ -579,7 +579,7 @@ namespace TFTV
                 CreateRevenantAbilityForPriest();
                 CreateRevenantAbilityForSniper();
                 CreateRevenantAbilityForTechnician();
-                CreateRevenantResistanceAbility();
+                CreateRevenantResistanceStatus();
             }
             catch (Exception e)
             {
@@ -896,7 +896,7 @@ namespace TFTV
                 TFTVLogger.Error(e);
             }
         }
-        public static void CreateRevenantResistanceAbility()
+        public static void CreateRevenantResistanceStatus()
         {
             try
             {
