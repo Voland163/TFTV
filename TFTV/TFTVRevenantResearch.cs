@@ -113,6 +113,7 @@ namespace TFTV
                 revenantCaptureResearch.RevealRequirements.Container = revenantReseachRevealRequirementContainer;
                 revenantCaptureResearch.RevealRequirements.Operation = ResearchContainerOperation.ALL;
                 revenantCaptureResearch.ViewElementDef = revenantResearchViewElement;
+                revenantResearchViewElement.BenefitsText.LocalizationKey = "PX_REVENANT_LIVE_RESEARCH_BENEFITS";
             }
 
             catch (Exception e)
@@ -139,9 +140,11 @@ namespace TFTV
                 ResearchDef enoughRevenantsKilledResearch =
                     TFTVCommonMethods.CreateNewPXResearch(nameRevenantCaptureResearch, 400, "040593DB-C61F-4C2A-A908-1B84C62424AF", revenantResearchViewElement);
 
+                revenantResearchViewElement.BenefitsText.LocalizationKey = "PX_PROJECT_OSIRIS_BENEFITS";
+
                 EncounterVariableResearchRequirementDef revenantEncounterVariableResearch =
                     TFTVCommonMethods.CreateNewEncounterVariableResearchRequirementDef(nameRevenantCaptureResearch + "EncounterVariableResearchReq", "009E4EC9-94ED-488A-A00D-536BFA750CEB",
-                    revenantVariable, 15);
+                    revenantVariable, 10);
 
                 ReseachRequirementDefOpContainer[] revenantReseachRevealRequirementContainer = new ReseachRequirementDefOpContainer[1];
                 ResearchRequirementDef[] revenantRevealResearchRequirementDefs = new ResearchRequirementDef[1];

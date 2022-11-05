@@ -659,6 +659,7 @@ We have to defeat the Pandoravirus once and for all. It's the only way to be sur
 Il n'y a rien que nous puissions faire pour notre camarade maintenant, et j'ai peur que le tuer ne nous libère en rien. Nous pourrions le rencontrer encore et encore : les Pandoriens dédoublent et clonent leurs victimes à l'infini.
 
 Nous devons vaincre le Pandoravirus une fois pour toutes. C'est la seule façon d'être sûrs.",,,,,,
+PX_REVENANT_LIVE_RESEARCH_BENEFITS,Text,,Killing or capturing additional Revenants may grant access to new research,,,,,,,,
 PX_PROJECT_OSIRIS_TITLE,Text,,Project Osiris,,Projet Osiris,,,,,,
 PX_PROJECT_OSIRIS_REVEAL,Text,,Defeating Revenants in the field has brought us closer to understanding how they are created. We may yet harness this knowledge in the war for the future of our species.,,Vaincre les Revenants sur le terrain nous a permis de mieux comprendre comment ils sont créés. Nous pouvons encore exploiter ces connaissances dans la guerre pour l'avenir de notre espèce.,,,,,,
 PX_PROJECT_OSIRIS_COMPLETE,Text,,"The Pandorans use the Oneiric Delirium to tap into our consciousness and partially replicate it. 
@@ -674,6 +675,7 @@ Au début, nous avons supposé qu'ils ne pouvaient accéder qu'aux informations 
 Tout cela nous amène à conclure que le délire onirique puise dans une variété de flux de données ou de centres d'information des infectés. C'est un processus que nous ne pouvons même pas commencer à comprendre, même s'il remet en question nos notions de base de la conscience.
 
 Néanmoins, nous avons réussi à extraire quelques applications pratiques de nos recherches sur les Revenants. Nous pensons que nous sommes maintenant capables de sauver parfois des agents gravement blessés en leur donnant de nouveaux corps artificiels.",,,,,,
+PX_PROJECT_OSIRIS_BENEFITS,Text,,"With a mutation and/or a bionic lab, a Phoenix KIA operative may be given a new lease on life right. Limited to one decesaed operative per mission. Chances are highest for the more experienced operatives.",,,,,,,,
 PROJECT_OSIRIS_TITLE,Text,,Project Osiris,,Projet Osiris,,,,,,
 PROJECT_OSIRIS_TEXT,Text,,We have a candidate for Project Osiris,,Nous avons un candidat pour le projet Osiris,,,,,,
 PROJECT_OSIRIS_CHOOSE_ROBOCOP,Text,,Bionics,,Bioniques,,,,,,
