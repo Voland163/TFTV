@@ -70,7 +70,14 @@ namespace TFTV
 
             TFTVRevenantResearch.CheckRevenantResearchRequirements(Controller);
             TFTVProjectOsiris.RunProjectOsiris(gsController);
-      
+
+           
+
+          //  TFTVLogger.Always("Revenants destroyed " + gsController.EventSystem.GetVariable("RevenantsDestroyed"));
+          //  TFTVLogger.Always("Revenant captured " + gsController.EventSystem.GetVariable("RevenantCapturedVariable"));
+            
+
+
 
         }
         /// <summary>

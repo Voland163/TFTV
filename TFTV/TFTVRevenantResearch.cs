@@ -1,4 +1,5 @@
 ﻿using Base.Defs;
+using EnviroSamples;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.GameTags;
@@ -165,6 +166,7 @@ namespace TFTV
         {
             try
             {
+         
                 if (RevenantCaptured && controller.EventSystem.GetVariable(RevenantCapturedVariable) == 0)
                 {
 
@@ -195,16 +197,23 @@ namespace TFTV
                          "\n\nWe have to defeat the Pandoravirus once and for all. It's the only way to be sure.", true);*/
 
                 }
-                else if (controller.EventSystem.GetVariable(RevenantCapturedVariable) != 0 && RevenantPoints > 0)
+                else if (controller.PhoenixFaction.Research.HasCompleted("PX_Revenant_Live_Research") && RevenantPoints > 0)
                 {
                     RevenantCaptured = false;
                     controller.EventSystem.SetVariable(RevenantsDestroyed, controller.EventSystem.GetVariable(RevenantsDestroyed) + RevenantPoints);
+                   
                 }
                 else
                 {
                     RevenantCaptured = false;
 
                 }
+
+                if (controller.EventSystem.GetVariable(RevenantsDestroyed) > 10)
+                {
+                    controller.EventSystem.SetVariable(RevenantsDestroyed, 10);
+                }
+
             }
 
             catch (Exception e)

@@ -19,8 +19,6 @@ using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.Entities.Statuses;
 using PhoenixPoint.Tactical.Entities.Weapons;
 using PhoenixPoint.Tactical.Levels;
-using PhoenixPoint.Tactical.View.ViewControllers;
-using PhoenixPoint.Tactical.View.ViewModules;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -89,7 +87,8 @@ namespace TFTV
 
         private static readonly DamageOverTimeDamageTypeEffectDef virusDamage = DefCache.GetDef<DamageOverTimeDamageTypeEffectDef>("Virus_DamageOverTimeDamageTypeEffectDef");
         private static readonly DamageOverTimeDamageTypeEffectDef acidDamage = DefCache.GetDef<DamageOverTimeDamageTypeEffectDef>("Acid_DamageOverTimeDamageTypeEffectDef");
-        private static readonly AttenuatingDamageTypeEffectDef paralysisDamage = DefCache.GetDef<AttenuatingDamageTypeEffectDef>("Electroshock_AttenuatingDamageTypeEffectDef");
+        private static readonly AttenuatingDamageTypeEffectDef paralysisDamageWeaponDescription = DefCache.GetDef<AttenuatingDamageTypeEffectDef>("Electroshock_AttenuatingDamageTypeEffectDef");
+        private static readonly DamageOverTimeDamageTypeEffectDef paralysisDamage = DefCache.GetDef<DamageOverTimeDamageTypeEffectDef>("Paralysis_DamageOverTimeDamageTypeEffectDef"); 
         // private static readonly DamageOverTimeDamageTypeEffectDef poisonDamage =DefCache.GetDef<DamageOverTimeDamageTypeEffectDef>("Poison_DamageOverTimeDamageTypeEffectDef"));
         private static readonly StandardDamageTypeEffectDef fireDamage = DefCache.GetDef<StandardDamageTypeEffectDef>("Fire_StandardDamageTypeEffectDef");
         private static readonly StandardDamageTypeEffectDef projectileDamage = DefCache.GetDef<StandardDamageTypeEffectDef>("Projectile_StandardDamageTypeEffectDef");
@@ -314,7 +313,7 @@ namespace TFTV
                     AddRevenantResistanceStatus(actor);
                     //  SpreadResistance(__instance);
                     actor.UpdateStats();
-                  //  TFTVLogger.Always("Crab's name has been changed to " + actor.GetDisplayName());
+                    //  TFTVLogger.Always("Crab's name has been changed to " + actor.GetDisplayName());
                     // revenantCanSpawn = false;
 
                     foreach (TacticalActorBase pandoranBase in pandorans.Actors)
@@ -327,15 +326,17 @@ namespace TFTV
                             if (!controller.TacticalGameParams.Statistics.LivingSoldiers.ContainsKey(pandoran.GeoUnitId)
                                  && !pandoran.GameTags.Contains(anyRevenantGameTag)
                                  && !pandoran.Status.HasStatus(revenantResistanceStatus))
+                            {
 
                                 AddRevenantResistanceStatus(pandoran);
-                            TFTVLogger.Always(pandoran.name + " received the revenant resistance ability.");
+                                TFTVLogger.Always(pandoran.name + " received the revenant resistance ability.");
+                            }
                         }
                     }
                     string newGuid = Guid.NewGuid().ToString();
                     string hintDescription = revenantResistanceStatus.Visuals.Description.LocalizeEnglish() + ".\nKilling the Revenant will not remove this resistance from any Pandoran that already has it.";
 
-                   // TFTVLogger.Always("Got to before hint");
+                    // TFTVLogger.Always("Got to before hint");
 
                     TFTVTutorialAndStory.CreateNewTacticalHintForRevenantResistance("RevenantResistanceSighted", HintTrigger.ActorSeen, "RevenantResistance_GameTagDef", "Revenant resistance", hintDescription);
                     revenantResistanceHintCreated = true;
@@ -355,16 +356,31 @@ namespace TFTV
                 if (controller.Factions.Any(f => f.Faction.FactionDef.MatchesShortName("aln")) && TFTVVoidOmens.VoidOmensCheck[19])
                 {
                     TacticalFaction pandorans = controller.GetFactionByCommandName("aln");
-
-                    foreach (TacticalActorBase pandoran in pandorans.Actors)
+                    foreach (TacticalActorBase pandoranBase in pandorans.Actors)
                     {
-                        if (!controller.TacticalGameParams.Statistics.LivingSoldiers.ContainsKey(pandoran.GeoUnitId)
-                             && !pandoran.GameTags.Contains(anyRevenantGameTag)
-                             && pandoran.Status.HasStatus(revenantResistanceStatus))
+                        TacticalActor pandoran = pandoranBase as TacticalActor;
+                        if (pandoran != null)
+                        {
+                            TFTVLogger.Always("The Pandoran is " + pandoran.DisplayName);
 
-                            AddRevenantResistanceStatus(pandoran);
-                        TFTVLogger.Always(pandoran.name + " received the revenant resistance ability.");
+                            if (!controller.TacticalGameParams.Statistics.LivingSoldiers.ContainsKey(pandoran.GeoUnitId)
+                                 && !pandoran.GameTags.Contains(anyRevenantGameTag)
+                                 && !pandoran.Status.HasStatus(revenantResistanceStatus))
+                            {
+
+                                AddRevenantResistanceStatus(pandoran);
+                                TFTVLogger.Always(pandoran.name + " received the revenant resistance ability.");
+                            }
+                        }
                     }
+                    string newGuid = Guid.NewGuid().ToString();
+                    string hintDescription = revenantResistanceStatus.Visuals.Description.LocalizeEnglish();
+
+                    // TFTVLogger.Always("Got to before hint");
+
+                    TFTVTutorialAndStory.CreateNewTacticalHintForRevenantResistance("RevenantResistanceSighted", HintTrigger.ActorSeen, "RevenantResistance_GameTagDef", "Revenant resistance", hintDescription);
+                    revenantResistanceHintCreated = true;
+
                 }
             }
             catch (Exception e)
@@ -690,37 +706,37 @@ namespace TFTV
 
 
 
-     /*   [HarmonyPatch(typeof(UIModuleCharacterStatus), "SetData")]
-        public static class UIModuleCharacterStatus_SetData_RevenantResistance_Patch
-        {
-            public static void Postfix(CharacterData data, UIModuleCharacterStatus __instance, ListControl ____statusIconsList)
-            {
-                try
-                {
+        /*   [HarmonyPatch(typeof(UIModuleCharacterStatus), "SetData")]
+           public static class UIModuleCharacterStatus_SetData_RevenantResistance_Patch
+           {
+               public static void Postfix(CharacterData data, UIModuleCharacterStatus __instance, ListControl ____statusIconsList)
+               {
+                   try
+                   {
 
-                    if (data.Tags.Contains(revenantResistanceGameTag))
-                    {
+                       if (data.Tags.Contains(revenantResistanceGameTag))
+                       {
 
-                        Sprite icon = Helper.CreateSpriteFromImageFile("Void-04P.png");
-                        StatusData statusData = new StatusData
-                        {
-                            Name = new LocalizedTextBind("Revenant Resistance", true),
+                           Sprite icon = Helper.CreateSpriteFromImageFile("Void-04P.png");
+                           StatusData statusData = new StatusData
+                           {
+                               Name = new LocalizedTextBind("Revenant Resistance", true),
 
-                            Icon = icon
-                        };
+                               Icon = icon
+                           };
 
-                        ____statusIconsList.AddRow<CharacterStatusAbilityRowController>(__instance.StatusPrototype).SetData(statusData);
-                    }
-                }
+                           ____statusIconsList.AddRow<CharacterStatusAbilityRowController>(__instance.StatusPrototype).SetData(statusData);
+                       }
+                   }
 
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
+                   catch (Exception e)
+                   {
+                       TFTVLogger.Error(e);
+                   }
 
-            }
-        }
-     */
+               }
+           }
+        */
 
         public static DamageTypeBaseEffectDef GetPreferredDamageType(TacticalLevelController controller)
         {
@@ -782,7 +798,7 @@ namespace TFTV
                             {
                                 scoreAcidDamage += stat.UsedCount;
                             }
-                            if (weaponDef != null && weaponDef.DamagePayload.DamageType == paralysisDamage)
+                            if (weaponDef != null && weaponDef.DamagePayload.DamageType == paralysisDamageWeaponDescription)
                             {
                                 scoreParalysisDamage += stat.UsedCount;
                                 //  TFTVLogger.Always("This weapon " + weaponDef.name + " has paralysis damage");
@@ -830,7 +846,7 @@ namespace TFTV
                     scoreAcidDamage *= 47 / 4;
                     scoreVirusDamage *= 47 / 5;
                     scoreParalysisDamage *= 47 / 7;
-                    scoreFireDamage *=47 / 4;
+                    scoreFireDamage *= 47 / 4;
                     scoreBlastDamage *= 47 / 26;
                     scoreHighDamage *= 47 / 31;
 
@@ -957,7 +973,7 @@ namespace TFTV
                    revenantResistanceAbilityDef.Multiplier = 1f;
                }*/
 
-            revenantResistanceStatus.Visuals.DisplayName1 = new LocalizedTextBind("REVENANT RESISTANCE - " +descriptionDamage.ToUpper(), true);
+            revenantResistanceStatus.Visuals.DisplayName1 = new LocalizedTextBind("REVENANT RESISTANCE - " + descriptionDamage.ToUpper(), true);
             revenantResistanceStatus.Visuals.Description = new LocalizedTextBind((1 - revenantResistanceStatus.Multiplier) * 100 + "%" + " resistance gained to " + descriptionDamage + " from knowledge of Phoenix ways", true);
 
             if (revenantResistanceStatus.DamageTypeDefs[0] == null)
@@ -972,7 +988,7 @@ namespace TFTV
             TacticalActor tacticalActor1 = tacticalActor as TacticalActor;
             tacticalActor1.Status.ApplyStatus<DamageMultiplierStatus>(revenantResistanceStatus);
 
-          //  tacticalActor.Status(revenantResistanceStatus);
+            //  tacticalActor.Status(revenantResistanceStatus);
             tacticalActor.GameTags.Add(revenantResistanceGameTag);
 
         }
@@ -1343,18 +1359,18 @@ namespace TFTV
             public static void Postfix(ref DamageAccumulation.TargetData data)
             {
 
-                if (data.Target.GetActor() != null)
+                if (data.Target.GetActor() != null && data.Target.GetActor().Status != null)
                 {
                     TacticalActorBase actor = data.Target.GetActor();
 
-                    if (actor != null && actor.Status.HasStatus(revenantResistanceStatus) && revenantResistanceStatus.DamageTypeDefs[0] == shredDamage)
+                    if (actor.Status.HasStatus(revenantResistanceStatus) && revenantResistanceStatus.DamageTypeDefs[0] == shredDamage)
                     {
                         data.DamageResult.ArmorDamage = Mathf.Floor(data.DamageResult.ArmorDamage * revenantResistanceStatus.Multiplier);
                     }
                 }
             }
         }
-        
+
         [HarmonyPatch(typeof(TacticalActorBase), "ApplyDamageInternal")]
         internal static class TacticalActorBase_ApplyDamage_DamageResistant_patch
         {
@@ -1382,7 +1398,7 @@ namespace TFTV
             }
 
         }
-        
+
 
         /*
         [HarmonyPatch(typeof(DamageMultiplierStatus), "GetIncomingMultiplier")]
@@ -1410,8 +1426,8 @@ namespace TFTV
                 }
             }
         }*/
-        
-      
+
+
         // Harmony Patch to calculate damage resistance
         [HarmonyPatch(typeof(DamageKeyword), "ProcessKeywordDataInternal")]
         internal static class TFTV_DamageKeyword_ProcessKeywordDataInternal_DamageResistant_patch
@@ -1420,8 +1436,8 @@ namespace TFTV
             {
                 try
                 {
-               
-                    if (data.Target.GetActor() != null && revenantResistanceStatus.DamageTypeDefs[0] == null 
+
+                    if (data.Target.GetActor() != null && revenantResistanceStatus.DamageTypeDefs[0] == null
                         && data.Target.GetActor().Status != null && data.Target.GetActor().Status.HasStatus(revenantResistanceStatus))
                     {
                         float multiplier = 0.25f;
@@ -1444,7 +1460,7 @@ namespace TFTV
                 }
             }
         }
-        
+
         [HarmonyPatch(typeof(TacticalLevelController), "ActorDied")]
         public static class TacticalLevelController_ActorDied_Revenant_Patch
         {
