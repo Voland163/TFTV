@@ -1374,31 +1374,31 @@ namespace TFTV
         [HarmonyPatch(typeof(TacticalActorBase), "ApplyDamageInternal")]
         internal static class TacticalActorBase_ApplyDamage_DamageResistant_patch
         {
-
             public static void Postfix(TacticalActorBase __instance)
             {
                 try
                 {
-
                     //  TFTVLogger.Always("Actor who has received damage is " + __instance.name);
 
-                    if (revenantResistanceStatus.DamageTypeDefs[0] == null && __instance.Status.HasStatus(revenantResistanceStatus) && !revenantSpecialResistance.Contains(__instance.name))
+                    if (revenantResistanceStatus != null
+                        && revenantResistanceStatus.DamageTypeDefs != null
+                        && revenantResistanceStatus.DamageTypeDefs.Count() > 0
+                        && revenantResistanceStatus.DamageTypeDefs[0] == null
+                        && __instance.Status != null
+                        && __instance.Status.HasStatus(revenantResistanceStatus)
+                        && revenantSpecialResistance != null
+                        && !revenantSpecialResistance.Contains(__instance.name))
                     {
                         //  TFTVLogger.Always(__instance.name + " has the Revenant Resistance ability and it's the first time it is triggered");
                         revenantSpecialResistance.Add(__instance.name);
                     }
                 }
-
-
                 catch (Exception e)
                 {
                     TFTVLogger.Error(e);
                 }
-
             }
-
         }
-
 
         /*
         [HarmonyPatch(typeof(DamageMultiplierStatus), "GetIncomingMultiplier")]

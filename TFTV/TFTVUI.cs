@@ -1,41 +1,316 @@
-﻿
-using Base.Core;
-using Base.Defs;
+﻿using Base.Core;
 using Base.Entities.Statuses;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.Characters;
 using PhoenixPoint.Common.Entities.GameTags;
-using PhoenixPoint.Common.Saves;
+using PhoenixPoint.Common.Game;
 using PhoenixPoint.Common.View.ViewModules;
 using PhoenixPoint.Geoscape.Entities;
+using PhoenixPoint.Geoscape.Levels;
+using PhoenixPoint.Geoscape.View;
 using PhoenixPoint.Geoscape.View.DataObjects;
 using PhoenixPoint.Geoscape.View.ViewControllers.Roster;
 using PhoenixPoint.Geoscape.View.ViewModules;
-using PhoenixPoint.Home.View.ViewModules;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.Equipments;
-using PhoenixPoint.Tactical.View.ViewModules;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.UI;
+
 
 namespace TFTV
 {
     internal class TFTVUI
     {
-      // private static readonly DefRepository Repo = TFTVMain.Repo;
+        // private static readonly DefRepository Repo = TFTVMain.Repo;
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
         //This method changes how WP are displayed in the Edit personnel screen, to show effects of Delirium on WP
 
 
         public static UIModuleCharacterProgression hookToProgressionModule = null;
         public static GeoCharacter hookToCharacter = null;
+        internal static bool moduleInfoBarAdjustmentsExecuted = false;
+        internal static Color red = new Color32(192, 32, 32, 255);
+        internal static Color purple = new Color32(149, 23, 151, 255);
+        internal static Color blue = new Color32(62, 12, 224, 255);
+        internal static Color green = new Color32(12, 224, 30, 255);
+        internal static Color anu = new Color(0.9490196f, 0.0f, 1.0f, 1.0f);
+        internal static Color nj = new Color(0.156862751f, 0.6156863f, 1.0f, 1.0f);
+        internal static Color syn = new Color(0.160784319f, 0.8862745f, 0.145098045f, 1.0f);
 
-        
-        
+
+        //Adapted from Mad´s Assorted Adjustments
+
+        [HarmonyPatch(typeof(UIModuleInfoBar), "Init")]
+        public static class UIModuleInfoBar_Init_Patch
+        {
+
+            public static void Prefix(UIModuleInfoBar __instance, GeoscapeViewContext ____context)
+            {
+                try
+                {
+
+                    if (moduleInfoBarAdjustmentsExecuted)
+                    {
+                        return;
+                    }
+
+                    // Declutter
+                    Transform tInfoBar = __instance.PopulationBarRoot.transform.parent?.transform;
+                   
+                    Transform anuDiploInfo = UnityEngine.Object.Instantiate(__instance.PopulationPercentageText.transform, tInfoBar.GetComponent<Transform>().Find("PopulationDoom_Meter"));
+                    anuDiploInfo.Translate(new Vector3(100f, 0f, 0f));
+                    anuDiploInfo.gameObject.name = "AnuPercentage";
+
+                    Transform njDiploInfo = UnityEngine.Object.Instantiate(__instance.PopulationPercentageText.transform, tInfoBar.GetComponent<Transform>().Find("PopulationDoom_Meter"));
+                    njDiploInfo.Translate(new Vector3(200f, 0f, 0f));
+                    njDiploInfo.gameObject.name = "NjPercentage";
+
+                    Transform synDiploInfo = UnityEngine.Object.Instantiate(__instance.PopulationPercentageText.transform, tInfoBar.GetComponent<Transform>().Find("PopulationDoom_Meter"));
+                    synDiploInfo.Translate(new Vector3(300f, 0f, 0f));
+                    synDiploInfo.gameObject.name = "SynPercentage";
+
+                  //  UnityEngine.Object.Destroy(__instance.PopulationPercentageText.gameObject);
+
+                    foreach (Transform t in tInfoBar.GetComponentsInChildren<Transform>())
+                    {
+                        TFTVLogger.Always($"[UIModuleInfoBar_Init_PREFIX] Transform.name: {t.name}");
+
+                        // Hide useless icons at production and research
+                        if (t.name == "UI_Clock")
+                        {
+                            t.gameObject.SetActive(false);
+                        }
+
+                        if (t.name == "Requirement_Icon")
+                        {
+
+                            Image icon = t.gameObject.GetComponent<Image>();
+                            if (icon.sprite.name == "Geoscape_UICanvasIcons_Actions_EditSquad")
+                            {
+                                icon.sprite = Helper.CreateSpriteFromImageFile("ODI_Skull.png");
+                                t.localScale = new Vector3(1.8f, 1.8f, 1f);
+                                icon.color = purple;
+                                Transform anuDiploInfoIcon = UnityEngine.Object.Instantiate(t, tInfoBar.GetComponent<Transform>().Find("PopulationDoom_Meter"));
+                                anuDiploInfoIcon.localScale = new Vector3(1f, 1f, 1f);
+                                anuDiploInfoIcon.Translate(new Vector3(100f, 0f, 0f));
+                                anuDiploInfoIcon.gameObject.GetComponent<Image>().color = anu;
+                                anuDiploInfoIcon.gameObject.GetComponent<Image>().sprite = Helper.CreateSpriteFromImageFile("FactionIcons_Anu.png");
+                               
+                                Transform njDiploInfoIcon = UnityEngine.Object.Instantiate(t, tInfoBar.GetComponent<Transform>().Find("PopulationDoom_Meter"));
+                                njDiploInfoIcon.localScale = new Vector3(1f, 1f, 1f);
+                                njDiploInfoIcon.Translate(new Vector3(200f, 0f, 0f));
+                                njDiploInfoIcon.gameObject.GetComponent<Image>().color = nj;
+                                njDiploInfoIcon.gameObject.GetComponent<Image>().sprite = Helper.CreateSpriteFromImageFile("FactionIcons_NewJericho.png");
+
+                                
+
+                                Transform synDiploInfoIcon = UnityEngine.Object.Instantiate(t, tInfoBar.GetComponent<Transform>().Find("PopulationDoom_Meter"));
+                                synDiploInfoIcon.localScale = new Vector3(1f, 1f, 1f);
+                                synDiploInfoIcon.Translate(new Vector3(300f, 0f, 0f));
+                                synDiploInfoIcon.gameObject.GetComponent<Image>().color = syn;
+                                synDiploInfoIcon.gameObject.GetComponent<Image>().sprite = Helper.CreateSpriteFromImageFile("FactionIcons_Synedrion.png");
+
+                               
+
+                                //  anuDiploInfo.gameObject.GetComponent<Image>().color = red;
+                            }
+                            // t.name = "ODI_icon";
+                            // TFTVLogger.Always("Req_Icon name is " + icon.sprite.name);
+                        }
+
+                      /*  if (t.name == "UI_underlight")
+                        {
+
+                            Transform anuDiploHL = UnityEngine.Object.Instantiate(t, tInfoBar.GetComponent<Transform>().Find("PopulationDoom_Meter"));
+                            anuDiploHL.TransformVector(tInfoBar.GetComponent<Transform>().Find("PopulationDoom_Meter").GetComponent<Transform>().Find("AnuPercentage").position + new Vector3(0f, 0f, 0f));
+                            anuDiploHL.localScale = new Vector3(0.1f, 0.1f, 0.1f);
+
+                            // separator.position = anuDiploInfoIcon.position - new Vector3(-100, 0, 0);
+                        }*/
+
+                        if (t.name == "Separator")
+                        {
+                            Transform separator = UnityEngine.Object.Instantiate(t, tInfoBar.GetComponent<Transform>().Find("PopulationDoom_Meter"));
+                            separator.Translate(new Vector3(-5f, 10f, 0f));
+
+                            Transform separator2 = UnityEngine.Object.Instantiate(t, tInfoBar.GetComponent<Transform>().Find("PopulationDoom_Meter"));
+                            separator2.Translate(new Vector3(55f, 10f, 0f));
+                        }
+                        // Reposition skull icon
+                        if (t.name == "skull")
+                        {
+                            //   Image icon = t.gameObject.GetComponent<Image>();
+                            //   icon.sprite= Helper.CreateSpriteFromImageFile("Anu.png");
+
+                            // icon.SetText("Anu");
+                            t.gameObject.SetActive(false);
+
+                            //  TFTVLogger.Always("Skull_Icon name is " + icon.sprite.name);
+                        }
+
+                        // Colorize the red part of the bar to get rid of the black crosses
+                        if (t.name == "tiled_gameover")
+                        {
+                            // Turn off original...
+                            t.gameObject.SetActive(false);
+                        }
+                        // ...and add a new image to fill the space instead
+                        /*    if (t.name == "gameover")
+                            {
+                                //if(t.gameObject.GetComponents<Image>().Count() > 0)
+                                //{
+                                //    continue;
+                                //}
+                                t.gameObject.SetActive(false);
+                                Image i = t.gameObject.AddComponent<Image>();
+                                i.transform.localScale = new Vector3(1f, 0.99f, 1f);
+                                i.color = red;
+                            }*/
+                        // t.name == "PopulationDoom_Meter" ||
+
+                        if (t.name == "alive_mask" || t.name == "alive_animation" ||
+                            t.name.Contains("alive_animated") || t.name == "dead" || t.name.Contains("death"))
+                        {
+                            //elementsToDestroy.Add(t);
+                            UnityEngine.Object.Destroy(t.gameObject);
+
+                            //  t.gameObject.SetActive(false);
+                        }
+
+                        /* if(t.name == "PopulationDoom_Meter") 
+                         {
+
+                         }*/
+
+                        // Shrink indicator arrow?
+                        /*  if (t.name == "bar")
+                          {
+                              t.gameObject.SetActive(false);
+                          }       */
+                    }
+                    /*  for(int i=0; i < elementsToDestroy.Count; i++) 
+                      {
+                          UnityEngine.Object.Destroy(elementsToDestroy[i].gameObject);
+
+                      }*/
+
+
+                    // Set a flag so that this whole stuff is only done ONCE
+                    // Otherwise the visual transformations are repeated everytime leading to weird results
+                    // This is reset on every level change (see below)
+                    moduleInfoBarAdjustmentsExecuted = true;
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+        }
+
+
+
+        [HarmonyPatch(typeof(PhoenixGame), "RunGameLevel")]
+        public static class PhoenixGame_RunGameLevel_Patch
+        {
+            public static void Prefix()
+            {
+                moduleInfoBarAdjustmentsExecuted = false;
+            }
+        }
+
+
+        [HarmonyPatch(typeof(UIModuleInfoBar), "UpdatePopulation")]
+        public static class TFTV_ODI_meter_patch
+        {
+            public static void Postfix(UIModuleInfoBar __instance, GeoscapeViewContext ____context)
+            {
+                try
+                {
+
+                    GeoLevelController controller = ____context.Level;
+
+                    List<GeoAlienBase> listOfAlienBases = controller.AlienFaction.Bases.ToList();
+
+                    int nests = 0;
+                    int lairs = 0;
+                    int citadels = 0;
+
+
+                    foreach (GeoAlienBase alienBase in listOfAlienBases)
+                    {
+                        if (alienBase.AlienBaseTypeDef.Equals(DefCache.GetDef<GeoAlienBaseTypeDef>("Nest_GeoAlienBaseTypeDef")))
+                        {
+                            nests++;
+                        }
+                        else if (alienBase.AlienBaseTypeDef.Equals(DefCache.GetDef<GeoAlienBaseTypeDef>("Lair_GeoAlienBaseTypeDef")))
+                        {
+                            lairs++;
+                        }
+                        else if (alienBase.AlienBaseTypeDef.Equals(DefCache.GetDef<GeoAlienBaseTypeDef>("Citadel_GeoAlienBaseTypeDef")))
+                        {
+                            citadels++;
+                        }
+
+                    }
+                    int multiplier = 2;
+                    if (controller.EventSystem.GetVariable("Pandorans_Researched_Citadel") == 1)
+                    {
+                        multiplier = 1;
+
+                    }
+
+                    int pEPerDay = nests * multiplier * 5 + lairs * multiplier * 10 + citadels * multiplier * 15 + controller.EventSystem.GetVariable(TFTVInfestation.InfestedHavensVariable) * multiplier * 10;
+
+
+                    TFTVLogger.Always("Evo progress is " + controller.AlienFaction.EvolutionProgress);
+                    float evoProgress = controller.AlienFaction.EvolutionProgress;
+
+                    float num = evoProgress / 9400;
+
+                    __instance.PopulationMinTransform.sizeDelta = new Vector2();
+                    __instance.PopulationDeadTransform.sizeDelta = new Vector2(__instance.PopulationAllTransform.sizeDelta.x * (1f - num), __instance.PopulationAllTransform.sizeDelta.y);
+
+                    int num3 = (int)Mathf.Ceil(num * 100f);
+                    __instance.PopulationPercentageText.text = $"{num3}%";
+
+                    string variation = "Your operatives can be afflicted with Delirium up to a third of their Willpower";
+                    if (num3 > 45)
+                    {
+                        variation = "Your operatives can be afflicted with Delirium up to half of their Willpower";
+                    }
+                    else
+                    {
+                        variation = "No limit to the Delirium with which your operatives can be afflicted";
+                    }
+                    string evolution = "\nPandorans are gaining " + pEPerDay + " Evolution Points per day from their Colonies and Infested Havens";
+                    string description = "ODI\n" + variation + evolution;
+                    string tipText = string.Format(description, num3);
+                    __instance.PopulationTooltip.TipText = tipText;
+                    TFTVLogger.Always("Num3 is " + num3);
+                    TFTVLogger.Always("Num is " + num);
+
+                    Transform tInfoBar = __instance.PopulationBarRoot.transform.parent?.transform;
+                    Transform populationBar = tInfoBar.GetComponent<Transform>().Find("PopulationDoom_Meter");
+                    Transform anuInfo = populationBar.GetComponent<Transform>().Find("AnuPercentage");
+                    anuInfo.gameObject.GetComponent<Text>().text = $"{____context.Level.AnuFaction.Diplomacy.GetDiplomacy(____context.Level.PhoenixFaction)}%";
+                    Transform njInfo = populationBar.GetComponent<Transform>().Find("NjPercentage");
+                    njInfo.gameObject.GetComponent<Text>().text = $"{____context.Level.NewJerichoFaction.Diplomacy.GetDiplomacy(____context.Level.PhoenixFaction)}%";
+                    Transform synInfo = populationBar.GetComponent<Transform>().Find("SynPercentage");
+                    synInfo.gameObject.GetComponent<Text>().text = $"{____context.Level.SynedrionFaction.Diplomacy.GetDiplomacy(____context.Level.PhoenixFaction)}%";
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+        }
+
+
 
         [HarmonyPatch(typeof(UIModuleCharacterProgression), "GetStarBarValuesDisplayString")]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051")]
@@ -89,11 +364,11 @@ namespace TFTV
                                 }
                             }
 
-                            
-                              if (ability == derealization)
-                              {
-                                  bonusStrength -= 5;
-                              }
+
+                            if (ability == derealization)
+                            {
+                                bonusStrength -= 5;
+                            }
 
                         }
 
@@ -196,7 +471,7 @@ namespace TFTV
             }
 
         }
-        
+
         [HarmonyPatch(typeof(UIModuleCharacterProgression), "Awake")]
 
         internal static class UIModuleCharacterProgression_Awake_patch
@@ -219,12 +494,12 @@ namespace TFTV
         [HarmonyPatch(typeof(UIModuleSoldierEquip), "RefreshWeightSlider")]
         internal static class UIModuleSoldierEquip_RefreshWeightSlider_Patch
         {
-           private static readonly ApplyStatusAbilityDef derealization = DefCache.GetDef<ApplyStatusAbilityDef>("DerealizationIgnorePain_AbilityDef");
+            private static readonly ApplyStatusAbilityDef derealization = DefCache.GetDef<ApplyStatusAbilityDef>("DerealizationIgnorePain_AbilityDef");
             private static void Prefix(ref int maxWeight, UIModuleSoldierEquip __instance)
             {
                 try
                 {
-                 
+
 
                     if (hookToCharacter != null && !__instance.IsVehicle && !hookToCharacter.TemplateDef.IsMutog)
                     {
@@ -241,7 +516,7 @@ namespace TFTV
                             }
                         }
 
-                      if (hookToCharacter.Progression != null)
+                        if (hookToCharacter.Progression != null)
                         {
                             foreach (TacticalAbilityDef ability in hookToCharacter.Progression.Abilities)
                             {
@@ -265,12 +540,12 @@ namespace TFTV
                                         }
                                     }
                                 }
-                                
-                                 if (ability == derealization) 
-                                 { 
-                                 bonusStrength -= 5;
 
-                                 }
+                                if (ability == derealization)
+                                {
+                                    bonusStrength -= 5;
+
+                                }
                             }
 
                             foreach (PassiveModifierAbilityDef passiveModifier in hookToCharacter.PassiveModifiers)
@@ -294,9 +569,9 @@ namespace TFTV
 
                         maxWeight += (int)(bonusStrength * bonusToCarry);
                         hookToProgressionModule.StatChanged();
-                     //   hookToProgressionModule.RefreshStats();
+                        //   hookToProgressionModule.RefreshStats();
                         //hookToProgressionModule.SetStatusesPanel();
-                       hookToProgressionModule.RefreshStatPanel();
+                        hookToProgressionModule.RefreshStatPanel();
                         //TFTVLogger.Always("Max weight is " + maxWeight + ". Bonus Strength is " + bonusStrength + ". Bonus to carry is " + bonusToCarry);
                     }
                 }
@@ -308,7 +583,7 @@ namespace TFTV
             }
         }
 
-        
+
 
         [HarmonyPatch(typeof(UIModuleActorCycle), "DisplaySoldier", new Type[] { typeof(GeoCharacter), typeof(bool), typeof(bool), typeof(bool) })]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051")]
@@ -329,8 +604,8 @@ namespace TFTV
                 GeoCharacter character, bool showHelmet, bool resetAnimation, bool addWeapon)
             {
                 try
-                { 
-                    if (character.TemplateDef.IsMutog || character.TemplateDef.IsMutoid || character.TemplateDef.IsVehicle) 
+                {
+                    if (character.TemplateDef.IsMutog || character.TemplateDef.IsMutoid || character.TemplateDef.IsVehicle)
                     {
                         return true;
                     }
@@ -338,18 +613,18 @@ namespace TFTV
 
                     if (character != null && character.TemplateDef.IsHuman && !character.IsMutoid && !character.TemplateDef.IsMutog && !character.TemplateDef.IsVehicle)
                     {
-                        
+
                         bool hasAugmentedHead = false;
 
-                       foreach (GeoItem bionic in character.ArmourItems)
+                        foreach (GeoItem bionic in character.ArmourItems)
                         {
-                           
-                            
-                            if ((bionic.CommonItemData.ItemDef.Tags.Contains(bionicalTag) || bionic.CommonItemData.ItemDef.Tags.Contains(mutationTag)) 
-                                && bionic.CommonItemData.ItemDef.RequiredSlotBinds[0].RequiredSlot==headSlot)
+
+
+                            if ((bionic.CommonItemData.ItemDef.Tags.Contains(bionicalTag) || bionic.CommonItemData.ItemDef.Tags.Contains(mutationTag))
+                                && bionic.CommonItemData.ItemDef.RequiredSlotBinds[0].RequiredSlot == headSlot)
                             {
                                 hasAugmentedHead = true;
-                                
+
                             }
                         }
 
@@ -382,7 +657,7 @@ namespace TFTV
             }
         }
 
-       
+
 
         //This changes display of Delirium bar in personnel edit screen to show current Delirium value vs max delirium value the character can have
         // taking into account ODI level and bionics
@@ -401,7 +676,7 @@ namespace TFTV
 
                     {
                         float delirium = ____character.CharacterStats.Corruption.IntValue;
-                        if(TFTVDelirium.CalculateMaxCorruption(____character) < ____character.CharacterStats.Corruption.IntValue) 
+                        if (TFTVDelirium.CalculateMaxCorruption(____character) < ____character.CharacterStats.Corruption.IntValue)
                         {
                             delirium = (TFTVDelirium.CalculateMaxCorruption(____character));
                         }

@@ -8,6 +8,7 @@ using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.Items;
 using PhoenixPoint.Common.Levels.Missions;
+using PhoenixPoint.Common.UI;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.Interception;
 using PhoenixPoint.Geoscape.Entities.Interception.Equipments;
@@ -20,12 +21,14 @@ using PhoenixPoint.Geoscape.Events.Eventus;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.ContextHelp.HintConditions;
 using PhoenixPoint.Tactical.ContextHelp.HintConditions;
+using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.Entities.Statuses;
 using PhoenixPoint.Tactical.Levels.FactionObjectives;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 
 namespace TFTV
 {
@@ -34,6 +37,7 @@ namespace TFTV
         //  private static readonly DefRepository Repo = TFTVMain.Repo;
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
         private static readonly DefRepository Repo = TFTVMain.Repo;
+        public static Sprite UmbraIcon = Helper.CreateSpriteFromImageFile("Void-03P.png");
         public static void InjectDefsInjectedOnlyOnce()
         {
             AlistairRoadsEvent();
@@ -57,6 +61,7 @@ namespace TFTV
             TFTVChangesToDLC3Events.ChangesToDLC3Defs();
             TFTVChangesToDLC4Events.ChangesToDLC4Defs();
             TFTVChangesToDLC5Events.ChangesToDLC5Defs();
+            ChangesToAcherons();
 
         }
 
@@ -100,6 +105,58 @@ namespace TFTV
                 TFTVLogger.Error(e);
             }
         }
+
+        public static void ChangesToAcherons()
+        {
+            try 
+            {
+                //Researches
+                ResearchDef acheronResearch1 = DefCache.GetDef<ResearchDef>("ALN_Acheron1_ResearchDef");
+                ResearchDef acheronResearch2 = DefCache.GetDef<ResearchDef>("ALN_Acheron2_ResearchDef");
+                ResearchDef acheronResearch3 = DefCache.GetDef<ResearchDef>("ALN_Acheron3_ResearchDef");
+                ResearchDef acheronResearch4 = DefCache.GetDef<ResearchDef>("ALN_Acheron4_ResearchDef");
+                ResearchDef acheronResearch5 = DefCache.GetDef<ResearchDef>("ALN_Acheron5_ResearchDef");
+                ResearchDef acheronResearch6 = DefCache.GetDef<ResearchDef>("ALN_Acheron6_ResearchDef");
+
+                TacCharacterDef acheron1 = DefCache.GetDef<TacCharacterDef>("Acheron_TacCharacterDef");
+                TacCharacterDef acheron2 = DefCache.GetDef<TacCharacterDef>("AcheronPrime_TacCharacterDef");
+                TacCharacterDef acheron3 = DefCache.GetDef<TacCharacterDef>("AcheronAsclepius_TacCharacterDef");
+                TacCharacterDef acheron4 = DefCache.GetDef<TacCharacterDef>("AcheronAsclepiusChampion_TacCharacterDef");
+                TacCharacterDef acheron5 = DefCache.GetDef<TacCharacterDef>("AcheronAchlys_TacCharacterDef");
+                TacCharacterDef acheron6 = DefCache.GetDef<TacCharacterDef>("AcheronAchlysChampion_TacCharacterDef");
+
+
+                ExistingResearchRequirementDef acheronResearchReq2 = DefCache.GetDef<ExistingResearchRequirementDef>("ALN_Acheron2_ResearchDef_ExistingResearchRequirementDef_0");
+                ExistingResearchRequirementDef acheronResearchReq3 = DefCache.GetDef<ExistingResearchRequirementDef>("ALN_Acheron3_ResearchDef_ExistingResearchRequirementDef_0");
+                ExistingResearchRequirementDef acheronResearchReq4 = DefCache.GetDef<ExistingResearchRequirementDef>("ALN_Acheron4_ResearchDef_ExistingResearchRequirementDef_0");
+                ExistingResearchRequirementDef acheronResearchReq5 = DefCache.GetDef<ExistingResearchRequirementDef>("ALN_Acheron5_ResearchDef_ExistingResearchRequirementDef_0");
+                ExistingResearchRequirementDef acheronResearchReq6 = DefCache.GetDef<ExistingResearchRequirementDef>("ALN_Acheron6_ResearchDef_ExistingResearchRequirementDef_0");
+
+                //Acheron Prime will require heavy Chirons
+                acheronResearchReq2.ResearchID = "ALN_Chiron2_ResearchDef";
+                //Acheron Ascepius & Acheron Achlys will require Goo Chirons
+                acheronResearchReq3.ResearchID = "ALN_Chiron7_ResearchDef";
+                acheronResearchReq5.ResearchID = "ALN_Chiron7_ResearchDef";
+                //Ascepius and Achlys Champions will require Bombard Chirons
+                acheronResearchReq4.ResearchID = "ALN_Chiron9_ResearchDef";
+                acheronResearchReq6.ResearchID = "ALN_Chiron9_ResearchDef";
+
+                acheron1.DeploymentCost = 180;
+                acheron2.DeploymentCost = 240;
+                acheron3.DeploymentCost = 310;
+                acheron5.DeploymentCost = 310;
+                acheron4.DeploymentCost = 350;
+                acheron6.DeploymentCost = 350;
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+
+        }
+
         public static void CreateUIDeliriumHint()
         {
             try
@@ -1225,6 +1282,26 @@ namespace TFTV
                 umbraFishResearch.RevealRequirements.Container[1].Requirements[0] = variableResReqUmbra;
                 //Because Triton research has 2 requirements in the second container, we set them to any
                 umbraFishResearch.RevealRequirements.Container[1].Operation = ResearchContainerOperation.ANY;
+
+                ViewElementDef oilCrabViewElementDef = DefCache.GetDef<ViewElementDef>("E_View [Oilcrab_Torso_BodyPartDef]");
+                oilCrabViewElementDef.DisplayName1.LocalizationKey = "TFTV_KEY_UMBRA_TARGET_DISPLAY_NAME";
+                oilCrabViewElementDef.Description.LocalizationKey = "TFTV_KEY_UMBRA_TARGET_DISPLAY_DESCRIPTION";
+                oilCrabViewElementDef.SmallIcon = UmbraIcon;
+                oilCrabViewElementDef.LargeIcon = UmbraIcon;
+                oilCrabViewElementDef.InventoryIcon = UmbraIcon;
+
+                ViewElementDef oilFishViewElementDef = DefCache.GetDef<ViewElementDef>("E_View [Oilfish_Torso_BodyPartDef]");
+                oilFishViewElementDef.DisplayName1.LocalizationKey = "TFTV_KEY_UMBRA_TARGET_DISPLAY_NAME";
+                oilFishViewElementDef.Description.LocalizationKey = "TFTV_KEY_UMBRA_TARGET_DISPLAY_DESCRIPTION";
+                oilFishViewElementDef.SmallIcon = UmbraIcon;
+                oilFishViewElementDef.LargeIcon = UmbraIcon;
+                oilFishViewElementDef.InventoryIcon = UmbraIcon;
+
+                TacticalPerceptionDef oilCrabPerceptionDef = DefCache.GetDef<TacticalPerceptionDef>("Oilcrab_PerceptionDef");
+                TacticalPerceptionDef oilFishPerceptionDef = DefCache.GetDef<TacticalPerceptionDef>("Oilfish_PerceptionDef");
+                oilCrabPerceptionDef.PerceptionRange = 30.0f;
+                oilFishPerceptionDef.PerceptionRange = 30.0f;
+                //
 
             }
             catch (Exception e)

@@ -88,6 +88,13 @@ namespace TFTV
                         bionics += 1;
                 }
 
+                //For Project Osiris
+                if (bionics == 3) 
+                { 
+                return maxCorruption;
+                
+                }
+
                 if (!TFTVVoidOmens.VoidOmensCheck[10])
                 {
                     if (odiPerc < 25)
@@ -329,6 +336,13 @@ namespace TFTV
                             maxCorruption -= (int)(maxCorruption * 0.66);
                         }
                     }
+
+                    //For Project Osiris
+                    if (numberOfBionics == 3)
+                    {
+                        maxCorruption=0;
+                    }
+
                     // Like the original calculation, but adapted with 'maxCorruption'
                     // Also '__result' for 'return', '__instance' for 'this' and 'base_TacticalActor' for 'base.TacticalActor'
                     __result = Mathf.Min(__instance.CorruptionStatusDef.ValueIncrement, maxCorruption - base_TacticalActor.CharacterStats.Corruption.IntValue);

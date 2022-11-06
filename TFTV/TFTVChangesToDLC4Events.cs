@@ -55,6 +55,9 @@ namespace TFTV
                 ResearchDef ALN_AcheronResearch1 = DefCache.GetDef<ResearchDef>("ALN_Acheron1_ResearchDef");
                 ALN_AcheronResearch1.RevealRequirements.Container[0] = requirementForAlienAcheronResearch;
 
+               
+
+
                 // Make CH0 Mission appear when Player completes Acheron Autopsy and Capture and Containment 
                 GeoResearchEventFilterDef PP_ResearchConditionCH0_Miss = DefCache.GetDef<GeoResearchEventFilterDef>("E_PROG_CH0_ResearchCompleted [GeoResearchEventFilterDef]");
 
@@ -82,11 +85,17 @@ namespace TFTV
                 ResearchDef specimen2Research = DefCache.GetDef<ResearchDef>("PX_OriginalAcheron_ResearchDef");
                 specimen2Research.Unlocks = new ResearchRewardDef[]
                 {
-                        DefCache.GetDef<ResearchRewardDef>("PX_Alien_Acheron_ResearchDef_UnlockPandoranSpecializationResearchRewardDef_0"),
+                       
                         DefCache.GetDef<ResearchRewardDef>("PX_Alien_Acheron_ResearchDef_UnlockFunctionalityResearchRewardDef_0")
                 };
                 ResearchDef acheronAutopsy = DefCache.GetDef<ResearchDef>("PX_Alien_Acheron_ResearchDef");
-                acheronAutopsy.Unlocks = new ResearchRewardDef[0];
+                acheronAutopsy.Unlocks = new ResearchRewardDef[] 
+                {
+
+                     DefCache.GetDef<ResearchRewardDef>("PX_Alien_Acheron_ResearchDef_UnlockPandoranSpecializationResearchRewardDef_0"),
+
+                };
+
 
                 // Remove requirement to research Mutoid Technology to reserach Specimen 2 (former 0)
                 ExistingResearchRequirementDef mutoidRequirement = DefCache.GetDef<ExistingResearchRequirementDef>("PX_OriginalAcheron_ResearchDef_ExistingResearchRequirementDef_0");

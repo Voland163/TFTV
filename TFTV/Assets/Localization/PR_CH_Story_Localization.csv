@@ -337,3 +337,5 @@ DELIRIUM_PERK_INNER_SIGHT_NAME,Text,,INNER SIGHT,,VUE INTERIEURE,,,,,,
 DELIRIUM_PERK_INNER_SIGHT_DESCRIPTION,Text,,"-10 Perception, +10 Hearing Range
 <i>The subject is often observed with eyes closed; claims to see with an 'inner eye'; possible schizophrenia, but heightened extrasensorial perception confirmed</i>",,"-10 Perception, +10 Portée auditive
 <i>Le sujet est souvent observé les yeux fermés ; il prétend voir avec un ""œil intérieur"" ; peut-être schizophrénie, mais une perception extrasensorielle accrue est confirmée.</i>",,,,,,
+TFTV_KEY_UMBRA_TARGET_DISPLAY_NAME,Text,,UMBRA,,,,,,,,
+TFTV_KEY_UMBRA_TARGET_DISPLAY_DESCRIPTION,Text,,It's not real it's not real it's not real it's not real,,,,,,,,
