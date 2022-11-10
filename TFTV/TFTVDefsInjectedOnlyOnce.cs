@@ -40,7 +40,6 @@ namespace TFTV
         public static Sprite UmbraIcon = Helper.CreateSpriteFromImageFile("Void-03P.png");
         public static void InjectDefsInjectedOnlyOnce()
         {
-            AlistairRoadsEvent();
             AugmentationEventsDefs();
             ChangesAmbushMissions();
             CreateHints();
@@ -59,6 +58,7 @@ namespace TFTV
             RemoveCorruptionDamageBuff();
             TFTVChangesToDLC1andDLC2Events.ChangesToDLC1andDLC2Defs();
             TFTVChangesToDLC3Events.ChangesToDLC3Defs();
+          //  TFTVChangesToDLC3Events.ModifyMaskedManticoreResearch();
             TFTVChangesToDLC4Events.ChangesToDLC4Defs();
             TFTVChangesToDLC5Events.ChangesToDLC5Defs();
             ChangesToAcherons();
@@ -66,11 +66,9 @@ namespace TFTV
         }
 
         public static void CreateHints()
-
         {
             try
-            {
-                
+            {            
                 TFTVTutorialAndStory.CreateNewTacticalHint("UmbraSighted", HintTrigger.ActorSeen, "Oilcrab_TacCharacterDef", "UMBRA_SIGHTED_TITLE", "UMBRA_SIGHTED_TEXT", 0, true, "C63F5953-9D29-4245-8FCD-1B8B875C007D");
                 TFTVTutorialAndStory.CreateNewTacticalHint("UmbraSightedTriton", HintTrigger.ActorSeen, "Oilfish_TacCharacterDef", "UMBRA_SIGHTED_TITLE", "UMBRA_SIGHTED_TEXT", 0, true, "7F85AF7F-D7F0-41F3-B6EF-839509FCCF00");
                 TFTVTutorialAndStory.CreateNewTacticalHint("RevenantSighted", HintTrigger.ActorSeen, "Any_Revenant_TagDef", "REVENANT_SIGHTED_TITLE", "REVENANT_SIGHTED_TEXT", 1, true, "194317EC-67DF-4775-BAFD-98499F82C2D7");              
@@ -626,7 +624,6 @@ namespace TFTV
                 //Alistair speaks about Symes after Antarctica discovery
                 GeoscapeEventDef alistairOnSymes2 = TFTVCommonMethods.CreateNewEvent("AlistairOnSymes2", "PROG_PX1_WIN_TITLE", "KEY_ALISTAIRONSYMES_2_DESCRIPTION", null);
                 alistairOnSymes2.GeoscapeEventData.Flavour = "AntarcticSite_Victory";
-
 
                 AlistairRoadsEvent();
                 CreateEventMessagesFromTheVoid();

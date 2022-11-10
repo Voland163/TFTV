@@ -113,7 +113,7 @@ namespace TFTV
                 TFTVRevenant.revenantID = 0;
                 TFTVHumanEnemies.HumanEnemiesAndTactics = new Dictionary<string, int>();
                 TFTVRevenantResearch.ProjectOsirisStats = new Dictionary<int, int[]>();
-                TFTVStamina.charactersWithBrokenLimbs = new List<int>();
+                TFTVStamina.charactersWithBrokenLimbs = new List<int>();               
                 TFTVHumanEnemiesNames.names.Clear();
                 TFTVHumanEnemiesNames.CreateNamesDictionary();
                 ClearHints();

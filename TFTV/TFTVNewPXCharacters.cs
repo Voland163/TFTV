@@ -60,8 +60,7 @@ namespace TFTV
 
                     if (__instance.Title != null && __instance.Title.LocalizationKey.Contains("VOID_OMEN_TITLE_"))
                     {
-                        __result = TFTVDefsRequiringReinjection.VoidIcon;
-
+                        __result = TFTVDefsRequiringReinjection.VoidIcon;                       
                     }
 
                 }

@@ -23,12 +23,12 @@ namespace TFTV
         {
             try 
             { 
-                names.Add("ban", ban_Names);
-                names.Add("nj", nj_Names);
-                names.Add("anu", anu_Names);
-                names.Add("syn", syn_Names);
-                names.Add("Purists", pu_Names);
-                names.Add("FallenOnes", fo_Names);
+                names.Add("ban", new List<string>(ban_Names));
+                names.Add("nj", new List<string>(nj_Names));
+                names.Add("anu", new List<string>(anu_Names));
+                names.Add("syn", new List<string>(syn_Names));
+                names.Add("Purists", new List<string>(pu_Names));
+                names.Add("FallenOnes", new List<string>(fo_Names));
 
             }
             catch (Exception e)

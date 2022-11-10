@@ -104,10 +104,11 @@ namespace TFTV
             
             umbraCrabBodyAspect.Endurance = (healthPoints / 10);
            
-            umbraFish.HitPoints = healthPoints;
+            umbraFish.HitPoints = healthPoints * 0.75f;
             umbraFish.DamagePayload.DamageKeywords[0].Value = standardDamageAttack;
             umbraFish.DamagePayload.DamageKeywords[1].Value = pierceDamageAttack;          
             umbraFishBodyAspect.Endurance = (healthPoints / 10);
+            umbraFishBodyAspect.Speed = 30;
         }
 
         public static void SetUmbraEvolution(GeoLevelController level)
@@ -137,8 +138,7 @@ namespace TFTV
                     {
                         if (!TFTVVoidOmens.VoidOmensCheck[16])
                         {
-                            
-
+                          
                             TacticalFaction phoenix = controller.GetFactionByCommandName("px");
                             TacticalFaction pandorans = controller.GetFactionByCommandName("aln");
                             totalCharactersWithDelirium = 0;
@@ -150,7 +150,6 @@ namespace TFTV
                                 {
                                     totalCharactersWithDelirium++;
                                     totalDeliriumOnMission += (int)actor.CharacterStats.Corruption.Value.BaseValue;
-
                                 }
                             }
 

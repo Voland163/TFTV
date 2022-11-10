@@ -178,10 +178,13 @@ namespace TFTV
         /// <param name="turnNumber">Current turn number</param>
         public override void OnNewTurn(int turnNumber)
         {
+            TFTVLogger.Always("The turn is " + turnNumber);
             TFTVRevenant.revenantSpecialResistance.Clear();
             TFTVUmbra.SpawnUmbra(Controller);
-            if (turnNumber == 0)
-            { TFTVHumanEnemies.AssignHumanEnemiesTags(Controller); }
+            if (turnNumber == 0 && TFTVHumanEnemies.HumanEnemiesAndTactics.Count==0)
+            { 
+                TFTVHumanEnemies.AssignHumanEnemiesTags(Controller);             
+            }
             TFTVHumanEnemies.ChampRecoverWPAura(Controller);           
             TFTVHumanEnemies.ApplyTactic(Controller);
            

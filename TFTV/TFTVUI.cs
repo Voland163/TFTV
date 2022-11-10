@@ -44,11 +44,10 @@ namespace TFTV
 
 
         //Adapted from Mad´s Assorted Adjustments
-
+        /*
         [HarmonyPatch(typeof(UIModuleInfoBar), "Init")]
         public static class UIModuleInfoBar_Init_Patch
         {
-
             public static void Prefix(UIModuleInfoBar __instance, GeoscapeViewContext ____context)
             {
                 try
@@ -61,31 +60,25 @@ namespace TFTV
 
                     // Declutter
                     Transform tInfoBar = __instance.PopulationBarRoot.transform.parent?.transform;
-                   
-                   
 
-                   
-                 
+                    //Use this to catch the ToolTip
+                    Transform[] thingsToUse = new Transform[2];
+
+
                     //  __instance.PopulationTooltip.gameObject.SetActive(false);
                     __instance.PopulationTooltip.enabled = false;
 
                     foreach (Transform t in tInfoBar.GetComponentsInChildren<Transform>())
                     {
-                        TFTVLogger.Always($"[UIModuleInfoBar_Init_PREFIX] Transform.name: {t.name}");
+                        // TFTVLogger.Always($"[UIModuleInfoBar_Init_PREFIX] Transform.name: {t.name}");
 
-                        if(t.name == "TooltipCatcher") 
+                        if (t.name == "TooltipCatcher")
                         {
-                            if(t.GetComponent<UITooltipText>().TipKey.LocalizeEnglish()== "Stores - used space / capacity of all stores facilities") 
+                            if (t.GetComponent<UITooltipText>().TipKey.LocalizeEnglish() == "Stores - used space / capacity of all stores facilities")
                             {
-                                Transform toolTipTest1 = UnityEngine.Object.Instantiate(t, tInfoBar.GetComponent<Transform>().Find("PopulationDoom_Meter"));
-                                toolTipTest1.gameObject.GetComponent<UITooltipText>().TipText = "testing1";
-                                toolTipTest1.gameObject.GetComponent<UITooltipText>().TipKey.LocalizationKey="";
-                                toolTipTest1.gameObject.name = "DeliriumTooltip";
-                                                               
+                                thingsToUse[0] = t;
                             }
                         }
-                       
-
 
                         // Hide useless icons at production and research
                         if (t.name == "UI_Clock")
@@ -93,21 +86,23 @@ namespace TFTV
                             t.gameObject.SetActive(false);
                         }
 
-                       
-
+                        //Add Delirium and Pandoran evolution icons, as well as factions icons.
                         if (t.name == "Requirement_Icon")
                         {
 
                             Image icon = t.gameObject.GetComponent<Image>();
                             if (icon.sprite.name == "Geoscape_UICanvasIcons_Actions_EditSquad")
                             {
-                                icon.sprite = Helper.CreateSpriteFromImageFile("Void-04Pthird.png");
+                                icon.sprite = Helper.CreateSpriteFromImageFile("Void-04P.png");
                                 t.localScale = new Vector3(1.8f, 1.8f, 1f);
+                                t.gameObject.name = "DeliriumIcon";
+                                t.parent = tInfoBar.GetComponent<Transform>().Find("PopulationDoom_Meter");
                                 //  icon.color = purple;
 
                                 Transform pandoranEvolution = UnityEngine.Object.Instantiate(t, tInfoBar.GetComponent<Transform>().Find("PopulationDoom_Meter"));
                                 pandoranEvolution.gameObject.GetComponent<Image>().sprite = Helper.CreateSpriteFromImageFile("Alien_Nest.png");
                                 pandoranEvolution.gameObject.GetComponent<Image>().color = red;
+                                pandoranEvolution.gameObject.name = "PandoranEvolutionIcon";
                                 pandoranEvolution.Translate(new Vector3(70f, 0f, 0f));
 
                                 Transform anuDiploInfoIcon = UnityEngine.Object.Instantiate(t, tInfoBar.GetComponent<Transform>().Find("PopulationDoom_Meter"));
@@ -115,39 +110,39 @@ namespace TFTV
                                 anuDiploInfoIcon.Translate(new Vector3(150f, 0f, 0f));
                                 anuDiploInfoIcon.gameObject.GetComponent<Image>().color = anu;
                                 anuDiploInfoIcon.gameObject.GetComponent<Image>().sprite = Helper.CreateSpriteFromImageFile("FactionIcons_Anu.png");
-                               
+
                                 Transform njDiploInfoIcon = UnityEngine.Object.Instantiate(t, tInfoBar.GetComponent<Transform>().Find("PopulationDoom_Meter"));
                                 njDiploInfoIcon.localScale = new Vector3(1f, 1f, 1f);
                                 njDiploInfoIcon.Translate(new Vector3(250f, 0f, 0f));
                                 njDiploInfoIcon.gameObject.GetComponent<Image>().color = nj;
                                 njDiploInfoIcon.gameObject.GetComponent<Image>().sprite = Helper.CreateSpriteFromImageFile("FactionIcons_NewJericho.png");
 
-                                
-
                                 Transform synDiploInfoIcon = UnityEngine.Object.Instantiate(t, tInfoBar.GetComponent<Transform>().Find("PopulationDoom_Meter"));
                                 synDiploInfoIcon.localScale = new Vector3(1f, 1f, 1f);
                                 synDiploInfoIcon.Translate(new Vector3(350f, 0f, 0f));
                                 synDiploInfoIcon.gameObject.GetComponent<Image>().color = syn;
                                 synDiploInfoIcon.gameObject.GetComponent<Image>().sprite = Helper.CreateSpriteFromImageFile("FactionIcons_Synedrion.png");
-
-                               
-
                                 //  anuDiploInfo.gameObject.GetComponent<Image>().color = red;
                             }
                             // t.name = "ODI_icon";
                             // TFTVLogger.Always("Req_Icon name is " + icon.sprite.name);
                         }
 
-                      /*  if (t.name == "UI_underlight")
+                        if (t.name == "UI_underlight")
                         {
+                            if (t.parent.name == "StoresRes")
+                            {
+                                thingsToUse[1] = t;
+                            }
 
-                            Transform anuDiploHL = UnityEngine.Object.Instantiate(t, tInfoBar.GetComponent<Transform>().Find("PopulationDoom_Meter"));
-                            anuDiploHL.TransformVector(tInfoBar.GetComponent<Transform>().Find("PopulationDoom_Meter").GetComponent<Transform>().Find("AnuPercentage").position + new Vector3(0f, 0f, 0f));
-                            anuDiploHL.localScale = new Vector3(0.1f, 0.1f, 0.1f);
 
+                            TFTVLogger.Always("Parent of UI_underlight " + t.parent.name);
+
+                           
                             // separator.position = anuDiploInfoIcon.position - new Vector3(-100, 0, 0);
-                        }*/
+                        }
 
+                        //Create separators to hold Delirium and Pandoran Evolution icons
                         if (t.name == "Separator")
                         {
                             Transform separator = UnityEngine.Object.Instantiate(t, tInfoBar.GetComponent<Transform>().Find("PopulationDoom_Meter"));
@@ -156,69 +151,51 @@ namespace TFTV
                             Transform separator2 = UnityEngine.Object.Instantiate(t, tInfoBar.GetComponent<Transform>().Find("PopulationDoom_Meter"));
                             separator2.Translate(new Vector3(130f, 10f, 0f));
                         }
-                        // Reposition skull icon
+                        // Remove skull icon
                         if (t.name == "skull")
                         {
-                            //   Image icon = t.gameObject.GetComponent<Image>();
-                            //   icon.sprite= Helper.CreateSpriteFromImageFile("Anu.png");
 
-                            // icon.SetText("Anu");
                             t.gameObject.SetActive(false);
 
-                            //  TFTVLogger.Always("Skull_Icon name is " + icon.sprite.name);
                         }
 
-                        // Colorize the red part of the bar to get rid of the black crosses
+                        // Removed tiled gameover bar
                         if (t.name == "tiled_gameover")
                         {
-                            // Turn off original...
+
                             t.gameObject.SetActive(false);
                         }
-                        // ...and add a new image to fill the space instead
-                        /*    if (t.name == "gameover")
-                            {
-                                //if(t.gameObject.GetComponents<Image>().Count() > 0)
-                                //{
-                                //    continue;
-                                //}
-                                t.gameObject.SetActive(false);
-                                Image i = t.gameObject.AddComponent<Image>();
-                                i.transform.localScale = new Vector3(1f, 0.99f, 1f);
-                                i.color = red;
-                            }*/
-                        // t.name == "PopulationDoom_Meter" ||
 
+                        //Remove other bits and pieces of doomsday clock
                         if (t.name == "alive_mask" || t.name == "alive_animation" ||
                             t.name.Contains("alive_animated") || t.name == "dead" || t.name.Contains("death"))
                         {
-                            //elementsToDestroy.Add(t);
-                            //UnityEngine.Object.Destroy(t.gameObject);
 
                             t.gameObject.SetActive(false);
                         }
-
-                      
-
-                        /* if(t.name == "PopulationDoom_Meter") 
-                         {
-
-                         }*/
-
-                        // Shrink indicator arrow?
-                        /*  if (t.name == "bar")
-                          {
-                              t.gameObject.SetActive(false);
-                          }       */
                     }
 
-                    Transform toolTipTest2 = UnityEngine.Object.Instantiate(tInfoBar.GetComponent<Transform>().Find("PopulationDoom_Meter").GetComponent<Transform>().Find("DeliriumTooltip"), tInfoBar.GetComponent<Transform>().Find("PopulationDoom_Meter"));
-                    toolTipTest2.gameObject.GetComponent<UITooltipText>().TipText = "testing2";
-                    toolTipTest2.gameObject.GetComponent<UITooltipText>().TipKey.LocalizationKey = "";
-                    toolTipTest2.gameObject.name = "PandoranEvolutionTooltip";
+
+
+                    Transform deliriumTooltip = UnityEngine.Object.Instantiate(thingsToUse[0], tInfoBar.GetComponent<Transform>().Find("PopulationDoom_Meter").GetComponent<Transform>().Find("DeliriumIcon"));
+                    deliriumTooltip.gameObject.GetComponent<UITooltipText>().TipText = "testing Delirium tooltip";
+                    deliriumTooltip.gameObject.GetComponent<UITooltipText>().TipKey.LocalizationKey = "";
+                    deliriumTooltip.gameObject.name = "DeliriumTooltip";
+                    TFTVLogger.Always("Got here");
+
+                    Transform evolutionTooltip = UnityEngine.Object.Instantiate(thingsToUse[0], tInfoBar.GetComponent<Transform>().
+                     Find("PopulationDoom_Meter").GetComponent<Transform>().Find("PandoranEvolutionIcon"));
+                    evolutionTooltip.gameObject.GetComponent<UITooltipText>().TipText = "testing Pandoran Evolution tooltip";
+                    evolutionTooltip.gameObject.GetComponent<UITooltipText>().TipKey.LocalizationKey = "";
+                    evolutionTooltip.gameObject.name = "PandoranEvolutionTooltip";
+
+
+                    //Create percentages next to each faction icon
 
                     Transform anuDiploInfo = UnityEngine.Object.Instantiate(__instance.PopulationPercentageText.transform, tInfoBar.GetComponent<Transform>().Find("PopulationDoom_Meter"));
                     anuDiploInfo.Translate(new Vector3(150f, 0f, 0f));
                     anuDiploInfo.gameObject.name = "AnuPercentage";
+                    // anuDiploInfo.gameObject.SetActive(false);
 
                     Transform njDiploInfo = UnityEngine.Object.Instantiate(__instance.PopulationPercentageText.transform, tInfoBar.GetComponent<Transform>().Find("PopulationDoom_Meter"));
                     njDiploInfo.Translate(new Vector3(250f, 0f, 0f));
@@ -228,14 +205,27 @@ namespace TFTV
                     synDiploInfo.Translate(new Vector3(350f, 0f, 0f));
                     synDiploInfo.gameObject.name = "SynPercentage";
 
+                    //Create highlights for new elements
+
+                    Transform deliriumIconHL = UnityEngine.Object.Instantiate(thingsToUse[1], tInfoBar.GetComponent<Transform>().Find("PopulationDoom_Meter").GetComponent<Transform>().Find("DeliriumIcon"));
+                    deliriumIconHL.localScale = new Vector3(0.6f, 0.6f, 0f);
+                    deliriumIconHL.Translate(new Vector3(0f, -20f, 1));
+
+                    Transform PandoranEvolutionIconHL = UnityEngine.Object.Instantiate(thingsToUse[1], tInfoBar.GetComponent<Transform>().Find("PopulationDoom_Meter").GetComponent<Transform>().Find("PandoranEvolutionIcon"));
+                    PandoranEvolutionIconHL.localScale = new Vector3(0.6f, 0.6f, 0f);
+                    PandoranEvolutionIconHL.Translate(new Vector3(0f, -20f, 1));
+
+                    Transform anuDiploHL = UnityEngine.Object.Instantiate(thingsToUse[1], tInfoBar.GetComponent<Transform>().Find("PopulationDoom_Meter").GetComponent<Transform>().Find("AnuPercentage"));
+                    anuDiploHL.Translate(new Vector3(-10, -15, 1));
+
+                    Transform njDiploHL = UnityEngine.Object.Instantiate(thingsToUse[1], tInfoBar.GetComponent<Transform>().Find("PopulationDoom_Meter").GetComponent<Transform>().Find("NjPercentage"));
+                    njDiploHL.Translate(new Vector3(-10, -15, 1));
+                    
+                    Transform synDiploHL = UnityEngine.Object.Instantiate(thingsToUse[1], tInfoBar.GetComponent<Transform>().Find("PopulationDoom_Meter").GetComponent<Transform>().Find("SynPercentage"));
+                    synDiploHL.Translate(new Vector3(-10, -15, 1));
+
+
                     __instance.PopulationPercentageText.gameObject.SetActive(false);
-
-                    /*  for(int i=0; i < elementsToDestroy.Count; i++) 
-                      {
-                          UnityEngine.Object.Destroy(elementsToDestroy[i].gameObject);
-
-                      }*/
-
 
                     // Set a flag so that this whole stuff is only done ONCE
                     // Otherwise the visual transformations are repeated everytime leading to weird results
@@ -347,7 +337,7 @@ namespace TFTV
             }
         }
 
-
+*/
 
         [HarmonyPatch(typeof(UIModuleCharacterProgression), "GetStarBarValuesDisplayString")]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051")]
