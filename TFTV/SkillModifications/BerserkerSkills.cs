@@ -114,7 +114,7 @@ namespace PRMBetterClasses.SkillModifications
                     {
                         SkillTagDef attackAbility_Tag = DefCache.GetDef<SkillTagDef>("AttackAbility_SkillTagDef");
                         __result = ability.TacticalAbilityDef.SkillTags.Contains(attackAbility_Tag)
-                            ? ability.Equipment == null || ability.Equipment.HandsToUse == 1
+                            ? ability.Equipment == null || ability.Equipment.HandsToUse == 1 || ability.AbilityDef.name.Equals("ElectricTentacleAttack_AbilityDef")
                             : !arExcludeList.Contains(ability.TacticalAbilityDef.name);
                     }
                 }

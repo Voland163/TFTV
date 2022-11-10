@@ -14,6 +14,8 @@ using PhoenixPoint.Tactical.Entities.DamageKeywords;
 using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.Entities.Statuses;
 using PhoenixPoint.Tactical.Entities.Weapons;
+using PhoenixPoint.Tactical.View.ViewControllers;
+using PhoenixPoint.Tactical.View.ViewModules;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -451,6 +453,26 @@ namespace PRMBetterClasses.VariousAdjustments
         {
             WeaponDef destiny3 = DefCache.GetDef<WeaponDef>("PX_LaserArrayPack_WeaponDef");
             destiny3.FumblePerc = 50;
+        }
+    }
+    
+    /// <summary>
+    /// Harmony Patch to fix a bug when ability buttons in tactical missions does not show on certain circumstances.
+    /// 
+    /// The original tacticalAbilityRowController.AbilitiesListMaxElements is set to 8 while the AbilitiesBarMaxElements is 14.
+    /// The abilities are ordered in 3 groups (common, advanced and slot abilities) for each row to show in the UI.
+    /// If one group has more than 8 members in any row than the UI bugs out and does not show the button plus the flash does colorize another button orange.
+    /// This patch sets the AbilitiesListMaxElements equal to AbilitiesBarMaxElements so there are defenitely enough elements in the precreated UI element to not bug out.
+    /// </summary>
+    [HarmonyPatch(typeof(UIModuleAbilities), "Awake")]
+    internal static class UIModuleAbilities_Awake_Patch
+    {
+        public static void Prefix(UIModuleAbilities __instance)
+        {
+            foreach (TacticalAbilityRowController tacticalAbilityRowController in __instance.AbilitiesBars)
+            {
+                tacticalAbilityRowController.AbilitiesListMaxElements = __instance.AbilitiesBarMaxElements;
+            }
         }
     }
 }

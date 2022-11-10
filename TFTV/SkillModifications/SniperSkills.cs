@@ -1,4 +1,5 @@
 ﻿using Base.Defs;
+using Base.Entities.Statuses;
 using Base.UI;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
@@ -63,6 +64,8 @@ namespace PRMBetterClasses.SkillModifications
             armourBreakDamageReduction.Visuals = armourBreak.ViewElementDef;
             armourBreakDamageReduction.StatModifications[0].Value = 0.75f;
             armourBreakShredMod.AdditionalStatusesToApply = new TacStatusDef[] { armourBreakDamageReduction };
+            // Fix to prevent that the skill can be used more than once without shooting, vanilla bug!
+            armourBreak.DisablingStatuses = new StatusDef[] { armourBreak.StatusDef };
         }
 
         private static void Change_Gunslinger()

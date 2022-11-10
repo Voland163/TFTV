@@ -1,8 +1,10 @@
-﻿using Base.Cameras.ExecutionNodes;
+﻿using Base;
+using Base.Cameras.ExecutionNodes;
 using Base.Defs;
 using Base.Entities.Abilities;
 using Base.Entities.Effects;
 using Base.Entities.Statuses;
+using Base.Input;
 using Base.UI;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
@@ -10,14 +12,21 @@ using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.UI;
+using PhoenixPoint.Common.View.ViewControllers;
+using PhoenixPoint.Geoscape.View.ViewModules;
 using PhoenixPoint.Tactical.Cameras.Filters;
+using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.Animations;
+using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.Entities.Statuses;
+using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using TFTV;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace PRMBetterClasses.SkillModifications
 {
@@ -119,7 +128,7 @@ namespace PRMBetterClasses.SkillModifications
             DefRepository Repo = TFTVMain.Repo;
 
             // Source to clone from for main ability: Inspire
-            ApplyStatusAbilityDef inspireAbility = defCache.GetDef<ApplyStatusAbilityDef>(("Inspire_AbilityDef"));
+            ApplyStatusAbilityDef inspireAbility = defCache.GetDef<ApplyStatusAbilityDef>("Inspire_AbilityDef");
 
             // Create Neccessary RuntimeDefs
             ApplyStatusAbilityDef killAndRunAbility = Helper.CreateDefFromClone(
@@ -215,6 +224,7 @@ namespace PRMBetterClasses.SkillModifications
             dashAbility.WillPointCost = 0.0f;
             dashAbility.SamePositionIsValidTarget = true;
             dashAbility.AmountOfMovementToUseAsRange = -1.0f;
+            BC_TacticalAbility_get_ShouldDisplay_Patch.KnR_Dash_AbilityDef = dashAbility;
 
             multiStatus.Statuses = new StatusDef[] { onActorDeathEffectStatus, addAbiltyStatus };
 
@@ -230,37 +240,23 @@ namespace PRMBetterClasses.SkillModifications
             addAbiltyStatus.SingleInstance = true;
             addAbiltyStatus.AbilityDef = dashAbility;
         }
-        // Harmony Patch to flash the KnR Dash ability icon after kill has been achieved
-        //[HarmonyPatch(typeof(TacticalAbility), "get_ShouldFlash")]
-        //internal static class BC_TacticalAbility_get_ShouldDisplay_Patch
-        //{
-        //    [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051")]
-        //    private static void Postfix(TacticalAbility __instance, ref bool __result)
-        //    {
-        //        // Check if instance is KnR ability
-        //        if (__instance.TacticalAbilityDef.name.Equals("KillAndRun_Dash_AbilityDef"))
-        //        {
-        //            //  Set return value __result = true when ability is not disabled => show
-        //            __result = __instance.IsEnabled();
-        //        }
-        //    }
-        //}
-        // Harmony Patch to display the KnR Dash ability after kill has been achieved
-        //[HarmonyPatch(typeof(TacticalAbility), "get_ShouldDisplay")]
-        //internal static class BC_TacticalAbility_get_ShouldDisplay_Patch
-        //{
-        //    [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051")]
-        //    private static void Postfix(TacticalAbility __instance, ref bool __result)
-        //    {
-        //        // Check if instance is KnR ability
-        //        if (__instance.TacticalAbilityDef.name.Equals("KillAndRun_Dash_AbilityDef"))
-        //        {
-        //            //  Set return value __result = true when ability is not disabled => show
-        //            __result = __instance.GetDisabledState() == AbilityDisabledState.NotDisabled;
-        //        }
-        //    }
-        //}
 
+        // Harmony Patch to display the KnR Dash ability after kill has been achieved
+        [HarmonyPatch(typeof(TacticalAbility), "get_ShouldDisplay")]
+        internal static class BC_TacticalAbility_get_ShouldDisplay_Patch
+        {
+            public static TacticalAbilityDef KnR_Dash_AbilityDef;
+            public static void Postfix(TacticalAbility __instance, ref bool __result)
+            {
+                // Check if instance is KnR ability
+                if (__instance.TacticalAbilityDef == KnR_Dash_AbilityDef)
+                {
+                    //  Set return value __result = true when ability is not disabled => show
+                    __result = __instance.GetDisabledState() == AbilityDisabledState.NotDisabled;
+                }
+            }
+        }
+        
         private static void Change_Onslaught(DefCache defCache)
         {
             // This below works on the target but he can be targeted again from another Assault without any response => the Assault loses 2 AP and the target gets nothing
