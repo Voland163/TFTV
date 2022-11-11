@@ -62,9 +62,21 @@ namespace TFTV
             TFTVChangesToDLC4Events.ChangesToDLC4Defs();
             TFTVChangesToDLC5Events.ChangesToDLC5Defs();
             ChangesToAcherons();
+            RemoveCensusResearch();
 
         }
 
+        public static void RemoveCensusResearch()
+        {
+            try
+            {
+                DefCache.GetDef<ResearchDbDef>("pp_ResearchDB").Researches.Remove(DefCache.GetDef<ResearchDef>("PX_SDI_ResearchDef"));             
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
         public static void CreateHints()
         {
             try
@@ -257,6 +269,10 @@ namespace TFTV
                 //Muting Living Weapons
                 GeoscapeEventDef lwstartingEvent = DefCache.GetDef<GeoscapeEventDef>("PROG_LW1_GeoscapeEventDef");
                 lwstartingEvent.GeoscapeEventData.Mute = true;
+                DefCache.GetDef<KillActorFactionObjectiveDef>("KillCorruptionNode_CustomMissionObjective").MissionObjectiveData.ExperienceReward=1000;
+                
+
+                //
 
             }
             catch (Exception e)

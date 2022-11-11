@@ -30,29 +30,7 @@ namespace TFTV
         private static readonly DefRepository Repo = TFTVMain.Repo;
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
         public static Sprite VoidIcon = Helper.CreateSpriteFromImageFile("Void-04P.png");
-
-        public static void CheckUmbraCondition()
-        {
-            try 
-            {
-                AddAbilityStatusDef sourceAbilityStatusDef = DefCache.GetDef<AddAbilityStatusDef>("OilCrab_AddAbilityStatusDef");
-
-                if (sourceAbilityStatusDef.ApplicationConditions.Count() > 0)
-                {
-                    TFTVLogger.Always(sourceAbilityStatusDef.ApplicationConditions[0].name);
-                }
-                else
-                {
-                    TFTVLogger.Always("Umbra has no application conditions");
-                }
-
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-        }
-
+ 
         public static void InjectDefsRequiringReinjection() 
         {
             try

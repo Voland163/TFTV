@@ -11,6 +11,7 @@ using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Geoscape.Levels;
+using PhoenixPoint.Tactical.AI.Considerations;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.DamageKeywords;
@@ -299,6 +300,12 @@ namespace TFTV
                         {
                             TFTVLogger.Always(possibleClasses.Last() + " no actor with this tag, removing from list");
                             possibleClasses.Remove(possibleClasses.Last());
+
+                            if (i == availableTags - 1) 
+                            {
+                                TFTVLogger.Always("No eligible Pandoran found, no Revenant will spawn this time");
+                                return;
+                            }
                         }
                     }
 
@@ -550,9 +557,14 @@ namespace TFTV
                 {
                     tag = revenantTier1GameTag;
                 }
-
-                actor.GameTags.Add(tag);
-                actor.GameTags.Add(anyRevenantGameTag);
+                if (!actor.HasGameTag(tag))
+                {
+                    actor.GameTags.Add(tag);
+                }
+                if (!actor.HasGameTag(anyRevenantGameTag))
+                {
+                    actor.GameTags.Add(anyRevenantGameTag);
+                }
             }
             catch (Exception e)
             {
@@ -986,10 +998,17 @@ namespace TFTV
         public static void AddRevenantResistanceStatus(TacticalActorBase tacticalActor)
         {
             TacticalActor tacticalActor1 = tacticalActor as TacticalActor;
-            tacticalActor1.Status.ApplyStatus<DamageMultiplierStatus>(revenantResistanceStatus);
+            if (!tacticalActor1.Status.HasStatus(revenantResistanceStatus))
+            {
+
+                tacticalActor1.Status.ApplyStatus<DamageMultiplierStatus>(revenantResistanceStatus);
+            }
 
             //  tacticalActor.Status(revenantResistanceStatus);
-            tacticalActor.GameTags.Add(revenantResistanceGameTag);
+            if (!tacticalActor.HasGameTag(revenantResistanceGameTag))
+            {
+                tacticalActor.GameTags.Add(revenantResistanceGameTag);
+            }
 
         }
         public static void AddRevenantClassAbility(TacticalActor tacticalActor, SpecializationDef specialization)
@@ -998,6 +1017,7 @@ namespace TFTV
             try
             {
 
+               
                 if (specialization == assaultSpecialization)
                 {
                     TFTVLogger.Always("Deceased had Assault specialization");
@@ -1026,7 +1046,7 @@ namespace TFTV
                 }
                 else if (specialization == berserkerSpecialization)
                 {
-
+                    
 
                     TFTVLogger.Always("Deceased had Berserker specialization");
                     if (tacticalActor.GameTags.Contains(DefCache.GetDef<GameTagDef>("RevenantTier_2_GameTagDef")))
@@ -1464,7 +1484,7 @@ namespace TFTV
         [HarmonyPatch(typeof(TacticalLevelController), "ActorDied")]
         public static class TacticalLevelController_ActorDied_Revenant_Patch
         {
-            public static void Postfix(DeathReport deathReport)
+            public static void Postfix(DeathReport deathReport, TacticalLevelController __instance)
             {
                 try
                 {
@@ -1480,14 +1500,20 @@ namespace TFTV
                         if (deathReport.Actor.HasGameTag(revenantTier1GameTag))
                         {
                             TFTVRevenantResearch.RevenantPoints = 1; // testing 1
+                            TFTVLogger.Always("StartingSkill points " + __instance.GetFactionByCommandName("PX").StartingSkillpoints);
+                            __instance.GetFactionByCommandName("PX").SetStartingSkillPoints(2);
                         }
                         else if (deathReport.Actor.HasGameTag(revenantTier2GameTag))
                         {
                             TFTVRevenantResearch.RevenantPoints = 5; // testing 5
+                            TFTVLogger.Always("StartingSkill points " + __instance.GetFactionByCommandName("PX").StartingSkillpoints);
+                            __instance.GetFactionByCommandName("PX").SetStartingSkillPoints(4);
                         }
                         else if (deathReport.Actor.HasGameTag(revenantTier3GameTag))
                         {
                             TFTVRevenantResearch.RevenantPoints = 10;
+                            TFTVLogger.Always("StartingSkill points " + __instance.GetFactionByCommandName("PX").StartingSkillpoints);
+                            __instance.GetFactionByCommandName("PX").SetStartingSkillPoints(6);
                         }
 
                     }

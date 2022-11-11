@@ -258,7 +258,7 @@ namespace TFTV
                     anyAdditionalResearch2 = " research.";
                 }
 
-                string modularEventText = "<i>-''I'm... a mess.''\n-''They will fix you. They fix everything.''</i>\n\nWe have recovered " + name + "(a " + deadSoldierDescriptor.GetClassViewElementDefs().First().Name + ") from the battlefield. "
+                string modularEventText = "<i>-''I'm... a mess.''\n-''They will fix you. They fix everything.''</i>\n\nWe have recovered " + name + "(" + deadSoldierDescriptor.GetClassViewElementDefs().First().Name + ") from the battlefield. "
                     + pronoun + " is clinically dead, but with the Project Osiris now operational we can bring " + possesivePronoun + " back with a new body " + typeOfBodyAvailable + ". " +
                     increaseOptions + buildAdditionalLab + and1 + anyAdditionalResearch + researchAdditionalTech1 + and2 + researchAdditionalTech2 + anyAdditionalResearch2;
 

@@ -39,48 +39,6 @@ namespace TFTV
       
         public static bool InfestationMissionWon = false;
 
-        /*
-        public static ItemStorage InfestationRewardGenerator(int num)
-        {
-            try
-            {
-                GeoscapeEventDef LW1Miss = DefCache.GetDef<GeoscapeEventDef>("PROG_LW1_WIN_GeoscapeEventDef");
-                GeoscapeEventDef LW2Miss = DefCache.GetDef<GeoscapeEventDef>("PROG_LW2_WIN_GeoscapeEventDef");
-                GeoscapeEventDef LW3Miss = DefCache.GetDef<GeoscapeEventDef>("PROG_LW3_WIN_GeoscapeEventDef");
-
-                if (num == 1)
-                {
-                    List<ItemUnit> reward = LW1Miss.GeoscapeEventData.Choices[0].Outcome.Items;
-                    ItemStorage itemStorage = new ItemStorage();
-
-                    itemStorage.AddItems((IEnumerable<GeoItem>)reward);
-                    return itemStorage;
-                }
-                else if (num == 2)
-                {
-                    List<ItemUnit> reward = LW2Miss.GeoscapeEventData.Choices[0].Outcome.Items;
-                    ItemStorage itemStorage = new ItemStorage();
-                    itemStorage.AddItems((IEnumerable<GeoItem>)reward);
-                    return itemStorage;
-                }
-                else if (num == 3)
-                {
-                    List<ItemUnit> reward = LW3Miss.GeoscapeEventData.Choices[0].Outcome.Items;
-                    ItemStorage itemStorage = new ItemStorage();
-                    itemStorage.AddItems((IEnumerable<GeoItem>)reward);
-                    return itemStorage;
-                }
-
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-            throw new InvalidOperationException();
-
-        }
-        */
-
         // Copied and adapted from Mad´s Assorted Adjustments
 
 
@@ -248,79 +206,6 @@ namespace TFTV
                 }
             }
         }
-
-        /*
-                [HarmonyPatch(typeof(RewardsController), "SetReward")]
-
-                public static class RewardsController_SetReward_patch
-                {
-                    public static void Postfix(GeoFactionReward reward)
-
-                    {
-                        try 
-                        {
-
-
-                            reward.Items.AddItems((IEnumerable<GeoItem>)InfestationRewardGenerator(1));
-
-
-
-                        }
-                        catch (Exception e)
-                        {
-                            TFTVLogger.Error(e);
-
-                        }
-
-                    }
-
-
-
-                }
-
-                */
-
-
-      /*  public static void CheckIfPhoenixLost(TacticalLevelController controller)
-        {
-            try
-            {
-                if (controller.TacMission.MissionData.MissionType.Tags.Contains(DefCache.GetDef<MissionTypeTagDef>("HavenInfestation_MissionTypeTagDef")))
-                {
-                    TFTVLogger.Always("Passed the MissionTypeTagDef check");
-
-                    if (controller.GetFactionByCommandName("PX").State != TacFactionState.Won)
-                    {
-                       
-                       
-
-                    }
-                }
-            }
-
-
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-        }*/
-
-     
-      /*  public static void SetInfestationMissionVariableToZero(GeoLevelController controller) 
-        {
-            try 
-            {
-                if (controller.EventSystem.GetVariable(InfestationMissionWon) != 0)
-                {
-                    controller.EventSystem.SetVariable(InfestationMissionWon, 0);
-                }
-            }
-
-         catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-        }*/
 
 
         [HarmonyPatch(typeof(InfestedHavenOutcomeDataBind), "ModalShowHandler")]

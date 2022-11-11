@@ -1,19 +1,25 @@
 ﻿using Base;
 using HarmonyLib;
+using PhoenixPoint.Common.Entities.GameTagsTypes;
+using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Events;
 using PhoenixPoint.Geoscape.Events.Eventus;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
+using PhoenixPoint.Geoscape.View;
+using PhoenixPoint.Geoscape.View.ViewModules;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
+using System.Security.Policy;
 using UnityEngine;
 
 namespace TFTV
 {
     internal class TFTVSDIandVoidOmenRoll
     {
-
+        private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
         // Current and last ODI level
         public static int CurrentODI_Level = 0;
         // All SDI (ODI) event IDs, levels as array, index 0 - 19
@@ -189,6 +195,9 @@ namespace TFTV
                     // The ODI event is triggered
                     geoLevelController.EventSystem.TriggerGeoscapeEvent(ODI_EventIDs[CurrentODI_Level], geoscapeEventContext);
                     geoLevelController.EventSystem.SetVariable("BC_SDI", CurrentODI_Level);
+
+                   
+
                     //UpdateODITracker(CurrentODI_Level, geoLevelController); not used currently, because clogs the UI
                     // And if a Void Omen has been rolled, a Void Omen will appear
                     if (voidOmenRolled && TFTVVoidOmens.CheckForAlreadyRolledVoidOmens(geoLevelController).Count == 1)

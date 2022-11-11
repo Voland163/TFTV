@@ -107,7 +107,7 @@ namespace TFTV
             umbraFish.HitPoints = healthPoints * 0.75f;
             umbraFish.DamagePayload.DamageKeywords[0].Value = standardDamageAttack;
             umbraFish.DamagePayload.DamageKeywords[1].Value = pierceDamageAttack;          
-            umbraFishBodyAspect.Endurance = (healthPoints / 10);
+            umbraFishBodyAspect.Endurance = (healthPoints * 0.75f / 10);
             umbraFishBodyAspect.Speed = 30;
         }
 

@@ -93,6 +93,7 @@ namespace TFTV
 
 
                     GeoscapeEventDef ProgAnuAlliance = DefCache.GetDef<GeoscapeEventDef>("PROG_AN6_GeoscapeEventDef");
+                    GeoscapeEventDef ProgAnuAllianceNoSynod = DefCache.GetDef<GeoscapeEventDef>("PROG_AN6_2_GeoscapeEventDef");
                     GeoscapeEventDef ProgNJAlliance = DefCache.GetDef<GeoscapeEventDef>("PROG_NJ3_GeoscapeEventDef");
                     GeoscapeEventDef ProgSynAllianceTerra = DefCache.GetDef<GeoscapeEventDef>("PROG_SY4_T_GeoscapeEventDef");
                     GeoscapeEventDef ProgSynAlliancePoly = DefCache.GetDef<GeoscapeEventDef>("PROG_SY4_P_GeoscapeEventDef");
@@ -116,9 +117,11 @@ namespace TFTV
                     ProgAnuAlliance.GeoscapeEventData.Choices[0].Outcome.Diplomacy.Add(TFTVCommonMethods.GenerateDiplomacyOutcome(NewJericho, PhoenixPoint, -10));
                     ProgAnuAlliance.GeoscapeEventData.Choices[1].Outcome.Diplomacy.Add(TFTVCommonMethods.GenerateDiplomacyOutcome(NewJericho, PhoenixPoint, -20));
                     ProgAnuAlliance.GeoscapeEventData.Choices[1].Outcome.Diplomacy.Add(TFTVCommonMethods.GenerateDiplomacyOutcome(Synedrion, PhoenixPoint, -15));
-                    TFTVCommonMethods.GenerateGeoEventChoice(ProgAnuAlliance, "PROG_AN4_CHOICE_1_TEXT", "PROG_AN4_CHOICE_1_OUTCOME_GENERAL");
+                    TFTVCommonMethods.GenerateGeoEventChoice(ProgAnuAlliance, "PROG_AN4_CHOICE_1_TEXT", "PROG_AN4_CHOICE_1_OUTCOME_GENERAL");                  
                     ProgAnuAlliance.GeoscapeEventData.Choices[2].Outcome.Diplomacy.Add(TFTVCommonMethods.GenerateDiplomacyOutcome(Anu, PhoenixPoint, -8));
-                 //   ProgAnuAlliance.GeoscapeEventData.Choices[2].Outcome.VariablesChange.Add(TFTVCommonMethods.GenerateVariableChange("RefusedAnu", 3, true));
+                    TFTVCommonMethods.GenerateGeoEventChoice(ProgAnuAllianceNoSynod, "PROG_AN4_CHOICE_1_TEXT", "PROG_AN4_CHOICE_1_OUTCOME_GENERAL");
+                    ProgAnuAllianceNoSynod.GeoscapeEventData.Choices[1].Outcome.Diplomacy.Add(TFTVCommonMethods.GenerateDiplomacyOutcome(Anu, PhoenixPoint, -8));
+                    //   ProgAnuAlliance.GeoscapeEventData.Choices[2].Outcome.VariablesChange.Add(TFTVCommonMethods.GenerateVariableChange("RefusedAnu", 3, true));
 
                     //Synedrion
                     //Supportive Polyphonic

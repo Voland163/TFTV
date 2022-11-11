@@ -2,6 +2,7 @@
 using Base.Defs;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
+using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.Entities.Items;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.Interception.Equipments;
@@ -116,6 +117,13 @@ namespace TFTV
             {
                 try
                 {
+                    if (!__instance.GameTags.Contains(DefCache.GetDef<FactionFunctionalityTagDef>("SDI_FactionFunctionalityTagDef")))
+                    {
+                        __instance.AddTag(DefCache.GetDef<FactionFunctionalityTagDef>("SDI_FactionFunctionalityTagDef"));
+
+                    }
+
+
                     TacticalItemDef redeemerAmmo = DefCache.GetDef<TacticalItemDef>("AN_Redemptor_AmmoClip_ItemDef");
 
                     TacticalItemDef pdwAmmo = DefCache.GetDef<TacticalItemDef>("NJ_Gauss_PDW_AmmoClip_ItemDef");

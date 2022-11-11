@@ -1,5 +1,6 @@
 ﻿using Base.Defs;
 using Base.Eventus.Filters;
+using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Geoscape.Entities.Research;
 using PhoenixPoint.Geoscape.Entities.Research.Requirement;
 using PhoenixPoint.Geoscape.Entities.Research.Reward;
@@ -158,7 +159,7 @@ namespace TFTV
 
 
                 //Changes to SDI Events
-                sdi1.GeoscapeEventData.Choices[0].Outcome.OutcomeText.General.LocalizationKey = "SDI1_OUTCOME";
+                sdi1.GeoscapeEventData.Choices[0].Outcome.OutcomeText.General.LocalizationKey = "SDI1_OUTCOME";               
                 GeoscapeEventDef sdi3 = DefCache.GetDef<GeoscapeEventDef>("SDI_03_GeoscapeEventDef");
                 sdi3.GeoscapeEventData.Choices[0].Outcome.VariablesChange.Add(TFTVCommonMethods.GenerateVariableChange("Umbra_Encounter_Variable", 1, false));        
                 GeoscapeEventDef sdi6 = DefCache.GetDef<GeoscapeEventDef>("SDI_06_GeoscapeEventDef");

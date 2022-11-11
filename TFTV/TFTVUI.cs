@@ -1,10 +1,12 @@
 ﻿using Base.Core;
 using Base.Entities.Statuses;
+using Base.Levels;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.Characters;
 using PhoenixPoint.Common.Entities.GameTags;
+using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.Game;
 using PhoenixPoint.Common.View.ViewModules;
 using PhoenixPoint.Geoscape.Entities;
@@ -15,6 +17,7 @@ using PhoenixPoint.Geoscape.View.ViewControllers.Roster;
 using PhoenixPoint.Geoscape.View.ViewModules;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.Equipments;
+using PhoenixPoint.Tactical.Tutorial;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -34,6 +37,7 @@ namespace TFTV
         public static UIModuleCharacterProgression hookToProgressionModule = null;
         public static GeoCharacter hookToCharacter = null;
         internal static bool moduleInfoBarAdjustmentsExecuted = false;
+        public static bool odiunlocked = false;
         internal static Color red = new Color32(192, 32, 32, 255);
         internal static Color purple = new Color32(149, 23, 151, 255);
         internal static Color blue = new Color32(62, 12, 224, 255);
@@ -43,8 +47,9 @@ namespace TFTV
         internal static Color syn = new Color(0.160784319f, 0.8862745f, 0.145098045f, 1.0f);
 
 
+
         //Adapted from Mad´s Assorted Adjustments
-        /*
+
         [HarmonyPatch(typeof(UIModuleInfoBar), "Init")]
         public static class UIModuleInfoBar_Init_Patch
         {
@@ -52,20 +57,18 @@ namespace TFTV
             {
                 try
                 {
-
                     if (moduleInfoBarAdjustmentsExecuted)
                     {
                         return;
                     }
 
+                    TFTVLogger.Always("Running UIModuleInfoBar");
                     // Declutter
                     Transform tInfoBar = __instance.PopulationBarRoot.transform.parent?.transform;
 
                     //Use this to catch the ToolTip
                     Transform[] thingsToUse = new Transform[2];
 
-
-                    //  __instance.PopulationTooltip.gameObject.SetActive(false);
                     __instance.PopulationTooltip.enabled = false;
 
                     foreach (Transform t in tInfoBar.GetComponentsInChildren<Transform>())
@@ -85,43 +88,53 @@ namespace TFTV
                         {
                             t.gameObject.SetActive(false);
                         }
-
                         //Add Delirium and Pandoran evolution icons, as well as factions icons.
                         if (t.name == "Requirement_Icon")
                         {
-
                             Image icon = t.gameObject.GetComponent<Image>();
                             if (icon.sprite.name == "Geoscape_UICanvasIcons_Actions_EditSquad")
                             {
                                 icon.sprite = Helper.CreateSpriteFromImageFile("Void-04P.png");
-                                t.localScale = new Vector3(1.8f, 1.8f, 1f);
                                 t.gameObject.name = "DeliriumIcon";
                                 t.parent = tInfoBar.GetComponent<Transform>().Find("PopulationDoom_Meter");
+                                t.Translate(new Vector3(30f, 0f, 0f));
+                                t.localScale = new Vector3(1.3f, 1.3f, 1f);
+                                t.gameObject.SetActive(false);
                                 //  icon.color = purple;
 
+                                //   TFTVLogger.Always($"[UIModuleInfoBar_Init_PREFIX] Transform.name: {t.name}");
+
                                 Transform pandoranEvolution = UnityEngine.Object.Instantiate(t, tInfoBar.GetComponent<Transform>().Find("PopulationDoom_Meter"));
-                                pandoranEvolution.gameObject.GetComponent<Image>().sprite = Helper.CreateSpriteFromImageFile("Alien_Nest.png");
+                                pandoranEvolution.gameObject.GetComponent<Image>().sprite = Helper.CreateSpriteFromImageFile("FactionIcons_Aliens_Evo_slow.png");
                                 pandoranEvolution.gameObject.GetComponent<Image>().color = red;
                                 pandoranEvolution.gameObject.name = "PandoranEvolutionIcon";
-                                pandoranEvolution.Translate(new Vector3(70f, 0f, 0f));
+                                // pandoranEvolution.localScale = new Vector3(0.9f, 0.9f, 1);
+                                pandoranEvolution.Translate(new Vector3(110f, 0f, 0f));
+                                pandoranEvolution.gameObject.SetActive(false);
 
                                 Transform anuDiploInfoIcon = UnityEngine.Object.Instantiate(t, tInfoBar.GetComponent<Transform>().Find("PopulationDoom_Meter"));
                                 anuDiploInfoIcon.localScale = new Vector3(1f, 1f, 1f);
-                                anuDiploInfoIcon.Translate(new Vector3(150f, 0f, 0f));
+                                anuDiploInfoIcon.Translate(new Vector3(210f, 0f, 0f));
                                 anuDiploInfoIcon.gameObject.GetComponent<Image>().color = anu;
                                 anuDiploInfoIcon.gameObject.GetComponent<Image>().sprite = Helper.CreateSpriteFromImageFile("FactionIcons_Anu.png");
+                                anuDiploInfoIcon.gameObject.name = "AnuIcon";
+                                anuDiploInfoIcon.gameObject.SetActive(false);
 
                                 Transform njDiploInfoIcon = UnityEngine.Object.Instantiate(t, tInfoBar.GetComponent<Transform>().Find("PopulationDoom_Meter"));
                                 njDiploInfoIcon.localScale = new Vector3(1f, 1f, 1f);
-                                njDiploInfoIcon.Translate(new Vector3(250f, 0f, 0f));
+                                njDiploInfoIcon.Translate(new Vector3(320f, 0f, 0f));
                                 njDiploInfoIcon.gameObject.GetComponent<Image>().color = nj;
                                 njDiploInfoIcon.gameObject.GetComponent<Image>().sprite = Helper.CreateSpriteFromImageFile("FactionIcons_NewJericho.png");
+                                njDiploInfoIcon.gameObject.name = "NJIcon";
+                                njDiploInfoIcon.gameObject.SetActive(false);
 
                                 Transform synDiploInfoIcon = UnityEngine.Object.Instantiate(t, tInfoBar.GetComponent<Transform>().Find("PopulationDoom_Meter"));
                                 synDiploInfoIcon.localScale = new Vector3(1f, 1f, 1f);
-                                synDiploInfoIcon.Translate(new Vector3(350f, 0f, 0f));
+                                synDiploInfoIcon.Translate(new Vector3(430f, 0f, 0f));
                                 synDiploInfoIcon.gameObject.GetComponent<Image>().color = syn;
                                 synDiploInfoIcon.gameObject.GetComponent<Image>().sprite = Helper.CreateSpriteFromImageFile("FactionIcons_Synedrion.png");
+                                synDiploInfoIcon.gameObject.name = "SynIcon";
+                                synDiploInfoIcon.gameObject.SetActive(false);
                                 //  anuDiploInfo.gameObject.GetComponent<Image>().color = red;
                             }
                             // t.name = "ODI_icon";
@@ -138,7 +151,7 @@ namespace TFTV
 
                             TFTVLogger.Always("Parent of UI_underlight " + t.parent.name);
 
-                           
+
                             // separator.position = anuDiploInfoIcon.position - new Vector3(-100, 0, 0);
                         }
 
@@ -146,17 +159,19 @@ namespace TFTV
                         if (t.name == "Separator")
                         {
                             Transform separator = UnityEngine.Object.Instantiate(t, tInfoBar.GetComponent<Transform>().Find("PopulationDoom_Meter"));
-                            separator.Translate(new Vector3(-10f, 10f, 0f));
+                            separator.Translate(new Vector3(0f, 12f, 0f));
+                            separator.gameObject.name = "ODISeparator1";
+                            separator.gameObject.SetActive(false);
 
                             Transform separator2 = UnityEngine.Object.Instantiate(t, tInfoBar.GetComponent<Transform>().Find("PopulationDoom_Meter"));
-                            separator2.Translate(new Vector3(130f, 10f, 0f));
+                            separator2.Translate(new Vector3(180f, 12f, 0f));
+                            separator2.gameObject.name = "ODISeparator2";
+                            separator2.gameObject.SetActive(false);
                         }
                         // Remove skull icon
                         if (t.name == "skull")
                         {
-
                             t.gameObject.SetActive(false);
-
                         }
 
                         // Removed tiled gameover bar
@@ -181,29 +196,33 @@ namespace TFTV
                     deliriumTooltip.gameObject.GetComponent<UITooltipText>().TipText = "testing Delirium tooltip";
                     deliriumTooltip.gameObject.GetComponent<UITooltipText>().TipKey.LocalizationKey = "";
                     deliriumTooltip.gameObject.name = "DeliriumTooltip";
-                    TFTVLogger.Always("Got here");
+                    deliriumTooltip.gameObject.SetActive(false);
+                    //TFTVLogger.Always("Got here");
 
                     Transform evolutionTooltip = UnityEngine.Object.Instantiate(thingsToUse[0], tInfoBar.GetComponent<Transform>().
                      Find("PopulationDoom_Meter").GetComponent<Transform>().Find("PandoranEvolutionIcon"));
                     evolutionTooltip.gameObject.GetComponent<UITooltipText>().TipText = "testing Pandoran Evolution tooltip";
                     evolutionTooltip.gameObject.GetComponent<UITooltipText>().TipKey.LocalizationKey = "";
                     evolutionTooltip.gameObject.name = "PandoranEvolutionTooltip";
-
+                    evolutionTooltip.gameObject.SetActive(false);
 
                     //Create percentages next to each faction icon
 
                     Transform anuDiploInfo = UnityEngine.Object.Instantiate(__instance.PopulationPercentageText.transform, tInfoBar.GetComponent<Transform>().Find("PopulationDoom_Meter"));
-                    anuDiploInfo.Translate(new Vector3(150f, 0f, 0f));
+                    anuDiploInfo.Translate(new Vector3(210f, 0f, 0f));
                     anuDiploInfo.gameObject.name = "AnuPercentage";
+                    anuDiploInfo.gameObject.SetActive(false);
                     // anuDiploInfo.gameObject.SetActive(false);
 
                     Transform njDiploInfo = UnityEngine.Object.Instantiate(__instance.PopulationPercentageText.transform, tInfoBar.GetComponent<Transform>().Find("PopulationDoom_Meter"));
-                    njDiploInfo.Translate(new Vector3(250f, 0f, 0f));
+                    njDiploInfo.Translate(new Vector3(320f, 0f, 0f));
                     njDiploInfo.gameObject.name = "NjPercentage";
+                    njDiploInfo.gameObject.SetActive(false);
 
                     Transform synDiploInfo = UnityEngine.Object.Instantiate(__instance.PopulationPercentageText.transform, tInfoBar.GetComponent<Transform>().Find("PopulationDoom_Meter"));
-                    synDiploInfo.Translate(new Vector3(350f, 0f, 0f));
+                    synDiploInfo.Translate(new Vector3(430f, 0f, 0f));
                     synDiploInfo.gameObject.name = "SynPercentage";
+                    synDiploInfo.gameObject.SetActive(false);
 
                     //Create highlights for new elements
 
@@ -220,7 +239,7 @@ namespace TFTV
 
                     Transform njDiploHL = UnityEngine.Object.Instantiate(thingsToUse[1], tInfoBar.GetComponent<Transform>().Find("PopulationDoom_Meter").GetComponent<Transform>().Find("NjPercentage"));
                     njDiploHL.Translate(new Vector3(-10, -15, 1));
-                    
+
                     Transform synDiploHL = UnityEngine.Object.Instantiate(thingsToUse[1], tInfoBar.GetComponent<Transform>().Find("PopulationDoom_Meter").GetComponent<Transform>().Find("SynPercentage"));
                     synDiploHL.Translate(new Vector3(-10, -15, 1));
 
@@ -231,6 +250,7 @@ namespace TFTV
                     // Otherwise the visual transformations are repeated everytime leading to weird results
                     // This is reset on every level change (see below)
                     moduleInfoBarAdjustmentsExecuted = true;
+
                 }
                 catch (Exception e)
                 {
@@ -254,11 +274,11 @@ namespace TFTV
         [HarmonyPatch(typeof(UIModuleInfoBar), "UpdatePopulation")]
         public static class TFTV_ODI_meter_patch
         {
-            public static void Postfix(UIModuleInfoBar __instance, GeoscapeViewContext ____context)
+            public static void Postfix(UIModuleInfoBar __instance, GeoscapeViewContext ____context, LayoutGroup ____layoutGroup)
             {
                 try
                 {
-
+               
                     GeoLevelController controller = ____context.Level;
 
                     List<GeoAlienBase> listOfAlienBases = controller.AlienFaction.Bases.ToList();
@@ -284,52 +304,167 @@ namespace TFTV
                         }
 
                     }
-                    int multiplier = 2;
-                    if (controller.EventSystem.GetVariable("Pandorans_Researched_Citadel") == 1)
-                    {
-                        multiplier = 1;
-
-                    }
-
-                    int pEPerDay = nests * multiplier * 5 + lairs * multiplier * 10 + citadels * multiplier * 15 + controller.EventSystem.GetVariable(TFTVInfestation.InfestedHavensVariable) * multiplier * 10;
 
 
-                    TFTVLogger.Always("Evo progress is " + controller.AlienFaction.EvolutionProgress);
-                    float evoProgress = controller.AlienFaction.EvolutionProgress;
+                    int pEPerDay = nests + lairs * 2 + citadels * 3 + controller.EventSystem.GetVariable(TFTVInfestation.InfestedHavensVariable) * 2;
+                    //max, not counting IH, is 3 + 6 + 9 = 18
+                    //>=66%, evo high, so 12+
+                    //<66% >33%, evo normal, 6+ 
+                    //<33%, evo slow, else
 
-                    float num = evoProgress / 9400;
-
-                    __instance.PopulationMinTransform.sizeDelta = new Vector2();
-                    __instance.PopulationDeadTransform.sizeDelta = new Vector2(__instance.PopulationAllTransform.sizeDelta.x * (1f - num), __instance.PopulationAllTransform.sizeDelta.y);
-
-                    int num3 = (int)Mathf.Ceil(num * 100f);
-                    __instance.PopulationPercentageText.text = $"{num3}%";
-
-                    string variation = "Your operatives can be afflicted with Delirium up to a third of their Willpower";
-                    if (num3 > 45)
-                    {
-                        variation = "Your operatives can be afflicted with Delirium up to half of their Willpower";
-                    }
-                    else
-                    {
-                        variation = "No limit to the Delirium with which your operatives can be afflicted";
-                    }
-                    string evolution = "\nPandorans are gaining " + pEPerDay + " Evolution Points per day from their Colonies and Infested Havens";
-                    string description = "ODI\n" + variation + evolution;
-                    string tipText = string.Format(description, num3);
-                    __instance.PopulationTooltip.TipText = tipText;
-                    TFTVLogger.Always("Num3 is " + num3);
-                    TFTVLogger.Always("Num is " + num);
 
                     Transform tInfoBar = __instance.PopulationBarRoot.transform.parent?.transform;
                     Transform populationBar = tInfoBar.GetComponent<Transform>().Find("PopulationDoom_Meter");
+
+               //     TFTVLogger.Always("Got here");
+
+
                     Transform anuInfo = populationBar.GetComponent<Transform>().Find("AnuPercentage");
-                    anuInfo.gameObject.GetComponent<Text>().text = $"{____context.Level.AnuFaction.Diplomacy.GetDiplomacy(____context.Level.PhoenixFaction)}%";
+                    anuInfo.gameObject.GetComponent<Text>().text = $"<color=#f200ff>{____context.Level.AnuFaction.Diplomacy.GetDiplomacy(____context.Level.PhoenixFaction)}%</color>";
+
+
                     Transform njInfo = populationBar.GetComponent<Transform>().Find("NjPercentage");
-                    njInfo.gameObject.GetComponent<Text>().text = $"{____context.Level.NewJerichoFaction.Diplomacy.GetDiplomacy(____context.Level.PhoenixFaction)}%";
+                    njInfo.gameObject.GetComponent<Text>().text = $"<color=#289eff>{____context.Level.NewJerichoFaction.Diplomacy.GetDiplomacy(____context.Level.PhoenixFaction)}%</color>";
+
+
                     Transform synInfo = populationBar.GetComponent<Transform>().Find("SynPercentage");
-                    synInfo.gameObject.GetComponent<Text>().text = $"{____context.Level.SynedrionFaction.Diplomacy.GetDiplomacy(____context.Level.PhoenixFaction)}%";
+                    synInfo.gameObject.GetComponent<Text>().text = $"<color=#28e225>{____context.Level.SynedrionFaction.Diplomacy.GetDiplomacy(____context.Level.PhoenixFaction)}%</color>";
+
+                    Transform anuIcon = populationBar.GetComponent<Transform>().Find("AnuIcon");
+                    Transform njIcon = populationBar.GetComponent<Transform>().Find("NJIcon");
+                    Transform synIcon = populationBar.GetComponent<Transform>().Find("SynIcon");
+
+                 //   TFTVLogger.Always("Got here 2");
+
+                    if (controller.PhoenixFaction.GameTags.Contains(DefCache.GetDef<DiplomacyStateTagDef>("AN_Discovered_DiplomacyStateTagDef")))
+                    {
+                        anuInfo.gameObject.SetActive(true);
+                        anuIcon.gameObject.SetActive(true);
+                    }
+
+                    if (controller.PhoenixFaction.GameTags.Contains(DefCache.GetDef<DiplomacyStateTagDef>("NJ_Discovered_DiplomacyStateTagDef")))
+                    {
+                        njInfo.gameObject.SetActive(true);
+                        njIcon.gameObject.SetActive(true);
+
+                    }
+                    if (controller.PhoenixFaction.GameTags.Contains(DefCache.GetDef<DiplomacyStateTagDef>("SY_Discovered_DiplomacyStateTagDef")))
+                    {
+                        synInfo.gameObject.SetActive(true);
+                        synIcon.gameObject.SetActive(true);
+
+                    }
+
+                 //   TFTVLogger.Always("Got here 3");
+                    Transform deliriumIconHolder = populationBar.GetComponent<Transform>().Find("DeliriumIcon");
+                    Image deliriumIcon = deliriumIconHolder.GetComponent<Image>();
+                    Transform separator = populationBar.GetComponent<Transform>().Find("ODISeparator1");
+                   
+                    Transform separator2 = populationBar.GetComponent<Transform>().Find("ODISeparator2");
+                    
+                    //    TFTVLogger.Always("Got here 4");
+
+                    string deliriumToolTipText = "";
+                    if (controller.EventSystem.GetEventRecord("SDI_10")?.SelectedChoice == 0 || TFTVVoidOmens.CheckFordVoidOmensInPlay(controller).Contains(10))
+                    {
+                        __instance.PopulationBarRoot.gameObject.SetActive(true);
+                        populationBar.gameObject.SetActive(true);
+                        deliriumIconHolder.gameObject.SetActive(true);
+                        deliriumIcon.sprite = TFTVDefsRequiringReinjection.VoidIcon;
+                        deliriumToolTipText = "<color=#ec9006><b>-Our operatives can now be afflicted with a Delirium status equal to their Willpower</b></color>";
+                        separator.gameObject.SetActive(true);
+                        separator2.gameObject.SetActive(true);
+                    }
+                    else if (controller.EventSystem.GetEventRecord("SDI_06")?.SelectedChoice == 0)
+                    {
+                        populationBar.gameObject.SetActive(true);
+                        __instance.PopulationBarRoot.gameObject.SetActive(true);
+                        deliriumIconHolder.gameObject.SetActive(true);
+                        deliriumIcon.sprite = Helper.CreateSpriteFromImageFile("Void-04Phalf.png");
+                        deliriumToolTipText = "<color=#ec9006><b>-Our operatives can now be afflicted with a Delirium status of up to half of their Willpower</b></color>";
+                        separator.gameObject.SetActive(true);
+                        separator2.gameObject.SetActive(true);
+                    }
+                    else if (controller.EventSystem.GetEventRecord("SDI_01")?.SelectedChoice == 0)
+                    {
+                       // TFTVLogger.Always("Got to SDI01");
+                        deliriumIcon.sprite = Helper.CreateSpriteFromImageFile("Void-04Pthird.png");
+                        populationBar.gameObject.SetActive(true);
+                        __instance.PopulationBarRoot.gameObject.SetActive(true);
+                        deliriumIconHolder.gameObject.SetActive(true);
+                        deliriumToolTipText = "<color=#ec9006><b>-Our operatives can now be afflicted with a Delirium status of up to a third of their Willpower</b></color>";
+                        separator.gameObject.SetActive(true);
+                        separator2.gameObject.SetActive(true);
+                    }
+
+                    if (TFTVVoidOmens.CheckFordVoidOmensInPlay(controller).Contains(10)) 
+                    {
+                        deliriumToolTipText += "\n-<i>No limit to Delirium, regardless of ODI level</i> Void Omen is in effect.";
+                    }
+
+
+                    if (controller.EventSystem.GetEventRecord("SDI_09")?.SelectedChoice == 0)
+                    {
+                        deliriumToolTipText += "\n-Evolved Umbra sighted.";
+                    }
+                    else if (controller.EventSystem.GetVariable("UmbraResearched") == 1) 
+                    {
+                        deliriumToolTipText += "\n-Sightings of Umbra have been reported";                    
+                    }           
+                    if(controller.EventSystem.GetEventRecord("SDI_07")?.SelectedChoice == 0) 
+                    {
+                        deliriumToolTipText += "\n-Havens in the Mist can become infested instead of destroyed when attacked by Pandorans. Infested havens accelerate Pandoran evolution.";
+                    }
+                    
+
+                    Transform deliriumTooltip = populationBar.GetComponent<Transform>().Find("DeliriumIcon").GetComponent<Transform>().Find("DeliriumTooltip");                            
+                    deliriumTooltip.gameObject.GetComponent<UITooltipText>().TipText = deliriumToolTipText;
+                    deliriumTooltip.gameObject.SetActive(true);
+                    //TFTVLogger.Always("Got here");
+
+                  
+
+
+                    if (controller.EventSystem.GetEventRecord("SDI_01")?.SelectedChoice == 0 && controller.EventSystem.GetEventRecord("PROG_FS2_WIN")?.SelectedChoice == 0)
+                    {
+                        deliriumIconHolder.gameObject.SetActive(false);
+                    }
+
+                    Transform evolutionIconHolder = populationBar.GetComponent<Transform>().Find("PandoranEvolutionIcon");
+                    Image evolutionIcon = evolutionIconHolder.GetComponent<Image>();
+
+                    Transform evolutionTooltip = populationBar.GetComponent<Transform>().Find("PandoranEvolutionIcon").GetComponent<Transform>().Find("PandoranEvolutionTooltip");
+                    string evolutionToolTipText = "Based on reports and field observations, we estimate that the Pandorans are evolving ";
+                    if (controller.PhoenixFaction.Research.HasCompleted("PX_Alien_EvolvedAliens_ResearchDef"))
+                    {
+                        // TFTVLogger.Always("Got here 5");
+                        evolutionIconHolder.gameObject.SetActive(true);
+                        populationBar.gameObject.SetActive(true);
+                        __instance.PopulationBarRoot.gameObject.SetActive(true);
+                        evolutionTooltip.gameObject.SetActive(true);
+
+                        if (pEPerDay >= 12)
+                        {
+                            evolutionIcon.sprite = Helper.CreateSpriteFromImageFile("FactionIcons_Aliens_Evo_fast.png");
+                            evolutionToolTipText += "<b>very rapidly</b>. We must destroy Pandoran Colonies and Infested Havens before we are overwhelmed!";
+                        }
+                        else if (pEPerDay >= 6)
+                        {
+                            evolutionIcon.sprite = Helper.CreateSpriteFromImageFile("FactionIcons_Aliens_Evo_medium.png");
+                            evolutionToolTipText += "<b>rapidly</b>. We must keep the number of Pandoran Colonies and Infested Havens in check.";
+                        }
+                        else
+                        {
+                            evolutionIcon.sprite = Helper.CreateSpriteFromImageFile("FactionIcons_Aliens_Evo_slow.png");
+                            evolutionToolTipText += ". We are monitoring the situation and will report any newly discovered Pandoran Colonies.";
+                        }
+                    }
+
+
+                    evolutionTooltip.gameObject.GetComponent<UITooltipText>().TipText = evolutionToolTipText;
+
                 }
+                  
                 catch (Exception e)
                 {
                     TFTVLogger.Error(e);
@@ -337,7 +472,7 @@ namespace TFTV
             }
         }
 
-*/
+
 
         [HarmonyPatch(typeof(UIModuleCharacterProgression), "GetStarBarValuesDisplayString")]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051")]
