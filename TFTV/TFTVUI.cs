@@ -62,7 +62,7 @@ namespace TFTV
                         return;
                     }
 
-                    TFTVLogger.Always("Running UIModuleInfoBar");
+                  //  TFTVLogger.Always("Running UIModuleInfoBar");
                     // Declutter
                     Transform tInfoBar = __instance.PopulationBarRoot.transform.parent?.transform;
 
@@ -149,7 +149,7 @@ namespace TFTV
                             }
 
 
-                            TFTVLogger.Always("Parent of UI_underlight " + t.parent.name);
+                           // TFTVLogger.Always("Parent of UI_underlight " + t.parent.name);
 
 
                             // separator.position = anuDiploInfoIcon.position - new Vector3(-100, 0, 0);

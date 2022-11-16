@@ -22,6 +22,7 @@ using Base.UI;
 using PhoenixPoint.Common.Entities.Items;
 using PhoenixPoint.Tactical.Entities.Weapons;
 using PhoenixPoint.Tactical.Entities;
+using PhoenixPoint.Tactical.Levels.FactionObjectives;
 
 namespace TFTV
 {
@@ -558,12 +559,38 @@ namespace TFTV
                 CreateRevenantAbilityForSniper();
                 CreateRevenantAbilityForTechnician();
                 CreateRevenantResistanceStatus();
+              //  CreateKillRevenantObjective();
             }
             catch (Exception e)
             {
                 TFTVLogger.Error(e);
             }
         }
+
+        public static void CreateKillRevenantObjective() 
+        {
+            try
+            {
+                string objectiveName = "KillRevenant_Objective";
+                string description = "Capture or kill the Revenant";
+                KillActorFactionObjectiveDef killObjectiveSource = DefCache.GetDef<KillActorFactionObjectiveDef>("KillChiron_CustomMissionObjective");
+                KillActorFactionObjectiveDef killRevenantObjective = Helper.CreateDefFromClone(killObjectiveSource, "E4EEB674-4AF4-4902-8F0A-661752170E0B", objectiveName);
+                killRevenantObjective.IsVictoryObjective = false;
+                killRevenantObjective.KillTargetGameTag = DefCache.GetDef<GameTagDef>("Any_Revenant_TagDef");
+               // killRevenantObjective.IsUiHidden = true;
+              //  killRevenantObjective.ParalysedCounts = false;
+                killRevenantObjective.MissionObjectiveData.Description = new LocalizedTextBind(description, true);
+                killRevenantObjective.MissionObjectiveData.Summary = new LocalizedTextBind(description, true);
+
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+        }
+
         public static void CreateRevenantStatusEffect()
         {
             try

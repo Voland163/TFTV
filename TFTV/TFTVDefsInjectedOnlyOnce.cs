@@ -1,5 +1,6 @@
 ﻿using Base.Core;
 using Base.Defs;
+using Base.Entities.Effects;
 using Base.Entities.Effects.ApplicationConditions;
 using Base.Levels.Nav.Tiled;
 using PhoenixPoint.Common.ContextHelp;
@@ -22,6 +23,7 @@ using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.ContextHelp.HintConditions;
 using PhoenixPoint.Tactical.ContextHelp.HintConditions;
 using PhoenixPoint.Tactical.Entities;
+using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.Entities.Statuses;
 using PhoenixPoint.Tactical.Levels.FactionObjectives;
@@ -29,6 +31,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using PhoenixPoint.Common.Entities.Characters;
+using Base.Entities.Abilities;
 
 namespace TFTV
 {
@@ -63,8 +67,103 @@ namespace TFTV
             TFTVChangesToDLC5Events.ChangesToDLC5Defs();
             ChangesToAcherons();
             RemoveCensusResearch();
+            AllowMedkitsToTargetMutoids();
 
         }
+        public static void AllowMedkitsToTargetMutoids()
+        {
+            try
+            {
+                //Allow medkits to target Mutoids
+                DefCache.GetDef<TacticalTargetingDataDef>("E_TargetingData [Medkit_AbilityDef]").Origin.CullTargetTags.Clear();
+               
+                //Make Cure Spray/Cure Cloud remove acid
+                string abilityName = "AcidStatusRemover";
+                StatusRemoverEffectDef sourceStatusRemoverEffect = DefCache.GetDef<StatusRemoverEffectDef>("StrainedRemover_EffectDef");
+                StatusRemoverEffectDef newAcidStatusRemoverEffect = Helper.CreateDefFromClone(sourceStatusRemoverEffect, "0AE26C25-A67D-4F2F-B036-F7649B26B695", abilityName);
+                newAcidStatusRemoverEffect.StatusToRemove = "Acid";
+                List<EffectDef> effectDefsList = DefCache.GetDef<MultiEffectDef>("Cure_MultiEffectDef").EffectDefs.ToList();
+                effectDefsList.Add(newAcidStatusRemoverEffect);
+                DefCache.GetDef<MultiEffectDef>("Cure_MultiEffectDef").EffectDefs=effectDefsList.ToArray();
+
+                //Skill toss per Belial's suggestions
+
+                //need to change/clone CharacterProgressionData 
+                AbilityCharacterProgressionDef sourceFirstLevel = DefCache.GetDef<AbilityCharacterProgressionDef>("E_CharacterProgressionData [GooImmunity_AbilityDef]");
+
+
+                DefCache.GetDef<AbilityCharacterProgressionDef>("E_CharacterProgressionData [VirusResistant_DamageMultiplierAbilityDef]").MutagenCost=10;
+                AbilityCharacterProgressionDef demolitionStanceCPD =
+                    Helper.CreateDefFromClone(sourceFirstLevel, "F4DA4D75-8FCE-4414-BB88-7A065A45105C", "E_CharacterProgressionData [Demolition_AbilityDef]");
+              
+
+
+                AbilityCharacterProgressionDef mindControlImmunityCPD = DefCache.GetDef<AbilityCharacterProgressionDef>("E_CharacterProgressionData [MindControlImmunity_AbilityDef]");
+                mindControlImmunityCPD.MutagenCost = 15;
+                mindControlImmunityCPD.SkillPointCost = 0;
+                mindControlImmunityCPD.RequiredSpeed = 0;
+                mindControlImmunityCPD.RequiredStrength = 0;
+                mindControlImmunityCPD.RequiredWill = 0;
+               
+                AbilityCharacterProgressionDef poisonImmunityCPD = Helper.CreateDefFromClone(sourceFirstLevel, "67418B3A-C666-41CE-B504-853C6C705284", "E_CharacterProgressionData [PoisonImmunity_AbilityDef]");
+                poisonImmunityCPD.MutagenCost = 20;
+                DamageMultiplierAbilityDef poisonImmunity = DefCache.GetDef<DamageMultiplierAbilityDef>("PoisonImmunity_DamageMultiplierAbilityDef");
+                poisonImmunity.CharacterProgressionData = poisonImmunityCPD;
+
+          
+                AbilityCharacterProgressionDef acidResistanceCPD = Helper.CreateDefFromClone(sourceFirstLevel, "03367F73-97B9-4E65-919B-D31DF147EAA0", "E_CharacterProgressionData [AcidResistance_AbilityDef]");
+                acidResistanceCPD.MutagenCost = 25;
+                DamageMultiplierAbilityDef acidResistance = DefCache.GetDef<DamageMultiplierAbilityDef>("AcidResistant_DamageMultiplierAbilityDef");
+                acidResistance.CharacterProgressionData = acidResistanceCPD;
+
+                AbilityCharacterProgressionDef leapCPD = Helper.CreateDefFromClone(sourceFirstLevel, "99339FAB-3FA5-4472-89B6-52A816464637", "E_CharacterProgressionData [RocketLeap_AbilityDef]");
+                leapCPD.MutagenCost = 30;
+
+                JetJumpAbilityDef leap = DefCache.GetDef<JetJumpAbilityDef>("Exo_Leap_AbilityDef");
+                leap.CharacterProgressionData=leapCPD;
+
+             
+
+
+                ApplyStatusAbilityDef demolitionAbility =  DefCache.GetDef<ApplyStatusAbilityDef>("DemolitionMan_AbilityDef");
+                demolitionAbility.CharacterProgressionData = demolitionStanceCPD;
+
+              
+
+                AbilityTrackDef arthronAbilityTrack = DefCache.GetDef<AbilityTrackDef>("E_AbilityTrack [ArthronSpecializationDef]");
+            //    AbilityTrackDef tritonAbilityTrack = DefCache.GetDef<AbilityTrackDef>("E_AbilityTrack [TritonSpecializationDef]");
+                AbilityTrackDef sirenAbilityTrack = DefCache.GetDef<AbilityTrackDef>("E_AbilityTrack [SirenSpecializationDef]");
+                AbilityTrackDef scyllaAbilityTrack = DefCache.GetDef<AbilityTrackDef>("E_AbilityTrack [ScyllaSpecializationDef]");
+                AbilityTrackDef acheronAbilityTrack = DefCache.GetDef<AbilityTrackDef>("E_AbilityTrack [AcheronSpecializationDef]");
+
+              
+
+                arthronAbilityTrack.AbilitiesByLevel[0].Ability = DefCache.GetDef<DamageMultiplierAbilityDef>("VirusResistant_DamageMultiplierAbilityDef");
+                arthronAbilityTrack.AbilitiesByLevel[2].Ability = poisonImmunity;
+                arthronAbilityTrack.AbilitiesByLevel[4].Ability = DefCache.GetDef<ApplyEffectAbilityDef>("MistBreather_AbilityDef");
+
+                //Reduce cost of Mutoid Syphon attack to 1AP
+                DefCache.GetDef<BashAbilityDef>("Mutoid_Syphon_Strike_AbilityDef").ActionPointCost=0.25f;
+
+      
+                scyllaAbilityTrack.AbilitiesByLevel[0].Ability = demolitionAbility;
+                scyllaAbilityTrack.AbilitiesByLevel[4].Ability = leap;
+
+                sirenAbilityTrack.AbilitiesByLevel[3].Ability = acidResistance;
+
+                acheronAbilityTrack.AbilitiesByLevel[1].Ability = DefCache.GetDef<ApplyStatusAbilityDef>("MindControlImmunity_AbilityDef");
+         
+            }
+
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+
+        
 
         public static void RemoveCensusResearch()
         {
@@ -540,6 +639,13 @@ namespace TFTV
                 veryhard.StartingSquadTemplate[0] = hard.TutorialStartingSquadTemplate[1];
                 veryhard.StartingSquadTemplate[1] = hard.TutorialStartingSquadTemplate[2];
 
+                //Making HPC residual
+                veryhard.MinPopulationThreshold = 3;
+                hard.MinPopulationThreshold = 3;
+                standard.MinPopulationThreshold = 3;
+                easy.MinPopulationThreshold = 3;
+
+
 
 
 
@@ -568,7 +674,7 @@ namespace TFTV
 
 
                 //reducing evolution per day because there other sources of evolution points now
-                hard.EvolutionProgressPerDay = 60; //vanilla 70
+                hard.EvolutionProgressPerDay = 50; //vanilla 70; moved from 60 in Update#6
 
 
                 standard.NestLimitations.MaxNumber = 3; //vanilla 4

@@ -76,6 +76,8 @@ namespace TFTV
                             + " And from Infested Havens " + __instance.GeoLevel.EventSystem.GetVariable(TFTVInfestation.InfestedHavensVariable) * 20);
                     }
                 }
+
+
                 catch (Exception e)
                 {
                     TFTVLogger.Error(e);

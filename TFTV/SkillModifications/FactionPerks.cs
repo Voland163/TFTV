@@ -638,6 +638,8 @@ namespace PRMBetterClasses.SkillModifications
             mbProgressionDef.RequiredStrength = 0;
             mbProgressionDef.RequiredWill = 0;
             mbProgressionDef.RequiredSpeed = 0;
+            //Adjusting for Mutoids Voland
+            mbProgressionDef.MutagenCost = 30;
             mistBreather.CharacterProgressionData = mbProgressionDef;
         }
         private static void Change_Resurrect()

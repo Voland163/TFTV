@@ -10,6 +10,7 @@ using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
+using PhoenixPoint.Common.Levels.Missions;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Tactical.AI.Considerations;
 using PhoenixPoint.Tactical.Entities;
@@ -20,6 +21,7 @@ using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.Entities.Statuses;
 using PhoenixPoint.Tactical.Entities.Weapons;
 using PhoenixPoint.Tactical.Levels;
+using PhoenixPoint.Tactical.Levels.FactionObjectives;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -892,7 +894,7 @@ namespace TFTV
                         int roll = UnityEngine.Random.Range(0, options);
 
                         int winner = scoreList[roll];
-                        TFTVLogger.Always("The highest score is " + winner);
+                        TFTVLogger.Always("The roll is " + roll + ", so the highest score is " + winner);
 
                         DamageTypeBaseEffectDef damageTypeDef = new DamageTypeBaseEffectDef();
                         if (winner == scoreFireDamage)
@@ -1500,20 +1502,20 @@ namespace TFTV
                         if (deathReport.Actor.HasGameTag(revenantTier1GameTag))
                         {
                             TFTVRevenantResearch.RevenantPoints = 1; // testing 1
-                            TFTVLogger.Always("StartingSkill points " + __instance.GetFactionByCommandName("PX").StartingSkillpoints);
-                            __instance.GetFactionByCommandName("PX").SetStartingSkillPoints(2);
+                          //  TFTVLogger.Always("StartingSkill points " + __instance.GetFactionByCommandName("PX").StartingSkillpoints);
+                           // __instance.GetFactionByCommandName("PX").SetStartingSkillPoints(2);
                         }
                         else if (deathReport.Actor.HasGameTag(revenantTier2GameTag))
                         {
                             TFTVRevenantResearch.RevenantPoints = 5; // testing 5
-                            TFTVLogger.Always("StartingSkill points " + __instance.GetFactionByCommandName("PX").StartingSkillpoints);
-                            __instance.GetFactionByCommandName("PX").SetStartingSkillPoints(4);
+                          //  TFTVLogger.Always("StartingSkill points " + __instance.GetFactionByCommandName("PX").StartingSkillpoints);
+                           // __instance.GetFactionByCommandName("PX").SetStartingSkillPoints(4);
                         }
                         else if (deathReport.Actor.HasGameTag(revenantTier3GameTag))
                         {
                             TFTVRevenantResearch.RevenantPoints = 10;
-                            TFTVLogger.Always("StartingSkill points " + __instance.GetFactionByCommandName("PX").StartingSkillpoints);
-                            __instance.GetFactionByCommandName("PX").SetStartingSkillPoints(6);
+                           // TFTVLogger.Always("StartingSkill points " + __instance.GetFactionByCommandName("PX").StartingSkillpoints);
+                           // __instance.GetFactionByCommandName("PX").SetStartingSkillPoints(6);
                         }
 
                     }
@@ -1525,6 +1527,103 @@ namespace TFTV
             }
         }
 
+        public static bool SkillPointsForRevenantKillAwarded = false;
+
+        [HarmonyPatch(typeof(TacticalFaction), "get_Skillpoints")]
+        public static class TacticalFaction_GiveExperienceForObjectives_Revenant_Patch
+        {
+            public static void Postfix(TacticalFaction __instance, ref int __result)
+            {
+                try
+                {
+                    TFTVLogger.Always("get_Skillpoints");
+
+                    if (__instance == __instance.TacticalLevel.GetFactionByCommandName("PX") && !SkillPointsForRevenantKillAwarded)
+                    {
+                        TacticalFaction phoenix = __instance;
+
+                        if (TFTVRevenantResearch.RevenantPoints == 10)
+                        {
+                            __result += 6;
+                           // TFTVLogger.Always(__instance.Skillpoints + " awarded for killing Revenant");
+                            SkillPointsForRevenantKillAwarded=true;
+                        }
+                        else if (TFTVRevenantResearch.RevenantPoints == 5)
+                        {
+                            __result += 4;
+                        //    TFTVLogger.Always(__instance.Skillpoints + " awarded for killing Revenant");
+                            SkillPointsForRevenantKillAwarded=true;
+                        }
+                        else if (TFTVRevenantResearch.RevenantPoints == 1)
+                        {
+                            __result += 2;
+                         //   TFTVLogger.Always(__instance.Skillpoints + " awarded for killing Revenant");
+                            SkillPointsForRevenantKillAwarded=true;
+                        }
+                        else
+                        {
+                            return;
+                        }
+
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+        }
+
+
+
+
+
+        /*
+        [HarmonyPatch(typeof(TacticalFaction), "GiveExperienceForObjectives")]
+        public static class TacticalLevelController_GiveExperienceForObjectives_Revenant_Patch
+        {
+            public static void Postfix(TacticalFaction __instance)
+            {
+                try
+                {
+                    if (__instance == __instance.TacticalLevel.GetFactionByCommandName("PX"))
+                    {
+                        TacticalFaction phoenix = __instance;
+
+                     
+                        TFTVLogger.Always("Skill Points are " + __instance.Skillpoints);
+                        int sp = __instance.Skillpoints;
+
+                        if (TFTVRevenantResearch.RevenantPoints == 10)
+                        {
+                            __instance.SetStartingSkillPoints(sp+6);
+                            TFTVLogger.Always(__instance.Skillpoints + " awarded for killing Revenant");
+                        }
+                        else if (TFTVRevenantResearch.RevenantPoints == 5)
+                        {
+                            __instance.SetStartingSkillPoints(sp + 4);
+                            TFTVLogger.Always(__instance.Skillpoints + " awarded for killing Revenant");
+                        }
+                        else if (TFTVRevenantResearch.RevenantPoints == 1)
+                        {
+                            __instance.SetStartingSkillPoints(sp + 2);
+                            TFTVLogger.Always(__instance.Skillpoints + " awarded for killing Revenant");
+                        }
+                        else
+                        {
+                            return;
+                        }
+
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+        }
+
+        */
 
 
         /*

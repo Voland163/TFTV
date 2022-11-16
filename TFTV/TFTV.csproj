@@ -112,6 +112,7 @@
     <Compile Include="TFTVDelirium.cs" />
     <Compile Include="TFTVDeliriumPerks.cs" />
     <Compile Include="TFTVDiplomacyPenalties.cs" />
+    <Compile Include="TFTVExperimental.cs" />
     <Compile Include="TFTVGeoscape.cs" />
     <Compile Include="TFTVConfig.cs" />
     <Compile Include="TFTVHelper.cs" />

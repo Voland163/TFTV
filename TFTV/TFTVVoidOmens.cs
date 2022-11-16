@@ -890,11 +890,28 @@ namespace TFTV
             {
                 try
                 {
+                    /*
+                    TFTVLogger.Always("GetCompletion experience is " + __result);
+                    if (TFTVRevenantResearch.RevenantPoints == 10)
+                    {
+                        __result += 3;
+                        TFTVLogger.Always("300 awarded for killing Revenant; result is now " + __result);
+                    }
+                    else if (TFTVRevenantResearch.RevenantPoints == 5)
+                    {
+                        __result += 2;
+                        TFTVLogger.Always("200 awarded for killing Revenant; result is now " + __result);
+                    }
+                    else if (TFTVRevenantResearch.RevenantPoints == 1)
+                    {
+                        __result += 1;
+                        TFTVLogger.Always("100 awarded for killing Revenant; result is now " + __result);
+                    }*/
+
                     if (VoidOmensCheck[4])
                     {
                         __result *= 2;
                     }
-
                 }
                 catch (Exception e)
                 {
