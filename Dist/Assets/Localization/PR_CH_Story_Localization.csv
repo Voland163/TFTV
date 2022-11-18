@@ -339,3 +339,29 @@ DELIRIUM_PERK_INNER_SIGHT_DESCRIPTION,Text,,"-10 Perception, +10 Hearing Range
 <i>Le sujet est souvent observé les yeux fermés ; il prétend voir avec un ""œil intérieur"" ; peut-être schizophrénie, mais une perception extrasensorielle accrue est confirmée.</i>",,,,,,
 TFTV_KEY_UMBRA_TARGET_DISPLAY_NAME,Text,,UMBRA,,,,,,,,
 TFTV_KEY_UMBRA_TARGET_DISPLAY_DESCRIPTION,Text,,It's not real it's not real it's not real it's not real,,,,,,,,
+,,,,,,,,,,,
+KEY_GEO_HINT_AUGMENTATION_SCREEN_DESCRIPTION,Text,,"You are about to augment your first soldier. A character can only have UP TO 2 BODY PARTS replaced this way.
+
+Once an augmentation is installed, the soldier will not be able to revert back to their natural limbs. However, augmented body parts CAN BE SWAPPED with different cybernetic parts.
+
+Augmented body parts are IMMUNE TO BLEEDING and RESISTANT TO VIRAL DAMAGE, POISON, AND PARALYSIS. Damaged cybernetics CAN BE REPAIRED after battle at the expense of Tech and Materials. ",,,,,,,,
+KEY_GEO_HINT_AUGMENTATION_SCREEN_NAME,Text,,AUGMENTING A SOLDIER,,,,,,,,
+KEY_GEO_HINT_CYBERNETICS_LAB_BUILT_DESCRIPTION,Text,,"The construction of your Cybernetics Lab is complete. You will now be able to AUGMENT SOLDIERS, replacing their natural limbs with powerful cybernetics.
+
+Each augmentation reduces the maximum Delirium a character may have by 1/3 and also immediately removes that much Delirium from the character.  
+
+To Augment a soldier, navigate to the PERSONNEL tab, select EDIT UNIT and then select AUGMENT.",,,,,,,,
+KEY_GEO_HINT_CYBERNETICS_LAB_BUILT_NAME,Text,,AUGMENTATION NOW AVAILABLE,,,,,,,,
+KEY_GEO_HINT_MUTATION_LAB_BUILT_DESCRIPTION,Text,,"The construction of your Mutation Lab is complete. You will now be able to MUTATE SOLDIERS, replacing their natural limbs with ones enhanced by Pandoravirus mutation.
+
+
+To Mutate a soldier, navigate to the PERSONNEL tab, select EDIT UNIT and then select MUTATE.",,,,,,,,
+KEY_GEO_HINT_MUTATION_LAB_BUILT_NAME,Text,,MUTATION NOW AVAILABLE,,,,,,,,
+KEY_GEO_HINT_MUTATION_SCREEN_DESCRIPTION,Text,,"You are about to mutate your first soldier. A character can only have UP TO 2 BODY PARTS altered this way.
+
+Each mutated body part increases damage dealt by character by 2% per each Delirium point that the character has.
+
+Once a mutation is applied, the operative won't be able to revert back to their natural limbs. However, mutated body parts CAN BE SWAPPED with different mutation variants.
+
+The :PRIEST: PRIEST soldier class has access to UNIQUE HEAD MUTATIONS greatly enhancing their powers.",,,,,,,,
+KEY_GEO_HINT_MUTATION_SCREEN_NAME,Text,,MUTATING A SOLDIER,,,,,,,,

@@ -37,7 +37,7 @@ namespace TFTV
         public static UIModuleCharacterProgression hookToProgressionModule = null;
         public static GeoCharacter hookToCharacter = null;
         internal static bool moduleInfoBarAdjustmentsExecuted = false;
-        public static bool odiunlocked = false;
+ 
         internal static Color red = new Color32(192, 32, 32, 255);
         internal static Color purple = new Color32(149, 23, 151, 255);
         internal static Color blue = new Color32(62, 12, 224, 255);
@@ -62,7 +62,7 @@ namespace TFTV
                         return;
                     }
 
-                  //  TFTVLogger.Always("Running UIModuleInfoBar");
+                //   TFTVLogger.Always("Running UIModuleInfoBar Init");
                     // Declutter
                     Transform tInfoBar = __instance.PopulationBarRoot.transform.parent?.transform;
 
@@ -73,7 +73,7 @@ namespace TFTV
 
                     foreach (Transform t in tInfoBar.GetComponentsInChildren<Transform>())
                     {
-                        // TFTVLogger.Always($"[UIModuleInfoBar_Init_PREFIX] Transform.name: {t.name}");
+                       
 
                         if (t.name == "TooltipCatcher")
                         {
@@ -136,7 +136,10 @@ namespace TFTV
                                 synDiploInfoIcon.gameObject.name = "SynIcon";
                                 synDiploInfoIcon.gameObject.SetActive(false);
                                 //  anuDiploInfo.gameObject.GetComponent<Image>().color = red;
+
                             }
+                           // TFTVLogger.Always($"[UIModuleInfoBar_Init_PREFIX] Transform.name: {t.name}" + " local position magnitude " + "x: " + t.localPosition.magnitude);                         
+                           // TFTVLogger.Always($"[UIModuleInfoBar_Init_PREFIX] Transform.name: {t.name}" + " position magnitude " + "x: " + t.position.magnitude);
                             // t.name = "ODI_icon";
                             // TFTVLogger.Always("Req_Icon name is " + icon.sprite.name);
                         }
@@ -276,9 +279,11 @@ namespace TFTV
         {
             public static void Postfix(UIModuleInfoBar __instance, GeoscapeViewContext ____context, LayoutGroup ____layoutGroup)
             {
+
                 try
                 {
-               
+                  //  TFTVLogger.Always("Running UpdatePopulation");
+
                     GeoLevelController controller = ____context.Level;
 
                     List<GeoAlienBase> listOfAlienBases = controller.AlienFaction.Bases.ToList();

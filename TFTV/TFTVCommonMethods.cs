@@ -1,4 +1,5 @@
-﻿using Base.UI;
+﻿using Base.Entities.Statuses;
+using Base.UI;
 using HarmonyLib;
 using PhoenixPoint.Common.ContextHelp;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
@@ -11,6 +12,8 @@ using PhoenixPoint.Geoscape.Entities.Research.Requirement;
 using PhoenixPoint.Geoscape.Events;
 using PhoenixPoint.Geoscape.Events.Eventus;
 using PhoenixPoint.Geoscape.Levels;
+using PhoenixPoint.Geoscape.View;
+using PhoenixPoint.Geoscape.View.ViewModules;
 using PhoenixPoint.Tactical.Entities;
 using System;
 using System.Collections.Generic;
@@ -22,6 +25,28 @@ namespace TFTV
     internal class TFTVCommonMethods
     {
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
+
+        public static object View { get; private set; }
+
+        public static void CheckGeoUIfunctionality(GeoLevelController controller)
+        {
+            try 
+            {
+                if (!controller.PhoenixFaction.GameTags.Contains(DefCache.GetDef<FactionFunctionalityTagDef>("SDI_FactionFunctionalityTagDef")))
+                {
+                    controller.PhoenixFaction.AddTag(DefCache.GetDef<FactionFunctionalityTagDef>("SDI_FactionFunctionalityTagDef"));
+                }
+               // UIModuleInfoBar uIModuleInfoBar = (UIModuleInfoBar)UnityEngine.Object.FindObjectOfType(typeof(UIModuleInfoBar));
+
+               
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+            
+        }
 
         public static void ClearInternalVariables()
         {
@@ -354,7 +379,7 @@ namespace TFTV
             try
             {
 
-                ResearchViewElementDef sourceResearchViewDef = DefCache.GetDef<ResearchViewElementDef>("PX_Alien_CorruptionNode_ViewElementDef");
+                ResearchViewElementDef sourceResearchViewDef = DefCache.GetDef<ResearchViewElementDef>("PX_SDI_ViewElementDef");
                 ResearchViewElementDef researchViewDef = Helper.CreateDefFromClone(sourceResearchViewDef, gUID, def);
                 researchViewDef.DisplayName1.LocalizationKey = name;
                 researchViewDef.RevealText.LocalizationKey = reveal;

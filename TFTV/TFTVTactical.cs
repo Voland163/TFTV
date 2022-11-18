@@ -71,10 +71,7 @@ namespace TFTV
           //  TFTVLogger.Always("# of already shown tactical hints is " + TFTVTutorialAndStory.TacticalHintsToShow.Count);
            // TFTVTutorialAndStory.RemoveAlreadyShownTacticalHints();
             TFTVHumanEnemies.RollCount = 0;
-            TFTVRevenant.ModifyRevenantResistanceAbility(Controller);
-            TFTVRevenant.CheckForNotDeadSoldiers(tacController);
-            TFTVRevenant.RevenantCheckAndSpawn(Controller);
-            TFTVRevenant.ImplementVO19(Controller);
+
             TFTVLogger.Always("Tactical start completed");
             TFTVLogger.Always("Difficulty level is " + tacController.Difficulty.Order);
         }
@@ -179,12 +176,20 @@ namespace TFTV
         public override void OnNewTurn(int turnNumber)
         {
             TFTVLogger.Always("The turn is " + turnNumber);
-            TFTVRevenant.revenantSpecialResistance.Clear();
-            TFTVUmbra.SpawnUmbra(Controller);
+            
             if (turnNumber == 0 && TFTVHumanEnemies.HumanEnemiesAndTactics.Count==0)
             { 
                 TFTVHumanEnemies.AssignHumanEnemiesTags(Controller);             
             }
+            if (turnNumber == 0)
+            {
+                TFTVRevenant.ModifyRevenantResistanceAbility(Controller);
+                TFTVRevenant.CheckForNotDeadSoldiers(Controller);
+                TFTVRevenant.RevenantCheckAndSpawn(Controller);
+                TFTVRevenant.ImplementVO19(Controller);
+            }
+            TFTVRevenant.revenantSpecialResistance.Clear();
+            TFTVUmbra.SpawnUmbra(Controller);
             TFTVHumanEnemies.ChampRecoverWPAura(Controller);           
             TFTVHumanEnemies.ApplyTactic(Controller);
          

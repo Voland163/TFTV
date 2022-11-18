@@ -767,21 +767,25 @@ namespace TFTV
                 {
                     GeoLevelController geoLevel = mission.Site.GeoLevel;
 
-                    if (__instance.name.Contains("Haven") && CheckFordVoidOmensInPlay(geoLevel).Contains(18))
-                    {
-                        ResourcePack resources = __instance.Resources;
-
-                        for (int i = 0; i < 2; i++)
+                 //   if (!VO18applied)
+                 //   {
+                        if (__instance.name.Contains("Haven") && CheckFordVoidOmensInPlay(geoLevel).Contains(18))
                         {
-                            ResourceUnit resourceUnit = __instance.Resources[i];
-                            resources[i] = new ResourceUnit(resourceUnit.Type, resourceUnit.Value * 0.5f);
-                        }
+                            ResourcePack resources = new ResourcePack (__instance.Resources);
 
-                        rewardDescription.Resources.Clear();
-                        rewardDescription.Resources.AddRange(resources);
-                        TFTVLogger.Always("Resource reward from mission " + mission.MissionName.LocalizeEnglish() + " modified to "
-                            + resources[0].Value + ", " + resources[1].Value + " and " + resources[2].Value);
-                    }
+                            for (int i = 0; i < 3; i++)
+                            {
+                                ResourceUnit resourceUnit = __instance.Resources[i];
+                                resources[i] = new ResourceUnit(resourceUnit.Type, resourceUnit.Value * 0.5f);
+                            }
+
+                            rewardDescription.Resources.Clear();
+                            rewardDescription.Resources.AddRange(resources);
+                            TFTVLogger.Always("Resource reward from mission " + mission.MissionName.LocalizeEnglish() + " modified to "
+                                + resources[0].Value + ", " + resources[1].Value + " and " + resources[2].Value);
+                        }
+                   //     VO18applied = true;
+                   // }
                 }
                 catch (Exception e)
                 {
@@ -791,32 +795,40 @@ namespace TFTV
             }
         }
 
+      //  public static bool VO18applied = false;
+
         [HarmonyPatch(typeof(ResourceMissionOutcomeDef), "ApplyOutcome")]
 
         public static class ResourceMissionOutcomeDef_ApplyOutcome_V18
-
         {
+
+            //public static void Prefix (GeoMission mission, ref MissionRewardDescription rewardDescription, ResourceMissionOutcomeDef __instance)
+
             public static void Postfix(GeoMission mission, ref MissionRewardDescription rewardDescription, ResourceMissionOutcomeDef __instance)
             {
                 try
                 {
-                    GeoLevelController geoLevel = mission.Site.GeoLevel;
-                    if (__instance.name.Contains("Haven") && CheckFordVoidOmensInPlay(geoLevel).Contains(18))
-                    {
-                        ResourcePack resources = __instance.Resources;
-
-
-                        for (int i = 0; i <= 2; i++)
+                 //   if (!VO18applied)
+                 //   {
+                        GeoLevelController geoLevel = mission.Site.GeoLevel;
+                        if (__instance.name.Contains("Haven") && CheckFordVoidOmensInPlay(geoLevel).Contains(18))
                         {
-                            ResourceUnit resourceUnit = __instance.Resources[i];
-                            resources[i] = new ResourceUnit(resourceUnit.Type, resourceUnit.Value * 0.5f);
+                            ResourcePack resources = new ResourcePack (__instance.Resources);
 
+
+                            for (int i = 0; i <= 2; i++)
+                            {
+                                ResourceUnit resourceUnit = __instance.Resources[i];
+                                resources[i] = new ResourceUnit(resourceUnit.Type, resourceUnit.Value * 0.5f);
+
+                            }
+                            rewardDescription.Resources.Clear();
+                            rewardDescription.Resources.AddRange(resources);
+                            TFTVLogger.Always("Resource reward from mission " + mission.MissionName.LocalizeEnglish() + " modified to "
+                               + resources[0].Value + ", " + resources[1].Value + " and " + resources[2].Value);
                         }
-                        rewardDescription.Resources.Clear();
-                        rewardDescription.Resources.AddRange(resources);
-                        TFTVLogger.Always("Resource reward from mission " + mission.MissionName.LocalizeEnglish() + " modified to "
-                           + resources[0].Value + ", " + resources[1].Value + " and " + resources[2].Value);
-                    }
+                   //     VO18applied = true;
+                  //  }
                 }
                 catch (Exception e)
                 {

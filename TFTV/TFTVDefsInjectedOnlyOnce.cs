@@ -33,6 +33,8 @@ using System.Linq;
 using UnityEngine;
 using PhoenixPoint.Common.Entities.Characters;
 using Base.Entities.Abilities;
+using PhoenixPoint.Tactical.Levels;
+using PhoenixPoint.Common.Entities.GameTagsTypes;
 
 namespace TFTV
 {
@@ -68,8 +70,68 @@ namespace TFTV
             ChangesToAcherons();
             RemoveCensusResearch();
             AllowMedkitsToTargetMutoids();
+            ChangesToLOTA2();
 
         }
+
+        public static void ChangesToLOTA2()
+        {
+            try 
+            {
+
+                ChangeAntartica();
+                ChangeAncientSitesHarvesting();
+            }
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+
+        public static void ChangeAntartica()
+        {
+            try
+            {
+                CustomMissionTypeDef antarticaMission = DefCache.GetDef<CustomMissionTypeDef>("StoryPX15_CustomMissionTypeDef");
+
+                CustomMissionTypeDef OrichalcumMission = DefCache.GetDef<CustomMissionTypeDef>("OrichalcumHarvestAttack_Ancient_CustomMissionTypeDef");
+
+                antarticaMission.ParticipantsData = OrichalcumMission.ParticipantsData;
+                antarticaMission.ParticipantsData[0].ParticipantKind=TacMissionParticipant.Intruder;
+                antarticaMission.ParticipantsRelations[0].SecondParticipant = TacMissionParticipant.Intruder;
+                List<TacMissionTypeParticipantData.UniqueChatarcterBind> uniqueChatarcterBinds = antarticaMission.ParticipantsData[0].UniqueUnits.ToList();
+                uniqueChatarcterBinds.Add(DefCache.GetDef<CustomMissionTypeDef>("CrystalsHarvestAttack_Ancient_CustomMissionTypeDef").ParticipantsData[0].UniqueUnits[0]);
+                antarticaMission.ParticipantsData[0].UniqueUnits = uniqueChatarcterBinds.ToArray();
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+        public static void ChangeAncientSitesHarvesting()
+        {
+            try
+            {
+                ArcheologySettingsDef archeologySettingsDef = DefCache.GetDef<ArcheologySettingsDef>("ArcheologySettingsDef");
+                archeologySettingsDef.HarvestingTimeHours = 0;
+                archeologySettingsDef.ArcheologyFacilityHarvestingPower = 0;
+                archeologySettingsDef.ArcheologyPassiveOutput = 0;
+
+                DefCache.GetDef<ResourceMissionOutcomeDef>("AncientsHarvestCrystalMissionOutcomeDef").Resources.Values.Add(new ResourceUnit { Type = ResourceType.LivingCrystals, Value = 249 });
+                DefCache.GetDef<ResourceMissionOutcomeDef>("AncientsHarvestOrichalcumMissionOutcomeDef").Resources.Values.Add(new ResourceUnit { Type = ResourceType.Orichalcum, Value = 174 });
+                DefCache.GetDef<ResourceMissionOutcomeDef>("AncientsHarvestProteanMissionOutcomeDef").Resources.Values.Add(new ResourceUnit { Type = ResourceType.ProteanMutane, Value = 174 });
+             
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
         public static void AllowMedkitsToTargetMutoids()
         {
             try

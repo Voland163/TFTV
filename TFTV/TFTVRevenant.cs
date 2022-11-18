@@ -11,7 +11,10 @@ using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.Levels.Missions;
+using PhoenixPoint.Common.UI;
+using PhoenixPoint.Geoscape.Entities.Research;
 using PhoenixPoint.Geoscape.Levels;
+using PhoenixPoint.Geoscape.View.ViewModules;
 using PhoenixPoint.Tactical.AI.Considerations;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
@@ -310,6 +313,7 @@ namespace TFTV
                             }
                         }
                     }
+                    
 
                     TFTVLogger.Always("Here is an eligible Pandoran to be a Revenant: " + actor.GetDisplayName());
                     TacticalActor tacticalActor = actor as TacticalActor;
@@ -343,7 +347,9 @@ namespace TFTV
                         }
                     }
                     string newGuid = Guid.NewGuid().ToString();
-                    string hintDescription = revenantResistanceStatus.Visuals.Description.LocalizeEnglish() + ".\nKilling the Revenant will not remove this resistance from any Pandoran that already has it.";
+                    string hintDescription = revenantResistanceStatus.Visuals.Description.LocalizeEnglish() + 
+                        ".\nKilling the Revenant will not remove this resistance from any Pandoran that already has it." +
+                        "\nPandorans arriving as reinforcements will not receive the resistance.";
 
                     // TFTVLogger.Always("Got to before hint");
 
@@ -351,7 +357,7 @@ namespace TFTV
                     revenantResistanceHintCreated = true;
                 }
             }
-
+            
             catch (Exception e)
             {
                 TFTVLogger.Error(e);
@@ -1233,7 +1239,7 @@ namespace TFTV
         {
             try
             {
-
+                
 
                 actor.Status.ApplyStatus(revenantStatusAbility);
 
@@ -1536,7 +1542,7 @@ namespace TFTV
             {
                 try
                 {
-                    TFTVLogger.Always("get_Skillpoints");
+                   // TFTVLogger.Always("get_Skillpoints");
 
                     if (__instance == __instance.TacticalLevel.GetFactionByCommandName("PX") && !SkillPointsForRevenantKillAwarded)
                     {

@@ -1,7 +1,11 @@
 ﻿using Base.Entities;
 using HarmonyLib;
 using PhoenixPoint.Common.Entities.GameTags;
+using PhoenixPoint.Common.Entities.GameTagsTypes;
+using PhoenixPoint.Common.Levels.Missions;
+using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Levels;
+using PhoenixPoint.Geoscape.Levels.Factions;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.Statuses;
@@ -16,6 +20,99 @@ namespace TFTV
 {
     internal class TFTVExperimental
     {
+
+
+        //Unlock Project Glory when player activates 3rd base.
+        [HarmonyPatch(typeof(GeoPhoenixFaction), "ActivatePhoenixBase")]
+        public static class GeoPhoenixFaction_ActivatePhoenixBase_GiveGlory_Patch
+        {
+            public static void Postfix(GeoPhoenixFaction __instance)
+            {
+                try
+                {
+                    if (__instance.GeoLevel.EventSystem.GetVariable("Photographer")!=1 && __instance.Bases.Count()>2) 
+                    {
+                        __instance.GeoLevel.EventSystem.SetVariable("Photographer", 1);
+                    }
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+
+
+            }
+
+        }
+
+
+        /*
+                [HarmonyPatch(typeof(GeoMission), "Launch")]
+                public static class GeoMission_Launch_Antarctica_Patch
+                {
+                    public static void Postfix(GeoMission __instance, GeoSquad squad)
+                    {
+                        try
+                        {
+                            if (__instance.MissionDef.Equals(DefCache.GetDef<CustomMissionTypeDef>("StoryPX15_CustomMissionTypeDef")))
+                            { 
+
+
+                            }
+
+
+
+                        }
+                        catch (Exception e)
+                        {
+                            TFTVLogger.Error(e);
+                        }
+
+
+                    }
+
+                }
+
+                public static void RollCyclopsAura(TacticalLevelController controller)
+                {
+                    try
+                    {
+                        if (controller.TacMission.MissionData.MissionType.Equals(DefCache.GetDef<CustomMissionTypeDef>("StoryPX15_CustomMissionTypeDef")))
+                        {
+
+                            List<TacticalActorBase> ancients = controller.GetFactionByCommandName("anc").Actors.ToList();
+
+                            foreach (TacticalActorBase ancientBase in ancients)
+                            {
+                                if (ancientBase.HasGameTag(DefCache.GetDef<ClassTagDef>("MediumGuardian_ClassTagDef"))
+                                {
+                                    ancientBase.
+
+                                        //Aura_ProteanMutaneFire_AbilityDef
+                                        //Aura_OrichalcumStack_AbilityDef
+                                        //Aura_ProteanMutaneFire_AbilityDef
+
+
+                                }
+
+                            }
+
+
+
+
+                        }
+
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                    }
+
+
+                }
+
+                */
 
 
         public static void CheckForMutoids(TacticalLevelController controller)
@@ -140,6 +237,10 @@ namespace TFTV
             }
 
         }
+
+       // 
+
+       
 
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
 

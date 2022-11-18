@@ -4,6 +4,7 @@ using EnviroSamples;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Modding;
+using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.Statuses;
 using System;
 using System.Collections.Generic;
@@ -11,6 +12,7 @@ using System.Linq;
 
 namespace TFTV
 {
+
     /// <summary>
     /// Mod's custom save data for geoscape.
     /// </summary>
@@ -42,6 +44,8 @@ namespace TFTV
     /// </summary>
     public class TFTVGeoscape : ModGeoscape
     {
+        private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
+
 
         /// <summary>
         /// Called when Geoscape starts.
@@ -52,9 +56,9 @@ namespace TFTV
             /// Geoscape level controller is accessible at any time.
             GeoLevelController gsController = Controller;
             /// ModMain is accesible at any time
-
+            DefCache.GetDef<TacticalTargetingDataDef>("E_TargetingData [PsychicWard_AbilityDef]").Origin.Range = 10;
             TFTVBetaSaveGamesFixes.CheckSaveGameEventChoices(gsController);
-            TFTVMain main = (TFTVMain)Main;
+            TFTVCommonMethods.CheckGeoUIfunctionality(gsController);
             TFTVNewPXCharacters.PlayIntro(gsController);
             TFTVVoidOmens.ImplementVoidOmens(gsController);
             TFTVUmbra.CheckForUmbraResearch(gsController);

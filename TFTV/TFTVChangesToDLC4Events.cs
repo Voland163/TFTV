@@ -1,6 +1,7 @@
 ﻿using Base.Defs;
 using Base.Eventus.Filters;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
+using PhoenixPoint.Geoscape.Entities.Abilities;
 using PhoenixPoint.Geoscape.Entities.Research;
 using PhoenixPoint.Geoscape.Entities.Research.Requirement;
 using PhoenixPoint.Geoscape.Entities.Research.Reward;
@@ -9,9 +10,12 @@ using PhoenixPoint.Geoscape.Events.Conditions;
 using PhoenixPoint.Geoscape.Events.Eventus;
 using PhoenixPoint.Geoscape.Events.Eventus.Filters;
 using PhoenixPoint.Geoscape.Levels;
+using PhoenixPoint.Geoscape.Levels.ContextHelp;
+using PhoenixPoint.Geoscape.Levels.ContextHelp.HintConditions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -25,7 +29,7 @@ namespace TFTV
 
         public static void ChangesToDLC4Defs()
         {
-
+            
             try
             {
                 GeoFactionDef PhoenixPoint = DefCache.GetDef<GeoFactionDef>("Phoenix_GeoPhoenixFactionDef");
@@ -96,6 +100,9 @@ namespace TFTV
                      DefCache.GetDef<ResearchRewardDef>("PX_Alien_Acheron_ResearchDef_UnlockPandoranSpecializationResearchRewardDef_0"),
 
                 };
+                //Make Treatment hint appear when Specimen2 is researched
+                DefCache.GetDef<ResearchGeoHintConditionDef>("E_AcheronAutopsyResearchCompleted [GeoscapeHintsManagerDef]").ResearchID = "PX_OriginalAcheron_ResearchDef";
+
 
 
                 // Remove requirement to research Mutoid Technology to reserach Specimen 2 (former 0)

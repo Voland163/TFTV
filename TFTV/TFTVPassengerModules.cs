@@ -117,11 +117,7 @@ namespace TFTV
             {
                 try
                 {
-                    if (!__instance.GameTags.Contains(DefCache.GetDef<FactionFunctionalityTagDef>("SDI_FactionFunctionalityTagDef")))
-                    {
-                        __instance.AddTag(DefCache.GetDef<FactionFunctionalityTagDef>("SDI_FactionFunctionalityTagDef"));
-
-                    }
+                    
 
 
                     TacticalItemDef redeemerAmmo = DefCache.GetDef<TacticalItemDef>("AN_Redemptor_AmmoClip_ItemDef");
