@@ -1,6 +1,8 @@
-﻿using Base.Core;
+﻿using Base;
+using Base.Core;
 using Base.Entities.Statuses;
 using Base.Levels;
+using Base.UI.VideoPlayback;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities;
@@ -15,12 +17,15 @@ using PhoenixPoint.Geoscape.View;
 using PhoenixPoint.Geoscape.View.DataObjects;
 using PhoenixPoint.Geoscape.View.ViewControllers.Roster;
 using PhoenixPoint.Geoscape.View.ViewModules;
+using PhoenixPoint.Home.View.ViewStates;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.Tutorial;
+using PhoenixPoint.Tactical.View.ViewStates;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -62,7 +67,14 @@ namespace TFTV
                         return;
                     }
 
-                //   TFTVLogger.Always("Running UIModuleInfoBar Init");
+                    Resolution resolution = Screen.currentResolution;
+
+                   // TFTVLogger.Always("Resolution is " + Screen.currentResolution.width);
+                    float resolutionFactorWidth =(float)resolution.width/1920f;
+                 //   TFTVLogger.Always("ResolutionFactorWidth is " + resolutionFactorWidth);
+                    float resolutionFactorHeight = (float)resolution.height/1080f;
+                 //   TFTVLogger.Always("ResolutionFactorHeight is " + resolutionFactorHeight);
+
                     // Declutter
                     Transform tInfoBar = __instance.PopulationBarRoot.transform.parent?.transform;
 
@@ -73,8 +85,7 @@ namespace TFTV
 
                     foreach (Transform t in tInfoBar.GetComponentsInChildren<Transform>())
                     {
-                       
-
+                    
                         if (t.name == "TooltipCatcher")
                         {
                             if (t.GetComponent<UITooltipText>().TipKey.LocalizeEnglish() == "Stores - used space / capacity of all stores facilities")
@@ -97,7 +108,7 @@ namespace TFTV
                                 icon.sprite = Helper.CreateSpriteFromImageFile("Void-04P.png");
                                 t.gameObject.name = "DeliriumIcon";
                                 t.parent = tInfoBar.GetComponent<Transform>().Find("PopulationDoom_Meter");
-                                t.Translate(new Vector3(30f, 0f, 0f));
+                                t.Translate(new Vector3(30f*resolutionFactorWidth, 0f, 0f));
                                 t.localScale = new Vector3(1.3f, 1.3f, 1f);
                                 t.gameObject.SetActive(false);
                                 //  icon.color = purple;
@@ -109,12 +120,14 @@ namespace TFTV
                                 pandoranEvolution.gameObject.GetComponent<Image>().color = red;
                                 pandoranEvolution.gameObject.name = "PandoranEvolutionIcon";
                                 // pandoranEvolution.localScale = new Vector3(0.9f, 0.9f, 1);
-                                pandoranEvolution.Translate(new Vector3(110f, 0f, 0f));
+                                pandoranEvolution.Translate(new Vector3(110f * resolutionFactorWidth, 0f, 0f));
+                               // pandoranEvolution.Translate(80f*resolutionFactor, 0f, 0f, t);
                                 pandoranEvolution.gameObject.SetActive(false);
+
 
                                 Transform anuDiploInfoIcon = UnityEngine.Object.Instantiate(t, tInfoBar.GetComponent<Transform>().Find("PopulationDoom_Meter"));
                                 anuDiploInfoIcon.localScale = new Vector3(1f, 1f, 1f);
-                                anuDiploInfoIcon.Translate(new Vector3(210f, 0f, 0f));
+                                anuDiploInfoIcon.Translate(new Vector3(210f * resolutionFactorWidth, 0f, 0f));
                                 anuDiploInfoIcon.gameObject.GetComponent<Image>().color = anu;
                                 anuDiploInfoIcon.gameObject.GetComponent<Image>().sprite = Helper.CreateSpriteFromImageFile("FactionIcons_Anu.png");
                                 anuDiploInfoIcon.gameObject.name = "AnuIcon";
@@ -122,7 +135,7 @@ namespace TFTV
 
                                 Transform njDiploInfoIcon = UnityEngine.Object.Instantiate(t, tInfoBar.GetComponent<Transform>().Find("PopulationDoom_Meter"));
                                 njDiploInfoIcon.localScale = new Vector3(1f, 1f, 1f);
-                                njDiploInfoIcon.Translate(new Vector3(320f, 0f, 0f));
+                                njDiploInfoIcon.Translate(new Vector3(320f * resolutionFactorWidth, 0f, 0f));
                                 njDiploInfoIcon.gameObject.GetComponent<Image>().color = nj;
                                 njDiploInfoIcon.gameObject.GetComponent<Image>().sprite = Helper.CreateSpriteFromImageFile("FactionIcons_NewJericho.png");
                                 njDiploInfoIcon.gameObject.name = "NJIcon";
@@ -130,7 +143,7 @@ namespace TFTV
 
                                 Transform synDiploInfoIcon = UnityEngine.Object.Instantiate(t, tInfoBar.GetComponent<Transform>().Find("PopulationDoom_Meter"));
                                 synDiploInfoIcon.localScale = new Vector3(1f, 1f, 1f);
-                                synDiploInfoIcon.Translate(new Vector3(430f, 0f, 0f));
+                                synDiploInfoIcon.Translate(new Vector3(430f * resolutionFactorWidth, 0f, 0f));
                                 synDiploInfoIcon.gameObject.GetComponent<Image>().color = syn;
                                 synDiploInfoIcon.gameObject.GetComponent<Image>().sprite = Helper.CreateSpriteFromImageFile("FactionIcons_Synedrion.png");
                                 synDiploInfoIcon.gameObject.name = "SynIcon";
@@ -138,8 +151,7 @@ namespace TFTV
                                 //  anuDiploInfo.gameObject.GetComponent<Image>().color = red;
 
                             }
-                           // TFTVLogger.Always($"[UIModuleInfoBar_Init_PREFIX] Transform.name: {t.name}" + " local position magnitude " + "x: " + t.localPosition.magnitude);                         
-                           // TFTVLogger.Always($"[UIModuleInfoBar_Init_PREFIX] Transform.name: {t.name}" + " position magnitude " + "x: " + t.position.magnitude);
+                          
                             // t.name = "ODI_icon";
                             // TFTVLogger.Always("Req_Icon name is " + icon.sprite.name);
                         }
@@ -162,14 +174,16 @@ namespace TFTV
                         if (t.name == "Separator")
                         {
                             Transform separator = UnityEngine.Object.Instantiate(t, tInfoBar.GetComponent<Transform>().Find("PopulationDoom_Meter"));
-                            separator.Translate(new Vector3(0f, 12f, 0f));
+                            separator.Translate(new Vector3(0f, 12f * resolutionFactorHeight, 0f));
                             separator.gameObject.name = "ODISeparator1";
                             separator.gameObject.SetActive(false);
+                           // separator.SetParent(tInfoBar.GetComponent<Transform>().Find("PopulationDoom_Meter"));
 
                             Transform separator2 = UnityEngine.Object.Instantiate(t, tInfoBar.GetComponent<Transform>().Find("PopulationDoom_Meter"));
-                            separator2.Translate(new Vector3(180f, 12f, 0f));
+                            separator2.Translate(new Vector3(180f * resolutionFactorWidth, 12f * resolutionFactorHeight, 0f));
                             separator2.gameObject.name = "ODISeparator2";
                             separator2.gameObject.SetActive(false);
+                          //  separator2.SetParent(tInfoBar.GetComponent<Transform>().Find("PopulationDoom_Meter"));
                         }
                         // Remove skull icon
                         if (t.name == "skull")
@@ -191,6 +205,10 @@ namespace TFTV
 
                             t.gameObject.SetActive(false);
                         }
+
+                    //    TFTVLogger.Always($"[UIModuleInfoBar_Init_PREFIX] Transform.name: {t.name}" + " root position " + "x: " + t.root.position.x);
+                     //   TFTVLogger.Always($"[UIModuleInfoBar_Init_PREFIX] Transform.name: {t.name}" + " right " + "x: " + t.right.x);
+
                     }
 
 
@@ -212,40 +230,46 @@ namespace TFTV
                     //Create percentages next to each faction icon
 
                     Transform anuDiploInfo = UnityEngine.Object.Instantiate(__instance.PopulationPercentageText.transform, tInfoBar.GetComponent<Transform>().Find("PopulationDoom_Meter"));
-                    anuDiploInfo.Translate(new Vector3(210f, 0f, 0f));
+                    anuDiploInfo.Translate(new Vector3(210f * resolutionFactorWidth, 0f, 0f));
                     anuDiploInfo.gameObject.name = "AnuPercentage";
                     anuDiploInfo.gameObject.SetActive(false);
+                   // anuDiploInfo.SetParent(tInfoBar.GetComponent<Transform>().Find("PopulationDoom_Meter"));
                     // anuDiploInfo.gameObject.SetActive(false);
 
                     Transform njDiploInfo = UnityEngine.Object.Instantiate(__instance.PopulationPercentageText.transform, tInfoBar.GetComponent<Transform>().Find("PopulationDoom_Meter"));
-                    njDiploInfo.Translate(new Vector3(320f, 0f, 0f));
+                    njDiploInfo.Translate(new Vector3(320f * resolutionFactorWidth, 0f, 0f));
                     njDiploInfo.gameObject.name = "NjPercentage";
                     njDiploInfo.gameObject.SetActive(false);
+                    njDiploInfo.SetParent(tInfoBar.GetComponent<Transform>().Find("PopulationDoom_Meter"));
 
                     Transform synDiploInfo = UnityEngine.Object.Instantiate(__instance.PopulationPercentageText.transform, tInfoBar.GetComponent<Transform>().Find("PopulationDoom_Meter"));
-                    synDiploInfo.Translate(new Vector3(430f, 0f, 0f));
+                    synDiploInfo.Translate(new Vector3(430f * resolutionFactorWidth, 0f, 0f));
                     synDiploInfo.gameObject.name = "SynPercentage";
                     synDiploInfo.gameObject.SetActive(false);
-
+                 //   synDiploInfo.SetParent(tInfoBar.GetComponent<Transform>().Find("PopulationDoom_Meter"));
                     //Create highlights for new elements
 
                     Transform deliriumIconHL = UnityEngine.Object.Instantiate(thingsToUse[1], tInfoBar.GetComponent<Transform>().Find("PopulationDoom_Meter").GetComponent<Transform>().Find("DeliriumIcon"));
                     deliriumIconHL.localScale = new Vector3(0.6f, 0.6f, 0f);
-                    deliriumIconHL.Translate(new Vector3(0f, -20f, 1));
+                    deliriumIconHL.Translate(new Vector3(0f, -20f*resolutionFactorHeight, 1));
+               
 
                     Transform PandoranEvolutionIconHL = UnityEngine.Object.Instantiate(thingsToUse[1], tInfoBar.GetComponent<Transform>().Find("PopulationDoom_Meter").GetComponent<Transform>().Find("PandoranEvolutionIcon"));
                     PandoranEvolutionIconHL.localScale = new Vector3(0.6f, 0.6f, 0f);
-                    PandoranEvolutionIconHL.Translate(new Vector3(0f, -20f, 1));
+                    PandoranEvolutionIconHL.Translate(new Vector3(0f, -20f * resolutionFactorHeight, 1));
+              
 
                     Transform anuDiploHL = UnityEngine.Object.Instantiate(thingsToUse[1], tInfoBar.GetComponent<Transform>().Find("PopulationDoom_Meter").GetComponent<Transform>().Find("AnuPercentage"));
-                    anuDiploHL.Translate(new Vector3(-10, -15, 1));
+                    anuDiploHL.Translate(new Vector3(-10 * resolutionFactorWidth, -15 * resolutionFactorHeight, 1));
+               
 
                     Transform njDiploHL = UnityEngine.Object.Instantiate(thingsToUse[1], tInfoBar.GetComponent<Transform>().Find("PopulationDoom_Meter").GetComponent<Transform>().Find("NjPercentage"));
-                    njDiploHL.Translate(new Vector3(-10, -15, 1));
+                    njDiploHL.Translate(new Vector3(-10 * resolutionFactorWidth, -15 * resolutionFactorHeight, 1));
+                 // njDiploHL.SetParent(tInfoBar.GetComponent<Transform>().Find("PopulationDoom_Meter"));
 
                     Transform synDiploHL = UnityEngine.Object.Instantiate(thingsToUse[1], tInfoBar.GetComponent<Transform>().Find("PopulationDoom_Meter").GetComponent<Transform>().Find("SynPercentage"));
-                    synDiploHL.Translate(new Vector3(-10, -15, 1));
-
+                    synDiploHL.Translate(new Vector3(-10 * resolutionFactorWidth, -15 * resolutionFactorHeight, 1));
+                 // synDiploHL.SetParent(tInfoBar.GetComponent<Transform>().Find("PopulationDoom_Meter"));
 
                     __instance.PopulationPercentageText.gameObject.SetActive(false);
 
@@ -877,6 +901,91 @@ namespace TFTV
                 catch (Exception e)
                 {
                     TFTVLogger.Error(e);
+                }
+            }
+        }
+
+        //Adapted from Mad's Assorted Adjustments, all hail the Great Mad!
+        [HarmonyPatch(typeof(PhoenixGame), "RunGameLevel")]
+        public static class TFTV_PhoenixGame_RunGameLevel_SkipLogos_Patch
+        {
+            public static bool Prefix(PhoenixGame __instance, LevelSceneBinding levelSceneBinding, ref IEnumerator<NextUpdate> __result)
+            { 
+                TFTVConfig config = TFTVMain.Main.Config;
+             
+                try
+                {
+                    if (config.SkipMovies)
+                    {
+
+                        if (levelSceneBinding == __instance.Def.IntroLevelSceneDef.Binding)
+                        {
+                            __result = Enumerable.Empty<NextUpdate>().GetEnumerator();
+                            return false;
+                        }
+
+                        return true;
+                    }
+                    return true;
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    return true;
+                }
+            }
+        }
+
+        [HarmonyPatch(typeof(UIStateHomeScreenCutscene), "EnterState")]
+        public static class TFTV_PhoenixGame_RunGameLevel_SkipIntro_Patch
+        {
+            public static void Postfix(UIStateHomeScreenCutscene __instance, VideoPlaybackSourceDef ____sourcePlaybackDef)
+            {
+                TFTVConfig config = TFTVMain.Main.Config;
+                if (config.SkipMovies)
+                {
+                    try
+                    {
+                        if (____sourcePlaybackDef == null)
+                        {
+                            return;
+                        }
+
+                        if (____sourcePlaybackDef.ResourcePath.Contains("Game_Intro_Cutscene"))
+                        {
+                            typeof(UIStateHomeScreenCutscene).GetMethod("OnCancel", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(__instance, null);
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                    }
+                }
+            }
+        }
+        [HarmonyPatch(typeof(UIStateTacticalCutscene), "EnterState")]
+        public static class TFTV_PhoenixGame_RunGameLevel_SkipLanding_Patch
+        {
+            public static void Postfix(UIStateTacticalCutscene __instance, VideoPlaybackSourceDef ____sourcePlaybackDef)
+            {
+                TFTVConfig config = TFTVMain.Main.Config;
+                if (config.SkipMovies)
+                {
+                    try
+                    {
+                        if (____sourcePlaybackDef == null)
+                        {
+                            return;
+                        }
+                        if (____sourcePlaybackDef.ResourcePath.Contains("LandingSequences"))
+                        {
+                            typeof(UIStateTacticalCutscene).GetMethod("OnCancel", BindingFlags.NonPublic | BindingFlags.Instance)?.Invoke(__instance, null);
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                    }
                 }
             }
         }

@@ -62,6 +62,8 @@ namespace TFTV
         {
             try
             {
+                TFTVConfig config = TFTVMain.Main.Config;
+
                 // Index of last element of the ODI event ID array is Length - 1
                 int ODI_EventIDs_LastIndex = ODI_EventIDs.Length - 1;
                 // Set a maximum number to determine the upper limit from when the maximum ODI level is reached
@@ -114,7 +116,12 @@ namespace TFTV
 
                             // If a Void Omen rolls
                             // Create list of Void Omens currently implemented
-                            List<int> voidOmensList = new List<int> { 1, 2, 4, 5, 6, 7, 8, 9, 10, 12, 13, 14, 18 };
+                            List<int> voidOmensList = new List<int> { 1, 2, 4, 5, 6, 8, 9, 10, 12, 13, 14, 18 };
+
+                            if (config.MoreMistVO) 
+                            {
+                                voidOmensList.Add(7);                            
+                            }
 
                             if (geoAlienFaction.Research.HasCompleted("ALN_CrabmanUmbra_ResearchDef"))
                             {

@@ -36,6 +36,15 @@ namespace TFTV
             "turn this option off")]
         public bool helmentsOff = true;
 
+        [ConfigField(text: "REMOVE MORE MIST VOID OMEN",
+            description: "If you are playing on a Low-end system and experience lag with this Void Omen, you can turn it off here. This will prevent it from rolling" +
+            " and if already rolled, will prevent it from having any effect")]
+        public bool MoreMistVO = true;
+
+       [ConfigField(text: "SKIP MOVIES",
+            description: "Choose whether to skip Logos on game launch, Intro and Landing cinematics. Adapted from Mad's Assorted Adjustments.")]
+        public bool SkipMovies = false;
+
         //Starting squad
 
         public enum StartingSquadFaction

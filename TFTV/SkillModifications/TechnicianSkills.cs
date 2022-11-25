@@ -42,7 +42,11 @@ namespace PRMBetterClasses.SkillModifications
         private static void Change_RemoteDeployment()
         {
             TacticalAbilityDef throwTurret = DefCache.GetDef<TacticalAbilityDef>("ThrowTurret_AbilityDef");
+            TacticalAbilityDef throwPRCRTurret = DefCache.GetDef<TacticalAbilityDef>("ThrowPRCRTurret_AbilityDef");
+            TacticalAbilityDef throwLaserTurret = DefCache.GetDef<TacticalAbilityDef>("ThrowLaserTurret_AbilityDef");
             throwTurret.WillPointCost = 2;
+            throwPRCRTurret.WillPointCost = 2;
+            throwLaserTurret.WillPointCost = 2;
         }
 
         private static void Change_ElectricReinforcements()

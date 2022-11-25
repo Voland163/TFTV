@@ -22,8 +22,8 @@ namespace TFTV
     {
 
 
-        //Unlock Project Glory when player activates 3rd base.
-        [HarmonyPatch(typeof(GeoPhoenixFaction), "ActivatePhoenixBase")]
+        //Unlock Project Glory when player activates 3rd base. Commented out for release #7
+      /*  [HarmonyPatch(typeof(GeoPhoenixFaction), "ActivatePhoenixBase")]
         public static class GeoPhoenixFaction_ActivatePhoenixBase_GiveGlory_Patch
         {
             public static void Postfix(GeoPhoenixFaction __instance)
@@ -44,109 +44,8 @@ namespace TFTV
 
             }
 
-        }
+        }*/
 
-
-        /*
-                [HarmonyPatch(typeof(GeoMission), "Launch")]
-                public static class GeoMission_Launch_Antarctica_Patch
-                {
-                    public static void Postfix(GeoMission __instance, GeoSquad squad)
-                    {
-                        try
-                        {
-                            if (__instance.MissionDef.Equals(DefCache.GetDef<CustomMissionTypeDef>("StoryPX15_CustomMissionTypeDef")))
-                            { 
-
-
-                            }
-
-
-
-                        }
-                        catch (Exception e)
-                        {
-                            TFTVLogger.Error(e);
-                        }
-
-
-                    }
-
-                }
-
-                public static void RollCyclopsAura(TacticalLevelController controller)
-                {
-                    try
-                    {
-                        if (controller.TacMission.MissionData.MissionType.Equals(DefCache.GetDef<CustomMissionTypeDef>("StoryPX15_CustomMissionTypeDef")))
-                        {
-
-                            List<TacticalActorBase> ancients = controller.GetFactionByCommandName("anc").Actors.ToList();
-
-                            foreach (TacticalActorBase ancientBase in ancients)
-                            {
-                                if (ancientBase.HasGameTag(DefCache.GetDef<ClassTagDef>("MediumGuardian_ClassTagDef"))
-                                {
-                                    ancientBase.
-
-                                        //Aura_ProteanMutaneFire_AbilityDef
-                                        //Aura_OrichalcumStack_AbilityDef
-                                        //Aura_ProteanMutaneFire_AbilityDef
-
-
-                                }
-
-                            }
-
-
-
-
-                        }
-
-                    }
-                    catch (Exception e)
-                    {
-                        TFTVLogger.Error(e);
-                    }
-
-
-                }
-
-                */
-
-
-        public static void CheckForMutoids(TacticalLevelController controller)
-        {
-            try
-            {
-
-                DefCache.GetDef<TacticalTargetingDataDef>("E_TargetingData [Medkit_AbilityDef]").Origin.CullTargetTags.Clear();
-                // DefCache.GetDef<TacticalTargetingDataDef>("E_TargetingData [Mutoid_CannotBeHealed_TacticalAbilityDef]").Origin.Range = 0;
-
-               /* TacticalFaction phoenix = controller.GetFactionByCommandName("PX");
-
-                foreach (TacticalActorBase actor in phoenix.Actors)
-                {
-                    if (actor.HasGameTag(DefCache.GetDef<GameTagDef>("Mutoid_ClassTagDef")) &&
-                         actor.GetAbilityWithDef<TacticalAbility>(DefCache.GetDef<PassiveModifierAbilityDef>("Mutoid_CannotBeHealed_TacticalAbilityDef")) != null)
-
-                    {
-                        TFTVLogger.Always("This mutoid " + actor.DisplayName + " passed the checks");
-                        TacticalActor tacticalActor = actor as TacticalActor;
-
-                        tacticalActor.RemoveAbility(DefCache.GetDef<PassiveModifierAbilityDef>("Mutoid_CannotBeHealed_TacticalAbilityDef"));
-
-                    }
-
-                }*/
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-
-
-        }
 
         public static TacticalActor mutoidReceivingHealing = null;
 

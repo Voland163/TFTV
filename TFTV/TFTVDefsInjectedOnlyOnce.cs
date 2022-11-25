@@ -70,7 +70,8 @@ namespace TFTV
             ChangesToAcherons();
             RemoveCensusResearch();
             AllowMedkitsToTargetMutoids();
-            ChangesToLOTA2();
+         //Commented out for update #7
+            //   ChangesToLOTA2();
 
         }
 

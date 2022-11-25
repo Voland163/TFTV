@@ -446,6 +446,8 @@ namespace TFTV
 
         public static void CheckForVoidOmensRequiringTacticalPatching(GeoLevelController level)
         {
+            TFTVConfig config = TFTVMain.Main.Config;
+
             try
             {
 
@@ -473,7 +475,7 @@ namespace TFTV
 
                 }
 
-                if (rolledVoidOmens.Contains(7))
+                if (rolledVoidOmens.Contains(7) && config.MoreMistVO)
                 {
                     VoidOmensCheck[7] = true;
                     TFTVLogger.Always("More Mist in missions");
@@ -515,7 +517,7 @@ namespace TFTV
                 }
                 if (rolledVoidOmens.Contains(19))
                 {
-                    VoidOmensCheck[17] = true;
+                    VoidOmensCheck[19] = true;
                     TFTVLogger.Always("Reactive evolution");
                 }
                 else
@@ -1036,9 +1038,10 @@ namespace TFTV
             {
                 try
                 {
+                    TFTVConfig config = TFTVMain.Main.Config;
                     int difficultyLevel = __instance.TacticalLevel.Difficulty.Order;
 
-                    if (VoidOmensCheck[7])
+                    if (VoidOmensCheck[7] && config.MoreMistVO)
                     {
 
                         float missionTypeModifer = 1;
@@ -1079,7 +1082,9 @@ namespace TFTV
             {
                 try
                 {
-                    if (VoidOmensCheck[7] && __instance.Mission.MissionDef.MaxPlayerUnits == 8)
+                    TFTVConfig config = TFTVMain.Main.Config;
+
+                    if (VoidOmensCheck[7] && __instance.Mission.MissionDef.MaxPlayerUnits == 8 && config.MoreMistVO)
                     {
                         __result += 1;
                     }
