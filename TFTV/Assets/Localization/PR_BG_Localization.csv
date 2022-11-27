@@ -320,8 +320,8 @@ VOID_OMEN_TITLE_11,Text,,Behemoth disruption threshold increased,,Augmentation d
 VOID_OMEN_TITLE_12,Text,,Strength of Pandoran attacks on Havens increased by 50%,,La force des attaques des Pandoriens sur les refuges est augmentée de 50%.,,,,,,
 VOID_OMEN_TITLE_13,Text,,New Pandoran Colonies are built 100% faster,,Les nouvelles colonies pandoriennes sont construites 100 % plus rapidement.,,,,,,
 VOID_OMEN_TITLE_14,Text,,Human perception lowered to 20 from 35,,Perception humaine diminuée de 35 à 20,,,,,,
-VOID_OMEN_TITLE_15,Text,,More Umbras,,Plus d'Ombres,,,,,,
-VOID_OMEN_TITLE_16,Text,,Umbras can appear anywhere and attack anyone,,Les Ombres peuvent apparaître n'importe où et attaquer n'importe qui,,,,,,
+VOID_OMEN_TITLE_15,Text,,More Touched by the Void,,Plus d'Ombres,,,,,,
+VOID_OMEN_TITLE_16,Text,,Touched by the Void can appear anywhere and Umbras can attack anyone,,Les Ombres peuvent apparaître n'importe où et attaquer n'importe qui,,,,,,
 VOID_OMEN_TITLE_17,Text,,Destroyed havens in Mist always become infested ,,Les refuges détruits dans la brume deviennent toujours infestés,,,,,,
 VOID_OMEN_TITLE_18,Text,,"Havens defense rating higher, rewards from haven defense missions lower",,"Le taux de défense des refuges est plus élevé, mais les récompenses des missions de défense sont plus faibles.",,,,,,
 VOID_OMEN_TITLE_19,Text,,"Pandorans gain reactive evolutionary resistance, cost of faction tech in Bazaar reduced",,"Les Pandorans acquièrent une résistance évolutive réactive, le coût de la technologie du Bazar est réduit",,,,,,
@@ -518,8 +518,34 @@ We should try capturing it.",,"<i>""Les Pandoriens volaient en quelque sorte nos
 Nous devrions essayer de les capturer",,,,,,
 OLENA_ON_HAVEN_INFESTED_TITLE,Text,,Trapped in the Mist,,Piégé dans la brume,,,,,,
 OLENA_ON_HAVEN_INFESTED_TEXT,Text,,We are receiving reports of survivors trapped in a haven in the Mist that succumbed to a recent Pandoran attack. We should send a well-prepared team to investigate.,,Nous recevons des rapports de survivants piégés dans un refuge situé dans la brume qui a succombé à une récente attaque des Pandoriens. Nous devrions envoyer une équipe bien préparée pour enquêter.,,,,,,
-KEY_AC_DEATHBELCH_DESCRIPTION,Text,,How we shiver with affright,,Comme nous tremblons d'effroi,,,,,,
-KEY_AC_DEATHBELCH_NAME,Text,,Touched by the Void,,Touché par le vide,,,,,,
+KEY_AC_DEATHBELCH_DESCRIPTION,Text,,This Pandoran will spawn an Umbra version of itself if it dies,,Comme nous tremblons d'effroi,,,,,,
+KEY_AC_DEATHBELCH_NAME,Text,,Void Touched - Spawn Umbra on Death,,Touché par le vide,,,,,,
+TBTV_HIDDEN_ABILITY_NAME,Text,,Touched by the Void,,,,,,,,
+TBTV_HIDDEN_ABILITY_DESCRIPTION,Text,,How we shiver with affright,,,,,,,,
+VOID_TOUCHED_TITLE,Text,,Touched by the Void,,,,,,,,
+VOID_TOUCHED_TEXT,Text,,"<i>""A purple fume emanated from its body, marking it as the bearer of a Terrible Purpose.”</i>
+
+This Pandoran is special. At first, any Arthron or Triton that is Touched by the Void will spawn an Umbra version of itself on death. However, as the Oneiric Delirium advances, Touched by the Void Pandorans will gain different effects when attacked for the first time.
+",,,,,,,,
+TBTV_ON_ATTACK_TITLE,Text,,Void Touched - Attacker is Marked for Death,,,,,,,,
+TBTV_ON_ATTACK_TEXT,Text,,Any character that attacks this Pandoran will be afflicted by Marked for Death (no stacking),,,,,,,,
+TBTV_ON_TURN_END_TITLE,Text,,Void Touched - Calls reinforcements at turn's end,,,,,,,,
+TBTV_ON_TURN_END_TEXT,Text,,"If this Pandoran survives until the end of your turn, it will call reinforcements",,,,,,,,
+TBTV_ON_ATTACK_TITLE_HINT,Text,,Void Touched - Attacker is Marked for Death,,,,,,,,
+TBTV_ON_ATTACK_TEXT_HINT,Text,,"<i>”There was the black plume, jetting from the crabbie’s head… I got the bastard, I thought… Next thing I know, they are all coming after me!""</i>
+
+The Pandorans have learned a new trick. From now on, any Touched by the Void Arthron or Triton will either:
+
+- Afflict its attacker with Marked for Death (all hits on the character do 10 extra damage)
+- Spawn Umbra on death",,,,,,,,
+TBTV_ON_TURN_END_TITLE_HINT,Text,,Void Touched - Calls reinforcements at turn's end,,,,,,,,
+TBTV_ON_TURN_END_TEXT_HINT,Text,,"<i>""Pandorans, they always have 'friends' nearby.""</i>
+
+This Pandoran will call reinforcements if it <b>survives (in whatever shape)</b> until the end of your turn. From now on, any Touched by the Void Arthron or Triton will do one of the following:
+
+- Call reinforcements at the end of player’s turn
+- Afflict its attacker with Marked for Death (all hits on the character do 10 extra damage)
+- Spawn Umbra on death",,,,,,,,
 TFTV_BIONICS_RESEARCHDEF_COMPLETE,Text,,"<i>""Which brings us back to Project Purity... This PV strain is even worse than the previous ones. In the Second Mist, we knew the human from the abomination. But now... We all have those nightmares. The chems may dull them, but they never go away. Even West has them, I'm sure. We don't fully understand how or why it happens, but the correlation is undeniable: the users of substantial bionic prosthetics are outperforming their non-augmented peers in psycho-evaluations by 30 to 60 percent. It's the opposite of what we expected! Want another interesting data point? They dream less.""</i>
 
 - Dr. Abongameli Smith, New Jericho
@@ -691,3 +717,9 @@ HEAVY_MUTANT_DELIVERY_CHOICE,Text,,"""Bloodborne""",,"""Bloodborne""",,,,,,
 WATCHER_MUTANT_DELIVERY_CHOICE,Text,,"""Muscae Spectre""",,"""Muscae Spectre""",,,,,,
 SHOOTER_MUTANT_DELIVERY_CHOICE,Text,,"""Predator""",,"""Predator""",,,,,,
 REVENANT_RESISTANCE_TITLE,Text,,Revenant resistance,,,,,,,,
+ACHERON_HARBINGER_NAME,Text,,Harbinger of the Void,,,,,,,,
+ACHERON_HARBINGER_DESCRIPTION,Text,,Increases the chances that an Arthron or a Triton will be Touched by the Void,,,,,,,,
+ACHERON_TRIBUTARY_NAME,Text,,Tributary of the Void,,,,,,,,
+ACHERON_TRIBUTARY_DESCRIPTION,Text,,All friendlies <b>of any type</b> within 10 tiles will be Touched by the Void if the character dies,,,,,,,,
+VOID_BLIGHT_NAME,Text,,Blight of the Void,,,,,,,,
+VOID_BLIGHT_DESCRIPTION,Text,,"This character or unit can be attacked by Umbra, regardless of Delirium",,,,,,,,

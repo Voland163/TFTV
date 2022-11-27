@@ -36,6 +36,33 @@ namespace TFTV
             }
         }
 
+        public static void CheckUmbraResearchVariable(GeoLevelController controller)
+        {
+            try
+            {
+                if (controller.EventSystem.GetEventRecord("SDI_10")?.SelectedChoice == 0)
+                {
+                    controller.EventSystem.SetVariable(TFTVUmbra.TBTVVariableName, 4);
+                    TFTVLogger.Always(TFTVUmbra.TBTVVariableName + " is set to " + controller.EventSystem.GetVariable(TFTVUmbra.TBTVVariableName));
+                }
+                else if (controller.EventSystem.GetEventRecord("SDI_09")?.SelectedChoice == 0)
+                {
+                    controller.EventSystem.SetVariable(TFTVUmbra.TBTVVariableName, 3);
+                    TFTVLogger.Always(TFTVUmbra.TBTVVariableName + " is set to " + controller.EventSystem.GetVariable(TFTVUmbra.TBTVVariableName));
+                }
+                else if (controller.EventSystem.GetEventRecord("SDI_06")?.SelectedChoice == 0)
+                {
+                    controller.EventSystem.SetVariable(TFTVUmbra.TBTVVariableName, 2);
+                    TFTVLogger.Always(TFTVUmbra.TBTVVariableName + " is set to " + controller.EventSystem.GetVariable(TFTVUmbra.TBTVVariableName));
+                }
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
 
     }
 }

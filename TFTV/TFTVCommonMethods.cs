@@ -57,7 +57,7 @@ namespace TFTV
                 TFTVAirCombat.checkHammerfall = false;
                 TFTVRevenant.DeadSoldiersDelirium = new Dictionary<int, int>();
                 TFTVVoidOmens.VoidOmensCheck = new bool[20];
-                TFTVUmbra.UmbraResearched = false;
+                TFTVUmbra.TBTVVariable = 0;
                 TFTVRevenant.daysRevenantLastSeen = 0;
                 TFTVStamina.charactersWithBrokenLimbs = new List<int>();
                 TFTVAirCombat.behemothScenicRoute = new List<int>();
@@ -69,6 +69,7 @@ namespace TFTV
                 TFTVRevenantResearch.ProjectOsirisStats = new Dictionary<int, int[]>();
                 TFTVRevenantResearch.ProjectOsiris = false;
                 TFTVDiplomacyPenalties.VoidOmensImplemented = false;
+                TFTVUmbra.UmbraResearched = false;
                 TFTVHumanEnemiesNames.names.Clear();
                 TFTVHumanEnemiesNames.CreateNamesDictionary();
                 TFTVInfestation.InfestationMissionWon = false;
@@ -106,7 +107,6 @@ namespace TFTV
                         TFTVLogger.Always("Revenant resistance hint removed");
                     }
                 }
-
             }
 
             catch (Exception e)

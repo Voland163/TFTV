@@ -5,6 +5,8 @@ using Base.UI;
 using HarmonyLib;
 using PhoenixPoint.Common.ContextHelp;
 using PhoenixPoint.Common.Entities.GameTags;
+using PhoenixPoint.Common.Entities.GameTagsTypes;
+using PhoenixPoint.Common.Levels.Missions;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.Statuses;
@@ -92,7 +94,7 @@ namespace TFTV
 
 
 
-       // public static int difficultyLevel = 0;
+        // public static int difficultyLevel = 0;
         // public static Dictionary <string, string> FileNameSquadPic = new Dictionary<string, string>();
 
         public static Dictionary<string, int> HumanEnemiesAndTactics = new Dictionary<string, int>();
@@ -195,7 +197,17 @@ namespace TFTV
         {
             try
             {
-                string nameOfGang = GenerateGangName();
+                string nameOfGang = "";
+
+                if (nameOfLeader != "Subject 24")
+                {
+                    nameOfGang = GenerateGangName();
+                }
+                else
+                {
+                    nameOfGang = "Subject 24";
+
+                }
                 string unitType = "";
 
                 string tactic = "";
@@ -294,9 +306,18 @@ namespace TFTV
                     //  FileNameSquadPic = "pu_squad.jpg";
                 }
 
-                string descriptionHint = "You are facing " + unitType + ", called the " + nameOfGang +
-                    ". Their leader is " + nameOfLeader + ", using the tactic " + nameOfTactic + ": " + descriptionOfTactic;
+                string descriptionHint = "";
 
+                if (nameOfLeader != "Subject 24")
+                {
+                    descriptionHint = "You are facing " + unitType + ", called the " + nameOfGang +
+                        ". Their leader is " + nameOfLeader + ", using the tactic " + nameOfTactic + ": " + descriptionOfTactic;
+                }
+                else
+                {
+                    descriptionHint = "You are finally facing Subject 24, protected by an array of the Pure, " +
+                        "using the tactic " + nameOfTactic + ": " + descriptionOfTactic;
+                }
 
                 TFTVTutorialAndStory.CreateNewTacticalHintForHumanEnemies(nameOfGang, HintTrigger.ActorSeen, "HumanEnemyFaction_" + enemyHumanFaction.TacticalFactionDef.ShortName + "_GameTagDef", nameOfGang, descriptionHint);
                 ContextHelpHintDef humanEnemySightedHint = Repo.GetAllDefs<ContextHelpHintDef>().FirstOrDefault(ged => ged.name.Equals(nameOfGang));
@@ -317,6 +338,178 @@ namespace TFTV
                 TFTVLogger.Error(e);
             }
         }
+
+        public static void CheckMissionType(TacticalLevelController controller)
+        {
+            try
+            {
+                if (controller.TacMission.MissionData.MissionType.Equals(DefCache.GetDef<CustomMissionTypeDef>("StoryPU14_CustomMissionTypeDef")))
+                {
+                    RunBionicFortressProtocol(controller);
+                }
+                else
+                {
+                    AssignHumanEnemiesTags(controller);
+                }
+
+
+            }
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+        public static void RunBionicFortressProtocol(TacticalLevelController controller)
+        {
+            try
+
+            {
+                TacticalFaction phoenix = controller.GetFactionByCommandName("PX");
+                int difficultyLevel = controller.Difficulty.Order;
+
+                foreach (TacticalFaction faction in GetHumanEnemyFactions(controller))
+                {
+                    List<TacticalActor> listOfHumansEnemies = new List<TacticalActor>();
+
+                    TacticalActor leader = new TacticalActor();
+
+                    foreach (TacticalActorBase tacticalActorBase in faction.Actors)
+                    {
+
+
+                        if (tacticalActorBase.BaseDef.name == "Soldier_ActorDef" && tacticalActorBase.InPlay)
+                        {
+                            TacticalActor tacticalActor = tacticalActorBase as TacticalActor;
+                            if (tacticalActor.HasGameTag(DefCache.GetDef<CustomizationPrimaryColorTagDef>("CustomizationColorTagDef_9")))
+                            {
+                                leader = tacticalActor;
+                                TFTVLogger.Always("Found Subject24");
+                                leader.name = "Subject 24";
+                            }
+                            else
+                            {
+                                listOfHumansEnemies.Add(tacticalActor);
+                            }
+                        }
+                       
+                    }
+
+                    TFTVLogger.Always("There are " + listOfHumansEnemies.Count() + " human enemies");
+                    List<TacticalActor> orderedListOfHumanEnemies = listOfHumansEnemies.OrderByDescending(e => e.LevelProgression.Level).ToList();
+                    for (int i = 0; i < listOfHumansEnemies.Count; i++)
+                    {
+                        TFTVLogger.Always("TacticalActor is " + orderedListOfHumanEnemies[i].DisplayName + " and its level is " + listOfHumansEnemies[i].LevelProgression.Level);
+                    }
+
+                    if (listOfHumansEnemies[0].LevelProgression.Level == listOfHumansEnemies[listOfHumansEnemies.Count - 1].LevelProgression.Level)
+                    {
+                        TFTVLogger.Always("All enemies are of the same level");
+                        orderedListOfHumanEnemies = listOfHumansEnemies.OrderByDescending(e => e.CharacterStats.Willpower.IntValue).ToList();
+                    }
+
+                    for (int i = 0; i < orderedListOfHumanEnemies.Count; i++)
+                    {
+                        TFTVLogger.Always("The character is " + orderedListOfHumanEnemies[i].name + " and their WP are " + orderedListOfHumanEnemies[i].CharacterStats.Willpower.IntValue);
+                    }
+
+                    int champs = Mathf.FloorToInt(orderedListOfHumanEnemies.Count / (5 - (difficultyLevel / 2)));
+                    TFTVLogger.Always("There is space for " + champs + " champs");
+                    int gangers = Mathf.FloorToInt((orderedListOfHumanEnemies.Count - champs) / (4 - (difficultyLevel / 2)));
+                    TFTVLogger.Always("There is space for " + gangers + " gangers");
+                    int juves = orderedListOfHumanEnemies.Count - champs - gangers;
+                    TFTVLogger.Always("There is space for " + juves + " juves");
+
+                    TacticalActorBase leaderBase = leader;
+                    leader.LevelProgression.SetLevel(7);
+                    string nameOfFaction = faction.Faction.FactionDef.ShortName;
+
+                    GameTagDef gameTagDef = DefCache.GetDef<GameTagDef>("HumanEnemyFaction_" + nameOfFaction + "_GameTagDef");
+                    TFTVLogger.Always("gameTagDef found");
+                    List<string> factionNames = TFTVHumanEnemiesNames.names.GetValueSafe(nameOfFaction);
+
+                    if (!leaderBase.GameTags.Contains(HumanEnemyTier1GameTag))
+                    {
+                        leaderBase.GameTags.Add(HumanEnemyTier1GameTag);
+                        TFTVLogger.Always("Tier1GameTag assigned");
+                        leaderBase.GameTags.Add(gameTagDef);
+                        TFTVLogger.Always("GameTagDef assigned");
+                        leaderBase.GameTags.Add(humanEnemyTagDef, GameTagAddMode.ReplaceExistingExclusive);
+                        TFTVLogger.Always("humanEnemyTagDef assigned");
+
+                        TFTVLogger.Always("Leader now has GameTag and their name is " + leader.name);
+                        AdjustStatsAndSkills(leader);
+                    }
+
+                    RollTactic(nameOfFaction);
+                    GenerateHumanEnemyUnit(faction, leader.name, HumanEnemiesAndTactics[nameOfFaction]);
+                    
+                    for (int i = 0; i < champs; i++)
+                    {
+                        TacticalActorBase champ = orderedListOfHumanEnemies[i];
+                        if (!champ.GameTags.Contains(gameTagDef))
+                        {
+
+                            champ.GameTags.Add(HumanEnemyTier2GameTag);
+                            champ.GameTags.Add(gameTagDef);
+                            champ.GameTags.Add(humanEnemyTagDef, GameTagAddMode.ReplaceExistingExclusive);
+                            UnityEngine.Random.InitState((int)DateTime.Now.Ticks);
+                            champ.name = factionNames[UnityEngine.Random.Range(0, factionNames.Count)];
+                            TacticalActor tacticalActor = champ as TacticalActor;
+                            AdjustStatsAndSkills(tacticalActor);
+                            factionNames.Remove(champ.name);
+                        }
+                        TFTVLogger.Always("This " + champ.name + " is now a champ");
+                    }
+
+                    for (int i = champs; i < champs + gangers; i++)
+                    {
+                        TacticalActorBase ganger = orderedListOfHumanEnemies[i];
+                        if (!ganger.GameTags.Contains(gameTagDef))
+                        {
+
+                            ganger.GameTags.Add(HumanEnemyTier3GameTag);
+                            ganger.GameTags.Add(gameTagDef);
+                            ganger.GameTags.Add(humanEnemyTagDef, GameTagAddMode.ReplaceExistingExclusive);
+                            UnityEngine.Random.InitState((int)DateTime.Now.Ticks);
+                            ganger.name = factionNames[UnityEngine.Random.Range(0, factionNames.Count)];
+                            TacticalActor tacticalActor = ganger as TacticalActor;
+                            AdjustStatsAndSkills(tacticalActor);
+                            factionNames.Remove(ganger.name);
+
+                        }
+                        TFTVLogger.Always("This " + ganger.name + " is now a ganger");
+
+                    }
+
+                    for (int i = champs + gangers; i < champs + gangers + juves; i++)
+                    {
+                        TacticalActorBase juve = orderedListOfHumanEnemies[i];
+                        if (!juve.GameTags.Contains(gameTagDef))
+                        {
+                            juve.GameTags.Add(HumanEnemyTier4GameTag);
+                            juve.GameTags.Add(gameTagDef);
+                            juve.GameTags.Add(humanEnemyTagDef, GameTagAddMode.ReplaceExistingExclusive);
+                            UnityEngine.Random.InitState((int)DateTime.Now.Ticks);
+                            juve.name = factionNames[UnityEngine.Random.Range(0, factionNames.Count)];
+                            TacticalActor tacticalActor = juve as TacticalActor;
+                            AdjustStatsAndSkills(tacticalActor);
+                            factionNames.Remove(juve.name);
+                        }
+                        TFTVLogger.Always("This " + juve.name + " is now a juve");
+
+
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+        }
+
 
         public static void AssignHumanEnemiesTags(TacticalLevelController controller)
         {

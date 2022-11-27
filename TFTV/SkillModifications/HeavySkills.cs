@@ -169,7 +169,7 @@ namespace PRMBetterClasses.SkillModifications
                     Value = damageMod
                 }
             };
-            DynamicResistanceStatusDef skirmisherReactionStatus = (DynamicResistanceStatusDef)skirmisher.StatusDef;
+            skirmisherReactionStatus = (DynamicResistanceStatusDef)skirmisher.StatusDef;
             skirmisherReactionStatus.ResistanceStatuses = new DynamicResistanceStatusDef.ResistancePerDamageType[]
             {
                 new DynamicResistanceStatusDef.ResistancePerDamageType()
@@ -194,18 +194,33 @@ namespace PRMBetterClasses.SkillModifications
                 }
             };
         }
-        // Harmony patch for Skirmisher in the moment an ability is activated
+        public static DynamicResistanceStatusDef skirmisherReactionStatus;
+        // Harmony patch for Skirmisher where it checks if the ability should be monitored
+        [HarmonyPatch(typeof(DynamicResistanceStatus), "IsAbilityMonitored")]
+        internal static class Skirmisher_DynamicResistanceStatus_IsAbilityMonitored_patch
+        {
+            [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051")]
+            private static void Postfix(DynamicResistanceStatus __instance, ref bool __result)
+            {
+                // If it is in the turn of the status holder (__instance.TacticalActor.DuringOwnTurn) then don't monitor this ability
+                if (__instance.TacStatusDef == skirmisherReactionStatus && __instance.TacticalActor.DuringOwnTurn)
+                {
+                    __result = false;
+                }
+            }
+        }
+
+        /*// Harmony patch for Skirmisher in the moment an ability is activated
         [HarmonyPatch(typeof(DynamicResistanceStatus), "OnAbilityActivating")]
         internal static class Skirmisher_DynamicResistanceStatus_OnAbilityActivating_patch
         {
             [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051")]
             private static bool Prefix(DynamicResistanceStatus __instance)
             {
-                TacticalActorBase base_TacticalActorBase = (TacticalActorBase)AccessTools.Property(typeof(TacStatus), "TacticalActorBase").GetValue(__instance, null);
                 // Don't execute original method (return false) when current instance is called from Skirmisher ability
                 // AND current turn is same turn of ability owner (e.g. self damaging in player turn, no cheese patch)
-                return !(__instance.TacStatusDef.name.Equals("Skirmisher_AbilityDef")
-                    && base_TacticalActorBase.TacticalLevel.CurrentFaction == base_TacticalActorBase.TacticalFaction);
+                return !(__instance.TacStatusDef == skirmisherReactionStatus
+                    && __instance.TacticalActorBase.TacticalLevel.CurrentFaction == __instance.TacticalActorBase.TacticalFaction);
             }
         }
         // Harmony patch for Skirmisher in the moment damage is appilied
@@ -215,13 +230,12 @@ namespace PRMBetterClasses.SkillModifications
             [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051")]
             private static bool Prefix(DynamicResistanceStatus __instance)
             {
-                TacticalActorBase base_TacticalActorBase = (TacticalActorBase)AccessTools.Property(typeof(TacStatus), "TacticalActorBase").GetValue(__instance, null);
                 // Don't execute original method (return false) when current instance is called from Skirmisher ability
                 // AND current turn is same turn of ability owner (e.g. self damaging in player turn, no cheese patch)
-                return !(__instance.TacStatusDef.name.Equals("Skirmisher_AbilityDef")
-                    && base_TacticalActorBase.TacticalLevel.CurrentFaction == base_TacticalActorBase.TacticalFaction);
+                return !(__instance.TacStatusDef == skirmisherReactionStatus
+                    && __instance.TacticalActorBase.TacticalLevel.CurrentFaction == __instance.TacticalActorBase.TacticalFaction);
             }
-        }
+        }*/
 
         private static void Create_ShredResistance()
         {

@@ -167,11 +167,17 @@ namespace TFTV
 
                 //Changes to SDI Events
                 sdi1.GeoscapeEventData.Choices[0].Outcome.OutcomeText.General.LocalizationKey = "SDI1_OUTCOME";               
+                
+                
                 GeoscapeEventDef sdi3 = DefCache.GetDef<GeoscapeEventDef>("SDI_03_GeoscapeEventDef");
-                sdi3.GeoscapeEventData.Choices[0].Outcome.VariablesChange.Add(TFTVCommonMethods.GenerateVariableChange("Umbra_Encounter_Variable", 1, false));        
+               
+          
+                // GeoscapeEventDef sdi5 = DefCache.GetDef<GeoscapeEventDef>("SDI_05_GeoscapeEventDef");
+               // sdi5.GeoscapeEventData.Choices[0].Outcome.VariablesChange.Add(TFTVCommonMethods.GenerateVariableChange("Umbra_Encounter_Variable", 1, false));
+                
                 GeoscapeEventDef sdi6 = DefCache.GetDef<GeoscapeEventDef>("SDI_06_GeoscapeEventDef");
                 sdi6.GeoscapeEventData.Choices[0].Outcome.OutcomeText.General.LocalizationKey = "SDI6_OUTCOME";
-                //sdi6.GeoscapeEventData.Choices[0].Outcome.VariablesChange.Add(TFTVCommonMethods.GenerateVariableChange("Infestation_Encounter_Variable", 1, true);
+               
                   
                 //Need to fix a broken SDI event!
                 GeoscapeEventDef brokenSDIEvent = DefCache.GetDef<GeoscapeEventDef>("SDI_07_GeoscapeEventDef");
@@ -183,26 +189,36 @@ namespace TFTV
                 sdi7.GeoscapeEventData.Flavour = "SDI";
 
                 GeoscapeEventDef sdi09 = DefCache.GetDef<GeoscapeEventDef>("SDI_09_GeoscapeEventDef");
-                sdi09.GeoscapeEventData.Choices[0].Outcome.VariablesChange.Add(TFTVCommonMethods.GenerateVariableChange("Umbra_Encounter_Variable", 1, false));
-                sdi09.GeoscapeEventData.Choices[0].Outcome.OutcomeText.General.LocalizationKey = "SDI09_OUTCOME";
+               
                 GeoscapeEventDef sdi10 = DefCache.GetDef<GeoscapeEventDef>("SDI_10_GeoscapeEventDef");
                 sdi10.GeoscapeEventData.Choices[0].Outcome.OutcomeText.General.LocalizationKey = "SDI10_OUTCOME";
-               // GeoscapeEventDef sdi11 = DefCache.GetDef<GeoscapeEventDef>("SDI_11_GeoscapeEventDef");
+                GeoscapeEventDef sdi13 = DefCache.GetDef<GeoscapeEventDef>("SDI_13_GeoscapeEventDef");
                // sdi11.GeoscapeEventData.Choices[0].Outcome.OutcomeText.General.LocalizationKey = "SDI11_OUTCOME";
-               // sdi11.GeoscapeEventData.Choices[0].Outcome.VariablesChange.Add(TFTVCommonMethods.GenerateVariableChange("BerithAreComing", 1, true);
+               
 
                 GeoscapeEventDef sdi20 = DefCache.GetDef<GeoscapeEventDef>("SDI_20_GeoscapeEventDef");
                 sdi20.GeoscapeEventData.Choices[0].Outcome.GameOverVictoryFaction = null;
-              /*  sdi20.GeoscapeEventData.Choices[0].Outcome.VariablesChange.Add(TFTVCommonMethods.GenerateVariableChange("ODI_Complete", 1, true);
-                sdi20.GeoscapeEventData.Choices[0].Outcome.Diplomacy.Add(TFTVCommonMethods.GenerateDiplomacyOutcome(Anu, NewJericho, -200);
-                sdi20.GeoscapeEventData.Choices[0].Outcome.Diplomacy.Add(TFTVCommonMethods.GenerateDiplomacyOutcome(Anu, PhoenixPoint, -200);
-                sdi20.GeoscapeEventData.Choices[0].Outcome.Diplomacy.Add(TFTVCommonMethods.GenerateDiplomacyOutcome(Anu, Synedrion, -200);
-                sdi20.GeoscapeEventData.Choices[0].Outcome.Diplomacy.Add(TFTVCommonMethods.GenerateDiplomacyOutcome(NewJericho, Anu, -200);
-                sdi20.GeoscapeEventData.Choices[0].Outcome.Diplomacy.Add(TFTVCommonMethods.GenerateDiplomacyOutcome(NewJericho, Synedrion, -200);
-                sdi20.GeoscapeEventData.Choices[0].Outcome.Diplomacy.Add(TFTVCommonMethods.GenerateDiplomacyOutcome(NewJericho, PhoenixPoint, -200);
-                sdi20.GeoscapeEventData.Choices[0].Outcome.Diplomacy.Add(TFTVCommonMethods.GenerateDiplomacyOutcome(Synedrion, Anu, -200);
-                sdi20.GeoscapeEventData.Choices[0].Outcome.Diplomacy.Add(TFTVCommonMethods.GenerateDiplomacyOutcome(Synedrion, NewJericho, -200);
-                sdi20.GeoscapeEventData.Choices[0].Outcome.Diplomacy.Add(TFTVCommonMethods.GenerateDiplomacyOutcome(Synedrion, PhoenixPoint, -200);*/
+
+                //Add Umbra research variable #1; this is the evolution variable for all Touched by the Void effects
+                sdi3.GeoscapeEventData.Choices[0].Outcome.VariablesChange.Add(TFTVCommonMethods.GenerateVariableChange("Umbra_Encounter_Variable", 1, false));
+                //TBTV Marked for Death effect becomes available #2
+                sdi6.GeoscapeEventData.Choices[0].Outcome.VariablesChange.Add(TFTVCommonMethods.GenerateVariableChange("Umbra_Encounter_Variable", 1, false));
+                // Umbra grow stronger #3
+                sdi09.GeoscapeEventData.Choices[0].Outcome.VariablesChange.Add(TFTVCommonMethods.GenerateVariableChange("Umbra_Encounter_Variable", 1, false));
+                sdi09.GeoscapeEventData.Choices[0].Outcome.OutcomeText.General.LocalizationKey = "SDI09_OUTCOME";
+                //TBTV Reinforcements effect becomes available #4
+                sdi10.GeoscapeEventData.Choices[0].Outcome.VariablesChange.Add(TFTVCommonMethods.GenerateVariableChange("Umbra_Encounter_Variable", 1, false));
+
+                /*  sdi20.GeoscapeEventData.Choices[0].Outcome.VariablesChange.Add(TFTVCommonMethods.GenerateVariableChange("ODI_Complete", 1, true);
+                  sdi20.GeoscapeEventData.Choices[0].Outcome.Diplomacy.Add(TFTVCommonMethods.GenerateDiplomacyOutcome(Anu, NewJericho, -200);
+                  sdi20.GeoscapeEventData.Choices[0].Outcome.Diplomacy.Add(TFTVCommonMethods.GenerateDiplomacyOutcome(Anu, PhoenixPoint, -200);
+                  sdi20.GeoscapeEventData.Choices[0].Outcome.Diplomacy.Add(TFTVCommonMethods.GenerateDiplomacyOutcome(Anu, Synedrion, -200);
+                  sdi20.GeoscapeEventData.Choices[0].Outcome.Diplomacy.Add(TFTVCommonMethods.GenerateDiplomacyOutcome(NewJericho, Anu, -200);
+                  sdi20.GeoscapeEventData.Choices[0].Outcome.Diplomacy.Add(TFTVCommonMethods.GenerateDiplomacyOutcome(NewJericho, Synedrion, -200);
+                  sdi20.GeoscapeEventData.Choices[0].Outcome.Diplomacy.Add(TFTVCommonMethods.GenerateDiplomacyOutcome(NewJericho, PhoenixPoint, -200);
+                  sdi20.GeoscapeEventData.Choices[0].Outcome.Diplomacy.Add(TFTVCommonMethods.GenerateDiplomacyOutcome(Synedrion, Anu, -200);
+                  sdi20.GeoscapeEventData.Choices[0].Outcome.Diplomacy.Add(TFTVCommonMethods.GenerateDiplomacyOutcome(Synedrion, NewJericho, -200);
+                  sdi20.GeoscapeEventData.Choices[0].Outcome.Diplomacy.Add(TFTVCommonMethods.GenerateDiplomacyOutcome(Synedrion, PhoenixPoint, -200);*/
 
             }
 

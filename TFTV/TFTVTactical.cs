@@ -21,7 +21,8 @@ namespace TFTV
         // public int ExampleData;
         // Dictionary to transfer the characters geoscape stamina to tactical level by actor ID
         public List<int> charactersWithBrokenLimbs; // = TFTVStamina.charactersWithBrokenLimbs;
-        public bool UmbraResearched;// = TFTVUmbra.UmbraResearched;
+        public int TBTVVariable;
+        public bool UmbraResearched;
         public Dictionary<int, int> DeadSoldiersDelirium;// = TFTVRevenant.DeadSoldiersDelirium;
                                                          //    public TimeUnit timeRevenantLastSeenSaveData = TFTVRevenant.timeRevenantLastSeen;
                                                          //    public TimeSpan timeLastRevenantSpawned = TFTVRevenant.timeLastRevenantSpawned;
@@ -118,6 +119,7 @@ namespace TFTV
                 TFTVTacInstanceData data = (TFTVTacInstanceData)instanceData;
                 TFTVStamina.charactersWithBrokenLimbs = data.charactersWithBrokenLimbs;
                 TFTVVoidOmens.VoidOmensCheck = data.VoidOmensCheck;
+                TFTVUmbra.TBTVVariable = data.TBTVVariable;
                 TFTVUmbra.UmbraResearched = data.UmbraResearched;
                 TFTVRevenant.DeadSoldiersDelirium = data.DeadSoldiersDelirium;
                 //  TFTVRevenant.timeRevenantLastSeen = data.timeRevenantLastSeenSaveData;
@@ -153,6 +155,7 @@ namespace TFTV
             {
                 charactersWithBrokenLimbs = TFTVStamina.charactersWithBrokenLimbs,
                 VoidOmensCheck = TFTVVoidOmens.VoidOmensCheck,
+                TBTVVariable = TFTVUmbra.TBTVVariable,
                 UmbraResearched = TFTVUmbra.UmbraResearched,
                 DeadSoldiersDelirium = TFTVRevenant.DeadSoldiersDelirium,
                 //   timeRevenantLastSeenSaveData = TFTVRevenant.timeRevenantLastSeen,
@@ -179,7 +182,7 @@ namespace TFTV
             
             if (turnNumber == 0 && TFTVHumanEnemies.HumanEnemiesAndTactics.Count==0)
             { 
-                TFTVHumanEnemies.AssignHumanEnemiesTags(Controller);             
+                TFTVHumanEnemies.CheckMissionType(Controller);             
             }
             if (turnNumber == 0)
             {
@@ -192,8 +195,7 @@ namespace TFTV
             TFTVUmbra.SpawnUmbra(Controller);
             TFTVHumanEnemies.ChampRecoverWPAura(Controller);           
             TFTVHumanEnemies.ApplyTactic(Controller);
-         
-           
+            
 
 
         }

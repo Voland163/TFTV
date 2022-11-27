@@ -23,6 +23,7 @@ using PhoenixPoint.Common.Entities.Items;
 using PhoenixPoint.Tactical.Entities.Weapons;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Levels.FactionObjectives;
+using PhoenixPoint.Common.ContextHelp;
 
 namespace TFTV
 {
@@ -559,6 +560,7 @@ namespace TFTV
                 CreateRevenantAbilityForSniper();
                 CreateRevenantAbilityForTechnician();
                 CreateRevenantResistanceStatus();
+                CreateUmbraDefs();
               //  CreateKillRevenantObjective();
             }
             catch (Exception e)
@@ -566,6 +568,234 @@ namespace TFTV
                 TFTVLogger.Error(e);
             }
         }
+
+        public static void CreateUmbraDefs()
+        {
+            try 
+            {
+                CreateTouchedByTheVoidAbilities();
+                CreateTBTVStatuses();
+                CreateTBTVTag();
+            
+            
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+        }
+
+        //Need the tag for the Hint
+        public static void CreateTBTVTag()
+        {
+            try 
+            {
+                string tagTBTVName = "VoidTouched";
+                GameTagDef source = DefCache.GetDef<GameTagDef>("Takeshi_Tutorial3_GameTagDef");
+                Helper.CreateDefFromClone(
+                    source,
+                    "D7E21666-5953-4773-A0EE-D8646D278FE5",
+                    tagTBTVName + "_" + "GameTagDef");
+
+                TFTVTutorialAndStory.CreateNewTacticalHint("VoidTouchedSighted", HintTrigger.ActorSeen, "VoidTouched_GameTagDef", "VOID_TOUCHED_TITLE", "VOID_TOUCHED_TEXT", 1, true, "D3FC85FA-465C-4085-8A40-84B960DB5D25");
+
+                string tagTBTVOnAttackName = "VoidTouchedOnAttack";
+               
+                Helper.CreateDefFromClone(
+                    source,
+                    "B715978B-0ABF-48C2-BEC5-1B72C5AC4389",
+                    tagTBTVOnAttackName + "_" + "GameTagDef");
+
+                TFTVTutorialAndStory.CreateNewTacticalHint(tagTBTVOnAttackName +"_Hint", HintTrigger.ActorHurt, "VoidTouchedOnAttack_GameTagDef", "TBTV_ON_ATTACK_TITLE_HINT", "TBTV_ON_ATTACK_TEXT_HINT", 1, true, "6B34678C-6C8F-4462-B1DB-ED6A4B236B3D");
+
+                string tagTBTVOnTurnEndName = "VoidTouchedOnTurnEnd";
+               
+                Helper.CreateDefFromClone(
+                    source,
+                    "6620CBB3-D199-4A25-A10E-46F29359174F",
+                    tagTBTVOnTurnEndName + "_" + "GameTagDef");
+
+                
+                TFTVTutorialAndStory.CreateNewTacticalHint(tagTBTVOnTurnEndName+ "_Hint", HintTrigger.ActorHurt, "VoidTouchedOnTurnEnd_GameTagDef", "TBTV_ON_TURN_END_TITLE_HINT", "TBTV_ON_TURN_END_TEXT_HINT", 1, true, "E7365C33-7222-44E3-B397-77DA892E6D9F");
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+
+        }
+
+
+        public static void CreateTBTVStatuses()
+        {
+            try
+            {
+                DamageMultiplierStatusDef source = DefCache.GetDef<DamageMultiplierStatusDef>("BionicResistances_StatusDef");
+
+                string onAttackStatusDefName = "TBTV_OnAttack_StatusDef";
+                DamageMultiplierStatusDef onAttackStatus = Helper.CreateDefFromClone(
+                    source,
+                    "59FCD1FC-1A61-4AA6-B585-7DDD71739F40",
+                    onAttackStatusDefName);
+                onAttackStatus.Visuals = Helper.CreateDefFromClone(
+                    source.Visuals,
+                    "8553E163-8559-4551-870C-AD67D48EECE8",
+                    onAttackStatusDefName);
+
+                onAttackStatus.EffectName = "OnAttackTBTV";
+                onAttackStatus.VisibleOnHealthbar = TacStatusDef.HealthBarVisibility.AlwaysVisible;
+                onAttackStatus.VisibleOnPassiveBar = true;
+                onAttackStatus.VisibleOnStatusScreen = TacStatusDef.StatusScreenVisibility.VisibleOnStatusesList;
+                onAttackStatus.DamageTypeDefs = new DamageTypeBaseEffectDef[1];
+                onAttackStatus.Visuals.DisplayName1.LocalizationKey = "TBTV_ON_ATTACK_TITLE";
+                onAttackStatus.Visuals.Description.LocalizationKey = "TBTV_ON_ATTACK_TEXT";
+                onAttackStatus.Visuals.LargeIcon = Helper.CreateSpriteFromImageFile("TBTV_MarkForDeath.png");
+                onAttackStatus.Visuals.SmallIcon = Helper.CreateSpriteFromImageFile("TBTV_MarkForDeath.png");
+
+                string onTurnEndStatusDefName = "TBTV_OnTurnEnd_StatusDef";
+                DamageMultiplierStatusDef onTurnEndStatus = Helper.CreateDefFromClone(
+                    source,
+                    "77DF22A4-164A-497F-9239-A783F8DDB3AB",
+                    onTurnEndStatusDefName);
+                onTurnEndStatus.Visuals = Helper.CreateDefFromClone(
+                    source.Visuals,
+                    "34F6B557-B7DD-47A8-A8B3-9F945A156F18",
+                    onTurnEndStatusDefName);
+                onTurnEndStatus.EffectName = "OnTurnEndTBTV";
+                onTurnEndStatus.VisibleOnHealthbar = TacStatusDef.HealthBarVisibility.AlwaysVisible;
+                onTurnEndStatus.VisibleOnPassiveBar = true;
+                onTurnEndStatus.VisibleOnStatusScreen = TacStatusDef.StatusScreenVisibility.VisibleOnStatusesList;
+                onTurnEndStatus.DamageTypeDefs = new DamageTypeBaseEffectDef[1];
+
+                onTurnEndStatus.Visuals.DisplayName1.LocalizationKey = "TBTV_ON_TURN_END_TITLE";
+                onTurnEndStatus.Visuals.Description.LocalizationKey = "TBTV_ON_TURN_END_TEXT";
+                onTurnEndStatus.Visuals.LargeIcon = DefCache.GetDef<CallReinforcementsAbilityDef>("Acheron_CallReinforcements_AbilityDef").ViewElementDef.LargeIcon;
+                onTurnEndStatus.Visuals.SmallIcon = DefCache.GetDef<CallReinforcementsAbilityDef>("Acheron_CallReinforcements_AbilityDef").ViewElementDef.SmallIcon;
+
+
+                //need to clone belcher abilities so that they can be covertly applied in case the character gets one-shot killed
+                AddAbilityStatusDef oilCrabStatusDef = DefCache.GetDef<AddAbilityStatusDef>("OilCrab_AddAbilityStatusDef");
+              //  string hiddenOilCrabStatusDefName = "HiddenOilCrabStatusDef";
+             //   AddAbilityStatusDef hiddenOilCrabStatusDef = Helper.CreateDefFromClone(oilCrabStatusDef, "5A7ABACE-21DA-4A4B-AFB5-5D178226D9D1", hiddenOilCrabStatusDefName);
+                
+
+                
+                oilCrabStatusDef.EffectName = "OilCrabOnDeath";
+                oilCrabStatusDef.Visuals = Helper.CreateDefFromClone(
+                    source.Visuals,
+                    "0015079C-C250-404C-B912-679303BD5B2C",
+                    oilCrabStatusDef.EffectName);
+                oilCrabStatusDef.VisibleOnHealthbar = TacStatusDef.HealthBarVisibility.AlwaysVisible;
+                oilCrabStatusDef.VisibleOnPassiveBar = true;
+                oilCrabStatusDef.VisibleOnStatusScreen = TacStatusDef.StatusScreenVisibility.VisibleOnStatusesList;
+                oilCrabStatusDef.Visuals.DisplayName1.LocalizationKey = "KEY_AC_DEATHBELCH_NAME";
+                oilCrabStatusDef.Visuals.Description.LocalizationKey = "KEY_AC_DEATHBELCH_DESCRIPTION";
+                oilCrabStatusDef.Visuals.LargeIcon = DefCache.GetDef<DeathBelcherAbilityDef>("Oilcrab_Die_DeathBelcher_AbilityDef").ViewElementDef.LargeIcon;
+                oilCrabStatusDef.Visuals.SmallIcon = DefCache.GetDef<DeathBelcherAbilityDef>("Oilcrab_Die_DeathBelcher_AbilityDef").ViewElementDef.SmallIcon;
+
+                AddAbilityStatusDef oilFishStatusDef = DefCache.GetDef<AddAbilityStatusDef>("OilFish_AddAbilityStatusDef");
+                oilFishStatusDef.EffectName = "OilFishOnDeath";
+                oilFishStatusDef.Visuals = Helper.CreateDefFromClone(
+                   source.Visuals,
+                   "44BA7178-2307-491C-9593-2B8FDD312328",
+                   oilCrabStatusDef.EffectName);
+
+                oilFishStatusDef.VisibleOnHealthbar = TacStatusDef.HealthBarVisibility.AlwaysVisible;
+                oilFishStatusDef.VisibleOnPassiveBar = true;
+                oilFishStatusDef.VisibleOnStatusScreen = TacStatusDef.StatusScreenVisibility.VisibleOnStatusesList;
+                oilFishStatusDef.Visuals.DisplayName1.LocalizationKey = "KEY_AC_DEATHBELCH_NAME";
+                oilFishStatusDef.Visuals.Description.LocalizationKey = "KEY_AC_DEATHBELCH_DESCRIPTION";
+                oilFishStatusDef.Visuals.LargeIcon = DefCache.GetDef<DeathBelcherAbilityDef>("Oilcrab_Die_DeathBelcher_AbilityDef").ViewElementDef.LargeIcon;
+                oilFishStatusDef.Visuals.SmallIcon = DefCache.GetDef<DeathBelcherAbilityDef>("Oilcrab_Die_DeathBelcher_AbilityDef").ViewElementDef.SmallIcon;
+
+                DeathBelcherAbilityDef oilCrabDie = DefCache.GetDef<DeathBelcherAbilityDef>("Oilcrab_Die_DeathBelcher_AbilityDef");
+                oilCrabDie.ViewElementDef.ShowInStatusScreen = false;
+
+                DeathBelcherAbilityDef oilFishDie = DefCache.GetDef<DeathBelcherAbilityDef>("Oilfish_Die_DeathBelcher_AbilityDef");
+                oilFishDie.ViewElementDef.ShowInStatusScreen = false;
+
+                
+                
+                /*   string onDeathStatusDefName = "TBTV_OnDeath_StatusDef";
+                   DamageMultiplierStatusDef onDeathStatus = Helper.CreateDefFromClone(
+                       source,
+                       "77DF22A4-164A-497F-9239-A783F8DDB3AB",
+                       onTurnEndStatusDefName);
+                   onDeathStatus.Visuals = Helper.CreateDefFromClone(
+                       source.Visuals,
+                       "34F6B557-B7DD-47A8-A8B3-9F945A156F18",
+                       onTurnEndStatusDefName);
+                   onDeathStatus.EffectName = "OnTurnEndTBTV";
+                   onDeathStatus.VisibleOnHealthbar = TacStatusDef.HealthBarVisibility.AlwaysVisible;
+                   onDeathStatus.VisibleOnPassiveBar = true;
+                   onDeathStatus.VisibleOnStatusScreen = TacStatusDef.StatusScreenVisibility.VisibleOnStatusesList;
+                   onDeathStatus.DamageTypeDefs = new DamageTypeBaseEffectDef[1];
+
+                   onDeathStatus.Visuals.DisplayName1.LocalizationKey = "KEY_AC_DEATHBELCH_NAME";
+                   onDeathStatus.Visuals.Description.LocalizationKey = "KEY_AC_DEATHBELCH_DESCRIPTION";
+                   onDeathStatus.Visuals.LargeIcon = DefCache.GetDef<AddAbilityStatusDef>("OilCrab_AddAbilityStatusDef").Visuals.LargeIcon;
+                   onDeathStatus.Visuals.SmallIcon = DefCache.GetDef<AddAbilityStatusDef>("OilCrab_AddAbilityStatusDef").ViewElementDef.SmallIcon;*/
+
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+
+        }
+
+
+        public static void CreateTouchedByTheVoidAbilities()
+        {
+            try
+            {
+
+                string hiddenAbilityName = "TBTV_Hidden_AbilityDef";
+                PassiveModifierAbilityDef source = DefCache.GetDef<PassiveModifierAbilityDef>("SelfDefenseSpecialist_AbilityDef");
+                PassiveModifierAbilityDef hiddenTBTVAbility = Helper.CreateDefFromClone(
+                    source,
+                    "08B0682C-AAA0-42EC-9F96-794B1D4D7C7C",
+                    hiddenAbilityName);
+                hiddenTBTVAbility.CharacterProgressionData = Helper.CreateDefFromClone(
+                    source.CharacterProgressionData,
+                    "83A0DB53-E4EE-4EFC-A344-856BEE621D27",
+                    hiddenAbilityName);
+                hiddenTBTVAbility.ViewElementDef = Helper.CreateDefFromClone(
+                    source.ViewElementDef,
+                    "215E4A23-AF21-415D-B8FD-DA90E916542E",
+                    hiddenAbilityName);
+                hiddenTBTVAbility.StatModifications = new ItemStatModification[0];
+                hiddenTBTVAbility.ItemTagStatModifications = new EquipmentItemTagStatModification[0];
+                hiddenTBTVAbility.ViewElementDef.DisplayName1.LocalizationKey = "TBTV_HIDDEN_ABILITY_NAME";
+                hiddenTBTVAbility.ViewElementDef.Description.LocalizationKey = "TBTV_HIDDEN_ABILITY_DESCRIPTION";
+                hiddenTBTVAbility.ViewElementDef.LargeIcon = VoidIcon;
+                hiddenTBTVAbility.ViewElementDef.SmallIcon = VoidIcon;
+
+                AddAbilityStatusDef sourceAbilityStatusDef = DefCache.GetDef<AddAbilityStatusDef>("OilCrab_AddAbilityStatusDef");
+
+                string statusHiddenAbilityTBTVName = "TBTV_Hidden_AddAbilityStatusDef";
+                AddAbilityStatusDef statusHiddenTBTVDef = Helper.CreateDefFromClone(sourceAbilityStatusDef, "23BD57AF-418A-49C7-B658-D05465248578", statusHiddenAbilityTBTVName);
+                statusHiddenTBTVDef.AbilityDef = hiddenTBTVAbility;
+                statusHiddenTBTVDef.ApplicationConditions = new EffectConditionDef[] { };
+
+
+
+
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+        }
+
+
 
         public static void CreateKillRevenantObjective() 
         {
@@ -611,6 +841,8 @@ namespace TFTV
                 AddAbilityStatusDef newAbilityStatusDef = Helper.CreateDefFromClone(sourceAbilityStatusDef, "68EE5958-D977-4BD4-9018-CAE03C5A6579", "Revenant_StatusEffectDef");
                 newAbilityStatusDef.AbilityDef = Revenant_Ability;
                 newAbilityStatusDef.ApplicationConditions = new EffectConditionDef[] { };
+  
+
             }
             catch (Exception e)
             {

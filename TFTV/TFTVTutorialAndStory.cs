@@ -153,6 +153,19 @@ namespace TFTV
                             alwaysDisplayedTacticalHintsDbDef.Hints.Remove(hintDef);
                         }
 
+                        else if (hintDef.name.Contains("VoidTouchedSighted"))
+                        {
+                            __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("Hint_TBTV.png");
+                            
+                        }
+                        else if (hintDef.name.Contains("VoidTouchedOnAttack"))
+                        {
+                            __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("Hint_TBTV_MfD.png");    
+                        }
+                        else if (hintDef.name.Contains("VoidTouchedOnTurnEnd"))
+                        {
+                            __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("Hint_TBTV_EoT.png");
+                        }
                         else
                         {
                             __instance.Image.overrideSprite = null;
@@ -182,12 +195,20 @@ namespace TFTV
                                 }
                                 else if (hintDef.Text.LocalizeEnglish().Contains("an array of the Pure"))
                                 {
-                                    __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("pu_squad.jpg");
+                                    if (!hintDef.Text.LocalizeEnglish().Contains("You are finally facing Subject 24"))
+                                    {
+                                        __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("pu_squad.jpg");
+                                    }
+                                    else 
+                                    {
+                                        __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("subject24_squad.png");
+                                    }
                                 }
                                 else if (hintDef.Text.LocalizeEnglish().Contains("a gang"))
                                 {
                                     __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("ban_squad.png");
                                 }
+                                
                                 tacticsHintWasShown = true;
                                 alwaysDisplayedTacticalHintsDbDef.Hints.Remove(hintDef);
                             }
@@ -238,8 +259,6 @@ namespace TFTV
             {
                 string gUID = Guid.NewGuid().ToString();
 
-
-
                 ActorHasTagHintConditionDef newActorHasTemplateHintConditionDef = Helper.CreateDefFromClone(sourceActorHasTagHintConditionDef, gUID, "ActorHasTag_" + name + "_HintConditionDef");
                 GameTagDef gameTagDef = Repo.GetAllDefs<GameTagDef>().FirstOrDefault(ged => ged.name.Equals(name));
                 newActorHasTemplateHintConditionDef.GameTagDef = gameTagDef;
@@ -260,8 +279,6 @@ namespace TFTV
 
             {
                 string gUID = Guid.NewGuid().ToString();
-
-
 
                 ActorHasStatusHintConditionDef newActorHasStatusHintConditionDef = Helper.CreateDefFromClone(sourceActorHasStatusHintConditionDef, gUID, "ActorHasStatus_" + name + "_HintConditionDef");
                 StatusDef statusDef = Repo.GetAllDefs<StatusDef>().FirstOrDefault(ged => ged.name.Equals(name));

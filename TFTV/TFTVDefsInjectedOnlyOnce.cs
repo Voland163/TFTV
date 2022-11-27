@@ -1,13 +1,21 @@
-﻿using Base.Core;
-using Base.Defs;
+﻿using Base.Defs;
+using Base.Entities.Abilities;
 using Base.Entities.Effects;
 using Base.Entities.Effects.ApplicationConditions;
-using Base.Levels.Nav.Tiled;
+using Base.Entities.Statuses;
+using Base.Utils;
+using Epic.OnlineServices.Achievements;
+using Epic.OnlineServices.Sessions;
+using Mono.Cecil;
 using PhoenixPoint.Common.ContextHelp;
 using PhoenixPoint.Common.ContextHelp.HintConditions;
 using PhoenixPoint.Common.Core;
+using PhoenixPoint.Common.Entities.Characters;
+using PhoenixPoint.Common.Entities.Characters.CharacterTemplates;
 using PhoenixPoint.Common.Entities.GameTags;
+using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.Entities.Items;
+using PhoenixPoint.Common.Levels.ActorDeployment;
 using PhoenixPoint.Common.Levels.Missions;
 using PhoenixPoint.Common.UI;
 using PhoenixPoint.Geoscape.Entities;
@@ -24,17 +32,17 @@ using PhoenixPoint.Geoscape.Levels.ContextHelp.HintConditions;
 using PhoenixPoint.Tactical.ContextHelp.HintConditions;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
+using PhoenixPoint.Tactical.Entities.DamageKeywords;
+using PhoenixPoint.Tactical.Entities.Effects;
+using PhoenixPoint.Tactical.Entities.Effects.DamageTypes;
 using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.Entities.Statuses;
+using PhoenixPoint.Tactical.Entities.Weapons;
 using PhoenixPoint.Tactical.Levels.FactionObjectives;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using PhoenixPoint.Common.Entities.Characters;
-using Base.Entities.Abilities;
-using PhoenixPoint.Tactical.Levels;
-using PhoenixPoint.Common.Entities.GameTagsTypes;
 
 namespace TFTV
 {
@@ -64,20 +72,21 @@ namespace TFTV
             RemoveCorruptionDamageBuff();
             TFTVChangesToDLC1andDLC2Events.ChangesToDLC1andDLC2Defs();
             TFTVChangesToDLC3Events.ChangesToDLC3Defs();
-          //  TFTVChangesToDLC3Events.ModifyMaskedManticoreResearch();
+            //  TFTVChangesToDLC3Events.ModifyMaskedManticoreResearch();
             TFTVChangesToDLC4Events.ChangesToDLC4Defs();
             TFTVChangesToDLC5Events.ChangesToDLC5Defs();
-            ChangesToAcherons();
+            ChangesAcheronResearches();
             RemoveCensusResearch();
             AllowMedkitsToTargetMutoids();
-         //Commented out for update #7
+            //Commented out for update #7
             //   ChangesToLOTA2();
-
+            CreateSubject24();
+           
         }
 
         public static void ChangesToLOTA2()
         {
-            try 
+            try
             {
 
                 ChangeAntartica();
@@ -90,6 +99,81 @@ namespace TFTV
             }
         }
 
+      /*  public static void NewEnemy()
+        {
+            try 
+            {
+                string className = "Stitch";
+                ClassTagDef source = DefCache.GetDef<ClassTagDef>("Swarmer_ClassTagDef");
+                ClassTagDef newClass = Helper.CreateDefFromClone(source, "05DDAF88-0757-458D-AB5C-0A8E0B5025F3", className);
+
+                TacCharacterDef sourceTacCharacterDef = DefCache.GetDef<TacCharacterDef>("Swarmer_TacCharacterDef");
+                TacCharacterDef newTacCharacter = Helper.CreateDefFromClone(sourceTacCharacterDef, "C3BDED7B-1C4E-4DAA-8418-7A35DF601875", className);
+
+               // CustomizationPrimaryColorTagDef blackColor = DefCache.GetDef<CustomizationPrimaryColorTagDef>("CustomizationColorTagDef_9");
+                List<GameTagDef> gameTags = newTacCharacter.Data.GameTags.ToList();
+                gameTags.Remove(source);
+               // gameTags.Add(blackColor);
+                gameTags.Add(newClass);
+
+                newTacCharacter.Data.Name = "Stitch";
+
+                newTacCharacter.SpawnCommandId = "StitchTFTV";
+                newTacCharacter.Data.GameTags = gameTags.ToArray();
+
+                CustomMissionTypeDef testMission = DefCache.GetDef<CustomMissionTypeDef>("StoryPX14_CustomMissionTypeDef");
+                List<MissionDeployParams> list =  testMission.ParticipantsData[1].ActorDeployParams.ToList();
+
+                MissionDeployParams newMissionDeployParams = new MissionDeployParams() { Limit = new ActorDeployLimit { ActorTag = newClass, ActorLimit = new Base.Utils.RangeDataInt { Max = 3, Min = 0 } }, };
+                
+                list.Add(newMissionDeployParams);
+                testMission.ParticipantsData[1].ActorDeployParams = list;
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+        }*/
+
+        public static void CreateSubject24()
+        {
+            try
+            {
+                string nameDef = "Subject24_TacCharacerDef";
+
+                TacCharacterDef subject24 = Helper.CreateDefFromClone(DefCache.GetDef<TacCharacterDef>("NJ_Jugg_TacCharacterDef"), "A4F0335E-BF41-4175-8C28-7B0DE5352224", nameDef);
+                subject24.Data.Name = "Subject 24";
+
+                // CustomizationColorTagDef_10 green
+                // CustomizationColorTagDef_14 pink
+                // CustomizationColorTagDef_0 grey
+                // CustomizationColorTagDef_7 red
+
+                CustomizationPrimaryColorTagDef blackColor = DefCache.GetDef<CustomizationPrimaryColorTagDef>("CustomizationColorTagDef_9");
+                List<GameTagDef> gameTags = subject24.Data.GameTags.ToList();
+                gameTags.Add(blackColor);
+                subject24.SpawnCommandId = "Subject24TFTV";
+                subject24.Data.GameTags = gameTags.ToArray();
+
+                List<TacMissionTypeParticipantData.UniqueChatarcterBind> tacCharacterDefs = DefCache.GetDef<CustomMissionTypeDef>("StoryPU14_CustomMissionTypeDef").ParticipantsData[1].UniqueUnits.ToList();
+                TacMissionTypeParticipantData.UniqueChatarcterBind uniqueChatarcterBind = new TacMissionTypeParticipantData.UniqueChatarcterBind
+                {
+                    Character = subject24,
+                    Amount = new Base.Utils.RangeDataInt { Max = 1, Min = 1 },
+                };
+                tacCharacterDefs.Add(uniqueChatarcterBind);
+                DefCache.GetDef<CustomMissionTypeDef>("StoryPU14_CustomMissionTypeDef").ParticipantsData[1].UniqueUnits = tacCharacterDefs.ToArray();
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+        }
+
 
         public static void ChangeAntartica()
         {
@@ -100,7 +184,7 @@ namespace TFTV
                 CustomMissionTypeDef OrichalcumMission = DefCache.GetDef<CustomMissionTypeDef>("OrichalcumHarvestAttack_Ancient_CustomMissionTypeDef");
 
                 antarticaMission.ParticipantsData = OrichalcumMission.ParticipantsData;
-                antarticaMission.ParticipantsData[0].ParticipantKind=TacMissionParticipant.Intruder;
+                antarticaMission.ParticipantsData[0].ParticipantKind = TacMissionParticipant.Intruder;
                 antarticaMission.ParticipantsRelations[0].SecondParticipant = TacMissionParticipant.Intruder;
                 List<TacMissionTypeParticipantData.UniqueChatarcterBind> uniqueChatarcterBinds = antarticaMission.ParticipantsData[0].UniqueUnits.ToList();
                 uniqueChatarcterBinds.Add(DefCache.GetDef<CustomMissionTypeDef>("CrystalsHarvestAttack_Ancient_CustomMissionTypeDef").ParticipantsData[0].UniqueUnits[0]);
@@ -122,10 +206,10 @@ namespace TFTV
                 archeologySettingsDef.ArcheologyFacilityHarvestingPower = 0;
                 archeologySettingsDef.ArcheologyPassiveOutput = 0;
 
-                DefCache.GetDef<ResourceMissionOutcomeDef>("AncientsHarvestCrystalMissionOutcomeDef").Resources.Values.Add(new ResourceUnit { Type = ResourceType.LivingCrystals, Value = 249 });
-                DefCache.GetDef<ResourceMissionOutcomeDef>("AncientsHarvestOrichalcumMissionOutcomeDef").Resources.Values.Add(new ResourceUnit { Type = ResourceType.Orichalcum, Value = 174 });
-                DefCache.GetDef<ResourceMissionOutcomeDef>("AncientsHarvestProteanMissionOutcomeDef").Resources.Values.Add(new ResourceUnit { Type = ResourceType.ProteanMutane, Value = 174 });
-             
+                DefCache.GetDef<ResourceMissionOutcomeDef>("AncientsHarvestCrystalMissionOutcomeDef").Resources.Values.Add(new ResourceUnit { Type = PhoenixPoint.Common.Core.ResourceType.LivingCrystals, Value = 249 });
+                DefCache.GetDef<ResourceMissionOutcomeDef>("AncientsHarvestOrichalcumMissionOutcomeDef").Resources.Values.Add(new ResourceUnit { Type = PhoenixPoint.Common.Core.ResourceType.Orichalcum, Value = 174 });
+                DefCache.GetDef<ResourceMissionOutcomeDef>("AncientsHarvestProteanMissionOutcomeDef").Resources.Values.Add(new ResourceUnit { Type = PhoenixPoint.Common.Core.ResourceType.ProteanMutane, Value = 174 });
+
             }
             catch (Exception e)
             {
@@ -139,7 +223,7 @@ namespace TFTV
             {
                 //Allow medkits to target Mutoids
                 DefCache.GetDef<TacticalTargetingDataDef>("E_TargetingData [Medkit_AbilityDef]").Origin.CullTargetTags.Clear();
-               
+
                 //Make Cure Spray/Cure Cloud remove acid
                 string abilityName = "AcidStatusRemover";
                 StatusRemoverEffectDef sourceStatusRemoverEffect = DefCache.GetDef<StatusRemoverEffectDef>("StrainedRemover_EffectDef");
@@ -147,7 +231,7 @@ namespace TFTV
                 newAcidStatusRemoverEffect.StatusToRemove = "Acid";
                 List<EffectDef> effectDefsList = DefCache.GetDef<MultiEffectDef>("Cure_MultiEffectDef").EffectDefs.ToList();
                 effectDefsList.Add(newAcidStatusRemoverEffect);
-                DefCache.GetDef<MultiEffectDef>("Cure_MultiEffectDef").EffectDefs=effectDefsList.ToArray();
+                DefCache.GetDef<MultiEffectDef>("Cure_MultiEffectDef").EffectDefs = effectDefsList.ToArray();
 
                 //Skill toss per Belial's suggestions
 
@@ -155,10 +239,10 @@ namespace TFTV
                 AbilityCharacterProgressionDef sourceFirstLevel = DefCache.GetDef<AbilityCharacterProgressionDef>("E_CharacterProgressionData [GooImmunity_AbilityDef]");
 
 
-                DefCache.GetDef<AbilityCharacterProgressionDef>("E_CharacterProgressionData [VirusResistant_DamageMultiplierAbilityDef]").MutagenCost=10;
+                DefCache.GetDef<AbilityCharacterProgressionDef>("E_CharacterProgressionData [VirusResistant_DamageMultiplierAbilityDef]").MutagenCost = 10;
                 AbilityCharacterProgressionDef demolitionStanceCPD =
                     Helper.CreateDefFromClone(sourceFirstLevel, "F4DA4D75-8FCE-4414-BB88-7A065A45105C", "E_CharacterProgressionData [Demolition_AbilityDef]");
-              
+
 
 
                 AbilityCharacterProgressionDef mindControlImmunityCPD = DefCache.GetDef<AbilityCharacterProgressionDef>("E_CharacterProgressionData [MindControlImmunity_AbilityDef]");
@@ -167,13 +251,13 @@ namespace TFTV
                 mindControlImmunityCPD.RequiredSpeed = 0;
                 mindControlImmunityCPD.RequiredStrength = 0;
                 mindControlImmunityCPD.RequiredWill = 0;
-               
+
                 AbilityCharacterProgressionDef poisonImmunityCPD = Helper.CreateDefFromClone(sourceFirstLevel, "67418B3A-C666-41CE-B504-853C6C705284", "E_CharacterProgressionData [PoisonImmunity_AbilityDef]");
                 poisonImmunityCPD.MutagenCost = 20;
                 DamageMultiplierAbilityDef poisonImmunity = DefCache.GetDef<DamageMultiplierAbilityDef>("PoisonImmunity_DamageMultiplierAbilityDef");
                 poisonImmunity.CharacterProgressionData = poisonImmunityCPD;
 
-          
+
                 AbilityCharacterProgressionDef acidResistanceCPD = Helper.CreateDefFromClone(sourceFirstLevel, "03367F73-97B9-4E65-919B-D31DF147EAA0", "E_CharacterProgressionData [AcidResistance_AbilityDef]");
                 acidResistanceCPD.MutagenCost = 25;
                 DamageMultiplierAbilityDef acidResistance = DefCache.GetDef<DamageMultiplierAbilityDef>("AcidResistant_DamageMultiplierAbilityDef");
@@ -183,39 +267,39 @@ namespace TFTV
                 leapCPD.MutagenCost = 30;
 
                 JetJumpAbilityDef leap = DefCache.GetDef<JetJumpAbilityDef>("Exo_Leap_AbilityDef");
-                leap.CharacterProgressionData=leapCPD;
-
-             
+                leap.CharacterProgressionData = leapCPD;
 
 
-                ApplyStatusAbilityDef demolitionAbility =  DefCache.GetDef<ApplyStatusAbilityDef>("DemolitionMan_AbilityDef");
+
+
+                ApplyStatusAbilityDef demolitionAbility = DefCache.GetDef<ApplyStatusAbilityDef>("DemolitionMan_AbilityDef");
                 demolitionAbility.CharacterProgressionData = demolitionStanceCPD;
 
-              
+
 
                 AbilityTrackDef arthronAbilityTrack = DefCache.GetDef<AbilityTrackDef>("E_AbilityTrack [ArthronSpecializationDef]");
-            //    AbilityTrackDef tritonAbilityTrack = DefCache.GetDef<AbilityTrackDef>("E_AbilityTrack [TritonSpecializationDef]");
+                //    AbilityTrackDef tritonAbilityTrack = DefCache.GetDef<AbilityTrackDef>("E_AbilityTrack [TritonSpecializationDef]");
                 AbilityTrackDef sirenAbilityTrack = DefCache.GetDef<AbilityTrackDef>("E_AbilityTrack [SirenSpecializationDef]");
                 AbilityTrackDef scyllaAbilityTrack = DefCache.GetDef<AbilityTrackDef>("E_AbilityTrack [ScyllaSpecializationDef]");
                 AbilityTrackDef acheronAbilityTrack = DefCache.GetDef<AbilityTrackDef>("E_AbilityTrack [AcheronSpecializationDef]");
 
-              
+
 
                 arthronAbilityTrack.AbilitiesByLevel[0].Ability = DefCache.GetDef<DamageMultiplierAbilityDef>("VirusResistant_DamageMultiplierAbilityDef");
                 arthronAbilityTrack.AbilitiesByLevel[2].Ability = poisonImmunity;
                 arthronAbilityTrack.AbilitiesByLevel[4].Ability = DefCache.GetDef<ApplyEffectAbilityDef>("MistBreather_AbilityDef");
 
                 //Reduce cost of Mutoid Syphon attack to 1AP
-                DefCache.GetDef<BashAbilityDef>("Mutoid_Syphon_Strike_AbilityDef").ActionPointCost=0.25f;
+                DefCache.GetDef<BashAbilityDef>("Mutoid_Syphon_Strike_AbilityDef").ActionPointCost = 0.25f;
 
-      
+
                 scyllaAbilityTrack.AbilitiesByLevel[0].Ability = demolitionAbility;
                 scyllaAbilityTrack.AbilitiesByLevel[4].Ability = leap;
 
                 sirenAbilityTrack.AbilitiesByLevel[3].Ability = acidResistance;
 
                 acheronAbilityTrack.AbilitiesByLevel[1].Ability = DefCache.GetDef<ApplyStatusAbilityDef>("MindControlImmunity_AbilityDef");
-         
+
             }
 
 
@@ -226,13 +310,13 @@ namespace TFTV
         }
 
 
-        
+
 
         public static void RemoveCensusResearch()
         {
             try
             {
-                DefCache.GetDef<ResearchDbDef>("pp_ResearchDB").Researches.Remove(DefCache.GetDef<ResearchDef>("PX_SDI_ResearchDef"));             
+                DefCache.GetDef<ResearchDbDef>("pp_ResearchDB").Researches.Remove(DefCache.GetDef<ResearchDef>("PX_SDI_ResearchDef"));
             }
             catch (Exception e)
             {
@@ -242,13 +326,15 @@ namespace TFTV
         public static void CreateHints()
         {
             try
-            {            
+            {
                 TFTVTutorialAndStory.CreateNewTacticalHint("UmbraSighted", HintTrigger.ActorSeen, "Oilcrab_TacCharacterDef", "UMBRA_SIGHTED_TITLE", "UMBRA_SIGHTED_TEXT", 0, true, "C63F5953-9D29-4245-8FCD-1B8B875C007D");
                 TFTVTutorialAndStory.CreateNewTacticalHint("UmbraSightedTriton", HintTrigger.ActorSeen, "Oilfish_TacCharacterDef", "UMBRA_SIGHTED_TITLE", "UMBRA_SIGHTED_TEXT", 0, true, "7F85AF7F-D7F0-41F3-B6EF-839509FCCF00");
-                TFTVTutorialAndStory.CreateNewTacticalHint("RevenantSighted", HintTrigger.ActorSeen, "Any_Revenant_TagDef", "REVENANT_SIGHTED_TITLE", "REVENANT_SIGHTED_TEXT", 1, true, "194317EC-67DF-4775-BAFD-98499F82C2D7");              
+                TFTVTutorialAndStory.CreateNewTacticalHint("RevenantSighted", HintTrigger.ActorSeen, "Any_Revenant_TagDef", "REVENANT_SIGHTED_TITLE", "REVENANT_SIGHTED_TEXT", 1, true, "194317EC-67DF-4775-BAFD-98499F82C2D7");
+
+
                 TFTVTutorialAndStory.CreateNewTacticalHintInfestationMission("InfestationMissionIntro", "BBC5CAD0-42FF-4BBB-8E13-7611DC5695A6", "1ED63949-4375-4A9D-A017-07CF483F05D5", "2A01E924-A26B-44FB-AD67-B1B590B4E1D5");
                 TFTVTutorialAndStory.CreateNewTacticalHintInfestationMission("InfestationMissionIntro2", "164A4170-F7DC-4350-90C0-D5C1A0284E0D", "CA236EF2-6E6B-4CE4-89E9-17157930F91A", "422A7D39-0110-4F5B-98BB-66B1B5F616DD");
-               
+
                 HasSeenHintHintConditionDef seenOilCrabConditionDef = DefCache.GetDef<HasSeenHintHintConditionDef>("UmbraSightedHasSeenHintConditionDef");
                 HasSeenHintHintConditionDef seenFishCrabConditionDef = DefCache.GetDef<HasSeenHintHintConditionDef>("UmbraSightedTritonHasSeenHintConditionDef");
                 ContextHelpHintDef oilCrabHint = DefCache.GetDef<ContextHelpHintDef>("UmbraSighted");
@@ -259,7 +345,7 @@ namespace TFTV
                 TFTVTutorialAndStory.CreateNewTacticalHintInfestationMissionEnd("InfestationMissionEnd");
                 CreateStaminaHint();
                 CreateUIDeliriumHint();
-                
+
 
 
                 //  CreateNewTacticalHint("LeaderSighted", HintTrigger.ActorSeen, "HumanEnemy_GameTagDef", "Should not appear", "Should not appear", 1, false);
@@ -278,10 +364,11 @@ namespace TFTV
             }
         }
 
-        public static void ChangesToAcherons()
+        public static void ChangesAcheronResearches()
         {
-            try 
+            try
             {
+                CreateAcheronAbilitiesAndStatus();
                 //Researches
                 ResearchDef acheronResearch1 = DefCache.GetDef<ResearchDef>("ALN_Acheron1_ResearchDef");
                 ResearchDef acheronResearch2 = DefCache.GetDef<ResearchDef>("ALN_Acheron2_ResearchDef");
@@ -290,14 +377,8 @@ namespace TFTV
                 ResearchDef acheronResearch5 = DefCache.GetDef<ResearchDef>("ALN_Acheron5_ResearchDef");
                 ResearchDef acheronResearch6 = DefCache.GetDef<ResearchDef>("ALN_Acheron6_ResearchDef");
 
-                TacCharacterDef acheron1 = DefCache.GetDef<TacCharacterDef>("Acheron_TacCharacterDef");
-                TacCharacterDef acheron2 = DefCache.GetDef<TacCharacterDef>("AcheronPrime_TacCharacterDef");
-                TacCharacterDef acheron3 = DefCache.GetDef<TacCharacterDef>("AcheronAsclepius_TacCharacterDef");
-                TacCharacterDef acheron4 = DefCache.GetDef<TacCharacterDef>("AcheronAsclepiusChampion_TacCharacterDef");
-                TacCharacterDef acheron5 = DefCache.GetDef<TacCharacterDef>("AcheronAchlys_TacCharacterDef");
-                TacCharacterDef acheron6 = DefCache.GetDef<TacCharacterDef>("AcheronAchlysChampion_TacCharacterDef");
-
-
+                
+                
                 ExistingResearchRequirementDef acheronResearchReq2 = DefCache.GetDef<ExistingResearchRequirementDef>("ALN_Acheron2_ResearchDef_ExistingResearchRequirementDef_0");
                 ExistingResearchRequirementDef acheronResearchReq3 = DefCache.GetDef<ExistingResearchRequirementDef>("ALN_Acheron3_ResearchDef_ExistingResearchRequirementDef_0");
                 ExistingResearchRequirementDef acheronResearchReq4 = DefCache.GetDef<ExistingResearchRequirementDef>("ALN_Acheron4_ResearchDef_ExistingResearchRequirementDef_0");
@@ -313,12 +394,247 @@ namespace TFTV
                 acheronResearchReq4.ResearchID = "ALN_Chiron9_ResearchDef";
                 acheronResearchReq6.ResearchID = "ALN_Chiron9_ResearchDef";
 
-                acheron1.DeploymentCost = 180;
-                acheron2.DeploymentCost = 240;
-                acheron3.DeploymentCost = 310;
-                acheron5.DeploymentCost = 310;
-                acheron4.DeploymentCost = 350;
-                acheron6.DeploymentCost = 350;
+                ChangesAcheronTemplates();
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+
+        }
+
+        public static void CreateAcheronAbilitiesAndStatus()
+        {
+            try 
+            {
+                //Create Acheron Harbinger ability, to be used as a flag/counter when calculating chances of getting Void Touched
+                string acheronHarbingerAbilityName = "Acheron_Harbinger_AbilityDef";
+                PassiveModifierAbilityDef source = DefCache.GetDef<PassiveModifierAbilityDef>("SelfDefenseSpecialist_AbilityDef");
+                PassiveModifierAbilityDef acheronHarbingerAbility = Helper.CreateDefFromClone(
+                    source,
+                    "3ABB6347-5ABA-4B4D-B786-C962B7A0540C",
+                    acheronHarbingerAbilityName);
+                acheronHarbingerAbility.CharacterProgressionData = Helper.CreateDefFromClone(
+                    source.CharacterProgressionData,
+                    "336671D9-281F-4985-8F7A-8EF424EF1FB8",
+                    acheronHarbingerAbilityName);
+                acheronHarbingerAbility.ViewElementDef = Helper.CreateDefFromClone(
+                    source.ViewElementDef,
+                    "FB0B38FC-CDB7-4EDF-9E39-89111528A84B",
+                    acheronHarbingerAbilityName);
+                acheronHarbingerAbility.StatModifications = new ItemStatModification[0];
+                acheronHarbingerAbility.ItemTagStatModifications = new EquipmentItemTagStatModification[0];
+                acheronHarbingerAbility.ViewElementDef.DisplayName1.LocalizationKey = "ACHERON_HARBINGER_NAME";
+                acheronHarbingerAbility.ViewElementDef.Description.LocalizationKey = "ACHERON_HARBINGER_DESCRIPTION";
+                acheronHarbingerAbility.ViewElementDef.LargeIcon = TFTVDefsRequiringReinjection.VoidIcon;
+                acheronHarbingerAbility.ViewElementDef.SmallIcon = TFTVDefsRequiringReinjection.VoidIcon;
+
+                //Creating Tributary to the Void, to spread TBTV on nearby allies
+                string acheronTributaryAbilityName = "Acheron_Tributary_AbilityDef";
+                PassiveModifierAbilityDef acheronTributaryAbility = Helper.CreateDefFromClone(
+                    source,
+                    "2CDB184A-4E8D-4E9A-B957-983A1FD23313",
+                    acheronTributaryAbilityName);
+                acheronTributaryAbility.CharacterProgressionData = Helper.CreateDefFromClone(
+                    source.CharacterProgressionData,
+                    "0770EB67-52CD-4E17-9A3B-CB6C91E86BC5",
+                    acheronTributaryAbilityName);
+                acheronTributaryAbility.ViewElementDef = Helper.CreateDefFromClone(
+                    source.ViewElementDef,
+                    "A82EFDD3-8ED7-46C8-8B52-D8051910419D",
+                    acheronTributaryAbilityName);
+                acheronTributaryAbility.StatModifications = new ItemStatModification[0];
+                acheronTributaryAbility.ItemTagStatModifications = new EquipmentItemTagStatModification[0];
+                acheronTributaryAbility.ViewElementDef.DisplayName1.LocalizationKey = "ACHERON_TRIBUTARY_NAME";
+                acheronTributaryAbility.ViewElementDef.Description.LocalizationKey = "ACHERON_TRIBUTARY_DESCRIPTION";
+                acheronTributaryAbility.ViewElementDef.LargeIcon = TFTVDefsRequiringReinjection.VoidIcon;
+                acheronTributaryAbility.ViewElementDef.SmallIcon = TFTVDefsRequiringReinjection.VoidIcon;
+
+
+
+                //Creating special status that will allow Umbra to target the character
+                string umbraTargetStatusDefName = "TBTV_Target";
+                DamageMultiplierStatusDef sourceForTargetAbility = DefCache.GetDef<DamageMultiplierStatusDef>("BionicResistances_StatusDef");
+
+                DamageMultiplierStatusDef umbraTargetStatus = Helper.CreateDefFromClone(
+                   sourceForTargetAbility,
+                   "0C4558E8-2791-4669-8F5B-2DA1D20B2ADD",
+                   umbraTargetStatusDefName);
+
+                umbraTargetStatus.EffectName = "UmbraTarget";
+                umbraTargetStatus.Visuals = Helper.CreateDefFromClone(
+                    sourceForTargetAbility.Visuals,
+                    "49A5DC8D-50B9-4CCC-A3D4-7576A1DDD375",
+                    umbraTargetStatus.EffectName);
+                umbraTargetStatus.VisibleOnHealthbar = TacStatusDef.HealthBarVisibility.AlwaysVisible;
+                umbraTargetStatus.VisibleOnPassiveBar = true;
+                umbraTargetStatus.VisibleOnStatusScreen = TacStatusDef.StatusScreenVisibility.VisibleOnStatusesList;
+                umbraTargetStatus.Visuals.DisplayName1.LocalizationKey = "VOID_BLIGHT_NAME";
+                umbraTargetStatus.Visuals.Description.LocalizationKey = "VOID_BLIGHT_DESCRIPTION";
+                umbraTargetStatus.Visuals.LargeIcon = DefCache.GetDef<DeathBelcherAbilityDef>("Oilcrab_Die_DeathBelcher_AbilityDef").ViewElementDef.LargeIcon;
+                umbraTargetStatus.Visuals.SmallIcon = DefCache.GetDef<DeathBelcherAbilityDef>("Oilcrab_Die_DeathBelcher_AbilityDef").ViewElementDef.SmallIcon;
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+        }
+
+
+        
+
+
+        public static void ChangesAcheronTemplates()
+        {
+            try
+            {
+                TacCharacterDef acheron = DefCache.GetDef<TacCharacterDef>("Acheron_TacCharacterDef");
+                TacCharacterDef acheronPrime = DefCache.GetDef<TacCharacterDef>("AcheronPrime_TacCharacterDef");
+                TacCharacterDef acheronAsclepius = DefCache.GetDef<TacCharacterDef>("AcheronAsclepius_TacCharacterDef");
+                TacCharacterDef acheronAsclepiusChampion = DefCache.GetDef<TacCharacterDef>("AcheronAsclepiusChampion_TacCharacterDef");
+                TacCharacterDef acheronAchlys = DefCache.GetDef<TacCharacterDef>("AcheronAchlys_TacCharacterDef");
+                TacCharacterDef acheronAchlysChampion = DefCache.GetDef<TacCharacterDef>("AcheronAchlysChampion_TacCharacterDef");
+
+                acheron.DeploymentCost = 180;
+                acheronPrime.DeploymentCost = 240;
+                acheronAsclepius.DeploymentCost = 310;
+                acheronAchlys.DeploymentCost = 310;
+                acheronAsclepiusChampion.DeploymentCost = 350;
+                acheronAchlysChampion.DeploymentCost = 350;
+
+                //Adding Harbinger of the Void to Acheron, Acheron Prime and Acheron Asclepius Champion
+                //Adding Co-Delirium To Acheron Prime
+                PassiveModifierAbilityDef harbinger = DefCache.GetDef<PassiveModifierAbilityDef>("Acheron_Harbinger_AbilityDef");
+                PassiveModifierAbilityDef tributary = DefCache.GetDef<PassiveModifierAbilityDef>("Acheron_Tributary_AbilityDef");           
+                ApplyStatusAbilityDef coDeliriumAbility = DefCache.GetDef<ApplyStatusAbilityDef>("Acheron_CoCorruption_AbilityDef");
+
+                List<TacticalAbilityDef> acheronBasicAbilities = acheron.Data.Abilites.ToList();
+                acheronBasicAbilities.Add(harbinger);
+                acheron.Data.Abilites = acheronBasicAbilities.ToArray();
+               
+                List<TacticalAbilityDef> acheronPrimeBasicAbilities = acheronPrime.Data.Abilites.ToList();
+                acheronPrimeBasicAbilities.Add(harbinger);
+                acheronPrimeBasicAbilities.Add(coDeliriumAbility);
+                acheronPrime.Data.Abilites = acheronPrimeBasicAbilities.ToArray();
+                
+                List<TacticalAbilityDef> acheronAsclepiusChampionBasicAbilities = acheronAsclepiusChampion.Data.Abilites.ToList();
+                acheronAsclepiusChampionBasicAbilities.Add(harbinger);
+                acheronAsclepiusChampion.Data.Abilites = acheronAsclepiusChampionBasicAbilities.ToArray();
+
+                List<TacticalAbilityDef> acheronAchlysChampionBasicAbilities = acheronAchlysChampion.Data.Abilites.ToList();
+                acheronAchlysChampionBasicAbilities.Add(tributary);
+                acheronAchlysChampion.Data.Abilites = acheronAchlysChampionBasicAbilities.ToArray();
+
+                //Removes leap from all Acherons
+                /*
+                DefCache.GetDef<TacticalItemDef>("Acheron_RearRightLeg_BodyPartDef").Abilities = new AbilityDef[] { };
+                DefCache.GetDef<TacticalItemDef>("AcheronAchlys_RearRightLeg_BodyPartDef").Abilities = new AbilityDef[] { };
+                DefCache.GetDef<TacticalItemDef>("AcheronAchlysChampion_RearRightLeg_BodyPartDef").Abilities = new AbilityDef[] { };
+                DefCache.GetDef<TacticalItemDef>("AcheronAsclepius_RearRightLeg_BodyPartDef").Abilities = new AbilityDef[] { };
+                DefCache.GetDef<TacticalItemDef>("AcheronAsclepiusChampion_RearRightLeg_BodyPartDef").Abilities = new AbilityDef[] { };
+                DefCache.GetDef<TacticalItemDef>("AcheronPrime_RearRightLeg_BodyPartDef").Abilities = new AbilityDef[] { };*/
+
+                //Removing reinforcements from Acheron, Acheron Prime, Acheron Achlys and Acheron Achlys Champion
+                DefCache.GetDef<TacticalItemDef>("Acheron_Head_BodyPartDef").Abilities = new AbilityDef[] { };
+                DefCache.GetDef<TacticalItemDef>("AcheronPrime_Head_BodyPartDef").Abilities = new AbilityDef[] { };
+                DefCache.GetDef<TacticalItemDef>("AcheronAchlys_Head_BodyPartDef").Abilities = new AbilityDef[] { };
+                DefCache.GetDef<TacticalItemDef>("AcheronAchlysChampion_Head_BodyPartDef").Abilities = new AbilityDef[] { };
+              
+                //Limiting Delirium cloud to one use per turn
+                ApplyDamageEffectAbilityDef deliriumCloud= DefCache.GetDef<ApplyDamageEffectAbilityDef>("Acheron_CorruptionCloud_AbilityDef");
+                ApplyStatusAbilityDef pepperCloud= DefCache.GetDef<ApplyStatusAbilityDef>("Acheron_PepperCloud_ApplyStatusAbilityDef");
+                deliriumCloud.UsesPerTurn=1;
+                ApplyEffectAbilityDef confusionCloud = DefCache.GetDef<ApplyEffectAbilityDef>("Acheron_ParalyticCloud_AbilityDef");
+                ResurrectAbilityDef resurrectAbility= DefCache.GetDef<ResurrectAbilityDef>("Acheron_ResurrectAbilityDef");
+
+                //Adding Delirium Cloud ability to Acheron Prime
+                DefCache.GetDef<TacticalItemDef>("AcheronPrime_Husk_BodyPartDef").Abilities = new AbilityDef[] {deliriumCloud, pepperCloud };
+              
+                ApplyDamageEffectAbilityDef corrosiveCloud = DefCache.GetDef<ApplyDamageEffectAbilityDef>("Acheron_CorrosiveCloud_AbilityDef");
+
+                //Removes CorrosiveCloud from AchlysChampion
+                TacticalItemDef achlysChampionHusk = DefCache.GetDef<TacticalItemDef>("AcheronAchlysChampion_Husk_BodyPartDef");
+                List<AbilityDef> achlysChampionHuskAbilities = achlysChampionHusk.Abilities.ToList();
+                achlysChampionHuskAbilities.Remove(corrosiveCloud);
+                achlysChampionHusk.Abilities = achlysChampionHuskAbilities.ToArray();
+
+                //Remove Confusion cloud from Acheron Achlys
+                TacticalItemDef achlysHusk = DefCache.GetDef<TacticalItemDef>("AcheronAchlys_Husk_BodyPartDef");
+                List<AbilityDef> achlysHuskAbilities = achlysChampionHusk.Abilities.ToList();
+                achlysHuskAbilities.Remove(confusionCloud);
+                achlysChampionHusk.Abilities = achlysHuskAbilities.ToArray();
+
+                //Adjust Acheron leap so it can only be used once per turn and doesn't cost any AP
+                JetJumpAbilityDef acheronLeap = DefCache.GetDef<JetJumpAbilityDef>("Acheron_Leap_AbilityDef");
+                acheronLeap.UsesPerTurn = 1;
+                acheronLeap.ActionPointCost = 0;
+
+                //Removing Resurrect and Delirium Clouds from Asclepius Husks
+
+                TacticalItemDef asclepiusChampionHusk = DefCache.GetDef<TacticalItemDef>("AcheronAsclepiusChampion_Husk_BodyPartDef");
+                List<AbilityDef> asclepiusChampionHuskAbilities = asclepiusChampionHusk.Abilities.ToList();
+                asclepiusChampionHuskAbilities.Remove(resurrectAbility);
+                asclepiusChampionHuskAbilities.Remove(deliriumCloud);
+                asclepiusChampionHusk.Abilities = asclepiusChampionHuskAbilities.ToArray();
+
+        
+                TacticalItemDef asclepiusHusk = DefCache.GetDef<TacticalItemDef>("AcheronAsclepius_Husk_BodyPartDef");
+                List<AbilityDef> asclepiusHuskAbilities = asclepiusHusk.Abilities.ToList();
+                asclepiusHuskAbilities.Remove(resurrectAbility);
+                asclepiusHuskAbilities.Remove(deliriumCloud);
+                asclepiusHusk.Abilities = asclepiusHuskAbilities.ToArray();
+
+
+                DamageKeywordDef poison = DefCache.GetDef<DamageKeywordDef>("Poisonous_DamageKeywordDataDef");
+                DamageKeywordDef acid = DefCache.GetDef<DamageKeywordDef>("Acid_DamageKeywordDataDef");
+                DamageKeywordDef standard = DefCache.GetDef<DamageKeywordDef>("Damage_DamageKeywordDataDef");
+
+                DamageKeywordDef blast = DefCache.GetDef<DamageKeywordDef>("Blast_DamageKeywordDataDef");
+                StandardDamageTypeEffectDef blastDamage = DefCache.GetDef<StandardDamageTypeEffectDef>("Blast_StandardDamageTypeEffectDef");
+
+                WeaponDef spitArmsAcheronAchlysChampion = DefCache.GetDef<WeaponDef>("AcheronAchlysChampion_Arms_WeaponDef");
+                spitArmsAcheronAchlysChampion.DamagePayload.DamageKeywords[1].DamageKeywordDef = blast;
+                spitArmsAcheronAchlysChampion.DamagePayload.DamageKeywords[1].Value = 30;
+                spitArmsAcheronAchlysChampion.DamagePayload.DamageKeywords.Add(new DamageKeywordPair
+                {
+                    DamageKeywordDef = poison,
+                    Value = 30
+                });
+                spitArmsAcheronAchlysChampion.DamagePayload.DamageKeywords.Add(new DamageKeywordPair
+                {
+                    DamageKeywordDef = acid,
+                    Value = 30
+                });
+                spitArmsAcheronAchlysChampion.DamagePayload.DamageType = blastDamage;
+                spitArmsAcheronAchlysChampion.DamagePayload.AoeRadius = 2f;
+                spitArmsAcheronAchlysChampion.DamagePayload.DamageDeliveryType = DamageDeliveryType.Cone;
+
+                WeaponDef spitArmsAcheronAsclepiusChampion = DefCache.GetDef<WeaponDef>("AcheronAsclepiusChampion_Arms_WeaponDef");
+               
+                WeaponDef achlysArms = DefCache.GetDef<WeaponDef>("AcheronAchlys_Arms_WeaponDef");
+
+                string guid = "2B294E66-1BE9-425B-B088-F5A9075167A6";
+                WeaponDef neuroArmsCopy = Repo.CreateDef<WeaponDef>(guid);
+                ReflectionHelper.CopyFields(achlysArms, neuroArmsCopy);
+                ReflectionHelper.CopyFields(spitArmsAcheronAchlysChampion, achlysArms);
+                ReflectionHelper.CopyFields(neuroArmsCopy, spitArmsAcheronAsclepiusChampion);
+               
+                // Change_AcheronCorruptiveSpray();
+                WeaponDef acheronArms = DefCache.GetDef<WeaponDef>("Acheron_Arms_WeaponDef");
+                acheronArms.DamagePayload.DamageKeywords.Add(new DamageKeywordPair
+                {
+                    DamageKeywordDef = acid,
+                    Value = 20
+                });
+
+                WeaponDef acheronPrimeArms = DefCache.GetDef<WeaponDef>("AcheronPrime_Arms_WeaponDef");
+                acheronPrimeArms.DamagePayload.DamageKeywords.Add(new DamageKeywordPair
+                {
+                    DamageKeywordDef = acid,
+                    Value = 30
+                });
 
             }
             catch (Exception e)
@@ -328,6 +644,7 @@ namespace TFTV
 
 
         }
+
 
         public static void CreateUIDeliriumHint()
         {
@@ -400,7 +717,7 @@ namespace TFTV
                 ResourceMissionOutcomeDef sourceMissonResourceReward = DefCache.GetDef<ResourceMissionOutcomeDef>("HavenDefAN_ResourceMissionOutcomeDef");
                 ResourceMissionOutcomeDef mutagenRewardInfestation = Helper.CreateDefFromClone(sourceMissonResourceReward, "2E579AB8-3744-4994-8036-B5018B5E2E15", "InfestationReward");
                 mutagenRewardInfestation.Resources.Values.Clear();
-                mutagenRewardInfestation.Resources.Values.Add(new ResourceUnit { Type = ResourceType.Mutagen, Value = 800 });
+                mutagenRewardInfestation.Resources.Values.Add(new ResourceUnit { Type = PhoenixPoint.Common.Core.ResourceType.Mutagen, Value = 800 });
 
                 foreach (CustomMissionTypeDef missionTypeDef in Repo.GetAllDefs<CustomMissionTypeDef>())
                 {
@@ -431,8 +748,8 @@ namespace TFTV
                 //Muting Living Weapons
                 GeoscapeEventDef lwstartingEvent = DefCache.GetDef<GeoscapeEventDef>("PROG_LW1_GeoscapeEventDef");
                 lwstartingEvent.GeoscapeEventData.Mute = true;
-                DefCache.GetDef<KillActorFactionObjectiveDef>("KillCorruptionNode_CustomMissionObjective").MissionObjectiveData.ExperienceReward=1000;
-                
+                DefCache.GetDef<KillActorFactionObjectiveDef>("KillCorruptionNode_CustomMissionObjective").MissionObjectiveData.ExperienceReward = 1000;
+
 
                 //
 
@@ -1035,8 +1352,8 @@ namespace TFTV
                 ppResearchDB.Researches.Remove(DefCache.GetDef<ResearchDef>("PX_Aircraft_EscapePods_ResearchDef"));
                 njResearchDB.Researches.Remove(DefCache.GetDef<ResearchDef>("NJ_Aircraft_CruiseControl_ResearchDef"));
                 njResearchDB.Researches.Remove(DefCache.GetDef<ResearchDef>("NJ_Aircraft_FuelTank_ResearchDef"));
-                
-                    
+
+
                 //This is testing Belial's suggestions, unlocking flares via PX Aerial Warfare, etc.
                 AddItemToManufacturingReward("PX_Aircraft_Flares_ResearchDef_ManufactureResearchRewardDef_0",
                     "PX_AerialWarfare_ResearchDef_ManufactureResearchRewardDef_0", "PX_Aircraft_Flares_ResearchDef");
@@ -1433,6 +1750,11 @@ namespace TFTV
             }
 
         }
+
+
+
+
+
 
         public static void ChangeUmbra()
 
