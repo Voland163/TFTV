@@ -723,3 +723,30 @@ ACHERON_TRIBUTARY_NAME,Text,,Tributary of the Void,,,,,,,,
 ACHERON_TRIBUTARY_DESCRIPTION,Text,,All friendlies <b>of any type</b> within 10 tiles will be Touched by the Void if the character dies,,,,,,,,
 VOID_BLIGHT_NAME,Text,,Blight of the Void,,,,,,,,
 VOID_BLIGHT_DESCRIPTION,Text,,"This character or unit can be attacked by Umbra, regardless of Delirium",,,,,,,,
+KEY_TAC_HINT_ENEMY_ACHERON_DESCRIPTION,Text,,"The Acheron is a large Pandoran unit capable of afflicting various conditions on friendly and enemy units in a large radius on the battlefield. 
+
+This Acheron has the <b>""Harbinger of the Void"" passive ability</b> (<i>increases the chances that an Arthron or a Triton will be Touched by the Void</i>).
+
+All Acheron spray or cloud attacks afflict the target(s) with the <b>""Blight of the Void"" status</b> (<i>unit or character can be attacked by Umbra, regardless of Delirium</i>). ",,,,,,,,
+HINT_ACHERON_PRIME_DESCRIPTION,Text,,"This Acheron is a direct evolution of the basic Acheron. In addition to <b>""Harbinger of the Void"" passive ability</b> (<i>increases the chances that an Arthron or a Triton will be Touched by the Void</i>), it has the <b>""Co-Delirium"" passive ability</b> (<i>all Pandorans in battle deal Delirium damage</i>).
+
+Remember that all Acheron spray or cloud attacks afflict the target(s) with the <b>""Blight of the Void"" status</b> (<i>unit or character can be attacked by Umbra, regardless of Delirium</i>).",,,,,,,,
+HINT_ACHERON_PRIME_TITLE,Text,,Acheron Prime ,,,,,,,,
+HINT_ACHERON_ASCLEPIUS_DESCRIPTION,Text,,"The Asclepius Acheron mutation has the <b>""Call Reinforcements"" active ability</b> (<i>instantly call a group of Arthrons and Tritons</i>) and the <b>""Co-Delirium"" passive ability</b> (<i>all Pandorans in battle deal Delirium damage</i>). 
+
+It specializes in healing and aiding other Pandorans and does not have any direct offensive capabilities.",,,,,,,,
+HINT_ACHERON_ASCLEPIUS_TITLE,Text,,Acheron Asclepius,,,,,,,,
+HINT_ACHERON_ASCLEPIUS_CHAMPION_DESCRIPTION,Text,,"This Acheron is a direct evolution of the Asclepius variant. In addition to the <b>""Call Reinforcements"" active ability</b> (<i>instantly call a group of Arthrons and Tritons</i>) and the <b>""Co-Delirium"" passive ability</b> (<i>all Pandorans in battle deal Delirium damage</i>), it has the <b>Neurotoxic Spray</b> (<i>disable a body part for 1 turn</i>), which afflicts the target with the <b>""Blight of the Void"" status</b> (<i>unit or character can be attacked by Umbra, regardless of Delirium</i>).",,,,,,,,
+HINT_ACHERON_ASCLEPIUS_CHAMPION_TITLE,Text,,Acheron Asclepius Champion,,,,,,,,
+HINT_ACHERON_ACHLYS_DESCRIPTION,Text,,"The Achlys Acheron mutation has the <b>""Resurrect"" active ability</b> (<i>transform all human sized corpses within 10 tiles into Arthrons or Tritons</i>)
+
+Remember that all Acheron spray or cloud attacks afflict the target(s) with the <b>""Blight of the Void"" status</b> (<i>unit or character can be attacked by Umbra, regardless of Delirium</i>).",,,,,,,,
+HINT_ACHERON_ACHLYS_TITLE,Text,,Acheron Achlys,,,,,,,,
+HINT_ACHERON_ACHLYS_CHAMPION_DESCRIPTION,Text,,"This Acheron is a direct evolution of the Achlys variant. In addition to the <b>""Resurrect"" active ability</b> (<i>transform all human sized corpses within 10 tiles into Arthrons or Tritons</i>), it has the <b>""Tributary of the Void"" passive ability</b> (<i>all friendlies <b>of any type</b> within 10 tiles will be Touched by the Void if the character dies</i>).
+
+Remember that all Acheron spray or cloud attacks afflict the target(s) with the <b>""Blight of the Void"" status</b> (<i>unit or character can be attacked by Umbra, regardless of Delirium</i>).",,,,,,,,
+HINT_ACHERON_ACHLYS_CHAMPION_TITLE,Text,,Acheron Achlys Champion,,,,,,,,
+VOID_BLIGHT_NAME_HINT,Text,,Blight of the Void,,,,,,,,
+VOID_BLIGHT_DESCRIPTION_HINT,Text,,"This character or unit can now be attacked by Umbra, regardless of Delirium.
+
+It has gained this status because it was attacked by an Acheron. All Acheron spray or cloud attacks afflict the victims with the <b>""Blight of the Void"" status</b>",,,,,,,,

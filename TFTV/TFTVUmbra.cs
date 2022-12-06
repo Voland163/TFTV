@@ -1,7 +1,5 @@
-﻿using Base.Defs;
-using Base.Entities;
+﻿using Base.Entities;
 using Base.Entities.Effects.ApplicationConditions;
-using com.ootii.Actors.BoneControllers;
 using HarmonyLib;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
@@ -37,7 +35,7 @@ namespace TFTV
         private static readonly AddAbilityStatusDef oilCrabAddAbilityStatus = DefCache.GetDef<AddAbilityStatusDef>("OilCrab_AddAbilityStatusDef");
         private static readonly AddAbilityStatusDef oilTritonAddAbilityStatus = DefCache.GetDef<AddAbilityStatusDef>("OilFish_AddAbilityStatusDef");
         private static readonly AddAbilityStatusDef hiddenTBTVAddAbilityStatus = DefCache.GetDef<AddAbilityStatusDef>("TBTV_Hidden_AddAbilityStatusDef");
-       
+
         private static readonly DamageMultiplierStatusDef onAttackTBTVStatus = DefCache.GetDef<DamageMultiplierStatusDef>("TBTV_OnAttack_StatusDef");
         private static readonly DamageMultiplierStatusDef onTurnEndTBTVStatus = DefCache.GetDef<DamageMultiplierStatusDef>("TBTV_OnTurnEnd_StatusDef");
         private static readonly DamageMultiplierStatusDef umbraTargetStatusDef = DefCache.GetDef<DamageMultiplierStatusDef>("TBTV_Target");
@@ -48,7 +46,8 @@ namespace TFTV
         private static readonly GameTagDef voidTouchedTag = DefCache.GetDef<GameTagDef>("VoidTouched_GameTagDef");
         private static readonly GameTagDef voidTouchedOnAttackTag = DefCache.GetDef<GameTagDef>("VoidTouchedOnAttack_GameTagDef");
         private static readonly GameTagDef voidTouchedOnTurnEndTag = DefCache.GetDef<GameTagDef>("VoidTouchedOnTurnEnd_GameTagDef");
-
+      
+        
 
         private static readonly HitPenaltyStatusDef mFDStatus = DefCache.GetDef<HitPenaltyStatusDef>("E_PureDamageBonusStatus [MarkedForDeath_AbilityDef]");
 
@@ -87,7 +86,7 @@ namespace TFTV
                 }
             }
         }
-       
+
         //need to exclude curespray
 
 
@@ -99,7 +98,7 @@ namespace TFTV
             {
                 try
                 {
-                    ApplyEffectAbilityDef cureCloud= DefCache.GetDef<ApplyEffectAbilityDef>("Acheron_CureCloud_ApplyEffectAbilityDef");
+                    ApplyEffectAbilityDef cureCloud = DefCache.GetDef<ApplyEffectAbilityDef>("Acheron_CureCloud_ApplyEffectAbilityDef");
                     ApplyEffectAbilityDef restoreArmor = DefCache.GetDef<ApplyEffectAbilityDef>("Acheron_RestorePandoranArmor_AbilityDef");
 
                     if (__instance.TacticalActor != null && __instance.TacticalActor.HasGameTag(acheronTag) && !__instance.AbilityDef.Equals(cureCloud) && !__instance.AbilityDef.Equals(restoreArmor))
@@ -121,6 +120,7 @@ namespace TFTV
                                     {
                                         TFTVLogger.Always("The target is " + tacticalActor.name);
                                         tacticalActor.Status.ApplyStatus(umbraTargetStatusDef);
+                                       
                                     }
 
                                 }
@@ -129,6 +129,7 @@ namespace TFTV
                         else
                         {
                             abilityTarget.GetTargetActor().Status.ApplyStatus(umbraTargetStatusDef);
+                           
                         }
                     }
                 }
@@ -154,7 +155,7 @@ namespace TFTV
                 {
                     AdditionalEffectShootAbilityDef cureSpray = DefCache.GetDef<AdditionalEffectShootAbilityDef>("Acheron_CureSpray_AbilityDef");
 
-                    if (__instance.TacticalActor.HasGameTag(acheronTag) && !__instance.AbilityDef.Equals(cureSpray))
+                    if (__instance.TacticalActor!=null && __instance.TacticalActor.HasGameTag(acheronTag) && !__instance.AbilityDef.Equals(cureSpray))
                     {
                         TFTVLogger.Always("Acheron ShootAbility attack");
 
@@ -162,13 +163,14 @@ namespace TFTV
 
                         if (__instance.LastAbilityTarget != null && __instance.LastAbilityTarget.Actor is TacticalActor)
                         {
-                         //   TFTVLogger.Always("Actor is " + __instance.LastAbilityTarget.Actor);
+                            //   TFTVLogger.Always("Actor is " + __instance.LastAbilityTarget.Actor);
                             TacticalActor tacticalActor = __instance.LastAbilityTarget.Actor as TacticalActor;
 
                             if (!tacticalActor.HasStatus(umbraTargetStatusDef))
                             {
                                 TFTVLogger.Always("The target is " + tacticalActor.name);
                                 tacticalActor.Status.ApplyStatus(umbraTargetStatusDef);
+                            
                             }
 
                         }
@@ -199,13 +201,14 @@ namespace TFTV
                         {
                             if (targetActor.Actor is TacticalActor)
                             {
-                               // TFTVLogger.Always("Actor is " + targetActor.Actor);
+                                // TFTVLogger.Always("Actor is " + targetActor.Actor);
                                 TacticalActor tacticalActor = targetActor.Actor as TacticalActor;
 
                                 if (!tacticalActor.HasStatus(umbraTargetStatusDef))
                                 {
                                     TFTVLogger.Always("The target is " + tacticalActor.name);
                                     tacticalActor.Status.ApplyStatus(umbraTargetStatusDef);
+                                 
                                 }
 
                             }
@@ -240,13 +243,14 @@ namespace TFTV
                             {
                                 if (targetActor.Actor is TacticalActor)
                                 {
-                                   // TFTVLogger.Always("Actor is " + targetActor.Actor);
+                                    // TFTVLogger.Always("Actor is " + targetActor.Actor);
                                     TacticalActor tacticalActor = targetActor.Actor as TacticalActor;
 
                                     if (!tacticalActor.HasStatus(umbraTargetStatusDef))
                                     {
                                         TFTVLogger.Always("The target is " + tacticalActor.name);
                                         tacticalActor.Status.ApplyStatus(umbraTargetStatusDef);
+                                     
                                     }
 
                                 }
@@ -255,6 +259,7 @@ namespace TFTV
                         else
                         {
                             abilityTarget.GetTargetActor().Status.ApplyStatus(umbraTargetStatusDef);
+                           
                         }
                     }
                 }
@@ -272,7 +277,7 @@ namespace TFTV
             {
                 try
                 {
-                    if (deathReport.Actor != null)
+                    if (deathReport.Actor != null && deathReport.Actor is TacticalActor)
                     {
                         TacticalActor actor = deathReport.Actor as TacticalActor;
 
@@ -292,7 +297,7 @@ namespace TFTV
                         {
                             foreach (TacticalActorBase allyTacticalActorBase in actor.TacticalFaction.Actors)
                             {
-                                if (allyTacticalActorBase.InPlay)
+                                if (allyTacticalActorBase.InPlay && allyTacticalActorBase is TacticalActor && allyTacticalActorBase !=actor)
                                 {
                                     TacticalActor tacticalActor = allyTacticalActorBase as TacticalActor;
                                     float magnitude = 10;
@@ -300,48 +305,48 @@ namespace TFTV
                                     if ((allyTacticalActorBase.Pos - actor.Pos).magnitude <= magnitude)
                                     {
 
-                                        TFTVLogger.Always("The actor who will receive TBTV from the Tributary is " + actor.name);
-                                        if (actor.GameTags.Contains(crabTag) && actor.GetAbilityWithDef<PassiveModifierAbility>(hiddenTBTVAbilityDef) == null
-                                            && !actor.name.Contains("Oilcrab") && !actor.GameTags.Contains(anyRevenantGameTag))
+                                        TFTVLogger.Always("The actor who will receive TBTV from the Tributary is " + tacticalActor.name);
+                                        if (tacticalActor.GameTags.Contains(crabTag) && tacticalActor.GetAbilityWithDef<PassiveModifierAbility>(hiddenTBTVAbilityDef) == null
+                                            && !tacticalActor.name.Contains("Oilcrab") && !tacticalActor.GameTags.Contains(anyRevenantGameTag))
                                         {
-                                            actor.Status.ApplyStatus(hiddenTBTVAddAbilityStatus);
-                                            if (!actor.HasGameTag(voidTouchedTag))
+                                            tacticalActor.Status.ApplyStatus(hiddenTBTVAddAbilityStatus);
+                                            if (!tacticalActor.HasGameTag(voidTouchedTag))
                                             {
-                                                actor.GameTags.Add(voidTouchedTag);
-                                                actor.AddAbility(oilcrabDeathBelcherAbility, actor);
+                                                tacticalActor.GameTags.Add(voidTouchedTag);
+                                                tacticalActor.AddAbility(oilcrabDeathBelcherAbility, tacticalActor);
                                             }
 
                                         }
 
-                                        else if (actor.GameTags.Contains(fishTag) && actor.GetAbilityWithDef<PassiveModifierAbility>(hiddenTBTVAbilityDef) == null
-                                            && !actor.name.Contains("Oilfish") && !actor.GameTags.Contains(anyRevenantGameTag))
+                                        else if (tacticalActor.GameTags.Contains(fishTag) && tacticalActor.GetAbilityWithDef<PassiveModifierAbility>(hiddenTBTVAbilityDef) == null
+                                            && !tacticalActor.name.Contains("Oilfish") && !actor.GameTags.Contains(anyRevenantGameTag))
                                         {
-                                            TFTVLogger.Always("The actor who will receive TBTV from the Tributary is " + actor.name);
-                                            actor.Status.ApplyStatus(hiddenTBTVAddAbilityStatus);
-                                            if (!actor.HasGameTag(voidTouchedTag))
+                                            TFTVLogger.Always("The actor who will receive TBTV from the Tributary is " + tacticalActor.name);
+                                            tacticalActor.Status.ApplyStatus(hiddenTBTVAddAbilityStatus);
+                                            if (!tacticalActor.HasGameTag(voidTouchedTag))
                                             {
-                                                actor.GameTags.Add(voidTouchedTag);
-                                                actor.AddAbility(oilfishDeathBelcherAbility, actor);
+                                                tacticalActor.GameTags.Add(voidTouchedTag);
+                                                tacticalActor.AddAbility(oilfishDeathBelcherAbility, tacticalActor);
                                             }
-                                           
+
                                         }
-                                        else if (actor.GetAbilityWithDef<PassiveModifierAbility>(hiddenTBTVAbilityDef) == null
-                                            && !actor.name.Contains("Oilfish") && !actor.name.Contains("Oilcrab") && !actor.GameTags.Contains(anyRevenantGameTag)) 
+                                        else if (tacticalActor.GetAbilityWithDef<PassiveModifierAbility>(hiddenTBTVAbilityDef) == null
+                                            && !tacticalActor.name.Contains("Oilfish") && !tacticalActor.name.Contains("Oilcrab") && !tacticalActor.GameTags.Contains(anyRevenantGameTag))
                                         {
-                                            TFTVLogger.Always("The actor who will receive TBTV from the Tributary is " + actor.name);
-                                            actor.Status.ApplyStatus(hiddenTBTVAddAbilityStatus);
-                                            if (!actor.HasGameTag(voidTouchedTag))
+                                            TFTVLogger.Always("The actor who will receive TBTV from the Tributary is " + tacticalActor.name);
+                                            tacticalActor.Status.ApplyStatus(hiddenTBTVAddAbilityStatus);
+                                            if (!tacticalActor.HasGameTag(voidTouchedTag))
                                             {
-                                                actor.GameTags.Add(voidTouchedTag);
+                                                tacticalActor.GameTags.Add(voidTouchedTag);
                                                 UnityEngine.Random.InitState((int)DateTime.Now.Ticks);
                                                 int roll = UnityEngine.Random.Range(1, 11);
                                                 if (roll <= 5)
                                                 {
-                                                    actor.AddAbility(oilfishDeathBelcherAbility, actor);
+                                                    tacticalActor.AddAbility(oilfishDeathBelcherAbility, tacticalActor);
                                                 }
-                                                else 
+                                                else
                                                 {
-                                                    actor.AddAbility(oilcrabDeathBelcherAbility, actor);
+                                                    tacticalActor.AddAbility(oilcrabDeathBelcherAbility, tacticalActor);
                                                 }
                                             }
                                         }
@@ -497,12 +502,27 @@ namespace TFTV
                     if (tacticalActor.HasGameTag(crabTag))
                     {
                         tacticalActor.Status.ApplyStatus(oilCrabAddAbilityStatus);
-                        TFTVLogger.Always("Spawn Umbra status applied " + tacticalActor.name);
+                        TFTVLogger.Always("Spawn Umbra crab status applied " + tacticalActor.name);
                     }
-                    else
+                    else if(tacticalActor.HasGameTag(fishTag))
                     {
                         tacticalActor.Status.ApplyStatus(oilTritonAddAbilityStatus);
-                        TFTVLogger.Always("Spawn Umbra status applied " + tacticalActor.name);
+                        TFTVLogger.Always("Spawn Umbra fish status applied " + tacticalActor.name);
+                    }
+                    else 
+                    {
+                        int roll2 = UnityEngine.Random.Range(1, 11);
+                        if (roll2 <= 5)
+                        {
+                            tacticalActor.Status.ApplyStatus(oilTritonAddAbilityStatus);
+                            TFTVLogger.Always("Spawn Umbra fish status applied " + tacticalActor.name);
+                        }
+                        else
+                        {
+                            tacticalActor.Status.ApplyStatus(oilCrabAddAbilityStatus);
+                            TFTVLogger.Always("Spawn Umbra crab status applied " + tacticalActor.name);
+                        }
+
                     }
                 }
             }
@@ -510,6 +530,168 @@ namespace TFTV
             {
                 TFTVLogger.Error(e);
             }
+        }
+
+        public static Dictionary<ClassTagDef, int> PickReinforcements(TacticalLevelController controller)
+        {
+            try
+            {
+                ClassTagDef sirenTag = DefCache.GetDef<ClassTagDef>("Siren_ClassTagDef");
+                ClassTagDef myrmidonTag = DefCache.GetDef<ClassTagDef>("Swarmer_ClassTagDef");
+                ClassTagDef mindfraggerTag = DefCache.GetDef<ClassTagDef>("Facehugger_ClassTagDef");
+                Dictionary<ClassTagDef, int> reinforcements = new Dictionary<ClassTagDef, int>();
+                List<ClassTagDef> eligibleClassTagDefs = new List<ClassTagDef>();
+
+
+                int difficulty = controller.Difficulty.Order;
+
+                foreach (TacCharacterDef tacCharacterDef in controller.TacMission.MissionData.UnlockedAlienTacCharacterDefs) 
+                { 
+                    if(tacCharacterDef.ClassTag!=null && !eligibleClassTagDefs.Contains(tacCharacterDef.ClassTag)) 
+                    
+                    {
+                        TFTVLogger.Always("ClassTag " + tacCharacterDef.ClassTag.className + " added");
+                        eligibleClassTagDefs.Add(tacCharacterDef.ClassTag);
+                    
+                    }                      
+                }
+
+                if(difficulty > 0) 
+                {
+                    UnityEngine.Random.InitState((int)DateTime.Now.Ticks);
+                    int roll = UnityEngine.Random.Range(1, 2);
+
+                    if (roll == 1)
+                    {
+                        reinforcements.Add(crabTag, 1);
+                    }
+                    else 
+                    { 
+                        reinforcements.Add(fishTag, 1); 
+                    }
+                }
+              
+                if(difficulty > 2) 
+                {
+                    if (eligibleClassTagDefs.Contains(myrmidonTag)) 
+                    {
+                        reinforcements.Add(myrmidonTag, 1);
+                    
+                    }
+                    else 
+                    {
+                        UnityEngine.Random.InitState((int)DateTime.Now.Ticks);
+                        int roll = UnityEngine.Random.Range(1, 2);
+
+                        if (roll == 1)
+                        {
+                            if (reinforcements.ContainsKey(crabTag))
+                            {
+                                reinforcements[crabTag]+=1;
+                            }
+                            else 
+                            {
+                                reinforcements.Add(crabTag, 1);
+                            }
+                        }
+                        else
+                        {
+                            if (reinforcements.ContainsKey(fishTag))
+                            {
+                                reinforcements[fishTag] += 1;
+                            }
+                            else
+                            {
+                                reinforcements.Add(fishTag, 1);
+                            }
+                        }
+                    }
+                }
+
+                if (difficulty > 3)
+                {
+                    if (eligibleClassTagDefs.Contains(sirenTag) && eligibleClassTagDefs.Contains(myrmidonTag))
+                    {
+                        UnityEngine.Random.InitState((int)DateTime.Now.Ticks);
+                        int roll = UnityEngine.Random.Range(1, 2);
+
+                        if (roll == 1)
+                        {
+                            reinforcements.Add(sirenTag, 1);
+                        }
+                        else
+                        {
+                            if (reinforcements.ContainsKey(myrmidonTag))
+                            {
+                                reinforcements[myrmidonTag] += 1;
+                            }
+                            else
+                            {
+                                reinforcements.Add(myrmidonTag, 1);
+                            }
+                        }
+
+                    }
+                    else if (eligibleClassTagDefs.Contains(sirenTag) && !eligibleClassTagDefs.Contains(myrmidonTag))
+                    {
+
+                        reinforcements.Add(sirenTag, 1);
+
+                    }
+                    else if (!eligibleClassTagDefs.Contains(sirenTag) && eligibleClassTagDefs.Contains(myrmidonTag))
+                    {
+                        if (reinforcements.ContainsKey(myrmidonTag))
+                        {
+                            reinforcements[myrmidonTag] += 1;
+                        }
+                        else
+                        {
+                            reinforcements.Add(myrmidonTag, 1);
+                        }
+
+                    }
+                    else
+                    {
+                        UnityEngine.Random.InitState((int)DateTime.Now.Ticks);
+                        int roll = UnityEngine.Random.Range(1, 2);
+
+                        if (roll == 1)
+                        {
+                            if (reinforcements.ContainsKey(crabTag))
+                            {
+                                reinforcements[crabTag] += 1;
+                            }
+                            else
+                            {
+                                reinforcements.Add(crabTag, 1);
+                            }
+                        }
+                        else
+                        {
+                            if (reinforcements.ContainsKey(fishTag))
+                            {
+                                reinforcements[fishTag] += 1;
+                            }
+                            else
+                            {
+                                reinforcements.Add(fishTag, 1);
+                            }
+                        }
+
+                    }
+
+                }
+
+                return reinforcements;
+               
+            }
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                return new Dictionary<ClassTagDef, int>() { { crabTag, 1 } };
+            }
+
         }
 
 
@@ -522,6 +704,8 @@ namespace TFTV
 
                 ClassTagDef sirenTag = DefCache.GetDef<ClassTagDef>("Siren_ClassTagDef");
                 ClassTagDef myrmidonTag = DefCache.GetDef<ClassTagDef>("Swarmer_ClassTagDef");
+
+
                 //   ClassTagDef newSwarmerTag = DefCache.GetDef<ClassTagDef>("Stitch");
 
 
@@ -540,10 +724,7 @@ namespace TFTV
                         if ((actor.GameTags.Contains(crabTag) || actor.GameTags.Contains(fishTag)) &&
                             actor.HasStatus(onTurnEndTBTVStatus) && actor.IsAlive)
                         {
-
                             pandoransCallingReinforcements.Add(actor);
-
-
                         }
                     }
 
@@ -551,40 +732,31 @@ namespace TFTV
                     {
                         foreach (TacticalActor actor in pandoransCallingReinforcements)
                         {
-                            ReinforcementSettings reinforcement0 = new ReinforcementSettings()
+                            Dictionary<ClassTagDef, int> reinforcements = PickReinforcements(controller);
+
+                            foreach (ClassTagDef classTag in reinforcements.Keys)
                             {
-                                CharacterTagDef = myrmidonTag,
-                                NumberOfReinforcements = new Base.Utils.RangeDataInt()
-                                { Min = 2, Max = 3 }
-                            };
 
-                            /* ReinforcementSettings reinforcement1 = new ReinforcementSettings()
-                             {
-                                 CharacterTagDef = crabTag,
-                                 NumberOfReinforcements = new Base.Utils.RangeDataInt()
-                                 { Min = 1, Max = 2 }
-                             };
+                                ReinforcementSettings reinforcement = new ReinforcementSettings()
+                                {
+                                    CharacterTagDef = classTag,
+                                    NumberOfReinforcements = new Base.Utils.RangeDataInt()
+                                    { Min = reinforcements[classTag], Max = reinforcements[classTag] }
+                                };
 
-                             ReinforcementSettings reinforcement2 = new ReinforcementSettings()
-                             {
-                                 CharacterTagDef = fishTag,
-                                 NumberOfReinforcements = new Base.Utils.RangeDataInt()
-                                 { Min = 1, Max = 1 }
-                             };*/
-
-                            TFTVLogger.Always("Reinforcements should be called");
-                            CallReinforcementsAbility callReinforcementsAbility = new CallReinforcementsAbility();
+                                TFTVLogger.Always("Reinforcements should be called, with classTag " + classTag.className);
+                                CallReinforcementsAbility callReinforcementsAbility = new CallReinforcementsAbility();
 
 
-                            //  actor.GetAbilityWithDef<CallReinforcementsAbility>(callReinforcementsTBTVAbilityDef);
-                            TacParticipantSpawn participantSpawn = controller.TacMission.ParticipantSpawns.First((TacParticipantSpawn ps) => ps.ParticipantKind == actor.MissionParticipant);
-                            // ReinforcementSettings[] reinforcementsSettings = callReinforcementsAbility.Def<CallReinforcementsAbilityDef>().ReinforcementsSettings;
+                                //  actor.GetAbilityWithDef<CallReinforcementsAbility>(callReinforcementsTBTVAbilityDef);
+                                TacParticipantSpawn participantSpawn = controller.TacMission.ParticipantSpawns.First((TacParticipantSpawn ps) => ps.ParticipantKind == actor.MissionParticipant);
+                                // ReinforcementSettings[] reinforcementsSettings = callReinforcementsAbility.Def<CallReinforcementsAbilityDef>().ReinforcementsSettings;
 
-                            MethodInfo method_GenerateTargetData = AccessTools.Method(typeof(CallReinforcementsAbility), "DeployReinforcement");
-                            method_GenerateTargetData.Invoke(callReinforcementsAbility, new object[] { participantSpawn, reinforcement0 });
-                            /*  method_GenerateTargetData.Invoke(callReinforcementsAbility, new object[] { participantSpawn, reinforcement1 });
+                                MethodInfo method_GenerateTargetData = AccessTools.Method(typeof(CallReinforcementsAbility), "DeployReinforcement");
+                                method_GenerateTargetData.Invoke(callReinforcementsAbility, new object[] { participantSpawn, reinforcement });
 
-                            method_GenerateTargetData.Invoke(callReinforcementsAbility, new object[] { participantSpawn, reinforcement2 });*/
+                            }
+                           
                         }
                     }
                 }
@@ -657,7 +829,7 @@ namespace TFTV
 
                             if (totalDeliriumOnMission > 0)
                             {
-                                TFTVLogger.Always("There are " + CheckForAcheronHarbingers(controller) + " and total Delirium is " + totalDeliriumOnMission);
+                                TFTVLogger.Always("There are " + CheckForAcheronHarbingers(controller) + " harbingers and total Delirium is " + totalDeliriumOnMission);
                                 totalDeliriumOnMission += CheckForAcheronHarbingers(controller) * 10;
                             }
 
@@ -683,7 +855,7 @@ namespace TFTV
                                             actor.GameTags.Add(voidTouchedTag);
                                             actor.AddAbility(oilcrabDeathBelcherAbility, actor);
                                         }
-                                        
+
                                     }
                                     else if (!TFTVVoidOmens.VoidOmensCheck[15] && roll <= totalDeliriumOnMission / 2)
                                     {
@@ -694,7 +866,7 @@ namespace TFTV
                                             actor.GameTags.Add(voidTouchedTag);
                                             actor.AddAbility(oilcrabDeathBelcherAbility, actor);
                                         }
-                                     
+
                                     }
 
                                 }
@@ -712,7 +884,7 @@ namespace TFTV
                                             actor.GameTags.Add(voidTouchedTag);
                                             actor.AddAbility(oilfishDeathBelcherAbility, actor);
                                         }
-                                       
+
                                     }
                                     else if (!TFTVVoidOmens.VoidOmensCheck[15] && roll <= totalDeliriumOnMission / 2)
                                     {
@@ -723,11 +895,11 @@ namespace TFTV
                                             actor.GameTags.Add(voidTouchedTag);
                                             actor.AddAbility(oilfishDeathBelcherAbility, actor);
                                         }
-                                        
+
                                     }
                                 }
                             }
-                        }                      
+                        }
                     }
                 }
 
@@ -869,7 +1041,7 @@ namespace TFTV
                                 TacticalActor tacticalActor = actor as TacticalActor;
 
                                 UnityEngine.Random.InitState((int)DateTime.Now.Ticks);
-                                int roll = UnityEngine.Random.Range(0, 101);
+                                int roll = UnityEngine.Random.Range(0, 101 - CheckForAcheronHarbingers(__instance) * 10);
                                 if (TFTVVoidOmens.VoidOmensCheck[15] && roll <= 32)
                                 {
                                     TFTVLogger.Always("VO16+VO15 This Triton here " + actor + ", got past the crabtag and the blecher ability check!");

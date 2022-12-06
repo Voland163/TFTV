@@ -37,7 +37,7 @@ namespace TFTV
         private static readonly HasSeenHintHintConditionDef sourceHasSeenHintConditionDef = DefCache.GetDef<HasSeenHintHintConditionDef>("HasSeenHint_TUT2_Overwatch_HintDef-False_HintConditionDef");
         private static readonly LevelHasTagHintConditionDef sourceInfestationMission = DefCache.GetDef<LevelHasTagHintConditionDef>("LevelHasTag_MissionTypeBaseInfestation_MissionTagDef_HintConditionDef");
         private static readonly MissionTypeTagDef infestationMissionTagDef = DefCache.GetDef<MissionTypeTagDef>("HavenInfestation_MissionTypeTagDef");
-        private static readonly ActorHasStatusHintConditionDef sourceActorHasStatusHintConditionDef = DefCache.GetDef<ActorHasStatusHintConditionDef>("ActorHasStatus_CorruptionAttack_StatusDef_HintConditionDef");
+        private static readonly IsDefHintConditionDef sourceIsDefHintConditionDef = DefCache.GetDef<IsDefHintConditionDef>("IsDef_Strained_StatusDef_HintConditionDef");
 
       /*  public static void RemoveAlreadyShownTacticalHints()
         {
@@ -166,9 +166,37 @@ namespace TFTV
                         {
                             __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("Hint_TBTV_EoT.png");
                         }
+                        else if (hintDef.name.Contains("TUT_DLC4_Acheron_HintDef")) 
+                        {
+                            __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("Acheron.png");
+                        }
+                        else if (hintDef.name.Contains("AcheronPrime"))
+                        {
+                            __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("AcheronPrime.png"); //Prime.png");
+                        }
+                        else if (hintDef.name.Equals("AcheronAchlys"))
+                        {
+                            __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("AcheronAchlys.png");
+                        }
+                        else if (hintDef.name.Equals("AcheronAchlysChampion"))
+                        {
+                            __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("AcheronAchlysChampion.png");
+                        }
+                        else if (hintDef.name.Equals("AcheronAsclepius"))
+                        {
+                            __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("AcheronAsclepius.png");
+                        }
+                        else if (hintDef.name.Equals("AcheronAsclepiusChampion"))
+                        {
+                            __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("AcheronAsclepiusChampion.png");
+                        }
+                        else if (hintDef.name.Equals("VoidBlight"))
+                        {
+                            __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("acheron_void_blight.png");
+                        }
                         else
                         {
-                            __instance.Image.overrideSprite = null;
+                                    __instance.Image.overrideSprite = null;//Helper.CreateSpriteFromImageFile("missing_hint_pic.jpg");
                         }
 
                         foreach (ContextHelpHintDef tacticsHint in TFTVHumanEnemies.TacticsHint)
@@ -273,16 +301,16 @@ namespace TFTV
             }
         }
 
-        public static ActorHasStatusHintConditionDef ActorHasStatusHintConditionDefCreateNewConditionForTacticalHint(string name)
+        public static IsDefHintConditionDef ActorHasStatusHintConditionDefCreateNewConditionForTacticalHint(string name)
         {
             try
 
             {
                 string gUID = Guid.NewGuid().ToString();
 
-                ActorHasStatusHintConditionDef newActorHasStatusHintConditionDef = Helper.CreateDefFromClone(sourceActorHasStatusHintConditionDef, gUID, "ActorHasStatus_" + name + "_HintConditionDef");
-                StatusDef statusDef = Repo.GetAllDefs<StatusDef>().FirstOrDefault(ged => ged.name.Equals(name));
-                newActorHasStatusHintConditionDef.StatusDef = statusDef;
+                IsDefHintConditionDef newActorHasStatusHintConditionDef = Helper.CreateDefFromClone(sourceIsDefHintConditionDef, gUID, "ActorHasStatus_" + name + "_HintConditionDef");
+                StatusDef statusDef = DefCache.GetDef<StatusDef>(name); 
+                newActorHasStatusHintConditionDef.TargetDef = statusDef;
 
                 return newActorHasStatusHintConditionDef;
             }
