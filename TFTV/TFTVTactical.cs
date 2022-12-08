@@ -195,7 +195,12 @@ namespace TFTV
             TFTVUmbra.SpawnUmbra(Controller);
             TFTVHumanEnemies.ChampRecoverWPAura(Controller);           
             TFTVHumanEnemies.ApplyTactic(Controller);
+          //  TFTVAncients.RemoveBeamFromDriller(Controller);
+          /*  if(turnNumber == 1) 
+            {
+                TFTVAncients.AddDrillBack(Controller);
             
+            }*/
 
 
         }

@@ -393,7 +393,7 @@ namespace TFTV
                                 listOfHumansEnemies.Add(tacticalActor);
                             }
                         }
-                       
+
                     }
 
                     TFTVLogger.Always("There are " + listOfHumansEnemies.Count() + " human enemies");
@@ -444,7 +444,7 @@ namespace TFTV
 
                     RollTactic(nameOfFaction);
                     GenerateHumanEnemyUnit(faction, leader.name, HumanEnemiesAndTactics[nameOfFaction]);
-                    
+
                     for (int i = 0; i < champs; i++)
                     {
                         TacticalActorBase champ = orderedListOfHumanEnemies[i];
@@ -1302,6 +1302,51 @@ namespace TFTV
         [HarmonyPatch(typeof(TacticalActor), "OnAnotherActorDeath")]
         public static class TacticalActor_OnAnotherActorDeath_HumanEnemies_Patch
         {
+            public static void Prefix(TacticalActor __instance, DeathReport death, out int __state)
+            {
+                //Postfix checks for relevant GameTags then saves and zeroes the WPWorth of the dying actor before main method is executed.
+                __state = 0; //Set this to zero so that the method still works for other actors.
+                GameTagsList<GameTagDef> RelevantTags = new GameTagsList<GameTagDef> { HumanEnemyTier4GameTag, HumanEnemyTier2GameTag, HumanEnemyTier1GameTag };
+                if (__instance.TacticalFaction == death.Actor.TacticalFaction && death.Actor.HasGameTags(RelevantTags, false))
+                {
+                    __state = death.Actor.TacticalActorBaseDef.WillPointWorth;
+                    death.Actor.TacticalActorBaseDef.WillPointWorth = 0;
+                }
+            }
+
+            public static void Postfix(TacticalActor __instance, DeathReport death, int __state)
+            {
+                //Postfix will remove necessary Willpoints from allies and restore WPWorth's value to the def of the dying actor.
+                if (__instance.TacticalFaction == death.Actor.TacticalFaction)
+                {
+                    foreach (GameTagDef Tag in death.Actor.GameTags)
+                    {
+                        if (Tag == HumanEnemyTier4GameTag)
+                        {
+                            //Death has no effect on allies
+                            death.Actor.TacticalActorBaseDef.WillPointWorth = __state;
+                        }
+                        else if (Tag == HumanEnemyTier2GameTag)
+                        {
+                            //Allies lose 3WP
+                            __instance.CharacterStats.WillPoints.Subtract((__state + 1));
+                            death.Actor.TacticalActorBaseDef.WillPointWorth = __state;
+                        }
+                        else if (Tag == HumanEnemyTier1GameTag)
+                        {
+                            //Allies lose 4WP
+                            __instance.CharacterStats.WillPoints.Subtract((__state * 2));
+                            death.Actor.TacticalActorBaseDef.WillPointWorth = __state;
+                        } 
+                    }
+                }
+            }
+        }
+
+        /*
+        [HarmonyPatch(typeof(TacticalActor), "OnAnotherActorDeath")]
+        public static class TacticalActor_OnAnotherActorDeath_HumanEnemies_Patch
+        {
             public static void Postfix(TacticalActor __instance, DeathReport death)
             {
 
@@ -1340,7 +1385,7 @@ namespace TFTV
                     TFTVLogger.Error(e);
                 }
             }
-        }
+        }*/
 
         [HarmonyPatch(typeof(TacticalLevelController), "ActorEnteredPlay")]
         public static class TacticalLevelController_ActorEnteredPlay_HumanEnemies_Patch

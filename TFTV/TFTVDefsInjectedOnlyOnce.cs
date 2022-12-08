@@ -1,21 +1,17 @@
-﻿using Base.Defs;
+﻿using Base.AI;
+using Base.AI.Defs;
+using Base.Defs;
 using Base.Entities.Abilities;
 using Base.Entities.Effects;
 using Base.Entities.Effects.ApplicationConditions;
-using Base.Entities.Statuses;
 using Base.Utils;
-using Epic.OnlineServices.Achievements;
-using Epic.OnlineServices.Sessions;
-using Mono.Cecil;
 using PhoenixPoint.Common.ContextHelp;
 using PhoenixPoint.Common.ContextHelp.HintConditions;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities.Characters;
-using PhoenixPoint.Common.Entities.Characters.CharacterTemplates;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.Entities.Items;
-using PhoenixPoint.Common.Levels.ActorDeployment;
 using PhoenixPoint.Common.Levels.Missions;
 using PhoenixPoint.Common.UI;
 using PhoenixPoint.Geoscape.Entities;
@@ -29,11 +25,12 @@ using PhoenixPoint.Geoscape.Entities.Research.Reward;
 using PhoenixPoint.Geoscape.Events.Eventus;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.ContextHelp.HintConditions;
+using PhoenixPoint.Tactical.AI.Considerations;
 using PhoenixPoint.Tactical.ContextHelp.HintConditions;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.DamageKeywords;
-using PhoenixPoint.Tactical.Entities.Effects;
+using PhoenixPoint.Tactical.Entities.Effects.ApplicationConditions;
 using PhoenixPoint.Tactical.Entities.Effects.DamageTypes;
 using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.Entities.Statuses;
@@ -75,13 +72,13 @@ namespace TFTV
             //  TFTVChangesToDLC3Events.ModifyMaskedManticoreResearch();
             TFTVChangesToDLC4Events.ChangesToDLC4Defs();
             TFTVChangesToDLC5Events.ChangesToDLC5Defs();
-            ChangesAcheronResearches();
+            ChangesToAcherons();
             RemoveCensusResearch();
             AllowMedkitsToTargetMutoids();
             //Commented out for update #7
-            //   ChangesToLOTA2();
+            //  ChangesToLOTA2();
             CreateSubject24();
-           
+
         }
 
         public static void ChangesToLOTA2()
@@ -91,6 +88,7 @@ namespace TFTV
 
                 ChangeAntartica();
                 ChangeAncientSitesHarvesting();
+                ChangeAncients();
             }
 
             catch (Exception e)
@@ -99,43 +97,43 @@ namespace TFTV
             }
         }
 
-      /*  public static void NewEnemy()
-        {
-            try 
-            {
-                string className = "Stitch";
-                ClassTagDef source = DefCache.GetDef<ClassTagDef>("Swarmer_ClassTagDef");
-                ClassTagDef newClass = Helper.CreateDefFromClone(source, "05DDAF88-0757-458D-AB5C-0A8E0B5025F3", className);
+        /*  public static void NewEnemy()
+          {
+              try 
+              {
+                  string className = "Stitch";
+                  ClassTagDef source = DefCache.GetDef<ClassTagDef>("Swarmer_ClassTagDef");
+                  ClassTagDef newClass = Helper.CreateDefFromClone(source, "05DDAF88-0757-458D-AB5C-0A8E0B5025F3", className);
 
-                TacCharacterDef sourceTacCharacterDef = DefCache.GetDef<TacCharacterDef>("Swarmer_TacCharacterDef");
-                TacCharacterDef newTacCharacter = Helper.CreateDefFromClone(sourceTacCharacterDef, "C3BDED7B-1C4E-4DAA-8418-7A35DF601875", className);
+                  TacCharacterDef sourceTacCharacterDef = DefCache.GetDef<TacCharacterDef>("Swarmer_TacCharacterDef");
+                  TacCharacterDef newTacCharacter = Helper.CreateDefFromClone(sourceTacCharacterDef, "C3BDED7B-1C4E-4DAA-8418-7A35DF601875", className);
 
-               // CustomizationPrimaryColorTagDef blackColor = DefCache.GetDef<CustomizationPrimaryColorTagDef>("CustomizationColorTagDef_9");
-                List<GameTagDef> gameTags = newTacCharacter.Data.GameTags.ToList();
-                gameTags.Remove(source);
-               // gameTags.Add(blackColor);
-                gameTags.Add(newClass);
+                 // CustomizationPrimaryColorTagDef blackColor = DefCache.GetDef<CustomizationPrimaryColorTagDef>("CustomizationColorTagDef_9");
+                  List<GameTagDef> gameTags = newTacCharacter.Data.GameTags.ToList();
+                  gameTags.Remove(source);
+                 // gameTags.Add(blackColor);
+                  gameTags.Add(newClass);
 
-                newTacCharacter.Data.Name = "Stitch";
+                  newTacCharacter.Data.Name = "Stitch";
 
-                newTacCharacter.SpawnCommandId = "StitchTFTV";
-                newTacCharacter.Data.GameTags = gameTags.ToArray();
+                  newTacCharacter.SpawnCommandId = "StitchTFTV";
+                  newTacCharacter.Data.GameTags = gameTags.ToArray();
 
-                CustomMissionTypeDef testMission = DefCache.GetDef<CustomMissionTypeDef>("StoryPX14_CustomMissionTypeDef");
-                List<MissionDeployParams> list =  testMission.ParticipantsData[1].ActorDeployParams.ToList();
+                  CustomMissionTypeDef testMission = DefCache.GetDef<CustomMissionTypeDef>("StoryPX14_CustomMissionTypeDef");
+                  List<MissionDeployParams> list =  testMission.ParticipantsData[1].ActorDeployParams.ToList();
 
-                MissionDeployParams newMissionDeployParams = new MissionDeployParams() { Limit = new ActorDeployLimit { ActorTag = newClass, ActorLimit = new Base.Utils.RangeDataInt { Max = 3, Min = 0 } }, };
-                
-                list.Add(newMissionDeployParams);
-                testMission.ParticipantsData[1].ActorDeployParams = list;
+                  MissionDeployParams newMissionDeployParams = new MissionDeployParams() { Limit = new ActorDeployLimit { ActorTag = newClass, ActorLimit = new Base.Utils.RangeDataInt { Max = 3, Min = 0 } }, };
 
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
+                  list.Add(newMissionDeployParams);
+                  testMission.ParticipantsData[1].ActorDeployParams = list;
 
-        }*/
+              }
+              catch (Exception e)
+              {
+                  TFTVLogger.Error(e);
+              }
+
+          }*/
 
         public static void CreateSubject24()
         {
@@ -174,7 +172,74 @@ namespace TFTV
 
         }
 
+        public static void ChangeAncients()
+        {
+            try
+            {
+                //string name = "BlackShielder";
+                TacCharacterDef shielder = DefCache.GetDef<TacCharacterDef>("HumanoidGuardian_Shielder_TacCharacterDef");
+                TacCharacterDef driller = DefCache.GetDef<TacCharacterDef>("HumanoidGuardian_Driller_TacCharacterDef");
 
+
+
+
+                /* TacCharacterDef newShielder = Helper.CreateDefFromClone(shielder, "C3BDED7B-1C4E-4DAA-8418-7A35DF601875", name);
+                 newShielder.SpawnCommandId = "BlackShield";
+                 newShielder.Data.Name = "BlackShield";
+
+                 CustomizationSecondaryColorTagDef blackColor = DefCache.GetDef<CustomizationSecondaryColorTagDef>("CustomizationSecondaryColorTagDef_7");
+                 List<GameTagDef> gameTags = newShielder.Data.GameTags.ToList();
+                 gameTags.Add(blackColor);
+                 newShielder.Data.GameTags=gameTags.ToArray();*/
+
+                /*
+                string name2 = "RedShielder";
+                TacCharacterDef newShielder2 = Helper.CreateDefFromClone(shielder, "052B5D66-A9A2-4281-B95F-F6787F7282E3", name2);
+                newShielder2.SpawnCommandId = "RedShield";
+                newShielder2.Data.Name = "RedShield";
+
+                CustomizationSecondaryColorTagDef redColor = DefCache.GetDef<CustomizationSecondaryColorTagDef>("CustomizationSecondaryColorTagDef_7");
+                List<GameTagDef> gameTags2 = newShielder2.Data.GameTags.ToList();
+                gameTags2.Add(redColor);
+                newShielder2.Data.GameTags = gameTags2.ToArray();
+
+                string name3 = "GreyShielder";
+                TacCharacterDef newShielder3 = Helper.CreateDefFromClone(shielder, "65B5EBFD-F4F4-436B-BC7C-CD4316686CAD", name3);
+                newShielder2.SpawnCommandId = "GreyShield";
+                newShielder2.Data.Name = "GreyShield";
+
+                CustomizationSecondaryColorTagDef greyColor = DefCache.GetDef<CustomizationSecondaryColorTagDef>("CustomizationSecondaryColorTagDef_0");
+                List<GameTagDef> gameTags3 = newShielder3.Data.GameTags.ToList();
+                gameTags3.Add(greyColor);
+                newShielder3.Data.GameTags = gameTags3.ToArray();
+
+                string name4 = "PinkShielder";
+                TacCharacterDef newShielder4 = Helper.CreateDefFromClone(shielder, "C113580D-EC1B-4EAC-9927-1AF5E8446C57", name4);
+                newShielder2.SpawnCommandId = "PinkShield";
+                newShielder2.Data.Name = "PinkShield";
+
+                CustomizationSecondaryColorTagDef pinkColor = DefCache.GetDef<CustomizationSecondaryColorTagDef>("CustomizationSecondaryColorTagDef_14");
+                List<GameTagDef> gameTags4 = newShielder4.Data.GameTags.ToList();
+                gameTags4.Add(pinkColor);
+                newShielder4.Data.GameTags = gameTags4.ToArray();
+
+                string name5 = "GreenShielder";
+                TacCharacterDef newShielder5 = Helper.CreateDefFromClone(shielder, "53208DD6-3199-4ED9-BEA3-9C3D9441F90E", name5);
+                newShielder2.SpawnCommandId = "GreenShield";
+                newShielder2.Data.Name = "GreenShield";
+
+                CustomizationSecondaryColorTagDef greenColor = DefCache.GetDef<CustomizationSecondaryColorTagDef>("CustomizationSecondaryColorTagDef_14");
+                List<GameTagDef> gameTags5 = newShielder5.Data.GameTags.ToList();
+                gameTags5.Add(greenColor);
+                newShielder5.Data.GameTags = gameTags5.ToArray();
+                */
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
         public static void ChangeAntartica()
         {
             try
@@ -334,7 +399,7 @@ namespace TFTV
                 TFTVTutorialAndStory.CreateNewTacticalHint("AcheronAsclepiusChampion", HintTrigger.ActorSeen, "AcheronAsclepiusChampion_TacCharacterDef", "HINT_ACHERON_ASCLEPIUS_CHAMPION_TITLE", "HINT_ACHERON_ASCLEPIUS_CHAMPION_DESCRIPTION", 0, true, "2FA6F938-0928-4C3A-A514-91F3BD90E048");
                 TFTVTutorialAndStory.CreateNewTacticalHint("AcheronAchlys", HintTrigger.ActorSeen, "AcheronAchlys_TacCharacterDef", "HINT_ACHERON_ACHLYS_TITLE", "HINT_ACHERON_ACHLYS_DESCRIPTION", 0, true, "06EEEA6B-1264-4616-AC78-1A2A56911E72");
                 TFTVTutorialAndStory.CreateNewTacticalHint("AcheronAchlysChampion", HintTrigger.ActorSeen, "AcheronAchlysChampion_TacCharacterDef", "HINT_ACHERON_ACHLYS_CHAMPION_TITLE", "HINT_ACHERON_ACHLYS_CHAMPION_DESCRIPTION", 0, true, "760FDBB6-1556-4B1D-AFE0-59C906672A5D");
-               
+
                 TFTVTutorialAndStory.CreateNewTacticalHint("RevenantSighted", HintTrigger.ActorSeen, "Any_Revenant_TagDef", "REVENANT_SIGHTED_TITLE", "REVENANT_SIGHTED_TEXT", 1, true, "194317EC-67DF-4775-BAFD-98499F82C2D7");
 
                 TFTVTutorialAndStory.CreateNewTacticalHintInfestationMission("InfestationMissionIntro", "BBC5CAD0-42FF-4BBB-8E13-7611DC5695A6", "1ED63949-4375-4A9D-A017-07CF483F05D5", "2A01E924-A26B-44FB-AD67-B1B590B4E1D5");
@@ -369,11 +434,105 @@ namespace TFTV
             }
         }
 
+        public static void ChangesToAcherons()
+        {
+            try
+            {
+                ChangesAcheronResearches();
+                CreateAcheronAbilitiesAndStatus();
+                ChangesAcheronTemplates();
+                ChangesAcheronsAI();
+                ChangesAcheronAbilities();
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+
+        }
+
+
+        public static void CreateBlights() 
+        {
+            try
+            {
+                DefCache.GetDef<ExhaustedStatusDef>("DefaultExhaustedStatusDef");
+                DefCache.GetDef<FatigueStatusDef>("SoldierExhausted_StatusDef");
+                DefCache.GetDef<FatigueStatusDef>("SoldierTired_StatusDef");
+                DefCache.GetDef<SilencedStatusDef>("ActorSilenced_StatusDef");
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+        }
+
+        public static void ChangesAcheronAbilities()
+        {
+            try
+            {
+                string nameOfNotMetallicConditionTag = "Organic_ApplicationCondition";
+                ActorHasTagEffectConditionDef sourceHasTagConditionDef = DefCache.GetDef<ActorHasTagEffectConditionDef>("HasHumanTag_ApplicationCondition");
+                ActorHasTagEffectConditionDef organicEffectConditionDef = Helper.CreateDefFromClone(sourceHasTagConditionDef, "E1ADF8A5-746D-4176-9FFA-99296F96B9BE", nameOfNotMetallicConditionTag);
+                organicEffectConditionDef.GameTag= DefCache.GetDef<SubstanceTypeTagDef>("Organic_SubstanceTypeTagDef");
+
+                StatMultiplierStatusDef trembling = DefCache.GetDef<StatMultiplierStatusDef>("Trembling_StatusDef");
+                trembling.ApplicationConditions = new EffectConditionDef[] { organicEffectConditionDef };
+                ApplyStatusAbilityDef pepperCloud = DefCache.GetDef<ApplyStatusAbilityDef>("Acheron_PepperCloud_ApplyStatusAbilityDef");
+               
+              
+
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+
+        }
+
+        public static void ChangesAcheronsAI()
+        {
+            try
+            {
+                //Adjusting Delirium Spray
+                AINonHealthDamageAttackPositionConsiderationDef deliriumSprayConsideration = DefCache.GetDef<AINonHealthDamageAttackPositionConsiderationDef>("Acheron_CorruptionSprayAttackPosition_AIConsiderationDef");
+                deliriumSprayConsideration.EnemyMask = PhoenixPoint.Tactical.AI.ActorType.Combatant;
+                AcidStatusDef acidStatus = DefCache.GetDef<AcidStatusDef>("Acid_StatusDef");
+                deliriumSprayConsideration.DamageTypeStatusDef = acidStatus;
+
+                //Removes exclusions to metallic and ancients targets
+                HasTagSuitabilityDef deliriumSprayExcludedTags = DefCache.GetDef <HasTagSuitabilityDef>("E_TargetSuitability [Acheron_CorruptionTagsTargetsSuitability_AIConsiderationDef]");
+                List<GameTagDef> deliriumSprayCheckTargetsByTag = deliriumSprayExcludedTags.GameTagDefs.ToList();
+                deliriumSprayCheckTargetsByTag.Add(DefCache.GetDef<SubstanceTypeTagDef>("Organic_SubstanceTypeTagDef"));
+                deliriumSprayExcludedTags.GameTagDefs = deliriumSprayCheckTargetsByTag.ToArray();
+                deliriumSprayExcludedTags.HasTag = true;
+
+                //Adjusting GooSpray
+                AINonHealthDamageAttackPositionConsiderationDef gooSprayConsideration = DefCache.GetDef<AINonHealthDamageAttackPositionConsiderationDef>("Acheron_GooSprayAttackPosition_AIConsiderationDef");
+                gooSprayConsideration.EnemyMask = PhoenixPoint.Tactical.AI.ActorType.Combatant;
+                deliriumSprayConsideration.DamageTypeStatusDef = acidStatus;
+              
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+            
+
+        }
+        
+
+
         public static void ChangesAcheronResearches()
         {
             try
             {
-                CreateAcheronAbilitiesAndStatus();
+
                 //Researches
                 ResearchDef acheronResearch1 = DefCache.GetDef<ResearchDef>("ALN_Acheron1_ResearchDef");
                 ResearchDef acheronResearch2 = DefCache.GetDef<ResearchDef>("ALN_Acheron2_ResearchDef");
@@ -382,8 +541,8 @@ namespace TFTV
                 ResearchDef acheronResearch5 = DefCache.GetDef<ResearchDef>("ALN_Acheron5_ResearchDef");
                 ResearchDef acheronResearch6 = DefCache.GetDef<ResearchDef>("ALN_Acheron6_ResearchDef");
 
-                
-                
+
+
                 ExistingResearchRequirementDef acheronResearchReq2 = DefCache.GetDef<ExistingResearchRequirementDef>("ALN_Acheron2_ResearchDef_ExistingResearchRequirementDef_0");
                 ExistingResearchRequirementDef acheronResearchReq3 = DefCache.GetDef<ExistingResearchRequirementDef>("ALN_Acheron3_ResearchDef_ExistingResearchRequirementDef_0");
                 ExistingResearchRequirementDef acheronResearchReq4 = DefCache.GetDef<ExistingResearchRequirementDef>("ALN_Acheron4_ResearchDef_ExistingResearchRequirementDef_0");
@@ -399,7 +558,7 @@ namespace TFTV
                 acheronResearchReq4.ResearchID = "ALN_Chiron9_ResearchDef";
                 acheronResearchReq6.ResearchID = "ALN_Chiron9_ResearchDef";
 
-                ChangesAcheronTemplates();
+
             }
             catch (Exception e)
             {
@@ -411,7 +570,7 @@ namespace TFTV
 
         public static void CreateAcheronAbilitiesAndStatus()
         {
-            try 
+            try
             {
                 //Create Acheron Harbinger ability, to be used as a flag/counter when calculating chances of getting Void Touched
                 string acheronHarbingerAbilityName = "Acheron_Harbinger_AbilityDef";
@@ -488,7 +647,7 @@ namespace TFTV
         }
 
 
-        
+
 
 
         public static void ChangesAcheronTemplates()
@@ -512,21 +671,21 @@ namespace TFTV
                 //Adding Harbinger of the Void to Acheron, Acheron Prime and Acheron Asclepius Champion
                 //Adding Co-Delirium To Acheron Prime
                 PassiveModifierAbilityDef harbinger = DefCache.GetDef<PassiveModifierAbilityDef>("Acheron_Harbinger_AbilityDef");
-                PassiveModifierAbilityDef tributary = DefCache.GetDef<PassiveModifierAbilityDef>("Acheron_Tributary_AbilityDef");           
+                PassiveModifierAbilityDef tributary = DefCache.GetDef<PassiveModifierAbilityDef>("Acheron_Tributary_AbilityDef");
                 ApplyStatusAbilityDef coDeliriumAbility = DefCache.GetDef<ApplyStatusAbilityDef>("Acheron_CoCorruption_AbilityDef");
 
                 List<TacticalAbilityDef> acheronBasicAbilities = acheron.Data.Abilites.ToList();
                 acheronBasicAbilities.Add(harbinger);
                 acheron.Data.Abilites = acheronBasicAbilities.ToArray();
-               
+
                 List<TacticalAbilityDef> acheronPrimeBasicAbilities = acheronPrime.Data.Abilites.ToList();
                 acheronPrimeBasicAbilities.Add(harbinger);
                 acheronPrimeBasicAbilities.Add(coDeliriumAbility);
                 acheronPrime.Data.Abilites = acheronPrimeBasicAbilities.ToArray();
-                
-               /* List<TacticalAbilityDef> acheronAsclepiusChampionBasicAbilities = acheronAsclepiusChampion.Data.Abilites.ToList();
-                acheronAsclepiusChampionBasicAbilities.Add(harbinger);
-                acheronAsclepiusChampion.Data.Abilites = acheronAsclepiusChampionBasicAbilities.ToArray();*/
+
+                /* List<TacticalAbilityDef> acheronAsclepiusChampionBasicAbilities = acheronAsclepiusChampion.Data.Abilites.ToList();
+                 acheronAsclepiusChampionBasicAbilities.Add(harbinger);
+                 acheronAsclepiusChampion.Data.Abilites = acheronAsclepiusChampionBasicAbilities.ToArray();*/
 
                 List<TacticalAbilityDef> acheronAchlysChampionBasicAbilities = acheronAchlysChampion.Data.Abilites.ToList();
                 acheronAchlysChampionBasicAbilities.Add(tributary);
@@ -546,17 +705,17 @@ namespace TFTV
                 DefCache.GetDef<TacticalItemDef>("AcheronPrime_Head_BodyPartDef").Abilities = new AbilityDef[] { };
                 DefCache.GetDef<TacticalItemDef>("AcheronAchlys_Head_BodyPartDef").Abilities = new AbilityDef[] { };
                 DefCache.GetDef<TacticalItemDef>("AcheronAchlysChampion_Head_BodyPartDef").Abilities = new AbilityDef[] { };
-              
+
                 //Limiting Delirium cloud to one use per turn
-                ApplyDamageEffectAbilityDef deliriumCloud= DefCache.GetDef<ApplyDamageEffectAbilityDef>("Acheron_CorruptionCloud_AbilityDef");
-                ApplyStatusAbilityDef pepperCloud= DefCache.GetDef<ApplyStatusAbilityDef>("Acheron_PepperCloud_ApplyStatusAbilityDef");
-                deliriumCloud.UsesPerTurn=1;
+                ApplyDamageEffectAbilityDef deliriumCloud = DefCache.GetDef<ApplyDamageEffectAbilityDef>("Acheron_CorruptionCloud_AbilityDef");
+                ApplyStatusAbilityDef pepperCloud = DefCache.GetDef<ApplyStatusAbilityDef>("Acheron_PepperCloud_ApplyStatusAbilityDef");
+                deliriumCloud.UsesPerTurn = 1;
                 ApplyEffectAbilityDef confusionCloud = DefCache.GetDef<ApplyEffectAbilityDef>("Acheron_ParalyticCloud_AbilityDef");
-                ResurrectAbilityDef resurrectAbility= DefCache.GetDef<ResurrectAbilityDef>("Acheron_ResurrectAbilityDef");
+                ResurrectAbilityDef resurrectAbility = DefCache.GetDef<ResurrectAbilityDef>("Acheron_ResurrectAbilityDef");
 
                 //Adding Delirium Cloud ability to Acheron Prime
-                DefCache.GetDef<TacticalItemDef>("AcheronPrime_Husk_BodyPartDef").Abilities = new AbilityDef[] {deliriumCloud, pepperCloud };
-              
+                DefCache.GetDef<TacticalItemDef>("AcheronPrime_Husk_BodyPartDef").Abilities = new AbilityDef[] { deliriumCloud, pepperCloud };
+
                 ApplyDamageEffectAbilityDef corrosiveCloud = DefCache.GetDef<ApplyDamageEffectAbilityDef>("Acheron_CorrosiveCloud_AbilityDef");
 
                 //Removes CorrosiveCloud from AchlysChampion
@@ -584,7 +743,7 @@ namespace TFTV
                 asclepiusChampionHuskAbilities.Remove(deliriumCloud);
                 asclepiusChampionHusk.Abilities = asclepiusChampionHuskAbilities.ToArray();
 
-        
+
                 TacticalItemDef asclepiusHusk = DefCache.GetDef<TacticalItemDef>("AcheronAsclepius_Husk_BodyPartDef");
                 List<AbilityDef> asclepiusHuskAbilities = asclepiusHusk.Abilities.ToList();
                 asclepiusHuskAbilities.Remove(resurrectAbility);
@@ -617,7 +776,7 @@ namespace TFTV
                 spitArmsAcheronAchlysChampion.DamagePayload.DamageDeliveryType = DamageDeliveryType.Cone;
 
                 WeaponDef spitArmsAcheronAsclepiusChampion = DefCache.GetDef<WeaponDef>("AcheronAsclepiusChampion_Arms_WeaponDef");
-               
+
                 WeaponDef achlysArms = DefCache.GetDef<WeaponDef>("AcheronAchlys_Arms_WeaponDef");
 
                 string guid = "2B294E66-1BE9-425B-B088-F5A9075167A6";
@@ -625,7 +784,7 @@ namespace TFTV
                 ReflectionHelper.CopyFields(achlysArms, neuroArmsCopy);
                 ReflectionHelper.CopyFields(spitArmsAcheronAchlysChampion, achlysArms);
                 ReflectionHelper.CopyFields(neuroArmsCopy, spitArmsAcheronAsclepiusChampion);
-               
+
                 // Change_AcheronCorruptiveSpray();
                 WeaponDef acheronArms = DefCache.GetDef<WeaponDef>("Acheron_Arms_WeaponDef");
                 acheronArms.DamagePayload.DamageKeywords.Add(new DamageKeywordPair
@@ -1807,7 +1966,7 @@ namespace TFTV
                 oilFishPerceptionDef.PerceptionRange = 30.0f;
                 //
                 AddAbilityStatusDef oilTritonAddAbilityStatus = DefCache.GetDef<AddAbilityStatusDef>("OilFish_AddAbilityStatusDef");
-                oilTritonAddAbilityStatus.ApplicationConditions= new EffectConditionDef[] { };
+                oilTritonAddAbilityStatus.ApplicationConditions = new EffectConditionDef[] { };
                 AddAbilityStatusDef oilCrabAddAbilityStatus = DefCache.GetDef<AddAbilityStatusDef>("OilCrab_AddAbilityStatusDef");
                 oilCrabAddAbilityStatus.ApplicationConditions = new EffectConditionDef[] { };
             }

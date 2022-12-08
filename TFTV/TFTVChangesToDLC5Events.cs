@@ -2,6 +2,7 @@
 using Base.Core;
 using Base.Defs;
 using HarmonyLib;
+using Mono.Cecil;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Geoscape.Entities;
@@ -191,8 +192,7 @@ namespace TFTV
                         }
                     }
 
-
-                }
+                 }
                 catch (Exception e)
                 {
                     TFTVLogger.Error(e);

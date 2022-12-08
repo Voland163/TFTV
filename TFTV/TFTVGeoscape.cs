@@ -74,12 +74,12 @@ namespace TFTV
 
             TFTVRevenantResearch.CheckRevenantResearchRequirements(Controller);
             TFTVProjectOsiris.RunProjectOsiris(gsController);
+            Main.Logger.LogInfo("UmbraEvolution variable is " + Controller.EventSystem.GetVariable(TFTVUmbra.TBTVVariableName));
+            TFTVLogger.Always("UmbraEvolution variable is " + Controller.EventSystem.GetVariable(TFTVUmbra.TBTVVariableName));
 
-           
+            //  TFTVLogger.Always("Revenants destroyed " + gsController.EventSystem.GetVariable("RevenantsDestroyed"));
+            //  TFTVLogger.Always("Revenant captured " + gsController.EventSystem.GetVariable("RevenantCapturedVariable"));
 
-          //  TFTVLogger.Always("Revenants destroyed " + gsController.EventSystem.GetVariable("RevenantsDestroyed"));
-          //  TFTVLogger.Always("Revenant captured " + gsController.EventSystem.GetVariable("RevenantCapturedVariable"));
-            
 
 
 
@@ -151,7 +151,7 @@ namespace TFTV
             TFTVVoidOmens.VoidOmensCheck = data.VoidOmensCheck;
           //  TFTVTutorialAndStory.TacticalHintsToShow = data.TacticalHintsToShow;
 
-            Main.Logger.LogInfo("UmbraEvoltion variable is " + Controller.EventSystem.GetVariable(TFTVUmbra.TBTVVariableName));
+          //  Main.Logger.LogInfo("UmbraEvolution variable is " + Controller.EventSystem.GetVariable(TFTVUmbra.TBTVVariableName));
             Main.Logger.LogInfo("# Characters with broken limbs: " + TFTVStamina.charactersWithBrokenLimbs.Count);
             Main.Logger.LogInfo("# Behemoth targets for this emergence: " + TFTVAirCombat.targetsForBehemoth.Count);
             //    Main.Logger.LogInfo("# Targets already hit by Behemoth on this emergence: " + TFTVAirCombat.targetsVisitedByBehemoth.Count);
@@ -166,7 +166,7 @@ namespace TFTV
           //  Main.Logger.LogInfo("Shown hints count " + TFTVTutorialAndStory.TacticalHintsToShow.Count);
 
 
-          TFTVLogger.Always("UmbraEvoltion variable is " + Controller.EventSystem.GetVariable(TFTVUmbra.TBTVVariableName));
+       //  
             TFTVLogger.Always("# Characters with broken limbs: " + TFTVStamina.charactersWithBrokenLimbs.Count);
             TFTVLogger.Always("# Behemoth targets for this emergence: " + TFTVAirCombat.targetsForBehemoth.Count);
             //   TFTVLogger.Always("# Targets already hit by Behemoth on this emergence: " + TFTVAirCombat.targetsVisitedByBehemoth.Count);

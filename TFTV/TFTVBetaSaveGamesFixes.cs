@@ -40,17 +40,17 @@ namespace TFTV
         {
             try
             {
-                if (controller.EventSystem.GetEventRecord("SDI_10")?.SelectedChoice == 0)
+                if (controller.EventSystem.GetEventRecord("SDI_10")?.SelectedChoice == 0) //|| controller.AlienFaction.EvolutionProgress>=4700)
                 {
                     controller.EventSystem.SetVariable(TFTVUmbra.TBTVVariableName, 4);
                     TFTVLogger.Always(TFTVUmbra.TBTVVariableName + " is set to " + controller.EventSystem.GetVariable(TFTVUmbra.TBTVVariableName));
                 }
-                else if (controller.EventSystem.GetEventRecord("SDI_09")?.SelectedChoice == 0)
+                else if (controller.EventSystem.GetEventRecord("SDI_09")?.SelectedChoice == 0)// || controller.AlienFaction.EvolutionProgress >= 4230)
                 {
                     controller.EventSystem.SetVariable(TFTVUmbra.TBTVVariableName, 3);
                     TFTVLogger.Always(TFTVUmbra.TBTVVariableName + " is set to " + controller.EventSystem.GetVariable(TFTVUmbra.TBTVVariableName));
                 }
-                else if (controller.EventSystem.GetEventRecord("SDI_06")?.SelectedChoice == 0)
+                else if (controller.EventSystem.GetEventRecord("SDI_06")?.SelectedChoice == 0)// || controller.AlienFaction.EvolutionProgress >= 2820)
                 {
                     controller.EventSystem.SetVariable(TFTVUmbra.TBTVVariableName, 2);
                     TFTVLogger.Always(TFTVUmbra.TBTVVariableName + " is set to " + controller.EventSystem.GetVariable(TFTVUmbra.TBTVVariableName));

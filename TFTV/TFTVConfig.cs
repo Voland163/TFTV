@@ -36,7 +36,7 @@ namespace TFTV
             "turn this option off")]
         public bool helmentsOff = true;
 
-        [ConfigField(text: "REMOVE MORE MIST VOID OMEN",
+        [ConfigField(text: "PLAY WITH MORE MIST VOID OMEN",
             description: "If you are playing on a Low-end system and experience lag with this Void Omen, you can turn it off here. This will prevent it from rolling" +
             " and if already rolled, will prevent it from having any effect")]
         public bool MoreMistVO = true;

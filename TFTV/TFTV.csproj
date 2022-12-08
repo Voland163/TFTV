@@ -101,6 +101,7 @@
     <Compile Include="Tactical\Entities\Statuses\AddDependentDamageKeywordsStatusDef.cs" />
     <Compile Include="TFTVAirCombat.cs" />
     <Compile Include="TFTVAmbushes.cs" />
+    <Compile Include="TFTVAncients.cs" />
     <Compile Include="TFTVAugmentations.cs" />
     <Compile Include="TFTVBetaSaveGamesFixes.cs" />
     <Compile Include="TFTVChangesToDLC1andDLC2Events.cs" />

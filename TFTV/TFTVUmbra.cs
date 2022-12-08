@@ -788,11 +788,11 @@ namespace TFTV
         public static void SetUmbraEvolution(GeoLevelController level)
         {
 
-            if (level.EventSystem.GetVariable(TBTVVariableName) == 3)
+            if (level.EventSystem.GetVariable(TBTVVariableName) == 3 || level.EventSystem.GetVariable(TBTVVariableName) == 4)
             {
                 UmbraEvolution(125 * level.CurrentDifficultyLevel.Order, 20 * level.CurrentDifficultyLevel.Order, 20);
             }
-            else if (level.EventSystem.GetVariable(TBTVVariableName) == 1)
+            else if (level.EventSystem.GetVariable(TBTVVariableName) == 1 || level.EventSystem.GetVariable(TBTVVariableName) == 2)
             {
                 UmbraEvolution(80 * level.CurrentDifficultyLevel.Order, 20 * level.CurrentDifficultyLevel.Order, 0);
             }
@@ -991,7 +991,7 @@ namespace TFTV
         }
 
         [HarmonyPatch(typeof(TacticalLevelController), "ActorEnteredPlay")]
-        public static class TacticalLevelController_ActorEnteredPlay_HumanEnemies_Patch
+        public static class TacticalLevelController_ActorEnteredPlay_Umbra_Patch
         {
             public static void Postfix(TacticalActorBase actor, TacticalLevelController __instance)
             {
