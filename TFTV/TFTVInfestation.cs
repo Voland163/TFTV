@@ -97,7 +97,7 @@ namespace TFTV
 
                         int[] rolledVoidOmens = TFTVVoidOmens.CheckFordVoidOmensInPlay(__instance.GeoLevel);
                         if (attacker.PPFactionDef == sharedData.AlienFactionDef && __instance.IsInMist && __instance.GeoLevel.EventSystem.GetVariable("Infestation_Encounter_Variable") > 0
-                         && (roll >= 6 || rolledVoidOmens.Contains(17)))
+                         && (roll >= 6 || rolledVoidOmens.Contains(17) || __instance.GeoLevel.EventSystem.GetVariable("TrappedInTheMistTriggered") != 1))//to make infestation more likely
                         {
                             GeoSiteForInfestation = __instance;
                             __instance.ActiveMission = null;
@@ -147,8 +147,6 @@ namespace TFTV
                 try
                 {
                     //TFTVLogger.Always("AddEntry method invoked");
-
-
 
                     if (GeoSiteForInfestation != null && GeoSiteForInfestation.SiteName != null && entry != null && entry.Parameters != null && entry.Parameters.Contains(GeoSiteForInfestation.SiteName))
                     {

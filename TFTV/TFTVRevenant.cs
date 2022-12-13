@@ -150,7 +150,7 @@ namespace TFTV
             try
             {
                 TFTVLogger.Always("DeadSoldierDeliriumCount is " + DeadSoldiersDelirium.Count + " and last time a Revenant was seen was on day " + daysRevenantLastSeen + ", and now it is day " + controller.Timing.Now.TimeSpan.Days);
-                if (DeadSoldiersDelirium.Count > 0 && (daysRevenantLastSeen == 0 || controller.Timing.Now.TimeSpan.Days - daysRevenantLastSeen >= 100)) //testing, should be 3 + UnityEngine.Random.Range(-1, 3))) 
+                if (DeadSoldiersDelirium.Count > 0 && (daysRevenantLastSeen == 0 || controller.Timing.Now.TimeSpan.Days - daysRevenantLastSeen >= 3)) //UnityEngine.Random.Range(-1, 3))) 
                 {
                     revenantCanSpawn = true;
                     TFTVLogger.Always("Therefore, a Revenant can spawn is " + revenantCanSpawn);

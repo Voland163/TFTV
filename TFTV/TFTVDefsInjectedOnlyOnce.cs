@@ -1,6 +1,4 @@
-﻿using Base.AI;
-using Base.AI.Defs;
-using Base.Defs;
+﻿using Base.Defs;
 using Base.Entities.Abilities;
 using Base.Entities.Effects;
 using Base.Entities.Effects.ApplicationConditions;
@@ -35,6 +33,7 @@ using PhoenixPoint.Tactical.Entities.Effects.DamageTypes;
 using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.Entities.Statuses;
 using PhoenixPoint.Tactical.Entities.Weapons;
+using PhoenixPoint.Tactical.Eventus;
 using PhoenixPoint.Tactical.Levels.FactionObjectives;
 using System;
 using System.Collections.Generic;
@@ -453,7 +452,7 @@ namespace TFTV
         }
 
 
-        public static void CreateBlights() 
+        public static void CreateBlights()
         {
             try
             {
@@ -477,14 +476,11 @@ namespace TFTV
                 string nameOfNotMetallicConditionTag = "Organic_ApplicationCondition";
                 ActorHasTagEffectConditionDef sourceHasTagConditionDef = DefCache.GetDef<ActorHasTagEffectConditionDef>("HasHumanTag_ApplicationCondition");
                 ActorHasTagEffectConditionDef organicEffectConditionDef = Helper.CreateDefFromClone(sourceHasTagConditionDef, "E1ADF8A5-746D-4176-9FFA-99296F96B9BE", nameOfNotMetallicConditionTag);
-                organicEffectConditionDef.GameTag= DefCache.GetDef<SubstanceTypeTagDef>("Organic_SubstanceTypeTagDef");
+                organicEffectConditionDef.GameTag = DefCache.GetDef<SubstanceTypeTagDef>("Organic_SubstanceTypeTagDef");
 
                 StatMultiplierStatusDef trembling = DefCache.GetDef<StatMultiplierStatusDef>("Trembling_StatusDef");
                 trembling.ApplicationConditions = new EffectConditionDef[] { organicEffectConditionDef };
                 ApplyStatusAbilityDef pepperCloud = DefCache.GetDef<ApplyStatusAbilityDef>("Acheron_PepperCloud_ApplyStatusAbilityDef");
-               
-              
-
 
             }
             catch (Exception e)
@@ -506,7 +502,7 @@ namespace TFTV
                 deliriumSprayConsideration.DamageTypeStatusDef = acidStatus;
 
                 //Removes exclusions to metallic and ancients targets
-                HasTagSuitabilityDef deliriumSprayExcludedTags = DefCache.GetDef <HasTagSuitabilityDef>("E_TargetSuitability [Acheron_CorruptionTagsTargetsSuitability_AIConsiderationDef]");
+                HasTagSuitabilityDef deliriumSprayExcludedTags = DefCache.GetDef<HasTagSuitabilityDef>("E_TargetSuitability [Acheron_CorruptionTagsTargetsSuitability_AIConsiderationDef]");
                 List<GameTagDef> deliriumSprayCheckTargetsByTag = deliriumSprayExcludedTags.GameTagDefs.ToList();
                 deliriumSprayCheckTargetsByTag.Add(DefCache.GetDef<SubstanceTypeTagDef>("Organic_SubstanceTypeTagDef"));
                 deliriumSprayExcludedTags.GameTagDefs = deliriumSprayCheckTargetsByTag.ToArray();
@@ -516,16 +512,46 @@ namespace TFTV
                 AINonHealthDamageAttackPositionConsiderationDef gooSprayConsideration = DefCache.GetDef<AINonHealthDamageAttackPositionConsiderationDef>("Acheron_GooSprayAttackPosition_AIConsiderationDef");
                 gooSprayConsideration.EnemyMask = PhoenixPoint.Tactical.AI.ActorType.Combatant;
                 deliriumSprayConsideration.DamageTypeStatusDef = acidStatus;
-              
+
+
+
             }
             catch (Exception e)
             {
                 TFTVLogger.Error(e);
             }
-            
+
 
         }
-        
+
+        public static void CreatePepperBomb()
+        {
+            try
+            {
+
+
+                DamageKeywordDef sourceForDKE = DefCache.GetDef<DamageKeywordDef>("Mist_DamageKeywordEffectorDef");
+                string guidForDKE = "E7136E49-A82F-4290-B5D5-1EA6999F2520";
+                DamageKeywordDef pepperDamageKeywordDef = Repo.CreateDef<DamageKeywordDef>(guidForDKE);
+                ReflectionHelper.CopyFields(sourceForDKE, pepperDamageKeywordDef);
+
+                SpawnVoxelDamageTypeEffectDef sourceForDTE = DefCache.GetDef<SpawnVoxelDamageTypeEffectDef>("Mist_SpawnVoxelDamageTypeEffectDef");
+                string guidForDTE = "9541D0A1-7C7F-424B-B117-1FF0B85EB60D";
+                DamageKeywordDef pepperDamageTypeEffectDef = Repo.CreateDef<DamageKeywordDef>(guidForDTE);
+                ReflectionHelper.CopyFields(sourceForDTE, pepperDamageTypeEffectDef);
+
+                TacticalEventDef spawnPepperCloud = DefCache.GetDef<TacticalEventDef>("Acheron_SpawnPepperCloudParticle_EventDef");
+                ParticleEffectDef pepperCloudParticleEffect = DefCache.GetDef<ParticleEffectDef>("E_Mist10 [Acheron_SpawnPepperCloudParticle_EventDef]");
+
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+        }
+
 
 
         public static void ChangesAcheronResearches()
@@ -785,13 +811,30 @@ namespace TFTV
                 ReflectionHelper.CopyFields(spitArmsAcheronAchlysChampion, achlysArms);
                 ReflectionHelper.CopyFields(neuroArmsCopy, spitArmsAcheronAsclepiusChampion);
 
+                DamageKeywordDef mistDamageKeyword = DefCache.GetDef<DamageKeywordDef>("Mist_DamageKeywordEffectorDef");
+                SpawnVoxelDamageTypeEffectDef mistDamageTypeEffect = DefCache.GetDef<SpawnVoxelDamageTypeEffectDef>("Mist_SpawnVoxelDamageTypeEffectDef");
+
                 // Change_AcheronCorruptiveSpray();
+                //Add acid and mist, increase range
                 WeaponDef acheronArms = DefCache.GetDef<WeaponDef>("Acheron_Arms_WeaponDef");
                 acheronArms.DamagePayload.DamageKeywords.Add(new DamageKeywordPair
-                {
-                    DamageKeywordDef = acid,
-                    Value = 20
-                });
+                 {
+                     DamageKeywordDef = acid,
+                     Value = 20
+                 });
+                 acheronArms.DamagePayload.DamageKeywords.Add(new DamageKeywordPair
+                 {
+                     DamageKeywordDef = mistDamageKeyword,
+                     Value = 1
+
+                 });
+
+                acheronArms.DamagePayload.DamageType = mistDamageTypeEffect;
+                acheronArms.DamagePayload.AoeRadius = 5;
+                acheronArms.DamagePayload.Range = 30;
+                acheronArms.DamagePayload.DamageDeliveryType = DamageDeliveryType.Cone;
+                //   acheronArms.Abilities[0] = DefCache.GetDef<ShootAbilityDef>("MistLaunch_ShootAbilityDef"); 
+
 
                 WeaponDef acheronPrimeArms = DefCache.GetDef<WeaponDef>("AcheronPrime_Arms_WeaponDef");
                 acheronPrimeArms.DamagePayload.DamageKeywords.Add(new DamageKeywordPair
@@ -799,6 +842,17 @@ namespace TFTV
                     DamageKeywordDef = acid,
                     Value = 30
                 });
+                acheronPrimeArms.DamagePayload.DamageKeywords.Add(new DamageKeywordPair
+                {
+                    DamageKeywordDef = mistDamageKeyword,
+                    Value = 1
+
+                });
+
+                acheronPrimeArms.DamagePayload.DamageType = mistDamageTypeEffect;
+                acheronPrimeArms.DamagePayload.AoeRadius = 5;
+                acheronPrimeArms.DamagePayload.Range = 30;
+                acheronPrimeArms.DamagePayload.DamageDeliveryType = DamageDeliveryType.Cone;
 
             }
             catch (Exception e)

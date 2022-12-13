@@ -1,5 +1,7 @@
 ﻿using Base.Entities;
+using Base.Entities.Effects;
 using Base.Entities.Effects.ApplicationConditions;
+using Base.Entities.Statuses;
 using HarmonyLib;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
@@ -11,6 +13,7 @@ using PhoenixPoint.Tactical.Entities.Statuses;
 using PhoenixPoint.Tactical.Entities.Weapons;
 using PhoenixPoint.Tactical.Levels;
 using PhoenixPoint.Tactical.Levels.Missions;
+using PhoenixPoint.Tactical.Levels.Mist;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -46,8 +49,8 @@ namespace TFTV
         private static readonly GameTagDef voidTouchedTag = DefCache.GetDef<GameTagDef>("VoidTouched_GameTagDef");
         private static readonly GameTagDef voidTouchedOnAttackTag = DefCache.GetDef<GameTagDef>("VoidTouchedOnAttack_GameTagDef");
         private static readonly GameTagDef voidTouchedOnTurnEndTag = DefCache.GetDef<GameTagDef>("VoidTouchedOnTurnEnd_GameTagDef");
-      
-        
+
+
 
         private static readonly HitPenaltyStatusDef mFDStatus = DefCache.GetDef<HitPenaltyStatusDef>("E_PureDamageBonusStatus [MarkedForDeath_AbilityDef]");
 
@@ -89,7 +92,7 @@ namespace TFTV
 
         //need to exclude curespray
 
-
+        /*
         [HarmonyPatch(typeof(ApplyEffectAbility), "ApplyEffectCrt")]
         internal static class ApplyEffectAbility_ApplyStatusCrt_AcheronTBTV_patch
         {
@@ -120,7 +123,7 @@ namespace TFTV
                                     {
                                         TFTVLogger.Always("The target is " + tacticalActor.name);
                                         tacticalActor.Status.ApplyStatus(umbraTargetStatusDef);
-                                       
+
                                     }
 
                                 }
@@ -129,7 +132,7 @@ namespace TFTV
                         else
                         {
                             abilityTarget.GetTargetActor().Status.ApplyStatus(umbraTargetStatusDef);
-                           
+
                         }
                     }
                 }
@@ -155,7 +158,7 @@ namespace TFTV
                 {
                     AdditionalEffectShootAbilityDef cureSpray = DefCache.GetDef<AdditionalEffectShootAbilityDef>("Acheron_CureSpray_AbilityDef");
 
-                    if (__instance.TacticalActor!=null && __instance.TacticalActor.HasGameTag(acheronTag) && !__instance.AbilityDef.Equals(cureSpray))
+                    if (__instance.TacticalActor != null && __instance.TacticalActor.HasGameTag(acheronTag) && !__instance.AbilityDef.Equals(cureSpray))
                     {
                         TFTVLogger.Always("Acheron ShootAbility attack");
 
@@ -170,8 +173,9 @@ namespace TFTV
                             {
                                 TFTVLogger.Always("The target is " + tacticalActor.name);
                                 tacticalActor.Status.ApplyStatus(umbraTargetStatusDef);
-                            
+
                             }
+                           
 
                         }
 
@@ -208,9 +212,12 @@ namespace TFTV
                                 {
                                     TFTVLogger.Always("The target is " + tacticalActor.name);
                                     tacticalActor.Status.ApplyStatus(umbraTargetStatusDef);
-                                 
-                                }
 
+                                }
+                                ParticleEffectDef pepperCloudParticleEffect = DefCache.GetDef<ParticleEffectDef>("E_Mist10 [Acheron_SpawnPepperCloudParticle_EventDef]");
+                                Effect pepperCloud = new Effect() { BaseDef = pepperCloudParticleEffect };
+                                EffectTarget effectTarget = new EffectTarget { GameObject = tacticalActor.gameObject };
+                                pepperCloud.Apply(effectTarget);
                             }
                         }
 
@@ -250,7 +257,7 @@ namespace TFTV
                                     {
                                         TFTVLogger.Always("The target is " + tacticalActor.name);
                                         tacticalActor.Status.ApplyStatus(umbraTargetStatusDef);
-                                     
+
                                     }
 
                                 }
@@ -259,7 +266,7 @@ namespace TFTV
                         else
                         {
                             abilityTarget.GetTargetActor().Status.ApplyStatus(umbraTargetStatusDef);
-                           
+
                         }
                     }
                 }
@@ -269,7 +276,7 @@ namespace TFTV
                 }
             }
         }
-
+        */
         [HarmonyPatch(typeof(TacticalLevelController), "ActorDied")]
         public static class TacticalLevelController_ActorDied_TBTV_Patch
         {
@@ -284,9 +291,10 @@ namespace TFTV
                         if (actor.GetAbilityWithDef<PassiveModifierAbility>(hiddenTBTVAbilityDef) != null)
                         {
                             actor.RemoveAbility(hiddenTBTVAbilityDef);
+                            actor.GameTags.Remove(voidTouchedTag);
                             int roll = MakeTBTVRoll();
 
-                            if (roll > 34)
+                            if (roll > 30)
                             {
                                 RemoveDeathBelcherAbilities(actor);
                                 GiveTBTVAbility(actor, roll);
@@ -297,7 +305,7 @@ namespace TFTV
                         {
                             foreach (TacticalActorBase allyTacticalActorBase in actor.TacticalFaction.Actors)
                             {
-                                if (allyTacticalActorBase.InPlay && allyTacticalActorBase is TacticalActor && allyTacticalActorBase !=actor)
+                                if (allyTacticalActorBase.InPlay && allyTacticalActorBase is TacticalActor && allyTacticalActorBase != actor)
                                 {
                                     TacticalActor tacticalActor = allyTacticalActorBase as TacticalActor;
                                     float magnitude = 10;
@@ -375,6 +383,7 @@ namespace TFTV
                         RemoveDeathBelcherAbilities(__instance);
                         int roll = MakeTBTVRoll();
                         __instance.RemoveAbility(hiddenTBTVAbilityDef);
+                        __instance.GameTags.Remove(voidTouchedTag);
                         GiveTBTVAbility(__instance, roll);
                     }
                 }
@@ -400,6 +409,7 @@ namespace TFTV
                         RemoveDeathBelcherAbilities(actor);
                         int roll = MakeTBTVRoll();
                         actor.RemoveAbility(hiddenTBTVAbilityDef);
+                        actor.GameTags.Remove(voidTouchedTag);
                         GiveTBTVAbility(actor, roll);
                     }
 
@@ -433,7 +443,7 @@ namespace TFTV
 
                 if (TBTVVariable >= 4)
                 {
-                    rollCap = 100;
+                    rollCap = 101;
                 }
                 else if (TBTVVariable >= 2)
                 {
@@ -483,33 +493,40 @@ namespace TFTV
         {
             try
             {
-                if (roll > 34 && roll <= 67)
+                //1-30 Umbra, 31-36 dud,37-66 MfD, 67-96 Reinforcements, 97-100 dud  
+
+                if (roll > 37 && roll <= 66)
                 {
                     tacticalActor.Status.ApplyStatus(onAttackTBTVStatus);
                     tacticalActor.GameTags.Add(voidTouchedOnAttackTag);
 
                     TFTVLogger.Always("MfD status applied " + tacticalActor.name);
                 }
-                else if (roll > 67)
+                else if (roll > 66 && roll <=96)
                 {
                     tacticalActor.Status.ApplyStatus(onTurnEndTBTVStatus);
                     tacticalActor.GameTags.Add(voidTouchedOnTurnEndTag);
 
                     TFTVLogger.Always("CallReinforcements status applied " + tacticalActor.name);
                 }
-                else
+                else if((roll >=31 && roll <=36)||roll>=97)
+                {
+                    TFTVLogger.Always(tacticalActor.name + " had a dud TBTV!");
+                    return;
+                }
+                else 
                 {
                     if (tacticalActor.HasGameTag(crabTag))
                     {
                         tacticalActor.Status.ApplyStatus(oilCrabAddAbilityStatus);
                         TFTVLogger.Always("Spawn Umbra crab status applied " + tacticalActor.name);
                     }
-                    else if(tacticalActor.HasGameTag(fishTag))
+                    else if (tacticalActor.HasGameTag(fishTag))
                     {
                         tacticalActor.Status.ApplyStatus(oilTritonAddAbilityStatus);
                         TFTVLogger.Always("Spawn Umbra fish status applied " + tacticalActor.name);
                     }
-                    else 
+                    else
                     {
                         int roll2 = UnityEngine.Random.Range(1, 11);
                         if (roll2 <= 5)
@@ -545,18 +562,18 @@ namespace TFTV
 
                 int difficulty = controller.Difficulty.Order;
 
-                foreach (TacCharacterDef tacCharacterDef in controller.TacMission.MissionData.UnlockedAlienTacCharacterDefs) 
-                { 
-                    if(tacCharacterDef.ClassTag!=null && !eligibleClassTagDefs.Contains(tacCharacterDef.ClassTag)) 
-                    
+                foreach (TacCharacterDef tacCharacterDef in controller.TacMission.MissionData.UnlockedAlienTacCharacterDefs)
+                {
+                    if (tacCharacterDef.ClassTag != null && !eligibleClassTagDefs.Contains(tacCharacterDef.ClassTag))
+
                     {
                         TFTVLogger.Always("ClassTag " + tacCharacterDef.ClassTag.className + " added");
                         eligibleClassTagDefs.Add(tacCharacterDef.ClassTag);
-                    
-                    }                      
+
+                    }
                 }
 
-                if(difficulty > 0) 
+                if (difficulty > 0)
                 {
                     UnityEngine.Random.InitState((int)DateTime.Now.Ticks);
                     int roll = UnityEngine.Random.Range(1, 2);
@@ -565,20 +582,20 @@ namespace TFTV
                     {
                         reinforcements.Add(crabTag, 1);
                     }
-                    else 
-                    { 
-                        reinforcements.Add(fishTag, 1); 
+                    else
+                    {
+                        reinforcements.Add(fishTag, 1);
                     }
                 }
-              
-                if(difficulty > 2) 
+
+                if (difficulty > 2)
                 {
-                    if (eligibleClassTagDefs.Contains(myrmidonTag)) 
+                    if (eligibleClassTagDefs.Contains(myrmidonTag))
                     {
                         reinforcements.Add(myrmidonTag, 1);
-                    
+
                     }
-                    else 
+                    else
                     {
                         UnityEngine.Random.InitState((int)DateTime.Now.Ticks);
                         int roll = UnityEngine.Random.Range(1, 2);
@@ -587,9 +604,9 @@ namespace TFTV
                         {
                             if (reinforcements.ContainsKey(crabTag))
                             {
-                                reinforcements[crabTag]+=1;
+                                reinforcements[crabTag] += 1;
                             }
-                            else 
+                            else
                             {
                                 reinforcements.Add(crabTag, 1);
                             }
@@ -683,7 +700,7 @@ namespace TFTV
                 }
 
                 return reinforcements;
-               
+
             }
 
             catch (Exception e)
@@ -756,7 +773,7 @@ namespace TFTV
                                 method_GenerateTargetData.Invoke(callReinforcementsAbility, new object[] { participantSpawn, reinforcement });
 
                             }
-                           
+
                         }
                     }
                 }
@@ -974,7 +991,7 @@ namespace TFTV
                                                                                                   //list.RemoveWhere(adilityTarget => (adilityTarget.Actor as TacticalActor)?.CharacterStats.Corruption <= 0);
                             foreach (TacticalAbilityTarget source in __result)
                             {
-                                if (source.Actor is TacticalActor && ((source.Actor as TacticalActor).CharacterStats.Corruption > 0 || (source.Actor as TacticalActor).HasStatus(umbraTargetStatusDef)))
+                                if (source.Actor is TacticalActor && ((source.Actor as TacticalActor).CharacterStats.Corruption > 0 || source.Actor.TacticalPerceptionBase.IsTouchingVoxel(TacticalVoxelType.Mist)))
                                 {
                                     list.Add(source);
                                 }
@@ -1012,9 +1029,9 @@ namespace TFTV
                                 TacticalActor tacticalActor = actor as TacticalActor;
 
                                 UnityEngine.Random.InitState((int)DateTime.Now.Ticks);
-                                int roll = UnityEngine.Random.Range(0, 101 - CheckForAcheronHarbingers(__instance) * 10);
+                                int roll = UnityEngine.Random.Range(0, 101);
                                 // TFTVLogger.Always("The roll is " + roll);
-                                if (TFTVVoidOmens.VoidOmensCheck[15] && roll <= 32)
+                                if (TFTVVoidOmens.VoidOmensCheck[15] && roll <= 32 + CheckForAcheronHarbingers(__instance) * 10)
                                 {
                                     TFTVLogger.Always("VO16+VO15 This Arthron here " + actor + ", got past the crabtag and the blecher ability check!");
                                     tacticalActor.Status.ApplyStatus(hiddenTBTVAddAbilityStatus);
@@ -1024,7 +1041,7 @@ namespace TFTV
                                     }
 
                                 }
-                                else if (!TFTVVoidOmens.VoidOmensCheck[15] && roll <= 16)
+                                else if (!TFTVVoidOmens.VoidOmensCheck[15] && roll <= 16 + CheckForAcheronHarbingers(__instance) * 5)
                                 {
                                     TFTVLogger.Always("VO16 This Arthron here " + actor + ", got past the crabtag and the blecher ability check!");
                                     tacticalActor.Status.ApplyStatus(hiddenTBTVAddAbilityStatus);
@@ -1041,8 +1058,8 @@ namespace TFTV
                                 TacticalActor tacticalActor = actor as TacticalActor;
 
                                 UnityEngine.Random.InitState((int)DateTime.Now.Ticks);
-                                int roll = UnityEngine.Random.Range(0, 101 - CheckForAcheronHarbingers(__instance) * 10);
-                                if (TFTVVoidOmens.VoidOmensCheck[15] && roll <= 32)
+                                int roll = UnityEngine.Random.Range(0, 101);
+                                if (TFTVVoidOmens.VoidOmensCheck[15] && roll <= 32 + CheckForAcheronHarbingers(__instance) * 10)
                                 {
                                     TFTVLogger.Always("VO16+VO15 This Triton here " + actor + ", got past the crabtag and the blecher ability check!");
                                     tacticalActor.Status.ApplyStatus(hiddenTBTVAddAbilityStatus);
@@ -1051,7 +1068,7 @@ namespace TFTV
                                         actor.GameTags.Add(voidTouchedTag);
                                     }
                                 }
-                                else if (!TFTVVoidOmens.VoidOmensCheck[15] && roll <= 16)
+                                else if (!TFTVVoidOmens.VoidOmensCheck[15] && roll <= 16 + CheckForAcheronHarbingers(__instance) * 5)
                                 {
                                     TFTVLogger.Always("VO16 This Triton here " + actor + ", got past the crabtag and the blecher ability check!");
                                     tacticalActor.Status.ApplyStatus(hiddenTBTVAddAbilityStatus);
@@ -1071,6 +1088,51 @@ namespace TFTV
             }
         }
 
+       /* public static void CheckForActorsInMist(TacticalLevelController controller)
+        {
+            try
+            {
+                foreach (TacticalFaction tacticalFaction in controller.Factions)
+                {
+                    if (tacticalFaction != controller.GetFactionByCommandName("aln"))
+                    {
+                        foreach (TacticalActorBase tacticalActorBase in tacticalFaction.Actors)
+                        {
+                            if (tacticalActorBase is TacticalActor)
+                            {
+                                TacticalActor tacticalActor = tacticalActorBase as TacticalActor;
+
+                                if (tacticalActorBase.TacticalPerceptionBase.IsTouchingVoxel(TacticalVoxelType.Mist))
+                                {
+                                   
+                                    if (!tacticalActor.HasStatus(umbraTargetStatusDef))
+                                    {
+                                        TFTVLogger.Always("The target is " + tacticalActor.name);
+                                        tacticalActor.Status.ApplyStatus(umbraTargetStatusDef);
+                                    }
+                                }
+                                else 
+                                {
+                                    if (tacticalActor.HasStatus(umbraTargetStatusDef))
+                                    {
+                                        TFTVLogger.Always("The target is " + tacticalActor.name);
+                                        Status status = tacticalActor.Status.GetStatus<Status>(umbraTargetStatusDef);
+                                        tacticalActor.Status.Statuses.Remove(status);
+
+                                    }
+                                }
+                            }
+                        }                 
+                    }
+                }
+            }
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+       */
 
         /* [HarmonyPatch(typeof(CallReinforcementsAbility), "CallReinforcementsCrt")]
 
