@@ -16,6 +16,7 @@ using PhoenixPoint.Tactical.Levels.Missions;
 using PhoenixPoint.Tactical.Levels.Mist;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
@@ -41,7 +42,7 @@ namespace TFTV
 
         private static readonly DamageMultiplierStatusDef onAttackTBTVStatus = DefCache.GetDef<DamageMultiplierStatusDef>("TBTV_OnAttack_StatusDef");
         private static readonly DamageMultiplierStatusDef onTurnEndTBTVStatus = DefCache.GetDef<DamageMultiplierStatusDef>("TBTV_OnTurnEnd_StatusDef");
-        private static readonly DamageMultiplierStatusDef umbraTargetStatusDef = DefCache.GetDef<DamageMultiplierStatusDef>("TBTV_Target");
+      //  private static readonly DamageMultiplierStatusDef umbraTargetStatusDef = DefCache.GetDef<DamageMultiplierStatusDef>("TBTV_Target");
         private static readonly PassiveModifierAbilityDef acheronTributary = DefCache.GetDef<PassiveModifierAbilityDef>("Acheron_Tributary_AbilityDef");
 
         private static readonly PassiveModifierAbilityDef hiddenTBTVAbilityDef = DefCache.GetDef<PassiveModifierAbilityDef>("TBTV_Hidden_AbilityDef");
@@ -288,9 +289,9 @@ namespace TFTV
                     {
                         TacticalActor actor = deathReport.Actor as TacticalActor;
 
-                        if (actor.GetAbilityWithDef<PassiveModifierAbility>(hiddenTBTVAbilityDef) != null)
+                        if (actor.GameTags.Contains(voidTouchedTag))
                         {
-                            actor.RemoveAbility(hiddenTBTVAbilityDef);
+                            actor.RemoveAbility(hiddenTBTVAbilityDef); 
                             actor.GameTags.Remove(voidTouchedTag);
                             int roll = MakeTBTVRoll();
 
@@ -314,7 +315,7 @@ namespace TFTV
                                     {
 
                                         TFTVLogger.Always("The actor who will receive TBTV from the Tributary is " + tacticalActor.name);
-                                        if (tacticalActor.GameTags.Contains(crabTag) && tacticalActor.GetAbilityWithDef<PassiveModifierAbility>(hiddenTBTVAbilityDef) == null
+                                        if (tacticalActor.GameTags.Contains(crabTag) && tacticalActor.GameTags.Contains(voidTouchedTag)
                                             && !tacticalActor.name.Contains("Oilcrab") && !tacticalActor.GameTags.Contains(anyRevenantGameTag))
                                         {
                                             tacticalActor.Status.ApplyStatus(hiddenTBTVAddAbilityStatus);
@@ -326,7 +327,7 @@ namespace TFTV
 
                                         }
 
-                                        else if (tacticalActor.GameTags.Contains(fishTag) && tacticalActor.GetAbilityWithDef<PassiveModifierAbility>(hiddenTBTVAbilityDef) == null
+                                        else if (tacticalActor.GameTags.Contains(fishTag) && tacticalActor.GameTags.Contains(voidTouchedTag)
                                             && !tacticalActor.name.Contains("Oilfish") && !actor.GameTags.Contains(anyRevenantGameTag))
                                         {
                                             TFTVLogger.Always("The actor who will receive TBTV from the Tributary is " + tacticalActor.name);
@@ -338,7 +339,7 @@ namespace TFTV
                                             }
 
                                         }
-                                        else if (tacticalActor.GetAbilityWithDef<PassiveModifierAbility>(hiddenTBTVAbilityDef) == null
+                                        else if (tacticalActor.GameTags.Contains(voidTouchedTag)
                                             && !tacticalActor.name.Contains("Oilfish") && !tacticalActor.name.Contains("Oilcrab") && !tacticalActor.GameTags.Contains(anyRevenantGameTag))
                                         {
                                             TFTVLogger.Always("The actor who will receive TBTV from the Tributary is " + tacticalActor.name);
@@ -346,7 +347,7 @@ namespace TFTV
                                             if (!tacticalActor.HasGameTag(voidTouchedTag))
                                             {
                                                 tacticalActor.GameTags.Add(voidTouchedTag);
-                                                UnityEngine.Random.InitState((int)DateTime.Now.Ticks);
+                                                UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
                                                 int roll = UnityEngine.Random.Range(1, 11);
                                                 if (roll <= 5)
                                                 {
@@ -378,7 +379,7 @@ namespace TFTV
             {
                 try
                 {
-                    if (__instance.GetAbilityWithDef<PassiveModifierAbility>(hiddenTBTVAbilityDef) != null)
+                    if (__instance.GameTags.Contains(voidTouchedTag))
                     {
                         RemoveDeathBelcherAbilities(__instance);
                         int roll = MakeTBTVRoll();
@@ -404,7 +405,7 @@ namespace TFTV
             {
                 try
                 {
-                    if (actor.GetAbilityWithDef<PassiveModifierAbility>(hiddenTBTVAbilityDef) != null)
+                    if (actor.GameTags.Contains(voidTouchedTag))
                     {
                         RemoveDeathBelcherAbilities(actor);
                         int roll = MakeTBTVRoll();
@@ -452,7 +453,7 @@ namespace TFTV
 
                 TFTVLogger.Always("rollCap is " + rollCap);
 
-                UnityEngine.Random.InitState((int)DateTime.Now.Ticks);
+                UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
                 int roll = UnityEngine.Random.Range(1, rollCap);
                 TFTVLogger.Always("The TBTV roll is " + roll);
 
@@ -575,7 +576,7 @@ namespace TFTV
 
                 if (difficulty > 0)
                 {
-                    UnityEngine.Random.InitState((int)DateTime.Now.Ticks);
+                    UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
                     int roll = UnityEngine.Random.Range(1, 2);
 
                     if (roll == 1)
@@ -597,7 +598,7 @@ namespace TFTV
                     }
                     else
                     {
-                        UnityEngine.Random.InitState((int)DateTime.Now.Ticks);
+                        UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
                         int roll = UnityEngine.Random.Range(1, 2);
 
                         if (roll == 1)
@@ -629,7 +630,7 @@ namespace TFTV
                 {
                     if (eligibleClassTagDefs.Contains(sirenTag) && eligibleClassTagDefs.Contains(myrmidonTag))
                     {
-                        UnityEngine.Random.InitState((int)DateTime.Now.Ticks);
+                        UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
                         int roll = UnityEngine.Random.Range(1, 2);
 
                         if (roll == 1)
@@ -669,7 +670,7 @@ namespace TFTV
                     }
                     else
                     {
-                        UnityEngine.Random.InitState((int)DateTime.Now.Ticks);
+                        UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
                         int roll = UnityEngine.Random.Range(1, 2);
 
                         if (roll == 1)
@@ -857,12 +858,12 @@ namespace TFTV
                             {
 
                                 TFTVLogger.Always("The actor is " + actor.name);
-                                if (actor.GameTags.Contains(crabTag) && actor.GetAbilityWithDef<PassiveModifierAbility>(hiddenTBTVAbilityDef) == null
+                                if (actor.GameTags.Contains(crabTag) && !actor.GameTags.Contains(voidTouchedTag)
                                     && !actor.name.Contains("Oilcrab") && !actor.GameTags.Contains(anyRevenantGameTag))
 
                                 {
-                                    UnityEngine.Random.InitState((int)DateTime.Now.Ticks);
-                                    int roll = UnityEngine.Random.Range(0, 100);
+                                    UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
+                                    int roll = UnityEngine.Random.Range(1, 101);
                                     if (TFTVVoidOmens.VoidOmensCheck[15] && roll <= totalDeliriumOnMission)
                                     {
                                         TFTVLogger.Always("This Arthron here " + actor + ", got past the crabtag and the blecher ability check!");
@@ -887,11 +888,11 @@ namespace TFTV
                                     }
 
                                 }
-                                if (actor.GameTags.Contains(fishTag) && actor.GetAbilityWithDef<PassiveModifierAbility>(hiddenTBTVAbilityDef) == null
+                                if (actor.GameTags.Contains(fishTag) && !actor.GameTags.Contains(voidTouchedTag)
                                     && !actor.name.Contains("Oilfish") && !actor.GameTags.Contains(anyRevenantGameTag))
                                 {
-                                    UnityEngine.Random.InitState((int)DateTime.Now.Ticks);
-                                    int roll = UnityEngine.Random.Range(0, 100);
+                                    UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
+                                    int roll = UnityEngine.Random.Range(1, 101);
                                     if (TFTVVoidOmens.VoidOmensCheck[15] && roll <= totalDeliriumOnMission)
                                     {
                                         TFTVLogger.Always("This Triton here " + actor + ", got past the crabtag and the blecher ability check!");
@@ -1022,14 +1023,14 @@ namespace TFTV
                         {
                             //   TFTVLogger.Always("found aln faction and checked that VO is in place");
 
-                            if (actor.GameTags.Contains(crabTag) && actor.GetAbilityWithDef<PassiveModifierAbility>(hiddenTBTVAbilityDef) == null
+                            if (actor.GameTags.Contains(crabTag) && !actor.GameTags.Contains(voidTouchedTag)
                                         && !actor.name.Contains("Oilcrab") && !actor.GameTags.Contains(anyRevenantGameTag) && actor.TacticalFaction.Faction.FactionDef.MatchesShortName("aln"))
 
                             {
                                 TacticalActor tacticalActor = actor as TacticalActor;
 
-                                UnityEngine.Random.InitState((int)DateTime.Now.Ticks);
-                                int roll = UnityEngine.Random.Range(0, 101);
+                                UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
+                                int roll = UnityEngine.Random.Range(1, 101);
                                 // TFTVLogger.Always("The roll is " + roll);
                                 if (TFTVVoidOmens.VoidOmensCheck[15] && roll <= 32 + CheckForAcheronHarbingers(__instance) * 10)
                                 {
@@ -1052,13 +1053,13 @@ namespace TFTV
                                 }
 
                             }
-                            if (actor.GameTags.Contains(fishTag) && actor.GetAbilityWithDef<PassiveModifierAbility>(hiddenTBTVAbilityDef) == null
+                            if (actor.GameTags.Contains(fishTag) && !actor.GameTags.Contains(voidTouchedTag)
                                 && !actor.name.Contains("Oilfish") && !actor.GameTags.Contains(anyRevenantGameTag) && actor.TacticalFaction.Faction.FactionDef.MatchesShortName("aln"))
                             {
                                 TacticalActor tacticalActor = actor as TacticalActor;
 
-                                UnityEngine.Random.InitState((int)DateTime.Now.Ticks);
-                                int roll = UnityEngine.Random.Range(0, 101);
+                                UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
+                                int roll = UnityEngine.Random.Range(1, 101);
                                 if (TFTVVoidOmens.VoidOmensCheck[15] && roll <= 32 + CheckForAcheronHarbingers(__instance) * 10)
                                 {
                                     TFTVLogger.Always("VO16+VO15 This Triton here " + actor + ", got past the crabtag and the blecher ability check!");

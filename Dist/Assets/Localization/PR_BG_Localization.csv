@@ -745,3 +745,5 @@ VOID_BLIGHT_NAME_HINT,Text,,Blight of the Void,,,,,,,,
 VOID_BLIGHT_DESCRIPTION_HINT,Text,,"This character or unit can now be attacked by Umbra, regardless of Delirium.
 
 It has gained this status because it was attacked by an Acheron. All Acheron spray or cloud attacks afflict the victims with the <b>""Blight of the Void"" status</b>",,,,,,,,
+ANC_AUTOREPAIR_TITLE,Text,,Self repair,,,,,,,,
+ANC_AUTOREPAIR_TEXT,Text,,Using a nearby fallen Automata for spare parts,,,,,,,,

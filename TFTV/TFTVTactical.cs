@@ -75,6 +75,7 @@ namespace TFTV
 
             TFTVLogger.Always("Tactical start completed");
             TFTVLogger.Always("Difficulty level is " + tacController.Difficulty.Order);
+            
         }
 
         /// <summary>
@@ -184,6 +185,13 @@ namespace TFTV
             { 
                 TFTVHumanEnemies.CheckMissionType(Controller);             
             }
+
+            //commented out for release #10
+          /*  if (turnNumber==0 && TFTVAncients.CheckIfAncientsPresent(Controller))
+            {
+                TFTVAncients.AdjustAncientsOnDeployment(Controller);
+            }*/
+
             if (turnNumber == 0)
             {
                 TFTVRevenant.ModifyRevenantResistanceAbility(Controller);
@@ -195,8 +203,9 @@ namespace TFTV
             TFTVUmbra.SpawnUmbra(Controller);
             TFTVHumanEnemies.ChampRecoverWPAura(Controller);           
             TFTVHumanEnemies.ApplyTactic(Controller);
+           // TFTVAncients.CheckForAutoRepairAbility(Controller);
            
-          //  TFTVAncients.RemoveBeamFromDriller(Controller);
+          // TFTVAncients.RemoveBeamFromDriller(Controller);
           /*  if(turnNumber == 1) 
             {
                 TFTVAncients.AddDrillBack(Controller);

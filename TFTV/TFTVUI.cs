@@ -17,10 +17,10 @@ using PhoenixPoint.Geoscape.View;
 using PhoenixPoint.Geoscape.View.DataObjects;
 using PhoenixPoint.Geoscape.View.ViewControllers.Roster;
 using PhoenixPoint.Geoscape.View.ViewModules;
+using PhoenixPoint.Geoscape.View.ViewStates;
 using PhoenixPoint.Home.View.ViewStates;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.Equipments;
-using PhoenixPoint.Tactical.Tutorial;
 using PhoenixPoint.Tactical.View.ViewStates;
 using System;
 using System.Collections.Generic;
@@ -28,7 +28,6 @@ using System.Linq;
 using System.Reflection;
 using UnityEngine;
 using UnityEngine.UI;
-
 
 namespace TFTV
 {
@@ -42,7 +41,7 @@ namespace TFTV
         public static UIModuleCharacterProgression hookToProgressionModule = null;
         public static GeoCharacter hookToCharacter = null;
         internal static bool moduleInfoBarAdjustmentsExecuted = false;
- 
+
         internal static Color red = new Color32(192, 32, 32, 255);
         internal static Color purple = new Color32(149, 23, 151, 255);
         internal static Color blue = new Color32(62, 12, 224, 255);
@@ -69,11 +68,11 @@ namespace TFTV
 
                     Resolution resolution = Screen.currentResolution;
 
-                   // TFTVLogger.Always("Resolution is " + Screen.currentResolution.width);
-                    float resolutionFactorWidth =(float)resolution.width/1920f;
-                 //   TFTVLogger.Always("ResolutionFactorWidth is " + resolutionFactorWidth);
-                    float resolutionFactorHeight = (float)resolution.height/1080f;
-                 //   TFTVLogger.Always("ResolutionFactorHeight is " + resolutionFactorHeight);
+                    // TFTVLogger.Always("Resolution is " + Screen.currentResolution.width);
+                    float resolutionFactorWidth = (float)resolution.width / 1920f;
+                    //   TFTVLogger.Always("ResolutionFactorWidth is " + resolutionFactorWidth);
+                    float resolutionFactorHeight = (float)resolution.height / 1080f;
+                    //   TFTVLogger.Always("ResolutionFactorHeight is " + resolutionFactorHeight);
 
                     // Declutter
                     Transform tInfoBar = __instance.PopulationBarRoot.transform.parent?.transform;
@@ -85,7 +84,7 @@ namespace TFTV
 
                     foreach (Transform t in tInfoBar.GetComponentsInChildren<Transform>())
                     {
-                    
+
                         if (t.name == "TooltipCatcher")
                         {
                             if (t.GetComponent<UITooltipText>().TipKey.LocalizeEnglish() == "Stores - used space / capacity of all stores facilities")
@@ -108,7 +107,7 @@ namespace TFTV
                                 icon.sprite = Helper.CreateSpriteFromImageFile("Void-04P.png");
                                 t.gameObject.name = "DeliriumIcon";
                                 t.parent = tInfoBar.GetComponent<Transform>().Find("PopulationDoom_Meter");
-                                t.Translate(new Vector3(30f*resolutionFactorWidth, 0f, 0f));
+                                t.Translate(new Vector3(30f * resolutionFactorWidth, 0f, 0f));
                                 t.localScale = new Vector3(1.3f, 1.3f, 1f);
                                 t.gameObject.SetActive(false);
                                 //  icon.color = purple;
@@ -121,7 +120,7 @@ namespace TFTV
                                 pandoranEvolution.gameObject.name = "PandoranEvolutionIcon";
                                 // pandoranEvolution.localScale = new Vector3(0.9f, 0.9f, 1);
                                 pandoranEvolution.Translate(new Vector3(110f * resolutionFactorWidth, 0f, 0f));
-                               // pandoranEvolution.Translate(80f*resolutionFactor, 0f, 0f, t);
+                                // pandoranEvolution.Translate(80f*resolutionFactor, 0f, 0f, t);
                                 pandoranEvolution.gameObject.SetActive(false);
 
 
@@ -151,7 +150,7 @@ namespace TFTV
                                 //  anuDiploInfo.gameObject.GetComponent<Image>().color = red;
 
                             }
-                          
+
                             // t.name = "ODI_icon";
                             // TFTVLogger.Always("Req_Icon name is " + icon.sprite.name);
                         }
@@ -164,7 +163,7 @@ namespace TFTV
                             }
 
 
-                           // TFTVLogger.Always("Parent of UI_underlight " + t.parent.name);
+                            // TFTVLogger.Always("Parent of UI_underlight " + t.parent.name);
 
 
                             // separator.position = anuDiploInfoIcon.position - new Vector3(-100, 0, 0);
@@ -177,13 +176,13 @@ namespace TFTV
                             separator.Translate(new Vector3(0f, 12f * resolutionFactorHeight, 0f));
                             separator.gameObject.name = "ODISeparator1";
                             separator.gameObject.SetActive(false);
-                           // separator.SetParent(tInfoBar.GetComponent<Transform>().Find("PopulationDoom_Meter"));
+                            // separator.SetParent(tInfoBar.GetComponent<Transform>().Find("PopulationDoom_Meter"));
 
                             Transform separator2 = UnityEngine.Object.Instantiate(t, tInfoBar.GetComponent<Transform>().Find("PopulationDoom_Meter"));
                             separator2.Translate(new Vector3(180f * resolutionFactorWidth, 12f * resolutionFactorHeight, 0f));
                             separator2.gameObject.name = "ODISeparator2";
                             separator2.gameObject.SetActive(false);
-                          //  separator2.SetParent(tInfoBar.GetComponent<Transform>().Find("PopulationDoom_Meter"));
+                            //  separator2.SetParent(tInfoBar.GetComponent<Transform>().Find("PopulationDoom_Meter"));
                         }
                         // Remove skull icon
                         if (t.name == "skull")
@@ -206,8 +205,8 @@ namespace TFTV
                             t.gameObject.SetActive(false);
                         }
 
-                    //    TFTVLogger.Always($"[UIModuleInfoBar_Init_PREFIX] Transform.name: {t.name}" + " root position " + "x: " + t.root.position.x);
-                     //   TFTVLogger.Always($"[UIModuleInfoBar_Init_PREFIX] Transform.name: {t.name}" + " right " + "x: " + t.right.x);
+                        //    TFTVLogger.Always($"[UIModuleInfoBar_Init_PREFIX] Transform.name: {t.name}" + " root position " + "x: " + t.root.position.x);
+                        //   TFTVLogger.Always($"[UIModuleInfoBar_Init_PREFIX] Transform.name: {t.name}" + " right " + "x: " + t.right.x);
 
                     }
 
@@ -233,7 +232,7 @@ namespace TFTV
                     anuDiploInfo.Translate(new Vector3(210f * resolutionFactorWidth, 0f, 0f));
                     anuDiploInfo.gameObject.name = "AnuPercentage";
                     anuDiploInfo.gameObject.SetActive(false);
-                   // anuDiploInfo.SetParent(tInfoBar.GetComponent<Transform>().Find("PopulationDoom_Meter"));
+                    // anuDiploInfo.SetParent(tInfoBar.GetComponent<Transform>().Find("PopulationDoom_Meter"));
                     // anuDiploInfo.gameObject.SetActive(false);
 
                     Transform njDiploInfo = UnityEngine.Object.Instantiate(__instance.PopulationPercentageText.transform, tInfoBar.GetComponent<Transform>().Find("PopulationDoom_Meter"));
@@ -246,30 +245,30 @@ namespace TFTV
                     synDiploInfo.Translate(new Vector3(430f * resolutionFactorWidth, 0f, 0f));
                     synDiploInfo.gameObject.name = "SynPercentage";
                     synDiploInfo.gameObject.SetActive(false);
-                 //   synDiploInfo.SetParent(tInfoBar.GetComponent<Transform>().Find("PopulationDoom_Meter"));
+                    //   synDiploInfo.SetParent(tInfoBar.GetComponent<Transform>().Find("PopulationDoom_Meter"));
                     //Create highlights for new elements
 
                     Transform deliriumIconHL = UnityEngine.Object.Instantiate(thingsToUse[1], tInfoBar.GetComponent<Transform>().Find("PopulationDoom_Meter").GetComponent<Transform>().Find("DeliriumIcon"));
                     deliriumIconHL.localScale = new Vector3(0.6f, 0.6f, 0f);
-                    deliriumIconHL.Translate(new Vector3(0f, -20f*resolutionFactorHeight, 1));
-               
+                    deliriumIconHL.Translate(new Vector3(0f, -20f * resolutionFactorHeight, 1));
+
 
                     Transform PandoranEvolutionIconHL = UnityEngine.Object.Instantiate(thingsToUse[1], tInfoBar.GetComponent<Transform>().Find("PopulationDoom_Meter").GetComponent<Transform>().Find("PandoranEvolutionIcon"));
                     PandoranEvolutionIconHL.localScale = new Vector3(0.6f, 0.6f, 0f);
                     PandoranEvolutionIconHL.Translate(new Vector3(0f, -20f * resolutionFactorHeight, 1));
-              
+
 
                     Transform anuDiploHL = UnityEngine.Object.Instantiate(thingsToUse[1], tInfoBar.GetComponent<Transform>().Find("PopulationDoom_Meter").GetComponent<Transform>().Find("AnuPercentage"));
                     anuDiploHL.Translate(new Vector3(-10 * resolutionFactorWidth, -15 * resolutionFactorHeight, 1));
-               
+
 
                     Transform njDiploHL = UnityEngine.Object.Instantiate(thingsToUse[1], tInfoBar.GetComponent<Transform>().Find("PopulationDoom_Meter").GetComponent<Transform>().Find("NjPercentage"));
                     njDiploHL.Translate(new Vector3(-10 * resolutionFactorWidth, -15 * resolutionFactorHeight, 1));
-                 // njDiploHL.SetParent(tInfoBar.GetComponent<Transform>().Find("PopulationDoom_Meter"));
+                    // njDiploHL.SetParent(tInfoBar.GetComponent<Transform>().Find("PopulationDoom_Meter"));
 
                     Transform synDiploHL = UnityEngine.Object.Instantiate(thingsToUse[1], tInfoBar.GetComponent<Transform>().Find("PopulationDoom_Meter").GetComponent<Transform>().Find("SynPercentage"));
                     synDiploHL.Translate(new Vector3(-10 * resolutionFactorWidth, -15 * resolutionFactorHeight, 1));
-                 // synDiploHL.SetParent(tInfoBar.GetComponent<Transform>().Find("PopulationDoom_Meter"));
+                    // synDiploHL.SetParent(tInfoBar.GetComponent<Transform>().Find("PopulationDoom_Meter"));
 
                     __instance.PopulationPercentageText.gameObject.SetActive(false);
 
@@ -306,7 +305,7 @@ namespace TFTV
 
                 try
                 {
-                  //  TFTVLogger.Always("Running UpdatePopulation");
+                    //  TFTVLogger.Always("Running UpdatePopulation");
 
                     GeoLevelController controller = ____context.Level;
 
@@ -345,7 +344,7 @@ namespace TFTV
                     Transform tInfoBar = __instance.PopulationBarRoot.transform.parent?.transform;
                     Transform populationBar = tInfoBar.GetComponent<Transform>().Find("PopulationDoom_Meter");
 
-               //     TFTVLogger.Always("Got here");
+                    //     TFTVLogger.Always("Got here");
 
 
                     Transform anuInfo = populationBar.GetComponent<Transform>().Find("AnuPercentage");
@@ -363,7 +362,7 @@ namespace TFTV
                     Transform njIcon = populationBar.GetComponent<Transform>().Find("NJIcon");
                     Transform synIcon = populationBar.GetComponent<Transform>().Find("SynIcon");
 
-                 //   TFTVLogger.Always("Got here 2");
+                    //   TFTVLogger.Always("Got here 2");
 
                     if (controller.PhoenixFaction.GameTags.Contains(DefCache.GetDef<DiplomacyStateTagDef>("AN_Discovered_DiplomacyStateTagDef")))
                     {
@@ -384,13 +383,13 @@ namespace TFTV
 
                     }
 
-                 //   TFTVLogger.Always("Got here 3");
+                    //   TFTVLogger.Always("Got here 3");
                     Transform deliriumIconHolder = populationBar.GetComponent<Transform>().Find("DeliriumIcon");
                     Image deliriumIcon = deliriumIconHolder.GetComponent<Image>();
                     Transform separator = populationBar.GetComponent<Transform>().Find("ODISeparator1");
-                   
+
                     Transform separator2 = populationBar.GetComponent<Transform>().Find("ODISeparator2");
-                    
+
                     //    TFTVLogger.Always("Got here 4");
 
                     string deliriumToolTipText = "";
@@ -416,7 +415,7 @@ namespace TFTV
                     }
                     else if (controller.EventSystem.GetEventRecord("SDI_01")?.SelectedChoice == 0)
                     {
-                       // TFTVLogger.Always("Got to SDI01");
+                        // TFTVLogger.Always("Got to SDI01");
                         deliriumIcon.sprite = Helper.CreateSpriteFromImageFile("Void-04Pthird.png");
                         populationBar.gameObject.SetActive(true);
                         __instance.PopulationBarRoot.gameObject.SetActive(true);
@@ -426,7 +425,7 @@ namespace TFTV
                         separator2.gameObject.SetActive(true);
                     }
 
-                    if (TFTVVoidOmens.CheckFordVoidOmensInPlay(controller).Contains(10)) 
+                    if (TFTVVoidOmens.CheckFordVoidOmensInPlay(controller).Contains(10))
                     {
                         deliriumToolTipText += "\n-<i>No limit to Delirium, regardless of ODI level</i> Void Omen is in effect.";
                     }
@@ -436,22 +435,22 @@ namespace TFTV
                     {
                         deliriumToolTipText += "\n-Evolved Umbra sighted.";
                     }
-                    else if (controller.EventSystem.GetVariable("UmbraResearched") == 1) 
+                    else if (controller.EventSystem.GetVariable("UmbraResearched") == 1)
                     {
-                        deliriumToolTipText += "\n-Sightings of Umbra have been reported";                    
-                    }           
-                    if(controller.EventSystem.GetEventRecord("SDI_07")?.SelectedChoice == 0) 
+                        deliriumToolTipText += "\n-Sightings of Umbra have been reported";
+                    }
+                    if (controller.EventSystem.GetEventRecord("SDI_07")?.SelectedChoice == 0)
                     {
                         deliriumToolTipText += "\n-Havens in the Mist can become infested instead of destroyed when attacked by Pandorans. Infested havens accelerate Pandoran evolution.";
                     }
-                    
 
-                    Transform deliriumTooltip = populationBar.GetComponent<Transform>().Find("DeliriumIcon").GetComponent<Transform>().Find("DeliriumTooltip");                            
+
+                    Transform deliriumTooltip = populationBar.GetComponent<Transform>().Find("DeliriumIcon").GetComponent<Transform>().Find("DeliriumTooltip");
                     deliriumTooltip.gameObject.GetComponent<UITooltipText>().TipText = deliriumToolTipText;
                     deliriumTooltip.gameObject.SetActive(true);
                     //TFTVLogger.Always("Got here");
 
-                  
+
 
 
                     if (controller.EventSystem.GetEventRecord("SDI_01")?.SelectedChoice == 0 && controller.EventSystem.GetEventRecord("PROG_FS2_WIN")?.SelectedChoice == 0)
@@ -493,7 +492,7 @@ namespace TFTV
                     evolutionTooltip.gameObject.GetComponent<UITooltipText>().TipText = evolutionToolTipText;
 
                 }
-                  
+
                 catch (Exception e)
                 {
                     TFTVLogger.Error(e);
@@ -690,8 +689,6 @@ namespace TFTV
             {
                 try
                 {
-
-
                     if (hookToCharacter != null && !__instance.IsVehicle && !hookToCharacter.TemplateDef.IsMutog)
                     {
 
@@ -764,6 +761,7 @@ namespace TFTV
                         //hookToProgressionModule.SetStatusesPanel();
                         hookToProgressionModule.RefreshStatPanel();
                         //TFTVLogger.Always("Max weight is " + maxWeight + ". Bonus Strength is " + bonusStrength + ". Bonus to carry is " + bonusToCarry);
+                 
                     }
                 }
 
@@ -775,6 +773,244 @@ namespace TFTV
         }
 
 
+        [HarmonyPatch(typeof(UIStateEditSoldier), "RequestRefreshCharacterData")]
+        internal static class UIStateEditSoldier_RequestRefreshCharacterData_Patch
+        {
+          
+            private static void Postfix(ref bool ____uiCharacterAnimationResetNeeded)
+            {
+                try
+                {
+
+                    ____uiCharacterAnimationResetNeeded = false;
+
+                }
+
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+        }
+
+
+        [HarmonyPatch(typeof(CharacterStats), "get_CorruptionProgressRel")]
+        internal static class TFTV_UI_CharacterStats_DeliriumFace_patch
+        {
+            private static void Postfix(ref float __result)
+            {
+                try
+                {
+                    if (hookToCharacter != null)
+                    {
+                        GeoCharacter geoCharacter = hookToCharacter;
+                        if (geoCharacter.CharacterStats.Corruption > 0)
+                        {
+                            if (geoCharacter.CharacterStats.Corruption - TFTVDelirium.CalculateStaminaEffectOnDelirium(geoCharacter) > 0)
+                            {
+
+                                __result = ((geoCharacter.CharacterStats.Corruption - (TFTVDelirium.CalculateStaminaEffectOnDelirium(geoCharacter))) / 20);
+
+
+                            }
+                            else
+                            {
+                                __result = 0.05f;
+                            }
+                        }
+
+                    }
+
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+
+
+        }
+
+        /* [HarmonyPatch(typeof(CorruptionSettingsDef), "CalculateCorruptionShaderValue")]
+
+         internal static class TFTV_UI_CorruptionSettingsDef_DeliriumFace_patch
+         {
+             private static void Prefix(float corruption01)
+             {
+                 try
+                 {
+                     if (hookToCharacter != null)
+                     {
+                         GeoCharacter geoCharacter = hookToCharacter;
+                         if (geoCharacter.CharacterStats.Corruption > 0)
+                         {
+                             // corruption01 = ((geoCharacter.CharacterStats.Corruption-(geoCharacter.Fatigue.Stamina/10))/ geoCharacter.CharacterStats.WillPoints.IntMax)*0.25f;
+
+                           //  TFTVLogger.Always("This character is " + geoCharacter.DisplayName + " has CorruptionProgressRel of " + geoCharacter.CharacterStats.CorruptionProgressRel
+                           //      + " Delirium of " + geoCharacter.CharacterStats.Corruption + " and WP of " + geoCharacter.CharacterStats.WillPoints.IntMax + " and floatcorruption is " + corruption01);
+
+                         }
+
+                     }
+
+
+
+
+                 }
+                 catch (Exception e)
+                 {
+                     TFTVLogger.Error(e);
+                 }
+             }
+
+
+         }*/
+
+
+
+        [HarmonyPatch(typeof(UIModuleSoldierCustomization), "OnNewCharacter")]
+
+        internal static class TFTV_UI_UIModuleSoldierCustomization_patch
+        {
+            private static readonly GameTagDef bionicalTag = GameUtl.GameComponent<SharedData>().SharedGameTags.BionicalTag;
+            private static readonly GameTagDef mutationTag = GameUtl.GameComponent<SharedData>().SharedGameTags.AnuMutationTag;
+            private static readonly ItemSlotDef headSlot = DefCache.GetDef<ItemSlotDef>("Human_Head_SlotDef");
+
+            private static void Postfix(GeoCharacter newCharacter)
+            {
+                try
+                {
+
+                  //  TFTVLogger.Always("Checking that OnNewCharacter is launched");
+                    if (newCharacter != null && (newCharacter.TemplateDef.IsHuman || newCharacter.TemplateDef.IsMutoid))
+                    {
+                    //    TFTVLogger.Always("character is " + newCharacter.DisplayName + " and is human or mutoid");
+
+                        UIModuleSoldierCustomization uIModuleSoldierCustomizationLocal = (UIModuleSoldierCustomization)UnityEngine.Object.FindObjectOfType(typeof(UIModuleSoldierCustomization));
+                        uIModuleSoldierCustomization = uIModuleSoldierCustomizationLocal;
+                        uIModuleSoldierCustomization.HideHelmetToggle.isOn = false;
+
+                        if (newCharacter != null && (!newCharacter.TemplateDef.IsHuman || newCharacter.IsMutoid))
+                        {
+
+                            uIModuleSoldierCustomization.HideHelmetToggle.interactable = false;
+                            uIModuleSoldierCustomization.HideHelmetToggle.isOn = false;
+                          //  TFTVLogger.Always("character is " + newCharacter.DisplayName + " and is mutoid");
+
+                        }
+                        else if (newCharacter != null && newCharacter.TemplateDef.IsHuman)
+                        {
+                           // TFTVLogger.Always("character is " + newCharacter.DisplayName + " and is human");
+                            bool hasAugmentedHead = false;
+                            foreach (GeoItem bionic in (newCharacter.ArmourItems))
+                            {
+                                if ((bionic.CommonItemData.ItemDef.Tags.Contains(bionicalTag) || bionic.CommonItemData.ItemDef.Tags.Contains(mutationTag))
+                                && bionic.CommonItemData.ItemDef.RequiredSlotBinds[0].RequiredSlot == headSlot)
+                                {
+                                    hasAugmentedHead = true;
+                                }
+                            }
+
+                            if (hasAugmentedHead)
+                            {
+                                uIModuleSoldierCustomization.HideHelmetToggle.interactable = false;
+                                uIModuleSoldierCustomization.HideHelmetToggle.isOn = false;
+                             //   TFTVLogger.Always("character is " + newCharacter.DisplayName + " and has augmented head");
+                            }
+                            else
+                            {
+                                uIModuleSoldierCustomization.HideHelmetToggle.interactable = true;
+                             //   TFTVLogger.Always("character is " + newCharacter.DisplayName + " and does not have an augmented head");
+                            }
+                        }
+                       /* else
+                        {
+                            uIModuleSoldierCustomization.HideHelmetToggle.interactable = true;
+                        }*/
+
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+
+
+        }
+
+
+
+        public static UIModuleSoldierCustomization uIModuleSoldierCustomization = null;
+      
+
+        [HarmonyPatch(typeof(UIStateSoldierCustomization), "EnterState")]
+        internal static class TFTV_UIStateSoldierCustomization_DisplaySoldier_HelmetToggle_patch
+        {
+            private static readonly GameTagDef bionicalTag = GameUtl.GameComponent<SharedData>().SharedGameTags.BionicalTag;
+            private static readonly GameTagDef mutationTag = GameUtl.GameComponent<SharedData>().SharedGameTags.AnuMutationTag;
+            private static readonly ItemSlotDef headSlot = DefCache.GetDef<ItemSlotDef>("Human_Head_SlotDef");
+
+
+            public static void Postfix()
+            {
+                try
+                {
+                  //  TFTVLogger.Always("Trying to set helmets off if character has mutated head");
+                    if (hookToCharacter != null && (hookToCharacter.TemplateDef.IsHuman || hookToCharacter.TemplateDef.IsMutoid))
+                    {
+                   //     TFTVLogger.Always("character is " + hookToCharacter.DisplayName + " and is human or mutoid");
+                        if (hookToCharacter != null && (!hookToCharacter.TemplateDef.IsHuman || hookToCharacter.IsMutoid))
+                        {
+                       //     TFTVLogger.Always("character is " + hookToCharacter.DisplayName + " and is mutoid");
+                            uIModuleSoldierCustomization.HideHelmetToggle.interactable = false;
+                            uIModuleSoldierCustomization.HideHelmetToggle.isOn = false;
+
+                        }
+                        else if (hookToCharacter != null && hookToCharacter.TemplateDef.IsHuman)
+                        {
+                        //    TFTVLogger.Always("character is " + hookToCharacter.DisplayName + " and is human");
+                            bool hasAugmentedHead = false;
+                            foreach (GeoItem bionic in (hookToCharacter.ArmourItems))
+                            {
+                                if ((bionic.CommonItemData.ItemDef.Tags.Contains(bionicalTag) || bionic.CommonItemData.ItemDef.Tags.Contains(mutationTag))
+                                && bionic.CommonItemData.ItemDef.RequiredSlotBinds[0].RequiredSlot == headSlot)
+                                {
+                                    hasAugmentedHead = true;
+                                }
+                            }
+
+                            if (hasAugmentedHead)
+                            {
+                                uIModuleSoldierCustomization.HideHelmetToggle.interactable = false;
+                                uIModuleSoldierCustomization.HideHelmetToggle.isOn = false;
+                             //   TFTVLogger.Always("character is " + hookToCharacter.DisplayName + " and has augmented head");
+                            }
+                            else
+                            {
+                                uIModuleSoldierCustomization.HideHelmetToggle.interactable = true;
+
+                            //    TFTVLogger.Always("character is " + hookToCharacter.DisplayName + " and does not have an augmented head");
+                            }
+                        }
+                       /* else
+                        {
+                            uIModuleSoldierCustomization.HideHelmetToggle.interactable = true;
+                        }*/
+
+                    }
+
+                }
+
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+
+        }
+
 
         [HarmonyPatch(typeof(UIModuleActorCycle), "DisplaySoldier", new Type[] { typeof(GeoCharacter), typeof(bool), typeof(bool), typeof(bool) })]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051")]
@@ -784,11 +1020,11 @@ namespace TFTV
             private static readonly GameTagDef mutationTag = GameUtl.GameComponent<SharedData>().SharedGameTags.AnuMutationTag;
             private static readonly ItemSlotDef headSlot = DefCache.GetDef<ItemSlotDef>("Human_Head_SlotDef");
 
-            public static bool Prepare()
+          /*  public static bool Prepare()
             {
                 TFTVConfig config = TFTVMain.Main.Config;
                 return config.helmentsOff;
-            }
+            }*/
 
             private static bool Prefix(UIModuleActorCycle __instance, List<UnitDisplayData> ____units,
                 CharacterClassWorldDisplay ____classWorldDisplay,
@@ -810,7 +1046,6 @@ namespace TFTV
                         foreach (GeoItem bionic in character.ArmourItems)
                         {
 
-
                             if ((bionic.CommonItemData.ItemDef.Tags.Contains(bionicalTag) || bionic.CommonItemData.ItemDef.Tags.Contains(mutationTag))
                                 && bionic.CommonItemData.ItemDef.RequiredSlotBinds[0].RequiredSlot == headSlot)
                             {
@@ -830,8 +1065,17 @@ namespace TFTV
 
                             ____classWorldDisplay.SetDisplay(character.GetClassViewElementDefs(), (float)character.CharacterStats.Corruption > 0f);
 
-                            __instance.DisplaySoldier(unitDisplayData, resetAnimation, addWeapon, showHelmet = false);
-                            return false;
+
+                            if (uIModuleSoldierCustomization == null || uIModuleSoldierCustomization.HideHelmetToggle.isOn)
+                            {
+                                __instance.DisplaySoldier(unitDisplayData, resetAnimation, addWeapon, showHelmet = false);
+                                return false;
+                            }
+                            else
+                            {
+                                return true;
+
+                            }
                         }
                         else
                         {
@@ -910,9 +1154,9 @@ namespace TFTV
         public static class TFTV_PhoenixGame_RunGameLevel_SkipLogos_Patch
         {
             public static bool Prefix(PhoenixGame __instance, LevelSceneBinding levelSceneBinding, ref IEnumerator<NextUpdate> __result)
-            { 
+            {
                 TFTVConfig config = TFTVMain.Main.Config;
-             
+
                 try
                 {
                     if (config.SkipMovies)

@@ -20,6 +20,7 @@ using PhoenixPoint.Geoscape.View.ViewStates;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.Statuses;
+using PhoenixPoint.Tactical.Entities.Weapons;
 using PhoenixPoint.Tactical.Levels;
 using PhoenixPoint.Tactical.Levels.FactionEffects;
 using PhoenixPoint.Tactical.Levels.FactionObjectives;
@@ -45,30 +46,30 @@ namespace TFTV
         private static readonly GeoHavenZoneDef havenLab = DefCache.GetDef<GeoHavenZoneDef>("Research_GeoHavenZoneDef");
 
         public static bool[] VoidOmensCheck = new bool[20];
-     /*
-        
-        //VO#1 is harder ambushes
-        public static bool VoidOmen1Active = false;
-        //VO#3 is WP cost +50%
-        public static bool VoidOmen3Active = false;
-        //VO#4 is limited deplyoment, extra XP
-        public static bool VoidOmen4Active = false;
-        //VO#5 is haven defenders hostile; this is needed for victory kludge
-        public static bool VoidOmen5Active = false;
-        //VO#7 is more mist in missions
-        public static bool VoidOmen7Active = false;
-        //VO#10 is no limit to Delirium
-        public static bool VoidOmen10Active = false;
-        //VO#12 is +50% strength of alien attacks on Havens
-        public static bool VoidOmen12Active = false;
-        //VO#15 is more Umbra
-        public static bool VoidOmen15Active = false;
-        //VO#16 is Umbras can appear anywhere and attack anyone
-        public static bool VoidOmen16Active = false;
-        //V0#18 is extra defense points, less rewards
-        public static bool VoidOmen18Active = false;
-        //V0#19 is reactive evoltion
-        public static bool VoidOmen19Active = false;*/
+        /*
+
+           //VO#1 is harder ambushes
+           public static bool VoidOmen1Active = false;
+           //VO#3 is WP cost +50%
+           public static bool VoidOmen3Active = false;
+           //VO#4 is limited deplyoment, extra XP
+           public static bool VoidOmen4Active = false;
+           //VO#5 is haven defenders hostile; this is needed for victory kludge
+           public static bool VoidOmen5Active = false;
+           //VO#7 is more mist in missions
+           public static bool VoidOmen7Active = false;
+           //VO#10 is no limit to Delirium
+           public static bool VoidOmen10Active = false;
+           //VO#12 is +50% strength of alien attacks on Havens
+           public static bool VoidOmen12Active = false;
+           //VO#15 is more Umbra
+           public static bool VoidOmen15Active = false;
+           //VO#16 is Umbras can appear anywhere and attack anyone
+           public static bool VoidOmen16Active = false;
+           //V0#18 is extra defense points, less rewards
+           public static bool VoidOmen18Active = false;
+           //V0#19 is reactive evoltion
+           public static bool VoidOmen19Active = false;*/
 
         public static void ImplementVoidOmens(GeoLevelController level)
         {
@@ -124,7 +125,7 @@ namespace TFTV
                     // Logger.Always(voidOmen + j + " is now in effect, held in variable " + voidOmen + i);
                     //  VoidOmensCheck[3] = true;
                 }
-                else if (!CheckFordVoidOmensInPlay(level).Contains(3) && CheckForAlreadyRolledVoidOmens(level).Contains(3) 
+                else if (!CheckFordVoidOmensInPlay(level).Contains(3) && CheckForAlreadyRolledVoidOmens(level).Contains(3)
                     && VoidOmensCheck[3])
                 {
                     VoidOmensCheck[3] = false;
@@ -236,11 +237,11 @@ namespace TFTV
                 {
                     VoidOmensCheck[7] = true;
                     //  Logger.Always(voidOmen + j + " is now in effect, held in variable " + voidOmen + i);
-                 }
+                }
                 else if (!CheckFordVoidOmensInPlay(level).Contains(7) && CheckForAlreadyRolledVoidOmens(level).Contains(7) && VoidOmensCheck[7])
                 {
                     VoidOmensCheck[7] = false;
-         
+
                     TFTVLogger.Always("The check for VO#7 went ok");
 
                 }
@@ -275,12 +276,12 @@ namespace TFTV
                 if (CheckFordVoidOmensInPlay(level).Contains(10))
                 {
                     // Logger.Always(voidOmen + j + " is now in effect, held in variable " + voidOmen + i);
-                  VoidOmensCheck[10] = true;
+                    VoidOmensCheck[10] = true;
                 }
                 else if (!CheckFordVoidOmensInPlay(level).Contains(10) && CheckForAlreadyRolledVoidOmens(level).Contains(10) && VoidOmensCheck[10])
                 {
                     VoidOmensCheck[10] = false;
-                
+
                     TFTVLogger.Always("The check for VO#10 went ok");
 
                 }
@@ -297,13 +298,13 @@ namespace TFTV
                    }*/
                 if (CheckFordVoidOmensInPlay(level).Contains(12))
                 {
-                    
+
                     // Logger.Always(voidOmen + j + " is now in effect, held in variable " + voidOmen + i);
                     VoidOmensCheck[12] = true;
                 }
                 else if (!CheckFordVoidOmensInPlay(level).Contains(12) && CheckForAlreadyRolledVoidOmens(level).Contains(12) && VoidOmensCheck[12])
                 {
-                    
+
                     VoidOmensCheck[12] = false;
                     TFTVLogger.Always("The check for VO#12 went ok");
 
@@ -378,7 +379,7 @@ namespace TFTV
                 if (CheckFordVoidOmensInPlay(level).Contains(18))
                 {
 
-                   
+
                     // Logger.Always(voidOmen + j + " is now in effect, held in variable " + voidOmen + i);
                     VoidOmensCheck[18] = true;
                 }
@@ -458,10 +459,10 @@ namespace TFTV
                     VoidOmensCheck[3] = true;
                     TFTVLogger.Always("All abilities cost +50% WP, but Delirium has no effect on WP");
                 }
-                else 
+                else
                 {
                     VoidOmensCheck[3] = false;
-                
+
                 }
 
                 if (rolledVoidOmens.Contains(5))
@@ -769,25 +770,25 @@ namespace TFTV
                 {
                     GeoLevelController geoLevel = mission.Site.GeoLevel;
 
-                 //   if (!VO18applied)
-                 //   {
-                        if (__instance.name.Contains("Haven") && CheckFordVoidOmensInPlay(geoLevel).Contains(18))
+                    //   if (!VO18applied)
+                    //   {
+                    if (__instance.name.Contains("Haven") && CheckFordVoidOmensInPlay(geoLevel).Contains(18))
+                    {
+                        ResourcePack resources = new ResourcePack(__instance.Resources);
+
+                        for (int i = 0; i < 3; i++)
                         {
-                            ResourcePack resources = new ResourcePack (__instance.Resources);
-
-                            for (int i = 0; i < 3; i++)
-                            {
-                                ResourceUnit resourceUnit = __instance.Resources[i];
-                                resources[i] = new ResourceUnit(resourceUnit.Type, resourceUnit.Value * 0.5f);
-                            }
-
-                            rewardDescription.Resources.Clear();
-                            rewardDescription.Resources.AddRange(resources);
-                            TFTVLogger.Always("Resource reward from mission " + mission.MissionName.LocalizeEnglish() + " modified to "
-                                + resources[0].Value + ", " + resources[1].Value + " and " + resources[2].Value);
+                            ResourceUnit resourceUnit = __instance.Resources[i];
+                            resources[i] = new ResourceUnit(resourceUnit.Type, resourceUnit.Value * 0.5f);
                         }
-                   //     VO18applied = true;
-                   // }
+
+                        rewardDescription.Resources.Clear();
+                        rewardDescription.Resources.AddRange(resources);
+                        TFTVLogger.Always("Resource reward from mission " + mission.MissionName.LocalizeEnglish() + " modified to "
+                            + resources[0].Value + ", " + resources[1].Value + " and " + resources[2].Value);
+                    }
+                    //     VO18applied = true;
+                    // }
                 }
                 catch (Exception e)
                 {
@@ -797,7 +798,7 @@ namespace TFTV
             }
         }
 
-      //  public static bool VO18applied = false;
+        //  public static bool VO18applied = false;
 
         [HarmonyPatch(typeof(ResourceMissionOutcomeDef), "ApplyOutcome")]
 
@@ -810,27 +811,27 @@ namespace TFTV
             {
                 try
                 {
-                 //   if (!VO18applied)
-                 //   {
-                        GeoLevelController geoLevel = mission.Site.GeoLevel;
-                        if (__instance.name.Contains("Haven") && CheckFordVoidOmensInPlay(geoLevel).Contains(18))
+                    //   if (!VO18applied)
+                    //   {
+                    GeoLevelController geoLevel = mission.Site.GeoLevel;
+                    if (__instance.name.Contains("Haven") && CheckFordVoidOmensInPlay(geoLevel).Contains(18))
+                    {
+                        ResourcePack resources = new ResourcePack(__instance.Resources);
+
+
+                        for (int i = 0; i <= 2; i++)
                         {
-                            ResourcePack resources = new ResourcePack (__instance.Resources);
+                            ResourceUnit resourceUnit = __instance.Resources[i];
+                            resources[i] = new ResourceUnit(resourceUnit.Type, resourceUnit.Value * 0.5f);
 
-
-                            for (int i = 0; i <= 2; i++)
-                            {
-                                ResourceUnit resourceUnit = __instance.Resources[i];
-                                resources[i] = new ResourceUnit(resourceUnit.Type, resourceUnit.Value * 0.5f);
-
-                            }
-                            rewardDescription.Resources.Clear();
-                            rewardDescription.Resources.AddRange(resources);
-                            TFTVLogger.Always("Resource reward from mission " + mission.MissionName.LocalizeEnglish() + " modified to "
-                               + resources[0].Value + ", " + resources[1].Value + " and " + resources[2].Value);
                         }
-                   //     VO18applied = true;
-                  //  }
+                        rewardDescription.Resources.Clear();
+                        rewardDescription.Resources.AddRange(resources);
+                        TFTVLogger.Always("Resource reward from mission " + mission.MissionName.LocalizeEnglish() + " modified to "
+                           + resources[0].Value + ", " + resources[1].Value + " and " + resources[2].Value);
+                    }
+                    //     VO18applied = true;
+                    //  }
                 }
                 catch (Exception e)
                 {
@@ -937,7 +938,6 @@ namespace TFTV
         }
 
 
-        // public void GameOver() for later 
         [HarmonyPatch(typeof(TacticalLevelController), "GameOver")]
         public static class TacticalLevelController_GameOver_HostileDefenders_Patch
         {
@@ -1004,7 +1004,7 @@ namespace TFTV
             }
         }
 
-        //NEED TO TEST
+
         [HarmonyPatch(typeof(TacticalAbility), "get_WillPointCost")]
         public static class TacticalAbility_get_WillPointCost_VoidOmenExtraWPCost_Patch
         {
@@ -1200,6 +1200,58 @@ namespace TFTV
                         TFTVLogger.Always("Lair or Citadal destroyed, Void Omen should be removed");
                         RemoveEarliestVoidOmen(__instance.GeoLevel);
 
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+        }
+
+        //VO5 increase chance to spawn weapons in crates
+        [HarmonyPatch(typeof(GeoMission), "PrepareTacticalGame")]
+        public static class TFTV_GeoMission_ModifyCratesVO5_Patch
+        {
+
+            public static void Prefix(GeoMission __instance, ref List<WeaponDef> __state)
+            {
+                try
+                {
+
+                    if (VoidOmensCheck[5] && __instance.MissionDef.name.Contains("HavenDef"))
+                    {
+                        __state = new List<WeaponDef>();
+
+                        foreach (WeaponDef weapon in Repo.GetAllDefs<WeaponDef>())
+                        {
+
+                            if ((weapon.name.Contains("AN_") || weapon.name.Contains("NJ_") || weapon.name.Contains("SY_"))
+                                && !weapon.name.Contains("Grenade") && !weapon.name.Contains("Berserker") && !weapon.name.Contains("Armadillo")
+                            && !weapon.name.Contains("Aspida"))
+                            { 
+                                __state.Add(weapon);
+                                weapon.CrateSpawnWeight *= 50;
+                            }
+
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+            public static void Postfix(GeoMission __instance, List<WeaponDef> __state)
+            {
+                try
+                {
+                    if (VoidOmensCheck[5] && __instance.MissionDef.name.Contains("HavenDef"))
+                    {
+                        foreach (WeaponDef weapon in __state)
+                        {
+                            weapon.CrateSpawnWeight /= 50;
+                        }
                     }
                 }
                 catch (Exception e)

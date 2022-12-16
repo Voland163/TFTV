@@ -15,6 +15,7 @@ using PhoenixPoint.Tactical.View.ViewControllers;
 using PhoenixPoint.Tactical.View.ViewModules;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using UnityEngine;
 using static PhoenixPoint.Tactical.View.ViewModules.UIModuleCharacterStatus;
@@ -153,7 +154,7 @@ namespace TFTV
         {
             try
             {
-                UnityEngine.Random.InitState((int)DateTime.Now.Ticks);
+                UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
                 int roll = UnityEngine.Random.Range(1, 10);
 
                 TFTVLogger.Always("The tactics roll is " + roll);
@@ -177,9 +178,9 @@ namespace TFTV
         {
             try
             {
-                UnityEngine.Random.InitState((int)DateTime.Now.Ticks);
+                UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
                 int adjectivesNumber = UnityEngine.Random.Range(0, TFTVHumanEnemiesNames.adjectives.Count());
-                UnityEngine.Random.InitState((int)DateTime.Now.Ticks);
+                UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
                 int nounsNumber = UnityEngine.Random.Range(0, TFTVHumanEnemiesNames.nouns.Count());
                 string name = TFTVHumanEnemiesNames.adjectives[adjectivesNumber] + " " + TFTVHumanEnemiesNames.nouns[nounsNumber];
                 TFTVLogger.Always("The gang names is" + name);
@@ -454,7 +455,7 @@ namespace TFTV
                             champ.GameTags.Add(HumanEnemyTier2GameTag);
                             champ.GameTags.Add(gameTagDef);
                             champ.GameTags.Add(humanEnemyTagDef, GameTagAddMode.ReplaceExistingExclusive);
-                            UnityEngine.Random.InitState((int)DateTime.Now.Ticks);
+                            UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
                             champ.name = factionNames[UnityEngine.Random.Range(0, factionNames.Count)];
                             TacticalActor tacticalActor = champ as TacticalActor;
                             AdjustStatsAndSkills(tacticalActor);
@@ -472,7 +473,7 @@ namespace TFTV
                             ganger.GameTags.Add(HumanEnemyTier3GameTag);
                             ganger.GameTags.Add(gameTagDef);
                             ganger.GameTags.Add(humanEnemyTagDef, GameTagAddMode.ReplaceExistingExclusive);
-                            UnityEngine.Random.InitState((int)DateTime.Now.Ticks);
+                            UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
                             ganger.name = factionNames[UnityEngine.Random.Range(0, factionNames.Count)];
                             TacticalActor tacticalActor = ganger as TacticalActor;
                             AdjustStatsAndSkills(tacticalActor);
@@ -491,7 +492,7 @@ namespace TFTV
                             juve.GameTags.Add(HumanEnemyTier4GameTag);
                             juve.GameTags.Add(gameTagDef);
                             juve.GameTags.Add(humanEnemyTagDef, GameTagAddMode.ReplaceExistingExclusive);
-                            UnityEngine.Random.InitState((int)DateTime.Now.Ticks);
+                            UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
                             juve.name = factionNames[UnityEngine.Random.Range(0, factionNames.Count)];
                             TacticalActor tacticalActor = juve as TacticalActor;
                             AdjustStatsAndSkills(tacticalActor);
@@ -583,7 +584,7 @@ namespace TFTV
                         leaderBase.GameTags.Add(humanEnemyTagDef, GameTagAddMode.ReplaceExistingExclusive);
                         TFTVLogger.Always("humanEnemyTagDef assigned");
 
-                        UnityEngine.Random.InitState((int)DateTime.Now.Ticks);
+                        UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
                         leader.name = factionNames[UnityEngine.Random.Range(0, factionNames.Count)];
                         factionNames.Remove(leader.name);
                         TFTVLogger.Always("Leader now has GameTag and their name is " + leader.name);
@@ -603,7 +604,7 @@ namespace TFTV
                             champ.GameTags.Add(HumanEnemyTier2GameTag);
                             champ.GameTags.Add(gameTagDef);
                             champ.GameTags.Add(humanEnemyTagDef, GameTagAddMode.ReplaceExistingExclusive);
-                            UnityEngine.Random.InitState((int)DateTime.Now.Ticks);
+                            UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
                             champ.name = factionNames[UnityEngine.Random.Range(0, factionNames.Count)];
                             TacticalActor tacticalActor = champ as TacticalActor;
                             AdjustStatsAndSkills(tacticalActor);
@@ -621,7 +622,7 @@ namespace TFTV
                             ganger.GameTags.Add(HumanEnemyTier3GameTag);
                             ganger.GameTags.Add(gameTagDef);
                             ganger.GameTags.Add(humanEnemyTagDef, GameTagAddMode.ReplaceExistingExclusive);
-                            UnityEngine.Random.InitState((int)DateTime.Now.Ticks);
+                            UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
                             ganger.name = factionNames[UnityEngine.Random.Range(0, factionNames.Count)];
                             TacticalActor tacticalActor = ganger as TacticalActor;
                             AdjustStatsAndSkills(tacticalActor);
@@ -640,7 +641,7 @@ namespace TFTV
                             juve.GameTags.Add(HumanEnemyTier4GameTag);
                             juve.GameTags.Add(gameTagDef);
                             juve.GameTags.Add(humanEnemyTagDef, GameTagAddMode.ReplaceExistingExclusive);
-                            UnityEngine.Random.InitState((int)DateTime.Now.Ticks);
+                            UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
                             juve.name = factionNames[UnityEngine.Random.Range(0, factionNames.Count)];
                             TacticalActor tacticalActor = juve as TacticalActor;
                             AdjustStatsAndSkills(tacticalActor);
@@ -1408,13 +1409,13 @@ namespace TFTV
 
                                 if (faction.Actors.Contains(actor))
                                 {
-                                    UnityEngine.Random.InitState((int)DateTime.Now.Ticks);
+                                    UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
                                     int rankNumber = UnityEngine.Random.Range(1, 7);
                                     if (rankNumber == 6)
                                     {
                                         actor.GameTags.Add(HumanEnemyTier2GameTag);
                                         actor.GameTags.Add(gameTagDef);
-                                        UnityEngine.Random.InitState((int)DateTime.Now.Ticks);
+                                        UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
                                         actor.name = factionNames[UnityEngine.Random.Range(0, factionNames.Count)];
                                         TFTVLogger.Always("Name of new enemy is " + actor.name);
                                         TacticalActor tacticalActor = actor as TacticalActor;
@@ -1426,7 +1427,7 @@ namespace TFTV
                                     {
                                         actor.GameTags.Add(HumanEnemyTier3GameTag);
                                         actor.GameTags.Add(gameTagDef);
-                                        UnityEngine.Random.InitState((int)DateTime.Now.Ticks);
+                                        UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
                                         actor.name = factionNames[UnityEngine.Random.Range(0, factionNames.Count)];
                                         TFTVLogger.Always("Name of new enemy is " + actor.name);
                                         TacticalActor tacticalActor = actor as TacticalActor;
@@ -1439,7 +1440,7 @@ namespace TFTV
                                     {
                                         actor.GameTags.Add(HumanEnemyTier4GameTag);
                                         actor.GameTags.Add(gameTagDef);
-                                        UnityEngine.Random.InitState((int)DateTime.Now.Ticks);
+                                        UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
                                         actor.name = factionNames[UnityEngine.Random.Range(0, factionNames.Count)];
                                         TFTVLogger.Always("Name of new enemy is " + actor.name);
                                         TacticalActor tacticalActor = actor as TacticalActor;

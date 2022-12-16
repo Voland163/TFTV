@@ -6,6 +6,7 @@ using Base.Utils;
 using PhoenixPoint.Common.ContextHelp;
 using PhoenixPoint.Common.ContextHelp.HintConditions;
 using PhoenixPoint.Common.Core;
+using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.Characters;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
@@ -75,9 +76,26 @@ namespace TFTV
             RemoveCensusResearch();
             AllowMedkitsToTargetMutoids();
             //Commented out for update #7
-            //  ChangesToLOTA2();
+            //ChangesToLOTA2();
             CreateSubject24();
+           // Test();
 
+        }
+
+        public static void Test()
+        {
+            try 
+            {
+                InventoryComponentDef anuCrate = DefCache.GetDef<InventoryComponentDef>("Crate_AN_InventoryComponentDef");
+                InventoryComponentDef njCrate = DefCache.GetDef<InventoryComponentDef>("Crate_NJ_InventoryComponentDef");
+
+
+                anuCrate.ItemDefs = njCrate.ItemDefs;
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
         }
 
         public static void ChangesToLOTA2()
@@ -88,6 +106,35 @@ namespace TFTV
                 ChangeAntartica();
                 ChangeAncientSitesHarvesting();
                 ChangeAncients();
+                CreateAbilitiesForAncients();
+            }
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+        public static void CreateAbilitiesForAncients()
+        {
+            try
+            {
+                //Creating status effect to show that Guardian will repair a body part next turn. Need to create a status to show small icon.
+                
+                DamageMultiplierStatusDef sourceAbilityStatusDef = DefCache.GetDef<DamageMultiplierStatusDef>("BionicResistances_StatusDef");
+
+                string statusSelfRepairAbilityName = "AutoRepair_AddAbilityStatusDef";
+                DamageMultiplierStatusDef statusSelfRepairAbilityDef = Helper.CreateDefFromClone(sourceAbilityStatusDef, "17A2DF06-6BA5-46F3-92B5-D85F74193ABD", statusSelfRepairAbilityName);
+                statusSelfRepairAbilityDef.EffectName = "Selfrepair";
+                statusSelfRepairAbilityDef.ApplicationConditions = new EffectConditionDef[] { };
+                statusSelfRepairAbilityDef.Visuals = Helper.CreateDefFromClone(sourceAbilityStatusDef.Visuals, "2330D0AE-547B-492E-8C49-16BFDD498653", statusSelfRepairAbilityName);
+                statusSelfRepairAbilityDef.VisibleOnHealthbar = TacStatusDef.HealthBarVisibility.AlwaysVisible;
+                statusSelfRepairAbilityDef.VisibleOnPassiveBar = true;
+                statusSelfRepairAbilityDef.VisibleOnStatusScreen = TacStatusDef.StatusScreenVisibility.VisibleOnStatusesList;
+                statusSelfRepairAbilityDef.Visuals.DisplayName1.LocalizationKey = "ANC_AUTOREPAIR_TITLE";
+                statusSelfRepairAbilityDef.Visuals.Description.LocalizationKey = "ANC_AUTOREPAIR_TEXT";
+                statusSelfRepairAbilityDef.Visuals.LargeIcon= TFTVDefsRequiringReinjection.VoidIcon;
+                statusSelfRepairAbilityDef.Visuals.SmallIcon = TFTVDefsRequiringReinjection.VoidIcon;
             }
 
             catch (Exception e)
@@ -179,8 +226,15 @@ namespace TFTV
                 TacCharacterDef shielder = DefCache.GetDef<TacCharacterDef>("HumanoidGuardian_Shielder_TacCharacterDef");
                 TacCharacterDef driller = DefCache.GetDef<TacCharacterDef>("HumanoidGuardian_Driller_TacCharacterDef");
 
+                BodyPartAspectDef headBodyAspect = DefCache.GetDef<BodyPartAspectDef>("E_BodyPartAspect [HumanoidGuardian_Head_WeaponDef]");
+                headBodyAspect.Endurance = 0;
+                headBodyAspect.WillPower = 0;
 
+                BodyPartAspectDef torsoDrillBodyAspect = DefCache.GetDef<BodyPartAspectDef>("E_BodyPartAspect [HumanoidGuardian_TorsoDrill_BodyPartDef]");
+                BodyPartAspectDef torsoShieldsBodyAspect = DefCache.GetDef<BodyPartAspectDef>("E_BodyPartAspect [HumanoidGuardian_TorsoShields_BodyPartDef]");
 
+                torsoDrillBodyAspect.WillPower = 30;
+                torsoShieldsBodyAspect.WillPower = 30;
 
                 /* TacCharacterDef newShielder = Helper.CreateDefFromClone(shielder, "C3BDED7B-1C4E-4DAA-8418-7A35DF601875", name);
                  newShielder.SpawnCommandId = "BlackShield";
@@ -1945,6 +1999,13 @@ namespace TFTV
             {
                 HealFacilityComponentDef e_HealMedicalBay_PhoenixFacilityDe = DefCache.GetDef<HealFacilityComponentDef>("E_Heal [MedicalBay_PhoenixFacilityDef]");
                 e_HealMedicalBay_PhoenixFacilityDe.BaseHeal = 16;
+                PhoenixFacilityDef medbay=   DefCache.GetDef<PhoenixFacilityDef>("MedicalBay_PhoenixFacilityDef");
+                medbay.ConstructionTimeDays = 1.5f;
+                medbay.ResourceCost = new ResourcePack 
+                { 
+                    new ResourceUnit { Type = ResourceType.Materials, Value = 200 }, 
+                    new ResourceUnit { Type = ResourceType.Tech, Value = 50 } 
+                };
 
             }
             catch (Exception e)

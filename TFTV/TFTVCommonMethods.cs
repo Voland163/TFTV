@@ -74,6 +74,7 @@ namespace TFTV
                 TFTVHumanEnemiesNames.CreateNamesDictionary();
                 TFTVInfestation.InfestationMissionWon = false;
                 ClearHints();
+                TFTVUI.uIModuleSoldierCustomization = null;
                 TFTVLogger.Always("Internal variables cleared");
             }
             catch (Exception e)

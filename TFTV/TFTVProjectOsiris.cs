@@ -19,6 +19,7 @@ using PRMBetterClasses;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Design.Serialization;
+using System.Diagnostics;
 using System.Linq;
 
 namespace TFTV
@@ -415,7 +416,7 @@ namespace TFTV
                     {
                         List<int> orderedList = allProjectOsirisCandidates.Values.OrderBy(x => x).ToList();
 
-                        UnityEngine.Random.InitState((int)DateTime.Now.Ticks);
+                        UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
                         int roll = UnityEngine.Random.Range(0, 100);
                         int rollTo = orderedList.Count * 10 + orderedList[0];
                         if (rollTo > 90)

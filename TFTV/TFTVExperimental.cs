@@ -1,50 +1,43 @@
-﻿using Base.Entities;
+﻿using Base.Defs;
+using Base.Entities;
 using HarmonyLib;
 using PhoenixPoint.Common.Entities.GameTags;
-using PhoenixPoint.Common.Entities.GameTagsTypes;
-using PhoenixPoint.Common.Levels.Missions;
-using PhoenixPoint.Geoscape.Entities;
-using PhoenixPoint.Geoscape.Levels;
-using PhoenixPoint.Geoscape.Levels.Factions;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
-using PhoenixPoint.Tactical.Entities.Statuses;
-using PhoenixPoint.Tactical.Levels;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection.Emit;
-using static UnityStandardAssets.Utility.TimedObjectActivator;
 
 namespace TFTV
 {
     internal class TFTVExperimental
     {
-
+      //  private static readonly DefRepository Repo = TFTVMain.Repo;
 
         //Unlock Project Glory when player activates 3rd base. Commented out for release #7
-      /*  [HarmonyPatch(typeof(GeoPhoenixFaction), "ActivatePhoenixBase")]
-        public static class GeoPhoenixFaction_ActivatePhoenixBase_GiveGlory_Patch
-        {
-            public static void Postfix(GeoPhoenixFaction __instance)
-            {
-                try
-                {
-                    if (__instance.GeoLevel.EventSystem.GetVariable("Photographer")!=1 && __instance.Bases.Count()>2) 
-                    {
-                        __instance.GeoLevel.EventSystem.SetVariable("Photographer", 1);
-                    }
+        /*  [HarmonyPatch(typeof(GeoPhoenixFaction), "ActivatePhoenixBase")]
+          public static class GeoPhoenixFaction_ActivatePhoenixBase_GiveGlory_Patch
+          {
+              public static void Postfix(GeoPhoenixFaction __instance)
+              {
+                  try
+                  {
+                      if (__instance.GeoLevel.EventSystem.GetVariable("Photographer")!=1 && __instance.Bases.Count()>2) 
+                      {
+                          __instance.GeoLevel.EventSystem.SetVariable("Photographer", 1);
+                      }
 
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
+                  }
+                  catch (Exception e)
+                  {
+                      TFTVLogger.Error(e);
+                  }
 
 
-            }
+              }
 
-        }*/
+          }*/
 
 
         public static TacticalActor mutoidReceivingHealing = null;
@@ -58,15 +51,15 @@ namespace TFTV
             {
                 try
                 {
-                    if ((TacticalActor)((TacticalAbilityTarget)action.Param).Actor != null) 
+                    if ((TacticalActor)((TacticalAbilityTarget)action.Param).Actor != null)
                     {
                         TacticalActor actor = (TacticalActor)((TacticalAbilityTarget)action.Param).Actor;
-                        if (actor.HasGameTag(DefCache.GetDef<GameTagDef>("Mutoid_ClassTagDef"))) 
+                        if (actor.HasGameTag(DefCache.GetDef<GameTagDef>("Mutoid_ClassTagDef")))
                         {
                             mutoidReceivingHealing = actor;
                         }
                     }
-                       
+
                 }
                 catch (Exception e)
                 {
@@ -84,11 +77,12 @@ namespace TFTV
             public static void Postfix(HealAbility __instance, ref float __result)
             {
                 try
-                { 
+                {
 
-                    if (mutoidReceivingHealing != null) 
+                    if (mutoidReceivingHealing != null)
                     {
                         __result = 0;
+                        mutoidReceivingHealing = null;
                     }
 
                 }
@@ -137,9 +131,12 @@ namespace TFTV
 
         }
 
-       // 
 
-       
+
+
+
+
+
 
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
 

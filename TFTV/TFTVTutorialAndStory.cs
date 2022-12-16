@@ -94,6 +94,173 @@ namespace TFTV
         }
 
 
+        [HarmonyPatch(typeof(UIModuleContextHelp), "ShowPanel")]
+        public static class UIModuleContextHelp_Show_Hints_Patch
+        {
+            public static void Postfix(UIModuleContextHelp __instance, object ____context)
+            {
+                try
+                {
+                   
+
+                    ContextHelpHintDef hintDef = ____context as ContextHelpHintDef;
+
+                    if (hintDef != null)
+                    {
+
+                        bool tacticsHintWasShown = false;
+                        TFTVLogger.Always("Show hint method invoked, the hint is " + hintDef.name);
+                        //  TFTVLogger.Always("There are " + TFTVHumanEnemies.TacticsHint.Count + " hints in the human tactics list");
+
+                        if (hintDef.name.Contains("InfestationMissionIntro"))// && !TacticalHintsToShow.Contains(hintDef.name))
+                        {
+                            __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("px_squad.jpg");
+                            hintDef.Trigger = HintTrigger.Manual;
+                            // TacticalHintsToShow.Add(hintDef.name);
+                        }
+
+                        else if (hintDef.name.Contains("InfestationMissionEnd"))// && !TacticalHintsToShow.Contains(hintDef.name))
+                        {
+                            __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("px_squad.jpg");
+                            hintDef.Trigger = HintTrigger.Manual;
+                            // TacticalHintsToShow.Add(hintDef.name);
+                        }
+
+                        else if (hintDef.Title.LocalizationKey == "UMBRA_SIGHTED_TITLE")// && !TacticalHintsToShow.Contains(hintDef.name))
+                        {
+                            __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("Umbra_base.png");
+                            // TacticalHintsToShow.Add(hintDef.name);
+                        }
+
+                        else if (hintDef.Title.LocalizationKey == "REVENANT_SIGHTED_TITLE")// && !TacticalHintsToShow.Contains(hintDef.name))
+                        {
+                            __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("Hint_Revenant.png");
+                            // TacticalHintsToShow.Add(hintDef.name);
+                        }
+
+                        else if (hintDef.name.Contains("TFTV_StaminaHintDef"))// && !TacticalHintsToShow.Contains(hintDef.name))
+                        {
+                            __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("broken_limb_stamina.png");
+                            // TacticalHintsToShow.Add(hintDef.name);
+                        }
+
+                        else if (hintDef.name.Contains("RevenantResistanceSighted"))
+                        {
+                            __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("Hint_Revenant.png");
+                            alwaysDisplayedTacticalHintsDbDef.Hints.Remove(hintDef);
+                        }
+
+                        else if (hintDef.name.Contains("VoidTouchedSighted"))
+                        {
+                            __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("Hint_TBTV.png");
+
+                        }
+                        else if (hintDef.name.Contains("VoidTouchedOnAttack"))
+                        {
+                            __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("Hint_TBTV_MfD.png");
+                        }
+                        else if (hintDef.name.Contains("VoidTouchedOnTurnEnd"))
+                        {
+                            __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("Hint_TBTV_EoT.png");
+                        }
+                        else if (hintDef.name.Contains("TUT_DLC4_Acheron_HintDef"))
+                        {
+                            __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("Acheron.png");
+                        }
+                        else if (hintDef.name.Contains("AcheronPrime"))
+                        {
+                            __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("AcheronPrime.png"); //Prime.png");
+                        }
+                        else if (hintDef.name.Equals("AcheronAchlys"))
+                        {
+                            __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("AcheronAchlys.png");
+                        }
+                        else if (hintDef.name.Equals("AcheronAchlysChampion"))
+                        {
+                            __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("AcheronAchlysChampion.png");
+                        }
+                        else if (hintDef.name.Equals("AcheronAsclepius"))
+                        {
+                            __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("AcheronAsclepius.png");
+                        }
+                        else if (hintDef.name.Equals("AcheronAsclepiusChampion"))
+                        {
+                            __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("AcheronAsclepiusChampion.png");
+                        }
+                        else if (hintDef.name.Equals("VoidBlight"))
+                        {
+                            __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("acheron_void_blight.png");
+                        }
+                        else
+                        {
+                            __instance.Image.overrideSprite = null;//Helper.CreateSpriteFromImageFile("missing_hint_pic.jpg");
+                        }
+
+                        foreach (ContextHelpHintDef tacticsHint in TFTVHumanEnemies.TacticsHint)
+                        {
+                            if (tacticsHint.name == hintDef.name && !hintDef.Title.LocalizationKey.Contains("Should not appear"))  //hintDef.Text.LocalizeEnglish().Contains("Their leader is"))
+                            {
+                                //  TFTVLogger.Always("leaderSightedHint if check passed");
+
+                                if (hintDef.Text.LocalizeEnglish().Contains("Synedrion"))
+                                {
+                                    __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("syn_squad.jpg");
+                                }
+                                else if (hintDef.Text.LocalizeEnglish().Contains("a pack of Forsaken"))
+                                {
+                                    __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("fo_squad.png");
+                                }
+                                else if (hintDef.Text.LocalizeEnglish().Contains("New Jericho"))
+                                {
+                                    __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("nj_squad.jpg");
+                                }
+                                else if (hintDef.Text.LocalizeEnglish().Contains("Disciples of Anu"))
+                                {
+                                    __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("anu_squad.jpg");
+                                }
+                                else if (hintDef.Text.LocalizeEnglish().Contains("an array of the Pure"))
+                                {
+                                    if (!hintDef.Text.LocalizeEnglish().Contains("You are finally facing Subject 24"))
+                                    {
+                                        __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("pu_squad.jpg");
+                                    }
+                                    else
+                                    {
+                                        __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("subject24_squad.png");
+                                    }
+                                }
+                                else if (hintDef.Text.LocalizeEnglish().Contains("a gang"))
+                                {
+                                    __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("ban_squad.png");
+                                }
+
+                                tacticsHintWasShown = true;
+                                alwaysDisplayedTacticalHintsDbDef.Hints.Remove(hintDef);
+                            }
+
+                        }
+                        if (tacticsHintWasShown)
+                        {
+                            TFTVHumanEnemies.TacticsHint.Remove(hintDef);
+                        }
+                    }
+                    else
+                    {
+                        __instance.Image.overrideSprite = null;
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+
+        }
+
+
+
+
+        /*
         [HarmonyPatch(typeof(UIModuleContextHelp), "Show")]
         public static class UIModuleContextHelp_Show_Hints_Patch
         {
@@ -110,11 +277,6 @@ namespace TFTV
                         TFTVLogger.Always("Show hint method invoked, the hint is " + hintDef.name);
                         //  TFTVLogger.Always("There are " + TFTVHumanEnemies.TacticsHint.Count + " hints in the human tactics list");
 
-                        /* for (int i = 0; i < TFTVHumanEnemies.TacticsHint.Count; i++) 
-                         {
-                             TFTVLogger.Always("The hint # " + (i+1) + " is " + TFTVHumanEnemies.TacticsHint[i].name);
-
-                         }*/
                         if (hintDef.name.Contains("InfestationMissionIntro"))// && !TacticalHintsToShow.Contains(hintDef.name))
                         {
                             __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("px_squad.jpg");
@@ -258,7 +420,7 @@ namespace TFTV
                 }
             }
 
-        }
+        }*/
 
         public static ActorHasTemplateHintConditionDef ActorHasTemplateCreateNewConditionForTacticalHint(string name)
         {

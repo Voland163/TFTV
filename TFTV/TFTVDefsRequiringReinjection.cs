@@ -544,7 +544,7 @@ namespace TFTV
             derealizationIgnorePain.ViewElementDef.LargeIcon = icon;
             derealizationIgnorePain.ViewElementDef.SmallIcon = icon;
         }
-        
+       
         public static void CreateRevenantDefs()
         {
             try
@@ -791,10 +791,6 @@ namespace TFTV
                 AddAbilityStatusDef statusHiddenTBTVDef = Helper.CreateDefFromClone(sourceAbilityStatusDef, "23BD57AF-418A-49C7-B658-D05465248578", statusHiddenAbilityTBTVName);
                 statusHiddenTBTVDef.AbilityDef = hiddenTBTVAbility;
                 statusHiddenTBTVDef.ApplicationConditions = new EffectConditionDef[] { };
-
-
-
-
 
             }
             catch (Exception e)

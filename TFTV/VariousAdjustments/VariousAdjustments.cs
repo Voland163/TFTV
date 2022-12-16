@@ -34,6 +34,8 @@ namespace PRMBetterClasses.VariousAdjustments
         {
             SharedData shared = GameUtl.GameComponent<SharedData>();
 
+            // Fix Regen Torso to also regenerate health in vehicles
+            Fix_RegenTorso();
             // Fix for Triton Elite bloodsucker arms
             Fix_TritonElite();
             // Change Advanced Laser research to require advanced technician weapons
@@ -74,6 +76,12 @@ namespace PRMBetterClasses.VariousAdjustments
             Change_VidarGL(shared);
             // Destiny III - Give chance to fumble when non-proficient
             Change_Destiny();
+        }
+
+        private static void Fix_RegenTorso()
+        {
+            ApplyStatusAbilityDef regenTorsoAbility = DefCache.GetDef<ApplyStatusAbilityDef>("Regeneration_Torso_Passive_AbilityDef");
+            regenTorsoAbility.CanApplyToOffMapTarget = true; // can apply the regeneration status also in vehicles (= off map)
         }
 
         private static void Fix_TritonElite()
@@ -313,58 +321,81 @@ namespace PRMBetterClasses.VariousAdjustments
         }
         public static void Change_VariousWeapons(SharedData shared)
         {
-            SharedDamageKeywordsDataDef damageKeywords = GameUtl.GameComponent<SharedData>().SharedDamageKeywords;
+            SharedDamageKeywordsDataDef damageKeywords = shared.SharedDamageKeywords;
             foreach (WeaponDef weaponDef in Repo.GetAllDefs<WeaponDef>())
             {
-                // Danchev MG
-                if (weaponDef.name.Equals("PX_PoisonMachineGun_WeaponDef"))
-                {
-                    weaponDef.DamagePayload.DamageKeywords.Add(new DamageKeywordPair { DamageKeywordDef = shared.SharedDamageKeywords.ShreddingKeyword, Value = 3 });
-                    weaponDef.SpreadDegrees = 40.99f / 17;
-                }
-                // Danchev AR
-                if (weaponDef.name.Equals("PX_AcidAssaultRifle_WeaponDef"))
-                {
-                    weaponDef.DamagePayload.DamageKeywords.Add(new DamageKeywordPair { DamageKeywordDef = shared.SharedDamageKeywords.ShreddingKeyword, Value = 1 });
-                    weaponDef.DamagePayload.DamageKeywords.Find(dkp => dkp.DamageKeywordDef == shared.SharedDamageKeywords.AcidKeyword).Value = 10;
-                }
-                // Slamstrike Shotgun
-                if (weaponDef.name.Equals("FS_SlamstrikeShotgun_WeaponDef"))
-                {
-                    weaponDef.DamagePayload.DamageKeywords.Find(dkp => dkp.DamageKeywordDef == shared.SharedDamageKeywords.ShockKeyword).Value = 180;
-                }
-                // Grenades
+                // All hand thrown grenades, only these weapon defs ends with "Grenade_WeaponDef"
                 if (weaponDef.name.EndsWith("Grenade_WeaponDef") && weaponDef.Tags.Contains(shared.SharedGameTags.StandaloneTag))
                 {
                     // Manufature intantly
                     weaponDef.ManufacturePointsCost = 0;
+                }
+                // Various changes dependend on weapon def
+                switch (weaponDef.name)
+                {
+                    // Hawk light sniper rifle, switch to one handed ...
+                    //case "FS_LightSniperRifle_WeaponDef":
+                    //    weaponDef.HandsToUse = 1;
+                    //    break;
+                    // Danchev MG
+                    case "PX_PoisonMachineGun_WeaponDef":
+                        weaponDef.DamagePayload.DamageKeywords.Add(new DamageKeywordPair { DamageKeywordDef = damageKeywords.ShreddingKeyword, Value = 3 });
+                        weaponDef.SpreadDegrees = 40.99f / 17;
+                        break;
+                    // Danchev AR
+                    case "PX_AcidAssaultRifle_WeaponDef":
+                        weaponDef.DamagePayload.DamageKeywords.Add(new DamageKeywordPair { DamageKeywordDef = damageKeywords.ShreddingKeyword, Value = 1 });
+                        weaponDef.DamagePayload.DamageKeywords.Find(dkp => dkp.DamageKeywordDef == damageKeywords.AcidKeyword).Value = 10;
+                        break;
+                    // Slamstrike Shotgun
+                    case "FS_SlamstrikeShotgun_WeaponDef":
+                        weaponDef.DamagePayload.DamageKeywords.Find(dkp => dkp.DamageKeywordDef == damageKeywords.ShockKeyword).Value = 180;
+                        break;
                     // Imhullu Acid grenade
-                    if (weaponDef.name.Equals("AN_AcidGrenade_WeaponDef"))
-                    {
+                    case "AN_AcidGrenade_WeaponDef":
                         weaponDef.DamagePayload.DamageKeywords.Add(new DamageKeywordPair { DamageKeywordDef = damageKeywords.ShockKeyword, Value = 240 });
-                    }
+                        break;
                     // Fire grenade
-                    if (weaponDef.name.Equals("NJ_IncindieryGrenade_WeaponDef"))
-                    {
+                    case "NJ_IncindieryGrenade_WeaponDef":
                         weaponDef.ManufactureMaterials = 26;
                         weaponDef.ManufactureTech = 10;
                         DamageKeywordPair damageKeywordPair = weaponDef.DamagePayload.DamageKeywords.Find(dkp => dkp.DamageKeywordDef == damageKeywords.ShreddingKeyword);
                         _ = weaponDef.DamagePayload.DamageKeywords.Remove(damageKeywordPair);
-                    }
+                        break;
+                    // Yggdrasil Virophage grenade
+                    case "PX_VirophageGrenade_WeaponDef":
+                        weaponDef.ManufactureMutagen = 10;
+                        break;
+                    default:
+                        break;
                 }
             }
         }
         public static void Change_VenomTorso()
         {
-            WeaponDef venomTorso = DefCache.GetDef<WeaponDef>("AN_Berserker_Shooter_LeftArm_WeaponDef");
+            // Get Venom Torso def
+            TacticalItemDef venomTorso = DefCache.GetDef<TacticalItemDef>("AN_Berserker_Shooter_Torso_BodyPartDef");
+            // Set accuracy buff to 0, we don't want this when we can use 2 handed weapons!
+            /*venomTorso.BodyPartAspectDef.Accuracy = 0;*/
 
-            venomTorso.Tags = new GameTagsList()
+            // Get poison spike weapon def
+            WeaponDef poisonSpikeWeapon = DefCache.GetDef<WeaponDef>("AN_Berserker_Shooter_LeftArm_WeaponDef");
+            // Add GunWeapon tag for ... idk ;-)
+            poisonSpikeWeapon.Tags.Add(DefCache.GetDef<GameTagDef>("GunWeapon_TagDef"));
+            // Set range to infinity (As all other direct line weapons), vanilla is set to 12.0
+            poisonSpikeWeapon.DamagePayload.Range = float.PositiveInfinity;
+            // Set ammo to unlimited (ChargesMax = 0)
+            poisonSpikeWeapon.ChargesMax = 0;
+            // Make 2 handed weapns usable => remove "UnusableLeftHand_AbilityDef"
+            // => set it new to "ShootPoisonSpike_ShootAbilityDef"
+            // add Overwatch just because :-)
+            /*poisonSpikeWeapon.Abilities = new AbilityDef[]
             {
-                venomTorso.Tags[0],
-                venomTorso.Tags[1],
-                venomTorso.Tags[2],
-                DefCache.GetDef<GameTagDef>("GunWeapon_TagDef")
-            };
+                DefCache.GetDef<AbilityDef>("ShootPoisonSpike_ShootAbilityDef"),
+                DefCache.GetDef<AbilityDef>("Overwatch_AbilityDef")
+            };*/
+            // Buff accuracy to compensate the lost acc buff from torso 
+            /*poisonSpikeWeapon.SpreadDegrees = 1.2f;*/ // default 1.8
         }
         public static void Change_HavenRecruits()
         {

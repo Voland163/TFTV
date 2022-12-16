@@ -31,10 +31,10 @@ namespace TFTV
             description: "Sets all settings to default, to provide the Terror from the Void experience as envisioned by its creators")]
         public bool defaultSettings = false;
 
-        [ConfigField(text: "DISPLAY OPERATIVES WITHOUT HELMETS",
+      /*  [ConfigField(text: "DISPLAY OPERATIVES WITHOUT HELMETS",
             description: "Faces of operatives will always be fully displayed in Geoscape, even when they are wearing helmets. If you prefer to see your operatives with helmets, as in Vanilla, " +
             "turn this option off")]
-        public bool helmentsOff = true;
+        public bool helmentsOff = true;*/
 
         [ConfigField(text: "PLAY WITH MORE MIST VOID OMEN",
             description: "If you are playing on a Low-end system and experience lag with this Void Omen, you can turn it off here. This will prevent it from rolling" +
@@ -53,7 +53,7 @@ namespace TFTV
         }
         [ConfigField(text: "Starting squad",
          description: "You can choose a different starting squad. If you do, one of your Assaults and your starting Heavy on Legend and Hero, " +
-            "Assault on Veteran, or Sniper on Rookie will be replaced by a Faction class of your choice. " +
+            "Assault on Veteran, or Sniper on Rookie will be replaced by an operative of the elite class of the Faction of your choice. " +
             "You will also get the corresponding faction technology once the faction researches it.")]
         public StartingSquadFaction startingSquad = StartingSquadFaction.PHOENIX;
 

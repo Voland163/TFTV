@@ -136,7 +136,7 @@ namespace TFTV
 
                             if(killer.GetAbilityWithDef<TacticalAbility>(feral) != null) 
                             {
-                                UnityEngine.Random.InitState((int)DateTime.Now.Ticks);
+                                UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
                                 int roll = UnityEngine.Random.Range(0, 100);
                                 TFTVLogger.Always("FumbleActionCheck roll is " + roll);
 
@@ -179,7 +179,7 @@ namespace TFTV
                     if (__instance.TacticalActor.GetAbilityWithDef<TacticalAbility>(feral) != null && __instance.Source is Equipment)
                     {
                         
-                         UnityEngine.Random.InitState((int)DateTime.Now.Ticks);
+                         UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
                           int roll = UnityEngine.Random.Range(0, 100);
                         TFTVLogger.Always("FumbleActionCheck roll is " + roll);
 

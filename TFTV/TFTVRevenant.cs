@@ -27,6 +27,7 @@ using PhoenixPoint.Tactical.Levels;
 using PhoenixPoint.Tactical.Levels.FactionObjectives;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using UnityEngine;
 
@@ -218,7 +219,7 @@ namespace TFTV
                         + GetDeadSoldiersIdFromInt(deadSoldier, controller) + " is added to the list of Revenant candidates");
                 }
 
-                UnityEngine.Random.InitState((int)DateTime.Now.Ticks);
+                UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
                 int roll = UnityEngine.Random.Range(0, candidates.Count());
                 TFTVLogger.Always("The total number of candidates is " + candidates.Count() + " and the roll is " + roll);
 
@@ -895,7 +896,7 @@ namespace TFTV
                             options = scoreList.Count;
                         }
 
-                        UnityEngine.Random.InitState((int)DateTime.Now.Ticks);
+                        UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
 
                         int roll = UnityEngine.Random.Range(0, options);
 

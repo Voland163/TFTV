@@ -18,6 +18,7 @@ using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.Entities.Statuses;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using UnityEngine;
 
@@ -508,7 +509,7 @@ namespace TFTV
                     OneOfThem_AbilityDef, bloodthirsty_AbilityDef
                     };
 
-                    UnityEngine.Random.InitState((int)DateTime.Now.Ticks);
+                    UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
                     int num = UnityEngine.Random.Range(0, 200);
                     TFTVLogger.Always("Treatment rolled " + num);
 
@@ -516,7 +517,7 @@ namespace TFTV
                     {
                         for (int i = 0; i < 100; i++)
                         {
-                            UnityEngine.Random.InitState((int)DateTime.Now.Ticks);
+                            UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
                             TacticalAbilityDef abilityToAdd = abilityList.GetRandomElement();
                             TFTVLogger.Always("The randomly chosen ability is " + abilityToAdd.name);
                             if (!__instance.Progression.Abilities.Contains(abilityToAdd))
