@@ -1009,7 +1009,6 @@ namespace TFTV
             TacticalActor tacticalActor1 = tacticalActor as TacticalActor;
             if (!tacticalActor1.Status.HasStatus(revenantResistanceStatus))
             {
-
                 tacticalActor1.Status.ApplyStatus<DamageMultiplierStatus>(revenantResistanceStatus);
             }
 
@@ -1018,8 +1017,8 @@ namespace TFTV
             {
                 tacticalActor.GameTags.Add(revenantResistanceGameTag);
             }
-
         }
+
         public static void AddRevenantClassAbility(TacticalActor tacticalActor, SpecializationDef specialization)
 
         {

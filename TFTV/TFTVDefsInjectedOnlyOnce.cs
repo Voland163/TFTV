@@ -2,6 +2,7 @@
 using Base.Entities.Abilities;
 using Base.Entities.Effects;
 using Base.Entities.Effects.ApplicationConditions;
+using Base.UI;
 using Base.Utils;
 using PhoenixPoint.Common.ContextHelp;
 using PhoenixPoint.Common.ContextHelp.HintConditions;
@@ -34,7 +35,6 @@ using PhoenixPoint.Tactical.Entities.Effects.DamageTypes;
 using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.Entities.Statuses;
 using PhoenixPoint.Tactical.Entities.Weapons;
-using PhoenixPoint.Tactical.Eventus;
 using PhoenixPoint.Tactical.Levels.FactionObjectives;
 using System;
 using System.Collections.Generic;
@@ -75,27 +75,11 @@ namespace TFTV
             ChangesToAcherons();
             RemoveCensusResearch();
             AllowMedkitsToTargetMutoids();
-            //Commented out for update #7
-            //ChangesToLOTA2();
+            //Commented out for update #11
+          //  ChangesToLOTA2();
             CreateSubject24();
-           // Test();
-
-        }
-
-        public static void Test()
-        {
-            try 
-            {
-                InventoryComponentDef anuCrate = DefCache.GetDef<InventoryComponentDef>("Crate_AN_InventoryComponentDef");
-                InventoryComponentDef njCrate = DefCache.GetDef<InventoryComponentDef>("Crate_NJ_InventoryComponentDef");
 
 
-                anuCrate.ItemDefs = njCrate.ItemDefs;
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
         }
 
         public static void ChangesToLOTA2()
@@ -105,8 +89,10 @@ namespace TFTV
 
                 ChangeAntartica();
                 ChangeAncientSitesHarvesting();
-                ChangeAncients();
+                ChangeAncientsBodyParts();
                 CreateAbilitiesForAncients();
+                CreateAncientStatusEffects();
+                ChangeAncientsWeapons();
             }
 
             catch (Exception e)
@@ -120,7 +106,7 @@ namespace TFTV
             try
             {
                 //Creating status effect to show that Guardian will repair a body part next turn. Need to create a status to show small icon.
-                
+
                 DamageMultiplierStatusDef sourceAbilityStatusDef = DefCache.GetDef<DamageMultiplierStatusDef>("BionicResistances_StatusDef");
 
                 string statusSelfRepairAbilityName = "AutoRepair_AddAbilityStatusDef";
@@ -133,7 +119,7 @@ namespace TFTV
                 statusSelfRepairAbilityDef.VisibleOnStatusScreen = TacStatusDef.StatusScreenVisibility.VisibleOnStatusesList;
                 statusSelfRepairAbilityDef.Visuals.DisplayName1.LocalizationKey = "ANC_AUTOREPAIR_TITLE";
                 statusSelfRepairAbilityDef.Visuals.Description.LocalizationKey = "ANC_AUTOREPAIR_TEXT";
-                statusSelfRepairAbilityDef.Visuals.LargeIcon= TFTVDefsRequiringReinjection.VoidIcon;
+                statusSelfRepairAbilityDef.Visuals.LargeIcon = TFTVDefsRequiringReinjection.VoidIcon;
                 statusSelfRepairAbilityDef.Visuals.SmallIcon = TFTVDefsRequiringReinjection.VoidIcon;
             }
 
@@ -218,7 +204,112 @@ namespace TFTV
 
         }
 
-        public static void ChangeAncients()
+        public static void CreateAncientStatusEffects()
+        {
+            try
+            {
+                //Status for Cyclops Defense
+                //Cyclops is near invulnerable while most hoplites are alive
+                string statusCyclopsDefenseName = "CyclopsDefense_StatusDef";
+                StandardDamageTypeEffectDef projectileDamage = DefCache.GetDef<StandardDamageTypeEffectDef>("Projectile_StandardDamageTypeEffectDef");
+                StandardDamageTypeEffectDef blastDamage = DefCache.GetDef<StandardDamageTypeEffectDef>("Blast_StandardDamageTypeEffectDef");
+                DamageMultiplierStatusDef source = DefCache.GetDef<DamageMultiplierStatusDef>("BionicResistances_StatusDef");
+                DamageMultiplierStatusDef statusCyclopsDefense = Helper.CreateDefFromClone(
+                    source,
+                    "1C2318BF-9DF4-479A-B220-93471A6ED3D0",
+                    statusCyclopsDefenseName);
+                statusCyclopsDefense.EffectName = "CyclopsDefense";
+                statusCyclopsDefense.VisibleOnHealthbar = TacStatusDef.HealthBarVisibility.AlwaysVisible;
+                statusCyclopsDefense.VisibleOnPassiveBar = true;
+                statusCyclopsDefense.VisibleOnStatusScreen = TacStatusDef.StatusScreenVisibility.VisibleOnStatusesList;
+
+
+                statusCyclopsDefense.Visuals = Helper.CreateDefFromClone(
+                    source.Visuals,
+                    "041002FC-A98F-4F09-B3AC-79089D7A9C63",
+                    statusCyclopsDefenseName);
+                statusCyclopsDefense.Multiplier = 0.25f;
+                statusCyclopsDefense.Range = -1;
+                statusCyclopsDefense.DamageTypeDefs = new DamageTypeBaseEffectDef[] { projectileDamage, blastDamage };
+
+                statusCyclopsDefense.Visuals.LargeIcon = TFTVDefsRequiringReinjection.VoidIcon;
+                statusCyclopsDefense.Visuals.SmallIcon = TFTVDefsRequiringReinjection.VoidIcon;
+
+                statusCyclopsDefense.Visuals.DisplayName1 = new LocalizedTextBind("CYCLOPS DEFENSE", true);
+                statusCyclopsDefense.Visuals.Description = new LocalizedTextBind("CYCLOPS DEFENSE", true);
+
+                DamageMultiplierStatusDef CyclopsDefenseStatus = DefCache.GetDef<DamageMultiplierStatusDef>("CyclopsDefense_StatusDef");
+
+                TFTVLogger.Always(CyclopsDefenseStatus.EffectName + " is real");
+
+                //Status for hoplites; while hidden and during the turn on which they awake, they are nearly invulnerable
+                /*  string skillName = "AncientStasis_StatusDef";
+                  DamageMultiplierStatusDef ancientStasis = Helper.CreateDefFromClone(
+                      source,
+                      "94E23AE4-8089-41A2-98B1-899535FC577A",
+                      skillName);
+                  ancientStasis.EffectName = "AncientStasis";
+                  ancientStasis.VisibleOnHealthbar = TacStatusDef.HealthBarVisibility.AlwaysVisible;
+                  ancientStasis.VisibleOnPassiveBar = false;
+                  ancientStasis.VisibleOnStatusScreen = TacStatusDef.StatusScreenVisibility.VisibleOnStatusesList;
+                  ancientStasis.HealthbarPriority = -1;
+                  ancientStasis.ExpireOnEndOfTurn = false;
+
+                  ancientStasis.Visuals = Helper.CreateDefFromClone(
+                      source.Visuals,
+                      "E24AFC45-FD5F-4E2A-BDFC-5D9A8B240813",
+                      skillName);
+                  ancientStasis.DamageTypeDefs = new DamageTypeBaseEffectDef[1];
+                  ancientStasis.Multiplier = 0.1f;
+                  ancientStasis.Range = -1;
+                  ancientStasis.DamageTypeDefs = new DamageTypeBaseEffectDef[] { projectileDamage, blastDamage };
+
+                  ancientStasis.Visuals.LargeIcon = TFTVDefsRequiringReinjection.VoidIcon;
+                  ancientStasis.Visuals.SmallIcon = TFTVDefsRequiringReinjection.VoidIcon;
+
+                  ancientStasis.Visuals.DisplayName1 = new LocalizedTextBind("ANCIENT STASIS", true);
+                  ancientStasis.Visuals.Description = new LocalizedTextBind("STASIS", true);
+
+                  //  DamageMultiplierStatusDef AncientStasisStatus = DefCache.GetDef<DamageMultiplierStatusDef>("AncientStasis_StatusDef");
+                  //and " + CyclopsDefenseStatus.EffectName + " is real too");*/
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+        public static void ChangeAncientsWeapons()
+        {
+            try
+            {
+                //Reducing "base" damage of automata's weapons; the idea is to then increase them dynamically during mission
+                WeaponDef drill = DefCache.GetDef<WeaponDef>("HumanoidGuardian_Drill_WeaponDef");
+                drill.DamagePayload.DamageKeywords[0].Value = 60;
+
+                WeaponDef hopliteBeam = DefCache.GetDef<WeaponDef>("HumanoidGuardian_Head_WeaponDef");
+                hopliteBeam.DamagePayload.DamageKeywords[0].Value = 70;
+
+                WeaponDef shield = DefCache.GetDef<WeaponDef>("HumanoidGuardian_RightShield_WeaponDef");
+                shield.DamagePayload.DamageKeywords[0].Value = 80;
+
+                WeaponDef cyclopsLCBeam = DefCache.GetDef<WeaponDef>("MediumGuardian_Head_LivingCrystal_WeaponDef");
+                cyclopsLCBeam.DamagePayload.DamageKeywords[0].Value = 120;
+
+                WeaponDef cyclopsOBeam = DefCache.GetDef<WeaponDef>("MediumGuardian_Head_Orichalcum_WeaponDef");
+                cyclopsOBeam.DamagePayload.DamageKeywords[0].Value = 120;
+               
+                WeaponDef cyclopsPBeam = DefCache.GetDef<WeaponDef>("MediumGuardian_Head_ProteanMutane_WeaponDef");
+                cyclopsPBeam.DamagePayload.DamageKeywords[0].Value = 120;
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+
+        public static void ChangeAncientsBodyParts()
         {
             try
             {
@@ -236,6 +327,8 @@ namespace TFTV
                 torsoDrillBodyAspect.WillPower = 30;
                 torsoShieldsBodyAspect.WillPower = 30;
 
+                // StanceStatusDef ancientGuardianStealthStatus = DefCache.GetDef<StanceStatusDef>("AncientGuardianStealth_StatusDef");
+                //    ancientGuardianStealthStatus.StatModifications[0].Value = 0.75f;
                 /* TacCharacterDef newShielder = Helper.CreateDefFromClone(shielder, "C3BDED7B-1C4E-4DAA-8418-7A35DF601875", name);
                  newShielder.SpawnCommandId = "BlackShield";
                  newShielder.Data.Name = "BlackShield";
@@ -335,6 +428,8 @@ namespace TFTV
             }
         }
 
+
+
         public static void AllowMedkitsToTargetMutoids()
         {
             try
@@ -426,10 +521,6 @@ namespace TFTV
                 TFTVLogger.Error(e);
             }
         }
-
-
-
-
         public static void RemoveCensusResearch()
         {
             try
@@ -505,24 +596,6 @@ namespace TFTV
 
         }
 
-
-        public static void CreateBlights()
-        {
-            try
-            {
-                DefCache.GetDef<ExhaustedStatusDef>("DefaultExhaustedStatusDef");
-                DefCache.GetDef<FatigueStatusDef>("SoldierExhausted_StatusDef");
-                DefCache.GetDef<FatigueStatusDef>("SoldierTired_StatusDef");
-                DefCache.GetDef<SilencedStatusDef>("ActorSilenced_StatusDef");
-
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-
-        }
-
         public static void ChangesAcheronAbilities()
         {
             try
@@ -574,39 +647,7 @@ namespace TFTV
             {
                 TFTVLogger.Error(e);
             }
-
-
         }
-
-        public static void CreatePepperBomb()
-        {
-            try
-            {
-
-
-                DamageKeywordDef sourceForDKE = DefCache.GetDef<DamageKeywordDef>("Mist_DamageKeywordEffectorDef");
-                string guidForDKE = "E7136E49-A82F-4290-B5D5-1EA6999F2520";
-                DamageKeywordDef pepperDamageKeywordDef = Repo.CreateDef<DamageKeywordDef>(guidForDKE);
-                ReflectionHelper.CopyFields(sourceForDKE, pepperDamageKeywordDef);
-
-                SpawnVoxelDamageTypeEffectDef sourceForDTE = DefCache.GetDef<SpawnVoxelDamageTypeEffectDef>("Mist_SpawnVoxelDamageTypeEffectDef");
-                string guidForDTE = "9541D0A1-7C7F-424B-B117-1FF0B85EB60D";
-                DamageKeywordDef pepperDamageTypeEffectDef = Repo.CreateDef<DamageKeywordDef>(guidForDTE);
-                ReflectionHelper.CopyFields(sourceForDTE, pepperDamageTypeEffectDef);
-
-                TacticalEventDef spawnPepperCloud = DefCache.GetDef<TacticalEventDef>("Acheron_SpawnPepperCloudParticle_EventDef");
-                ParticleEffectDef pepperCloudParticleEffect = DefCache.GetDef<ParticleEffectDef>("E_Mist10 [Acheron_SpawnPepperCloudParticle_EventDef]");
-
-
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-
-        }
-
-
 
         public static void ChangesAcheronResearches()
         {
@@ -725,10 +766,6 @@ namespace TFTV
             }
 
         }
-
-
-
-
 
         public static void ChangesAcheronTemplates()
         {
@@ -872,16 +909,16 @@ namespace TFTV
                 //Add acid and mist, increase range
                 WeaponDef acheronArms = DefCache.GetDef<WeaponDef>("Acheron_Arms_WeaponDef");
                 acheronArms.DamagePayload.DamageKeywords.Add(new DamageKeywordPair
-                 {
-                     DamageKeywordDef = acid,
-                     Value = 20
-                 });
-                 acheronArms.DamagePayload.DamageKeywords.Add(new DamageKeywordPair
-                 {
-                     DamageKeywordDef = mistDamageKeyword,
-                     Value = 1
+                {
+                    DamageKeywordDef = acid,
+                    Value = 20
+                });
+                acheronArms.DamagePayload.DamageKeywords.Add(new DamageKeywordPair
+                {
+                    DamageKeywordDef = mistDamageKeyword,
+                    Value = 1
 
-                 });
+                });
 
                 acheronArms.DamagePayload.DamageType = mistDamageTypeEffect;
                 acheronArms.DamagePayload.AoeRadius = 5;
@@ -917,7 +954,6 @@ namespace TFTV
 
         }
 
-
         public static void CreateUIDeliriumHint()
         {
             try
@@ -932,7 +968,6 @@ namespace TFTV
             }
 
         }
-
 
         public static void CreateStaminaHint()
         {
@@ -969,7 +1004,6 @@ namespace TFTV
             }
 
         }
-
         public static void ChangeInfestationDefs()
         {
             try
@@ -1032,7 +1066,6 @@ namespace TFTV
 
             }
         }
-
         public static void ModifyMissionDefsToReplaceNeutralWithBandit()
         {
             try
@@ -1401,7 +1434,6 @@ namespace TFTV
 
                 AlistairRoadsEvent();
                 CreateEventMessagesFromTheVoid();
-                InjectOlenaKimLines();
                 CreateBehemothPattern();
                 CreateTrappedInMist();
 
@@ -1999,12 +2031,12 @@ namespace TFTV
             {
                 HealFacilityComponentDef e_HealMedicalBay_PhoenixFacilityDe = DefCache.GetDef<HealFacilityComponentDef>("E_Heal [MedicalBay_PhoenixFacilityDef]");
                 e_HealMedicalBay_PhoenixFacilityDe.BaseHeal = 16;
-                PhoenixFacilityDef medbay=   DefCache.GetDef<PhoenixFacilityDef>("MedicalBay_PhoenixFacilityDef");
+                PhoenixFacilityDef medbay = DefCache.GetDef<PhoenixFacilityDef>("MedicalBay_PhoenixFacilityDef");
                 medbay.ConstructionTimeDays = 1.5f;
-                medbay.ResourceCost = new ResourcePack 
-                { 
-                    new ResourceUnit { Type = ResourceType.Materials, Value = 200 }, 
-                    new ResourceUnit { Type = ResourceType.Tech, Value = 50 } 
+                medbay.ResourceCost = new ResourcePack
+                {
+                    new ResourceUnit { Type = ResourceType.Materials, Value = 200 },
+                    new ResourceUnit { Type = ResourceType.Tech, Value = 50 }
                 };
 
             }
@@ -2246,10 +2278,6 @@ namespace TFTV
                 TFTVLogger.Error(e);
             }
         }
-
-
-
-
     }
 
 }

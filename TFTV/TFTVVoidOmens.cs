@@ -46,30 +46,28 @@ namespace TFTV
         private static readonly GeoHavenZoneDef havenLab = DefCache.GetDef<GeoHavenZoneDef>("Research_GeoHavenZoneDef");
 
         public static bool[] VoidOmensCheck = new bool[20];
-        /*
 
-           //VO#1 is harder ambushes
-           public static bool VoidOmen1Active = false;
-           //VO#3 is WP cost +50%
-           public static bool VoidOmen3Active = false;
-           //VO#4 is limited deplyoment, extra XP
-           public static bool VoidOmen4Active = false;
-           //VO#5 is haven defenders hostile; this is needed for victory kludge
-           public static bool VoidOmen5Active = false;
-           //VO#7 is more mist in missions
-           public static bool VoidOmen7Active = false;
-           //VO#10 is no limit to Delirium
-           public static bool VoidOmen10Active = false;
-           //VO#12 is +50% strength of alien attacks on Havens
-           public static bool VoidOmen12Active = false;
-           //VO#15 is more Umbra
-           public static bool VoidOmen15Active = false;
-           //VO#16 is Umbras can appear anywhere and attack anyone
-           public static bool VoidOmen16Active = false;
-           //V0#18 is extra defense points, less rewards
-           public static bool VoidOmen18Active = false;
-           //V0#19 is reactive evoltion
-           public static bool VoidOmen19Active = false;*/
+        //VO#1 is harder ambushes
+        //VO#2 is All diplomatic penalties and rewards halved
+        //VO#3 is WP cost +50%
+
+        //VO#4 is limited deplyoment, extra XP
+
+        //VO#5 is haven defenders hostile; this is needed for victory kludge
+
+        //VO#7 is more mist in missions
+
+        //VO#10 is no limit to Delirium
+
+        //VO#12 is +50% strength of alien attacks on Havens
+
+        //VO#15 is more Umbra
+
+        //VO#16 is Umbras can appear anywhere and attack anyone
+
+        //V0#18 is extra defense points, less rewards
+
+
 
         public static void ImplementVoidOmens(GeoLevelController level)
         {
@@ -493,7 +491,7 @@ namespace TFTV
                 }
                 else
                 {
-                    VoidOmensCheck[8] = false;
+                    VoidOmensCheck[10] = false;
 
                 }
                 if (rolledVoidOmens.Contains(15))
@@ -1209,6 +1207,50 @@ namespace TFTV
             }
         }
 
+        //VO2 decrease diplo reward air missions
+        [HarmonyPatch(typeof(GeoAirMission), "SetOutcomeAndReward")]
+        public static class TFTV_GeoAirMission_SetOutcomeAndRewardVO2_Patch
+        {
+            public static void Prefix(GeoFactionReward reward)
+            {
+                try
+                {
+                    GeoLevelController controller = (GeoLevelController)UnityEngine.Object.FindObjectOfType(typeof(GeoLevelController));
+         
+                    if (CheckFordVoidOmensInPlay(controller).Contains(2))
+                    {
+                                              
+                        if (reward.Resources!=null && reward.Resources.Count>0)
+                        {
+                            TFTVLogger.Always("Resource amount is " + reward.Resources[0].Value);
+                            reward.Resources = new ResourcePack 
+                            { new ResourceUnit{ 
+                                 
+                                Type = reward.Resources[0].Type, Value = reward.Resources[0].Value * 0.5f} 
+                           
+                            };
+                        }
+                        if(reward.Diplomacy!=null && reward.Diplomacy.Count > 0) 
+                        {
+                            
+                            foreach (RewardDiplomacyChange change in reward.Diplomacy) 
+                            {
+                                TFTVLogger.Always("Diplo reward is " + change.Value);
+                                change.Value = Mathf.RoundToInt(0.5f* change.Value);
+                            
+                            }
+                        }
+            
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+        }
+
+
         //VO5 increase chance to spawn weapons in crates
         [HarmonyPatch(typeof(GeoMission), "PrepareTacticalGame")]
         public static class TFTV_GeoMission_ModifyCratesVO5_Patch
@@ -1229,7 +1271,7 @@ namespace TFTV
                             if ((weapon.name.Contains("AN_") || weapon.name.Contains("NJ_") || weapon.name.Contains("SY_"))
                                 && !weapon.name.Contains("Grenade") && !weapon.name.Contains("Berserker") && !weapon.name.Contains("Armadillo")
                             && !weapon.name.Contains("Aspida"))
-                            { 
+                            {
                                 __state.Add(weapon);
                                 weapon.CrateSpawnWeight *= 50;
                             }

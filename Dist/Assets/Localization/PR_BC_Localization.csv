@@ -1,4 +1,7 @@
 Key,Type,Desc,English,Chinese (Simplified),French,German,Italian,Polish,Russian,,UI_Tester
+KEY_NJ_HEAVY_ROCKET_LAUNCHER_NAME,Text,,Archangel AP-RL,,,,,,,,
+KEY_NJ_HEAVY_ROCKET_LAUNCHER_DESCRIPTION,Text,,NJ Armour Piercing Rocket Launcher,,,,,,,,
+BC_KEY_ITEM_STAT_BODYPART_DAMAGE,Text,,DAMAGE TO BODY PART,,,,,,,,
 KEY_PSYCHIC_IMMUNITY_DESCRIPTION,Text,,Immune to Psychic Scream,,Immunisé contre le cri psychique,,,,,,
 KEY_ELECTRIC_STRIKE_DESCRIPTION,Text,,Inflict Shock and EMP damage on target once per turn,,Inflige des dégâts Electrique et d'EMP à la cible une fois par tour.,,,,,,
 PR_BC_MOUNTED_ITEMS_PROF,Text,,MOUNTED ITEM PROFICIENCY,,MAÎTRISE DES OBJETS MONTÉS,,,,ОБРАЩЕНИЕ С НЕЙРО-ИНТЕРФЕЙСОМ,,
@@ -32,7 +35,7 @@ PR_BC_GUNSLINGER_DESC,Text,,Shoot handgun 3 times at -50% accuracy. Uses AP cost
 PR_BC_KILL_ZONE,Text,,KILL ZONE,,ZONE DE MORT,,,,СМЕРТЕЛЬНАЯ ЗОНА,,
 PR_BC_KILL_ZONE_DESC,Text,,When you take an Overwatch shot you fire twice at the target,,"Lorsque vous effectuez un tir de vigilance, vous tirez deux fois sur la cible.",,,,"Когда вы стреляете в режиме наблюдения, совершите два выстрела по цели",,
 PR_BC_HUNKER_DOWN,Text,,HUNKER DOWN,,ACCROUPI,,,,ПРИГНУТЬСЯ,,
-PR_BC_HUNKER_DOWN_DESC,Text,,Gain 25% damage resistance until your next turn. Ends turn.,,Gagnez 25% de résistance aux dégâts jusqu'à votre prochain tour. Termine le tour du personnage.,,,,До конца хода получите 25% сопротивления урону и ваши конечности не могут быть повреждены. Заканчивает ход.,,
+PR_BC_HUNKER_DOWN_DESC,Text,,Gain 10 armor until your next turn. Ends turn.,,Gagnez 10 points d'armure jusqu'à votre prochain tour. Termine le tour du personnage.,,,,Получите 10 единиц брони до вашего следующего хода. Заканчивает ход.,,
 PR_BC_SKIRMISHER,Text,,SKIRMISHER,,ESCARMOUCHEUR,,,,НА ПЕРЕДОВОЙ,,
 PR_BC_SKIRMISHER_DESC,Text,,If you take damage during enemy turn your attacks deal 25% more damage until end of turn,,"Si vous subissez des dégâts pendant le tour de l'ennemi, vos attaques infligent 25% de dégâts supplémentaires jusqu'à la fin du tour.",,,,"При получении урона во время вражеского хода, получите +25% бонус урона на свой следующий ход",,
 PR_BC_SHRED_RESISTANCE,Text,,SHRED RESISTANCE,,RÉSISTANCE PARE-BALLE,,,,УСИЛЕННАЯ БРОНЯ,,

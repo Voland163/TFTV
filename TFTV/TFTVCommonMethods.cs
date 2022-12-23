@@ -75,6 +75,7 @@ namespace TFTV
                 TFTVInfestation.InfestationMissionWon = false;
                 ClearHints();
                 TFTVUI.uIModuleSoldierCustomization = null;
+             //   TFTVAncients.HoplitesKilled = 0;
                 TFTVLogger.Always("Internal variables cleared");
             }
             catch (Exception e)
@@ -135,6 +136,7 @@ namespace TFTV
         {
             try
             {
+               // TFTVAncients.HoplitesKilled = 0;
                 TFTVRevenant.revenantSpawned = false;
                 TFTVRevenant.revenantID = 0;
                 TFTVHumanEnemies.HumanEnemiesAndTactics = new Dictionary<string, int>();

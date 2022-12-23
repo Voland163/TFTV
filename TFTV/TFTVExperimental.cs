@@ -1,19 +1,36 @@
-﻿using Base.Defs;
+﻿using Base;
+using Base.Defs;
 using Base.Entities;
+using Base.Entities.Statuses;
+using Base.UI;
 using HarmonyLib;
+using hoenixPoint.Tactical.View.ViewControllers;
 using PhoenixPoint.Common.Entities.GameTags;
+using PhoenixPoint.Common.Levels.Missions;
+using PhoenixPoint.Geoscape.Entities;
+using PhoenixPoint.Geoscape.Levels;
+using PhoenixPoint.Geoscape.View.ViewModules;
+using PhoenixPoint.Home.View.ViewModules;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
+using PhoenixPoint.Tactical.Levels;
+using PhoenixPoint.Tactical.Levels.FactionObjectives;
+using PhoenixPoint.Tactical.View.ViewModules;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Reflection.Emit;
+using UnityEngine;
+using UnityEngine.UI;
 
 namespace TFTV
 {
     internal class TFTVExperimental
     {
-      //  private static readonly DefRepository Repo = TFTVMain.Repo;
+
+        internal static Color purple = new Color32(149, 23, 151, 255);
+        //  private static readonly DefRepository Repo = TFTVMain.Repo;
 
         //Unlock Project Glory when player activates 3rd base. Commented out for release #7
         /*  [HarmonyPatch(typeof(GeoPhoenixFaction), "ActivatePhoenixBase")]
@@ -131,38 +148,115 @@ namespace TFTV
 
         }
 
-
-
-
-
-
-
-
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
 
-        /* [HarmonyPatch(typeof(GeoMission), "ModifyMissionData")]
-         public static class GeoMission_ModifyMissionData_Patch
-         {
-
-             public static void Postfix(TacMissionData missionData)
+         [HarmonyPatch(typeof(GeoMission), "PrepareLevel")]
+         public static class GeoMission_ModifyMissionData_AddVOObjectives_Patch
+         {          
+             public static void Postfix(TacMissionData missionData, GeoMission __instance)
              {
                  try
                  {
-                     List <FactionObjectiveDef> listOfFactionObjectives = missionData.MissionType.CustomObjectives.ToList();
-                     listOfFactionObjectives.Add(DefCache.GetDef<FactionObjectiveDef>("KillRevenant_Objective"));
-                     missionData.MissionType.CustomObjectives = listOfFactionObjectives.ToArray();                    
+                    TFTVLogger.Always("ModifyMissionData invoked");
+                    GeoLevelController controller = __instance.Level;
+                    List<int> voidOmens = new List<int> { 3, 5, 7, 10, 15, 16, 19 };
+
+                    foreach (int vo in voidOmens)
+                    {
+                        if (TFTVVoidOmens.CheckFordVoidOmensInPlay(controller).Contains(vo))
+                        {
+                            TFTVLogger.Always("VO " + vo + " found");
+                            List<FactionObjectiveDef> listOfFactionObjectives = missionData.MissionType.CustomObjectives.ToList();
+                            listOfFactionObjectives.Add(DefCache.GetDef<FactionObjectiveDef>("VOID_OMEN_TITLE_"+vo));
+                            missionData.MissionType.CustomObjectives = listOfFactionObjectives.ToArray();
+                        }
+                    }
                  }
                  catch (Exception e)
                  {
                      TFTVLogger.Error(e);
                  }
              }
-         }*/
+         }
 
-        //   [Tooltip("This is the number of items unlocked by the player added to each chest")]
-        // public RangeDataInt FactionItemsRange = new RangeDataInt(-1, -1);
+        /*public static void CheckObjectives()
+        {
+            try 
+            {
+                List<ObjectiveElement> objectiveElementsList = UnityEngine.Object.FindObjectsOfType<ObjectiveElement>().ToList();
+                if (objectiveElementsList.Count > 0)
+                {
+                    TFTVLogger.Always("There are elements in the list");
+
+                }
+                foreach (ObjectiveElement objectiveElement in objectiveElementsList)
+                {
+                    TFTVLogger.Always("ObjectiveElement name " + objectiveElement.name);
+                    TFTVLogger.Always("ObjectiveElement " + objectiveElement.StatusText.text);
+
+                    if (objectiveElement.Description.text.Contains("VOID"))
+                    {
+                        TFTVLogger.Always("FactionObjective check passed");
+                        objectiveElement.Description.color = purple;
+
+                    }
+
+                }
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+        }*/
 
 
+        [HarmonyPatch(typeof(ObjectivesManager), "Add")]
+        public static class FactionObjective_ModifyObjectiveColor_Patch
+        {
+
+            public static void Postfix(ObjectivesManager __instance, FactionObjective objective)
+            {
+                try
+                {
+                  //  TFTVLogger.Always("FactionObjective Invoked");
+                    if (objective.Description.LocalizationKey.Contains("VOID"))
+                    {
+                        objective.Description = new LocalizedTextBind (objective.Description.Localize().ToUpper(), true);
+                    }
+                  
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+        }
+        
+
+        [HarmonyPatch(typeof(KeepSoldiersAliveFactionObjective), "EvaluateObjective")]
+        public static class KeepSoldiersAliveFactionObjective_EvaluateObjective_Patch
+        {
+
+            public static void Postfix(KeepSoldiersAliveFactionObjective __instance,  ref FactionObjectiveState __result)
+            {
+                try
+                {
+                    //TFTVLogger.Always("FactionObjective Evaluate");
+                    if (__instance.Description.LocalizationKey.Contains("VOID"))
+                    {
+                       __result=FactionObjectiveState.InProgress;
+
+                    }
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+        }
+        
     }
 
 

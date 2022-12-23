@@ -65,7 +65,7 @@ namespace TFTV
 
         private static readonly ClassTagDef crabTag = DefCache.GetDef<ClassTagDef>("Crabman_ClassTagDef");
         private static readonly ClassTagDef fishTag = DefCache.GetDef<ClassTagDef>("Fishman_ClassTagDef");
-        private static readonly ClassTagDef acheronTag = DefCache.GetDef<ClassTagDef>("Acheron_ClassTagDef");
+      //  private static readonly ClassTagDef acheronTag = DefCache.GetDef<ClassTagDef>("Acheron_ClassTagDef");
 
         private static readonly DeathBelcherAbilityDef oilcrabDeathBelcherAbility = DefCache.GetDef<DeathBelcherAbilityDef>("Oilcrab_Die_DeathBelcher_AbilityDef");
         private static readonly DeathBelcherAbilityDef oilfishDeathBelcherAbility = DefCache.GetDef<DeathBelcherAbilityDef>("Oilfish_Die_DeathBelcher_AbilityDef");
@@ -91,193 +91,7 @@ namespace TFTV
             }
         }
 
-        //need to exclude curespray
-
-        /*
-        [HarmonyPatch(typeof(ApplyEffectAbility), "ApplyEffectCrt")]
-        internal static class ApplyEffectAbility_ApplyStatusCrt_AcheronTBTV_patch
-        {
-
-            public static void Postfix(PlayingAction action, ApplyEffectAbility __instance)
-            {
-                try
-                {
-                    ApplyEffectAbilityDef cureCloud = DefCache.GetDef<ApplyEffectAbilityDef>("Acheron_CureCloud_ApplyEffectAbilityDef");
-                    ApplyEffectAbilityDef restoreArmor = DefCache.GetDef<ApplyEffectAbilityDef>("Acheron_RestorePandoranArmor_AbilityDef");
-
-                    if (__instance.TacticalActor != null && __instance.TacticalActor.HasGameTag(acheronTag) && !__instance.AbilityDef.Equals(cureCloud) && !__instance.AbilityDef.Equals(restoreArmor))
-                    {
-                        TFTVLogger.Always("Acheron attack");
-
-                        TacticalAbilityTarget abilityTarget = (TacticalAbilityTarget)action.Param;
-
-                        if (__instance.ApplyEffectAbilityDef.ApplyToAllTargets)
-                        {
-                            foreach (TacticalAbilityTarget targetActor in __instance.GetTargetActors(__instance.OriginTargetData))
-                            {
-                                if (targetActor.Actor is TacticalActor)
-                                {
-                                    TFTVLogger.Always("Actor is " + targetActor.Actor);
-                                    TacticalActor tacticalActor = targetActor.Actor as TacticalActor;
-
-                                    if (!tacticalActor.HasStatus(umbraTargetStatusDef))
-                                    {
-                                        TFTVLogger.Always("The target is " + tacticalActor.name);
-                                        tacticalActor.Status.ApplyStatus(umbraTargetStatusDef);
-
-                                    }
-
-                                }
-                            }
-                        }
-                        else
-                        {
-                            abilityTarget.GetTargetActor().Status.ApplyStatus(umbraTargetStatusDef);
-
-                        }
-                    }
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-            }
-        }
-
-
-
-
-
-        [HarmonyPatch(typeof(ShootAbility), "OnPlayingActionEnd")]
-
-        internal static class ShootAbility_PlayAction_AcheronTBTV_patch
-        {
-
-            public static void Postfix(ShootAbility __instance)
-            {
-                try
-                {
-                    AdditionalEffectShootAbilityDef cureSpray = DefCache.GetDef<AdditionalEffectShootAbilityDef>("Acheron_CureSpray_AbilityDef");
-
-                    if (__instance.TacticalActor != null && __instance.TacticalActor.HasGameTag(acheronTag) && !__instance.AbilityDef.Equals(cureSpray))
-                    {
-                        TFTVLogger.Always("Acheron ShootAbility attack");
-
-                        TacticalAbilityTarget abilityTarget = __instance.LastAbilityTarget;
-
-                        if (__instance.LastAbilityTarget != null && __instance.LastAbilityTarget.Actor is TacticalActor)
-                        {
-                            //   TFTVLogger.Always("Actor is " + __instance.LastAbilityTarget.Actor);
-                            TacticalActor tacticalActor = __instance.LastAbilityTarget.Actor as TacticalActor;
-
-                            if (!tacticalActor.HasStatus(umbraTargetStatusDef))
-                            {
-                                TFTVLogger.Always("The target is " + tacticalActor.name);
-                                tacticalActor.Status.ApplyStatus(umbraTargetStatusDef);
-
-                            }
-                           
-
-                        }
-
-                    }
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-            }
-        }
-
-        [HarmonyPatch(typeof(ApplyDamageEffectAbility), "ApplyDamageEffectCrt")]
-        internal static class ApplyDamageEffectAbility_ApplyDamageEffectCrt_AcheronTBTV_patch
-        {
-            public static void Postfix(PlayingAction action, ApplyDamageEffectAbility __instance)
-            {
-                try
-                {
-                    if (__instance.TacticalActor != null && __instance.TacticalActor.HasGameTag(acheronTag))
-                    {
-                        TFTVLogger.Always("Acheron ApplyDamageEffectAbility attack");
-
-                        TacticalAbilityTarget abilityTarget = (TacticalAbilityTarget)action.Param;
-
-                        foreach (TacticalAbilityTarget targetActor in __instance.GetTargetActors(__instance.OriginTargetData))
-                        {
-                            if (targetActor.Actor is TacticalActor)
-                            {
-                                // TFTVLogger.Always("Actor is " + targetActor.Actor);
-                                TacticalActor tacticalActor = targetActor.Actor as TacticalActor;
-
-                                if (!tacticalActor.HasStatus(umbraTargetStatusDef))
-                                {
-                                    TFTVLogger.Always("The target is " + tacticalActor.name);
-                                    tacticalActor.Status.ApplyStatus(umbraTargetStatusDef);
-
-                                }
-                                ParticleEffectDef pepperCloudParticleEffect = DefCache.GetDef<ParticleEffectDef>("E_Mist10 [Acheron_SpawnPepperCloudParticle_EventDef]");
-                                Effect pepperCloud = new Effect() { BaseDef = pepperCloudParticleEffect };
-                                EffectTarget effectTarget = new EffectTarget { GameObject = tacticalActor.gameObject };
-                                pepperCloud.Apply(effectTarget);
-                            }
-                        }
-
-                    }
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-            }
-        }
-
-        [HarmonyPatch(typeof(ApplyStatusAbility), "ApplyStatusCrt")]
-        internal static class ApplyStatusAbility_ApplyStatusCrt_AcheronTBTV_patch
-        {
-
-            public static void Postfix(PlayingAction action, ApplyStatusAbility __instance)
-            {
-                try
-                {
-                    if (__instance.TacticalActor != null && __instance.TacticalActor.HasGameTag(acheronTag))
-                    {
-                        TFTVLogger.Always("Acheron ApplyStatus attack");
-
-                        TacticalAbilityTarget abilityTarget = (TacticalAbilityTarget)action.Param;
-
-                        if (__instance.ApplyStatusAbilityDef.ApplyStatusToAllTargets)
-                        {
-                            foreach (TacticalAbilityTarget targetActor in __instance.GetTargetActors(__instance.OriginTargetData))
-                            {
-                                if (targetActor.Actor is TacticalActor)
-                                {
-                                    // TFTVLogger.Always("Actor is " + targetActor.Actor);
-                                    TacticalActor tacticalActor = targetActor.Actor as TacticalActor;
-
-                                    if (!tacticalActor.HasStatus(umbraTargetStatusDef))
-                                    {
-                                        TFTVLogger.Always("The target is " + tacticalActor.name);
-                                        tacticalActor.Status.ApplyStatus(umbraTargetStatusDef);
-
-                                    }
-
-                                }
-                            }
-                        }
-                        else
-                        {
-                            abilityTarget.GetTargetActor().Status.ApplyStatus(umbraTargetStatusDef);
-
-                        }
-                    }
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-            }
-        }
-        */
+       
         [HarmonyPatch(typeof(TacticalLevelController), "ActorDied")]
         public static class TacticalLevelController_ActorDied_TBTV_Patch
         {
@@ -498,17 +312,23 @@ namespace TFTV
 
                 if (roll > 37 && roll <= 66)
                 {
-                    tacticalActor.Status.ApplyStatus(onAttackTBTVStatus);
-                    tacticalActor.GameTags.Add(voidTouchedOnAttackTag);
+                    if (!tacticalActor.HasGameTag(voidTouchedOnAttackTag) && !tacticalActor.HasGameTag(voidTouchedOnTurnEndTag))
+                    {
+                        tacticalActor.Status.ApplyStatus(onAttackTBTVStatus);
+                        tacticalActor.GameTags.Add(voidTouchedOnAttackTag);
 
-                    TFTVLogger.Always("MfD status applied " + tacticalActor.name);
+                        TFTVLogger.Always("MfD status applied " + tacticalActor.name);
+                    }
                 }
                 else if (roll > 66 && roll <=96)
                 {
-                    tacticalActor.Status.ApplyStatus(onTurnEndTBTVStatus);
-                    tacticalActor.GameTags.Add(voidTouchedOnTurnEndTag);
+                    if (!tacticalActor.HasGameTag(voidTouchedOnAttackTag) && !tacticalActor.HasGameTag(voidTouchedOnTurnEndTag))
+                    {
+                        tacticalActor.Status.ApplyStatus(onTurnEndTBTVStatus);
+                        tacticalActor.GameTags.Add(voidTouchedOnTurnEndTag);
 
-                    TFTVLogger.Always("CallReinforcements status applied " + tacticalActor.name);
+                        TFTVLogger.Always("CallReinforcements status applied " + tacticalActor.name);
+                    }
                 }
                 else if((roll >=31 && roll <=36)||roll>=97)
                 {
@@ -517,30 +337,32 @@ namespace TFTV
                 }
                 else 
                 {
-                    if (tacticalActor.HasGameTag(crabTag))
+                    if (!tacticalActor.HasGameTag(voidTouchedOnAttackTag) && !tacticalActor.HasGameTag(voidTouchedOnTurnEndTag))
                     {
-                        tacticalActor.Status.ApplyStatus(oilCrabAddAbilityStatus);
-                        TFTVLogger.Always("Spawn Umbra crab status applied " + tacticalActor.name);
-                    }
-                    else if (tacticalActor.HasGameTag(fishTag))
-                    {
-                        tacticalActor.Status.ApplyStatus(oilTritonAddAbilityStatus);
-                        TFTVLogger.Always("Spawn Umbra fish status applied " + tacticalActor.name);
-                    }
-                    else
-                    {
-                        int roll2 = UnityEngine.Random.Range(1, 11);
-                        if (roll2 <= 5)
+                        if (tacticalActor.HasGameTag(crabTag))
+                        {
+                            tacticalActor.Status.ApplyStatus(oilCrabAddAbilityStatus);
+                            TFTVLogger.Always("Spawn Umbra crab status applied " + tacticalActor.name);
+                        }
+                        else if (tacticalActor.HasGameTag(fishTag))
                         {
                             tacticalActor.Status.ApplyStatus(oilTritonAddAbilityStatus);
                             TFTVLogger.Always("Spawn Umbra fish status applied " + tacticalActor.name);
                         }
                         else
                         {
-                            tacticalActor.Status.ApplyStatus(oilCrabAddAbilityStatus);
-                            TFTVLogger.Always("Spawn Umbra crab status applied " + tacticalActor.name);
+                            int roll2 = UnityEngine.Random.Range(1, 11);
+                            if (roll2 <= 5)
+                            {
+                                tacticalActor.Status.ApplyStatus(oilTritonAddAbilityStatus);
+                                TFTVLogger.Always("Spawn Umbra fish status applied " + tacticalActor.name);
+                            }
+                            else
+                            {
+                                tacticalActor.Status.ApplyStatus(oilCrabAddAbilityStatus);
+                                TFTVLogger.Always("Spawn Umbra crab status applied " + tacticalActor.name);
+                            }
                         }
-
                     }
                 }
             }
@@ -1089,51 +911,51 @@ namespace TFTV
             }
         }
 
-       /* public static void CheckForActorsInMist(TacticalLevelController controller)
-        {
-            try
-            {
-                foreach (TacticalFaction tacticalFaction in controller.Factions)
-                {
-                    if (tacticalFaction != controller.GetFactionByCommandName("aln"))
-                    {
-                        foreach (TacticalActorBase tacticalActorBase in tacticalFaction.Actors)
-                        {
-                            if (tacticalActorBase is TacticalActor)
-                            {
-                                TacticalActor tacticalActor = tacticalActorBase as TacticalActor;
+        /* public static void CheckForActorsInMist(TacticalLevelController controller)
+         {
+             try
+             {
+                 foreach (TacticalFaction tacticalFaction in controller.Factions)
+                 {
+                     if (tacticalFaction != controller.GetFactionByCommandName("aln"))
+                     {
+                         foreach (TacticalActorBase tacticalActorBase in tacticalFaction.Actors)
+                         {
+                             if (tacticalActorBase is TacticalActor)
+                             {
+                                 TacticalActor tacticalActor = tacticalActorBase as TacticalActor;
 
-                                if (tacticalActorBase.TacticalPerceptionBase.IsTouchingVoxel(TacticalVoxelType.Mist))
-                                {
-                                   
-                                    if (!tacticalActor.HasStatus(umbraTargetStatusDef))
-                                    {
-                                        TFTVLogger.Always("The target is " + tacticalActor.name);
-                                        tacticalActor.Status.ApplyStatus(umbraTargetStatusDef);
-                                    }
-                                }
-                                else 
-                                {
-                                    if (tacticalActor.HasStatus(umbraTargetStatusDef))
-                                    {
-                                        TFTVLogger.Always("The target is " + tacticalActor.name);
-                                        Status status = tacticalActor.Status.GetStatus<Status>(umbraTargetStatusDef);
-                                        tacticalActor.Status.Statuses.Remove(status);
+                                 if (tacticalActorBase.TacticalPerceptionBase.IsTouchingVoxel(TacticalVoxelType.Mist))
+                                 {
 
-                                    }
-                                }
-                            }
-                        }                 
-                    }
-                }
-            }
+                                     if (!tacticalActor.HasStatus(umbraTargetStatusDef))
+                                     {
+                                         TFTVLogger.Always("The target is " + tacticalActor.name);
+                                         tacticalActor.Status.ApplyStatus(umbraTargetStatusDef);
+                                     }
+                                 }
+                                 else 
+                                 {
+                                     if (tacticalActor.HasStatus(umbraTargetStatusDef))
+                                     {
+                                         TFTVLogger.Always("The target is " + tacticalActor.name);
+                                         Status status = tacticalActor.Status.GetStatus<Status>(umbraTargetStatusDef);
+                                         tacticalActor.Status.Statuses.Remove(status);
 
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-        }
-       */
+                                     }
+                                 }
+                             }
+                         }                 
+                     }
+                 }
+             }
+
+             catch (Exception e)
+             {
+                 TFTVLogger.Error(e);
+             }
+         }
+        */
 
         /* [HarmonyPatch(typeof(CallReinforcementsAbility), "CallReinforcementsCrt")]
 
@@ -1172,6 +994,194 @@ namespace TFTV
 
              }
          }*/
+
+        //need to exclude curespray
+
+        /*
+        [HarmonyPatch(typeof(ApplyEffectAbility), "ApplyEffectCrt")]
+        internal static class ApplyEffectAbility_ApplyStatusCrt_AcheronTBTV_patch
+        {
+
+            public static void Postfix(PlayingAction action, ApplyEffectAbility __instance)
+            {
+                try
+                {
+                    ApplyEffectAbilityDef cureCloud = DefCache.GetDef<ApplyEffectAbilityDef>("Acheron_CureCloud_ApplyEffectAbilityDef");
+                    ApplyEffectAbilityDef restoreArmor = DefCache.GetDef<ApplyEffectAbilityDef>("Acheron_RestorePandoranArmor_AbilityDef");
+
+                    if (__instance.TacticalActor != null && __instance.TacticalActor.HasGameTag(acheronTag) && !__instance.AbilityDef.Equals(cureCloud) && !__instance.AbilityDef.Equals(restoreArmor))
+                    {
+                        TFTVLogger.Always("Acheron attack");
+
+                        TacticalAbilityTarget abilityTarget = (TacticalAbilityTarget)action.Param;
+
+                        if (__instance.ApplyEffectAbilityDef.ApplyToAllTargets)
+                        {
+                            foreach (TacticalAbilityTarget targetActor in __instance.GetTargetActors(__instance.OriginTargetData))
+                            {
+                                if (targetActor.Actor is TacticalActor)
+                                {
+                                    TFTVLogger.Always("Actor is " + targetActor.Actor);
+                                    TacticalActor tacticalActor = targetActor.Actor as TacticalActor;
+
+                                    if (!tacticalActor.HasStatus(umbraTargetStatusDef))
+                                    {
+                                        TFTVLogger.Always("The target is " + tacticalActor.name);
+                                        tacticalActor.Status.ApplyStatus(umbraTargetStatusDef);
+
+                                    }
+
+                                }
+                            }
+                        }
+                        else
+                        {
+                            abilityTarget.GetTargetActor().Status.ApplyStatus(umbraTargetStatusDef);
+
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+        }
+
+
+
+
+
+        [HarmonyPatch(typeof(ShootAbility), "OnPlayingActionEnd")]
+
+        internal static class ShootAbility_PlayAction_AcheronTBTV_patch
+        {
+
+            public static void Postfix(ShootAbility __instance)
+            {
+                try
+                {
+                    AdditionalEffectShootAbilityDef cureSpray = DefCache.GetDef<AdditionalEffectShootAbilityDef>("Acheron_CureSpray_AbilityDef");
+
+                    if (__instance.TacticalActor != null && __instance.TacticalActor.HasGameTag(acheronTag) && !__instance.AbilityDef.Equals(cureSpray))
+                    {
+                        TFTVLogger.Always("Acheron ShootAbility attack");
+
+                        TacticalAbilityTarget abilityTarget = __instance.LastAbilityTarget;
+
+                        if (__instance.LastAbilityTarget != null && __instance.LastAbilityTarget.Actor is TacticalActor)
+                        {
+                            //   TFTVLogger.Always("Actor is " + __instance.LastAbilityTarget.Actor);
+                            TacticalActor tacticalActor = __instance.LastAbilityTarget.Actor as TacticalActor;
+
+                            if (!tacticalActor.HasStatus(umbraTargetStatusDef))
+                            {
+                                TFTVLogger.Always("The target is " + tacticalActor.name);
+                                tacticalActor.Status.ApplyStatus(umbraTargetStatusDef);
+
+                            }
+                           
+
+                        }
+
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+        }
+
+        [HarmonyPatch(typeof(ApplyDamageEffectAbility), "ApplyDamageEffectCrt")]
+        internal static class ApplyDamageEffectAbility_ApplyDamageEffectCrt_AcheronTBTV_patch
+        {
+            public static void Postfix(PlayingAction action, ApplyDamageEffectAbility __instance)
+            {
+                try
+                {
+                    if (__instance.TacticalActor != null && __instance.TacticalActor.HasGameTag(acheronTag))
+                    {
+                        TFTVLogger.Always("Acheron ApplyDamageEffectAbility attack");
+
+                        TacticalAbilityTarget abilityTarget = (TacticalAbilityTarget)action.Param;
+
+                        foreach (TacticalAbilityTarget targetActor in __instance.GetTargetActors(__instance.OriginTargetData))
+                        {
+                            if (targetActor.Actor is TacticalActor)
+                            {
+                                // TFTVLogger.Always("Actor is " + targetActor.Actor);
+                                TacticalActor tacticalActor = targetActor.Actor as TacticalActor;
+
+                                if (!tacticalActor.HasStatus(umbraTargetStatusDef))
+                                {
+                                    TFTVLogger.Always("The target is " + tacticalActor.name);
+                                    tacticalActor.Status.ApplyStatus(umbraTargetStatusDef);
+
+                                }
+                                ParticleEffectDef pepperCloudParticleEffect = DefCache.GetDef<ParticleEffectDef>("E_Mist10 [Acheron_SpawnPepperCloudParticle_EventDef]");
+                                Effect pepperCloud = new Effect() { BaseDef = pepperCloudParticleEffect };
+                                EffectTarget effectTarget = new EffectTarget { GameObject = tacticalActor.gameObject };
+                                pepperCloud.Apply(effectTarget);
+                            }
+                        }
+
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+        }
+
+        [HarmonyPatch(typeof(ApplyStatusAbility), "ApplyStatusCrt")]
+        internal static class ApplyStatusAbility_ApplyStatusCrt_AcheronTBTV_patch
+        {
+
+            public static void Postfix(PlayingAction action, ApplyStatusAbility __instance)
+            {
+                try
+                {
+                    if (__instance.TacticalActor != null && __instance.TacticalActor.HasGameTag(acheronTag))
+                    {
+                        TFTVLogger.Always("Acheron ApplyStatus attack");
+
+                        TacticalAbilityTarget abilityTarget = (TacticalAbilityTarget)action.Param;
+
+                        if (__instance.ApplyStatusAbilityDef.ApplyStatusToAllTargets)
+                        {
+                            foreach (TacticalAbilityTarget targetActor in __instance.GetTargetActors(__instance.OriginTargetData))
+                            {
+                                if (targetActor.Actor is TacticalActor)
+                                {
+                                    // TFTVLogger.Always("Actor is " + targetActor.Actor);
+                                    TacticalActor tacticalActor = targetActor.Actor as TacticalActor;
+
+                                    if (!tacticalActor.HasStatus(umbraTargetStatusDef))
+                                    {
+                                        TFTVLogger.Always("The target is " + tacticalActor.name);
+                                        tacticalActor.Status.ApplyStatus(umbraTargetStatusDef);
+
+                                    }
+
+                                }
+                            }
+                        }
+                        else
+                        {
+                            abilityTarget.GetTargetActor().Status.ApplyStatus(umbraTargetStatusDef);
+
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+        }
+        */
 
     }
 

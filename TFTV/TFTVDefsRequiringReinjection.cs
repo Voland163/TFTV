@@ -46,8 +46,6 @@ namespace TFTV
             {
                 TFTVLogger.Error(e);
             }
-
-
         }
 
         public static void CreateHumanEnemiesDefs() 
@@ -544,7 +542,6 @@ namespace TFTV
             derealizationIgnorePain.ViewElementDef.LargeIcon = icon;
             derealizationIgnorePain.ViewElementDef.SmallIcon = icon;
         }
-       
         public static void CreateRevenantDefs()
         {
             try
@@ -561,7 +558,7 @@ namespace TFTV
                 CreateRevenantAbilityForTechnician();
                 CreateRevenantResistanceStatus();
                 CreateUmbraDefs();
-              //  CreateKillRevenantObjective();
+                CreateVoidOmenRemindersInTactical();
             }
             catch (Exception e)
             {
@@ -800,24 +797,46 @@ namespace TFTV
 
         }
 
+        public static void CreateVoidOmenRemindersInTactical()
+        {
+            try 
+            {
+                CreateVoidOmenObjective("818B37C5-AC05-4245-A629-D84761838DE6", "VOID_OMEN_TITLE_3", 0);
+                CreateVoidOmenObjective("F0CCE047-352C-4AE4-8D12-6856FA57A5C7", "VOID_OMEN_TITLE_5", 0);
+                CreateVoidOmenObjective("BDBBD195-D07C-43CF-AB0F-50C7CEA8B044", "VOID_OMEN_TITLE_7", 0);
+                CreateVoidOmenObjective("EC9011E4-2C01-485B-8E89-7D0A20996899", "VOID_OMEN_TITLE_10", 0);
+                CreateVoidOmenObjective("3CBE9291-2241-428B-B6DD-776EFF316D4F", "VOID_OMEN_TITLE_15", 0);
+                CreateVoidOmenObjective("D25FC8F1-DB31-4BA2-9B9F-3787B9D3A664", "VOID_OMEN_TITLE_16", 0);
+                CreateVoidOmenObjective("BA859656-03E9-4BCD-AAAC-2A0B09506FEC", "VOID_OMEN_TITLE_19", 0);
 
+                //3, 5, 7, 10, 15, 16, 19
 
-        public static void CreateKillRevenantObjective() 
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+        }
+
+ 
+
+        public static void CreateVoidOmenObjective(string guid, string description_key, int experienceReward) 
         {
             try
             {
-                string objectiveName = "KillRevenant_Objective";
-                string description = "Capture or kill the Revenant";
-                KillActorFactionObjectiveDef killObjectiveSource = DefCache.GetDef<KillActorFactionObjectiveDef>("KillChiron_CustomMissionObjective");
-                KillActorFactionObjectiveDef killRevenantObjective = Helper.CreateDefFromClone(killObjectiveSource, "E4EEB674-4AF4-4902-8F0A-661752170E0B", objectiveName);
-                killRevenantObjective.IsVictoryObjective = false;
-                killRevenantObjective.KillTargetGameTag = DefCache.GetDef<GameTagDef>("Any_Revenant_TagDef");
-               // killRevenantObjective.IsUiHidden = true;
-              //  killRevenantObjective.ParalysedCounts = false;
-                killRevenantObjective.MissionObjectiveData.Description = new LocalizedTextBind(description, true);
-                killRevenantObjective.MissionObjectiveData.Summary = new LocalizedTextBind(description, true);
 
-
+                string objectiveName = description_key;
+                KeepSoldiersAliveFactionObjectiveDef keepSoldiersAliveObjectiveSource = DefCache.GetDef<KeepSoldiersAliveFactionObjectiveDef>("KeepSoldiersAliveFactionObjectiveDef");
+                KeepSoldiersAliveFactionObjectiveDef voidOmenObjective = Helper.CreateDefFromClone(keepSoldiersAliveObjectiveSource, guid, objectiveName);
+                voidOmenObjective.IsVictoryObjective = false;
+                voidOmenObjective.IsDefeatObjective = false;
+                voidOmenObjective.MissionObjectiveData.ExperienceReward = experienceReward;
+                voidOmenObjective.MissionObjectiveData.Description.LocalizationKey = description_key;
+                voidOmenObjective.MissionObjectiveData.Summary.LocalizationKey = description_key;
+                voidOmenObjective.IsUiSummaryHidden=true;
+             //   TFTVLogger.Always("FactionObjective " + DefCache.GetDef<FactionObjectiveDef>(objectiveName).name + " created");
+               
             }
             catch (Exception e)
             {

@@ -1,22 +1,24 @@
-﻿using Base;
-using HarmonyLib;
+﻿using HarmonyLib;
+using PhoenixPoint.Common.Entities.GameTagsTypes;
+using PhoenixPoint.Geoscape.Entities;
+using PhoenixPoint.Geoscape.Levels;
+using PhoenixPoint.Tactical.AI.Considerations;
 using PhoenixPoint.Tactical.Entities;
-using PhoenixPoint.Tactical.Entities.Abilities;
+using PhoenixPoint.Tactical.Entities.DamageKeywords;
 using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.Entities.Statuses;
 using PhoenixPoint.Tactical.Entities.Weapons;
-using PhoenixPoint.Tactical.Eventus;
 using PhoenixPoint.Tactical.Levels;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using static UnityStandardAssets.Utility.TimedObjectActivator;
 
 namespace TFTV
 {
     internal class TFTVAncients
     {
+        /* commented out for release #11
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
 
         private static readonly DamageMultiplierStatusDef AddAutoRepairStatusAbility = DefCache.GetDef<DamageMultiplierStatusDef>("AutoRepair_AddAbilityStatusDef");
@@ -27,8 +29,40 @@ namespace TFTV
         private static readonly WeaponDef beamHead = DefCache.GetDef<WeaponDef>("HumanoidGuardian_Head_WeaponDef");
         private static readonly EquipmentDef leftCrystalShield = DefCache.GetDef<EquipmentDef>("HumanoidGuardian_CrystalShield_EquipmentDef");
 
+        //  private static readonly ClassTagDef cyclopsTag = DefCache.GetDef<ClassTagDef>("MediumGuardian_ClassTagDef");
+
         //This is the number of previous encounters with Ancients. It is added to the Difficulty to determine the number of fully repaired MediumGuardians in battle
         public static int AncientsEncounterCounter = 0;
+        public static string AncientsEncounterVariableName = "Ancients_Encounter_Global_Variable";
+        public static int HoplitesKilled = 0;
+     //   private static readonly DamageMultiplierStatusDef AncientStasisStatus = DefCache.GetDef<DamageMultiplierStatusDef>("AncientStasis_StatusDef");
+        private static readonly DamageMultiplierStatusDef CyclopsDefenseStatus = DefCache.GetDef<DamageMultiplierStatusDef>("CyclopsDefense_StatusDef");
+        private static readonly StanceStatusDef AncientGuardianStealthStatus = DefCache.GetDef<StanceStatusDef>("AncientGuardianStealth_StatusDef");
+
+        [HarmonyPatch(typeof(GeoMission), "ApplyOutcomes")]
+        public static class GeoMission_ModifyMissionData_CheckAncients_Patch
+        {
+
+            public static void Postfix(GeoMission __instance)
+            {
+                try
+                {
+                    GeoLevelController controller = __instance.Level;
+
+                    if (__instance.MissionDef.SaveDefaultName == "AncientRuin")
+                    {
+                        controller.EventSystem.SetVariable(AncientsEncounterVariableName, controller.EventSystem.GetVariable(AncientsEncounterVariableName) + 1);
+                        TFTVLogger.Always(AncientsEncounterVariableName + " is now " + controller.EventSystem.GetVariable(AncientsEncounterVariableName));
+                    }
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+        }
+
 
         public static bool CheckIfAncientsPresent(TacticalLevelController controller)
         {
@@ -36,7 +70,9 @@ namespace TFTV
             {
                 if (controller.Factions.Any(f => f.Faction.FactionDef.MatchesShortName("anc")))
                 {
+                    TFTVLogger.Always("Ancients present");
                     return true;
+
                 }
                 return false;
             }
@@ -49,24 +85,34 @@ namespace TFTV
 
         public static void AdjustAncientsOnDeployment(TacticalLevelController controller)
         {
+            ClassTagDef cyclopsTag = DefCache.GetDef<ClassTagDef>("MediumGuardian_ClassTagDef");
             try
             {
-
+                TFTVLogger.Always("AdjustAncientsOnDeployment method invoked");
                 TacticalFaction ancients = controller.GetFactionByCommandName("anc");
-
-
+                CyclopsDefenseStatus.Multiplier = 0.25f;
                 List<TacticalActor> damagedGuardians = new List<TacticalActor>();
                 int countUndamagedGuardians = AncientsEncounterCounter + controller.Difficulty.Order;
 
                 foreach (TacticalActorBase tacticalActorBase in ancients.Actors)
                 {
-                    if (tacticalActorBase is TacticalActor)
+                    TFTVLogger.Always("Found tacticalactorbase");
+                    if (tacticalActorBase is TacticalActor && !tacticalActorBase.HasGameTag(cyclopsTag))
                     {
+                        TFTVLogger.Always("Found hoplite");
                         TacticalActor guardian = tacticalActorBase as TacticalActor;
                         if (damagedGuardians.Count() + countUndamagedGuardians < ancients.Actors.Count())
                         {
                             damagedGuardians.Add(guardian);
                         }
+
+                   
+
+                    }
+                    else if (tacticalActorBase is TacticalActor && tacticalActorBase.HasGameTag(cyclopsTag))
+                    {
+                        TFTVLogger.Always("Found cyclops");
+                        tacticalActorBase.Status.ApplyStatus(CyclopsDefenseStatus);
                     }
                 }
 
@@ -75,9 +121,7 @@ namespace TFTV
                     UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
                     int roll = UnityEngine.Random.Range(1, 101);
                     TFTVLogger.Always("The roll is " + roll);
-                    /*  Equipment head = new Equipment();
-                      Equipment leftArm = new Equipment();
-                      Equipment rightArm = new Equipment();*/
+                    
 
                     foreach (Equipment item in tacticalActor.Equipments.Equipments)
                     {
@@ -103,12 +147,28 @@ namespace TFTV
                             }
                         }
                     }
-                }
+                }        
             }
             catch (Exception e)
             {
                 TFTVLogger.Error(e);
             }
+        }
+
+    
+       public static void CheckCyclopsDefense()
+        {
+            try 
+            {
+                CyclopsDefenseStatus.Multiplier = 0.25f + HoplitesKilled * 0.1f;
+                TFTVLogger.Always("Cyclops Defense level is " + CyclopsDefenseStatus.Multiplier);
+            }
+            catch (Exception e) 
+            {
+                TFTVLogger.Error(e);
+            
+            }
+        
         }
 
         public static TacticalItem[] CheckGuardianBodyParts(TacticalActor actor)
@@ -145,19 +205,21 @@ namespace TFTV
         }
 
         //commented out for release #10
-     /*   [HarmonyPatch(typeof(TacticalFaction), "RequestEndTurn")]
+        [HarmonyPatch(typeof(TacticalFaction), "RequestEndTurn")]
         public static class TacticalFaction_RequestEndTurn_AncientsSelfRepair_Patch
         {
-            public static void Prefix(TacticalFaction __instance)
+            public static void Postfix(TacticalFaction __instance)
             {
                 try
                 {
                     if (CheckIfAncientsPresent(__instance.TacticalLevel))
                     {
-                        if (__instance.TacticalLevel.TurnNumber > 0 && __instance.TacticalLevel.GetFactionByCommandName("PX") == __instance)
+                        if (__instance.TacticalLevel.TurnNumber > 0 && __instance.Equals(__instance.TacticalLevel.GetFactionByCommandName("PX")))
                         {
                             CheckForAutoRepairAbility(__instance.TacticalLevel);
                         }
+
+                   
                     }
                 }
                 catch (Exception e)
@@ -165,15 +227,42 @@ namespace TFTV
                     TFTVLogger.Error(e);
                 }
             }
-        }*/
+        }
 
 
-       /* [HarmonyPatch(typeof(TacticalLevelController), "ActorDied")]
+         [HarmonyPatch(typeof(DamageKeyword), "ProcessKeywordDataInternal")]
+         internal static class TFTV_DamageKeyword_ProcessKeywordDataInternal_DamageResistant_patch
+         {
+             public static void Postfix(ref DamageAccumulation.TargetData data)
+             {
+                 try
+                 {
+
+                     if (data.Target.GetActor() != null && data.Target.GetActor().Status != null && data.Target.GetActor().Status.HasStatus(AncientGuardianStealthStatus))
+                     {
+                       //  TFTVLogger.Always("Statis check passed");
+
+                         float multiplier = 0.1f;
+
+                         data.DamageResult.HealthDamage = Math.Min(data.Target.GetHealth(), data.DamageResult.HealthDamage * multiplier);
+                         data.AmountApplied = Math.Min(data.Target.GetHealth(), data.AmountApplied * multiplier);
+                     }
+                 }
+                 catch (Exception e)
+                 {
+                     TFTVLogger.Error(e);
+                 }
+             }
+         }
+
+
+
+        [HarmonyPatch(typeof(TacticalLevelController), "ActorDied")]
         public static class TacticalLevelController_ActorDied_Ancients_Patch
         {
-
             public static void Postfix(TacticalLevelController __instance, DeathReport deathReport)
             {
+                ClassTagDef cyclopsTag = DefCache.GetDef<ClassTagDef>("MediumGuardian_ClassTagDef");
                 try
                 {
                     if (CheckIfAncientsPresent(__instance))
@@ -198,10 +287,25 @@ namespace TFTV
                                             || CheckGuardianBodyParts(actorAlly)[2] == null))
                                         {
                                             TFTVLogger.Always("Actor in range and missing bodyparts, getting spare parts");
-                                            actorAlly.Status.ApplyStatus(AddAutoRepairStatusAbility);
+                                            if (!actorAlly.HasStatus(AddAutoRepairStatusAbility) && !actorAlly.HasGameTag(cyclopsTag))
+                                            {
+                                                actorAlly.Status.ApplyStatus(AddAutoRepairStatusAbility);
+                                            }
                                         }
-
                                     }
+                                }
+
+                                if (!actor.HasGameTag(cyclopsTag))
+                                {
+                                    if (CyclopsDefenseStatus.Multiplier <= 0.9f)
+                                    {
+                                        CyclopsDefenseStatus.Multiplier += 0.1f;
+                                    }
+                                    else
+                                    {
+                                        CyclopsDefenseStatus.Multiplier = 1;
+                                    }
+                                    HoplitesKilled++;
                                 }
                             }
                         }
@@ -216,18 +320,18 @@ namespace TFTV
 
         public static void CheckForAutoRepairAbility(TacticalLevelController controller)
         {
-            try 
-            {              
-                if (CheckIfAncientsPresent(controller)) 
+            try
+            {
+                if (CheckIfAncientsPresent(controller))
                 {
                     TacticalFaction ancients = controller.GetFactionByCommandName("anc");
-                   
+
                     foreach (TacticalActorBase tacticalActorBase in ancients.Actors)
                     {
                         if (tacticalActorBase is TacticalActor)
                         {
                             TacticalActor actor = tacticalActorBase as TacticalActor;
-                           
+
                             if (actor.HasStatus(AddAutoRepairStatusAbility))
                             {
                                 Weapon drill = new Weapon();
@@ -235,12 +339,12 @@ namespace TFTV
                                 Equipment livingShield = new Equipment();
                                 Equipment orichalcumShield = new Equipment();
 
-                                foreach(Equipment item in actor.Equipments.Equipments) 
-                                { 
-                                    if(item.TacticalItemDef == rightDrill) 
+                                foreach (Equipment item in actor.Equipments.Equipments)
+                                {
+                                    if (item.TacticalItemDef == rightDrill)
                                     {
                                         drill = item as Weapon;
-                                    
+
                                     }
                                     else if (item.TacticalItemDef == rightShield)
                                     {
@@ -260,13 +364,13 @@ namespace TFTV
 
                                 TFTVLogger.Always("Actor has spare parts, making repairs");
                                 actor.Status.Statuses.Remove(actor.Status.GetStatusByName(AddAutoRepairStatusAbility.EffectName));
-                                if (CheckGuardianBodyParts(actor)[0] == null) 
+                                if (CheckGuardianBodyParts(actor)[0] == null)
                                 {
-                                    actor.Equipments.AddItem(beamHead);                                
+                                    actor.Equipments.AddItem(beamHead);
                                 }
-                                else if(CheckGuardianBodyParts(actor)[1] == null && livingShield != null) 
+                                else if (CheckGuardianBodyParts(actor)[1] == null && livingShield != null)
                                 {
-                                    actor.Equipments.AddItem(rightDrill); 
+                                    actor.Equipments.AddItem(rightDrill);
                                 }
                                 else if (CheckGuardianBodyParts(actor)[1] == null && orichalcumShield != null)
                                 {
@@ -284,150 +388,150 @@ namespace TFTV
                             }
                         }
                     }
-                }  
+                }
             }
             catch (Exception e)
             {
                 TFTVLogger.Error(e);
             }
         }
-    */
 
 
 
-}
-        /*
-         public static void AddDrillBack(TacticalLevelController controller)
+
+    }*/
+    /*
+     public static void AddDrillBack(TacticalLevelController controller)
+     {
+         try
          {
-             try
+             if (controller.Factions.Any(f => f.Faction.FactionDef.MatchesShortName("anc")))
              {
-                 if (controller.Factions.Any(f => f.Faction.FactionDef.MatchesShortName("anc")))
+                 TFTVLogger.Always("Found ancients");
+
+                 BashAbilityDef drillBash =DefCache.GetDef<BashAbilityDef>("Guardian_Drill_AbilityDef");
+                 ShootAbilityDef beam = DefCache.GetDef<ShootAbilityDef>("Guardian_Beam_ShootAbilityDef");
+
+                 WeaponDef drill = DefCache.GetDef<WeaponDef>("HumanoidGuardian_Drill_WeaponDef");
+                 EquipmentDef leftShield = DefCache.GetDef<EquipmentDef>("HumanoidGuardian_LeftShield_EquipmentDef");
+                 WeaponDef beamHead = DefCache.GetDef<WeaponDef>("HumanoidGuardian_Head_WeaponDef");
+                 Equipment head = new Equipment();
+
+                 foreach (TacticalActor tacticalActor in controller.GetFactionByCommandName("anc").TacticalActors)
                  {
-                     TFTVLogger.Always("Found ancients");
+                     bool foundLeftShield = false;
 
-                     BashAbilityDef drillBash =DefCache.GetDef<BashAbilityDef>("Guardian_Drill_AbilityDef");
-                     ShootAbilityDef beam = DefCache.GetDef<ShootAbilityDef>("Guardian_Beam_ShootAbilityDef");
-
-                     WeaponDef drill = DefCache.GetDef<WeaponDef>("HumanoidGuardian_Drill_WeaponDef");
-                     EquipmentDef leftShield = DefCache.GetDef<EquipmentDef>("HumanoidGuardian_LeftShield_EquipmentDef");
-                     WeaponDef beamHead = DefCache.GetDef<WeaponDef>("HumanoidGuardian_Head_WeaponDef");
-                     Equipment head = new Equipment();
-
-                     foreach (TacticalActor tacticalActor in controller.GetFactionByCommandName("anc").TacticalActors)
+                     foreach (Equipment item in tacticalActor.Equipments.Equipments)
                      {
-                         bool foundLeftShield = false;
-
-                         foreach (Equipment item in tacticalActor.Equipments.Equipments)
+                         if (item.TacticalItemDef.Equals(leftShield))
                          {
-                             if (item.TacticalItemDef.Equals(leftShield))
-                             {
-                                 TFTVLogger.Always("Found leftShield");
-                                 foundLeftShield = true;
-
-                             }
-
-                             if (item.TacticalItemDef.Equals(beamHead))
-                             {
-                                 TFTVLogger.Always("Found beam");
-                                 head = item;
-
-                             }
+                             TFTVLogger.Always("Found leftShield");
+                             foundLeftShield = true;
 
                          }
 
-                         if (!foundLeftShield) 
+                         if (item.TacticalItemDef.Equals(beamHead))
                          {
-                            TFTVLogger.Always("Found a driller");
-                          //   if (drill == null)
-                          //   {
-                                TFTVLogger.Always("Should add a drill");
-                                tacticalActor.Equipments.AddItem(drillSave);
-                         //    }
-
+                             TFTVLogger.Always("Found beam");
+                             head = item;
 
                          }
 
                      }
+
+                     if (!foundLeftShield) 
+                     {
+                        TFTVLogger.Always("Found a driller");
+                      //   if (drill == null)
+                      //   {
+                            TFTVLogger.Always("Should add a drill");
+                            tacticalActor.Equipments.AddItem(drillSave);
+                     //    }
+
+
+                     }
+
                  }
              }
-             catch (Exception e)
-             {
-                 TFTVLogger.Error(e);
-             }
          }
+         catch (Exception e)
+         {
+             TFTVLogger.Error(e);
+         }
+     }
 
-        private static Equipment drillSave = new Equipment(); 
-        [HarmonyPatch(typeof(TacticalLevelController), "ActorEnteredPlay")]
-        public static class TacticalLevelController_ActorEnteredPlay_Ancients_Patch
+    private static Equipment drillSave = new Equipment(); 
+    [HarmonyPatch(typeof(TacticalLevelController), "ActorEnteredPlay")]
+    public static class TacticalLevelController_ActorEnteredPlay_Ancients_Patch
+    {
+        public static void Postfix(TacticalActorBase actor, TacticalLevelController __instance)
         {
-            public static void Postfix(TacticalActorBase actor, TacticalLevelController __instance)
+            try
             {
-                try
+                if (__instance.Factions.Any(f => f.Faction.FactionDef.MatchesShortName("anc")))
                 {
-                    if (__instance.Factions.Any(f => f.Faction.FactionDef.MatchesShortName("anc")))
+                    TacticalFaction ancients = __instance.GetFactionByCommandName("anc");
+
+                    if (actor is TacticalActor && actor.TacticalFaction == ancients) 
                     {
-                        TacticalFaction ancients = __instance.GetFactionByCommandName("anc");
+                        BashAbilityDef drillBash = DefCache.GetDef<BashAbilityDef>("Guardian_Drill_AbilityDef");
+                        ShootAbilityDef beam = DefCache.GetDef<ShootAbilityDef>("Guardian_Beam_ShootAbilityDef");
 
-                        if (actor is TacticalActor && actor.TacticalFaction == ancients) 
+                        WeaponDef drillDef = DefCache.GetDef<WeaponDef>("HumanoidGuardian_Drill_WeaponDef");
+                        WeaponDef beamDef = DefCache.GetDef<WeaponDef>("HumanoidGuardian_Head_WeaponDef");
+                        Equipment head = new Equipment();
+                        Equipment drill = new Equipment();
+
+
+                        TacticalActor tacticalActor = actor as TacticalActor;
+
+                        bool foundDriller = false;
+
+                        foreach (Equipment item in tacticalActor.Equipments.Equipments)
                         {
-                            BashAbilityDef drillBash = DefCache.GetDef<BashAbilityDef>("Guardian_Drill_AbilityDef");
-                            ShootAbilityDef beam = DefCache.GetDef<ShootAbilityDef>("Guardian_Beam_ShootAbilityDef");
-
-                            WeaponDef drillDef = DefCache.GetDef<WeaponDef>("HumanoidGuardian_Drill_WeaponDef");
-                            WeaponDef beamDef = DefCache.GetDef<WeaponDef>("HumanoidGuardian_Head_WeaponDef");
-                            Equipment head = new Equipment();
-                            Equipment drill = new Equipment();
-
-
-                            TacticalActor tacticalActor = actor as TacticalActor;
-
-                            bool foundDriller = false;
-
-                            foreach (Equipment item in tacticalActor.Equipments.Equipments)
+                            if (item.TacticalItemDef.Equals(drillDef))
                             {
-                                if (item.TacticalItemDef.Equals(drillDef))
-                                {
-                                    TFTVLogger.Always("Found driller");
-                                    foundDriller = true;
-                                    drill = item;
-
-                                }
-
-                                if (item.TacticalItemDef.Equals(beamDef))
-                                {
-                                    TFTVLogger.Always("Found beam");
-                                    head = item;
-
-                                }
+                                TFTVLogger.Always("Found driller");
+                                foundDriller = true;
+                                drill = item;
 
                             }
 
-                            if (foundDriller)
+                            if (item.TacticalItemDef.Equals(beamDef))
                             {
-
-                                TFTVLogger.Always("Drill removed");
-                                if (drill != null)
-                                {
-                                    drillSave = drill;
-                                    drill.DestroyAll();
-                                }
+                                TFTVLogger.Always("Found beam");
+                                head = item;
 
                             }
-
-
-
 
                         }
+
+                        if (foundDriller)
+                        {
+
+                            TFTVLogger.Always("Drill removed");
+                            if (drill != null)
+                            {
+                                drillSave = drill;
+                                drill.DestroyAll();
+                            }
+
+                        }
+
+
+
+
                     }
+                }
 
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
             }
-        }
-        */
-
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }*/
     }
+    
+
+}
 

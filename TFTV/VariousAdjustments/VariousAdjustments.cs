@@ -11,6 +11,7 @@ using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.Animations;
 using PhoenixPoint.Tactical.Entities.DamageKeywords;
+using PhoenixPoint.Tactical.Entities.Effects;
 using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.Entities.Statuses;
 using PhoenixPoint.Tactical.Entities.Weapons;
@@ -34,6 +35,8 @@ namespace PRMBetterClasses.VariousAdjustments
         {
             SharedData shared = GameUtl.GameComponent<SharedData>();
 
+            // Bash: Increase damage to weapon from 0,45 to 0,6
+            Change_BashWeaponDamage();
             // Fix Regen Torso to also regenerate health in vehicles
             Fix_RegenTorso();
             // Fix for Triton Elite bloodsucker arms
@@ -55,12 +58,12 @@ namespace PRMBetterClasses.VariousAdjustments
             // Psychici resistance: fix effect and description to: Psychic Scream damage values are halved
             Change_PsychicResistance();
             // Mutoid Worms: limit each worm ability to 5 ammo (worms)
-            Change_MutoidWorms();
+            Change_Mutoids();
             // Screaming Head: Mind Control Immunity
             Change_PriestsHeadMutations();
             // Spider Drones: Armor down to 10 (from 30)
             Change_SpiderDrones();
-            // Danchev MG: ER buff to 14 (up from 9)
+            // Various weapon changes
             Change_VariousWeapons(shared);
             // Venom Torso: Add Weapon Tag to Poison Arm 
             Change_VenomTorso();
@@ -68,14 +71,18 @@ namespace PRMBetterClasses.VariousAdjustments
             Change_HavenRecruits();
             // Mech Arms: 200 emp damage
             Change_MechArms(shared);
-            // Vengeance Torso: Attacks against enemies within 10 tiles deal 10% more damage
-            Change_VengeanceTorso();
             // Shadow Legs: Electric Kick replace shock damage with Sonic damage (value 20)
             Change_ShadowLegs(shared);
             // Vidar GL - Increase Shred to 20 (from 10), Add Acid 10. Increase AP cost to 2 (from 1)
             Change_VidarGL(shared);
             // Destiny III - Give chance to fumble when non-proficient
             Change_Destiny();
+        }
+
+        private static void Change_BashWeaponDamage()
+        {
+            MeleeBashDamageEffectDef meleeBashDamageEffect = (MeleeBashDamageEffectDef)Repo.GetDef("38767152-dc65-8be1-6d12-ad7ba889a88a"); // E_MeleeBashEffect [MeleeBash_StandardDamageTypeEffectDef]
+            meleeBashDamageEffect.DamageAmountForTheEquipment = 0.6f;
         }
 
         private static void Fix_RegenTorso()
@@ -86,6 +93,28 @@ namespace PRMBetterClasses.VariousAdjustments
 
         private static void Fix_TritonElite()
         {
+            GameTagDef combinedWeaponBodyPart_Tag = (GameTagDef)Repo.GetDef("498a2ab2-cd1a-d104-f8fc-f37e875f76dc"); //"CombinedWeaponBodyPart_TagDef" (m_PathID 36683)
+            List<TacticalItemDef> fishmanEliteUpperArms = new List<TacticalItemDef>()
+            {
+                (TacticalItemDef)Repo.GetDef("cb294fe3-a30b-5bc4-2ad0-3361cb1d0d84"), //"FishmanElite_UpperArms_BloodSucker_BodyPartDef"
+                (TacticalItemDef)Repo.GetDef("ed323004-0282-a354-3ae0-053791ad17c6"), //"FishmanElite_Upper_LeftArm_BloodSucker_BodyPartDef"
+                (TacticalItemDef)Repo.GetDef("b5361644-9ac1-9fd4-d931-b144c1c7d329"), //"FishmanElite_Upper_RightArm_BloodSucker_BodyPartDef"
+                (TacticalItemDef)Repo.GetDef("32a6dd8e-0abb-3224-6b4b-33847fd67804"), //"FishmanElite_UpperArms_Paralyzing_BodyPartDef"
+                (TacticalItemDef)Repo.GetDef("9b96a46e-8b84-7b64-fa18-71ee51afa0dd"), //"FishmanElite_Upper_LeftArm_Paralyzing_BodyPartDef"
+                (TacticalItemDef)Repo.GetDef("3cedbaa9-1574-5f94-e8b9-1afec1f57903")  //"FishmanElite_Upper_RightArm_Paralyzing_BodyPartDef"
+            };
+            foreach (TacticalItemDef tacticalItemDef in fishmanEliteUpperArms)
+            {
+                if (tacticalItemDef.WeakAddon && tacticalItemDef.HandsToUse != 0) // base where the two arms are tied on is a WeakAddon ("..._UpperArms_...")
+                {
+                    tacticalItemDef.HandsToUse = 0;
+                }
+                if (!tacticalItemDef.Tags.Contains(combinedWeaponBodyPart_Tag))
+                {
+                    tacticalItemDef.Tags.Add(combinedWeaponBodyPart_Tag);
+                }
+            }
+/*
             GameTagDef gameTag = (GameTagDef)Repo.GetDef("498a2ab2-cd1a-d104-f8fc-f37e875f76dc"); //DefCache.GetDef<GameTagDef>("CombinedWeaponBodyPart_TagDef");
             TacticalItemDef EBloodsucker = (TacticalItemDef)Repo.GetDef("cb294fe3-a30b-5bc4-2ad0-3361cb1d0d84"); //DefCache.GetDef<TacticalItemDef>("FishmanElite_UpperArms_BloodSucker_BodyPartDef");
             TacticalItemDef LEBloodsucker = (TacticalItemDef)Repo.GetDef("ed323004-0282-a354-3ae0-053791ad17c6"); //DefCache.GetDef<TacticalItemDef>("FishmanElite_Upper_LeftArm_BloodSucker_BodyPartDef");
@@ -101,6 +130,7 @@ namespace PRMBetterClasses.VariousAdjustments
             EParalysing.Tags.Add(gameTag);
             LEParalysing.Tags.Add(gameTag);
             REParalysing.Tags.Add(gameTag);
+*/
         }
 
         private static void Change_AdvLaserResearch()
@@ -220,6 +250,20 @@ namespace PRMBetterClasses.VariousAdjustments
             // Mirage Legs: Speed +1 -> +2
             BodyPartAspectDef mirageLegsAspect = DefCache.GetDef<BodyPartAspectDef>("E_BodyPartAspect [SY_Shinobi_BIO_Legs_ItemDef]");
             mirageLegsAspect.Speed = 2;
+
+            // Vengeance Torso: Attacks against enemies within 10 tiles deal 10% more damage (Battle Focus ability)
+            TacticalItemDef vTorso = DefCache.GetDef<TacticalItemDef>("SY_Shinobi_BIO_Torso_BodyPartDef");
+            vTorso.Abilities[1] = DefCache.GetDef<AbilityDef>("BattleFocus_AbilityDef");
+
+            // Echo Head: Remove "Silent Echo", Stealth +10% -> +15%, Accuracy 0% -> 5% --- DELAYED AMYBE EVEN NOT NECESSARY
+            //TacticalItemDef echoHead = (TacticalItemDef)Repo.GetDef("bacfc1a6-f043-ff64-8bee-5bbdea13970f"); // SY_Shinobi_BIO_Helmet_BodyPartDef
+            //echoHead.Abilities = new AbilityDef[] // set abilities new without Silent Echo, aka remove it
+            //{
+            //    (AbilityDef)Repo.GetDef("94b5e1df-83c8-9c74-fa4f-104708cd017c"), // EnhancedVision_AbilityDef (Night Vision)
+            //    (AbilityDef)Repo.GetDef("7cb66494-acd9-fa74-b93d-15e5f50e5b40")  // BionicDamageMultipliers_AbilityDef
+            //};
+            //echoHead.BodyPartAspectDef.Stealth = 0.15f;
+            //echoHead.BodyPartAspectDef.Accuracy = 0.05f;
         }
 
         public static void Change_Turrets()
@@ -275,42 +319,102 @@ namespace PRMBetterClasses.VariousAdjustments
             DamageMultiplierAbilityDef psychicImmunity = DefCache.GetDef<DamageMultiplierAbilityDef>("PsychicImmunity_DamageMultiplierAbilityDef");
             psychicResistant.ViewElementDef = psychicImmunity.ViewElementDef;
         }
-        public static void Change_MutoidWorms()
+        public static void Change_Mutoids()
         {
-            int mutoidWormCharges = 5;
-            float range = 25.0f;
+            // Mutoids gain Pistol and Assault Rifle proficiency -> adding Mutoid_ClassTagDef ("cd38a996-0565-1694-bb91-b4479a65950e") to their weapon tags
+            // -> see Change_VariousWeapons(..) below
 
-            WeaponDef mAWorm = DefCache.GetDef<WeaponDef>("Mutoid_Arm_AcidWorm_WeaponDef");
-            WeaponDef mFWorm = DefCache.GetDef<WeaponDef>("Mutoid_Arm_FireWorm_WeaponDef");
-            WeaponDef mPWorm = DefCache.GetDef<WeaponDef>("Mutoid_Arm_PoisonWorm_WeaponDef");
+            // Worm launcher, limited ammo and range
+            List<WeaponDef> mutoidWormLauncher = new List<WeaponDef>()
+            {
+                (WeaponDef)Repo.GetDef("8ca45ea2-3f17-c0f4-1ab6-464bbe6a6acb"), // Mutoid_Arm_AcidWorm_WeaponDef
+                (WeaponDef)Repo.GetDef("f5a7eb15-269d-db74-9bc1-38d96f785cef"), // Mutoid_Arm_FireWorm_WeaponDef
+                (WeaponDef)Repo.GetDef("3412c7e3-1d20-bd24-daac-93f3c245ce77")  // Mutoid_Arm_PoisonWorm_WeaponDef
+            };
+            TacticalItemDef sharedFreeReloadAmmo = (TacticalItemDef)Repo.GetDef("e296cd3b-74a9-2184-1900-f122ac9c50fc"); // SharedFreeReload_AmmoClip_ItemDef
+            foreach (WeaponDef launcher in mutoidWormLauncher)
+            {
+                launcher.ChargesMax = 5;
+                launcher.DamagePayload.Range = 25f;
+                launcher.CompatibleAmmunition = new TacticalItemDef[] { sharedFreeReloadAmmo };
+            }
+        }
+        public static void Change_VariousWeapons(SharedData shared)
+        {
+            // defining variables
+            SharedDamageKeywordsDataDef damageKeywords = shared.SharedDamageKeywords;
+            GameTagDef grenadeTag = (GameTagDef)Repo.GetDef("318dd3ff-28f0-1bb4-98bc-39164b7292b6"); // GrenadeItem_TagDef
+            GameTagDef mutoidClassTag = (GameTagDef)Repo.GetDef("cd38a996-0565-1694-bb91-b4479a65950e"); // Mutoid_ClassTagDef
+            GameTagDef pistolTag = (GameTagDef)Repo.GetDef("7a8a0a76-deb6-c004-3b5b-712eae0ad4a5"); // HandgunItem_TagDef
+            GameTagDef assaultRifleTag = (GameTagDef)Repo.GetDef("d98ff229-5459-9224-ea2e-2dbca60bae1d"); // AssaultRifleItem_TagDef
 
-            mAWorm.ChargesMax = mutoidWormCharges;
-            mAWorm.DamagePayload.Range = range;
-            mFWorm.ChargesMax = mutoidWormCharges;
-            mFWorm.DamagePayload.Range = range;
-            mPWorm.ChargesMax = mutoidWormCharges;
-            mPWorm.DamagePayload.Range = range;
+            // loop over all weapon defs in the repo
+            foreach (WeaponDef weaponDef in Repo.GetAllDefs<WeaponDef>())
+            {
+                // All hand thrown grenades (only these weapon defs ends with "Grenade_WeaponDef" <- checked by tag)
+                if (weaponDef.Tags.Contains(grenadeTag)) // weaponDef.name.EndsWith("Grenade_WeaponDef") && 
+                {
+                    // Manufature intantly
+                    weaponDef.ManufacturePointsCost = 0;
+                }
+                // Mutoids gain Pistol and Assault Rifle proficiency -> adding Mutoid_ClassTagDef ("cd38a996-0565-1694-bb91-b4479a65950e") to their weapon tags
+                if ((weaponDef.Tags.Contains(pistolTag) || weaponDef.Tags.Contains(assaultRifleTag)) && !weaponDef.Tags.Contains(mutoidClassTag))
+                {
+                    weaponDef.Tags.Add(mutoidClassTag);
+                }
+                // Various changes dependend on weapon def guids (safer than using the def names)
+                switch (weaponDef.Guid)
+                {
+                    // Hawk light sniper rifle, switch to one handed ...
+                    //case "f72e9df8-2c13-6ba4-e9b8-444dfda1b19a": // FS_LightSniperRifle_WeaponDef
+                    //    weaponDef.HandsToUse = 1;
+                    //    break;
+                    // Danchev MG
+                    case "434c4004-580f-10a4-995a-c5a64e6998dc": // PX_PoisonMachineGun_WeaponDef
+                        weaponDef.DamagePayload.DamageKeywords.Add(new DamageKeywordPair { DamageKeywordDef = damageKeywords.ShreddingKeyword, Value = 3 });
+                        weaponDef.SpreadDegrees = 40.99f / 17;
+                        break;
+                    // Danchev AR
+                    case "f3b83418-1363-18d4-4858-143901ea2d8e": // PX_AcidAssaultRifle_WeaponDef
+                        weaponDef.DamagePayload.DamageKeywords.Add(new DamageKeywordPair { DamageKeywordDef = damageKeywords.ShreddingKeyword, Value = 1 });
+                        weaponDef.DamagePayload.DamageKeywords.Find(dkp => dkp.DamageKeywordDef == damageKeywords.AcidKeyword).Value = 10;
+                        break;
+                    // Slamstrike Shotgun
+                    case "38ddbbc0-3bd4-5834-5a75-19bde3df3ab6": // FS_SlamstrikeShotgun_WeaponDef
+                        weaponDef.DamagePayload.DamageKeywords.Find(dkp => dkp.DamageKeywordDef == damageKeywords.ShockKeyword).Value = 180;
+                        break;
+                    // Imhullu Acid grenade
+                    case "4291806f-cc74-5b24-2ace-644a17b65bd9": // AN_AcidGrenade_WeaponDef
+                        weaponDef.DamagePayload.DamageKeywords.Add(new DamageKeywordPair { DamageKeywordDef = damageKeywords.ShockKeyword, Value = 240 });
+                        break;
+                    // Fire grenade
+                    case "3880461b-4419-0cc4-5986-64bda2224e51": // NJ_IncindieryGrenade_WeaponDef
+                        weaponDef.ManufactureMaterials = 26;
+                        weaponDef.ManufactureTech = 10;
+                        DamageKeywordPair damageKeywordPair = weaponDef.DamagePayload.DamageKeywords.Find(dkp => dkp.DamageKeywordDef == damageKeywords.ShreddingKeyword);
+                        _ = weaponDef.DamagePayload.DamageKeywords.Remove(damageKeywordPair);
+                        break;
+                    // Yggdrasil Virophage grenade
+                    case "06825a27-029e-a414-d806-49c513dfce53": // PX_VirophageGrenade_WeaponDef
+                        weaponDef.ManufactureMutagen = 10;
+                        break;
+                    default:
+                        break;
+                }
+            }
         }
         public static void Change_PriestsHeadMutations()
         {
-            foreach (TacticalItemDef tacticalItem in Repo.GetAllDefs<TacticalItemDef>())
-            {
-                // Screaming Head mutation
-                if (tacticalItem.name.Equals("AN_Priest_Head03_BodyPartDef"))
-                {
-                    tacticalItem.BodyPartAspectDef.WillPower = 8;
-                    tacticalItem.Abilities = new AbilityDef[]
-                    {
-                        tacticalItem.Abilities[0],
-                        DefCache.GetDef < AbilityDef >("MindControlImmunity_AbilityDef")
-                    };
-                }
-                // Judgement Head mutation
-                if (tacticalItem.name.Equals("AN_Priest_Head02_BodyPartDef"))
-                {
-                    tacticalItem.BodyPartAspectDef.WillPower = 4;
-                }
-            }
+            // Screaming Head mutation
+            TacticalItemDef tactcalItemDef = (TacticalItemDef)Repo.GetDef("c9a03d9e-0cf7-5e84-9ba6-cbb94e5eb0e1"); // AN_Priest_Head03_BodyPartDef
+            tactcalItemDef.BodyPartAspectDef.WillPower = 8;
+            List<AbilityDef> temp = tactcalItemDef.Abilities.ToList();
+            temp.Add((AbilityDef)Repo.GetDef("758fd670-ceb2-e474-1b01-8388d47cd8e1")); // MindControlImmunity_AbilityDef
+            tactcalItemDef.Abilities = temp.ToArray();
+
+            // Judgement Head mutation
+            tactcalItemDef = (TacticalItemDef)Repo.GetDef("4804dff5-a2f9-7dd4-3bb9-6f5ed215ccbc"); // AN_Priest_Head02_BodyPartDef
+            tactcalItemDef.BodyPartAspectDef.WillPower = 4;
         }
         public static void Change_SpiderDrones()
         {
@@ -318,58 +422,6 @@ namespace PRMBetterClasses.VariousAdjustments
 
             TacticalItemDef spiderDrone = DefCache.GetDef<TacticalItemDef>("SpiderDrone_Torso_BodyPartDef");
             spiderDrone.Armor = spiderDroneArmor;
-        }
-        public static void Change_VariousWeapons(SharedData shared)
-        {
-            SharedDamageKeywordsDataDef damageKeywords = shared.SharedDamageKeywords;
-            foreach (WeaponDef weaponDef in Repo.GetAllDefs<WeaponDef>())
-            {
-                // All hand thrown grenades, only these weapon defs ends with "Grenade_WeaponDef"
-                if (weaponDef.name.EndsWith("Grenade_WeaponDef") && weaponDef.Tags.Contains(shared.SharedGameTags.StandaloneTag))
-                {
-                    // Manufature intantly
-                    weaponDef.ManufacturePointsCost = 0;
-                }
-                // Various changes dependend on weapon def
-                switch (weaponDef.name)
-                {
-                    // Hawk light sniper rifle, switch to one handed ...
-                    //case "FS_LightSniperRifle_WeaponDef":
-                    //    weaponDef.HandsToUse = 1;
-                    //    break;
-                    // Danchev MG
-                    case "PX_PoisonMachineGun_WeaponDef":
-                        weaponDef.DamagePayload.DamageKeywords.Add(new DamageKeywordPair { DamageKeywordDef = damageKeywords.ShreddingKeyword, Value = 3 });
-                        weaponDef.SpreadDegrees = 40.99f / 17;
-                        break;
-                    // Danchev AR
-                    case "PX_AcidAssaultRifle_WeaponDef":
-                        weaponDef.DamagePayload.DamageKeywords.Add(new DamageKeywordPair { DamageKeywordDef = damageKeywords.ShreddingKeyword, Value = 1 });
-                        weaponDef.DamagePayload.DamageKeywords.Find(dkp => dkp.DamageKeywordDef == damageKeywords.AcidKeyword).Value = 10;
-                        break;
-                    // Slamstrike Shotgun
-                    case "FS_SlamstrikeShotgun_WeaponDef":
-                        weaponDef.DamagePayload.DamageKeywords.Find(dkp => dkp.DamageKeywordDef == damageKeywords.ShockKeyword).Value = 180;
-                        break;
-                    // Imhullu Acid grenade
-                    case "AN_AcidGrenade_WeaponDef":
-                        weaponDef.DamagePayload.DamageKeywords.Add(new DamageKeywordPair { DamageKeywordDef = damageKeywords.ShockKeyword, Value = 240 });
-                        break;
-                    // Fire grenade
-                    case "NJ_IncindieryGrenade_WeaponDef":
-                        weaponDef.ManufactureMaterials = 26;
-                        weaponDef.ManufactureTech = 10;
-                        DamageKeywordPair damageKeywordPair = weaponDef.DamagePayload.DamageKeywords.Find(dkp => dkp.DamageKeywordDef == damageKeywords.ShreddingKeyword);
-                        _ = weaponDef.DamagePayload.DamageKeywords.Remove(damageKeywordPair);
-                        break;
-                    // Yggdrasil Virophage grenade
-                    case "PX_VirophageGrenade_WeaponDef":
-                        weaponDef.ManufactureMutagen = 10;
-                        break;
-                    default:
-                        break;
-                }
-            }
         }
         public static void Change_VenomTorso()
         {
@@ -442,12 +494,6 @@ namespace PRMBetterClasses.VariousAdjustments
             TacticalItemDef mechArmsAmmo = DefCache.GetDef<TacticalItemDef>("MechArms_AmmoClip_ItemDef");
             mechArmsAmmo.ManufactureMaterials = 55;
             mechArmsAmmo.ManufactureTech = 15;
-        }
-        public static void Change_VengeanceTorso()
-        {
-            TacticalItemDef vTorso = DefCache.GetDef<TacticalItemDef>("SY_Shinobi_BIO_Torso_BodyPartDef");
-
-            vTorso.Abilities[1] = DefCache.GetDef<AbilityDef>("BattleFocus_AbilityDef");
         }
         public static void Change_ShadowLegs(SharedData shared)
         {

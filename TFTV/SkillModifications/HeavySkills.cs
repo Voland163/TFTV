@@ -21,6 +21,7 @@ using System.Collections.Generic;
 using System.Linq;
 using TFTV;
 using UnityEngine;
+using static PhoenixPoint.Tactical.Entities.Statuses.ItemSlotStatsModifyStatusDef;
 
 namespace PRMBetterClasses.SkillModifications
 {
@@ -84,9 +85,35 @@ namespace PRMBetterClasses.SkillModifications
                 "c0b8b645-b1b7-4f4e-87ea-3f6bacc2dc4f",
                 skillName);
             hunkerDown.StatusDef = Helper.CreateDefFromClone(
-                source.StatusDef,
+                DefCache.GetDef<ApplyStatusAbilityDef>("ElectricReinforcement_AbilityDef").StatusDef,
                 "adc38c08-1878-422f-a37c-a859aa67ceed",
                 skillName);
+            ItemSlotStatsModifyStatusDef hunkerDownStatus = (ItemSlotStatsModifyStatusDef)hunkerDown.StatusDef;
+            hunkerDownStatus.Visuals = hunkerDown.ViewElementDef;
+            hunkerDownStatus.StatsModifications = new ItemSlotModification[]
+            {
+                new ItemSlotModification()
+                {
+                    Type = StatType.Armour,
+                    ModificationType = StatModificationType.AddMax,
+                    Value = 10f,
+                    ShowsNotification = false,
+                    NotifyOnce = false
+                },
+                new ItemSlotModification()
+                {
+                    Type = StatType.Armour,
+                    ModificationType = StatModificationType.AddRestrictedToBounds,
+                    Value = 10f,
+                    ShowsNotification = true,
+                    NotifyOnce = true
+                }
+            };
+            //DamageMultiplierStatusDef hunkerDownStatus = (DamageMultiplierStatusDef)hunkerDown.StatusDef;
+            //hunkerDownStatus.DurationTurns = 1;
+            //hunkerDownStatus.Visuals = hunkerDown.ViewElementDef;
+            //hunkerDownStatus.DamageTypeDefs = new DamageTypeBaseEffectDef[0]; // Empty = all damage types
+            //hunkerDownStatus.Range = -1.0f; // -1 = no range restriction
             hunkerDown.Active = true;
             hunkerDown.EndsTurn = true;
             hunkerDown.ActionPointCost = 0.25f;
@@ -103,10 +130,6 @@ namespace PRMBetterClasses.SkillModifications
             Sprite hunkerDownIcon = Helper.CreateSpriteFromImageFile("UI_AbilitiesIcon_HunkerDown_1-2.png");
             hunkerDown.ViewElementDef.LargeIcon = hunkerDownIcon;
             hunkerDown.ViewElementDef.SmallIcon = hunkerDownIcon;
-            (hunkerDown.StatusDef as DamageMultiplierStatusDef).DurationTurns = 1;
-            (hunkerDown.StatusDef as DamageMultiplierStatusDef).Visuals = hunkerDown.ViewElementDef;
-            (hunkerDown.StatusDef as DamageMultiplierStatusDef).DamageTypeDefs = new DamageTypeBaseEffectDef[0]; // Empty = all damage types
-            (hunkerDown.StatusDef as DamageMultiplierStatusDef).Range = -1.0f; // -1 = no range restriction
             AbilityDef animationSearchDef = DefCache.GetDef<AbilityDef>("QuickAim_AbilityDef");
             foreach (TacActorSimpleAbilityAnimActionDef animActionDef in Repo.GetAllDefs<TacActorSimpleAbilityAnimActionDef>().Where(aad => aad.name.Contains("Soldier_Utka_AnimActionsDef")))
             {

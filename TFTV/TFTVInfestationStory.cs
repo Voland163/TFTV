@@ -110,23 +110,32 @@ namespace TFTV
                         else
                         {
                            
-
-
                             TFTVLogger.Always("There are " + operatives.Count() + " phoenix operatives");
                             List<GeoCharacter> orderedOperatives = operatives.OrderByDescending(e => e.LevelProgression.Experience).ToList();
+                            string characterName = "";
+                            
                             for (int i = 0; i < operatives.Count; i++)
                             {
                                 TFTVLogger.Always("Phoenix operative is " + orderedOperatives[i].DisplayName + " with XP " + orderedOperatives[i].LevelProgression.Experience);
-                                TFTVLogger.Always("The first name of the operative is " + orderedOperatives[i].DisplayName.Split()[1]);
+                                if (orderedOperatives[i].DisplayName.Split()[1] != null)
+                                {
+                                    TFTVLogger.Always("The first name of the operative is " + orderedOperatives[i].DisplayName.Split()[1]);
+                                    characterName = orderedOperatives[i].DisplayName.Split()[1];
+                                }
+                                else 
+                                {
+                                    TFTVLogger.Always("The operative " + orderedOperatives[i].DisplayName + " doesn't have a first or last name");
+                                    characterName = orderedOperatives[i].DisplayName;
+                                }
                             }
 
                             string name = "InfestationMissionIntro";
                             string title = "Search and Rescue";
-                            string text = "Director, " + orderedOperatives[1].DisplayName + " reporting. We are at " + __instance.Site.LocalizedSiteName + ". Are you seeing this? The green shimmering…  I… I feel like I have been here before…";
+                            string text = "Director, " + characterName + " reporting. We are at " + __instance.Site.LocalizedSiteName + ". Are you seeing this? The green shimmering…  I… I feel like I have been here before…";
 
 
 
-                            string reply = orderedOperatives[1].DisplayName.Split()[1] + " snap out of it! " +
+                            string reply = characterName + " snap out of it! " +
                                 "We are still Phoenix operatives and we got a job to do. " +
                                 "Scans show that there are survivors out there. Stay frosty and be ready for anything. " + orderedOperatives[0].DisplayName + " out.";
 
@@ -140,12 +149,8 @@ namespace TFTV
                             infestationIntro.Title = new Base.UI.LocalizedTextBind(title, true);
                             infestationIntro2.Text = new Base.UI.LocalizedTextBind(reply, true);
                             infestationIntro2.Title = new Base.UI.LocalizedTextBind(title, true);
-
-
                         }
-
                     }
-
                 }
                 catch (Exception e)
                 {
