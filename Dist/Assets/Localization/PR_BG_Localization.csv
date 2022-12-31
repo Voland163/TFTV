@@ -525,7 +525,7 @@ TBTV_HIDDEN_ABILITY_DESCRIPTION,Text,,How we shiver with affright,,,,,,,,
 VOID_TOUCHED_TITLE,Text,,Touched by the Void,,,,,,,,
 VOID_TOUCHED_TEXT,Text,,"<i>""A purple fume emanated from its body, marking it as the bearer of a Terrible Purpose.”</i>
 
-This Pandoran is special. After it is attacked, it is very likely to gain a special ability (however, there is a small chance that it will be passed by the Void and lose its Touch, gaining nothing). At first, the only ability it may again is to spawn an Umbra version of itself on death. However, as the Oneiric Delirium advances, Touched by the Void Pandorans will gain other effects when attacked for the first time.",,,,,,,,
+This Pandoran is special. After it is attacked, it is very likely to gain a special ability (however, there is a small chance that it will be passed by the Void and lose its Touch, gaining nothing). At first, the only ability it may gain is to spawn an Umbra version of itself on death. However, as the Oneiric Delirium advances, Touched by the Void Pandorans will gain other effects when attacked for the first time.",,,,,,,,
 TBTV_ON_ATTACK_TITLE,Text,,Void Touched - Attacker is Marked for Death,,,,,,,,
 TBTV_ON_ATTACK_TEXT,Text,,Any character that attacks this Pandoran will be afflicted by Marked for Death (no stacking),,,,,,,,
 TBTV_ON_TURN_END_TITLE,Text,,Void Touched - Calls reinforcements at turn's end,,,,,,,,
@@ -700,7 +700,7 @@ Au début, nous avons supposé qu'ils ne pouvaient accéder qu'aux informations 
 Tout cela nous amène à conclure que le délire onirique puise dans une variété de flux de données ou de centres d'information des infectés. C'est un processus que nous ne pouvons même pas commencer à comprendre, même s'il remet en question nos notions de base de la conscience.
 
 Néanmoins, nous avons réussi à extraire quelques applications pratiques de nos recherches sur les Revenants. Nous pensons que nous sommes maintenant capables de sauver parfois des agents gravement blessés en leur donnant de nouveaux corps artificiels.",,,,,,
-PX_PROJECT_OSIRIS_BENEFITS,Text,,"With a mutation and/or a bionic lab, a Phoenix KIA operative may be given a new lease on life right. Limited to one deceased operative per mission. Chances are highest for the more experienced operatives.",,,,,,,,
+PX_PROJECT_OSIRIS_BENEFITS,Text,,"With a mutation and/or a bionic lab, a Phoenix KIA operative may be given a new lease on life. Limited to one deceased operative per mission. Chances are highest for the more experienced operatives.",,,,,,,,
 PROJECT_OSIRIS_TITLE,Text,,Project Osiris,,Projet Osiris,,,,,,
 PROJECT_OSIRIS_TEXT,Text,,We have a candidate for Project Osiris,,Nous avons un candidat pour le projet Osiris,,,,,,
 PROJECT_OSIRIS_CHOOSE_ROBOCOP,Text,,Bionics,,Bioniques,,,,,,

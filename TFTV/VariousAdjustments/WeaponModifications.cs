@@ -218,16 +218,16 @@ namespace PRMBetterClasses.VariousAdjustments
                 // Different changes based on weapon GUID
                 switch (kaosWepaon.Guid)
                 {
-                    //case "DevastatorGUID": // KS_Devastator_WeaponDef -> no changes yet
-                    //    break;
-                    //case "ObliteratorGUID": // KS_Obliterator_WeaponDef -> no changes yet
-                    //    break;
+                    case DevastatorGUID: // KS_Devastator_WeaponDef -> no changes yet
+                        break;
+                    case ObliteratorGUID: // KS_Obliterator_WeaponDef -> Damage 30
+                        kaosWepaon.DamagePayload.DamageKeywords.Find(dkp => dkp.DamageKeywordDef == damageKeywords.DamageKeyword).Value = 30;
+                        break;
                     case RedemptorGUID: // KS_Redemptor_WeaponDef -> ER 13, damage 40
                         kaosWepaon.SpreadDegrees = 40.99f / 13;
                         kaosWepaon.DamagePayload.DamageKeywords.Find(dkp => dkp.DamageKeywordDef == damageKeywords.DamageKeyword).Value = 40;
                         break;
-                    case SubjectorGUID: // KS_Subjector_WeaponDef -> Damage 30
-                        kaosWepaon.DamagePayload.DamageKeywords.Find(dkp => dkp.DamageKeywordDef == damageKeywords.DamageKeyword).Value = 30;
+                    case SubjectorGUID: // KS_Subjector_WeaponDef -> no changes yet
                         break;
                     case TormentorGUID: // KS_Tormentor_WeaponDef -> Damage 40
                         kaosWepaon.DamagePayload.DamageKeywords.Find(dkp => dkp.DamageKeywordDef == damageKeywords.DamageKeyword).Value = 40;
