@@ -36,6 +36,10 @@ namespace TFTV
 
         public T GetDef<T>(string name) where T : BaseDef
         {
+            if (!_defNameToGuidCache.ContainsKey(name))
+            {
+                return null;
+            }
             string guid = _defNameToGuidCache[name].FirstOrDefault();
             return guid != default ? (T)_repo.GetDef(guid) : null;
         }

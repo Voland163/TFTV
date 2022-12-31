@@ -104,7 +104,7 @@ namespace PRMBetterClasses.VariousAdjustments
             {
                 StatusDef panicked = DefCache.GetDef<StatusDef>("Panic_StatusDef");
                 StatusDef overWatch = DefCache.GetDef<StatusDef>("Overwatch_StatusDef");
-                StatusDef hunkerDown = DefCache.GetDef<StatusDef>("E_CloseQuatersStatus [HunkerDown_AbilityDef]");
+                StatusDef hunkerDown = DefCache.GetDef<StatusDef>("E_Status [HunkerDown_AbilityDef]");
                 // Check if actor is from viewer faction (= player) and several conditions are not met
                 SharedData Shared = GameUtl.GameComponent<SharedData>();
                 if (__instance.IsFromViewerFaction && !(__instance.IsDead
