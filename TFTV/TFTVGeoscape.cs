@@ -1,11 +1,8 @@
-using Base.Levels;
 using Base.Serialization.General;
-using EnviroSamples;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Modding;
 using PhoenixPoint.Tactical.Entities.Abilities;
-using PhoenixPoint.Tactical.Entities.Statuses;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -34,8 +31,6 @@ namespace TFTV
         public Dictionary<int, int[]> ProjectOsirisStatsSaveData = TFTVRevenantResearch.ProjectOsirisStats;
         public bool[] VoidOmensCheck = TFTVVoidOmens.VoidOmensCheck;
         // public List<string> TacticalHintsToShow = TFTVTutorialAndStory.TacticalHintsToShow;
-
-
     }
 
     /// <summary>
@@ -60,7 +55,10 @@ namespace TFTV
             TFTVBetaSaveGamesFixes.CheckSaveGameEventChoices(gsController);
             TFTVBetaSaveGamesFixes.CheckUmbraResearchVariable(gsController);
             TFTVCommonMethods.CheckGeoUIfunctionality(gsController);
+            // if (!Controller.Tutorial.InProgress)
+            //  {
             TFTVNewPXCharacters.PlayIntro(gsController);
+            //  }
             TFTVVoidOmens.ImplementVoidOmens(gsController);
             TFTVUmbra.CheckForUmbraResearch(gsController);
             TFTVUmbra.SetUmbraEvolution(gsController);
@@ -96,7 +94,7 @@ namespace TFTV
             TFTVVoidOmens.CheckForVoidOmensRequiringTacticalPatching(gsController);
             TFTVUI.hookToCharacter = null;
             TFTVRevenant.CheckRevenantTime(gsController);
-            TFTVRevenantResearch.CheckProjectOsiris(gsController);         
+            TFTVRevenantResearch.CheckProjectOsiris(gsController);
             TFTVDiplomacyPenalties.VoidOmensImplemented = false;
 
         }
@@ -123,7 +121,7 @@ namespace TFTV
                 infestedHavenOriginalOwnerSaveData = TFTVInfestationStory.OriginalOwner,
                 infestedHavenPopulationSaveData = TFTVInfestationStory.HavenPopulation,
                 ProjectOsirisStatsSaveData = TFTVRevenantResearch.ProjectOsirisStats,
-                VoidOmensCheck = TFTVVoidOmens.VoidOmensCheck,              
+                VoidOmensCheck = TFTVVoidOmens.VoidOmensCheck,
             };
 
         }
@@ -149,9 +147,9 @@ namespace TFTV
             TFTVInfestationStory.OriginalOwner = data.infestedHavenOriginalOwnerSaveData;
             TFTVRevenantResearch.ProjectOsirisStats = data.ProjectOsirisStatsSaveData;
             TFTVVoidOmens.VoidOmensCheck = data.VoidOmensCheck;
-          //  TFTVTutorialAndStory.TacticalHintsToShow = data.TacticalHintsToShow;
+            //  TFTVTutorialAndStory.TacticalHintsToShow = data.TacticalHintsToShow;
 
-          //  Main.Logger.LogInfo("UmbraEvolution variable is " + Controller.EventSystem.GetVariable(TFTVUmbra.TBTVVariableName));
+            //  Main.Logger.LogInfo("UmbraEvolution variable is " + Controller.EventSystem.GetVariable(TFTVUmbra.TBTVVariableName));
             Main.Logger.LogInfo("# Characters with broken limbs: " + TFTVStamina.charactersWithBrokenLimbs.Count);
             Main.Logger.LogInfo("# Behemoth targets for this emergence: " + TFTVAirCombat.targetsForBehemoth.Count);
             //    Main.Logger.LogInfo("# Targets already hit by Behemoth on this emergence: " + TFTVAirCombat.targetsVisitedByBehemoth.Count);
@@ -163,10 +161,10 @@ namespace TFTV
             Main.Logger.LogInfo("Behemoth will wait for another  " + TFTVAirCombat.behemothWaitHours + " before moving");
             Main.Logger.LogInfo("Last time a Revenant was seen was on day " + TFTVRevenant.daysRevenantLastSeen + ", and now it is day " + Controller.Timing.Now.TimeSpan.Days);
             Main.Logger.LogInfo("Project Osiris stats count " + TFTVRevenantResearch.ProjectOsirisStats.Count);
-          //  Main.Logger.LogInfo("Shown hints count " + TFTVTutorialAndStory.TacticalHintsToShow.Count);
+            //  Main.Logger.LogInfo("Shown hints count " + TFTVTutorialAndStory.TacticalHintsToShow.Count);
 
 
-       //  
+            //  
             TFTVLogger.Always("# Characters with broken limbs: " + TFTVStamina.charactersWithBrokenLimbs.Count);
             TFTVLogger.Always("# Behemoth targets for this emergence: " + TFTVAirCombat.targetsForBehemoth.Count);
             //   TFTVLogger.Always("# Targets already hit by Behemoth on this emergence: " + TFTVAirCombat.targetsVisitedByBehemoth.Count);
@@ -176,9 +174,9 @@ namespace TFTV
             TFTVLogger.Always("# sites on Behemoth scenic route " + TFTVAirCombat.behemothScenicRoute.Count);
             TFTVLogger.Always("Behemoth target id number is " + TFTVAirCombat.behemothTarget);
             TFTVLogger.Always("Behemoth will wait for another  " + TFTVAirCombat.behemothWaitHours + " before moving");
-            TFTVLogger.Always("Last time a Revenant was seen was on day " + TFTVRevenant.daysRevenantLastSeen + ", and now it is day " + Controller.Timing.Now.TimeSpan.Days); 
+            TFTVLogger.Always("Last time a Revenant was seen was on day " + TFTVRevenant.daysRevenantLastSeen + ", and now it is day " + Controller.Timing.Now.TimeSpan.Days);
             TFTVLogger.Always("Project Osiris stats count " + TFTVRevenantResearch.ProjectOsirisStats.Count);
-           // TFTVLogger.Always("Shown hints count " + TFTVTutorialAndStory.TacticalHintsToShow.Count);
+            // TFTVLogger.Always("Shown hints count " + TFTVTutorialAndStory.TacticalHintsToShow.Count);
 
         }
 
@@ -289,7 +287,7 @@ namespace TFTV
                 TFTVMain main = (TFTVMain)Main;
                 GeoLevelController gsController = Controller;
 
-            
+
 
                 setup.InitialScavengingSiteCount = (uint)main.Config.InitialScavSites;
 

@@ -37,8 +37,8 @@ namespace TFTV
         public bool ProjectOrisisCompletedSaveData;// = TFTVRevenantResearch.ProjectOsiris;
         public int RevenantId;
         public bool [] VoidOmensCheck = TFTVVoidOmens.VoidOmensCheck;
-        //commented out for release #11  public int HoplitesKilledOnMission;
-        // public bool PhoenixWonInfestationMissionTacticalSaveData = TFTVInfestation.PhoenixWon;
+        //Commented out for release #12   public int HoplitesKilledOnMission;
+
     }
 
     /// <summary>
@@ -70,10 +70,9 @@ namespace TFTV
             TFTVLogger.Always("VO16 Active " + TFTVVoidOmens.VoidOmensCheck[16]);
             TFTVLogger.Always("VO19 Active " + TFTVVoidOmens.VoidOmensCheck[19]);
             TFTVLogger.Always("Project Osiris researched " + TFTVRevenantResearch.ProjectOsiris);
-          //  TFTVLogger.Always("# of already shown tactical hints is " + TFTVTutorialAndStory.TacticalHintsToShow.Count);
-           // TFTVTutorialAndStory.RemoveAlreadyShownTacticalHints();
+
             TFTVHumanEnemies.RollCount = 0;
-          //commented out for release #11  TFTVAncients.CheckCyclopsDefense();
+            //Commented out for release #12     TFTVAncients.CheckCyclopsDefense();
             TFTVLogger.Always("Tactical start completed");
             TFTVLogger.Always("Difficulty level is " + tacController.Difficulty.Order);
             
@@ -136,10 +135,8 @@ namespace TFTV
                 TFTVInfestationStory.HavenPopulation = data.infestedHavenPopulationSaveData;
                 TFTVInfestationStory.OriginalOwner = data.infestedHavenOriginalOwnerSaveData;
                 TFTVRevenant.revenantID = data.RevenantId;
-                //commented out for release #11     TFTVAncients.HoplitesKilled = data.HoplitesKilledOnMission;
-                //   TFTVTutorialAndStory.TacticalHintsToShow = data.TacticalHintsToShow;
+                //Commented out for release #12     TFTVAncients.HoplitesKilled = data.HoplitesKilledOnMission;
 
-                // TFTVInfestation.PhoenixWon = data.PhoenixWonInfestationMissionTacticalSaveData;
             }
             catch (Exception e)
             {
@@ -186,38 +183,33 @@ namespace TFTV
             {
                 TFTVLogger.Always("The turn is " + turnNumber);
 
-                if (turnNumber == 0 && TFTVHumanEnemies.HumanEnemiesAndTactics.Count == 0)
+                if (!Controller.TacMission.MissionData.MissionType.name.Contains("Tutorial"))
                 {
-                    TFTVHumanEnemies.CheckMissionType(Controller);
+
+                    if (turnNumber == 0 && TFTVHumanEnemies.HumanEnemiesAndTactics.Count == 0)
+                    {
+                        TFTVHumanEnemies.CheckMissionType(Controller);
+                    }
+
+                    //commented out for release #12
+                 /*   if (turnNumber == 0 && TFTVAncients.CheckIfAncientsPresent(Controller))
+                    {
+                        TFTVAncients.AdjustAncientsOnDeployment(Controller);
+                    }*/
+
+                    if (turnNumber == 0)
+                    {
+                        TFTVRevenant.ModifyRevenantResistanceAbility(Controller);
+                        TFTVRevenant.CheckForNotDeadSoldiers(Controller);
+                        TFTVRevenant.RevenantCheckAndSpawn(Controller);
+                        TFTVRevenant.ImplementVO19(Controller);
+                    }
+                    TFTVRevenant.revenantSpecialResistance.Clear();
+                    TFTVUmbra.SpawnUmbra(Controller);
+                    TFTVHumanEnemies.ChampRecoverWPAura(Controller);
+                    TFTVHumanEnemies.ApplyTactic(Controller);
                 }
 
-                //commented out for release #11
-              /*  if (turnNumber == 0 && TFTVAncients.CheckIfAncientsPresent(Controller))
-                {
-                    TFTVAncients.AdjustAncientsOnDeployment(Controller);
-                }*/
-
-                if (turnNumber == 0)
-                {
-                    TFTVRevenant.ModifyRevenantResistanceAbility(Controller);
-                    TFTVRevenant.CheckForNotDeadSoldiers(Controller);
-                    TFTVRevenant.RevenantCheckAndSpawn(Controller);
-                    TFTVRevenant.ImplementVO19(Controller);
-                }
-                TFTVRevenant.revenantSpecialResistance.Clear();
-                TFTVUmbra.SpawnUmbra(Controller);
-                TFTVHumanEnemies.ChampRecoverWPAura(Controller);
-                TFTVHumanEnemies.ApplyTactic(Controller);
-                //TFTVExperimental.CheckObjectives();
-                //commented out for release #11    TFTVAncients.CheckForAutoRepairAbility(Controller);
-
-
-                // TFTVAncients.RemoveBeamFromDriller(Controller);
-                /*  if(turnNumber == 1) 
-                  {
-                      TFTVAncients.AddDrillBack(Controller);
-
-                  }*/
             }
             catch (Exception e)
             {

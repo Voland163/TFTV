@@ -200,9 +200,6 @@
     <Content Include="Assets\Textures\BG_Intro_1.jpg">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Assets\Textures\BG_Olena.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
     <Content Include="Assets\Textures\BG_Olena_small.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
@@ -248,6 +245,7 @@
     <Content Include="Assets\Textures\NodeAlt.jpg">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="Assets\Textures\Olena.png" />
     <Content Include="Assets\Textures\pu_squad.jpg">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

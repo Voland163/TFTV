@@ -747,3 +747,14 @@ VOID_BLIGHT_DESCRIPTION_HINT,Text,,"This character or unit can now be attacked b
 It has gained this status because it was attacked by an Acheron. All Acheron spray or cloud attacks afflict the victims with the <b>""Blight of the Void"" status</b>",,,,,,,,
 ANC_AUTOREPAIR_TITLE,Text,,Self repair,,,,,,,,
 ANC_AUTOREPAIR_TEXT,Text,,Using a nearby fallen Automata for spare parts,,,,,,,,
+KEY_TUT3_STORY2_DESCRIPTION,Text,,"""Kill confirmed. Phoenix, welco-  Team, on your toes, possible hostiles!""
+
+",,,,,,,,
+KEY_TUT3_TFTV1_DESCRIPTION,Text,,"""Don't shoot, we surrender! I'm Alistair Ashby. Yes, the ""Mist Expert"". Thanks for watching my content back in the day, I guess... 
+
+A few of us managed to get to this bunker and activate the emergency beacon before we were overrun by the creatures that followed us here. 
+
+We've got this place mostly up and running... Thanks to Olena, she is quite the wunderkind.""",,,,,,,,
+KEY_TUT3_TFTV1_TITLE,Text,,Alistair Ashby,,,,,,,,
+KEY_TUT3_TFTV2_DESCRIPTION,Text,,"""<i>Oppa</i> Alistair is good with people. I'm good with machines and software. This facility runs on a limited AI called Bennu. Once Bennu verifies your credentials as duly appointed Director, all functionality should be restored and you should be able to interface with the system.""",,,,,,,,
+KEY_TUT3_TFTV2_TITLE,Text,,Olena Kim,,,,,,,,

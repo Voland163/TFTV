@@ -53,7 +53,10 @@ namespace TFTV
             [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051")]
             private static void Postfix(GeoAlienFaction __instance, int ____evolutionProgress)
             {
-                Calculate_ODI_Level(__instance, ____evolutionProgress);
+                if (!__instance.GeoLevel.Tutorial.InProgress)
+                {
+                    Calculate_ODI_Level(__instance, ____evolutionProgress);
+                }
             }
         }
 

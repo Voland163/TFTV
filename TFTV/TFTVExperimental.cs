@@ -8,7 +8,9 @@ using hoenixPoint.Tactical.View.ViewControllers;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Levels.Missions;
 using PhoenixPoint.Geoscape.Entities;
+using PhoenixPoint.Geoscape.Events;
 using PhoenixPoint.Geoscape.Levels;
+using PhoenixPoint.Geoscape.Levels.Factions;
 using PhoenixPoint.Geoscape.View.ViewModules;
 using PhoenixPoint.Home.View.ViewModules;
 using PhoenixPoint.Tactical.Entities;
@@ -32,8 +34,8 @@ namespace TFTV
         internal static Color purple = new Color32(149, 23, 151, 255);
         //  private static readonly DefRepository Repo = TFTVMain.Repo;
 
-        //Unlock Project Glory when player activates 3rd base. Commented out for release #7
-        /*  [HarmonyPatch(typeof(GeoPhoenixFaction), "ActivatePhoenixBase")]
+        //Unlock Project Glory when player activates 3rd base. Commented out for release #12
+       /* [HarmonyPatch(typeof(GeoPhoenixFaction), "ActivatePhoenixBase")]
           public static class GeoPhoenixFaction_ActivatePhoenixBase_GiveGlory_Patch
           {
               public static void Postfix(GeoPhoenixFaction __instance)
@@ -42,20 +44,18 @@ namespace TFTV
                   {
                       if (__instance.GeoLevel.EventSystem.GetVariable("Photographer")!=1 && __instance.Bases.Count()>2) 
                       {
+                        GeoscapeEventContext eventContext = new GeoscapeEventContext(__instance.GeoLevel.ViewerFaction, __instance);
+                        __instance.GeoLevel.EventSystem.TriggerGeoscapeEvent("OlenaLotaStart", eventContext);
                           __instance.GeoLevel.EventSystem.SetVariable("Photographer", 1);
                       }
-
                   }
                   catch (Exception e)
                   {
                       TFTVLogger.Error(e);
                   }
-
-
               }
-
-          }*/
-
+          }
+       */
 
         public static TacticalActor mutoidReceivingHealing = null;
 
@@ -63,7 +63,6 @@ namespace TFTV
 
         public static class HealAbility_HealTargetCrt_Mutoid_Patch
         {
-
             public static void Prefix(PlayingAction action)
             {
                 try
@@ -76,7 +75,6 @@ namespace TFTV
                             mutoidReceivingHealing = actor;
                         }
                     }
-
                 }
                 catch (Exception e)
                 {

@@ -75,7 +75,7 @@ namespace TFTV
                 TFTVInfestation.InfestationMissionWon = false;
                 ClearHints();
                 TFTVUI.uIModuleSoldierCustomization = null;
-             //   TFTVAncients.HoplitesKilled = 0;
+            //Commented out for release #12    TFTVAncients.HoplitesKilled = 0;
                 TFTVLogger.Always("Internal variables cleared");
             }
             catch (Exception e)

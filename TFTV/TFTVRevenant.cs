@@ -10,12 +10,7 @@ using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
-using PhoenixPoint.Common.Levels.Missions;
-using PhoenixPoint.Common.UI;
-using PhoenixPoint.Geoscape.Entities.Research;
 using PhoenixPoint.Geoscape.Levels;
-using PhoenixPoint.Geoscape.View.ViewModules;
-using PhoenixPoint.Tactical.AI.Considerations;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.DamageKeywords;
@@ -24,7 +19,6 @@ using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.Entities.Statuses;
 using PhoenixPoint.Tactical.Entities.Weapons;
 using PhoenixPoint.Tactical.Levels;
-using PhoenixPoint.Tactical.Levels.FactionObjectives;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -95,7 +89,7 @@ namespace TFTV
         private static readonly DamageOverTimeDamageTypeEffectDef virusDamage = DefCache.GetDef<DamageOverTimeDamageTypeEffectDef>("Virus_DamageOverTimeDamageTypeEffectDef");
         private static readonly DamageOverTimeDamageTypeEffectDef acidDamage = DefCache.GetDef<DamageOverTimeDamageTypeEffectDef>("Acid_DamageOverTimeDamageTypeEffectDef");
         private static readonly AttenuatingDamageTypeEffectDef paralysisDamageWeaponDescription = DefCache.GetDef<AttenuatingDamageTypeEffectDef>("Electroshock_AttenuatingDamageTypeEffectDef");
-        private static readonly DamageOverTimeDamageTypeEffectDef paralysisDamage = DefCache.GetDef<DamageOverTimeDamageTypeEffectDef>("Paralysis_DamageOverTimeDamageTypeEffectDef"); 
+        private static readonly DamageOverTimeDamageTypeEffectDef paralysisDamage = DefCache.GetDef<DamageOverTimeDamageTypeEffectDef>("Paralysis_DamageOverTimeDamageTypeEffectDef");
         // private static readonly DamageOverTimeDamageTypeEffectDef poisonDamage =DefCache.GetDef<DamageOverTimeDamageTypeEffectDef>("Poison_DamageOverTimeDamageTypeEffectDef"));
         private static readonly StandardDamageTypeEffectDef fireDamage = DefCache.GetDef<StandardDamageTypeEffectDef>("Fire_StandardDamageTypeEffectDef");
         private static readonly StandardDamageTypeEffectDef projectileDamage = DefCache.GetDef<StandardDamageTypeEffectDef>("Projectile_StandardDamageTypeEffectDef");
@@ -307,14 +301,14 @@ namespace TFTV
                             TFTVLogger.Always(possibleClasses.Last() + " no actor with this tag, removing from list");
                             possibleClasses.Remove(possibleClasses.Last());
 
-                            if (i == availableTags - 1) 
+                            if (i == availableTags - 1)
                             {
                                 TFTVLogger.Always("No eligible Pandoran found, no Revenant will spawn this time");
                                 return;
                             }
                         }
                     }
-                    
+
 
                     TFTVLogger.Always("Here is an eligible Pandoran to be a Revenant: " + actor.GetDisplayName());
                     TacticalActor tacticalActor = actor as TacticalActor;
@@ -348,7 +342,7 @@ namespace TFTV
                         }
                     }
                     string newGuid = Guid.NewGuid().ToString();
-                    string hintDescription = revenantResistanceStatus.Visuals.Description.LocalizeEnglish() + 
+                    string hintDescription = revenantResistanceStatus.Visuals.Description.LocalizeEnglish() +
                         ".\nKilling the Revenant will not remove this resistance from any Pandoran that already has it." +
                         "\nPandorans arriving as reinforcements will not receive the resistance.";
 
@@ -358,7 +352,7 @@ namespace TFTV
                     revenantResistanceHintCreated = true;
                 }
             }
-            
+
             catch (Exception e)
             {
                 TFTVLogger.Error(e);
@@ -405,27 +399,6 @@ namespace TFTV
             }
         }
 
-        /*  [HarmonyPatch(typeof(PhoenixStatisticsManager), "OnActorKilled", new Type[] { typeof(GeoTacUnitId), typeof(DeathDetails)})]
-
-          public static class PhoenixStatisticsManager_OnActorKilled_DeathRipper_Patch
-          {
-              public static void Prefix(GeoTacUnitId activeActorId, DeathDetails cause)
-              {
-                  try
-                  {
-                      TFTVLogger.Always("OnActorKilled method invoked");
-
-
-
-                  }
-                  catch (Exception e)
-                  {
-                      TFTVLogger.Error(e);
-                  }
-              }
-
-          */
-
         [HarmonyPatch(typeof(TacticalLevelController), "ActorDied")]
         public static class TacticalLevelController_ActorDied_DeathRipper_Patch
         {
@@ -433,36 +406,38 @@ namespace TFTV
             {
                 try
                 {
-
-                    if (TFTVRevenantResearch.ProjectOsiris)
+                    if (__instance.Factions.Any(f => f.Faction.FactionDef.MatchesShortName("px")) && deathReport.Actor.TacticalFaction == __instance.GetFactionByCommandName("PX")
+                        && !__instance.TacMission.MissionData.MissionType.name.Contains("Tutorial"))
                     {
-                        if (__instance.TacticalGameParams.Statistics.LivingSoldiers.ContainsKey(deathReport.Actor.GeoUnitId)
-                        && !__instance.TacticalGameParams.Statistics.DeadSoldiers.ContainsKey(deathReport.Actor.GeoUnitId))
 
-                            TFTVRevenantResearch.RecordStatsOfDeadSoldier(deathReport.Actor);
-                    }
-
-
-                    if (__instance.TacticalGameParams.Statistics.LivingSoldiers.ContainsKey(deathReport.Actor.GeoUnitId)
-                        && !__instance.TacticalGameParams.Statistics.DeadSoldiers.ContainsKey(deathReport.Actor.GeoUnitId)
-                        && !DeadSoldiersDelirium.ContainsKey(deathReport.Actor.GeoUnitId))
-                    {
-                        AddtoListOfDeadSoldiers(deathReport.Actor);
-                        TFTVStamina.charactersWithBrokenLimbs.Remove(deathReport.Actor.GeoUnitId);
-                        TFTVLogger.Always(deathReport.Actor.DisplayName + " died at. The deathlist now has " + DeadSoldiersDelirium.Count);
-                        if (deathReport.Actor.DisplayName != __instance.TacticalGameParams.Statistics.LivingSoldiers[deathReport.Actor.GeoUnitId].Name)
+                        if (TFTVRevenantResearch.ProjectOsiris)
                         {
-                            TFTVLogger.Always("Dead actor " + deathReport.Actor.DisplayName + " is " + __instance.TacticalGameParams.Statistics.LivingSoldiers[deathReport.Actor.GeoUnitId].Name +
-                                " in the files. Files will be updated");
-                            PhoenixStatisticsManager statisticsManager = (PhoenixStatisticsManager)UnityEngine.Object.FindObjectOfType(typeof(PhoenixStatisticsManager));
-                            statisticsManager.CurrentGameStats.DeadSoldiers[deathReport.Actor.GeoUnitId].Name = deathReport.Actor.DisplayName;
-                            __instance.TacticalGameParams.Statistics.LivingSoldiers[deathReport.Actor.GeoUnitId].Name = deathReport.Actor.DisplayName;
-                            TFTVLogger.Always("Name in files of Living Soldiers changed to " + __instance.TacticalGameParams.Statistics.LivingSoldiers[deathReport.Actor.GeoUnitId].Name);
-                            TFTVLogger.Always("Name in files of currentstats changed to " + statisticsManager.CurrentGameStats.DeadSoldiers[deathReport.Actor.GeoUnitId].Name);
+                            if (__instance.TacticalGameParams.Statistics.LivingSoldiers.ContainsKey(deathReport.Actor.GeoUnitId)
+                            && !__instance.TacticalGameParams.Statistics.DeadSoldiers.ContainsKey(deathReport.Actor.GeoUnitId))
+
+                                TFTVRevenantResearch.RecordStatsOfDeadSoldier(deathReport.Actor);
+                        }
+
+
+                        if (__instance.TacticalGameParams.Statistics.LivingSoldiers.ContainsKey(deathReport.Actor.GeoUnitId)
+                            && !__instance.TacticalGameParams.Statistics.DeadSoldiers.ContainsKey(deathReport.Actor.GeoUnitId)
+                            && !DeadSoldiersDelirium.ContainsKey(deathReport.Actor.GeoUnitId))
+                        {
+                            AddtoListOfDeadSoldiers(deathReport.Actor);
+                            TFTVStamina.charactersWithBrokenLimbs.Remove(deathReport.Actor.GeoUnitId);
+                            TFTVLogger.Always(deathReport.Actor.DisplayName + " died at. The deathlist now has " + DeadSoldiersDelirium.Count);
+                            if (deathReport.Actor.DisplayName != __instance.TacticalGameParams.Statistics.LivingSoldiers[deathReport.Actor.GeoUnitId].Name)
+                            {
+                                TFTVLogger.Always("Dead actor " + deathReport.Actor.DisplayName + " is " + __instance.TacticalGameParams.Statistics.LivingSoldiers[deathReport.Actor.GeoUnitId].Name +
+                                    " in the files. Files will be updated");
+                                PhoenixStatisticsManager statisticsManager = (PhoenixStatisticsManager)UnityEngine.Object.FindObjectOfType(typeof(PhoenixStatisticsManager));
+                                statisticsManager.CurrentGameStats.DeadSoldiers[deathReport.Actor.GeoUnitId].Name = deathReport.Actor.DisplayName;
+                                __instance.TacticalGameParams.Statistics.LivingSoldiers[deathReport.Actor.GeoUnitId].Name = deathReport.Actor.DisplayName;
+                                TFTVLogger.Always("Name in files of Living Soldiers changed to " + __instance.TacticalGameParams.Statistics.LivingSoldiers[deathReport.Actor.GeoUnitId].Name);
+                                TFTVLogger.Always("Name in files of currentstats changed to " + statisticsManager.CurrentGameStats.DeadSoldiers[deathReport.Actor.GeoUnitId].Name);
+                            }
                         }
                     }
-
-
                 }
                 catch (Exception e)
                 {
@@ -952,10 +927,9 @@ namespace TFTV
         }
         public static void ModifyRevenantResistanceAbility(TacticalLevelController controller)
         {
-            //DamageMultiplierStatusDef revenantResistanceStatus = DefCache.GetDef<DamageMultiplierStatusDef>("RevenantResistance_StatusDef"); // Repo.GetAllDefs<DamageMultiplierAbilityDef>().FirstOrDefault(dm=>dm.name.Equals("RevenantResistance_StatusDef"));
+          
             revenantResistanceStatus.DamageTypeDefs[0] = GetPreferredDamageType(controller);
             revenantResistanceStatus.Multiplier = 0.5f;
-
 
             string descriptionDamage = "";
 
@@ -1004,18 +978,18 @@ namespace TFTV
                     "as a response to Phoenix Project overwhelming use of weapons with high damage per projectile/strike", true);
             }
         }
-        public static void AddRevenantResistanceStatus(TacticalActorBase tacticalActor)
+        public static void AddRevenantResistanceStatus(TacticalActorBase tacticalActorBase)
         {
-            TacticalActor tacticalActor1 = tacticalActor as TacticalActor;
-            if (!tacticalActor1.Status.HasStatus(revenantResistanceStatus))
+            TacticalActor tacticalActor = tacticalActorBase as TacticalActor;
+            if (!tacticalActor.Status.HasStatus(revenantResistanceStatus))
             {
-                tacticalActor1.Status.ApplyStatus<DamageMultiplierStatus>(revenantResistanceStatus);
+                tacticalActor.Status.ApplyStatus<DamageMultiplierStatus>(revenantResistanceStatus);
             }
 
             //  tacticalActor.Status(revenantResistanceStatus);
-            if (!tacticalActor.HasGameTag(revenantResistanceGameTag))
+            if (!tacticalActorBase.HasGameTag(revenantResistanceGameTag))
             {
-                tacticalActor.GameTags.Add(revenantResistanceGameTag);
+                tacticalActorBase.GameTags.Add(revenantResistanceGameTag);
             }
         }
 
@@ -1025,7 +999,7 @@ namespace TFTV
             try
             {
 
-               
+
                 if (specialization == assaultSpecialization)
                 {
                     TFTVLogger.Always("Deceased had Assault specialization");
@@ -1054,7 +1028,7 @@ namespace TFTV
                 }
                 else if (specialization == berserkerSpecialization)
                 {
-                    
+
 
                     TFTVLogger.Always("Deceased had Berserker specialization");
                     if (tacticalActor.GameTags.Contains(DefCache.GetDef<GameTagDef>("RevenantTier_2_GameTagDef")))
@@ -1239,7 +1213,7 @@ namespace TFTV
         {
             try
             {
-                
+
 
                 actor.Status.ApplyStatus(revenantStatusAbility);
 
@@ -1508,20 +1482,20 @@ namespace TFTV
                         if (deathReport.Actor.HasGameTag(revenantTier1GameTag))
                         {
                             TFTVRevenantResearch.RevenantPoints = 1; // testing 1
-                          //  TFTVLogger.Always("StartingSkill points " + __instance.GetFactionByCommandName("PX").StartingSkillpoints);
-                           // __instance.GetFactionByCommandName("PX").SetStartingSkillPoints(2);
+                                                                     //  TFTVLogger.Always("StartingSkill points " + __instance.GetFactionByCommandName("PX").StartingSkillpoints);
+                                                                     // __instance.GetFactionByCommandName("PX").SetStartingSkillPoints(2);
                         }
                         else if (deathReport.Actor.HasGameTag(revenantTier2GameTag))
                         {
                             TFTVRevenantResearch.RevenantPoints = 5; // testing 5
-                          //  TFTVLogger.Always("StartingSkill points " + __instance.GetFactionByCommandName("PX").StartingSkillpoints);
-                           // __instance.GetFactionByCommandName("PX").SetStartingSkillPoints(4);
+                                                                     //  TFTVLogger.Always("StartingSkill points " + __instance.GetFactionByCommandName("PX").StartingSkillpoints);
+                                                                     // __instance.GetFactionByCommandName("PX").SetStartingSkillPoints(4);
                         }
                         else if (deathReport.Actor.HasGameTag(revenantTier3GameTag))
                         {
                             TFTVRevenantResearch.RevenantPoints = 10;
-                           // TFTVLogger.Always("StartingSkill points " + __instance.GetFactionByCommandName("PX").StartingSkillpoints);
-                           // __instance.GetFactionByCommandName("PX").SetStartingSkillPoints(6);
+                            // TFTVLogger.Always("StartingSkill points " + __instance.GetFactionByCommandName("PX").StartingSkillpoints);
+                            // __instance.GetFactionByCommandName("PX").SetStartingSkillPoints(6);
                         }
 
                     }
@@ -1542,7 +1516,7 @@ namespace TFTV
             {
                 try
                 {
-                   // TFTVLogger.Always("get_Skillpoints");
+                    // TFTVLogger.Always("get_Skillpoints");
 
                     if (__instance == __instance.TacticalLevel.GetFactionByCommandName("PX") && !SkillPointsForRevenantKillAwarded)
                     {
@@ -1551,20 +1525,20 @@ namespace TFTV
                         if (TFTVRevenantResearch.RevenantPoints == 10)
                         {
                             __result += 6;
-                           // TFTVLogger.Always(__instance.Skillpoints + " awarded for killing Revenant");
-                            SkillPointsForRevenantKillAwarded=true;
+                            // TFTVLogger.Always(__instance.Skillpoints + " awarded for killing Revenant");
+                            SkillPointsForRevenantKillAwarded = true;
                         }
                         else if (TFTVRevenantResearch.RevenantPoints == 5)
                         {
                             __result += 4;
-                        //    TFTVLogger.Always(__instance.Skillpoints + " awarded for killing Revenant");
-                            SkillPointsForRevenantKillAwarded=true;
+                            //    TFTVLogger.Always(__instance.Skillpoints + " awarded for killing Revenant");
+                            SkillPointsForRevenantKillAwarded = true;
                         }
                         else if (TFTVRevenantResearch.RevenantPoints == 1)
                         {
                             __result += 2;
-                         //   TFTVLogger.Always(__instance.Skillpoints + " awarded for killing Revenant");
-                            SkillPointsForRevenantKillAwarded=true;
+                            //   TFTVLogger.Always(__instance.Skillpoints + " awarded for killing Revenant");
+                            SkillPointsForRevenantKillAwarded = true;
                         }
                         else
                         {

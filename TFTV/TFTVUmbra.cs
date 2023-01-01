@@ -128,9 +128,11 @@ namespace TFTV
                                     if ((allyTacticalActorBase.Pos - actor.Pos).magnitude <= magnitude)
                                     {
 
-                                        TFTVLogger.Always("The actor who will receive TBTV from the Tributary is " + tacticalActor.name);
-                                        if (tacticalActor.GameTags.Contains(crabTag) && tacticalActor.GameTags.Contains(voidTouchedTag)
-                                            && !tacticalActor.name.Contains("Oilcrab") && !tacticalActor.GameTags.Contains(anyRevenantGameTag))
+                                       
+                                        if (tacticalActor.GameTags.Contains(crabTag) && !tacticalActor.GameTags.Contains(voidTouchedTag)
+                                            && !tacticalActor.name.Contains("Oilcrab") && !tacticalActor.GameTags.Contains(anyRevenantGameTag)
+                                            && !tacticalActor.GameTags.Contains(voidTouchedOnTurnEndTag) && !tacticalActor.GameTags.Contains(voidTouchedOnAttackTag)
+                                            && !tacticalActor.HasStatus(oilCrabAddAbilityStatus))
                                         {
                                             tacticalActor.Status.ApplyStatus(hiddenTBTVAddAbilityStatus);
                                             if (!tacticalActor.HasGameTag(voidTouchedTag))
@@ -138,25 +140,29 @@ namespace TFTV
                                                 tacticalActor.GameTags.Add(voidTouchedTag);
                                                 tacticalActor.AddAbility(oilcrabDeathBelcherAbility, tacticalActor);
                                             }
-
+                                            TFTVLogger.Always("The actor who will receive TBTV from the Tributary is " + tacticalActor.name);
                                         }
 
                                         else if (tacticalActor.GameTags.Contains(fishTag) && tacticalActor.GameTags.Contains(voidTouchedTag)
-                                            && !tacticalActor.name.Contains("Oilfish") && !actor.GameTags.Contains(anyRevenantGameTag))
+                                            && !tacticalActor.name.Contains("Oilfish") && !actor.GameTags.Contains(anyRevenantGameTag)
+                                             && !tacticalActor.GameTags.Contains(voidTouchedOnTurnEndTag) && !tacticalActor.GameTags.Contains(voidTouchedOnAttackTag)
+                                            && !tacticalActor.HasStatus(oilTritonAddAbilityStatus))
                                         {
-                                            TFTVLogger.Always("The actor who will receive TBTV from the Tributary is " + tacticalActor.name);
+                                            
                                             tacticalActor.Status.ApplyStatus(hiddenTBTVAddAbilityStatus);
                                             if (!tacticalActor.HasGameTag(voidTouchedTag))
                                             {
                                                 tacticalActor.GameTags.Add(voidTouchedTag);
                                                 tacticalActor.AddAbility(oilfishDeathBelcherAbility, tacticalActor);
                                             }
-
-                                        }
-                                        else if (tacticalActor.GameTags.Contains(voidTouchedTag)
-                                            && !tacticalActor.name.Contains("Oilfish") && !tacticalActor.name.Contains("Oilcrab") && !tacticalActor.GameTags.Contains(anyRevenantGameTag))
-                                        {
                                             TFTVLogger.Always("The actor who will receive TBTV from the Tributary is " + tacticalActor.name);
+                                        }
+                                        else if (!tacticalActor.GameTags.Contains(voidTouchedTag)
+                                            && !tacticalActor.name.Contains("Oilfish") && !tacticalActor.name.Contains("Oilcrab") && !tacticalActor.GameTags.Contains(anyRevenantGameTag)
+                                             && !tacticalActor.GameTags.Contains(voidTouchedOnTurnEndTag) && !tacticalActor.GameTags.Contains(voidTouchedOnAttackTag)
+                                            && !tacticalActor.HasStatus(oilCrabAddAbilityStatus) && !tacticalActor.HasStatus(oilTritonAddAbilityStatus))
+                                        {
+                                           
                                             tacticalActor.Status.ApplyStatus(hiddenTBTVAddAbilityStatus);
                                             if (!tacticalActor.HasGameTag(voidTouchedTag))
                                             {
@@ -171,7 +177,9 @@ namespace TFTV
                                                 {
                                                     tacticalActor.AddAbility(oilcrabDeathBelcherAbility, tacticalActor);
                                                 }
+                                                TFTVLogger.Always("The actor who will receive TBTV from the Tributary is " + tacticalActor.name);
                                             }
+                                           
                                         }
                                     }
                                 }

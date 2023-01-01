@@ -7,6 +7,7 @@ using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Levels;
+using PhoenixPoint.Tactical.Entities.Weapons;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,6 +18,11 @@ namespace TFTV
     {
         private static readonly DefRepository Repo = TFTVMain.Repo;
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
+        private static readonly WeaponDef Obliterator = DefCache.GetDef<WeaponDef>("KS_Obliterator_WeaponDef");
+        private static readonly WeaponDef Subjector = DefCache.GetDef<WeaponDef>("KS_Subjector_WeaponDef");
+        private static readonly WeaponDef Redemptor = DefCache.GetDef<WeaponDef>("KS_Redemptor_WeaponDef");
+        private static readonly WeaponDef Devastator = DefCache.GetDef<WeaponDef>("KS_Devastator_WeaponDef");
+        private static readonly WeaponDef Tormentor = DefCache.GetDef<WeaponDef>("KS_Tormentor_WeaponDef");
 
         public static void ChangesToDLC5Defs()
         {
@@ -62,23 +68,25 @@ namespace TFTV
                     {
                         //TFTVLogger.Always(item.CommonItemData.GetDisplayName());
 
-                        if (item.CommonItemData.GetDisplayName() == "Obliterator")
+                        
+
+                        if (item.ItemDef.Equals(Obliterator))//item.CommonItemData.GetDisplayName() == "Obliterator")
                         {
                             kaosWeapons.Add("KEY_KS_OBLITERATOR");
                         }
-                        else if (item.CommonItemData.GetDisplayName() == "Subjector")
+                        else if (item.ItemDef.Equals(Subjector))//item.CommonItemData.GetDisplayName() == "Subjector")
                         {
                             kaosWeapons.Add("KEY_KS_SUBJECTOR");
                         }
-                        else if (item.CommonItemData.GetDisplayName() == "Redemptor")
+                        else if (item.ItemDef.Equals(Redemptor))//item.CommonItemData.GetDisplayName() == "Redemptor")
                         {
                             kaosWeapons.Add("KEY_KS_REDEMPTOR");
                         }
-                        else if (item.CommonItemData.GetDisplayName() == "Devastator")
+                        else if (item.ItemDef.Equals(Devastator))//item.CommonItemData.GetDisplayName() == "Devastator")
                         {
                             kaosWeapons.Add("KEY_KS_DEVASTATOR");
                         }
-                        else if (item.CommonItemData.GetDisplayName() == "Tormentor")
+                        else if (item.ItemDef.Equals(Tormentor))//item.CommonItemData.GetDisplayName() == "Tormentor")
                         {
                             kaosWeapons.Add("KEY_KS_TORMENTOR");
                         }
@@ -94,23 +102,23 @@ namespace TFTV
                         if (inventoryItem.ItemDef.Tags.Contains(dlc5Tag))
                         {
                             //TFTVLogger.Always(inventoryItem.CommonItemData.GetDisplayName());
-                            if (inventoryItem.CommonItemData.GetDisplayName() == "Obliterator")
+                            if (inventoryItem.ItemDef.Equals(Obliterator))//inventoryItem.CommonItemData.GetDisplayName() == "Obliterator")
                             {
                                 kaosWeapons.Add("KEY_KS_OBLITERATOR");
                             }
-                            else if (inventoryItem.CommonItemData.GetDisplayName() == "Subjector")
+                            else if (inventoryItem.ItemDef.Equals(Subjector))//inventoryItem.CommonItemData.GetDisplayName() == "Subjector")
                             {
                                 kaosWeapons.Add("KEY_KS_SUBJECTOR");
                             }
-                            else if (inventoryItem.CommonItemData.GetDisplayName() == "Redemptor")
+                            else if (inventoryItem.ItemDef.Equals(Redemptor)) //inventoryItem.CommonItemData.GetDisplayName() == "Redemptor")
                             {
                                 kaosWeapons.Add("KEY_KS_REDEMPTOR");
                             }
-                            else if (inventoryItem.CommonItemData.GetDisplayName() == "Devastator")
+                            else if (inventoryItem.ItemDef.Equals(Devastator)) //inventoryItem.CommonItemData.GetDisplayName() == "Devastator")
                             {
                                 kaosWeapons.Add("KEY_KS_DEVASTATOR");
                             }
-                            else if (inventoryItem.CommonItemData.GetDisplayName() == "Tormentor")
+                            else if (inventoryItem.ItemDef.Equals(Tormentor)) //inventoryItem.CommonItemData.GetDisplayName() == "Tormentor")
                             {
                                 kaosWeapons.Add("KEY_KS_TORMENTOR");
                             }
@@ -122,23 +130,23 @@ namespace TFTV
                         {
                             // TFTVLogger.Always(equipmentItem.CommonItemData.GetDisplayName());
 
-                            if (equipmentItem.CommonItemData.GetDisplayName() == "Obliterator")
+                            if (equipmentItem.ItemDef.Equals(Obliterator))// equipmentItem.CommonItemData.GetDisplayName() == "Obliterator")
                             {
                                 kaosWeapons.Add("KEY_KS_OBLITERATOR");
                             }
-                            else if (equipmentItem.CommonItemData.GetDisplayName() == "Subjector")
+                            else if (equipmentItem.ItemDef.Equals(Subjector)) //equipmentItem.CommonItemData.GetDisplayName() == "Subjector")
                             {
                                 kaosWeapons.Add("KEY_KS_SUBJECTOR");
                             }
-                            else if (equipmentItem.CommonItemData.GetDisplayName() == "Redemptor")
+                            else if (equipmentItem.ItemDef.Equals(Redemptor)) //equipmentItem.CommonItemData.GetDisplayName() == "Redemptor")
                             {
                                 kaosWeapons.Add("KEY_KS_REDEMPTOR");
                             }
-                            else if (equipmentItem.CommonItemData.GetDisplayName() == "Devastator")
+                            else if (equipmentItem.ItemDef.Equals(Devastator)) //equipmentItem.CommonItemData.GetDisplayName() == "Devastator")
                             {
                                 kaosWeapons.Add("KEY_KS_DEVASTATOR");
                             }
-                            else if (equipmentItem.CommonItemData.GetDisplayName() == "Tormentor")
+                            else if (equipmentItem.ItemDef.Equals(Tormentor)) //equipmentItem.CommonItemData.GetDisplayName() == "Tormentor")
                             {
                                 kaosWeapons.Add("KEY_KS_TORMENTOR");
                             }

@@ -36,7 +36,7 @@ namespace TFTV
                     TFTVLogger.Always("Element is " + element.OptionText.text);
                     if (element.OptionText.text == "PLAY PROLOGUE AND TUTORIAL")
                     {
-                        element.OptionText.text = "START WITH VANILLA TUTORIAL SQUAD";                      
+                      //  element.OptionText.text = "START WITH VANILLA TUTORIAL SQUAD";                      
                     }
                     else
                     {
@@ -63,7 +63,7 @@ namespace TFTV
                 {
                     if (gameParams.TutorialEnabled)
                     {
-                        gameParams.TutorialEnabled = false;
+                        gameParams.TutorialEnabled = true;
                         TFTVConfig config = TFTVMain.Main.Config;
                         config.tutorialCharacters = TFTVConfig.StartingSquadCharacters.BUFFED;
                     }

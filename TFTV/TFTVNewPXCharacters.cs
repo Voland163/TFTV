@@ -16,8 +16,8 @@ namespace TFTV
 {
     internal class TFTVNewPXCharacters
     {
-        private static readonly Sprite OlenaPic = Helper.CreateSpriteFromImageFile("BG_Olena_small.png");
-        private static readonly Sprite AlistairPic = Helper.CreateSpriteFromImageFile("BG_alistair_small.png");
+        public static readonly Sprite OlenaPic = Helper.CreateSpriteFromImageFile("BG_Olena_small.png");
+        public static readonly Sprite AlistairPic = Helper.CreateSpriteFromImageFile("BG_alistair_small.png");
 
         public static void PlayIntro(GeoLevelController level)
         {

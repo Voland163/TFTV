@@ -2,6 +2,7 @@
 using Base.Entities.Abilities;
 using Base.Entities.Effects;
 using Base.Entities.Effects.ApplicationConditions;
+using Base.Entities.Statuses;
 using Base.UI;
 using Base.Utils;
 using PhoenixPoint.Common.ContextHelp;
@@ -75,10 +76,9 @@ namespace TFTV
             ChangesToAcherons();
             RemoveCensusResearch();
             AllowMedkitsToTargetMutoids();
-            //Commented out for update #11
-          //  ChangesToLOTA2();
-            CreateSubject24();
 
+            //Commented out for release #12  ChangesToLOTA2();
+            CreateSubject24();
 
         }
 
@@ -86,7 +86,6 @@ namespace TFTV
         {
             try
             {
-
                 ChangeAntartica();
                 ChangeAncientSitesHarvesting();
                 ChangeAncientsBodyParts();
@@ -128,44 +127,6 @@ namespace TFTV
                 TFTVLogger.Error(e);
             }
         }
-
-        /*  public static void NewEnemy()
-          {
-              try 
-              {
-                  string className = "Stitch";
-                  ClassTagDef source = DefCache.GetDef<ClassTagDef>("Swarmer_ClassTagDef");
-                  ClassTagDef newClass = Helper.CreateDefFromClone(source, "05DDAF88-0757-458D-AB5C-0A8E0B5025F3", className);
-
-                  TacCharacterDef sourceTacCharacterDef = DefCache.GetDef<TacCharacterDef>("Swarmer_TacCharacterDef");
-                  TacCharacterDef newTacCharacter = Helper.CreateDefFromClone(sourceTacCharacterDef, "C3BDED7B-1C4E-4DAA-8418-7A35DF601875", className);
-
-                 // CustomizationPrimaryColorTagDef blackColor = DefCache.GetDef<CustomizationPrimaryColorTagDef>("CustomizationColorTagDef_9");
-                  List<GameTagDef> gameTags = newTacCharacter.Data.GameTags.ToList();
-                  gameTags.Remove(source);
-                 // gameTags.Add(blackColor);
-                  gameTags.Add(newClass);
-
-                  newTacCharacter.Data.Name = "Stitch";
-
-                  newTacCharacter.SpawnCommandId = "StitchTFTV";
-                  newTacCharacter.Data.GameTags = gameTags.ToArray();
-
-                  CustomMissionTypeDef testMission = DefCache.GetDef<CustomMissionTypeDef>("StoryPX14_CustomMissionTypeDef");
-                  List<MissionDeployParams> list =  testMission.ParticipantsData[1].ActorDeployParams.ToList();
-
-                  MissionDeployParams newMissionDeployParams = new MissionDeployParams() { Limit = new ActorDeployLimit { ActorTag = newClass, ActorLimit = new Base.Utils.RangeDataInt { Max = 3, Min = 0 } }, };
-
-                  list.Add(newMissionDeployParams);
-                  testMission.ParticipantsData[1].ActorDeployParams = list;
-
-              }
-              catch (Exception e)
-              {
-                  TFTVLogger.Error(e);
-              }
-
-          }*/
 
         public static void CreateSubject24()
         {
@@ -242,36 +203,56 @@ namespace TFTV
 
                 TFTVLogger.Always(CyclopsDefenseStatus.EffectName + " is real");
 
-                //Status for hoplites; while hidden and during the turn on which they awake, they are nearly invulnerable
-                /*  string skillName = "AncientStasis_StatusDef";
-                  DamageMultiplierStatusDef ancientStasis = Helper.CreateDefFromClone(
+                //Status for hoplites; extra damage when charged
+                string skillName = "AncientsPoweredUp";
+                  DamageMultiplierStatusDef ancientPowerUp = Helper.CreateDefFromClone(
                       source,
                       "94E23AE4-8089-41A2-98B1-899535FC577A",
                       skillName);
-                  ancientStasis.EffectName = "AncientStasis";
-                  ancientStasis.VisibleOnHealthbar = TacStatusDef.HealthBarVisibility.AlwaysVisible;
-                  ancientStasis.VisibleOnPassiveBar = false;
-                  ancientStasis.VisibleOnStatusScreen = TacStatusDef.StatusScreenVisibility.VisibleOnStatusesList;
-                  ancientStasis.HealthbarPriority = -1;
-                  ancientStasis.ExpireOnEndOfTurn = false;
+                  ancientPowerUp.EffectName = "AncientPowerUP";
+                  ancientPowerUp.VisibleOnHealthbar = TacStatusDef.HealthBarVisibility.AlwaysVisible;
+                  ancientPowerUp.VisibleOnPassiveBar = false;
+                  ancientPowerUp.VisibleOnStatusScreen = TacStatusDef.StatusScreenVisibility.VisibleOnStatusesList;
+                  ancientPowerUp.HealthbarPriority = -1;
+                  ancientPowerUp.ExpireOnEndOfTurn = false;
 
-                  ancientStasis.Visuals = Helper.CreateDefFromClone(
+                  ancientPowerUp.Visuals = Helper.CreateDefFromClone(
                       source.Visuals,
                       "E24AFC45-FD5F-4E2A-BDFC-5D9A8B240813",
                       skillName);
-                  ancientStasis.DamageTypeDefs = new DamageTypeBaseEffectDef[1];
-                  ancientStasis.Multiplier = 0.1f;
-                  ancientStasis.Range = -1;
-                  ancientStasis.DamageTypeDefs = new DamageTypeBaseEffectDef[] { projectileDamage, blastDamage };
+                  ancientPowerUp.DamageTypeDefs = new DamageTypeBaseEffectDef[] {};
+               
+                  ancientPowerUp.Visuals.LargeIcon = TFTVDefsRequiringReinjection.VoidIcon;
+                  ancientPowerUp.Visuals.SmallIcon = TFTVDefsRequiringReinjection.VoidIcon;
 
-                  ancientStasis.Visuals.LargeIcon = TFTVDefsRequiringReinjection.VoidIcon;
-                  ancientStasis.Visuals.SmallIcon = TFTVDefsRequiringReinjection.VoidIcon;
+                  ancientPowerUp.Visuals.DisplayName1 = new LocalizedTextBind("MAX POWER", true);
+                  ancientPowerUp.Visuals.Description = new LocalizedTextBind("+50% damage to all attacks", true);
 
-                  ancientStasis.Visuals.DisplayName1 = new LocalizedTextBind("ANCIENT STASIS", true);
-                  ancientStasis.Visuals.Description = new LocalizedTextBind("STASIS", true);
+                string abilityName = "AncientMaxPower_AbilityDef";
+                PassiveModifierAbilityDef sourceAbility = DefCache.GetDef<PassiveModifierAbilityDef>("SelfDefenseSpecialist_AbilityDef");
+                PassiveModifierAbilityDef ancientMaxPowerAbility = Helper.CreateDefFromClone(
+                    sourceAbility,
+                    "6C77E15C-B1C4-46A3-A196-2BB6A6E7EB5E",
+                    abilityName);
+                ancientMaxPowerAbility.CharacterProgressionData = Helper.CreateDefFromClone(
+                    sourceAbility.CharacterProgressionData,
+                    "5125A077-0D6A-4AC1-A7A1-B554F68AEEBB",
+                    abilityName);
+                ancientMaxPowerAbility.ViewElementDef = Helper.CreateDefFromClone(
+                    sourceAbility.ViewElementDef,
+                    "5936B6D6-9DEA-4087-8AA5-DC76DA6FFAE7",
+                    abilityName);
+                ancientMaxPowerAbility.ViewElementDef.ShowInStatusScreen = false;
+                ancientMaxPowerAbility.StatModifications = new ItemStatModification[]
+                { new ItemStatModification {TargetStat = StatModificationTarget.BonusAttackDamage, Modification = StatModificationType.Multiply, Value = 1.50f},
+                };
+                ancientMaxPowerAbility.ItemTagStatModifications = new EquipmentItemTagStatModification[0];
+                ancientMaxPowerAbility.ViewElementDef.DisplayName1 = new LocalizedTextBind("MAX POWER", true);
+                ancientMaxPowerAbility.ViewElementDef.Description = new LocalizedTextBind("+50% damage to all attacks", true);
 
-                  //  DamageMultiplierStatusDef AncientStasisStatus = DefCache.GetDef<DamageMultiplierStatusDef>("AncientStasis_StatusDef");
-                  //and " + CyclopsDefenseStatus.EffectName + " is real too");*/
+                ancientMaxPowerAbility.ViewElementDef.LargeIcon = TFTVDefsRequiringReinjection.VoidIcon;
+                ancientMaxPowerAbility.ViewElementDef.SmallIcon = TFTVDefsRequiringReinjection.VoidIcon;
+
             }
             catch (Exception e)
             {
@@ -398,8 +379,8 @@ namespace TFTV
                 antarticaMission.ParticipantsData[0].ParticipantKind = TacMissionParticipant.Intruder;
                 antarticaMission.ParticipantsRelations[0].SecondParticipant = TacMissionParticipant.Intruder;
                 List<TacMissionTypeParticipantData.UniqueChatarcterBind> uniqueChatarcterBinds = antarticaMission.ParticipantsData[0].UniqueUnits.ToList();
-                uniqueChatarcterBinds.Add(DefCache.GetDef<CustomMissionTypeDef>("CrystalsHarvestAttack_Ancient_CustomMissionTypeDef").ParticipantsData[0].UniqueUnits[0]);
-                antarticaMission.ParticipantsData[0].UniqueUnits = uniqueChatarcterBinds.ToArray();
+               // uniqueChatarcterBinds.Add(DefCache.GetDef<CustomMissionTypeDef>("CrystalsHarvestAttack_Ancient_CustomMissionTypeDef").ParticipantsData[0].UniqueUnits[0]);
+               // antarticaMission.ParticipantsData[0].UniqueUnits = uniqueChatarcterBinds.ToArray();
 
             }
             catch (Exception e)
@@ -548,6 +529,13 @@ namespace TFTV
 
                 TFTVTutorialAndStory.CreateNewTacticalHintInfestationMission("InfestationMissionIntro", "BBC5CAD0-42FF-4BBB-8E13-7611DC5695A6", "1ED63949-4375-4A9D-A017-07CF483F05D5", "2A01E924-A26B-44FB-AD67-B1B590B4E1D5");
                 TFTVTutorialAndStory.CreateNewTacticalHintInfestationMission("InfestationMissionIntro2", "164A4170-F7DC-4350-90C0-D5C1A0284E0D", "CA236EF2-6E6B-4CE4-89E9-17157930F91A", "422A7D39-0110-4F5B-98BB-66B1B5F616DD");
+                TFTVTutorialAndStory.CreateNewManualTacticalHint("TFTV_Tutorial1", "0D36F3D5-9A39-4A5C-B6A4-85B5A3007655", "KEY_TUT3_TFTV1_TITLE", "KEY_TUT3_TFTV1_DESCRIPTION");
+                TFTVTutorialAndStory.CreateNewManualTacticalHint("TFTV_Tutorial2", "EA319607-D2F3-4293-AECE-91AC26C9BD5E", "KEY_TUT3_TFTV2_TITLE", "KEY_TUT3_TFTV2_DESCRIPTION");
+                ContextHelpHintDef tutorialTFTV1 = DefCache.GetDef<ContextHelpHintDef>("TFTV_Tutorial1");
+                ContextHelpHintDef tutorialTFTV2 = DefCache.GetDef<ContextHelpHintDef>("TFTV_Tutorial2");
+                ContextHelpHintDef tutorial3MissionEnd = DefCache.GetDef<ContextHelpHintDef>("TUT3_MissionSuccess_HintDef");
+                tutorial3MissionEnd.NextHint = tutorialTFTV1;
+                tutorialTFTV1.NextHint = tutorialTFTV2;
 
                 HasSeenHintHintConditionDef seenOilCrabConditionDef = DefCache.GetDef<HasSeenHintHintConditionDef>("UmbraSightedHasSeenHintConditionDef");
                 HasSeenHintHintConditionDef seenFishCrabConditionDef = DefCache.GetDef<HasSeenHintHintConditionDef>("UmbraSightedTritonHasSeenHintConditionDef");
@@ -559,6 +547,7 @@ namespace TFTV
                 TFTVTutorialAndStory.CreateNewTacticalHintInfestationMissionEnd("InfestationMissionEnd");
                 CreateStaminaHint();
                 CreateUIDeliriumHint();
+
 
 
 
@@ -896,8 +885,8 @@ namespace TFTV
 
                 WeaponDef achlysArms = DefCache.GetDef<WeaponDef>("AcheronAchlys_Arms_WeaponDef");
 
-                string guid = "2B294E66-1BE9-425B-B088-F5A9075167A6";
-                WeaponDef neuroArmsCopy = Repo.CreateDef<WeaponDef>(guid);
+                //   string guid = "2B294E66-1BE9-425B-B088-F5A9075167A6";
+                WeaponDef neuroArmsCopy = new WeaponDef();//Repo.CreateDef<WeaponDef>(guid);
                 ReflectionHelper.CopyFields(achlysArms, neuroArmsCopy);
                 ReflectionHelper.CopyFields(spitArmsAcheronAchlysChampion, achlysArms);
                 ReflectionHelper.CopyFields(neuroArmsCopy, spitArmsAcheronAsclepiusChampion);
@@ -1470,6 +1459,9 @@ namespace TFTV
                 GeoscapeEventDef olenaOnBionicsLabSabotage = TFTVCommonMethods.CreateNewEvent("OlenaOnBionicsLabSabotage", "ANU_REALLY_PISSED_BIONICS_TITLE", "ANU_REALLY_PISSED_BIONICS_CHOICE_0_OUTCOME", null);
                 //Olena about Mutations Lab sabotage
                 GeoscapeEventDef olenaOnMutationsLabSabotage = TFTVCommonMethods.CreateNewEvent("OlenaOnMutationsLabSabotage", "NJ_REALLY_PISSED_MUTATIONS_TITLE", "NJ_REALLY_PISSED_MUTATIONS_CHOICE_0_OUTCOME", null);
+                //Olena First LOTA Event 
+                TFTVCommonMethods.CreateNewEvent("OlenaLotaStart", "TFTV_LOTA_START_EVENT_TITLE", "TFTV_LOTA_START_EVENT_DESCRIPTION", null);
+
                 CreateEventFirstFlyer();
                 CreateEventFirstHavenTarget();
                 CreateEventFirstHavenAttack();

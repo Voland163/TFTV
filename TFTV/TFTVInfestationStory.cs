@@ -117,7 +117,8 @@ namespace TFTV
                             for (int i = 0; i < operatives.Count; i++)
                             {
                                 TFTVLogger.Always("Phoenix operative is " + orderedOperatives[i].DisplayName + " with XP " + orderedOperatives[i].LevelProgression.Experience);
-                                if (orderedOperatives[i].DisplayName.Split()[1] != null)
+                                TFTVLogger.Always("The count is " + orderedOperatives[i].DisplayName.Split().Count());
+                                if (orderedOperatives[i].DisplayName.Split().Count()> 1)
                                 {
                                     TFTVLogger.Always("The first name of the operative is " + orderedOperatives[i].DisplayName.Split()[1]);
                                     characterName = orderedOperatives[i].DisplayName.Split()[1];

@@ -849,15 +849,7 @@ namespace TFTV
         {
             try
             {
-                /* AddAbilityStatusDef sourceAbilityStatusDef =
-                     Repo.GetAllDefs<AddAbilityStatusDef>().FirstOrDefault
-                     (ged => ged.name.Equals("OilCrab_AddAbilityStatusDef"));
-                 PassiveModifierAbilityDef Revenant_Ability =
-                     Repo.GetAllDefs<PassiveModifierAbilityDef>().FirstOrDefault(ged => ged.name.Equals("Revenant_AbilityDef"));
-                 AddAbilityStatusDef newAbilityStatusDef = Helper.CreateDefFromClone(sourceAbilityStatusDef, "68EE5958-D977-4BD4-9018-CAE03C5A6579", "Revenant_StatusEffectDef");
-                 newAbilityStatusDef.AbilityDef = Revenant_Ability;
-                 newAbilityStatusDef.ApplicationConditions = new EffectConditionDef[] { };*/
-
+               
 
                 AddAbilityStatusDef sourceAbilityStatusDef = DefCache.GetDef<AddAbilityStatusDef>("OilCrab_AddAbilityStatusDef");
                 PassiveModifierAbilityDef Revenant_Ability = DefCache.GetDef<PassiveModifierAbilityDef>("Revenant_AbilityDef");
