@@ -16,6 +16,7 @@ using PhoenixPoint.Common.Entities.Items;
 using PhoenixPoint.Common.Levels.Missions;
 using PhoenixPoint.Common.UI;
 using PhoenixPoint.Geoscape.Entities;
+using PhoenixPoint.Geoscape.Entities.Abilities;
 using PhoenixPoint.Geoscape.Entities.Interception;
 using PhoenixPoint.Geoscape.Entities.Interception.Equipments;
 using PhoenixPoint.Geoscape.Entities.Missions.Outcomes;
@@ -24,6 +25,7 @@ using PhoenixPoint.Geoscape.Entities.Research;
 using PhoenixPoint.Geoscape.Entities.Research.Requirement;
 using PhoenixPoint.Geoscape.Entities.Research.Reward;
 using PhoenixPoint.Geoscape.Events.Eventus;
+using PhoenixPoint.Geoscape.Events.Eventus.Filters;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.ContextHelp.HintConditions;
 using PhoenixPoint.Tactical.AI.Considerations;
@@ -77,27 +79,162 @@ namespace TFTV
             RemoveCensusResearch();
             AllowMedkitsToTargetMutoids();
 
-            //Commented out for release #12  ChangesToLOTA2();
+            //Commented out for release #12
+          //  ChangesToLOTA2();
             CreateSubject24();
-
+            TFTVExperimental.MakeCopyOfAlienAttackOnPhoenixBase();
         }
 
         public static void ChangesToLOTA2()
         {
             try
             {
-                ChangeAntartica();
+                //   ChangeAntartica();
                 ChangeAncientSitesHarvesting();
                 ChangeAncientsBodyParts();
                 CreateAbilitiesForAncients();
                 CreateAncientStatusEffects();
                 ChangeAncientsWeapons();
+                CreateAncientAutomataResearch();
+                CreateExoticMaterialsResearch();
+                ChangeSchemataMissionRequirement();
+                ChangeAncientSiteExploration();
             }
 
             catch (Exception e)
             {
                 TFTVLogger.Error(e);
             }
+        }
+
+
+        public static void ChangeAncientWeapons()
+        {
+            try
+            {
+                WeaponDef shardGun = DefCache.GetDef<WeaponDef>("AC_ShardGun_WeaponDef");
+                WeaponDef crystalCrossbow = DefCache.GetDef<WeaponDef>("AC_CrystalCrossbow_WeaponDef");
+                WeaponDef mattock = DefCache.GetDef<WeaponDef>("AC_Mattock_WeaponDef");
+                WeaponDef rebuke = DefCache.GetDef<WeaponDef>("AC_Rebuke_WeaponDef");
+                WeaponDef scorpion = DefCache.GetDef<WeaponDef>("AC_Scorpion_WeaponDef");
+                WeaponDef scyther = DefCache.GetDef<WeaponDef>("AC_Scyther_WeaponDef");
+
+
+
+
+
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+
+            }
+        }
+
+
+        public static void ChangeAncientSiteExploration()
+        {
+            try
+            {
+                DefCache.GetDef<ExcavateAbilityDef>("ExcavateAbilityDef").Cost.Values = new List<ResourceUnit>() { new ResourceUnit(ResourceType.Materials, value: 20), new ResourceUnit(ResourceType.Tech, value: 5) };
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+        }
+        public static void ChangeSchemataMissionRequirement()
+        {
+            try
+            {
+
+                DefCache.GetDef<GeoResearchEventFilterDef>("E_PROG_LE1_ResearchCompleted [GeoResearchEventFilterDef]").ResearchID = "ExoticMaterialsResearch";
+
+            }
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+
+            }
+
+        }
+
+        public static void CreateAncientAutomataResearch()
+        {
+            try
+            {
+
+                ActorResearchRequirementDef sourceActorResearchRequirement = DefCache.GetDef<ActorResearchRequirementDef>("PX_Alien_Fishman_ResearchDef_ActorResearchRequirementDef_0");
+                TacticalActorDef humanoidGuardianTacticalActor = DefCache.GetDef<TacticalActorDef>("HumanoidGuardian_ActorDef");
+                ActorResearchRequirementDef requirementDef = Helper.CreateDefFromClone(sourceActorResearchRequirement, "14163A38-C07E-4BFF-8366-6E30F524F85D", "HumanoidActorResearchRequirement");
+                requirementDef.Actor = humanoidGuardianTacticalActor;
+
+                string ancientAutomataResearchName = "AncientAutomataResearch";
+                string keyName = "AUTOMATA_RESEARCH_TITLE";
+                string keyReveal = "AUTOMATA_RESEARCH_REVEAL";
+                string keyUnlock = "";
+                string keyComplete = "AUTOMATA_RESEARCH_COMPLETE";
+                string keyBenefits = "AUTOMATA_RESEARCH_BENEFITS";
+                int cost = 400;
+                string gUID = "DEE22274-1E44-4D02-8773-2A22B5DA8213";
+                string gUID2 = "DD59BCB8-F197-4A3D-A8AD-6B1D0B9CB958";
+                ResearchViewElementDef imageSource = DefCache.GetDef<ResearchViewElementDef>("PX_AntediluvianArchaeology_ViewElementDef");
+
+                ResearchDef research = TFTVCommonMethods.CreateNewPXResearch(ancientAutomataResearchName, cost, gUID, gUID2, keyName, keyReveal, keyUnlock, keyComplete, keyBenefits, imageSource);
+
+                ReseachRequirementDefOpContainer[] revealRequirementContainer = new ReseachRequirementDefOpContainer[1];
+                ResearchRequirementDef[] revealResearchRequirementDefs = new ResearchRequirementDef[1];
+                revealResearchRequirementDefs[0] = requirementDef; //small box
+                revealRequirementContainer[0].Requirements = revealResearchRequirementDefs; //medium box
+                research.RevealRequirements.Container = revealRequirementContainer;
+                research.RevealRequirements.Operation = ResearchContainerOperation.ALL;
+
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+        }
+
+        public static void CreateExoticMaterialsResearch()
+        {
+            try
+            {
+
+                string defName = "ExoticMaterialsResearch";
+                string keyName = "EXOTIC_RESEARCH_TITLE";
+                string keyReveal = "EXOTIC_RESEARCH_REVEAL";
+                string keyUnlock = "";
+                string keyComplete = "EXOTIC_RESEARCH_COMPLETE";
+                string keyBenefits = "EXOTIC_RESEARCH_BENEFITS";
+                int cost = 400;
+                string gUID = "17D9D851-3B75-48A7-A856-D72F101E4CE0";
+                string gUID2 = "05BA677D-52E4-4A16-B050-130EEDBB956D";
+                ResearchViewElementDef imageSource = DefCache.GetDef<ResearchViewElementDef>("PX_AntediluvianArchaeology_ViewElementDef");
+
+                ResearchDef research = TFTVCommonMethods.CreateNewPXResearch(defName, cost, gUID, gUID2, keyName, keyReveal, keyUnlock, keyComplete, keyBenefits, imageSource);
+
+                ExistingResearchRequirementDef requirementDef = TFTVCommonMethods.CreateNewExistingResearchResearchRequirementDef(defName + "ResearchReq", "47BA0BD6-F622-4EC7-A49B-B93C0A955D3C", "AncientAutomataResearch");
+
+                ReseachRequirementDefOpContainer[] revealRequirementContainer = new ReseachRequirementDefOpContainer[1];
+                ResearchRequirementDef[] revealResearchRequirementDefs = new ResearchRequirementDef[1];
+                revealResearchRequirementDefs[0] = requirementDef; //small box
+                revealRequirementContainer[0].Requirements = revealResearchRequirementDefs; //medium box
+                research.RevealRequirements.Container = revealRequirementContainer;
+                research.RevealRequirements.Operation = ResearchContainerOperation.ALL;
+
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
         }
 
         public static void CreateAbilitiesForAncients()
@@ -205,28 +342,28 @@ namespace TFTV
 
                 //Status for hoplites; extra damage when charged
                 string skillName = "AncientsPoweredUp";
-                  DamageMultiplierStatusDef ancientPowerUp = Helper.CreateDefFromClone(
-                      source,
-                      "94E23AE4-8089-41A2-98B1-899535FC577A",
-                      skillName);
-                  ancientPowerUp.EffectName = "AncientPowerUP";
-                  ancientPowerUp.VisibleOnHealthbar = TacStatusDef.HealthBarVisibility.AlwaysVisible;
-                  ancientPowerUp.VisibleOnPassiveBar = false;
-                  ancientPowerUp.VisibleOnStatusScreen = TacStatusDef.StatusScreenVisibility.VisibleOnStatusesList;
-                  ancientPowerUp.HealthbarPriority = -1;
-                  ancientPowerUp.ExpireOnEndOfTurn = false;
+                DamageMultiplierStatusDef ancientPowerUp = Helper.CreateDefFromClone(
+                    source,
+                    "94E23AE4-8089-41A2-98B1-899535FC577A",
+                    skillName);
+                ancientPowerUp.EffectName = "AncientPowerUP";
+                ancientPowerUp.VisibleOnHealthbar = TacStatusDef.HealthBarVisibility.AlwaysVisible;
+                ancientPowerUp.VisibleOnPassiveBar = false;
+                ancientPowerUp.VisibleOnStatusScreen = TacStatusDef.StatusScreenVisibility.VisibleOnStatusesList;
+                ancientPowerUp.HealthbarPriority = -1;
+                ancientPowerUp.ExpireOnEndOfTurn = false;
 
-                  ancientPowerUp.Visuals = Helper.CreateDefFromClone(
-                      source.Visuals,
-                      "E24AFC45-FD5F-4E2A-BDFC-5D9A8B240813",
-                      skillName);
-                  ancientPowerUp.DamageTypeDefs = new DamageTypeBaseEffectDef[] {};
-               
-                  ancientPowerUp.Visuals.LargeIcon = TFTVDefsRequiringReinjection.VoidIcon;
-                  ancientPowerUp.Visuals.SmallIcon = TFTVDefsRequiringReinjection.VoidIcon;
+                ancientPowerUp.Visuals = Helper.CreateDefFromClone(
+                    source.Visuals,
+                    "E24AFC45-FD5F-4E2A-BDFC-5D9A8B240813",
+                    skillName);
+                ancientPowerUp.DamageTypeDefs = new DamageTypeBaseEffectDef[] { };
 
-                  ancientPowerUp.Visuals.DisplayName1 = new LocalizedTextBind("MAX POWER", true);
-                  ancientPowerUp.Visuals.Description = new LocalizedTextBind("+50% damage to all attacks", true);
+                ancientPowerUp.Visuals.LargeIcon = TFTVDefsRequiringReinjection.VoidIcon;
+                ancientPowerUp.Visuals.SmallIcon = TFTVDefsRequiringReinjection.VoidIcon;
+
+                ancientPowerUp.Visuals.DisplayName1 = new LocalizedTextBind("MAX POWER", true);
+                ancientPowerUp.Visuals.Description = new LocalizedTextBind("+50% damage to all attacks", true);
 
                 string abilityName = "AncientMaxPower_AbilityDef";
                 PassiveModifierAbilityDef sourceAbility = DefCache.GetDef<PassiveModifierAbilityDef>("SelfDefenseSpecialist_AbilityDef");
@@ -279,7 +416,7 @@ namespace TFTV
 
                 WeaponDef cyclopsOBeam = DefCache.GetDef<WeaponDef>("MediumGuardian_Head_Orichalcum_WeaponDef");
                 cyclopsOBeam.DamagePayload.DamageKeywords[0].Value = 120;
-               
+
                 WeaponDef cyclopsPBeam = DefCache.GetDef<WeaponDef>("MediumGuardian_Head_ProteanMutane_WeaponDef");
                 cyclopsPBeam.DamagePayload.DamageKeywords[0].Value = 120;
             }
@@ -307,6 +444,18 @@ namespace TFTV
 
                 torsoDrillBodyAspect.WillPower = 30;
                 torsoShieldsBodyAspect.WillPower = 30;
+
+                TacticalItemDef proteanMutaneTorso = DefCache.GetDef<TacticalItemDef>("MediumGuardian_Torso_ProteanMutane_BodyPartDef");
+                TacticalItemDef orichalcumTorso = DefCache.GetDef<TacticalItemDef>("MediumGuardian_Torso_Orichalcum_BodyPartDef");
+                TacticalItemDef livingCrystalTorso = DefCache.GetDef<TacticalItemDef>("MediumGuardian_Torso_LivingCrystal_BodyPartDef");
+
+                proteanMutaneTorso.Abilities = new AbilityDef[] { };
+                orichalcumTorso.Abilities = new AbilityDef[] { };
+                livingCrystalTorso.Abilities = new AbilityDef[] { };
+
+                ApplyDamageEffectAbilityDef stomp = DefCache.GetDef<ApplyDamageEffectAbilityDef>("Guardian_Stomp_AbilityDef");
+                stomp.DamagePayload.AoeRadius = 7;
+
 
                 // StanceStatusDef ancientGuardianStealthStatus = DefCache.GetDef<StanceStatusDef>("AncientGuardianStealth_StatusDef");
                 //    ancientGuardianStealthStatus.StatModifications[0].Value = 0.75f;
@@ -379,8 +528,8 @@ namespace TFTV
                 antarticaMission.ParticipantsData[0].ParticipantKind = TacMissionParticipant.Intruder;
                 antarticaMission.ParticipantsRelations[0].SecondParticipant = TacMissionParticipant.Intruder;
                 List<TacMissionTypeParticipantData.UniqueChatarcterBind> uniqueChatarcterBinds = antarticaMission.ParticipantsData[0].UniqueUnits.ToList();
-               // uniqueChatarcterBinds.Add(DefCache.GetDef<CustomMissionTypeDef>("CrystalsHarvestAttack_Ancient_CustomMissionTypeDef").ParticipantsData[0].UniqueUnits[0]);
-               // antarticaMission.ParticipantsData[0].UniqueUnits = uniqueChatarcterBinds.ToArray();
+                // uniqueChatarcterBinds.Add(DefCache.GetDef<CustomMissionTypeDef>("CrystalsHarvestAttack_Ancient_CustomMissionTypeDef").ParticipantsData[0].UniqueUnits[0]);
+                // antarticaMission.ParticipantsData[0].UniqueUnits = uniqueChatarcterBinds.ToArray();
 
             }
             catch (Exception e)
@@ -388,6 +537,7 @@ namespace TFTV
                 TFTVLogger.Error(e);
             }
         }
+
 
         public static void ChangeAncientSitesHarvesting()
         {
@@ -398,10 +548,28 @@ namespace TFTV
                 archeologySettingsDef.ArcheologyFacilityHarvestingPower = 0;
                 archeologySettingsDef.ArcheologyPassiveOutput = 0;
 
-                DefCache.GetDef<ResourceMissionOutcomeDef>("AncientsHarvestCrystalMissionOutcomeDef").Resources.Values.Add(new ResourceUnit { Type = PhoenixPoint.Common.Core.ResourceType.LivingCrystals, Value = 249 });
-                DefCache.GetDef<ResourceMissionOutcomeDef>("AncientsHarvestOrichalcumMissionOutcomeDef").Resources.Values.Add(new ResourceUnit { Type = PhoenixPoint.Common.Core.ResourceType.Orichalcum, Value = 174 });
-                DefCache.GetDef<ResourceMissionOutcomeDef>("AncientsHarvestProteanMissionOutcomeDef").Resources.Values.Add(new ResourceUnit { Type = PhoenixPoint.Common.Core.ResourceType.ProteanMutane, Value = 174 });
+                ResourceMissionOutcomeDef crystalHarvest = DefCache.GetDef<ResourceMissionOutcomeDef>("AncientsHarvestCrystalMissionOutcomeDef");
+                ResourceMissionOutcomeDef orichalcumHarvest = DefCache.GetDef<ResourceMissionOutcomeDef>("AncientsHarvestOrichalcumMissionOutcomeDef");
+                ResourceMissionOutcomeDef proteanHarvest = DefCache.GetDef<ResourceMissionOutcomeDef>("AncientsHarvestProteanMissionOutcomeDef");
 
+                crystalHarvest.Resources.Values = new List<ResourceUnit>() {
+                    new ResourceUnit { Type = PhoenixPoint.Common.Core.ResourceType.LivingCrystals, Value = 250 }
+                };
+                orichalcumHarvest.Resources.Values = new List<ResourceUnit>() {
+                    new ResourceUnit { Type = PhoenixPoint.Common.Core.ResourceType.Orichalcum, Value = 175 }
+                };
+                proteanHarvest.Resources.Values = new List<ResourceUnit>()
+                { new ResourceUnit { Type = PhoenixPoint.Common.Core.ResourceType.ProteanMutane, Value = 175 }
+                };
+
+                DefCache.GetDef<CustomMissionTypeDef>("CrystalsRefineryAttack_Ancient_CustomMissionTypeDef").Outcomes[0].Outcomes[1] = crystalHarvest;
+                DefCache.GetDef<CustomMissionTypeDef>("OrichalcumRefineryAttack_Ancient_CustomMissionTypeDef").Outcomes[0].Outcomes[1] = orichalcumHarvest;
+                DefCache.GetDef<CustomMissionTypeDef>("ProteanRefineryAttack_Ancient_CustomMissionTypeDef").Outcomes[0].Outcomes[1] = proteanHarvest;
+
+                AncientGuardianGuardAbilityDef AncientGuardianGuardAbilityDef = DefCache.GetDef<AncientGuardianGuardAbilityDef>("AncientGuardianGuardAbilityDef");
+                AncientGuardianGuardAbilityDef.LocalSiteResourceCost = 0;
+
+               // DefCache.GetDef<CustomMissionTypeDef>("ProteanHarvestAttack_Ancient_CustomMissionTypeDef").Outcomes[0].DestroySite=true;
             }
             catch (Exception e)
             {
@@ -547,19 +715,6 @@ namespace TFTV
                 TFTVTutorialAndStory.CreateNewTacticalHintInfestationMissionEnd("InfestationMissionEnd");
                 CreateStaminaHint();
                 CreateUIDeliriumHint();
-
-
-
-
-                //  CreateNewTacticalHint("LeaderSighted", HintTrigger.ActorSeen, "HumanEnemy_GameTagDef", "Should not appear", "Should not appear", 1, false);
-                //   ContextHelpHintDef leaderSightedHint = DefCache.GetDef<ContextHelpHintDef>("LeaderSighted");
-                //   leaderSightedHint.AnyCondition = false;
-                //  leaderSightedHint.Conditions[0] = ActorIsOfFactionCreateNewConditionForTacticalHint("AN_FallenOnes_TacticalFactionDef");
-                //  leaderSightedHint.Conditions.Add(ActorIsOfFactionCreateNewConditionForTacticalHint("Anu_TacticalFactionDef");
-                //  leaderSightedHint.Conditions.Add(ActorIsOfFactionCreateNewConditionForTacticalHint("NEU_Bandits_TacticalFactionDef");
-                //  leaderSightedHint.Conditions.Add(ActorIsOfFactionCreateNewConditionForTacticalHint("NJ_Purists_TacticalFactionDef");
-                //  leaderSightedHint.Conditions.Add(ActorIsOfFactionCreateNewConditionForTacticalHint("NewJericho_TacticalFactionDef");
-                //  leaderSightedHint.Conditions.Add(ActorIsOfFactionCreateNewConditionForTacticalHint("Synedrion_TacticalFactionDef");
             }
             catch (Exception e)
             {
@@ -596,7 +751,7 @@ namespace TFTV
 
                 StatMultiplierStatusDef trembling = DefCache.GetDef<StatMultiplierStatusDef>("Trembling_StatusDef");
                 trembling.ApplicationConditions = new EffectConditionDef[] { organicEffectConditionDef };
-                ApplyStatusAbilityDef pepperCloud = DefCache.GetDef<ApplyStatusAbilityDef>("Acheron_PepperCloud_ApplyStatusAbilityDef");
+               
 
             }
             catch (Exception e)

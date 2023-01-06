@@ -1,7 +1,4 @@
-﻿using Base.Entities;
-using Base.Entities.Effects;
-using Base.Entities.Effects.ApplicationConditions;
-using Base.Entities.Statuses;
+﻿using Base.Entities.Effects.ApplicationConditions;
 using HarmonyLib;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
@@ -19,6 +16,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices.WindowsRuntime;
 using UnityEngine;
 using static PhoenixPoint.Tactical.Entities.Abilities.CallReinforcementsAbilityDef;
 
@@ -42,7 +40,7 @@ namespace TFTV
 
         private static readonly DamageMultiplierStatusDef onAttackTBTVStatus = DefCache.GetDef<DamageMultiplierStatusDef>("TBTV_OnAttack_StatusDef");
         private static readonly DamageMultiplierStatusDef onTurnEndTBTVStatus = DefCache.GetDef<DamageMultiplierStatusDef>("TBTV_OnTurnEnd_StatusDef");
-      //  private static readonly DamageMultiplierStatusDef umbraTargetStatusDef = DefCache.GetDef<DamageMultiplierStatusDef>("TBTV_Target");
+        //  private static readonly DamageMultiplierStatusDef umbraTargetStatusDef = DefCache.GetDef<DamageMultiplierStatusDef>("TBTV_Target");
         private static readonly PassiveModifierAbilityDef acheronTributary = DefCache.GetDef<PassiveModifierAbilityDef>("Acheron_Tributary_AbilityDef");
 
         private static readonly PassiveModifierAbilityDef hiddenTBTVAbilityDef = DefCache.GetDef<PassiveModifierAbilityDef>("TBTV_Hidden_AbilityDef");
@@ -65,7 +63,7 @@ namespace TFTV
 
         private static readonly ClassTagDef crabTag = DefCache.GetDef<ClassTagDef>("Crabman_ClassTagDef");
         private static readonly ClassTagDef fishTag = DefCache.GetDef<ClassTagDef>("Fishman_ClassTagDef");
-      //  private static readonly ClassTagDef acheronTag = DefCache.GetDef<ClassTagDef>("Acheron_ClassTagDef");
+        //  private static readonly ClassTagDef acheronTag = DefCache.GetDef<ClassTagDef>("Acheron_ClassTagDef");
 
         private static readonly DeathBelcherAbilityDef oilcrabDeathBelcherAbility = DefCache.GetDef<DeathBelcherAbilityDef>("Oilcrab_Die_DeathBelcher_AbilityDef");
         private static readonly DeathBelcherAbilityDef oilfishDeathBelcherAbility = DefCache.GetDef<DeathBelcherAbilityDef>("Oilfish_Die_DeathBelcher_AbilityDef");
@@ -91,7 +89,7 @@ namespace TFTV
             }
         }
 
-       
+
         [HarmonyPatch(typeof(TacticalLevelController), "ActorDied")]
         public static class TacticalLevelController_ActorDied_TBTV_Patch
         {
@@ -105,7 +103,7 @@ namespace TFTV
 
                         if (actor.GameTags.Contains(voidTouchedTag))
                         {
-                            actor.RemoveAbility(hiddenTBTVAbilityDef); 
+                            actor.RemoveAbility(hiddenTBTVAbilityDef);
                             actor.GameTags.Remove(voidTouchedTag);
                             int roll = MakeTBTVRoll();
 
@@ -127,8 +125,6 @@ namespace TFTV
 
                                     if ((allyTacticalActorBase.Pos - actor.Pos).magnitude <= magnitude)
                                     {
-
-                                       
                                         if (tacticalActor.GameTags.Contains(crabTag) && !tacticalActor.GameTags.Contains(voidTouchedTag)
                                             && !tacticalActor.name.Contains("Oilcrab") && !tacticalActor.GameTags.Contains(anyRevenantGameTag)
                                             && !tacticalActor.GameTags.Contains(voidTouchedOnTurnEndTag) && !tacticalActor.GameTags.Contains(voidTouchedOnAttackTag)
@@ -148,7 +144,7 @@ namespace TFTV
                                              && !tacticalActor.GameTags.Contains(voidTouchedOnTurnEndTag) && !tacticalActor.GameTags.Contains(voidTouchedOnAttackTag)
                                             && !tacticalActor.HasStatus(oilTritonAddAbilityStatus))
                                         {
-                                            
+
                                             tacticalActor.Status.ApplyStatus(hiddenTBTVAddAbilityStatus);
                                             if (!tacticalActor.HasGameTag(voidTouchedTag))
                                             {
@@ -162,7 +158,7 @@ namespace TFTV
                                              && !tacticalActor.GameTags.Contains(voidTouchedOnTurnEndTag) && !tacticalActor.GameTags.Contains(voidTouchedOnAttackTag)
                                             && !tacticalActor.HasStatus(oilCrabAddAbilityStatus) && !tacticalActor.HasStatus(oilTritonAddAbilityStatus))
                                         {
-                                           
+
                                             tacticalActor.Status.ApplyStatus(hiddenTBTVAddAbilityStatus);
                                             if (!tacticalActor.HasGameTag(voidTouchedTag))
                                             {
@@ -179,7 +175,7 @@ namespace TFTV
                                                 }
                                                 TFTVLogger.Always("The actor who will receive TBTV from the Tributary is " + tacticalActor.name);
                                             }
-                                           
+
                                         }
                                     }
                                 }
@@ -290,6 +286,35 @@ namespace TFTV
 
         }
 
+        public static bool CheckForTBTVAbilities(TacticalActor tacticalActor)
+        {
+            try 
+            { 
+                if(tacticalActor.GetAbilityWithDef<DeathBelcherAbility>(oilcrabDeathBelcherAbility) != null||
+                    tacticalActor.GetAbilityWithDef<DeathBelcherAbility>(oilfishDeathBelcherAbility) != null||
+                    tacticalActor.HasGameTag(voidTouchedOnAttackTag) ||
+                    tacticalActor.HasGameTag(voidTouchedOnTurnEndTag)) 
+                {
+
+                    return true;
+                
+                }
+                else
+                {
+                    return false;
+                }
+
+            }
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                return false;
+            }
+
+        }
+
+
         public static void RemoveDeathBelcherAbilities(TacticalActor tacticalActor)
         {
             try
@@ -328,7 +353,7 @@ namespace TFTV
                         TFTVLogger.Always("MfD status applied " + tacticalActor.name);
                     }
                 }
-                else if (roll > 66 && roll <=96)
+                else if (roll > 66 && roll <= 96)
                 {
                     if (!tacticalActor.HasGameTag(voidTouchedOnAttackTag) && !tacticalActor.HasGameTag(voidTouchedOnTurnEndTag))
                     {
@@ -338,12 +363,12 @@ namespace TFTV
                         TFTVLogger.Always("CallReinforcements status applied " + tacticalActor.name);
                     }
                 }
-                else if((roll >=31 && roll <=36)||roll>=97)
+                else if ((roll >= 31 && roll <= 36) || roll >= 97)
                 {
                     TFTVLogger.Always(tacticalActor.name + " had a dud TBTV!");
                     return;
                 }
-                else 
+                else
                 {
                     if (!tacticalActor.HasGameTag(voidTouchedOnAttackTag) && !tacticalActor.HasGameTag(voidTouchedOnTurnEndTag))
                     {
@@ -568,7 +593,7 @@ namespace TFTV
                     foreach (TacticalActor actor in pandoranFaction.TacticalActors)
                     {
 
-                        TFTVLogger.Always("The actor is " + actor.name);
+                    //    TFTVLogger.Always("The actor is " + actor.name);
                         if ((actor.GameTags.Contains(crabTag) || actor.GameTags.Contains(fishTag)) &&
                             actor.HasStatus(onTurnEndTBTVStatus) && actor.IsAlive)
                         {
@@ -689,60 +714,51 @@ namespace TFTV
 
                                 TFTVLogger.Always("The actor is " + actor.name);
                                 if (actor.GameTags.Contains(crabTag) && !actor.GameTags.Contains(voidTouchedTag)
-                                    && !actor.name.Contains("Oilcrab") && !actor.GameTags.Contains(anyRevenantGameTag))
+                                    && !actor.name.Contains("Oilcrab") && !actor.GameTags.Contains(anyRevenantGameTag) && !CheckForTBTVAbilities(actor))
 
                                 {
                                     UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
                                     int roll = UnityEngine.Random.Range(1, 101);
                                     if (TFTVVoidOmens.VoidOmensCheck[15] && roll <= totalDeliriumOnMission)
                                     {
-                                        TFTVLogger.Always("This Arthron here " + actor + ", got past the crabtag and the blecher ability check!");
+                                        TFTVLogger.Always("This Arthron here " + actor + ", got past the TBTV check!");
                                         actor.Status.ApplyStatus(hiddenTBTVAddAbilityStatus);
-                                        if (!actor.HasGameTag(voidTouchedTag))
-                                        {
-                                            actor.GameTags.Add(voidTouchedTag);
-                                            actor.AddAbility(oilcrabDeathBelcherAbility, actor);
-                                        }
+                                        actor.GameTags.Add(voidTouchedTag);
+                                        actor.AddAbility(oilcrabDeathBelcherAbility, actor);
+
 
                                     }
                                     else if (!TFTVVoidOmens.VoidOmensCheck[15] && roll <= totalDeliriumOnMission / 2)
                                     {
-                                        TFTVLogger.Always("This Arthron here " + actor + ", got past the crabtag and the blecher ability check!");
+                                        TFTVLogger.Always("This Arthron here " + actor + ", got past the TBTV check!");
                                         actor.Status.ApplyStatus(hiddenTBTVAddAbilityStatus);
-                                        if (!actor.HasGameTag(voidTouchedTag))
-                                        {
-                                            actor.GameTags.Add(voidTouchedTag);
-                                            actor.AddAbility(oilcrabDeathBelcherAbility, actor);
-                                        }
-
+                                        actor.GameTags.Add(voidTouchedTag);
+                                        actor.AddAbility(oilcrabDeathBelcherAbility, actor);
                                     }
 
                                 }
                                 if (actor.GameTags.Contains(fishTag) && !actor.GameTags.Contains(voidTouchedTag)
-                                    && !actor.name.Contains("Oilfish") && !actor.GameTags.Contains(anyRevenantGameTag))
+                                    && !actor.name.Contains("Oilfish") && !actor.GameTags.Contains(anyRevenantGameTag) && !CheckForTBTVAbilities(actor))
                                 {
                                     UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
                                     int roll = UnityEngine.Random.Range(1, 101);
                                     if (TFTVVoidOmens.VoidOmensCheck[15] && roll <= totalDeliriumOnMission)
                                     {
-                                        TFTVLogger.Always("This Triton here " + actor + ", got past the crabtag and the blecher ability check!");
+                                        TFTVLogger.Always("This Triton here " + actor + ", got past the TBTV check!");
                                         actor.Status.ApplyStatus(hiddenTBTVAddAbilityStatus);
-                                        if (!actor.HasGameTag(voidTouchedTag))
-                                        {
-                                            actor.GameTags.Add(voidTouchedTag);
-                                            actor.AddAbility(oilfishDeathBelcherAbility, actor);
-                                        }
+
+                                        actor.GameTags.Add(voidTouchedTag);
+                                        actor.AddAbility(oilfishDeathBelcherAbility, actor);
+
 
                                     }
                                     else if (!TFTVVoidOmens.VoidOmensCheck[15] && roll <= totalDeliriumOnMission / 2)
                                     {
-                                        TFTVLogger.Always("This Triton here " + actor + ", got past the crabtag and the blecher ability check!");
+                                        TFTVLogger.Always("This Triton here " + actor + ", got past the TBTV check!");
                                         actor.Status.ApplyStatus(hiddenTBTVAddAbilityStatus);
-                                        if (!actor.HasGameTag(voidTouchedTag))
-                                        {
-                                            actor.GameTags.Add(voidTouchedTag);
-                                            actor.AddAbility(oilfishDeathBelcherAbility, actor);
-                                        }
+
+                                        actor.GameTags.Add(voidTouchedTag);
+                                        actor.AddAbility(oilfishDeathBelcherAbility, actor);
 
                                     }
                                 }
@@ -854,7 +870,8 @@ namespace TFTV
                             //   TFTVLogger.Always("found aln faction and checked that VO is in place");
 
                             if (actor.GameTags.Contains(crabTag) && !actor.GameTags.Contains(voidTouchedTag)
-                                        && !actor.name.Contains("Oilcrab") && !actor.GameTags.Contains(anyRevenantGameTag) && actor.TacticalFaction.Faction.FactionDef.MatchesShortName("aln"))
+                                        && !actor.name.Contains("Oilcrab") && !actor.GameTags.Contains(anyRevenantGameTag)
+                                        && actor.TacticalFaction.Faction.FactionDef.MatchesShortName("aln") && !CheckForTBTVAbilities(actor as TacticalActor))
 
                             {
                                 TacticalActor tacticalActor = actor as TacticalActor;
@@ -864,27 +881,26 @@ namespace TFTV
                                 // TFTVLogger.Always("The roll is " + roll);
                                 if (TFTVVoidOmens.VoidOmensCheck[15] && roll <= 32 + CheckForAcheronHarbingers(__instance) * 10)
                                 {
-                                    TFTVLogger.Always("VO16+VO15 This Arthron here " + actor + ", got past the crabtag and the blecher ability check!");
+                                    TFTVLogger.Always("VO16+VO15 This Arthron here " + actor + ", got past the TBTV check!");
                                     tacticalActor.Status.ApplyStatus(hiddenTBTVAddAbilityStatus);
-                                    if (!actor.HasGameTag(voidTouchedTag))
-                                    {
-                                        actor.GameTags.Add(voidTouchedTag);
-                                    }
+
+                                    actor.GameTags.Add(voidTouchedTag);
+
 
                                 }
                                 else if (!TFTVVoidOmens.VoidOmensCheck[15] && roll <= 16 + CheckForAcheronHarbingers(__instance) * 5)
                                 {
-                                    TFTVLogger.Always("VO16 This Arthron here " + actor + ", got past the crabtag and the blecher ability check!");
+                                    TFTVLogger.Always("VO16 This Arthron here " + actor + ", got past the TBTV check!");
                                     tacticalActor.Status.ApplyStatus(hiddenTBTVAddAbilityStatus);
-                                    if (!actor.HasGameTag(voidTouchedTag))
-                                    {
-                                        actor.GameTags.Add(voidTouchedTag);
-                                    }
+
+                                    actor.GameTags.Add(voidTouchedTag);
+
                                 }
 
                             }
                             if (actor.GameTags.Contains(fishTag) && !actor.GameTags.Contains(voidTouchedTag)
-                                && !actor.name.Contains("Oilfish") && !actor.GameTags.Contains(anyRevenantGameTag) && actor.TacticalFaction.Faction.FactionDef.MatchesShortName("aln"))
+                                && !actor.name.Contains("Oilfish") && !actor.GameTags.Contains(anyRevenantGameTag)
+                                && actor.TacticalFaction.Faction.FactionDef.MatchesShortName("aln") && !CheckForTBTVAbilities(actor as TacticalActor))
                             {
                                 TacticalActor tacticalActor = actor as TacticalActor;
 
@@ -892,21 +908,19 @@ namespace TFTV
                                 int roll = UnityEngine.Random.Range(1, 101);
                                 if (TFTVVoidOmens.VoidOmensCheck[15] && roll <= 32 + CheckForAcheronHarbingers(__instance) * 10)
                                 {
-                                    TFTVLogger.Always("VO16+VO15 This Triton here " + actor + ", got past the crabtag and the blecher ability check!");
+                                    TFTVLogger.Always("VO16+VO15 This Triton here " + actor + ", got past the TBTV check!");
                                     tacticalActor.Status.ApplyStatus(hiddenTBTVAddAbilityStatus);
-                                    if (!actor.HasGameTag(voidTouchedTag))
-                                    {
-                                        actor.GameTags.Add(voidTouchedTag);
-                                    }
+
+                                    actor.GameTags.Add(voidTouchedTag);
+
                                 }
                                 else if (!TFTVVoidOmens.VoidOmensCheck[15] && roll <= 16 + CheckForAcheronHarbingers(__instance) * 5)
                                 {
-                                    TFTVLogger.Always("VO16 This Triton here " + actor + ", got past the crabtag and the blecher ability check!");
+                                    TFTVLogger.Always("VO16 This Triton here " + actor + ", got past the TBTV check!");
                                     tacticalActor.Status.ApplyStatus(hiddenTBTVAddAbilityStatus);
-                                    if (!actor.HasGameTag(voidTouchedTag))
-                                    {
-                                        actor.GameTags.Add(voidTouchedTag);
-                                    }
+
+                                    actor.GameTags.Add(voidTouchedTag);
+
                                 }
                             }
                         }

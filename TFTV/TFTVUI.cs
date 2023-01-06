@@ -135,7 +135,7 @@ namespace TFTV
 
                     foreach (Transform t in tInfoBar.GetComponentsInChildren<Transform>())
                     {
-
+                    
                         if (t.name == "TooltipCatcher")
                         {
                             if (t.GetComponent<UITooltipText>().TipKey.LocalizeEnglish() == "Stores - used space / capacity of all stores facilities")

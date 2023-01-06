@@ -758,3 +758,60 @@ We've got this place mostly up and running... Thanks to Olena, she is quite the 
 KEY_TUT3_TFTV1_TITLE,Text,,Alistair Ashby,,,,,,,,
 KEY_TUT3_TFTV2_DESCRIPTION,Text,,"""<i>Oppa</i> Alistair is good with people. I'm good with machines and software. This facility runs on a limited AI called Bennu. Once Bennu verifies your credentials as duly appointed Director, all functionality should be restored and you should be able to interface with the system.""",,,,,,,,
 KEY_TUT3_TFTV2_TITLE,Text,,Olena Kim,,,,,,,,
+PX_ANTEDILUVIANARCHAEOLOGY_RESEARCHDEF_COMPLETE,Text,,"<i>""Our planet is over 4.5 billion years old. Pre-collapse no more than 3% of Earth's surface was urbanized. Dinosaurs lived on Earth for about 165 million years, going extinct some 65 million years ago. In a little over two centuries we found around 11,000 Dinosaur bones, which comes to one bone for every 15,000 years they spent on our planet. 
+
+Do the math, Tobias... A million years from now someone might be proposing 'crackpot theories' suggesting that something like our civilization might have existed.""</i>
+
+- Dr. Helena Lewandowski
+
+Over the past decades, the melting permafrost and the ecological changes wrought by the Pandoravirus have brought to the surface sites long hidden by sediment and water. With the help of Dr. Helena we have devised a scanner probe which can be produced in the Archaeology Facility. When launched from one of our aircraft, it can detect anomalies pointing to promising archaeological sites. Then, the hazardous process of exploration can begin.",,,,,,,,
+PX_ANTEDILUVIANARCHAEOLOGY_RESEARCHDEF_UNLOCK,Text,,"Pre-Collapse there had been many attempts to find evidence of advanced precursor civilizations on Earth. Could those out of time and place artifacts have been real? What was behind the myths of Atlantis and of the Great Flood? If we want to learn the truth, we must pursue a more scientific approach.",,,,,,,,
+TFTV_LOTA_START_EVENT_TITLE,Text,,An Unexpected Find,,,,,,,,
+TFTV_LOTA_START_EVENT_DESCRIPTION,Text,,"Director, I've come across something interesting in the archives of the recently activated base. Something called Project Glory... Perhaps we should put Bennu to analyze it.",,,,,,,,
+AUTOMATA_RESEARCH_TITLE,Text,,Ancient Automata,,,,,,,,
+AUTOMATA_RESEARCH_REVEAL,Text,,"We have retrieved the remains of the automata that we encountered at the site. We should analyze them immediately.",,,,,,,,
+AUTOMATA_RESEARCH_COMPLETE,Text,,"We encountered these entities during our exploration of the ancient site. This is the single most important archaeological discovery ever made! 
+
+Our analysis concludes that these entities are inorganic and that they have been inactive for more than 1.8m years. The technology permitting the creation of such constructs is beyond our understanding; we are facing the artifacts of a civilization far in advance of our own. 
+
+However, we have achieved two major breakthroughs in the course of our research into these creations:
+
+1) We have gained new insight into the behavior and capabilities of the Ancient automata, which we will be able to leverage in the field from now on.
+2) We have identified the type of materials from which they are made of, and are already theorizing on possible applications.",,,,,,,,
+AUTOMATA_RESEARCH_BENEFITS,Text,,New information about Ancient Automata abilities available in tactical missions; EMP and Stun grenades will now work against Ancient Automata,,,,,,,,
+EXOTIC_RESEARCH_TITLE,Text,,Exotic Materials,,,,,,,,
+EXOTIC_RESEARCH_REVEAL,Text,,"“My working theory is that they were summoned from a spellbook. Our objective: find the spellbook.” - Alistair Ashby
+
+We have identified 3 distinct previously unknown substances in the composition of the Ancient Automata.",,,,,,,,
+EXOTIC_RESEARCH_COMPLETE,Text,,"""Dr. Helena Lewandowski has claimed naming rights on the Exotic Materials on the basis of this being an archaeological find. I want it to be a matter of record that it is entirely her fault that what is in fact an object in a previously unobserved state of matter, but vaguely reminiscent of Quark-gluon plasma, shall be confusingly known as 'Living Crystal'."" - Dr. Art Vandelay
+
+The frames of the Ancient Automata are made of an extremely light and resistant alloy (Orichalcum). We have been unable to find anything resembling a CPU, leading us to speculate that there is no central control or processing unit, but rather a diffused system, possibly sustained through a supercritical fluid (Protean Mutane) that permeates the frame. The contraption appears to draw its power from a self-sustained and self-modulated miniaturized fusion reaction within a super-heated plasma compound (Living Crystal). 
+
+We are not capable of replicating these Exotic Materials, or even of providing any reasonable hypothesis as to where they could come from. However, we are confident that we can find practical applications if we are able to secure them in their unaltered form in sufficient quantities.",,,,,,,,
+EXOTIC_RESEARCH_BENEFITS,Text,,This will bring us a step closer to using Exotic Materials for weapon research and development,,,,,,,,
+PX_YUGGOTHIANENTITY_RESEARCHDEF_REVEALED_TFTV_ALTERNATIVE,Text,,"The plan worked, but, as was to be expected, we can only understand a tiny fraction of the information contained in the data dump. It is enough. Enough to overturn much of what we thought we knew and, critical to our current existential threat, of what we thought we knew about the Pandoravirus. 
+
+It is ancient, yes; we suspected as much since the infection of our ecosystem began with the melting of the permafrost. But, thanks to the meticulous charts of our Solar system drawn by the Ancients, we now know that the Pandoravirus didn’t originate on our planet: it arrived 1.8 million years ago on an asteroid that intersected the orbit of a “ninth planet” before it crashed into Earth.   
+
+The astrological charts were easy enough to extract, but we have to dig deeper into the data dump if we want to learn more.",,,,,,,,
+PX_YUGGOTHIANENTITY_RESEARCHDEF_COMPLETE,Text,,"Our analysis of the Antediluvian texts, combined with the knowledge gathered by the Phoenix Project over the course of the last century, has forced us to acknowledge a shocking truth: the war against Earth is being waged by an alien entity. This being of unimaginable age and power is located on Yuggoth, the ninth planet of our solar system.
+Around 1.8 million years ago it planted a bioweapon on an asteroid on a collision trajectory with Earth: the Pandoravirus, intended to radically transform the Earth's ecosystem to the advantage of the Yuggothian Entity.
+
+The Entity communicates with its creatures via some form of quasi-telepathic signal. Evidence suggests that some human beings are sensitive to these transmissions, explaining the occurrence of the name ""Yuggoth"" and variations thereof in the work of artists such as H.P. Lovecraft, Virginia Gutierrez, John Bellairs, Ralph Pabodie, and many others. This presumably represents an earlier, less powerful expression of the phenomenon we have termed Oneiric Delirium.
+
+We have concluded that the ultimate purpose of the Entity is to create the ecological conditions that will allow it to come to Earth, and have hypothesized the existence of the Yuggothian Receptacle, a clone or replica to which the Entity will transfer its consciousness. We believe the Pandorans are already in the process of accumulating biomass and genetic material for this purpose.",,,,,,,,
+DLC2 Necronomicon/KEY_EXCAVATE_POPUP_BUTTON,Text,,EXPLORE,,,,,,,,
+DLC2 Necronomicon/KEY_EXCAVATE_POPUP_DESCRIPTION,Text,,"The valley below is lush, almost primordial. Earth nature, untarnished by the Pandoravirus. Places such as these can be yet found on the planet; less than 20 years ago they were covered by water or sediment. The Earth was transformed, washed, dried, swept away, bringing back to sight and life a world hidden a long, long time ago. ",,,,,,,,
+DLC2 Necronomicon/KEY_EXCAVATE_POPUP_LISTCOSTS,Text,,We will release a number of short-range drones to map the area and locate the ancient ruins,,,,,,,,
+KEY_GEO_ABILITY_EXCAVATE_SITE_NAME,Text,,EXPLORE,,,,,,,,
+KEY_FACTION_ANCIENTS,Text,,Ancient Automata,,,,,,,,
+KEY_GEO_ABILITY_EXCAVATE_SITE_DESCRIPTION,Text,,Find the ancient ruins,,,,,,,,
+DLC2 Necronomicon/KEY_EXCAVATE_POPUP_NAME,Text,,MAP THE GREEN,,,,,,,,
+KEY_AC_METAINFO_HARVEST,Text,,Explore to uncover the secrets of the Ancients,,,,,,,,
+KEY_AC_METAINFO_REFINERY,Text,,Explore to uncover the secrets of the Ancients,,,,,,,,
+KEY_AC_PROTEAN_HARVEST,Text,,ANCIENT RUINS,,,,,,,,
+KEY_AC_PROTEAN_REFINERY,Text,,ANCIENT RUINS,,,,,,,,
+KEY_AC_ORICHALCUM_HARVEST,Text,,ANCIENT RUINS,,,,,,,,
+KEY_AC_ORICHALCUM_REFINERY,Text,,ANCIENT RUINS,,,,,,,,
+KEY_AC_CRYSTAL_HARVEST,Text,,ANCIENT RUINS,,,,,,,,
+KEY_AC_CRYSTAL_REFINERY,Text,,ANCIENT RUINS,,,,,,,,

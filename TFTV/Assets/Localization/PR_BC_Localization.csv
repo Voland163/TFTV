@@ -1,4 +1,5 @@
 Key,Type,Desc,English,Chinese (Simplified),French,German,Italian,Polish,Russian,,UI_Tester
+KEY_IGNORE_PAIN_DESCRIPTION,Text,,Disabled body parts remain functional and cannot Panic.,,,,,,,,
 KEY_NJ_HEAVY_ROCKET_LAUNCHER_NAME,Text,,Archangel AP-RL,,,,,,,,
 KEY_NJ_HEAVY_ROCKET_LAUNCHER_DESCRIPTION,Text,,NJ Armour Piercing Rocket Launcher,,,,,,,,
 BC_KEY_ITEM_STAT_BODYPART_DAMAGE,Text,,DAMAGE TO BODY PART,,,,,,,,

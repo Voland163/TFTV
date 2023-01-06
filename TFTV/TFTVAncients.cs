@@ -1,8 +1,16 @@
 ﻿using HarmonyLib;
+using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Geoscape.Entities;
+using PhoenixPoint.Geoscape.Entities.Abilities;
+using PhoenixPoint.Geoscape.Entities.Missions;
+using PhoenixPoint.Geoscape.Entities.Missions.Outcomes;
 using PhoenixPoint.Geoscape.Levels;
+using PhoenixPoint.Geoscape.View.ViewControllers;
+using PhoenixPoint.Geoscape.View.ViewControllers.Modal;
+using PhoenixPoint.Geoscape.View.ViewModules;
+using PhoenixPoint.Home.View.ViewModules;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.DamageKeywords;
@@ -14,13 +22,15 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using UnityEngine;
+using UnityEngine.UI;
 
 namespace TFTV
 {
     internal class TFTVAncients
     {
-        // commented out for release #12
-       /* private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
+        // commented out for release #13
+      /*  private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
 
         private static readonly DamageMultiplierStatusDef AddAutoRepairStatusAbility = DefCache.GetDef<DamageMultiplierStatusDef>("AutoRepair_AddAbilityStatusDef");
 
@@ -41,9 +51,148 @@ namespace TFTV
         public static int AncientsEncounterCounter = 0;
         public static string AncientsEncounterVariableName = "Ancients_Encounter_Global_Variable";
         public static int HoplitesKilled = 0;
-        //   private static readonly DamageMultiplierStatusDef AncientStasisStatus = DefCache.GetDef<DamageMultiplierStatusDef>("AncientStasis_StatusDef");
+        private static readonly AlertedStatusDef AlertedStatus = DefCache.GetDef<AlertedStatusDef>("Alerted_StatusDef");
         private static readonly DamageMultiplierStatusDef CyclopsDefenseStatus = DefCache.GetDef<DamageMultiplierStatusDef>("CyclopsDefense_StatusDef");
         private static readonly StanceStatusDef AncientGuardianStealthStatus = DefCache.GetDef<StanceStatusDef>("AncientGuardianStealth_StatusDef");
+
+
+        [HarmonyPatch(typeof(RewardsController), "SetResources")]
+        public static class RewardsController_SetResources_Patch
+        {
+
+            public static void Postfix(ResourcePack reward, RewardsController __instance)
+            {
+                try
+                {
+                  
+                    foreach(ResourceUnit resourceUnit in reward) 
+                    {
+                        if (resourceUnit.Type == ResourceType.ProteanMutane) 
+                        {
+                            UIModuleInfoBar uIModuleInfoBar = (UIModuleInfoBar)UnityEngine.Object.FindObjectOfType(typeof(UIModuleInfoBar));
+
+                            Resolution resolution = Screen.currentResolution;
+                            float resolutionFactorWidth = (float)resolution.width / 1920f;
+                            float resolutionFactorHeight = (float)resolution.height / 1080f;
+
+
+                            Transform tInfoBar = uIModuleInfoBar.PopulationBarRoot.transform.parent?.transform;
+                            Transform exoticResourceIcon = tInfoBar.GetComponent<Transform>().Find("ProteanMutaneRes").GetComponent<Transform>().Find("Requirement_Icon");          
+                            Transform exoticResourceText = tInfoBar.GetComponent<Transform>().Find("ProteanMutaneRes").GetComponent<Transform>().Find("Requirement_Text");
+                                                    
+                            Transform exoticResourceIconCopy = UnityEngine.Object.Instantiate(exoticResourceIcon, __instance.ResourcesRewardsParentObject.transform);
+                            Transform exoticResourceTextCopy = UnityEngine.Object.Instantiate(exoticResourceText, __instance.ResourcesRewardsParentObject.transform);
+
+                            exoticResourceTextCopy.GetComponent<Text>().text = reward.Values[0].Value.ToString();
+                            // exoticResourceTextCopy.GetComponent<Text>().text = DefCache.GetDef<ResourceMissionOutcomeDef>("AncientsHarvestProteanMissionOutcomeDef").Resources[0].Value.ToString();
+                            exoticResourceTextCopy.SetParent(exoticResourceIconCopy);
+                            exoticResourceIconCopy.localScale = new Vector3(1.5f, 1.5f, 1f);
+                            exoticResourceTextCopy.Translate(new Vector3(0f, -10f*resolutionFactorHeight, 0f));
+                          
+                            __instance.NoResourcesText.gameObject.SetActive(false);
+                            __instance.ResourcesRewardsParentObject.SetActive(true);
+
+                        }
+                        else if(resourceUnit.Type == ResourceType.LivingCrystals)
+                        {
+                            UIModuleInfoBar uIModuleInfoBar = (UIModuleInfoBar)UnityEngine.Object.FindObjectOfType(typeof(UIModuleInfoBar));
+
+                            Resolution resolution = Screen.currentResolution;
+                            float resolutionFactorWidth = (float)resolution.width / 1920f;
+                            float resolutionFactorHeight = (float)resolution.height / 1080f;
+
+                            Transform tInfoBar = uIModuleInfoBar.PopulationBarRoot.transform.parent?.transform;
+                            Transform exoticResourceIcon = tInfoBar.GetComponent<Transform>().Find("LivingCrystalsRes").GetComponent<Transform>().Find("Requirement_Icon");
+                            Transform exoticResourceText = tInfoBar.GetComponent<Transform>().Find("LivingCrystalsRes").GetComponent<Transform>().Find("Requirement_Text");
+
+
+                            Transform exoticResourceIconCopy = UnityEngine.Object.Instantiate(exoticResourceIcon, __instance.ResourcesRewardsParentObject.transform);
+                            Transform exoticResourceTextCopy = UnityEngine.Object.Instantiate(exoticResourceText, __instance.ResourcesRewardsParentObject.transform);
+
+                            exoticResourceTextCopy.GetComponent<Text>().text = reward.Values[0].Value.ToString();
+                               // DefCache.GetDef<ResourceMissionOutcomeDef>("AncientsHarvestCrystalMissionOutcomeDef").Resources[0].Value.ToString();
+                            exoticResourceTextCopy.SetParent(exoticResourceIconCopy);
+                            exoticResourceIconCopy.localScale = new Vector3(1.5f, 1.5f, 1f);
+                            exoticResourceTextCopy.Translate(new Vector3(0f, -10f * resolutionFactorHeight, 0f));
+                          
+                            __instance.NoResourcesText.gameObject.SetActive(false);
+                            __instance.ResourcesRewardsParentObject.SetActive(true);
+
+                        }
+                        else if (resourceUnit.Type == ResourceType.Orichalcum)
+                        {
+                            UIModuleInfoBar uIModuleInfoBar = (UIModuleInfoBar)UnityEngine.Object.FindObjectOfType(typeof(UIModuleInfoBar));
+
+                            Resolution resolution = Screen.currentResolution;
+                            float resolutionFactorWidth = (float)resolution.width / 1920f;
+                            float resolutionFactorHeight = (float)resolution.height / 1080f;
+
+
+                            Transform tInfoBar = uIModuleInfoBar.PopulationBarRoot.transform.parent?.transform;
+                            Transform exoticResourceIcon = tInfoBar.GetComponent<Transform>().Find("OrichalcumRes").GetComponent<Transform>().Find("Requirement_Icon");
+                            Transform exoticResourceText = tInfoBar.GetComponent<Transform>().Find("OrichalcumRes").GetComponent<Transform>().Find("Requirement_Text");
+
+
+                            Transform exoticResourceIconCopy = UnityEngine.Object.Instantiate(exoticResourceIcon, __instance.ResourcesRewardsParentObject.transform);
+                            Transform exoticResourceTextCopy = UnityEngine.Object.Instantiate(exoticResourceText, __instance.ResourcesRewardsParentObject.transform);
+
+                            exoticResourceTextCopy.GetComponent<Text>().text = reward.Values[0].Value.ToString();
+                            //DefCache.GetDef<ResourceMissionOutcomeDef>("AncientsHarvestOrichalcumMissionOutcomeDef").Resources[0].Value.ToString();
+                            exoticResourceTextCopy.SetParent(exoticResourceIconCopy);
+                            exoticResourceIconCopy.localScale = new Vector3(1.5f, 1.5f, 1f);
+                            exoticResourceTextCopy.Translate(new Vector3(0f, -10f * resolutionFactorHeight, 0f));
+
+                            __instance.NoResourcesText.gameObject.SetActive(false);
+                            __instance.ResourcesRewardsParentObject.SetActive(true);
+
+                        }
+                    }
+                 
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+        }
+
+        [HarmonyPatch(typeof(GeoVehicle), "get_CanHarvestFromSites")]
+        public static class GeoVehicle_get_CanHarvestFromSites_Patch
+        {
+
+            public static void Postfix(ref bool __result)
+            {
+                try
+                {
+
+                    __result = false;
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+        }
+
+        [HarmonyPatch(typeof(AncientGuardianGuardAbility), "GetDisabledStateInternal")]
+        public static class AncientGuardianGuardAbility_GetDisabledStateInternal_Patch
+        {
+
+            public static void Postfix(ref GeoAbilityDisabledState __result)
+            {
+                try
+                {
+
+                    __result = GeoAbilityDisabledState.RequirementsNotMet;
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+        }
 
 
         [HarmonyPatch(typeof(GeoMission), "ApplyOutcomes")]
@@ -58,10 +207,21 @@ namespace TFTV
 
                     if (__instance.MissionDef.SaveDefaultName == "AncientRuin")
                     {
+                      
                         controller.EventSystem.SetVariable(AncientsEncounterVariableName, controller.EventSystem.GetVariable(AncientsEncounterVariableName) + 1);
                         TFTVLogger.Always(AncientsEncounterVariableName + " is now " + controller.EventSystem.GetVariable(AncientsEncounterVariableName));
-                    }
 
+                        List<GeoVehicle> geoVehicles = __instance.Site.Vehicles.ToList();
+                        foreach (GeoVehicle vehicle in geoVehicles)
+                        {
+                            vehicle.EndCollectingFromCurrentSite();
+
+                        }
+
+                        // __instance.Site.Type = GeoSiteType.AncientRefinery;
+                        //  __instance.Site.DisableSite();
+
+                    }
                 }
                 catch (Exception e)
                 {
@@ -96,7 +256,7 @@ namespace TFTV
             {
                 TFTVLogger.Always("AdjustAncientsOnDeployment method invoked");
                 TacticalFaction ancients = controller.GetFactionByCommandName("anc");
-                CyclopsDefenseStatus.Multiplier = 0.25f;
+                CyclopsDefenseStatus.Multiplier = 0.5f;
                 List<TacticalActor> damagedGuardians = new List<TacticalActor>();
                 int countUndamagedGuardians = AncientsEncounterCounter + controller.Difficulty.Order;
 
@@ -120,7 +280,7 @@ namespace TFTV
                     {
                         TFTVLogger.Always("Found cyclops");
                         tacticalActorBase.Status.ApplyStatus(CyclopsDefenseStatus);
-                        cyclops.CharacterStats.WillPoints.Set(cyclops.CharacterStats.WillPoints.IntMax / 2);
+                        cyclops.CharacterStats.WillPoints.Set(cyclops.CharacterStats.WillPoints.IntMax / 4);
                         cyclops.CharacterStats.Speed.SetMax(cyclops.CharacterStats.WillPoints.IntValue);
                         cyclops.CharacterStats.Speed.Set(cyclops.CharacterStats.WillPoints.IntValue);
                     }
@@ -151,7 +311,7 @@ namespace TFTV
                         }
                         else if (item.TacticalItemDef.Equals(leftShield) || item.TacticalItemDef.Equals(leftCrystalShield))
                         {
-                            if (roll >= 50 + 10 * countUndamagedGuardians)
+                            if (roll + 10 * countUndamagedGuardians >= 65)
                             {
                                 item.DestroyAll();
                             }
@@ -170,7 +330,7 @@ namespace TFTV
         {
             try
             {
-                CyclopsDefenseStatus.Multiplier = 0.25f + HoplitesKilled * 0.1f;
+                CyclopsDefenseStatus.Multiplier = 0.5f + HoplitesKilled * 0.1f;
                 TFTVLogger.Always("Cyclops Defense level is " + CyclopsDefenseStatus.Multiplier);
             }
             catch (Exception e)
@@ -204,6 +364,7 @@ namespace TFTV
                     }
                 }
                 return equipment;
+
             }
 
 
@@ -265,7 +426,10 @@ namespace TFTV
                                 cyclops.Status.Statuses.Remove(cyclops.Status.GetStatusByName(ancientsPowerUpStatus.EffectName));
                             }
                         }
-                        cyclops.CharacterStats.WillPoints.Add(5);
+                        if (cyclops.HasStatus(AlertedStatus))
+                        {
+                            cyclops.CharacterStats.WillPoints.Add(5);
+                        }
                         cyclops.CharacterStats.Speed.SetMax(cyclops.CharacterStats.WillPoints.IntValue);
                         cyclops.CharacterStats.Speed.Set(cyclops.CharacterStats.WillPoints.IntValue);
                     }
@@ -281,8 +445,50 @@ namespace TFTV
         }
 
 
+        //set resource cost of excavation (now exploration)
+        [HarmonyPatch(typeof(ExcavateAbility), "GetResourceCost")]
 
-        //commented out for release #10
+        public static class TFTV_GeoAbility_GetResourceCost
+        {
+            public static void Postfix(ref ResourcePack __result)
+            {
+                try
+                {
+                    __result = new ResourcePack() { new ResourceUnit(ResourceType.Materials, value: 20), new ResourceUnit(ResourceType.Tech, value: 5) };
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+
+                }
+            }
+        }
+
+        //removes icon + text of resource requirement if resource is not required
+        [HarmonyPatch(typeof(SiteContextualMenuDescriptionController), "SetResourcesText")]
+
+        public static class TFTV_ResourceDisplayController_SetDisplayedResource
+        {
+            public static void Postfix(Text textField)
+            {
+                try
+                {
+
+                    if (textField.text == "0")
+                    {
+                        textField.transform.parent.gameObject.SetActive(value: false);
+                    }
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+
+                }
+            }
+        }
+
         [HarmonyPatch(typeof(TacticalFaction), "RequestEndTurn")]
         public static class TacticalFaction_RequestEndTurn_AncientsSelfRepair_Patch
         {
@@ -541,6 +747,7 @@ namespace TFTV
 
     }
 }
+
 /*
  public static void AddDrillBack(TacticalLevelController controller)
  {

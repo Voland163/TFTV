@@ -1,4 +1,5 @@
 ﻿using Base;
+using EnviroSamples;
 using HarmonyLib;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Geoscape.Entities;
@@ -19,7 +20,7 @@ namespace TFTV
 {
     internal class TFTVSDIandVoidOmenRoll
     {
-        private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
+       // private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
         // Current and last ODI level
         public static int CurrentODI_Level = 0;
         // All SDI (ODI) event IDs, levels as array, index 0 - 19
@@ -230,6 +231,7 @@ namespace TFTV
                         TFTVVoidOmens.CreateVoidOmenObjective(voidOmenTitle + voidOmenRoll, voidOmenDescription + voidOmenRoll, geoLevelController);
                     }
                     // Implement the new Void Omen situation
+                    TFTVVoidOmens.CheckVoidOmensBeforeImplementing(geoLevelController);
                     TFTVVoidOmens.ImplementVoidOmens(geoLevelController);
                 }
             }

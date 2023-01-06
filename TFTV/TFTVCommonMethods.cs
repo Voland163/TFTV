@@ -1,4 +1,5 @@
-﻿using Base.Entities.Statuses;
+﻿using Base.Core;
+using Base.Entities.Statuses;
 using Base.UI;
 using HarmonyLib;
 using PhoenixPoint.Common.ContextHelp;
@@ -19,6 +20,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Security.Cryptography;
 
 namespace TFTV
 {
@@ -350,7 +352,7 @@ namespace TFTV
             }
             throw new InvalidOperationException();
         }
-        public static ResearchDef CreateNewPXResearch(string id, int cost, string gUID, ResearchViewElementDef researchViewElementDef)
+        public static ResearchDef CreateNewPXResearch(string id, int cost, string gUID, string gUID2, string name, string reveal, string unlock, string complete, string benefits, ResearchViewElementDef imageSource)
 
         {
             try
@@ -363,10 +365,26 @@ namespace TFTV
                 researchDef.Id = id;
                 researchDef.InitialStates[0].State = ResearchState.Hidden;
                 researchDef.ResearchCost = cost;
-                researchDef.ViewElementDef = researchViewElementDef;
+               
                 researchDef.Unlocks = secondarySourceResearchDef.Unlocks;
                 researchDef.Tags = secondarySourceResearchDef.Tags;
                 researchDB.Researches.Add(researchDef);
+
+                ResearchViewElementDef sourceResearchViewDef = DefCache.GetDef<ResearchViewElementDef>("PX_SDI_ViewElementDef");
+                ResearchViewElementDef researchViewDef = Helper.CreateDefFromClone(sourceResearchViewDef, gUID2, id + "_ViewElementDef");
+                researchViewDef.DisplayName1.LocalizationKey = name;
+                researchViewDef.RevealText.LocalizationKey = reveal;
+                researchViewDef.UnlockText.LocalizationKey = unlock;
+                researchViewDef.CompleteText.LocalizationKey = complete;
+                researchViewDef.BenefitsText.LocalizationKey = benefits;
+
+                if (imageSource != null) 
+                {
+                    researchViewDef.ResearchIcon = imageSource.ResearchIcon; 
+                }
+
+                researchDef.ViewElementDef = researchViewDef;
+
                 return researchDef;
             }
 
@@ -455,6 +473,28 @@ namespace TFTV
             throw new InvalidOperationException();
 
         }
+
+        public static ExistingResearchRequirementDef CreateNewExistingResearchResearchRequirementDef(string nameDef, string gUID, string researchID)
+        {
+            try
+            {
+                ExistingResearchRequirementDef sourceExisitingResReq =
+                      DefCache.GetDef<ExistingResearchRequirementDef>("PX_PhoenixProject_ResearchDef_ExistingResearchRequirementDef_0");
+
+                ExistingResearchRequirementDef newResReq = Helper.CreateDefFromClone(sourceExisitingResReq, gUID, nameDef);
+                newResReq.ResearchID = researchID;
+               
+                return newResReq;
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+            throw new InvalidOperationException();
+
+        }
+
+
 
         [HarmonyPatch(typeof(GeoSite), "CreateHavenDefenseMission")]
         public static class GeoSite_CreateHavenDefenseMission_RevealHD_Patch

@@ -37,7 +37,8 @@ namespace TFTV
         public bool ProjectOrisisCompletedSaveData;// = TFTVRevenantResearch.ProjectOsiris;
         public int RevenantId;
         public bool [] VoidOmensCheck = TFTVVoidOmens.VoidOmensCheck;
-        //Commented out for release #12   public int HoplitesKilledOnMission;
+        //Commented out for release #12
+        public int HoplitesKilledOnMission;
 
     }
 
@@ -72,7 +73,8 @@ namespace TFTV
             TFTVLogger.Always("Project Osiris researched " + TFTVRevenantResearch.ProjectOsiris);
 
             TFTVHumanEnemies.RollCount = 0;
-            //Commented out for release #12     TFTVAncients.CheckCyclopsDefense();
+            //Commented out for release #13
+           // TFTVAncients.CheckCyclopsDefense();
             TFTVLogger.Always("Tactical start completed");
             TFTVLogger.Always("Difficulty level is " + tacController.Difficulty.Order);
             
@@ -83,26 +85,17 @@ namespace TFTV
         /// </summary>
         public override void OnTacticalEnd()
         {
-            //   TFTVRevenant.CheckForNotDeadSoldiers(Controller);
+
               TFTVLogger.Always("OnTacticalEnd check");
             TFTVRevenant.revenantCanSpawn=false;
-          //  TFTVInfestation.CheckIfPhoenixLost(Controller);
+      
             TFTVRevenantResearch.CheckRevenantCapturedOrKilled(Controller);
-         //   TFTVVoidOmens.GameOverMethodInvoked = false;
+       
             
 
             base.OnTacticalEnd();
 
-          /*  if (TFTVRevenant.revenantSpawned)
-            {
-                TFTVLogger.Always("revenant Spawned is true and " + TFTVRevenant.timeLastRevenantSpawned.DateTime);
-                TFTVRevenant.timeLastRevenantSpawned = TFTVRevenant.timeOfMissionStart;
-                TFTVLogger.Always("revenant Spawned is true and " + TFTVRevenant.timeLastRevenantSpawned.DateTime);
-            }*/
-            /*  if (TFTVRevenant.DeadSoldiersDelirium.Count != 0 && TFTVRevenant.DeadSoldiersDelirium.Count > TFTVRevenant.GeoDeadSoldiersDelirium.Count)
-              {
-                  TFTVRevenant.DeadSoldiersDelirium = TFTVRevenant.DeadSoldiersDelirium;
-              }*/
+        
 
             
         }
@@ -123,19 +116,19 @@ namespace TFTV
                 TFTVUmbra.TBTVVariable = data.TBTVVariable;
                 TFTVUmbra.UmbraResearched = data.UmbraResearched;
                 TFTVRevenant.DeadSoldiersDelirium = data.DeadSoldiersDelirium;
-                //  TFTVRevenant.timeRevenantLastSeen = data.timeRevenantLastSeenSaveData;
-                // TFTVRevenant.timeLastRevenantSpawned = data.timeLastRevenantSpawned;
+
                 TFTVRevenant.revenantSpawned = data.revenantSpawned;
                 TFTVRevenant.revenantSpecialResistance = data.revenantSpecialResistance;
                 TFTVRevenant.revenantCanSpawn = data.revenantCanSpawnSaveDate;
                 TFTVRevenantResearch.ProjectOsirisStats = data.ProjectOsirisStatsTacticalSaveData;
                 TFTVRevenantResearch.ProjectOsiris = data.ProjectOrisisCompletedSaveData;
-               // TFTVHumanEnemies.difficultyLevel = data.difficultyLevelForTacticalSaveData;
+
                 TFTVHumanEnemies.HumanEnemiesAndTactics = data.humanEnemiesLeaderTacticsSaveData;
                 TFTVInfestationStory.HavenPopulation = data.infestedHavenPopulationSaveData;
                 TFTVInfestationStory.OriginalOwner = data.infestedHavenOriginalOwnerSaveData;
                 TFTVRevenant.revenantID = data.RevenantId;
-                //Commented out for release #12     TFTVAncients.HoplitesKilled = data.HoplitesKilledOnMission;
+                //Commented out for release #13
+              //  TFTVAncients.HoplitesKilled = data.HoplitesKilledOnMission;
 
             }
             catch (Exception e)
@@ -158,7 +151,6 @@ namespace TFTV
                 TBTVVariable = TFTVUmbra.TBTVVariable,
                 UmbraResearched = TFTVUmbra.UmbraResearched,
                 DeadSoldiersDelirium = TFTVRevenant.DeadSoldiersDelirium,
-                //   timeRevenantLastSeenSaveData = TFTVRevenant.timeRevenantLastSeen,
                 revenantSpawned = TFTVRevenant.revenantSpawned,
                 revenantSpecialResistance = TFTVRevenant.revenantSpecialResistance,
                 revenantCanSpawnSaveDate = TFTVRevenant.revenantCanSpawn,
@@ -168,7 +160,8 @@ namespace TFTV
                 infestedHavenPopulationSaveData = TFTVInfestationStory.HavenPopulation,
                 infestedHavenOriginalOwnerSaveData = TFTVInfestationStory.OriginalOwner,
                 RevenantId = TFTVRevenant.revenantID,
-                //commented out for release #11        HoplitesKilledOnMission = TFTVAncients.HoplitesKilled
+                //commented out for release #13
+            //    HoplitesKilledOnMission = TFTVAncients.HoplitesKilled
 
             };
             
@@ -192,7 +185,7 @@ namespace TFTV
                     }
 
                     //commented out for release #12
-                 /*   if (turnNumber == 0 && TFTVAncients.CheckIfAncientsPresent(Controller))
+                 /*  if (turnNumber == 0 && TFTVAncients.CheckIfAncientsPresent(Controller))
                     {
                         TFTVAncients.AdjustAncientsOnDeployment(Controller);
                     }*/

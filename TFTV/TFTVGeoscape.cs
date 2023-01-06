@@ -1,4 +1,6 @@
 using Base.Serialization.General;
+using PhoenixPoint.Common.Core;
+using PhoenixPoint.Geoscape.Core;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Modding;
@@ -30,6 +32,9 @@ namespace TFTV
         public string infestedHavenOriginalOwnerSaveData = TFTVInfestationStory.OriginalOwner;
         public Dictionary<int, int[]> ProjectOsirisStatsSaveData = TFTVRevenantResearch.ProjectOsirisStats;
         public bool[] VoidOmensCheck = TFTVVoidOmens.VoidOmensCheck;
+     //   public string PhoenixBaseUnderAttack = TFTVExperimental.PhoenixBaseUnderAttack;
+    //    public PhoenixBaseAttacker baseAttacker = TFTVExperimental.phoenixBaseAttacker;
+      //  public PPFactionDef factionAttackingPheonixBase = TFTVExperimental.FactionAttackingPhoenixBase;
         // public List<string> TacticalHintsToShow = TFTVTutorialAndStory.TacticalHintsToShow;
     }
 
@@ -59,6 +64,7 @@ namespace TFTV
             //  {
             TFTVNewPXCharacters.PlayIntro(gsController);
             //  }
+            TFTVVoidOmens.CheckVoidOmensBeforeImplementing(gsController);
             TFTVVoidOmens.ImplementVoidOmens(gsController);
             TFTVUmbra.CheckForUmbraResearch(gsController);
             TFTVUmbra.SetUmbraEvolution(gsController);
@@ -74,13 +80,9 @@ namespace TFTV
             TFTVProjectOsiris.RunProjectOsiris(gsController);
             Main.Logger.LogInfo("UmbraEvolution variable is " + Controller.EventSystem.GetVariable(TFTVUmbra.TBTVVariableName));
             TFTVLogger.Always("UmbraEvolution variable is " + Controller.EventSystem.GetVariable(TFTVUmbra.TBTVVariableName));
-
+           // TFTVExperimental.ClearAndCreateBaseDefenseMission(gsController);
             //  TFTVLogger.Always("Revenants destroyed " + gsController.EventSystem.GetVariable("RevenantsDestroyed"));
             //  TFTVLogger.Always("Revenant captured " + gsController.EventSystem.GetVariable("RevenantCapturedVariable"));
-
-
-
-
         }
         /// <summary>
         /// Called when Geoscape ends.
@@ -122,6 +124,9 @@ namespace TFTV
                 infestedHavenPopulationSaveData = TFTVInfestationStory.HavenPopulation,
                 ProjectOsirisStatsSaveData = TFTVRevenantResearch.ProjectOsirisStats,
                 VoidOmensCheck = TFTVVoidOmens.VoidOmensCheck,
+              //  PhoenixBaseUnderAttack = TFTVExperimental.PhoenixBaseUnderAttack,
+               // baseAttacker = TFTVExperimental.phoenixBaseAttacker
+              //  factionAttackingPheonixBase = TFTVExperimental.FactionAttackingPhoenixBase
             };
 
         }
@@ -147,6 +152,10 @@ namespace TFTV
             TFTVInfestationStory.OriginalOwner = data.infestedHavenOriginalOwnerSaveData;
             TFTVRevenantResearch.ProjectOsirisStats = data.ProjectOsirisStatsSaveData;
             TFTVVoidOmens.VoidOmensCheck = data.VoidOmensCheck;
+      
+            //TFTVExperimental.FactionAttackingPhoenixBase = data.factionAttackingPheonixBase;
+            //TFTVExperimental.CheckIfFactionAttackingPhoenixBase();
+
             //  TFTVTutorialAndStory.TacticalHintsToShow = data.TacticalHintsToShow;
 
             //  Main.Logger.LogInfo("UmbraEvolution variable is " + Controller.EventSystem.GetVariable(TFTVUmbra.TBTVVariableName));
@@ -161,6 +170,7 @@ namespace TFTV
             Main.Logger.LogInfo("Behemoth will wait for another  " + TFTVAirCombat.behemothWaitHours + " before moving");
             Main.Logger.LogInfo("Last time a Revenant was seen was on day " + TFTVRevenant.daysRevenantLastSeen + ", and now it is day " + Controller.Timing.Now.TimeSpan.Days);
             Main.Logger.LogInfo("Project Osiris stats count " + TFTVRevenantResearch.ProjectOsirisStats.Count);
+         //   Main.Logger.LogInfo("Faction attacking Phoenix Base is " + TFTVExperimental.FactionAttackingPhoenixBase.name);
             //  Main.Logger.LogInfo("Shown hints count " + TFTVTutorialAndStory.TacticalHintsToShow.Count);
 
 
@@ -176,6 +186,7 @@ namespace TFTV
             TFTVLogger.Always("Behemoth will wait for another  " + TFTVAirCombat.behemothWaitHours + " before moving");
             TFTVLogger.Always("Last time a Revenant was seen was on day " + TFTVRevenant.daysRevenantLastSeen + ", and now it is day " + Controller.Timing.Now.TimeSpan.Days);
             TFTVLogger.Always("Project Osiris stats count " + TFTVRevenantResearch.ProjectOsirisStats.Count);
+           // TFTVLogger.Always("Faction attacking Phoenix Base is " + TFTVExperimental.FactionAttackingPhoenixBase.name);
             // TFTVLogger.Always("Shown hints count " + TFTVTutorialAndStory.TacticalHintsToShow.Count);
 
         }

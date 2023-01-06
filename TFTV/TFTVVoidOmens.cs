@@ -68,7 +68,68 @@ namespace TFTV
         //V0#18 is extra defense points, less rewards
 
 
+        public static void CheckVoidOmensBeforeImplementing(GeoLevelController level)
+        {
+            try
 
+            {
+                List<int> VoidOmensInPLay = new List<int>();
+                List<int> AlreadyRolledVoidOmens = new List<int>();
+
+                int difficulty = level.CurrentDifficultyLevel.Order;
+                string voidOmen = "VoidOmen_";
+
+                for (int i = 0; i < CheckFordVoidOmensInPlay(level).Count(); i++)
+                {
+                    TFTVLogger.Always("Void Omen " + CheckFordVoidOmensInPlay(level)[i] + " is in play");
+                    VoidOmensInPLay.Add(CheckFordVoidOmensInPlay(level)[i]);
+                }
+
+                for (int x = 0; x < CheckForAlreadyRolledVoidOmens(level).Count; x++)
+                {
+                    TFTVLogger.Always("Void Omen " + CheckForAlreadyRolledVoidOmens(level)[x] + " rolled at some point");
+                    AlreadyRolledVoidOmens.Add(CheckForAlreadyRolledVoidOmens(level)[x]);
+                }
+
+                bool foundError = false;
+
+                foreach (int x in VoidOmensInPLay)
+                {
+                    if (x!=0 && !AlreadyRolledVoidOmens.Contains(x))
+                    {
+                        TFTVLogger.Always("Found a ghost VO " + x + ". Will try to remove");
+                        foundError = true;
+                        for (int y = 0; y < CheckFordVoidOmensInPlay(level).Count(); y++)
+                        {
+                            if(CheckFordVoidOmensInPlay(level)[y] == x) 
+                            {
+                                level.EventSystem.SetVariable(voidOmen + (y+1), 0);
+                            }
+                        }
+                    }
+                }
+                if (foundError)
+                {
+                    TFTVLogger.Always("Verifying if error was corrected...");
+                    for (int i = 0; i < CheckFordVoidOmensInPlay(level).Count(); i++)
+                    {
+                        TFTVLogger.Always("Void Omen " + CheckFordVoidOmensInPlay(level)[i] + " is in play");
+                    }
+
+                    for (int x = 0; x < CheckForAlreadyRolledVoidOmens(level).Count; x++)
+                    {
+                        TFTVLogger.Always("Void Omen " + CheckForAlreadyRolledVoidOmens(level)[x] + " rolled at some point");
+                    }
+                }
+            
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+
+        }
         public static void ImplementVoidOmens(GeoLevelController level)
         {
             try
@@ -167,7 +228,7 @@ namespace TFTV
                             missionTypeDef.DontRecoverItems = true;
                         }
                     }
-                    // Logger.Always(voidOmen + j + " is now in effect, held in variable " + voidOmen + i);
+                    //Logger.Always(voidOmen + j + " is now in effect, held in variable " + voidOmen + i);
                     VoidOmensCheck[5] = true;
                 }
                 else if (!CheckFordVoidOmensInPlay(level).Contains(5) && CheckForAlreadyRolledVoidOmens(level).Contains(5) && VoidOmensCheck[5])
@@ -198,18 +259,18 @@ namespace TFTV
                     TFTVLogger.Always("The check for VO#5 went ok");
 
                 }
-                if (CheckFordVoidOmensInPlay(level).Contains(6))
+                if (CheckFordVoidOmensInPlay(level).Equals(6))
                 {
                     level.CurrentDifficultyLevel.EvolutionPointsGainOnMissionLoss = 20;
                     level.CurrentDifficultyLevel.AlienBaseTypeEvolutionParams[0].EvolutionPerDestroyedBase = 30;
                     level.CurrentDifficultyLevel.AlienBaseTypeEvolutionParams[1].EvolutionPerDestroyedBase = 60;
                     level.CurrentDifficultyLevel.AlienBaseTypeEvolutionParams[2].EvolutionPerDestroyedBase = 90;
-                    foreach (ResourceGeneratorFacilityComponentDef lab in Repo.GetAllDefs<ResourceGeneratorFacilityComponentDef>())
-                    {
-                        if (lab.name == "E_ResourceGenerator [ResearchLab_PhoenixFacilityDef]" || lab.name == "E_ResourceGenerator [BionicsLab_PhoenixFacilityDef]")
-                            lab.BaseResourcesOutput.Values.Add(new ResourceUnit { Type = ResourceType.Research, Value = 2 });
-                    }
-                    //  Logger.Always(voidOmen + j + " is now in effect, held in variable " + voidOmen + i);
+                    ResourceGeneratorFacilityComponentDef researchLab = DefCache.GetDef<ResourceGeneratorFacilityComponentDef>("E_ResourceGenerator [ResearchLab_PhoenixFacilityDef]");
+                    ResourceGeneratorFacilityComponentDef bionicsLab = DefCache.GetDef<ResourceGeneratorFacilityComponentDef>("E_ResourceGenerator [BionicsLab_PhoenixFacilityDef]");
+                    researchLab.BaseResourcesOutput.Values[0] = new ResourceUnit { Type = ResourceType.Research, Value = 6 };
+                    bionicsLab.BaseResourcesOutput.Values[0] = new ResourceUnit { Type = ResourceType.Research, Value = 6 };
+
+                    // TFTVLogger.Always("VoidOmen6 is " + VoidOmensCheck[6]);
                     VoidOmensCheck[6] = true;
                 }
                 else if (!CheckFordVoidOmensInPlay(level).Contains(6) && CheckForAlreadyRolledVoidOmens(level).Contains(6) && VoidOmensCheck[6])
@@ -218,15 +279,10 @@ namespace TFTV
                     level.CurrentDifficultyLevel.AlienBaseTypeEvolutionParams[0].EvolutionPerDestroyedBase = 0;
                     level.CurrentDifficultyLevel.AlienBaseTypeEvolutionParams[1].EvolutionPerDestroyedBase = 0;
                     level.CurrentDifficultyLevel.AlienBaseTypeEvolutionParams[2].EvolutionPerDestroyedBase = 0;
-                    foreach (ResourceGeneratorFacilityComponentDef lab in Repo.GetAllDefs<ResourceGeneratorFacilityComponentDef>())
-                    {
-                        if (lab.name == "E_ResourceGenerator [ResearchLab_PhoenixFacilityDef]"
-                            || lab.name == "E_ResourceGenerator [BionicsLab_PhoenixFacilityDef]"
-                            && lab.BaseResourcesOutput.Values[1] != null)
-                        {
-                            lab.BaseResourcesOutput.Values.Remove(lab.BaseResourcesOutput.Values[1]);
-                        }
-                    }
+                    ResourceGeneratorFacilityComponentDef researchLab = DefCache.GetDef<ResourceGeneratorFacilityComponentDef>("E_ResourceGenerator [ResearchLab_PhoenixFacilityDef]");
+                    ResourceGeneratorFacilityComponentDef bionicsLab = DefCache.GetDef<ResourceGeneratorFacilityComponentDef>("E_ResourceGenerator [BionicsLab_PhoenixFacilityDef]");
+                    researchLab.BaseResourcesOutput.Values[0] = new ResourceUnit { Type = ResourceType.Research, Value = 4 };
+                    bionicsLab.BaseResourcesOutput.Values[0] = new ResourceUnit { Type = ResourceType.Research, Value = 4 };
                     VoidOmensCheck[6] = false;
                     TFTVLogger.Always("The check for VO#6 went ok");
 
@@ -341,39 +397,39 @@ namespace TFTV
                     TFTVLogger.Always("The check for VO#14 went ok");
 
                 }
-                /*   if (CheckFordVoidOmensInPlay(level).Contains(15))
-                   {
-                       //  Logger.Always(voidOmen + j + " is now in effect, held in variable " + voidOmen + i);
-                       VoidOmensCheck[15] = true;
-                   }
-                   else if (!CheckFordVoidOmensInPlay(level).Contains(15) && CheckForAlreadyRolledVoidOmens(level).Contains(15))
-                   {
-                       VoidOmensCheck[15] = false;
-                       TFTVLogger.Always("The check for VO#15 went ok");
+                if (CheckFordVoidOmensInPlay(level).Contains(15))
+                {
+                    //  Logger.Always(voidOmen + j + " is now in effect, held in variable " + voidOmen + i);
+                    VoidOmensCheck[15] = true;
+                }
+                else if (!CheckFordVoidOmensInPlay(level).Contains(15) && CheckForAlreadyRolledVoidOmens(level).Contains(15))
+                {
+                    VoidOmensCheck[15] = false;
+                    TFTVLogger.Always("The check for VO#15 went ok");
 
-                   }
-                   if (CheckFordVoidOmensInPlay(level).Contains(16))
-                   {
+                }
+                if (CheckFordVoidOmensInPlay(level).Contains(16))
+                {
 
-                       VoidOmensCheck[16] = true;
-                   }
-                   else if (!CheckFordVoidOmensInPlay(level).Contains(16) && CheckForAlreadyRolledVoidOmens(level).Contains(16))
-                   {
-                       // TFTVUmbra.SetUmbraRandomValue(0);
+                    VoidOmensCheck[16] = true;
+                }
+                else if (!CheckFordVoidOmensInPlay(level).Contains(16) && CheckForAlreadyRolledVoidOmens(level).Contains(16))
+                {
+                    // TFTVUmbra.SetUmbraRandomValue(0);
 
-                       VoidOmensCheck[16] = false;
-                       TFTVLogger.Always("The check for VO#16 went ok");
+                    VoidOmensCheck[16] = false;
+                    TFTVLogger.Always("The check for VO#16 went ok");
 
-                   }
-                   if (CheckFordVoidOmensInPlay(level).Contains(17))
-                   {
-                       VoidOmensCheck[17] = true;
-                   }
-                   else if (!CheckFordVoidOmensInPlay(level).Contains(17) && CheckForAlreadyRolledVoidOmens(level).Contains(17))
-                   {
-                       VoidOmensCheck[17] = false;
-                       TFTVLogger.Always("The check for VO#17 went ok");
-                   }*/
+                }
+                if (CheckFordVoidOmensInPlay(level).Contains(17))
+                {
+                    VoidOmensCheck[17] = true;
+                }
+                else if (!CheckFordVoidOmensInPlay(level).Contains(17) && CheckForAlreadyRolledVoidOmens(level).Contains(17))
+                {
+                    VoidOmensCheck[17] = false;
+                    TFTVLogger.Always("The check for VO#17 went ok");
+                }
                 if (CheckFordVoidOmensInPlay(level).Contains(18))
                 {
 
@@ -1216,31 +1272,31 @@ namespace TFTV
                 try
                 {
                     GeoLevelController controller = (GeoLevelController)UnityEngine.Object.FindObjectOfType(typeof(GeoLevelController));
-         
+
                     if (CheckFordVoidOmensInPlay(controller).Contains(2))
                     {
-                                              
-                        if (reward.Resources!=null && reward.Resources.Count>0)
+
+                        if (reward.Resources != null && reward.Resources.Count > 0)
                         {
                             TFTVLogger.Always("Resource amount is " + reward.Resources[0].Value);
-                            reward.Resources = new ResourcePack 
-                            { new ResourceUnit{ 
-                                 
-                                Type = reward.Resources[0].Type, Value = reward.Resources[0].Value * 0.5f} 
-                           
+                            reward.Resources = new ResourcePack
+                            { new ResourceUnit{
+
+                                Type = reward.Resources[0].Type, Value = reward.Resources[0].Value * 0.5f}
+
                             };
                         }
-                        if(reward.Diplomacy!=null && reward.Diplomacy.Count > 0) 
+                        if (reward.Diplomacy != null && reward.Diplomacy.Count > 0)
                         {
-                            
-                            foreach (RewardDiplomacyChange change in reward.Diplomacy) 
+
+                            foreach (RewardDiplomacyChange change in reward.Diplomacy)
                             {
                                 TFTVLogger.Always("Diplo reward is " + change.Value);
-                                change.Value = Mathf.RoundToInt(0.5f* change.Value);
-                            
+                                change.Value = Mathf.RoundToInt(0.5f * change.Value);
+
                             }
                         }
-            
+
                     }
                 }
                 catch (Exception e)

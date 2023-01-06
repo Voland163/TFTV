@@ -1,5 +1,6 @@
 ﻿using Base.Defs;
 using Base.Entities.Abilities;
+using Base.Entities.Effects.ApplicationConditions;
 using Base.UI;
 using com.ootii.Collections;
 using HarmonyLib;
@@ -9,6 +10,7 @@ using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.UI;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.Animations;
+using PhoenixPoint.Tactical.Entities.Effects.ApplicationConditions;
 using PhoenixPoint.Tactical.Entities.Statuses;
 using System;
 using System.Collections.Generic;
@@ -71,18 +73,14 @@ namespace PRMBetterClasses.SkillModifications
 
         private static void Change_IgnorePain()
         {
-            PRMLogger.Debug("'" + MethodBase.GetCurrentMethod().DeclaringType.Name + "." + MethodBase.GetCurrentMethod().Name + "()' no changes implemented yet!");
-            PRMLogger.Debug("----------------------------------------------------", false);
-            //// Remove Ignore Pain from mind control application conditions
-            //MindControlStatusDef mcStatus = Repo.GetAllDefs<MindControlStatusDef>().FirstOrDefault(mcs => mcs.name.Equals("MindControl_StatusDef"));
-            //List<EffectConditionDef> mcApplicationConditions = mcStatus.ApplicationConditions.ToList();
-            //if (mcApplicationConditions.Remove(Repo.GetAllDefs<EffectConditionDef>().FirstOrDefault(ec => ec.name.Contains("IgnorePain"))))
-            //{
-            //    mcStatus.ApplicationConditions = mcApplicationConditions.ToArray();
-            //}
-            //// Change description
-            //ApplyStatusAbilityDef ignorePain = Repo.GetAllDefs<ApplyStatusAbilityDef>().FirstOrDefault(asa => asa.name.Equals("IgnorePain_AbilityDef"));
-            //ignorePain.ViewElementDef.Description = new LocalizedTextBind("Disabled body parts remain functional and cannot Panic.", doNotLocalize);
+            // Remove Ignore Pain from mind control application conditions
+            MindControlStatusDef mcStatus = DefCache.GetDef<MindControlStatusDef>("MindControl_StatusDef");
+            EffectConditionDef actorHasIgnorePain = DefCache.GetDef<EffectConditionDef>("NoIgnorePainStatus_ApplicationCondition");
+            List<EffectConditionDef> mcApplicationConditions = mcStatus.ApplicationConditions.ToList();
+            if (mcApplicationConditions.Remove(actorHasIgnorePain))
+            {
+                mcStatus.ApplicationConditions = mcApplicationConditions.ToArray();
+            }
         }
 
         private static void Change_AdrenalineRush()

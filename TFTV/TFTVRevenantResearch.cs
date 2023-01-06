@@ -21,7 +21,7 @@ namespace TFTV
     {
 
         private static readonly DefCache DefCache = new DefCache();
-        private static readonly DefRepository Repo = TFTVMain.Repo;
+     //   private static readonly DefRepository Repo = TFTVMain.Repo;
 
         public static bool RevenantCaptured = false;
 
@@ -91,20 +91,26 @@ namespace TFTV
         {
             try
             {
-                string nameRevenantCaptureResearch = "PX_Revenant_Live_Research";
-                string revenantVariable = RevenantCapturedVariable;
+                string defName = "PX_Revenant_Live_Research";
+                
                 string title = "PX_REVENANT_LIVE_RESEARCH_TITLE";
                 string reveal = "PX_REVENANT_LIVE_RESEARCH_REVEAL";
+                string unlock = "";
                 string complete = "PX_REVENANT_LIVE_RESEARCH_COMPLETE";
+                string benefits = "PX_REVENANT_LIVE_RESEARCH_BENEFITS";
+                string gUID = "B94BF4EC-4227-4D87-900D-48AB3B970DC1";
+                string gUID2 = "B5CC42DE-016F-4151-ACFA-8604C9C4CCCF";
+                int cost = 200;
 
-                ResearchViewElementDef revenantResearchViewElement =
-                    TFTVCommonMethods.CreateNewResearchViewElement(nameRevenantCaptureResearch + "_ViewElement_Def", "B94BF4EC-4227-4D87-900D-48AB3B970DC1", title, reveal, reveal, complete);
+               
 
                 ResearchDef revenantCaptureResearch =
-                    TFTVCommonMethods.CreateNewPXResearch(nameRevenantCaptureResearch, 200, "B5CC42DE-016F-4151-ACFA-8604C9C4CCCF", revenantResearchViewElement);
+                    TFTVCommonMethods.CreateNewPXResearch(defName, cost, gUID, gUID2, title, reveal, unlock, complete, benefits, null);
+
+                string revenantVariable = RevenantCapturedVariable;
 
                 EncounterVariableResearchRequirementDef revenantEncounterVariableResearch =
-                    TFTVCommonMethods.CreateNewEncounterVariableResearchRequirementDef(nameRevenantCaptureResearch + "EncounterVariableResearchReq", "2857133D-C201-4BF8-B505-AF80863BA4EE",
+                    TFTVCommonMethods.CreateNewEncounterVariableResearchRequirementDef(defName + "EncounterVariableResearchReq", "2857133D-C201-4BF8-B505-AF80863BA4EE",
                     revenantVariable, 1);
 
                 ReseachRequirementDefOpContainer[] revenantReseachRevealRequirementContainer = new ReseachRequirementDefOpContainer[1];
@@ -113,8 +119,7 @@ namespace TFTV
                 revenantReseachRevealRequirementContainer[0].Requirements = revenantRevealResearchRequirementDefs; //medium box
                 revenantCaptureResearch.RevealRequirements.Container = revenantReseachRevealRequirementContainer;
                 revenantCaptureResearch.RevealRequirements.Operation = ResearchContainerOperation.ALL;
-                revenantCaptureResearch.ViewElementDef = revenantResearchViewElement;
-                revenantResearchViewElement.BenefitsText.LocalizationKey = "PX_REVENANT_LIVE_RESEARCH_BENEFITS";
+
             }
 
             catch (Exception e)
@@ -127,24 +132,27 @@ namespace TFTV
         {
             try
             {
-                string nameRevenantCaptureResearch = "PX_Project_Osiris_Research";
-                string revenantVariable = RevenantsDestroyed;
+                string defName = "PX_Project_Osiris_Research";
+              
 
                 string title = "PX_PROJECT_OSIRIS_TITLE";
                 string reveal = "PX_PROJECT_OSIRIS_REVEAL";
                 string complete = "PX_PROJECT_OSIRIS_COMPLETE";
+                string unlock = "";
+                string benefits = "PX_PROJECT_OSIRIS_BENEFITS";
+                string gUID = "E91914A2-B077-40F0-AB98-6560537A89C8";
+                string gUID2 = "040593DB-C61F-4C2A-A908-1B84C62424AF";
+                int cost = 400;
 
 
-                ResearchViewElementDef revenantResearchViewElement =
-                    TFTVCommonMethods.CreateNewResearchViewElement(nameRevenantCaptureResearch + "_ViewElement_Def", "E91914A2-B077-40F0-AB98-6560537A89C8", title, reveal, reveal, complete);
-
+          
                 ResearchDef enoughRevenantsKilledResearch =
-                    TFTVCommonMethods.CreateNewPXResearch(nameRevenantCaptureResearch, 400, "040593DB-C61F-4C2A-A908-1B84C62424AF", revenantResearchViewElement);
+                    TFTVCommonMethods.CreateNewPXResearch(defName, cost, gUID, gUID2, title, reveal, unlock, complete, benefits, null);
 
-                revenantResearchViewElement.BenefitsText.LocalizationKey = "PX_PROJECT_OSIRIS_BENEFITS";
+                string revenantVariable = RevenantsDestroyed;
 
                 EncounterVariableResearchRequirementDef revenantEncounterVariableResearch =
-                    TFTVCommonMethods.CreateNewEncounterVariableResearchRequirementDef(nameRevenantCaptureResearch + "EncounterVariableResearchReq", "009E4EC9-94ED-488A-A00D-536BFA750CEB",
+                    TFTVCommonMethods.CreateNewEncounterVariableResearchRequirementDef(defName + "EncounterVariableResearchReq", "009E4EC9-94ED-488A-A00D-536BFA750CEB",
                     revenantVariable, 10);
 
                 ReseachRequirementDefOpContainer[] revenantReseachRevealRequirementContainer = new ReseachRequirementDefOpContainer[1];

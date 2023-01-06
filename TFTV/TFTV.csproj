@@ -52,6 +52,10 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="Unity.Addressables">
+      <HintPath>..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Phoenix Point\PhoenixPointWin64_Data\Managed\Unity.Addressables.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="UnityEngine.CoreModule">
       <HintPath>..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Phoenix Point\PhoenixPointWin64_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
       <Private>False</Private>

@@ -40,7 +40,7 @@ namespace PRMBetterClasses.VariousAdjustments
         /// The original method is fully copied in here and will not be called unless an error occurs, i.e. this patch overwrites the original.
         /// </summary>
         [HarmonyPatch(typeof(UIItemTooltip), "SetWeaponStats")]
-        internal static class __instance
+        internal static class UIItemTooltip_SetWeaponStats_Patch
         {
             // Create new static localized text binds for the inserted UI tooltip texts
             public static LocalizedTextBind bodyPartDamageText = new LocalizedTextBind("BC_KEY_ITEM_STAT_BODYPART_DAMAGE");
