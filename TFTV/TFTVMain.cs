@@ -135,6 +135,7 @@ namespace TFTV
                 Logger.LogInfo("Defs with Dynamic Config dependency injected");
                 TFTVRevenantResearch.CreateRevenantRewardsDefs();
                 TFTVProjectOsiris.CreateProjectOsirisDefs();
+              //  TFTVAncients.CheckResearchesRequiringThings();
 
                 harmony.PatchAll();
 

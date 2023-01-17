@@ -94,8 +94,8 @@ namespace TFTV
                 string defName = "PX_Revenant_Live_Research";
                 
                 string title = "PX_REVENANT_LIVE_RESEARCH_TITLE";
-                string reveal = "PX_REVENANT_LIVE_RESEARCH_REVEAL";
-                string unlock = "";
+                string reveal = "";
+                string unlock = "PX_REVENANT_LIVE_RESEARCH_REVEAL";
                 string complete = "PX_REVENANT_LIVE_RESEARCH_COMPLETE";
                 string benefits = "PX_REVENANT_LIVE_RESEARCH_BENEFITS";
                 string gUID = "B94BF4EC-4227-4D87-900D-48AB3B970DC1";
@@ -136,9 +136,9 @@ namespace TFTV
               
 
                 string title = "PX_PROJECT_OSIRIS_TITLE";
-                string reveal = "PX_PROJECT_OSIRIS_REVEAL";
+                string reveal = "";
                 string complete = "PX_PROJECT_OSIRIS_COMPLETE";
-                string unlock = "";
+                string unlock = "PX_PROJECT_OSIRIS_REVEAL";
                 string benefits = "PX_PROJECT_OSIRIS_BENEFITS";
                 string gUID = "E91914A2-B077-40F0-AB98-6560537A89C8";
                 string gUID2 = "040593DB-C61F-4C2A-A908-1B84C62424AF";

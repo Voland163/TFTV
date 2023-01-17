@@ -8,6 +8,7 @@ using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.View.ViewModules;
 using PhoenixPoint.Geoscape.Levels;
+using PhoenixPoint.Tactical.ContextHelp;
 using PhoenixPoint.Tactical.ContextHelp.HintConditions;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Levels;
@@ -31,11 +32,13 @@ namespace TFTV
 
         private static readonly ActorHasTemplateHintConditionDef sourceActorHasTemplateHintConditionDef = DefCache.GetDef<ActorHasTemplateHintConditionDef>("ActorHasTemplate_Fishman2_Sneaker_AlienMutationVariationDef_HintConditionDef");
         private static readonly ActorHasTagHintConditionDef sourceActorHasTagHintConditionDef = DefCache.GetDef<ActorHasTagHintConditionDef>("ActorHasTag_Takeshi_Tutorial3_GameTagDef_HintConditionDef");
+        private static readonly ActorHasStatusHintConditionDef sourceActorHasStatusHintConditionDef = DefCache.GetDef<ActorHasStatusHintConditionDef>("ActorHasStatus_CorruptionAttack_StatusDef_HintConditionDef");
+
         private static readonly ContextHelpHintDef sourceContextHelpHintDef = DefCache.GetDef<ContextHelpHintDef>("TUT_DLC3_MissionStartStory_HintDef");
         private static readonly HasSeenHintHintConditionDef sourceHasSeenHintConditionDef = DefCache.GetDef<HasSeenHintHintConditionDef>("HasSeenHint_TUT2_Overwatch_HintDef-False_HintConditionDef");
         private static readonly LevelHasTagHintConditionDef sourceInfestationMission = DefCache.GetDef<LevelHasTagHintConditionDef>("LevelHasTag_MissionTypeBaseInfestation_MissionTagDef_HintConditionDef");
         private static readonly MissionTypeTagDef infestationMissionTagDef = DefCache.GetDef<MissionTypeTagDef>("HavenInfestation_MissionTypeTagDef");
-        private static readonly IsDefHintConditionDef sourceIsDefHintConditionDef = DefCache.GetDef<IsDefHintConditionDef>("IsDef_Strained_StatusDef_HintConditionDef");
+       // private static readonly IsDefHintConditionDef sourceIsDefHintConditionDef = DefCache.GetDef<IsDefHintConditionDef>("IsDef_Strained_StatusDef_HintConditionDef");
 
         /*  public static void RemoveAlreadyShownTacticalHints()
           {
@@ -61,33 +64,33 @@ namespace TFTV
               }
           }*/
 
-     
 
-       /* [HarmonyPatch(typeof(UIStateGeoCutscene), "ExitState")] //, new Type[] { typeof(GeoscapeTutorialStepType), typeof(int)})]
-        public static class GeoscapeTutorial_Finished_Patch
-        {
-            public static void Postfix(UIStateGeoCutscene __instance)
-            {
-                try
-                {
-   
-                    TFTVLogger.Always("ExitState");
-             
-                        GeoLevelController controller = (GeoLevelController)UnityEngine.Object.FindObjectOfType(typeof(GeoLevelController));
-                        TFTVLogger.Always("Intro variable is " + controller.EventSystem.GetVariable("BG_Intro_Played"));
-                        //controller.EventSystem.SetVariable("BG_Intro_Played", 0);
-                        TFTVNewPXCharacters.PlayIntro(controller);
-                        TFTVLogger.Always("Intro should have triggered");
-                    
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
 
-            }
-        }
-       */
+        /* [HarmonyPatch(typeof(UIStateGeoCutscene), "ExitState")] //, new Type[] { typeof(GeoscapeTutorialStepType), typeof(int)})]
+         public static class GeoscapeTutorial_Finished_Patch
+         {
+             public static void Postfix(UIStateGeoCutscene __instance)
+             {
+                 try
+                 {
+
+                     TFTVLogger.Always("ExitState");
+
+                         GeoLevelController controller = (GeoLevelController)UnityEngine.Object.FindObjectOfType(typeof(GeoLevelController));
+                         TFTVLogger.Always("Intro variable is " + controller.EventSystem.GetVariable("BG_Intro_Played"));
+                         //controller.EventSystem.SetVariable("BG_Intro_Played", 0);
+                         TFTVNewPXCharacters.PlayIntro(controller);
+                         TFTVLogger.Always("Intro should have triggered");
+
+                 }
+                 catch (Exception e)
+                 {
+                     TFTVLogger.Error(e);
+                 }
+
+             }
+         }
+        */
 
 
 
@@ -158,7 +161,7 @@ namespace TFTV
             {
                 try
                 {
-
+                    
 
                     ContextHelpHintDef hintDef = ____context as ContextHelpHintDef;
 
@@ -256,10 +259,39 @@ namespace TFTV
                         {
                             __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("Olena.png");
                         }
+                        else if (hintDef.name.Equals("ANCIENTS_STORY1"))
+                        {
+                            __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("HINT_TFTV_Ancients_Tactical_Story_1.jpg");
+                        }
+                        else if (hintDef.name.Equals("ANCIENTS_CYCLOPS"))
+                        {
+                            __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("HINT_TFTV_Ancients_Tactical_CyclopsDefense.jpg");
+                        }
+                        else if (hintDef.name.Equals("ANCIENTS_CYCLOPSDEFENSE"))
+                        {
+                            __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("HINT_TFTV_Ancients_Tactical_CyclopsDefense.jpg");
+                        }
+                        else if (hintDef.name.Equals("ANCIENTS_HOPLITS"))
+                        {
+                            __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("HINT_TFTV_Ancients_Tactical_Hoplites.jpg");
+                        }
+                        else if (hintDef.name.Equals("ANCIENTS_HOPLITSREPAIR"))
+                        {
+                            __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("HINT_TFTV_Ancients_Tactical_Hoplites_Overpower.jpg");
+                        }
+                        else if (hintDef.name.Equals("ANCIENTS_HOPLITSMAXPOWER"))
+                        {
+                            __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("HINT_TFTV_Ancients_Tactical_Hoplites_Overpower.jpg");
+                        }
+                       
                         else
                         {
                             __instance.Image.overrideSprite = null;//Helper.CreateSpriteFromImageFile("missing_hint_pic.jpg");
                         }
+
+
+
+
 
                         foreach (ContextHelpHintDef tacticsHint in TFTVHumanEnemies.TacticsHint)
                         {
@@ -363,16 +395,16 @@ namespace TFTV
             }
         }
 
-        public static IsDefHintConditionDef ActorHasStatusHintConditionDefCreateNewConditionForTacticalHint(string name)
+        public static ActorHasStatusHintConditionDef ActorHasStatusHintConditionDefCreateNewConditionForTacticalHint(string name)
         {
             try
 
             {
                 string gUID = Guid.NewGuid().ToString();
 
-                IsDefHintConditionDef newActorHasStatusHintConditionDef = Helper.CreateDefFromClone(sourceIsDefHintConditionDef, gUID, "ActorHasStatus_" + name + "_HintConditionDef");
+                ActorHasStatusHintConditionDef newActorHasStatusHintConditionDef = Helper.CreateDefFromClone(sourceActorHasStatusHintConditionDef, gUID, "ActorHasStatus_" + name + "_HintConditionDef");
                 StatusDef statusDef = DefCache.GetDef<StatusDef>(name);
-                newActorHasStatusHintConditionDef.TargetDef = statusDef;
+                newActorHasStatusHintConditionDef.StatusDef = statusDef;
 
                 return newActorHasStatusHintConditionDef;
             }
@@ -383,20 +415,15 @@ namespace TFTV
                 throw new InvalidOperationException();
             }
         }
-        public static ActorIsOfFactionHintConditionDef ActorIsOfFactionCreateNewConditionForTacticalHint(string name)
+        public static LevelHasTagHintConditionDef LevelHasTagHintConditionForTacticalHint(string name)
         {
             try
-
             {
                 string gUID = Guid.NewGuid().ToString();
+                LevelHasTagHintConditionDef newLevelTagCondition = Helper.CreateDefFromClone(sourceInfestationMission, gUID, name + "_HintConditionDef");
+                newLevelTagCondition.GameTagDef = DefCache.GetDef<MissionTypeTagDef>(name);
 
-
-                ActorIsOfFactionHintConditionDef sourceActorIsOfFactionConditionDef = DefCache.GetDef<ActorIsOfFactionHintConditionDef>("ActorHasTag_Takeshi_Tutorial3_GameTagDef_HintConditionDef");
-                ActorIsOfFactionHintConditionDef newActorIsOfFactionHintConditionDef = Helper.CreateDefFromClone(sourceActorIsOfFactionConditionDef, gUID, "ActorIsOfFaction_" + name + "_HintConditionDef");
-                TacticalFactionDef tacticalFactionDef = DefCache.GetDef<TacticalFactionDef>(name);
-                newActorIsOfFactionHintConditionDef.TacticalFactionDef = tacticalFactionDef;
-
-                return newActorIsOfFactionHintConditionDef;
+                return newLevelTagCondition;
             }
 
             catch (Exception e)
@@ -427,6 +454,11 @@ namespace TFTV
                 else if (typeHint == 2)
                 {
                     newContextHelpHintDef.Conditions[0] = ActorHasStatusHintConditionDefCreateNewConditionForTacticalHint(conditionName);
+                }
+                else if (typeHint == 3)
+                {
+                    newContextHelpHintDef.Conditions[0] = LevelHasTagHintConditionForTacticalHint(conditionName);
+
                 }
                 newContextHelpHintDef.Title.LocalizationKey = title;
                 newContextHelpHintDef.Text.LocalizationKey = text;
@@ -501,7 +533,7 @@ namespace TFTV
 
         public static void CreateNewManualTacticalHint(string name, string gUID, string titleKey, string textKey)
         {
-            try 
+            try
             {
                 ContextHelpHintDef newContextHelpHintDef = Helper.CreateDefFromClone(sourceContextHelpHintDef, gUID, name);
                 newContextHelpHintDef.Trigger = HintTrigger.Manual;

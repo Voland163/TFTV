@@ -56,11 +56,9 @@ namespace TFTV
 
             /// Tactical level controller is accessible at any time.
             TacticalLevelController tacController = Controller;
-            //  TFTVDefsRequiringReinjection.InjectDefsRequiringReinjection();
+
             /// ModMain is accesible at any time
-            // TFTVMain main = (TFTVMain)Main;
-            //TFTV give Dtony's Delirium Perks
-            //  TFTVDelirium.DeliriumPerksOnTactical(tacController);
+
             TFTVLogger.Always("Tactical Started");
             TFTVLogger.Always("The count of tactics in play is " + TFTVHumanEnemies.HumanEnemiesAndTactics.Count);
             TFTVLogger.Always("VO3 Active " + TFTVVoidOmens.VoidOmensCheck[3]);
@@ -74,7 +72,7 @@ namespace TFTV
 
             TFTVHumanEnemies.RollCount = 0;
             //Commented out for release #13
-           // TFTVAncients.CheckCyclopsDefense();
+            TFTVAncients.CheckCyclopsDefense();
             TFTVLogger.Always("Tactical start completed");
             TFTVLogger.Always("Difficulty level is " + tacController.Difficulty.Order);
             
@@ -128,7 +126,7 @@ namespace TFTV
                 TFTVInfestationStory.OriginalOwner = data.infestedHavenOriginalOwnerSaveData;
                 TFTVRevenant.revenantID = data.RevenantId;
                 //Commented out for release #13
-              //  TFTVAncients.HoplitesKilled = data.HoplitesKilledOnMission;
+                TFTVAncients.HoplitesKilled = data.HoplitesKilledOnMission;
 
             }
             catch (Exception e)
@@ -161,7 +159,7 @@ namespace TFTV
                 infestedHavenOriginalOwnerSaveData = TFTVInfestationStory.OriginalOwner,
                 RevenantId = TFTVRevenant.revenantID,
                 //commented out for release #13
-            //    HoplitesKilledOnMission = TFTVAncients.HoplitesKilled
+                HoplitesKilledOnMission = TFTVAncients.HoplitesKilled
 
             };
             
@@ -185,10 +183,10 @@ namespace TFTV
                     }
 
                     //commented out for release #12
-                 /*  if (turnNumber == 0 && TFTVAncients.CheckIfAncientsPresent(Controller))
+                   if (turnNumber == 0 && TFTVAncients.CheckIfAncientsPresent(Controller))
                     {
                         TFTVAncients.AdjustAncientsOnDeployment(Controller);
-                    }*/
+                    }
 
                     if (turnNumber == 0)
                     {

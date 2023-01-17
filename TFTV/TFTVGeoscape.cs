@@ -32,6 +32,9 @@ namespace TFTV
         public string infestedHavenOriginalOwnerSaveData = TFTVInfestationStory.OriginalOwner;
         public Dictionary<int, int[]> ProjectOsirisStatsSaveData = TFTVRevenantResearch.ProjectOsirisStats;
         public bool[] VoidOmensCheck = TFTVVoidOmens.VoidOmensCheck;
+
+
+
      //   public string PhoenixBaseUnderAttack = TFTVExperimental.PhoenixBaseUnderAttack;
     //    public PhoenixBaseAttacker baseAttacker = TFTVExperimental.phoenixBaseAttacker;
       //  public PPFactionDef factionAttackingPheonixBase = TFTVExperimental.FactionAttackingPhoenixBase;
@@ -59,11 +62,8 @@ namespace TFTV
             DefCache.GetDef<TacticalTargetingDataDef>("E_TargetingData [PsychicWard_AbilityDef]").Origin.Range = 10; //Fix Dtony thing
             TFTVBetaSaveGamesFixes.CheckSaveGameEventChoices(gsController);
             TFTVBetaSaveGamesFixes.CheckUmbraResearchVariable(gsController);
-            TFTVCommonMethods.CheckGeoUIfunctionality(gsController);
-            // if (!Controller.Tutorial.InProgress)
-            //  {
+            TFTVCommonMethods.CheckGeoUIfunctionality(gsController); 
             TFTVNewPXCharacters.PlayIntro(gsController);
-            //  }
             TFTVVoidOmens.CheckVoidOmensBeforeImplementing(gsController);
             TFTVVoidOmens.ImplementVoidOmens(gsController);
             TFTVUmbra.CheckForUmbraResearch(gsController);
@@ -78,9 +78,13 @@ namespace TFTV
 
             TFTVRevenantResearch.CheckRevenantResearchRequirements(Controller);
             TFTVProjectOsiris.RunProjectOsiris(gsController);
+            TFTVAncients.CheckResearchState(gsController);
             Main.Logger.LogInfo("UmbraEvolution variable is " + Controller.EventSystem.GetVariable(TFTVUmbra.TBTVVariableName));
             TFTVLogger.Always("UmbraEvolution variable is " + Controller.EventSystem.GetVariable(TFTVUmbra.TBTVVariableName));
-           // TFTVExperimental.ClearAndCreateBaseDefenseMission(gsController);
+          
+       
+            
+            // TFTVExperimental.ClearAndCreateBaseDefenseMission(gsController);
             //  TFTVLogger.Always("Revenants destroyed " + gsController.EventSystem.GetVariable("RevenantsDestroyed"));
             //  TFTVLogger.Always("Revenant captured " + gsController.EventSystem.GetVariable("RevenantCapturedVariable"));
         }
@@ -124,7 +128,8 @@ namespace TFTV
                 infestedHavenPopulationSaveData = TFTVInfestationStory.HavenPopulation,
                 ProjectOsirisStatsSaveData = TFTVRevenantResearch.ProjectOsirisStats,
                 VoidOmensCheck = TFTVVoidOmens.VoidOmensCheck,
-              //  PhoenixBaseUnderAttack = TFTVExperimental.PhoenixBaseUnderAttack,
+           
+                //  PhoenixBaseUnderAttack = TFTVExperimental.PhoenixBaseUnderAttack,
                // baseAttacker = TFTVExperimental.phoenixBaseAttacker
               //  factionAttackingPheonixBase = TFTVExperimental.FactionAttackingPhoenixBase
             };

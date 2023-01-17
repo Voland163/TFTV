@@ -1,15 +1,9 @@
-﻿using Base.Defs;
-using EnviroSamples;
-using HarmonyLib;
+﻿using HarmonyLib;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Events;
-using PhoenixPoint.Geoscape.Events.Eventus;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Objectives;
-using PhoenixPoint.Tactical.Entities;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
 namespace TFTV
@@ -18,6 +12,11 @@ namespace TFTV
     {
         public static readonly Sprite OlenaPic = Helper.CreateSpriteFromImageFile("BG_Olena_small.png");
         public static readonly Sprite AlistairPic = Helper.CreateSpriteFromImageFile("BG_alistair_small.png");
+        public static readonly Sprite HelenaPic = Helper.CreateSpriteFromImageFile("helena.png");
+        // public static readonly Sprite AlistairOffice = Helper.CreateSpriteFromImageFile("background_alistair_office.jpg");
+        //  public static readonly Sprite OlenaOffice = Helper.CreateSpriteFromImageFile("insidebase.jpg");
+        //  public static readonly Sprite HelenaOffice = Helper.CreateSpriteFromImageFile("background_office.jpg");
+        //  public static readonly Sprite AncientBackground = Helper.CreateSpriteFromImageFile("background_ancients.jpg");
 
         public static void PlayIntro(GeoLevelController level)
         {
@@ -60,7 +59,7 @@ namespace TFTV
 
                     if (__instance.Title != null && __instance.Title.LocalizationKey.Contains("VOID_OMEN_TITLE_"))
                     {
-                        __result = TFTVDefsRequiringReinjection.VoidIcon;                       
+                        __result = TFTVDefsRequiringReinjection.VoidIcon;
                     }
 
                 }
@@ -84,7 +83,7 @@ namespace TFTV
                 try
                 {
                     TFTVLogger.Always("TriggerGeoscapeEvent triggered for event " + eventId);
-                                                  
+
                     if (eventId == "PROG_PX10_WIN")
                     {
                         __instance.TriggerGeoscapeEvent("AlistairOnSymes1", context);
@@ -97,7 +96,7 @@ namespace TFTV
                     {
                         __instance.TriggerGeoscapeEvent("AlistairOnSymes2", context);
                     }
-                    else if(eventId == "PROG_LE0_WIN") 
+                    else if (eventId == "PROG_LE0_WIN")
                     {
                         __instance.TriggerGeoscapeEvent("HelenaOnOlena", context);
                     }
@@ -109,7 +108,7 @@ namespace TFTV
                     {
                         __instance.TriggerGeoscapeEvent("OlenaOnSynod", context);
                     }
-                    else if(eventId == "PROG_LE_FINAL") 
+                    else if (eventId == "PROG_LE_FINAL")
                     {
                         __instance.TriggerGeoscapeEvent("OlenaOnAncients", context);
                     }
@@ -129,10 +128,14 @@ namespace TFTV
                     {
                         __instance.TriggerGeoscapeEvent("OlenaOnMutationsLabSabotage", context);
                     }
-                    else if (eventId== "PROG_FS2_WIN") 
+                    else if (eventId == "PROG_FS2_WIN")
                     {
                         // TFTVThirdAct.ActivateFS3Event(context.Level);
                         TFTVVoidOmens.RemoveAllVoidOmens(context.Level);
+                    }
+                    else if (eventId == "Helena_Oneiromancy")
+                    {
+                        __instance.TriggerGeoscapeEvent("Olena_Oneiromancy", context);
                     }
 
                 }
@@ -160,35 +163,38 @@ namespace TFTV
                          //__result.EventBackground
                      }*/
 
-                    if (geoEvent.EventID.Equals("PROG_LE2_WARN"))
-                    {
-                        __result.EventLeader = Helper.CreateSpriteFromImageFile("helena.png");
-                    }
+                    /* if (geoEvent.EventID.Equals("PROG_LE2_WARN"))
+                     {
+                         __result.EventLeader = Helper.CreateSpriteFromImageFile("helena.png");
+                     }*/
 
                     if (geoEvent.EventID.Equals("HelenaOnOlena"))
                     {
                         GeoLevelController controller = (GeoLevelController)UnityEngine.Object.FindObjectOfType(typeof(GeoLevelController));
-                        if (controller.EventSystem.GetEventRecord("PROG_LE0_MISS").SelectedChoice == 2) 
+                        if (controller.EventSystem.GetEventRecord("PROG_LE0_MISS").SelectedChoice == 2)
                         {
                             __result.EventBackground = Helper.CreateSpriteFromImageFile("Helena_peace.jpg");
                         }
-                        else 
-                        { 
+                        else
+                        {
                             __result.EventBackground = Helper.CreateSpriteFromImageFile("Helena_fire2.jpg");
                         }
 
-                        __result.EventLeader = Helper.CreateSpriteFromImageFile("helena.png");                    
+                        __result.EventLeader = HelenaPic;
                     }
 
                     if (geoEvent.EventID.Equals("VoidOmen") || geoEvent.EventID == "PROG_FS10" || geoEvent.EventID.Contains("Alistair")
                             || geoEvent.EventID.Equals("PROG_LE3_WARN"))
                     {
                         __result.EventLeader = AlistairPic;
+                        __result.EventBackground = Helper.CreateSpriteFromImageFile("background_alistair_office.jpg");//AlistairOffice;
                     }
 
-                    if (geoEvent.EventID == "PROG_FS2" || geoEvent.EventID == "PROG_LE1_WARN" || (geoEvent.EventID.Contains("Olena") && !geoEvent.EventID.Contains("Helena")))
+                    if (geoEvent.EventID == "PROG_FS2" || geoEvent.EventID == "PROG_LE1_WARN" || (geoEvent.EventID.Contains("Olena") && !geoEvent.EventID.Contains("Helena")) ||
+                        geoEvent.EventID == "PROG_LE1")
                     {
                         __result.EventLeader = OlenaPic;
+                        __result.EventBackground = Helper.CreateSpriteFromImageFile("insidebase.jpg");//OlenaOffice;
                     }
 
                     if (geoEvent.EventID == "PROG_FS20")
@@ -236,7 +242,7 @@ namespace TFTV
                     }
                     if (geoEvent.EventID.Equals("IntroBetterGeo_2"))
                     {
-                        __result.EventBackground = Helper.CreateSpriteFromImageFile("BG_Intro_1.jpg");
+                        __result.EventBackground = Helper.CreateSpriteFromImageFile("insidebase.jpg");
                         __result.EventLeader = OlenaPic;
                     }
                     if (geoEvent.EventID.Equals("IntroBetterGeo_1"))
@@ -245,14 +251,14 @@ namespace TFTV
                         __result.EventLeader = AlistairPic;
                     }
                     if (geoEvent.EventID.Equals("IntroBetterGeo_0"))
-                    {                      
-                        __result.EventBackground = Helper.CreateSpriteFromImageFile("BG_Intro_0.jpg");                                      
+                    {
+                        __result.EventBackground = Helper.CreateSpriteFromImageFile("BG_Intro_0.jpg");
                     }
                     if (geoEvent.EventID == "PROG_LW1_WIN")
                     {
                         __result.EventBackground = Helper.CreateSpriteFromImageFile("makeshift_lab.png");
                     }
-                    if (TFTVProjectOsiris.ProjectOsirisDeliveryEvents.Contains(geoEvent.EventID)) 
+                    if (TFTVProjectOsiris.ProjectOsirisDeliveryEvents.Contains(geoEvent.EventID))
                     {
                         __result.EventBackground = Helper.CreateSpriteFromImageFile("Project_Osiris_Bionics.png");
 
@@ -295,6 +301,20 @@ namespace TFTV
                              __result.EventBackground = Helper.CreateSpriteFromImageFile("Project_Osiris_Shinobi.png");
                          }*/
 
+                    }
+                    if (geoEvent.EventID.Equals("Helena_Echoes") || geoEvent.EventID.Equals("Helena_Oneiromancy"))
+                    {
+                        __result.EventLeader = HelenaPic;
+                        __result.EventBackground = Helper.CreateSpriteFromImageFile("background_office.jpg");//HelenaOffice;
+                    }
+                    if (geoEvent.EventID.Equals("Helena_Beast"))
+                    {
+                        __result.EventLeader = HelenaPic;
+                        __result.EventBackground = Helper.CreateSpriteFromImageFile("background_ancients.jpg");//AncientBackground;
+                    }
+                    if (geoEvent.EventID.Equals("Cyclops_Dreams"))
+                    {
+                        __result.EventBackground = Helper.CreateSpriteFromImageFile("background_cyclops.jpg");
                     }
 
                 }

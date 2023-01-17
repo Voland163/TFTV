@@ -1,16 +1,22 @@
-﻿using HarmonyLib;
+﻿using Base.Core;
+using Base.Defs;
+using HarmonyLib;
+using PhoenixPoint.Common.ContextHelp;
 using PhoenixPoint.Common.Core;
+using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
+using PhoenixPoint.Common.UI;
+using PhoenixPoint.Geoscape.Core;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.Abilities;
-using PhoenixPoint.Geoscape.Entities.Missions;
-using PhoenixPoint.Geoscape.Entities.Missions.Outcomes;
+using PhoenixPoint.Geoscape.Entities.Research;
+using PhoenixPoint.Geoscape.Events;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.View.ViewControllers;
 using PhoenixPoint.Geoscape.View.ViewControllers.Modal;
 using PhoenixPoint.Geoscape.View.ViewModules;
-using PhoenixPoint.Home.View.ViewModules;
+using PhoenixPoint.Tactical.ContextHelp;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.DamageKeywords;
@@ -18,10 +24,14 @@ using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.Entities.Statuses;
 using PhoenixPoint.Tactical.Entities.Weapons;
 using PhoenixPoint.Tactical.Levels;
+using PhoenixPoint.Tactical.View.ViewModules;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
+using System.Security.Policy;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -30,7 +40,8 @@ namespace TFTV
     internal class TFTVAncients
     {
         // commented out for release #13
-      /*  private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
+        private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
+        private static readonly DefRepository Repo = TFTVMain.Repo;
 
         private static readonly DamageMultiplierStatusDef AddAutoRepairStatusAbility = DefCache.GetDef<DamageMultiplierStatusDef>("AutoRepair_AddAbilityStatusDef");
 
@@ -46,6 +57,7 @@ namespace TFTV
         private static readonly PassiveModifierAbilityDef ancientsPowerUpAbility = DefCache.GetDef<PassiveModifierAbilityDef>("AncientMaxPower_AbilityDef");
         private static readonly DamageMultiplierStatusDef ancientsPowerUpStatus = DefCache.GetDef<DamageMultiplierStatusDef>("AncientsPoweredUp");
 
+        public static readonly string CyclopsBuiltVariable = "CyclopsBuiltVariable";
 
         //This is the number of previous encounters with Ancients. It is added to the Difficulty to determine the number of fully repaired MediumGuardians in battle
         public static int AncientsEncounterCounter = 0;
@@ -54,6 +66,37 @@ namespace TFTV
         private static readonly AlertedStatusDef AlertedStatus = DefCache.GetDef<AlertedStatusDef>("Alerted_StatusDef");
         private static readonly DamageMultiplierStatusDef CyclopsDefenseStatus = DefCache.GetDef<DamageMultiplierStatusDef>("CyclopsDefense_StatusDef");
         private static readonly StanceStatusDef AncientGuardianStealthStatus = DefCache.GetDef<StanceStatusDef>("AncientGuardianStealth_StatusDef");
+       // private static readonly GameTagDef SelfRepairTag = DefCache.GetDef<GameTagDef>("SelfRepair");
+       // private static readonly GameTagDef MaxPowerTag = DefCache.GetDef<GameTagDef>("MaxPower");
+
+
+        public static void CheckResearchState(GeoLevelController controller)
+        {
+            try 
+            {
+
+                //alternative Reveal text for YuggothianEntity Research: 
+
+                ResearchViewElementDef yuggothianEntityVED = DefCache.GetDef<ResearchViewElementDef>("PX_YuggothianEntity_ViewElementDef");
+         
+                if (controller.EventSystem.GetVariable("SymesAlternativeCompleted") == 1)
+                {   
+                    yuggothianEntityVED.UnlockText.LocalizationKey = "PX_YUGGOTHIANENTITY_RESEARCHDEF_REVEALED_TFTV_ALTERNATIVE";
+                }
+                else
+                {
+                    yuggothianEntityVED.UnlockText.LocalizationKey = "PX_YUGGOTHIANENTITY_RESEARCHDEF_REVEALED";
+                }
+               
+            }
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+
+        }
 
 
         [HarmonyPatch(typeof(RewardsController), "SetResources")]
@@ -64,10 +107,10 @@ namespace TFTV
             {
                 try
                 {
-                  
-                    foreach(ResourceUnit resourceUnit in reward) 
+
+                    foreach (ResourceUnit resourceUnit in reward)
                     {
-                        if (resourceUnit.Type == ResourceType.ProteanMutane) 
+                        if (resourceUnit.Type == ResourceType.ProteanMutane)
                         {
                             UIModuleInfoBar uIModuleInfoBar = (UIModuleInfoBar)UnityEngine.Object.FindObjectOfType(typeof(UIModuleInfoBar));
 
@@ -77,9 +120,9 @@ namespace TFTV
 
 
                             Transform tInfoBar = uIModuleInfoBar.PopulationBarRoot.transform.parent?.transform;
-                            Transform exoticResourceIcon = tInfoBar.GetComponent<Transform>().Find("ProteanMutaneRes").GetComponent<Transform>().Find("Requirement_Icon");          
+                            Transform exoticResourceIcon = tInfoBar.GetComponent<Transform>().Find("ProteanMutaneRes").GetComponent<Transform>().Find("Requirement_Icon");
                             Transform exoticResourceText = tInfoBar.GetComponent<Transform>().Find("ProteanMutaneRes").GetComponent<Transform>().Find("Requirement_Text");
-                                                    
+
                             Transform exoticResourceIconCopy = UnityEngine.Object.Instantiate(exoticResourceIcon, __instance.ResourcesRewardsParentObject.transform);
                             Transform exoticResourceTextCopy = UnityEngine.Object.Instantiate(exoticResourceText, __instance.ResourcesRewardsParentObject.transform);
 
@@ -87,13 +130,13 @@ namespace TFTV
                             // exoticResourceTextCopy.GetComponent<Text>().text = DefCache.GetDef<ResourceMissionOutcomeDef>("AncientsHarvestProteanMissionOutcomeDef").Resources[0].Value.ToString();
                             exoticResourceTextCopy.SetParent(exoticResourceIconCopy);
                             exoticResourceIconCopy.localScale = new Vector3(1.5f, 1.5f, 1f);
-                            exoticResourceTextCopy.Translate(new Vector3(0f, -10f*resolutionFactorHeight, 0f));
-                          
+                            exoticResourceTextCopy.Translate(new Vector3(0f, -10f * resolutionFactorHeight, 0f));
+
                             __instance.NoResourcesText.gameObject.SetActive(false);
                             __instance.ResourcesRewardsParentObject.SetActive(true);
 
                         }
-                        else if(resourceUnit.Type == ResourceType.LivingCrystals)
+                        else if (resourceUnit.Type == ResourceType.LivingCrystals)
                         {
                             UIModuleInfoBar uIModuleInfoBar = (UIModuleInfoBar)UnityEngine.Object.FindObjectOfType(typeof(UIModuleInfoBar));
 
@@ -110,11 +153,11 @@ namespace TFTV
                             Transform exoticResourceTextCopy = UnityEngine.Object.Instantiate(exoticResourceText, __instance.ResourcesRewardsParentObject.transform);
 
                             exoticResourceTextCopy.GetComponent<Text>().text = reward.Values[0].Value.ToString();
-                               // DefCache.GetDef<ResourceMissionOutcomeDef>("AncientsHarvestCrystalMissionOutcomeDef").Resources[0].Value.ToString();
+                            // DefCache.GetDef<ResourceMissionOutcomeDef>("AncientsHarvestCrystalMissionOutcomeDef").Resources[0].Value.ToString();
                             exoticResourceTextCopy.SetParent(exoticResourceIconCopy);
                             exoticResourceIconCopy.localScale = new Vector3(1.5f, 1.5f, 1f);
                             exoticResourceTextCopy.Translate(new Vector3(0f, -10f * resolutionFactorHeight, 0f));
-                          
+
                             __instance.NoResourcesText.gameObject.SetActive(false);
                             __instance.ResourcesRewardsParentObject.SetActive(true);
 
@@ -147,7 +190,7 @@ namespace TFTV
 
                         }
                     }
-                 
+
                 }
                 catch (Exception e)
                 {
@@ -175,16 +218,68 @@ namespace TFTV
             }
         }
 
+
+        //Prevents player from building Cyclops
         [HarmonyPatch(typeof(AncientGuardianGuardAbility), "GetDisabledStateInternal")]
         public static class AncientGuardianGuardAbility_GetDisabledStateInternal_Patch
         {
 
-            public static void Postfix(ref GeoAbilityDisabledState __result)
+            public static void Postfix(ref GeoAbilityDisabledState __result, AncientGuardianGuardAbility __instance)
+            {
+                try
+                {
+                    GeoLevelController controller = __instance.GeoLevel;
+
+
+
+                    if (!controller.PhoenixFaction.Research.HasCompleted("PX_LivingCrystalResearchDef")
+                        || controller.EventSystem.GetVariable(CyclopsBuiltVariable) != 0)
+                    {
+
+                        __result = GeoAbilityDisabledState.RequirementsNotMet;
+
+                    }
+                    else if (controller.PhoenixFaction.Research.HasCompleted("PX_LivingCrystalResearchDef") 
+                        && controller.PhoenixFaction.Research.HasCompleted("PX_ProteanMutaneResearchDef")
+                        && controller.EventSystem.GetVariable(CyclopsBuiltVariable) == 0)
+                    {
+
+
+                    }
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+        }
+
+        //If Player builds cyclops, schedules an Attack on the site
+        [HarmonyPatch(typeof(AncientGuardianGuardAbility), "ActivateInternal")]
+
+        public static class AncientGuardianGuardAbility_ActivateInternal_Patch
+        {
+
+            public static void Postfix(AncientGuardianGuardAbility __instance, GeoAbilityTarget target)
             {
                 try
                 {
 
-                    __result = GeoAbilityDisabledState.RequirementsNotMet;
+                    GeoLevelController controller = __instance.GeoLevel;
+                    GeoSite geoSite = (GeoSite)target.Actor;
+
+                    controller.AlienFaction.AttackAncientSite(geoSite, 24);
+                    
+                    //   geoSite.CreateAncientSiteMission(controller.AlienFaction);
+                 //   SiteAttackSchedule siteAttackSchedule = controller.AlienFaction.AncientSiteAttackSchedule.FirstOrDefault((SiteAttackSchedule s) => s.Site == geoSite);
+
+                  
+                    controller.EventSystem.SetVariable(CyclopsBuiltVariable, 1);
+                   // siteAttackSchedule.ScheduleAttack(controller.Timing, TimeUnit.FromHours(12f));
+                //  controller.AlienFaction.ScheduleAttackOnSite(geoSite, TimeUnit.FromHours(24f));
+                    GeoscapeEventContext context = new GeoscapeEventContext(controller.AlienFaction, controller.PhoenixFaction);
+                    controller.EventSystem.TriggerGeoscapeEvent("Helena_Beast", context);
 
                 }
                 catch (Exception e)
@@ -195,19 +290,20 @@ namespace TFTV
         }
 
 
+
         [HarmonyPatch(typeof(GeoMission), "ApplyOutcomes")]
         public static class GeoMission_ModifyMissionData_CheckAncients_Patch
         {
 
-            public static void Postfix(GeoMission __instance)
+            public static void Postfix(GeoMission __instance, FactionResult viewerFactionResult)
             {
                 try
                 {
                     GeoLevelController controller = __instance.Level;
-
-                    if (__instance.MissionDef.SaveDefaultName == "AncientRuin")
+                    MissionTypeTagDef ancientSiteDefense = DefCache.GetDef<MissionTypeTagDef>("MissionTypeAncientSiteDefense_MissionTagDef");
+                    if (__instance.MissionDef.SaveDefaultName == "AncientRuin" && !__instance.MissionDef.Tags.Contains(ancientSiteDefense))
                     {
-                      
+
                         controller.EventSystem.SetVariable(AncientsEncounterVariableName, controller.EventSystem.GetVariable(AncientsEncounterVariableName) + 1);
                         TFTVLogger.Always(AncientsEncounterVariableName + " is now " + controller.EventSystem.GetVariable(AncientsEncounterVariableName));
 
@@ -217,18 +313,146 @@ namespace TFTV
                             vehicle.EndCollectingFromCurrentSite();
 
                         }
+                    }
+                    //if player wins the ancient defense mission, the variable triggering Yuggothian Entity research will be unlocked
+                    if (__instance.MissionDef.Tags.Contains(ancientSiteDefense))
+                    {
+                        if (viewerFactionResult.State == TacFactionState.Won && controller.EventSystem.GetVariable("Sphere") == 0)
+                        {
+                            controller.EventSystem.SetVariable("Sphere", 1);
+                          //triggers Digitize my Dreams, the Cyclops said event
+                            GeoscapeEventContext context = new GeoscapeEventContext(controller.AlienFaction, controller.PhoenixFaction);
+                            controller.EventSystem.TriggerGeoscapeEvent("Cyclops_Dreams", context);
+                            CheckResearchState(controller);
+                        }
+                        //if the player is defeated, the Cyclops variable will be reset so that the player may try again
+                        else if (viewerFactionResult.State == TacFactionState.Defeated)
+                        {
+                            controller.EventSystem.SetVariable(CyclopsBuiltVariable, 0);
 
-                        // __instance.Site.Type = GeoSiteType.AncientRefinery;
-                        //  __instance.Site.DisableSite();
+                        }
 
                     }
                 }
+
                 catch (Exception e)
                 {
                     TFTVLogger.Error(e);
                 }
             }
         }
+
+
+        /* [HarmonyPatch(typeof(ResearchElement), "SetupRequirements")]
+          public static class TFTV_ResearchElement_AlternativeToSymes_Patch
+          {
+
+              public static void Postfix(ReseachRequirementDefContainer def)
+              {
+                  try
+                  {
+
+                      GeoFaction faction = __instance.Faction;
+                      string ResearchIDYE = "PX_YuggothianEntity_ResearchDef";
+
+                      if (faction.Research.HasCompleted(ResearchIDYE)) 
+                      {
+                          ExistingResearchRequirementDef reqForAlienPhysiology = DefCache.GetDef<ExistingResearchRequirementDef>("NJ_AlienPhysiology_ResearchDef_ExistingResearchRequirementDef_1");
+                          ExistingResearchRequirementDef reqForPandoraKey = DefCache.GetDef<ExistingResearchRequirementDef>("PX_PandoraKey_ResearchDef_ExistingResearchRequirementDef_1");
+                          ExistingResearchRequirementDef reqForVirophage = DefCache.GetDef<ExistingResearchRequirementDef>("PX_VirophageWeapons_ResearchDef_ExistingResearchRequirementDef_1");
+                          reqForAlienPhysiology.Instantiate();
+                          reqForPandoraKey.Instantiate();
+                          reqForVirophage.Instantiate();
+
+                          TFTVLogger.Always("Result is how long " + __result.Count());
+                          foreach (ResearchRequirement requirement in __result)
+                          {
+                              TFTVLogger.Always(requirement.ResearchRequirementDefName);
+                          }
+
+                          if (__result.Contains(reqForAlienPhysiology.Instantiate())) 
+                          {        
+                              List<ResearchRequirement> researchRequirements = __result.ToList();
+                              foreach(ResearchRequirement requirement in researchRequirements) 
+                              {
+                                  TFTVLogger.Always("This " + requirement.ResearchRequirementDefName + " is one of the requirements for AlienPhysiology");
+                              }
+
+                              researchRequirements.Remove(reqForAlienPhysiology.Instantiate());
+                              __result = researchRequirements;
+                          }
+                          else if( __result.Contains(reqForPandoraKey.Instantiate()))
+                          {
+                              List<ResearchRequirement> researchRequirements = __result.ToList();
+                              foreach (ResearchRequirement requirement in researchRequirements)
+                              {
+                                  TFTVLogger.Always("This " + requirement.ResearchRequirementDefName + " is one of the requirements for PandoraKey");
+                              }
+                              researchRequirements.Remove(reqForPandoraKey.Instantiate());
+                              __result = researchRequirements;
+                          }
+                          else if  (__result.Contains(reqForVirophage.Instantiate()))
+                          {
+                              List<ResearchRequirement> researchRequirements = __result.ToList();
+                              foreach (ResearchRequirement requirement in researchRequirements)
+                              {
+                                  TFTVLogger.Always("This " + requirement.ResearchRequirementDefName + " is one of the requirements for Virophage");
+                              }
+                              researchRequirements.Remove(reqForVirophage.Instantiate());
+                              __result = researchRequirements;
+                          }
+
+
+                      }
+
+
+                  }
+                  catch (Exception e)
+                  {
+                      TFTVLogger.Error(e);
+                  }
+              }
+          }
+        */
+
+
+
+        /* public static void CheckPandoravirusVariable(GeoLevelController controller)
+         {
+             try
+             {
+                 ResearchDef pandoraVirusResearch = DefCache.GetDef<ResearchDef>("PX_Pandoravirus_ResearchDef");
+
+                 if (controller.PhoenixFaction.Research.HasCompleted(pandoraVirusResearch.Id))
+                 {
+
+                 }
+                 else
+                 {
+                     if (controller.PhoenixFaction.Research.HasCompleted("PX_YuggothianEntity_ResearchDef"))
+                     {
+
+
+                         //Researches that require PX_Pandoravirus_ResearchDef: PX_PandoraKey_ResearchDef, NJ_AlienPhysiology_ResearchDef, 
+   //PX_Pandoravirus_ResearchDef required by NJ_AlienPhysiology_ResearchDef_ExistingResearchRequirementDef_1
+    //PX_Pandoravirus_ResearchDef required by PX_PandoraKey_ResearchDef_ExistingResearchRequirementDef_1
+     //PX_Pandoravirus_ResearchDef required by PX_VirophageWeapons_ResearchDef_ExistingResearchRequirementDef_1
+     //PandoraVirusResearch variable required by PX_Pandoravirus_ResearchDef_EncounterVariableResearchRequirementDef_0
+
+                     }
+
+                 }
+
+             }
+             catch (Exception e)
+             {
+                 TFTVLogger.Error(e);
+             }
+
+
+
+         }*/
+
 
         public static bool CheckIfAncientsPresent(TacticalLevelController controller)
         {
@@ -394,6 +618,13 @@ namespace TFTV
                             {
                                 guardian.AddAbility(ancientsPowerUpAbility, guardian);
                                 guardian.Status.ApplyStatus(ancientsPowerUpStatus);
+
+                               // if (!guardian.HasGameTag(MaxPowerTag))
+                               // {
+                                 //   guardian.GameTags.Add(MaxPowerTag);
+                                    TacContextHelpManager tacContextHelpManager = (TacContextHelpManager)UnityEngine.Object.FindObjectOfType(typeof(TacContextHelpManager));
+                                    tacContextHelpManager.EventTypeTriggered(HintTrigger.ActorSeen, guardian, guardian);
+                               // }
                             }
                         }
                         else
@@ -402,6 +633,10 @@ namespace TFTV
                             {
                                 guardian.RemoveAbility(ancientsPowerUpAbility);
                                 guardian.Status.Statuses.Remove(guardian.Status.GetStatusByName(ancientsPowerUpStatus.EffectName));
+                              /*  if (guardian.HasGameTag(MaxPowerTag))
+                                {
+                                    guardian.GameTags.Remove(MaxPowerTag);
+                                }*/
                             }
                             guardian.CharacterStats.WillPoints.Add(5);
                         }
@@ -416,6 +651,12 @@ namespace TFTV
                             {
                                 cyclops.AddAbility(ancientsPowerUpAbility, cyclops);
                                 cyclops.Status.ApplyStatus(ancientsPowerUpStatus);
+                              /*  if (!cyclops.HasGameTag(MaxPowerTag))
+                                {
+                                    cyclops.GameTags.Add(MaxPowerTag);
+                                }*/
+                                TacContextHelpManager tacContextHelpManager = (TacContextHelpManager)UnityEngine.Object.FindObjectOfType(typeof(TacContextHelpManager));
+                                tacContextHelpManager.EventTypeTriggered(HintTrigger.ActorSeen, cyclops, cyclops);
                             }
                         }
                         else
@@ -424,6 +665,10 @@ namespace TFTV
                             {
                                 cyclops.RemoveAbility(ancientsPowerUpAbility);
                                 cyclops.Status.Statuses.Remove(cyclops.Status.GetStatusByName(ancientsPowerUpStatus.EffectName));
+                               /* if (cyclops.HasGameTag(MaxPowerTag))
+                                {
+                                    cyclops.GameTags.Remove(MaxPowerTag);
+                                }*/
                             }
                         }
                         if (cyclops.HasStatus(AlertedStatus))
@@ -540,7 +785,7 @@ namespace TFTV
             }
         }
 
-
+        
 
         [HarmonyPatch(typeof(TacticalLevelController), "ActorDied")]
         public static class TacticalLevelController_ActorDied_Ancients_Patch
@@ -580,6 +825,14 @@ namespace TFTV
                                                 {
                                                     actorAlly.Status.ApplyStatus(AddAutoRepairStatusAbility);
                                                     TFTVLogger.Always("AutoRepairStatus added to " + actorAlly.name);
+
+                                                 /*   if (!actorAlly.HasGameTag(SelfRepairTag))
+                                                    {
+                                                        actorAlly.GameTags.Add(SelfRepairTag);
+                                                    }*/
+                                                    TacContextHelpManager tacContextHelpManager = (TacContextHelpManager)UnityEngine.Object.FindObjectOfType(typeof(TacContextHelpManager));
+                                                    tacContextHelpManager.EventTypeTriggered(HintTrigger.ActorSeen, actorAlly, actorAlly);
+
                                                 }
 
                                             }
@@ -597,10 +850,10 @@ namespace TFTV
                                                     }
 
                                                 }
-
+                                                TacContextHelpManager tacContextHelpManager = (TacContextHelpManager)UnityEngine.Object.FindObjectOfType(typeof(TacContextHelpManager));
+                                                tacContextHelpManager.EventTypeTriggered(HintTrigger.ActorSeen, actorAlly, actorAlly);
                                             }
                                         }
-
                                     }
                                 }
 
@@ -741,10 +994,7 @@ namespace TFTV
                 }
 
             }
-        }*/
-
-
-
+        }
     }
 }
 
@@ -878,6 +1128,53 @@ public static class TacticalLevelController_ActorEnteredPlay_Ancients_Patch
             TFTVLogger.Error(e);
         }
     }*/
+
+/*  public static void CheckResearchesRequiringThings()
+       {
+           try
+           {
+               foreach (ExistingResearchRequirementDef existingResearchRequirementDef in Repo.GetAllDefs<ExistingResearchRequirementDef>())
+               {
+                   if (existingResearchRequirementDef.ResearchID == "PX_Pandoravirus_ResearchDef")
+                   {
+                       TFTVLogger.Always("PX_Pandoravirus_ResearchDef required by " + existingResearchRequirementDef.name);
+                   }
+               }
+
+               foreach (EncounterVariableResearchRequirementDef encounterVariableResearchRequirementDef in Repo.GetAllDefs<EncounterVariableResearchRequirementDef>())
+               {
+                   if (encounterVariableResearchRequirementDef.VariableName == "PandoraVirusResearch")
+                   {
+
+                       TFTVLogger.Always("PandoraVirusResearch variable required by " + encounterVariableResearchRequirementDef.name);
+                   }
+               }
+
+               foreach (GeoscapeEventDef geoEvent in Repo.GetAllDefs<GeoscapeEventDef>())
+               {
+                   foreach (GeoEventChoice choice in geoEvent.GeoscapeEventData.Choices)
+                   {
+                       foreach (var variable in choice.Outcome.VariablesChange)
+                       {
+                           if (variable.VariableName == "Lev")
+                           {
+                               TFTVLogger.Always("The event with the lev variable is " + geoEvent.name);
+
+                           }
+
+                       }
+
+                   }
+
+
+               }
+
+           }
+           catch (Exception e)
+           {
+               TFTVLogger.Error(e);
+           }
+       }*/
 
 
 

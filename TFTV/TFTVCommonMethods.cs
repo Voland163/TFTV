@@ -1,5 +1,6 @@
 ﻿using Base.Core;
 using Base.Entities.Statuses;
+using Base.Eventus;
 using Base.UI;
 using HarmonyLib;
 using PhoenixPoint.Common.ContextHelp;
@@ -242,10 +243,26 @@ namespace TFTV
                     {
                         GeoscapeEventContext context = new GeoscapeEventContext(research.Faction.GeoLevel.AlienFaction, research.Faction.GeoLevel.PhoenixFaction);
                         research.Faction.GeoLevel.EventSystem.TriggerGeoscapeEvent("AlistairOnMessagesFromTheVoid", context);
+
+                    }
+                    else if (research.ResearchID == "PX_AntediluvianArchaeology_ResearchDef")
+                    {
+                        GeoscapeEventContext context = new GeoscapeEventContext(research.Faction.GeoLevel.AlienFaction, research.Faction.GeoLevel.PhoenixFaction);
+                        research.Faction.GeoLevel.EventSystem.TriggerGeoscapeEvent("Helena_Echoes", context);
+                    }
+                    else if (research.ResearchID == "AncientAutomataResearch")
+                    {
+                        GeoscapeEventContext context = new GeoscapeEventContext(research.Faction.GeoLevel.AlienFaction, research.Faction.GeoLevel.PhoenixFaction);
+                        research.Faction.GeoLevel.EventSystem.TriggerGeoscapeEvent("Olena_Styx", context);
+                    }
+              
+                    else if (research.ResearchID == "PX_LivingCrystalResearchDef")
+                    {
+                        GeoscapeEventContext context = new GeoscapeEventContext(research.Faction.GeoLevel.AlienFaction, research.Faction.GeoLevel.PhoenixFaction);
+                        research.Faction.GeoLevel.EventSystem.TriggerGeoscapeEvent("Helena_Oneiromancy", context);
                     }
 
-
-
+                
                 }
                 catch (Exception e)
                 {
@@ -327,6 +344,38 @@ namespace TFTV
             }
             throw new InvalidOperationException();
         }
+
+       /* public static GeoscapeEventDef CreateNewPostResearchEvent(string name, string title, string description, string outcome)
+        {
+            try 
+            {
+                string gUID = Guid.NewGuid().ToString();
+                GeoscapeEventDef sourceLoseGeoEvent = DefCache.GetDef<GeoscapeEventDef>("PROG_PX10_GeoscapeEventDef");
+                GeoscapeEventDef newEvent = Helper.CreateDefFromClone(sourceLoseGeoEvent, gUID, name);
+                newEvent.GeoscapeEventData.Choices[0].Outcome.ReEneableEvent = false;
+                newEvent.GeoscapeEventData.Choices[0].Outcome.ReactiveEncounters.Clear();
+                newEvent.GeoscapeEventData.EventID = name;
+                newEvent.GeoscapeEventData.Title.LocalizationKey = title;
+                newEvent.GeoscapeEventData.Choices[0].Outcome.SetEvents.Clear();
+                newEvent.GeoscapeEventData.Choices[0].Outcome.TrackEncounters.Clear();
+                newEvent.GeoscapeEventData.Description[0].General.LocalizationKey = description;
+                if (outcome != null)
+                {
+                    newEvent.GeoscapeEventData.Choices[0].Outcome.OutcomeText.General.LocalizationKey = outcome;
+                }
+                return newEvent;
+           
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+            throw new InvalidOperationException();
+
+        }*/
+
+
         public static GeoscapeEventDef CreateNewEvent(string name, string title, string description, string outcome)
         {
             try

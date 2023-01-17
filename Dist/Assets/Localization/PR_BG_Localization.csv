@@ -51,20 +51,26 @@ Nous avons élaboré un plan simple pour obtenir la recherche sur les systèmes 
 
 Votre équipe sera insérée hors du périmètre opérationnel et se dirigera vers l’objectif à pied. Après avoir obtenu une copie des données, ils vont voler un véhicule blindé de la garnison et s'enfuir avec. Ils vont ensuite abandonner et détruire le véhicule. Nous allons présenter les faits à la Nouvelle Jericho comme un raid par un tiers inconnu. Tant que nous pouvons maintenir un déni plausible, nos relations avec la Nouvelle Jericho ne devraient pas être affectées.",,,,,,
 PROG_LE1_MISS_TITLE,Text,,Grand Theft Auto,,Grand Theft Auto,,,,,,
-PROG_LE1_TEXT_GENERAL_0,Text,,"Impossible Weapons 
-
-Vanadium Co had an R & D division, Next Generation+ Weapon Systems, focused on designing armaments that required as of yet undiscovered technologies, energy sources or materials with impossible tensile strengths or conductivity. 
+PROG_LE1_TEXT_GENERAL_0,Text,,"Vanadium Co had an R & D division, Next Generation+ Weapon Systems, focused on designing armaments that required as of yet undiscovered technologies, energy sources or materials with impossible tensile strengths or conductivity. 
 
 Though at the time it was deemed little more than a publicity stunt and part of Vanadium's talent retention strategy, we speculate that these weapons could be indeed developed using the materials harnessed by the Ancients.
 
-We have located a New Jericho archive facility harboring the NG+ Weapon Systems research.",,"Armes impossibles
-
-Vanadium Co avait une division de R & D, Next Generation+ Weapon Systems, axée sur la conception d’armements qui nécessitaient des technologies, des sources d’énergie ou des matériaux non encore découverts avec des résistances ou une conductivité impossibles.
+We have located a New Jericho archive facility harboring the NG+ Weapon Systems research.
+",,"Vanadium Co avait une division de R & D, Next Generation+ Weapon Systems, axée sur la conception d’armements qui nécessitaient des technologies, des sources d’énergie ou des matériaux non encore découverts avec des résistances ou une conductivité impossibles.
 
 Bien qu’à l’époque on ait considéré qu’il ne s’agissait que d’un coup de publicité et qu’il faisait partie de la stratégie de rétention des talents de Vanadium, nous supposons que ces armes pourraient être développées en utilisant les matériaux utilisés par les Anciens.
 
 Nous avons localisé une installation d’archives de la Nouvelle Jericho abritant la recherche sur les systèmes d’armes NG+.",,,,,,
+OLENA_PUZZLE_OUTCOME,Text,,"Yes, apparently Vanadium Co had an R & D division, Next Generation+ Weapon Systems, focused on designing armaments that required as of yet undiscovered technologies, energy sources or materials with impossible tensile strengths or conductivity. 
+
+According to Helena, at the time it was deemed little more than a publicity stunt, but I have a hunch that maybe these weapons could be indeed developed using the exotic materials...
+
+We have located a New Jericho archive facility harboring the NG+ Weapon Systems research, if you deem it worth our efforts, Director.",,,,,,,,
 PROG_LE1_TITLE,Text,,Impossible Weapons,,Armes Impossibles,,,,,,
+OLENA_PUZZLE_CHOICE,Text,,Weapons? That sounds interesting.,,,,,,,,
+OLENA_PUZZLE_TEXT,Text,,"Strange… there is nothing like a CPU, nothing like a memory module. I suppose we should have expected that they would be very different from what we could have designed. There must be something here we are not seeing. We should secure and analyze samples of the Living Crystal and of the Protean Mutane as soon as possible.
+
+One more thing: I have been talking to Helena about her time at Vanadium, and she recalls another ""moonshot"" division, charged with designing a new generation of weapon systems.",,,,,,,,
 PX_CRYSTALCROSSBOW_RESEARCHDEF_COMPLETE,Text,,"At a first glance it seemed to us that Kristian Luft came up with a design for a very high air powered bow; a long shot from the marvels of the other projects of the NG+ Vanadium division. This until we realized that Prof. Luft did away with the glaring deficiency of all crossbows: that they require bolts. The Crystal Crossbow does not shoot bolts at all, but rather air particles accelerated to incredible speeds!",,"À première vue, il nous a semblé que Kristian Luft avait conçu un arc pneumatique à très haute puissance. Bien loin des merveilles des autres projets de la division NG+ Vanadium. Jusqu’à ce que nous nous rendions compte que le Prof. Luft avait éliminé la déficience flagrante de toutes les arbalètes : elles ont besoin de carreaux. L’arbalète de cristal ne tire pas du tout des carreaux, mais plutôt des particules d’air accélérées à des vitesses incroyables !",,,,,,
 PX_CRYSTALCROSSBOW_RESEARCHDEF_NAME,Text,,Crystal Crossbow,,Arbalète de cristal,,,,,,
 PX_CRYSTALCROSSBOW_RESEARCHDEF_UNLOCK,Text,,"A design for what appears to be a high powered pneumatic crossbow by Kristian Luft, acclaimed particle physicist and medieval history buff.",,"Une conception pour ce qui semble être une arbalète pneumatique de haute puissance par Kristian Luft, physicien des particules acclamé et passionné d’histoire médiévale.",,,,,,
@@ -760,17 +766,19 @@ KEY_TUT3_TFTV2_DESCRIPTION,Text,,"""<i>Oppa</i> Alistair is good with people. I'
 KEY_TUT3_TFTV2_TITLE,Text,,Olena Kim,,,,,,,,
 PX_ANTEDILUVIANARCHAEOLOGY_RESEARCHDEF_COMPLETE,Text,,"<i>""Our planet is over 4.5 billion years old. Pre-collapse no more than 3% of Earth's surface was urbanized. Dinosaurs lived on Earth for about 165 million years, going extinct some 65 million years ago. In a little over two centuries we found around 11,000 Dinosaur bones, which comes to one bone for every 15,000 years they spent on our planet. 
 
-Do the math, Tobias... A million years from now someone might be proposing 'crackpot theories' suggesting that something like our civilization might have existed.""</i>
-
-- Dr. Helena Lewandowski
+Do the math, Tobias... A million years from now someone might be proposing 'crackpot theories' suggesting that something like our civilization might have existed.""</i> -Dr. Helena Lewandowski
 
 Over the past decades, the melting permafrost and the ecological changes wrought by the Pandoravirus have brought to the surface sites long hidden by sediment and water. With the help of Dr. Helena we have devised a scanner probe which can be produced in the Archaeology Facility. When launched from one of our aircraft, it can detect anomalies pointing to promising archaeological sites. Then, the hazardous process of exploration can begin.",,,,,,,,
 PX_ANTEDILUVIANARCHAEOLOGY_RESEARCHDEF_UNLOCK,Text,,"Pre-Collapse there had been many attempts to find evidence of advanced precursor civilizations on Earth. Could those out of time and place artifacts have been real? What was behind the myths of Atlantis and of the Great Flood? If we want to learn the truth, we must pursue a more scientific approach.",,,,,,,,
 TFTV_LOTA_START_EVENT_TITLE,Text,,An Unexpected Find,,,,,,,,
 TFTV_LOTA_START_EVENT_DESCRIPTION,Text,,"Director, I've come across something interesting in the archives of the recently activated base. Something called Project Glory... Perhaps we should put Bennu to analyze it.",,,,,,,,
 AUTOMATA_RESEARCH_TITLE,Text,,Ancient Automata,,,,,,,,
-AUTOMATA_RESEARCH_REVEAL,Text,,"We have retrieved the remains of the automata that we encountered at the site. We should analyze them immediately.",,,,,,,,
-AUTOMATA_RESEARCH_COMPLETE,Text,,"We encountered these entities during our exploration of the ancient site. This is the single most important archaeological discovery ever made! 
+AUTOMATA_RESEARCH_REVEAL,Text,,"<i>“My working theory is that they were summoned from a spellbook. Our objective: find the spellbook.”</i> - Alistair Ashby
+
+We have retrieved the remains of the automata that we encountered at the site. We should analyze them immediately.",,,,,,,,
+AUTOMATA_RESEARCH_COMPLETE,Text,,"<i>""What do their Automata tell us about the Ancients? Yes, they were far more technologically advanced than us, that's a given. But how different was their society from ours? These weaponized Automata tell us there was violence, there was fear. But what were they fighting, what did they fear?""</i> - Alistair Ashby 
+
+We encountered these entities during our exploration of the ancient site. This is the single most important archaeological discovery ever made! 
 
 Our analysis concludes that these entities are inorganic and that they have been inactive for more than 1.8m years. The technology permitting the creation of such constructs is beyond our understanding; we are facing the artifacts of a civilization far in advance of our own. 
 
@@ -780,21 +788,21 @@ However, we have achieved two major breakthroughs in the course of our research 
 2) We have identified the type of materials from which they are made of, and are already theorizing on possible applications.",,,,,,,,
 AUTOMATA_RESEARCH_BENEFITS,Text,,New information about Ancient Automata abilities available in tactical missions; EMP and Stun grenades will now work against Ancient Automata,,,,,,,,
 EXOTIC_RESEARCH_TITLE,Text,,Exotic Materials,,,,,,,,
-EXOTIC_RESEARCH_REVEAL,Text,,"“My working theory is that they were summoned from a spellbook. Our objective: find the spellbook.” - Alistair Ashby
+EXOTIC_RESEARCH_REVEAL,Text,,"We have identified 3 distinct previously unknown substances in the composition of the Ancient Automata.
+",,,,,,,,
+EXOTIC_RESEARCH_COMPLETE,Text,,"<i>""Dr. Helena Lewandowski has claimed naming rights on the Exotic Materials on the basis of this being an archaeological find. I want it to be a matter of record that this is the reason why, what is in fact an object in a previously unobserved state of matter, but vaguely reminiscent of Quark-gluon plasma, shall be confusingly known as 'Living Crystal'.""</i> - Dr. Rupert Everett-Bancroft
 
-We have identified 3 distinct previously unknown substances in the composition of the Ancient Automata.",,,,,,,,
-EXOTIC_RESEARCH_COMPLETE,Text,,"""Dr. Helena Lewandowski has claimed naming rights on the Exotic Materials on the basis of this being an archaeological find. I want it to be a matter of record that it is entirely her fault that what is in fact an object in a previously unobserved state of matter, but vaguely reminiscent of Quark-gluon plasma, shall be confusingly known as 'Living Crystal'."" - Dr. Art Vandelay
+The frames of the Ancient Automata are made of an extremely light and resistant alloy, dubbed “Orichalculm” by the Archaelogy department. Initial experimentation has further revealed that the alloy has the ability to change its conductivity properties in response to external stimuli.
 
-The frames of the Ancient Automata are made of an extremely light and resistant alloy (Orichalcum). We have been unable to find anything resembling a CPU, leading us to speculate that there is no central control or processing unit, but rather a diffused system, possibly sustained through a supercritical fluid (Protean Mutane) that permeates the frame. The contraption appears to draw its power from a self-sustained and self-modulated miniaturized fusion reaction within a super-heated plasma compound (Living Crystal). 
+The Automata appear to draw electric power from a self-sustained and self-modulated miniaturized fusion reaction within a super-heated plasma compound: the “Living Crystal”. We need to secure and analyze an undamaged sample of this material.
 
-We are not capable of replicating these Exotic Materials, or even of providing any reasonable hypothesis as to where they could come from. However, we are confident that we can find practical applications if we are able to secure them in their unaltered form in sufficient quantities.",,,,,,,,
-EXOTIC_RESEARCH_BENEFITS,Text,,This will bring us a step closer to using Exotic Materials for weapon research and development,,,,,,,,
-PX_YUGGOTHIANENTITY_RESEARCHDEF_REVEALED_TFTV_ALTERNATIVE,Text,,"The plan worked, but, as was to be expected, we can only understand a tiny fraction of the information contained in the data dump. It is enough. Enough to overturn much of what we thought we knew and, critical to our current existential threat, of what we thought we knew about the Pandoravirus. 
+We have not found a device that would be turning the electric power generated by the Living Crystal into mechanical power; that is, we do not know how the Automata are able to move. This, taken with the fact that, according to the field report, the parts that make up the entity were suspended at a distance from each other, leads us to speculate on the presence of a third exotic material that is capable of nullifying gravity and providing motor function, a “Protean Mutane”.
 
-It is ancient, yes; we suspected as much since the infection of our ecosystem began with the melting of the permafrost. But, thanks to the meticulous charts of our Solar system drawn by the Ancients, we now know that the Pandoravirus didn’t originate on our planet: it arrived 1.8 million years ago on an asteroid that intersected the orbit of a “ninth planet” before it crashed into Earth.   
-
-The astrological charts were easy enough to extract, but we have to dig deeper into the data dump if we want to learn more.",,,,,,,,
+We are not capable of replicating these Exotic Materials, or even of providing any reasonable hypothesis as to where they could come from. However, we are confident that we can find practical applications if we are able to secure them in their unaltered form in sufficient quantities, and once we can examine samples of the Living Crystal and of the Protean Mutane.",,,,,,,,
+EXOTIC_RESEARCH_BENEFITS,Text,,This brings us a step closer to uncovering what happened to the Ancients and of using Exotic Materials for weapon research and development,,,,,,,,
+PX_YUGGOTHIANENTITY_RESEARCHDEF_REVEALED_TFTV_ALTERNATIVE,Text,,"The astrological charts were easy enough to extract, but we have to dig deeper into the data dump if we want to learn more.",,,,,,,,
 PX_YUGGOTHIANENTITY_RESEARCHDEF_COMPLETE,Text,,"Our analysis of the Antediluvian texts, combined with the knowledge gathered by the Phoenix Project over the course of the last century, has forced us to acknowledge a shocking truth: the war against Earth is being waged by an alien entity. This being of unimaginable age and power is located on Yuggoth, the ninth planet of our solar system.
+
 Around 1.8 million years ago it planted a bioweapon on an asteroid on a collision trajectory with Earth: the Pandoravirus, intended to radically transform the Earth's ecosystem to the advantage of the Yuggothian Entity.
 
 The Entity communicates with its creatures via some form of quasi-telepathic signal. Evidence suggests that some human beings are sensitive to these transmissions, explaining the occurrence of the name ""Yuggoth"" and variations thereof in the work of artists such as H.P. Lovecraft, Virginia Gutierrez, John Bellairs, Ralph Pabodie, and many others. This presumably represents an earlier, less powerful expression of the phenomenon we have termed Oneiric Delirium.
@@ -815,3 +823,65 @@ KEY_AC_ORICHALCUM_HARVEST,Text,,ANCIENT RUINS,,,,,,,,
 KEY_AC_ORICHALCUM_REFINERY,Text,,ANCIENT RUINS,,,,,,,,
 KEY_AC_CRYSTAL_HARVEST,Text,,ANCIENT RUINS,,,,,,,,
 KEY_AC_CRYSTAL_REFINERY,Text,,ANCIENT RUINS,,,,,,,,
+HINT_ANCIENTS_STORY1_TITLE,Text,,"<i>""There is something out there waiting for us, and it ain’t no human… and it ain’t no crab”</i>",,,,,,,,
+HINT_ANCIENTS_STORY1_TEXT,Text,,"Your team has landed near the site where the exploration drones had previously detected the remains of ancient ruins, but on closer approach they started to experience comms malfunction, possibly due to electromagnetic interference. Proceed with caution.",,,,,,,,
+HINT_ANCIENTS_CYCLOPSDEFENSE_TITLE,Text,,"<i>“Target hit, no effect!”</i>",,,,,,,,
+HINT_ANCIENTS_CYCLOPSDEFENSE_TEXT,Text,,This Automata is protected by some sort of electromagnetic field that reduces the strength of incoming attacks. Maybe destroying some of the smaller Automata will dampen the effect?,,,,,,,,
+HINT_ANCIENTS_CYCLOPS_TITLE,Text,,<i> “Wake up not the beast that layeth in slumber” </i>,,,,,,,,
+HINT_ANCIENTS_CYCLOPS_TEXT,Text,,Our operatives have located something that may be the source of the electromagnetic interferences that our exploration drones had come across. We should avoid alerting it for as long as possible. ,,,,,,,,
+HINT_ANCIENTS_HOPLITS_TITLE,Text,,"<i>“Frag me, what is that thing? Is that a… drill?!”</i>",,,,,,,,
+HINT_ANCIENTS_HOPLITS_TEXT,Text,,"This Ancient Automata is reactivating! While we have no intel on their capabilities, it seems like they are dormant while buried in the ground, but once they emerge they become alerted and gradually reactivate their systems, becoming stronger. The Automata also seem to be in varying states of disrepair.",,,,,,,,
+HINT_ANCIENTS_HOPLITSREPAIR_TITLE,Text,,<i>”The broken remains merged with the damaged Automata”</i>,,,,,,,,
+HINT_ANCIENTS_HOPLITSREPAIR_TEXT,Text,,This Ancient Automata has just repaired itself using the remains of the destroyed robot in its vicinity! It has also drained some of its power.,,,,,,,,
+HINT_ANCIENTS_HOPLITSMAXPOWER_TITLE,Text,,"<i>”Whirl whirl whirl Vroom!”</i>",,,,,,,,
+HINT_ANCIENTS_HOPLITSMAXPOWER_TEXT,Text,,The Ancient Automata is now fully charged; damage increased significantly.,,,,,,,,
+HELENA_ECHOES_TITLE,Text,,"The Echoes of the Ancients",,,,,,,,
+HELENA_ECHOES_TEXT,Text,,"This is something neither West nor Symes understood, or wanted to understand, although I tried explaining it to them many times. History is about making sense of the present by understanding the past. Cause and effect, reverberation and resonance. But when it comes to the Ancients, their echoes are getting stronger, and they started getting stronger with the First Mist. 
+
+Perhaps it's because both were hidden below the same melting permafrost, but even that coincidence is anything but insignificant.",,,,,,,,
+OLENA_STYX_TITLE,Text,,Crossing the Styx,,,,,,,,
+OLENA_STYX_TEXT,Text,,"If these are robots, or cyborgs, they must have some sort of memory bank: they must be getting their instructions, routines, behaviors from somewhere. If we are able to find and access these memories, maybe we can find out what happened to the Ancients. 
+
+I agree with Helena, there must be some connection between the Ancients and the Pandoravirus. Could it be something that they created and accidentally unleashed on our planet? But what happened to them? What happened to the Pandoravirus?",,,,,,,,
+LIVING_CRYSTAL_RESEARCH_TITLE,Text,,Living Crystal Analysis,,,,,,,,
+LIVING_CRYSTAL_RESEARCH_REVEAL,Text,,We have finally obtained an undamaged sample of the Living Crystal,,,,,,,,
+LIVING_CRYSTAL_RESEARCH_COMPLETE,Text,,"<i>""I have always known about the 'Ancients'. I have these memories of my parents talking about them when I was a child... They weren't just real, they were more real to them than everything else. And I have seen the 'Living Crystal' before. My dad kept a small notebook with brown leather covers. Every page was crammed with Hangul writing and sketches. Sometimes I would sit on his lap and he would show me the drawings and explain what they were. The crystal stuck with me because dad joked that it would make my toys come alive.""</i> - Olena Kim 
+
+Initial examination of an unaltered ""Living Crystal"" sample has revealed that it is capable of generating immense amounts of energy, potentially through an as-yet-unknown mechanism. Additionally, the material has the ability to store large amounts of information, similar to a computer memory. It appears to be able to process and manipulate this stored information in ways that are currently beyond our understanding.
+
+A lucky accident has revealed another extraordinary property of the ""Living Crystal"", as one of our researchers slipped in the lab and hit his head, receiving a severe brain injury, putting him in a coma. Since this incident, the rest of the research team has been seeing Dr. Rupert Everett-Bancroft's dreams while asleep!
+
+The crystal must be able to emit some form of signal or energy that interacts with the human brain, allowing the stored memories to seep into our consciousness while we sleep.
+
+It is hypothesized the crystal could be able to tap into a form of collective memory, where information is stored not just within the crystal itself but also in a larger, interconnected network of crystals.",,,,,,,,
+LIVING_CRYSTAL_RESEARCH_BENEFITS,Text,,We can now manufacture weapons that require Living Crystal,,,,,,,,
+PROTEAN_MUTANE_RESEARCH_TITLE,Text,,Protean Mutane Analysis,,,,,,,,
+PROTEAN_MUTANE_RESEARCH_REVEAL,Text,,We have finally secured a sample of the Protean Mutane,,,,,,,,
+PROTEAN_MUTANE_RESEARCH_COMPLETE,Text,,"<i> ""Make no mistake: for the ancients, our ancestors were little more than curious animals. Perhaps they had laws to ensure our protection along with that of the other primates. Maybe they came from somewhere else and brought their own primordial soup with them… These are gods we are talking about, only they cleaned their roadside picnic pretty well when they left. Fortunately for us, we were able to grow without the burden of familiarity with our precursors' magic. Can you imagine how long it would have taken us to invent the lever had we been cursed with the power of ""protean mutane"" in our infancy?""</i> - Alistair Ashby
+
+Protean Mutane possesses the extraordinary ability to manipulate gravitational forces, providing a powerful motor-like effect.
+
+The material is composed of a complex array of molecular structures, including a high concentration of exotic particles known as gravitons. These particles are believed to be responsible for mediating the gravitational force and have only been theorized to exist by physicists.
+
+Protean Mutane appears to harness the energy of these gravitons in a way that has yet to be fully understood. The material's structure also appears to be in a state of constant flux, hence its name is strikingly appropriate; ""Protean"" meaning able to change shape easily and ""Mutane"" meaning mutation.",,,,,,,,
+PROTEAN_MUTANE_RESEARCH_BENEFITS,Text,,"We can now manufacture weapons that require Protean Mutane, and reactivate one of the defeated Cyclops.",,,,,,,,
+HELENA_ONEIROMANCY_TITLE,Text,,Reversed Oneiromancy,,,,,,,,
+HELENA_ONEIROMANCY_TEXT,Text,,"The Living Crystal, it's the key. There was always the question, how could the stories of the Ancients and imitations of the artifacts and architecture have made it into our culture, when they preceded the homosapiens by more than a million years? No meaningful interaction between our ancestors and the ancients could have taken place at the time when the ancients existed, yet there were signs of this interaction everywhere! 
+
+The Living Crystal solves the paradox. We have never met the Ancients, but we have seen them in our dreams, and in our nightmares.",,,,,,,,
+OLENA_ONEIROMANCY_TITLE,Text,,Reversed Oneiromancy,,,,,,,,
+OLENA_ONEIROMANCY_TEXT,Text,,"Yes, the Living Crystal must be the “memory module” that we have been looking for… And I believe I know how we can access it: we need to reactivate one of the Cyclops. 
+
+Data never really disappears unless the storage medium is destroyed or it is overwritten. In this case, the medium is beyond our understanding. I can’t explain how something like the Oneiric Delirium exists, or what the Living Crystals are, but they are related; our dreams can’t be a coincidence. I think they are part of, or use the same pathways, or “network”... What we need is a more direct interface, and one that we can use while awake.",,,,,,,,
+OLENA_ONEIROMANCY_CHOICE,Text,,So you want to repair and reactivate an ancient killer robot so that you can poke about in its memory banks? What could possibly go wrong.,,,,,,,,
+OLENA_ONEIROMANCY_OUTCOME,Text,,It's going to be OK.,,,,,,,,
+CYCLOP_DREAMS_TITLE,Text,,"Digitize my Dreams, the Cyclops Said",,,,,,,,
+CYCLOP_DREAMS_TEXT,Text,,"The plan worked, but we can only understand a tiny fraction of the information contained in the data dump. It is enough. Enough to overturn much of what we thought we knew and, critical to our current existential threat, of what we thought we knew about the Pandoravirus. 
+
+It is ancient, yes; we suspected as much since the infection of our ecosystem began with the melting of the permafrost. But, thanks to the meticulous charts of our Solar system drawn up by the Ancients, we now know that the Pandoravirus didn’t originate on our planet: it arrived 1.8 million years ago on an asteroid that intersected the orbit of a “ninth planet” before it crashed into Earth.",,,,,,,,
+ALISTAIR_PROGRESS_TITLE,Text,,Survival and Progress,,,,,,,,
+ALISTAIR_PROGRESS_TEXT,Text,,"Back in the day I would have gone on a rant about how crazy it is to use the few magic beans humanity ever found to make a few cool looking weapons. The things we could build with this stuff! But survival comes before progress, and maybe survival is all we can afford for now. 
+
+However, there must be a lot more of these exotic materials on our planet and we can search for them properly if we win the war.",,,,,,,,
+HELENA_BEAST_TITLE,Text,,Protect the Beast,,,,,,,,
+HELENA_BEAST_TEXT,Text,,Director! We have detected a Pandoran force approaching the site with the reactivated Cyclops. We must defend it at all costs! ,,,,,,,,

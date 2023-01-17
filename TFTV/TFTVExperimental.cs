@@ -54,22 +54,6 @@ namespace TFTV
 
         }
 
-        /* public static void CheckIfFactionAttackingPhoenixBase()
-         {
-             try
-             {
-                 if (FactionAttackingPhoenixBase != null)
-                 {
-                     AdjustBaseAttack(FactionAttackingPhoenixBase);
-                 }
-             }
-             catch (Exception e)
-             {
-                 TFTVLogger.Error(e);
-             }
-         }*/
-
-
         public static void AdjustBaseAttack(PPFactionDef faction)
         {
             try
@@ -128,9 +112,7 @@ namespace TFTV
                     baseDefenseVsAlien.Outcomes[0].Outcomes = new PhoenixPoint.Geoscape.Entities.Missions.Outcomes.MissionOutcomeDef[] { };
 
                 }
-              //  FactionAttackingPhoenixBase = faction;
-
-
+   
             }
             catch (Exception e)
             {
@@ -140,34 +122,6 @@ namespace TFTV
 
         }
 
-
-
-
-        /* [HarmonyPatch(typeof(PhoenixBaseDefenseDataBind), "ModalShowHandler")]
-
-         public static class TacMission_InitDeployZones_Experiment_patch
-         {
-             public static void Prefix(UIModal modal)
-             {
-                 try
-                 {
-                     TFTVLogger.Always("ModalShowHandler invoked");
-                     GeoMission geoMission = (GeoMission)modal.Data;
-                     GeoSite geoSite = geoMission.Site;
-                     geoMission.Cancel();
-                //     geoSite.CreatePhoenixBaseDefenseMission(FactionAttackingPhoenixBase)
-
-
-
-                 }
-                 catch (Exception e)
-                 {
-                     TFTVLogger.Error(e);
-                 }
-             }
-
-
-         }*/
 
         [HarmonyPatch(typeof(GeoMissionGenerator), "GetRandomMission", new Type[] { typeof(MissionTypeTagDef), typeof(ParticipantFilter) })]
 
@@ -199,6 +153,36 @@ namespace TFTV
         }
 
 
+
+        /* [HarmonyPatch(typeof(PhoenixBaseDefenseDataBind), "ModalShowHandler")]
+
+         public static class TacMission_InitDeployZones_Experiment_patch
+         {
+             public static void Prefix(UIModal modal)
+             {
+                 try
+                 {
+                     TFTVLogger.Always("ModalShowHandler invoked");
+                     GeoMission geoMission = (GeoMission)modal.Data;
+                     GeoSite geoSite = geoMission.Site;
+                     geoMission.Cancel();
+                //     geoSite.CreatePhoenixBaseDefenseMission(FactionAttackingPhoenixBase)
+
+
+
+                 }
+                 catch (Exception e)
+                 {
+                     TFTVLogger.Error(e);
+                 }
+             }
+
+
+         }*/
+
+
+
+
         /*  [HarmonyPatch(typeof(TacMission), "InitDeployZones")]
 
           public static class TacMission_InitDeployZones_Experiment_patch
@@ -221,66 +205,66 @@ namespace TFTV
           }*/
 
 
-      /*  [HarmonyPatch(typeof(GeoSite), "CreatePhoenixBaseDefenseMission")]
+        /*  [HarmonyPatch(typeof(GeoSite), "CreatePhoenixBaseDefenseMission")]
 
-        public static class LevelSceneBinding_InitializeInstanceData_Experiment_patch
-        {
-            public static void Postfix(PhoenixBaseAttacker attacker, GeoSite __instance)
-            {
-                try
-                {
-                    //phoenixBaseAttacker = attacker;
-                    PhoenixBaseUnderAttack = __instance.LocalizedSiteName;
+          public static class LevelSceneBinding_InitializeInstanceData_Experiment_patch
+          {
+              public static void Postfix(PhoenixBaseAttacker attacker, GeoSite __instance)
+              {
+                  try
+                  {
+                      //phoenixBaseAttacker = attacker;
+                      PhoenixBaseUnderAttack = __instance.LocalizedSiteName;
 
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-            }
-        }*/
+                  }
+                  catch (Exception e)
+                  {
+                      TFTVLogger.Error(e);
+                  }
+              }
+          }*/
 
-     /*   public static void ClearAndCreateBaseDefenseMission(GeoLevelController controller)
-        {
-            try
-                
-            {
-                PPFactionDef nj = DefCache.GetDef<PPFactionDef>("NewJericho_FactionDef");
-                CustomMissionTypeDef baseDefenseVsNJ = DefCache.GetDef<CustomMissionTypeDef>("PXBaseNJ_CustomMissionTypeDef");
-                List<MissionDeployParams> actorDeployDataNJ =
-               new List<MissionDeployParams>(baseDefenseVsNJ.ParticipantsData[0].ActorDeployParams);
-                TFTVLogger.Always("At least the method is inovked");
-                if (PhoenixBaseUnderAttack != null)
-                {
-                    TFTVLogger.Always("Base under attack found");
+        /*   public static void ClearAndCreateBaseDefenseMission(GeoLevelController controller)
+           {
+               try
 
-                    foreach(GeoSite geoSite in controller.PhoenixFaction.Sites)
+               {
+                   PPFactionDef nj = DefCache.GetDef<PPFactionDef>("NewJericho_FactionDef");
+                   CustomMissionTypeDef baseDefenseVsNJ = DefCache.GetDef<CustomMissionTypeDef>("PXBaseNJ_CustomMissionTypeDef");
+                   List<MissionDeployParams> actorDeployDataNJ =
+                  new List<MissionDeployParams>(baseDefenseVsNJ.ParticipantsData[0].ActorDeployParams);
+                   TFTVLogger.Always("At least the method is inovked");
+                   if (PhoenixBaseUnderAttack != null)
+                   {
+                       TFTVLogger.Always("Base under attack found");
 
-                    if (geoSite.LocalizedSiteName == PhoenixBaseUnderAttack && geoSite.HasActiveMission)
-                    {
-                        TFTVLogger.Always("Active mission found");
+                       foreach(GeoSite geoSite in controller.PhoenixFaction.Sites)
 
-                            geoSite.DisableSite();
-                          //  geoSite.ActiveMission = null;
+                       if (geoSite.LocalizedSiteName == PhoenixBaseUnderAttack && geoSite.HasActiveMission)
+                       {
+                           TFTVLogger.Always("Active mission found");
 
-                          //  geoSite.ActiveMission.MissionDef.ParticipantsData[0].FactionDef = nj;
-                          //  geoSite.ActiveMission.MissionDef.ParticipantsData[0].ActorDeployParams = actorDeployDataNJ;
-                      
-                            
-                        // PhoenixBaseUnderAttack.CreatePhoenixBaseDefenseMission(phoenixBaseAttacker);
-                        TFTVLogger.Always("New defense mission should have been created, with attacker ");  //phoenixBaseAttacker.Faction.Name);   
-                    }
+                               geoSite.DisableSite();
+                             //  geoSite.ActiveMission = null;
 
-                }
+                             //  geoSite.ActiveMission.MissionDef.ParticipantsData[0].FactionDef = nj;
+                             //  geoSite.ActiveMission.MissionDef.ParticipantsData[0].ActorDeployParams = actorDeployDataNJ;
 
 
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
+                           // PhoenixBaseUnderAttack.CreatePhoenixBaseDefenseMission(phoenixBaseAttacker);
+                           TFTVLogger.Always("New defense mission should have been created, with attacker ");  //phoenixBaseAttacker.Faction.Name);   
+                       }
 
-        }*/
+                   }
+
+
+               }
+               catch (Exception e)
+               {
+                   TFTVLogger.Error(e);
+               }
+
+           }*/
 
         /*
             [HarmonyPatch(typeof(TacParticipantSpawn), "GetMissionSpawnZones")]
@@ -317,26 +301,26 @@ namespace TFTV
 
 
 
-      /*  [HarmonyPatch(typeof(GeoPhoenixFaction), "ActivatePhoenixBase")]
-        public static class GeoPhoenixFaction_ActivatePhoenixBase_GiveGlory_Patch
-        {
-            public static void Postfix(GeoPhoenixFaction __instance)
-            {
-                try
-                {
-                    if (__instance.GeoLevel.EventSystem.GetVariable("Photographer") != 1 && __instance.Bases.Count() > 2)
-                    {
-                        GeoscapeEventContext eventContext = new GeoscapeEventContext(__instance.GeoLevel.ViewerFaction, __instance);
-                        __instance.GeoLevel.EventSystem.TriggerGeoscapeEvent("OlenaLotaStart", eventContext);
-                        __instance.GeoLevel.EventSystem.SetVariable("Photographer", 1);
-                    }
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-            }
-        }*/
+        /*  [HarmonyPatch(typeof(GeoPhoenixFaction), "ActivatePhoenixBase")]
+          public static class GeoPhoenixFaction_ActivatePhoenixBase_GiveGlory_Patch
+          {
+              public static void Postfix(GeoPhoenixFaction __instance)
+              {
+                  try
+                  {
+                      if (__instance.GeoLevel.EventSystem.GetVariable("Photographer") != 1 && __instance.Bases.Count() > 2)
+                      {
+                          GeoscapeEventContext eventContext = new GeoscapeEventContext(__instance.GeoLevel.ViewerFaction, __instance);
+                          __instance.GeoLevel.EventSystem.TriggerGeoscapeEvent("OlenaLotaStart", eventContext);
+                          __instance.GeoLevel.EventSystem.SetVariable("Photographer", 1);
+                      }
+                  }
+                  catch (Exception e)
+                  {
+                      TFTVLogger.Error(e);
+                  }
+              }
+          }*/
 
 
         public static TacticalActor mutoidReceivingHealing = null;

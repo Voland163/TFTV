@@ -427,22 +427,7 @@ namespace TFTV
 
         }
 
-        public static void MakeLOTAAlternativeToSymes()
-        {
-            try
-            {
-                GeoscapeEventDef leFINAL = DefCache.GetDef<GeoscapeEventDef>("PROG_LE_FINAL_GeoscapeEventDef");
-                leFINAL.GeoscapeEventData.Choices[0].Outcome.GiveResearches.Add("PX_VirophageWeapons_ResearchDef");
-                leFINAL.GeoscapeEventData.Choices[0].Outcome.GiveResearches.Add("Pandoravirus");
-                leFINAL.GeoscapeEventData.Choices[0].Outcome.VariablesChange.Add(TFTVCommonMethods.GenerateVariableChange("Sphere", 1, true));
-                
-
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-        }
+      
 
     }
 }
