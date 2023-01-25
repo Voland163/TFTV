@@ -773,7 +773,7 @@ PX_ANTEDILUVIANARCHAEOLOGY_RESEARCHDEF_UNLOCK,Text,,"Pre-Collapse there had been
 TFTV_LOTA_START_EVENT_TITLE,Text,,An Unexpected Find,,,,,,,,
 TFTV_LOTA_START_EVENT_DESCRIPTION,Text,,"Director, I've come across something interesting in the archives of the recently activated base. Something called Project Glory... Perhaps we should put Bennu to analyze it.",,,,,,,,
 AUTOMATA_RESEARCH_TITLE,Text,,Ancient Automata,,,,,,,,
-AUTOMATA_RESEARCH_REVEAL,Text,,"<i>“My working theory is that they were summoned from a spellbook. Our objective: find the spellbook.”</i> - Alistair Ashby
+AUTOMATA_RESEARCH_REVEAL,Text,,"
 
 We have retrieved the remains of the automata that we encountered at the site. We should analyze them immediately.",,,,,,,,
 AUTOMATA_RESEARCH_COMPLETE,Text,,"<i>""What do their Automata tell us about the Ancients? Yes, they were far more technologically advanced than us, that's a given. But how different was their society from ours? These weaponized Automata tell us there was violence, there was fear. But what were they fighting, what did they fear?""</i> - Alistair Ashby 
@@ -786,7 +786,7 @@ However, we have achieved two major breakthroughs in the course of our research 
 
 1) We have gained new insight into the behavior and capabilities of the Ancient automata, which we will be able to leverage in the field from now on.
 2) We have identified the type of materials from which they are made of, and are already theorizing on possible applications.",,,,,,,,
-AUTOMATA_RESEARCH_BENEFITS,Text,,New information about Ancient Automata abilities available in tactical missions; EMP and Stun grenades will now work against Ancient Automata,,,,,,,,
+AUTOMATA_RESEARCH_BENEFITS,Text,,New information about Ancient Automata abilities available in tactical missions; Ancient Automata no longer immune to Daze effects from our weaponry,,,,,,,,
 EXOTIC_RESEARCH_TITLE,Text,,Exotic Materials,,,,,,,,
 EXOTIC_RESEARCH_REVEAL,Text,,"We have identified 3 distinct previously unknown substances in the composition of the Ancient Automata.
 ",,,,,,,,
@@ -866,9 +866,9 @@ The material is composed of a complex array of molecular structures, including a
 Protean Mutane appears to harness the energy of these gravitons in a way that has yet to be fully understood. The material's structure also appears to be in a state of constant flux, hence its name is strikingly appropriate; ""Protean"" meaning able to change shape easily and ""Mutane"" meaning mutation.",,,,,,,,
 PROTEAN_MUTANE_RESEARCH_BENEFITS,Text,,"We can now manufacture weapons that require Protean Mutane, and reactivate one of the defeated Cyclops.",,,,,,,,
 HELENA_ONEIROMANCY_TITLE,Text,,Reversed Oneiromancy,,,,,,,,
-HELENA_ONEIROMANCY_TEXT,Text,,"The Living Crystal, it's the key. There was always the question, how could the stories of the Ancients and imitations of the artifacts and architecture have made it into our culture, when they preceded the homosapiens by more than a million years? No meaningful interaction between our ancestors and the ancients could have taken place at the time when the ancients existed, yet there were signs of this interaction everywhere! 
+HELENA_ONEIROMANCY_TEXT,Text,,"The Living Crystal, it's the key. There was always the question, how could the stories of the Ancients and imitations of their artifacts and architecture have made it into our culture, when they preceded the homosapiens by more than a million years? No meaningful interaction between our ancestors and the ancients could have taken place at the time when the ancients existed, yet there were signs of this interaction everywhere! 
 
-The Living Crystal solves the paradox. We have never met the Ancients, but we have seen them in our dreams, and in our nightmares.",,,,,,,,
+The Living Crystal solves the paradox. We have never met the Ancients, but we have seen them in our dreams, and in our nightmares.",,,,,,,,
 OLENA_ONEIROMANCY_TITLE,Text,,Reversed Oneiromancy,,,,,,,,
 OLENA_ONEIROMANCY_TEXT,Text,,"Yes, the Living Crystal must be the “memory module” that we have been looking for… And I believe I know how we can access it: we need to reactivate one of the Cyclops. 
 
@@ -885,3 +885,37 @@ ALISTAIR_PROGRESS_TEXT,Text,,"Back in the day I would have gone on a rant about 
 However, there must be a lot more of these exotic materials on our planet and we can search for them properly if we win the war.",,,,,,,,
 HELENA_BEAST_TITLE,Text,,Protect the Beast,,,,,,,,
 HELENA_BEAST_TEXT,Text,,Director! We have detected a Pandoran force approaching the site with the reactivated Cyclops. We must defend it at all costs! ,,,,,,,,
+PROTECT_THE_CYCLOPS,Text,,PROTECT THE CYCLOPS,,,,,,,,
+KEY_BASE_FACILITY_ARCHEOLOGY_LAB_DESCRIPTION,Text,,The Archaeology Lab allows the construction of Archaeology Probes. You only need one Archaelogy Lab and there are no benefits to having more than that. Note that it does not generate regular research.,,,,,,,,
+KEY_DEPLOYGUARDIAN_POPUP_BUTTON,Text,,REACTIVATE BROKEN CYCLOPS,,,,,,,,
+KEY_DEPLOYGUARDIAN_POPUP_DESCRIPTION,Text,,Reactivate a broken cyclops to access its memory and learn what really happened to the Ancients,,,,,,,,
+KEY_DEPLOYGUARDIAN_POPUP_LISTCOSTS,Text,,COST OF REPAIRS,,,,,,,,
+KEY_DEPLOYGUARDIAN_POPUP_NAME,Text,,REACTIVATE BROKEN CYCLOPS,,,,,,,,
+KEY_GEO_ANCIENT_GUARDIAN_GUARD_DESCRIPTION,Text,,Reactivate a broken cyclops to access its memory and learn what really happened to the Ancients,,,,,,,,
+KEY_GEO_ANCIENT_GUARDIAN_GUARD_NAME,Text,,REACTIVATE BROKEN CYCLOPS,,,,,,,,
+KEY_MESSAGE_MISSING_REFINERY,Text,,YOU HAVE NOT RESEARCHED THE REQUIRED EXOTIC MATERIAL!,,,,,,,,
+KEY_TUTORIAL_DLC2_ANCIENT_SITE_DESCRIPTION,Text,,"Send an aircraft to set up an Exploration operation at the site. Once Exploration starts, the presence of aircraft is no longer needed.",,,,,,,,
+KEY_TUTORIAL_DLC2_EXCAVATION_DONE_NAME,Text,,We've completed our first ancient site Exploration!,,,,,,,,
+KEY_TUTORIAL_DLC2_HARVESITNG_DESCRIPTION,Text,,"In TFTV, you immediately gain some amount of an exotic resource when you take control of an ancient site from the Automata. The amount of resources depends on type of resource and difficulty level, or alternatively the manual setting used in the Mod config. ",,,,,,,,
+KEY_TUTORIAL_DLC2_HARVESITNG_NAME,Text,,ANCIENT SITE,,,,,,,,
+KEY_TUTORIAL_DLC2_REFINERY_DESCRIPTIOY,Text,,"In TFTV, you immediately gain some amount of an exotic resource when you take control of an ancient site from the Automata. The amount of resources depends on type of resource and difficulty level, or alternatively the manual setting used in the Mod config. ",,,,,,,,
+KEY_TUTORIAL_DLC2_REFINERY_NAME,Text,,ANCIENT SITE,,,,,,,,
+KEY_AC_PROTEAN_HARVEST_AFTER_REVEAL,Text,,PROTEAN MUTANE SITE,,,,,,,,
+KEY_AC_PROTEAN_REFINERY_AFTER_REVEAL,Text,,PROTEAN MUTANE SITE,,,,,,,,
+KEY_AC_ORICHALCUM_HARVEST_AFTER_REVEAL,Text,,ORICHALCUM SITE,,,,,,,,
+KEY_AC_ORICHALCUM_REFINERY_AFTER_REVEAL,Text,,ORICHALCUM SITE,,,,,,,,
+KEY_AC_CRYSTAL_HARVEST_AFTER_REVEAL,Text,,LIVING CRYSTAL SITE,,,,,,,,
+KEY_AC_CRYSTAL_REFINERY_AFTER_REVEAL,Text,,LIVING CRYSTAL SITE,,,,,,,,
+CYCLOPS_DEFENSE_NAME,Text,,CYCLOPS DEFENSE,,,,,,,,
+CYCLOPS_DEFENSE_DESCRIPTION,Text,,"Before any Hoplites are destroyed, the Cyclops has a 50% resistance to all damage. Destroying Hoplites reduces this resistance.",,,,,,,,
+HOPLITES_SELF_REPAIR_NAME,Text,,HOPLITES SELF-REPAIR,,,,,,,,
+HOPLITES_SELF_REPAIR_DESCRIPTION,Text,,"Any Automata destroyed within 7 tiles of another one will allow it to recover a missing body part or 50 HP, and 5 WP",,,,,,,,
+POWERED_UP_NAME,Text,,ALL POWERED UP,,,,,,,,
+POWERED_UP_DESCRIPTION,Text,,"From the moment it is alerted, an Automata gains 5 WP per turn. Its speed is determined by its current WP. Once it reaches maximum WP, it gains the this status, receving +50% damage to all attacks ",,,,,,,,
+UNKNOWN_STATUS_NAME,Text,,?,,,,,,,,
+UNKNOWN_STATUS_DESCRIPTION,Text,,Research the entity to learn what it is capable of,,,,,,,,
+KEY_EMP_RESISTANCE_NAME,Text,,IMMUNE TO EMP,,,,,,,,
+KEY_EMP_RESISTANCE_DESCRIPTION,Text,,Immune to EMP attacks,,,,,,,,
+IMMUNITY_TO_PARALYSIS_NAME,Text,,IMMUNE TO PARALYZE WEAPONS,,,,,,,,
+IMMUNITY_TO_PARALYSIS_DESCRIPTION,Text,,Immune to Paralyze weapons,,,,,,,,
+KEY_TUTORIAL_DLC2_ARCHEOLOGY_NAME,Text,,We've completed our Archaeology Lab!,,,,,,,,

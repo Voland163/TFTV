@@ -39,6 +39,7 @@ namespace TFTV
         public bool [] VoidOmensCheck = TFTVVoidOmens.VoidOmensCheck;
         //Commented out for release #12
         public int HoplitesKilledOnMission;
+        public bool LOTAReworkActiveInTactical;
 
     }
 
@@ -75,7 +76,9 @@ namespace TFTV
             TFTVAncients.CheckCyclopsDefense();
             TFTVLogger.Always("Tactical start completed");
             TFTVLogger.Always("Difficulty level is " + tacController.Difficulty.Order);
-            
+            TFTVLogger.Always("LOTA rework active in tactical is " + TFTVAncients.LOTAReworkActive);
+            TFTVAncients.CheckResearchStateOnTacticalStart();
+
         }
 
         /// <summary>
@@ -127,6 +130,7 @@ namespace TFTV
                 TFTVRevenant.revenantID = data.RevenantId;
                 //Commented out for release #13
                 TFTVAncients.HoplitesKilled = data.HoplitesKilledOnMission;
+                TFTVAncients.LOTAReworkActive = data.LOTAReworkActiveInTactical;
 
             }
             catch (Exception e)
@@ -159,7 +163,8 @@ namespace TFTV
                 infestedHavenOriginalOwnerSaveData = TFTVInfestationStory.OriginalOwner,
                 RevenantId = TFTVRevenant.revenantID,
                 //commented out for release #13
-                HoplitesKilledOnMission = TFTVAncients.HoplitesKilled
+                HoplitesKilledOnMission = TFTVAncients.HoplitesKilled,
+                LOTAReworkActiveInTactical = TFTVAncients.LOTAReworkActive
 
             };
             

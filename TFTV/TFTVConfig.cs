@@ -13,37 +13,32 @@ namespace TFTV
 
     public class TFTVConfig : ModConfig
     {
-      /*  public readonly Dictionary<string, StartingSquadFaction> StartingSquad= new Dictionary<string, StartingSquadFaction>();
 
-        public override List<ModConfigField> GetConfigFields()
-        {
-            return StartingSquad.Select(s => new ModConfigField(s.Key, s.Value.GetType())
-            {
-                GetValue = () => s.Value,
-                SetValue = (StartingSquadFaction) => StartingSquad[s.Key] = (StartingSquadFaction)StartingSquadFaction,
-                GetDescription = () => "<<custom description>>"
-            }).ToList();
-        }
-      */
 
         //Default settings
         [ConfigField(text: "DEFAULT TFTV SETTINGS",
             description: "Sets all settings to default, to provide the Terror from the Void experience as envisioned by its creators")]
         public bool defaultSettings = false;
 
-      /*  [ConfigField(text: "DISPLAY OPERATIVES WITHOUT HELMETS",
-            description: "Faces of operatives will always be fully displayed in Geoscape, even when they are wearing helmets. If you prefer to see your operatives with helmets, as in Vanilla, " +
-            "turn this option off")]
-        public bool helmentsOff = true;*/
-
         [ConfigField(text: "PLAY WITH MORE MIST VOID OMEN",
             description: "If you are playing on a Low-end system and experience lag with this Void Omen, you can turn it off here. This will prevent it from rolling" +
             " and if already rolled, will prevent it from having any effect")]
         public bool MoreMistVO = true;
 
-       [ConfigField(text: "SKIP MOVIES",
-            description: "Choose whether to skip Logos on game launch, Intro and Landing cinematics. Adapted from Mad's Assorted Adjustments.")]
+        [ConfigField(text: "SKIP MOVIES",
+             description: "Choose whether to skip Logos on game launch, Intro and Landing cinematics. Adapted from Mad's Assorted Adjustments.")]
         public bool SkipMovies = false;
+
+        //New LOTA settings
+        [ConfigField(text: "AMOUNT OF EXOTIC RESOURCES",
+         description: "Choose the amount of Exotic Resources you want to have in your game per playthrough. Each unit provides enough resources to manufacture one set of Impossible Weapons. " +
+          "So, if you want to have two full sets, set this number to 2, and so on. By default, this is set by the difficulty level: 2.5 on Rookie, 2 on Veteran, 1.5 on Hero, 1 on Legend. " +
+          "Need to restart the game for the changes to take effect")]
+        public float amountOfExoticResources = 1f;
+
+        [ConfigField(text: "IMPOSSIBLE WEAPONS ADJUSTMENTS", description: "Switch off to keep Impossible Weapons with the same stats and functionality as Ancient Weapons in Vanilla. " +
+            "(For now, in TFTV only Rebuke has been adjusted to make it less powerful, removing its Shred Damage)")]
+        public bool impossibleWeaponsAdjustments = true;
 
         //Starting squad
 

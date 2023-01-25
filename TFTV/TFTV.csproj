@@ -103,6 +103,8 @@
     <Compile Include="Tactical\Entities\Statuses\ActionpointsRelatedStatusDef.cs" />
     <Compile Include="Tactical\Entities\Statuses\AddDependentDamageKeywordsStatus.cs" />
     <Compile Include="Tactical\Entities\Statuses\AddDependentDamageKeywordsStatusDef.cs" />
+    <Compile Include="Tactical\Entities\Statuses\OnActorDazedEffectStatus.cs" />
+    <Compile Include="Tactical\Entities\Statuses\OnActorDazedEffectStatusDef.cs" />
     <Compile Include="TFTVAirCombat.cs" />
     <Compile Include="TFTVAmbushes.cs" />
     <Compile Include="TFTVAncients.cs" />

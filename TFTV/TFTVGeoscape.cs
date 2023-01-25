@@ -60,6 +60,7 @@ namespace TFTV
             GeoLevelController gsController = Controller;
             /// ModMain is accesible at any time
             DefCache.GetDef<TacticalTargetingDataDef>("E_TargetingData [PsychicWard_AbilityDef]").Origin.Range = 10; //Fix Dtony thing
+           // TFTVBetaSaveGamesFixes.SpecialFixForTesting(gsController);
             TFTVBetaSaveGamesFixes.CheckSaveGameEventChoices(gsController);
             TFTVBetaSaveGamesFixes.CheckUmbraResearchVariable(gsController);
             TFTVCommonMethods.CheckGeoUIfunctionality(gsController); 
@@ -77,13 +78,14 @@ namespace TFTV
             }
 
             TFTVRevenantResearch.CheckRevenantResearchRequirements(Controller);
-            TFTVProjectOsiris.RunProjectOsiris(gsController);
-            TFTVAncients.CheckResearchState(gsController);
+            TFTVProjectOsiris.RunProjectOsiris(gsController);  
             Main.Logger.LogInfo("UmbraEvolution variable is " + Controller.EventSystem.GetVariable(TFTVUmbra.TBTVVariableName));
             TFTVLogger.Always("UmbraEvolution variable is " + Controller.EventSystem.GetVariable(TFTVUmbra.TBTVVariableName));
-          
-       
+            TFTVBetaSaveGamesFixes.CheckNewLOTA(gsController);
+            TFTVAncients.AncientsOnGeoscapeStartChecks(gsController);
             
+
+
             // TFTVExperimental.ClearAndCreateBaseDefenseMission(gsController);
             //  TFTVLogger.Always("Revenants destroyed " + gsController.EventSystem.GetVariable("RevenantsDestroyed"));
             //  TFTVLogger.Always("Revenant captured " + gsController.EventSystem.GetVariable("RevenantCapturedVariable"));
@@ -102,6 +104,7 @@ namespace TFTV
             TFTVRevenant.CheckRevenantTime(gsController);
             TFTVRevenantResearch.CheckProjectOsiris(gsController);
             TFTVDiplomacyPenalties.VoidOmensImplemented = false;
+            TFTVAncients.CheckResearchStateOnGeoscapeEnd(gsController);
 
         }
 
@@ -214,6 +217,12 @@ namespace TFTV
 
                 setup.InitialScavengingSiteCount = (uint)main.Config.InitialScavSites;
 
+                // Generate only one LOTA site of each kind
+                foreach (GeoInitialWorldSetup.ArcheologyHasvestingConfiguration archeologyHasvestingConfiguration in setup.ArcheologyHasvestingSitesDistribution)
+                {
+                    archeologyHasvestingConfiguration.AmountToGenerate = 1;
+                }
+
                 // ScavengingSitesDistribution is an array with the weights for scav, rescue soldier and vehicle
                 foreach (GeoInitialWorldSetup.ScavengingSiteConfiguration scavSiteConf in setup.ScavengingSitesDistribution)
                 {
@@ -307,6 +316,16 @@ namespace TFTV
 
                 setup.InitialScavengingSiteCount = (uint)main.Config.InitialScavSites;
 
+                // Generate only one LOTA site of each kind
+                foreach (GeoInitialWorldSetup.ArcheologyHasvestingConfiguration archeologyHasvestingConfiguration in setup.ArcheologyHasvestingSitesDistribution) 
+                {
+
+                    archeologyHasvestingConfiguration.AmountToGenerate = 1;
+                
+                
+                }
+
+                
                 // ScavengingSitesDistribution is an array with the weights for scav, rescue soldier and vehicle
                 foreach (GeoInitialWorldSetup.ScavengingSiteConfiguration scavSiteConf in setup.ScavengingSitesDistribution)
                 {

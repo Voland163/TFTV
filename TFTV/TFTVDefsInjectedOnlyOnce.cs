@@ -84,33 +84,39 @@ namespace TFTV
             AllowMedkitsToTargetMutoids();
 
             //Commented out for release #12
-            ChangesToLOTA2();
+            //  ChangesToLOTA2();
+            ChangesToLOTAEarlyLoad();
             CreateSubject24();
             TFTVExperimental.MakeCopyOfAlienAttackOnPhoenixBase();
         }
+
+        public static void ChangesToLOTAEarlyLoad() 
+        {
+            CreateAbilitiesForAncients();
+            CreateAncientStatusEffects();
+            CreateParalysisDamageImmunity();
+            CreateLOTAHints();
+            CreateAncientAutomataResearch();
+            CreateExoticMaterialsResearch();
+            CreateLivingCrystalResearch();
+            CreateProteanMutaneResearch();
+
+        }
+
 
         public static void ChangesToLOTA2()
         {
             try
             {
-      
-                ChangeAncientSitesHarvesting();
-                ChangeAncientsBodyParts();
-                CreateAbilitiesForAncients();
-                CreateAncientStatusEffects();
+                ChangeAncientsBodyParts();    
                 ChangeAncientsWeapons();
-                CreateAncientAutomataResearch();
-                CreateExoticMaterialsResearch();
-                CreateLivingCrystalResearch();
-                CreateProteanMutaneResearch();
+               
                 ChangeSchemataMissionRequirement();
                 ChangeAncientSiteExploration();
                 ChangeImpossibleWeapons();
                 RemovePandoranVirusResearchRequirement();
-                ChangeAutomataResistances();
                 CreateEventsForLOTA();
-                CreateLOTAHints();
-                ChangeDeployGuardianCosts();
+              
                 ChangeAncientDefenseMission();
             }
 
@@ -118,6 +124,43 @@ namespace TFTV
             {
                 TFTVLogger.Error(e);
             }
+        }
+
+       /* public static void CreateEMPImmunity()
+        {
+            try 
+            {
+                DamageMultiplierAbilityDef damageMultiplierAbilityDefSource = DefCache.GetDef<DamageMultiplierAbilityDef>("EMPResistant_DamageMultiplierAbilityDef");
+                DamageMultiplierAbilityDef EMPImmunity = Helper.CreateDefFromClone(damageMultiplierAbilityDefSource, "7895158D-62AE-4990-A1A0-EF924CF1C2E4", "EMPImmunity_DamageMultiplierAbilityDef");
+                EMPImmunity.Multiplier = 0.0f;
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+        }*/
+
+        public static void CreateParalysisDamageImmunity()
+        {
+            try 
+            {
+                DamageMultiplierAbilityDef damageMultiplierAbilityDefSource = DefCache.GetDef<DamageMultiplierAbilityDef>("EMPResistant_DamageMultiplierAbilityDef");
+                DamageMultiplierAbilityDef ParalysisNotShcokImmunity = Helper.CreateDefFromClone(damageMultiplierAbilityDefSource, "38B0CBAB-EE97-4481-876B-71427E4C11CE", "ParalysisNotShockImmunity_DamageMultiplierAbilityDef");
+                ParalysisNotShcokImmunity.DamageTypeDef = DefCache.GetDef<DamageOverTimeDamageTypeEffectDef>("Paralysis_DamageOverTimeDamageTypeEffectDef");
+                ParalysisNotShcokImmunity.Multiplier = 0.0f;
+                ParalysisNotShcokImmunity.ViewElementDef = Helper.CreateDefFromClone(damageMultiplierAbilityDefSource.ViewElementDef, "FF08454A-CFD1-4BC9-AEF5-003E2ED646EC", "ParalysisNotShockImmunity_ViewElementDef");
+                ParalysisNotShcokImmunity.ViewElementDef.DisplayName1.LocalizationKey = "IMMUNITY_TO_PARALYSIS_NAME";
+                ParalysisNotShcokImmunity.ViewElementDef.Description.LocalizationKey = "IMMUNITY_TO_PARALYSIS_DESCRIPTION";
+                ParalysisNotShcokImmunity.ViewElementDef.LargeIcon = Helper.CreateSpriteFromImageFile("ParalysisImmunity.png");
+                ParalysisNotShcokImmunity.ViewElementDef.SmallIcon = Helper.CreateSpriteFromImageFile("ParalysisImmunity.png");
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
         }
 
 
@@ -165,21 +208,7 @@ namespace TFTV
 
         }
 
-        public static void ChangeDeployGuardianCosts()
-        {
-            try 
-            {
-                DefCache.GetDef<AncientGuardianGuardAbilityDef>("AncientGuardianGuardAbilityDef").LocalSiteResourceCost=0;
-            
-            }
 
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-
-
-        }
 
         public static void CreateLivingCrystalResearch()
         {
@@ -360,7 +389,22 @@ namespace TFTV
                // hoplitesRepairHint.Conditions.Add(TFTVTutorialAndStory.ActorHasTagCreateNewConditionForTacticalHint(hopliteTag.name));
 
                 TFTVTutorialAndStory.CreateNewTacticalHint(hintHopliteMaxPower, HintTrigger.ActorSeen, ancientsPowerUpStatus.name, hopliteMaxPowerTitle, hopliteMaxPowerText, 2, true, "0DC75121-325A-406E-AC37-5F1AAB4E7778");
-                
+
+               // GeoscapeTutorialStepsDef geoscapeTutorialStepsDef = DefCache.GetDef<GeoscapeTutorialStepsDef>("GeoscapeTutorialStepsDef");
+
+                /*   List<GeoscapeTutorialStep> geoscapeTutorialSteps = new List<GeoscapeTutorialStep>();
+
+                   foreach(GeoscapeTutorialStep tutorialStep in geoscapeTutorialStepsDef.Hints) 
+                   {
+                       if (tutorialStep.StepType == GeoscapeTutorialStepType.HarvestingSiteCaptured || tutorialStep.StepType == GeoscapeTutorialStepType.RefineryCaptured) 
+                       {
+                           geoscapeTutorialSteps.Add(tutorialStep);
+
+                       }
+                   }*/
+               // geoscapeTutorialStepsDef.Hints.RemoveRange(3, 2);
+               // TFTVLogger.Always("Geohints count " + geoscapeTutorialStepsDef.Hints.Count());
+
             }
             catch (Exception e)
             {
@@ -370,21 +414,8 @@ namespace TFTV
 
 
         }
-
-        public static void ChangeAutomataResistances()
-        {
-            try
-            {
-                TacticalActorDef hopliteActorDef = DefCache.GetDef<TacticalActorDef>("HumanoidGuardian_ActorDef");
-                List<AbilityDef> abilites = hopliteActorDef.Abilities.ToList();
-                abilites.RemoveLast();
-                hopliteActorDef.Abilities = abilites.ToArray();
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-        }
+        
+       
 
         public static void RemovePandoranVirusResearchRequirement()
         {
@@ -438,6 +469,8 @@ namespace TFTV
                 scyther.ManufactureRequiredTagDefs.RemoveAt(1);
                 scorpion.ManufactureRequiredTagDefs.RemoveAt(1);
 
+                scorpion.ManufactureProteanMutane = 75;
+                scorpion.ManufactureOricalcum = 75;
 
                /* List<WeaponDef> allAncientWeapons = new List<WeaponDef> { shardGun, crystalCrossbow, mattock, rebuke, scorpion, scyther };
 
@@ -466,7 +499,19 @@ namespace TFTV
         {
             try
             {
+
+                AncientSiteProbeItemDef ancientSiteProbeItemDef = DefCache.GetDef<AncientSiteProbeItemDef>("AncientSiteProbeItemDef");
+                ancientSiteProbeItemDef.ManufactureTech = 5;
+                ancientSiteProbeItemDef.ManufactureMaterials = 25;
+
                 DefCache.GetDef<ExcavateAbilityDef>("ExcavateAbilityDef").Cost.Values = new List<ResourceUnit>() { new ResourceUnit(ResourceType.Materials, value: 20), new ResourceUnit(ResourceType.Tech, value: 5) };
+                AncientGuardianGuardAbilityDef AncientGuardianGuardAbilityDef = DefCache.GetDef<AncientGuardianGuardAbilityDef>("AncientGuardianGuardAbilityDef");
+                AncientGuardianGuardAbilityDef.Cost.Values.Add(new ResourceUnit { Type = ResourceType.Tech, Value = 25 });
+                AncientGuardianGuardAbilityDef.LocalSiteResourceCost = 0;
+
+                ArcheologySettingsDef archeologySettingsDef = DefCache.GetDef<ArcheologySettingsDef>("ArcheologySettingsDef");
+                archeologySettingsDef.ArcheologyPassiveOutput = 0;
+                archeologySettingsDef.ArcheologyFacilityHarvestingPower = 0;
             }
             catch (Exception e)
             {
@@ -582,10 +627,14 @@ namespace TFTV
                 statusSelfRepairAbilityDef.VisibleOnHealthbar = TacStatusDef.HealthBarVisibility.AlwaysVisible;
                 statusSelfRepairAbilityDef.VisibleOnPassiveBar = true;
                 statusSelfRepairAbilityDef.VisibleOnStatusScreen = TacStatusDef.StatusScreenVisibility.VisibleOnStatusesList;
-                statusSelfRepairAbilityDef.Visuals.DisplayName1.LocalizationKey = "ANC_AUTOREPAIR_TITLE";
-                statusSelfRepairAbilityDef.Visuals.Description.LocalizationKey = "ANC_AUTOREPAIR_TEXT";
+                statusSelfRepairAbilityDef.Visuals.DisplayName1.LocalizationKey = "HOPLITES_SELF_REPAIR_NAME";
+                statusSelfRepairAbilityDef.Visuals.Description.LocalizationKey = "HOPLITES_SELF_REPAIR_DESCRIPTION";
                 statusSelfRepairAbilityDef.Visuals.LargeIcon = Helper.CreateSpriteFromImageFile("TFTV_status_self_repair.png");
                 statusSelfRepairAbilityDef.Visuals.SmallIcon = Helper.CreateSpriteFromImageFile("TFTV_status_self_repair.png");
+
+               
+
+
             }
 
             catch (Exception e)
@@ -635,6 +684,7 @@ namespace TFTV
         {
             try
             {
+               
                 //Status for Cyclops Defense
                 //Cyclops is near invulnerable while most hoplites are alive
                 string statusCyclopsDefenseName = "CyclopsDefense_StatusDef";
@@ -662,12 +712,8 @@ namespace TFTV
                 statusCyclopsDefense.Visuals.LargeIcon = Helper.CreateSpriteFromImageFile("TFTV_status_cyclops_defense.png");
                 statusCyclopsDefense.Visuals.SmallIcon = Helper.CreateSpriteFromImageFile("TFTV_status_cyclops_defense.png");
 
-                statusCyclopsDefense.Visuals.DisplayName1 = new LocalizedTextBind("CYCLOPS DEFENSE", true);
-                statusCyclopsDefense.Visuals.Description = new LocalizedTextBind("CYCLOPS DEFENSE", true);
-
-                DamageMultiplierStatusDef CyclopsDefenseStatus = DefCache.GetDef<DamageMultiplierStatusDef>("CyclopsDefense_StatusDef");
-
-                TFTVLogger.Always(CyclopsDefenseStatus.EffectName + " is real");
+                statusCyclopsDefense.Visuals.DisplayName1.LocalizationKey = "CYCLOPS_DEFENSE_NAME";
+                statusCyclopsDefense.Visuals.Description.LocalizationKey = "CYCLOPS_DEFENSE_DESCRIPTION";
 
                 //Status for hoplites; extra damage when charged
                 string skillName = "AncientsPoweredUp";
@@ -713,8 +759,8 @@ namespace TFTV
                 { new ItemStatModification {TargetStat = StatModificationTarget.BonusAttackDamage, Modification = StatModificationType.Multiply, Value = 1.50f},
                 };
                 ancientMaxPowerAbility.ItemTagStatModifications = new EquipmentItemTagStatModification[0];
-                ancientMaxPowerAbility.ViewElementDef.DisplayName1 = new LocalizedTextBind("MAX POWER", true);
-                ancientMaxPowerAbility.ViewElementDef.Description = new LocalizedTextBind("+50% damage to all attacks", true);
+                ancientMaxPowerAbility.ViewElementDef.DisplayName1.LocalizationKey = "POWERED_UP_NAME";
+                ancientMaxPowerAbility.ViewElementDef.Description.LocalizationKey = "POWERED_UP_DESCRIPTION";
 
                 ancientMaxPowerAbility.ViewElementDef.LargeIcon = Helper.CreateSpriteFromImageFile("TFTV_status_powered_up.png");
                 ancientMaxPowerAbility.ViewElementDef.SmallIcon = Helper.CreateSpriteFromImageFile("TFTV_status_powered_up.png");
@@ -871,43 +917,7 @@ namespace TFTV
         }
 
 
-        public static void ChangeAncientSitesHarvesting()
-        {
-            try
-            {
-                ArcheologySettingsDef archeologySettingsDef = DefCache.GetDef<ArcheologySettingsDef>("ArcheologySettingsDef");
-                archeologySettingsDef.HarvestingTimeHours = 0;
-                archeologySettingsDef.ArcheologyFacilityHarvestingPower = 0;
-                archeologySettingsDef.ArcheologyPassiveOutput = 0;
-
-                ResourceMissionOutcomeDef crystalHarvest = DefCache.GetDef<ResourceMissionOutcomeDef>("AncientsHarvestCrystalMissionOutcomeDef");
-                ResourceMissionOutcomeDef orichalcumHarvest = DefCache.GetDef<ResourceMissionOutcomeDef>("AncientsHarvestOrichalcumMissionOutcomeDef");
-                ResourceMissionOutcomeDef proteanHarvest = DefCache.GetDef<ResourceMissionOutcomeDef>("AncientsHarvestProteanMissionOutcomeDef");
-
-                crystalHarvest.Resources.Values = new List<ResourceUnit>() {
-                    new ResourceUnit { Type = PhoenixPoint.Common.Core.ResourceType.LivingCrystals, Value = 250 }
-                };
-                orichalcumHarvest.Resources.Values = new List<ResourceUnit>() {
-                    new ResourceUnit { Type = PhoenixPoint.Common.Core.ResourceType.Orichalcum, Value = 175 }
-                };
-                proteanHarvest.Resources.Values = new List<ResourceUnit>()
-                { new ResourceUnit { Type = PhoenixPoint.Common.Core.ResourceType.ProteanMutane, Value = 175 }
-                };
-
-                DefCache.GetDef<CustomMissionTypeDef>("CrystalsRefineryAttack_Ancient_CustomMissionTypeDef").Outcomes[0].Outcomes[1] = crystalHarvest;
-                DefCache.GetDef<CustomMissionTypeDef>("OrichalcumRefineryAttack_Ancient_CustomMissionTypeDef").Outcomes[0].Outcomes[1] = orichalcumHarvest;
-                DefCache.GetDef<CustomMissionTypeDef>("ProteanRefineryAttack_Ancient_CustomMissionTypeDef").Outcomes[0].Outcomes[1] = proteanHarvest;
-
-                AncientGuardianGuardAbilityDef AncientGuardianGuardAbilityDef = DefCache.GetDef<AncientGuardianGuardAbilityDef>("AncientGuardianGuardAbilityDef");
-                AncientGuardianGuardAbilityDef.LocalSiteResourceCost = 0;
-
-                // DefCache.GetDef<CustomMissionTypeDef>("ProteanHarvestAttack_Ancient_CustomMissionTypeDef").Outcomes[0].DestroySite=true;
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-        }
+      
 
 
 

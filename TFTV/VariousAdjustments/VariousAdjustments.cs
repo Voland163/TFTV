@@ -2,6 +2,7 @@
 using Base.Defs;
 using Base.Entities.Abilities;
 using Base.UI;
+using Epic.OnlineServices;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities.GameTags;
@@ -30,6 +31,7 @@ namespace PRMBetterClasses.VariousAdjustments
     {
         private static readonly DefRepository Repo = TFTVMain.Repo;
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
+       
 
         public static void ApplyChanges()
         {
@@ -347,7 +349,7 @@ namespace PRMBetterClasses.VariousAdjustments
             GameTagDef mutoidClassTag = (GameTagDef)Repo.GetDef("cd38a996-0565-1694-bb91-b4479a65950e"); // Mutoid_ClassTagDef
             GameTagDef pistolTag = (GameTagDef)Repo.GetDef("7a8a0a76-deb6-c004-3b5b-712eae0ad4a5"); // HandgunItem_TagDef
             GameTagDef assaultRifleTag = (GameTagDef)Repo.GetDef("d98ff229-5459-9224-ea2e-2dbca60bae1d"); // AssaultRifleItem_TagDef
-
+            TFTVConfig config = TFTVMain.Main.Config;
             // loop over all weapon defs in the repo
             foreach (WeaponDef weaponDef in Repo.GetAllDefs<WeaponDef>())
             {
@@ -369,6 +371,28 @@ namespace PRMBetterClasses.VariousAdjustments
                     //case "f72e9df8-2c13-6ba4-e9b8-444dfda1b19a": // FS_LightSniperRifle_WeaponDef
                     //    weaponDef.HandsToUse = 1;
                     //    break;
+                    // Rebuke, add piercing scrap shred
+                   
+                    case "831be08f-d0d7-2764-4833-02ce83ff7277": // AC_Rebuke_WeaponDef
+                        if (config.impossibleWeaponsAdjustments)
+                        {
+                            //weaponDef.DamagePayload.DamageKeywords.Find(dkp => dkp.DamageKeywordDef == damageKeywords.ShreddingKeyword).Value = 1;
+                            // Remove shredding
+                            _ = weaponDef.DamagePayload.DamageKeywords.RemoveAll(dkp => dkp.DamageKeywordDef == damageKeywords.ShreddingKeyword);
+                            weaponDef.DamagePayload.ArmourShred = 0;
+                            weaponDef.DamagePayload.ArmourShredProbabilityPerc = 0;
+                            //weaponDef.DamagePayload.DamageKeywords.Find(dkp => dkp.DamageKeywordDef == damageKeywords.BlastKeyword).Value = 10;
+                            //weaponDef.DamagePayload.DamageKeywords.Add(new DamageKeywordPair { DamageKeywordDef = damageKeywords.PiercingKeyword, Value = 25 });
+                            //weaponDef.DamagePayload.ProjectilesPerShot = 10;
+                            //weaponDef.DamagePayload.ParabolaHeightToLengthRatio = 0.5f;
+                            //weaponDef.DamagePayload.AoeRadius = 3f;
+                            //weaponDef.DamagePayload.Range = 30.0f;
+                            //weaponDef.DamagePayload.BodyPartMultiplier = 2;
+                            //weaponDef.DamagePayload.ObjectMultiplier = 10;
+                            //weaponDef.SpreadRadius = 6f;
+                        }
+                            break;
+                        
                     // Danchev MG
                     case "434c4004-580f-10a4-995a-c5a64e6998dc": // PX_PoisonMachineGun_WeaponDef
                         weaponDef.DamagePayload.DamageKeywords.Add(new DamageKeywordPair { DamageKeywordDef = damageKeywords.ShreddingKeyword, Value = 3 });
@@ -391,8 +415,8 @@ namespace PRMBetterClasses.VariousAdjustments
                     case "3880461b-4419-0cc4-5986-64bda2224e51": // NJ_IncindieryGrenade_WeaponDef
                         weaponDef.ManufactureMaterials = 26;
                         weaponDef.ManufactureTech = 10;
-                        DamageKeywordPair damageKeywordPair = weaponDef.DamagePayload.DamageKeywords.Find(dkp => dkp.DamageKeywordDef == damageKeywords.ShreddingKeyword);
-                        _ = weaponDef.DamagePayload.DamageKeywords.Remove(damageKeywordPair);
+                        DamageKeywordPair damageKeywordPair2 = weaponDef.DamagePayload.DamageKeywords.Find(dkp => dkp.DamageKeywordDef == damageKeywords.ShreddingKeyword);
+                        _ = weaponDef.DamagePayload.DamageKeywords.Remove(damageKeywordPair2);
                         break;
                     // Yggdrasil Virophage grenade
                     case "06825a27-029e-a414-d806-49c513dfce53": // PX_VirophageGrenade_WeaponDef

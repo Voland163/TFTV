@@ -261,8 +261,12 @@ namespace TFTV
                         GeoscapeEventContext context = new GeoscapeEventContext(research.Faction.GeoLevel.AlienFaction, research.Faction.GeoLevel.PhoenixFaction);
                         research.Faction.GeoLevel.EventSystem.TriggerGeoscapeEvent("Helena_Oneiromancy", context);
                     }
+                    else if (research.ResearchID == "ExoticMaterialsResearch")
+                    {
+                        TFTVAncients.CheckResearchState(research.Faction.GeoLevel);
+                    }
 
-                
+
                 }
                 catch (Exception e)
                 {
@@ -280,7 +284,7 @@ namespace TFTV
                     __instance.Fatigue.Stamina.SetToMin();
                 }
             }
-
+            
             catch (Exception e)
             {
                 TFTVLogger.Error(e);

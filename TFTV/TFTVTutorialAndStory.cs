@@ -14,6 +14,7 @@ using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Levels;
 using PhoenixPoint.Tactical.View.ViewModules;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace TFTV
@@ -94,35 +95,6 @@ namespace TFTV
 
 
 
-        /*  [HarmonyPatch(typeof(GeoscapeTutorial), "CompleteStep")]
-          public static class GeoscapeTutorial_Finished_Patch
-          {
-          public static void Postfix(GeoscapeTutorialStepType stepType)
-              {
-
-
-                  try 
-                  {
-                      TFTVLogger.Always("CompleteStep invoked");
-
-
-                      if (stepType == GeoscapeTutorialStepType.TutorialCompleted) 
-                      {
-
-                          GeoLevelController controller = (GeoLevelController)UnityEngine.Object.FindObjectOfType(typeof(GeoLevelController));
-                          TFTVLogger.Always("Intro variable is " + controller.EventSystem.GetVariable("BG_Intro_Played"));
-                          controller.EventSystem.SetVariable("BG_Intro_Played", 0);
-                          TFTVNewPXCharacters.PlayIntro(controller);
-                          TFTVLogger.Always("Intro should have triggered");
-                      }
-                  }
-                  catch (Exception e)
-                  {
-                      TFTVLogger.Error(e);
-                  }
-
-              }
-          }*/
 
 
         [HarmonyPatch(typeof(UIModuleTutorialModal), "SetTutorialStep")]
@@ -145,6 +117,21 @@ namespace TFTV
                     {
                         __instance.Image.sprite = Helper.CreateSpriteFromImageFile("Hint_PandoranEvolution.png");
                     }
+                    else if (step.StepType == GeoscapeTutorialStepType.HarvestingSiteCaptured || step.StepType == GeoscapeTutorialStepType.RefineryCaptured)
+                    {
+                        __instance.Image.sprite = Helper.CreateSpriteFromImageFile("background_ancients_hint.jpg");
+                    }
+
+
+                    /*  else if (step.StepType == GeoscapeTutorialStepType.HarvestingSiteCaptured) 
+                      {
+                          __instance.CancelInvoke();      
+                      }
+                      else if (step.StepType == GeoscapeTutorialStepType.HarvestingSiteCaptured)
+                              {
+                                  __instance.CancelInvoke();
+                              }*/
+
                 }
                 catch (Exception e)
                 {
@@ -188,7 +175,7 @@ namespace TFTV
 
                         else if (hintDef.Title.LocalizationKey == "UMBRA_SIGHTED_TITLE")// && !TacticalHintsToShow.Contains(hintDef.name))
                         {
-                            __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("Umbra_base.png");
+                            __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("VO15.jpg");
                             // TacticalHintsToShow.Add(hintDef.name);
                         }
 
@@ -419,10 +406,13 @@ namespace TFTV
         {
             try
             {
+           
                 string gUID = Guid.NewGuid().ToString();
+     
                 LevelHasTagHintConditionDef newLevelTagCondition = Helper.CreateDefFromClone(sourceInfestationMission, gUID, name + "_HintConditionDef");
+       
                 newLevelTagCondition.GameTagDef = DefCache.GetDef<MissionTypeTagDef>(name);
-
+             
                 return newLevelTagCondition;
             }
 
@@ -440,29 +430,44 @@ namespace TFTV
         {
             try
             {
+              
+                
 
                 ContextHelpHintDef newContextHelpHintDef = Helper.CreateDefFromClone(sourceContextHelpHintDef, gUID, name);
+
                 newContextHelpHintDef.Trigger = trigger;
+                newContextHelpHintDef.Conditions = new List<HintConditionDef>() { };
+            
+               
+
                 if (typeHint == 0)
                 {
-                    newContextHelpHintDef.Conditions[0] = ActorHasTemplateCreateNewConditionForTacticalHint(conditionName);
+                    newContextHelpHintDef.Conditions.Add(ActorHasTemplateCreateNewConditionForTacticalHint(conditionName));
                 }
                 else if (typeHint == 1)
                 {
-                    newContextHelpHintDef.Conditions[0] = ActorHasTagCreateNewConditionForTacticalHint(conditionName);
+                    newContextHelpHintDef.Conditions.Add(ActorHasTagCreateNewConditionForTacticalHint(conditionName));
+                   
                 }
                 else if (typeHint == 2)
                 {
-                    newContextHelpHintDef.Conditions[0] = ActorHasStatusHintConditionDefCreateNewConditionForTacticalHint(conditionName);
+                    newContextHelpHintDef.Conditions.Add(ActorHasStatusHintConditionDefCreateNewConditionForTacticalHint(conditionName));
                 }
                 else if (typeHint == 3)
                 {
-                    newContextHelpHintDef.Conditions[0] = LevelHasTagHintConditionForTacticalHint(conditionName);
-
+                    newContextHelpHintDef.Conditions.Add(LevelHasTagHintConditionForTacticalHint(conditionName));
+                  
                 }
+
+               
                 newContextHelpHintDef.Title.LocalizationKey = title;
+           
+
+
                 newContextHelpHintDef.Text.LocalizationKey = text;
+ 
                 newContextHelpHintDef.AnyCondition = false;
+ 
 
                 if (oneTime)
                 {
