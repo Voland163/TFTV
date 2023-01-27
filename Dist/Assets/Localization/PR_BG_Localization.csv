@@ -831,8 +831,8 @@ HINT_ANCIENTS_CYCLOPS_TITLE,Text,,<i> “Wake up not the beast that layeth in sl
 HINT_ANCIENTS_CYCLOPS_TEXT,Text,,Our operatives have located something that may be the source of the electromagnetic interferences that our exploration drones had come across. We should avoid alerting it for as long as possible. ,,,,,,,,
 HINT_ANCIENTS_HOPLITS_TITLE,Text,,"<i>“Frag me, what is that thing? Is that a… drill?!”</i>",,,,,,,,
 HINT_ANCIENTS_HOPLITS_TEXT,Text,,"This Ancient Automata is reactivating! While we have no intel on their capabilities, it seems like they are dormant while buried in the ground, but once they emerge they become alerted and gradually reactivate their systems, becoming stronger. The Automata also seem to be in varying states of disrepair.",,,,,,,,
-HINT_ANCIENTS_HOPLITSREPAIR_TITLE,Text,,<i>”The broken remains merged with the damaged Automata”</i>,,,,,,,,
-HINT_ANCIENTS_HOPLITSREPAIR_TEXT,Text,,This Ancient Automata has just repaired itself using the remains of the destroyed robot in its vicinity! It has also drained some of its power.,,,,,,,,
+HINT_ANCIENTS_HOPLITSREPAIR_TITLE,Text,,<i>”The broken remains floated towards the damaged Automata”</i>,,,,,,,,
+HINT_ANCIENTS_HOPLITSREPAIR_TEXT,Text,,This Ancient Automata is trying to repair itself using the remains of the destroyed robot in its vicinity! It has also drained some of its power.,,,,,,,,
 HINT_ANCIENTS_HOPLITSMAXPOWER_TITLE,Text,,"<i>”Whirl whirl whirl Vroom!”</i>",,,,,,,,
 HINT_ANCIENTS_HOPLITSMAXPOWER_TEXT,Text,,The Ancient Automata is now fully charged; damage increased significantly.,,,,,,,,
 HELENA_ECHOES_TITLE,Text,,"The Echoes of the Ancients",,,,,,,,

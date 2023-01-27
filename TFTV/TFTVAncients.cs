@@ -1,19 +1,23 @@
 ﻿using Base.Defs;
 using Base.Entities.Abilities;
+using Base.Entities.Statuses;
 using HarmonyLib;
 using PhoenixPoint.Common.ContextHelp;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
+using PhoenixPoint.Common.Entities.Items;
 using PhoenixPoint.Common.Levels.Missions;
 using PhoenixPoint.Common.UI;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.Abilities;
 using PhoenixPoint.Geoscape.Entities.Missions.Outcomes;
+using PhoenixPoint.Geoscape.Entities.Research;
 using PhoenixPoint.Geoscape.Events;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.View.ViewControllers;
+using PhoenixPoint.Geoscape.View.ViewControllers.Manufacturing;
 using PhoenixPoint.Geoscape.View.ViewControllers.Modal;
 using PhoenixPoint.Geoscape.View.ViewModules;
 using PhoenixPoint.Tactical.ContextHelp;
@@ -67,14 +71,13 @@ namespace TFTV
         // private static readonly GameTagDef SelfRepairTag = DefCache.GetDef<GameTagDef>("SelfRepair");
         // private static readonly GameTagDef MaxPowerTag = DefCache.GetDef<GameTagDef>("MaxPower");
 
-
+        //Method to make adjustments if LOTA rework is active
         public static void AncientsOnGeoscapeStartChecks(GeoLevelController controller)
         {
             try
             {
                 if (controller.EventSystem.GetVariable("NewGameStarted") == 1)
                 {
-
                     CheckAncientResources(controller);
                     CheckResearchState(controller);
                 }
@@ -90,6 +93,7 @@ namespace TFTV
 
         }
 
+        //Adjusts amount of exotic resources 
         public static void CheckAncientResources(GeoLevelController controller)
         {
             try
@@ -101,7 +105,11 @@ namespace TFTV
                 ResourceMissionOutcomeDef orichalcumHarvest = DefCache.GetDef<ResourceMissionOutcomeDef>("AncientsHarvestOrichalcumMissionOutcomeDef");
                 ResourceMissionOutcomeDef proteanHarvest = DefCache.GetDef<ResourceMissionOutcomeDef>("AncientsHarvestProteanMissionOutcomeDef");
 
-                float ResourceMultiplier = (6 - controller.CurrentDifficultyLevel.Order) / 2;
+                float ResourceMultiplier = (6 - controller.CurrentDifficultyLevel.Order) * 0.5f;
+
+               // TFTVLogger.Always("Resouce multiplier based on diffuclty " + ResourceMultiplier.ToString());
+
+               // TFTVLogger.Always("Exotic Resource multiplier in config " + config.amountOfExoticResources.ToString());
 
                 if (config.amountOfExoticResources != 1)
                 {
@@ -110,19 +118,20 @@ namespace TFTV
 
                 }
 
-
+                TFTVLogger.Always("Final exotic Resource Multiplier: " + ResourceMultiplier.ToString());
+                
                 float amountLivingCrystal = 300 * ResourceMultiplier;
                 float amountOrichalcum = 250 * ResourceMultiplier;
                 float amountProtean = 250 * ResourceMultiplier;
 
                 crystalHarvest.Resources.Values = new List<ResourceUnit>() {
-                    new ResourceUnit { Type = ResourceType.LivingCrystals, Value = amountLivingCrystal/2 }
+                    new ResourceUnit { Type = ResourceType.LivingCrystals, Value = amountLivingCrystal*0.5f }
                 };
                 orichalcumHarvest.Resources.Values = new List<ResourceUnit>() {
-                    new ResourceUnit { Type = ResourceType.Orichalcum, Value = amountOrichalcum/2}
+                    new ResourceUnit { Type = ResourceType.Orichalcum, Value = amountOrichalcum*0.5f}
                 };
                 proteanHarvest.Resources.Values = new List<ResourceUnit>()
-                { new ResourceUnit { Type = ResourceType.ProteanMutane, Value = amountProtean/2}
+                { new ResourceUnit { Type = ResourceType.ProteanMutane, Value = amountProtean*0.5f}
                 };
 
                 DefCache.GetDef<CustomMissionTypeDef>("CrystalsRefineryAttack_Ancient_CustomMissionTypeDef").Outcomes[0].Outcomes[1] = crystalHarvest;
@@ -180,7 +189,7 @@ namespace TFTV
                 //AutoRepair_AddAbilityStatusDef  AncientsPoweredUp AncientMaxPower_AbilityDef
                 // DamageMultiplierStatusDef sourceAbilityStatusDef = DefCache.GetDef<DamageMultiplierStatusDef>("BionicResistances_StatusDef");
                 // 
-                
+
             }
 
             catch (Exception e)
@@ -205,10 +214,10 @@ namespace TFTV
                 AbilityDef psychicResistance = DefCache.GetDef<AbilityDef>("PsychicResistant_DamageMultiplierAbilityDef");
                 AbilityDef eMPResistant = DefCache.GetDef<AbilityDef>("EMPResistant_DamageMultiplierAbilityDef");
                 AbilityDef poisonImmunity = DefCache.GetDef<AbilityDef>("PoisonImmunity_DamageMultiplierAbilityDef");
-                AbilityDef psychicImmunity = DefCache.GetDef<AbilityDef>("PsychicImmunity_DamageMultiplierAbilityDef");
+                //  AbilityDef psychicImmunity = DefCache.GetDef<AbilityDef>("PsychicImmunity_DamageMultiplierAbilityDef");
                 AbilityDef paralysisImmunity = DefCache.GetDef<AbilityDef>("ParalysisNotShockImmunity_DamageMultiplierAbilityDef");
 
-                AbilityDef sonicImmunity = DefCache.GetDef<AbilityDef>("SonicImmunity_DamageMultiplierAbilityDef");
+                AbilityDef stunStatusImmunity = DefCache.GetDef<AbilityDef>("StunStatusImmunity_AbilityDef");
                 //AbilityDef empImmunity = DefCache.GetDef<AbilityDef>("EMPImmunity_DamageMultiplierAbilityDef");
 
                 DamageMultiplierStatusDef cyclopsDefense_StatusDef = DefCache.GetDef<DamageMultiplierStatusDef>("CyclopsDefense_StatusDef");
@@ -216,20 +225,20 @@ namespace TFTV
                 DamageMultiplierStatusDef poweredUp = DefCache.GetDef<DamageMultiplierStatusDef>("AncientsPoweredUp");
 
                 List<AbilityDef> abilitiesToRemove = new List<AbilityDef>() { poisonResistance };
-                List<AbilityDef> abilitiesToAdd = new List<AbilityDef>() { poisonImmunity, paralysisImmunity, psychicImmunity };
+                List<AbilityDef> abilitiesToAdd = new List<AbilityDef>() { poisonImmunity, paralysisImmunity };
 
                 if (controller.PhoenixFaction.Research.HasCompleted("AncientAutomataResearch"))
                 {
                     TFTVLogger.Always("Ancient Automata Research Completed");
 
-                    if (!abilitiesToRemove.Contains(sonicImmunity))
+                    if (!abilitiesToRemove.Contains(stunStatusImmunity))
                     {
-                        abilitiesToRemove.Add(sonicImmunity);
+                        abilitiesToRemove.Add(stunStatusImmunity);
                     }
-                  /*  if (!abilitiesToRemove.Contains(eMPResistant))
-                    {
-                        abilitiesToRemove.Add(eMPResistant);
-                    }*/
+                    /*  if (!abilitiesToRemove.Contains(eMPResistant))
+                      {
+                          abilitiesToRemove.Add(eMPResistant);
+                      }*/
 
                     AutomataResearched = true;
 
@@ -243,14 +252,14 @@ namespace TFTV
                 }
                 else
                 {
-                    if (!abilitiesToAdd.Contains(sonicImmunity))
+                    if (!abilitiesToAdd.Contains(stunStatusImmunity))
                     {
-                        abilitiesToAdd.Add(sonicImmunity);
+                        abilitiesToAdd.Add(stunStatusImmunity);
                     }
-                /*    if (!abilitiesToAdd.Contains(eMPResistant))
-                    {
-                        abilitiesToAdd.Add(eMPResistant);
-                    }*/
+                    /*    if (!abilitiesToAdd.Contains(eMPResistant))
+                        {
+                            abilitiesToAdd.Add(eMPResistant);
+                        }*/
 
                     AutomataResearched = false;
 
@@ -289,18 +298,18 @@ namespace TFTV
 
 
 
-             /*   TFTVLogger.Always("The count of Hoplite abilities is " + hopliteAbilities.Count);
-                foreach (AbilityDef ability in hopliteAbilities)
-                {
-                    TFTVLogger.Always("The ability is " + ability.name);
-                }
+                /*   TFTVLogger.Always("The count of Hoplite abilities is " + hopliteAbilities.Count);
+                   foreach (AbilityDef ability in hopliteAbilities)
+                   {
+                       TFTVLogger.Always("The ability is " + ability.name);
+                   }
 
-                TFTVLogger.Always("The count of Cyclops abilities is " + cyclopsAbilites.Count);
-                foreach (AbilityDef ability in cyclopsAbilites)
-                {
-                    TFTVLogger.Always("The ability is " + ability.name);
-                }
-             */
+                   TFTVLogger.Always("The count of Cyclops abilities is " + cyclopsAbilites.Count);
+                   foreach (AbilityDef ability in cyclopsAbilites)
+                   {
+                       TFTVLogger.Always("The ability is " + ability.name);
+                   }
+                */
                 hopliteActorDef.Abilities = hopliteAbilities.ToArray();
                 cyclopsActorDef.Abilities = cyclopsAbilites.ToArray();
 
@@ -326,10 +335,10 @@ namespace TFTV
                 AbilityDef psychicResistance = DefCache.GetDef<AbilityDef>("PsychicResistant_DamageMultiplierAbilityDef");
                 AbilityDef eMPResistant = DefCache.GetDef<AbilityDef>("EMPResistant_DamageMultiplierAbilityDef");
                 AbilityDef poisonImmunity = DefCache.GetDef<AbilityDef>("PoisonImmunity_DamageMultiplierAbilityDef");
-                AbilityDef psychicImmunity = DefCache.GetDef<AbilityDef>("PsychicImmunity_DamageMultiplierAbilityDef");
+                //  AbilityDef psychicImmunity = DefCache.GetDef<AbilityDef>("PsychicImmunity_DamageMultiplierAbilityDef");
                 AbilityDef paralysisImmunity = DefCache.GetDef<AbilityDef>("ParalysisNotShockImmunity_DamageMultiplierAbilityDef");
 
-                AbilityDef sonicImmunity = DefCache.GetDef<AbilityDef>("SonicImmunity_DamageMultiplierAbilityDef");
+                AbilityDef stunStatusImmunity = DefCache.GetDef<AbilityDef>("StunStatusImmunity_AbilityDef");
                 //AbilityDef empImmunity = DefCache.GetDef<AbilityDef>("EMPImmunity_DamageMultiplierAbilityDef");
 
                 DamageMultiplierStatusDef cyclopsDefense_StatusDef = DefCache.GetDef<DamageMultiplierStatusDef>("CyclopsDefense_StatusDef");
@@ -337,19 +346,19 @@ namespace TFTV
                 DamageMultiplierStatusDef poweredUp = DefCache.GetDef<DamageMultiplierStatusDef>("AncientsPoweredUp");
 
                 List<AbilityDef> abilitiesToRemove = new List<AbilityDef>() { poisonResistance };
-                List<AbilityDef> abilitiesToAdd = new List<AbilityDef>() { poisonImmunity, paralysisImmunity, psychicImmunity };
+                List<AbilityDef> abilitiesToAdd = new List<AbilityDef>() { poisonImmunity, paralysisImmunity };
 
                 if (AutomataResearched)
                 {
                     TFTVLogger.Always("Ancient Automata Research Completed");
-                    if (!abilitiesToRemove.Contains(sonicImmunity))
+                    if (!abilitiesToRemove.Contains(stunStatusImmunity))
                     {
-                        abilitiesToRemove.Add(sonicImmunity);
+                        abilitiesToRemove.Add(stunStatusImmunity);
                     }
-                   /* if (!abilitiesToRemove.Contains(eMPResistant))
-                    {
-                        abilitiesToRemove.Add(eMPResistant);
-                    }*/
+                    /* if (!abilitiesToRemove.Contains(eMPResistant))
+                     {
+                         abilitiesToRemove.Add(eMPResistant);
+                     }*/
 
 
                     cyclopsDefense_StatusDef.Visuals.DisplayName1.LocalizationKey = "CYCLOPS_DEFENSE_NAME";
@@ -362,14 +371,14 @@ namespace TFTV
                 }
                 else
                 {
-                    if (!abilitiesToAdd.Contains(sonicImmunity))
+                    if (!abilitiesToAdd.Contains(stunStatusImmunity))
                     {
-                        abilitiesToAdd.Add(sonicImmunity);
+                        abilitiesToAdd.Add(stunStatusImmunity);
                     }
-                 /*   if (!abilitiesToAdd.Contains(eMPResistant))
-                    {
-                        abilitiesToAdd.Add(eMPResistant);
-                    }*/
+                    /*   if (!abilitiesToAdd.Contains(eMPResistant))
+                       {
+                           abilitiesToAdd.Add(eMPResistant);
+                       }*/
 
                     cyclopsDefense_StatusDef.Visuals.DisplayName1.LocalizationKey = "UNKNOWN_STATUS_NAME";
                     cyclopsDefense_StatusDef.Visuals.Description.LocalizationKey = "UNKNOWN_STATUS_DESCRIPTION";
@@ -406,17 +415,17 @@ namespace TFTV
 
 
 
-             /*   TFTVLogger.Always("The count of Hoplite abilities is " + hopliteAbilities.Count);
-                foreach (AbilityDef ability in hopliteAbilities)
-                {
-                    TFTVLogger.Always("The ability is " + ability.name);
-                }
+                /*   TFTVLogger.Always("The count of Hoplite abilities is " + hopliteAbilities.Count);
+                   foreach (AbilityDef ability in hopliteAbilities)
+                   {
+                       TFTVLogger.Always("The ability is " + ability.name);
+                   }
 
-                TFTVLogger.Always("The count of Cyclops abilities is " + cyclopsAbilites.Count);
-                foreach (AbilityDef ability in cyclopsAbilites)
-                {
-                    TFTVLogger.Always("The ability is " + ability.name);
-                }*/
+                   TFTVLogger.Always("The count of Cyclops abilities is " + cyclopsAbilites.Count);
+                   foreach (AbilityDef ability in cyclopsAbilites)
+                   {
+                       TFTVLogger.Always("The ability is " + ability.name);
+                   }*/
 
                 hopliteActorDef.Abilities = hopliteAbilities.ToArray();
                 cyclopsActorDef.Abilities = cyclopsAbilites.ToArray();
@@ -900,10 +909,10 @@ namespace TFTV
                                 guardian.AddAbility(ancientsPowerUpAbility, guardian);
                                 guardian.Status.ApplyStatus(ancientsPowerUpStatus);
 
-                               
+
                                 TacContextHelpManager tacContextHelpManager = (TacContextHelpManager)UnityEngine.Object.FindObjectOfType(typeof(TacContextHelpManager));
                                 tacContextHelpManager.EventTypeTriggered(HintTrigger.ActorSeen, guardian, guardian);
-            
+
                             }
                         }
                         else
@@ -912,7 +921,7 @@ namespace TFTV
                             {
                                 guardian.RemoveAbility(ancientsPowerUpAbility);
                                 guardian.Status.Statuses.Remove(guardian.Status.GetStatusByName(ancientsPowerUpStatus.EffectName));
-                                
+
                             }
                             guardian.CharacterStats.WillPoints.Add(5);
                         }
@@ -927,7 +936,7 @@ namespace TFTV
                             {
                                 cyclops.AddAbility(ancientsPowerUpAbility, cyclops);
                                 cyclops.Status.ApplyStatus(ancientsPowerUpStatus);
-                               
+
                                 TacContextHelpManager tacContextHelpManager = (TacContextHelpManager)UnityEngine.Object.FindObjectOfType(typeof(TacContextHelpManager));
                                 tacContextHelpManager.EventTypeTriggered(HintTrigger.ActorSeen, cyclops, cyclops);
                             }
@@ -938,7 +947,7 @@ namespace TFTV
                             {
                                 cyclops.RemoveAbility(ancientsPowerUpAbility);
                                 cyclops.Status.Statuses.Remove(cyclops.Status.GetStatusByName(ancientsPowerUpStatus.EffectName));
-                                
+
                             }
                         }
                         if (cyclops.HasStatus(AlertedStatus))
@@ -959,6 +968,50 @@ namespace TFTV
 
         }
 
+        [HarmonyPatch(typeof(ItemDef), "OnManufacture")]
+        public static class TFTV_Ancients_ItemDef_OnManufacture 
+        { 
+        public static void Postfix(ItemDef __instance)
+            {
+                try 
+                {
+                    GeoLevelController controller = (GeoLevelController)UnityEngine.Object.FindObjectOfType(typeof(GeoLevelController));
+
+                    if (controller.EventSystem.GetVariable("ManufacturedImpossibleWeapon") == 0) 
+                    {
+                        WeaponDef shardGun = DefCache.GetDef<WeaponDef>("AC_ShardGun_WeaponDef");
+                        WeaponDef crystalCrossbow = DefCache.GetDef<WeaponDef>("AC_CrystalCrossbow_WeaponDef");
+                        WeaponDef mattock = DefCache.GetDef<WeaponDef>("AC_Mattock_WeaponDef");
+                        WeaponDef rebuke = DefCache.GetDef<WeaponDef>("AC_Rebuke_WeaponDef");
+                        WeaponDef scorpion = DefCache.GetDef<WeaponDef>("AC_Scorpion_WeaponDef");
+                        WeaponDef scyther = DefCache.GetDef<WeaponDef>("AC_Scyther_WeaponDef");
+
+
+                        if (__instance as WeaponDef != null && (__instance as WeaponDef == shardGun || __instance as WeaponDef == crystalCrossbow || __instance as WeaponDef == mattock ||
+                            __instance as WeaponDef == rebuke || __instance as WeaponDef == scorpion || __instance as WeaponDef == scyther))
+                        {
+
+                            controller.EventSystem.SetVariable("ManufacturedImpossibleWeapon", 1);
+                            GeoscapeEventContext context = new GeoscapeEventContext(controller.PhoenixFaction, controller.PhoenixFaction);
+                            controller.EventSystem.TriggerGeoscapeEvent("Alistair_Progress", context);
+
+                        }
+                    
+                    }
+
+
+
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+
+                }
+            }
+        
+        
+        }
 
         //set resource cost of excavation (now exploration)
         [HarmonyPatch(typeof(ExcavateAbility), "GetResourceCost")]
@@ -1140,17 +1193,43 @@ namespace TFTV
                                     }
                                 }
 
-                                if (!actor.HasGameTag(cyclopsTag))
+                                if (actor.HasGameTag(hopliteTag))
                                 {
                                     if (CyclopsDefenseStatus.Multiplier <= 0.9f)
                                     {
+
                                         CyclopsDefenseStatus.Multiplier += 0.1f;
+                                        TFTVLogger.Always("Hoplite killed, decreasing Cyclops defense. Cyclops defense now " + CyclopsDefenseStatus.Multiplier);
                                     }
                                     else
                                     {
                                         CyclopsDefenseStatus.Multiplier = 1;
+                                        if (AutomataResearched)
+                                        {
+                                            foreach (TacticalActorBase allyTacticalActorBase in ancients.Actors)
+                                            {
+                                                if (allyTacticalActorBase is TacticalActor && allyTacticalActorBase != actor)
+                                                {
+                                                    TacticalActor actorAlly = allyTacticalActorBase as TacticalActor;
+                                                    if (actorAlly.HasStatus(CyclopsDefenseStatus))
+                                                    {
+                                                        Status status = actorAlly.Status.GetStatusByName(CyclopsDefenseStatus.EffectName);
+                                                        actorAlly.Status.Statuses.Remove(status);
+                                                        TFTVLogger.Always("Cyclops defense removed from " + actorAlly.name);
+                                                        
+                                                    }
+                                                }
+                                            }
+                                        }
                                     }
                                     HoplitesKilled++;
+
+                                    /*  if (AutomataResearched) 
+                                      {
+                                          string description = "Before any Hoplites are destroyed, the Cyclops has a 50% resistance to all damage. Destroying Hoplites reduces this resistance. Current resistance: " + (100 - (CyclopsDefenseStatus.Multiplier * 100)) + "%";
+                                          CyclopsDefenseStatus.Visuals.Description = new LocalizedTextBind(description, true);
+                                      }*/
+
                                 }
                             }
                         }

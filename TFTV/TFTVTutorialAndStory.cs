@@ -175,7 +175,7 @@ namespace TFTV
 
                         else if (hintDef.Title.LocalizationKey == "UMBRA_SIGHTED_TITLE")// && !TacticalHintsToShow.Contains(hintDef.name))
                         {
-                            __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("VO15.jpg");
+                            __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("VO_15.jpg");
                             // TacticalHintsToShow.Add(hintDef.name);
                         }
 

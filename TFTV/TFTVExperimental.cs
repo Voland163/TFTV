@@ -5,23 +5,20 @@ using Base.UI;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities.GameTags;
-using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.Levels.Missions;
-using PhoenixPoint.Geoscape.Core;
 using PhoenixPoint.Geoscape.Entities;
-using PhoenixPoint.Geoscape.Events;
 using PhoenixPoint.Geoscape.Levels;
-using PhoenixPoint.Geoscape.Levels.Factions;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Levels.FactionObjectives;
+using PhoenixPoint.Tactical.Levels.Missions;
 using SETUtil.Extend;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection.Emit;
 using UnityEngine;
-using static PhoenixPoint.Geoscape.Levels.GeoMissionGenerator;
+using UnityEngine.SceneManagement;
 
 namespace TFTV
 {
@@ -30,9 +27,70 @@ namespace TFTV
 
         internal static Color purple = new Color32(149, 23, 151, 255);
         private static readonly DefRepository Repo = TFTVMain.Repo;
-      //  public static PPFactionDef FactionAttackingPhoenixBase = new PPFactionDef();
-      //  public static PhoenixBaseAttacker phoenixBaseAttacker;
-      //  public static string PhoenixBaseUnderAttack = "";
+        //  public static PPFactionDef FactionAttackingPhoenixBase = new PPFactionDef();
+        //  public static PhoenixBaseAttacker phoenixBaseAttacker;
+        //  public static string PhoenixBaseUnderAttack = "";
+
+        public static void PatchInAllBaseDefenseDefs()
+        {
+            try
+            {
+
+                CustomMissionTypeDef alienDef = DefCache.GetDef<CustomMissionTypeDef>("PXBaseAlien_CustomMissionTypeDef");
+                CustomMissionTypeDef anuDef = DefCache.GetDef<CustomMissionTypeDef>("PXBaseAnu_CustomMissionTypeDef");
+                CustomMissionTypeDef njDef = DefCache.GetDef<CustomMissionTypeDef>("PXBaseNJ_CustomMissionTypeDef");
+                CustomMissionTypeDef syDef = DefCache.GetDef<CustomMissionTypeDef>("PXBaseSY_CustomMissionTypeDef");
+
+                TacMissionTypeDef[] defenseMissions = { alienDef, anuDef, njDef, syDef };
+
+                for (int i = 0; i < SceneManager.sceneCount; i++)
+                {
+                    var scene = SceneManager.GetSceneAt(i);
+                    if (!scene.isLoaded)
+                        continue;
+
+                    foreach (var root in scene.GetRootGameObjects())
+                    {
+                        foreach (var transform in root.GetTransformsInChildrenStable())
+                        {
+                            var objActivator = transform.GetComponent<TacMissionObjectActivator>();
+                            if (objActivator && objActivator.Missions.Length == 1 && objActivator.Missions.Contains(alienDef))
+                            {
+                                objActivator.Missions = defenseMissions;
+                            }
+                        }
+                    }
+                }
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+
+        [HarmonyPatch(typeof(TacMission), "PrepareMissionActivators")]
+
+        public static class TacMission_PrepareMissionActivators_Experiment_patch
+        {
+            public static void Prefix(TacMission __instance)
+            {
+                try
+                {
+                  
+                        TFTVLogger.Always("PrepareMissionActivators");
+                        PatchInAllBaseDefenseDefs();
+                  
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+
+
+        }
 
 
         public static void MakeCopyOfAlienAttackOnPhoenixBase()
@@ -112,7 +170,7 @@ namespace TFTV
                     baseDefenseVsAlien.Outcomes[0].Outcomes = new PhoenixPoint.Geoscape.Entities.Missions.Outcomes.MissionOutcomeDef[] { };
 
                 }
-   
+
             }
             catch (Exception e)
             {
@@ -123,34 +181,34 @@ namespace TFTV
         }
 
 
-        [HarmonyPatch(typeof(GeoMissionGenerator), "GetRandomMission", new Type[] { typeof(MissionTypeTagDef), typeof(ParticipantFilter) })]
+        /*  [HarmonyPatch(typeof(GeoMissionGenerator), "GetRandomMission", new Type[] { typeof(MissionTypeTagDef), typeof(ParticipantFilter) })]
 
-        public static class GetRandomMission_InitializeInstanceData_Experiment_patch
-        {
-            public static void Postfix(ref TacMissionTypeDef __result, ParticipantFilter enemy, MissionTypeTagDef type)
-            {
-                try
-                {
-                    MissionTypeTagDef baseDefence = DefCache.GetDef<MissionTypeTagDef>("MissionTypePhoenixBaseDefence_MissionTagDef");
-                    if (type == baseDefence)
-                    {
-                        PPFactionDef aliens = DefCache.GetDef<PPFactionDef>("Alien_FactionDef");
-                        PPFactionDef anu = DefCache.GetDef<PPFactionDef>("Anu_FactionDef");
-                        PPFactionDef nj = DefCache.GetDef<PPFactionDef>("NewJericho_FactionDef");
-                        PPFactionDef synedrion = DefCache.GetDef<PPFactionDef>("Synedrion_FactionDef");
+          public static class GetRandomMission_InitializeInstanceData_Experiment_patch
+          {
+              public static void Postfix(ref TacMissionTypeDef __result, ParticipantFilter enemy, MissionTypeTagDef type)
+              {
+                  try
+                  {
+                      MissionTypeTagDef baseDefence = DefCache.GetDef<MissionTypeTagDef>("MissionTypePhoenixBaseDefence_MissionTagDef");
+                      if (type == baseDefence)
+                      {
+                          PPFactionDef aliens = DefCache.GetDef<PPFactionDef>("Alien_FactionDef");
+                          PPFactionDef anu = DefCache.GetDef<PPFactionDef>("Anu_FactionDef");
+                          PPFactionDef nj = DefCache.GetDef<PPFactionDef>("NewJericho_FactionDef");
+                          PPFactionDef synedrion = DefCache.GetDef<PPFactionDef>("Synedrion_FactionDef");
 
-                        CustomMissionTypeDef baseDefenseVsAlien = DefCache.GetDef<CustomMissionTypeDef>("PXBaseAlien_CustomMissionTypeDef");
+                          CustomMissionTypeDef baseDefenseVsAlien = DefCache.GetDef<CustomMissionTypeDef>("PXBaseAlien_CustomMissionTypeDef");
 
-                        AdjustBaseAttack(enemy.Faction);
-                        __result = baseDefenseVsAlien;
-                    }
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-            }
-        }
+                          AdjustBaseAttack(enemy.Faction);
+                          __result = baseDefenseVsAlien;
+                      }
+                  }
+                  catch (Exception e)
+                  {
+                      TFTVLogger.Error(e);
+                  }
+              }
+          }*/
 
 
 
@@ -447,38 +505,7 @@ namespace TFTV
             }
         }
 
-        /*public static void CheckObjectives()
-        {
-            try 
-            {
-                List<ObjectiveElement> objectiveElementsList = UnityEngine.Object.FindObjectsOfType<ObjectiveElement>().ToList();
-                if (objectiveElementsList.Count > 0)
-                {
-                    TFTVLogger.Always("There are elements in the list");
-
-                }
-                foreach (ObjectiveElement objectiveElement in objectiveElementsList)
-                {
-                    TFTVLogger.Always("ObjectiveElement name " + objectiveElement.name);
-                    TFTVLogger.Always("ObjectiveElement " + objectiveElement.StatusText.text);
-
-                    if (objectiveElement.Description.text.Contains("VOID"))
-                    {
-                        TFTVLogger.Always("FactionObjective check passed");
-                        objectiveElement.Description.color = purple;
-
-                    }
-
-                }
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-
-        }*/
-
-
+        //Patch to set VO objective test in uppercase to match other objectives
         [HarmonyPatch(typeof(ObjectivesManager), "Add")]
         public static class FactionObjective_ModifyObjectiveColor_Patch
         {
@@ -501,7 +528,7 @@ namespace TFTV
             }
         }
 
-
+        //Patch to avoid triggering "failed" state for VO objectives when player loses a character
         [HarmonyPatch(typeof(KeepSoldiersAliveFactionObjective), "EvaluateObjective")]
         public static class KeepSoldiersAliveFactionObjective_EvaluateObjective_Patch
         {
@@ -510,12 +537,30 @@ namespace TFTV
             {
                 try
                 {
-                    //TFTVLogger.Always("FactionObjective Evaluate");
-                    if (__instance.Description.LocalizationKey.Contains("VOID"))
+                    KeepSoldiersAliveFactionObjectiveDef VOID_OMEN_TITLE_3 = DefCache.GetDef<KeepSoldiersAliveFactionObjectiveDef>("VOID_OMEN_TITLE_3");
+                    KeepSoldiersAliveFactionObjectiveDef VOID_OMEN_TITLE_5 = DefCache.GetDef<KeepSoldiersAliveFactionObjectiveDef>("VOID_OMEN_TITLE_5");
+                    KeepSoldiersAliveFactionObjectiveDef VOID_OMEN_TITLE_7 = DefCache.GetDef<KeepSoldiersAliveFactionObjectiveDef>("VOID_OMEN_TITLE_7");
+                    KeepSoldiersAliveFactionObjectiveDef VOID_OMEN_TITLE_10 = DefCache.GetDef<KeepSoldiersAliveFactionObjectiveDef>("VOID_OMEN_TITLE_10");
+                    KeepSoldiersAliveFactionObjectiveDef VOID_OMEN_TITLE_15 = DefCache.GetDef<KeepSoldiersAliveFactionObjectiveDef>("VOID_OMEN_TITLE_15");
+                    KeepSoldiersAliveFactionObjectiveDef VOID_OMEN_TITLE_16 = DefCache.GetDef<KeepSoldiersAliveFactionObjectiveDef>("VOID_OMEN_TITLE_16");
+                    KeepSoldiersAliveFactionObjectiveDef VOID_OMEN_TITLE_19 = DefCache.GetDef<KeepSoldiersAliveFactionObjectiveDef>("VOID_OMEN_TITLE_19");
+
+                    List<KeepSoldiersAliveFactionObjectiveDef> voidOmens = new List<KeepSoldiersAliveFactionObjectiveDef> { VOID_OMEN_TITLE_3, VOID_OMEN_TITLE_5, VOID_OMEN_TITLE_7, VOID_OMEN_TITLE_10, VOID_OMEN_TITLE_15, VOID_OMEN_TITLE_16, VOID_OMEN_TITLE_19 };
+
+                    //  TFTVLogger.Always("FactionObjective Evaluate " + __instance.Description.ToString());
+                    foreach (KeepSoldiersAliveFactionObjectiveDef keepSoldiersAliveFactionObjectiveDef in voidOmens)
                     {
-                        __result = FactionObjectiveState.InProgress;
+                        // TFTVLogger.Always(keepSoldiersAliveFactionObjectiveDef.MissionObjectiveData.Description.LocalizeEnglish());
+                        // TFTVLogger.Always(__instance.Description.LocalizationKey);
+
+                        if (keepSoldiersAliveFactionObjectiveDef.MissionObjectiveData.Description.LocalizeEnglish().ToUpper() == __instance.Description.LocalizationKey)
+                        {
+                            // TFTVLogger.Always("FactionObjective check passed");
+                            __result = FactionObjectiveState.InProgress;
+                        }
 
                     }
+
 
                 }
                 catch (Exception e)

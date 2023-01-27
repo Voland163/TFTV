@@ -1,10 +1,12 @@
 ﻿using Base.Defs;
 using Base.Entities.Abilities;
 using Base.Entities.Effects.ApplicationConditions;
+using Base.Entities.Statuses;
 using Base.UI;
 using com.ootii.Collections;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
+using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.UI;
@@ -52,7 +54,38 @@ namespace PRMBetterClasses.SkillModifications
             ViewElementDef blView = DefCache.GetDef<ViewElementDef>("E_ViewElement [BloodLust_AbilityDef]");
             BloodLustStatusDef blStatus = DefCache.GetDef<BloodLustStatusDef>("E_Status [BloodLust_AbilityDef]");
             blStatus.MaxBoost = maxBoost;
-            blView.Description.LocalizationKey = "PR_BC_BLOODLUST_DESC"; // new LocalizedTextBind($"Gain up to {maxBoost * 100}% Speed and Damage based on lost Health", TFTVMain.Main.Settings.DoNotLocalizeChangedTexts);
+            blStatus.HealthLowBound = 0.5f;
+            blView.Description.LocalizationKey = "PR_BC_BLOODLUST_DESC";
+        }
+
+        [HarmonyPatch(typeof(BloodLustStatus), "ApplyModification")]
+        internal static class BloodLustStatus_ApplyModification_Patch
+        {
+            public static bool Prefix(BloodLustStatus __instance, StatusStat healthStat)
+            {
+                if (__instance.BloodLustStatusDef.HealthLowBound >= 1)
+                {
+                    return true;
+                }
+                float healthLowBound = healthStat.Max * __instance.BloodLustStatusDef.HealthLowBound;
+                healthLowBound = Mathf.Clamp(healthLowBound, 1, healthStat.Max);
+                float num = (healthStat.Value - healthLowBound) / (healthStat.Max - healthLowBound);
+                num = Mathf.Clamp01(num);
+                float num2 = 1f + (1f - num) * __instance.BloodLustStatusDef.MaxBoost;
+                num2 = Mathf.Max(num2, 1f);
+                foreach (StatModificationTarget targetStat in __instance.BloodLustStatusDef.StatModificationTargets)
+                {
+                    BaseStat baseStat = __instance.TacticalActor.CharacterStats.TryGetStat(targetStat);
+                    baseStat.RemoveStatModificationsWithSource(__instance.BloodLustStatusDef, true);
+                    if (baseStat is StatusStat)
+                    {
+                        baseStat.AddStatModification(new StatModification(StatModificationType.MultiplyMax, targetStat.ToString(), num2, __instance.BloodLustStatusDef, num2), true);
+                    }
+                    baseStat.AddStatModification(new StatModification(StatModificationType.MultiplyRestrictedToBounds, targetStat.ToString(), num2, __instance.BloodLustStatusDef, num2), true);
+                    baseStat.ReapplyModifications();
+                }
+                return false;
+            }
         }
 
         private static void Change_Dash()

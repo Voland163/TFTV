@@ -16,6 +16,7 @@ using PhoenixPoint.Common.Entities.Characters;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.Entities.Items;
+using PhoenixPoint.Common.Levels.ActorDeployment;
 using PhoenixPoint.Common.Levels.Missions;
 using PhoenixPoint.Common.UI;
 using PhoenixPoint.Geoscape.Entities;
@@ -76,30 +77,35 @@ namespace TFTV
             RemoveCorruptionDamageBuff();
             TFTVChangesToDLC1andDLC2Events.ChangesToDLC1andDLC2Defs();
             TFTVChangesToDLC3Events.ChangesToDLC3Defs();
-            //  TFTVChangesToDLC3Events.ModifyMaskedManticoreResearch();
             TFTVChangesToDLC4Events.ChangesToDLC4Defs();
             TFTVChangesToDLC5Events.ChangesToDLC5Defs();
             ChangesToAcherons();
             RemoveCensusResearch();
             AllowMedkitsToTargetMutoids();
-
-            //Commented out for release #12
-            //  ChangesToLOTA2();
             ChangesToLOTAEarlyLoad();
             CreateSubject24();
-            TFTVExperimental.MakeCopyOfAlienAttackOnPhoenixBase();
+           // TFTVExperimental.MakeCopyOfAlienAttackOnPhoenixBase();
+            CreateVoidOmenRemindersInTactical();
         }
 
         public static void ChangesToLOTAEarlyLoad() 
         {
-            CreateAbilitiesForAncients();
-            CreateAncientStatusEffects();
-            CreateParalysisDamageImmunity();
-            CreateLOTAHints();
-            CreateAncientAutomataResearch();
-            CreateExoticMaterialsResearch();
-            CreateLivingCrystalResearch();
-            CreateProteanMutaneResearch();
+            try
+            {
+
+                CreateAbilitiesForAncients();
+                CreateAncientStatusEffects();
+                CreateParalysisDamageImmunity();
+                CreateLOTAHints();
+                CreateAncientAutomataResearch();
+                CreateExoticMaterialsResearch();
+                CreateLivingCrystalResearch();
+                CreateProteanMutaneResearch();
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
 
         }
 
@@ -109,15 +115,14 @@ namespace TFTV
             try
             {
                 ChangeAncientsBodyParts();    
-                ChangeAncientsWeapons();
-               
+                ChangeAncientsWeapons();   
                 ChangeSchemataMissionRequirement();
                 ChangeAncientSiteExploration();
                 ChangeImpossibleWeapons();
                 RemovePandoranVirusResearchRequirement();
-                CreateEventsForLOTA();
-              
+                CreateEventsForLOTA();      
                 ChangeAncientDefenseMission();
+                ChangeAncientSiteMissions();
             }
 
             catch (Exception e)
@@ -126,20 +131,53 @@ namespace TFTV
             }
         }
 
-       /* public static void CreateEMPImmunity()
+
+        public static void CreateVoidOmenRemindersInTactical()
         {
-            try 
+            try
             {
-                DamageMultiplierAbilityDef damageMultiplierAbilityDefSource = DefCache.GetDef<DamageMultiplierAbilityDef>("EMPResistant_DamageMultiplierAbilityDef");
-                DamageMultiplierAbilityDef EMPImmunity = Helper.CreateDefFromClone(damageMultiplierAbilityDefSource, "7895158D-62AE-4990-A1A0-EF924CF1C2E4", "EMPImmunity_DamageMultiplierAbilityDef");
-                EMPImmunity.Multiplier = 0.0f;
+                CreateVoidOmenObjective("818B37C5-AC05-4245-A629-D84761838DE6", "VOID_OMEN_TITLE_3", 0);
+                CreateVoidOmenObjective("F0CCE047-352C-4AE4-8D12-6856FA57A5C7", "VOID_OMEN_TITLE_5", 0);
+                CreateVoidOmenObjective("BDBBD195-D07C-43CF-AB0F-50C7CEA8B044", "VOID_OMEN_TITLE_7", 0);
+                CreateVoidOmenObjective("EC9011E4-2C01-485B-8E89-7D0A20996899", "VOID_OMEN_TITLE_10", 0);
+                CreateVoidOmenObjective("3CBE9291-2241-428B-B6DD-776EFF316D4F", "VOID_OMEN_TITLE_15", 0);
+                CreateVoidOmenObjective("D25FC8F1-DB31-4BA2-9B9F-3787B9D3A664", "VOID_OMEN_TITLE_16", 0);
+                CreateVoidOmenObjective("BA859656-03E9-4BCD-AAAC-2A0B09506FEC", "VOID_OMEN_TITLE_19", 0);
+
+                //3, 5, 7, 10, 15, 16, 19
+
             }
             catch (Exception e)
             {
                 TFTVLogger.Error(e);
             }
 
-        }*/
+        }
+
+        public static void CreateVoidOmenObjective(string guid, string description_key, int experienceReward)
+        {
+            try
+            {
+
+                string objectiveName = description_key;
+                KeepSoldiersAliveFactionObjectiveDef keepSoldiersAliveObjectiveSource = DefCache.GetDef<KeepSoldiersAliveFactionObjectiveDef>("KeepSoldiersAliveFactionObjectiveDef");
+                KeepSoldiersAliveFactionObjectiveDef voidOmenObjective = Helper.CreateDefFromClone(keepSoldiersAliveObjectiveSource, guid, objectiveName);
+                voidOmenObjective.IsVictoryObjective = false;
+                voidOmenObjective.IsDefeatObjective = false;
+                voidOmenObjective.MissionObjectiveData.ExperienceReward = experienceReward;
+                voidOmenObjective.MissionObjectiveData.Description.LocalizationKey = description_key;
+                voidOmenObjective.MissionObjectiveData.Summary.LocalizationKey = description_key;
+                voidOmenObjective.IsUiSummaryHidden = true;
+                //   TFTVLogger.Always("FactionObjective " + DefCache.GetDef<FactionObjectiveDef>(objectiveName).name + " created");
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+        }
+
 
         public static void CreateParalysisDamageImmunity()
         {
@@ -162,7 +200,90 @@ namespace TFTV
             }
 
         }
+        
+        public static void ChangeAncientSiteMissions()
+        {
+            try 
+            {
+                CustomMissionTypeDef crystalRefinery = DefCache.GetDef<CustomMissionTypeDef>("CrystalsRefineryAttack_Ancient_CustomMissionTypeDef");
+                CustomMissionTypeDef orichalcumRefinery = DefCache.GetDef<CustomMissionTypeDef>("OrichalcumRefineryAttack_Ancient_CustomMissionTypeDef");
+                CustomMissionTypeDef proteanRefinery = DefCache.GetDef<CustomMissionTypeDef>("ProteanRefineryAttack_Ancient_CustomMissionTypeDef");
 
+                CustomMissionTypeDef crystalHarvest = DefCache.GetDef<CustomMissionTypeDef>("CrystalsHarvestAttack_Ancient_CustomMissionTypeDef");
+                CustomMissionTypeDef orichalcumHarvest = DefCache.GetDef<CustomMissionTypeDef>("OrichalcumHarvestAttack_Ancient_CustomMissionTypeDef");
+                CustomMissionTypeDef proteanHarvest = DefCache.GetDef<CustomMissionTypeDef>("ProteanHarvestAttack_Ancient_CustomMissionTypeDef");
+
+                List<CustomMissionTypeDef> customMissionTypeDefs = new List<CustomMissionTypeDef>() {crystalHarvest, crystalRefinery, orichalcumRefinery, proteanRefinery, orichalcumHarvest, proteanHarvest };
+
+                ClassTagDef hoplite = DefCache.GetDef<ClassTagDef>("HumanoidGuardian_ClassTagDef");
+                GameDifficultyLevelDef hero = DefCache.GetDef<GameDifficultyLevelDef>("Hard_GameDifficultyLevelDef");
+                GameDifficultyLevelDef veteran = DefCache.GetDef<GameDifficultyLevelDef>("Standard_GameDifficultyLevelDef");
+                GameDifficultyLevelDef legend = DefCache.GetDef<GameDifficultyLevelDef>("VeryHard_GameDifficultyLevelDef");
+
+                foreach (CustomMissionTypeDef customMissionTypeDef in customMissionTypeDefs)
+                {
+
+                    TacMissionTypeParticipantData.UniqueChatarcterBind shielderVeteran = new TacMissionTypeParticipantData.UniqueChatarcterBind()
+                    {
+                        Amount = { Min = 1, Max = 1 },
+                        Character = DefCache.GetDef<TacCharacterDef>("HumanoidGuardian_Shielder_TacCharacterDef"),
+                        Difficulty = veteran,
+                        
+                    };
+                    TacMissionTypeParticipantData.UniqueChatarcterBind drillerVeteran = new TacMissionTypeParticipantData.UniqueChatarcterBind()
+                    {
+                        Amount = { Min = 1, Max = 1 },
+                        Character = DefCache.GetDef<TacCharacterDef>("HumanoidGuardian_Driller_TacCharacterDef"),
+                        Difficulty = veteran,
+
+                    };
+                    TacMissionTypeParticipantData.UniqueChatarcterBind shielderHero = new TacMissionTypeParticipantData.UniqueChatarcterBind()
+                    {
+                        Amount = { Min = 1, Max = 1 },
+                        Character = DefCache.GetDef<TacCharacterDef>("HumanoidGuardian_Shielder_TacCharacterDef"),
+                        Difficulty = hero,
+
+                    };
+                    TacMissionTypeParticipantData.UniqueChatarcterBind drillerHero = new TacMissionTypeParticipantData.UniqueChatarcterBind()
+                    {
+                        Amount = { Min = 1, Max = 1 },
+                        Character = DefCache.GetDef<TacCharacterDef>("HumanoidGuardian_Driller_TacCharacterDef"),
+                        Difficulty = hero,
+
+                    };
+                    TacMissionTypeParticipantData.UniqueChatarcterBind shielderLegend = new TacMissionTypeParticipantData.UniqueChatarcterBind()
+                    {
+                        Amount = { Min = 1, Max = 1 },
+                        Character = DefCache.GetDef<TacCharacterDef>("HumanoidGuardian_Shielder_TacCharacterDef"),
+                        Difficulty = legend,
+
+                    };
+                    TacMissionTypeParticipantData.UniqueChatarcterBind drillerLegend = new TacMissionTypeParticipantData.UniqueChatarcterBind()
+                    {
+                        Amount = { Min = 1, Max = 1 },
+                        Character = DefCache.GetDef<TacCharacterDef>("HumanoidGuardian_Driller_TacCharacterDef"),
+                        Difficulty = legend,
+
+                    };
+
+                    List<TacMissionTypeParticipantData.UniqueChatarcterBind> uniqueUnits = customMissionTypeDef.ParticipantsData[0].UniqueUnits.ToList();
+                    uniqueUnits.Add(drillerVeteran);
+                    uniqueUnits.Add(shielderVeteran);
+                    uniqueUnits.Add(drillerHero);
+                    uniqueUnits.Add(shielderHero);
+                    uniqueUnits.Add(drillerLegend);
+                    uniqueUnits.Add(shielderLegend);
+                    customMissionTypeDef.ParticipantsData[0].UniqueUnits = uniqueUnits.ToArray();
+               
+                }
+            }
+            
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+        }
 
         public static void ChangeAncientDefenseMission()
         {
@@ -214,6 +335,14 @@ namespace TFTV
         {
             try 
             {
+                string id = "PX_LivingCrystalResearchDef";
+                int cost = 400;
+                string keyName = "LIVING_CRYSTAL_RESEARCH_TITLE";
+                string keyReveal = "";
+                string keyUnlock = "LIVING_CRYSTAL_RESEARCH_REVEAL";
+                string keyComplete = "LIVING_CRYSTAL_RESEARCH_COMPLETE";
+                string keyBenefits = "LIVING_CRYSTAL_RESEARCH_BENEFITS";
+
                 UnlockFunctionalityResearchRewardDef sourceUnlockFunctionality = DefCache.GetDef<UnlockFunctionalityResearchRewardDef>("PX_AtmosphericAnalysis_ResearchDef_UnlockFunctionalityResearchRewardDef_0");
                 UnlockFunctionalityResearchRewardDef livingCrystalFunctionalityResearchReward = Helper.CreateDefFromClone(sourceUnlockFunctionality, "6CEA3DBE-DC8C-4454-96A9-4A4D8FCB6927", "LivingCrystalFunctionalityResearchReward");
 
@@ -225,13 +354,10 @@ namespace TFTV
                 ResourcesResearchRequirementDef requirementDef = Helper.CreateDefFromClone(sourceRequirement, "C61983EE-F219-467A-B478-3451273ECB84", "LivingCrystalResearchRequirementDef");
                 requirementDef.Resources = new ResourcePack(new ResourceUnit { Type = ResourceType.LivingCrystals, Value = 1 });
 
-                string id = "PX_LivingCrystalResearchDef";
-                int cost = 400;
-                string keyName = "LIVING_CRYSTAL_RESEARCH_TITLE";
-                string keyReveal = "";
-                string keyUnlock = "LIVING_CRYSTAL_RESEARCH_REVEAL";
-                string keyComplete = "LIVING_CRYSTAL_RESEARCH_COMPLETE";
-                string keyBenefits = "LIVING_CRYSTAL_RESEARCH_BENEFITS";
+                ExistingResearchRequirementDef requiremen2tDef = TFTVCommonMethods.CreateNewExistingResearchResearchRequirementDef(id + "ResearchReq", "F0D428A7-9D51-4746-9C60-1EFADD5457B8", "ExoticMaterialsResearch");
+
+
+               
                 ResearchViewElementDef imageSource = DefCache.GetDef<ResearchViewElementDef>("PX_AntediluvianArchaeology_ViewElementDef");
 
                 string gUID = "14E1635F-6663-41C8-B04E-A8C91890BC5B";
@@ -240,8 +366,9 @@ namespace TFTV
                 ResearchDef research = TFTVCommonMethods.CreateNewPXResearch(id, cost, gUID, gUID2, keyName, keyReveal, keyUnlock, keyComplete, keyBenefits, imageSource);
 
                 ReseachRequirementDefOpContainer[] revealRequirementContainer = new ReseachRequirementDefOpContainer[1];
-                ResearchRequirementDef[] revealResearchRequirementDefs = new ResearchRequirementDef[1];
+                ResearchRequirementDef[] revealResearchRequirementDefs = new ResearchRequirementDef[2];
                 revealResearchRequirementDefs[0] = requirementDef; //small box
+                revealResearchRequirementDefs[1] = requiremen2tDef; 
                 revealRequirementContainer[0].Requirements = revealResearchRequirementDefs; //medium box
                 research.RevealRequirements.Container = revealRequirementContainer;
                 research.RevealRequirements.Operation = ResearchContainerOperation.ALL;
@@ -258,6 +385,14 @@ namespace TFTV
         {
             try
             {
+                string id = "PX_ProteanMutaneResearchDef";
+                int cost = 400;
+                string keyName = "PROTEAN_MUTANE_RESEARCH_TITLE";
+                string keyReveal = "";
+                string keyUnlock = "PROTEAN_MUTANE_RESEARCH_REVEAL";
+                string keyComplete = "PROTEAN_MUTANE_RESEARCH_COMPLETE";
+                string keyBenefits = "PROTEAN_MUTANE_RESEARCH_BENEFITS";
+
                 UnlockFunctionalityResearchRewardDef sourceUnlockFunctionality = DefCache.GetDef<UnlockFunctionalityResearchRewardDef>("PX_AtmosphericAnalysis_ResearchDef_UnlockFunctionalityResearchRewardDef_0");
                 UnlockFunctionalityResearchRewardDef proteanMutaneFunctionalityResearchReward = Helper.CreateDefFromClone(sourceUnlockFunctionality, "E01EFEAF-70E3-4DDF-8644-AF12C1FA7AFD", "ProteanMutaneFunctionalityResearchReward");
 
@@ -269,14 +404,10 @@ namespace TFTV
 
                 ResourcesResearchRequirementDef sourceRequirement = DefCache.GetDef<ResourcesResearchRequirementDef>("ALN_CrabmanUmbra_ResearchDef_ResourcesResearchRequirementDef_0");
                 ResourcesResearchRequirementDef requirementDef = Helper.CreateDefFromClone(sourceRequirement, "FA66ED06-A5F7-4A6F-B18F-F84BA4B97AB5", "ProteanMutaneResearchRequirementDef");
-              
-                string id = "PX_ProteanMutaneResearchDef";
-                int cost = 400;
-                string keyName = "PROTEAN_MUTANE_RESEARCH_TITLE";
-                string keyReveal = "";
-                string keyUnlock = "PROTEAN_MUTANE_RESEARCH_REVEAL";
-                string keyComplete = "PROTEAN_MUTANE_RESEARCH_COMPLETE";
-                string keyBenefits = "PROTEAN_MUTANE_RESEARCH_BENEFITS";
+
+                ExistingResearchRequirementDef requiremen2tDef = TFTVCommonMethods.CreateNewExistingResearchResearchRequirementDef(id + "ResearchReq", "041C8F9B-0F7F-467F-9DD6-183C3B901B56", "ExoticMaterialsResearch");
+
+               
                 ResearchViewElementDef imageSource = DefCache.GetDef<ResearchViewElementDef>("PX_AntediluvianArchaeology_ViewElementDef");
 
                 string gUID = "1BFAE176-45F4-4A8B-A1A7-8CE89CA2B224";
@@ -285,8 +416,9 @@ namespace TFTV
                 ResearchDef research = TFTVCommonMethods.CreateNewPXResearch(id, cost, gUID, gUID2, keyName, keyReveal, keyUnlock, keyComplete, keyBenefits, imageSource);
 
                 ReseachRequirementDefOpContainer[] revealRequirementContainer = new ReseachRequirementDefOpContainer[1];
-                ResearchRequirementDef[] revealResearchRequirementDefs = new ResearchRequirementDef[1];
+                ResearchRequirementDef[] revealResearchRequirementDefs = new ResearchRequirementDef[2];
                 revealResearchRequirementDefs[0] = requirementDef; //small box
+                revealResearchRequirementDefs[1] = requiremen2tDef;
                 revealRequirementContainer[0].Requirements = revealResearchRequirementDefs; //medium box
                 research.RevealRequirements.Container = revealRequirementContainer;
                 research.RevealRequirements.Operation = ResearchContainerOperation.ALL;
@@ -334,7 +466,7 @@ namespace TFTV
                 //digitize my dreams: triggered on successful ancient site defense    
               GeoscapeEventDef cyclopsDreams=  TFTVCommonMethods.CreateNewEvent("Cyclops_Dreams", "CYCLOP_DREAMS_TITLE", "CYCLOP_DREAMS_TEXT", null);
                 cyclopsDreams.GeoscapeEventData.Choices[0].Outcome.VariablesChange.Add(TFTVCommonMethods.GenerateVariableChange("SymesAlternativeCompleted", 1, true));
-                //Pending implementing triggers:
+             
                 //Alistair on manufacture of an ancient weapon:   
                 TFTVCommonMethods.CreateNewEvent("Alistair_Progress", "ALISTAIR_PROGRESS_TITLE", "ALISTAIR_PROGRESS_TEXT", null);
             }
@@ -512,6 +644,11 @@ namespace TFTV
                 ArcheologySettingsDef archeologySettingsDef = DefCache.GetDef<ArcheologySettingsDef>("ArcheologySettingsDef");
                 archeologySettingsDef.ArcheologyPassiveOutput = 0;
                 archeologySettingsDef.ArcheologyFacilityHarvestingPower = 0;
+                archeologySettingsDef.ExcavationCostReductionPerFacilityPercentage = 0;
+                archeologySettingsDef.MaxExcavationProbeCostReductionPerPercentage = 0;
+                archeologySettingsDef.MaxProbeCostReductionPerPercentage = 0;
+                archeologySettingsDef.ProbeCostReductionPerFacilityPercentage = 0;
+                
             }
             catch (Exception e)
             {
@@ -631,8 +768,8 @@ namespace TFTV
                 statusSelfRepairAbilityDef.Visuals.Description.LocalizationKey = "HOPLITES_SELF_REPAIR_DESCRIPTION";
                 statusSelfRepairAbilityDef.Visuals.LargeIcon = Helper.CreateSpriteFromImageFile("TFTV_status_self_repair.png");
                 statusSelfRepairAbilityDef.Visuals.SmallIcon = Helper.CreateSpriteFromImageFile("TFTV_status_self_repair.png");
-
-               
+                statusSelfRepairAbilityDef.DamageTypeDefs = new DamageTypeBaseEffectDef[] { };
+                statusSelfRepairAbilityDef.Multiplier = 1;
 
 
             }
@@ -643,42 +780,7 @@ namespace TFTV
             }
         }
 
-        public static void CreateSubject24()
-        {
-            try
-            {
-                string nameDef = "Subject24_TacCharacerDef";
-
-                TacCharacterDef subject24 = Helper.CreateDefFromClone(DefCache.GetDef<TacCharacterDef>("NJ_Jugg_TacCharacterDef"), "A4F0335E-BF41-4175-8C28-7B0DE5352224", nameDef);
-                subject24.Data.Name = "Subject 24";
-
-                // CustomizationColorTagDef_10 green
-                // CustomizationColorTagDef_14 pink
-                // CustomizationColorTagDef_0 grey
-                // CustomizationColorTagDef_7 red
-
-                CustomizationPrimaryColorTagDef blackColor = DefCache.GetDef<CustomizationPrimaryColorTagDef>("CustomizationColorTagDef_9");
-                List<GameTagDef> gameTags = subject24.Data.GameTags.ToList();
-                gameTags.Add(blackColor);
-                subject24.SpawnCommandId = "Subject24TFTV";
-                subject24.Data.GameTags = gameTags.ToArray();
-
-                List<TacMissionTypeParticipantData.UniqueChatarcterBind> tacCharacterDefs = DefCache.GetDef<CustomMissionTypeDef>("StoryPU14_CustomMissionTypeDef").ParticipantsData[1].UniqueUnits.ToList();
-                TacMissionTypeParticipantData.UniqueChatarcterBind uniqueChatarcterBind = new TacMissionTypeParticipantData.UniqueChatarcterBind
-                {
-                    Character = subject24,
-                    Amount = new Base.Utils.RangeDataInt { Max = 1, Min = 1 },
-                };
-                tacCharacterDefs.Add(uniqueChatarcterBind);
-                DefCache.GetDef<CustomMissionTypeDef>("StoryPU14_CustomMissionTypeDef").ParticipantsData[1].UniqueUnits = tacCharacterDefs.ToArray();
-
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-
-        }
+       
 
         public static void CreateAncientStatusEffects()
         {
@@ -728,17 +830,20 @@ namespace TFTV
                 ancientPowerUp.HealthbarPriority = -1;
                 ancientPowerUp.ExpireOnEndOfTurn = false;
 
+                
+
                 ancientPowerUp.Visuals = Helper.CreateDefFromClone(
                     source.Visuals,
                     "E24AFC45-FD5F-4E2A-BDFC-5D9A8B240813",
                     skillName);
                 ancientPowerUp.DamageTypeDefs = new DamageTypeBaseEffectDef[] { };
+                ancientPowerUp.Multiplier = 0.75f;
 
                 ancientPowerUp.Visuals.LargeIcon = Helper.CreateSpriteFromImageFile("TFTV_status_powered_up.png");
                 ancientPowerUp.Visuals.SmallIcon = Helper.CreateSpriteFromImageFile("TFTV_status_powered_up.png");
 
-                ancientPowerUp.Visuals.DisplayName1 = new LocalizedTextBind("MAX POWER", true);
-                ancientPowerUp.Visuals.Description = new LocalizedTextBind("+50% damage to all attacks", true);
+                ancientPowerUp.Visuals.DisplayName1.LocalizationKey = "POWERED_UP_NAME";
+                ancientPowerUp.Visuals.Description.LocalizationKey = "POWERED_UP_DESCRIPTION";
 
                 string abilityName = "AncientMaxPower_AbilityDef";
                 PassiveModifierAbilityDef sourceAbility = DefCache.GetDef<PassiveModifierAbilityDef>("SelfDefenseSpecialist_AbilityDef");
@@ -833,6 +938,7 @@ namespace TFTV
 
                 ApplyDamageEffectAbilityDef stomp = DefCache.GetDef<ApplyDamageEffectAbilityDef>("Guardian_Stomp_AbilityDef");
                 stomp.DamagePayload.AoeRadius = 7;
+                stomp.TargetingDataDef.Origin.Range = 7;
 
 
                 // StanceStatusDef ancientGuardianStealthStatus = DefCache.GetDef<StanceStatusDef>("AncientGuardianStealth_StatusDef");
@@ -916,8 +1022,43 @@ namespace TFTV
             }
         }
 
+        public static void CreateSubject24()
+        {
+            try
+            {
+                string nameDef = "Subject24_TacCharacerDef";
 
-      
+                TacCharacterDef subject24 = Helper.CreateDefFromClone(DefCache.GetDef<TacCharacterDef>("NJ_Jugg_TacCharacterDef"), "A4F0335E-BF41-4175-8C28-7B0DE5352224", nameDef);
+                subject24.Data.Name = "Subject 24";
+
+                // CustomizationColorTagDef_10 green
+                // CustomizationColorTagDef_14 pink
+                // CustomizationColorTagDef_0 grey
+                // CustomizationColorTagDef_7 red
+
+                CustomizationPrimaryColorTagDef blackColor = DefCache.GetDef<CustomizationPrimaryColorTagDef>("CustomizationColorTagDef_9");
+                List<GameTagDef> gameTags = subject24.Data.GameTags.ToList();
+                gameTags.Add(blackColor);
+                subject24.SpawnCommandId = "Subject24TFTV";
+                subject24.Data.GameTags = gameTags.ToArray();
+
+                List<TacMissionTypeParticipantData.UniqueChatarcterBind> tacCharacterDefs = DefCache.GetDef<CustomMissionTypeDef>("StoryPU14_CustomMissionTypeDef").ParticipantsData[1].UniqueUnits.ToList();
+                TacMissionTypeParticipantData.UniqueChatarcterBind uniqueChatarcterBind = new TacMissionTypeParticipantData.UniqueChatarcterBind
+                {
+                    Character = subject24,
+                    Amount = new Base.Utils.RangeDataInt { Max = 1, Min = 1 },
+                };
+                tacCharacterDefs.Add(uniqueChatarcterBind);
+                DefCache.GetDef<CustomMissionTypeDef>("StoryPU14_CustomMissionTypeDef").ParticipantsData[1].UniqueUnits = tacCharacterDefs.ToArray();
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+        }
+
 
 
 

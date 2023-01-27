@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
+using static PhoenixPoint.Geoscape.Entities.GeoBehemothActor;
 
 namespace TFTV
 {
@@ -32,7 +33,7 @@ namespace TFTV
         public static bool checkHammerfall = false;
         private static readonly string BehemothRoamings = "BehemothRoamings";
 
-
+        //Trigger event on first Pandoran flyer
         [HarmonyPatch(typeof(GeoFaction), "CreateVehicleAtPosition")]
         public static class GeoFaction_CreateVehicleAtPosition_patch
         {
@@ -59,10 +60,7 @@ namespace TFTV
 
         }
 
-
-
-
-
+        //Behemoth roaming
         [HarmonyPatch(typeof(GeoBehemothActor), "OnBehemothEmerged")]
         public static class GeoBehemothActor_OnBehemothEmerged_patch
         {
@@ -79,10 +77,10 @@ namespace TFTV
                     TFTVLogger.Always("Behemoth emerging");
 
                     __instance.GeoLevel.EventSystem.SetVariable(BehemothRoamings, __instance.GeoLevel.EventSystem.GetVariable(BehemothRoamings) + 1);
-                    
+
                     if (__instance.GeoLevel.PhoenixFaction.Research.HasCompleted("PX_YuggothianEntity_ResearchDef")
-                        && __instance.GeoLevel.PhoenixFaction.Research.HasCompleted("PX_Alien_Citadel_ResearchDef") 
-                        && __instance.GeoLevel.EventSystem.GetVariable("BehemothPatternEventTriggered")!=1)
+                        && __instance.GeoLevel.PhoenixFaction.Research.HasCompleted("PX_Alien_Citadel_ResearchDef")
+                        && __instance.GeoLevel.EventSystem.GetVariable("BehemothPatternEventTriggered") != 1)
                     {
                         GeoscapeEventContext context = new GeoscapeEventContext(__instance.GeoLevel.AlienFaction, __instance.GeoLevel.PhoenixFaction);
                         __instance.GeoLevel.EventSystem.TriggerGeoscapeEvent("OlenaOnBehemothPattern", context);
@@ -101,8 +99,7 @@ namespace TFTV
 
         }
 
-
-
+        //Hammerfall
         [HarmonyPatch(typeof(GeoAlienFaction), "SpawnEgg", new Type[] { typeof(Vector3) })]
         public static class GeoAlienFaction_SpawnEgg_DestroyHavens_Patch
         {
@@ -203,8 +200,8 @@ namespace TFTV
             }
         }
 
+        //Controlling Pandoran flyers visiting havens
         [HarmonyPatch(typeof(GeoVehicle), "OnArrivedAtDestination")]
-
         public static class GeoVehicle_OnArrivedAtDestination
         {
             public static bool Prepare()
@@ -243,8 +240,7 @@ namespace TFTV
 
         }
 
-        //  public static bool BehemothSubmerging = false; 
-
+        //Clear lists of internal variables on Behemoth submerge + add Berith and Abbadon researches depending on number of roamings
         [HarmonyPatch(typeof(GeoBehemothActor), "PickSubmergeLocation")]
         public static class GeoBehemothActor_PickSubmergeLocation_patch
         {
@@ -299,8 +295,8 @@ namespace TFTV
 
         }
 
+        //Verifiying if flyer returning to Behemoth has visited a haven
         [HarmonyPatch(typeof(GeoscapeRaid), "StopBehemothFollowing")]
-
         public static class GeoscapeRaid_StopBehemothFollowing_patch
         {
             public static bool Prepare()
@@ -409,6 +405,8 @@ namespace TFTV
                 {
                     //TFTVLogger.Always("Total sites count is " + __instance.GeoLevel.Map.AllSites.Count);
 
+                    GeoLevelController controller = __instance.GeoLevel;
+
                     if (__instance.CurrentBehemothStatus == GeoBehemothActor.BehemothStatus.Dormant)//first check
                     {
                         //   TFTVLogger.Always("Behemoth's target lists are cleared because he is sleeping");
@@ -449,14 +447,19 @@ namespace TFTV
 
                     if (!__instance.IsSubmerging && ____disruptionPoints >= ____disruptionThreshhold)
                     {
-                        MethodInfo method_GenerateTargetData = AccessTools.Method(typeof(GeoBehemothActor), "PickSubmergeLocation");
+                        if (__instance.CurrentSite != null)
+                        {
 
-                        method_GenerateTargetData.Invoke(__instance, null);
-                        TFTVLogger.Always("Behemoth hourly update, disruption points at " + ____disruptionPoints + ", while threshold set to " + ____disruptionThreshhold + ". Behemoth should submerge");
-                        return false;
+                            MethodInfo method_GenerateTargetData = AccessTools.Method(typeof(GeoBehemothActor), "PickSubmergeLocation");
+
+                            method_GenerateTargetData.Invoke(__instance, null);
+                            TFTVLogger.Always("Behemoth hourly update, disruption points at " + ____disruptionPoints + ", while threshold set to " + ____disruptionThreshhold + ". Behemoth should submerge");
+                            return false;
+                        }
                     }
 
                     ____nextActionHoursLeft = Mathf.Clamp(____nextActionHoursLeft - 1, 0, int.MaxValue);
+
                     if (____nextActionHoursLeft <= 0)
                     {
                         MethodInfo method_GenerateTargetData = AccessTools.Method(typeof(GeoBehemothActor), "PerformAction");
@@ -547,6 +550,82 @@ namespace TFTV
                 return true;
             }
         }
+
+
+
+        //Patch to ensure that Behemoth emerges near exploration sites, written with the help of my new best friend, chatgpt
+        [HarmonyPatch(typeof(GeoBehemothActor), "OnBehemothEmerged")]
+        class TFTV_OnBehemothEmerged_Patch
+        {
+
+            public static bool Prefix(GeoBehemothActor __instance, ref int ____disruptionPoints, ref int ____disruptionThreshhold, ref BehemothStatus ____currentBehemothStatus,
+                 ref int ____nextActionHoursLeft, ref Vector3 ____submergeEmergeEndPoint, ref Vector3 ____submergeEmergeStartPoint,
+                 IUpdateable ____submergeOrEmergeCrt, GameObject ____submergeOrEmergeVfx)
+            {
+                try
+                {
+                    GeoLevelController controller = __instance.GeoLevel;
+
+                    TFTVLogger.Always("OnBehemothEmerged invoked");
+                    GeoSite randomElement = __instance.GeoLevel.Map.SitesByType[GeoSiteType.MistGenerator]
+                        .Where(s => s != __instance.CurrentSite)
+                        .Where(s => controller.Map.SitesByType[GeoSiteType.Exploration]
+                            .Count(e => Vector3.Distance(e.WorldPosition, s.WorldPosition) <= 5) >= 5)
+                         .Where(s => controller.Map.SitesByType[GeoSiteType.Haven]
+                             .Count(e => Vector3.Distance(e.WorldPosition, s.WorldPosition) <= 5) >= 5)
+                        .ToList().GetRandomElement();
+
+                    TFTVLogger.Always("Random Element is " + randomElement.SiteId);
+
+                    Type targetType = typeof(GeoBehemothActor);
+                    FieldInfo eventField = targetType.GetField("OnEmerged", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+                    BehemothSiteEventHandler OnEmerged = (BehemothSiteEventHandler)eventField.GetValue(__instance);
+
+                    if (randomElement == null) return false;
+
+                    __instance.TeleportToSite(randomElement);
+
+                    // rest of the original method, adapted for patch
+                    __instance.ModelRoot.transform.localPosition = new Vector3(0f, -0.375f, 0f);
+                    __instance.VisualsRoot.gameObject.SetActive(value: true);
+                    OnEmerged?.Invoke(__instance.CurrentSite);
+                    __instance.GeoLevel.View.ChaseTarget(__instance.CurrentSite, instant: true);
+                    ____currentBehemothStatus = BehemothStatus.None;
+                    ____nextActionHoursLeft = 0;
+
+                    MethodInfo performActionMethod = AccessTools.Method(typeof(GeoBehemothActor), "PerformAction");
+                    performActionMethod.Invoke(__instance, null);
+
+                    MethodInfo getEmergePointMethod = AccessTools.Method(typeof(GeoBehemothActor), "GetEmergePoint");
+                    ____submergeEmergeEndPoint = (Vector3)getEmergePointMethod.Invoke(__instance, null);
+                    ____submergeEmergeStartPoint = __instance.WorldPosition;
+
+                    MethodInfo EmergeCrtMethod = AccessTools.Method(typeof(GeoBehemothActor), "EmergeCrt");
+                    object emergeCrtResult = EmergeCrtMethod.Invoke(__instance, new object[] { new Timing() });
+
+                    if (__instance.BehemothDef.EmergeVFX != null)
+                    {
+                        ____submergeOrEmergeVfx = UnityEngine.Object.Instantiate(__instance.BehemothDef.EmergeVFX, __instance.VFXRoot);
+                        ____submergeOrEmergeVfx.transform.localPosition = Vector3.zero;
+                    }
+
+                    MethodInfo CalculateDisruptionThreshholdMethod = AccessTools.Method(typeof(GeoBehemothActor), "CalculateDisruptionThreshhold");
+
+                    ____disruptionPoints = 0;
+                    ____disruptionThreshhold = (int)CalculateDisruptionThreshholdMethod.Invoke(__instance, null);
+
+                    return false;
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+
+                }
+                return true;
+
+            }
+        }
+
 
         [HarmonyPatch(typeof(GeoBehemothActor), "DamageHavenOutcome")]
 
@@ -681,7 +760,7 @@ namespace TFTV
                         if (behemothScenicRoute.Contains(site.SiteId))
                         {
                             chosenTarget = site;
-                           // TFTVLogger.Always("The site is " + site.Name);
+                            // TFTVLogger.Always("The site is " + site.Name);
                             behemothScenicRoute.Remove(site.SiteId);
                             return chosenTarget;
                         }

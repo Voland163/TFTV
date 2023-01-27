@@ -22,6 +22,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Security.Cryptography;
+using UnityEngine;
+using UnityEngine.AddressableAssets;
 
 namespace TFTV
 {
@@ -78,7 +80,7 @@ namespace TFTV
                 TFTVInfestation.InfestationMissionWon = false;
                 ClearHints();
                 TFTVUI.uIModuleSoldierCustomization = null;
-            //Commented out for release #12    TFTVAncients.HoplitesKilled = 0;
+                TFTVAncients.HoplitesKilled = 0;
                 TFTVLogger.Always("Internal variables cleared");
             }
             catch (Exception e)
@@ -410,6 +412,7 @@ namespace TFTV
         {
             try
             {
+              
                 ResearchDef sourceResearchDef = DefCache.GetDef<ResearchDef>("PX_AtmosphericAnalysis_ResearchDef");
                 ResearchDef researchDef = Helper.CreateDefFromClone(sourceResearchDef, gUID, id);
                 ResearchDef secondarySourceResearchDef = DefCache.GetDef<ResearchDef>("PX_AlienGoo_ResearchDef");
