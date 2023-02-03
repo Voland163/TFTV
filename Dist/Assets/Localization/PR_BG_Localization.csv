@@ -834,7 +834,7 @@ HINT_ANCIENTS_HOPLITS_TEXT,Text,,"This Ancient Automata is reactivating! While w
 HINT_ANCIENTS_HOPLITSREPAIR_TITLE,Text,,<i>”The broken remains floated towards the damaged Automata”</i>,,,,,,,,
 HINT_ANCIENTS_HOPLITSREPAIR_TEXT,Text,,This Ancient Automata is trying to repair itself using the remains of the destroyed robot in its vicinity! It has also drained some of its power.,,,,,,,,
 HINT_ANCIENTS_HOPLITSMAXPOWER_TITLE,Text,,"<i>”Whirl whirl whirl Vroom!”</i>",,,,,,,,
-HINT_ANCIENTS_HOPLITSMAXPOWER_TEXT,Text,,The Ancient Automata is now fully charged; damage increased significantly.,,,,,,,,
+HINT_ANCIENTS_HOPLITSMAXPOWER_TEXT,Text,,The Ancient Automata is now fully charged; damage increased significantly and damage resistance gained.,,,,,,,,
 HELENA_ECHOES_TITLE,Text,,"The Echoes of the Ancients",,,,,,,,
 HELENA_ECHOES_TEXT,Text,,"This is something neither West nor Symes understood, or wanted to understand, although I tried explaining it to them many times. History is about making sense of the present by understanding the past. Cause and effect, reverberation and resonance. But when it comes to the Ancients, their echoes are getting stronger, and they started getting stronger with the First Mist. 
 
@@ -911,7 +911,7 @@ CYCLOPS_DEFENSE_DESCRIPTION,Text,,"Before any Hoplites are destroyed, the Cyclop
 HOPLITES_SELF_REPAIR_NAME,Text,,HOPLITES SELF-REPAIR,,,,,,,,
 HOPLITES_SELF_REPAIR_DESCRIPTION,Text,,"Any Automata destroyed within 7 tiles of another one will allow it to recover a missing body part or 50 HP, and 5 WP",,,,,,,,
 POWERED_UP_NAME,Text,,ALL POWERED UP,,,,,,,,
-POWERED_UP_DESCRIPTION,Text,,"From the moment it is alerted, an Automata gains 5 WP per turn. Its speed is determined by its current WP. Once it reaches maximum WP, it gains the this status, receving +50% damage to all attacks ",,,,,,,,
+POWERED_UP_DESCRIPTION,Text,,"From the moment it is alerted, an Automata gains 5 WP per turn. Its speed is determined by its current WP. Once it reaches maximum WP, it gains the this status, receving +50% damage to all attacks and 25% damage resistance",,,,,,,,
 UNKNOWN_STATUS_NAME,Text,,?,,,,,,,,
 UNKNOWN_STATUS_DESCRIPTION,Text,,Research the entity to learn what it is capable of,,,,,,,,
 KEY_EMP_RESISTANCE_NAME,Text,,IMMUNE TO EMP,,,,,,,,
