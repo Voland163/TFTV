@@ -35,7 +35,7 @@ namespace TFTV
 
 
         [HarmonyPatch(typeof(CorruptionStatus), "GetMultiplier")]
-        internal static class BG_CorruptionStatus_GetMultiplier_Mutations_patch
+        internal static class TFTV_CorruptionStatus_GetMultiplier_Mutations_patch
         {
 
             [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051")]
@@ -513,7 +513,7 @@ namespace TFTV
                     int num = UnityEngine.Random.Range(0, 200);
                     TFTVLogger.Always("Treatment rolled " + num);
 
-                    if (num >= 0 && num <= 50)
+                    if (num >= 0 && num <=50) 
                     {
                         for (int i = 0; i < 100; i++)
                         {

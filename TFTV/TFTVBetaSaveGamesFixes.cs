@@ -1,18 +1,8 @@
-﻿using PhoenixPoint.Common.Core;
-using PhoenixPoint.Geoscape.Events;
-using PhoenixPoint.Geoscape.Levels;
-using PhoenixPoint.Tactical.AI.Considerations;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using static Base.Input.InputController;
-using static PhoenixPoint.Common.Core.PartyDiplomacy;
-using UnityEngine.EventSystems;
-using I2.Loc;
-using PhoenixPoint.Common.ContextHelp;
+﻿using PhoenixPoint.Common.ContextHelp;
+using PhoenixPoint.Common.Entities.Items;
 using PhoenixPoint.Geoscape.Entities.Research;
+using PhoenixPoint.Geoscape.Levels;
+using System;
 
 namespace TFTV
 {
@@ -20,8 +10,10 @@ namespace TFTV
     {
         public static bool LOTAapplied = false;
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
+        public static bool LOTAReworkGlobalCheck = false;
 
-        public static void SpecialFixForTesting(GeoLevelController controller) 
+
+        public static void SpecialFixForTesting(GeoLevelController controller)
         {
             try
             {
@@ -37,18 +29,17 @@ namespace TFTV
 
         }
 
-
-
         public static void CheckNewLOTA(GeoLevelController controller)
         {
-            try 
+            try
             {
-                if (controller.EventSystem.GetVariable("NewGameStarted") == 1 && !LOTAapplied) 
+                if (controller.EventSystem.GetVariable("NewGameStarted") == 1 && !LOTAapplied)
                 {
                     LOTAapplied = true;
                     TFTVDefsInjectedOnlyOnce.ChangesToLOTA2();
                     TFTVAncients.LOTAReworkActive = true;
-                    TFTVLogger.Always("LOTA rework activared!");
+                    LOTAReworkGlobalCheck = true;
+                    TFTVLogger.Always("LOTA rework activated!");
                 }
                 CheckIfLOTAReworkActive();
             }
@@ -58,6 +49,30 @@ namespace TFTV
                 TFTVLogger.Error(e);
             }
         }
+
+        public static void CheckNewLOTASavegame()
+        {
+            try
+            {
+                if ((LOTAReworkGlobalCheck || TFTVAncients.LOTAReworkActive) && !LOTAapplied)
+                {
+                    LOTAapplied = true;
+                    TFTVDefsInjectedOnlyOnce.ChangesToLOTA2();
+                    TFTVAncients.LOTAReworkActive = true;
+                    TFTVLogger.Always("LOTA rework activated!");
+                }
+                CheckIfLOTAReworkActive();
+            }
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+
+
+
 
         public static void CheckIfLOTAReworkActive()
         {
@@ -80,11 +95,14 @@ namespace TFTV
                 ResearchDef pX_ProteanMutaneResearch = DefCache.GetDef<ResearchDef>("PX_ProteanMutaneResearchDef");
 
 
-                if (TFTVAncients.LOTAReworkActive) 
+                AncientSiteProbeItemDef ancientSiteProbeItemDef = DefCache.GetDef<AncientSiteProbeItemDef>("AncientSiteProbeItemDef");
+
+
+                if (TFTVAncients.LOTAReworkActive)
                 {
-                    if (!researchDB.Researches.Contains(ancientAutomataResearch)) 
+                    if (!researchDB.Researches.Contains(ancientAutomataResearch))
                     {
-                        researchDB.Researches.Add(ancientAutomataResearch);              
+                        researchDB.Researches.Add(ancientAutomataResearch);
                     }
                     if (!researchDB.Researches.Contains(pX_LivingCrystalResearch))
                     {
@@ -94,13 +112,13 @@ namespace TFTV
                     {
                         researchDB.Researches.Add(pX_ProteanMutaneResearch);
                     }
-                    if (!alwaysDisplayedTacticalHintsDbDef.Hints.Contains(hintStory1)) 
+                    if (!alwaysDisplayedTacticalHintsDbDef.Hints.Contains(hintStory1))
                     {
-                        alwaysDisplayedTacticalHintsDbDef.Hints.Add(hintStory1);                   
+                        alwaysDisplayedTacticalHintsDbDef.Hints.Add(hintStory1);
                     }
-                    if (!alwaysDisplayedTacticalHintsDbDef.Hints.Contains(hintCyclops)) 
+                    if (!alwaysDisplayedTacticalHintsDbDef.Hints.Contains(hintCyclops))
                     {
-                        alwaysDisplayedTacticalHintsDbDef.Hints.Add(hintCyclops);                
+                        alwaysDisplayedTacticalHintsDbDef.Hints.Add(hintCyclops);
                     }
                     if (!alwaysDisplayedTacticalHintsDbDef.Hints.Contains(hintCyclopsDefense))
                     {
@@ -119,7 +137,7 @@ namespace TFTV
                         alwaysDisplayedTacticalHintsDbDef.Hints.Add(hintHopliteMaxPower);
                     }
                 }
-                else 
+                else
                 {
                     if (researchDB.Researches.Contains(ancientAutomataResearch))
                     {
@@ -157,6 +175,8 @@ namespace TFTV
                     {
                         alwaysDisplayedTacticalHintsDbDef.Hints.Remove(hintHopliteMaxPower);
                     }
+                    ancientSiteProbeItemDef.ManufactureTech = 25;
+                    ancientSiteProbeItemDef.ManufactureMaterials = 75;
                 }
             }
             catch (Exception e)
@@ -168,20 +188,20 @@ namespace TFTV
         }
 
 
-        public static void CheckSaveGameEventChoices(GeoLevelController controller) 
-        {           
-            try 
+        public static void CheckSaveGameEventChoices(GeoLevelController controller)
+        {
+            try
             {
-                if(controller.EventSystem.GetEventRecord("PROG_AN2")?.SelectedChoice == -1) 
+                if (controller.EventSystem.GetEventRecord("PROG_AN2")?.SelectedChoice == -1)
                 {
                     controller.EventSystem.GetEventRecord("PROG_AN2").SelectChoice(0);
                     controller.EventSystem.GetEventRecord("PROG_AN2").Complete(controller.Timing.Now);
                 }
-                if(controller.EventSystem.GetEventRecord("PROG_AN4")?.SelectedChoice == -1)
+                if (controller.EventSystem.GetEventRecord("PROG_AN4")?.SelectedChoice == -1)
                 {
                     controller.EventSystem.GetEventRecord("PROG_AN4").SelectChoice(1);
                     controller.EventSystem.GetEventRecord("PROG_AN4").Complete(controller.Timing.Now);
-                }             
+                }
             }
             catch (Exception e)
             {

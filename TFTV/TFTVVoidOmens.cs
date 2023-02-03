@@ -4,8 +4,10 @@ using Base.Defs;
 using Base.Entities.Effects;
 using Base.UI;
 using HarmonyLib;
+using PhoenixPoint.Common.ContextHelp;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities;
+using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.Levels.Missions;
 using PhoenixPoint.Geoscape.Core;
 using PhoenixPoint.Geoscape.Entities;
@@ -17,6 +19,7 @@ using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
 using PhoenixPoint.Geoscape.Levels.Objectives;
 using PhoenixPoint.Geoscape.View.ViewStates;
+using PhoenixPoint.Tactical.ContextHelp;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.Statuses;
@@ -25,9 +28,11 @@ using PhoenixPoint.Tactical.Levels;
 using PhoenixPoint.Tactical.Levels.FactionEffects;
 using PhoenixPoint.Tactical.Levels.FactionObjectives;
 using PhoenixPoint.Tactical.Levels.Mist;
+using PhoenixPoint.Tactical.View.ViewStates;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Policy;
 using UnityEngine;
 
 namespace TFTV
@@ -207,6 +212,14 @@ namespace TFTV
                 }
                 if (CheckFordVoidOmensInPlay(level).Contains(5))
                 {
+                    ContextHelpHintDbDef alwaysDisplayedTacticalHintsDbDef = DefCache.GetDef<ContextHelpHintDbDef>("AlwaysDisplayedTacticalHintsDbDef");
+                    ContextHelpHintDef hostileDefenders = DefCache.GetDef<ContextHelpHintDef>("HostileDefenders");
+                    if (!alwaysDisplayedTacticalHintsDbDef.Hints.Contains(hostileDefenders))
+                    {
+                        alwaysDisplayedTacticalHintsDbDef.Hints.Add(hostileDefenders);
+                    }
+                 
+
                     foreach (CustomMissionTypeDef missionTypeDef in Repo.GetAllDefs<CustomMissionTypeDef>())
                     {
                         if (missionTypeDef.name.Contains("Haven") && !missionTypeDef.name.Contains("Infestation"))
@@ -226,13 +239,22 @@ namespace TFTV
                             missionTypeDef.CratesDeploymentPointsRange.Min = 20;
                             missionTypeDef.CratesDeploymentPointsRange.Max = 30;
                             missionTypeDef.DontRecoverItems = true;
+                       
                         }
                     }
+                    
                     //Logger.Always(voidOmen + j + " is now in effect, held in variable " + voidOmen + i);
                     VoidOmensCheck[5] = true;
                 }
                 else if (!CheckFordVoidOmensInPlay(level).Contains(5) && CheckForAlreadyRolledVoidOmens(level).Contains(5) && VoidOmensCheck[5])
                 {
+                    ContextHelpHintDbDef alwaysDisplayedTacticalHintsDbDef = DefCache.GetDef<ContextHelpHintDbDef>("AlwaysDisplayedTacticalHintsDbDef");
+                    ContextHelpHintDef hostileDefenders = DefCache.GetDef<ContextHelpHintDef>("HostileDefenders");
+                    if (alwaysDisplayedTacticalHintsDbDef.Hints.Contains(hostileDefenders))
+                    {
+                        alwaysDisplayedTacticalHintsDbDef.Hints.Remove(hostileDefenders);
+                    }
+
                     foreach (CustomMissionTypeDef missionTypeDef in Repo.GetAllDefs<CustomMissionTypeDef>())
                     {
                         if (missionTypeDef.name.Contains("Haven") && !missionTypeDef.name.Contains("Infestation"))
@@ -252,7 +274,7 @@ namespace TFTV
                             missionTypeDef.CratesDeploymentPointsRange.Min = 0;
                             missionTypeDef.CratesDeploymentPointsRange.Max = 0;
                             missionTypeDef.DontRecoverItems = false;
-
+                         
                         }
                     }
                     VoidOmensCheck[5] = false;
@@ -457,13 +479,12 @@ namespace TFTV
                     GeoMarketplaceResearchOptionDef randomMarketResearch = DefCache.GetDef<GeoMarketplaceResearchOptionDef>("Random_MarketplaceResearchOptionDef");
                     randomMarketResearch.MaxPrice = 1500;
                     randomMarketResearch.MinPrice = 1200;
-
-
+                    
                     VoidOmensCheck[19] = false;
                     TFTVLogger.Always("The check for VO#19 went ok");
                 }
 
-
+                
 
                 //pending baby abbadons
                 /*  if (i == 20 && CheckFordVoidOmensInPlay(level).Contains(i) && !voidOmensCheck[i])
@@ -1358,5 +1379,25 @@ namespace TFTV
                 }
             }
         }
+
+       /* public static void CheckHostileDefendersVO(TacticalLevelController controller)
+        {
+            try 
+            {
+                if (VoidOmensCheck[5] && controller.TacMission.MissionData.MissionType.SaveDefaultName.Contains("HavenDefense"))
+                {
+                    object context = controller.GetFactionByCommandName("PX").Actors.First();
+                    TacContextHelpManager tacContextHelpManager = (TacContextHelpManager)UnityEngine.Object.FindObjectOfType(typeof(TacContextHelpManager));
+                    tacContextHelpManager.EventTypeTriggered(HintTrigger.Manual, context, context);
+                }
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+        }*/
+
     }
 }

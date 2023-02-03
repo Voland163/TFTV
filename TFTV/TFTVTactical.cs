@@ -131,7 +131,7 @@ namespace TFTV
                 //Commented out for release #13
                 TFTVAncients.HoplitesKilled = data.HoplitesKilledOnMission;
                 TFTVAncients.LOTAReworkActive = data.LOTAReworkActiveInTactical;
-
+                TFTVBetaSaveGamesFixes.CheckNewLOTASavegame();
             }
             catch (Exception e)
             {

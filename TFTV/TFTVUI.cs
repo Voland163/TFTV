@@ -24,9 +24,7 @@ using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.DamageKeywords;
 using PhoenixPoint.Tactical.Entities.Effects.DamageTypes;
 using PhoenixPoint.Tactical.Entities.Equipments;
-using PhoenixPoint.Tactical.Entities.Statuses;
 using PhoenixPoint.Tactical.UI;
-using PhoenixPoint.Tactical.View.ViewModules;
 using PhoenixPoint.Tactical.View.ViewStates;
 using System;
 using System.Collections.Generic;
@@ -47,9 +45,8 @@ namespace TFTV
         public static UIModuleCharacterProgression hookToProgressionModule = null;
         public static GeoCharacter hookToCharacter = null;
         internal static bool moduleInfoBarAdjustmentsExecuted = false;
-       // public static bool showFaceNotHelmet = true;
-
-
+        // public static bool showFaceNotHelmet = true;
+        
         internal static Color red = new Color32(192, 32, 32, 255);
         internal static Color purple = new Color32(149, 23, 151, 255);
         internal static Color blue = new Color32(62, 12, 224, 255);
@@ -57,10 +54,10 @@ namespace TFTV
         internal static Color anu = new Color(0.9490196f, 0.0f, 1.0f, 1.0f);
         internal static Color nj = new Color(0.156862751f, 0.6156863f, 1.0f, 1.0f);
         internal static Color syn = new Color(0.160784319f, 0.8862745f, 0.145098045f, 1.0f);
-
-       
+        
+        //Patch to show correct damage prediction with mutations and Delirium 
         [HarmonyPatch(typeof(Utils), "GetDamageKeywordValue")]
-        public static class Utils_GetDamageKeywordValue_Patch
+        public static class TFTV_Utils_GetDamageKeywordValue_DamagePredictionMutations_Patch
         {
             public static void Postfix(DamagePayload payload, DamageKeywordDef damageKeyword, TacticalActor tacticalActor, ref float __result)
             {
@@ -75,7 +72,7 @@ namespace TFTV
 
                         float numberOfMutations = 0;
 
-                     //   TFTVLogger.Always("GetDamageKeywordValue check passed");
+                        //   TFTVLogger.Always("GetDamageKeywordValue check passed");
 
                         foreach (TacticalItem armourItem in tacticalActor.BodyState.GetArmourItems())
                         {
@@ -87,13 +84,13 @@ namespace TFTV
 
                         if (numberOfMutations > 0)
                         {
-                           // TFTVLogger.Always("damage value is " + payload.GenerateDamageValue(tacticalActor.CharacterStats.BonusAttackDamage));
+                            // TFTVLogger.Always("damage value is " + payload.GenerateDamageValue(tacticalActor.CharacterStats.BonusAttackDamage));
 
-                           __result = payload.GenerateDamageValue(tacticalActor.CharacterStats.BonusAttackDamage) * (1f + (numberOfMutations * 2) / 100 * (float)tacticalActor.CharacterStats.Corruption);
-                          //  TFTVLogger.Always("result is " + __result +", damage increase is " + (1f + (((numberOfMutations * 2) / 100) * (float)tacticalActor.CharacterStats.Corruption)));
+                            __result = payload.GenerateDamageValue(tacticalActor.CharacterStats.BonusAttackDamage) * (1f + (numberOfMutations * 2) / 100 * (float)tacticalActor.CharacterStats.Corruption);
+                            //  TFTVLogger.Always("result is " + __result +", damage increase is " + (1f + (((numberOfMutations * 2) / 100) * (float)tacticalActor.CharacterStats.Corruption)));
                         }
 
-                    }       
+                    }
                 }
                 catch (Exception e)
                 {
@@ -103,10 +100,10 @@ namespace TFTV
         }
 
 
-        //Adapted from Mad´s Assorted Adjustments
+        //Adapted from Mad´s Assorted Adjustments; this patch changes Geoescape UI
 
         [HarmonyPatch(typeof(UIModuleInfoBar), "Init")]
-        public static class UIModuleInfoBar_Init_Patch
+        public static class TFTV_UIModuleInfoBar_Init_GeoscapeUI_Patch
         {
             public static void Prefix(UIModuleInfoBar __instance, GeoscapeViewContext ____context)
             {
@@ -135,7 +132,7 @@ namespace TFTV
 
                     foreach (Transform t in tInfoBar.GetComponentsInChildren<Transform>())
                     {
-                    
+
                         if (t.name == "TooltipCatcher")
                         {
                             if (t.GetComponent<UITooltipText>().TipKey.LocalizeEnglish() == "Stores - used space / capacity of all stores facilities")
@@ -337,7 +334,7 @@ namespace TFTV
         }
 
 
-
+        //Patch to ensure that patch above is only run once
         [HarmonyPatch(typeof(PhoenixGame), "RunGameLevel")]
         public static class PhoenixGame_RunGameLevel_Patch
         {
@@ -347,7 +344,7 @@ namespace TFTV
             }
         }
 
-
+        //Second patch to update Geoscape UI
         [HarmonyPatch(typeof(UIModuleInfoBar), "UpdatePopulation")]
         public static class TFTV_ODI_meter_patch
         {
@@ -552,10 +549,10 @@ namespace TFTV
         }
 
 
-
+        //Patch to show correct stats in Personnel Edit screen
         [HarmonyPatch(typeof(UIModuleCharacterProgression), "GetStarBarValuesDisplayString")]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051")]
-        internal static class BG_UIModuleCharacterProgression_RefreshStatPanel_patch
+        internal static class TFTV_UIModuleCharacterProgression_RefreshStatPanel_patch
         {
             private static void Postfix(GeoCharacter ____character, ref string __result, CharacterBaseAttribute attribute, int currentAttributeValue)
             {
@@ -713,10 +710,10 @@ namespace TFTV
 
         }
 
+
         [HarmonyPatch(typeof(UIModuleCharacterProgression), "Awake")]
 
-        internal static class UIModuleCharacterProgression_Awake_patch
-
+        internal static class TFTV_UIModuleCharacterProgression_Awake_Hook_patch
         {
             public static void Postfix(UIModuleCharacterProgression __instance)
             {
@@ -732,8 +729,9 @@ namespace TFTV
             }
         }
 
+        //Patch to show correct encumbrance
         [HarmonyPatch(typeof(UIModuleSoldierEquip), "RefreshWeightSlider")]
-        internal static class UIModuleSoldierEquip_RefreshWeightSlider_Patch
+        internal static class TFTV_UIModuleSoldierEquip_RefreshWeightSlider_Patch
         {
             private static readonly ApplyStatusAbilityDef derealization = DefCache.GetDef<ApplyStatusAbilityDef>("DerealizationIgnorePain_AbilityDef");
             private static void Prefix(ref int maxWeight, UIModuleSoldierEquip __instance)
@@ -823,9 +821,9 @@ namespace TFTV
             }
         }
 
-
+        //Patch to keep characters animating in edit screen despite constant stat updates invoked by the other patches
         [HarmonyPatch(typeof(UIStateEditSoldier), "RequestRefreshCharacterData")]
-        internal static class UIStateEditSoldier_RequestRefreshCharacterData_Patch
+        internal static class TFTV_UIStateEditSoldier_RequestRefreshCharacterData_Patch
         {
 
             private static void Postfix(ref bool ____uiCharacterAnimationResetNeeded)
@@ -845,30 +843,35 @@ namespace TFTV
         }
 
 
-        [HarmonyPatch(typeof(CharacterStats), "get_CorruptionProgressRel")]
-        internal static class TFTV_UI_CharacterStats_DeliriumFace_patch
+
+        public static GeoCharacter HookToCharacterForDeliriumShader = null;
+
+        //Patch to reduce Delirium visuals on faces of infected characters
+
+        [HarmonyPatch(typeof(UIModuleActorCycle), "SetupFaceCorruptionShader")]
+        class TFTV_UIoduleActorCycle_SetupFaceCorruptionShader_Hook_Patch
         {
-            private static void Postfix(ref float __result, CharacterStats __instance)
+            private static void Prefix(UIModuleActorCycle __instance)
             {
                 try
                 {
 
-                    if (__instance.Corruption > 0 && hookToCharacter!=null)
-                    {
-                        GeoCharacter character = hookToCharacter;
+                    HookToCharacterForDeliriumShader = __instance.CurrentCharacter;
 
-                        if (__instance.Corruption - TFTVDelirium.CalculateStaminaEffectOnDelirium(character) > 0)
-                        {
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
 
-                            __result = ((character.CharacterStats.Corruption - (TFTVDelirium.CalculateStaminaEffectOnDelirium(character))) / 20);
+            private static void Postfix(UIModuleActorCycle __instance)
+            {
+                try
+                {
 
+                    HookToCharacterForDeliriumShader = null;
 
-                        }
-                        else
-                        {
-                            __result = 0.05f;
-                        }
-                    }
 
                 }
                 catch (Exception e)
@@ -879,6 +882,107 @@ namespace TFTV
 
 
         }
+
+        public static TacticalActor HookCharacterStatsForDeliriumShader = null;
+
+        [HarmonyPatch(typeof(TacticalActor), "SetupFaceCorruptionShader")]
+      
+        class TFTV_TacticalActor_SetupFaceCorruptionShader
+        {
+            private static void Prefix(TacticalActor __instance)
+            {
+                try
+                {
+                    HookCharacterStatsForDeliriumShader = __instance;
+                  
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+               
+            }
+            private static void Postfix()
+            {
+                try
+                {
+                    HookCharacterStatsForDeliriumShader = null;
+
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+
+            }
+        }
+
+
+        [HarmonyPatch(typeof(CharacterStats), "get_CorruptionProgressRel")]
+         internal static class TFTV_UI_CharacterStats_DeliriumFace_patch
+         {
+             private static void Postfix(ref float __result, CharacterStats __instance)
+             {
+                 try
+                 {
+                    // Type targetType = typeof(UIModuleActorCycle);
+                    // FieldInfo geoCharacterField = targetType.GetField("GeoCharacter", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+
+                    
+
+                     if (HookToCharacterForDeliriumShader != null)
+                     {
+                         GeoCharacter geoCharacter = HookToCharacterForDeliriumShader;
+
+                         if (__instance.Corruption > 0 && geoCharacter != null)//hookToCharacter != null)
+                         {
+                          
+                             if (__instance.Corruption - TFTVDelirium.CalculateStaminaEffectOnDelirium(geoCharacter) > 0)
+                             {
+                                 __result = ((geoCharacter.CharacterStats.Corruption - (TFTVDelirium.CalculateStaminaEffectOnDelirium(geoCharacter))) / 20);
+                             }
+                             else
+                             {
+                                 __result = 0.05f;
+                             }
+                         }
+                     }
+                    if (HookCharacterStatsForDeliriumShader != null)
+                    {
+                        if (__instance == HookCharacterStatsForDeliriumShader.CharacterStats)
+                        {
+                            int stamina = 40;
+
+                            if (TFTVDelirium.StaminaMap.ContainsKey(HookCharacterStatsForDeliriumShader.GeoUnitId))
+                            {
+                                stamina = TFTVDelirium.StaminaMap[HookCharacterStatsForDeliriumShader.GeoUnitId];
+                            }
+
+
+                            if (__instance.Corruption > 0)//hookToCharacter != null)
+                            {
+
+                                if (__instance.Corruption - stamina / 10 > 0)
+                                {
+                                    __result = ((__instance.Corruption - (stamina / 10)) / 20);
+                                }
+                                else
+                                {
+                                    __result = 0.05f;
+                                }
+                            }
+                        }
+                    }
+
+                }
+                 catch (Exception e)
+                 {
+                     TFTVLogger.Error(e);
+                 }
+             }
+         }
 
         /* [HarmonyPatch(typeof(CorruptionSettingsDef), "CalculateCorruptionShaderValue")]
 

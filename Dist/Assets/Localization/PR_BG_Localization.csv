@@ -919,3 +919,31 @@ KEY_EMP_RESISTANCE_DESCRIPTION,Text,,Immune to EMP attacks,,,,,,,,
 IMMUNITY_TO_PARALYSIS_NAME,Text,,IMMUNE TO PARALYZE WEAPONS,,,,,,,,
 IMMUNITY_TO_PARALYSIS_DESCRIPTION,Text,,Immune to Paralyze weapons,,,,,,,,
 KEY_TUTORIAL_DLC2_ARCHEOLOGY_NAME,Text,,We've completed our Archaeology Lab!,,,,,,,,
+CAN_BUILD_CYCLOPS_TITLE,Text,,Necroneuromant,,,,,,,,
+CAN_BUILD_CYCLOPS_TEXT,Text,,"Now that we have analyzed samples of both the Living Crystal and of the Protean Mutane, our scientists and engineers are confident that they can reactivate a Cyclops to access its memories and discover what happened to the Ancients. Olena has warned me that she will need some time to interface with the entity.",,,,,,,,
+BUILD_CYCLOPS_OBJECTIVE,Text,,Reactivate a Cyclops at one of the Ancient Sites under your control,,,,,,,,
+OBTAIN_LC_OBJECTIVE,Text,,Obtain a Living Crystal sample,,,,,,,,
+OBTAIN_PM_OBJECTIVE,Text,,Obtain a Protean Mutane sample,,,,,,,,
+PROTECT_THE_CYCLOPS_OBJECTIVE_GEO_TITLE,Text,,Protect the Cyclops from the Pandoran attack,,,,,,,,
+REVENANT_STATUS_TITLE_ASSAULT,Text,,FORMER ASSAULT,,,,,,,,
+REVENANT_STATUS_DESCRIPTION_ASSAULT,Text,,,,,,,,,,
+REVENANT_STATUS_TITLE_BERSERKER,Text,,FORMER BERSERKER,,,,,,,,
+REVENANT_STATUS_DESCRIPTION_BERSERKER,Text,,,,,,,,,,
+REVENANT_STATUS_TITLE_HEAVY,Text,,FORMER HEAVY,,,,,,,,
+REVENANT_STATUS_DESCRIPTION_HEAVY,Text,,,,,,,,,,
+REVENANT_STATUS_TITLE_INFILTRATOR,Text,,FORMER INFILTRATOR,,,,,,,,
+REVENANT_STATUS_DESCRIPTION_INFILTRATOR,Text,,,,,,,,,,
+REVENANT_STATUS_TITLE_PRIEST,Text,,FORMER PRIEST,,,,,,,,
+REVENANT_STATUS_DESCRIPTION_PRIEST,Text,,,,,,,,,,
+REVENANT_STATUS_TITLE_SNIPER,Text,,FORMER SNIPER,,,,,,,,
+REVENANT_STATUS_DESCRIPTION_SNIPER,Text,,,,,,,,,,
+REVENANT_STATUS_TITLE_TECHNICIAN,Text,,FORMER TECHNICIAN,,,,,,,,
+REVENANT_STATUS_DESCRIPTION_TECHNICIAN,Text,,,,,,,,,,
+HINT_HOSTILE_DEFENDERS_TITLE,Text,,Hostile haven defenders,,,,,,,,
+HINT_HOSTILE_DEFENDERS_TEXT,Text,,"<i>""Come to rescue us, have they? They are the ones who brought the damn critters on us in the first place! Fragging nerds…""</i>
+
+While this Void Omen is in effect, haven defenders will be hostile to you and attack your operatives on sight, but <b>you do not have to kill them to win the mission</b>. 
+
+Protect structures or civilians as you normally would to gain XP. 
+
+There are crates with faction weapons that you can loot, but remember that only the equipment in your operatives or vehicles inventory will be recovered.",,,,,,,,

@@ -1,6 +1,4 @@
-﻿using Base.Core;
-using Base.Entities.Statuses;
-using Base.Eventus;
+﻿using Base.Defs;
 using Base.UI;
 using HarmonyLib;
 using PhoenixPoint.Common.ContextHelp;
@@ -14,43 +12,44 @@ using PhoenixPoint.Geoscape.Entities.Research.Requirement;
 using PhoenixPoint.Geoscape.Events;
 using PhoenixPoint.Geoscape.Events.Eventus;
 using PhoenixPoint.Geoscape.Levels;
-using PhoenixPoint.Geoscape.View;
-using PhoenixPoint.Geoscape.View.ViewModules;
+using PhoenixPoint.Geoscape.Levels.Objectives;
 using PhoenixPoint.Tactical.Entities;
+using PhoenixPoint.Tactical.Entities.Effects.DamageTypes;
+using PhoenixPoint.Tactical.Entities.Statuses;
+using PhoenixPoint.Tactical.View.ViewStates;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Security.Cryptography;
-using UnityEngine;
-using UnityEngine.AddressableAssets;
+using static PhoenixPoint.Tactical.Entities.Statuses.TacStatusDef;
 
 namespace TFTV
 {
     internal class TFTVCommonMethods
     {
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
+        private static readonly DefRepository Repo = TFTVMain.Repo;
 
         public static object View { get; private set; }
 
         public static void CheckGeoUIfunctionality(GeoLevelController controller)
         {
-            try 
+            try
             {
                 if (!controller.PhoenixFaction.GameTags.Contains(DefCache.GetDef<FactionFunctionalityTagDef>("SDI_FactionFunctionalityTagDef")))
                 {
                     controller.PhoenixFaction.AddTag(DefCache.GetDef<FactionFunctionalityTagDef>("SDI_FactionFunctionalityTagDef"));
                 }
-               // UIModuleInfoBar uIModuleInfoBar = (UIModuleInfoBar)UnityEngine.Object.FindObjectOfType(typeof(UIModuleInfoBar));
+                // UIModuleInfoBar uIModuleInfoBar = (UIModuleInfoBar)UnityEngine.Object.FindObjectOfType(typeof(UIModuleInfoBar));
 
-               
+
             }
             catch (Exception e)
             {
                 TFTVLogger.Error(e);
             }
 
-            
+
         }
 
         public static void ClearInternalVariables()
@@ -81,6 +80,7 @@ namespace TFTV
                 ClearHints();
                 TFTVUI.uIModuleSoldierCustomization = null;
                 TFTVAncients.HoplitesKilled = 0;
+                TFTVBetaSaveGamesFixes.LOTAReworkGlobalCheck = false;
                 TFTVLogger.Always("Internal variables cleared");
             }
             catch (Exception e)
@@ -141,12 +141,12 @@ namespace TFTV
         {
             try
             {
-               // TFTVAncients.HoplitesKilled = 0;
+                // TFTVAncients.HoplitesKilled = 0;
                 TFTVRevenant.revenantSpawned = false;
                 TFTVRevenant.revenantID = 0;
                 TFTVHumanEnemies.HumanEnemiesAndTactics = new Dictionary<string, int>();
                 TFTVRevenantResearch.ProjectOsirisStats = new Dictionary<int, int[]>();
-                TFTVStamina.charactersWithBrokenLimbs = new List<int>();               
+                TFTVStamina.charactersWithBrokenLimbs = new List<int>();
                 TFTVHumanEnemiesNames.names.Clear();
                 TFTVHumanEnemiesNames.CreateNamesDictionary();
                 ClearHints();
@@ -200,6 +200,8 @@ namespace TFTV
             }
         }
 
+     
+
         [HarmonyPatch(typeof(Research), "CompleteResearch")]
         public static class Research_NewTurnEvent_CalculateDelirium_Patch
         {
@@ -209,6 +211,7 @@ namespace TFTV
                 try
                 {
                     TFTVLogger.Always("Research completed " + research.ResearchID);
+                    GeoLevelController controller = research.Faction.GeoLevel;
 
                     if (research.ResearchID == "ALN_CrabmanUmbra_ResearchDef")
                     {
@@ -237,7 +240,6 @@ namespace TFTV
                         ClassTagDef queenTag = DefCache.GetDef<ClassTagDef>("Queen_ClassTagDef");
                         TacCharacterDef startingScylla = DefCache.GetDef<TacCharacterDef>("Scylla1_FrenzyMistSmasherAgileSpawner_AlienMutationVariationDef");
 
-
                         citadel.SpawnMonster(queenTag, startingScylla);
 
                     }
@@ -256,16 +258,36 @@ namespace TFTV
                     {
                         GeoscapeEventContext context = new GeoscapeEventContext(research.Faction.GeoLevel.AlienFaction, research.Faction.GeoLevel.PhoenixFaction);
                         research.Faction.GeoLevel.EventSystem.TriggerGeoscapeEvent("Olena_Styx", context);
+
+                      //  ResearchElement exoticMaterialsResearch = research.Faction.GeoLevel.PhoenixFaction.Research.GetResearchById("ExoticMaterialsResearch");
+                      //  research.Faction.GeoLevel.FactionObjectiveSystem.CreateResearchObjective(research.Faction.GeoLevel.PhoenixFaction, exoticMaterialsResearch);
                     }
-              
+
                     else if (research.ResearchID == "PX_LivingCrystalResearchDef")
                     {
                         GeoscapeEventContext context = new GeoscapeEventContext(research.Faction.GeoLevel.AlienFaction, research.Faction.GeoLevel.PhoenixFaction);
                         research.Faction.GeoLevel.EventSystem.TriggerGeoscapeEvent("Helena_Oneiromancy", context);
+                        // GeoscapeEventSystem eventSystem = research.Faction.GeoLevel.EventSystem;
+                        // eventSystem.SetVariable("ProteanMutaneResearched", eventSystem.GetVariable("ProteanMutaneResearched") + 1);
+                        TFTVAncients.SetReactivateCyclopsObjective(controller);
                     }
                     else if (research.ResearchID == "ExoticMaterialsResearch")
                     {
                         TFTVAncients.CheckResearchState(research.Faction.GeoLevel);
+                        TFTVAncients.SetObtainLCandPMSamplesObjective(controller);
+
+                     //   ResearchElement livingCrystalsResearch = research.Faction.GeoLevel.PhoenixFaction.Research.GetResearchById("PX_LivingCrystalResearchDef");
+                     //   GeoFactionObjective researchLC = research.Faction.GeoLevel.FactionObjectiveSystem.CreateResearchObjective(research.Faction.GeoLevel.PhoenixFaction, livingCrystalsResearch);
+                     //  controller.PhoenixFaction.AddObjective(researchLC);
+                     //  ResearchElement proteanMutaneResearch = research.Faction.GeoLevel.PhoenixFaction.Research.GetResearchById("PX_ProteanMutaneResearchDef");
+                     //  GeoFactionObjective researchPM = research.Faction.GeoLevel.FactionObjectiveSystem.CreateResearchObjective(research.Faction.GeoLevel.PhoenixFaction, proteanMutaneResearch);
+                     //  controller.PhoenixFaction.AddObjective(researchPM);
+                    }
+                    else if (research.ResearchID == "PX_ProteanMutaneResearchDef")
+                    {
+                        GeoscapeEventSystem eventSystem = controller.EventSystem;
+                        //  eventSystem.SetVariable("ProteanMutaneResearched", eventSystem.GetVariable("ProteanMutaneResearched") + 1);
+                        TFTVAncients.SetReactivateCyclopsObjective(controller);
                     }
 
 
@@ -277,6 +299,8 @@ namespace TFTV
             }
         }
 
+
+
         public static void SetStaminaToZero(GeoCharacter __instance)
         {
             try
@@ -286,13 +310,55 @@ namespace TFTV
                     __instance.Fatigue.Stamina.SetToMin();
                 }
             }
-            
+
             catch (Exception e)
             {
                 TFTVLogger.Error(e);
             }
 
         }
+
+        public static DamageMultiplierStatusDef CreateNewDescriptiveTacticalStatus(string statusName, string gUIDStatus, 
+            string gUIDVisuals, string title, string description, string iconFileName)
+        {
+            try 
+            {
+                DamageMultiplierStatusDef source = DefCache.GetDef<DamageMultiplierStatusDef>("BionicResistances_StatusDef");
+                DamageMultiplierStatusDef newStatus = Helper.CreateDefFromClone(
+                    source,
+                    gUIDStatus,
+                    statusName);
+                
+                newStatus.Visuals = Helper.CreateDefFromClone(
+                    source.Visuals,
+                    gUIDVisuals,
+                    statusName+"VisualsDef");
+
+                newStatus.EffectName =statusName;
+                newStatus.VisibleOnHealthbar = HealthBarVisibility.AlwaysVisible;
+                newStatus.VisibleOnPassiveBar = true;
+                newStatus.VisibleOnStatusScreen = StatusScreenVisibility.VisibleOnStatusesList;
+                newStatus.DamageTypeDefs = new DamageTypeBaseEffectDef[1];
+                newStatus.Visuals.DisplayName1.LocalizationKey = title;
+                newStatus.Visuals.Description.LocalizationKey = description;
+                newStatus.Visuals.LargeIcon = Helper.CreateSpriteFromImageFile(iconFileName);
+                newStatus.Visuals.SmallIcon = Helper.CreateSpriteFromImageFile(iconFileName);
+
+              //  TacticalAbilityViewElementDef visuals = (TacticalAbilityViewElementDef)newStatus.Visuals;
+              //  visuals.HideFromPassives = true;
+              //  visuals.ShowInStatusScreen = false;
+              
+
+                return newStatus;
+            }
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+            throw new InvalidOperationException();
+        }
+
         public static void GenerateGeoEventChoice(GeoscapeEventDef geoEvent, string choice, string outcome)
         {
             try
@@ -351,35 +417,8 @@ namespace TFTV
             throw new InvalidOperationException();
         }
 
-       /* public static GeoscapeEventDef CreateNewPostResearchEvent(string name, string title, string description, string outcome)
-        {
-            try 
-            {
-                string gUID = Guid.NewGuid().ToString();
-                GeoscapeEventDef sourceLoseGeoEvent = DefCache.GetDef<GeoscapeEventDef>("PROG_PX10_GeoscapeEventDef");
-                GeoscapeEventDef newEvent = Helper.CreateDefFromClone(sourceLoseGeoEvent, gUID, name);
-                newEvent.GeoscapeEventData.Choices[0].Outcome.ReEneableEvent = false;
-                newEvent.GeoscapeEventData.Choices[0].Outcome.ReactiveEncounters.Clear();
-                newEvent.GeoscapeEventData.EventID = name;
-                newEvent.GeoscapeEventData.Title.LocalizationKey = title;
-                newEvent.GeoscapeEventData.Choices[0].Outcome.SetEvents.Clear();
-                newEvent.GeoscapeEventData.Choices[0].Outcome.TrackEncounters.Clear();
-                newEvent.GeoscapeEventData.Description[0].General.LocalizationKey = description;
-                if (outcome != null)
-                {
-                    newEvent.GeoscapeEventData.Choices[0].Outcome.OutcomeText.General.LocalizationKey = outcome;
-                }
-                return newEvent;
-           
 
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-            throw new InvalidOperationException();
 
-        }*/
 
 
         public static GeoscapeEventDef CreateNewEvent(string name, string title, string description, string outcome)
@@ -412,7 +451,7 @@ namespace TFTV
         {
             try
             {
-              
+
                 ResearchDef sourceResearchDef = DefCache.GetDef<ResearchDef>("PX_AtmosphericAnalysis_ResearchDef");
                 ResearchDef researchDef = Helper.CreateDefFromClone(sourceResearchDef, gUID, id);
                 ResearchDef secondarySourceResearchDef = DefCache.GetDef<ResearchDef>("PX_AlienGoo_ResearchDef");
@@ -421,7 +460,7 @@ namespace TFTV
                 researchDef.Id = id;
                 researchDef.InitialStates[0].State = ResearchState.Hidden;
                 researchDef.ResearchCost = cost;
-               
+
                 researchDef.Unlocks = secondarySourceResearchDef.Unlocks;
                 researchDef.Tags = secondarySourceResearchDef.Tags;
                 researchDB.Researches.Add(researchDef);
@@ -434,9 +473,9 @@ namespace TFTV
                 researchViewDef.CompleteText.LocalizationKey = complete;
                 researchViewDef.BenefitsText.LocalizationKey = benefits;
 
-                if (imageSource != null) 
+                if (imageSource != null)
                 {
-                    researchViewDef.ResearchIcon = imageSource.ResearchIcon; 
+                    researchViewDef.ResearchIcon = imageSource.ResearchIcon;
                 }
 
                 researchDef.ViewElementDef = researchViewDef;
@@ -539,7 +578,7 @@ namespace TFTV
 
                 ExistingResearchRequirementDef newResReq = Helper.CreateDefFromClone(sourceExisitingResReq, gUID, nameDef);
                 newResReq.ResearchID = researchID;
-               
+
                 return newResReq;
             }
             catch (Exception e)

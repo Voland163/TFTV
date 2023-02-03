@@ -24,15 +24,15 @@ A previously unknown creature, named the Acheron due to its ability to spread th
 Une créature jusqu'alors inconnue, nommée l'Acheron en raison de sa capacité à propager la souche du pandoravirus de la Troisième Brume affectant l'esprit et la volonté des gens. Contrairement à d'autres spécimens pandoriens, celui-ci ne repose pas sur une attaque directe, mais affecte plutôt les cibles dans une zone autour de lui. L'Acheron a la capacité d'affecter temporairement la précision humaine, ainsi que d'appeler des renforts pandoriens.",,,,,,
 KEY_CH_ALN_ACHERON_RESEARCHDEF_NAME,Text,,ACHERON,,ACHERON,,,,,,
 PX_ACHERON_DISSECTION_RESEARCHDEF_BENEFITS,Text,,Delirium treatment available,,Traitement du délire onirique disponible,,,,,,
-PX_ACHERON_DISSECTION_RESEARCHDEF_COMPLETE,Text,,"After research: Summary: The most surprising fact arising out of the autopsy is that the Acheron is genetically mostly human, much closer to us than any other Pandoran species so far encountered. This is astounding, given that the only noticeable resemblance to our species is the atrophied human body suspended from the creature's oversized limbs and carapace. 
+PX_ACHERON_DISSECTION_RESEARCHDEF_COMPLETE,Text,,"Summary: The most surprising fact arising out of the autopsy is that the Acheron is genetically mostly human, much closer to us than any other Pandoran species so far encountered. This is astounding, given that the only noticeable resemblance to our species is the atrophied human body suspended from the creature's oversized limbs and carapace. 
 
-Genetic origins: 70% homosapiens 
+Genetic origins: 70% homosapiens.
 
-Function: intelligence remains undetermined. It's speculated that its goal is to spread the Third Mist Pandoravirus strain throughout the world
+Function: intelligence remains undetermined. It's speculated that its goal is to spread the Third Mist Pandoravirus strain throughout the world.
 
 Offensive mutations: strong dispersal glands located on the creature's husk allow it to disperse biochemical droplets in a large area. Additionally the creature can squirt concentrated liquid through organs in its hands.
 
-Mobility: the creature is fast and has the ability to jump at great distances
+Mobility: the creature is fast and has the ability to jump at great distances.
 
 Weakness: the creature has been observed to adapt to any type of damage once dealt. It is recommended that attacks of various nature are used on it simultaneously before it can adjust.",,"Résumé post-recherche : Le fait le plus surprenant découlant de l'autopsie est que l'Achéron est génétiquement majoritairement humain, bien plus proche de nous que toute autre espèce pandorienne rencontrée jusqu'à présent. C'est stupéfiant, étant donné que la seule ressemblance notable avec notre espèce est le corps humain atrophié suspendu aux membres et à la carapace surdimensionnés de la créature.
 

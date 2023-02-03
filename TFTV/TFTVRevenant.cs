@@ -2,6 +2,7 @@
 using Base.Defs;
 using Base.Entities.Abilities;
 using Base.Entities.Statuses;
+using Base.Levels;
 using Base.ParticleSystems;
 using Base.UI;
 using HarmonyLib;
@@ -10,7 +11,9 @@ using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
+using PhoenixPoint.Common.UI;
 using PhoenixPoint.Geoscape.Levels;
+using PhoenixPoint.Geoscape.View.ViewControllers;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.DamageKeywords;
@@ -19,6 +22,7 @@ using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.Entities.Statuses;
 using PhoenixPoint.Tactical.Entities.Weapons;
 using PhoenixPoint.Tactical.Levels;
+using PRMBetterClasses.SkillModifications;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -99,6 +103,16 @@ namespace TFTV
 
         //private static readonly DamageKeywordDef paralisingDamageKeywordDef =DefCache.GetDef<DamageKeywordDef>("Paralysing_DamageKeywordDataDef"));
 
+
+     /*   private static readonly DamageMultiplierStatusDef RevenantAssaultStatus = DefCache.GetDef<DamageMultiplierStatusDef>("RevenantAssaultStatus");
+        private static readonly DamageMultiplierStatusDef RevenantHeavyStatus = DefCache.GetDef<DamageMultiplierStatusDef>("RevenantHeavyStatus");
+        private static readonly DamageMultiplierStatusDef RevenantBerserkerStatus = DefCache.GetDef<DamageMultiplierStatusDef>("RevenantBerserkerStatus");
+        private static readonly DamageMultiplierStatusDef RevenantInfiltratorStatus = DefCache.GetDef<DamageMultiplierStatusDef>("RevenantInfiltratorStatus");
+        private static readonly DamageMultiplierStatusDef RevenantSniperStatus = DefCache.GetDef<DamageMultiplierStatusDef>("RevenantSniperStatus");
+        private static readonly DamageMultiplierStatusDef RevenantTechnician = DefCache.GetDef<DamageMultiplierStatusDef>("RevenantTechnicianStatus");
+        private static readonly DamageMultiplierStatusDef RevenantPriestStatus = DefCache.GetDef<DamageMultiplierStatusDef>("RevenantPriestStatus");
+        */
+               
         public static void CheckForNotDeadSoldiers(TacticalLevelController level)
         {
             try
@@ -289,7 +303,10 @@ namespace TFTV
                         foreach (TacticalActorBase tacticalActorBase in pandorans.Actors.Where(tab => tab.GameTags.Contains(possibleClasses.Last())))
                         {
                             candidates.Add(tacticalActorBase);
+                            
                         }
+                        candidates.OrderByDescending(tab => tab.DeploymentCost);
+
 
                         if (candidates.Count > 0)
                         {
@@ -446,20 +463,49 @@ namespace TFTV
             }
         }
 
-        [HarmonyPatch(typeof(TacticalAbility), "GetAbilityDescription")]
+
+
+        
+         [HarmonyPatch(typeof(TacticalAbility), "GetAbilityDescription")]
+         public static class TacticalAbility_DisplayCategory_ChangeDescriptionRevenantSkill_patch
+         {
+             public static void Postfix(TacticalAbility __instance, ref string __result)
+             {
+                 try
+                 {
+                     if (__instance.AbilityDef == revenantAbility)
+                     {
+                         string actorName = __instance.TacticalActor.name;
+                         string additionalDescription =
+                             GetDescriptionOfRevenantClassAbility(actorName, __instance.TacticalActor.TacticalLevel);
+                         __result = "This is your fallen comrade, " + actorName + ", returned as Pandoran monstrosity. "+ additionalDescription;
+
+                     }
+                 }
+                 catch (Exception e)
+                 {
+                     TFTVLogger.Error(e);
+                 }
+
+             }
+         }
+
+      /*  [HarmonyPatch(typeof(ViewElementDef), "GetInterpolatedDescription")]
         public static class TacticalAbility_DisplayCategory_ChangeDescriptionRevenantSkill_patch
         {
-            public static void Postfix(TacticalAbility __instance, ref string __result)
+            public static void Postfix(ViewElementDef __instance, ref string __result)
             {
                 try
                 {
-                    if (__instance.AbilityDef == revenantAbility)
-                    {
-                        string actorName = __instance.TacticalActor.name;
-                        string additionalDescription =
-                            GetDescriptionOfRevenantClassAbility(actorName, __instance.TacticalActor.TacticalLevel);
-                        __result = "This is your fallen comrade, " + actorName + ", returned as Pandoran monstrosity." + additionalDescription;
+                    TFTVLogger.Always("GetInterpolatedDescription");
 
+                    if (__instance == RevenantSniperStatus.Visuals.) //revenantAbility)
+                    {
+                        // string actorName = __instance.TacticalActor.name;
+                        //  string additionalDescription =
+                        //    GetDescriptionOfRevenantClassAbility(actorName, __instance.TacticalActor.TacticalLevel);
+                        __result = "This is your fallen comrade, "; //+ actorName + ", returned as Pandoran monstrosity."; //+ additionalDescription;
+                        TFTVLogger.Always("GetInterpolatedDescription check passed");
                     }
                 }
                 catch (Exception e)
@@ -468,7 +514,8 @@ namespace TFTV
                 }
 
             }
-        }
+        }*/
+        
 
         [HarmonyPatch(typeof(TacticalActorBase), "get_DisplayName")]
         public static class TacticalActorBase_GetDisplayName_RevenantGenerator_Patch
@@ -623,31 +670,31 @@ namespace TFTV
 
                 if (specializations.Contains(assaultSpecialization))
                 {
-                    description += " Increased damage potential, speed and aggressiveness";
+                    description += "Increased damage potential and speed.";
                 }
                 if (specializations.Contains(berserkerSpecialization))
                 {
-                    description += " Fearless, fast, unstoppable...";
+                    description += "Fearless, fast, unstoppable...";
                 }
                 if (specializations.Contains(heavySpecialization))
                 {
-                    description += " Bullet sponge";
+                    description += "Bullet sponge.";
                 }
                 if (specializations.Contains(infiltratorSpecialization))
                 {
-                    description += " Scary quiet";
+                    description += "Scary quiet.";
                 }
                 if (specializations.Contains(priestSpecialization))
                 {
-                    description += " Power overflowing";
+                    description += "Power overflowing.";
                 }
                 if (specializations.Contains(sniperSpecialization))
                 {
-                    description += " All seeing";
+                    description += "All seeing.";
                 }
                 else if (specializations.Contains(technicianSpecialization))
                 {
-                    description += " Surge!";
+                    description += "Surge!";
                 }
 
                 return description;
@@ -974,8 +1021,8 @@ namespace TFTV
             if (revenantResistanceStatus.DamageTypeDefs[0] == null)
             {
                 revenantResistanceStatus.Visuals.DisplayName1 = new LocalizedTextBind("REVENANT RESISTANCE - " + descriptionDamage.ToUpper(), true);
-                revenantResistanceStatus.Visuals.Description = new LocalizedTextBind("This Pandoran has developed a unique active armor protection: <b>damage from first hit in a turn is reduced by 75%</b> " +
-                    "as a response to Phoenix Project overwhelming use of weapons with high damage per projectile/strike", true);
+                revenantResistanceStatus.Visuals.Description = new LocalizedTextBind("<b>Damage from first hit in a turn is reduced by 75%</b>, " +
+                    "an evolutionary response to Phoenix Project overwhelming use of weapons with high damage per projectile/strike", true);
             }
         }
         public static void AddRevenantResistanceStatus(TacticalActorBase tacticalActorBase)
@@ -985,198 +1032,245 @@ namespace TFTV
             {
                 tacticalActor.Status.ApplyStatus<DamageMultiplierStatus>(revenantResistanceStatus);
             }
-
-            //  tacticalActor.Status(revenantResistanceStatus);
+         
             if (!tacticalActorBase.HasGameTag(revenantResistanceGameTag))
             {
                 tacticalActorBase.GameTags.Add(revenantResistanceGameTag);
             }
         }
 
-        public static void AddRevenantClassAbility(TacticalActor tacticalActor, SpecializationDef specialization)
+        public static void IncreaseRevenantHP(TacticalActor tacticalActor) 
+        {
+            try 
+            {
+               
 
+                int currentEndurance = (int)(tacticalActor.CharacterStats.Endurance);
+                int newEndurance = (int)(tacticalActor.CharacterStats.Endurance * 1.15f);
+                if (tacticalActor.GameTags.Contains(revenantTier2GameTag)) 
+                {
+
+                    newEndurance = (int)(tacticalActor.CharacterStats.Endurance * 1.2f);
+
+                }
+                else if (tacticalActor.GameTags.Contains(revenantTier3GameTag)) 
+                {
+                    newEndurance = (int)(tacticalActor.CharacterStats.Endurance * 1.25f);
+
+                }
+                tacticalActor.CharacterStats.Endurance.SetMax(newEndurance);
+                tacticalActor.CharacterStats.Endurance.SetToMax();
+                tacticalActor.UpdateStats();
+                tacticalActor.CharacterStats.Health.SetToMax();
+                tacticalActor.UpdateStats();
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+
+        }
+
+
+        public static void AddRevenantClassAbility(TacticalActor tacticalActor, SpecializationDef specialization)
         {
             try
             {
 
-
                 if (specialization == assaultSpecialization)
                 {
                     TFTVLogger.Always("Deceased had Assault specialization");
-
-                    tacticalActor.AddAbility(revenantAssault, tacticalActor);
-
-                    if (tacticalActor.GameTags.Contains(DefCache.GetDef<GameTagDef>("RevenantTier_2_GameTagDef")))
+                   // tacticalActor.Status.ApplyStatus(RevenantAssaultStatus);
+                 
+                    if (tacticalActor.GameTags.Contains(revenantTier2GameTag))
+                    {                
+                        revenantAssault.StatModifications = new ItemStatModification[]
+                        {
+                            new ItemStatModification {TargetStat = StatModificationTarget.BonusAttackDamage, Modification = StatModificationType.Multiply, Value = 1.10f},
+                            new ItemStatModification {TargetStat = StatModificationTarget.Speed, Modification = StatModificationType.Add, Value = 4},
+                        };
+                       // revenantAssault.ViewElementDef.Description = new LocalizedTextBind("+10% Damage", true);
+                    }
+                    else if (tacticalActor.GameTags.Contains(revenantTier3GameTag))
                     {
-                        tacticalActor.AddAbility(DefCache.GetDef<AbilityDef>("Pitcher_AbilityDef"), tacticalActor);
+                       
                         revenantAssault.StatModifications = new ItemStatModification[]
                         {
                             new ItemStatModification {TargetStat = StatModificationTarget.BonusAttackDamage, Modification = StatModificationType.Multiply, Value = 1.15f},
+                            new ItemStatModification {TargetStat = StatModificationTarget.Speed, Modification = StatModificationType.Add, Value = 6},
                         };
-                        revenantAssault.ViewElementDef.Description = new LocalizedTextBind("+15% Damage", true);
+                      //  revenantAssault.ViewElementDef.Description = new LocalizedTextBind("+15% Damage", true);
                     }
-                    else if (tacticalActor.GameTags.Contains(DefCache.GetDef<GameTagDef>("RevenantTier_3_GameTagDef")))
-                    {
-                        tacticalActor.AddAbility(DefCache.GetDef<AbilityDef>("Pitcher_AbilityDef"), tacticalActor);
-                        tacticalActor.AddAbility(DefCache.GetDef<AbilityDef>("Mutog_PrimalInstinct_AbilityDef"), tacticalActor);
-                        revenantAssault.StatModifications = new ItemStatModification[]
-                        {
-                            new ItemStatModification {TargetStat = StatModificationTarget.BonusAttackDamage, Modification = StatModificationType.Multiply, Value = 1.25f},
-                        };
-                        revenantAssault.ViewElementDef.Description = new LocalizedTextBind("+25% Damage", true);
-                    }
+                    tacticalActor.AddAbility(revenantAssault, tacticalActor);
+
+
                 }
                 else if (specialization == berserkerSpecialization)
                 {
-
-
                     TFTVLogger.Always("Deceased had Berserker specialization");
-                    if (tacticalActor.GameTags.Contains(DefCache.GetDef<GameTagDef>("RevenantTier_2_GameTagDef")))
+                   // tacticalActor.Status.ApplyStatus(RevenantBerserkerStatus);
+                  
+
+                    if (tacticalActor.GameTags.Contains(revenantTier2GameTag))
                     {
-                        tacticalActor.AddAbility(DefCache.GetDef<AbilityDef>("BloodLust_AbilityDef"), tacticalActor);
+                       
                         revenantBerserker.StatModifications = new ItemStatModification[]
                         {
-                            new ItemStatModification {TargetStat = StatModificationTarget.Speed, Modification = StatModificationType.AddMax, Value = 6},
+                           // new ItemStatModification {TargetStat = StatModificationTarget.Speed, Modification = StatModificationType.AddMax, Value = 6},
                             new ItemStatModification {TargetStat = StatModificationTarget.Speed, Modification = StatModificationType.Add, Value = 6},
                         };
 
-                        revenantBerserker.ViewElementDef.Description = new LocalizedTextBind("+6 Speed", true);
+                       // revenantBerserker.ViewElementDef.Description = new LocalizedTextBind("+6 Speed", true);
                     }
                     else if (tacticalActor.GameTags.Contains(DefCache.GetDef<GameTagDef>("RevenantTier_3_GameTagDef")))
                     {
-                        tacticalActor.AddAbility(DefCache.GetDef<AbilityDef>("BloodLust_AbilityDef"), tacticalActor);
-                        tacticalActor.AddAbility(DefCache.GetDef<AbilityDef>("CloseQuarters_AbilityDef"), tacticalActor);
+                       
                         revenantBerserker.StatModifications = new ItemStatModification[]
                         {
-                            new ItemStatModification {TargetStat = StatModificationTarget.Speed, Modification = StatModificationType.AddMax, Value = 10},
+                          // new ItemStatModification {TargetStat = StatModificationTarget.Speed, Modification = StatModificationType.AddMax, Value = 10},
                             new ItemStatModification {TargetStat = StatModificationTarget.Speed, Modification = StatModificationType.Add, Value = 10},
                         };
 
-                        revenantBerserker.ViewElementDef.Description = new LocalizedTextBind("+10 Speed", true);
+                      //  revenantBerserker.ViewElementDef.Description = new LocalizedTextBind("+10 Speed", true);
                     }
+                    tacticalActor.AddAbility(revenantBerserker, tacticalActor);
                 }
                 else if (specialization == heavySpecialization)
                 {
-
-
                     TFTVLogger.Always("Deceased had Heavy specialization");
+                //    tacticalActor.Status.ApplyStatus(RevenantHeavyStatus);
+                   
                     if (tacticalActor.GameTags.Contains(revenantTier2GameTag))
                     {
-                        tacticalActor.AddAbility(DefCache.GetDef<AbilityDef>("ReturnFire_AbilityDef"), tacticalActor);
+                       
+                        revenantHeavy.StatModifications = new ItemStatModification[]
+                        {
+                            new ItemStatModification {TargetStat = StatModificationTarget.Endurance, Modification = StatModificationType.AddMax, Value = 15},
+                            new ItemStatModification {TargetStat = StatModificationTarget.Endurance, Modification = StatModificationType.Add, Value = 15},
+                            new ItemStatModification {TargetStat = StatModificationTarget.Health, Modification = StatModificationType.Add, Value = 150}
+                        };
+
+                       // revenantHeavy.ViewElementDef.Description = new LocalizedTextBind("+10 Strength", true);
+                    }
+                    else if (tacticalActor.GameTags.Contains(revenantTier3GameTag))
+                    {
+                      
                         revenantHeavy.StatModifications = new ItemStatModification[]
                         {
                             new ItemStatModification {TargetStat = StatModificationTarget.Endurance, Modification = StatModificationType.AddMax, Value = 20},
                             new ItemStatModification {TargetStat = StatModificationTarget.Endurance, Modification = StatModificationType.Add, Value = 20},
+                            new ItemStatModification {TargetStat = StatModificationTarget.Health, Modification = StatModificationType.Add, Value = 200}
                         };
 
-                        revenantHeavy.ViewElementDef.Description = new LocalizedTextBind("+20 Strength", true);
+                      //  revenantHeavy.ViewElementDef.Description = new LocalizedTextBind("+15 Strength", true);
                     }
-                    else if (tacticalActor.GameTags.Contains(revenantTier3GameTag))
-                    {
-                        tacticalActor.AddAbility(DefCache.GetDef<AbilityDef>("ReturnFire_AbilityDef"), tacticalActor);
-                        tacticalActor.AddAbility(DefCache.GetDef<AbilityDef>("Skirmisher_AbilityDef"), tacticalActor);
-                        revenantHeavy.StatModifications = new ItemStatModification[]
-                        {
-                            new ItemStatModification {TargetStat = StatModificationTarget.Endurance, Modification = StatModificationType.AddMax, Value = 30},
-                            new ItemStatModification {TargetStat = StatModificationTarget.Endurance, Modification = StatModificationType.Add, Value = 30},
-                        };
-
-                        revenantHeavy.ViewElementDef.Description = new LocalizedTextBind("+30 Strength", true);
-                    }
+                    tacticalActor.AddAbility(revenantHeavy, tacticalActor);
                 }
                 else if (specialization == infiltratorSpecialization)
                 {
                     TFTVLogger.Always("Deceased had Infiltrator specialization");
+                 //   tacticalActor.Status.ApplyStatus(RevenantInfiltratorStatus);
+                    
 
                     if (tacticalActor.GameTags.Contains(revenantTier2GameTag))
                     {
-                        tacticalActor.AddAbility(DefCache.GetDef<AbilityDef>("SurpriseAttack_AbilityDef"), tacticalActor);
+                       
                         revenantInfiltrator.StatModifications = new ItemStatModification[]
                         {
-                            new ItemStatModification {TargetStat = StatModificationTarget.Stealth, Modification = StatModificationType.AddMax, Value = 30},
+                            new ItemStatModification {TargetStat = StatModificationTarget.Stealth, Modification = StatModificationType.Add, Value = 30},
                         };
 
-                        revenantInfiltrator.ViewElementDef.Description = new LocalizedTextBind("+30% Stealth", true);
+                      //  revenantInfiltrator.ViewElementDef.Description = new LocalizedTextBind("+30% Stealth", true);
                     }
                     else if (tacticalActor.GameTags.Contains(revenantTier3GameTag))
                     {
-                        tacticalActor.AddAbility(DefCache.GetDef<AbilityDef>("SurpriseAttack_AbilityDef"), tacticalActor);
-                        tacticalActor.AddAbility(DefCache.GetDef<AbilityDef>("WeakSpot_AbilityDef"), tacticalActor);
+                       
                         revenantInfiltrator.StatModifications = new ItemStatModification[]
                         {
-                            new ItemStatModification {TargetStat = StatModificationTarget.Endurance, Modification = StatModificationType.AddMax, Value = 30},
-                            new ItemStatModification {TargetStat = StatModificationTarget.Endurance, Modification = StatModificationType.Add, Value = 30},
+                          // new ItemStatModification {TargetStat = StatModificationTarget.Endurance, Modification = StatModificationType.AddMax, Value = 30},
+                           new ItemStatModification {TargetStat = StatModificationTarget.Stealth, Modification = StatModificationType.Add, Value = 50},
                         };
 
-                        revenantInfiltrator.ViewElementDef.Description = new LocalizedTextBind("+50% Stealth", true);
+                     //   revenantInfiltrator.ViewElementDef.Description = new LocalizedTextBind("+50% Stealth", true);
                     }
+                    tacticalActor.AddAbility(revenantInfiltrator, tacticalActor);
                 }
                 else if (specialization == priestSpecialization)
                 {
                     TFTVLogger.Always("Deceased had Priest specialization");
-
-
+               //     tacticalActor.Status.ApplyStatus(RevenantPriestStatus);
+                
                     if (tacticalActor.GameTags.Contains(revenantTier2GameTag))
-                    {
-                        tacticalActor.AddAbility(DefCache.GetDef<AbilityDef>("MindSense_AbilityDef"), tacticalActor);
+                    {            
                         revenantPriest.StatModifications = new ItemStatModification[]
                         {
                             new ItemStatModification {TargetStat = StatModificationTarget.Willpower, Modification = StatModificationType.AddMax, Value = 20},
+                            new ItemStatModification {TargetStat = StatModificationTarget.Willpower, Modification = StatModificationType.Add, Value = 20},
                         };
 
-                        revenantPriest.ViewElementDef.Description = new LocalizedTextBind("+20 Willpower", true);
+                       // revenantPriest.ViewElementDef.Description = new LocalizedTextBind("+20 Willpower", true);
                     }
                     else if (tacticalActor.GameTags.Contains(revenantTier3GameTag))
                     {
-                        tacticalActor.AddAbility(DefCache.GetDef<AbilityDef>("MindSense_AbilityDef"), tacticalActor);
-                        tacticalActor.AddAbility(DefCache.GetDef<AbilityDef>("PsychicWard_AbilityDef"), tacticalActor);
+                      
                         revenantPriest.StatModifications = new ItemStatModification[]
                         {
-                            new ItemStatModification {TargetStat = StatModificationTarget.Willpower, Modification = StatModificationType.AddMax, Value = 40},
-                            new ItemStatModification {TargetStat = StatModificationTarget.Willpower, Modification = StatModificationType.Add, Value = 40},
+                            new ItemStatModification {TargetStat = StatModificationTarget.Willpower, Modification = StatModificationType.AddMax, Value = 30},
+                            new ItemStatModification {TargetStat = StatModificationTarget.Willpower, Modification = StatModificationType.Add, Value = 30},
                         };
 
-                        revenantPriest.ViewElementDef.Description = new LocalizedTextBind("+40 Willpower", true);
+                      //  revenantPriest.ViewElementDef.Description = new LocalizedTextBind("+30 Willpower", true);
                     }
+                    tacticalActor.AddAbility(revenantPriest, tacticalActor);
                 }
+             
                 else if (specialization == sniperSpecialization)
                 {
+                    
                     TFTVLogger.Always("Deceased had Sniper specialization");
+                //    tacticalActor.Status.ApplyStatus(RevenantSniperStatus);
+                   
+                  
 
                     if (tacticalActor.GameTags.Contains(DefCache.GetDef<GameTagDef>("RevenantTier_2_GameTagDef")))
-                    {
-                        tacticalActor.AddAbility(DefCache.GetDef<AbilityDef>("OverwatchFocus_AbilityDef"), tacticalActor);
+                    {               
                         revenantSniper.StatModifications = new ItemStatModification[]
                         {
-                            new ItemStatModification {TargetStat = StatModificationTarget.Perception, Modification = StatModificationType.AddMax, Value = 15},
+                           // new ItemStatModification {TargetStat = StatModificationTarget.Perception, Modification = StatModificationType.AddMax, Value = 15},
                             new ItemStatModification {TargetStat = StatModificationTarget.Perception, Modification = StatModificationType.Add, Value = 15},
                         };
-
-                        revenantSniper.ViewElementDef.Description = new LocalizedTextBind("+15 Perception", true);
+                        
+                
                     }
                     else if (tacticalActor.GameTags.Contains(DefCache.GetDef<GameTagDef>("RevenantTier_3_GameTagDef")))
                     {
-                        tacticalActor.AddAbility(DefCache.GetDef<AbilityDef>("OverwatchFocus_AbilityDef"), tacticalActor);
-                        tacticalActor.AddAbility(DefCache.GetDef<AbilityDef>("MasterMarksman_AbilityDef"), tacticalActor);
+                       
                         revenantSniper.StatModifications = new ItemStatModification[]
                         {
-                            new ItemStatModification {TargetStat = StatModificationTarget.Perception, Modification = StatModificationType.AddMax, Value = 20 },
+                         //   new ItemStatModification {TargetStat = StatModificationTarget.Perception, Modification = StatModificationType.AddMax, Value = 20 },
                             new ItemStatModification {TargetStat = StatModificationTarget.Perception, Modification = StatModificationType.Add, Value = 20},
                             new ItemStatModification {TargetStat = StatModificationTarget.Accuracy, Modification = StatModificationType.Add, Value = 20},
-                            new ItemStatModification {TargetStat = StatModificationTarget.Accuracy, Modification = StatModificationType.AddMax, Value = 20},
+                          //  new ItemStatModification {TargetStat = StatModificationTarget.Accuracy, Modification = StatModificationType.AddMax, Value = 20},
                         };
 
-                        revenantSniper.ViewElementDef.Description = new LocalizedTextBind("+20 Perception, +20% Accuracy", true);
-                    }
 
+                  //      RevenantSniperStatus.Visuals.Description = new LocalizedTextBind("Nemesis, +20 Perception, +20% Accuracy, +20% HP", true);
+                      
+                    }
+                  
+                    tacticalActor.AddAbility(revenantSniper, tacticalActor);
                 }
                 else if (specialization == technicianSpecialization)
                 {
                     TFTVLogger.Always("Deceased had Technician specialization");
+                 //   tacticalActor.Status.ApplyStatus(RevenantTechnician);
+                    tacticalActor.AddAbility(revenantTechnician, tacticalActor);
+                    
 
                     if (tacticalActor.GameTags.Contains(revenantTier2GameTag))
                     {
-                        tacticalActor.AddAbility(DefCache.GetDef<AbilityDef>("Stability_AbilityDef"), tacticalActor);
+                       
                         revenantTechnician.StatModifications = new ItemStatModification[]
                         {
                             new ItemStatModification {TargetStat = StatModificationTarget.Endurance, Modification = StatModificationType.Add, Value = 5},
@@ -1189,8 +1283,7 @@ namespace TFTV
                     }
                     else if (tacticalActor.GameTags.Contains(revenantTier3GameTag))
                     {
-                        tacticalActor.AddAbility(DefCache.GetDef<AbilityDef>("Stability_AbilityDef"), tacticalActor);
-                        tacticalActor.AddAbility(DefCache.GetDef<AbilityDef>("BioChemist_AbilityDef"), tacticalActor);
+                      
                         revenantTechnician.StatModifications = new ItemStatModification[]
                         {
                             new ItemStatModification {TargetStat = StatModificationTarget.Endurance, Modification = StatModificationType.Add, Value = 10},
@@ -1202,6 +1295,8 @@ namespace TFTV
                         revenantTechnician.ViewElementDef.Description = new LocalizedTextBind("+10 Strength, +10 Willpower", true);
                     }
                 }
+
+                IncreaseRevenantHP(tacticalActor);
             }
             catch (Exception e)
             {

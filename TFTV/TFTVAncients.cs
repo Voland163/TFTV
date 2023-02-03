@@ -1,6 +1,7 @@
 ﻿using Base.Defs;
 using Base.Entities.Abilities;
 using Base.Entities.Statuses;
+using Base.UI;
 using HarmonyLib;
 using PhoenixPoint.Common.ContextHelp;
 using PhoenixPoint.Common.Core;
@@ -16,8 +17,9 @@ using PhoenixPoint.Geoscape.Entities.Missions.Outcomes;
 using PhoenixPoint.Geoscape.Entities.Research;
 using PhoenixPoint.Geoscape.Events;
 using PhoenixPoint.Geoscape.Levels;
+using PhoenixPoint.Geoscape.Levels.Factions;
+using PhoenixPoint.Geoscape.Levels.Objectives;
 using PhoenixPoint.Geoscape.View.ViewControllers;
-using PhoenixPoint.Geoscape.View.ViewControllers.Manufacturing;
 using PhoenixPoint.Geoscape.View.ViewControllers.Modal;
 using PhoenixPoint.Geoscape.View.ViewModules;
 using PhoenixPoint.Tactical.ContextHelp;
@@ -71,6 +73,181 @@ namespace TFTV
         // private static readonly GameTagDef SelfRepairTag = DefCache.GetDef<GameTagDef>("SelfRepair");
         // private static readonly GameTagDef MaxPowerTag = DefCache.GetDef<GameTagDef>("MaxPower");
 
+        
+
+        public static void SetReactivateCyclopsObjective(GeoLevelController controller)
+        {
+            try
+            {
+                GeoscapeEventSystem eventSystem = controller.EventSystem;
+
+                if (controller.PhoenixFaction.Research.HasCompleted("PX_ProteanMutaneResearchDef") && controller.PhoenixFaction.Research.HasCompleted("PX_LivingCrystalResearchDef"))
+                {
+                    GeoscapeEventContext context = new GeoscapeEventContext(controller.PhoenixFaction, controller.PhoenixFaction);
+                    eventSystem.TriggerGeoscapeEvent("Helena_Can_Build_Cyclops", context);
+                    DiplomaticGeoFactionObjective cyclopsObjective = new DiplomaticGeoFactionObjective(controller.PhoenixFaction, controller.PhoenixFaction)
+                    {
+                        Title = new LocalizedTextBind("BUILD_CYCLOPS_OBJECTIVE"),
+                        Description = new LocalizedTextBind("BUILD_CYCLOPS_OBJECTIVE"),
+                    };
+                    cyclopsObjective.IsCriticalPath = true;
+                    controller.PhoenixFaction.AddObjective(cyclopsObjective);
+                }
+
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+        }
+
+        public static void SetProtectCyclopsObjective(GeoLevelController controller)
+        {
+            try 
+            {
+                GeoscapeEventSystem eventSystem = controller.EventSystem;
+
+                    DiplomaticGeoFactionObjective cyclopsObjective = new DiplomaticGeoFactionObjective(controller.PhoenixFaction, controller.PhoenixFaction)
+                    {
+                        Title = new LocalizedTextBind("PROTECT_THE_CYCLOPS_OBJECTIVE_GEO_TITLE"),
+                        Description = new LocalizedTextBind("PROTECT_THE_CYCLOPS_OBJECTIVE_GEO_TITLE"),
+                    };
+                    cyclopsObjective.IsCriticalPath = true;
+                    controller.PhoenixFaction.AddObjective(cyclopsObjective);
+              
+
+            }
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+
+        }
+        
+
+
+    /*  [HarmonyPatch(typeof(ItemDef), "get_ManufacturePrice")]
+        public static class TFTV_ItemDef_Get_ManufactureTech_BetaOnlyCostProbeAdjustmentPatch
+        {
+
+            public static void Postfix(ItemDef __instance, ref ResourcePack __result)
+            {
+                try
+                {
+                    TFTVLogger.Always("get_ManufacturePrice invoked");
+
+                    if (LOTAReworkActive)
+                    {
+                        TFTVLogger.Always("first check passed");
+
+                        if (__instance.name == "AncientSiteProbeItemDef")
+                        {
+                            TFTVLogger.Always("Second check passed");
+                            __result = new ResourcePack
+                                   (new ResourceUnit
+                                   { Type = ResourceType.Tech, Value = 5 }, new ResourceUnit { Type = ResourceType.Materials, Value = 25 });
+
+
+                        }
+                    }      
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+        }*/
+
+
+
+
+        public static void SetObtainLCandPMSamplesObjective(GeoLevelController controller)
+        {
+            try
+            {
+                GeoscapeEventSystem eventSystem = controller.EventSystem;
+
+                ResourceUnit livingCrystal = new ResourceUnit(ResourceType.LivingCrystals, 1);
+                ResourceUnit proteanMutane = new ResourceUnit(ResourceType.ProteanMutane, 1);
+
+                if (!controller.PhoenixFaction.Wallet.HasResources(livingCrystal))
+                {
+                    DiplomaticGeoFactionObjective obtainLCObjective = new DiplomaticGeoFactionObjective(controller.PhoenixFaction, controller.PhoenixFaction)
+                    {
+                        Title = new LocalizedTextBind("OBTAIN_LC_OBJECTIVE"),
+                        Description = new LocalizedTextBind("OBTAIN_LC_OBJECTIVE"),
+                        IsCriticalPath = true
+                    };
+                    controller.PhoenixFaction.AddObjective(obtainLCObjective);
+                }
+                if (!controller.PhoenixFaction.Wallet.HasResources(proteanMutane))
+                {
+                    DiplomaticGeoFactionObjective obtainPMObjective = new DiplomaticGeoFactionObjective(controller.PhoenixFaction, controller.PhoenixFaction)
+                    {
+                        Title = new LocalizedTextBind("OBTAIN_PM_OBJECTIVE"),
+                        Description = new LocalizedTextBind("OBTAIN_PM_OBJECTIVE"),
+                        IsCriticalPath = true
+                    };
+                    controller.PhoenixFaction.AddObjective(obtainPMObjective);
+                }
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+        }
+
+
+
+
+        public static void RemoveManuallySetObjective(GeoLevelController controller, string title)
+        {
+            try
+            {
+                List<GeoFactionObjective> listOfObjectives = controller.PhoenixFaction.Objectives.ToList();
+               
+                foreach (GeoFactionObjective objective1 in listOfObjectives)
+                {
+                    if (objective1.Title == null)
+                    {
+                        TFTVLogger.Always("objective1.Title is missing!");
+                    }
+                    else
+                    {
+                        if (objective1.Title.LocalizationKey == null)
+                        {
+                            TFTVLogger.Always("objective1.Title.LocalizationKey is missing!");
+                        }
+                        else
+                        {
+                            TFTVLogger.Always("objective1.Title.LocalizationKey is " + objective1.Title.LocalizationKey);
+
+                            if (objective1.Title.LocalizationKey == title)
+                            {
+                                controller.PhoenixFaction.RemoveObjective(objective1);
+                            }
+                        }
+                    }
+
+                }
+
+
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+
+        }
+
         //Method to make adjustments if LOTA rework is active
         public static void AncientsOnGeoscapeStartChecks(GeoLevelController controller)
         {
@@ -88,10 +265,10 @@ namespace TFTV
             {
                 TFTVLogger.Error(e);
             }
-
-
-
         }
+
+       
+
 
         //Adjusts amount of exotic resources 
         public static void CheckAncientResources(GeoLevelController controller)
@@ -107,9 +284,9 @@ namespace TFTV
 
                 float ResourceMultiplier = (6 - controller.CurrentDifficultyLevel.Order) * 0.5f;
 
-               // TFTVLogger.Always("Resouce multiplier based on diffuclty " + ResourceMultiplier.ToString());
+                // TFTVLogger.Always("Resouce multiplier based on diffuclty " + ResourceMultiplier.ToString());
 
-               // TFTVLogger.Always("Exotic Resource multiplier in config " + config.amountOfExoticResources.ToString());
+                // TFTVLogger.Always("Exotic Resource multiplier in config " + config.amountOfExoticResources.ToString());
 
                 if (config.amountOfExoticResources != 1)
                 {
@@ -119,7 +296,7 @@ namespace TFTV
                 }
 
                 TFTVLogger.Always("Final exotic Resource Multiplier: " + ResourceMultiplier.ToString());
-                
+
                 float amountLivingCrystal = 300 * ResourceMultiplier;
                 float amountOrichalcum = 250 * ResourceMultiplier;
                 float amountProtean = 250 * ResourceMultiplier;
@@ -163,7 +340,7 @@ namespace TFTV
                 }
                 else
                 {
-                    yuggothianEntityVED.UnlockText.LocalizationKey = "PX_YUGGOTHIANENTITY_RESEARCHDEF_REVEALED";
+                    yuggothianEntityVED.UnlockText.LocalizationKey = "PX_YUGGOTHIANENTITY_RESEARCHDEF_UNLOCK";
                 }
 
                 if (controller.PhoenixFaction.Research.HasCompleted("ExoticMaterialsResearch"))
@@ -186,6 +363,7 @@ namespace TFTV
                     archeologySettingsDef.AncientSiteSetting[1].RefinerySiteName.LocalizationKey = "KEY_AC_ORICHALCUM_REFINERY";
                     archeologySettingsDef.AncientSiteSetting[2].RefinerySiteName.LocalizationKey = "KEY_AC_CRYSTAL_REFINERY";
                 }
+             
                 //AutoRepair_AddAbilityStatusDef  AncientsPoweredUp AncientMaxPower_AbilityDef
                 // DamageMultiplierStatusDef sourceAbilityStatusDef = DefCache.GetDef<DamageMultiplierStatusDef>("BionicResistances_StatusDef");
                 // 
@@ -319,8 +497,6 @@ namespace TFTV
                 TFTVLogger.Error(e);
             }
         }
-
-
         public static void CheckResearchStateOnTacticalStart()
         {
             try
@@ -437,8 +613,6 @@ namespace TFTV
             }
         }
 
-
-
         [HarmonyPatch(typeof(RewardsController), "SetResources")]
         public static class RewardsController_SetResources_Patch
         {
@@ -479,6 +653,8 @@ namespace TFTV
                                 __instance.NoResourcesText.gameObject.SetActive(false);
                                 __instance.ResourcesRewardsParentObject.SetActive(true);
 
+                                TFTVLogger.Always("Removing Protean Mutane Objective");
+                                RemoveManuallySetObjective(controller, "OBTAIN_PM_OBJECTIVE");
                             }
                             else if (resourceUnit.Type == ResourceType.LivingCrystals)
                             {
@@ -504,6 +680,9 @@ namespace TFTV
 
                                 __instance.NoResourcesText.gameObject.SetActive(false);
                                 __instance.ResourcesRewardsParentObject.SetActive(true);
+
+                                TFTVLogger.Always("Removing Living Crystal Objective");
+                                RemoveManuallySetObjective(controller, "OBTAIN_LC_OBJECTIVE");
 
                             }
                             else if (resourceUnit.Type == ResourceType.Orichalcum)
@@ -563,8 +742,6 @@ namespace TFTV
             }
         }
 
-
-
         //Prevents player from building Cyclops
         [HarmonyPatch(typeof(AncientGuardianGuardAbility), "GetDisabledStateInternal")]
         public static class AncientGuardianGuardAbility_GetDisabledStateInternal_Patch
@@ -604,32 +781,33 @@ namespace TFTV
             }
         }
 
-
-
         [HarmonyPatch(typeof(GeoFaction), "AttackAncientSite")]
         public static class GeoFaction_AttackAncientSite_Patch
         {
             public static bool Prefix(GeoSite ancientSite, GeoFaction __instance)
             {
+
+
                 try
                 {
+                    TFTVLogger.Always("AttackAncientSite " + ancientSite.Name);
+
+
                     GeoLevelController controller = __instance.GeoLevel;
 
-                    if (controller.EventSystem.GetVariable("NewGameStarted") == 1)
+                    GameTagDef lcGuardian = DefCache.GetDef<GameTagDef>("LivingCrystalGuardianGameTagDef");
+                    GameTagDef oGuardian = DefCache.GetDef<GameTagDef>("OrichalcumGuardianGameTagDef");
+                    GameTagDef pmGuardian = DefCache.GetDef<GameTagDef>("ProteanMutaneGuardianGameTagDef");
+                    List<GameTagDef> guardianTags = new List<GameTagDef> { lcGuardian, oGuardian, pmGuardian };
+
+                    if (controller.EventSystem.GetVariable("NewGameStarted") == 1 && guardianTags.Any(tag => ancientSite.GameTags.Contains(tag)))
                     {
-                        if (controller.EventSystem.GetVariable(CyclopsBuiltVariable) == 1)
-                        {
-                            return true;
-                        }
-                        else
-                        {
-                            return false;
-
-                        }
-
+                        TFTVLogger.Always("AttackAncientSite " + ancientSite.Name + " Guardian");
+                        SetProtectCyclopsObjective(controller);
+                        return true;
                     }
 
-                    return true;
+                    return false;
 
                 }
                 catch (Exception e)
@@ -642,20 +820,15 @@ namespace TFTV
 
         }
 
-
-
-
         //If Player builds cyclops, schedules an Attack on the site
         [HarmonyPatch(typeof(AncientGuardianGuardAbility), "ActivateInternal")]
 
         public static class AncientGuardianGuardAbility_ActivateInternal_Patch
         {
-
             public static void Postfix(AncientGuardianGuardAbility __instance, GeoAbilityTarget target)
             {
                 try
                 {
-
                     GeoLevelController controller = __instance.GeoLevel;
 
                     if (controller.EventSystem.GetVariable("NewGameStarted") == 1)
@@ -664,7 +837,6 @@ namespace TFTV
                         GeoSite geoSite = (GeoSite)target.Actor;
 
                         controller.AlienFaction.AttackAncientSite(geoSite, 24);
-
 
                         GeoscapeEventContext context = new GeoscapeEventContext(controller.AlienFaction, controller.PhoenixFaction);
                         controller.EventSystem.TriggerGeoscapeEvent("Helena_Beast", context);
@@ -677,8 +849,6 @@ namespace TFTV
             }
         }
 
-
-
         [HarmonyPatch(typeof(GeoMission), "ApplyOutcomes")]
         public static class GeoMission_ModifyMissionData_CheckAncients_Patch
         {
@@ -688,6 +858,7 @@ namespace TFTV
                 try
                 {
                     GeoLevelController controller = __instance.Level;
+                    GeoSite geoSite = __instance.Site;
 
                     if (controller.EventSystem.GetVariable("NewGameStarted") == 1)
                     {
@@ -709,13 +880,34 @@ namespace TFTV
                         //if player wins the ancient defense mission, the variable triggering Yuggothian Entity research will be unlocked
                         if (__instance.MissionDef.Tags.Contains(ancientSiteDefense))
                         {
-                            if (viewerFactionResult.State == TacFactionState.Won && controller.EventSystem.GetVariable("Sphere") == 0)
+                            if (viewerFactionResult.State == TacFactionState.Won)
                             {
-                                controller.EventSystem.SetVariable("Sphere", 1);
-                                //triggers Digitize my Dreams, the Cyclops said event
-                                GeoscapeEventContext context = new GeoscapeEventContext(controller.AlienFaction, controller.PhoenixFaction);
-                                controller.EventSystem.TriggerGeoscapeEvent("Cyclops_Dreams", context);
-                                CheckResearchState(controller);
+                                if (controller.EventSystem.GetVariable("Sphere") == 0)
+                                {
+                                    controller.EventSystem.SetVariable("Sphere", 1);
+                                    //triggers Digitize my Dreams, the Cyclops said event
+                                    GeoscapeEventContext context = new GeoscapeEventContext(controller.AlienFaction, controller.PhoenixFaction);
+                                    controller.EventSystem.TriggerGeoscapeEvent("Cyclops_Dreams", context);
+                                    CheckResearchState(controller);
+                                }
+                                GameTagDef lcGuardian = DefCache.GetDef<GameTagDef>("LivingCrystalGuardianGameTagDef");
+                                GameTagDef oGuardian = DefCache.GetDef<GameTagDef>("OrichalcumGuardianGameTagDef");
+                                GameTagDef pmGuardian = DefCache.GetDef<GameTagDef>("ProteanMutaneGuardianGameTagDef");
+                                List<GameTagDef> guardianTags = new List<GameTagDef> { lcGuardian, oGuardian, pmGuardian };
+
+
+                                foreach (GameTagDef gameTagDef in guardianTags)
+                                {
+                                    if (geoSite.GameTags.Contains(gameTagDef))
+                                    {
+                                        geoSite.GameTags.Remove(gameTagDef);
+
+                                    }
+
+                                }
+
+                                RemoveManuallySetObjective(controller, "BUILD_CYCLOPS_OBJECTIVE");
+
                             }
                             //if the player is defeated, the Cyclops variable will be reset so that the player may try again
                             else if (viewerFactionResult.State == TacFactionState.Defeated)
@@ -723,6 +915,8 @@ namespace TFTV
                                 controller.EventSystem.SetVariable(CyclopsBuiltVariable, 0);
 
                             }
+
+                            RemoveManuallySetObjective(controller, "PROTECT_THE_CYCLOPS_OBJECTIVE_GEO_TITLE");
                         }
                     }
                 }
@@ -733,9 +927,6 @@ namespace TFTV
                 }
             }
         }
-
-
-
 
         public static bool CheckIfAncientsPresent(TacticalLevelController controller)
         {
@@ -835,7 +1026,6 @@ namespace TFTV
                 TFTVLogger.Error(e);
             }
         }
-
 
         public static void CheckCyclopsDefense()
         {
@@ -969,15 +1159,15 @@ namespace TFTV
         }
 
         [HarmonyPatch(typeof(ItemDef), "OnManufacture")]
-        public static class TFTV_Ancients_ItemDef_OnManufacture 
-        { 
-        public static void Postfix(ItemDef __instance)
+        public static class TFTV_Ancients_ItemDef_OnManufacture
+        {
+            public static void Postfix(ItemDef __instance)
             {
-                try 
+                try
                 {
                     GeoLevelController controller = (GeoLevelController)UnityEngine.Object.FindObjectOfType(typeof(GeoLevelController));
 
-                    if (controller.EventSystem.GetVariable("ManufacturedImpossibleWeapon") == 0) 
+                    if (controller.EventSystem.GetVariable("ManufacturedImpossibleWeapon") == 0)
                     {
                         WeaponDef shardGun = DefCache.GetDef<WeaponDef>("AC_ShardGun_WeaponDef");
                         WeaponDef crystalCrossbow = DefCache.GetDef<WeaponDef>("AC_CrystalCrossbow_WeaponDef");
@@ -996,7 +1186,7 @@ namespace TFTV
                             controller.EventSystem.TriggerGeoscapeEvent("Alistair_Progress", context);
 
                         }
-                    
+
                     }
 
 
@@ -1009,8 +1199,8 @@ namespace TFTV
 
                 }
             }
-        
-        
+
+
         }
 
         //set resource cost of excavation (now exploration)
@@ -1122,7 +1312,6 @@ namespace TFTV
         }
 
 
-
         [HarmonyPatch(typeof(TacticalLevelController), "ActorDied")]
         public static class TacticalLevelController_ActorDied_Ancients_Patch
         {
@@ -1216,7 +1405,7 @@ namespace TFTV
                                                         Status status = actorAlly.Status.GetStatusByName(CyclopsDefenseStatus.EffectName);
                                                         actorAlly.Status.Statuses.Remove(status);
                                                         TFTVLogger.Always("Cyclops defense removed from " + actorAlly.name);
-                                                        
+
                                                     }
                                                 }
                                             }

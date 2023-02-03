@@ -32,6 +32,7 @@ namespace TFTV
         public string infestedHavenOriginalOwnerSaveData = TFTVInfestationStory.OriginalOwner;
         public Dictionary<int, int[]> ProjectOsirisStatsSaveData = TFTVRevenantResearch.ProjectOsirisStats;
         public bool[] VoidOmensCheck = TFTVVoidOmens.VoidOmensCheck;
+        public bool GlobalLOTAReworkCheck = TFTVBetaSaveGamesFixes.LOTAReworkGlobalCheck;
 
 
 
@@ -131,10 +132,11 @@ namespace TFTV
                 infestedHavenPopulationSaveData = TFTVInfestationStory.HavenPopulation,
                 ProjectOsirisStatsSaveData = TFTVRevenantResearch.ProjectOsirisStats,
                 VoidOmensCheck = TFTVVoidOmens.VoidOmensCheck,
-           
+                GlobalLOTAReworkCheck = TFTVBetaSaveGamesFixes.LOTAReworkGlobalCheck
+
                 //  PhoenixBaseUnderAttack = TFTVExperimental.PhoenixBaseUnderAttack,
-               // baseAttacker = TFTVExperimental.phoenixBaseAttacker
-              //  factionAttackingPheonixBase = TFTVExperimental.FactionAttackingPhoenixBase
+                // baseAttacker = TFTVExperimental.phoenixBaseAttacker
+                //  factionAttackingPheonixBase = TFTVExperimental.FactionAttackingPhoenixBase
             };
 
         }
@@ -160,7 +162,8 @@ namespace TFTV
             TFTVInfestationStory.OriginalOwner = data.infestedHavenOriginalOwnerSaveData;
             TFTVRevenantResearch.ProjectOsirisStats = data.ProjectOsirisStatsSaveData;
             TFTVVoidOmens.VoidOmensCheck = data.VoidOmensCheck;
-      
+            TFTVBetaSaveGamesFixes.LOTAReworkGlobalCheck = data.GlobalLOTAReworkCheck;
+            TFTVBetaSaveGamesFixes.CheckNewLOTASavegame();
             //TFTVExperimental.FactionAttackingPhoenixBase = data.factionAttackingPheonixBase;
             //TFTVExperimental.CheckIfFactionAttackingPhoenixBase();
 
@@ -178,8 +181,7 @@ namespace TFTV
             Main.Logger.LogInfo("Behemoth will wait for another  " + TFTVAirCombat.behemothWaitHours + " before moving");
             Main.Logger.LogInfo("Last time a Revenant was seen was on day " + TFTVRevenant.daysRevenantLastSeen + ", and now it is day " + Controller.Timing.Now.TimeSpan.Days);
             Main.Logger.LogInfo("Project Osiris stats count " + TFTVRevenantResearch.ProjectOsirisStats.Count);
-         //   Main.Logger.LogInfo("Faction attacking Phoenix Base is " + TFTVExperimental.FactionAttackingPhoenixBase.name);
-            //  Main.Logger.LogInfo("Shown hints count " + TFTVTutorialAndStory.TacticalHintsToShow.Count);
+            Main.Logger.LogInfo("LOTAGlobalReworkCheck is " + TFTVBetaSaveGamesFixes.LOTAReworkGlobalCheck);
 
 
             //  
@@ -194,8 +196,8 @@ namespace TFTV
             TFTVLogger.Always("Behemoth will wait for another  " + TFTVAirCombat.behemothWaitHours + " before moving");
             TFTVLogger.Always("Last time a Revenant was seen was on day " + TFTVRevenant.daysRevenantLastSeen + ", and now it is day " + Controller.Timing.Now.TimeSpan.Days);
             TFTVLogger.Always("Project Osiris stats count " + TFTVRevenantResearch.ProjectOsirisStats.Count);
-           // TFTVLogger.Always("Faction attacking Phoenix Base is " + TFTVExperimental.FactionAttackingPhoenixBase.name);
-            // TFTVLogger.Always("Shown hints count " + TFTVTutorialAndStory.TacticalHintsToShow.Count);
+            TFTVLogger.Always("LOTAGlobalReworkCheck is " + TFTVBetaSaveGamesFixes.LOTAReworkGlobalCheck);
+           
 
         }
 

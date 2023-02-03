@@ -270,7 +270,10 @@ namespace TFTV
                         {
                             __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("HINT_TFTV_Ancients_Tactical_Hoplites_Overpower.jpg");
                         }
-                       
+                        else if (hintDef.name.Equals("HostileDefenders"))
+                        {
+                            __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("TFTV_Hint_HostileDefenders.jpg");
+                        }
                         else
                         {
                             __instance.Image.overrideSprite = null;//Helper.CreateSpriteFromImageFile("missing_hint_pic.jpg");

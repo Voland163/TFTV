@@ -304,7 +304,7 @@ namespace TFTV
                          }*/
 
                     }
-                    if (geoEvent.EventID.Equals("Helena_Echoes") || geoEvent.EventID.Equals("Helena_Oneiromancy"))
+                    if (geoEvent.EventID.Equals("Helena_Echoes") || geoEvent.EventID.Equals("Helena_Oneiromancy")|| geoEvent.EventID.Equals("Helena_Can_Build_Cyclops") )
                     {
                         __result.EventLeader = HelenaPic;
                         __result.EventBackground = Helper.CreateSpriteFromImageFile("background_office.jpg");//HelenaOffice;

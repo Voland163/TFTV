@@ -56,9 +56,6 @@
       <HintPath>..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Phoenix Point\PhoenixPointWin64_Data\Managed\Unity.Addressables.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Unity.ResourceManager">
-      <HintPath>..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Phoenix Point\PhoenixPointWin64_Data\Managed\Unity.ResourceManager.dll</HintPath>
-    </Reference>
     <Reference Include="UnityEngine.CoreModule">
       <HintPath>..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Phoenix Point\PhoenixPointWin64_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
       <Private>False</Private>
@@ -233,9 +230,6 @@
     <Content Include="Assets\Textures\Hint_Revenant.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Assets\Textures\Hint_Revenant_2.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
     <Content Include="Assets\Textures\Hint_Umbra.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
@@ -366,16 +360,10 @@
     <Content Include="Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Hunter_2-3.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Assets\Textures\UI_AbilitiesIcon_PersonalTrack_NightOwl.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
     <Content Include="Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Pacifist.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Paranoid_1-1.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Paranoid_2-1.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Paranoid_3-1.png">
@@ -409,9 +397,6 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Sower_Of_Change_1-1.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Sower_Of_Change_1-2.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Sower_Of_Change_2-1.png">
@@ -453,13 +438,7 @@
     <Content Include="Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Thief.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Vampire.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
     <Content Include="Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Volunteered_1-1.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Volunteered_1-2.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Assets\Textures\UI_AbilitiesIcon_PersonalTrack_Volunteered_2-1.png">
@@ -511,6 +490,7 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>RMDIR /S /Q "%25USERPROFILE%25\AppData\LocalLow\Snapshot Games Inc\Phoenix Point\Steam\WorkshopTool\TestMod"
