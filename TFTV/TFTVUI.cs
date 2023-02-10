@@ -478,7 +478,6 @@ namespace TFTV
                         deliriumToolTipText += "\n-<i>No limit to Delirium, regardless of ODI level</i> Void Omen is in effect.";
                     }
 
-
                     if (controller.EventSystem.GetEventRecord("SDI_09")?.SelectedChoice == 0)
                     {
                         deliriumToolTipText += "\n-Evolved Umbra sighted.";
@@ -501,10 +500,10 @@ namespace TFTV
 
 
 
-                    if (controller.EventSystem.GetEventRecord("SDI_01")?.SelectedChoice == 0 && controller.EventSystem.GetEventRecord("PROG_FS2_WIN")?.SelectedChoice == 0)
+                   /* if (controller.EventSystem.GetEventRecord("SDI_01")?.SelectedChoice == 0 && controller.EventSystem.GetEventRecord("PROG_FS2_WIN")?.SelectedChoice == 0)
                     {
                         deliriumIconHolder.gameObject.SetActive(false);
-                    }
+                    }*/
 
                     Transform evolutionIconHolder = populationBar.GetComponent<Transform>().Find("PandoranEvolutionIcon");
                     Image evolutionIcon = evolutionIconHolder.GetComponent<Image>();
@@ -1260,18 +1259,20 @@ namespace TFTV
                     hookToCharacter = ____character;
 
                     if (____character.CharacterStats.Corruption > 0f)
-
+                        
                     {
-                        float delirium = ____character.CharacterStats.Corruption.IntValue;
-                        if (TFTVDelirium.CalculateMaxCorruption(____character) < ____character.CharacterStats.Corruption.IntValue)
+                        //____character.CharacterStats.Corruption.Set(Mathf.RoundToInt(____character.CharacterStats.Corruption));
+
+                        float delirium = ____character.CharacterStats.Corruption;
+                        if (TFTVDelirium.CalculateMaxCorruption(____character) < ____character.CharacterStats.Corruption)
                         {
                             delirium = (TFTVDelirium.CalculateMaxCorruption(____character));
                         }
-
+                        
                         __instance.CorruptionSlider.minValue = 0f;
-                        __instance.CorruptionSlider.maxValue = TFTVDelirium.CalculateMaxCorruption(____character);
+                        __instance.CorruptionSlider.maxValue = Mathf.RoundToInt(TFTVDelirium.CalculateMaxCorruption(____character));
                         __instance.CorruptionSlider.value = delirium;
-                        __instance.CorruptionStatText.text = $"{delirium}/{Mathf.RoundToInt(__instance.CorruptionSlider.maxValue)}";
+                        __instance.CorruptionStatText.text = $"{Mathf.RoundToInt(delirium)}/{Mathf.RoundToInt(__instance.CorruptionSlider.maxValue)}";
 
                         int num = (int)(float)____character.Fatigue.Stamina;
                         int num2 = (int)(float)____character.Fatigue.Stamina.Max;

@@ -1088,6 +1088,7 @@ namespace TFTV
                         revenantAssault.StatModifications = new ItemStatModification[]
                         {
                             new ItemStatModification {TargetStat = StatModificationTarget.BonusAttackDamage, Modification = StatModificationType.Multiply, Value = 1.10f},
+                            new ItemStatModification {TargetStat = StatModificationTarget.Speed, Modification = StatModificationType.AddMax, Value = 4},
                             new ItemStatModification {TargetStat = StatModificationTarget.Speed, Modification = StatModificationType.Add, Value = 4},
                         };
                        // revenantAssault.ViewElementDef.Description = new LocalizedTextBind("+10% Damage", true);
@@ -1098,6 +1099,7 @@ namespace TFTV
                         revenantAssault.StatModifications = new ItemStatModification[]
                         {
                             new ItemStatModification {TargetStat = StatModificationTarget.BonusAttackDamage, Modification = StatModificationType.Multiply, Value = 1.15f},
+                            new ItemStatModification {TargetStat = StatModificationTarget.Speed, Modification = StatModificationType.AddMax, Value = 6},
                             new ItemStatModification {TargetStat = StatModificationTarget.Speed, Modification = StatModificationType.Add, Value = 6},
                         };
                       //  revenantAssault.ViewElementDef.Description = new LocalizedTextBind("+15% Damage", true);
@@ -1117,7 +1119,7 @@ namespace TFTV
                        
                         revenantBerserker.StatModifications = new ItemStatModification[]
                         {
-                           // new ItemStatModification {TargetStat = StatModificationTarget.Speed, Modification = StatModificationType.AddMax, Value = 6},
+                            new ItemStatModification {TargetStat = StatModificationTarget.Speed, Modification = StatModificationType.AddMax, Value = 6},
                             new ItemStatModification {TargetStat = StatModificationTarget.Speed, Modification = StatModificationType.Add, Value = 6},
                         };
 
@@ -1128,7 +1130,7 @@ namespace TFTV
                        
                         revenantBerserker.StatModifications = new ItemStatModification[]
                         {
-                          // new ItemStatModification {TargetStat = StatModificationTarget.Speed, Modification = StatModificationType.AddMax, Value = 10},
+                            new ItemStatModification {TargetStat = StatModificationTarget.Speed, Modification = StatModificationType.AddMax, Value = 10},
                             new ItemStatModification {TargetStat = StatModificationTarget.Speed, Modification = StatModificationType.Add, Value = 10},
                         };
 

@@ -66,7 +66,7 @@ namespace TFTV
             TFTVBetaSaveGamesFixes.CheckUmbraResearchVariable(gsController);
             TFTVCommonMethods.CheckGeoUIfunctionality(gsController); 
             TFTVNewPXCharacters.PlayIntro(gsController);
-            TFTVVoidOmens.CheckVoidOmensBeforeImplementing(gsController);
+         //  TFTVVoidOmens.CheckVoidOmensBeforeImplementing(gsController);
             TFTVVoidOmens.ImplementVoidOmens(gsController);
             TFTVUmbra.CheckForUmbraResearch(gsController);
             TFTVUmbra.SetUmbraEvolution(gsController);
@@ -84,7 +84,8 @@ namespace TFTV
             TFTVLogger.Always("UmbraEvolution variable is " + Controller.EventSystem.GetVariable(TFTVUmbra.TBTVVariableName));
             TFTVBetaSaveGamesFixes.CheckNewLOTA(gsController);
             TFTVAncients.AncientsOnGeoscapeStartChecks(gsController);
-            
+            TFTVAncients.CheckImpossibleWeaponsAdditionalRequirements(gsController);
+            // TFTVBetaSaveGamesFixes.CheckImpossibleWeaponsFunctionalityTags(gsController);
 
 
             // TFTVExperimental.ClearAndCreateBaseDefenseMission(gsController);

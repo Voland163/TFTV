@@ -4,6 +4,7 @@ using Base.Entities;
 using Base.UI;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
+using PhoenixPoint.Common.Entities.Characters;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Levels.Missions;
 using PhoenixPoint.Geoscape.Entities;
@@ -179,11 +180,11 @@ namespace TFTV
             }
 
         }
-
+      
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
 
         [HarmonyPatch(typeof(GeoMission), "PrepareLevel")]
-        public static class GeoMission_ModifyMissionData_AddVOObjectives_Patch
+        public static class GeoMission_ModifyMissionData_VOObjectives_Patch
         {
             public static void Postfix(TacMissionData missionData, GeoMission __instance)
             {
@@ -193,20 +194,37 @@ namespace TFTV
                     GeoLevelController controller = __instance.Level;
                     List<int> voidOmens = new List<int> { 3, 5, 7, 10, 15, 16, 19 };
 
+                    List<FactionObjectiveDef> listOfFactionObjectives = missionData.MissionType.CustomObjectives.ToList();
+
+                    // Remove faction objectives that correspond to void omens that are not in play
+                    for (int i = listOfFactionObjectives.Count - 1; i >= 0; i--)
+                    {
+                        FactionObjectiveDef objective = listOfFactionObjectives[i];
+                        if (objective.name.StartsWith("VOID_OMEN_TITLE_"))
+                        {
+                            int vo = int.Parse(objective.name.Substring("VOID_OMEN_TITLE_".Length));
+                            if (!TFTVVoidOmens.CheckFordVoidOmensInPlay(controller).Contains(vo))
+                            {
+                                TFTVLogger.Always("Removing VO " + vo + " from faction objectives");
+                                listOfFactionObjectives.RemoveAt(i);
+                            }
+                        }
+                    }
+
+                    // Add faction objectives for void omens that are in play
                     foreach (int vo in voidOmens)
                     {
                         if (TFTVVoidOmens.CheckFordVoidOmensInPlay(controller).Contains(vo))
                         {
-                            TFTVLogger.Always("VO " + vo + " found");
-                            List<FactionObjectiveDef> listOfFactionObjectives = missionData.MissionType.CustomObjectives.ToList();
-
-                            if (!listOfFactionObjectives.Contains(DefCache.GetDef<FactionObjectiveDef>("VOID_OMEN_TITLE_" + vo)))
+                            if (!listOfFactionObjectives.Any(o => o.name == "VOID_OMEN_TITLE_" + vo))
                             {
+                                TFTVLogger.Always("Adding VO " + vo + " to faction objectives");
                                 listOfFactionObjectives.Add(DefCache.GetDef<FactionObjectiveDef>("VOID_OMEN_TITLE_" + vo));
-                                missionData.MissionType.CustomObjectives = listOfFactionObjectives.ToArray();
                             }
                         }
                     }
+
+                    missionData.MissionType.CustomObjectives = listOfFactionObjectives.ToArray();
                 }
                 catch (Exception e)
                 {
@@ -214,6 +232,43 @@ namespace TFTV
                 }
             }
         }
+
+
+
+
+        /* [HarmonyPatch(typeof(GeoMission), "PrepareLevel")]
+         public static class GeoMission_ModifyMissionData_AddVOObjectives_Patch
+         {
+             public static void Postfix(TacMissionData missionData, GeoMission __instance)
+             {
+                 try
+                 {
+                     TFTVLogger.Always("ModifyMissionData invoked");
+                     GeoLevelController controller = __instance.Level;
+                     List<int> voidOmens = new List<int> { 3, 5, 7, 10, 15, 16, 19 };
+
+                     foreach (int vo in voidOmens)
+                     {
+                         if (TFTVVoidOmens.CheckFordVoidOmensInPlay(controller).Contains(vo))
+                         {
+                             TFTVLogger.Always("VO " + vo + " found");
+                             List<FactionObjectiveDef> listOfFactionObjectives = missionData.MissionType.CustomObjectives.ToList();
+
+                             if (!listOfFactionObjectives.Contains(DefCache.GetDef<FactionObjectiveDef>("VOID_OMEN_TITLE_" + vo)))
+                             {
+                                 listOfFactionObjectives.Add(DefCache.GetDef<FactionObjectiveDef>("VOID_OMEN_TITLE_" + vo));
+                                 missionData.MissionType.CustomObjectives = listOfFactionObjectives.ToArray();
+                             }
+                         }
+                     }
+
+                 }
+                 catch (Exception e)
+                 {
+                     TFTVLogger.Error(e);
+                 }
+             }
+         }*/
 
         //Patch to set VO objective test in uppercase to match other objectives
         [HarmonyPatch(typeof(ObjectivesManager), "Add")]

@@ -3,6 +3,7 @@ using Base.UI;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Levels.Missions;
 using PhoenixPoint.Common.UI;
+using PhoenixPoint.Geoscape.Entities.Research;
 using PhoenixPoint.Geoscape.Events;
 using PhoenixPoint.Geoscape.Events.Eventus;
 using PhoenixPoint.Geoscape.Levels;
@@ -21,7 +22,7 @@ namespace TFTV
         {
             try
             {
-               // MakeLOTAAlternativeToSymes();
+              
                 ResearchViewElementDef njBionicsVEDef = DefCache.GetDef<ResearchViewElementDef>("NJ_Bionics1_ViewElementDef");
                 njBionicsVEDef.CompleteText.LocalizationKey = "TFTV_BIONICS_RESEARCHDEF_COMPLETE";
 

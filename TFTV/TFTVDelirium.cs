@@ -3,12 +3,16 @@ using Base.Core;
 using Base.Defs;
 using Base.Entities.Statuses;
 using Base.UI.MessageBox;
+using Epic.OnlineServices.Lobby;
+using Epic.OnlineServices;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.Characters;
 using PhoenixPoint.Common.Entities.GameTags;
+using PhoenixPoint.Common.Levels.MapGeneration;
 using PhoenixPoint.Geoscape.Entities;
+using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.View.ViewControllers.AugmentationScreen;
 using PhoenixPoint.Geoscape.View.ViewModules;
 using PhoenixPoint.Tactical.Entities;
@@ -21,6 +25,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using UnityEngine;
+using System.Runtime.InteropServices.WindowsRuntime;
 
 namespace TFTV
 {
@@ -75,12 +80,64 @@ namespace TFTV
 
             try
             {
+                float bonusWillpower = 0;
+              
+
+                //  GeoLevelController level = (GeoLevelController)UnityEngine.Object.FindObjectOfType(typeof(GeoLevelController));
+
+                foreach (ICommonItem armorItem in character.ArmourItems)
+                {
+                    TacticalItemDef tacticalItemDef = armorItem.ItemDef as TacticalItemDef;
+                    if (!(tacticalItemDef == null) && !(tacticalItemDef.BodyPartAspectDef == null))
+                    {
+                    
+                        bonusWillpower += tacticalItemDef.BodyPartAspectDef.WillPower;
+                       
+                    }
+                }
+
+                if (character.Progression != null)
+                {
+                    foreach (TacticalAbilityDef ability in character.Progression.Abilities)
+                    {
+                        PassiveModifierAbilityDef passiveModifierAbilityDef = ability as PassiveModifierAbilityDef;
+                        if (!(passiveModifierAbilityDef == null))
+                        {
+                            ItemStatModification[] statModifications = passiveModifierAbilityDef.StatModifications;
+                            foreach (ItemStatModification statModifier in statModifications)
+                            {
+                               
+                                if (statModifier.TargetStat == StatModificationTarget.Willpower && statModifier.Modification == StatModificationType.AddMax)
+                                {
+                                    bonusWillpower += statModifier.Value;
+                                }
+                            }
+                        }
+                    }
+
+
+                    foreach (PassiveModifierAbilityDef passiveModifier in character.PassiveModifiers)
+                    {
+                        ItemStatModification[] statModifications = passiveModifier.StatModifications;
+                        foreach (ItemStatModification statModifier2 in statModifications)
+                        {
+                            if (statModifier2.TargetStat == StatModificationTarget.Willpower)
+                            {
+                                bonusWillpower += statModifier2.Value;
+                            }
+                            
+                        }
+                    }
+                }
+
                 float maxCorruption = 0;
                 int bionics = 0;
                 int currentODIlevel = character.Faction.GeoLevel.EventSystem.GetVariable("BC_SDI");
                // TFTVLogger.Always("CurrentODIlevel is " + currentODIlevel);
                 int odiPerc = currentODIlevel * 100 / TFTVSDIandVoidOmenRoll.ODI_EventIDs.Length;
-              //  TFTVLogger.Always("odiPerc is " + odiPerc);
+                //  TFTVLogger.Always("odiPerc is " + odiPerc);
+
+                int actualWillpower = (int)(character.CharacterStats.Willpower.IntMax + bonusWillpower);
 
                 foreach (GeoItem bionic in character.ArmourItems)
                 {
@@ -100,83 +157,76 @@ namespace TFTV
                 {
                     if (odiPerc < 25)
                     {
-                        maxCorruption = character.CharacterStats.Willpower.IntMax / 3;
+                        maxCorruption = actualWillpower / 3;
 
                         if (bionics == 1)
                         {
-                            return maxCorruption -= maxCorruption * 0.33f;
+                            maxCorruption -= maxCorruption * 0.33f;
                         }
 
                         if (bionics == 2)
                         {
-                            return maxCorruption -= maxCorruption * 0.66f;
+                            maxCorruption -= maxCorruption * 0.66f;
                         }
-                        else
-                        {
-                            return maxCorruption;
-                        }
+                        
                     }
                     else
                     {
                         if (odiPerc < 45)
                         {
-                            maxCorruption = character.CharacterStats.Willpower.IntMax * 1 / 2;
+                            maxCorruption = actualWillpower * 1 / 2;
 
                             if (bionics == 1)
                             {
-                                return maxCorruption -= maxCorruption * 0.33f;
+                                maxCorruption -= maxCorruption * 0.33f;
                             }
 
                             if (bionics == 2)
                             {
-                                return maxCorruption -= maxCorruption * 0.66f;
+                                maxCorruption -= maxCorruption * 0.66f;
                             }
-                            else
-                            {
-                                return maxCorruption;
-                            }
+                           
                         }
                         else // > 75%
                         {
-                            maxCorruption = character.CharacterStats.Willpower.IntMax;
+                            maxCorruption = actualWillpower;
 
                             if (bionics == 1)
                             {
-                                return maxCorruption -= maxCorruption * 0.33f;
+                                maxCorruption -= maxCorruption * 0.33f;
                             }
 
                             if (bionics == 2)
                             {
-                                return maxCorruption -= maxCorruption * 0.66f;
+                                maxCorruption -= maxCorruption * 0.66f;
                             }
 
-                            else
-                            {
-                                return maxCorruption;
-                            }
                         }
                     }
                 }
                 else
                 {
-                    maxCorruption = character.CharacterStats.Willpower.IntMax;
+                    maxCorruption = actualWillpower;
 
                     if (bionics == 1)
                     {
-                        return maxCorruption -= maxCorruption * 0.33f;
+                         maxCorruption -= maxCorruption * 0.33f;
                     }
 
                     if (bionics == 2)
                     {
-                        return maxCorruption -= maxCorruption * 0.66f;
+                        maxCorruption -= maxCorruption * 0.66f;
                     }
 
-                    else
-                    {
-                        return maxCorruption;
-                    }
+                   
 
                 }
+                if (maxCorruption < character.CharacterStats.Corruption) 
+                {
+                    character.CharacterStats.Corruption.Set(maxCorruption);
+                
+                }
+                return maxCorruption;
 
             }
             catch (Exception e)
@@ -485,6 +535,31 @@ namespace TFTV
                 }
             }
         }
+
+        public static void RemoveDeliriumFromAllCharactersWithoutMutations(GeoLevelController controller)
+        {
+            try 
+            {   GameTagDef mutationTag = GameUtl.GameComponent<SharedData>().SharedGameTags.AnuMutationTag;
+                foreach(GeoCharacter character in controller.PhoenixFaction.HumanSoldiers) 
+                {
+
+
+                    if (character.CharacterStats.Corruption != null 
+                        && character.CharacterStats.Corruption>0 
+                        && !character.ArmourItems.Any(ai => ai.ItemDef.Tags.Contains(mutationTag)))
+                        {
+                        character.CharacterStats.Corruption.Set(0);
+                    
+                    }                    
+                } 
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+
 
         [HarmonyPatch(typeof(GeoCharacter), "CureCorruption")]
         public static class GeoCharacter_CureCorruption_SetStaminaTo0_patch

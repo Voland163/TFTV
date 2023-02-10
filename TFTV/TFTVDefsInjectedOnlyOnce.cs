@@ -81,8 +81,36 @@ namespace TFTV
             ChangesToLOTAEarlyLoad();
             CreateSubject24();
             CreateVoidOmenRemindersInTactical();
-
+            RemoveMindControlImmunityVFX();
+            AddContributionPointsToPriestAndTech();
         }
+
+        public static void AddContributionPointsToPriestAndTech()
+        {
+            try
+            {
+                DefCache.GetDef<MindControlAbilityDef>("Priest_MindControl_AbilityDef").ContributionPointsOnUse = 500;
+                DefCache.GetDef<ApplyStatusAbilityDef>("InducePanic_AbilityDef").ContributionPointsOnUse = 500;
+                DefCache.GetDef<InstilFrenzyAbilityDef>("Priest_InstilFrenzy_AbilityDef").ContributionPointsOnUse = 500;
+                DefCache.GetDef<PsychicScreamAbilityDef>("Priest_PsychicScream_AbilityDef").ContributionPointsOnUse = 500;
+                DefCache.GetDef<TacticalAbilityDef>("ThrowTurret_AbilityDef").ContributionPointsOnUse = 500;
+                DefCache.GetDef<TacticalAbilityDef>("ThrowPRCRTurret_AbilityDef").ContributionPointsOnUse = 500;
+                DefCache.GetDef<TacticalAbilityDef>("ThrowLaserTurret_AbilityDef").ContributionPointsOnUse = 500;
+                DefCache.GetDef<ApplyStatusAbilityDef>("ElectricReinforcement_AbilityDef").ContributionPointsOnUse = 500;
+                DefCache.GetDef<TacticalAbilityDef>("DeployLaserTurret_AbilityDef").ContributionPointsOnUse = 500;
+                DefCache.GetDef<TacticalAbilityDef>("DeployPRCRTurret_AbilityDef").ContributionPointsOnUse = 500;
+                DefCache.GetDef<TacticalAbilityDef>("DeployTurret_AbilityDef").ContributionPointsOnUse = 500;
+                DefCache.GetDef<ApplyStatusAbilityDef>("ManualControl_AbilityDef").ContributionPointsOnUse = 500;
+                DefCache.GetDef<HealAbilityDef>("FieldMedic_AbilityDef").ContributionPointsOnUse = 500;
+
+            }
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
 
         public static void ChangesToLOTAEarlyLoad()
         {
@@ -97,6 +125,7 @@ namespace TFTV
                 CreateLivingCrystalResearch();
                 CreateProteanMutaneResearch();
                 ChangeCostAncientProbe();
+                //  CreateImpossibleWeaponsManufactureRequirements();
             }
             catch (Exception e)
             {
@@ -127,6 +156,20 @@ namespace TFTV
             }
         }
 
+        public static void RemoveMindControlImmunityVFX()
+        {
+            try
+            {
+                DefCache.GetDef<TacStatusDef>("MindControlImmunity_StatusDef").ParticleEffectPrefab = new GameObject() { };
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+
+        }
 
         public static void CreateVoidOmenRemindersInTactical()
         {
@@ -431,9 +474,13 @@ namespace TFTV
             try
             {
                 //muting warning events:
-                DefCache.GetDef<GeoscapeEventDef>("PROG_LE1_WARN_GeoscapeEventDef").GeoscapeEventData.Mute = true;
-                DefCache.GetDef<GeoscapeEventDef>("PROG_LE2_WARN_GeoscapeEventDef").GeoscapeEventData.Mute = true;
-                DefCache.GetDef<GeoscapeEventDef>("PROG_LE3_WARN_GeoscapeEventDef").GeoscapeEventData.Mute = true;
+                GeoscapeEventDef livingCrystalObtainedEvent = DefCache.GetDef<GeoscapeEventDef>("PROG_LE1_WARN_GeoscapeEventDef");
+                GeoscapeEventDef orichalcumObtainedEvent = DefCache.GetDef<GeoscapeEventDef>("PROG_LE2_WARN_GeoscapeEventDef");
+                GeoscapeEventDef proteanMutaneObtainedEvent = DefCache.GetDef<GeoscapeEventDef>("PROG_LE3_WARN_GeoscapeEventDef");
+
+                livingCrystalObtainedEvent.GeoscapeEventData.Mute = true;
+                proteanMutaneObtainedEvent.GeoscapeEventData.Mute = true;
+                orichalcumObtainedEvent.GeoscapeEventData.Mute = true;
 
                 //Helena post-research Antediluvian Archaelogy event: 
                 TFTVCommonMethods.CreateNewEvent("Helena_Echoes", "HELENA_ECHOES_TITLE", "HELENA_ECHOES_TEXT", null);
@@ -444,13 +491,11 @@ namespace TFTV
                 //Helena post research Living Crystal event: 
                 GeoscapeEventDef helenaOneiromancy = TFTVCommonMethods.CreateNewEvent("Helena_Oneiromancy", "HELENA_ONEIROMANCY_TITLE", "HELENA_ONEIROMANCY_TEXT", null);
                 helenaOneiromancy.GeoscapeEventData.Choices[0].Outcome.VariablesChange.Add(TFTVCommonMethods.GenerateVariableChange("ProteanMutaneResearched", 1, false));
-
+                // helenaOneiromancy.GeoscapeEventData.Choices[0].Outcome.Cinematic = livingCrystalObtainedEvent.GeoscapeEventData.Choices[0].Outcome.Cinematic;
 
                 //Olena post-Helena event:    
                 GeoscapeEventDef olenaOneiromancy = TFTVCommonMethods.CreateNewEvent("Olena_Oneiromancy", "OLENA_ONEIROMANCY_TITLE", "OLENA_ONEIROMANCY_TEXT", "OLENA_ONEIROMANCY_OUTCOME");
                 olenaOneiromancy.GeoscapeEventData.Choices[0].Text.LocalizationKey = "OLENA_ONEIROMANCY_CHOICE";
-
-
 
                 //Post research Exotic mnaterials Olena event:
                 GeoscapeEventDef impossibleWeaponsEvent = DefCache.GetDef<GeoscapeEventDef>("PROG_LE1_GeoscapeEventDef");
@@ -471,7 +516,10 @@ namespace TFTV
                 //Event on ProteanMutaneResearched reaching 2
                 GeoscapeEventDef canBuildCyclops = TFTVCommonMethods.CreateNewEvent("Helena_Can_Build_Cyclops", "CAN_BUILD_CYCLOPS_TITLE", "CAN_BUILD_CYCLOPS_TEXT", null);
 
-
+                //Event on researching Virophage weapons
+                GeoscapeEventDef virophage = TFTVCommonMethods.CreateNewEvent("Helena_Virophage", "HELENA_VIROPHAGE_TITLE", "HELENA_VIROPHAGE_TEXT", null);
+                virophage.GeoscapeEventData.Choices[0].Outcome.Cinematic =
+                               DefCache.GetDef<GeoscapeEventDef>("PROG_LE_FINAL_GeoscapeEventDef").GeoscapeEventData.Choices[0].Outcome.Cinematic;
             }
             catch (Exception e)
             {
@@ -562,6 +610,12 @@ namespace TFTV
             }
         }
 
+
+
+
+
+
+
         public static void ChangeImpossibleWeapons()
         {
             try
@@ -573,26 +627,20 @@ namespace TFTV
                 WeaponDef scorpion = DefCache.GetDef<WeaponDef>("AC_Scorpion_WeaponDef");
                 WeaponDef scyther = DefCache.GetDef<WeaponDef>("AC_Scyther_WeaponDef");
 
+                FactionFunctionalityTagDef scytherManufacture = DefCache.GetDef<FactionFunctionalityTagDef>("ScytherManufacture_FactionFunctionalityTagDef");
+                FactionFunctionalityTagDef scorpionManufacture = DefCache.GetDef<FactionFunctionalityTagDef>("ScorpionManufacture_FactionFunctionalityTagDef");
+                FactionFunctionalityTagDef shardGunManufacture = DefCache.GetDef<FactionFunctionalityTagDef>("ShardGunManufacture_FactionFunctionalityTagDef");
+                FactionFunctionalityTagDef proteanMutane = DefCache.GetDef<FactionFunctionalityTagDef>("RefineProteanMutane_FactionFunctionalityTagDef");
+
+
                 mattock.ManufactureRequiredTagDefs.Clear();
-                scyther.ManufactureRequiredTagDefs.RemoveAt(1);
-                scorpion.ManufactureRequiredTagDefs.RemoveAt(1);
-
-                scorpion.ManufactureProteanMutane = 75;
+                scyther.ManufactureRequiredTagDefs.Clear();
+                scorpion.ManufactureRequiredTagDefs.Clear();
+                shardGun.ManufactureRequiredTagDefs.Clear();
+                crystalCrossbow.ManufactureRequiredTagDefs.Clear();
+                rebuke.ManufactureRequiredTagDefs.Clear();
                 scorpion.ManufactureOricalcum = 75;
-
-                /* List<WeaponDef> allAncientWeapons = new List<WeaponDef> { shardGun, crystalCrossbow, mattock, rebuke, scorpion, scyther };
-
-                 FactionFunctionalityTagDataDef orichalcumRefineryRequirement = DefCache.GetDef<FactionFunctionalityTagDataDef>("RefineOrichalcum_FactionFunctionalityTagDef");
-
-                 //Remove the requirement of the processing facilities for all impossible weapons
-                 foreach (WeaponDef weaponDef in allAncientWeapons)
-                 {
-
-
-                     if(weaponDef.ManufactureRequiredTagDefs.Contains(orichalcumRefineryRequirement as GameTagDef))
-
-                     weaponDef.ManufactureRequiredTagDefs.RemoveAt(0);
-                 }*/
+                mattock.ManufactureProteanMutane = 25;
 
             }
             catch (Exception e)

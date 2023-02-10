@@ -248,7 +248,9 @@ Et nous savons pourquoi ils en ont besoin : pour amplifier le signal du Délire
 
 Si nous éliminons le Béhémoth, nous affaiblirons son emprise sur nous, peut-être même la neutraliserons-nous complètement. ",,,,,,
 PROG_FS2_WIN_CHOICE_0_TEXT,Text,,We deserve a good night sleep...,,Nous méritons une bonne nuit de sommeil…,,,,,,
-PROG_FS2_WIN_TEXT_GENERAL_0,Text,,"Today we were finally able to deal a serious blow to our enemy. The Oneiric Delirium is gone. Our dreams and nightmares are once again our own. Humanity may yet perish, but it will not be enslaved.",,"Aujourd’hui, nous avons finalement pu porter un sérieux coup à notre ennemi. Le Délire Onirique a disparu. Nos rêves et nos cauchemars nous appartiennent à nouveau. L’humanité peut encore périr, mais elle ne sera pas asservie.",,,,,,
+PROG_FS2_WIN_TEXT_GENERAL_0,Text,,"Today we were finally able to deal a serious blow to our enemy. If only for a while, our dreams and nightmares are once again our own.  
+
+This victory has galvanized the factions into setting aside their differences until the survival of humanity can be ensured and has cemented Phoenix Project as the only actor capable of dealing with the threat of the Yuggothian Entity. ",,"Aujourd’hui, nous avons finalement pu porter un sérieux coup à notre ennemi. Le Délire Onirique a disparu. Nos rêves et nos cauchemars nous appartiennent à nouveau. L’humanité peut encore périr, mais elle ne sera pas asservie.",,,,,,
 PROG_FS2_WIN_TITLE,Text,,Will Not Go Gentle Into That Night,,N’entre pas doucement dans cette nuit,,,,,,
 MASKED_MANTICORE_RESEARCHDEF_TFTV,Text,,"""See, I think the Manti was designed in different times, when aircraft needed to be certified for flight and such… Long story short, it has many in-built redundancies to satisfy safety inspectors who have long turned to crab. We can get rid of <i>that</i> stuff and then we will have space to put in <i>other</i> stuff, know what I'm saying? Beats me why you want to cover it in slime, but you're the boss… or the Director… or whatever"".
 

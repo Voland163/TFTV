@@ -1,28 +1,22 @@
 ﻿using Base;
-using EnviroSamples;
 using HarmonyLib;
-using PhoenixPoint.Common.Entities.GameTagsTypes;
-using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Events;
 using PhoenixPoint.Geoscape.Events.Eventus;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
-using PhoenixPoint.Geoscape.View;
-using PhoenixPoint.Geoscape.View.ViewModules;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
-using System.Security.Policy;
 using UnityEngine;
 
 namespace TFTV
 {
     internal class TFTVSDIandVoidOmenRoll
     {
-       // private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
+        // private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
         // Current and last ODI level
         public static int CurrentODI_Level = 0;
+       // public static List<bool> PlayedODIEvents = new List<bool>();
         // All SDI (ODI) event IDs, levels as array, index 0 - 19
         public static readonly string[] ODI_EventIDs = new string[]
         {
@@ -45,7 +39,214 @@ namespace TFTV
     "SDI_17",
     "SDI_18",
     "SDI_19",
-    "SDI_20"
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+     "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
+    "SDI_20",
         };
 
         [HarmonyPatch(typeof(GeoAlienFaction), "UpdateFactionDaily")]
@@ -61,12 +262,71 @@ namespace TFTV
             }
         }
 
+        public static List<int> GetPossibleVoidOmens(GeoLevelController controller)
+        {
+            try
+            {
+                TFTVConfig config = TFTVMain.Main.Config;
+                List<int> voidOmensList = new List<int> { 1, 2, 4, 5, 6, 8, 9, 10, 12, 13, 14, 18 };
+
+                if (config.MoreMistVO)
+                {
+                    voidOmensList.Add(7);
+                }
+
+                if (controller.AlienFaction.Research.HasCompleted("ALN_CrabmanUmbra_ResearchDef"))
+                {
+                    voidOmensList.Add(15);
+                    voidOmensList.Add(16);
+
+                }
+                if (controller.EventSystem.GetVariable("BehemothEggHatched") == 1 && controller.AlienFaction.Behemoth != null)
+                {
+                    TFTVLogger.Always("Behemoth vo check");
+                    voidOmensList.Add(11);
+
+                }
+                if (controller.EventSystem.GetVariable("Infestation_Encounter_Variable") == 1)
+                {
+                    voidOmensList.Add(17);
+
+                }
+                if (TFTVVoidOmens.CheckForAlreadyRolledVoidOmens(controller).Count >= 8)
+                {
+                    voidOmensList.Add(3);
+                }
+                if (TFTVVoidOmens.CheckForAlreadyRolledVoidOmens(controller).Count >= 5 && TFTVRevenant.DeadSoldiersDelirium.Keys.Count == 0)
+                {
+                    voidOmensList.Add(19);
+                }
+
+                foreach (int voidOmensInPlay in TFTVVoidOmens.CheckFordVoidOmensInPlay(controller))
+                {
+                    if (voidOmensList.Contains(voidOmensInPlay))
+                    {
+                        voidOmensList.Remove(voidOmensInPlay);
+                    }
+                }
+
+                return voidOmensList;
+
+            }
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+            throw new InvalidOperationException();
+
+
+        }
+
 
         internal static void Calculate_ODI_Level(GeoAlienFaction geoAlienFaction, int evolutionProgress)
         {
             try
             {
-                TFTVConfig config = TFTVMain.Main.Config;
 
                 // Index of last element of the ODI event ID array is Length - 1
                 int ODI_EventIDs_LastIndex = ODI_EventIDs.Length - 1;
@@ -75,23 +335,40 @@ namespace TFTV
                 // Calculate the current ODI level = index for the ODI event ID array
                 // Mathf.Min = cap the lavel at max index, after that the index will not longer get increased wiht higher progress
                 CurrentODI_Level = Mathf.Min(ODI_EventIDs_LastIndex, evolutionProgress * ODI_EventIDs_LastIndex / maxODI_Progress);
+                // CurrentODI_Level = (evolutionProgress * ODI_EventIDs_LastIndex / maxODI_Progress) % ODI_EventIDs_LastIndex;
+               // CurrentODI_Level = evolutionProgress * ODI_EventIDs_LastIndex / maxODI_Progress;
+
+
+
                 // Get the GeoLevelController to get access to the event system and the variable
                 GeoLevelController geoLevelController = geoAlienFaction.GeoLevel;
                 // If current calculated level is different to last saved one then new ODI level is reached, show the new ODI event
 
-                if (geoLevelController.EventSystem.GetEventRecord("PROG_FS2_WIN") != null && geoLevelController.EventSystem.GetEventRecord("PROG_FS2_WIN").Completed)
-                {
-                    TFTVLogger.Always("Behemoth defeated, so no more ODI");
-                    return;
-                }
+                //removed for update #17
+                /* if (geoLevelController.EventSystem.GetEventRecord("PROG_FS2_WIN") != null && geoLevelController.EventSystem.GetEventRecord("PROG_FS2_WIN").Completed)
+                 {
+                     TFTVLogger.Always("Behemoth defeated, so no more ODI");
+                     return;
+                 }*/
 
-                else if (CurrentODI_Level != geoLevelController.EventSystem.GetVariable("BC_SDI", -1))
+                //Need to always have ODIEvent 20 clear of variables
+                geoLevelController.EventSystem.GetEventByID("SDI_20").GeoscapeEventData.Choices[0].Outcome.VariablesChange.Clear();
+
+                if (CurrentODI_Level != geoLevelController.EventSystem.GetVariable("BC_SDI", -1))
                 {
+
+                 //   CurrentODI_Level = CurrentODI_Level > ODI_EventIDs_LastIndex ? ODI_EventIDs_LastIndex : CurrentODI_Level;
+                    TFTVLogger.Always("CurrentODI_Level is " + CurrentODI_Level);
                     // Get the Event ID from array dependent on calculated level index
-
                     string eventID = ODI_EventIDs[CurrentODI_Level];
+
+                  /*  if (ODI_EventIDs.Length < CurrentODI_Level)
+                    {
+                        eventID = ODI_EventIDs.Last();
+                    }*/
+                    TFTVLogger.Always("ODI Event is " + eventID + " and Alien EP are " + geoAlienFaction.EvolutionProgress);
                     GeoscapeEventContext geoscapeEventContext = new GeoscapeEventContext(geoAlienFaction, geoLevelController.ViewerFaction);
-                    GeoscapeEventDef oDIEventToTrigger = geoLevelController.EventSystem.GetEventByID(ODI_EventIDs[CurrentODI_Level]);
+                    GeoscapeEventDef oDIEventToTrigger = geoLevelController.EventSystem.GetEventByID(eventID);
 
                     // Void Omens roll
                     // Before the roll, Void Omen has not been rolled
@@ -104,6 +381,8 @@ namespace TFTV
                     string voidOmen = "VoidOmen_";
                     string voidOmenTitle = "VOID_OMEN_TITLE_";
                     string voidOmenDescription = "VOID_OMEN_DESCRIPTION_TEXT_";
+                    //This is a bool to check if the list of possible Void Omens has been repopulated
+                    bool voidOmenListRepopulated = false;
 
                     if (geoLevelController.EventSystem.GetVariable("BC_SDI") > 0)
                     {
@@ -120,37 +399,7 @@ namespace TFTV
 
                             // If a Void Omen rolls
                             // Create list of Void Omens currently implemented
-                            List<int> voidOmensList = new List<int> { 1, 2, 4, 5, 6, 8, 9, 10, 12, 13, 14, 18 };
-
-                            if (config.MoreMistVO) 
-                            {
-                                voidOmensList.Add(7);                            
-                            }
-
-                            if (geoAlienFaction.Research.HasCompleted("ALN_CrabmanUmbra_ResearchDef"))
-                            {
-                                voidOmensList.Add(15);
-                                voidOmensList.Add(16);
-
-                            }
-                            if (geoAlienFaction.GeoLevel.EventSystem.GetVariable("BehemothEggHatched") == 1)
-                            {
-                                voidOmensList.Add(11);
-
-                            }
-                            if (geoAlienFaction.GeoLevel.EventSystem.GetVariable("Infestation_Encounter_Variable") == 1)
-                            {
-                                voidOmensList.Add(17);
-
-                            }
-                            if (TFTVVoidOmens.CheckForAlreadyRolledVoidOmens(geoLevelController).Count >= 8)
-                            {
-                                voidOmensList.Add(3);
-                            }
-                            if (TFTVVoidOmens.CheckForAlreadyRolledVoidOmens(geoLevelController).Count >= 5 && TFTVRevenant.DeadSoldiersDelirium.Keys.Count == 0)
-                            {
-                                voidOmensList.Add(19);
-                            }
+                            List<int> voidOmensList = GetPossibleVoidOmens(geoLevelController);
 
                             // Check for already rolled Void Omens
                             List<int> allVoidOmensAlreadyRolled = TFTVVoidOmens.CheckForAlreadyRolledVoidOmens(geoLevelController);
@@ -165,7 +414,20 @@ namespace TFTV
                             }
                             TFTVLogger.Always("The number of remaining VOs is " + voidOmensList.Count);
 
-                            // Get a random dark event from the available Void Omens list
+                            for (int x = 0; x < voidOmensList.Count; x++)
+                            {
+                                TFTVLogger.Always(voidOmensList[x] + " available for roll");
+
+                            }
+
+                            if (voidOmensList.Count == 0)
+                            {
+                                TFTVVoidOmens.ClearListOfAlreadyRolledVoidOmens(geoLevelController);
+                                voidOmensList = GetPossibleVoidOmens(geoLevelController);
+                                voidOmenListRepopulated = true;
+                            }
+
+                            // Get a random void omen from the available Void Omens list
                             voidOmenRoll = voidOmensList.GetRandomElement();
 
                             // We can have as many simulateneous Void Omens in play as the mathematical expression of the difficulty level
@@ -193,7 +455,8 @@ namespace TFTV
                                         IsSetOperation = true,
                                     });
                                     // This records which ODI event triggered which Void Omen
-                                    geoLevelController.EventSystem.SetVariable(triggeredVoidOmens + CurrentODI_Level, voidOmenRoll);
+                                    int variableRolledVoidOmen = geoAlienFaction.EvolutionProgress / 470;
+                                    geoLevelController.EventSystem.SetVariable(triggeredVoidOmens + variableRolledVoidOmen, voidOmenRoll);
                                     // Raise the flag, we have a Void Omen!
                                     voidOmenRolled = true;
                                     // Then close the loop:
@@ -204,14 +467,14 @@ namespace TFTV
                     }
 
                     // The ODI event is triggered
-                    geoLevelController.EventSystem.TriggerGeoscapeEvent(ODI_EventIDs[CurrentODI_Level], geoscapeEventContext);
+                    geoLevelController.EventSystem.TriggerGeoscapeEvent(oDIEventToTrigger.EventID, geoscapeEventContext);
                     geoLevelController.EventSystem.SetVariable("BC_SDI", CurrentODI_Level);
 
-                   
+
 
                     //UpdateODITracker(CurrentODI_Level, geoLevelController); not used currently, because clogs the UI
                     // And if a Void Omen has been rolled, a Void Omen will appear
-                    if (voidOmenRolled && TFTVVoidOmens.CheckForAlreadyRolledVoidOmens(geoLevelController).Count == 1)
+                    if (voidOmenRolled && TFTVVoidOmens.CheckForAlreadyRolledVoidOmens(geoLevelController).Count == 1 && !voidOmenListRepopulated)
                     {
                         GeoscapeEventDef voidOmenIntro = geoLevelController.EventSystem.GetEventByID("VoidOmenIntro");
                         voidOmenIntro.GeoscapeEventData.Title.LocalizationKey = "VOID_OMEN_INTRO_TITLE";
@@ -231,7 +494,7 @@ namespace TFTV
                         TFTVVoidOmens.CreateVoidOmenObjective(voidOmenTitle + voidOmenRoll, voidOmenDescription + voidOmenRoll, geoLevelController);
                     }
                     // Implement the new Void Omen situation
-                    TFTVVoidOmens.CheckVoidOmensBeforeImplementing(geoLevelController);
+                   // TFTVVoidOmens.CheckVoidOmensBeforeImplementing(geoLevelController);
                     TFTVVoidOmens.ImplementVoidOmens(geoLevelController);
                 }
             }

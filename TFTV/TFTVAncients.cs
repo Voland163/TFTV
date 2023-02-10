@@ -34,8 +34,10 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Security.Permissions;
 using UnityEngine;
 using UnityEngine.UI;
+using static PhoenixPoint.Common.Entities.Items.ItemManufacturing;
 
 namespace TFTV
 {
@@ -73,6 +75,149 @@ namespace TFTV
         // private static readonly GameTagDef SelfRepairTag = DefCache.GetDef<GameTagDef>("SelfRepair");
         // private static readonly GameTagDef MaxPowerTag = DefCache.GetDef<GameTagDef>("MaxPower");
 
+
+        public static void CheckImpossibleWeaponsAdditionalRequirements(GeoLevelController controller)
+        {
+            try 
+            {
+                TFTVConfig config = TFTVMain.Main.Config;
+                if (config.impossibleWeaponsAdjustments)
+                {
+
+                    if (controller.EventSystem.GetVariable("NewGameStarted") == 1)
+                    {
+
+                        if (controller.PhoenixFaction.Research.HasCompleted("PX_Scorpion_ResearchDef"))
+                        {
+                            DefCache.GetDef<ResearchViewElementDef>("NJ_VehicleTech_ViewElementDef").BenefitsText.LocalizationKey = "TFTV_NJ_VEHICLETECH_RESEARCHDEF_BENEFITS";
+                        }
+                        else
+                        {
+                            DefCache.GetDef<ResearchViewElementDef>("NJ_VehicleTech_ViewElementDef").BenefitsText.LocalizationKey = "";
+                        }
+                        if (controller.PhoenixFaction.Research.HasCompleted("PX_ShardGun_ResearchDef"))
+                        {
+                            DefCache.GetDef<ResearchViewElementDef>("ANU_AdvancedInfectionTech_ViewElementDef").BenefitsText.LocalizationKey = "TFTV_ANU_ADVANCEDINFECTIONTECH_RESEARCHDEF_BENEFITS";
+                        }
+                        else
+                        {
+                            DefCache.GetDef<ResearchViewElementDef>("ANU_AdvancedInfectionTech_ViewElementDef").BenefitsText.LocalizationKey = "";
+                        }
+                        if (controller.PhoenixFaction.Research.HasCompleted("PX_Scyther_ResearchDef"))
+                        {
+                            DefCache.GetDef<ResearchViewElementDef>("SYN_Bionics3_ViewElementDef").BenefitsText.LocalizationKey = "TFTV_SYN_BIONICS3_RESEARCHDEF_BENEFITS";
+                        }
+                        else
+                        {
+                            DefCache.GetDef<ResearchViewElementDef>("SYN_Bionics3_ViewElementDef").BenefitsText.LocalizationKey = "SYN_BIONICS3_RESEARCHDEF_BENEFITS";
+                        }
+                    }
+                }
+            
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+
+        }
+        
+
+        [HarmonyPatch(typeof(ItemManufacturing), "CanManufacture")]
+        public static class GeoFaction_CanManufacture_Patch
+        {
+            
+            public static void Postfix(ManufacturableItem item, ref ManufactureFailureReason __result, GeoFaction ____faction)
+            {
+                try
+
+                {
+                    //For TFTV we need to add checks here to see if the player has researched the required Exotic Materials + additional Faction Tech, and if not, return NotUnlocked
+                    //However, we may add an option to Config so that additional faction research is not required
+
+                    //AC Crossbow is not nerfed, but in TFTV it is unlocked by the Living Crystal research
+                    if (item.Name.LocalizationKey == "KEY_AC_CROSSBOW_NAME" && !____faction.Research.HasCompleted("PX_LivingCrystalResearchDef"))
+                    {
+                        TFTVLogger.Always("Crossbow is not unlocked " + item.Name.LocalizationKey);
+                        __result = ManufactureFailureReason.NotUnlocked;
+                    }
+
+                    //Rebuke is nerfed, and in TFTV it is unlocked by the Protean Mutane research
+                    if (item.Name.LocalizationKey == "KEY_AC_HEAVY_NAME" && !____faction.Research.HasCompleted("PX_ProteanMutaneResearchDef"))
+                    {
+                        TFTVLogger.Always("Rebuke is not unlocked " + item.Name.LocalizationKey);
+                        __result = ManufactureFailureReason.NotUnlocked;
+                    }
+
+                    //Nerfed Mattock in TFTV has a different name, but both nerfed and Vanilla now require Protean Mutane research
+                    if ((item.Name.LocalizationKey == "TFTV_KEY_AC_MACE_NAME" || item.Name.LocalizationKey == "KEY_AC_MACE_NAME") && !____faction.Research.HasCompleted("PX_ProteanMutaneResearchDef"))
+                    {
+                        TFTVLogger.Always("Mattock is not unlocked " + item.Name.LocalizationKey);
+                        __result = ManufactureFailureReason.NotUnlocked;
+                    }
+
+                    //Nerfed Shardgun in TFTV requires Advanced Infection Tech
+                    if (item.Name.LocalizationKey == "TFTV_KEY_AC_SHOTGUN_NAME" && 
+                        (!____faction.Research.HasCompleted("PX_ProteanMutaneResearchDef") || !____faction.Research.HasCompleted("PX_LivingCrystalResearchDef") 
+                        || !____faction.Research.HasCompleted("ANU_AdvancedInfectionTech_ResearchDef")))
+                    {
+                        TFTVLogger.Always("Shardgun TFTV is not unlocked " + item.Name.LocalizationKey);
+                        __result = ManufactureFailureReason.NotUnlocked;
+                    }
+
+                    //Vanilla Shardgun in TFTV requires Living Crystal research and Protean Mutane Reseach
+                    if (item.Name.LocalizationKey == "KEY_AC_SHOTGUN_NAME" &&
+                        (!____faction.Research.HasCompleted("PX_ProteanMutaneResearchDef") || !____faction.Research.HasCompleted("PX_LivingCrystalResearchDef")))
+                       
+                    {
+                        TFTVLogger.Always("Shardgun is not unlocked " + item.Name.LocalizationKey);
+                        __result = ManufactureFailureReason.NotUnlocked;
+                    }
+
+
+                    //Nerfed Scorpion in TFTV requires Armadillo tech
+                    if (item.Name.LocalizationKey == "TFTV_KEY_AC_SNIPER_NAME" &&
+                       (!____faction.Research.HasCompleted("PX_ProteanMutaneResearchDef") || !____faction.Research.HasCompleted("PX_LivingCrystalResearchDef") 
+                       || !____faction.Research.HasCompleted("NJ_VehicleTech_ResearchDef")))
+                    {
+                        TFTVLogger.Always("Scorpion TFTV is not unlocked " + item.Name.LocalizationKey);
+                        __result = ManufactureFailureReason.NotUnlocked;
+                    }
+
+                    //Vanilla Scorpion in TFTV requires Living Crystal research and Protean Mutane Reseach
+                    if (item.Name.LocalizationKey == "KEY_AC_SNIPER_NAME" &&
+                       (!____faction.Research.HasCompleted("PX_ProteanMutaneResearchDef") || !____faction.Research.HasCompleted("PX_LivingCrystalResearchDef")))
+                    {
+                        TFTVLogger.Always("Scorpion is not unlocked " + item.Name.LocalizationKey);
+                        __result = ManufactureFailureReason.NotUnlocked;
+                    }
+
+                    //Nerfed Scythe in TFTV requires Bionics 3
+                    if (item.Name.LocalizationKey == "TFTV_KEY_AC_SCYTHE_NAME" &&
+                      (!____faction.Research.HasCompleted("PX_ProteanMutaneResearchDef") || !____faction.Research.HasCompleted("PX_LivingCrystalResearchDef")
+                      || !____faction.Research.HasCompleted("SYN_Bionics3_ResearchDef")))
+                    {
+                        TFTVLogger.Always("Scythe TFTV is not unlocked " + item.Name.LocalizationKey);
+                        __result = ManufactureFailureReason.NotUnlocked;
+                    }
+
+                    //Vanilla Scythe in TFTV requires Living Crystal research and Protean Mutane Reseach
+                    if (item.Name.LocalizationKey == "KEY_AC_SCYTHE_NAME" &&
+                      (!____faction.Research.HasCompleted("PX_ProteanMutaneResearchDef") || !____faction.Research.HasCompleted("PX_LivingCrystalResearchDef")))
+                    {
+                        TFTVLogger.Always("Scythe is not unlocked " + item.Name.LocalizationKey);
+                        __result = ManufactureFailureReason.NotUnlocked;
+                    }
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+        }
+
         
 
         public static void SetReactivateCyclopsObjective(GeoLevelController controller)
@@ -109,13 +254,13 @@ namespace TFTV
             {
                 GeoscapeEventSystem eventSystem = controller.EventSystem;
 
-                    DiplomaticGeoFactionObjective cyclopsObjective = new DiplomaticGeoFactionObjective(controller.PhoenixFaction, controller.PhoenixFaction)
-                    {
-                        Title = new LocalizedTextBind("PROTECT_THE_CYCLOPS_OBJECTIVE_GEO_TITLE"),
-                        Description = new LocalizedTextBind("PROTECT_THE_CYCLOPS_OBJECTIVE_GEO_TITLE"),
-                    };
-                    cyclopsObjective.IsCriticalPath = true;
-                    controller.PhoenixFaction.AddObjective(cyclopsObjective);
+                DiplomaticGeoFactionObjective cyclopsObjective = new DiplomaticGeoFactionObjective(controller.PhoenixFaction, controller.PhoenixFaction)
+                {
+                    Title = new LocalizedTextBind("PROTECT_THE_CYCLOPS_OBJECTIVE_GEO_TITLE"),
+                    Description = new LocalizedTextBind("PROTECT_THE_CYCLOPS_OBJECTIVE_GEO_TITLE"),
+                    IsCriticalPath = true
+                };
+                controller.PhoenixFaction.AddObjective(cyclopsObjective);
               
 
             }
@@ -128,40 +273,7 @@ namespace TFTV
 
         }
         
-
-
-    /*  [HarmonyPatch(typeof(ItemDef), "get_ManufacturePrice")]
-        public static class TFTV_ItemDef_Get_ManufactureTech_BetaOnlyCostProbeAdjustmentPatch
-        {
-
-            public static void Postfix(ItemDef __instance, ref ResourcePack __result)
-            {
-                try
-                {
-                    TFTVLogger.Always("get_ManufacturePrice invoked");
-
-                    if (LOTAReworkActive)
-                    {
-                        TFTVLogger.Always("first check passed");
-
-                        if (__instance.name == "AncientSiteProbeItemDef")
-                        {
-                            TFTVLogger.Always("Second check passed");
-                            __result = new ResourcePack
-                                   (new ResourceUnit
-                                   { Type = ResourceType.Tech, Value = 5 }, new ResourceUnit { Type = ResourceType.Materials, Value = 25 });
-
-
-                        }
-                    }      
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-            }
-        }*/
-
+        
 
 
 
@@ -268,8 +380,7 @@ namespace TFTV
         }
 
        
-
-
+       
         //Adjusts amount of exotic resources 
         public static void CheckAncientResources(GeoLevelController controller)
         {

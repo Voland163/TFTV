@@ -1,6 +1,9 @@
 ﻿using Base.Defs;
 using Base.UI;
+using Base.UI.VideoPlayback;
+using EnviroSamples;
 using HarmonyLib;
+using I2.Loc;
 using PhoenixPoint.Common.ContextHelp;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.Saves;
@@ -21,6 +24,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.Remoting.Contexts;
 using static PhoenixPoint.Tactical.Entities.Statuses.TacStatusDef;
 
 namespace TFTV
@@ -243,8 +247,20 @@ namespace TFTV
                         citadel.SpawnMonster(queenTag, startingScylla);
 
                     }
+                    else if (research.ResearchID == "PX_VirophageWeapons_ResearchDef")
+                    {                       
+                        if (controller.EventSystem.GetVariable("SymesAlternativeCompleted") == 1)
+                        {
+                            GeoscapeEventContext context = new GeoscapeEventContext(research.Faction.GeoLevel.AlienFaction, research.Faction.GeoLevel.PhoenixFaction);
+                            research.Faction.GeoLevel.EventSystem.TriggerGeoscapeEvent("Helena_Virophage", context);
+
+                        }                     
+                    }
+
+
                     else if (research.ResearchID == "PX_YuggothianEntity_ResearchDef")
                     {
+                       
                         GeoscapeEventContext context = new GeoscapeEventContext(research.Faction.GeoLevel.AlienFaction, research.Faction.GeoLevel.PhoenixFaction);
                         research.Faction.GeoLevel.EventSystem.TriggerGeoscapeEvent("AlistairOnMessagesFromTheVoid", context);
 
@@ -290,6 +306,20 @@ namespace TFTV
                         TFTVAncients.SetReactivateCyclopsObjective(controller);
                     }
 
+                    else if (research.ResearchID == "NJ_Bionics2_ResearchDef")
+                    {
+                       
+                        ResearchElement bionics3 = controller.SynedrionFaction.Research.GetResearchById("SYN_Bionics3_ResearchDef");
+                        controller.SynedrionFaction.Research.GiveResearch(bionics3);
+                        controller.SynedrionFaction.Research.CompleteResearch(bionics3);
+                        //controller.SynedrionFaction.Research.FactionResearches.AddItem(research);
+                        //controller.SynedrionFaction.Research.AddProgressToResearch(research, 700);
+
+                    }
+
+                 
+                        TFTVAncients.CheckImpossibleWeaponsAdditionalRequirements(controller);
+                    
 
                 }
                 catch (Exception e)

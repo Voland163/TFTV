@@ -616,7 +616,7 @@ namespace TFTV
                 List<int> allVoidOmensAlreadyRolled = new List<int>();
                 string triggeredVoidOmens = "TriggeredVoidOmen_";
 
-                for (int x = 1; x < 20; x++)
+                for (int x = 1; x < 100; x++)
                 {
                     if (geoLevelController.EventSystem.GetVariable(triggeredVoidOmens + x) != 0)
                     {
@@ -632,6 +632,25 @@ namespace TFTV
             }
 
             throw new InvalidOperationException();
+        }
+
+        public static void ClearListOfAlreadyRolledVoidOmens(GeoLevelController geoLevelController)
+        {
+            try
+            {
+                string triggeredVoidOmens = "TriggeredVoidOmen_";
+
+                for (int x = 1; x < 100; x++)
+                {
+                    geoLevelController.EventSystem.SetVariable(triggeredVoidOmens + x, 0);
+                }
+                TFTVLogger.Always("Void Omens cleared");
+            }
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
         }
 
 

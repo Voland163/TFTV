@@ -1,8 +1,19 @@
-﻿using PhoenixPoint.Common.ContextHelp;
+﻿using Base.UI;
+using HarmonyLib;
+using PhoenixPoint.Common.ContextHelp;
+using PhoenixPoint.Common.Core;
+using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.Items;
+using PhoenixPoint.Geoscape.Entities;
+using PhoenixPoint.Geoscape.Entities.Missions.Outcomes;
 using PhoenixPoint.Geoscape.Entities.Research;
+using PhoenixPoint.Geoscape.Entities.Research.Reward;
 using PhoenixPoint.Geoscape.Levels;
+using PhoenixPoint.Geoscape.Levels.Factions;
+using PhoenixPoint.Tactical.Levels.FactionObjectives;
 using System;
+using System.Collections.Generic;
+using static PhoenixPoint.Common.Entities.Items.ItemManufacturing;
 
 namespace TFTV
 {
@@ -19,7 +30,6 @@ namespace TFTV
             {
                 controller.EventSystem.SetVariable("NewGameStarted", 1);
 
-
             }
             catch (Exception e)
             {
@@ -28,6 +38,122 @@ namespace TFTV
 
 
         }
+
+       
+
+       
+
+
+        /*   [HarmonyPatch(typeof(GeoPhoenixFaction), "OnSiteOwnerChanged")]
+           public static class GeoFaction_Init_Patch
+           {
+
+               public static void Postfix(GeoSite __instance, List<GeoSite> ____ancientSites)
+               {
+                   try
+                   {
+                       if (__instance.Type == GeoSiteType.AncientRefinery)
+                       {
+                           if (____ancientSites.Contains(__instance))
+                               {
+                               ____ancientSites.Remove(__instance);
+
+                           }
+
+                       }
+
+
+
+                   }
+                   catch (Exception e)
+                   {
+                       TFTVLogger.Error(e);
+                   }
+               }
+           }
+
+           [HarmonyPatch(typeof(GeoPhoenixFaction), "LevelStartLoadedGame")]
+           public static class GeoFaction_LevelStartLoadedGame_Patch
+           {
+
+               public static void Postfix(List<GeoSite> ____ancientSites)
+               {
+                   try
+                   {
+                       List<GeoSite> list = new List<GeoSite>(____ancientSites);
+
+                       foreach (GeoSite site in list)
+                       {
+                           if (site.Type == GeoSiteType.AncientRefinery)
+                           {
+                               ____ancientSites.Remove(site);
+                           }
+                       }
+
+
+
+
+                   }
+                   catch (Exception e)
+                   {
+                       TFTVLogger.Error(e);
+                   }
+               }
+           }
+        */
+
+        public static void CheckImpossibleWeaponsFunctionalityTags(GeoLevelController controller)
+        {
+            try
+            {
+            
+                   
+                GameTagDef scytherManufacture = DefCache.GetDef<GameTagDef>("ScytherManufacture");
+                GameTagDef scorpionManufacture = DefCache.GetDef<GameTagDef>("ScorpionManufacture");
+                GameTagDef shardGunManufacture = DefCache.GetDef<GameTagDef>("ShardGunManufacture");
+
+                //("ScytherManufacture", "5F018324-12DF-4725-97DB-569DFB0ADACB");
+                //              ("ScorpionManufacture", "B5F5F5B1-5B9B-4F5B-8F5B-5F5B5F5B5F5B");
+                //            ("ShardGunManufacture", "C5F5F5B1-5B9B-4F5B-8F5B-5F5B5F5B5F5B");
+                //          ("ScytherBionics3", "9A4B7FE7-3C59-41F5-A09C-D585E876C1F9", "SYN_Bionics3_ResearchDef", "ScytherManufacture");
+                //      ("ScorpionArmadillo", "04938B0C-4106-4488-BAAE-6869F75F0B9A", "NJ_VehicleTech_ResearchDef", "ScorpionManufacture");
+                //     ("ShardGunAdvancedViral", "A994C6B3-9EF4-4861-8604-2ED096BE9190", "ANU_AdvancedInfectionTech_ResearchDef", "ShardGunManufacture");
+
+
+                if (controller.PhoenixFaction.Research.HasCompleted("SYN_Bionics3_ResearchDef"))
+                {
+                    if (!controller.PhoenixFaction.GameTags.Contains(scytherManufacture))
+                    {
+                        controller.PhoenixFaction.AddTag(scytherManufacture);
+                    }
+                }
+                if (controller.PhoenixFaction.Research.HasCompleted("NJ_VehicleTech_ResearchDef"))
+                {
+                    if (!controller.PhoenixFaction.GameTags.Contains(scorpionManufacture))
+                    {
+                        controller.PhoenixFaction.AddTag(scorpionManufacture);
+                    }
+                }
+                if (controller.PhoenixFaction.Research.HasCompleted("ANU_AdvancedInfectionTech_ResearchDef"))
+                {
+                    if (!controller.PhoenixFaction.GameTags.Contains(shardGunManufacture))
+                    {
+                        controller.PhoenixFaction.AddTag(shardGunManufacture);
+                    }
+                }
+
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+
+
+
+        }
+
 
         public static void CheckNewLOTA(GeoLevelController controller)
         {

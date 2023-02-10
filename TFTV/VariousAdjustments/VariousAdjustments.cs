@@ -7,6 +7,7 @@ using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.UI;
+using PhoenixPoint.Geoscape.Entities.Research;
 using PhoenixPoint.Geoscape.Entities.Research.Requirement;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
@@ -381,6 +382,9 @@ namespace PRMBetterClasses.VariousAdjustments
                             _ = weaponDef.DamagePayload.DamageKeywords.RemoveAll(dkp => dkp.DamageKeywordDef == damageKeywords.ShreddingKeyword);
                             weaponDef.DamagePayload.ArmourShred = 0;
                             weaponDef.DamagePayload.ArmourShredProbabilityPerc = 0;
+                            weaponDef.DamagePayload.DamageKeywords.Add(new DamageKeywordPair { DamageKeywordDef = damageKeywords.BurningKeyword, Value = 20 });
+                            
+                            
                             //weaponDef.DamagePayload.DamageKeywords.Find(dkp => dkp.DamageKeywordDef == damageKeywords.BlastKeyword).Value = 10;
                             //weaponDef.DamagePayload.DamageKeywords.Add(new DamageKeywordPair { DamageKeywordDef = damageKeywords.PiercingKeyword, Value = 25 });
                             //weaponDef.DamagePayload.ProjectilesPerShot = 10;
@@ -392,7 +396,56 @@ namespace PRMBetterClasses.VariousAdjustments
                             //weaponDef.SpreadRadius = 6f;
                         }
                             break;
-                        
+
+                    case "1fd630cb-c45f-cf14-8a4e-095ee3c672d1": //AC_ShardGun_WeaponDef
+                        if (config.impossibleWeaponsAdjustments)
+                        {
+                            weaponDef.DamagePayload.ProjectilesPerShot = 12;
+                            weaponDef.DamagePayload.DamageKeywords[1].Value = 10;
+                            weaponDef.DamagePayload.DamageKeywords.Add(new DamageKeywordPair { DamageKeywordDef = damageKeywords.PsychicKeyword, Value = 1 });
+                            weaponDef.ViewElementDef.DisplayName1.LocalizationKey = "TFTV_KEY_AC_SHOTGUN_NAME";
+                            DefCache.GetDef<ResearchViewElementDef>("PX_ShardGun_ViewElementDef").CompleteText.LocalizationKey = "TFTV_PX_SHARDGUN_RESEARCHDEF_COMPLETE";
+                           // DefCache.GetDef<ResearchViewElementDef>("ANU_AdvancedInfectionTech_ViewElementDef").BenefitsText.LocalizationKey = "TFTV_ANU_ADVANCEDINFECTIONTECH_RESEARCHDEF_BENEFITS";
+                        }
+                        break;
+
+                    case "3489e0a7-2d5e-9704-0ada-ae332ebeed49": //AC_Mattock_WeaponDef
+                        if (config.impossibleWeaponsAdjustments) 
+                        {
+                            
+                            _ = weaponDef.DamagePayload.DamageKeywords.RemoveAll(dkp => dkp.DamageKeywordDef == damageKeywords.ShockKeyword);
+                            weaponDef.DamagePayload.DamageKeywords[0].Value = 110;
+                            weaponDef.DamagePayload.DamageKeywords.Add(new DamageKeywordPair { DamageKeywordDef = damageKeywords.SyphonKeyword, Value = 80 });
+                            weaponDef.ViewElementDef.DisplayName1.LocalizationKey = "TFTV_KEY_AC_MACE_NAME";
+                           // DefCache.GetDef<ResearchViewElementDef>("PX_MattockoftheAncients_ViewElementDef").CompleteText.LocalizationKey = "TFTV_PX_MATTOCKOFTHEANCIENTS_RESEARCHDEF_COMPLETE";
+                        }
+                        break;
+                    case "2cd06c4b-f1f5-a9b4-c9ff-afbad25be5d8"://AC_Scorpion_WeaponDef
+                        if (config.impossibleWeaponsAdjustments)
+                        {
+                            _ = weaponDef.DamagePayload.DamageKeywords.RemoveAll(dkp => dkp.DamageKeywordDef == damageKeywords.PiercingKeyword);
+                            weaponDef.DamagePayload.DamageKeywords[0].Value = 140;
+                            weaponDef.DamagePayload.ArmourPiercing = 0;
+                            weaponDef.DamagePayload.DamageKeywords.Add(new DamageKeywordPair { DamageKeywordDef = damageKeywords.ShreddingKeyword, Value = 10 });
+                            weaponDef.ViewElementDef.DisplayName1.LocalizationKey = "TFTV_KEY_AC_SNIPER_NAME";
+                            DefCache.GetDef<ResearchViewElementDef>("PX_Scorpion_ViewElementDef").CompleteText.LocalizationKey = "TFTV_PX_SCORPION_RESEARCHDEF_COMPLETE";
+                           // DefCache.GetDef<ResearchViewElementDef>("NJ_VehicleTech_ViewElementDef").BenefitsText.LocalizationKey = "TFTV_NJ_VEHICLETECH_RESEARCHDEF_BENEFITS";
+                        }
+                        break;
+                    case "4d14021e-a8ce-7444-3a19-6f3dc9c44f8a"://AC_Scyther_WeaponDef
+                        if (config.impossibleWeaponsAdjustments)
+                        {
+                            _ = weaponDef.DamagePayload.DamageKeywords.RemoveAll(dkp => dkp.DamageKeywordDef == damageKeywords.ShreddingKeyword);
+                            weaponDef.DamagePayload.DamageKeywords[0].Value = 180;
+                            weaponDef.DamagePayload.DamageKeywords.Add(new DamageKeywordPair { DamageKeywordDef = damageKeywords.BleedingKeyword, Value = 60 });
+                            weaponDef.DamagePayload.ArmourShred = 0;
+                            weaponDef.DamagePayload.ArmourShredProbabilityPerc = 0;
+                            weaponDef.ViewElementDef.DisplayName1.LocalizationKey = "TFTV_KEY_AC_SCYTHE_NAME";
+                            DefCache.GetDef<ResearchViewElementDef>("PX_Scyther_ViewElementDef").CompleteText.LocalizationKey = "TFTV_PX_SCYTHER_RESEARCHDEF_COMPLETE";
+                          //  DefCache.GetDef<ResearchViewElementDef>("SYN_Bionics3_ViewElementDef").BenefitsText.LocalizationKey = "TFTV_SYN_BIONICS3_RESEARCHDEF_BENEFITS";
+                        }
+                        break;
+                    
                     // Danchev MG
                     case "434c4004-580f-10a4-995a-c5a64e6998dc": // PX_PoisonMachineGun_WeaponDef
                         weaponDef.DamagePayload.DamageKeywords.Add(new DamageKeywordPair { DamageKeywordDef = damageKeywords.ShreddingKeyword, Value = 3 });

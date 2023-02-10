@@ -36,8 +36,10 @@ namespace TFTV
           "Need to restart the game for the changes to take effect")]
         public float amountOfExoticResources = 1f;
 
-        [ConfigField(text: "IMPOSSIBLE WEAPONS ADJUSTMENTS", description: "Switch off to keep Impossible Weapons with the same stats and functionality as Ancient Weapons in Vanilla. " +
-            "(For now, in TFTV only Rebuke has been adjusted to make it less powerful, removing its Shred Damage)")]
+        [ConfigField(text: "IMPOSSIBLE WEAPONS ADJUSTMENTS", description: "In TFTV, Ancient Weapons are replaced by the Impossible Weapons (IW) " +
+            "counterparts. They have different functionality (read: they are nerfed) " +
+            "and some of them require additional faction research.  " +
+            "Check this option off to keep Impossible Weapons with the same stats and functionality as Ancient Weapons in Vanilla and without requiring additional faction research.")]
         public bool impossibleWeaponsAdjustments = true;
 
         //Starting squad

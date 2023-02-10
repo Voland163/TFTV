@@ -1,6 +1,4 @@
 ﻿using AK.Wwise;
-using Base.Defs;
-using HarmonyLib;
 using PhoenixPoint.Common.Levels.Missions;
 using PhoenixPoint.Common.UI;
 using PhoenixPoint.Geoscape.Entities.Research;
@@ -9,14 +7,15 @@ using PhoenixPoint.Geoscape.Entities.Research.Reward;
 using PhoenixPoint.Geoscape.Events;
 using PhoenixPoint.Geoscape.Events.Eventus;
 using PhoenixPoint.Geoscape.Events.Eventus.Filters;
+using PhoenixPoint.Geoscape.Levels;
 using System;
-using System.Linq;
+using System.Collections.Generic;
 
 namespace TFTV
 {
     internal class TFTVChangesToDLC3Events
     {
-       // private static readonly DefRepository Repo = TFTVMain.Repo;
+        // private static readonly DefRepository Repo = TFTVMain.Repo;
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
         private static Event AugeryChant = null;
 
@@ -24,6 +23,10 @@ namespace TFTV
         {
             try
             {
+                GeoFactionDef phoenixPoint = DefCache.GetDef<GeoFactionDef>("Phoenix_GeoPhoenixFactionDef");
+                GeoFactionDef newJericho = DefCache.GetDef<GeoFactionDef>("NewJericho_GeoFactionDef");
+                GeoFactionDef anu = DefCache.GetDef<GeoFactionDef>("Anu_GeoFactionDef");
+                GeoFactionDef synedrion = DefCache.GetDef<GeoFactionDef>("Synedrion_GeoFactionDef");
 
                 //Festering Skies changes
                 // copy Augury chant from PROG_FS0 to PROG_FS9 and remove from PROG_FS0, because Augury doesn't happen and FS0 event will be used for a Sleeping Beauty Awakens
@@ -93,13 +96,22 @@ namespace TFTV
                 GeoTimePassedEventFilterDef timePassedFS3 = DefCache.GetDef<GeoTimePassedEventFilterDef>("E_PROG_FS3_TimePassed [GeoTimePassedEventFilterDef]");
                 timePassedFS3.TimePassedHours = 100000;
 
-                //Remove CH2 miss and assign variable change to Behemoth destruction completely
+
+
+
+                //Remove CH2 miss 
                 GeoscapeEventDef CH2_Event = DefCache.GetDef<GeoscapeEventDef>("PROG_CH2_GeoscapeEventDef");
                 CH2_Event.GeoscapeEventData.Mute = true;
-                GeoscapeEventDef CH2WIN_Event = DefCache.GetDef<GeoscapeEventDef>("PROG_CH2_WIN_GeoscapeEventDef");
-
+                //  GeoscapeEventDef CH2WIN_Event = DefCache.GetDef<GeoscapeEventDef>("PROG_CH2_WIN_GeoscapeEventDef");
                 GeoscapeEventDef FS2WIN_Event = DefCache.GetDef<GeoscapeEventDef>("PROG_FS2_WIN_GeoscapeEventDef");
-                FS2WIN_Event.GeoscapeEventData.Choices[0].Outcome.VariablesChange = CH2WIN_Event.GeoscapeEventData.Choices[0].Outcome.VariablesChange;
+                //Changing for relase 1.0.2.6, Killing Behemoth will not remove Delirium  // FS2WIN_Event.GeoscapeEventData.Choices[0].Outcome.VariablesChange = CH2WIN_Event.GeoscapeEventData.Choices[0].Outcome.VariablesChange;
+                FS2WIN_Event.GeoscapeEventData.Choices[0].Outcome.Diplomacy = new List<OutcomeDiplomacyChange>()
+                {
+                    TFTVCommonMethods.GenerateDiplomacyOutcome(anu, newJericho, 50), TFTVCommonMethods.GenerateDiplomacyOutcome(anu, synedrion, 50),
+                TFTVCommonMethods.GenerateDiplomacyOutcome(newJericho, anu, 50), TFTVCommonMethods.GenerateDiplomacyOutcome(newJericho, synedrion, 50),
+                TFTVCommonMethods.GenerateDiplomacyOutcome(synedrion, anu, 50), TFTVCommonMethods.GenerateDiplomacyOutcome(synedrion, newJericho, 50),
+                };
+
 
                 //All the stuff below was removed after new implementation, 23/9/2022
 
@@ -117,9 +129,9 @@ namespace TFTV
             {
                 ResearchDef maskedManticoreResearchDef = DefCache.GetDef<ResearchDef>("PX_Aircraft_MaskedManticore_ResearchDef");
                 ResearchViewElementDef maskedManticoreViewElementDef = DefCache.GetDef<ResearchViewElementDef>("PX_Aircraft_MaskedManticore_ViewElementDef");
-                maskedManticoreViewElementDef.CompleteText.LocalizationKey = "MASKED_MANTICORE_RESEARCHDEF_TFTV"; 
-                
-                
+                maskedManticoreViewElementDef.CompleteText.LocalizationKey = "MASKED_MANTICORE_RESEARCHDEF_TFTV";
+
+
                 //In Vanilla Masked Manticore research requires researching Virophage weapons(PX_Aircraft_MaskedManticore_ResearchDef_ExistingResearchRequirementDef_0)
                 //and Node autopsy(PX_Aircraft_MaskedManticore_ResearchDef_ExistingResearchRequirementDef_1), 
                 //It unlocks building the Masked Manticore, PX_Aircraft_MaskedManticore_ResearchDef_ManufactureResearchRewardDef_0
@@ -151,8 +163,8 @@ namespace TFTV
                 //But first we need a box to put them all in
                 ReseachRequirementDefOpContainer[] reseachRequirementsMaskedManticoreContainer = new ReseachRequirementDefOpContainer[1];
 
-               // ReseachRequirementDefContainer reseachRequirementDefContainer = new ReseachRequirementDefContainer();
-               // reseachRequirementDefContainer.Container = reseachRequirementsMaskedManticoreContainer;
+                // ReseachRequirementDefContainer reseachRequirementDefContainer = new ReseachRequirementDefContainer();
+                // reseachRequirementDefContainer.Container = reseachRequirementsMaskedManticoreContainer;
 
                 //Now the box with node autopsy, ye and citadel 
 
@@ -166,7 +178,7 @@ namespace TFTV
                 reseachRequirementsMaskedManticoreContainer[0].Requirements = researchRequirementWithNodeDefs;
 
 
-               
+
 
                 /*
                 //now let's create the second container

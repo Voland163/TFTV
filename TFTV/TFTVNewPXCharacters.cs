@@ -1,6 +1,8 @@
 ﻿using HarmonyLib;
 using PhoenixPoint.Geoscape.Entities;
+using PhoenixPoint.Geoscape.Entities.Research;
 using PhoenixPoint.Geoscape.Events;
+using PhoenixPoint.Geoscape.Events.Eventus;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Objectives;
 using System;
@@ -10,6 +12,7 @@ namespace TFTV
 {
     internal class TFTVNewPXCharacters
     {
+        private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
         public static readonly Sprite OlenaPic = Helper.CreateSpriteFromImageFile("BG_Olena_small.png");
         public static readonly Sprite AlistairPic = Helper.CreateSpriteFromImageFile("BG_alistair_small.png");
         public static readonly Sprite HelenaPic = Helper.CreateSpriteFromImageFile("helena.png");
@@ -132,13 +135,45 @@ namespace TFTV
                     }
                     else if (eventId == "PROG_FS2_WIN")
                     {
+
+                        GeoscapeEventDef afterWest = DefCache.GetDef<GeoscapeEventDef>("AlistairRoadsNoWest");
+                        GeoscapeEventDef afterSynedrion = DefCache.GetDef<GeoscapeEventDef>("AlistairRoadsNoSynedrion");
+                        GeoscapeEventDef afterAnu = DefCache.GetDef<GeoscapeEventDef>("AlistairRoadsNoAnu");
+                        string answerAboutVirophage = "KEY_ALISTAIRONVIROPHAGE_DESCRIPTION";
+                        string questionAboutVirophage = "KEY_ALISTAIRONVIROPHAGE_CHOICE";
+                        string answerAboutHelena = "KEY_ALISTAIRONHELENA_DESCRIPTION";
+                        string questionAboutHelena = "KEY_ALISTAIRONHELENA_CHOICE";
+                        
+
+                        if (context.Level.EventSystem.GetVariable("SymesAlternativeCompleted") == 1) 
+                        {
+                            afterWest.GeoscapeEventData.Choices[3].Outcome.OutcomeText.General.LocalizationKey = answerAboutHelena;
+                            afterWest.GeoscapeEventData.Choices[3].Text.LocalizationKey = questionAboutHelena;
+                            afterSynedrion.GeoscapeEventData.Choices[3].Outcome.OutcomeText.General.LocalizationKey = answerAboutHelena;
+                            afterSynedrion.GeoscapeEventData.Choices[3].Text.LocalizationKey = questionAboutHelena;
+                            afterAnu.GeoscapeEventData.Choices[3].Outcome.OutcomeText.General.LocalizationKey = answerAboutHelena;
+                            afterAnu.GeoscapeEventData.Choices[3].Text.LocalizationKey = questionAboutHelena;
+                        }
+                        else 
+                        {
+                            afterWest.GeoscapeEventData.Choices[3].Outcome.OutcomeText.General.LocalizationKey = answerAboutVirophage;
+                            afterWest.GeoscapeEventData.Choices[3].Text.LocalizationKey = questionAboutVirophage;
+                            afterSynedrion.GeoscapeEventData.Choices[3].Outcome.OutcomeText.General.LocalizationKey = answerAboutVirophage;
+                            afterSynedrion.GeoscapeEventData.Choices[3].Text.LocalizationKey = questionAboutVirophage;
+                            afterAnu.GeoscapeEventData.Choices[3].Outcome.OutcomeText.General.LocalizationKey = answerAboutVirophage;
+                            afterAnu.GeoscapeEventData.Choices[3].Text.LocalizationKey = questionAboutVirophage;
+                        }
+                        
                         // TFTVThirdAct.ActivateFS3Event(context.Level);
                         TFTVVoidOmens.RemoveAllVoidOmens(context.Level);
+                        __instance.TriggerGeoscapeEvent("AlistairRoads", context);
+                        TFTVDelirium.RemoveDeliriumFromAllCharactersWithoutMutations(context.Level);
                     }
                     else if (eventId == "Helena_Oneiromancy")
                     {
                         __instance.TriggerGeoscapeEvent("Olena_Oneiromancy", context);
                     }
+                   
 
                 }
 
@@ -318,7 +353,12 @@ namespace TFTV
                     {
                         __result.EventBackground = Helper.CreateSpriteFromImageFile("background_cyclops.jpg");
                     }
-
+                    if (geoEvent.EventID.Equals("Helena_Virophage"))
+                    {
+                        __result.EventLeader = HelenaPic;
+                        __result.EventBackground = Helper.CreateSpriteFromImageFile("background_cyclops.jpg"); 
+                    }
+                   
                 }
                 catch (Exception e)
                 {
