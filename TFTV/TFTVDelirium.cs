@@ -98,7 +98,7 @@ namespace TFTV
 
                 if (character.Progression != null)
                 {
-                    foreach (TacticalAbilityDef ability in character.Progression.Abilities)
+                 /*   foreach (TacticalAbilityDef ability in character.Progression.Abilities)
                     {
                         PassiveModifierAbilityDef passiveModifierAbilityDef = ability as PassiveModifierAbilityDef;
                         if (!(passiveModifierAbilityDef == null))
@@ -113,7 +113,7 @@ namespace TFTV
                                 }
                             }
                         }
-                    }
+                    }*/
 
 
                     foreach (PassiveModifierAbilityDef passiveModifier in character.PassiveModifiers)
@@ -133,8 +133,8 @@ namespace TFTV
                 float maxCorruption = 0;
                 int bionics = 0;
                 int currentODIlevel = character.Faction.GeoLevel.EventSystem.GetVariable("BC_SDI");
-               // TFTVLogger.Always("CurrentODIlevel is " + currentODIlevel);
-                int odiPerc = currentODIlevel * 100 / TFTVSDIandVoidOmenRoll.ODI_EventIDs.Length;
+                // TFTVLogger.Always("CurrentODIlevel is " + currentODIlevel);
+                int odiPerc = currentODIlevel * 100 / 20; //TFTVSDIandVoidOmenRoll.ODI_EventIDs.Length;
                 //  TFTVLogger.Always("odiPerc is " + odiPerc);
 
                 int actualWillpower = (int)(character.CharacterStats.Willpower.IntMax + bonusWillpower);
@@ -318,7 +318,7 @@ namespace TFTV
                     }
 
                     // Calculate the percentage of current ODI level, these two variables are globally set by our ODI event patches
-                    int odiPerc = TFTVSDIandVoidOmenRoll.CurrentODI_Level * 100 / TFTVSDIandVoidOmenRoll.ODI_EventIDs.Length;
+                    int odiPerc = TFTVSDIandVoidOmenRoll.CurrentODI_Level * 100 / 20; //TFTVSDIandVoidOmenRoll.ODI_EventIDs.Length;
                   
                     int maxCorruption = 0;
                     // Get max corruption dependent on max WP of the selected actor

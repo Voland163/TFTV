@@ -1,8 +1,6 @@
 ﻿using Base.Core;
 using Base.Defs;
-using Base.Entities.Abilities;
 using Base.Entities.Statuses;
-using Base.Levels;
 using Base.ParticleSystems;
 using Base.UI;
 using HarmonyLib;
@@ -11,9 +9,7 @@ using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
-using PhoenixPoint.Common.UI;
 using PhoenixPoint.Geoscape.Levels;
-using PhoenixPoint.Geoscape.View.ViewControllers;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.DamageKeywords;
@@ -22,7 +18,6 @@ using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.Entities.Statuses;
 using PhoenixPoint.Tactical.Entities.Weapons;
 using PhoenixPoint.Tactical.Levels;
-using PRMBetterClasses.SkillModifications;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -104,15 +99,15 @@ namespace TFTV
         //private static readonly DamageKeywordDef paralisingDamageKeywordDef =DefCache.GetDef<DamageKeywordDef>("Paralysing_DamageKeywordDataDef"));
 
 
-     /*   private static readonly DamageMultiplierStatusDef RevenantAssaultStatus = DefCache.GetDef<DamageMultiplierStatusDef>("RevenantAssaultStatus");
-        private static readonly DamageMultiplierStatusDef RevenantHeavyStatus = DefCache.GetDef<DamageMultiplierStatusDef>("RevenantHeavyStatus");
-        private static readonly DamageMultiplierStatusDef RevenantBerserkerStatus = DefCache.GetDef<DamageMultiplierStatusDef>("RevenantBerserkerStatus");
-        private static readonly DamageMultiplierStatusDef RevenantInfiltratorStatus = DefCache.GetDef<DamageMultiplierStatusDef>("RevenantInfiltratorStatus");
-        private static readonly DamageMultiplierStatusDef RevenantSniperStatus = DefCache.GetDef<DamageMultiplierStatusDef>("RevenantSniperStatus");
-        private static readonly DamageMultiplierStatusDef RevenantTechnician = DefCache.GetDef<DamageMultiplierStatusDef>("RevenantTechnicianStatus");
-        private static readonly DamageMultiplierStatusDef RevenantPriestStatus = DefCache.GetDef<DamageMultiplierStatusDef>("RevenantPriestStatus");
-        */
-               
+        /*   private static readonly DamageMultiplierStatusDef RevenantAssaultStatus = DefCache.GetDef<DamageMultiplierStatusDef>("RevenantAssaultStatus");
+           private static readonly DamageMultiplierStatusDef RevenantHeavyStatus = DefCache.GetDef<DamageMultiplierStatusDef>("RevenantHeavyStatus");
+           private static readonly DamageMultiplierStatusDef RevenantBerserkerStatus = DefCache.GetDef<DamageMultiplierStatusDef>("RevenantBerserkerStatus");
+           private static readonly DamageMultiplierStatusDef RevenantInfiltratorStatus = DefCache.GetDef<DamageMultiplierStatusDef>("RevenantInfiltratorStatus");
+           private static readonly DamageMultiplierStatusDef RevenantSniperStatus = DefCache.GetDef<DamageMultiplierStatusDef>("RevenantSniperStatus");
+           private static readonly DamageMultiplierStatusDef RevenantTechnician = DefCache.GetDef<DamageMultiplierStatusDef>("RevenantTechnicianStatus");
+           private static readonly DamageMultiplierStatusDef RevenantPriestStatus = DefCache.GetDef<DamageMultiplierStatusDef>("RevenantPriestStatus");
+           */
+
         public static void CheckForNotDeadSoldiers(TacticalLevelController level)
         {
             try
@@ -303,9 +298,10 @@ namespace TFTV
                         foreach (TacticalActorBase tacticalActorBase in pandorans.Actors.Where(tab => tab.GameTags.Contains(possibleClasses.Last())))
                         {
                             candidates.Add(tacticalActorBase);
-                            
+
                         }
-                        candidates.OrderByDescending(tab => tab.DeploymentCost);
+                        candidates = candidates.OrderByDescending(tab => tab.DeploymentCost).ToList();
+
 
 
                         if (candidates.Count > 0)
@@ -463,49 +459,20 @@ namespace TFTV
             }
         }
 
-
-
-        
-         [HarmonyPatch(typeof(TacticalAbility), "GetAbilityDescription")]
-         public static class TacticalAbility_DisplayCategory_ChangeDescriptionRevenantSkill_patch
-         {
-             public static void Postfix(TacticalAbility __instance, ref string __result)
-             {
-                 try
-                 {
-                     if (__instance.AbilityDef == revenantAbility)
-                     {
-                         string actorName = __instance.TacticalActor.name;
-                         string additionalDescription =
-                             GetDescriptionOfRevenantClassAbility(actorName, __instance.TacticalActor.TacticalLevel);
-                         __result = "This is your fallen comrade, " + actorName + ", returned as Pandoran monstrosity. "+ additionalDescription;
-
-                     }
-                 }
-                 catch (Exception e)
-                 {
-                     TFTVLogger.Error(e);
-                 }
-
-             }
-         }
-
-      /*  [HarmonyPatch(typeof(ViewElementDef), "GetInterpolatedDescription")]
+        [HarmonyPatch(typeof(TacticalAbility), "GetAbilityDescription")]
         public static class TacticalAbility_DisplayCategory_ChangeDescriptionRevenantSkill_patch
         {
-            public static void Postfix(ViewElementDef __instance, ref string __result)
+            public static void Postfix(TacticalAbility __instance, ref string __result)
             {
                 try
                 {
-                    TFTVLogger.Always("GetInterpolatedDescription");
-
-                    if (__instance == RevenantSniperStatus.Visuals.) //revenantAbility)
+                    if (__instance.AbilityDef == revenantAbility)
                     {
-                        // string actorName = __instance.TacticalActor.name;
-                        //  string additionalDescription =
-                        //    GetDescriptionOfRevenantClassAbility(actorName, __instance.TacticalActor.TacticalLevel);
-                        __result = "This is your fallen comrade, "; //+ actorName + ", returned as Pandoran monstrosity."; //+ additionalDescription;
-                        TFTVLogger.Always("GetInterpolatedDescription check passed");
+                        string actorName = __instance.TacticalActor.name;
+                        string additionalDescription =
+                            GetDescriptionOfRevenantClassAbility(actorName, __instance.TacticalActor.TacticalLevel);
+                        __result = "This is your fallen comrade, " + actorName + ", returned as Pandoran monstrosity. " + additionalDescription;
+
                     }
                 }
                 catch (Exception e)
@@ -514,8 +481,7 @@ namespace TFTV
                 }
 
             }
-        }*/
-        
+        }
 
         [HarmonyPatch(typeof(TacticalActorBase), "get_DisplayName")]
         public static class TacticalActorBase_GetDisplayName_RevenantGenerator_Patch
@@ -747,40 +713,6 @@ namespace TFTV
 
         }
 
-
-
-        /*   [HarmonyPatch(typeof(UIModuleCharacterStatus), "SetData")]
-           public static class UIModuleCharacterStatus_SetData_RevenantResistance_Patch
-           {
-               public static void Postfix(CharacterData data, UIModuleCharacterStatus __instance, ListControl ____statusIconsList)
-               {
-                   try
-                   {
-
-                       if (data.Tags.Contains(revenantResistanceGameTag))
-                       {
-
-                           Sprite icon = Helper.CreateSpriteFromImageFile("Void-04P.png");
-                           StatusData statusData = new StatusData
-                           {
-                               Name = new LocalizedTextBind("Revenant Resistance", true),
-
-                               Icon = icon
-                           };
-
-                           ____statusIconsList.AddRow<CharacterStatusAbilityRowController>(__instance.StatusPrototype).SetData(statusData);
-                       }
-                   }
-
-                   catch (Exception e)
-                   {
-                       TFTVLogger.Error(e);
-                   }
-
-               }
-           }
-        */
-
         public static DamageTypeBaseEffectDef GetPreferredDamageType(TacticalLevelController controller)
         {
             try
@@ -974,7 +906,7 @@ namespace TFTV
         }
         public static void ModifyRevenantResistanceAbility(TacticalLevelController controller)
         {
-          
+
             revenantResistanceStatus.DamageTypeDefs[0] = GetPreferredDamageType(controller);
             revenantResistanceStatus.Multiplier = 0.5f;
 
@@ -1032,28 +964,28 @@ namespace TFTV
             {
                 tacticalActor.Status.ApplyStatus<DamageMultiplierStatus>(revenantResistanceStatus);
             }
-         
+
             if (!tacticalActorBase.HasGameTag(revenantResistanceGameTag))
             {
                 tacticalActorBase.GameTags.Add(revenantResistanceGameTag);
             }
         }
 
-        public static void IncreaseRevenantHP(TacticalActor tacticalActor) 
+        public static void IncreaseRevenantHP(TacticalActor tacticalActor)
         {
-            try 
+            try
             {
-               
+
 
                 int currentEndurance = (int)(tacticalActor.CharacterStats.Endurance);
                 int newEndurance = (int)(tacticalActor.CharacterStats.Endurance * 1.15f);
-                if (tacticalActor.GameTags.Contains(revenantTier2GameTag)) 
+                if (tacticalActor.GameTags.Contains(revenantTier2GameTag))
                 {
 
                     newEndurance = (int)(tacticalActor.CharacterStats.Endurance * 1.2f);
 
                 }
-                else if (tacticalActor.GameTags.Contains(revenantTier3GameTag)) 
+                else if (tacticalActor.GameTags.Contains(revenantTier3GameTag))
                 {
                     newEndurance = (int)(tacticalActor.CharacterStats.Endurance * 1.25f);
 
@@ -1081,28 +1013,28 @@ namespace TFTV
                 if (specialization == assaultSpecialization)
                 {
                     TFTVLogger.Always("Deceased had Assault specialization");
-                   // tacticalActor.Status.ApplyStatus(RevenantAssaultStatus);
-                 
+                    // tacticalActor.Status.ApplyStatus(RevenantAssaultStatus);
+
                     if (tacticalActor.GameTags.Contains(revenantTier2GameTag))
-                    {                
+                    {
                         revenantAssault.StatModifications = new ItemStatModification[]
                         {
                             new ItemStatModification {TargetStat = StatModificationTarget.BonusAttackDamage, Modification = StatModificationType.Multiply, Value = 1.10f},
                             new ItemStatModification {TargetStat = StatModificationTarget.Speed, Modification = StatModificationType.AddMax, Value = 4},
                             new ItemStatModification {TargetStat = StatModificationTarget.Speed, Modification = StatModificationType.Add, Value = 4},
                         };
-                       // revenantAssault.ViewElementDef.Description = new LocalizedTextBind("+10% Damage", true);
+                        // revenantAssault.ViewElementDef.Description = new LocalizedTextBind("+10% Damage", true);
                     }
                     else if (tacticalActor.GameTags.Contains(revenantTier3GameTag))
                     {
-                       
+
                         revenantAssault.StatModifications = new ItemStatModification[]
                         {
                             new ItemStatModification {TargetStat = StatModificationTarget.BonusAttackDamage, Modification = StatModificationType.Multiply, Value = 1.15f},
                             new ItemStatModification {TargetStat = StatModificationTarget.Speed, Modification = StatModificationType.AddMax, Value = 6},
                             new ItemStatModification {TargetStat = StatModificationTarget.Speed, Modification = StatModificationType.Add, Value = 6},
                         };
-                      //  revenantAssault.ViewElementDef.Description = new LocalizedTextBind("+15% Damage", true);
+                        //  revenantAssault.ViewElementDef.Description = new LocalizedTextBind("+15% Damage", true);
                     }
                     tacticalActor.AddAbility(revenantAssault, tacticalActor);
 
@@ -1111,41 +1043,41 @@ namespace TFTV
                 else if (specialization == berserkerSpecialization)
                 {
                     TFTVLogger.Always("Deceased had Berserker specialization");
-                   // tacticalActor.Status.ApplyStatus(RevenantBerserkerStatus);
-                  
+                    // tacticalActor.Status.ApplyStatus(RevenantBerserkerStatus);
+
 
                     if (tacticalActor.GameTags.Contains(revenantTier2GameTag))
                     {
-                       
+
                         revenantBerserker.StatModifications = new ItemStatModification[]
                         {
                             new ItemStatModification {TargetStat = StatModificationTarget.Speed, Modification = StatModificationType.AddMax, Value = 6},
                             new ItemStatModification {TargetStat = StatModificationTarget.Speed, Modification = StatModificationType.Add, Value = 6},
                         };
 
-                       // revenantBerserker.ViewElementDef.Description = new LocalizedTextBind("+6 Speed", true);
+                        // revenantBerserker.ViewElementDef.Description = new LocalizedTextBind("+6 Speed", true);
                     }
                     else if (tacticalActor.GameTags.Contains(DefCache.GetDef<GameTagDef>("RevenantTier_3_GameTagDef")))
                     {
-                       
+
                         revenantBerserker.StatModifications = new ItemStatModification[]
                         {
                             new ItemStatModification {TargetStat = StatModificationTarget.Speed, Modification = StatModificationType.AddMax, Value = 10},
                             new ItemStatModification {TargetStat = StatModificationTarget.Speed, Modification = StatModificationType.Add, Value = 10},
                         };
 
-                      //  revenantBerserker.ViewElementDef.Description = new LocalizedTextBind("+10 Speed", true);
+                        //  revenantBerserker.ViewElementDef.Description = new LocalizedTextBind("+10 Speed", true);
                     }
                     tacticalActor.AddAbility(revenantBerserker, tacticalActor);
                 }
                 else if (specialization == heavySpecialization)
                 {
                     TFTVLogger.Always("Deceased had Heavy specialization");
-                //    tacticalActor.Status.ApplyStatus(RevenantHeavyStatus);
-                   
+                    //    tacticalActor.Status.ApplyStatus(RevenantHeavyStatus);
+
                     if (tacticalActor.GameTags.Contains(revenantTier2GameTag))
                     {
-                       
+
                         revenantHeavy.StatModifications = new ItemStatModification[]
                         {
                             new ItemStatModification {TargetStat = StatModificationTarget.Endurance, Modification = StatModificationType.AddMax, Value = 15},
@@ -1153,11 +1085,11 @@ namespace TFTV
                             new ItemStatModification {TargetStat = StatModificationTarget.Health, Modification = StatModificationType.Add, Value = 150}
                         };
 
-                       // revenantHeavy.ViewElementDef.Description = new LocalizedTextBind("+10 Strength", true);
+                        // revenantHeavy.ViewElementDef.Description = new LocalizedTextBind("+10 Strength", true);
                     }
                     else if (tacticalActor.GameTags.Contains(revenantTier3GameTag))
                     {
-                      
+
                         revenantHeavy.StatModifications = new ItemStatModification[]
                         {
                             new ItemStatModification {TargetStat = StatModificationTarget.Endurance, Modification = StatModificationType.AddMax, Value = 20},
@@ -1165,114 +1097,114 @@ namespace TFTV
                             new ItemStatModification {TargetStat = StatModificationTarget.Health, Modification = StatModificationType.Add, Value = 200}
                         };
 
-                      //  revenantHeavy.ViewElementDef.Description = new LocalizedTextBind("+15 Strength", true);
+                        //  revenantHeavy.ViewElementDef.Description = new LocalizedTextBind("+15 Strength", true);
                     }
                     tacticalActor.AddAbility(revenantHeavy, tacticalActor);
                 }
                 else if (specialization == infiltratorSpecialization)
                 {
                     TFTVLogger.Always("Deceased had Infiltrator specialization");
-                 //   tacticalActor.Status.ApplyStatus(RevenantInfiltratorStatus);
-                    
+                    //   tacticalActor.Status.ApplyStatus(RevenantInfiltratorStatus);
+
 
                     if (tacticalActor.GameTags.Contains(revenantTier2GameTag))
                     {
-                       
+
                         revenantInfiltrator.StatModifications = new ItemStatModification[]
                         {
-                            new ItemStatModification {TargetStat = StatModificationTarget.Stealth, Modification = StatModificationType.Add, Value = 30},
+                            new ItemStatModification {TargetStat = StatModificationTarget.Stealth, Modification = StatModificationType.Add, Value = 0.3f},
                         };
 
-                      //  revenantInfiltrator.ViewElementDef.Description = new LocalizedTextBind("+30% Stealth", true);
+                        //  revenantInfiltrator.ViewElementDef.Description = new LocalizedTextBind("+30% Stealth", true);
                     }
                     else if (tacticalActor.GameTags.Contains(revenantTier3GameTag))
                     {
-                       
+
                         revenantInfiltrator.StatModifications = new ItemStatModification[]
                         {
                           // new ItemStatModification {TargetStat = StatModificationTarget.Endurance, Modification = StatModificationType.AddMax, Value = 30},
-                           new ItemStatModification {TargetStat = StatModificationTarget.Stealth, Modification = StatModificationType.Add, Value = 50},
+                           new ItemStatModification {TargetStat = StatModificationTarget.Stealth, Modification = StatModificationType.Add, Value = 0.5f},
                         };
 
-                     //   revenantInfiltrator.ViewElementDef.Description = new LocalizedTextBind("+50% Stealth", true);
+                        //   revenantInfiltrator.ViewElementDef.Description = new LocalizedTextBind("+50% Stealth", true);
                     }
                     tacticalActor.AddAbility(revenantInfiltrator, tacticalActor);
                 }
                 else if (specialization == priestSpecialization)
                 {
                     TFTVLogger.Always("Deceased had Priest specialization");
-               //     tacticalActor.Status.ApplyStatus(RevenantPriestStatus);
-                
+                    //     tacticalActor.Status.ApplyStatus(RevenantPriestStatus);
+
                     if (tacticalActor.GameTags.Contains(revenantTier2GameTag))
-                    {            
+                    {
                         revenantPriest.StatModifications = new ItemStatModification[]
                         {
                             new ItemStatModification {TargetStat = StatModificationTarget.Willpower, Modification = StatModificationType.AddMax, Value = 20},
                             new ItemStatModification {TargetStat = StatModificationTarget.Willpower, Modification = StatModificationType.Add, Value = 20},
                         };
 
-                       // revenantPriest.ViewElementDef.Description = new LocalizedTextBind("+20 Willpower", true);
+                        // revenantPriest.ViewElementDef.Description = new LocalizedTextBind("+20 Willpower", true);
                     }
                     else if (tacticalActor.GameTags.Contains(revenantTier3GameTag))
                     {
-                      
+
                         revenantPriest.StatModifications = new ItemStatModification[]
                         {
                             new ItemStatModification {TargetStat = StatModificationTarget.Willpower, Modification = StatModificationType.AddMax, Value = 30},
                             new ItemStatModification {TargetStat = StatModificationTarget.Willpower, Modification = StatModificationType.Add, Value = 30},
                         };
 
-                      //  revenantPriest.ViewElementDef.Description = new LocalizedTextBind("+30 Willpower", true);
+                        //  revenantPriest.ViewElementDef.Description = new LocalizedTextBind("+30 Willpower", true);
                     }
                     tacticalActor.AddAbility(revenantPriest, tacticalActor);
                 }
-             
+
                 else if (specialization == sniperSpecialization)
                 {
-                    
+
                     TFTVLogger.Always("Deceased had Sniper specialization");
-                //    tacticalActor.Status.ApplyStatus(RevenantSniperStatus);
-                   
-                  
+                    //    tacticalActor.Status.ApplyStatus(RevenantSniperStatus);
+
+
 
                     if (tacticalActor.GameTags.Contains(DefCache.GetDef<GameTagDef>("RevenantTier_2_GameTagDef")))
-                    {               
+                    {
                         revenantSniper.StatModifications = new ItemStatModification[]
                         {
                            // new ItemStatModification {TargetStat = StatModificationTarget.Perception, Modification = StatModificationType.AddMax, Value = 15},
-                            new ItemStatModification {TargetStat = StatModificationTarget.Perception, Modification = StatModificationType.Add, Value = 15},
+                            new ItemStatModification {TargetStat = StatModificationTarget.Perception, Modification = StatModificationType.Add, Value = 0.15f},
                         };
-                        
-                
+
+
                     }
                     else if (tacticalActor.GameTags.Contains(DefCache.GetDef<GameTagDef>("RevenantTier_3_GameTagDef")))
                     {
-                       
+
                         revenantSniper.StatModifications = new ItemStatModification[]
                         {
                          //   new ItemStatModification {TargetStat = StatModificationTarget.Perception, Modification = StatModificationType.AddMax, Value = 20 },
-                            new ItemStatModification {TargetStat = StatModificationTarget.Perception, Modification = StatModificationType.Add, Value = 20},
-                            new ItemStatModification {TargetStat = StatModificationTarget.Accuracy, Modification = StatModificationType.Add, Value = 20},
+                            new ItemStatModification {TargetStat = StatModificationTarget.Perception, Modification = StatModificationType.Add, Value = 0.2f},
+                            new ItemStatModification {TargetStat = StatModificationTarget.Accuracy, Modification = StatModificationType.Add, Value = 0.2f},
                           //  new ItemStatModification {TargetStat = StatModificationTarget.Accuracy, Modification = StatModificationType.AddMax, Value = 20},
                         };
 
 
-                  //      RevenantSniperStatus.Visuals.Description = new LocalizedTextBind("Nemesis, +20 Perception, +20% Accuracy, +20% HP", true);
-                      
+                        //      RevenantSniperStatus.Visuals.Description = new LocalizedTextBind("Nemesis, +20 Perception, +20% Accuracy, +20% HP", true);
+
                     }
-                  
+
                     tacticalActor.AddAbility(revenantSniper, tacticalActor);
                 }
                 else if (specialization == technicianSpecialization)
                 {
                     TFTVLogger.Always("Deceased had Technician specialization");
-                 //   tacticalActor.Status.ApplyStatus(RevenantTechnician);
+                    //   tacticalActor.Status.ApplyStatus(RevenantTechnician);
                     tacticalActor.AddAbility(revenantTechnician, tacticalActor);
-                    
+
 
                     if (tacticalActor.GameTags.Contains(revenantTier2GameTag))
                     {
-                       
+
                         revenantTechnician.StatModifications = new ItemStatModification[]
                         {
                             new ItemStatModification {TargetStat = StatModificationTarget.Endurance, Modification = StatModificationType.Add, Value = 5},
@@ -1285,7 +1217,7 @@ namespace TFTV
                     }
                     else if (tacticalActor.GameTags.Contains(revenantTier3GameTag))
                     {
-                      
+
                         revenantTechnician.StatModifications = new ItemStatModification[]
                         {
                             new ItemStatModification {TargetStat = StatModificationTarget.Endurance, Modification = StatModificationType.Add, Value = 10},
@@ -1650,387 +1582,6 @@ namespace TFTV
                 }
             }
         }
-
-
-
-
-
-        /*
-        [HarmonyPatch(typeof(TacticalFaction), "GiveExperienceForObjectives")]
-        public static class TacticalLevelController_GiveExperienceForObjectives_Revenant_Patch
-        {
-            public static void Postfix(TacticalFaction __instance)
-            {
-                try
-                {
-                    if (__instance == __instance.TacticalLevel.GetFactionByCommandName("PX"))
-                    {
-                        TacticalFaction phoenix = __instance;
-
-                     
-                        TFTVLogger.Always("Skill Points are " + __instance.Skillpoints);
-                        int sp = __instance.Skillpoints;
-
-                        if (TFTVRevenantResearch.RevenantPoints == 10)
-                        {
-                            __instance.SetStartingSkillPoints(sp+6);
-                            TFTVLogger.Always(__instance.Skillpoints + " awarded for killing Revenant");
-                        }
-                        else if (TFTVRevenantResearch.RevenantPoints == 5)
-                        {
-                            __instance.SetStartingSkillPoints(sp + 4);
-                            TFTVLogger.Always(__instance.Skillpoints + " awarded for killing Revenant");
-                        }
-                        else if (TFTVRevenantResearch.RevenantPoints == 1)
-                        {
-                            __instance.SetStartingSkillPoints(sp + 2);
-                            TFTVLogger.Always(__instance.Skillpoints + " awarded for killing Revenant");
-                        }
-                        else
-                        {
-                            return;
-                        }
-
-                    }
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-            }
-        }
-
-        */
-
-
-        /*
-                [HarmonyPatch(typeof(TacticalLevelController), "ActorEnteredPlay")]
-                public static class TacticalLevelController_ActorEnteredPlay_RevenantGenerator_Patch
-                {
-                    public static void Postfix(TacticalActorBase actor, TacticalLevelController __instance)
-                    {
-                        try
-                        {
-                            if (revenantSpawned == false)
-                            {
-
-                                if (actor.TacticalFaction.Faction.BaseDef == sharedData.AlienFactionDef && DeadSoldiersDelirium.Count > 0
-                                    && !actor.GameTags.Contains(DefCache.GetDef<GameTagDef>().FirstOrDefault(p => p.name.Contains("Revenant"))))
-                                {
-
-                                    //First lets check time of death to create a first list of dead soldiers
-                                    List<GeoTacUnitId> allDeadSoldiers = __instance.TacticalGameParams.Statistics.DeadSoldiers.Keys.ToList();
-
-                                    //This list is after first crib re time they have been dead
-                                    List<GeoTacUnitId> deadLongEnoughSoldiers = new List<GeoTacUnitId>();
-
-                                    //These are class specific eligibility lists
-
-                                    List<GeoTacUnitId> eligibleForScylla = new List<GeoTacUnitId>();
-                                    List<GeoTacUnitId> eligibleForAcheron = new List<GeoTacUnitId>();
-                                    List<GeoTacUnitId> eligibleForChiron = new List<GeoTacUnitId>();
-                                    List<GeoTacUnitId> eligibleForSiren = new List<GeoTacUnitId>();
-                                    List<GeoTacUnitId> eligibleForTriton = new List<GeoTacUnitId>();
-                                    List<GeoTacUnitId> eligibleForArthron = new List<GeoTacUnitId>();
-
-                                    //first cribing
-                                    foreach (GeoTacUnitId candidate in allDeadSoldiers)
-                                    {
-                                        TimeUnit timeUnit = CheckTimerFromDeath(candidate, __instance);
-                                        TFTVLogger.Always("The time unit when character died is " + timeUnit.DateTime.ToString());
-                                        TFTVLogger.Always("Current time is " + timeOfMissionStart.DateTime.ToString());
-                                        TFTVLogger.Always((timeOfMissionStart - timeUnit).TimeSpan.Days.ToString());
-                                        if ((timeOfMissionStart - timeUnit).TimeSpan.Days >= 1)
-                                        {
-                                            deadLongEnoughSoldiers.Add(candidate);
-                                        }
-                                    }
-
-                                    //second class-specific eligibility cribing
-                                    foreach (GeoTacUnitId candidate in deadLongEnoughSoldiers)
-                                    {
-                                        int delirium = CheckDeliriumAtDeath(candidate, __instance);
-
-                                        if (delirium >= 10)
-                                        {
-                                            eligibleForScylla.Add(candidate);
-                                        }
-                                        else if (delirium == 9)
-                                        {
-                                            eligibleForAcheron.Add(candidate);
-                                        }
-                                        else if (delirium == 8)
-                                        {
-                                            eligibleForChiron.Add(candidate);
-                                        }
-                                        else if (delirium < 8 && delirium >= 6)
-                                        {
-                                            eligibleForSiren.Add(candidate);
-                                        }
-                                        else if (delirium < 6 && delirium >= 3)
-                                        {
-                                            eligibleForTriton.Add(candidate);
-                                        }
-                                        else if (delirium < 3) //&& delirium >= 1 for testing
-                                        {
-                                            eligibleForArthron.Add(candidate);
-                                        }
-                                    }
-
-
-                                    ClassTagDef crabTag =DefCache.GetDef<ClassTagDef>().FirstOrDefault
-                                        (ged => ged.name.Equals("Crabman_ClassTagDef"));
-                                    ClassTagDef fishmanTag =DefCache.GetDef<ClassTagDef>().FirstOrDefault
-                                        (ged => ged.name.Equals("Fishman_ClassTagDef"));
-                                    ClassTagDef sirenTag =DefCache.GetDef<ClassTagDef>().FirstOrDefault
-                                        (ged => ged.name.Equals("Siren_ClassTagDef"));
-                                    ClassTagDef chironTag =DefCache.GetDef<ClassTagDef>().FirstOrDefault
-                                        (ged => ged.name.Equals("Chiron_ClassTagDef"));
-                                    ClassTagDef acheronTag =DefCache.GetDef<ClassTagDef>().FirstOrDefault
-                                        (ged => ged.name.Equals("Acheron_ClassTagDef"));
-                                    ClassTagDef queenTag =DefCache.GetDef<ClassTagDef>().FirstOrDefault
-                                        (ged => ged.name.Equals("Queen_ClassTagDef"));
-
-                                    if (actor.GameTags.Contains(crabTag) && eligibleForArthron.Count > 0 && !CheckForActorWithTag(crabTag, __instance)
-                                        && RevenantCounter[0] == 0)
-                                    {
-                                        GeoTacUnitId theChosen = eligibleForArthron.First();
-                                        TFTVLogger.Always("Here is an eligible crab: " + actor.GetDisplayName());
-                                        TacticalActor tacticalActor = actor as TacticalActor;
-                                        AddRevenantStatusEffect(actor);
-                                        SetRevenantTierTag(theChosen, actor, __instance);
-                                        actor.name = GetDeadSoldiersNameFromID(theChosen, __instance);
-                                        //  TFTVLogger.Always("Crab's name has been changed to " + actor.GetDisplayName());
-                                        SetDeathTime(theChosen, __instance, timeOfMissionStart);
-                                        DeadSoldiersDelirium[actor.name] += 1;
-                                        TFTVLogger.Always("The time of death has been reset to " + CheckTimerFromDeath(theChosen, __instance).DateTime.ToString());
-                                        SetRevenantClassAbility(theChosen, __instance, tacticalActor);
-                                        AddRevenantResistanceAbility(actor);
-                                        //  SpreadResistance(__instance);
-                                        actor.UpdateStats();
-
-                                        RevenantCounter[0] = 1;
-                                    }
-
-                                    if (actor.GameTags.Contains(fishmanTag) && eligibleForTriton.Count > 0 && !CheckForActorWithTag(fishmanTag, __instance)
-                                        && RevenantCounter[1] == 0)
-                                    {
-                                        GeoTacUnitId theChosen = eligibleForTriton.First();
-                                        TFTVLogger.Always("Here is an eligible fishman: " + actor.GetDisplayName());
-                                        TacticalActor tacticalActor = actor as TacticalActor;
-                                        AddRevenantStatusEffect(actor);
-                                        SetRevenantTierTag(theChosen, actor, __instance);
-                                        actor.name = GetDeadSoldiersNameFromID(theChosen, __instance);
-                                        SetDeathTime(theChosen, __instance, timeOfMissionStart);
-                                        DeadSoldiersDelirium[actor.name] += 1;
-                                        TFTVLogger.Always("The time of death has been reset to " + CheckTimerFromDeath(theChosen, __instance).DateTime.ToString());
-                                        SetRevenantClassAbility(theChosen, __instance, tacticalActor);
-                                        AddRevenantResistanceAbility(actor);
-                                        //   SpreadResistance(__instance);
-                                        actor.UpdateStats();
-
-                                        RevenantCounter[1] = 1;
-                                    }
-
-                                    if (actor.GameTags.Contains(sirenTag) && eligibleForSiren.Count > 0 && !CheckForActorWithTag(sirenTag, __instance)
-                                        && RevenantCounter[2] == 0)
-                                    {
-                                        GeoTacUnitId theChosen = eligibleForSiren.First();
-                                        TFTVLogger.Always("Here is an eligible Siren: " + actor.GetDisplayName());
-                                        TacticalActor tacticalActor = actor as TacticalActor;
-                                        AddRevenantStatusEffect(actor);
-                                        SetRevenantTierTag(theChosen, actor, __instance);
-                                        actor.name = GetDeadSoldiersNameFromID(theChosen, __instance);
-                                        DeadSoldiersDelirium[actor.name] += 1;
-                                        SetDeathTime(theChosen, __instance, timeOfMissionStart);
-                                        TFTVLogger.Always("The time of death has been reset to " + CheckTimerFromDeath(theChosen, __instance).DateTime.ToString());
-                                        SetRevenantClassAbility(theChosen, __instance, tacticalActor);
-                                        AddRevenantResistanceAbility(actor);
-                                        //   SpreadResistance(__instance);
-                                        actor.UpdateStats();
-
-
-                                        RevenantCounter[2] = 1;
-                                    }
-                                    if (actor.GameTags.Contains(chironTag) && eligibleForChiron.Count > 0 && !CheckForActorWithTag(chironTag, __instance)
-                                        && RevenantCounter[3] == 0)
-                                    {
-                                        GeoTacUnitId theChosen = eligibleForChiron.First();
-                                        TFTVLogger.Always("Here is an eligible Chiron: " + actor.GetDisplayName());
-                                        TacticalActor tacticalActor = actor as TacticalActor;
-                                        AddRevenantStatusEffect(actor);
-                                        SetRevenantTierTag(theChosen, actor, __instance);
-                                        actor.name = GetDeadSoldiersNameFromID(theChosen, __instance);
-                                        SetDeathTime(theChosen, __instance, timeOfMissionStart);
-                                        DeadSoldiersDelirium[actor.name] += 1;
-                                        TFTVLogger.Always("The time of death has been reset to " + CheckTimerFromDeath(theChosen, __instance).DateTime.ToString());
-                                        SetRevenantClassAbility(theChosen, __instance, tacticalActor);
-                                        AddRevenantResistanceAbility(actor);
-                                        //   SpreadResistance(__instance);
-                                        actor.UpdateStats();
-
-
-                                        RevenantCounter[3] = 1;
-                                    }
-                                    if (actor.GameTags.Contains(acheronTag) && eligibleForAcheron.Count > 0 && !CheckForActorWithTag(acheronTag, __instance)
-                                        && RevenantCounter[4] == 0)
-                                    {
-                                        GeoTacUnitId theChosen = eligibleForAcheron.First();
-                                        TFTVLogger.Always("Here is an eligible Chiron: " + actor.GetDisplayName());
-                                        TacticalActor tacticalActor = actor as TacticalActor;
-                                        AddRevenantStatusEffect(actor);
-                                        SetRevenantTierTag(theChosen, actor, __instance);
-                                        actor.name = GetDeadSoldiersNameFromID(theChosen, __instance);
-                                        DeadSoldiersDelirium[actor.name] += 1;
-                                        SetDeathTime(theChosen, __instance, timeOfMissionStart);
-                                        TFTVLogger.Always("The time of death has been reset to " + CheckTimerFromDeath(theChosen, __instance).DateTime.ToString());
-                                        SetRevenantClassAbility(theChosen, __instance, tacticalActor);
-                                        AddRevenantResistanceAbility(actor);
-                                        //    SpreadResistance(__instance);
-                                        actor.UpdateStats();
-                                        RevenantCounter[4] = 1;
-                                    }
-                                    if (actor.GameTags.Contains(queenTag) && eligibleForScylla.Count > 0 && !CheckForActorWithTag(queenTag, __instance)
-                                        && RevenantCounter[5] == 0)
-                                    {
-                                        GeoTacUnitId theChosen = eligibleForScylla.First();
-                                        TFTVLogger.Always("Here is an eligible Chiron: " + actor.GetDisplayName());
-                                        TacticalActor tacticalActor = actor as TacticalActor;
-                                        AddRevenantStatusEffect(actor);
-                                        SetRevenantTierTag(theChosen, actor, __instance);
-                                        actor.name = GetDeadSoldiersNameFromID(theChosen, __instance);
-                                        DeadSoldiersDelirium[actor.name] += 1;
-                                        SetDeathTime(theChosen, __instance, timeOfMissionStart);
-                                        TFTVLogger.Always("The time of death has been reset to " + CheckTimerFromDeath(theChosen, __instance).DateTime.ToString());
-                                        SetRevenantClassAbility(theChosen, __instance, tacticalActor);
-                                        AddRevenantResistanceAbility(actor);
-                                        //   SpreadResistance(__instance);
-                                        actor.UpdateStats();
-                                        RevenantCounter[5] = 1;
-                                    }
-
-                                }
-                            }
-                            revenantSpawned = true;
-                        }
-                        catch (Exception e)
-                        {
-                            TFTVLogger.Error(e);
-                        }
-                    }
-                }
-
-         public static void SpreadResistance(TacticalLevelController level)
-        {
-            try
-            {
-                TFTVLogger.Always("Spread Resistance invoked ");
-                List<TacticalFaction> factions = level.Factions.ToList();
-                foreach (TacticalFaction faction in factions)
-                {
-                    if (faction.Faction.FactionDef.Equals(sharedData.AlienFactionDef))
-                    {
-                        foreach (TacticalActorBase actor in faction.Actors.ToList())
-                        {
-                            TFTVLogger.Always("looking at actor " + actor.name);
-
-                            if (!level.TacticalGameParams.Statistics.LivingSoldiers.ContainsKey(actor.GeoUnitId)
-                            && !actor.GameTags.Contains(DefCache.GetDef<GameTagDef>().FirstOrDefault(p => p.name.Contains("Revenant"))))
-                            {
-                                TFTVLogger.Always("Got passed the if checks");
-                                AddRevenantResistanceAbility(actor);
-                                TFTVLogger.Always("revenantSpecialResistance now contains " + revenantSpecialResistance.Count);
-                            }
-                        }
-                    }
-                }
-
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-
-
-        }
-         public static bool CheckForActorWithTag(ClassTagDef classTagDef, TacticalLevelController level)
-        {
-            try
-            {
-                TacticalFaction alienFaction = level.GetTacticalFaction(sharedData.AlienFactionDef);
-                // GameTagDef revenantTag =DefCache.GetDef<GameTagDef>().FirstOrDefault(p => p.name.Contains("Revenant"));
-
-                foreach (TacticalActor actor in alienFaction.TacticalActors)
-                {
-                    if (actor.tag.Contains(classTagDef.name) && actor.GameTags.Contains(DefCache.GetDef<GameTagDef>().FirstOrDefault(p => p.name.Contains("Revenant"))))
-                    {
-                        return true;
-
-                    }
-                }
-                return false;
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-            throw new InvalidOperationException();
-        }
-
-
-        public static int CheckDeliriumAtDeath(GeoTacUnitId deadSoldier, TacticalLevelController level)
-        {
-            try
-            {
-                int Delirium = DeadSoldiersDelirium.TryGetValue(GetDeadSoldiersNameFromID(deadSoldier, level), out Delirium) ? Delirium : 0;
-                return Delirium;
-
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-            throw new InvalidOperationException();
-        }
-         /*        public static void RevenantResistanceCheck(TacticalLevelController controller)
-                {
-                    try
-                    {
-
-                        List<TacticalActorBase> pandorans = controller.GetFactionByCommandName("aln").Actors.ToList();
-                        bool revenantPresent = false;
-
-                        foreach (TacticalActorBase actor in pandorans)
-                        {
-                            if (actor.HasGameTag(TFTVMain.DefCache.GetDef<GameTagDef>().FirstOrDefault(p => p.name.Contains("Revenant"))))
-                            {
-                                revenantPresent = true;
-                                TFTVLogger.Always("On new turn, revenant is found");
-                            }
-                        }
-
-                        if (revenantPresent == true)
-                        {
-
-
-                            foreach (TacticalActorBase actor in pandorans)
-                            {
-                                if (!controller.TacticalGameParams.Statistics.LivingSoldiers.ContainsKey(actor.GeoUnitId)
-                                     && !actor.GameTags.Contains(TFTVMain.DefCache.GetDef<GameTagDef>().FirstOrDefault(p => p.name.Contains("Revenant")))
-                                     && actor.GetAbilityWithDef<DamageMultiplierAbility>(TFTVMain.DefCache.GetDef<DamageMultiplierAbilityDef>("RevenantResistance_AbilityDef"))) == null)
-
-                                    AddRevenantResistanceAbility(actor);
-                                    TFTVLogger.Always(actor.name + " received the revenant resistance ability.");
-
-                            }
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        TFTVLogger.Error(e);
-                    }
-                }*/
-
 
     }
 }

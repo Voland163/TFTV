@@ -1338,7 +1338,7 @@ namespace TFTV
                             //Allies lose 4WP
                             __instance.CharacterStats.WillPoints.Subtract((__state * 2));
                             death.Actor.TacticalActorBaseDef.WillPointWorth = __state;
-                        } 
+                        }
                     }
                 }
             }
@@ -1515,41 +1515,46 @@ namespace TFTV
 
                     if (HumanEnemiesAndTactics.GetValueSafe(faction) == 1)
                     {
+                        TFTVLogger.Always("Applying tactic Terrifying Aura");
                         TerrifyingAura(controller, faction);
                     }
                     else if (HumanEnemiesAndTactics.GetValueSafe(faction) == 2)
                     {
+                        TFTVLogger.Always("Tactic Starting Volley");
                         // StartingVolley(controller);
                     }
                     else if (HumanEnemiesAndTactics.GetValueSafe(faction) == 3)
                     {
+                        TFTVLogger.Always("Applying tactic Experimental Drugs");
                         ExperimentalDrugs(controller, faction);
                     }
                     else if (HumanEnemiesAndTactics.GetValueSafe(faction) == 4)
                     {
+                        TFTVLogger.Always("Applying tactic Optical Shield");
                         OpticalShield(controller, faction);
                     }
                     else if (HumanEnemiesAndTactics.GetValueSafe(faction) == 5)
                     {
+                        TFTVLogger.Always("Applying tactic Fire Discipline");
                         FireDiscipline(controller, faction);
                     }
                     else if (HumanEnemiesAndTactics.GetValueSafe(faction) == 6)
                     {
-
+                        TFTVLogger.Always("Tactic Blood Frenzy");
                     }
                     else if (HumanEnemiesAndTactics.GetValueSafe(faction) == 7)
                     {
-
+                        TFTVLogger.Always("Tactic Retribution");
                     }
                     else if (HumanEnemiesAndTactics.GetValueSafe(faction) == 8)
                     {
+                        TFTVLogger.Always("Applying tactic Ambush");
                         Ambush(controller, faction);
-
                     }
                     else if (HumanEnemiesAndTactics.GetValueSafe(faction) == 9)
                     {
+                        TFTVLogger.Always("Applying tactic Assisted Targeting");
                         AssistedTargeting(controller, faction);
-
                     }
                 }
             }
@@ -1872,7 +1877,7 @@ namespace TFTV
         {
             try
             {
-                List<TacticalFaction> enemyHumanFactions = TFTVHumanEnemies.GetHumanEnemyFactions(controller);
+                List<TacticalFaction> enemyHumanFactions = GetHumanEnemyFactions(controller);
                 if (enemyHumanFactions.Count != 0)
                 {
                     foreach (TacticalFaction faction in enemyHumanFactions)
@@ -1880,43 +1885,61 @@ namespace TFTV
                         if (faction.Faction.FactionDef.ShortName == factionName)
                         {
 
+                            TacticalActor leader = null;
+
                             foreach (TacticalActorBase tacticalActorBase in faction.Actors)
                             {
-                                TacticalActor leader = tacticalActorBase as TacticalActor;
-
                                 if (tacticalActorBase.HasGameTag(HumanEnemyTier1GameTag))
                                 {
-                                    // StatModification stealthBuff = new StatModification() { Modification = StatModificationType.Add, Value = 1, StatName = "Stealth" };
-
-
-                                    foreach (TacticalActorBase allyTacticalActorBase in faction.Actors)
+                                    if (tacticalActorBase.IsAlive)
                                     {
-                                        if (allyTacticalActorBase.BaseDef.name == "Soldier_ActorDef" && allyTacticalActorBase.InPlay)
-                                        {
-                                            TacticalActor actor = allyTacticalActorBase as TacticalActor;
-                                            float magnitude = 20;
+                                        TFTVLogger.Always("Found leader " + tacticalActorBase.name);
+                                        leader = tacticalActorBase as TacticalActor;
+                                    }
+                                }
+                            }
 
-                                            if (leader.IsAlive)
+                            foreach (TacticalActorBase allyTacticalActorBase in faction.Actors)
+                            {
+                                if (allyTacticalActorBase.BaseDef.name == "Soldier_ActorDef" && allyTacticalActorBase.InPlay)
+                                {
+                                    TacticalActor actor = allyTacticalActorBase as TacticalActor;
+                                    float magnitude = 20;
+
+                                    if (leader != null)
+                                    {
+                                        TFTVLogger.Always("Leader " + leader.name + " is alive");
+                                        if ((allyTacticalActorBase.Pos - leader.Pos).magnitude < magnitude
+                                            && actor.GetAbilityWithDef<Ability>(returnFire) == null && actor != leader)
+                                        {
+                                            TFTVLogger.Always(allyTacticalActorBase.name + " is in range of " + leader.name + ", adding return fire to " + actor.name);
+                                            actor.AddAbility(returnFire, actor);
+                                        }
+                                        else if (actor.GetAbilityWithDef<Ability>(returnFire) != null)
+                                        {
+                                            if(actor.HasGameTag(heavy) && (actor.LevelProgression.Level > 1 ||
+                                            !actor.HasGameTag(HumanEnemyTier4GameTag)))
                                             {
-                                                if ((allyTacticalActorBase.Pos - tacticalActorBase.Pos).magnitude < magnitude
-                                                    && actor.GetAbilityWithDef<Ability>(returnFire) == null && actor != leader)
-                                                {
-                                                    TFTVLogger.Always("Actor in range, return fire");
-                                                    actor.AddAbility(returnFire, actor);
-                                                }
-                                                else if (actor.GetAbilityWithDef<Ability>(returnFire) != null && (!actor.HasGameTag
-                                                    (heavy) && (actor.LevelProgression.Level > 1 ||
-                                                    !actor.HasGameTag(HumanEnemyTier4GameTag))))
-                                                {
-                                                    actor.RemoveAbility(returnFire);
-                                                }
+                                               
                                             }
-                                            else if (!leader.IsAlive && actor.GetAbilityWithDef<Ability>(returnFire) != null && (!actor.HasGameTag
-                                                    (heavy) && (actor.LevelProgression.Level > 1 ||
-                                                    !actor.HasGameTag(HumanEnemyTier4GameTag))))
+                                            else 
                                             {
+                                                TFTVLogger.Always(allyTacticalActorBase.name + " is not in range of " + leader.name + ", removing return fire from " + actor.name);
                                                 actor.RemoveAbility(returnFire);
+
                                             }
+                                        }
+                                    }
+                                    else if (leader == null && actor.GetAbilityWithDef<Ability>(returnFire) != null)
+                                    {
+                                        if (actor.HasGameTag(heavy) && (actor.LevelProgression.Level > 1 || !actor.HasGameTag(HumanEnemyTier4GameTag)))
+                                        {
+
+                                        }
+                                        else
+                                        {
+                                            TFTVLogger.Always("Leader is dead. Removing return fire from " + actor.name);
+                                            actor.RemoveAbility(returnFire);
                                         }
                                     }
                                 }

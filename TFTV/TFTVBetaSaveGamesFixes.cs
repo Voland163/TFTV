@@ -102,58 +102,6 @@ namespace TFTV
            }
         */
 
-        public static void CheckImpossibleWeaponsFunctionalityTags(GeoLevelController controller)
-        {
-            try
-            {
-            
-                   
-                GameTagDef scytherManufacture = DefCache.GetDef<GameTagDef>("ScytherManufacture");
-                GameTagDef scorpionManufacture = DefCache.GetDef<GameTagDef>("ScorpionManufacture");
-                GameTagDef shardGunManufacture = DefCache.GetDef<GameTagDef>("ShardGunManufacture");
-
-                //("ScytherManufacture", "5F018324-12DF-4725-97DB-569DFB0ADACB");
-                //              ("ScorpionManufacture", "B5F5F5B1-5B9B-4F5B-8F5B-5F5B5F5B5F5B");
-                //            ("ShardGunManufacture", "C5F5F5B1-5B9B-4F5B-8F5B-5F5B5F5B5F5B");
-                //          ("ScytherBionics3", "9A4B7FE7-3C59-41F5-A09C-D585E876C1F9", "SYN_Bionics3_ResearchDef", "ScytherManufacture");
-                //      ("ScorpionArmadillo", "04938B0C-4106-4488-BAAE-6869F75F0B9A", "NJ_VehicleTech_ResearchDef", "ScorpionManufacture");
-                //     ("ShardGunAdvancedViral", "A994C6B3-9EF4-4861-8604-2ED096BE9190", "ANU_AdvancedInfectionTech_ResearchDef", "ShardGunManufacture");
-
-
-                if (controller.PhoenixFaction.Research.HasCompleted("SYN_Bionics3_ResearchDef"))
-                {
-                    if (!controller.PhoenixFaction.GameTags.Contains(scytherManufacture))
-                    {
-                        controller.PhoenixFaction.AddTag(scytherManufacture);
-                    }
-                }
-                if (controller.PhoenixFaction.Research.HasCompleted("NJ_VehicleTech_ResearchDef"))
-                {
-                    if (!controller.PhoenixFaction.GameTags.Contains(scorpionManufacture))
-                    {
-                        controller.PhoenixFaction.AddTag(scorpionManufacture);
-                    }
-                }
-                if (controller.PhoenixFaction.Research.HasCompleted("ANU_AdvancedInfectionTech_ResearchDef"))
-                {
-                    if (!controller.PhoenixFaction.GameTags.Contains(shardGunManufacture))
-                    {
-                        controller.PhoenixFaction.AddTag(shardGunManufacture);
-                    }
-                }
-
-
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-
-
-
-
-        }
-
 
         public static void CheckNewLOTA(GeoLevelController controller)
         {

@@ -1,17 +1,12 @@
-using Base;
-using Base.Core;
 using Base.Serialization.General;
-using HarmonyLib;
-using PhoenixPoint.Common.Entities;
-using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Modding;
 using PhoenixPoint.Tactical.Levels;
 using System;
 using System.Collections.Generic;
-using UnityEngine;
 
 namespace TFTV
 {
+    
     /// <summary>
     /// Mod's custom save data for tactical.
     /// </summary>
@@ -36,10 +31,11 @@ namespace TFTV
         public Dictionary<int, int[]> ProjectOsirisStatsTacticalSaveData;// = TFTVRevenantResearch.ProjectOsirisStats;
         public bool ProjectOrisisCompletedSaveData;// = TFTVRevenantResearch.ProjectOsiris;
         public int RevenantId;
-        public bool [] VoidOmensCheck = TFTVVoidOmens.VoidOmensCheck;
+        public bool[] VoidOmensCheck = TFTVVoidOmens.VoidOmensCheck;
         //Commented out for release #12
         public int HoplitesKilledOnMission;
         public bool LOTAReworkActiveInTactical;
+        public bool TurnZeroMethodsExecuted;
 
     }
 
@@ -49,6 +45,7 @@ namespace TFTV
     /// </summary>
     public class TFTVTactical : ModTactical
     {
+        public static bool TurnZeroMethodsExecuted = false;
         /// <summary>
         /// Called when Tactical starts.
         /// </summary>
@@ -72,7 +69,6 @@ namespace TFTV
             TFTVLogger.Always("Project Osiris researched " + TFTVRevenantResearch.ProjectOsiris);
 
             TFTVHumanEnemies.RollCount = 0;
-            //Commented out for release #13
             TFTVAncients.CheckCyclopsDefense();
             TFTVLogger.Always("Tactical start completed");
             TFTVLogger.Always("Difficulty level is " + tacController.Difficulty.Order);
@@ -87,20 +83,15 @@ namespace TFTV
         public override void OnTacticalEnd()
         {
 
-              TFTVLogger.Always("OnTacticalEnd check");
-            TFTVRevenant.revenantCanSpawn=false;
-      
+            TFTVLogger.Always("OnTacticalEnd check");
+            TFTVRevenant.revenantCanSpawn = false;
+
             TFTVRevenantResearch.CheckRevenantCapturedOrKilled(Controller);
-       
-            
 
             base.OnTacticalEnd();
 
-        
-
-            
         }
-       
+
         /// <summary>
         /// Called when Tactical save is being process. At this point level is already created, but TacticalStart is not called.
         /// </summary>
@@ -131,6 +122,7 @@ namespace TFTV
                 //Commented out for release #13
                 TFTVAncients.HoplitesKilled = data.HoplitesKilledOnMission;
                 TFTVAncients.LOTAReworkActive = data.LOTAReworkActiveInTactical;
+                TurnZeroMethodsExecuted = data.TurnZeroMethodsExecuted;
                 TFTVBetaSaveGamesFixes.CheckNewLOTASavegame();
             }
             catch (Exception e)
@@ -162,12 +154,13 @@ namespace TFTV
                 infestedHavenPopulationSaveData = TFTVInfestationStory.HavenPopulation,
                 infestedHavenOriginalOwnerSaveData = TFTVInfestationStory.OriginalOwner,
                 RevenantId = TFTVRevenant.revenantID,
-                //commented out for release #13
                 HoplitesKilledOnMission = TFTVAncients.HoplitesKilled,
-                LOTAReworkActiveInTactical = TFTVAncients.LOTAReworkActive
+                LOTAReworkActiveInTactical = TFTVAncients.LOTAReworkActive,
+                TurnZeroMethodsExecuted = TurnZeroMethodsExecuted
+
 
             };
-            
+
         }
         /// <summary>
         /// Called when new turn starts in tactical. At this point all factions must play in their order.
@@ -187,19 +180,22 @@ namespace TFTV
                         TFTVHumanEnemies.CheckMissionType(Controller);
                     }
 
-                    //commented out for release #12
-                   if (turnNumber == 0 && TFTVAncients.CheckIfAncientsPresent(Controller))
+                    if (turnNumber == 0 && TFTVAncients.CheckIfAncientsPresent(Controller))
                     {
                         TFTVAncients.AdjustAncientsOnDeployment(Controller);
                     }
 
-                    if (turnNumber == 0)
-                    {
-                        TFTVRevenant.ModifyRevenantResistanceAbility(Controller);
-                        TFTVRevenant.CheckForNotDeadSoldiers(Controller);
-                        TFTVRevenant.RevenantCheckAndSpawn(Controller);
-                        TFTVRevenant.ImplementVO19(Controller);
+                    if (turnNumber == 0 && !TurnZeroMethodsExecuted)
+                    {          
+                            TFTVLogger.Always("Turn 0 check");
+                            TFTVRevenant.ModifyRevenantResistanceAbility(Controller);
+                            TFTVRevenant.CheckForNotDeadSoldiers(Controller);
+                            TFTVRevenant.RevenantCheckAndSpawn(Controller);
+                            TFTVRevenant.ImplementVO19(Controller);
+                            TFTVVoidOmens.VO5TurnHostileCivviesFriendly(Controller);
+                            TurnZeroMethodsExecuted = true;
                     }
+
                     TFTVRevenant.revenantSpecialResistance.Clear();
                     TFTVUmbra.SpawnUmbra(Controller);
                     TFTVHumanEnemies.ChampRecoverWPAura(Controller);

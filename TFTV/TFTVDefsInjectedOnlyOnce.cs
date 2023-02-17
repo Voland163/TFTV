@@ -83,7 +83,25 @@ namespace TFTV
             CreateVoidOmenRemindersInTactical();
             RemoveMindControlImmunityVFX();
             AddContributionPointsToPriestAndTech();
+            SyphonAttackFix();
+           
         }
+        
+
+        public static void SyphonAttackFix()
+        {
+            try 
+            {
+
+                DefCache.GetDef<SyphoningDamageKeywordDataDef>("Syphon_DamageKeywordDataDef").SyphonBasedOnHealthDamageDealt = false;
+            }
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
 
         public static void AddContributionPointsToPriestAndTech()
         {
@@ -1716,7 +1734,7 @@ namespace TFTV
                                                 missionTypeDef.name == "StorySYN4_CustomMissionTypeDef")
                                             {
                                                 data.FactionDef = banditFaction;
-                                                TFTVLogger.Always("In mission " + missionTypeDef.name + " the enemy faction is " + data.FactionDef.name);
+                                              //  TFTVLogger.Always("In mission " + missionTypeDef.name + " the enemy faction is " + data.FactionDef.name);
                                             }
                                         }
                                     }

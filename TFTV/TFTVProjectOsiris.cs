@@ -414,7 +414,7 @@ namespace TFTV
 
                     if (allProjectOsirisCandidates.Count > 0) //it can happen that this list is empty because savescumming
                     {
-                        List<int> orderedList = allProjectOsirisCandidates.Values.OrderBy(x => x).ToList();
+                        List<int> orderedList = allProjectOsirisCandidates.Values.OrderByDescending(x => x).ToList();
 
                         UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
                         int roll = UnityEngine.Random.Range(0, 100);

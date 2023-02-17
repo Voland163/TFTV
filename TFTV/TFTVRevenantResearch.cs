@@ -247,6 +247,9 @@ namespace TFTV
 
                             if (pandoranActorBase.HasGameTag(anyRevenantGameTag) && pandoranActor.Status.GetStatus<ParalysedStatus>(DefCache.GetDef<ParalysedStatusDef>("Paralysed_StatusDef")) != null)
                             {
+                                TFTVRevenant.revenantSpawned = true;
+                                TFTVLogger.Always("Revenant was captured, so revenantSpawned is now " + TFTVRevenant.revenantSpawned);
+                                
                                 RevenantCaptured = true;
                                 if (pandoranActor.HasGameTag(revenantTier1GameTag))
                                 {

@@ -14,7 +14,6 @@ using PhoenixPoint.Common.UI;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.Abilities;
 using PhoenixPoint.Geoscape.Entities.Missions.Outcomes;
-using PhoenixPoint.Geoscape.Entities.Research;
 using PhoenixPoint.Geoscape.Events;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
@@ -34,7 +33,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Security.Permissions;
 using UnityEngine;
 using UnityEngine.UI;
 using static PhoenixPoint.Common.Entities.Items.ItemManufacturing;
@@ -76,9 +74,30 @@ namespace TFTV
         // private static readonly GameTagDef MaxPowerTag = DefCache.GetDef<GameTagDef>("MaxPower");
 
 
+        [HarmonyPatch(typeof(GeoPhoenixFaction), "ActivatePhoenixBase")]
+        public static class GeoPhoenixFaction_ActivatePhoenixBase_GiveGlory_Patch
+        {
+            public static void Postfix(GeoPhoenixFaction __instance)
+            {
+                try
+                {
+                    if (__instance.GeoLevel.EventSystem.GetVariable("Photographer") != 1 && __instance.Bases.Count() > 2)
+                    {
+                        GeoscapeEventContext eventContext = new GeoscapeEventContext(__instance.GeoLevel.ViewerFaction, __instance);
+                        __instance.GeoLevel.EventSystem.TriggerGeoscapeEvent("OlenaLotaStart", eventContext);
+                        __instance.GeoLevel.EventSystem.SetVariable("Photographer", 1);
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+        }
+
         public static void CheckImpossibleWeaponsAdditionalRequirements(GeoLevelController controller)
         {
-            try 
+            try
             {
                 TFTVConfig config = TFTVMain.Main.Config;
                 if (config.impossibleWeaponsAdjustments)
@@ -113,7 +132,7 @@ namespace TFTV
                         }
                     }
                 }
-            
+
             }
             catch (Exception e)
             {
@@ -122,12 +141,11 @@ namespace TFTV
 
 
         }
-        
 
         [HarmonyPatch(typeof(ItemManufacturing), "CanManufacture")]
         public static class GeoFaction_CanManufacture_Patch
         {
-            
+
             public static void Postfix(ManufacturableItem item, ref ManufactureFailureReason __result, GeoFaction ____faction)
             {
                 try
@@ -139,49 +157,49 @@ namespace TFTV
                     //AC Crossbow is not nerfed, but in TFTV it is unlocked by the Living Crystal research
                     if (item.Name.LocalizationKey == "KEY_AC_CROSSBOW_NAME" && !____faction.Research.HasCompleted("PX_LivingCrystalResearchDef"))
                     {
-                        TFTVLogger.Always("Crossbow is not unlocked " + item.Name.LocalizationKey);
+                     //   TFTVLogger.Always("Crossbow is not unlocked " + item.Name.LocalizationKey);
                         __result = ManufactureFailureReason.NotUnlocked;
                     }
 
                     //Rebuke is nerfed, and in TFTV it is unlocked by the Protean Mutane research
                     if (item.Name.LocalizationKey == "KEY_AC_HEAVY_NAME" && !____faction.Research.HasCompleted("PX_ProteanMutaneResearchDef"))
                     {
-                        TFTVLogger.Always("Rebuke is not unlocked " + item.Name.LocalizationKey);
+                      //  TFTVLogger.Always("Rebuke is not unlocked " + item.Name.LocalizationKey);
                         __result = ManufactureFailureReason.NotUnlocked;
                     }
 
                     //Nerfed Mattock in TFTV has a different name, but both nerfed and Vanilla now require Protean Mutane research
                     if ((item.Name.LocalizationKey == "TFTV_KEY_AC_MACE_NAME" || item.Name.LocalizationKey == "KEY_AC_MACE_NAME") && !____faction.Research.HasCompleted("PX_ProteanMutaneResearchDef"))
                     {
-                        TFTVLogger.Always("Mattock is not unlocked " + item.Name.LocalizationKey);
+                     //   TFTVLogger.Always("Mattock is not unlocked " + item.Name.LocalizationKey);
                         __result = ManufactureFailureReason.NotUnlocked;
                     }
 
                     //Nerfed Shardgun in TFTV requires Advanced Infection Tech
-                    if (item.Name.LocalizationKey == "TFTV_KEY_AC_SHOTGUN_NAME" && 
-                        (!____faction.Research.HasCompleted("PX_ProteanMutaneResearchDef") || !____faction.Research.HasCompleted("PX_LivingCrystalResearchDef") 
+                    if (item.Name.LocalizationKey == "TFTV_KEY_AC_SHOTGUN_NAME" &&
+                        (!____faction.Research.HasCompleted("PX_ProteanMutaneResearchDef") || !____faction.Research.HasCompleted("PX_LivingCrystalResearchDef")
                         || !____faction.Research.HasCompleted("ANU_AdvancedInfectionTech_ResearchDef")))
                     {
-                        TFTVLogger.Always("Shardgun TFTV is not unlocked " + item.Name.LocalizationKey);
+                     //   TFTVLogger.Always("Shardgun TFTV is not unlocked " + item.Name.LocalizationKey);
                         __result = ManufactureFailureReason.NotUnlocked;
                     }
 
                     //Vanilla Shardgun in TFTV requires Living Crystal research and Protean Mutane Reseach
                     if (item.Name.LocalizationKey == "KEY_AC_SHOTGUN_NAME" &&
                         (!____faction.Research.HasCompleted("PX_ProteanMutaneResearchDef") || !____faction.Research.HasCompleted("PX_LivingCrystalResearchDef")))
-                       
+
                     {
-                        TFTVLogger.Always("Shardgun is not unlocked " + item.Name.LocalizationKey);
+                      //  TFTVLogger.Always("Shardgun is not unlocked " + item.Name.LocalizationKey);
                         __result = ManufactureFailureReason.NotUnlocked;
                     }
 
 
                     //Nerfed Scorpion in TFTV requires Armadillo tech
                     if (item.Name.LocalizationKey == "TFTV_KEY_AC_SNIPER_NAME" &&
-                       (!____faction.Research.HasCompleted("PX_ProteanMutaneResearchDef") || !____faction.Research.HasCompleted("PX_LivingCrystalResearchDef") 
+                       (!____faction.Research.HasCompleted("PX_ProteanMutaneResearchDef") || !____faction.Research.HasCompleted("PX_LivingCrystalResearchDef")
                        || !____faction.Research.HasCompleted("NJ_VehicleTech_ResearchDef")))
                     {
-                        TFTVLogger.Always("Scorpion TFTV is not unlocked " + item.Name.LocalizationKey);
+                      //  TFTVLogger.Always("Scorpion TFTV is not unlocked " + item.Name.LocalizationKey);
                         __result = ManufactureFailureReason.NotUnlocked;
                     }
 
@@ -189,7 +207,7 @@ namespace TFTV
                     if (item.Name.LocalizationKey == "KEY_AC_SNIPER_NAME" &&
                        (!____faction.Research.HasCompleted("PX_ProteanMutaneResearchDef") || !____faction.Research.HasCompleted("PX_LivingCrystalResearchDef")))
                     {
-                        TFTVLogger.Always("Scorpion is not unlocked " + item.Name.LocalizationKey);
+                      //  TFTVLogger.Always("Scorpion is not unlocked " + item.Name.LocalizationKey);
                         __result = ManufactureFailureReason.NotUnlocked;
                     }
 
@@ -198,7 +216,7 @@ namespace TFTV
                       (!____faction.Research.HasCompleted("PX_ProteanMutaneResearchDef") || !____faction.Research.HasCompleted("PX_LivingCrystalResearchDef")
                       || !____faction.Research.HasCompleted("SYN_Bionics3_ResearchDef")))
                     {
-                        TFTVLogger.Always("Scythe TFTV is not unlocked " + item.Name.LocalizationKey);
+                      //  TFTVLogger.Always("Scythe TFTV is not unlocked " + item.Name.LocalizationKey);
                         __result = ManufactureFailureReason.NotUnlocked;
                     }
 
@@ -206,7 +224,7 @@ namespace TFTV
                     if (item.Name.LocalizationKey == "KEY_AC_SCYTHE_NAME" &&
                       (!____faction.Research.HasCompleted("PX_ProteanMutaneResearchDef") || !____faction.Research.HasCompleted("PX_LivingCrystalResearchDef")))
                     {
-                        TFTVLogger.Always("Scythe is not unlocked " + item.Name.LocalizationKey);
+                      //  TFTVLogger.Always("Scythe is not unlocked " + item.Name.LocalizationKey);
                         __result = ManufactureFailureReason.NotUnlocked;
                     }
 
@@ -217,8 +235,6 @@ namespace TFTV
                 }
             }
         }
-
-        
 
         public static void SetReactivateCyclopsObjective(GeoLevelController controller)
         {
@@ -250,7 +266,7 @@ namespace TFTV
 
         public static void SetProtectCyclopsObjective(GeoLevelController controller)
         {
-            try 
+            try
             {
                 GeoscapeEventSystem eventSystem = controller.EventSystem;
 
@@ -261,7 +277,7 @@ namespace TFTV
                     IsCriticalPath = true
                 };
                 controller.PhoenixFaction.AddObjective(cyclopsObjective);
-              
+
 
             }
 
@@ -272,10 +288,6 @@ namespace TFTV
 
 
         }
-        
-        
-
-
 
         public static void SetObtainLCandPMSamplesObjective(GeoLevelController controller)
         {
@@ -315,15 +327,12 @@ namespace TFTV
 
         }
 
-
-
-
         public static void RemoveManuallySetObjective(GeoLevelController controller, string title)
         {
             try
             {
                 List<GeoFactionObjective> listOfObjectives = controller.PhoenixFaction.Objectives.ToList();
-               
+
                 foreach (GeoFactionObjective objective1 in listOfObjectives)
                 {
                     if (objective1.Title == null)
@@ -379,8 +388,6 @@ namespace TFTV
             }
         }
 
-       
-       
         //Adjusts amount of exotic resources 
         public static void CheckAncientResources(GeoLevelController controller)
         {
@@ -474,7 +481,7 @@ namespace TFTV
                     archeologySettingsDef.AncientSiteSetting[1].RefinerySiteName.LocalizationKey = "KEY_AC_ORICHALCUM_REFINERY";
                     archeologySettingsDef.AncientSiteSetting[2].RefinerySiteName.LocalizationKey = "KEY_AC_CRYSTAL_REFINERY";
                 }
-             
+
                 //AutoRepair_AddAbilityStatusDef  AncientsPoweredUp AncientMaxPower_AbilityDef
                 // DamageMultiplierStatusDef sourceAbilityStatusDef = DefCache.GetDef<DamageMultiplierStatusDef>("BionicResistances_StatusDef");
                 // 
@@ -1201,7 +1208,18 @@ namespace TFTV
                 {
                     if (tacticalActorBase is TacticalActor guardian && tacticalActorBase.HasGameTag(hopliteTag) && !guardian.Status.HasStatus(AncientGuardianStealthStatus))
                     {
+                        if (guardian.CharacterStats.WillPoints < 30)
+                        {
+                            if (guardian.CharacterStats.WillPoints > 25)
+                            {
+                                guardian.CharacterStats.WillPoints.Set(30);
+                            }
+                            else
+                            {
+                                guardian.CharacterStats.WillPoints.Add(5);
 
+                            }
+                        }
 
                         if (guardian.CharacterStats.WillPoints >= 30)
                         {
@@ -1210,10 +1228,8 @@ namespace TFTV
                                 guardian.AddAbility(ancientsPowerUpAbility, guardian);
                                 guardian.Status.ApplyStatus(ancientsPowerUpStatus);
 
-
                                 TacContextHelpManager tacContextHelpManager = (TacContextHelpManager)UnityEngine.Object.FindObjectOfType(typeof(TacContextHelpManager));
                                 tacContextHelpManager.EventTypeTriggered(HintTrigger.ActorSeen, guardian, guardian);
-
                             }
                         }
                         else
@@ -1224,13 +1240,29 @@ namespace TFTV
                                 guardian.Status.Statuses.Remove(guardian.Status.GetStatusByName(ancientsPowerUpStatus.EffectName));
 
                             }
-                            guardian.CharacterStats.WillPoints.Add(5);
+
                         }
                         guardian.CharacterStats.Speed.SetMax(guardian.CharacterStats.WillPoints.IntValue);
                         guardian.CharacterStats.Speed.Set(guardian.CharacterStats.WillPoints.IntValue);
                     }
                     else if (tacticalActorBase is TacticalActor cyclops && tacticalActorBase.HasGameTag(cyclopsTag))
                     {
+                        if (cyclops.HasStatus(AlertedStatus))
+                        {
+                            if (cyclops.CharacterStats.WillPoints < 40)
+                            {
+                                if (cyclops.CharacterStats.WillPoints > 35)
+                                {
+                                    cyclops.CharacterStats.WillPoints.Set(40);
+                                }
+                                else
+                                {
+                                    cyclops.CharacterStats.WillPoints.Add(5);
+
+                                }
+                            }
+                        }
+                        
                         if (cyclops.CharacterStats.WillPoints >= 40)
                         {
                             if (cyclops.GetAbilityWithDef<PassiveModifierAbility>(ancientsPowerUpAbility) == null)
@@ -1251,10 +1283,7 @@ namespace TFTV
 
                             }
                         }
-                        if (cyclops.HasStatus(AlertedStatus))
-                        {
-                            cyclops.CharacterStats.WillPoints.Add(5);
-                        }
+                                              
                         cyclops.CharacterStats.Speed.SetMax(cyclops.CharacterStats.WillPoints.IntValue);
                         cyclops.CharacterStats.Speed.Set(cyclops.CharacterStats.WillPoints.IntValue);
                     }

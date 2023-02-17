@@ -107,12 +107,12 @@ namespace TFTV
             {
                 try
                 {
-
                     if (__instance.TacticalActor.GetAbilityWithDef<TacticalAbility>(feral) != null && __instance.Source is Equipment)
                     {
-                        __result = UnityEngine.Random.Range(0, 100) < 20;
+                        __result = __result || UnityEngine.Random.Range(0, 100) < 20;
                         TFTVLogger.Always("The fumble action is " + __instance.GetAbilityDescription() + " and the fumble result is " + __result);
                     }
+                    
                 }
                 catch (Exception e)
                 {

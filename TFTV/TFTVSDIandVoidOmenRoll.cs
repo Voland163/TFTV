@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using static Base.Audio.WwiseIDs.SWITCHES;
 
 namespace TFTV
 {
@@ -267,11 +268,20 @@ namespace TFTV
             try
             {
                 TFTVConfig config = TFTVMain.Main.Config;
-                List<int> voidOmensList = new List<int> { 1, 2, 4, 5, 6, 8, 9, 10, 12, 13, 14, 18 };
+                List<int> voidOmensList = new List<int> { 1, 2, 4, 5, 6, 8, 9, 12, 13, 14, 18 };
+                int currentODIlevel = controller.EventSystem.GetVariable("BC_SDI");
+                // TFTVLogger.Always("CurrentODIlevel is " + currentODIlevel);
+                int odiPerc = currentODIlevel * 5;
+
 
                 if (config.MoreMistVO)
                 {
                     voidOmensList.Add(7);
+                }
+
+                if (odiPerc < 45) //only add unlimited Delirium if max Delirium is not reached
+                {
+                    voidOmensList.Add(10);
                 }
 
                 if (controller.AlienFaction.Research.HasCompleted("ALN_CrabmanUmbra_ResearchDef"))

@@ -3,14 +3,13 @@ using Base.Defs;
 using Base.Entities;
 using Base.UI;
 using HarmonyLib;
-using PhoenixPoint.Common.Core;
-using PhoenixPoint.Common.Entities.Characters;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Levels.Missions;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
+using PhoenixPoint.Tactical.Levels;
 using PhoenixPoint.Tactical.Levels.FactionObjectives;
 using PhoenixPoint.Tactical.Levels.Missions;
 using SETUtil.Extend;
@@ -78,10 +77,10 @@ namespace TFTV
             {
                 try
                 {
-                  
-                        TFTVLogger.Always("PrepareMissionActivators");
-                        PatchInAllBaseDefenseDefs();
-                  
+
+                    TFTVLogger.Always("PrepareMissionActivators");
+                    PatchInAllBaseDefenseDefs();
+
                 }
                 catch (Exception e)
                 {
@@ -180,7 +179,7 @@ namespace TFTV
             }
 
         }
-      
+
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
 
         [HarmonyPatch(typeof(GeoMission), "PrepareLevel")]
@@ -292,6 +291,69 @@ namespace TFTV
                 }
             }
         }
+
+
+
+        [HarmonyPatch(typeof(WipeEnemyFactionObjective), "EvaluateObjective")]
+        public static class TFTV_HavenDefendersHostileFactionObjective_EvaluateObjective_Patch
+        {
+            public static bool Prefix(FactionObjective __instance, ref FactionObjectiveState __result,
+                List<TacticalFaction> ____enemyFactions, List<TacticalFactionDef> ____overrideFactions, bool ____ignoreDeployment)
+            {
+                try
+                {
+                    if (TFTVVoidOmens.VoidOmensCheck[5])
+                    {
+                        TacticalLevelController controller = __instance.Level;
+                        string MissionType = controller.TacticalGameParams.MissionData.MissionType.SaveDefaultName;
+
+                        if (MissionType == "HavenDefense")
+                        {
+                            if (!__instance.IsUiHidden)
+                            {
+
+                              //  TFTVLogger.Always("WipeEnemyFactionObjetive invoked");
+
+                                if (!__instance.Faction.HasTacActorsThatCanWin() && !__instance.Faction.HasUndeployedTacActors())
+                                {
+                                    __result = FactionObjectiveState.Failed;
+                                    TFTVLogger.Always("WipeEnemyFactionObjetive failed");
+                                    return false; // skip original method
+                                }
+
+                                foreach (TacticalFaction enemyFaction in controller.Factions)
+                                {
+                                    if (enemyFaction.ParticipantKind == TacMissionParticipant.Intruder)
+                                    {
+                                        // TFTVLogger.Always("The faction is " + faction.TacticalFactionDef.name);
+                                        if (!enemyFaction.HasTacActorsThatCanWin())
+                                        {
+                                            TFTVLogger.Always("HavenDefense with hostile defenders, no intruders alive, so mission should be a win");
+                                            __result = FactionObjectiveState.Achieved;
+                                            return false;
+                                        }
+
+                                    }
+                                }
+
+
+                            }
+                            return true;
+                        }
+                        return true;
+                    }
+                    return true;
+                }
+
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
+
+
 
         //Patch to avoid triggering "failed" state for VO objectives when player loses a character
         [HarmonyPatch(typeof(KeepSoldiersAliveFactionObjective), "EvaluateObjective")]

@@ -1134,7 +1134,7 @@ namespace TFTV
                     "6CAFD922-60C6-449E-A652-C2BD94386BE5",
                     skillName);
                 infiltrator.StatModifications = new ItemStatModification[]
-                { new ItemStatModification {TargetStat = StatModificationTarget.Stealth, Modification = StatModificationType.MultiplyMax, Value = 1.15f},
+                { new ItemStatModification {TargetStat = StatModificationTarget.Stealth, Modification = StatModificationType.Add, Value = 0.15f},
                 };
                 infiltrator.ItemTagStatModifications = new EquipmentItemTagStatModification[0];
                 infiltrator.ViewElementDef.DisplayName1 = new LocalizedTextBind("Infiltrator Revenant", true);
@@ -1560,7 +1560,7 @@ namespace TFTV
                     tagName + "_GameTagDef");
 
 
-                TFTVLogger.Always("Human Enemy Tags created");
+            //    TFTVLogger.Always("Human Enemy Tags created");
 
             }
 

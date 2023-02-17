@@ -1248,7 +1248,6 @@ namespace TFTV
         //This changes display of Delirium bar in personnel edit screen to show current Delirium value vs max delirium value the character can have
         // taking into account ODI level and bionics
         [HarmonyPatch(typeof(UIModuleCharacterProgression), "SetStatusesPanel")]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051")]
         internal static class BG_UIModuleCharacterProgression_SetStatusesPanel_patch
         {
 
