@@ -267,12 +267,12 @@ namespace TFTV
                         __instance.GeoLevel.EventSystem.SetVariable("BerithResearchVariable", 1);
                         TFTVLogger.Always("Aliens should now have Beriths");
                     }
-                    else if (__instance.GeoLevel.EventSystem.GetVariable(BehemothRoamings) == 4)//4 - __instance.GeoLevel.CurrentDifficultyLevel.Order <= roaming) 
+                    else if (__instance.GeoLevel.EventSystem.GetVariable(BehemothRoamings) == 2)//4 - __instance.GeoLevel.CurrentDifficultyLevel.Order <= roaming) 
                     {
                         __instance.GeoLevel.EventSystem.SetVariable("AbbadonResearchVariable", 1);
                         TFTVLogger.Always("Aliens should now have Abbadons");
                     }
-                    else if (__instance.GeoLevel.EventSystem.GetVariable(BehemothRoamings) == 5)//4 - __instance.GeoLevel.CurrentDifficultyLevel.Order <= roaming) 
+                    else if (__instance.GeoLevel.EventSystem.GetVariable(BehemothRoamings) == 3)//4 - __instance.GeoLevel.CurrentDifficultyLevel.Order <= roaming) 
                     {
 
                         if (__instance.GeoLevel.EventSystem.GetVariable("BehemothPatternEventTriggered") == 0)
@@ -352,7 +352,6 @@ namespace TFTV
                     if (haven.Site.SiteId == idOfHaven)
                     {
                         target = haven.Site;
-
                     }
                 }
                 return target;

@@ -1,6 +1,8 @@
 using Base.Serialization.General;
 using PhoenixPoint.Modding;
+using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Levels;
+using PhoenixPoint.Tactical.Levels.Mist;
 using System;
 using System.Collections.Generic;
 
@@ -171,10 +173,14 @@ namespace TFTV
             try
             {
                 TFTVLogger.Always("The turn is " + turnNumber);
+               
+             //   TFTVLogger.Always("AI Actions influenced by Safety consideration during previous turn " + TFTVExperimental.CounterAIActionsInfluencedBySafetyConsideration);
+             //   TFTVExperimental.CounterAIActionsInfluencedBySafetyConsideration = 0;
+
 
                 if (!Controller.TacMission.MissionData.MissionType.name.Contains("Tutorial"))
                 {
-
+                   
                     if (turnNumber == 0 && TFTVHumanEnemies.HumanEnemiesAndTactics.Count == 0)
                     {
                         TFTVHumanEnemies.CheckMissionType(Controller);

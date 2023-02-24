@@ -1,19 +1,9 @@
-﻿using Base.UI;
-using HarmonyLib;
-using PhoenixPoint.Common.ContextHelp;
-using PhoenixPoint.Common.Core;
-using PhoenixPoint.Common.Entities.GameTags;
+﻿using PhoenixPoint.Common.ContextHelp;
 using PhoenixPoint.Common.Entities.Items;
-using PhoenixPoint.Geoscape.Entities;
-using PhoenixPoint.Geoscape.Entities.Missions.Outcomes;
 using PhoenixPoint.Geoscape.Entities.Research;
-using PhoenixPoint.Geoscape.Entities.Research.Reward;
 using PhoenixPoint.Geoscape.Levels;
-using PhoenixPoint.Geoscape.Levels.Factions;
-using PhoenixPoint.Tactical.Levels.FactionObjectives;
 using System;
-using System.Collections.Generic;
-using static PhoenixPoint.Common.Entities.Items.ItemManufacturing;
+
 
 namespace TFTV
 {
@@ -38,70 +28,6 @@ namespace TFTV
 
 
         }
-
-       
-
-       
-
-
-        /*   [HarmonyPatch(typeof(GeoPhoenixFaction), "OnSiteOwnerChanged")]
-           public static class GeoFaction_Init_Patch
-           {
-
-               public static void Postfix(GeoSite __instance, List<GeoSite> ____ancientSites)
-               {
-                   try
-                   {
-                       if (__instance.Type == GeoSiteType.AncientRefinery)
-                       {
-                           if (____ancientSites.Contains(__instance))
-                               {
-                               ____ancientSites.Remove(__instance);
-
-                           }
-
-                       }
-
-
-
-                   }
-                   catch (Exception e)
-                   {
-                       TFTVLogger.Error(e);
-                   }
-               }
-           }
-
-           [HarmonyPatch(typeof(GeoPhoenixFaction), "LevelStartLoadedGame")]
-           public static class GeoFaction_LevelStartLoadedGame_Patch
-           {
-
-               public static void Postfix(List<GeoSite> ____ancientSites)
-               {
-                   try
-                   {
-                       List<GeoSite> list = new List<GeoSite>(____ancientSites);
-
-                       foreach (GeoSite site in list)
-                       {
-                           if (site.Type == GeoSiteType.AncientRefinery)
-                           {
-                               ____ancientSites.Remove(site);
-                           }
-                       }
-
-
-
-
-                   }
-                   catch (Exception e)
-                   {
-                       TFTVLogger.Error(e);
-                   }
-               }
-           }
-        */
-
 
         public static void CheckNewLOTA(GeoLevelController controller)
         {

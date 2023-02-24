@@ -89,28 +89,7 @@ namespace TFTV
         [HarmonyPatch(typeof(GeoPhoenixFaction), "CreateInitialSquad")]
         internal static class BG_GeoPhoenixFaction_CreateInitialSquad_patch
         {
-            /* private static readonly TacticalItemDef redeemerAmmo = Repo.GetAllDefs<TacticalItemDef>().FirstOrDefault(a => a.name.Equals("AN_Redemptor_AmmoClip_ItemDef"));
-
-             private static readonly TacticalItemDef pdwAmmo = Repo.GetAllDefs<TacticalItemDef>().FirstOrDefault(a => a.name.Equals("NJ_Gauss_PDW_AmmoClip_ItemDef"));
-             private static readonly TacticalItemDef mechArmsAmmo = Repo.GetAllDefs<TacticalItemDef>().FirstOrDefault(a => a.name.Equals("MechArms_AmmoClip_ItemDef"));
-
-             private static readonly TacticalItemDef boltsAmmo = Repo.GetAllDefs<TacticalItemDef>().FirstOrDefault(a => a.name.Equals("SY_Crossbow_AmmoClip_ItemDef"));
-             private static readonly TacticalItemDef spidersAmmo = Repo.GetAllDefs<TacticalItemDef>().FirstOrDefault(a => a.name.Equals("SY_SpiderDroneLauncher_AmmoClip_ItemDef"));
-
-             private static readonly TacCharacterDef jacob = Repo.GetAllDefs<TacCharacterDef>().FirstOrDefault(a => a.name.Equals("PX_Jacob_TFTV_TacCharacterDef"));
-             private static readonly TacCharacterDef sophia = Repo.GetAllDefs<TacCharacterDef>().FirstOrDefault(a => a.name.Equals("PX_Sophia_TFTV_TacCharacterDef"));*/
-
-            /*
-            private static readonly TacticalItemDef redeemerAmmo = DefCache.GetDef<TacticalItemDef>("AN_Redemptor_AmmoClip_ItemDef");
-
-            private static readonly TacticalItemDef pdwAmmo = DefCache.GetDef<TacticalItemDef>("NJ_Gauss_PDW_AmmoClip_ItemDef");
-            private static readonly TacticalItemDef mechArmsAmmo = DefCache.GetDef<TacticalItemDef>("MechArms_AmmoClip_ItemDef");
-
-            private static readonly TacticalItemDef boltsAmmo = DefCache.GetDef<TacticalItemDef>("SY_Crossbow_AmmoClip_ItemDef");
-            private static readonly TacticalItemDef spidersAmmo = DefCache.GetDef<TacticalItemDef>("SY_SpiderDroneLauncher_AmmoClip_ItemDef");
-
-            private static readonly TacCharacterDef jacob = DefCache.GetDef<TacCharacterDef>("PX_Jacob_TFTV_TacCharacterDef");
-            private static readonly TacCharacterDef sophia = DefCache.GetDef<TacCharacterDef>("PX_Sophia_TFTV_TacCharacterDef");*/
+           
 
             [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051")]
             private static bool Prefix(GeoPhoenixFaction __instance, GeoSite site)

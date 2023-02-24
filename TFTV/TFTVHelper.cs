@@ -21,6 +21,7 @@ namespace TFTV
         public static readonly string GeoscapeLocalizationFileName = "PR_BG_Localization.csv";
         public static readonly string CHStoryLocalizationFileName = "PR_CH_Story_Localization.csv";
         public static readonly string FsStoryLocalizationFileName = "PR_FS_Story_Localization.csv";
+        public static readonly string LoreLocalizationFileName = "PR_Lore_Localization.csv";
 
         public static void Initialize()
         {
@@ -39,6 +40,10 @@ namespace TFTV
                 if (File.Exists(Path.Combine(LocalizationDirectory, CHStoryLocalizationFileName)))
                 {
                     AddLocalizationFromCSV(CHStoryLocalizationFileName, null);
+                }
+                if (File.Exists(Path.Combine(LocalizationDirectory, LoreLocalizationFileName)))
+                {
+                    AddLocalizationFromCSV(LoreLocalizationFileName, null);
                 }
 
             }

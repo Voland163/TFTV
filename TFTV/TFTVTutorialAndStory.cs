@@ -274,11 +274,16 @@ namespace TFTV
                         {
                             __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("TFTV_Hint_HostileDefenders.jpg");
                         }
+                        else if (hintDef.name.Equals("FIRE_QUENCHER"))
+                        {
+                            __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("hint_firequencher.png");
+                        }
                         else
                         {
                             __instance.Image.overrideSprite = null;//Helper.CreateSpriteFromImageFile("missing_hint_pic.jpg");
                         }
 
+                        
 
 
 

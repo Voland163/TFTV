@@ -14,6 +14,8 @@ using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.Missions;
 using PhoenixPoint.Geoscape.Entities.Missions.Outcomes;
 using PhoenixPoint.Geoscape.Entities.PhoenixBases.FacilityComponents;
+using PhoenixPoint.Geoscape.Entities.Research;
+using PhoenixPoint.Geoscape.Entities.Research.Reward;
 using PhoenixPoint.Geoscape.Entities.Sites;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
@@ -223,12 +225,12 @@ namespace TFTV
                             if (missionTypeDef.name.Contains("Civ"))
                             {
                                 missionTypeDef.ParticipantsRelations[1].MutualRelation = FactionRelation.Enemy;
-                               
+
                             }
                             else if (!missionTypeDef.name.Contains("Civ"))
                             {
                                 missionTypeDef.ParticipantsRelations[2].MutualRelation = FactionRelation.Enemy;
-                               
+
                             }
                             missionTypeDef.ParticipantsData[1].PredeterminedFactionEffects = missionTypeDef.ParticipantsData[0].PredeterminedFactionEffects;
                             missionTypeDef.MissionSpecificCrates = cratesNotResources;
@@ -279,19 +281,31 @@ namespace TFTV
                     TFTVLogger.Always("The check for VO#5 went ok");
 
                 }
-                if (CheckFordVoidOmensInPlay(level).Equals(6))
+                if (CheckFordVoidOmensInPlay(level).Contains(6))
                 {
                     level.CurrentDifficultyLevel.EvolutionPointsGainOnMissionLoss = 20;
                     level.CurrentDifficultyLevel.AlienBaseTypeEvolutionParams[0].EvolutionPerDestroyedBase = 30;
                     level.CurrentDifficultyLevel.AlienBaseTypeEvolutionParams[1].EvolutionPerDestroyedBase = 60;
                     level.CurrentDifficultyLevel.AlienBaseTypeEvolutionParams[2].EvolutionPerDestroyedBase = 90;
-                    ResourceGeneratorFacilityComponentDef researchLab = DefCache.GetDef<ResourceGeneratorFacilityComponentDef>("E_ResourceGenerator [ResearchLab_PhoenixFacilityDef]");
+                 /*   ResourceGeneratorFacilityComponentDef researchLab = DefCache.GetDef<ResourceGeneratorFacilityComponentDef>("E_ResourceGenerator [ResearchLab_PhoenixFacilityDef]");
                     ResourceGeneratorFacilityComponentDef bionicsLab = DefCache.GetDef<ResourceGeneratorFacilityComponentDef>("E_ResourceGenerator [BionicsLab_PhoenixFacilityDef]");
                     researchLab.BaseResourcesOutput.Values[0] = new ResourceUnit { Type = ResourceType.Research, Value = 6 };
-                    bionicsLab.BaseResourcesOutput.Values[0] = new ResourceUnit { Type = ResourceType.Research, Value = 6 };
-
-                    // TFTVLogger.Always("VoidOmen6 is " + VoidOmensCheck[6]);
+                    bionicsLab.BaseResourcesOutput.Values[0] = new ResourceUnit { Type = ResourceType.Research, Value = 6 };*/
                     VoidOmensCheck[6] = true;
+                    level.PhoenixFaction.Research.Update();
+
+                    /*    foreach(GeoPhoenixBase phoenixBase in level.PhoenixFaction.Bases) 
+                        { 
+                        foreach(GeoPhoenixFacility facility in phoenixBase.Layout.Facilities) 
+                            {
+                                facility.UpdateOutput();
+
+                            }
+
+                        }*/
+
+
+                    //  TFTVLogger.Always("VoidOmen6 is " + VoidOmensCheck[6]);
                 }
                 else if (!CheckFordVoidOmensInPlay(level).Contains(6) && CheckForAlreadyRolledVoidOmens(level).Contains(6) && VoidOmensCheck[6])
                 {
@@ -299,10 +313,10 @@ namespace TFTV
                     level.CurrentDifficultyLevel.AlienBaseTypeEvolutionParams[0].EvolutionPerDestroyedBase = 0;
                     level.CurrentDifficultyLevel.AlienBaseTypeEvolutionParams[1].EvolutionPerDestroyedBase = 0;
                     level.CurrentDifficultyLevel.AlienBaseTypeEvolutionParams[2].EvolutionPerDestroyedBase = 0;
-                    ResourceGeneratorFacilityComponentDef researchLab = DefCache.GetDef<ResourceGeneratorFacilityComponentDef>("E_ResourceGenerator [ResearchLab_PhoenixFacilityDef]");
+                /*    ResourceGeneratorFacilityComponentDef researchLab = DefCache.GetDef<ResourceGeneratorFacilityComponentDef>("E_ResourceGenerator [ResearchLab_PhoenixFacilityDef]");
                     ResourceGeneratorFacilityComponentDef bionicsLab = DefCache.GetDef<ResourceGeneratorFacilityComponentDef>("E_ResourceGenerator [BionicsLab_PhoenixFacilityDef]");
                     researchLab.BaseResourcesOutput.Values[0] = new ResourceUnit { Type = ResourceType.Research, Value = 4 };
-                    bionicsLab.BaseResourcesOutput.Values[0] = new ResourceUnit { Type = ResourceType.Research, Value = 4 };
+                    bionicsLab.BaseResourcesOutput.Values[0] = new ResourceUnit { Type = ResourceType.Research, Value = 4 };*/
                     VoidOmensCheck[6] = false;
                     TFTVLogger.Always("The check for VO#6 went ok");
 
@@ -482,7 +496,22 @@ namespace TFTV
                     TFTVLogger.Always("The check for VO#19 went ok");
                 }
 
+                List<int> VoidOmensInPLay = new List<int>();
+                List<int> AlreadyRolledVoidOmens = new List<int>();
 
+                int difficulty = level.CurrentDifficultyLevel.Order;
+
+                for (int i = 0; i < CheckFordVoidOmensInPlay(level).Count(); i++)
+                {
+                    TFTVLogger.Always("Void Omen " + CheckFordVoidOmensInPlay(level)[i] + " is in play");
+                    VoidOmensInPLay.Add(CheckFordVoidOmensInPlay(level)[i]);
+                }
+
+                for (int x = 0; x < CheckForAlreadyRolledVoidOmens(level).Count; x++)
+                {
+                    TFTVLogger.Always("Void Omen " + CheckForAlreadyRolledVoidOmens(level)[x] + " rolled at some point");
+                    AlreadyRolledVoidOmens.Add(CheckForAlreadyRolledVoidOmens(level)[x]);
+                }
 
                 //pending baby abbadons
                 /*  if (i == 20 && CheckFordVoidOmensInPlay(level).Contains(i) && !voidOmensCheck[i])
@@ -1036,20 +1065,23 @@ namespace TFTV
 
                 if (VoidOmensCheck[5])
                 {
-                    string MissionType = controller.TacticalGameParams.MissionData.MissionType.SaveDefaultName;
+                    TacMissionTypeDef MissionType = controller.TacticalGameParams.MissionData.MissionType;
 
-                    if (MissionType == "HavenDefense")
+                    GameTagDef containsCivvies = DefCache.GetDef<GameTagDef>("Contains_Civilians_MissionTagDef");
+                    GameTagDef havenDefenseMIssion = DefCache.GetDef<GameTagDef>("MissionTypeHavenDefense_MissionTagDef");
+
+                    if (MissionType.Tags.Contains(containsCivvies) && MissionType.Tags.Contains(havenDefenseMIssion))
                     {
-
+                        TFTVLogger.Always("Haven defense mission with VO5 in play; turning civvies friendly");
                         GameTagDef civvieTag = DefCache.GetDef<GameTagDef>("Civilian_ClassTagDef");
                         TacticalFaction environment = controller.GetFactionByCommandName("env");
-                       // TFTVLogger.Always("Tag declared successfully");
+                        // TFTVLogger.Always("Tag declared successfully");
 
                         foreach (TacticalFaction faction in controller.Factions)
                         {
                             if (faction.ParticipantKind == TacMissionParticipant.Residents)
                             {
-                              //  TFTVLogger.Always("Found residents faction");
+                                TFTVLogger.Always("Found residents faction");
 
                                 foreach (TacticalActorBase tacticalActorBase in faction.Actors)
                                 {
@@ -1058,10 +1090,10 @@ namespace TFTV
                                         TacticalActor tacticalActor = tacticalActorBase as TacticalActor;
                                         if (tacticalActor.GameTags.Contains(civvieTag))
                                         {
-                                           // TFTVLogger.Always("Found civie");
+                                            TFTVLogger.Always("Found civvy");
                                             tacticalActor.SetFaction(environment, TacMissionParticipant.Environment);
-                                      
-    
+
+
                                         }
                                     }
                                 }
@@ -1445,6 +1477,34 @@ namespace TFTV
                 }
             }
         }
+        
+     
+
+        [HarmonyPatch(typeof(Research), "GetHourlyResearchProduction")]
+        public static class TFTV_Research_GetHourlyResearchProductionVO6_Patch
+        {
+            public static void Postfix(ref float __result)
+            {
+                try
+                {
+                    //TFTVLogger.Always("GetHourlyResearchProduction invoked");
+
+                    if (VoidOmensCheck[6])
+                    {
+                        __result *= 1.5f;
+                    }
+
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+        }
+
+
+
 
         /* public static void CheckHostileDefendersVO(TacticalLevelController controller)
          {

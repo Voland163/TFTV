@@ -94,14 +94,14 @@ TFTV_PX_SCORPION_RESEARCHDEF_COMPLETE,Text,,"The ultimate purpose of the Scorpio
 Frustratingly, we are missing the know-how to produce certain critical components required to build a Scorpion prototype. We speculate that New Jericho is pursuing research in that direction for the development of a new land vehicle. 
 
 In addition, requires completing Living Crystal and Protean Mutane researches.",,,,,,,,
-TFTV_NJ_VEHICLETECH_RESEARCHDEF_BENEFITS,Text,,The breakthrough we have been waiting for! We can now manufacture the Scorpion Impossible Weapon,,,,,,,,
+TFTV_NJ_VEHICLETECH_RESEARCHDEF_BENEFITS,Text,,The breakthrough we have been waiting for! We can now manufacture the Scorpion Impossible Weapon.,,,,,,,,
 PX_SCORPION_RESEARCHDEF_COMPLETE,Text,,"The ultimate purpose of the Scorpion is to make all forms of armor obsolete. Surprisingly, it seems like Mr. Antonasov’s work has provided a foundational basis for a lot of technologies with practical applications developed first by Vanadium and later New Jericho.
 
 Requires completing Living Crystal and Protean Mutane researches.",,"Le but ultime du Scorpion est de rendre toutes les formes d’armure obsolètes. Étonnamment, il semble que le travail de M. Antonasov ait fourni une base fondamentale à de nombreuses technologies avec des applications pratiques développées d’abord par Vanadium et plus tard par la Nouvelle Jericho.",,,,,,
 PX_SCORPION_RESEARCHDEF_NAME,Text,,Scorpion,,Scorpion,,,,,,
 PX_SCORPION_RESEARCHDEF_UNLOCK,Text,,This blueprint by renowned rocket engineer John Antonasov is for some sort of long rifle with incredible damage capacity.,,Ce plan du célèbre ingénieur en fusée John Antonasov est pour une sorte de long fusil avec une capacité de pénétration et de dégâts incroyable.,,,,,,
 TFTV_KEY_AC_SCYTHE_NAME,Text,,Scyther,,,,,,,,
-TFTV_SYN_BIONICS3_RESEARCHDEF_BENEFITS,Text,,The breakthrough we have been waiting for! We can now manufacture the Scyther Impossible Weapon,,,,,,,,
+TFTV_SYN_BIONICS3_RESEARCHDEF_BENEFITS,Text,,Cybernetics Lab facility and additional designs. The breakthrough we have been waiting for! We can now manufacture the Scyther Impossible Weapon.,,,,,,,,
 TFTV_PX_SCYTHER_RESEARCHDEF_COMPLETE,Text,,"According to the notes accompanying the recovered data, Jules Godfry designed the Scyther after his disappointing performance in some sort of corporate ludic e-competition called ""Chaos Reborn 2022 Annual Tournament”. In psychological terms it is the expression of unfathomable anger directed at all things, living and inanimate, though its practical military applications in the real world were doubtful until the appearance of the Pandoran monstrosities.
 
 Unfortunately, elemental safety concerns prevent us from manufacturing the Scyther, a bladed weapon with an area of effect. This weapon requires very fine sensors that can re-balance the weapon while in full swing to avoid harming its wielder. The reaction times demanded of these sensors are beyond what our own technology can provide, but New Jericho’s Project Purity was making strides in the right direction. Perhaps further development of bionics technology will give us the solution we need. Until then, the Scyther remains a dream.
@@ -113,7 +113,7 @@ Requires completing Living Crystal and Protean Mutane researches.",,"Selon les n
 PX_SCYTHER_RESEARCHDEF_NAME,Text,,Scyther,,Scyther,,,,,,
 PX_SCYTHER_RESEARCHDEF_UNLOCK,Text,,"A curious design by Jules Godfry, head of NG+ Weapon Systems at Vanadium, that looks like an electro blade powered by a miniaturized fusion reactor.",,"Une curieuse conception de Jules Godfry, directeur de NG+ Weapon Systems chez Vanadium, qui ressemble à une lame électro alimentée par un réacteur à fusion miniaturisé.",,,,,,
 TFTV_KEY_AC_SHOTGUN_NAME,Text,,Shard Gun,,,,,,,,
-TFTV_ANU_ADVANCEDINFECTIONTECH_RESEARCHDEF_BENEFITS,Text,,The breakthrough we have been waiting for! We can now manufacture the Shardgun Impossible Weapon,,,,,,,,
+TFTV_ANU_ADVANCEDINFECTIONTECH_RESEARCHDEF_BENEFITS,Text,,The breakthrough we have been waiting for! We can now manufacture the Shardgun Impossible Weapon.,,,,,,,,
 TFTV_PX_SHARDGUN_RESEARCHDEF_COMPLETE,Text,,"The Shard Gun is perhaps the less theoretically impressive of the NG+ Weapon Systems designs. But what it lacks in mathematical panache, it compensates in sheer effectiveness; in the words of its promoter, Emmanuel ""SG"" Erickson, ""it will be a bad*** shotgun that will **** you up, you trespassing ***********"" (Mr. Erickson's streams were notable for their profanity. They tragically ended at the beginning of the First Mist, when a Triton invaded Emmanuel's Malibu beachfront, ironically vindicating the streamer's plea for a next generation home defense weapon).
 
 A crucial aspect of this weapon's design is that the shards must deliver a nerve agent that will demoralize the target on impact. Surely the Disciples of Anu must be working on some advanced technology for their ""Priest"" class operatives that we can advantage of to finally make the Shard Gun a reality. 
@@ -353,7 +353,7 @@ VOID_OMEN_TITLE_2,Text,,All diplomatic penalties and rewards halved,,Toutes les 
 VOID_OMEN_TITLE_3,Text,,"All abilities cost +50% WP, but Delirium has no effect on WP",,"Toutes les capacités coûtent +50% de Points de Volonté, mais le délire n'a aucun effet sur les Points de Volonté.",,,,,,
 VOID_OMEN_TITLE_4,Text,,"Max 6 operatives can be deployed on any mission, but +100% experience ",,"6 agents maximum peuvent être déployés sur n'importe quelle mission, mais +100% d'expérience. ",,,,,,
 VOID_OMEN_TITLE_5,Text,,"Haven defenders always hostile, but crates available for looting ",,"Les défenseurs des refuges sont toujours hostiles, mais des caisses sont disponibles pour le pillage. ",,,,,,
-VOID_OMEN_TITLE_6,Text,,"Pandorans evolve as they lose missions and colonies, but Phoenix research output is doubled",,Les pandoriens évoluent au fur et à mesure qu'ils perdent des missions et des colonies.,,,,,,
+VOID_OMEN_TITLE_6,Text,,"Pandorans evolve as they lose missions and colonies, but Phoenix research output increased by 50%",,Les pandoriens évoluent au fur et à mesure qu'ils perdent des missions et des colonies.,,,,,,
 VOID_OMEN_TITLE_7,Text,,"More Mist in missions, can deploy one more operative on standard missions",,Plus de brume dans les missions,,,,,,
 VOID_OMEN_TITLE_8,Text,,"Diplomatic penalties among factions +50%, but double faction research",,"Pénalités diplomatiques entre factions +50%, mais recherche de factions doublée",,,,,,
 VOID_OMEN_TITLE_9,Text,,Attacks on havens twice as frequent,,Des attaques deux fois plus fréquentes contre les refuges,,,,,,
@@ -900,7 +900,7 @@ Protean Mutane possesses the extraordinary ability to manipulate gravitational f
 The material is composed of a complex array of molecular structures, including a high concentration of exotic particles known as gravitons. These particles are believed to be responsible for mediating the gravitational force and have only been theorized to exist by physicists.
 
 Protean Mutane appears to harness the energy of these gravitons in a way that has yet to be fully understood. The material's structure also appears to be in a state of constant flux, hence its name is strikingly appropriate; ""Protean"" meaning able to change shape easily and ""Mutane"" meaning mutation.",,,,,,,,
-PROTEAN_MUTANE_RESEARCH_BENEFITS,Text,,"We can now manufacture weapons that require Protean Mutane, and reactivate one of the defeated Cyclops.",,,,,,,,
+PROTEAN_MUTANE_RESEARCH_BENEFITS,Text,,"We can now manufacture weapons that require Protean Mutane, and probably reactivate one of the defeated Cyclops, if needed",,,,,,,,
 HELENA_ONEIROMANCY_TITLE,Text,,Reversed Oneiromancy,,,,,,,,
 HELENA_ONEIROMANCY_TEXT,Text,,"The Living Crystal, it's the key. There was always the question, how could the stories of the Ancients and imitations of their artifacts and architecture have made it into our culture, when they preceded the homosapiens by more than a million years? No meaningful interaction between our ancestors and the ancients could have taken place at the time when the ancients existed, yet there were signs of this interaction everywhere! 
 
@@ -989,3 +989,9 @@ While this Void Omen is in effect, haven defenders will be hostile to you and at
 Gain XP by protecting structures or civilians as usual.
 
 You can loot crates with faction weapons, but only the equipment in your operatives or vehicles inventory will be recovered.",,,,,,,,
+FIRE_QUENCHER_NAME,Text,,FIRE QUENCHER,,,,,,,,
+FIRE_QUENCHER_DESCRIPTION,Text,,Immunity to fire. Replaces any lit tiles it passes through with Mist.,,,,,,,,
+HINT_FIRE_QUENCHER_TITLE,Text,,Fire Quencher,,,,,,,,
+HINT_FIRE_QUENCHER_TEXT,Text,,"<i>“There was nothing special about this one… Here comes the bisque, I thought… Boy was I wrong.”</i>
+
+Some Arthrons have evolved the ability to instantly quench the fire they come in contact with, replacing it with Mist. They are apparently doing this by spraying some biochemical compound  from their <b>heads</b>. Disabling their heads should remove both their immunity to fire and their ability to quench it.",,,,,,,,

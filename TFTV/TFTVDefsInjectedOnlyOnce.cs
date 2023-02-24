@@ -1,4 +1,5 @@
-﻿using Base.Defs;
+﻿using Base.AI.Defs;
+using Base.Defs;
 using Base.Entities.Abilities;
 using Base.Entities.Effects;
 using Base.Entities.Effects.ApplicationConditions;
@@ -27,6 +28,7 @@ using PhoenixPoint.Geoscape.Events.Eventus;
 using PhoenixPoint.Geoscape.Events.Eventus.Filters;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.ContextHelp.HintConditions;
+using PhoenixPoint.Tactical.AI.Actions;
 using PhoenixPoint.Tactical.AI.Considerations;
 using PhoenixPoint.Tactical.ContextHelp.HintConditions;
 using PhoenixPoint.Tactical.Entities;
@@ -84,13 +86,479 @@ namespace TFTV
             RemoveMindControlImmunityVFX();
             AddContributionPointsToPriestAndTech();
             SyphonAttackFix();
-           
+            AddLoreEntries();
+            CreateFireQuenchers();
+            ChangeMyrmidonAndFirewormResearchRewards();
+            //  Testing();
         }
-        
+
+        public static void ChangeMyrmidonAndFirewormResearchRewards() 
+        {
+            try 
+            {
+                ResearchDef myrmidonResearch = DefCache.GetDef<ResearchDef>("PX_Alien_Swarmer_ResearchDef");
+                DefCache.GetDef<ExistingResearchRequirementDef>("PX_LightSniperRifle_ResearchDef_ExistingResearchRequirementDef_0").ResearchID = myrmidonResearch.Id;
+                myrmidonResearch.Resources.Add(ResourceType.Supplies, 100);
+                myrmidonResearch.Resources.Add(ResourceType.Materials, 100);
+
+                DefCache.GetDef<ResearchDef>("PX_Alien_Fireworm_ResearchDef").Resources.Add(ResourceType.Supplies, 150);
+                DefCache.GetDef<ResearchDef>("PX_Alien_SwarmerEgg_ResearchDef").Resources.Add(ResourceType.Supplies, 400);
+
+                
+
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+
+
+        }
+
+
+        public static void CreateFireQuenchers()
+        {
+            try
+            {
+                CloneFireImmunityAbility();
+                CreateFireQuencherStatus();
+                CreateFireQuencherAbility();
+                CreateFireQuencherHint();
+              
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+        }
+
+
+        public static void CreateFireQuencherHint()
+        {
+            try
+            {
+                DamageMultiplierStatusDef status = DefCache.GetDef<DamageMultiplierStatusDef>("FireQuencherStatus");
+
+
+
+                string hintName = "FIRE_QUENCHER";
+                string hintTitle = "HINT_FIRE_QUENCHER_TITLE";
+                string hintText = "HINT_FIRE_QUENCHER_TEXT";
+              
+
+                TFTVTutorialAndStory.CreateNewTacticalHint(hintName, HintTrigger.ActorSeen, status.name, hintTitle, hintText, 2, true, "5F24B699-455E-44E5-831D-1CA79B9E3EED");
+               
+
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+
+
+        }
+
+
+
+        //cloning the DamageMultiplierAbilityDef fire immunity ability because because through Status effect only achieving immunity for body part
+        //Need to clone to make it invisible in status panel
+        public static void CloneFireImmunityAbility() 
+        {
+            try 
+            {
+                string abilityName = "FireImmunityInvisibleAbility";
+                string gUID = "9A55315E-4694-4D95-8811-476C524EBAAE";
+               // string characterProgressionGUID = "AA24A50E-C61A-4CD8-97FE-3F8BAC5F7BAA";
+                string viewElementGUID = "231F088F-A4F0-4E6D-BC78-614AD0EF4594";
+
+             
+
+                DamageMultiplierAbilityDef source = DefCache.GetDef<DamageMultiplierAbilityDef>("FireImmunity_DamageMultiplierAbilityDef");
+                DamageMultiplierAbilityDef newAbility = Helper.CreateDefFromClone(
+                    source,
+                   gUID,
+                    abilityName);
+
+
+                /*newAbility.CharacterProgressionData = Helper.CreateDefFromClone(
+                    source.CharacterProgressionData,
+                    characterProgressionGUID,
+                   abilityName + "CharacterProgression");*/
+                newAbility.ViewElementDef = Helper.CreateDefFromClone(
+                    source.ViewElementDef,
+                    viewElementGUID,
+                    abilityName + "ViewElement");
+                newAbility.ViewElementDef.ShowInStatusScreen = false;
+                newAbility.ViewElementDef.ShowInFreeAimMode = false;
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+
+
+        public static void CreateFireQuencherAbility()
+        {
+            try
+            {
+                string abilityName = "FireQuencherAbility";
+                string gUID = "020679B9-A7AD-45F9-BCD5-0EC13FB0D396";
+                string characterProgressionGUID = "EEBE2E43-C8CC-4E05-9777-149FC0DBB874";
+                string viewElementGUID = "AA346C20-3163-4A95-AD9B-E9C5678CB282";
+
+                DamageMultiplierStatusDef status = DefCache.GetDef<DamageMultiplierStatusDef>("FireQuencherStatus");
+
+                ApplyStatusAbilityDef source = DefCache.GetDef<ApplyStatusAbilityDef>("BionicDamageMultipliers_AbilityDef");
+                ApplyStatusAbilityDef newAbility = Helper.CreateDefFromClone(
+                    source,
+                   gUID,
+                    abilityName);
+
+
+                newAbility.CharacterProgressionData = Helper.CreateDefFromClone(
+                    source.CharacterProgressionData,
+                    characterProgressionGUID,
+                   abilityName + "CharacterProgression");
+                newAbility.ViewElementDef = Helper.CreateDefFromClone(
+                    source.ViewElementDef,
+                    viewElementGUID,
+                    abilityName + "ViewElement");
+                newAbility.ViewElementDef.ShowInStatusScreen = true;
+                newAbility.ViewElementDef.ShowInFreeAimMode = true;
+                //  newAbility.ViewElementDef.ShowInStatusScreen = false;
+
+                DamageMultiplierAbilityDef fireImmunity = DefCache.GetDef<DamageMultiplierAbilityDef>("FireImmunity_DamageMultiplierAbilityDef");
+
+                newAbility.ViewElementDef.DisplayName1.LocalizationKey = "FIRE_QUENCHER_NAME";
+                newAbility.ViewElementDef.Description.LocalizationKey = "FIRE_QUENCHER_DESCRIPTION";
+                newAbility.ViewElementDef.LargeIcon = fireImmunity.ViewElementDef.LargeIcon;
+                newAbility.ViewElementDef.SmallIcon = fireImmunity.ViewElementDef.SmallIcon;
+                newAbility.StatusDef = status;
+                newAbility.TargetApplicationConditions = new EffectConditionDef[] { };
+                newAbility.StatusApplicationTrigger = StatusApplicationTrigger.ActorEnterPlay;
+                newAbility.StatusSource = StatusSource.AbilitySource;
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+        public static void CreateFireQuencherStatus()
+        {
+
+            try
+            {
+                StandardDamageTypeEffectDef fireDamage = DefCache.GetDef<StandardDamageTypeEffectDef>("Fire_StandardDamageTypeEffectDef");
+
+                string statusName = "FireQuencherStatus";
+                string gUID = "CC8B3A1B-E25D-43F4-9469-52FBE6F9C926";
+                string gUIDVisuals = "2B927AA0-7CA5-473D-9847-31718002B552";
+
+                DamageMultiplierStatusDef source = DefCache.GetDef<DamageMultiplierStatusDef>("BionicResistances_StatusDef");
+                DamageMultiplierStatusDef newStatus = Helper.CreateDefFromClone(
+                    source,
+                    gUID,
+                    statusName);
+                newStatus.EffectName = statusName;
+                newStatus.VisibleOnHealthbar = TacStatusDef.HealthBarVisibility.AlwaysVisible;
+                newStatus.VisibleOnPassiveBar = true;
+                newStatus.VisibleOnStatusScreen = TacStatusDef.StatusScreenVisibility.VisibleOnBodyPartStatusList;
+                newStatus.ApplicationConditions = new EffectConditionDef[] { };
+
+                newStatus.Visuals = Helper.CreateDefFromClone(
+                    source.Visuals,
+                    gUIDVisuals,
+                    statusName + "Visuals");
+                newStatus.Multiplier = 1f;
+                newStatus.MultiplierType = DamageMultiplierType.Incoming;
+                newStatus.Range = -1;
+                newStatus.DamageTypeDefs = new StandardDamageTypeEffectDef[] { };
+
+                DamageMultiplierAbilityDef fireImmunity = DefCache.GetDef<DamageMultiplierAbilityDef>("FireImmunity_DamageMultiplierAbilityDef");
+
+                newStatus.Visuals.LargeIcon = fireImmunity.ViewElementDef.LargeIcon;
+                newStatus.Visuals.SmallIcon = fireImmunity.ViewElementDef.SmallIcon;
+
+
+                newStatus.Visuals.DisplayName1.LocalizationKey = "FIRE_QUENCHER_NAME";
+                newStatus.Visuals.Description.LocalizationKey = "FIRE_QUENCHER_DESCRIPTION";
+            }
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+
+
+        public static void Testing()
+        {
+            try
+            {
+                AddingSafetyConsiderationToMoveAndAttack();
+                AddingSafetyConsiderationToRandomMove();
+                AddingSafetyConsiderationToRegularAdvance();
+                ModifySafetyConsiderationDef();
+            }
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+        public static void ModifySafetyConsiderationDef()
+        {
+            try
+            {
+                AISafePositionConsiderationDef safePositionConsideration = DefCache.GetDef<AISafePositionConsiderationDef>("DefenseSafePosition_AIConsiderationDef");
+
+                safePositionConsideration.HighCoverProtection = 1f;
+                safePositionConsideration.LowCoverProtection = 0.5f;
+                safePositionConsideration.NoneCoverProtection = 0f;
+                safePositionConsideration.VisionScoreWhenVisibleByAllEnemies = 1f;
+                safePositionConsideration.VisionRange = 20;
+
+
+            }
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+
+        }
+
+
+        public static void AddingSafetyConsiderationToMoveAndAttack()
+        {
+            try
+            {
+
+                AIActionMoveAndAttackDef moveAndAttack = DefCache.GetDef<AIActionMoveAndAttackDef>("MoveAndShoot_AIActionDef");
+
+                AISafePositionConsiderationDef safePositionConsideration = DefCache.GetDef<AISafePositionConsiderationDef>("DefenseSafePosition_AIConsiderationDef");
+
+
+                AIAdjustedConsideration aIAdjustedConsideration = new AIAdjustedConsideration()
+                {
+                    Consideration = safePositionConsideration,
+                    ScoreCurve = moveAndAttack.Evaluations[1].Considerations.First().ScoreCurve
+                };
+
+                List<AIAdjustedConsideration> aIAdjustedConsiderations = moveAndAttack.Evaluations[1].Considerations.ToList();
+                aIAdjustedConsiderations.Add(aIAdjustedConsideration);
+                moveAndAttack.Evaluations.First().Considerations = aIAdjustedConsiderations.ToArray();
+
+
+
+
+
+            }
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+        }
+
+        public static void AddingSafetyConsiderationToRegularAdvance()
+        {
+            try
+            {
+                AIActionMoveToPositionDef advanceNormal = DefCache.GetDef<AIActionMoveToPositionDef>("Advance_Normal_AIActionDef");
+
+                AISafePositionConsiderationDef safePositionConsideration = DefCache.GetDef<AISafePositionConsiderationDef>("DefenseSafePosition_AIConsiderationDef");
+
+
+                AIAdjustedConsideration aIAdjustedConsideration = new AIAdjustedConsideration()
+                {
+                    Consideration = safePositionConsideration,
+                    ScoreCurve = advanceNormal.Evaluations.First().Considerations.First().ScoreCurve
+                };
+
+                List<AIAdjustedConsideration> aIAdjustedConsiderations = advanceNormal.Evaluations.First().Considerations.ToList();
+                aIAdjustedConsiderations.Add(aIAdjustedConsideration);
+                advanceNormal.Evaluations.First().Considerations = aIAdjustedConsiderations.ToArray();
+
+
+            }
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+        }
+
+        public static void AddingSafetyConsiderationToRandomMove()
+        {
+            try
+            {
+
+                AIActionMoveToPositionDef moveToRandom = DefCache.GetDef<AIActionMoveToPositionDef>("MoveToRandomWaypoint_AIActionDef");
+
+
+                AISafePositionConsiderationDef safePositionConsideration = DefCache.GetDef<AISafePositionConsiderationDef>("DefenseSafePosition_AIConsiderationDef");
+
+
+
+                AIAdjustedConsideration aIAdjustedConsideration = new AIAdjustedConsideration()
+                {
+                    Consideration = safePositionConsideration,
+                    ScoreCurve = moveToRandom.Evaluations.First().Considerations.First().ScoreCurve
+                };
+
+                List<AIAdjustedConsideration> aIAdjustedConsiderations = moveToRandom.Evaluations.First().Considerations.ToList();
+                aIAdjustedConsiderations.Add(aIAdjustedConsideration);
+                moveToRandom.Evaluations.First().Considerations = aIAdjustedConsiderations.ToArray();
+
+
+            }
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+        }
+
+        public static void AddLoreEntries()
+        {
+            try
+            {
+                CreateAlistairLoreEntry();
+                CreateOlenaLoreEntry();
+                CreateBennuLoreEntry();
+                CreateHelenaLoreEntry();
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+        public static void CreateHelenaLoreEntry()
+        {
+            try
+            {
+                string gUID = "217EB721-52E6-4401-90D1-3287D6CC8DC2";
+                string name = "Helena_Lore";
+                string title = "TFTV_LORE_HELENA_TITLE";
+                string description = "TFTV_LORE_HELAN_DESCRIPTION";
+                string pic = "lore_helena.png";
+                GeoPhoenixpediaEntryDef alistairEntry = CreateLoreEntry(name, gUID, title, description, pic);
+                DefCache.GetDef<GeoscapeEventDef>("HelenaOnOlena").GeoscapeEventData.Choices[0].Outcome.GivePhoenixpediaEntries = new List<GeoPhoenixpediaEntryDef>() { alistairEntry };
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+        }
+
+
+        public static void CreateBennuLoreEntry()
+        {
+            try
+            {
+                string gUID = "0A67EB59-5E9B-46A9-95EE-EC6C47417B7C";
+                string name = "Bennu_Lore";
+                string title = "TFTV_LORE_BENNU_TITLE";
+                string description = "TFTV_LORE_BENNU_DESCRIPTION";
+                string pic = "lore_bennu.png";
+                GeoPhoenixpediaEntryDef alistairEntry = CreateLoreEntry(name, gUID, title, description, pic);
+                DefCache.GetDef<GeoscapeEventDef>("IntroBetterGeo_2").GeoscapeEventData.Choices[0].Outcome.GivePhoenixpediaEntries = new List<GeoPhoenixpediaEntryDef>() { alistairEntry };
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+        }
+
+
+        public static void CreateOlenaLoreEntry()
+        {
+            try
+            {
+                string gUID = "38ACBF41-7D2D-479F-981E-10FED4FC6800";
+                string name = "Olena_Lore";
+                string title = "TFTV_LORE_OLENA_TITLE";
+                string description = "TFTV_LORE_OLENA_DESCRIPTION";
+                string pic = "lore_olena.png";
+                GeoPhoenixpediaEntryDef alistairEntry = CreateLoreEntry(name, gUID, title, description, pic);
+                DefCache.GetDef<GeoscapeEventDef>("IntroBetterGeo_1").GeoscapeEventData.Choices[0].Outcome.GivePhoenixpediaEntries = new List<GeoPhoenixpediaEntryDef>() { alistairEntry };
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+        }
+
+
+
+        public static void CreateAlistairLoreEntry()
+        {
+            try
+            {
+                string gUID = "B955090F-62E0-41F2-9036-3548A1DC5F46";
+                string name = "Alistair_Lore";
+                string title = "TFTV_LORE_ALISTAIR_TITLE";
+                string description = "TFTV_LORE_ALISTAIR_DESCRIPTION";
+                string pic = "lore_alistair.png";
+                GeoPhoenixpediaEntryDef alistairEntry = CreateLoreEntry(name, gUID, title, description, pic);
+                DefCache.GetDef<GeoscapeEventDef>("IntroBetterGeo_0").GeoscapeEventData.Choices[0].Outcome.GivePhoenixpediaEntries = new List<GeoPhoenixpediaEntryDef>() { alistairEntry };
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+        }
+
+
+        public static GeoPhoenixpediaEntryDef CreateLoreEntry(string name, string gUID, string title, string description, string pic)
+        {
+            try
+            {
+                GeoPhoenixpediaEntryDef source = DefCache.GetDef<GeoPhoenixpediaEntryDef>("AntediluvianArchaeology_GeoPhoenixpediaEntryDef");
+                GeoPhoenixpediaEntryDef newLoreEntry = Helper.CreateDefFromClone(source, gUID, name);
+                newLoreEntry.Category = PhoenixpediaCategoryType.Lore;
+                newLoreEntry.Entry.Title.LocalizationKey = title;
+                newLoreEntry.Entry.Description.LocalizationKey = description;
+                newLoreEntry.Entry.DetailsImage = Helper.CreateSpriteFromImageFile(pic);
+                return newLoreEntry;
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
+
+
+        }
+
+
 
         public static void SyphonAttackFix()
         {
-            try 
+            try
             {
 
                 DefCache.GetDef<SyphoningDamageKeywordDataDef>("Syphon_DamageKeywordDataDef").SyphonBasedOnHealthDamageDealt = false;
@@ -1241,6 +1709,8 @@ namespace TFTV
                 StatMultiplierStatusDef trembling = DefCache.GetDef<StatMultiplierStatusDef>("Trembling_StatusDef");
                 trembling.ApplicationConditions = new EffectConditionDef[] { organicEffectConditionDef };
 
+                DefCache.GetDef<CallReinforcementsAbilityDef>("Acheron_CallReinforcements_AbilityDef").WillPointCost = 10;
+
 
             }
             catch (Exception e)
@@ -1734,7 +2204,7 @@ namespace TFTV
                                                 missionTypeDef.name == "StorySYN4_CustomMissionTypeDef")
                                             {
                                                 data.FactionDef = banditFaction;
-                                              //  TFTVLogger.Always("In mission " + missionTypeDef.name + " the enemy faction is " + data.FactionDef.name);
+                                                //  TFTVLogger.Always("In mission " + missionTypeDef.name + " the enemy faction is " + data.FactionDef.name);
                                             }
                                         }
                                     }

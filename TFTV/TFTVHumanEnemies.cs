@@ -93,62 +93,11 @@ namespace TFTV
         private static readonly AbilityDef amplifyPain = DefCache.GetDef<AbilityDef>("AmplifyPain_AbilityDef");
 
 
-
-
-        // public static int difficultyLevel = 0;
-        // public static Dictionary <string, string> FileNameSquadPic = new Dictionary<string, string>();
-
         public static Dictionary<string, int> HumanEnemiesAndTactics = new Dictionary<string, int>();
 
         public static int RollCount = 0;
         public static List<ContextHelpHintDef> TacticsHint = new List<ContextHelpHintDef>();
-        // public static List <TacticalFaction> HumanEnemyTacticalFactions = new List<TacticalFaction>();
-
-        /* [HarmonyPatch(typeof(GeoMission), "Launch")]
-         public static class GeoMission_Launch_InfestationStory_Patch
-         {
-             public static void Postfix(GeoMission __instance)
-             {
-                 try
-                 {
-
-                     List<string> enemyFactionNames = new List<string>();
-                     List<int> enemyParticpants = new List<int>();
-                     foreach (MutualParticipantsRelations relations in __instance.MissionDef.ParticipantsRelations)
-                     {
-                         if (relations.HasParticipant(TacMissionParticipant.Player) && relations.MutualRelation == PhoenixPoint.Common.Core.FactionRelation.Enemy)
-                         {
-                             enemyParticpants.Add((int)relations.SecondParticipant);
-                         }
-                     }
-
-                     foreach (TacMissionTypeParticipantData participantData in __instance.MissionDef.ParticipantsData)
-                     {
-                         if (enemyParticpants.Contains((int)participantData.ParticipantKind))
-                         {
-                             if (participantData.FactionDef.ShortName.Equals("ban")
-                                || participantData.FactionDef.ShortName.Equals("nj") || participantData.FactionDef.ShortName.Equals("anu")
-                                || participantData.FactionDef.ShortName.Equals("syn") || participantData.FactionDef.ShortName.Equals("Purists")
-                                || participantData.FactionDef.ShortName.Equals("FallenOnes"))
-                                 TFTVLogger.Always("On GeoMission launch, the short name of the faction is " + participantData.FactionDef.ShortName);
-                             enemyFactionNames.Add(participantData.FactionDef.ShortName);
-                         }
-                     }
-
-                     foreach (string name in enemyFactionNames)
-                     {
-                         RollTactic(name);
-                     }
-
-
-
-                 }
-                 catch (Exception e)
-                 {
-                     TFTVLogger.Error(e);
-                 }
-             }
-         }*/
+     
 
         public static void RollTactic(string nameOfFaction)
         {

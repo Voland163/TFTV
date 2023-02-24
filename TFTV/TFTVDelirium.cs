@@ -85,7 +85,7 @@ namespace TFTV
 
                 //  GeoLevelController level = (GeoLevelController)UnityEngine.Object.FindObjectOfType(typeof(GeoLevelController));
 
-                foreach (ICommonItem armorItem in character.ArmourItems)
+              /*  foreach (ICommonItem armorItem in character.ArmourItems)
                 {
                     TacticalItemDef tacticalItemDef = armorItem.ItemDef as TacticalItemDef;
                     if (!(tacticalItemDef == null) && !(tacticalItemDef.BodyPartAspectDef == null))
@@ -94,7 +94,7 @@ namespace TFTV
                         bonusWillpower += tacticalItemDef.BodyPartAspectDef.WillPower;
                        
                     }
-                }
+                }*/
 
                 if (character.Progression != null)
                 {

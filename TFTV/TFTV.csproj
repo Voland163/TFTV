@@ -79,6 +79,18 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BCSettings.cs" />
+    <Compile Include="BetterEnemies\AbilityChanges.cs" />
+    <Compile Include="BetterEnemies\AIActionsDefs.cs" />
+    <Compile Include="BetterEnemies\ArthronsTritons.cs" />
+    <Compile Include="BetterEnemies\BetterAI.cs" />
+    <Compile Include="BetterEnemies\BetterEnemiesMain.cs" />
+    <Compile Include="BetterEnemies\Missions.cs" />
+    <Compile Include="BetterEnemies\PerceptionAdjustments.cs" />
+    <Compile Include="BetterEnemies\ResearchChanges.cs" />
+    <Compile Include="BetterEnemies\Scylla.cs" />
+    <Compile Include="BetterEnemies\SirenChiron.cs" />
+    <Compile Include="BetterEnemies\SmallPandorans.cs" />
+    <Compile Include="BetterEnemies\Willpower.cs" />
     <Compile Include="ConfigHelpers.cs" />
     <Compile Include="DefCache.cs" />
     <Compile Include="Helper.cs" />
@@ -108,6 +120,7 @@
     <Compile Include="TFTVAirCombat.cs" />
     <Compile Include="TFTVAmbushes.cs" />
     <Compile Include="TFTVAncients.cs" />
+    <Compile Include="TFTVArtOfCrab.cs" />
     <Compile Include="TFTVAugmentations.cs" />
     <Compile Include="TFTVBetaSaveGamesFixes.cs" />
     <Compile Include="TFTVChangesToDLC1andDLC2Events.cs" />

@@ -1,13 +1,16 @@
+using Base.Audio;
 using Base.Serialization.General;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Geoscape.Core;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Levels;
+using PhoenixPoint.Geoscape.Levels.Objectives;
 using PhoenixPoint.Modding;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine.EventSystems;
 
 namespace TFTV
 {
@@ -85,6 +88,7 @@ namespace TFTV
             TFTVBetaSaveGamesFixes.CheckNewLOTA(gsController);
             TFTVAncients.AncientsOnGeoscapeStartChecks(gsController);
             TFTVAncients.CheckImpossibleWeaponsAdditionalRequirements(gsController);
+            TFTVExperimental.CheckForFireQuenchers(gsController);
             // TFTVBetaSaveGamesFixes.CheckImpossibleWeaponsFunctionalityTags(gsController);
 
 
@@ -147,7 +151,19 @@ namespace TFTV
         /// <param name="instanceData">Instance data serialized for this mod. Cannot be null.</param>
         public override void ProcessGeoscapeInstanceData(object instanceData)
         {
+         
             DateTime myDate = new DateTime(1, 1, 1);
+            TFTVLogger.Always("Geoscape data will be processed");
+          /*  foreach (ResearchGeoFactionObjective obj in Controller.PhoenixFaction.Objectives.Cast<ResearchGeoFactionObjective>())
+            {
+                TFTVLogger.Always("Objective " + obj + " is null");
+
+                if (obj.Title == null)
+                {
+                    Controller.PhoenixFaction.RemoveObjective(obj);
+                }
+               
+            }*/
 
             TFTVCommonMethods.ClearInternalVariables();
             TFTVGSInstanceData data = (TFTVGSInstanceData)instanceData;

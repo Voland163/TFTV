@@ -2,13 +2,14 @@
 using Base.Defs;
 using Base.Entities.Abilities;
 using Base.UI;
-using Epic.OnlineServices;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.UI;
 using PhoenixPoint.Geoscape.Entities.Research;
 using PhoenixPoint.Geoscape.Entities.Research.Requirement;
+using PhoenixPoint.Tactical.AI.Considerations;
+using PhoenixPoint.Tactical.AI.TargetGenerators;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.Animations;
@@ -19,7 +20,6 @@ using PhoenixPoint.Tactical.Entities.Statuses;
 using PhoenixPoint.Tactical.Entities.Weapons;
 using PhoenixPoint.Tactical.View.ViewControllers;
 using PhoenixPoint.Tactical.View.ViewModules;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using TFTV;
@@ -45,7 +45,7 @@ namespace PRMBetterClasses.VariousAdjustments
             // Fix for Triton Elite bloodsucker arms
             Fix_TritonElite();
             // Change Advanced Laser research to require advanced technician weapons
-            Change_AdvLaserResearch();
+            Change_AdvancedResearches();
             // Change Stimpack: Restores 2AP, Heal 1HP to every body part. Disabled Body Parts are restored.
             Change_Stimpack();
             // Change Poison: -50% accuracy and -3 WP per turn
@@ -136,10 +136,28 @@ namespace PRMBetterClasses.VariousAdjustments
 */
         }
 
-        private static void Change_AdvLaserResearch()
+        private static void Change_AdvancedResearches()
         {
-            ExistingResearchRequirementDef advLaserResearchRequirement = DefCache.GetDef<ExistingResearchRequirementDef>("PX_AdvancedLaserTech_ResearchDef_ExistingResearchRequirementDef_1");
-            advLaserResearchRequirement.ResearchID = "NJ_PRCRTechTurret_ResearchDef";
+            // Advanced laser tech
+            ExistingResearchRequirementDef advLaserResearchRequirement0 = DefCache.GetDef<ExistingResearchRequirementDef>("PX_AdvancedLaserTech_ResearchDef_ExistingResearchRequirementDef_0");
+            advLaserResearchRequirement0.ResearchID = "SYN_NightVision_ResearchDef";
+            //ExistingResearchRequirementDef advLaserResearchRequirement1 = DefCache.GetDef<ExistingResearchRequirementDef>("PX_AdvancedLaserTech_ResearchDef_ExistingResearchRequirementDef_1");
+            //advLaserResearchRequirement1.ResearchID = "NJ_PRCRTechTurret_ResearchDef";
+
+            // Advanced melee tech (StunRod = Shock Lance)
+            ExistingResearchRequirementDef advMeleeResearchRequirement0 = DefCache.GetDef<ExistingResearchRequirementDef>("PX_StunRodTech_ResearchDef_ExistingResearchRequirementDef_0");
+            advMeleeResearchRequirement0.ResearchID = "ANU_AdvancedMeleeCombat_ResearchDef";
+            ExistingResearchRequirementDef advMeleeResearchRequirement1 = DefCache.GetDef<ExistingResearchRequirementDef>("PX_StunRodTech_ResearchDef_ExistingResearchRequirementDef_1");
+            advMeleeResearchRequirement1.ResearchID = "SYN_AdvancedDisableTech_ResearchDef";
+
+            // Advanced acid tech
+            ExistingResearchRequirementDef advAcidResearchRequirement1 = Helper.CreateDefFromClone(
+                DefCache.GetDef<ExistingResearchRequirementDef>("PX_AdvancedAcidTech_ResearchDef_ExistingResearchRequirementDef_0"),
+                "6C04D135-7609-40F6-AC08-09832817ED20",
+                "PX_AdvancedAcidTech_ResearchDef_ExistingResearchRequirementDef_1");
+            advAcidResearchRequirement1.ResearchID = "PX_HelCannon_ResearchDef";
+            ResearchDef advAcidResearch = DefCache.GetDef<ResearchDef>("PX_AdvancedAcidTech_ResearchDef");
+            advAcidResearch.RevealRequirements.Container[0].Requirements = advAcidResearch.RevealRequirements.Container[0].Requirements.AddToArray(advAcidResearchRequirement1);
         }
 
         private static void Change_Stimpack()
@@ -342,6 +360,7 @@ namespace PRMBetterClasses.VariousAdjustments
                 launcher.CompatibleAmmunition = new TacticalItemDef[] { sharedFreeReloadAmmo };
             }
         }
+
         public static void Change_VariousWeapons(SharedData shared)
         {
             // defining variables
@@ -373,7 +392,7 @@ namespace PRMBetterClasses.VariousAdjustments
                     //    weaponDef.HandsToUse = 1;
                     //    break;
                     // Rebuke, add piercing scrap shred
-                   
+
                     case "831be08f-d0d7-2764-4833-02ce83ff7277": // AC_Rebuke_WeaponDef
                         if (config.impossibleWeaponsAdjustments)
                         {
@@ -383,8 +402,8 @@ namespace PRMBetterClasses.VariousAdjustments
                             weaponDef.DamagePayload.ArmourShred = 0;
                             weaponDef.DamagePayload.ArmourShredProbabilityPerc = 0;
                             weaponDef.DamagePayload.DamageKeywords.Add(new DamageKeywordPair { DamageKeywordDef = damageKeywords.BurningKeyword, Value = 20 });
-                            
-                            
+
+
                             //weaponDef.DamagePayload.DamageKeywords.Find(dkp => dkp.DamageKeywordDef == damageKeywords.BlastKeyword).Value = 10;
                             //weaponDef.DamagePayload.DamageKeywords.Add(new DamageKeywordPair { DamageKeywordDef = damageKeywords.PiercingKeyword, Value = 25 });
                             //weaponDef.DamagePayload.ProjectilesPerShot = 10;
@@ -395,7 +414,7 @@ namespace PRMBetterClasses.VariousAdjustments
                             //weaponDef.DamagePayload.ObjectMultiplier = 10;
                             //weaponDef.SpreadRadius = 6f;
                         }
-                            break;
+                        break;
 
                     case "1fd630cb-c45f-cf14-8a4e-095ee3c672d1": //AC_ShardGun_WeaponDef
                         if (config.impossibleWeaponsAdjustments)
@@ -405,19 +424,19 @@ namespace PRMBetterClasses.VariousAdjustments
                             weaponDef.DamagePayload.DamageKeywords.Add(new DamageKeywordPair { DamageKeywordDef = damageKeywords.PsychicKeyword, Value = 1 });
                             weaponDef.ViewElementDef.DisplayName1.LocalizationKey = "TFTV_KEY_AC_SHOTGUN_NAME";
                             DefCache.GetDef<ResearchViewElementDef>("PX_ShardGun_ViewElementDef").CompleteText.LocalizationKey = "TFTV_PX_SHARDGUN_RESEARCHDEF_COMPLETE";
-                           // DefCache.GetDef<ResearchViewElementDef>("ANU_AdvancedInfectionTech_ViewElementDef").BenefitsText.LocalizationKey = "TFTV_ANU_ADVANCEDINFECTIONTECH_RESEARCHDEF_BENEFITS";
+                            // DefCache.GetDef<ResearchViewElementDef>("ANU_AdvancedInfectionTech_ViewElementDef").BenefitsText.LocalizationKey = "TFTV_ANU_ADVANCEDINFECTIONTECH_RESEARCHDEF_BENEFITS";
                         }
                         break;
 
                     case "3489e0a7-2d5e-9704-0ada-ae332ebeed49": //AC_Mattock_WeaponDef
-                        if (config.impossibleWeaponsAdjustments) 
+                        if (config.impossibleWeaponsAdjustments)
                         {
-                            
+
                             _ = weaponDef.DamagePayload.DamageKeywords.RemoveAll(dkp => dkp.DamageKeywordDef == damageKeywords.ShockKeyword);
                             weaponDef.DamagePayload.DamageKeywords[0].Value = 110;
                             weaponDef.DamagePayload.DamageKeywords.Add(new DamageKeywordPair { DamageKeywordDef = damageKeywords.SyphonKeyword, Value = 80 });
                             weaponDef.ViewElementDef.DisplayName1.LocalizationKey = "TFTV_KEY_AC_MACE_NAME";
-                           // DefCache.GetDef<ResearchViewElementDef>("PX_MattockoftheAncients_ViewElementDef").CompleteText.LocalizationKey = "TFTV_PX_MATTOCKOFTHEANCIENTS_RESEARCHDEF_COMPLETE";
+                            // DefCache.GetDef<ResearchViewElementDef>("PX_MattockoftheAncients_ViewElementDef").CompleteText.LocalizationKey = "TFTV_PX_MATTOCKOFTHEANCIENTS_RESEARCHDEF_COMPLETE";
                         }
                         break;
                     case "2cd06c4b-f1f5-a9b4-c9ff-afbad25be5d8"://AC_Scorpion_WeaponDef
@@ -429,7 +448,7 @@ namespace PRMBetterClasses.VariousAdjustments
                             weaponDef.DamagePayload.DamageKeywords.Add(new DamageKeywordPair { DamageKeywordDef = damageKeywords.ShreddingKeyword, Value = 10 });
                             weaponDef.ViewElementDef.DisplayName1.LocalizationKey = "TFTV_KEY_AC_SNIPER_NAME";
                             DefCache.GetDef<ResearchViewElementDef>("PX_Scorpion_ViewElementDef").CompleteText.LocalizationKey = "TFTV_PX_SCORPION_RESEARCHDEF_COMPLETE";
-                           // DefCache.GetDef<ResearchViewElementDef>("NJ_VehicleTech_ViewElementDef").BenefitsText.LocalizationKey = "TFTV_NJ_VEHICLETECH_RESEARCHDEF_BENEFITS";
+                            // DefCache.GetDef<ResearchViewElementDef>("NJ_VehicleTech_ViewElementDef").BenefitsText.LocalizationKey = "TFTV_NJ_VEHICLETECH_RESEARCHDEF_BENEFITS";
                         }
                         break;
                     case "4d14021e-a8ce-7444-3a19-6f3dc9c44f8a"://AC_Scyther_WeaponDef
@@ -442,10 +461,10 @@ namespace PRMBetterClasses.VariousAdjustments
                             weaponDef.DamagePayload.ArmourShredProbabilityPerc = 0;
                             weaponDef.ViewElementDef.DisplayName1.LocalizationKey = "TFTV_KEY_AC_SCYTHE_NAME";
                             DefCache.GetDef<ResearchViewElementDef>("PX_Scyther_ViewElementDef").CompleteText.LocalizationKey = "TFTV_PX_SCYTHER_RESEARCHDEF_COMPLETE";
-                          //  DefCache.GetDef<ResearchViewElementDef>("SYN_Bionics3_ViewElementDef").BenefitsText.LocalizationKey = "TFTV_SYN_BIONICS3_RESEARCHDEF_BENEFITS";
+                            //  DefCache.GetDef<ResearchViewElementDef>("SYN_Bionics3_ViewElementDef").BenefitsText.LocalizationKey = "TFTV_SYN_BIONICS3_RESEARCHDEF_BENEFITS";
                         }
                         break;
-                    
+
                     // Danchev MG
                     case "434c4004-580f-10a4-995a-c5a64e6998dc": // PX_PoisonMachineGun_WeaponDef
                         weaponDef.DamagePayload.DamageKeywords.Add(new DamageKeywordPair { DamageKeywordDef = damageKeywords.ShreddingKeyword, Value = 3 });

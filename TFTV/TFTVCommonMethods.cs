@@ -85,6 +85,7 @@ namespace TFTV
                 TFTVUI.uIModuleSoldierCustomization = null;
                 TFTVAncients.HoplitesKilled = 0;
                 TFTVBetaSaveGamesFixes.LOTAReworkGlobalCheck = false;
+                TFTVTactical.TurnZeroMethodsExecuted = false;
                 TFTVLogger.Always("Internal variables cleared");
             }
             catch (Exception e)
@@ -132,6 +133,7 @@ namespace TFTV
             {
                 TFTVRevenant.revenantSpawned = false;
                 TFTVRevenant.revenantID = 0;
+                TFTVTactical.TurnZeroMethodsExecuted = false;
 
             }
             catch (Exception e)
@@ -154,6 +156,7 @@ namespace TFTV
                 TFTVHumanEnemiesNames.names.Clear();
                 TFTVHumanEnemiesNames.CreateNamesDictionary();
                 ClearHints();
+                TFTVTactical.TurnZeroMethodsExecuted = false;
 
             }
             catch (Exception e)

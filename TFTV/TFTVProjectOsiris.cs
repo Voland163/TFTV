@@ -424,7 +424,7 @@ namespace TFTV
                             rollTo = 90;
                         }
 
-                        if (roll <= rollTo) //testing, real rollTo instead of 100
+                        if (roll <= rollTo) 
                         {
                             foreach (GeoTacUnitId id in allProjectOsirisCandidates.Keys)
                             {

@@ -360,7 +360,7 @@ namespace TFTV
                                 "“You have to take it! You have to take it! Yes! Take it, and Malachi Constant shall be free! Free!”" +
                                 "\r\n\r\nMalachi takes your team to a workshop behind the haven’s main generator. " +
                                 "On a workbench is another mysterious device that looks like a multi-projectile heavy weapon. " +
-                                "He looks pleadingly at " + nameMainCharacter + ", begging " + possesivePronoun + "to take the weapon." +
+                                "He looks pleadingly at " + nameMainCharacter + ", begging " + possesivePronoun + " to take the weapon." +
                                 "\r\n\r\nWhen " + pronoun + " does, Malachi erupts in boundless joy “They chose me to give it to you! Somebody up there really likes me!”" +
                                 "\r\n\r\nUnfortunately, this exertion was too much for him. He collapses, dead, but with a smile of bliss on his face. \r\n", true);
 
