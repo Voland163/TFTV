@@ -1,14 +1,12 @@
 using Base.Serialization.General;
 using PhoenixPoint.Modding;
-using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Levels;
-using PhoenixPoint.Tactical.Levels.Mist;
 using System;
 using System.Collections.Generic;
 
 namespace TFTV
 {
-    
+
     /// <summary>
     /// Mod's custom save data for tactical.
     /// </summary>
@@ -173,14 +171,14 @@ namespace TFTV
             try
             {
                 TFTVLogger.Always("The turn is " + turnNumber);
-               
-             //   TFTVLogger.Always("AI Actions influenced by Safety consideration during previous turn " + TFTVExperimental.CounterAIActionsInfluencedBySafetyConsideration);
-             //   TFTVExperimental.CounterAIActionsInfluencedBySafetyConsideration = 0;
+
+                //   TFTVLogger.Always("AI Actions influenced by Safety consideration during previous turn " + TFTVExperimental.CounterAIActionsInfluencedBySafetyConsideration);
+                //   TFTVExperimental.CounterAIActionsInfluencedBySafetyConsideration = 0;
 
 
                 if (!Controller.TacMission.MissionData.MissionType.name.Contains("Tutorial"))
                 {
-                   
+
                     if (turnNumber == 0 && TFTVHumanEnemies.HumanEnemiesAndTactics.Count == 0)
                     {
                         TFTVHumanEnemies.CheckMissionType(Controller);
@@ -192,20 +190,23 @@ namespace TFTV
                     }
 
                     if (turnNumber == 0 && !TurnZeroMethodsExecuted)
-                    {          
-                            TFTVLogger.Always("Turn 0 check");
-                            TFTVRevenant.ModifyRevenantResistanceAbility(Controller);
-                            TFTVRevenant.CheckForNotDeadSoldiers(Controller);
-                            TFTVRevenant.RevenantCheckAndSpawn(Controller);
-                            TFTVRevenant.ImplementVO19(Controller);
-                            TFTVVoidOmens.VO5TurnHostileCivviesFriendly(Controller);
-                            TurnZeroMethodsExecuted = true;
+                    {
+                        TFTVLogger.Always("Turn 0 check");
+                        TFTVRevenant.ModifyRevenantResistanceAbility(Controller);
+                        TFTVRevenant.CheckForNotDeadSoldiers(Controller);
+                        TFTVRevenant.RevenantCheckAndSpawn(Controller);
+                        TFTVRevenant.ImplementVO19(Controller);
+                        TFTVVoidOmens.VO5TurnHostileCivviesFriendly(Controller);
+                        TurnZeroMethodsExecuted = true;
                     }
 
                     TFTVRevenant.revenantSpecialResistance.Clear();
                     TFTVUmbra.SpawnUmbra(Controller);
                     TFTVHumanEnemies.ChampRecoverWPAura(Controller);
                     TFTVHumanEnemies.ApplyTactic(Controller);
+
+                  
+
                 }
 
             }

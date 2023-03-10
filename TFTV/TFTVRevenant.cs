@@ -1,4 +1,5 @@
-﻿using Base.Core;
+﻿using Base;
+using Base.Core;
 using Base.Defs;
 using Base.Entities.Statuses;
 using Base.ParticleSystems;
@@ -960,12 +961,13 @@ namespace TFTV
         public static void AddRevenantResistanceStatus(TacticalActorBase tacticalActorBase)
         {
             TacticalActor tacticalActor = tacticalActorBase as TacticalActor;
-            if (!tacticalActor.Status.HasStatus(revenantResistanceStatus))
+
+            if (!tacticalActor.Status.HasStatus(revenantResistanceStatus) && !tacticalActor.GameTags.Last().name.Contains("Mindfragged"))
             {
                 tacticalActor.Status.ApplyStatus<DamageMultiplierStatus>(revenantResistanceStatus);
             }
 
-            if (!tacticalActorBase.HasGameTag(revenantResistanceGameTag))
+            if (!tacticalActorBase.HasGameTag(revenantResistanceGameTag) && !tacticalActor.GameTags.Last().name.Contains("Mindfragged"))
             {
                 tacticalActorBase.GameTags.Add(revenantResistanceGameTag);
             }

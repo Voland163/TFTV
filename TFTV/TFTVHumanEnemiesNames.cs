@@ -58,7 +58,7 @@ namespace TFTV
 
 
         }
-
+        
 
         public static List<string> pu_Adjectives = new List<string> { "Metal", "Junk", "Titanium", "Oil", "Servo", "Mech", "Wire", "Mesh", "Robo", "Quantum", "Cyber", "Death", "Wire", "Bit", "Gear" };
 
@@ -76,7 +76,7 @@ namespace TFTV
 
         public static List<string> anu_Names = new List<string> {"Walker","Charlie","Wez","Ziggy","Alex","Max","Miller","Kenzo","Karal","Katoa",
             "Okoye","Fagan","Avery","Parker","Joyce","Kai","Angel","Jesse","Riley","Ash","Finley","Shaw","Vickers","Marno","Jikkola",
-            "Kris","Strid","Showalter","Grimsrud"};
+            "Kris","Strid","Showalter","Grimsrud", "Aigazy", "Bassar", "Erasyl", "Gani", "Itymbai", "Kibrik","Murat", "Rakhat","Sadvaqas", "Tjatigul", "Zhandos"};
 
         public static List<string> syn_Names = new List<string> {"Nagata","Inaros","Avasarala","Liberty","Fraternity","Equality","Lenin","Tenet",
             "Campion","Meseeks","Squanchy","Nimbus","Mojo","Nostromo","Odyssey","Bono","Eli","Naru","Taabe","Sanchez","Walker","Charlie",

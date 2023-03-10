@@ -878,146 +878,7 @@ namespace TFTV
             }
 
         }
-
-
-        [HarmonyPatch(typeof(ResourceMissionOutcomeDef), "FillPotentialReward")]
-
-        public static class ResourceMissionOutcomeDef_FillPotentialReward_V18
-
-        {
-            public static void Postfix(GeoMission mission, ref MissionRewardDescription rewardDescription, ResourceMissionOutcomeDef __instance)
-            {
-                try
-                {
-                    GeoLevelController geoLevel = mission.Site.GeoLevel;
-
-                    //   if (!VO18applied)
-                    //   {
-                    if (__instance.name.Contains("Haven") && CheckFordVoidOmensInPlay(geoLevel).Contains(18))
-                    {
-                        ResourcePack resources = new ResourcePack(__instance.Resources);
-
-                        for (int i = 0; i < 3; i++)
-                        {
-                            ResourceUnit resourceUnit = __instance.Resources[i];
-                            resources[i] = new ResourceUnit(resourceUnit.Type, resourceUnit.Value * 0.5f);
-                        }
-
-                        rewardDescription.Resources.Clear();
-                        rewardDescription.Resources.AddRange(resources);
-                        TFTVLogger.Always("Resource reward from mission " + mission.MissionName.LocalizeEnglish() + " modified to "
-                            + resources[0].Value + ", " + resources[1].Value + " and " + resources[2].Value);
-                    }
-                    //     VO18applied = true;
-                    // }
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-
-            }
-        }
-
-        //  public static bool VO18applied = false;
-
-        [HarmonyPatch(typeof(ResourceMissionOutcomeDef), "ApplyOutcome")]
-
-        public static class ResourceMissionOutcomeDef_ApplyOutcome_V18
-        {
-
-            //public static void Prefix (GeoMission mission, ref MissionRewardDescription rewardDescription, ResourceMissionOutcomeDef __instance)
-
-            public static void Postfix(GeoMission mission, ref MissionRewardDescription rewardDescription, ResourceMissionOutcomeDef __instance)
-            {
-                try
-                {
-                    //   if (!VO18applied)
-                    //   {
-                    GeoLevelController geoLevel = mission.Site.GeoLevel;
-                    if (__instance.name.Contains("Haven") && CheckFordVoidOmensInPlay(geoLevel).Contains(18))
-                    {
-                        ResourcePack resources = new ResourcePack(__instance.Resources);
-
-
-                        for (int i = 0; i <= 2; i++)
-                        {
-                            ResourceUnit resourceUnit = __instance.Resources[i];
-                            resources[i] = new ResourceUnit(resourceUnit.Type, resourceUnit.Value * 0.5f);
-
-                        }
-                        rewardDescription.Resources.Clear();
-                        rewardDescription.Resources.AddRange(resources);
-                        TFTVLogger.Always("Resource reward from mission " + mission.MissionName.LocalizeEnglish() + " modified to "
-                           + resources[0].Value + ", " + resources[1].Value + " and " + resources[2].Value);
-                    }
-                    //     VO18applied = true;
-                    //  }
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-
-            }
-        }
-
-
-
-        [HarmonyPatch(typeof(DiplomacyMissionOutcomeDef), "FillPotentialReward")]
-
-        public static class DiplomacyMissionOutcomeDef_FillPotentialReward_VO2
-
-        {
-            public static void Postfix(GeoMission mission, ref MissionRewardDescription rewardDescription, DiplomacyMissionOutcomeDef __instance)
-            {
-                try
-                {
-                    GeoLevelController geoLevel = mission.Site.GeoLevel;
-
-                    if (CheckFordVoidOmensInPlay(geoLevel).Contains(2))
-                    {
-                        GeoFaction viewerFaction = mission.Site.GeoLevel.ViewerFaction;
-                        GeoFaction faction = geoLevel.GetFaction(__instance.ToFaction);
-                        rewardDescription.SetDiplomacyChange(faction, viewerFaction, Mathf.RoundToInt(__instance.DiplomacyToFaction.Min * 0.5f));
-                        TFTVLogger.Always("In preview, original diplo reward from mission " + mission.MissionName + " was " + __instance.DiplomacyToFaction.Min
-                            + "; now it is  " + __instance.DiplomacyToFaction.Min * 0.5f);
-                    }
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-
-            }
-        }
-
-        [HarmonyPatch(typeof(DiplomacyMissionOutcomeDef), "ApplyOutcome")]
-
-        public static class DiplomacyMissionOutcomeDef_ApplyOutcome_VO2
-
-        {
-            public static void Postfix(GeoMission mission, ref MissionRewardDescription rewardDescription, DiplomacyMissionOutcomeDef __instance)
-            {
-                try
-                {
-                    GeoLevelController geoLevel = mission.Site.GeoLevel;
-                    if (CheckFordVoidOmensInPlay(geoLevel).Contains(2))
-                    {
-                        GeoFaction viewerFaction = mission.Site.GeoLevel.ViewerFaction;
-                        GeoFaction faction = geoLevel.GetFaction(__instance.ToFaction);
-                        rewardDescription.SetDiplomacyChange(faction, viewerFaction, Mathf.RoundToInt(__instance.DiplomacyToFaction.RandomValue() * 0.5f));
-                        TFTVLogger.Always("Original diplo reward from mission " + mission.MissionName.LocalizeEnglish() + " was at the least " + __instance.DiplomacyToFaction.Min
-                            + "; now it is at the least  " + __instance.DiplomacyToFaction.Min * 0.5f);
-                    }
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-
-            }
-        }
+       
 
         [HarmonyPatch(typeof(FactionObjective), "GetCompletion")]
         public static class FactionObjective_GetCompletion_VO4_Patch
@@ -1382,48 +1243,7 @@ namespace TFTV
             }
         }
 
-        //VO2 decrease diplo reward air missions
-        [HarmonyPatch(typeof(GeoAirMission), "SetOutcomeAndReward")]
-        public static class TFTV_GeoAirMission_SetOutcomeAndRewardVO2_Patch
-        {
-            public static void Prefix(GeoFactionReward reward)
-            {
-                try
-                {
-                    GeoLevelController controller = (GeoLevelController)UnityEngine.Object.FindObjectOfType(typeof(GeoLevelController));
-
-                    if (CheckFordVoidOmensInPlay(controller).Contains(2))
-                    {
-
-                        if (reward.Resources != null && reward.Resources.Count > 0)
-                        {
-                            TFTVLogger.Always("Resource amount is " + reward.Resources[0].Value);
-                            reward.Resources = new ResourcePack
-                            { new ResourceUnit{
-
-                                Type = reward.Resources[0].Type, Value = reward.Resources[0].Value * 0.5f}
-
-                            };
-                        }
-                        if (reward.Diplomacy != null && reward.Diplomacy.Count > 0)
-                        {
-
-                            foreach (RewardDiplomacyChange change in reward.Diplomacy)
-                            {
-                                TFTVLogger.Always("Diplo reward is " + change.Value);
-                                change.Value = Mathf.RoundToInt(0.5f * change.Value);
-
-                            }
-                        }
-
-                    }
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-            }
-        }
+       
 
 
         //VO5 increase chance to spawn weapons in crates
@@ -1480,29 +1300,7 @@ namespace TFTV
         
      
 
-        [HarmonyPatch(typeof(Research), "GetHourlyResearchProduction")]
-        public static class TFTV_Research_GetHourlyResearchProductionVO6_Patch
-        {
-            public static void Postfix(ref float __result)
-            {
-                try
-                {
-                    //TFTVLogger.Always("GetHourlyResearchProduction invoked");
-
-                    if (VoidOmensCheck[6])
-                    {
-                        __result *= 1.5f;
-                    }
-
-
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-            }
-        }
-
+       
 
 
 

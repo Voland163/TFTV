@@ -1,5 +1,6 @@
 ﻿using HarmonyLib;
 using PhoenixPoint.Geoscape.Entities;
+using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.View.ViewControllers.AugmentationScreen;
 using PhoenixPoint.Geoscape.View.ViewModules;
 using PhoenixPoint.Tactical.Entities.Equipments;
@@ -29,6 +30,7 @@ namespace TFTV
             [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051")]
             private static void Postfix(BodyPartAspect __instance)
             {
+                
                 // The way to get access to base.OwnerItem
                 // 'base' it the class this object is derived from and with Harmony we can't directly access these base classes
                 // looking in dnSpy we can see, that 'base' is of type 'TacticalItemAspectBase' and we want to access it's property 'OwnerItem' that is of type 'TacticalItem'
@@ -43,15 +45,20 @@ namespace TFTV
         }
 
 
-        public static void CheckBrokenLimbs(List<GeoCharacter> geoCharacters)
+        public static void CheckBrokenLimbs(List<GeoCharacter> geoCharacters, GeoLevelController controller)
         {
             try
             {
-                foreach (GeoCharacter geoCharacter in geoCharacters)
+                TFTVConfig config = TFTVMain.Main.Config;
+
+                if (controller.CurrentDifficultyLevel.Order != 1 || config.OverrideRookieDifficultySettings)
                 {
-                    if (charactersWithBrokenLimbs.Contains(geoCharacter.Id))
+                    foreach (GeoCharacter geoCharacter in geoCharacters)
                     {
-                        TFTVCommonMethods.SetStaminaToZero(geoCharacter);
+                        if (charactersWithBrokenLimbs.Contains(geoCharacter.Id))
+                        {
+                            TFTVCommonMethods.SetStaminaToZero(geoCharacter);
+                        }
                     }
                 }
                 charactersWithBrokenLimbs = new List<int>();
@@ -79,7 +86,13 @@ namespace TFTV
             {
                 try
                 {
-                    ____parentModule.CurrentCharacter.Fatigue.Stamina.SetToMin();
+                    TFTVConfig config = TFTVMain.Main.Config;
+                    GeoLevelController controller = (GeoLevelController)UnityEngine.Object.FindObjectOfType(typeof(GeoLevelController));
+
+                    if (controller.CurrentDifficultyLevel.Order != 1 || config.OverrideRookieDifficultySettings)
+                    {
+                        ____parentModule.CurrentCharacter.Fatigue.Stamina.SetToMin();
+                    }
                 }
                 catch (Exception e)
                 {
@@ -103,9 +116,14 @@ namespace TFTV
             {
                 try
                 {
+                    TFTVConfig config = TFTVMain.Main.Config;
+                    GeoLevelController controller = (GeoLevelController)UnityEngine.Object.FindObjectOfType(typeof(GeoLevelController));
 
-                    //set Stamina to zero after installing a bionic
-                    __instance.CurrentCharacter.Fatigue.Stamina.SetToMin();
+                    if (controller.CurrentDifficultyLevel.Order != 1 || config.OverrideRookieDifficultySettings)
+                    {
+                        //set Stamina to zero after installing a bionic
+                        __instance.CurrentCharacter.Fatigue.Stamina.SetToMin();
+                    }
                 }
 
                 catch (Exception e)

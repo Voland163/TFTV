@@ -74,7 +74,7 @@ namespace TFTV
             TFTVUmbra.CheckForUmbraResearch(gsController);
             TFTVUmbra.SetUmbraEvolution(gsController);
             TFTVThirdAct.SetBehemothOnRampageMod(gsController);
-            TFTVStamina.CheckBrokenLimbs(gsController.PhoenixFaction.Soldiers.ToList());
+            TFTVStamina.CheckBrokenLimbs(gsController.PhoenixFaction.Soldiers.ToList(), gsController);
             TFTVRevenant.UpdateRevenantTimer(gsController);
             if (TFTVRevenant.revenantID != 0 && TFTVRevenant.DeadSoldiersDelirium.ContainsKey(TFTVRevenant.revenantID))
             {
@@ -89,6 +89,7 @@ namespace TFTV
             TFTVAncients.AncientsOnGeoscapeStartChecks(gsController);
             TFTVAncients.CheckImpossibleWeaponsAdditionalRequirements(gsController);
             TFTVExperimental.CheckForFireQuenchers(gsController);
+            TFTVSpecialDifficulties.CheckForSpecialDifficulties(gsController);
             // TFTVBetaSaveGamesFixes.CheckImpossibleWeaponsFunctionalityTags(gsController);
 
 

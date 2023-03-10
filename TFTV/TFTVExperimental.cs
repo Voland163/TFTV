@@ -7,7 +7,10 @@ using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Levels.Missions;
 using PhoenixPoint.Geoscape.Entities;
+using PhoenixPoint.Geoscape.Entities.Interception.Equipments;
+using PhoenixPoint.Geoscape.Entities.Sites;
 using PhoenixPoint.Geoscape.Levels;
+using PhoenixPoint.Geoscape.View.ViewControllers.HavenDetails;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.Effects.DamageTypes;
@@ -23,8 +26,8 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using System.Reflection.Emit;
-using TFTV.PortedAATweaks;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -38,6 +41,288 @@ namespace TFTV
         private static readonly DefRepository Repo = TFTVMain.Repo;
 
         public static List<TacticalVoxel> VoxelsOnFire = new List<TacticalVoxel>();
+
+
+        /* GeoHavenLeader
+         public bool CanTradeWithFaction(IDiplomaticParty faction)
+         {
+             return this.GetRelationWith(faction).Diplomacy >= 0;
+         }
+
+         // Token: 0x06005DF2 RID: 24050 RVA: 0x00161BCF File Offset: 0x0015FDCF
+         public bool CanRecruitWithFaction(IDiplomaticParty faction)
+         {
+             return this.GetRelationWith(faction).Diplomacy >= 0;
+         }*/
+
+        [HarmonyPatch(typeof(GeoVehicle), "GetModuleBonusByType")]
+
+        public static class TFTV_Experimental_GeoVehicle_GetModuleBonusByType_AdjustFARMRecuperationModule_patch
+        {
+            public static void Postfix(GeoVehicleModuleDef.GeoVehicleModuleBonusType type, ref float __result)
+            {
+                try
+                {
+                    if (type == GeoVehicleModuleDef.GeoVehicleModuleBonusType.Recuperation)
+                    {
+                        TFTVConfig config = TFTVMain.Main.Config;
+                       
+                        if (config.ActivateStaminaRecuperatonModule)
+                        {
+
+                            __result = 0.35f;
+
+                        }
+                        else
+                        {
+
+                            __result = 0.0f;
+
+                        }
+
+                    }
+
+                }
+
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+
+            }
+        }
+
+
+
+
+        [HarmonyPatch(typeof(GeoHavenLeader), "CanRecruitWithFaction")]
+
+        public static class TFTV_Experimental_GeoHavenLeader_CanRecruitWithFaction_EnableRecruitingWhenNotAtWar_patch
+        {
+            public static void Postfix(GeoHavenLeader __instance, IDiplomaticParty faction, ref bool __result)
+            {
+                try
+                {
+                    MethodInfo getRelationMethod = AccessTools.Method(typeof(GeoHavenLeader), "GetRelationWith");
+                    PartyDiplomacy.Relation relation = (PartyDiplomacy.Relation)getRelationMethod.Invoke(__instance, new object[] { faction });
+
+                    __result = relation.Diplomacy > -50;
+
+                }
+
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+
+            }
+        }
+
+        /* [HarmonyPatch(typeof(GeoHavenLeader), "CanTradeWithFaction")]
+
+         public static class TFTV_Experimental_GeoHavenLeader_CanTradeWithFaction_EnableTradingWhenNotAtWar_patch
+         {
+             public static void Postfix(GeoHavenLeader __instance, IDiplomaticParty faction, ref bool __result)
+             {
+                 try
+                 {
+                     MethodInfo getRelationMethod = AccessTools.Method(typeof(GeoHavenLeader), "GetRelationWith");
+                     PartyDiplomacy.Relation relation = (PartyDiplomacy.Relation)getRelationMethod.Invoke(__instance, new object[] { faction });
+
+                     __result = relation.Diplomacy > -50;
+
+                 }
+
+                 catch (Exception e)
+                 {
+                     TFTVLogger.Error(e);
+                 }
+
+             }
+         }*/
+
+
+
+        [HarmonyPatch(typeof(GeoHaven), "GetRecruitCost")]
+        public static class TFTV_Experimental_GeoHaven_GetRecruitCost_IncreaseCostDiplomacy_patch
+        {
+            public static void Postfix(GeoHaven __instance, ref ResourcePack __result, GeoFaction forFaction)
+            {
+                try
+                {
+                    GeoHavenLeader leader = __instance.Leader;
+                    MethodInfo getRelationMethod = AccessTools.Method(typeof(GeoHavenLeader), "GetRelationWith");
+                    PartyDiplomacy.Relation relation = (PartyDiplomacy.Relation)getRelationMethod.Invoke(leader, new object[] { forFaction });
+                    ResourcePack price = new ResourcePack(__result);
+                    float multiplier = 1f;
+                    if (relation.Diplomacy > -50 && relation.Diplomacy <= -25)
+                    {
+                        multiplier = 1.5f;
+                    }
+                    else if (relation.Diplomacy > -25 && relation.Diplomacy <= 0)
+                    {
+                        multiplier = 1.25f;
+
+                    }
+
+                    for (int i = 0; i < price.Count; i++)
+                    {
+                        TFTVLogger.Always("Price component is " + price[i].Type + " amount " + price[i].Value);
+                        ResourceUnit resourceUnit = price[i];
+                        price[i] = new ResourceUnit(resourceUnit.Type, resourceUnit.Value * multiplier);
+                    }
+
+                    __result = price;
+
+
+                }
+
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+
+            }
+        }
+
+
+
+
+        /*  [HarmonyPatch(typeof(GeoHaven), "GetResourceTrading")]
+          public static class TFTV_Experimental_GeoHaven_GetResourceTrading_IncreaseCostDiplomacy_patch
+          {
+              public static void Postfix(GeoHaven __instance, ref List<HavenTradingEntry> __result)
+              {
+                  try
+                  {
+                      GeoFaction phoenixFaction = __instance.Site.GeoLevel.PhoenixFaction;
+                      PartyDiplomacy.Relation relation = __instance.Leader.Diplomacy.GetRelation(phoenixFaction);
+                      float multiplier = 1f;
+                      List<HavenTradingEntry> offeredTrade = new List<HavenTradingEntry>(__result);
+
+                      if (relation.Diplomacy > -50 && relation.Diplomacy <= -25)
+                      {
+                          multiplier = 0.5f;
+                      }
+                      else if (relation.Diplomacy > -25 && relation.Diplomacy <= 0)
+                      {
+                          multiplier = 0.75f;
+                          TFTVLogger.Always("GetResourceTrading");
+                      }
+
+                      for (int i = 0; i < offeredTrade.Count; i++)
+                      {
+                         HavenTradingEntry havenTradingEntry = offeredTrade[i];
+                          offeredTrade[i] = new HavenTradingEntry
+                          {
+                              HavenOfferQuantity = (int)(havenTradingEntry.HavenOfferQuantity*multiplier),
+                              HavenOffers = havenTradingEntry.HavenOffers,
+                              HavenWants = havenTradingEntry.HavenWants,
+                              ResourceStock = havenTradingEntry.ResourceStock,
+                              HavenReceiveQuantity = havenTradingEntry.HavenReceiveQuantity,
+                          };
+                          TFTVLogger.Always("New value is " + offeredTrade[i].HavenOfferQuantity);
+                      }
+
+                      __result = offeredTrade;
+
+                  }
+
+                  catch (Exception e)
+                  {
+                      TFTVLogger.Error(e);
+                  }
+
+              }
+          }*/
+
+
+
+
+        [HarmonyPatch(typeof(GeoHaven), "CheckShouldSpawnRecruit")]
+        public static class TFTV_Experimental_GeoHaven_CheckShouldSpawnRecruit_IncreaseCostDiplomacy_patch
+        {
+            public static void Postfix(GeoHaven __instance, ref bool __result, float modifier)
+            {
+                try
+                {
+                    if (__result == false)
+                    {
+                        if (!__instance.IsRecruitmentEnabled || !__instance.ZonesStats.CanGenerateRecruit)
+                        {
+                            __result = false;
+                        }
+                        else
+                        { 
+                            GeoFaction phoenixFaction = __instance.Site.GeoLevel.PhoenixFaction;
+                            PartyDiplomacy.Relation relation = __instance.Leader.Diplomacy.GetRelation(phoenixFaction);
+                            if (relation.Diplomacy <= 0 && relation.Diplomacy > -50)
+                            {
+                                int num = __instance.HavenDef.RecruitmentBaseChance;
+                                num = Mathf.RoundToInt((float)num * modifier);
+
+
+                                __result = UnityEngine.Random.Range(0, 100) < num;
+                            }
+                        }
+                    }
+                }
+
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+
+            }
+        }
+
+
+
+
+
+        [HarmonyPatch(typeof(GeoHaven), "TakeRecruit")]
+
+        public static class TFTV_Experimental_GeoHaven_TakeRecruit_VanillaBugBix_patch
+        {
+            public static void Postfix(GeoHaven __instance, IGeoCharacterContainer __result, ref int ____population)
+            {
+                try
+                {
+                    if (__result != null)
+                    {
+                        ____population -= 1;
+                        HavenInfoController havenInfo = (HavenInfoController)UnityEngine.Object.FindObjectOfType(typeof(HavenInfoController));
+
+
+                        int populationChange = __instance.GetPopulationChange(__instance.ZonesStats.GetTotalHavenOutput());
+                        if (populationChange > 0)
+                        {
+                            havenInfo.PopulationValueText.text = string.Format(havenInfo.PopulationPositiveTextPattern, __instance.Population.ToString(), populationChange);
+                        }
+                        else if (populationChange == 0)
+                        {
+                            havenInfo.PopulationValueText.text = __instance.Population.ToString();
+                        }
+                        else
+                        {
+                            havenInfo.PopulationValueText.text = string.Format(havenInfo.PopulationNegativeTextPattern, __instance.Population.ToString(), populationChange);
+                        }
+
+
+                    }
+
+                }
+
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+
+            }
+        }
+
+
+
 
 
         public static void CheckUseFireWeaponsAndDifficulty(GeoLevelController controller)
@@ -123,7 +408,7 @@ namespace TFTV
 
                     DefCache.GetDef<TacticalItemDef>("Crabman_Head_Humanoid_BodyPartDef").Abilities = new TacticalAbilityDef[] { };
                     DefCache.GetDef<TacticalItemDef>("Crabman_Head_EliteHumanoid_BodyPartDef").Abilities = new TacticalAbilityDef[] { };
-                    
+
                 }
             }
 
@@ -217,36 +502,38 @@ namespace TFTV
             {
                 try
                 {
-                    if (TFTVExperimental.VoxelsOnFire.Count > 0)
+                    if (VoxelsOnFire != null)
                     {
-                      //  TFTVLogger.Always("Voxels on fire count is " + TFTVExperimental.VoxelsOnFire.Count);
-                        // List<TacticalVoxel> voxelsForMist = new List<TacticalVoxel>();
-                        foreach (TacticalVoxel voxel in TFTVExperimental.VoxelsOnFire)
-                        {
-                            if (voxel.GetVoxelType() == TacticalVoxelType.Fire)
-                            {
-                            //    TFTVLogger.Always("Got past the if check");
 
-                                voxel.SetVoxelType(TacticalVoxelType.Empty, 1);
+                        if (VoxelsOnFire.Count > 0)
+                        {
+                            //  TFTVLogger.Always("Voxels on fire count is " + TFTVExperimental.VoxelsOnFire.Count);
+                            // List<TacticalVoxel> voxelsForMist = new List<TacticalVoxel>();
+                            foreach (TacticalVoxel voxel in TFTVExperimental.VoxelsOnFire)
+                            {
+                                if (voxel.GetVoxelType() == TacticalVoxelType.Fire)
+                                {
+                                    //    TFTVLogger.Always("Got past the if check");
+
+                                    voxel.SetVoxelType(TacticalVoxelType.Empty, 1);
+                                }
                             }
                         }
-                    }
 
-                    if (TFTVExperimental.VoxelsOnFire.Count > 0)
-                    {
-                        foreach (TacticalVoxel voxel in TFTVExperimental.VoxelsOnFire)
+                        if (VoxelsOnFire.Count > 0)
                         {
-                            if (voxel.GetVoxelType() == TacticalVoxelType.Empty)
+                            foreach (TacticalVoxel voxel in TFTVExperimental.VoxelsOnFire)
                             {
-                                //TFTVLogger.Always("Got past the if check for Mist");
-                                voxel.SetVoxelType(TacticalVoxelType.Mist, 2, 10);
+                                if (voxel.GetVoxelType() == TacticalVoxelType.Empty)
+                                {
+                                    //TFTVLogger.Always("Got past the if check for Mist");
+                                    voxel.SetVoxelType(TacticalVoxelType.Mist, 2, 10);
+                                }
                             }
                         }
+
+                        VoxelsOnFire.Clear();
                     }
-
-                    TFTVExperimental.VoxelsOnFire.Clear();
-
-
                 }
 
                 catch (Exception e)

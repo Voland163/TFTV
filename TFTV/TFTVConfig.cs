@@ -1,6 +1,7 @@
 using PhoenixPoint.Modding;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 
 namespace TFTV
 {
@@ -19,6 +20,24 @@ namespace TFTV
         [ConfigField(text: "DEFAULT TFTV SETTINGS",
             description: "Sets all settings to default, to provide the Terror from the Void experience as envisioned by its creators")]
         public bool defaultSettings = false;
+
+        [ConfigField(text: "OVERRIDE ROOKIE DIFFICULTY SETTINGS",
+          description: "Certain config settings are set by default to a certain level for Rookie (see each config option for details). If you want to override them, check this box.")]
+        public bool OverrideRookieDifficultySettings = false;
+
+        [ConfigField(text: "EASY TACTICAL",
+          description: "All enemies gain a special trait increasing damage done to them by 50%, Pandorans never have more than 20 armor, Scylla and Node have less HP. " +
+            "All Phoenix operatives gain a special trait increasing their damage resistance by 50%. Set to true on Rookie by default")]
+        public bool EasyTactical = false;
+
+        [ConfigField(text: "EASY GEOSCAPE",
+          description: "All diplo rewards, resource rewards from missions, research output are doubled, and all diplo penalties are halved " +
+            " Set to true on Rookie by default")]
+        public bool EasyGeoscape = false;
+
+        [ConfigField(text: "I AM ETERMES",
+                  description: "YOU ARE ETERMES")]
+        public bool EtermesMode = false;
 
         [ConfigField(text: "PLAY WITH MORE MIST VOID OMEN",
             description: "If you are playing on a Low-end system and experience lag with this Void Omen, you can turn it off here. This will prevent it from rolling" +
@@ -39,7 +58,7 @@ namespace TFTV
         [ConfigField(text: "IMPOSSIBLE WEAPONS ADJUSTMENTS", description: "In TFTV, Ancient Weapons are replaced by the Impossible Weapons (IW) " +
             "counterparts. They have different functionality (read: they are nerfed) " +
             "and some of them require additional faction research.  " +
-            "Check this option off to keep Impossible Weapons with the same stats and functionality as Ancient Weapons in Vanilla and without requiring additional faction research.")]
+            "Check this option off to keep Impossible Weapons with the same stats and functionality as Ancient Weapons in Vanilla and without requiring additional faction research. Set to false by default on Rookie.")]
         public bool impossibleWeaponsAdjustments = true;
 
         //Starting squad
@@ -101,7 +120,7 @@ namespace TFTV
         // Can be applied to game in progress
         [ConfigField(text: "Amount of resources gained in events",
            description: "For current (post Azazoth patch) Vanilla, set to 1. For default TFTV and Vanilla pre-Azazoth patch, set to 0.8.\n" +
-            "Can be applied to a game in progress")]
+            "Can be applied to a game in progress.\n"+"Set to 1.2 on Rookie by default")] //done
         public float ResourceMultiplier = 0.8f;
 
         // Changing the settings below will make the game easier:
@@ -110,31 +129,31 @@ namespace TFTV
         // Can be applied to game in progress
         [ConfigField(text: "Higher diplomatic penalties",
            description: "Diplomatic penalties from choices in events are doubled and revealing diplomatic missions for one faction gives a diplomatic penalty with the other factions.\n" +
-                        "Can be applied to a game in progress")]
+                        "Can be applied to a game in progress.\n" + "Set to false on Rookie by default")] //done
         public bool DiplomaticPenalties = true;
 
 
         // If set to false, a disabled limb in tactical will not set character's Stamina to zero in geo
         [ConfigField(text: "Stamina drained on injury",
            description: "The stamina of any operative that sustains an injury in combat that results in a disabled body part will be set to zero after the mission.\n" +
-            "Can be applied to a game in progress.")]
+            "Can be applied to a game in progress.\n" + "Set to false on Rookie by default")] //done
         public bool StaminaPenaltyFromInjury = true;
 
         // If set to false, applying a mutation will not set character's Stamina to zero
         [ConfigField(text: "Stamina drained on mutation",
           description: "The stamina of any operative that undergoes a mutation will be set to zero.\n" +
-           "Can be applied to a game in progress.")]
+           "Can be applied to a game in progress.\n" + "Set to false on Rookie by default")] //done
         public bool StaminaPenaltyFromMutation = true;
 
         // If set to false, adding a bionic will not set character's Stamina to zero
         [ConfigField(text: "Stamina drained on bionic augmentation",
           description: "The stamina of any operative that undergoes a bionic augmentation will be set to zero.\n" +
-           "Can be applied to a game in progress.")]
+           "Can be applied to a game in progress.\n" + "Set to false on Rookie by default")] //done
         public bool StaminaPenaltyFromBionics = true;
 
         // If set to false, ambushes will happen as rarely as in Vanilla, and will not have crates in them
         [ConfigField(text: "New ambush",
-          description: "Ambushes will happen more often and will be harder. Regardless of this setting, all ambushes will have crates in them.")]
+          description: "Ambushes will happen more often and will be harder. Regardless of this setting, all ambushes will have crates in them.\n" + "Set to false on Rookie by default")] //done
         public bool MoreAmbushes = true;
 
         // Changing the settings below will make the game harder:

@@ -16,6 +16,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
+using static TFTV.TFTVConfig;
 
 namespace TFTV
 {
@@ -82,9 +83,9 @@ namespace TFTV
                 /// PhoenixGame is accessible at any time.
                 PhoenixGame game = GetGame();
 
-                TFTVversion = $"TFTV March 10 release #1 v{MetaData.Version}";
+                TFTVversion = $"TFTV March 19 release #1 v{MetaData.Version}";
 
-                Logger.LogInfo("TFTV March 10 release #1");
+                Logger.LogInfo("TFTV March 19 release #1");
 
                 ModDirectory = Instance.Entry.Directory;
                 //Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
@@ -97,7 +98,7 @@ namespace TFTV
                 TFTVLogger.Initialize(LogPath, Config.Debug, ModDirectory, nameof(TFTV));
                 PRMLogger.Initialize(LogPath, Settings.Debug, ModDirectory, nameof(PRMBetterClasses));
                 // DefCache.Initialize();
-                TFTVLogger.Always("TFTV March 10 release #1");
+                TFTVLogger.Always("TFTV March 19 release #1");
 
                 PRMBetterClasses.Helper.Initialize();
                 // Initialize Helper
@@ -126,13 +127,7 @@ namespace TFTV
                     TFTVReverseEngineering.ModifyReverseEngineering();
                     Logger.LogInfo("Reverse Engineering changes to Defs injected");
                 }
-               // TFTVDefsWithConfigDependency.PopulateResourceRewardsDictionary();
-               // Logger.LogInfo("ResoucesRewardDictionary populated");
 
-                TFTVDefsWithConfigDependency.InjectDefsWithStaticConfigDependency();
-                Logger.LogInfo("Defs with Static Config dependency injected");
-                TFTVDefsWithConfigDependency.InjectDefsWithDynamicConfigDependency();
-                Logger.LogInfo("Defs with Dynamic Config dependency injected");
                 TFTVRevenantResearch.CreateRevenantRewardsDefs();
                 TFTVProjectOsiris.CreateProjectOsirisDefs();
               //  TFTVAncients.CheckResearchesRequiringThings();
@@ -181,6 +176,17 @@ namespace TFTV
 
             if (Config.defaultSettings)
             {
+
+                Config.OverrideRookieDifficultySettings = false;
+                Config.EasyTactical = false;
+                Config.EasyGeoscape = false;
+                Config.EtermesMode = false;
+                Config.MoreMistVO = true;
+                Config.SkipMovies = false;
+                Config.amountOfExoticResources = 1f;
+                Config.impossibleWeaponsAdjustments = true;
+                Config.startingSquad = StartingSquadFaction.PHOENIX;
+                Config.tutorialCharacters = StartingSquadCharacters.UNBUFFED;
                 Config.InitialScavSites = 8;
                 Config.ChancesScavCrates = TFTVConfig.ScavengingWeight.High;
                 Config.ChancesScavSoldiers = TFTVConfig.ScavengingWeight.Low;
@@ -199,7 +205,17 @@ namespace TFTV
                 Config.Debug = true;
 
             }
-            if (Config.InitialScavSites != 8 ||
+            if (Config.OverrideRookieDifficultySettings =! false||
+            Config.EasyTactical != false||
+            Config.EasyGeoscape != false||
+            Config.EtermesMode != false ||
+            Config.MoreMistVO != true ||
+            Config.SkipMovies != false ||
+            Config.amountOfExoticResources != 1f ||
+            Config.impossibleWeaponsAdjustments != true ||
+            Config.startingSquad != StartingSquadFaction.PHOENIX ||
+            Config.tutorialCharacters != StartingSquadCharacters.UNBUFFED ||
+            Config.InitialScavSites != 8 ||
                Config.ChancesScavCrates != TFTVConfig.ScavengingWeight.High ||
                Config.ChancesScavSoldiers != TFTVConfig.ScavengingWeight.Low ||
                Config.ChancesScavGroundVehicleRescue != TFTVConfig.ScavengingWeight.Low ||
@@ -220,7 +236,6 @@ namespace TFTV
                 Config.defaultSettings = false;
 
             }
-            TFTVDefsWithConfigDependency.InjectDefsWithDynamicConfigDependency();
             Harmony harmony = (Harmony)HarmonyInstance;
             //  injectionComplete = false;
             harmony.UnpatchAll();
@@ -245,27 +260,11 @@ namespace TFTV
         /// <param name="state">New state of the level.</param>
         public override void OnLevelStateChanged(Level level, Level.State prevState, Level.State state)
         {
-            //Level l = GetLevel();
-            // BCApplyDefChanges();
-            //    TFTVDefsRequiringReinjection.InjectDefsRequiringReinjection();
-
-            //  TFTVProjectRobocop.CreateRoboCopDef();
+         
             Logger.LogInfo($"{MethodBase.GetCurrentMethod().Name} called for level '{level}' with old state '{prevState}' and new state '{state}'");
             if (level.name.Contains("Intro") && prevState == Level.State.Uninitialized && state == Level.State.NotLoaded)
             {
-                //  Logger.LogInfo($"TFTV should do Def stuff here to make sure BC stuff is ready");
-                /*  BCApplyDefChanges();
-                  TFTVDefsInjectedOnlyOnce.InjectDefsInjectedOnlyOnce();
-                  TFTVHumanEnemiesNames.CreateNamesDictionary();
-                  TFTVDefsWithConfigDependency.PopulateResourceRewardsDictionary();
-                  TFTVDefsRequiringReinjection.InjectDefsRequiringReinjection();
-
-                  if (Config.ActivateReverseEngineeringResearch)
-                  {
-                      TFTVReverseEngineering.ModifyReverseEngineering();
-                  }*/
-                //  TFTVProjectRobocop.CreateRoboCopDef();
-                // TFTVProjectRobocop.CreateRoboCopDeliveryEvent();
+                
             }
 
             /// Alternative way to access current level at any time.
@@ -281,10 +280,7 @@ namespace TFTV
         /// <param name="level">Level that starts.</param>
         public override void OnLevelStart(Level level)
         {
-            //Reinject Dtony's delirium perks, because assuming degradation will happen based on BetterClasses experience
-            //  BCApplyDefChanges();
-            //  TFTVDefsRequiringReinjection.InjectDefsRequiringReinjection();
-
+          
 
         }
 

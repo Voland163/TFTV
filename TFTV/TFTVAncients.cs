@@ -215,7 +215,7 @@ namespace TFTV
 
                         //Nerfed Scythe in TFTV requires Bionics 3
                         if (item.Name.LocalizationKey == "TFTV_KEY_AC_SCYTHE_NAME" &&
-                          (!____faction.Research.HasCompleted("PX_ProteanMutaneResearchDef") || !____faction.Research.HasCompleted("PX_LivingCrystalResearchDef")
+                          (!____faction.Research.HasCompleted("PX_LivingCrystalResearchDef")
                           || !____faction.Research.HasCompleted("SYN_Bionics3_ResearchDef")))
                         {
                             //  TFTVLogger.Always("Scythe TFTV is not unlocked " + item.Name.LocalizationKey);
@@ -224,7 +224,7 @@ namespace TFTV
 
                         //Vanilla Scythe in TFTV requires Living Crystal research and Protean Mutane Reseach
                         if (item.Name.LocalizationKey == "KEY_AC_SCYTHE_NAME" &&
-                          (!____faction.Research.HasCompleted("PX_ProteanMutaneResearchDef") || !____faction.Research.HasCompleted("PX_LivingCrystalResearchDef")))
+                          (!____faction.Research.HasCompleted("PX_LivingCrystalResearchDef")))
                         {
                             //  TFTVLogger.Always("Scythe is not unlocked " + item.Name.LocalizationKey);
                             __result = ManufactureFailureReason.NotUnlocked;

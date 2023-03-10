@@ -93,11 +93,49 @@ namespace TFTV
         private static readonly AbilityDef amplifyPain = DefCache.GetDef<AbilityDef>("AmplifyPain_AbilityDef");
 
 
+    
+
         public static Dictionary<string, int> HumanEnemiesAndTactics = new Dictionary<string, int>();
 
         public static int RollCount = 0;
         public static List<ContextHelpHintDef> TacticsHint = new List<ContextHelpHintDef>();
      
+
+      /*  public static void AddRookieVulnerability(TacticalLevelController controller) 
+        {
+            try 
+            {
+              //  TFTVConfig config = TFTVMain.Main.Config;
+
+                if (controller.Difficulty.Order == 1)
+                {
+                    if (GetHumanEnemyFactions(controller).Count > 0)
+                    {
+                        foreach (TacticalFaction enemyFaction in GetHumanEnemyFactions(controller))
+                        {
+                            foreach (TacticalActorBase tacticalActorBase in enemyFaction.Actors)
+                            {
+                                if (tacticalActorBase is TacticalActor tacticalActor)
+                                {
+                                    if (tacticalActor.GetAbility<DamageMultiplierAbility>(RookieVulnerability) == null)
+                                    {
+                                        tacticalActor.AddAbility(RookieVulnerability, tacticalActor);
+                                    }
+                                }
+                            }
+
+                        }
+
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+        }*/
+        
 
         public static void RollTactic(string nameOfFaction)
         {
@@ -451,6 +489,7 @@ namespace TFTV
 
 
                     }
+
                 }
             }
             catch (Exception e)
@@ -600,6 +639,7 @@ namespace TFTV
 
 
                     }
+
                 }
             }
             catch (Exception e)
@@ -1400,10 +1440,8 @@ namespace TFTV
                                 }
 
                             }
-
                         }
                     }
-
 
                 }
                 catch (Exception e)
@@ -1438,7 +1476,7 @@ namespace TFTV
                                         if ((allyTacticalActorBase.Pos - tacticalActorBase.Pos).magnitude < magnitude
                                             && TacticalFactionVision.CheckVisibleLineBetweenActors(allyTacticalActorBase, allyTacticalActorBase.Pos, tacticalActor, true))
                                         {
-                                            TFTVLogger.Always("Actor in range and has LoS");
+                                           // TFTVLogger.Always("Actor in range and has LoS");
                                             actor.CharacterStats.WillPoints.AddRestrictedToMax(1);
                                         }
                                     }
@@ -2079,7 +2117,7 @@ namespace TFTV
                                     && allyTacticalActorBase.BaseDef.name == "Soldier_ActorDef" && allyTacticalActorBase.InPlay
                                     && TacticalFactionVision.CheckVisibleLineBetweenActors(allyTacticalActorBase, allyTacticalActorBase.Pos, tacticalActor, true))
                                 {
-                                    TFTVLogger.Always("Actor in range and has LoS");
+                                   // TFTVLogger.Always("Actor in range and has LoS");
                                     ItemSlotStatsModifyStatusDef eRStatusEffect = DefCache.GetDef<ItemSlotStatsModifyStatusDef>("E_Status [ElectricReinforcement_AbilityDef]");
                                     allyTacticalActorBase.Status.ApplyStatus(eRStatusEffect);
                                 }

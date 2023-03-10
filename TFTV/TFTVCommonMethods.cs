@@ -64,7 +64,7 @@ namespace TFTV
                 TFTVAirCombat.flyersAndHavens = new Dictionary<int, List<int>>();
                 TFTVAirCombat.checkHammerfall = false;
                 TFTVRevenant.DeadSoldiersDelirium = new Dictionary<int, int>();
-                TFTVVoidOmens.VoidOmensCheck = new bool[20];
+              //  TFTVVoidOmens.VoidOmensCheck = new bool[20];
                 TFTVUmbra.TBTVVariable = 0;
                 TFTVRevenant.daysRevenantLastSeen = 0;
                 TFTVStamina.charactersWithBrokenLimbs = new List<int>();

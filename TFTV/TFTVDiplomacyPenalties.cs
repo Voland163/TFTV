@@ -1,8 +1,10 @@
-﻿using Base.Core;
+﻿using Base;
+using Base.Core;
 using com.ootii.Collections;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Geoscape.Events;
+using PhoenixPoint.Geoscape.Events.Eventus;
 using PhoenixPoint.Geoscape.Levels;
 using System;
 using System.Collections.Generic;
@@ -15,209 +17,6 @@ namespace TFTV
     {
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
         public static bool VoidOmensImplemented = false;
-
-        private static readonly List<string> ExcludedEventsDiplomacyPenalty = new List<string>
-        {
-            "PROG_PU4_WIN", "PROG_SY7", "PROG_SY8", "PROG_AN3", "PROG_AN5", "PROG_NJ7", "PROG_NJ8",
-        "PROG_AN2", "PROG_NJ1", "PROG_SY1", "PROG_AN4", "PROG_NJ2", "PROG_SY3_WIN", "PROG_AN6", "PROG_NJ3", "PROG_SY4_T", "PROG_SY4_P",
-        "PROG_PU2_CHOICE3EVENT","PROG_PU4_WIN","PROG_PU2_CHOICE2EVENT","PROG_PU12WIN2", "PROG_PU12NewNJOption","PROG_LE1_WIN",
-        "Anu_Pissed1", "Anu_Pissed2", "NJ_Pissed1", "NJ_Pissed2", "PROG_LE0_WIN"
-        };
-
-
-        [HarmonyPatch(typeof(GeoEventChoiceOutcome), "GenerateFactionReward")]
-
-        public static class GeoEventChoiceOutcome_GenerateFactionReward_patch
-        {
-            private static readonly GeoFactionDef PhoenixFaction = DefCache.GetDef<GeoFactionDef>("Phoenix_GeoPhoenixFactionDef");
- 
-
-          /*  public static bool Prepare()
-            {
-                GeoLevelController controller = (GeoLevelController)UnityEngine.Object.FindObjectOfType(typeof(GeoLevelController));
-                TFTVConfig config = TFTVMain.Main.Config;
-                if (config.DiplomaticPenalties || config.ResourceMultiplier != 1 || TFTVVoidOmens.CheckFordVoidOmensInPlay(controller).Contains(2) || TFTVVoidOmens.CheckFordVoidOmensInPlay(controller).Contains(8))
-                {
-                    return true;
-                }
-                else
-                {
-                    return false;
-                }
-            }*/
-
-            public static void Prefix(GeoEventChoiceOutcome __instance, string eventID)
-            {
-                try
-                {
-                   // if (!VoidOmensImplemented)
-                   // {
-                        GeoLevelController controller = (GeoLevelController)UnityEngine.Object.FindObjectOfType(typeof(GeoLevelController));
-                      //  TFTVVoidOmens.ImplementVoidOmens(controller);
-                      //  VoidOmensImplemented = true;
-                   // }
-
-                    TFTVConfig config = TFTVMain.Main.Config;
-                  
-                    if (config.DiplomaticPenalties)
-                    {
-                        if (!ExcludedEventsDiplomacyPenalty.Contains(eventID) && __instance.Diplomacy.Count > 0)
-                        {
-                            for (int i = 0; i < __instance.Diplomacy.Count; i++)
-                            {
-                                if (__instance.Diplomacy[i].TargetFaction == PhoenixFaction && __instance.Diplomacy[i].Value <= 0)
-                                {
-                                    TFTVLogger.Always("Harder diplomacy. The event is " + eventID + ". Original diplo penalty is " + __instance.Diplomacy[i].Value +
-                                        ". New diplomacy value is " + __instance.Diplomacy[i].Value * 2);
-                                    OutcomeDiplomacyChange diplomacyChange = __instance.Diplomacy[i];
-                                    diplomacyChange.Value *= 2;
-                                    __instance.Diplomacy[i] = diplomacyChange;
-
-                                }
-                            }
-                        }
-                    }
-                    if (TFTVVoidOmens.CheckFordVoidOmensInPlay(controller).Contains(2))
-                    {
-                        if (__instance.Diplomacy.Count > 0)
-                        {
-                            for (int t = 0; t < __instance.Diplomacy.Count; t++)
-                            {
-                                if (__instance.Diplomacy[t].Value != 0)
-                                {
-                                    OutcomeDiplomacyChange diplomacyChange = __instance.Diplomacy[t];
-                                    TFTVLogger.Always("VO#2. Original value was " + diplomacyChange.Value + ". New value is " + diplomacyChange.Value * 0.5f);
-                                    diplomacyChange.Value = Mathf.CeilToInt(diplomacyChange.Value * 0.5f);
-                                    __instance.Diplomacy[t] = diplomacyChange;
-
-                                }
-                            }
-                        }
-                    }
-                    if (TFTVVoidOmens.CheckFordVoidOmensInPlay(controller).Contains(8))
-                    {
-                        if (__instance.Diplomacy.Count > 0)
-                        {
-                            for (int t = 0; t < __instance.Diplomacy.Count; t++)
-                            {
-                                if (__instance.Diplomacy[t].Value <= 0 && __instance.Diplomacy[t].TargetFaction != PhoenixFaction)
-                                {
-                                    OutcomeDiplomacyChange diplomacyChange = __instance.Diplomacy[t];
-                                    TFTVLogger.Always("VO#8. Original value was " + diplomacyChange.Value + ". New value is " + diplomacyChange.Value * 1.5f);
-                                    diplomacyChange.Value = Mathf.RoundToInt(diplomacyChange.Value * 1.5f);
-                                    __instance.Diplomacy[t] = diplomacyChange;
-
-                                }
-                            }
-                        }
-                    }
-
-
-                    if (config.ResourceMultiplier != 1)
-                    {
-
-                        for (int i = 0; i < __instance.Resources.Count; i++)
-                        {
-                            ResourceUnit resources = __instance.Resources[i];
-                            TFTVLogger.Always("Resource Multiplier changing resource reward from " + __instance.Resources[i].Value + " to " 
-                                + __instance.Resources[i].Value * config.ResourceMultiplier);
-                            resources.Value *= config.ResourceMultiplier; 
-                            __instance.Resources[i] = resources;
-                           
-                        }
-                    }
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-            }
-
-            public static void Postfix(GeoEventChoiceOutcome __instance, string eventID)
-            {
-                try
-                {
-                    
-                    TFTVConfig config = TFTVMain.Main.Config;
-                    GeoLevelController controller = (GeoLevelController)UnityEngine.Object.FindObjectOfType(typeof(GeoLevelController));
-
-                    if (config.DiplomaticPenalties)
-                    {
-                        if (!ExcludedEventsDiplomacyPenalty.Contains(eventID) && __instance.Diplomacy.Count > 0)
-                        {
-                            for (int i = 0; i < __instance.Diplomacy.Count; i++)
-                            {
-                                if (__instance.Diplomacy[i].TargetFaction == PhoenixFaction && __instance.Diplomacy[i].Value <= 0)
-                                {
-                                    TFTVLogger.Always("Harder diplomacy. Reverting to original value for event " + eventID + ". Current diplo penalty is " + __instance.Diplomacy[i].Value +
-                                        ". Original diplomacy value is " + __instance.Diplomacy[i].Value / 2);
-                                    OutcomeDiplomacyChange diplomacyChange = __instance.Diplomacy[i];
-                                    diplomacyChange.Value /= 2;
-                                    __instance.Diplomacy[i] = diplomacyChange;
-
-                                }
-                            }
-                        }
-                    }
-                    if (TFTVVoidOmens.CheckFordVoidOmensInPlay(controller).Contains(2))
-                    {
-                        TFTVLogger.Always("VoidOmen2 check passed");
-                        if (__instance.Diplomacy.Count > 0)
-                        {
-                            for (int t = 0; t < __instance.Diplomacy.Count; t++)
-                            {
-                                if (__instance.Diplomacy[t].Value != 0)
-                                {
-                                    OutcomeDiplomacyChange diplomacyChange = __instance.Diplomacy[t];
-                                    TFTVLogger.Always("VO#2. Reverting to original value, from  " + diplomacyChange.Value + ", to former value " + diplomacyChange.Value * 2f);
-                                    diplomacyChange.Value = Mathf.CeilToInt(diplomacyChange.Value * 2f);
-                                    __instance.Diplomacy[t] = diplomacyChange;
-
-                                }
-                            }
-                        }
-                    }
-                    if (TFTVVoidOmens.CheckFordVoidOmensInPlay(controller).Contains(8))
-                    {
-                        if (__instance.Diplomacy.Count > 0)
-                        {
-                            for (int t = 0; t < __instance.Diplomacy.Count; t++)
-                            {
-                                if (__instance.Diplomacy[t].Value <= 0 && __instance.Diplomacy[t].TargetFaction != PhoenixFaction)
-                                {
-                                    OutcomeDiplomacyChange diplomacyChange = __instance.Diplomacy[t];
-                                    TFTVLogger.Always("VO#8. Reverting to original value, from " + diplomacyChange.Value + ", to former value " + diplomacyChange.Value * (2/3));
-                                    diplomacyChange.Value = Mathf.RoundToInt(diplomacyChange.Value * (2/3));
-                                    __instance.Diplomacy[t] = diplomacyChange;
-
-                                }
-                            }
-                        }
-                    }
-
-
-                    if (config.ResourceMultiplier != 1)
-                    {
-
-                        for (int i = 0; i < __instance.Resources.Count; i++)
-                        {
-                            ResourceUnit resources = __instance.Resources[i];
-                            TFTVLogger.Always("Resource Multiplier, reverting resource reward from " + __instance.Resources[i].Value + " back to "
-                                + __instance.Resources[i].Value / config.ResourceMultiplier);
-                            resources.Value /= config.ResourceMultiplier;
-                            __instance.Resources[i] = resources;
-
-                        }
-                    }
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-            }
-
-        }
-
 
 
         [HarmonyPatch(typeof(GeoFaction), "OnDiplomacyChanged")]
@@ -249,7 +48,7 @@ namespace TFTV
         public static void CheckPostponedFactionMissions(GeoFaction faction, PartyDiplomacy.Relation relation, int newValue)
         {
             GeoscapeEventSystem eventSystem = faction.GeoLevel.EventSystem; // endless dereferencing hurts my poor soul
-          //  TFTVLogger.Always("Diplomacy changed, CheckPostponedFactionMissions invoked");
+                                                                            //  TFTVLogger.Always("Diplomacy changed, CheckPostponedFactionMissions invoked");
             try
             {
                 GeoFaction targetFaction = faction.GeoLevel.GetFaction((PPFactionDef)relation.WithParty);
@@ -257,11 +56,11 @@ namespace TFTV
 
                 if (faction.GetParticipatingFaction() == faction.GeoLevel.AnuFaction && targetFaction == faction.GeoLevel.PhoenixFaction)
                 {
-                    TFTVLogger.Always("The record for event PROG_AN2 states that choice " + eventSystem.GetEventRecord("PROG_AN2")?.SelectedChoice + " was chosen");
+                   /* TFTVLogger.Always("The record for event PROG_AN2 states that choice " + eventSystem.GetEventRecord("PROG_AN2")?.SelectedChoice + " was chosen");
                     TFTVLogger.Always("The record for event PROG_AN4 states that choice " + eventSystem.GetEventRecord("PROG_AN4")?.SelectedChoice + " was chosen");
                     TFTVLogger.Always("The record for event PROG_AN6 states that choice " + eventSystem.GetEventRecord("PROG_AN6")?.SelectedChoice + " was chosen");
                     TFTVLogger.Always("The record shows PROG_AN4 was completed on " + eventSystem.GetEventRecord("PROG_AN4")?.CompletedAt + " it is now " + faction.GeoLevel.Timing.Now);
-                    
+                   */
                     // GetEventRecord can return null, implying that this event has never spawned. Not sure that should happen in postpone check, but the choice conditional will be false either way
                     if (newValue == 24 && eventSystem.GetEventRecord("PROG_AN2")?.SelectedChoice == 0) // choice 0 is postpone for this event, according to TFTVDefsWithConfigDependency.cs
                     {
@@ -278,9 +77,9 @@ namespace TFTV
                 }
                 else if (faction.GetParticipatingFaction() == faction.GeoLevel.NewJerichoFaction && targetFaction == faction.GeoLevel.PhoenixFaction)
                 {
-                    TFTVLogger.Always("The record for event PROG_NJ1 states that choice " + eventSystem.GetEventRecord("PROG_NJ1")?.SelectedChoice + " was chosen");
+                   /* TFTVLogger.Always("The record for event PROG_NJ1 states that choice " + eventSystem.GetEventRecord("PROG_NJ1")?.SelectedChoice + " was chosen");
                     TFTVLogger.Always("The record for event PROG_NJ2 states that choice " + eventSystem.GetEventRecord("PROG_NJ2")?.SelectedChoice + " was chosen");
-                    TFTVLogger.Always("The record for event PROG_NJ3 states that choice " + eventSystem.GetEventRecord("PROG_NJ3")?.SelectedChoice + " was chosen");
+                    TFTVLogger.Always("The record for event PROG_NJ3 states that choice " + eventSystem.GetEventRecord("PROG_NJ3")?.SelectedChoice + " was chosen");*/
 
                     if (newValue == 24 && eventSystem.GetEventRecord("PROG_NJ1")?.SelectedChoice == 1)
                     {
@@ -297,12 +96,12 @@ namespace TFTV
                 }
                 else if (faction.GetParticipatingFaction() == faction.GeoLevel.SynedrionFaction && targetFaction == faction.GeoLevel.PhoenixFaction)
                 {
-                    TFTVLogger.Always("The record for event PROG_SY1 states that choice " + eventSystem.GetEventRecord("PROG_SY1")?.SelectedChoice + " was chosen");
+                  /*  TFTVLogger.Always("The record for event PROG_SY1 states that choice " + eventSystem.GetEventRecord("PROG_SY1")?.SelectedChoice + " was chosen");
                     TFTVLogger.Always("The record for event PROG_SY4_P states that choice " + eventSystem.GetEventRecord("PROG_SY4_P")?.SelectedChoice + " was chosen");
-                    TFTVLogger.Always("The record for event PROG_SY4_T states that choice " + eventSystem.GetEventRecord("PROG_SY4_T")?.SelectedChoice + " was chosen");
+                    TFTVLogger.Always("The record for event PROG_SY4_T states that choice " + eventSystem.GetEventRecord("PROG_SY4_T")?.SelectedChoice + " was chosen");*/
 
 
-                    if (newValue == 24 && eventSystem.GetEventRecord("PROG_SY1")?.SelectedChoice ==2)
+                    if (newValue == 24 && eventSystem.GetEventRecord("PROG_SY1")?.SelectedChoice == 2)
                     {
                         eventSystem.TriggerGeoscapeEvent("PROG_SY1", geoscapeEventContext);
                     }
@@ -331,90 +130,286 @@ namespace TFTV
             }
         }
 
-
-/*
-        public static void CheckPostponedFactionMissions(GeoFaction faction, PartyDiplomacy.Relation relation, int newValue)
+        [HarmonyPatch(typeof(GeoscapeEventSystem), "OnEventTriggered")]
+        public static class GeoscapeEventSystem_OnGeoscapeEvent_patch
         {
-            try
+            public static void Prefix(GeoscapeEventData @event)
             {
-                GeoFaction targetFaction = faction.GeoLevel.GetFaction((PPFactionDef)relation.WithParty);
-                GeoscapeEventContext geoscapeEventContext = new GeoscapeEventContext(targetFaction, faction.GeoLevel.ViewerFaction);
-
-                if (faction.GetParticipatingFaction() == faction.GeoLevel.AnuFaction
-                       && targetFaction == faction.GeoLevel.PhoenixFaction && faction.GeoLevel.EventSystem.GetVariable("RefusedAnu") > 0)
+                try
                 {
-                    if (newValue == 24 && faction.GeoLevel.EventSystem.GetVariable("RefusedAnu") == 1)
-                    {
-                        faction.GeoLevel.EventSystem.SetVariable("RefusedAnu", 0);
-                        faction.GeoLevel.EventSystem.TriggerGeoscapeEvent("PROG_AN2", geoscapeEventContext);
-                    }
-                    else if (newValue == 49 && faction.GeoLevel.EventSystem.GetVariable("RefusedAnu") == 2)
+                    TFTVConfig config = TFTVMain.Main.Config;
+
+                    GeoLevelController controller = (GeoLevelController)UnityEngine.Object.FindObjectOfType(typeof(GeoLevelController));
+
+                    if (config.DiplomaticPenalties && (controller.CurrentDifficultyLevel.Order != 1 || config.OverrideRookieDifficultySettings))
                     {
 
-                        faction.GeoLevel.EventSystem.SetVariable("RefusedAnu", 0);
-                        faction.GeoLevel.EventSystem.TriggerGeoscapeEvent("PROG_AN4", geoscapeEventContext);
 
-                    }
-                    else if (newValue == 74 && faction.GeoLevel.EventSystem.GetVariable("RefusedAnu") == 3)
-                    {
-                        faction.GeoLevel.EventSystem.SetVariable("RefusedAnu", 0);
-                        faction.GeoLevel.EventSystem.TriggerGeoscapeEvent("PROG_AN6", geoscapeEventContext);
+                        GeoFactionDef PhoenixPoint = DefCache.GetDef<GeoFactionDef>("Phoenix_GeoPhoenixFactionDef");
+                        GeoFactionDef NewJericho = DefCache.GetDef<GeoFactionDef>("NewJericho_GeoFactionDef");
+                        GeoFactionDef Anu = DefCache.GetDef<GeoFactionDef>("Anu_GeoFactionDef");
+                        GeoFactionDef Synedrion = DefCache.GetDef<GeoFactionDef>("Synedrion_GeoFactionDef");
 
-                    }
-                }
-                else if (faction.GetParticipatingFaction() == faction.GeoLevel.NewJerichoFaction
-                      && targetFaction == faction.GeoLevel.PhoenixFaction && faction.GeoLevel.EventSystem.GetVariable("RefusedNewJericho") > 0)
-                {
-                    if (newValue == 24 && faction.GeoLevel.EventSystem.GetVariable("RefusedNewJericho") == 1)
-                    {
-                        faction.GeoLevel.EventSystem.SetVariable("RefusedNewJericho", 0);
-                        faction.GeoLevel.EventSystem.TriggerGeoscapeEvent("PROG_NJ1", geoscapeEventContext);
-                    }
-                    else if (newValue == 49 && faction.GeoLevel.EventSystem.GetVariable("RefusedNewJericho") == 2)
-                    {
+                        GeoscapeEventDef ProgAnuSupportive = DefCache.GetDef<GeoscapeEventDef>("PROG_AN2_GeoscapeEventDef");
+                        GeoscapeEventDef ProgNJSupportive = DefCache.GetDef<GeoscapeEventDef>("PROG_NJ1_GeoscapeEventDef");
+                        GeoscapeEventDef ProgSynSupportive = DefCache.GetDef<GeoscapeEventDef>("PROG_SY1_GeoscapeEventDef");
 
-                        faction.GeoLevel.EventSystem.SetVariable("RefusedNewJericho", 0);
-                        faction.GeoLevel.EventSystem.TriggerGeoscapeEvent("PROG_NJ2", geoscapeEventContext);
+                        GeoscapeEventDef ProgAnuPact = DefCache.GetDef<GeoscapeEventDef>("PROG_AN4_GeoscapeEventDef");
+                        GeoscapeEventDef ProgNJPact = DefCache.GetDef<GeoscapeEventDef>("PROG_NJ2_GeoscapeEventDef");
+                        GeoscapeEventDef ProgSynPact = DefCache.GetDef<GeoscapeEventDef>("PROG_SY3_WIN_GeoscapeEventDef");
 
-                    }
-                    else if (newValue == 74 && faction.GeoLevel.EventSystem.GetVariable("RefusedNewJericho") == 3)
-                    {
-                        faction.GeoLevel.EventSystem.SetVariable("RefusedNewJericho", 0);
-                        faction.GeoLevel.EventSystem.TriggerGeoscapeEvent("PROG_NJ3", geoscapeEventContext);
-                    }
-                }
-                else if (faction.GetParticipatingFaction() == faction.GeoLevel.SynedrionFaction
-                      && targetFaction == faction.GeoLevel.PhoenixFaction && faction.GeoLevel.EventSystem.GetVariable("RefusedSynedrion") > 0)
-                {
-                    if (newValue == 24 && faction.GeoLevel.EventSystem.GetVariable("RefusedSynedrion") == 1)
-                    {
-                        faction.GeoLevel.EventSystem.SetVariable("RefusedSynedrion", 0);
-                        faction.GeoLevel.EventSystem.TriggerGeoscapeEvent("PROG_SY1", geoscapeEventContext);
-                    }
 
-                    else if (newValue == 74 && faction.GeoLevel.EventSystem.GetVariable("RefusedSynedrion") == 3)
-                    {
-                        if (faction.GeoLevel.EventSystem.GetVariable("Polyphonic") > faction.GeoLevel.EventSystem.GetVariable("Terraformers"))
+                        GeoscapeEventDef ProgAnuAlliance = DefCache.GetDef<GeoscapeEventDef>("PROG_AN6_GeoscapeEventDef");
+                        GeoscapeEventDef ProgAnuAllianceNoSynod = DefCache.GetDef<GeoscapeEventDef>("PROG_AN6_2_GeoscapeEventDef");
+                        GeoscapeEventDef ProgNJAlliance = DefCache.GetDef<GeoscapeEventDef>("PROG_NJ3_GeoscapeEventDef");
+                        GeoscapeEventDef ProgSynAllianceTerra = DefCache.GetDef<GeoscapeEventDef>("PROG_SY4_T_GeoscapeEventDef");
+                        GeoscapeEventDef ProgSynAlliancePoly = DefCache.GetDef<GeoscapeEventDef>("PROG_SY4_P_GeoscapeEventDef");
+
+
+                        if (@event.EventID == ProgAnuSupportive.EventID)
+                        {
+                            ProgAnuSupportive.GeoscapeEventData.Choices[0].Outcome.SetDiplomaticObjectives.Clear();
+                            ProgAnuSupportive.GeoscapeEventData.Choices[0].Outcome.Diplomacy.Add(TFTVCommonMethods.GenerateDiplomacyOutcome(Anu, PhoenixPoint, -4));
+                            ProgAnuSupportive.GeoscapeEventData.Choices[1].Outcome.Diplomacy.Add(TFTVCommonMethods.GenerateDiplomacyOutcome(NewJericho, PhoenixPoint, -10));
+                            ProgAnuSupportive.GeoscapeEventData.Choices[1].Outcome.Diplomacy.Add(TFTVCommonMethods.GenerateDiplomacyOutcome(Synedrion, PhoenixPoint, -10));
+                            TFTVLogger.Always("Harder diplomacy is on, changing event " + @event.EventID);
+                        }
+
+                        else if (@event.EventID == ProgAnuPact.EventID)
+                        {
+                            ProgAnuPact.GeoscapeEventData.Choices[0].Outcome.Diplomacy.Add(TFTVCommonMethods.GenerateDiplomacyOutcome(Synedrion, PhoenixPoint, -15));
+                            ProgAnuPact.GeoscapeEventData.Choices[0].Outcome.Diplomacy.Add(TFTVCommonMethods.GenerateDiplomacyOutcome(NewJericho, PhoenixPoint, -15));
+                            TFTVCommonMethods.GenerateGeoEventChoice(ProgAnuPact, "PROG_AN4_CHOICE_1_TEXT", "PROG_AN4_CHOICE_1_OUTCOME_GENERAL");
+                            ProgAnuPact.GeoscapeEventData.Choices[1].Outcome.Diplomacy.Add(TFTVCommonMethods.GenerateDiplomacyOutcome(Anu, PhoenixPoint, -6));
+                            TFTVLogger.Always("Harder diplomacy is on, changing event " + @event.EventID);
+                        }
+                        else if (@event.EventID == ProgAnuAlliance.EventID)
+                        {
+                            ProgAnuAlliance.GeoscapeEventData.Choices[0].Outcome.Diplomacy.Add(TFTVCommonMethods.GenerateDiplomacyOutcome(NewJericho, PhoenixPoint, -10));
+                            ProgAnuAlliance.GeoscapeEventData.Choices[1].Outcome.Diplomacy.Add(TFTVCommonMethods.GenerateDiplomacyOutcome(NewJericho, PhoenixPoint, -20));
+                            ProgAnuAlliance.GeoscapeEventData.Choices[1].Outcome.Diplomacy.Add(TFTVCommonMethods.GenerateDiplomacyOutcome(Synedrion, PhoenixPoint, -15));
+                            TFTVCommonMethods.GenerateGeoEventChoice(ProgAnuAlliance, "PROG_AN4_CHOICE_1_TEXT", "PROG_AN4_CHOICE_1_OUTCOME_GENERAL");
+                            ProgAnuAlliance.GeoscapeEventData.Choices[2].Outcome.Diplomacy.Add(TFTVCommonMethods.GenerateDiplomacyOutcome(Anu, PhoenixPoint, -8));
+                            TFTVLogger.Always("Harder diplomacy is on, changing event " + @event.EventID);
+                        }
+                        else if (@event.EventID == ProgAnuAllianceNoSynod.EventID)
+                        {
+                            TFTVCommonMethods.GenerateGeoEventChoice(ProgAnuAllianceNoSynod, "PROG_AN4_CHOICE_1_TEXT", "PROG_AN4_CHOICE_1_OUTCOME_GENERAL");
+                            ProgAnuAllianceNoSynod.GeoscapeEventData.Choices[1].Outcome.Diplomacy.Add(TFTVCommonMethods.GenerateDiplomacyOutcome(Anu, PhoenixPoint, -8));
+                            TFTVLogger.Always("Harder diplomacy is on, changing event " + @event.EventID);
+                        }
+
+                        else if (@event.EventID == ProgSynSupportive.EventID)
+                        {
+                            //Synedrion
+                            //Supportive Polyphonic
+                            ProgSynSupportive.GeoscapeEventData.Choices[0].Outcome.Diplomacy.Add(TFTVCommonMethods.GenerateDiplomacyOutcome(NewJericho, PhoenixPoint, -15));
+                            ProgSynSupportive.GeoscapeEventData.Choices[0].Outcome.Diplomacy.Add(TFTVCommonMethods.GenerateDiplomacyOutcome(Anu, PhoenixPoint, -5));
+
+                            //Supportive Terra
+                            ProgSynSupportive.GeoscapeEventData.Choices[1].Outcome.Diplomacy.Add(TFTVCommonMethods.GenerateDiplomacyOutcome(Anu, PhoenixPoint, -15));
+                            ProgSynSupportive.GeoscapeEventData.Choices[1].Outcome.Diplomacy.Add(TFTVCommonMethods.GenerateDiplomacyOutcome(NewJericho, PhoenixPoint, -5));
+
+                            //Postpone
+                            TFTVCommonMethods.GenerateGeoEventChoice(ProgSynSupportive, "PROG_SY_POSTPONE_CHOICE", "PROG_SY_POSTPONE_TEXT");
+                            ProgSynSupportive.GeoscapeEventData.Choices[2].Outcome.Diplomacy.Add(TFTVCommonMethods.GenerateDiplomacyOutcome(Synedrion, PhoenixPoint, -4));
+                            TFTVLogger.Always("Harder diplomacy is on, changing event " + @event.EventID);
+                        }
+                        else if (@event.EventID == ProgSynPact.EventID)
                         {
 
-                            faction.GeoLevel.EventSystem.SetVariable("RefusedSynedrion", 0);
-                            faction.GeoLevel.EventSystem.TriggerGeoscapeEvent("PROG_SY4_P", geoscapeEventContext);
+                            //Aligned
+                            ProgSynPact.GeoscapeEventData.Choices[0].Outcome.Diplomacy.Add(TFTVCommonMethods.GenerateDiplomacyOutcome(Anu, PhoenixPoint, -18));
+                            ProgSynPact.GeoscapeEventData.Choices[1].Outcome.Diplomacy.Add(TFTVCommonMethods.GenerateDiplomacyOutcome(NewJericho, PhoenixPoint, -18));
+                            ProgSynPact.GeoscapeEventData.Choices[2].Outcome.Diplomacy.Add(TFTVCommonMethods.GenerateDiplomacyOutcome(Anu, PhoenixPoint, -15));
+                            ProgSynPact.GeoscapeEventData.Choices[2].Outcome.Diplomacy.Add(TFTVCommonMethods.GenerateDiplomacyOutcome(NewJericho, PhoenixPoint, -15));
+                            TFTVLogger.Always("Harder diplomacy is on, changing event " + @event.EventID);
                         }
-                        else
+                        else if (@event.EventID == ProgSynAlliancePoly.EventID)
                         {
-                            faction.GeoLevel.EventSystem.SetVariable("RefusedSynedrion", 0);
-                            faction.GeoLevel.EventSystem.TriggerGeoscapeEvent("PROG_SY4_T", geoscapeEventContext);
+                            //Aliance Polyphonic             
+                            ProgSynAlliancePoly.GeoscapeEventData.Choices[0].Outcome.Diplomacy.Add(TFTVCommonMethods.GenerateDiplomacyOutcome(NewJericho, PhoenixPoint, -8));
+                            TFTVCommonMethods.GenerateGeoEventChoice(ProgSynAlliancePoly, "PROG_SY_POSTPONE_CHOICE", "PROG_SY_POSTPONE_TEXT");
+                            ProgSynAlliancePoly.GeoscapeEventData.Choices[1].Outcome.Diplomacy.Add(TFTVCommonMethods.GenerateDiplomacyOutcome(Synedrion, PhoenixPoint, -8));
+                            TFTVLogger.Always("Harder diplomacy is on, changing event " + @event.EventID);
+                        }
 
+                        else if (@event.EventID == ProgSynAllianceTerra.EventID)
+                        {
+                            //Alliance Terra
+                            ProgSynAllianceTerra.GeoscapeEventData.Choices[0].Outcome.Diplomacy.Add(TFTVCommonMethods.GenerateDiplomacyOutcome(Anu, PhoenixPoint, -20));
+                            TFTVCommonMethods.GenerateGeoEventChoice(ProgSynAllianceTerra, "PROG_SY_POSTPONE_CHOICE", "PROG_SY_POSTPONE_TEXT");
+                            ProgSynAllianceTerra.GeoscapeEventData.Choices[1].Outcome.Diplomacy.Add(TFTVCommonMethods.GenerateDiplomacyOutcome(Synedrion, PhoenixPoint, -8));
+                            TFTVLogger.Always("Harder diplomacy is on, changing event " + @event.EventID);
+                        }
+                        else if (@event.EventID == ProgNJSupportive.EventID)
+                        {
+                            ProgNJSupportive.GeoscapeEventData.Choices[0].Outcome.Diplomacy.Add(TFTVCommonMethods.GenerateDiplomacyOutcome(Anu, PhoenixPoint, -10));
+                            ProgNJSupportive.GeoscapeEventData.Choices[0].Outcome.Diplomacy.Add(TFTVCommonMethods.GenerateDiplomacyOutcome(Synedrion, PhoenixPoint, -10));
+                            TFTVCommonMethods.GenerateGeoEventChoice(ProgNJSupportive, "PROG_NJ_POSTPONE_CHOICE", "PROG_NJ_POSTPONE_TEXT");
+                            ProgNJSupportive.GeoscapeEventData.Choices[1].Outcome.Diplomacy.Add(TFTVCommonMethods.GenerateDiplomacyOutcome(NewJericho, PhoenixPoint, -4));
+                            TFTVLogger.Always("Harder diplomacy is on, changing event " + @event.EventID);
+                        }
+                        else if (@event.EventID == ProgNJPact.EventID)
+                        {
+                            ProgNJPact.GeoscapeEventData.Choices[0].Outcome.Diplomacy.Add(TFTVCommonMethods.GenerateDiplomacyOutcome(Anu, PhoenixPoint, -15));
+                            ProgNJPact.GeoscapeEventData.Choices[0].Outcome.Diplomacy.Add(TFTVCommonMethods.GenerateDiplomacyOutcome(Synedrion, PhoenixPoint, -15));
+                            TFTVCommonMethods.GenerateGeoEventChoice(ProgNJPact, "PROG_NJ_POSTPONE_CHOICE", "PROG_NJ_POSTPONE_TEXT");
+                            ProgNJPact.GeoscapeEventData.Choices[1].Outcome.Diplomacy.Add(TFTVCommonMethods.GenerateDiplomacyOutcome(NewJericho, PhoenixPoint, -6));
+                            TFTVLogger.Always("Harder diplomacy is on, changing event " + @event.EventID);
+                        }
+
+                        else if (@event.EventID == ProgNJAlliance.EventID)
+                        {
+                            ProgNJAlliance.GeoscapeEventData.Choices[0].Outcome.Diplomacy.Add(TFTVCommonMethods.GenerateDiplomacyOutcome(Anu, PhoenixPoint, -20));
+                            ProgNJAlliance.GeoscapeEventData.Choices[0].Outcome.Diplomacy.Add(TFTVCommonMethods.GenerateDiplomacyOutcome(Synedrion, PhoenixPoint, -20));
+                            TFTVCommonMethods.GenerateGeoEventChoice(ProgNJAlliance, "PROG_NJ_POSTPONE_CHOICE", "PROG_NJ_POSTPONE_TEXT");
+                            ProgNJAlliance.GeoscapeEventData.Choices[1].Outcome.Diplomacy.Add(TFTVCommonMethods.GenerateDiplomacyOutcome(NewJericho, PhoenixPoint, -8));
+                            TFTVLogger.Always("Harder diplomacy is on, changing event " + @event.EventID);
                         }
                     }
                 }
+
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
             }
-            catch (Exception e)
+        }
+
+
+        [HarmonyPatch(typeof(GeoscapeEvent), "CompleteEvent")]
+
+        public static class GeoscapeEvent_CompleteEvent_patch
+        {
+            public static void Postfix(GeoscapeEvent __instance)
             {
-                TFTVLogger.Error(e);
+                try
+                {
+
+                    TFTVConfig config = TFTVMain.Main.Config;
+                    GeoLevelController controller = (GeoLevelController)UnityEngine.Object.FindObjectOfType(typeof(GeoLevelController));
+
+                    if (config.DiplomaticPenalties && (controller.CurrentDifficultyLevel.Order != 1 || config.OverrideRookieDifficultySettings))
+                    {
+
+                        GeoFactionDef PhoenixPoint = DefCache.GetDef<GeoFactionDef>("Phoenix_GeoPhoenixFactionDef");
+                        GeoFactionDef NewJericho = DefCache.GetDef<GeoFactionDef>("NewJericho_GeoFactionDef");
+                        GeoFactionDef Anu = DefCache.GetDef<GeoFactionDef>("Anu_GeoFactionDef");
+                        GeoFactionDef Synedrion = DefCache.GetDef<GeoFactionDef>("Synedrion_GeoFactionDef");
+
+                        GeoscapeEventDef ProgAnuSupportive = DefCache.GetDef<GeoscapeEventDef>("PROG_AN2_GeoscapeEventDef");
+                        GeoscapeEventDef ProgNJSupportive = DefCache.GetDef<GeoscapeEventDef>("PROG_NJ1_GeoscapeEventDef");
+                        GeoscapeEventDef ProgSynSupportive = DefCache.GetDef<GeoscapeEventDef>("PROG_SY1_GeoscapeEventDef");
+
+                        GeoscapeEventDef ProgAnuPact = DefCache.GetDef<GeoscapeEventDef>("PROG_AN4_GeoscapeEventDef");
+                        GeoscapeEventDef ProgNJPact = DefCache.GetDef<GeoscapeEventDef>("PROG_NJ2_GeoscapeEventDef");
+                        GeoscapeEventDef ProgSynPact = DefCache.GetDef<GeoscapeEventDef>("PROG_SY3_WIN_GeoscapeEventDef");
+
+
+                        GeoscapeEventDef ProgAnuAlliance = DefCache.GetDef<GeoscapeEventDef>("PROG_AN6_GeoscapeEventDef");
+                        GeoscapeEventDef ProgAnuAllianceNoSynod = DefCache.GetDef<GeoscapeEventDef>("PROG_AN6_2_GeoscapeEventDef");
+                        GeoscapeEventDef ProgNJAlliance = DefCache.GetDef<GeoscapeEventDef>("PROG_NJ3_GeoscapeEventDef");
+                        GeoscapeEventDef ProgSynAllianceTerra = DefCache.GetDef<GeoscapeEventDef>("PROG_SY4_T_GeoscapeEventDef");
+                        GeoscapeEventDef ProgSynAlliancePoly = DefCache.GetDef<GeoscapeEventDef>("PROG_SY4_P_GeoscapeEventDef");
+
+                        if (__instance.EventID == ProgAnuSupportive.EventID)
+                        {
+
+                            ProgAnuSupportive.GeoscapeEventData.Choices[0].Outcome.Diplomacy.Clear();
+                            ProgAnuSupportive.GeoscapeEventData.Choices[1].Outcome.Diplomacy.Clear();
+
+                            OutcomeSetDiplomaticObjective copyObjective = ProgAnuSupportive.GeoscapeEventData.Choices[1].Outcome.SetDiplomaticObjectives[1];
+                            OutcomeSetDiplomaticObjective outcomeSetDiplomaticObjective = new OutcomeSetDiplomaticObjective() { Description = copyObjective.Description, EventID = copyObjective.EventID, WithFaction = copyObjective.WithFaction };
+                            ProgAnuSupportive.GeoscapeEventData.Choices[0].Outcome.SetDiplomaticObjectives.Add(outcomeSetDiplomaticObjective);
+                            TFTVLogger.Always("Harder diplomacy is on, changing event " + __instance.EventID + " back to keep things nice and tidy");
+                        }
+                        else if (__instance.EventID == ProgAnuPact.EventID)
+                        {
+                            ProgAnuPact.GeoscapeEventData.Choices[0].Outcome.Diplomacy.Clear();
+                            ProgAnuPact.GeoscapeEventData.Choices.RemoveLast();
+                            TFTVLogger.Always("Harder diplomacy is on, changing event " + __instance.EventID + " back to keep things nice and tidy");
+
+                        }
+                        else if (__instance.EventID == ProgAnuAlliance.EventID)
+                        {
+                            ProgAnuAlliance.GeoscapeEventData.Choices[0].Outcome.Diplomacy.Clear();
+                            ProgAnuAlliance.GeoscapeEventData.Choices[1].Outcome.Diplomacy.Clear();
+                            ProgAnuAlliance.GeoscapeEventData.Choices.RemoveLast();
+                            TFTVLogger.Always("Harder diplomacy is on, changing event " + __instance.EventID + " back to keep things nice and tidy");
+                        }
+                        else if (__instance.EventID == ProgAnuAllianceNoSynod.EventID)
+                        {
+                            ProgAnuAllianceNoSynod.GeoscapeEventData.Choices.RemoveLast();
+                            TFTVLogger.Always("Harder diplomacy is on, changing event " + __instance.EventID + " back to keep things nice and tidy");
+                        }
+
+                        else if (__instance.EventID == ProgSynSupportive.EventID)
+                        {
+
+                            //Synedrion
+                            //Supportive Polyphonic
+                            ProgSynSupportive.GeoscapeEventData.Choices[0].Outcome.Diplomacy.Clear();
+
+                            //Supportive Terra
+                            ProgSynSupportive.GeoscapeEventData.Choices[1].Outcome.Diplomacy.Clear();
+
+                            //Postpone
+                            ProgSynSupportive.GeoscapeEventData.Choices.RemoveLast();
+                            TFTVLogger.Always("Harder diplomacy is on, changing event " + __instance.EventID + " back to keep things nice and tidy");
+                        }
+                        else if (__instance.EventID == ProgSynPact.EventID)
+                        {
+
+                            //Aligned
+                            ProgSynPact.GeoscapeEventData.Choices[0].Outcome.Diplomacy.Clear();
+                            ProgSynPact.GeoscapeEventData.Choices[1].Outcome.Diplomacy.Clear();
+                            ProgSynPact.GeoscapeEventData.Choices[2].Outcome.Diplomacy.Clear();
+                            TFTVLogger.Always("Harder diplomacy is on, changing event " + __instance.EventID + " back to keep things nice and tidy");
+                        }
+                        else if (__instance.EventID == ProgSynAlliancePoly.EventID)
+                        {
+                            //Aliance Polyphonic             
+                            ProgSynAlliancePoly.GeoscapeEventData.Choices[0].Outcome.Diplomacy.Clear();
+                            ProgSynAlliancePoly.GeoscapeEventData.Choices.RemoveLast();
+                            TFTVLogger.Always("Harder diplomacy is on, changing event " + __instance.EventID + " back to keep things nice and tidy");
+                        }
+
+                        else if (__instance.EventID == ProgSynAllianceTerra.EventID)
+                        {
+                            //Alliance Terra
+                            ProgSynAllianceTerra.GeoscapeEventData.Choices[0].Outcome.Diplomacy.Clear();
+                            ProgSynAllianceTerra.GeoscapeEventData.Choices.RemoveLast();
+                            TFTVLogger.Always("Harder diplomacy is on, changing event " + __instance.EventID + " back to keep things nice and tidy");
+                        }
+                        else if (__instance.EventID == ProgNJSupportive.EventID)
+                        {
+                            ProgNJSupportive.GeoscapeEventData.Choices[0].Outcome.Diplomacy.Clear();
+                            ProgNJSupportive.GeoscapeEventData.Choices.RemoveLast();
+                            TFTVLogger.Always("Harder diplomacy is on, changing event " + __instance.EventID + " back to keep things nice and tidy");
+                        }
+                        else if (__instance.EventID == ProgNJPact.EventID)
+                        {
+                            ProgNJPact.GeoscapeEventData.Choices[0].Outcome.Diplomacy.Clear();
+                            ProgNJPact.GeoscapeEventData.Choices.RemoveLast();
+                            TFTVLogger.Always("Harder diplomacy is on, changing event " + __instance.EventID + " back to keep things nice and tidy");
+                        }
+
+                        else if (__instance.EventID == ProgNJAlliance.EventID)
+                        {
+                            ProgNJAlliance.GeoscapeEventData.Choices[0].Outcome.Diplomacy.Clear();
+                            ProgNJAlliance.GeoscapeEventData.Choices.RemoveLast();
+                            TFTVLogger.Always("Harder diplomacy is on, changing event " + __instance.EventID + " back to keep things nice and tidy");
+                        }
+
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+
             }
-
-        }*/
-
+        }
     }
 }

@@ -89,8 +89,351 @@ namespace TFTV
             AddLoreEntries();
             CreateFireQuenchers();
             ChangeMyrmidonAndFirewormResearchRewards();
+            RemovePirateKing();
+            CreateRookieVulnerability();
+            CreateRookieProtectionStatus();
+            CreateEtermesStatuses();
+            ModifyRecruitsCost();
+            RemoveScyllaResearches();
+            FixUnarmedAspida();
             //  Testing();
         }
+
+        public static void FixUnarmedAspida()
+        {
+            try 
+            { 
+            DefCache.GetDef<TacCharacterDef>("SY_AspidaInfested_TacCharacterDef").Data.EquipmentItems 
+                    = new ItemDef[] { DefCache.GetDef<ItemDef>("SY_Aspida_Arms_GroundVehicleWeaponDef") };
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+
+
+        }
+
+
+        public static void RemoveScyllaResearches()
+        {
+            try 
+            {
+                ResearchDbDef researchDbDef = DefCache.GetDef<ResearchDbDef>("aln_ResearchDB");
+
+                ResearchDef scylla1Research = DefCache.GetDef<ResearchDef>("ALN_Scylla1_ResearchDef");
+                ResearchDef scylla2Research = DefCache.GetDef<ResearchDef>("ALN_Scylla2_ResearchDef");
+                ResearchDef scylla3Research = DefCache.GetDef<ResearchDef>("ALN_Scylla3_ResearchDef");
+                ResearchDef scylla4Research = DefCache.GetDef<ResearchDef>("ALN_Scylla4_ResearchDef");
+                ResearchDef scylla5Research = DefCache.GetDef<ResearchDef>("ALN_Scylla5_ResearchDef");
+                ResearchDef scylla6Research = DefCache.GetDef<ResearchDef>("ALN_Scylla6_ResearchDef");
+                ResearchDef scylla7Research = DefCache.GetDef<ResearchDef>("ALN_Scylla7_ResearchDef");
+                ResearchDef scylla8Research = DefCache.GetDef<ResearchDef>("ALN_Scylla8_ResearchDef");
+                ResearchDef scylla9Research = DefCache.GetDef<ResearchDef>("ALN_Scylla9_ResearchDef");
+                ResearchDef scylla10Research = DefCache.GetDef<ResearchDef>("ALN_Scylla10_ResearchDef");
+
+
+                researchDbDef.Researches.RemoveAll(r => r.name.Contains("ALN_Scylla"));
+
+
+
+
+            }
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+        }
+
+        public static void ModifyRecruitsCost()
+        {
+            try 
+            {
+                GameDifficultyLevelDef veryhard = DefCache.GetDef<GameDifficultyLevelDef>("VeryHard_GameDifficultyLevelDef");
+                //Hero
+                GameDifficultyLevelDef hard = DefCache.GetDef<GameDifficultyLevelDef>("Hard_GameDifficultyLevelDef");
+                //Standard
+                GameDifficultyLevelDef standard = DefCache.GetDef<GameDifficultyLevelDef>("Standard_GameDifficultyLevelDef");
+                //Easy
+                GameDifficultyLevelDef easy = DefCache.GetDef<GameDifficultyLevelDef>("Easy_GameDifficultyLevelDef");
+
+
+                easy.RecruitCostPerLevelMultiplier = 0.5f;
+                standard.RecruitCostPerLevelMultiplier = 0.75f;
+
+
+            }
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+        public static void CreateEtermesStatuses() 
+        {
+            try 
+            {
+                CreateEtermesProtectionStatus();
+                CreateEtermesVulnerability();
+            
+            }
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+
+        }
+
+        public static void CreateEtermesProtectionStatus()
+        {
+            try
+            {
+
+                StandardDamageTypeEffectDef fireDamage = DefCache.GetDef<StandardDamageTypeEffectDef>("Fire_StandardDamageTypeEffectDef");
+                StandardDamageTypeEffectDef standardDamageTypeEffectDef = DefCache.GetDef<StandardDamageTypeEffectDef>("Projectile_StandardDamageTypeEffectDef");
+                AcidDamageTypeEffectDef acidDamage = DefCache.GetDef<AcidDamageTypeEffectDef>("Acid_DamageOverTimeDamageTypeEffectDef");
+
+                string statusName = "EtermesProtectionStatus";
+                string gUID = "35EC0B4B-C0C7-4EB4-B3F0-64E71507CB6D";
+                string gUIDVisuals = "EB475735-E388-49BE-80B6-6AA6907C9138";
+
+                DamageMultiplierStatusDef source = DefCache.GetDef<DamageMultiplierStatusDef>("BionicResistances_StatusDef");
+                DamageMultiplierStatusDef newStatus = Helper.CreateDefFromClone(
+                    source,
+                    gUID,
+                    statusName);
+                newStatus.EffectName = statusName;
+                newStatus.VisibleOnHealthbar = TacStatusDef.HealthBarVisibility.Hidden;
+                newStatus.VisibleOnPassiveBar = true;
+                newStatus.VisibleOnStatusScreen = TacStatusDef.StatusScreenVisibility.VisibleOnStatusesList;
+                newStatus.ApplicationConditions = new EffectConditionDef[] { };
+
+                newStatus.Visuals = Helper.CreateDefFromClone(
+                    source.Visuals,
+                    gUIDVisuals,
+                    statusName + "Visuals");
+                newStatus.Multiplier = 0.75f;
+                newStatus.MultiplierType = DamageMultiplierType.Incoming;
+                newStatus.Range = -1;
+                List<DamageTypeBaseEffectDef> damageTypeBaseEffectDefs = new List<DamageTypeBaseEffectDef>();
+                damageTypeBaseEffectDefs.AddRange(newStatus.DamageTypeDefs);
+                damageTypeBaseEffectDefs.Add(fireDamage);
+                damageTypeBaseEffectDefs.Add(standardDamageTypeEffectDef);
+                damageTypeBaseEffectDefs.Add(acidDamage);
+
+                newStatus.DamageTypeDefs = damageTypeBaseEffectDefs.ToArray();
+
+                newStatus.Visuals.LargeIcon = Helper.CreateSpriteFromImageFile("UI_AbilitiesIcon_HunkerDown_2-2.png");
+                newStatus.Visuals.SmallIcon = Helper.CreateSpriteFromImageFile("UI_AbilitiesIcon_HunkerDown_2-2.png");
+
+
+                newStatus.Visuals.DisplayName1.LocalizationKey = "ETERMES_VULNERABILITY_NAME";
+                newStatus.Visuals.Description.LocalizationKey = "ETERMES_PROTECTION_DESCRIPTION";
+
+            }
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+
+        }
+
+
+        public static void CreateEtermesVulnerability()
+        {
+            try
+            {
+                StandardDamageTypeEffectDef fireDamage = DefCache.GetDef<StandardDamageTypeEffectDef>("Fire_StandardDamageTypeEffectDef");
+                StandardDamageTypeEffectDef standardDamageTypeEffectDef = DefCache.GetDef<StandardDamageTypeEffectDef>("Projectile_StandardDamageTypeEffectDef");
+                AcidDamageTypeEffectDef acidDamage = DefCache.GetDef<AcidDamageTypeEffectDef>("Acid_DamageOverTimeDamageTypeEffectDef");
+
+                string statusName = "EtermesVulnerabilityStatus";
+                string gUID = "B5135532-82F2-48B3-8B2A-3B3433D438AF";
+                string gUIDVisuals = "30F37D69-5629-403E-A610-6B245B7665CD";
+
+                DamageMultiplierStatusDef source = DefCache.GetDef<DamageMultiplierStatusDef>("BionicResistances_StatusDef");
+                DamageMultiplierStatusDef newStatus = Helper.CreateDefFromClone(
+                    source,
+                    gUID,
+                    statusName);
+                newStatus.EffectName = statusName;
+                newStatus.VisibleOnHealthbar = TacStatusDef.HealthBarVisibility.Hidden;
+                newStatus.VisibleOnPassiveBar = true;
+                newStatus.VisibleOnStatusScreen = TacStatusDef.StatusScreenVisibility.VisibleOnStatusesList;
+                newStatus.ApplicationConditions = new EffectConditionDef[] { };
+
+                newStatus.Visuals = Helper.CreateDefFromClone(
+                    source.Visuals,
+                    gUIDVisuals,
+                    statusName + "Visuals");
+                newStatus.Multiplier = 1.25f;
+                newStatus.MultiplierType = DamageMultiplierType.Incoming;
+                newStatus.Range = -1;
+                List<DamageTypeBaseEffectDef> damageTypeBaseEffectDefs = new List<DamageTypeBaseEffectDef>();
+                damageTypeBaseEffectDefs.AddRange(newStatus.DamageTypeDefs);
+                damageTypeBaseEffectDefs.Add(fireDamage);
+                damageTypeBaseEffectDefs.Add(standardDamageTypeEffectDef);
+                damageTypeBaseEffectDefs.Add(acidDamage);
+
+
+                newStatus.DamageTypeDefs = damageTypeBaseEffectDefs.ToArray();
+
+                newStatus.Visuals.DisplayName1.LocalizationKey = "ETERMES_VULNERABILITY_NAME";
+                newStatus.Visuals.Description.LocalizationKey = "ETERMES_VULNERABILITY_DESCRIPTION";
+                newStatus.Visuals.LargeIcon = Helper.CreateSpriteFromImageFile("UI_AbilitiesIcon_HunkerDown_1-2.png");
+                newStatus.Visuals.SmallIcon = Helper.CreateSpriteFromImageFile("UI_AbilitiesIcon_HunkerDown_1-2.png");
+            }
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+        }
+
+
+
+
+        public static void CreateRookieProtectionStatus() 
+        {
+            try 
+            {
+
+                StandardDamageTypeEffectDef fireDamage = DefCache.GetDef<StandardDamageTypeEffectDef>("Fire_StandardDamageTypeEffectDef");
+                StandardDamageTypeEffectDef standardDamageTypeEffectDef = DefCache.GetDef<StandardDamageTypeEffectDef>("Projectile_StandardDamageTypeEffectDef");
+                AcidDamageTypeEffectDef acidDamage = DefCache.GetDef<AcidDamageTypeEffectDef>("Acid_DamageOverTimeDamageTypeEffectDef");
+
+
+                string statusName = "RookieProtectionStatus";
+                string gUID = "B7F811AF-D919-462D-8045-D42C08B1706D";
+                string gUIDVisuals = "DD77459C-6B4E-42B7-81C9-B425EB305E3B";
+
+                DamageMultiplierStatusDef source = DefCache.GetDef<DamageMultiplierStatusDef>("BionicResistances_StatusDef");
+                DamageMultiplierStatusDef newStatus = Helper.CreateDefFromClone(
+                    source,
+                    gUID,
+                    statusName);
+                newStatus.EffectName = statusName;
+                newStatus.VisibleOnHealthbar = TacStatusDef.HealthBarVisibility.Hidden;
+                newStatus.VisibleOnPassiveBar = true;
+                newStatus.VisibleOnStatusScreen = TacStatusDef.StatusScreenVisibility.VisibleOnStatusesList;
+                newStatus.ApplicationConditions = new EffectConditionDef[] { };
+
+                newStatus.Visuals = Helper.CreateDefFromClone(
+                    source.Visuals,
+                    gUIDVisuals,
+                    statusName + "Visuals");
+                newStatus.Multiplier = 0.5f;
+                newStatus.MultiplierType = DamageMultiplierType.Incoming;
+                newStatus.Range = -1;
+                List<DamageTypeBaseEffectDef> damageTypeBaseEffectDefs = new List<DamageTypeBaseEffectDef>();
+                damageTypeBaseEffectDefs.AddRange(newStatus.DamageTypeDefs);
+                damageTypeBaseEffectDefs.Add(fireDamage);
+                damageTypeBaseEffectDefs.Add(standardDamageTypeEffectDef);
+                damageTypeBaseEffectDefs.Add(acidDamage);
+
+                newStatus.DamageTypeDefs = damageTypeBaseEffectDefs.ToArray();
+
+                newStatus.Visuals.LargeIcon = Helper.CreateSpriteFromImageFile("UI_AbilitiesIcon_HunkerDown_2-2.png");
+                newStatus.Visuals.SmallIcon = Helper.CreateSpriteFromImageFile("UI_AbilitiesIcon_HunkerDown_2-2.png");
+
+
+                newStatus.Visuals.DisplayName1.LocalizationKey = "ROOKIE_VULNERABILITY_NAME";
+                newStatus.Visuals.Description.LocalizationKey = "ROOKIE_PROTECTION_DESCRIPTION";
+
+            }
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+
+        }
+
+        
+        public static void CreateRookieVulnerability() 
+        {
+            try 
+            {
+                StandardDamageTypeEffectDef fireDamage = DefCache.GetDef<StandardDamageTypeEffectDef>("Fire_StandardDamageTypeEffectDef");
+                StandardDamageTypeEffectDef standardDamageTypeEffectDef = DefCache.GetDef<StandardDamageTypeEffectDef>("Projectile_StandardDamageTypeEffectDef");
+                AcidDamageTypeEffectDef acidDamage = DefCache.GetDef<AcidDamageTypeEffectDef>("Acid_DamageOverTimeDamageTypeEffectDef");
+
+                string statusName = "RookieVulnerabilityStatus";
+                string gUID = "C8468900-F4A0-4E47-92B2-AA7CBEB9EE13";
+                string gUIDVisuals = "3F3697B6-487B-4610-A2B0-B2A17AA67C72";
+
+                DamageMultiplierStatusDef source = DefCache.GetDef<DamageMultiplierStatusDef>("BionicResistances_StatusDef");
+                DamageMultiplierStatusDef newStatus = Helper.CreateDefFromClone(
+                    source,
+                    gUID,
+                    statusName);
+                newStatus.EffectName = statusName;
+                newStatus.VisibleOnHealthbar = TacStatusDef.HealthBarVisibility.Hidden;
+                newStatus.VisibleOnPassiveBar = true;
+                newStatus.VisibleOnStatusScreen = TacStatusDef.StatusScreenVisibility.VisibleOnStatusesList;
+                newStatus.ApplicationConditions = new EffectConditionDef[] { };
+
+                newStatus.Visuals = Helper.CreateDefFromClone(
+                    source.Visuals,
+                    gUIDVisuals,
+                    statusName + "Visuals");
+                newStatus.Multiplier = 1.5f;
+                newStatus.MultiplierType = DamageMultiplierType.Incoming;
+                newStatus.Range = -1;
+                List<DamageTypeBaseEffectDef> damageTypeBaseEffectDefs = new List<DamageTypeBaseEffectDef>();
+                damageTypeBaseEffectDefs.AddRange(newStatus.DamageTypeDefs);
+                damageTypeBaseEffectDefs.Add(fireDamage);
+                damageTypeBaseEffectDefs.Add(standardDamageTypeEffectDef);
+                damageTypeBaseEffectDefs.Add(acidDamage);
+
+                newStatus.DamageTypeDefs = damageTypeBaseEffectDefs.ToArray();
+
+                newStatus.Visuals.DisplayName1.LocalizationKey = "ROOKIE_VULNERABILITY_NAME";
+                newStatus.Visuals.Description.LocalizationKey = "ROOKIE_VULNERABILITY_DESCRIPTION";
+                newStatus.Visuals.LargeIcon = Helper.CreateSpriteFromImageFile("UI_AbilitiesIcon_HunkerDown_1-2.png");
+                newStatus.Visuals.SmallIcon = Helper.CreateSpriteFromImageFile("UI_AbilitiesIcon_HunkerDown_1-2.png");
+            }
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+        }
+
+
+        public static void RemovePirateKing()
+        {
+            try
+            {
+
+                GeoscapeEventDef ProgSynIntroWin = DefCache.GetDef<GeoscapeEventDef>("PROG_SY0_WIN_GeoscapeEventDef");
+                ProgSynIntroWin.GeoscapeEventData.Choices[1].Outcome.Diplomacy.Clear();
+
+                GeoscapeEventDef fireBirdMiss = DefCache.GetDef<GeoscapeEventDef>("PROG_SY2_MISS_GeoscapeEventDef");
+                fireBirdMiss.GeoscapeEventData.Choices[0].Outcome.StartMission.WonEventID = "PROG_SY3_WIN";
+
+                GeoscapeEventDef pirateKingWin = DefCache.GetDef<GeoscapeEventDef>("PROG_SY3_WIN_GeoscapeEventDef");
+                pirateKingWin.GeoscapeEventData.Title.LocalizationKey = "PROG_SY2_WIN_TITLE";
+
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
 
         public static void ChangeMyrmidonAndFirewormResearchRewards() 
         {
@@ -745,6 +1088,9 @@ namespace TFTV
                 GameDifficultyLevelDef veteran = DefCache.GetDef<GameDifficultyLevelDef>("Standard_GameDifficultyLevelDef");
                 GameDifficultyLevelDef legend = DefCache.GetDef<GameDifficultyLevelDef>("VeryHard_GameDifficultyLevelDef");
 
+              //  TacCharacterDef crystalScylla = DefCache.GetDef<TacCharacterDef>("Scylla10_Crystal_AlienMutationVariationDef");
+
+
                 foreach (CustomMissionTypeDef customMissionTypeDef in customMissionTypeDefs)
                 {
 
@@ -790,6 +1136,13 @@ namespace TFTV
                         Difficulty = legend,
 
                     };
+                  /*  TacMissionTypeParticipantData.UniqueChatarcterBind scyllaLegend = new TacMissionTypeParticipantData.UniqueChatarcterBind()
+                    {
+                        Amount = { Min = 1, Max = 1 },
+                        Character = crystalScylla,
+                        Difficulty = legend,
+
+                    };*/
 
                     List<TacMissionTypeParticipantData.UniqueChatarcterBind> uniqueUnits = customMissionTypeDef.ParticipantsData[0].UniqueUnits.ToList();
                     uniqueUnits.Add(drillerVeteran);
@@ -798,6 +1151,7 @@ namespace TFTV
                     uniqueUnits.Add(shielderHero);
                     uniqueUnits.Add(drillerLegend);
                     uniqueUnits.Add(shielderLegend);
+                   // uniqueUnits.Add(scyllaLegend);
                     customMissionTypeDef.ParticipantsData[0].UniqueUnits = uniqueUnits.ToArray();
 
                 }

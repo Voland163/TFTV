@@ -995,3 +995,9 @@ HINT_FIRE_QUENCHER_TITLE,Text,,Fire Quencher,,,,,,,,
 HINT_FIRE_QUENCHER_TEXT,Text,,"<i>“There was nothing special about this one… Here comes the bisque, I thought… Boy was I wrong.”</i>
 
 Some Arthrons have evolved the ability to instantly quench the fire they come in contact with, replacing it with Mist. They are apparently doing this by spraying some biochemical compound  from their <b>heads</b>. Disabling their heads should remove both their immunity to fire and their ability to quench it.",,,,,,,,
+ROOKIE_VULNERABILITY_NAME,Text,,Heroes always win,,,,,,,,
+ROOKIE_VULNERABILITY_DESCRIPTION,Text,,...When you are playing on Rookie. All enemies suffer 50% more damage. ,,,,,,,,
+ROOKIE_PROTECTION_DESCRIPTION,Text,,...When you are playing on Rookie. All Phoenix operatives suffer 50% less damage.,,,,,,,,
+ETERMES_VULNERABILITY_NAME,Text,,You are Etermes,,,,,,,,
+ETERMES_VULNERABILITY_DESCRIPTION,Text,,...And everything is always too easy for you. All Phoenix operatives suffer 25% more damage.,,,,,,,,
+ETERMES_PROTECTION_DESCRIPTION,Text,,...And everything is always too easy for you. All enemies suffer 25% less damage. ,,,,,,,,

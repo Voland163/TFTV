@@ -1,13 +1,16 @@
 ﻿using Base;
 using HarmonyLib;
+using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Geoscape.Entities;
+using PhoenixPoint.Geoscape.Entities.Research;
 using PhoenixPoint.Geoscape.Entities.Sites;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
 using PhoenixPoint.Tactical.Entities;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 
@@ -110,125 +113,101 @@ namespace TFTV
             }
         }
 
-        public static GeoAlienMonster Monster = null;
+
         //patch to modify what Scylla spawn
         [HarmonyPatch(typeof(GeoAlienBase), "SpawnMonster")]
         internal static class TFTV_GeoAlienBase_SpawnMonster_patch
         {
-            public static bool Prefix(GeoAlienBase __instance, ClassTagDef classTag, bool fallbackAllTemplates = false)
+            public static bool Prefix(GeoAlienBase __instance)
             {
                 try
                 {
-                    ClassTagDef queenTag = DefCache.GetDef<ClassTagDef>("Queen_ClassTagDef");
-                    TacCharacterDef startingScylla = DefCache.GetDef<TacCharacterDef>("Scylla1_FrenzyMistSmasherAgileSpawner_AlienMutationVariationDef");
-                    TacCharacterDef scylla2 = DefCache.GetDef<TacCharacterDef>("Scylla2_SpitMistSmashAgileSpawn_AlienMutationVariationDef");
-                    TacCharacterDef scylla3 = DefCache.GetDef<TacCharacterDef>("Scylla3_SonicMistSmashAgileSpawn_AlienMutationVariationDef");
-                    TacCharacterDef scylla4 = DefCache.GetDef<TacCharacterDef>("Scylla4_SpitLaunchGunAgileBelch_AlienMutationVariationDef");
-                    TacCharacterDef scylla5 = DefCache.GetDef<TacCharacterDef>("Scylla5_SonicMistGunAgileBelch_AlienMutationVariationDef");
-                    TacCharacterDef scylla6 = DefCache.GetDef<TacCharacterDef>("Scylla6_FrenzyArmorSmashHeavySpawn_AlienMutationVariationDef");
-                    TacCharacterDef scylla7 = DefCache.GetDef<TacCharacterDef>("Scylla7_SpitArmorGunHeavyBelch_AlienMutationVariationDef");
-                    TacCharacterDef scylla8 = DefCache.GetDef<TacCharacterDef>("Scylla8_SonicMistSmashHeavyBelch_AlienMutationVariationDef");
-                    TacCharacterDef scylla9 = DefCache.GetDef<TacCharacterDef>("Scylla9_SonicArmorGunHeavyBelch_AlienMutationVariationDef");
-                    TacCharacterDef scylla10 = DefCache.GetDef<TacCharacterDef>("Scylla10_Crystal_AlienMutationVariationDef");
 
+                    PhoenixStatisticsManager statisticsManager = (PhoenixStatisticsManager)UnityEngine.Object.FindObjectOfType(typeof(PhoenixStatisticsManager));
 
-                    List<TacCharacterDef> list = __instance.Site.Owner.UnlockedUnitTemplates.Where((TacCharacterDef t) => t.ClassTag == classTag).ToList();
-                    if (list.Count == 0)
-                    {
-                      //  TFTVLogger.Debug($"No template exist for monster class '{classTag}' in faction '{__instance.Site.Owner}'.");
-                      //  if (!fallbackAllTemplates)
-                      //  {
-                            Monster = __instance.Site.GeoLevel.CreateAlienMonster(startingScylla);
-                            typeof(GeoAlienBase).GetMethod("set_Monster", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(__instance, new object[] { Monster});
-                            return false;
-                      //  }
+                    int citadelCount = statisticsManager.CurrentGameStats.GeoscapeStats.SurvivingCitadels + statisticsManager.CurrentGameStats.GeoscapeStats.DestroyedCitadels;
+                    TFTVLogger.Always("There are " + statisticsManager.CurrentGameStats.GeoscapeStats.SurvivingCitadels + " existing citadels and " + statisticsManager.CurrentGameStats.GeoscapeStats.DestroyedCitadels
+                        + " have been destroyed, so Citadel counter is " + citadelCount);
 
-                       // TFTVLogger.Debug($"Fallback to all template for monster class '{classTag}'.");
-                      //  list.AddRange(__instance.Site.GeoLevel.CharacterGenerator.UnitTemplates.Where((TacCharacterDef t) => t.ClassTag == classTag));
-                    }
-                    List<TacCharacterDef> shortList = new List<TacCharacterDef>();
-
-                    if (list.Contains(scylla10))
-                    {
-
-                        shortList.Add(scylla10);
-
-                    }
-                    if (list.Contains(scylla9))
-                    {
-
-                        shortList.Add(scylla9);
-
-                    }
-                    if (list.Contains(scylla8))
-                    {
-
-                        shortList.Add(scylla8);
-
-                    }
-                    if (list.Contains(scylla7))
-                    {
-
-                        shortList.Add(scylla7);
-
-                    }
-                    if (list.Contains(scylla6))
-                    {
-
-                        shortList.Add(scylla6);
-                    }
-                    if (list.Contains(scylla5) && !list.Contains(scylla9))
-
-                    {
-                        shortList.Add(scylla5);
-
-                    }
-                    if (list.Contains(scylla4) && !list.Contains(scylla6))
-
-                    {
-                        shortList.Add(scylla4);
-
-                    }
-                    if (list.Contains(scylla3) && !list.Contains(scylla5))
-
-                    {
-                        shortList.Add(scylla3);
-
-                    }
-                    if (list.Contains(scylla2) && !list.Contains(scylla4))
-
-                    {
-                        shortList.Add(scylla2);
-
-                    }
-                    if (list.Contains(startingScylla) && !list.Contains(scylla2))
-
-                    {
-                        shortList.Add(startingScylla);
-
-                    }
-
-                    TacCharacterDef randomElement = list.GetRandomElement();
-                    Monster = __instance.Site.GeoLevel.CreateAlienMonster(randomElement);
-                    typeof(GeoAlienBase).GetMethod("set_Monster", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(__instance, new object[] { Monster});
+                    SpawnScylla(__instance, RollScylla(citadelCount));
                     return false;
 
                 }
                 catch (Exception e)
                 {
                     TFTVLogger.Error(e);
+                    throw;
                 }
-                return true;
+               
 
             }
 
         }
 
+        public static void SpawnScylla(GeoAlienBase geoAlienBase, TacCharacterDef scyllaTemplate)
+        {
+            try
+            {
+                GeoAlienMonster scylla = geoAlienBase.Site.GeoLevel.CreateAlienMonster(scyllaTemplate);
+                typeof(GeoAlienBase).GetMethod("set_Monster", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(geoAlienBase, new object[] { scylla });
 
-    
 
-            // Harmony patch to change the reveal of alien bases when in scanner range, so increases the reveal chance instead of revealing it right away
-            [HarmonyPatch(typeof(GeoAlienFaction), "TryRevealAlienBase")]
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+
+        }
+
+        public static TacCharacterDef RollScylla(int citadels)
+        {
+            try
+            {
+                GeoLevelController controller = (GeoLevelController)UnityEngine.Object.FindObjectOfType(typeof(GeoLevelController));
+
+                TacCharacterDef startingScylla = DefCache.GetDef<TacCharacterDef>("Scylla1_FrenzyMistSmasherAgileSpawner_AlienMutationVariationDef");
+                TacCharacterDef scylla2 = DefCache.GetDef<TacCharacterDef>("Scylla2_SpitMistSmashAgileSpawn_AlienMutationVariationDef");
+                TacCharacterDef scylla3 = DefCache.GetDef<TacCharacterDef>("Scylla3_SonicMistSmashAgileSpawn_AlienMutationVariationDef");
+                TacCharacterDef scylla4 = DefCache.GetDef<TacCharacterDef>("Scylla4_SpitLaunchGunAgileBelch_AlienMutationVariationDef");
+                TacCharacterDef scylla5 = DefCache.GetDef<TacCharacterDef>("Scylla5_SonicMistGunAgileBelch_AlienMutationVariationDef");
+                TacCharacterDef scylla6 = DefCache.GetDef<TacCharacterDef>("Scylla6_FrenzyArmorSmashHeavySpawn_AlienMutationVariationDef");
+                TacCharacterDef scylla7 = DefCache.GetDef<TacCharacterDef>("Scylla7_SpitArmorGunHeavyBelch_AlienMutationVariationDef");
+                TacCharacterDef scylla8 = DefCache.GetDef<TacCharacterDef>("Scylla8_SonicMistSmashHeavyBelch_AlienMutationVariationDef");
+                TacCharacterDef scylla9 = DefCache.GetDef<TacCharacterDef>("Scylla9_SonicArmorGunHeavyBelch_AlienMutationVariationDef");
+                TacCharacterDef scylla10 = DefCache.GetDef<TacCharacterDef>("Scylla10_Crystal_AlienMutationVariationDef");
+
+               
+                List<TacCharacterDef> allScyllas = new List<TacCharacterDef>() 
+                { startingScylla, scylla2, scylla3, scylla4, scylla5, scylla6, scylla7, scylla8, scylla9, scylla10 };
+
+                DateTime myDate = new DateTime(1, 1, 1);
+
+                UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
+                int roll = UnityEngine.Random.Range(citadels, citadels+1);
+                if (roll > allScyllas.Count - 1) 
+                {
+                   int newRoll = UnityEngine.Random.Range(allScyllas.Count-4, allScyllas.Count - 1);
+                    TFTVLogger.Always("It's " + myDate.Add(new TimeSpan(controller.Timing.Now.TimeSpan.Ticks)) + " and " + allScyllas[newRoll].name + " will spawn");
+                    return allScyllas[newRoll];
+                }
+                TFTVLogger.Always("It's " + myDate.Add(new TimeSpan(controller.Timing.Now.TimeSpan.Ticks)) + " and " + allScyllas[roll].name + " will spawn");
+                return allScyllas[roll];
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
+        }
+
+
+
+
+        // Harmony patch to change the reveal of alien bases when in scanner range, so increases the reveal chance instead of revealing it right away
+        [HarmonyPatch(typeof(GeoAlienFaction), "TryRevealAlienBase")]
         internal static class BC_GeoAlienFaction_TryRevealAlienBase_patch
         {
             [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051")]

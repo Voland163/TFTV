@@ -1,4 +1,5 @@
 ﻿using Base.Defs;
+using Epic.OnlineServices;
 using HarmonyLib;
 using PhoenixPoint.Common.Levels.Missions;
 using PhoenixPoint.Geoscape.Events;
@@ -25,17 +26,31 @@ namespace TFTV
             public static void Prefix(GeoscapeEventSystem __instance)
             {                
                 try
-                {                    
-                    __instance.AmbushExploredSitesProtection = 0;
-                    __instance.StartingAmbushProtection = 0;
-                    if (TFTVVoidOmens.VoidOmensCheck[1])
-                    {
-                        __instance.ExplorationAmbushChance = 100;
+                {
+                    TFTVConfig config = TFTVMain.Main.Config;
+                    GeoLevelController controller = __instance.GetComponent<GeoLevelController>();
 
-                    }
-                    else
+                    if (controller.CurrentDifficultyLevel.Order != 1 || config.OverrideRookieDifficultySettings)
                     {
-                        __instance.ExplorationAmbushChance = 70;
+                        __instance.AmbushExploredSitesProtection = 0;
+                        __instance.StartingAmbushProtection = 0;
+                        if (TFTVVoidOmens.VoidOmensCheck[1])
+                        {
+                            __instance.ExplorationAmbushChance = 100;
+
+                        }
+                        else
+                        {
+                            __instance.ExplorationAmbushChance = 70;
+                        }
+                    }
+                    else 
+                    {
+                        if (TFTVVoidOmens.VoidOmensCheck[1])
+                        {
+                            __instance.ExplorationAmbushChance = 100;
+
+                        }
                     }
 
                 }
