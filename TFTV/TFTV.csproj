@@ -163,6 +163,7 @@
     <Compile Include="TFTVUI.cs" />
     <Compile Include="TFTVUmbra.cs" />
     <Compile Include="TFTVVoidOmens.cs" />
+    <Compile Include="VariousAdjustments\MissionDeployment.cs" />
     <Compile Include="VariousAdjustments\VariousAdjustments.cs" />
     <Compile Include="VariousAdjustments\VariousAdjustmentsMain.cs" />
     <Compile Include="VariousAdjustments\WeaponModifications.cs" />

@@ -418,17 +418,20 @@ namespace TFTV
 
                         UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
                         int roll = UnityEngine.Random.Range(0, 100);
+                        
                         int rollTo = orderedList.Count * 10 + orderedList[0];
                         if (rollTo > 90)
                         {
                             rollTo = 90;
                         }
 
+                        TFTVLogger.Always("The roll is " + roll + " and the rollTo is " + rollTo);
+                       
                         if (roll <= rollTo) 
                         {
                             foreach (GeoTacUnitId id in allProjectOsirisCandidates.Keys)
                             {
-                                if (allProjectOsirisCandidates[id] == allProjectOsirisCandidates.First().Value)
+                                if (allProjectOsirisCandidates[id] == orderedList.First())
                                 {
                                     IdProjectOsirisCandidate = id;
 

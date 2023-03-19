@@ -319,7 +319,7 @@ namespace TFTV
                             ProgAnuSupportive.GeoscapeEventData.Choices[0].Outcome.Diplomacy.Clear();
                             ProgAnuSupportive.GeoscapeEventData.Choices[1].Outcome.Diplomacy.Clear();
 
-                            OutcomeSetDiplomaticObjective copyObjective = ProgAnuSupportive.GeoscapeEventData.Choices[1].Outcome.SetDiplomaticObjectives[1];
+                            OutcomeSetDiplomaticObjective copyObjective = ProgAnuSupportive.GeoscapeEventData.Choices[1].Outcome.SetDiplomaticObjectives[0];
                             OutcomeSetDiplomaticObjective outcomeSetDiplomaticObjective = new OutcomeSetDiplomaticObjective() { Description = copyObjective.Description, EventID = copyObjective.EventID, WithFaction = copyObjective.WithFaction };
                             ProgAnuSupportive.GeoscapeEventData.Choices[0].Outcome.SetDiplomaticObjectives.Add(outcomeSetDiplomaticObjective);
                             TFTVLogger.Always("Harder diplomacy is on, changing event " + __instance.EventID + " back to keep things nice and tidy");

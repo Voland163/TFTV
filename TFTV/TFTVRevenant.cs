@@ -438,7 +438,7 @@ namespace TFTV
                             && !DeadSoldiersDelirium.ContainsKey(deathReport.Actor.GeoUnitId))
                         {
                             AddtoListOfDeadSoldiers(deathReport.Actor);
-                            TFTVStamina.charactersWithBrokenLimbs.Remove(deathReport.Actor.GeoUnitId);
+                            TFTVStamina.charactersWithDisabledBodyParts.Remove(deathReport.Actor.GeoUnitId);
                             TFTVLogger.Always(deathReport.Actor.DisplayName + " died at. The deathlist now has " + DeadSoldiersDelirium.Count);
                             if (deathReport.Actor.DisplayName != __instance.TacticalGameParams.Statistics.LivingSoldiers[deathReport.Actor.GeoUnitId].Name)
                             {

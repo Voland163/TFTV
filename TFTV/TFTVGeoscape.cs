@@ -22,7 +22,7 @@ namespace TFTV
 
     public class TFTVGSInstanceData
     {
-        public List<int> charactersWithBrokenLimbs = TFTVStamina.charactersWithBrokenLimbs;
+        public Dictionary<int, List<string>> charactersWithDisabledBodyParts = TFTVStamina.charactersWithDisabledBodyParts;
         public List<int> targetsForBehemoth = TFTVAirCombat.targetsForBehemoth;
         public Dictionary<int, List<int>> flyersAndHavens = TFTVAirCombat.flyersAndHavens;
         public bool checkHammerfall = TFTVAirCombat.checkHammerfall;
@@ -125,7 +125,7 @@ namespace TFTV
             TFTVRevenant.UpdateRevenantTimer(Controller);
             return new TFTVGSInstanceData()
             {
-                charactersWithBrokenLimbs = TFTVStamina.charactersWithBrokenLimbs,
+                charactersWithDisabledBodyParts = TFTVStamina.charactersWithDisabledBodyParts,
                 targetsForBehemoth = TFTVAirCombat.targetsForBehemoth,
                 flyersAndHavens = TFTVAirCombat.flyersAndHavens,
                 checkHammerfall = TFTVAirCombat.checkHammerfall,
@@ -168,7 +168,7 @@ namespace TFTV
 
             TFTVCommonMethods.ClearInternalVariables();
             TFTVGSInstanceData data = (TFTVGSInstanceData)instanceData;
-            TFTVStamina.charactersWithBrokenLimbs = data.charactersWithBrokenLimbs;
+            TFTVStamina.charactersWithDisabledBodyParts = data.charactersWithDisabledBodyParts;
             TFTVAirCombat.targetsForBehemoth = data.targetsForBehemoth;
             TFTVAirCombat.flyersAndHavens = data.flyersAndHavens;
             TFTVAirCombat.checkHammerfall = data.checkHammerfall;
@@ -189,7 +189,7 @@ namespace TFTV
             //  TFTVTutorialAndStory.TacticalHintsToShow = data.TacticalHintsToShow;
 
             //  Main.Logger.LogInfo("UmbraEvolution variable is " + Controller.EventSystem.GetVariable(TFTVUmbra.TBTVVariableName));
-            Main.Logger.LogInfo("# Characters with broken limbs: " + TFTVStamina.charactersWithBrokenLimbs.Count);
+            Main.Logger.LogInfo("# Characters with broken limbs: " + TFTVStamina.charactersWithDisabledBodyParts.Count);
             Main.Logger.LogInfo("# Behemoth targets for this emergence: " + TFTVAirCombat.targetsForBehemoth.Count);
             //    Main.Logger.LogInfo("# Targets already hit by Behemoth on this emergence: " + TFTVAirCombat.targetsVisitedByBehemoth.Count);
             Main.Logger.LogInfo("# Pandoran flyers that have visited havens on this emergence:  " + TFTVAirCombat.flyersAndHavens.Count);
@@ -205,7 +205,7 @@ namespace TFTV
            
 
             //  
-            TFTVLogger.Always("# Characters with broken limbs: " + TFTVStamina.charactersWithBrokenLimbs.Count);
+            TFTVLogger.Always("# Characters with broken limbs: " + TFTVStamina.charactersWithDisabledBodyParts.Count);
             TFTVLogger.Always("# Behemoth targets for this emergence: " + TFTVAirCombat.targetsForBehemoth.Count);
             //   TFTVLogger.Always("# Targets already hit by Behemoth on this emergence: " + TFTVAirCombat.targetsVisitedByBehemoth.Count);
             TFTVLogger.Always("# Pandoran flyers that have visited havens on this emergence:  " + TFTVAirCombat.flyersAndHavens.Count);

@@ -3,6 +3,7 @@ using PhoenixPoint.Modding;
 using PhoenixPoint.Tactical.Levels;
 using System;
 using System.Collections.Generic;
+using TFTV.VariousAdjustments;
 
 namespace TFTV
 {
@@ -15,7 +16,7 @@ namespace TFTV
     {
         // public int ExampleData;
         // Dictionary to transfer the characters geoscape stamina to tactical level by actor ID
-        public List<int> charactersWithBrokenLimbs; // = TFTVStamina.charactersWithBrokenLimbs;
+        public Dictionary<int, List<string>> charactersWithBrokenLimbs = TFTVStamina.charactersWithDisabledBodyParts;
         public int TBTVVariable;
         public bool UmbraResearched;
         public Dictionary<int, int> DeadSoldiersDelirium;// = TFTVRevenant.DeadSoldiersDelirium;
@@ -32,7 +33,6 @@ namespace TFTV
         public bool ProjectOrisisCompletedSaveData;// = TFTVRevenantResearch.ProjectOsiris;
         public int RevenantId;
         public bool[] VoidOmensCheck = TFTVVoidOmens.VoidOmensCheck;
-        //Commented out for release #12
         public int HoplitesKilledOnMission;
         public bool LOTAReworkActiveInTactical;
         public bool TurnZeroMethodsExecuted;
@@ -75,6 +75,8 @@ namespace TFTV
             TFTVLogger.Always("LOTA rework active in tactical is " + TFTVAncients.LOTAReworkActive);
             TFTVAncients.CheckResearchStateOnTacticalStart();
 
+         //   MissionDeployment.CheckDepolyZones(Controller);
+
         }
 
         /// <summary>
@@ -103,7 +105,7 @@ namespace TFTV
                 TFTVLogger.Always("Tactical save is being processed");
                 TFTVCommonMethods.ClearInternalVariables();
                 TFTVTacInstanceData data = (TFTVTacInstanceData)instanceData;
-                TFTVStamina.charactersWithBrokenLimbs = data.charactersWithBrokenLimbs;
+                TFTVStamina.charactersWithDisabledBodyParts = data.charactersWithBrokenLimbs;
                 TFTVVoidOmens.VoidOmensCheck = data.VoidOmensCheck;
                 TFTVUmbra.TBTVVariable = data.TBTVVariable;
                 TFTVUmbra.UmbraResearched = data.UmbraResearched;
@@ -140,7 +142,7 @@ namespace TFTV
             TFTVLogger.Always("Tactical data will be saved");
             return new TFTVTacInstanceData()
             {
-                charactersWithBrokenLimbs = TFTVStamina.charactersWithBrokenLimbs,
+                charactersWithBrokenLimbs = TFTVStamina.charactersWithDisabledBodyParts,
                 VoidOmensCheck = TFTVVoidOmens.VoidOmensCheck,
                 TBTVVariable = TFTVUmbra.TBTVVariable,
                 UmbraResearched = TFTVUmbra.UmbraResearched,

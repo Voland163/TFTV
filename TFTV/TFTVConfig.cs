@@ -36,7 +36,7 @@ namespace TFTV
         public bool EasyGeoscape = false;
 
         [ConfigField(text: "I AM ETERMES",
-                  description: "YOU ARE ETERMES")]
+                  description: "YOU ARE ETERMES... and everything is always too easy for you")]
         public bool EtermesMode = false;
 
         [ConfigField(text: "PLAY WITH MORE MIST VOID OMEN",

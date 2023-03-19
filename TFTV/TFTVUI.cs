@@ -9,12 +9,18 @@ using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.Characters;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
+using PhoenixPoint.Common.Entities.Items;
 using PhoenixPoint.Common.Game;
+using PhoenixPoint.Common.View.ViewControllers;
 using PhoenixPoint.Common.View.ViewModules;
 using PhoenixPoint.Geoscape.Entities;
+using PhoenixPoint.Geoscape.Events.Eventus;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.View;
 using PhoenixPoint.Geoscape.View.DataObjects;
+using PhoenixPoint.Geoscape.View.ViewControllers;
+using PhoenixPoint.Geoscape.View.ViewControllers.AugmentationScreen;
+using PhoenixPoint.Geoscape.View.ViewControllers.Manufacturing;
 using PhoenixPoint.Geoscape.View.ViewControllers.Roster;
 using PhoenixPoint.Geoscape.View.ViewModules;
 using PhoenixPoint.Geoscape.View.ViewStates;
@@ -25,12 +31,15 @@ using PhoenixPoint.Tactical.Entities.DamageKeywords;
 using PhoenixPoint.Tactical.Entities.Effects.DamageTypes;
 using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.UI;
+using PhoenixPoint.Tactical.View.ViewControllers;
 using PhoenixPoint.Tactical.View.ViewStates;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.Remoting.Contexts;
 using UnityEngine;
+using UnityEngine.PlayerLoop;
 using UnityEngine.UI;
 
 namespace TFTV
@@ -46,7 +55,7 @@ namespace TFTV
         public static GeoCharacter hookToCharacter = null;
         internal static bool moduleInfoBarAdjustmentsExecuted = false;
         // public static bool showFaceNotHelmet = true;
-        
+
         internal static Color red = new Color32(192, 32, 32, 255);
         internal static Color purple = new Color32(149, 23, 151, 255);
         internal static Color blue = new Color32(62, 12, 224, 255);
@@ -54,7 +63,189 @@ namespace TFTV
         internal static Color anu = new Color(0.9490196f, 0.0f, 1.0f, 1.0f);
         internal static Color nj = new Color(0.156862751f, 0.6156863f, 1.0f, 1.0f);
         internal static Color syn = new Color(0.160784319f, 0.8862745f, 0.145098045f, 1.0f);
+
+
         
+
+
+        [HarmonyPatch(typeof(UIModuleMutationSection), "SelectMutation")]
+
+        public static class TFTV_UIModuleMutationSection_SelectMutation_patch
+        {
+            public static void Postfix(UIModuleMutationSection __instance, IAugmentationUIModule ____parentModule)
+            {
+                try
+                {
+                    if (__instance.RepairButton.isActiveAndEnabled)
+                    {
+                        float equippedItemHealth = ____parentModule.CurrentCharacter.GetEquippedItemHealth(__instance.MutationUsed);
+                        ResourcePack resourcePack = __instance.MutationUsed.ManufacturePrice * (1f - equippedItemHealth) * 0.5f;
+
+                        bool interactable = ____parentModule.Context.ViewerFaction.Wallet.HasResources(resourcePack);
+                        __instance.RepairButtonCost.Init(resourcePack);
+                        __instance.RepairButton.SetEnabled(interactable);
+                        __instance.RepairButton.SetInteractable(interactable);
+                    }
+                }
+
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+        }
+
+
+
+
+        [HarmonyPatch(typeof(UIModuleMutationSection), "RepairItem")]
+
+        public static class TFTV_UIModuleMutationSection_RepairItem_patch
+        {
+
+            public static void Postfix(UIModuleMutationSection __instance, IAugmentationUIModule ____parentModule)
+            {
+                try
+                {
+                    // TFTVLogger.Always("RepairItem invoked");
+
+                    if (!(____parentModule.CurrentCharacter.GetEquippedItemHealth(__instance.MutationUsed) >= 1f) && ____parentModule.CurrentCharacter.RepairItem(__instance.MutationUsed))
+                    {
+                        ____parentModule.RequestViewRefresh();
+
+                        typeof(UIModuleMutationSection).GetMethod("RefreshContainerSlots", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(__instance, null);
+
+                        __instance.RepairButton.gameObject.SetActive(value: false);
+                        __instance.MutateButton.gameObject.SetActive(value: false);
+
+                        UIModuleActorCycle controller = (UIModuleActorCycle)UnityEngine.Object.FindObjectOfType(typeof(UIModuleActorCycle));
+
+                        controller.DisplaySoldier(____parentModule.CurrentCharacter, true);
+                        
+
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+        }
+
+        /*  [HarmonyPatch(typeof(GeoCharacter), "RepairItem", new Type[] { typeof(ItemDef), typeof(bool) })]
+
+          public static class TFTV_GeoCharacter_RepairItem_patch
+          {
+
+              public static void Postfix(GeoCharacter __instance, bool __result)
+              {
+                  try
+                  {
+                      TFTVLogger.Always("GeoCharacter RepairItem invoked and result is " + __result);
+
+                  }
+                  catch (Exception e)
+                  {
+                      TFTVLogger.Error(e);
+                  }
+              }
+          }*/
+
+        [HarmonyPatch(typeof(UIModuleReplenish), "AddRepairableItem")]
+
+        public static class TFTV_UIModuleReplenish_AddRepairableItem_patch
+        {
+
+            public static bool Prefix(UIModuleReplenish __instance, GeoCharacter character, ItemDef itemDef, ref int materialsCost, ref int techCost, ref bool __result)
+            {
+                try
+                {
+                    GeoFaction faction = character.Faction;
+
+
+                    MethodInfo onEnterSlotMethodInfo = typeof(UIModuleReplenish).GetMethod("OnEnterSlot", BindingFlags.Instance | BindingFlags.NonPublic);
+                    MethodInfo onExitSlotMethodInfo = typeof(UIModuleReplenish).GetMethod("OnExitSlot", BindingFlags.Instance | BindingFlags.NonPublic);
+                    Delegate onEnterSlotDelegate = Delegate.CreateDelegate(typeof(InteractHandler), __instance, onEnterSlotMethodInfo);
+                    Delegate onExitSlotDelegate = Delegate.CreateDelegate(typeof(InteractHandler), __instance, onExitSlotMethodInfo);
+
+                    MethodInfo singleItemRepairMethodInfo = typeof(UIModuleReplenish).GetMethod("SingleItemRepair", BindingFlags.Instance | BindingFlags.NonPublic);
+                    Delegate singleItemRepairDelegate = Delegate.CreateDelegate(typeof(Action<GeoManufactureItem>), __instance, singleItemRepairMethodInfo);
+                   
+                    float equippedItemHealth = character.GetEquippedItemHealth(itemDef);
+                    ResourcePack resourcePack = itemDef.ManufacturePrice * (1f - equippedItemHealth)*0.5f;
+                    materialsCost += resourcePack.ByResourceType(ResourceType.Materials).RoundedValue;
+                    techCost += resourcePack.ByResourceType(ResourceType.Tech).RoundedValue;
+                    GeoManufactureItem geoManufactureItem = UnityEngine.Object.Instantiate(__instance.ItemListPrefab, __instance.ItemListContainer);
+                    ReplenishmentElementController.CreateAndAdd(geoManufactureItem.gameObject, ReplenishmentType.Repair, character, geoManufactureItem.ItemDef);
+                    geoManufactureItem.OnEnter = (InteractHandler)Delegate.Combine(geoManufactureItem.OnEnter, onEnterSlotDelegate);
+                    geoManufactureItem.OnExit = (InteractHandler)Delegate.Combine(geoManufactureItem.OnExit, onExitSlotDelegate);
+
+                  
+                    geoManufactureItem.OnSelected = (Action<GeoManufactureItem>)Delegate.Combine(geoManufactureItem.OnSelected, singleItemRepairDelegate);                
+                    geoManufactureItem.Init(itemDef, faction, resourcePack, repairMode: true);
+                    PhoenixGeneralButton component = geoManufactureItem.AddToQueueButton.GetComponent<PhoenixGeneralButton>();
+                    if (component != null && equippedItemHealth == 1f)
+                    {
+                        component.SetEnabled(isEnabled: false);
+                    }
+
+                    __instance.RepairableItems.Add(geoManufactureItem);
+                    __result= faction.Wallet.HasResources(resourcePack);
+                    return false;
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
+
+
+
+
+        [HarmonyPatch(typeof(GeoCharacter), "RepairItem", new Type[] { typeof(GeoItem), typeof(bool) })]
+
+        public static class TFTV_GeoCharacter_RepairItem_GeoItem_patch
+        {
+
+            public static bool Prefix(GeoCharacter __instance, ref bool __result, GeoItem item, bool payCost = true)
+            {
+                try
+                {
+                    _ = item.ItemDef;
+                    float equippedItemHealth = __instance.GetEquippedItemHealth(item);
+                    if (equippedItemHealth >= 1f)
+                    {
+                        __result = false;
+                        return false;
+                    }
+
+                    ResourcePack pack = item.ItemDef.ManufacturePrice * (1f - equippedItemHealth) * 0.5f;
+                    if (!__instance.Faction.Wallet.HasResources(pack) && payCost)
+                    {
+                        __result = false;
+                        return false;
+                    }
+
+                    if (payCost)
+                    {
+                        __instance.Faction.Wallet.Take(pack, OperationReason.ItemRepair);
+                    }
+
+                    __instance.RestoreBodyPart(item);
+                    __result = true;
+                    return false;
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
+
+
         //Patch to show correct damage prediction with mutations and Delirium 
         [HarmonyPatch(typeof(Utils), "GetDamageKeywordValue")]
         public static class TFTV_Utils_GetDamageKeywordValue_DamagePredictionMutations_Patch
@@ -274,6 +465,28 @@ namespace TFTV
                     evolutionTooltip.gameObject.name = "PandoranEvolutionTooltip";
                     evolutionTooltip.gameObject.SetActive(false);
 
+                    Transform anuTooltip = UnityEngine.Object.Instantiate(thingsToUse[0], tInfoBar.GetComponent<Transform>().
+                     Find("PopulationDoom_Meter").GetComponent<Transform>().Find("AnuIcon"));
+                    anuTooltip.gameObject.GetComponent<UITooltipText>().TipText = "testing Anu tooltip";
+                    anuTooltip.gameObject.GetComponent<UITooltipText>().TipKey.LocalizationKey = "";
+                    anuTooltip.gameObject.name = "AnuTooltip";
+                    anuTooltip.gameObject.SetActive(false);
+
+                    Transform njTooltip = UnityEngine.Object.Instantiate(thingsToUse[0], tInfoBar.GetComponent<Transform>().
+                    Find("PopulationDoom_Meter").GetComponent<Transform>().Find("NJIcon"));
+                    njTooltip.gameObject.GetComponent<UITooltipText>().TipText = "testing nj tooltip";
+                    njTooltip.gameObject.GetComponent<UITooltipText>().TipKey.LocalizationKey = "";
+                    njTooltip.gameObject.name = "NJTooltip";
+                    njTooltip.gameObject.SetActive(false);
+
+                    Transform synTooltip = UnityEngine.Object.Instantiate(thingsToUse[0], tInfoBar.GetComponent<Transform>().
+                    Find("PopulationDoom_Meter").GetComponent<Transform>().Find("SynIcon"));
+                    synTooltip.gameObject.GetComponent<UITooltipText>().TipText = "testing syn tooltip";
+                    synTooltip.gameObject.GetComponent<UITooltipText>().TipKey.LocalizationKey = "";
+                    synTooltip.gameObject.name = "SynTooltip";
+                    synTooltip.gameObject.SetActive(false);
+
+
                     //Create percentages next to each faction icon
 
                     Transform anuDiploInfo = UnityEngine.Object.Instantiate(__instance.PopulationPercentageText.transform, tInfoBar.GetComponent<Transform>().Find("PopulationDoom_Meter"));
@@ -412,23 +625,40 @@ namespace TFTV
 
                     //   TFTVLogger.Always("Got here 2");
 
+                    Transform anuTooltip = populationBar.GetComponent<Transform>().Find("AnuIcon").GetComponent<Transform>().Find("AnuTooltip");
+                    Transform njTooltip = populationBar.GetComponent<Transform>().Find("NJIcon").GetComponent<Transform>().Find("NJTooltip");
+                    Transform synTooltip = populationBar.GetComponent<Transform>().Find("SynIcon").GetComponent<Transform>().Find("SynTooltip");
+
+
+                    string anuToolTipText = "<b>The Disciples of Anu</b>";
+                    string njToolTipText = "<b>New Jericho</b>";
+                    string synToolTipText = "<b>Synedrion</b>";
+
                     if (controller.PhoenixFaction.GameTags.Contains(DefCache.GetDef<DiplomacyStateTagDef>("AN_Discovered_DiplomacyStateTagDef")))
                     {
                         anuInfo.gameObject.SetActive(true);
                         anuIcon.gameObject.SetActive(true);
+                        anuTooltip.gameObject.SetActive(true);
+
+                        anuTooltip.gameObject.GetComponent<UITooltipText>().TipText = anuToolTipText + "\n" + CreateTextForAnuTooltipText(controller);
+
                     }
 
                     if (controller.PhoenixFaction.GameTags.Contains(DefCache.GetDef<DiplomacyStateTagDef>("NJ_Discovered_DiplomacyStateTagDef")))
                     {
                         njInfo.gameObject.SetActive(true);
                         njIcon.gameObject.SetActive(true);
+                        njTooltip.gameObject.SetActive(true);
 
+                        njTooltip.gameObject.GetComponent<UITooltipText>().TipText = njToolTipText + "\n" + CreateTextForNJTooltipText(controller);
                     }
                     if (controller.PhoenixFaction.GameTags.Contains(DefCache.GetDef<DiplomacyStateTagDef>("SY_Discovered_DiplomacyStateTagDef")))
                     {
                         synInfo.gameObject.SetActive(true);
                         synIcon.gameObject.SetActive(true);
+                        synTooltip.gameObject.SetActive(true);
 
+                        synTooltip.gameObject.GetComponent<UITooltipText>().TipText = synToolTipText + "\n" + CreateTextForSynTooltipText(controller);
                     }
 
                     //   TFTVLogger.Always("Got here 3");
@@ -500,10 +730,10 @@ namespace TFTV
 
 
 
-                   /* if (controller.EventSystem.GetEventRecord("SDI_01")?.SelectedChoice == 0 && controller.EventSystem.GetEventRecord("PROG_FS2_WIN")?.SelectedChoice == 0)
-                    {
-                        deliriumIconHolder.gameObject.SetActive(false);
-                    }*/
+                    /* if (controller.EventSystem.GetEventRecord("SDI_01")?.SelectedChoice == 0 && controller.EventSystem.GetEventRecord("PROG_FS2_WIN")?.SelectedChoice == 0)
+                     {
+                         deliriumIconHolder.gameObject.SetActive(false);
+                     }*/
 
                     Transform evolutionIconHolder = populationBar.GetComponent<Transform>().Find("PandoranEvolutionIcon");
                     Image evolutionIcon = evolutionIconHolder.GetComponent<Image>();
@@ -535,9 +765,9 @@ namespace TFTV
                         }
                     }
 
-
                     evolutionTooltip.gameObject.GetComponent<UITooltipText>().TipText = evolutionToolTipText;
 
+                 
                 }
 
                 catch (Exception e)
@@ -546,6 +776,175 @@ namespace TFTV
                 }
             }
         }
+
+        
+       
+
+
+        public static string CreateTextForAnuTooltipText(GeoLevelController controller)
+        {
+            try 
+            {
+                string text = "";
+                GeoFaction phoenix = controller.PhoenixFaction;
+                PartyDiplomacyStateEntry relation = controller.AnuFaction.Diplomacy.GetDiplomacyStateEntry(phoenix);
+                text = relation.StateText.Localize();
+
+
+                if (controller.EventSystem.GetEventRecord("PROG_AN6")?.SelectedChoice == 1 || controller.EventSystem.GetEventRecord("PROG_AN6_2")?.SelectedChoice == 1)
+                {
+                    text += "\n-You have postponed the third special mission offered by this faction (will be offered again at 74%)";
+                }
+                else if (controller.EventSystem.GetEventRecord("PROG_AN4")?.SelectedChoice == 1)
+                {
+                    text += "\n-You have postponed the second special mission offered by this faction (will be offered again at 49%)";
+                }
+                else if (controller.EventSystem.GetEventRecord("PROG_AN2")?.SelectedChoice == 0)
+                {
+                    text += "\n-You have postponed the first special mission offered by this faction (will be offered again at 24%)";
+                }
+
+                if (controller.EventSystem.GetEventRecord("PROG_AN6_WIN1")?.SelectedChoice == 0 || controller.EventSystem.GetEventRecord("PROG_AN6_WIN2")?.SelectedChoice == 0)
+                {
+                    text += "\n-You have completed all the special missions for this faction; you have full access to their research tree";
+                }
+                else if (controller.EventSystem.GetEventRecord("PROG_AN4_WIN")?.SelectedChoice == 0)
+                {
+                    text += "\n-You have completed the second special mission for this faction; you will gain access to any technology researched by the faction";
+                }
+                else if (controller.EventSystem.GetEventRecord("PROG_AN2_WIN")?.SelectedChoice == 0)
+                {
+                    text += "\n-You have completed the first special misssion for this faction; all their havens have been revealed to you";
+                }
+
+
+                return text;
+
+            }
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
+
+
+        }
+
+
+        public static string CreateTextForSynTooltipText(GeoLevelController controller)
+        {
+            try
+            {
+                string text = "";
+                GeoFaction phoenix = controller.PhoenixFaction;
+                PartyDiplomacyStateEntry relation = controller.SynedrionFaction.Diplomacy.GetDiplomacyStateEntry(phoenix);
+                text = relation.StateText.Localize();
+                int polyCounter = controller.EventSystem.GetVariable("Polyphonic");
+                int terraCounter = controller.EventSystem.GetVariable("Terraformers");
+
+                if (controller.EventSystem.GetEventRecord("PROG_SY4_T")?.SelectedChoice == 1 || controller.EventSystem.GetEventRecord("PROG_SY4_P")?.SelectedChoice == 1)
+                {
+                    text += "\n-You have postponed the third special mission offered by this faction (will be offered again at 74%)";
+                }
+               
+                else if (controller.EventSystem.GetEventRecord("PROG_SY1")?.SelectedChoice == 2)
+                {
+                    text += "\n-You have postponed the first special mission offered by this faction (will be offered again at 24%)";
+                }
+
+                if (controller.EventSystem.GetEventRecord("PROG_SY4_WIN1")?.SelectedChoice == 0 || controller.EventSystem.GetEventRecord("PROG_SY4_WIN2")?.SelectedChoice == 0)
+                {
+                    text += "\n-You have completed all the special missions for this faction; you have full access to their research tree";
+                }
+                else if (controller.EventSystem.GetEventRecord("PROG_SY3_WIN")?.SelectedChoice !=null)
+                {
+                    text += "\n-You have completed the second special mission for this faction; you will gain access to any technology researched by the faction";
+                }
+                else if (controller.EventSystem.GetEventRecord("PROG_SY1_WIN1")?.SelectedChoice != null || controller.EventSystem.GetEventRecord("PROG_SY1_WIN2")?.SelectedChoice != null)
+                {
+                    text += "\n-You have completed the first special misssion for this faction; all their havens have been revealed to you";
+                }
+
+                if (polyCounter > terraCounter) 
+                {
+                    text += "\n-Through Phoenix Project influence, the Polyphonic tendency is currently ascendant in Synedrion";
+
+                }
+                else if (polyCounter < terraCounter)
+                {
+                    text += "\n-Through Phoenix Project influence, the Terraformers are currently ascendant in Synedrion";
+                }
+                
+
+
+                return text;
+
+            }
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
+
+
+        }
+
+
+
+
+        public static string CreateTextForNJTooltipText(GeoLevelController controller)
+        {
+            try
+            {
+                string text = "";
+                GeoFaction phoenix = controller.PhoenixFaction;
+                PartyDiplomacyStateEntry relation = controller.NewJerichoFaction.Diplomacy.GetDiplomacyStateEntry(phoenix);
+                text = relation.StateText.Localize();
+
+
+                if (controller.EventSystem.GetEventRecord("PROG_NJ3")?.SelectedChoice == 1)
+                {
+                    text += "\n-You have postponed the third special mission offered by this faction (will be offered again at 74%)";
+                }
+                else if (controller.EventSystem.GetEventRecord("PROG_NJ2")?.SelectedChoice == 1)
+                {
+                    text += "\n-You have postponed the second special mission offered by this faction (will be offered again at 49%)";
+                }
+                else if (controller.EventSystem.GetEventRecord("PROG_NJ1")?.SelectedChoice == 1)
+                {
+                    text += "\n-You have postponed the first special mission offered by this faction (will be offered again at 24%)";
+                }
+
+                if (controller.EventSystem.GetEventRecord("PROG_NJ3_WIN")?.SelectedChoice == 0)
+                {
+                    text += "\n-You have completed all the special missions for this faction; you have full access to their research tree";
+                }
+                else if (controller.EventSystem.GetEventRecord("PROG_NJ2_WIN")?.SelectedChoice == 0)
+                {
+                    text += "\n-You have completed the second special mission for this faction; you will gain access to any technology researched by the faction";
+                }
+                else if (controller.EventSystem.GetEventRecord("PROG_NJ1_WIN")?.SelectedChoice == 0)
+                {
+                    text += "\n-You have completed the first special misssion for this faction; all their havens have been revealed to you";
+                }
+
+
+                return text;
+
+            }
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
+
+
+        }
+
+
 
 
         //Patch to show correct stats in Personnel Edit screen
@@ -885,7 +1284,7 @@ namespace TFTV
         public static TacticalActor HookCharacterStatsForDeliriumShader = null;
 
         [HarmonyPatch(typeof(TacticalActor), "SetupFaceCorruptionShader")]
-      
+
         class TFTV_TacticalActor_SetupFaceCorruptionShader
         {
             private static void Prefix(TacticalActor __instance)
@@ -893,14 +1292,14 @@ namespace TFTV
                 try
                 {
                     HookCharacterStatsForDeliriumShader = __instance;
-                  
+
 
                 }
                 catch (Exception e)
                 {
                     TFTVLogger.Error(e);
                 }
-               
+
             }
             private static void Postfix()
             {
@@ -920,34 +1319,34 @@ namespace TFTV
 
 
         [HarmonyPatch(typeof(CharacterStats), "get_CorruptionProgressRel")]
-         internal static class TFTV_UI_CharacterStats_DeliriumFace_patch
-         {
-             private static void Postfix(ref float __result, CharacterStats __instance)
-             {
-                 try
-                 {
+        internal static class TFTV_UI_CharacterStats_DeliriumFace_patch
+        {
+            private static void Postfix(ref float __result, CharacterStats __instance)
+            {
+                try
+                {
                     // Type targetType = typeof(UIModuleActorCycle);
                     // FieldInfo geoCharacterField = targetType.GetField("GeoCharacter", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
 
-                    
 
-                     if (HookToCharacterForDeliriumShader != null)
-                     {
-                         GeoCharacter geoCharacter = HookToCharacterForDeliriumShader;
 
-                         if (__instance.Corruption > 0 && geoCharacter != null)//hookToCharacter != null)
-                         {
-                          
-                             if (__instance.Corruption - TFTVDelirium.CalculateStaminaEffectOnDelirium(geoCharacter) > 0)
-                             {
-                                 __result = ((geoCharacter.CharacterStats.Corruption - (TFTVDelirium.CalculateStaminaEffectOnDelirium(geoCharacter))) / 20);
-                             }
-                             else
-                             {
-                                 __result = 0.05f;
-                             }
-                         }
-                     }
+                    if (HookToCharacterForDeliriumShader != null)
+                    {
+                        GeoCharacter geoCharacter = HookToCharacterForDeliriumShader;
+
+                        if (__instance.Corruption > 0 && geoCharacter != null)//hookToCharacter != null)
+                        {
+
+                            if (__instance.Corruption - TFTVDelirium.CalculateStaminaEffectOnDelirium(geoCharacter) > 0)
+                            {
+                                __result = ((geoCharacter.CharacterStats.Corruption - (TFTVDelirium.CalculateStaminaEffectOnDelirium(geoCharacter))) / 20);
+                            }
+                            else
+                            {
+                                __result = 0.05f;
+                            }
+                        }
+                    }
                     if (HookCharacterStatsForDeliriumShader != null)
                     {
                         if (__instance == HookCharacterStatsForDeliriumShader.CharacterStats)
@@ -976,12 +1375,12 @@ namespace TFTV
                     }
 
                 }
-                 catch (Exception e)
-                 {
-                     TFTVLogger.Error(e);
-                 }
-             }
-         }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+        }
 
         /* [HarmonyPatch(typeof(CorruptionSettingsDef), "CalculateCorruptionShaderValue")]
 
@@ -1258,7 +1657,7 @@ namespace TFTV
                     hookToCharacter = ____character;
 
                     if (____character.CharacterStats.Corruption > 0f)
-                        
+
                     {
                         //____character.CharacterStats.Corruption.Set(Mathf.RoundToInt(____character.CharacterStats.Corruption));
 
@@ -1267,7 +1666,7 @@ namespace TFTV
                         {
                             delirium = (TFTVDelirium.CalculateMaxCorruption(____character));
                         }
-                        
+
                         __instance.CorruptionSlider.minValue = 0f;
                         __instance.CorruptionSlider.maxValue = Mathf.RoundToInt(TFTVDelirium.CalculateMaxCorruption(____character));
                         __instance.CorruptionSlider.value = delirium;

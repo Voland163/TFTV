@@ -213,7 +213,7 @@ namespace PRMBetterClasses.SkillModifications
                         PRMLogger.Debug($"POSTFIX ApplyEffectAbility.TargetFilterPredicate(..) with 'LayWaste_AbilityDef' detected and __result is true ...");
                         BaseStat targetWP = targetActor.Status.GetStat(StatModificationTarget.WillPoints.ToString(), null);
                         StatusStat sourceWP = __instance.TacticalActor.CharacterStats.WillPoints; //((TacticalActor)AccessTools.Property(typeof(TacticalAbility), "TacticalActor").GetValue(__instance, null)).CharacterStats.WillPoints;
-                        __result = Utl.LesserThan(targetWP, sourceWP, 1E-05f);
+                        __result = targetWP != null && Utl.LesserThan(targetWP, sourceWP, 1E-05f);
                         PRMLogger.Debug($"Target actor WP {targetWP} vs source WP {sourceWP}, result after WP check: {__result}");
                         PRMLogger.Debug("----------------------------------------------------", false);
                     }

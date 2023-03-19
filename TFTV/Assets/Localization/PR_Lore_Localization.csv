@@ -1,21 +1,98 @@
 Key,Type,Desc,English,Chinese (Simplified),French,German,Italian,Polish,Russian,Spanish,UI_Tester
 TFTV_LORE_ALISTAIR_TITLE,Text,,Alistair Ashby,,,,,,,,
-TFTV_LORE_ALISTAIR_DESCRIPTION,Text,,"Sometimes Alistair thought that the transformative effect of the Pandoravirus on him could not have been greater had he actually been infected with it. 
+TFTV_LORE_ALISTAIR_DESCRIPTION,Text,,"Sometimes Alistair thought that the transformative effect of the Pandoravirus on him could not have been greater had he actually been infected with it.
 
-Alistair went from a youthful college-dropout influencer to a bona fide expert, all by taking the first Mist stories seriously, while the rest of the media still considered them fake news. He grasped the significance of what was happening earlier and better than anyone else. He anticipated the Third World War and its consequences, including the rise of the highly polarized and ideologically charged factions, and the demise of race, wealth, nationality and family prestige as relevant sociological factors. 
+Alistair went from a youthful college-dropout influencer to a bona fide expert, all by taking the first Mist stories seriously, while the rest of the media still considered them fake news. He grasped the significance of what was happening earlier and better than anyone else. He anticipated the Third World War and its consequences, including the rise of the highly polarized and ideologically charged factions, and the demise of race, wealth, nationality and family prestige as relevant sociological factors.
 
-""We are mistaken about the coming Apocalypse. It's not about extinction or survival. It's about our place in the new food chain.""
+“We are mistaken about the coming Apocalypse. It’s not about extinction or survival. It’s about our place in the new food chain.”
 
-The Pandoravirus also brought Alistair into contact with the child prodigy Olena Kim. They ran into each other more than a decade ago and have been inseparable ever since, to the extent that Alastair now considers himself her oppa (older brother).
+The Pandoravirus also brought Alistair into contact with the child prodigy Olena Kim. They ran into each other more than two decades ago and have been inseparable ever since, to the extent that Alistair now considers himself her oppa (older brother).
 
-The connection - if any - between Alistair and Phoenix Project remains a mystery, but it seems like he knew Randolph Symes III personally.",,,,,,,,
+The connection - if any - between Alistair and Phoenix Project remains a mystery, but it seems like he knew Randolph Symes III personally.",,,,,,,,
 TFTV_LORE_OLENA_TITLE,Text,,Olena Kim,,,,,,,,
-TFTV_LORE_OLENA_DESCRIPTION,Text,,"Olena came of age after the Pandoravirus appeared. She never talks about her past, but it's safe to say that it was not an ordinary childhood. A prodigy, she bears the imprint of a program for the gifted: an alien within her own species.",,,,,,,,
+TFTV_LORE_OLENA_DESCRIPTION,Text,,"Olena was born in Odesa to a Korean father and a Ukrainian mother, both renowned scholars in archaeology and anthropology. They traveled around the world with their daughter, exposing her to different cultures and languages. A prodigy, Olena bears the imprint of a program for the gifted: an alien within her own species.
+
+She lost her parents during the First Mist. When Alistair Ashby and his band of refugees found her, she was another shell shocked child. In time, he became her friend and confidant, one of the few people who understood her.
+
+Olena never talks about her past unless asked directly. She prefers to focus on the present and future challenges. She is loyal to Alistair and respects his judgment, particularly as to people. She is curious about the various factions but wary of their intentions or agendas.",,,,,,,,
 TFTV_LORE_HELENA_TITLE,Text,,Helena Lewandowski,,,,,,,,
-TFTV_LORE_HELAN_DESCRIPTION,Text,,,,,,,,,,
+TFTV_LORE_HELAN_DESCRIPTION,Text,,"Helena Lewandowski was born in Warsaw, Poland, in 1993. She had a passion for history and archaeology since she was a child, and pursued her studies at the University of Warsaw. She became one of the world’s leading experts on pre-historic cultures and civilizations, especially those that existed before the last ice age. 
+
+In 2019, she joined Project Glory, a secretive attempt to study the nature of enigmatic ruins that predated Homo Sapiens. Project Glory was funded by the Phoenix Project and Vanadium Inc., and was led by Dr. Randolph Symes III, the director of the Phoenix Project at that time.
+
+However, Dr. Symes did not share her enthusiasm or vision. Helena left Project Glory and joined Vanadium Inc., where she continued her research under the supervision of Tobias West, the CEO of Vanadium Inc. In 2022, when the Pandora virus began to spread across the globe, Helena uncovered evidence of an ancient civilization that had advanced technology and knowledge beyond anything known to modern humans. She contacted West and told him about her breakthrough.
+
+However, West suddenly shut down Project Glory and ordered Helena to return to New Jericho’s headquarters. She was later transferred to a prison facility, where she remained until rescued by the Phoenix Project. ",,,,,,,,
 TFTV_LORE_BENNU_TITLE,Text,,Bennu,,,,,,,,
 TFTV_LORE_BENNU_DESCRIPTION,Text,,"The Phoenix Project relies on a number of Limited Artificial Intelligences: task oriented, non replicating software with limited growth potential devoid of internal personality modulators, aggregated under the namespace ""Bennu"". 
 
 Bennu runs the life support on Phoenix bases, assists with research and manufacturing processes, and provides the Director Interface and other critical information, among many other crucial background tasks. They allow the Director maximum control in both strategic and tactical decisions. 
 
 As a data processing unit, Bennu works to present all relevant information in the most succinct, understandable and engaging manner. Like this reading here! Hope you enjoyed it!",,,,,,,,
+KEY_NJ_EXO_BIO_HELMET_DESCRIPTION,Text,,New Jericho Will Disruption Head Augmentation,,,,,,,,
+KEY_NJ_EXO_BIO_HELMET_LONG_DESCRIPTION,Text,,"Created as an advanced targeting implant, the Disruptor head augmentation was gradually modified to use ultrasound emitters to disrupt enemy mind processes.",,,,,,,,
+KEY_NJ_EXO_BIO_HELMET_NAME2,Text,,Disruptor Head,,,,,,,,
+KEY_NJ_EXO_BIO_LEGS_DESCRIPTION,Text,,New Jericho Rocket Legs Augmentation,,,,,,,,
+KEY_NJ_EXO_BIO_LEGS_LONG_DESCRIPTION,Text,,"Following the design of the Golem-B armor jetpack, the Propeller legs augmentation allows soldiers to traverse short distances flying over low obstacles on the way.",,,,,,,,
+KEY_NJ_EXO_BIO_LEGS_NAME2,Text,,Propeller Legs,,,,,,,,
+KEY_NJ_EXO_BIO_TORSO_DESCRIPTION,Text,,New Jericho Exoskeletal Torso Augmentation,,,,,,,,
+KEY_NJ_EXO_BIO_TORSO_LONG_DESCRIPTION,Text,,"A third generation exoskeleton rig that allows a soldier to attach any mounted weapons or mecharms to their frame, increasing their versatility in combat by seventy-nine percent.",,,,,,,,
+KEY_NJ_EXO_BIO_TORSO_NAME2,Text,,Neural Torso,,,,,,,,
+KEY_NJ_JUGG_BIO_HELMET_DESCRIPTION,Text,,New Jericho Control Resist Head Augmentation,,,,,,,,
+KEY_NJ_JUGG_BIO_HELMET_LONG_DESCRIPTION,Text,,"A massive head augmentation of reinforced titanium, the Clarity head provides complete protection to the soldier’s brain, while also isolating him from Pandoran mind control.
+",,,,,,,,
+KEY_NJ_JUGG_BIO_HELMET_NAME2,Text,,Clarity Head,,,,,,,,
+KEY_NJ_JUGG_BIO_LEGS_DESCRIPTION,Text,,New Jericho Safe Landing Legs Augmentation,,,,,,,,
+KEY_NJ_JUGG_BIO_LEGS_LONG_DESCRIPTION,Text,,"Based on advanced vehicle hydraulics, the Armadillo legs allow soldiers of up to three tons to land safely from fifty meters height absorbing the entire shock.",,,,,,,,
+KEY_NJ_JUGG_BIO_LEGS_NAME2,Text,,Armadillo Legs,,,,,,,,
+KEY_NJ_JUGG_BIO_TORSO_DESCRIPTION,Text,,New Jericho Demolishing Torso Augmentation,,,,,,,,
+KEY_NJ_JUGG_BIO_TORSO_LONG_DESCRIPTION,Text,,"Initially designed for space combat, the Juggernaut torso makes a person immune to the majority of physical attacks, while also allowing soldiers to breach through solid walls by walking through them.",,,,,,,,
+KEY_NJ_JUGG_BIO_TORSO_NAME2,Text,,Juggernaut Torso,,,,,,,,
+KEY_SY_SHINOBI_BIO_HELMET_DESCRIPTION,Text,,Synedrion Silent Echo Head Augmentation,,,,,,,,
+KEY_SY_SHINOBI_BIO_HELMET_LONG_DESCRIPTION,Text,,"Based on Triton head physiology, the Echo head augment is able to produce a sound suppression field, increasing soldier's stealth.",,,,,,,,
+KEY_SY_SHINOBI_BIO_HELMET_NAME2,Text,,Echo Head,,,,,,,,
+KEY_SY_SHINOBI_BIO_LEGS_DESCRIPTION,Text,,Synedrion Anti-detection Legs Augmentation,,,,,,,,
+KEY_SY_SHINOBI_BIO_LEGS_LONG_DESCRIPTION,Text,,"Designed for silent running, the Mirage legs allow soldiers to run through observed areas unnoticed without worrying about enemy Overwatch.",,,,,,,,
+KEY_SY_SHINOBI_BIO_LEGS_NAME2,Text,,Mirage Legs,,,,,,,,
+KEY_SY_SHINOBI_BIO_TORSO_DESCRIPTION,Text,,Synedrion Melee Proficient Torso Augmentation,,,,,,,,
+KEY_SY_SHINOBI_BIO_TORSO_LONG_DESCRIPTION,Text,,"The Vengeance torso augmentation focuses on close combat efficiency, combining reflex enhancers and vital spot targeting assistance. This also allows soldiers to wield melee weapons effectively without prior training.",,,,,,,,
+KEY_SY_SHINOBI_BIO_TORSO_NAME2,Text,,Vengeance Torso,,,,,,,,
+KEY_MUTATION_PART_HEAD_ARMORED_LONG_DESCRIPTION,Text,,"Developed through Arthron DNA modification, the mutation grants 30 head armor and full daze immunity. Additional +1 to Strength",,,,,,,,
+KEY_MUTATION_PART_HEAD_PERCEPTOR_LONG_DESCRIPTION,Text,,"Based on Scylla DNA samples, the mutation enhances the senses, increasing Perception by 14 and Accuracy by 10%.",,,,,,,,
+KEY_MUTATION_PART_HEAD_RESISTOR_LONG_DESCRIPTION,Text,,"Engineered through Siren gene modification, the mutation offers Poison and Virus resistance, while also increasing Willpower by +2.",,,,,,,,
+KEY_MUTATION_PART_LEG_AGILE_LONG_DESCRIPTION,Text,,"Modified based on Arthron DNA, the mutation grants superior Speed as well as goo immunity and the ability to jump up one storey.",,,,,,,,
+KEY_MUTATION_PART_LEG_SNEAKER_LONG_DESCRIPTION,Text,,"Combining Triton and aquatic DNA, the mutation grants superior stealth and the ability to perform Sonic kicks as well as approach Sentinels without being detected.",,,,,,,,
+KEY_MUTATION_PART_LEG_STOMPER_LONG_DESCRIPTION,Text,,"Created from Chiron DNA, the mutation grants Stomping Attack (Shock Attack affecting a 5-tile radius, dazing targets if shock value > target Hit Points). Additional +1 to Strength.",,,,,,,,
+KEY_MUTATION_PART_PRIEST1_LONG_DESCRIPTION,Text,,"Based on DNA from the Synod of Yearning, the mutation restores 2 Will Points to all friendly living entities within 7 tiles at the start of each turn. Additional +4 to Willpower.",,,,,,,,
+KEY_MUTATION_PART_PRIEST2_LONG_DESCRIPTION,Text,,"Created from DNA of from the Blind Legate, the mutation allows a priest to perform Instil Frenzy (increase Speed by 33% and make them immune to panic) on allied characters. Additional +4 to Willpower.",,,,,,,,
+KEY_MUTATION_PART_PRIEST3_LONG_DESCRIPTION,Text,,"Engineered from the Keeper of the Threshhold’s DNA, the mutation grants Mind Control Immunity and the ability to perform a Psychic Scream (reduces the Will Points of all enemy units in an 8 tile radius). Additional +8 to Willpower.",,,,,,,,
+KEY_MUTATION_PART_TORSO_REGEN_LONG_DESCRIPTION,Text,,"Based on Arthron DNA, the mutation has regeneration capabilities (restore 10 Hit Points to arms and torso at the end of each turn) and fire resistance. Additional +1 to Strength.",,,,,,,,
+KEY_MUTATION_PART_TORSO_SHOOT_LONG_DESCRIPTION,Text,,"Created through combination of aquatic DNA, the mutation makes it possible to shoot poisonous darts at short distances. The mutation prevents the use of two-handed weapons.",,,,,,,,
+KEY_MUTATION_PART_TORSO_TENTACLE_LONG_DESCRIPTION,Text,,"Two pairs of tentacles that retaliate to any proximity attack. Based on electric eel DNA, the tentacles are capable of performing melee attacks that deal Paralyze damage.",,,,,,,,
+TFTV_TIP_GEOSCAPE_1,Text,,Accepting a Diplomacy mission from one faction will normally give you a large penalty with the other factions,,,,,,,,
+TFTV_TIP_GEOSCAPE_2,Text,,"If you choose to postpone a Diplomacy mission, you will suffer a penalty with the offering faction, and be offered the mission again once you reach the required Diplomacy rating",,,,,,,,
+TFTV_TIP_GEOSCAPE_3,Text,,Void Omens can be removed by destroying Pandoran Lairs or Citadels (or Nests if you are playing on Rookie),,,,,,,,
+TFTV_TIP_GEOSCAPE_4,Text,,Pandoran Colonies and Infested Havens speed up Pandoran Evolution,,,,,,,,
+TFTV_TIP_GEOSCAPE_5,Text,,Beware of ambushes when exploring! ,,,,,,,,
+TFTV_TIP_GEOSCAPE_6,Text,,You can buy Faction Technologies in the Marketplace,,,,,,,,
+TFTV_TIP_GEOSCAPE_7,Text,,Reverse Engineering an item allows researching the underlying Faction Technology,,,,,,,,
+TFTV_TIP_GEOSCAPE_8,Text,,You don't have to follow the Symes questline to win; activate a couple old Phoenix bases to see if there is anything interesting in their archives...,,,,,,,,
+TFTV_TIP_GEOSCAPE_9,Text,,FAR-M module for your starting Manticore add 4 seats and stamina regeneration to everyone on board,,,,,,,,
+TFTV_TIP_GEOSCAPE_10,Text,,"There are 3 different Passenger Modules for your aircraft, each granting some bonus in addition to the extra seats. You will unlock them as you acquire Faction Technologies
+",,,,,,,,
+TFTV_TIP_GEOSCAPE_11,Text,,"A Haven under attack will send out an S.O.S., revealing its position",,,,,,,,
+TFTV_TIP_GEOSCAPE_12,Text,,Build or repair satellite uplinks at your bases to discover Points of Interest and increasing the chance of detecting a Pandoran Colony after successfully defending a haven,,,,,,,,
+TFTV_TIP_GEOSCAPE_13,Text,,"As long as haven leaders are not hostile to Phoenix Project, they will continue to offer recruits, though at a higher price if they dislike you ",,,,,,,,
+TFTV_TIP_GEOSCAPE_14,Text,,"As the Oneiric Delirium advances more negative effects will come in play, including Void Omens",,,,,,,,
+TFTV_TIP_GEOSCAPE_15,Text,,Havens destroyed inside the Mist can become Infested,,,,,,,,
+TFTV_TIP_GEOSCAPE_16,Text,,"Infested Havens cannot be saved, but unique rewards can be salvaged and some population saved",,,,,,,,
+TFTV_TIP_TACTICAL_1,Text,,The total amount of Delirium of all your operatives present on the mission determines  the chance that an Arthron or a Triton will be Touched by the Void,,,,,,,,
+TFTV_TIP_TACTICAL_2,Text,,"Umbras can only attack characters that have at least one Delirium point, or are inside the Mist",,,,,,,,
+TFTV_TIP_TACTICAL_3,Text,,Delirium impact on Willpower is weakened if your operative is well rested (each 10 Stamina reduce the effect of Delirium on Willpower by 1),,,,,,,,
+TFTV_TIP_TACTICAL_4,Text,,"If a body part is disabled in battle, the operative's Stamina will drop to 0 after the mission",,,,,,,,
+TFTV_TIP_TACTICAL_5,Text,,,,,,,,,,
+TFTV_TIP_TACTICAL_6,Text,,,,,,,,,,
+TFTV_TIP_TACTICAL_7,Text,,,,,,,,,,
+TFTV_TIP_TACTICAL_8,Text,,,,,,,,,,
+TFTV_TIP_TACTICAL_9,Text,,,,,,,,,,
+TFTV_TIP_TACTICAL_10,Text,,,,,,,,,,

@@ -4,17 +4,21 @@ using Base.Entities.Abilities;
 using Base.Entities.Effects;
 using Base.Entities.Effects.ApplicationConditions;
 using Base.Entities.Statuses;
+using Base.UI;
 using Base.Utils;
+using HarmonyLib;
 using PhoenixPoint.Common.ContextHelp;
 using PhoenixPoint.Common.ContextHelp.HintConditions;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities;
+using PhoenixPoint.Common.Entities.Addons;
 using PhoenixPoint.Common.Entities.Characters;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.Entities.Items;
 using PhoenixPoint.Common.Levels.Missions;
 using PhoenixPoint.Common.UI;
+using PhoenixPoint.Common.View.ViewModules;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.Abilities;
 using PhoenixPoint.Geoscape.Entities.Interception;
@@ -28,6 +32,7 @@ using PhoenixPoint.Geoscape.Events.Eventus;
 using PhoenixPoint.Geoscape.Events.Eventus.Filters;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.ContextHelp.HintConditions;
+using PhoenixPoint.Geoscape.View.ViewModules;
 using PhoenixPoint.Tactical.AI.Actions;
 using PhoenixPoint.Tactical.AI.Considerations;
 using PhoenixPoint.Tactical.ContextHelp.HintConditions;
@@ -44,6 +49,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using static Base.Audio.WwiseIDs;
 
 namespace TFTV
 {
@@ -96,15 +102,236 @@ namespace TFTV
             ModifyRecruitsCost();
             RemoveScyllaResearches();
             FixUnarmedAspida();
+            AddLoadingScreens();
+            AddTips();
+            ModifyCratesToAddArmor();
             //  Testing();
         }
 
+        public static void ModifyCratesToAddArmor()
+        {
+            try
+            {
+                GameTagDef armourTag = DefCache.GetDef<GameTagDef>("ArmourItem_TagDef");
+                GameTagDef synedrion = DefCache.GetDef<GameTagDef>("Synedrion_FactionTagDef");
+                GameTagDef anu = DefCache.GetDef<GameTagDef>("Anu_FactionTagDef");
+                GameTagDef nj = DefCache.GetDef<GameTagDef>("NewJerico_FactionTagDef");
+
+                List<ItemDef> synArmors = new List<ItemDef>() {
+                DefCache.GetDef<ItemDef>("SY_Infiltrator_Bonus_Helmet_BodyPartDef"),
+                DefCache.GetDef<ItemDef>("SY_Infiltrator_Bonus_Legs_ItemDef"),
+                DefCache.GetDef<ItemDef>("SY_Infiltrator_Bonus_Torso_BodyPartDef"),
+                DefCache.GetDef<ItemDef>("SY_MistRepeller_Attachment_ItemDef"),
+                DefCache.GetDef<ItemDef>("SY_MotionDetector_Attachment_ItemDef"),
+                DefCache.GetDef<ItemDef>("SY_MultiVisualSensor_Attachment_ItemDef"),
+                DefCache.GetDef<ItemDef>("SY_PoisonResistanceVest_Attachment_ItemDef"),
+                DefCache.GetDef<ItemDef>("SY_Assault_Helmet_Neon_BodyPartDef"),
+                DefCache.GetDef<ItemDef>("SY_Assault_Legs_Neon_ItemDef"),
+                DefCache.GetDef<ItemDef>("SY_Assault_Torso_Neon_BodyPartDef"),
+                DefCache.GetDef<ItemDef>("SY_Assault_Helmet_WhiteNeon_BodyPartDef"),
+                DefCache.GetDef<ItemDef>("SY_Assault_Legs_WhiteNeon_ItemDef"),
+                DefCache.GetDef<ItemDef>("SY_Assault_Torso_WhiteNeon_BodyPartDef"),
+                DefCache.GetDef<ItemDef>("SY_Assault_Helmet_BodyPartDef"),
+                DefCache.GetDef<ItemDef>("SY_Assault_Legs_ItemDef"),
+                DefCache.GetDef<ItemDef>("SY_Assault_Torso_BodyPartDef"),
+                DefCache.GetDef<ItemDef>("SY_Infiltrator_Helmet_BodyPartDef"),
+                DefCache.GetDef<ItemDef>("SY_Infiltrator_Legs_ItemDef"),
+                DefCache.GetDef<ItemDef>("SY_Infiltrator_Torso_BodyPartDef"),
+                DefCache.GetDef<ItemDef>("SY_Infiltrator_Venom_Helmet_BodyPartDef"),
+                DefCache.GetDef<ItemDef>("SY_Infiltrator_Venom_Legs_ItemDef"),
+                DefCache.GetDef<ItemDef>("SY_Infiltrator_Venom_Torso_BodyPartDef"),
+                DefCache.GetDef<ItemDef>("SY_Sniper_Helmet_BodyPartDef"),
+                DefCache.GetDef<ItemDef>("SY_Sniper_Legs_ItemDef"),
+                DefCache.GetDef<ItemDef>("SY_Sniper_Torso_BodyPartDef"),
+                };
+
+                List<ItemDef> njArmors = new List<ItemDef>() {
+                DefCache.GetDef<ItemDef>("NJ_Assault_Helmet_BodyPartDef"),
+                DefCache.GetDef<ItemDef>("NJ_Assault_Legs_ItemDef"),
+                DefCache.GetDef<ItemDef>("NJ_Assault_Torso_BodyPartDef"),
+                DefCache.GetDef<ItemDef>("NJ_Heavy_Helmet_BodyPartDef"),
+                DefCache.GetDef<ItemDef>("NJ_Heavy_Legs_ItemDef"),
+                DefCache.GetDef<ItemDef>("NJ_Heavy_Torso_BodyPartDef"),
+                DefCache.GetDef<ItemDef>("NJ_Sniper_Helmet_BodyPartDef"),
+                DefCache.GetDef<ItemDef>("NJ_Sniper_Legs_ItemDef"),
+                DefCache.GetDef<ItemDef>("NJ_Sniper_Torso_BodyPartDef"),
+                DefCache.GetDef<ItemDef>("NJ_Technician_Helmet_BodyPartDef"),
+                DefCache.GetDef<ItemDef>("NJ_Technician_Legs_ItemDef"),
+                DefCache.GetDef<ItemDef>("NJ_Technician_Torso_BodyPartDef"),
+                DefCache.GetDef<ItemDef>("NJ_FireResistanceVest_Attachment_ItemDef"),
+                DefCache.GetDef<ItemDef>("NJ_Technician_Helmet_ALN_BodyPartDef"),
+                DefCache.GetDef<ItemDef>("NJ_Technician_Legs_ALN_ItemDef"),
+                DefCache.GetDef<ItemDef>("NJ_Technician_Torso_ALN_BodyPartDef"),
+                };
+
+                List<ItemDef> anuArmors = new List<ItemDef>() {
+                DefCache.GetDef<ItemDef>("AN_Berserker_Helmet_Viking_BodyPartDef"),
+                DefCache.GetDef<ItemDef>("AN_Berserker_Legs_Viking_ItemDef"),
+                DefCache.GetDef<ItemDef>("AN_Berserker_Torso_Viking_BodyPartDef"),
+                DefCache.GetDef<ItemDef>("AN_Assault_Helmet_BodyPartDef"),
+                DefCache.GetDef<ItemDef>("AN_Assault_Legs_ItemDef"),
+                DefCache.GetDef<ItemDef>("AN_Assault_Torso_BodyPartDef"),
+                DefCache.GetDef<ItemDef>("AN_Berserker_Helmet_BodyPartDef"),
+                DefCache.GetDef<ItemDef>("AN_Berserker_Legs_ItemDef"),
+                DefCache.GetDef<ItemDef>("AN_Berserker_Torso_BodyPartDef"),
+                DefCache.GetDef<ItemDef>("AN_Priest_Legs_ItemDef"),
+                DefCache.GetDef<ItemDef>("AN_Priest_Torso_BodyPartDef"),
+                DefCache.GetDef<ItemDef>("AN_Priest_Legs_AZ_ItemDef"),
+                DefCache.GetDef<ItemDef>("AN_Priest_Torso_AZ_BodyPartDef"),
+                
+                };
+             
+                foreach (TacticalItemDef item in anuArmors) 
+                {
+                    item.CrateSpawnWeight = 200;
+                    item.IsPickable = true;
+
+                    //    TFTVLogger.Always(item.name + " has a chance of " + item.CrateSpawnWeight + " to spawn");
+
+                }
+
+                foreach (TacticalItemDef item in njArmors)
+                {
+                    item.CrateSpawnWeight = 200;
+                    item.IsPickable = true;
+                    //  TFTVLogger.Always(item.name + " has a chance of " + item.CrateSpawnWeight + " to spawn");
+
+                }
+
+                foreach (TacticalItemDef item in synArmors)
+                {
+                    item.CrateSpawnWeight = 200;
+                    item.IsPickable = true;
+
+                    //TFTVLogger.Always(item.name + " has a chance of " + item.CrateSpawnWeight + " to spawn");
+
+                }
+
+                
+
+                InventoryComponentDef anuCrates = DefCache.GetDef<InventoryComponentDef>("Crate_AN_InventoryComponentDef");
+
+                anuCrates.ItemDefs.AddRangeToArray(anuArmors.ToArray());
+
+
+                InventoryComponentDef njCrates = DefCache.GetDef<InventoryComponentDef>("Crate_NJ_InventoryComponentDef");
+
+                njCrates.ItemDefs.AddRangeToArray(njArmors.ToArray());
+
+                InventoryComponentDef synCrates = DefCache.GetDef<InventoryComponentDef>("Crate_SY_InventoryComponentDef");
+
+                synCrates.ItemDefs.AddRangeToArray(synArmors.ToArray());
+
+
+               /* List<ItemDef> synCratesList = new List<ItemDef>();
+                synCratesList.AddRange(synCrates.ItemDefs.ToList());
+                synCratesList.AddRange(synArmors);
+
+                synCrates.ItemDefs = synCratesList.ToArray();*/
+
+                /*   foreach(TacticalItemDef tacticalItemDef in Repo.GetAllDefs<TacticalItemDef>().Where(tid => tid.Tags.Contains(armourTag)))
+                       {
+
+                       if (tacticalItemDef.Tags.Contains(anu)) 
+                       { 
+                       anuCrates.ItemDefs.AddToArray(tacticalItemDef);
+                           TFTVLogger.Always("Added " + tacticalItemDef.name + " to Anu crates");
+
+                       }
+                       else if (tacticalItemDef.Tags.Contains(nj))
+                       {
+                           njCrates.ItemDefs.AddToArray(tacticalItemDef);
+                           TFTVLogger.Always("Added " + tacticalItemDef.name + " to NJ crates");
+
+                       }
+                       else if (tacticalItemDef.Tags.Contains(synedrion))
+                       {
+                           synCrates.ItemDefs.AddToArray(tacticalItemDef);
+                           TFTVLogger.Always("Added " + tacticalItemDef.name + " to Syn crates");
+
+                       }
+
+
+                   }*/
+
+
+            }
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+        }
+
+
+
+        public static void AddLoadingScreens()
+        {
+            try
+            {
+                LoadingScreenArtCollectionDef loadingScreenArtCollectionDef = DefCache.GetDef<LoadingScreenArtCollectionDef>("LoadingScreenArtCollectionDef");
+
+                Sprite forsaken = Helper.CreateSpriteFromImageFile("fo_squad.png");
+                Sprite pure = Helper.CreateSpriteFromImageFile("squad_pu.jpg");
+
+                loadingScreenArtCollectionDef.LoadingScreenImages.Add(forsaken);
+                loadingScreenArtCollectionDef.LoadingScreenImages.Add(pure);
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+        }
+
+        public static void AddTips()
+        {
+            try
+            {
+                LoadingTipsRepositoryDef loadingTipsRepositoryDef = DefCache.GetDef<LoadingTipsRepositoryDef>("LoadingTipsRepositoryDef");
+                loadingTipsRepositoryDef.GeoscapeLoadingTips.Add(new LocalizedTextBind() { LocalizationKey = "TFTV_TIP_GEOSCAPE_1" });
+                loadingTipsRepositoryDef.GeoscapeLoadingTips.Add(new LocalizedTextBind() { LocalizationKey = "TFTV_TIP_GEOSCAPE_2" });
+                loadingTipsRepositoryDef.GeoscapeLoadingTips.Add(new LocalizedTextBind() { LocalizationKey = "TFTV_TIP_GEOSCAPE_3" });
+                loadingTipsRepositoryDef.GeoscapeLoadingTips.Add(new LocalizedTextBind() { LocalizationKey = "TFTV_TIP_GEOSCAPE_4" });
+                loadingTipsRepositoryDef.GeoscapeLoadingTips.Add(new LocalizedTextBind() { LocalizationKey = "TFTV_TIP_GEOSCAPE_5" });
+                loadingTipsRepositoryDef.GeoscapeLoadingTips.Add(new LocalizedTextBind() { LocalizationKey = "TFTV_TIP_GEOSCAPE_6" });
+                loadingTipsRepositoryDef.GeoscapeLoadingTips.Add(new LocalizedTextBind() { LocalizationKey = "TFTV_TIP_GEOSCAPE_7" });
+                loadingTipsRepositoryDef.GeoscapeLoadingTips.Add(new LocalizedTextBind() { LocalizationKey = "TFTV_TIP_GEOSCAPE_8" });
+                loadingTipsRepositoryDef.GeoscapeLoadingTips.Add(new LocalizedTextBind() { LocalizationKey = "TFTV_TIP_GEOSCAPE_9" });
+                loadingTipsRepositoryDef.GeoscapeLoadingTips.Add(new LocalizedTextBind() { LocalizationKey = "TFTV_TIP_GEOSCAPE_10" });
+                loadingTipsRepositoryDef.GeoscapeLoadingTips.Add(new LocalizedTextBind() { LocalizationKey = "TFTV_TIP_GEOSCAPE_11" });
+                loadingTipsRepositoryDef.GeoscapeLoadingTips.Add(new LocalizedTextBind() { LocalizationKey = "TFTV_TIP_GEOSCAPE_12" });
+                loadingTipsRepositoryDef.GeoscapeLoadingTips.Add(new LocalizedTextBind() { LocalizationKey = "TFTV_TIP_GEOSCAPE_13" });
+                loadingTipsRepositoryDef.GeoscapeLoadingTips.Add(new LocalizedTextBind() { LocalizationKey = "TFTV_TIP_GEOSCAPE_14" });
+                loadingTipsRepositoryDef.GeoscapeLoadingTips.Add(new LocalizedTextBind() { LocalizationKey = "TFTV_TIP_GEOSCAPE_15" });
+                loadingTipsRepositoryDef.GeoscapeLoadingTips.Add(new LocalizedTextBind() { LocalizationKey = "TFTV_TIP_GEOSCAPE_16" });
+                loadingTipsRepositoryDef.TacticalLoadingTips.Add(new LocalizedTextBind() { LocalizationKey = "TFTV_TIP_TACTICAL_1" });
+                loadingTipsRepositoryDef.TacticalLoadingTips.Add(new LocalizedTextBind() { LocalizationKey = "TFTV_TIP_TACTICAL_2" });
+                loadingTipsRepositoryDef.TacticalLoadingTips.Add(new LocalizedTextBind() { LocalizationKey = "TFTV_TIP_TACTICAL_3" });
+                loadingTipsRepositoryDef.TacticalLoadingTips.Add(new LocalizedTextBind() { LocalizationKey = "TFTV_TIP_TACTICAL_4" });
+
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+
+        }
+
+
+
+
+
         public static void FixUnarmedAspida()
         {
-            try 
-            { 
-            DefCache.GetDef<TacCharacterDef>("SY_AspidaInfested_TacCharacterDef").Data.EquipmentItems 
-                    = new ItemDef[] { DefCache.GetDef<ItemDef>("SY_Aspida_Arms_GroundVehicleWeaponDef") };
+            try
+            {
+                DefCache.GetDef<TacCharacterDef>("SY_AspidaInfested_TacCharacterDef").Data.EquipmentItems
+                        = new ItemDef[] { DefCache.GetDef<ItemDef>("SY_Aspida_Arms_GroundVehicleWeaponDef") };
 
             }
             catch (Exception e)
@@ -119,7 +346,7 @@ namespace TFTV
 
         public static void RemoveScyllaResearches()
         {
-            try 
+            try
             {
                 ResearchDbDef researchDbDef = DefCache.GetDef<ResearchDbDef>("aln_ResearchDB");
 
@@ -151,7 +378,7 @@ namespace TFTV
 
         public static void ModifyRecruitsCost()
         {
-            try 
+            try
             {
                 GameDifficultyLevelDef veryhard = DefCache.GetDef<GameDifficultyLevelDef>("VeryHard_GameDifficultyLevelDef");
                 //Hero
@@ -173,13 +400,13 @@ namespace TFTV
                 TFTVLogger.Error(e);
             }
         }
-        public static void CreateEtermesStatuses() 
+        public static void CreateEtermesStatuses()
         {
-            try 
+            try
             {
                 CreateEtermesProtectionStatus();
                 CreateEtermesVulnerability();
-            
+
             }
 
             catch (Exception e)
@@ -302,9 +529,9 @@ namespace TFTV
 
 
 
-        public static void CreateRookieProtectionStatus() 
+        public static void CreateRookieProtectionStatus()
         {
-            try 
+            try
             {
 
                 StandardDamageTypeEffectDef fireDamage = DefCache.GetDef<StandardDamageTypeEffectDef>("Fire_StandardDamageTypeEffectDef");
@@ -359,10 +586,10 @@ namespace TFTV
 
         }
 
-        
-        public static void CreateRookieVulnerability() 
+
+        public static void CreateRookieVulnerability()
         {
-            try 
+            try
             {
                 StandardDamageTypeEffectDef fireDamage = DefCache.GetDef<StandardDamageTypeEffectDef>("Fire_StandardDamageTypeEffectDef");
                 StandardDamageTypeEffectDef standardDamageTypeEffectDef = DefCache.GetDef<StandardDamageTypeEffectDef>("Projectile_StandardDamageTypeEffectDef");
@@ -435,9 +662,9 @@ namespace TFTV
         }
 
 
-        public static void ChangeMyrmidonAndFirewormResearchRewards() 
+        public static void ChangeMyrmidonAndFirewormResearchRewards()
         {
-            try 
+            try
             {
                 ResearchDef myrmidonResearch = DefCache.GetDef<ResearchDef>("PX_Alien_Swarmer_ResearchDef");
                 DefCache.GetDef<ExistingResearchRequirementDef>("PX_LightSniperRifle_ResearchDef_ExistingResearchRequirementDef_0").ResearchID = myrmidonResearch.Id;
@@ -447,7 +674,7 @@ namespace TFTV
                 DefCache.GetDef<ResearchDef>("PX_Alien_Fireworm_ResearchDef").Resources.Add(ResourceType.Supplies, 150);
                 DefCache.GetDef<ResearchDef>("PX_Alien_SwarmerEgg_ResearchDef").Resources.Add(ResourceType.Supplies, 400);
 
-                
+
 
 
             }
@@ -469,7 +696,7 @@ namespace TFTV
                 CreateFireQuencherStatus();
                 CreateFireQuencherAbility();
                 CreateFireQuencherHint();
-              
+
             }
             catch (Exception e)
             {
@@ -490,10 +717,10 @@ namespace TFTV
                 string hintName = "FIRE_QUENCHER";
                 string hintTitle = "HINT_FIRE_QUENCHER_TITLE";
                 string hintText = "HINT_FIRE_QUENCHER_TEXT";
-              
+
 
                 TFTVTutorialAndStory.CreateNewTacticalHint(hintName, HintTrigger.ActorSeen, status.name, hintTitle, hintText, 2, true, "5F24B699-455E-44E5-831D-1CA79B9E3EED");
-               
+
 
 
             }
@@ -510,16 +737,16 @@ namespace TFTV
 
         //cloning the DamageMultiplierAbilityDef fire immunity ability because because through Status effect only achieving immunity for body part
         //Need to clone to make it invisible in status panel
-        public static void CloneFireImmunityAbility() 
+        public static void CloneFireImmunityAbility()
         {
-            try 
+            try
             {
                 string abilityName = "FireImmunityInvisibleAbility";
                 string gUID = "9A55315E-4694-4D95-8811-476C524EBAAE";
-               // string characterProgressionGUID = "AA24A50E-C61A-4CD8-97FE-3F8BAC5F7BAA";
+                // string characterProgressionGUID = "AA24A50E-C61A-4CD8-97FE-3F8BAC5F7BAA";
                 string viewElementGUID = "231F088F-A4F0-4E6D-BC78-614AD0EF4594";
 
-             
+
 
                 DamageMultiplierAbilityDef source = DefCache.GetDef<DamageMultiplierAbilityDef>("FireImmunity_DamageMultiplierAbilityDef");
                 DamageMultiplierAbilityDef newAbility = Helper.CreateDefFromClone(
@@ -1088,7 +1315,7 @@ namespace TFTV
                 GameDifficultyLevelDef veteran = DefCache.GetDef<GameDifficultyLevelDef>("Standard_GameDifficultyLevelDef");
                 GameDifficultyLevelDef legend = DefCache.GetDef<GameDifficultyLevelDef>("VeryHard_GameDifficultyLevelDef");
 
-              //  TacCharacterDef crystalScylla = DefCache.GetDef<TacCharacterDef>("Scylla10_Crystal_AlienMutationVariationDef");
+                //  TacCharacterDef crystalScylla = DefCache.GetDef<TacCharacterDef>("Scylla10_Crystal_AlienMutationVariationDef");
 
 
                 foreach (CustomMissionTypeDef customMissionTypeDef in customMissionTypeDefs)
@@ -1136,13 +1363,13 @@ namespace TFTV
                         Difficulty = legend,
 
                     };
-                  /*  TacMissionTypeParticipantData.UniqueChatarcterBind scyllaLegend = new TacMissionTypeParticipantData.UniqueChatarcterBind()
-                    {
-                        Amount = { Min = 1, Max = 1 },
-                        Character = crystalScylla,
-                        Difficulty = legend,
+                    /*  TacMissionTypeParticipantData.UniqueChatarcterBind scyllaLegend = new TacMissionTypeParticipantData.UniqueChatarcterBind()
+                      {
+                          Amount = { Min = 1, Max = 1 },
+                          Character = crystalScylla,
+                          Difficulty = legend,
 
-                    };*/
+                      };*/
 
                     List<TacMissionTypeParticipantData.UniqueChatarcterBind> uniqueUnits = customMissionTypeDef.ParticipantsData[0].UniqueUnits.ToList();
                     uniqueUnits.Add(drillerVeteran);
@@ -1151,7 +1378,7 @@ namespace TFTV
                     uniqueUnits.Add(shielderHero);
                     uniqueUnits.Add(drillerLegend);
                     uniqueUnits.Add(shielderLegend);
-                   // uniqueUnits.Add(scyllaLegend);
+                    // uniqueUnits.Add(scyllaLegend);
                     customMissionTypeDef.ParticipantsData[0].UniqueUnits = uniqueUnits.ToArray();
 
                 }

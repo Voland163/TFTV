@@ -67,7 +67,7 @@ namespace TFTV
               //  TFTVVoidOmens.VoidOmensCheck = new bool[20];
                 TFTVUmbra.TBTVVariable = 0;
                 TFTVRevenant.daysRevenantLastSeen = 0;
-                TFTVStamina.charactersWithBrokenLimbs = new List<int>();
+                TFTVStamina.charactersWithDisabledBodyParts = new Dictionary<int, List<string>>();
                 TFTVAirCombat.behemothScenicRoute = new List<int>();
                 TFTVAirCombat.behemothTarget = 0;
                 TFTVAirCombat.behemothWaitHours = 12;
@@ -152,7 +152,7 @@ namespace TFTV
                 TFTVRevenant.revenantID = 0;
                 TFTVHumanEnemies.HumanEnemiesAndTactics = new Dictionary<string, int>();
                 TFTVRevenantResearch.ProjectOsirisStats = new Dictionary<int, int[]>();
-                TFTVStamina.charactersWithBrokenLimbs = new List<int>();
+                TFTVStamina.charactersWithDisabledBodyParts = new Dictionary<int, List<string>>();
                 TFTVHumanEnemiesNames.names.Clear();
                 TFTVHumanEnemiesNames.CreateNamesDictionary();
                 ClearHints();

@@ -83,9 +83,9 @@ namespace TFTV
                 /// PhoenixGame is accessible at any time.
                 PhoenixGame game = GetGame();
 
-                TFTVversion = $"TFTV March 19 release #1 v{MetaData.Version}";
+                TFTVversion = $"TFTV March 25 release #1 v{MetaData.Version}";
 
-                Logger.LogInfo("TFTV March 19 release #1");
+                Logger.LogInfo("TFTV March 25 release #1");
 
                 ModDirectory = Instance.Entry.Directory;
                 //Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
@@ -98,7 +98,7 @@ namespace TFTV
                 TFTVLogger.Initialize(LogPath, Config.Debug, ModDirectory, nameof(TFTV));
                 PRMLogger.Initialize(LogPath, Settings.Debug, ModDirectory, nameof(PRMBetterClasses));
                 // DefCache.Initialize();
-                TFTVLogger.Always("TFTV March 19 release #1");
+                TFTVLogger.Always("TFTV March 25 release #1");
 
                 PRMBetterClasses.Helper.Initialize();
                 // Initialize Helper

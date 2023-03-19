@@ -83,7 +83,7 @@ namespace TFTV
                             }
                         }
                     }
-                    else if(CheckGeoscapeSpecialDifficultySettings(controller) == 1) 
+                    if(CheckGeoscapeSpecialDifficultySettings(controller) == 1) 
                     {
                         if (__instance.Diplomacy.Count > 0)
                         {
@@ -101,6 +101,27 @@ namespace TFTV
                             }
                         }
                     }
+
+                    else if (CheckGeoscapeSpecialDifficultySettings(controller) == 2)
+                    {
+                        if (__instance.Diplomacy.Count > 0)
+                        {
+                            for (int i = 0; i < __instance.Diplomacy.Count; i++)
+                            {
+                                if (__instance.Diplomacy[i].TargetFaction == PhoenixFaction && __instance.Diplomacy[i].Value >= 0)
+                                {
+                                    TFTVLogger.Always("Applying Etermes difficulty. The event is " + eventID + ". Original diplo reward is " + __instance.Diplomacy[i].Value +
+                                        ". New diplomacy value is " + __instance.Diplomacy[i].Value / 2);
+                                    OutcomeDiplomacyChange diplomacyChange = __instance.Diplomacy[i];
+                                    diplomacyChange.Value /= 2;
+                                    __instance.Diplomacy[i] = diplomacyChange;
+
+                                }
+                            }
+                        }
+                    }
+
+
 
                     if (TFTVVoidOmens.CheckFordVoidOmensInPlay(controller).Contains(2))
                     {
@@ -210,7 +231,7 @@ namespace TFTV
                             }
                         }
                     }
-                    else if (CheckGeoscapeSpecialDifficultySettings(controller) == 1)
+                    if (CheckGeoscapeSpecialDifficultySettings(controller) == 1)
                     {
                         if (__instance.Diplomacy.Count > 0)
                         {
@@ -222,6 +243,25 @@ namespace TFTV
                                         ". Original diplomacy value is " + __instance.Diplomacy[i].Value / 2);
                                     OutcomeDiplomacyChange diplomacyChange = __instance.Diplomacy[i];
                                     diplomacyChange.Value /= 2;
+                                    __instance.Diplomacy[i] = diplomacyChange;
+
+                                }
+                            }
+                        }
+                    }
+
+                    else if (CheckGeoscapeSpecialDifficultySettings(controller) == 2)
+                    {
+                        if (__instance.Diplomacy.Count > 0)
+                        {
+                            for (int i = 0; i < __instance.Diplomacy.Count; i++)
+                            {
+                                if (__instance.Diplomacy[i].TargetFaction == PhoenixFaction && __instance.Diplomacy[i].Value >= 0)
+                                {
+                                    TFTVLogger.Always("Applying Etermes difficulty.  Reverting to original value for event " + eventID + ". Current diplo reward is " + __instance.Diplomacy[i].Value +
+                                        ". Original diplomacy value is " + __instance.Diplomacy[i].Value * 2);
+                                    OutcomeDiplomacyChange diplomacyChange = __instance.Diplomacy[i];
+                                    diplomacyChange.Value *= 2;
                                     __instance.Diplomacy[i] = diplomacyChange;
 
                                 }
@@ -279,7 +319,7 @@ namespace TFTV
 
                         }
                     }
-                    else if (CheckGeoscapeSpecialDifficultySettings(controller) == 1)
+                    if (CheckGeoscapeSpecialDifficultySettings(controller) == 1)
                     {
                         for (int i = 0; i < __instance.Resources.Count; i++)
                         {
@@ -495,6 +535,26 @@ namespace TFTV
                         }
                     }
 
+                    if (CheckGeoscapeSpecialDifficultySettings(geoLevel) == 2)
+                    {
+                        if (__instance.DiplomacyToFaction.Min > 0)
+                        {
+                            GeoFaction viewerFaction = mission.Site.GeoLevel.ViewerFaction;
+                            GeoFaction faction = geoLevel.GetFaction(__instance.ToFaction);
+                            rewardDescription.SetDiplomacyChange(faction, viewerFaction, Mathf.RoundToInt(__instance.DiplomacyToFaction.RandomValue() * 0.5f));
+                            TFTVLogger.Always("In preview, applying Etermes settings. Original diplo reward from mission " + mission.MissionName.LocalizeEnglish() + " was at the least " + __instance.DiplomacyToFaction.Min
+                               + "; now it is at the least  " + __instance.DiplomacyToFaction.Min * 0.5f);
+                        }
+                        else
+                        {
+                            GeoFaction viewerFaction = mission.Site.GeoLevel.ViewerFaction;
+                            GeoFaction faction = geoLevel.GetFaction(__instance.ToFaction);
+                            rewardDescription.SetDiplomacyChange(faction, viewerFaction, Mathf.RoundToInt(__instance.DiplomacyToFaction.RandomValue() * 2f));
+                            TFTVLogger.Always("In preview, applying Etermes settings. Original diplo reward from mission " + mission.MissionName.LocalizeEnglish() + " was at the least " + __instance.DiplomacyToFaction.Min
+                               + "; now it is at the least  " + __instance.DiplomacyToFaction.Min * 2f);
+                        }
+                    }
+
 
 
                     if (TFTVVoidOmens.CheckFordVoidOmensInPlay(geoLevel).Contains(2))
@@ -544,6 +604,26 @@ namespace TFTV
                             rewardDescription.SetDiplomacyChange(faction, viewerFaction, Mathf.RoundToInt(__instance.DiplomacyToFaction.Min * 0.5f));
                             TFTVLogger.Always("Applying Easy Geoscape settings. Original diplo reward from mission " + mission.MissionName.LocalizeEnglish() + " was at the least " + __instance.DiplomacyToFaction.Min
                                + "; now it is at the least  " + __instance.DiplomacyToFaction.Min * 0.5f);
+                        }
+                    }
+
+                    if (CheckGeoscapeSpecialDifficultySettings(geoLevel) == 2)
+                    {
+                        if (__instance.DiplomacyToFaction.Min > 0)
+                        {
+                            GeoFaction viewerFaction = mission.Site.GeoLevel.ViewerFaction;
+                            GeoFaction faction = geoLevel.GetFaction(__instance.ToFaction);
+                            rewardDescription.SetDiplomacyChange(faction, viewerFaction, Mathf.RoundToInt(__instance.DiplomacyToFaction.RandomValue() * 0.5f));
+                            TFTVLogger.Always("Applying Etermes settings. Original diplo reward from mission " + mission.MissionName.LocalizeEnglish() + " was at the least " + __instance.DiplomacyToFaction.Min
+                               + "; now it is at the least  " + __instance.DiplomacyToFaction.Min * 0.5f);
+                        }
+                        else
+                        {
+                            GeoFaction viewerFaction = mission.Site.GeoLevel.ViewerFaction;
+                            GeoFaction faction = geoLevel.GetFaction(__instance.ToFaction);
+                            rewardDescription.SetDiplomacyChange(faction, viewerFaction, Mathf.RoundToInt(__instance.DiplomacyToFaction.Min * 2f));
+                            TFTVLogger.Always("Applying Etermes settings. Original diplo reward from mission " + mission.MissionName.LocalizeEnglish() + " was at the least " + __instance.DiplomacyToFaction.Min
+                               + "; now it is at the least  " + __instance.DiplomacyToFaction.Min * 2f);
                         }
                     }
 
