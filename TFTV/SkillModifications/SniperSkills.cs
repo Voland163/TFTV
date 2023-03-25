@@ -14,6 +14,7 @@ using PhoenixPoint.Tactical.Entities.Weapons;
 using System;
 using System.Linq;
 using TFTV;
+using TFTV.Tactical.Entities.DamageKeywords;
 using UnityEngine;
 
 namespace PRMBetterClasses.SkillModifications
@@ -48,24 +49,44 @@ namespace PRMBetterClasses.SkillModifications
         private static void Change_ArmourBreak()
         {
             ApplyStatusAbilityDef armourBreak = DefCache.GetDef<ApplyStatusAbilityDef>("ArmourBreak_AbilityDef");
-            armourBreak.WillPointCost = 2.0f;
-            armourBreak.ViewElementDef.Description.LocalizationKey = "PR_BC_ARMOR_BREAK_DESC"; // new LocalizedTextBind("Next shot has 15 shred but -25% damage", TFTVMain.Main.Settings.DoNotLocalizeChangedTexts);
-            AddAttackBoostStatusDef armourBreakShredMod = armourBreak.StatusDef as AddAttackBoostStatusDef;
-            armourBreakShredMod.DamageKeywordPairs[0].Value = 15.0f;
-            StanceStatusDef armourBreakDamageReduction = Helper.CreateDefFromClone( // Borrow status from Sneak Attack for damage reduction
-                DefCache.GetDef<StanceStatusDef>("E_SneakAttackStatus [SneakAttack_AbilityDef]"),
-                "e0dcd2aa-0262-41ff-9be0-c7671a6a11e0",
-                "E_DamageReductionStatus [ArmourBreak_AbilityDef]");
-            armourBreakDamageReduction.EffectName = "ArmourBreak";
-            armourBreakDamageReduction.DurationTurns = 0;
-            armourBreakDamageReduction.SingleInstance = true;
-            armourBreakDamageReduction.VisibleOnHealthbar = TacStatusDef.HealthBarVisibility.Hidden;
-            armourBreakDamageReduction.VisibleOnStatusScreen = 0;
-            armourBreakDamageReduction.Visuals = armourBreak.ViewElementDef;
-            armourBreakDamageReduction.StatModifications[0].Value = 0.75f;
-            armourBreakShredMod.AdditionalStatusesToApply = new TacStatusDef[] { armourBreakDamageReduction };
+            armourBreak.WillPointCost = 3.0f;
+            armourBreak.ViewElementDef.Description.LocalizationKey = "PR_BC_ARMOR_BREAK_DESC";
+            // Get status for damage keyword manipulation
+            AddAttackBoostStatusDef armourBreakStatus = armourBreak.StatusDef as AddAttackBoostStatusDef;
+            armourBreakStatus.WeaponTagFilter = DefCache.GetDef<GameTagDef>("GunWeapon_TagDef");
+            // Create new damage keyword
+            ArmourBreakDamageKeywordDataDef armourBreakDamageKeyword = Helper.CreateDefFromClone<ArmourBreakDamageKeywordDataDef>(
+                null,
+                "09EE6453-5D9E-4635-8BD1-F3980C3A1A99",
+                "ArmourBreak_DamageKeywordDataDef");
+            Helper.CopyFieldsByReflection(armourBreakStatus.DamageKeywordPairs.First().DamageKeywordDef, armourBreakDamageKeyword);
+            armourBreakDamageKeyword.DistributeShredAcrossBurst = true;
+            armourBreakDamageKeyword.ShredIsAdditive = true;
+            // Set newly created damage keyword back to status
+            armourBreakStatus.DamageKeywordPairs = new DamageKeywordPair[] //[0].Value = 15.0f;
+            {
+                new DamageKeywordPair()
+                {
+                    DamageKeywordDef = armourBreakDamageKeyword,
+                    Value = 15
+                }
+            };
             // Fix to prevent that the skill can be used more than once without shooting, vanilla bug!
             armourBreak.DisablingStatuses = new StatusDef[] { armourBreak.StatusDef };
+
+            // OLD STUFF!
+            //StanceStatusDef armourBreakDamageReduction = Helper.CreateDefFromClone( // Borrow status from Sneak Attack for damage reduction
+            //    DefCache.GetDef<StanceStatusDef>("E_SneakAttackStatus [SneakAttack_AbilityDef]"),
+            //    "e0dcd2aa-0262-41ff-9be0-c7671a6a11e0",
+            //    "E_DamageReductionStatus [ArmourBreak_AbilityDef]");
+            //armourBreakDamageReduction.EffectName = "ArmourBreak";
+            //armourBreakDamageReduction.DurationTurns = 0;
+            //armourBreakDamageReduction.SingleInstance = true;
+            //armourBreakDamageReduction.VisibleOnHealthbar = TacStatusDef.HealthBarVisibility.Hidden;
+            //armourBreakDamageReduction.VisibleOnStatusScreen = 0;
+            //armourBreakDamageReduction.Visuals = armourBreak.ViewElementDef;
+            //armourBreakDamageReduction.StatModifications[0].Value = 0.75f;
+            //armourBreakStatus.AdditionalStatusesToApply = new TacStatusDef[] { armourBreakDamageReduction };
         }
 
         private static void Change_Gunslinger()

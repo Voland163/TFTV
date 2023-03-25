@@ -371,80 +371,10 @@ namespace TFTV
 
         }
 
-        //Method to make adjustments if LOTA rework is active
-        public static void AncientsOnGeoscapeStartChecks(GeoLevelController controller)
-        {
-            try
-            {
-                if (controller.EventSystem.GetVariable("NewGameStarted") == 1)
-                {
-                    CheckAncientResources(controller);
-                    CheckResearchState(controller);
-                }
+       
 
-            }
-
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-        }
-
-        //Adjusts amount of exotic resources 
-        public static void CheckAncientResources(GeoLevelController controller)
-        {
-            try
-            {
-
-                TFTVConfig config = TFTVMain.Main.Config;
-
-                ResourceMissionOutcomeDef crystalHarvest = DefCache.GetDef<ResourceMissionOutcomeDef>("AncientsHarvestCrystalMissionOutcomeDef");
-                ResourceMissionOutcomeDef orichalcumHarvest = DefCache.GetDef<ResourceMissionOutcomeDef>("AncientsHarvestOrichalcumMissionOutcomeDef");
-                ResourceMissionOutcomeDef proteanHarvest = DefCache.GetDef<ResourceMissionOutcomeDef>("AncientsHarvestProteanMissionOutcomeDef");
-
-                float ResourceMultiplier = (6 - controller.CurrentDifficultyLevel.Order) * 0.5f;
-
-                // TFTVLogger.Always("Resouce multiplier based on diffuclty " + ResourceMultiplier.ToString());
-
-                // TFTVLogger.Always("Exotic Resource multiplier in config " + config.amountOfExoticResources.ToString());
-
-                if (config.amountOfExoticResources != 1)
-                {
-
-                    ResourceMultiplier = config.amountOfExoticResources;
-
-                }
-
-                TFTVLogger.Always("Final exotic Resource Multiplier: " + ResourceMultiplier.ToString());
-
-                float amountLivingCrystal = 300 * ResourceMultiplier;
-                float amountOrichalcum = 250 * ResourceMultiplier;
-                float amountProtean = 250 * ResourceMultiplier;
-
-                crystalHarvest.Resources.Values = new List<ResourceUnit>() {
-                    new ResourceUnit { Type = ResourceType.LivingCrystals, Value = amountLivingCrystal*0.5f }
-                };
-                orichalcumHarvest.Resources.Values = new List<ResourceUnit>() {
-                    new ResourceUnit { Type = ResourceType.Orichalcum, Value = amountOrichalcum*0.5f}
-                };
-                proteanHarvest.Resources.Values = new List<ResourceUnit>()
-                { new ResourceUnit { Type = ResourceType.ProteanMutane, Value = amountProtean*0.5f}
-                };
-
-                DefCache.GetDef<CustomMissionTypeDef>("CrystalsRefineryAttack_Ancient_CustomMissionTypeDef").Outcomes[0].Outcomes[1] = crystalHarvest;
-                DefCache.GetDef<CustomMissionTypeDef>("OrichalcumRefineryAttack_Ancient_CustomMissionTypeDef").Outcomes[0].Outcomes[1] = orichalcumHarvest;
-                DefCache.GetDef<CustomMissionTypeDef>("ProteanRefineryAttack_Ancient_CustomMissionTypeDef").Outcomes[0].Outcomes[1] = proteanHarvest;
-
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-
-
-        }
-
-        public static void CheckResearchState(GeoLevelController controller)
+  
+        public static void AncientsCheckResearchState(GeoLevelController controller)
         {
             try
             {
@@ -745,9 +675,12 @@ namespace TFTV
 
                     if (controller.EventSystem.GetVariable("NewGameStarted") == 1)
                     {
+                      //  TFTVLogger.Always("Set resources, got here");
 
                         foreach (ResourceUnit resourceUnit in reward)
                         {
+                          //  TFTVLogger.Always($"{resourceUnit.Type} {resourceUnit.Value}");
+
                             if (resourceUnit.Type == ResourceType.ProteanMutane)
                             {
                                 UIModuleInfoBar uIModuleInfoBar = (UIModuleInfoBar)UnityEngine.Object.FindObjectOfType(typeof(UIModuleInfoBar));
@@ -807,6 +740,7 @@ namespace TFTV
                             }
                             else if (resourceUnit.Type == ResourceType.Orichalcum)
                             {
+                                TFTVLogger.Always("Orichalcum, got here");
                                 UIModuleInfoBar uIModuleInfoBar = (UIModuleInfoBar)UnityEngine.Object.FindObjectOfType(typeof(UIModuleInfoBar));
 
                                 Resolution resolution = Screen.currentResolution;
@@ -821,8 +755,9 @@ namespace TFTV
 
                                 Transform exoticResourceIconCopy = UnityEngine.Object.Instantiate(exoticResourceIcon, __instance.ResourcesRewardsParentObject.transform);
                                 Transform exoticResourceTextCopy = UnityEngine.Object.Instantiate(exoticResourceText, __instance.ResourcesRewardsParentObject.transform);
-
+                               // TFTVLogger.Always($"{reward.Values[0].Value}");
                                 exoticResourceTextCopy.GetComponent<Text>().text = reward.Values[0].Value.ToString();
+                              //  TFTVLogger.Always($"{exoticResourceTextCopy.GetComponent<Text>().text}");
                                 //DefCache.GetDef<ResourceMissionOutcomeDef>("AncientsHarvestOrichalcumMissionOutcomeDef").Resources[0].Value.ToString();
                                 exoticResourceTextCopy.SetParent(exoticResourceIconCopy);
                                 exoticResourceIconCopy.localScale = new Vector3(1.5f, 1.5f, 1f);
@@ -1006,7 +941,7 @@ namespace TFTV
                                     //triggers Digitize my Dreams, the Cyclops said event
                                     GeoscapeEventContext context = new GeoscapeEventContext(controller.AlienFaction, controller.PhoenixFaction);
                                     controller.EventSystem.TriggerGeoscapeEvent("Cyclops_Dreams", context);
-                                    CheckResearchState(controller);
+                                    AncientsCheckResearchState(controller);
                                 }
                                 GameTagDef lcGuardian = DefCache.GetDef<GameTagDef>("LivingCrystalGuardianGameTagDef");
                                 GameTagDef oGuardian = DefCache.GetDef<GameTagDef>("OrichalcumGuardianGameTagDef");

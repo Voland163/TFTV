@@ -1,15 +1,18 @@
-﻿using Base.Core;
+﻿using Base.AI.Defs;
+using Base.Core;
 using Base.Defs;
 using Base.Entities.Abilities;
 using Base.UI;
 using HarmonyLib;
+using Newtonsoft.Json.Linq;
 using PhoenixPoint.Common.Core;
+using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.UI;
 using PhoenixPoint.Geoscape.Entities.Research;
 using PhoenixPoint.Geoscape.Entities.Research.Requirement;
+using PhoenixPoint.Tactical.AI.Actions;
 using PhoenixPoint.Tactical.AI.Considerations;
-using PhoenixPoint.Tactical.AI.TargetGenerators;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.Animations;
@@ -20,7 +23,9 @@ using PhoenixPoint.Tactical.Entities.Statuses;
 using PhoenixPoint.Tactical.Entities.Weapons;
 using PhoenixPoint.Tactical.View.ViewControllers;
 using PhoenixPoint.Tactical.View.ViewModules;
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using TFTV;
 using UnityEngine;
@@ -38,6 +43,8 @@ namespace PRMBetterClasses.VariousAdjustments
         {
             SharedData shared = GameUtl.GameComponent<SharedData>();
 
+            // Deny to demmolish the Access Lift
+            Change_AccessLift();
             // Bash: Increase damage to weapon from 0,45 to 0,6
             Change_BashWeaponDamage();
             // Fix Regen Torso to also regenerate health in vehicles
@@ -80,6 +87,11 @@ namespace PRMBetterClasses.VariousAdjustments
             Change_VidarGL(shared);
             // Destiny III - Give chance to fumble when non-proficient
             Change_Destiny();
+        }
+
+        private static void Change_AccessLift()
+        {
+            DefCache.GetDef<PhoenixFacilityDef>("AccessLift_PhoenixFacilityDef").CannotDemolish = true;
         }
 
         private static void Change_BashWeaponDamage()
@@ -150,7 +162,7 @@ namespace PRMBetterClasses.VariousAdjustments
             ExistingResearchRequirementDef advMeleeResearchRequirement1 = DefCache.GetDef<ExistingResearchRequirementDef>("PX_StunRodTech_ResearchDef_ExistingResearchRequirementDef_1");
             advMeleeResearchRequirement1.ResearchID = "SYN_AdvancedDisableTech_ResearchDef";
 
-            // Advanced acid tech
+            // Advanced acid tech, adding an additional requirement
             ExistingResearchRequirementDef advAcidResearchRequirement1 = Helper.CreateDefFromClone(
                 DefCache.GetDef<ExistingResearchRequirementDef>("PX_AdvancedAcidTech_ResearchDef_ExistingResearchRequirementDef_0"),
                 "6C04D135-7609-40F6-AC08-09832817ED20",
@@ -239,6 +251,12 @@ namespace PRMBetterClasses.VariousAdjustments
 
         private static void Change_VariousBionics()
         {
+            // Restrict Rocket Leap ability to 2 uses per turn
+            TacticalAbilityDef rocketLeap = DefCache.GetDef<TacticalAbilityDef>("Exo_Leap_AbilityDef");
+            rocketLeap.UsesPerTurn = 2;
+            rocketLeap.WillPointCost = 3f;
+            //rocketLeap.TargetingDataDef.Origin.Range = 12;
+
             // Juggernaut Torso & Armadillo Legs: Speed -1 -> 0
             BodyPartAspectDef juggTorsoAspect = DefCache.GetDef<BodyPartAspectDef>("E_BodyPartAspect [NJ_Jugg_BIO_Torso_BodyPartDef]");
             BodyPartAspectDef juggLegsAspect = DefCache.GetDef<BodyPartAspectDef>("E_BodyPartAspect [NJ_Jugg_BIO_Legs_ItemDef]");
@@ -360,7 +378,6 @@ namespace PRMBetterClasses.VariousAdjustments
                 launcher.CompatibleAmmunition = new TacticalItemDef[] { sharedFreeReloadAmmo };
             }
         }
-
         public static void Change_VariousWeapons(SharedData shared)
         {
             // defining variables
@@ -391,7 +408,28 @@ namespace PRMBetterClasses.VariousAdjustments
                     //case "f72e9df8-2c13-6ba4-e9b8-444dfda1b19a": // FS_LightSniperRifle_WeaponDef
                     //    weaponDef.HandsToUse = 1;
                     //    break;
-             
+                    // Rebuke, add piercing scrap shred
+                   
+                    case "831be08f-d0d7-2764-4833-02ce83ff7277": // AC_Rebuke_WeaponDef
+                        if (config.impossibleWeaponsAdjustments)
+                        {
+                            //weaponDef.DamagePayload.DamageKeywords.Find(dkp => dkp.DamageKeywordDef == damageKeywords.ShreddingKeyword).Value = 1;
+                            // Remove shredding
+                            _ = weaponDef.DamagePayload.DamageKeywords.RemoveAll(dkp => dkp.DamageKeywordDef == damageKeywords.ShreddingKeyword);
+                            weaponDef.DamagePayload.ArmourShred = 0;
+                            weaponDef.DamagePayload.ArmourShredProbabilityPerc = 0;
+                            //weaponDef.DamagePayload.DamageKeywords.Find(dkp => dkp.DamageKeywordDef == damageKeywords.BlastKeyword).Value = 10;
+                            //weaponDef.DamagePayload.DamageKeywords.Add(new DamageKeywordPair { DamageKeywordDef = damageKeywords.PiercingKeyword, Value = 25 });
+                            //weaponDef.DamagePayload.ProjectilesPerShot = 10;
+                            //weaponDef.DamagePayload.ParabolaHeightToLengthRatio = 0.5f;
+                            //weaponDef.DamagePayload.AoeRadius = 3f;
+                            //weaponDef.DamagePayload.Range = 30.0f;
+                            //weaponDef.DamagePayload.BodyPartMultiplier = 2;
+                            //weaponDef.DamagePayload.ObjectMultiplier = 10;
+                            //weaponDef.SpreadRadius = 6f;
+                        }
+                            break;
+                        
                     // Danchev MG
                     case "434c4004-580f-10a4-995a-c5a64e6998dc": // PX_PoisonMachineGun_WeaponDef
                         weaponDef.DamagePayload.DamageKeywords.Add(new DamageKeywordPair { DamageKeywordDef = damageKeywords.ShreddingKeyword, Value = 3 });

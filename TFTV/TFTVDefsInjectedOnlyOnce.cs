@@ -1,4 +1,5 @@
-﻿using Base.AI.Defs;
+﻿using Base;
+using Base.AI.Defs;
 using Base.Defs;
 using Base.Entities.Abilities;
 using Base.Entities.Effects;
@@ -11,14 +12,12 @@ using PhoenixPoint.Common.ContextHelp;
 using PhoenixPoint.Common.ContextHelp.HintConditions;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities;
-using PhoenixPoint.Common.Entities.Addons;
 using PhoenixPoint.Common.Entities.Characters;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.Entities.Items;
 using PhoenixPoint.Common.Levels.Missions;
 using PhoenixPoint.Common.UI;
-using PhoenixPoint.Common.View.ViewModules;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.Abilities;
 using PhoenixPoint.Geoscape.Entities.Interception;
@@ -32,13 +31,13 @@ using PhoenixPoint.Geoscape.Events.Eventus;
 using PhoenixPoint.Geoscape.Events.Eventus.Filters;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.ContextHelp.HintConditions;
-using PhoenixPoint.Geoscape.View.ViewModules;
 using PhoenixPoint.Tactical.AI.Actions;
 using PhoenixPoint.Tactical.AI.Considerations;
 using PhoenixPoint.Tactical.ContextHelp.HintConditions;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.DamageKeywords;
+using PhoenixPoint.Tactical.Entities.Effects;
 using PhoenixPoint.Tactical.Entities.Effects.ApplicationConditions;
 using PhoenixPoint.Tactical.Entities.Effects.DamageTypes;
 using PhoenixPoint.Tactical.Entities.Equipments;
@@ -49,7 +48,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using static Base.Audio.WwiseIDs;
 
 namespace TFTV
 {
@@ -105,8 +103,251 @@ namespace TFTV
             AddLoadingScreens();
             AddTips();
             ModifyCratesToAddArmor();
+            //   CreateMeleeChiron();
+            FixMyrmidonFlee();
             //  Testing();
+            ChangeBaseDefense();
+            CreateObjectivesBaseGames();
+            CreateCosmeticExplosion();
+            CreateHintsForBaseDefense();
+            CreateFireExplosion();
+            CreateBaseDefenseEvents();
         }
+
+        internal static void CreateHintsForBaseDefense()
+        {
+            try
+            {
+                MissionTypeTagDef baseDefenseMissionTag = DefCache.GetDef<MissionTypeTagDef>("MissionTypePhoenixBaseDefence_MissionTagDef");
+
+                TFTVTutorialAndStory.CreateNewManualTacticalHint("BaseDefenseUmbraStrat", "{B6B31D16-82B6-462D-A220-388447F2C9D8}", "BASEDEFENSE_UMBRASTRAT_TITLE", "BASEDEFENSE_UMBRASTRAT_TEXT");
+                TFTVTutorialAndStory.CreateNewManualTacticalHint("BaseDefenseWormsStrat", "{1CA6F9FB-BD41-430B-A4BF-04867245BEBF}", "BASEDEFENSE_WORMSSTRAT_TITLE", "BASEDEFENSE_WORMSSTRAT_TEXT");
+                TFTVTutorialAndStory.CreateNewManualTacticalHint("BaseDefenseForce2Strat", "{22DF1F91-2D1A-4F34-AD9A-E9881E60CCD5}", "BASEDEFENSE_FORCE2STRAT_TITLE", "BASEDEFENSE_FORCE2STRAT_TEXT");
+                TFTVTutorialAndStory.CreateNewTacticalHint("TFTVBaseDefense", HintTrigger.MissionStart, baseDefenseMissionTag.name, "BASEDEFENSE_TACTICAL_ADVANTAGE_TITLE", "BASEDEFENSE_TACTICAL_ADVANTAGE_DESCRIPTION", 3, false, "{DB7CF4DE-D59F-4990-90AE-4C0B43550468}");
+                /*TFTVTutorialAndStory.CreateNewManualTacticalHint("BaseDefenseInfestation", "{34A92A89-DECF-45F2-82E5-52E1D721A1B3}", "BASEDEFENSE_INFESTATION_TITLE", "BASEDEFENSE_INFESTATION_DESCRIPTION");
+                TFTVTutorialAndStory.CreateNewManualTacticalHint("BaseDefenseNesting", "{34A92A89-DECF-45F2-82E5-52E1D721A1B3}", "BASEDEFENSE_NESTING_TITLE ", "BASEDEFENSE_NESTING_DESCRIPTION");
+                TFTVTutorialAndStory.CreateNewManualTacticalHint("BaseDefenseTacticalAdvantage", "{34A92A89-DECF-45F2-82E5-52E1D721A1B3}", "BASEDEFENSE_TACTICAL_ADVANTAGE_TITLE", "BASEDEFENSE_TACTICAL_ADVANTAGE_DESCRIPTION"); */
+                ContextHelpHintDef baseDefenseStartHint = DefCache.GetDef<ContextHelpHintDef>("TFTVBaseDefense");
+                baseDefenseStartHint.AnyCondition = true;
+
+                TFTVTutorialAndStory.CreateNewManualTacticalHint("BaseDefenseVenting", "{AE6CE201-816F-4363-A80E-5CD07D8263CF}", "BASEDEFENSE_VENTING_TITLE", "BASEDEFENSE_VENTING_TEXT");
+
+
+
+            }
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+        }
+
+
+        internal static void CreateFireExplosion()
+        {
+            try
+            {
+                SpawnTacticalVoxelEffectDef spawnFire = Helper.CreateDefFromClone<SpawnTacticalVoxelEffectDef>(null, "{96C92F1C-CA61-4FB3-8147-809ED0E70108}", "FireVoxelSpawnerEffect");
+                spawnFire.ApplicationConditions = new EffectConditionDef[] { };
+                spawnFire.SpawnDelay = 2f;
+                spawnFire.Radius = 2;
+                spawnFire.TacticalVoxelType = PhoenixPoint.Tactical.Levels.Mist.TacticalVoxelType.Fire;
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+
+        internal static void CreateCosmeticExplosion()
+        {
+            try
+            {
+                string name = "FakeExplosion_ExplosionEffectDef";
+                string gUIDDelayedEffect = "{82F49470-B14D-4C73-8B91-9D3EEE7CCB44}";
+                DelayedEffectDef sourceDelayedEffect = DefCache.GetDef<DelayedEffectDef>("ExplodingBarrel_ExplosionEffectDef");
+                DelayedEffectDef newDelayedEffect = Helper.CreateDefFromClone(sourceDelayedEffect, gUIDDelayedEffect, name);
+                newDelayedEffect.SecondsDelay = 0.2f;
+
+                string gUIDExplosionEffect = "{8054419B-6410-47A4-8BD5-C2CC5A4B8B62}";
+                ExplosionEffectDef sourceExplosionEffect = DefCache.GetDef<ExplosionEffectDef>("E_ShrapnelExplosion [ExplodingBarrel_ExplosionEffectDef]");
+                ExplosionEffectDef newExplosionEffect = Helper.CreateDefFromClone(sourceExplosionEffect, gUIDExplosionEffect, name);
+
+
+                //  SpawnVoxelDamageTypeEffectDef mistDamage = DefCache.GetDef<SpawnVoxelDamageTypeEffectDef>("Goo_SpawnVoxelDamageTypeEffectDef");
+
+                string gUIDDamageEffect = "{CD3D8BC8-C90D-40A6-BBA3-0FD7FE629F15}";
+                DamageEffectDef sourceDamageEffect = DefCache.GetDef<DamageEffectDef>("E_DamageEffect [ExplodingBarrel_ExplosionEffectDef]");
+                DamageEffectDef newDamageEffect = Helper.CreateDefFromClone(sourceDamageEffect, gUIDDamageEffect, name);
+                newDamageEffect.MinimumDamage = 1;
+                newDamageEffect.MaximumDamage = 1;
+                newDamageEffect.ObjectMultiplier = 100000f;
+                newDamageEffect.ArmourShred = 0;
+                newDamageEffect.ArmourShredProbabilityPerc = 0;
+                //  newDamageEffect.DamageTypeDef = mistDamage;
+                newExplosionEffect.DamageEffect = newDamageEffect;
+                newDelayedEffect.EffectDef = newExplosionEffect;
+
+                newDelayedEffect.SecondsDelay = 0.5f;
+
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+
+        public static void CreateBaseDefenseEvents()
+        {
+            try
+            {
+                TFTVCommonMethods.CreateNewEvent("OlenaBaseDefense", "BASEDEFENSE_EVENT_TITLE", "BASEDEFENSE_EVENT_TEXT", null);
+
+              
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+
+        }
+
+
+        public static void CreateObjectivesBaseGames()
+        {
+            try
+            {
+                KillActorFactionObjectiveDef killActorFactionObjectiveSource = DefCache.GetDef<KillActorFactionObjectiveDef>("E_KillSentinels [Nest_AlienBase_CustomMissionTypeDef]");
+
+                string nameMainObjective = "PhoenixBaseInfestation";
+                GameTagDef source = DefCache.GetDef<GameTagDef>("Takeshi_Tutorial3_GameTagDef");
+                GameTagDef gameTagMainObjective = Helper.CreateDefFromClone(
+                    source,
+                    "{B42E4079-EDC6-4E7A-9720-8F8839FCD3CE}",
+                    nameMainObjective + "_GameTagDef");
+
+                KillActorFactionObjectiveDef killInfestation = Helper.CreateDefFromClone(killActorFactionObjectiveSource, "5BDA1D39-80A8-4EB8-A34F-92FB08AF2CB5", nameMainObjective);
+                killInfestation.MissionObjectiveData.Description.LocalizationKey = "BASEDEFENSE_INFESTATION_OBJECTIVE";
+                killInfestation.MissionObjectiveData.Summary.LocalizationKey = "BASEDEFENSE_INFESTATION_OBJECTIVE";
+                killInfestation.KillTargetGameTag = gameTagMainObjective;
+
+
+                string nameSecondObjective = "ScatterRemainingAttackers";
+                GameTagDef gameTagSecondObjective = Helper.CreateDefFromClone(
+                    source,
+                    "{ADACF6A2-A969-4518-AD36-C94D1A1C6A82}",
+                    nameSecondObjective + "_GameTagDef");
+                KillActorFactionObjectiveDef secondKillAll = Helper.CreateDefFromClone(killActorFactionObjectiveSource, "{B7BB4BFF-E7DC-4FD1-A307-FF348FC87946}", nameSecondObjective);
+                secondKillAll.KillTargetGameTag = gameTagSecondObjective;
+                secondKillAll.MissionObjectiveData.Description.LocalizationKey = "BASEDEFENSE_SECOND_OBJECTIVE";
+                secondKillAll.MissionObjectiveData.Summary.LocalizationKey = "BASEDEFENSE_SECOND_OBJECTIVE";
+                killInfestation.NextOnSuccess = new FactionObjectiveDef[] { secondKillAll };
+
+            }
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+
+        public static void ChangeBaseDefense()
+        {
+            try
+            {
+                CustomMissionTypeDef baseDefenseMissionTypeDef = DefCache.GetDef<CustomMissionTypeDef>("PXBaseAlien_CustomMissionTypeDef");
+                baseDefenseMissionTypeDef.MandatoryMission = true;
+                baseDefenseMissionTypeDef.SkipDeploymentSelection = false;
+                //  baseDefenseMissionTypeDef.ClearMissionOnCancel = false;
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+        }
+
+        public static void FixMyrmidonFlee()
+        {
+            try
+            {
+                AIActionsTemplateDef swarmerAI = DefCache.GetDef<AIActionsTemplateDef>("Swarmer_AIActionsTemplateDef");
+                AIActionDef flee = DefCache.GetDef<AIActionDef>("Flee_AIActionDef");
+
+                List<AIActionDef> aIActionDefs = new List<AIActionDef>(swarmerAI.ActionDefs)
+                {
+                    flee
+                };
+                swarmerAI.ActionDefs = aIActionDefs.ToArray();
+
+                TacticalActorDef swarmer = DefCache.GetDef<TacticalActorDef>("Swarmer_ActorDef");
+
+                ExitMissionAbilityDef exitMissionAbilityDef = DefCache.GetDef<ExitMissionAbilityDef>("ExitMission_AbilityDef");
+
+
+                List<AbilityDef> abilityDefs = new List<AbilityDef>();
+                abilityDefs = swarmer.Abilities.ToList();
+                abilityDefs.Add(exitMissionAbilityDef);
+                swarmer.Abilities = abilityDefs.ToArray();
+
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+
+        public static void CreateMeleeChiron()
+        {
+            try
+
+
+            {
+
+                // TacticalItemDef sourceHead =DefCache.GetDef<TacticalItemDef>("Crabman_Head_Humanoid_BodyPartDef");
+                //  TacticalItemDef newHead = Helper.CreateDefFromClone(sourceHead, "{A322DA22-7ED0-49D9-9F32-C4127351ABD3}", "NewChironHead");
+
+
+
+                // newHead.RequiredSlotBinds[0].RequiredSlot = DefCache.GetDef<ItemSlotDef>("Chiron_Head_SlotDef");
+
+
+                TacCharacterDef source = DefCache.GetDef<TacCharacterDef>("Chiron2_FireWormHeavy_AlienMutationVariationDef");
+                string name = "MeleeChiron";
+                string gUID = "{95AA563B-4EC8-4232-BB7D-A35765AD2055}";
+
+                TacCharacterDef newChiron = Helper.CreateDefFromClone(source, gUID, name);
+                newChiron.SpawnCommandId = "MeleeChiron";
+                List<ItemDef> bodyParts = newChiron.Data.BodypartItems.ToList();
+
+                bodyParts.RemoveLast();
+                //    bodyParts.Add(DefCache.GetDef<WeaponDef>("Chiron_Abdomen_Mortar_WeaponDef"));
+                //  bodyParts[0] = newHead; 
+                //   bodyParts.Add(DefCache.GetDef<TacticalItemDef>("Crabman_Carapace_BodyPartDef"));
+                newChiron.Data.BodypartItems = bodyParts.ToArray();
+
+
+
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+
+
+        }
+
 
         public static void ModifyCratesToAddArmor()
         {
@@ -178,10 +419,10 @@ namespace TFTV
                 DefCache.GetDef<ItemDef>("AN_Priest_Torso_BodyPartDef"),
                 DefCache.GetDef<ItemDef>("AN_Priest_Legs_AZ_ItemDef"),
                 DefCache.GetDef<ItemDef>("AN_Priest_Torso_AZ_BodyPartDef"),
-                
+
                 };
-             
-                foreach (TacticalItemDef item in anuArmors) 
+
+                foreach (TacticalItemDef item in anuArmors)
                 {
                     item.CrateSpawnWeight = 200;
                     item.IsPickable = true;
@@ -207,7 +448,7 @@ namespace TFTV
 
                 }
 
-                
+
 
                 InventoryComponentDef anuCrates = DefCache.GetDef<InventoryComponentDef>("Crate_AN_InventoryComponentDef");
 
@@ -223,11 +464,11 @@ namespace TFTV
                 synCrates.ItemDefs.AddRangeToArray(synArmors.ToArray());
 
 
-               /* List<ItemDef> synCratesList = new List<ItemDef>();
-                synCratesList.AddRange(synCrates.ItemDefs.ToList());
-                synCratesList.AddRange(synArmors);
+                /* List<ItemDef> synCratesList = new List<ItemDef>();
+                 synCratesList.AddRange(synCrates.ItemDefs.ToList());
+                 synCratesList.AddRange(synArmors);
 
-                synCrates.ItemDefs = synCratesList.ToArray();*/
+                 synCrates.ItemDefs = synCratesList.ToArray();*/
 
                 /*   foreach(TacticalItemDef tacticalItemDef in Repo.GetAllDefs<TacticalItemDef>().Where(tid => tid.Tags.Contains(armourTag)))
                        {
@@ -2211,6 +2452,7 @@ namespace TFTV
                 TFTVLogger.Error(e);
             }
         }
+
         public static void CreateHints()
         {
             try

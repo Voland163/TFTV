@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using TFTV;
 using UnityEngine;
 
@@ -54,6 +55,25 @@ namespace PRMBetterClasses
             catch (Exception e)
             {
                 PRMLogger.Error(e);
+            }
+        }
+
+        /// <summary>
+        /// Copy fields of two objects of the same or derived classes by using reflection
+        /// </summary>
+        /// <param name="src">The source object</param>
+        /// <param name="dst">The destination object, can be an instance of a derived class of the source, all additional fields are skipped</param>
+        /// <param name="bindFlags"></param>
+        public static void CopyFieldsByReflection(object src, object dst, BindingFlags bindFlags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+        {
+            Type srcType = src.GetType();
+            foreach (FieldInfo dstFieldInfo in dst.GetType().GetFields(bindFlags))
+            {
+                FieldInfo srcField = srcType.GetField(dstFieldInfo.Name, bindFlags);
+                if (srcField != null)
+                {
+                    dstFieldInfo.SetValue(dst, srcField.GetValue(src));
+                }
             }
         }
 

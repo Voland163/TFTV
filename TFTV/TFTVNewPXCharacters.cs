@@ -358,7 +358,12 @@ namespace TFTV
                         __result.EventLeader = HelenaPic;
                         __result.EventBackground = Helper.CreateSpriteFromImageFile("background_cyclops.jpg"); 
                     }
-                   
+                    if (geoEvent.EventID.Equals("OlenaBaseDefense"))
+                    {
+                        __result.EventLeader = OlenaPic;
+                        __result.EventBackground = Helper.CreateSpriteFromImageFile("insidebase.jpg");
+                    }
+
                 }
                 catch (Exception e)
                 {

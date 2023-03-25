@@ -24,6 +24,7 @@ using PhoenixPoint.Tactical.Entities.Statuses;
 using PhoenixPoint.Tactical.Levels;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using TFTV;
@@ -38,6 +39,8 @@ namespace PRMBetterClasses.SkillModifications
 
         public static void ApplyChanges()
         {
+            // Die Hard: When you take lethal damage there is 50% to survive with 1HP and have all negative effects cleared and limbs restored. Can only trigger once per combat.
+            Create_DieHard();
             //OW Focus: Change icon to 'UI_AbilitiesIcon_EquipmentAbility_OverwatchFocus-2.png'
             Change_OWFocus();
             //Battle Hardened: Gain +2 to all primary stats, +10% to accuracy and +4 to perception
@@ -64,6 +67,183 @@ namespace PRMBetterClasses.SkillModifications
             Create_AR_Targeting();
             //Endurance: Create new with 'Recover Restores 75% WP (instead of 50%)', check cloning from 'RecoverWill_AbilityDef', icon to LargeIcon from 'Reckless_AbilityDef'
             Create_Endurance();
+        }
+
+        private static void Create_DieHard()
+        {
+            string skillName = "DieHard_AbilityDef";
+            Sprite icon = Helper.CreateSpriteFromImageFile("die_hard_2.png");
+            PassiveModifierAbilityDef source = DefCache.GetDef<PassiveModifierAbilityDef>("SniperTalent_AbilityDef");
+            PassiveModifierAbilityDef dieHard = Helper.CreateDefFromClone(
+                source,
+                "150776C9-CDE9-43A8-97C9-0676D1652736",
+                skillName);
+            dieHard.CharacterProgressionData = Helper.CreateDefFromClone(
+                source.CharacterProgressionData,
+                "3BB8CED0-452C-456B-921D-33F3E57D31C9",
+                skillName);
+            dieHard.ViewElementDef = Helper.CreateDefFromClone(
+                source.ViewElementDef,
+                "01CFDA81-0B2E-49A5-9A48-50BF0101977A",
+                skillName);
+            // reset all possible passive modifications, we need none, this ability is only to have something to chose and as flag for the below Harmony patch
+            dieHard.StatModifications = new ItemStatModification[0];
+            dieHard.ItemTagStatModifications = new EquipmentItemTagStatModification[0];
+            dieHard.DamageKeywordPairs = new DamageKeywordPair[0];
+            // Set necessary fields
+            dieHard.CharacterProgressionData.RequiredSpeed = 0;
+            dieHard.CharacterProgressionData.RequiredStrength = 0;
+            dieHard.CharacterProgressionData.RequiredWill = 0;
+            dieHard.ViewElementDef.DisplayName1.LocalizationKey = "PR_BC_DIE_HARD";
+            dieHard.ViewElementDef.Description.LocalizationKey = "PR_BC_DIE_HARD_DESC";
+            dieHard.ViewElementDef.LargeIcon = icon;
+            dieHard.ViewElementDef.SmallIcon = icon;
+
+            // Create a dummy status to have a persitent flag on the actor after Die Hard triggered to not have it trigger again in the current mission, see Harmony patch below
+            TacStatusDef dieHardTriggeredStatus = Helper.CreateDefFromClone<TacStatusDef>(null, "11F6B0E4-5238-4478-910F-F868D3AD768E", $"DieHard_TriggeredStatus");
+            dieHardTriggeredStatus.EffectName = "DieHard_TriggeredStatus";
+            dieHardTriggeredStatus.ExpireOnEndOfTurn = false; // never expires, once it is applied to the actor it should stay the whole mission
+            dieHardTriggeredStatus.ApplicationConditions = new EffectConditionDef[0];
+            dieHardTriggeredStatus.Visuals = Helper.CreateDefFromClone(
+                DefCache.GetDef<DamageMultiplierStatusDef>("BionicResistances_StatusDef").Visuals,
+                "202879CB-09C1-4F92-B426-5E5B1DAB6D95",
+                "E_Visuals [DieHard_TriggeredStatus]");
+            dieHardTriggeredStatus.Visuals.DisplayName1.LocalizationKey = "PR_BC_DIE_HARD_TRIGGERED";
+            dieHardTriggeredStatus.Visuals.Description.LocalizationKey = "PR_BC_DIE_HARD_TRIGGERED_DESC";
+            dieHardTriggeredStatus.Visuals.LargeIcon = icon;
+            dieHardTriggeredStatus.Visuals.SmallIcon = icon;
+            dieHardTriggeredStatus.ShowNotification = true;
+            dieHardTriggeredStatus.VisibleOnPassiveBar = true;
+            dieHardTriggeredStatus.VisibleOnHealthbar = TacStatusDef.HealthBarVisibility.AlwaysVisible;
+            dieHardTriggeredStatus.VisibleOnStatusScreen = TacStatusDef.StatusScreenVisibility.VisibleOnStatusesList;
+
+            // Create another dummy status to to make the actor invulnerable in the turn when Die Hard triggers, see Harmony patch below
+            TacStatusDef dieHardKeepAliveStatus = Helper.CreateDefFromClone(
+                dieHardTriggeredStatus,
+                "B10CF045-D686-4A8D-A359-9636CA6EA8BA",
+                $"DieHard_KeepAliveStatus");
+            dieHardKeepAliveStatus.EffectName = "DieHard_KeepAliveStatus";
+            dieHardKeepAliveStatus.DurationTurns = 0; // should only be active in the enemy turn when Die Hard triggered
+            dieHardKeepAliveStatus.ExpireOnEndOfTurn = true; // ^^
+            dieHardKeepAliveStatus.Visuals = Helper.CreateDefFromClone(
+                dieHardTriggeredStatus.Visuals,
+                "3433A8D1-DF3D-4FC3-92DA-3AF92EB835DC",
+                "E_Visuals [DieHard_KeepAliveStatus]");
+            dieHardKeepAliveStatus.Visuals.DisplayName1.LocalizationKey = "PR_BC_DIE_HARD_KEEPALIVE";
+            dieHardKeepAliveStatus.Visuals.Description.LocalizationKey = "PR_BC_DIE_HARD_KEEPALIVE_DESC";
+            dieHardKeepAliveStatus.ShowNotification = false;
+            dieHardKeepAliveStatus.VisibleOnHealthbar = default;
+            dieHardKeepAliveStatus.VisibleOnStatusScreen = default;
+
+            // Set static variables for the patch
+            TacticalActor_ApplyDamageInternal_Patch.DieHardAbilityDef = dieHard;
+            TacticalActor_ApplyDamageInternal_Patch.DieHardTriggeredStatus = dieHardTriggeredStatus;
+            TacticalActor_ApplyDamageInternal_Patch.DieHardKeepAliveStatus = dieHardKeepAliveStatus;
+        }
+        [HarmonyPatch(typeof(TacticalActor), "ApplyDamageInternal")]
+        public static class TacticalActor_ApplyDamageInternal_Patch
+        {
+            internal static AbilityDef DieHardAbilityDef { get; set; }
+            internal static TacStatusDef DieHardTriggeredStatus { get; set; }
+            internal static TacStatusDef DieHardKeepAliveStatus { get; set; }
+            internal static Shader Shader { get; } = DefCache.GetDef<StanceStatusDef>("E_VanishedStatus [Vanish_AbilityDef]").StanceShader;
+            internal static List<TacticalActorBase> DieHardActorsToKeepAlive { get; } = new List<TacticalActorBase>();
+            internal static bool OnFactionStartTurnSubscribed { get; set; } = false;
+            internal static GameTagDef ExcludeFromAiBlackboard { get; } = DefCache.GetDef<GameTagDef>("ExcludeFromAiBlackboard_TagDef");
+
+            public static void Prefix(TacticalActor __instance, ref DamageResult damageResult)
+            {
+                try
+                {
+                    if ((damageResult.Source as TacticalActor)?.TacticalFaction == __instance.TacticalFaction
+                        || damageResult.HealthDamage < __instance.Health
+                        || __instance.GetAbilityWithDef<Ability>(DieHardAbilityDef) == null
+                        || (__instance.HasStatus(DieHardTriggeredStatus) && !__instance.HasGameTag(ExcludeFromAiBlackboard)))
+                    {
+                        return;
+                    }
+                    if (!__instance.HasStatus(DieHardTriggeredStatus))
+                    {
+                        float overflowDamage = damageResult.HealthDamage - __instance.Health;
+                        float lowcap = 0;
+                        float highcap = 30;
+                        float lowcapThreshold = lowcap + (highcap * 0.1f);
+                        float highcapThreshold = highcap - (highcap * 0.1f);
+                        // clamp overflow damage to lowcap+threshold and highcap-threshold
+                        float clampedOverflowDamage = Mathf.Clamp(overflowDamage, lowcapThreshold, highcapThreshold);
+                        // roll from lowcap to highcap
+                        UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
+                        float roll = UnityEngine.Random.Range(0, highcap);
+                        // => if clamped overlow damage is below lowcapThreshold DH will trigger with 90% chance
+                        // => if clamped overlow damage is above highcapThreshold DH will trigger with 10% chance
+                        if (clampedOverflowDamage > roll)
+                        {
+                            PRMLogger.Always($"Die Hard for {__instance}: Clamped overflow damage ({clampedOverflowDamage}) > RNG roll ({roll}), actor has to die :-(");
+                            //return; // Don't trigger Die Hard, RNG was against the actor
+                        }
+                        PRMLogger.Always($"Die Hard for {__instance}: Clamped overflow damage ({clampedOverflowDamage}) <= RNG roll ({roll}), trigger DH, actor get another chance :-)");
+                        _ = __instance.Status.ApplyStatus(DieHardTriggeredStatus);
+                        _ = __instance.Status.ApplyStatus(DieHardKeepAliveStatus);
+                        _ = __instance.AddGameTags(new GameTagsList() { ExcludeFromAiBlackboard });
+                        __instance.SetSpecialShader(Shader);
+                        DieHardActorsToKeepAlive.Add(__instance);
+                        if (!OnFactionStartTurnSubscribed)
+                        {
+                            __instance.TacticalFaction.StartTurnEvent += OnFactionStartTurn;
+                            OnFactionStartTurnSubscribed = true;
+                        }
+                    }
+
+                    // Set damage value to actors HP -1 so he has 1 HP left
+                    damageResult.HealthDamage = __instance.Health.IntValue - 1;
+
+                    // Clear all effects, statuses, stat modifier if set
+                    damageResult.ActorEffects?.Clear();
+                    damageResult.ApplyStatuses?.Clear();
+                    damageResult.StatModifications?.Clear();
+                }
+                catch (Exception e)
+                {
+                    PRMLogger.Error(e);
+                }
+            }
+
+            private static void OnFactionStartTurn()
+            {
+                try
+                {
+                    if (DieHardActorsToKeepAlive.IsEmpty())
+                    {
+                        return;
+                    }
+                    // Unapply any existent DoT on the actor
+                    StatusDef[] statusesToRemove = new StatusDef[]
+                    {
+                        DieHardKeepAliveStatus,
+                        DefCache.GetDef<StatusDef>("Bleed_StatusDef"),
+                        DefCache.GetDef<StatusDef>("Poison_DamageOverTimeStatusDef"),
+                        DefCache.GetDef<StatusDef>("Paralysis_DamageOverTimeStatusDef"),
+                        DefCache.GetDef<StatusDef>("Acid_StatusDef"),
+                        DefCache.GetDef<StatusDef>("Infected_StatusDef"), // = virus applied
+                    };
+                    foreach (TacticalActorBase actor in DieHardActorsToKeepAlive)
+                    {
+                        actor.Status.UnapplyAllStatusesFiltered(status => statusesToRemove.Contains(status.BaseDef));
+                        (actor as TacticalActor)?.SetSpecialShader(null);
+                        _ = actor.RemoveGameTags(new GameTagsList() { ExcludeFromAiBlackboard });
+                        if (OnFactionStartTurnSubscribed)
+                        {
+                            actor.TacticalFaction.StartTurnEvent -= OnFactionStartTurn;
+                            OnFactionStartTurnSubscribed = false;
+                        }
+                    }
+                    DieHardActorsToKeepAlive.Clear();
+                }
+                catch (Exception e) 
+                {
+                    PRMLogger.Error(e);
+                }
+            }
         }
 
         private static void Create_Saboteur()
@@ -128,8 +308,8 @@ namespace PRMBetterClasses.SkillModifications
             // List of all abilities that should not get AP reduction
             List<TacticalAbilityDef> excludedAbilities = new List<TacticalAbilityDef>()
             {
-                DefCache.GetDef < TacticalAbilityDef >("Overwatch_AbilityDef"),
-                //Repo.GetAllDefs<TacticalAbilityDef>().FirstOrDefault(tad2 => tad2.name.Equals("RecoverWill_AbilityDef")),
+                DefCache.GetDef<TacticalAbilityDef>("Overwatch_AbilityDef"),
+                //DefCache.GetDef<TacticalAbilityDef>("RecoverWill_AbilityDef")
             };
 
             ChangeAbilitiesCostStatusDef noneAttackChangeAbilitiesCostStatus = Helper.CreateDefFromClone(
@@ -192,13 +372,12 @@ namespace PRMBetterClasses.SkillModifications
             punisher.ViewElementDef.LargeIcon = punisherIcon;
             punisher.ViewElementDef.SmallIcon = punisherIcon;
         }
-        // Harmony patch to check if an actor got killed by someone with the Punisker ability
+        // Harmony patch to check if an actor got killed by someone with the Punisher ability
         [HarmonyPatch(typeof(TacticalActor), "OnAnotherActorDeath")]
         public static class BC_TacticalActor_OnAnotherActorDeath_Patch
         {
             public static void Postfix(TacticalActor __instance, DeathReport death)
             {
-                DefRepository Repo = GameUtl.GameComponent<DefRepository>();
                 try
                 {
                     // Copy from original OnAnotherActorDeath method to catch some exceptions when this patch should also do nothing
@@ -222,6 +401,7 @@ namespace PRMBetterClasses.SkillModifications
                         TacticalFaction tacticalFaction = death.Actor.TacticalFaction;
                         if (death.Actor.TacticalFaction == __instance.TacticalFaction && __instance.CharacterStats != null && __instance.CharacterStats.WillPoints > 0)
                         {
+                            //TFTVLogger.Always($"Punisher -2 WP triggered for actor {__instance} from faction {__instance.TacticalFaction} because {death.Actor} from faction {death.Actor.TacticalFaction} got killed by {death.Killer}");
                             __instance.CharacterStats.WillPoints.Subtract(2);
                         }
                     }

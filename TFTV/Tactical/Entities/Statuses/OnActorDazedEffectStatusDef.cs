@@ -18,7 +18,9 @@ namespace TFTV.Tactical.Entities.Statuses
         public bool NeedAllTags;
         public bool DazedByApplicant = true;
         public float Range = float.PositiveInfinity;
-        public EffectDef EffectDef;
+        //public EffectDef EffectDef;
+        public float RestoreActionPointsFraction;
         public TacticalEventDef EventOnSuccessfulTrigger;
-	}
+        public int TriggerCount = 1;
+    }
 }

@@ -1,4 +1,5 @@
 using Base.Audio;
+using Base.Core;
 using Base.Serialization.General;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Geoscape.Core;
@@ -36,9 +37,8 @@ namespace TFTV
         public Dictionary<int, int[]> ProjectOsirisStatsSaveData = TFTVRevenantResearch.ProjectOsirisStats;
         public bool[] VoidOmensCheck = TFTVVoidOmens.VoidOmensCheck;
         public bool GlobalLOTAReworkCheck = TFTVBetaSaveGamesFixes.LOTAReworkGlobalCheck;
-
-
-
+        public Dictionary<int, Dictionary<string, double>> PhoenixBasesUnderAttack = TFTVBaseDefenseGeoscape.PhoenixBasesUnderAttack;
+        public List<int> InfestedPhoenixBases = TFTVBaseDefenseGeoscape.PhoenixBasesInfested;
      //   public string PhoenixBaseUnderAttack = TFTVExperimental.PhoenixBaseUnderAttack;
     //    public PhoenixBaseAttacker baseAttacker = TFTVExperimental.phoenixBaseAttacker;
       //  public PPFactionDef factionAttackingPheonixBase = TFTVExperimental.FactionAttackingPhoenixBase;
@@ -86,16 +86,11 @@ namespace TFTV
             Main.Logger.LogInfo("UmbraEvolution variable is " + Controller.EventSystem.GetVariable(TFTVUmbra.TBTVVariableName));
             TFTVLogger.Always("UmbraEvolution variable is " + Controller.EventSystem.GetVariable(TFTVUmbra.TBTVVariableName));
             TFTVBetaSaveGamesFixes.CheckNewLOTA(gsController);
-            TFTVAncients.AncientsOnGeoscapeStartChecks(gsController);
+            TFTVAncients.AncientsCheckResearchState(gsController);
             TFTVAncients.CheckImpossibleWeaponsAdditionalRequirements(gsController);
             TFTVExperimental.CheckForFireQuenchers(gsController);
-            TFTVSpecialDifficulties.CheckForSpecialDifficulties(gsController);
-            // TFTVBetaSaveGamesFixes.CheckImpossibleWeaponsFunctionalityTags(gsController);
-
-
-            // TFTVExperimental.ClearAndCreateBaseDefenseMission(gsController);
-            //  TFTVLogger.Always("Revenants destroyed " + gsController.EventSystem.GetVariable("RevenantsDestroyed"));
-            //  TFTVLogger.Always("Revenant captured " + gsController.EventSystem.GetVariable("RevenantCapturedVariable"));
+            TFTVSpecialDifficulties.CheckForSpecialDifficulties();
+            
         }
         /// <summary>
         /// Called when Geoscape ends.
@@ -138,7 +133,11 @@ namespace TFTV
                 infestedHavenPopulationSaveData = TFTVInfestationStory.HavenPopulation,
                 ProjectOsirisStatsSaveData = TFTVRevenantResearch.ProjectOsirisStats,
                 VoidOmensCheck = TFTVVoidOmens.VoidOmensCheck,
-                GlobalLOTAReworkCheck = TFTVBetaSaveGamesFixes.LOTAReworkGlobalCheck
+                GlobalLOTAReworkCheck = TFTVBetaSaveGamesFixes.LOTAReworkGlobalCheck,
+                PhoenixBasesUnderAttack = TFTVBaseDefenseGeoscape.PhoenixBasesUnderAttack,
+                InfestedPhoenixBases = TFTVBaseDefenseGeoscape.PhoenixBasesInfested,
+               
+
 
                 //  PhoenixBaseUnderAttack = TFTVExperimental.PhoenixBaseUnderAttack,
                 // baseAttacker = TFTVExperimental.phoenixBaseAttacker
@@ -182,6 +181,8 @@ namespace TFTV
             TFTVRevenantResearch.ProjectOsirisStats = data.ProjectOsirisStatsSaveData;
             TFTVVoidOmens.VoidOmensCheck = data.VoidOmensCheck;
             TFTVBetaSaveGamesFixes.LOTAReworkGlobalCheck = data.GlobalLOTAReworkCheck;
+            TFTVBaseDefenseGeoscape.PhoenixBasesUnderAttack = data.PhoenixBasesUnderAttack;
+            TFTVBaseDefenseGeoscape.PhoenixBasesInfested = data.InfestedPhoenixBases;
             TFTVBetaSaveGamesFixes.CheckNewLOTASavegame();
             //TFTVExperimental.FactionAttackingPhoenixBase = data.factionAttackingPheonixBase;
             //TFTVExperimental.CheckIfFactionAttackingPhoenixBase();
@@ -201,8 +202,8 @@ namespace TFTV
             Main.Logger.LogInfo("Last time a Revenant was seen was on  " + myDate.Add(new TimeSpan(TFTVRevenant.daysRevenantLastSeen, 0, 0, 0)) + ", and now it is day " + myDate.Add(new TimeSpan(Controller.Timing.Now.TimeSpan.Ticks)));
             Main.Logger.LogInfo("Project Osiris stats count " + TFTVRevenantResearch.ProjectOsirisStats.Count);
             Main.Logger.LogInfo("LOTAGlobalReworkCheck is " + TFTVBetaSaveGamesFixes.LOTAReworkGlobalCheck);
+            Main.Logger.LogInfo($"Bases under attack count {TFTVBaseDefenseGeoscape.PhoenixBasesUnderAttack.Count}");
 
-           
 
             //  
             TFTVLogger.Always("# Characters with broken limbs: " + TFTVStamina.charactersWithDisabledBodyParts.Count);
@@ -217,7 +218,7 @@ namespace TFTV
             TFTVLogger.Always("Last time a Revenant was seen was on  " + myDate.Add(new TimeSpan(TFTVRevenant.daysRevenantLastSeen, 0, 0, 0)) + ", and now it is day " + myDate.Add(new TimeSpan(Controller.Timing.Now.TimeSpan.Ticks)));
             TFTVLogger.Always("Project Osiris stats count " + TFTVRevenantResearch.ProjectOsirisStats.Count);
             TFTVLogger.Always("LOTAGlobalReworkCheck is " + TFTVBetaSaveGamesFixes.LOTAReworkGlobalCheck);
-           
+            TFTVLogger.Always($"Bases under attack count {TFTVBaseDefenseGeoscape.PhoenixBasesUnderAttack.Count}");
 
         }
 

@@ -140,7 +140,8 @@ PROG_KE1_TEXT_OUTCOME_0,Text,,"As you step inside the crypt, alien thoughts are 
 
 <i>""Soon you will be contacted by string Subject integer twenty four. Accept proposal. Share data. Satisfactory outcome will lead to much preferred customer status. Beware of your Amygdala, it reeks of betrayal.""</i>
 
-There is no Drop-Ka stone to be found, but you suspect that's not why you were sent here anyway.",,"Lorsque vous entrez dans la crypte, des pensées extraterrestres sont projetées dans votre esprit. Vous *écoutez* une *voix* que vous ne pouvez pas *entendre*.
+There is no Drop-Ka stone to be found, but you suspect that's not why you were sent here anyway.
+",,"Lorsque vous entrez dans la crypte, des pensées extraterrestres sont projetées dans votre esprit. Vous *écoutez* une *voix* que vous ne pouvez pas *entendre*.
 
 <i>""Bientôt, vous serez contacté par Sujet numéro vingt-quatre. Accepter la proposition. Partager les données. Un résultat satisfaisant mènera à un statut de client privilégié. Méfiez-vous de votre Amygdale, elle sent la trahison.""</i>
 
@@ -265,7 +266,8 @@ West est naturellement bouleversé, mais nous avons obtenu un certain succès au
 PROG_PU4_WIN_CHOICE_1_TEXT,Text,,"An exercise in civic duty, with some unfortunate casualties",,"Un exercice de devoir civique, avec quelques malheureuses victimes",,,,,,
 PROG_PU4_WIN_CHOICE_2_OUTCOME_GENERAL,Text,,"We are not entirely in the clear, but New Jericho doesn't want to draw attention to its secret research and therefore avoids making an issue of the raid.
 
-At the same time, our strenuous denials result in West suspecting the involvement of other factions.",,"Nous ne sommes pas tout à fait dans la transparence, mais la Nouvelle Jericho ne veut pas attirer l’attention sur sa recherche secrète et évite donc de faire un problème de la descente.
+At the same time, our strenuous denials result in West suspecting the involvement of other factions.
+",,"Nous ne sommes pas tout à fait dans la transparence, mais la Nouvelle Jericho ne veut pas attirer l’attention sur sa recherche secrète et évite donc de faire un problème de la descente.
 
 En même temps, nos dénégations acharnées font que West soupçonne l’implication d’autres factions.
 ",,,,,,
@@ -630,7 +632,8 @@ KEY_GEO_HINT_PANDORAN_BASE_DIPLOMACY_EFFECTS_DESCRIPTION,Text,,"In TFTV, Faction
 
 Each Pandoran colony contributes to Pandoran evolution: the more active Pandoran colonies there are, the faster the enemy will field more advanced units and the faster the Oneiric Delirium will grow. 
 
-In addition, destroying a more advanced Pandoran colony (a Lair or a Citadel) removes the earliest <b>Void Omen</b> currently in play. (On Rookie difficulty, destroying Nests also removes Void Omens). ",,"Dans TFTV, les factions ne réagiront <b>pas négativement</b> aux colonies pandoriennes révélées si vous ne parvenez pas à les détruire. Cependant, vous subirez une petite pénalité auprès des dirigeants des refuges proches.
+In addition, destroying a more advanced Pandoran colony (a Lair or a Citadel) removes the earliest <b>Void Omen</b> currently in play. (On Rookie difficulty, destroying Nests also removes Void Omens). 
+",,"Dans TFTV, les factions ne réagiront <b>pas négativement</b> aux colonies pandoriennes révélées si vous ne parvenez pas à les détruire. Cependant, vous subirez une petite pénalité auprès des dirigeants des refuges proches.
 
 Chaque colonie pandorienne contribue à l'évolution des Pandoriens : plus il y a de colonies pandoriennes actives, plus vite l'ennemi déploie des unités plus avancées et plus vite le délire onirique se développe.
 
@@ -800,14 +803,17 @@ We've got this place mostly up and running... Thanks to Olena, she is quite the 
 KEY_TUT3_TFTV1_TITLE,Text,,Alistair Ashby,,,,,,,,
 KEY_TUT3_TFTV2_DESCRIPTION,Text,,"""<i>Oppa</i> Alistair is good with people. I'm good with machines and software. This facility runs on a limited AI called Bennu. Once Bennu verifies your credentials as duly appointed Director, all functionality should be restored and you should be able to interface with the system.""",,,,,,,,
 KEY_TUT3_TFTV2_TITLE,Text,,Olena Kim,,,,,,,,
-PX_ANTEDILUVIANARCHAEOLOGY_RESEARCHDEF_COMPLETE,Text,,"<i>""Our planet is over 4.5 billion years old. Pre-collapse no more than 3% of Earth's surface was urbanized. Dinosaurs lived on Earth for about 165 million years, going extinct some 65 million years ago. In a little over two centuries we found around 11,000 Dinosaur bones, which comes to one bone for every 15,000 years they spent on our planet. 
+PX_ANTEDILUVIANARCHAEOLOGY_RESEARCHDEF_COMPLETE,Text,,"<i>""Our planet is over 4.5 billion years old. Pre-collapse, no more than 3% of Earth's surface was urbanized. Dinosaurs lived on Earth for about 165 million years, going extinct some 65 million years ago. In a little over two centuries we found around 11,000 Dinosaur bones, which comes to one bone for every 15,000 years they spent on our planet. 
 
-Do the math, Tobias... A million years from now someone might be proposing 'crackpot theories' suggesting that something like our civilization might have existed.""</i> -Dr. Helena Lewandowski
+Do the math, Tobias... A million years from now someone might be proposing 'crackpot theories' suggesting that something like our civilization might have existed.""</i>
 
-Over the past decades, the melting permafrost and the ecological changes wrought by the Pandoravirus have brought to the surface sites long hidden by sediment and water. With the help of Dr. Helena we have devised a scanner probe which can be produced in the Archaeology Facility. When launched from one of our aircraft, it can detect anomalies pointing to promising archaeological sites. Then, the hazardous process of exploration can begin.",,,,,,,,
-PX_ANTEDILUVIANARCHAEOLOGY_RESEARCHDEF_UNLOCK,Text,,"Pre-Collapse there had been many attempts to find evidence of advanced precursor civilizations on Earth. Could those out of time and place artifacts have been real? What was behind the myths of Atlantis and of the Great Flood? If we want to learn the truth, we must pursue a more scientific approach.",,,,,,,,
+- Dr Helena Lewandowski
+
+Over the past decades, the melting permafrost and the ecological changes wrought by the Pandoravirus have brought to the surface sites long hidden by sediment and water. With the help of Dr. Helena we have devised a scanner probe which can be produced in the Archaeology Facility. When launched from one of our aircraft, it can detect anomalies pointing to promising archaeological sites. Then, the hazardous process of exploration can begin.
+",,,,,,,,
+PX_ANTEDILUVIANARCHAEOLOGY_RESEARCHDEF_UNLOCK,Text,,"Pre-Collapse there had been many attempts to find evidence of advanced precursor civilizations on Earth. Could those out-of-place artifacts have been real? What was behind the myths of Atlantis and of the Great Flood? If we want to learn the truth, we must pursue a more scientific approach.",,,,,,,,
 TFTV_LOTA_START_EVENT_TITLE,Text,,An Unexpected Find,,,,,,,,
-TFTV_LOTA_START_EVENT_DESCRIPTION,Text,,"Director, I've come across something interesting in the archives of the recently activated base. Something called Project Glory... Perhaps we should put Bennu to analyze it.",,,,,,,,
+TFTV_LOTA_START_EVENT_DESCRIPTION,Text,,"Director, I've come across something interesting in the archives of the recently activated base. Something called Project Glory... Perhaps we should get Bennu to analyze it.",,,,,,,,
 AUTOMATA_RESEARCH_TITLE,Text,,Ancient Automata,,,,,,,,
 AUTOMATA_RESEARCH_REVEAL,Text,,"
 
@@ -826,7 +832,7 @@ AUTOMATA_RESEARCH_BENEFITS,Text,,New information about Ancient Automata abilitie
 EXOTIC_RESEARCH_TITLE,Text,,Exotic Materials,,,,,,,,
 EXOTIC_RESEARCH_REVEAL,Text,,"We have identified 3 distinct previously unknown substances in the composition of the Ancient Automata.
 ",,,,,,,,
-EXOTIC_RESEARCH_COMPLETE,Text,,"<i>""Dr. Helena Lewandowski has claimed naming rights on the Exotic Materials on the basis of this being an archaeological find. I want it to be a matter of record that this is the reason why, what is in fact an object in a previously unobserved state of matter, but vaguely reminiscent of Quark-gluon plasma, shall be confusingly known as 'Living Crystal'.""</i> - Dr. Rupert Everett-Bancroft
+EXOTIC_RESEARCH_COMPLETE,Text,,"<i>""Dr. Helena Lewandowski has claimed naming rights on the Exotic Materials on the basis that this an archaeological find. I want it to be a matter of record that this is the reason why, what is in fact an object in a previously unobserved state of matter, but vaguely reminiscent of Quark-gluon plasma, shall be confusingly known as 'Living Crystal'.""</i> - Dr. Rupert Everett-Bancroft
 
 The frames of the Ancient Automata are made of an extremely light and resistant alloy, dubbed “Orichalculm” by the Archaelogy department. Initial experimentation has further revealed that the alloy has the ability to change its conductivity properties in response to external stimuli.
 
@@ -845,7 +851,7 @@ The Entity communicates with its creatures via some form of quasi-telepathic sig
 
 We have concluded that the ultimate purpose of the Entity is to create the ecological conditions that will allow it to come to Earth, and have hypothesized the existence of the Yuggothian Receptacle, a clone or replica to which the Entity will transfer its consciousness. We believe the Pandorans are already in the process of accumulating biomass and genetic material for this purpose.",,,,,,,,
 DLC2 Necronomicon/KEY_EXCAVATE_POPUP_BUTTON,Text,,EXPLORE,,,,,,,,
-DLC2 Necronomicon/KEY_EXCAVATE_POPUP_DESCRIPTION,Text,,"The valley below is lush, almost primordial. Earth nature, untarnished by the Pandoravirus. Places such as these can be yet found on the planet; less than 20 years ago they were covered by water or sediment. The Earth was transformed, washed, dried, swept away, bringing back to sight and life a world hidden a long, long time ago. ",,,,,,,,
+DLC2 Necronomicon/KEY_EXCAVATE_POPUP_DESCRIPTION,Text,,"The valley below is lush, almost primordial. Nature or the old Earth, untarnished by the Pandoravirus. Places like these can still be found on the planet; less than 20 years ago they were covered by water or sediment. The Earth was transformed, washed, dried, swept away, bringing back to sight and life a world hidden a long, long time ago.",,,,,,,,
 DLC2 Necronomicon/KEY_EXCAVATE_POPUP_LISTCOSTS,Text,,We will release a number of short-range drones to map the area and locate the ancient ruins,,,,,,,,
 KEY_GEO_ABILITY_EXCAVATE_SITE_NAME,Text,,EXPLORE,,,,,,,,
 KEY_FACTION_ANCIENTS,Text,,Ancient Automata,,,,,,,,
@@ -859,22 +865,26 @@ KEY_AC_ORICHALCUM_HARVEST,Text,,ANCIENT RUINS,,,,,,,,
 KEY_AC_ORICHALCUM_REFINERY,Text,,ANCIENT RUINS,,,,,,,,
 KEY_AC_CRYSTAL_HARVEST,Text,,ANCIENT RUINS,,,,,,,,
 KEY_AC_CRYSTAL_REFINERY,Text,,ANCIENT RUINS,,,,,,,,
-HINT_ANCIENTS_STORY1_TITLE,Text,,"<i>""There is something out there waiting for us, and it ain’t no human… and it ain’t no crab”</i>",,,,,,,,
+HINT_ANCIENTS_STORY1_TITLE,Text,,"<i>""There is something out there waiting for us, and it ain’t no human… ain’t no crab, neither”</i>",,,,,,,,
 HINT_ANCIENTS_STORY1_TEXT,Text,,"Your team has landed near the site where the exploration drones had previously detected the remains of ancient ruins, but on closer approach they started to experience comms malfunction, possibly due to electromagnetic interference. Proceed with caution.",,,,,,,,
 HINT_ANCIENTS_CYCLOPSDEFENSE_TITLE,Text,,"<i>“Target hit, no effect!”</i>",,,,,,,,
 HINT_ANCIENTS_CYCLOPSDEFENSE_TEXT,Text,,This Automata is protected by some sort of electromagnetic field that reduces the strength of incoming attacks. Maybe destroying some of the smaller Automata will dampen the effect?,,,,,,,,
-HINT_ANCIENTS_CYCLOPS_TITLE,Text,,<i> “Wake up not the beast that layeth in slumber” </i>,,,,,,,,
-HINT_ANCIENTS_CYCLOPS_TEXT,Text,,Our operatives have located something that may be the source of the electromagnetic interferences that our exploration drones had come across. We should avoid alerting it for as long as possible. ,,,,,,,,
+HINT_ANCIENTS_CYCLOPS_TITLE,Text,,"<i> “Wake up not the beast that layeth in slumber.” </i>
+",,,,,,,,
+HINT_ANCIENTS_CYCLOPS_TEXT,Text,,Our operatives have located something that may be the source of the electromagnetic interferences that our exploration drones discovered. We should avoid alerting it for as long as possible.,,,,,,,,
 HINT_ANCIENTS_HOPLITS_TITLE,Text,,"<i>“Frag me, what is that thing? Is that a… drill?!”</i>",,,,,,,,
 HINT_ANCIENTS_HOPLITS_TEXT,Text,,"This Ancient Automata is reactivating! While we have no intel on their capabilities, it seems like they are dormant while buried in the ground, but once they emerge they become alerted and gradually reactivate their systems, becoming stronger. The Automata also seem to be in varying states of disrepair.",,,,,,,,
-HINT_ANCIENTS_HOPLITSREPAIR_TITLE,Text,,<i>”The broken remains floated towards the damaged Automata”</i>,,,,,,,,
+HINT_ANCIENTS_HOPLITSREPAIR_TITLE,Text,,<i>”The broken remains floated towards the damaged Automata.”</i>,,,,,,,,
 HINT_ANCIENTS_HOPLITSREPAIR_TEXT,Text,,This Ancient Automata is trying to repair itself using the remains of the destroyed robot in its vicinity! It has also drained some of its power.,,,,,,,,
-HINT_ANCIENTS_HOPLITSMAXPOWER_TITLE,Text,,"<i>”Whirl whirl whirl Vroom!”</i>",,,,,,,,
+HINT_ANCIENTS_HOPLITSMAXPOWER_TITLE,Text,,"<i>”Whirl whirl whirl Vroom!”</i>
+",,,,,,,,
 HINT_ANCIENTS_HOPLITSMAXPOWER_TEXT,Text,,The Ancient Automata is now fully charged; damage increased significantly and damage resistance gained.,,,,,,,,
-HELENA_ECHOES_TITLE,Text,,"The Echoes of the Ancients",,,,,,,,
+HELENA_ECHOES_TITLE,Text,,"The Echoes of the Ancients
+",,,,,,,,
 HELENA_ECHOES_TEXT,Text,,"This is something neither West nor Symes understood, or wanted to understand, although I tried explaining it to them many times. History is about making sense of the present by understanding the past. Cause and effect, reverberation and resonance. But when it comes to the Ancients, their echoes are getting stronger, and they started getting stronger with the First Mist. 
 
-Perhaps it's because both were hidden below the same melting permafrost, but even that coincidence is anything but insignificant.",,,,,,,,
+Perhaps it's because both were hidden below the same melting permafrost. Even that 'coincidence' is not insignificant.
+",,,,,,,,
 OLENA_STYX_TITLE,Text,,Crossing the Styx,,,,,,,,
 OLENA_STYX_TEXT,Text,,"If these are robots, or cyborgs, they must have some sort of memory bank: they must be getting their instructions, routines, behaviors from somewhere. If we are able to find and access these memories, maybe we can find out what happened to the Ancients. 
 
@@ -911,7 +921,8 @@ OLENA_ONEIROMANCY_TEXT,Text,,"Yes, the Living Crystal must be the “memory modu
 Data never really disappears unless the storage medium is destroyed or it is overwritten. In this case, the medium is beyond our understanding. I can’t explain how something like the Oneiric Delirium exists, or what the Living Crystals are, but they are related; our dreams can’t be a coincidence. I think they are part of, or use the same pathways, or “network”... What we need is a more direct interface, and one that we can use while awake.",,,,,,,,
 OLENA_ONEIROMANCY_CHOICE,Text,,So you want to repair and reactivate an ancient killer robot so that you can poke about in its memory banks? What could possibly go wrong.,,,,,,,,
 OLENA_ONEIROMANCY_OUTCOME,Text,,It's going to be OK.,,,,,,,,
-CYCLOP_DREAMS_TITLE,Text,,"Digitize my Dreams, the Cyclops Said",,,,,,,,
+CYCLOP_DREAMS_TITLE,Text,,"Digitize my Dreams, the Cyclops Said
+",,,,,,,,
 CYCLOP_DREAMS_TEXT,Text,,"The plan worked, but we can only understand a tiny fraction of the information contained in the data dump. It is enough. Enough to overturn much of what we thought we knew and, critical to our current existential threat, of what we thought we knew about the Pandoravirus. 
 
 It is ancient, yes; we suspected as much since the infection of our ecosystem began with the melting of the permafrost. But, thanks to the meticulous charts of our Solar system drawn up by the Ancients, we now know that the Pandoravirus didn’t originate on our planet: it arrived 1.8 million years ago on an asteroid that intersected the orbit of a “ninth planet” before it crashed into Earth.",,,,,,,,
@@ -1000,4 +1011,55 @@ ROOKIE_VULNERABILITY_DESCRIPTION,Text,,...When you are playing on Rookie. All en
 ROOKIE_PROTECTION_DESCRIPTION,Text,,...When you are playing on Rookie. All Phoenix operatives suffer 50% less damage.,,,,,,,,
 ETERMES_VULNERABILITY_NAME,Text,,You are Etermes,,,,,,,,
 ETERMES_VULNERABILITY_DESCRIPTION,Text,,...And everything is always too easy for you. All Phoenix operatives suffer 25% more damage.,,,,,,,,
-ETERMES_PROTECTION_DESCRIPTION,Text,,...And everything is always too easy for you. All enemies suffer 25% less damage. ,,,,,,,,
+ETERMES_PROTECTION_DESCRIPTION,Text,,...And everything is always too easy for you. ,,,,,,,,
+KEY_GEO_HINT_AUGMENTATION_SCREEN_DESCRIPTION,Text,,"You are about to augment your first soldier. A character can only have UP TO 2 BODY PARTS replaced this way.
+
+Once an augmentation is installed, the soldier will not be able to revert back to their natural limbs. However, augmented body parts CAN BE SWAPPED with different cybernetic parts.
+
+Augmented body parts are IMMUNE TO BLEEDING and RESISTANT TO VIRAL DAMAGE, POISON, AND PARALYSIS. Damaged cybernetics CAN BE REPAIRED after battle at the expense of Tech and Materials. 
+
+In addition, each bionic augmentation reduces the maximum Delirium the character can have by 1/3, and removes up to that amount of Delirium from the character. 
+
+Augmenting a character will reduce their Stamina to zero.",,,,,,,,
+BASEDEFENSE_INFESTATION_OBJECTIVE,Text,,DESTROY ALL PANDORAN STRUCTURES,,,,,,,,
+BASEDEFENSE_SECOND_OBJECTIVE,Text,,SCATTER THE REMAINING ATTACKERS,,,,,,,,
+BASEDEFENSE_EVENT_TITLE ,Text,,A Phoenix Project base is under attack!,,,,,,,,
+BASEDEFENSE_EVENT_TEXT,Text,,"Director! We are under attack! Our automated defenses and bullheads will buy us some time, but we need to deploy a squad to secure the base as soon as possible. The longer we take, the more time the enemy will have to achieve its objectives.
+",,,,,,,,
+BASEDEFENSE_INFESTATION_TITLE ,Text,,Infested.,,,,,,,,
+BASEDEFENSE_INFESTATION_DESCRIPTION,Text,,"<i>""They're coming out of the walls! They're coming out of the goddamn walls!""</i>
+
+Security footage shows the Pandorans taking over the base. 
+
+Director, they are colonizing it.
+
+We will deploy through maintenance access in the tunnels under the base facilities.",,,,,,,,
+BASEDEFENSE_NESTING_TITLE ,Text,,Infestation in progress...,,,,,,,,
+BASEDEFENSE_NESTING_DESCRIPTION,Text,,"<i>""Busy little creatures""</i>
+
+The enemy has breached our defenses and has spread throughout the base. We will deploy through maintenance access in the tunnels under the base facilities. ",,,,,,,,
+BASEDEFENSE_TACTICAL_ADVANTAGE_TITLE ,Text,,Tactical Advantage!,,,,,,,,
+BASEDEFENSE_TACTICAL_ADVANTAGE_DESCRIPTION,Text,,"<i>""You're down there, we're up here! You walked into the wrong goddamn room...""</i>
+
+We have taken defensive positions around the main entrance. As long as we hold this choke point we should be fine. ",,,,,,,,
+BASEDEFENSE_UMBRASTRAT_TEXT,Text,,"Director, we are detecting something in the air vents. It's the Mist. And where there is Mist, there are Umbra.",,,,,,,,
+BASEDEFENSE_UMBRASTRAT_TITLE,Text,,Umbra,,,,,,,,
+BASEDEFENSE_WORMSSTRAT_TEXT,Text,,"Director, there is something burrowing down towards your team. Small, multiple targets bearing on the hangar.",,,,,,,,
+BASEDEFENSE_WORMSSTRAT_TITLE,Text,,Worms or Myrmidons,,,,,,,,
+BASEDEFENSE_FORCE2STRAT_TEXT,Text,,"Director, be advised, we have detected a secondary strike force digging their way in. They can appear behind our backs any minute!",,,,,,,,
+BASEDEFENSE_FORCE2STRAT_TITLE,Text,,Secondary Strike Force,,,,,,,,
+BASEDEFENSE_VENTING_TITLE,Text,,Emergency venting,,,,,,,,
+BASEDEFENSE_VENTING_TEXT,Text,,"<i>“Between a rock and a hard place, be water.”</i> 
+
+The geothermal plant that powers the base has an emergency steam vent that can scald the Pandorans that are trying to get into the base, removing the currently incoming wave of reinforcements. However, this will likely damage the generator and will cause the base systems to malfunction, resulting in fires and explosions. 
+
+There are several consoles around the base that can be activated; inbuilt safety measures prevent repeating the operation at the same console.",,,,,,,,
+BASEDEFENSE_BRIEFING_OBJECTIVES_SIMPLE,Text,,Scatter the attackers.,,,,,,,,
+BASEDEFENSE_BRIEFING_OBJECTIVES_DOUBLE,Text,,Destroy all Pandoran structures and scatter the remaining attackers. ,,,,,,,,
+BASEDEFENSE_BRIEFING_TACTICALADVANTAGE,Text,,"If we take the attackers on now, we can take optimal defensive positions. The mission gets harder over time. If we fail, we lose control of the base.",,,,,,,,
+BASEDEFENSE_BRIEFING_NESTING,Text,,"The enemy has breached our defenses and has spread throughout the base. It can yet get worse. If we fail, we lose control of the base.",,,,,,,,
+BASEDEFENSE_BRIEFING_INFESTATION,Text,,"Security footage shows the Pandorans have almost taken over the base. If we fail, we lose control of the base.",,,,,,,,
+BASEDEFENSE_EVENT_TEXT,Text ,,"Director! Our base is under attack! Our automated defenses and bullheads will buy us some time, but we need to deploy a squad to secure the base as soon as possible. The longer we take, the more time the enemy will have to achieve its objectives.",,,,,,,,
+BASEDEFENSE_EVENT_TITLE,Text ,,PHOENIX BASE UNDER ATTACK,,,,,,,,
+BASEDEFENSE_DEFEAT_TITLE,Text,,PHOENIX BASE INFESTED,,,,,,,,
+BASEDEFENSE_DEFEAT_TEXT,Text,,Our base has been overrun. We will need to send a team to clear out the infestation if we want to recover it.,,,,,,,,

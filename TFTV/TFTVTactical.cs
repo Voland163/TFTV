@@ -1,9 +1,10 @@
 using Base.Serialization.General;
+using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Modding;
 using PhoenixPoint.Tactical.Levels;
 using System;
 using System.Collections.Generic;
-using TFTV.VariousAdjustments;
+using UnityEngine;
 
 namespace TFTV
 {
@@ -36,7 +37,10 @@ namespace TFTV
         public int HoplitesKilledOnMission;
         public bool LOTAReworkActiveInTactical;
         public bool TurnZeroMethodsExecuted;
-
+        public bool [] BaseDefenseConsole;
+        public float BaseDefenseAttackProgress;
+        public int BaseDefenseStratToBeAnnounced;
+        public int BaseDefenseStratToBeImplemented;
     }
 
     /// <summary>
@@ -75,7 +79,15 @@ namespace TFTV
             TFTVLogger.Always("LOTA rework active in tactical is " + TFTVAncients.LOTAReworkActive);
             TFTVAncients.CheckResearchStateOnTacticalStart();
 
-         //   MissionDeployment.CheckDepolyZones(Controller);
+            TFTVBaseDefenseTactical.CheckConsoleSituation(Controller);
+          //  TFTVBaseDefenseTactical.InteractionPointPlacement();
+         //   TFTVBaseDefenseTactical.CheckIfConsoleActivated(Controller);
+            TFTVSpecialDifficulties.CheckForSpecialDifficulties();
+          //  TFTVBaseDefenseTactical.RevealAllSpawns(Controller);
+
+            // TFTVBaseDefenseTactical.CheckingPortrait(Controller);
+
+            //  TFTVBaseDefenseTactical.ModifyObjectives(Controller);
 
         }
 
@@ -102,6 +114,7 @@ namespace TFTV
         {
             try
             {
+                
                 TFTVLogger.Always("Tactical save is being processed");
                 TFTVCommonMethods.ClearInternalVariables();
                 TFTVTacInstanceData data = (TFTVTacInstanceData)instanceData;
@@ -121,11 +134,20 @@ namespace TFTV
                 TFTVInfestationStory.HavenPopulation = data.infestedHavenPopulationSaveData;
                 TFTVInfestationStory.OriginalOwner = data.infestedHavenOriginalOwnerSaveData;
                 TFTVRevenant.revenantID = data.RevenantId;
-                //Commented out for release #13
                 TFTVAncients.HoplitesKilled = data.HoplitesKilledOnMission;
                 TFTVAncients.LOTAReworkActive = data.LOTAReworkActiveInTactical;
+                TFTVBaseDefenseTactical.ConsoleInBaseDefense = data.BaseDefenseConsole;
+                TFTVBaseDefenseTactical.AttackProgress = data.BaseDefenseAttackProgress;
+                TFTVBaseDefenseTactical.StratToBeAnnounced = data.BaseDefenseStratToBeAnnounced;
+                TFTVBaseDefenseTactical.StratToBeImplemented = data.BaseDefenseStratToBeImplemented;
+                TFTVBaseDefenseTactical.ModifyObjectives(Controller.TacMission.MissionData.MissionType);
+                
                 TurnZeroMethodsExecuted = data.TurnZeroMethodsExecuted;
+
+                
                 TFTVBetaSaveGamesFixes.CheckNewLOTASavegame();
+           
+
             }
             catch (Exception e)
             {
@@ -158,11 +180,12 @@ namespace TFTV
                 RevenantId = TFTVRevenant.revenantID,
                 HoplitesKilledOnMission = TFTVAncients.HoplitesKilled,
                 LOTAReworkActiveInTactical = TFTVAncients.LOTAReworkActive,
+                BaseDefenseConsole = TFTVBaseDefenseTactical.ConsoleInBaseDefense,
+                BaseDefenseAttackProgress = TFTVBaseDefenseTactical.AttackProgress,
+                BaseDefenseStratToBeImplemented = TFTVBaseDefenseTactical.StratToBeImplemented,
+                BaseDefenseStratToBeAnnounced = TFTVBaseDefenseTactical.StratToBeAnnounced,
                 TurnZeroMethodsExecuted = TurnZeroMethodsExecuted
-
-
             };
-
         }
         /// <summary>
         /// Called when new turn starts in tactical. At this point all factions must play in their order.
@@ -177,6 +200,8 @@ namespace TFTV
                 //   TFTVLogger.Always("AI Actions influenced by Safety consideration during previous turn " + TFTVExperimental.CounterAIActionsInfluencedBySafetyConsideration);
                 //   TFTVExperimental.CounterAIActionsInfluencedBySafetyConsideration = 0;
 
+             
+                // MissionDeployment.PlaceInteractionPoint_EXAMPLE(new Vector3(-34.5f, 0.0f, 2.5f));
 
                 if (!Controller.TacMission.MissionData.MissionType.name.Contains("Tutorial"))
                 {
@@ -199,16 +224,16 @@ namespace TFTV
                         TFTVRevenant.RevenantCheckAndSpawn(Controller);
                         TFTVRevenant.ImplementVO19(Controller);
                         TFTVVoidOmens.VO5TurnHostileCivviesFriendly(Controller);
+                      //  TFTVBaseDefenseTactical.ModifyObjectives(Controller.TacMission.MissionData.MissionType);
                         TurnZeroMethodsExecuted = true;
                     }
-
+                  
                     TFTVRevenant.revenantSpecialResistance.Clear();
                     TFTVUmbra.SpawnUmbra(Controller);
                     TFTVHumanEnemies.ChampRecoverWPAura(Controller);
                     TFTVHumanEnemies.ApplyTactic(Controller);
 
-                  
-
+                    
                 }
 
             }

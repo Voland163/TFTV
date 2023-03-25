@@ -426,8 +426,10 @@ namespace TFTV
 
                         if (TFTVRevenantResearch.ProjectOsiris)
                         {
+                            GameTagDef mutoidTag = DefCache.GetDef<GameTagDef>("Mutoid_TagDef");
+
                             if (__instance.TacticalGameParams.Statistics.LivingSoldiers.ContainsKey(deathReport.Actor.GeoUnitId)
-                            && !__instance.TacticalGameParams.Statistics.DeadSoldiers.ContainsKey(deathReport.Actor.GeoUnitId))
+                            && !__instance.TacticalGameParams.Statistics.DeadSoldiers.ContainsKey(deathReport.Actor.GeoUnitId)  && !deathReport.Actor.GameTags.Contains(mutoidTag))
 
                                 TFTVRevenantResearch.RecordStatsOfDeadSoldier(deathReport.Actor);
                         }

@@ -46,7 +46,7 @@ namespace PRMBetterClasses
                 {
                     "",
                     "EXTREME FOCUS",
-                    "ARMOR BREAK",
+                    "ARMOR BREAK", // ARMOR BREAK
                     "",
                     "MASTER MARKSMAN",
                     "INSPIRE",
@@ -96,9 +96,9 @@ namespace PRMBetterClasses
                     "SURPRISE ATTACK",
                     "DEPLOY DECOY",
                     "",
-                    "WEAK SPOT",
-                    "VANISH",
-                    "SNEAK ATTACK"
+                    "NEURAL FEEDBACK", // NEURAL FEEDBACK
+                    "JAMMING FIELD", // JAMMING FIELD
+                    "PARAPSYCHOSIS" // PARAPSYCHOSIS ex SNEAK ATTACK
                 }),
         };
         public string[] OrderOfPersonalPerks = new string[]
@@ -166,7 +166,7 @@ namespace PRMBetterClasses
                     { ClassKeys.Berserker.Name, "GUN KATA" },
                     { ClassKeys.Priest.Name, "BIOCHEMIST" },
                     { ClassKeys.Technician.Name, "REMOTE DEPLOYMENT" },
-                    { ClassKeys.Infiltrator.Name, "PHANTOM PROTOCOL" }
+                    { ClassKeys.Infiltrator.Name, "VANISH" } // VANISH ex PHANTOM PROTOCOL
                 } } }),
             new PersonalPerksDef(
                 perkKey: PerkType.Class_2,
@@ -190,13 +190,13 @@ namespace PRMBetterClasses
                 {
                     { FactionKeys.PX, new Dictionary<string, string>
                     {
-                        { ClassKeys.Assault.Name, "OVERWATCH FOCUS" },
-                        { ClassKeys.Heavy.Name, "OVERWATCH FOCUS" },
-                        { ClassKeys.Sniper.Name, "OVERWATCH FOCUS" },
-                        { ClassKeys.Berserker.Name, "OVERWATCH FOCUS" },
-                        { ClassKeys.Priest.Name, "OVERWATCH FOCUS" },
-                        { ClassKeys.Technician.Name, "OVERWATCH FOCUS" },
-                        { ClassKeys.Infiltrator.Name, "OVERWATCH FOCUS" }
+                        { ClassKeys.Assault.Name, "DIE HARD" }, //DIE HARD ex OVERWATCH FOCUS
+                        { ClassKeys.Heavy.Name, "DIE HARD" },
+                        { ClassKeys.Sniper.Name, "DIE HARD" },
+                        { ClassKeys.Berserker.Name, "DIE HARD" },
+                        { ClassKeys.Priest.Name, "DIE HARD" },
+                        { ClassKeys.Technician.Name, "DIE HARD" },
+                        { ClassKeys.Infiltrator.Name, "DIE HARD" }
                     } },
                     { FactionKeys.Anu, new Dictionary<string, string>
                     {
@@ -213,15 +213,15 @@ namespace PRMBetterClasses
                     } },
                     { FactionKeys.Syn, new Dictionary<string, string>
                     {
-                        { ClassKeys.Assault.Name, "PAIN CHAMELEON" },
-                        { ClassKeys.Sniper.Name, "PAIN CHAMELEON" },
-                        { ClassKeys.Infiltrator.Name, "PAIN CHAMELEON" }
+                        { ClassKeys.Assault.Name, "OVERWATCH FOCUS" }, // ex PAIN CHAMELEON
+                        { ClassKeys.Sniper.Name, "OVERWATCH FOCUS" },
+                        { ClassKeys.Infiltrator.Name, "OVERWATCH FOCUS" }
                     } },
                     { FactionKeys.IN, new Dictionary<string, string>
                     {
                         { ClassKeys.Assault.Name, "BREATHE MIST" },
                         { ClassKeys.Heavy.Name, "TAKEDOWN" },
-                        { ClassKeys.Sniper.Name, "PAIN CHAMELEON" },
+                        { ClassKeys.Sniper.Name, "OVERWATCH FOCUS" },
                     } },
                     { FactionKeys.PU, new Dictionary<string, string>
                     {

@@ -56,6 +56,10 @@
       <HintPath>..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Phoenix Point\PhoenixPointWin64_Data\Managed\Unity.Addressables.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="UnityEngine">
+      <HintPath>..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Phoenix Point\PhoenixPointWin64_Data\Managed\UnityEngine.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="UnityEngine.CoreModule">
       <HintPath>..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Phoenix Point\PhoenixPointWin64_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
       <Private>False</Private>
@@ -68,6 +72,10 @@
       <HintPath>..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Phoenix Point\PhoenixPointWin64_Data\Managed\UnityEngine.ParticleSystemModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="UnityEngine.PhysicsModule">
+      <HintPath>..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Phoenix Point\PhoenixPointWin64_Data\Managed\UnityEngine.PhysicsModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="UnityEngine.TextRenderingModule">
       <HintPath>..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Phoenix Point\PhoenixPointWin64_Data\Managed\UnityEngine.TextRenderingModule.dll</HintPath>
       <Private>False</Private>
@@ -75,6 +83,9 @@
     <Reference Include="UnityEngine.UI">
       <HintPath>..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Phoenix Point\PhoenixPointWin64_Data\Managed\UnityEngine.UI.dll</HintPath>
       <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.UIModule">
+      <HintPath>..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Phoenix Point\PhoenixPointWin64_Data\Managed\UnityEngine.UIModule.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -110,11 +121,17 @@
     <Compile Include="SkillModifications\SkillModsMain.cs" />
     <Compile Include="SkillModifications\SniperSkills.cs" />
     <Compile Include="SkillModifications\TechnicianSkills.cs" />
+    <Compile Include="Tactical\Entities\DamageKeywords\ArmourBreakDamageKeywordData.cs" />
+    <Compile Include="Tactical\Entities\DamageKeywords\ArmourBreakDamageKeywordDataDef.cs" />
     <Compile Include="Tactical\Entities\DamageKeywords\SharedSoloEffectorDamageKeywordsDataDef.cs" />
     <Compile Include="Tactical\Entities\Statuses\ActionpointsRelatedStatus.cs" />
     <Compile Include="Tactical\Entities\Statuses\ActionpointsRelatedStatusDef.cs" />
     <Compile Include="Tactical\Entities\Statuses\AddDependentDamageKeywordsStatus.cs" />
     <Compile Include="Tactical\Entities\Statuses\AddDependentDamageKeywordsStatusDef.cs" />
+    <Compile Include="Tactical\Entities\Statuses\ArmourBreakStatus.cs" />
+    <Compile Include="Tactical\Entities\Statuses\ArmourBreakStatusDef.cs" />
+    <Compile Include="Tactical\Entities\Statuses\FumbleChanceStatus.cs" />
+    <Compile Include="Tactical\Entities\Statuses\FumbleChanceStatusDef.cs" />
     <Compile Include="Tactical\Entities\Statuses\OnActorDazedEffectStatus.cs" />
     <Compile Include="Tactical\Entities\Statuses\OnActorDazedEffectStatusDef.cs" />
     <Compile Include="TFTVAAExperiment.cs" />
@@ -123,6 +140,8 @@
     <Compile Include="TFTVAncients.cs" />
     <Compile Include="TFTVArtOfCrab.cs" />
     <Compile Include="TFTVAugmentations.cs" />
+    <Compile Include="TFTVBaseDefenseGeoscape.cs" />
+    <Compile Include="TFTVBaseDefenseTactical.cs" />
     <Compile Include="TFTVBetaSaveGamesFixes.cs" />
     <Compile Include="TFTVChangesToDLC1andDLC2Events.cs" />
     <Compile Include="TFTVChangesToDLC3Events.cs" />
@@ -163,7 +182,6 @@
     <Compile Include="TFTVUI.cs" />
     <Compile Include="TFTVUmbra.cs" />
     <Compile Include="TFTVVoidOmens.cs" />
-    <Compile Include="VariousAdjustments\MissionDeployment.cs" />
     <Compile Include="VariousAdjustments\VariousAdjustments.cs" />
     <Compile Include="VariousAdjustments\VariousAdjustmentsMain.cs" />
     <Compile Include="VariousAdjustments\WeaponModifications.cs" />

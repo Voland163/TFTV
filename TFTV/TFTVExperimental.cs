@@ -321,10 +321,6 @@ namespace TFTV
             }
         }
 
-
-
-
-
         public static void CheckUseFireWeaponsAndDifficulty(GeoLevelController controller)
         {
             try
@@ -418,8 +414,6 @@ namespace TFTV
             }
         }
 
-
-
         public static void AddFireQuencherAbility()
         {
             try
@@ -496,7 +490,7 @@ namespace TFTV
 
         [HarmonyPatch(typeof(TacticalActor), "OnAbilityExecuteFinished")]
 
-        public static class TacticalActor_OnFinishedMovingActor_Experiment_patch
+        public static class TacticalActor_OnAbilityExecuteFinished_Experiment_patch
         {
             public static void Postfix()
             {
@@ -511,7 +505,7 @@ namespace TFTV
                             // List<TacticalVoxel> voxelsForMist = new List<TacticalVoxel>();
                             foreach (TacticalVoxel voxel in TFTVExperimental.VoxelsOnFire)
                             {
-                                if (voxel.GetVoxelType() == TacticalVoxelType.Fire)
+                                if (voxel!=null && voxel.GetVoxelType() == TacticalVoxelType.Fire)
                                 {
                                     //    TFTVLogger.Always("Got past the if check");
 
@@ -524,7 +518,7 @@ namespace TFTV
                         {
                             foreach (TacticalVoxel voxel in TFTVExperimental.VoxelsOnFire)
                             {
-                                if (voxel.GetVoxelType() == TacticalVoxelType.Empty)
+                                if (voxel != null && voxel.GetVoxelType() == TacticalVoxelType.Empty)
                                 {
                                     //TFTVLogger.Always("Got past the if check for Mist");
                                     voxel.SetVoxelType(TacticalVoxelType.Mist, 2, 10);
@@ -880,14 +874,14 @@ namespace TFTV
 
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
 
-        [HarmonyPatch(typeof(GeoMission), "PrepareLevel")]
-        public static class GeoMission_ModifyMissionData_VOObjectives_Patch
+       /* [HarmonyPatch(typeof(GeoMission), "PrepareLevel")]
+        public static class GeoMission_PrepareLevel_VOObjectives_Patch
         {
             public static void Postfix(TacMissionData missionData, GeoMission __instance)
             {
                 try
                 {
-                    TFTVLogger.Always("ModifyMissionData invoked");
+                   // TFTVLogger.Always("PrepareLevel invoked");
                     GeoLevelController controller = __instance.Level;
                     List<int> voidOmens = new List<int> { 3, 5, 7, 10, 15, 16, 19 };
 
@@ -928,7 +922,7 @@ namespace TFTV
                     TFTVLogger.Error(e);
                 }
             }
-        }
+        }*/
 
 
 
@@ -967,133 +961,15 @@ namespace TFTV
              }
          }*/
 
-        //Patch to set VO objective test in uppercase to match other objectives
-        [HarmonyPatch(typeof(ObjectivesManager), "Add")]
-        public static class FactionObjective_ModifyObjectiveColor_Patch
-        {
-
-            public static void Postfix(ObjectivesManager __instance, FactionObjective objective)
-            {
-                try
-                {
-                    //  TFTVLogger.Always("FactionObjective Invoked");
-                    if (objective.Description.LocalizationKey.Contains("VOID"))
-                    {
-                        objective.Description = new LocalizedTextBind(objective.Description.Localize().ToUpper(), true);
-                    }
-
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-            }
-        }
+      
 
 
 
-        [HarmonyPatch(typeof(WipeEnemyFactionObjective), "EvaluateObjective")]
-        public static class TFTV_HavenDefendersHostileFactionObjective_EvaluateObjective_Patch
-        {
-            public static bool Prefix(FactionObjective __instance, ref FactionObjectiveState __result,
-                List<TacticalFaction> ____enemyFactions, List<TacticalFactionDef> ____overrideFactions, bool ____ignoreDeployment)
-            {
-                try
-                {
-                    if (TFTVVoidOmens.VoidOmensCheck[5])
-                    {
-                        TacticalLevelController controller = __instance.Level;
-                        string MissionType = controller.TacticalGameParams.MissionData.MissionType.SaveDefaultName;
-
-                        if (MissionType == "HavenDefense")
-                        {
-                            if (!__instance.IsUiHidden)
-                            {
-
-                                //  TFTVLogger.Always("WipeEnemyFactionObjetive invoked");
-
-                                if (!__instance.Faction.HasTacActorsThatCanWin() && !__instance.Faction.HasUndeployedTacActors())
-                                {
-                                    __result = FactionObjectiveState.Failed;
-                                    TFTVLogger.Always("WipeEnemyFactionObjetive failed");
-                                    return false; // skip original method
-                                }
-
-                                foreach (TacticalFaction enemyFaction in controller.Factions)
-                                {
-                                    if (enemyFaction.ParticipantKind == TacMissionParticipant.Intruder)
-                                    {
-                                        // TFTVLogger.Always("The faction is " + faction.TacticalFactionDef.name);
-                                        if (!enemyFaction.HasTacActorsThatCanWin())
-                                        {
-                                            TFTVLogger.Always("HavenDefense with hostile defenders, no intruders alive, so mission should be a win");
-                                            __result = FactionObjectiveState.Achieved;
-                                            return false;
-                                        }
-
-                                    }
-                                }
-
-
-                            }
-                            return true;
-                        }
-                        return true;
-                    }
-                    return true;
-                }
-
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                    throw;
-                }
-            }
-        }
+      
 
 
 
-        //Patch to avoid triggering "failed" state for VO objectives when player loses a character
-        [HarmonyPatch(typeof(KeepSoldiersAliveFactionObjective), "EvaluateObjective")]
-        public static class KeepSoldiersAliveFactionObjective_EvaluateObjective_Patch
-        {
-
-            public static void Postfix(KeepSoldiersAliveFactionObjective __instance, ref FactionObjectiveState __result)
-            {
-                try
-                {
-                    KeepSoldiersAliveFactionObjectiveDef VOID_OMEN_TITLE_3 = DefCache.GetDef<KeepSoldiersAliveFactionObjectiveDef>("VOID_OMEN_TITLE_3");
-                    KeepSoldiersAliveFactionObjectiveDef VOID_OMEN_TITLE_5 = DefCache.GetDef<KeepSoldiersAliveFactionObjectiveDef>("VOID_OMEN_TITLE_5");
-                    KeepSoldiersAliveFactionObjectiveDef VOID_OMEN_TITLE_7 = DefCache.GetDef<KeepSoldiersAliveFactionObjectiveDef>("VOID_OMEN_TITLE_7");
-                    KeepSoldiersAliveFactionObjectiveDef VOID_OMEN_TITLE_10 = DefCache.GetDef<KeepSoldiersAliveFactionObjectiveDef>("VOID_OMEN_TITLE_10");
-                    KeepSoldiersAliveFactionObjectiveDef VOID_OMEN_TITLE_15 = DefCache.GetDef<KeepSoldiersAliveFactionObjectiveDef>("VOID_OMEN_TITLE_15");
-                    KeepSoldiersAliveFactionObjectiveDef VOID_OMEN_TITLE_16 = DefCache.GetDef<KeepSoldiersAliveFactionObjectiveDef>("VOID_OMEN_TITLE_16");
-                    KeepSoldiersAliveFactionObjectiveDef VOID_OMEN_TITLE_19 = DefCache.GetDef<KeepSoldiersAliveFactionObjectiveDef>("VOID_OMEN_TITLE_19");
-
-                    List<KeepSoldiersAliveFactionObjectiveDef> voidOmens = new List<KeepSoldiersAliveFactionObjectiveDef> { VOID_OMEN_TITLE_3, VOID_OMEN_TITLE_5, VOID_OMEN_TITLE_7, VOID_OMEN_TITLE_10, VOID_OMEN_TITLE_15, VOID_OMEN_TITLE_16, VOID_OMEN_TITLE_19 };
-
-                    //  TFTVLogger.Always("FactionObjective Evaluate " + __instance.Description.ToString());
-                    foreach (KeepSoldiersAliveFactionObjectiveDef keepSoldiersAliveFactionObjectiveDef in voidOmens)
-                    {
-                        // TFTVLogger.Always(keepSoldiersAliveFactionObjectiveDef.MissionObjectiveData.Description.LocalizeEnglish());
-                        // TFTVLogger.Always(__instance.Description.LocalizationKey);
-
-                        if (keepSoldiersAliveFactionObjectiveDef.MissionObjectiveData.Description.LocalizeEnglish().ToUpper() == __instance.Description.LocalizationKey)
-                        {
-                            // TFTVLogger.Always("FactionObjective check passed");
-                            __result = FactionObjectiveState.InProgress;
-                        }
-
-                    }
-
-
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-            }
-        }
+        
 
     }
     /* [HarmonyPatch(typeof(AIStrategicPositionConsideration), "Evaluate")]

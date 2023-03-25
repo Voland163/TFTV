@@ -1,11 +1,9 @@
 ﻿using Base.Core;
 using Base.Defs;
-using Base.Levels;
-using Epic.OnlineServices;
 using HarmonyLib;
-using JetBrains.Annotations;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities.GameTags;
+using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.UI;
 using PhoenixPoint.Geoscape.Core;
 using PhoenixPoint.Geoscape.Entities;
@@ -13,7 +11,6 @@ using PhoenixPoint.Geoscape.Entities.Missions;
 using PhoenixPoint.Geoscape.Entities.Missions.Outcomes;
 using PhoenixPoint.Geoscape.Entities.Research;
 using PhoenixPoint.Geoscape.Events;
-using PhoenixPoint.Geoscape.Events.Eventus;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.DamageKeywords;
@@ -25,7 +22,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using static Base.Platforms.Platform;
 
 namespace TFTV
 {
@@ -59,13 +55,13 @@ namespace TFTV
             {
                 try
                 {
-                
+
                     GeoLevelController controller = (GeoLevelController)UnityEngine.Object.FindObjectOfType(typeof(GeoLevelController));
-                 
+
 
                     TFTVConfig config = TFTVMain.Main.Config;
 
-                    if (config.DiplomaticPenalties && CheckGeoscapeSpecialDifficultySettings(controller)!=1)
+                    if (config.DiplomaticPenalties && CheckGeoscapeSpecialDifficultySettings(controller) != 1)
                     {
                         if (!ExcludedEventsDiplomacyPenalty.Contains(eventID) && __instance.Diplomacy.Count > 0)
                         {
@@ -83,7 +79,7 @@ namespace TFTV
                             }
                         }
                     }
-                    if(CheckGeoscapeSpecialDifficultySettings(controller) == 1) 
+                    if (CheckGeoscapeSpecialDifficultySettings(controller) == 1)
                     {
                         if (__instance.Diplomacy.Count > 0)
                         {
@@ -172,7 +168,7 @@ namespace TFTV
 
                         }
                     }
-                    else if (CheckGeoscapeSpecialDifficultySettings(controller)==1)
+                    else if (CheckGeoscapeSpecialDifficultySettings(controller) == 1)
                     {
                         for (int i = 0; i < __instance.Resources.Count; i++)
                         {
@@ -368,18 +364,18 @@ namespace TFTV
 
                     if (TFTVVoidOmens.VoidOmensCheck[6] || CheckGeoscapeSpecialDifficultySettings(controller) != 0)
                     {
-                       
+
                         float multiplier = 1f;
 
-                        if (TFTVVoidOmens.VoidOmensCheck[6]) 
+                        if (TFTVVoidOmens.VoidOmensCheck[6])
                         {
-                            multiplier *= 1.5f;            
+                            multiplier *= 1.5f;
                         }
-                        if(CheckGeoscapeSpecialDifficultySettings(controller) == 1) 
+                        if (CheckGeoscapeSpecialDifficultySettings(controller) == 1)
                         {
                             multiplier *= 2f;
                         }
-                        if(CheckGeoscapeSpecialDifficultySettings(controller) == 2) 
+                        if (CheckGeoscapeSpecialDifficultySettings(controller) == 2)
                         {
 
                             multiplier *= 0.5f;
@@ -408,39 +404,44 @@ namespace TFTV
             {
                 try
                 {
-                    GeoLevelController geoLevel = mission.Site.GeoLevel;
+                    MissionTagDef havenDefenseTag = DefCache.GetDef<MissionTagDef>("MissionTypeHavenDefense_MissionTagDef");
 
-                    if (TFTVVoidOmens.CheckFordVoidOmensInPlay(geoLevel).Contains(18) || CheckGeoscapeSpecialDifficultySettings(geoLevel) != 0)
+                    if (mission.MissionDef.Tags.Contains(havenDefenseTag))
                     {
-                        ResourcePack resources = new ResourcePack(__instance.Resources);
-                        float multiplier = 1f;
 
-                        if (TFTVVoidOmens.CheckFordVoidOmensInPlay(geoLevel).Contains(18) && __instance.name.Contains("Haven"))
+                        GeoLevelController geoLevel = mission.Site.GeoLevel;
+
+                        if (TFTVVoidOmens.CheckFordVoidOmensInPlay(geoLevel).Contains(18) || CheckGeoscapeSpecialDifficultySettings(geoLevel) != 0)
                         {
-                            multiplier *= 0.5f;
-                        }
-                        if (CheckGeoscapeSpecialDifficultySettings(geoLevel) == 1)
-                        {
-                            multiplier *= 2f;
-                        }
-                        if (CheckGeoscapeSpecialDifficultySettings(geoLevel) == 2)
-                        {
-                            multiplier *= 0.5f;
-                        }
+                            ResourcePack resources = new ResourcePack(__instance.Resources);
+                            float multiplier = 1f;
+
+                            if (TFTVVoidOmens.CheckFordVoidOmensInPlay(geoLevel).Contains(18) && __instance.name.Contains("Haven"))
+                            {
+                                multiplier *= 0.5f;
+                            }
+                            if (CheckGeoscapeSpecialDifficultySettings(geoLevel) == 1)
+                            {
+                                multiplier *= 2f;
+                            }
+                            if (CheckGeoscapeSpecialDifficultySettings(geoLevel) == 2)
+                            {
+                                multiplier *= 0.5f;
+                            }
 
 
-                        for (int i = 0; i < 3; i++)
-                        {
-                            ResourceUnit resourceUnit = __instance.Resources[i];
-                            resources[i] = new ResourceUnit(resourceUnit.Type, resourceUnit.Value * multiplier);
-                        }
+                            for (int i = 0; i < __instance.Resources.Count(); i++)
+                            {
+                                ResourceUnit resourceUnit = __instance.Resources[i];
+                                resources[i] = new ResourceUnit(resourceUnit.Type, resourceUnit.Value * multiplier);
+                            }
 
-                        rewardDescription.Resources.Clear();
-                        rewardDescription.Resources.AddRange(resources);
-                        TFTVLogger.Always("Resource reward from mission " + mission.MissionName.LocalizeEnglish() + " modified to "
-                            + resources[0].Value + ", " + resources[1].Value + " and " + resources[2].Value);
+                            rewardDescription.Resources.Clear();
+                            rewardDescription.Resources.AddRange(resources);
+                            TFTVLogger.Always("Resource reward from mission " + mission.MissionName.LocalizeEnglish() + " modified to "
+                                + resources[0].Value + ", " + resources[1].Value + " and " + resources[2].Value);
+                        }
                     }
-
                 }
                 catch (Exception e)
                 {
@@ -457,40 +458,129 @@ namespace TFTV
             {
                 try
                 {
+                    MissionTagDef havenDefenseTag = DefCache.GetDef<MissionTagDef>("MissionTypeHavenDefense_MissionTagDef");
+                    MissionTagDef proteanMutaneTag = DefCache.GetDef<MissionTagDef>("EnvAncientProteanMutane_MissionTagDef");
+                    MissionTagDef livingCrystalTag = DefCache.GetDef<MissionTagDef>("EnvAncientLivingCrystal_MissionTagDef");
+                    MissionTagDef orichalcumTag = DefCache.GetDef<MissionTagDef>("EnvAncientOrichalcum_MissionTagDef");
+                    GeoLevelController controller = mission.Level;
+                    List<MissionTagDef> list = new List<MissionTagDef>() { proteanMutaneTag, livingCrystalTag, orichalcumTag };
 
-
-                    GeoLevelController geoLevel = mission.Site.GeoLevel;
-
-                    if (TFTVVoidOmens.CheckFordVoidOmensInPlay(geoLevel).Contains(18) || CheckGeoscapeSpecialDifficultySettings(geoLevel) != 0)
+                    if (mission.MissionDef.Tags.Contains(havenDefenseTag))
                     {
-                        ResourcePack resources = new ResourcePack(__instance.Resources);
-                        float multiplier = 1f;
 
-                        if (TFTVVoidOmens.CheckFordVoidOmensInPlay(geoLevel).Contains(18) && __instance.name.Contains("Haven"))
-                        {
-                            multiplier *= 0.5f;
-                        }
-                        if (CheckGeoscapeSpecialDifficultySettings(geoLevel) == 1)
-                        {
-                            multiplier *= 2f;
-                        }
-                        if (CheckGeoscapeSpecialDifficultySettings(geoLevel) == 2)
-                        {
-                            multiplier *= 0.5f;
-                        }
+                        GeoLevelController geoLevel = mission.Site.GeoLevel;
 
-                        for (int i = 0; i <= 2; i++)
+                        if (TFTVVoidOmens.CheckFordVoidOmensInPlay(geoLevel).Contains(18) || CheckGeoscapeSpecialDifficultySettings(geoLevel) != 0)
                         {
-                            ResourceUnit resourceUnit = __instance.Resources[i];
-                            resources[i] = new ResourceUnit(resourceUnit.Type, resourceUnit.Value * multiplier);
+                            ResourcePack resources = new ResourcePack(__instance.Resources);
+                            float multiplier = 1f;
 
+                            if (TFTVVoidOmens.CheckFordVoidOmensInPlay(geoLevel).Contains(18) && __instance.name.Contains("Haven"))
+                            {
+                                multiplier *= 0.5f;
+                            }
+                            if (CheckGeoscapeSpecialDifficultySettings(geoLevel) == 1)
+                            {
+                                multiplier *= 2f;
+                            }
+                            if (CheckGeoscapeSpecialDifficultySettings(geoLevel) == 2)
+                            {
+                                multiplier *= 0.5f;
+                            }
+
+                            for (int i = 0; i < __instance.Resources.Count(); i++)
+                            {
+                                ResourceUnit resourceUnit = __instance.Resources[i];
+                                resources[i] = new ResourceUnit(resourceUnit.Type, resourceUnit.Value * multiplier);
+
+                            }
+                            rewardDescription.Resources.Clear();
+                            rewardDescription.Resources.AddRange(resources);
+                            TFTVLogger.Always("Applying VO18. Resource reward from mission " + mission.MissionName.LocalizeEnglish() + " modified to "
+                               + resources[0].Value + ", " + resources[1].Value + " and " + resources[2].Value);
                         }
-                        rewardDescription.Resources.Clear();
-                        rewardDescription.Resources.AddRange(resources);
-                        TFTVLogger.Always("Applying VO18. Resource reward from mission " + mission.MissionName.LocalizeEnglish() + " modified to "
-                           + resources[0].Value + ", " + resources[1].Value + " and " + resources[2].Value);
                     }
 
+                    if (controller.EventSystem.GetVariable("NewGameStarted") == 1)
+                    {
+
+                        TFTVConfig config = TFTVMain.Main.Config;
+                        float ResourceMultiplier = (6 - controller.CurrentDifficultyLevel.Order) * 0.5f;
+
+                        if (config.amountOfExoticResources != 1)
+                        {
+                            ResourceMultiplier = config.amountOfExoticResources;
+                        }
+
+                        float amountLivingCrystal = 300 * ResourceMultiplier;
+                        float amountOrichalcum = 250 * ResourceMultiplier;
+                        float amountProtean = 250 * ResourceMultiplier;
+
+                        foreach (MissionTagDef tag in list)
+                        {
+                            if (mission.MissionDef.Tags.Contains(tag))
+                            {
+                                if (tag.Equals(orichalcumTag))
+                                {
+                                    ResourcePack resources = new ResourcePack(__instance.Resources);
+
+                                    if (resources.Count > 1)
+                                    {
+                                        resources.Clear();
+                                        resources.Add(new ResourceUnit(ResourceType.Orichalcum, 250 * ResourceMultiplier));
+
+                                    }
+                                    else
+                                    {
+                                        resources.Add(new ResourceUnit(ResourceType.Orichalcum, 250 * ResourceMultiplier));
+
+                                    }
+                                    rewardDescription.Resources.Clear();
+                                    rewardDescription.Resources.AddRange(resources);
+
+                                }
+                                else if (tag.Equals(livingCrystalTag))
+                                {
+                                    ResourcePack resources = new ResourcePack(__instance.Resources);
+
+                                    if (resources.Count > 1)
+                                    {
+                                        resources.Clear();
+                                        resources.Add(new ResourceUnit(ResourceType.LivingCrystals, 300 * ResourceMultiplier));
+
+                                    }
+                                    else
+                                    {
+                                        resources.Add(new ResourceUnit(ResourceType.LivingCrystals, 300 * ResourceMultiplier));
+
+                                    }
+                                    rewardDescription.Resources.Clear();
+                                    rewardDescription.Resources.AddRange(resources);
+
+                                }
+                                else if (tag.Equals(proteanMutaneTag))
+                                {
+                                    ResourcePack resources = new ResourcePack(__instance.Resources);
+
+                                    if (resources.Count > 1)
+                                    {
+                                        resources.Clear();
+                                        resources.Add(new ResourceUnit(ResourceType.ProteanMutane, 250 * ResourceMultiplier));
+
+                                    }
+                                    else
+                                    {
+                                        resources.Add(new ResourceUnit(ResourceType.ProteanMutane, 250 * ResourceMultiplier));
+
+                                    }
+                                    rewardDescription.Resources.Clear();
+                                    rewardDescription.Resources.AddRange(resources);
+
+                                }
+                            }
+
+                        }
+                    }
                 }
                 catch (Exception e)
                 {
@@ -655,7 +745,7 @@ namespace TFTV
                 {
                     GeoLevelController controller = (GeoLevelController)UnityEngine.Object.FindObjectOfType(typeof(GeoLevelController));
 
-                    if (TFTVVoidOmens.CheckFordVoidOmensInPlay(controller).Contains(2)|| CheckGeoscapeSpecialDifficultySettings(controller)!=0)
+                    if (TFTVVoidOmens.CheckFordVoidOmensInPlay(controller).Contains(2) || CheckGeoscapeSpecialDifficultySettings(controller) != 0)
                     {
 
                         if (reward.Resources != null && reward.Resources.Count > 0 && CheckGeoscapeSpecialDifficultySettings(controller) != 0)
@@ -663,27 +753,27 @@ namespace TFTV
                             float multiplier = 1f;
                             string difficulty = "";
 
-                            if(CheckGeoscapeSpecialDifficultySettings(controller) == 1) 
+                            if (CheckGeoscapeSpecialDifficultySettings(controller) == 1)
                             {
 
                                 multiplier *= 2;
                                 difficulty = "easy";
-                            
+
                             }
-                            else 
+                            else
                             {
                                 multiplier *= 0.5f;
                                 difficulty = "Etermes";
                             }
 
-                          //  TFTVLogger.Always("Resource amount is " + reward.Resources[0].Value);
+                            //  TFTVLogger.Always("Resource amount is " + reward.Resources[0].Value);
                             reward.Resources = new ResourcePack
                             { new ResourceUnit{
 
                                 Type = reward.Resources[0].Type, Value = reward.Resources[0].Value * multiplier}
 
                             };
-                            TFTVLogger.Always("Applying " + difficulty + " difficulty. Reward now " + reward.Resources[0].Value + ", from " + reward.Resources[0].Value/multiplier);
+                            TFTVLogger.Always("Applying " + difficulty + " difficulty. Reward now " + reward.Resources[0].Value + ", from " + reward.Resources[0].Value / multiplier);
                         }
                         if (reward.Diplomacy != null && reward.Diplomacy.Count > 0)
                         {
@@ -703,16 +793,16 @@ namespace TFTV
                                 difficulty = "Etermes";
                             }
 
-                            if (TFTVVoidOmens.CheckFordVoidOmensInPlay(controller).Contains(2)) 
+                            if (TFTVVoidOmens.CheckFordVoidOmensInPlay(controller).Contains(2))
                             {
 
                                 multiplier *= 0.5f;
                                 difficulty += " VO2";
-                            
+
                             }
                             foreach (RewardDiplomacyChange change in reward.Diplomacy)
                             {
-                              //  TFTVLogger.Always("Diplo reward is " + change.Value);
+                                //  TFTVLogger.Always("Diplo reward is " + change.Value);
                                 change.Value = Mathf.RoundToInt(multiplier * change.Value);
                                 TFTVLogger.Always("Applying " + difficulty + " difficulty. Diplo reward now " + change.Value + ", from " + change.Value / multiplier);
 
@@ -758,26 +848,26 @@ namespace TFTV
             }
         }
 
-        public static bool ApplyImpossibleWeaponsAdjustments(GeoLevelController controller) 
+        public static bool ApplyImpossibleWeaponsAdjustmentsOnGeoscape(GeoLevelController controller)
         {
             try
             {
                 TFTVConfig config = TFTVMain.Main.Config;
 
-                if(controller.CurrentDifficultyLevel.Order != 1 && !config.EasyGeoscape && config.impossibleWeaponsAdjustments) 
+                if (controller.CurrentDifficultyLevel.Order != 1 && !config.EasyGeoscape && config.impossibleWeaponsAdjustments)
                 {
                     return true;
-                
+
                 }
-                else if((controller.CurrentDifficultyLevel.Order == 1 || config.EasyGeoscape) && config.OverrideRookieDifficultySettings && config.impossibleWeaponsAdjustments) 
+                else if ((controller.CurrentDifficultyLevel.Order == 1 || config.EasyGeoscape) && config.OverrideRookieDifficultySettings && config.impossibleWeaponsAdjustments)
                 {
                     return true;
-                
+
                 }
-                else 
+                else
                 {
                     return false;
-                
+
                 }
             }
             catch (Exception e)
@@ -786,6 +876,36 @@ namespace TFTV
                 throw;
             }
         }
+
+        public static bool ApplyImpossibleWeaponsAdjustmentsOnTactical(TacticalLevelController controller)
+        {
+            try
+            {
+                TFTVConfig config = TFTVMain.Main.Config;
+
+                if (controller.Difficulty.Order != 1 && !config.EasyGeoscape && config.impossibleWeaponsAdjustments)
+                {
+                    return true;
+
+                }
+                else if ((controller.Difficulty.Order == 1 || config.EasyGeoscape) && config.OverrideRookieDifficultySettings && config.impossibleWeaponsAdjustments)
+                {
+                    return true;
+
+                }
+                else
+                {
+                    return false;
+
+                }
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
+        }
+
 
         public static int CheckOnGeoscapeSpecialDifficultySettingsForTactical(GeoLevelController controller)
         {
@@ -936,13 +1056,13 @@ namespace TFTV
 
 
 
-        public static void CheckForSpecialDifficulties(GeoLevelController controller)
+        public static void CheckForSpecialDifficulties()
         {
             try
             {
-                SaveData(controller);
-                ReducePandoranArmor(controller);
-                NerfImpossibleWeapons(controller);
+                SaveData();
+                ReducePandoranArmor();
+                NerfImpossibleWeapons();
             }
 
             catch (Exception e)
@@ -954,12 +1074,17 @@ namespace TFTV
 
         //This method saves the relevant data from the defs before they are modified. 
         //This is needed in case player starts a new gamel/loads a game with a different difficulty setting
-        public static void SaveData(GeoLevelController controller)
+        public static void SaveData()
         {
             try
             {
                 TFTVConfig config = TFTVMain.Main.Config;
-                if (CheckOnGeoscapeSpecialDifficultySettingsForTactical(controller) == 1)
+
+                GeoLevelController controllerGeo = (GeoLevelController)UnityEngine.Object.FindObjectOfType(typeof(GeoLevelController));
+                TacticalLevelController controllerTactical = (TacticalLevelController)UnityEngine.Object.FindObjectOfType(typeof(TacticalLevelController));
+
+                if ((controllerGeo != null && CheckOnGeoscapeSpecialDifficultySettingsForTactical(controllerGeo) == 1)
+                    || (controllerTactical != null && CheckTacticalSpecialDifficultySettings(controllerTactical) == 1))
                 {
 
                     if (!DataForRookieSaved)
@@ -987,17 +1112,20 @@ namespace TFTV
         }
 
 
-        public static void ReducePandoranArmor(GeoLevelController controller)
+        public static void ReducePandoranArmor()
         {
             try
             {
                 TFTVConfig config = TFTVMain.Main.Config;
+                GeoLevelController controllerGeo = (GeoLevelController)UnityEngine.Object.FindObjectOfType(typeof(GeoLevelController));
+                TacticalLevelController controllerTactical = (TacticalLevelController)UnityEngine.Object.FindObjectOfType(typeof(TacticalLevelController));
 
                 if (DataForRookieSaved)
                 {
                     foreach (TacticalItemDef itemDef1 in AlienBodyParts)
                     {
-                        if (CheckOnGeoscapeSpecialDifficultySettingsForTactical(controller) == 1)
+                        if ((controllerGeo != null && CheckOnGeoscapeSpecialDifficultySettingsForTactical(controllerGeo) == 1)
+                    || (controllerTactical != null && CheckTacticalSpecialDifficultySettings(controllerTactical) == 1))
                         {
                             itemDef1.Armor = 20;
 
@@ -1023,7 +1151,8 @@ namespace TFTV
                 MediumGuardian_Torso_LivingCrystal_BodyPartDef, MediumGuardian_Torso_Orichalcum_BodyPartDef, MediumGuardian_Torso_ProteanMutane_BodyPartDef};
 
 
-                    if (CheckOnGeoscapeSpecialDifficultySettingsForTactical(controller) == 1)
+                    if ((controllerGeo != null && CheckOnGeoscapeSpecialDifficultySettingsForTactical(controllerGeo) == 1)
+                    || (controllerTactical != null && CheckTacticalSpecialDifficultySettings(controllerTactical) == 1))
                     {
                         foreach (BodyPartAspectDef bodyPartAspect in alienBodyPartAspects)
                         {
@@ -1051,7 +1180,7 @@ namespace TFTV
 
 
         private static bool ImpossibleWeaponsAdjusted = false;
-        public static void NerfImpossibleWeapons(GeoLevelController controller)
+        public static void NerfImpossibleWeapons()
         {
 
             try
@@ -1060,7 +1189,11 @@ namespace TFTV
                 SharedData shared = GameUtl.GameComponent<SharedData>();
                 SharedDamageKeywordsDataDef damageKeywords = shared.SharedDamageKeywords;
 
-                if (ApplyImpossibleWeaponsAdjustments(controller) && !ImpossibleWeaponsAdjusted)
+                GeoLevelController controllerGeo = (GeoLevelController)UnityEngine.Object.FindObjectOfType(typeof(GeoLevelController));
+                TacticalLevelController controllerTactical = (TacticalLevelController)UnityEngine.Object.FindObjectOfType(typeof(TacticalLevelController));
+
+
+                if ((controllerGeo != null && ApplyImpossibleWeaponsAdjustmentsOnGeoscape(controllerGeo) || controllerTactical != null && ApplyImpossibleWeaponsAdjustmentsOnTactical(controllerTactical)) && !ImpossibleWeaponsAdjusted)
                 {
                     foreach (WeaponDef weaponDef in Repo.GetAllDefs<WeaponDef>())
                     {
@@ -1122,7 +1255,7 @@ namespace TFTV
                     }
 
                 }
-                else if (!ApplyImpossibleWeaponsAdjustments(controller) && ImpossibleWeaponsAdjusted)
+                else if ((controllerGeo != null && !ApplyImpossibleWeaponsAdjustmentsOnGeoscape(controllerGeo) || controllerTactical != null && !ApplyImpossibleWeaponsAdjustmentsOnTactical(controllerTactical)) && ImpossibleWeaponsAdjusted)
                 {
                     foreach (WeaponDef weaponDef in Repo.GetAllDefs<WeaponDef>())
                     {
@@ -1191,9 +1324,9 @@ namespace TFTV
 
     }
 
-   
 
-   
+
+
 
 
 

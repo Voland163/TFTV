@@ -314,8 +314,10 @@ namespace PRMBetterClasses.SkillModifications
             string skillName = "JetpackControl_AbilityDef";
             float jetpackControlAPCost = 0.5f;
             float jetpackControlWPCost = 3f;
-            float jetpackControlRange = 12f;
+            float jetpackControlRange = 14f;
             JetJumpAbilityDef source = DefCache.GetDef<JetJumpAbilityDef>("JetJump_AbilityDef");
+            // Change Jet Jump abilities restricted to 1 use per turn
+            source.UsesPerTurn = 1;
             JetJumpAbilityDef jetpackControl = Helper.CreateDefFromClone(
                 source,
                 "ddbb58e8-9ea4-417c-bddb-8ed62837bb10",

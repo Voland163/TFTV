@@ -32,7 +32,7 @@ namespace TFTV
     internal class TFTVCommonMethods
     {
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
-        private static readonly DefRepository Repo = TFTVMain.Repo;
+      //  private static readonly DefRepository Repo = TFTVMain.Repo;
 
         public static object View { get; private set; }
 
@@ -64,7 +64,6 @@ namespace TFTV
                 TFTVAirCombat.flyersAndHavens = new Dictionary<int, List<int>>();
                 TFTVAirCombat.checkHammerfall = false;
                 TFTVRevenant.DeadSoldiersDelirium = new Dictionary<int, int>();
-              //  TFTVVoidOmens.VoidOmensCheck = new bool[20];
                 TFTVUmbra.TBTVVariable = 0;
                 TFTVRevenant.daysRevenantLastSeen = 0;
                 TFTVStamina.charactersWithDisabledBodyParts = new Dictionary<int, List<string>>();
@@ -86,6 +85,9 @@ namespace TFTV
                 TFTVAncients.HoplitesKilled = 0;
                 TFTVBetaSaveGamesFixes.LOTAReworkGlobalCheck = false;
                 TFTVTactical.TurnZeroMethodsExecuted = false;
+                TFTVBaseDefenseTactical.ConsoleInBaseDefense = new bool[3];
+                TFTVBaseDefenseGeoscape.PhoenixBasesUnderAttack = new Dictionary<int, Dictionary<string, double>>();
+                TFTVBaseDefenseTactical.VentingHintShown = false;
                 TFTVLogger.Always("Internal variables cleared");
             }
             catch (Exception e)
@@ -157,6 +159,7 @@ namespace TFTV
                 TFTVHumanEnemiesNames.CreateNamesDictionary();
                 ClearHints();
                 TFTVTactical.TurnZeroMethodsExecuted = false;
+                TFTVBaseDefenseTactical.ConsoleInBaseDefense = new bool[3];
 
             }
             catch (Exception e)
@@ -292,7 +295,7 @@ namespace TFTV
                     }
                     else if (research.ResearchID == "ExoticMaterialsResearch")
                     {
-                        TFTVAncients.CheckResearchState(research.Faction.GeoLevel);
+                        TFTVAncients.AncientsCheckResearchState(research.Faction.GeoLevel);
                         TFTVAncients.SetObtainLCandPMSamplesObjective(controller);
 
                      //   ResearchElement livingCrystalsResearch = research.Faction.GeoLevel.PhoenixFaction.Research.GetResearchById("PX_LivingCrystalResearchDef");

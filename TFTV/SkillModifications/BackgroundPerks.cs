@@ -8,9 +8,11 @@ using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.DamageKeywords;
 using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.Entities.Statuses;
+using PhoenixPoint.Tactical.Levels.PathProcessors;
 using System.Linq;
 using TFTV;
 using UnityEngine;
+using static PhoenixPoint.Tactical.Levels.PathProcessors.ClimbPathProcessor;
 
 namespace PRMBetterClasses.SkillModifications
 {
@@ -304,6 +306,7 @@ namespace PRMBetterClasses.SkillModifications
             Volunteered.ViewElementDef.LargeIcon = VolunteeredIcon;
             Volunteered.ViewElementDef.SmallIcon = VolunteeredIcon;
         }
+       
         private static void Create_CondoRaider()
         {
             string skillName = "CondoRaider_AbilityDef";

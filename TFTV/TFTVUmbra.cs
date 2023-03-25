@@ -712,7 +712,7 @@ namespace TFTV
                             foreach (TacticalActor actor in pandorans.TacticalActors)
                             {
 
-                                TFTVLogger.Always("The actor is " + actor.name);
+                               // TFTVLogger.Always("The actor is " + actor.name);
                                 if (actor.GameTags.Contains(crabTag) && !actor.GameTags.Contains(voidTouchedTag)
                                     && !actor.name.Contains("Oilcrab") && !actor.GameTags.Contains(anyRevenantGameTag) && !CheckForTBTVAbilities(actor))
 

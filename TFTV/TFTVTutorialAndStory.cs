@@ -8,10 +8,8 @@ using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.View.ViewModules;
 using PhoenixPoint.Geoscape.Levels;
-using PhoenixPoint.Tactical.ContextHelp;
 using PhoenixPoint.Tactical.ContextHelp.HintConditions;
 using PhoenixPoint.Tactical.Entities;
-using PhoenixPoint.Tactical.Levels;
 using PhoenixPoint.Tactical.View.ViewModules;
 using System;
 using System.Collections.Generic;
@@ -39,7 +37,7 @@ namespace TFTV
         private static readonly HasSeenHintHintConditionDef sourceHasSeenHintConditionDef = DefCache.GetDef<HasSeenHintHintConditionDef>("HasSeenHint_TUT2_Overwatch_HintDef-False_HintConditionDef");
         private static readonly LevelHasTagHintConditionDef sourceInfestationMission = DefCache.GetDef<LevelHasTagHintConditionDef>("LevelHasTag_MissionTypeBaseInfestation_MissionTagDef_HintConditionDef");
         private static readonly MissionTypeTagDef infestationMissionTagDef = DefCache.GetDef<MissionTypeTagDef>("HavenInfestation_MissionTypeTagDef");
-       // private static readonly IsDefHintConditionDef sourceIsDefHintConditionDef = DefCache.GetDef<IsDefHintConditionDef>("IsDef_Strained_StatusDef_HintConditionDef");
+        // private static readonly IsDefHintConditionDef sourceIsDefHintConditionDef = DefCache.GetDef<IsDefHintConditionDef>("IsDef_Strained_StatusDef_HintConditionDef");
 
         /*  public static void RemoveAlreadyShownTacticalHints()
           {
@@ -148,12 +146,11 @@ namespace TFTV
             {
                 try
                 {
-                    
-
                     ContextHelpHintDef hintDef = ____context as ContextHelpHintDef;
 
                     if (hintDef != null)
                     {
+
 
                         bool tacticsHintWasShown = false;
                         TFTVLogger.Always("Show hint method invoked, the hint is " + hintDef.name);
@@ -278,13 +275,36 @@ namespace TFTV
                         {
                             __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("hint_firequencher.png");
                         }
+                        else if (hintDef.name.Equals("BaseDefenseUmbraStrat") 
+                            || hintDef.name.Equals("BaseDefenseWormsStrat") 
+                            || hintDef.name.Equals("BaseDefenseForce2Strat")
+                            || hintDef.name.Equals("BaseDefenseVenting"))
+                        {
+                            __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("Olena_static.jpg");
+                        }
+                        else if (hintDef.name.Equals("TFTVBaseDefense"))
+                        {
+                            if (TFTVBaseDefenseTactical.AttackProgress < 0.3)
+                            {
+                                __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("base_defense_hint.jpg");
+
+
+                            }
+                            else if (TFTVBaseDefenseTactical.AttackProgress >= 0.3 && TFTVBaseDefenseTactical.AttackProgress < 0.8)
+                            {
+                                __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("base_defense_hint_nesting.jpg");
+
+                            }
+                            else
+                            {
+                                __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("base_defense_hint_infestation.jpg");
+                            }
+
+                        }
                         else
                         {
                             __instance.Image.overrideSprite = null;//Helper.CreateSpriteFromImageFile("missing_hint_pic.jpg");
                         }
-
-                        
-
 
 
 
@@ -414,13 +434,13 @@ namespace TFTV
         {
             try
             {
-           
+
                 string gUID = Guid.NewGuid().ToString();
-     
+
                 LevelHasTagHintConditionDef newLevelTagCondition = Helper.CreateDefFromClone(sourceInfestationMission, gUID, name + "_HintConditionDef");
-       
+
                 newLevelTagCondition.GameTagDef = DefCache.GetDef<MissionTypeTagDef>(name);
-             
+
                 return newLevelTagCondition;
             }
 
@@ -438,15 +458,15 @@ namespace TFTV
         {
             try
             {
-              
-                
+
+
 
                 ContextHelpHintDef newContextHelpHintDef = Helper.CreateDefFromClone(sourceContextHelpHintDef, gUID, name);
 
                 newContextHelpHintDef.Trigger = trigger;
                 newContextHelpHintDef.Conditions = new List<HintConditionDef>() { };
-            
-               
+
+
 
                 if (typeHint == 0)
                 {
@@ -455,7 +475,7 @@ namespace TFTV
                 else if (typeHint == 1)
                 {
                     newContextHelpHintDef.Conditions.Add(ActorHasTagCreateNewConditionForTacticalHint(conditionName));
-                   
+
                 }
                 else if (typeHint == 2)
                 {
@@ -464,18 +484,18 @@ namespace TFTV
                 else if (typeHint == 3)
                 {
                     newContextHelpHintDef.Conditions.Add(LevelHasTagHintConditionForTacticalHint(conditionName));
-                  
+
                 }
 
-               
+
                 newContextHelpHintDef.Title.LocalizationKey = title;
-           
+
 
 
                 newContextHelpHintDef.Text.LocalizationKey = text;
- 
+
                 newContextHelpHintDef.AnyCondition = false;
- 
+
 
                 if (oneTime)
                 {
