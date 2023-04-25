@@ -33,7 +33,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
-using static Base.Audio.WwiseIDs.SWITCHES;
 
 namespace TFTV
 {
@@ -51,7 +50,7 @@ namespace TFTV
         private static readonly string ConsoleName2 = "BaseDefenseConsole2";
         private static readonly string ConsoleName3 = "BaseDefenseConsole3";
         private static readonly DefRepository Repo = TFTVMain.Repo;
-       // private static readonly GameTagDef InfestationFirstObjectiveTag = DefCache.GetDef<GameTagDef>("PhoenixBaseInfestation_GameTagDef");
+        // private static readonly GameTagDef InfestationFirstObjectiveTag = DefCache.GetDef<GameTagDef>("PhoenixBaseInfestation_GameTagDef");
         private static readonly GameTagDef InfestationSecondObjectiveTag = DefCache.GetDef<GameTagDef>("ScatterRemainingAttackers_GameTagDef");
 
 
@@ -69,7 +68,7 @@ namespace TFTV
                     ClassTagDef SirenTag = DefCache.GetDef<ClassTagDef>("Siren_ClassTagDef");
                     ClassTagDef AcheronTag = DefCache.GetDef<ClassTagDef>("Acheron_ClassTagDef");
 
-                 
+
                     // TFTVLogger.Always("ActorEnteredPlay invoked");
                     if (CheckIfBaseDefense(__instance))
                     {
@@ -78,7 +77,7 @@ namespace TFTV
                         {
                             //   TFTVLogger.Always("found aln faction and checked that VO is in place");
 
-                            if (actor.TacticalFaction.Faction.FactionDef.MatchesShortName("aln")                               
+                            if (actor.TacticalFaction.Faction.FactionDef.MatchesShortName("aln")
                                 && actor is TacticalActor tacticalActor
                                 && (actor.GameTags.Contains(crabTag) || actor.GameTags.Contains(fishTag) || actor.GameTags.Contains(SirenTag) || actor.GameTags.Contains(AcheronTag))
                                 && !actor.GameTags.Contains(InfestationSecondObjectiveTag)
@@ -175,7 +174,7 @@ namespace TFTV
 
 
         }
-        
+
         //This method is NOT ONLY FOR BASE DEFENSE; also implements Void Omen objectives
         public static void ModifyObjectives(TacMissionTypeDef missionType)
         {
@@ -224,7 +223,7 @@ namespace TFTV
                     }
                 }
 
-                if (missionType.Tags.Contains(baseDefense) && missionType.ParticipantsData[0].FactionDef==DefCache.GetDef<PPFactionDef>("Alien_FactionDef"))
+                if (missionType.Tags.Contains(baseDefense) && missionType.ParticipantsData[0].FactionDef == DefCache.GetDef<PPFactionDef>("Alien_FactionDef"))
                 {
 
                     KillActorFactionObjectiveDef killSentinels = DefCache.GetDef<KillActorFactionObjectiveDef>("E_KillSentinels [PhoenixBaseInfestation]");
@@ -290,7 +289,7 @@ namespace TFTV
                 try
                 {
                     //  TFTVLogger.Always($"ModifyMissionData invoked");
-                    if (__instance.Site.Type == GeoSiteType.PhoenixBase && AttackProgress >= 0.3 
+                    if (__instance.Site.Type == GeoSiteType.PhoenixBase && AttackProgress >= 0.3
                         && missionData.MissionType.ParticipantsData[0].FactionDef == DefCache.GetDef<PPFactionDef>("Alien_FactionDef"))
                     {
                         PPFactionDef alienFaction = DefCache.GetDef<PPFactionDef>("Alien_FactionDef");
@@ -1193,7 +1192,7 @@ namespace TFTV
                     TacticalLevelController controller = (TacticalLevelController)UnityEngine.Object.FindObjectOfType(typeof(TacticalLevelController));
 
                     //   TFTVLogger.Always($"Status {status.Def.name} applied to {__instance.transform.name}");
-                    if (controller!=null && CheckIfBaseDefense(controller))
+                    if (controller != null && CheckIfBaseDefense(controller))
                     {
                         if (status.Def == DefCache.GetDef<StatusDef>("ConsoleActivated_StatusDef"))
                         {
@@ -1449,13 +1448,19 @@ namespace TFTV
 
                 //  TacCharacterDef mindFragger = DefCache.GetDef<TacCharacterDef>("Facehugger_AlienMutationVariationDef");
 
+              /*  TacticalDeployZone tacticalDeployZone1 = new TacticalDeployZone() { };
+                tacticalDeployZone1 = zones.First();
+                tacticalDeployZone1.SetPosition(zones.First().Pos + new Vector3(3, 0, 3));*/
+
+
+                MethodInfo createVisuals = AccessTools.Method(typeof(TacticalDeployZone), "CreateVisuals");
+
                 foreach (TacticalDeployZone tacticalDeployZone in zones)
                 {
-                    MethodInfo createVisuals = AccessTools.Method(typeof(TacticalDeployZone), "CreateVisuals");
                     createVisuals.Invoke(tacticalDeployZone, null);
-
-
                 }
+
+             //   createVisuals.Invoke(tacticalDeployZone1, null);
 
                 //  InfestationStrat(controller);
 

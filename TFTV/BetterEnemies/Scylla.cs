@@ -21,7 +21,7 @@ namespace TFTV.BetterEnemies
         private static readonly DefRepository Repo = TFTVMain.Repo;
         private static readonly SharedData Shared = TFTVMain.Shared;
 
-        public static void Chnage_Queen()
+        public static void Change_Queen()
         {
             try
             {

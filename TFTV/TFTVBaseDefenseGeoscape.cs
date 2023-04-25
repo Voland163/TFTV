@@ -4,6 +4,7 @@ using Base.UI;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
+using PhoenixPoint.Common.Levels.Missions;
 using PhoenixPoint.Common.Levels.Params;
 using PhoenixPoint.Common.View.ViewControllers;
 using PhoenixPoint.Geoscape.Core;
@@ -31,6 +32,47 @@ namespace TFTV
 
         //  public static List<GeoSite> InstantiatedVisuales = new List<GeoSite>();
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
+
+
+        [HarmonyPatch(typeof(GeoSite), "CreatePhoenixBaseInfestationMission")]
+        public static class GeoSite_CreatePhoenixBaseInfestationMission_Experiment_patch
+        {
+            public static bool Prefix(GeoSite __instance)
+            {
+                try
+                {
+                    if (PhoenixBasesInfested.Contains(__instance.SiteId))
+                    {
+
+                        if (__instance.Type != GeoSiteType.PhoenixBase)
+                        {
+                            throw new Exception("Site is not a Phoenix Base!");
+                        }
+
+                        TacMissionTypeDef mission = __instance.GeoLevel.MissionGenerator.GetRandomMission(__instance.GeoLevel.SharedData.SharedGameTags.BaseDefenseMissionTag);
+                        if (mission == null)
+                        {
+                            throw new Exception("No Phoenix Base Infestations mission on level");
+                        }
+
+                        GeoPhoenixBaseInfestationMission activeMission = new GeoPhoenixBaseInfestationMission(mission, __instance);
+                        __instance.SetActiveMission(activeMission);
+                        __instance.RefreshVisuals();
+
+                        return false;
+                    }
+                    return true;
+                }
+
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+
+        }
+
 
 
         [HarmonyPatch(typeof(PhoenixBaseDefenseOutcomeDataBind), "ModalShowHandler")]
@@ -201,7 +243,7 @@ namespace TFTV
                         controller.EventSystem.TriggerGeoscapeEvent("OlenaBaseDefense", context);
                     }
 
-                   
+
                 }
                 catch (Exception e)
                 {
@@ -263,7 +305,7 @@ namespace TFTV
 
                         if (missionVisualsController != null || PhoenixBasesUnderAttack.ContainsKey(site.SiteId))
                         {
-  
+
                             if (PhoenixBasesUnderAttack.ContainsKey(site.SiteId) && missionVisualsController == null)
                             {
                                 __instance.TimerController.gameObject.SetChildrenVisibility(true);
@@ -336,6 +378,13 @@ namespace TFTV
                                 TFTVBaseDefenseTactical.AttackProgress = progress;
                             }
                         }
+                        if (site.ExpiringTimerAt != null && !PhoenixBasesUnderAttack.ContainsKey(site.SiteId) && missionVisualsController == null)
+                        {
+
+                            __instance.TimerController.gameObject.SetChildrenVisibility(false);
+
+                        }
+
                     }
                 }
                 catch (Exception e)

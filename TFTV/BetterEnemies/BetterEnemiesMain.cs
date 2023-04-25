@@ -20,7 +20,7 @@ namespace TFTV.BetterEnemies
                 Missions.Change_Some_Missions();
                 PerceptionAdjustments.Change_Perception(); 
                 ResearchChanges.Create_ResearchRequirements();
-                Scylla.Chnage_Queen();
+                Scylla.Change_Queen();
                 SirenChiron.Change_SirenChiron();
                 SmallPandorans.Change_SmallCharactersAndSentinels();
                 WillPower.Change_WillPower();

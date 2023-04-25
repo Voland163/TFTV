@@ -3024,7 +3024,8 @@ namespace TFTV
                                                 missionTypeDef.name == "StoryNJ_Chain1_CustomMissionTypeDef" ||
                                                 missionTypeDef.name == "StoryPX13_CustomMissionTypeDef" ||
                                                 missionTypeDef.name == "StorySYN0_CustomMissionTypeDef" ||
-                                                missionTypeDef.name == "StorySYN4_CustomMissionTypeDef")
+                                                missionTypeDef.name == "StorySYN4_CustomMissionTypeDef"||
+                                                    missionTypeDef.name == "StorySYN5_CustomMissionTypeDef")
                                             {
                                                 data.FactionDef = banditFaction;
                                                 //  TFTVLogger.Always("In mission " + missionTypeDef.name + " the enemy faction is " + data.FactionDef.name);
