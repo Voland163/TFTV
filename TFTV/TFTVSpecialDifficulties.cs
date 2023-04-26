@@ -467,7 +467,6 @@ namespace TFTV
 
                     if (mission.MissionDef.Tags.Contains(havenDefenseTag))
                     {
-
                         GeoLevelController geoLevel = mission.Site.GeoLevel;
 
                         if (TFTVVoidOmens.CheckFordVoidOmensInPlay(geoLevel).Contains(18) || CheckGeoscapeSpecialDifficultySettings(geoLevel) != 0)
@@ -512,9 +511,9 @@ namespace TFTV
                             ResourceMultiplier = config.amountOfExoticResources;
                         }
 
-                        float amountLivingCrystal = 300 * ResourceMultiplier;
-                        float amountOrichalcum = 250 * ResourceMultiplier;
-                        float amountProtean = 250 * ResourceMultiplier;
+                        float amountLivingCrystal = 150 * ResourceMultiplier;
+                        float amountOrichalcum = 125 * ResourceMultiplier;
+                        float amountProtean = 125 * ResourceMultiplier;
 
                         foreach (MissionTagDef tag in list)
                         {
@@ -524,15 +523,15 @@ namespace TFTV
                                 {
                                     ResourcePack resources = new ResourcePack(__instance.Resources);
 
-                                    if (resources.Count > 1)
+                                    if (resources.Count > 0)
                                     {
                                         resources.Clear();
-                                        resources.Add(new ResourceUnit(ResourceType.Orichalcum, 250 * ResourceMultiplier));
+                                        resources.Add(new ResourceUnit(ResourceType.Orichalcum, amountOrichalcum));
 
                                     }
                                     else
                                     {
-                                        resources.Add(new ResourceUnit(ResourceType.Orichalcum, 250 * ResourceMultiplier));
+                                        resources.Add(new ResourceUnit(ResourceType.Orichalcum, amountOrichalcum));
 
                                     }
                                     rewardDescription.Resources.Clear();
@@ -543,15 +542,15 @@ namespace TFTV
                                 {
                                     ResourcePack resources = new ResourcePack(__instance.Resources);
 
-                                    if (resources.Count > 1)
+                                    if (resources.Count > 0)
                                     {
                                         resources.Clear();
-                                        resources.Add(new ResourceUnit(ResourceType.LivingCrystals, 300 * ResourceMultiplier));
+                                        resources.Add(new ResourceUnit(ResourceType.LivingCrystals, amountLivingCrystal));
 
                                     }
                                     else
                                     {
-                                        resources.Add(new ResourceUnit(ResourceType.LivingCrystals, 300 * ResourceMultiplier));
+                                        resources.Add(new ResourceUnit(ResourceType.LivingCrystals, amountLivingCrystal));
 
                                     }
                                     rewardDescription.Resources.Clear();
@@ -562,15 +561,15 @@ namespace TFTV
                                 {
                                     ResourcePack resources = new ResourcePack(__instance.Resources);
 
-                                    if (resources.Count > 1)
+                                    if (resources.Count > 0)
                                     {
                                         resources.Clear();
-                                        resources.Add(new ResourceUnit(ResourceType.ProteanMutane, 250 * ResourceMultiplier));
+                                        resources.Add(new ResourceUnit(ResourceType.ProteanMutane, amountProtean));
 
                                     }
                                     else
                                     {
-                                        resources.Add(new ResourceUnit(ResourceType.ProteanMutane, 250 * ResourceMultiplier));
+                                        resources.Add(new ResourceUnit(ResourceType.ProteanMutane, amountProtean));
 
                                     }
                                     rewardDescription.Resources.Clear();

@@ -14,12 +14,15 @@ namespace TFTV
 
     public class TFTVConfig : ModConfig
     {
-
-
         //Default settings
         [ConfigField(text: "DEFAULT TFTV SETTINGS",
-            description: "Sets all settings to default, to provide the Terror from the Void experience as envisioned by its creators")]
+            description: "Sets all settings to default, to provide the Terror from the Void experience as envisioned by its creators.")]
         public bool defaultSettings = false;
+
+        //BetterEnemies
+        [ConfigField(text: "MAKE PANDORANS STRONGER",
+       description: "Applies the changes from Dtony BetterEnemies that make Pandorans more of a challenge.")]
+        public bool BetterEnemiesOn = false;
 
         [ConfigField(text: "OVERRIDE ROOKIE DIFFICULTY SETTINGS",
           description: "Certain config settings are set by default to a certain level for Rookie (see each config option for details). If you want to override them, check this box.")]
@@ -27,12 +30,12 @@ namespace TFTV
 
         [ConfigField(text: "EASY TACTICAL",
           description: "All enemies gain a special trait increasing damage done to them by 50%, Pandorans never have more than 20 armor, Scylla and Node have less HP. " +
-            "All Phoenix operatives gain a special trait increasing their damage resistance by 50%. Set to true on Rookie by default")]
+            "All Phoenix operatives gain a special trait increasing their damage resistance by 50%. Set to true on Rookie by default.")]
         public bool EasyTactical = false;
 
         [ConfigField(text: "EASY GEOSCAPE",
-          description: "All diplo rewards, resource rewards from missions, research output are doubled, and all diplo penalties are halved " +
-            " Set to true on Rookie by default")]
+          description: "All diplo rewards, resource rewards from missions, research output are doubled, and all diplo penalties are halved. " +
+            " Set to true on Rookie by default.")]
         public bool EasyGeoscape = false;
 
         [ConfigField(text: "I AM ETERMES",
@@ -41,7 +44,7 @@ namespace TFTV
 
         [ConfigField(text: "PLAY WITH MORE MIST VOID OMEN",
             description: "If you are playing on a Low-end system and experience lag with this Void Omen, you can turn it off here. This will prevent it from rolling" +
-            " and if already rolled, will prevent it from having any effect")]
+            " and if already rolled, will prevent it from having any effect.")]
         public bool MoreMistVO = true;
 
         [ConfigField(text: "SKIP MOVIES",
@@ -52,7 +55,7 @@ namespace TFTV
         [ConfigField(text: "AMOUNT OF EXOTIC RESOURCES",
          description: "Choose the amount of Exotic Resources you want to have in your game per playthrough. Each unit provides enough resources to manufacture one set of Impossible Weapons. " +
           "So, if you want to have two full sets, set this number to 2, and so on. By default, this is set by the difficulty level: 2.5 on Rookie, 2 on Veteran, 1.5 on Hero, 1 on Legend. " +
-          "Need to restart the game for the changes to take effect")]
+          "Need to restart the game for the changes to take effect.")]
         public float amountOfExoticResources = 1f;
 
         [ConfigField(text: "IMPOSSIBLE WEAPONS ADJUSTMENTS", description: "In TFTV, Ancient Weapons are replaced by the Impossible Weapons (IW) " +
@@ -89,7 +92,7 @@ namespace TFTV
         // These settings determine amount of resources player can acquire:
         [ConfigField(text: "Number of scavenging sites",
             description: "Total number of scavenging sites generated on game start, not counting overgrown sites\n" +
-            "(Vanilla: 16, TFTV default 8, because Ambushes generate additional resources)\n" +
+            "(Vanilla: 16, TFTV default 8, because Ambushes generate additional resources).\n" +
             "Will not have any effect on a game in progress.")]
         public int InitialScavSites = 8; // 16 on Vanilla
 
@@ -210,6 +213,8 @@ namespace TFTV
             description: "Set the amount of bolts for the magazine of the advanced crossbow (Psyche CRB IV)")]
         public int VenomCrossbow_Ammo = 3;
 
+
+        
 
     }
 }

@@ -8,11 +8,14 @@ using PhoenixPoint.Geoscape.Entities.Sites;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
 using PhoenixPoint.Tactical.Entities;
+using PhoenixPoint.Tactical.Entities.DamageKeywords;
+using PhoenixPoint.Tactical.Entities.Statuses;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using UnityEngine;
 
 namespace TFTV
 {
@@ -26,6 +29,33 @@ namespace TFTV
         private static readonly GeoAlienBaseTypeDef lairType = DefCache.GetDef<GeoAlienBaseTypeDef>("Lair_GeoAlienBaseTypeDef");
         private static readonly GeoAlienBaseTypeDef citadelType = DefCache.GetDef<GeoAlienBaseTypeDef>("Citadel_GeoAlienBaseTypeDef");
         private static readonly GeoAlienBaseTypeDef palaceType = DefCache.GetDef<GeoAlienBaseTypeDef>("Palace_GeoAlienBaseTypeDef");
+        public static int ScyllaCount = 0;
+
+
+
+        [HarmonyPatch(typeof(ShreddingDamageKeywordData), "ProcessKeywordDataInternal")]
+        internal static class TFTV_ShreddingDamageKeywordData_ProcessKeywordDataInternal_ScyllaImmunity_patch
+        {
+
+            public static void Postfix(ref DamageAccumulation.TargetData data)
+            {
+                DamageMultiplierStatusDef queenImmunity = DefCache.GetDef<DamageMultiplierStatusDef>("E_BlastImmunityStatus [Queen_GunsFire_ShootAbilityDef]");
+
+                if (data.Target.GetActor() != null && data.Target.GetActor().Status != null)
+                {
+                    TacticalActorBase actor = data.Target.GetActor();
+
+                    if (actor.Status.HasStatus(queenImmunity))
+                    {
+                        data.DamageResult.ArmorDamage = Mathf.Floor(data.DamageResult.ArmorDamage * 0);
+                    }
+                }
+            }
+        }
+
+
+
+
 
         [HarmonyPatch(typeof(GeoAlienFaction), "UpdateFactionDaily")]
         internal static class BC_GeoAlienFaction_UpdateFactionDaily_patch
@@ -125,11 +155,13 @@ namespace TFTV
 
                     PhoenixStatisticsManager statisticsManager = (PhoenixStatisticsManager)UnityEngine.Object.FindObjectOfType(typeof(PhoenixStatisticsManager));
 
-                    int citadelCount = statisticsManager.CurrentGameStats.GeoscapeStats.SurvivingCitadels + statisticsManager.CurrentGameStats.GeoscapeStats.DestroyedCitadels;
+                    /*int citadelCount = statisticsManager.CurrentGameStats.GeoscapeStats.SurvivingCitadels + statisticsManager.CurrentGameStats.GeoscapeStats.DestroyedCitadels;
                     TFTVLogger.Always("There are " + statisticsManager.CurrentGameStats.GeoscapeStats.SurvivingCitadels + " existing citadels and " + statisticsManager.CurrentGameStats.GeoscapeStats.DestroyedCitadels
-                        + " have been destroyed, so Citadel counter is " + citadelCount);
+                        + " have been destroyed, so Citadel counter is " + citadelCount);*/
 
-                    SpawnScylla(__instance, RollScylla(citadelCount));
+                    ScyllaCount += 1;
+
+                    SpawnScylla(__instance, RollScylla(ScyllaCount));
                     return false;
 
                 }
@@ -161,7 +193,7 @@ namespace TFTV
 
         }
 
-        public static TacCharacterDef RollScylla(int citadels)
+        public static TacCharacterDef RollScylla(int scyllasAlreadySpawned)
         {
             try
             {
@@ -185,7 +217,7 @@ namespace TFTV
                 DateTime myDate = new DateTime(1, 1, 1);
 
                 UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
-                int roll = UnityEngine.Random.Range(citadels, citadels+1);
+                int roll = UnityEngine.Random.Range(scyllasAlreadySpawned, scyllasAlreadySpawned+1);
                 if (roll > allScyllas.Count - 1) 
                 {
                    int newRoll = UnityEngine.Random.Range(allScyllas.Count-4, allScyllas.Count - 1);

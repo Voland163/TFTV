@@ -66,9 +66,9 @@ namespace TFTV
         //infiltrator
         private static readonly AbilityDef surpriseAttack = DefCache.GetDef<AbilityDef>("SurpriseAttack_AbilityDef");
         private static readonly AbilityDef decoy = DefCache.GetDef<AbilityDef>("Decoy_AbilityDef");
-        private static readonly AbilityDef weakspot = DefCache.GetDef<AbilityDef>("WeakSpot_AbilityDef");
-        private static readonly AbilityDef vanish = DefCache.GetDef<AbilityDef>("Vanish_AbilityDef");
-        private static readonly AbilityDef sneakAttack = DefCache.GetDef<AbilityDef>("SneakAttack_AbilityDef");
+        private static readonly AbilityDef neuralFeedback = DefCache.GetDef<AbilityDef>("NeuralFeedback_AbilityDef");
+        private static readonly AbilityDef jammingField = DefCache.GetDef<AbilityDef>("JammingFiled_AbilityDef");
+        private static readonly AbilityDef parasychosis = DefCache.GetDef<AbilityDef>("Parasychosis_AbilityDef");
 
         //priest
 
@@ -1020,7 +1020,7 @@ namespace TFTV
                 List<AbilityDef> assaultAbilities = new List<AbilityDef> { quickAim, killAndRun, onslaught, readyForAction, rapidClearance };
                 List<AbilityDef> berserkerAbilities = new List<AbilityDef> { dash, cqc, bloodlust, ignorePain, adrenalineRush };
                 List<AbilityDef> heavyAbilities = new List<AbilityDef> { returnFire, hunkerDown, skirmisher, shredResistant, rageBurst };
-                List<AbilityDef> infiltratorAbilities = new List<AbilityDef> { surpriseAttack, decoy, weakspot, vanish, sneakAttack };
+                List<AbilityDef> infiltratorAbilities = new List<AbilityDef> { surpriseAttack, decoy, neuralFeedback, jammingField, parasychosis };
                 List<AbilityDef> priestAbilities = new List<AbilityDef> { mindControl, inducePanic, mindSense, psychicWard, mindCrush };
                 List<AbilityDef> sniperAbilities = new List<AbilityDef> { extremeFocus, armorBreak, masterMarksman, inspire, markedForDeath };
                 List<AbilityDef> technicianAbilities = new List<AbilityDef> { fastUse, electricReinforcement, stability, fieldMedic, amplifyPain };
@@ -1045,8 +1045,8 @@ namespace TFTV
                 discardedAbilities.Remove(skirmisher);
                 discardedAbilities.Remove(shredResistant);
                 discardedAbilities.Remove(surpriseAttack);
-                discardedAbilities.Remove(weakspot);
-                discardedAbilities.Remove(sneakAttack);
+                discardedAbilities.Remove(neuralFeedback);
+                discardedAbilities.Remove(parasychosis);
                 discardedAbilities.Remove(mindControl);
                 discardedAbilities.Remove(mindSense);
                 discardedAbilities.Remove(mindCrush);
@@ -1143,15 +1143,15 @@ namespace TFTV
                 }
                 if (classTagDef.name.Contains("Infiltrator"))
                 {
-                    if (level == 7)
+                    if (level >= 6)
                     {
-                        tacticalActor.AddAbility(sneakAttack, tacticalActor);
-                        tacticalActor.AddAbility(weakspot, tacticalActor);
+                        tacticalActor.AddAbility(jammingField, tacticalActor);
+                        tacticalActor.AddAbility(neuralFeedback, tacticalActor);
                         tacticalActor.AddAbility(surpriseAttack, tacticalActor);
                     }
                     else if (level >= 5)
                     {
-                        tacticalActor.AddAbility(weakspot, tacticalActor);
+                        tacticalActor.AddAbility(neuralFeedback, tacticalActor);
                         tacticalActor.AddAbility(surpriseAttack, tacticalActor);
 
                     }

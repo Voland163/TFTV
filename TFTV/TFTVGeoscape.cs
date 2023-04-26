@@ -39,6 +39,7 @@ namespace TFTV
         public bool GlobalLOTAReworkCheck = TFTVBetaSaveGamesFixes.LOTAReworkGlobalCheck;
         public Dictionary<int, Dictionary<string, double>> PhoenixBasesUnderAttack = TFTVBaseDefenseGeoscape.PhoenixBasesUnderAttack;
         public List<int> InfestedPhoenixBases = TFTVBaseDefenseGeoscape.PhoenixBasesInfested;
+        public int SpawnedScyllas = TFTVPandoranProgress.ScyllaCount;
      //   public string PhoenixBaseUnderAttack = TFTVExperimental.PhoenixBaseUnderAttack;
     //    public PhoenixBaseAttacker baseAttacker = TFTVExperimental.phoenixBaseAttacker;
       //  public PPFactionDef factionAttackingPheonixBase = TFTVExperimental.FactionAttackingPhoenixBase;
@@ -90,6 +91,7 @@ namespace TFTV
             TFTVAncients.CheckImpossibleWeaponsAdditionalRequirements(gsController);
             TFTVExperimental.CheckForFireQuenchers(gsController);
             TFTVSpecialDifficulties.CheckForSpecialDifficulties();
+            TFTVBetterEnemies.ImplementBetterEnemies();
             
         }
         /// <summary>
@@ -136,6 +138,7 @@ namespace TFTV
                 GlobalLOTAReworkCheck = TFTVBetaSaveGamesFixes.LOTAReworkGlobalCheck,
                 PhoenixBasesUnderAttack = TFTVBaseDefenseGeoscape.PhoenixBasesUnderAttack,
                 InfestedPhoenixBases = TFTVBaseDefenseGeoscape.PhoenixBasesInfested,
+                SpawnedScyllas = TFTVPandoranProgress.ScyllaCount,
                
 
 
@@ -183,6 +186,7 @@ namespace TFTV
             TFTVBetaSaveGamesFixes.LOTAReworkGlobalCheck = data.GlobalLOTAReworkCheck;
             TFTVBaseDefenseGeoscape.PhoenixBasesUnderAttack = data.PhoenixBasesUnderAttack;
             TFTVBaseDefenseGeoscape.PhoenixBasesInfested = data.InfestedPhoenixBases;
+            TFTVPandoranProgress.ScyllaCount = data.SpawnedScyllas;
             TFTVBetaSaveGamesFixes.CheckNewLOTASavegame();
             //TFTVExperimental.FactionAttackingPhoenixBase = data.factionAttackingPheonixBase;
             //TFTVExperimental.CheckIfFactionAttackingPhoenixBase();

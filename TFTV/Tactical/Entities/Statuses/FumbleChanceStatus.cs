@@ -1,6 +1,7 @@
 ﻿using Base.Entities.Statuses;
 using Base.Serialization.General;
 using HarmonyLib;
+using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.Entities.Statuses;
@@ -17,7 +18,12 @@ namespace TFTV.Tactical.Entities.Statuses
         public override void OnApply(StatusComponent statusComponent)
         {
             base.OnApply(statusComponent);
-            if (TacticalActor == null)
+            bool actorHasRestrictedWeapon = false;
+            if (TacticalActor != null && FumbleChanceStatusDef.RestrictedDeliveryType != default)
+            {
+                actorHasRestrictedWeapon = TacticalActor.Equipments.GetWeapons().Any(weapon => weapon.WeaponDef.DamagePayload.DamageDeliveryType == FumbleChanceStatusDef.RestrictedDeliveryType);
+            }
+            if (TacticalActor == null || !actorHasRestrictedWeapon)
             {
                 RequestUnapply(statusComponent);
                 return;

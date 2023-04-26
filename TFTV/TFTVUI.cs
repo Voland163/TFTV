@@ -2,9 +2,10 @@
 using Base.Core;
 using Base.Entities.Statuses;
 using Base.Levels;
-using Base.UI;
 using Base.UI.VideoPlayback;
+using Epic.OnlineServices;
 using HarmonyLib;
+using Mtree;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.Characters;
@@ -12,10 +13,13 @@ using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.Entities.Items;
 using PhoenixPoint.Common.Game;
+using PhoenixPoint.Common.UI;
 using PhoenixPoint.Common.View.ViewControllers;
 using PhoenixPoint.Common.View.ViewModules;
 using PhoenixPoint.Geoscape.Entities;
+using PhoenixPoint.Geoscape.Entities.PhoenixBases;
 using PhoenixPoint.Geoscape.Levels;
+using PhoenixPoint.Geoscape.Levels.Factions;
 using PhoenixPoint.Geoscape.View;
 using PhoenixPoint.Geoscape.View.DataObjects;
 using PhoenixPoint.Geoscape.View.ViewControllers;
@@ -31,6 +35,7 @@ using PhoenixPoint.Tactical.Entities.DamageKeywords;
 using PhoenixPoint.Tactical.Entities.Effects.DamageTypes;
 using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.UI;
+using PhoenixPoint.Tactical.View;
 using PhoenixPoint.Tactical.View.ViewControllers;
 using PhoenixPoint.Tactical.View.ViewStates;
 using System;
@@ -245,7 +250,7 @@ namespace TFTV
 
 
         //Patch to show correct damage prediction with mutations and Delirium 
-        [HarmonyPatch(typeof(Utils), "GetDamageKeywordValue")]
+        [HarmonyPatch(typeof(PhoenixPoint.Tactical.UI.Utils), "GetDamageKeywordValue")]
         public static class TFTV_Utils_GetDamageKeywordValue_DamagePredictionMutations_Patch
         {
             public static void Postfix(DamagePayload payload, DamageKeywordDef damageKeyword, TacticalActor tacticalActor, ref float __result)
@@ -259,7 +264,7 @@ namespace TFTV
 
                     if (tacticalActor != null && (damageKeyword.DamageTypeDef == projectileDamage || damageKeyword.DamageTypeDef == blastDamage) && damageKeyword != damageKeywords.SyphonKeyword) //&& damageKeyword is PiercingDamageKeywordDataDef == false) 
                     {
-                       
+
                         float numberOfMutations = 0;
 
                         //   TFTVLogger.Always("GetDamageKeywordValue check passed");
@@ -277,7 +282,7 @@ namespace TFTV
                             // TFTVLogger.Always("damage value is " + payload.GenerateDamageValue(tacticalActor.CharacterStats.BonusAttackDamage));
 
                             __result = payload.GenerateDamageValue(tacticalActor.CharacterStats.BonusAttackDamage) * (1f + (numberOfMutations * 2) / 100 * (float)tacticalActor.CharacterStats.Corruption);
-                            TFTVLogger.Always($"GetDamageKeywordValue invoked for {tacticalActor.DisplayName} and result is {__result}");
+                           // TFTVLogger.Always($"GetDamageKeywordValue invoked for {tacticalActor.DisplayName} and result is {__result}");
                             //  TFTVLogger.Always("result is " + __result +", damage increase is " + (1f + (((numberOfMutations * 2) / 100) * (float)tacticalActor.CharacterStats.Corruption)));
                         }
 
@@ -289,6 +294,192 @@ namespace TFTV
                 }
             }
         }
+
+        [HarmonyPatch(typeof(GeoCharacter), "GetClassViewElementDefs")]
+
+        internal static class TFTV_GeoCharacter_GetClassViewElementDefs_patch
+        {
+            public static void Postfix(ref ICollection<ViewElementDef> __result, GeoCharacter __instance)
+            {
+                try
+                {
+                    if (__instance.IsMutoid)
+                    {
+
+                        ClassTagDef assault = DefCache.GetDef<ClassTagDef>("Assault_ClassTagDef");
+                        ClassTagDef heavy = DefCache.GetDef<ClassTagDef>("Heavy_ClassTagDef");
+                        ClassTagDef sniper = DefCache.GetDef<ClassTagDef>("Sniper_ClassTagDef");
+                        ClassTagDef berserker = DefCache.GetDef<ClassTagDef>("Berserker_ClassTagDef");
+                        ClassTagDef priest = DefCache.GetDef<ClassTagDef>("Priest_ClassTagDef");
+                        ClassTagDef technician = DefCache.GetDef<ClassTagDef>("Technician_ClassTagDef");
+                        ClassTagDef infiltrator = DefCache.GetDef<ClassTagDef>("Infiltrator_ClassTagDef");
+
+                        ViewElementDef assaultVE = DefCache.GetDef<ViewElementDef>("E_ViewElement [Assault_ClassProficiency_AbilityDef]");
+                        ViewElementDef heavyVE = DefCache.GetDef<ViewElementDef>("E_ViewElement [Heavy_ClassProficiency_AbilityDef]");
+                        ViewElementDef sniperVE = DefCache.GetDef<ViewElementDef>("E_ViewElement [Sniper_ClassProficiency_AbilityDef]");
+                        ViewElementDef berserkerVE = DefCache.GetDef<ViewElementDef>("E_ViewElement [Berserker_ClassProficiency_AbilityDef]");
+                        ViewElementDef priestVE = DefCache.GetDef<ViewElementDef>("E_ViewElement [Priest_ClassProficiency_AbilityDef]");
+                        ViewElementDef technicianVE = DefCache.GetDef<ViewElementDef>("E_ViewElement [Technician_ClassProficiency_AbilityDef]");
+                        ViewElementDef infiltratorVE = DefCache.GetDef<ViewElementDef>("E_ViewElement [Infiltrator_ClassProficiency_AbilityDef]");
+
+                        ViewElementDef mutoidVE = DefCache.GetDef<ViewElementDef>("E_ViewElement [MutoidSpecializationDef]");
+
+                        Dictionary<ClassTagDef, ViewElementDef> dictionary = new Dictionary<ClassTagDef, ViewElementDef>(){
+                            { assault, assaultVE },
+                            { heavy, heavyVE },
+                            { sniper, sniperVE },
+                            { berserker, berserkerVE },
+                            { priest, priestVE },
+                            { technician, technicianVE },
+                            { infiltrator, infiltratorVE }
+                        };
+
+                        foreach (ClassTagDef classTag in dictionary.Keys)
+                        {
+                            if (__instance.ClassTags.Contains(classTag))
+                            {
+                                __result = new ViewElementDef[2] { mutoidVE, dictionary[classTag] };
+                            }
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+
+            }
+        }
+
+        //UIStateBuyMutoid
+
+        [HarmonyPatch(typeof(GeoPhoenixFaction), "AddRecruitToContainerFinal")]
+
+        internal static class TFTV_GeoPhoenixFaction_AddRecruitToContainerFinal_patch
+        {
+            public static void Prefix(ref GeoCharacter recruit)
+            {
+                try
+                {
+                    if (recruit.IsMutoid)
+                    {
+
+                        ClassTagDef assault = DefCache.GetDef<ClassTagDef>("Assault_ClassTagDef");
+                        ClassTagDef heavy = DefCache.GetDef<ClassTagDef>("Heavy_ClassTagDef");
+                        ClassTagDef sniper = DefCache.GetDef<ClassTagDef>("Sniper_ClassTagDef");
+                        ClassTagDef berserker = DefCache.GetDef<ClassTagDef>("Berserker_ClassTagDef");
+                        ClassTagDef priest = DefCache.GetDef<ClassTagDef>("Priest_ClassTagDef");
+                        ClassTagDef technician = DefCache.GetDef<ClassTagDef>("Technician_ClassTagDef");
+                        ClassTagDef infiltrator = DefCache.GetDef<ClassTagDef>("Infiltrator_ClassTagDef");
+
+                        ViewElementDef assaultVE = DefCache.GetDef<ViewElementDef>("E_ViewElement [Assault_ClassProficiency_AbilityDef]");
+                        ViewElementDef heavyVE = DefCache.GetDef<ViewElementDef>("E_ViewElement [Heavy_ClassProficiency_AbilityDef]");
+                        ViewElementDef sniperVE = DefCache.GetDef<ViewElementDef>("E_ViewElement [Sniper_ClassProficiency_AbilityDef]");
+                        ViewElementDef berserkerVE = DefCache.GetDef<ViewElementDef>("E_ViewElement [Berserker_ClassProficiency_AbilityDef]");
+                        ViewElementDef priestVE = DefCache.GetDef<ViewElementDef>("E_ViewElement [Priest_ClassProficiency_AbilityDef]");
+                        ViewElementDef technicianVE = DefCache.GetDef<ViewElementDef>("E_ViewElement [Technician_ClassProficiency_AbilityDef]");
+                        ViewElementDef infiltratorVE = DefCache.GetDef<ViewElementDef>("E_ViewElement [Infiltrator_ClassProficiency_AbilityDef]");
+                    
+                        Dictionary<ClassTagDef, ViewElementDef> dictionary = new Dictionary<ClassTagDef, ViewElementDef>(){
+                            { assault, assaultVE },
+                            { heavy, heavyVE },
+                            { sniper, sniperVE },
+                            { berserker, berserkerVE },
+                            { priest, priestVE },
+                            { technician, technicianVE },
+                            { infiltrator, infiltratorVE }
+                        };
+
+                        foreach (ClassTagDef classTag in dictionary.Keys)
+                        {
+                            if (recruit.ClassTags.Contains(classTag))
+                            {
+                               recruit.Identity.Name = "Mutoid " + dictionary[classTag].DisplayName2.Localize();
+                            }
+                        }
+                    }
+
+
+
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+        }
+
+
+
+        [HarmonyPatch(typeof(TacticalActorBase), "UpdateClassViewElementDefs")]
+
+        internal static class TFTV_TacticalActorBase_UpdateClassViewElementDefs_patch
+        {
+            public static void Postfix(TacticalActorBase __instance, ref List<ViewElementDef> ____classViewElementDefs)
+            {
+                try
+
+                {
+                    GameTagDef mutoidTag = DefCache.GetDef<GameTagDef>("Mutoid_ClassTagDef");
+                   
+                    
+                    if(__instance is TacticalActor tacticalActor && tacticalActor.GameTags.Contains(mutoidTag)) 
+                    { 
+
+                        TFTVLogger.Always($"{tacticalActor.DisplayName}");
+                        ClassTagDef assault = DefCache.GetDef<ClassTagDef>("Assault_ClassTagDef");
+                        ClassTagDef heavy = DefCache.GetDef<ClassTagDef>("Heavy_ClassTagDef");
+                        ClassTagDef sniper = DefCache.GetDef<ClassTagDef>("Sniper_ClassTagDef");
+                        ClassTagDef berserker = DefCache.GetDef<ClassTagDef>("Berserker_ClassTagDef");
+                        ClassTagDef priest = DefCache.GetDef<ClassTagDef>("Priest_ClassTagDef");
+                        ClassTagDef technician = DefCache.GetDef<ClassTagDef>("Technician_ClassTagDef");
+                        ClassTagDef infiltrator = DefCache.GetDef<ClassTagDef>("Infiltrator_ClassTagDef");
+
+                        ViewElementDef assaultVE = DefCache.GetDef<ViewElementDef>("E_ViewElement [Assault_ClassProficiency_AbilityDef]");
+                        ViewElementDef heavyVE = DefCache.GetDef<ViewElementDef>("E_ViewElement [Heavy_ClassProficiency_AbilityDef]");
+                        ViewElementDef sniperVE = DefCache.GetDef<ViewElementDef>("E_ViewElement [Sniper_ClassProficiency_AbilityDef]");
+                        ViewElementDef berserkerVE = DefCache.GetDef<ViewElementDef>("E_ViewElement [Berserker_ClassProficiency_AbilityDef]");
+                        ViewElementDef priestVE = DefCache.GetDef<ViewElementDef>("E_ViewElement [Priest_ClassProficiency_AbilityDef]");
+                        ViewElementDef technicianVE = DefCache.GetDef<ViewElementDef>("E_ViewElement [Technician_ClassProficiency_AbilityDef]");
+                        ViewElementDef infiltratorVE = DefCache.GetDef<ViewElementDef>("E_ViewElement [Infiltrator_ClassProficiency_AbilityDef]");
+
+                        TacticalAbilityViewElementDef mutoidVE = DefCache.GetDef<TacticalAbilityViewElementDef>("E_ViewElement [Mutoid_ClassProficiency_AbilityDef]");
+
+                        Dictionary<ClassTagDef, ViewElementDef> dictionary = new Dictionary<ClassTagDef, ViewElementDef>(){
+                            { assault, assaultVE },
+                            { heavy, heavyVE },
+                            { sniper, sniperVE },
+                            { berserker, berserkerVE },
+                            { priest, priestVE },
+                            { technician, technicianVE },
+                            { infiltrator, infiltratorVE }
+                        };
+
+                        foreach (ClassTagDef classTag in dictionary.Keys)
+                        {
+                            if (tacticalActor.GameTags.Contains(classTag))
+                            {
+                              
+                                ____classViewElementDefs = new List <ViewElementDef> { mutoidVE, dictionary[classTag] };
+                                TFTVLogger.Always("Here we are");
+
+                            }
+                        }
+
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+        }
+
+        
+
+
+
 
 
         //Adapted from Mad´s Assorted Adjustments; this patch changes Geoescape UI
@@ -1127,76 +1318,76 @@ namespace TFTV
             }
         }
 
-       /* [HarmonyPatch(typeof(UIModuleSoldierEquip), "Init")]
-        internal static class TFTV_UIModuleSoldierEquip_Awake_SuperExperiment_Patch
-        {
-            private static void Postfix(UIModuleSoldierEquip __instance)
-            {
-                try
-                {
-                  
-                     Type sourceType = Type.GetType("UIModuleSoldierCustomization");
+        /* [HarmonyPatch(typeof(UIModuleSoldierEquip), "Init")]
+         internal static class TFTV_UIModuleSoldierEquip_Awake_SuperExperiment_Patch
+         {
+             private static void Postfix(UIModuleSoldierEquip __instance)
+             {
+                 try
+                 {
 
-                    // Get a reference to the UIStateSoldierCustomization instance
-                    Debug.Log("Finding UIStateSoldierCustomization object");
-                    GameObject uiState = (GameObject)UnityEngine.Object.FindObjectOfType(sourceType);
+                      Type sourceType = Type.GetType("UIModuleSoldierCustomization");
 
-                    if (uiState == null)
-                    {
-                        Debug.LogError("Could not find UIStateSoldierCustomization object");
-                        return;
-                    }
+                     // Get a reference to the UIStateSoldierCustomization instance
+                     Debug.Log("Finding UIStateSoldierCustomization object");
+                     GameObject uiState = (GameObject)UnityEngine.Object.FindObjectOfType(sourceType);
 
-
-                    // Get a reference to the PhoenixGeneralButton with the text "HIDE HELMET"
-                    PhoenixGeneralButton targetButton = null;
-
-                    foreach (PhoenixGeneralButton button in uiState.GetComponentsInChildren<PhoenixGeneralButton>(true))
-                    {
-
-                        TFTVLogger.Always($"{button.name}");
-                        Text text = button.gameObject.GetComponentInChildren<Text>();
+                     if (uiState == null)
+                     {
+                         Debug.LogError("Could not find UIStateSoldierCustomization object");
+                         return;
+                     }
 
 
-                        if (text.text == "HIDE HELMET")
-                        {
-                            TFTVLogger.Always($"Found the button!");
-                            targetButton = button;
-                            break;
-                        }
-                    }
+                     // Get a reference to the PhoenixGeneralButton with the text "HIDE HELMET"
+                     PhoenixGeneralButton targetButton = null;
 
-                    if (targetButton != null)
-                    {
-                        // Use reflection to get the type of the PhoenixGeneralButton
-                        Type buttonType = targetButton.GetType();
+                     foreach (PhoenixGeneralButton button in uiState.GetComponentsInChildren<PhoenixGeneralButton>(true))
+                     {
 
-                        // Create a new instance of the PhoenixGeneralButton type
-                        object newButton = Activator.CreateInstance(buttonType);
-
-                        // Copy relevant properties from the original button to the new button
-                        foreach (FieldInfo field in buttonType.GetFields(BindingFlags.Public | BindingFlags.Instance))
-                        {
-                            field.SetValue(newButton, field.GetValue(targetButton));
-                        }
-
-                        // Add the new button to the UIModuleSoldierEquip hierarchy
-                        // (assuming you already have a reference to the UIModuleSoldierEquip instance)
-                        GameObject newButtonObj = new GameObject("MyButton");
-                        newButtonObj.transform.SetParent(__instance.transform, false);
-                        newButtonObj.AddComponent(buttonType);
-                       // ((PhoenixGeneralButton)newButtonObj.GetComponent(buttonType)).Text.text = "NEW BUTTON TEXT";
-                    }
+                         TFTVLogger.Always($"{button.name}");
+                         Text text = button.gameObject.GetComponentInChildren<Text>();
 
 
-                }
+                         if (text.text == "HIDE HELMET")
+                         {
+                             TFTVLogger.Always($"Found the button!");
+                             targetButton = button;
+                             break;
+                         }
+                     }
 
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-            }
-        }*/
+                     if (targetButton != null)
+                     {
+                         // Use reflection to get the type of the PhoenixGeneralButton
+                         Type buttonType = targetButton.GetType();
+
+                         // Create a new instance of the PhoenixGeneralButton type
+                         object newButton = Activator.CreateInstance(buttonType);
+
+                         // Copy relevant properties from the original button to the new button
+                         foreach (FieldInfo field in buttonType.GetFields(BindingFlags.Public | BindingFlags.Instance))
+                         {
+                             field.SetValue(newButton, field.GetValue(targetButton));
+                         }
+
+                         // Add the new button to the UIModuleSoldierEquip hierarchy
+                         // (assuming you already have a reference to the UIModuleSoldierEquip instance)
+                         GameObject newButtonObj = new GameObject("MyButton");
+                         newButtonObj.transform.SetParent(__instance.transform, false);
+                         newButtonObj.AddComponent(buttonType);
+                        // ((PhoenixGeneralButton)newButtonObj.GetComponent(buttonType)).Text.text = "NEW BUTTON TEXT";
+                     }
+
+
+                 }
+
+                 catch (Exception e)
+                 {
+                     TFTVLogger.Error(e);
+                 }
+             }
+         }*/
 
         //Patch to show correct encumbrance
         [HarmonyPatch(typeof(UIModuleSoldierEquip), "RefreshWeightSlider")]
@@ -1355,7 +1546,7 @@ namespace TFTV
         public static TacticalActor HookCharacterStatsForDeliriumShader = null;
 
 
-        
+
 
 
         [HarmonyPatch(typeof(SquadMemberScrollerController), "SetupFaceCorruptionShader")]
@@ -1447,7 +1638,7 @@ namespace TFTV
                                 }
                             }
 
-                          //  TFTVLogger.Always($"corruption shader result is {__result}");
+                            //  TFTVLogger.Always($"corruption shader result is {__result}");
                         }
                     }
 
@@ -1627,7 +1818,7 @@ namespace TFTV
                          }*/
 
 
-                        
+
 
                     }
 

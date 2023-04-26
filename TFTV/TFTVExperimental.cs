@@ -1,7 +1,6 @@
 ﻿using Base;
 using Base.Defs;
 using Base.Entities;
-using Base.UI;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities.GameTags;
@@ -17,8 +16,6 @@ using PhoenixPoint.Tactical.Entities.Effects.DamageTypes;
 using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.Entities.Statuses;
 using PhoenixPoint.Tactical.Entities.Weapons;
-using PhoenixPoint.Tactical.Levels;
-using PhoenixPoint.Tactical.Levels.FactionObjectives;
 using PhoenixPoint.Tactical.Levels.Missions;
 using PhoenixPoint.Tactical.Levels.Mist;
 using SETUtil.Extend;
@@ -39,8 +36,50 @@ namespace TFTV
 
         internal static Color purple = new Color32(149, 23, 151, 255);
         private static readonly DefRepository Repo = TFTVMain.Repo;
+        //  private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
 
         public static List<TacticalVoxel> VoxelsOnFire = new List<TacticalVoxel>();
+
+
+
+        [HarmonyPatch(typeof(TacticalActor), "OnAbilityExecuteFinished")]
+
+        public static class TacticalActor_OnAbilityExecuteFinished_Scylla_Experiment_patch
+        {
+            public static void Postfix(TacticalAbility ability, TacticalActor __instance, object parameter)
+            {
+                try
+                {
+                    ShootAbilityDef scyllaSpit = DefCache.GetDef<ShootAbilityDef>("GooSpit_ShootAbilityDef");
+                    ShootAbilityDef scyllaScream = DefCache.GetDef<ShootAbilityDef>("SonicBlast_ShootAbilityDef");
+
+                    //   TFTVLogger.Always($"ability {ability.TacticalAbilityDef.name} executed by {__instance.DisplayName}");
+                    if (ability.TacticalAbilityDef == scyllaSpit || ability.TacticalAbilityDef == scyllaScream)
+                    {
+                        StartPreparingShootAbilityDef scyllaStartPreparing = DefCache.GetDef<StartPreparingShootAbilityDef>("Queen_StartPreparing_AbilityDef");
+                        //    TFTVLogger.Always("Got here");
+
+
+
+                        StartPreparingShootAbility startPreparingShootAbility = __instance.GetAbilityWithDef<StartPreparingShootAbility>(scyllaStartPreparing);
+
+                        if (startPreparingShootAbility != null)
+                        {
+
+                            startPreparingShootAbility.Activate(parameter);
+                        }
+
+                    }
+
+                }
+
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+
+            }
+        }
 
 
         /* GeoHavenLeader
@@ -66,7 +105,7 @@ namespace TFTV
                     if (type == GeoVehicleModuleDef.GeoVehicleModuleBonusType.Recuperation)
                     {
                         TFTVConfig config = TFTVMain.Main.Config;
-                       
+
                         if (config.ActivateStaminaRecuperatonModule)
                         {
 
@@ -253,7 +292,7 @@ namespace TFTV
                             __result = false;
                         }
                         else
-                        { 
+                        {
                             GeoFaction phoenixFaction = __instance.Site.GeoLevel.PhoenixFaction;
                             PartyDiplomacy.Relation relation = __instance.Leader.Diplomacy.GetRelation(phoenixFaction);
                             if (relation.Diplomacy <= 0 && relation.Diplomacy > -50)
@@ -505,7 +544,7 @@ namespace TFTV
                             // List<TacticalVoxel> voxelsForMist = new List<TacticalVoxel>();
                             foreach (TacticalVoxel voxel in TFTVExperimental.VoxelsOnFire)
                             {
-                                if (voxel!=null && voxel.GetVoxelType() == TacticalVoxelType.Fire)
+                                if (voxel != null && voxel.GetVoxelType() == TacticalVoxelType.Fire)
                                 {
                                     //    TFTVLogger.Always("Got past the if check");
 
@@ -875,55 +914,55 @@ namespace TFTV
 
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
 
-       /* [HarmonyPatch(typeof(GeoMission), "PrepareLevel")]
-        public static class GeoMission_PrepareLevel_VOObjectives_Patch
-        {
-            public static void Postfix(TacMissionData missionData, GeoMission __instance)
-            {
-                try
-                {
-                   // TFTVLogger.Always("PrepareLevel invoked");
-                    GeoLevelController controller = __instance.Level;
-                    List<int> voidOmens = new List<int> { 3, 5, 7, 10, 15, 16, 19 };
+        /* [HarmonyPatch(typeof(GeoMission), "PrepareLevel")]
+         public static class GeoMission_PrepareLevel_VOObjectives_Patch
+         {
+             public static void Postfix(TacMissionData missionData, GeoMission __instance)
+             {
+                 try
+                 {
+                    // TFTVLogger.Always("PrepareLevel invoked");
+                     GeoLevelController controller = __instance.Level;
+                     List<int> voidOmens = new List<int> { 3, 5, 7, 10, 15, 16, 19 };
 
-                    List<FactionObjectiveDef> listOfFactionObjectives = missionData.MissionType.CustomObjectives.ToList();
+                     List<FactionObjectiveDef> listOfFactionObjectives = missionData.MissionType.CustomObjectives.ToList();
 
-                    // Remove faction objectives that correspond to void omens that are not in play
-                    for (int i = listOfFactionObjectives.Count - 1; i >= 0; i--)
-                    {
-                        FactionObjectiveDef objective = listOfFactionObjectives[i];
-                        if (objective.name.StartsWith("VOID_OMEN_TITLE_"))
-                        {
-                            int vo = int.Parse(objective.name.Substring("VOID_OMEN_TITLE_".Length));
-                            if (!TFTVVoidOmens.CheckFordVoidOmensInPlay(controller).Contains(vo))
-                            {
-                                TFTVLogger.Always("Removing VO " + vo + " from faction objectives");
-                                listOfFactionObjectives.RemoveAt(i);
-                            }
-                        }
-                    }
+                     // Remove faction objectives that correspond to void omens that are not in play
+                     for (int i = listOfFactionObjectives.Count - 1; i >= 0; i--)
+                     {
+                         FactionObjectiveDef objective = listOfFactionObjectives[i];
+                         if (objective.name.StartsWith("VOID_OMEN_TITLE_"))
+                         {
+                             int vo = int.Parse(objective.name.Substring("VOID_OMEN_TITLE_".Length));
+                             if (!TFTVVoidOmens.CheckFordVoidOmensInPlay(controller).Contains(vo))
+                             {
+                                 TFTVLogger.Always("Removing VO " + vo + " from faction objectives");
+                                 listOfFactionObjectives.RemoveAt(i);
+                             }
+                         }
+                     }
 
-                    // Add faction objectives for void omens that are in play
-                    foreach (int vo in voidOmens)
-                    {
-                        if (TFTVVoidOmens.CheckFordVoidOmensInPlay(controller).Contains(vo))
-                        {
-                            if (!listOfFactionObjectives.Any(o => o.name == "VOID_OMEN_TITLE_" + vo))
-                            {
-                                TFTVLogger.Always("Adding VO " + vo + " to faction objectives");
-                                listOfFactionObjectives.Add(DefCache.GetDef<FactionObjectiveDef>("VOID_OMEN_TITLE_" + vo));
-                            }
-                        }
-                    }
+                     // Add faction objectives for void omens that are in play
+                     foreach (int vo in voidOmens)
+                     {
+                         if (TFTVVoidOmens.CheckFordVoidOmensInPlay(controller).Contains(vo))
+                         {
+                             if (!listOfFactionObjectives.Any(o => o.name == "VOID_OMEN_TITLE_" + vo))
+                             {
+                                 TFTVLogger.Always("Adding VO " + vo + " to faction objectives");
+                                 listOfFactionObjectives.Add(DefCache.GetDef<FactionObjectiveDef>("VOID_OMEN_TITLE_" + vo));
+                             }
+                         }
+                     }
 
-                    missionData.MissionType.CustomObjectives = listOfFactionObjectives.ToArray();
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-            }
-        }*/
+                     missionData.MissionType.CustomObjectives = listOfFactionObjectives.ToArray();
+                 }
+                 catch (Exception e)
+                 {
+                     TFTVLogger.Error(e);
+                 }
+             }
+         }*/
 
 
 
@@ -962,15 +1001,15 @@ namespace TFTV
              }
          }*/
 
-      
 
 
 
-      
 
 
 
-        
+
+
+
 
     }
     /* [HarmonyPatch(typeof(AIStrategicPositionConsideration), "Evaluate")]

@@ -112,7 +112,81 @@ namespace TFTV
             CreateHintsForBaseDefense();
             CreateFireExplosion();
             CreateBaseDefenseEvents();
+            ImproveScyllas();
         }
+
+       
+
+        internal static void ImproveScyllas()
+        {
+            try
+            {
+
+                //maybe use later for a new AI leapAndScream/Spit action
+                /*  AIActionExecuteAbilityDef source = DefCache.GetDef<AIActionExecuteAbilityDef>("Egg_Surveillance_AIActionExecuteAbilityDef");
+                AIActionExecuteAbilityDef newScyllaAIAction = Helper.CreateDefFromClone(source, "{F63C49F1-CB26-4EBB-B633-F9AEB1336D28}", "ScyllaPrepareGunsAIAction");
+                StartPreparingShootAbilityDef scyllaStartPreparing = DefCache.GetDef<StartPreparingShootAbilityDef>("Queen_StartPreparing_AbilityDef");
+                AIActionDef moveAndPrepareShooting = DefCache.GetDef<AIActionDef>("Queen_MoveAndPrepareShooting_AIActionDef");
+                newScyllaAIAction.AbilityDefs = new TacticalAbilityDef[] { scyllaStartPreparing };
+                newScyllaAIAction.EarlyExitConsiderations = moveAndPrepareShooting.EarlyExitConsiderations;
+                newScyllaAIAction.Evaluations = moveAndPrepareShooting.Evaluations;
+                newScyllaAIAction.Weight = 1000;
+
+              
+                AIActionsTemplateDef QueenAI = DefCache.GetDef<AIActionsTemplateDef>("Queen_AIActionsTemplateDef");
+
+                List <AIActionDef> QueenAIActions = new List<AIActionDef>(QueenAI.ActionDefs);
+                QueenAIActions.Remove(moveAndPrepareShooting);
+                QueenAIActions.Add(newScyllaAIAction);
+
+                QueenAI.ActionDefs = QueenAIActions.ToArray();*/
+
+                WeaponDef headSpitter = DefCache.GetDef<WeaponDef>("Queen_Head_Spitter_Goo_WeaponDef");
+                // DamageKeywordDef blast = DefCache.GetDef<DamageKeywordDef>("Blast_DamageKeywordDataDef");
+                StandardDamageTypeEffectDef blastDamage = DefCache.GetDef<StandardDamageTypeEffectDef>("Blast_StandardDamageTypeEffectDef");
+
+                //switch to blast damage from goo damage
+                headSpitter.DamagePayload.DamageType = blastDamage;
+                //increase blast annd poison damage to 40 from 30
+                headSpitter.DamagePayload.DamageKeywords[0].Value = 40;
+                headSpitter.DamagePayload.DamageKeywords[2].Value = 40;
+                //testing, shouldn't make a difference
+                headSpitter.DamagePayload.AoeRadius = 2f;
+
+                //Reduce Move and SpitGoo/SonicBlast weight, so she also uses Smashers sometimes
+                DefCache.GetDef<AIActionDef>("Queen_MoveAndSpitGoo_AIActionDef").Weight = 50.0f;
+                DefCache.GetDef<AIActionDef>("Queen_MoveAndSonicBlast_AIActionDef").Weight = 50.0f;
+
+                //Reduce range of Sonic and Spitter Heads from 20 to 15 so that cannons are more effective
+                WeaponDef headSonic = DefCache.GetDef<WeaponDef>("Queen_Head_Sonic_WeaponDef");
+                headSpitter.DamagePayload.Range = 15;
+                headSonic.DamagePayload.Range = 15;
+
+                DefCache.GetDef<AIActionDef>("Queen_Recover_AIActionDef").Weight = 0.01f;
+
+
+
+                //  DefCache.GetDef<JetJumpAbilityDef>("Queen_Leap_AbilityDef"); //currently costs 3AP!
+
+
+
+                /*  TacCharacterDef tetrarch = DefCache.GetDef <TacCharacterDef>("Scylla4_SpitLaunchGunAgileBelch_AlienMutationVariationDef");
+                List<ItemDef> tetrachBodyParts = new List<ItemDef>() { };
+                tetrachBodyParts.AddRange(tetrarch.Data.BodypartItems);
+                tetrachBodyParts.Remove(guns);
+                tetrachBodyParts.Add(smashers);
+                tetrarch.Data.BodypartItems = tetrachBodyParts.ToArray();*/
+
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+
+        }
+
 
         internal static void CreateHintsForBaseDefense()
         {
@@ -207,7 +281,7 @@ namespace TFTV
             {
                 TFTVCommonMethods.CreateNewEvent("OlenaBaseDefense", "BASEDEFENSE_EVENT_TITLE", "BASEDEFENSE_EVENT_TEXT", null);
 
-              
+
             }
             catch (Exception e)
             {
@@ -262,7 +336,7 @@ namespace TFTV
             try
             {
                 CustomMissionTypeDef baseDefenseMissionTypeDef = DefCache.GetDef<CustomMissionTypeDef>("PXBaseAlien_CustomMissionTypeDef");
-                baseDefenseMissionTypeDef.MandatoryMission = true;
+                baseDefenseMissionTypeDef.MandatoryMission = false;
                 baseDefenseMissionTypeDef.SkipDeploymentSelection = false;
                 //  baseDefenseMissionTypeDef.ClearMissionOnCancel = false;
 
@@ -3024,7 +3098,7 @@ namespace TFTV
                                                 missionTypeDef.name == "StoryNJ_Chain1_CustomMissionTypeDef" ||
                                                 missionTypeDef.name == "StoryPX13_CustomMissionTypeDef" ||
                                                 missionTypeDef.name == "StorySYN0_CustomMissionTypeDef" ||
-                                                missionTypeDef.name == "StorySYN4_CustomMissionTypeDef"||
+                                                missionTypeDef.name == "StorySYN4_CustomMissionTypeDef" ||
                                                     missionTypeDef.name == "StorySYN5_CustomMissionTypeDef")
                                             {
                                                 data.FactionDef = banditFaction;

@@ -5,8 +5,10 @@ using Base.Entities;
 using Base.Entities.Effects;
 using Base.Entities.Statuses;
 using Base.Levels;
+using Base.Utils.Maths;
 using com.ootii.Geometry;
 using HarmonyLib;
+using hoenixPoint.Tactical.View.ViewControllers;
 using PhoenixPoint.Common.ContextHelp;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities.GameTags;
@@ -26,12 +28,17 @@ using PhoenixPoint.Tactical.Levels.Destruction;
 using PhoenixPoint.Tactical.Levels.FactionObjectives;
 using PhoenixPoint.Tactical.Levels.Missions;
 using PhoenixPoint.Tactical.Levels.Mist;
+using PhoenixPoint.Tactical.Sequencer;
+using PhoenixPoint.Tactical.UI;
+using PhoenixPoint.Tactical.View.ViewControllers;
+using PhoenixPoint.Tactical.View.ViewModules;
 using SETUtil.Extend;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using System.Security.Policy;
 using UnityEngine;
 
 namespace TFTV
@@ -103,7 +110,10 @@ namespace TFTV
             {
                 try
                 {
-                    BaseDefenseTurnStartChecks(__instance.Faction.TacticalLevel, __instance.Faction);
+                    if (!__instance.Faction.TacticalLevel.IsLoadingSavedGame)
+                    {
+                        BaseDefenseTurnStartChecks(__instance.Faction.TacticalLevel, __instance.Faction);
+                    }
                 }
                 catch (Exception e)
                 {
@@ -834,7 +844,7 @@ namespace TFTV
                 {
                     UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
 
-                    int roll = UnityEngine.Random.Range(1, 11 + controller.Difficulty.Order);
+                    int roll = 7;//UnityEngine.Random.Range(1, 11 + controller.Difficulty.Order);
 
                     TFTVLogger.Always($"Picking strat for base defense, roll is {roll}");
 
@@ -1275,6 +1285,8 @@ namespace TFTV
                 TFTVLogger.Always($"found status {status.Def.EffectName}");
                 console.Status.UnapplyStatus(status);
 
+                //KEY_ACTIVATE_OBJECTIVE_PROMPT
+         
 
             }
             catch (Exception e)
@@ -1695,7 +1707,7 @@ namespace TFTV
 
                 if (tacticalActor.Pos.y - pos.y < 2 && (tacticalActor.Pos - pos).magnitude < 15)
                 {
-                    //  TFTVLogger.Always($"{tacticalActor.DisplayName} is at {tacticalActor.Pos} and postion checked vs is {pos}");
+                    TFTVLogger.Always($"{tacticalActor.DisplayName} is at {tacticalActor.Pos} and postion checked vs is {pos}");
                     canAttack = true;
 
                 }
@@ -1729,7 +1741,7 @@ namespace TFTV
                             || tacticalActor.TacticalPerceptionBase.IsTouchingVoxel(TacticalVoxelType.Mist))
                     {
                         infectedPhoenixOperatives.Add(tacticalActor);
-
+                       // TFTVLogger.Always($"tactical actor added to list is {tacticalActor.DisplayName}");
                     }
                 }
 
@@ -1763,6 +1775,8 @@ namespace TFTV
 
                 foreach (TacticalActor pXOperative in targetablePhoenixOperatives.Keys)
                 {
+                 
+
                     UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
 
                     int roll = UnityEngine.Random.Range(1, 11 + controller.Difficulty.Order);
@@ -1771,13 +1785,23 @@ namespace TFTV
 
                     Level level = controller.Level;
                     TacticalVoxelMatrix tacticalVoxelMatrix = level?.GetComponent<TacticalVoxelMatrix>();
+                    Vector3 position = zone.Pos;
+                    if (position.y <= 2 && position.y!=1.2) 
+                    {
+                        position.SetY(1.2f);  
+                    }
+                    else if (position.y>4 && position.y != 4.8) 
+                    {
+                        position.SetY(4.8f);
+                    
+                    }
+                   
 
                     MethodInfo spawnBlob = AccessTools.Method(typeof(TacticalVoxelMatrix), "SpawnBlob_Internal");
+                    //spawnBlob.Invoke(tacticalVoxelMatrix, new object[] { TacticalVoxelType.Empty, zone.Pos + Vector3.up * -1.5f, 3, 1, false, true });
 
-
-
-                    spawnBlob.Invoke(tacticalVoxelMatrix, new object[] { TacticalVoxelType.Mist, zone.Pos + Vector3.up * -1.5f, 3, 1, false, true });
-
+                    TFTVLogger.Always($"pXOperative to be ghosted {pXOperative.DisplayName} at pos {position}");
+                    spawnBlob.Invoke(tacticalVoxelMatrix, new object[] { TacticalVoxelType.Mist, position, 3, 1, false, true });
 
                     // SpawnBlob_Internal(TacticalVoxelType type, Vector3 pos, int horizontalRadius, int height, bool circular, bool updateMatrix = true)
 

@@ -109,6 +109,26 @@ namespace TFTV
                     newJacob
                 };
 
+                if (level.CurrentDifficultyLevel.Order == 2 && config.startingSquad == TFTVConfig.StartingSquadFaction.PHOENIX)
+                {
+                    startingTemplates.Add(assault);
+                }
+                else if (level.CurrentDifficultyLevel.Order == 2 && config.startingSquad != TFTVConfig.StartingSquadFaction.PHOENIX)
+                {
+                    startingTemplates.Add(heavy);
+                }
+                else if (level.CurrentDifficultyLevel.Order == 1 && config.startingSquad == TFTVConfig.StartingSquadFaction.PHOENIX)
+                {
+                    startingTemplates.Add(assault);
+                    startingTemplates.Add(sniper);
+                }
+                else if (level.CurrentDifficultyLevel.Order == 1 && config.startingSquad != TFTVConfig.StartingSquadFaction.PHOENIX)
+                {
+                    startingTemplates.Add(heavy);
+                    startingTemplates.Add(assault);
+                }
+
+
                 if (config.startingSquad == TFTVConfig.StartingSquadFaction.PHOENIX)
                 {
                     startingTemplates.Add(heavy);
@@ -131,24 +151,7 @@ namespace TFTV
                 }
 
 
-                if (level.CurrentDifficultyLevel.Order == 2 && config.startingSquad == TFTVConfig.StartingSquadFaction.PHOENIX)
-                {
-                    startingTemplates.Add(assault);
-                }
-                else if (level.CurrentDifficultyLevel.Order == 2 && config.startingSquad != TFTVConfig.StartingSquadFaction.PHOENIX)
-                {
-                    startingTemplates.Add(heavy);
-                }
-                else if (level.CurrentDifficultyLevel.Order == 1 && config.startingSquad == TFTVConfig.StartingSquadFaction.PHOENIX)
-                {
-                    startingTemplates.Add(assault);
-                    startingTemplates.Add(sniper);
-                }
-                else if (level.CurrentDifficultyLevel.Order == 1 && config.startingSquad != TFTVConfig.StartingSquadFaction.PHOENIX)
-                {
-                    startingTemplates.Add(heavy);
-                    startingTemplates.Add(assault);
-                }
+             
 
                 int strengthBonus = 0;
                 int willBonus = 0;
