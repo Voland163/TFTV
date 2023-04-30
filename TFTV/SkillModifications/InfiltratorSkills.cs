@@ -20,6 +20,7 @@ using PhoenixPoint.Tactical.Entities.Statuses;
 using PhoenixPoint.Tactical.Levels;
 using PhoenixPoint.Tactical.Levels.FactionObjectives;
 using PhoenixPoint.Tactical.Levels.Missions;
+using PhoenixPoint.Tactical.View;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -249,6 +250,7 @@ namespace PRMBetterClasses.SkillModifications
             parasychosis.ActionPointCost = 0.25f;
             parasychosis.WillPointCost = 6;
             parasychosis.ApplyToAllTargets = false;
+            parasychosis.SimulatesDamage = false;
             parasychosis.MultipleTargetSimulation = false;
 
             parasychosis.ContributionPointsOnUse = 1000;
@@ -278,6 +280,19 @@ namespace PRMBetterClasses.SkillModifications
                         PRMLogger.Debug("  " + ad.name);
                     }
                     PRMLogger.Debug("----------------------------------------------------", false);
+                }
+            }
+        }
+        //Patch to set a different health bar color for wild faction actors 
+        [HarmonyPatch(typeof(HealthbarUIActorElement), "GetMainColor")]
+        public static class HealthbarUIActorElement_GetMainColor_Patch
+        {
+            public static void Postfix(HealthbarUIActorElement __instance, ref Color __result)
+            {
+                if (__instance.Actor is TacticalActor tacticalActor
+                    && tacticalActor.TacticalFaction == tacticalActor.TacticalLevel.GetTacticalFaction(tacticalActor.TacticalLevel.TacticalLevelControllerDef.WildBeastFaction))
+                {
+                    __result = Color.magenta;
                 }
             }
         }

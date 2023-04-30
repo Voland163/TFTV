@@ -1737,6 +1737,8 @@ namespace TFTV
                     objectives.Add(protectCyclopsObjective);
 
                     customMissionType.CustomObjectives = objectives.ToArray();
+                   // customMissionType.MandatoryMission = true; //to prevent being able to cancel it
+                    customMissionType.ClearMissionOnCancel = true; //first try this
 
                 }
 

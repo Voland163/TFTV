@@ -34,10 +34,10 @@ namespace TFTV
         {
             try
             {
-                AIActionMoveAndAttackDef existingMAShoot = DefCache.GetDef<AIActionMoveAndAttackDef>("BC_MoveAndShoot_AIActionDef");
+                AIActionMoveAndAttackDef existingMAShoot = (AIActionMoveAndAttackDef)Repo.GetDef("3fd2dfd1-3cc0-4c71-b427-22afd020b45d");     
+                  
                 if (existingMAShoot != null)
                 {
-
                     return true;
                 }
                 else
@@ -135,6 +135,7 @@ namespace TFTV
                 }
                 else
                 {
+                    TFTVLogger.Always("BetterEnemies mod found, reverting changes to Scylla");
                     RevertScyllaAIFromBE();
 
 

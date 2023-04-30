@@ -844,7 +844,7 @@ namespace TFTV
                 {
                     UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
 
-                    int roll = 7;//UnityEngine.Random.Range(1, 11 + controller.Difficulty.Order);
+                    int roll = UnityEngine.Random.Range(1, 11 + controller.Difficulty.Order);
 
                     TFTVLogger.Always($"Picking strat for base defense, roll is {roll}");
 
