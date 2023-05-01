@@ -43,6 +43,7 @@ using PhoenixPoint.Tactical.Entities.Effects.DamageTypes;
 using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.Entities.Statuses;
 using PhoenixPoint.Tactical.Entities.Weapons;
+using PhoenixPoint.Tactical.Levels;
 using PhoenixPoint.Tactical.Levels.FactionObjectives;
 using System;
 using System.Collections.Generic;
@@ -2321,6 +2322,26 @@ namespace TFTV
 
                 WeaponDef cyclopsPBeam = DefCache.GetDef<WeaponDef>("MediumGuardian_Head_ProteanMutane_WeaponDef");
                 cyclopsPBeam.DamagePayload.DamageKeywords[0].Value = 120;
+
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+        internal static void TestingCyclopsMeleeAttack()
+        {
+            try 
+            {
+                TacCharacterDef livingCrystalCyclops = DefCache.GetDef<TacCharacterDef>("MediumGuardian_LivingCrystal_TacCharacterDef");
+                //Cyclops targeting: hoplites and turrets shoot at the target shot at by the Cyclops
+                //Vulnerability: modifies hoplite beams to apply damage to which the target is vulnerable to (virophage, acid or poison)
+                //Sound damage: stomp inflicts daze and a special status, if hit again, does 30 bleed damage in addition to daze, if hit again target becomes wild/MCed
+                //Repair body parts in exchange for WP
+            
+         
             }
             catch (Exception e)
             {

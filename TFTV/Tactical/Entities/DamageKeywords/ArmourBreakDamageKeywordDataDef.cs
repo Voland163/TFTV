@@ -20,7 +20,7 @@ namespace TFTV.Tactical.Entities.DamageKeywords
 
         public float CalculateDamageValue(DamagePayload payload, float shredValue)
         {
-            PRMLogger.Always($"ArmourBreakDamageKeywordDataDef.CalculateDamageValue called ...");
+          //  PRMLogger.Always($"ArmourBreakDamageKeywordDataDef.CalculateDamageValue called ...");
             if (!DistributeShredAcrossBurst)
             {
                 return shredValue;

@@ -19,7 +19,7 @@ namespace TFTV.Tactical.Entities.DamageKeywords
 
         protected override bool ProcessKeywordDataInternal(ref DamageAccumulation.TargetData data)
         {
-            PRMLogger.Always($"ArmourBreakDamageKeywordData.ProcessKeywordDataInternal called ...");
+           // PRMLogger.Always($"ArmourBreakDamageKeywordData.ProcessKeywordDataInternal called ...");
             if (data == null)
 			{
                 data = GenerateTargetData();
@@ -37,7 +37,7 @@ namespace TFTV.Tactical.Entities.DamageKeywords
 
         private float CalculateDamageValue()
         {
-            PRMLogger.Always($"ArmourBreakDamageKeywordData.CalculateDamageValue called ...");
+           // PRMLogger.Always($"ArmourBreakDamageKeywordData.CalculateDamageValue called ...");
             if (!(_accum.Source is IDamageDealer damageDealer))
             {
                 return _value;

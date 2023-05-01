@@ -9,6 +9,8 @@ using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.GameTags;
+using PhoenixPoint.Common.Entities.GameTagsTypes;
+using PhoenixPoint.Common.Levels.Missions;
 using PhoenixPoint.Modding;
 using PhoenixPoint.Tactical.Cameras.Filters;
 using PhoenixPoint.Tactical.Entities;
@@ -50,9 +52,6 @@ namespace PRMBetterClasses.SkillModifications
 
             // Parasychosis: 1AP / 6WP, Target human-sized enemy within 12 tiles becomes Wild
             Create_Parasychosis();
-
-            // Sapper: Your Decoys and Drones explode when destroyed
-            //Create_Sapper();
 
             // Spider Drone Pack: 3 AP 3 WP, rest vanilla
             Change_DeployDronePack();
@@ -176,6 +175,7 @@ namespace PRMBetterClasses.SkillModifications
                 $"E_FumbleChanceStatus [{skillname}]");
             fumbleChanceStatus.EffectName = "JammingField";
             fumbleChanceStatus.ApplicationConditions = new EffectConditionDef[0];
+            fumbleChanceStatus.SingleInstance = true;
             fumbleChanceStatus.ShowNotification = true;
             fumbleChanceStatus.VisibleOnHealthbar = TacStatusDef.HealthBarVisibility.AlwaysVisible;
             fumbleChanceStatus.VisibleOnStatusScreen = TacStatusDef.StatusScreenVisibility.VisibleOnStatusesList;
@@ -220,18 +220,38 @@ namespace PRMBetterClasses.SkillModifications
                 "4D1420F3-CDD2-4B11-B56D-194F8AA07266",
                 skillName);
 
+            // Create new ClassTagDef for Umbras and add them to their actor def
+            ClassTagDef umbraTag = Helper.CreateDefFromClone(
+                DefCache.GetDef<ClassTagDef>("Crabman_ClassTagDef"),
+                "092D50F3-B4E7-4B8E-9AD3-47E31DBAE82C",
+                "Umbra_ClassTagDef");
+            TacticalActorDef oilcrab = DefCache.GetDef<TacticalActorDef>("Oilcrab_ActorDef");
+            if (oilcrab.GameTags.CanAdd(umbraTag))
+            {
+                oilcrab.GameTags.Add(umbraTag);
+            }
+            TacticalActorDef oilfish = DefCache.GetDef<TacticalActorDef>("Oilfish_ActorDef");
+            if (oilfish.GameTags.CanAdd(umbraTag))
+            {
+                oilfish.GameTags.Add(umbraTag);
+            }
+
             parasychosis.TargetingDataDef.Origin.LineOfSight = LineOfSightType.InSight;
             parasychosis.TargetingDataDef.Origin.FactionVisibility = LineOfSightType.InSight;
             parasychosis.TargetingDataDef.Origin.CanPeekFromEdge = true;
             parasychosis.TargetingDataDef.Origin.Range = 14;
             parasychosis.TargetingDataDef.Origin.CullTargetTags = new GameTagsList()
             {
+                umbraTag,
                 DefCache.GetDef<GameTagDef>("Acheron_ClassTagDef"),
                 DefCache.GetDef<GameTagDef>("Chiron_ClassTagDef"),
                 DefCache.GetDef<GameTagDef>("CorruptionNode_ClassTagDef"),
                 DefCache.GetDef<GameTagDef>("Mutog_ClassTagDef"),
                 DefCache.GetDef<GameTagDef>("Queen_ClassTagDef"),
-                DefCache.GetDef<GameTagDef>("Sentinel_ClassTagDef"),
+                DefCache.GetDef<GameTagDef>("SentinelHatching_ClassTagDef"),
+                DefCache.GetDef<GameTagDef>("SentinelMist_ClassTagDef"),
+                DefCache.GetDef<GameTagDef>("SentinelTerror_ClassTagDef"),
+                DefCache.GetDef<GameTagDef>("Sentinel_ClassTagDef"), // not used on any of the above, keep?
                 DefCache.GetDef<GameTagDef>("SpawningPoolCrabman_ClassTagDef"),
                 DefCache.GetDef<GameTagDef>("Yuggothian_ClassTagDef"),
             };
@@ -283,6 +303,23 @@ namespace PRMBetterClasses.SkillModifications
                 }
             }
         }
+        //Patch to set any Umbra back to pandoran if he is spawned as wild (killed wild tar shadows will spawn wild umbras)
+        [HarmonyPatch(typeof(TacticalLevelController), "ActorEnteredPlay")]
+        public static class TacticalLevelController_ActorEnteredPlay_Patch
+        {
+            public static void Postfix(TacticalLevelController __instance, TacticalActorBase actor)
+            {
+                if (actor.ActorDef.name.StartsWith("Oil") 
+                    && actor.TacticalFaction == __instance.GetTacticalFaction(__instance.TacticalLevelControllerDef.WildBeastFaction))
+                {
+                    TacticalFaction tacticalFaction = __instance.GetTacticalFaction(DefCache.GetDef<PPFactionDef>("Alien_TacticalFactionDef"));
+                    TacMissionFactionData missionFactionData = __instance.TacMission.GetMissionFactionData(tacticalFaction.TacticalFactionDef);
+                    TacMissionParticipant missionParticipant = (missionFactionData != null) ? missionFactionData.ParticipantKind : TacMissionParticipant.None;
+                    actor.SetFaction(tacticalFaction, missionParticipant);
+                    actor.AIActor.IsAlerted = actor.TacticalFaction.IsControlledByAI;
+                }
+            }
+        }
         //Patch to set a different health bar color for wild faction actors 
         [HarmonyPatch(typeof(HealthbarUIActorElement), "GetMainColor")]
         public static class HealthbarUIActorElement_GetMainColor_Patch
@@ -306,10 +343,6 @@ namespace PRMBetterClasses.SkillModifications
                 TacticalFaction.SetMutualRelation(wildBeastFaction, wildBeastFaction, FactionRelation.Friend);
             }
         }
-
-        //private static void Create_Sapper()
-        //{
-        //}
 
         private static void Change_DeployDronePack()
         {

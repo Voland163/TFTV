@@ -404,6 +404,7 @@ namespace PRMBetterClasses.SkillModifications
                             //TFTVLogger.Always($"Punisher -2 WP triggered for actor {__instance} from faction {__instance.TacticalFaction} because {death.Actor} from faction {death.Actor.TacticalFaction} got killed by {death.Killer}");
                             __instance.CharacterStats.WillPoints.Subtract(2);
                         }
+                       
                     }
                 }
                 catch (Exception e)

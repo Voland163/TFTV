@@ -696,10 +696,10 @@ namespace TFTV
                     }
 
 
-                    if (!hintManager.RegisterContextHelpHint(contextHelpHintDef, isMandatory: false, null))
+                    if (!hintManager.RegisterContextHelpHint(contextHelpHintDef, isMandatory: true, null))
                     {
 
-                        ContextHelpHint item = new ContextHelpHint(contextHelpHintDef, isMandatory: false, null);
+                        ContextHelpHint item = new ContextHelpHint(contextHelpHintDef, isMandatory: true, null);
 
                         // Get the current value of _hintsPendingDisplay
                         List<ContextHelpHint> hintsPendingDisplay = (List<ContextHelpHint>)hintsPendingDisplayField.GetValue(hintManager);
@@ -726,10 +726,10 @@ namespace TFTV
                     {
                         ContextHelpHintDef ventingHint = DefCache.GetDef<ContextHelpHintDef>("BaseDefenseVenting");
 
-                        if (!hintManager.RegisterContextHelpHint(ventingHint, isMandatory: false, null))
+                        if (!hintManager.RegisterContextHelpHint(ventingHint, isMandatory: true, null))
                         {
 
-                            ContextHelpHint item = new ContextHelpHint(ventingHint, isMandatory: false, null);
+                            ContextHelpHint item = new ContextHelpHint(ventingHint, isMandatory: true, null);
 
                             // Get the current value of _hintsPendingDisplay
                             List<ContextHelpHint> hintsPendingDisplay = (List<ContextHelpHint>)hintsPendingDisplayField.GetValue(hintManager);
@@ -844,7 +844,7 @@ namespace TFTV
                 {
                     UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
 
-                    int roll = UnityEngine.Random.Range(1, 11 + controller.Difficulty.Order);
+                    int roll = 7; // UnityEngine.Random.Range(1, 11 + controller.Difficulty.Order);
 
                     TFTVLogger.Always($"Picking strat for base defense, roll is {roll}");
 
@@ -1351,14 +1351,17 @@ namespace TFTV
 
                 ipCols.transform.SetPositionAndRotation(position, Quaternion.identity);
                 var collider = ipCols.AddComponent<BoxCollider>();
-
+               
 
                 structuralTarget.Initialize();
                 structuralTarget.DoEnterPlay();
 
+            //    TacticalActorBase
 
                 StatusDef activeConsoleStatusDef = DefCache.GetDef<StatusDef>("ActiveInteractableConsole_StatusDef");
                 structuralTarget.Status.ApplyStatus(activeConsoleStatusDef);
+
+                TFTVLogger.Always($"{name} is at position {position}");
             }
 
             catch (Exception e)
@@ -1380,7 +1383,15 @@ namespace TFTV
                     List<Breakable> consoles = UnityEngine.Object.FindObjectsOfType<Breakable>().Where(b => b.name.StartsWith("NJR_LoCov_Console")).ToList();
                     Vector3[] position = new Vector3[3];
 
-                    List<Breakable> consolesCulled = new List<Breakable>(consoles);
+                    consoles = consoles.OrderByDescending(c => c.transform.position.z).ToList();
+                    position[0] = consoles[0].transform.position + new Vector3(0, 0, 1);
+                    position[1] = consoles[1].transform.position + new Vector3(1, 0, 0);
+                    position[2] = consoles[2].transform.position + new Vector3(1, 0, 0);
+
+
+                    /*List<Breakable> consolesCulled = new List<Breakable>(consoles);
+
+
 
                     foreach (Breakable gameObject in consoles)
                     {
@@ -1406,8 +1417,7 @@ namespace TFTV
                         }
                     }
                     position[1] = consolesCulled[0].transform.position + new Vector3(0, 0, 1);
-                    TFTVLogger.Always($"{consolesCulled[0].gameObject.name} is at position {consolesCulled[0].transform.position} and IPC will be placed at " +
-                    $"{position[1]}");
+                  */
 
 
                     SpawnInteractionPoint(position[0], ConsoleName1);

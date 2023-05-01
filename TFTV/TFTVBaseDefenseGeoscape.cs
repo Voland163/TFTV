@@ -20,6 +20,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices.WindowsRuntime;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -394,7 +395,29 @@ namespace TFTV
             }
         }
 
+        [HarmonyPatch(typeof(GeoscapeLog), "OnFactionSiteAttackScheduled")]
+        
+        internal static class TFTV_GeoscapeLog_OnFactionSiteAttackScheduled_HideAttackInLogger 
+        { 
+        public static bool Prefix()
+            {
+                try 
+                {
+                    return false;
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
 
+
+            }
+        
+        
+        
+        
+        }
 
         [HarmonyPatch(typeof(PhoenixBaseDefenseDataBind), "ModalShowHandler")]
         public static class PhoenixBaseDefenseDataBind_ModalShowHandler_Experiment_patch

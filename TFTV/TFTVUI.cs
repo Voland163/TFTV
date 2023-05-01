@@ -427,7 +427,7 @@ namespace TFTV
                     if(__instance is TacticalActor tacticalActor && tacticalActor.GameTags.Contains(mutoidTag)) 
                     { 
 
-                        TFTVLogger.Always($"{tacticalActor.DisplayName}");
+                      //  TFTVLogger.Always($"{tacticalActor.DisplayName}");
                         ClassTagDef assault = DefCache.GetDef<ClassTagDef>("Assault_ClassTagDef");
                         ClassTagDef heavy = DefCache.GetDef<ClassTagDef>("Heavy_ClassTagDef");
                         ClassTagDef sniper = DefCache.GetDef<ClassTagDef>("Sniper_ClassTagDef");
@@ -462,7 +462,7 @@ namespace TFTV
                             {
                               
                                 ____classViewElementDefs = new List <ViewElementDef> { mutoidVE, dictionary[classTag] };
-                                TFTVLogger.Always("Here we are");
+                              //  TFTVLogger.Always("Here we are");
 
                             }
                         }
