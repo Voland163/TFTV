@@ -220,29 +220,13 @@ namespace PRMBetterClasses.SkillModifications
                 "4D1420F3-CDD2-4B11-B56D-194F8AA07266",
                 skillName);
 
-            // Create new ClassTagDef for Umbras and add them to their actor def
-            ClassTagDef umbraTag = Helper.CreateDefFromClone(
-                DefCache.GetDef<ClassTagDef>("Crabman_ClassTagDef"),
-                "092D50F3-B4E7-4B8E-9AD3-47E31DBAE82C",
-                "Umbra_ClassTagDef");
-            TacticalActorDef oilcrab = DefCache.GetDef<TacticalActorDef>("Oilcrab_ActorDef");
-            if (oilcrab.GameTags.CanAdd(umbraTag))
-            {
-                oilcrab.GameTags.Add(umbraTag);
-            }
-            TacticalActorDef oilfish = DefCache.GetDef<TacticalActorDef>("Oilfish_ActorDef");
-            if (oilfish.GameTags.CanAdd(umbraTag))
-            {
-                oilfish.GameTags.Add(umbraTag);
-            }
-
             parasychosis.TargetingDataDef.Origin.LineOfSight = LineOfSightType.InSight;
             parasychosis.TargetingDataDef.Origin.FactionVisibility = LineOfSightType.InSight;
             parasychosis.TargetingDataDef.Origin.CanPeekFromEdge = true;
             parasychosis.TargetingDataDef.Origin.Range = 14;
             parasychosis.TargetingDataDef.Origin.CullTargetTags = new GameTagsList()
             {
-                umbraTag,
+                DefCache.GetDef<GameTagDef>("Siren_ClassTagDef"),
                 DefCache.GetDef<GameTagDef>("Acheron_ClassTagDef"),
                 DefCache.GetDef<GameTagDef>("Chiron_ClassTagDef"),
                 DefCache.GetDef<GameTagDef>("CorruptionNode_ClassTagDef"),
@@ -270,6 +254,7 @@ namespace PRMBetterClasses.SkillModifications
             parasychosis.ActionPointCost = 0.25f;
             parasychosis.WillPointCost = 6;
             parasychosis.ApplyToAllTargets = false;
+            parasychosis.CheckApplicationConditions = true;
             parasychosis.SimulatesDamage = false;
             parasychosis.MultipleTargetSimulation = false;
 
@@ -312,7 +297,7 @@ namespace PRMBetterClasses.SkillModifications
                 if (actor.ActorDef.name.StartsWith("Oil") 
                     && actor.TacticalFaction == __instance.GetTacticalFaction(__instance.TacticalLevelControllerDef.WildBeastFaction))
                 {
-                    TacticalFaction tacticalFaction = __instance.GetTacticalFaction(DefCache.GetDef<PPFactionDef>("Alien_TacticalFactionDef"));
+                    TacticalFaction tacticalFaction = __instance.GetFactionByCommandName("aln"); ;
                     TacMissionFactionData missionFactionData = __instance.TacMission.GetMissionFactionData(tacticalFaction.TacticalFactionDef);
                     TacMissionParticipant missionParticipant = (missionFactionData != null) ? missionFactionData.ParticipantKind : TacMissionParticipant.None;
                     actor.SetFaction(tacticalFaction, missionParticipant);

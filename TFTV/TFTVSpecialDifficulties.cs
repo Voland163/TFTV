@@ -990,11 +990,13 @@ namespace TFTV
                         DamageMultiplierStatusDef vulnerabilityStatus = DefCache.GetDef<DamageMultiplierStatusDef>("RookieVulnerabilityStatus");
                         DamageMultiplierStatusDef protectionEtermesStatus = DefCache.GetDef<DamageMultiplierStatusDef>("EtermesProtectionStatus");
                         DamageMultiplierStatusDef vulnerabilityEtermesStatus = DefCache.GetDef<DamageMultiplierStatusDef>("EtermesVulnerabilityStatus");
+                        DamageMultiplierStatusDef scyllaDamageResistance = DefCache.GetDef<DamageMultiplierStatusDef>("ScyllaDamageResistance");
+
 
                         if (CheckTacticalSpecialDifficultySettings(__instance) == 1)
                         {
 
-                            if (__instance.GetFactionByCommandName("PX") != null && !__instance.TacMission.MissionData.MissionType.name.Contains("Tutorial"))
+                            if (__instance.GetFactionByCommandName("PX") != null)
                             {
                                 TacticalFaction phoenixFaction = __instance.GetFactionByCommandName("PX");
 
@@ -1019,7 +1021,7 @@ namespace TFTV
                         }
                         if (CheckTacticalSpecialDifficultySettings(__instance) == 2)
                         {
-                            if (__instance.GetFactionByCommandName("PX") != null && !__instance.TacMission.MissionData.MissionType.name.Contains("Tutorial"))
+                            if (__instance.GetFactionByCommandName("PX") != null)
                             {
                                 TacticalFaction phoenixFaction = __instance.GetFactionByCommandName("PX");
 
@@ -1042,9 +1044,15 @@ namespace TFTV
 
                             }
                         }
-
+                        if (config.BetterEnemiesOn && scyllaDamageResistance!=null) 
+                        {
+                            if (actor.ActorDef.name.Equals("Queen_ActorDef"))
+                            {
+                                actor.Status.ApplyStatus(scyllaDamageResistance);
+                                                
+                            } 
+                        }
                     }
-
                 }
                 catch (Exception e)
                 {

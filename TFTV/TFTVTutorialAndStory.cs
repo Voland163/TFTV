@@ -275,6 +275,11 @@ namespace TFTV
                         {
                             __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("hint_firequencher.png");
                         }
+                        else if (hintDef.name.Equals("HintDecoyPlaced"))
+                        {
+                            __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("decoy_hint.jpg");
+                        }
+                        
                         else if (hintDef.name.Equals("BaseDefenseUmbraStrat") 
                             || hintDef.name.Equals("BaseDefenseWormsStrat") 
                             || hintDef.name.Equals("BaseDefenseForce2Strat")
@@ -287,13 +292,10 @@ namespace TFTV
                             if (TFTVBaseDefenseTactical.AttackProgress < 0.3)
                             {
                                 __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("base_defense_hint.jpg");
-
-
                             }
                             else if (TFTVBaseDefenseTactical.AttackProgress >= 0.3 && TFTVBaseDefenseTactical.AttackProgress < 0.8)
                             {
                                 __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("base_defense_hint_nesting.jpg");
-
                             }
                             else
                             {
@@ -451,6 +453,28 @@ namespace TFTV
             }
         }
 
+        public static IsDefHintConditionDef IsDefConditionForTacticalHint(string name)
+        {
+            try
+            {
+
+                string gUID = Guid.NewGuid().ToString();
+
+                IsDefHintConditionDef source = DefCache.GetDef<IsDefHintConditionDef>("IsDef_Overwatch_AbilityDef_HintConditionDef");
+
+                IsDefHintConditionDef newIsDefCondition = Helper.CreateDefFromClone(source, gUID, name + "_HintConditionDef");
+
+                return newIsDefCondition;
+            }
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw new InvalidOperationException();
+            }
+        }
+
+
 
 
 
@@ -484,6 +508,12 @@ namespace TFTV
                 else if (typeHint == 3)
                 {
                     newContextHelpHintDef.Conditions.Add(LevelHasTagHintConditionForTacticalHint(conditionName));
+
+                }
+                else if (typeHint == 4) 
+                {
+                    newContextHelpHintDef.Conditions.Add(IsDefConditionForTacticalHint(conditionName));
+
 
                 }
 

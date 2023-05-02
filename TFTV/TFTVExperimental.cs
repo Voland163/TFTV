@@ -4,6 +4,7 @@ using Base.Entities;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities.GameTags;
+using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.Levels.Missions;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.Interception.Equipments;
@@ -16,6 +17,7 @@ using PhoenixPoint.Tactical.Entities.Effects.DamageTypes;
 using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.Entities.Statuses;
 using PhoenixPoint.Tactical.Entities.Weapons;
+using PhoenixPoint.Tactical.Levels;
 using PhoenixPoint.Tactical.Levels.Missions;
 using PhoenixPoint.Tactical.Levels.Mist;
 using SETUtil.Extend;
@@ -36,9 +38,237 @@ namespace TFTV
 
         internal static Color purple = new Color32(149, 23, 151, 255);
         private static readonly DefRepository Repo = TFTVMain.Repo;
+        private static readonly SharedData Shared = TFTVMain.Shared;
+
         //  private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
 
         public static List<TacticalVoxel> VoxelsOnFire = new List<TacticalVoxel>();
+
+        [HarmonyPatch(typeof(DieAbility), "Activate")]
+        public static class DieAbility_Activate_Decoy_Patch
+        {
+            public static bool Prefix(RagdollDieAbility __instance)
+            {
+                try
+                {
+                    // TFTVLogger.Always("DieTriggered");
+                    TacticalActorDef dcoy = DefCache.GetDef<TacticalActorDef>("Decoy_ActorDef");
+                    if (__instance.TacticalActor != null && __instance.TacticalActor.TacticalActorDef == dcoy)
+                    {
+                        // TFTVLogger.Always("It's a decoy!");
+                        __instance.TacticalActor.gameObject.SetActive(false);
+                        return false;
+                    }
+                    return true;
+
+
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
+
+
+
+        [HarmonyPatch(typeof(TacticalLevelController), "ActorDamageDealt")]
+        public static class TacticalLevelController_ActorDamageDealt_Decoy_Patch
+        {
+            public static void Postfix(TacticalActor actor, IDamageDealer damageDealer)
+            {
+                try
+                {
+                    TacticalActorDef dcoy = DefCache.GetDef<TacticalActorDef>("Decoy_ActorDef");
+                    ClassTagDef sirenTag = DefCache.GetDef<ClassTagDef>("Siren_ClassTagDef");
+                    ClassTagDef queenTag = DefCache.GetDef<ClassTagDef>("Queen_ClassTagDef");
+                    ClassTagDef tritonTag = DefCache.GetDef<ClassTagDef>("Fishman_ClassTagDef");
+                    ClassTagDef acheronTag = DefCache.GetDef<ClassTagDef>("Acheron_ClassTagDef");
+                    GameTagDef humanTag = DefCache.GetDef<GameTagDef>("Human_TagDef");
+
+
+                    if (actor.IsAlive)
+                    {
+                        if (actor.TacticalActorDef == dcoy && damageDealer != null && damageDealer.GetTacticalActorBase() != null)
+                        {
+                            TacticalActorBase attackerBase = damageDealer.GetTacticalActorBase();
+                            TacticalActor attacker = attackerBase as TacticalActor;
+
+                            if (!attacker.IsControlledByPlayer)
+                            {
+                                //Decoy despawned if attacked by Siren or Scylla
+                                if (attacker.GameTags.Contains(sirenTag) || attacker.GameTags.Contains(queenTag))
+                                {
+                                    actor.ApplyDamage(new DamageResult() { HealthDamage = actor.Health });
+                                    //  TacContextHelpManager tacContextHelpManager = (TacContextHelpManager)UnityEngine.Object.FindObjectOfType(typeof(TacContextHelpManager));
+                                    //  tacContextHelpManager.EventTypeTriggered(HintTrigger.ActorHurt, actor, actor);
+                                }
+                                //Decoy despawned if attacked within 5 tiles by human, triton or acheron
+                                else if ((attacker.GameTags.Contains(tritonTag)
+                                    || attacker.GameTags.Contains(humanTag)
+                                    || attacker.GameTags.Contains(acheronTag))
+                                    && (actor.Pos - attacker.Pos).magnitude <= 5)
+                                {
+                                    actor.ApplyDamage(new DamageResult() { HealthDamage = actor.Health });
+                                    //  TacContextHelpManager tacContextHelpManager = (TacContextHelpManager)UnityEngine.Object.FindObjectOfType(typeof(TacContextHelpManager));
+                                    //  tacContextHelpManager.EventTypeTriggered(HintTrigger.ActorHurt, actor, actor);
+                                }
+                            }
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+        }
+
+
+        public static Vector3 FindPushToTile(TacticalActor attacker, TacticalActor defender, int numTiles)
+        {
+
+            try
+            {
+
+
+                Vector3 diff = defender.Pos - attacker.Pos;
+                Vector3 pushToPosition = defender.Pos + numTiles * diff.normalized;
+
+                // TFTVLogger.Always($"attacker position is {attacker.Pos} and defender position is {defender.Pos}, so difference is {diff} and pushtoposition is {pushToPosition}");
+
+
+
+                return pushToPosition;
+
+            }
+
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
+        }
+
+
+
+        /*   [HarmonyPatch(typeof(TacticalActor), "OnAbilityExecuteFinished")]
+
+           public static class TacticalActor_OnAbilityExecuteFinished_KnockBack_Experiment_patch
+           {
+               public static void Prefix(TacticalAbility ability, TacticalActor __instance, object parameter)
+               {
+                   try
+                   {
+                      // TFTVLogger.Always($"ability {ability.TacticalAbilityDef.name} executed by {__instance.DisplayName}");
+
+                       JetJumpAbilityDef knockBackAbility = DefCache.GetDef<JetJumpAbilityDef>("KnockBackAbility");
+                       BashAbilityDef strikeAbility = DefCache.GetDef<BashAbilityDef>("BashStrike_AbilityDef");
+                       if (ability.TacticalAbilityDef!=null && ability.TacticalAbilityDef == strikeAbility)
+                       {
+                           if (parameter is TacticalAbilityTarget abilityTarget && abilityTarget.GetTargetActor() != null)
+                           {
+
+                           //    TFTVLogger.Always($"got here, target is {abilityTarget.GetTargetActor()}");
+
+                               TacticalActor tacticalActor = abilityTarget.GetTargetActor() as TacticalActor;
+
+                               if (tacticalActor != null)
+                               {
+                                   tacticalActor.AddAbility(knockBackAbility, tacticalActor);
+                                //   TFTVLogger.Always($"got here, added {knockBackAbility.name} to {tacticalActor.name}");
+                               }
+                           }
+                       }
+                   }
+
+                   catch (Exception e)
+                   {
+                       TFTVLogger.Error(e);
+                   }
+
+               }
+
+               public static void Postfix(TacticalAbility ability, TacticalActor __instance, object parameter)
+               {
+                   try
+                   {
+
+
+                       JetJumpAbilityDef knockBackAbility = DefCache.GetDef<JetJumpAbilityDef>("KnockBackAbility");
+                       BashAbilityDef strikeAbility = DefCache.GetDef<BashAbilityDef>("BashStrike_AbilityDef");
+
+                       if (ability.TacticalAbilityDef != null && ability.TacticalAbilityDef == strikeAbility)
+                       {
+                        //   TFTVLogger.Always($"got here, ability is {ability.TacticalAbilityDef.name}");
+
+                           if (parameter is TacticalAbilityTarget abilityTarget && abilityTarget.GetTargetActor() != null)
+                           {
+
+                              // TFTVLogger.Always($"got here, target is {abilityTarget.GetTargetActor()}");
+
+                               TacticalActor tacticalActor = abilityTarget.GetTargetActor() as TacticalActor;
+
+
+
+                               if (tacticalActor != null && tacticalActor.GetAbilityWithDef<JetJumpAbility>(knockBackAbility) != null)
+                               {
+                                   JetJumpAbility knockBack = tacticalActor.GetAbilityWithDef<JetJumpAbility>(knockBackAbility);
+
+                                   IEnumerable<TacticalAbilityTarget> targets = knockBack.GetTargets();
+
+                                   TacticalAbilityTarget pushPosition = new TacticalAbilityTarget();
+                                   TacticalAbilityTarget attack = parameter as TacticalAbilityTarget;
+
+                                   foreach (TacticalAbilityTarget target in targets)  
+                                   {
+                                      // TFTVLogger.Always($"possible position {target.PositionToApply} and magnitude is {(target.PositionToApply - FindPushToTile(__instance, tacticalActor)).magnitude} ");
+
+                                       if ((target.PositionToApply - FindPushToTile(__instance, tacticalActor, 2)).magnitude <= 1f) 
+                                       {
+                                           TFTVLogger.Always($"chosen position {target.PositionToApply}");
+
+                                           pushPosition = target;
+
+                                       }
+                                   }
+
+
+                                   //  MoveAbilityDef moveAbilityDef = DefCache.GetDef<MoveAbilityDef>("Move_AbilityDef");
+
+                                   //  MoveAbility moveAbility = tacticalActor.GetAbilityWithDef<MoveAbility>(moveAbilityDef);
+                                   //  moveAbility.Activate(pushPosition);
+
+                                   knockBack.Activate(pushPosition);
+
+
+
+                                   TFTVLogger.Always($"knocback executed position should be {pushPosition.GetActorOrWorkingPosition()}");
+
+                               }
+                           }
+                       }
+
+                       if (ability.TacticalAbilityDef == knockBackAbility)
+                       {
+                           __instance.RemoveAbility(ability);
+
+                       }
+                   }
+
+                   catch (Exception e)
+                   {
+                       TFTVLogger.Error(e);
+                   }
+
+               }
+
+           }
+        */
+
 
 
 
@@ -58,9 +288,6 @@ namespace TFTV
                     {
                         StartPreparingShootAbilityDef scyllaStartPreparing = DefCache.GetDef<StartPreparingShootAbilityDef>("Queen_StartPreparing_AbilityDef");
                         //    TFTVLogger.Always("Got here");
-
-
-
                         StartPreparingShootAbility startPreparingShootAbility = __instance.GetAbilityWithDef<StartPreparingShootAbility>(scyllaStartPreparing);
 
                         if (startPreparingShootAbility != null)
@@ -70,6 +297,15 @@ namespace TFTV
                         }
 
                     }
+
+                    /*   SpawnActorAbilityDef DecoyAbility = DefCache.GetDef<SpawnActorAbilityDef>("Decoy_AbilityDef");
+
+                       if (ability.TacticalAbilityDef == DecoyAbility)
+                       {                 
+                           TacContextHelpManager tacContextHelpManager = (TacContextHelpManager)UnityEngine.Object.FindObjectOfType(typeof(TacContextHelpManager));
+                           tacContextHelpManager.EventTypeTriggered(HintTrigger.ActorSeen, parameter, parameter);
+                       }*/
+
 
                 }
 
@@ -580,184 +816,184 @@ namespace TFTV
 
 
 
-        /*   public static float Score = 0;
-           public static List<float> ScoresBeforeCulling = new List<float>();
-           public static int CounterAIActionsInfluencedBySafetyConsideration = 0;
+        //  public static float Score = 0;
+        //  public static List<float> ScoresBeforeCulling = new List<float>();
+        //  public static int CounterAIActionsInfluencedBySafetyConsideration = 0;
 
-           [HarmonyPatch(typeof(AIMultiplyConsiderationCombiner), "GetCombinedScore")]
+        /*  [HarmonyPatch(typeof(AIMultiplyConsiderationCombiner), "GetCombinedScore")]
 
-           public static class AIConsiderationCombiner_GetCombinedScore_Experiment_patch
-           {
-               public static void Postfix(float __result, List<float> ____scores)
-               {
-                   try
-                   {
+          public static class AIConsiderationCombiner_GetCombinedScore_Experiment_patch
+          {
+              public static void Postfix(float __result, List<float> ____scores)
+              {
+                  try
+                  {
 
-                       if (Score != 0)
-                       {
-                           List<int> scoreList = new List<int>();
-                           bool safetyConsiderationRelevant = true;
-                           float scoreBeforeSafetyConsideration = 1f;
+                      if (Score != 0)
+                      {
+                          List<int> scoreList = new List<int>();
+                          bool safetyConsiderationRelevant = true;
+                          float scoreBeforeSafetyConsideration = 1f;
 
-                           for (int x = 0; x < ____scores.Count()-1; x++)
-                           {
-                               if (____scores[x] == 0) 
-                               {
-                                   safetyConsiderationRelevant = false;
+                          for (int x = 0; x < ____scores.Count()-1; x++)
+                          {
+                              if (____scores[x] == 0) 
+                              {
+                                  safetyConsiderationRelevant = false;
 
-                               }
-                               if (safetyConsiderationRelevant) 
-                               {
-                                   scoreBeforeSafetyConsideration *= ____scores[x];                          
-                               }
-                           }
+                              }
+                              if (safetyConsiderationRelevant) 
+                              {
+                                  scoreBeforeSafetyConsideration *= ____scores[x];                          
+                              }
+                          }
 
-                           if (safetyConsiderationRelevant && scoreBeforeSafetyConsideration > ____scores.Last()) 
-                           {
-                               ScoresBeforeCulling.Add(scoreBeforeSafetyConsideration);
-                              TFTVLogger.Always("DefenseSafePosition consideration score was " + Score + " and combined score is " + __result + " so score was reduced from " + __result / Score + " checksum " + scoreBeforeSafetyConsideration);
-                               foreach(float score in ____scores) 
-                               {
-                                   TFTVLogger.Always(score.ToString());
+                          if (safetyConsiderationRelevant && scoreBeforeSafetyConsideration > ____scores.Last()) 
+                          {
+                              ScoresBeforeCulling.Add(scoreBeforeSafetyConsideration);
+                             TFTVLogger.Always("DefenseSafePosition consideration score was " + Score + " and combined score is " + __result + " so score was reduced from " + __result / Score + " checksum " + scoreBeforeSafetyConsideration);
+                              foreach(float score in ____scores) 
+                              {
+                                  TFTVLogger.Always(score.ToString());
 
-                               }
+                              }
 
-                           }
+                          }
 
-                           Score = 0;
-                       }
-                   }
+                          Score = 0;
+                      }
+                  }
 
-                   catch (Exception e)
-                   {
-                       TFTVLogger.Error(e);
-                   }
+                  catch (Exception e)
+                  {
+                      TFTVLogger.Error(e);
+                  }
 
-               }
-           }
+              }
+          }
 
-           [HarmonyPatch(typeof(AISafePositionConsideration), "Evaluate")]
+          [HarmonyPatch(typeof(AISafePositionConsideration), "Evaluate")]
 
-           public static class AISafePositionConsideration_Evaluate_Experiment_patch
-           {
-               public static void Postfix(AISafePositionConsideration __instance, float __result)
-               {
-                   try
-                   {
-                       if (__instance.BaseDef.name == "DefenseSafePosition_AIConsiderationDef" && __result != 1)
-                       {
+          public static class AISafePositionConsideration_Evaluate_Experiment_patch
+          {
+              public static void Postfix(AISafePositionConsideration __instance, float __result)
+              {
+                  try
+                  {
+                      if (__instance.BaseDef.name == "DefenseSafePosition_AIConsiderationDef" && __result != 1)
+                      {
 
-                           // TFTVLogger.Always("DefenseSafePosition_AIConsiderationDef " + __result);
-                           Score = __result;
-                       }
-                   }
+                          // TFTVLogger.Always("DefenseSafePosition_AIConsiderationDef " + __result);
+                          Score = __result;
+                      }
+                  }
 
-                   catch (Exception e)
-                   {
-                       TFTVLogger.Error(e);
-                   }
+                  catch (Exception e)
+                  {
+                      TFTVLogger.Error(e);
+                  }
 
-               }
-           }
-
-
-
-           [HarmonyPatch(typeof(AIFaction), "SelectTarget")]
-
-           public static class AIFaction_SelectTarget_Experiment_patch
-           {
-               public static void Postfix(IList<AIScoredTarget> scoredTargets, AIScoredTarget __result, AIScoredTargetComparer ____aiScoredTargetComparer)
-               {
-                   try
-                   {
-                       if (__result != null)
-                       {
-
-                           IList<AIScoredTarget> list = null;
-                           float num = 0f;
-                           Dictionary<AIActionDef, MinHeap<AIScoredTarget>> dictionary = new Dictionary<AIActionDef, MinHeap<AIScoredTarget>>();
-                           foreach (AIScoredTarget scoredTarget in scoredTargets)
-                           {
-                               AIActionDef actionDef = scoredTarget.Action.ActionDef;
-                               if (!dictionary.ContainsKey(actionDef))
-                               {
-                                   dictionary[actionDef] = new MinHeap<AIScoredTarget>(____aiScoredTargetComparer);
-                               }
-
-                               dictionary[actionDef].Push(scoredTarget);
-                               if (num < scoredTarget.Score)
-                               {
-                                   num = scoredTarget.Score;
-                               }
-                           }
-
-                           list = new List<AIScoredTarget>();
-                           foreach (KeyValuePair<AIActionDef, MinHeap<AIScoredTarget>> item in dictionary)
-                           {
-                               int i = 0;
-                               MinHeap<AIScoredTarget> value = item.Value;
-                               for (; i < 3; i++)
-                               {
-                                   if (value.Count <= 0)
-                                   {
-                                       break;
-                                   }
-
-                                   AIScoredTarget aIScoredTarget = value.Pop();
-                                   if (aIScoredTarget.Score / num < 0.75)
-                                   {
-                                       break;
-                                   }
-
-                                   list.Add(aIScoredTarget);
-                               }
-                           }
-
-                           foreach (AIScoredTarget aIScoredTarget in list)
-                           {
+              }
+          }
 
 
-                               TFTVLogger.Always
-                                   ("Possible action is " + aIScoredTarget.Action.ActionDef.name + " with a score of " + aIScoredTarget.Score);
 
-                           }
-                           TFTVLogger.Always("Chosen action is " + __result.Action.ActionDef.name);
-                           if (ScoresBeforeCulling.Count > 0) 
-                           {
-                               List<float> orderedCulledScores = ScoresBeforeCulling.OrderByDescending(s => s).ToList();
+          [HarmonyPatch(typeof(AIFaction), "SelectTarget")]
 
-                               TFTVLogger.Always(ScoresBeforeCulling.Count() + " positions were culled by the SafetyConsideration, and the highest culled score was " + orderedCulledScores.First());
+          public static class AIFaction_SelectTarget_Experiment_patch
+          {
+              public static void Postfix(IList<AIScoredTarget> scoredTargets, AIScoredTarget __result, AIScoredTargetComparer ____aiScoredTargetComparer)
+              {
+                  try
+                  {
+                      if (__result != null)
+                      {
 
-                               bool highCullScore = false;
+                          IList<AIScoredTarget> list = null;
+                          float num = 0f;
+                          Dictionary<AIActionDef, MinHeap<AIScoredTarget>> dictionary = new Dictionary<AIActionDef, MinHeap<AIScoredTarget>>();
+                          foreach (AIScoredTarget scoredTarget in scoredTargets)
+                          {
+                              AIActionDef actionDef = scoredTarget.Action.ActionDef;
+                              if (!dictionary.ContainsKey(actionDef))
+                              {
+                                  dictionary[actionDef] = new MinHeap<AIScoredTarget>(____aiScoredTargetComparer);
+                              }
 
-                            //   foreach (AIScoredTarget aIScoredTarget in list)
-                            //   {
-                                   if (orderedCulledScores.First() >= list.Last().Score) 
-                                   {
-                                       highCullScore = true;
+                              dictionary[actionDef].Push(scoredTarget);
+                              if (num < scoredTarget.Score)
+                              {
+                                  num = scoredTarget.Score;
+                              }
+                          }
 
-                                   }
-                            //   }
+                          list = new List<AIScoredTarget>();
+                          foreach (KeyValuePair<AIActionDef, MinHeap<AIScoredTarget>> item in dictionary)
+                          {
+                              int i = 0;
+                              MinHeap<AIScoredTarget> value = item.Value;
+                              for (; i < 3; i++)
+                              {
+                                  if (value.Count <= 0)
+                                  {
+                                      break;
+                                  }
 
-                               if (highCullScore) 
-                               {
-                                   TFTVLogger.Always("Without the safety consideration, at least one of the culled positions could have been considered for chosen action");
-                                   CounterAIActionsInfluencedBySafetyConsideration += 1;
+                                  AIScoredTarget aIScoredTarget = value.Pop();
+                                  if (aIScoredTarget.Score / num < 0.75)
+                                  {
+                                      break;
+                                  }
 
-                               }
+                                  list.Add(aIScoredTarget);
+                              }
+                          }
 
-                               ScoresBeforeCulling.Clear();
-                           }
-                       }
-                   }
+                          foreach (AIScoredTarget aIScoredTarget in list)
+                          {
 
-                   catch (Exception e)
-                   {
-                       TFTVLogger.Error(e);
-                   }
 
-               }
-           }*/
+                              TFTVLogger.Always
+                                  ("Possible action is " + aIScoredTarget.Action.ActionDef.name + " with a score of " + aIScoredTarget.Score);
+
+                          }
+                          TFTVLogger.Always("Chosen action is " + __result.Action.ActionDef.name);
+                          if (ScoresBeforeCulling.Count > 0) 
+                          {
+                              List<float> orderedCulledScores = ScoresBeforeCulling.OrderByDescending(s => s).ToList();
+
+                              TFTVLogger.Always(ScoresBeforeCulling.Count() + " positions were culled by the SafetyConsideration, and the highest culled score was " + orderedCulledScores.First());
+
+                              bool highCullScore = false;
+
+                           //   foreach (AIScoredTarget aIScoredTarget in list)
+                           //   {
+                                  if (orderedCulledScores.First() >= list.Last().Score) 
+                                  {
+                                      highCullScore = true;
+
+                                  }
+                           //   }
+
+                              if (highCullScore) 
+                              {
+                                  TFTVLogger.Always("Without the safety consideration, at least one of the culled positions could have been considered for chosen action");
+                                  CounterAIActionsInfluencedBySafetyConsideration += 1;
+
+                              }
+
+                              ScoresBeforeCulling.Clear();
+                          }
+                      }
+                  }
+
+                  catch (Exception e)
+                  {
+                      TFTVLogger.Error(e);
+                  }
+
+              }
+          }*/
 
 
         //Method by Dimitar "Codemite" Evtimov from Snapshot Games

@@ -2,6 +2,7 @@
 using Base.Core;
 using Base.Defs;
 using Base.Entities.Abilities;
+using Base.Entities.Effects.ApplicationConditions;
 using Base.UI;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities.GameTags;
@@ -15,7 +16,9 @@ using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.Animations;
 using PhoenixPoint.Tactical.Entities.DamageKeywords;
 using PhoenixPoint.Tactical.Entities.Effects;
+using PhoenixPoint.Tactical.Entities.Effects.DamageTypes;
 using PhoenixPoint.Tactical.Entities.Equipments;
+using PhoenixPoint.Tactical.Entities.Statuses;
 using PhoenixPoint.Tactical.Entities.Weapons;
 using System;
 using System.Collections.Generic;
@@ -34,8 +37,8 @@ namespace TFTV
         {
             try
             {
-                AIActionMoveAndAttackDef existingMAShoot = (AIActionMoveAndAttackDef)Repo.GetDef("3fd2dfd1-3cc0-4c71-b427-22afd020b45d");     
-                  
+                AIActionMoveAndAttackDef existingMAShoot = (AIActionMoveAndAttackDef)Repo.GetDef("3fd2dfd1-3cc0-4c71-b427-22afd020b45d");
+
                 if (existingMAShoot != null)
                 {
                     return true;
@@ -87,7 +90,7 @@ namespace TFTV
                 scyllaGunsShootAbilityDef, startPreparingShootAbilityDef
                 };
 
-             
+
                 AIActionsTemplateDef QueenAI = DefCache.GetDef<AIActionsTemplateDef>("Queen_AIActionsTemplateDef");
                 AIActionMoveAndExecuteAbilityDef moveAndPrepareShooting = DefCache.GetDef<AIActionMoveAndExecuteAbilityDef>("Queen_MoveAndPrepareShooting_AIActionDef");
                 List<AIActionDef> QueenAIActions = new List<AIActionDef>(QueenAI.ActionDefs)
@@ -117,11 +120,11 @@ namespace TFTV
                     TFTVLogger.Always("BetterEnemies mod not found");
 
                     BECreateAIActionDefs();
-                  //  TFTVLogger.Always("BE AIActionDefs created");
+                    //  TFTVLogger.Always("BE AIActionDefs created");
                     BEFixesToAI();
-                 //   TFTVLogger.Always("BE Fixes to AI applied");
+                    //   TFTVLogger.Always("BE Fixes to AI applied");
                     BEChange_Perception();
-                    BEFixCaterpillarTracksDamage();
+                   // BEFixCaterpillarTracksDamage(); //already added to base
                     BEReducePandoranWillpower();
                     if (config.BetterEnemiesOn)
                     {
@@ -370,7 +373,7 @@ namespace TFTV
             {
                 TacticalItemDef queenSpawner = DefCache.GetDef<TacticalItemDef>("Queen_Abdomen_Spawner_BodyPartDef");
                 TacticalItemDef queenBelcher = DefCache.GetDef<TacticalItemDef>("Queen_Abdomen_Belcher_BodyPartDef");
-                TacCharacterDef queenCrystal = DefCache.GetDef<TacCharacterDef>("Queen_Crystal_TacCharacterDef");
+                TacCharacterDef queenCrystal = DefCache.GetDef<TacCharacterDef>("Scylla10_Crystal_AlienMutationVariationDef");
 
                 BodyPartAspectDef queenHeavyHead = DefCache.GetDef<BodyPartAspectDef>("E_BodyPartAspect [Queen_Head_Heavy_BodyPartDef]");
                 BodyPartAspectDef queenSpitterHead = DefCache.GetDef<BodyPartAspectDef>("E_BodyPartAspect [Queen_Head_Spitter_Goo_WeaponDef]");
@@ -393,11 +396,8 @@ namespace TFTV
                 DefCache.GetDef<AbilityDef>("AcidResistant_DamageMultiplierAbilityDef"),
                 };
 
-                queenCrystal.Data.Abilites = new TacticalAbilityDef[]
-                {
-                DefCache.GetDef<TacticalAbilityDef>("CaterpillarMoveAbilityDef"),
-                MindControl,
-                };
+                List<TacticalAbilityDef> scyllaAbilities = new List<TacticalAbilityDef>(queenCrystal.Data.Abilites.ToList()) { MindControl };
+                queenCrystal.Data.Abilites = scyllaAbilities.ToArray();
 
                 foreach (TacActorSimpleAbilityAnimActionDef animActionDef in Repo.GetAllDefs<TacActorSimpleAbilityAnimActionDef>().Where(aad => aad.name.Contains("Queen_AnimActionsDef")))
                 {
@@ -426,7 +426,12 @@ namespace TFTV
                 queenSpitterHead.WillPower = 165;
                 queenSonicHead.WillPower = 170;
 
+                WeaponDef headSpitter = DefCache.GetDef<WeaponDef>("Queen_Head_Spitter_Goo_WeaponDef");
+                DamageKeywordDef acid = DefCache.GetDef<DamageKeywordDef>("Acid_DamageKeywordDataDef");
+                headSpitter.DamagePayload.DamageKeywords.Add(new DamageKeywordPair { DamageKeywordDef = acid, Value = 30 });
+                //    WeaponDef headSonic = DefCache.GetDef<WeaponDef>("Queen_Head_Sonic_WeaponDef");
 
+                BEGiveDRToAllScylla();
 
             }
             catch (Exception e)
@@ -435,7 +440,68 @@ namespace TFTV
             }
         }
 
+        internal static void BEGiveDRToAllScylla()
+        {
+            try
+            {
+                try
+                {
 
+                    StandardDamageTypeEffectDef fireDamage = DefCache.GetDef<StandardDamageTypeEffectDef>("Fire_StandardDamageTypeEffectDef");
+                    StandardDamageTypeEffectDef standardDamageTypeEffectDef = DefCache.GetDef<StandardDamageTypeEffectDef>("Projectile_StandardDamageTypeEffectDef");
+                    AcidDamageTypeEffectDef acidDamage = DefCache.GetDef<AcidDamageTypeEffectDef>("Acid_DamageOverTimeDamageTypeEffectDef");
+
+                    string statusName = "ScyllaDamageResistance";
+                    string gUID = "{CE61D05C-5A75-4354-BEC8-73EC0357F971}";
+                    string gUIDVisuals = "{6272B177-49AA-4F81-9C05-9CB9026A26C5}";
+
+                    DamageMultiplierStatusDef source = DefCache.GetDef<DamageMultiplierStatusDef>("BionicResistances_StatusDef");
+                    DamageMultiplierStatusDef newStatus = Helper.CreateDefFromClone(
+                        source,
+                        gUID,
+                        statusName);
+                    newStatus.EffectName = statusName;
+                    newStatus.VisibleOnHealthbar = TacStatusDef.HealthBarVisibility.Hidden;
+                    newStatus.VisibleOnPassiveBar = true;
+                    newStatus.VisibleOnStatusScreen = TacStatusDef.StatusScreenVisibility.VisibleOnStatusesList;
+                    newStatus.ApplicationConditions = new EffectConditionDef[] { };
+
+                    newStatus.Visuals = Helper.CreateDefFromClone(
+                        source.Visuals,
+                        gUIDVisuals,
+                        statusName + "Visuals");
+                    newStatus.Multiplier = 0.75f;
+                    newStatus.MultiplierType = DamageMultiplierType.Incoming;
+                    newStatus.Range = -1;
+                    List<DamageTypeBaseEffectDef> damageTypeBaseEffectDefs = new List<DamageTypeBaseEffectDef>();
+                    damageTypeBaseEffectDefs.AddRange(newStatus.DamageTypeDefs);
+                    damageTypeBaseEffectDefs.Add(fireDamage);
+                    damageTypeBaseEffectDefs.Add(standardDamageTypeEffectDef);
+                    damageTypeBaseEffectDefs.Add(acidDamage);
+
+                    newStatus.DamageTypeDefs = damageTypeBaseEffectDefs.ToArray();
+
+                    newStatus.Visuals.LargeIcon = Helper.CreateSpriteFromImageFile("UI_AbilitiesIcon_HunkerDown_2-2.png");
+                    newStatus.Visuals.SmallIcon = Helper.CreateSpriteFromImageFile("UI_AbilitiesIcon_HunkerDown_2-2.png");
+
+
+                    newStatus.Visuals.DisplayName1.LocalizationKey = "SCYLLA_DAMAGERESISTANCE_NAME";
+                    newStatus.Visuals.Description.LocalizationKey = "SCYLLA_DAMAGERESISTANCE_DESCRIPTION";
+
+
+
+                }
+
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
 
         public static void BEBuff_StartingEvolution()
         {
@@ -629,7 +695,7 @@ namespace TFTV
             {
                 GameTagDef damagedByCaterpillar = DefCache.GetDef<GameTagDef>("DamageByCaterpillarTracks_TagDef");
 
-                foreach (TacticalActorDef actor in Repo.GetAllDefs<TacticalActorDef>().Where(a => a.name.Contains("worm") || a.name.Contains("SpiderDrone")))
+                foreach (TacticalActorDef actor in Repo.GetAllDefs<TacticalActorDef>().Where(a => a.name.Contains("worm") || a.name.Contains("SpiderDrone")||a.name.Contains("TechTurret")))
                 {
                     actor.GameTags.Add(damagedByCaterpillar);
                 }
@@ -818,7 +884,7 @@ namespace TFTV
                     mAShoot
                 };
                 SirenAITemplate.ActionDefs = sirenAIActions.ToArray();
-              //  TFTVLogger.Always("SirenAITemplate");
+                //  TFTVLogger.Always("SirenAITemplate");
                 //reduce weight for neuralDisrupt AI action
                 AIActionMoveAndExecuteAbilityDef NeuralDisruptAI = DefCache.GetDef<AIActionMoveAndExecuteAbilityDef>("MoveAndDoSilence_AIActionDef");
                 NeuralDisruptAI.Weight = 32.5f;
@@ -839,7 +905,7 @@ namespace TFTV
                 soldierAIActionDefs.Add(DefCache.GetDef<AIActionExecuteAbilityDef>("ElectricReinforcement_AIActionDef"));
 
                 soldierAI.ActionDefs = soldierAIActionDefs.ToArray();
-             //   TFTVLogger.Always("SoldierAITemplate");
+                //   TFTVLogger.Always("SoldierAITemplate");
 
                 //Reduce weight for Acheron recover
                 AIActionExecuteAbilityDef acheronRecover = DefCache.GetDef<AIActionExecuteAbilityDef>("Acheron_Recover_AIActionDef");
@@ -853,7 +919,7 @@ namespace TFTV
                     moveAndDoMC
                 };
                 queenAITemplate.ActionDefs = scyllaActionDefs.ToArray();
-              //  TFTVLogger.Always("QueenAITemplate");
+                //  TFTVLogger.Always("QueenAITemplate");
             }
             catch (Exception e)
             {

@@ -213,8 +213,11 @@ namespace TFTV
             description: "Set the amount of bolts for the magazine of the advanced crossbow (Psyche CRB IV)")]
         public int VenomCrossbow_Ammo = 3;
 
+        // Always show helmets
+        [ConfigField(text: "Operatives will appear without helmets in the personnel screen",
+            description: "Turn off if you don't like to see the faces of the individuals you are sending to be clawed and devoured by horrifying monstrosities")]
+        public bool ShowFaces = true;
 
-        
 
     }
 }

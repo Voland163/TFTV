@@ -1,5 +1,6 @@
 ﻿using Base.Entities.Effects.ApplicationConditions;
 using HarmonyLib;
+using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Geoscape.Levels;
@@ -217,7 +218,7 @@ namespace TFTV
 
 
         [HarmonyPatch(typeof(TacticalLevelController), "ActorDamageDealt")]
-        public static class TacticalLevelController_ActorDamageDealt_HumanEnemiesTactics_Retribution_Patch
+        public static class TacticalLevelController_ActorDamageDealt_TBTV_Trigger_Patch
         {
             public static void Prefix(TacticalActor actor, IDamageDealer damageDealer)
             {
@@ -588,6 +589,7 @@ namespace TFTV
                 if (controller.Factions.Any(f => f.Faction.FactionDef.MatchesShortName("aln")))
                 {
                     TacticalFaction pandoranFaction = controller.GetFactionByCommandName("aln");
+                    TacticalFaction wildFaction = controller.GetFactionByCommandName("wild");
                     List<TacticalActor> pandoransCallingReinforcements = new List<TacticalActor>();
 
                     foreach (TacticalActor actor in pandoranFaction.TacticalActors)
@@ -600,6 +602,18 @@ namespace TFTV
                             pandoransCallingReinforcements.Add(actor);
                         }
                     }
+
+                    foreach (TacticalActor actor in wildFaction.TacticalActors)
+                    {
+
+                        //    TFTVLogger.Always("The actor is " + actor.name);
+                        if ((actor.GameTags.Contains(crabTag) || actor.GameTags.Contains(fishTag)) &&
+                            actor.HasStatus(onTurnEndTBTVStatus) && actor.IsAlive)
+                        {
+                            pandoransCallingReinforcements.Add(actor);
+                        }
+                    }
+
 
                     if (pandoransCallingReinforcements.Count > 0)
                     {
@@ -617,18 +631,19 @@ namespace TFTV
                                     { Min = reinforcements[classTag], Max = reinforcements[classTag] }
                                 };
 
-                                TFTVLogger.Always("Reinforcements should be called, with classTag " + classTag.className);
+                               // TFTVLogger.Always("Reinforcements should be called, with classTag " + classTag.className);
                                 CallReinforcementsAbility callReinforcementsAbility = new CallReinforcementsAbility();
 
 
                                 //  actor.GetAbilityWithDef<CallReinforcementsAbility>(callReinforcementsTBTVAbilityDef);
-                                TacParticipantSpawn participantSpawn = controller.TacMission.ParticipantSpawns.First((TacParticipantSpawn ps) => ps.ParticipantKind == actor.MissionParticipant);
+                                TacParticipantSpawn participantSpawn = controller.TacMission.ParticipantSpawns.First((TacParticipantSpawn ps) => ps.TacticalFaction == pandoranFaction); //ps.ParticipantKind == actor.MissionParticipant);
                                 // ReinforcementSettings[] reinforcementsSettings = callReinforcementsAbility.Def<CallReinforcementsAbilityDef>().ReinforcementsSettings;
 
                                 MethodInfo method_GenerateTargetData = AccessTools.Method(typeof(CallReinforcementsAbility), "DeployReinforcement");
                                 method_GenerateTargetData.Invoke(callReinforcementsAbility, new object[] { participantSpawn, reinforcement });
-
                             }
+
+                            actor.Status.UnapplyStatus(actor.Status.GetStatusByName(onTurnEndTBTVStatus.EffectName));
 
                         }
                     }
@@ -801,9 +816,6 @@ namespace TFTV
 
         }
 
-
-
-
         public static void CheckForUmbraResearch(GeoLevelController level)
         {
             try
@@ -830,6 +842,8 @@ namespace TFTV
             {
                 try
                 {
+                    SpawnedActorTagDef decoyTag = DefCache.GetDef<SpawnedActorTagDef>("Decoy_SpawnedActorTagDef");
+
                     if (!TFTVVoidOmens.VoidOmensCheck[16])
                     {
                         if (sourceActor.ActorDef.name.Equals("Oilcrab_ActorDef") || sourceActor.ActorDef.name.Equals("Oilfish_ActorDef"))
@@ -838,7 +852,7 @@ namespace TFTV
                                                                                                   //list.RemoveWhere(adilityTarget => (adilityTarget.Actor as TacticalActor)?.CharacterStats.Corruption <= 0);
                             foreach (TacticalAbilityTarget source in __result)
                             {
-                                if (source.Actor is TacticalActor && ((source.Actor as TacticalActor).CharacterStats.Corruption > 0 || source.Actor.TacticalPerceptionBase.IsTouchingVoxel(TacticalVoxelType.Mist)))
+                                if (source.Actor is TacticalActor && ((source.Actor as TacticalActor).CharacterStats.Corruption > 0 || (source.Actor.TacticalPerceptionBase.IsTouchingVoxel(TacticalVoxelType.Mist) && !source.Actor.HasGameTag(decoyTag))))
                                 {
                                     list.Add(source);
                                 }
@@ -846,6 +860,7 @@ namespace TFTV
                             __result = list;
                         }
                     }
+                    
                 }
                 catch (Exception e)
                 {

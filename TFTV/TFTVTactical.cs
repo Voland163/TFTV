@@ -82,7 +82,7 @@ namespace TFTV
             //   TFTVBaseDefenseTactical.CheckIfConsoleActivated(Controller);
             TFTVSpecialDifficulties.CheckForSpecialDifficulties();
             TFTVBetterEnemies.ImplementBetterEnemies();
-            TFTVBaseDefenseTactical.RevealAllSpawns(Controller);
+           // TFTVBaseDefenseTactical.RevealAllSpawns(Controller);
 
             // TFTVBaseDefenseTactical.CheckingPortrait(Controller);
 

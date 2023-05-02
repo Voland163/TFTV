@@ -39,6 +39,9 @@ namespace PRMBetterClasses.SkillModifications
 
         public static void ApplyChanges()
         {
+            // Fix balance issues with psychic abilities
+            FixPsychicAbilitiesIssues();
+
             // Psychic Ward - fix and description to : Allies within 10 tiles are immune to panic and psychic scream damage
             Change_PsychicWard();
 
@@ -47,6 +50,34 @@ namespace PRMBetterClasses.SkillModifications
 
             // Lay Waste: 1 AP, 3 WP, If your current Willpower score is higher than target's deal 30 damage for each point of WP difference
             Create_LayWaste();
+        }
+
+        private static void FixPsychicAbilitiesIssues()
+        {
+            string[] psychicAbilityDefNames = {
+                "Priest_MindControl_AbilityDef",
+                "Exalted_MindControl_AbilityDef",
+                "InducePanic_AbilityDef",
+                "Exalted_InducePanic_AbilityDef",
+                "Priest_PsychicScream_AbilityDef",
+                "Siren_PsychicScream_AbilityDef",
+                "MindCrush_AbilityDef",
+                "Exalted_MindCrush_AbilityDef"
+            };
+            SkillTagDef attackSkillTag = DefCache.GetDef<SkillTagDef>("AttackAbility_SkillTagDef");
+            GameTagDef metallicSubstanceTag = DefCache.GetDef<GameTagDef>("Metallic_SubstanceTypeTagDef");
+            foreach (string defName in psychicAbilityDefNames)
+            {
+                TacticalAbilityDef abilityDef = DefCache.GetDef<TacticalAbilityDef>(defName);
+                if (!abilityDef.SkillTags.Contains(attackSkillTag))
+                {
+                    abilityDef.SkillTags = abilityDef.SkillTags.AddItem(attackSkillTag).ToArray();
+                }
+                if (abilityDef.TargetingDataDef.Origin.TargetTags.Contains(metallicSubstanceTag))
+                {
+                    abilityDef.TargetingDataDef.Origin.TargetTags.Remove(metallicSubstanceTag);
+                }
+            }
         }
 
         public static void Change_PsychicWard()

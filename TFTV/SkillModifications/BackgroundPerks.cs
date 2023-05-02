@@ -446,7 +446,7 @@ namespace PRMBetterClasses.SkillModifications
                 {
                     TargetStat = StatModificationTarget.Perception,
                     Modification = StatModificationType.Add,
-                    Value = 4
+                    Value = 8
                 },
                 new ItemStatModification()
                 {
@@ -713,7 +713,7 @@ namespace PRMBetterClasses.SkillModifications
             trueGrit.ViewElementDef.LargeIcon = tgIcon;
             trueGrit.ViewElementDef.SmallIcon = tgIcon;
             DamageMultiplierStatusDef tgStatus = (DamageMultiplierStatusDef)trueGrit.StatusDef;
-            tgStatus.Multiplier = 0.9f;
+            tgStatus.Multiplier = 0.8f;
             tgStatus.Range = 1.5f;
             tgStatus.Visuals = trueGrit.ViewElementDef;
             tgStatus.VisibleOnStatusScreen = 0;

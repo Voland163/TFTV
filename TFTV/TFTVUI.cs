@@ -1695,6 +1695,13 @@ namespace TFTV
             private static readonly GameTagDef mutationTag = GameUtl.GameComponent<SharedData>().SharedGameTags.AnuMutationTag;
             private static readonly ItemSlotDef headSlot = DefCache.GetDef<ItemSlotDef>("Human_Head_SlotDef");
 
+            public static bool Prepare()
+            {
+                TFTVConfig config = TFTVMain.Main.Config;
+                return config.ShowFaces;
+            }
+
+
             private static void Postfix(GeoCharacter newCharacter)
             {
                 try
@@ -1770,6 +1777,11 @@ namespace TFTV
             private static readonly GameTagDef mutationTag = GameUtl.GameComponent<SharedData>().SharedGameTags.AnuMutationTag;
             private static readonly ItemSlotDef headSlot = DefCache.GetDef<ItemSlotDef>("Human_Head_SlotDef");
 
+            public static bool Prepare()
+            {
+                TFTVConfig config = TFTVMain.Main.Config;
+                return config.ShowFaces;
+            }
 
             public static void Postfix()
             {
@@ -1841,11 +1853,11 @@ namespace TFTV
             private static readonly GameTagDef mutationTag = GameUtl.GameComponent<SharedData>().SharedGameTags.AnuMutationTag;
             private static readonly ItemSlotDef headSlot = DefCache.GetDef<ItemSlotDef>("Human_Head_SlotDef");
 
-            /*  public static bool Prepare()
+            public static bool Prepare()
               {
                   TFTVConfig config = TFTVMain.Main.Config;
-                  return config.helmentsOff;
-              }*/
+                  return config.ShowFaces;
+              }
 
             private static bool Prefix(UIModuleActorCycle __instance, List<UnitDisplayData> ____units,
                 CharacterClassWorldDisplay ____classWorldDisplay,

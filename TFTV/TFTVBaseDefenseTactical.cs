@@ -8,7 +8,6 @@ using Base.Levels;
 using Base.Utils.Maths;
 using com.ootii.Geometry;
 using HarmonyLib;
-using hoenixPoint.Tactical.View.ViewControllers;
 using PhoenixPoint.Common.ContextHelp;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities.GameTags;
@@ -28,17 +27,13 @@ using PhoenixPoint.Tactical.Levels.Destruction;
 using PhoenixPoint.Tactical.Levels.FactionObjectives;
 using PhoenixPoint.Tactical.Levels.Missions;
 using PhoenixPoint.Tactical.Levels.Mist;
-using PhoenixPoint.Tactical.Sequencer;
-using PhoenixPoint.Tactical.UI;
-using PhoenixPoint.Tactical.View.ViewControllers;
-using PhoenixPoint.Tactical.View.ViewModules;
+using PhoenixPoint.Tactical.Prompts;
 using SETUtil.Extend;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
-using System.Security.Policy;
 using UnityEngine;
 
 namespace TFTV
@@ -59,7 +54,6 @@ namespace TFTV
         private static readonly DefRepository Repo = TFTVMain.Repo;
         // private static readonly GameTagDef InfestationFirstObjectiveTag = DefCache.GetDef<GameTagDef>("PhoenixBaseInfestation_GameTagDef");
         private static readonly GameTagDef InfestationSecondObjectiveTag = DefCache.GetDef<GameTagDef>("ScatterRemainingAttackers_GameTagDef");
-
 
         //Patch to add objective tag on Pandorans for the Scatter Attackers objective
         //Doesn't activate if Pandoran faction not present
@@ -844,7 +838,7 @@ namespace TFTV
                 {
                     UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
 
-                    int roll =  UnityEngine.Random.Range(1, 11 + controller.Difficulty.Order);
+                    int roll = UnityEngine.Random.Range(1, 11 + controller.Difficulty.Order);
 
                     TFTVLogger.Always($"Picking strat for base defense, roll is {roll}");
 
@@ -1271,6 +1265,37 @@ namespace TFTV
             }
         }
 
+
+        [HarmonyPatch(typeof(TacticalPrompt), "Show")]
+        public static class TacticalPrompt_AddStatus_patch
+        {
+            public static void Prefix(TacticalPrompt __instance)
+            {
+                try
+                {
+                    // TFTVLogger.Always($"Showing prompt {__instance.PromptDef.name}");
+
+                    TacticalLevelController controller = (TacticalLevelController)UnityEngine.Object.FindObjectOfType(typeof(TacticalLevelController));
+                    TacticalPromptDef activateObjective = DefCache.GetDef<TacticalPromptDef>("ActivateObjectivePromptDef");
+                    TacticalPromptDef consoleBaseDefenseObjective = DefCache.GetDef<TacticalPromptDef>("TFTVBaseDefensePrompt");
+
+                    if (__instance.PromptDef == activateObjective && controller.TacMission.MissionData.UsePhoenixBaseLayout)
+                    {
+                        //  TFTVLogger.Always("Got past the if on the prompt");
+                        __instance.PromptDef = consoleBaseDefenseObjective;
+                    }
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+
+                }
+
+
+            }
+        }
+
         internal static void DeactivateConsole(string name)
         {
             try
@@ -1285,8 +1310,10 @@ namespace TFTV
                 TFTVLogger.Always($"found status {status.Def.EffectName}");
                 console.Status.UnapplyStatus(status);
 
+
+
                 //KEY_ACTIVATE_OBJECTIVE_PROMPT
-         
+
 
             }
             catch (Exception e)
@@ -1351,12 +1378,12 @@ namespace TFTV
 
                 ipCols.transform.SetPositionAndRotation(position, Quaternion.identity);
                 var collider = ipCols.AddComponent<BoxCollider>();
-               
+
 
                 structuralTarget.Initialize();
                 structuralTarget.DoEnterPlay();
 
-            //    TacticalActorBase
+                //    TacticalActorBase
 
                 StatusDef activeConsoleStatusDef = DefCache.GetDef<StatusDef>("ActiveInteractableConsole_StatusDef");
                 structuralTarget.Status.ApplyStatus(activeConsoleStatusDef);
@@ -1460,8 +1487,6 @@ namespace TFTV
                 }
             }
         }
-
-
         internal static void RevealAllSpawns(TacticalLevelController controller)
         {
             try
@@ -1470,9 +1495,9 @@ namespace TFTV
 
                 //  TacCharacterDef mindFragger = DefCache.GetDef<TacCharacterDef>("Facehugger_AlienMutationVariationDef");
 
-              /*  TacticalDeployZone tacticalDeployZone1 = new TacticalDeployZone() { };
-                tacticalDeployZone1 = zones.First();
-                tacticalDeployZone1.SetPosition(zones.First().Pos + new Vector3(3, 0, 3));*/
+                /*  TacticalDeployZone tacticalDeployZone1 = new TacticalDeployZone() { };
+                  tacticalDeployZone1 = zones.First();
+                  tacticalDeployZone1.SetPosition(zones.First().Pos + new Vector3(3, 0, 3));*/
 
 
                 MethodInfo createVisuals = AccessTools.Method(typeof(TacticalDeployZone), "CreateVisuals");
@@ -1482,7 +1507,7 @@ namespace TFTV
                     createVisuals.Invoke(tacticalDeployZone, null);
                 }
 
-             //   createVisuals.Invoke(tacticalDeployZone1, null);
+                //   createVisuals.Invoke(tacticalDeployZone1, null);
 
                 //  InfestationStrat(controller);
 
@@ -1751,7 +1776,7 @@ namespace TFTV
                             || tacticalActor.TacticalPerceptionBase.IsTouchingVoxel(TacticalVoxelType.Mist))
                     {
                         infectedPhoenixOperatives.Add(tacticalActor);
-                       // TFTVLogger.Always($"tactical actor added to list is {tacticalActor.DisplayName}");
+                        // TFTVLogger.Always($"tactical actor added to list is {tacticalActor.DisplayName}");
                     }
                 }
 
@@ -1785,7 +1810,7 @@ namespace TFTV
 
                 foreach (TacticalActor pXOperative in targetablePhoenixOperatives.Keys)
                 {
-                 
+
 
                     UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
 
@@ -1796,16 +1821,16 @@ namespace TFTV
                     Level level = controller.Level;
                     TacticalVoxelMatrix tacticalVoxelMatrix = level?.GetComponent<TacticalVoxelMatrix>();
                     Vector3 position = zone.Pos;
-                    if (position.y <= 2 && position.y!=1.2) 
+                    if (position.y <= 2 && position.y != 1.2)
                     {
-                        position.SetY(1.2f);  
+                        position.SetY(1.2f);
                     }
-                    else if (position.y>4 && position.y != 4.8) 
+                    else if (position.y > 4 && position.y != 4.8)
                     {
                         position.SetY(4.8f);
-                    
+
                     }
-                   
+
 
                     MethodInfo spawnBlob = AccessTools.Method(typeof(TacticalVoxelMatrix), "SpawnBlob_Internal");
                     //spawnBlob.Invoke(tacticalVoxelMatrix, new object[] { TacticalVoxelType.Empty, zone.Pos + Vector3.up * -1.5f, 3, 1, false, true });

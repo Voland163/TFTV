@@ -1,15 +1,19 @@
-﻿using Base;
+﻿using Base.Defs;
+using Base.Entities;
+using Base.Entities.Effects;
+using Base.Levels.Nav;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
-using PhoenixPoint.Common.Entities.GameTagsTypes;
+using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Geoscape.Entities;
-using PhoenixPoint.Geoscape.Entities.Research;
 using PhoenixPoint.Geoscape.Entities.Sites;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
 using PhoenixPoint.Tactical.Entities;
+using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.DamageKeywords;
 using PhoenixPoint.Tactical.Entities.Statuses;
+using PhoenixPoint.Tactical.Levels;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -24,12 +28,42 @@ namespace TFTV
 
         //  private static readonly DefRepository Repo = TFTVMain.Repo;
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
+        private static readonly DefRepository Repo = TFTVMain.Repo;
+        private static readonly SharedData Shared = TFTVMain.Shared;
 
         private static readonly GeoAlienBaseTypeDef nestType = DefCache.GetDef<GeoAlienBaseTypeDef>("Nest_GeoAlienBaseTypeDef");
         private static readonly GeoAlienBaseTypeDef lairType = DefCache.GetDef<GeoAlienBaseTypeDef>("Lair_GeoAlienBaseTypeDef");
         private static readonly GeoAlienBaseTypeDef citadelType = DefCache.GetDef<GeoAlienBaseTypeDef>("Citadel_GeoAlienBaseTypeDef");
         private static readonly GeoAlienBaseTypeDef palaceType = DefCache.GetDef<GeoAlienBaseTypeDef>("Palace_GeoAlienBaseTypeDef");
         public static int ScyllaCount = 0;
+
+        /*  [HarmonyPatch(typeof(NavObstacle), "IsPassable")]
+          internal static class TFTV_NavObstacle_AbilityAdded_ScyllaCaterpillar_patch
+          {
+
+              public static void Prefix(NavObstacle __instance, bool __result, float maxDist, params NavAreas[] areas)
+              {
+                  try
+                  {
+                     TFTVLogger.Always($"obstacle {__instance.NavSettings.Name} is passable {__result} maxDist is {maxDist}");
+
+                     foreach(NavAreas area in areas) 
+                      {
+                          TFTVLogger.Always($"areaMask is {area.AreaMask}");
+
+                      }
+
+
+                  }
+                  catch (Exception e)
+                  {
+                      TFTVLogger.Error(e);
+
+                  }
+              }
+          }*/
+
+       
 
 
 
@@ -39,16 +73,25 @@ namespace TFTV
 
             public static void Postfix(ref DamageAccumulation.TargetData data)
             {
-                DamageMultiplierStatusDef queenImmunity = DefCache.GetDef<DamageMultiplierStatusDef>("E_BlastImmunityStatus [Queen_GunsFire_ShootAbilityDef]");
-
-                if (data.Target.GetActor() != null && data.Target.GetActor().Status != null)
+                try
                 {
-                    TacticalActorBase actor = data.Target.GetActor();
+                    DamageMultiplierStatusDef queenImmunity = DefCache.GetDef<DamageMultiplierStatusDef>("E_BlastImmunityStatus [Queen_GunsFire_ShootAbilityDef]");
 
-                    if (actor.Status.HasStatus(queenImmunity))
+                    if (data.Target.GetActor() != null && data.Target.GetActor().Status != null)
                     {
-                        data.DamageResult.ArmorDamage = Mathf.Floor(data.DamageResult.ArmorDamage * 0);
+                        TacticalActorBase actor = data.Target.GetActor();
+
+                        if (actor.Status.HasStatus(queenImmunity))
+                        {
+                            data.DamageResult.ArmorDamage = Mathf.Floor(data.DamageResult.ArmorDamage * 0);
+                        }
                     }
+                }
+
+
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
                 }
             }
         }
@@ -159,9 +202,9 @@ namespace TFTV
                     TFTVLogger.Always("There are " + statisticsManager.CurrentGameStats.GeoscapeStats.SurvivingCitadels + " existing citadels and " + statisticsManager.CurrentGameStats.GeoscapeStats.DestroyedCitadels
                         + " have been destroyed, so Citadel counter is " + citadelCount);*/
 
-                    ScyllaCount += 1;
-
+                    
                     SpawnScylla(__instance, RollScylla(ScyllaCount));
+                    ScyllaCount += 1;
                     return false;
 
                 }
@@ -170,7 +213,7 @@ namespace TFTV
                     TFTVLogger.Error(e);
                     throw;
                 }
-               
+
 
             }
 
@@ -210,17 +253,17 @@ namespace TFTV
                 TacCharacterDef scylla9 = DefCache.GetDef<TacCharacterDef>("Scylla9_SonicArmorGunHeavyBelch_AlienMutationVariationDef");
                 TacCharacterDef scylla10 = DefCache.GetDef<TacCharacterDef>("Scylla10_Crystal_AlienMutationVariationDef");
 
-               
-                List<TacCharacterDef> allScyllas = new List<TacCharacterDef>() 
+
+                List<TacCharacterDef> allScyllas = new List<TacCharacterDef>()
                 { startingScylla, scylla2, scylla3, scylla4, scylla5, scylla6, scylla7, scylla8, scylla9, scylla10 };
 
                 DateTime myDate = new DateTime(1, 1, 1);
 
                 UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
-                int roll = UnityEngine.Random.Range(scyllasAlreadySpawned, scyllasAlreadySpawned+1);
-                if (roll > allScyllas.Count - 1) 
+                int roll = UnityEngine.Random.Range(scyllasAlreadySpawned, scyllasAlreadySpawned + 1);
+                if (roll > allScyllas.Count - 1)
                 {
-                   int newRoll = UnityEngine.Random.Range(allScyllas.Count-4, allScyllas.Count - 1);
+                    int newRoll = UnityEngine.Random.Range(allScyllas.Count - 4, allScyllas.Count - 1);
                     TFTVLogger.Always("It's " + myDate.Add(new TimeSpan(controller.Timing.Now.TimeSpan.Ticks)) + " and " + allScyllas[newRoll].name + " will spawn");
                     return allScyllas[newRoll];
                 }

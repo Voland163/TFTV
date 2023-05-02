@@ -1,5 +1,8 @@
-﻿using HarmonyLib;
+﻿using Base.Defs;
+using Base.Entities.Effects;
+using HarmonyLib;
 using PhoenixPoint.Common.Entities.GameTags;
+using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.DamageKeywords;
@@ -11,13 +14,181 @@ using PhoenixPoint.Tactical.Levels.Mist;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
+using UnityEngine;
 
 namespace TFTV
 {
     internal class TFTVArtOfCrab
     {
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
+        private static readonly DefRepository Repo = TFTVMain.Repo;
+
+        [HarmonyPatch(typeof(CaterpillarMoveAbility), "Activate")]
+        internal static class TFTV_CaterpillarMoveAbility_Activate_ScyllaCaterpillar_patch
+        {
+
+            public static void Postfix(CaterpillarMoveAbility __instance)
+            {
+                try
+                {
+                    if (__instance.TacticalActor.ActorDef.name.Equals("Queen_ActorDef"))
+                    {
+                        EffectTarget effectTarget = new EffectTarget() { Object = __instance.TacticalActor.gameObject };
+
+                        TacStatusEffectDef scyllaImmunity = DefCache.GetDef<TacStatusEffectDef>("E_MakeImmuneToBlastDamageEffect [Queen_GunsFire_ShootAbilityDef]");
+                        Effect.Apply(Repo, scyllaImmunity, effectTarget, __instance.TacticalActor);
+
+
+                    }
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+
+                }
+            }
+        }
+
+
+        [HarmonyPatch(typeof(CaterpillarMoveAbility), "AbilityAdded")]
+        internal static class TFTV_CaterpillarMoveAbility_AbilityAdded_ScyllaCaterpillar_patch
+        {
+
+            public static void Postfix(CaterpillarMoveAbility __instance)
+            {
+                try
+                {
+                    if (__instance.TacticalActor.ActorDef.name.Equals("Queen_ActorDef"))
+                    {
+
+                        TacticalNavigationComponent component = __instance.TacticalActor.GetComponent<TacticalNavigationComponent>();
+                        string[] extraNavAreas = new string[] { "WalkableBigMonster" };
+
+                        __instance.TacticalActor.TacticalNav.AddNavAreas(extraNavAreas);
+                        TFTVLogger.Always($"{__instance.TacticalActor.DisplayName} has {component.NavAreas.GetAreaCount()} navigation areas, " +
+                             $"navcomp agent is {component.AgentTypeName}");
+                    }
+                    /*   else if(__instance.TacticalActor.ActorDef.name.Equals("MediumGuardian_ActorDef"))
+                       {
+                           TacticalNavigationComponent component = __instance.TacticalActor.GetComponent<TacticalNavigationComponent>();
+
+                           string[] extraNavAreas = new string[] { "WalkableMedMonster"};
+
+                           __instance.TacticalActor.TacticalNav.AddNavAreas(extraNavAreas);
+
+                           TFTVLogger.Always($"{__instance.TacticalActor.DisplayName} has {component.NavAreas.GetAreaCount()} navigation areas, " +
+                               $"navcomp agent is {component.AgentTypeName}");
+                       }*/
+
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+
+                }
+            }
+        }
+        //NavMeshAreasDef
+
+
+
+        //Patch to prevent Scylla from targeting tiny critters like worms and spider drones
+        [HarmonyPatch(typeof(TacticalAbility), "GetTargetActors", new Type[] { typeof(TacticalTargetData), typeof(TacticalActorBase), typeof(Vector3) })]
+        public static class TFTV_TacticalAbility_GetTargetActors_Scylla_Patch
+        {
+            public static void Postfix(ref IEnumerable<TacticalAbilityTarget> __result, TacticalActorBase sourceActor, TacticalAbility __instance)
+            {
+                try
+                {
+                   CullTargetsLists(__result, sourceActor, __instance);
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+        }
+
+
+
+        //implement method to cull small target
+        public static IEnumerable<TacticalAbilityTarget> CullTargetsLists(IEnumerable<TacticalAbilityTarget> targetList, TacticalActorBase actor, TacticalAbility ability)
+        {
+            try
+            {
+                IEnumerable<TacticalAbilityTarget> culledList = new List<TacticalAbilityTarget>();
+
+                ClassTagDef swarmerTag = DefCache.GetDef<ClassTagDef>("Swarmer_ClassTagDef");
+                ClassTagDef crabTag = DefCache.GetDef<ClassTagDef>("Crabman_ClassTagDef");
+                ClassTagDef sirenTag = DefCache.GetDef<ClassTagDef>("Siren_ClassTagDef");
+                ClassTagDef queenTag = DefCache.GetDef<ClassTagDef>("Queen_ClassTagDef");
+                ClassTagDef tritonTag = DefCache.GetDef<ClassTagDef>("Fishman_ClassTagDef");
+                ClassTagDef acheronTag = DefCache.GetDef<ClassTagDef>("Acheron_ClassTagDef");
+                GameTagDef humanTag = DefCache.GetDef<GameTagDef>("Human_TagDef");
+                GameTagDef caterpillarDamage = DefCache.GetDef<GameTagDef>("DamageByCaterpillarTracks_TagDef");
+                SkillTagDef meleeSkillTag = DefCache.GetDef<SkillTagDef>("MeleeAbility_SkillTagDef");
+
+
+                if (actor.GameTags.Contains(swarmerTag) || (ability.TacticalAbilityDef.SkillTags.Contains(meleeSkillTag) && actor.GameTags.Contains(crabTag)))
+                {
+
+                    culledList = targetList;
+
+                }
+                else if (actor.GameTags.Contains(queenTag))
+                {
+
+                    List<TacticalAbilityTarget> list = new List<TacticalAbilityTarget>(targetList);
+
+                    foreach (TacticalAbilityTarget source in list)
+                    {
+                        if (source.Actor is TacticalActor tacticalActor && tacticalActor.GameTags.Contains(caterpillarDamage))
+                        {
+                            // TFTVLogger.Always($"{sourceActor.DisplayName} has the caterpillartag");
+                            list.Remove(source);
+                        }
+
+                    }
+                  
+                        culledList = list;
+                   
+                }
+                else 
+                {
+                    List<TacticalAbilityTarget> list = new List<TacticalAbilityTarget>(targetList);
+
+                    foreach (TacticalAbilityTarget source in list)
+                    {
+                        if (source.Actor is TacticalActor tacticalActor && tacticalActor.GameTags.Contains(caterpillarDamage) && (tacticalActor.Pos-source.Actor.Pos).magnitude>=5)
+                        {
+                            // TFTVLogger.Always($"{sourceActor.DisplayName} has the caterpillartag");
+                            list.Remove(source);
+                        }
+
+                    }
+                   
+                        culledList = list;
+                   
+                }
+
+                
+                    return culledList;
+             
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
+
+
+        }
+
+
 
         public static void SortOutAITurnOrder(List<TacticalActor> tacticalActors)
         {
@@ -310,7 +481,7 @@ namespace TFTV
         }
 
 
-        
+
 
         public static bool CheckForMeleeTargets(TacticalActor actor, List<TacticalActor> enemies)
         {

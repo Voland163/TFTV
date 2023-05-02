@@ -14,7 +14,7 @@ namespace TFTV.Tactical.Entities.Statuses
     {
         public bool IsApplicant;
         public FactionRelation TriggerOnRelation = FactionRelation.Enemy;
-        public GameTagDef[] RequiredActorTags;
+        public GameTagDef[] RequiredActorTags = new GameTagDef[0];
         public bool NeedAllTags;
         public bool DazedByApplicant = true;
         public float Range = float.PositiveInfinity;
