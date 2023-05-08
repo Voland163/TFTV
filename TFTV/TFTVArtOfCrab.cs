@@ -3,6 +3,10 @@ using Base.Entities.Effects;
 using HarmonyLib;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
+using PhoenixPoint.Common.Levels.MapGeneration;
+using PhoenixPoint.Common.Levels.Missions;
+using PhoenixPoint.Geoscape.Entities.PhoenixBases;
+using PhoenixPoint.Geoscape.View.ViewControllers.PhoenixBase;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.DamageKeywords;
@@ -22,6 +26,8 @@ namespace TFTV
     {
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
         private static readonly DefRepository Repo = TFTVMain.Repo;
+
+      
 
         [HarmonyPatch(typeof(CaterpillarMoveAbility), "Activate")]
         internal static class TFTV_CaterpillarMoveAbility_Activate_ScyllaCaterpillar_patch
@@ -68,18 +74,77 @@ namespace TFTV
                         __instance.TacticalActor.TacticalNav.AddNavAreas(extraNavAreas);
                         TFTVLogger.Always($"{__instance.TacticalActor.DisplayName} has {component.NavAreas.GetAreaCount()} navigation areas, " +
                              $"navcomp agent is {component.AgentTypeName}");
+
                     }
-                    /*   else if(__instance.TacticalActor.ActorDef.name.Equals("MediumGuardian_ActorDef"))
-                       {
-                           TacticalNavigationComponent component = __instance.TacticalActor.GetComponent<TacticalNavigationComponent>();
+                    else if (__instance.TacticalActor.ActorDef.name.Equals("MediumGuardian_ActorDef"))
+                    {
 
-                           string[] extraNavAreas = new string[] { "WalkableMedMonster"};
+                        TacticalNavigationComponent component = __instance.TacticalActor.GetComponent<TacticalNavigationComponent>();
 
-                           __instance.TacticalActor.TacticalNav.AddNavAreas(extraNavAreas);
+                        //  string[] extraNavAreas = new string[] { "WalkableMedMonster" };
 
-                           TFTVLogger.Always($"{__instance.TacticalActor.DisplayName} has {component.NavAreas.GetAreaCount()} navigation areas, " +
-                               $"navcomp agent is {component.AgentTypeName}");
-                       }*/
+                        //  __instance.TacticalActor.TacticalNav.AddNavAreas(extraNavAreas);
+
+                        TFTVLogger.Always($"{__instance.TacticalActor.DisplayName} has {component.NavAreas.GetAreaCount()} navigation areas, " +
+                            $"navcomp agent is {component.AgentTypeName}");
+
+                        TacticalDemolitionComponent demo = __instance.TacticalActor.GetComponent<TacticalDemolitionComponent>();
+                      //  demo.TacticalDemolitionComponentDef.RectangleCenter = new Vector3(0f, 1.5f, 0f);
+
+
+                        demo.TacticalDemolitionComponentDef.RectangleSize = new Vector3
+                        {
+                            x = 2.5f,
+                            y = 2.6f,
+                            z = 2.9f,
+                        };
+
+
+                        /* demo.TacticalDemolitionComponentDef.CapsuleStart = new Vector3
+                         {
+                             x = 0.0f,
+                             y = 1.0f,
+                             z = -0.6f,
+                         };
+                         demo.TacticalDemolitionComponentDef.CapsuleEnd = new Vector3
+                         {
+                             x = 0.0f,
+                             y = 0.5f,
+                             z = 0.6f,
+                         };
+                         demo.TacticalDemolitionComponentDef.SphereCenter = new Vector3
+                         {
+                             x = 0.0f,
+                             y = 0.0f,
+                             z = 0.0f,
+                         };
+                       //  demo.TacticalDemolitionComponentDef.LayersToIgnore.value = 427819008;
+                         demo.TacticalDemolitionComponentDef.DemolitionRadius = 1.875f;
+                         demo.TacticalDemolitionComponentDef.CapsuleRadius = 1.2f;
+                         demo.TacticalDemolitionComponentDef.SphereRadius = 0.0f;*/
+
+                        //   demo.TacticalDemolitionComponentDef.
+
+                        component.CurrentPath = component.CreatePathRequest();
+
+                    }
+                    else if (__instance.TacticalActor.ActorDef.name.Equals("Chiron_ActorDef"))
+                    {
+
+                        TacticalNavigationComponent component = __instance.TacticalActor.GetComponent<TacticalNavigationComponent>();
+
+                        /*    string[] extraNavAreas = new string[] { "WalkableMedMonster" };
+
+                            __instance.TacticalActor.TacticalNav.AddNavAreas(extraNavAreas);*/
+
+                        TFTVLogger.Always($"{__instance.TacticalActor.DisplayName} has {component.NavAreas.GetAreaCount()} navigation areas, " +
+                            $"navcomp agent is {component.AgentTypeName}");
+
+
+                        TacticalDemolitionComponent demo = __instance.TacticalActor.GetComponent<TacticalDemolitionComponent>();
+                        demo.TacticalDemolitionComponentDef.RectangleCenter = new Vector3(0f, 1.5f, 0f);
+                        component.CurrentPath = component.CreatePathRequest();
+                    }
 
 
                 }
@@ -102,7 +167,7 @@ namespace TFTV
             {
                 try
                 {
-                   CullTargetsLists(__result, sourceActor, __instance);
+                    CullTargetsLists(__result, sourceActor, __instance);
 
                 }
                 catch (Exception e)
@@ -152,31 +217,31 @@ namespace TFTV
                         }
 
                     }
-                  
-                        culledList = list;
-                   
+
+                    culledList = list;
+
                 }
-                else 
+                else
                 {
                     List<TacticalAbilityTarget> list = new List<TacticalAbilityTarget>(targetList);
 
                     foreach (TacticalAbilityTarget source in list)
                     {
-                        if (source.Actor is TacticalActor tacticalActor && tacticalActor.GameTags.Contains(caterpillarDamage) && (tacticalActor.Pos-source.Actor.Pos).magnitude>=5)
+                        if (source.Actor is TacticalActor tacticalActor && tacticalActor.GameTags.Contains(caterpillarDamage) && (tacticalActor.Pos - source.Actor.Pos).magnitude >= 5)
                         {
                             // TFTVLogger.Always($"{sourceActor.DisplayName} has the caterpillartag");
                             list.Remove(source);
                         }
 
                     }
-                   
-                        culledList = list;
-                   
+
+                    culledList = list;
+
                 }
 
-                
-                    return culledList;
-             
+
+                return culledList;
+
 
             }
             catch (Exception e)

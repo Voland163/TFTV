@@ -10,17 +10,18 @@ using PhoenixPoint.Common.View.ViewControllers;
 using PhoenixPoint.Geoscape.Core;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.Missions;
+using PhoenixPoint.Geoscape.Entities.PhoenixBases;
 using PhoenixPoint.Geoscape.Entities.Sites;
 using PhoenixPoint.Geoscape.Events;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.View;
 using PhoenixPoint.Geoscape.View.ViewControllers.Modal;
+using PhoenixPoint.Geoscape.View.ViewControllers.PhoenixBase;
 using PhoenixPoint.Tactical.Levels;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.InteropServices.WindowsRuntime;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -33,6 +34,189 @@ namespace TFTV
 
         //  public static List<GeoSite> InstantiatedVisuales = new List<GeoSite>();
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
+
+
+        //Need to patch this here for demolition PhoenixFacilityConfirmationDialogue
+
+
+
+
+        internal static List<Vector2Int> CheckAdjacency(Vector2Int position)
+        {
+            try
+            {
+
+                List<Vector2Int> adjacentTiles = new List<Vector2Int>();
+
+                if (position.x + 1 <= 4)
+                {
+                    adjacentTiles.Add(new Vector2Int() + position + Vector2Int.right);
+                    // TFTVLogger.Always($"right from position {position} is {new Vector2Int() + position + Vector2Int.right}");
+                }
+                if (position.x - 1 >= 0)
+                {
+                    adjacentTiles.Add(new Vector2Int() + position + Vector2Int.left);
+                    // TFTVLogger.Always($"left from position {position} is {new Vector2Int() + position + Vector2Int.left}");
+                }
+                if (position.y + 1 <= 3)
+                {
+                    adjacentTiles.Add(new Vector2Int() + position + Vector2Int.up);
+                    // TFTVLogger.Always($"down from position {position} is {new Vector2Int() + position + Vector2Int.up}");
+                }
+                if (position.y - 1 >= 0)
+                {
+                    adjacentTiles.Add(new Vector2Int() + position + Vector2Int.down);
+                    // TFTVLogger.Always($"up from position {position} is {new Vector2Int() + position + Vector2Int.down}");
+                }
+
+                return adjacentTiles;
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
+        }
+
+        internal static bool CheckConnectionToHangar(GeoPhoenixBaseLayout layout, Vector2Int tileToExclude, GeoPhoenixFacility baseFacility)
+        {
+            try
+            {
+                GeoPhoenixFacility hangar = layout.BasicFacilities.FirstOrDefault(bf => bf.FacilityTiles.Count > 1);
+
+                List<Vector2Int> adjacentTiles = CheckAdjacency(baseFacility.GridPosition);
+
+                foreach (Vector2Int adjacentTile in adjacentTiles)
+                {
+                    if (hangar.FacilityTiles.Contains(adjacentTile))
+                    {
+                        return true;
+
+                    }
+                    else if (layout.GetFacilityAtPosition(adjacentTile) != null && adjacentTile != tileToExclude)
+                    {
+                        foreach (Vector2Int connectedTile in CheckAdjacency(adjacentTile))
+                        {
+                            if (hangar.FacilityTiles.Contains(connectedTile))
+                            {
+                                return true;
+
+                            }
+                            else if (layout.GetFacilityAtPosition(connectedTile) != null && connectedTile != tileToExclude)
+                            {
+                                foreach (Vector2Int connectedTile2 in CheckAdjacency(connectedTile))
+                                {
+                                    if (hangar.FacilityTiles.Contains(connectedTile2))
+                                    {
+                                        return true;
+
+                                    }
+                                    else if (layout.GetFacilityAtPosition(connectedTile2) != null && connectedTile2 != tileToExclude)
+                                    {
+                                        foreach (Vector2Int connectedTile3 in CheckAdjacency(connectedTile2))
+                                        {
+                                            if (hangar.FacilityTiles.Contains(connectedTile3))
+                                            {
+                                                return true;
+
+                                            }
+                                            else if (layout.GetFacilityAtPosition(connectedTile3) != null && connectedTile3 != tileToExclude)
+                                            {
+
+                                                foreach (Vector2Int connectedTile4 in CheckAdjacency(connectedTile3))
+                                                {
+                                                    if (hangar.FacilityTiles.Contains(connectedTile4))
+                                                    {
+                                                        return true;
+
+                                                    }
+                                                    else if (layout.GetFacilityAtPosition(connectedTile4) != null && connectedTile4 != tileToExclude)
+                                                    {
+                                                        foreach (Vector2Int connectedTile5 in CheckAdjacency(connectedTile4))
+                                                        {
+                                                            if (hangar.FacilityTiles.Contains(connectedTile5))
+                                                            {
+                                                                return true;
+
+                                                            }
+
+
+                                                        }
+
+                                                    }
+
+                                                }
+
+                                            }
+
+                                        }
+
+                                    }
+
+                                }
+
+                            }
+
+                        }
+
+                    }
+
+                }
+
+                return false;
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
+        }
+
+        //commented out for Hotfix 2 release
+     /*   [HarmonyPatch(typeof(UIFacilityInfoPopup), "Show")]
+        public static class UIFacilityInfoPopup_Show_PreventBadDemolition_patch
+        {
+
+            public static void Postfix(UIFacilityInfoPopup __instance, GeoPhoenixFacility facility)
+            {
+                try
+                {
+
+
+                    Vector2Int positionToExclude = facility.GridPosition;
+                    GeoPhoenixFacility hangar = facility.PxBase.Layout.BasicFacilities.FirstOrDefault(bf => bf.FacilityTiles.Count > 1);
+                    GeoPhoenixBaseLayout layout = facility.PxBase.Layout;
+
+
+                    bool connectionToHangarLoss = false;
+
+                    foreach (GeoPhoenixFacility baseFacility in layout.Facilities)
+                    {
+                        if(CheckConnectionToHangar(layout, positionToExclude, baseFacility)) 
+                        { 
+                        
+                        }
+                        else 
+                        {
+                            connectionToHangarLoss = true;
+                            TFTVLogger.Always($"{facility.Def.name} is demolished, some facility will lose connection to Hangar is {connectionToHangarLoss}");
+                            return;
+                        
+                        }
+                    }
+                    TFTVLogger.Always($"{facility.Def.name} is demolished, some facility will lose connection to Hangar is {connectionToHangarLoss}");
+                }
+
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+
+        }*/
+
 
 
         [HarmonyPatch(typeof(GeoSite), "CreatePhoenixBaseInfestationMission")]
@@ -396,12 +580,12 @@ namespace TFTV
         }
 
         [HarmonyPatch(typeof(GeoscapeLog), "OnFactionSiteAttackScheduled")]
-        
-        internal static class TFTV_GeoscapeLog_OnFactionSiteAttackScheduled_HideAttackInLogger 
-        { 
-        public static bool Prefix()
+
+        internal static class TFTV_GeoscapeLog_OnFactionSiteAttackScheduled_HideAttackInLogger
+        {
+            public static bool Prefix()
             {
-                try 
+                try
                 {
                     return false;
                 }
@@ -410,14 +594,12 @@ namespace TFTV
                     TFTVLogger.Error(e);
                     throw;
                 }
-
-
             }
-        
-        
-        
-        
         }
+
+
+
+
 
         [HarmonyPatch(typeof(PhoenixBaseDefenseDataBind), "ModalShowHandler")]
         public static class PhoenixBaseDefenseDataBind_ModalShowHandler_Experiment_patch

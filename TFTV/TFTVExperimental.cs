@@ -1,6 +1,7 @@
 ﻿using Base;
 using Base.Defs;
 using Base.Entities;
+using Base.Entities.Animations;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities.GameTags;
@@ -44,6 +45,43 @@ namespace TFTV
 
         public static List<TacticalVoxel> VoxelsOnFire = new List<TacticalVoxel>();
 
+/*
+[HarmonyPatch(typeof(TacticalAbility), "DoActionAnimation")]
+        public static class TacticalAbility_DoActionAnimation_SpawnerySpawn_Patch
+        {
+            public static bool Prefix(AnimEventReceiver __instance)
+            {
+                try
+                {
+                    
+
+                    ("Crabman_Spawning_Pool_idle");
+
+                    // TFTVLogger.Always("DieTriggered");
+                    TacticalActorDef dcoy = DefCache.GetDef<TacticalActorDef>("Decoy_ActorDef");
+                    if (!__instance.TacticalActorBase.IsObject() &&
+                        __instance.TacticalActor != null && __instance.TacticalActor.TacticalActorDef == dcoy)
+                    {
+                        // TFTVLogger.Always("It's a decoy!");
+                        __instance.TacticalActor.gameObject.SetActive(false);
+                        return false;
+                    }
+                    return true;
+
+
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }*/
+
+
+
+
         [HarmonyPatch(typeof(DieAbility), "Activate")]
         public static class DieAbility_Activate_Decoy_Patch
         {
@@ -55,8 +93,8 @@ namespace TFTV
 
                     // TFTVLogger.Always("DieTriggered");
                     TacticalActorDef dcoy = DefCache.GetDef<TacticalActorDef>("Decoy_ActorDef");
-                    if (!__instance.TacticalActorBase.IsObject() &&                    
-                        __instance.TacticalActor != null && __instance.TacticalActor.TacticalActorDef==dcoy)
+             
+                    if (!__instance.TacticalActorBase.IsObject() && __instance.TacticalActorBase.ActorDef == dcoy) 
                     {
                         // TFTVLogger.Always("It's a decoy!");
                         __instance.TacticalActor.gameObject.SetActive(false);

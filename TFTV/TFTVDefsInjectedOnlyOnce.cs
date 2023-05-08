@@ -34,6 +34,7 @@ using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.ContextHelp.HintConditions;
 using PhoenixPoint.Tactical.AI.Actions;
 using PhoenixPoint.Tactical.AI.Considerations;
+using PhoenixPoint.Tactical.AI.TargetGenerators;
 using PhoenixPoint.Tactical.ContextHelp.HintConditions;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
@@ -51,9 +52,8 @@ using PhoenixPoint.Tactical.Prompts;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using TFTV.Tactical.Entities.Statuses;
 using UnityEngine;
-using static UnityStandardAssets.Utility.TimedObjectActivator;
+using ResourceType = PhoenixPoint.Common.Core.ResourceType;
 
 namespace TFTV
 {
@@ -112,12 +112,8 @@ namespace TFTV
             //   CreateMeleeChiron();
             FixMyrmidonFlee();
             //  Testing();
-            ChangeBaseDefense();
-            CreateObjectivesBaseGames();
-            CreateCosmeticExplosion();
-            CreateHintsForBaseDefense();
-            CreateFireExplosion();
-            CreateBaseDefenseEvents();
+            CreateNewBaseDefense();
+
             ImproveScyllas();
             //  TestingKnockBack();
             UmbraSubstance();
@@ -175,11 +171,11 @@ namespace TFTV
                 List<GameTagDef> gameTagDefs = new List<GameTagDef>(dcoy.GameTags) { assaultClassTag, deploymentTagDef };
 
                 dcoyTacCharacter.Data.GameTags = gameTagDefs.ToArray();
-              //  OnActorDazedEffectStatus.ShouldApplyEffect
+                //  OnActorDazedEffectStatus.ShouldApplyEffect
 
-                 TacticalNavigationComponentDef navigationSource = DefCache.GetDef<TacticalNavigationComponentDef>("Soldier_NavigationDef");
-              //  navigationSource.CreateNavObstacle = false;
-                
+                TacticalNavigationComponentDef navigationSource = DefCache.GetDef<TacticalNavigationComponentDef>("Soldier_NavigationDef");
+                //  navigationSource.CreateNavObstacle = false;
+
                 TacticalNavigationComponentDef newNavigation = Helper.CreateDefFromClone(navigationSource, "{AAED2DCB-6269-42D0-ADCF-474576B16258}", "DecoyNavigationComponentDef");
                 newNavigation.CreateNavObstacle = false;
 
@@ -193,10 +189,10 @@ namespace TFTV
                 string hintDecoyPlacedGUID = "{E86C3A8A-B3E3-4A52-9BEB-1FFFE1506F60}";
                 string hintDecoyPlacedTitle = "HINT_DECOYPLACED_TITLE";
                 string hintDecoyPlacedText = "HINT_DECOYPLACED_TEXT";
-                
+
                 TFTVTutorialAndStory.CreateNewTacticalHint(hintDecoyPlacedName, HintTrigger.AbilityExecuted, decoyAbility.name, hintDecoyPlacedTitle, hintDecoyPlacedText, 4, true, hintDecoyPlacedGUID);
 
-                IsDefHintConditionDef conditionDef= DefCache.GetDef<IsDefHintConditionDef>(decoyAbility.name + "_HintConditionDef");
+                IsDefHintConditionDef conditionDef = DefCache.GetDef<IsDefHintConditionDef>(decoyAbility.name + "_HintConditionDef");
                 conditionDef.TargetDef = decoyAbility;
 
                 string hintDecoyDiscoveredName = "HintDecoyDiscovered";
@@ -209,7 +205,7 @@ namespace TFTV
                 string hintDecoyScyllaGUID = "{06D96E1B-758C-4178-9D9B-13A40686E90F}";
                 string hintDecoyScyllaTitle = "HINT_DECOYSCYLLA_TITLE";
                 string hintDecoyScyllaText = "HINT_DECOYSCYLLA_TEXT";
-                TFTVTutorialAndStory.CreateNewTacticalHint(hintDecoyScyllaName, HintTrigger.ActorDied, dcoyTacCharacter.name, hintDecoyScyllaTitle, hintDecoyScyllaText,0, true, hintDecoyScyllaGUID);
+                TFTVTutorialAndStory.CreateNewTacticalHint(hintDecoyScyllaName, HintTrigger.ActorDied, dcoyTacCharacter.name, hintDecoyScyllaTitle, hintDecoyScyllaText, 0, true, hintDecoyScyllaGUID);
 
             }
 
@@ -391,10 +387,10 @@ namespace TFTV
                 //Make all small critters and things not an obstacle for Scylla movement
 
                 TacticalNavigationComponentDef spiderDroneNav = DefCache.GetDef<TacticalNavigationComponentDef>("SpiderDrone_NavigationDef");
-                spiderDroneNav.ignoreObstacleFor = new string[] { "BigMonster", "MedMonster" };
+                spiderDroneNav.ignoreObstacleFor = new string[] { "BigMonster", "MedMonster", "ArmadilloWormsDestroyer" };
 
                 TacticalNavigationComponentDef wormNav = DefCache.GetDef<TacticalNavigationComponentDef>("Fireworm_NavigationDef");
-                wormNav.ignoreObstacleFor = new string[] { "BigMonster", "MedMonster" };
+                wormNav.ignoreObstacleFor = new string[] { "BigMonster", "MedMonster", "ArmadilloWormsDestroyer" };
                 //  wormNav.CreateNavObstacle = false;
 
                 TacticalNavigationComponentDef faceHuggerNav = DefCache.GetDef<TacticalNavigationComponentDef>("Facehugger_NavigationDef");
@@ -430,6 +426,13 @@ namespace TFTV
                         actor.GameTags.Add(damagedByCaterpillar);
                     }
                 }
+
+                //comenting out for hotfix2 release
+               /* foreach (TacCharacterDef actor in Repo.GetAllDefs<TacCharacterDef>().Where(a => a.name.Contains("Chiron")))
+                {
+                    List<TacticalAbilityDef> chironAbilities = new List<TacticalAbilityDef>(actor.Data.Abilites) { scyllaCaterpillarAbility };
+                    actor.Data.Abilites = chironAbilities.ToArray();
+                }*/
 
                 //  DefCache.GetDef<JetJumpAbilityDef>("Queen_Leap_AbilityDef"); //currently costs 3AP!
                 /*  TacticalNavigationComponentDef cyclopsNav = DefCache.GetDef<TacticalNavigationComponentDef>("MediumGuardian_NavigationDef");
@@ -559,35 +562,166 @@ namespace TFTV
         }
 
 
-        public static void CreateObjectivesBaseGames()
+        internal static void CreateNewBaseDefense()
+        {
+            try
+            {
+                ChangeBaseDefense();
+                CreateObjectivesBaseDefense();
+                CreateBaseDefenseEvents();
+                CreateCosmeticExplosion();
+                CreateFireExplosion();
+                CreateHintsForBaseDefense();
+                //commented out for Hotfix2
+              //  CreateSpawnCrabmanAbility();
+
+
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+        internal static void CreateSpawnCrabmanAbility()
+        {
+            try
+            {
+                string abilityName = "SpawnerySpawnAbility";
+                string abilityGUID = "{7FBEB256-1F44-4F3A-8B3A-17A8A8AF9F8F}";
+
+                SpawnActorAbilityDef source = DefCache.GetDef<SpawnActorAbilityDef>("Queen_SpawnFacehugger_AbilityDef");
+                SpawnActorAbilityDef newSpawnerySpawnAbility = Helper.CreateDefFromClone(source, abilityGUID, abilityName);
+
+                newSpawnerySpawnAbility.WillPointCost = 0;
+
+                TacCharacterDef crabman = DefCache.GetDef<TacCharacterDef>("Crabman3_AdvancedCharger_AlienMutationVariationDef");
+                newSpawnerySpawnAbility.TacCharacterDef = crabman;
+                ComponentSetDef crabmanComponent = DefCache.GetDef<ComponentSetDef>("Crabman_Template_ComponentSetDef");
+                newSpawnerySpawnAbility.ActorComponentSetDef = crabmanComponent;
+                newSpawnerySpawnAbility.PlaySpawningActorAnimation = true;
+                newSpawnerySpawnAbility.FacePosition = false;
+                newSpawnerySpawnAbility.OverrideDefaultActionAnimation = true;
+                newSpawnerySpawnAbility.WaitsForActionEnd = false;
+
+                TacCharacterDef spawnery = DefCache.GetDef<TacCharacterDef>("SpawningPoolCrabman_AlienMutationVariationDef");
+                spawnery.Data.Abilites = new TacticalAbilityDef[] { newSpawnerySpawnAbility };
+
+
+                AIActionsTemplateDef spawneryAIActionsTemplate = DefCache.GetDef<AIActionsTemplateDef>("SpawningPool_AIActionsTemplateDef");
+
+                string aIActionName = "SpawnerySpawnAIAction";
+                string aIActionGUID = "{0598ABF5-6ECF-4AB8-BF3F-DF15636B633A}";
+                AIActionExecuteAbilityDef sourceExecuteAbilityAction = DefCache.GetDef<AIActionExecuteAbilityDef>("Queen_SpawnFacehugger_AIActionDef");
+                AIActionExecuteAbilityDef spawneryAIAction = Helper.CreateDefFromClone(sourceExecuteAbilityAction, aIActionGUID, aIActionName);
+
+                TacActorSimpleAbilityAnimActionDef crabmanEnterPlay = DefCache.GetDef<TacActorSimpleAbilityAnimActionDef>("E_EnterPlay [Crabman_AnimActionsDef]");
+                List<AbilityDef> crabmanEntrePlayAbilities = new List<AbilityDef> (crabmanEnterPlay.AbilityDefs.ToList()){newSpawnerySpawnAbility };
+                crabmanEnterPlay.AbilityDefs = crabmanEntrePlayAbilities.ToArray();
+
+                TacActorAnimActionsDef spawneryAnimations = DefCache.GetDef<TacActorAnimActionsDef>("SpawningPoolCrabman_AnimActionsDef");
+             //   TacActorNavAnimActionDef spawneryNavAnimations = DefCache.GetDef<TacActorNavAnimActionDef>("E_DefaultNav [SpawningPoolCrabman_AnimActionsDef]");
+               
+
+
+               string animationGUID = "{E3F8E5FE-CD03-4C8A-B7AE-783E181823C5}";
+                TacActorSimpleAbilityAnimActionDef spawnerySpawnAnimation = Helper.CreateDefFromClone(DefCache.GetDef<TacActorSimpleAbilityAnimActionDef>("E_SpawnFacehugger [Queen_AnimActionsDef]"), animationGUID, aIActionName);
+             //   spawnerySpawnAnimation.NumberOfHands = -1;
+             //   spawnerySpawnAnimation.Equipments = new EquipmentDef[] { };
+                spawnerySpawnAnimation.AbilityDefs = new AbilityDef[] { newSpawnerySpawnAbility };
+                spawnerySpawnAnimation.Clip = spawneryAnimations.DefaultActionClip;
+                List<TacActorAnimActionBaseDef> animations = new List<TacActorAnimActionBaseDef>(spawneryAnimations.AnimActions.ToList()) { spawnerySpawnAnimation };
+                spawneryAnimations.AnimActions = animations.ToArray();
+
+                string aIConsiderationGUID = "{41BE5653-27D3-456D-A76C-E54F8744DAF7}";
+                AIAbilityMaxUsesInTheTurnConsiderationDef sourceAbilityMaxUseConsiderion = DefCache.GetDef<AIAbilityMaxUsesInTheTurnConsiderationDef>("Queen_SpawnFacehuggerNotUsed_AIConsiderationDef");
+                AIAbilityMaxUsesInTheTurnConsiderationDef spawneryAIConsideration = Helper.CreateDefFromClone(sourceAbilityMaxUseConsiderion, aIConsiderationGUID, aIActionName);
+
+
+                string aITargetGeneratorGUID = "{20CBA94D-ADF0-42DA-BE90-182096E1B119}";
+                AISpawnActorPositionTargetGeneratorDef sourceTargetGenerator = DefCache.GetDef<AISpawnActorPositionTargetGeneratorDef>("Queen_SpawnActorPosition_AITargetGeneratorDef");
+                AISpawnActorPositionTargetGeneratorDef spawneryTargetGenerator = Helper.CreateDefFromClone(sourceTargetGenerator, aITargetGeneratorGUID, aIActionName);
+
+                List<AIActionDef> aIActionDefs = new List<AIActionDef>(spawneryAIActionsTemplate.ActionDefs.ToList()) { spawneryAIAction };
+                spawneryAIActionsTemplate.ActionDefs = aIActionDefs.ToArray();
+                spawneryAIAction.AbilityDefs = new TacticalAbilityDef[] { newSpawnerySpawnAbility };
+                spawneryAIAction.Weight = 1000;
+                spawneryAIAction.EarlyExitConsiderations = new AIAdjustedConsideration[] { };
+                spawneryAIAction.Evaluations[0].TargetGeneratorDef = spawneryTargetGenerator;
+
+                spawneryTargetGenerator.SpawnActorAbility = newSpawnerySpawnAbility;
+
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+
+            }
+        }
+
+        public static void CreateObjectivesBaseDefense()
         {
             try
             {
                 KillActorFactionObjectiveDef killActorFactionObjectiveSource = DefCache.GetDef<KillActorFactionObjectiveDef>("E_KillSentinels [Nest_AlienBase_CustomMissionTypeDef]");
 
-                string nameMainObjective = "PhoenixBaseInfestation";
+                string nameObjectiveDestroySpawnery = "PhoenixBaseInfestation";
                 GameTagDef source = DefCache.GetDef<GameTagDef>("Takeshi_Tutorial3_GameTagDef");
                 GameTagDef gameTagMainObjective = Helper.CreateDefFromClone(
                     source,
                     "{B42E4079-EDC6-4E7A-9720-8F8839FCD3CE}",
-                    nameMainObjective + "_GameTagDef");
+                    nameObjectiveDestroySpawnery + "_GameTagDef");
 
-                KillActorFactionObjectiveDef killInfestation = Helper.CreateDefFromClone(killActorFactionObjectiveSource, "5BDA1D39-80A8-4EB8-A34F-92FB08AF2CB5", nameMainObjective);
+                KillActorFactionObjectiveDef killInfestation = Helper.CreateDefFromClone(killActorFactionObjectiveSource, "5BDA1D39-80A8-4EB8-A34F-92FB08AF2CB5", nameObjectiveDestroySpawnery);
                 killInfestation.MissionObjectiveData.Description.LocalizationKey = "BASEDEFENSE_INFESTATION_OBJECTIVE";
                 killInfestation.MissionObjectiveData.Summary.LocalizationKey = "BASEDEFENSE_INFESTATION_OBJECTIVE";
                 killInfestation.KillTargetGameTag = gameTagMainObjective;
 
+                string nameObjectiveDestroySentinel = "PhoenixBaseDestroySentinel";
 
-                string nameSecondObjective = "ScatterRemainingAttackers";
+                KillActorFactionObjectiveDef killSentinel = Helper.CreateDefFromClone(killActorFactionObjectiveSource, "{97745084-836A-4D5C-A1F5-052EDEC307A5}", nameObjectiveDestroySentinel);
+                killSentinel.MissionObjectiveData.Description.LocalizationKey = "BASEDEFENSE_SENTINEL_OBJECTIVE";
+                killSentinel.MissionObjectiveData.Summary.LocalizationKey = "BASEDEFENSE_SENTINEL_OBJECTIVE";
+                killSentinel.KillTargetGameTag = gameTagMainObjective;
+
+
+                string nameObjectiveScatterEnemies = "ScatterRemainingAttackers";
                 GameTagDef gameTagSecondObjective = Helper.CreateDefFromClone(
                     source,
                     "{ADACF6A2-A969-4518-AD36-C94D1A1C6A82}",
-                    nameSecondObjective + "_GameTagDef");
-                KillActorFactionObjectiveDef secondKillAll = Helper.CreateDefFromClone(killActorFactionObjectiveSource, "{B7BB4BFF-E7DC-4FD1-A307-FF348FC87946}", nameSecondObjective);
+                    nameObjectiveScatterEnemies + "_GameTagDef");
+                KillActorFactionObjectiveDef secondKillAll = Helper.CreateDefFromClone(killActorFactionObjectiveSource, "{B7BB4BFF-E7DC-4FD1-A307-FF348FC87946}", nameObjectiveScatterEnemies);
                 secondKillAll.KillTargetGameTag = gameTagSecondObjective;
                 secondKillAll.MissionObjectiveData.Description.LocalizationKey = "BASEDEFENSE_SECOND_OBJECTIVE";
                 secondKillAll.MissionObjectiveData.Summary.LocalizationKey = "BASEDEFENSE_SECOND_OBJECTIVE";
+
+                //infestation BD mission, destroy Spawnery, then scatter attackers
                 killInfestation.NextOnSuccess = new FactionObjectiveDef[] { secondKillAll };
+
+                SurviveTurnsFactionObjectiveDef sourceSurviveObjective = DefCache.GetDef<SurviveTurnsFactionObjectiveDef>("SurviveAmbush_CustomMissionObjective");
+                string nameObjective = "SurviveFiveTurns";
+
+                SurviveTurnsFactionObjectiveDef surviveFiveTurns = Helper.CreateDefFromClone(sourceSurviveObjective, "{EC7E94DD-199B-41BF-B6D7-7933CE40E0C1}", nameObjective);
+                surviveFiveTurns.SurviveTurns = 5;
+                surviveFiveTurns.MissionObjectiveData.Description.LocalizationKey = "BASEDEFENSE_SURVIVE_OBJECTIVE";
+                surviveFiveTurns.MissionObjectiveData.Summary.LocalizationKey = "BASEDEFENSE_SURVIVE_OBJECTIVE";
+
+                //early BD mission, survive 5 turns, then scatter attackers
+                surviveFiveTurns.NextOnSuccess = new FactionObjectiveDef[] { secondKillAll };
+
+
+                string nameObjectivSurviveThreeTurns = "SurviveThreeTurns";
+
+                SurviveTurnsFactionObjectiveDef surviveThreeTurns = Helper.CreateDefFromClone(sourceSurviveObjective, "{B817A3CD-482B-472F-85EC-7259451E8F88}", nameObjectivSurviveThreeTurns);
+                surviveThreeTurns.SurviveTurns = 5;
+                surviveThreeTurns.MissionObjectiveData.Description.LocalizationKey = "BASEDEFENSE_SURVIVE_OBJECTIVE";
+                surviveThreeTurns.MissionObjectiveData.Summary.LocalizationKey = "BASEDEFENSE_SURVIVE_OBJECTIVE";
+                surviveThreeTurns.NextOnSuccess = new FactionObjectiveDef[] { secondKillAll };
+
+                //Mid BD mission, first kill Sentinel, then Survive 3 turns, then scatter attackers
+                killSentinel.NextOnSuccess = new FactionObjectiveDef[] { surviveThreeTurns };
 
             }
 
@@ -2647,11 +2781,12 @@ namespace TFTV
                 stomp.DamagePayload.AoeRadius = 7;
                 stomp.TargetingDataDef.Origin.Range = 7;
 
-                /*  TacCharacterDef lcGuardian = DefCache.GetDef<TacCharacterDef>("MediumGuardian_LivingCrystal_TacCharacterDef");
+                 TacCharacterDef lcGuardian = DefCache.GetDef<TacCharacterDef>("MediumGuardian_LivingCrystal_TacCharacterDef");
                   TacCharacterDef pmGuardian = DefCache.GetDef<TacCharacterDef>("MediumGuardian_ProteanMutane_TacCharacterDef");
                   TacCharacterDef oGuardian = DefCache.GetDef<TacCharacterDef>("MediumGuardian_Orichalcum_TacCharacterDef");
-
-                  List<TacCharacterDef> medGuardians = new List<TacCharacterDef>() { lcGuardian, pmGuardian, oGuardian };
+               
+                //Commented out for Hotfix2
+               /*   List<TacCharacterDef> medGuardians = new List<TacCharacterDef>() { lcGuardian, pmGuardian, oGuardian };
 
                   foreach(TacCharacterDef guardian in medGuardians) 
                   {
@@ -2663,9 +2798,9 @@ namespace TFTV
                      };
 
 
-                  }
+                  }*/
 
-                  */
+                  
 
             }
             catch (Exception e)
