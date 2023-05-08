@@ -425,7 +425,10 @@ namespace TFTV
 
                 foreach (TacticalActorDef actor in Repo.GetAllDefs<TacticalActorDef>().Where(a => a.name.Contains("worm") || a.name.Contains("SpiderDrone") || a.name.Contains("TechTurret")))
                 {
-                    actor.GameTags.Add(damagedByCaterpillar);
+                    if (!actor.GameTags.Contains(damagedByCaterpillar))
+                    {
+                        actor.GameTags.Add(damagedByCaterpillar);
+                    }
                 }
 
                 //  DefCache.GetDef<JetJumpAbilityDef>("Queen_Leap_AbilityDef"); //currently costs 3AP!

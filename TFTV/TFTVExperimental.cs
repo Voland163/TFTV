@@ -47,13 +47,16 @@ namespace TFTV
         [HarmonyPatch(typeof(DieAbility), "Activate")]
         public static class DieAbility_Activate_Decoy_Patch
         {
-            public static bool Prefix(RagdollDieAbility __instance)
+            public static bool Prefix(DieAbility __instance)
             {
                 try
                 {
+                    
+
                     // TFTVLogger.Always("DieTriggered");
                     TacticalActorDef dcoy = DefCache.GetDef<TacticalActorDef>("Decoy_ActorDef");
-                    if (__instance.TacticalActor != null && __instance.TacticalActor.TacticalActorDef == dcoy)
+                    if (!__instance.TacticalActorBase.IsObject() &&                    
+                        __instance.TacticalActor != null && __instance.TacticalActor.TacticalActorDef==dcoy)
                     {
                         // TFTVLogger.Always("It's a decoy!");
                         __instance.TacticalActor.gameObject.SetActive(false);
