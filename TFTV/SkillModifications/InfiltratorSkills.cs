@@ -223,7 +223,7 @@ namespace PRMBetterClasses.SkillModifications
             parasychosis.TargetingDataDef.Origin.LineOfSight = LineOfSightType.InSight;
             parasychosis.TargetingDataDef.Origin.FactionVisibility = LineOfSightType.InSight;
             parasychosis.TargetingDataDef.Origin.CanPeekFromEdge = true;
-            parasychosis.TargetingDataDef.Origin.Range = 14;
+            parasychosis.TargetingDataDef.Origin.Range = 12;
             parasychosis.TargetingDataDef.Origin.CullTargetTags = new GameTagsList()
             {
                 DefCache.GetDef<GameTagDef>("Siren_ClassTagDef"),

@@ -140,7 +140,8 @@ PROG_KE1_TEXT_OUTCOME_0,Text,,"As you step inside the crypt, alien thoughts are 
 
 <i>""Soon you will be contacted by string Subject integer twenty four. Accept proposal. Share data. Satisfactory outcome will lead to much preferred customer status. Beware of your Amygdala, it reeks of betrayal.""</i>
 
-There is no Drop-Ka stone to be found, but you suspect that's not why you were sent here anyway.",,"Lorsque vous entrez dans la crypte, des pensées extraterrestres sont projetées dans votre esprit. Vous *écoutez* une *voix* que vous ne pouvez pas *entendre*.
+There is no Drop-Ka stone to be found, but you suspect that's not why you were sent here anyway.
+",,"Lorsque vous entrez dans la crypte, des pensées extraterrestres sont projetées dans votre esprit. Vous *écoutez* une *voix* que vous ne pouvez pas *entendre*.
 
 <i>""Bientôt, vous serez contacté par Sujet numéro vingt-quatre. Accepter la proposition. Partager les données. Un résultat satisfaisant mènera à un statut de client privilégié. Méfiez-vous de votre Amygdale, elle sent la trahison.""</i>
 
@@ -265,7 +266,8 @@ West est naturellement bouleversé, mais nous avons obtenu un certain succès au
 PROG_PU4_WIN_CHOICE_1_TEXT,Text,,"An exercise in civic duty, with some unfortunate casualties",,"Un exercice de devoir civique, avec quelques malheureuses victimes",,,,,,
 PROG_PU4_WIN_CHOICE_2_OUTCOME_GENERAL,Text,,"We are not entirely in the clear, but New Jericho doesn't want to draw attention to its secret research and therefore avoids making an issue of the raid.
 
-At the same time, our strenuous denials result in West suspecting the involvement of other factions.",,"Nous ne sommes pas tout à fait dans la transparence, mais la Nouvelle Jericho ne veut pas attirer l’attention sur sa recherche secrète et évite donc de faire un problème de la descente.
+At the same time, our strenuous denials result in West suspecting the involvement of other factions.
+",,"Nous ne sommes pas tout à fait dans la transparence, mais la Nouvelle Jericho ne veut pas attirer l’attention sur sa recherche secrète et évite donc de faire un problème de la descente.
 
 En même temps, nos dénégations acharnées font que West soupçonne l’implication d’autres factions.
 ",,,,,,
@@ -630,7 +632,8 @@ KEY_GEO_HINT_PANDORAN_BASE_DIPLOMACY_EFFECTS_DESCRIPTION,Text,,"In TFTV, Faction
 
 Each Pandoran colony contributes to Pandoran evolution: the more active Pandoran colonies there are, the faster the enemy will field more advanced units and the faster the Oneiric Delirium will grow. 
 
-In addition, destroying a more advanced Pandoran colony (a Lair or a Citadel) removes the earliest <b>Void Omen</b> currently in play. (On Rookie difficulty, destroying Nests also removes Void Omens). ",,"Dans TFTV, les factions ne réagiront <b>pas négativement</b> aux colonies pandoriennes révélées si vous ne parvenez pas à les détruire. Cependant, vous subirez une petite pénalité auprès des dirigeants des refuges proches.
+In addition, destroying a more advanced Pandoran colony (a Lair or a Citadel) removes the earliest <b>Void Omen</b> currently in play. (On Rookie difficulty, destroying Nests also removes Void Omens). 
+",,"Dans TFTV, les factions ne réagiront <b>pas négativement</b> aux colonies pandoriennes révélées si vous ne parvenez pas à les détruire. Cependant, vous subirez une petite pénalité auprès des dirigeants des refuges proches.
 
 Chaque colonie pandorienne contribue à l'évolution des Pandoriens : plus il y a de colonies pandoriennes actives, plus vite l'ennemi déploie des unités plus avancées et plus vite le délire onirique se développe.
 
@@ -873,9 +876,11 @@ HINT_ANCIENTS_HOPLITS_TITLE,Text,,"<i>“Frag me, what is that thing? Is that a�
 HINT_ANCIENTS_HOPLITS_TEXT,Text,,"This Ancient Automata is reactivating! While we have no intel on their capabilities, it seems like they are dormant while buried in the ground, but once they emerge they become alerted and gradually reactivate their systems, becoming stronger. The Automata also seem to be in varying states of disrepair.",,,,,,,,
 HINT_ANCIENTS_HOPLITSREPAIR_TITLE,Text,,<i>”The broken remains floated towards the damaged Automata.”</i>,,,,,,,,
 HINT_ANCIENTS_HOPLITSREPAIR_TEXT,Text,,This Ancient Automata is trying to repair itself using the remains of the destroyed robot in its vicinity! It has also drained some of its power.,,,,,,,,
-HINT_ANCIENTS_HOPLITSMAXPOWER_TITLE,Text,,"<i>”Whirl whirl whirl Vroom!”</i>",,,,,,,,
+HINT_ANCIENTS_HOPLITSMAXPOWER_TITLE,Text,,"<i>”Whirl whirl whirl Vroom!”</i>
+",,,,,,,,
 HINT_ANCIENTS_HOPLITSMAXPOWER_TEXT,Text,,The Ancient Automata is now fully charged; damage increased significantly and damage resistance gained.,,,,,,,,
-HELENA_ECHOES_TITLE,Text,,"The Echoes of the Ancients",,,,,,,,
+HELENA_ECHOES_TITLE,Text,,"The Echoes of the Ancients
+",,,,,,,,
 HELENA_ECHOES_TEXT,Text,,"This is something neither West nor Symes understood, or wanted to understand, although I tried explaining it to them many times. History is about making sense of the present by understanding the past. Cause and effect, reverberation and resonance. But when it comes to the Ancients, their echoes are getting stronger, and they started getting stronger with the First Mist. 
 
 Perhaps it's because both were hidden below the same melting permafrost. Even that 'coincidence' is not insignificant.
@@ -916,7 +921,8 @@ OLENA_ONEIROMANCY_TEXT,Text,,"Yes, the Living Crystal must be the “memory modu
 Data never really disappears unless the storage medium is destroyed or it is overwritten. In this case, the medium is beyond our understanding. I can’t explain how something like the Oneiric Delirium exists, or what the Living Crystals are, but they are related; our dreams can’t be a coincidence. I think they are part of, or use the same pathways, or “network”... What we need is a more direct interface, and one that we can use while awake.",,,,,,,,
 OLENA_ONEIROMANCY_CHOICE,Text,,So you want to repair and reactivate an ancient killer robot so that you can poke about in its memory banks? What could possibly go wrong.,,,,,,,,
 OLENA_ONEIROMANCY_OUTCOME,Text,,It's going to be OK.,,,,,,,,
-CYCLOP_DREAMS_TITLE,Text,,"Digitize my Dreams, the Cyclops Said",,,,,,,,
+CYCLOP_DREAMS_TITLE,Text,,"Digitize my Dreams, the Cyclops Said
+",,,,,,,,
 CYCLOP_DREAMS_TEXT,Text,,"The plan worked, but we can only understand a tiny fraction of the information contained in the data dump. It is enough. Enough to overturn much of what we thought we knew and, critical to our current existential threat, of what we thought we knew about the Pandoravirus. 
 
 It is ancient, yes; we suspected as much since the infection of our ecosystem began with the melting of the permafrost. But, thanks to the meticulous charts of our Solar system drawn up by the Ancients, we now know that the Pandoravirus didn’t originate on our planet: it arrived 1.8 million years ago on an asteroid that intersected the orbit of a “ninth planet” before it crashed into Earth.",,,,,,,,
@@ -1015,8 +1021,12 @@ Augmented body parts are IMMUNE TO BLEEDING and RESISTANT TO VIRAL DAMAGE, POISO
 In addition, each bionic augmentation reduces the maximum Delirium the character can have by 1/3, and removes up to that amount of Delirium from the character. 
 
 Augmenting a character will reduce their Stamina to zero.",,,,,,,,
-BASEDEFENSE_INFESTATION_OBJECTIVE,Text,,DESTROY ALL PANDORAN STRUCTURES,,,,,,,,
-BASEDEFENSE_SECOND_OBJECTIVE,Text,,SCATTER THE REMAINING ATTACKERS,,,,,,,,
+BASEDEFENSE_INFESTATION_OBJECTIVE,Text,,DESTROY THE SPAWNERY AND THE SENTINELS,,,,,,,,
+BASEDEFENSE_SECOND_OBJECTIVE,Text,,SCATTER THE REMAINING ATTACKERS (LEAVE THE SMALL CREEPY CRAWLERS TO THE CLEANING DETAIL),,,,,,,,
+BASEDEFENSE_SURVIVE5_OBJECTIVE,Text,,SURVIVE {0} TURNS,,,,,,,,
+BASEDEFENSE_SURVIVE_COMPLETE,Text,,SURVIVED THE ATTACK,,,,,,,,
+BASEDEFENSE_SURVIVE3_OBJECTIVE,Text,,SURVIVE {0} TURNS,,,,,,,,
+BASEDEFENSE_SENTINEL_OBJECTIVE,Text,,DESTROY THE SENTINEL,,,,,,,,
 BASEDEFENSE_EVENT_TITLE ,Text,,A Phoenix Project base is under attack!,,,,,,,,
 BASEDEFENSE_EVENT_TEXT,Text,,"Director! We are under attack! Our automated defenses and bullheads will buy us some time, but we need to deploy a squad to secure the base as soon as possible. The longer we take, the more time the enemy will have to achieve its objectives.
 ",,,,,,,,
@@ -1036,8 +1046,8 @@ BASEDEFENSE_TACTICAL_ADVANTAGE_TITLE ,Text,,Tactical Advantage!,,,,,,,,
 BASEDEFENSE_TACTICAL_ADVANTAGE_DESCRIPTION,Text,,"<i>""You're down there, we're up here! You walked into the wrong goddamn room...""</i>
 
 We have taken defensive positions around the main entrance. As long as we hold this choke point we should be fine. ",,,,,,,,
-BASEDEFENSE_UMBRASTRAT_TEXT,Text,,"Director, we are detecting something in the air vents. It's the Mist. And where there is Mist, there are Umbra.",,,,,,,,
-BASEDEFENSE_UMBRASTRAT_TITLE,Text,,Umbra,,,,,,,,
+BASEDEFENSE_UMBRASTRAT_TEXT,Text,,"Director, we are detecting something in the air vents. It's the Mist. Could be a Triton inflitration team. Could be something worse... ",,,,,,,,
+BASEDEFENSE_UMBRASTRAT_TITLE,Text,,Umbra or Tritons,,,,,,,,
 BASEDEFENSE_WORMSSTRAT_TEXT,Text,,"Director, there is something burrowing down towards your team. Small, multiple targets bearing on the hangar.",,,,,,,,
 BASEDEFENSE_WORMSSTRAT_TITLE,Text,,Worms or Myrmidons,,,,,,,,
 BASEDEFENSE_FORCE2STRAT_TEXT,Text,,"Director, be advised, we have detected a secondary strike force digging their way in. They can appear behind our backs any minute!",,,,,,,,

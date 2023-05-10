@@ -39,6 +39,7 @@ namespace TFTV
         public float BaseDefenseAttackProgress;
         public int BaseDefenseStratToBeAnnounced;
         public int BaseDefenseStratToBeImplemented;
+        public bool[] StratsAlreadyImplementedAtBD;
     }
 
     /// <summary>
@@ -138,7 +139,8 @@ namespace TFTV
                 TFTVBaseDefenseTactical.ConsoleInBaseDefense = data.BaseDefenseConsole;
                 TFTVBaseDefenseTactical.AttackProgress = data.BaseDefenseAttackProgress;
                 TFTVBaseDefenseTactical.StratToBeAnnounced = data.BaseDefenseStratToBeAnnounced;
-                TFTVBaseDefenseTactical.StratToBeImplemented = data.BaseDefenseStratToBeImplemented;
+                TFTVBaseDefenseTactical.StratToBeImplemented = data.BaseDefenseStratToBeImplemented;  
+                TFTVBaseDefenseTactical.UsedStrats = data.StratsAlreadyImplementedAtBD;
                 TFTVBaseDefenseTactical.ModifyObjectives(Controller.TacMission.MissionData.MissionType);
 
                 TurnZeroMethodsExecuted = data.TurnZeroMethodsExecuted;
@@ -183,6 +185,7 @@ namespace TFTV
                 BaseDefenseAttackProgress = TFTVBaseDefenseTactical.AttackProgress,
                 BaseDefenseStratToBeImplemented = TFTVBaseDefenseTactical.StratToBeImplemented,
                 BaseDefenseStratToBeAnnounced = TFTVBaseDefenseTactical.StratToBeAnnounced,
+                StratsAlreadyImplementedAtBD = TFTVBaseDefenseTactical.UsedStrats,
                 TurnZeroMethodsExecuted = TurnZeroMethodsExecuted
             };
         }

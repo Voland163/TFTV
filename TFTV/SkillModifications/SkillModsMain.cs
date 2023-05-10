@@ -8,6 +8,7 @@ using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.GameTags;
+using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.UI;
 using PhoenixPoint.Tactical;
 using PhoenixPoint.Tactical.Entities;
@@ -28,6 +29,7 @@ namespace PRMBetterClasses.SkillModifications
     internal class SkillModsMain
     {
 
+        private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
         public static SharedSoloEffectorDamageKeywordsDataDef sharedSoloDamageKeywords;
 
         public static void ApplyChanges()
@@ -36,6 +38,12 @@ namespace PRMBetterClasses.SkillModifications
             {
                 // Create solo DamageKeywords
                 sharedSoloDamageKeywords = new SharedSoloEffectorDamageKeywordsDataDef();
+
+                // Create Umbra class tag and apply it to their actor defs
+                UmbraClassTag();
+
+                // Fix balance issues with psychic abilities and add umbra class tag to not use it against them
+                FixPsychicAbilitiesIssues();
 
                 // Change Recover to reduce viral by half
                 Change_RecoverToReduceViral();
@@ -82,6 +90,66 @@ namespace PRMBetterClasses.SkillModifications
             catch (Exception e)
             {
                 PRMLogger.Error(e);
+            }
+        }
+
+        internal static void UmbraClassTag()
+        {
+            try
+            {
+                // Create a new ClassTagDef and SubstanceTypeTagDef for Umbras and add/replace them to their actor def
+                ClassTagDef umbraClassTag = Helper.CreateDefFromClone(
+                    DefCache.GetDef<ClassTagDef>("Crabman_ClassTagDef"),
+                    "092D50F3-B4E7-4B8E-9AD3-47E31DBAE82C",
+                    "Umbra_ClassTagDef");
+
+                foreach (TacticalActorDef umbra in new TacticalActorDef[] { DefCache.GetDef<TacticalActorDef>("Oilcrab_ActorDef"), DefCache.GetDef<TacticalActorDef>("Oilfish_ActorDef") })
+                {
+                    if (umbra.GameTags.CanAdd(umbraClassTag))
+                    {
+                        umbra.GameTags.Add(umbraClassTag);
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+        private static void FixPsychicAbilitiesIssues()
+        {
+            TacticalAbilityDef[] psychicAbilities = {
+                DefCache.GetDef<TacticalAbilityDef>("Priest_MindControl_AbilityDef"),
+                DefCache.GetDef<TacticalAbilityDef>("Exalted_MindControl_AbilityDef"),
+                DefCache.GetDef<TacticalAbilityDef>("InducePanic_AbilityDef"),
+                DefCache.GetDef<TacticalAbilityDef>("Exalted_InducePanic_AbilityDef"),
+                DefCache.GetDef<TacticalAbilityDef>("Priest_PsychicScream_AbilityDef"),
+                DefCache.GetDef<TacticalAbilityDef>("Siren_PsychicScream_AbilityDef"),
+                DefCache.GetDef<TacticalAbilityDef>("MindCrush_AbilityDef"),
+                DefCache.GetDef<TacticalAbilityDef>("Exalted_MindCrush_AbilityDef"),
+            };
+            SkillTagDef attackSkillTag = DefCache.GetDef<SkillTagDef>("AttackAbility_SkillTagDef");
+            GameTagDef metallicSubstanceTag = DefCache.GetDef<GameTagDef>("Metallic_SubstanceTypeTagDef");
+            GameTagDef umbraClassTag = DefCache.GetDef<GameTagDef>("Umbra_ClassTagDef");
+            foreach (TacticalAbilityDef abilityDef in psychicAbilities)
+            {
+                if (!abilityDef.SkillTags.Contains(attackSkillTag))
+                {
+                    abilityDef.SkillTags = abilityDef.SkillTags.AddItem(attackSkillTag).ToArray();
+                }
+                if (abilityDef.TargetingDataDef.Origin.TargetTags.Contains(metallicSubstanceTag))
+                {
+                    abilityDef.TargetingDataDef.Origin.TargetTags.Remove(metallicSubstanceTag);
+                }
+                if (abilityDef.TargetingDataDef.Origin.CullTargetTags.CanAdd(umbraClassTag))
+                {
+                    abilityDef.TargetingDataDef.Origin.CullTargetTags.Add(umbraClassTag);
+                }
+                if (abilityDef.TargetingDataDef.Target.CullTargetTags.CanAdd(umbraClassTag))
+                {
+                    abilityDef.TargetingDataDef.Target.CullTargetTags.Add(umbraClassTag);
+                }
             }
         }
 

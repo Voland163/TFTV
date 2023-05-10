@@ -78,7 +78,7 @@ namespace TFTV
                 float bonusWillpower = 0;
 
 
-                //  GeoLevelController level = (GeoLevelController)UnityEngine.Object.FindObjectOfType(typeof(GeoLevelController));
+                //  GeoLevelController level = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
 
                 /*  foreach (ICommonItem armorItem in character.ArmourItems)
                   {

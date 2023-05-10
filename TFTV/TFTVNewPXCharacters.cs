@@ -1,4 +1,5 @@
-﻿using HarmonyLib;
+﻿using Base.Core;
+using HarmonyLib;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.Research;
 using PhoenixPoint.Geoscape.Events;
@@ -207,7 +208,7 @@ namespace TFTV
 
                     if (geoEvent.EventID.Equals("HelenaOnOlena"))
                     {
-                        GeoLevelController controller = (GeoLevelController)UnityEngine.Object.FindObjectOfType(typeof(GeoLevelController));
+                        GeoLevelController controller = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
                         if (controller.EventSystem.GetEventRecord("PROG_LE0_MISS").SelectedChoice == 2)
                         {
                             __result.EventBackground = Helper.CreateSpriteFromImageFile("Helena_peace.jpg");

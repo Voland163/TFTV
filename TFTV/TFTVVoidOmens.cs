@@ -1109,6 +1109,7 @@ namespace TFTV
                 }
             }
         }
+     
 
         [HarmonyPatch(typeof(UIStateRosterDeployment), "get__squadMaxDeployment")]
         public static class UIStateRosterDeployment_get_SquadMaxDeployment_VoidOmenLimitedDeployment_Patch

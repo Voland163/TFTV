@@ -56,7 +56,7 @@ namespace TFTV
                 try
                 {
 
-                    GeoLevelController controller = (GeoLevelController)UnityEngine.Object.FindObjectOfType(typeof(GeoLevelController));
+                    GeoLevelController controller = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
 
 
                     TFTVConfig config = TFTVMain.Main.Config;
@@ -207,7 +207,7 @@ namespace TFTV
                 {
 
                     TFTVConfig config = TFTVMain.Main.Config;
-                    GeoLevelController controller = (GeoLevelController)UnityEngine.Object.FindObjectOfType(typeof(GeoLevelController));
+                    GeoLevelController controller = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
 
                     if (config.DiplomaticPenalties && CheckGeoscapeSpecialDifficultySettings(controller) != 1)
                     {
@@ -742,7 +742,7 @@ namespace TFTV
             {
                 try
                 {
-                    GeoLevelController controller = (GeoLevelController)UnityEngine.Object.FindObjectOfType(typeof(GeoLevelController));
+                    GeoLevelController controller = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
 
                     if (TFTVVoidOmens.CheckFordVoidOmensInPlay(controller).Contains(2) || CheckGeoscapeSpecialDifficultySettings(controller) != 0)
                     {
@@ -1087,8 +1087,8 @@ namespace TFTV
             {
                 TFTVConfig config = TFTVMain.Main.Config;
 
-                GeoLevelController controllerGeo = (GeoLevelController)UnityEngine.Object.FindObjectOfType(typeof(GeoLevelController));
-                TacticalLevelController controllerTactical = (TacticalLevelController)UnityEngine.Object.FindObjectOfType(typeof(TacticalLevelController));
+                GeoLevelController controllerGeo = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
+                TacticalLevelController controllerTactical = GameUtl.CurrentLevel().GetComponent<TacticalLevelController>();
 
                 if ((controllerGeo != null && CheckOnGeoscapeSpecialDifficultySettingsForTactical(controllerGeo) == 1)
                     || (controllerTactical != null && CheckTacticalSpecialDifficultySettings(controllerTactical) == 1))
@@ -1124,8 +1124,8 @@ namespace TFTV
             try
             {
                 TFTVConfig config = TFTVMain.Main.Config;
-                GeoLevelController controllerGeo = (GeoLevelController)UnityEngine.Object.FindObjectOfType(typeof(GeoLevelController));
-                TacticalLevelController controllerTactical = (TacticalLevelController)UnityEngine.Object.FindObjectOfType(typeof(TacticalLevelController));
+                GeoLevelController controllerGeo = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
+                TacticalLevelController controllerTactical = GameUtl.CurrentLevel().GetComponent<TacticalLevelController>();
 
                 if (DataForRookieSaved)
                 {
@@ -1196,9 +1196,9 @@ namespace TFTV
                 SharedData shared = GameUtl.GameComponent<SharedData>();
                 SharedDamageKeywordsDataDef damageKeywords = shared.SharedDamageKeywords;
 
-                GeoLevelController controllerGeo = (GeoLevelController)UnityEngine.Object.FindObjectOfType(typeof(GeoLevelController));
-                TacticalLevelController controllerTactical = (TacticalLevelController)UnityEngine.Object.FindObjectOfType(typeof(TacticalLevelController));
-
+                GeoLevelController controllerGeo = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
+                TacticalLevelController controllerTactical = GameUtl.CurrentLevel().GetComponent<TacticalLevelController>();
+                
 
                 if ((controllerGeo != null && ApplyImpossibleWeaponsAdjustmentsOnGeoscape(controllerGeo) || controllerTactical != null && ApplyImpossibleWeaponsAdjustmentsOnTactical(controllerTactical)) && !ImpossibleWeaponsAdjusted)
                 {
@@ -1241,7 +1241,9 @@ namespace TFTV
                                 _ = weaponDef.DamagePayload.DamageKeywords.RemoveAll(dkp => dkp.DamageKeywordDef == damageKeywords.PiercingKeyword);
                                 weaponDef.DamagePayload.DamageKeywords[0].Value = 140;
                                 weaponDef.DamagePayload.ArmourPiercing = 0;
-                                weaponDef.DamagePayload.DamageKeywords.Add(new DamageKeywordPair { DamageKeywordDef = damageKeywords.ShreddingKeyword, Value = 10 });
+                                weaponDef.DamagePayload.StopOnFirstHit = false;
+                                weaponDef.DamagePayload.StopWhenNoRemainingDamage = false;
+                               // weaponDef.DamagePayload.DamageKeywords.Add(new DamageKeywordPair { DamageKeywordDef = damageKeywords.ShreddingKeyword, Value = 10 });
                                 weaponDef.ViewElementDef.DisplayName1.LocalizationKey = "TFTV_KEY_AC_SNIPER_NAME";
                                 DefCache.GetDef<ResearchViewElementDef>("PX_Scorpion_ViewElementDef").CompleteText.LocalizationKey = "TFTV_PX_SCORPION_RESEARCHDEF_COMPLETE";
                                 // DefCache.GetDef<ResearchViewElementDef>("NJ_VehicleTech_ViewElementDef").BenefitsText.LocalizationKey = "TFTV_NJ_VEHICLETECH_RESEARCHDEF_BENEFITS";
@@ -1298,11 +1300,13 @@ namespace TFTV
                                 break;
                             case "2cd06c4b-f1f5-a9b4-c9ff-afbad25be5d8"://AC_Scorpion_WeaponDef
 
-                                _ = weaponDef.DamagePayload.DamageKeywords.RemoveAll(dkp => dkp.DamageKeywordDef == damageKeywords.ShreddingKeyword);
+                              //  _ = weaponDef.DamagePayload.DamageKeywords.RemoveAll(dkp => dkp.DamageKeywordDef == damageKeywords.ShreddingKeyword);
                                 weaponDef.DamagePayload.DamageKeywords[0].Value = 180;
                                 weaponDef.DamagePayload.ArmourPiercing = 50;
                                 weaponDef.DamagePayload.DamageKeywords.Add(new DamageKeywordPair { DamageKeywordDef = damageKeywords.PiercingKeyword, Value = 80 });
                                 weaponDef.ViewElementDef.DisplayName1.LocalizationKey = "KEY_AC_SNIPER_NAME";
+                                weaponDef.DamagePayload.StopOnFirstHit = true;
+                                weaponDef.DamagePayload.StopWhenNoRemainingDamage = true;
                                 DefCache.GetDef<ResearchViewElementDef>("PX_Scorpion_ViewElementDef").CompleteText.LocalizationKey = "PX_SCORPION_RESEARCHDEF_COMPLETE";
                                 // DefCache.GetDef<ResearchViewElementDef>("NJ_VehicleTech_ViewElementDef").BenefitsText.LocalizationKey = "TFTV_NJ_VEHICLETECH_RESEARCHDEF_BENEFITS";
                                 break;

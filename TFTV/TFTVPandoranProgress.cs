@@ -1,4 +1,5 @@
-﻿using Base.Defs;
+﻿using Base.Core;
+using Base.Defs;
 using Base.Entities;
 using Base.Entities.Effects;
 using Base.Levels.Nav;
@@ -233,14 +234,14 @@ namespace TFTV
                 TFTVLogger.Error(e);
             }
 
-
+           
         }
 
         public static TacCharacterDef RollScylla(int scyllasAlreadySpawned)
         {
             try
             {
-                GeoLevelController controller = (GeoLevelController)UnityEngine.Object.FindObjectOfType(typeof(GeoLevelController));
+                GeoLevelController controller = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
 
                 TacCharacterDef startingScylla = DefCache.GetDef<TacCharacterDef>("Scylla1_FrenzyMistSmasherAgileSpawner_AlienMutationVariationDef");
                 TacCharacterDef scylla2 = DefCache.GetDef<TacCharacterDef>("Scylla2_SpitMistSmashAgileSpawn_AlienMutationVariationDef");

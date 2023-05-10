@@ -106,7 +106,22 @@ namespace TFTV
                 {
                     if (!__instance.Faction.TacticalLevel.IsLoadingSavedGame)
                     {
-                        BaseDefenseTurnStartChecks(__instance.Faction.TacticalLevel, __instance.Faction);
+                        TacticalLevelController controller = __instance.Faction.TacticalLevel;
+
+
+
+                        if (CheckIfBaseDefense(controller) && controller.Factions.Any(f => f.Faction.FactionDef.MatchesShortName("aln")))
+                        {
+                            //TacticalFaction pandorans = controller.GetFactionByCommandName("aln");
+                            TacticalFaction phoenix = controller.GetFactionByCommandName("px");
+
+
+                            if (__instance.Faction == phoenix && StratToBeAnnounced != 0)
+                            {
+                                StratAnnouncer(controller);
+                            }
+
+                        }
                     }
                 }
                 catch (Exception e)
@@ -116,6 +131,7 @@ namespace TFTV
             }
         }
 
+        //Not used, because everything included now elsewhere
         public static void BaseDefenseTurnStartChecks(TacticalLevelController controller, TacticalFaction faction)
         {
             try
@@ -126,14 +142,14 @@ namespace TFTV
                     TacticalFaction phoenix = controller.GetFactionByCommandName("px");
 
 
-                    if (controller.TurnNumber > 0)
-                    {
-                        CheckForLossOfObjectiveTag(controller);
-                    }
-                    if (faction == phoenix && StratToBeImplemented != 0)
-                    {
-                        StratImplementer(controller);
-                    }
+                    /*  if (controller.TurnNumber > 0)
+                      {
+                          CheckForLossOfObjectiveTag(controller);
+                      }
+                      if (faction == phoenix && StratToBeImplemented != 0)
+                      {
+                       //   StratImplementer(controller);
+                      }*/
                     if (faction == phoenix && StratToBeAnnounced != 0)
                     {
                         StratAnnouncer(controller);
@@ -150,6 +166,8 @@ namespace TFTV
 
         }
 
+
+        //deemed to confusing
         public static void CheckForLossOfObjectiveTag(TacticalLevelController controller)
         {
             try
@@ -230,7 +248,11 @@ namespace TFTV
                 if (missionType.Tags.Contains(baseDefense) && missionType.ParticipantsData[0].FactionDef == DefCache.GetDef<PPFactionDef>("Alien_FactionDef"))
                 {
 
-                    KillActorFactionObjectiveDef killSentinels = DefCache.GetDef<KillActorFactionObjectiveDef>("E_KillSentinels [PhoenixBaseInfestation]");
+                    KillActorFactionObjectiveDef killSpawnery = DefCache.GetDef<KillActorFactionObjectiveDef>("E_KillSentinels [PhoenixBaseInfestation]");
+                    KillActorFactionObjectiveDef killSentinel = DefCache.GetDef<KillActorFactionObjectiveDef>("E_KillSentinels [PhoenixBaseDestroySentinel]");
+                    SurviveTurnsFactionObjectiveDef survive3turns = DefCache.GetDef<SurviveTurnsFactionObjectiveDef>("SurviveThreeTurns");
+                    SurviveTurnsFactionObjectiveDef survive5turns = DefCache.GetDef<SurviveTurnsFactionObjectiveDef>("SurviveFiveTurns");
+
                     KillActorFactionObjectiveDef scatterEnemies = DefCache.GetDef<KillActorFactionObjectiveDef>("E_KillSentinels [ScatterRemainingAttackers]");
                     WipeEnemyFactionObjectiveDef killAllEnemies = DefCache.GetDef<WipeEnemyFactionObjectiveDef>("E_DefeatEnemies [PhoenixBaseDefense_CustomMissionTypeDef]");
                     ProtectKeyStructuresFactionObjectiveDef protectFacilities = DefCache.GetDef<ProtectKeyStructuresFactionObjectiveDef>("E_ProtectKeyStructures [PhoenixBaseDefense_CustomMissionTypeDef]");
@@ -247,29 +269,34 @@ namespace TFTV
 
                     }
 
-                    if (AttackProgress >= 0.3)
+                    if (AttackProgress >= 0.8)
                     {
-                        if (!listOfFactionObjectives.Contains(killSentinels))
+                        if (!listOfFactionObjectives.Contains(killSpawnery))
                         {
-                            listOfFactionObjectives.Add(killSentinels);
+                            listOfFactionObjectives.Add(killSpawnery);
 
                         }
 
+                    }
+                    else if (AttackProgress < 0.8 && AttackProgress >= 0.3)
+                    {
+                        if (!listOfFactionObjectives.Contains(killSentinel))
+                        {
+                            listOfFactionObjectives.Add(killSentinel);
+
+                        }
                     }
                     else
                     {
-                        if (!listOfFactionObjectives.Contains(scatterEnemies))
+                        if (!listOfFactionObjectives.Contains(survive5turns))
                         {
-                            listOfFactionObjectives.Add(scatterEnemies);
+                            listOfFactionObjectives.Add(survive5turns);
 
                         }
-
-
-
                     }
                 }
 
-                TFTVLogger.Always($"{listOfFactionObjectives[0].name} base defense objective");
+                //  TFTVLogger.Always($"{listOfFactionObjectives[0].name} base defense objective");
 
                 missionType.CustomObjectives = listOfFactionObjectives.ToArray();
 
@@ -292,9 +319,8 @@ namespace TFTV
             {
                 try
                 {
-                    //  TFTVLogger.Always($"ModifyMissionData invoked");
-                    if (__instance.Site.Type == GeoSiteType.PhoenixBase && AttackProgress >= 0.3
-                        && missionData.MissionType.ParticipantsData[0].FactionDef == DefCache.GetDef<PPFactionDef>("Alien_FactionDef"))
+                    // TFTVLogger.Always($"ModifyMissionData invoked. Kludge site id is {TFTVBaseDefenseGeoscape.KludgeSite?.SiteId}. timer expiring at {__instance.Site.ExpiringTimerAt} ");
+                    if (TFTVBaseDefenseGeoscape.PhoenixBasesUnderAttack.ContainsKey(__instance.Site.SiteId) || TFTVBaseDefenseGeoscape.PhoenixBasesInfested.Contains(__instance.Site.SiteId))
                     {
                         PPFactionDef alienFaction = DefCache.GetDef<PPFactionDef>("Alien_FactionDef");
                         int difficulty = __instance.GameController.CurrentDifficulty.Order;
@@ -308,21 +334,31 @@ namespace TFTV
                                 tacMissionFactionData.InitialDeploymentPoints *= 0.6f + (0.05f * difficulty);
 
                                 TFTVLogger.Always($"Deployment points changed to {tacMissionFactionData.InitialDeploymentPoints}");
-
                             }
-
                         }
 
                         ContextHelpHintDef hintDef = DefCache.GetDef<ContextHelpHintDef>("TFTVBaseDefense");
 
-                        if (AttackProgress < 0.3)
+                        int timer = 0;
+
+                        if (__instance.Site.ExpiringTimerAt != 0)
+                        {
+                            timer = (__instance.Site.ExpiringTimerAt.DateTime - __instance.Level.Timing.Now.DateTime).Hours;
+                        }
+                        float timeToCompleteAttack = 18;
+
+                        float progress = 1f - timer / timeToCompleteAttack;
+
+                        TFTVLogger.Always($"When modifying mission data, progress is {progress}");
+
+                        if (progress < 0.3)
                         {
 
                             hintDef.Title.LocalizationKey = "BASEDEFENSE_TACTICAL_ADVANTAGE_TITLE";
                             hintDef.Text.LocalizationKey = "BASEDEFENSE_TACTICAL_ADVANTAGE_DESCRIPTION";
 
                         }
-                        else if (AttackProgress >= 0.3 && AttackProgress < 0.8)
+                        else if (progress >= 0.3 && progress < 0.8)
                         {
 
                             hintDef.Title.LocalizationKey = "BASEDEFENSE_NESTING_TITLE";
@@ -336,11 +372,12 @@ namespace TFTV
 
                         }
 
+                        AttackProgress = progress;
 
                     }
 
                     ModifyObjectives(missionData.MissionType);
-
+                    __instance.GameController.SaveManager.IsSaveEnabled = true;
                 }
                 catch (Exception e)
                 {
@@ -667,9 +704,8 @@ namespace TFTV
 
                         case 2:
                             {
-                                //  GenerateSecondaryForce(controller);
-                                contextHelpHintDef = hintManager.HintDb.Hints.FirstOrDefault((ContextHelpHintDef h) => h.name == "BaseDefenseForce2Strat");
-
+                                //   MyrmidonAssaultStrat(controller);
+                                contextHelpHintDef = hintManager.HintDb.Hints.FirstOrDefault((ContextHelpHintDef h) => h.name == "BaseDefenseWormsStrat");
                             }
                             break;
 
@@ -682,8 +718,17 @@ namespace TFTV
                             break;
                         case 4:
                             {
-                                //   MyrmidonAssaultStrat(controller);
-                                contextHelpHintDef = hintManager.HintDb.Hints.FirstOrDefault((ContextHelpHintDef h) => h.name == "BaseDefenseWormsStrat");
+                                //  GenerateSecondaryForce(controller);
+                                contextHelpHintDef = hintManager.HintDb.Hints.FirstOrDefault((ContextHelpHintDef h) => h.name == "BaseDefenseForce2Strat");
+
+
+
+                            }
+                            break;
+                        case 5:
+                            {
+                                //  UmbraStrat(controller);
+                                contextHelpHintDef = hintManager.HintDb.Hints.FirstOrDefault((ContextHelpHintDef h) => h.name == "BaseDefenseUmbraStrat");
 
                             }
                             break;
@@ -770,7 +815,8 @@ namespace TFTV
 
                         case 2:
                             {
-                                SpawnSecondaryForce(controller);
+                                MyrmidonAssaultStrat(controller);
+
 
                             }
                             break;
@@ -783,7 +829,13 @@ namespace TFTV
                             break;
                         case 4:
                             {
-                                MyrmidonAssaultStrat(controller);
+                                SpawnSecondaryForce(controller);
+
+                            }
+                            break;
+                        case 5:
+                            {
+                                FishmanInfiltrationStrat(controller);
 
                             }
                             break;
@@ -801,24 +853,59 @@ namespace TFTV
 
 
         //Patch that invokes StratPicker method, and therefore sets the chain that will lead to announcement of strat, showing hint, spawning interaction points, etc
+        //also invokes strat implementer, which will actually materialize the reinforcements
+
+        public static bool[] UsedStrats = new bool[5];
+
+
         [HarmonyPatch(typeof(TacticalFaction), "GetSortedAIActors")]
         public static class TFTV_TacticalFactionn_GetSortedAIActors_BaseDefense_patch
         {
+            public static void Prefix(TacticalFaction __instance)
+            {
+                try
+                {
+                    if (CheckIfBaseDefense(__instance.TacticalLevel) && __instance.Equals(__instance.TacticalLevel.GetFactionByCommandName("aln")))
+                    {
+
+
+                        StratPicker(__instance.TacticalLevel);
+
+                        //These strats get implemented before alien turn starts: triton infiltration team and secondary force
+
+                        if (StratToBeImplemented >= 4)
+                        {
+                            StratImplementer(__instance.TacticalLevel);
+                        }
+
+                    }
+
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+
+
+
+            }
+
+
             public static void Postfix(List<TacticalActor> __result, TacticalFaction __instance)
             {
                 try
                 {
-                    if (__result.Count > 0)
+                    if (CheckIfBaseDefense(__instance.TacticalLevel) && __instance.Equals(__instance.TacticalLevel.GetFactionByCommandName("aln")))
                     {
-                        if (CheckIfBaseDefense(__instance.TacticalLevel) && __instance.Equals(__instance.TacticalLevel.GetFactionByCommandName("aln")))
+
+                        //These strats get implemented after alien turn starts: worms, myrmidons, umbra
+
+                        if (StratToBeImplemented < 4)
                         {
-                            // if (__instance.TacticalLevel.TurnNumber > 0)
-                            //  {
-
-                            StratPicker(__instance.TacticalLevel);
-
-                            //  }
+                            StratImplementer(__instance.TacticalLevel);
                         }
+
                     }
                 }
                 catch (Exception e)
@@ -826,83 +913,155 @@ namespace TFTV
                     TFTVLogger.Error(e);
                 }
             }
-
-
         }
 
         public static void StratPicker(TacticalLevelController controller)
         {
             try
             {
-                if (CheckIfBaseDefense(controller)) //need to check for completion of objectives...
+                if (CheckIfBaseDefense(controller))
                 {
-                    UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
+                    //need to check for completion of objectives...
 
-                    int roll = UnityEngine.Random.Range(1, 11 + controller.Difficulty.Order);
+                    ObjectivesManager phoenixObjectives = controller.GetFactionByCommandName("Px").Objectives;
+                    int difficulty = controller.Difficulty.Order;
 
-                    TFTVLogger.Always($"Picking strat for base defense, roll is {roll}");
-
-                    if (roll == 5 || roll == 12)
+                    foreach (FactionObjective objective in phoenixObjectives)
                     {
-                        StratToBeAnnounced = 1;
-
-                        // WormDropStrat(controller);
-                    }
-                    else if (roll == 6 || roll == 13)
-                    {
-                        StratToBeAnnounced = 2;
-                        // GenerateSecondaryForce(controller);
-                    }
-                    else if (roll == 7 || roll == 14)
-                    {
-                        StratToBeAnnounced = 3;
-                        // UmbraStrat(controller);
-
-                    }
-                    else if (roll == 8 || roll == 10)
-                    {
-                        StratToBeAnnounced = 4;
-                        // MyrmidonAssaultStrat(controller);
-                    }
-                    else if (roll == 9 || roll == 11)
-                    {
-                        if (AttackProgress >= 8)
+                        if (objective.Description.LocalizationKey == "BASEDEFENSE_SURVIVE5_OBJECTIVE" && objective.GetCompletion() == 0)
                         {
-                            SpawnAdditionalEggs(controller);
+                            TFTVLogger.Always($"the objective is {objective.GetDescription()}; completion is at {objective.GetCompletion()}");
+                            if (controller.TurnNumber >= 5 - difficulty && controller.TurnNumber < 5)
+                            {
+                                List<int> availableStrats = new List<int>();
+
+                                for (int x = 0; x < UsedStrats.Count(); x++)
+                                {
+                                    if (UsedStrats[x] == false)
+                                    {
+                                        availableStrats.Add(x + 1);
+                                    }
+                                }
+
+                                if (availableStrats.Count > 0)
+                                {
+
+                                    StratToBeAnnounced = availableStrats.GetRandomElement();
+                                    UsedStrats[StratToBeAnnounced - 1] = true;
+                                    TFTVLogger.Always($"the objective is {objective.GetDescription()} and the strat picked is {StratToBeAnnounced} and it can't be used again");
+
+                                }
+                            }
                         }
-                        else
+                        else if (objective.Description.LocalizationKey == "BASEDEFENSE_SURVIVE3_OBJECTIVE" && objective.GetCompletion() == 0)
                         {
+                            TFTVLogger.Always($"the objective is {objective.GetDescription()}; completion is at {objective.GetCompletion()}");
+                            List<int> availableStrats = new List<int>();
+
+                            for (int x = 0; x < UsedStrats.Count(); x++)
+                            {
+                                if (UsedStrats[x] == false)
+                                {
+                                    availableStrats.Add(x + 1);
+
+                                }
+                            }
+
+                            if (availableStrats.Count > 0)
+                            {
+                                switch (difficulty)
+                                {
+                                    case 1:
+                                        {
+
+                                        }
+                                        break;
+                                    case 2:
+                                        {
+                                            if (objective.GetCompletion() > 0.6f)
+                                            {
+                                                StratToBeAnnounced = availableStrats.GetRandomElement();
+                                                UsedStrats[StratToBeAnnounced - 1] = true;
+
+                                            }
+                                        }
+                                        break;
+                                    case 3:
+                                        {
+                                            if (objective.GetCompletion() > 0.3f)
+                                            {
+                                                StratToBeAnnounced = availableStrats.GetRandomElement();
+                                                UsedStrats[StratToBeAnnounced - 1] = true;
+
+                                            }
+                                        }
+                                        break;
+                                    case 4:
+                                        {
+
+                                            StratToBeAnnounced = availableStrats.GetRandomElement();
+                                            UsedStrats[StratToBeAnnounced - 1] = true;
+
+
+                                        }
+                                        break;
+
+                                }
+
+                                TFTVLogger.Always($"the strat picked is {StratToBeAnnounced}");
+                            }
+                            else //this will give one turn pause, and then reset all strats, making them available again
+                            {
+                                UsedStrats = new bool[5];
+                            }
+                        }
+
+                        else if ((objective.Description.LocalizationKey == "BASEDEFENSE_INFESTATION_OBJECTIVE"
+                            || objective.Description.LocalizationKey == "BASEDEFENSE_SENTINEL_OBJECTIVE") && objective.GetCompletion() == 0)
+                        {
+                            TFTVLogger.Always($"the objective is {objective.GetDescription()}; completion is at {objective.GetCompletion()}");
                             UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
+                            int roll = UnityEngine.Random.Range(1, 11 + controller.Difficulty.Order);
 
-                            int roll2 = UnityEngine.Random.Range(1, 7);
-                            if (roll == 1)
+                            if (roll >= 7)
                             {
-                                StratToBeAnnounced = 1;
+                                List<int> availableStrats = new List<int>();
 
-                                // WormDropStrat(controller);
+                                for (int x = 0; x < UsedStrats.Count(); x++)
+                                {
+                                    if (UsedStrats[x] == false)
+                                    {
+                                        availableStrats.Add(x + 1);
 
+                                    }
+                                }
+
+                                if (availableStrats.Count > 0)
+                                {
+                                    StratToBeAnnounced = availableStrats.GetRandomElement();
+                                    UsedStrats[StratToBeAnnounced - 1] = true;
+                                    TFTVLogger.Always($"the objective is {objective.GetDescription()} and the strat picked is {StratToBeAnnounced} and it can't be used again");
+
+                                }
+                                else//this will give one turn pause, and then reset all strats, making them available again
+                                {
+                                    UsedStrats = new bool[5];
+                                }
                             }
-                            else if (roll == 2)
+                            else
                             {
-                                StratToBeAnnounced = 2;
-                                // GenerateSecondaryForce(controller);
-
-                            }
-                            else if (roll == 3)
-                            {
-
-                                StratToBeAnnounced = 3;
-                                // UmbraStrat(controller);
-
-                            }
-                            else if (roll == 4)
-                            {
-                                StratToBeAnnounced = 4;
-                                // MyrmidonAssaultStrat(controller);
-
+                                TFTVLogger.Always($"roll was {roll}, which is below 7! phew!");
+                                if (AttackProgress >= 8)
+                                {
+                                    SpawnAdditionalEggs(controller);
+                                    TFTVLogger.Always("But some more eggs should have spawned instead!");
+                                }
                             }
                         }
                     }
+
+
+
                 }
             }
             catch (Exception e)
@@ -1038,7 +1197,7 @@ namespace TFTV
                     Position = vector3
                 }, null);
 
-                //   TacticalLevelController controllerTactical = (TacticalLevelController)UnityEngine.Object.FindObjectOfType(typeof(TacticalLevelController));
+                //   TacticalLevelController controllerTactical = GameUtl.CurrentLevel().GetComponent<TacticalLevelController>();
 
 
 
@@ -1077,7 +1236,7 @@ namespace TFTV
                     Position = vector3
                 }, null);
 
-                //   TacticalLevelController controllerTactical = (TacticalLevelController)UnityEngine.Object.FindObjectOfType(typeof(TacticalLevelController));
+                //   TacticalLevelController controllerTactical = GameUtl.CurrentLevel().GetComponent<TacticalLevelController>();
 
 
 
@@ -1115,7 +1274,7 @@ namespace TFTV
                     Position = position
                 }, null);
 
-                //   TacticalLevelController controllerTactical = (TacticalLevelController)UnityEngine.Object.FindObjectOfType(typeof(TacticalLevelController));
+                //   TacticalLevelController controllerTactical = GameUtl.CurrentLevel().GetComponent<TacticalLevelController>();
 
 
 
@@ -1148,7 +1307,7 @@ namespace TFTV
             try
             {
 
-                TacticalLevelController controller = (TacticalLevelController)UnityEngine.Object.FindObjectOfType(typeof(TacticalLevelController));
+                TacticalLevelController controller = GameUtl.CurrentLevel().GetComponent<TacticalLevelController>();
                 List<TacticalDeployZone> zones = new List<TacticalDeployZone>(controller.Map.GetActors<TacticalDeployZone>(null));
                 zones.RemoveRange(GetTopsideDeployZones(controller));
 
@@ -1193,7 +1352,7 @@ namespace TFTV
             {
                 try
                 {
-                    TacticalLevelController controller = (TacticalLevelController)UnityEngine.Object.FindObjectOfType(typeof(TacticalLevelController));
+                    TacticalLevelController controller = GameUtl.CurrentLevel().GetComponent<TacticalLevelController>();
 
                     //   TFTVLogger.Always($"Status {status.Def.name} applied to {__instance.transform.name}");
                     if (controller != null && CheckIfBaseDefense(controller))
@@ -1275,7 +1434,7 @@ namespace TFTV
                 {
                     // TFTVLogger.Always($"Showing prompt {__instance.PromptDef.name}");
 
-                    TacticalLevelController controller = (TacticalLevelController)UnityEngine.Object.FindObjectOfType(typeof(TacticalLevelController));
+                    TacticalLevelController controller = GameUtl.CurrentLevel().GetComponent<TacticalLevelController>();
                     TacticalPromptDef activateObjective = DefCache.GetDef<TacticalPromptDef>("ActivateObjectivePromptDef");
                     TacticalPromptDef consoleBaseDefenseObjective = DefCache.GetDef<TacticalPromptDef>("TFTVBaseDefensePrompt");
 
@@ -1333,7 +1492,7 @@ namespace TFTV
                 {
                     for (int x = 0; x < ConsoleInBaseDefense.Count(); x++)
                     {
-                        TFTVLogger.Always($"{ConsoleInBaseDefense[x]}");
+                        // TFTVLogger.Always($"{ConsoleInBaseDefense[x]}");
 
                         if (ConsoleInBaseDefense[x] == true)
                         {
@@ -1388,7 +1547,7 @@ namespace TFTV
                 StatusDef activeConsoleStatusDef = DefCache.GetDef<StatusDef>("ActiveInteractableConsole_StatusDef");
                 structuralTarget.Status.ApplyStatus(activeConsoleStatusDef);
 
-                TFTVLogger.Always($"{name} is at position {position}");
+                // TFTVLogger.Always($"{name} is at position {position}");
             }
 
             catch (Exception e)
@@ -1402,7 +1561,7 @@ namespace TFTV
         {
             try
             {
-                TacticalLevelController controller = (TacticalLevelController)UnityEngine.Object.FindObjectOfType(typeof(TacticalLevelController));
+                TacticalLevelController controller = GameUtl.CurrentLevel().GetComponent<TacticalLevelController>();
 
                 if (CheckIfBaseDefense(controller))
                 {
@@ -1843,8 +2002,6 @@ namespace TFTV
 
                     if (roll > 6)
                     {
-
-
                         TacCharacterDef chosenEnemy = enemies.GetRandomElement(new System.Random((int)Stopwatch.GetTimestamp()));
                         zone.SetFaction(controller.GetFactionByCommandName("aln"), TacMissionParticipant.Intruder);
                         TFTVLogger.Always($"Found deployzone and deploying " + chosenEnemy.name + $"; Position is y={zone.Pos.y} x={zone.Pos.x} z={zone.Pos.z}");
@@ -1939,11 +2096,8 @@ namespace TFTV
                         actorDeployData.InitializeInstanceData();
 
                         tacticalDeployZone.SpawnActor(actorDeployData.ComponentSetDef, actorDeployData.InstanceData, actorDeployData.DeploymentTags, null, true, tacticalDeployZone);
-
                     }
-
                 }
-
             }
 
             catch (Exception e)
@@ -1956,7 +2110,83 @@ namespace TFTV
         {
             try
             {
-                TFTVLogger.Always("Spwaning Secondary Force");
+                TFTVLogger.Always("Spawning Secondary Force");
+
+                List<TacticalDeployZone> tacticalDeployZones = GetAllBottomDeployZones(controller);
+                List<TacticalActor> pxOperatives = controller.GetFactionByCommandName("px").TacticalActors.ToList();
+
+                List<TacticalDeployZone> culledTacticalDeployZones = new List<TacticalDeployZone>();
+                List<TacticalDeployZone> preferableDeploymentZone = new List<TacticalDeployZone>();
+                TacticalDeployZone zoneToDeployAt = new TacticalDeployZone();
+
+                foreach (TacticalDeployZone tacticalDeployZone in tacticalDeployZones)
+                {
+                    if (!CheckLOSToPlayer(controller, tacticalDeployZone.Pos))
+                    {
+                        culledTacticalDeployZones.Add(tacticalDeployZone);
+                    }
+                }
+
+                if (culledTacticalDeployZones.Count > 0)
+                {
+                    foreach (TacticalDeployZone tunnelZone in GetTunnelDeployZones(controller))
+                    {
+                        if (culledTacticalDeployZones.Contains(tunnelZone))
+                        {
+                            preferableDeploymentZone.Add(tunnelZone);
+                        }
+                    }
+
+                    if (preferableDeploymentZone.Count > 0)
+                    {
+                        zoneToDeployAt = preferableDeploymentZone.GetRandomElement();
+                    }
+                    else
+                    {
+                        zoneToDeployAt = culledTacticalDeployZones.GetRandomElement();
+                    }
+                }
+                else
+                {
+                    zoneToDeployAt = tacticalDeployZones.GetRandomElement();
+                }
+
+                Dictionary<TacCharacterDef, int> secondaryForce = GenerateSecondaryForce(controller);
+
+                GenerateFakeExplosion(zoneToDeployAt.Pos);
+
+                foreach (TacCharacterDef tacCharacterDef in secondaryForce.Keys)
+                {
+                    for (int i = 0; i < secondaryForce[tacCharacterDef]; i++)
+                    {
+
+                        zoneToDeployAt.SetFaction(controller.GetFactionByCommandName("AlN"), TacMissionParticipant.Intruder);
+                        //  TFTVLogger.Always($"Found center deployzone position and deploying " + chosenWormType.name + $"; Position is y={tacticalDeployZone.Pos.y} x={tacticalDeployZone.Pos.x} z={tacticalDeployZone.Pos.z}");
+                        ActorDeployData actorDeployData = tacCharacterDef.GenerateActorDeployData();
+
+                        actorDeployData.InitializeInstanceData();
+
+                        TacticalActorBase tacticalActorBase = zoneToDeployAt.SpawnActor(actorDeployData.ComponentSetDef, actorDeployData.InstanceData, actorDeployData.DeploymentTags, null, true, zoneToDeployAt);
+
+                        TacticalActor tacticalActor = tacticalActorBase as TacticalActor;
+                        tacticalActor.CharacterStats.ActionPoints.SetToMax();
+                        tacticalActor.ForceRestartTurn();
+                    }
+                }
+            }
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
+        }
+
+        internal static void FishmanInfiltrationStrat(TacticalLevelController controller)
+        {
+            try
+            {
+                TFTVLogger.Always("Spawning Triton Infiltration team");
 
                 List<TacticalDeployZone> tacticalDeployZones = GetAllBottomDeployZones(controller);
                 List<TacticalActor> pxOperatives = controller.GetFactionByCommandName("px").TacticalActors.ToList();
@@ -2006,13 +2236,30 @@ namespace TFTV
 
                 }
 
-                Dictionary<TacCharacterDef, int> secondaryForce = GenerateSecondaryForce(controller);
+                Dictionary<TacCharacterDef, int> tritonInfiltratonTeam = GenerateTritonInfiltrationForce(controller);
 
-                GenerateFakeExplosion(zoneToDeployAt.Pos);
-
-                foreach (TacCharacterDef tacCharacterDef in secondaryForce.Keys)
+                Level level = controller.Level;
+                TacticalVoxelMatrix tacticalVoxelMatrix = level?.GetComponent<TacticalVoxelMatrix>();
+                Vector3 position = zoneToDeployAt.Pos;
+                if (position.y <= 2 && position.y != 1.2)
                 {
-                    for (int i = 0; i < secondaryForce[tacCharacterDef]; i++)
+                    position.SetY(1.2f);
+                }
+                else if (position.y > 4 && position.y != 4.8)
+                {
+                    position.SetY(4.8f);
+
+                }
+
+
+                MethodInfo spawnBlob = AccessTools.Method(typeof(TacticalVoxelMatrix), "SpawnBlob_Internal");
+
+                spawnBlob.Invoke(tacticalVoxelMatrix, new object[] { TacticalVoxelType.Mist, position, 3, 1, false, true });
+
+
+                foreach (TacCharacterDef tacCharacterDef in tritonInfiltratonTeam.Keys)
+                {
+                    for (int i = 0; i < tritonInfiltratonTeam[tacCharacterDef]; i++)
                     {
 
                         zoneToDeployAt.SetFaction(controller.GetFactionByCommandName("AlN"), TacMissionParticipant.Intruder);
@@ -2021,7 +2268,12 @@ namespace TFTV
 
                         actorDeployData.InitializeInstanceData();
 
-                        zoneToDeployAt.SpawnActor(actorDeployData.ComponentSetDef, actorDeployData.InstanceData, actorDeployData.DeploymentTags, null, true, zoneToDeployAt);
+                        TacticalActorBase tacticalActorBase = zoneToDeployAt.SpawnActor(actorDeployData.ComponentSetDef, actorDeployData.InstanceData, actorDeployData.DeploymentTags, null, true, zoneToDeployAt);
+
+                        TacticalActor tacticalActor = tacticalActorBase as TacticalActor;
+                        tacticalActor.CharacterStats.ActionPoints.SetToMax();
+                        tacticalActor.ForceRestartTurn();
+                        //  TFTVLogger.Always($"{tacticalActor.DisplayName} spawned, has {tacticalActor.CharacterStats.ActionPoints} actions points");
 
                     }
 
@@ -2029,16 +2281,69 @@ namespace TFTV
 
                 }
 
+
+
+
             }
 
             catch (Exception e)
             {
                 TFTVLogger.Error(e);
-                throw;
             }
 
 
+
         }
+
+        internal static Dictionary<TacCharacterDef, int> GenerateTritonInfiltrationForce(TacticalLevelController controller)
+        {
+            try
+            {
+                TFTVLogger.Always("Generating Triton Infiltration Team Force");
+
+                ClassTagDef fishmanTag = DefCache.GetDef<ClassTagDef>("Fishman_ClassTagDef");
+
+                List<TacCharacterDef> researchedTritons = new List<TacCharacterDef>();
+
+                Dictionary<TacCharacterDef, int> infiltrationTeam = new Dictionary<TacCharacterDef, int>();
+
+                int difficulty = controller.Difficulty.Order;
+
+                foreach (TacCharacterDef tacCharacterDef in controller.TacMission.MissionData.UnlockedAlienTacCharacterDefs)
+                {
+                    if (tacCharacterDef.ClassTag != null && tacCharacterDef.ClassTag == fishmanTag && !researchedTritons.Contains(tacCharacterDef))
+                    {
+                        researchedTritons.Add(tacCharacterDef);
+
+                    }
+                }
+
+                for (int x = 0; x < difficulty + 2; x++)
+                {
+                    TacCharacterDef tritonTypeToAdd = researchedTritons.GetRandomElement(new System.Random((int)Stopwatch.GetTimestamp()));
+
+                    if (infiltrationTeam.ContainsKey(tritonTypeToAdd))
+                    {
+                        infiltrationTeam[tritonTypeToAdd] += 1;
+                    }
+                    else
+                    {
+                        infiltrationTeam.Add(tritonTypeToAdd, 1);
+
+                    }
+
+                }
+
+                return infiltrationTeam;
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
+        }
+
+
 
         internal static Dictionary<TacCharacterDef, int> GenerateSecondaryForce(TacticalLevelController controller)
         {

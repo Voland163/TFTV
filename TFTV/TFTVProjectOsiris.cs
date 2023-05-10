@@ -401,7 +401,7 @@ namespace TFTV
                                 int enemiesKilled = deadSoldierStats.EnemiesKilled.Count;
                                 int soldierLevel = deadSoldierStats.Level;
                                 int baseScore = 0;
-                                if (numMissions >= 3)
+                                if (numMissions > 3)
                                 {
                                     baseScore = 25;
                                 }
@@ -419,7 +419,7 @@ namespace TFTV
                         UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
                         int roll = UnityEngine.Random.Range(0, 100);
                         
-                        int rollTo = orderedList.Count * 10 + orderedList[0];
+                        int rollTo = (orderedList.Count - 1) * 10 + orderedList[0];
                         if (rollTo > 90)
                         {
                             rollTo = 90;
@@ -555,7 +555,7 @@ namespace TFTV
                         eventId == HeavyMutantDeliveryEvent || eventId == WatcherMutantDeliveryEvent || eventId == ShooterMutantDeliveryEvent)
                     {
 
-                        GeoLevelController controller = (GeoLevelController)UnityEngine.Object.FindObjectOfType(typeof(GeoLevelController));
+                        GeoLevelController controller = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
                         CompleteProjectOsiris(IdProjectOsirisCandidate, controller, __instance.GetEventByID(eventId));
 
                     }
@@ -577,7 +577,7 @@ namespace TFTV
                         eventId == HeavyMutantDeliveryEvent || eventId == WatcherMutantDeliveryEvent || eventId == ShooterMutantDeliveryEvent)
                     {
 
-                        GeoLevelController controller = (GeoLevelController)UnityEngine.Object.FindObjectOfType(typeof(GeoLevelController));
+                        GeoLevelController controller = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
                         PhoenixStatisticsManager statisticsManager = (PhoenixStatisticsManager)UnityEngine.Object.FindObjectOfType(typeof(PhoenixStatisticsManager));
                         GeoCharacter geoCharacterCloneFromDead = controller.DeadSoldiers[IdProjectOsirisCandidate].SpawnAsCharacter();
                         TacCharacterDef deadTemplateDef = geoCharacterCloneFromDead.TemplateDef;

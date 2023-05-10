@@ -216,7 +216,7 @@ namespace TFTV
 
                 try
                 {
-                    GeoLevelController controller = (GeoLevelController)UnityEngine.Object.FindObjectOfType(typeof(GeoLevelController));
+                    GeoLevelController controller = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
 
                     TFTVLogger.Always("InfestationMissionWon is " + InfestationMissionWon);
                     if (InfestationMissionWon)

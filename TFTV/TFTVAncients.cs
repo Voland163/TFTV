@@ -1,4 +1,5 @@
-﻿using Base.Defs;
+﻿using Base.Core;
+using Base.Defs;
 using Base.Entities.Abilities;
 using Base.Entities.Statuses;
 using Base.UI;
@@ -41,7 +42,7 @@ namespace TFTV
 {
     internal class TFTVAncients
     {
-        // commented out for release #13
+        
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
         private static readonly DefRepository Repo = TFTVMain.Repo;
 
@@ -671,7 +672,7 @@ namespace TFTV
             {
                 try
                 {
-                    GeoLevelController controller = (GeoLevelController)UnityEngine.Object.FindObjectOfType(typeof(GeoLevelController));
+                    GeoLevelController controller = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
 
                     if (controller.EventSystem.GetVariable("NewGameStarted") == 1)
                     {
@@ -1240,7 +1241,7 @@ namespace TFTV
             {
                 try
                 {
-                    GeoLevelController controller = (GeoLevelController)UnityEngine.Object.FindObjectOfType(typeof(GeoLevelController));
+                    GeoLevelController controller = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
 
                     if (controller.EventSystem.GetVariable("ManufacturedImpossibleWeapon") == 0)
                     {
@@ -1287,7 +1288,7 @@ namespace TFTV
             {
                 try
                 {
-                    GeoLevelController controller = (GeoLevelController)UnityEngine.Object.FindObjectOfType(typeof(GeoLevelController));
+                    GeoLevelController controller = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
 
 
                     if (controller.EventSystem.GetVariable("NewGameStarted") == 1)

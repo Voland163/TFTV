@@ -140,7 +140,7 @@ namespace TFTV
                 {
                     TFTVConfig config = TFTVMain.Main.Config;
 
-                    GeoLevelController controller = (GeoLevelController)UnityEngine.Object.FindObjectOfType(typeof(GeoLevelController));
+                    GeoLevelController controller = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
 
                     if (config.DiplomaticPenalties && (controller.CurrentDifficultyLevel.Order != 1 || config.OverrideRookieDifficultySettings))
                     {
@@ -287,7 +287,7 @@ namespace TFTV
                 {
                     TFTVConfig config = TFTVMain.Main.Config;
 
-                    GeoLevelController controller = (GeoLevelController)UnityEngine.Object.FindObjectOfType(typeof(GeoLevelController));
+                    GeoLevelController controller = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
 
                     if (config.DiplomaticPenalties && (controller.CurrentDifficultyLevel.Order != 1 || config.OverrideRookieDifficultySettings))
                     {
@@ -436,7 +436,7 @@ namespace TFTV
                 {
 
                     TFTVConfig config = TFTVMain.Main.Config;
-                    GeoLevelController controller = (GeoLevelController)UnityEngine.Object.FindObjectOfType(typeof(GeoLevelController));
+                    GeoLevelController controller = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
 
                     if (config.DiplomaticPenalties && (controller.CurrentDifficultyLevel.Order != 1 || config.OverrideRookieDifficultySettings))
                     {

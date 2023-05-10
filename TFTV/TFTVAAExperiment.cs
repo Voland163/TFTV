@@ -1231,7 +1231,7 @@ namespace TFTV
 
                                             TimeUnit timer = TimeUnit.FromSeconds((float)(3600 * TFTVBaseDefenseGeoscape.PhoenixBasesUnderAttack[phoenixBaseId].First().Value));
 
-                                            TimeUnit attackTime = timer - ____context.Level.Timing.Now;; //.TimeSpan.TotalHours)); //;
+                                            TimeUnit attackTime = timer - ____context.Level.Timing.Now; //.TimeSpan.TotalHours)); //;
                                                                                                                                                                                                                           //TFTVLogger.Debug($"[UIModuleFactionAgendaTracker_UpdateData_PREFIX] element.TrackedObject: {element.TrackedObject}, attackTime: {attackTime}");
                                                                                                                                                                                                                           // TFTVLogger.Always($"attack time is {attackTime}");
                                             element.UpdateData(attackTime, true, null);
