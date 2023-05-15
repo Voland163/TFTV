@@ -26,6 +26,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Security.Policy;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -1093,7 +1094,8 @@ namespace TFTV
                 try
                 {
 
-                    if (PhoenixBasesUnderAttack.ContainsKey(__instance.PhoenixBase.Site.SiteId))
+                    if (PhoenixBasesUnderAttack.ContainsKey(__instance.PhoenixBase.Site.SiteId) 
+                        || PhoenixBasesInfested.Contains(__instance.PhoenixBase.Site.SiteId))
                     {
                         __result = false;
 
@@ -1125,6 +1127,7 @@ namespace TFTV
                     // Create a modified collection of sites without the ones under attack
                     List<GeoSite> modifiedSites = new List<GeoSite>(sites);
                     modifiedSites.RemoveAll(site => PhoenixBasesUnderAttack.ContainsKey(site.SiteId));
+                    modifiedSites.RemoveAll(site => PhoenixBasesInfested.Contains(site.SiteId));
 
                     sites = modifiedSites;
 

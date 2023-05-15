@@ -32,6 +32,7 @@ using PhoenixPoint.Geoscape.Events.Eventus;
 using PhoenixPoint.Geoscape.Events.Eventus.Filters;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.ContextHelp.HintConditions;
+using PhoenixPoint.Tactical.AI;
 using PhoenixPoint.Tactical.AI.Actions;
 using PhoenixPoint.Tactical.AI.Considerations;
 using PhoenixPoint.Tactical.AI.TargetGenerators;
@@ -49,6 +50,7 @@ using PhoenixPoint.Tactical.Entities.Weapons;
 using PhoenixPoint.Tactical.Eventus;
 using PhoenixPoint.Tactical.Levels.FactionObjectives;
 using PhoenixPoint.Tactical.Prompts;
+using RootMotion.FinalIK;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -388,7 +390,8 @@ namespace TFTV
                 };
                 mediumGuardianAITemplate.ActionDefs = aIActions.ToArray();
 
-
+                TacAIActorDef cyclopsAIActor = DefCache.GetDef<TacAIActorDef>("MediumGuardian_AIActorDef");
+                cyclopsAIActor.TurnOrderPriority = 1000;
 
                 AIActionDef aggresiveAdvance = DefCache.GetDef<AIActionDef>("MediumGuardian_Advance_Aggressive_AIActionDef");
                 aggresiveAdvance.Weight = 10;
@@ -2812,6 +2815,7 @@ namespace TFTV
                 WeaponDef cyclopsPBeam = DefCache.GetDef<WeaponDef>("MediumGuardian_Head_ProteanMutane_WeaponDef");
                 cyclopsPBeam.DamagePayload.DamageKeywords[0].Value = 120;
 
+                CyclopsJoinStreamsAttack();
 
             }
             catch (Exception e)
@@ -2829,6 +2833,65 @@ namespace TFTV
                 //Vulnerability: modifies hoplite beams to apply damage to which the target is vulnerable to (virophage, acid or poison)
                 //Sound damage: stomp inflicts daze and a special status, if hit again, does 30 bleed damage in addition to daze, if hit again target becomes wild/MCed
                 //Repair body parts in exchange for WP
+
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+
+        internal static void CyclopsJoinStreamsAttack()
+        {
+            try 
+            {
+                //For reference
+                TacticalActorDef hopliteActor = DefCache.GetDef<TacticalActorDef>("HumanoidGuardian_ActorDef");
+                ShootAbilityDef cyclopsOldShootAbility = DefCache.GetDef<ShootAbilityDef>("Guardian_Beam_ShootAbilityDef");
+
+                //Creating new ShootAbility + Effect
+                AdditionalEffectShootAbilityDef sourceAdditionalEffectShootAbility = DefCache.GetDef<AdditionalEffectShootAbilityDef>("TurretCombo_ShootAbilityDef");
+                string abilityName = "CyclopsBeamTFTVShootAbility";
+                string abilityGUID = "{DD029932-A3F2-45AC-8A47-0B6275EBE8B5}";
+
+                MassShootTargetActorEffectDef sourceAdditionalEffect = DefCache.GetDef<MassShootTargetActorEffectDef>("E_AdditionalEffect [TurretCombo_ShootAbilityDef]");
+                string additionalEffectGUID = "{FFE817B7-2702-4EE6-A456-FAC9A01D7BBA}";
+
+                AdditionalEffectShootAbilityDef newCyclopsShootAbility = Helper.CreateDefFromClone(sourceAdditionalEffectShootAbility, abilityGUID, abilityName);
+                MassShootTargetActorEffectDef newCyclopsAdditionalEffect = Helper.CreateDefFromClone(sourceAdditionalEffect, additionalEffectGUID, abilityName);
+                //Adjusting new created Defs
+                newCyclopsAdditionalEffect.ShootersActorDef = hopliteActor;
+                newCyclopsShootAbility.AdditionalEffectDef = newCyclopsAdditionalEffect;
+                newCyclopsShootAbility.ShownModeToTrack = cyclopsOldShootAbility.ShownModeToTrack;
+                newCyclopsShootAbility.TrackWithCamera = cyclopsOldShootAbility.TrackWithCamera;
+                newCyclopsShootAbility.WillPointCost = cyclopsOldShootAbility.WillPointCost;
+                newCyclopsShootAbility.EquipmentTags = cyclopsOldShootAbility.EquipmentTags;
+                newCyclopsShootAbility.IsDefault = cyclopsOldShootAbility.IsDefault;
+                newCyclopsShootAbility.CharacterProgressionData = cyclopsOldShootAbility.CharacterProgressionData;
+                newCyclopsShootAbility.ViewElementDef = cyclopsOldShootAbility.ViewElementDef;
+
+                WeaponDef cyclopsLCBeam = DefCache.GetDef<WeaponDef>("MediumGuardian_Head_LivingCrystal_WeaponDef");
+               
+
+                WeaponDef cyclopsOBeam = DefCache.GetDef<WeaponDef>("MediumGuardian_Head_Orichalcum_WeaponDef");
+              
+
+                WeaponDef cyclopsPBeam = DefCache.GetDef<WeaponDef>("MediumGuardian_Head_ProteanMutane_WeaponDef");
+
+                cyclopsPBeam.Abilities = new AbilityDef[] { newCyclopsShootAbility };
+
+                cyclopsOBeam.Abilities = new AbilityDef[] { newCyclopsShootAbility };
+                cyclopsLCBeam.Abilities = new AbilityDef[] { newCyclopsShootAbility };
+
+
+
+
+
+
+
+
 
 
             }

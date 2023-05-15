@@ -262,6 +262,9 @@ namespace PRMBetterClasses.SkillModifications
 
             parasychosis.EffectDef = DefCache.GetDef<EffectDef>("ChangeFaction_WildBeast_EffectDef");
 
+            EffectConditionDef noMindControl = DefCache.GetDef<EffectConditionDef>("NoMindControlStatus_ApplicationCondition");
+            parasychosis.EffectDef.ApplicationConditions = parasychosis.EffectDef.ApplicationConditions.AddToArray(noMindControl);
+
             // Animation related stuff
             FirstMatchExecutionDef cameraAbility = Helper.CreateDefFromClone(
                 DefCache.GetDef<FirstMatchExecutionDef>("E_MindControlAbility [NoDieCamerasTacticalCameraDirectorDef]"),

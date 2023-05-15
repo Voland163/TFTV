@@ -131,8 +131,8 @@ namespace TFTV
                       
                         __instance.TacticalActor.TacticalNav.RemoveNavAreas(dilloNavAreas);
                         __instance.TacticalActor.TacticalNav.AddNavAreas(extraNavAreas);
-                        TFTVLogger.Always($"{__instance.TacticalActor.DisplayName} has {component.NavAreas.GetAreaCount()} navigation areas, " +
-                             $"navcomp agent is {component.AgentTypeName}");
+                      //  TFTVLogger.Always($"{__instance.TacticalActor.DisplayName} has {component.NavAreas.GetAreaCount()} navigation areas, " +
+                      //       $"navcomp agent is {component.AgentTypeName}");
 
                     }
                     else if (__instance.TacticalActor.ActorDef.name.Equals("MediumGuardian_ActorDef"))
@@ -303,7 +303,7 @@ namespace TFTV
                         if (tacticalActorBase is TacticalActor)
                         {
                             enemies.Add(tacticalActorBase as TacticalActor);
-                            TFTVLogger.Always("faction " + factionVision.Faction.Faction.FactionDef.name + " has revealed enemy " + tacticalActorBase.DisplayName);
+                          //  TFTVLogger.Always("faction " + factionVision.Faction.Faction.FactionDef.name + " has revealed enemy " + tacticalActorBase.DisplayName);
                         }
                     }
                 }

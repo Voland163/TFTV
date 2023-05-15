@@ -259,7 +259,6 @@ namespace TFTV
 
                     if (listOfFactionObjectives.Contains(killAllEnemies))
                     {
-
                         listOfFactionObjectives.Remove(killAllEnemies);
 
                     }
@@ -325,17 +324,7 @@ namespace TFTV
                         PPFactionDef alienFaction = DefCache.GetDef<PPFactionDef>("Alien_FactionDef");
                         int difficulty = __instance.GameController.CurrentDifficulty.Order;
                         // TFTVLogger.Always($"if passed");
-                        foreach (TacMissionFactionData tacMissionFactionData in missionData.MissionParticipants)
-                        {
-                            TFTVLogger.Always($"{tacMissionFactionData.FactionDef} {tacMissionFactionData.InitialDeploymentPoints}");
-
-                            if (tacMissionFactionData.FactionDef == alienFaction)
-                            {
-                                tacMissionFactionData.InitialDeploymentPoints *= 0.6f + (0.05f * difficulty);
-
-                                TFTVLogger.Always($"Deployment points changed to {tacMissionFactionData.InitialDeploymentPoints}");
-                            }
-                        }
+                        
 
                         ContextHelpHintDef hintDef = DefCache.GetDef<ContextHelpHintDef>("TFTVBaseDefense");
 
@@ -350,6 +339,21 @@ namespace TFTV
                         float progress = 1f - timer / timeToCompleteAttack;
 
                         TFTVLogger.Always($"When modifying mission data, progress is {progress}");
+
+                        if (progress >= 0.3)
+                        {
+                            foreach (TacMissionFactionData tacMissionFactionData in missionData.MissionParticipants)
+                            {
+                                TFTVLogger.Always($"{tacMissionFactionData.FactionDef} {tacMissionFactionData.InitialDeploymentPoints}");
+
+                                if (tacMissionFactionData.FactionDef == alienFaction)
+                                {
+                                    tacMissionFactionData.InitialDeploymentPoints *= 0.6f + (0.05f * difficulty);
+
+                                    TFTVLogger.Always($"Deployment points changed to {tacMissionFactionData.InitialDeploymentPoints}");
+                                }
+                            }
+                        }
 
                         if (progress < 0.3)
                         {
@@ -1994,7 +1998,7 @@ namespace TFTV
                     MethodInfo spawnBlob = AccessTools.Method(typeof(TacticalVoxelMatrix), "SpawnBlob_Internal");
                     //spawnBlob.Invoke(tacticalVoxelMatrix, new object[] { TacticalVoxelType.Empty, zone.Pos + Vector3.up * -1.5f, 3, 1, false, true });
 
-                    TFTVLogger.Always($"pXOperative to be ghosted {pXOperative.DisplayName} at pos {position}");
+                 //   TFTVLogger.Always($"pXOperative to be ghosted {pXOperative.DisplayName} at pos {position}");
                     spawnBlob.Invoke(tacticalVoxelMatrix, new object[] { TacticalVoxelType.Mist, position, 3, 1, false, true });
 
                     // SpawnBlob_Internal(TacticalVoxelType type, Vector3 pos, int horizontalRadius, int height, bool circular, bool updateMatrix = true)
@@ -2004,7 +2008,7 @@ namespace TFTV
                     {
                         TacCharacterDef chosenEnemy = enemies.GetRandomElement(new System.Random((int)Stopwatch.GetTimestamp()));
                         zone.SetFaction(controller.GetFactionByCommandName("aln"), TacMissionParticipant.Intruder);
-                        TFTVLogger.Always($"Found deployzone and deploying " + chosenEnemy.name + $"; Position is y={zone.Pos.y} x={zone.Pos.x} z={zone.Pos.z}");
+                      //  TFTVLogger.Always($"Found deployzone and deploying " + chosenEnemy.name + $"; Position is y={zone.Pos.y} x={zone.Pos.x} z={zone.Pos.z}");
                         ActorDeployData actorDeployData = chosenEnemy.GenerateActorDeployData();
                         actorDeployData.InitializeInstanceData();
                         zone.SpawnActor(actorDeployData.ComponentSetDef, actorDeployData.InstanceData, actorDeployData.DeploymentTags, null, true, zone);
@@ -2045,7 +2049,7 @@ namespace TFTV
                         TacCharacterDef chosenMyrmidon = myrmidons.GetRandomElement(new System.Random((int)Stopwatch.GetTimestamp()));
 
                         tacticalDeployZone.SetFaction(controller.GetFactionByCommandName("AlN"), TacMissionParticipant.Intruder);
-                        TFTVLogger.Always($"Found topside deployzone position and deploying " + chosenMyrmidon.name + $"; Position is y={tacticalDeployZone.Pos.y} x={tacticalDeployZone.Pos.x} z={tacticalDeployZone.Pos.z}");
+                      //  TFTVLogger.Always($"Found topside deployzone position and deploying " + chosenMyrmidon.name + $"; Position is y={tacticalDeployZone.Pos.y} x={tacticalDeployZone.Pos.x} z={tacticalDeployZone.Pos.z}");
                         ActorDeployData actorDeployData = chosenMyrmidon.GenerateActorDeployData();
 
 

@@ -1,13 +1,12 @@
 ﻿using Base;
-using Base.AI;
 using Base.Core;
 using Base.Defs;
 using Base.Entities;
-using Base.Entities.Animations;
 using Base.Entities.Effects;
 using Base.Levels;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
+using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.Levels.Missions;
@@ -16,6 +15,7 @@ using PhoenixPoint.Geoscape.Entities.Interception.Equipments;
 using PhoenixPoint.Geoscape.Entities.Sites;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.View.ViewControllers.HavenDetails;
+using PhoenixPoint.Tactical;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.Effects;
@@ -52,6 +52,153 @@ namespace TFTV
 
 
 
+        private static IEnumerator<NextUpdate> RaiseShield(TacticalActor shooterActor)//, Weapon weapon, TacticalAbilityTarget shootTarget)
+        {
+
+            //  ShieldDeployedStatusDef shieldDeployed = DefCache.GetDef<ShieldDeployedStatusDef>("ShieldDeployed_StatusDef");
+            RetrieveShieldAbilityDef retrieveShieldAbilityDef = DefCache.GetDef<RetrieveShieldAbilityDef>("RetrieveShield_AbilityDef");
+            // Raise the shield
+
+            RetrieveShieldAbility retrieveShieldAbility = shooterActor.GetAbilityWithDef<RetrieveShieldAbility>(retrieveShieldAbilityDef);
+
+            TacticalAbilityTarget actorAsTargetForShieldRetrieval = new TacticalAbilityTarget
+            { GameObject = shooterActor.gameObject, PositionToApply = shooterActor.gameObject.transform.position };
+
+
+            // Wait for the shield animation to complete
+            yield return retrieveShieldAbility.ExecuteAndWait(actorAsTargetForShieldRetrieval);
+
+            // Face and shoot at the target
+            /*    Vector3 normalized = (shootTarget.Actor.Pos - shooterActor.Pos).normalized;
+                yield return shooterActor.Timing.Call(shooterActor.TacticalNav.Face(normalized));
+                yield return weapon.DefaultShootAbility.ExecuteAndWait(shootTarget);*/
+
+
+
+
+        }
+
+        internal static void ReDeployHopliteShield(TacticalAbility ability, TacticalActor __instance, object parameter)
+        {
+            try
+            {
+                if (__instance.TacticalActorDef.name.Equals("HumanoidGuardian_ActorDef") && ability.AbilityDef.name.Equals("Guardian_Beam_ShootAbilityDef"))
+
+
+                {
+                    DeployShieldAbilityDef deployShieldAbilityDef = DefCache.GetDef<DeployShieldAbilityDef>("DeployShield_Guardian_AbilityDef");
+
+                    DeployShieldAbilityDef deployShieldAbilityDualDef = DefCache.GetDef<DeployShieldAbilityDef>("DeployShield_Guardian_Dual_AbilityDef");
+
+                    DeployShieldAbility deployShieldAbility = null;
+
+                    if (__instance.GetAbilityWithDef<DeployShieldAbility>(deployShieldAbilityDef) != null)
+                    {
+
+                        deployShieldAbility = __instance.GetAbilityWithDef<DeployShieldAbility>(deployShieldAbilityDef);
+
+
+                    }
+                    else if (__instance.GetAbilityWithDef<DeployShieldAbility>(deployShieldAbilityDualDef) != null)
+                    {
+
+                        deployShieldAbility = __instance.GetAbilityWithDef<DeployShieldAbility>(deployShieldAbilityDualDef);
+
+                    }
+
+
+                    TacticalAbilityTarget targetOfTheAttack = parameter as TacticalAbilityTarget;
+
+                    Vector3 directionShieldDeploy = __instance.gameObject.transform.position + 2*(targetOfTheAttack.ActorGridPosition-__instance.gameObject.transform.position).normalized;
+                  //  TFTVLogger.Always($"directShieldDeploy {directionShieldDeploy}, hoplite position {__instance.gameObject.transform.position} and target{targetOfTheAttack.ActorGridPosition}");
+                    TacticalAbilityTarget tacticalAbilitytaret = new TacticalAbilityTarget
+                    { GameObject = __instance.gameObject, PositionToApply = directionShieldDeploy };
+
+                    deployShieldAbility.Activate(tacticalAbilitytaret);
+                }
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
+        }
+
+        [HarmonyPatch(typeof(MassShootTargetActorEffect), "OnApply")]
+
+        public static class MassShootTargetActorEffect_OnApply_GuardiansCrossBeams_Patch
+        {
+            public static bool Prefix(MassShootTargetActorEffect __instance, EffectTarget target)
+            {
+                try
+                {
+                    MethodInfo tryGetShootTargetMethod = typeof(MassShootTargetActorEffect).GetMethod("TryGetShootTarget", BindingFlags.Instance | BindingFlags.NonPublic);
+
+
+
+                    TacticalAbilityTarget tacticalAbilityTarget = (TacticalAbilityTarget)tryGetShootTargetMethod.Invoke(__instance, new object[] { target });
+                    if (tacticalAbilityTarget == null || tacticalAbilityTarget.Actor.IsDead)
+                    {
+                        return false;
+                    }
+
+                    TacticalActorBase sourceTacticalActorBase = TacUtil.GetSourceTacticalActorBase(__instance.Source);
+                    List<TacticalActor> list = sourceTacticalActorBase.TacticalFaction.TacticalActors.Where((TacticalActor a) => a.TacticalActorBaseDef == __instance.MassShootTargetActorEffectDef.ShootersActorDef).ToList();
+                    using (new MultiForceTargetableLock(sourceTacticalActorBase.Map.GetActors<TacticalActor>()))
+                    {
+                        foreach (TacticalActor item in list)
+                        {
+                            ShieldDeployedStatusDef shieldDeployed = DefCache.GetDef<ShieldDeployedStatusDef>("ShieldDeployed_StatusDef");
+
+                            if (item.HasStatus(shieldDeployed))
+                            {
+                                Timing.Current.Start(RaiseShield(item));
+
+                                WeaponDef beamHead = DefCache.GetDef<WeaponDef>("HumanoidGuardian_Head_WeaponDef");
+
+                                Equipment weapon = null;
+
+                                foreach (Equipment equipment in item.Equipments.Equipments)
+                                {
+                                    if (equipment.TacticalItemDef.Equals(beamHead))
+                                    {
+                                        weapon = equipment;
+                                    }
+                                }
+
+                                item.Equipments.SetSelectedEquipment(weapon);
+                            }
+
+                            Weapon selectedWeapon = item.Equipments.SelectedWeapon;
+                            if (selectedWeapon != null && !(selectedWeapon.DefaultShootAbility.GetWeaponDisabledState(IgnoredAbilityDisabledStatesFilter.CreateDefaultFilter()) != AbilityDisabledState.NotDisabled))
+                            {
+                                TacticalActor hitFriend = null;
+                                if (!item.TacticalPerception.CheckFriendlyFire(selectedWeapon, item.Pos, tacticalAbilityTarget, out hitFriend) && selectedWeapon.TryGetShootTarget(tacticalAbilityTarget) != null)
+                                {
+                                    MethodInfo faceAndShootAtTarget = typeof(MassShootTargetActorEffect).GetMethod("FaceAndShootAtTarget", BindingFlags.Instance | BindingFlags.NonPublic);
+
+                                    Timing.Current.Start((IEnumerator<NextUpdate>)faceAndShootAtTarget.Invoke(__instance, new object[] { item, selectedWeapon, tacticalAbilityTarget }));
+                                }
+
+
+                            }
+                        }
+                    }
+
+                    return false;
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
+
+
+
 
         //Make bullets go through Umbra and Decoy, method by Dimitar "Codemite" Evtimov from Snapshot Games
 
@@ -72,7 +219,7 @@ namespace TFTV
             return recv;
         }
 
-        public static Dictionary<Projectile, List <TacticalActor>> projectileActor = new Dictionary<Projectile, List <TacticalActor>>();
+        public static Dictionary<Projectile, List<TacticalActor>> projectileActor = new Dictionary<Projectile, List<TacticalActor>>();
 
         [HarmonyPatch(typeof(ProjectileLogic), "OnProjectileHit")]
 
@@ -82,20 +229,20 @@ namespace TFTV
             {
                 try
                 {
-                   
+
 
 
                     Vector3 pos = hit.Point;
                     Quaternion rot = Quaternion.LookRotation(dir);
                     IDamageReceiver receiver = GetDamageReceiver(__instance.Predictor, hit.Collider.gameObject, pos, rot);
 
-           
+
 
                     ClassTagDef umbraClassTag = DefCache.GetDef<ClassTagDef>("Umbra_ClassTagDef");
                     SpawnedActorTagDef decoy = DefCache.GetDef<SpawnedActorTagDef>("Decoy_SpawnedActorTagDef");
 
-              
-                    
+
+
                     if (__instance.Predictor != null)
                     {
                         receiver = __instance.Predictor.GetPredictingReceiver(receiver);
@@ -103,39 +250,39 @@ namespace TFTV
 
                     TacticalActor hitActor = receiver?.GetActor() as TacticalActor;
 
-        
-                    if (hitActor!=null && __instance.Projectile!=null && (hitActor.HasGameTag(umbraClassTag) || hitActor.HasGameTag(decoy)))
-                    {       
+
+                    if (hitActor != null && __instance.Projectile != null && (hitActor.HasGameTag(umbraClassTag) || hitActor.HasGameTag(decoy)))
+                    {
                         __result = false;
-                        
-                        if(projectileActor.ContainsKey(__instance.Projectile) && projectileActor[__instance.Projectile]!=null && projectileActor[__instance.Projectile].Contains(hitActor)) 
-                        { 
-                        
-                        
+
+                        if (projectileActor.ContainsKey(__instance.Projectile) && projectileActor[__instance.Projectile] != null && projectileActor[__instance.Projectile].Contains(hitActor))
+                        {
+
+
                         }
-                        else 
-                        { 
+                        else
+                        {
 
-                         ____damageAccum?.ResetToInitalAmount();
+                            ____damageAccum?.ResetToInitalAmount();
 
-                            if (projectileActor.ContainsKey(__instance.Projectile)) 
+                            if (projectileActor.ContainsKey(__instance.Projectile))
                             {
                                 projectileActor[__instance.Projectile].Add(hitActor);
-                            
-                            
+
+
                             }
-                            else 
-                            { 
-                               projectileActor.Add(__instance.Projectile, new List<TacticalActor> { hitActor });
-                            
-                           
+                            else
+                            {
+                                projectileActor.Add(__instance.Projectile, new List<TacticalActor> { hitActor });
+
+
                             }
 
-                        
+
                         }
 
                     }
-     
+
                 }
                 catch (Exception e)
                 {
@@ -259,117 +406,117 @@ namespace TFTV
             }
         }
 
-      /*  [HarmonyPatch(typeof(TacticalActor), "OnAbilityExecuteFinished")]
+        /*  [HarmonyPatch(typeof(TacticalActor), "OnAbilityExecuteFinished")]
 
-        public static class TacticalActor_OnAbilityExecuteFinished_KnockBack_Experiment_patch
-        {
-            public static void Prefix(TacticalAbility ability, TacticalActor __instance, object parameter)
-            {
-                try
-                {
-                    TFTVLogger.Always($"ability {ability.TacticalAbilityDef.name} executed by {__instance.DisplayName}");
+          public static class TacticalActor_OnAbilityExecuteFinished_KnockBack_Experiment_patch
+          {
+              public static void Prefix(TacticalAbility ability, TacticalActor __instance, object parameter)
+              {
+                  try
+                  {
+                      TFTVLogger.Always($"ability {ability.TacticalAbilityDef.name} executed by {__instance.DisplayName}");
 
-                    RepositionAbilityDef knockBackAbility = DefCache.GetDef<RepositionAbilityDef>("KnockBackAbility");
-                    BashAbilityDef strikeAbility = DefCache.GetDef<BashAbilityDef>("BashStrike_AbilityDef");
-                    if (ability.TacticalAbilityDef != null && ability.TacticalAbilityDef == strikeAbility)
-                    {
-                        if (parameter is TacticalAbilityTarget abilityTarget && abilityTarget.GetTargetActor() != null)
-                        {
-                            TFTVLogger.Always($"got here, target is {abilityTarget.GetTargetActor()}");
+                      RepositionAbilityDef knockBackAbility = DefCache.GetDef<RepositionAbilityDef>("KnockBackAbility");
+                      BashAbilityDef strikeAbility = DefCache.GetDef<BashAbilityDef>("BashStrike_AbilityDef");
+                      if (ability.TacticalAbilityDef != null && ability.TacticalAbilityDef == strikeAbility)
+                      {
+                          if (parameter is TacticalAbilityTarget abilityTarget && abilityTarget.GetTargetActor() != null)
+                          {
+                              TFTVLogger.Always($"got here, target is {abilityTarget.GetTargetActor()}");
 
-                            TacticalActor tacticalActor = abilityTarget.GetTargetActor() as TacticalActor;
+                              TacticalActor tacticalActor = abilityTarget.GetTargetActor() as TacticalActor;
 
-                            if (tacticalActor != null)
-                            {
-                                tacticalActor.AddAbility(knockBackAbility, tacticalActor);
-                                   TFTVLogger.Always($"got here, added {knockBackAbility.name} to {tacticalActor.name}");
-                            }
-                        }
-                    }
-                }
+                              if (tacticalActor != null)
+                              {
+                                  tacticalActor.AddAbility(knockBackAbility, tacticalActor);
+                                     TFTVLogger.Always($"got here, added {knockBackAbility.name} to {tacticalActor.name}");
+                              }
+                          }
+                      }
+                  }
 
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
+                  catch (Exception e)
+                  {
+                      TFTVLogger.Error(e);
+                  }
 
-            }
+              }
 
-            public static void Postfix(TacticalAbility ability, TacticalActor __instance, object parameter)
-            {
-                try
-                {
-                    RepositionAbilityDef knockBackAbility = DefCache.GetDef<RepositionAbilityDef>("KnockBackAbility");
-                    BashAbilityDef strikeAbility = DefCache.GetDef<BashAbilityDef>("BashStrike_AbilityDef");
+              public static void Postfix(TacticalAbility ability, TacticalActor __instance, object parameter)
+              {
+                  try
+                  {
+                      RepositionAbilityDef knockBackAbility = DefCache.GetDef<RepositionAbilityDef>("KnockBackAbility");
+                      BashAbilityDef strikeAbility = DefCache.GetDef<BashAbilityDef>("BashStrike_AbilityDef");
 
-                    if (ability.TacticalAbilityDef != null && ability.TacticalAbilityDef == strikeAbility)
-                    {
-                           TFTVLogger.Always($"got here, ability is {ability.TacticalAbilityDef.name}");
+                      if (ability.TacticalAbilityDef != null && ability.TacticalAbilityDef == strikeAbility)
+                      {
+                             TFTVLogger.Always($"got here, ability is {ability.TacticalAbilityDef.name}");
 
-                        if (parameter is TacticalAbilityTarget abilityTarget && abilityTarget.GetTargetActor() != null)
-                        {
+                          if (parameter is TacticalAbilityTarget abilityTarget && abilityTarget.GetTargetActor() != null)
+                          {
 
-                            TFTVLogger.Always($"got here, target is {abilityTarget.GetTargetActor()}");
+                              TFTVLogger.Always($"got here, target is {abilityTarget.GetTargetActor()}");
 
-                            TacticalActor tacticalActor = abilityTarget.GetTargetActor() as TacticalActor;
-
-
-
-                            if (tacticalActor != null && tacticalActor.GetAbilityWithDef<RepositionAbility>(knockBackAbility) != null && tacticalActor.IsAlive)
-                            {
-                                RepositionAbility knockBack = tacticalActor.GetAbilityWithDef<RepositionAbility>(knockBackAbility);
-
-                                IEnumerable<TacticalAbilityTarget> targets = knockBack.GetTargets();
-
-                                TacticalAbilityTarget pushPosition = new TacticalAbilityTarget();
-                                TacticalAbilityTarget attack = parameter as TacticalAbilityTarget;
-
-                                foreach (TacticalAbilityTarget target in targets)
-                                {
-                                    // TFTVLogger.Always($"possible position {target.PositionToApply} and magnitude is {(target.PositionToApply - FindPushToTile(__instance, tacticalActor)).magnitude} ");
-
-                                    if ((target.PositionToApply - FindPushToTile(__instance, tacticalActor, 2)).magnitude <= 1f)
-                                    {
-                                        TFTVLogger.Always($"chosen position {target.PositionToApply}");
-
-                                        pushPosition = target;
-                                       
-                                    }
-                                }
-
-
-                                //  MoveAbilityDef moveAbilityDef = DefCache.GetDef<MoveAbilityDef>("Move_AbilityDef");
-
-                                //  MoveAbility moveAbility = tacticalActor.GetAbilityWithDef<MoveAbility>(moveAbilityDef);
-                                //  moveAbility.Activate(pushPosition);
-
-                                knockBack.Activate(pushPosition);
+                              TacticalActor tacticalActor = abilityTarget.GetTargetActor() as TacticalActor;
 
 
 
-                                TFTVLogger.Always($"knocback executed position should be {pushPosition.GetActorOrWorkingPosition()}");
+                              if (tacticalActor != null && tacticalActor.GetAbilityWithDef<RepositionAbility>(knockBackAbility) != null && tacticalActor.IsAlive)
+                              {
+                                  RepositionAbility knockBack = tacticalActor.GetAbilityWithDef<RepositionAbility>(knockBackAbility);
 
-                            }
-                        }
-                    }
+                                  IEnumerable<TacticalAbilityTarget> targets = knockBack.GetTargets();
 
-                    if (ability.TacticalAbilityDef == knockBackAbility)
-                    {
-                        __instance.RemoveAbility(ability);
+                                  TacticalAbilityTarget pushPosition = new TacticalAbilityTarget();
+                                  TacticalAbilityTarget attack = parameter as TacticalAbilityTarget;
 
-                    }
-                }
+                                  foreach (TacticalAbilityTarget target in targets)
+                                  {
+                                      // TFTVLogger.Always($"possible position {target.PositionToApply} and magnitude is {(target.PositionToApply - FindPushToTile(__instance, tacticalActor)).magnitude} ");
 
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
+                                      if ((target.PositionToApply - FindPushToTile(__instance, tacticalActor, 2)).magnitude <= 1f)
+                                      {
+                                          TFTVLogger.Always($"chosen position {target.PositionToApply}");
 
-            }
+                                          pushPosition = target;
 
-        }
+                                      }
+                                  }
 
-        */
+
+                                  //  MoveAbilityDef moveAbilityDef = DefCache.GetDef<MoveAbilityDef>("Move_AbilityDef");
+
+                                  //  MoveAbility moveAbility = tacticalActor.GetAbilityWithDef<MoveAbility>(moveAbilityDef);
+                                  //  moveAbility.Activate(pushPosition);
+
+                                  knockBack.Activate(pushPosition);
+
+
+
+                                  TFTVLogger.Always($"knocback executed position should be {pushPosition.GetActorOrWorkingPosition()}");
+
+                              }
+                          }
+                      }
+
+                      if (ability.TacticalAbilityDef == knockBackAbility)
+                      {
+                          __instance.RemoveAbility(ability);
+
+                      }
+                  }
+
+                  catch (Exception e)
+                  {
+                      TFTVLogger.Error(e);
+                  }
+
+              }
+
+          }
+
+          */
 
 
         /* [HarmonyPatch(typeof(TacticalActor), "OnAbilityExecuteFinished")]
@@ -497,6 +644,11 @@ namespace TFTV
             {
                 try
                 {
+
+                    ReDeployHopliteShield(ability, __instance, parameter);
+                //    TacticalAbilityTarget target = parameter as TacticalAbilityTarget;
+                  //  TFTVLogger.Always($"ability {ability.TacticalAbilityDef.name} executed by {__instance.DisplayName} and the TacticalAbilityTarget position to apply is {target.PositionToApply} ");
+
                     ShootAbilityDef scyllaSpit = DefCache.GetDef<ShootAbilityDef>("GooSpit_ShootAbilityDef");
                     ShootAbilityDef scyllaScream = DefCache.GetDef<ShootAbilityDef>("SonicBlast_ShootAbilityDef");
 
@@ -650,7 +802,7 @@ namespace TFTV
 
                     for (int i = 0; i < price.Count; i++)
                     {
-                        TFTVLogger.Always("Price component is " + price[i].Type + " amount " + price[i].Value);
+                      //  TFTVLogger.Always("Price component is " + price[i].Type + " amount " + price[i].Value);
                         ResourceUnit resourceUnit = price[i];
                         price[i] = new ResourceUnit(resourceUnit.Type, resourceUnit.Value * multiplier);
                     }
@@ -810,7 +962,7 @@ namespace TFTV
             {
                 if (controller.EventSystem.GetVariable("FireQuenchersAdded") == 0 && controller.CurrentDifficultyLevel.Order > 1)
                 {
-                    TFTVLogger.Always("Checking fire weapons usage to decide wether to add Fire Quenchers");
+                   // TFTVLogger.Always("Checking fire weapons usage to decide wether to add Fire Quenchers");
 
                     PhoenixStatisticsManager statisticsManager = (PhoenixStatisticsManager)UnityEngine.Object.FindObjectOfType(typeof(PhoenixStatisticsManager));
 
@@ -846,18 +998,18 @@ namespace TFTV
                         }
                     }
 
-                    TFTVLogger.Always("Fire weapons used " + scoreFireDamage + " times");
+                   // TFTVLogger.Always("Fire weapons used " + scoreFireDamage + " times");
 
                     if (scoreFireDamage > 1)
                     {
                         UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
                         int roll = UnityEngine.Random.Range(0, 6) + controller.CurrentDifficultyLevel.Order + scoreFireDamage;
 
-                        TFTVLogger.Always("The roll is " + roll);
+                    //    TFTVLogger.Always("The roll is " + roll);
 
                         if (roll >= 10)
                         {
-                            TFTVLogger.Always("The roll is passed!");
+                        //    TFTVLogger.Always("The roll is passed!");
                             controller.EventSystem.SetVariable("FireQuenchersAdded", 1);
                         }
 
@@ -1028,7 +1180,7 @@ namespace TFTV
         //  public static List<float> ScoresBeforeCulling = new List<float>();
         //  public static int CounterAIActionsInfluencedBySafetyConsideration = 0;
 
-        
+
 
 
         //Method by Dimitar "Codemite" Evtimov from Snapshot Games

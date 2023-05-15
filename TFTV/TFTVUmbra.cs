@@ -424,7 +424,7 @@ namespace TFTV
                     if (tacCharacterDef.ClassTag != null && !eligibleClassTagDefs.Contains(tacCharacterDef.ClassTag))
 
                     {
-                        TFTVLogger.Always("ClassTag " + tacCharacterDef.ClassTag.className + " added");
+                      //  TFTVLogger.Always("ClassTag " + tacCharacterDef.ClassTag.className + " added");
                         eligibleClassTagDefs.Add(tacCharacterDef.ClassTag);
 
                     }
@@ -842,7 +842,8 @@ namespace TFTV
             {
                 try
                 {
-                    SpawnedActorTagDef decoyTag = DefCache.GetDef<SpawnedActorTagDef>("Decoy_SpawnedActorTagDef");
+                    //Design choice to allow decoys to be targeted by Umbra if decoy is in mist 
+                  //  SpawnedActorTagDef decoyTag = DefCache.GetDef<SpawnedActorTagDef>("Decoy_SpawnedActorTagDef");
 
                     if (!TFTVVoidOmens.VoidOmensCheck[16])
                     {
@@ -852,7 +853,7 @@ namespace TFTV
                                                                                                   //list.RemoveWhere(adilityTarget => (adilityTarget.Actor as TacticalActor)?.CharacterStats.Corruption <= 0);
                             foreach (TacticalAbilityTarget source in __result)
                             {
-                                if (source.Actor is TacticalActor && ((source.Actor as TacticalActor).CharacterStats.Corruption > 0 || (source.Actor.TacticalPerceptionBase.IsTouchingVoxel(TacticalVoxelType.Mist) && !source.Actor.HasGameTag(decoyTag))))
+                                if (source.Actor is TacticalActor && ((source.Actor as TacticalActor).CharacterStats.Corruption > 0 || (source.Actor.TacticalPerceptionBase.IsTouchingVoxel(TacticalVoxelType.Mist)))) //&& !source.Actor.HasGameTag(decoyTag))))
                                 {
                                     list.Add(source);
                                 }
