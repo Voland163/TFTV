@@ -71,9 +71,9 @@ namespace TFTV
 
             return recv;
         }
-       
 
-        
+        public static Dictionary<Projectile, List <TacticalActor>> projectileActor = new Dictionary<Projectile, List <TacticalActor>>();
+
         [HarmonyPatch(typeof(ProjectileLogic), "OnProjectileHit")]
 
         public static class ProjectileLogic_OnProjectileHit_Umbra_Patch
@@ -82,28 +82,19 @@ namespace TFTV
             {
                 try
                 {
+                   
+
+
                     Vector3 pos = hit.Point;
                     Quaternion rot = Quaternion.LookRotation(dir);
                     IDamageReceiver receiver = GetDamageReceiver(__instance.Predictor, hit.Collider.gameObject, pos, rot);
 
-                    /* TacticalLevelController controllerTactical = GameUtl.CurrentLevel().GetComponent<TacticalLevelController>();
-                     TacticalFaction aliens = controllerTactical.GetFactionByCommandName("aln");*/
-
-
-                    /*   TacticalActorBase tacticalactorBase = hit.Collider.GetComponent<TacticalActorBase>();
-
-                       if (tacticalactorBase != null) 
-                       {
-                          TFTVLogger.Always($"On projectile hit {tacticalactorBase.name}");
-                       }*/
-
-                    //   TFTVLogger.Always($"hit position normal {hit.Normal} and position point {hit.Point}");
+           
 
                     ClassTagDef umbraClassTag = DefCache.GetDef<ClassTagDef>("Umbra_ClassTagDef");
                     SpawnedActorTagDef decoy = DefCache.GetDef<SpawnedActorTagDef>("Decoy_SpawnedActorTagDef");
 
-                  //  IDamageReceiver receiver = hit.Collider.gameObject.GetComponent<IDamageReceiver>();
-                  
+              
                     
                     if (__instance.Predictor != null)
                     {
@@ -112,31 +103,39 @@ namespace TFTV
 
                     TacticalActor hitActor = receiver?.GetActor() as TacticalActor;
 
-
-                   /*   if (hitActor != null)
-                      {
-
-                          TFTVLogger.Always($"hitactor is {hitActor.name}");
-
-                      }*/
-                    if (hitActor!=null && (hitActor.HasGameTag(umbraClassTag) || hitActor.HasGameTag(decoy)))
-                    {
-                      //  TFTVLogger.Always($"if passed");
-
-                        //    foreach (TacticalActor tacticalActor in aliens.TacticalActors)
-                        //    {
-                        //   TFTVLogger.Always($"tac actor pos {tacticalActor.Pos}");
-
-                        //      if ((hit.Point.x - tacticalActor.Pos.x)<=1 && (hit.Point.z - tacticalActor.Pos.z) <= 1)
-                        //     {
-                        //  TFTVLogger.Always("Found!");
-                        ____damageAccum?.ResetToInitalAmount();
+        
+                    if (hitActor!=null && __instance.Projectile!=null && (hitActor.HasGameTag(umbraClassTag) || hitActor.HasGameTag(decoy)))
+                    {       
                         __result = false;
-                        //   }
-                        // }
-                    }
+                        
+                        if(projectileActor.ContainsKey(__instance.Projectile) && projectileActor[__instance.Projectile]!=null && projectileActor[__instance.Projectile].Contains(hitActor)) 
+                        { 
+                        
+                        
+                        }
+                        else 
+                        { 
 
-                  //  PhoenixPoint.Tactical.Entities.Abilities.RagdollDieAbility
+                         ____damageAccum?.ResetToInitalAmount();
+
+                            if (projectileActor.ContainsKey(__instance.Projectile)) 
+                            {
+                                projectileActor[__instance.Projectile].Add(hitActor);
+                            
+                            
+                            }
+                            else 
+                            { 
+                               projectileActor.Add(__instance.Projectile, new List<TacticalActor> { hitActor });
+                            
+                           
+                            }
+
+                        
+                        }
+
+                    }
+     
                 }
                 catch (Exception e)
                 {
@@ -260,9 +259,120 @@ namespace TFTV
             }
         }
 
+      /*  [HarmonyPatch(typeof(TacticalActor), "OnAbilityExecuteFinished")]
+
+        public static class TacticalActor_OnAbilityExecuteFinished_KnockBack_Experiment_patch
+        {
+            public static void Prefix(TacticalAbility ability, TacticalActor __instance, object parameter)
+            {
+                try
+                {
+                    TFTVLogger.Always($"ability {ability.TacticalAbilityDef.name} executed by {__instance.DisplayName}");
+
+                    RepositionAbilityDef knockBackAbility = DefCache.GetDef<RepositionAbilityDef>("KnockBackAbility");
+                    BashAbilityDef strikeAbility = DefCache.GetDef<BashAbilityDef>("BashStrike_AbilityDef");
+                    if (ability.TacticalAbilityDef != null && ability.TacticalAbilityDef == strikeAbility)
+                    {
+                        if (parameter is TacticalAbilityTarget abilityTarget && abilityTarget.GetTargetActor() != null)
+                        {
+                            TFTVLogger.Always($"got here, target is {abilityTarget.GetTargetActor()}");
+
+                            TacticalActor tacticalActor = abilityTarget.GetTargetActor() as TacticalActor;
+
+                            if (tacticalActor != null)
+                            {
+                                tacticalActor.AddAbility(knockBackAbility, tacticalActor);
+                                   TFTVLogger.Always($"got here, added {knockBackAbility.name} to {tacticalActor.name}");
+                            }
+                        }
+                    }
+                }
+
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+
+            }
+
+            public static void Postfix(TacticalAbility ability, TacticalActor __instance, object parameter)
+            {
+                try
+                {
+                    RepositionAbilityDef knockBackAbility = DefCache.GetDef<RepositionAbilityDef>("KnockBackAbility");
+                    BashAbilityDef strikeAbility = DefCache.GetDef<BashAbilityDef>("BashStrike_AbilityDef");
+
+                    if (ability.TacticalAbilityDef != null && ability.TacticalAbilityDef == strikeAbility)
+                    {
+                           TFTVLogger.Always($"got here, ability is {ability.TacticalAbilityDef.name}");
+
+                        if (parameter is TacticalAbilityTarget abilityTarget && abilityTarget.GetTargetActor() != null)
+                        {
+
+                            TFTVLogger.Always($"got here, target is {abilityTarget.GetTargetActor()}");
+
+                            TacticalActor tacticalActor = abilityTarget.GetTargetActor() as TacticalActor;
 
 
-        /*   [HarmonyPatch(typeof(TacticalActor), "OnAbilityExecuteFinished")]
+
+                            if (tacticalActor != null && tacticalActor.GetAbilityWithDef<RepositionAbility>(knockBackAbility) != null && tacticalActor.IsAlive)
+                            {
+                                RepositionAbility knockBack = tacticalActor.GetAbilityWithDef<RepositionAbility>(knockBackAbility);
+
+                                IEnumerable<TacticalAbilityTarget> targets = knockBack.GetTargets();
+
+                                TacticalAbilityTarget pushPosition = new TacticalAbilityTarget();
+                                TacticalAbilityTarget attack = parameter as TacticalAbilityTarget;
+
+                                foreach (TacticalAbilityTarget target in targets)
+                                {
+                                    // TFTVLogger.Always($"possible position {target.PositionToApply} and magnitude is {(target.PositionToApply - FindPushToTile(__instance, tacticalActor)).magnitude} ");
+
+                                    if ((target.PositionToApply - FindPushToTile(__instance, tacticalActor, 2)).magnitude <= 1f)
+                                    {
+                                        TFTVLogger.Always($"chosen position {target.PositionToApply}");
+
+                                        pushPosition = target;
+                                       
+                                    }
+                                }
+
+
+                                //  MoveAbilityDef moveAbilityDef = DefCache.GetDef<MoveAbilityDef>("Move_AbilityDef");
+
+                                //  MoveAbility moveAbility = tacticalActor.GetAbilityWithDef<MoveAbility>(moveAbilityDef);
+                                //  moveAbility.Activate(pushPosition);
+
+                                knockBack.Activate(pushPosition);
+
+
+
+                                TFTVLogger.Always($"knocback executed position should be {pushPosition.GetActorOrWorkingPosition()}");
+
+                            }
+                        }
+                    }
+
+                    if (ability.TacticalAbilityDef == knockBackAbility)
+                    {
+                        __instance.RemoveAbility(ability);
+
+                    }
+                }
+
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+
+            }
+
+        }
+
+        */
+
+
+        /* [HarmonyPatch(typeof(TacticalActor), "OnAbilityExecuteFinished")]
 
            public static class TacticalActor_OnAbilityExecuteFinished_KnockBack_Experiment_patch
            {
@@ -321,7 +431,7 @@ namespace TFTV
 
 
 
-                               if (tacticalActor != null && tacticalActor.GetAbilityWithDef<JetJumpAbility>(knockBackAbility) != null)
+                               if (tacticalActor != null && tacticalActor.GetAbilityWithDef<JetJumpAbility>(knockBackAbility) != null && tacticalActor.IsAlive)
                                {
                                    JetJumpAbility knockBack = tacticalActor.GetAbilityWithDef<JetJumpAbility>(knockBackAbility);
 
@@ -334,7 +444,7 @@ namespace TFTV
                                    {
                                       // TFTVLogger.Always($"possible position {target.PositionToApply} and magnitude is {(target.PositionToApply - FindPushToTile(__instance, tacticalActor)).magnitude} ");
 
-                                       if ((target.PositionToApply - FindPushToTile(__instance, tacticalActor, 2)).magnitude <= 1f) 
+                                       if ((target.PositionToApply - FindPushToTile(__instance, tacticalActor, 1)).magnitude <= 1f) 
                                        {
                                            TFTVLogger.Always($"chosen position {target.PositionToApply}");
 
@@ -374,9 +484,9 @@ namespace TFTV
                }
 
            }
+
+
         */
-
-
 
 
         [HarmonyPatch(typeof(TacticalActor), "OnAbilityExecuteFinished")]
@@ -399,13 +509,12 @@ namespace TFTV
 
                         if (startPreparingShootAbility != null)
                         {
-
                             startPreparingShootAbility.Activate(parameter);
                         }
 
                     }
 
-                 
+                    projectileActor.Clear();
 
 
                     /*   SpawnActorAbilityDef DecoyAbility = DefCache.GetDef<SpawnActorAbilityDef>("Decoy_AbilityDef");

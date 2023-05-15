@@ -125,8 +125,11 @@ namespace TFTV
                     {
 
                         TacticalNavigationComponent component = __instance.TacticalActor.GetComponent<TacticalNavigationComponent>();
+                        string[] dilloNavAreas = new string[] { "WalkableArmadilloWorms" };
                         string[] extraNavAreas = new string[] { "WalkableBigMonster" };
 
+                      
+                        __instance.TacticalActor.TacticalNav.RemoveNavAreas(dilloNavAreas);
                         __instance.TacticalActor.TacticalNav.AddNavAreas(extraNavAreas);
                         TFTVLogger.Always($"{__instance.TacticalActor.DisplayName} has {component.NavAreas.GetAreaCount()} navigation areas, " +
                              $"navcomp agent is {component.AgentTypeName}");

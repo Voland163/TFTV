@@ -114,10 +114,11 @@ namespace TFTV
             //  Testing();
             CreateNewBaseDefense();
 
-            //  TestingKnockBack();
+            TestingKnockBack();
             CreateConsolePromptBaseDefense();
             ModifyDecoyAbility();
             ImproveScyllaAcheronsChironsAndCyclops();
+           // TestingKnockBackRepositionAlternative();
         }
 
 
@@ -211,7 +212,64 @@ namespace TFTV
 
         }
 
-      
+
+        
+
+        internal static void TestingKnockBackRepositionAlternative()
+        {
+            try
+            {
+                string nameKnockBack = "KnockBackAbility";
+                string gUIDAbility = "{B4238D2D-3E25-4EE5-A3C0-23CFED493D42}";
+
+                RepositionAbilityDef source = DefCache.GetDef<RepositionAbilityDef>("Dash_AbilityDef");
+                RepositionAbilityDef newKnockBackAbility = Helper.CreateDefFromClone(source, gUIDAbility, nameKnockBack);
+                newKnockBackAbility.ActionPointCost = 0.0f;
+                newKnockBackAbility.WillPointCost = 0.0f;
+                newKnockBackAbility.UsesPerTurn = -1;
+                newKnockBackAbility.EventOnActivate = new TacticalEventDef();
+                newKnockBackAbility.AmountOfMovementToUseAsRange = 0;
+               // newKnockBackAbility.FumblePerc = 0;
+                newKnockBackAbility.TraitsRequired = new string[] { };
+            //    newKnockBackAbility.HeightToWidth = 0.01f;
+                //  newKnockBackAbility.TesellationPoints = 10;
+                // newKnockBackAbility.UseLeapAnimation = true;
+
+
+                string gUIDTargeting = "{8B266029-F014-4514-865A-C51201944385}";
+                TacticalTargetingDataDef tacticalTargetingDataDef = Helper.CreateDefFromClone(source.TargetingDataDef, gUIDTargeting, nameKnockBack);
+                tacticalTargetingDataDef.Origin.Range = 3;
+
+             /*   string gUIDAnim = "{B1ADC473-1AD8-431F-8953-953E4CB3E584}";
+                TacActorJumpAbilityAnimActionDef animSource = DefCache.GetDef<TacActorJumpAbilityAnimActionDef>("E_JetJump [Soldier_Utka_AnimActionsDef]");
+                TacActorJumpAbilityAnimActionDef knockBackAnimation = Helper.CreateDefFromClone(animSource, gUIDAnim, nameKnockBack);
+                TacActorNavAnimActionDef someAnimations = DefCache.GetDef<TacActorNavAnimActionDef>("E_CrabmanNav [Crabman_AnimActionsDef]");
+                TacActorSimpleReactionAnimActionDef hurtReaction = DefCache.GetDef<TacActorSimpleReactionAnimActionDef>("E_Hurt_Reaction [Crabman_AnimActionsDef]");
+                /*  knockBackAnimation.Clip = hurtReaction.GetAllClips().First();
+                  knockBackAnimation.ClipEnd = someAnimations.FallNoSupport.Stop;
+                  knockBackAnimation.ClipStart = hurtReaction.GetAllClips().First();*/
+              /*  knockBackAnimation.Clip = someAnimations.JetJump.Loop;
+                knockBackAnimation.ClipEnd = hurtReaction.GetAllClips().First();
+                knockBackAnimation.ClipStart = someAnimations.JetJump.Loop;
+
+                knockBackAnimation.AbilityDefs = new AbilityDef[] { newKnockBackAbility };
+
+
+
+                TacActorAnimActionsDef crabAnimActions = DefCache.GetDef<TacActorAnimActionsDef>("Crabman_AnimActionsDef");
+                List<TacActorAnimActionBaseDef> crabAnimations = new List<TacActorAnimActionBaseDef>(crabAnimActions.AnimActions.ToList());
+                crabAnimations.Add(knockBackAnimation);
+                crabAnimActions.AnimActions = crabAnimations.ToArray();*/
+
+
+            }
+
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
 
         internal static void TestingKnockBack()
         {
@@ -219,6 +277,7 @@ namespace TFTV
             {
                 string nameKnockBack = "KnockBackAbility";
                 string gUIDAbility = "{B4238D2D-3E25-4EE5-A3C0-23CFED493D42}";
+
                 JetJumpAbilityDef source = DefCache.GetDef<JetJumpAbilityDef>("JetJump_AbilityDef");
                 JetJumpAbilityDef newKnockBackAbility = Helper.CreateDefFromClone(source, gUIDAbility, nameKnockBack);
                 newKnockBackAbility.ActionPointCost = 0.0f;
@@ -232,7 +291,7 @@ namespace TFTV
 
                 string gUIDTargeting = "{8B266029-F014-4514-865A-C51201944385}";
                 TacticalTargetingDataDef tacticalTargetingDataDef = Helper.CreateDefFromClone(source.TargetingDataDef, gUIDTargeting, nameKnockBack);
-                tacticalTargetingDataDef.Origin.Range = 3;
+                tacticalTargetingDataDef.Origin.Range = 1;
 
                 string gUIDAnim = "{B1ADC473-1AD8-431F-8953-953E4CB3E584}";
                 TacActorJumpAbilityAnimActionDef animSource = DefCache.GetDef<TacActorJumpAbilityAnimActionDef>("E_JetJump [Soldier_Utka_AnimActionsDef]");
@@ -272,7 +331,7 @@ namespace TFTV
                 ModifyScyllaAIAndHeads();
                 MedAndBigMonstersSquishers();
                 ModifyGuardianAIandStomp();
-                MakeUmbraNotObstacle();
+              //  MakeUmbraNotObstacle();
             }
             catch (Exception e)
             {

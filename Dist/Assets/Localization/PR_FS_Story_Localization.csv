@@ -238,11 +238,12 @@ AFTER_YE_SIGNAL_TEXT,Text,,"Director, the Oneiric Delirium is a signal, a signal
 AFTER_YE_SIGNAL_OUTCOME,Text,,"There must be infrastructure here, on Earth. Something to receive the signal, transform it, augment it… A network of relays that is powered locally, using our planet's resources.",,"Il doit y avoir une infrastructure ici, sur Terre. Quelque chose pour recevoir le signal, le transformer, l’augmenter… Un réseau de relais alimentés localement en utilisant les ressources de notre planète.",,,,,,
 AFTER_YE_SIGNAL_CHOICE,Text,,How do you explain it then?,,Comment l’expliquez-vous alors ?,,,,,,
 BEHEMOTH_PATTERN_TITLE,Text,,A Method to the Carnage,,Une méthode pour le carnage,,,,,,
-BEHEMOTH_PATTERN_TEXT,Text,,"There is a pattern.. I didn’t see it at first, but then it occurred to me to check the old marine surveys from the times of the First Mist. The Behemoth <i>always</i> submerges and emerges near a <i>different</i> cluster of the undersea colonies, the first recorded manifestations of the Pandoravirus over 20 years ago. It’s delivering the harvested biomass to them. 
+BEHEMOTH_PATTERN_TEXT,Text,,"There is a pattern... I didn’t see it at first, but then it occurred to me to check the old marine surveys from the times of the First Mist. The Behemoth <i>always</i> submerges and emerges near a <i>different</i> cluster of the undersea colonies, the first recorded manifestations of the Pandoravirus over 20 years ago. It’s delivering the harvested biomass to them. 
 
 And we know what they need it for: to amplify the Oneiric Delirium signal from Yuggoth. 
 
-If we take out the Behemoth, we will weaken its grip on us, maybe even neutralize it completely. ",,"Il y a une tendance.. Je ne l’ai pas vue au début, mais ensuite il m’est venu à l’esprit de vérifier les anciens relevés maritimes de l’époque de la Première Brume. Le Béhémoth plonge dans l'océan et émerge <i>toujours</i> près d’un groupe <i>différent</i> de colonies sous-marines, les premières manifestations enregistrées du pandoravirus il y a plus de 20 ans. Il leur livre la biomasse récoltée.
+If we take out the Behemoth, we will weaken its grip on us, maybe even neutralize it completely. 
+",,"Il y a une tendance.. Je ne l’ai pas vue au début, mais ensuite il m’est venu à l’esprit de vérifier les anciens relevés maritimes de l’époque de la Première Brume. Le Béhémoth plonge dans l'océan et émerge <i>toujours</i> près d’un groupe <i>différent</i> de colonies sous-marines, les premières manifestations enregistrées du pandoravirus il y a plus de 20 ans. Il leur livre la biomasse récoltée.
 
 Et nous savons pourquoi ils en ont besoin : pour amplifier le signal du Délire Onirique de Yuggoth.
 
