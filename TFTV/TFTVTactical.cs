@@ -3,6 +3,7 @@ using PhoenixPoint.Modding;
 using PhoenixPoint.Tactical.Levels;
 using System;
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace TFTV
 {
@@ -40,6 +41,9 @@ namespace TFTV
         public int BaseDefenseStratToBeAnnounced;
         public int BaseDefenseStratToBeImplemented;
         public bool[] StratsAlreadyImplementedAtBD;
+        
+        public Dictionary<float, float> ConsolePositionsInBaseDefense;
+       // public Dictionary<int, int> CyclopsMolecularTargeting;
     }
 
     /// <summary>
@@ -83,6 +87,8 @@ namespace TFTV
             //   TFTVBaseDefenseTactical.CheckIfConsoleActivated(Controller);
             TFTVSpecialDifficulties.CheckForSpecialDifficulties();
             TFTVBetterEnemies.ImplementBetterEnemies();
+            TFTVRevenant.CheckIfRevenantPresent(Controller);
+            
            // TFTVBaseDefenseTactical.RevealAllSpawns(Controller);
 
             // TFTVBaseDefenseTactical.CheckingPortrait(Controller);
@@ -136,12 +142,14 @@ namespace TFTV
                 TFTVRevenant.revenantID = data.RevenantId;
                 TFTVAncients.HoplitesKilled = data.HoplitesKilledOnMission;
                 TFTVAncients.LOTAReworkActive = data.LOTAReworkActiveInTactical;
-                TFTVBaseDefenseTactical.ConsoleInBaseDefense = data.BaseDefenseConsole;
                 TFTVBaseDefenseTactical.AttackProgress = data.BaseDefenseAttackProgress;
                 TFTVBaseDefenseTactical.StratToBeAnnounced = data.BaseDefenseStratToBeAnnounced;
                 TFTVBaseDefenseTactical.StratToBeImplemented = data.BaseDefenseStratToBeImplemented;  
                 TFTVBaseDefenseTactical.UsedStrats = data.StratsAlreadyImplementedAtBD;
+                TFTVBaseDefenseTactical.ConsolePositions = data.ConsolePositionsInBaseDefense;
+              //  TFTVAncients.CyclopsMolecularDamageBuff = data.CyclopsMolecularTargeting;
                 TFTVBaseDefenseTactical.ModifyObjectives(Controller.TacMission.MissionData.MissionType);
+               
 
                 TurnZeroMethodsExecuted = data.TurnZeroMethodsExecuted;
 
@@ -181,11 +189,12 @@ namespace TFTV
                 RevenantId = TFTVRevenant.revenantID,
                 HoplitesKilledOnMission = TFTVAncients.HoplitesKilled,
                 LOTAReworkActiveInTactical = TFTVAncients.LOTAReworkActive,
-                BaseDefenseConsole = TFTVBaseDefenseTactical.ConsoleInBaseDefense,
                 BaseDefenseAttackProgress = TFTVBaseDefenseTactical.AttackProgress,
                 BaseDefenseStratToBeImplemented = TFTVBaseDefenseTactical.StratToBeImplemented,
                 BaseDefenseStratToBeAnnounced = TFTVBaseDefenseTactical.StratToBeAnnounced,
                 StratsAlreadyImplementedAtBD = TFTVBaseDefenseTactical.UsedStrats,
+                ConsolePositionsInBaseDefense = TFTVBaseDefenseTactical.ConsolePositions,
+              //  CyclopsMolecularTargeting = TFTVAncients.CyclopsMolecularDamageBuff,
                 TurnZeroMethodsExecuted = TurnZeroMethodsExecuted
             };
         }
@@ -226,6 +235,7 @@ namespace TFTV
                         TFTVRevenant.RevenantCheckAndSpawn(Controller);
                         TFTVRevenant.ImplementVO19(Controller);
                         TFTVVoidOmens.VO5TurnHostileCivviesFriendly(Controller);
+                        TFTVBaseDefenseTactical.GetConsoles();
                         //  TFTVBaseDefenseTactical.ModifyObjectives(Controller.TacMission.MissionData.MissionType);
                         TurnZeroMethodsExecuted = true;
                     }

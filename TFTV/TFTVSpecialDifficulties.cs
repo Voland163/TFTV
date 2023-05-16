@@ -1046,7 +1046,7 @@ namespace TFTV
                         }
                         if (config.BetterEnemiesOn && scyllaDamageResistance!=null) 
                         {
-                            if (actor.ActorDef.name.Equals("Queen_ActorDef"))
+                            if (actor.ActorDef.name.Equals("Queen_ActorDef") && !actor.Status.HasStatus(scyllaDamageResistance))
                             {
                                 actor.Status.ApplyStatus(scyllaDamageResistance);
                                                 

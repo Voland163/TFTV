@@ -3,6 +3,7 @@ using Base.Core;
 using Base.Defs;
 using Base.Entities;
 using Base.Entities.Effects;
+using Base.Entities.Statuses;
 using Base.Levels;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
@@ -52,6 +53,7 @@ namespace TFTV
 
 
 
+
         private static IEnumerator<NextUpdate> RaiseShield(TacticalActor shooterActor)//, Weapon weapon, TacticalAbilityTarget shootTarget)
         {
 
@@ -68,21 +70,15 @@ namespace TFTV
             // Wait for the shield animation to complete
             yield return retrieveShieldAbility.ExecuteAndWait(actorAsTargetForShieldRetrieval);
 
-            // Face and shoot at the target
-            /*    Vector3 normalized = (shootTarget.Actor.Pos - shooterActor.Pos).normalized;
-                yield return shooterActor.Timing.Call(shooterActor.TacticalNav.Face(normalized));
-                yield return weapon.DefaultShootAbility.ExecuteAndWait(shootTarget);*/
-
-
-
-
         }
+
+
 
         internal static void ReDeployHopliteShield(TacticalAbility ability, TacticalActor __instance, object parameter)
         {
             try
             {
-                if (__instance.TacticalActorDef.name.Equals("HumanoidGuardian_ActorDef") && ability.AbilityDef.name.Equals("Guardian_Beam_ShootAbilityDef"))
+                if (__instance.TacticalActorDef.name.Equals("HumanoidGuardian_ActorDef") && ability.AbilityDef.name.Equals("Guardian_Beam_ShootAbilityDef") && !__instance.IsControlledByPlayer)
 
 
                 {
@@ -106,15 +102,18 @@ namespace TFTV
 
                     }
 
+                    if (deployShieldAbility != null)
+                    {
 
-                    TacticalAbilityTarget targetOfTheAttack = parameter as TacticalAbilityTarget;
+                        TacticalAbilityTarget targetOfTheAttack = parameter as TacticalAbilityTarget;
 
-                    Vector3 directionShieldDeploy = __instance.gameObject.transform.position + 2*(targetOfTheAttack.ActorGridPosition-__instance.gameObject.transform.position).normalized;
-                  //  TFTVLogger.Always($"directShieldDeploy {directionShieldDeploy}, hoplite position {__instance.gameObject.transform.position} and target{targetOfTheAttack.ActorGridPosition}");
-                    TacticalAbilityTarget tacticalAbilitytaret = new TacticalAbilityTarget
-                    { GameObject = __instance.gameObject, PositionToApply = directionShieldDeploy };
+                        Vector3 directionShieldDeploy = __instance.gameObject.transform.position + 2 * (targetOfTheAttack.ActorGridPosition - __instance.gameObject.transform.position).normalized;
+                        //  TFTVLogger.Always($"directShieldDeploy {directionShieldDeploy}, hoplite position {__instance.gameObject.transform.position} and target{targetOfTheAttack.ActorGridPosition}");
+                        TacticalAbilityTarget tacticalAbilitytaret = new TacticalAbilityTarget
+                        { GameObject = __instance.gameObject, PositionToApply = directionShieldDeploy };
 
-                    deployShieldAbility.Activate(tacticalAbilitytaret);
+                        deployShieldAbility.Activate(tacticalAbilitytaret);
+                    }
                 }
 
             }
@@ -134,8 +133,8 @@ namespace TFTV
                 try
                 {
                     MethodInfo tryGetShootTargetMethod = typeof(MassShootTargetActorEffect).GetMethod("TryGetShootTarget", BindingFlags.Instance | BindingFlags.NonPublic);
-
-
+                    WeaponDef beamHead = DefCache.GetDef<WeaponDef>("HumanoidGuardian_Head_WeaponDef");
+                    beamHead.APToUsePerc = 0;
 
                     TacticalAbilityTarget tacticalAbilityTarget = (TacticalAbilityTarget)tryGetShootTargetMethod.Invoke(__instance, new object[] { target });
                     if (tacticalAbilityTarget == null || tacticalAbilityTarget.Actor.IsDead)
@@ -151,40 +150,53 @@ namespace TFTV
                         {
                             ShieldDeployedStatusDef shieldDeployed = DefCache.GetDef<ShieldDeployedStatusDef>("ShieldDeployed_StatusDef");
 
-                            if (item.HasStatus(shieldDeployed))
+
+
+                            Weapon selectedWeapon = null;
+
+                            foreach (Equipment equipment in item.Equipments.Equipments)
                             {
-                                Timing.Current.Start(RaiseShield(item));
-
-                                WeaponDef beamHead = DefCache.GetDef<WeaponDef>("HumanoidGuardian_Head_WeaponDef");
-
-                                Equipment weapon = null;
-
-                                foreach (Equipment equipment in item.Equipments.Equipments)
+                                if (equipment.TacticalItemDef.Equals(beamHead))
                                 {
-                                    if (equipment.TacticalItemDef.Equals(beamHead))
-                                    {
-                                        weapon = equipment;
-                                    }
+                                    selectedWeapon = equipment as Weapon;
                                 }
-
-                                item.Equipments.SetSelectedEquipment(weapon);
                             }
 
-                            Weapon selectedWeapon = item.Equipments.SelectedWeapon;
+
+
+                            // Weapon selectedWeapon = item.Equipments.SelectedWeapon;
                             if (selectedWeapon != null && !(selectedWeapon.DefaultShootAbility.GetWeaponDisabledState(IgnoredAbilityDisabledStatesFilter.CreateDefaultFilter()) != AbilityDisabledState.NotDisabled))
                             {
                                 TacticalActor hitFriend = null;
                                 if (!item.TacticalPerception.CheckFriendlyFire(selectedWeapon, item.Pos, tacticalAbilityTarget, out hitFriend) && selectedWeapon.TryGetShootTarget(tacticalAbilityTarget) != null)
                                 {
+                                    if (item.HasStatus(shieldDeployed))
+                                    {
+                                        Timing.Current.StartAndWaitFor(RaiseShield(item));
+
+                                        item.Equipments.SetSelectedEquipment(selectedWeapon);
+                                    }
+
                                     MethodInfo faceAndShootAtTarget = typeof(MassShootTargetActorEffect).GetMethod("FaceAndShootAtTarget", BindingFlags.Instance | BindingFlags.NonPublic);
 
                                     Timing.Current.Start((IEnumerator<NextUpdate>)faceAndShootAtTarget.Invoke(__instance, new object[] { item, selectedWeapon, tacticalAbilityTarget }));
+
+                                    /*  if (item.IsControlledByPlayer) 
+                                      {
+
+                                          item.CharacterStats.ActionPoints.Set(selectedWeapon.ApToUse, false);
+                                          TFTVLogger.Always($"beam costs {selectedWeapon.ApToUse} AP to use and character now has {item.CharacterStats.ActionPoints} action points");
+
+                                      }*/
+
                                 }
 
 
                             }
                         }
                     }
+
+
 
                     return false;
 
@@ -195,11 +207,24 @@ namespace TFTV
                     throw;
                 }
             }
+
+            public static void Postfix()
+            {
+                try
+                {
+                    WeaponDef beamHead = DefCache.GetDef<WeaponDef>("HumanoidGuardian_Head_WeaponDef");
+                    beamHead.APToUsePerc = 75;
+
+                }
+
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+
         }
-
-
-
-
         //Make bullets go through Umbra and Decoy, method by Dimitar "Codemite" Evtimov from Snapshot Games
 
         public static IDamageReceiver GetDamageReceiver(DamagePredictor predictor, GameObject gameObject, Vector3 pos, Quaternion rot)
@@ -225,22 +250,18 @@ namespace TFTV
 
         public static class ProjectileLogic_OnProjectileHit_Umbra_Patch
         {
-            public static void Postfix(ProjectileLogic __instance, ref bool __result, DamageAccumulation ____damageAccum, CastHit hit, Vector3 dir)
+            public static bool Prefix(ProjectileLogic __instance, ref bool __result, DamageAccumulation ____damageAccum, CastHit hit, Vector3 dir)
             {
                 try
                 {
-
-
 
                     Vector3 pos = hit.Point;
                     Quaternion rot = Quaternion.LookRotation(dir);
                     IDamageReceiver receiver = GetDamageReceiver(__instance.Predictor, hit.Collider.gameObject, pos, rot);
 
 
-
                     ClassTagDef umbraClassTag = DefCache.GetDef<ClassTagDef>("Umbra_ClassTagDef");
                     SpawnedActorTagDef decoy = DefCache.GetDef<SpawnedActorTagDef>("Decoy_SpawnedActorTagDef");
-
 
 
                     if (__instance.Predictor != null)
@@ -250,7 +271,6 @@ namespace TFTV
 
                     TacticalActor hitActor = receiver?.GetActor() as TacticalActor;
 
-
                     if (hitActor != null && __instance.Projectile != null && (hitActor.HasGameTag(umbraClassTag) || hitActor.HasGameTag(decoy)))
                     {
                         __result = false;
@@ -258,30 +278,37 @@ namespace TFTV
                         if (projectileActor.ContainsKey(__instance.Projectile) && projectileActor[__instance.Projectile] != null && projectileActor[__instance.Projectile].Contains(hitActor))
                         {
 
+                            __instance.Projectile.OnProjectileHit(hit);
+                            ____damageAccum?.ResetToInitalAmount();
 
                         }
                         else
                         {
+
+
+                            __instance.Projectile.OnProjectileHit(hit);
+
+
+                            MethodInfo affectTargetMethod = typeof(ProjectileLogic).GetMethod("AffectTarget", BindingFlags.Instance | BindingFlags.NonPublic);
+                            affectTargetMethod.Invoke(__instance, new object[] { hit, dir });
 
                             ____damageAccum?.ResetToInitalAmount();
 
                             if (projectileActor.ContainsKey(__instance.Projectile))
                             {
                                 projectileActor[__instance.Projectile].Add(hitActor);
-
-
                             }
                             else
                             {
                                 projectileActor.Add(__instance.Projectile, new List<TacticalActor> { hitActor });
-
-
                             }
 
 
                         }
-
+                        return false;
                     }
+
+                    return true;
 
                 }
                 catch (Exception e)
@@ -292,7 +319,7 @@ namespace TFTV
             }
         }
 
-
+        //Makes D-Coy disappear instead of dying
 
         [HarmonyPatch(typeof(DieAbility), "Activate")]
         public static class DieAbility_Activate_Decoy_Patch
@@ -326,7 +353,7 @@ namespace TFTV
         }
 
 
-
+        //D-Coy patch to remove if attacked by "smart" enemy
         [HarmonyPatch(typeof(TacticalLevelController), "ActorDamageDealt")]
         public static class TacticalLevelController_ActorDamageDealt_Decoy_Patch
         {
@@ -339,6 +366,9 @@ namespace TFTV
                     ClassTagDef queenTag = DefCache.GetDef<ClassTagDef>("Queen_ClassTagDef");
                     ClassTagDef tritonTag = DefCache.GetDef<ClassTagDef>("Fishman_ClassTagDef");
                     ClassTagDef acheronTag = DefCache.GetDef<ClassTagDef>("Acheron_ClassTagDef");
+                    ClassTagDef hopliteTag = DefCache.GetDef<ClassTagDef>("HumanoidGuardian_ClassTagDef");
+                    ClassTagDef cyclopsTag = DefCache.GetDef<ClassTagDef>("MediumGuardian_ClassTagDef");
+
                     GameTagDef humanTag = DefCache.GetDef<GameTagDef>("Human_TagDef");
 
 
@@ -352,7 +382,8 @@ namespace TFTV
                             if (!attacker.IsControlledByPlayer)
                             {
                                 //Decoy despawned if attacked by Siren or Scylla
-                                if (attacker.GameTags.Contains(sirenTag) || attacker.GameTags.Contains(queenTag))
+                                if (attacker.GameTags.Contains(sirenTag) || attacker.GameTags.Contains(queenTag)
+                                    || attacker.GameTags.Contains(hopliteTag) || attacker.GameTags.Contains(cyclopsTag))
                                 {
                                     actor.ApplyDamage(new DamageResult() { HealthDamage = actor.Health });
                                     //  TacContextHelpManager tacContextHelpManager = (TacContextHelpManager)UnityEngine.Object.FindObjectOfType(typeof(TacContextHelpManager));
@@ -636,6 +667,8 @@ namespace TFTV
         */
 
 
+
+
         [HarmonyPatch(typeof(TacticalActor), "OnAbilityExecuteFinished")]
 
         public static class TacticalActor_OnAbilityExecuteFinished_Scylla_Experiment_patch
@@ -644,10 +677,10 @@ namespace TFTV
             {
                 try
                 {
-
+                   
                     ReDeployHopliteShield(ability, __instance, parameter);
-                //    TacticalAbilityTarget target = parameter as TacticalAbilityTarget;
-                  //  TFTVLogger.Always($"ability {ability.TacticalAbilityDef.name} executed by {__instance.DisplayName} and the TacticalAbilityTarget position to apply is {target.PositionToApply} ");
+                    //    TacticalAbilityTarget target = parameter as TacticalAbilityTarget;
+                    //  TFTVLogger.Always($"ability {ability.TacticalAbilityDef.name} executed by {__instance.DisplayName} and the TacticalAbilityTarget position to apply is {target.PositionToApply} ");
 
                     ShootAbilityDef scyllaSpit = DefCache.GetDef<ShootAbilityDef>("GooSpit_ShootAbilityDef");
                     ShootAbilityDef scyllaScream = DefCache.GetDef<ShootAbilityDef>("SonicBlast_ShootAbilityDef");
@@ -802,7 +835,7 @@ namespace TFTV
 
                     for (int i = 0; i < price.Count; i++)
                     {
-                      //  TFTVLogger.Always("Price component is " + price[i].Type + " amount " + price[i].Value);
+                        //  TFTVLogger.Always("Price component is " + price[i].Type + " amount " + price[i].Value);
                         ResourceUnit resourceUnit = price[i];
                         price[i] = new ResourceUnit(resourceUnit.Type, resourceUnit.Value * multiplier);
                     }
@@ -962,7 +995,7 @@ namespace TFTV
             {
                 if (controller.EventSystem.GetVariable("FireQuenchersAdded") == 0 && controller.CurrentDifficultyLevel.Order > 1)
                 {
-                   // TFTVLogger.Always("Checking fire weapons usage to decide wether to add Fire Quenchers");
+                    // TFTVLogger.Always("Checking fire weapons usage to decide wether to add Fire Quenchers");
 
                     PhoenixStatisticsManager statisticsManager = (PhoenixStatisticsManager)UnityEngine.Object.FindObjectOfType(typeof(PhoenixStatisticsManager));
 
@@ -998,18 +1031,18 @@ namespace TFTV
                         }
                     }
 
-                   // TFTVLogger.Always("Fire weapons used " + scoreFireDamage + " times");
+                    // TFTVLogger.Always("Fire weapons used " + scoreFireDamage + " times");
 
                     if (scoreFireDamage > 1)
                     {
                         UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
                         int roll = UnityEngine.Random.Range(0, 6) + controller.CurrentDifficultyLevel.Order + scoreFireDamage;
 
-                    //    TFTVLogger.Always("The roll is " + roll);
+                        //    TFTVLogger.Always("The roll is " + roll);
 
                         if (roll >= 10)
                         {
-                        //    TFTVLogger.Always("The roll is passed!");
+                            //    TFTVLogger.Always("The roll is passed!");
                             controller.EventSystem.SetVariable("FireQuenchersAdded", 1);
                         }
 

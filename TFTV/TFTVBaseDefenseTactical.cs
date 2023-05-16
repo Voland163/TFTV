@@ -43,14 +43,17 @@ namespace TFTV
 
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
         public static float AttackProgress = 0;
-        public static bool[] ConsoleInBaseDefense = new bool[3];
+        // public static bool[] ConsoleInBaseDefense = new bool[3];
+
+        public static Dictionary<float, float> ConsolePositions = new Dictionary<float, float>();
+
 
         public static int StratToBeAnnounced = 0;
         public static int StratToBeImplemented = 0;
 
-        private static readonly string ConsoleName1 = "BaseDefenseConsole1";
-        private static readonly string ConsoleName2 = "BaseDefenseConsole2";
-        private static readonly string ConsoleName3 = "BaseDefenseConsole3";
+        private static readonly string ConsoleName = "BaseDefenseConsole";
+        //  private static readonly string ConsoleName2 = "BaseDefenseConsole2";
+        //  private static readonly string ConsoleName3 = "BaseDefenseConsole3";
         private static readonly DefRepository Repo = TFTVMain.Repo;
         // private static readonly GameTagDef InfestationFirstObjectiveTag = DefCache.GetDef<GameTagDef>("PhoenixBaseInfestation_GameTagDef");
         private static readonly GameTagDef InfestationSecondObjectiveTag = DefCache.GetDef<GameTagDef>("ScatterRemainingAttackers_GameTagDef");
@@ -273,7 +276,14 @@ namespace TFTV
                         if (!listOfFactionObjectives.Contains(killSpawnery))
                         {
                             listOfFactionObjectives.Add(killSpawnery);
-
+                        }
+                        if (listOfFactionObjectives.Contains(killSentinel))
+                        {
+                            listOfFactionObjectives.Remove(killSentinel);
+                        }
+                        if (listOfFactionObjectives.Contains(survive3turns))
+                        {
+                            listOfFactionObjectives.Remove(survive3turns);
                         }
 
                     }
@@ -284,13 +294,32 @@ namespace TFTV
                             listOfFactionObjectives.Add(killSentinel);
 
                         }
+                        if (listOfFactionObjectives.Contains(killSpawnery))
+                        {
+                            listOfFactionObjectives.Remove(killSpawnery);
+                        }
+                        if (listOfFactionObjectives.Contains(survive5turns))
+                        {
+                            listOfFactionObjectives.Remove(survive5turns);
+                        }
                     }
                     else
                     {
                         if (!listOfFactionObjectives.Contains(survive5turns))
                         {
                             listOfFactionObjectives.Add(survive5turns);
-
+                        }
+                        if (listOfFactionObjectives.Contains(survive3turns))
+                        {
+                            listOfFactionObjectives.Remove(survive3turns);
+                        }
+                        if (listOfFactionObjectives.Contains(killSentinel))
+                        {
+                            listOfFactionObjectives.Remove(killSentinel);
+                        }
+                        if (listOfFactionObjectives.Contains(killSpawnery))
+                        {
+                            listOfFactionObjectives.Remove(killSpawnery);
                         }
                     }
                 }
@@ -324,7 +353,7 @@ namespace TFTV
                         PPFactionDef alienFaction = DefCache.GetDef<PPFactionDef>("Alien_FactionDef");
                         int difficulty = __instance.GameController.CurrentDifficulty.Order;
                         // TFTVLogger.Always($"if passed");
-                        
+
 
                         ContextHelpHintDef hintDef = DefCache.GetDef<ContextHelpHintDef>("TFTVBaseDefense");
 
@@ -669,7 +698,6 @@ namespace TFTV
                     {
                         VentingHintShown = true;
                         InteractionPointPlacement();
-
                     }
                 }
 
@@ -1364,57 +1392,33 @@ namespace TFTV
                         if (status.Def == DefCache.GetDef<StatusDef>("ConsoleActivated_StatusDef"))
                         {
                             StructuralTarget console = __instance.transform.GetComponent<StructuralTarget>();
-                            List<StructuralTarget> generators = UnityEngine.Object.FindObjectsOfType<StructuralTarget>().Where(b => b.name.StartsWith("PP_Cover_Generator")).ToList();
+                            List<StructuralTarget> generators = UnityEngine.Object.FindObjectsOfType<StructuralTarget>().Where(st => st.Deployment != null).Where(st => st.Deployment.name.Equals("PP_Cover_Generator_2x2_A_StructuralTarget")).ToList();
 
                             TFTVLogger.Always($"Console {console.name} activated");
 
-                            if (console.name.Equals(ConsoleName1) && !ConsoleInBaseDefense[0])
+                            for (int i = 0; i < 3; i++)
                             {
-                                //  TFTVLogger.Always($"Console {console.name} activation logged");
-                                ConsoleInBaseDefense[0] = true;
-                                StratToBeImplemented = 0;
-
-                                if (generators.Count > 0)
+                                if (console.name.Equals(ConsoleName + i) && ConsolePositions.ElementAt(i).Value != 1000)
                                 {
-                                    foreach (StructuralTarget structuralTarget in generators)
+                                    //  TFTVLogger.Always($"Console {console.name} activation logged");
+                                    float keyToChange = ConsolePositions.ElementAt(i).Key;
+                                    ConsolePositions[keyToChange] = 1000;
+
+                                    StratToBeImplemented = 0;
+
+                                    if (generators.Count > 0)
                                     {
-                                        GenerateExplosion(structuralTarget.Pos);
+                                        foreach (StructuralTarget structuralTarget in generators)
+                                        {
+
+                                            TFTVLogger.Always($"Applying damage to generators: current health is {structuralTarget.GetHealth()}, reducing it by {60}");
+                                            structuralTarget.Health.Subtract(60);
+                                            TFTVLogger.Always($"Current health is {structuralTarget.GetHealth()}");
+
+                                        }
+
+                                        GenerateRandomExplosions();
                                     }
-
-                                    GenerateRandomExplosions();
-                                }
-
-                            }
-                            else if (console.name.Contains(ConsoleName2) && !ConsoleInBaseDefense[1])
-                            {
-                                //  TFTVLogger.Always($"Console {console.name} activation logged");
-                                ConsoleInBaseDefense[1] = true;
-                                StratToBeImplemented = 0;
-
-                                if (generators.Count > 0)
-                                {
-                                    foreach (StructuralTarget structuralTarget in generators)
-                                    {
-                                        GenerateExplosion(structuralTarget.Pos);
-                                    }
-
-                                    GenerateRandomExplosions();
-                                }
-                            }
-                            else if (console.name.Contains(ConsoleName3) && !ConsoleInBaseDefense[2])
-                            {
-                                //  TFTVLogger.Always($"Console {console.name} activation logged");
-                                ConsoleInBaseDefense[2] = true;
-                                StratToBeImplemented = 0;
-
-                                if (generators.Count > 0)
-                                {
-                                    foreach (StructuralTarget structuralTarget in generators)
-                                    {
-                                        GenerateExplosion(structuralTarget.Pos);
-                                    }
-
-                                    GenerateRandomExplosions();
                                 }
                             }
                         }
@@ -1467,17 +1471,16 @@ namespace TFTV
 
                 StatusDef activeConsoleStatusDef = DefCache.GetDef<StatusDef>("ActiveInteractableConsole_StatusDef");
                 StructuralTarget console = UnityEngine.Object.FindObjectsOfType<StructuralTarget>().FirstOrDefault(b => b.name.Equals(name));
-                TFTVLogger.Always($"Found console {console.name}");
 
-                Status status = console.Status.GetStatusByName(activeConsoleStatusDef.EffectName);
-                TFTVLogger.Always($"found status {status.Def.EffectName}");
-                console.Status.UnapplyStatus(status);
+                if (console != null)
+                {
+                    TFTVLogger.Always($"Found console {console.name}");
 
+                    Status status = console.Status.GetStatusByName(activeConsoleStatusDef.EffectName);
+                    TFTVLogger.Always($"found status {status.Def.EffectName}");
+                    console.Status.UnapplyStatus(status);
 
-
-                //KEY_ACTIVATE_OBJECTIVE_PROMPT
-
-
+                }
             }
             catch (Exception e)
             {
@@ -1494,13 +1497,13 @@ namespace TFTV
             {
                 if (CheckIfBaseDefense(controller))
                 {
-                    for (int x = 0; x < ConsoleInBaseDefense.Count(); x++)
+                    for (int x = 0; x < ConsolePositions.Count(); x++)
                     {
                         // TFTVLogger.Always($"{ConsoleInBaseDefense[x]}");
 
-                        if (ConsoleInBaseDefense[x] == true)
+                        if (ConsolePositions.ElementAt(x).Value == 1000)
                         {
-                            DeactivateConsole("BaseDefenseConsole" + (x + 1));
+                            DeactivateConsole(ConsoleName + x);
                         }
                     }
                 }
@@ -1551,7 +1554,7 @@ namespace TFTV
                 StatusDef activeConsoleStatusDef = DefCache.GetDef<StatusDef>("ActiveInteractableConsole_StatusDef");
                 structuralTarget.Status.ApplyStatus(activeConsoleStatusDef);
 
-                // TFTVLogger.Always($"{name} is at position {position}");
+                TFTVLogger.Always($"{name} is at position {position}");
             }
 
             catch (Exception e)
@@ -1561,6 +1564,74 @@ namespace TFTV
             }
         }
 
+
+        internal static void GetConsoles()
+        {
+            try
+            {
+                TacticalLevelController controller = GameUtl.CurrentLevel().GetComponent<TacticalLevelController>();
+
+                if (CheckIfBaseDefense(controller))
+                {
+                    List<Breakable> consoles = UnityEngine.Object.FindObjectsOfType<Breakable>().Where(b => b.name.StartsWith("NJR_LoCov_Console")).ToList();
+                    Vector3[] position = new Vector3[3];
+
+                    consoles = consoles.OrderByDescending(c => c.transform.position.z).ToList();
+
+
+                    ConsolePositions.Add(consoles[0].transform.position.z + 1, consoles[0].transform.position.x);
+                    TFTVLogger.Always($"there is a console at {consoles[0].transform.position}, recording it in the dictionary as {ConsolePositions.ElementAt(0).Key} for z coordinate, and {ConsolePositions.ElementAt(0).Value} for x coordinate ");
+                    ConsolePositions.Add(consoles[1].transform.position.z, consoles[1].transform.position.x + 1);
+                    TFTVLogger.Always($"there is a console at {consoles[1].transform.position}, recording it in the dictionary as {ConsolePositions.ElementAt(1).Key} for z coordinate, and {ConsolePositions.ElementAt(1).Value} for x coordinate ");
+                    ConsolePositions.Add(consoles[2].transform.position.z, consoles[2].transform.position.x + 1);
+                    TFTVLogger.Always($"there is a console at {consoles[2].transform.position}, recording it in the dictionary as {ConsolePositions.ElementAt(2).Key} for z coordinate, and {ConsolePositions.ElementAt(2).Value} for x coordinate ");
+
+                }
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+
+            }
+        }
+
+        [HarmonyPatch(typeof(Breakable), "Explode")]
+        public static class Breakable_Explode_Experiment_patch
+        {
+            public static void Postfix(Breakable __instance)
+            {
+                try
+                {
+                    if (__instance.name.StartsWith("NJR_LoCov_Console"))
+                    {
+                        for (int x = 0; x < ConsolePositions.Count; x++)
+                        {
+                            TFTVLogger.Always($"difference in x coordinates is " +
+                                $"{Math.Abs((int)(ConsolePositions.ElementAt(x).Value - __instance.transform?.position.x))} " +
+                                $"and in z coordinates {Math.Abs((int)(ConsolePositions.ElementAt(x).Key - __instance.transform?.position.z))}");
+
+                            if (Math.Abs(ConsolePositions.ElementAt(x).Value - __instance.transform.position.x) < 5
+                                && Math.Abs(ConsolePositions.ElementAt(x).Key - __instance.transform.position.z) < 5)
+                            {                               
+                                float keyToChange = ConsolePositions.ElementAt(x).Key;
+                                ConsolePositions[keyToChange] = 1000;
+                                TFTVLogger.Always($"{ConsoleName + x} exploded!");
+                                DeactivateConsole(ConsoleName + x);
+                                TFTVLogger.Always($"{ConsoleName + x} deactivated!");
+                            }
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+        }
+
+
+
         internal static void InteractionPointPlacement()
         {
             try
@@ -1569,52 +1640,36 @@ namespace TFTV
 
                 if (CheckIfBaseDefense(controller))
                 {
-
                     List<Breakable> consoles = UnityEngine.Object.FindObjectsOfType<Breakable>().Where(b => b.name.StartsWith("NJR_LoCov_Console")).ToList();
-                    Vector3[] position = new Vector3[3];
+                    Vector3[] culledConsolePositions = new Vector3[3];
 
                     consoles = consoles.OrderByDescending(c => c.transform.position.z).ToList();
-                    position[0] = consoles[0].transform.position + new Vector3(0, 0, 1);
-                    position[1] = consoles[1].transform.position + new Vector3(1, 0, 0);
-                    position[2] = consoles[2].transform.position + new Vector3(1, 0, 0);
+                    TFTVLogger.Always($"{consoles.Count} consoles were found");
 
-
-                    /*List<Breakable> consolesCulled = new List<Breakable>(consoles);
-
-
-
-                    foreach (Breakable gameObject in consoles)
+                    for (int x = 0; x < 3; x++)
                     {
-                        foreach (Breakable gameObject2 in consoles)
+                        foreach (Breakable breakable in consoles)
                         {
-                            if (gameObject != gameObject2 && gameObject.transform.position.x == gameObject2.transform.position.x && gameObject.transform.position.z > gameObject2.transform.position.z)
+                            TFTVLogger.Always($"difference in x coordinates is {Math.Abs((int)(ConsolePositions.ElementAt(x).Value - breakable?.transform?.position.x))} and in z coordinates {Math.Abs((int)(ConsolePositions.ElementAt(x).Key - breakable?.transform?.position.z))}");
+
+                            if (Math.Abs((int)(ConsolePositions.ElementAt(x).Value - breakable?.transform?.position.x)) < 5 && Math.Abs((int)(ConsolePositions.ElementAt(x).Key - breakable?.transform?.position.z)) < 5)
                             {
-                                position[0] = gameObject.transform.position + new Vector3(1, 0, 0);
+                                TFTVLogger.Always($"Found breakable at position {breakable.transform.position}, close to interaction point at {ConsolePositions.ElementAt(x)}");
+                                culledConsolePositions[x].y = breakable.transform.position.y;
+                                culledConsolePositions[x].x = ConsolePositions.ElementAt(x).Value;
+                                culledConsolePositions[x].z = ConsolePositions.ElementAt(x).Key;
 
-                                TFTVLogger.Always($"{gameObject.name} is at position {gameObject.transform.position} and IPC will be placed at " +
-                                    $"{position[0]}");
-                                consolesCulled.Remove(gameObject);
                             }
-                            else if (gameObject != gameObject2 && gameObject.transform.position.x == gameObject2.transform.position.x && gameObject.transform.position.z < gameObject2.transform.position.z)
-                            {
-                                position[2] = gameObject.transform.position + new Vector3(1, 0, 0);
-
-                                TFTVLogger.Always($"{gameObject.name} is at position {gameObject.transform.position} and IPC will be placed at " +
-                                    $"{position[2]}");
-                                consolesCulled.Remove(gameObject);
-                            }
-
                         }
                     }
-                    position[1] = consolesCulled[0].transform.position + new Vector3(0, 0, 1);
-                  */
 
-
-                    SpawnInteractionPoint(position[0], ConsoleName1);
-
-                    SpawnInteractionPoint(position[1], ConsoleName2);
-
-                    SpawnInteractionPoint(position[2], ConsoleName3);
+                    for (int x = 0; x < 3; x++)
+                    {
+                        if (culledConsolePositions[x] != null)
+                        {
+                            SpawnInteractionPoint(culledConsolePositions[x], ConsoleName + x);
+                        }
+                    }
 
                     CheckIfConsoleActivated(controller);
                 }
@@ -1905,7 +1960,7 @@ namespace TFTV
 
                 if (tacticalActor.Pos.y - pos.y < 2 && (tacticalActor.Pos - pos).magnitude < 15)
                 {
-                    TFTVLogger.Always($"{tacticalActor.DisplayName} is at {tacticalActor.Pos} and postion checked vs is {pos}");
+                  //  TFTVLogger.Always($"{tacticalActor.DisplayName} is at {tacticalActor.Pos} and postion checked vs is {pos}");
                     canAttack = true;
 
                 }
@@ -1998,7 +2053,7 @@ namespace TFTV
                     MethodInfo spawnBlob = AccessTools.Method(typeof(TacticalVoxelMatrix), "SpawnBlob_Internal");
                     //spawnBlob.Invoke(tacticalVoxelMatrix, new object[] { TacticalVoxelType.Empty, zone.Pos + Vector3.up * -1.5f, 3, 1, false, true });
 
-                 //   TFTVLogger.Always($"pXOperative to be ghosted {pXOperative.DisplayName} at pos {position}");
+                    //   TFTVLogger.Always($"pXOperative to be ghosted {pXOperative.DisplayName} at pos {position}");
                     spawnBlob.Invoke(tacticalVoxelMatrix, new object[] { TacticalVoxelType.Mist, position, 3, 1, false, true });
 
                     // SpawnBlob_Internal(TacticalVoxelType type, Vector3 pos, int horizontalRadius, int height, bool circular, bool updateMatrix = true)
@@ -2008,7 +2063,7 @@ namespace TFTV
                     {
                         TacCharacterDef chosenEnemy = enemies.GetRandomElement(new System.Random((int)Stopwatch.GetTimestamp()));
                         zone.SetFaction(controller.GetFactionByCommandName("aln"), TacMissionParticipant.Intruder);
-                      //  TFTVLogger.Always($"Found deployzone and deploying " + chosenEnemy.name + $"; Position is y={zone.Pos.y} x={zone.Pos.x} z={zone.Pos.z}");
+                        //  TFTVLogger.Always($"Found deployzone and deploying " + chosenEnemy.name + $"; Position is y={zone.Pos.y} x={zone.Pos.x} z={zone.Pos.z}");
                         ActorDeployData actorDeployData = chosenEnemy.GenerateActorDeployData();
                         actorDeployData.InitializeInstanceData();
                         zone.SpawnActor(actorDeployData.ComponentSetDef, actorDeployData.InstanceData, actorDeployData.DeploymentTags, null, true, zone);
@@ -2049,7 +2104,7 @@ namespace TFTV
                         TacCharacterDef chosenMyrmidon = myrmidons.GetRandomElement(new System.Random((int)Stopwatch.GetTimestamp()));
 
                         tacticalDeployZone.SetFaction(controller.GetFactionByCommandName("AlN"), TacMissionParticipant.Intruder);
-                      //  TFTVLogger.Always($"Found topside deployzone position and deploying " + chosenMyrmidon.name + $"; Position is y={tacticalDeployZone.Pos.y} x={tacticalDeployZone.Pos.x} z={tacticalDeployZone.Pos.z}");
+                        //  TFTVLogger.Always($"Found topside deployzone position and deploying " + chosenMyrmidon.name + $"; Position is y={tacticalDeployZone.Pos.y} x={tacticalDeployZone.Pos.x} z={tacticalDeployZone.Pos.z}");
                         ActorDeployData actorDeployData = chosenMyrmidon.GenerateActorDeployData();
 
 

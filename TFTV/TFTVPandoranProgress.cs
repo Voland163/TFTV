@@ -1,20 +1,14 @@
 ﻿using Base.Core;
 using Base.Defs;
-using Base.Entities;
-using Base.Entities.Effects;
-using Base.Levels.Nav;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
-using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.Sites;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
 using PhoenixPoint.Tactical.Entities;
-using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.DamageKeywords;
 using PhoenixPoint.Tactical.Entities.Statuses;
-using PhoenixPoint.Tactical.Levels;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -64,7 +58,7 @@ namespace TFTV
               }
           }*/
 
-       
+
 
 
 
@@ -203,7 +197,7 @@ namespace TFTV
                     TFTVLogger.Always("There are " + statisticsManager.CurrentGameStats.GeoscapeStats.SurvivingCitadels + " existing citadels and " + statisticsManager.CurrentGameStats.GeoscapeStats.DestroyedCitadels
                         + " have been destroyed, so Citadel counter is " + citadelCount);*/
 
-                    
+
                     SpawnScylla(__instance, RollScylla(ScyllaCount));
                     ScyllaCount += 1;
                     return false;
@@ -234,7 +228,7 @@ namespace TFTV
                 TFTVLogger.Error(e);
             }
 
-           
+
         }
 
         public static TacCharacterDef RollScylla(int scyllasAlreadySpawned)

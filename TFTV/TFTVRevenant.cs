@@ -32,6 +32,7 @@ namespace TFTV
     {
         private static readonly DefRepository Repo = TFTVMain.Repo;
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
+        private static readonly SharedData Shared = TFTVMain.Shared;
         public static Dictionary<int, int> DeadSoldiersDelirium = new Dictionary<int, int>();
         public static Dictionary<int, int> RevenantsKilled = new Dictionary<int, int>();
 
@@ -44,7 +45,7 @@ namespace TFTV
         public static int revenantID = 0;
         public static bool revenantResistanceHintCreated = false;
 
-        private static bool revenantPresent = false;
+      //  private static bool revenantPresent = false;
 
         private static readonly GameTagDef revenantTier1GameTag = DefCache.GetDef<GameTagDef>("RevenantTier_1_GameTagDef");
         private static readonly GameTagDef revenantTier2GameTag = DefCache.GetDef<GameTagDef>("RevenantTier_2_GameTagDef");
@@ -108,6 +109,29 @@ namespace TFTV
            private static readonly DamageMultiplierStatusDef RevenantTechnician = DefCache.GetDef<DamageMultiplierStatusDef>("RevenantTechnicianStatus");
            private static readonly DamageMultiplierStatusDef RevenantPriestStatus = DefCache.GetDef<DamageMultiplierStatusDef>("RevenantPriestStatus");
            */
+
+        public static void CheckIfRevenantPresent(TacticalLevelController controller)
+        {
+            try 
+            {
+                if (controller.IsFromSaveGame && revenantID != 0) 
+                {
+                    TFTVLogger.Always("Game is loading and Revenant is present; adjusting revenant resistance check");
+                    AdjustRevenantResistanceStatusDescription();
+                
+                }
+
+
+
+            }
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+
+        }
 
         public static void CheckForNotDeadSoldiers(TacticalLevelController level)
         {
@@ -429,7 +453,7 @@ namespace TFTV
                             GameTagDef mutoidTag = DefCache.GetDef<GameTagDef>("Mutoid_TagDef");
 
                             if (__instance.TacticalGameParams.Statistics.LivingSoldiers.ContainsKey(deathReport.Actor.GeoUnitId)
-                            && !__instance.TacticalGameParams.Statistics.DeadSoldiers.ContainsKey(deathReport.Actor.GeoUnitId)  && !deathReport.Actor.GameTags.Contains(mutoidTag))
+                            && !__instance.TacticalGameParams.Statistics.DeadSoldiers.ContainsKey(deathReport.Actor.GeoUnitId) && !deathReport.Actor.GameTags.Contains(mutoidTag))
 
                                 TFTVRevenantResearch.RecordStatsOfDeadSoldier(deathReport.Actor);
                         }
@@ -726,14 +750,14 @@ namespace TFTV
                 TFTVLogger.Always("AllSoldierStats, including dead soldiers, count is " + allSoldierStats.Count());
                 List<UsedWeaponStat> usedWeapons = new List<UsedWeaponStat>();
 
-                int scoreFireDamage = 0;
-                int scoreParalysisDamage = 0;
-                int scoreVirusDamage = 0;
+                float scoreFireDamage = 0;
+                float scoreParalysisDamage = 0;
+                float scoreVirusDamage = 0;
                 //  int scoreShredDamage = 0;
-                int scoreBlastDamage = 0;
-                int scoreAcidDamage = 0;
-                int scoreHighDamage = 0;
-                int scoreBurstDamage = 0;
+                float scoreBlastDamage = 0;
+                float scoreAcidDamage = 0;
+                float scoreHighDamage = 0;
+                float scoreBurstDamage = 0;
                 //    int scoreBashDamage = 0;
 
                 foreach (SoldierStats stat in allSoldierStats)
@@ -744,59 +768,53 @@ namespace TFTV
                     }
                 }
 
-                TFTVLogger.Always("Number of times weapons or other items were used " + usedWeapons.Count());
+                TFTVLogger.Always("Number of weapons or other items used " + usedWeapons.Count());
 
                 if (usedWeapons.Count() > 0)
                 {
                     // TFTVLogger.Always("Checking use of each weapon... ");
                     foreach (UsedWeaponStat stat in usedWeapons)
                     {
+                        WeaponDef weaponDef = stat.UsedItem as WeaponDef;
                         //   TFTVLogger.Always("This item is  " + stat.UsedItem.ViewElementDef.DisplayName1.LocalizeEnglish());
-                        if (Repo.GetAllDefs<WeaponDef>().FirstOrDefault(p => p.name.Contains(stat.UsedItem.ToString())))
+
+                        if (weaponDef != null)
                         {
-                            WeaponDef weaponDef = stat.UsedItem as WeaponDef;
-                            /*  if (weaponDef != null && weaponDef.DamagePayload. == null)
-                              {
-                                  TFTVLogger.Always("This item, as weapon is  " + weaponDef.ViewElementDef.DisplayName1.LocalizeEnglish());
-                              }*/
-                            if (weaponDef != null && weaponDef.DamagePayload.DamageType == fireDamage)
+                            TFTVLogger.Always($"weapon is {weaponDef.name}");
+
+                            foreach (DamageKeywordPair damageKeywordPair in weaponDef.DamagePayload.DamageKeywords)
                             {
-                                scoreFireDamage += stat.UsedCount;
-                            }
-                            /*  if (weaponDef.DamagePayload.DamageType == bashDamage)
-                              {
-                                  TFTVLogger.Always("This weapon is considered melee damage  " + weaponDef.ViewElementDef.DisplayName1.LocalizeEnglish());
-                                  scoreBashDamage += stat.UsedCount;
-                              }*/
-                            if (weaponDef != null && weaponDef.DamagePayload.DamageType == blastDamage)
-                            {
-                                scoreBlastDamage += stat.UsedCount;
-                            }
-                            if (weaponDef != null && weaponDef.DamagePayload.DamageType == acidDamage)
-                            {
-                                scoreAcidDamage += stat.UsedCount;
-                            }
-                            if (weaponDef != null && weaponDef.DamagePayload.DamageType == paralysisDamageWeaponDescription)
-                            {
-                                scoreParalysisDamage += stat.UsedCount;
-                                //  TFTVLogger.Always("This weapon " + weaponDef.name + " has paralysis damage");
-                            }
-                            if (weaponDef != null && weaponDef.DamagePayload.DamageType == virusDamage)
-                            {
-                                scoreVirusDamage += stat.UsedCount;
-                                //  TFTVLogger.Always("This weapon " + weaponDef.name + " has virus damage");
+                                if (damageKeywordPair.DamageKeywordDef == Shared.SharedDamageKeywords.BurningKeyword)
+                                {
+                                    scoreFireDamage += stat.UsedCount;
+                                }
+                                if (damageKeywordPair.DamageKeywordDef == Shared.SharedDamageKeywords.BlastKeyword)
+                                {
+                                    scoreBlastDamage += stat.UsedCount;
+                                }
+                                if (damageKeywordPair.DamageKeywordDef == Shared.SharedDamageKeywords.AcidKeyword)
+                                {
+                                    scoreAcidDamage += stat.UsedCount;
+                                }
+                                if (damageKeywordPair.DamageKeywordDef == Shared.SharedDamageKeywords.ParalysingKeyword)
+                                {
+                                    scoreParalysisDamage += stat.UsedCount;
+                                }
+                                if (damageKeywordPair.DamageKeywordDef == Shared.SharedDamageKeywords.ViralKeyword)
+                                {
+                                    scoreVirusDamage += stat.UsedCount;
+                                }
+                                if (damageKeywordPair.Value >= 70 && damageKeywordPair.DamageKeywordDef!=Shared.SharedDamageKeywords.ShockKeyword)
+                                {
+                                    TFTVLogger.Always($"{weaponDef.name} is counted as high damage weapon");
+                                    scoreHighDamage += stat.UsedCount;
+                                }
+                                if (damageKeywordPair.DamageKeywordDef == Shared.SharedDamageKeywords.DamageKeyword && (weaponDef.DamagePayload.ProjectilesPerShot >= 2 || weaponDef.DamagePayload.AutoFireShotCount >= 3))
+                                {
+                                    scoreBurstDamage += stat.UsedCount;
+                                }
                             }
 
-                            if (weaponDef != null && weaponDef.DamagePayload.GenerateDamageValue() >= 70) //&& weaponDef.DamagePayload.DamageKeywords != null 
-                            {
-                                //   TFTVLogger.Always("This weapon is considered high damage  " + weaponDef.ViewElementDef.DisplayName1.LocalizeEnglish());
-                                scoreHighDamage += stat.UsedCount;
-                            }
-                            if (weaponDef != null && weaponDef.DamagePayload.DamageType == projectileDamage && (weaponDef.DamagePayload.ProjectilesPerShot >= 2 || weaponDef.DamagePayload.AutoFireShotCount >= 3))
-                            {
-                                //  TFTVLogger.Always("This weapon is considered high burst  " + weaponDef.ViewElementDef.DisplayName1.LocalizeEnglish());
-                                scoreBurstDamage += stat.UsedCount;
-                            }
                         }
                     }
                     TFTVLogger.Always("Number of fire weapons used " + scoreFireDamage);
@@ -821,12 +839,12 @@ namespace TFTV
                     //highBurstWeapons 12 ARs + SGs + 6 HWs + 1 Sanctifier + 1 Tormentor + 1 Redeemer + 3 PDWs 24 total
                     //modified by AP cost: 24 + 6 + 3 + 3 + 2 + 9 = 47  
 
-                    scoreAcidDamage *= 47 / 4;
-                    scoreVirusDamage *= 47 / 5;
-                    scoreParalysisDamage *= 47 / 7;
-                    scoreFireDamage *= 47 / 4;
-                    scoreBlastDamage *= 47 / 26;
-                    scoreHighDamage *= 47 / 31;
+                    scoreAcidDamage *= 47f / 4f;
+                    scoreVirusDamage *= 47f / 5f;
+                    scoreParalysisDamage *= 47f / 7f;
+                    scoreFireDamage *= 47f / 4f;
+                    scoreBlastDamage *= 47f / 26f;
+                    scoreHighDamage *= 47f / 31f;
 
                     TFTVLogger.Always("Number of acid damage weapons used after adjustment  " + scoreAcidDamage);
                     TFTVLogger.Always("Number of virus damage weapons used after adjustment  " + scoreVirusDamage);
@@ -840,7 +858,7 @@ namespace TFTV
                     if (scoreAcidDamage > 0 || scoreFireDamage > 0 || scoreBlastDamage > 0 || scoreHighDamage > 0 || scoreBurstDamage > 0
                         || scoreVirusDamage > 0 || scoreParalysisDamage > 0)
                     {
-                        List<int> scoreList = new List<int> { scoreFireDamage, scoreAcidDamage, scoreBlastDamage, scoreBurstDamage, scoreHighDamage, scoreParalysisDamage, scoreVirusDamage };
+                        List<float> scoreList = new List<float> { scoreFireDamage, scoreAcidDamage, scoreBlastDamage, scoreBurstDamage, scoreHighDamage, scoreParalysisDamage, scoreVirusDamage };
                         scoreList = scoreList.OrderByDescending(x => x).ToList();
                         int options = 0;
 
@@ -857,7 +875,7 @@ namespace TFTV
 
                         int roll = UnityEngine.Random.Range(0, options);
 
-                        int winner = scoreList[roll];
+                        float winner = scoreList[roll];
                         TFTVLogger.Always("The roll is " + roll + ", so the highest score is " + winner);
 
                         DamageTypeBaseEffectDef damageTypeDef = new DamageTypeBaseEffectDef();
@@ -896,6 +914,7 @@ namespace TFTV
                         return projectileDamage;
                     }
                 }
+
                 else
                 {
                     return projectileDamage;
@@ -907,57 +926,74 @@ namespace TFTV
             }
             throw new InvalidOperationException();
         }
+
+        public static void AdjustRevenantResistanceStatusDescription()
+        {
+            try 
+            {
+                revenantResistanceStatus.Multiplier = 0.5f;
+
+                string descriptionDamage = "";
+
+                if (revenantResistanceStatus.DamageTypeDefs[0] == acidDamage)
+                {
+                    descriptionDamage = "<b>acid damage</b>";
+                }
+                else if (revenantResistanceStatus.DamageTypeDefs[0] == blastDamage)
+                {
+                    descriptionDamage = "<b>blast damage</b>";
+                }
+                else if (revenantResistanceStatus.DamageTypeDefs[0] == fireDamage)
+                {
+                    descriptionDamage = "<b>fire damage</b>";
+                }
+                else if (revenantResistanceStatus.DamageTypeDefs[0] == shredDamage)
+                {
+                    descriptionDamage = "<b>shred damage</b>";
+                }
+                else if (revenantResistanceStatus.DamageTypeDefs[0] == virusDamage)
+                {
+                    descriptionDamage = "<b>virus damage</b>";
+                }
+                else if (revenantResistanceStatus.DamageTypeDefs[0] == paralysisDamage)
+                {
+                    descriptionDamage = "<b>paralysis damage</b>";
+                }
+                else if (revenantResistanceStatus.DamageTypeDefs[0] == null)
+                {
+                    descriptionDamage = "<b>high damage attacks </b>";
+                    revenantResistanceStatus.Multiplier = 1f;
+                }
+
+                revenantResistanceStatus.Visuals.DisplayName1 = new LocalizedTextBind("REVENANT RESISTANCE - " + descriptionDamage.ToUpper(), true);
+                revenantResistanceStatus.Visuals.Description = new LocalizedTextBind((1 - revenantResistanceStatus.Multiplier) * 100 + "%" + " resistance gained to " + descriptionDamage + " from knowledge of Phoenix ways", true);
+
+                if (revenantResistanceStatus.DamageTypeDefs[0] == null)
+                {
+                    revenantResistanceStatus.Visuals.DisplayName1 = new LocalizedTextBind("REVENANT RESISTANCE - " + descriptionDamage.ToUpper(), true);
+                    revenantResistanceStatus.Visuals.Description = new LocalizedTextBind("<b>Damage from first hit in a turn is reduced by 75%</b>, " +
+                        "an evolutionary response to Phoenix Project overwhelming use of weapons with high damage per projectile/strike", true);
+                }
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+        }
+
         public static void ModifyRevenantResistanceAbility(TacticalLevelController controller)
         {
-
-            revenantResistanceStatus.DamageTypeDefs[0] = GetPreferredDamageType(controller);
-            revenantResistanceStatus.Multiplier = 0.5f;
-
-            string descriptionDamage = "";
-
-            if (revenantResistanceStatus.DamageTypeDefs[0] == acidDamage)
+            try
             {
-                descriptionDamage = "<b>acid damage</b>";
+                revenantResistanceStatus.DamageTypeDefs[0] = GetPreferredDamageType(controller);
+                AdjustRevenantResistanceStatusDescription();
+                
             }
-            else if (revenantResistanceStatus.DamageTypeDefs[0] == blastDamage)
+            catch (Exception e)
             {
-                descriptionDamage = "<b>blast damage</b>";
-            }
-            else if (revenantResistanceStatus.DamageTypeDefs[0] == fireDamage)
-            {
-                descriptionDamage = "<b>fire damage</b>";
-            }
-            else if (revenantResistanceStatus.DamageTypeDefs[0] == shredDamage)
-            {
-                descriptionDamage = "<b>shred damage</b>";
-            }
-            else if (revenantResistanceStatus.DamageTypeDefs[0] == virusDamage)
-            {
-                descriptionDamage = "<b>virus damage</b>";
-            }
-            else if (revenantResistanceStatus.DamageTypeDefs[0] == paralysisDamage)
-            {
-                descriptionDamage = "<b>paralysis damage</b>";
-            }
-            else if (revenantResistanceStatus.DamageTypeDefs[0] == null)
-            {
-                descriptionDamage = "<b>high damage attacks </b>";
-                revenantResistanceStatus.Multiplier = 1f;
-            }
-            /*   else if (revenantResistanceAbilityDef.DamageTypeDef == projectileDamage)
-               {
-                   descriptionDamage = "";
-                   revenantResistanceAbilityDef.Multiplier = 1f;
-               }*/
-
-            revenantResistanceStatus.Visuals.DisplayName1 = new LocalizedTextBind("REVENANT RESISTANCE - " + descriptionDamage.ToUpper(), true);
-            revenantResistanceStatus.Visuals.Description = new LocalizedTextBind((1 - revenantResistanceStatus.Multiplier) * 100 + "%" + " resistance gained to " + descriptionDamage + " from knowledge of Phoenix ways", true);
-
-            if (revenantResistanceStatus.DamageTypeDefs[0] == null)
-            {
-                revenantResistanceStatus.Visuals.DisplayName1 = new LocalizedTextBind("REVENANT RESISTANCE - " + descriptionDamage.ToUpper(), true);
-                revenantResistanceStatus.Visuals.Description = new LocalizedTextBind("<b>Damage from first hit in a turn is reduced by 75%</b>, " +
-                    "an evolutionary response to Phoenix Project overwhelming use of weapons with high damage per projectile/strike", true);
+                TFTVLogger.Error(e);
             }
         }
         public static void AddRevenantResistanceStatus(TacticalActorBase tacticalActorBase)
@@ -1350,7 +1386,7 @@ namespace TFTV
             }
         }
 
-        public static void CheckForRevenantResistance(TacticalLevelController controller)
+      /*  public static void CheckForRevenantResistance(TacticalLevelController controller)
         {
             try
             {
@@ -1384,7 +1420,7 @@ namespace TFTV
             {
                 TFTVLogger.Error(e);
             }
-        }
+        }*/
 
         // Adopted from MadSkunky BetterClasses. Harmony Patch to calcualte shred resistance, vanilla has no implementation for this
         [HarmonyPatch(typeof(ShreddingDamageKeywordData), "ProcessKeywordDataInternal")]

@@ -179,7 +179,7 @@ namespace PRMBetterClasses.SkillModifications
                         if (clampedOverflowDamage > roll)
                         {
                             PRMLogger.Always($"Die Hard for {__instance}: Clamped overflow damage ({clampedOverflowDamage}) > RNG roll ({roll}), actor has to die :-(");
-                            //return; // Don't trigger Die Hard, RNG was against the actor
+                            return; // Don't trigger Die Hard, RNG was against the actor
                         }
                         PRMLogger.Always($"Die Hard for {__instance}: Clamped overflow damage ({clampedOverflowDamage}) <= RNG roll ({roll}), trigger DH, actor get another chance :-)");
                         _ = __instance.Status.ApplyStatus(DieHardTriggeredStatus);

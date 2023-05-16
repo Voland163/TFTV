@@ -1,6 +1,7 @@
 ﻿using Base.Core;
 using Base.Defs;
 using Base.Entities.Effects;
+using Base.Entities.Statuses;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities.GameTags;
@@ -83,6 +84,82 @@ namespace TFTV
         */
 
 
+        [HarmonyPatch(typeof(ApplyDamageEffectAbility), "GetCharactersToIgnore")]
+        public static class ApplyDamageEffectAbility_Activate_Scylla_Caterpillar_patch
+        {
+            public static void Postfix(ApplyDamageEffectAbility __instance, ref IEnumerable<TacticalActorBase> __result)
+            {
+                try
+                {
+                    TacticalLevelController controller = GameUtl.CurrentLevel().GetComponent<TacticalLevelController>();
+                    GameTagDef damagedByCaterpillar = DefCache.GetDef<GameTagDef>("DamageByCaterpillarTracks_TagDef");
+                    if (__instance.TacticalActor.HasGameTag(damagedByCaterpillar) && __instance.TacticalActor.TacticalFaction != controller.CurrentFaction)
+                    {
+                        CaterpillarMoveAbilityDef scyllaSquisher = DefCache.GetDef<CaterpillarMoveAbilityDef>("ScyllaSquisher");
+
+                        List<TacticalActorBase> additionalCharactersToIgnore = new List<TacticalActorBase>(__result);
+
+                        additionalCharactersToIgnore.AddRange(
+
+                            from t in __instance.TacticalActorBase.Map.GetActors<TacticalActor>()
+                            where t.GetAbilityWithDef<CaterpillarMoveAbility>(scyllaSquisher) != null
+                            select t
+
+                        );
+
+                        __result = additionalCharactersToIgnore;
+
+                    }
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
+
+
+        [HarmonyPatch(typeof(TacticalActor), "OnFinishedMovingActor")]
+
+        public static class TacticalActor_OnFinishedMovingActor_Scylla_Experiment_patch
+        {
+            public static void Postfix(TacticalActor __instance)
+            {
+                try
+                {
+                    //   CaterpillarMoveAbilityDef caterpillarAbility = DefCache.GetDef<CaterpillarMoveAbilityDef>("CaterpillarMoveAbilityDef");
+
+                    //  if (ability.TacticalAbilityDef == caterpillarAbility)
+                    //  {
+
+                    if (__instance.ActorDef.name.Equals("Queen_ActorDef")
+                      || __instance.ActorDef.name.Equals("MediumGuardian_ActorDef")
+                      || __instance.ActorDef.name.Equals("Chiron_ActorDef"))
+                    {
+                        DamageMultiplierStatusDef scyllaImmunity = DefCache.GetDef<DamageMultiplierStatusDef>("E_BlastImmunityStatus [Queen_GunsFire_ShootAbilityDef]");
+
+                        //   TFTVLogger.Always($"{__instance.DisplayName} moved");
+
+                        if (__instance.HasStatus(scyllaImmunity))
+                        {
+                            //  TFTVLogger.Always($"{__instance.DisplayName} has {scyllaImmunity.name}");
+                            Status status = __instance.Status.GetStatusByName(scyllaImmunity.EffectName);
+                            __instance.Status.Statuses.Remove(status);
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+
+                }
+            }
+        }
+
+
+
         [HarmonyPatch(typeof(CaterpillarMoveAbility), "Activate")]
         internal static class TFTV_CaterpillarMoveAbility_Activate_ScyllaCaterpillar_patch
         {
@@ -128,11 +205,11 @@ namespace TFTV
                         string[] dilloNavAreas = new string[] { "WalkableArmadilloWorms" };
                         string[] extraNavAreas = new string[] { "WalkableBigMonster" };
 
-                      
+
                         __instance.TacticalActor.TacticalNav.RemoveNavAreas(dilloNavAreas);
                         __instance.TacticalActor.TacticalNav.AddNavAreas(extraNavAreas);
-                      //  TFTVLogger.Always($"{__instance.TacticalActor.DisplayName} has {component.NavAreas.GetAreaCount()} navigation areas, " +
-                      //       $"navcomp agent is {component.AgentTypeName}");
+                        //  TFTVLogger.Always($"{__instance.TacticalActor.DisplayName} has {component.NavAreas.GetAreaCount()} navigation areas, " +
+                        //       $"navcomp agent is {component.AgentTypeName}");
 
                     }
                     else if (__instance.TacticalActor.ActorDef.name.Equals("MediumGuardian_ActorDef"))
@@ -232,7 +309,7 @@ namespace TFTV
                     {
 
                     }
-                    else if (actor.GameTags.Contains(queenTag) || actor.GameTags.Contains(acheronTag) || actor.GameTags.Contains(chironTag))
+                    else if (actor.GameTags.Contains(queenTag) || actor.GameTags.Contains(acheronTag) || actor.GameTags.Contains(chironTag) || actor.GameTags.Contains(cyclopsTag))
                     {
                         if (target.Actor is TacticalActor tacticalActor && tacticalActor.GameTags.Contains(caterpillarDamage))
                         {
@@ -303,7 +380,7 @@ namespace TFTV
                         if (tacticalActorBase is TacticalActor)
                         {
                             enemies.Add(tacticalActorBase as TacticalActor);
-                          //  TFTVLogger.Always("faction " + factionVision.Faction.Faction.FactionDef.name + " has revealed enemy " + tacticalActorBase.DisplayName);
+                            //  TFTVLogger.Always("faction " + factionVision.Faction.Faction.FactionDef.name + " has revealed enemy " + tacticalActorBase.DisplayName);
                         }
                     }
                 }

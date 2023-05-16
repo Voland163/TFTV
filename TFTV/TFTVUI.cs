@@ -3,9 +3,7 @@ using Base.Core;
 using Base.Entities.Statuses;
 using Base.Levels;
 using Base.UI.VideoPlayback;
-using Epic.OnlineServices;
 using HarmonyLib;
-using Mtree;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.Characters;
@@ -17,7 +15,6 @@ using PhoenixPoint.Common.UI;
 using PhoenixPoint.Common.View.ViewControllers;
 using PhoenixPoint.Common.View.ViewModules;
 using PhoenixPoint.Geoscape.Entities;
-using PhoenixPoint.Geoscape.Entities.PhoenixBases;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
 using PhoenixPoint.Geoscape.View;
@@ -34,8 +31,6 @@ using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.DamageKeywords;
 using PhoenixPoint.Tactical.Entities.Effects.DamageTypes;
 using PhoenixPoint.Tactical.Entities.Equipments;
-using PhoenixPoint.Tactical.UI;
-using PhoenixPoint.Tactical.View;
 using PhoenixPoint.Tactical.View.ViewControllers;
 using PhoenixPoint.Tactical.View.ViewStates;
 using System;
@@ -282,7 +277,7 @@ namespace TFTV
                             // TFTVLogger.Always("damage value is " + payload.GenerateDamageValue(tacticalActor.CharacterStats.BonusAttackDamage));
 
                             __result = payload.GenerateDamageValue(tacticalActor.CharacterStats.BonusAttackDamage) * (1f + (numberOfMutations * 2) / 100 * (float)tacticalActor.CharacterStats.Corruption);
-                           // TFTVLogger.Always($"GetDamageKeywordValue invoked for {tacticalActor.DisplayName} and result is {__result}");
+                            // TFTVLogger.Always($"GetDamageKeywordValue invoked for {tacticalActor.DisplayName} and result is {__result}");
                             //  TFTVLogger.Always("result is " + __result +", damage increase is " + (1f + (((numberOfMutations * 2) / 100) * (float)tacticalActor.CharacterStats.Corruption)));
                         }
 
@@ -379,7 +374,7 @@ namespace TFTV
                         ViewElementDef priestVE = DefCache.GetDef<ViewElementDef>("E_ViewElement [Priest_ClassProficiency_AbilityDef]");
                         ViewElementDef technicianVE = DefCache.GetDef<ViewElementDef>("E_ViewElement [Technician_ClassProficiency_AbilityDef]");
                         ViewElementDef infiltratorVE = DefCache.GetDef<ViewElementDef>("E_ViewElement [Infiltrator_ClassProficiency_AbilityDef]");
-                    
+
                         Dictionary<ClassTagDef, ViewElementDef> dictionary = new Dictionary<ClassTagDef, ViewElementDef>(){
                             { assault, assaultVE },
                             { heavy, heavyVE },
@@ -394,7 +389,7 @@ namespace TFTV
                         {
                             if (recruit.ClassTags.Contains(classTag))
                             {
-                               recruit.Identity.Name = "Mutoid " + dictionary[classTag].DisplayName2.Localize();
+                                recruit.Identity.Name = "Mutoid " + dictionary[classTag].DisplayName2.Localize();
                             }
                         }
                     }
@@ -422,12 +417,12 @@ namespace TFTV
 
                 {
                     GameTagDef mutoidTag = DefCache.GetDef<GameTagDef>("Mutoid_ClassTagDef");
-                   
-                    
-                    if(__instance is TacticalActor tacticalActor && tacticalActor.GameTags.Contains(mutoidTag)) 
-                    { 
 
-                      //  TFTVLogger.Always($"{tacticalActor.DisplayName}");
+
+                    if (__instance is TacticalActor tacticalActor && tacticalActor.GameTags.Contains(mutoidTag))
+                    {
+
+                        //  TFTVLogger.Always($"{tacticalActor.DisplayName}");
                         ClassTagDef assault = DefCache.GetDef<ClassTagDef>("Assault_ClassTagDef");
                         ClassTagDef heavy = DefCache.GetDef<ClassTagDef>("Heavy_ClassTagDef");
                         ClassTagDef sniper = DefCache.GetDef<ClassTagDef>("Sniper_ClassTagDef");
@@ -460,9 +455,9 @@ namespace TFTV
                         {
                             if (tacticalActor.GameTags.Contains(classTag))
                             {
-                              
-                                ____classViewElementDefs = new List <ViewElementDef> { mutoidVE, dictionary[classTag] };
-                              //  TFTVLogger.Always("Here we are");
+
+                                ____classViewElementDefs = new List<ViewElementDef> { mutoidVE, dictionary[classTag] };
+                                //  TFTVLogger.Always("Here we are");
 
                             }
                         }
@@ -476,7 +471,7 @@ namespace TFTV
             }
         }
 
-        
+
 
 
 
@@ -1854,10 +1849,10 @@ namespace TFTV
             private static readonly ItemSlotDef headSlot = DefCache.GetDef<ItemSlotDef>("Human_Head_SlotDef");
 
             public static bool Prepare()
-              {
-                  TFTVConfig config = TFTVMain.Main.Config;
-                  return config.ShowFaces;
-              }
+            {
+                TFTVConfig config = TFTVMain.Main.Config;
+                return config.ShowFaces;
+            }
 
             private static bool Prefix(UIModuleActorCycle __instance, List<UnitDisplayData> ____units,
                 CharacterClassWorldDisplay ____classWorldDisplay,

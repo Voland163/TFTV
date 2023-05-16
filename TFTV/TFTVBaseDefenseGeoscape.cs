@@ -1040,7 +1040,7 @@ namespace TFTV
 
                     TFTVLogger.Always($"GeoPhoenixBaseDefenseMission Cancel method invoked. Progress is {progress}");
 
-                    if (PhoenixBasesUnderAttack.ContainsKey(phoenixBase.SiteId) && progress != 1)
+                    if (PhoenixBasesUnderAttack.ContainsKey(phoenixBase.SiteId) && progress < 1)
                     {
                         TFTVLogger.Always("GeoPhoenixBaseDefenseMission Cancel method canceled.");
 
@@ -1176,12 +1176,16 @@ namespace TFTV
 
                         if (PhoenixBasesUnderAttack.ContainsKey(geoSite.SiteId) && geoSite.CharactersCount == 0)
                         {
+                            float timer = (geoMission.Site.ExpiringTimerAt.DateTime - geoMission.Level.Timing.Now.DateTime).Hours;
+                            float timeToCompleteAttack = 18;
+                            float progress = 1f - timer / timeToCompleteAttack;
+
                             List<IGeoCharacterContainer> characterContainers = geoMission.GetDeploymentSources(geoSite.Owner);
 
                             IEnumerable<GeoCharacter> deployment = characterContainers.SelectMany((IGeoCharacterContainer s) => s.GetAllCharacters());
 
 
-                            if (deployment.Count() == 0)
+                            if (deployment.Count() == 0 && progress<1)
                             {
                                 __instance.Close();
 

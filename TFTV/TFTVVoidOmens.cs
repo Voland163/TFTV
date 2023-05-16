@@ -1300,6 +1300,7 @@ namespace TFTV
             }
         }
 
+        //Adjusted for all haven defenses because parapsychosis bug. Check if necessary for other WipeEnemyFactionObjective missions
         [HarmonyPatch(typeof(WipeEnemyFactionObjective), "EvaluateObjective")]
         public static class TFTV_HavenDefendersHostileFactionObjective_EvaluateObjective_Patch
         {
@@ -1308,8 +1309,10 @@ namespace TFTV
             {
                 try
                 {
-                    if (TFTVVoidOmens.VoidOmensCheck[5])
-                    {
+                  //  TFTVLogger.Always($"evaluating {__instance.GetDescription()} and the result is {__result}");
+
+                 //   if (VoidOmensCheck[5])
+                 //   {
                         TacticalLevelController controller = __instance.Level;
                         string MissionType = controller.TacticalGameParams.MissionData.MissionType.SaveDefaultName;
 
@@ -1323,7 +1326,7 @@ namespace TFTV
                                 if (!__instance.Faction.HasTacActorsThatCanWin() && !__instance.Faction.HasUndeployedTacActors())
                                 {
                                     __result = FactionObjectiveState.Failed;
-                                    TFTVLogger.Always("WipeEnemyFactionObjetive failed");
+                                  //  TFTVLogger.Always("WipeEnemyFactionObjetive failed");
                                     return false; // skip original method
                                 }
 
@@ -1334,7 +1337,7 @@ namespace TFTV
                                         // TFTVLogger.Always("The faction is " + faction.TacticalFactionDef.name);
                                         if (!enemyFaction.HasTacActorsThatCanWin())
                                         {
-                                            TFTVLogger.Always("HavenDefense with hostile defenders, no intruders alive, so mission should be a win");
+                                          //  TFTVLogger.Always("HavenDefense, no intruders alive, so mission should be a win");
                                             __result = FactionObjectiveState.Achieved;
                                             return false;
                                         }
@@ -1347,8 +1350,8 @@ namespace TFTV
                             return true;
                         }
                         return true;
-                    }
-                    return true;
+                  //  }
+                  //  return true;
                 }
 
                 catch (Exception e)
@@ -1358,8 +1361,6 @@ namespace TFTV
                 }
             }
         }
-
-
         //Patch to set VO objective test in uppercase to match other objectives
         [HarmonyPatch(typeof(ObjectivesManager), "Add")]
         public static class FactionObjective_ModifyObjectiveColor_Patch
