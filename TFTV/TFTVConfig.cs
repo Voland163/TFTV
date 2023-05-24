@@ -1,5 +1,6 @@
 using PhoenixPoint.Modding;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Net;
 
@@ -76,7 +77,99 @@ namespace TFTV
             "You will also get the corresponding faction technology once the faction researches it.")]
         public StartingSquadFaction startingSquad = StartingSquadFaction.PHOENIX;
 
+ 
+        public enum StartingBaseLocation
+        {
+            [Description("Vanilla selection")]
+            Vanilla,
+
+            [Description("Random")]
+            Random,
+
+            [Description("North Africa (Algeria)")]
+            Algeria,
+
+            [Description("Eastern Europe (Ukraine)")]
+            Ukraine,
+
+            [Description("Central America (Mexico)")]
+            Mexico,
+
+            [Description("South America (Bolivia)")]
+            Bolivia,
+
+            [Description("East Africa (Ethiopia)")]
+            Ethiopia,
+
+            [Description("Asia (China)")]
+            China,
+
+            [Description("Northern Asia (Siberia)")]
+            Siberia,
+
+            [Description("Middle East (Afghanistan)")]
+            Afghanistan,
+
+            [Description("Antarctica")]
+            Antarctica,
+
+            [Description("South America (Tierra de Fuego)")]
+            Argentina,
+
+            [Description("Australia")]
+            Australia,
+
+            [Description("Southeast Asia (Cambodia)")]
+            Cambodia,
+
+            [Description("South Africa (Zimbabwe)")]
+            Zimbabwe,
+
+            [Description("West Africa (Ghana)")]
+            Ghana,
+
+            [Description("Central America (Honduras)")]
+            Honduras,
+
+            [Description("North America (Quebec)")]
+            Quebec,
+
+            [Description("North America (Alaska)")]
+            Alaska,
+
+            [Description("Greenland")]
+            Greenland
+        }
+
+
+         [ConfigField(text: "Starting base",
+          description: "You can choose a specific location to start from. Please note that some locations are harder to start from than others!")]
+         public StartingBaseLocation startingBaseLocation = StartingBaseLocation.Vanilla;
         
+
+        /*
+            (-0.4f, 3.7f, 5.2f),  North Africa (Algeria) 165 
+            (-1.9f, 4.8f, 3.8f), Eastern Europe (Ukraine) 166
+            (5.3f, 3.1f, -1.7f), Central America (Mexico) 167
+            (5.5f, -2.0f, 2.7f), South America (Bolivia) 168
+            (-4.2f, 1.1f, 4.7f), East Africa (Ethiopia) 169
+            (-5.1f, 3.8f, -0.8f), Asia (China)  170
+            (-1.9f, 6.0f, -1.2f), Northern Asia (Siberia) 171
+            (-4.8f, 3.7f, 2.2f) Middle East (Afghanistan) 172
+            (0.0f, -6.4f, 0.1f) Antarctica 584
+            (3.5f, -5.2f, 1.3f)  South America (Tierra de Fuego) 193
+            (-4.5f, -1.5f, -4.3f) Australia 191
+            (-6.0f, 1.3f, -1.9f) Southeast Asia (Cambodia) 190
+            (-2.7f, -2.4f, 5.3f) South Africa (Zimbabwe) 189
+            (0.5f, 0.8f, 6.3f) West Africa (Ghana) 188
+            (6.2f, 1.6f, 0.4f) Central America (Honduras) 186
+            (4.0f, 4.9f, 1.0f) North America (Quebec) 185 
+            (1.3f, 5.7f, -2.6f) North America (Alaska) 192
+            (0.7f, 6.2f, 1.5f) Greenland 187 
+            */
+
+
+
         public enum StartingSquadCharacters
         {
             UNBUFFED, BUFFED, RANDOM

@@ -806,9 +806,9 @@ namespace TFTV
                 EarlyExitConsideration1.Ability = MindCrush;
                 AIProximityToEnemiesConsiderationDef Consideration1 = (AIProximityToEnemiesConsiderationDef)MindCrushAI.Evaluations[0].Considerations[0].Consideration;
                 Consideration1.MaxRange = 10;
-                AINumberOfEnemiesInRangeConsiderationDef Consideration2 = (AINumberOfEnemiesInRangeConsiderationDef)MindCrushAI.Evaluations[0].Considerations[1].Consideration;
-                Consideration2.MaxEnemies = 5;
-                Consideration2.MaxRange = 10;
+                AIAbilityNumberOfTargetsConsiderationDef Consideration2 = (AIAbilityNumberOfTargetsConsiderationDef)MindCrushAI.Evaluations[0].Considerations[1].Consideration;
+              Consideration2.Ability = MindCrush;
+    
                 AIWillpointsLeftAfterAbilityConsiderationDef Consideration3 = (AIWillpointsLeftAfterAbilityConsiderationDef)MindCrushAI.Evaluations[0].Considerations[2].Consideration;
                 Consideration3.Ability = MindCrush;
             }

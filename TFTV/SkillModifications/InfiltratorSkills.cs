@@ -182,14 +182,10 @@ namespace PRMBetterClasses.SkillModifications
             fumbleChanceStatus.Visuals = jammingFiled.ViewElementDef;
             fumbleChanceStatus.FumbleChancePerc = 50;
             fumbleChanceStatus.RestrictedDeliveryType = DamageDeliveryType.DirectLine;
-            //fumbleChanceStatus.AdditionalAbilitiesToFumble = new TacticalAbilityDef[]
-            //{
-            //    DefCache.GetDef<TacticalAbilityDef>("InducePanic_AbilityDef"),
-            //    DefCache.GetDef<TacticalAbilityDef>("Priest_MindControl_AbilityDef"),
-            //    DefCache.GetDef<TacticalAbilityDef>("MindCrush_AbilityDef"),
-            //    DefCache.GetDef<TacticalAbilityDef>("Priest_PsychicScream_AbilityDef"),
-            //    DefCache.GetDef<TacticalAbilityDef>("Siren_PsychicScream_AbilityDef"),
-            //};
+            fumbleChanceStatus.WeaponTagCullFilter = new GameTagDef[]
+            {
+                DefCache.GetDef<GameTagDef>("SpitterWeapon_TagDef")
+            };
             jammingFiled.StatusDef = fumbleChanceStatus;
         }
 
@@ -226,7 +222,6 @@ namespace PRMBetterClasses.SkillModifications
             parasychosis.TargetingDataDef.Origin.Range = 12;
             parasychosis.TargetingDataDef.Origin.CullTargetTags = new GameTagsList()
             {
-                DefCache.GetDef<GameTagDef>("Siren_ClassTagDef"),
                 DefCache.GetDef<GameTagDef>("Acheron_ClassTagDef"),
                 DefCache.GetDef<GameTagDef>("Chiron_ClassTagDef"),
                 DefCache.GetDef<GameTagDef>("CorruptionNode_ClassTagDef"),
@@ -236,7 +231,9 @@ namespace PRMBetterClasses.SkillModifications
                 DefCache.GetDef<GameTagDef>("SentinelMist_ClassTagDef"),
                 DefCache.GetDef<GameTagDef>("SentinelTerror_ClassTagDef"),
                 DefCache.GetDef<GameTagDef>("Sentinel_ClassTagDef"), // not used on any of the above, keep?
-                DefCache.GetDef<GameTagDef>("SpawningPoolCrabman_ClassTagDef"),
+                DefCache.GetDef<GameTagDef>("Siren_ClassTagDef"),
+                DefCache.GetDef<GameTagDef>("SpawningPoolCrabman_ClassTagDef"), // Lair Spawnrey
+                DefCache.GetDef<GameTagDef>("Umbra_ClassTagDef"),
                 DefCache.GetDef<GameTagDef>("Yuggothian_ClassTagDef"),
             };
             parasychosis.TargetingDataDef.Target.TargetEnemies = true;

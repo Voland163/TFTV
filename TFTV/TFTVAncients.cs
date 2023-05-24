@@ -1,6 +1,7 @@
 ﻿using Base.Core;
 using Base.Defs;
 using Base.Entities.Abilities;
+using Base.Entities.Effects;
 using Base.Entities.Statuses;
 using Base.UI;
 using HarmonyLib;
@@ -10,7 +11,6 @@ using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.Entities.Items;
-using PhoenixPoint.Common.Levels.MapGeneration;
 using PhoenixPoint.Common.UI;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.Abilities;
@@ -25,6 +25,7 @@ using PhoenixPoint.Tactical.ContextHelp;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.DamageKeywords;
+using PhoenixPoint.Tactical.Entities.Effects;
 using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.Entities.Statuses;
 using PhoenixPoint.Tactical.Entities.Weapons;
@@ -36,7 +37,6 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 using static PhoenixPoint.Common.Entities.Items.ItemManufacturing;
-using static UnityStandardAssets.Utility.TimedObjectActivator;
 
 namespace TFTV
 {
@@ -60,6 +60,8 @@ namespace TFTV
 
         private static readonly PassiveModifierAbilityDef ancientsPowerUpAbility = DefCache.GetDef<PassiveModifierAbilityDef>("AncientMaxPower_AbilityDef");
         private static readonly DamageMultiplierStatusDef ancientsPowerUpStatus = DefCache.GetDef<DamageMultiplierStatusDef>("AncientsPoweredUp");
+        private static readonly PassiveModifierAbilityDef SelfRepairAbility = DefCache.GetDef<PassiveModifierAbilityDef>("RoboticSelfRepair_AbilityDef");
+
 
         public static readonly string CyclopsBuiltVariable = "CyclopsBuiltVariable";
         public static bool LOTAReworkActive = false;
@@ -72,11 +74,90 @@ namespace TFTV
         private static readonly AlertedStatusDef AlertedStatus = DefCache.GetDef<AlertedStatusDef>("Alerted_StatusDef");
         private static readonly DamageMultiplierStatusDef CyclopsDefenseStatus = DefCache.GetDef<DamageMultiplierStatusDef>("CyclopsDefense_StatusDef");
         private static readonly StanceStatusDef AncientGuardianStealthStatus = DefCache.GetDef<StanceStatusDef>("AncientGuardianStealth_StatusDef");
+        private static readonly DamageMultiplierStatusDef RoboticSelfRepairStatus = DefCache.GetDef<DamageMultiplierStatusDef>("RoboticSelfRepair_AddAbilityStatusDef");
         // private static readonly GameTagDef SelfRepairTag = DefCache.GetDef<GameTagDef>("SelfRepair");
         // private static readonly GameTagDef MaxPowerTag = DefCache.GetDef<GameTagDef>("MaxPower");
 
 
         public static Dictionary<int, int> CyclopsMolecularDamageBuff = new Dictionary<int, int> { }; //turn number + 0 = none, 1 = mutation, 2 = bionic
+
+
+        /*  [HarmonyPatch(typeof(TacticalAbility), "IsEnabled")]
+          public static class TacticalAbility_IsEnabled_CyclopsScream_Patch
+          {
+              public static void Postfix(TacticalAbility __instance, ref bool __result)
+              {
+                  try
+                  {
+                      TFTVLogger.Always($"ability {__instance.TacticalAbilityDef.name} is enabled {__result}. Changing to disabled.");
+                      __result = false;
+
+
+                  }
+                  catch (Exception e)
+                  {
+                      TFTVLogger.Error(e);
+                  }
+              }
+          }*/
+
+
+
+        [HarmonyPatch(typeof(PsychicScreamAbility), "Activate")]
+        public static class PsychicScreamAbility_Activate_CyclopsScream_Patch
+        {
+            public static void Postfix(PsychicScreamAbility __instance)
+            {
+                try
+                {
+                    //    TFTVLogger.Always($"Got here, {__instance.TacticalAbilityDef.name}");
+
+
+
+                    if (__instance.TacticalAbilityDef.name.Equals("CyclopsScream"))
+                    {
+                        // BleedStatusDef screamStatusLevel1Def = DefCache.GetDef<BleedStatusDef>("CyclopsScreamLevel1_BleedStatusDef");
+                        SilencedStatusDef silencedStatusDef = DefCache.GetDef<SilencedStatusDef>("ActorSilenced_StatusDef");
+                        DamageEffectDef mindCrushEffect = DefCache.GetDef<DamageEffectDef>("E_Effect [Cyclops_MindCrush]");
+                        //  SlotStateStatusDef disabledBodyPartStatus = DefCache.GetDef< SlotStateStatusDef>("DisabledElectronicSlot_StatusDef");
+                        //  MindControlStatusDef mindControlStatusDef = DefCache.GetDef<MindControlStatusDef>("MindControl_StatusDef");
+                        //  DamageEffectDef bleedEffect = DefCache.GetDef< DamageEffectDef>("Bleed_EffectDef");
+
+
+                        foreach (TacticalAbilityTarget target in __instance.GetTargets())
+                        {
+                            // TFTVLogger.Always($"Got here");
+
+                            if (target.GetTargetActor() != null && target.GetTargetActor() is TacticalActor tacticalActor)
+                            {
+
+                                //   ItemSlot head = tacticalActor.BodyState.GetSlot("Head");
+                                //   tacticalActor.ApplyDamage(new DamageResult { ApplyStatuses = new List<StatusApplication> { new StatusApplication { StatusDef = disabledBodyPartStatus, StatusSource = tacticalActor, StatusTarget = head, Value = 100 } } });
+                                tacticalActor.ApplyDamage(new DamageResult { ActorEffects = new List<EffectDef> { mindCrushEffect } });
+                                tacticalActor.ApplyDamage(new DamageResult { ApplyStatuses = new List<StatusApplication> { new StatusApplication { StatusDef = silencedStatusDef, StatusSource = __instance.TacticalActor, StatusTarget = tacticalActor } } });
+
+                                // EffectTarget effectTarget = new EffectTarget { GameObject = tacticalActor.gameObject };
+
+                                //  Effect.Apply(Repo, bleedEffect, effectTarget);
+
+
+
+                                // head.ApplyDamage(new DamageResult {DamageTypeDef = bleedDamage, HealthDamage = 20 });
+
+
+
+                            }
+
+                        }
+                    }
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+        }
 
         [HarmonyPatch(typeof(TacticalLevelController), "ActorDamageDealt")]
         public static class TacticalLevelController_ActorDamageDealt_CyclopsMolecularTargeting_Patch
@@ -86,6 +167,7 @@ namespace TFTV
                 try
                 {
                     CyclopsMolecularTargeting(actor, damageDealer);
+                    // CyclopsSelfHealing(actor);
                 }
                 catch (Exception e)
                 {
@@ -94,7 +176,95 @@ namespace TFTV
             }
         }
 
-        
+
+        [HarmonyPatch(typeof(TacticalFactionVision), "OnFactionStartTurn")]
+        public static class TacticalFactionVision_OnFactionStartTurn_SelfRepair_Patch
+        {
+            public static void Postfix(TacticalFactionVision __instance)
+            {
+                try
+                {
+                    if (!__instance.Faction.TacticalLevel.IsLoadingSavedGame)
+                    {
+                        TacticalLevelController controller = __instance.Faction.TacticalLevel;
+                        TacticalFaction tacticalFaction = __instance.Faction;
+
+                        TFTVLogger.Always($"starting turn {tacticalFaction.TurnNumber} for faction {tacticalFaction.Faction.FactionDef.name}");
+                        CheckRoboticSelfRepairStatus(tacticalFaction);
+                        CyclopsSelfHealing(tacticalFaction);
+
+
+                        if (tacticalFaction.TurnNumber > 0)
+                        {
+                            CheckForAutoRepairAbility(__instance.Faction);
+                            AdjustAutomataStats(__instance.Faction);
+
+                        }
+
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+        }
+
+
+
+        internal static void CyclopsSelfHealing(TacticalFaction tacticalFaction)
+        {
+            try
+            {
+                foreach (TacticalActor tacticalActor in tacticalFaction.TacticalActors.Where(ta => ta.GetAbilityWithDef<PassiveModifierAbility>(SelfRepairAbility) != null))
+                {
+                    List<ItemSlot> bodyPartAspects = tacticalActor.BodyState.GetHealthSlots().Where(hs => !hs.Enabled).ToList();
+
+                    TFTVLogger.Always($"{tacticalActor.name} has {SelfRepairAbility.name} and {bodyPartAspects.Count} disabled body parts. Applying Robotic Self Repair");
+
+                    if (bodyPartAspects.Count > 0)
+                    {
+                        tacticalActor.Status.ApplyStatus(RoboticSelfRepairStatus);
+                    }
+
+                }
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+        internal static void CheckRoboticSelfRepairStatus(TacticalFaction tacticalFaction)
+
+        {
+            try
+            {
+                foreach (TacticalActor tacticalActor in tacticalFaction.TacticalActors)
+                {
+                    if (tacticalActor.HasStatus(RoboticSelfRepairStatus))
+                    {
+                        List<ItemSlot> bodyPartAspects = tacticalActor.BodyState.GetHealthSlots().Where(hs => !hs.Enabled).ToList();
+
+                        foreach (ItemSlot bodyPart in bodyPartAspects)
+                        {
+                            TFTVLogger.Always($"{tacticalActor.name} has disabled {bodyPart.DisplayName}. Adding {bodyPart.GetHealth().Max / 2} health ");
+                            bodyPart.GetHealth().Add(bodyPart.GetHealth().Max / 2);
+                            tacticalActor.CharacterStats.WillPoints.Subtract(5);
+                        }
+
+                        Status status = tacticalActor.Status.GetStatusByName(RoboticSelfRepairStatus.EffectName);
+
+                        tacticalActor.Status.Statuses.Remove(status);
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
 
         //  DamageAccumulation
 
@@ -168,7 +338,7 @@ namespace TFTV
                     }
                 }*/
 
-        
+
 
 
         internal static void CyclopsMolecularTargeting(TacticalActor actor, IDamageDealer damageDealer)
@@ -177,7 +347,9 @@ namespace TFTV
             {
                 TacticalLevelController controller = GameUtl.CurrentLevel().GetComponent<TacticalLevelController>();
 
-                if (!CyclopsMolecularDamageBuff.ContainsKey(controller.TurnNumber))
+               
+
+                if (CyclopsMolecularDamageBuff.Count()==0 || !CyclopsMolecularDamageBuff.ContainsKey(controller.TurnNumber))
                 {
                     ClassTagDef hopliteTag = DefCache.GetDef<ClassTagDef>("HumanoidGuardian_ClassTagDef");
                     ClassTagDef cyclopsTag = DefCache.GetDef<ClassTagDef>("MediumGuardian_ClassTagDef");
@@ -190,10 +362,10 @@ namespace TFTV
                         WeaponDef beamVsCyborgs = DefCache.GetDef<WeaponDef>("HopliteVSCyborgs");
 
                         WeaponDef cyclopsLCBeam = DefCache.GetDef<WeaponDef>("MediumGuardian_Head_LivingCrystal_WeaponDef");
-                    //    cyclopsLCBeam.DamagePayload.DamageKeywords[0].Value = 120;
+                        //    cyclopsLCBeam.DamagePayload.DamageKeywords[0].Value = 120;
 
                         WeaponDef cyclopsOBeam = DefCache.GetDef<WeaponDef>("MediumGuardian_Head_Orichalcum_WeaponDef");
-                     //   cyclopsOBeam.DamagePayload.DamageKeywords[0].Value = 120;
+                        //   cyclopsOBeam.DamagePayload.DamageKeywords[0].Value = 120;
 
                         WeaponDef cyclopsPBeam = DefCache.GetDef<WeaponDef>("MediumGuardian_Head_ProteanMutane_WeaponDef");
                         //   cyclopsPBeam.DamagePayload.DamageKeywords[0].Value = 120;
@@ -206,14 +378,14 @@ namespace TFTV
 
                         bool cyclopsAlive = false;
 
-                     
+
 
                         foreach (TacticalActor tacticalActor in tacticalFaction.TacticalActors)
                         {
                             if (tacticalActor.IsAlive && tacticalActor.GameTags.Contains(cyclopsTag))
                             {
                                 cyclopsAlive = true;
-                              
+
                             }
                         }
 
@@ -257,7 +429,7 @@ namespace TFTV
                                 cyclopsOBeam.ViewElementDef = cyclopsBeamVsCyborgs.ViewElementDef;
                                 cyclopsPBeam.DamagePayload = cyclopsBeamVsCyborgs.DamagePayload;
                                 cyclopsPBeam.ViewElementDef = cyclopsBeamVsCyborgs.ViewElementDef;
-                               
+
 
                                 TFTVLogger.Always($"{actor.DisplayName} is primarily bionic or a vehicle");
 
@@ -288,7 +460,7 @@ namespace TFTV
                                 { new DamageKeywordPair
                                     { Value = 120, DamageKeywordDef = Shared.SharedDamageKeywords.DamageKeyword }
                                 };
-                                cyclopsLCBeam.ViewElementDef = DefCache.GetDef<ViewElementDef>("E_View [MediumGuardian_Head_LivingCrystal_WeaponDef]") ;
+                                cyclopsLCBeam.ViewElementDef = DefCache.GetDef<ViewElementDef>("E_View [MediumGuardian_Head_LivingCrystal_WeaponDef]");
                                 cyclopsOBeam.DamagePayload.DamageKeywords = new List<DamageKeywordPair>()
                                 { new DamageKeywordPair
                                     { Value = 120, DamageKeywordDef = Shared.SharedDamageKeywords.DamageKeyword }
@@ -314,9 +486,7 @@ namespace TFTV
         }
 
 
-
-
-
+        //Patch giving access to Project Glory research when Player activates 3rd base
         [HarmonyPatch(typeof(GeoPhoenixFaction), "ActivatePhoenixBase")]
         public static class GeoPhoenixFaction_ActivatePhoenixBase_GiveGlory_Patch
         {
@@ -337,6 +507,8 @@ namespace TFTV
                 }
             }
         }
+
+        //Method additional requirements texts to Impossible Weapons if nerf is on.
 
         public static void CheckImpossibleWeaponsAdditionalRequirements(GeoLevelController controller)
         {
@@ -385,6 +557,8 @@ namespace TFTV
 
         }
 
+        //Patch preventing manufacturing of IW when all conditions are not fulfilled if LOTA rework active and nerf is on in the config.
+        //Note that conditons vary depending on whether nerf is on, but even if off, some conditions are required.
         [HarmonyPatch(typeof(ItemManufacturing), "CanManufacture")]
         public static class GeoFaction_CanManufacture_Patch
         {
@@ -481,6 +655,8 @@ namespace TFTV
             }
         }
 
+        //Sets the objective to reactivate cyclops
+        //Called when Living Crystal or Protean Mutane researches are completed; whichever is completed last
         public static void SetReactivateCyclopsObjective(GeoLevelController controller)
         {
             try
@@ -509,6 +685,7 @@ namespace TFTV
 
         }
 
+        //Sets the objective to protect cyclops
         public static void SetProtectCyclopsObjective(GeoLevelController controller)
         {
             try
@@ -534,6 +711,7 @@ namespace TFTV
 
         }
 
+        //Sets the objective to obtain samples of Living Crystal/Protean Mutane
         public static void SetObtainLCandPMSamplesObjective(GeoLevelController controller)
         {
             try
@@ -572,48 +750,7 @@ namespace TFTV
 
         }
 
-        public static void RemoveManuallySetObjective(GeoLevelController controller, string title)
-        {
-            try
-            {
-                List<GeoFactionObjective> listOfObjectives = controller.PhoenixFaction.Objectives.ToList();
-
-                foreach (GeoFactionObjective objective1 in listOfObjectives)
-                {
-                    if (objective1.Title == null)
-                    {
-                        TFTVLogger.Always("objective1.Title is missing!");
-                    }
-                    else
-                    {
-                        if (objective1.Title.LocalizationKey == null)
-                        {
-                            TFTVLogger.Always("objective1.Title.LocalizationKey is missing!");
-                        }
-                        else
-                        {
-                            TFTVLogger.Always("objective1.Title.LocalizationKey is " + objective1.Title.LocalizationKey);
-
-                            if (objective1.Title.LocalizationKey == title)
-                            {
-                                controller.PhoenixFaction.RemoveObjective(objective1);
-                            }
-                        }
-                    }
-
-                }
-
-
-
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-
-
-        }
-
+        //Checks research state to adjust texts
         public static void AncientsCheckResearchState(GeoLevelController controller)
         {
             try
@@ -654,10 +791,6 @@ namespace TFTV
                     archeologySettingsDef.AncientSiteSetting[2].RefinerySiteName.LocalizationKey = "KEY_AC_CRYSTAL_REFINERY";
                 }
 
-                //AutoRepair_AddAbilityStatusDef  AncientsPoweredUp AncientMaxPower_AbilityDef
-                // DamageMultiplierStatusDef sourceAbilityStatusDef = DefCache.GetDef<DamageMultiplierStatusDef>("BionicResistances_StatusDef");
-                // 
-
             }
 
             catch (Exception e)
@@ -668,7 +801,8 @@ namespace TFTV
 
         }
 
-        public static void CheckResearchStateOnGeoscapeEnd(GeoLevelController controller)
+        //Checks research state on Geoscape End and then on Tactical Start
+        public static void CheckResearchStateOnGeoscapeEndAndOnTacticalStart(GeoLevelController controller)
         {
             try
             {
@@ -678,13 +812,14 @@ namespace TFTV
                 List<AbilityDef> hopliteAbilities = new List<AbilityDef>(hopliteActorDef.Abilities.ToList());
                 List<AbilityDef> cyclopsAbilites = new List<AbilityDef>(cyclopsActorDef.Abilities.ToList());
 
+
                 AbilityDef poisonResistance = DefCache.GetDef<AbilityDef>("PoisonResistant_DamageMultiplierAbilityDef");
                 AbilityDef psychicResistance = DefCache.GetDef<AbilityDef>("PsychicResistant_DamageMultiplierAbilityDef");
                 AbilityDef eMPResistant = DefCache.GetDef<AbilityDef>("EMPResistant_DamageMultiplierAbilityDef");
                 AbilityDef poisonImmunity = DefCache.GetDef<AbilityDef>("PoisonImmunity_DamageMultiplierAbilityDef");
                 //  AbilityDef psychicImmunity = DefCache.GetDef<AbilityDef>("PsychicImmunity_DamageMultiplierAbilityDef");
                 AbilityDef paralysisImmunity = DefCache.GetDef<AbilityDef>("ParalysisNotShockImmunity_DamageMultiplierAbilityDef");
-
+                AbilityDef fireImmunity = DefCache.GetDef<AbilityDef>("FireImmunity_DamageMultiplierAbilityDef");
                 AbilityDef stunStatusImmunity = DefCache.GetDef<AbilityDef>("StunStatusImmunity_AbilityDef");
                 //AbilityDef empImmunity = DefCache.GetDef<AbilityDef>("EMPImmunity_DamageMultiplierAbilityDef");
 
@@ -693,22 +828,33 @@ namespace TFTV
                 DamageMultiplierStatusDef poweredUp = DefCache.GetDef<DamageMultiplierStatusDef>("AncientsPoweredUp");
 
                 List<AbilityDef> abilitiesToRemove = new List<AbilityDef>() { poisonResistance };
-                List<AbilityDef> abilitiesToAdd = new List<AbilityDef>() { poisonImmunity, paralysisImmunity };
+                List<AbilityDef> abilitiesToAdd = new List<AbilityDef>() { poisonImmunity, paralysisImmunity, fireImmunity };
 
-                if (controller.PhoenixFaction.Research.HasCompleted("AncientAutomataResearch"))
+
+                /* if (GameUtl.CurrentLevel()?.GetComponent<GeoLevelController>() != null)
+                 {
+                     GeoLevelController controller = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
+                     TFTVLogger.Always("Got here");*/
+
+                if (controller != null && controller.PhoenixFaction.Research.HasCompleted("AncientAutomataResearch"))
                 {
-                    TFTVLogger.Always("Ancient Automata Research Completed");
+                    AutomataResearched = true;
+                    TFTVLogger.Always($"Geoscape Check Automata Research completed is {AutomataResearched}");
+                    //  return;
+                }
+                else if (controller != null && !controller.PhoenixFaction.Research.HasCompleted("AncientAutomataResearch"))
+                {
+                    AutomataResearched = false;
+                    TFTVLogger.Always($"Geoscape Check Automata Research completed is {AutomataResearched}");
+                    //  return;
+                }
 
+                if (AutomataResearched)
+                {
                     if (!abilitiesToRemove.Contains(stunStatusImmunity))
                     {
                         abilitiesToRemove.Add(stunStatusImmunity);
                     }
-                    /*  if (!abilitiesToRemove.Contains(eMPResistant))
-                      {
-                          abilitiesToRemove.Add(eMPResistant);
-                      }*/
-
-                    AutomataResearched = true;
 
                     cyclopsDefense_StatusDef.Visuals.DisplayName1.LocalizationKey = "CYCLOPS_DEFENSE_NAME";
                     cyclopsDefense_StatusDef.Visuals.Description.LocalizationKey = "CYCLOPS_DEFENSE_DESCRIPTION";
@@ -717,6 +863,7 @@ namespace TFTV
                     poweredUp.Visuals.DisplayName1.LocalizationKey = "POWERED_UP_NAME";
                     poweredUp.Visuals.Description.LocalizationKey = "POWERED_UP_DESCRIPTION";
 
+
                 }
                 else
                 {
@@ -724,12 +871,6 @@ namespace TFTV
                     {
                         abilitiesToAdd.Add(stunStatusImmunity);
                     }
-                    /*    if (!abilitiesToAdd.Contains(eMPResistant))
-                        {
-                            abilitiesToAdd.Add(eMPResistant);
-                        }*/
-
-                    AutomataResearched = false;
 
                     cyclopsDefense_StatusDef.Visuals.DisplayName1.LocalizationKey = "UNKNOWN_STATUS_NAME";
                     cyclopsDefense_StatusDef.Visuals.Description.LocalizationKey = "UNKNOWN_STATUS_DESCRIPTION";
@@ -780,6 +921,7 @@ namespace TFTV
                 */
                 hopliteActorDef.Abilities = hopliteAbilities.ToArray();
                 cyclopsActorDef.Abilities = cyclopsAbilites.ToArray();
+                TFTVLogger.Always($"Tactical: Automata researched is {AutomataResearched}");
 
             }
             catch (Exception e)
@@ -787,6 +929,8 @@ namespace TFTV
                 TFTVLogger.Error(e);
             }
         }
+
+        //Was awkward method, deprecated
         public static void CheckResearchStateOnTacticalStart()
         {
             try
@@ -904,6 +1048,7 @@ namespace TFTV
             }
         }
 
+        //Adjusts exotic resources received as reward
         [HarmonyPatch(typeof(RewardsController), "SetResources")]
         public static class RewardsController_SetResources_Patch
         {
@@ -948,7 +1093,7 @@ namespace TFTV
                                 __instance.ResourcesRewardsParentObject.SetActive(true);
 
                                 TFTVLogger.Always("Removing Protean Mutane Objective");
-                                RemoveManuallySetObjective(controller, "OBTAIN_PM_OBJECTIVE");
+                                TFTVCommonMethods.RemoveManuallySetObjective(controller, "OBTAIN_PM_OBJECTIVE");
                             }
                             else if (resourceUnit.Type == ResourceType.LivingCrystals)
                             {
@@ -976,7 +1121,7 @@ namespace TFTV
                                 __instance.ResourcesRewardsParentObject.SetActive(true);
 
                                 TFTVLogger.Always("Removing Living Crystal Objective");
-                                RemoveManuallySetObjective(controller, "OBTAIN_LC_OBJECTIVE");
+                                TFTVCommonMethods.RemoveManuallySetObjective(controller, "OBTAIN_LC_OBJECTIVE");
 
                             }
                             else if (resourceUnit.Type == ResourceType.Orichalcum)
@@ -1018,6 +1163,7 @@ namespace TFTV
             }
         }
 
+        //Removes exotic resource harvesting from game
         [HarmonyPatch(typeof(GeoVehicle), "get_CanHarvestFromSites")]
         public static class GeoVehicle_get_CanHarvestFromSites_Patch
         {
@@ -1075,6 +1221,7 @@ namespace TFTV
             }
         }
 
+        //Prevents attacks on ancient sites, except for story mission
         [HarmonyPatch(typeof(GeoFaction), "AttackAncientSite")]
         public static class GeoFaction_AttackAncientSite_Patch
         {
@@ -1142,6 +1289,9 @@ namespace TFTV
             }
         }
 
+        //Prevents player from harvesting from Ancient site right after winning mission
+        //Also triggers a bunch of things after story mission is completed
+
         [HarmonyPatch(typeof(GeoMission), "ApplyOutcomes")]
         public static class GeoMission_ModifyMissionData_CheckAncients_Patch
         {
@@ -1199,7 +1349,7 @@ namespace TFTV
 
                                 }
 
-                                RemoveManuallySetObjective(controller, "BUILD_CYCLOPS_OBJECTIVE");
+                                TFTVCommonMethods.RemoveManuallySetObjective(controller, "BUILD_CYCLOPS_OBJECTIVE");
 
                             }
                             //if the player is defeated, the Cyclops variable will be reset so that the player may try again
@@ -1209,7 +1359,7 @@ namespace TFTV
 
                             }
 
-                            RemoveManuallySetObjective(controller, "PROTECT_THE_CYCLOPS_OBJECTIVE_GEO_TITLE");
+                            TFTVCommonMethods.RemoveManuallySetObjective(controller, "PROTECT_THE_CYCLOPS_OBJECTIVE_GEO_TITLE");
                         }
                     }
                 }
@@ -1221,6 +1371,8 @@ namespace TFTV
             }
         }
 
+
+        //Method to check if Ancients (as a faction) are present in the mission
         public static bool CheckIfAncientsPresent(TacticalLevelController controller)
         {
             try
@@ -1240,6 +1392,7 @@ namespace TFTV
             }
         }
 
+        //Adjusts deployment of Ancient Automata
         public static void AdjustAncientsOnDeployment(TacticalLevelController controller)
         {
             ClassTagDef cyclopsTag = DefCache.GetDef<ClassTagDef>("MediumGuardian_ClassTagDef");
@@ -1320,7 +1473,6 @@ namespace TFTV
             }
         }
 
-
         public static void AdjustHopliteAndCyclopsBeam()
         {
             try
@@ -1338,67 +1490,67 @@ namespace TFTV
                 WeaponDef cyclopsBeamVsMutants = DefCache.GetDef<WeaponDef>("CyclopsVSMutantsBeam");
                 WeaponDef cyclopsBeamVsCyborgs = DefCache.GetDef<WeaponDef>("CyclopsVSCyborgs");
 
-
-
-
-                if (CyclopsMolecularDamageBuff.ContainsKey(controller.TurnNumber))
+                if (CyclopsMolecularDamageBuff.Count() > 0)
                 {
 
-
-                    WeaponDef beamVsMutants = DefCache.GetDef<WeaponDef>("HopliteVSMutantsBeam");
-                    WeaponDef beamVsCyborgs = DefCache.GetDef<WeaponDef>("HopliteVSCyborgs");
-
-                    if (CyclopsMolecularDamageBuff[controller.TurnNumber] == 1)
+                    if (CyclopsMolecularDamageBuff.ContainsKey(controller.TurnNumber))
                     {
-                        originalBeam.ViewElementDef = beamVsMutants.ViewElementDef;
-                        originalBeam.DamagePayload = beamVsMutants.DamagePayload;
-                        cyclopsLCBeam.DamagePayload = cyclopsBeamVsMutants.DamagePayload;
-                        cyclopsLCBeam.ViewElementDef = cyclopsBeamVsMutants.ViewElementDef;
-                        cyclopsOBeam.DamagePayload = cyclopsBeamVsMutants.DamagePayload;
-                        cyclopsOBeam.ViewElementDef = cyclopsBeamVsMutants.ViewElementDef;
-                        cyclopsPBeam.DamagePayload = cyclopsBeamVsMutants.DamagePayload;
-                        cyclopsPBeam.ViewElementDef = cyclopsBeamVsMutants.ViewElementDef;
-                        TFTVLogger.Always($"{originalBeam.name} is switching to vs mutants and aliens");
-                    }
-                    else if (CyclopsMolecularDamageBuff[controller.TurnNumber] == 2)
-                    {
-                        originalBeam.ViewElementDef = beamVsCyborgs.ViewElementDef;
-                        originalBeam.DamagePayload = beamVsCyborgs.DamagePayload;
-                        cyclopsLCBeam.DamagePayload = cyclopsBeamVsCyborgs.DamagePayload;
-                        cyclopsLCBeam.ViewElementDef = cyclopsBeamVsCyborgs.ViewElementDef;
-                        cyclopsOBeam.DamagePayload = cyclopsBeamVsCyborgs.DamagePayload;
-                        cyclopsOBeam.ViewElementDef = cyclopsBeamVsCyborgs.ViewElementDef;
-                        cyclopsPBeam.DamagePayload = cyclopsBeamVsCyborgs.DamagePayload;
-                        cyclopsPBeam.ViewElementDef = cyclopsBeamVsCyborgs.ViewElementDef;
-                        TFTVLogger.Always($"{originalBeam.name} is switching to vs cyborgs and vehicles");
-                    }
-                }
-                else
-                {
 
-                    originalBeam.ViewElementDef = DefCache.GetDef<ViewElementDef>("E_View [HumanoidGuardian_Head_WeaponDef]");
-                    originalBeam.DamagePayload.DamageKeywords = new List<DamageKeywordPair>()
+
+                        WeaponDef beamVsMutants = DefCache.GetDef<WeaponDef>("HopliteVSMutantsBeam");
+                        WeaponDef beamVsCyborgs = DefCache.GetDef<WeaponDef>("HopliteVSCyborgs");
+
+                        if (CyclopsMolecularDamageBuff[controller.TurnNumber] == 1)
+                        {
+                            originalBeam.ViewElementDef = beamVsMutants.ViewElementDef;
+                            originalBeam.DamagePayload = beamVsMutants.DamagePayload;
+                            cyclopsLCBeam.DamagePayload = cyclopsBeamVsMutants.DamagePayload;
+                            cyclopsLCBeam.ViewElementDef = cyclopsBeamVsMutants.ViewElementDef;
+                            cyclopsOBeam.DamagePayload = cyclopsBeamVsMutants.DamagePayload;
+                            cyclopsOBeam.ViewElementDef = cyclopsBeamVsMutants.ViewElementDef;
+                            cyclopsPBeam.DamagePayload = cyclopsBeamVsMutants.DamagePayload;
+                            cyclopsPBeam.ViewElementDef = cyclopsBeamVsMutants.ViewElementDef;
+                            TFTVLogger.Always($"{originalBeam.name} is switching to vs mutants and aliens");
+                        }
+                        else if (CyclopsMolecularDamageBuff[controller.TurnNumber] == 2)
+                        {
+                            originalBeam.ViewElementDef = beamVsCyborgs.ViewElementDef;
+                            originalBeam.DamagePayload = beamVsCyborgs.DamagePayload;
+                            cyclopsLCBeam.DamagePayload = cyclopsBeamVsCyborgs.DamagePayload;
+                            cyclopsLCBeam.ViewElementDef = cyclopsBeamVsCyborgs.ViewElementDef;
+                            cyclopsOBeam.DamagePayload = cyclopsBeamVsCyborgs.DamagePayload;
+                            cyclopsOBeam.ViewElementDef = cyclopsBeamVsCyborgs.ViewElementDef;
+                            cyclopsPBeam.DamagePayload = cyclopsBeamVsCyborgs.DamagePayload;
+                            cyclopsPBeam.ViewElementDef = cyclopsBeamVsCyborgs.ViewElementDef;
+                            TFTVLogger.Always($"{originalBeam.name} is switching to vs cyborgs and vehicles");
+                        }
+                    }
+                    else
+                    {
+
+                        originalBeam.ViewElementDef = DefCache.GetDef<ViewElementDef>("E_View [HumanoidGuardian_Head_WeaponDef]");
+                        originalBeam.DamagePayload.DamageKeywords = new List<DamageKeywordPair>()
                                 { new DamageKeywordPair
                                 { Value = 70, DamageKeywordDef = Shared.SharedDamageKeywords.DamageKeyword }
                                 };
-                    cyclopsLCBeam.DamagePayload.DamageKeywords =
-                       new List<DamageKeywordPair>()
-                    { new DamageKeywordPair
+                        cyclopsLCBeam.DamagePayload.DamageKeywords =
+                           new List<DamageKeywordPair>()
+                        { new DamageKeywordPair
                                     { Value = 120, DamageKeywordDef = Shared.SharedDamageKeywords.DamageKeyword }
-                    };
-                    cyclopsLCBeam.ViewElementDef = DefCache.GetDef<ViewElementDef>("E_View [MediumGuardian_Head_LivingCrystal_WeaponDef]");
-                    cyclopsOBeam.DamagePayload.DamageKeywords = new List<DamageKeywordPair>()
+                        };
+                        cyclopsLCBeam.ViewElementDef = DefCache.GetDef<ViewElementDef>("E_View [MediumGuardian_Head_LivingCrystal_WeaponDef]");
+                        cyclopsOBeam.DamagePayload.DamageKeywords = new List<DamageKeywordPair>()
                                 { new DamageKeywordPair
                                     { Value = 120, DamageKeywordDef = Shared.SharedDamageKeywords.DamageKeyword }
                                 };
-                    cyclopsOBeam.ViewElementDef = DefCache.GetDef<ViewElementDef>("E_View [MediumGuardian_Head_Orichalcum_WeaponDef]");
-                    cyclopsPBeam.DamagePayload.DamageKeywords = new List<DamageKeywordPair>()
+                        cyclopsOBeam.ViewElementDef = DefCache.GetDef<ViewElementDef>("E_View [MediumGuardian_Head_Orichalcum_WeaponDef]");
+                        cyclopsPBeam.DamagePayload.DamageKeywords = new List<DamageKeywordPair>()
                                 { new DamageKeywordPair
                                     { Value = 120, DamageKeywordDef = Shared.SharedDamageKeywords.DamageKeyword }
                                 };
-                    cyclopsPBeam.ViewElementDef = DefCache.GetDef<ViewElementDef>("E_View [MediumGuardian_Head_ProteanMutane_WeaponDef]");
+                        cyclopsPBeam.ViewElementDef = DefCache.GetDef<ViewElementDef>("E_View [MediumGuardian_Head_ProteanMutane_WeaponDef]");
+                    }
                 }
-
             }
             catch (Exception e)
             {
@@ -1412,11 +1564,18 @@ namespace TFTV
             {
                 if (LOTAReworkActive)
                 {
-                    CyclopsDefenseStatus.Multiplier = 0.5f + HoplitesKilled * 0.1f;
-                    TFTVLogger.Always("Cyclops Defense level is " + CyclopsDefenseStatus.Multiplier);
+                    TacticalLevelController controller = GameUtl.CurrentLevel().GetComponent<TacticalLevelController>();
+
+                    if (CheckIfAncientsPresent(controller))
+                    {
+                        List<TacticalActor> allHoplites = controller.GetFactionByCommandName("anc").TacticalActors.Where(ta => ta.HasGameTag(hopliteTag)).ToList();
+                        int deadHoplites = allHoplites.Where(h => h.IsDead).Count();
+                        float proportion = ((float)deadHoplites / (float)(allHoplites.Count));
+                        CyclopsDefenseStatus.Multiplier = 0.5f + proportion * 0.5f; //+ HoplitesKilled * 0.1f;
+                        TFTVLogger.Always($"There are {allHoplites.Count} hoplites in total, {deadHoplites} are dead. Proportion is {proportion}. Cyclops Defense level is {CyclopsDefenseStatus.Multiplier}");
+                    }
 
                     AdjustHopliteAndCyclopsBeam();
-
                 }
             }
             catch (Exception e)
@@ -1461,16 +1620,14 @@ namespace TFTV
             }
         }
 
-        public static void AdjustAutomataStats(TacticalLevelController controller)
+        public static void AdjustAutomataStats(TacticalFaction faction)
         {
-
             try
             {
-                TacticalFaction ancients = controller.GetFactionByCommandName("anc");
 
-                foreach (TacticalActorBase tacticalActorBase in ancients.Actors)
+                foreach (TacticalActor tacticalActor in faction.TacticalActors)
                 {
-                    if (tacticalActorBase is TacticalActor guardian && tacticalActorBase.HasGameTag(hopliteTag) && !guardian.Status.HasStatus(AncientGuardianStealthStatus))
+                    if (tacticalActor is TacticalActor guardian && tacticalActor.HasGameTag(hopliteTag) && !guardian.Status.HasStatus(AncientGuardianStealthStatus))
                     {
                         if (guardian.CharacterStats.WillPoints < 30)
                         {
@@ -1480,7 +1637,7 @@ namespace TFTV
                             }
                             else
                             {
-                                guardian.CharacterStats.WillPoints.Add(5);
+                                guardian.CharacterStats.WillPoints.AddRestrictedToMax(5);
 
                             }
                         }
@@ -1509,7 +1666,7 @@ namespace TFTV
                         guardian.CharacterStats.Speed.SetMax(guardian.CharacterStats.WillPoints.IntValue);
                         guardian.CharacterStats.Speed.Set(guardian.CharacterStats.WillPoints.IntValue);
                     }
-                    else if (tacticalActorBase is TacticalActor cyclops && tacticalActorBase.HasGameTag(cyclopsTag))
+                    else if (tacticalActor is TacticalActor cyclops && tacticalActor.HasGameTag(cyclopsTag))
                     {
                         if (cyclops.HasStatus(AlertedStatus))
                         {
@@ -1521,7 +1678,7 @@ namespace TFTV
                                 }
                                 else
                                 {
-                                    cyclops.CharacterStats.WillPoints.Add(5);
+                                    cyclops.CharacterStats.WillPoints.AddRestrictedToMax(5);
 
                                 }
                             }
@@ -1657,34 +1814,35 @@ namespace TFTV
             }
         }
 
-        [HarmonyPatch(typeof(TacticalFaction), "RequestEndTurn")]
-        public static class TacticalFaction_RequestEndTurn_AncientsSelfRepair_Patch
-        {
-            public static void Postfix(TacticalFaction __instance)
-            {
-                try
-                {
-                    if (LOTAReworkActive)
-                    {
+        /*  [HarmonyPatch(typeof(TacticalFaction), "RequestEndTurn")]
+          public static class TacticalFaction_RequestEndTurn_AncientsSelfRepair_Patch
+          {
+              public static void Postfix(TacticalFaction __instance)
+              {
+                  try
+                  {
+                      if (LOTAReworkActive)
+                      {
+                          if (CheckIfAncientsPresent(__instance.TacticalLevel))
+                          {
+                              if (__instance.TacticalLevel.TurnNumber > 0 && __instance.Equals(__instance.TacticalLevel.GetFactionByCommandName("PX")))
+                              {
 
-                        if (CheckIfAncientsPresent(__instance.TacticalLevel))
-                        {
-                            if (__instance.TacticalLevel.TurnNumber > 0 && __instance.Equals(__instance.TacticalLevel.GetFactionByCommandName("PX")))
-                            {
-                                CheckForAutoRepairAbility(__instance.TacticalLevel);
-                                AdjustAutomataStats(__instance.TacticalLevel);
-                            }
+                                  CheckRoboticSelfRepairStatus(__instance);
+                                  CyclopsSelfHealing(__instance);
+                                  CheckForAutoRepairAbility(__instance.TacticalLevel);
+                                  AdjustAutomataStats(__instance.TacticalLevel);
 
-
-                        }
-                    }
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-            }
-        }
+                              }
+                          }
+                      }
+                  }
+                  catch (Exception e)
+                  {
+                      TFTVLogger.Error(e);
+                  }
+              }
+          }*/
 
 
         [HarmonyPatch(typeof(DamageKeyword), "ProcessKeywordDataInternal")]
@@ -1743,7 +1901,7 @@ namespace TFTV
                                         if ((actorAlly.Pos - actor.Pos).magnitude <= magnitude)
                                         {
                                             TFTVLogger.Always("Actor in range and will be receiving power from dead friendly");
-                                            actorAlly.CharacterStats.WillPoints.Add(5);
+                                            actorAlly.CharacterStats.WillPoints.AddRestrictedToMax(5);
 
                                             if ((CheckGuardianBodyParts(actorAlly)[0] == null
                                             || CheckGuardianBodyParts(actorAlly)[1] == null
@@ -1788,10 +1946,16 @@ namespace TFTV
 
                                 if (actor.HasGameTag(hopliteTag))
                                 {
-                                    if (CyclopsDefenseStatus.Multiplier <= 0.9f)
+                                    if (CyclopsDefenseStatus.Multiplier <= 0.99f)
                                     {
+                                        List<TacticalActor> allHoplites = actor.TacticalFaction.TacticalActors.Where(ta => ta.HasGameTag(hopliteTag)).ToList();
+                                        int deadHoplites = allHoplites.Where(h => h.IsDead).Count();
+                                        float proportion = ((float)deadHoplites / (float)(allHoplites.Count));
+                                        CyclopsDefenseStatus.Multiplier = 0.5f + proportion * 0.5f; //+ HoplitesKilled * 0.1f;
+                                        TFTVLogger.Always($"There are {allHoplites.Count} hoplites in total, {deadHoplites} are dead. Proportion is {proportion}. Cyclops Defense level is {CyclopsDefenseStatus.Multiplier}");
 
-                                        CyclopsDefenseStatus.Multiplier += 0.1f;
+
+                                        //  CyclopsDefenseStatus.Multiplier += 0.1f;
                                         TFTVLogger.Always("Hoplite killed, decreasing Cyclops defense. Cyclops defense now " + CyclopsDefenseStatus.Multiplier);
                                     }
                                     else
@@ -1815,7 +1979,7 @@ namespace TFTV
                                             }
                                         }
                                     }
-                                    HoplitesKilled++;
+                                    // HoplitesKilled++;
 
                                     /*  if (AutomataResearched) 
                                       {
@@ -1835,49 +1999,45 @@ namespace TFTV
             }
         }
 
-        public static void CheckForAutoRepairAbility(TacticalLevelController controller)
+        public static void CheckForAutoRepairAbility(TacticalFaction faction)
         {
             try
             {
 
-                TacticalFaction ancients = controller.GetFactionByCommandName("anc");
 
-                foreach (TacticalActorBase tacticalActorBase in ancients.Actors)
+                foreach (TacticalActor actor in faction.TacticalActors)
                 {
-                    if (tacticalActorBase is TacticalActor)
+                    if (actor.HasStatus(AddAutoRepairStatusAbility))
                     {
-                        TacticalActor actor = tacticalActorBase as TacticalActor;
+                        TacticalItem[] Bodyparts = CheckGuardianBodyParts(actor);
 
-                        if (actor.HasStatus(AddAutoRepairStatusAbility))
+                        TFTVLogger.Always($"{actor.name} has spare parts, making repairs");
+
+                        actor.Status.Statuses.Remove(actor.Status.GetStatusByName(AddAutoRepairStatusAbility.EffectName));
+
+                        if (Bodyparts[0] == null)
                         {
-
-                            TacticalItem[] Bodyparts = CheckGuardianBodyParts(actor);
-
-                            TFTVLogger.Always("Actor has spare parts, making repairs");
-                            actor.Status.Statuses.Remove(actor.Status.GetStatusByName(AddAutoRepairStatusAbility.EffectName));
-                            if (Bodyparts[0] == null)
-                            {
-                                actor.Equipments.AddItem(BeamHead);
-                            }
-                            else if (Bodyparts[1] == null && Bodyparts[2] != null && Bodyparts[2].TacticalItemDef == LeftCrystalShield)
-                            {
-                                actor.Equipments.AddItem(RightDrill);
-                            }
-                            else if (Bodyparts[1] == null && Bodyparts[2] != null && Bodyparts[2].TacticalItemDef == LeftShield)
-                            {
-                                actor.Equipments.AddItem(RightShield);
-                            }
-                            else if (Bodyparts[2] == null && Bodyparts[1] != null && Bodyparts[1].TacticalItemDef == RightDrill)
-                            {
-                                actor.Equipments.AddItem(LeftCrystalShield);
-                            }
-                            else if (Bodyparts[2] == null && Bodyparts[1] != null && Bodyparts[1].TacticalItemDef == RightShield)
-                            {
-                                actor.Equipments.AddItem(LeftShield);
-                            }
-
+                            actor.Equipments.AddItem(BeamHead);
                         }
+                        else if (Bodyparts[1] == null && Bodyparts[2] != null && Bodyparts[2].TacticalItemDef == LeftCrystalShield)
+                        {
+                            actor.Equipments.AddItem(RightDrill);
+                        }
+                        else if (Bodyparts[1] == null && Bodyparts[2] != null && Bodyparts[2].TacticalItemDef == LeftShield)
+                        {
+                            actor.Equipments.AddItem(RightShield);
+                        }
+                        else if (Bodyparts[2] == null && Bodyparts[1] != null && Bodyparts[1].TacticalItemDef == RightDrill)
+                        {
+                            actor.Equipments.AddItem(LeftCrystalShield);
+                        }
+                        else if (Bodyparts[2] == null && Bodyparts[1] != null && Bodyparts[1].TacticalItemDef == RightShield)
+                        {
+                            actor.Equipments.AddItem(LeftShield);
+                        }
+
                     }
+
                 }
 
             }

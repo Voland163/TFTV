@@ -780,7 +780,7 @@ namespace TFTV
 
                         if (weaponDef != null)
                         {
-                            TFTVLogger.Always($"weapon is {weaponDef.name}");
+                         //   TFTVLogger.Always($"weapon is {weaponDef.name}");
 
                             foreach (DamageKeywordPair damageKeywordPair in weaponDef.DamagePayload.DamageKeywords)
                             {
@@ -806,7 +806,7 @@ namespace TFTV
                                 }
                                 if (damageKeywordPair.Value >= 70 && damageKeywordPair.DamageKeywordDef!=Shared.SharedDamageKeywords.ShockKeyword)
                                 {
-                                    TFTVLogger.Always($"{weaponDef.name} is counted as high damage weapon");
+                                   // TFTVLogger.Always($"{weaponDef.name} is counted as high damage weapon");
                                     scoreHighDamage += stat.UsedCount;
                                 }
                                 if (damageKeywordPair.DamageKeywordDef == Shared.SharedDamageKeywords.DamageKeyword && (weaponDef.DamagePayload.ProjectilesPerShot >= 2 || weaponDef.DamagePayload.AutoFireShotCount >= 3))

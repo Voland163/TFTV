@@ -102,7 +102,7 @@ namespace TFTV
             TFTVRevenant.CheckRevenantTime(gsController);
             TFTVRevenantResearch.CheckProjectOsiris(gsController);
             TFTVDiplomacyPenalties.VoidOmensImplemented = false;
-            TFTVAncients.CheckResearchStateOnGeoscapeEnd(gsController);
+            TFTVAncients.CheckResearchStateOnGeoscapeEndAndOnTacticalStart(gsController);
 
         }
 
@@ -151,7 +151,7 @@ namespace TFTV
 
             DateTime myDate = new DateTime(1, 1, 1);
             TFTVLogger.Always("Geoscape data will be processed");
-            
+
             TFTVCommonMethods.ClearInternalVariables();
             TFTVGSInstanceData data = (TFTVGSInstanceData)instanceData;
             TFTVStamina.charactersWithDisabledBodyParts = data.charactersWithDisabledBodyParts;
@@ -225,10 +225,128 @@ namespace TFTV
         {
             TFTVMain main = (TFTVMain)Main;
             GeoLevelController gsController = Controller;
+            TFTVConfig config = TFTVMain.Main.Config;
             TFTVCommonMethods.ClearInternalVariables();
+
+            List<int> locations = new List<int>() { 0, 1, 165, 166, 167, 168, 169, 170, 171, 172, 584, 193, 191, 190, 189, 188, 186, 185, 192, 187 };
+
+
+
+            /*
+            (-0.4f, 3.7f, 5.2f),  North Africa (Algeria) 165 
+            (-1.9f, 4.8f, 3.8f), Eastern Europe (Ukraine) 166
+            (5.3f, 3.1f, -1.7f), Central America (Mexico) 167
+            (5.5f, -2.0f, 2.7f), South America (Bolivia) 168
+            (-4.2f, 1.1f, 4.7f), East Africa (Ethiopia) 169
+            (-5.1f, 3.8f, -0.8f), Asia (China)  170
+            (-1.9f, 6.0f, -1.2f), Northern Asia (Siberia) 171
+            (-4.8f, 3.7f, 2.2f) Middle East (Afghanistan) 172
+            (0.0f, -6.4f, 0.1f) Antarctica 584
+            (3.5f, -5.2f, 1.3f)  South America (Tierra de Fuego) 193
+            (-4.5f, -1.5f, -4.3f) Australia 191
+            (-6.0f, 1.3f, -1.9f) Southeast Asia (Cambodia) 190
+            (-2.7f, -2.4f, 5.3f) South Africa (Zimbabwe) 189
+            (0.5f, 0.8f, 6.3f) West Africa (Ghana) 188
+            (6.2f, 1.6f, 0.4f) Central America (Honduras) 186
+            (4.0f, 4.9f, 1.0f) North America (Quebec) 185 
+            (1.3f, 5.7f, -2.6f) North America (Alaska) 192
+            (0.7f, 6.2f, 1.5f) Greenland 187 
+            */
 
             try
             {
+                if (config.startingBaseLocation == TFTVConfig.StartingBaseLocation.Vanilla && TFTVSpecialDifficulties.CheckGeoscapeSpecialDifficultySettings(gsController) == 0)
+                {
+
+                }
+                else
+                {
+                    foreach (GeoSiteSceneDef.SiteInfo siteInfo in worldSites.Where(ws => ws.SiteTags.Any(t => t.Contains("PhoenixBase"))))
+                    {
+                        int index = (int)config.startingBaseLocation;
+                        TFTVLogger.Always($"index is {index}");
+
+                        if (config.startingBaseLocation == TFTVConfig.StartingBaseLocation.Vanilla)
+                        {
+                            if (TFTVSpecialDifficulties.CheckGeoscapeSpecialDifficultySettings(gsController) == 1)
+                            {
+                                List<int> forbiddenBases = new List<int> { 167, 168, 584, 193, 191, 186, 185, 192, 187 };
+
+                                if (forbiddenBases.Contains(siteInfo.SiteId))
+                                {
+                                    if (siteInfo.SiteTags.Contains("StartingPhoenixBase"))
+                                    {
+                                        siteInfo.SiteTags.Remove("StartingPhoenixBase");
+
+
+                                    }
+                                }
+
+                            }
+                            else
+                            {
+                                List<int> approvedBases = new List<int> { 584, 191 };
+
+                                if (approvedBases.Contains(siteInfo.SiteId)) 
+                                {
+                                    if (!siteInfo.SiteTags.Contains("StartingPhoenixBase"))
+                                    {
+                                        siteInfo.SiteTags.Add("StartingPhoenixBase");
+                                       
+                                    }
+
+                                }
+                                else 
+                                {
+                                    if (siteInfo.SiteTags.Contains("StartingPhoenixBase"))
+                                    {
+                                        siteInfo.SiteTags.Remove("StartingPhoenixBase");
+
+
+                                    }
+                                }
+                            }
+
+                        }
+                        else if (config.startingBaseLocation == TFTVConfig.StartingBaseLocation.Random)
+                        {
+                            if (!siteInfo.SiteTags.Contains("StartingPhoenixBase"))
+                            {
+                                siteInfo.SiteTags.Add("StartingPhoenixBase");
+                                // TFTVLogger.Always($"Found site {siteInfo.SiteId}");
+                            }
+
+                        }
+                        else
+                        {
+                            TFTVLogger.Always($"{siteInfo.SiteId} world position is {siteInfo.WorldPosition}");
+                            if (siteInfo.SiteId == locations[index])   //SiteDescription.LocalizationKey== "KEY_OBJECTIVE_PHOENIXBASE_NAME_18") 
+                            {
+                                if (!siteInfo.SiteTags.Contains("StartingPhoenixBase"))
+                                {
+                                    siteInfo.SiteTags.Add("StartingPhoenixBase");
+                                    TFTVLogger.Always($"Found site {siteInfo.SiteId}");
+                                }
+                            }
+                            else
+                            {
+                                if (siteInfo.SiteTags.Contains("StartingPhoenixBase"))
+                                {
+                                    siteInfo.SiteTags.Remove("StartingPhoenixBase");
+                                    //  TFTVLogger.Always($"{siteInfo.SiteId} has site tag removed");
+                                    // GeoSitesMapper
+
+                                }
+
+                            }
+
+                        }
+                    }
+                    //   TFTVLogger.Always($"{siteInfo.SiteDescription.Localize()} world position is {siteInfo.WorldPosition}");
+
+                }
+
+
 
                 setup.InitialScavengingSiteCount = (uint)main.Config.InitialScavSites;
 

@@ -83,9 +83,9 @@ namespace TFTV
                 /// PhoenixGame is accessible at any time.
                 PhoenixGame game = GetGame();
 
-                TFTVversion = $"TFTV May 24 release #1 v{MetaData.Version}";
+                TFTVversion = $"TFTV June 6 release #1 v{MetaData.Version}";
 
-                Logger.LogInfo("TFTV May 24 release #1");
+                Logger.LogInfo("TFTV June 6 release #1");
 
                 ModDirectory = Instance.Entry.Directory;
                 //Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
@@ -98,7 +98,7 @@ namespace TFTV
                 TFTVLogger.Initialize(LogPath, Config.Debug, ModDirectory, nameof(TFTV));
                 PRMLogger.Initialize(LogPath, Settings.Debug, ModDirectory, nameof(PRMBetterClasses));
                 // DefCache.Initialize();
-                TFTVLogger.Always("TFTV May 24 release #1");
+                TFTVLogger.Always("TFTV June 6 release #1");
 
                 PRMBetterClasses.Helper.Initialize();
                 // Initialize Helper
@@ -186,6 +186,7 @@ namespace TFTV
                 Config.amountOfExoticResources = 1f;
                 Config.impossibleWeaponsAdjustments = true;
                 Config.startingSquad = StartingSquadFaction.PHOENIX;
+                Config.startingBaseLocation = StartingBaseLocation.Vanilla;
                 Config.tutorialCharacters = StartingSquadCharacters.UNBUFFED;
                 Config.InitialScavSites = 8;
                 Config.ChancesScavCrates = TFTVConfig.ScavengingWeight.High;
@@ -203,6 +204,7 @@ namespace TFTV
                 Config.ActivateKERework = true;
                 Config.HavenSOS = true;
                 Config.Debug = true;
+                Config.ShowFaces = true;
 
             }
             if (Config.OverrideRookieDifficultySettings =! false||
@@ -215,6 +217,7 @@ namespace TFTV
             Config.impossibleWeaponsAdjustments != true ||
             Config.startingSquad != StartingSquadFaction.PHOENIX ||
             Config.tutorialCharacters != StartingSquadCharacters.UNBUFFED ||
+            Config.startingBaseLocation!=StartingBaseLocation.Vanilla||
             Config.InitialScavSites != 8 ||
                Config.ChancesScavCrates != TFTVConfig.ScavengingWeight.High ||
                Config.ChancesScavSoldiers != TFTVConfig.ScavengingWeight.Low ||
@@ -230,16 +233,17 @@ namespace TFTV
             Config.ActivateAirCombatChanges != true ||
             Config.ActivateKERework != true ||
             Config.HavenSOS != true ||
-            Config.Debug != true)
+            Config.Debug != true||
+            Config.ShowFaces!=true)
             {
 
                 Config.defaultSettings = false;
 
             }
-            Harmony harmony = (Harmony)HarmonyInstance;
+         /*   Harmony harmony = (Harmony)HarmonyInstance;
             //  injectionComplete = false;
             harmony.UnpatchAll();
-            harmony.PatchAll();
+            harmony.PatchAll();*/
             /*  
               UIModuleModManager uIModuleModManager = (UIModuleModManager)UnityEngine.Object.FindObjectOfType(typeof(UIModuleModManager));
               PhoenixGeneralButton activeModTab = uIModuleModManager.ModSettingsSections.First(pgb => pgb.IsSelected);
@@ -261,11 +265,15 @@ namespace TFTV
         public override void OnLevelStateChanged(Level level, Level.State prevState, Level.State state)
         {
          
-            Logger.LogInfo($"{MethodBase.GetCurrentMethod().Name} called for level '{level}' with old state '{prevState}' and new state '{state}'");
-            if (level.name.Contains("Intro") && prevState == Level.State.Uninitialized && state == Level.State.NotLoaded)
+           // Logger.LogInfo($"{MethodBase.GetCurrentMethod().Name} called for level '{level}' with old state '{prevState}' and new state '{state}'");
+          /*  if (level.name.Contains("Intro") && prevState == Level.State.NotLoaded && state == Level.State.Uninitialized)
             {
-                
-            }
+              
+
+            }*/
+
+            
+          
 
             /// Alternative way to access current level at any time.
             //Level l = GetLevel();
@@ -291,7 +299,15 @@ namespace TFTV
         /// <param name="level">Level that ends.</param>
         public override void OnLevelEnd(Level level)
         {
+            if (level.name.Contains("HomeScreen"))
+            {
+                Logger.LogInfo($"{MethodBase.GetCurrentMethod().Name} called for level '{level}'; harmony re-patching everything in case config changed");
 
+                Harmony harmony = (Harmony)HarmonyInstance;
+                harmony.UnpatchAll();
+                harmony.PatchAll();
+
+            }
         }
 
         private void BCApplyInGameConfig()

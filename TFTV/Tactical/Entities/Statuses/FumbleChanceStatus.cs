@@ -21,7 +21,8 @@ namespace TFTV.Tactical.Entities.Statuses
             bool actorHasRestrictedWeapon = false;
             if (TacticalActor != null && FumbleChanceStatusDef.RestrictedDeliveryType != default)
             {
-                actorHasRestrictedWeapon = TacticalActor.Equipments.GetWeapons().Any(weapon => weapon.WeaponDef.DamagePayload.DamageDeliveryType == FumbleChanceStatusDef.RestrictedDeliveryType);
+                actorHasRestrictedWeapon = TacticalActor.Equipments.GetWeapons().Any(weapon => weapon.WeaponDef.DamagePayload.DamageDeliveryType == FumbleChanceStatusDef.RestrictedDeliveryType
+                                                                                               && !weapon.WeaponDef.Tags.Any(gt => FumbleChanceStatusDef.WeaponTagCullFilter.Contains(gt)));
             }
             if (TacticalActor == null || !actorHasRestrictedWeapon)
             {
@@ -61,7 +62,9 @@ namespace TFTV.Tactical.Entities.Statuses
         {
             if (FumbleChanceStatusDef.RestrictedDeliveryType != default)
             {
-                return ability.Source is Weapon weapon && weapon.WeaponDef.DamagePayload.DamageDeliveryType == FumbleChanceStatusDef.RestrictedDeliveryType;
+                return ability.Source is Weapon weapon
+                       && weapon.WeaponDef.DamagePayload.DamageDeliveryType == FumbleChanceStatusDef.RestrictedDeliveryType
+                       && !weapon.WeaponDef.Tags.Any(gt => FumbleChanceStatusDef.WeaponTagCullFilter.Contains(gt));
             }
             if (FumbleChanceStatusDef.AbilitiesToFumble != null && FumbleChanceStatusDef.AbilitiesToFumble.Length > 0)
             {

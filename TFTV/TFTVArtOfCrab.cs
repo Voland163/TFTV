@@ -266,8 +266,11 @@ namespace TFTV
             {
                 try
                 {
-                    __result = CullTargetsLists(__result, sourceActor, __instance);
-
+                    if (sourceActor is TacticalActor tacticalActor && tacticalActor.IsControlledByAI)
+                    {
+                       // TFTVLogger.Always($"{tacticalActor.DisplayName} is looking for targets");
+                        __result = CullTargetsLists(__result, sourceActor, __instance);
+                    }
                 }
                 catch (Exception e)
                 {
@@ -283,6 +286,7 @@ namespace TFTV
         {
             try
             {
+
 
                 List<TacticalAbilityTarget> culledList = new List<TacticalAbilityTarget>(targetList);
 
@@ -326,10 +330,11 @@ namespace TFTV
                 }
 
                 DamageKeywordDef[] excludeDamageDefs =
-{
-    GameUtl.GameComponent<SharedData>().SharedDamageKeywords.ParalysingKeyword,
-    GameUtl.GameComponent<SharedData>().SharedDamageKeywords.ViralKeyword
-};
+                {
+                    GameUtl.GameComponent<SharedData>().SharedDamageKeywords.ParalysingKeyword,
+                    GameUtl.GameComponent<SharedData>().SharedDamageKeywords.ViralKeyword
+                };
+
                 if (ability.Equipment != null && ability.Equipment is Weapon weapon
                     && weapon.GetDamagePayload().DamageKeywords.Any(damageKeyordPair => excludeDamageDefs.Contains(damageKeyordPair.DamageKeywordDef)))
                 {
@@ -343,6 +348,25 @@ namespace TFTV
                     }
 
                 }
+
+             //   TFTVLogger.Always($"The ability is {ability.TacticalAbilityDef.name}");
+
+             /*   if (ability.TacticalAbilityDef.name.Contains("PsychicScream"))
+                {
+                    TFTVLogger.Always($"found ability");
+
+                    foreach (TacticalAbilityTarget target in targetList)
+                    {
+                       // if (target.Actor is TacticalActor tacticalActor)
+                       // {
+                            TFTVLogger.Always($"{target.Actor.DisplayName}");
+                           // culledList.Remove(target);
+                       // }
+                    }
+
+
+
+                }*/
 
 
 

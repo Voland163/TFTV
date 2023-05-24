@@ -41,9 +41,10 @@ namespace TFTV
         public int BaseDefenseStratToBeAnnounced;
         public int BaseDefenseStratToBeImplemented;
         public bool[] StratsAlreadyImplementedAtBD;
+        public bool AutomataResearched;
         
         public Dictionary<float, float> ConsolePositionsInBaseDefense;
-       // public Dictionary<int, int> CyclopsMolecularTargeting;
+        public Dictionary<int, int> CyclopsMolecularTargeting = TFTVAncients.CyclopsMolecularDamageBuff;
     }
 
     /// <summary>
@@ -80,7 +81,7 @@ namespace TFTV
             TFTVLogger.Always("Tactical start completed");
             TFTVLogger.Always("Difficulty level is " + tacController.Difficulty.Order);
             TFTVLogger.Always("LOTA rework active in tactical is " + TFTVAncients.LOTAReworkActive);
-            TFTVAncients.CheckResearchStateOnTacticalStart();
+            TFTVAncients.CheckResearchStateOnGeoscapeEndAndOnTacticalStart(null);
 
             TFTVBaseDefenseTactical.CheckConsoleSituation(Controller);
             //  TFTVBaseDefenseTactical.InteractionPointPlacement();
@@ -88,8 +89,8 @@ namespace TFTV
             TFTVSpecialDifficulties.CheckForSpecialDifficulties();
             TFTVBetterEnemies.ImplementBetterEnemies();
             TFTVRevenant.CheckIfRevenantPresent(Controller);
-            
-           // TFTVBaseDefenseTactical.RevealAllSpawns(Controller);
+         //   TFTVBaseDefenseTactical.OjectivesDebbuger(Controller);
+            // TFTVBaseDefenseTactical.RevealAllSpawns(Controller);
 
             // TFTVBaseDefenseTactical.CheckingPortrait(Controller);
 
@@ -107,7 +108,7 @@ namespace TFTV
             TFTVRevenant.revenantCanSpawn = false;
 
             TFTVRevenantResearch.CheckRevenantCapturedOrKilled(Controller);
-
+           // TFTVBaseDefenseTactical.OjectivesDebbuger(Controller);
             base.OnTacticalEnd();
 
         }
@@ -147,9 +148,9 @@ namespace TFTV
                 TFTVBaseDefenseTactical.StratToBeImplemented = data.BaseDefenseStratToBeImplemented;  
                 TFTVBaseDefenseTactical.UsedStrats = data.StratsAlreadyImplementedAtBD;
                 TFTVBaseDefenseTactical.ConsolePositions = data.ConsolePositionsInBaseDefense;
-              //  TFTVAncients.CyclopsMolecularDamageBuff = data.CyclopsMolecularTargeting;
+                TFTVAncients.CyclopsMolecularDamageBuff = data.CyclopsMolecularTargeting;
                 TFTVBaseDefenseTactical.ModifyObjectives(Controller.TacMission.MissionData.MissionType);
-               
+                TFTVAncients.AutomataResearched = data.AutomataResearched;
 
                 TurnZeroMethodsExecuted = data.TurnZeroMethodsExecuted;
 
@@ -194,8 +195,10 @@ namespace TFTV
                 BaseDefenseStratToBeAnnounced = TFTVBaseDefenseTactical.StratToBeAnnounced,
                 StratsAlreadyImplementedAtBD = TFTVBaseDefenseTactical.UsedStrats,
                 ConsolePositionsInBaseDefense = TFTVBaseDefenseTactical.ConsolePositions,
-              //  CyclopsMolecularTargeting = TFTVAncients.CyclopsMolecularDamageBuff,
+                AutomataResearched = TFTVAncients.AutomataResearched,
+                CyclopsMolecularTargeting = TFTVAncients.CyclopsMolecularDamageBuff,
                 TurnZeroMethodsExecuted = TurnZeroMethodsExecuted
+                
             };
         }
         /// <summary>

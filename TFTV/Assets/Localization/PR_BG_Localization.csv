@@ -1082,3 +1082,8 @@ HINT_DECOYSCYLLA_TITLE,Text,,Terrifying intelligence,,,,,,,,
 HINT_DECOYSCYLLA_TEXT,Text,,"<i> ""She is not falling for it twice!""</i>
 
 What did you expect of the Apex of Creation?",,,,,,,,
+ROBOTIC_SELF_REPAIR_TITLE,Text,,SELF-RESTORE,,,,,,,,
+ROBOTIC_SELF_REPAIR_ABILITY_TEXT,Text,,Restores all its disabled limbs after one turn. ,,,,,,,,
+ROBOTIC_SELF_REPAIR_TEXT_TEXT,Text,,All disabled limbs will be restored with half their maximum health next turn.,,,,,,,,
+CYCLOPS_SCREAM_TITLE,Text,,TREMOR STOMP,,,,,,,,
+CYCLOPS_SCREAM_DESCRIPTION,Text,,Disorients and deals 60 damage to all organic targets within 12 tiles. ,,,,,,,,

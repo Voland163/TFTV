@@ -74,11 +74,11 @@ namespace TFTV
 
 
 
-        internal static void ReDeployHopliteShield(TacticalAbility ability, TacticalActor __instance, object parameter)
+        internal static void ReDeployHopliteShield(TacticalAbility ability, TacticalActor tacticalActor, object parameter)
         {
             try
             {
-                if (__instance.TacticalActorDef.name.Equals("HumanoidGuardian_ActorDef") && ability.AbilityDef.name.Equals("Guardian_Beam_ShootAbilityDef") && !__instance.IsControlledByPlayer)
+                if (tacticalActor.TacticalActorDef.name.Equals("HumanoidGuardian_ActorDef") && ability.AbilityDef.name.Equals("Guardian_Beam_ShootAbilityDef") && !tacticalActor.IsControlledByPlayer && tacticalActor.IsAlive)
 
 
                 {
@@ -88,17 +88,17 @@ namespace TFTV
 
                     DeployShieldAbility deployShieldAbility = null;
 
-                    if (__instance.GetAbilityWithDef<DeployShieldAbility>(deployShieldAbilityDef) != null)
+                    if (tacticalActor.GetAbilityWithDef<DeployShieldAbility>(deployShieldAbilityDef) != null)
                     {
 
-                        deployShieldAbility = __instance.GetAbilityWithDef<DeployShieldAbility>(deployShieldAbilityDef);
+                        deployShieldAbility = tacticalActor.GetAbilityWithDef<DeployShieldAbility>(deployShieldAbilityDef);
 
 
                     }
-                    else if (__instance.GetAbilityWithDef<DeployShieldAbility>(deployShieldAbilityDualDef) != null)
+                    else if (tacticalActor.GetAbilityWithDef<DeployShieldAbility>(deployShieldAbilityDualDef) != null)
                     {
 
-                        deployShieldAbility = __instance.GetAbilityWithDef<DeployShieldAbility>(deployShieldAbilityDualDef);
+                        deployShieldAbility = tacticalActor.GetAbilityWithDef<DeployShieldAbility>(deployShieldAbilityDualDef);
 
                     }
 
@@ -107,10 +107,10 @@ namespace TFTV
 
                         TacticalAbilityTarget targetOfTheAttack = parameter as TacticalAbilityTarget;
 
-                        Vector3 directionShieldDeploy = __instance.gameObject.transform.position + 2 * (targetOfTheAttack.ActorGridPosition - __instance.gameObject.transform.position).normalized;
+                        Vector3 directionShieldDeploy = tacticalActor.gameObject.transform.position + 2 * (targetOfTheAttack.ActorGridPosition - tacticalActor.gameObject.transform.position).normalized;
                         //  TFTVLogger.Always($"directShieldDeploy {directionShieldDeploy}, hoplite position {__instance.gameObject.transform.position} and target{targetOfTheAttack.ActorGridPosition}");
                         TacticalAbilityTarget tacticalAbilitytaret = new TacticalAbilityTarget
-                        { GameObject = __instance.gameObject, PositionToApply = directionShieldDeploy };
+                        { GameObject = tacticalActor.gameObject, PositionToApply = directionShieldDeploy };
 
                         deployShieldAbility.Activate(tacticalAbilitytaret);
                     }
@@ -144,13 +144,11 @@ namespace TFTV
 
                     TacticalActorBase sourceTacticalActorBase = TacUtil.GetSourceTacticalActorBase(__instance.Source);
                     List<TacticalActor> list = sourceTacticalActorBase.TacticalFaction.TacticalActors.Where((TacticalActor a) => a.TacticalActorBaseDef == __instance.MassShootTargetActorEffectDef.ShootersActorDef).ToList();
-                    using (new MultiForceTargetableLock(sourceTacticalActorBase.Map.GetActors<TacticalActor>()))
+                    using (new MultiForceTargetableLock(sourceTacticalActorBase.Map.GetActors<TacticalActor>().Where(ta => ta.IsAlive)))
                     {
                         foreach (TacticalActor item in list)
                         {
                             ShieldDeployedStatusDef shieldDeployed = DefCache.GetDef<ShieldDeployedStatusDef>("ShieldDeployed_StatusDef");
-
-
 
                             Weapon selectedWeapon = null;
 
@@ -162,10 +160,7 @@ namespace TFTV
                                 }
                             }
 
-
-
-                            // Weapon selectedWeapon = item.Equipments.SelectedWeapon;
-                            if (selectedWeapon != null && !(selectedWeapon.DefaultShootAbility.GetWeaponDisabledState(IgnoredAbilityDisabledStatesFilter.CreateDefaultFilter()) != AbilityDisabledState.NotDisabled))
+                            if (item.IsAlive && selectedWeapon != null && !(selectedWeapon.DefaultShootAbility.GetWeaponDisabledState(IgnoredAbilityDisabledStatesFilter.CreateDefaultFilter()) != AbilityDisabledState.NotDisabled))
                             {
                                 TacticalActor hitFriend = null;
                                 if (!item.TacticalPerception.CheckFriendlyFire(selectedWeapon, item.Pos, tacticalAbilityTarget, out hitFriend) && selectedWeapon.TryGetShootTarget(tacticalAbilityTarget) != null)
@@ -697,6 +692,18 @@ namespace TFTV
                             startPreparingShootAbility.Activate(parameter);
                         }
 
+                    }
+
+                   
+
+                    ApplyEffectAbilityDef parasychosis = DefCache.GetDef<ApplyEffectAbilityDef>("Parasychosis_AbilityDef");
+                    GameTagDef infestationSecondObjectiveTag = DefCache.GetDef<GameTagDef>("ScatterRemainingAttackers_GameTagDef");
+
+                    if(ability.TacticalAbilityDef == parasychosis && parameter is TacticalAbilityTarget target && target.GetTargetActor() != null && target.GetTargetActor() is TacticalActor tacticalActor && tacticalActor.HasGameTag(infestationSecondObjectiveTag)) 
+                    {
+                      //  TFTVLogger.Always($"Got here, target is {tacticalActor.name}");
+                        tacticalActor.GameTags.Remove(infestationSecondObjectiveTag);
+                    
                     }
 
                     projectileActor.Clear();

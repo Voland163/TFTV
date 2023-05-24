@@ -1,19 +1,12 @@
-﻿using Base.Core;
-using Base.Defs;
-using Base.Levels;
+﻿using Base.Defs;
 using Base.Platforms;
 using HarmonyLib;
-using PhoenixPoint.Common.Core;
-using PhoenixPoint.Common.Entities.RedeemableCodes;
-using PhoenixPoint.Common.Game;
-using PhoenixPoint.Common.Levels;
 using PhoenixPoint.Common.Levels.Params;
 using PhoenixPoint.Home.View.ViewControllers;
 using PhoenixPoint.Home.View.ViewModules;
 using PhoenixPoint.Home.View.ViewStates;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace TFTV
 {
@@ -26,6 +19,9 @@ namespace TFTV
         //You will need to edit scene hierarchy to add new objects under GameSettingsModule, it has a UIModuleGameSettings script
         //Class UIStateNewGeoscapeGameSettings is responsible for accepting selected settings and start the game, so you'll have to dig inside
         //for changing behaviour.
+
+
+
         [HarmonyPatch(typeof(UIStateNewGeoscapeGameSettings), "BindSecondaryOptions")]
         internal static class UIStateNewGeoscapeGameSettings_BindSecondaryOptions_patch
         {
@@ -36,13 +32,16 @@ namespace TFTV
                     TFTVLogger.Always("Element is " + element.OptionText.text);
                     if (element.OptionText.text == "PLAY PROLOGUE AND TUTORIAL")
                     {
-                      //  element.OptionText.text = "START WITH VANILLA TUTORIAL SQUAD";                      
+                        //  element.OptionText.text = "START WITH VANILLA TUTORIAL SQUAD";                      
                     }
                     else
                     {
                         element.CheckedToggle.isOn = false;
 
                     }
+
+
+
                 }
                 catch (Exception e)
                 {
@@ -50,8 +49,6 @@ namespace TFTV
                 }
 
             }
-
-
         }
 
         [HarmonyPatch(typeof(UIStateNewGeoscapeGameSettings), "CreateSceneBinding")]
@@ -71,7 +68,7 @@ namespace TFTV
                     List<EntitlementDef> entitlementDefs = new List<EntitlementDef>();
                     entitlementDefs.AddRange(gameSettings.GetActivatedEntitlements());
                     entitlementDefs.AddRange(gameSettings.GetDeactivatedEntitlements());
-                    gameParams.EnabledDlc = entitlementDefs.ToArray(); 
+                    gameParams.EnabledDlc = entitlementDefs.ToArray();
                 }
                 catch (Exception e)
                 {

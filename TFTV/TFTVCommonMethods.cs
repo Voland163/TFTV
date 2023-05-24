@@ -11,6 +11,7 @@ using PhoenixPoint.Geoscape.Entities.Research.Requirement;
 using PhoenixPoint.Geoscape.Events;
 using PhoenixPoint.Geoscape.Events.Eventus;
 using PhoenixPoint.Geoscape.Levels;
+using PhoenixPoint.Geoscape.Levels.Objectives;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Effects.DamageTypes;
 using PhoenixPoint.Tactical.Entities.Statuses;
@@ -86,6 +87,7 @@ namespace TFTV
                 TFTVBaseDefenseTactical.ConsolePositions = new Dictionary<float, float>();
                 TFTVAncients.CyclopsMolecularDamageBuff.Clear();
                 TFTVPandoranProgress.ScyllaCount = 0;
+                TFTVAncients.AutomataResearched = false;
                 TFTVLogger.Always("Internal variables cleared");
             }
             catch (Exception e)
@@ -137,6 +139,8 @@ namespace TFTV
                 TFTVBaseDefenseTactical.ConsolePositions = new Dictionary<float, float>();
                 TFTVBaseDefenseTactical.StratToBeAnnounced = 0;
                 TFTVBaseDefenseTactical.StratToBeImplemented = 0;
+                TFTVAncients.CyclopsMolecularDamageBuff.Clear();
+                //  TFTVBaseDefenseTactical.VentingHintShown = false;
             }
             catch (Exception e)
             {
@@ -163,6 +167,7 @@ namespace TFTV
                 TFTVBaseDefenseTactical.ConsolePositions = new Dictionary<float, float>();
                 TFTVBaseDefenseTactical.StratToBeAnnounced = 0;
                 TFTVBaseDefenseTactical.StratToBeImplemented = 0;
+                TFTVBaseDefenseTactical.VentingHintShown = false;
 
             }
             catch (Exception e)
@@ -213,6 +218,49 @@ namespace TFTV
             }
         }
 
+
+        //Method to remove manually set objective
+        public static void RemoveManuallySetObjective(GeoLevelController controller, string title)
+        {
+            try
+            {
+                List<GeoFactionObjective> listOfObjectives = controller.PhoenixFaction.Objectives.ToList();
+
+                foreach (GeoFactionObjective objective1 in listOfObjectives)
+                {
+                    if (objective1.Title == null)
+                    {
+                        TFTVLogger.Always("objective1.Title is missing!");
+                    }
+                    else
+                    {
+                        if (objective1.Title.LocalizationKey == null)
+                        {
+                            TFTVLogger.Always("objective1.Title.LocalizationKey is missing!");
+                        }
+                        else
+                        {
+                            TFTVLogger.Always("objective1.Title.LocalizationKey is " + objective1.Title.LocalizationKey);
+
+                            if (objective1.Title.LocalizationKey == title)
+                            {
+                                controller.PhoenixFaction.RemoveObjective(objective1);
+                            }
+                        }
+                    }
+
+                }
+
+
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+
+        }
 
 
         [HarmonyPatch(typeof(Research), "CompleteResearch")]

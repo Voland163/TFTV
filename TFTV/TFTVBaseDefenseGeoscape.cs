@@ -15,6 +15,7 @@ using PhoenixPoint.Geoscape.Entities.PhoenixBases;
 using PhoenixPoint.Geoscape.Entities.Sites;
 using PhoenixPoint.Geoscape.Events;
 using PhoenixPoint.Geoscape.Levels;
+using PhoenixPoint.Geoscape.Levels.Objectives;
 using PhoenixPoint.Geoscape.View;
 using PhoenixPoint.Geoscape.View.DataObjects;
 using PhoenixPoint.Geoscape.View.ViewControllers.BaseRecruits;
@@ -37,12 +38,19 @@ namespace TFTV
         public static Dictionary<int, Dictionary<string, double>> PhoenixBasesUnderAttack = new Dictionary<int, Dictionary<string, double>>();
         public static List<int> PhoenixBasesInfested = new List<int>();
 
-        //  public static List<GeoSite> InstantiatedVisuales = new List<GeoSite>();
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
+
+        //For implementing base defense as proper objective:
+        /* DiplomaticGeoFactionObjective cyclopsObjective = new DiplomaticGeoFactionObjective(controller.PhoenixFaction, controller.PhoenixFaction)
+                    {
+                        Title = new LocalizedTextBind("BUILD_CYCLOPS_OBJECTIVE"),
+                        Description = new LocalizedTextBind("BUILD_CYCLOPS_OBJECTIVE"),
+                    };
+                    cyclopsObjective.IsCriticalPath = true;
+                    controller.PhoenixFaction.AddObjective(cyclopsObjective);*/
 
 
         //Patch and methods for demolition PhoenixFacilityConfirmationDialogue
-
         internal static List<Vector2Int> CheckAdjacency(Vector2Int position)
         {
             try
@@ -465,6 +473,18 @@ namespace TFTV
                         GeoscapeEventContext context = new GeoscapeEventContext(phoenixBase, controller.PhoenixFaction);
 
                         controller.EventSystem.TriggerGeoscapeEvent("OlenaBaseDefense", context);
+
+                     /*   UIModuleGeoObjectives
+
+                        //For implementing base defense as proper objective:
+                        DiplomaticGeoFactionObjective baseDefenseObjective = new DiplomaticGeoFactionObjective(controller.PhoenixFaction, controller.PhoenixFaction)
+                                    {
+                                        Title = new LocalizedTextBind("BUILD_CYCLOPS_OBJECTIVE"),
+                                        Description = new LocalizedTextBind("BUILD_CYCLOPS_OBJECTIVE"),
+                                    };
+                                    baseDefenseObjective.IsCriticalPath = true;
+                                    controller.PhoenixFaction.AddObjective(baseDefenseObjective);*/
+
                     }
 
 
@@ -721,7 +741,7 @@ namespace TFTV
                               }
                           }*/
 
-                        __instance.Background.sprite = sprite;
+        __instance.Background.sprite = sprite;
                         __instance.Warning.SetWarning(text, factionInfo.Name, geoMission.Site.SiteName);
                         Text description = __instance.GetComponentInChildren<ObjectivesController>().Objectives;
                         description.GetComponent<I2.Loc.Localize>().enabled = false;

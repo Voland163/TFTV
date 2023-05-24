@@ -1,8 +1,9 @@
 ﻿using Base.Serialization.General;
+using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.Statuses;
-using System.Collections.Generic;
+using PhoenixPoint.Tactical.Entities.Weapons;
 using UnityEngine;
 
 namespace TFTV.Tactical.Entities.Statuses
@@ -14,5 +15,6 @@ namespace TFTV.Tactical.Entities.Statuses
         public int FumbleChancePerc = 50;
         public TacticalAbilityDef[] AbilitiesToFumble;
         public DamageDeliveryType RestrictedDeliveryType = default;
+        public GameTagDef[] WeaponTagCullFilter;
     }
 }
