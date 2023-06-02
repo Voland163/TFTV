@@ -180,7 +180,8 @@ namespace PRMBetterClasses.Tactical.Entities.Statuses
                     float multiplier = AddDependentDamageKeywordStatusDef.BonusDamagePerc;
                     if (damageDealer.TryGetWeapon() is Weapon weapon)
                     {
-                        if (weapon.WeaponDef.name.Equals("SY_PoisonGrenade_WeaponDef"))
+                        if (weapon.WeaponDef.name.Equals("SY_PoisonGrenade_WeaponDef")
+                            || weapon.WeaponDef.name.Equals("AN_AcidGrenade_WeaponDef"))
                         {
                             multiplier *= 0.2f;
                         }

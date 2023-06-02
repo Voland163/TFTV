@@ -29,6 +29,8 @@ namespace TFTV
 
         }
 
+
+        //not yet deprecated, zig zag zog still playing with old LOTA
         public static void CheckNewLOTA(GeoLevelController controller)
         {
             try
@@ -70,7 +72,7 @@ namespace TFTV
             }
         }
 
-
+        
 
 
 

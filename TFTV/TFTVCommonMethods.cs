@@ -79,8 +79,7 @@ namespace TFTV
                 TFTVInfestation.InfestationMissionWon = false;
                 ClearHints();
                 TFTVUI.uIModuleSoldierCustomization = null;
-                TFTVAncients.HoplitesKilled = 0;
-                TFTVBetaSaveGamesFixes.LOTAReworkGlobalCheck = false;
+            //    TFTVBetaSaveGamesFixes.LOTAReworkGlobalCheck = false;
                 TFTVTactical.TurnZeroMethodsExecuted = false;
                 TFTVBaseDefenseGeoscape.PhoenixBasesUnderAttack = new Dictionary<int, Dictionary<string, double>>();
                 TFTVBaseDefenseTactical.VentingHintShown = false;
@@ -88,6 +87,7 @@ namespace TFTV
                 TFTVAncients.CyclopsMolecularDamageBuff.Clear();
                 TFTVPandoranProgress.ScyllaCount = 0;
                 TFTVAncients.AutomataResearched = false;
+                TFTVAncients.AlertedHoplites.Clear();
                 TFTVLogger.Always("Internal variables cleared");
             }
             catch (Exception e)
@@ -140,6 +140,7 @@ namespace TFTV
                 TFTVBaseDefenseTactical.StratToBeAnnounced = 0;
                 TFTVBaseDefenseTactical.StratToBeImplemented = 0;
                 TFTVAncients.CyclopsMolecularDamageBuff.Clear();
+                TFTVAncients.AlertedHoplites.Clear();
                 //  TFTVBaseDefenseTactical.VentingHintShown = false;
             }
             catch (Exception e)
@@ -168,6 +169,7 @@ namespace TFTV
                 TFTVBaseDefenseTactical.StratToBeAnnounced = 0;
                 TFTVBaseDefenseTactical.StratToBeImplemented = 0;
                 TFTVBaseDefenseTactical.VentingHintShown = false;
+                TFTVAncients.AlertedHoplites.Clear();
 
             }
             catch (Exception e)

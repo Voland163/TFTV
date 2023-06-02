@@ -1,10 +1,10 @@
 ﻿using Base;
 using Base.Core;
+using Base.Levels;
 using Base.UI;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
-using PhoenixPoint.Common.Entities.Items;
 using PhoenixPoint.Common.View.ViewControllers;
 using PhoenixPoint.Geoscape.Core;
 using PhoenixPoint.Geoscape.Entities;
@@ -12,9 +12,8 @@ using PhoenixPoint.Geoscape.Entities.Missions;
 using PhoenixPoint.Geoscape.Events;
 using PhoenixPoint.Geoscape.Events.Eventus;
 using PhoenixPoint.Geoscape.Levels;
+using PhoenixPoint.Geoscape.Levels.Objectives;
 using PhoenixPoint.Geoscape.View.ViewControllers.Modal;
-using PhoenixPoint.Home.View.ViewModules;
-using PhoenixPoint.Tactical.Levels;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -36,8 +35,68 @@ namespace TFTV
         public static string InfestedHavensVariable = "Number_of_Infested_Havens";
         public static string LivingWeaponsAcquired = "Living_Weapons_Acquired";
         public static int roll = 0;
-      
+
         public static bool InfestationMissionWon = false;
+
+
+        
+        //force Corruption of the Mind to spawn in a haven covered in Mist
+
+        [HarmonyPatch(typeof(GeoEventChoiceOutcome), "GetRandomSiteForEncounter")]
+        public static class GeoEventChoiceOutcome_GetRandomSiteForEncounter_CorruptionOfMind_Patch
+        {
+
+            public static void Postfix(ref GeoSite __result, GeoLevelController level, string encounterID, GeoSite contextSite, EarthUnits range, GeoActor rangeReference, bool nearestSite = false, bool removeCurrent = true)
+            {
+                try 
+                {
+                    if (encounterID == "PROG_FS3_MISS") 
+                    {
+                        GeoSite anuHaven = __result;
+                        __result = null;
+
+                        if (!anuHaven.IsInMist) 
+                        {
+
+                            List<GeoSite> list = level.EventSystem.GetValidSitesForEvent(encounterID).Where(gs=>gs.IsInMist).ToList();
+                            if (removeCurrent)
+                            {
+                                list.Remove(contextSite);
+                            }
+
+                            if (list.Count > 0)
+                            {
+                                anuHaven = list.GetRandomElement();
+                            }
+                        }
+
+                        level.EventSystem.SetVariable("TrappedInTheMistTriggered", 1);
+                        level.EventSystem.SetVariable("Number_of_Infested_Havens", level.EventSystem.GetVariable(InfestedHavensVariable) + 1);
+                        level.AlienFaction.InfestHaven(anuHaven);
+                        anuHaven.RevealSite(level.PhoenixFaction);
+                        anuHaven.RefreshVisuals();
+
+                        /* DiplomaticGeoFactionObjective cyclopsObjective = new DiplomaticGeoFactionObjective(controller.PhoenixFaction, controller.PhoenixFaction)
+                  {
+                      Title = new LocalizedTextBind("BUILD_CYCLOPS_OBJECTIVE"),
+                      Description = new LocalizedTextBind("BUILD_CYCLOPS_OBJECTIVE"),
+                  };
+                  cyclopsObjective.IsCriticalPath = true;
+                  controller.PhoenixFaction.AddObjective(cyclopsObjective);*/
+
+
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                   // return true;
+                }
+            }
+
+        }
+
+
 
         // Copied and adapted from Mad´s Assorted Adjustments
 
@@ -76,9 +135,9 @@ namespace TFTV
                         // TFTVLogger.Always("DestroySite method called");
                         TFTVLogger.Always("infestation variable is " + __instance.GeoLevel.EventSystem.GetVariable("Infestation_Encounter_Variable"));
 
-                        if (TFTVInfestationStory.HavenPopulation!=0)
+                        if (TFTVInfestationStory.HavenPopulation != 0)
                         {
-                            InfestationMissionWon=true;
+                            InfestationMissionWon = true;
                         }
                         string faction = __instance.Owner.GetPPName();
                         //  TFTVLogger.Always(faction);
@@ -389,8 +448,8 @@ namespace TFTV
                                 site.GeoLevel.EventSystem.SetVariable(LivingWeaponsAcquired, 3);
                             }
                         }
-                        InfestationMissionWon=false;
-                      
+                        InfestationMissionWon = false;
+
 
                         return false;
                     }
@@ -405,8 +464,8 @@ namespace TFTV
 
 
                         __instance.Background.sprite = Helper.CreateSpriteFromImageFile("Node.jpg");
-                     
-                        
+
+
 
                         return true;
 

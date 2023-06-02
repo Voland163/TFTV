@@ -3,6 +3,7 @@ using Base.Defs;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities.GameTags;
+using PhoenixPoint.Common.View.ViewModules;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.PhoenixBases;
 using PhoenixPoint.Geoscape.Entities.Sites;
@@ -15,6 +16,7 @@ using PhoenixPoint.Geoscape.View.ViewModules;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 
 namespace TFTV
 {
@@ -23,6 +25,95 @@ namespace TFTV
         
 
         private static readonly DefRepository Repo = TFTVMain.Repo;
+
+        [HarmonyPatch(typeof(EditUnitButtonsController), "CheckIsBionicsIsAvailable")]
+        public static class EditUnitButtonsController_CheckIsBionicsIsAvailable_Bionics_patch
+        {
+            public static void Postfix(GeoPhoenixFaction phoenixFaction, ref bool ____bionicsAvailable, EditUnitButtonsController __instance)
+            {
+                try
+                {
+
+                    bool flag = false;
+                    foreach (GeoPhoenixBase basis in phoenixFaction.Bases)
+                    {
+                        foreach (GeoPhoenixFacility facility in basis.Layout.Facilities)
+                        {
+                            if (!(facility.Def != __instance.BionicLab) && facility.State == GeoPhoenixFacility.FacilityState.Functioning && facility.IsPowered)
+                            {
+                                flag = true;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (flag)
+                    {
+
+
+                    }
+                    else
+                    {
+                        ____bionicsAvailable = false;
+                        MethodInfo methodInfo = typeof(EditUnitButtonsController).GetMethod("SetCircularButtonVisibility", BindingFlags.NonPublic | BindingFlags.Instance);
+
+                        methodInfo.Invoke(__instance, new object[] { __instance.BionicsButton, ____bionicsAvailable });
+                    }
+                   
+                }
+
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+        }
+
+
+        [HarmonyPatch(typeof(EditUnitButtonsController), "CheckIsMutationIsAvailable")]
+        public static class EditUnitButtonsController_CheckIsMutationIsAvailable_Mutations_patch
+        {                   
+            public static void Postfix(GeoPhoenixFaction phoenixFaction, ref bool ____mutationAvailable, EditUnitButtonsController __instance)
+            {
+                try
+                {
+
+                    bool flag = false;
+                    foreach (GeoPhoenixBase basis in phoenixFaction.Bases)
+                    {
+                        foreach (GeoPhoenixFacility facility in basis.Layout.Facilities)
+                        {
+                            if (!(facility.Def != __instance.MutationLab) && facility.State == GeoPhoenixFacility.FacilityState.Functioning && facility.IsPowered)
+                            {
+                                flag = true;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (flag)
+                    {
+
+
+                    }
+                    else
+                    {
+                        ____mutationAvailable = false;
+                        MethodInfo methodInfo = typeof(EditUnitButtonsController).GetMethod("SetCircularButtonVisibility", BindingFlags.NonPublic | BindingFlags.Instance);
+
+                        methodInfo.Invoke(__instance, new object[] { __instance.BionicsButton, ____mutationAvailable });
+                    }
+
+                }
+
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+        }
+
+
 
         [HarmonyPatch(typeof(GeoAlienFaction), "UpdateFactionDaily")]
         public static class PhoenixStatisticsManager_UpdateGeoscapeStats_AnuPissedAtBionics_Patch

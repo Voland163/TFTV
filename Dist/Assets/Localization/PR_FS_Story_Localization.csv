@@ -182,31 +182,6 @@ A species that looks utterly alien, even compared to other highly mutated Pandor
 Une espèce qui semble totalement étrangère, même comparée à d’autres Pandoriens hautement mutés. Nous devons commencer l’étude le plus tôt possible pour comprendre comment l’infestation s’est produite.",,,,,,
 PROG_FS20_TEXT_GENERAL_0,Text,,"Why did the Behemoth destroy that haven? I believe our Adversary is trying to send us a message, “behave, or else…”",,"Pourquoi le Béhémoth a-t-il détruit ce refuge ? Je crois que notre Adversaire essaie de nous envoyer un message, ""comporte-toi bien, sinon...""",,,,,,
 PROG_FS20_TITLE,Text,,An Education into the Consequences of Resistance,,Un enseignement sur les conséquences de la résistance,,,,,,
-PROG_FS3_TEXT_GENERAL_0,Text,,"<i>""To keep the Synedrion dream alive, we must keep our people alive. Join the volunteer militia today! Service guarantees basic alimentary allocation."" </i>
-
-- Public notice on a Synedrion feed
-
-<i>""We are proceeding with total mobilization as per West's orders.
-The war against the Pandoravirus is entering its most active phase. The number and intensity of attacks on our havens is staggering. We need to shift all available resources towards defensive measures, there is no other choice.""</i>
-
-- From an intercept of New Jericho comms
-
-<i>""The Disciples have accelerated their directed evolution program... They are injecting the Mutagens into the slum dwellers, breeding an army to withstand the Pandoran hordes... Personal note: I can't tell if the Anu are being guided by their Scriptures or pre-collapse mass entertainment.""</i>
-
-- Excerpts from intelligence report 634b/47/AA.
-",,"<i>""Pour faire vivre le rêve de Synedrion, nous devons garder notre peuple en vie. Joignez-vous à la milice bénévole dès aujourd’hui! Le service garantit une allocation alimentaire de base.""</i>
-
-- Avis public sur un flux Synedrion
-
-<i>""Nous procédons à une mobilisation totale conformément aux ordres de West. 
-La guerre contre le pandoravirus entre dans sa phase la plus active. Le nombre et l’intensité des attaques contre nos refuges sont stupéfiants. Nous devons déplacer toutes les ressources disponibles vers des mesures défensives, il n’y a pas d’autre choix.""</i>
-
-- D’une interception de communications de New Jericho
-<i>""Les disciples ont accéléré leur programme d’évolution dirigée... Ils injectent les mutagènes dans les habitants des bidonvilles, élevant une armée pour résister aux hordes de pandoriens... Note personnelle : Je ne peux pas dire si les Anus sont guidés par leurs Écritures ou le divertissement de masse pré-éfondrement.""</i>
-
-- Extraits du rapport de renseignement 634b/47/AA.
-",,,,,,
-PROG_FS3_TITLE,Text,,The Falling Veil,,La chute du voile,,,,,,
 OLENA_ON_FIRST_FLYER_TITLE,Text,,Bogey!,,Bogey !,,,,,,
 OLENA_ON_FIRST_FLYER_TEXT,Text,,One of the flyers is detaching itself from the swarm! If it reaches a haven it will wreak havoc on the civilians. We should attempt to triangulate its destination and set an armed aircraft on course to intercept.,,"L'une des créatures volantes se détache de l’essaim ! S’il atteint un refuge, il fera des ravages parmi les civils. Nous devrions tenter de trianguler sa destination et mettre un avion armé en route pour l’intercepter.",,,,,,
 OLENA_ON_FIRST_HAVEN_TARGET_TITLE,Text,,Moving!,,En mouvement !,,,,,,
@@ -267,3 +242,16 @@ KEY_FS_NJ_CRUISE_CONTROL_MODULE_DESCRIPTION,Text,,Extra crew and increased speed
 KEY_FS_NJ_CRUISE_CONTROL_MODULE_NAME,Text,,Quick Response Module,,,,,,,,
 KEY_FS_NJ_FUEL_TANK_MODULE_DESCRIPTION,Text,,Extra crew and increased range module,,,,,,,,
 KEY_FS_NJ_FUEL_TANK_MODULE_NAME,Text,,Extended Range Module,,,,,,,,
+PROG_FS3_CHOICE_0_TEXT,Text,,OK.,,,,,,,,
+PROG_FS3_FAIL_CHOICE_0_TEXT,Text,,OK.,,,,,,,,
+PROG_FS3_FAIL_TEXT_GENERAL_0,Text,,We did not have the strength to combat this threat. But we must return.,,,,,,,,
+PROG_FS3_FAIL_TITLE,Text,,Corruption of the Body,,,,,,,,
+PROG_FS3_MISS_CHOICE_0_TEXT,Text,,START MISSION,,,,,,,,
+PROG_FS3_MISS_CHOICE_1_TEXT,Text,,CANCEL,,,,,,,,
+PROG_FS3_MISS_TEXT_GENERAL_0,Text,,Locate and destroy the Pandoran mutation that has taken hold of the minds of the Anu splinter group command.,,,,,,,,
+PROG_FS3_MISS_TITLE,Text,,Corruption of the Mind,,,,,,,,
+PROG_FS3_TEXT_GENERAL_0,Text,,Something strange is happening in a Disciples of Anu haven deep in the Mist. We are receiving reports that suggest mass-psychoneurological affliction of some sort. I bet it is a Delirium related incident. We have to investigate it as soon as possible; it might open new avenues of research that can help us deal with the Delirium menace.,,,,,,,,
+PROG_FS3_TITLE,Text,,The Science of Madness,,,,,,,,
+PROG_FS3_WIN_CHOICE_0_TEXT,Text,,OK.,,,,,,,,
+PROG_FS3_WIN_TEXT_GENERAL_0,Text,,The horrifying creature will no longer terrorize the Anu cultists. Let's hope they rebuild in a sensible way.,,,,,,,,
+PROG_FS3_WIN_TITLE,Text,,Cleansed,,,,,,,,

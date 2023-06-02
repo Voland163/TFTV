@@ -21,21 +21,6 @@ namespace TFTV
         
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
 
-      /*  private static readonly GeoVehicleEquipmentDef hibernationModule = Repo.GetAllDefs<GeoVehicleEquipmentDef>().FirstOrDefault(gve => gve.name.Equals("SY_HibernationPods_GeoVehicleModuleDef"));
-
-        private static readonly GeoVehicleDef manticore6slots = Repo.GetAllDefs<GeoVehicleDef>().FirstOrDefault(ged => ged.name.Equals("PP_Manticore_Def_6_Slots"));
-        private static readonly GeoVehicleDef manticore = Repo.GetAllDefs<GeoVehicleDef>().FirstOrDefault(ged => ged.name.Equals("PP_Manticore_Def"));
-        private static readonly GeoVehicleDef helios5slots = Repo.GetAllDefs<GeoVehicleDef>().FirstOrDefault(ged => ged.name.Equals("SYN_Helios_Def_5_Slots"));
-        private static readonly GeoVehicleDef helios = Repo.GetAllDefs<GeoVehicleDef>().FirstOrDefault(ged => ged.name.Equals("SYN_Helios_Def"));
-        private static readonly GeoVehicleDef thunderbird7slots = Repo.GetAllDefs<GeoVehicleDef>().FirstOrDefault(ged => ged.name.Equals("NJ_Thunderbird_Def_7_Slots"));
-        private static readonly GeoVehicleDef thunderbird = Repo.GetAllDefs<GeoVehicleDef>().FirstOrDefault(ged => ged.name.Equals("NJ_Thunderbird_Def"));
-        private static readonly GeoVehicleDef blimp12slots = Repo.GetAllDefs<GeoVehicleDef>().FirstOrDefault(ged => ged.name.Equals("ANU_Blimp_Def_12_Slots"));
-        private static readonly GeoVehicleDef blimp8slots = Repo.GetAllDefs<GeoVehicleDef>().FirstOrDefault(ged => ged.name.Equals("ANU_Blimp_Def"));
-        private static readonly GeoVehicleDef maskedManticore8slots = Repo.GetAllDefs<GeoVehicleDef>().FirstOrDefault(ged => ged.name.Equals("PP_ManticoreMasked_Def_8_Slots"));
-        private static readonly GeoVehicleDef maskedManticore = Repo.GetAllDefs<GeoVehicleDef>().FirstOrDefault(ged => ged.name.Equals("PP_MaskedManticore_Def"));*/
-
-
-        
         private static readonly GeoVehicleEquipmentDef hibernationModule = DefCache.GetDef<GeoVehicleEquipmentDef>("SY_HibernationPods_GeoVehicleModuleDef");
 
         private static readonly GeoVehicleDef manticore6slots = DefCache.GetDef<GeoVehicleDef>("PP_Manticore_Def_6_Slots");
@@ -376,6 +361,8 @@ namespace TFTV
                                        select d).FirstOrDefault();
                     clonedAircraft.TeleportToSite(geoSite);
                     clonedAircraft.ReloadAllEquipments();
+
+
 
 
                 }

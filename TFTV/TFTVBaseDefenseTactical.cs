@@ -198,9 +198,6 @@ namespace TFTV
             }
         }
 
-
-
-
         //safety check to avoid mission not completing properly
         public static void AuxiliaryCheckForMissionAccomplished(TacticalLevelController controller)
         {
@@ -1105,7 +1102,9 @@ namespace TFTV
                         {
                             TFTVLogger.Always($"the objective is {objective.GetDescription()}; completion is at {objective.GetCompletion()}");
                             UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
+                   
                             int roll = UnityEngine.Random.Range(1, 11 + controller.Difficulty.Order);
+                           
 
                             if (roll >= 7)
                             {
@@ -1122,7 +1121,9 @@ namespace TFTV
 
                                 if (availableStrats.Count > 0)
                                 {
-                                    StratToBeAnnounced = availableStrats.GetRandomElement();
+                                    //TESTING TESTING TESTING TESTING
+                                    StratToBeAnnounced = 3;         //TESTING TESTING TESTING TESTINGavailableStrats.GetRandomElement();
+                                    //TESTING TESTING TESTING TESTING
                                     UsedStrats[StratToBeAnnounced - 1] = true;
                                     TFTVLogger.Always($"the objective is {objective.GetDescription()} and the strat picked is {StratToBeAnnounced} and it can't be used again");
 
@@ -2091,12 +2092,15 @@ namespace TFTV
                     Level level = controller.Level;
                     TacticalVoxelMatrix tacticalVoxelMatrix = level?.GetComponent<TacticalVoxelMatrix>();
                     Vector3 position = zone.Pos;
-                    if (position.y <= 2 && position.y != 1.2)
+                  //  TFTVLogger.Always($"position before adjustmment is {position}");
+                    if (position.y <= 2 && position.y != 1.0)
                     {
-                        position.SetY(1.2f);
+                      //  TFTVLogger.Always($"position should be adjusted to 1.2");
+                        position.y = 1.0f;
                     }
                     else if (position.y > 4 && position.y != 4.8)
                     {
+                    //    TFTVLogger.Always($"position should be adjusted to 4.8");
                         position.SetY(4.8f);
 
                     }
@@ -2105,7 +2109,9 @@ namespace TFTV
                     MethodInfo spawnBlob = AccessTools.Method(typeof(TacticalVoxelMatrix), "SpawnBlob_Internal");
                     //spawnBlob.Invoke(tacticalVoxelMatrix, new object[] { TacticalVoxelType.Empty, zone.Pos + Vector3.up * -1.5f, 3, 1, false, true });
 
-                    //   TFTVLogger.Always($"pXOperative to be ghosted {pXOperative.DisplayName} at pos {position}");
+
+
+                   // TFTVLogger.Always($"pXOperative to be ghosted {pXOperative.DisplayName} at pos {position}");
                     spawnBlob.Invoke(tacticalVoxelMatrix, new object[] { TacticalVoxelType.Mist, position, 3, 1, false, true });
 
                     // SpawnBlob_Internal(TacticalVoxelType type, Vector3 pos, int horizontalRadius, int height, bool circular, bool updateMatrix = true)
@@ -2464,8 +2470,6 @@ namespace TFTV
                 throw;
             }
         }
-
-
 
         internal static Dictionary<TacCharacterDef, int> GenerateSecondaryForce(TacticalLevelController controller)
         {

@@ -18,7 +18,6 @@ using PhoenixPoint.Tactical.Entities.Equipments;
 using PRMBetterClasses;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.Design.Serialization;
 using System.Diagnostics;
 using System.Linq;
 
@@ -39,8 +38,8 @@ namespace TFTV
         public static readonly string HeavyMutantDeliveryEvent = "HeavyMutantDeliveryEvent";
         public static readonly string WatcherMutantDeliveryEvent = "WatcherMutantDeliveryEvent";
         public static readonly string ShooterMutantDeliveryEvent = "ShooterMutantDeliveryEvent";
-        public static readonly List <string> ProjectOsirisDeliveryEvents= new List<string>() 
-        {RobocopEvent, ProjectOsirisEvent, FullMutantEvent, RoboCopDeliveryEvent, ScoutDeliveryEvent, HeavyMutantDeliveryEvent, ShinobiDeliveryEvent, 
+        public static readonly List<string> ProjectOsirisDeliveryEvents = new List<string>()
+        {RobocopEvent, ProjectOsirisEvent, FullMutantEvent, RoboCopDeliveryEvent, ScoutDeliveryEvent, HeavyMutantDeliveryEvent, ShinobiDeliveryEvent,
             WatcherMutantDeliveryEvent, ShinobiDeliveryEvent};
 
 
@@ -242,7 +241,7 @@ namespace TFTV
                 if (buildAdditionalLab != "" || researchAdditionalTech1 != "" || researchAdditionalTech2 != "")
                 {
                     increaseOptions = "\nTo enhance Project Osiris and increase our options we should ";
-                } 
+                }
 
                 if ((researchAdditionalTech1 != "" || researchAdditionalTech2 != "") && buildAdditionalLab != "")
                 {
@@ -291,7 +290,7 @@ namespace TFTV
                 deadTemplateDef.Data.LocalizeName = false;
                 deadTemplateDef.Data.Name = name;
 
-                TFTVLogger.Always("Candidate name is" + name + " and it is level " + deadSoldierDescriptor.Level);
+                TFTVLogger.Always($"Candidate name is {name} and it is level {deadSoldierDescriptor.Level}");
 
                 bCSettings.SpecialCharacterPersonalSkills.Add(name, new Dictionary<int, string>()
                         {
@@ -304,7 +303,7 @@ namespace TFTV
                             {6,deadSoldierDescriptor.Progression.PersonalAbilities[6].name}
                         });
 
-                TFTVLogger.Always(name + " added to BC special list is " + bCSettings.SpecialCharacterPersonalSkills.Keys.Contains(name));
+                TFTVLogger.Always($"{name} added to BC special list is {bCSettings.SpecialCharacterPersonalSkills.Keys.Contains(name)}");
 
                 List<GameTagDef> deadSoldiersTags = new List<GameTagDef>();
                 List<ClassTagDef> deadSoldierClassTags = new List<ClassTagDef>();
@@ -316,7 +315,7 @@ namespace TFTV
                 List<TacticalAbilityDef> abilityDefs = deadSoldierDescriptor.GetTacticalAbilities().ToList();
                 TacticalAbilityDef[] tacticalAbilities = abilityDefs.ToArray();
                 deadTemplateDef.Data.Abilites = tacticalAbilities;
-               
+
 
                 //  deadTemplateDef.Data.LevelProgression.SetLevel(level);
 
@@ -344,8 +343,8 @@ namespace TFTV
                 {
                     deadTemplateDef.Data.BodypartItems = new ItemDef[] { shooterHead, shooterTorso, shooterLegs };
                 }
-                             
-                LocalizedTextBind projectOsirisDescription = new LocalizedTextBind(CreateDescriptionForEvent(controller,deadSoldierDescriptor)+"\n\nProject Osiris has given " + name + " a new body.", true);
+
+                LocalizedTextBind projectOsirisDescription = new LocalizedTextBind(CreateDescriptionForEvent(controller, deadSoldierDescriptor) + "\n\nProject Osiris has given " + name + " a new body.", true);
 
                 GeoscapeEventDef deliveryEvent = controller.EventSystem.GetEventByID(RoboCopDeliveryEvent);
                 GeoscapeEventDef scoutDeliveryEvent = controller.EventSystem.GetEventByID(ScoutDeliveryEvent);
@@ -364,6 +363,7 @@ namespace TFTV
 
                 }
 
+                OsirisEventTemplate = deadTemplateDef;
                 /* deliveryEvent.GeoscapeEventData.Choices[0].Outcome.CustomCharacters.Add(deadTemplateDef);
                  scoutDeliveryEvent.GeoscapeEventData.Choices[0].Outcome.CustomCharacters.Add(deadTemplateDef);
                  shinobiDeliveryEvent.GeoscapeEventData.Choices[0].Outcome.CustomCharacters.Add(deadTemplateDef);
@@ -377,6 +377,8 @@ namespace TFTV
                 TFTVLogger.Error(e);
             }
         }
+
+        public static TacCharacterDef OsirisEventTemplate = null;
 
         public static void RunProjectOsiris(GeoLevelController controller)
         {
@@ -418,7 +420,7 @@ namespace TFTV
 
                         UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
                         int roll = UnityEngine.Random.Range(0, 100);
-                        
+
                         int rollTo = (orderedList.Count - 1) * 10 + orderedList[0];
                         if (rollTo > 90)
                         {
@@ -426,8 +428,8 @@ namespace TFTV
                         }
 
                         TFTVLogger.Always("The roll is " + roll + " and the rollTo is " + rollTo);
-                       
-                        if (roll <= rollTo) 
+
+                        if (roll <= rollTo)
                         {
                             foreach (GeoTacUnitId id in allProjectOsirisCandidates.Keys)
                             {
@@ -583,28 +585,51 @@ namespace TFTV
                         TacCharacterDef deadTemplateDef = geoCharacterCloneFromDead.TemplateDef;
 
 
-                        GeoTacUnitId geoTacUnitNewCharacter = statisticsManager.CurrentGameStats.LivingSoldiers.Last().Key;
-                        statisticsManager.CurrentGameStats.LivingSoldiers.Remove(geoTacUnitNewCharacter);
-                        statisticsManager.CurrentGameStats.LivingSoldiers.Add(geoTacUnitNewCharacter, statisticsManager.CurrentGameStats.DeadSoldiers[IdProjectOsirisCandidate]);
-                        controller.DeadSoldiers.Remove(IdProjectOsirisCandidate);
-                        statisticsManager.CurrentGameStats.DeadSoldiers.Remove(IdProjectOsirisCandidate);
+                        GeoTacUnitId geoTacUnitNewCharacter = NewBodyGeoID;
+                        TFTVLogger.Always($"geoCharacterCloneFromDead.Id is {geoCharacterCloneFromDead.Id}, compared to last living soldier id: {statisticsManager.CurrentGameStats.LivingSoldiers.Last().Key}");
+                        // statisticsManager.CurrentGameStats.LivingSoldiers.Last().Key;
+
+
+                        if (statisticsManager.CurrentGameStats.LivingSoldiers.ContainsKey(geoTacUnitNewCharacter))
+                        {
+                          //  TFTVLogger.Always("tis true");
+                            statisticsManager.CurrentGameStats.LivingSoldiers[geoTacUnitNewCharacter] = statisticsManager.CurrentGameStats.DeadSoldiers[IdProjectOsirisCandidate];
+                        }
+                        else
+                        {
+                            statisticsManager.CurrentGameStats.LivingSoldiers.Add(geoTacUnitNewCharacter, statisticsManager.CurrentGameStats.DeadSoldiers[IdProjectOsirisCandidate]);
+                        }
+
+                        if (controller.DeadSoldiers.ContainsKey(IdProjectOsirisCandidate))
+                        {
+                            controller.DeadSoldiers.Remove(IdProjectOsirisCandidate);
+
+                            statisticsManager.CurrentGameStats.DeadSoldiers.Remove(IdProjectOsirisCandidate);
+                        }
+
 
                         if (TFTVRevenant.DeadSoldiersDelirium.Keys.Contains(IdProjectOsirisCandidate))
                         {
                             TFTVRevenant.DeadSoldiersDelirium.Remove(IdProjectOsirisCandidate);
                         }
 
-                        int level = geoCharacterCloneFromDead.Progression.LevelProgression.Level;
 
-                        GeoCharacter returned = controller.PhoenixFaction.Soldiers.FirstOrDefault(s => s.Id.Equals(geoTacUnitNewCharacter));
-                      //  TFTVLogger.Always("The returned is " + returned.DisplayName);
+
+
+                        int level = (int)(geoCharacterCloneFromDead.Progression?.LevelProgression?.Level);
+
+
+                        GeoCharacter returned = controller.PhoenixFaction.Soldiers.FirstOrDefault(s => s.Id.Equals(NewBodyGeoID));
+
+                        TFTVLogger.Always($"The returned is {returned.DisplayName}");
 
                         returned.Identity.CopyFrom(geoCharacterCloneFromDead.Identity, PhoenixPoint.Common.Entities.Characters.CharacterIdentity.EmptyReplaceOperation.Default);
                         returned.LevelProgression.SetLevel(level);
                         returned.Progression.SkillPoints = 0;
                         returned.Fatigue.Stamina.SetToMin();
 
-                        // TFTVLogger.Always("The clone is level " + geoCharacterCloneFromDead.LevelProgression.Level);
+                        TFTVLogger.Always($"The clone is level {geoCharacterCloneFromDead.LevelProgression.Level}");
+                      //  geoCharacterCloneFromDead.LevelProgression.SetLevel(geoCharacterCloneFromDead.LevelProgression.Level);
                         // TFTVLogger.Always("The clone has a secondary class " + geoCharacterCloneFromDead.Progression.SecondarySpecDef.name);
 
                         if (geoCharacterCloneFromDead.Progression.SecondarySpecDef != null)
@@ -617,6 +642,7 @@ namespace TFTV
                         IdProjectOsirisCandidate = new GeoTacUnitId();
                         SaveTemplateData = new TacCharacterData();
                         TFTVRevenantResearch.ProjectOsirisStats.Clear();
+                        NewBodyGeoID = new GeoTacUnitId();
 
                         GeoscapeEventDef deliveryEvent = controller.EventSystem.GetEventByID(RoboCopDeliveryEvent);
                         GeoscapeEventDef scoutDeliveryEvent = controller.EventSystem.GetEventByID(ScoutDeliveryEvent);
@@ -642,6 +668,38 @@ namespace TFTV
                 }
             }
         }
+
+        public static GeoTacUnitId NewBodyGeoID = new GeoTacUnitId();
+
+        [HarmonyPatch(typeof(GeoLevelController), "CreateCharacterFromDescriptor")]
+
+        public static class GeoLevelController_CreateCharacterFromDescriptor_ProjectOsiris_patch
+        {
+            public static void Postfix(GeoLevelController __instance, GeoUnitDescriptor unit, GeoCharacter __result)
+            {
+                try
+                {
+                    if (OsirisEventTemplate != null)
+                    {
+                        TFTVLogger.Always($"{unit.Identity.Name} {OsirisEventTemplate.Data.Name}");
+
+                        if (unit.Identity.Name == OsirisEventTemplate.Data.Name)
+                        {
+                            NewBodyGeoID = __result.Id;
+                            OsirisEventTemplate = null;
+                        }
+                    }
+                }
+
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+
+            }
+
+        }
+
 
 
 

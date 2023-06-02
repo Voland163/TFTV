@@ -33,7 +33,6 @@ namespace TFTV
         public bool ProjectOrisisCompletedSaveData;// = TFTVRevenantResearch.ProjectOsiris;
         public int RevenantId;
         public bool[] VoidOmensCheck = TFTVVoidOmens.VoidOmensCheck;
-        public int HoplitesKilledOnMission;
         public bool LOTAReworkActiveInTactical;
         public bool TurnZeroMethodsExecuted;
         public bool[] BaseDefenseConsole;
@@ -42,9 +41,10 @@ namespace TFTV
         public int BaseDefenseStratToBeImplemented;
         public bool[] StratsAlreadyImplementedAtBD;
         public bool AutomataResearched;
+        public List<string> HopliteKillList;
         
         public Dictionary<float, float> ConsolePositionsInBaseDefense;
-        public Dictionary<int, int> CyclopsMolecularTargeting = TFTVAncients.CyclopsMolecularDamageBuff;
+        public Dictionary<int, int> CyclopsMolecularTargeting;
     }
 
     /// <summary>
@@ -89,6 +89,7 @@ namespace TFTV
             TFTVSpecialDifficulties.CheckForSpecialDifficulties();
             TFTVBetterEnemies.ImplementBetterEnemies();
             TFTVRevenant.CheckIfRevenantPresent(Controller);
+         
          //   TFTVBaseDefenseTactical.OjectivesDebbuger(Controller);
             // TFTVBaseDefenseTactical.RevealAllSpawns(Controller);
 
@@ -123,7 +124,7 @@ namespace TFTV
             {
 
                 TFTVLogger.Always("Tactical save is being processed");
-                TFTVCommonMethods.ClearInternalVariables();
+                TFTVCommonMethods.ClearInternalVariables();                
                 TFTVTacInstanceData data = (TFTVTacInstanceData)instanceData;
                 TFTVStamina.charactersWithDisabledBodyParts = data.charactersWithBrokenLimbs;
                 TFTVVoidOmens.VoidOmensCheck = data.VoidOmensCheck;
@@ -141,7 +142,6 @@ namespace TFTV
                 TFTVInfestationStory.HavenPopulation = data.infestedHavenPopulationSaveData;
                 TFTVInfestationStory.OriginalOwner = data.infestedHavenOriginalOwnerSaveData;
                 TFTVRevenant.revenantID = data.RevenantId;
-                TFTVAncients.HoplitesKilled = data.HoplitesKilledOnMission;
                 TFTVAncients.LOTAReworkActive = data.LOTAReworkActiveInTactical;
                 TFTVBaseDefenseTactical.AttackProgress = data.BaseDefenseAttackProgress;
                 TFTVBaseDefenseTactical.StratToBeAnnounced = data.BaseDefenseStratToBeAnnounced;
@@ -151,11 +151,13 @@ namespace TFTV
                 TFTVAncients.CyclopsMolecularDamageBuff = data.CyclopsMolecularTargeting;
                 TFTVBaseDefenseTactical.ModifyObjectives(Controller.TacMission.MissionData.MissionType);
                 TFTVAncients.AutomataResearched = data.AutomataResearched;
+                TFTVAncients.AlertedHoplites = data.HopliteKillList;
+                TFTVBetaSaveGamesFixes.CheckNewLOTASavegame();
 
                 TurnZeroMethodsExecuted = data.TurnZeroMethodsExecuted;
 
 
-                TFTVBetaSaveGamesFixes.CheckNewLOTASavegame();
+               
 
 
             }
@@ -188,7 +190,7 @@ namespace TFTV
                 infestedHavenPopulationSaveData = TFTVInfestationStory.HavenPopulation,
                 infestedHavenOriginalOwnerSaveData = TFTVInfestationStory.OriginalOwner,
                 RevenantId = TFTVRevenant.revenantID,
-                HoplitesKilledOnMission = TFTVAncients.HoplitesKilled,
+      
                 LOTAReworkActiveInTactical = TFTVAncients.LOTAReworkActive,
                 BaseDefenseAttackProgress = TFTVBaseDefenseTactical.AttackProgress,
                 BaseDefenseStratToBeImplemented = TFTVBaseDefenseTactical.StratToBeImplemented,
@@ -197,6 +199,8 @@ namespace TFTV
                 ConsolePositionsInBaseDefense = TFTVBaseDefenseTactical.ConsolePositions,
                 AutomataResearched = TFTVAncients.AutomataResearched,
                 CyclopsMolecularTargeting = TFTVAncients.CyclopsMolecularDamageBuff,
+                HopliteKillList = TFTVAncients.AlertedHoplites,
+      
                 TurnZeroMethodsExecuted = TurnZeroMethodsExecuted
                 
             };
@@ -219,7 +223,7 @@ namespace TFTV
 
                 if (!Controller.TacMission.MissionData.MissionType.name.Contains("Tutorial"))
                 {
-
+                  
                     if (turnNumber == 0 && TFTVHumanEnemies.HumanEnemiesAndTactics.Count == 0)
                     {
                         TFTVHumanEnemies.CheckMissionType(Controller);

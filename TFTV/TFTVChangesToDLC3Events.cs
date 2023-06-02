@@ -1,6 +1,8 @@
 ﻿using AK.Wwise;
+using HarmonyLib;
 using PhoenixPoint.Common.Levels.Missions;
 using PhoenixPoint.Common.UI;
+using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.Research;
 using PhoenixPoint.Geoscape.Entities.Research.Requirement;
 using PhoenixPoint.Geoscape.Entities.Research.Reward;
@@ -66,7 +68,7 @@ namespace TFTV
 
                 // Destroy Haven after mission
                 GeoscapeEventDef geoEventFS1WIN = DefCache.GetDef<GeoscapeEventDef>("PROG_FS1_WIN_GeoscapeEventDef");
-                geoEventFS1WIN.GeoscapeEventData.Choices[0].Outcome.HavenPopulationChange = -20000;
+                // geoEventFS1WIN.GeoscapeEventData.Choices[0].Outcome.HavenPopulationChange = -20000;
                 //Allow equipment before The Hatching
                 CustomMissionTypeDef storyFS1_CustomMissionTypeDef = DefCache.GetDef<CustomMissionTypeDef>("StoryFS1_CustomMissionTypeDef");
                 storyFS1_CustomMissionTypeDef.SkipDeploymentSelection = false;
@@ -89,15 +91,17 @@ namespace TFTV
                 nodeResearchDef.Unlocks = new ResearchRewardDef[] { };
 
                 //Change FS3 event
-                GeoscapeEventDef geoEventFS3 = DefCache.GetDef<GeoscapeEventDef>("PROG_FS3_GeoscapeEventDef");
-                geoEventFS3.GeoscapeEventData.Mute = true;
-                geoEventFS3.GeoscapeEventData.Choices[0].Outcome.VariablesChange.Add(TFTVCommonMethods.GenerateVariableChange("Mobilization", 1, true));
-                geoEventFS3.GeoscapeEventData.Choices[0].Outcome.SetEvents.Clear();
+                //Reinstating FS3 event to ensure player has access to Node
+               GeoscapeEventDef geoEventFS3 = DefCache.GetDef<GeoscapeEventDef>("PROG_FS3_GeoscapeEventDef");
+                geoEventFS3.GeoscapeEventData.Choices[0].Outcome.TrackEncounters.Clear();
+                // geoEventFS3.GeoscapeEventData.Mute = true;
+               // geoEventFS3.GeoscapeEventData.Choices[0].Outcome.VariablesChange.Add(TFTVCommonMethods.GenerateVariableChange("Mobilization", 1, true));
+              //  geoEventFS3.GeoscapeEventData.Choices[0].Outcome.SetEvents.Clear();
                 GeoTimePassedEventFilterDef timePassedFS3 = DefCache.GetDef<GeoTimePassedEventFilterDef>("E_PROG_FS3_TimePassed [GeoTimePassedEventFilterDef]");
-                timePassedFS3.TimePassedHours = 100000;
+                timePassedFS3.TimePassedHours = UnityEngine.Random.Range(950, 1100);
 
 
-
+          
 
                 //Remove CH2 miss 
                 GeoscapeEventDef CH2_Event = DefCache.GetDef<GeoscapeEventDef>("PROG_CH2_GeoscapeEventDef");
@@ -122,6 +126,51 @@ namespace TFTV
                 TFTVLogger.Error(e);
             }
         }
+
+
+        //Patch to destory Eillen's haven.
+        [HarmonyPatch(typeof(GeoscapeEventSystem), "TriggerGeoscapeEvent")]
+
+        public static class GeoscapeEventSystem_TriggerGeoscapeEvent_DestroyEileenHaven_patch
+        {
+            public static void Prefix(string eventId, GeoscapeEventSystem __instance, out GeoSite __state)
+            {
+                __state = null;
+
+                try
+                { 
+                    if (eventId == "PROG_FS1_WIN")
+                    {
+                        __state = __instance.FindEventLocation("PROG_FS1_MISS");
+                        TFTVLogger.Always($"eillenHaven is {__state.LocalizedSiteName}. It shall be destroyed!");
+                    }
+                }
+
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+
+            }
+
+            public static void Postfix(GeoSite __state)
+            {
+                try
+                {
+
+                    __state?.DestroySite();
+
+                }
+
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+
+            }
+
+        }
+
 
         public static void ModifyMaskedManticoreResearch()
         {

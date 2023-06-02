@@ -15,7 +15,7 @@ using PhoenixPoint.Geoscape.Entities.PhoenixBases;
 using PhoenixPoint.Geoscape.Entities.Sites;
 using PhoenixPoint.Geoscape.Events;
 using PhoenixPoint.Geoscape.Levels;
-using PhoenixPoint.Geoscape.Levels.Objectives;
+using PhoenixPoint.Geoscape.Levels.Factions;
 using PhoenixPoint.Geoscape.View;
 using PhoenixPoint.Geoscape.View.DataObjects;
 using PhoenixPoint.Geoscape.View.ViewControllers.BaseRecruits;
@@ -27,7 +27,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Security.Policy;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -48,7 +47,6 @@ namespace TFTV
                     };
                     cyclopsObjective.IsCriticalPath = true;
                     controller.PhoenixFaction.AddObjective(cyclopsObjective);*/
-
 
         //Patch and methods for demolition PhoenixFacilityConfirmationDialogue
         internal static List<Vector2Int> CheckAdjacency(Vector2Int position)
@@ -248,6 +246,11 @@ namespace TFTV
 
                         GeoPhoenixBaseInfestationMission activeMission = new GeoPhoenixBaseInfestationMission(mission, __instance);
                         __instance.SetActiveMission(activeMission);
+
+                        FieldInfo basesField = AccessTools.Field(typeof(GeoPhoenixFaction), "_bases");
+                        List<GeoPhoenixBase> bases = (List<GeoPhoenixBase>)basesField.GetValue(__instance.GeoLevel.PhoenixFaction);
+                        bases.Remove(__instance.GetComponent<GeoPhoenixBase>());
+
                         __instance.RefreshVisuals();
 
                         return false;
@@ -303,6 +306,15 @@ namespace TFTV
                                 if (PhoenixBasesInfested.Contains(geoMission.Site.SiteId))
                                 {
                                     PhoenixBasesInfested.Remove(geoMission.Site.SiteId);
+
+                                  //  geoMission.Level.PhoenixFaction.ActivatePhoenixBase(geoMission.Site, true);
+
+                                   FieldInfo basesField = AccessTools.Field(typeof(GeoPhoenixFaction), "_bases");
+                                    List<GeoPhoenixBase> bases = (List<GeoPhoenixBase>)basesField.GetValue(geoMission.Level.PhoenixFaction);
+                                    bases.Add(geoMission.Site.GetComponent<GeoPhoenixBase>());
+                                    geoMission.Site.RefreshVisuals();
+                                    
+
                                 }
 
                                 geoMission.Site.RefreshVisuals();
@@ -363,7 +375,7 @@ namespace TFTV
                                         geoMission.Site.RemoveCharacter(geoCharacter);
                                         phoenixBases.First().AddCharacter(geoCharacter);
                                         //  TFTVLogger.Always($"{geoCharacter.DisplayName} moved to {phoenixBases.First().LocalizedSiteName}");
-                                      //  description.text += $" {geoCharacter.DisplayName} escaped to {phoenixBases.First().LocalizedSiteName}.";
+                                        //  description.text += $" {geoCharacter.DisplayName} escaped to {phoenixBases.First().LocalizedSiteName}.";
                                     }
 
                                     for (int x = 0; x < charactersToMove.Count; x++)
@@ -380,7 +392,7 @@ namespace TFTV
                                         {
                                             description.text += $" {charactersToMove[x].DisplayName} ";
                                         }
-                                       
+
                                     }
 
                                     description.text += $"escaped to {phoenixBases.First().LocalizedSiteName}.";
@@ -390,6 +402,7 @@ namespace TFTV
                         }
                         return false;
                     }
+
                     return true;
                 }
                 catch (Exception e)
@@ -474,16 +487,16 @@ namespace TFTV
 
                         controller.EventSystem.TriggerGeoscapeEvent("OlenaBaseDefense", context);
 
-                     /*   UIModuleGeoObjectives
+                        /*   UIModuleGeoObjectives
 
-                        //For implementing base defense as proper objective:
-                        DiplomaticGeoFactionObjective baseDefenseObjective = new DiplomaticGeoFactionObjective(controller.PhoenixFaction, controller.PhoenixFaction)
-                                    {
-                                        Title = new LocalizedTextBind("BUILD_CYCLOPS_OBJECTIVE"),
-                                        Description = new LocalizedTextBind("BUILD_CYCLOPS_OBJECTIVE"),
-                                    };
-                                    baseDefenseObjective.IsCriticalPath = true;
-                                    controller.PhoenixFaction.AddObjective(baseDefenseObjective);*/
+                           //For implementing base defense as proper objective:
+                           DiplomaticGeoFactionObjective baseDefenseObjective = new DiplomaticGeoFactionObjective(controller.PhoenixFaction, controller.PhoenixFaction)
+                                       {
+                                           Title = new LocalizedTextBind("BUILD_CYCLOPS_OBJECTIVE"),
+                                           Description = new LocalizedTextBind("BUILD_CYCLOPS_OBJECTIVE"),
+                                       };
+                                       baseDefenseObjective.IsCriticalPath = true;
+                                       controller.PhoenixFaction.AddObjective(baseDefenseObjective);*/
 
                     }
 
@@ -741,7 +754,7 @@ namespace TFTV
                               }
                           }*/
 
-        __instance.Background.sprite = sprite;
+                        __instance.Background.sprite = sprite;
                         __instance.Warning.SetWarning(text, factionInfo.Name, geoMission.Site.SiteName);
                         Text description = __instance.GetComponentInChildren<ObjectivesController>().Objectives;
                         description.GetComponent<I2.Loc.Localize>().enabled = false;
@@ -1114,7 +1127,7 @@ namespace TFTV
                 try
                 {
 
-                    if (PhoenixBasesUnderAttack.ContainsKey(__instance.PhoenixBase.Site.SiteId) 
+                    if (PhoenixBasesUnderAttack.ContainsKey(__instance.PhoenixBase.Site.SiteId)
                         || PhoenixBasesInfested.Contains(__instance.PhoenixBase.Site.SiteId))
                     {
                         __result = false;
@@ -1205,7 +1218,7 @@ namespace TFTV
                             IEnumerable<GeoCharacter> deployment = characterContainers.SelectMany((IGeoCharacterContainer s) => s.GetAllCharacters());
 
 
-                            if (deployment.Count() == 0 && progress<1)
+                            if (deployment.Count() == 0 && progress < 1)
                             {
                                 __instance.Close();
 

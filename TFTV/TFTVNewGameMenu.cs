@@ -1,5 +1,6 @@
 ﻿using Base.Defs;
 using Base.Platforms;
+using Base.UI;
 using HarmonyLib;
 using PhoenixPoint.Common.Levels.Params;
 using PhoenixPoint.Home.View.ViewControllers;
@@ -7,6 +8,7 @@ using PhoenixPoint.Home.View.ViewModules;
 using PhoenixPoint.Home.View.ViewStates;
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 
 namespace TFTV
 {
@@ -16,9 +18,71 @@ namespace TFTV
 
 
 
+
+
+
         //You will need to edit scene hierarchy to add new objects under GameSettingsModule, it has a UIModuleGameSettings script
         //Class UIStateNewGeoscapeGameSettings is responsible for accepting selected settings and start the game, so you'll have to dig inside
         //for changing behaviour.
+
+      /*  public class MyOptionEntry
+        {
+            public LocalizedTextBind Text { get; set; }
+            public LocalizedTextBind Description { get; set; }
+            public bool DefaultChecked { get; set; }
+        }
+
+        [HarmonyPatch(typeof(UIStateNewGeoscapeGameSettings), "EnterState")]
+        public static class UIStateNewGeoscapeGameSettings_EnterState_Patch
+        {
+            private static void Postfix(UIStateNewGeoscapeGameSettings __instance)
+            {
+                try
+                {
+                    // Access the private fields and methods of UIStateNewGeoscapeGameSettings
+                    List<MyOptionEntry> secondaryOptions = Traverse.Create(__instance).Field("_secondaryOptions").GetValue<List<MyOptionEntry>>();
+                    UIModuleGameSettings gameSettings = Traverse.Create(__instance).Property("_gameSettings").GetValue<UIModuleGameSettings>();
+
+                    // Call the helper method to add the new option
+                    AddNewOption(__instance, secondaryOptions, gameSettings);
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+
+            private static void AddNewOption(UIStateNewGeoscapeGameSettings instance, List<MyOptionEntry> secondaryOptions, UIModuleGameSettings gameSettings)
+            {
+                try
+                {
+                    // Create your new option
+                    MyOptionEntry newOption = new MyOptionEntry
+                    {
+                        Text = new LocalizedTextBind("YourOptionTextKey"),
+                        Description = new LocalizedTextBind("YourOptionDescriptionKey"),
+                        DefaultChecked = false // Set the default checked state as desired
+                    };
+
+                    // Add your new option to the secondary options list
+                    secondaryOptions.Add(newOption);
+
+                    // Use reflection to access the BindSecondaryOptions method
+                    MethodInfo bindSecondaryOptionsMethod = instance.GetType().GetMethod("BindSecondaryOptions", BindingFlags.Instance | BindingFlags.NonPublic);
+
+                    gameSettings.SecondaryOptions.SetOptions(secondaryOptions, (Action<GameOptionViewController, MyOptionEntry>)bindSecondaryOptionsMethod.Invoke(instance, null));
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+
+        }
+      */
+
+
 
 
 
@@ -29,7 +93,9 @@ namespace TFTV
             {
                 try
                 {
-                    TFTVLogger.Always("Element is " + element.OptionText.text);
+                    TFTVLogger.Always($"Element is {element.OptionText.text}");
+                 //   GameOptionViewController viewController = new GameOptionViewController() { };
+
                     if (element.OptionText.text == "PLAY PROLOGUE AND TUTORIAL")
                     {
                         //  element.OptionText.text = "START WITH VANILLA TUTORIAL SQUAD";                      

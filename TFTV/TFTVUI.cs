@@ -63,7 +63,71 @@ namespace TFTV
         internal static Color syn = new Color(0.160784319f, 0.8862745f, 0.145098045f, 1.0f);
 
 
+        //EditUnitButtonsController for later attempts at adding toggle helmet on/off button
 
+        /*[HarmonyPatch(typeof(EditUnitButtonsController))]
+        [HarmonyPatch("Awake")]
+        public static class EditUnitButtonsController_Awake_Patch
+        {
+            static void Postfix(EditUnitButtonsController __instance)
+            {
+                try
+                {
+                    // Use Traverse to access the UIModuleSoldierCustomization class
+                    var uiModuleSoldierCustomizationType = AccessTools.TypeByName("UIModuleSoldierCustomization");
+                    TFTVLogger.Always($"EditUnitButtonsController - Awake");
+                    if (uiModuleSoldierCustomizationType != null)
+                    {
+                        TFTVLogger.Always($"{uiModuleSoldierCustomizationType.Name} got here");
+
+                        // Use Traverse to access the HideHelmetToggle field in UIModuleSoldierCustomization
+                        var hideHelmetToggleField = Traverse.Create(uiModuleSoldierCustomizationType).Field("HideHelmetToggle");
+
+                        if (hideHelmetToggleField != null)
+                        {
+                            TFTVLogger.Always($"got here 2");
+
+                            // Retrieve the HideHelmetToggle field value
+                            Toggle hideHelmetToggle = hideHelmetToggleField.GetValue<Toggle>();
+
+
+                            // Add the toggle button to the EditUnitButtonsController instance
+                            __instance.gameObject.AddComponent(hideHelmetToggle.GetType());
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+
+            }
+        }
+
+
+        [HarmonyPatch(typeof(EditUnitButtonsController))]
+        [HarmonyPatch("Init")]
+        public static class EditUnitButtonsController_Init_Patch
+        {
+            static void Postfix(EditUnitButtonsController __instance)
+            {
+                try
+                {
+                    Toggle hideHelmetToggle = __instance.gameObject.GetComponent<Toggle>();
+
+                    hideHelmetToggle.interactable = true;
+
+                   // hideHelmetToggle.transform.parent.gameObject.SetActive(true);
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+
+
+            }
+        }
+        */
 
 
         [HarmonyPatch(typeof(UIModuleMutationSection), "SelectMutation")]

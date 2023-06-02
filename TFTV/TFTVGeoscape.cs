@@ -129,7 +129,7 @@ namespace TFTV
                 infestedHavenPopulationSaveData = TFTVInfestationStory.HavenPopulation,
                 ProjectOsirisStatsSaveData = TFTVRevenantResearch.ProjectOsirisStats,
                 //  VoidOmensCheck = TFTVVoidOmens.VoidOmensCheck,
-                GlobalLOTAReworkCheck = TFTVBetaSaveGamesFixes.LOTAReworkGlobalCheck,
+             //   GlobalLOTAReworkCheck = TFTVBetaSaveGamesFixes.LOTAReworkGlobalCheck,
                 PhoenixBasesUnderAttack = TFTVBaseDefenseGeoscape.PhoenixBasesUnderAttack,
                 InfestedPhoenixBases = TFTVBaseDefenseGeoscape.PhoenixBasesInfested,
                 SpawnedScyllas = TFTVPandoranProgress.ScyllaCount,
@@ -171,7 +171,7 @@ namespace TFTV
             TFTVBaseDefenseGeoscape.PhoenixBasesUnderAttack = data.PhoenixBasesUnderAttack;
             TFTVBaseDefenseGeoscape.PhoenixBasesInfested = data.InfestedPhoenixBases;
             TFTVPandoranProgress.ScyllaCount = data.SpawnedScyllas;
-            TFTVBetaSaveGamesFixes.CheckNewLOTASavegame();
+          //  TFTVBetaSaveGamesFixes.CheckNewLOTASavegame();
             //TFTVExperimental.FactionAttackingPhoenixBase = data.factionAttackingPheonixBase;
             //TFTVExperimental.CheckIfFactionAttackingPhoenixBase();
 

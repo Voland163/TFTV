@@ -140,8 +140,7 @@ PROG_KE1_TEXT_OUTCOME_0,Text,,"As you step inside the crypt, alien thoughts are 
 
 <i>""Soon you will be contacted by string Subject integer twenty four. Accept proposal. Share data. Satisfactory outcome will lead to much preferred customer status. Beware of your Amygdala, it reeks of betrayal.""</i>
 
-There is no Drop-Ka stone to be found, but you suspect that's not why you were sent here anyway.
-",,"Lorsque vous entrez dans la crypte, des pensées extraterrestres sont projetées dans votre esprit. Vous *écoutez* une *voix* que vous ne pouvez pas *entendre*.
+There is no Drop-Ka stone to be found, but you suspect that's not why you were sent here anyway.",,"Lorsque vous entrez dans la crypte, des pensées extraterrestres sont projetées dans votre esprit. Vous *écoutez* une *voix* que vous ne pouvez pas *entendre*.
 
 <i>""Bientôt, vous serez contacté par Sujet numéro vingt-quatre. Accepter la proposition. Partager les données. Un résultat satisfaisant mènera à un statut de client privilégié. Méfiez-vous de votre Amygdale, elle sent la trahison.""</i>
 
@@ -266,8 +265,7 @@ West est naturellement bouleversé, mais nous avons obtenu un certain succès au
 PROG_PU4_WIN_CHOICE_1_TEXT,Text,,"An exercise in civic duty, with some unfortunate casualties",,"Un exercice de devoir civique, avec quelques malheureuses victimes",,,,,,
 PROG_PU4_WIN_CHOICE_2_OUTCOME_GENERAL,Text,,"We are not entirely in the clear, but New Jericho doesn't want to draw attention to its secret research and therefore avoids making an issue of the raid.
 
-At the same time, our strenuous denials result in West suspecting the involvement of other factions.
-",,"Nous ne sommes pas tout à fait dans la transparence, mais la Nouvelle Jericho ne veut pas attirer l’attention sur sa recherche secrète et évite donc de faire un problème de la descente.
+At the same time, our strenuous denials result in West suspecting the involvement of other factions.",,"Nous ne sommes pas tout à fait dans la transparence, mais la Nouvelle Jericho ne veut pas attirer l’attention sur sa recherche secrète et évite donc de faire un problème de la descente.
 
 En même temps, nos dénégations acharnées font que West soupçonne l’implication d’autres factions.
 ",,,,,,
@@ -632,8 +630,7 @@ KEY_GEO_HINT_PANDORAN_BASE_DIPLOMACY_EFFECTS_DESCRIPTION,Text,,"In TFTV, Faction
 
 Each Pandoran colony contributes to Pandoran evolution: the more active Pandoran colonies there are, the faster the enemy will field more advanced units and the faster the Oneiric Delirium will grow. 
 
-In addition, destroying a more advanced Pandoran colony (a Lair or a Citadel) removes the earliest <b>Void Omen</b> currently in play. (On Rookie difficulty, destroying Nests also removes Void Omens). 
-",,"Dans TFTV, les factions ne réagiront <b>pas négativement</b> aux colonies pandoriennes révélées si vous ne parvenez pas à les détruire. Cependant, vous subirez une petite pénalité auprès des dirigeants des refuges proches.
+In addition, destroying a more advanced Pandoran colony (a Lair or a Citadel) removes the earliest <b>Void Omen</b> currently in play. (On Rookie difficulty, destroying Nests also removes Void Omens). ",,"Dans TFTV, les factions ne réagiront <b>pas négativement</b> aux colonies pandoriennes révélées si vous ne parvenez pas à les détruire. Cependant, vous subirez une petite pénalité auprès des dirigeants des refuges proches.
 
 Chaque colonie pandorienne contribue à l'évolution des Pandoriens : plus il y a de colonies pandoriennes actives, plus vite l'ennemi déploie des unités plus avancées et plus vite le délire onirique se développe.
 
@@ -876,11 +873,9 @@ HINT_ANCIENTS_HOPLITS_TITLE,Text,,"<i>“Frag me, what is that thing? Is that a�
 HINT_ANCIENTS_HOPLITS_TEXT,Text,,"This Ancient Automata is reactivating! While we have no intel on their capabilities, it seems like they are dormant while buried in the ground, but once they emerge they become alerted and gradually reactivate their systems, becoming stronger. The Automata also seem to be in varying states of disrepair.",,,,,,,,
 HINT_ANCIENTS_HOPLITSREPAIR_TITLE,Text,,<i>”The broken remains floated towards the damaged Automata.”</i>,,,,,,,,
 HINT_ANCIENTS_HOPLITSREPAIR_TEXT,Text,,This Ancient Automata is trying to repair itself using the remains of the destroyed robot in its vicinity! It has also drained some of its power.,,,,,,,,
-HINT_ANCIENTS_HOPLITSMAXPOWER_TITLE,Text,,"<i>”Whirl whirl whirl Vroom!”</i>
-",,,,,,,,
+HINT_ANCIENTS_HOPLITSMAXPOWER_TITLE,Text,,"<i>”Whirl whirl whirl Vroom!”</i>",,,,,,,,
 HINT_ANCIENTS_HOPLITSMAXPOWER_TEXT,Text,,The Ancient Automata is now fully charged; damage increased significantly and damage resistance gained.,,,,,,,,
-HELENA_ECHOES_TITLE,Text,,"The Echoes of the Ancients
-",,,,,,,,
+HELENA_ECHOES_TITLE,Text,,"The Echoes of the Ancients",,,,,,,,
 HELENA_ECHOES_TEXT,Text,,"This is something neither West nor Symes understood, or wanted to understand, although I tried explaining it to them many times. History is about making sense of the present by understanding the past. Cause and effect, reverberation and resonance. But when it comes to the Ancients, their echoes are getting stronger, and they started getting stronger with the First Mist. 
 
 Perhaps it's because both were hidden below the same melting permafrost. Even that 'coincidence' is not insignificant.
@@ -921,8 +916,7 @@ OLENA_ONEIROMANCY_TEXT,Text,,"Yes, the Living Crystal must be the “memory modu
 Data never really disappears unless the storage medium is destroyed or it is overwritten. In this case, the medium is beyond our understanding. I can’t explain how something like the Oneiric Delirium exists, or what the Living Crystals are, but they are related; our dreams can’t be a coincidence. I think they are part of, or use the same pathways, or “network”... What we need is a more direct interface, and one that we can use while awake.",,,,,,,,
 OLENA_ONEIROMANCY_CHOICE,Text,,So you want to repair and reactivate an ancient killer robot so that you can poke about in its memory banks? What could possibly go wrong.,,,,,,,,
 OLENA_ONEIROMANCY_OUTCOME,Text,,It's going to be OK.,,,,,,,,
-CYCLOP_DREAMS_TITLE,Text,,"Digitize my Dreams, the Cyclops Said
-",,,,,,,,
+CYCLOP_DREAMS_TITLE,Text,,"Digitize my Dreams, the Cyclops Said",,,,,,,,
 CYCLOP_DREAMS_TEXT,Text,,"The plan worked, but we can only understand a tiny fraction of the information contained in the data dump. It is enough. Enough to overturn much of what we thought we knew and, critical to our current existential threat, of what we thought we knew about the Pandoravirus. 
 
 It is ancient, yes; we suspected as much since the infection of our ecosystem began with the melting of the permafrost. But, thanks to the meticulous charts of our Solar system drawn up by the Ancients, we now know that the Pandoravirus didn’t originate on our planet: it arrived 1.8 million years ago on an asteroid that intersected the orbit of a “ninth planet” before it crashed into Earth.",,,,,,,,
@@ -931,7 +925,7 @@ ALISTAIR_PROGRESS_TEXT,Text,,"Back in the day I would have gone on a rant about 
 
 However, there must be a lot more of these exotic materials on our planet and we can search for them properly if we win the war.",,,,,,,,
 HELENA_BEAST_TITLE,Text,,Protect the Beast,,,,,,,,
-HELENA_BEAST_TEXT,Text,,Director! We have detected a Pandoran force approaching the site with the reactivated Cyclops. We must defend it at all costs! ,,,,,,,,
+HELENA_BEAST_TEXT,Text,,"Director! We have detected a Pandoran force approaching the site with the reactivated Cyclops. I think we can reactivate some of the Hoplites. Together with the Cyclops they will make a formidable force against the Pandorans. However, we can't deploy our operatives in proximity to the Ancient Automata. I fear that… malfunctions may occur.",,,,,,,,
 HELENA_VIROPHAGE_TITLE,Text,,Builder of Worlds,,,,,,,,
 HELENA_VIROPHAGE_TEXT,Text,,"Director, I believe that with all the information we have gathered, we have a much greater advantage than the Ancients ever had to use the Virophage to defeat the Pandoravirus while minimizing our own losses.
 
@@ -1086,4 +1080,10 @@ ROBOTIC_SELF_REPAIR_TITLE,Text,,SELF-RESTORE,,,,,,,,
 ROBOTIC_SELF_REPAIR_ABILITY_TEXT,Text,,Restores all its disabled limbs after one turn. ,,,,,,,,
 ROBOTIC_SELF_REPAIR_TEXT_TEXT,Text,,All disabled limbs will be restored with half their maximum health next turn.,,,,,,,,
 CYCLOPS_SCREAM_TITLE,Text,,TREMOR STOMP,,,,,,,,
-CYCLOPS_SCREAM_DESCRIPTION,Text,,Disorients and deals 60 damage to all organic targets within 12 tiles. ,,,,,,,,
+CYCLOPS_SCREAM_DESCRIPTION,Text,,"Disorients, deals 60 damage and 1 psychic damage to all organic targets within 12 tiles. ",,,,,,,,
+KEY_TAC_HINT_MISSION_BASEDEFENSE_DESCRIPTION,Text,,"In TFTV, depending on how far along the attack is, you will face a somewhat different base defense mission; the earliest type is the easiest, and the latest type is the hardest. If this is your only currently operational base and you lose the mission, <b>you will lose the game</b>. If not, you will lose the base but will be able to recover it later. 
+
+Fulfill all the objectives to complete the mission. You don't have to kill every worm, egg, mindfragger or myrmidon to win. 
+
+Once you get a warning about reinforcements arriving, you will have a chance to stop them following the instructions from Olena. ",,,,,,,,
+KEY_MUTOID_CURE_SPRAY_DESCRIPTION,Text,,"Removes all Acid and Paralysis, Bleeding, Poison, Strained, Infected, Dazed, and Slowed status effects from target ally.",,,,,,,,
