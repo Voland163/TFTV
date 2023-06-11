@@ -150,6 +150,15 @@ namespace PRMBetterClasses.SkillModifications
             internal static List<TacticalActorBase> DieHardActorsToKeepAlive { get; } = new List<TacticalActorBase>();
             internal static bool OnFactionStartTurnSubscribed { get; set; } = false;
             internal static GameTagDef ExcludeFromAiBlackboard { get; } = DefCache.GetDef<GameTagDef>("ExcludeFromAiBlackboard_TagDef");
+            internal static StatusDef[] StatusesToRemove = new StatusDef[]
+            {
+                        DieHardKeepAliveStatus,
+                        DefCache.GetDef<StatusDef>("Bleed_StatusDef"),
+                        DefCache.GetDef<StatusDef>("Poison_DamageOverTimeStatusDef"),
+                        DefCache.GetDef<StatusDef>("Paralysis_DamageOverTimeStatusDef"),
+                        DefCache.GetDef<StatusDef>("Acid_StatusDef"),
+                        DefCache.GetDef<StatusDef>("Infected_StatusDef"), // = virus applied
+            };
 
             public static void Prefix(TacticalActor __instance, ref DamageResult damageResult)
             {
@@ -197,10 +206,13 @@ namespace PRMBetterClasses.SkillModifications
                     // Set damage value to actors HP -1 so he has 1 HP left
                     damageResult.HealthDamage = __instance.Health.IntValue - 1;
 
-                    // Clear all effects, statuses, stat modifier if set
+                    // Clear all effects, statuses, stat modifier if set from the damage result
                     damageResult.ActorEffects?.Clear();
                     damageResult.ApplyStatuses?.Clear();
                     damageResult.StatModifications?.Clear();
+
+                    // Unapply any existent DoT on the actor
+                    //__instance.Status.UnapplyAllStatusesFiltered(status => StatusesToRemove.Contains(status.BaseDef));
                 }
                 catch (Exception e)
                 {
@@ -217,18 +229,9 @@ namespace PRMBetterClasses.SkillModifications
                         return;
                     }
                     // Unapply any existent DoT on the actor
-                    StatusDef[] statusesToRemove = new StatusDef[]
-                    {
-                        DieHardKeepAliveStatus,
-                        DefCache.GetDef<StatusDef>("Bleed_StatusDef"),
-                        DefCache.GetDef<StatusDef>("Poison_DamageOverTimeStatusDef"),
-                        DefCache.GetDef<StatusDef>("Paralysis_DamageOverTimeStatusDef"),
-                        DefCache.GetDef<StatusDef>("Acid_StatusDef"),
-                        DefCache.GetDef<StatusDef>("Infected_StatusDef"), // = virus applied
-                    };
                     foreach (TacticalActorBase actor in DieHardActorsToKeepAlive)
                     {
-                        actor.Status.UnapplyAllStatusesFiltered(status => statusesToRemove.Contains(status.BaseDef));
+                        actor.Status.UnapplyAllStatusesFiltered(status => StatusesToRemove.Contains(status.BaseDef));
                         (actor as TacticalActor)?.SetSpecialShader(null);
                         _ = actor.RemoveGameTags(new GameTagsList() { ExcludeFromAiBlackboard });
                         if (OnFactionStartTurnSubscribed)

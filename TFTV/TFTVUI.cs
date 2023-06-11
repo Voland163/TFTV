@@ -1,5 +1,6 @@
 ﻿using Base;
 using Base.Core;
+using Base.Defs;
 using Base.Entities.Statuses;
 using Base.Levels;
 using Base.UI.VideoPlayback;
@@ -13,8 +14,10 @@ using PhoenixPoint.Common.Entities.Items;
 using PhoenixPoint.Common.Game;
 using PhoenixPoint.Common.UI;
 using PhoenixPoint.Common.View.ViewControllers;
+using PhoenixPoint.Common.View.ViewControllers.Inventory;
 using PhoenixPoint.Common.View.ViewModules;
 using PhoenixPoint.Geoscape.Entities;
+using PhoenixPoint.Geoscape.Entities.Sites;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
 using PhoenixPoint.Geoscape.View;
@@ -48,6 +51,13 @@ namespace TFTV
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
         //This method changes how WP are displayed in the Edit personnel screen, to show effects of Delirium on WP
         private static readonly GameTagDef mutationTag = GameUtl.GameComponent<SharedData>().SharedGameTags.AnuMutationTag;
+        private static readonly DefRepository Repo = TFTVMain.Repo;
+        private static readonly SharedData Shared = TFTVMain.Shared;
+
+        //  public static Dictionary<int, List<string>> CurrentlyHiddenInv = new Dictionary<int, List<string>>();
+        //  public static Dictionary<int, List<string>> CurrentlyAvailableInv = new Dictionary<int, List<string>>();
+
+
 
         public static UIModuleCharacterProgression hookToProgressionModule = null;
         public static GeoCharacter hookToCharacter = null;
@@ -61,6 +71,56 @@ namespace TFTV
         internal static Color anu = new Color(0.9490196f, 0.0f, 1.0f, 1.0f);
         internal static Color nj = new Color(0.156862751f, 0.6156863f, 1.0f, 1.0f);
         internal static Color syn = new Color(0.160784319f, 0.8862745f, 0.145098045f, 1.0f);
+
+
+
+        /*  [HarmonyPatch(typeof(ModManager), "SerializeModObject")]
+
+          public static class TFTV_ModManager_SerializeModObject_patch
+          {
+              public static bool Prefix(ModMain mod, object data, ModManager __instance, ref ModInstanceData __result)
+              {
+                  try
+                  {
+                      if (data == null)
+                      {
+                         __result = null;
+                      }
+
+                      try
+                      {
+                          var settings = new JsonSerializerSettings
+                          {
+                              ReferenceLoopHandling = ReferenceLoopHandling.Ignore
+                          };
+
+                          string jsonData = JsonConvert.SerializeObject(data, settings);
+                          __result = new ModInstanceData
+                          {
+                              JsonData = jsonData,
+                              TypeName = data.GetType().FullName
+                          };
+                      }
+                      catch (Exception e)
+                      {          
+                          TFTVLogger.Error(e);
+                      }
+
+
+                      __result = null;
+
+                      return false;
+                  }
+
+                  catch (Exception e)
+                  {
+                      TFTVLogger.Error(e);
+                      throw;
+                  }
+              }
+          }*/
+
+
 
 
         //EditUnitButtonsController for later attempts at adding toggle helmet on/off button
@@ -1148,6 +1208,8 @@ namespace TFTV
         {
             try
             {
+                // TFTVLogger.Always($"Checking NJ Diplo status {controller.EventSystem.GetEventRecord("PROG_NJ2__WIN")?.SelectedChoice}");
+
                 string text = "";
                 GeoFaction phoenix = controller.PhoenixFaction;
                 PartyDiplomacyStateEntry relation = controller.NewJerichoFaction.Diplomacy.GetDiplomacyStateEntry(phoenix);
@@ -1171,7 +1233,7 @@ namespace TFTV
                 {
                     text += "\n-You have completed all the special missions for this faction; you have full access to their research tree";
                 }
-                else if (controller.EventSystem.GetEventRecord("PROG_NJ2_WIN")?.SelectedChoice == 0)
+                else if (controller.EventSystem.GetEventRecord("PROG_NJ2__WIN")?.SelectedChoice == 0 || controller.EventSystem.GetEventRecord("PROG_NJ2__WIN")?.SelectedChoice == 1)
                 {
                     text += "\n-You have completed the second special mission for this faction; you will gain access to any technology researched by the faction";
                 }
@@ -1202,7 +1264,7 @@ namespace TFTV
         [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051")]
         internal static class TFTV_UIModuleCharacterProgression_RefreshStatPanel_patch
         {
-            private static void Postfix(GeoCharacter ____character, ref string __result, CharacterBaseAttribute attribute, int currentAttributeValue)
+            private static void Postfix(GeoCharacter ____character, ref string __result, CharacterBaseAttribute attribute, int currentAttributeValue, UIModuleCharacterProgression __instance)
             {
                 try
                 {
@@ -1210,6 +1272,11 @@ namespace TFTV
                     float bonusSpeed = 0;
                     float bonusWillpower = 0;
                     float bonusStrength = 0;
+
+
+
+                    //   string forStrengthToolTip = "";
+
 
                     //  GeoLevelController level = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
 
@@ -1237,6 +1304,7 @@ namespace TFTV
                                     if (statModifier.TargetStat == StatModificationTarget.Endurance && statModifier.Modification == StatModificationType.AddMax)
                                     {
                                         bonusStrength += statModifier.Value;
+                                        //  forStrengthToolTip += $"+{statModifier.Value} from {passiveModifierAbilityDef.ViewElementDef.DisplayName1.Localize()}";
                                     }
                                     else if (statModifier.TargetStat == StatModificationTarget.Willpower && statModifier.Modification == StatModificationType.AddMax)
                                     {
@@ -1267,6 +1335,7 @@ namespace TFTV
                                 if (statModifier2.TargetStat == StatModificationTarget.Endurance)
                                 {
                                     bonusStrength += statModifier2.Value;
+                                    //   forStrengthToolTip += $"+{statModifier2.Value} from {passiveModifier?.ViewElementDef?.DisplayName1?.Localize()}";
                                 }
                                 else if (statModifier2.TargetStat == StatModificationTarget.Willpower)
                                 {
@@ -1280,6 +1349,8 @@ namespace TFTV
                             }
                         }
                     }
+
+                    //  StrengthToolTip.TipText += forStrengthToolTip;
 
                     if (attribute.Equals(CharacterBaseAttribute.Strength))
                     {
@@ -1358,6 +1429,7 @@ namespace TFTV
 
         }
 
+        // public static UITooltipText StrengthToolTip = null;
 
         [HarmonyPatch(typeof(UIModuleCharacterProgression), "Awake")]
 
@@ -1368,6 +1440,8 @@ namespace TFTV
                 try
                 {
                     hookToProgressionModule = __instance;
+                    //  StrengthToolTip = __instance.StrengthSlider.gameObject.GetComponent<UITooltipText>();
+
                 }
                 catch (Exception e)
                 {
@@ -1377,755 +1451,1792 @@ namespace TFTV
             }
         }
 
-        /* [HarmonyPatch(typeof(UIModuleSoldierEquip), "Init")]
-         internal static class TFTV_UIModuleSoldierEquip_Awake_SuperExperiment_Patch
+        [HarmonyPatch(typeof(EditUnitButtonsController), "SetEditUnitButtonsBasedOnType")]
+        internal static class TFTV_EditUnitButtonsController_SetEditUnitButtonsBasedOnType_ToggleHelmetButton_patch
+        {
+            public static void Postfix(EditUnitButtonsController __instance, UIModuleActorCycle ____parentModule)
+            {
+                try
+                {
+
+                    if (____parentModule.CurrentUnit != null)
+                    {
+
+                        switch (____parentModule.CurrentState)
+                        {
+                            case UIModuleActorCycle.ActorCycleState.RosterSection:
+
+                                HelmetToggle.gameObject.SetActive(false);
+                                HelmetToggle.ResetButtonAnimations();
+                                UnequipAll.gameObject.SetActive(false);
+                                UnequipAll.ResetButtonAnimations();
+                                SaveLoadout.gameObject.SetActive(false);
+                                SaveLoadout.ResetButtonAnimations();
+                                LoadLoadout.gameObject.SetActive(false);
+                                LoadLoadout.ResetButtonAnimations();
+
+                                break;
+
+                            case UIModuleActorCycle.ActorCycleState.EditSoldierSection:
+                              //  HelmetToggle.gameObject.SetActive(true);
+                              //  HelmetToggle.ResetButtonAnimations();
+                                UnequipAll.gameObject.SetActive(true);
+                                UnequipAll.ResetButtonAnimations();
+                                SaveLoadout.gameObject.SetActive(true);
+                                SaveLoadout.ResetButtonAnimations();
+                                LoadLoadout.gameObject.SetActive(true);
+                                LoadLoadout.ResetButtonAnimations();
+
+                               bool hasAugmentedHead = false;
+                                ItemSlotDef headSlot = DefCache.GetDef<ItemSlotDef>("Human_Head_SlotDef");
+                                foreach (GeoItem bionic in ____parentModule?.CurrentCharacter?.ArmourItems)
+                                {
+                                    if ((bionic.CommonItemData.ItemDef.Tags.Contains(Shared.SharedGameTags.BionicalTag) || bionic.CommonItemData.ItemDef.Tags.Contains(Shared.SharedGameTags.AnuMutationTag))
+                                    && bionic.CommonItemData.ItemDef.RequiredSlotBinds[0].RequiredSlot == headSlot)
+                                    {
+                                        hasAugmentedHead = true;
+                                    }
+                                }
+
+                                if (hasAugmentedHead)
+                                {
+                                    HelmetToggle.gameObject.SetActive(false);
+                                    HelmetToggle.ResetButtonAnimations();
+
+                                }
+                                else
+                                {
+                                    HelmetToggle.gameObject.SetActive(true);
+                                    HelmetToggle.ResetButtonAnimations();
+                                }
+
+
+                                break;
+                            case UIModuleActorCycle.ActorCycleState.EditVehicleSection:
+                                HelmetToggle.gameObject.SetActive(false);
+                                HelmetToggle.ResetButtonAnimations();
+                                UnequipAll.gameObject.SetActive(false);
+                                UnequipAll.ResetButtonAnimations();
+                                SaveLoadout.gameObject.SetActive(false);
+                                SaveLoadout.ResetButtonAnimations();
+                                LoadLoadout.gameObject.SetActive(false);
+                                LoadLoadout.ResetButtonAnimations();
+                                break;
+                            case UIModuleActorCycle.ActorCycleState.EditMutogSection:
+                                HelmetToggle.gameObject.SetActive(false);
+                                HelmetToggle.ResetButtonAnimations();
+                                UnequipAll.gameObject.SetActive(false);
+                                UnequipAll.ResetButtonAnimations();
+                                SaveLoadout.gameObject.SetActive(false);
+                                SaveLoadout.ResetButtonAnimations();
+                                LoadLoadout.gameObject.SetActive(false);
+                                LoadLoadout.ResetButtonAnimations();
+                                break;
+                            case UIModuleActorCycle.ActorCycleState.CapturedAlienSection:
+                                HelmetToggle.gameObject.SetActive(false);
+                                HelmetToggle.ResetButtonAnimations();
+                                UnequipAll.gameObject.SetActive(false);
+                                UnequipAll.ResetButtonAnimations();
+                                SaveLoadout.gameObject.SetActive(false);
+                                SaveLoadout.ResetButtonAnimations();
+                                LoadLoadout.gameObject.SetActive(false);
+                                LoadLoadout.ResetButtonAnimations();
+                                break;
+
+
+                        }
+
+                        if (!____parentModule.EditUnitButtonsController.CustomizeButton.gameObject.activeInHierarchy)
+                        {
+                           
+
+                            // TFTVLogger.Always($"Customize button enabled is {____parentModule.EditUnitButtonsController.CustomizeButton.enabled}");
+                            HelmetToggle.gameObject.SetActive(false);
+                            HelmetToggle.ResetButtonAnimations();
+                            UnequipAll.gameObject.SetActive(false);
+                            UnequipAll.ResetButtonAnimations();
+                            SaveLoadout.gameObject.SetActive(false);
+                            SaveLoadout.ResetButtonAnimations();
+                            LoadLoadout.gameObject.SetActive(false);
+                            LoadLoadout.ResetButtonAnimations();
+                            // HelmetsOff = false;
+                        }
+
+                        if (____parentModule.CurrentCharacter!=null && (CharacterLoadouts==null || CharacterLoadouts != null && !CharacterLoadouts.ContainsKey(____parentModule.CurrentCharacter.Id)))
+                        {
+                          
+
+                            LoadLoadout.gameObject.SetActive(false);
+                            LoadLoadout.ResetButtonAnimations();
+                        }
+                       
+
+                       
+
+
+
+                    }
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+
+        }
+
+
+
+        // public static List<ICommonItem> ItemsEquippedFromStorage = new List<ICommonItem>();
+
+        /*  public static List<ICommonItem> ConvertStringToICommonItem(List<string> itemDefNames)
+           {
+               try 
+               {
+                   List<ICommonItem> commonItems = new List<ICommonItem>();
+
+                   foreach(string itemName in itemDefNames)  
+                   { 
+                   ItemDef itemDef = (ItemDef)Repo.GetDef(itemName);
+                    GeoItem commonItem = new GeoItem();
+
+
+
+                   }
+
+
+
+
+                   return commonItems;
+
+               }
+               catch (Exception e)
+               {
+                   TFTVLogger.Error(e);
+                   throw;
+               }
+           }*/
+
+
+
+
+        internal static int LocateSoldier(GeoCharacter geoCharacter)
+        {
+            try
+            {
+                int geoVehicleID = 0;
+                GeoLevelController controller = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
+
+                foreach (GeoVehicle aircraft in controller.PhoenixFaction.Vehicles)
+                {
+                    if (aircraft.GetAllCharacters().Contains(geoCharacter))
+                    {
+
+                        geoVehicleID = aircraft.VehicleID;
+                        break;
+
+                    }
+                }
+
+
+                return geoVehicleID;
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
+        }
+
+        internal static List<int> LocateOtherVehicles(int id)
+        {
+            try
+            {
+                List<int> vehicleIDs = new List<int>();
+
+                if (id != 0)
+                {
+                    GeoLevelController controller = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
+
+                    List<GeoVehicle> geoVehiclesAtSite = controller.PhoenixFaction?.Vehicles?.FirstOrDefault(v => v?.VehicleID == id)?.CurrentSite?.Vehicles?.Where(vs => vs?.Owner == controller.PhoenixFaction && vs?.VehicleID != id)?.ToList();
+
+                    if (geoVehiclesAtSite != null && geoVehiclesAtSite.Count > 0)
+                    {
+
+                        foreach (GeoVehicle vehicle in geoVehiclesAtSite)
+                        {
+                            vehicleIDs.Add(vehicle.VehicleID);
+
+                        }
+                    }
+                }
+
+                return vehicleIDs;
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
+
+
+
+
+        }
+
+
+
+        //  public static GeoCharacter CharacterInventory = null;
+
+        /*   [HarmonyPatch(typeof(UIStateEditSoldier), "CharacterChangedHandler")]
+           internal static class TFTV_UIStateEditSoldier_UpdateSoldierEquipment_Patch
+           {
+
+               private static void Postfix(UIStateEditSoldier __instance, GeoCharacter lastCharacter, GeoCharacter newCharacter, bool initial)
+               {
+                   try
+                   {
+                       UIInventoryList storage = UIModuleSoldierEquipKludge.StorageList;
+
+
+
+
+
+                       if (CurrentlyHiddenInv.Keys.Count > 0 || CurrentlyAvailableInv.Keys.Count > 0)
+                       {
+                           TFTVLogger.Always($"Looking at {newCharacter.DisplayName}");
+
+
+                          //  UIInventoryList storage = UIModuleSoldierEquipKludge.StorageList;
+
+
+
+
+
+                           CharacterInventory = newCharacter;
+                           storage.Deinit();
+                           storage.Init(storage.UnfilteredItems, UIModuleSoldierEquipKludge);
+
+                           CharacterInventory = null;
+
+                       }
+                       else 
+                       {
+                           storage.Deinit();
+                           storage.Init(storage.UnfilteredItems, UIModuleSoldierEquipKludge);
+
+
+                       }
+
+
+
+                   }
+
+                   catch (Exception e)
+                   {
+                       TFTVLogger.Error(e);
+                       throw;
+                   }
+               }
+
+           }
+
+   */
+
+
+        /*   [HarmonyPatch(typeof(UIInventoryList), "Init")]
+           internal static class TFTV_UIInventoryList_Update_InventoryExperiment_patch
+           {
+               public static void Prefix(ref IEnumerable<ICommonItem> items, UIModuleSoldierEquip parentModule, UIInventoryList __instance)
+               {
+                   try
+                   {
+
+                       if(__instance.IsStorage && CharacterInventory!=null)
+                       {
+                           GeoCharacter character = CharacterInventory;
+
+                           int charactersAircraft = LocateSoldier(character);
+                           List<int> otherVehiclesAtSameLocation = LocateOtherVehicles(charactersAircraft);
+
+                           List<ICommonItem> commonItems = new List<ICommonItem>(items);
+
+                        //   TFTVLogger.Always($"there are {commonItems.Count} items in the new list, vs the starting list {items.Count()}");
+
+                           if (CurrentlyAvailableInv.Keys.Count > 0)
+                           {
+                               TFTVLogger.Always($"There are {CurrentlyAvailableInv.Keys.Count()} AircraftShowing inventories");
+                            //   List<int> geoVehiclesElsewhere = new List<int>();
+
+                               foreach (int geoVehicleAwayFromCharacter in CurrentlyAvailableInv.Keys)
+                               {
+                                   if (geoVehicleAwayFromCharacter != charactersAircraft &&
+                                       (otherVehiclesAtSameLocation?.Count == 0
+                                       || otherVehiclesAtSameLocation?.Count > 0 && !otherVehiclesAtSameLocation.Contains(geoVehicleAwayFromCharacter)))
+                                   {
+                                       TFTVLogger.Always($"{character?.DisplayName} is not in craft #{geoVehicleAwayFromCharacter} or at an aircraft at its location");
+
+                                       if (!CurrentlyHiddenInv.ContainsKey(geoVehicleAwayFromCharacter))
+                                       {
+                                           CurrentlyHiddenInv.Add(geoVehicleAwayFromCharacter, new List<ICommonItem>());
+                                           TFTVLogger.Always($"Creating new Hidden Inventory list for craft #{geoVehicleAwayFromCharacter}");
+                                       }
+
+                                       foreach (ICommonItem geoItem in CurrentlyAvailableInv[geoVehicleAwayFromCharacter])
+                                       {
+
+                                         //  ICommonItem commonItem = commonItems.Where((ICommonItem ufi) => ufi.ItemDef.Guid == geoItem).FirstOrDefault();
+
+                                           TFTVLogger.Always($"removing {geoItem}");
+
+                                           if (commonItems.Contains(geoItem))
+                                           {
+
+                                               commonItems.Remove(geoItem);
+                                               CurrentlyHiddenInv[geoVehicleAwayFromCharacter].Add(geoItem);
+
+
+
+
+                                               TFTVLogger.Always($"{geoItem} added to currently hidden list, count {CurrentlyHiddenInv[geoVehicleAwayFromCharacter].Count}");
+                                           }
+                                           else 
+                                           {
+                                               TFTVLogger.Always($"Item with guid {geoItem} not found!!!");
+                                           }
+                                       }
+
+                                       foreach (ICommonItem geoItem in CurrentlyHiddenInv[geoVehicleAwayFromCharacter])
+                                       {
+                                           CurrentlyAvailableInv[geoVehicleAwayFromCharacter].Remove(geoItem);
+                                       }
+
+                                       //   geoVehiclesElsewhere.Add(geoVehicleAwayFromCharacter);
+                                   }
+
+                               }
+
+
+                           }
+
+
+
+                           if (charactersAircraft != 0 && CurrentlyHiddenInv.Keys.Count > 0)
+                           {
+                               if (CurrentlyHiddenInv.Keys.Contains(charactersAircraft))
+                               {
+
+                                   TFTVLogger.Always($"{character.DisplayName} is at craft #{charactersAircraft}; adding items to storage");
+
+                                   if (!CurrentlyAvailableInv.ContainsKey(charactersAircraft))
+                                   {
+                                       CurrentlyAvailableInv.Add(charactersAircraft, new List<ICommonItem>());
+                                       TFTVLogger.Always($"Creating new Available Inventory list for craft #{charactersAircraft}");
+                                   }
+
+
+                                   foreach (ICommonItem geoItem in CurrentlyHiddenInv[charactersAircraft])
+                                   {
+                                      // GeoItem geoItem1 = new GeoItem((ItemDef)Repo.GetDef(geoItem));
+                                      // ICommonItem commonItem = geoItem1;//Repo.Instantiate<ICommonItem>(Repo.GetDef(geoItem));
+
+                                       commonItems.Add(geoItem);
+                                       CurrentlyAvailableInv[charactersAircraft].Add(geoItem);
+                                       TFTVLogger.Always($"{geoItem} added to storage");
+
+                                   }
+
+                                   CurrentlyHiddenInv.Remove(charactersAircraft);
+
+
+
+                               }
+
+                               if (otherVehiclesAtSameLocation != null && otherVehiclesAtSameLocation.Count > 0)
+                               {
+                                   TFTVLogger.Always($"There are other vehicles at the same location");
+
+                                   foreach (int geoVehicleAtSameLocation in otherVehiclesAtSameLocation)
+
+                                   {
+                                       if (CurrentlyHiddenInv.Keys.Contains(geoVehicleAtSameLocation))
+                                       {
+                                           if (!CurrentlyAvailableInv.ContainsKey(geoVehicleAtSameLocation))
+                                           {
+                                               CurrentlyAvailableInv.Add(geoVehicleAtSameLocation, new List<ICommonItem>());
+                                               TFTVLogger.Always($"Creating new Available Inventory list for craft #{geoVehicleAtSameLocation}");
+                                           }
+
+
+                                           foreach (ICommonItem geoItem in CurrentlyHiddenInv[geoVehicleAtSameLocation])
+                                           {
+                                           //    GeoItem geoItem1 = new GeoItem((ItemDef)Repo.GetDef(geoItem));
+                                           //    ICommonItem commonItem = geoItem1;//Repo.Instantiate<ICommonItem>(Repo.GetDef(geoItem));
+
+                                               commonItems.Add(geoItem);
+                                               CurrentlyAvailableInv[geoVehicleAtSameLocation].Add(geoItem);
+                                               TFTVLogger.Always($"{geoItem} added to storage");
+
+
+                                           }
+
+                                           CurrentlyHiddenInv.Remove(geoVehicleAtSameLocation);
+                                       }
+                                   }
+                               }
+                           }
+
+                           TFTVLogger.Always($"original list count vs old count {items.Count()} | {commonItems.Count()}");
+
+                           items = commonItems;
+                       }
+
+                   }
+                   catch (Exception e)
+                   {
+                       TFTVLogger.Error(e);
+                       throw;
+                   }
+               }
+
+           }*/
+        //  internal static List<ItemDef> CurrentlyShowingItems = new List<ItemDef>();
+        /*  internal static Sprite TestPic = Helper.CreateSpriteFromImageFile("Aircraft_Inventory.png");
+
+
+
+
+          [HarmonyPatch(typeof(UIInventorySlot), "Update")]
+          internal static class TFTV_UIInventorySlot_Update_InventoryExperiment_patch
+          {
+              public static void Postfix(UIInventorySlot __instance, ICommonItem ____item)
+              {
+                  try
+                  {
+
+
+                      // TFTVLogger.Always($"default color is {__instance.Highlight.color.}");
+
+                      if (CurrentlyAvailableInv.Count > 0)
+                      {
+                          foreach (List<ICommonItem> geoItemList in CurrentlyAvailableInv.Values)
+                          {
+                              foreach (ICommonItem geoItem in geoItemList)
+                              {
+
+
+                                  if (____item != null && __instance.ParentList.IsStorage && geoItem == ____item)
+                                  {
+
+                                      __instance.NotProficientNode.GetComponent<Image>().overrideSprite = TestPic;
+                                      //  __instance.NotProficientNode.GetComponent<Image>().transform.localScale = new Vector3(2f, 2f, 2f); 
+                                      //  __instance.NotProficientNode.enabled = true;
+                                      __instance.NotProficientNode.gameObject.SetActive(true);
+
+                                      if (__instance.NotProficientNode.gameObject.GetComponent<UITooltipText>() == null)
+
+                                      {
+                                          __instance.NotProficientNode.gameObject.AddComponent<UITooltipText>().TipText = "This item was unequipped by someone on a plane, and can only be equipped by someone at the same location";
+                                          // __instance.gameObject.AddComponent<Text>().text = "just testing";
+                                      }
+
+                                      __instance.Highlight.color = red;
+                                      // ColoredItems.Add(____item);
+                                      return;
+                                  }
+                                  else
+                                  {
+                                      if (__instance.Highlight.color == red)
+                                      {
+                                          __instance.Highlight.color = new Color(1, 1, 1);
+                                          __instance.NotProficientNode.GetComponent<Image>().overrideSprite = null;
+
+                                      }
+
+                                  }
+                              }
+                          }
+                      }
+                      else
+                      {
+                          if (__instance.Highlight.color == red)
+                          {
+                              __instance.Highlight.color = new Color(1, 1, 1);
+
+                          }
+
+                      }
+
+                  }
+                  catch (Exception e)
+                  {
+                      TFTVLogger.Error(e);
+                      throw;
+                  }
+              }
+
+          }*/
+
+        internal static bool CheckPhoenixBasePresent(int vehicleID)
+        {
+            try
+            {
+
+
+                GeoLevelController controller = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
+
+                if (vehicleID == 0)
+                {
+                    return true;
+
+                }
+
+                if (controller.PhoenixFaction.Vehicles.FirstOrDefault(v => v.VehicleID == vehicleID)?.CurrentSite?.GetComponent<GeoPhoenixBase>() != null)
+                {
+                    return true;
+                }
+
+                return false;
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
+
+
+
+
+
+
+        }
+
+        /* [HarmonyPatch(typeof(UIInventoryList), "AddItem")]
+         internal static class TFTV_UIInventoryList_AddItem_InventoryExperiment_patch
          {
-             private static void Postfix(UIModuleSoldierEquip __instance)
+             public static bool Prefix(UIInventoryList __instance, ICommonItem item, UIInventorySlot slot, UIInventoryList sourceList)
              {
                  try
                  {
+                     GeoLevelController controller = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
 
-                      Type sourceType = Type.GetType("UIModuleSoldierCustomization");
+                     GeoCharacter character = CharacterInventory ?? hookToCharacter;
 
-                     // Get a reference to the UIStateSoldierCustomization instance
-                     Debug.Log("Finding UIStateSoldierCustomization object");
-                     GameObject uiState = (GameObject)UnityEngine.Object.FindObjectOfType(sourceType);
+                     int charactersAircraft = LocateSoldier(character);
 
-                     if (uiState == null)
+                     // GeoItem geoItem = item as GeoItem;
+
+                     if (charactersAircraft != 0 && !item.ItemDef.Tags.Contains(Shared.SharedGameTags.AmmoTag))
                      {
-                         Debug.LogError("Could not find UIStateSoldierCustomization object");
-                         return;
-                     }
-
-
-                     // Get a reference to the PhoenixGeneralButton with the text "HIDE HELMET"
-                     PhoenixGeneralButton targetButton = null;
-
-                     foreach (PhoenixGeneralButton button in uiState.GetComponentsInChildren<PhoenixGeneralButton>(true))
-                     {
-
-                         TFTVLogger.Always($"{button.name}");
-                         Text text = button.gameObject.GetComponentInChildren<Text>();
-
-
-                         if (text.text == "HIDE HELMET")
+                         if (CheckPhoenixBasePresent(charactersAircraft))
                          {
-                             TFTVLogger.Always($"Found the button!");
-                             targetButton = button;
-                             break;
-                         }
-                     }
+                             TFTVLogger.Always($"{item.ItemDef.name} from {character.DisplayName} is going to be added to an inventory list. Is it storage? {__instance.IsStorage}");
 
-                     if (targetButton != null)
-                     {
-                         // Use reflection to get the type of the PhoenixGeneralButton
-                         Type buttonType = targetButton.GetType();
-
-                         // Create a new instance of the PhoenixGeneralButton type
-                         object newButton = Activator.CreateInstance(buttonType);
-
-                         // Copy relevant properties from the original button to the new button
-                         foreach (FieldInfo field in buttonType.GetFields(BindingFlags.Public | BindingFlags.Instance))
-                         {
-                             field.SetValue(newButton, field.GetValue(targetButton));
+                             return true;
                          }
 
-                         // Add the new button to the UIModuleSoldierEquip hierarchy
-                         // (assuming you already have a reference to the UIModuleSoldierEquip instance)
-                         GameObject newButtonObj = new GameObject("MyButton");
-                         newButtonObj.transform.SetParent(__instance.transform, false);
-                         newButtonObj.AddComponent(buttonType);
-                        // ((PhoenixGeneralButton)newButtonObj.GetComponent(buttonType)).Text.text = "NEW BUTTON TEXT";
-                     }
+                         if (__instance.IsStorage)
+                         {
+                             if (ItemsEquippedFromStorage.Contains(item))
+                             {
 
+                                 ItemsEquippedFromStorage.Remove(item);
+                                 TFTVLogger.Always($"{item.ItemDef.name} came from storage, so it's not added to Aircraft Inventory. Count {ItemsEquippedFromStorage.Count}");
+
+                                 return true;
+                             }
+                             else
+
+                             {
+                                 __instance.AllowStacking = false;
+                                 MethodInfo TryStripAmmo = typeof(UIInventoryList).GetMethod("TryStripAmmo", BindingFlags.Instance | BindingFlags.NonPublic);
+                                 MethodInfo AddRowIfNeeded = typeof(UIInventoryList).GetMethod("AddRowIfNeeded", BindingFlags.Instance | BindingFlags.NonPublic);
+                                 FieldInfo slotItemChangedEventField = AccessTools.Field(typeof(UIInventoryList), "OnSlotItemChanged");
+                                 TryStripAmmo.Invoke(__instance, new object[] { item, null });
+
+                                 if (slot == null)
+                                 {
+                                     slot = __instance.GetFirstAvailableSlot(item.ItemDef);
+                                 }
+
+                                 slot.Item = item;
+
+                                 AddRowIfNeeded.Invoke(__instance, null);
+
+                                 SlotItemChangedHandler slotItemChangedHandler = (SlotItemChangedHandler)slotItemChangedEventField.GetValue(__instance);
+                                 slotItemChangedHandler?.Invoke(slot);
+
+                                 if (CurrentlyAvailableInv.Keys.Contains(charactersAircraft))
+                                 {
+                                     CurrentlyAvailableInv[charactersAircraft].Add(item);
+                                     TFTVLogger.Always($"craft #{charactersAircraft} not a PX base! {item.ItemDef.name} from {character.DisplayName} added to Currently Showing inv, count {CurrentlyAvailableInv[charactersAircraft].Count}");
+                                 }
+                                 else
+                                 {
+                                     TFTVLogger.Always($"craft #{charactersAircraft} not at a PX base! {item.ItemDef.name} from {character.DisplayName} added to Currently Showing inv. Creating new item list.");
+                                     CurrentlyAvailableInv.Add(charactersAircraft, new List<ICommonItem>() { item});
+
+                                 }
+                                 //   MethodInfo TryStripAmmo = typeof(UIInventoryList).GetMethod("TryStripAmmo", BindingFlags.Instance | BindingFlags.NonPublic);
+                                 //   TryStripAmmo.Invoke(__instance, new object[] { item, null });
+
+                                // CurrentlyShowingItems.Add(item.ItemDef);
+
+                                 return false;
+
+                             }
+                         }
+
+                         if (!__instance.IsStorage && CurrentlyAvailableInv.Keys.Count > 0 && CurrentlyAvailableInv.Keys.Contains(charactersAircraft) && CurrentlyAvailableInv[charactersAircraft].Any(i => i == item))
+                         {
+                             CurrentlyAvailableInv[charactersAircraft].Remove(item);
+                             TFTVLogger.Always($"{item.ItemDef.name} is coming from the craft #{charactersAircraft} inventory; current inventory count is {CurrentlyAvailableInv[charactersAircraft].Count} ");
+
+                             return true;
+                         }
+                         else if (!__instance.IsStorage && CurrentlyAvailableInv.Keys.Count > 0)
+                         {
+                             List<int> otherVehiclesAtSameLocation = LocateOtherVehicles(charactersAircraft);
+
+                             if (otherVehiclesAtSameLocation != null && otherVehiclesAtSameLocation.Count > 0)
+                             {
+                                 TFTVLogger.Always($"There are other vehicles at the same location");
+
+                                 foreach (int geoVehicleAtSameLocation in otherVehiclesAtSameLocation)
+                                 {
+                                     if (CurrentlyAvailableInv.Keys.Contains(geoVehicleAtSameLocation))
+                                     {
+                                         if (CurrentlyAvailableInv[geoVehicleAtSameLocation].Any(i => i == item))
+                                         {
+                                             CurrentlyAvailableInv[geoVehicleAtSameLocation].Remove(item);
+                                             TFTVLogger.Always($" craft #{geoVehicleAtSameLocation} is at the same location as craft #{charactersAircraft} and has {item.ItemDef.name}. Count {CurrentlyAvailableInv[geoVehicleAtSameLocation].Count}");
+                                             return true;
+                                         }
+                                     }
+                                 }
+                             }
+                         }
+
+                         if (!__instance.IsStorage)
+                         {
+
+                             ItemsEquippedFromStorage.Add(item);
+                             TFTVLogger.Always($"{item.ItemDef.name} coming from storage; saving to ItemEquippedFromStorage. Count{ItemsEquippedFromStorage.Count}");
+
+                         }
+
+                         return true;
+                     }
+                     TFTVLogger.Always($"{item.ItemDef.name} is going to be added to storage {__instance.IsStorage}");
+                     return true;
 
                  }
 
                  catch (Exception e)
                  {
                      TFTVLogger.Error(e);
+                     throw;
                  }
              }
+
          }*/
 
-        //Patch to show correct encumbrance
-        [HarmonyPatch(typeof(UIModuleSoldierEquip), "RefreshWeightSlider")]
-        internal static class TFTV_UIModuleSoldierEquip_RefreshWeightSlider_Patch
+
+
+
+
+
+        public static Dictionary<int, Dictionary<string, List<string>>> CharacterLoadouts = new Dictionary<int, Dictionary<string, List<string>>>();
+
+        public static bool HelmetsOff;
+
+        public static PhoenixGeneralButton HelmetToggle = null;
+        public static PhoenixGeneralButton UnequipAll = null;
+        public static PhoenixGeneralButton SaveLoadout = null;
+        public static PhoenixGeneralButton LoadLoadout = null;
+
+        [HarmonyPatch(typeof(EditUnitButtonsController), "Awake")]
+        internal static class TFTV_EditUnitButtonsController_Awake_ToggleHelmetButton_patch
         {
-            private static readonly ApplyStatusAbilityDef derealization = DefCache.GetDef<ApplyStatusAbilityDef>("DerealizationIgnorePain_AbilityDef");
-            private static void Prefix(ref int maxWeight, UIModuleSoldierEquip __instance)
+            private static bool toggleState = false;  // Initial toggle state
+            private static readonly string armourItems = "ArmourItems";
+            private static readonly string equipmentItems = "EquipmentItems";
+            private static readonly string inventoryItems = "InventoryItems";
+
+            public static void Postfix(EditUnitButtonsController __instance)
             {
                 try
                 {
-                    if (hookToCharacter != null && !__instance.IsVehicle && !hookToCharacter.TemplateDef.IsMutog)
+                    PhoenixGeneralButton helmetToggleButton = UnityEngine.Object.Instantiate(__instance.EditButton, __instance.transform);
+                    helmetToggleButton.gameObject.AddComponent<UITooltipText>().TipText = "Toggles helmet visibility on/off.";
+                    // TFTVLogger.Always($"original icon position {newPhoenixGeneralButton.transform.position}, edit button position {__instance.EditButton.transform.position}");
+                    helmetToggleButton.transform.position += new Vector3(-50, -35, 0);
+
+                    // TFTVLogger.Always($"new icon position {newPhoenixGeneralButton.transform.position}");
+
+                    PhoenixGeneralButton unequipAllPhoenixGeneralButton = UnityEngine.Object.Instantiate(__instance.EditButton, __instance.transform);
+                    unequipAllPhoenixGeneralButton.gameObject.AddComponent<UITooltipText>().TipText = "Unequips all the items currently equipped by the operative.";
+                    unequipAllPhoenixGeneralButton.transform.position = helmetToggleButton.transform.position + new Vector3(0, -100, 0);
+
+                    PhoenixGeneralButton saveLoadout = UnityEngine.Object.Instantiate(__instance.EditButton, __instance.transform);
+                    saveLoadout.transform.position = unequipAllPhoenixGeneralButton.transform.position + new Vector3(0, -100, 0);
+                    saveLoadout.gameObject.AddComponent<UITooltipText>().TipText = "Saves the current loadout of the operative.";
+
+                    PhoenixGeneralButton loadLoadout = UnityEngine.Object.Instantiate(__instance.EditButton, __instance.transform);
+                    loadLoadout.transform.position = saveLoadout.transform.position + new Vector3(0, -100, 0);
+                    loadLoadout.gameObject.AddComponent<UITooltipText>().TipText = "Unequips all the items currently equipped by the operative and loads the previously saved loadout for this operative.";
+
+
+                    helmetToggleButton.PointerClicked += () => ToggleButtonClicked(helmetToggleButton);
+                    unequipAllPhoenixGeneralButton.PointerClicked += () => UnequipButtonClicked();
+                    saveLoadout.PointerClicked += () => SaveLoadoutButtonClicked();
+                    loadLoadout.PointerClicked += () => LoadLoadoutButtonClicked();
+
+                    helmetToggleButton.transform.GetChildren().First().GetChildren().Where(t => t.name.Equals("UI_Icon")).FirstOrDefault().GetComponent<Image>().sprite = Helper.CreateSpriteFromImageFile("TFTV_helmet_off_icon.png");
+                    unequipAllPhoenixGeneralButton.transform.GetChildren().First().GetChildren().Where(t => t.name.Equals("UI_Icon")).FirstOrDefault().GetComponent<Image>().sprite = Helper.CreateSpriteFromImageFile("lockers.png");
+                    saveLoadout.transform.GetChildren().First().GetChildren().Where(t => t.name.Equals("UI_Icon")).FirstOrDefault().GetComponent<Image>().sprite = Helper.CreateSpriteFromImageFile("loadout_load.png");
+                    loadLoadout.transform.GetChildren().First().GetChildren().Where(t => t.name.Equals("UI_Icon")).FirstOrDefault().GetComponent<Image>().sprite = Helper.CreateSpriteFromImageFile("loadout_save.png");
+                 
+                    HelmetToggle = helmetToggleButton;
+                    UnequipAll = unequipAllPhoenixGeneralButton;
+                    SaveLoadout = saveLoadout;
+                    LoadLoadout = loadLoadout;
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+
+            private static void LoadLoadoutButtonClicked()
+            {
+                try
+                {
+                    GeoCharacter character = hookToCharacter;
+
+                    if (!CharacterLoadouts.ContainsKey(character.Id)) 
+                    {
+                        return;
+                    }
+
+
+                    UnequipButtonClicked();
+                    UIInventoryList storage = UIModuleSoldierEquipKludge.StorageList;
+
+                    Predicate<TacticalItemDef> filter = null;
+
+
+                    storage.SetFilter(filter);
+                    //    UIModuleSoldierEquipKludge.RefreshSideButtons();
+
+
+                    foreach (string armor in CharacterLoadouts[character.Id][armourItems])
                     {
 
-                        float bonusStrength = 0;
-                        float bonusToCarry = 1;
-
-                        foreach (ICommonItem armorItem in hookToCharacter.ArmourItems)
+                        ICommonItem item = storage.UnfilteredItems.Where((ICommonItem ufi) => ufi.ItemDef.Guid == armor).FirstOrDefault() ?? storage.FilteredItems.Where((ICommonItem ufi) => ufi.ItemDef.Guid == armor).FirstOrDefault();
+                        if (item != null && UIModuleSoldierEquipKludge.ArmorList.CanAddItem(item))
                         {
-                            TacticalItemDef tacticalItemDef = armorItem.ItemDef as TacticalItemDef;
-                            if (!(tacticalItemDef == null) && !(tacticalItemDef.BodyPartAspectDef == null))
-                            {
-                                bonusStrength += tacticalItemDef.BodyPartAspectDef.Endurance;
-                            }
+
+                            TFTVLogger.Always($"armor item is {item}");
+                            UIModuleSoldierEquipKludge.ArmorList.AddItem(item.GetSingleItem());
+
+
+
+                            /*     UIInventorySlot slot = UIModuleSoldierEquipKludge.ArmorList.Slots.FirstOrDefault(s => s.Item?.ItemDef == item.ItemDef);
+
+                                 foreach(UIInventorySlot uIInventorySlot in UIModuleSoldierEquipKludge.ArmorList.Slots) 
+                                 {
+                                     if (uIInventorySlot.Item != null)
+                                     {
+                                         TFTVLogger.Always($"slot has {uIInventorySlot?.Item}");
+                                     }
+                                 }
+
+
+                                 if (slot != null)
+                                 {
+                                     TFTVLogger.Always($"Found slot {slot.Item.ItemDef.name}");
+                                 }
+
+                                 UIModuleSoldierEquipKludge.ArmorList.TryLoadAmmo(item, slot, storage);*/
+                            storage.RemoveItem(item.GetSingleItem(), null);
+
+
+                            //storage.RemoveItem(, null);
                         }
-
-                        if (hookToCharacter.Progression != null)
-                        {
-                            foreach (TacticalAbilityDef ability in hookToCharacter.Progression.Abilities)
-                            {
-                                PassiveModifierAbilityDef passiveModifierAbilityDef = ability as PassiveModifierAbilityDef;
-                                if (!(passiveModifierAbilityDef == null))
-                                {
-                                    ItemStatModification[] statModifications = passiveModifierAbilityDef.StatModifications;
-                                    foreach (ItemStatModification statModifier in statModifications)
-                                    {
-                                        if (statModifier.TargetStat == StatModificationTarget.Endurance && statModifier.Modification == StatModificationType.AddMax)
-                                        {
-                                            bonusStrength += statModifier.Value;
-                                            // TFTVLogger.Always("The TacticalAbilityDef is " + ability.name + ". It modifies Endurance, giving " + statModifier.Value + ", " +
-                                            //    "making the total bonus to Strength " + bonusStrength);
-                                        }
-
-
-                                        if (statModifier.TargetStat == StatModificationTarget.CarryWeight && statModifier.Modification == StatModificationType.MultiplyMax)
-                                        {
-                                            bonusToCarry += statModifier.Value - 1;
-                                        }
-                                    }
-                                }
-
-                                if (ability == derealization)
-                                {
-                                    bonusStrength -= 5;
-
-                                }
-                            }
-
-                            foreach (PassiveModifierAbilityDef passiveModifier in hookToCharacter.PassiveModifiers)
-                            {
-                                ItemStatModification[] statModifications = passiveModifier.StatModifications;
-                                foreach (ItemStatModification statModifier2 in statModifications)
-                                {
-                                    if (statModifier2.TargetStat == StatModificationTarget.Endurance)
-                                    {
-                                        bonusStrength += statModifier2.Value;
-                                    }
-                                    if (statModifier2.TargetStat == StatModificationTarget.CarryWeight)
-                                    {
-                                        bonusToCarry += statModifier2.Value;
-                                    }
-
-                                }
-                            }
-
-                        }
-
-                        maxWeight += (int)(bonusStrength * bonusToCarry);
-                        hookToProgressionModule.StatChanged();
-                        //   hookToProgressionModule.RefreshStats();
-                        //hookToProgressionModule.SetStatusesPanel();
-                        hookToProgressionModule.RefreshStatPanel();
-                        //TFTVLogger.Always("Max weight is " + maxWeight + ". Bonus Strength is " + bonusStrength + ". Bonus to carry is " + bonusToCarry);
 
                     }
-                }
 
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-            }
-        }
-
-        //Patch to keep characters animating in edit screen despite constant stat updates invoked by the other patches
-        [HarmonyPatch(typeof(UIStateEditSoldier), "RequestRefreshCharacterData")]
-        internal static class TFTV_UIStateEditSoldier_RequestRefreshCharacterData_Patch
-        {
-
-            private static void Postfix(ref bool ____uiCharacterAnimationResetNeeded)
-            {
-                try
-                {
-
-                    ____uiCharacterAnimationResetNeeded = false;
-
-                }
-
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-            }
-        }
-
-
-
-        public static GeoCharacter HookToCharacterForDeliriumShader = null;
-
-        //Patch to reduce Delirium visuals on faces of infected characters
-
-        [HarmonyPatch(typeof(UIModuleActorCycle), "SetupFaceCorruptionShader")]
-        class TFTV_UIoduleActorCycle_SetupFaceCorruptionShader_Hook_Patch
-        {
-            private static void Prefix(UIModuleActorCycle __instance)
-            {
-                try
-                {
-
-                    HookToCharacterForDeliriumShader = __instance.CurrentCharacter;
-
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-            }
-
-            private static void Postfix(UIModuleActorCycle __instance)
-            {
-                try
-                {
-
-                    HookToCharacterForDeliriumShader = null;
-
-
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-            }
-
-
-        }
-
-        public static TacticalActor HookCharacterStatsForDeliriumShader = null;
-
-
-
-
-
-        [HarmonyPatch(typeof(SquadMemberScrollerController), "SetupFaceCorruptionShader")]
-
-        class TFTV_SquadMemberScrollerController_SetupFaceCorruptionShader
-        {
-            private static void Prefix(TacticalActor actor)
-            {
-                try
-                {
-                    HookCharacterStatsForDeliriumShader = actor;
-
-
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-
-            }
-            private static void Postfix()
-            {
-                try
-                {
-                    HookCharacterStatsForDeliriumShader = null;
-
-
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-
-            }
-        }
-
-
-        [HarmonyPatch(typeof(CharacterStats), "get_CorruptionProgressRel")]
-        internal static class TFTV_UI_CharacterStats_DeliriumFace_patch
-        {
-            private static void Postfix(ref float __result, CharacterStats __instance)
-            {
-                try
-                {
-                    // Type targetType = typeof(UIModuleActorCycle);
-                    // FieldInfo geoCharacterField = targetType.GetField("GeoCharacter", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-
-
-
-                    if (HookToCharacterForDeliriumShader != null)
+                    foreach (string equipment in CharacterLoadouts[character.Id][equipmentItems])
                     {
-                        GeoCharacter geoCharacter = HookToCharacterForDeliriumShader;
 
-                        if (__instance.Corruption > 0 && geoCharacter != null)//hookToCharacter != null)
+                        ICommonItem item = storage.UnfilteredItems.Where((ICommonItem ufi) => ufi.ItemDef.Guid == equipment).FirstOrDefault() ?? storage.FilteredItems.Where((ICommonItem ufi) => ufi.ItemDef.Guid == equipment).FirstOrDefault();
+                        TFTVLogger.Always($"equipment item is {item}");
+
+                        UIModuleSoldierEquipKludge.ReadyList.AddItem(item.GetSingleItem());
+                        storage.RemoveItem(item.GetSingleItem(), null);
+                       /* UIInventorySlot slot = UIModuleSoldierEquipKludge.ReadyList.Slots.FirstOrDefault(s => s.Item.ItemDef == item.ItemDef);
+
+                        if (slot != null)
+                        {
+                            TFTVLogger.Always($"Found slot {slot.Item.ItemDef.name}");
+                        }*/
+
+
+                      //  if (item != null && UIModuleSoldierEquipKludge.ReadyList.CanAddItem(item))
+                      //  {
+
+                          /*  TacticalItemDef[] compatibleAmmunition = (item.ItemDef as EquipmentDef).CompatibleAmmunition;
+                            foreach (TacticalItemDef tacticalItemDef in compatibleAmmunition)
+                            {
+                                TFTVLogger.Always("Got here");
+                                bool foundSlot= false;
+                                foreach (UIInventorySlot storageSlot in storage.Slots)
+                                {
+                                    if (!storageSlot.Empty && !(storageSlot.Item.ItemDef != tacticalItemDef) && storage.TryLoadItemWithItem(item, storageSlot.Item, storageSlot))
+                                    {
+                                        slot?.UpdateItem();
+                                        TFTVLogger.Always("Got here2");
+                                        foundSlot = true;
+                                        break;
+                                    }
+                                }
+                                TFTVLogger.Always("Got here b");
+
+                                if (!foundSlot)
+                                {
+
+                                    foreach (ICommonItem unfilteredItem in storage.UnfilteredItems)
+                                    {
+                                        if (!(unfilteredItem.ItemDef != tacticalItemDef) && storage.TryLoadItemWithItem(item, unfilteredItem, null))
+                                        {
+                                            TFTVLogger.Always("Got here2b");
+
+                                            slot?.UpdateItem();
+                                            if (unfilteredItem.CommonItemData.IsEmpty())
+                                            {
+                                                storage.UnfilteredItems.Remove(unfilteredItem);
+                                            }
+
+                                            break;
+                                        }
+                                    }
+                                }
+                            }*/
+
+                         //   UIModuleSoldierEquipKludge.ReadyList.TryLoadAmmo(item, slot, storage);
+                            //   TFTVLogger.Always($" ammo: {item?.CommonItemData?.Ammo == null} charge: {item?.CommonItemData?.Ammo?.CurrentCharges >= item?.ItemDef?.ChargesMax} storage: {storage == null} allowstacking: {!storage?.AllowStacking}");
+
+
+
+
+                            //  TFTVLogger.Always("this worked too");
+                      //  }
+
+                    }
+
+                    foreach (string inventory in CharacterLoadouts[character.Id][inventoryItems])
+                    {
+
+
+
+                        ICommonItem item = storage.UnfilteredItems.Where((ICommonItem ufi) => ufi.ItemDef.Guid == inventory).FirstOrDefault() ?? storage.FilteredItems.Where((ICommonItem ufi) => ufi.ItemDef.Guid == inventory).FirstOrDefault();
+
+                        if (item != null && UIModuleSoldierEquipKludge.InventoryList.CanAddItem(item))
+                        {
+                            TFTVLogger.Always($"inventory item is {item}");
+
+
+                            UIModuleSoldierEquipKludge.InventoryList.AddItem(item.GetSingleItem());
+                            UIInventorySlot slot = UIModuleSoldierEquipKludge.InventoryList.Slots.FirstOrDefault(s => s.Item == item);
+                        //    UIModuleSoldierEquipKludge.InventoryList.TryLoadAmmo(item.GetSingleItem(), slot, storage);
+                            storage.RemoveItem(item.GetSingleItem(), null);
+                        }
+
+                    }
+
+                }
+
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+
+            private static void SaveLoadoutButtonClicked()
+
+            {
+                try
+                {
+                    GeoCharacter character = hookToCharacter;
+
+                    Dictionary<string, List<string>> characterItems = new Dictionary<string, List<string>>
+                    {
+                        { armourItems, new List<string>() },
+                        { equipmentItems, new List<string>() },
+                        { inventoryItems, new List<string>() }
+                    };
+
+                    foreach (GeoItem armourPiece in character.ArmourItems.Where(a => !a.ItemDef.Tags.Contains(Shared.SharedGameTags.AnuMutationTag)).
+                            Where(a => !a.ItemDef.Tags.Contains(Shared.SharedGameTags.BionicalTag)))
+                    {
+                        characterItems[armourItems].Add(armourPiece.ItemDef.Guid);
+
+                    }
+                    foreach (GeoItem equipmentPiece in character.EquipmentItems)
+                    {
+                        characterItems[equipmentItems].Add(equipmentPiece.ItemDef.Guid);
+
+                    }
+                    foreach (GeoItem inventoryPiece in character.InventoryItems)
+                    {
+                        characterItems[inventoryItems].Add(inventoryPiece.ItemDef.Guid);
+
+                    }
+
+                    if (CharacterLoadouts == null) 
+                    {
+                        CharacterLoadouts = new Dictionary<int, Dictionary<string, List<string>>>();
+                    }
+
+                    if (!CharacterLoadouts.ContainsKey(character.Id))
+                    {
+                        CharacterLoadouts.Add(character.Id, characterItems);
+                    }
+                    else
+                    {
+                        CharacterLoadouts[character.Id].AddRange(characterItems);
+                    }
+
+                    LoadLoadout.gameObject.SetActive(true);
+                    LoadLoadout.ResetButtonAnimations();
+                }
+
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+
+
+            }
+
+
+
+
+            private static void ToggleButtonClicked(PhoenixGeneralButton helmetToggleButton)
+            {
+                try
+                {
+                    toggleState = !toggleState;  // Flip the toggle state
+
+                    // Perform any actions based on the toggle state
+                    if (toggleState)
+                    {
+                        /*  if (uIModuleSoldierCustomization != null)
+                          {
+                              uIModuleSoldierCustomization.HideHelmetToggle.isOn = true;
+
+                          }*/
+                        helmetToggleButton.transform.GetChildren().First().GetChildren().Where(t => t.name.Equals("UI_Icon")).FirstOrDefault().GetComponent<Image>().sprite = Helper.CreateSpriteFromImageFile("TFTV_helmet_on_icon.png");
+                        HelmetsOff = true;
+                        // TFTVLogger.Always($"{uIModuleSoldierCustomization.HideHelmetToggle.isOn}");
+
+                    }
+                    else
+                    {
+
+                        /*  if (uIModuleSoldierCustomization != null)
+                          {
+                              uIModuleSoldierCustomization.HideHelmetToggle.isOn = false;
+                          }*/
+                        helmetToggleButton.transform.GetChildren().First().GetChildren().Where(t => t.name.Equals("UI_Icon")).FirstOrDefault().GetComponent<Image>().sprite = Helper.CreateSpriteFromImageFile("TFTV_helmet_off_icon.png");
+                        HelmetsOff = false;
+
+
+                    }
+                    TFTVLogger.Always($"HelmetsOff is {HelmetsOff}");
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+
+            private static void UnequipButtonClicked()
+            {
+                try
+                {
+                    if (UIModuleSoldierEquipKludge != null && hookToCharacter != null)
+                    {
+                        GeoCharacter character = hookToCharacter;
+
+                        List<GeoItem> armorItems = new List<GeoItem>();
+                        List<GeoItem> inventoryItems = new List<GeoItem>();
+                        List<GeoItem> equipmentItems = new List<GeoItem>();
+
+                        armorItems.AddRange(character.ArmourItems.
+                            Where(a => !a.ItemDef.Tags.Contains(Shared.SharedGameTags.AnuMutationTag)).
+                            Where(a => !a.ItemDef.Tags.Contains(Shared.SharedGameTags.BionicalTag)).
+                            Where(a => !a.ItemDef.RequiredSlotBinds[0].RequiredSlot.name.Contains("Attachment")).
+                            Where(a => !a.ItemDef.RequiredSlotBinds[0].RequiredSlot.name.Contains("BackPack")).
+                            Where(a => !a.ItemDef.RequiredSlotBinds[0].RequiredSlot.name.Contains("MechArm"))
+                            );
+                        equipmentItems.AddRange(character.EquipmentItems);
+                        inventoryItems.AddRange(character.InventoryItems);
+
+                        foreach (GeoItem item in inventoryItems)
+                        {
+                            // TFTVLogger.Always($"{item.ItemDef.name} in Inventory");
+                            UIModuleSoldierEquipKludge.StorageList.AddItem(item);
+                            UIModuleSoldierEquipKludge.InventoryList.RemoveItem(item, null);
+                        }
+
+                        foreach (GeoItem item in equipmentItems)
+                        {
+                            // TFTVLogger.Always($"{item.ItemDef.name} in Equipment");
+                            UIModuleSoldierEquipKludge.StorageList.AddItem(item);
+                            UIModuleSoldierEquipKludge.ReadyList.RemoveItem(item, null);
+                        }
+
+                        foreach (GeoItem item in armorItems)
+                        {
+                            //  TFTVLogger.Always($"{item.ItemDef.name} in Armor. {item.ItemDef?.RequiredSlotBinds[0].RequiredSlot?.name}");
+                            UIModuleSoldierEquipKludge.StorageList.AddItem(item);
+                            UIModuleSoldierEquipKludge.ArmorList.RemoveItem(item, null);
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+
+
+        }
+
+        public static UIModuleSoldierEquip UIModuleSoldierEquipKludge = null;
+
+     /*   [HarmonyPatch(typeof(UIInventoryList), "TryLoadItemWithItem")]
+        internal static class TFTV_UIInventoryList_TryLoadItemWithItem_Patch
+        {
+            private static readonly ApplyStatusAbilityDef derealization = DefCache.GetDef<ApplyStatusAbilityDef>("DerealizationIgnorePain_AbilityDef");
+            private static void Postfix(bool __result, ICommonItem item, ICommonItem ammoItem, UIInventorySlot ammoSlot)
+            {
+                try
+                {
+                    TFTVLogger.Always($"result is {__result}. item is {item} ammoItem is {ammoItem}. ammonslot is {ammoSlot?.name}");
+
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+        }*/
+
+    
+
+
+    //Patch to show correct encumbrance
+    [HarmonyPatch(typeof(UIModuleSoldierEquip), "RefreshWeightSlider")]
+    internal static class TFTV_UIModuleSoldierEquip_RefreshWeightSlider_Patch
+    {
+        private static readonly ApplyStatusAbilityDef derealization = DefCache.GetDef<ApplyStatusAbilityDef>("DerealizationIgnorePain_AbilityDef");
+        private static void Prefix(ref int maxWeight, UIModuleSoldierEquip __instance)
+        {
+            try
+
+            {
+                UIModuleSoldierEquipKludge = __instance;
+
+                if (hookToCharacter != null && !__instance.IsVehicle && !hookToCharacter.TemplateDef.IsMutog)
+                {
+
+                    float bonusStrength = 0;
+                    float bonusToCarry = 1;
+
+                    foreach (ICommonItem armorItem in hookToCharacter.ArmourItems)
+                    {
+                        TacticalItemDef tacticalItemDef = armorItem.ItemDef as TacticalItemDef;
+                        if (!(tacticalItemDef == null) && !(tacticalItemDef.BodyPartAspectDef == null))
+                        {
+                            bonusStrength += tacticalItemDef.BodyPartAspectDef.Endurance;
+                        }
+                    }
+
+                    if (hookToCharacter.Progression != null)
+                    {
+                        foreach (TacticalAbilityDef ability in hookToCharacter.Progression.Abilities)
+                        {
+                            PassiveModifierAbilityDef passiveModifierAbilityDef = ability as PassiveModifierAbilityDef;
+                            if (!(passiveModifierAbilityDef == null))
+                            {
+                                ItemStatModification[] statModifications = passiveModifierAbilityDef.StatModifications;
+                                foreach (ItemStatModification statModifier in statModifications)
+                                {
+                                    if (statModifier.TargetStat == StatModificationTarget.Endurance && statModifier.Modification == StatModificationType.AddMax)
+                                    {
+                                        bonusStrength += statModifier.Value;
+                                        // TFTVLogger.Always("The TacticalAbilityDef is " + ability.name + ". It modifies Endurance, giving " + statModifier.Value + ", " +
+                                        //    "making the total bonus to Strength " + bonusStrength);
+                                    }
+
+
+                                    if (statModifier.TargetStat == StatModificationTarget.CarryWeight && statModifier.Modification == StatModificationType.MultiplyMax)
+                                    {
+                                        bonusToCarry += statModifier.Value - 1;
+                                    }
+                                }
+                            }
+
+                            if (ability == derealization)
+                            {
+                                bonusStrength -= 5;
+
+                            }
+                        }
+
+                        foreach (PassiveModifierAbilityDef passiveModifier in hookToCharacter.PassiveModifiers)
+                        {
+                            ItemStatModification[] statModifications = passiveModifier.StatModifications;
+                            foreach (ItemStatModification statModifier2 in statModifications)
+                            {
+                                if (statModifier2.TargetStat == StatModificationTarget.Endurance)
+                                {
+                                    bonusStrength += statModifier2.Value;
+                                }
+                                if (statModifier2.TargetStat == StatModificationTarget.CarryWeight)
+                                {
+                                    bonusToCarry += statModifier2.Value;
+                                }
+
+                            }
+                        }
+
+                    }
+
+                    maxWeight += (int)(bonusStrength * bonusToCarry);
+                    hookToProgressionModule.StatChanged();
+                    //   hookToProgressionModule.RefreshStats();
+                    //hookToProgressionModule.SetStatusesPanel();
+                    hookToProgressionModule.RefreshStatPanel();
+                    //TFTVLogger.Always("Max weight is " + maxWeight + ". Bonus Strength is " + bonusStrength + ". Bonus to carry is " + bonusToCarry);
+
+                }
+            }
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+    }
+
+    //Patch to keep characters animating in edit screen despite constant stat updates invoked by the other patches
+    [HarmonyPatch(typeof(UIStateEditSoldier), "RequestRefreshCharacterData")]
+    internal static class TFTV_UIStateEditSoldier_RequestRefreshCharacterData_Patch
+    {
+
+        private static void Postfix(ref bool ____uiCharacterAnimationResetNeeded)
+        {
+            try
+            {
+
+                ____uiCharacterAnimationResetNeeded = false;
+
+            }
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+    }
+
+
+
+    public static GeoCharacter HookToCharacterForDeliriumShader = null;
+
+    //Patch to reduce Delirium visuals on faces of infected characters
+
+    [HarmonyPatch(typeof(UIModuleActorCycle), "SetupFaceCorruptionShader")]
+    class TFTV_UIoduleActorCycle_SetupFaceCorruptionShader_Hook_Patch
+    {
+        private static void Prefix(UIModuleActorCycle __instance)
+        {
+            try
+            {
+
+                HookToCharacterForDeliriumShader = __instance.CurrentCharacter;
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+        private static void Postfix(UIModuleActorCycle __instance)
+        {
+            try
+            {
+
+                HookToCharacterForDeliriumShader = null;
+
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+
+    }
+
+    public static TacticalActor HookCharacterStatsForDeliriumShader = null;
+
+
+
+
+
+    [HarmonyPatch(typeof(SquadMemberScrollerController), "SetupFaceCorruptionShader")]
+
+    class TFTV_SquadMemberScrollerController_SetupFaceCorruptionShader
+    {
+        private static void Prefix(TacticalActor actor)
+        {
+            try
+            {
+                HookCharacterStatsForDeliriumShader = actor;
+
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+        }
+        private static void Postfix()
+        {
+            try
+            {
+                HookCharacterStatsForDeliriumShader = null;
+
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+        }
+    }
+
+
+    [HarmonyPatch(typeof(CharacterStats), "get_CorruptionProgressRel")]
+    internal static class TFTV_UI_CharacterStats_DeliriumFace_patch
+    {
+        private static void Postfix(ref float __result, CharacterStats __instance)
+        {
+            try
+            {
+                // Type targetType = typeof(UIModuleActorCycle);
+                // FieldInfo geoCharacterField = targetType.GetField("GeoCharacter", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+
+
+
+                if (HookToCharacterForDeliriumShader != null)
+                {
+                    GeoCharacter geoCharacter = HookToCharacterForDeliriumShader;
+
+                    if (__instance.Corruption > 0 && geoCharacter != null)//hookToCharacter != null)
+                    {
+
+                        if (__instance.Corruption - TFTVDelirium.CalculateStaminaEffectOnDelirium(geoCharacter) > 0)
+                        {
+                            __result = ((geoCharacter.CharacterStats.Corruption - (TFTVDelirium.CalculateStaminaEffectOnDelirium(geoCharacter))) / 20);
+                        }
+                        else
+                        {
+                            __result = 0.05f;
+                        }
+                    }
+                }
+                if (HookCharacterStatsForDeliriumShader != null)
+                {
+                    if (__instance == HookCharacterStatsForDeliriumShader.CharacterStats)
+                    {
+                        int stamina = 40;
+
+                        if (TFTVDelirium.StaminaMap.ContainsKey(HookCharacterStatsForDeliriumShader.GeoUnitId))
+                        {
+                            stamina = TFTVDelirium.StaminaMap[HookCharacterStatsForDeliriumShader.GeoUnitId];
+                        }
+
+
+                        if (__instance.Corruption > 0)//hookToCharacter != null)
                         {
 
-                            if (__instance.Corruption - TFTVDelirium.CalculateStaminaEffectOnDelirium(geoCharacter) > 0)
+                            if (__instance.Corruption - stamina / 10 > 0)
                             {
-                                __result = ((geoCharacter.CharacterStats.Corruption - (TFTVDelirium.CalculateStaminaEffectOnDelirium(geoCharacter))) / 20);
+                                __result = ((__instance.Corruption - (stamina / 10)) / 20);
                             }
                             else
                             {
                                 __result = 0.05f;
                             }
                         }
+
+                        //  TFTVLogger.Always($"corruption shader result is {__result}");
                     }
-                    if (HookCharacterStatsForDeliriumShader != null)
-                    {
-                        if (__instance == HookCharacterStatsForDeliriumShader.CharacterStats)
-                        {
-                            int stamina = 40;
-
-                            if (TFTVDelirium.StaminaMap.ContainsKey(HookCharacterStatsForDeliriumShader.GeoUnitId))
-                            {
-                                stamina = TFTVDelirium.StaminaMap[HookCharacterStatsForDeliriumShader.GeoUnitId];
-                            }
-
-
-                            if (__instance.Corruption > 0)//hookToCharacter != null)
-                            {
-
-                                if (__instance.Corruption - stamina / 10 > 0)
-                                {
-                                    __result = ((__instance.Corruption - (stamina / 10)) / 20);
-                                }
-                                else
-                                {
-                                    __result = 0.05f;
-                                }
-                            }
-
-                            //  TFTVLogger.Always($"corruption shader result is {__result}");
-                        }
-                    }
-
                 }
-                catch (Exception e)
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+    }
+
+    /*[HarmonyPatch(typeof(CorruptionSettingsDef), "CalculateCorruptionShaderValue")]
+
+    internal static class TFTV_UI_CorruptionSettingsDef_DeliriumFace_patch
+    {
+        private static void Prefix(float corruption01)
+        {
+            try
+            {
+                if (hookToCharacter != null)
                 {
-                    TFTVLogger.Error(e);
+                    GeoCharacter geoCharacter = hookToCharacter;
+                    if (geoCharacter.CharacterStats.Corruption > 0)
+                    {
+                        // corruption01 = ((geoCharacter.CharacterStats.Corruption-(geoCharacter.Fatigue.Stamina/10))/ geoCharacter.CharacterStats.WillPoints.IntMax)*0.25f;
+
+                      //  TFTVLogger.Always("This character is " + geoCharacter.DisplayName + " has CorruptionProgressRel of " + geoCharacter.CharacterStats.CorruptionProgressRel
+                      //      + " Delirium of " + geoCharacter.CharacterStats.Corruption + " and WP of " + geoCharacter.CharacterStats.WillPoints.IntMax + " and floatcorruption is " + corruption01);
+
+                    }
+
                 }
+
+
+
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
             }
         }
 
-        /* [HarmonyPatch(typeof(CorruptionSettingsDef), "CalculateCorruptionShaderValue")]
 
-         internal static class TFTV_UI_CorruptionSettingsDef_DeliriumFace_patch
-         {
-             private static void Prefix(float corruption01)
-             {
-                 try
-                 {
-                     if (hookToCharacter != null)
-                     {
-                         GeoCharacter geoCharacter = hookToCharacter;
-                         if (geoCharacter.CharacterStats.Corruption > 0)
-                         {
-                             // corruption01 = ((geoCharacter.CharacterStats.Corruption-(geoCharacter.Fatigue.Stamina/10))/ geoCharacter.CharacterStats.WillPoints.IntMax)*0.25f;
-
-                           //  TFTVLogger.Always("This character is " + geoCharacter.DisplayName + " has CorruptionProgressRel of " + geoCharacter.CharacterStats.CorruptionProgressRel
-                           //      + " Delirium of " + geoCharacter.CharacterStats.Corruption + " and WP of " + geoCharacter.CharacterStats.WillPoints.IntMax + " and floatcorruption is " + corruption01);
-
-                         }
-
-                     }
+    }*/
 
 
 
+    [HarmonyPatch(typeof(UIModuleSoldierCustomization), "OnNewCharacter")]
 
-                 }
-                 catch (Exception e)
-                 {
-                     TFTVLogger.Error(e);
-                 }
-             }
+    internal static class TFTV_UI_UIModuleSoldierCustomization_patch
+    {
+        private static readonly GameTagDef bionicalTag = GameUtl.GameComponent<SharedData>().SharedGameTags.BionicalTag;
+        private static readonly GameTagDef mutationTag = GameUtl.GameComponent<SharedData>().SharedGameTags.AnuMutationTag;
+        private static readonly ItemSlotDef headSlot = DefCache.GetDef<ItemSlotDef>("Human_Head_SlotDef");
 
-
-         }*/
-
-
-
-        [HarmonyPatch(typeof(UIModuleSoldierCustomization), "OnNewCharacter")]
-
-        internal static class TFTV_UI_UIModuleSoldierCustomization_patch
+        private static void Postfix(GeoCharacter newCharacter, UIModuleSoldierCustomization __instance)
         {
-            private static readonly GameTagDef bionicalTag = GameUtl.GameComponent<SharedData>().SharedGameTags.BionicalTag;
-            private static readonly GameTagDef mutationTag = GameUtl.GameComponent<SharedData>().SharedGameTags.AnuMutationTag;
-            private static readonly ItemSlotDef headSlot = DefCache.GetDef<ItemSlotDef>("Human_Head_SlotDef");
-
-            public static bool Prepare()
+            try
             {
-                TFTVConfig config = TFTVMain.Main.Config;
-                return config.ShowFaces;
-            }
 
-
-            private static void Postfix(GeoCharacter newCharacter)
-            {
-                try
+                //  TFTVLogger.Always("Checking that OnNewCharacter is launched");
+                if (newCharacter != null && (newCharacter.TemplateDef.IsHuman || newCharacter.TemplateDef.IsMutoid))
                 {
+                    //    TFTVLogger.Always("character is " + newCharacter.DisplayName + " and is human or mutoid");
 
-                    //  TFTVLogger.Always("Checking that OnNewCharacter is launched");
-                    if (newCharacter != null && (newCharacter.TemplateDef.IsHuman || newCharacter.TemplateDef.IsMutoid))
+                    UIModuleSoldierCustomization uIModuleSoldierCustomizationLocal = __instance;//(UIModuleSoldierCustomization)UnityEngine.Object.FindObjectOfType(typeof(UIModuleSoldierCustomization));
+                    uIModuleSoldierCustomization = uIModuleSoldierCustomizationLocal;
+                    uIModuleSoldierCustomization.HideHelmetToggle.isOn = false;
+
+                    if (newCharacter != null && (!newCharacter.TemplateDef.IsHuman || newCharacter.IsMutoid))
                     {
-                        //    TFTVLogger.Always("character is " + newCharacter.DisplayName + " and is human or mutoid");
 
-                        UIModuleSoldierCustomization uIModuleSoldierCustomizationLocal = (UIModuleSoldierCustomization)UnityEngine.Object.FindObjectOfType(typeof(UIModuleSoldierCustomization));
-                        uIModuleSoldierCustomization = uIModuleSoldierCustomizationLocal;
+                        uIModuleSoldierCustomization.HideHelmetToggle.interactable = false;
                         uIModuleSoldierCustomization.HideHelmetToggle.isOn = false;
-
-                        if (newCharacter != null && (!newCharacter.TemplateDef.IsHuman || newCharacter.IsMutoid))
-                        {
-
-                            uIModuleSoldierCustomization.HideHelmetToggle.interactable = false;
-                            uIModuleSoldierCustomization.HideHelmetToggle.isOn = false;
-                            //  TFTVLogger.Always("character is " + newCharacter.DisplayName + " and is mutoid");
-
-                        }
-                        else if (newCharacter != null && newCharacter.TemplateDef.IsHuman)
-                        {
-                            // TFTVLogger.Always("character is " + newCharacter.DisplayName + " and is human");
-                            bool hasAugmentedHead = false;
-                            foreach (GeoItem bionic in (newCharacter.ArmourItems))
-                            {
-                                if ((bionic.CommonItemData.ItemDef.Tags.Contains(bionicalTag) || bionic.CommonItemData.ItemDef.Tags.Contains(mutationTag))
-                                && bionic.CommonItemData.ItemDef.RequiredSlotBinds[0].RequiredSlot == headSlot)
-                                {
-                                    hasAugmentedHead = true;
-                                }
-                            }
-
-                            if (hasAugmentedHead)
-                            {
-                                uIModuleSoldierCustomization.HideHelmetToggle.interactable = false;
-                                uIModuleSoldierCustomization.HideHelmetToggle.isOn = false;
-                                //   TFTVLogger.Always("character is " + newCharacter.DisplayName + " and has augmented head");
-                            }
-                            else
-                            {
-                                uIModuleSoldierCustomization.HideHelmetToggle.interactable = true;
-                                //   TFTVLogger.Always("character is " + newCharacter.DisplayName + " and does not have an augmented head");
-                            }
-                        }
-                        /* else
-                         {
-                             uIModuleSoldierCustomization.HideHelmetToggle.interactable = true;
-                         }*/
+                        //  TFTVLogger.Always("character is " + newCharacter.DisplayName + " and is mutoid");
 
                     }
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-            }
-
-
-        }
-
-
-
-        public static UIModuleSoldierCustomization uIModuleSoldierCustomization = null;
-
-
-        [HarmonyPatch(typeof(UIStateSoldierCustomization), "EnterState")]
-        internal static class TFTV_UIStateSoldierCustomization_DisplaySoldier_HelmetToggle_patch
-        {
-            private static readonly GameTagDef bionicalTag = GameUtl.GameComponent<SharedData>().SharedGameTags.BionicalTag;
-            private static readonly GameTagDef mutationTag = GameUtl.GameComponent<SharedData>().SharedGameTags.AnuMutationTag;
-            private static readonly ItemSlotDef headSlot = DefCache.GetDef<ItemSlotDef>("Human_Head_SlotDef");
-
-            public static bool Prepare()
-            {
-                TFTVConfig config = TFTVMain.Main.Config;
-                return config.ShowFaces;
-            }
-
-            public static void Postfix()
-            {
-                try
-                {
-                    //  TFTVLogger.Always("Trying to set helmets off if character has mutated head");
-                    if (hookToCharacter != null && (hookToCharacter.TemplateDef.IsHuman || hookToCharacter.TemplateDef.IsMutoid))
+                    else if (newCharacter != null && newCharacter.TemplateDef.IsHuman)
                     {
-                        //     TFTVLogger.Always("character is " + hookToCharacter.DisplayName + " and is human or mutoid");
-                        if (hookToCharacter != null && (!hookToCharacter.TemplateDef.IsHuman || hookToCharacter.IsMutoid))
-                        {
-                            //     TFTVLogger.Always("character is " + hookToCharacter.DisplayName + " and is mutoid");
-                            uIModuleSoldierCustomization.HideHelmetToggle.interactable = false;
-                            uIModuleSoldierCustomization.HideHelmetToggle.isOn = false;
-
-                        }
-                        else if (hookToCharacter != null && hookToCharacter.TemplateDef.IsHuman)
-                        {
-                            //    TFTVLogger.Always("character is " + hookToCharacter.DisplayName + " and is human");
-                            bool hasAugmentedHead = false;
-                            foreach (GeoItem bionic in (hookToCharacter.ArmourItems))
-                            {
-                                if ((bionic.CommonItemData.ItemDef.Tags.Contains(bionicalTag) || bionic.CommonItemData.ItemDef.Tags.Contains(mutationTag))
-                                && bionic.CommonItemData.ItemDef.RequiredSlotBinds[0].RequiredSlot == headSlot)
-                                {
-                                    hasAugmentedHead = true;
-                                }
-                            }
-
-                            if (hasAugmentedHead)
-                            {
-                                uIModuleSoldierCustomization.HideHelmetToggle.interactable = false;
-                                uIModuleSoldierCustomization.HideHelmetToggle.isOn = false;
-                                //   TFTVLogger.Always("character is " + hookToCharacter.DisplayName + " and has augmented head");
-                            }
-                            else
-                            {
-                                uIModuleSoldierCustomization.HideHelmetToggle.interactable = true;
-
-                                //    TFTVLogger.Always("character is " + hookToCharacter.DisplayName + " and does not have an augmented head");
-                            }
-                        }
-                        /* else
-                         {
-                             uIModuleSoldierCustomization.HideHelmetToggle.interactable = true;
-                         }*/
-
-
-
-
-                    }
-
-                }
-
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-            }
-
-        }
-
-
-        [HarmonyPatch(typeof(UIModuleActorCycle), "DisplaySoldier", new Type[] { typeof(GeoCharacter), typeof(bool), typeof(bool), typeof(bool) })]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051")]
-        internal static class BG_UIModuleActorCycle_DisplaySoldier_patch
-        {
-            private static readonly GameTagDef bionicalTag = GameUtl.GameComponent<SharedData>().SharedGameTags.BionicalTag;
-            private static readonly GameTagDef mutationTag = GameUtl.GameComponent<SharedData>().SharedGameTags.AnuMutationTag;
-            private static readonly ItemSlotDef headSlot = DefCache.GetDef<ItemSlotDef>("Human_Head_SlotDef");
-
-            public static bool Prepare()
-            {
-                TFTVConfig config = TFTVMain.Main.Config;
-                return config.ShowFaces;
-            }
-
-            private static bool Prefix(UIModuleActorCycle __instance, List<UnitDisplayData> ____units,
-                CharacterClassWorldDisplay ____classWorldDisplay,
-                GeoCharacter character, bool showHelmet, bool resetAnimation, bool addWeapon)
-            {
-                try
-                {
-                    if (character.TemplateDef.IsMutog || character.TemplateDef.IsMutoid || character.TemplateDef.IsVehicle)
-                    {
-                        return true;
-                    }
-
-
-                    if (character != null && character.TemplateDef.IsHuman && !character.IsMutoid && !character.TemplateDef.IsMutog && !character.TemplateDef.IsVehicle)
-                    {
-
+                        // TFTVLogger.Always("character is " + newCharacter.DisplayName + " and is human");
                         bool hasAugmentedHead = false;
-
-                        foreach (GeoItem bionic in character.ArmourItems)
+                        foreach (GeoItem bionic in (newCharacter.ArmourItems))
                         {
-
                             if ((bionic.CommonItemData.ItemDef.Tags.Contains(bionicalTag) || bionic.CommonItemData.ItemDef.Tags.Contains(mutationTag))
-                                && bionic.CommonItemData.ItemDef.RequiredSlotBinds[0].RequiredSlot == headSlot)
+                            && bionic.CommonItemData.ItemDef.RequiredSlotBinds[0].RequiredSlot == headSlot)
                             {
                                 hasAugmentedHead = true;
-
                             }
                         }
 
-                        if (!hasAugmentedHead)
+                        if (hasAugmentedHead)
                         {
-                            UnitDisplayData unitDisplayData = ____units.FirstOrDefault((UnitDisplayData u) => u.BaseObject == character);
-                            if (unitDisplayData == null)
-                            {
-                                return true;
-                            }
-
-
-                            ____classWorldDisplay.SetDisplay(character.GetClassViewElementDefs(), (float)character.CharacterStats.Corruption > 0f);
-
-
-                            if (uIModuleSoldierCustomization == null || uIModuleSoldierCustomization.HideHelmetToggle.isOn)
-                            {
-                                __instance.DisplaySoldier(unitDisplayData, resetAnimation, addWeapon, showHelmet = false);
-                                return false;
-                            }
-                            else
-                            {
-                                return true;
-
-                            }
+                            uIModuleSoldierCustomization.HideHelmetToggle.interactable = false;
+                            uIModuleSoldierCustomization.HideHelmetToggle.isOn = false;
+                            //   TFTVLogger.Always("character is " + newCharacter.DisplayName + " and has augmented head");
                         }
                         else
                         {
-                            return true;
+                            uIModuleSoldierCustomization.HideHelmetToggle.interactable = true;
+                            //   TFTVLogger.Always("character is " + newCharacter.DisplayName + " and does not have an augmented head");
                         }
                     }
-                    return true;
+                    /* else
+                     {
+                         uIModuleSoldierCustomization.HideHelmetToggle.interactable = true;
+                     }*/
+
                 }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-                return true;
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
             }
         }
 
 
+    }
 
-        //This changes display of Delirium bar in personnel edit screen to show current Delirium value vs max delirium value the character can have
-        // taking into account ODI level and bionics
-        [HarmonyPatch(typeof(UIModuleCharacterProgression), "SetStatusesPanel")]
-        internal static class BG_UIModuleCharacterProgression_SetStatusesPanel_patch
+
+
+    public static UIModuleSoldierCustomization uIModuleSoldierCustomization = null;
+
+
+    [HarmonyPatch(typeof(UIStateSoldierCustomization), "UpdateHelmetShown")]
+    internal static class TFTV_UIStateSoldierCustomization_UpdateHelmetShown_HelmetToggle_patch
+    {
+
+        public static void Postfix()
         {
-
-            private static void Postfix(UIModuleCharacterProgression __instance, GeoCharacter ____character)
+            try
             {
-                try
-                {
-                    hookToCharacter = ____character;
 
-                    if (____character.CharacterStats.Corruption > 0f)
-
-                    {
-                        //____character.CharacterStats.Corruption.Set(Mathf.RoundToInt(____character.CharacterStats.Corruption));
-
-                        float delirium = ____character.CharacterStats.Corruption;
-                        if (TFTVDelirium.CalculateMaxCorruption(____character) < ____character.CharacterStats.Corruption)
-                        {
-                            delirium = (TFTVDelirium.CalculateMaxCorruption(____character));
-                        }
-
-                        __instance.CorruptionSlider.minValue = 0f;
-                        __instance.CorruptionSlider.maxValue = Mathf.RoundToInt(TFTVDelirium.CalculateMaxCorruption(____character));
-                        __instance.CorruptionSlider.value = delirium;
-                        __instance.CorruptionStatText.text = $"{Mathf.RoundToInt(delirium)}/{Mathf.RoundToInt(__instance.CorruptionSlider.maxValue)}";
-
-                        int num = (int)(float)____character.Fatigue.Stamina;
-                        int num2 = (int)(float)____character.Fatigue.Stamina.Max;
-                        __instance.StaminaSlider.minValue = 0f;
-                        __instance.StaminaSlider.maxValue = num2;
-                        __instance.StaminaSlider.value = num;
-                        if (num != num2)
-                        {
-                            string deliriumReducedStamina = "";
-                            for (int i = 0; i < TFTVDelirium.CalculateStaminaEffectOnDelirium(____character); i++)
-                            {
-                                deliriumReducedStamina += "-";
-
-                            }
-                            __instance.StaminaStatText.text = $"<color=#da5be3>{deliriumReducedStamina}</color>" + num + "/" + num2;
-                        }
-                        else
-                        {
-                            __instance.StaminaStatText.text = "<color=#da5be3> ---- </color>" + num.ToString();
-                        }
-                    }
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
+                HelmetsOff = !uIModuleSoldierCustomization.HideHelmetToggle.isOn;
             }
-        }
-
-        //Adapted from Mad's Assorted Adjustments, all hail the Great Mad!
-        [HarmonyPatch(typeof(PhoenixGame), "RunGameLevel")]
-        public static class TFTV_PhoenixGame_RunGameLevel_SkipLogos_Patch
-        {
-            public static bool Prefix(PhoenixGame __instance, LevelSceneBinding levelSceneBinding, ref IEnumerator<NextUpdate> __result)
+            catch (Exception e)
             {
-                TFTVConfig config = TFTVMain.Main.Config;
-
-                try
-                {
-                    if (config.SkipMovies)
-                    {
-
-                        if (levelSceneBinding == __instance.Def.IntroLevelSceneDef.Binding)
-                        {
-                            __result = Enumerable.Empty<NextUpdate>().GetEnumerator();
-                            return false;
-                        }
-
-                        return true;
-                    }
-                    return true;
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                    return true;
-                }
-            }
-        }
-
-        [HarmonyPatch(typeof(UIStateHomeScreenCutscene), "EnterState")]
-        public static class TFTV_PhoenixGame_RunGameLevel_SkipIntro_Patch
-        {
-            public static void Postfix(UIStateHomeScreenCutscene __instance, VideoPlaybackSourceDef ____sourcePlaybackDef)
-            {
-                TFTVConfig config = TFTVMain.Main.Config;
-                if (config.SkipMovies)
-                {
-                    try
-                    {
-                        if (____sourcePlaybackDef == null)
-                        {
-                            return;
-                        }
-
-                        if (____sourcePlaybackDef.ResourcePath.Contains("Game_Intro_Cutscene"))
-                        {
-                            typeof(UIStateHomeScreenCutscene).GetMethod("OnCancel", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(__instance, null);
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        TFTVLogger.Error(e);
-                    }
-                }
-            }
-        }
-        [HarmonyPatch(typeof(UIStateTacticalCutscene), "EnterState")]
-        public static class TFTV_PhoenixGame_RunGameLevel_SkipLanding_Patch
-        {
-            public static void Postfix(UIStateTacticalCutscene __instance, VideoPlaybackSourceDef ____sourcePlaybackDef)
-            {
-                TFTVConfig config = TFTVMain.Main.Config;
-                if (config.SkipMovies)
-                {
-                    try
-                    {
-                        if (____sourcePlaybackDef == null)
-                        {
-                            return;
-                        }
-                        if (____sourcePlaybackDef.ResourcePath.Contains("LandingSequences"))
-                        {
-                            typeof(UIStateTacticalCutscene).GetMethod("OnCancel", BindingFlags.NonPublic | BindingFlags.Instance)?.Invoke(__instance, null);
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        TFTVLogger.Error(e);
-                    }
-                }
+                TFTVLogger.Error(e);
             }
         }
 
     }
+    [HarmonyPatch(typeof(UIStateSoldierCustomization), "EnterState")]
+    internal static class TFTV_UIStateSoldierCustomization_DisplaySoldier_HelmetToggle_patch
+    {
+        private static readonly GameTagDef bionicalTag = GameUtl.GameComponent<SharedData>().SharedGameTags.BionicalTag;
+        private static readonly GameTagDef mutationTag = GameUtl.GameComponent<SharedData>().SharedGameTags.AnuMutationTag;
+        private static readonly ItemSlotDef headSlot = DefCache.GetDef<ItemSlotDef>("Human_Head_SlotDef");
+
+        public static void Postfix()
+        {
+            try
+            {
+                HelmetsOff = false;
+                //  TFTVLogger.Always("Trying to set helmets off if character has mutated head");
+                if (hookToCharacter != null && (hookToCharacter.TemplateDef.IsHuman || hookToCharacter.TemplateDef.IsMutoid))
+                {
+                    //     TFTVLogger.Always("character is " + hookToCharacter.DisplayName + " and is human or mutoid");
+                    if (hookToCharacter != null && (!hookToCharacter.TemplateDef.IsHuman || hookToCharacter.IsMutoid))
+                    {
+                        //     TFTVLogger.Always("character is " + hookToCharacter.DisplayName + " and is mutoid");
+                        uIModuleSoldierCustomization.HideHelmetToggle.interactable = false;
+                        uIModuleSoldierCustomization.HideHelmetToggle.isOn = false;
+
+                    }
+                    else if (hookToCharacter != null && hookToCharacter.TemplateDef.IsHuman)
+                    {
+                        //    TFTVLogger.Always("character is " + hookToCharacter.DisplayName + " and is human");
+                        bool hasAugmentedHead = false;
+                        foreach (GeoItem bionic in (hookToCharacter.ArmourItems))
+                        {
+                            if ((bionic.CommonItemData.ItemDef.Tags.Contains(bionicalTag) || bionic.CommonItemData.ItemDef.Tags.Contains(mutationTag))
+                            && bionic.CommonItemData.ItemDef.RequiredSlotBinds[0].RequiredSlot == headSlot)
+                            {
+                                hasAugmentedHead = true;
+                            }
+                        }
+
+                        if (hasAugmentedHead)
+                        {
+                            uIModuleSoldierCustomization.HideHelmetToggle.interactable = false;
+                            uIModuleSoldierCustomization.HideHelmetToggle.isOn = false;
+                            //   TFTVLogger.Always("character is " + hookToCharacter.DisplayName + " and has augmented head");
+                        }
+                        else
+                        {
+                            uIModuleSoldierCustomization.HideHelmetToggle.interactable = true;
+
+                            //    TFTVLogger.Always("character is " + hookToCharacter.DisplayName + " and does not have an augmented head");
+                        }
+                    }
+                    /* else
+                     {
+                         uIModuleSoldierCustomization.HideHelmetToggle.interactable = true;
+                     }*/
+
+
+
+
+                }
+
+            }
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+    }
+
+
+    [HarmonyPatch(typeof(UIModuleActorCycle), "DisplaySoldier", new Type[] { typeof(GeoCharacter), typeof(bool), typeof(bool), typeof(bool) })]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051")]
+    internal static class BG_UIModuleActorCycle_DisplaySoldier_patch
+    {
+        private static readonly GameTagDef bionicalTag = GameUtl.GameComponent<SharedData>().SharedGameTags.BionicalTag;
+        private static readonly GameTagDef mutationTag = GameUtl.GameComponent<SharedData>().SharedGameTags.AnuMutationTag;
+        private static readonly ItemSlotDef headSlot = DefCache.GetDef<ItemSlotDef>("Human_Head_SlotDef");
+
+        private static bool Prefix(UIModuleActorCycle __instance, List<UnitDisplayData> ____units,
+            CharacterClassWorldDisplay ____classWorldDisplay,
+            GeoCharacter character, bool showHelmet, bool resetAnimation, bool addWeapon)
+        {
+            try
+            {
+                if (character.TemplateDef.IsMutog || character.TemplateDef.IsMutoid || character.TemplateDef.IsVehicle)
+                {
+                    return true;
+                }
+
+
+                if (character != null && character.TemplateDef.IsHuman && !character.IsMutoid && !character.TemplateDef.IsMutog && !character.TemplateDef.IsVehicle)
+                {
+
+                    bool hasAugmentedHead = false;
+
+                    foreach (GeoItem bionic in character.ArmourItems)
+                    {
+
+                        if ((bionic.CommonItemData.ItemDef.Tags.Contains(bionicalTag) || bionic.CommonItemData.ItemDef.Tags.Contains(mutationTag))
+                            && bionic.CommonItemData.ItemDef.RequiredSlotBinds[0].RequiredSlot == headSlot)
+                        {
+                            hasAugmentedHead = true;
+
+                        }
+                    }
+
+                    if (!hasAugmentedHead)
+                    {
+                        UnitDisplayData unitDisplayData = ____units.FirstOrDefault((UnitDisplayData u) => u.BaseObject == character);
+                        if (unitDisplayData == null)
+                        {
+                            return true;
+                        }
+
+
+                        ____classWorldDisplay.SetDisplay(character.GetClassViewElementDefs(), (float)character.CharacterStats.Corruption > 0f);
+
+                        if (HelmetsOff)
+                        {
+
+                            // if (uIModuleSoldierCustomization == null && HelmetsOff || uIModuleSoldierCustomization.HideHelmetToggle.isOn)
+                            // {
+                            __instance.DisplaySoldier(unitDisplayData, resetAnimation, addWeapon, showHelmet = false);
+                            return false;
+                        }
+
+                        else
+                        {
+                            return true;
+
+                        }
+                    }
+                    else
+                    {
+                        return true;
+                    }
+                }
+                return true;
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+            return true;
+        }
+    }
+
+
+
+    //This changes display of Delirium bar in personnel edit screen to show current Delirium value vs max delirium value the character can have
+    // taking into account ODI level and bionics
+    [HarmonyPatch(typeof(UIModuleCharacterProgression), "SetStatusesPanel")]
+    internal static class BG_UIModuleCharacterProgression_SetStatusesPanel_patch
+    {
+
+        private static void Postfix(UIModuleCharacterProgression __instance, GeoCharacter ____character)
+        {
+            try
+            {
+                hookToCharacter = ____character;
+
+                if (____character.CharacterStats.Corruption > 0f)
+
+                {
+                    //____character.CharacterStats.Corruption.Set(Mathf.RoundToInt(____character.CharacterStats.Corruption));
+
+                    float delirium = ____character.CharacterStats.Corruption;
+                    if (TFTVDelirium.CalculateMaxCorruption(____character) < ____character.CharacterStats.Corruption)
+                    {
+                        delirium = (TFTVDelirium.CalculateMaxCorruption(____character));
+                    }
+
+                    __instance.CorruptionSlider.minValue = 0f;
+                    __instance.CorruptionSlider.maxValue = Mathf.RoundToInt(TFTVDelirium.CalculateMaxCorruption(____character));
+                    __instance.CorruptionSlider.value = delirium;
+
+                    UITooltipText corruptionSliderTip = __instance.CorruptionSlider.gameObject.AddComponent<UITooltipText>();
+                    corruptionSliderTip.TipText = $"Delirium is gained in Tactical missions. Current max Delirium is {TFTVDelirium.CurrentDeliriumLevel(____character.Faction.GeoLevel)}.";
+                    __instance.CorruptionStatText.text = $"{Mathf.RoundToInt(delirium)}/{Mathf.RoundToInt(__instance.CorruptionSlider.maxValue)}";
+
+                    int num = (int)(float)____character.Fatigue.Stamina;
+                    int num2 = (int)(float)____character.Fatigue.Stamina.Max;
+                    __instance.StaminaSlider.minValue = 0f;
+                    __instance.StaminaSlider.maxValue = num2;
+                    __instance.StaminaSlider.value = num;
+
+
+                    UITooltipText staminaTextTip = __instance.StaminaStatText.gameObject.AddComponent<UITooltipText>();
+                    if (num != num2)
+                    {
+                        string deliriumReducedStamina = "";
+                        for (int i = 0; i < TFTVDelirium.CalculateStaminaEffectOnDelirium(____character); i++)
+                        {
+                            deliriumReducedStamina += "-";
+
+                        }
+                        __instance.StaminaStatText.text = $"<color=#da5be3>{deliriumReducedStamina}</color>" + num + "/" + num2;
+                    }
+                    else
+                    {
+                        __instance.StaminaStatText.text = "<color=#da5be3> ---- </color>" + num.ToString();
+
+                    }
+
+                    staminaTextTip.TipText = $"Character's current Stamina is reducing the effects of Delirium on Willpower by {TFTVDelirium.CalculateStaminaEffectOnDelirium(____character)}";
+
+                }
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+    }
+
+    //Adapted from Mad's Assorted Adjustments, all hail the Great Mad!
+    [HarmonyPatch(typeof(PhoenixGame), "RunGameLevel")]
+    public static class TFTV_PhoenixGame_RunGameLevel_SkipLogos_Patch
+    {
+        public static bool Prefix(PhoenixGame __instance, LevelSceneBinding levelSceneBinding, ref IEnumerator<NextUpdate> __result)
+        {
+            TFTVConfig config = TFTVMain.Main.Config;
+
+            try
+            {
+                if (config.SkipMovies)
+                {
+
+                    if (levelSceneBinding == __instance.Def.IntroLevelSceneDef.Binding)
+                    {
+                        __result = Enumerable.Empty<NextUpdate>().GetEnumerator();
+                        return false;
+                    }
+
+                    return true;
+                }
+                return true;
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                return true;
+            }
+        }
+    }
+
+    [HarmonyPatch(typeof(UIStateHomeScreenCutscene), "EnterState")]
+    public static class TFTV_PhoenixGame_RunGameLevel_SkipIntro_Patch
+    {
+        public static void Postfix(UIStateHomeScreenCutscene __instance, VideoPlaybackSourceDef ____sourcePlaybackDef)
+        {
+            TFTVConfig config = TFTVMain.Main.Config;
+            if (config.SkipMovies)
+            {
+                try
+                {
+                    if (____sourcePlaybackDef == null)
+                    {
+                        return;
+                    }
+
+                    if (____sourcePlaybackDef.ResourcePath.Contains("Game_Intro_Cutscene"))
+                    {
+                        typeof(UIStateHomeScreenCutscene).GetMethod("OnCancel", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(__instance, null);
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+        }
+    }
+    [HarmonyPatch(typeof(UIStateTacticalCutscene), "EnterState")]
+    public static class TFTV_PhoenixGame_RunGameLevel_SkipLanding_Patch
+    {
+        public static void Postfix(UIStateTacticalCutscene __instance, VideoPlaybackSourceDef ____sourcePlaybackDef)
+        {
+            TFTVConfig config = TFTVMain.Main.Config;
+            if (config.SkipMovies)
+            {
+                try
+                {
+                    if (____sourcePlaybackDef == null)
+                    {
+                        return;
+                    }
+                    if (____sourcePlaybackDef.ResourcePath.Contains("LandingSequences"))
+                    {
+                        typeof(UIStateTacticalCutscene).GetMethod("OnCancel", BindingFlags.NonPublic | BindingFlags.Instance)?.Invoke(__instance, null);
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+        }
+    }
+
+}
 }

@@ -82,12 +82,16 @@ namespace TFTV
             //    TFTVBetaSaveGamesFixes.LOTAReworkGlobalCheck = false;
                 TFTVTactical.TurnZeroMethodsExecuted = false;
                 TFTVBaseDefenseGeoscape.PhoenixBasesUnderAttack = new Dictionary<int, Dictionary<string, double>>();
+                TFTVBaseDefenseGeoscape.PhoenixBasesInfested.Clear();
                 TFTVBaseDefenseTactical.VentingHintShown = false;
                 TFTVBaseDefenseTactical.ConsolePositions = new Dictionary<float, float>();
                 TFTVAncients.CyclopsMolecularDamageBuff.Clear();
                 TFTVPandoranProgress.ScyllaCount = 0;
                 TFTVAncients.AutomataResearched = false;
                 TFTVAncients.AlertedHoplites.Clear();
+                TFTVUI.CharacterLoadouts.Clear();
+              //  TFTVUI.CurrentlyAvailableInv.Clear();
+              //  TFTVUI.CurrentlyHiddenInv.Clear();
                 TFTVLogger.Always("Internal variables cleared");
             }
             catch (Exception e)

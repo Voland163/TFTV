@@ -2,8 +2,6 @@
 using Base.Core;
 using Base.Defs;
 using Base.Entities;
-using Base.Entities.Effects;
-using Base.Entities.Statuses;
 using Base.Levels;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
@@ -16,10 +14,8 @@ using PhoenixPoint.Geoscape.Entities.Interception.Equipments;
 using PhoenixPoint.Geoscape.Entities.Sites;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.View.ViewControllers.HavenDetails;
-using PhoenixPoint.Tactical;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
-using PhoenixPoint.Tactical.Entities.Effects;
 using PhoenixPoint.Tactical.Entities.Effects.DamageTypes;
 using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.Entities.Statuses;
@@ -36,6 +32,7 @@ using System.Reflection;
 using System.Reflection.Emit;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using static EnviroSkyMgr;
 
 
 namespace TFTV
@@ -50,6 +47,178 @@ namespace TFTV
         //  private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
 
         public static List<TacticalVoxel> VoxelsOnFire = new List<TacticalVoxel>();
+
+
+     /*   internal virtual void TriggerHurt(DamageResult damageResult)
+        {
+            var hurtReactionAbility = GetAbility<TacticalHurtReactionAbility>();
+            if (IsDead || (hurtReactionAbility != null && hurtReactionAbility.TacticalHurtReactionAbilityDef.TriggerOnDamage && hurtReactionAbility.IsEnabled(IgnoredAbilityDisabledStatesFilter.IgnoreNoValidTargetsFilter)))
+            {
+                return;
+            }
+
+            bool useModFlinching = true; // Use a global flag for the mod 
+            if (useModFlinching && _ragdollDummy != null && _ragdollDummy.CanFlinch)
+            {
+                DoTriggerHurt(damageResult, damageResult.forceHurt);
+                return;
+            }
+
+            _pendingHurtDamage = damageResult;
+            if (_waitingForHurtReactionCrt == null || _waitingForHurtReactionCrt.Stopped)
+            {
+                _waitingForHurtReactionCrt = Timing.Start(PollForPendingHurtReaction(damageResult.forceHurt));
+            }
+        }*/
+
+
+        /*
+       [HarmonyPatch(typeof(TacticalActor), "TriggerHurt")]
+        public static class TacticalActor_TriggerHurt_Patch
+        {
+            public static bool Prefix(TacticalActor __instance, DamageResult damageResult, RagdollDummy ____ragdollDummy, IUpdateable ____waitingForHurtReactionCrt,
+                DamageResult ____pendingHurtDamage)
+            {
+                try
+                {
+                    
+
+                    MethodInfo doTriggerHurtMethod = typeof(TacticalActor).GetMethod("DoTriggerHurt", BindingFlags.NonPublic | BindingFlags.Instance);
+                    MethodInfo pollForPendingHurtReaction = typeof(TacticalActor).GetMethod("PollForPendingHurtReaction", BindingFlags.NonPublic | BindingFlags.Instance); 
+
+
+
+                 var hurtReactionAbility = __instance.GetAbility<TacticalHurtReactionAbility>();
+
+
+
+                    if (__instance.IsDead || (hurtReactionAbility != null && hurtReactionAbility.TacticalHurtReactionAbilityDef.TriggerOnDamage && hurtReactionAbility.IsEnabled(IgnoredAbilityDisabledStatesFilter.IgnoreNoValidTargetsFilter)))
+                    {
+                        TFTVLogger.Always("Early exit triggers");
+                        return true;
+                    }
+
+                    bool useModFlinching = true; // Use a global flag for the mod 
+                    if (useModFlinching && ____ragdollDummy != null && ____ragdollDummy.CanFlinch)
+                    {
+                        doTriggerHurtMethod.Invoke(__instance, new object[] { damageResult, damageResult.forceHurt });
+                        TFTVLogger.Always("Takes to do trigger hurt method");
+
+                        return false;
+                    }
+
+                    ____pendingHurtDamage = damageResult;
+                    if (____waitingForHurtReactionCrt == null || ____waitingForHurtReactionCrt.Stopped)
+                    {
+                        TFTVLogger.Always("waiting for hurt reaction or it is stopped");
+                        object[] parameters = new object[] { damageResult.forceHurt };
+                        //Timing timingInstance = new Timing();
+                        ____waitingForHurtReactionCrt = __instance.Timing.Start((IEnumerator<NextUpdate>)pollForPendingHurtReaction.Invoke(__instance, parameters));
+
+                    }
+
+
+                    return false;
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
+     
+
+
+
+        [HarmonyPatch(typeof(TacticalActor), "SetFlinchingEnabled")]
+        public static class TacticalActor_AddFlinch_Patch
+        {
+            public static void Postfix(TacticalActor __instance, ref RagdollDummy ____ragdollDummy)
+            {
+                try
+                {
+                    TFTVLogger.Always($"SetFlinchingEnabled invoked");
+                    ____ragdollDummy.SetFlinchingEnabled(true);
+  
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
+
+
+        [HarmonyPatch(typeof(RagdollDummy), "AddFlinch")]
+        public static class RagdollDummy_AddFlinch_Patch
+        {
+            public static void Prefix(RagdollDummy __instance, float ____ragdollBlendTimeTotal)
+            {
+                try
+                {
+                    TFTVLogger.Always($"AddFlinch invoked prefix, ragdollBlendtimeTotal is {____ragdollBlendTimeTotal}");
+
+         
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+            public static void Postfix(RagdollDummy __instance, float ____ragdollBlendTimeTotal, Vector3 force, CastHit hit)
+            {
+                try
+                {
+                    RagdollDummyDef ragdollDummyDef = DefCache.GetDef<RagdollDummyDef>("Generic_RagdollDummyDef");
+                    TFTVLogger.Always($"AddFlinch invoked postfix, ragdollBlendtimeTotal is {____ragdollBlendTimeTotal}. original force is {force}, the hit body part is {hit.Collider?.attachedRigidbody?.name}" +
+                        $" mass is {hit.Collider?.attachedRigidbody?.mass}, force applied on first hit is {force*ragdollDummyDef.FlinchForceMultiplier}");
+
+
+
+
+
+
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
+
+
+
+        [HarmonyPatch(typeof(RagdollDummy), "get_CanFlinch")]
+        public static class RagdollDummy_SetFlinchingEnabled_Patch
+        {
+            public static void Postfix(RagdollDummy __instance, ref bool __result)
+            {
+                try
+                {
+                    TFTVLogger.Always($"get_CanFlinch invoked for {__instance?.Actor?.name} and result is {__result}");
+
+                    __result = true;
+
+                    TFTVLogger.Always($"And now result is {__result}");
+
+
+
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
+        */
 
 
 
@@ -505,8 +674,8 @@ namespace TFTV
             {
                 try
                 {
-                   
-                  
+
+
                     //    TacticalAbilityTarget target = parameter as TacticalAbilityTarget;
                     //  TFTVLogger.Always($"ability {ability.TacticalAbilityDef.name} executed by {__instance.DisplayName} and the TacticalAbilityTarget position to apply is {target.PositionToApply} ");
 
@@ -527,16 +696,16 @@ namespace TFTV
 
                     }
 
-                   
+
 
                     ApplyEffectAbilityDef parasychosis = DefCache.GetDef<ApplyEffectAbilityDef>("Parasychosis_AbilityDef");
                     GameTagDef infestationSecondObjectiveTag = DefCache.GetDef<GameTagDef>("ScatterRemainingAttackers_GameTagDef");
 
-                    if(ability.TacticalAbilityDef == parasychosis && parameter is TacticalAbilityTarget target && target.GetTargetActor() != null && target.GetTargetActor() is TacticalActor tacticalActor && tacticalActor.HasGameTag(infestationSecondObjectiveTag)) 
+                    if (ability.TacticalAbilityDef == parasychosis && parameter is TacticalAbilityTarget target && target.GetTargetActor() != null && target.GetTargetActor() is TacticalActor tacticalActor && tacticalActor.HasGameTag(infestationSecondObjectiveTag))
                     {
-                      //  TFTVLogger.Always($"Got here, target is {tacticalActor.name}");
+                        //  TFTVLogger.Always($"Got here, target is {tacticalActor.name}");
                         tacticalActor.GameTags.Remove(infestationSecondObjectiveTag);
-                    
+
                     }
 
                     projectileActor.Clear();

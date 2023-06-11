@@ -20,6 +20,13 @@ namespace TFTV
             description: "Sets all settings to default, to provide the Terror from the Void experience as envisioned by its creators.")]
         public bool defaultSettings = false;
 
+        [ConfigField(text: "ANIMATIONS CONTINUE DURING SHOOTING (FLINCHING)",
+            description: "The characters will continue to animate during shooting sequences and targets that are hit may flinch, " +
+            "causing subsequent shots in a burst to miss when shooting in freeaim mode.")]
+        public bool AnimateWhileShooting = false;
+
+
+
         //BetterEnemies
         [ConfigField(text: "MAKE PANDORANS STRONGER",
        description: "Applies the changes from Dtony BetterEnemies that make Pandorans more of a challenge.")]
@@ -307,9 +314,9 @@ namespace TFTV
         public int VenomCrossbow_Ammo = 3;
 
         // Always show helmets
-        [ConfigField(text: "Operatives will appear without helmets in the personnel screen",
+      /*  [ConfigField(text: "Operatives will appear without helmets in the personnel screen",
             description: "Turn off if you don't like to see the faces of the individuals you are sending to be clawed and devoured by horrifying monstrosities")]
-        public bool ShowFaces = true;
+        public bool ShowFaces = true;*/
 
 
     }

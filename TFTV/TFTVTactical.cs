@@ -1,4 +1,5 @@
 using Base.Serialization.General;
+using Epic.OnlineServices;
 using PhoenixPoint.Modding;
 using PhoenixPoint.Tactical.Levels;
 using System;
@@ -41,8 +42,7 @@ namespace TFTV
         public int BaseDefenseStratToBeImplemented;
         public bool[] StratsAlreadyImplementedAtBD;
         public bool AutomataResearched;
-        public List<string> HopliteKillList;
-        
+        public List<string> HopliteKillList;       
         public Dictionary<float, float> ConsolePositionsInBaseDefense;
         public Dictionary<int, int> CyclopsMolecularTargeting;
     }
@@ -62,7 +62,20 @@ namespace TFTV
 
             /// Tactical level controller is accessible at any time.
             TacticalLevelController tacController = Controller;
+            TFTVConfig config = TFTVMain.Main.Config;
+            if (config.AnimateWhileShooting)
+            {
+                TFTVLogger.Always($"Flinching should be on");
 
+                Controller.FireTargetTimeScale = 1f;
+              //  Controller.FirstPersonShootingTimeScale = 0.2f;
+            }
+            else 
+            {
+                Controller.FireTargetTimeScale = 0.1f;
+              //  Controller.FirstPersonShootingTimeScale = 0.1f;
+
+            }
             /// ModMain is accesible at any time
 
             TFTVLogger.Always("Tactical Started");

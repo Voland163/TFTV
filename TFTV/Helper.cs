@@ -77,6 +77,32 @@ namespace PRMBetterClasses
             }
         }
 
+        /// <summary>
+        /// Generating a pair of independent standard normal random variables.
+        /// Implements the Marsaglia polar method (https://en.wikipedia.org/wiki/Marsaglia_polar_method), a modification of the Box–Muller method which does not require computation of the sine and cosine functions.
+        /// </summary>
+        /// <param name="mean">Mean</param>
+        /// <param name="stdDev">Standard deviation</param>
+        /// <returns>A pair of independent standard normal random variables</returns>
+        public static (float, float) GenerateRandomGaussianPair(float mean = 0.0f, float stdDev = 1.0f)
+        {
+            float u, v, S;
+
+            do
+            {
+                u = 2.0f * UnityEngine.Random.value - 1.0f;
+                v = 2.0f * UnityEngine.Random.value - 1.0f;
+                S = (u * u) + (v * v);
+            }
+            while (S >= 1.0f || S == 0.0f);
+
+            S = Mathf.Sqrt(-2.0f * Mathf.Log(S) / S);
+
+            float gauss1 = mean + (stdDev * u * S);
+            float gauss2 = mean + (stdDev * v * S);
+            return (gauss1, gauss2);
+        }
+
         // Read localization from CSV file
         public static void AddLocalizationFromCSV(string LocalizationFileName, string Category = null)
         {

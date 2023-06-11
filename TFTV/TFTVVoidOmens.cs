@@ -1,4 +1,5 @@
 ﻿using Assets.Code.PhoenixPoint.Geoscape.Entities.Sites.TheMarketplace;
+using Base;
 using Base.Core;
 using Base.Defs;
 using Base.Entities.Effects;
@@ -31,6 +32,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace TFTV
 {
@@ -875,14 +877,130 @@ namespace TFTV
 
         }
 
-        [HarmonyPatch(typeof(UIModuleGeoObjectives), "RefreshObjectives")]
+      /*  [HarmonyPatch(typeof(UIModuleGeoObjectives), "RefreshObjectives")]
         public static class UIModuleGeoObjectives_RefreshObjectives_Experiment_patch
         {
             public static void Postfix(UIModuleGeoObjectives __instance, IEnumerable<GeoFactionObjective> objectives)
             {
                 try
-                {
-                    MethodInfo initObjectiveMethod = typeof(UIModuleGeoObjectives).GetMethod("InitObjective", BindingFlags.NonPublic | BindingFlags.Instance);
+                {*/
+
+                    //need to exlore rectTransform
+                    /*
+                    [TFTV @ 6/19/2023 11:27:53 PM] level4 PrimaryObjectives_Container a child of ObjectivesContainer (UnityEngine.RectTransform)
+                    [TFTV @ 6/19/2023 11:27:53 PM] level5 GeoObjectiveElement a child of PrimaryObjectives_Container (UnityEngine.RectTransform)
+                    [TFTV @ 6/19/2023 11:27:53 PM] level6 border a child of GeoObjectiveElement (UnityEngine.RectTransform)
+                    [TFTV @ 6/19/2023 11:27:53 PM] level6 UITextGeneric_Big a child of GeoObjectiveElement (UnityEngine.RectTransform)
+                    */
+
+
+             /*       TFTVLogger.Always("RefreshObjectives invoked");
+                    foreach(Transform transform in __instance.transform.GetChildren()) 
+                    {
+                      //  TFTVLogger.Always($"level1 {transform.name}, a child of {__instance.transform.name}");
+
+                        foreach (Transform transform2 in transform.GetChildren())
+                        {
+                        //    TFTVLogger.Always($"level2 {transform2.name} a child of {transform}");
+
+                            foreach (Transform transform3 in transform2.GetChildren())
+                            {
+                          //      TFTVLogger.Always($"level3 {transform3.name} a child of {transform2}");
+
+                                foreach (Transform transform4 in transform3.GetChildren())
+                                {
+                            //        TFTVLogger.Always($"level4 {transform4.name} a child of {transform3}");
+                                 
+                                    foreach (Transform transform5 in transform4.GetChildren())
+                                    {
+                                       // TFTVLogger.Always($"level5 {transform5.name} a child of {transform4}");
+                                      */  
+
+
+                                    //    foreach (Transform transform6 in transform5.GetComponents<Transform>())
+                                    //    {
+                                          /*  TFTVLogger.Always($"level6 {transform6.name} a child of {transform5}");
+
+                                            if (transform5.name.Contains("GeoObjectiveElement") && transform6.name.Contains("UIText"))
+                                            {
+                                                TFTVLogger.Always($"{transform6.GetComponent<Text>().text}");
+
+                                            }*/
+
+
+                                        /*    foreach (Transform transform7 in transform6.GetComponents<Transform>())
+                                            {
+                                                TFTVLogger.Always($"level7 {transform7.name} a child of {transform6}");
+
+                                            */
+                                             
+
+
+
+                                             /*   foreach (Transform transform8 in transform7)
+                                                {
+
+                                                    if (transform8.name.Equals("Icon"))
+                                                        {
+                                                        TFTVLogger.Always($"{transform8.name} is a parent of {transform7.name}");
+                                                        transform8.GetComponent<Image>().color = new Color32(149, 23, 151, 255);
+
+                                                        transform8.GetComponent<Image>().sprite = Helper.CreateSpriteFromImageFile("Void-04P.png");
+                                                    }*/
+
+
+                                                   
+
+                                                   /* if (transform6.GetComponent<Text>().text == "Human perception lowered to 20 from 30" && transform8.GetComponent<Image>() != null)
+                                                    {
+                                                        TFTVLogger.Always($"got passed the check 2");
+
+                                                        
+
+
+
+
+                                                    }*/
+
+                                               /*     TFTVLogger.Always($"level8 {transform8.name} a child of {transform7}");
+
+                                                    //    if (transform8.name.Contains("Image") && transform7.name.Contains("Image"))
+                                                    //  {
+                                                    if (transform8?.GetComponent<Image>()?.sprite == Helper.CreateSpriteFromImageFile("Void-04P.png"))
+                                                    {
+                                                        TFTVLogger.Always($"at level8 found {transform8.name} with the void icon");
+                                                        transform8.GetComponent<Image>().color = new Color32(149, 23, 151, 255);
+
+
+                                                    }*/
+                                                    // TFTVLogger.Always($"{transform6.GetComponent<Text>().text}");
+
+                                                    //  }
+
+
+
+                                                    /*   foreach (Transform transform9 in transform8)
+                                                       {
+                                                           TFTVLogger.Always($"level9 {transform9.name} a child of {transform8}");
+
+                                                           foreach (Transform transform10 in transform9)
+                                                           {
+                                                               TFTVLogger.Always($"level10 {transform10.name} a child of {transform9}");
+
+                                                               foreach (Transform transform11 in transform10)
+                                                               {
+                                                                   TFTVLogger.Always($"level11 {transform11.name} a child of {transform10}");
+
+
+                                                               }
+
+                                                           }
+
+                                                       }*/
+
+
+                    
+                 /*   MethodInfo initObjectiveMethod = typeof(UIModuleGeoObjectives).GetMethod("InitObjective", BindingFlags.NonPublic | BindingFlags.Instance);
                     // Filter the objectives to get only the third type objectives
                     List<GeoFactionObjective> voidOmens = objectives
                         .Where(obj => obj.Title?.LocalizationKey?.Contains("VOID_OMEN") == true)
@@ -913,17 +1031,17 @@ namespace TFTV
                     }
 
                 
-                    thirdObjectivesContainer.SetActive(voidOmens.Any());
-                }
+                    thirdObjectivesContainer.SetActive(voidOmens.Any());*/
+       /*         }
                 catch (Exception e)
                 {
                     TFTVLogger.Error(e);
                 }
             }
-        }
+        }*/
 
 
-        /* [HarmonyPatch(typeof(UIModuleGeoObjectives), "RefreshObjectives")]
+       /* [HarmonyPatch(typeof(UIModuleGeoObjectives), "RefreshObjectives")]
          public static class UIModuleGeoObjectives_RefreshObjectives_Experiment_patch
          {
              public static void Postfix(UIModuleGeoObjectives __instance, IEnumerable<GeoFactionObjective> objectives)
@@ -938,7 +1056,14 @@ namespace TFTV
 
                      TFTVLogger.Always($"voidobjectives count is {voidOmens.Count()}");
                      // Create a new container for the third type of objectives
-                     GameObject thirdObjectivesContainer = new GameObject("ThirdObjectivesContainer");
+                    
+
+
+                    
+                    GameObject thirdObjectivesContainer = new GameObject("ThirdObjectivesContainer");
+
+
+
                      thirdObjectivesContainer.transform.SetParent(__instance.ObjectivesContainer.transform);
                      thirdObjectivesContainer.SetActive(true);
 
@@ -966,10 +1091,10 @@ namespace TFTV
                  }
 
              }
-         }
+         }*/
 
 
-         [HarmonyPatch(typeof(UIModuleGeoObjectives), "InitObjective")]
+      /*   [HarmonyPatch(typeof(UIModuleGeoObjectives), "InitObjective")]
          public static class UIModuleGeoObjectives_InitObjective_Experiment_patch
          {
              public static void Postfix(UIModuleGeoObjectives __instance, GeoObjectiveElementController element, GeoFactionObjective objective)

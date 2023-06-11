@@ -480,6 +480,8 @@ namespace TFTV
                     PPFactionDef factionDef = __instance.Attacker;
                     GeoFaction attacker = controller.GetFaction(factionDef);
 
+                    TFTVLogger.Always($"Phoenix base under attack? {PhoenixBasesUnderAttack.ContainsKey(phoenixBase.SiteId)} Phoenix base infested? {PhoenixBasesInfested.Contains(phoenixBase.SiteId)} ");
+
                     if (phoenixBase.Type == GeoSiteType.PhoenixBase && !PhoenixBasesUnderAttack.ContainsKey(phoenixBase.SiteId) && !PhoenixBasesInfested.Contains(phoenixBase.SiteId))
                     {
                         AddToTFTVAttackSchedule(phoenixBase, controller, attacker);

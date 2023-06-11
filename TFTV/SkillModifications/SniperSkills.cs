@@ -50,6 +50,7 @@ namespace PRMBetterClasses.SkillModifications
         {
             ApplyStatusAbilityDef armourBreak = DefCache.GetDef<ApplyStatusAbilityDef>("ArmourBreak_AbilityDef");
             armourBreak.WillPointCost = 3.0f;
+            armourBreak.UsesPerTurn = 2;
             armourBreak.ViewElementDef.Description.LocalizationKey = "PR_BC_ARMOR_BREAK_DESC";
             // Get status for damage keyword manipulation
             AddAttackBoostStatusDef armourBreakStatus = armourBreak.StatusDef as AddAttackBoostStatusDef;
@@ -72,21 +73,12 @@ namespace PRMBetterClasses.SkillModifications
                 }
             };
             // Fix to prevent that the skill can be used more than once without shooting, vanilla bug!
-            armourBreak.DisablingStatuses = new StatusDef[] { armourBreak.StatusDef };
-
-            // OLD STUFF!
-            //StanceStatusDef armourBreakDamageReduction = Helper.CreateDefFromClone( // Borrow status from Sneak Attack for damage reduction
-            //    DefCache.GetDef<StanceStatusDef>("E_SneakAttackStatus [SneakAttack_AbilityDef]"),
-            //    "e0dcd2aa-0262-41ff-9be0-c7671a6a11e0",
-            //    "E_DamageReductionStatus [ArmourBreak_AbilityDef]");
-            //armourBreakDamageReduction.EffectName = "ArmourBreak";
-            //armourBreakDamageReduction.DurationTurns = 0;
-            //armourBreakDamageReduction.SingleInstance = true;
-            //armourBreakDamageReduction.VisibleOnHealthbar = TacStatusDef.HealthBarVisibility.Hidden;
-            //armourBreakDamageReduction.VisibleOnStatusScreen = 0;
-            //armourBreakDamageReduction.Visuals = armourBreak.ViewElementDef;
-            //armourBreakDamageReduction.StatModifications[0].Value = 0.75f;
-            //armourBreakStatus.AdditionalStatusesToApply = new TacStatusDef[] { armourBreakDamageReduction };
+            armourBreak.DisablingStatuses = new StatusDef[]
+            {
+                armourBreak.StatusDef,
+                DefCache.GetDef<ApplyStatusAbilityDef>("BC_QuickAim_AbilityDef").StatusDef,
+                DefCache.GetDef<ApplyStatusAbilityDef>("QuickAim_AbilityDef").StatusDef,
+            };
         }
 
         private static void Change_Gunslinger()
@@ -127,6 +119,10 @@ namespace PRMBetterClasses.SkillModifications
             };
             gunslinger.ExecutionsCount = burst;
             gunslinger.ProjectileSpreadMultiplier = accPenalty;
+            gunslinger.DisablingStatuses = new StatusDef[]
+            {
+                DefCache.GetDef<ApplyStatusAbilityDef>("ArmourBreak_AbilityDef").StatusDef,
+            };
         }
 
         private static void Create_KillZone()

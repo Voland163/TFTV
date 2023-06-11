@@ -94,7 +94,11 @@ namespace PRMBetterClasses.SkillModifications
 
             quickAim.ViewElementDef.Description.LocalizationKey = "PR_BC_QUICK_AIM_DESC"; // qaDescription;
             quickAim.UsesPerTurn = qaUsesPerTurn;
-            quickAim.DisablingStatuses = new StatusDef[] { quickAim.StatusDef };
+            quickAim.DisablingStatuses = new StatusDef[]
+            { 
+                quickAim.StatusDef,
+                defCache.GetDef<ApplyStatusAbilityDef>("ArmourBreak_AbilityDef").StatusDef
+            };
             qaAccMod.EffectName = "";
             qaAccMod.ShowNotification = false;
             qaAccMod.VisibleOnHealthbar = 0;
@@ -349,14 +353,15 @@ namespace PRMBetterClasses.SkillModifications
             progression.RequiredStrength = 0;
             progression.RequiredWill = 0;
             progression.RequiredSpeed = 0;
-            bool doNotLocalize = TFTVMain.Main.Settings.DoNotLocalizeChangedTexts;
-            viewElement.DisplayName1.LocalizationKey = "PR_BC_AIMED_BURST"; // new LocalizedTextBind("AIMED BURST", doNotLocalize);
-            viewElement.Description.LocalizationKey = "PR_BC_AIMED_BURST_DESC"; // new LocalizedTextBind("Next shot with Assault Rifle uses double burst and gains +30% acc", doNotLocalize);
-            // TODO: Maybe change to own Icon, current borrowed from Deadly Dou, for now we stick with it
+            viewElement.DisplayName1.LocalizationKey = "PR_BC_AIMED_BURST";
+            viewElement.Description.LocalizationKey = "PR_BC_AIMED_BURST_DESC";
             Sprite aimedBurst_IconSprite = defCache.GetDef<TacticalAbilityViewElementDef>("E_View [DeadlyDuo_ShootAbilityDef]").LargeIcon;
             viewElement.LargeIcon = aimedBurst_IconSprite;
             viewElement.SmallIcon = aimedBurst_IconSprite;
-            //viewElement.MultiTargetSelectionButtonTexts = new string[0];
+            aimedBurstAbility.DisablingStatuses = new StatusDef[]
+            {
+                defCache.GetDef<ApplyStatusAbilityDef>("ArmourBreak_AbilityDef").StatusDef,
+            };
         }
     }
 }

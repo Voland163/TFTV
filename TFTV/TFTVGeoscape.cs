@@ -1,4 +1,5 @@
 using Base.Serialization.General;
+using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Modding;
@@ -34,6 +35,9 @@ namespace TFTV
         public Dictionary<int, Dictionary<string, double>> PhoenixBasesUnderAttack = TFTVBaseDefenseGeoscape.PhoenixBasesUnderAttack;
         public List<int> InfestedPhoenixBases = TFTVBaseDefenseGeoscape.PhoenixBasesInfested;
         public int SpawnedScyllas = TFTVPandoranProgress.ScyllaCount;
+        public Dictionary<int, Dictionary<string, List<string>>> CharacterLoadouts;
+        //  public Dictionary<int, List<string>> HiddenInventories; //TFTVUI.CurrentlyHiddenInv;
+      //  public Dictionary<int, List<string>> AvailableInventories; //= TFTVUI.CurrentlyAvailableInv;
         //   public string PhoenixBaseUnderAttack = TFTVExperimental.PhoenixBaseUnderAttack;
         //    public PhoenixBaseAttacker baseAttacker = TFTVExperimental.phoenixBaseAttacker;
         //  public PPFactionDef factionAttackingPheonixBase = TFTVExperimental.FactionAttackingPhoenixBase;
@@ -113,9 +117,13 @@ namespace TFTV
         public override object RecordGeoscapeInstanceData()
         {
             TFTVLogger.Always("Geoscape data will be saved");
+          //  TFTVLogger.Always($"Items currently available in Aircraft inventory {TFTVUI.CurrentlyAvailableInv.Values.Count}");
+          //  TFTVLogger.Always($"Items currently hidden in Aircraft inventory {TFTVUI.CurrentlyHiddenInv.Values.Count}");
             TFTVRevenant.UpdateRevenantTimer(Controller);
             return new TFTVGSInstanceData()
             {
+               // HiddenInventories = TFTVUI.CurrentlyHiddenInv,
+              //  AvailableInventories = TFTVUI.CurrentlyAvailableInv,
                 charactersWithDisabledBodyParts = TFTVStamina.charactersWithDisabledBodyParts,
                 targetsForBehemoth = TFTVAirCombat.targetsForBehemoth,
                 flyersAndHavens = TFTVAirCombat.flyersAndHavens,
@@ -133,7 +141,8 @@ namespace TFTV
                 PhoenixBasesUnderAttack = TFTVBaseDefenseGeoscape.PhoenixBasesUnderAttack,
                 InfestedPhoenixBases = TFTVBaseDefenseGeoscape.PhoenixBasesInfested,
                 SpawnedScyllas = TFTVPandoranProgress.ScyllaCount,
-
+                CharacterLoadouts = TFTVUI.CharacterLoadouts,
+             
 
 
                 //  PhoenixBaseUnderAttack = TFTVExperimental.PhoenixBaseUnderAttack,
@@ -151,9 +160,13 @@ namespace TFTV
 
             DateTime myDate = new DateTime(1, 1, 1);
             TFTVLogger.Always("Geoscape data will be processed");
-
+           
             TFTVCommonMethods.ClearInternalVariables();
             TFTVGSInstanceData data = (TFTVGSInstanceData)instanceData;
+           // TFTVLogger.Always($"Items currently available in Aircraft inventory {data.AvailableInventories.Values.Count}");
+           // TFTVLogger.Always($"Items currently hidden in Aircraft inventory {data.HiddenInventories.Values.Count}");
+          //  TFTVUI.CurrentlyAvailableInv = data.AvailableInventories;
+          //  TFTVUI.CurrentlyHiddenInv = data.HiddenInventories;
             TFTVStamina.charactersWithDisabledBodyParts = data.charactersWithDisabledBodyParts;
             TFTVAirCombat.targetsForBehemoth = data.targetsForBehemoth;
             TFTVAirCombat.flyersAndHavens = data.flyersAndHavens;
@@ -171,6 +184,8 @@ namespace TFTV
             TFTVBaseDefenseGeoscape.PhoenixBasesUnderAttack = data.PhoenixBasesUnderAttack;
             TFTVBaseDefenseGeoscape.PhoenixBasesInfested = data.InfestedPhoenixBases;
             TFTVPandoranProgress.ScyllaCount = data.SpawnedScyllas;
+            TFTVUI.CharacterLoadouts = data.CharacterLoadouts;
+           
           //  TFTVBetaSaveGamesFixes.CheckNewLOTASavegame();
             //TFTVExperimental.FactionAttackingPhoenixBase = data.factionAttackingPheonixBase;
             //TFTVExperimental.CheckIfFactionAttackingPhoenixBase();
@@ -195,7 +210,8 @@ namespace TFTV
 
             Main.Logger.LogInfo($"Scylla count {TFTVPandoranProgress.ScyllaCount}");
             Main.Logger.LogInfo($"infested haven population save data {TFTVInfestationStory.HavenPopulation}");
-
+        //    Main.Logger.LogInfo($"Items currently available in Aircraft inventory {TFTVUI.CurrentlyAvailableInv.Values.Count}");
+         //   Main.Logger.LogInfo($"Items currently hidden in Aircraft inventory {TFTVUI.CurrentlyAvailableInv.Values.Count}");
             //  
             TFTVLogger.Always("# Characters with broken limbs: " + TFTVStamina.charactersWithDisabledBodyParts.Count);
             TFTVLogger.Always("# Behemoth targets for this emergence: " + TFTVAirCombat.targetsForBehemoth.Count);
@@ -211,7 +227,8 @@ namespace TFTV
             TFTVLogger.Always("LOTAGlobalReworkCheck is " + TFTVBetaSaveGamesFixes.LOTAReworkGlobalCheck);
             TFTVLogger.Always($"Bases under attack count {TFTVBaseDefenseGeoscape.PhoenixBasesUnderAttack.Count}");
             TFTVLogger.Always($"Scylla count {TFTVPandoranProgress.ScyllaCount}");
-
+          //  TFTVLogger.Always($"Items currently available in Aircraft inventory {TFTVUI.CurrentlyAvailableInv.Values.Count}");
+          //  TFTVLogger.Always($"Items currently hidden in Aircraft inventory {TFTVUI.CurrentlyAvailableInv.Values.Count}");
         }
 
 

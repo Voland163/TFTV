@@ -472,7 +472,7 @@ namespace TFTV
 
                         TFTVLogger.Always($"starting turn {tacticalFaction.TurnNumber} for faction {tacticalFaction.Faction.FactionDef.name}");
                         CheckRoboticSelfRepairStatus(tacticalFaction);
-                        CyclopsSelfHealing(tacticalFaction);
+                        ApplyRoboticSelfHealingStatus(tacticalFaction);
                         CheckHopliteKillList();
 
                         if (tacticalFaction.TurnNumber > 0)
@@ -494,7 +494,7 @@ namespace TFTV
 
 
 
-        internal static void CyclopsSelfHealing(TacticalFaction tacticalFaction)
+        internal static void ApplyRoboticSelfHealingStatus(TacticalFaction tacticalFaction)
         {
             try
             {

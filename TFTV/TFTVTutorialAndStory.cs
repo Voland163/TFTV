@@ -601,7 +601,7 @@ namespace TFTV
                 ContextHelpHintDef newContextHelpHintDef = Helper.CreateDefFromClone(sourceContextHelpHintDef, gUID, name);
                 newContextHelpHintDef.Trigger = HintTrigger.Manual;
                 newContextHelpHintDef.Conditions.Clear();
-                newContextHelpHintDef.AnyCondition = true;
+                newContextHelpHintDef.AnyCondition = false;
                 newContextHelpHintDef.Title.LocalizationKey = titleKey;
                 newContextHelpHintDef.Text.LocalizationKey = textKey;
                 newContextHelpHintDef.IsTutorialHint = true;

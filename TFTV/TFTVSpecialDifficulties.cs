@@ -991,7 +991,7 @@ namespace TFTV
                         DamageMultiplierStatusDef protectionEtermesStatus = DefCache.GetDef<DamageMultiplierStatusDef>("EtermesProtectionStatus");
                         DamageMultiplierStatusDef vulnerabilityEtermesStatus = DefCache.GetDef<DamageMultiplierStatusDef>("EtermesVulnerabilityStatus");
                         DamageMultiplierStatusDef scyllaDamageResistance = DefCache.GetDef<DamageMultiplierStatusDef>("ScyllaDamageResistance");
-
+                         ClassTagDef cyclopsTag = DefCache.GetDef<ClassTagDef>("MediumGuardian_ClassTagDef");
 
                         if (CheckTacticalSpecialDifficultySettings(__instance) == 1)
                         {
@@ -1027,7 +1027,7 @@ namespace TFTV
 
                                 if (actor is TacticalActor tacticalActor && tacticalActor.TacticalFaction.GetRelationTo(phoenixFaction) == FactionRelation.Enemy)
                                 {
-                                    if (tacticalActor.IsActive && !tacticalActor.HasStatus(protectionEtermesStatus))
+                                    if (tacticalActor.IsActive && !tacticalActor.HasStatus(protectionEtermesStatus) && !tacticalActor.HasGameTag(cyclopsTag))
                                     {
                                         tacticalActor.Status.ApplyStatus(protectionEtermesStatus);
 

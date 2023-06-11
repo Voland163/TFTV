@@ -1,4 +1,5 @@
-﻿using Base.Defs;
+﻿using Base.Core;
+using Base.Defs;
 using Base.Entities.Abilities;
 using Base.Entities.Statuses;
 using Base.UI;
@@ -13,6 +14,7 @@ using PhoenixPoint.Tactical.Entities.Statuses;
 using PhoenixPoint.Tactical.Levels;
 using PhoenixPoint.Tactical.View.ViewControllers;
 using PhoenixPoint.Tactical.View.ViewModules;
+using RootMotion.FinalIK;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -93,49 +95,49 @@ namespace TFTV
         private static readonly AbilityDef amplifyPain = DefCache.GetDef<AbilityDef>("AmplifyPain_AbilityDef");
 
 
-    
+
 
         public static Dictionary<string, int> HumanEnemiesAndTactics = new Dictionary<string, int>();
 
         public static int RollCount = 0;
         public static List<ContextHelpHintDef> TacticsHint = new List<ContextHelpHintDef>();
-     
 
-      /*  public static void AddRookieVulnerability(TacticalLevelController controller) 
-        {
-            try 
-            {
-              //  TFTVConfig config = TFTVMain.Main.Config;
 
-                if (controller.Difficulty.Order == 1)
-                {
-                    if (GetHumanEnemyFactions(controller).Count > 0)
-                    {
-                        foreach (TacticalFaction enemyFaction in GetHumanEnemyFactions(controller))
-                        {
-                            foreach (TacticalActorBase tacticalActorBase in enemyFaction.Actors)
-                            {
-                                if (tacticalActorBase is TacticalActor tacticalActor)
-                                {
-                                    if (tacticalActor.GetAbility<DamageMultiplierAbility>(RookieVulnerability) == null)
-                                    {
-                                        tacticalActor.AddAbility(RookieVulnerability, tacticalActor);
-                                    }
-                                }
-                            }
+        /*  public static void AddRookieVulnerability(TacticalLevelController controller) 
+          {
+              try 
+              {
+                //  TFTVConfig config = TFTVMain.Main.Config;
 
-                        }
+                  if (controller.Difficulty.Order == 1)
+                  {
+                      if (GetHumanEnemyFactions(controller).Count > 0)
+                      {
+                          foreach (TacticalFaction enemyFaction in GetHumanEnemyFactions(controller))
+                          {
+                              foreach (TacticalActorBase tacticalActorBase in enemyFaction.Actors)
+                              {
+                                  if (tacticalActorBase is TacticalActor tacticalActor)
+                                  {
+                                      if (tacticalActor.GetAbility<DamageMultiplierAbility>(RookieVulnerability) == null)
+                                      {
+                                          tacticalActor.AddAbility(RookieVulnerability, tacticalActor);
+                                      }
+                                  }
+                              }
 
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
+                          }
 
-        }*/
-        
+                      }
+                  }
+              }
+              catch (Exception e)
+              {
+                  TFTVLogger.Error(e);
+              }
+
+          }*/
+
 
         public static void RollTactic(string nameOfFaction)
         {
@@ -212,8 +214,8 @@ namespace TFTV
                 }
                 else if (roll == 3)
                 {
-                    description = "All lowest tier friendlies gain 10 regeneration";
-                    tactic = "Experimental drugs";
+                    description = "Allies gain self-repair ability that restores disabled limbs";
+                    tactic = "Self-repair protocol";
                 }
                 else if (roll == 4)
                 {
@@ -786,11 +788,11 @@ namespace TFTV
                             {
                                 __instance.CharacterLevel.text = "6";
                             }
-                            
-                            foreach(GameTagDef gameTagDef in factionAndTier) 
+
+                            foreach (GameTagDef gameTagDef in factionAndTier)
                             {
                                 TFTVLogger.Always($"{gameTagDef.name}");
-                            
+
                             }
 
 
@@ -895,8 +897,18 @@ namespace TFTV
                 }
                 else if (roll == 3)
                 {
-                    description = "All lowest tier friendlies gain 10 regeneration";
-                    tactic = " - Experimental drugs";
+                    if (HumanEnemiesAndTactics.ContainsKey("pu") || HumanEnemiesAndTactics.ContainsKey("Purists"))
+                    {
+                        description = "Allies gain self-repair ability that restores disabled limbs";
+                        tactic = " - Self-repair protocol";
+
+                    }
+                    else
+                    {
+                        description = "All lowest tier friendlies gain 10 regeneration";
+                        tactic = " - Experimental drugs";
+                    }
+
                 }
 
                 else if (roll == 4)
@@ -1484,7 +1496,7 @@ namespace TFTV
                                         if ((allyTacticalActorBase.Pos - tacticalActorBase.Pos).magnitude < magnitude
                                             && TacticalFactionVision.CheckVisibleLineBetweenActors(allyTacticalActorBase, allyTacticalActorBase.Pos, tacticalActor, true))
                                         {
-                                           // TFTVLogger.Always("Actor in range and has LoS");
+                                            // TFTVLogger.Always("Actor in range and has LoS");
                                             actor.CharacterStats.WillPoints.AddRestrictedToMax(1);
                                         }
                                     }
@@ -1520,8 +1532,17 @@ namespace TFTV
                     }
                     else if (HumanEnemiesAndTactics.GetValueSafe(faction) == 3)
                     {
-                        TFTVLogger.Always("Applying tactic Experimental Drugs");
-                        ExperimentalDrugs(controller, faction);
+                        if (HumanEnemiesAndTactics.ContainsKey("pu") || HumanEnemiesAndTactics.ContainsKey("Purists"))
+                        {
+                            TFTVLogger.Always("Applying tactic Pure self-repair");
+                            PureSelfRepairAbility();
+                        
+                        }
+                        else
+                        {
+                            TFTVLogger.Always("Applying tactic Experimental Drugs");
+                            ExperimentalDrugs(controller, faction);
+                        }
                     }
                     else if (HumanEnemiesAndTactics.GetValueSafe(faction) == 4)
                     {
@@ -1558,6 +1579,107 @@ namespace TFTV
                 TFTVLogger.Error(e);
             }
         }
+
+        //Special faction tactics
+
+        internal static void EmmissariesOfTheVoid()
+        {
+            try 
+            {
+                //Give Foresaken Umbra
+
+                TacticalLevelController controller = GameUtl.CurrentLevel().GetComponent<TacticalLevelController>();
+                TacticalFaction tacticalFaction = controller.GetFactionByCommandName("pu");
+                foreach (TacticalActor tacticalActor in tacticalFaction.TacticalActors.Where(ta => ta.IsAlive).Where(ta => ta.GetAbilityWithDef<PassiveModifierAbility>(SelfRepairAbility) == null))
+                {
+                    tacticalActor.AddAbility(SelfRepairAbility, tacticalActor);
+                }
+
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+        
+        internal static void RapidReactionForce()
+        {
+            try 
+            { 
+                //NJ reinforcements if leader has arm disabled but alive at start of turn
+            
+            
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+        }
+
+        internal static void BeastMaster()
+        {
+            try
+            {
+                //Spawns ANU Priest + Mutog 
+
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+        }
+        internal static void AssassinationTeam()
+        {
+            try
+            {
+                //Spawns SY infiltator reinforcements at player spawn locations
+
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+        }
+
+
+
+
+
+
+
+        private static readonly PassiveModifierAbilityDef SelfRepairAbility = DefCache.GetDef<PassiveModifierAbilityDef>("RoboticSelfRepair_AbilityDef");
+      //  private static readonly DamageMultiplierStatusDef RoboticSelfRepairStatus = DefCache.GetDef<DamageMultiplierStatusDef>("RoboticSelfRepair_AddAbilityStatusDef");
+
+        internal static void PureSelfRepairAbility()
+        {
+            try
+            {
+                if (HumanEnemiesAndTactics.Count > 0 && (HumanEnemiesAndTactics.ContainsKey("pu") || HumanEnemiesAndTactics.ContainsKey("Purists")) && HumanEnemiesAndTactics.ContainsValue(3))
+                {
+
+                    TacticalLevelController controller = GameUtl.CurrentLevel().GetComponent<TacticalLevelController>();
+                    TacticalFaction tacticalFaction = controller.GetFactionByCommandName("pu");
+                    foreach (TacticalActor tacticalActor in tacticalFaction.TacticalActors.Where(ta => ta.IsAlive).Where(ta => ta.GetAbilityWithDef<PassiveModifierAbility>(SelfRepairAbility) == null))
+                    {
+                        tacticalActor.AddAbility(SelfRepairAbility, tacticalActor);
+                    }
+                    TFTVAncients.CheckRoboticSelfRepairStatus(tacticalFaction);
+                    TFTVAncients.ApplyRoboticSelfHealingStatus(tacticalFaction);
+                }
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
 
         public static void TerrifyingAura(TacticalLevelController controller, string factionName)
         {
@@ -1912,12 +2034,12 @@ namespace TFTV
                                         }
                                         else if (actor.GetAbilityWithDef<Ability>(returnFire) != null)
                                         {
-                                            if(actor.HasGameTag(heavy) && (actor.LevelProgression.Level > 1 ||
+                                            if (actor.HasGameTag(heavy) && (actor.LevelProgression.Level > 1 ||
                                             !actor.HasGameTag(HumanEnemyTier4GameTag)))
                                             {
-                                               
+
                                             }
-                                            else 
+                                            else
                                             {
                                                 TFTVLogger.Always(allyTacticalActorBase.name + " is not in range of " + leader.name + ", removing return fire from " + actor.name);
                                                 actor.RemoveAbility(returnFire);
@@ -2125,7 +2247,7 @@ namespace TFTV
                                     && allyTacticalActorBase.BaseDef.name == "Soldier_ActorDef" && allyTacticalActorBase.InPlay
                                     && TacticalFactionVision.CheckVisibleLineBetweenActors(allyTacticalActorBase, allyTacticalActorBase.Pos, tacticalActor, true))
                                 {
-                                   // TFTVLogger.Always("Actor in range and has LoS");
+                                    // TFTVLogger.Always("Actor in range and has LoS");
                                     ItemSlotStatsModifyStatusDef eRStatusEffect = DefCache.GetDef<ItemSlotStatsModifyStatusDef>("E_Status [ElectricReinforcement_AbilityDef]");
                                     allyTacticalActorBase.Status.ApplyStatus(eRStatusEffect);
                                 }

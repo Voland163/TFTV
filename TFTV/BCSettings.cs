@@ -152,7 +152,7 @@ namespace PRMBetterClasses
                     "SHOTGUN PROFICIENCY",
                     "SNIPER RIFLE PROFICIENCY",
                     "HEAVY WEAPON PROFICIENCY",
-                    "MOUNTED WEAPON PROFICIENCY"
+                    //"MOUNTED WEAPON PROFICIENCY"
                 }),
             new PersonalPerksDef(
                 perkKey: PerkType.Class_1,
@@ -161,7 +161,7 @@ namespace PRMBetterClasses
                 relList: new Dictionary<string, Dictionary<string, string>>
                 {{ FactionKeys.All, new Dictionary<string,string> {
                     { ClassKeys.Assault.Name, "QUARTERBACK" },
-                    { ClassKeys.Heavy.Name, "JETPACK CONTROL" },
+                    { ClassKeys.Heavy.Name, "JETPACK CONTROL" }, // JETPACK CONTROL
                     { ClassKeys.Sniper.Name, "GUNSLINGER" },
                     { ClassKeys.Berserker.Name, "GUN KATA" },
                     { ClassKeys.Priest.Name, "BIOCHEMIST" },
@@ -177,7 +177,7 @@ namespace PRMBetterClasses
                     { ClassKeys.Assault.Name, "AIMED BURST" },
                     { ClassKeys.Heavy.Name, "BOOM BLAST" },
                     { ClassKeys.Sniper.Name, "KILL ZONE" },
-                    { ClassKeys.Berserker.Name, "EXERTION" },
+                    { ClassKeys.Berserker.Name, "KILLER INSTINCT" }, // KILLER INSTINCT ex EXERTION
                     { ClassKeys.Priest.Name, "LAY WASTE" },
                     { ClassKeys.Technician.Name, "REMOTE CONTROL" },
                     { ClassKeys.Infiltrator.Name, "SPIDER DRONE PACK" }

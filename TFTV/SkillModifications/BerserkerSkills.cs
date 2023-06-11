@@ -46,6 +46,9 @@ namespace PRMBetterClasses.SkillModifications
 
             // Exertion: 0AP 2WP Recover 1AP. Next turn you have -1 AP. Limited to 1 use per turn.
             Create_Exertion();
+
+            // Killer Instinct: At the beginning of your turn, if there is an enemy within 5 tiles your next attack costs -2AP.
+            Create_KillerInstinct();
         }
 
         private static void Change_Bloodlust()
@@ -236,6 +239,72 @@ namespace PRMBetterClasses.SkillModifications
             //        PRMLogger.Debug("----------------------------------------------------", false);
             //    }
             //}
+        }
+
+        private static void Create_KillerInstinct()
+        {
+            string skillname = "KillerInstinct_AbiltyDef";
+            ApplyStatusAbilityDef source = DefCache.GetDef<ApplyStatusAbilityDef>("MasterMarksman_AbilityDef");
+            ApplyStatusAbilityDef killerInstinct = Helper.CreateDefFromClone(
+                source,
+                "ADEAFE3F-7592-43A2-9C57-EE2BBA4932D8",
+                skillname);
+
+            killerInstinct.CharacterProgressionData = Helper.CreateDefFromClone(
+                source.CharacterProgressionData,
+                "C1527003-4FC9-4167-B6BC-BD35CEF4E9D1",
+                skillname);
+
+            killerInstinct.TargetingDataDef = Helper.CreateDefFromClone(
+                source.TargetingDataDef,
+                "65B21ADD-A05E-463B-8A66-C0A8377C5FE6",
+                skillname);
+            killerInstinct.TargetingDataDef.Origin.Range = 5f;
+
+            killerInstinct.ViewElementDef = Helper.CreateDefFromClone(
+                source.ViewElementDef,
+                "9BDBE22B-624F-472F-8002-27BBD5657700",
+                skillname);
+            Sprite icon = Helper.CreateSpriteFromImageFile("meat-cleaver.png");
+            killerInstinct.ViewElementDef.LargeIcon = icon;
+            killerInstinct.ViewElementDef.SmallIcon = icon;
+            killerInstinct.ViewElementDef.DisplayName1.LocalizationKey = "PR_BC_KILLER_INSTINCT"; // name;
+            killerInstinct.ViewElementDef.Description.LocalizationKey = "PR_BC_KILLER_INSTINCT_DESC"; // description;
+
+            VisibleActorsInRangeEffectConditionDef visibleActorsInRange = Helper.CreateDefFromClone(
+                DefCache.GetDef<VisibleActorsInRangeEffectConditionDef>("E_VisibleActorsInRange [MasterMarksman_AbilityDef]"),
+                "621C3DBA-1DC6-400B-B6C1-B3FB8C648241",
+                skillname);
+            visibleActorsInRange.TargetingData = killerInstinct.TargetingDataDef;
+            visibleActorsInRange.ActorsInRange = true;
+
+            ChangeAbilitiesCostStatusDef changeAbilitiesCostStatus = Helper.CreateDefFromClone(
+                DefCache.GetDef<ChangeAbilitiesCostStatusDef>("E_AbilityCostModifier [QuickAim_AbilityDef]"),
+                "47272759-6EAE-4F13-B399-2FD582FD01AF",
+                skillname);
+            changeAbilitiesCostStatus.ApplicationConditions = new EffectConditionDef[] { visibleActorsInRange };
+            changeAbilitiesCostStatus.AbilityCostModification.SkillTagCullFilter = new SkillTagDef[0];
+            changeAbilitiesCostStatus.AbilityCostModification.ActionPointMod = -0.5f;
+
+            AddAttackBoostStatusDef addAttackBoostStatus = Helper.CreateDefFromClone(
+                DefCache.GetDef<AddAttackBoostStatusDef>("E_Status [QuickAim_AbilityDef]"),
+                "6B341F7B-A12B-4833-9F85-AC2AA66AF288",
+                skillname);
+            addAttackBoostStatus.ApplicationConditions = new EffectConditionDef[] { visibleActorsInRange };
+            addAttackBoostStatus.ShowNotification = true;
+            addAttackBoostStatus.VisibleOnHealthbar = TacStatusDef.HealthBarVisibility.AlwaysVisible;
+            addAttackBoostStatus.Visuals = Helper.CreateDefFromClone(
+                killerInstinct.ViewElementDef,
+                "9FBE01B5-E8B0-4FDC-93FE-41DA4283888C",
+                "E_AbilityCostModifier_Visuals [KillerInstinct_AbiltyDef]");
+            addAttackBoostStatus.Visuals.Color = Color.red;
+            addAttackBoostStatus.Visuals.DisplayName1.LocalizationKey = "PR_BC_KILLER_INSTINCT_STATUS";
+            addAttackBoostStatus.Visuals.Description.LocalizationKey = "PR_BC_KILLER_INSTINCT_STATUS_DESC";
+            addAttackBoostStatus.AdditionalStatusesToApply = new TacStatusDef[] { changeAbilitiesCostStatus };
+
+            killerInstinct.StatusDef = addAttackBoostStatus;
+
+            killerInstinct.StatusApplicationTrigger = StatusApplicationTrigger.StartTurn;
         }
     }
 }

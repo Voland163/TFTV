@@ -14,6 +14,7 @@ using PhoenixPoint.Common.ContextHelp;
 using PhoenixPoint.Common.ContextHelp.HintConditions;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities;
+using PhoenixPoint.Common.Entities.Addons;
 using PhoenixPoint.Common.Entities.Characters;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
@@ -33,6 +34,7 @@ using PhoenixPoint.Geoscape.Events.Eventus;
 using PhoenixPoint.Geoscape.Events.Eventus.Filters;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.ContextHelp.HintConditions;
+using PhoenixPoint.Geoscape.View.ViewModules;
 using PhoenixPoint.Tactical.AI;
 using PhoenixPoint.Tactical.AI.Actions;
 using PhoenixPoint.Tactical.AI.Considerations;
@@ -49,6 +51,7 @@ using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.Entities.Statuses;
 using PhoenixPoint.Tactical.Entities.Weapons;
 using PhoenixPoint.Tactical.Eventus;
+using PhoenixPoint.Tactical.Levels;
 using PhoenixPoint.Tactical.Levels.FactionObjectives;
 using PhoenixPoint.Tactical.Prompts;
 using System;
@@ -70,32 +73,30 @@ namespace TFTV
 
         public static Sprite UmbraIcon = Helper.CreateSpriteFromImageFile("Void-03P.png");
 
+       
+
+
         internal static void Print()
         {
-
-
-
             foreach (ExistingResearchRequirementDef research in Repo.GetAllDefs<ExistingResearchRequirementDef>().Where(r => r.name.StartsWith("ALN")))
             {
-
-
-
                 if (!research.ResearchID.StartsWith("ALN"))
                 {
                     TFTVLogger.Always($"{research.name} is  {research.ResearchID}");
                 }
-
-
             }
 
-
-
         }
+
+       
+
 
         public static void InjectDefsInjectedOnlyOnce()
         {
             //   Print();
-
+          //   CreateNewDifficultyLevel();
+          //  CreateNewRookieDifficultyLevel();
+         //   ReEnableFlinching();
             CreateRoboticSelfRestoreAbility();
             CreateAcidImmunity();
 
@@ -157,8 +158,51 @@ namespace TFTV
             // CreateCyclopsScreamStatus();
         }
 
+        internal static void CreateNewRookieDifficultyLevel()
+        {
+            try
+            {
+                GameDifficultyLevelDef sourceDef = DefCache.GetDef<GameDifficultyLevelDef>("Easy_GameDifficultyLevelDef");
+                GameDifficultyLevelDef newDifficulty = Helper.CreateDefFromClone(sourceDef, "{B10E3C8C-1398-4398-B1A6-A93DB0C48781}", "NewEasyDifficulty");
+                newDifficulty.Order = 1;
+                newDifficulty.Name.LocalizationKey = "TFTV_DIFFICULTY_ROOKIE_TITLE";
+                newDifficulty.Description.LocalizationKey = "TFTV_DIFFICULTY_ROOKIE_DESCRIPTION";
+
+                List<GameDifficultyLevelDef> difficultyLevelDefs = new List<GameDifficultyLevelDef>(Shared.DifficultyLevels);
+
+                difficultyLevelDefs.Insert(0, newDifficulty);
+
+                Shared.DifficultyLevels = difficultyLevelDefs.ToArray();
+            }
 
 
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+        internal static void CreateNewDifficultyLevel()
+        {
+            try
+            {
+                GameDifficultyLevelDef sourceDef = DefCache.GetDef<GameDifficultyLevelDef>("VeryHard_GameDifficultyLevelDef");
+                GameDifficultyLevelDef newDifficulty = Helper.CreateDefFromClone(sourceDef, "{F713C90F-5D7D-4F95-B71A-CE094A7DA6AE}", "EtermesDifficulty");
+                newDifficulty.Order = 5;
+                newDifficulty.Name.LocalizationKey = "TFTV_DIFFICULTY_ETERMES_TITLE";
+                newDifficulty.Description.LocalizationKey = "TFTV_DIFFICULTY_ETERMES_DESCRIPTION";
+
+                List<GameDifficultyLevelDef> difficultyLevelDefs = new List<GameDifficultyLevelDef>(Shared.DifficultyLevels) { newDifficulty };
+
+                Shared.DifficultyLevels = difficultyLevelDefs.ToArray();
+            }
+
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
 
 
         internal static void CreateAcidImmunity()
@@ -220,33 +264,7 @@ namespace TFTV
         }
 
         //Maybe will be used later
-        internal static void CreateCyclopsScreamStatus()
-        {
-            try
-            {
-                BleedStatusDef sourceBleedStatusDef = DefCache.GetDef<BleedStatusDef>("Bleed_StatusDef");
-
-                string statusScreamedLevel1Name = "CyclopsScreamLevel1_BleedStatusDef";
-                BleedStatusDef statusScreamedLevel1 = Helper.CreateDefFromClone(sourceBleedStatusDef, "{73C5B78E-E9CB-4558-95AA-807B7AE2755A}", statusScreamedLevel1Name);
-                statusScreamedLevel1.EffectName = "CyclopsScreamLevel1";
-                statusScreamedLevel1.ApplicationConditions = new EffectConditionDef[] { };
-                statusScreamedLevel1.Visuals = Helper.CreateDefFromClone(sourceBleedStatusDef.Visuals, "{A7BADADA-F936-4D28-B171-A4A770A673E7}", statusScreamedLevel1Name);
-                statusScreamedLevel1.VisibleOnHealthbar = TacStatusDef.HealthBarVisibility.AlwaysVisible;
-                statusScreamedLevel1.VisibleOnPassiveBar = true;
-                statusScreamedLevel1.VisibleOnStatusScreen = TacStatusDef.StatusScreenVisibility.VisibleOnStatusesList;
-                statusScreamedLevel1.Visuals.DisplayName1.LocalizationKey = "SCREAMED_LEVEL1_TITLE";
-                statusScreamedLevel1.Visuals.Description.LocalizationKey = "SCREAMED_LEVEL1_TEXT";
-                statusScreamedLevel1.Visuals.LargeIcon = Helper.CreateSpriteFromImageFile("TFTV_status_self_repair.png");
-                statusScreamedLevel1.Visuals.SmallIcon = Helper.CreateSpriteFromImageFile("TFTV_status_self_repair.png");
-
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-        }
-
-
+      
         internal static void CreateRoboticSelfRestoreAbility()
         {
             try
@@ -454,115 +472,6 @@ namespace TFTV
 
 
 
-        internal static void TestingKnockBackRepositionAlternative()
-        {
-            try
-            {
-                string nameKnockBack = "KnockBackAbility";
-                string gUIDAbility = "{B4238D2D-3E25-4EE5-A3C0-23CFED493D42}";
-
-                RepositionAbilityDef source = DefCache.GetDef<RepositionAbilityDef>("Dash_AbilityDef");
-                RepositionAbilityDef newKnockBackAbility = Helper.CreateDefFromClone(source, gUIDAbility, nameKnockBack);
-                newKnockBackAbility.ActionPointCost = 0.0f;
-                newKnockBackAbility.WillPointCost = 0.0f;
-                newKnockBackAbility.UsesPerTurn = -1;
-                newKnockBackAbility.EventOnActivate = new TacticalEventDef();
-                newKnockBackAbility.AmountOfMovementToUseAsRange = 0;
-                // newKnockBackAbility.FumblePerc = 0;
-                newKnockBackAbility.TraitsRequired = new string[] { };
-                //    newKnockBackAbility.HeightToWidth = 0.01f;
-                //  newKnockBackAbility.TesellationPoints = 10;
-                // newKnockBackAbility.UseLeapAnimation = true;
-
-
-                string gUIDTargeting = "{8B266029-F014-4514-865A-C51201944385}";
-                TacticalTargetingDataDef tacticalTargetingDataDef = Helper.CreateDefFromClone(source.TargetingDataDef, gUIDTargeting, nameKnockBack);
-                tacticalTargetingDataDef.Origin.Range = 3;
-
-                /*   string gUIDAnim = "{B1ADC473-1AD8-431F-8953-953E4CB3E584}";
-                   TacActorJumpAbilityAnimActionDef animSource = DefCache.GetDef<TacActorJumpAbilityAnimActionDef>("E_JetJump [Soldier_Utka_AnimActionsDef]");
-                   TacActorJumpAbilityAnimActionDef knockBackAnimation = Helper.CreateDefFromClone(animSource, gUIDAnim, nameKnockBack);
-                   TacActorNavAnimActionDef someAnimations = DefCache.GetDef<TacActorNavAnimActionDef>("E_CrabmanNav [Crabman_AnimActionsDef]");
-                   TacActorSimpleReactionAnimActionDef hurtReaction = DefCache.GetDef<TacActorSimpleReactionAnimActionDef>("E_Hurt_Reaction [Crabman_AnimActionsDef]");
-                   /*  knockBackAnimation.Clip = hurtReaction.GetAllClips().First();
-                     knockBackAnimation.ClipEnd = someAnimations.FallNoSupport.Stop;
-                     knockBackAnimation.ClipStart = hurtReaction.GetAllClips().First();*/
-                /*  knockBackAnimation.Clip = someAnimations.JetJump.Loop;
-                  knockBackAnimation.ClipEnd = hurtReaction.GetAllClips().First();
-                  knockBackAnimation.ClipStart = someAnimations.JetJump.Loop;
-
-                  knockBackAnimation.AbilityDefs = new AbilityDef[] { newKnockBackAbility };
-
-
-
-                  TacActorAnimActionsDef crabAnimActions = DefCache.GetDef<TacActorAnimActionsDef>("Crabman_AnimActionsDef");
-                  List<TacActorAnimActionBaseDef> crabAnimations = new List<TacActorAnimActionBaseDef>(crabAnimActions.AnimActions.ToList());
-                  crabAnimations.Add(knockBackAnimation);
-                  crabAnimActions.AnimActions = crabAnimations.ToArray();*/
-
-
-            }
-
-
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-        }
-
-        internal static void TestingKnockBack()
-        {
-            try
-            {
-                string nameKnockBack = "KnockBackAbility";
-                string gUIDAbility = "{B4238D2D-3E25-4EE5-A3C0-23CFED493D42}";
-
-                JetJumpAbilityDef source = DefCache.GetDef<JetJumpAbilityDef>("JetJump_AbilityDef");
-                JetJumpAbilityDef newKnockBackAbility = Helper.CreateDefFromClone(source, gUIDAbility, nameKnockBack);
-                newKnockBackAbility.ActionPointCost = 0.0f;
-                newKnockBackAbility.WillPointCost = 0.0f;
-                newKnockBackAbility.FumblePerc = 0;
-                newKnockBackAbility.TraitsRequired = new string[] { };
-                newKnockBackAbility.HeightToWidth = 0.01f;
-                //  newKnockBackAbility.TesellationPoints = 10;
-                // newKnockBackAbility.UseLeapAnimation = true;
-
-
-                string gUIDTargeting = "{8B266029-F014-4514-865A-C51201944385}";
-                TacticalTargetingDataDef tacticalTargetingDataDef = Helper.CreateDefFromClone(source.TargetingDataDef, gUIDTargeting, nameKnockBack);
-                tacticalTargetingDataDef.Origin.Range = 1;
-
-                string gUIDAnim = "{B1ADC473-1AD8-431F-8953-953E4CB3E584}";
-                TacActorJumpAbilityAnimActionDef animSource = DefCache.GetDef<TacActorJumpAbilityAnimActionDef>("E_JetJump [Soldier_Utka_AnimActionsDef]");
-                TacActorJumpAbilityAnimActionDef knockBackAnimation = Helper.CreateDefFromClone(animSource, gUIDAnim, nameKnockBack);
-                TacActorNavAnimActionDef someAnimations = DefCache.GetDef<TacActorNavAnimActionDef>("E_CrabmanNav [Crabman_AnimActionsDef]");
-                TacActorSimpleReactionAnimActionDef hurtReaction = DefCache.GetDef<TacActorSimpleReactionAnimActionDef>("E_Hurt_Reaction [Crabman_AnimActionsDef]");
-                /*  knockBackAnimation.Clip = hurtReaction.GetAllClips().First();
-                  knockBackAnimation.ClipEnd = someAnimations.FallNoSupport.Stop;
-                  knockBackAnimation.ClipStart = hurtReaction.GetAllClips().First();*/
-                knockBackAnimation.Clip = someAnimations.JetJump.Loop;
-                knockBackAnimation.ClipEnd = hurtReaction.GetAllClips().First();
-                knockBackAnimation.ClipStart = someAnimations.JetJump.Loop;
-
-                knockBackAnimation.AbilityDefs = new AbilityDef[] { newKnockBackAbility };
-
-
-
-                TacActorAnimActionsDef crabAnimActions = DefCache.GetDef<TacActorAnimActionsDef>("Crabman_AnimActionsDef");
-                List<TacActorAnimActionBaseDef> crabAnimations = new List<TacActorAnimActionBaseDef>(crabAnimActions.AnimActions.ToList());
-                crabAnimations.Add(knockBackAnimation);
-                crabAnimActions.AnimActions = crabAnimations.ToArray();
-
-
-            }
-
-
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-        }
-
         internal static void ImproveScyllaAcheronsChironsAndCyclops()
         {
             try
@@ -580,38 +489,7 @@ namespace TFTV
 
         }
 
-        //Causes too many issues
-        internal static void MakeUmbraNotObstacle()
-        {
-            try
-            {
-
-                TacticalActorDef oilcrab = DefCache.GetDef<TacticalActorDef>("Oilcrab_ActorDef");
-                TacticalActorDef oilfish = DefCache.GetDef<TacticalActorDef>("Oilfish_ActorDef");
-
-                DefCache.GetDef<TacticalNavigationComponentDef>("Oilcrab_NavigationDef").CreateNavObstacle = false;
-                DefCache.GetDef<TacticalNavigationComponentDef>("Oilfish_NavigationDef").CreateNavObstacle = false;
-
-                DieAbilityDef source = DefCache.GetDef<DieAbilityDef>("ArmadilloHulk_DieAbilityDef");
-                DieAbilityDef newDieAbility = Helper.CreateDefFromClone(source, "{8654CB01-602D-4204-8A03-2BA50999C1B8}", "DieNoRagDoll");
-
-                RagdollDieAbilityDef oilMonsterRagDollDie = DefCache.GetDef<RagdollDieAbilityDef>("OilMonster_Die_AbilityDef");
-
-                newDieAbility.EventOnActivate = oilMonsterRagDollDie.EventOnActivate;
-                newDieAbility.DeathEffect = oilMonsterRagDollDie.DeathEffect;
-                newDieAbility.DestroyItems = false;
-
-                oilcrab.Abilities[4] = newDieAbility;
-                oilfish.Abilities[4] = newDieAbility;
-
-
-            }
-
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-        }
+        
 
         internal static void CreateNewScreamForCyclops()
         {
@@ -3128,7 +3006,6 @@ namespace TFTV
         {
             try
             {
-
                 ActorResearchRequirementDef sourceActorResearchRequirement = DefCache.GetDef<ActorResearchRequirementDef>("PX_Alien_Fishman_ResearchDef_ActorResearchRequirementDef_0");
                 TacticalActorDef humanoidGuardianTacticalActor = DefCache.GetDef<TacticalActorDef>("HumanoidGuardian_ActorDef");
                 ActorResearchRequirementDef requirementDef = Helper.CreateDefFromClone(sourceActorResearchRequirement, "14163A38-C07E-4BFF-8366-6E30F524F85D", "HumanoidActorResearchRequirement");
@@ -3154,8 +3031,6 @@ namespace TFTV
                 research.RevealRequirements.Container = revealRequirementContainer;
                 research.RevealRequirements.Operation = ResearchContainerOperation.ALL;
                 research.Tags = new ResearchTagDef[] { CriticalResearchTag };
-
-
             }
             catch (Exception e)
             {
@@ -3763,6 +3638,8 @@ namespace TFTV
                 ContextHelpHintDef tutorial3MissionEnd = DefCache.GetDef<ContextHelpHintDef>("TUT3_MissionSuccess_HintDef");
                 tutorial3MissionEnd.NextHint = tutorialTFTV1;
                 tutorialTFTV1.NextHint = tutorialTFTV2;
+                tutorialTFTV1.Conditions = tutorial3MissionEnd.Conditions;
+                tutorialTFTV2.Conditions = tutorial3MissionEnd.Conditions;
 
                 HasSeenHintHintConditionDef seenOilCrabConditionDef = DefCache.GetDef<HasSeenHintHintConditionDef>("UmbraSightedHasSeenHintConditionDef");
                 HasSeenHintHintConditionDef seenFishCrabConditionDef = DefCache.GetDef<HasSeenHintHintConditionDef>("UmbraSightedTritonHasSeenHintConditionDef");
@@ -5528,6 +5405,224 @@ namespace TFTV
                 TFTVLogger.Error(e);
             }
         }
+
+        internal static void TestingKnockBackRepositionAlternative()
+        {
+            try
+            {
+                string nameKnockBack = "KnockBackAbility";
+                string gUIDAbility = "{B4238D2D-3E25-4EE5-A3C0-23CFED493D42}";
+
+                RepositionAbilityDef source = DefCache.GetDef<RepositionAbilityDef>("Dash_AbilityDef");
+                RepositionAbilityDef newKnockBackAbility = Helper.CreateDefFromClone(source, gUIDAbility, nameKnockBack);
+                newKnockBackAbility.ActionPointCost = 0.0f;
+                newKnockBackAbility.WillPointCost = 0.0f;
+                newKnockBackAbility.UsesPerTurn = -1;
+                newKnockBackAbility.EventOnActivate = new TacticalEventDef();
+                newKnockBackAbility.AmountOfMovementToUseAsRange = 0;
+                // newKnockBackAbility.FumblePerc = 0;
+                newKnockBackAbility.TraitsRequired = new string[] { };
+                //    newKnockBackAbility.HeightToWidth = 0.01f;
+                //  newKnockBackAbility.TesellationPoints = 10;
+                // newKnockBackAbility.UseLeapAnimation = true;
+
+
+                string gUIDTargeting = "{8B266029-F014-4514-865A-C51201944385}";
+                TacticalTargetingDataDef tacticalTargetingDataDef = Helper.CreateDefFromClone(source.TargetingDataDef, gUIDTargeting, nameKnockBack);
+                tacticalTargetingDataDef.Origin.Range = 3;
+
+                /*   string gUIDAnim = "{B1ADC473-1AD8-431F-8953-953E4CB3E584}";
+                   TacActorJumpAbilityAnimActionDef animSource = DefCache.GetDef<TacActorJumpAbilityAnimActionDef>("E_JetJump [Soldier_Utka_AnimActionsDef]");
+                   TacActorJumpAbilityAnimActionDef knockBackAnimation = Helper.CreateDefFromClone(animSource, gUIDAnim, nameKnockBack);
+                   TacActorNavAnimActionDef someAnimations = DefCache.GetDef<TacActorNavAnimActionDef>("E_CrabmanNav [Crabman_AnimActionsDef]");
+                   TacActorSimpleReactionAnimActionDef hurtReaction = DefCache.GetDef<TacActorSimpleReactionAnimActionDef>("E_Hurt_Reaction [Crabman_AnimActionsDef]");
+                   /*  knockBackAnimation.Clip = hurtReaction.GetAllClips().First();
+                     knockBackAnimation.ClipEnd = someAnimations.FallNoSupport.Stop;
+                     knockBackAnimation.ClipStart = hurtReaction.GetAllClips().First();*/
+                /*  knockBackAnimation.Clip = someAnimations.JetJump.Loop;
+                  knockBackAnimation.ClipEnd = hurtReaction.GetAllClips().First();
+                  knockBackAnimation.ClipStart = someAnimations.JetJump.Loop;
+
+                  knockBackAnimation.AbilityDefs = new AbilityDef[] { newKnockBackAbility };
+
+
+
+                  TacActorAnimActionsDef crabAnimActions = DefCache.GetDef<TacActorAnimActionsDef>("Crabman_AnimActionsDef");
+                  List<TacActorAnimActionBaseDef> crabAnimations = new List<TacActorAnimActionBaseDef>(crabAnimActions.AnimActions.ToList());
+                  crabAnimations.Add(knockBackAnimation);
+                  crabAnimActions.AnimActions = crabAnimations.ToArray();*/
+
+
+            }
+
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+        internal static void TestingKnockBack()
+        {
+            try
+            {
+                string nameKnockBack = "KnockBackAbility";
+                string gUIDAbility = "{B4238D2D-3E25-4EE5-A3C0-23CFED493D42}";
+
+                JetJumpAbilityDef source = DefCache.GetDef<JetJumpAbilityDef>("JetJump_AbilityDef");
+                JetJumpAbilityDef newKnockBackAbility = Helper.CreateDefFromClone(source, gUIDAbility, nameKnockBack);
+                newKnockBackAbility.ActionPointCost = 0.0f;
+                newKnockBackAbility.WillPointCost = 0.0f;
+                newKnockBackAbility.FumblePerc = 0;
+                newKnockBackAbility.TraitsRequired = new string[] { };
+                newKnockBackAbility.HeightToWidth = 0.01f;
+                //  newKnockBackAbility.TesellationPoints = 10;
+                // newKnockBackAbility.UseLeapAnimation = true;
+
+
+                string gUIDTargeting = "{8B266029-F014-4514-865A-C51201944385}";
+                TacticalTargetingDataDef tacticalTargetingDataDef = Helper.CreateDefFromClone(source.TargetingDataDef, gUIDTargeting, nameKnockBack);
+                tacticalTargetingDataDef.Origin.Range = 1;
+
+                string gUIDAnim = "{B1ADC473-1AD8-431F-8953-953E4CB3E584}";
+                TacActorJumpAbilityAnimActionDef animSource = DefCache.GetDef<TacActorJumpAbilityAnimActionDef>("E_JetJump [Soldier_Utka_AnimActionsDef]");
+                TacActorJumpAbilityAnimActionDef knockBackAnimation = Helper.CreateDefFromClone(animSource, gUIDAnim, nameKnockBack);
+                TacActorNavAnimActionDef someAnimations = DefCache.GetDef<TacActorNavAnimActionDef>("E_CrabmanNav [Crabman_AnimActionsDef]");
+                TacActorSimpleReactionAnimActionDef hurtReaction = DefCache.GetDef<TacActorSimpleReactionAnimActionDef>("E_Hurt_Reaction [Crabman_AnimActionsDef]");
+                /*  knockBackAnimation.Clip = hurtReaction.GetAllClips().First();
+                  knockBackAnimation.ClipEnd = someAnimations.FallNoSupport.Stop;
+                  knockBackAnimation.ClipStart = hurtReaction.GetAllClips().First();*/
+                knockBackAnimation.Clip = someAnimations.JetJump.Loop;
+                knockBackAnimation.ClipEnd = hurtReaction.GetAllClips().First();
+                knockBackAnimation.ClipStart = someAnimations.JetJump.Loop;
+
+                knockBackAnimation.AbilityDefs = new AbilityDef[] { newKnockBackAbility };
+
+
+
+                TacActorAnimActionsDef crabAnimActions = DefCache.GetDef<TacActorAnimActionsDef>("Crabman_AnimActionsDef");
+                List<TacActorAnimActionBaseDef> crabAnimations = new List<TacActorAnimActionBaseDef>(crabAnimActions.AnimActions.ToList());
+                crabAnimations.Add(knockBackAnimation);
+                crabAnimActions.AnimActions = crabAnimations.ToArray();
+
+
+            }
+
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+        //Causes too many issues
+        internal static void MakeUmbraNotObstacle()
+        {
+            try
+            {
+
+                TacticalActorDef oilcrab = DefCache.GetDef<TacticalActorDef>("Oilcrab_ActorDef");
+                TacticalActorDef oilfish = DefCache.GetDef<TacticalActorDef>("Oilfish_ActorDef");
+
+                DefCache.GetDef<TacticalNavigationComponentDef>("Oilcrab_NavigationDef").CreateNavObstacle = false;
+                DefCache.GetDef<TacticalNavigationComponentDef>("Oilfish_NavigationDef").CreateNavObstacle = false;
+
+                DieAbilityDef source = DefCache.GetDef<DieAbilityDef>("ArmadilloHulk_DieAbilityDef");
+                DieAbilityDef newDieAbility = Helper.CreateDefFromClone(source, "{8654CB01-602D-4204-8A03-2BA50999C1B8}", "DieNoRagDoll");
+
+                RagdollDieAbilityDef oilMonsterRagDollDie = DefCache.GetDef<RagdollDieAbilityDef>("OilMonster_Die_AbilityDef");
+
+                newDieAbility.EventOnActivate = oilMonsterRagDollDie.EventOnActivate;
+                newDieAbility.DeathEffect = oilMonsterRagDollDie.DeathEffect;
+                newDieAbility.DestroyItems = false;
+
+                oilcrab.Abilities[4] = newDieAbility;
+                oilfish.Abilities[4] = newDieAbility;
+
+
+            }
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+        internal static void ReEnableFlinching()
+        {
+            try
+            {
+                // TacticalLevelController
+
+                TacticalLevelControllerDef tacticalLevelControllerDef = DefCache.GetDef<TacticalLevelControllerDef>("TacticalLevelControllerDef");
+                tacticalLevelControllerDef.UseFlinching = true;
+
+                AddonsComponentDef fishmanAddons = DefCache.GetDef<AddonsComponentDef>("Fishman_AddonsComponentDef");
+                TacActorSimpleReactionAnimActionDef fishReactionAnim = DefCache.GetDef<TacActorSimpleReactionAnimActionDef>("E_Hurt_Reaction_01Hands [Fishman_AnimActionsDef]");
+                TacActorAnimActionsDef fishAnimations = DefCache.GetDef<TacActorAnimActionsDef>("Fishman_AnimActionsDef");
+                fishAnimations.DefaultReactionClip = fishReactionAnim.GetAllClips().First();
+
+                //  fishmanAddons.InitialRagdollMode = CollidersRagdollActivationMode.Ragdoll;
+
+                RagdollDummyDef ragdollDummyDef = DefCache.GetDef<RagdollDummyDef>("Generic_RagdollDummyDef");
+                ragdollDummyDef.FlinchForceMultiplier = 200f; //2f //4f //5f
+                                                              //    ragdollDummyDef.OverrideAngularDrag = 40;
+                                                              //   ragdollDummyDef.OverrideDrag = 10;
+                ragdollDummyDef.FlinchForceMultiplierSecondary = 50f;
+                //   ragdollDummyDef.LeashDamper = 1f;
+                ComponentSetDef crabmanComponent = DefCache.GetDef<ComponentSetDef>("Crabman_Template_ComponentSetDef");
+
+
+                List<ObjectDef> crabComponentSetDefs = new List<ObjectDef>(crabmanComponent.Components);
+                crabComponentSetDefs.Insert(crabComponentSetDefs.Count - 2, ragdollDummyDef);
+                crabmanComponent.Components = crabComponentSetDefs.ToArray();
+
+
+                ComponentSetDef fishmanComponent = DefCache.GetDef<ComponentSetDef>("Fishman_ComponentSetDef");
+
+
+                List<ObjectDef> fishComponentSetDefs = new List<ObjectDef>(fishmanComponent.Components);
+                fishComponentSetDefs.Insert(fishComponentSetDefs.Count - 2, ragdollDummyDef);
+                fishmanComponent.Components = fishComponentSetDefs.ToArray();
+
+
+            }
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+        internal static void CreateCyclopsScreamStatus()
+        {
+            try
+            {
+                BleedStatusDef sourceBleedStatusDef = DefCache.GetDef<BleedStatusDef>("Bleed_StatusDef");
+
+                string statusScreamedLevel1Name = "CyclopsScreamLevel1_BleedStatusDef";
+                BleedStatusDef statusScreamedLevel1 = Helper.CreateDefFromClone(sourceBleedStatusDef, "{73C5B78E-E9CB-4558-95AA-807B7AE2755A}", statusScreamedLevel1Name);
+                statusScreamedLevel1.EffectName = "CyclopsScreamLevel1";
+                statusScreamedLevel1.ApplicationConditions = new EffectConditionDef[] { };
+                statusScreamedLevel1.Visuals = Helper.CreateDefFromClone(sourceBleedStatusDef.Visuals, "{A7BADADA-F936-4D28-B171-A4A770A673E7}", statusScreamedLevel1Name);
+                statusScreamedLevel1.VisibleOnHealthbar = TacStatusDef.HealthBarVisibility.AlwaysVisible;
+                statusScreamedLevel1.VisibleOnPassiveBar = true;
+                statusScreamedLevel1.VisibleOnStatusScreen = TacStatusDef.StatusScreenVisibility.VisibleOnStatusesList;
+                statusScreamedLevel1.Visuals.DisplayName1.LocalizationKey = "SCREAMED_LEVEL1_TITLE";
+                statusScreamedLevel1.Visuals.Description.LocalizationKey = "SCREAMED_LEVEL1_TEXT";
+                statusScreamedLevel1.Visuals.LargeIcon = Helper.CreateSpriteFromImageFile("TFTV_status_self_repair.png");
+                statusScreamedLevel1.Visuals.SmallIcon = Helper.CreateSpriteFromImageFile("TFTV_status_self_repair.png");
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+
+
     }
+
 
 }

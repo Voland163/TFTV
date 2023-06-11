@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using UnityEngine;
+using static Base.Audio.WwiseIDs.SWITCHES;
 using Random = System.Random;
 
 namespace TFTV
@@ -66,6 +67,39 @@ namespace TFTV
                 {
                     TFTVLogger.Error(e);
                 }
+            }
+        }
+
+        public static string CurrentDeliriumLevel(GeoLevelController controller)
+        {
+            try 
+            {
+                string currentDeliriumLevel = "";
+
+                int currentODIlevel = controller.EventSystem.GetVariable("BC_SDI");
+                // TFTVLogger.Always("CurrentODIlevel is " + currentODIlevel);
+                int odiPerc = currentODIlevel * 100 / 20; //TFTVSDIandVoidOmenRoll.ODI_EventIDs.Length;
+
+                if (TFTVVoidOmens.VoidOmensCheck[10] || odiPerc >= 45)
+                {
+                    currentDeliriumLevel = "equal to character's Willpower";
+                }
+                else if(odiPerc < 45) 
+                {
+                    currentDeliriumLevel = "equal to half character's Willpower";
+                }
+                else if (odiPerc < 25) 
+                {
+                    currentDeliriumLevel = "equal to a third of character's Willpower";
+                }
+                                                
+                return currentDeliriumLevel;
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
             }
         }
 

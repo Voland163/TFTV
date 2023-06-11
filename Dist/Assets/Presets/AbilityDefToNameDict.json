@@ -90,6 +90,7 @@
   "JETPACK CONTROL": "JetpackControl_AbilityDef",
   "JUMP": "Humanoid_HighJump_AbilityDef",
   "KILL ZONE": "KillZone_AbilityDef",
+  "KILLER INSTINCT": "KillerInstinct_AbiltyDef",
   "KILL'N'RUN": "KillAndRun_AbilityDef",
   "LAB ASSISTANT": "LabAssistant_AbilityDef",
   "LANDING SHOCK ABSORPTION": "SafeLanding_AbilityDef",

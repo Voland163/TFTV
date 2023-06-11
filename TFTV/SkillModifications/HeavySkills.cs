@@ -70,7 +70,7 @@ namespace PRMBetterClasses.SkillModifications
         private static void Create_HunkerDown()
         {
             string skillName = "HunkerDown_AbilityDef";
-            ApplyStatusAbilityDef source = DefCache.GetDef<ApplyStatusAbilityDef>("CloseQuarters_AbilityDef"); //Repo.GetAllDefs<ApplyStatusAbilityDef>().FirstOrDefault(asa => asa.name.Equals("CloseQuarters_AbilityDef"));
+            ApplyStatusAbilityDef source = DefCache.GetDef<ApplyStatusAbilityDef>("CloseQuarters_AbilityDef");
             ApplyStatusAbilityDef hunkerDown = Helper.CreateDefFromClone(
                 source,
                 "a3d841c5-b3dd-440b-ae4e-629dcabd14df",
@@ -79,18 +79,23 @@ namespace PRMBetterClasses.SkillModifications
                 source.CharacterProgressionData,
                 "64add472-da6f-4584-b5e9-f204b7d3c735",
                 skillName);
-            hunkerDown.TargetingDataDef = DefCache.GetDef<ApplyStatusAbilityDef>("QuickAim_AbilityDef").TargetingDataDef; //Repo.GetAllDefs<ApplyStatusAbilityDef>().FirstOrDefault(a => a.name.Equals("QuickAim_AbilityDef")).TargetingDataDef;
+            hunkerDown.TargetingDataDef = DefCache.GetDef<ApplyStatusAbilityDef>("QuickAim_AbilityDef").TargetingDataDef;
             hunkerDown.ViewElementDef = Helper.CreateDefFromClone(
                 source.ViewElementDef,
                 "c0b8b645-b1b7-4f4e-87ea-3f6bacc2dc4f",
                 skillName);
-            hunkerDown.StatusDef = Helper.CreateDefFromClone(
-                DefCache.GetDef<ApplyStatusAbilityDef>("ElectricReinforcement_AbilityDef").StatusDef,
+
+            ItemSlotStatsModifyStatusDef hunkerDownArmourBuffStatus = Helper.CreateDefFromClone(
+                DefCache.GetDef<ItemSlotStatsModifyStatusDef>("E_Status [ElectricReinforcement_AbilityDef]"),
                 "adc38c08-1878-422f-a37c-a859aa67ceed",
-                skillName);
-            ItemSlotStatsModifyStatusDef hunkerDownStatus = (ItemSlotStatsModifyStatusDef)hunkerDown.StatusDef;
-            hunkerDownStatus.Visuals = hunkerDown.ViewElementDef;
-            hunkerDownStatus.StatsModifications = new ItemSlotModification[]
+                "E_ArmourModifier [HunkerDown_AbilityDef]");
+            hunkerDownArmourBuffStatus.Visuals = Helper.CreateDefFromClone(
+                hunkerDown.ViewElementDef,
+                "C14AA324-3F07-4607-A1B9-75AFED9E2143",
+                "E_Visuals_ArmourModifier [HunkerDown_AbilityDef]");
+            hunkerDownArmourBuffStatus.Visuals.DisplayName1.LocalizationKey = "PR_BC_HUNKER_DOWN_ARMOR_STATUS";
+            hunkerDownArmourBuffStatus.Visuals.Description.LocalizationKey = "PR_BC_HUNKER_DOWN_ARMOR_STATUS_DESC";
+            hunkerDownArmourBuffStatus.StatsModifications = new ItemSlotModification[]
             {
                 new ItemSlotModification()
                 {
@@ -109,15 +114,38 @@ namespace PRMBetterClasses.SkillModifications
                     NotifyOnce = true
                 }
             };
-            //DamageMultiplierStatusDef hunkerDownStatus = (DamageMultiplierStatusDef)hunkerDown.StatusDef;
-            //hunkerDownStatus.DurationTurns = 1;
-            //hunkerDownStatus.Visuals = hunkerDown.ViewElementDef;
-            //hunkerDownStatus.DamageTypeDefs = new DamageTypeBaseEffectDef[0]; // Empty = all damage types
-            //hunkerDownStatus.Range = -1.0f; // -1 = no range restriction
+
+            ChangeAbilitiesCostStatusDef hunkerDownApCostModifier = Helper.CreateDefFromClone(
+                DefCache.GetDef<ChangeAbilitiesCostStatusDef>("E_AbilityCostModifier [QuickAim_AbilityDef]"),
+                "8D495936-8AEB-42B2-94A2-04CB7604D545",
+                "E_AbilityCostModifier [HunkerDown_AbilityDef]");
+            hunkerDownApCostModifier.DurationTurns = 1;
+            hunkerDownApCostModifier.ExpireOnEndOfTurn = true;
+            //hunkerDownApCostModifier.AbilityCostModification.ActionPointModType = TacticalAbilityModificationType.Multiply;
+            //hunkerDownApCostModifier.AbilityCostModification.ActionPointMod = 2f / 3;
+
+            AddAttackBoostStatusDef hunkerDownAddAttackBoostStatus = Helper.CreateDefFromClone(
+                DefCache.GetDef<AddAttackBoostStatusDef>("E_Status [QuickAim_AbilityDef]"),
+                "B75DFE69-6E49-4277-9312-DAEC9A8220B4",
+                "E_AddAttackBoostStatus [HunkerDown_AbilityDef]");
+            hunkerDownAddAttackBoostStatus.DurationTurns = 1;
+            hunkerDownAddAttackBoostStatus.ExpireOnEndOfTurn = true;
+            hunkerDownAddAttackBoostStatus.ShowNotification = true;
+            hunkerDownAddAttackBoostStatus.Visuals = Helper.CreateDefFromClone(
+                hunkerDown.ViewElementDef,
+                "ABD59E47-EF36-4FB8-8ED6-ACDB2C317C37",
+                "E_Visuals_AddAttackBoostStatus [HunkerDown_AbilityDef]");
+            hunkerDownAddAttackBoostStatus.Visuals.DisplayName1.LocalizationKey = "PR_BC_HUNKER_DOWN_AP_STATUS";
+            hunkerDownAddAttackBoostStatus.Visuals.Description.LocalizationKey = "PR_BC_HUNKER_DOWN_AP_STATUS_DESC";
+            hunkerDownAddAttackBoostStatus.AdditionalStatusesToApply = new TacStatusDef[] { hunkerDownArmourBuffStatus, hunkerDownApCostModifier };
+
+            hunkerDown.StatusDef = hunkerDownAddAttackBoostStatus;
+
             hunkerDown.Active = true;
             hunkerDown.EndsTurn = true;
             hunkerDown.ActionPointCost = 0.25f;
             hunkerDown.WillPointCost = 0.0f;
+            hunkerDown.DisablingStatuses = new StatusDef[] { hunkerDown.StatusDef };
             hunkerDown.TraitsRequired = new string[] { "start", "ability", "move" };
             hunkerDown.TraitsToApply = new string[] { "ability" };
             hunkerDown.ShowNotificationOnUse = true;
@@ -125,11 +153,13 @@ namespace PRMBetterClasses.SkillModifications
             hunkerDown.CharacterProgressionData.RequiredStrength = 0;
             hunkerDown.CharacterProgressionData.RequiredWill = 0;
             hunkerDown.CharacterProgressionData.RequiredSpeed = 0;
-            hunkerDown.ViewElementDef.DisplayName1.LocalizationKey = "PR_BC_HUNKER_DOWN"; // new LocalizedTextBind("HUNKER DOWN", TFTVMain.Main.Settings.DoNotLocalizeChangedTexts);
-            hunkerDown.ViewElementDef.Description.LocalizationKey = "PR_BC_HUNKER_DOWN_DESC"; // new LocalizedTextBind("Gain 25% damage resistance until your next turn.", TFTVMain.Main.Settings.DoNotLocalizeChangedTexts);
+            hunkerDown.ViewElementDef.DisplayName1.LocalizationKey = "PR_BC_HUNKER_DOWN";
+            hunkerDown.ViewElementDef.Description.LocalizationKey = "PR_BC_HUNKER_DOWN_DESC";
             Sprite hunkerDownIcon = Helper.CreateSpriteFromImageFile("UI_AbilitiesIcon_HunkerDown_1-2.png");
             hunkerDown.ViewElementDef.LargeIcon = hunkerDownIcon;
             hunkerDown.ViewElementDef.SmallIcon = hunkerDownIcon;
+
+            // Animation related stuff
             AbilityDef animationSearchDef = DefCache.GetDef<AbilityDef>("QuickAim_AbilityDef");
             foreach (TacActorSimpleAbilityAnimActionDef animActionDef in Repo.GetAllDefs<TacActorSimpleAbilityAnimActionDef>().Where(aad => aad.name.Contains("Soldier_Utka_AnimActionsDef")))
             {
@@ -308,6 +338,10 @@ namespace PRMBetterClasses.SkillModifications
             rageBurst.ProjectileSpreadMultiplier = 0.4f; // acc buff calculation: 1 / value - 100 = +acc%, 1 / 0.4 - 100 = +150%
             rageBurst.ConeSpread = 15.0f;
             rageBurst.ViewElementDef.Description.LocalizationKey = "PR_BC_RAGE_BURST_DESC"; // new LocalizedTextBind("Shoot 5 times across a wide arc with increased accuracy", TFTVMain.Main.Settings.DoNotLocalizeChangedTexts);
+            rageBurst.DisablingStatuses = new StatusDef[]
+            {
+                DefCache.GetDef<ApplyStatusAbilityDef>("ArmourBreak_AbilityDef").StatusDef,
+            };
         }
         private static void Create_JetpackControl()
         {
