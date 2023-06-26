@@ -89,7 +89,7 @@ namespace TFTV
                 TFTVPandoranProgress.ScyllaCount = 0;
                 TFTVAncients.AutomataResearched = false;
                 TFTVAncients.AlertedHoplites.Clear();
-                TFTVUI.CharacterLoadouts.Clear();
+                TFTVUI.CharacterLoadouts?.Clear();
               //  TFTVUI.CurrentlyAvailableInv.Clear();
               //  TFTVUI.CurrentlyHiddenInv.Clear();
                 TFTVLogger.Always("Internal variables cleared");

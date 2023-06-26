@@ -258,7 +258,7 @@ namespace TFTV
             {
                 if (!__instance.GeoLevel.Tutorial.InProgress)
                 {
-                    Calculate_ODI_Level(__instance, ____evolutionProgress);
+                    ApplyNewODI(__instance, ____evolutionProgress);
                 }
             }
         }
@@ -332,8 +332,29 @@ namespace TFTV
 
         }
 
+        internal static void Calculate_ODI_Level(GeoLevelController controller)
+        {
+            try
+            {
+                int evolutionProgress = controller.AlienFaction.EvolutionProgress;
+                // Index of last element of the ODI event ID array is Length - 1
+                int ODI_EventIDs_LastIndex = ODI_EventIDs.Length - 1;
+                // Set a maximum number to determine the upper limit from when the maximum ODI level is reached
+                int maxODI_Progress = 470 * ODI_EventIDs_LastIndex;
+                // Calculate the current ODI level = index for the ODI event ID array
+                // Mathf.Min = cap the lavel at max index, after that the index will not longer get increased wiht higher progress
+                CurrentODI_Level = Mathf.Min(ODI_EventIDs_LastIndex, evolutionProgress * ODI_EventIDs_LastIndex / maxODI_Progress);
+                // CurrentODI_Level = (evolutionProgress * ODI_EventIDs_LastIndex / maxODI_Progress) % ODI_EventIDs_LastIndex;
+                // CurrentODI_Level = evolutionProgress * ODI_EventIDs_LastIndex / maxODI_Progress;
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
 
-        internal static void Calculate_ODI_Level(GeoAlienFaction geoAlienFaction, int evolutionProgress)
+
+        internal static void ApplyNewODI(GeoAlienFaction geoAlienFaction, int evolutionProgress)
         {
             try
             {

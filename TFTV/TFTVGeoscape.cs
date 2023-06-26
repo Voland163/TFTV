@@ -91,6 +91,7 @@ namespace TFTV
             TFTVSpecialDifficulties.CheckForSpecialDifficulties();
             TFTVBetterEnemies.ImplementBetterEnemies();
             TFTVPandoranProgress.ScyllaCount = 0;
+            TFTVSDIandVoidOmenRoll.Calculate_ODI_Level(Controller);
         }
         /// <summary>
         /// Called when Geoscape ends.

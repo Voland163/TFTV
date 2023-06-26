@@ -1454,13 +1454,14 @@ namespace TFTV
         [HarmonyPatch(typeof(EditUnitButtonsController), "SetEditUnitButtonsBasedOnType")]
         internal static class TFTV_EditUnitButtonsController_SetEditUnitButtonsBasedOnType_ToggleHelmetButton_patch
         {
-            public static void Postfix(EditUnitButtonsController __instance, UIModuleActorCycle ____parentModule)
+            public static void Prefix(EditUnitButtonsController __instance, UIModuleActorCycle ____parentModule)
             {
                 try
                 {
 
                     if (____parentModule.CurrentUnit != null)
                     {
+                        TFTVLogger.Always("Actually here");
 
                         switch (____parentModule.CurrentState)
                         {
@@ -1478,7 +1479,9 @@ namespace TFTV
                                 break;
 
                             case UIModuleActorCycle.ActorCycleState.EditSoldierSection:
-                              //  HelmetToggle.gameObject.SetActive(true);
+
+                                TFTVLogger.Always("And even here!");
+                                //  HelmetToggle.gameObject.SetActive(true);
                               //  HelmetToggle.ResetButtonAnimations();
                                 UnequipAll.gameObject.SetActive(true);
                                 UnequipAll.ResetButtonAnimations();
@@ -2171,6 +2174,8 @@ namespace TFTV
             {
                 try
                 {
+                    TFTVLogger.Always($"checking");
+
                     PhoenixGeneralButton helmetToggleButton = UnityEngine.Object.Instantiate(__instance.EditButton, __instance.transform);
                     helmetToggleButton.gameObject.AddComponent<UITooltipText>().TipText = "Toggles helmet visibility on/off.";
                     // TFTVLogger.Always($"original icon position {newPhoenixGeneralButton.transform.position}, edit button position {__instance.EditButton.transform.position}");
@@ -2188,7 +2193,7 @@ namespace TFTV
 
                     PhoenixGeneralButton loadLoadout = UnityEngine.Object.Instantiate(__instance.EditButton, __instance.transform);
                     loadLoadout.transform.position = saveLoadout.transform.position + new Vector3(0, -100, 0);
-                    loadLoadout.gameObject.AddComponent<UITooltipText>().TipText = "Unequips all the items currently equipped by the operative and loads the previously saved loadout for this operative.";
+                    loadLoadout.gameObject.AddComponent<UITooltipText>().TipText = "Loads the previously saved loadout for this operative.";
 
 
                     helmetToggleButton.PointerClicked += () => ToggleButtonClicked(helmetToggleButton);
