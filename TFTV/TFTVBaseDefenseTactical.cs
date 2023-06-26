@@ -2281,14 +2281,14 @@ namespace TFTV
 
                 GenerateFakeExplosion(zoneToDeployAt.Pos);
                 
-              //  TFTVLogger.Always($"got passed the explosion");
+                TFTVLogger.Always($"Explosion preceding secondary force deployment at {zoneToDeployAt.Pos}");
 
                 foreach (TacCharacterDef tacCharacterDef in secondaryForce.Keys)
                 {
                     for (int i = 0; i < secondaryForce[tacCharacterDef]; i++)
                     {
 
-                        zoneToDeployAt.SetFaction(controller.GetFactionByCommandName("AlN"), TacMissionParticipant.Intruder);
+                        zoneToDeployAt.SetFaction(controller.GetFactionByCommandName("ALN"), TacMissionParticipant.Intruder);
                         //  TFTVLogger.Always($"Found center deployzone position and deploying " + chosenWormType.name + $"; Position is y={tacticalDeployZone.Pos.y} x={tacticalDeployZone.Pos.x} z={tacticalDeployZone.Pos.z}");
                         ActorDeployData actorDeployData = tacCharacterDef.GenerateActorDeployData();
 

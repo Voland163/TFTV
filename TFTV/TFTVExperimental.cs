@@ -1,8 +1,12 @@
 ﻿using Base;
+using Base.AI;
+using Base.AI.Defs;
 using Base.Core;
 using Base.Defs;
 using Base.Entities;
+using Base.Entities.Statuses;
 using Base.Levels;
+using Base.Utils;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities;
@@ -14,6 +18,7 @@ using PhoenixPoint.Geoscape.Entities.Interception.Equipments;
 using PhoenixPoint.Geoscape.Entities.Sites;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.View.ViewControllers.HavenDetails;
+using PhoenixPoint.Tactical.AI.Actions;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.Effects.DamageTypes;
@@ -730,23 +735,134 @@ namespace TFTV
             }
         }
 
+    
+       [HarmonyPatch(typeof(AIFaction), "GetActionScore")]
 
+        public static class TFTV_Experimental_AIActionMoveAndEscape_GetModuleBonusByType_AdjustFARMRecuperationModule_patch
+        {
+            public static void Prefix(AIFaction __instance, AIAction action, IAIActor actor, object context, LazyCache<AIConsiderationDef, AIConsideration> ____considerationsCache)
+            {
+                try
+                {
+                    if (action.ActionDef.name == "Flee_AIActionDef")
+                    {
+                        StatusDef autoRepairStatusDef = DefCache.GetDef<StatusDef>("RoboticSelfRepair_AddAbilityStatusDef");
+                        TacticalLevelController tacticalLevelController = GameUtl.CurrentLevel().GetComponent<TacticalLevelController>();
+
+                        foreach (TacticalActor tacticalActor in tacticalLevelController.GetFactionByCommandName("pu").TacticalActors)
+                        {
+                            if (tacticalActor.HasStatus(autoRepairStatusDef))
+                            {
+                                TFTVLogger.Always($"{tacticalActor.name} has autorepair status");
+                            }
+
+
+                        }
+
+
+                        float num = action.ActionDef.Weight;
+                        TFTVLogger.Always($"get action score for action {action.ActionDef.name} with a weight of {num}");
+                        AIAdjustedConsideration[] earlyExitConsiderations = action.ActionDef.EarlyExitConsiderations;
+
+                        foreach (AIAdjustedConsideration aIAdjustedConsideration in earlyExitConsiderations)
+                        {
+
+                            if (aIAdjustedConsideration.Consideration == null)
+                            {
+                                throw new InvalidOperationException($"Missing consideration for {actor} at {action.ActionDef.name}");
+                            }
+
+                            float time = ____considerationsCache.Get(aIAdjustedConsideration.Consideration).Evaluate(actor, null, context);
+                            float num2 = aIAdjustedConsideration.ScoreCurve.Evaluate(time);
+
+                            num *= num2;
+
+                            TFTVLogger.Always($"early consideration is {aIAdjustedConsideration.Consideration.name} and num2 is {num2}, so score is now {num}");
+                            if (num < 0.0001f)
+                            {
+                                TFTVLogger.Always($"aIAdjustedConsideration {aIAdjustedConsideration.Consideration.name} reduced score to nearly 0");
+                                break;
+
+                            }
+                        }
+
+                    }
+
+                  
+
+                  /*  if (action.ActionDef.name == "MoveAndQuickAim_AIActionDef")
+                    {
+                        StatusDef autoRepairStatusDef = DefCache.GetDef<StatusDef>("RoboticSelfRepair_AddAbilityStatusDef");
+                        TacticalLevelController tacticalLevelController = GameUtl.CurrentLevel().GetComponent<TacticalLevelController>();
+
+                        ApplyStatusAbilityDef quickaim = DefCache.GetDef<ApplyStatusAbilityDef>("BC_QuickAim_AbilityDef");
+
+                        foreach (TacticalActor tacticalActor in tacticalLevelController.GetFactionByCommandName("pu").TacticalActors) 
+                        {
+                            if (tacticalActor.GetAbilityWithDef <ApplyStatusAbility> (quickaim)!=null) 
+                            {
+                                TFTVLogger.Always($"{tacticalActor.name} has quickaim ability");
+                            }
+                        
+                        
+                        }
+
+
+                        float num = action.ActionDef.Weight;
+                        TFTVLogger.Always($"get action score for action {action.ActionDef.name} with a weight of {num}");
+                        AIAdjustedConsideration[] earlyExitConsiderations = action.ActionDef.EarlyExitConsiderations;
+
+                        foreach (AIAdjustedConsideration aIAdjustedConsideration in earlyExitConsiderations)
+                        {
+
+                            if (aIAdjustedConsideration.Consideration == null)
+                            {
+                                throw new InvalidOperationException($"Missing consideration for {actor} at {action.ActionDef.name}");
+                            }
+
+                            float time = ____considerationsCache.Get(aIAdjustedConsideration.Consideration).Evaluate(actor, null, context);
+                            float num2 = aIAdjustedConsideration.ScoreCurve.Evaluate(time);
+
+                            num *= num2;
+
+                            TFTVLogger.Always($"early consideration is {aIAdjustedConsideration.Consideration.name} and num2 is {num2}, so score is now {num}");
+                            if (num < 0.0001f)
+                            {
+                                TFTVLogger.Always($"aIAdjustedConsideration {aIAdjustedConsideration.Consideration.name} reduced score to nearly 0");
+                                break;
+
+                            }
+                        }
+
+                    }*/
+                }
+
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+
+            }
+        }
+       
 
         [HarmonyPatch(typeof(GeoVehicle), "GetModuleBonusByType")]
 
         public static class TFTV_Experimental_GeoVehicle_GetModuleBonusByType_AdjustFARMRecuperationModule_patch
         {
-            public static void Postfix(GeoVehicleModuleDef.GeoVehicleModuleBonusType type, ref float __result)
+            public static void Postfix(GeoVehicleModuleDef.GeoVehicleModuleBonusType type, ref float __result, GeoVehicle __instance)
             {
                 try
                 {
-                    if (type == GeoVehicleModuleDef.GeoVehicleModuleBonusType.Recuperation)
+                    GeoVehicleEquipment hybernationPods = __instance.Modules?.FirstOrDefault(gve => gve != null && gve.ModuleDef != null && gve.ModuleDef.BonusType == GeoVehicleModuleDef.GeoVehicleModuleBonusType.Recuperation);
+
+                    if (hybernationPods!=null && type == GeoVehicleModuleDef.GeoVehicleModuleBonusType.Recuperation)
                     {
                         TFTVConfig config = TFTVMain.Main.Config;
 
                         if (config.ActivateStaminaRecuperatonModule)
                         {
-
+                            TFTVLogger.Always($"geovehicle is {__instance.name}");
                             __result = 0.35f;
 
                         }

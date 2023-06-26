@@ -9,6 +9,7 @@ using Base.Entities.Statuses;
 using Base.UI;
 using Base.Utils;
 using Code.PhoenixPoint.Tactical.Entities.Equipments;
+using Epic.OnlineServices.RTCAudio;
 using HarmonyLib;
 using PhoenixPoint.Common.ContextHelp;
 using PhoenixPoint.Common.ContextHelp.HintConditions;
@@ -88,14 +89,16 @@ namespace TFTV
 
         }
 
+      
+
        
 
 
         public static void InjectDefsInjectedOnlyOnce()
         {
             //   Print();
-          //   CreateNewDifficultyLevel();
-          //  CreateNewRookieDifficultyLevel();
+         //  CreateNewDifficultyLevel();
+         //  CreateNewRookieDifficultyLevel();
          //   ReEnableFlinching();
             CreateRoboticSelfRestoreAbility();
             CreateAcidImmunity();

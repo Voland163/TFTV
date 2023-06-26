@@ -102,43 +102,6 @@ namespace TFTV
         public static int RollCount = 0;
         public static List<ContextHelpHintDef> TacticsHint = new List<ContextHelpHintDef>();
 
-
-        /*  public static void AddRookieVulnerability(TacticalLevelController controller) 
-          {
-              try 
-              {
-                //  TFTVConfig config = TFTVMain.Main.Config;
-
-                  if (controller.Difficulty.Order == 1)
-                  {
-                      if (GetHumanEnemyFactions(controller).Count > 0)
-                      {
-                          foreach (TacticalFaction enemyFaction in GetHumanEnemyFactions(controller))
-                          {
-                              foreach (TacticalActorBase tacticalActorBase in enemyFaction.Actors)
-                              {
-                                  if (tacticalActorBase is TacticalActor tacticalActor)
-                                  {
-                                      if (tacticalActor.GetAbility<DamageMultiplierAbility>(RookieVulnerability) == null)
-                                      {
-                                          tacticalActor.AddAbility(RookieVulnerability, tacticalActor);
-                                      }
-                                  }
-                              }
-
-                          }
-
-                      }
-                  }
-              }
-              catch (Exception e)
-              {
-                  TFTVLogger.Error(e);
-              }
-
-          }*/
-
-
         public static void RollTactic(string nameOfFaction)
         {
             try
@@ -202,6 +165,9 @@ namespace TFTV
 
                 string tactic = "";
                 string description = "";
+
+
+
                 if (roll == 1)
                 {
                     description = "Enemies who can see the character lose 1 WP";
@@ -214,8 +180,17 @@ namespace TFTV
                 }
                 else if (roll == 3)
                 {
-                    description = "Allies gain self-repair ability that restores disabled limbs";
-                    tactic = "Self-repair protocol";
+                    if (enemyHumanFaction.TacticalFactionDef.ShortName.Equals("Purists"))
+                    {
+                        description = "Allies gain self-repair ability that restores disabled limbs";
+                        tactic = "Self-repair protocol";
+                    }
+                    else 
+                    {
+                        description = "All lowest tier friendlies gain 10 regeneration";
+                        tactic = "Experimental drugs";
+
+                    }
                 }
                 else if (roll == 4)
                 {
@@ -500,7 +475,6 @@ namespace TFTV
             }
 
         }
-
 
         public static void AssignHumanEnemiesTags(TacticalLevelController controller)
         {
@@ -1353,49 +1327,7 @@ namespace TFTV
             }
         }
 
-        /*
-        [HarmonyPatch(typeof(TacticalActor), "OnAnotherActorDeath")]
-        public static class TacticalActor_OnAnotherActorDeath_HumanEnemies_Patch
-        {
-            public static void Postfix(TacticalActor __instance, DeathReport death)
-            {
-
-                try
-                {
-
-                    if (death.Actor.HasGameTag(HumanEnemyTier4GameTag))
-                    {
-                        TacticalFaction tacticalFaction = death.Actor.TacticalFaction;
-                        int willPointWorth = death.Actor.TacticalActorBaseDef.WillPointWorth;
-                        if (death.Actor.TacticalFaction == __instance.TacticalFaction)
-                        {
-                            __instance.CharacterStats.WillPoints.Add(willPointWorth);
-                        }
-                    }
-                    else if (death.Actor.HasGameTag(HumanEnemyTier2GameTag))
-                    {
-                        TacticalFaction tacticalFaction = death.Actor.TacticalFaction;
-                        if (death.Actor.TacticalFaction == __instance.TacticalFaction)
-                        {
-                            __instance.CharacterStats.WillPoints.Subtract(1);
-                        }
-                    }
-                    else if (death.Actor.HasGameTag(HumanEnemyTier1GameTag))
-                    {
-                        TacticalFaction tacticalFaction = death.Actor.TacticalFaction;
-                        int willPointWorth = death.Actor.TacticalActorBaseDef.WillPointWorth;
-                        if (death.Actor.TacticalFaction == __instance.TacticalFaction)
-                        {
-                            __instance.CharacterStats.WillPoints.Subtract(willPointWorth);
-                        }
-                    }
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-            }
-        }*/
+       
 
         [HarmonyPatch(typeof(TacticalLevelController), "ActorEnteredPlay")]
         public static class TacticalLevelController_ActorEnteredPlay_HumanEnemies_Patch

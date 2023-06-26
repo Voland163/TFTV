@@ -33,7 +33,7 @@ namespace TFTV
 {
     internal class TFTVAAExperiment
     {
-        //This has been copy pasted from the great Mad's Assorted Adjustments (all hail Mad!) with minimum adjustments
+        //This has been copy pasted from the great Mad's Assorted Adjustments (all hail Mad!) with minimal adjustments
         //https://github.com/Mad-Mods-Phoenix-Point/AssortedAdjustments/tree/main/Source/AssortedAdjustments
 
       //  public static bool KludgeCheck = false;
@@ -1419,26 +1419,7 @@ namespace TFTV
                                     }
                                 }
 
-                                //Old AA method
-                                /*  foreach (SiteAttackSchedule phoenixBaseAttackSchedule in geoFaction.PhoenixBaseAttackSchedule)
-                                {
-                                    if (phoenixBaseAttackSchedule.HasAttackScheduled && phoenixBaseAttackSchedule.Site.Owner == ____context.ViewerFaction)
-                                    {
-                                        TFTVLogger.Debug($"[UIModuleFactionAgendaTracker_InitialSetup_POSTFIX] Add/Reapply tracker element for {phoenixBaseAttackSchedule.Site.Name}.");
-
-                                        UIFactionDataTrackerElement freeElement = (UIFactionDataTrackerElement)___GetFreeElement.Invoke(__instance, null);
-
-                                        string siteName = phoenixBaseAttackSchedule.Site.Name;
-                                        string attackInfo = $"{geoFaction.Name.Localize().ToUpperInvariant()} {actionAttack} {siteName}";
-                                        //string attackInfo = string.Format(actionAttack, siteName, geoFaction.Name.Localize(null));
-
-                                        // Without a viewdef there are... problems. Therefore we borrow one with the correct icon
-                                        ViewElementDef borrowedViewElementDef = GameUtl.GameComponent<DefRepository>().DefRepositoryDef.AllDefs.OfType<ViewElementDef>().Where(def => def.name.Contains("Crabman_ActorViewDef")).FirstOrDefault();
-                                        freeElement.Init(phoenixBaseAttackSchedule.Site, attackInfo, borrowedViewElementDef, false);
-
-                                        ___OnAddedElement.Invoke(__instance, new object[] { freeElement });
-                                    }
-                                }*/
+                                
                                 foreach (SiteAttackSchedule ancientSiteAttackSchedule in geoFaction.AncientSiteAttackSchedule)
                                 {
                                     if (ancientSiteAttackSchedule.HasAttackScheduled && ancientSiteAttackSchedule.Site.Owner == ____context.ViewerFaction)
@@ -1558,6 +1539,8 @@ namespace TFTV
                             }
                             else if (gs.Type == GeoSiteType.PhoenixBase)
                             {
+                                __instance.gameObject.SetActive(false);
+
                                 __instance.TrackedName.text = text; // Always use passed text for non-default elements as def disturbs it
                                 __instance.TrackedName.color = baseAttackTrackerColor;
                                 __instance.TrackedTime.color = baseAttackTrackerColor;

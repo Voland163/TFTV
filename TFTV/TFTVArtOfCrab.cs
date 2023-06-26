@@ -770,7 +770,7 @@ namespace TFTV
 
         public static class TFTV_TacticalFactionn_GetSortedAIActors_ArtOfCrab_patch
         {
-            public static void Postfix(List<TacticalActor> __result)
+            public static void Postfix(List<TacticalActor> __result, TacticalFaction __instance)
             {
                 try
                 {
@@ -778,6 +778,7 @@ namespace TFTV
                     {
                         SortOutAITurnOrder(__result);
                         __result.Sort((TacticalActor a, TacticalActor b) => a.AIActor.TurnOrderPriority - b.AIActor.TurnOrderPriority);
+                        TFTVHumanEnemies.ApplyTactic(__instance.TacticalLevel);
                         TFTVLogger.Always("TFTV: Art of Crab: Sorted AI Turn Order");
                     }
                 }

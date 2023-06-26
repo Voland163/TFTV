@@ -300,6 +300,7 @@ namespace PRMBetterClasses.SkillModifications
             addAttackBoostStatus.Visuals.Color = Color.red;
             addAttackBoostStatus.Visuals.DisplayName1.LocalizationKey = "PR_BC_KILLER_INSTINCT_STATUS";
             addAttackBoostStatus.Visuals.Description.LocalizationKey = "PR_BC_KILLER_INSTINCT_STATUS_DESC";
+            addAttackBoostStatus.SkillTagCullFilter = new SkillTagDef[0];
             addAttackBoostStatus.AdditionalStatusesToApply = new TacStatusDef[] { changeAbilitiesCostStatus };
 
             killerInstinct.StatusDef = addAttackBoostStatus;

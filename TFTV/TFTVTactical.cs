@@ -263,7 +263,7 @@ namespace TFTV
                     TFTVRevenant.revenantSpecialResistance.Clear();
                     TFTVUmbra.SpawnUmbra(Controller);
                     TFTVHumanEnemies.ChampRecoverWPAura(Controller);
-                    TFTVHumanEnemies.ApplyTactic(Controller);
+                   // TFTVHumanEnemies.ApplyTactic(Controller);
 
 
                 }

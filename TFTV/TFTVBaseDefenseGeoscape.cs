@@ -1,5 +1,6 @@
 ﻿using Base;
 using Base.Core;
+using Base.Levels;
 using Base.UI;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
@@ -16,17 +17,21 @@ using PhoenixPoint.Geoscape.Entities.Sites;
 using PhoenixPoint.Geoscape.Events;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
+using PhoenixPoint.Geoscape.Levels.Objectives;
 using PhoenixPoint.Geoscape.View;
 using PhoenixPoint.Geoscape.View.DataObjects;
+using PhoenixPoint.Geoscape.View.ViewControllers;
 using PhoenixPoint.Geoscape.View.ViewControllers.BaseRecruits;
 using PhoenixPoint.Geoscape.View.ViewControllers.Modal;
 using PhoenixPoint.Geoscape.View.ViewControllers.PhoenixBase;
 using PhoenixPoint.Geoscape.View.ViewModules;
+using PhoenixPoint.Tactical.AI.Considerations;
 using PhoenixPoint.Tactical.Levels;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Reflection.Emit;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -36,17 +41,347 @@ namespace TFTV
     {
         public static Dictionary<int, Dictionary<string, double>> PhoenixBasesUnderAttack = new Dictionary<int, Dictionary<string, double>>();
         public static List<int> PhoenixBasesInfested = new List<int>();
-
+        public static Sprite VoidIcon = Helper.CreateSpriteFromImageFile("Void-04P.png");
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
+        internal static Color purple = new Color32(149, 23, 151, 255);
+        internal static Color red = new Color32(192, 32, 32, 255);
+        internal static Color brightRed = new Color32(255, 0, 0, 255);
 
-        //For implementing base defense as proper objective:
-        /* DiplomaticGeoFactionObjective cyclopsObjective = new DiplomaticGeoFactionObjective(controller.PhoenixFaction, controller.PhoenixFaction)
+        internal static void RemoveBaseDefenseObjective(string baseName)
+        {
+            try
+            {
+                GeoPhoenixFaction geoPhoenixFaction = GameUtl.CurrentLevel().GetComponent<GeoLevelController>().PhoenixFaction;
+
+                List<GeoFactionObjective> listOfObjectives = geoPhoenixFaction.Objectives.ToList();
+
+                foreach (GeoFactionObjective objective in listOfObjectives)
+                {
+                    if (objective.GetTitle() == null)
                     {
-                        Title = new LocalizedTextBind("BUILD_CYCLOPS_OBJECTIVE"),
-                        Description = new LocalizedTextBind("BUILD_CYCLOPS_OBJECTIVE"),
-                    };
-                    cyclopsObjective.IsCriticalPath = true;
-                    controller.PhoenixFaction.AddObjective(cyclopsObjective);*/
+                        TFTVLogger.Always("objective.GetTitle() returns null!");
+                    }
+                    else
+                    {
+                        foreach (GeoSite geoSite in geoPhoenixFaction.Sites)
+                        {
+
+                            if (objective.GetTitle().Contains(baseName))
+                            {
+                                geoPhoenixFaction.RemoveObjective(objective);
+
+                            }
+                        }
+
+                    }
+
+                }
+            }
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
+        }
+
+        [HarmonyPatch(typeof(DiplomaticGeoFactionObjective), "GetRelatedActors")]
+        internal static class TFTV_DiplomaticGeoFactionObjective_GetRelatedActors_ExperimentPatch
+        {
+            public static void Postfix(DiplomaticGeoFactionObjective __instance, ref IEnumerable<GeoActor> __result, ref List<GeoSite> ____assignedSites)
+            {
+                try
+                {
+                    //  TFTVLogger.Always($"GetRelatedActorsInvoked objective {__instance.GetTitle()}");
+
+                    GeoLevelController geoLevelController = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
+
+                    foreach (GeoSite geoSite in geoLevelController.PhoenixFaction.Sites)
+                    {
+
+                        if (__instance.GetTitle().Contains(geoSite.LocalizedSiteName))
+                        {
+                            ____assignedSites.Add(geoSite);
+
+                            __result = ____assignedSites;
+                        }
+                    }
+
+
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
+
+
+
+        [HarmonyPatch(typeof(GeoFaction), "get_Objectives")]
+        internal static class TFTV_GeoFaction_get_Objectives_ExperimentPatch
+        {
+            public static void Postfix(GeoFaction __instance, ref IReadOnlyList<GeoFactionObjective> __result)
+            {
+
+                try
+                {
+                    List<GeoFactionObjective> reOrderedObjectiveList = new List<GeoFactionObjective>();
+                   
+
+                    if (__result != null && GameUtl.CurrentLevel()!=null && GameUtl.CurrentLevel().GetComponent<GeoLevelController>()!=null)
+                    {
+
+
+                     /*   List<GeoFactionObjective> listOfObjectives = __result.ToList();
+
+                        foreach (GeoFactionObjective objective1 in listOfObjectives)
+                        {
+                            if (objective1.Title == null)
+                            {
+                                TFTVLogger.Always("objective1.Title is missing!");
+                            }
+                            else
+                            {
+                                if (objective1.Title.LocalizationKey == null)
+                                {
+                                    TFTVLogger.Always("objective1.Title.LocalizationKey is missing!");
+                                }
+                                else
+                                {
+                                    if (objective1.Title.LocalizationKey == title)
+                                    {
+                                        level.PhoenixFaction.RemoveObjective(objective1);
+                                    }
+                                }
+                            }
+
+                        }*/
+
+
+
+                        foreach (GeoFactionObjective objective in __result)
+                        {
+                            if (objective.GetTitle() != null && objective.GetTitle().Contains("Phoenix base") && objective.GetTitle().Contains("is under attack!"))
+                            {
+                              //  TFTVLogger.Always($"Found base under attack objective");
+                                reOrderedObjectiveList.Add(objective);
+
+                            }
+                        }
+                    }
+                 
+
+                    if (__result != null && GameUtl.CurrentLevel() != null && GameUtl.CurrentLevel().GetComponent<GeoLevelController>() != null)
+                    {
+                        foreach (GeoFactionObjective objective in __result)
+                        {
+                            string localizationKey = objective.Title?.LocalizationKey;
+
+                            if (localizationKey != null && localizationKey.Contains("VOID_OMEN_TITLE_"))
+                            {
+                              //  TFTVLogger.Always($"Found VO objective");
+                                reOrderedObjectiveList.Add(objective);
+                            }
+                        }
+                    }
+
+
+                    if (reOrderedObjectiveList.Count > 0)
+                    {
+
+                        reOrderedObjectiveList.AddRange(__result.Where(o => !reOrderedObjectiveList.Contains(o)));
+
+                        __result = reOrderedObjectiveList;
+
+                      /*  for (int x = 0; x < reOrderedObjectiveList.Count(); x++)
+                        {
+                            TFTVLogger.Always($"in raw objectives, objective #{x} is {reOrderedObjectiveList[x].GetTitle()}");
+
+                        }*/
+                    }
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+
+        }
+        internal static bool TestRun = false;
+
+        [HarmonyPatch(typeof(UIModuleGeoObjectives), "InitObjective")]
+        internal static class TFTV_UIModuleGeoObjectives_SetObjective_ExperimentPatch
+        {
+            public static bool Prefix(UIModuleGeoObjectives __instance, GeoObjectiveElementController element, GeoFactionObjective objective, GeoLevelController ____level, IEnumerable<GeoFactionObjective> ____rawObjectives)
+            {
+                try
+                {
+                    /*  if (!TestRun)
+                      {
+                          Transform newObjectivesContainer = UnityEngine.Object.Instantiate(__instance.PrimaryObjectivesContainer.transform, __instance.ObjectivesContainer.transform);
+                          TestRun = true;
+                      }*/
+
+                    /*  foreach(Transform transform in __instance.ObjectivesHeader.transform.GetChildren()) 
+                      {
+
+                          TFTVLogger.Always($"{transform.name}");
+
+                      }*/
+                    // <Text>().color = red;
+                    // TFTVLogger.Always("got here");
+
+                    string warningMessage = "<color=#FF0000> !!! WARNING !!! A PHOENIX BASE IS UNDER ATTACK</color>";
+                    Text objectivesHeaderText = __instance.ObjectivesHeader.transform.Find("ObjectivesLabel").GetComponent<Text>();
+                    string objectivesRegularHeader = new LocalizedTextBind() { LocalizationKey = "KEY_OBJECTIVES" }.Localize();
+
+
+                    if (PhoenixBasesUnderAttack.Count > 0) 
+                    {      
+                       objectivesHeaderText.text += warningMessage;
+                    }
+                    else 
+                    {
+                        if (__instance.ObjectivesHeader.transform.Find("ObjectivesLabel").GetComponent<Text>().text.Contains(warningMessage)) 
+                        {
+                            objectivesHeaderText.text = objectivesRegularHeader;
+                        
+                        
+                        }
+
+                        
+
+                    }
+
+                    if (objective.GetTitle().Contains("Phoenix base") && objective.GetTitle().Contains("is under attack!"))
+                    {
+                        MethodInfo onElementClickedMethod = __instance.GetType().GetMethod("OnElementClicked", BindingFlags.NonPublic | BindingFlags.Instance);
+                        MethodInfo getObjectiveTooltipMethod = __instance.GetType().GetMethod("GetObjectiveTooltip", BindingFlags.NonPublic | BindingFlags.Instance);
+
+                        if (____level == null)
+                        {
+                            ____level = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
+                        }
+
+                        Color factionColor = brightRed;
+                        
+                        
+                        EventGeoFactionObjective eventGeoFactionObjective = objective as EventGeoFactionObjective;
+                        TimeUnit endTime = TimeUnit.Invalid;
+                        if (eventGeoFactionObjective != null)
+                        {
+                            string timerID = ____level.EventSystem.GetEventByID(eventGeoFactionObjective.EventID).GeoscapeEventData.TimerID;
+                            if (!string.IsNullOrWhiteSpace(timerID))
+                            {
+                                GeoEventTimer timerById = ____level.EventSystem.GetTimerById(timerID);
+                                if (timerById != null)
+                                {
+                                    endTime = timerById.EndAt;
+                                }
+                            }
+                        }
+
+
+                        bool isLocationObjective = objective.GetRelatedActors().Any((GeoActor x) => objective.IsActorFocusableByObjective(x));
+                        LocalizedTextBind objectiveTooltip = (LocalizedTextBind)getObjectiveTooltipMethod.Invoke(__instance, new object[] { objective });
+                        element.SetObjective(objective.GetIcon(), factionColor, objective.GetTitle(), ____rawObjectives.IndexOf(objective), isLocationObjective, true, objectiveTooltip, endTime, ____level.Timing);
+
+                        element.OnElementClicked = (Action<GeoObjectiveElementController>)onElementClickedMethod.Invoke(__instance, new object[] { element });
+
+                     
+
+                        return false;
+
+                    }
+
+                    string localizationKey = objective.Title?.LocalizationKey;
+
+                    if (localizationKey != null && localizationKey.Contains("VOID_OMEN_TITLE_"))
+                    {
+                        MethodInfo onElementClickedMethod = __instance.GetType().GetMethod("OnElementClicked", BindingFlags.NonPublic | BindingFlags.Instance);
+                        MethodInfo getObjectiveTooltipMethod = __instance.GetType().GetMethod("GetObjectiveTooltip", BindingFlags.NonPublic | BindingFlags.Instance);
+
+
+                        if (____level == null)
+                        {
+                            ____level = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
+                        }
+
+                        Color factionColor = purple;
+                        EventGeoFactionObjective eventGeoFactionObjective = objective as EventGeoFactionObjective;
+                        TimeUnit endTime = TimeUnit.Invalid;
+                        if (eventGeoFactionObjective != null)
+                        {
+                            string timerID = ____level.EventSystem.GetEventByID(eventGeoFactionObjective.EventID).GeoscapeEventData.TimerID;
+                            if (!string.IsNullOrWhiteSpace(timerID))
+                            {
+                                GeoEventTimer timerById = ____level.EventSystem.GetTimerById(timerID);
+                                if (timerById != null)
+                                {
+                                    endTime = timerById.EndAt;
+                                }
+                            }
+                        }
+
+
+                        bool isLocationObjective = objective.GetRelatedActors().Any((GeoActor x) => objective.IsActorFocusableByObjective(x));
+                        LocalizedTextBind objectiveTooltip = (LocalizedTextBind)getObjectiveTooltipMethod.Invoke(__instance, new object[] { objective });
+                        element.SetObjective(objective.GetIcon(), factionColor, objective.GetTitle(), ____rawObjectives.IndexOf(objective), isLocationObjective, false, objectiveTooltip, endTime, ____level.Timing);
+
+                        element.OnElementClicked = (Action<GeoObjectiveElementController>)onElementClickedMethod.Invoke(__instance, new object[] { element });
+
+                        //  __instance.ObjectivesHeader.transform.Find("ObjectivesLabel").GetComponent<Text>().color = purple;
+
+                        return false;
+
+
+                    }
+
+                    return true;
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
+
+
+        [HarmonyPatch(typeof(GeoObjectiveElementController), "SetObjective")]
+        internal static class TFTV_GeoObjectiveElementController_SetObjective_ExperimentPatch
+        {
+            public static void Postfix(GeoObjectiveElementController __instance, string objectiveText, int objectiveIndex, ref Color iconColor, ref Color ____color, ref Timing ____levelTiming, ref TimeUnit ____endTime)
+            {
+                try
+                {
+                   
+
+                    GeoLevelController geoLevelController = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
+
+                    foreach (GeoSite geoSite in geoLevelController.PhoenixFaction.Sites)
+                    {
+                        if (objectiveText.Contains(geoSite.LocalizedSiteName))
+                        {
+                            ____levelTiming = GameUtl.CurrentLevel().GetComponent<GeoLevelController>().Timing;
+                            ____endTime = geoSite.ExpiringTimerAt;
+                           
+                        }
+                    }
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
 
         //Patch and methods for demolition PhoenixFacilityConfirmationDialogue
         internal static List<Vector2Int> CheckAdjacency(Vector2Int position)
@@ -281,7 +616,7 @@ namespace TFTV
 
                     if (!geoMission.MissionDef.MissionTags.Contains(pxBaseInfestationTag))
                     {
-
+                 
                         if (!____shown)
                         {
 
@@ -293,27 +628,36 @@ namespace TFTV
 
                             ____shown = true;
 
+                          
 
                             if (geoMission.GetMissionOutcomeState() == TacFactionState.Won)
                             {
                                 __instance.TopBar.Subtitle.text = geoMission.Site.LocalizedSiteName;
                                 __instance.Background.sprite = Helper.CreateSpriteFromImageFile("BG_Intro_1.jpg");
                                 __instance.Rewards.SetReward(geoMission.Reward);
+
+                               
+
                                 if (PhoenixBasesUnderAttack.ContainsKey(geoMission.Site.SiteId))
                                 {
                                     PhoenixBasesUnderAttack.Remove(geoMission.Site.SiteId);
+                                    RemoveBaseDefenseObjective(geoMission.Site.LocalizedSiteName);
                                 }
                                 if (PhoenixBasesInfested.Contains(geoMission.Site.SiteId))
                                 {
+                                  
+
                                     PhoenixBasesInfested.Remove(geoMission.Site.SiteId);
+                                    RemoveBaseDefenseObjective(geoMission.Site.LocalizedSiteName);
+                                    //  geoMission.Level.PhoenixFaction.ActivatePhoenixBase(geoMission.Site, true);
 
-                                  //  geoMission.Level.PhoenixFaction.ActivatePhoenixBase(geoMission.Site, true);
+                                    
 
-                                   FieldInfo basesField = AccessTools.Field(typeof(GeoPhoenixFaction), "_bases");
+                                    FieldInfo basesField = AccessTools.Field(typeof(GeoPhoenixFaction), "_bases");
                                     List<GeoPhoenixBase> bases = (List<GeoPhoenixBase>)basesField.GetValue(geoMission.Level.PhoenixFaction);
                                     bases.Add(geoMission.Site.GetComponent<GeoPhoenixBase>());
                                     geoMission.Site.RefreshVisuals();
-                                    
+                                
 
                                 }
 
@@ -324,11 +668,13 @@ namespace TFTV
                             {
                                 if (!PhoenixBasesInfested.Contains(geoMission.Site.SiteId))
                                 {
+                                    TFTVLogger.Always($"{geoMission.Site.SiteId} should get added to infested bases");
                                     PhoenixBasesInfested.Add(geoMission.Site.SiteId);
                                 }
                                 if (PhoenixBasesUnderAttack.ContainsKey(geoMission.Site.SiteId))
                                 {
                                     PhoenixBasesUnderAttack.Remove(geoMission.Site.SiteId);
+                                    RemoveBaseDefenseObjective(geoMission.Site.LocalizedSiteName);
                                 }
                                 __instance.TopBar.Subtitle.text = geoMission.Site.LocalizedSiteName;
                                 __instance.Background.sprite = Helper.CreateSpriteFromImageFile("base_defense_lost.jpg");
@@ -456,6 +802,26 @@ namespace TFTV
                 phoenixBase.RefreshVisuals();
                 TFTVLogger.Always($"{phoenixBase.LocalizedSiteName} was added to the list of Phoenix bases under attack by {attacker}. " +
                     $"Attack will be completed successfully by {timer}");
+
+
+
+                //For implementing base defense as proper objective:
+                DiplomaticGeoFactionObjective protectBase = new DiplomaticGeoFactionObjective(controller.PhoenixFaction, controller.PhoenixFaction)
+                {
+                    Title = new LocalizedTextBind($"<color=#FF0000>Phoenix base {phoenixBase.LocalizedSiteName} is under attack!</color>", true)
+
+                };
+
+                /*  FieldInfo assignedSitesField = typeof(DiplomaticGeoFactionObjective).GetField("_assignedSites", BindingFlags.Instance | BindingFlags.NonPublic);
+
+                      List<GeoSite> assignedSitesList = (List<GeoSite>)assignedSitesField.GetValue(protectBase);
+                      assignedSitesList.Add(phoenixBase);*/
+
+
+
+                controller.PhoenixFaction.AddObjective(protectBase);
+
+
 
                 // phoenixBase.RefreshVisuals();
             }
@@ -979,7 +1345,7 @@ namespace TFTV
 
                             TFTVLogger.Always("The Phoenix Base has people inside! Mandatory mission");
                         }
-                       
+
                     }
                 }
                 catch (Exception e)

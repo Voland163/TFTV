@@ -2,8 +2,8 @@
 using Base.Core;
 using Base.Defs;
 using Base.Platforms;
+using Epic.OnlineServices.Platform;
 using HarmonyLib;
-using I2.Loc;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Levels.Params;
 using PhoenixPoint.Common.View.ViewControllers;
@@ -12,11 +12,12 @@ using PhoenixPoint.Home.View;
 using PhoenixPoint.Home.View.ViewControllers;
 using PhoenixPoint.Home.View.ViewModules;
 using PhoenixPoint.Home.View.ViewStates;
+using PhoenixPoint.Modding;
 using System;
-using System.CodeDom;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Reflection.Emit;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -82,10 +83,11 @@ namespace TFTV
                     TFTVLogger.Error(e);
                 }
             }
-        }*/
-
+        }
+      */
 
         public static HomeScreenViewContext HomeScreenViewContext = null;
+        public static ModSettingController ModSettingControllerHook = null;
 
         [HarmonyPatch(typeof(HomeScreenView), "InitView")]
         public static class HomeScreenView_InitView_Patch
@@ -95,8 +97,8 @@ namespace TFTV
                 try
                 {
                     HomeScreenViewContext = ____context;
-
-                  //  TFTVLogger.Always($"Testing");
+                    ModSettingControllerHook = __instance.HomeScreenModules.ModManagerModule.SettingsModSettingPrefab;
+                    //  TFTVLogger.Always($"Testing");
 
                 }
                 catch (Exception e)
@@ -107,243 +109,240 @@ namespace TFTV
             }
         }
 
-        /*   public static UIModuleGameSettings gameSettings = null;
+        public static UIModuleGameSettings gameSettings = null;
 
-           [HarmonyPatch(typeof(UIModuleGameSettings), "Awake")]
-           public static class UIModuleGameSettings_Awake_Patch
-           {
-               private static void Postfix(UIModuleGameSettings __instance)
-               {
-                   try
-                   {
-
-                       gameSettings = __instance;
-
-
-                       TFTVLogger.Always("Awake run");
-
-                   }
-                   catch (Exception e)
-                   {
-                       TFTVLogger.Error(e);
-                   }
-               }
-           }*/
-
-        /*  private class OptionEntry
-          {
-              public LocalizedTextBind Text;
-
-              public LocalizedTextBind Description;
-
-              public bool DefaultChecked;
-          }*/
-
-        //   private GeoscapeGameModeDef _gameModeDef;
-
-
-     /*   [HarmonyPatch(typeof(ArrowPickerController), "Init")]
-        internal static class ArrowPickerController_Init_patch
-        {
-            private static void Prefix(ArrowPickerController __instance, int valueRange, int currentValue, Action<int> onValueChanged)
-            {
-                try
-                {
-                    if (__instance == null)
-                    {
-                        TFTVLogger.Always($"Instance null, but valueRange is {valueRange} and currentValue is {currentValue}");
-
-                    }
-                    else
-                    {
-                       
-
-                        TFTVLogger.Always($"{__instance.name} initiated");
-
-                    }
-
-
-
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-
-            }
-        }
-
-
-        [HarmonyPatch(typeof(ArrowPickerController), "SetEnabled")]
-        internal static class ArrowPickerController_SetEnabled_patch
-        {
-            private static void Postfix(ArrowPickerController __instance, bool enabled)
-            {
-                try
-                {
-                    TFTVLogger.Always($"Enabled is {enabled}");
-
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-
-            }
-        }*/
-
-
-
-    /*    private static void OnDropdownValueChanged(int value)
-        {
-
-            // Perform desired actions based on the selected option
-        }
-
-
-
-        [HarmonyPatch(typeof(UIModuleGameSettings), "InitFullContent")]
-        internal static class UIStateNewGeoscapeGameSettings_InitFullContent_patch
+        [HarmonyPatch(typeof(UIModuleGameSettings), "Awake")]
+        public static class UIModuleGameSettings_Awake_Patch
         {
             private static void Postfix(UIModuleGameSettings __instance)
             {
                 try
                 {
 
+                    gameSettings = __instance;
 
 
-                    RectTransform rectTransform = __instance.GameAddiotionalContentGroup.GetComponentInChildren<RectTransform>();
-                    GameObject parentGameObject = rectTransform.gameObject;
-
-                    TFTVLogger.Always($"{parentGameObject.layer}");
-
-
-                    __instance.GameAddiotionalContentGroup.GetComponentInChildren<RectTransform>();
-
-
-                    //RectTransform dlcButton1 = (RectTransform)rectTransform.GetChildren().Where(rt => rt.name.Equals("DLC_Button")).FirstOrDefault();
-
-
-
-                    //  dlcButton1.DetachChildren();
-
-                    GameObject gameObject = new GameObject("ObjectForArrowPicker");
-                   // gameObject.AddComponent<Renderer>().enabled = true;
-
-                    RectTransform gameObjectRectTransform = gameObject.AddComponent<RectTransform>();
-                    ArrowPickerController arrowPicker = gameObject.AddComponent<ArrowPickerController>();
-                    arrowPicker.gameObject.SetActive(true);
-                    arrowPicker.transform.SetParent(gameObjectRectTransform, false);
-
-                    GameObject previousArrowObject = new GameObject("PreviousArrow");
-                    GameObject nextArrowObject = new GameObject("NextArrow");
-                    GameObject centralButtonObject = new GameObject("CentralButton");
-                    GameObject textObject = new GameObject("TextBox");
-                    GameObject localizeObject = new GameObject("Localize");
-
-                    Text textBox = textObject.AddComponent<Text>();
-                    Localize localizeThingy = localizeObject.AddComponent<Localize>();
-
-
-                    // Add necessary components to the button objects (e.g., Image, Button, etc.)
-                    Image previousArrowImage = previousArrowObject.AddComponent<Image>();
-                    PhoenixGeneralButton previousArrowButton = previousArrowObject.AddComponent<PhoenixGeneralButton>();
-                    Image nextArrowImage = nextArrowObject.AddComponent<Image>();
-                    PhoenixGeneralButton nextArrowButton = nextArrowObject.AddComponent<PhoenixGeneralButton>();
-
-                    Image centralButtonImage = centralButtonObject.AddComponent<Image>();
-                    PhoenixGeneralButton centralButton = centralButtonObject.AddComponent<PhoenixGeneralButton>();
-
-                    // Set the references in the arrowPicker
-                    arrowPicker.PreviousArrow = previousArrowButton;
-                    arrowPicker.NextArrow = nextArrowButton;
-                    arrowPicker.CentralButton = centralButton;
-                    arrowPicker.CurrentItem = localizeThingy;
-                    arrowPicker.CurrentItemText = textBox;
-
-                    // Activate the button objects
-                    previousArrowButton.gameObject.SetActive(true);
-                    nextArrowButton.gameObject.SetActive(true);
-                    centralButton.gameObject.SetActive(true);
-                    textBox.gameObject.SetActive(true);
-                    localizeThingy.gameObject.SetActive(true);
-
-                    previousArrowObject.transform.SetParent(gameObjectRectTransform, false);
-                    previousArrowButton.transform.Translate(-200, 0, 0);
-                    nextArrowObject.transform.SetParent(gameObjectRectTransform, false);
-                    nextArrowButton.transform.Translate(200, 0, 0);
-                    centralButtonObject.transform.SetParent(gameObjectRectTransform, false);
-                    textBox.transform.SetParent(gameObjectRectTransform, false);
-                    localizeThingy.transform.SetParent(gameObjectRectTransform, false);
-
-                   
-
-                    int valueRange = 10; // Example value range
-                    int currentValue = 0; // Example current value
-                    System.Action<int> onValueChanged = (index) =>
-                    {
-                        Debug.Log($"New value is {index}");
-                    };
-
-
-                    arrowPicker.Init(valueRange, currentValue, onValueChanged);
-
-                    // Set the parent transform of the UI elements
-                    gameObjectRectTransform.transform.SetParent(rectTransform, false);
-
-                    gameObjectRectTransform.anchorMin = new Vector2(0, 0); // Adjust as needed
-                    gameObjectRectTransform.anchorMax = new Vector2(1, 1); // Adjust as needed
-                    gameObjectRectTransform.pivot = new Vector2(0.5f, 0.5f); // Adjust as needed
-                    gameObjectRectTransform.anchoredPosition = new Vector2(0, 0); // Adjust as needed
-                    gameObjectRectTransform.sizeDelta = new Vector2(1000, 500);
-
-                    rectTransform.gameObject.SetChildrenVisibility(true);
-
-                   
-
-                    foreach (Component component in arrowPicker.GetComponentsInChildren<Transform>()) 
-                    {
-                        TFTVLogger.Always($"{component.name} {component?.gameObject?.layer}");
-                        component.gameObject.SetActive(true);
-                        
-
-                    }
-
-                    
-
-                    
-
-                    Renderer[] componentsInChildren = arrowPicker.GetComponentsInChildren<Renderer>(includeInactive: true);
-                    for (int i = 0; i < componentsInChildren.Length; i++)
-                    {
-                        componentsInChildren[i].enabled = true;
-                    }
-
-
-                    TFTVLogger.Always($"RectTransform {rectTransform?.name}. it has {rectTransform.childCount} children");
-
-                    foreach (RectTransform rTransform in rectTransform.GetComponentsInChildren<RectTransform>().ToList())
-                    {
-
-                        TFTVLogger.Always($"Found {rTransform.name}. It has {rTransform.childCount} children. size x {rTransform.rect.size.x} size y {rTransform.rect.size.y}. Layer is {rTransform.gameObject.layer}");
-                        //   rTransform.DetachChildren();
-
-                    }
-
+                    TFTVLogger.Always("Awake run");
 
                 }
                 catch (Exception e)
                 {
                     TFTVLogger.Error(e);
                 }
+            }
+        }
 
+/*
+        [HarmonyPatch(typeof(UIModuleGameSettings), "InitFullContent")]
+        internal static class UIStateNewGeoscapeGameSettings_InitFullContent_patch
+        {
+
+            private static ArrowPickerController _startingFaction = null;
+            private static ArrowPickerController _startingBase = null;
+            private static ArrowPickerController _startingSquad = null;
+            private static ArrowPickerController _startingScavSites = null;
+            private static ArrowPickerController _resCratePriority = null;
+            private static ArrowPickerController _recruitsPriority = null;
+            private static ArrowPickerController _vehiclePriority = null;
+
+            private static string _titleResCratePriority = "RESOURCE CRATE PRIORITY";
+            private static string _titleRecruitsPriority = "RECRUITS PRIORITY";
+            private static string _titleVehiclePriority = "VEHICLE PRIORITY";
+            private static string _descriptionScavPriority = "In Vanilla and default TFTV, resource crate scavenging sites are much more likely to spawn than either vehicle or personnel rescues. " +
+                "You can modify the relative chances of each type of scavenging site being generated. Choose none to have 0 scavenging sites of this type (for reference, high/medium/low ratio is 6/4/1)";
+            private static string [] _optionsResCratePriority = {"HIGH", "MEDIUM", "LOW", "NONE"};
+            private static string[] _optionsRecruitsPriority = { "HIGH", "MEDIUM", "LOW", "NONE" };
+            private static string[] _optionsVehiclePriority = { "HIGH", "MEDIUM", "LOW", "NONE" };
+
+            private static string _titleScavSites = "SCAVENGING SITES #";
+            private static string _descriptionScavSites = "Total number of scavenging sites generated on game start, not counting overgrown sites. (Vanilla: 16, TFTV default 8, because Ambushes generate additional resources).";
+            private static string [] _optionsScavSites = {"0","1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","31","32"} ;
+
+
+            private static string _titleStartingFaction = "FACTION BACKGROUND";
+            private static string _descriptionStartingFaction = "You can choose a different faction background. " +
+                        "If you do, one of your Assaults and your starting Heavy on Legend and Hero," +
+                        "Assault on Veteran, or Sniper on Rookie will be replaced by an operative of the elite class of the Faction of your choice. " +
+                        "You will also get the corresponding faction technology once the faction researches it.";
+            private static string[] _optionsStartingFaction = { "PHOENIX PROJECT", "DISCIPLES OF ANU", "NEW JERICHO", "SYNEDRION" };
+
+            private static string _titleStartingBase = "STARTING BASE LOCATION";
+            private static string _descriptionStartingBase = "Select your starting base. You can choose a specific location to start from. Please note that some locations are harder to start from than others!";
+            private static string[] _optionsStartingBase = {"Vanilla Random (remote bases excluded)",
+                  "Random (ALL bases included)",
+                  "Antarctica",
+                  "Asia (China)",
+                  "Australia",
+                  "Central America (Honduras)",
+                  "Central America (Mexico)",
+                  "East Africa (Ethiopia)",
+                  "Eastern Europe (Ukraine)",
+                  "Greenland",
+                  "Middle East (Afghanistan)",
+                  "North Africa (Algeria)",
+                  "North America (Alaska)",
+                  "North America (Quebec)",
+                  "Northern Asia (Siberia)",
+                  "South Africa (Zimbabwe)",
+                  "South America (Bolivia)",
+                  "South America (Tierra de Fuego)",
+                  "Southeast Asia (Cambodia)",
+                  "West Africa (Ghana)" };
+
+            private static string _titleStartingSquad = "STARTING SQUAD";
+            private static string _descriptionStartingSquad = "You can choose to get a completely random squad (as in Vanilla without doing the tutorial), " +
+              "the Vanilla tutorial starting squad (with higher stats), " +
+              "or a squad that will include Sophia Brown and Jacob with unbuffed stats (default on TFTV). " +
+              "Note that Jacob is a sniper, as in the title screen :)";
+            private static string[] _optionsStartingSquad = { "UNBUFFED", "BUFFED", "RANDOM" };
+
+            private static void InstantiateArrowPickerController(ModSettingController modSettingController, 
+                ArrowPickerController arrowPickerController, string title, string description, string[] options, int currentValue, Action<int> onValueChanged)
+            {
+                try 
+                {
+                    Resolution resolution = Screen.currentResolution;
+                    float resolutionFactorWidth = (float)resolution.width / 1920f;
+                    float resolutionFactorHeight = (float)resolution.height / 1080f;
+
+                    modSettingController.Label.text = title;
+                    modSettingController.transform.localScale *= 0.75f;
+                    arrowPickerController.transform.position += new Vector3(270 * resolutionFactorWidth, 0, 0);
+
+                    modSettingController.Label.rectTransform.Translate(new Vector3(-270 * resolutionFactorWidth, 0, 0), arrowPickerController.transform);
+                    modSettingController.Label.alignment = TextAnchor.MiddleLeft;
+                    UnityEngine.Object.Destroy(modSettingController.GetComponentInChildren<UITooltipText>());
+
+                    UITooltipText uITooltipText = modSettingController.Label.gameObject.AddComponent<UITooltipText>();
+                 
+                    uITooltipText.TipText = description;
+ 
+                    arrowPickerController.Init(options.Length, currentValue, onValueChanged);
+                   
+                    arrowPickerController.SetEnabled(true);
+                  
+                    arrowPickerController.CurrentItemText.text = options[currentValue];
+       
+                    PopulateOptions(arrowPickerController, options);
+            
+                }
+
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+
+
+
+
+            private static void Postfix(UIModuleGameSettings __instance)
+            {
+                try
+                {
+                  
+                    RectTransform rectTransform = __instance.GameAddiotionalContentGroup.GetComponentInChildren<RectTransform>();
+                    rectTransform.DestroyChildren();
+
+                   // __instance.DlcTitleRoot.GetComponent<Text>().text = "testing";
+
+                    ModSettingController startingFactionController = UnityEngine.Object.Instantiate(ModSettingControllerHook, rectTransform);
+                    ModSettingController startingBaseController = UnityEngine.Object.Instantiate(startingFactionController, rectTransform);
+                    ModSettingController startingSquadController = UnityEngine.Object.Instantiate(startingBaseController, rectTransform);
+                    ModSettingController startingScavSitesController = UnityEngine.Object.Instantiate(startingSquadController, rectTransform);
+                    ModSettingController crateScavSitesController = UnityEngine.Object.Instantiate(startingScavSitesController, rectTransform);
+                    ModSettingController recruitScavSitesController = UnityEngine.Object.Instantiate(ModSettingControllerHook, rectTransform);
+                    ModSettingController vehicleScavSitesController = UnityEngine.Object.Instantiate(ModSettingControllerHook, rectTransform);
+
+                    _startingFaction = startingFactionController.ListField;
+                    _startingBase = startingBaseController.ListField;
+                    _startingSquad = startingSquadController.ListField;
+                    _startingScavSites = startingScavSitesController.ListField;
+                    _resCratePriority = crateScavSitesController.ListField;
+                    _recruitsPriority = recruitScavSitesController.ListField;
+                    _vehiclePriority = vehicleScavSitesController.ListField;
+
+                    InstantiateArrowPickerController(startingFactionController, _startingFaction, _titleStartingFaction, _descriptionStartingFaction, _optionsStartingFaction, 0, OnStartingFactionValueChangedCallback);
+                    InstantiateArrowPickerController(startingBaseController, _startingBase, _titleStartingBase, _descriptionStartingBase, _optionsStartingBase, 0, OnStartingBaseValueChangedCallback);
+                    InstantiateArrowPickerController(startingSquadController, _startingSquad, _titleStartingSquad, _descriptionStartingSquad, _optionsStartingSquad, 0, OnStartingSquadValueChangedCallback);
+                    InstantiateArrowPickerController(startingScavSitesController, _startingScavSites, _titleScavSites, _descriptionScavSites, _optionsScavSites, 8, OnStartingScavSitesValueChangedCallback);
+                    InstantiateArrowPickerController(crateScavSitesController, _resCratePriority, _titleResCratePriority, _descriptionScavPriority, _optionsResCratePriority, 0, OnResScavPriorityValueChangedCallback);
+                    InstantiateArrowPickerController(recruitScavSitesController, _recruitsPriority, _titleRecruitsPriority, _descriptionScavPriority, _optionsRecruitsPriority, 2, OnRecruitsPriorityValueChangedCallback);
+                    InstantiateArrowPickerController(vehicleScavSitesController, _vehiclePriority, _titleVehiclePriority, _descriptionScavPriority, _optionsVehiclePriority, 2, OnVehiclePriorityValueChangedCallback);
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+
+            private static void OnStartingFactionValueChangedCallback(int newValue)
+            {        
+
+                _startingFaction.CurrentItemText.text = _optionsStartingFaction[newValue];
+            }
+
+            private static void OnStartingSquadValueChangedCallback(int newValue)
+            {
+            
+                _startingSquad.CurrentItemText.text = _optionsStartingSquad[newValue];
+            }
+
+            private static void OnStartingBaseValueChangedCallback(int newValue)
+            {
+                _startingBase.CurrentItemText.text = _optionsStartingBase[newValue];
+            }
+
+            private static void OnStartingScavSitesValueChangedCallback(int newValue)
+            {
+
+                _startingScavSites.CurrentItemText.text = _optionsScavSites[newValue];
+            }
+
+            private static void OnResScavPriorityValueChangedCallback(int newValue)
+            {
+                string[] options = { "HIGH", "MEDIUM", "LOW", "NONE"};
+                _resCratePriority.CurrentItemText.text = options[newValue];
+            }
+
+            private static void OnRecruitsPriorityValueChangedCallback(int newValue)
+            {
+                string[] options = { "HIGH", "MEDIUM", "LOW", "NONE" };
+                _recruitsPriority.CurrentItemText.text = options[newValue];
+            }
+
+            private static void OnVehiclePriorityValueChangedCallback(int newValue)
+            {
+                string[] options = { "HIGH", "MEDIUM", "LOW", "NONE" };
+                _vehiclePriority.CurrentItemText.text = options[newValue];
+            }
+
+
+            private static void PopulateOptions(ArrowPickerController arrowPickerController, string[] options)
+            {
+                for (int i = 0; i < options.Length; i++)
+                {
+                   
+                    arrowPickerController.CurrentItemText.text = options[i];
+
+                    MethodInfo OnNewValue = arrowPickerController.GetType().GetMethod("OnNewValue", BindingFlags.NonPublic | BindingFlags.Instance);
+                  
+                    OnNewValue.Invoke(arrowPickerController, null);
+                }
             }
         }
 
 
+
+        */
+
+
+
         public static bool EnterStateRun = false;
 
-        [HarmonyPatch(typeof(UIStateNewGeoscapeGameSettings), "EnterState")]
+    /*    [HarmonyPatch(typeof(UIStateNewGeoscapeGameSettings), "EnterState")]
         public static class UIStateNewGeoscapeGameSettings_EnterState_Patch
         {
             private static void Prefix(UIStateNewGeoscapeGameSettings __instance)

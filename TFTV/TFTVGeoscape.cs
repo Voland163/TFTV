@@ -33,7 +33,7 @@ namespace TFTV
         //   public bool[] VoidOmensCheck = TFTVVoidOmens.VoidOmensCheck;
         public bool GlobalLOTAReworkCheck = TFTVBetaSaveGamesFixes.LOTAReworkGlobalCheck;
         public Dictionary<int, Dictionary<string, double>> PhoenixBasesUnderAttack = TFTVBaseDefenseGeoscape.PhoenixBasesUnderAttack;
-        public List<int> InfestedPhoenixBases = TFTVBaseDefenseGeoscape.PhoenixBasesInfested;
+        public List<int> InfestedPhoenixBases = new List<int> ();
         public int SpawnedScyllas = TFTVPandoranProgress.ScyllaCount;
         public Dictionary<int, Dictionary<string, List<string>>> CharacterLoadouts;
         //  public Dictionary<int, List<string>> HiddenInventories; //TFTVUI.CurrentlyHiddenInv;
@@ -63,7 +63,7 @@ namespace TFTV
             GeoLevelController gsController = Controller;
             /// ModMain is accesible at any time
             DefCache.GetDef<TacticalTargetingDataDef>("E_TargetingData [PsychicWard_AbilityDef]").Origin.Range = 10; //Fix Dtony thing
-                                                                                                                     // TFTVBetaSaveGamesFixes.SpecialFixForTesting(gsController);
+            TFTVBetaSaveGamesFixes.FixInfestedBase(gsController);
             TFTVBetaSaveGamesFixes.CheckSaveGameEventChoices(gsController);
             TFTVBetaSaveGamesFixes.CheckUmbraResearchVariable(gsController);
             TFTVCommonMethods.CheckGeoUIfunctionality(gsController);
@@ -118,8 +118,16 @@ namespace TFTV
         public override object RecordGeoscapeInstanceData()
         {
             TFTVLogger.Always("Geoscape data will be saved");
-          //  TFTVLogger.Always($"Items currently available in Aircraft inventory {TFTVUI.CurrentlyAvailableInv.Values.Count}");
-          //  TFTVLogger.Always($"Items currently hidden in Aircraft inventory {TFTVUI.CurrentlyHiddenInv.Values.Count}");
+
+          /*  foreach (int i in TFTVBaseDefenseGeoscape.PhoenixBasesInfested)
+            {
+                TFTVLogger.Always($"On RecordInstance: infested base in temporary variable is {i}");
+
+            }*/
+
+
+            //  TFTVLogger.Always($"Items currently available in Aircraft inventory {TFTVUI.CurrentlyAvailableInv.Values.Count}");
+            //  TFTVLogger.Always($"Items currently hidden in Aircraft inventory {TFTVUI.CurrentlyHiddenInv.Values.Count}");
             TFTVRevenant.UpdateRevenantTimer(Controller);
             return new TFTVGSInstanceData()
             {
@@ -160,11 +168,21 @@ namespace TFTV
         {
 
             DateTime myDate = new DateTime(1, 1, 1);
+
             TFTVLogger.Always("Geoscape data will be processed");
            
-            TFTVCommonMethods.ClearInternalVariables();
+           
             TFTVGSInstanceData data = (TFTVGSInstanceData)instanceData;
-           // TFTVLogger.Always($"Items currently available in Aircraft inventory {data.AvailableInventories.Values.Count}");
+          //  TFTVLogger.Always($"currently infested bases {data.InfestedPhoenixBases.Count}");
+            TFTVCommonMethods.ClearInternalVariables();
+          //  TFTVLogger.Always($"currently infested bases {data.InfestedPhoenixBases.Count}");
+
+            foreach(int i in data.InfestedPhoenixBases) 
+            {
+                TFTVLogger.Always($"infested base is {i}");
+            
+            }
+
            // TFTVLogger.Always($"Items currently hidden in Aircraft inventory {data.HiddenInventories.Values.Count}");
           //  TFTVUI.CurrentlyAvailableInv = data.AvailableInventories;
           //  TFTVUI.CurrentlyHiddenInv = data.HiddenInventories;
@@ -207,7 +225,7 @@ namespace TFTV
             Main.Logger.LogInfo("Project Osiris stats count " + TFTVRevenantResearch.ProjectOsirisStats.Count);
             Main.Logger.LogInfo("LOTAGlobalReworkCheck is " + TFTVBetaSaveGamesFixes.LOTAReworkGlobalCheck);
             Main.Logger.LogInfo($"Bases under attack count {TFTVBaseDefenseGeoscape.PhoenixBasesUnderAttack.Count}");
-            Main.Logger.LogInfo($"Infested Phoenix bases {TFTVBaseDefenseGeoscape.PhoenixBasesInfested}");
+            Main.Logger.LogInfo($"Infested Phoenix bases {TFTVBaseDefenseGeoscape.PhoenixBasesInfested.Count}");
 
             Main.Logger.LogInfo($"Scylla count {TFTVPandoranProgress.ScyllaCount}");
             Main.Logger.LogInfo($"infested haven population save data {TFTVInfestationStory.HavenPopulation}");
@@ -227,9 +245,24 @@ namespace TFTV
             TFTVLogger.Always("Project Osiris stats count " + TFTVRevenantResearch.ProjectOsirisStats.Count);
             TFTVLogger.Always("LOTAGlobalReworkCheck is " + TFTVBetaSaveGamesFixes.LOTAReworkGlobalCheck);
             TFTVLogger.Always($"Bases under attack count {TFTVBaseDefenseGeoscape.PhoenixBasesUnderAttack.Count}");
+            TFTVLogger.Always($"Infested Phoenix bases {TFTVBaseDefenseGeoscape.PhoenixBasesInfested.Count}");
             TFTVLogger.Always($"Scylla count {TFTVPandoranProgress.ScyllaCount}");
-          //  TFTVLogger.Always($"Items currently available in Aircraft inventory {TFTVUI.CurrentlyAvailableInv.Values.Count}");
-          //  TFTVLogger.Always($"Items currently hidden in Aircraft inventory {TFTVUI.CurrentlyAvailableInv.Values.Count}");
+
+            foreach (int i in data.InfestedPhoenixBases)
+            {
+                TFTVLogger.Always($"infested base in save data is {i}");
+
+            }
+
+            foreach (int i in TFTVBaseDefenseGeoscape.PhoenixBasesInfested)
+            {
+                TFTVLogger.Always($"infested base in temporary variable is {i}");
+
+            }
+
+
+            //  TFTVLogger.Always($"Items currently available in Aircraft inventory {TFTVUI.CurrentlyAvailableInv.Values.Count}");
+            //  TFTVLogger.Always($"Items currently hidden in Aircraft inventory {TFTVUI.CurrentlyAvailableInv.Values.Count}");
         }
 
 

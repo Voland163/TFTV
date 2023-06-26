@@ -353,7 +353,7 @@ NJ_REALLY_PISSED_MUTATIONS_CHOICE_0_OUTCOME,Text,,"Director, something happened 
 VOID_OMEN_TITLE_1,Text,,"Ambushes more dangerous and more likely, but have more crates",,"Les embuscades sont plus dangereuses et plus fréquentes, mais il y a plus de caisses de stockage.",,,,,,
 VOID_OMEN_TITLE_2,Text,,All diplomatic penalties and rewards halved,,Toutes les pénalités et récompenses diplomatiques sont réduites de moitié,,,,,,
 VOID_OMEN_TITLE_3,Text,,"All abilities cost +50% WP, but Delirium has no effect on WP",,"Toutes les capacités coûtent +50% de Points de Volonté, mais le délire n'a aucun effet sur les Points de Volonté.",,,,,,
-VOID_OMEN_TITLE_4,Text,,"Max 6 operatives can be deployed on any mission, but +100% experience ",,"6 agents maximum peuvent être déployés sur n'importe quelle mission, mais +100% d'expérience. ",,,,,,
+VOID_OMEN_TITLE_4,Text,,"Max operatives that can be deployed reduced by 2, but +100% experience ",,"6 agents maximum peuvent être déployés sur n'importe quelle mission, mais +100% d'expérience. ",,,,,,
 VOID_OMEN_TITLE_5,Text,,"Haven defenders always hostile, but crates available for looting ",,"Les défenseurs des refuges sont toujours hostiles, mais des caisses sont disponibles pour le pillage. ",,,,,,
 VOID_OMEN_TITLE_6,Text,,"Pandorans evolve as they lose missions and colonies, but Phoenix research output increased by 50%",,Les pandoriens évoluent au fur et à mesure qu'ils perdent des missions et des colonies.,,,,,,
 VOID_OMEN_TITLE_7,Text,,"More Mist in missions, can deploy one more operative on standard missions",,Plus de brume dans les missions,,,,,,
@@ -1103,3 +1103,4 @@ TFTV_DIFFICULTY_ETERMES_DESCRIPTION,Text,,The pain! The horror! Open the floodga
 ALN_ELITERANGER_RESEARCHDEF_NAME,Text,,ARTHRON SKIRMISHER CHAMPION,,,,,,,,
 ALN_ELITERANGER2_RESEARCHDEF_NAME,Text,,ARTHRON SKIRMISHER CHAMPION,,,,,,,,
 ALN_ELITERANGER3_RESEARCHDEF_NAME,Text,,ARTHRON SKIRMISHER CHAMPION,,,,,,,,
+Opening Screen/KEY_DLC_ACTIVATE,Text,,ADDITIONAL OPTIONS ON NEW GAME START,,,,,,,,

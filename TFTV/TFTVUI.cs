@@ -1461,7 +1461,7 @@ namespace TFTV
 
                     if (____parentModule.CurrentUnit != null)
                     {
-                        TFTVLogger.Always("Actually here");
+                     //   TFTVLogger.Always("Actually here");
 
                         switch (____parentModule.CurrentState)
                         {
@@ -1480,7 +1480,7 @@ namespace TFTV
 
                             case UIModuleActorCycle.ActorCycleState.EditSoldierSection:
 
-                                TFTVLogger.Always("And even here!");
+                             //   TFTVLogger.Always("And even here!");
                                 //  HelmetToggle.gameObject.SetActive(true);
                               //  HelmetToggle.ResetButtonAnimations();
                                 UnequipAll.gameObject.SetActive(true);
@@ -2174,7 +2174,7 @@ namespace TFTV
             {
                 try
                 {
-                    TFTVLogger.Always($"checking");
+                   // TFTVLogger.Always($"checking");
 
                     PhoenixGeneralButton helmetToggleButton = UnityEngine.Object.Instantiate(__instance.EditButton, __instance.transform);
                     helmetToggleButton.gameObject.AddComponent<UITooltipText>().TipText = "Toggles helmet visibility on/off.";
@@ -2389,6 +2389,7 @@ namespace TFTV
                     foreach (GeoItem armourPiece in character.ArmourItems.Where(a => !a.ItemDef.Tags.Contains(Shared.SharedGameTags.AnuMutationTag)).
                             Where(a => !a.ItemDef.Tags.Contains(Shared.SharedGameTags.BionicalTag)))
                     {
+
                         characterItems[armourItems].Add(armourPiece.ItemDef.Guid);
 
                     }
@@ -2414,6 +2415,7 @@ namespace TFTV
                     }
                     else
                     {
+                        CharacterLoadouts[character.Id].Clear();
                         CharacterLoadouts[character.Id].AddRange(characterItems);
                     }
 

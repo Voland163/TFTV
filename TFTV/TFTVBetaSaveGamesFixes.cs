@@ -1,8 +1,15 @@
-﻿using PhoenixPoint.Common.ContextHelp;
+﻿using HarmonyLib;
+using PhoenixPoint.Common.ContextHelp;
 using PhoenixPoint.Common.Entities.Items;
+using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.Research;
+using PhoenixPoint.Geoscape.Entities.Sites;
 using PhoenixPoint.Geoscape.Levels;
+using PhoenixPoint.Geoscape.Levels.Factions;
 using System;
+using System.Collections.Generic;
+using System.Reflection;
+
 
 
 namespace TFTV
@@ -25,10 +32,42 @@ namespace TFTV
             {
                 TFTVLogger.Error(e);
             }
-
-
         }
 
+        public static void FixInfestedBase(GeoLevelController controller)
+        {
+            try
+            {
+                FieldInfo basesField = AccessTools.Field(typeof(GeoPhoenixFaction), "_bases");
+                List<GeoPhoenixBase> bases = (List<GeoPhoenixBase>)basesField.GetValue(controller.PhoenixFaction);
+
+                foreach (GeoSite geoSite in controller.Map.AllSites) 
+                
+                { 
+                if(geoSite.GetComponent<GeoPhoenixBase>()!=null && geoSite.Owner == controller.PhoenixFaction && !bases.Contains(geoSite.GetComponent<GeoPhoenixBase>())) 
+                    {
+
+                        TFTVLogger.Always($"found base {geoSite.LocalizedSiteName} under Phoenix control but not in _bases list");
+                     bases.Add(geoSite.GetComponent<GeoPhoenixBase>());
+                        geoSite.RefreshVisuals();
+                    
+                    }
+                
+                
+                }
+
+             
+               
+
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+        
 
         //not yet deprecated, zig zag zog still playing with old LOTA
         public static void CheckNewLOTA(GeoLevelController controller)

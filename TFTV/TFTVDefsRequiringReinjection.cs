@@ -1,13 +1,18 @@
-﻿using Base.Defs;
+﻿using Base;
+using Base.AI.Defs;
+using Base.Defs;
 using Base.Entities.Effects;
 using Base.Entities.Effects.ApplicationConditions;
 using Base.Entities.Statuses;
+using Base.Levels;
 using Base.UI;
 using PhoenixPoint.Common.ContextHelp;
 using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.Items;
 using PhoenixPoint.Common.UI;
+using PhoenixPoint.Tactical.AI.Actions;
+using PhoenixPoint.Tactical.AI.Considerations;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.Animations;
@@ -40,12 +45,132 @@ namespace TFTV
                 CreateRevenantDefs();
                 CreateHumanEnemiesDefs();
                 CreateUmbraDefs();
+                CreateNewFleeConsiderationForAI();
             }
             catch (Exception e)
             {
                 TFTVLogger.Error(e);
             }
         }
+
+
+        internal static void CreateNewFleeConsiderationForAI()
+        {
+            try
+            {
+
+              /*  MultiStatusDef sourceMultiStatus = DefCache.GetDef<MultiStatusDef>("CanBeRecruited_FactionBundledStatus_StatusDef");
+                string nameMultiStatus = "MultiStatusNotFlee";
+                string gUIDMultiStatus = "{0D63DFAF-96F7-4057-990A-096E701A82D7}";
+                MultiStatusDef newMultiStatus = Helper.CreateDefFromClone(sourceMultiStatus, gUIDMultiStatus, nameMultiStatus);*/
+
+                StatusDef onAttackTBTV = DefCache.GetDef<StatusDef>("TBTV_OnAttack_StatusDef");
+                StatusDef onTurnEndTBTV = DefCache.GetDef<StatusDef>("TBTV_OnTurnEnd_StatusDef");
+
+                DamageMultiplierStatusDef RoboticSelfRepairStatus = DefCache.GetDef<DamageMultiplierStatusDef>("RoboticSelfRepair_AddAbilityStatusDef");
+            
+                StatusDef oilCrabStatusDef = DefCache.GetDef<StatusDef>("OilCrab_AddAbilityStatusDef");
+                StatusDef oilFishStatusDef = DefCache.GetDef<StatusDef>("OilFish_AddAbilityStatusDef");
+
+              //  newMultiStatus.Statuses = new StatusDef[] {RoboticSelfRepairStatus};
+
+             //   TFTVLogger.Always($"{newMultiStatus.Statuses[2].name}");
+
+                AIStatusConsiderationDef sourceStatusConsideration = DefCache.GetDef<AIStatusConsiderationDef>("NoCanBeRecruitedStatus_AIConsiderationDef");
+
+                string nameAIStatusConsiderationSelfRepair = "AIConsiderationNoFleeSelfRepair";
+                string gUIDAIStatusConsiderationSelfRepair = "{3892ECC8-EDE9-4A31-8C32-8F094EED9170}";
+              
+                AIStatusConsiderationDef newAIStatusConsiderationSelfRepair = Helper.CreateDefFromClone(sourceStatusConsideration, gUIDAIStatusConsiderationSelfRepair, nameAIStatusConsiderationSelfRepair);
+
+                newAIStatusConsiderationSelfRepair.StatusDef = RoboticSelfRepairStatus;
+
+                string nameAIStatusConsiderationTBTV_OnTurnEnd = "AIConsiderationNoFleeTBTV";
+                string gUIDAIStatusConsiderationTBTV_OnTurnEnd = "{CD765A6A-C2DA-4EE8-B109-D5C01AB59B32}";
+
+                AIStatusConsiderationDef newAIStatusConsiderationTBTV = Helper.CreateDefFromClone(sourceStatusConsideration, gUIDAIStatusConsiderationTBTV_OnTurnEnd, nameAIStatusConsiderationTBTV_OnTurnEnd);
+
+                newAIStatusConsiderationTBTV.StatusDef = onTurnEndTBTV;
+
+                string nameAIStatusConsiderationTBTV_OnAttack = "AIConsiderationNoFleeOnAttack";
+                string gUIDAIStatusConsiderationTBTV_OnAttack = "{908A99C2-AC90-4BC6-A812-9DC3953DAE00}";
+
+                AIStatusConsiderationDef newAIStatusConsiderationTBTVOnAttack = Helper.CreateDefFromClone(sourceStatusConsideration, gUIDAIStatusConsiderationTBTV_OnAttack, nameAIStatusConsiderationTBTV_OnAttack);
+
+                newAIStatusConsiderationTBTVOnAttack.StatusDef = onAttackTBTV;
+
+
+                string nameAIStatusConsiderationOilCrab = "AIConsiderationNoFleeOilCrab";
+                string gUIDAIStatusConsiderationOilCrab = "{7CE39E7C-C691-4CC1-93EA-EB36EEAF1985}";
+
+                AIStatusConsiderationDef newAIStatusConsiderationOilCrab = Helper.CreateDefFromClone(sourceStatusConsideration, gUIDAIStatusConsiderationOilCrab, nameAIStatusConsiderationOilCrab);
+
+                newAIStatusConsiderationOilCrab.StatusDef = oilCrabStatusDef;
+
+
+                string nameAIStatusConsiderationOilFish = "AIConsiderationNoFleeOilFish";
+                string gUIDAIStatusConsiderationOilFish = "{9DA59FA0-646F-4C38-952E-2CA530F9B158}";
+
+                AIStatusConsiderationDef newAIStatusConsiderationOilFish = Helper.CreateDefFromClone(sourceStatusConsideration, gUIDAIStatusConsiderationOilFish, nameAIStatusConsiderationOilFish);
+
+                newAIStatusConsiderationOilFish.StatusDef = oilFishStatusDef;
+
+
+
+                //first early exit consideration uses NoCanBeRecruitedStatus_AIConsiderationDef
+                AIActionMoveToPositionDef moveToRandomWP = DefCache.GetDef<AIActionMoveToPositionDef>("MoveToRandomWaypoint_AIActionDef");
+
+                AIActionMoveAndEscapeDef fleeHumanoidsAIAction = DefCache.GetDef<AIActionMoveAndEscapeDef>("Flee_AIActionDef");
+                AIActionMoveAndEscapeDef fleeCrabmenAIAction = DefCache.GetDef<AIActionMoveAndEscapeDef>("Crabman_Flee_AIActionDef");
+                AIActionMoveAndEscapeDef fleeFishmenAIAction = DefCache.GetDef<AIActionMoveAndEscapeDef>("Fishman_Flee_AIActionDef");
+
+                AIAdjustedConsideration aIAdjustedConsiderationSelfRepair = new AIAdjustedConsideration() { Consideration = newAIStatusConsiderationSelfRepair, ScoreCurve = moveToRandomWP.EarlyExitConsiderations[0].ScoreCurve };
+                AIAdjustedConsideration aIAdjustedConsiderationTBTV = new AIAdjustedConsideration() { Consideration = newAIStatusConsiderationTBTV, ScoreCurve = moveToRandomWP.EarlyExitConsiderations[0].ScoreCurve };
+                AIAdjustedConsideration aIAdjustedConsiderationTBTVonAttack = new AIAdjustedConsideration() { Consideration = newAIStatusConsiderationTBTVOnAttack, ScoreCurve = moveToRandomWP.EarlyExitConsiderations[0].ScoreCurve };
+                AIAdjustedConsideration aIAdjustedConsiderationOilCrab = new AIAdjustedConsideration() { Consideration = newAIStatusConsiderationOilCrab, ScoreCurve = moveToRandomWP.EarlyExitConsiderations[0].ScoreCurve };
+                AIAdjustedConsideration aIAdjustedConsiderationOilFish = new AIAdjustedConsideration() { Consideration = newAIStatusConsiderationOilFish, ScoreCurve = moveToRandomWP.EarlyExitConsiderations[0].ScoreCurve };
+
+
+
+                List<AIAdjustedConsideration> aIAdjustedConsiderationsHumanoidsFlee = new List<AIAdjustedConsideration>()
+                {
+                  aIAdjustedConsiderationSelfRepair, aIAdjustedConsiderationTBTV, aIAdjustedConsiderationTBTV, aIAdjustedConsiderationTBTVonAttack, aIAdjustedConsiderationOilCrab, aIAdjustedConsiderationOilFish
+                };
+
+             /*   List<AIAdjustedConsideration> aIAdjustedConsiderationsCrabmenFlee = new List<AIAdjustedConsideration>()
+                {
+                   aIAdjustedConsiderationTBTV
+                };
+
+                List<AIAdjustedConsideration> aIAdjustedConsiderationsFishmenFlee = new List<AIAdjustedConsideration>()
+                {
+                   aIAdjustedConsiderationTBTV
+                };*/
+
+                aIAdjustedConsiderationsHumanoidsFlee.AddRange(fleeHumanoidsAIAction.EarlyExitConsiderations);
+              //  aIAdjustedConsiderationsCrabmenFlee.AddRange(fleeCrabmenAIAction.EarlyExitConsiderations);
+              //  aIAdjustedConsiderationsFishmenFlee.AddRange(fleeFishmenAIAction.EarlyExitConsiderations);
+
+                fleeHumanoidsAIAction.EarlyExitConsiderations = aIAdjustedConsiderationsHumanoidsFlee.ToArray();
+                fleeCrabmenAIAction.EarlyExitConsiderations = aIAdjustedConsiderationsHumanoidsFlee.ToArray(); //aIAdjustedConsiderationsCrabmenFlee.ToArray();
+                fleeFishmenAIAction.EarlyExitConsiderations = aIAdjustedConsiderationsHumanoidsFlee.ToArray(); //aIAdjustedConsiderationsFishmenFlee.ToArray();
+
+                ApplyStatusAbilityDef quickaim = DefCache.GetDef<ApplyStatusAbilityDef>("BC_QuickAim_AbilityDef");
+                DefCache.GetDef<AIAbilityDisabledStateConsiderationDef>("QuickAimAbilityEnabled_AIConsiderationDef").Ability = quickaim;
+
+                AIActionMoveAndExecuteAbilityDef moveAndQA = DefCache.GetDef<AIActionMoveAndExecuteAbilityDef>("MoveAndQuickAim_AIActionDef");
+                moveAndQA.AbilityToExecute = quickaim;
+              
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+        }
+
+
 
         public static void CreateHumanEnemiesDefs()
         {

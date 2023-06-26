@@ -31,6 +31,7 @@ using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.Entities.Statuses;
 using PhoenixPoint.Tactical.Entities.Weapons;
 using PhoenixPoint.Tactical.Levels;
+using SoftMasking.Samples;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -232,22 +233,23 @@ namespace TFTV
 
         }
 
-        public static int HopliteBeamWeaponKludge = 0;
+      //  public static int HopliteBeamWeaponKludge = 0;
 
         [HarmonyPatch(typeof(MassShootTargetActorEffect), "FaceAndShootAtTarget")]
 
         public static class MassShootTargetActorEffect_FaceAndShootAtTarget_GuardiansCrossBeams_Patch
         {
-            public static void Prefix(Weapon weapon)
+            public static void Postfix(TacticalActor shooterActor)
             {
                 try
                 {
+                    shooterActor.CharacterStats.ActionPoints.Set(0.75f+ shooterActor.CharacterStats.ActionPoints, true);
+                   // TFTVLogger.Always($"character now has {shooterActor.CharacterStats.ActionPoints} action points");
 
-
-                    WeaponDef beamHead = DefCache.GetDef<WeaponDef>("HumanoidGuardian_Head_WeaponDef");
-                    beamHead.APToUsePerc = 0;
-                    HopliteBeamWeaponKludge += 1;
-                    TFTVLogger.Always($"MassShoot in effect, count {HopliteBeamWeaponKludge}");
+                    /*  WeaponDef beamHead = DefCache.GetDef<WeaponDef>("HumanoidGuardian_Head_WeaponDef");
+                      beamHead.APToUsePerc = 0;
+                      HopliteBeamWeaponKludge += 1;
+                      TFTVLogger.Always($"MassShoot in effect, count {HopliteBeamWeaponKludge}");*/
 
                 }
 
@@ -420,7 +422,7 @@ namespace TFTV
 
                     ReDeployHopliteShield(ability, __instance, parameter);
 
-                    if (HopliteBeamWeaponKludge > 0)
+                /*    if (HopliteBeamWeaponKludge > 0)
                     {
                         HopliteBeamWeaponKludge -= 1;
                     }
@@ -428,7 +430,7 @@ namespace TFTV
                     {
                         DefCache.GetDef<WeaponDef>("HumanoidGuardian_Head_WeaponDef").APToUsePerc = 75;
 
-                    }
+                    }*/
                 }
 
                 catch (Exception e)
@@ -2214,8 +2216,6 @@ namespace TFTV
         {
             public static void Prefix(TacticalActor __instance, DeathReport death, out int __state)
             {
-
-
                 __state = 0; //Set this to zero so that the method still works for other actors.
                 if (LOTAReworkActive)
                 {
