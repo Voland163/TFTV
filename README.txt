@@ -18,6 +18,8 @@ Features
 - Highly configurable. If you don't like something you can turn it off.
 - Legend Difficulty worthy of its name
 
+A lot of icons come from the most excellent https://game-icons.net/ Many thanks to the authors!
+
 Trailer: https://youtu.be/533Stk91HFY
 Presentation/Changelog TftV: https://drive.google.com/file/d/1OHhNJDZJe9hRcxnnDCIlSCLY9t5lwyvb/
 Presentation Better Classes: https://drive.google.com/file/d/19L8sXoFmxc2MsWlaHS_qMlxIQEpD5zmJ/
