@@ -736,7 +736,7 @@ namespace TFTV
         }
 
     
-       [HarmonyPatch(typeof(AIFaction), "GetActionScore")]
+     /*  [HarmonyPatch(typeof(AIFaction), "GetActionScore")]
 
         public static class TFTV_Experimental_AIActionMoveAndEscape_GetModuleBonusByType_AdjustFARMRecuperationModule_patch
         {
@@ -834,7 +834,7 @@ namespace TFTV
                             }
                         }
 
-                    }*/
+                    }
                 }
 
                 catch (Exception e)
@@ -843,7 +843,7 @@ namespace TFTV
                 }
 
             }
-        }
+        }*/
        
 
         [HarmonyPatch(typeof(GeoVehicle), "GetModuleBonusByType")]
