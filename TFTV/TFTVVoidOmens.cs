@@ -1291,6 +1291,15 @@ namespace TFTV
                                 //TFTVLogger.Always("WP cost increased to " + __result);
                             }
                         }
+                        PassiveModifierAbilityDef feralDeliriumPerk = DefCache.GetDef<PassiveModifierAbilityDef>("FeralNew_AbilityDef");
+
+                        if(__instance.TacticalActor!=null && __instance.TacticalActor.GetAbilityWithDef<PassiveModifierAbility>(feralDeliriumPerk) != null) 
+                        {
+
+                            __result += 1;
+                        
+                        }
+
                     }
                 }
                 catch (Exception e)

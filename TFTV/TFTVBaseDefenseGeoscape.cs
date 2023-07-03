@@ -13,6 +13,7 @@ using PhoenixPoint.Geoscape.Core;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.Missions;
 using PhoenixPoint.Geoscape.Entities.PhoenixBases;
+using PhoenixPoint.Geoscape.Entities.PhoenixBases.FacilityComponents;
 using PhoenixPoint.Geoscape.Entities.Sites;
 using PhoenixPoint.Geoscape.Events;
 using PhoenixPoint.Geoscape.Levels;
@@ -524,6 +525,7 @@ namespace TFTV
             {
                 try
                 {
+                    //TFTVLogger.Always($"facility is {facility.ViewElementDef.name} and it has {facility.HealthPercentage} % health");
 
                     Vector2Int positionToExclude = facility.GridPosition;
                     GeoPhoenixFacility hangar = facility.PxBase.Layout.BasicFacilities.FirstOrDefault(bf => bf.FacilityTiles.Count > 1);
@@ -602,6 +604,36 @@ namespace TFTV
 
         }
 
+
+        public static void DisableFacilitiesAtBase(GeoPhoenixBase phoenixBase)
+        {
+            try
+            {
+                foreach(GeoPhoenixFacility facility in phoenixBase.Layout.Facilities)      
+                {
+                    if (facility.GetComponent<HealFacilityComponent>() != null) 
+                    {
+                        facility.SetPowered(false); 
+                    }
+                    if (facility.GetComponent<ExperienceFacilityComponent>() != null)
+                    {
+                        facility.SetPowered(false);
+                    }
+                    if (facility.GetComponent<VehicleSlotFacilityComponent>() != null)
+                    {
+                        facility.SetPowered(false);
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
+        }
+
+
+
         [HarmonyPatch(typeof(PhoenixBaseDefenseOutcomeDataBind), "ModalShowHandler")]
         public static class PhoenixBaseDefenseOutcomeDataBind_ModalShowHandler_Experiment_patch
         {
@@ -632,6 +664,8 @@ namespace TFTV
 
                             if (geoMission.GetMissionOutcomeState() == TacFactionState.Won)
                             {
+                                TFTVLogger.Always("Defense mission won");
+                                
                                 __instance.TopBar.Subtitle.text = geoMission.Site.LocalizedSiteName;
                                 __instance.Background.sprite = Helper.CreateSpriteFromImageFile("BG_Intro_1.jpg");
                                 __instance.Rewards.SetReward(geoMission.Reward);
@@ -666,6 +700,8 @@ namespace TFTV
                             }
                             else
                             {
+                                TFTVLogger.Always("Defense mission lost");
+
                                 if (!PhoenixBasesInfested.Contains(geoMission.Site.SiteId))
                                 {
                                     TFTVLogger.Always($"{geoMission.Site.SiteId} should get added to infested bases");
@@ -1000,6 +1036,16 @@ namespace TFTV
 
 
                                 }
+                                else if(progress >= 0.3) 
+                                {
+                                    TFTVLogger.Always($"Deactivating facilities at base {site.LocalizedSiteName}");
+
+                                    DisableFacilitiesAtBase(site.GetComponent<GeoPhoenixBase>());
+                                
+                                
+                                }
+                                
+
                                 // TFTVBaseDefenseTactical.AttackProgress = progress;
                             }
                         }

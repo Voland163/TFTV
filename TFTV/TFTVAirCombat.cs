@@ -428,13 +428,16 @@ namespace TFTV
                         int num = festeringSkiesSettings.DisruptionThreshholdBaseValue + currentDifficultyLevel.DisruptionDueToDifficulty;
                         //  TFTVLogger.Always("The num is " + num);
 
-                        foreach (BonusesToDisruptionMeter researchDisruptionBonuse in festeringSkiesSettings.ResearchDisruptionBonuses)
+                        num += __instance.GeoLevel.EventSystem.GetVariable(BehemothRoamings) * 2;
+
+
+                       /* foreach (BonusesToDisruptionMeter researchDisruptionBonuse in festeringSkiesSettings.ResearchDisruptionBonuses)
                         {
                             if (__instance.GeoLevel.AlienFaction.Research.HasCompleted(researchDisruptionBonuse.ResearchDefId))
                             {
                                 num += researchDisruptionBonuse.DisruptionBonus;
                             }
-                        }
+                        }*/
                         ____disruptionThreshhold = num;
 
                         // BehemothDisplayController behemothDisplayController = (BehemothDisplayController)UnityEngine.Object.FindObjectOfType(typeof(BehemothDisplayController));
@@ -703,53 +706,62 @@ namespace TFTV
         {
             try
             {
+                GeoLevelController controller = geoBehemothActor.GeoLevel;
+
                 TFTVLogger.Always("TargetsForBehemoth counts " + targetsForBehemoth.Count() + " and/but counted as 0, so here we are");
-                List<GeoHaven> geoHavens = geoBehemothActor.GeoLevel.AnuFaction.Havens.ToList();
-                geoHavens.AddRange(geoBehemothActor.GeoLevel.NewJerichoFaction.Havens.ToList());
-                geoHavens.AddRange(geoBehemothActor.GeoLevel.SynedrionFaction.Havens.ToList());
-                List<GeoSite> geoSites = new List<GeoSite>();
-                GeoSite chosenTarget = geoBehemothActor.GeoLevel.Map.GetClosestSite_Land(geoBehemothActor.WorldPosition);
 
-                foreach (GeoHaven haven in geoHavens)
+             
+                //Get site closest to Behemoth  
+                GeoSite behemothSite = geoBehemothActor.GeoLevel.Map.GetClosestSite_Land(geoBehemothActor.WorldPosition, true);
+
+                if (behemothSite != null)
                 {
-                    if (Vector3.Distance(haven.Site.WorldPosition, geoBehemothActor.WorldPosition) <= 5)
-                    {
-                        geoSites.Add(haven.Site);
-                    }
+
+                    
+                }
+                else 
+                {
+                    TFTVLogger.Always("No site connected to land near the Behemoth!!!");
+                    IOrderedEnumerable<GeoSite> closestSiteAnywhere = from s in controller.Map.AllSites.Where(gs=>!controller.Map.IsInWater(gs.Pos))
+                                                                        orderby GeoMap.Distance(geoBehemothActor.Pos, s.Pos)
+                                                                        select s;
+                    behemothSite = closestSiteAnywhere.First();
+
+                    TFTVLogger.Always("Found closest site anywhere that is not in water");
+
                 }
 
-                if (geoSites.Count == 0)
-                {
-                    foreach (GeoHaven haven in geoHavens)
-                    {
-                        if (Vector3.Distance(haven.Site.WorldPosition, geoBehemothActor.WorldPosition) <= 15)
-                        {
-                            geoSites.Add(haven.Site);
-                        }
-                    }
-                }
+                
+                GeoSite chosenTarget = behemothSite; //by default, in case no other sites are found
 
-                if (behemothScenicRoute.Count > geoBehemothActor.GeoLevel.Map.AllSites.Count / 2)
+                if (behemothScenicRoute.Count > controller.Map.AllSites.Where(s=>s.Type == GeoSiteType.Exploration).Count()) 
                 {
-                    TFTVLogger.Always("Total sites count is " + geoBehemothActor.GeoLevel.Map.AllSites.Count + " and scenic route has " + behemothScenicRoute.Count + " sites.");
+                    TFTVLogger.Always($"scenic route has {behemothScenicRoute.Count} sites, while there are only {controller.Map.AllSites.Where(s => s.Type == GeoSiteType.Exploration).Count()} sites in total! Clearing the list.");
                     behemothScenicRoute.Clear();
+                
                 }
 
-                if (geoSites.Count > 0 && behemothScenicRoute.Count == 0)
+                if (behemothScenicRoute.Count == 0)
                 {
 
-                    GeoSite targetReference = geoSites.GetRandomElement();
+                    //Get all sites connected to it, excluding the BehemothSite, ordered by distance from it
+                    IOrderedEnumerable<GeoSite> sitesBehemothCanVisit = from s in controller.Map.GetConnectedSitesOfType_Land(behemothSite, GeoSiteType.Exploration).Where(gs => gs != behemothSite)
+                                                                        orderby GeoMap.Distance(behemothSite, s)
+                                                                        select s;
+                    if (sitesBehemothCanVisit.Count() > 0)
+                    {     
+                        foreach (GeoSite target in sitesBehemothCanVisit)
+                        {
+                            if (!behemothScenicRoute.Contains(target.SiteId))
+                            {
+                                behemothScenicRoute.Add(target.SiteId);
+                            }
+                        }
 
-                    IOrderedEnumerable<GeoSite> orderedEnumerable = from s in geoBehemothActor.GeoLevel.Map.GetConnectedSitesOfType_Land(targetReference, GeoSiteType.Exploration, activeOnly: false)
-                                                                    orderby GeoMap.Distance(targetReference, s)
-                                                                    select s;
-
-                    foreach (GeoSite target in orderedEnumerable)
-                    {
-                        behemothScenicRoute.Add(target.SiteId);
                     }
 
                 }
+
                 if (behemothScenicRoute.Count > 0)
                 {
                     TFTVLogger.Always("Actually got to the scenic Route count, and it's " + behemothScenicRoute.Count);
@@ -775,6 +787,85 @@ namespace TFTV
             }
             throw new InvalidOperationException();
         }
+
+
+        /*  public static GeoSite GetSiteForBehemothToMoveTo(GeoBehemothActor geoBehemothActor)
+
+          {
+              try
+              {
+                  TFTVLogger.Always("TargetsForBehemoth counts " + targetsForBehemoth.Count() + " and/but counted as 0, so here we are");
+                  List<GeoHaven> geoHavens = geoBehemothActor.GeoLevel.AnuFaction.Havens.ToList();
+                  geoHavens.AddRange(geoBehemothActor.GeoLevel.NewJerichoFaction.Havens.ToList());
+                  geoHavens.AddRange(geoBehemothActor.GeoLevel.SynedrionFaction.Havens.ToList());
+                  List<GeoSite> geoSites = new List<GeoSite>();
+                  GeoSite chosenTarget = geoBehemothActor.GeoLevel.Map.GetClosestSite_Land(geoBehemothActor.WorldPosition);
+
+                  foreach (GeoHaven haven in geoHavens)
+                  {
+                      if (Vector3.Distance(haven.Site.WorldPosition, geoBehemothActor.WorldPosition) <= 5)
+                      {
+                          geoSites.Add(haven.Site);
+                      }
+                  }
+
+                  if (geoSites.Count == 0)
+                  {
+                      foreach (GeoHaven haven in geoHavens)
+                      {
+                          if (Vector3.Distance(haven.Site.WorldPosition, geoBehemothActor.WorldPosition) <= 15)
+                          {
+                              geoSites.Add(haven.Site);
+                          }
+                      }
+                  }
+
+                  if (behemothScenicRoute.Count > geoBehemothActor.GeoLevel.Map.AllSites.Count / 2)
+                  {
+                      TFTVLogger.Always("Total sites count is " + geoBehemothActor.GeoLevel.Map.AllSites.Count + " and scenic route has " + behemothScenicRoute.Count + " sites.");
+                      behemothScenicRoute.Clear();
+                  }
+
+                  if (geoSites.Count > 0 && behemothScenicRoute.Count == 0)
+                  {
+
+                      GeoSite targetReference = geoSites.GetRandomElement();
+
+                      IOrderedEnumerable<GeoSite> orderedEnumerable = from s in geoBehemothActor.GeoLevel.Map.GetConnectedSitesOfType_Land(targetReference, GeoSiteType.Exploration, activeOnly: false)
+                                                                      orderby GeoMap.Distance(targetReference, s)
+                                                                      select s;
+
+                      foreach (GeoSite target in orderedEnumerable)
+                      {
+                          behemothScenicRoute.Add(target.SiteId);
+                      }
+
+                  }
+                  if (behemothScenicRoute.Count > 0)
+                  {
+                      TFTVLogger.Always("Actually got to the scenic Route count, and it's " + behemothScenicRoute.Count);
+
+                      foreach (GeoSite site in geoBehemothActor.GeoLevel.Map.AllSites)
+                      {
+                          if (behemothScenicRoute.Contains(site.SiteId))
+                          {
+                              chosenTarget = site;
+                              // TFTVLogger.Always("The site is " + site.Name);
+                              behemothScenicRoute.Remove(site.SiteId);
+                              return chosenTarget;
+                          }
+                      }
+                  }
+                  TFTVLogger.Always("Didn't find a site on the scenic route, so defaulting to nearest site, which is " + chosenTarget.Name);
+                  return chosenTarget;
+              }
+
+              catch (Exception e)
+              {
+                  TFTVLogger.Error(e);
+              }
+              throw new InvalidOperationException();
+          }*/
 
         /*
          [HarmonyPatch(typeof(InterceptionAircraft), "get_CurrentHitPoints")]

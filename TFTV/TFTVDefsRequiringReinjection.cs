@@ -4,7 +4,6 @@ using Base.Defs;
 using Base.Entities.Effects;
 using Base.Entities.Effects.ApplicationConditions;
 using Base.Entities.Statuses;
-using Base.Levels;
 using Base.UI;
 using PhoenixPoint.Common.ContextHelp;
 using PhoenixPoint.Common.Entities;
@@ -26,7 +25,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace TFTV
 {
@@ -59,28 +57,28 @@ namespace TFTV
             try
             {
 
-              /*  MultiStatusDef sourceMultiStatus = DefCache.GetDef<MultiStatusDef>("CanBeRecruited_FactionBundledStatus_StatusDef");
-                string nameMultiStatus = "MultiStatusNotFlee";
-                string gUIDMultiStatus = "{0D63DFAF-96F7-4057-990A-096E701A82D7}";
-                MultiStatusDef newMultiStatus = Helper.CreateDefFromClone(sourceMultiStatus, gUIDMultiStatus, nameMultiStatus);*/
+                /*  MultiStatusDef sourceMultiStatus = DefCache.GetDef<MultiStatusDef>("CanBeRecruited_FactionBundledStatus_StatusDef");
+                  string nameMultiStatus = "MultiStatusNotFlee";
+                  string gUIDMultiStatus = "{0D63DFAF-96F7-4057-990A-096E701A82D7}";
+                  MultiStatusDef newMultiStatus = Helper.CreateDefFromClone(sourceMultiStatus, gUIDMultiStatus, nameMultiStatus);*/
 
                 StatusDef onAttackTBTV = DefCache.GetDef<StatusDef>("TBTV_OnAttack_StatusDef");
                 StatusDef onTurnEndTBTV = DefCache.GetDef<StatusDef>("TBTV_OnTurnEnd_StatusDef");
 
                 DamageMultiplierStatusDef RoboticSelfRepairStatus = DefCache.GetDef<DamageMultiplierStatusDef>("RoboticSelfRepair_AddAbilityStatusDef");
-            
+
                 StatusDef oilCrabStatusDef = DefCache.GetDef<StatusDef>("OilCrab_AddAbilityStatusDef");
                 StatusDef oilFishStatusDef = DefCache.GetDef<StatusDef>("OilFish_AddAbilityStatusDef");
 
-              //  newMultiStatus.Statuses = new StatusDef[] {RoboticSelfRepairStatus};
+                //  newMultiStatus.Statuses = new StatusDef[] {RoboticSelfRepairStatus};
 
-             //   TFTVLogger.Always($"{newMultiStatus.Statuses[2].name}");
+                //   TFTVLogger.Always($"{newMultiStatus.Statuses[2].name}");
 
                 AIStatusConsiderationDef sourceStatusConsideration = DefCache.GetDef<AIStatusConsiderationDef>("NoCanBeRecruitedStatus_AIConsiderationDef");
 
                 string nameAIStatusConsiderationSelfRepair = "AIConsiderationNoFleeSelfRepair";
                 string gUIDAIStatusConsiderationSelfRepair = "{3892ECC8-EDE9-4A31-8C32-8F094EED9170}";
-              
+
                 AIStatusConsiderationDef newAIStatusConsiderationSelfRepair = Helper.CreateDefFromClone(sourceStatusConsideration, gUIDAIStatusConsiderationSelfRepair, nameAIStatusConsiderationSelfRepair);
 
                 newAIStatusConsiderationSelfRepair.StatusDef = RoboticSelfRepairStatus;
@@ -137,19 +135,19 @@ namespace TFTV
                   aIAdjustedConsiderationSelfRepair, aIAdjustedConsiderationTBTV, aIAdjustedConsiderationTBTV, aIAdjustedConsiderationTBTVonAttack, aIAdjustedConsiderationOilCrab, aIAdjustedConsiderationOilFish
                 };
 
-             /*   List<AIAdjustedConsideration> aIAdjustedConsiderationsCrabmenFlee = new List<AIAdjustedConsideration>()
-                {
-                   aIAdjustedConsiderationTBTV
-                };
+                /*   List<AIAdjustedConsideration> aIAdjustedConsiderationsCrabmenFlee = new List<AIAdjustedConsideration>()
+                   {
+                      aIAdjustedConsiderationTBTV
+                   };
 
-                List<AIAdjustedConsideration> aIAdjustedConsiderationsFishmenFlee = new List<AIAdjustedConsideration>()
-                {
-                   aIAdjustedConsiderationTBTV
-                };*/
+                   List<AIAdjustedConsideration> aIAdjustedConsiderationsFishmenFlee = new List<AIAdjustedConsideration>()
+                   {
+                      aIAdjustedConsiderationTBTV
+                   };*/
 
                 aIAdjustedConsiderationsHumanoidsFlee.AddRange(fleeHumanoidsAIAction.EarlyExitConsiderations);
-              //  aIAdjustedConsiderationsCrabmenFlee.AddRange(fleeCrabmenAIAction.EarlyExitConsiderations);
-              //  aIAdjustedConsiderationsFishmenFlee.AddRange(fleeFishmenAIAction.EarlyExitConsiderations);
+                //  aIAdjustedConsiderationsCrabmenFlee.AddRange(fleeCrabmenAIAction.EarlyExitConsiderations);
+                //  aIAdjustedConsiderationsFishmenFlee.AddRange(fleeFishmenAIAction.EarlyExitConsiderations);
 
                 fleeHumanoidsAIAction.EarlyExitConsiderations = aIAdjustedConsiderationsHumanoidsFlee.ToArray();
                 fleeCrabmenAIAction.EarlyExitConsiderations = aIAdjustedConsiderationsHumanoidsFlee.ToArray(); //aIAdjustedConsiderationsCrabmenFlee.ToArray();
@@ -160,7 +158,7 @@ namespace TFTV
 
                 AIActionMoveAndExecuteAbilityDef moveAndQA = DefCache.GetDef<AIActionMoveAndExecuteAbilityDef>("MoveAndQuickAim_AIActionDef");
                 moveAndQA.AbilityToExecute = quickaim;
-              
+
 
             }
             catch (Exception e)
@@ -186,7 +184,7 @@ namespace TFTV
             Create_Terror();
             Create_FasterSynapses();
             Create_Anxiety();
-            Create_OneOfThem();
+         //   Create_OneOfThem();
             Create_OneOfThemPassive();
             Create_Bloodthirsty();
             //Clone_Inspire();
@@ -198,67 +196,140 @@ namespace TFTV
             Create_Hyperalgesia();
             //Clone_ArmorBuffStatus();
             Create_AnxietyStatus();
+            Create_NewFeralPerk();
+            Create_New_Anxiety();
+            Create_New_Derealization();
+            Create_WolverineCured();
+        }
+
+
+        //FERAL Skills cost +1 WP. You gain +8 STR
+        internal static void Create_NewFeralPerk()
+        {
+            try
+            {
+                string skillName = "FeralNew_AbilityDef";
+                string skillGUID = "{7BFA5655-4CC3-4C46-98BA-896622EE9BBC}";
+                string progressionGUID = "{B496D54C-B0F3-45D7-AA42-C672D01DA26B}";
+                string viewElementGUID = "{F3588757-0C6B-484B-8A30-F54104CA3A27}";
+                PassiveModifierAbilityDef source = DefCache.GetDef<PassiveModifierAbilityDef>("Thief_AbilityDef");
+                PassiveModifierAbilityDef newAbility = Helper.CreateDefFromClone(
+                    source,
+                    skillGUID,
+                    skillName);
+                newAbility.CharacterProgressionData = Helper.CreateDefFromClone(
+                    source.CharacterProgressionData,
+                    progressionGUID,
+                    skillName);
+                newAbility.ViewElementDef = Helper.CreateDefFromClone(
+                    source.ViewElementDef,
+                    viewElementGUID,
+                    skillName);
+                newAbility.StatModifications = new ItemStatModification[]
+                {
+                new ItemStatModification()
+                    {
+                    TargetStat = StatModificationTarget.Endurance,
+                    Modification = StatModificationType.Add,
+                    Value = 8
+                    },
+
+               
+                new ItemStatModification()
+                {
+                    TargetStat = StatModificationTarget.Endurance,
+                    Modification = StatModificationType.AddMax,
+                    Value = 8
+                },
+                };
+
+                newAbility.ViewElementDef.DisplayName1.LocalizationKey = "DELIRIUM_PERK_FERAL_NAME";
+                newAbility.ViewElementDef.Description.LocalizationKey = "DELIRIUM_PERK_NEW_FERAL_DESCRIPTION";
+                Sprite icon = Helper.CreateSpriteFromImageFile("TFTV_DeliriumPerks_Feral.png");
+                newAbility.ViewElementDef.LargeIcon = icon;
+                newAbility.ViewElementDef.SmallIcon = icon;
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
         }
 
         public static void AddAnimation()
         {
-            ApplyStatusAbilityDef devour = DefCache.GetDef<ApplyStatusAbilityDef>("Mutog_Devour_AbilityDef");
-            PlayActionAnimationAbilityDef devourAnim = DefCache.GetDef<PlayActionAnimationAbilityDef>("Mutog_PlayDevourAnimation_AbilityDef");
-
-            //OnActorDeathEffectStatusDef devourStatus = (OnActorDeathEffectStatusDef)devour.StatusDef;
-            //devourStatus.Range = 99;
-            //devourStatus.RequiredDyingActorTags = null;
-
-
-            foreach (TacActorSimpleAbilityAnimActionDef animActionDef in Repo.GetAllDefs<TacActorSimpleAbilityAnimActionDef>().Where(aad => aad.name.Contains("Soldier_Utka_AnimActionsDef")))
+            try
             {
-                if (animActionDef.AbilityDefs != null && !animActionDef.AbilityDefs.Contains(devour))
+                ApplyStatusAbilityDef devour = DefCache.GetDef<ApplyStatusAbilityDef>("Mutog_Devour_AbilityDef");
+                PlayActionAnimationAbilityDef devourAnim = DefCache.GetDef<PlayActionAnimationAbilityDef>("Mutog_PlayDevourAnimation_AbilityDef");
+
+                //OnActorDeathEffectStatusDef devourStatus = (OnActorDeathEffectStatusDef)devour.StatusDef;
+                //devourStatus.Range = 99;
+                //devourStatus.RequiredDyingActorTags = null;
+
+
+                foreach (TacActorSimpleAbilityAnimActionDef animActionDef in Repo.GetAllDefs<TacActorSimpleAbilityAnimActionDef>().Where(aad => aad.name.Contains("Soldier_Utka_AnimActionsDef")))
                 {
-                    animActionDef.AbilityDefs = animActionDef.AbilityDefs.Append(devour).ToArray();
+                    if (animActionDef.AbilityDefs != null && !animActionDef.AbilityDefs.Contains(devour))
+                    {
+                        animActionDef.AbilityDefs = animActionDef.AbilityDefs.Append(devour).ToArray();
+                    }
+                }
+
+                foreach (TacActorSimpleAbilityAnimActionDef animActionDef in Repo.GetAllDefs<TacActorSimpleAbilityAnimActionDef>().Where(aad => aad.name.Contains("Soldier_Utka_AnimActionsDef")))
+                {
+                    if (animActionDef.AbilityDefs != null && !animActionDef.AbilityDefs.Contains(devourAnim))
+                    {
+                        animActionDef.AbilityDefs = animActionDef.AbilityDefs.Append(devourAnim).ToArray();
+                    }
                 }
             }
-
-            foreach (TacActorSimpleAbilityAnimActionDef animActionDef in Repo.GetAllDefs<TacActorSimpleAbilityAnimActionDef>().Where(aad => aad.name.Contains("Soldier_Utka_AnimActionsDef")))
+            catch (Exception e)
             {
-                if (animActionDef.AbilityDefs != null && !animActionDef.AbilityDefs.Contains(devourAnim))
-                {
-                    animActionDef.AbilityDefs = animActionDef.AbilityDefs.Append(devourAnim).ToArray();
-                }
+                TFTVLogger.Error(e);
             }
         }
         public static void Clone_GameTag()
         {
-            string skillName = "OneOfUsMistResistance_GameTagDef";
-            GameTagDef source = DefCache.GetDef<GameTagDef>("Takeshi_Tutorial3_GameTagDef");
-            GameTagDef Takashi = Helper.CreateDefFromClone(
-                source,
-                "F9FF0EF9-4800-4355-B6F4-5543994C129F",
-                skillName);
+            try
+            {
+                string skillName = "OneOfUsMistResistance_GameTagDef";
+                GameTagDef source = DefCache.GetDef<GameTagDef>("Takeshi_Tutorial3_GameTagDef");
+                GameTagDef Takashi = Helper.CreateDefFromClone(
+                    source,
+                    "F9FF0EF9-4800-4355-B6F4-5543994C129F",
+                    skillName);
 
-            TacticalVoxelMatrixDataDef tVMDD = DefCache.GetDef<TacticalVoxelMatrixDataDef>("TacticalVoxelMatrixDataDef");
-            tVMDD.MistImmunityTags = new GameTagsList()
+                TacticalVoxelMatrixDataDef tVMDD = DefCache.GetDef<TacticalVoxelMatrixDataDef>("TacticalVoxelMatrixDataDef");
+                tVMDD.MistImmunityTags = new GameTagsList()
             {
                 Takashi,
             };
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
         }
         public static void Create_InnerSight()
         {
-            string skillName = "InnerSight_AbilityDef";
-            PassiveModifierAbilityDef source = DefCache.GetDef<PassiveModifierAbilityDef>("SelfDefenseSpecialist_AbilityDef");
-            PassiveModifierAbilityDef shutEye = Helper.CreateDefFromClone(
-                source,
-                "95431c82-a525-4975-a8da-9add9799a340",
-                skillName);
-            shutEye.CharacterProgressionData = Helper.CreateDefFromClone(
-                source.CharacterProgressionData,
-                "69bbcec5-d491-4e7e-85a2-1063716f4532",
-                skillName);
-            shutEye.ViewElementDef = Helper.CreateDefFromClone(
-                source.ViewElementDef,
-                "28d440ee-c254-427a-b0a9-fe62a25faeac",
-                skillName);
-            shutEye.StatModifications = new ItemStatModification[]
-              {
+            try
+            {
+                string skillName = "InnerSight_AbilityDef";
+                PassiveModifierAbilityDef source = DefCache.GetDef<PassiveModifierAbilityDef>("SelfDefenseSpecialist_AbilityDef");
+                PassiveModifierAbilityDef shutEye = Helper.CreateDefFromClone(
+                    source,
+                    "95431c82-a525-4975-a8da-9add9799a340",
+                    skillName);
+                shutEye.CharacterProgressionData = Helper.CreateDefFromClone(
+                    source.CharacterProgressionData,
+                    "69bbcec5-d491-4e7e-85a2-1063716f4532",
+                    skillName);
+                shutEye.ViewElementDef = Helper.CreateDefFromClone(
+                    source.ViewElementDef,
+                    "28d440ee-c254-427a-b0a9-fe62a25faeac",
+                    skillName);
+                shutEye.StatModifications = new ItemStatModification[]
+                  {
                 new ItemStatModification()
                 {
                     TargetStat = StatModificationTarget.Perception,
@@ -271,77 +342,123 @@ namespace TFTV
                     Modification = StatModificationType.Add,
                     Value = 10
                 },
-              };
-            shutEye.ItemTagStatModifications = new EquipmentItemTagStatModification[0];
-            shutEye.ViewElementDef.DisplayName1.LocalizationKey = "DELIRIUM_PERK_INNER_SIGHT_NAME";
-            shutEye.ViewElementDef.Description.LocalizationKey = "DELIRIUM_PERK_INNER_SIGHT_DESCRIPTION";
-            Sprite icon = Helper.CreateSpriteFromImageFile("TFTV_DeliriumPerks_Inner_Sight.png");
-            shutEye.ViewElementDef.LargeIcon = icon;
-            shutEye.ViewElementDef.SmallIcon = icon;
+                  };
+                shutEye.ItemTagStatModifications = new EquipmentItemTagStatModification[0];
+                shutEye.ViewElementDef.DisplayName1.LocalizationKey = "DELIRIUM_PERK_INNER_SIGHT_NAME";
+                shutEye.ViewElementDef.Description.LocalizationKey = "DELIRIUM_PERK_INNER_SIGHT_DESCRIPTION";
+                Sprite icon = Helper.CreateSpriteFromImageFile("TFTV_DeliriumPerks_Inner_Sight.png");
+                shutEye.ViewElementDef.LargeIcon = icon;
+                shutEye.ViewElementDef.SmallIcon = icon;
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
         }
         public static void Create_Anxiety()
         {
-            string skillName = "AnxietyAbilityDef";
-            PassiveModifierAbilityDef source = DefCache.GetDef<PassiveModifierAbilityDef>("SelfDefenseSpecialist_AbilityDef");
-            PassiveModifierAbilityDef hallucinating = Helper.CreateDefFromClone(
-                source,
-                "5d3421cb-9e22-4cdf-bcac-3beac61b2713",
-                skillName);
-            hallucinating.CharacterProgressionData = Helper.CreateDefFromClone(
-                source.CharacterProgressionData,
-                "92560850-084c-4d43-8c57-a4f5773e4a26",
-                skillName);
-            hallucinating.ViewElementDef = Helper.CreateDefFromClone(
-                source.ViewElementDef,
-                "b8c58fc2-c56e-4577-a187-c0922cba8468",
-                skillName);
-            hallucinating.StatModifications = new ItemStatModification[0];
-            hallucinating.ItemTagStatModifications = new EquipmentItemTagStatModification[0];
-            hallucinating.ViewElementDef.DisplayName1.LocalizationKey = "DELIRIUM_PERK_ANXIETY_NAME";
-            hallucinating.ViewElementDef.Description.LocalizationKey = "DELIRIUM_PERK_ANXIETY_DESCRIPTION";
-            Sprite icon = Helper.CreateSpriteFromImageFile("TFTV_DeliriumPerks_Anxiety.png");
-            hallucinating.ViewElementDef.LargeIcon = icon;
-            hallucinating.ViewElementDef.SmallIcon = icon;
+            try
+            {
+                string skillName = "AnxietyAbilityDef";
+                PassiveModifierAbilityDef source = DefCache.GetDef<PassiveModifierAbilityDef>("SelfDefenseSpecialist_AbilityDef");
+                PassiveModifierAbilityDef hallucinating = Helper.CreateDefFromClone(
+                    source,
+                    "5d3421cb-9e22-4cdf-bcac-3beac61b2713",
+                    skillName);
+                hallucinating.CharacterProgressionData = Helper.CreateDefFromClone(
+                    source.CharacterProgressionData,
+                    "92560850-084c-4d43-8c57-a4f5773e4a26",
+                    skillName);
+                hallucinating.ViewElementDef = Helper.CreateDefFromClone(
+                    source.ViewElementDef,
+                    "b8c58fc2-c56e-4577-a187-c0922cba8468",
+                    skillName);
+                hallucinating.StatModifications = new ItemStatModification[0];
+                hallucinating.ItemTagStatModifications = new EquipmentItemTagStatModification[0];
+                hallucinating.ViewElementDef.DisplayName1.LocalizationKey = "DELIRIUM_PERK_ANXIETY_NAME";
+                hallucinating.ViewElementDef.Description.LocalizationKey = "DELIRIUM_PERK_ANXIETY_DESCRIPTION";
+                Sprite icon = Helper.CreateSpriteFromImageFile("TFTV_DeliriumPerks_Anxiety.png");
+                hallucinating.ViewElementDef.LargeIcon = icon;
+                hallucinating.ViewElementDef.SmallIcon = icon;
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
         }
+
+        internal static void Create_New_Anxiety()
+        {
+            try
+            {
+                string skillName = "NewAnxietyAbilityDef";
+                ApplyStatusAbilityDef source = DefCache.GetDef<ApplyStatusAbilityDef>("MindControlImmunity_AbilityDef");
+                ApplyStatusAbilityDef hallucinating = Helper.CreateDefFromClone(
+                    source,
+                    "{33568B0C-45A3-4FBC-BE5A-5292FE928C35}",
+                    skillName);
+                hallucinating.CharacterProgressionData = Helper.CreateDefFromClone(
+                    source.CharacterProgressionData,
+                    "{66590C72-BD59-47E6-A922-F7E78B841BEF}",
+                    skillName);
+                hallucinating.ViewElementDef = Helper.CreateDefFromClone(
+                    source.ViewElementDef,
+                    "{4D9194A0-EE49-4D5F-8A51-735CC6FD5CC3}",
+                    skillName);
+           
+                hallucinating.ViewElementDef.DisplayName1.LocalizationKey = "DELIRIUM_PERK_ANXIETY_NAME";
+                hallucinating.ViewElementDef.Description.LocalizationKey = "DELIRIUM_PERK_NEW_ANXIETY_DESCRIPTION";
+                Sprite icon = Helper.CreateSpriteFromImageFile("TFTV_DeliriumPerks_Anxiety.png");
+                hallucinating.ViewElementDef.LargeIcon = icon;
+                hallucinating.ViewElementDef.SmallIcon = icon;
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
         public static void Create_Bloodthirsty()
         {
-            string skillName = "Bloodthirsty_AbilityDef";
-            ApplyStatusAbilityDef source = DefCache.GetDef<ApplyStatusAbilityDef>("Inspire_AbilityDef");
-            ApplyStatusAbilityDef bloodthirsty = Helper.CreateDefFromClone(
-                source,
-                "0319cf53-65d2-4964-98d2-08c1acb54b24",
-                skillName);
-            bloodthirsty.CharacterProgressionData = Helper.CreateDefFromClone(
-                source.CharacterProgressionData,
-                "b101c95b-cd35-4649-9983-2662a454e40f",
-                skillName);
-            bloodthirsty.ViewElementDef = Helper.CreateDefFromClone(
-                source.ViewElementDef,
-                "ed164c5a-2927-422a-a086-8762137d4c5d",
-                skillName);
+            try
+            {
+                string skillName = "Bloodthirsty_AbilityDef";
+                ApplyStatusAbilityDef source = DefCache.GetDef<ApplyStatusAbilityDef>("Inspire_AbilityDef");
+                ApplyStatusAbilityDef bloodthirsty = Helper.CreateDefFromClone(
+                    source,
+                    "0319cf53-65d2-4964-98d2-08c1acb54b24",
+                    skillName);
+                bloodthirsty.CharacterProgressionData = Helper.CreateDefFromClone(
+                    source.CharacterProgressionData,
+                    "b101c95b-cd35-4649-9983-2662a454e40f",
+                    skillName);
+                bloodthirsty.ViewElementDef = Helper.CreateDefFromClone(
+                    source.ViewElementDef,
+                    "ed164c5a-2927-422a-a086-8762137d4c5d",
+                    skillName);
 
-            OnActorDeathEffectStatusDef bloodthirstyStatus = Helper.CreateDefFromClone(
-                bloodthirsty.StatusDef as OnActorDeathEffectStatusDef,
-                "ac7195f9-c382-4f79-a956-55d5eb3b6371",
-                "E_KillListenerStatus [" + skillName + "]");
+                OnActorDeathEffectStatusDef bloodthirstyStatus = Helper.CreateDefFromClone(
+                    bloodthirsty.StatusDef as OnActorDeathEffectStatusDef,
+                    "ac7195f9-c382-4f79-a956-55d5eb3b6371",
+                    "E_KillListenerStatus [" + skillName + "]");
 
-            FactionMembersEffectDef bloodthirstyEffectDef2 = Helper.CreateDefFromClone(
-                bloodthirstyStatus.EffectDef as FactionMembersEffectDef,
-                "8bd34f58-d452-4f38-975e-4f32b33d283d",
-                "E_Effect [" + skillName + "]");
+                FactionMembersEffectDef bloodthirstyEffectDef2 = Helper.CreateDefFromClone(
+                    bloodthirstyStatus.EffectDef as FactionMembersEffectDef,
+                    "8bd34f58-d452-4f38-975e-4f32b33d283d",
+                    "E_Effect [" + skillName + "]");
 
-            StatsModifyEffectDef bloodthirstySingleEffectDef2 = Helper.CreateDefFromClone(
-                bloodthirstyEffectDef2.SingleTargetEffect as StatsModifyEffectDef,
-                "ad0891cf-fe7a-443f-acb9-575c3cf23432",
-                "E_SingleTargetEffect [" + skillName + "]");
+                StatsModifyEffectDef bloodthirstySingleEffectDef2 = Helper.CreateDefFromClone(
+                    bloodthirstyEffectDef2.SingleTargetEffect as StatsModifyEffectDef,
+                    "ad0891cf-fe7a-443f-acb9-575c3cf23432",
+                    "E_SingleTargetEffect [" + skillName + "]");
 
 
 
-            bloodthirsty.StatusDef = bloodthirstyStatus;
-            bloodthirstyStatus.EffectDef = bloodthirstyEffectDef2;
-            bloodthirstyEffectDef2.SingleTargetEffect = bloodthirstySingleEffectDef2;
-            // This is working:
-            bloodthirstySingleEffectDef2.StatModifications = new List<StatModification>
+                bloodthirsty.StatusDef = bloodthirstyStatus;
+                bloodthirstyStatus.EffectDef = bloodthirstyEffectDef2;
+                bloodthirstyEffectDef2.SingleTargetEffect = bloodthirstySingleEffectDef2;
+                // This is working:
+                bloodthirstySingleEffectDef2.StatModifications = new List<StatModification>
             {
                 new StatModification()
                 {
@@ -351,63 +468,77 @@ namespace TFTV
                 }
             };
 
-            bloodthirsty.ViewElementDef.DisplayName1.LocalizationKey = "DELIRIUM_PERK_BLOODTHIRSTY_NAME";
-            bloodthirsty.ViewElementDef.Description.LocalizationKey = "DELIRIUM_PERK_BLOODTHIRSTY_DESCRIPTION";
+                bloodthirsty.ViewElementDef.DisplayName1.LocalizationKey = "DELIRIUM_PERK_BLOODTHIRSTY_NAME";
+                bloodthirsty.ViewElementDef.Description.LocalizationKey = "DELIRIUM_PERK_BLOODTHIRSTY_DESCRIPTION";
 
-            Sprite icon = Helper.CreateSpriteFromImageFile("TFTV_DeliriumPerks_Bloodthirsty.png");
-            bloodthirsty.ViewElementDef.LargeIcon = icon;
-            bloodthirsty.ViewElementDef.SmallIcon = icon;
+                Sprite icon = Helper.CreateSpriteFromImageFile("TFTV_DeliriumPerks_Bloodthirsty.png");
+                bloodthirsty.ViewElementDef.LargeIcon = icon;
+                bloodthirsty.ViewElementDef.SmallIcon = icon;
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
         }
         public static void Create_FasterSynapses()
         {
-            string skillName = "FasterSynapses_AbilityDef";
-            PassiveModifierAbilityDef source = DefCache.GetDef<PassiveModifierAbilityDef>("Thief_AbilityDef");
-            PassiveModifierAbilityDef angerIssues = Helper.CreateDefFromClone(
-                source,
-                "c1a545b3-eb5d-47f0-bf59-82710415d559",
-                skillName);
-            angerIssues.CharacterProgressionData = Helper.CreateDefFromClone(
-                source.CharacterProgressionData,
-                "561c23c1-ce46-4862-b49f-0fd3656cdefc",
-                skillName);
-            angerIssues.ViewElementDef = Helper.CreateDefFromClone(
-                source.ViewElementDef,
-                "da704d9c-354c-4e2b-a61d-af3b23f47522",
-                skillName);
-            angerIssues.StatModifications = new ItemStatModification[]
-              {
+            try
+            {
+                string skillName = "FasterSynapses_AbilityDef";
+                PassiveModifierAbilityDef source = DefCache.GetDef<PassiveModifierAbilityDef>("Thief_AbilityDef");
+                PassiveModifierAbilityDef angerIssues = Helper.CreateDefFromClone(
+                    source,
+                    "c1a545b3-eb5d-47f0-bf59-82710415d559",
+                    skillName);
+                angerIssues.CharacterProgressionData = Helper.CreateDefFromClone(
+                    source.CharacterProgressionData,
+                    "561c23c1-ce46-4862-b49f-0fd3656cdefc",
+                    skillName);
+                angerIssues.ViewElementDef = Helper.CreateDefFromClone(
+                    source.ViewElementDef,
+                    "da704d9c-354c-4e2b-a61d-af3b23f47522",
+                    skillName);
+                angerIssues.StatModifications = new ItemStatModification[]
+                  {
                 new ItemStatModification()
                 {
                     TargetStat = StatModificationTarget.Stealth,
                     Modification = StatModificationType.Add,
                     Value = -0.25f
                 },
-              };
-            angerIssues.ItemTagStatModifications = new EquipmentItemTagStatModification[0];
-            angerIssues.ViewElementDef.DisplayName1.LocalizationKey = "DELIRIUM_PERK_FASTER_SYNAPSES_NAME";
-            angerIssues.ViewElementDef.Description.LocalizationKey = "DELIRIUM_PERK_FASTER_SYNAPSES_DESCRIPTION";
-            Sprite icon = Helper.CreateSpriteFromImageFile("TFTV_DeliriumPerks_Faster_Synapses.png");
-            angerIssues.ViewElementDef.LargeIcon = icon;
-            angerIssues.ViewElementDef.SmallIcon = icon;
+                  };
+                angerIssues.ItemTagStatModifications = new EquipmentItemTagStatModification[0];
+                angerIssues.ViewElementDef.DisplayName1.LocalizationKey = "DELIRIUM_PERK_FASTER_SYNAPSES_NAME";
+                angerIssues.ViewElementDef.Description.LocalizationKey = "DELIRIUM_PERK_FASTER_SYNAPSES_DESCRIPTION";
+                Sprite icon = Helper.CreateSpriteFromImageFile("TFTV_DeliriumPerks_Faster_Synapses.png");
+                angerIssues.ViewElementDef.LargeIcon = icon;
+                angerIssues.ViewElementDef.SmallIcon = icon;
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
         }
         public static void Create_Terror()
         {
-            string skillName = "Terror_AbilityDef";
-            PassiveModifierAbilityDef source = DefCache.GetDef<PassiveModifierAbilityDef>("Thief_AbilityDef");
-            PassiveModifierAbilityDef photophobia = Helper.CreateDefFromClone(
-                source,
-                "42399bdf-b43b-40f4-a471-89d082a31fde",
-                skillName);
-            photophobia.CharacterProgressionData = Helper.CreateDefFromClone(
-                source.CharacterProgressionData,
-                "7e8fff90-a757-4794-81a9-a90cb97cb325",
-                skillName);
-            photophobia.ViewElementDef = Helper.CreateDefFromClone(
-                source.ViewElementDef,
-                "2e4f7cec-80de-423c-914d-865700949a93",
-                skillName);
-            photophobia.StatModifications = new ItemStatModification[]
-              {
+            try
+            {
+                string skillName = "Terror_AbilityDef";
+                PassiveModifierAbilityDef source = DefCache.GetDef<PassiveModifierAbilityDef>("Thief_AbilityDef");
+                PassiveModifierAbilityDef photophobia = Helper.CreateDefFromClone(
+                    source,
+                    "42399bdf-b43b-40f4-a471-89d082a31fde",
+                    skillName);
+                photophobia.CharacterProgressionData = Helper.CreateDefFromClone(
+                    source.CharacterProgressionData,
+                    "7e8fff90-a757-4794-81a9-a90cb97cb325",
+                    skillName);
+                photophobia.ViewElementDef = Helper.CreateDefFromClone(
+                    source.ViewElementDef,
+                    "2e4f7cec-80de-423c-914d-865700949a93",
+                    skillName);
+                photophobia.StatModifications = new ItemStatModification[]
+                  {
                 new ItemStatModification()
                 {
                     TargetStat = StatModificationTarget.Speed,
@@ -420,115 +551,165 @@ namespace TFTV
                     Modification = StatModificationType.Add,
                     Value = 0.25f
                 },
-              };
-            photophobia.ItemTagStatModifications = new EquipmentItemTagStatModification[0];
-            photophobia.ViewElementDef.DisplayName1.LocalizationKey = "DELIRIUM_PERK_TERROR_NAME";
-            photophobia.ViewElementDef.Description.LocalizationKey = "DELIRIUM_PERK_TERROR_DESCRIPTION";
-            Sprite icon = Helper.CreateSpriteFromImageFile("TFTV_DeliriumPerks_Terror.png");
-            photophobia.ViewElementDef.LargeIcon = icon;
-            photophobia.ViewElementDef.SmallIcon = icon;
+                  };
+                photophobia.ItemTagStatModifications = new EquipmentItemTagStatModification[0];
+                photophobia.ViewElementDef.DisplayName1.LocalizationKey = "DELIRIUM_PERK_TERROR_NAME";
+                photophobia.ViewElementDef.Description.LocalizationKey = "DELIRIUM_PERK_TERROR_DESCRIPTION";
+                Sprite icon = Helper.CreateSpriteFromImageFile("TFTV_DeliriumPerks_Terror.png");
+                photophobia.ViewElementDef.LargeIcon = icon;
+                photophobia.ViewElementDef.SmallIcon = icon;
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
         }
         public static void Create_WolverinePassive()
         {
-            string skillName = "WolverinePassive_AbilityDef";
-            PassiveModifierAbilityDef source = DefCache.GetDef<PassiveModifierAbilityDef>("Cautious_AbilityDef");
-            PassiveModifierAbilityDef nailsPassive = Helper.CreateDefFromClone(
-                source,
-                "b3185867-ca87-4e59-af6d-012267a7bd25",
-                skillName);
-            nailsPassive.CharacterProgressionData = Helper.CreateDefFromClone(
-                source.CharacterProgressionData,
-                "3e57b19b-11e1-42b9-81f4-c9cc9fffc42d",
-                skillName);
-            nailsPassive.ViewElementDef = Helper.CreateDefFromClone(
-                source.ViewElementDef,
-                "3f170800-b819-4237-80a3-c9b9daa9dab4",
-                skillName);
-            nailsPassive.StatModifications = new ItemStatModification[]
-              {
-                new ItemStatModification()
-                {
-                    TargetStat = StatModificationTarget.Accuracy,
-                    Modification = StatModificationType.Add,
-                    Value = -0.2f
-                },
-              };
-            nailsPassive.ItemTagStatModifications = new EquipmentItemTagStatModification[0];
-            nailsPassive.ViewElementDef.DisplayName1.LocalizationKey = "DELIRIUM_PERK_WOLVERINE_NAME";
-            nailsPassive.ViewElementDef.Description.LocalizationKey = "DELIRIUM_PERK_WOLVERINE_DESCRIPTION";
-            TacticalAbilityViewElementDef tacticalAbilityViewElementDef = DefCache.GetDef<TacticalAbilityViewElementDef>("E_ViewElement [Mutoid_SlashingStrike_AbilityDef]");
-            Sprite icon = Helper.CreateSpriteFromImageFile("TFTV_DeliriumPerks_Wolverine.png");
-            nailsPassive.ViewElementDef.LargeIcon = icon;
-            nailsPassive.ViewElementDef.SmallIcon = icon;
+            try
+            {
+                string skillName = "WolverinePassive_StatusDef";
+                StatMultiplierStatusDef source = DefCache.GetDef<StatMultiplierStatusDef>("Trembling_StatusDef");
+                StatMultiplierStatusDef wolverinePassiveStatus = Helper.CreateDefFromClone(
+                    source,
+                    "b3185867-ca87-4e59-af6d-012267a7bd25",
+                    skillName);
+               
+                wolverinePassiveStatus.Visuals = Helper.CreateDefFromClone(
+                    source.Visuals,
+                    "3f170800-b819-4237-80a3-c9b9daa9dab4",
+                    skillName);
+                wolverinePassiveStatus.StatsMultipliers[0].Multiplier = 0.8f;
+                wolverinePassiveStatus.ExpireOnEndOfTurn = false;
+                wolverinePassiveStatus.DurationTurns = -1;
+                wolverinePassiveStatus.VisibleOnHealthbar = TacStatusDef.HealthBarVisibility.Hidden;
+                wolverinePassiveStatus.VisibleOnStatusScreen = TacStatusDef.StatusScreenVisibility.VisibleOnBodyPartStatusList;
+                wolverinePassiveStatus.VisibleOnPassiveBar = false;
+
+                
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
         }
         public static void Create_Wolverine()
         {
-            string skillName = "Wolverine_AbilityDef";
-            ApplyStatusAbilityDef source = DefCache.GetDef<ApplyStatusAbilityDef>("Mutoid_Adapt_RightArm_Slasher_AbilityDef");
-            ApplyStatusAbilityDef nails = Helper.CreateDefFromClone(
-                source,
-                "bb65ab9c-94ae-4878-b999-e04946f720aa",
-                skillName);
-            nails.CharacterProgressionData = Helper.CreateDefFromClone(
-                source.CharacterProgressionData,
-                "c050760d-1fb7-4b25-9295-00d98aedad19",
-                skillName);
-            nails.ViewElementDef = Helper.CreateDefFromClone(
-                source.ViewElementDef,
-                "e9bd7acb-6955-414b-a2de-7544c38b7b6e",
-                skillName);
+            try
+            {
+                string skillName = "Wolverine_AbilityDef";
+                ApplyStatusAbilityDef source = DefCache.GetDef<ApplyStatusAbilityDef>("Mutoid_Adapt_RightArm_Slasher_AbilityDef");
+                ApplyStatusAbilityDef nails = Helper.CreateDefFromClone(
+                    source,
+                    "bb65ab9c-94ae-4878-b999-e04946f720aa",
+                    skillName);
+                nails.CharacterProgressionData = Helper.CreateDefFromClone(
+                    source.CharacterProgressionData,
+                    "c050760d-1fb7-4b25-9295-00d98aedad19",
+                    skillName);
+                nails.ViewElementDef = Helper.CreateDefFromClone(
+                    source.ViewElementDef,
+                    "e9bd7acb-6955-414b-a2de-7544c38b7b6e",
+                    skillName);
 
-            nails.ViewElementDef.DisplayName1.LocalizationKey = "DELIRIUM_PERK_WOLVERINE_NAME";
-            nails.ViewElementDef.Description.LocalizationKey = "DELIRIUM_PERK_WOLVERINE_DESCRIPTION";
-            Sprite icon = Helper.CreateSpriteFromImageFile("TFTV_DeliriumPerks_Wolverine.png");
-            nails.ViewElementDef.LargeIcon = icon;
-            nails.ViewElementDef.SmallIcon = icon;
+                nails.ViewElementDef.DisplayName1.LocalizationKey = "DELIRIUM_PERK_WOLVERINE_NAME";
+                nails.ViewElementDef.Description.LocalizationKey = "DELIRIUM_PERK_WOLVERINE_DESCRIPTION";
+                Sprite icon = Helper.CreateSpriteFromImageFile("TFTV_DeliriumPerks_Wolverine.png");
+                nails.ViewElementDef.LargeIcon = icon;
+                nails.ViewElementDef.SmallIcon = icon;
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
         }
+
+        public static void Create_WolverineCured()
+        {
+            try
+            {
+                string skillName = "WolverineCured_AbilityDef";
+                ApplyStatusAbilityDef source = DefCache.GetDef<ApplyStatusAbilityDef>("Mutoid_Adapt_RightArm_Slasher_AbilityDef");
+                ApplyStatusAbilityDef nails = Helper.CreateDefFromClone(
+                    source,
+                    "{51145E82-44FF-45D7-9DDF-F2751D9EDFD8}",
+                    skillName);
+                nails.CharacterProgressionData = Helper.CreateDefFromClone(
+                    source.CharacterProgressionData,
+                    "{785D5A01-2F15-4E77-9B10-6F250AA1AD28}",
+                    skillName);
+                nails.ViewElementDef = Helper.CreateDefFromClone(
+                    source.ViewElementDef,
+                    "{BD0DDD5E-8B12-4DD4-BF3D-843AFB2D82B3}",
+                    skillName);
+
+                nails.ViewElementDef.DisplayName1.LocalizationKey = "DELIRIUM_PERK_WOLVERINE_NAME";
+                nails.ViewElementDef.Description.LocalizationKey = "DELIRIUM_PERK_WOLVERINE_CURED_DESCRIPTION";
+                Sprite icon = Helper.CreateSpriteFromImageFile("TFTV_DeliriumPerks_Wolverine.png");
+                nails.ViewElementDef.LargeIcon = icon;
+                nails.ViewElementDef.SmallIcon = icon;
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
         public static void Create_OneOfThem()
         {
-            string skillName = "OneOfThem_AbilityDef";
-            DamageMultiplierAbilityDef source = DefCache.GetDef<DamageMultiplierAbilityDef>("VirusResistant_DamageMultiplierAbilityDef");
-            DamageMultiplierAbilityDef oneOfUs = Helper.CreateDefFromClone(
-                source,
-                "d4f5f9f2-43b6-4c3e-a5db-78a7a9cccd3e",
-                skillName);
-            oneOfUs.CharacterProgressionData = Helper.CreateDefFromClone(
-                source.CharacterProgressionData,
-                "569a8f7b-41bf-4a0c-93ce-d96006f4ed27",
-                skillName);
-            oneOfUs.ViewElementDef = Helper.CreateDefFromClone(
-                source.ViewElementDef,
-                "3cc4d8c8-739c-403b-92c9-7a6f5c54abb5",
-                skillName);
+            try
+            {
+                string skillName = "OneOfThem_AbilityDef";
+                DamageMultiplierAbilityDef source = DefCache.GetDef<DamageMultiplierAbilityDef>("VirusResistant_DamageMultiplierAbilityDef");
+                DamageMultiplierAbilityDef oneOfUs = Helper.CreateDefFromClone(
+                    source,
+                    "d4f5f9f2-43b6-4c3e-a5db-78a7a9cccd3e",
+                    skillName);
+                oneOfUs.CharacterProgressionData = Helper.CreateDefFromClone(
+                    source.CharacterProgressionData,
+                    "569a8f7b-41bf-4a0c-93ce-d96006f4ed27",
+                    skillName);
+                oneOfUs.ViewElementDef = Helper.CreateDefFromClone(
+                    source.ViewElementDef,
+                    "3cc4d8c8-739c-403b-92c9-7a6f5c54abb5",
+                    skillName);
 
-            oneOfUs.DamageTypeDef = DefCache.GetDef<DamageTypeBaseEffectDef>("Mist_SpawnVoxelDamageTypeEffectDef");
-            oneOfUs.Multiplier = 0;
+                oneOfUs.DamageTypeDef = DefCache.GetDef<DamageTypeBaseEffectDef>("Mist_SpawnVoxelDamageTypeEffectDef");
+                oneOfUs.Multiplier = 0;
 
-            oneOfUs.ViewElementDef.DisplayName1.LocalizationKey = "DELIRIUM_PERK_ONE_OF_THEM_NAME";
-            oneOfUs.ViewElementDef.Description.LocalizationKey = "DELIRIUM_PERK_ONE_OF_THEM_DESCRIPTION";
-            Sprite icon = Helper.CreateSpriteFromImageFile("TFTV_DeliriumPerks_One_Of_Them.png");
-            oneOfUs.ViewElementDef.LargeIcon = icon;
-            oneOfUs.ViewElementDef.SmallIcon = icon;
+                oneOfUs.ViewElementDef.DisplayName1.LocalizationKey = "DELIRIUM_PERK_ONE_OF_THEM_NAME";
+                oneOfUs.ViewElementDef.Description.LocalizationKey = "DELIRIUM_PERK_ONE_OF_THEM_DESCRIPTION";
+                Sprite icon = Helper.CreateSpriteFromImageFile("TFTV_DeliriumPerks_One_Of_Them.png");
+                oneOfUs.ViewElementDef.LargeIcon = icon;
+                oneOfUs.ViewElementDef.SmallIcon = icon;
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
         }
         public static void Create_OneOfThemPassive()
         {
-            string skillName = "OneOfThemPassive_AbilityDef";
-            PassiveModifierAbilityDef source = DefCache.GetDef<PassiveModifierAbilityDef>("Thief_AbilityDef");
-            PassiveModifierAbilityDef oneOfThemPassive = Helper.CreateDefFromClone(
-                source,
-                "ff35f9ef-ad67-42ff-9dcd-0288dba4d636",
-                skillName);
-            oneOfThemPassive.CharacterProgressionData = Helper.CreateDefFromClone(
-                source.CharacterProgressionData,
-                "61e44215-fc05-4383-b9e4-17f384e3d003",
-                skillName);
-            oneOfThemPassive.ViewElementDef = Helper.CreateDefFromClone(
-                source.ViewElementDef,
-                "aaead24e-9dba-4ef7-ba2d-8df142cb9105",
-                skillName);
+            try
+            {
+                string skillName = "OneOfThemPassive_AbilityDef";
+                PassiveModifierAbilityDef source = DefCache.GetDef<PassiveModifierAbilityDef>("Thief_AbilityDef");
+                PassiveModifierAbilityDef oneOfThemPassive = Helper.CreateDefFromClone(
+                    source,
+                    "ff35f9ef-ad67-42ff-9dcd-0288dba4d636",
+                    skillName);
+                oneOfThemPassive.CharacterProgressionData = Helper.CreateDefFromClone(
+                    source.CharacterProgressionData,
+                    "61e44215-fc05-4383-b9e4-17f384e3d003",
+                    skillName);
+                oneOfThemPassive.ViewElementDef = Helper.CreateDefFromClone(
+                    source.ViewElementDef,
+                    "aaead24e-9dba-4ef7-ba2d-8df142cb9105",
+                    skillName);
 
-            oneOfThemPassive.StatModifications = new ItemStatModification[]
-              {
+                oneOfThemPassive.StatModifications = new ItemStatModification[] { };
+               /*   {
                 new ItemStatModification()
                 {
                     TargetStat = StatModificationTarget.Willpower,
@@ -541,16 +722,21 @@ namespace TFTV
                     Modification = StatModificationType.AddMax,
                     Value = -2
                 },
-              };
+                  };*/
 
-            DamageMultiplierStatusDef mistResistance = DefCache.GetDef<DamageMultiplierStatusDef>("MistResistance_StatusDef");
-            mistResistance.Multiplier = 0.0f;
-            oneOfThemPassive.ItemTagStatModifications = new EquipmentItemTagStatModification[0];
-            oneOfThemPassive.ViewElementDef.DisplayName1.LocalizationKey = "DELIRIUM_PERK_ONE_OF_THEM_NAME";
-            oneOfThemPassive.ViewElementDef.Description.LocalizationKey = "DELIRIUM_PERK_ONE_OF_THEM_DESCRIPTION";
-            Sprite icon = Helper.CreateSpriteFromImageFile("TFTV_DeliriumPerks_One_Of_Them.png");
-            oneOfThemPassive.ViewElementDef.LargeIcon = icon;
-            oneOfThemPassive.ViewElementDef.SmallIcon = icon;
+                DamageMultiplierStatusDef mistResistance = DefCache.GetDef<DamageMultiplierStatusDef>("MistResistance_StatusDef");
+                mistResistance.Multiplier = 0.0f;
+                oneOfThemPassive.ItemTagStatModifications = new EquipmentItemTagStatModification[0];
+                oneOfThemPassive.ViewElementDef.DisplayName1.LocalizationKey = "DELIRIUM_PERK_ONE_OF_THEM_NAME";
+                oneOfThemPassive.ViewElementDef.Description.LocalizationKey = "DELIRIUM_PERK_ONE_OF_THEM_DESCRIPTION";
+                Sprite icon = Helper.CreateSpriteFromImageFile("TFTV_DeliriumPerks_One_Of_Them.png");
+                oneOfThemPassive.ViewElementDef.LargeIcon = icon;
+                oneOfThemPassive.ViewElementDef.SmallIcon = icon;
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
         }
         public static void Create_Feral()
         {
@@ -596,6 +782,7 @@ namespace TFTV
                 feral.ViewElementDef.LargeIcon = icon;
                 feral.ViewElementDef.SmallIcon = icon;
                 feralStatusDef.ExpireOnEndOfTurn = false;
+
             }
             catch (Exception e)
             {
@@ -641,8 +828,65 @@ namespace TFTV
 
             hallucinatingStatus.DurationTurns = 2;
         }
+
+
+        internal static void Create_New_Derealization()
+        {
+            try
+            {
+                string skillName = "Derealization_AbilityDef";
+                string skillGUID = "{2DF689FD-EF69-48F4-B2BF-BD95B6510C7D}";
+                string progressionGUID = "{C661D352-502C-4B16-BBEE-21860539341D}";
+                string viewElementGUID = "{68B7F31A-59C7-4A9A-BC70-45DC26040FCE}";
+                PassiveModifierAbilityDef source = DefCache.GetDef<PassiveModifierAbilityDef>("Thief_AbilityDef");
+                PassiveModifierAbilityDef newAbility = Helper.CreateDefFromClone(
+                    source,
+                    skillGUID,
+                    skillName);
+                newAbility.CharacterProgressionData = Helper.CreateDefFromClone(
+                    source.CharacterProgressionData,
+                    progressionGUID,
+                    skillName);
+                newAbility.ViewElementDef = Helper.CreateDefFromClone(
+                    source.ViewElementDef,
+                    viewElementGUID,
+                    skillName);
+                newAbility.StatModifications = new ItemStatModification[]
+                {
+                new ItemStatModification()
+                    {
+                    TargetStat = StatModificationTarget.Endurance,
+                    Modification = StatModificationType.Add,
+                    Value = -5
+                    },
+
+
+                new ItemStatModification()
+                {
+                    TargetStat = StatModificationTarget.Endurance,
+                    Modification = StatModificationType.AddMax,
+                    Value = -5
+                },
+                };
+
+                newAbility.ViewElementDef.DisplayName1.LocalizationKey = "DELIRIUM_PERK_DEREALIZATION_NAME";
+                newAbility.ViewElementDef.Description.LocalizationKey = "DELIRIUM_PERK_DEREALIZATION_DESCRIPTION";
+                Sprite icon = Helper.CreateSpriteFromImageFile("TFTV_DeliriumPerks_Derealization.png");
+                newAbility.ViewElementDef.LargeIcon = icon;
+                newAbility.ViewElementDef.SmallIcon = icon;
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+
+
         public static void Create_DerealizationIgnorePain()
         {
+            
             string skillName = "DerealizationIgnorePain_AbilityDef";
             ApplyStatusAbilityDef source = DefCache.GetDef<ApplyStatusAbilityDef>("IgnorePain_AbilityDef");
             ApplyStatusAbilityDef derealizationIgnorePain = Helper.CreateDefFromClone(
@@ -1185,7 +1429,7 @@ namespace TFTV
                     "3F74FAF1-1A87-4E2A-AEC2-CBB0BA5A14E0",
                     skillName);
                 revenantBerserker.StatModifications = new ItemStatModification[]
-                { 
+                {
                 new ItemStatModification {TargetStat = StatModificationTarget.Speed, Modification = StatModificationType.AddMax, Value = 4},
                 new ItemStatModification {TargetStat = StatModificationTarget.Speed, Modification = StatModificationType.Add, Value = 4},
                 };
@@ -1410,7 +1654,7 @@ namespace TFTV
                     "B737C223-52D0-413B-B48F-978AD5D5BB33",
                     skillName);
                 revenantResistance.DamageTypeDefs = new DamageTypeBaseEffectDef[1];
-                
+
                 revenantResistance.Visuals.LargeIcon = Helper.CreateSpriteFromImageFile("TFTV_RevenantResistance.png");
                 revenantResistance.Visuals.SmallIcon = Helper.CreateSpriteFromImageFile("TFTV_RevenantResistance.png");
 
@@ -1685,7 +1929,7 @@ namespace TFTV
                     tagName + "_GameTagDef");
 
 
-            //    TFTVLogger.Always("Human Enemy Tags created");
+                //    TFTVLogger.Always("Human Enemy Tags created");
 
             }
 

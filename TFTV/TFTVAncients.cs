@@ -31,7 +31,6 @@ using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.Entities.Statuses;
 using PhoenixPoint.Tactical.Entities.Weapons;
 using PhoenixPoint.Tactical.Levels;
-using SoftMasking.Samples;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -40,7 +39,7 @@ using System.Reflection;
 using UnityEngine;
 using UnityEngine.UI;
 using static PhoenixPoint.Common.Entities.Items.ItemManufacturing;
-using static UnityStandardAssets.Utility.TimedObjectActivator;
+
 
 namespace TFTV
 {
@@ -162,7 +161,7 @@ namespace TFTV
                 {
                     MethodInfo tryGetShootTargetMethod = typeof(MassShootTargetActorEffect).GetMethod("TryGetShootTarget", BindingFlags.Instance | BindingFlags.NonPublic);
                     WeaponDef beamHead = DefCache.GetDef<WeaponDef>("HumanoidGuardian_Head_WeaponDef");
-                    beamHead.APToUsePerc = 0;
+                 //   beamHead.APToUsePerc = 0;
 
                     TacticalAbilityTarget tacticalAbilityTarget = (TacticalAbilityTarget)tryGetShootTargetMethod.Invoke(__instance, new object[] { target });
                     if (tacticalAbilityTarget == null || tacticalAbilityTarget.Actor.IsDead)
@@ -172,7 +171,7 @@ namespace TFTV
 
                     TacticalActorBase sourceTacticalActorBase = TacUtil.GetSourceTacticalActorBase(__instance.Source);
                     List<TacticalActor> list = sourceTacticalActorBase.TacticalFaction.TacticalActors.Where((TacticalActor a) => a.TacticalActorBaseDef == __instance.MassShootTargetActorEffectDef.ShootersActorDef).ToList();
-                    using (new MultiForceTargetableLock(sourceTacticalActorBase.Map.GetActors<TacticalActor>().Where(ta => ta.IsAlive)))
+                    using (new MultiForceTargetableLock(sourceTacticalActorBase.Map.GetActors<TacticalActor>().Where(ta => ta.IsAlive).Where(ta => !ta.Status.HasStatus(AncientGuardianStealthStatus))))
                     {
                         foreach (TacticalActor item in list)
                         {
@@ -233,18 +232,25 @@ namespace TFTV
 
         }
 
-      //  public static int HopliteBeamWeaponKludge = 0;
+        //  public static int HopliteBeamWeaponKludge = 0;
 
+        public static Dictionary<TacticalActor, float> HopliteAPMassShoot = new Dictionary<TacticalActor, float>();
+        
         [HarmonyPatch(typeof(MassShootTargetActorEffect), "FaceAndShootAtTarget")]
 
         public static class MassShootTargetActorEffect_FaceAndShootAtTarget_GuardiansCrossBeams_Patch
         {
+
+          
+        
             public static void Postfix(TacticalActor shooterActor)
             {
                 try
                 {
-                    shooterActor.CharacterStats.ActionPoints.Set(0.75f+ shooterActor.CharacterStats.ActionPoints, true);
-                   // TFTVLogger.Always($"character now has {shooterActor.CharacterStats.ActionPoints} action points");
+                    HopliteAPMassShoot.Add(shooterActor, shooterActor.CharacterStats.ActionPoints);
+
+                 
+                    TFTVLogger.Always($"{shooterActor.name} has {shooterActor.CharacterStats.ActionPoints} action points");
 
                     /*  WeaponDef beamHead = DefCache.GetDef<WeaponDef>("HumanoidGuardian_Head_WeaponDef");
                       beamHead.APToUsePerc = 0;
@@ -422,15 +428,17 @@ namespace TFTV
 
                     ReDeployHopliteShield(ability, __instance, parameter);
 
-                /*    if (HopliteBeamWeaponKludge > 0)
+                    if (HopliteAPMassShoot.Count > 0)
                     {
-                        HopliteBeamWeaponKludge -= 1;
+                        if (HopliteAPMassShoot.ContainsKey(__instance)) 
+                        {
+                            TFTVLogger.Always($"{__instance.name} has {__instance.CharacterStats.ActionPoints} ");
+                            __instance.CharacterStats.ActionPoints.Set(HopliteAPMassShoot[__instance]);
+                            TFTVLogger.Always($"but now {__instance.name} has {__instance.CharacterStats.ActionPoints} ");
+                            HopliteAPMassShoot.Remove(__instance);
+                        }
                     }
-                    else
-                    {
-                        DefCache.GetDef<WeaponDef>("HumanoidGuardian_Head_WeaponDef").APToUsePerc = 75;
-
-                    }*/
+                  
                 }
 
                 catch (Exception e)
@@ -1447,7 +1455,10 @@ namespace TFTV
                         faction = controller.GetFactionByCommandName("px");
                         countUndamagedGuardians = 8 - controller.Difficulty.Order;
                     }
-                    CyclopsDefenseStatus.Multiplier = 0.5f;
+
+                    CheckCyclopsDefense();
+                    //CyclopsDefenseStatus.Multiplier = 0.5f;
+                                 
                     List<TacticalActor> damagedGuardians = new List<TacticalActor>();
 
                     TFTVLogger.Always($"AdjustAncientsOnDeployment, undamaged hoplites count is {countUndamagedGuardians}");

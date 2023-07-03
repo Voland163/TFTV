@@ -456,6 +456,9 @@ namespace TFTV
                     string gUIDVisuals = "{6272B177-49AA-4F81-9C05-9CB9026A26C5}";
 
                     DamageMultiplierStatusDef source = DefCache.GetDef<DamageMultiplierStatusDef>("BionicResistances_StatusDef");
+
+                    TFTVLogger.Always($"{source.DamageTypeDefs.Count()}");
+
                     DamageMultiplierStatusDef newStatus = Helper.CreateDefFromClone(
                         source,
                         gUID,
@@ -473,13 +476,21 @@ namespace TFTV
                     newStatus.Multiplier = 0.75f;
                     newStatus.MultiplierType = DamageMultiplierType.Incoming;
                     newStatus.Range = -1;
+                    newStatus.DamageTypeDefs = source.DamageTypeDefs;
+
+                    TFTVLogger.Always($"{newStatus.DamageTypeDefs.Count()}");
+
                     List<DamageTypeBaseEffectDef> damageTypeBaseEffectDefs = new List<DamageTypeBaseEffectDef>();
                     damageTypeBaseEffectDefs.AddRange(newStatus.DamageTypeDefs);
                     damageTypeBaseEffectDefs.Add(fireDamage);
                     damageTypeBaseEffectDefs.Add(standardDamageTypeEffectDef);
                     damageTypeBaseEffectDefs.Add(acidDamage);
 
+                    TFTVLogger.Always($"damageTypeBaseEffectDefs {damageTypeBaseEffectDefs.Count()}");
+
                     newStatus.DamageTypeDefs = damageTypeBaseEffectDefs.ToArray();
+
+                    TFTVLogger.Always($"{newStatus.DamageTypeDefs.Count()}");
 
                     newStatus.Visuals.LargeIcon = Helper.CreateSpriteFromImageFile("UI_AbilitiesIcon_HunkerDown_2-2.png");
                     newStatus.Visuals.SmallIcon = Helper.CreateSpriteFromImageFile("UI_AbilitiesIcon_HunkerDown_2-2.png");
@@ -630,8 +641,8 @@ namespace TFTV
                     };
                 }
 
-                arthronAcidGL.DamagePayload.DamageKeywords[1].Value = 20;
-                arthronAcidEliteGL.DamagePayload.DamageKeywords[1].Value = 30;
+                arthronAcidGL.DamagePayload.DamageKeywords[1].Value = 10;
+                arthronAcidEliteGL.DamagePayload.DamageKeywords[1].Value = 20;
             }
             catch (Exception e)
             {

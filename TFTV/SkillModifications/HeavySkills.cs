@@ -121,6 +121,7 @@ namespace PRMBetterClasses.SkillModifications
                 "E_AbilityCostModifier [HunkerDown_AbilityDef]");
             hunkerDownApCostModifier.DurationTurns = 1;
             hunkerDownApCostModifier.ExpireOnEndOfTurn = true;
+            hunkerDownApCostModifier.SingleInstance = true;
             //hunkerDownApCostModifier.AbilityCostModification.ActionPointModType = TacticalAbilityModificationType.Multiply;
             //hunkerDownApCostModifier.AbilityCostModification.ActionPointMod = 2f / 3;
 
@@ -145,7 +146,7 @@ namespace PRMBetterClasses.SkillModifications
             hunkerDown.EndsTurn = true;
             hunkerDown.ActionPointCost = 0.25f;
             hunkerDown.WillPointCost = 2.0f;
-            hunkerDown.DisablingStatuses = new StatusDef[] { hunkerDown.StatusDef };
+            hunkerDown.DisablingStatuses = new StatusDef[0];// { hunkerDown.StatusDef };
             hunkerDown.TraitsRequired = new string[] { "start", "ability", "move" };
             hunkerDown.TraitsToApply = new string[] { "ability" };
             hunkerDown.ShowNotificationOnUse = true;

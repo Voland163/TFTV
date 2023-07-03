@@ -98,6 +98,8 @@ namespace TFTV
                 {
                     HomeScreenViewContext = ____context;
                     ModSettingControllerHook = __instance.HomeScreenModules.ModManagerModule.SettingsModSettingPrefab;
+
+                   
                     //  TFTVLogger.Always($"Testing");
 
                 }

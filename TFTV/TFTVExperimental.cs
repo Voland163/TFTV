@@ -1,43 +1,37 @@
-﻿using Base;
-using Base.AI;
-using Base.AI.Defs;
-using Base.Core;
-using Base.Defs;
+﻿using Base.Defs;
 using Base.Entities;
+using Base.Entities.Abilities;
+using Base.Entities.Effects;
 using Base.Entities.Statuses;
+using Base.Input;
 using Base.Levels;
-using Base.Utils;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
-using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
-using PhoenixPoint.Common.Levels.Missions;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.Interception.Equipments;
 using PhoenixPoint.Geoscape.Entities.Sites;
 using PhoenixPoint.Geoscape.Levels;
-using PhoenixPoint.Geoscape.View.ViewControllers.HavenDetails;
-using PhoenixPoint.Tactical.AI.Actions;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
+using PhoenixPoint.Tactical.Entities.DamageKeywords;
+using PhoenixPoint.Tactical.Entities.Effects;
 using PhoenixPoint.Tactical.Entities.Effects.DamageTypes;
 using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.Entities.Statuses;
 using PhoenixPoint.Tactical.Entities.Weapons;
 using PhoenixPoint.Tactical.Levels;
-using PhoenixPoint.Tactical.Levels.Missions;
 using PhoenixPoint.Tactical.Levels.Mist;
-using SETUtil.Extend;
+using PhoenixPoint.Tactical.UI.Abilities;
+using PhoenixPoint.Tactical.View.ViewControllers;
+using PhoenixPoint.Tactical.View.ViewModules;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
-using System.Reflection.Emit;
 using UnityEngine;
-using UnityEngine.SceneManagement;
-using static EnviroSkyMgr;
 
 
 namespace TFTV
@@ -53,28 +47,564 @@ namespace TFTV
 
         public static List<TacticalVoxel> VoxelsOnFire = new List<TacticalVoxel>();
 
+       
 
-     /*   internal virtual void TriggerHurt(DamageResult damageResult)
+        [HarmonyPatch(typeof(UIModuleAbilityConfirmationButton), "SetAbility")]
+        public static class UIModuleAbilityConfirmationButton_SetAbility_patch
         {
-            var hurtReactionAbility = GetAbility<TacticalHurtReactionAbility>();
-            if (IsDead || (hurtReactionAbility != null && hurtReactionAbility.TacticalHurtReactionAbilityDef.TriggerOnDamage && hurtReactionAbility.IsEnabled(IgnoredAbilityDisabledStatesFilter.IgnoreNoValidTargetsFilter)))
+            public static void Postfix(UIModuleAbilityConfirmationButton __instance, TacticalAbility ability)
             {
-                return;
+                try
+                {
+                   // EquipmentDef repairKit = DefCache.GetDef<EquipmentDef>("FieldRepairKit_EquipmentDef");
+
+              
+                    if (ability.AbilityDef.name == "DoTMedkit") 
+                    {
+                     //   TFTVLogger.Always($"the ability is {ability.AbilityDef.name}");                    
+                       __instance.DamageTypeTemplateShort.gameObject.SetActive(false);
+                        __instance.DamageTypeTemplateExtended.gameObject.SetActive(false);
+
+
+                    }
+                    
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
+
+        /*   [HarmonyPatch(typeof(UIModuleWeaponSelection), "HandleEquipments")]
+            public static class UIModuleWeaponSelection_HandleEquipments_patch
+           {
+               public static void Postfix(UIModuleWeaponSelection __instance, Equipment ____selectedEquipment)
+               {
+                   try
+                   {
+                       EquipmentDef repairKit = DefCache.GetDef<EquipmentDef>("FieldRepairKit_EquipmentDef");
+
+                       if (____selectedEquipment.EquipmentDef==repairKit) 
+                       {
+                           TFTVLogger.Always("got here");
+                           __instance.DamageTypeVisualsTemplate.DamageTypeIcon.gameObject.SetActive(false);
+                           __instance.DamageTypeVisualsTemplate.DamageText.gameObject.SetActive(false);
+
+
+                       }
+
+
+
+                   }
+                   catch (Exception e)
+                   {
+                       TFTVLogger.Error(e);
+                       throw;
+                   }
+               }
+           }*/
+
+
+        [HarmonyPatch(typeof(UIModuleWeaponSelection), "SetHealAmount")]
+        public static class UIModuleWeaponSelection_SetHealAmount_patch
+        {
+            public static void Prefix(UIModuleWeaponSelection __instance, ref float amount)
+            {
+                try
+                {
+                    if (amount <= 1)
+                    {
+
+                        amount = 0;
+                    }
+
+
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
+
+
+        // UIModuleAbilities
+
+        // SlotStateStatus
+
+        /* [HarmonyPatch(typeof(TacticalActorBase), "GetDamageMultiplierFor")]
+         public static class TacticalActorBase_GetDamageMultiplierFor_patch
+         {
+             public static void Postfix(TacticalActorBase __instance, ref float __result, DamageTypeBaseEffectDef damageType)
+             {
+                 try
+                 {
+                     AcidDamageTypeEffectDef acidDamageTypeEffectDef = DefCache.GetDef<AcidDamageTypeEffectDef>("Acid_DamageOverTimeDamageTypeEffectDef");
+
+                     if (damageType == acidDamageTypeEffectDef)
+                     {
+                         TFTVLogger.Always($"GetDamageMultiplierFor  {__instance.name} and result is {__result}");
+                         __result = 1;
+                     }
+
+                 }
+                 catch (Exception e)
+                 {
+                     TFTVLogger.Error(e);
+                     throw;
+                 }
+             }
+         }*/
+
+
+        /*  [HarmonyPatch(typeof(DamageAccumulation), "GetPureDamageBonusFor")]
+          public static class DamageAccumulation_GetPureDamageBonusFor_patch
+          {
+              public static void Postfix(DamageAccumulation __instance, IDamageReceiver target, float __result)
+              {
+                  try
+                  {
+                      if (__result != 0)
+                      {
+
+                          TFTVLogger.Always($"GetPureDamageBonusFor {target.GetDisplayName()}, result is {__result}");
+                      }
+
+                  }
+                  catch (Exception e)
+                  {
+                      TFTVLogger.Error(e);
+                      throw;
+                  }
+              }
+          }*/
+
+
+
+
+
+        /*     [HarmonyPatch(typeof(AddStatusDamageKeywordData), "ProcessKeywordDataInternal")]
+          public static class AddStatusDamageKeywordData_ProcessKeywordDataInternal_Patch
+          {
+              public static void Postfix(AddStatusDamageKeywordData __instance, DamageAccumulation.TargetData data)
+              {
+                  try
+                  {
+                      if (__instance.DamageKeywordDef == Shared.SharedDamageKeywords.AcidKeyword)
+                      {
+                          TFTVLogger.Always($"target {data.Target.GetSlotName()}");
+
+                          if (data.Target is ItemSlot)
+                          {
+
+                              ItemSlot itemSlot = (ItemSlot) data.Target;
+
+                              if (itemSlot.DisplayName == "LEG")
+                              {
+                                  TacticalActor tacticalActor = data.Target.GetActor() as TacticalActor;
+
+                                  itemSlot = tacticalActor.BodyState.GetSlot("Legs");
+                                  TFTVLogger.Always($"itemslot name now {itemSlot.GetSlotName()}");
+                                  TacticalItem tacticalItem = itemSlot.GetAllDirectItems(onlyBodyparts: true).FirstOrDefault();
+                                  if (tacticalItem != null && tacticalItem.GameTags.Contains(Shared.SharedGameTags.BionicalTag))
+                                  {
+                                      TFTVLogger.Always($"Found bionic item {tacticalItem.DisplayName}");
+                                      data.Target.GetActor().RemoveAbilitiesFromSource(tacticalItem);
+                                      // SlotStateStatusDef source = DefCache.GetDef<SlotStateStatusDef>("DisabledElectronicsAcidSlot_StatusDef");
+
+                                  }
+                              }
+                              else
+                              {
+                                  TFTVLogger.Always($"target {data.Target.GetSlotName()} is itemslot {itemSlot.DisplayName}");
+
+                                  TacticalItem tacticalItem = itemSlot.GetAllDirectItems(onlyBodyparts: true).FirstOrDefault();
+                                  if (tacticalItem != null && tacticalItem.GameTags.Contains(Shared.SharedGameTags.BionicalTag))
+                                  {
+                                      TFTVLogger.Always($"Found bionic item {tacticalItem.DisplayName}");
+                                      data.Target.GetActor().RemoveAbilitiesFromSource(tacticalItem);
+                                      // SlotStateStatusDef source = DefCache.GetDef<SlotStateStatusDef>("DisabledElectronicsAcidSlot_StatusDef");
+
+                                  }
+                              }
+
+                          }
+
+
+                      }
+
+                  }
+                  catch (Exception e)
+                  {
+                      TFTVLogger.Error(e);
+                      throw;
+                  }
+              }
+          }
+
+          */
+
+        [HarmonyPatch(typeof(AddStatusDamageKeywordData), "ApplyDamageMultipliersToValue")]
+        public static class AddStatusDamageKeywordData_ApplyDamageMultipliersToValue_Patch
+        {
+            public static void Postfix(AddStatusDamageKeywordData __instance, float value, ref float __result)
+            {
+                try
+                {
+                    if (__instance.DamageKeywordDef == Shared.SharedDamageKeywords.AcidKeyword)
+                    {
+                        // TFTVLogger.Always($"Applyin acid; setting result to value (current value {value} and result {__result})");
+                        __result = value;
+                    }
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
+
+
+        /*   [HarmonyPatch(typeof(DamageKeyword), "AddKeywordStatus")]
+             public static class DamageOverTimeResistanceStatus_ApplyResistance_Patch
+             {
+                 public static void Postfix(IDamageReceiver recv, DamageAccumulation.TargetData data, StatusDef statusDef, int value, object customStatusTarget = null)
+                 {
+                     try
+                     {
+
+
+                       TFTVLogger.Always($"AddKeywordStatus value {value}");
+
+
+                     }
+                     catch (Exception e)
+                     {
+                         TFTVLogger.Error(e);
+                         throw;
+                     }
+                 }
+             }*/
+
+
+
+
+        /* [HarmonyPatch(typeof(DamageAccumulation), "AddTargetStatus")]
+         public static class DamageAccumulation_AddTargetStatus_Patch
+         {
+             public static void Prefix(DamageAccumulation __instance, StatusDef statusDef, int tacStatusValue, IDamageReceiver target)
+             {
+                 try
+                 {
+
+
+                     if (statusDef == DefCache.GetDef<AcidStatusDef>("Acid_StatusDef"))
+                     {
+
+
+
+
+                         TFTVLogger.Always($"tacstatusvalue is {tacStatusValue}");
+                     }
+
+
+                 }
+                 catch (Exception e)
+                 {
+                     TFTVLogger.Error(e);
+                     throw;
+                 }
+             }
+         }*/
+
+
+
+        /*  [HarmonyPatch(typeof(DamageOverTimeStatus), "GetDamageMultiplier")]
+          public static class DamageOverTimeStatus_GetDamageMultiplier_Patch
+          {
+              public static void Postfix(DamageOverTimeStatus __instance, ref float __result)
+              {
+                  try
+                  {
+                      TFTVLogger.Always($"GetDamageMultiplier for {__instance.DamageOverTimeStatusDef.name} and result is {__result}");
+
+                      AcidStatusDef acidDamage = DefCache.GetDef<AcidStatusDef>("Acid_StatusDef");
+
+                      if (__instance.DamageOverTimeStatusDef == acidDamage) 
+                      {
+                          TFTVLogger.Always($"dot status acid {__result}");
+                          __result = 1;
+                          TFTVLogger.Always($"new dot status acid {__result}");
+                      }
+
+
+                  }
+                  catch (Exception e)
+                  {
+                      TFTVLogger.Error(e);
+                      throw;
+                  }
+              }
+          }*/
+
+        /*  [HarmonyPatch(typeof(DamageAccumulation), "GetSourceDamageMultiplier")]
+          public static class DamageAccumulation_GetSourceDamageMultiplier_Patch
+          {
+              public static void Postfix(DamageAccumulation __instance, DamageTypeBaseEffectDef damageType, float __result)
+              {
+                  try
+                  {
+                      if (!damageType.name.Equals("Projectile_StandardDamageTypeEffectDef"))
+                          {
+
+                          TFTVLogger.Always($"source actor {__instance?.SourceActor?.name} damageType is {damageType.name} and multiplier is {__result}");
+                      }
+
+
+                  }
+                  catch (Exception e)
+                  {
+                      TFTVLogger.Error(e);
+                      throw;
+                  }
+              }
+          }*/
+
+        //Patch to prevent BionicResistances from being removed when Acid applies Disabled Status
+        [HarmonyPatch(typeof(ActorComponent), "RemoveAbility", new Type[] { typeof(Ability) })]
+        public static class ActorComponent_RemoveAbilitiesFromSource_Patch
+        {
+            public static bool Prefix(ActorComponent __instance, Ability ability)
+            {
+                try
+                {
+
+
+                    if (ability.AbilityDef.name == "BionicDamageMultipliers_AbilityDef")
+                    {
+
+                        return false;
+                    }
+
+                    // TFTVLogger.Always($"Removing ability {ability.AbilityDef.name}");
+
+                    return true;
+
+
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
+
+        [HarmonyPatch(typeof(AcidDamageEffect), "AddTarget")]
+        public static class AcidDamageEffect_ProcessHealAbilityDef_Patch
+        {
+            public static bool Prefix(AcidDamageEffect __instance, EffectTarget target, DamageAccumulation accum, IDamageReceiver recv, Vector3 damageOrigin, Vector3 impactForce, CastHit impactHit)
+            {
+                try
+                {
+                    //   DamageMultiplierStatusDef scyllaResistance = DefCache.GetDef<DamageMultiplierStatusDef>("ScyllaDamageResistance");
+                    float num3 = 1;
+
+                    TacticalActor hitActor = recv?.GetActor() as TacticalActor;
+                    ItemSlot itemSlot = recv as ItemSlot;
+                    ItemSlot additionalSlot = null; //in case Leg                   
+
+                    ItemSlotStatsModifyStatusDef electricReinforcementStatus = DefCache.GetDef<ItemSlotStatsModifyStatusDef>("E_Status [ElectricReinforcement_AbilityDef]");
+
+                  //  ItemSlotStatsModifyStatus
+                    if (hitActor != null) 
+                    {
+                        if (itemSlot!=null && itemSlot.DisplayName == "LEG")
+                        {
+                            additionalSlot = hitActor.BodyState.GetSlot("Legs");
+                        }
+                        TFTVLogger.Always($"itemslot is {itemSlot?.GetSlotName()} and additionalslot is {additionalSlot?.GetSlotName()}");
+
+                        if (itemSlot != null) 
+                        {
+                            StatModification electricReinforcementMod= itemSlot.DamageImplementation.GetArmor().GetValueModifications().FirstOrDefault(mod => mod.Source is ItemSlotStatsModifyStatus status && status.ItemSlotStatsModifyStatusDef == electricReinforcementStatus);
+
+                            if (electricReinforcementMod != null)
+                            {
+                                itemSlot.DamageImplementation.GetArmor().RemoveStatModificationsWithSource(electricReinforcementMod.Source);
+                            } 
+                        }
+                        
+
+
+                        foreach (var damageMultiplier in hitActor.GetDamageMultipliers(DamageMultiplierType.Incoming, __instance.AcidDamageEffectDef.DamageTypeDef))
+                        {
+                           // TFTVLogger.Always($"multiplier is {damageMultiplier.GetMultiplier(recv, recv)} ");
+                            num3 *= damageMultiplier.GetMultiplier(recv, recv);
+                        }
+
+                        TFTVLogger.Always($"{hitActor.name} has {num3} total acid damage resistance");
+
+                        
+                    }
+
+                    bool num = (float)recv.GetArmor().Value > 1E-05f;
+                    float armorDamage = num ? accum.Amount : 0f;
+                    // float armorDamage = (num ? (accum.Amount * accum.GetSourceDamageMultiplierForReceiver(recv)) : 0f);
+                    float num2 = num ? 0f : (accum.Amount * num3);
+                    TFTVLogger.Always($"damage to armor from acid is {armorDamage}; damage to HP is {num2}");
+
+                    DamageAccumulation.TargetData data = new DamageAccumulation.TargetData
+                    {
+                        Target = recv,
+                        AmountApplied = num2,
+                        DamageResult = new DamageResult
+                        {
+                            Source = __instance.Source,
+                            ArmorDamage = armorDamage,
+                            HealthDamage = num2,
+                            ImpactForce = impactForce,
+                            ImpactHit = impactHit,
+                            DamageOrigin = damageOrigin,
+                            DamageTypeDef = __instance.AcidDamageEffectDef.DamageTypeDef
+                        }
+                    };
+                    SlotStateStatusDef disabled = DefCache.GetDef<SlotStateStatusDef>("DisabledElectronicSlot_StatusDef");
+                  
+                    if (num2 > 0)
+                    {
+                       
+                       
+
+                        TacticalActor tacticalActor = recv.GetActor() as TacticalActor;
+
+                       
+
+                        /*   if (itemSlot.DisplayName == "ARM")
+                           {
+                               additionalSlot = tacticalActor.BodyState.GetSlot("Torso");
+                           }*/
+
+                        tacticalActor.ApplyDamage(new DamageResult
+                        {
+                            ApplyStatuses = new List<StatusApplication>
+                                { new StatusApplication
+                                { StatusDef = disabled, StatusSource = __instance, StatusTarget = itemSlot} }
+                        });
+
+                        if (additionalSlot != null)
+                        {
+                            tacticalActor.ApplyDamage(new DamageResult
+                            {
+                                ApplyStatuses = new List<StatusApplication>
+                                { new StatusApplication
+                                { StatusDef = disabled, StatusSource = __instance, StatusTarget = additionalSlot} }
+                            });
+
+                        }
+
+
+                      //  TFTVLogger.Always("Status should be applied");
+                    }
+                    accum.AddGeneratedTarget(data);
+
+                    return false;
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
+
+
+        /*    [HarmonyPatch(typeof(AbilitySummaryData), "ProcessHealAbilityDef")]
+            public static class AbilitySummaryData_ProcessHealAbilityDef_Patch
+            {
+                public static void Postfix(AbilitySummaryData __instance, HealAbilityDef healAbilityDef)
+                {
+                    try
+                    {
+                        TFTVLogger.Always($"ProcessHealAbilityDef running");
+                        if ((bool)healAbilityDef.GeneralHealSummary && healAbilityDef.GeneralHealAmount > 0f)
+                        {
+                            TFTVLogger.Always($"{healAbilityDef.GeneralHealSummary} and {healAbilityDef.GeneralHealAmount}");
+
+                        }
+
+                        TFTVLogger.Always($"Keywords count is {__instance.Keywords.Count}");
+
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                        throw;
+                    }
+                }
             }
 
-            bool useModFlinching = true; // Use a global flag for the mod 
-            if (useModFlinching && _ragdollDummy != null && _ragdollDummy.CanFlinch)
+            [HarmonyPatch(typeof(AbilitySummaryData), "ProcessHealAbility")]
+            public static class AbilitySummaryData_ProcessHealAbility_Patch
             {
-                DoTriggerHurt(damageResult, damageResult.forceHurt);
-                return;
-            }
+                public static void Prefix(AbilitySummaryData __instance, HealAbility healAbility)
+                {
+                    try
+                    {
+                        TFTVLogger.Always($"ProcessHealAbility running");
+                        TFTVLogger.Always($"Keywords count is {__instance.Keywords.Count}");
 
-            _pendingHurtDamage = damageResult;
-            if (_waitingForHurtReactionCrt == null || _waitingForHurtReactionCrt.Stopped)
-            {
-                _waitingForHurtReactionCrt = Timing.Start(PollForPendingHurtReaction(damageResult.forceHurt));
+                        if (__instance.Keywords.Count() > 0)
+                        {
+                            KeywordData keywordData = __instance.Keywords.First((KeywordData kd) => kd.Id == "GeneralHeal");
+
+                            if (keywordData == null)
+                            {
+                                TFTVLogger.Always("somehow null!");
+                            }
+                        }
+
+
+
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                        throw;
+                    }
+                }
             }
-        }*/
+        */
+
+
+        /*   internal virtual void TriggerHurt(DamageResult damageResult)
+           {
+               var hurtReactionAbility = GetAbility<TacticalHurtReactionAbility>();
+               if (IsDead || (hurtReactionAbility != null && hurtReactionAbility.TacticalHurtReactionAbilityDef.TriggerOnDamage && hurtReactionAbility.IsEnabled(IgnoredAbilityDisabledStatesFilter.IgnoreNoValidTargetsFilter)))
+               {
+                   return;
+               }
+
+               bool useModFlinching = true; // Use a global flag for the mod 
+               if (useModFlinching && _ragdollDummy != null && _ragdollDummy.CanFlinch)
+               {
+                   DoTriggerHurt(damageResult, damageResult.forceHurt);
+                   return;
+               }
+
+               _pendingHurtDamage = damageResult;
+               if (_waitingForHurtReactionCrt == null || _waitingForHurtReactionCrt.Stopped)
+               {
+                   _waitingForHurtReactionCrt = Timing.Start(PollForPendingHurtReaction(damageResult.forceHurt));
+               }
+           }*/
 
 
         /*
@@ -86,7 +616,7 @@ namespace TFTV
             {
                 try
                 {
-                    
+
 
                     MethodInfo doTriggerHurtMethod = typeof(TacticalActor).GetMethod("DoTriggerHurt", BindingFlags.NonPublic | BindingFlags.Instance);
                     MethodInfo pollForPendingHurtReaction = typeof(TacticalActor).GetMethod("PollForPendingHurtReaction", BindingFlags.NonPublic | BindingFlags.Instance); 
@@ -133,7 +663,7 @@ namespace TFTV
                 }
             }
         }
-     
+
 
 
 
@@ -146,7 +676,7 @@ namespace TFTV
                 {
                     TFTVLogger.Always($"SetFlinchingEnabled invoked");
                     ____ragdollDummy.SetFlinchingEnabled(true);
-  
+
                 }
                 catch (Exception e)
                 {
@@ -166,7 +696,7 @@ namespace TFTV
                 {
                     TFTVLogger.Always($"AddFlinch invoked prefix, ragdollBlendtimeTotal is {____ragdollBlendTimeTotal}");
 
-         
+
                 }
                 catch (Exception e)
                 {
@@ -735,116 +1265,119 @@ namespace TFTV
             }
         }
 
-    
-     /*  [HarmonyPatch(typeof(AIFaction), "GetActionScore")]
-
-        public static class TFTV_Experimental_AIActionMoveAndEscape_GetModuleBonusByType_AdjustFARMRecuperationModule_patch
-        {
-            public static void Prefix(AIFaction __instance, AIAction action, IAIActor actor, object context, LazyCache<AIConsiderationDef, AIConsideration> ____considerationsCache)
-            {
-                try
-                {
-                    if (action.ActionDef.name == "Flee_AIActionDef")
-                    {
-                        StatusDef autoRepairStatusDef = DefCache.GetDef<StatusDef>("RoboticSelfRepair_AddAbilityStatusDef");
-                        TacticalLevelController tacticalLevelController = GameUtl.CurrentLevel().GetComponent<TacticalLevelController>();
-
-                        foreach (TacticalActor tacticalActor in tacticalLevelController.GetFactionByCommandName("pu").TacticalActors)
-                        {
-                            if (tacticalActor.HasStatus(autoRepairStatusDef))
-                            {
-                                TFTVLogger.Always($"{tacticalActor.name} has autorepair status");
-                            }
 
 
-                        }
 
 
-                        float num = action.ActionDef.Weight;
-                        TFTVLogger.Always($"get action score for action {action.ActionDef.name} with a weight of {num}");
-                        AIAdjustedConsideration[] earlyExitConsiderations = action.ActionDef.EarlyExitConsiderations;
+        /*  [HarmonyPatch(typeof(AIFaction), "GetActionScore")]
 
-                        foreach (AIAdjustedConsideration aIAdjustedConsideration in earlyExitConsiderations)
-                        {
+           public static class TFTV_Experimental_AIActionMoveAndEscape_GetModuleBonusByType_AdjustFARMRecuperationModule_patch
+           {
+               public static void Prefix(AIFaction __instance, AIAction action, IAIActor actor, object context, LazyCache<AIConsiderationDef, AIConsideration> ____considerationsCache)
+               {
+                   try
+                   {
+                       if (action.ActionDef.name == "Flee_AIActionDef")
+                       {
+                           StatusDef autoRepairStatusDef = DefCache.GetDef<StatusDef>("RoboticSelfRepair_AddAbilityStatusDef");
+                           TacticalLevelController tacticalLevelController = GameUtl.CurrentLevel().GetComponent<TacticalLevelController>();
 
-                            if (aIAdjustedConsideration.Consideration == null)
-                            {
-                                throw new InvalidOperationException($"Missing consideration for {actor} at {action.ActionDef.name}");
-                            }
-
-                            float time = ____considerationsCache.Get(aIAdjustedConsideration.Consideration).Evaluate(actor, null, context);
-                            float num2 = aIAdjustedConsideration.ScoreCurve.Evaluate(time);
-
-                            num *= num2;
-
-                            TFTVLogger.Always($"early consideration is {aIAdjustedConsideration.Consideration.name} and num2 is {num2}, so score is now {num}");
-                            if (num < 0.0001f)
-                            {
-                                TFTVLogger.Always($"aIAdjustedConsideration {aIAdjustedConsideration.Consideration.name} reduced score to nearly 0");
-                                break;
-
-                            }
-                        }
-
-                    }
-
-                  
-
-                  /*  if (action.ActionDef.name == "MoveAndQuickAim_AIActionDef")
-                    {
-                        StatusDef autoRepairStatusDef = DefCache.GetDef<StatusDef>("RoboticSelfRepair_AddAbilityStatusDef");
-                        TacticalLevelController tacticalLevelController = GameUtl.CurrentLevel().GetComponent<TacticalLevelController>();
-
-                        ApplyStatusAbilityDef quickaim = DefCache.GetDef<ApplyStatusAbilityDef>("BC_QuickAim_AbilityDef");
-
-                        foreach (TacticalActor tacticalActor in tacticalLevelController.GetFactionByCommandName("pu").TacticalActors) 
-                        {
-                            if (tacticalActor.GetAbilityWithDef <ApplyStatusAbility> (quickaim)!=null) 
-                            {
-                                TFTVLogger.Always($"{tacticalActor.name} has quickaim ability");
-                            }
-                        
-                        
-                        }
+                           foreach (TacticalActor tacticalActor in tacticalLevelController.GetFactionByCommandName("pu").TacticalActors)
+                           {
+                               if (tacticalActor.HasStatus(autoRepairStatusDef))
+                               {
+                                   TFTVLogger.Always($"{tacticalActor.name} has autorepair status");
+                               }
 
 
-                        float num = action.ActionDef.Weight;
-                        TFTVLogger.Always($"get action score for action {action.ActionDef.name} with a weight of {num}");
-                        AIAdjustedConsideration[] earlyExitConsiderations = action.ActionDef.EarlyExitConsiderations;
+                           }
 
-                        foreach (AIAdjustedConsideration aIAdjustedConsideration in earlyExitConsiderations)
-                        {
 
-                            if (aIAdjustedConsideration.Consideration == null)
-                            {
-                                throw new InvalidOperationException($"Missing consideration for {actor} at {action.ActionDef.name}");
-                            }
+                           float num = action.ActionDef.Weight;
+                           TFTVLogger.Always($"get action score for action {action.ActionDef.name} with a weight of {num}");
+                           AIAdjustedConsideration[] earlyExitConsiderations = action.ActionDef.EarlyExitConsiderations;
 
-                            float time = ____considerationsCache.Get(aIAdjustedConsideration.Consideration).Evaluate(actor, null, context);
-                            float num2 = aIAdjustedConsideration.ScoreCurve.Evaluate(time);
+                           foreach (AIAdjustedConsideration aIAdjustedConsideration in earlyExitConsiderations)
+                           {
 
-                            num *= num2;
+                               if (aIAdjustedConsideration.Consideration == null)
+                               {
+                                   throw new InvalidOperationException($"Missing consideration for {actor} at {action.ActionDef.name}");
+                               }
 
-                            TFTVLogger.Always($"early consideration is {aIAdjustedConsideration.Consideration.name} and num2 is {num2}, so score is now {num}");
-                            if (num < 0.0001f)
-                            {
-                                TFTVLogger.Always($"aIAdjustedConsideration {aIAdjustedConsideration.Consideration.name} reduced score to nearly 0");
-                                break;
+                               float time = ____considerationsCache.Get(aIAdjustedConsideration.Consideration).Evaluate(actor, null, context);
+                               float num2 = aIAdjustedConsideration.ScoreCurve.Evaluate(time);
 
-                            }
-                        }
+                               num *= num2;
 
-                    }
-                }
+                               TFTVLogger.Always($"early consideration is {aIAdjustedConsideration.Consideration.name} and num2 is {num2}, so score is now {num}");
+                               if (num < 0.0001f)
+                               {
+                                   TFTVLogger.Always($"aIAdjustedConsideration {aIAdjustedConsideration.Consideration.name} reduced score to nearly 0");
+                                   break;
 
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
+                               }
+                           }
 
-            }
-        }*/
-       
+                       }
+
+
+
+                     /*  if (action.ActionDef.name == "MoveAndQuickAim_AIActionDef")
+                       {
+                           StatusDef autoRepairStatusDef = DefCache.GetDef<StatusDef>("RoboticSelfRepair_AddAbilityStatusDef");
+                           TacticalLevelController tacticalLevelController = GameUtl.CurrentLevel().GetComponent<TacticalLevelController>();
+
+                           ApplyStatusAbilityDef quickaim = DefCache.GetDef<ApplyStatusAbilityDef>("BC_QuickAim_AbilityDef");
+
+                           foreach (TacticalActor tacticalActor in tacticalLevelController.GetFactionByCommandName("pu").TacticalActors) 
+                           {
+                               if (tacticalActor.GetAbilityWithDef <ApplyStatusAbility> (quickaim)!=null) 
+                               {
+                                   TFTVLogger.Always($"{tacticalActor.name} has quickaim ability");
+                               }
+
+
+                           }
+
+
+                           float num = action.ActionDef.Weight;
+                           TFTVLogger.Always($"get action score for action {action.ActionDef.name} with a weight of {num}");
+                           AIAdjustedConsideration[] earlyExitConsiderations = action.ActionDef.EarlyExitConsiderations;
+
+                           foreach (AIAdjustedConsideration aIAdjustedConsideration in earlyExitConsiderations)
+                           {
+
+                               if (aIAdjustedConsideration.Consideration == null)
+                               {
+                                   throw new InvalidOperationException($"Missing consideration for {actor} at {action.ActionDef.name}");
+                               }
+
+                               float time = ____considerationsCache.Get(aIAdjustedConsideration.Consideration).Evaluate(actor, null, context);
+                               float num2 = aIAdjustedConsideration.ScoreCurve.Evaluate(time);
+
+                               num *= num2;
+
+                               TFTVLogger.Always($"early consideration is {aIAdjustedConsideration.Consideration.name} and num2 is {num2}, so score is now {num}");
+                               if (num < 0.0001f)
+                               {
+                                   TFTVLogger.Always($"aIAdjustedConsideration {aIAdjustedConsideration.Consideration.name} reduced score to nearly 0");
+                                   break;
+
+                               }
+                           }
+
+                       }
+                   }
+
+                   catch (Exception e)
+                   {
+                       TFTVLogger.Error(e);
+                   }
+
+               }
+           }*/
+
 
         [HarmonyPatch(typeof(GeoVehicle), "GetModuleBonusByType")]
 
@@ -856,7 +1389,7 @@ namespace TFTV
                 {
                     GeoVehicleEquipment hybernationPods = __instance.Modules?.FirstOrDefault(gve => gve != null && gve.ModuleDef != null && gve.ModuleDef.BonusType == GeoVehicleModuleDef.GeoVehicleModuleBonusType.Recuperation);
 
-                    if (hybernationPods!=null && type == GeoVehicleModuleDef.GeoVehicleModuleBonusType.Recuperation)
+                    if (hybernationPods != null && type == GeoVehicleModuleDef.GeoVehicleModuleBonusType.Recuperation)
                     {
                         TFTVConfig config = TFTVMain.Main.Config;
 
@@ -1071,48 +1604,6 @@ namespace TFTV
 
 
 
-
-
-        [HarmonyPatch(typeof(GeoHaven), "TakeRecruit")]
-
-        public static class TFTV_Experimental_GeoHaven_TakeRecruit_VanillaBugBix_patch
-        {
-            public static void Postfix(GeoHaven __instance, IGeoCharacterContainer __result, ref int ____population)
-            {
-                try
-                {
-                    if (__result != null)
-                    {
-                        ____population -= 1;
-                        HavenInfoController havenInfo = (HavenInfoController)UnityEngine.Object.FindObjectOfType(typeof(HavenInfoController));
-
-
-                        int populationChange = __instance.GetPopulationChange(__instance.ZonesStats.GetTotalHavenOutput());
-                        if (populationChange > 0)
-                        {
-                            havenInfo.PopulationValueText.text = string.Format(havenInfo.PopulationPositiveTextPattern, __instance.Population.ToString(), populationChange);
-                        }
-                        else if (populationChange == 0)
-                        {
-                            havenInfo.PopulationValueText.text = __instance.Population.ToString();
-                        }
-                        else
-                        {
-                            havenInfo.PopulationValueText.text = string.Format(havenInfo.PopulationNegativeTextPattern, __instance.Population.ToString(), populationChange);
-                        }
-
-
-                    }
-
-                }
-
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-
-            }
-        }
 
         public static void CheckUseFireWeaponsAndDifficulty(GeoLevelController controller)
         {
@@ -1341,68 +1832,7 @@ namespace TFTV
 
 
 
-        //Method by Dimitar "Codemite" Evtimov from Snapshot Games
-        public static void PatchInAllBaseDefenseDefs()
-        {
-            try
-            {
 
-                CustomMissionTypeDef alienDef = DefCache.GetDef<CustomMissionTypeDef>("PXBaseAlien_CustomMissionTypeDef");
-                CustomMissionTypeDef anuDef = DefCache.GetDef<CustomMissionTypeDef>("PXBaseAnu_CustomMissionTypeDef");
-                CustomMissionTypeDef njDef = DefCache.GetDef<CustomMissionTypeDef>("PXBaseNJ_CustomMissionTypeDef");
-                CustomMissionTypeDef syDef = DefCache.GetDef<CustomMissionTypeDef>("PXBaseSY_CustomMissionTypeDef");
-                CustomMissionTypeDef infestationDef = DefCache.GetDef<CustomMissionTypeDef>("PXBaseInfestationAlien_CustomMissionTypeDef");
-
-                TacMissionTypeDef[] defenseMissions = { alienDef, anuDef, njDef, syDef, infestationDef };
-
-                for (int i = 0; i < SceneManager.sceneCount; i++)
-                {
-                    var scene = SceneManager.GetSceneAt(i);
-                    if (!scene.isLoaded)
-                        continue;
-
-                    foreach (var root in scene.GetRootGameObjects())
-                    {
-                        foreach (var transform in root.GetTransformsInChildrenStable())
-                        {
-                            var objActivator = transform.GetComponent<TacMissionObjectActivator>();
-                            if (objActivator && objActivator.Missions.Length == 1 && objActivator.Missions.Contains(alienDef))
-                            {
-                                objActivator.Missions = defenseMissions;
-                            }
-                        }
-                    }
-                }
-
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-        }
-
-
-        [HarmonyPatch(typeof(TacMission), "PrepareMissionActivators")]
-
-        public static class TacMission_PrepareMissionActivators_Experiment_patch
-        {
-            public static void Prefix(TacMission __instance)
-            {
-                try
-                {
-
-                    TFTVLogger.Always("PrepareMissionActivators");
-                    PatchInAllBaseDefenseDefs();
-
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-            }
-
-
-        }
 
         public static TacticalActor mutoidReceivingHealing = null;
 
@@ -1456,42 +1886,7 @@ namespace TFTV
         }
 
 
-        [HarmonyPatch(typeof(DamageAccumulation), "GenerateStandardDamageTargetData")]
-        class DamageMultiplier_BugFix
-        {
-            static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
-            {
-                List<CodeInstruction> listInstructions = new List<CodeInstruction>(instructions);
-                IEnumerable<CodeInstruction> insert = new List<CodeInstruction>
-            {
-                new CodeInstruction(OpCodes.Ldloc_3),
-                new CodeInstruction(OpCodes.Div)
-            };
 
-                // insert after each of the first 3 divide opcodes
-                int divs = 0;
-                for (int index = 0; index < instructions.Count(); index++)
-                {
-                    if (listInstructions[index].opcode == OpCodes.Div)
-                    {
-                        listInstructions.InsertRange(index + 1, insert);
-                        index += 2;
-                        divs++;
-                        if (divs == 3)
-                        {
-                            break;
-                        }
-                    }
-                }
-
-                if (divs != 3)
-                {
-                    return instructions; // didn't find three, function signature changed, abort
-                }
-                return listInstructions;
-            }
-
-        }
 
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
 

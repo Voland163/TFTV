@@ -176,6 +176,7 @@
     <Compile Include="TFTVTutorialAndStory.cs" />
     <Compile Include="TFTVUI.cs" />
     <Compile Include="TFTVUmbra.cs" />
+    <Compile Include="TFTVVanillaFixes.cs" />
     <Compile Include="TFTVVoidOmens.cs" />
     <Compile Include="VanillaPatches\TacticalAbility_EnqueueAction_FumbleFix.cs" />
     <Compile Include="VariousAdjustments\VariousAdjustments.cs" />

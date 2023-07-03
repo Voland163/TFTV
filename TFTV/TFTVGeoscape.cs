@@ -34,10 +34,11 @@ namespace TFTV
         public bool GlobalLOTAReworkCheck = TFTVBetaSaveGamesFixes.LOTAReworkGlobalCheck;
         public Dictionary<int, Dictionary<string, double>> PhoenixBasesUnderAttack = TFTVBaseDefenseGeoscape.PhoenixBasesUnderAttack;
         public List<int> InfestedPhoenixBases = new List<int> ();
-        public int SpawnedScyllas = TFTVPandoranProgress.ScyllaCount;
+        public int SpawnedScyllas = new int();
         public Dictionary<int, Dictionary<string, List<string>>> CharacterLoadouts;
+        public Dictionary<int, int> CharactersDeliriumPerksAndMissions;
         //  public Dictionary<int, List<string>> HiddenInventories; //TFTVUI.CurrentlyHiddenInv;
-      //  public Dictionary<int, List<string>> AvailableInventories; //= TFTVUI.CurrentlyAvailableInv;
+        //  public Dictionary<int, List<string>> AvailableInventories; //= TFTVUI.CurrentlyAvailableInv;
         //   public string PhoenixBaseUnderAttack = TFTVExperimental.PhoenixBaseUnderAttack;
         //    public PhoenixBaseAttacker baseAttacker = TFTVExperimental.phoenixBaseAttacker;
         //  public PPFactionDef factionAttackingPheonixBase = TFTVExperimental.FactionAttackingPhoenixBase;
@@ -63,9 +64,12 @@ namespace TFTV
             GeoLevelController gsController = Controller;
             /// ModMain is accesible at any time
             DefCache.GetDef<TacticalTargetingDataDef>("E_TargetingData [PsychicWard_AbilityDef]").Origin.Range = 10; //Fix Dtony thing
-            TFTVBetaSaveGamesFixes.FixInfestedBase(gsController);
-            TFTVBetaSaveGamesFixes.CheckSaveGameEventChoices(gsController);
-            TFTVBetaSaveGamesFixes.CheckUmbraResearchVariable(gsController);
+          //  TFTVBetaSaveGamesFixes.FixInfestedBase(gsController);
+          //  TFTVBetaSaveGamesFixes.CheckSaveGameEventChoices(gsController);
+          //  TFTVBetaSaveGamesFixes.CheckUmbraResearchVariable(gsController);
+
+            TFTVBetaSaveGamesFixes.OpenBetaSaveGameFixes(gsController);
+
             TFTVCommonMethods.CheckGeoUIfunctionality(gsController);
             TFTVNewPXCharacters.PlayIntro(gsController);
             //  TFTVVoidOmens.CheckVoidOmensBeforeImplementing(gsController);
@@ -84,7 +88,7 @@ namespace TFTV
             TFTVProjectOsiris.RunProjectOsiris(gsController);
             Main.Logger.LogInfo("UmbraEvolution variable is " + Controller.EventSystem.GetVariable(TFTVUmbra.TBTVVariableName));
             TFTVLogger.Always("UmbraEvolution variable is " + Controller.EventSystem.GetVariable(TFTVUmbra.TBTVVariableName));
-            TFTVBetaSaveGamesFixes.CheckNewLOTA(gsController);
+           // TFTVBetaSaveGamesFixes.CheckNewLOTA(gsController);
             TFTVAncients.AncientsCheckResearchState(gsController);
             TFTVAncients.CheckImpossibleWeaponsAdditionalRequirements(gsController);
             TFTVExperimental.CheckForFireQuenchers(gsController);
@@ -92,6 +96,9 @@ namespace TFTV
             TFTVBetterEnemies.ImplementBetterEnemies();
             TFTVPandoranProgress.ScyllaCount = 0;
             TFTVSDIandVoidOmenRoll.Calculate_ODI_Level(Controller);
+          //  TFTVDeliriumPerks.RemoveDeliriumPerks(Controller);
+           
+           // TFTVAirCombat.behemothScenicRoute.Clear();
         }
         /// <summary>
         /// Called when Geoscape ends.
@@ -151,6 +158,7 @@ namespace TFTV
                 InfestedPhoenixBases = TFTVBaseDefenseGeoscape.PhoenixBasesInfested,
                 SpawnedScyllas = TFTVPandoranProgress.ScyllaCount,
                 CharacterLoadouts = TFTVUI.CharacterLoadouts,
+                CharactersDeliriumPerksAndMissions = TFTVDelirium.CharactersDeliriumPerksAndMissions
              
 
 
@@ -204,6 +212,7 @@ namespace TFTV
             TFTVBaseDefenseGeoscape.PhoenixBasesInfested = data.InfestedPhoenixBases;
             TFTVPandoranProgress.ScyllaCount = data.SpawnedScyllas;
             TFTVUI.CharacterLoadouts = data.CharacterLoadouts;
+            TFTVDelirium.CharactersDeliriumPerksAndMissions = data.CharactersDeliriumPerksAndMissions;
            
           //  TFTVBetaSaveGamesFixes.CheckNewLOTASavegame();
             //TFTVExperimental.FactionAttackingPhoenixBase = data.factionAttackingPheonixBase;
@@ -248,21 +257,7 @@ namespace TFTV
             TFTVLogger.Always($"Infested Phoenix bases {TFTVBaseDefenseGeoscape.PhoenixBasesInfested.Count}");
             TFTVLogger.Always($"Scylla count {TFTVPandoranProgress.ScyllaCount}");
 
-            foreach (int i in data.InfestedPhoenixBases)
-            {
-                TFTVLogger.Always($"infested base in save data is {i}");
-
-            }
-
-            foreach (int i in TFTVBaseDefenseGeoscape.PhoenixBasesInfested)
-            {
-                TFTVLogger.Always($"infested base in temporary variable is {i}");
-
-            }
-
-
-            //  TFTVLogger.Always($"Items currently available in Aircraft inventory {TFTVUI.CurrentlyAvailableInv.Values.Count}");
-            //  TFTVLogger.Always($"Items currently hidden in Aircraft inventory {TFTVUI.CurrentlyAvailableInv.Values.Count}");
+  
         }
 
 
@@ -328,8 +323,6 @@ namespace TFTV
                                     if (siteInfo.SiteTags.Contains("StartingPhoenixBase"))
                                     {
                                         siteInfo.SiteTags.Remove("StartingPhoenixBase");
-
-
                                     }
                                 }
 

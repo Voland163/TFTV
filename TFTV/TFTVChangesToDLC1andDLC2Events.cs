@@ -249,6 +249,8 @@ namespace TFTV
                     Value = 3,
                     PartyType = (OutcomeDiplomacyChange.ChangeTarget)1,
                 });
+               
+
                 newPU12NJOption.GeoscapeEventData.Choices[0].Outcome.UntrackEncounters.Add(pu12miss);
                 newPU12NJOption.GeoscapeEventData.Choices[0].Outcome.RemoveTimers.Add(pu12miss);
 
@@ -311,6 +313,7 @@ namespace TFTV
                 });
 
                 sourceWinGeoEvent.GeoscapeEventData.Choices[1].Outcome.VariablesChange = sourceWinGeoEvent.GeoscapeEventData.Choices[0].Outcome.VariablesChange;
+               
 
                 //Replace all LOTA Schemata missions with KE2 mission
                 GeoscapeEventDef geoEventFS9 = DefCache.GetDef<GeoscapeEventDef>("PROG_FS9_GeoscapeEventDef");

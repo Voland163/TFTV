@@ -257,9 +257,31 @@ namespace TFTV
         //NavMeshAreasDef
 
 
+       
 
-        //Patch to prevent Scylla from targeting tiny critters like worms and spider drones
-        [HarmonyPatch(typeof(TacticalAbility), "GetTargetActors", new Type[] { typeof(TacticalTargetData), typeof(TacticalActorBase), typeof(Vector3) })]
+
+           /* [HarmonyPatch(typeof(ApplyDamageEffectAbility), "GetTargetActors")]
+            public static class TFTV_ApplyDamageEffectAbility_GetAttackActorTarget_ChironStomp_Patch
+            {
+                public static void Postfix(ref TacticalAbilityTarget __result, TacticalActorBase actor, AttackType attackType, ApplyDamageEffectAbility __instance)
+                {
+                    try
+                    {
+                        if (actor is TacticalActor tacticalActor && tacticalActor.IsControlledByAI)
+                        {
+
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                    }
+                }
+            }*/
+
+
+           //Patch to prevent Scylla from targeting tiny critters like worms and spider drones
+           [HarmonyPatch(typeof(TacticalAbility), "GetTargetActors", new Type[] { typeof(TacticalTargetData), typeof(TacticalActorBase), typeof(Vector3) })]
         public static class TFTV_TacticalAbility_GetTargetActors_Scylla_Patch
         {
             public static void Postfix(ref IEnumerable<TacticalAbilityTarget> __result, TacticalActorBase sourceActor, TacticalAbility __instance)
@@ -268,7 +290,8 @@ namespace TFTV
                 {
                     if (sourceActor is TacticalActor tacticalActor && tacticalActor.IsControlledByAI)
                     {
-                       // TFTVLogger.Always($"{tacticalActor.DisplayName} is looking for targets");
+                        
+                        // TFTVLogger.Always($"{tacticalActor.DisplayName} is looking for targets");
                         __result = CullTargetsLists(__result, sourceActor, __instance);
                     }
                 }
@@ -279,13 +302,15 @@ namespace TFTV
             }
         }
 
-
+       // AIActionMoveAndAttack
 
         //implement method to cull small target
         public static IEnumerable<TacticalAbilityTarget> CullTargetsLists(IEnumerable<TacticalAbilityTarget> targetList, TacticalActorBase actor, TacticalAbility ability)
         {
             try
             {
+             //   TFTVLogger.Always($"{actor.name} using {ability?.TacticalAbilityDef?.name} and target list has {targetList.Count()} elements");
+
 
 
                 List<TacticalAbilityTarget> culledList = new List<TacticalAbilityTarget>(targetList);
@@ -315,15 +340,17 @@ namespace TFTV
                     }
                     else if (actor.GameTags.Contains(queenTag) || actor.GameTags.Contains(acheronTag) || actor.GameTags.Contains(chironTag) || actor.GameTags.Contains(cyclopsTag))
                     {
-                        if (target.Actor is TacticalActor tacticalActor && tacticalActor.GameTags.Contains(caterpillarDamage))
+                        if (target.GetTargetActor() is TacticalActor tacticalActor && tacticalActor.GameTags.Contains(caterpillarDamage) && tacticalActor.TacticalFaction!=actor.TacticalFaction)
                         {
+                        //    TFTVLogger.Always($"{tacticalActor.name} culled");
                             culledList.Remove(target);
                         }
                     }
                     else
                     {
-                        if (target.Actor is TacticalActor tacticalActor && tacticalActor.GameTags.Contains(caterpillarDamage) && (tacticalActor.Pos - target.Actor.Pos).magnitude > 8)
+                        if (target.GetTargetActor() is TacticalActor tacticalActor && tacticalActor.GameTags.Contains(caterpillarDamage) && (tacticalActor.Pos - target.Actor.Pos).magnitude > 8)
                         {
+                           // TFTVLogger.Always($"{tacticalActor.name} culled");
                             culledList.Remove(target);
                         }
                     }
@@ -340,37 +367,24 @@ namespace TFTV
                 {
                     foreach (TacticalAbilityTarget target in targetList)
                     {
-                        if (target.Actor is TacticalActor tacticalActor && (tacticalActor.ActorDef.name.Equals("SpiderDrone_ActorDef") ||
+                        if (target.GetTargetActor() is TacticalActor tacticalActor && (tacticalActor.ActorDef.name.Equals("SpiderDrone_ActorDef") ||
                             tacticalActor.ActorDef.name.Contains("Turret_ActorDef")) && culledList.Contains(target))
                         {
+                         //   TFTVLogger.Always($"{tacticalActor.name} culled");
                             culledList.Remove(target);
                         }
                     }
 
                 }
 
-             //   TFTVLogger.Always($"The ability is {ability.TacticalAbilityDef.name}");
-
-             /*   if (ability.TacticalAbilityDef.name.Contains("PsychicScream"))
+                foreach (TacticalAbilityTarget tacticalAbilityTarget in culledList)
                 {
-                    TFTVLogger.Always($"found ability");
 
-                    foreach (TacticalAbilityTarget target in targetList)
-                    {
-                       // if (target.Actor is TacticalActor tacticalActor)
-                       // {
-                            TFTVLogger.Always($"{target.Actor.DisplayName}");
-                           // culledList.Remove(target);
-                       // }
-                    }
+                  //  TFTVLogger.Always($"target is {tacticalAbilityTarget.GetTargetActor()}");
 
+                }
 
-
-                }*/
-
-
-
-                return culledList;
+              return culledList;
 
 
             }

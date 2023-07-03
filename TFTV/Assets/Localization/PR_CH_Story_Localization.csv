@@ -156,7 +156,7 @@ Your soldiers can no longer become corrupted. Those that are currently corrupted
 
 Vos soldats ne peuvent plus être corrompus. Cependant, ceux qui sont actuellement corrompus ont encore besoin d'un traitement.",,,,,,
 KEY_GEO_HINT_ENEMY_SPECIAL_CORRUPTION_OVER_NAME,Text,NEED TO CHANGE,CORRUPTION VACCINE,,VACCIN CONTRE LA CORRUPTION,,,,,,
-KEY_GEO_HINT_ENEMY_SPECIAL_CURE_DESCRIPTION,Text,,"Now that you have researched a treatment for the Oneiric Delirium, you can remove this condition from your operatives, though they will acquire it again if they operate in an area covered by mist or are attacked by Pandorans with the Delirium attack. In addition, be aware that the treatment can cause SERIOUS and PERMANENT side effects: every time you make use of it, there is a 25% chance that the operative will acquire one of the special Delirium perks, which grant a negative and a positive ability. The same operative can acquire any number of these special Delirium perks. 
+KEY_GEO_HINT_ENEMY_SPECIAL_CURE_DESCRIPTION,Text,,"Now that you have researched a treatment for the Oneiric Delirium, you can remove this condition from your operatives, though they will acquire it again if they operate in an area covered by mist or are attacked by Pandorans with the Delirium attack. In addition, be aware that the treatment can cause SERIOUS and LONG LASTING side effects: every time you make use of it, there is a 25% chance that the operative will acquire one of the special Delirium perks, which grant a negative and a positive ability. The same operative can acquire any number of these special Delirium perks. They will lose these perks eventually as they complete missions, provided that they do not acquire new Delirium perks.
  
 In order to treat a soldier you need to pay 50 MUTAGENS for every 25% of Delirium that has affected the soldier as compared to their Willpower.",,"Maintenant que vous avez recherché un traitement pour le délire onirique, vous pouvez supprimer cette affection de vos agents, bien qu'ils la contractent à nouveau s'ils opèrent dans une zone couverte de brume ou s'ils sont attaqués par des Pandoriens avec l'attaque Délire. De plus, sachez que le traitement peut avoir des effets secondaires GRAVES et PERMANENTS : chaque fois que vous l'utilisez, il y a 25% de chances que l'agent acquière l'un des avantages spéciaux du délire, qui confèrent une capacité négative et une capacité positive. Le même agent peut acquérir n'importe quel nombre de ces effets spéciaux du délire. 
 
@@ -306,18 +306,23 @@ DELIRIUM_PERK_HYPERALGESIA_DESCRIPTION,Text,,"Lose 1 WP when taking damage, no W
 ",Text,,"All actions have 10% chance to fumble, recover 1 AP from killing enemies
 <i>Subject engages in atavistic behavior. Alterations in adrenal glands function are also observed</i>",,"Toutes les actions ont 10% de chances d'échouer, récupére 1 Point d'Action en tuant des ennemis
 <i>Le sujet adopte un comportement atavique. Des altérations du fonctionnement des glandes surrénales sont également observées.</i>",,,,,,
+"DELIRIUM_PERK_NEW_FERAL_DESCRIPTION
+",Text,,"All skills that cost WP cost +1 WP, +8 to Strength
+<i>Subject engages in atavistic behavior. Alterations in adrenal glands function are also observed</i>",,,,,,,,
 DELIRIUM_PERK_DEREALIZATION_NAME,Text,,DEREALIZATION,,DEREALISATION,,,,,,
 DELIRIUM_PERK_DEREALIZATION_DESCRIPTION,Text,,"-5 to Strength, disabled limbs remain functional
 <i>Subject reports increasing detachment from reality and own body</i>",,"-5 à la Force, les membres handicapés restent fonctionnels
 <i>Le sujet rapporte un détachement croissant de la réalité et de son propre corps.</i>",,,,,,
 DELIRIUM_PERK_ONE_OF_THEM_NAME,Text,,ONE OF THEM,,L'UN D'EUX,,,,,,
-DELIRIUM_PERK_ONE_OF_THEM_DESCRIPTION,Text,,"-2 to Willpower, immune to Mist
+DELIRIUM_PERK_ONE_OF_THEM_DESCRIPTION,Text,,"Receives Delirium damage x2, immune to Mist
 <i>Subject appears to have acquired tolerance to Mist, resulting in a cognitive dissonance</i>",,"-2 à la Volonté, immunisé contre la brume
 <i>Le sujet semble avoir acquis une tolérance à la Brume, ce qui entraîne une dissonance cognitive.</i>",,,,,,
 DELIRIUM_PERK_WOLVERINE_NAME,Text,,WOLVERINE,,WOLVERINE,,,,,,
 DELIRIUM_PERK_WOLVERINE_DESCRIPTION,Text,,"-20% to Accuracy, gain Slashing Strike
 <i>Subject has gained a retractable claw-like appendage protruding from the right wrist. Unfortunately, discharging firearms has become moderately uncomfortable</i>",,"-20% à la précision, gain de Slashing Strike
 F142<i>Le sujet a acquis un appendice rétractable en forme de griffe qui dépasse du poignet droit. Malheureusement, le maniement des armes à feu est devenu modérément inconfortable.</i>",,,,,,
+DELIRIUM_PERK_WOLVERINE_CURED_DESCRIPTION,Text,,"Slashing Strike
+<i>""I just got used to it, I guess""</i>",,,,,,,,
 DELIRIUM_PERK_TERROR_NAME,Text,,TERROR,,TERREUR,,,,,,
 DELIRIUM_PERK_TERROR_DESCRIPTION,Text,,"-2 to Speed, +25% to Stealth
 <i>Despite enhanced treatment, subject remains fearful and acts with extreme caution in the field</i>",,"-2 à la Vitesse, +25% à la Furtivité
@@ -334,6 +339,8 @@ DELIRIUM_PERK_ANXIETY_NAME,Text,,ANXIETY,,ANXIETE,,,,,,
 DELIRIUM_PERK_ANXIETY_DESCRIPTION,Text,,"Start each mission Disoriented for 2 turns
 <i>Subject exhibits symptoms of a General Anxiety Disorder; limited response to treatment</i>",,"Commencez chaque mission en étant désorienté pendant 2 tours
 <i>Le sujet présente les symptômes d'un trouble anxieux général ; réponse limitée au traitement.</i>",,,,,,
+DELIRIUM_PERK_NEW_ANXIETY_DESCRIPTION,Text,,"Start each mission Disoriented for 2 turns, immune to Mind Control
+<i>Subject exhibits symptoms of a General Anxiety Disorder; limited response to treatment</i>",,,,,,,,
 DELIRIUM_PERK_INNER_SIGHT_NAME,Text,,INNER SIGHT,,VUE INTERIEURE,,,,,,
 DELIRIUM_PERK_INNER_SIGHT_DESCRIPTION,Text,,"-10 Perception, +10 Hearing Range
 <i>The subject is often observed with eyes closed; claims to see with an 'inner eye'; possible schizophrenia, but heightened extrasensorial perception confirmed</i>",,"-10 Perception, +10 Portée auditive

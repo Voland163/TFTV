@@ -1,4 +1,5 @@
-﻿using Base.Core;
+﻿using Base;
+using Base.Core;
 using Base.Defs;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
@@ -34,7 +35,6 @@ namespace TFTV
         private static Dictionary<string, int> AlienBodyPartsDictionary = new Dictionary<string, int>();
         private static List<TacticalItemDef> AlienBodyParts = new List<TacticalItemDef>();
 
-
         //Adjust diplo and resource reward from events based on Special Difficulties and VO2 & VO8
         [HarmonyPatch(typeof(GeoEventChoiceOutcome), "GenerateFactionReward")]
 
@@ -57,6 +57,22 @@ namespace TFTV
                 {
 
                     GeoLevelController controller = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
+
+                    if (eventID == "PROG_PU12NewNJOption" && controller.EventSystem.GetEventRecord("PROG_PU12_MISS")?.SelectedChoice == 0 && __instance.Diplomacy.Count()==1)
+                    {
+
+                       // TFTVLogger.Always($"got here");
+                        GeoFactionDef PhoenixPoint = DefCache.GetDef<GeoFactionDef>("Phoenix_GeoPhoenixFactionDef");
+                        GeoFactionDef Synedrion = DefCache.GetDef<GeoFactionDef>("Synedrion_GeoFactionDef");
+
+                        __instance.Diplomacy.Add(new OutcomeDiplomacyChange()
+                        {
+                            PartyFaction = Synedrion,
+                            TargetFaction = PhoenixPoint,
+                            Value = -12,
+                            PartyType = (OutcomeDiplomacyChange.ChangeTarget)1,
+                        });
+                    }
 
 
                     TFTVConfig config = TFTVMain.Main.Config;
@@ -208,6 +224,15 @@ namespace TFTV
 
                     TFTVConfig config = TFTVMain.Main.Config;
                     GeoLevelController controller = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
+
+                    if (eventID == "PROG_PU12NewNJOption" && controller.EventSystem.GetEventRecord("PROG_PU12_MISS")?.SelectedChoice == 0 && __instance.Diplomacy.Count() == 2)
+                    {
+                        GeoFactionDef PhoenixPoint = DefCache.GetDef<GeoFactionDef>("Phoenix_GeoPhoenixFactionDef");
+                        GeoFactionDef Synedrion = DefCache.GetDef<GeoFactionDef>("Synedrion_GeoFactionDef");
+
+                        __instance.Diplomacy.RemoveLast();
+                    }
+
 
                     if (config.DiplomaticPenalties && CheckGeoscapeSpecialDifficultySettings(controller) != 1)
                     {
@@ -991,7 +1016,7 @@ namespace TFTV
                         DamageMultiplierStatusDef protectionEtermesStatus = DefCache.GetDef<DamageMultiplierStatusDef>("EtermesProtectionStatus");
                         DamageMultiplierStatusDef vulnerabilityEtermesStatus = DefCache.GetDef<DamageMultiplierStatusDef>("EtermesVulnerabilityStatus");
                         DamageMultiplierStatusDef scyllaDamageResistance = DefCache.GetDef<DamageMultiplierStatusDef>("ScyllaDamageResistance");
-                         ClassTagDef cyclopsTag = DefCache.GetDef<ClassTagDef>("MediumGuardian_ClassTagDef");
+                        ClassTagDef cyclopsTag = DefCache.GetDef<ClassTagDef>("MediumGuardian_ClassTagDef");
 
                         if (CheckTacticalSpecialDifficultySettings(__instance) == 1)
                         {
@@ -1044,13 +1069,13 @@ namespace TFTV
 
                             }
                         }
-                        if (config.BetterEnemiesOn && scyllaDamageResistance!=null) 
+                        if (config.BetterEnemiesOn && scyllaDamageResistance != null)
                         {
                             if (actor.ActorDef.name.Equals("Queen_ActorDef") && !actor.Status.HasStatus(scyllaDamageResistance))
                             {
                                 actor.Status.ApplyStatus(scyllaDamageResistance);
-                                                
-                            } 
+
+                            }
                         }
                     }
                 }
@@ -1198,7 +1223,7 @@ namespace TFTV
 
                 GeoLevelController controllerGeo = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
                 TacticalLevelController controllerTactical = GameUtl.CurrentLevel().GetComponent<TacticalLevelController>();
-                
+
 
                 if ((controllerGeo != null && ApplyImpossibleWeaponsAdjustmentsOnGeoscape(controllerGeo) || controllerTactical != null && ApplyImpossibleWeaponsAdjustmentsOnTactical(controllerTactical)) && !ImpossibleWeaponsAdjusted)
                 {
@@ -1243,7 +1268,7 @@ namespace TFTV
                                 weaponDef.DamagePayload.ArmourPiercing = 0;
                                 weaponDef.DamagePayload.StopOnFirstHit = false;
                                 weaponDef.DamagePayload.StopWhenNoRemainingDamage = false;
-                               // weaponDef.DamagePayload.DamageKeywords.Add(new DamageKeywordPair { DamageKeywordDef = damageKeywords.ShreddingKeyword, Value = 10 });
+                                // weaponDef.DamagePayload.DamageKeywords.Add(new DamageKeywordPair { DamageKeywordDef = damageKeywords.ShreddingKeyword, Value = 10 });
                                 weaponDef.ViewElementDef.DisplayName1.LocalizationKey = "TFTV_KEY_AC_SNIPER_NAME";
                                 DefCache.GetDef<ResearchViewElementDef>("PX_Scorpion_ViewElementDef").CompleteText.LocalizationKey = "TFTV_PX_SCORPION_RESEARCHDEF_COMPLETE";
                                 // DefCache.GetDef<ResearchViewElementDef>("NJ_VehicleTech_ViewElementDef").BenefitsText.LocalizationKey = "TFTV_NJ_VEHICLETECH_RESEARCHDEF_BENEFITS";
@@ -1300,7 +1325,7 @@ namespace TFTV
                                 break;
                             case "2cd06c4b-f1f5-a9b4-c9ff-afbad25be5d8"://AC_Scorpion_WeaponDef
 
-                              //  _ = weaponDef.DamagePayload.DamageKeywords.RemoveAll(dkp => dkp.DamageKeywordDef == damageKeywords.ShreddingKeyword);
+                                //  _ = weaponDef.DamagePayload.DamageKeywords.RemoveAll(dkp => dkp.DamageKeywordDef == damageKeywords.ShreddingKeyword);
                                 weaponDef.DamagePayload.DamageKeywords[0].Value = 180;
                                 weaponDef.DamagePayload.ArmourPiercing = 50;
                                 weaponDef.DamagePayload.DamageKeywords.Add(new DamageKeywordPair { DamageKeywordDef = damageKeywords.PiercingKeyword, Value = 80 });

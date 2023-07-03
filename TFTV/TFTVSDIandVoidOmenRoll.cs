@@ -144,7 +144,7 @@ namespace TFTV
     "SDI_20",
     "SDI_20",
     "SDI_20",
-     "SDI_20",
+    "SDI_20",
     "SDI_20",
     "SDI_20",
     "SDI_20",
@@ -279,7 +279,7 @@ namespace TFTV
                     voidOmensList.Add(7);
                 }
 
-                if (odiPerc < 45) //only add unlimited Delirium if max Delirium is not reached
+                if (odiPerc < 30) //45) //only add unlimited Delirium if max Delirium is not reached
                 {
                     voidOmensList.Add(10);
                 }

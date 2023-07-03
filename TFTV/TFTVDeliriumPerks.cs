@@ -4,12 +4,16 @@ using Base.Entities.Statuses;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities.GameTags;
+using PhoenixPoint.Geoscape.Entities;
+using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.Equipments;
+using PhoenixPoint.Tactical.Entities.Statuses;
 using PhoenixPoint.Tactical.Levels;
 using System;
-
+using System.Collections.Generic;
+using System.Linq;
 
 namespace TFTV
 {
@@ -17,21 +21,32 @@ namespace TFTV
     {
         // private static readonly DefRepository Repo = TFTVMain.Repo;
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
+     
         internal static bool doNotLocalize = false;
         private static readonly SharedData sharedData = GameUtl.GameComponent<SharedData>();
 
+        private static readonly TacticalAbilityDef InnerSight_AbilityDef = DefCache.GetDef<TacticalAbilityDef>("InnerSight_AbilityDef");
+        private static readonly TacticalAbilityDef Terror_AbilityDef = DefCache.GetDef<TacticalAbilityDef>("Terror_AbilityDef");
+        private static readonly TacticalAbilityDef feralDeliriumPerk = DefCache.GetDef<TacticalAbilityDef>("FeralNew_AbilityDef");
         private static readonly TacticalAbilityDef hyperalgesiaAbilityDef = DefCache.GetDef<TacticalAbilityDef>("Hyperalgesia_AbilityDef");
         private static readonly TacticalAbilityDef feralAbilityDef = DefCache.GetDef<TacticalAbilityDef>("Feral_AbilityDef");
         private static readonly TacticalAbilityDef bloodthirstyAbilityDef = DefCache.GetDef<TacticalAbilityDef>("Bloodthirsty_AbilityDef");
-
         private static readonly TacticalAbilityDef fasterSynapsesDef = DefCache.GetDef<TacticalAbilityDef>("FasterSynapses_AbilityDef");
         private static readonly TacticalAbilityDef anxietyDef = DefCache.GetDef<TacticalAbilityDef>("AnxietyAbilityDef");
-
+        private static readonly TacticalAbilityDef newAnxietyDef = DefCache.GetDef<TacticalAbilityDef>("NewAnxietyAbilityDef");
         private static readonly TacticalAbilityDef oneOfThemDef = DefCache.GetDef<TacticalAbilityDef>("OneOfThemPassive_AbilityDef");
         private static readonly TacticalAbilityDef wolverineDef = DefCache.GetDef<TacticalAbilityDef>("Wolverine_AbilityDef");
         private static readonly TacticalAbilityDef derealizationDef = DefCache.GetDef<TacticalAbilityDef>("DerealizationIgnorePain_AbilityDef");
+        private static readonly TacticalAbilityDef newDerealizationDef = DefCache.GetDef<TacticalAbilityDef>("Derealization_AbilityDef");
+
+        private static readonly StatMultiplierStatusDef wolverinePassiveStatus = DefCache.GetDef<StatMultiplierStatusDef>("WolverinePassive_StatusDef");
+
+        private static readonly List<TacticalAbilityDef> DeliriumPerks = new List<TacticalAbilityDef>() {InnerSight_AbilityDef, Terror_AbilityDef, feralDeliriumPerk, hyperalgesiaAbilityDef,
+        feralAbilityDef, bloodthirstyAbilityDef, fasterSynapsesDef, anxietyDef, newAnxietyDef, oneOfThemDef, wolverineDef, derealizationDef, newDerealizationDef};
+
         private static readonly StatusDef frenzy = DefCache.GetDef<StatusDef>("Frenzy_StatusDef");
         private static readonly StatusDef anxiety = DefCache.GetDef<StatusDef>("Anxiety_StatusDef");
+        private static readonly StatusDef ignorePain = DefCache.GetDef<StatusDef>("IgnorePain_StatusDef");
         private static readonly StatusDef mistResistance = DefCache.GetDef<StatusDef>("MistResistance_StatusDef");
         private static readonly GameTagDef mistResistanceTag = DefCache.GetDef<GameTagDef>("OneOfUsMistResistance_GameTagDef");
 
@@ -56,10 +71,10 @@ namespace TFTV
                             TFTVLogger.Always(actor.DisplayName + " with " + fasterSynapsesDef.name);
                         }
 
-                        if (actor.GetAbilityWithDef<Ability>(anxietyDef) != null)
+                        if ((actor.GetAbilityWithDef<Ability>(newAnxietyDef) != null || actor.GetAbilityWithDef<Ability>(anxietyDef)!=null)&&!actor.Status.HasStatus(anxiety))
                         {
                             tacticalActor.Status.ApplyStatus(anxiety);
-                            TFTVLogger.Always(actor.DisplayName + " with " + anxietyDef.name);
+                            TFTVLogger.Always(actor.DisplayName + " with " + newAnxietyDef.name);
                         }
 
                         if (actor.GetAbilityWithDef<Ability>(oneOfThemDef) != null && !actor.HasGameTag(mistResistanceTag))
@@ -69,10 +84,14 @@ namespace TFTV
                             TFTVLogger.Always(actor.DisplayName + " with " + oneOfThemDef.name);
                         }
 
-                        if (actor.GetAbilityWithDef<Ability>(wolverineDef) != null)
+                        if (actor.GetAbilityWithDef<Ability>(wolverineDef) != null && !actor.Status.HasStatus(wolverinePassiveStatus))
                         {
-                            tacticalActor.AddAbility(wolverineDef, actor);
-                            TFTVLogger.Always(actor.DisplayName + " with " + wolverineDef.name);
+                            TFTVLogger.Always($"{actor.DisplayName} has accuracy of {tacticalActor.CharacterStats.Accuracy}");
+
+                            tacticalActor.Status.ApplyStatus(wolverinePassiveStatus);
+                        
+                            //tacticalActor.AddAbility(wolverineDef, actor);
+                            TFTVLogger.Always($"{actor.DisplayName} with {wolverineDef.name}, has accuracy of {tacticalActor.CharacterStats.Accuracy}");
                         }
 
                         if (actor.GetAbilityWithDef<Ability>(derealizationDef) != null)
@@ -86,6 +105,18 @@ namespace TFTV
                             // tacticalActor.AddAbility(Repo.GetAllDefs<TacticalAbilityDef>("IgnorePain_AbilityDef")), actor);
 
                             TFTVLogger.Always(actor.DisplayName + " with " + derealizationDef.name);
+
+                        }
+
+                        if (actor.GetAbilityWithDef<Ability>(newDerealizationDef) != null && !actor.Status.HasStatus(ignorePain))
+                        {
+
+                            actor.Status.ApplyStatus(ignorePain);
+                          
+
+                            // tacticalActor.AddAbility(Repo.GetAllDefs<TacticalAbilityDef>("IgnorePain_AbilityDef")), actor);
+
+                            TFTVLogger.Always($"{actor.DisplayName} should have ignore pain status");
 
                         }
 
@@ -121,6 +152,7 @@ namespace TFTV
             }
         }
 
+        
 
         /*
                 [HarmonyPatch(typeof(TacticalLevelController), "ActorDied")]

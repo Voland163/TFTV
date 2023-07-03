@@ -1,13 +1,19 @@
-﻿using HarmonyLib;
+﻿using Base.Core;
+using HarmonyLib;
 using PhoenixPoint.Common.ContextHelp;
+using PhoenixPoint.Common.Core;
+using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.Entities.Items;
+using PhoenixPoint.Common.Game;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.Research;
 using PhoenixPoint.Geoscape.Entities.Sites;
+using PhoenixPoint.Geoscape.Events;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 
 
@@ -34,30 +40,126 @@ namespace TFTV
             }
         }
 
-        public static void FixInfestedBase(GeoLevelController controller)
+        public static void OpenBetaSaveGameFixes(GeoLevelController controller)
+        {
+            try
+            {
+                CheckNewLOTA(controller);
+                FixScyllaCounter(controller);
+                FixInfestedBase(controller);
+                CheckSaveGameEventChoices(controller);
+                CheckUmbraResearchVariable(controller);
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+
+        }
+
+
+        internal static void FixScyllaCounter(GeoLevelController controller)
+        {
+            try
+            {
+                GeoscapeEventSystem eventSystem = controller.EventSystem;
+
+                int internalScyllaVariable = TFTVPandoranProgress.ScyllaCount;
+
+
+
+                if (eventSystem.GetVariable("ScyllaCounter") == 0)
+                {
+                    if (internalScyllaVariable > 0)
+                    {
+                        eventSystem.SetVariable("ScyllaCounter", internalScyllaVariable);
+
+
+                    }
+                    else
+                    {
+                        int activeCitadels = controller.AlienFaction.Bases.Where(b => b.AlienBaseTypeDef.MonsterClassType != null).Count();
+                        PhoenixStatisticsManager phoenixStatisticsManager = GameUtl.GameComponent<PhoenixGame>().GetComponent<PhoenixStatisticsManager>();//(PhoenixStatisticsManager)UnityEngine.Object.FindObjectOfType(typeof(PhoenixStatisticsManager));
+
+                        int destroyedCitadels = phoenixStatisticsManager.CurrentGameStats.GeoscapeStats.DestroyedCitadels;
+
+                        if (phoenixStatisticsManager == null) 
+                        {
+                            TFTVLogger.Always($"Failed to get stat manager");
+                        }
+
+                        ClassTagDef queenTag = DefCache.GetDef<ClassTagDef>("Queen_ClassTagDef");
+                        int scyllaActuallyKilled = 0;
+                        foreach (SoldierStats soldierStats in phoenixStatisticsManager.CurrentGameStats.LivingSoldiers.Values)
+                        {
+                            if (soldierStats.EnemiesKilled.Where(ek => ek.Class == queenTag).Count() > 0)
+                            {
+                                scyllaActuallyKilled += soldierStats.EnemiesKilled.Where(ek => ek.Class == queenTag).Count();
+                                TFTVLogger.Always($"{soldierStats.Name} killed {soldierStats.EnemiesKilled.Where(ek => ek.Class == queenTag).Count()} scyllas!");
+                            }
+
+
+                        }
+                        foreach (SoldierStats soldierStats in phoenixStatisticsManager.CurrentGameStats.DeadSoldiers.Values)
+                        {
+                            if (soldierStats.EnemiesKilled.Where(ek => ek.Class == queenTag).Count() > 0)
+                            {
+                                scyllaActuallyKilled += soldierStats.EnemiesKilled.Where(ek => ek.Class == queenTag).Count();
+                                TFTVLogger.Always($"{soldierStats.Name} killed {soldierStats.EnemiesKilled.Where(ek => ek.Class == queenTag).Count()} scyllas!");
+                            }
+
+                        }
+                        int totalScyllas = activeCitadels + scyllaActuallyKilled + destroyedCitadels;
+
+                        TFTVLogger.Always($"active citadels# {activeCitadels}; destroyed citadels {destroyedCitadels}, scyllas recorded as killed {scyllaActuallyKilled}, so total Scyllas spawned # {totalScyllas}");
+
+                        if (totalScyllas > 0)
+                        {
+                            eventSystem.SetVariable("ScyllaCounter", totalScyllas);
+
+                        }
+
+                    }
+
+                }
+
+                TFTVLogger.Always($"ScyllaCounter: {eventSystem.GetVariable("ScyllaCounter")}");
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+
+
+        }
+
+        internal static void FixInfestedBase(GeoLevelController controller)
         {
             try
             {
                 FieldInfo basesField = AccessTools.Field(typeof(GeoPhoenixFaction), "_bases");
                 List<GeoPhoenixBase> bases = (List<GeoPhoenixBase>)basesField.GetValue(controller.PhoenixFaction);
 
-                foreach (GeoSite geoSite in controller.Map.AllSites) 
-                
-                { 
-                if(geoSite.GetComponent<GeoPhoenixBase>()!=null && geoSite.Owner == controller.PhoenixFaction && !bases.Contains(geoSite.GetComponent<GeoPhoenixBase>())) 
+                foreach (GeoSite geoSite in controller.Map.AllSites)
+
+                {
+                    if (geoSite.GetComponent<GeoPhoenixBase>() != null && geoSite.Owner == controller.PhoenixFaction && !bases.Contains(geoSite.GetComponent<GeoPhoenixBase>()))
                     {
 
                         TFTVLogger.Always($"found base {geoSite.LocalizedSiteName} under Phoenix control but not in _bases list");
-                     bases.Add(geoSite.GetComponent<GeoPhoenixBase>());
+                        bases.Add(geoSite.GetComponent<GeoPhoenixBase>());
                         geoSite.RefreshVisuals();
-                    
+
                     }
-                
-                
+
+
                 }
 
-             
-               
+
+
 
 
             }
@@ -67,10 +169,10 @@ namespace TFTV
             }
         }
 
-        
+
 
         //not yet deprecated, zig zag zog still playing with old LOTA
-        public static void CheckNewLOTA(GeoLevelController controller)
+        internal static void CheckNewLOTA(GeoLevelController controller)
         {
             try
             {
@@ -111,11 +213,7 @@ namespace TFTV
             }
         }
 
-        
-
-
-
-        public static void CheckIfLOTAReworkActive()
+        internal static void CheckIfLOTAReworkActive()
         {
             try
             {
@@ -229,7 +327,7 @@ namespace TFTV
         }
 
 
-        public static void CheckSaveGameEventChoices(GeoLevelController controller)
+        internal static void CheckSaveGameEventChoices(GeoLevelController controller)
         {
             try
             {
@@ -250,7 +348,7 @@ namespace TFTV
             }
         }
 
-        public static void CheckUmbraResearchVariable(GeoLevelController controller)
+        internal static void CheckUmbraResearchVariable(GeoLevelController controller)
         {
             try
             {

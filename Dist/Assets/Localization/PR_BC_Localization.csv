@@ -41,7 +41,7 @@ PR_BC_HUNKER_DOWN_DESC,Text,,Gain 10 armor until your next turn. Ends turn. Your
 PR_BC_HUNKER_DOWN_ARMOR_STATUS,Text,,HUNKER DOWN ARMOUR BUFF,,,,,,,,
 PR_BC_HUNKER_DOWN_ARMOR_STATUS_DESC,Text,,Added 10 Armour to each body part.,,,,,,,,
 PR_BC_HUNKER_DOWN_AP_STATUS,Text,,HUNKER DOWN ATTACK BOOST,,,,,,,,
-PR_BC_HUNKER_DOWN_AP_STATUS_DESC,Text,,Next attack with proficient weapon cost 2/3 of its normal AP.,,,,,,,,
+PR_BC_HUNKER_DOWN_AP_STATUS_DESC,Text,,Next attack with proficient weapon cost -1 AP.,,,,,,,,
 PR_BC_SKIRMISHER,Text,,SKIRMISHER,,ESCARMOUCHEUR,,,,НА ПЕРЕДОВОЙ,,
 PR_BC_SKIRMISHER_DESC,Text,,If you take damage during enemy turn your attacks deal 25% more damage until end of turn,,"Si vous subissez des dégâts pendant le tour de l'ennemi, vos attaques infligent 25% de dégâts supplémentaires jusqu'à la fin du tour.",,,,"При получении урона во время вражеского хода, получите +25% бонус урона на свой следующий ход",,
 PR_BC_SHRED_RESISTANCE,Text,,SHRED RESISTANCE,,RÉSISTANCE PARE-BALLE,,,,УСИЛЕННАЯ БРОНЯ,,
