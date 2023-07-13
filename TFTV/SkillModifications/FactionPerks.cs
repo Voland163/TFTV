@@ -398,6 +398,11 @@ namespace PRMBetterClasses.SkillModifications
                     }
                     // end copy
 
+
+                    if (death.Actor.TacticalActorBaseDef.WillPointWorth == 0)
+                    {
+                        return;
+                    }
                     TacticalAbilityDef punisherAbilityDef = DefCache.GetDef<TacticalAbilityDef>("Punisher_AbilityDef");
                     if (death.Killer != null && death.Killer.GetAbilityWithDef<TacticalAbility>(punisherAbilityDef) != null)
                     {

@@ -478,6 +478,7 @@ namespace TFTV
                     };
                     SlotStateStatusDef disabled = DefCache.GetDef<SlotStateStatusDef>("DisabledElectronicSlot_StatusDef");
                   
+              
                     if (num2 > 0)
                     {
                        
@@ -491,6 +492,7 @@ namespace TFTV
                            {
                                additionalSlot = tacticalActor.BodyState.GetSlot("Torso");
                            }*/
+                       
 
                         tacticalActor.ApplyDamage(new DamageResult
                         {

@@ -195,5 +195,19 @@ namespace PRMBetterClasses.SkillModifications
                 }
             }
         }
+
+        // Patch to change Inspire not giving any WP when the killed actor has WillPointsWorth = 0
+        [HarmonyPatch(typeof(OnActorDeathEffectStatus), "ShouldApplyEffect")]
+        internal static class OnActorDeathEffectStatus_ShouldApplyEffect_Patch
+        {
+            public static void Postfix(OnActorDeathEffectStatus __instance, ref bool __result, DeathReport deathReport)
+            {
+                TacticalAbilityDef inspireAbilityDef = DefCache.GetDef<TacticalAbilityDef>("Inspire_AbilityDef");
+                if (__instance.TacticalActorBase.GetAbilityWithDef<TacticalAbility>(inspireAbilityDef) != null)
+                {
+                    __result = __result && deathReport.Actor.TacticalActorBaseDef.WillPointWorth > 0;
+                }
+            }
+        }
     }
 }
