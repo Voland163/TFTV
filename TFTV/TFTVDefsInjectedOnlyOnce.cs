@@ -57,7 +57,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using static PhoenixPoint.Common.Entities.Addons.AddonDef;
 using static PhoenixPoint.Tactical.Entities.Abilities.HealAbilityDef;
 using ResourceType = PhoenixPoint.Common.Core.ResourceType;
 
@@ -75,27 +74,88 @@ namespace TFTV
         public static Sprite UmbraIcon = Helper.CreateSpriteFromImageFile("Void-03P.png");
 
 
+        internal static GameTagDef CreateNewTag(string name, string guid)
+        {
+            try 
+            {
+               
+                GameTagDef source = DefCache.GetDef<GameTagDef>("Takeshi_Tutorial3_GameTagDef");
+                return Helper.CreateDefFromClone(
+                    source,
+                    guid,
+                    name + "_GameTagDef");
+
+                
+
+            }
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
+
+        }
+
+        internal static void MakeVestsOnlyForOrganicMeatbags()
+        {
+            try
+            {
+                GameTagDef organicMeatbagTorsoTag = CreateNewTag("MeatBagTorso", "{8D13AAD6-BA65-4907-B3C8-C977B819BF48}");
+
+                foreach (TacticalItemDef item in Repo.GetAllDefs<TacticalItemDef>()
+                
+                    .Where(ti => ti.name.Contains("Torso")).Where(ti => !ti.name.Contains("BIO"))
+
+                    .Where(ti => ti.name.StartsWith("AN_") || ti.name.StartsWith("SY_") || ti.name.StartsWith("NJ_") 
+                    || ti.name.StartsWith("NEU") || ti.name.StartsWith("PX_") || ti.name.StartsWith("IN_")))
+
+                {
+                    item.Tags.Add(organicMeatbagTorsoTag);  
+                }
+
+
+                TacticalItemDef fireVest = DefCache.GetDef<TacticalItemDef>("NJ_FireResistanceVest_Attachment_ItemDef");
+                TacticalItemDef poisonVest = DefCache.GetDef<TacticalItemDef>("SY_PoisonResistanceVest_Attachment_ItemDef");
+                TacticalItemDef blastVest = DefCache.GetDef<TacticalItemDef>("PX_BlastResistanceVest_Attachment_ItemDef");
+
+                blastVest.RequiredSlotBinds[0].GameTagFilter = organicMeatbagTorsoTag;
+                poisonVest.RequiredSlotBinds[0].GameTagFilter = organicMeatbagTorsoTag;
+                fireVest.RequiredSlotBinds[0].GameTagFilter = organicMeatbagTorsoTag;
+
+            }
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+        }
+
 
 
         internal static void Print()
         {
-            foreach (WeaponDef weapon in Repo.GetAllDefs<WeaponDef>())
-            {
-                foreach(DamageKeywordPair damageKeywordPair in weapon.DamagePayload.DamageKeywords) 
-                {
-                    if (damageKeywordPair.DamageKeywordDef == Shared.SharedDamageKeywords.AcidKeyword) 
-                    {
-                        TFTVLogger.Always($"{weapon.name} does {damageKeywordPair.Value} acid damage");
+            try { 
 
-                    }
-                
-                
+            
+                foreach (TacticalItemDef item in Repo.GetAllDefs<TacticalItemDef>()
+                    .Where(ti => ti.name.Contains("Torso")).Where(ti => !ti.name.Contains("BIO"))
+
+                .Where(ti => ti.name.StartsWith("AN_") || ti.name.StartsWith("SY_") || ti.name.StartsWith("NJ_") || ti.name.StartsWith("NEU") || ti.name.StartsWith("PX_") || ti.name.StartsWith("IN_")))
+                {
+                   
+    
+
+                TFTVLogger.Always($"{item} might need a tag");
+
                 }
 
-               
-
             }
-
+              catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
         }
 
 
@@ -124,7 +184,7 @@ namespace TFTV
 
         public static void InjectDefsInjectedOnlyOnce()
         {
-           
+
             //  CreateNewDifficultyLevel();
             //  CreateNewRookieDifficultyLevel();
             //   ReEnableFlinching();
@@ -194,7 +254,8 @@ namespace TFTV
             ChangesVests();
             RemoveRepairKitFromPure();
             AdjustAcidDamage();
-           // Print();
+            //    Print();
+            MakeVestsOnlyForOrganicMeatbags();
         }
 
 
@@ -245,14 +306,14 @@ namespace TFTV
             }
 
         }
-        
+
 
         internal static void AdjustAcidDamage()
         {
-            try 
+            try
             {
-                
-                DefCache.GetDef<DamagePayloadEffectDef>("E_Element0 [SwarmerAcidExplosion_Die_AbilityDef]").DamagePayload.DamageKeywords[1].Value=30;
+
+                DefCache.GetDef<DamagePayloadEffectDef>("E_Element0 [SwarmerAcidExplosion_Die_AbilityDef]").DamagePayload.DamageKeywords[1].Value = 30;
 
                 DefCache.GetDef<WeaponDef>("AcidSwarmer_Torso_BodyPartDef").DamagePayload.DamageKeywords[1].Value = 20;
 
@@ -309,16 +370,18 @@ namespace TFTV
 
                 }
 
-                ItemSlotDef backPackSlot = DefCache.GetDef<ItemSlotDef>("Human_BackPack_SlotDef");
+               // ItemSlotDef backPackSlot = DefCache.GetDef<ItemSlotDef>("Human_BackPack_SlotDef");
 
-              //  ItemSlotDef torsoSlot = DefCache.GetDef<ItemSlotDef>("Human_Torso_SlotDef");
+                //  ItemSlotDef torsoSlot = DefCache.GetDef<ItemSlotDef>("Human_Torso_SlotDef");
 
-             //   ItemSlotDef backSlot = DefCache.GetDef<ItemSlotDef>("Human_ShieldPoint_Back_SlotDef");
+                //   ItemSlotDef backSlot = DefCache.GetDef<ItemSlotDef>("Human_ShieldPoint_Back_SlotDef");
 
-                
 
-              //  TacticalItemDef juggBIO = DefCache.GetDef<TacticalItemDef>("NJ_Jugg_BIO_Torso_BodyPartDef");
-                TacticalItemDef exoBIO = DefCache.GetDef<TacticalItemDef>("NJ_Exo_BIO_Torso_BodyPartDef");
+
+                //  TacticalItemDef juggBIO = DefCache.GetDef<TacticalItemDef>("NJ_Jugg_BIO_Torso_BodyPartDef");
+
+                //TESTING TESTING TESTING
+                /*     TacticalItemDef exoBIO = DefCache.GetDef<TacticalItemDef>("NJ_Exo_BIO_Torso_BodyPartDef");
                 TacticalItemDef shinobiBIO = DefCache.GetDef<TacticalItemDef>("SY_Shinobi_BIO_Torso_BodyPartDef");
 
                 ProvidedSlotBind backPackSlotBind = exoBIO.ProvidedSlots[0];
@@ -332,30 +395,32 @@ namespace TFTV
                 List<ProvidedSlotBind> exoSlots = new List<ProvidedSlotBind>(exoBIO.ProvidedSlots);
 
                 exoSlots.Remove(backPackSlotBind);
-                exoBIO.ProvidedSlots = exoSlots.ToArray();
+                exoBIO.ProvidedSlots = exoSlots.ToArray();*/
+
+                //TESTING TESTING TESTING
 
                 TacticalItemDef gooRepeller = DefCache.GetDef<TacticalItemDef>("PX_GooRepeller_Attachment_ItemDef");
                 TacticalItemDef mistRepeller = DefCache.GetDef<TacticalItemDef>("SY_MistRepeller_Attachment_ItemDef");
                 mistRepeller.RequiredSlotBinds = gooRepeller.RequiredSlotBinds;
 
-              /*  foreach (TacticalItemDef tacticalItemDef in Repo.GetAllDefs<TacticalItemDef>())
-                {
-                    if (tacticalItemDef.RequiredSlotBinds.Count() > 0 && tacticalItemDef.RequiredSlotBinds[0].RequiredSlot == torsoSlot)
-                    {
+                /*  foreach (TacticalItemDef tacticalItemDef in Repo.GetAllDefs<TacticalItemDef>())
+                  {
+                      if (tacticalItemDef.RequiredSlotBinds.Count() > 0 && tacticalItemDef.RequiredSlotBinds[0].RequiredSlot == torsoSlot)
+                      {
 
-                        foreach (ProvidedSlotBind providedSlotBind in tacticalItemDef.ProvidedSlots)
-                        {
-                            if (providedSlotBind.ProvidedSlot == backPackSlot)
-                            {
+                          foreach (ProvidedSlotBind providedSlotBind in tacticalItemDef.ProvidedSlots)
+                          {
+                              if (providedSlotBind.ProvidedSlot == backPackSlot)
+                              {
 
-                                TFTVLogger.Always($"tactical item {tacticalItemDef.name} is providing backPackSlot");
-                            }
-                        }
+                                  TFTVLogger.Always($"tactical item {tacticalItemDef.name} is providing backPackSlot");
+                              }
+                          }
 
-                    }
+                      }
 
 
-                }*/
+                  }*/
             }
             catch (Exception e)
             {
@@ -461,12 +526,13 @@ namespace TFTV
         {
             try
             {
+               
                 TacticalItemDef blastVest = DefCache.GetDef<TacticalItemDef>("PX_BlastResistanceVest_Attachment_ItemDef");
                 TacticalItemDef fireVest = DefCache.GetDef<TacticalItemDef>("NJ_FireResistanceVest_Attachment_ItemDef");
                 blastVest.Abilities = new AbilityDef[] { fireVest.Abilities[0], blastVest.Abilities[0] };
                 blastVest.ViewElementDef.LargeIcon = Helper.CreateSpriteFromImageFile("modules_blastresvest.png");
                 blastVest.ViewElementDef.InventoryIcon = blastVest.ViewElementDef.LargeIcon;
-
+              
 
 
 
@@ -526,7 +592,7 @@ namespace TFTV
 
         }
 
-        internal static void ChangeVestResearches() 
+        internal static void ChangeVestResearches()
         {
 
             try
@@ -548,7 +614,7 @@ namespace TFTV
 
         }
 
-      
+
 
         internal static void AdjustNanotechResearch()
         {
@@ -574,10 +640,10 @@ namespace TFTV
                 ResearchDef advNanotechRes = DefCache.GetDef<ResearchDef>("SYN_NanoTech_ResearchDef");
                 advNanotechRes.Unlocks = new ResearchRewardDef[] { advNanotechRes.Unlocks[0] };
 
-               
+
 
                 List<ItemDef> manuRewards = new List<ItemDef>() { repairKit };
-                
+
 
                 advNanotechRewards.Items = manuRewards.ToArray();
 
@@ -607,7 +673,7 @@ namespace TFTV
                 StatusRemoverEffectDef sourceStatusRemoverEffect = DefCache.GetDef<StatusRemoverEffectDef>("StrainedRemover_EffectDef");
                 StatusRemoverEffectDef newAcidStatusRemoverEffect = Helper.CreateDefFromClone(sourceStatusRemoverEffect, "0AE26C25-A67D-4F2F-B036-F7649B26B695", abilityName);
                 newAcidStatusRemoverEffect.StatusToRemove = "Acid";
-               
+
 
 
                 string nameMultiEffect = "DoTMedkitMultiEffect";

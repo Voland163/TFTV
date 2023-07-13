@@ -170,11 +170,16 @@ namespace TFTV
                     }
 
                     TacticalActorBase sourceTacticalActorBase = TacUtil.GetSourceTacticalActorBase(__instance.Source);
-                    List<TacticalActor> list = sourceTacticalActorBase.TacticalFaction.TacticalActors.Where((TacticalActor a) => a.TacticalActorBaseDef == __instance.MassShootTargetActorEffectDef.ShootersActorDef).ToList();
-                    using (new MultiForceTargetableLock(sourceTacticalActorBase.Map.GetActors<TacticalActor>().Where(ta => ta.IsAlive).Where(ta => !ta.Status.HasStatus(AncientGuardianStealthStatus))))
+                    List<TacticalActor> list = sourceTacticalActorBase.TacticalFaction.TacticalActors.
+                        Where((TacticalActor a) => a.TacticalActorBaseDef == __instance.MassShootTargetActorEffectDef.ShootersActorDef).
+                        Where(ta => !ta.Status.HasStatus(AncientGuardianStealthStatus)).
+                        Where(ta => ta.IsAlive).ToList();
+                    using (new MultiForceTargetableLock(sourceTacticalActorBase.Map.GetActors<TacticalActor>().Where(ta => ta.IsAlive)))
                     {
                         foreach (TacticalActor item in list)
                         {
+                           // TFTVLogger.Always($"hoplite {item.name} has stealth status? {item.Status.HasStatus(AncientGuardianStealthStatus)}");
+
                             ShieldDeployedStatusDef shieldDeployed = DefCache.GetDef<ShieldDeployedStatusDef>("ShieldDeployed_StatusDef");
 
                             Weapon selectedWeapon = null;
@@ -203,13 +208,6 @@ namespace TFTV
 
                                     Timing.Current.Start((IEnumerator<NextUpdate>)faceAndShootAtTarget.Invoke(__instance, new object[] { item, selectedWeapon, tacticalAbilityTarget }));
 
-                                    /*  if (item.IsControlledByPlayer) 
-                                      {
-
-                                          item.CharacterStats.ActionPoints.Set(selectedWeapon.ApToUse, false);
-                                          TFTVLogger.Always($"beam costs {selectedWeapon.ApToUse} AP to use and character now has {item.CharacterStats.ActionPoints} action points");
-
-                                      }*/
 
                                 }
 
@@ -247,10 +245,10 @@ namespace TFTV
             {
                 try
                 {
-                    HopliteAPMassShoot.Add(shooterActor, shooterActor.CharacterStats.ActionPoints);
+                    HopliteAPMassShoot.Add(shooterActor, shooterActor?.CharacterStats?.ActionPoints);
 
                  
-                    TFTVLogger.Always($"{shooterActor.name} has {shooterActor.CharacterStats.ActionPoints} action points");
+                    TFTVLogger.Always($"{shooterActor?.name} has {shooterActor?.CharacterStats?.ActionPoints} action points");
 
                     /*  WeaponDef beamHead = DefCache.GetDef<WeaponDef>("HumanoidGuardian_Head_WeaponDef");
                       beamHead.APToUsePerc = 0;
@@ -432,9 +430,9 @@ namespace TFTV
                     {
                         if (HopliteAPMassShoot.ContainsKey(__instance)) 
                         {
-                            TFTVLogger.Always($"{__instance.name} has {__instance.CharacterStats.ActionPoints} ");
-                            __instance.CharacterStats.ActionPoints.Set(HopliteAPMassShoot[__instance]);
-                            TFTVLogger.Always($"but now {__instance.name} has {__instance.CharacterStats.ActionPoints} ");
+                            TFTVLogger.Always($"{__instance?.name} has {__instance?.CharacterStats?.ActionPoints} ");
+                            __instance?.CharacterStats?.ActionPoints?.Set(HopliteAPMassShoot[__instance]);
+                            TFTVLogger.Always($"but now {__instance?.name} has {__instance?.CharacterStats?.ActionPoints} ");
                             HopliteAPMassShoot.Remove(__instance);
                         }
                     }

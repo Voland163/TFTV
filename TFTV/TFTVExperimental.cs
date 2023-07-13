@@ -3,7 +3,6 @@ using Base.Entities;
 using Base.Entities.Abilities;
 using Base.Entities.Effects;
 using Base.Entities.Statuses;
-using Base.Input;
 using Base.Levels;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
@@ -23,8 +22,6 @@ using PhoenixPoint.Tactical.Entities.Statuses;
 using PhoenixPoint.Tactical.Entities.Weapons;
 using PhoenixPoint.Tactical.Levels;
 using PhoenixPoint.Tactical.Levels.Mist;
-using PhoenixPoint.Tactical.UI.Abilities;
-using PhoenixPoint.Tactical.View.ViewControllers;
 using PhoenixPoint.Tactical.View.ViewModules;
 using System;
 using System.Collections.Generic;
@@ -47,35 +44,8 @@ namespace TFTV
 
         public static List<TacticalVoxel> VoxelsOnFire = new List<TacticalVoxel>();
 
-       
-
-        [HarmonyPatch(typeof(UIModuleAbilityConfirmationButton), "SetAbility")]
-        public static class UIModuleAbilityConfirmationButton_SetAbility_patch
-        {
-            public static void Postfix(UIModuleAbilityConfirmationButton __instance, TacticalAbility ability)
-            {
-                try
-                {
-                   // EquipmentDef repairKit = DefCache.GetDef<EquipmentDef>("FieldRepairKit_EquipmentDef");
-
-              
-                    if (ability.AbilityDef.name == "DoTMedkit") 
-                    {
-                     //   TFTVLogger.Always($"the ability is {ability.AbilityDef.name}");                    
-                       __instance.DamageTypeTemplateShort.gameObject.SetActive(false);
-                        __instance.DamageTypeTemplateExtended.gameObject.SetActive(false);
 
 
-                    }
-                    
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                    throw;
-                }
-            }
-        }
 
         /*   [HarmonyPatch(typeof(UIModuleWeaponSelection), "HandleEquipments")]
             public static class UIModuleWeaponSelection_HandleEquipments_patch
@@ -107,34 +77,13 @@ namespace TFTV
            }*/
 
 
-        [HarmonyPatch(typeof(UIModuleWeaponSelection), "SetHealAmount")]
-        public static class UIModuleWeaponSelection_SetHealAmount_patch
-        {
-            public static void Prefix(UIModuleWeaponSelection __instance, ref float amount)
-            {
-                try
-                {
-                    if (amount <= 1)
-                    {
 
-                        amount = 0;
-                    }
-
-
-
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                    throw;
-                }
-            }
-        }
 
 
         // UIModuleAbilities
 
-        // SlotStateStatus
+
+
 
         /* [HarmonyPatch(typeof(TacticalActorBase), "GetDamageMultiplierFor")]
          public static class TacticalActorBase_GetDamageMultiplierFor_patch
@@ -248,27 +197,7 @@ namespace TFTV
 
           */
 
-        [HarmonyPatch(typeof(AddStatusDamageKeywordData), "ApplyDamageMultipliersToValue")]
-        public static class AddStatusDamageKeywordData_ApplyDamageMultipliersToValue_Patch
-        {
-            public static void Postfix(AddStatusDamageKeywordData __instance, float value, ref float __result)
-            {
-                try
-                {
-                    if (__instance.DamageKeywordDef == Shared.SharedDamageKeywords.AcidKeyword)
-                    {
-                        // TFTVLogger.Always($"Applyin acid; setting result to value (current value {value} and result {__result})");
-                        __result = value;
-                    }
 
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                    throw;
-                }
-            }
-        }
 
 
         /*   [HarmonyPatch(typeof(DamageKeyword), "AddKeywordStatus")]
@@ -376,26 +305,37 @@ namespace TFTV
               }
           }*/
 
-        //Patch to prevent BionicResistances from being removed when Acid applies Disabled Status
-        [HarmonyPatch(typeof(ActorComponent), "RemoveAbility", new Type[] { typeof(Ability) })]
-        public static class ActorComponent_RemoveAbilitiesFromSource_Patch
+        /* [HarmonyPatch(typeof(Equipment), "SetActive")]
+         public static class Equipment_RemoveAbilitiesFromSource_Patch
+         {
+             public static void Postfix(Equipment __instance, bool active)
+             {
+                 try
+                 {
+                     TFTVLogger.Always($"equipment is {__instance.DisplayName}, and is it active? {active}");
+
+
+
+
+                 }
+                 catch (Exception e)
+                 {
+                     TFTVLogger.Error(e);
+                     throw;
+                 }
+             }
+         }*/
+
+
+
+        [HarmonyPatch(typeof(TacticalItem), "RemoveAbilitiesFromActor")]
+        public static class TacticalItem_RemoveAbilitiesFromActor_patch
         {
-            public static bool Prefix(ActorComponent __instance, Ability ability)
+            public static void Prefix(TacticalItem __instance)
             {
                 try
                 {
-
-
-                    if (ability.AbilityDef.name == "BionicDamageMultipliers_AbilityDef")
-                    {
-
-                        return false;
-                    }
-
-                    // TFTVLogger.Always($"Removing ability {ability.AbilityDef.name}");
-
-                    return true;
-
+                    TFTVLogger.Always($"RemoveAbilitiesFromActor from item {__instance.ItemDef.name}");
 
 
                 }
@@ -407,117 +347,22 @@ namespace TFTV
             }
         }
 
-        [HarmonyPatch(typeof(AcidDamageEffect), "AddTarget")]
-        public static class AcidDamageEffect_ProcessHealAbilityDef_Patch
+
+
+        [HarmonyPatch(typeof(ActorComponent), "RemoveAbilitiesFromSource")]
+        public static class ActorComponent_RemoveAbilitiesFromSource_patch
         {
-            public static bool Prefix(AcidDamageEffect __instance, EffectTarget target, DamageAccumulation accum, IDamageReceiver recv, Vector3 damageOrigin, Vector3 impactForce, CastHit impactHit)
+            public static void Prefix(ActorComponent __instance, object source)
             {
                 try
                 {
-                    //   DamageMultiplierStatusDef scyllaResistance = DefCache.GetDef<DamageMultiplierStatusDef>("ScyllaDamageResistance");
-                    float num3 = 1;
-
-                    TacticalActor hitActor = recv?.GetActor() as TacticalActor;
-                    ItemSlot itemSlot = recv as ItemSlot;
-                    ItemSlot additionalSlot = null; //in case Leg                   
-
-                    ItemSlotStatsModifyStatusDef electricReinforcementStatus = DefCache.GetDef<ItemSlotStatsModifyStatusDef>("E_Status [ElectricReinforcement_AbilityDef]");
-
-                  //  ItemSlotStatsModifyStatus
-                    if (hitActor != null) 
+                    TFTVLogger.Always($"RemoveAbilitiesFromSource from {__instance.name} with source {source}");
+                 
+                    foreach (Ability item in __instance.GetAbilities<Ability>().Where((Ability a) => a.Source == source).ToList())
                     {
-                        if (itemSlot!=null && itemSlot.DisplayName == "LEG")
-                        {
-                            additionalSlot = hitActor.BodyState.GetSlot("Legs");
-                        }
-                        TFTVLogger.Always($"itemslot is {itemSlot?.GetSlotName()} and additionalslot is {additionalSlot?.GetSlotName()}");
-
-                        if (itemSlot != null) 
-                        {
-                            StatModification electricReinforcementMod= itemSlot.DamageImplementation.GetArmor().GetValueModifications().FirstOrDefault(mod => mod.Source is ItemSlotStatsModifyStatus status && status.ItemSlotStatsModifyStatusDef == electricReinforcementStatus);
-
-                            if (electricReinforcementMod != null)
-                            {
-                                itemSlot.DamageImplementation.GetArmor().RemoveStatModificationsWithSource(electricReinforcementMod.Source);
-                            } 
-                        }
-                        
-
-
-                        foreach (var damageMultiplier in hitActor.GetDamageMultipliers(DamageMultiplierType.Incoming, __instance.AcidDamageEffectDef.DamageTypeDef))
-                        {
-                           // TFTVLogger.Always($"multiplier is {damageMultiplier.GetMultiplier(recv, recv)} ");
-                            num3 *= damageMultiplier.GetMultiplier(recv, recv);
-                        }
-
-                        TFTVLogger.Always($"{hitActor.name} has {num3} total acid damage resistance");
-
-                        
+                        TFTVLogger.Always($"ability is {item.AbilityDef.name} and it's source is {item.Source}, while parameter source is {source}");
                     }
 
-                    bool num = (float)recv.GetArmor().Value > 1E-05f;
-                    float armorDamage = num ? accum.Amount : 0f;
-                    // float armorDamage = (num ? (accum.Amount * accum.GetSourceDamageMultiplierForReceiver(recv)) : 0f);
-                    float num2 = num ? 0f : (accum.Amount * num3);
-                    TFTVLogger.Always($"damage to armor from acid is {armorDamage}; damage to HP is {num2}");
-
-                    DamageAccumulation.TargetData data = new DamageAccumulation.TargetData
-                    {
-                        Target = recv,
-                        AmountApplied = num2,
-                        DamageResult = new DamageResult
-                        {
-                            Source = __instance.Source,
-                            ArmorDamage = armorDamage,
-                            HealthDamage = num2,
-                            ImpactForce = impactForce,
-                            ImpactHit = impactHit,
-                            DamageOrigin = damageOrigin,
-                            DamageTypeDef = __instance.AcidDamageEffectDef.DamageTypeDef
-                        }
-                    };
-                    SlotStateStatusDef disabled = DefCache.GetDef<SlotStateStatusDef>("DisabledElectronicSlot_StatusDef");
-                  
-              
-                    if (num2 > 0)
-                    {
-                       
-                       
-
-                        TacticalActor tacticalActor = recv.GetActor() as TacticalActor;
-
-                       
-
-                        /*   if (itemSlot.DisplayName == "ARM")
-                           {
-                               additionalSlot = tacticalActor.BodyState.GetSlot("Torso");
-                           }*/
-                       
-
-                        tacticalActor.ApplyDamage(new DamageResult
-                        {
-                            ApplyStatuses = new List<StatusApplication>
-                                { new StatusApplication
-                                { StatusDef = disabled, StatusSource = __instance, StatusTarget = itemSlot} }
-                        });
-
-                        if (additionalSlot != null)
-                        {
-                            tacticalActor.ApplyDamage(new DamageResult
-                            {
-                                ApplyStatuses = new List<StatusApplication>
-                                { new StatusApplication
-                                { StatusDef = disabled, StatusSource = __instance, StatusTarget = additionalSlot} }
-                            });
-
-                        }
-
-
-                      //  TFTVLogger.Always("Status should be applied");
-                    }
-                    accum.AddGeneratedTarget(data);
-
-                    return false;
                 }
                 catch (Exception e)
                 {
@@ -527,6 +372,39 @@ namespace TFTV
             }
         }
 
+
+
+/*
+        [HarmonyPatch(typeof(SlotStateStatus), "SetAbilitiesState")]
+        public static class SlotStateStatus_GetDamageMultiplierFor_patch
+        {
+            public static void Prefix(SlotStateStatus __instance, ItemSlot ____targetSlot)
+            {
+                try
+                {
+                    TFTVLogger.Always($"Gets at least to here {__instance.Source}");
+
+                    foreach (TacticalItem allDirectItem in ____targetSlot.GetAllDirectItems(onlyBodyparts: true))
+                    {
+                        if (__instance.SlotStateStatusDef.BodypartsEnabled && !allDirectItem.Enabled)
+                        {
+                            TFTVLogger.Always($"landed here: looking at {allDirectItem.ItemDef.name}");
+                        }
+                        else if (!__instance.SlotStateStatusDef.BodypartsEnabled && allDirectItem.Enabled)
+                        {
+                            TFTVLogger.Always($"landed in the else if: looking at {allDirectItem.ItemDef.name}");
+                        }
+
+
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }*/
 
         /*    [HarmonyPatch(typeof(AbilitySummaryData), "ProcessHealAbilityDef")]
             public static class AbilitySummaryData_ProcessHealAbilityDef_Patch

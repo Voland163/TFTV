@@ -813,7 +813,7 @@ namespace TFTV
             {
                 try
                 {
-                    if(CharactersDeliriumPerksAndMissions!=null && CharactersDeliriumPerksAndMissions.ContainsKey(____parentModule.CurrentCharacter.Id) &&
+                    if(CharactersDeliriumPerksAndMissions!=null && ____parentModule.CurrentCharacter!=null && ____parentModule.CurrentCharacter.Id!=null && CharactersDeliriumPerksAndMissions.ContainsKey(____parentModule.CurrentCharacter.Id) &&
                         CharactersDeliriumPerksAndMissions[____parentModule.CurrentCharacter.Id] == -1)                    
                     {
                         GameUtl.GetMessageBox().ShowSimplePrompt($"{____parentModule.CurrentCharacter.GetName()} has fully recovered from the effects caused by the experimental Delirium Treatment!", MessageBoxIcon.None, MessageBoxButtons.OK, null);

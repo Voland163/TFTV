@@ -263,10 +263,10 @@ namespace PRMBetterClasses.VariousAdjustments
             juggTorsoAspect.Speed = juggLegsAspect.Speed = 0;
 
             // Give mounted weapon slot to Juggernaut Torso 
-            //Removing for TFTV
+            //Removing for TFTV TESTING
             TacticalItemDef juggTorso = DefCache.GetDef<TacticalItemDef>("NJ_Jugg_BIO_Torso_BodyPartDef");
             TacticalItemDef neuralTorso = DefCache.GetDef<TacticalItemDef>("NJ_Exo_BIO_Torso_BodyPartDef");
-          //  juggTorso.ProvidedSlots = neuralTorso.ProvidedSlots;
+            juggTorso.ProvidedSlots = neuralTorso.ProvidedSlots;
 
             // shield deploy AP cost 1 -> 0
             TacticalAbilityDef deployJuggShield = DefCache.GetDef<TacticalAbilityDef>("DeployShield_Bionic_AbilityDef");
