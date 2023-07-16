@@ -431,6 +431,7 @@ namespace TFTV
 
                 List<Vector2Int> adjacentTiles = CheckAdjacency(baseFacility.GridPosition);
 
+             
                 foreach (Vector2Int adjacentTile in adjacentTiles)
                 {
                     if (hangar.FacilityTiles.Contains(adjacentTile))
@@ -440,48 +441,130 @@ namespace TFTV
                     }
                     else if (layout.GetFacilityAtPosition(adjacentTile) != null && adjacentTile != tileToExclude)
                     {
+                      //  TFTVLogger.Always($"got here0, facility: {layout.GetFacilityAtPosition(adjacentTile).Def.name}");
+
                         foreach (Vector2Int connectedTile in CheckAdjacency(adjacentTile))
                         {
                             if (hangar.FacilityTiles.Contains(connectedTile))
                             {
+                               // TFTVLogger.Always($"got here final, {baseFacility.Def.name} is connected to {hangar.Def.name}");
                                 return true;
 
                             }
                             else if (layout.GetFacilityAtPosition(connectedTile) != null && connectedTile != tileToExclude)
                             {
+                             //   TFTVLogger.Always($"got here1, facility: {layout.GetFacilityAtPosition(connectedTile).Def.name}");
+
                                 foreach (Vector2Int connectedTile2 in CheckAdjacency(connectedTile))
                                 {
                                     if (hangar.FacilityTiles.Contains(connectedTile2))
                                     {
+                                      //  TFTVLogger.Always($"got here final, {baseFacility.Def.name} is connected to {hangar.Def.name}");
                                         return true;
 
                                     }
                                     else if (layout.GetFacilityAtPosition(connectedTile2) != null && connectedTile2 != tileToExclude)
                                     {
+                                      //  TFTVLogger.Always($"got here2, facility: {layout.GetFacilityAtPosition(connectedTile2).Def.name}");
+
                                         foreach (Vector2Int connectedTile3 in CheckAdjacency(connectedTile2))
                                         {
                                             if (hangar.FacilityTiles.Contains(connectedTile3))
                                             {
+                                           //     TFTVLogger.Always($"got here final, {baseFacility.Def.name} is connected to {hangar.Def.name}");
                                                 return true;
 
                                             }
                                             else if (layout.GetFacilityAtPosition(connectedTile3) != null && connectedTile3 != tileToExclude)
                                             {
-
+                                             //   TFTVLogger.Always($"got here3, facility: {layout.GetFacilityAtPosition(connectedTile3).Def.name}");
                                                 foreach (Vector2Int connectedTile4 in CheckAdjacency(connectedTile3))
                                                 {
                                                     if (hangar.FacilityTiles.Contains(connectedTile4))
                                                     {
+                                                     //   TFTVLogger.Always($"got here final, {baseFacility.Def.name} is connected to {hangar.Def.name}");
                                                         return true;
 
                                                     }
                                                     else if (layout.GetFacilityAtPosition(connectedTile4) != null && connectedTile4 != tileToExclude)
                                                     {
+                                                      //  TFTVLogger.Always($"got here4, facility: {layout.GetFacilityAtPosition(connectedTile4).Def.name}");
                                                         foreach (Vector2Int connectedTile5 in CheckAdjacency(connectedTile4))
                                                         {
                                                             if (hangar.FacilityTiles.Contains(connectedTile5))
                                                             {
+                                                             //   TFTVLogger.Always($"got here final, {baseFacility.Def.name} is connected to {hangar.Def.name}");
+
                                                                 return true;
+
+                                                            }
+                                                            else if (layout.GetFacilityAtPosition(connectedTile5) != null && connectedTile5 != tileToExclude)
+                                                            {
+                                                              //  TFTVLogger.Always($"got here5, facility: {layout.GetFacilityAtPosition(connectedTile4).Def.name}");
+                                                                foreach (Vector2Int connectedTile6 in CheckAdjacency(connectedTile5))
+                                                                {
+                                                                    if (hangar.FacilityTiles.Contains(connectedTile6))
+                                                                    {
+                                                                      //  TFTVLogger.Always($"got here final, {baseFacility.Def.name} is connected to {hangar.Def.name}");
+
+                                                                        return true;
+
+                                                                    }
+                                                                    else if (layout.GetFacilityAtPosition(connectedTile6) != null && connectedTile6 != tileToExclude)
+                                                                    {
+                                                                        //  TFTVLogger.Always($"got here5, facility: {layout.GetFacilityAtPosition(connectedTile4).Def.name}");
+                                                                        foreach (Vector2Int connectedTile7 in CheckAdjacency(connectedTile6))
+                                                                        {
+                                                                            if (hangar.FacilityTiles.Contains(connectedTile7))
+                                                                            {
+                                                                                //  TFTVLogger.Always($"got here final, {baseFacility.Def.name} is connected to {hangar.Def.name}");
+
+                                                                                return true;
+
+                                                                            }
+                                                                            else if (layout.GetFacilityAtPosition(connectedTile7) != null && connectedTile7 != tileToExclude)
+                                                                            {
+                                                                                //  TFTVLogger.Always($"got here5, facility: {layout.GetFacilityAtPosition(connectedTile4).Def.name}");
+                                                                                foreach (Vector2Int connectedTile8 in CheckAdjacency(connectedTile7))
+                                                                                {
+                                                                                    if (hangar.FacilityTiles.Contains(connectedTile8))
+                                                                                    {
+                                                                                        //  TFTVLogger.Always($"got here final, {baseFacility.Def.name} is connected to {hangar.Def.name}");
+
+                                                                                        return true;
+
+                                                                                    }
+                                                                                    else if (layout.GetFacilityAtPosition(connectedTile8) != null && connectedTile8 != tileToExclude)
+                                                                                    {
+                                                                                        //  TFTVLogger.Always($"got here5, facility: {layout.GetFacilityAtPosition(connectedTile4).Def.name}");
+                                                                                        foreach (Vector2Int connectedTile9 in CheckAdjacency(connectedTile8))
+                                                                                        {
+                                                                                            if (hangar.FacilityTiles.Contains(connectedTile9))
+                                                                                            {
+                                                                                                //  TFTVLogger.Always($"got here final, {baseFacility.Def.name} is connected to {hangar.Def.name}");
+
+                                                                                                return true;
+
+                                                                                            }
+
+
+
+                                                                                        }
+
+                                                                                    }
+
+
+                                                                                }
+
+                                                                            }
+
+
+                                                                        }
+
+                                                                    }
+
+
+                                                                }
 
                                                             }
 
@@ -525,22 +608,23 @@ namespace TFTV
             {
                 try
                 {
-                    //TFTVLogger.Always($"facility is {facility.ViewElementDef.name} and it has {facility.HealthPercentage} % health");
+                  //  TFTVLogger.Always($"facility is {facility.ViewElementDef.name} and it can't be demolished? {facility.CannotDemolish}");
 
                     Vector2Int positionToExclude = facility.GridPosition;
                     GeoPhoenixFacility hangar = facility.PxBase.Layout.BasicFacilities.FirstOrDefault(bf => bf.FacilityTiles.Count > 1);
                     GeoPhoenixBaseLayout layout = facility.PxBase.Layout;
 
-                    foreach (GeoPhoenixFacility baseFacility in layout.Facilities)
+                    foreach (GeoPhoenixFacility baseFacility in layout.Facilities.Where(bf=>bf!=facility))
                     {
                         if (CheckConnectionToHangar(layout, positionToExclude, baseFacility))
                         {
+                           // TFTVLogger.Always($"{baseFacility.Def.name} at {baseFacility.GridPosition} is connected to Hangar");
 
                         }
                         else
                         {
                             // connectionToHangarLoss = true;
-                            // TFTVLogger.Always($"{facility.Def.name} is demolished, some facility will lose connection to Hangar is {connectionToHangarLoss}");
+                        //    TFTVLogger.Always($"if {facility.Def.name} at {facility.GridPosition} is demolished, {baseFacility.Def.name} at {baseFacility.GridPosition} will lose connection to Hangar");
                             __instance.DemolishFacilityBtn.SetInteractable(false);
                             //  __instance.CanDemolish = false;
                             __instance.Description.text += "\n\n<b>Can't demolish this facility, as otherwise other facilities will be cut off from the Hangar!</b>";
@@ -551,6 +635,7 @@ namespace TFTV
                     }
                     if (!facility.CannotDemolish)
                     {
+
                         __instance.DemolishFacilityBtn.SetInteractable(true);
                     }
 

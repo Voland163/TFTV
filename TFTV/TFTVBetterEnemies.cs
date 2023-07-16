@@ -457,7 +457,7 @@ namespace TFTV
 
                     DamageMultiplierStatusDef source = DefCache.GetDef<DamageMultiplierStatusDef>("BionicResistances_StatusDef");
 
-                    TFTVLogger.Always($"{source.DamageTypeDefs.Count()}");
+                 //   TFTVLogger.Always($"{source.DamageTypeDefs.Count()}");
 
                     DamageMultiplierStatusDef newStatus = Helper.CreateDefFromClone(
                         source,
@@ -478,7 +478,7 @@ namespace TFTV
                     newStatus.Range = -1;
                     newStatus.DamageTypeDefs = source.DamageTypeDefs;
 
-                    TFTVLogger.Always($"{newStatus.DamageTypeDefs.Count()}");
+                 //   TFTVLogger.Always($"{newStatus.DamageTypeDefs.Count()}");
 
                     List<DamageTypeBaseEffectDef> damageTypeBaseEffectDefs = new List<DamageTypeBaseEffectDef>();
                     damageTypeBaseEffectDefs.AddRange(newStatus.DamageTypeDefs);
@@ -486,11 +486,11 @@ namespace TFTV
                     damageTypeBaseEffectDefs.Add(standardDamageTypeEffectDef);
                     damageTypeBaseEffectDefs.Add(acidDamage);
 
-                    TFTVLogger.Always($"damageTypeBaseEffectDefs {damageTypeBaseEffectDefs.Count()}");
+               //     TFTVLogger.Always($"damageTypeBaseEffectDefs {damageTypeBaseEffectDefs.Count()}");
 
                     newStatus.DamageTypeDefs = damageTypeBaseEffectDefs.ToArray();
 
-                    TFTVLogger.Always($"{newStatus.DamageTypeDefs.Count()}");
+                  //  TFTVLogger.Always($"{newStatus.DamageTypeDefs.Count()}");
 
                     newStatus.Visuals.LargeIcon = Helper.CreateSpriteFromImageFile("UI_AbilitiesIcon_HunkerDown_2-2.png");
                     newStatus.Visuals.SmallIcon = Helper.CreateSpriteFromImageFile("UI_AbilitiesIcon_HunkerDown_2-2.png");

@@ -21,6 +21,7 @@ using PhoenixPoint.Tactical.View.ViewModules;
 using PhoenixPoint.Tactical.Entities.DamageKeywords;
 using PhoenixPoint.Common.Entities.Equipments;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
+using System.Linq.Expressions;
 
 namespace TFTV
 {
@@ -98,7 +99,7 @@ namespace TFTV
                         return false;
                     }
 
-                    TFTVLogger.Always($"Removing ability {ability.AbilityDef.name}");
+                  //  TFTVLogger.Always($"Removing ability {ability.AbilityDef.name}");
 
                     return true;
 
@@ -121,7 +122,7 @@ namespace TFTV
             {
                 try
                 {
-                    if (__instance.DamageKeywordDef == Shared.SharedDamageKeywords.AcidKeyword)
+                    if (__instance.DamageKeywordDef == Shared.SharedDamageKeywords.AcidKeyword && __result!=0)
                     {
                         // TFTVLogger.Always($"Applyin acid; setting result to value (current value {value} and result {__result})");
                         __result = value;
@@ -138,150 +139,153 @@ namespace TFTV
 
         //Method to change how Acid damage is applied
         [HarmonyPatch(typeof(AcidDamageEffect), "AddTarget")]
-        public static class AcidDamageEffect_ProcessHealAbilityDef_Patch
+        public static class AcidDamageEffect_AddTarget_Patch
         {
             public static bool Prefix(AcidDamageEffect __instance, EffectTarget target, DamageAccumulation accum, IDamageReceiver recv, Vector3 damageOrigin, Vector3 impactForce, CastHit impactHit)
             {
                 try
                 {
-
-                    float num3 = 1;
-
-                    TacticalActor hitActor = recv?.GetActor() as TacticalActor;
-                    ItemSlot itemSlot = recv as ItemSlot;
-                    ItemSlot additionalSlot = null; //in case Leg                   
-
-                    ItemSlotStatsModifyStatusDef electricReinforcementStatus = DefCache.GetDef<ItemSlotStatsModifyStatusDef>("E_Status [ElectricReinforcement_AbilityDef]");
-                    ItemSlotStatsModifyStatusDef hunkerDownStatus = DefCache.GetDef<ItemSlotStatsModifyStatusDef>("E_ArmourModifier [HunkerDown_AbilityDef]");
-
-                    //  ItemSlotStatsModifyStatus
-                    if (hitActor != null)
+                    if (recv != null)
                     {
-                        if (hitActor.HasGameTag(Shared.SharedGameTags.VehicleTag))
+                        float num3 = 1;
+
+                        TacticalActor hitActor = recv?.GetActor() as TacticalActor;
+                        ItemSlot itemSlot = recv as ItemSlot;
+                        ItemSlot additionalSlot = null; //in case Leg                   
+
+                        ItemSlotStatsModifyStatusDef electricReinforcementStatus = DefCache.GetDef<ItemSlotStatsModifyStatusDef>("E_Status [ElectricReinforcement_AbilityDef]");
+                        ItemSlotStatsModifyStatusDef hunkerDownStatus = DefCache.GetDef<ItemSlotStatsModifyStatusDef>("E_ArmourModifier [HunkerDown_AbilityDef]");
+
+                        //  ItemSlotStatsModifyStatus
+                        if (hitActor != null)
                         {
-                          /*  TFTVLogger.Always($"Damaging vehicle {hitActor.name} with acid; slots # {hitActor.BodyState.GetSlots().Count()}");
-             
-                            foreach(ItemSlot itemSlot1 in hitActor.BodyState.GetSlots()) 
+                            if (hitActor.HasGameTag(Shared.SharedGameTags.VehicleTag))
                             {
-                                TFTVLogger.Always($"{hitActor.name} item slot {itemSlot1.DisplayName} and slot name is {itemSlot1.GetSlotName()}");
-                            
-                            }*/
+                                /*  TFTVLogger.Always($"Damaging vehicle {hitActor.name} with acid; slots # {hitActor.BodyState.GetSlots().Count()}");
+
+                                  foreach(ItemSlot itemSlot1 in hitActor.BodyState.GetSlots()) 
+                                  {
+                                      TFTVLogger.Always($"{hitActor.name} item slot {itemSlot1.DisplayName} and slot name is {itemSlot1.GetSlotName()}");
+
+                                  }*/
 
 
-                        }
-                        else
-
-                        {
-
-                            if (itemSlot != null && itemSlot.DisplayName == "LEG")
-                            {
-                                additionalSlot = hitActor.BodyState.GetSlot("Legs");
                             }
-                           
+                            else
 
-                        }
-
-                        TFTVLogger.Always($"Affected itemslot is {itemSlot?.GetSlotName()} and additionalslot is {additionalSlot?.GetSlotName()}");
-
-                       
-
-
-                        if (itemSlot != null)
-                        {
-                            StatModification electricReinforcementHunkerDownMod = itemSlot.DamageImplementation.GetArmor().GetValueModifications().FirstOrDefault(mod => mod.Source is ItemSlotStatsModifyStatus status && (status.ItemSlotStatsModifyStatusDef == electricReinforcementStatus|| status.ItemSlotStatsModifyStatusDef ==hunkerDownStatus));
-
-                            if (electricReinforcementHunkerDownMod != null)
                             {
-                                itemSlot.DamageImplementation.GetArmor().RemoveStatModificationsWithSource(electricReinforcementHunkerDownMod.Source);
-                            }
-                        }
 
+                                if (itemSlot != null && itemSlot.DisplayName == "LEG")
+                                {
+                                    additionalSlot = hitActor.BodyState.GetSlot("Legs");
+                                }
 
-
-                        foreach (var damageMultiplier in hitActor.GetDamageMultipliers(DamageMultiplierType.Incoming, __instance.AcidDamageEffectDef.DamageTypeDef))
-                        {
-                            // TFTVLogger.Always($"multiplier is {damageMultiplier.GetMultiplier(recv, recv)} ");
-                            num3 *= damageMultiplier.GetMultiplier(recv, recv);
-                        }
-
-                        TFTVLogger.Always($"{hitActor.name} has {num3} total acid damage resistance");
-
-
-                    }
-
-                    bool num = (float)recv.GetArmor().Value > 1E-05f;
-                    float armorDamage = num ? accum.Amount : 0f;
-                    // float armorDamage = (num ? (accum.Amount * accum.GetSourceDamageMultiplierForReceiver(recv)) : 0f);
-                    float num2 = num ? 0f : (accum.Amount * num3);
-                    TFTVLogger.Always($"damage to armor from acid is {armorDamage}; damage to HP is {num2}");
-
-                    DamageAccumulation.TargetData data = new DamageAccumulation.TargetData
-                    {
-                        Target = recv,
-                        AmountApplied = num2,
-                        DamageResult = new DamageResult
-                        {
-                            Source = __instance.Source,
-                            ArmorDamage = armorDamage,
-                            HealthDamage = num2,
-                            ImpactForce = impactForce,
-                            ImpactHit = impactHit,
-                            DamageOrigin = damageOrigin,
-                            DamageTypeDef = __instance.AcidDamageEffectDef.DamageTypeDef
-                        }
-                    };
-                    SlotStateStatusDef disabled = DefCache.GetDef<SlotStateStatusDef>("DisabledElectronicSlot_StatusDef");
-                    ItemMaterialTagDef electronicTag = DefCache.GetDef<ItemMaterialTagDef>("Electronic_ItemMaterialTagDef");
-
-
-                 
-
-
-                    if (num2 > 0 && itemSlot.HasDirectGameTag(electronicTag, false))
-                    {
-
-                        TacticalActor tacticalActor = recv.GetActor() as TacticalActor;
-
-                   /*     object additionalTarget = additionalSlot;
-
-                        if (itemSlot?.SlotDef == DefCache.GetDef<ItemSlotDef>("PX_Scarab_Turret_SlotDef"))
-                        {
-                            foreach (TacticalItem tacticalItem in itemSlot.GetAllDirectItems())
-                            {
-                                TFTVLogger.Always($"in {itemSlot.GetSlotName()} tactical itemDef name {tacticalItem.ItemDef.name}");
-                                additionalTarget = tacticalItem;
 
                             }
 
-                        }*/
+                     //       TFTVLogger.Always($"Affected itemslot is {itemSlot?.GetSlotName()} and additionalslot is {additionalSlot?.GetSlotName()}");
 
 
 
-                        tacticalActor.ApplyDamage(new DamageResult
+
+                            if (itemSlot != null)
+                            {
+                                StatModification electricReinforcementHunkerDownMod = itemSlot.DamageImplementation.GetArmor().GetValueModifications().FirstOrDefault(mod => mod.Source is ItemSlotStatsModifyStatus status && (status.ItemSlotStatsModifyStatusDef == electricReinforcementStatus || status.ItemSlotStatsModifyStatusDef == hunkerDownStatus));
+
+                                if (electricReinforcementHunkerDownMod != null)
+                                {
+                                    itemSlot.DamageImplementation.GetArmor().RemoveStatModificationsWithSource(electricReinforcementHunkerDownMod.Source);
+                                }
+                            }
+
+
+
+                            foreach (var damageMultiplier in hitActor.GetDamageMultipliers(DamageMultiplierType.Incoming, __instance.AcidDamageEffectDef.DamageTypeDef))
+                            {
+                                // TFTVLogger.Always($"multiplier is {damageMultiplier.GetMultiplier(recv, recv)} ");
+                                num3 *= damageMultiplier.GetMultiplier(recv, recv);
+                            }
+
+                           // TFTVLogger.Always($"{hitActor.name} has {num3} total acid damage resistance");
+
+
+                        }
+
+
+
+                        bool num = (float)recv.GetArmor().Value > 1E-05f;
+                        float armorDamage = num ? accum.Amount : 0f;
+                        // float armorDamage = (num ? (accum.Amount * accum.GetSourceDamageMultiplierForReceiver(recv)) : 0f);
+                        float num2 = num ? 0f : (accum.Amount * num3);
+                     //   TFTVLogger.Always($"damage to armor from acid is {armorDamage}; damage to HP is {num2}");
+
+                        DamageAccumulation.TargetData data = new DamageAccumulation.TargetData
                         {
-                            ApplyStatuses = new List<StatusApplication>
-                                { new StatusApplication
-                                { StatusDef = disabled, StatusSource = __instance, StatusTarget = itemSlot} }
+                            Target = recv,
+                            AmountApplied = num2,
+                            DamageResult = new DamageResult
+                            {
+                                Source = __instance.Source,
+                                ArmorDamage = armorDamage,
+                                HealthDamage = num2,
+                                ImpactForce = impactForce,
+                                ImpactHit = impactHit,
+                                DamageOrigin = damageOrigin,
+                                DamageTypeDef = __instance.AcidDamageEffectDef.DamageTypeDef
+                            }
+                        };
+                        SlotStateStatusDef disabled = DefCache.GetDef<SlotStateStatusDef>("DisabledElectronicSlot_StatusDef");
+                        ItemMaterialTagDef electronicTag = DefCache.GetDef<ItemMaterialTagDef>("Electronic_ItemMaterialTagDef");
 
-                        });
 
-                        if (additionalSlot != null)
+
+
+
+                        if (num2 > 0 && itemSlot != null && itemSlot.HasDirectGameTag(electronicTag, false))
                         {
+
+                            TacticalActor tacticalActor = recv.GetActor() as TacticalActor;
+
+                            /*     object additionalTarget = additionalSlot;
+
+                                 if (itemSlot?.SlotDef == DefCache.GetDef<ItemSlotDef>("PX_Scarab_Turret_SlotDef"))
+                                 {
+                                     foreach (TacticalItem tacticalItem in itemSlot.GetAllDirectItems())
+                                     {
+                                         TFTVLogger.Always($"in {itemSlot.GetSlotName()} tactical itemDef name {tacticalItem.ItemDef.name}");
+                                         additionalTarget = tacticalItem;
+
+                                     }
+
+                                 }*/
+
                             tacticalActor.ApplyDamage(new DamageResult
                             {
                                 ApplyStatuses = new List<StatusApplication>
                                 { new StatusApplication
-                                { StatusDef = disabled, StatusSource = __instance, StatusTarget = additionalSlot} }
+                                { StatusDef = disabled, StatusSource = __instance, StatusTarget = itemSlot} }
+
                             });
 
+                            if (additionalSlot != null)
+                            {
+                                tacticalActor.ApplyDamage(new DamageResult
+                                {
+                                    ApplyStatuses = new List<StatusApplication>
+                                { new StatusApplication
+                                { StatusDef = disabled, StatusSource = __instance, StatusTarget = additionalSlot} }
+                                });
+
+                            }
+
+
+                            //  TFTVLogger.Always("Status should be applied");
                         }
+                        accum.AddGeneratedTarget(data);
 
-
-                        //  TFTVLogger.Always("Status should be applied");
+                        return false;
                     }
-                    accum.AddGeneratedTarget(data);
-
-                    return false;
+                    return true;
                 }
                 catch (Exception e)
                 {

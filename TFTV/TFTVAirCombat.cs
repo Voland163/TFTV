@@ -553,6 +553,41 @@ namespace TFTV
             }
         }
 
+        //Patch to adjust disprution threshold
+        [HarmonyPatch(typeof(GeoBehemothActor), "CalculateDisruptionThreshhold")]
+        public static class GeoBehemothActor_CalculateDisruptionThreshhold_patch
+        {
+            public static bool Prepare()
+            {
+                TFTVConfig config = TFTVMain.Main.Config;
+                return config.ActivateAirCombatChanges;
+            }
+            public static void Postfix(GeoBehemothActor __instance, ref int __result)
+            {
+                try
+                {
+                    FesteringSkiesSettingsDef festeringSkiesSettings = __instance.GeoLevel.FesteringSkiesSettings;
+                    GameDifficultyLevelDef currentDifficultyLevel = __instance.GeoLevel.CurrentDifficultyLevel;
+                    int num = festeringSkiesSettings.DisruptionThreshholdBaseValue + currentDifficultyLevel.DisruptionDueToDifficulty;
+                    //  TFTVLogger.Always("The num is " + num);
+
+                TFTVLogger.Always($"Calculating Disruption Threshold for Big B. " +
+                    $"Base value: {festeringSkiesSettings.DisruptionThreshholdBaseValue} " +
+                    $"From Difficulty: {currentDifficultyLevel.DisruptionDueToDifficulty}  " +
+                    $"Roaming: {__instance.GeoLevel.EventSystem.GetVariable(BehemothRoamings)}" +
+                    $"Total: {num + __instance.GeoLevel.EventSystem.GetVariable(BehemothRoamings) * 2}");
+
+                    __result = num;
+                }
+
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+        }
+
+        
 
 
         //Patch to ensure that Behemoth emerges near exploration sites, written with the help of my new best friend, chatgpt

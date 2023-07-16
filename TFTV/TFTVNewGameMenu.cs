@@ -99,8 +99,7 @@ namespace TFTV
                     HomeScreenViewContext = ____context;
                     ModSettingControllerHook = __instance.HomeScreenModules.ModManagerModule.SettingsModSettingPrefab;
 
-                   
-                    //  TFTVLogger.Always($"Testing");
+                  
 
                 }
                 catch (Exception e)
@@ -124,7 +123,7 @@ namespace TFTV
                     gameSettings = __instance;
 
 
-                    TFTVLogger.Always("Awake run");
+                    //TFTVLogger.Always("Awake run");
 
                 }
                 catch (Exception e)
@@ -247,7 +246,7 @@ namespace TFTV
                     RectTransform rectTransform = __instance.GameAddiotionalContentGroup.GetComponentInChildren<RectTransform>();
                     rectTransform.DestroyChildren();
 
-                   // __instance.DlcTitleRoot.GetComponent<Text>().text = "testing";
+                   // __instance.DlcTitleRoot.GetComponent<Text>().text = "";
 
                     ModSettingController startingFactionController = UnityEngine.Object.Instantiate(ModSettingControllerHook, rectTransform);
                     ModSettingController startingBaseController = UnityEngine.Object.Instantiate(startingFactionController, rectTransform);
@@ -441,7 +440,7 @@ namespace TFTV
                      {
                          Transform transformForCloning = UnityEngine.Object.Instantiate(element.gameObject.transform);
                          GameOptionViewController gameOptionViewController = transformForCloning.GetComponent<GameOptionViewController>();
-                         gameOptionViewController.Set(new Base.UI.LocalizedTextBind("Testing"), new Base.UI.LocalizedTextBind("Testing Testing"), false);
+                         gameOptionViewController.Set(new Base.UI.LocalizedTextBind(""), new Base.UI.LocalizedTextBind("), false);
                          BindSecondaryOptionRun = true;
                      }*/
                 }

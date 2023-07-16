@@ -8,6 +8,7 @@ using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.Characters;
 using PhoenixPoint.Common.Entities.GameTags;
+using PhoenixPoint.Common.Entities.Items;
 using PhoenixPoint.Common.View.ViewModules;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Levels;
@@ -651,13 +652,20 @@ namespace TFTV
                     OneOfThem_AbilityDef, bloodthirsty_AbilityDef, feralDeliriumPerk
                     };
 
+                    if (__instance.GetBodyParts()
+                        .Where(bp => bp?.RequiredSlotBinds.Count()>0 && bp?.RequiredSlotBinds[0].RequiredSlot == DefCache.GetDef<ItemSlotDef>("Human_Torso_SlotDef")).
+                        Any(bp => bp.Tags.Contains(Shared.SharedGameTags.BionicalTag)))
+                    {
+                        abilityList.Remove(Wolverine_AbilityDef);
+                    }                       
+
                     if (__instance.GetTacticalAbilities().Contains(wolverineCuredDef) && abilityList.Contains(Wolverine_AbilityDef)) 
                     {
                         abilityList.Remove(Wolverine_AbilityDef);
                     }
 
                     UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
-                    int num = UnityEngine.Random.Range(0, 200); //testing,
+                    int num = UnityEngine.Random.Range(0, 200); 
                     TFTVLogger.Always("Treatment rolled " + num);
 
                     if (num >= 0 && num <= 50)
@@ -673,9 +681,10 @@ namespace TFTV
 
                             __instance.Progression.AddAbility(abilityToAdd);
                           
-                            GameUtl.GetMessageBox().ShowSimplePrompt($"{__instance.GetName()} is afflicted with <b>{abilityToAdd.ViewElementDef.DisplayName1.LocalizeEnglish()}</b>"
-                                + $" as a result of the experimental mutagen treatment. The subject may overcome this condition as they continue to be deployed in the field. " +
-                                $"However, aquiring additional afflictions from this experimental treatment will wipe out any progress made in adjusting to this condition."
+                            GameUtl.GetMessageBox().ShowSimplePrompt($"{__instance.GetName()} is afflicted with <b>{abilityToAdd.ViewElementDef.DisplayName1.LocalizeEnglish()}</b>" +
+                                $" as a result of the experimental mutagen treatment." +
+                                $" The subject may overcome this condition as they continue to be deployed in the field. " +
+                                $"However, acquiring additional afflictions from this experimental treatment will reset any progress made in adjusting to this condition."
                                 + "\n\n" + $"<i>{abilityToAdd.ViewElementDef.Description.LocalizeEnglish()}</i>", MessageBoxIcon.None, MessageBoxButtons.OK, null);
                             
                             TFTVLogger.Always("Added ability " + abilityToAdd.ViewElementDef.DisplayName1.LocalizeEnglish());
@@ -768,7 +777,7 @@ namespace TFTV
                                 
                                 }
 
-                                int num = UnityEngine.Random.Range(0, sides); //testing,
+                                int num = UnityEngine.Random.Range(0, sides); 
                                 
                                 
                                 TFTVLogger.Always($"{geoCharacter.DisplayName} with {CharactersDeliriumPerksAndMissions[geoCharacter.Id]} missions rolls {num} on a {sides} sided dice to get rid of Delirium perks");
@@ -830,19 +839,14 @@ namespace TFTV
 
 
         //When getting an augment, each augment reduces corruption by a 1/3
+        //And thanks to Mergele also Removes wolverine on installing a bionic torso
         [HarmonyPatch(typeof(UIModuleBionics), "OnAugmentApplied")]
         public static class UIModuleBionics_OnAugmentApplied_SetStaminaTo0_patch
         {
-            public static void Postfix(UIModuleBionics __instance)
+            public static void Postfix(UIModuleBionics __instance, ItemDef augment)
             {
                 try
                 {
-                    //check number of augments the character has
-
-                    // int numberOfBionics = AugmentScreenUtilities.GetNumberOfBionicsAugmentations(__instance.CurrentCharacter);
-
-                    //  for (int i = 0; i < numberOfBionics; i++)
-                    //{
                     if (__instance.CurrentCharacter.CharacterStats.Corruption - __instance.CurrentCharacter.CharacterStats.Willpower * 0.33 >= 0)
                     {
                         __instance.CurrentCharacter.CharacterStats.Corruption.Set((float)(__instance.CurrentCharacter.CharacterStats.Corruption - __instance.CurrentCharacter.CharacterStats.Willpower * 0.33));
@@ -851,7 +855,23 @@ namespace TFTV
                     {
                         __instance.CurrentCharacter.CharacterStats.Corruption.Set(0);
                     }
-                    //    }
+
+                    if (augment.RequiredSlotBinds[0].RequiredSlot == DefCache.GetDef<ItemSlotDef>("Human_Torso_SlotDef")) 
+                    {
+                      
+                        List<TacticalAbilityDef> abilities = Traverse.Create(__instance.CurrentCharacter.Progression).Field("_abilities").GetValue<List<TacticalAbilityDef>>();
+
+                        if(abilities.Contains(wolverineCuredDef)) 
+                        {
+                            abilities.Remove(wolverineCuredDef);
+                        
+                        }
+                        else if (abilities.Contains(wolverineDef)) 
+                        {
+                            abilities.Remove(wolverineDef);
+                        }                       
+
+                    }
                 }
                 catch (Exception e)
                 {

@@ -762,7 +762,7 @@ namespace TFTV
 
 
                     Transform deliriumTooltip = UnityEngine.Object.Instantiate(thingsToUse[0], tInfoBar.GetComponent<Transform>().Find("PopulationDoom_Meter").GetComponent<Transform>().Find("DeliriumIcon"));
-                    deliriumTooltip.gameObject.GetComponent<UITooltipText>().TipText = "testing Delirium tooltip";
+                    deliriumTooltip.gameObject.GetComponent<UITooltipText>().TipText = "Delirium tooltip";
                     deliriumTooltip.gameObject.GetComponent<UITooltipText>().TipKey.LocalizationKey = "";
                     deliriumTooltip.gameObject.name = "DeliriumTooltip";
                     deliriumTooltip.gameObject.SetActive(false);
@@ -770,28 +770,28 @@ namespace TFTV
 
                     Transform evolutionTooltip = UnityEngine.Object.Instantiate(thingsToUse[0], tInfoBar.GetComponent<Transform>().
                      Find("PopulationDoom_Meter").GetComponent<Transform>().Find("PandoranEvolutionIcon"));
-                    evolutionTooltip.gameObject.GetComponent<UITooltipText>().TipText = "testing Pandoran Evolution tooltip";
+                    evolutionTooltip.gameObject.GetComponent<UITooltipText>().TipText = "Pandoran Evolution tooltip";
                     evolutionTooltip.gameObject.GetComponent<UITooltipText>().TipKey.LocalizationKey = "";
                     evolutionTooltip.gameObject.name = "PandoranEvolutionTooltip";
                     evolutionTooltip.gameObject.SetActive(false);
 
                     Transform anuTooltip = UnityEngine.Object.Instantiate(thingsToUse[0], tInfoBar.GetComponent<Transform>().
                      Find("PopulationDoom_Meter").GetComponent<Transform>().Find("AnuIcon"));
-                    anuTooltip.gameObject.GetComponent<UITooltipText>().TipText = "testing Anu tooltip";
+                    anuTooltip.gameObject.GetComponent<UITooltipText>().TipText = "Anu tooltip";
                     anuTooltip.gameObject.GetComponent<UITooltipText>().TipKey.LocalizationKey = "";
                     anuTooltip.gameObject.name = "AnuTooltip";
                     anuTooltip.gameObject.SetActive(false);
 
                     Transform njTooltip = UnityEngine.Object.Instantiate(thingsToUse[0], tInfoBar.GetComponent<Transform>().
                     Find("PopulationDoom_Meter").GetComponent<Transform>().Find("NJIcon"));
-                    njTooltip.gameObject.GetComponent<UITooltipText>().TipText = "testing nj tooltip";
+                    njTooltip.gameObject.GetComponent<UITooltipText>().TipText = "nj tooltip";
                     njTooltip.gameObject.GetComponent<UITooltipText>().TipKey.LocalizationKey = "";
                     njTooltip.gameObject.name = "NJTooltip";
                     njTooltip.gameObject.SetActive(false);
 
                     Transform synTooltip = UnityEngine.Object.Instantiate(thingsToUse[0], tInfoBar.GetComponent<Transform>().
                     Find("PopulationDoom_Meter").GetComponent<Transform>().Find("SynIcon"));
-                    synTooltip.gameObject.GetComponent<UITooltipText>().TipText = "testing syn tooltip";
+                    synTooltip.gameObject.GetComponent<UITooltipText>().TipText = "syn tooltip";
                     synTooltip.gameObject.GetComponent<UITooltipText>().TipKey.LocalizationKey = "";
                     synTooltip.gameObject.name = "SynTooltip";
                     synTooltip.gameObject.SetActive(false);
@@ -1943,7 +1943,7 @@ namespace TFTV
 
                                       {
                                           __instance.NotProficientNode.gameObject.AddComponent<UITooltipText>().TipText = "This item was unequipped by someone on a plane, and can only be equipped by someone at the same location";
-                                          // __instance.gameObject.AddComponent<Text>().text = "just testing";
+                                          // __instance.gameObject.AddComponent<Text>().text = "just ";
                                       }
 
                                       __instance.Highlight.color = red;

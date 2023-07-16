@@ -253,11 +253,11 @@ namespace TFTV
                                 RevenantCaptured = true;
                                 if (pandoranActor.HasGameTag(revenantTier1GameTag))
                                 {
-                                    RevenantPoints = 1; //testing 1
+                                    RevenantPoints = 1; 
                                 }
                                 else if (pandoranActor.HasGameTag(revenantTier2GameTag))
                                 {
-                                    RevenantPoints = 5; //testing 5
+                                    RevenantPoints = 5;
                                 }
                                 else if (pandoranActor.HasGameTag(revenantTier3GameTag))
                                 {

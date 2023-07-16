@@ -1198,6 +1198,8 @@ namespace TFTV
                         {
                             TFTVLogger.Always($"the objective is {objective.GetDescription()}; completion is at {objective.GetCompletion()}");
                             UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
+                           
+
 
                             int roll = UnityEngine.Random.Range(1, 11 + controller.Difficulty.Order);
 
@@ -1370,7 +1372,7 @@ namespace TFTV
             {
                 DelayedEffectDef explosion = DefCache.GetDef<DelayedEffectDef>("ExplodingBarrel_ExplosionEffectDef");
 
-                Vector3 vector3 = new Vector3(position.x + UnityEngine.Random.Range(-4, 4), position.y, position.z + UnityEngine.Random.Range(-4, 4)); //for testing
+                Vector3 vector3 = new Vector3(position.x + UnityEngine.Random.Range(-4, 4), position.y, position.z + UnityEngine.Random.Range(-4, 4)); 
 
 
                 Effect.Apply(Repo, explosion, new EffectTarget
@@ -1696,6 +1698,7 @@ namespace TFTV
 
 
                 structuralTarget.Initialize();
+                //TFTVLogger.Always($"Spawning interaction point with name {name} at position {position}");
                 structuralTarget.DoEnterPlay();
 
                 //    TacticalActorBase
@@ -1823,7 +1826,7 @@ namespace TFTV
 
                     for (int x = 0; x < 3; x++)
                     {
-                        if (culledConsolePositions[x] != null)
+                        if (culledConsolePositions[x] != null && culledConsolePositions[x] != new Vector3(0,0,0))
                         {
                             SpawnInteractionPoint(culledConsolePositions[x], ConsoleName + x);
                         }
@@ -2229,7 +2232,15 @@ namespace TFTV
                         //  TFTVLogger.Always($"Found deployzone and deploying " + chosenEnemy.name + $"; Position is y={zone.Pos.y} x={zone.Pos.x} z={zone.Pos.z}");
                         ActorDeployData actorDeployData = chosenEnemy.GenerateActorDeployData();
                         actorDeployData.InitializeInstanceData();
-                        zone.SpawnActor(actorDeployData.ComponentSetDef, actorDeployData.InstanceData, actorDeployData.DeploymentTags, null, true, zone);
+                        TacticalActorBase tacticalActorBase = zone.SpawnActor(actorDeployData.ComponentSetDef, actorDeployData.InstanceData, actorDeployData.DeploymentTags, null, true, zone);
+
+                        TacticalActor tacticalActor = tacticalActorBase as TacticalActor;
+
+                        if (tacticalActor != null)
+                        {
+                            tacticalActor.TacticalActorView.DoCameraChase();
+                        }
+
                     }
                 }
 
@@ -2274,8 +2285,15 @@ namespace TFTV
 
                         actorDeployData.InitializeInstanceData();
 
-                        tacticalDeployZone.SpawnActor(actorDeployData.ComponentSetDef, actorDeployData.InstanceData, actorDeployData.DeploymentTags, null, true, tacticalDeployZone);
+                        TacticalActorBase tacticalActorBase = tacticalDeployZone.SpawnActor(actorDeployData.ComponentSetDef, actorDeployData.InstanceData, actorDeployData.DeploymentTags, null, true, tacticalDeployZone);
 
+
+                        TacticalActor tacticalActor = tacticalActorBase as TacticalActor;
+
+                        if (x == 0 && tacticalActor != null)
+                        {
+                            tacticalActor.TacticalActorView.DoCameraChase();
+                        }
                     }
 
                 }
@@ -2317,7 +2335,14 @@ namespace TFTV
 
                         actorDeployData.InitializeInstanceData();
 
-                        tacticalDeployZone.SpawnActor(actorDeployData.ComponentSetDef, actorDeployData.InstanceData, actorDeployData.DeploymentTags, null, true, tacticalDeployZone);
+                        TacticalActorBase tacticalActorBase = tacticalDeployZone.SpawnActor(actorDeployData.ComponentSetDef, actorDeployData.InstanceData, actorDeployData.DeploymentTags, null, true, tacticalDeployZone);
+
+                        TacticalActor tacticalActor = tacticalActorBase as TacticalActor;
+
+                        if (x == 0 && tacticalActor!=null)
+                        {
+                            tacticalActor.TacticalActorView.DoCameraChase();
+                        }
                     }
                 }
             }
@@ -2335,7 +2360,8 @@ namespace TFTV
                 TFTVLogger.Always("Spawning Secondary Force");
 
                 List<TacticalDeployZone> tacticalDeployZones = GetAllBottomDeployZones(controller);
-                //  TFTVLogger.Always($"there are {tacticalDeployZones.Count()} bottom deploy zones ");
+                TFTVLogger.Always($"there are {tacticalDeployZones.Count()} bottom deploy zones");
+
                 List<TacticalActor> pxOperatives = controller.GetFactionByCommandName("px").TacticalActors.ToList();
 
                 List<TacticalDeployZone> culledTacticalDeployZones = new List<TacticalDeployZone>();
@@ -2346,7 +2372,7 @@ namespace TFTV
                 {
                     if (!CheckLOSToPlayer(controller, tacticalDeployZone.Pos))
                     {
-                        // TFTVLogger.Always($"Found culled tactical deploy zone at {tacticalDeployZone.Pos} ");
+                        TFTVLogger.Always($"Found culled tactical deploy zone at {tacticalDeployZone.Pos} ");
 
                         culledTacticalDeployZones.Add(tacticalDeployZone);
                     }
@@ -2358,7 +2384,7 @@ namespace TFTV
                     {
                         if (culledTacticalDeployZones.Contains(tunnelZone))
                         {
-                            //  TFTVLogger.Always($"Found preferable tactical deploy zone at {tunnelZone.Pos} ");
+                            TFTVLogger.Always($"Found preferable tactical deploy zone at {tunnelZone.Pos} ");
                             preferableDeploymentZone.Add(tunnelZone);
                         }
                     }
@@ -2370,16 +2396,16 @@ namespace TFTV
                     else
                     {
                         zoneToDeployAt = culledTacticalDeployZones.GetRandomElement();
-                        //   TFTVLogger.Always($"getting random zoneToDeployAt from culled options");
-                        //  TFTVLogger.Always($"position is {zoneToDeployAt.Pos}");
+                        TFTVLogger.Always($"getting random zoneToDeployAt from culled options");
+                        TFTVLogger.Always($"position is {zoneToDeployAt?.Pos}");
                     }
                 }
                 else
                 {
-                    //TFTVLogger.Always($"getting random zoneToDeployAt");
+                    TFTVLogger.Always($"getting random zoneToDeployAt");
 
                     zoneToDeployAt = tacticalDeployZones.GetRandomElement();
-
+                    TFTVLogger.Always($"the zoneToDeployAt is {zoneToDeployAt?.Pos}");
                 }
 
                 Dictionary<TacCharacterDef, int> secondaryForce = GenerateSecondaryForce(controller);
@@ -2394,16 +2420,24 @@ namespace TFTV
                     {
 
                         zoneToDeployAt.SetFaction(controller.GetFactionByCommandName("ALN"), TacMissionParticipant.Intruder);
-                        //  TFTVLogger.Always($"Found center deployzone position and deploying " + chosenWormType.name + $"; Position is y={tacticalDeployZone.Pos.y} x={tacticalDeployZone.Pos.x} z={tacticalDeployZone.Pos.z}");
+                      
+                        
+                        TFTVLogger.Always($"Changed deployzone to Alien and Intruder");
+                        TFTVLogger.Always($"going to generate actorDeployedData from {tacCharacterDef.name}");
                         ActorDeployData actorDeployData = tacCharacterDef.GenerateActorDeployData();
-
+                        TFTVLogger.Always($"generated deployData");
                         actorDeployData.InitializeInstanceData();
-
+                        TFTVLogger.Always($"data initialized");
                         TacticalActorBase tacticalActorBase = zoneToDeployAt.SpawnActor(actorDeployData.ComponentSetDef, actorDeployData.InstanceData, actorDeployData.DeploymentTags, null, true, zoneToDeployAt);
-
+                        TFTVLogger.Always($"actor spawned");
                         TacticalActor tacticalActor = tacticalActorBase as TacticalActor;
                         tacticalActor.CharacterStats.ActionPoints.SetToMax();
                         tacticalActor.ForceRestartTurn();
+
+                        if (i == 0) 
+                        { 
+                        tacticalActor.TacticalActorView.DoCameraChase();
+                        }
                     }
                 }
             }
@@ -2512,6 +2546,11 @@ namespace TFTV
                         TacticalActor tacticalActor = tacticalActorBase as TacticalActor;
                         tacticalActor.CharacterStats.ActionPoints.SetToMax();
                         tacticalActor.ForceRestartTurn();
+
+                        if (i == 0)
+                        {
+                            tacticalActor.TacticalActorView.DoCameraChase();
+                        }
                         //  TFTVLogger.Always($"{tacticalActor.DisplayName} spawned, has {tacticalActor.CharacterStats.ActionPoints} actions points");
 
                     }
