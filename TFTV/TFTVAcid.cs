@@ -1,27 +1,24 @@
-﻿using Base.Entities.Abilities;
+﻿using Base.Defs;
+using Base.Entities;
+using Base.Entities.Abilities;
 using Base.Entities.Effects;
 using Base.Entities.Statuses;
-using Base.Entities;
 using Base.Levels;
 using HarmonyLib;
+using PhoenixPoint.Common.Core;
+using PhoenixPoint.Common.Entities.GameTagsTypes;
+using PhoenixPoint.Tactical.Entities;
+using PhoenixPoint.Tactical.Entities.Abilities;
+using PhoenixPoint.Tactical.Entities.DamageKeywords;
 using PhoenixPoint.Tactical.Entities.Effects;
 using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.Entities.Statuses;
-using PhoenixPoint.Tactical.Entities;
+using PhoenixPoint.Tactical.View.ViewModules;
+using PRMBetterClasses.SkillModifications;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
-using Base.Defs;
-using PhoenixPoint.Common.Core;
-using PhoenixPoint.Tactical.Entities.Abilities;
-using PhoenixPoint.Tactical.View.ViewModules;
-using PhoenixPoint.Tactical.Entities.DamageKeywords;
-using PhoenixPoint.Common.Entities.Equipments;
-using PhoenixPoint.Common.Entities.GameTagsTypes;
-using System.Linq.Expressions;
 
 namespace TFTV
 {
@@ -99,7 +96,7 @@ namespace TFTV
                         return false;
                     }
 
-                  //  TFTVLogger.Always($"Removing ability {ability.AbilityDef.name}");
+                    //  TFTVLogger.Always($"Removing ability {ability.AbilityDef.name}");
 
                     return true;
 
@@ -122,7 +119,7 @@ namespace TFTV
             {
                 try
                 {
-                    if (__instance.DamageKeywordDef == Shared.SharedDamageKeywords.AcidKeyword && __result!=0)
+                    if ((__instance.DamageKeywordDef == Shared.SharedDamageKeywords.AcidKeyword || __instance.DamageKeywordDef == SkillModsMain.sharedSoloDamageKeywords.SoloAcidKeyword) && __result != 0)
                     {
                         // TFTVLogger.Always($"Applyin acid; setting result to value (current value {value} and result {__result})");
                         __result = value;
@@ -183,7 +180,7 @@ namespace TFTV
 
                             }
 
-                     //       TFTVLogger.Always($"Affected itemslot is {itemSlot?.GetSlotName()} and additionalslot is {additionalSlot?.GetSlotName()}");
+                            //       TFTVLogger.Always($"Affected itemslot is {itemSlot?.GetSlotName()} and additionalslot is {additionalSlot?.GetSlotName()}");
 
 
 
@@ -206,7 +203,7 @@ namespace TFTV
                                 num3 *= damageMultiplier.GetMultiplier(recv, recv);
                             }
 
-                           // TFTVLogger.Always($"{hitActor.name} has {num3} total acid damage resistance");
+                            // TFTVLogger.Always($"{hitActor.name} has {num3} total acid damage resistance");
 
 
                         }
@@ -217,7 +214,7 @@ namespace TFTV
                         float armorDamage = num ? accum.Amount : 0f;
                         // float armorDamage = (num ? (accum.Amount * accum.GetSourceDamageMultiplierForReceiver(recv)) : 0f);
                         float num2 = num ? 0f : (accum.Amount * num3);
-                     //   TFTVLogger.Always($"damage to armor from acid is {armorDamage}; damage to HP is {num2}");
+                        //   TFTVLogger.Always($"damage to armor from acid is {armorDamage}; damage to HP is {num2}");
 
                         DamageAccumulation.TargetData data = new DamageAccumulation.TargetData
                         {

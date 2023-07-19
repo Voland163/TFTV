@@ -17,8 +17,6 @@ using PhoenixPoint.Geoscape.Entities.Sites;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
 using PhoenixPoint.Geoscape.Levels.Objectives;
-using PhoenixPoint.Geoscape.View.ViewControllers;
-using PhoenixPoint.Geoscape.View.ViewModules;
 using PhoenixPoint.Geoscape.View.ViewStates;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
@@ -30,9 +28,7 @@ using PhoenixPoint.Tactical.Levels.Mist;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace TFTV
 {
@@ -669,7 +665,8 @@ namespace TFTV
                 {
                     geoLevelController.EventSystem.SetVariable(triggeredVoidOmens + x, 0);
                 }
-                TFTVLogger.Always("Void Omens cleared");
+
+                TFTVLogger.Always("List of already rolled Void Omens cleared");
             }
 
             catch (Exception e)
@@ -718,47 +715,100 @@ namespace TFTV
         {
             try
             {
+                string triggeredVoidOmensString = "TriggeredVoidOmen_";
+                string voidOmenTitleString = "VOID_OMEN_TITLE_";
+                string voidOmenString = "VoidOmen_";
                 int difficulty = geoLevelController.CurrentDifficultyLevel.Order;
-                string triggeredVoidOmens = "TriggeredVoidOmen_";
-                string voidOmen = "VoidOmen_";
-                string voidOmenTitle = "VOID_OMEN_TITLE_";
 
-                // And an array to record which variables hold which Dark Events
-                int[] voidOmensinPlay = CheckFordVoidOmensInPlay(geoLevelController);
-                //    TFTVLogger.Always("Checking if method invocation is working, these are all the Void Omens in play " + voidOmensinPlay[0] + " "
-                //       + voidOmensinPlay[1] + " " + voidOmensinPlay[2] + " " + voidOmensinPlay[3]);
+                GeoFactionObjective earliestVO = geoLevelController.PhoenixFaction.Objectives.FirstOrDefault(o => o.Title.LocalizationKey.Contains(voidOmenTitleString));
 
-                int replacedVoidOmen = 0;
-
-                for (int x = 1; x < 20; x++)
+                if (earliestVO != null)
                 {
-                    // We check, starting from the earliest, which Void Omen is still in play
-                    if (voidOmensinPlay.Contains(geoLevelController.EventSystem.GetVariable(triggeredVoidOmens + x)))
+                    string voidOmenTitleLocKey = earliestVO?.Title?.LocalizationKey;
+                    int voidOmen = int.Parse(voidOmenTitleLocKey.Substring(voidOmenTitleString.Length));
+                    TFTVLogger.Always($"The earliest VO is {voidOmenTitleLocKey}, {voidOmen}");
+
+                    int[] voidOmensinPlay = CheckFordVoidOmensInPlay(geoLevelController);
+
+                    for (int x = 0; x < voidOmensinPlay.Count(); x++)
                     {
-                        // Then we locate in which Variable it is recorded
-                        for (int y = 0; y < difficulty; y++)
+                        if (voidOmensinPlay[x] == voidOmen)
                         {
-                            // Once we find it, we want to remove it
-                            // Added the check to skip empty Void Omen variables, to hopefully make this method work even when list is not full
-                            if (voidOmensinPlay[difficulty - y - 1] == geoLevelController.EventSystem.GetVariable(triggeredVoidOmens + x) && voidOmensinPlay[difficulty - y - 1] != 0)
+                            int voidOmenSlot = x+1;
+                            TFTVLogger.Always($"vo slot {voidOmenSlot} emptied");
+                            
+                            geoLevelController.EventSystem.SetVariable(voidOmenString + voidOmenSlot, 0);
+                         
+                            if (!CheckForAlreadyRolledVoidOmens(geoLevelController).Contains(voidOmen))
                             {
-                                TFTVLogger.Always("The Void Omen Variable to be replaced is " + voidOmen + (difficulty - y) +
-                                   " now holds VO " + geoLevelController.EventSystem.GetVariable(voidOmen + (difficulty - y)));
-                                replacedVoidOmen = geoLevelController.EventSystem.GetVariable(voidOmen + (difficulty - y));
-                                geoLevelController.EventSystem.SetVariable(voidOmen + (difficulty - y), 0);
-                                TFTVLogger.Always("The Void Omen Variable " + voidOmen + (difficulty - y) +
-                                    " is now " + geoLevelController.EventSystem.GetVariable(voidOmen + (difficulty - y)));
-                                y = difficulty;
-                                x = 20;
+                                for (int y = 1; x < 100; x++)
+                                {
+                                    if (geoLevelController.EventSystem.GetVariable(triggeredVoidOmensString + y) == 0)
+                                    {
+                                        geoLevelController.EventSystem.SetVariable(triggeredVoidOmensString + y, voidOmen);
+                                        TFTVLogger.Always($"Recording that this VO has already rolled before");
+                                        break;
+                                    }
+                                }
                             }
+
+                            TFTVLogger.Always($" VO {voidOmen} will be removed ");
+                            RemoveVoidOmenObjective(voidOmenTitleLocKey, geoLevelController);
+
+
                         }
                     }
                 }
 
-                if (replacedVoidOmen != 0)
+
+
+                /*
+                    int difficulty = geoLevelController.CurrentDifficultyLevel.Order;
+                    
+                    string voidOmen = "VoidOmen_";
+                   
+
+                    // And an array to record which variables hold which Dark Events
+                    
+                    //    TFTVLogger.Always("Checking if method invocation is working, these are all the Void Omens in play " + voidOmensinPlay[0] + " "
+                    //       + voidOmensinPlay[1] + " " + voidOmensinPlay[2] + " " + voidOmensinPlay[3]);
+
+                    int replacedVoidOmen = 0;
+
+                    for (int x = 1; x < 20; x++)
+                    {
+                        // We check, starting from the earliest, which Void Omen is still in play
+                        if (voidOmensinPlay.Contains(geoLevelController.EventSystem.GetVariable(triggeredVoidOmens + x)))
+                        {
+                            // Then we locate in which Variable it is recorded
+                            for (int y = 0; y < difficulty; y++)
+                            {
+                                // Once we find it, we want to remove it
+                                // Added the check to skip empty Void Omen variables, to hopefully make this method work even when list is not full
+                                if (voidOmensinPlay[difficulty - y - 1] == geoLevelController.EventSystem.GetVariable(triggeredVoidOmens + x) && voidOmensinPlay[difficulty - y - 1] != 0)
+                                {
+                                    TFTVLogger.Always("The Void Omen Variable to be replaced is " + voidOmen + (difficulty - y) +
+                                       " now holds VO " + geoLevelController.EventSystem.GetVariable(voidOmen + (difficulty - y)));
+                                    replacedVoidOmen = geoLevelController.EventSystem.GetVariable(voidOmen + (difficulty - y));
+                                    geoLevelController.EventSystem.SetVariable(voidOmen + (difficulty - y), 0);
+                                    TFTVLogger.Always("The Void Omen Variable " + voidOmen + (difficulty - y) +
+                                        " is now " + geoLevelController.EventSystem.GetVariable(voidOmen + (difficulty - y)));
+                                    y = difficulty;
+                                    x = 20;
+                                }
+                            }
+                        }
+                    }
+
+                    if (replacedVoidOmen != 0)
+                    {
+                       
+                    }*/
+
+                else
                 {
-                    TFTVLogger.Always("The target event that will be replaced is " + voidOmenTitle + replacedVoidOmen);
-                    RemoveVoidOmenObjective(voidOmenTitle + replacedVoidOmen, geoLevelController);
+                    TFTVLogger.Always($"Wanted to remove earliest Void Omen, but failed to find it!");
+
                 }
             }
             catch (Exception e)
@@ -771,7 +821,59 @@ namespace TFTV
         {
             try
             {
+
+
+                string triggeredVoidOmensString = "TriggeredVoidOmen_";
+                string voidOmenTitleString = "VOID_OMEN_TITLE_";
+                string voidOmenString = "VoidOmen_";
+                int[] voidOmensinPlay = CheckFordVoidOmensInPlay(geoLevelController);
                 int difficulty = geoLevelController.CurrentDifficultyLevel.Order;
+
+                List <GeoFactionObjective> allVoidOmenObjectives = geoLevelController.PhoenixFaction.Objectives.Where(o => o.Title.LocalizationKey.Contains(voidOmenTitleString)).ToList();
+
+                if (allVoidOmenObjectives != null)
+                {
+                    foreach (GeoFactionObjective voObjective in allVoidOmenObjectives)
+                    {
+                        string voidOmenTitleLocKey = voObjective?.Title?.LocalizationKey;
+                        int voidOmen = int.Parse(voidOmenTitleLocKey.Substring(voidOmenTitleString.Length));
+                        TFTVLogger.Always($"VO is {voidOmenTitleString}, {voidOmen}");
+
+                        for (int x = 0; x < voidOmensinPlay.Count(); x++)
+                        {
+                            if (voidOmensinPlay[x] == voidOmen)
+                            {
+                                int voidOmenSlot = x+1;
+                                TFTVLogger.Always($"vo slot {voidOmenSlot} emptied");
+
+                                geoLevelController.EventSystem.SetVariable(voidOmenString + voidOmenSlot, 0);
+
+                                if (!CheckForAlreadyRolledVoidOmens(geoLevelController).Contains(voidOmen))
+                                {
+                                    for (int y = 1; x < 100; x++)
+                                    {
+                                        if (geoLevelController.EventSystem.GetVariable(triggeredVoidOmensString + y) == 0)
+                                        {
+                                            geoLevelController.EventSystem.SetVariable(triggeredVoidOmensString + y, voidOmen);
+                                            TFTVLogger.Always($"Recording that this VO has already rolled before");
+                                            break;
+                                        }
+                                    }
+                                }
+
+                                TFTVLogger.Always($" VO {voidOmen} will be removed ");
+                                RemoveVoidOmenObjective(voidOmenTitleLocKey, geoLevelController);
+                            }
+                        }
+                    }
+                }
+
+
+
+
+
+
+             /*   int difficulty = geoLevelController.CurrentDifficultyLevel.Order;
                 string triggeredVoidOmens = "TriggeredVoidOmen_";
                 string voidOmen = "VoidOmen_";
                 string voidOmenTitle = "VOID_OMEN_TITLE_";
@@ -810,7 +912,7 @@ namespace TFTV
                         RemoveVoidOmenObjective(voidOmenTitle + replacedVoidOmen, geoLevelController);
 
                     }
-                }
+                }*/
             }
             catch (Exception e)
             {
@@ -877,243 +979,243 @@ namespace TFTV
 
         }
 
-      /*  [HarmonyPatch(typeof(UIModuleGeoObjectives), "RefreshObjectives")]
-        public static class UIModuleGeoObjectives_RefreshObjectives_Experiment_patch
-        {
-            public static void Postfix(UIModuleGeoObjectives __instance, IEnumerable<GeoFactionObjective> objectives)
+        /*  [HarmonyPatch(typeof(UIModuleGeoObjectives), "RefreshObjectives")]
+          public static class UIModuleGeoObjectives_RefreshObjectives_Experiment_patch
+          {
+              public static void Postfix(UIModuleGeoObjectives __instance, IEnumerable<GeoFactionObjective> objectives)
+              {
+                  try
+                  {*/
+
+        //need to exlore rectTransform
+        /*
+        [TFTV @ 6/19/2023 11:27:53 PM] level4 PrimaryObjectives_Container a child of ObjectivesContainer (UnityEngine.RectTransform)
+        [TFTV @ 6/19/2023 11:27:53 PM] level5 GeoObjectiveElement a child of PrimaryObjectives_Container (UnityEngine.RectTransform)
+        [TFTV @ 6/19/2023 11:27:53 PM] level6 border a child of GeoObjectiveElement (UnityEngine.RectTransform)
+        [TFTV @ 6/19/2023 11:27:53 PM] level6 UITextGeneric_Big a child of GeoObjectiveElement (UnityEngine.RectTransform)
+        */
+
+
+        /*       TFTVLogger.Always("RefreshObjectives invoked");
+               foreach(Transform transform in __instance.transform.GetChildren()) 
+               {
+                 //  TFTVLogger.Always($"level1 {transform.name}, a child of {__instance.transform.name}");
+
+                   foreach (Transform transform2 in transform.GetChildren())
+                   {
+                   //    TFTVLogger.Always($"level2 {transform2.name} a child of {transform}");
+
+                       foreach (Transform transform3 in transform2.GetChildren())
+                       {
+                     //      TFTVLogger.Always($"level3 {transform3.name} a child of {transform2}");
+
+                           foreach (Transform transform4 in transform3.GetChildren())
+                           {
+                       //        TFTVLogger.Always($"level4 {transform4.name} a child of {transform3}");
+
+                               foreach (Transform transform5 in transform4.GetChildren())
+                               {
+                                  // TFTVLogger.Always($"level5 {transform5.name} a child of {transform4}");
+                                 */
+
+
+        //    foreach (Transform transform6 in transform5.GetComponents<Transform>())
+        //    {
+        /*  TFTVLogger.Always($"level6 {transform6.name} a child of {transform5}");
+
+          if (transform5.name.Contains("GeoObjectiveElement") && transform6.name.Contains("UIText"))
+          {
+              TFTVLogger.Always($"{transform6.GetComponent<Text>().text}");
+
+          }*/
+
+
+        /*    foreach (Transform transform7 in transform6.GetComponents<Transform>())
             {
-                try
-                {*/
+                TFTVLogger.Always($"level7 {transform7.name} a child of {transform6}");
 
-                    //need to exlore rectTransform
-                    /*
-                    [TFTV @ 6/19/2023 11:27:53 PM] level4 PrimaryObjectives_Container a child of ObjectivesContainer (UnityEngine.RectTransform)
-                    [TFTV @ 6/19/2023 11:27:53 PM] level5 GeoObjectiveElement a child of PrimaryObjectives_Container (UnityEngine.RectTransform)
-                    [TFTV @ 6/19/2023 11:27:53 PM] level6 border a child of GeoObjectiveElement (UnityEngine.RectTransform)
-                    [TFTV @ 6/19/2023 11:27:53 PM] level6 UITextGeneric_Big a child of GeoObjectiveElement (UnityEngine.RectTransform)
-                    */
-
-
-             /*       TFTVLogger.Always("RefreshObjectives invoked");
-                    foreach(Transform transform in __instance.transform.GetChildren()) 
-                    {
-                      //  TFTVLogger.Always($"level1 {transform.name}, a child of {__instance.transform.name}");
-
-                        foreach (Transform transform2 in transform.GetChildren())
-                        {
-                        //    TFTVLogger.Always($"level2 {transform2.name} a child of {transform}");
-
-                            foreach (Transform transform3 in transform2.GetChildren())
-                            {
-                          //      TFTVLogger.Always($"level3 {transform3.name} a child of {transform2}");
-
-                                foreach (Transform transform4 in transform3.GetChildren())
-                                {
-                            //        TFTVLogger.Always($"level4 {transform4.name} a child of {transform3}");
-                                 
-                                    foreach (Transform transform5 in transform4.GetChildren())
-                                    {
-                                       // TFTVLogger.Always($"level5 {transform5.name} a child of {transform4}");
-                                      */  
-
-
-                                    //    foreach (Transform transform6 in transform5.GetComponents<Transform>())
-                                    //    {
-                                          /*  TFTVLogger.Always($"level6 {transform6.name} a child of {transform5}");
-
-                                            if (transform5.name.Contains("GeoObjectiveElement") && transform6.name.Contains("UIText"))
-                                            {
-                                                TFTVLogger.Always($"{transform6.GetComponent<Text>().text}");
-
-                                            }*/
-
-
-                                        /*    foreach (Transform transform7 in transform6.GetComponents<Transform>())
-                                            {
-                                                TFTVLogger.Always($"level7 {transform7.name} a child of {transform6}");
-
-                                            */
-                                             
-
-
-
-                                             /*   foreach (Transform transform8 in transform7)
-                                                {
-
-                                                    if (transform8.name.Equals("Icon"))
-                                                        {
-                                                        TFTVLogger.Always($"{transform8.name} is a parent of {transform7.name}");
-                                                        transform8.GetComponent<Image>().color = new Color32(149, 23, 151, 255);
-
-                                                        transform8.GetComponent<Image>().sprite = Helper.CreateSpriteFromImageFile("Void-04P.png");
-                                                    }*/
-
-
-                                                   
-
-                                                   /* if (transform6.GetComponent<Text>().text == "Human perception lowered to 20 from 30" && transform8.GetComponent<Image>() != null)
-                                                    {
-                                                        TFTVLogger.Always($"got passed the check 2");
-
-                                                        
+            */
 
 
 
 
-                                                    }*/
+        /*   foreach (Transform transform8 in transform7)
+           {
 
-                                               /*     TFTVLogger.Always($"level8 {transform8.name} a child of {transform7}");
+               if (transform8.name.Equals("Icon"))
+                   {
+                   TFTVLogger.Always($"{transform8.name} is a parent of {transform7.name}");
+                   transform8.GetComponent<Image>().color = new Color32(149, 23, 151, 255);
 
-                                                    //    if (transform8.name.Contains("Image") && transform7.name.Contains("Image"))
-                                                    //  {
-                                                    if (transform8?.GetComponent<Image>()?.sprite == Helper.CreateSpriteFromImageFile("Void-04P.png"))
-                                                    {
-                                                        TFTVLogger.Always($"at level8 found {transform8.name} with the void icon");
-                                                        transform8.GetComponent<Image>().color = new Color32(149, 23, 151, 255);
-
-
-                                                    }*/
-                                                    // TFTVLogger.Always($"{transform6.GetComponent<Text>().text}");
-
-                                                    //  }
+                   transform8.GetComponent<Image>().sprite = Helper.CreateSpriteFromImageFile("Void-04P.png");
+               }*/
 
 
 
-                                                    /*   foreach (Transform transform9 in transform8)
-                                                       {
-                                                           TFTVLogger.Always($"level9 {transform9.name} a child of {transform8}");
 
-                                                           foreach (Transform transform10 in transform9)
-                                                           {
-                                                               TFTVLogger.Always($"level10 {transform10.name} a child of {transform9}");
-
-                                                               foreach (Transform transform11 in transform10)
-                                                               {
-                                                                   TFTVLogger.Always($"level11 {transform11.name} a child of {transform10}");
-
-
-                                                               }
-
-                                                           }
-
-                                                       }*/
-
-
-                    
-                 /*   MethodInfo initObjectiveMethod = typeof(UIModuleGeoObjectives).GetMethod("InitObjective", BindingFlags.NonPublic | BindingFlags.Instance);
-                    // Filter the objectives to get only the third type objectives
-                    List<GeoFactionObjective> voidOmens = objectives
-                        .Where(obj => obj.Title?.LocalizationKey?.Contains("VOID_OMEN") == true)
-                        .ToList();
-
-                    TFTVLogger.Always($"voidobjectives count is {voidOmens.Count()}");
-
-                    // Find the last objective container and add the third type objectives after it
-                    Transform lastObjectiveContainer = __instance.ObjectivesContainer.transform.GetChild(__instance.ObjectivesContainer.transform.childCount - 1);
-                    GameObject thirdObjectivesContainer = new GameObject("ThirdObjectivesContainer");
-                    thirdObjectivesContainer.transform.SetParent(__instance.ObjectivesContainer.transform);
-                    thirdObjectivesContainer.transform.SetSiblingIndex(lastObjectiveContainer.GetSiblingIndex() + 1);
-                    thirdObjectivesContainer.SetActive(true);
-
-                    foreach (GeoObjectiveElementController geoObjectiveElementController in __instance.GetComponents<GeoObjectiveElementController>())
-                    {
-                        foreach (GeoFactionObjective geoFactionObjective in voidOmens)
-                        {
-                            if (geoObjectiveElementController.ObjectiveText.text == geoFactionObjective?.Title?.Localize())
-                            {
-                                GeoObjectiveElementController objectiveElement = UnityEngine.Object.Instantiate(geoObjectiveElementController, thirdObjectivesContainer.transform);
-                                GeoObjectiveElementController objectiveController = objectiveElement.GetComponent<GeoObjectiveElementController>();
-                                initObjectiveMethod.Invoke(__instance, new object[] { geoObjectiveElementController, geoFactionObjective });
-
-
-                            }
-                        }
-                    }
-
-                
-                    thirdObjectivesContainer.SetActive(voidOmens.Any());*/
-       /*         }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-            }
-        }*/
-
-
-       /* [HarmonyPatch(typeof(UIModuleGeoObjectives), "RefreshObjectives")]
-         public static class UIModuleGeoObjectives_RefreshObjectives_Experiment_patch
+        /* if (transform6.GetComponent<Text>().text == "Human perception lowered to 20 from 30" && transform8.GetComponent<Image>() != null)
          {
-             public static void Postfix(UIModuleGeoObjectives __instance, IEnumerable<GeoFactionObjective> objectives)
+             TFTVLogger.Always($"got passed the check 2");
+
+
+
+
+
+
+         }*/
+
+        /*     TFTVLogger.Always($"level8 {transform8.name} a child of {transform7}");
+
+             //    if (transform8.name.Contains("Image") && transform7.name.Contains("Image"))
+             //  {
+             if (transform8?.GetComponent<Image>()?.sprite == Helper.CreateSpriteFromImageFile("Void-04P.png"))
              {
-                 try
-                 {
-                     MethodInfo initObjectiveMethod = typeof(UIModuleGeoObjectives).GetMethod("InitObjective", BindingFlags.NonPublic | BindingFlags.Instance);
-                     // Filter the objectives to get only the third type objectives
-                     List<GeoFactionObjective> voidOmens = objectives
-                         .Where(obj => obj.Title?.LocalizationKey?.Contains("VOID_OMEN") == true)
-                         .ToList();
-
-                     TFTVLogger.Always($"voidobjectives count is {voidOmens.Count()}");
-                     // Create a new container for the third type of objectives
-                    
+                 TFTVLogger.Always($"at level8 found {transform8.name} with the void icon");
+                 transform8.GetComponent<Image>().color = new Color32(149, 23, 151, 255);
 
 
-                    
-                    GameObject thirdObjectivesContainer = new GameObject("ThirdObjectivesContainer");
+             }*/
+        // TFTVLogger.Always($"{transform6.GetComponent<Text>().text}");
+
+        //  }
 
 
 
-                     thirdObjectivesContainer.transform.SetParent(__instance.ObjectivesContainer.transform);
-                     thirdObjectivesContainer.SetActive(true);
+        /*   foreach (Transform transform9 in transform8)
+           {
+               TFTVLogger.Always($"level9 {transform9.name} a child of {transform8}");
 
-                     foreach (GeoObjectiveElementController geoObjectiveElementController in __instance.GetComponents<GeoObjectiveElementController>())
-                     {
-                         foreach (GeoFactionObjective geoFactionObjective in voidOmens)
-                         {
-                             if (geoObjectiveElementController.ObjectiveText.text == geoFactionObjective?.Title?.Localize())
-                             {
+               foreach (Transform transform10 in transform9)
+               {
+                   TFTVLogger.Always($"level10 {transform10.name} a child of {transform9}");
 
-                                 initObjectiveMethod.Invoke(__instance, new object[] { geoObjectiveElementController, geoFactionObjective });
-
-
-                             }
-                         }
-                     }
-
-                     thirdObjectivesContainer.SetActive(voidOmens.Any());
+                   foreach (Transform transform11 in transform10)
+                   {
+                       TFTVLogger.Always($"level11 {transform11.name} a child of {transform10}");
 
 
-                 }
+                   }
+
+               }
+
+           }*/
+
+
+
+        /*   MethodInfo initObjectiveMethod = typeof(UIModuleGeoObjectives).GetMethod("InitObjective", BindingFlags.NonPublic | BindingFlags.Instance);
+           // Filter the objectives to get only the third type objectives
+           List<GeoFactionObjective> voidOmens = objectives
+               .Where(obj => obj.Title?.LocalizationKey?.Contains("VOID_OMEN") == true)
+               .ToList();
+
+           TFTVLogger.Always($"voidobjectives count is {voidOmens.Count()}");
+
+           // Find the last objective container and add the third type objectives after it
+           Transform lastObjectiveContainer = __instance.ObjectivesContainer.transform.GetChild(__instance.ObjectivesContainer.transform.childCount - 1);
+           GameObject thirdObjectivesContainer = new GameObject("ThirdObjectivesContainer");
+           thirdObjectivesContainer.transform.SetParent(__instance.ObjectivesContainer.transform);
+           thirdObjectivesContainer.transform.SetSiblingIndex(lastObjectiveContainer.GetSiblingIndex() + 1);
+           thirdObjectivesContainer.SetActive(true);
+
+           foreach (GeoObjectiveElementController geoObjectiveElementController in __instance.GetComponents<GeoObjectiveElementController>())
+           {
+               foreach (GeoFactionObjective geoFactionObjective in voidOmens)
+               {
+                   if (geoObjectiveElementController.ObjectiveText.text == geoFactionObjective?.Title?.Localize())
+                   {
+                       GeoObjectiveElementController objectiveElement = UnityEngine.Object.Instantiate(geoObjectiveElementController, thirdObjectivesContainer.transform);
+                       GeoObjectiveElementController objectiveController = objectiveElement.GetComponent<GeoObjectiveElementController>();
+                       initObjectiveMethod.Invoke(__instance, new object[] { geoObjectiveElementController, geoFactionObjective });
+
+
+                   }
+               }
+           }
+
+
+           thirdObjectivesContainer.SetActive(voidOmens.Any());*/
+        /*         }
                  catch (Exception e)
                  {
                      TFTVLogger.Error(e);
                  }
-
              }
          }*/
 
 
-      /*   [HarmonyPatch(typeof(UIModuleGeoObjectives), "InitObjective")]
-         public static class UIModuleGeoObjectives_InitObjective_Experiment_patch
-         {
-             public static void Postfix(UIModuleGeoObjectives __instance, GeoObjectiveElementController element, GeoFactionObjective objective)
-             {
-                 try
-                 {
-                     TFTVLogger.Always($"Objective is {objective?.Title?.Localize()}");
-                     TFTVLogger.Always($"Element text is {element?.ObjectiveText?.text}");
+        /* [HarmonyPatch(typeof(UIModuleGeoObjectives), "RefreshObjectives")]
+          public static class UIModuleGeoObjectives_RefreshObjectives_Experiment_patch
+          {
+              public static void Postfix(UIModuleGeoObjectives __instance, IEnumerable<GeoFactionObjective> objectives)
+              {
+                  try
+                  {
+                      MethodInfo initObjectiveMethod = typeof(UIModuleGeoObjectives).GetMethod("InitObjective", BindingFlags.NonPublic | BindingFlags.Instance);
+                      // Filter the objectives to get only the third type objectives
+                      List<GeoFactionObjective> voidOmens = objectives
+                          .Where(obj => obj.Title?.LocalizationKey?.Contains("VOID_OMEN") == true)
+                          .ToList();
+
+                      TFTVLogger.Always($"voidobjectives count is {voidOmens.Count()}");
+                      // Create a new container for the third type of objectives
 
 
 
-                 }
-                 catch (Exception e)
-                 {
-                     TFTVLogger.Error(e);
-                 }
 
-             }
-         }*/
+                     GameObject thirdObjectivesContainer = new GameObject("ThirdObjectivesContainer");
+
+
+
+                      thirdObjectivesContainer.transform.SetParent(__instance.ObjectivesContainer.transform);
+                      thirdObjectivesContainer.SetActive(true);
+
+                      foreach (GeoObjectiveElementController geoObjectiveElementController in __instance.GetComponents<GeoObjectiveElementController>())
+                      {
+                          foreach (GeoFactionObjective geoFactionObjective in voidOmens)
+                          {
+                              if (geoObjectiveElementController.ObjectiveText.text == geoFactionObjective?.Title?.Localize())
+                              {
+
+                                  initObjectiveMethod.Invoke(__instance, new object[] { geoObjectiveElementController, geoFactionObjective });
+
+
+                              }
+                          }
+                      }
+
+                      thirdObjectivesContainer.SetActive(voidOmens.Any());
+
+
+                  }
+                  catch (Exception e)
+                  {
+                      TFTVLogger.Error(e);
+                  }
+
+              }
+          }*/
+
+
+        /*   [HarmonyPatch(typeof(UIModuleGeoObjectives), "InitObjective")]
+           public static class UIModuleGeoObjectives_InitObjective_Experiment_patch
+           {
+               public static void Postfix(UIModuleGeoObjectives __instance, GeoObjectiveElementController element, GeoFactionObjective objective)
+               {
+                   try
+                   {
+                       TFTVLogger.Always($"Objective is {objective?.Title?.Localize()}");
+                       TFTVLogger.Always($"Element text is {element?.ObjectiveText?.text}");
+
+
+
+                   }
+                   catch (Exception e)
+                   {
+                       TFTVLogger.Error(e);
+                   }
+
+               }
+           }*/
 
         [HarmonyPatch(typeof(FactionObjective), "GetCompletion")]
         public static class FactionObjective_GetCompletion_VO4_Patch
@@ -1293,11 +1395,11 @@ namespace TFTV
                         }
                         PassiveModifierAbilityDef feralDeliriumPerk = DefCache.GetDef<PassiveModifierAbilityDef>("FeralNew_AbilityDef");
 
-                        if(__instance.TacticalActor!=null && __instance.TacticalActor.GetAbilityWithDef<PassiveModifierAbility>(feralDeliriumPerk) != null) 
+                        if (__instance.TacticalActor != null && __instance.TacticalActor.GetAbilityWithDef<PassiveModifierAbility>(feralDeliriumPerk) != null)
                         {
 
                             __result += 1;
-                        
+
                         }
 
                     }
@@ -1389,7 +1491,7 @@ namespace TFTV
             }
         }
 
-        [HarmonyPatch(typeof(GeoBehemothActor), "get_DisruptionMax")]
+      /*  [HarmonyPatch(typeof(GeoBehemothActor), "get_DisruptionMax")]
         public static class GeoBehemothActor_get_DisruptionMax_VoidOmenBehemothRoamsMore_Patch
         {
             public static void Postfix(ref int __result, GeoBehemothActor __instance)
@@ -1409,7 +1511,7 @@ namespace TFTV
                 }
 
             }
-        }
+        }*/
 
 
 
@@ -1640,6 +1742,8 @@ namespace TFTV
             {
                 try
                 {
+                    KeepSoldiersAliveFactionObjectiveDef containmentPresent = DefCache.GetDef<KeepSoldiersAliveFactionObjectiveDef>("CAPTURE_CAPACIY_BASE");
+                    KeepSoldiersAliveFactionObjectiveDef aircraftCapture = DefCache.GetDef<KeepSoldiersAliveFactionObjectiveDef>("CAPTURE_CAPACIY_AIRCRAFT");
                     KeepSoldiersAliveFactionObjectiveDef VOID_OMEN_TITLE_3 = DefCache.GetDef<KeepSoldiersAliveFactionObjectiveDef>("VOID_OMEN_TITLE_3");
                     KeepSoldiersAliveFactionObjectiveDef VOID_OMEN_TITLE_5 = DefCache.GetDef<KeepSoldiersAliveFactionObjectiveDef>("VOID_OMEN_TITLE_5");
                     KeepSoldiersAliveFactionObjectiveDef VOID_OMEN_TITLE_7 = DefCache.GetDef<KeepSoldiersAliveFactionObjectiveDef>("VOID_OMEN_TITLE_7");
@@ -1648,7 +1752,7 @@ namespace TFTV
                     KeepSoldiersAliveFactionObjectiveDef VOID_OMEN_TITLE_16 = DefCache.GetDef<KeepSoldiersAliveFactionObjectiveDef>("VOID_OMEN_TITLE_16");
                     KeepSoldiersAliveFactionObjectiveDef VOID_OMEN_TITLE_19 = DefCache.GetDef<KeepSoldiersAliveFactionObjectiveDef>("VOID_OMEN_TITLE_19");
 
-                    List<KeepSoldiersAliveFactionObjectiveDef> voidOmens = new List<KeepSoldiersAliveFactionObjectiveDef> { VOID_OMEN_TITLE_3, VOID_OMEN_TITLE_5, VOID_OMEN_TITLE_7, VOID_OMEN_TITLE_10, VOID_OMEN_TITLE_15, VOID_OMEN_TITLE_16, VOID_OMEN_TITLE_19 };
+                    List<KeepSoldiersAliveFactionObjectiveDef> voidOmens = new List<KeepSoldiersAliveFactionObjectiveDef> {VOID_OMEN_TITLE_3, VOID_OMEN_TITLE_5, VOID_OMEN_TITLE_7, VOID_OMEN_TITLE_10, VOID_OMEN_TITLE_15, VOID_OMEN_TITLE_16, VOID_OMEN_TITLE_19 };
 
                     //  TFTVLogger.Always("FactionObjective Evaluate " + __instance.Description.ToString());
                     foreach (KeepSoldiersAliveFactionObjectiveDef keepSoldiersAliveFactionObjectiveDef in voidOmens)

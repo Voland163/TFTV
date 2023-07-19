@@ -551,12 +551,12 @@ namespace TFTV
             {
                 try
                 {
-                    TFTVLogger.Always("TriggerGeoscapeEvent prefix triggered for event " + eventId);
+                   
 
                     if (eventId == RoboCopDeliveryEvent || eventId == ScoutDeliveryEvent || eventId == ShinobiDeliveryEvent ||
                         eventId == HeavyMutantDeliveryEvent || eventId == WatcherMutantDeliveryEvent || eventId == ShooterMutantDeliveryEvent)
                     {
-
+                        TFTVLogger.Always($"TriggerGeoscapeEvent prefix for Osiris triggered for event {eventId}");
                         GeoLevelController controller = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
                         CompleteProjectOsiris(IdProjectOsirisCandidate, controller, __instance.GetEventByID(eventId));
 

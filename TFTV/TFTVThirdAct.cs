@@ -118,34 +118,6 @@ namespace TFTV
         }
 
         */
-        public static void SetBehemothOnRampageMod(GeoLevelController geoLevel)
-
-        {
-            try
-            {
-                /*FesteringSkiesSettingsDef festeringSkiesSettingsDef = 
-                    Repo.GetAllDefs<FesteringSkiesSettingsDef>().FirstOrDefault(ged => ged.name.Equals("FesteringSkiesSettingsDef"));
-                 festeringSkiesSettingsDef.NumOfHavensToDestroyBeforeSubmerge = 30;
-                 festeringSkiesSettingsDef.DisruptionThreshholdBaseValue = 100;*/
-                if (geoLevel.EventSystem.GetVariable("BehemothRoamings") >= 3)
-                {
-                    geoLevel.CurrentDifficultyLevel.DestroyHavenOutcomeChance = 50;
-                    geoLevel.FesteringSkiesSettings.NumOfHavensToDestroyBeforeSubmerge = 4;
-                   // geoLevel.FesteringSkiesSettings.DisruptionThreshholdBaseValue = 100;
-                    geoLevel.CurrentDifficultyLevel.DamageHavenOutcomeChance = 50;
-                }
-
-                else
-                {
-                    geoLevel.CurrentDifficultyLevel.DestroyHavenOutcomeChance = 0;
-                    geoLevel.CurrentDifficultyLevel.DamageHavenOutcomeChance = 100;
-
-                }
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-        }
+       
     }
 }

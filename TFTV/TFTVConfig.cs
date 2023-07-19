@@ -1,8 +1,5 @@
 using PhoenixPoint.Modding;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
-using System.Net;
 
 namespace TFTV
 {
@@ -19,6 +16,27 @@ namespace TFTV
         [ConfigField(text: "DEFAULT TFTV SETTINGS",
             description: "Sets all settings to default, to provide the Terror from the Void experience as envisioned by its creators.")]
         public bool defaultSettings = false;
+
+        [ConfigField(text: "NO PROFIT FROM TRADING",
+    description: "Trade is always 1 tech for 5 food or 5 materials, so no profit can be made from trading. IF YOU SET THIS TO FALSE, PLEASE QUIT TO DESKTOP BEFORE STARTING A NEW GAME/LOADING A SAVE")]
+        public bool EqualizeTrade = true;
+
+        [ConfigField(text: "CAPTURING PANDORANS IS LIMITED",
+  description: "There is a limit to how many Pandorans you can capture per mission. IF YOU SET THIS TO FALSE, PLEASE QUIT TO DESKTOP BEFORE STARTING A NEW GAME/LOADING A SAVE")]
+        public bool LimitedCapture = true;
+
+        [ConfigField(text: "LIMITS ON RENDERING PANDORANS FOR FOOD OR MUTAGENS",
+ description: "New mechanics make obtaining food or mutagens from captured Pandorans harder. IF YOU SET THIS TO FALSE, PLEASE QUIT TO DESKTOP BEFORE STARTING A NEW GAME/LOADING A SAVE")]
+        public bool LimitedHarvesting = true;
+
+        [ConfigField(text: "LIMITED RAIDING",
+description: "After a raid, all faction havens are immediately set to highest alert and may not be raided in the next 7 days. IF YOU SET THIS TO FALSE, PLEASE QUIT TO DESKTOP BEFORE STARTING A NEW GAME/LOADING A SAVE")]
+        public bool LimitedRaiding = true;
+
+        [ConfigField(text: "NO ITEM DROPS FROM REINFORCEMENTS",
+description: "Enemy reinforcements do not drop items on death; disallows farming for weapons on missions with infinite reinforcements.  IF YOU SET THIS TO FALSE, PLEASE QUIT TO DESKTOP BEFORE STARTING A NEW GAME/LOADING A SAVE")]
+        public bool ReinforcementsNoDrops = true;
+
 
         [ConfigField(text: "ANIMATIONS CONTINUE DURING SHOOTING (FLINCHING)",
             description: "The characters will continue to animate during shooting sequences and targets that are hit may flinch, " +
@@ -84,7 +102,7 @@ namespace TFTV
             "You will also get the corresponding faction technology once the faction researches it.")]
         public StartingSquadFaction startingSquad = StartingSquadFaction.PHOENIX;
 
- 
+
         public enum StartingBaseLocation
         {
             [Description("Vanilla selection")]
@@ -149,10 +167,10 @@ namespace TFTV
         }
 
 
-         [ConfigField(text: "Starting base",
-          description: "You can choose a specific location to start from. Please note that some locations are harder to start from than others!")]
-         public StartingBaseLocation startingBaseLocation = StartingBaseLocation.Vanilla;
-        
+        [ConfigField(text: "Starting base",
+         description: "You can choose a specific location to start from. Please note that some locations are harder to start from than others!")]
+        public StartingBaseLocation startingBaseLocation = StartingBaseLocation.Vanilla;
+
 
         /*
             (-0.4f, 3.7f, 5.2f),  North Africa (Algeria) 165 
@@ -188,7 +206,7 @@ namespace TFTV
             "Note that Jacob is a sniper, as in the title screen :)")]
 
         public StartingSquadCharacters tutorialCharacters = StartingSquadCharacters.UNBUFFED;
-       
+
         // These settings determine amount of resources player can acquire:
         [ConfigField(text: "Number of scavenging sites",
             description: "Total number of scavenging sites generated on game start, not counting overgrown sites\n" +
@@ -223,7 +241,7 @@ namespace TFTV
         // Can be applied to game in progress
         [ConfigField(text: "Amount of resources gained in events",
            description: "For current (post Azazoth patch) Vanilla, set to 1. For default TFTV and Vanilla pre-Azazoth patch, set to 0.8.\n" +
-            "Can be applied to a game in progress.\n"+"Set to 1.2 on Rookie by default")] //done
+            "Can be applied to a game in progress.\n" + "Set to 1.2 on Rookie by default")] //done
         public float ResourceMultiplier = 0.8f;
 
         // Changing the settings below will make the game easier:
@@ -314,9 +332,9 @@ namespace TFTV
         public int VenomCrossbow_Ammo = 3;
 
         // Always show helmets
-      /*  [ConfigField(text: "Operatives will appear without helmets in the personnel screen",
-            description: "Turn off if you don't like to see the faces of the individuals you are sending to be clawed and devoured by horrifying monstrosities")]
-        public bool ShowFaces = true;*/
+        /*  [ConfigField(text: "Operatives will appear without helmets in the personnel screen",
+              description: "Turn off if you don't like to see the faces of the individuals you are sending to be clawed and devoured by horrifying monstrosities")]
+          public bool ShowFaces = true;*/
 
 
     }

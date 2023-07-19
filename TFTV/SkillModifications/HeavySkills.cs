@@ -176,6 +176,19 @@ namespace PRMBetterClasses.SkillModifications
                 }
             }
         }
+        // Harmony patch for HunkerDown to prevent counting return fire for the attack boost
+        // => don't check abilities that are executed in the enemy turn
+        [HarmonyPatch(typeof(AddAttackBoostStatus), "AbilityExecutedHandler")]
+        internal static class HunkerDown_AddAttackBoostStatusDef_AbilityExecutedHandler_patch
+        {
+            public static bool Prefix(AddAttackBoostStatus __instance)
+            {
+                TacStatusDef hdBaseStatus = DefCache.GetDef<TacStatusDef>("E_AddAttackBoostStatus [HunkerDown_AbilityDef]");
+                // If it is not in the turn of the status holder then don't monitor this ability
+                return __instance.TacStatusDef != hdBaseStatus || __instance.TacticalActor.DuringOwnTurn;
+            }
+        }
+
         private static void Create_Skirmisher()
         {
             float damageMod = 1.25f;

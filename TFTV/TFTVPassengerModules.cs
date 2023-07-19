@@ -1,8 +1,6 @@
 ﻿using Base.Core;
-using Base.Defs;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
-using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.Entities.Items;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.Interception.Equipments;
@@ -18,7 +16,7 @@ namespace TFTV
 {
     internal class TFTVPassengerModules
     {
-        
+
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
 
         private static readonly GeoVehicleEquipmentDef hibernationModule = DefCache.GetDef<GeoVehicleEquipmentDef>("SY_HibernationPods_GeoVehicleModuleDef");
@@ -68,20 +66,57 @@ namespace TFTV
             throw new InvalidOperationException();
         }
 
+        [HarmonyPatch(typeof(GeoVehicle), "GetModuleBonusByType")]
 
+        public static class TFTV_Experimental_GeoVehicle_GetModuleBonusByType_AdjustFARMRecuperationModule_patch
+        {
+            public static void Postfix(GeoVehicleModuleDef.GeoVehicleModuleBonusType type, ref float __result, GeoVehicle __instance)
+            {
+                try
+                {
+                    GeoVehicleEquipment hybernationPods = __instance.Modules?.FirstOrDefault(gve => gve != null && gve.ModuleDef != null && gve.ModuleDef.BonusType == GeoVehicleModuleDef.GeoVehicleModuleBonusType.Recuperation);
+
+                    if (hybernationPods != null && type == GeoVehicleModuleDef.GeoVehicleModuleBonusType.Recuperation)
+                    {
+                        TFTVConfig config = TFTVMain.Main.Config;
+
+                        if (config.ActivateStaminaRecuperatonModule)
+                        {
+                            TFTVLogger.Always($"geovehicle is {__instance.name}");
+                            __result = 0.35f;
+
+                        }
+                        else
+                        {
+
+                            __result = 0.0f;
+
+                        }
+
+                    }
+
+                }
+
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+
+            }
+        }
 
 
         [HarmonyPatch(typeof(GeoPhoenixFaction), "CreateInitialSquad")]
         internal static class BG_GeoPhoenixFaction_CreateInitialSquad_patch
         {
-           
+
 
             [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051")]
             private static bool Prefix(GeoPhoenixFaction __instance, GeoSite site)
             {
                 try
                 {
-                    
+
 
 
                     TacticalItemDef redeemerAmmo = DefCache.GetDef<TacticalItemDef>("AN_Redemptor_AmmoClip_ItemDef");
@@ -243,77 +278,104 @@ namespace TFTV
         {
             [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051")]
 
-            private static void Postfix(GeoVehicle __instance)
+            private static void Postfix(GeoVehicle __instance)//, Dictionary<GeoVehicleModuleDef.GeoVehicleModuleBonusType, float> ____vehicleModuleBonusCache)
             {
                 try
                 {
+                    bool passengerModulePresent = __instance.Modules.Any
+                        (m => m.ModuleDef.BonusType != GeoVehicleModuleDef.GeoVehicleModuleBonusType.Speed ||
+                        m.ModuleDef.BonusType != GeoVehicleModuleDef.GeoVehicleModuleBonusType.SurvivalOdds ||
+                        m.ModuleDef.BonusType != GeoVehicleModuleDef.GeoVehicleModuleBonusType.Range ||
+                        m.ModuleDef.BonusType != GeoVehicleModuleDef.GeoVehicleModuleBonusType.Recuperation);
 
-                    GeoVehicleEquipment hybernationPods = __instance.Modules?.FirstOrDefault(gve => gve != null && gve.ModuleDef != null && gve.ModuleDef.BonusType == GeoVehicleModuleDef.GeoVehicleModuleBonusType.Recuperation);
-                    GeoVehicleEquipment fuelTank = __instance.Modules?.FirstOrDefault(gve => gve != null && gve.ModuleDef != null && gve.ModuleDef.BonusType == GeoVehicleModuleDef.GeoVehicleModuleBonusType.Range);
-                    GeoVehicleEquipment cruiseControl = __instance.Modules?.FirstOrDefault(gve => gve != null && gve.ModuleDef != null && gve.ModuleDef.BonusType == GeoVehicleModuleDef.GeoVehicleModuleBonusType.Speed);
                     string geoVehicle = __instance.VehicleDef.ViewElement.Name;
 
-                    //if hybernation pods are present, take the stats of the new defs with increased capacity
-                    if (geoVehicle == "Geoscape Manticore")
+                    switch (geoVehicle)
                     {
-                        if (hybernationPods != null || cruiseControl != null || fuelTank != null)
-                        {
-                            __instance.BaseDef = manticore6slots;
-                        }
-                        else
-                        {
-                            __instance.BaseDef = manticore;
+                        case "Geoscape Manticore":
+                            {
+                                if (passengerModulePresent)
+                                {
 
-                        }
-                    }
-                    if (geoVehicle == "Geoscape Helios")
-                    {
-                        if (hybernationPods != null || cruiseControl != null || fuelTank != null)
-                        {
-                            __instance.BaseDef = helios5slots;
-                        }
-                        else
-                        {
-                            __instance.BaseDef = helios;
+                                    __instance.BaseDef = manticore6slots;
 
-                        }
-                    }
-                    if (geoVehicle == "Geoscape Thunderbird")
-                    {
-                        if (hybernationPods != null || cruiseControl != null || fuelTank != null)
-                        {
-                            __instance.BaseDef = thunderbird7slots;
-                        }
-                        else
-                        {
-                            __instance.BaseDef = thunderbird;
+                                }
+                                else
+                                {
 
-                        }
-                    }
-                    if (geoVehicle == "Geoscape Blimp")
-                    {
-                        if (hybernationPods != null || cruiseControl != null || fuelTank != null)
-                        {
-                            __instance.BaseDef = blimp12slots;
-                        }
-                        else
-                        {
-                            __instance.BaseDef = blimp8slots;
+                                    __instance.BaseDef = manticore;
 
-                        }
-                    }
-                    if (geoVehicle == "Geoscape Masked Manticore")
-                    {
-                        if (hybernationPods != null || cruiseControl != null || fuelTank != null)
-                        {
-                            __instance.BaseDef = maskedManticore8slots;
-                        }
-                        else
-                        {
-                            __instance.BaseDef = maskedManticore;
+                                }
 
-                        }
+                                break;
+                            }
+
+                        case "Geoscape Helios":
+                            {
+                                if (passengerModulePresent)
+                                {
+                                    __instance.BaseDef = helios5slots;
+                                }
+                                else
+                                {
+                                    __instance.BaseDef = helios;
+
+                                }
+
+                                break;
+
+
+                            }
+
+                        case "Geoscape Thunderbird":
+                            {
+                                if (passengerModulePresent)
+                                {
+                                    __instance.BaseDef = thunderbird7slots;
+                                }
+                                else
+                                {
+                                    __instance.BaseDef = thunderbird;
+
+                                }
+
+                                break;
+
+
+                            }
+                        case "Geoscape Blimp":
+                            {
+                                if (passengerModulePresent)
+                                {
+                                    __instance.BaseDef = blimp12slots;
+                                }
+                                else
+                                {
+                                    __instance.BaseDef = blimp8slots;
+
+                                }
+
+                                break;
+
+                            }
+
+                        case "Geoscape Masked Manticore":
+                            {
+                                if (passengerModulePresent)
+                                {
+                                    __instance.BaseDef = maskedManticore8slots;
+                                }
+                                else
+                                {
+                                    __instance.BaseDef = maskedManticore;
+
+                                }
+
+                                break;
+
+                            }
                     }
+
                 }
                 catch (Exception e)
                 {

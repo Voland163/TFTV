@@ -491,8 +491,18 @@ namespace PRMBetterClasses.VariousAdjustments
             // Set accuracy buff to 0, we don't want this when we can use 2 handed weapons!
             /*venomTorso.BodyPartAspectDef.Accuracy = 0;*/
 
+
             // Get poison spike weapon def
             WeaponDef poisonSpikeWeapon = DefCache.GetDef<WeaponDef>("AN_Berserker_Shooter_LeftArm_WeaponDef");
+            // Add handgun item tag def for proficiency check
+            poisonSpikeWeapon.Tags.Add(DefCache.GetDef<GameTagDef>("HandgunItem_TagDef"));
+            // Add handgun prficiency to venom torso, makes the venom spikes to be a weapon with proficiency for several skills
+            PassiveModifierAbilityDef handgunsProficiency = DefCache.GetDef<PassiveModifierAbilityDef>("HandgunsTalent_AbilityDef");
+            if (!venomTorso.Abilities.Contains(handgunsProficiency))
+            {
+                venomTorso.Abilities = venomTorso.Abilities.AddToArray(handgunsProficiency);
+            }
+
             // Add GunWeapon tag for ... idk ;-)
             poisonSpikeWeapon.Tags.Add(DefCache.GetDef<GameTagDef>("GunWeapon_TagDef"));
             // Set range to infinity (As all other direct line weapons), vanilla is set to 12.0

@@ -266,7 +266,6 @@ namespace TFTV
 
         }
 
-
         public static void CheckHopliteKillList()
         {
             try

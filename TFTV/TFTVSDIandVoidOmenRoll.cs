@@ -468,6 +468,7 @@ namespace TFTV
                             //If there is no space, we have to remove the earliest one
                             if (!voidOmensInPlay.Contains(0))
                             {
+                                TFTVLogger.Always($"All VO slots taken, need to remove an existing VO");
                                 TFTVVoidOmens.RemoveEarliestVoidOmen(geoLevelController);
                             }
                             //Then let's find a spot for the new Void Omen

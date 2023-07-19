@@ -35,8 +35,8 @@ namespace TFTV
         private static Dictionary<string, int> AlienBodyPartsDictionary = new Dictionary<string, int>();
         private static List<TacticalItemDef> AlienBodyParts = new List<TacticalItemDef>();
 
-        //Adjust diplo and resource reward from events based on Special Difficulties and VO2 & VO8
-        [HarmonyPatch(typeof(GeoEventChoiceOutcome), "GenerateFactionReward")]
+            //Adjust diplo and resource reward from events based on Special Difficulties and VO2 & VO8 
+            [HarmonyPatch(typeof(GeoEventChoiceOutcome), "GenerateFactionReward")]
 
         public static class TFTV_GeoEventChoiceOutcome_GenerateFactionReward_SpecialDifficultiesAndVO2AndVO8_patch
         {
@@ -51,17 +51,19 @@ namespace TFTV
 
             private static readonly GeoFactionDef PhoenixFaction = DefCache.GetDef<GeoFactionDef>("Phoenix_GeoPhoenixFactionDef");
 
+   
+
             public static void Prefix(GeoEventChoiceOutcome __instance, string eventID)
             {
                 try
                 {
 
                     GeoLevelController controller = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
-
-                    if (eventID == "PROG_PU12NewNJOption" && controller.EventSystem.GetEventRecord("PROG_PU12_MISS")?.SelectedChoice == 0 && __instance.Diplomacy.Count()==1)
+                   
+                  /*  if (eventID == "PROG_PU12NewNJOption" && controller.EventSystem.GetEventRecord("PROG_PU12_MISS")?.SelectedChoice == 0 && __instance.Diplomacy.Count()==1)
                     {
 
-                       // TFTVLogger.Always($"got here");
+                        TFTVLogger.Always($"got here");
                         GeoFactionDef PhoenixPoint = DefCache.GetDef<GeoFactionDef>("Phoenix_GeoPhoenixFactionDef");
                         GeoFactionDef Synedrion = DefCache.GetDef<GeoFactionDef>("Synedrion_GeoFactionDef");
 
@@ -72,7 +74,7 @@ namespace TFTV
                             Value = -12,
                             PartyType = (OutcomeDiplomacyChange.ChangeTarget)1,
                         });
-                    }
+                    }*/
 
 
                     TFTVConfig config = TFTVMain.Main.Config;
@@ -225,13 +227,14 @@ namespace TFTV
                     TFTVConfig config = TFTVMain.Main.Config;
                     GeoLevelController controller = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
 
-                    if (eventID == "PROG_PU12NewNJOption" && controller.EventSystem.GetEventRecord("PROG_PU12_MISS")?.SelectedChoice == 0 && __instance.Diplomacy.Count() == 2)
+                  /*  if (eventID == "PROG_PU12NewNJOption" && controller.EventSystem.GetEventRecord("PROG_PU12_MISS")?.SelectedChoice == 0 && __instance.Diplomacy.Count() == 2)
                     {
                         GeoFactionDef PhoenixPoint = DefCache.GetDef<GeoFactionDef>("Phoenix_GeoPhoenixFactionDef");
                         GeoFactionDef Synedrion = DefCache.GetDef<GeoFactionDef>("Synedrion_GeoFactionDef");
 
                         __instance.Diplomacy.RemoveLast();
-                    }
+                        TFTVLogger.Always($"the postfix triggered");
+                    }*/
 
 
                     if (config.DiplomaticPenalties && CheckGeoscapeSpecialDifficultySettings(controller) != 1)

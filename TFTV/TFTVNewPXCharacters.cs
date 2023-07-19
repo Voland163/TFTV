@@ -89,13 +89,13 @@ namespace TFTV
 
         [HarmonyPatch(typeof(GeoscapeEventSystem), "TriggerGeoscapeEvent")]
 
-        public static class GeoscapeEventSystem_TriggerGeoscapeEvent_patch
+        public static class GeoscapeEventSystem_TriggerGeoscapeEvent_TriggerAdditionalEvent_patch
         {
             public static void Postfix(string eventId, GeoscapeEventSystem __instance, GeoscapeEventContext context)
             {
                 try
                 {
-                    TFTVLogger.Always("TriggerGeoscapeEvent triggered for event " + eventId);
+                    TFTVLogger.Always($"TriggerGeoscapeEvent triggered for event {eventId}");
 
                     if (eventId == "PROG_PX10_WIN")
                     {

@@ -1,34 +1,16 @@
-﻿using Base;
-using Base.Defs;
-using Base.Entities;
-using Base.Entities.Abilities;
-using Base.Levels;
+﻿using Base.Defs;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities.GameTags;
-using PhoenixPoint.Common.Entities.GameTagsTypes;
-using PhoenixPoint.Common.Entities.Items;
-using PhoenixPoint.Common.View.ViewModules;
 using PhoenixPoint.Geoscape.Entities;
-using PhoenixPoint.Geoscape.Entities.Interception.Equipments;
-using PhoenixPoint.Geoscape.Entities.Sites;
-using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
-using PhoenixPoint.Tactical.Entities.Effects.DamageTypes;
 using PhoenixPoint.Tactical.Entities.Equipments;
-using PhoenixPoint.Tactical.Entities.Statuses;
-using PhoenixPoint.Tactical.Entities.Weapons;
 using PhoenixPoint.Tactical.Levels;
-using PhoenixPoint.Tactical.Levels.Mist;
-using PhoenixPoint.Tactical.View.ViewStates;
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
 using System.Reflection;
 using UnityEngine;
-
+using static PhoenixPoint.Geoscape.Entities.GeoHaven;
 
 namespace TFTV
 {
@@ -40,10 +22,110 @@ namespace TFTV
         private static readonly SharedData Shared = TFTVMain.Shared;
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
 
-      
+        [HarmonyPatch(typeof(TacticalLevelController), "ActorEnteredPlay")]
+        public static class TacticalLevelController_ActorEnteredPlay_ReduceDrops_Patch
+        {
+            public static void Postfix(TacticalActorBase actor, TacticalLevelController __instance)
+            {
+                try
+                {
+                    if (__instance.TurnNumber > 1 && actor is TacticalActor tacticalActor)
+                    {
+
+                        if (tacticalActor.TacticalFaction != __instance.GetFactionByCommandName("PX"))
+                        {
+                            GameTagDef reinforcementTag = DefCache.GetDef<GameTagDef>("ReinforcementTag");
+
+                           // TFTVLogger.Always("The turn number is " + __instance.TurnNumber);
+
+                            if (!tacticalActor.HasGameTag(reinforcementTag))
+                            {
+                                TFTVLogger.Always($"Reinforcement tag added to {actor?.name}");
+                                tacticalActor.GameTags.Add(reinforcementTag);
+
+                            }
 
 
-        
+                        }
+                    }
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+        }
+
+
+        [HarmonyPatch(typeof(DieAbility), "ShouldDestroyItem")]
+        public static class DieAbility_ShouldDestroyItem_patch
+        {
+
+            public static void Postfix(DieAbility __instance, TacticalItem item, ref bool __result)
+            {
+                try
+                {
+                    GameTagDef reinforcementTag = DefCache.GetDef<GameTagDef>("ReinforcementTag");
+
+                    if (__instance.TacticalActorBase.HasGameTag(reinforcementTag))
+                    {
+                        TFTVLogger.Always($"{__instance?.TacticalActorBase?.name} has reinforcement tag, so should drop no items on death");
+                        __result = false;
+                    }
+
+
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
+
+
+
+        [HarmonyPatch(typeof(GeoHaven), "IncreaseAlertness")]
+        public static class GeoHaven_IncreaseAlertness_patch
+        {
+
+            public static bool Prefix(GeoHaven __instance)
+            {
+                try
+
+
+                {
+                    // Get the type of the GeoHaven class
+                    Type geoHavenType = typeof(GeoHaven);
+
+                    // Get the PropertyInfo object representing the AlertLevel property
+                    PropertyInfo alertLevelProperty = geoHavenType.GetProperty("AlertLevel", BindingFlags.Public | BindingFlags.Instance);
+
+                    // Set the value of the AlertLevel property using reflection
+                    if (alertLevelProperty != null && alertLevelProperty.CanWrite)
+                    {
+                        alertLevelProperty.SetValue(__instance, HavenAlertLevel.HighAlert);
+                    }
+
+                    __instance.AlertCooldownDaysLeft = 7;
+
+
+                    return false;
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
+
+
+
+
+
 
 
 
@@ -216,21 +298,71 @@ namespace TFTV
           }*/
 
 
-        /* [HarmonyPatch(typeof(UIStateInventory), "EnterState")]
+
+
+        /*
+        [HarmonyPatch(typeof(UIStateInventory), "EnterState")]
          public static class UIStateInventory_EnterState_patch
          {
-             public static void Postfix(UIStateInventory __instance, TacticalActor ____secondaryActor)
+             public static void Postfix(UIStateInventory __instance, TacticalActor ____secondaryActor, InventoryComponent ____groundInventory, bool ____isSecondaryVehicleInventory)
              {
                  try
                  {
-                   //  TFTVLogger.Always("EnterState");
-                     ChangeAbilitiesCostStatusDef rfAStatus = DefCache.GetDef<ChangeAbilitiesCostStatusDef>("E_ReadyForActionStatus [ReadyForAction_AbilityDef]");
-                     if (__instance.PrimaryActor.HasStatus(rfAStatus) && ____secondaryActor!=null)
-                     {
 
-                         __instance.PrimaryActor.Status.UnapplyStatus(__instance.PrimaryActor.Status.GetStatusByName(rfAStatus.EffectName));
-                      //   KludgeStartingWeight = __instance.PrimaryActor.CharacterStats.CarryWeight.IntValue;
-                       //  TFTVLogger.Always($"{__instance.PrimaryActor.name} has RfA status and kludge weight is now {KludgeStartingWeight}");
+                     TFTVLogger.Always($"primary actor is {__instance.PrimaryActor.DisplayName}, groundInventory actor is {____groundInventory?.Actor?.name}, is secondary vehicle inventory: {____isSecondaryVehicleInventory}");
+
+                     if(____groundInventory.Actor is TacticalActor actor && actor == ____secondaryActor) 
+                     {
+                        MethodInfo methodCreateGroundInventory = typeof(UIStateInventory).GetMethod("CreateGroundInventory", BindingFlags.Instance | BindingFlags.NonPublic);
+
+                        MethodInfo methodResetInventoryQueries = typeof(UIStateInventory).GetMethod("ResetInventoryQueries", BindingFlags.Instance | BindingFlags.NonPublic);
+
+                        MethodInfo methodRefreshStorageLabel = typeof(UIStateInventory).GetMethod("RefreshStorageLabel", BindingFlags.Instance | BindingFlags.NonPublic);
+
+                        MethodInfo methodInitInitialItems = typeof(UIStateInventory).GetMethod("InitInitialItems", BindingFlags.Instance | BindingFlags.NonPublic);
+                       
+                        MethodInfo methodSetupGroundMarkers = typeof(UIStateInventory).GetMethod("SetupGroundMarkers", BindingFlags.Instance | BindingFlags.NonPublic);
+
+
+                        ____groundInventory = (InventoryComponent)methodCreateGroundInventory.Invoke(__instance, null);
+
+                        methodResetInventoryQueries.Invoke(__instance, null);
+                        methodSetupGroundMarkers.Invoke(__instance, null);
+                        methodRefreshStorageLabel.Invoke(__instance, null);
+                        methodInitInitialItems.Invoke(__instance, null);
+                  
+
+                        //
+                        // __instance.ResetInventoryQueries();
+                        TFTVLogger.Always($"ground inventory set active to false");
+
+                     }
+
+                     TFTVLogger.Always($"{__instance.PrimaryActor.GetAbility<InventoryAbility>()?.TacticalAbilityDef?.name}");
+
+                     foreach (TacticalAbilityTarget target in __instance.PrimaryActor.GetAbility<InventoryAbility>().GetTargets())
+                     {
+                         InventoryComponent inventoryComponent = target.InventoryComponent;
+
+                         TFTVLogger.Always($"inventory component {inventoryComponent?.name}");
+
+                         if (inventoryComponent.GetType() != typeof(EquipmentComponent))
+                         {
+                             TFTVLogger.Always($" {inventoryComponent?.name} is no equipmentComponent");
+
+                             TacticalActor tacticalActor = inventoryComponent.Actor as TacticalActor;
+                             if (tacticalActor != null && TacUtil.CanTradeWith(__instance.PrimaryActor, tacticalActor))
+                             {
+                                 TFTVLogger.Always($"{__instance.PrimaryActor.DisplayName} can trade with {tacticalActor.DisplayName}");
+                                 InventoryAbility ability = tacticalActor.GetAbility<InventoryAbility>();
+                                 if (ability != null && !(ability.GetDisabledState() != AbilityDisabledState.NotDisabled))
+                                 {
+                                     TFTVLogger.Always($"{tacticalActor.DisplayName} inventory ability is not null");
+                                 }
+                             }
+
+
+                         }
                      }
 
 
@@ -241,39 +373,11 @@ namespace TFTV
                      throw;
                  }
              }
-         }*/
+         }
+        */
 
 
 
-        [HarmonyPatch(typeof(UIStateInventory), "GetGroundItems")]
-        public static class UIStateInventory_GetGroundItems_patch
-        {
-            public static bool Prefix(UIStateInventory __instance, IEnumerable<ItemContainer> itemContainers, ref HashSet<TacticalItem> __result)
-            {
-                try
-                {
-                    MethodInfo method = typeof(UIStateInventory).GetMethod("GetItemsInItemContainers", BindingFlags.NonPublic | BindingFlags.Instance);
-                    IEnumerable<Item> result = (IEnumerable<Item>)method.Invoke(__instance, new object[] { itemContainers });
-
-                    HashSet<TacticalItem> hashSet = new HashSet<TacticalItem>();
-
-                    hashSet.AddRange(from item in result.OfType<TacticalItem>()
-                                     where item.IsPickable
-                                     select item);
-
-
-                    __result = hashSet;
-
-                    return false;
-
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                    throw;
-                }
-            }
-        }
 
 
 
@@ -563,49 +667,49 @@ namespace TFTV
 
 
 
-     /*   [HarmonyPatch(typeof(TacticalItem), "RemoveAbilitiesFromActor")]
-        public static class TacticalItem_RemoveAbilitiesFromActor_patch
-        {
-            public static void Prefix(TacticalItem __instance)
-            {
-                try
-                {
-                    TFTVLogger.Always($"RemoveAbilitiesFromActor from item {__instance.ItemDef.name}");
+        /*   [HarmonyPatch(typeof(TacticalItem), "RemoveAbilitiesFromActor")]
+           public static class TacticalItem_RemoveAbilitiesFromActor_patch
+           {
+               public static void Prefix(TacticalItem __instance)
+               {
+                   try
+                   {
+                       TFTVLogger.Always($"RemoveAbilitiesFromActor from item {__instance.ItemDef.name}");
 
 
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                    throw;
-                }
-            }
-        }*/
+                   }
+                   catch (Exception e)
+                   {
+                       TFTVLogger.Error(e);
+                       throw;
+                   }
+               }
+           }*/
 
 
 
-     /*   [HarmonyPatch(typeof(ActorComponent), "RemoveAbilitiesFromSource")]
-        public static class ActorComponent_RemoveAbilitiesFromSource_patch
-        {
-            public static void Prefix(ActorComponent __instance, object source)
-            {
-                try
-                {
-                    TFTVLogger.Always($"RemoveAbilitiesFromSource from {__instance.name} with source {source}");
+        /*   [HarmonyPatch(typeof(ActorComponent), "RemoveAbilitiesFromSource")]
+           public static class ActorComponent_RemoveAbilitiesFromSource_patch
+           {
+               public static void Prefix(ActorComponent __instance, object source)
+               {
+                   try
+                   {
+                       TFTVLogger.Always($"RemoveAbilitiesFromSource from {__instance.name} with source {source}");
 
-                    foreach (Ability item in __instance.GetAbilities<Ability>().Where((Ability a) => a.Source == source).ToList())
-                    {
-                        TFTVLogger.Always($"ability is {item.AbilityDef.name} and it's source is {item.Source}, while parameter source is {source}");
-                    }
+                       foreach (Ability item in __instance.GetAbilities<Ability>().Where((Ability a) => a.Source == source).ToList())
+                       {
+                           TFTVLogger.Always($"ability is {item.AbilityDef.name} and it's source is {item.Source}, while parameter source is {source}");
+                       }
 
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                    throw;
-                }
-            }
-        }*/
+                   }
+                   catch (Exception e)
+                   {
+                       TFTVLogger.Error(e);
+                       throw;
+                   }
+               }
+           }*/
 
 
 
@@ -723,7 +827,7 @@ namespace TFTV
 
 
         /*
-       [HarmonyPatch(typeof(TacticalActor), "TriggerHurt")]
+        [HarmonyPatch(typeof(TacticalActor), "TriggerHurt")]
         public static class TacticalActor_TriggerHurt_Patch
         {
             public static bool Prefix(TacticalActor __instance, DamageResult damageResult, RagdollDummy ____ragdollDummy, IUpdateable ____waitingForHurtReactionCrt,
@@ -872,190 +976,39 @@ namespace TFTV
 
 
 
-        //Make bullets go through Umbra and Decoy, method by Dimitar "Codemite" Evtimov from Snapshot Games
 
-        public static IDamageReceiver GetDamageReceiver(DamagePredictor predictor, GameObject gameObject, Vector3 pos, Quaternion rot)
+        /*private bool OnProjectileHit(CastHit hit, Vector3 dir)
         {
-            IDamageable damageableObject = gameObject.GetComponentInParent<IDamageable>();
-            if (damageableObject == null)
+            if (hit.Collider.gameObject.CompareTag("WindowPane"))
             {
-                return null;
+                return false;
             }
 
-            IDamageReceiver recv = damageableObject.GetDamageReceiverForHit(pos, rot * Vector3.forward); ;
-            if (predictor != null)
+            if (Projectile != null)
             {
-                recv = predictor.GetPredictingReceiver(recv);
+                Projectile.OnProjectileHit(hit);
             }
 
-            return recv;
-        }
-
-        public static Dictionary<Projectile, List<TacticalActor>> projectileActor = new Dictionary<Projectile, List<TacticalActor>>();
-
-        [HarmonyPatch(typeof(ProjectileLogic), "OnProjectileHit")]
-
-        public static class ProjectileLogic_OnProjectileHit_Umbra_Patch
-        {
-            public static bool Prefix(ProjectileLogic __instance, ref bool __result, DamageAccumulation ____damageAccum, CastHit hit, Vector3 dir)
+            AffectTarget(hit, dir);
+            if (DamagePayload.StopOnFirstHit)
             {
-                try
-                {
-
-                    Vector3 pos = hit.Point;
-                    Quaternion rot = Quaternion.LookRotation(dir);
-                    IDamageReceiver receiver = GetDamageReceiver(__instance.Predictor, hit.Collider.gameObject, pos, rot);
-
-
-                    ClassTagDef umbraClassTag = DefCache.GetDef<ClassTagDef>("Umbra_ClassTagDef");
-                    SpawnedActorTagDef decoy = DefCache.GetDef<SpawnedActorTagDef>("Decoy_SpawnedActorTagDef");
-
-
-                    if (__instance.Predictor != null)
-                    {
-                        receiver = __instance.Predictor.GetPredictingReceiver(receiver);
-                    }
-
-                    TacticalActor hitActor = receiver?.GetActor() as TacticalActor;
-
-                    if (hitActor != null && __instance.Projectile != null && (hitActor.HasGameTag(umbraClassTag) || hitActor.HasGameTag(decoy)))
-                    {
-                        __result = false;
-
-                        if (projectileActor.ContainsKey(__instance.Projectile) && projectileActor[__instance.Projectile] != null && projectileActor[__instance.Projectile].Contains(hitActor))
-                        {
-
-                            __instance.Projectile.OnProjectileHit(hit);
-                            ____damageAccum?.ResetToInitalAmount();
-
-                        }
-                        else
-                        {
-
-
-                            __instance.Projectile.OnProjectileHit(hit);
-
-
-                            MethodInfo affectTargetMethod = typeof(ProjectileLogic).GetMethod("AffectTarget", BindingFlags.Instance | BindingFlags.NonPublic);
-                            affectTargetMethod.Invoke(__instance, new object[] { hit, dir });
-
-                            ____damageAccum?.ResetToInitalAmount();
-
-                            if (projectileActor.ContainsKey(__instance.Projectile))
-                            {
-                                projectileActor[__instance.Projectile].Add(hitActor);
-                            }
-                            else
-                            {
-                                projectileActor.Add(__instance.Projectile, new List<TacticalActor> { hitActor });
-                            }
-
-
-                        }
-                        return false;
-                    }
-
-                    return true;
-
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                    throw;
-                }
+                return true;
             }
-        }
 
-        //Makes D-Coy disappear instead of dying
-
-        [HarmonyPatch(typeof(DieAbility), "Activate")]
-        public static class DieAbility_Activate_Decoy_Patch
-        {
-            public static bool Prefix(DieAbility __instance)
+            if (DamagePayload.StopWhenNoRemainingDamage)
             {
-                try
-                {
-
-
-                    // TFTVLogger.Always("DieTriggered");
-                    TacticalActorDef dcoy = DefCache.GetDef<TacticalActorDef>("Decoy_ActorDef");
-
-                    if (!__instance.TacticalActorBase.IsObject() && __instance.TacticalActorBase.ActorDef == dcoy)
-                    {
-                        // TFTVLogger.Always("It's a decoy!");
-                        __instance.TacticalActor.gameObject.SetActive(false);
-                        return false;
-                    }
-                    return true;
-
-
-
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                    throw;
-                }
+                DamageAccumulation damageAccum = _damageAccum;
+                return damageAccum == null || !damageAccum.HasRemainingDamage;
             }
-        }
+
+            _damageAccum?.ResetToInitalAmount();
+            return false;
+        }*/
 
 
-        //D-Coy patch to remove if attacked by "smart" enemy
-        [HarmonyPatch(typeof(TacticalLevelController), "ActorDamageDealt")]
-        public static class TacticalLevelController_ActorDamageDealt_Decoy_Patch
-        {
-            public static void Postfix(TacticalActor actor, IDamageDealer damageDealer)
-            {
-                try
-                {
-                    TacticalActorDef dcoy = DefCache.GetDef<TacticalActorDef>("Decoy_ActorDef");
-                    ClassTagDef sirenTag = DefCache.GetDef<ClassTagDef>("Siren_ClassTagDef");
-                    ClassTagDef queenTag = DefCache.GetDef<ClassTagDef>("Queen_ClassTagDef");
-                    ClassTagDef tritonTag = DefCache.GetDef<ClassTagDef>("Fishman_ClassTagDef");
-                    ClassTagDef acheronTag = DefCache.GetDef<ClassTagDef>("Acheron_ClassTagDef");
-                    ClassTagDef hopliteTag = DefCache.GetDef<ClassTagDef>("HumanoidGuardian_ClassTagDef");
-                    ClassTagDef cyclopsTag = DefCache.GetDef<ClassTagDef>("MediumGuardian_ClassTagDef");
-
-                    GameTagDef humanTag = DefCache.GetDef<GameTagDef>("Human_TagDef");
 
 
-                    if (actor.IsAlive)
-                    {
-                        if (actor.TacticalActorDef == dcoy && damageDealer != null && damageDealer.GetTacticalActorBase() != null)
-                        {
-                            TacticalActorBase attackerBase = damageDealer.GetTacticalActorBase();
-                            TacticalActor attacker = attackerBase as TacticalActor;
 
-                            if (!attacker.IsControlledByPlayer)
-                            {
-                                //Decoy despawned if attacked by Siren or Scylla
-                                if (attacker.GameTags.Contains(sirenTag) || attacker.GameTags.Contains(queenTag)
-                                    || attacker.GameTags.Contains(hopliteTag) || attacker.GameTags.Contains(cyclopsTag))
-                                {
-                                    actor.ApplyDamage(new DamageResult() { HealthDamage = actor.Health });
-                                    //  TacContextHelpManager tacContextHelpManager = (TacContextHelpManager)UnityEngine.Object.FindObjectOfType(typeof(TacContextHelpManager));
-                                    //  tacContextHelpManager.EventTypeTriggered(HintTrigger.ActorHurt, actor, actor);
-                                }
-                                //Decoy despawned if attacked within 5 tiles by human, triton or acheron
-                                else if ((attacker.GameTags.Contains(tritonTag)
-                                    || attacker.GameTags.Contains(humanTag)
-                                    || attacker.GameTags.Contains(acheronTag))
-                                    && (actor.Pos - attacker.Pos).magnitude <= 5)
-                                {
-                                    actor.ApplyDamage(new DamageResult() { HealthDamage = actor.Health });
-                                    //  TacContextHelpManager tacContextHelpManager = (TacContextHelpManager)UnityEngine.Object.FindObjectOfType(typeof(TacContextHelpManager));
-                                    //  tacContextHelpManager.EventTypeTriggered(HintTrigger.ActorHurt, actor, actor);
-                                }
-                            }
-                        }
-                    }
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-            }
-        }
 
 
         public static Vector3 FindPushToTile(TacticalActor attacker, TacticalActor defender, int numTiles)
@@ -1315,72 +1268,7 @@ namespace TFTV
 
 
 
-        //Force Scylla to use Cannons
-        //Also clear projectiles Dictionary, used to make bullets go through Umbra/Decoy
 
-        [HarmonyPatch(typeof(TacticalActor), "OnAbilityExecuteFinished")]
-
-        public static class TacticalActor_OnAbilityExecuteFinished_Scylla_Experiment_patch
-        {
-            public static void Postfix(TacticalAbility ability, TacticalActor __instance, object parameter)
-            {
-                try
-                {
-
-
-                    //    TacticalAbilityTarget target = parameter as TacticalAbilityTarget;
-                    //  TFTVLogger.Always($"ability {ability.TacticalAbilityDef.name} executed by {__instance.DisplayName} and the TacticalAbilityTarget position to apply is {target.PositionToApply} ");
-
-                    ShootAbilityDef scyllaSpit = DefCache.GetDef<ShootAbilityDef>("GooSpit_ShootAbilityDef");
-                    ShootAbilityDef scyllaScream = DefCache.GetDef<ShootAbilityDef>("SonicBlast_ShootAbilityDef");
-
-                    //   TFTVLogger.Always($"ability {ability.TacticalAbilityDef.name} executed by {__instance.DisplayName}");
-                    if (ability.TacticalAbilityDef == scyllaSpit || ability.TacticalAbilityDef == scyllaScream)
-                    {
-                        StartPreparingShootAbilityDef scyllaStartPreparing = DefCache.GetDef<StartPreparingShootAbilityDef>("Queen_StartPreparing_AbilityDef");
-                        //    TFTVLogger.Always("Got here");
-                        StartPreparingShootAbility startPreparingShootAbility = __instance.GetAbilityWithDef<StartPreparingShootAbility>(scyllaStartPreparing);
-
-                        if (startPreparingShootAbility != null)
-                        {
-                            startPreparingShootAbility.Activate(parameter);
-                        }
-
-                    }
-
-
-
-                    ApplyEffectAbilityDef parasychosis = DefCache.GetDef<ApplyEffectAbilityDef>("Parasychosis_AbilityDef");
-                    GameTagDef infestationSecondObjectiveTag = DefCache.GetDef<GameTagDef>("ScatterRemainingAttackers_GameTagDef");
-
-                    if (ability.TacticalAbilityDef == parasychosis && parameter is TacticalAbilityTarget target && target.GetTargetActor() != null && target.GetTargetActor() is TacticalActor tacticalActor && tacticalActor.HasGameTag(infestationSecondObjectiveTag))
-                    {
-                        //  TFTVLogger.Always($"Got here, target is {tacticalActor.name}");
-                        tacticalActor.GameTags.Remove(infestationSecondObjectiveTag);
-
-                    }
-
-                    projectileActor.Clear();
-
-
-                    /*   SpawnActorAbilityDef DecoyAbility = DefCache.GetDef<SpawnActorAbilityDef>("Decoy_AbilityDef");
-
-                       if (ability.TacticalAbilityDef == DecoyAbility)
-                       {                 
-                           TacContextHelpManager tacContextHelpManager = (TacContextHelpManager)UnityEngine.Object.FindObjectOfType(typeof(TacContextHelpManager));
-                           tacContextHelpManager.EventTypeTriggered(HintTrigger.ActorSeen, parameter, parameter);
-                       }*/
-
-
-                }
-
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-
-            }
-        }
 
 
 
@@ -1496,70 +1384,12 @@ namespace TFTV
            }*/
 
 
-        [HarmonyPatch(typeof(GeoVehicle), "GetModuleBonusByType")]
-
-        public static class TFTV_Experimental_GeoVehicle_GetModuleBonusByType_AdjustFARMRecuperationModule_patch
-        {
-            public static void Postfix(GeoVehicleModuleDef.GeoVehicleModuleBonusType type, ref float __result, GeoVehicle __instance)
-            {
-                try
-                {
-                    GeoVehicleEquipment hybernationPods = __instance.Modules?.FirstOrDefault(gve => gve != null && gve.ModuleDef != null && gve.ModuleDef.BonusType == GeoVehicleModuleDef.GeoVehicleModuleBonusType.Recuperation);
-
-                    if (hybernationPods != null && type == GeoVehicleModuleDef.GeoVehicleModuleBonusType.Recuperation)
-                    {
-                        TFTVConfig config = TFTVMain.Main.Config;
-
-                        if (config.ActivateStaminaRecuperatonModule)
-                        {
-                            TFTVLogger.Always($"geovehicle is {__instance.name}");
-                            __result = 0.35f;
-
-                        }
-                        else
-                        {
-
-                            __result = 0.0f;
-
-                        }
-
-                    }
-
-                }
-
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-
-            }
-        }
 
 
 
 
-        [HarmonyPatch(typeof(GeoHavenLeader), "CanRecruitWithFaction")]
 
-        public static class TFTV_Experimental_GeoHavenLeader_CanRecruitWithFaction_EnableRecruitingWhenNotAtWar_patch
-        {
-            public static void Postfix(GeoHavenLeader __instance, IDiplomaticParty faction, ref bool __result)
-            {
-                try
-                {
-                    MethodInfo getRelationMethod = AccessTools.Method(typeof(GeoHavenLeader), "GetRelationWith");
-                    PartyDiplomacy.Relation relation = (PartyDiplomacy.Relation)getRelationMethod.Invoke(__instance, new object[] { faction });
 
-                    __result = relation.Diplomacy > -50;
-
-                }
-
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-
-            }
-        }
 
         /* [HarmonyPatch(typeof(GeoHavenLeader), "CanTradeWithFaction")]
 
@@ -1586,47 +1416,7 @@ namespace TFTV
 
 
 
-        [HarmonyPatch(typeof(GeoHaven), "GetRecruitCost")]
-        public static class TFTV_Experimental_GeoHaven_GetRecruitCost_IncreaseCostDiplomacy_patch
-        {
-            public static void Postfix(GeoHaven __instance, ref ResourcePack __result, GeoFaction forFaction)
-            {
-                try
-                {
-                    GeoHavenLeader leader = __instance.Leader;
-                    MethodInfo getRelationMethod = AccessTools.Method(typeof(GeoHavenLeader), "GetRelationWith");
-                    PartyDiplomacy.Relation relation = (PartyDiplomacy.Relation)getRelationMethod.Invoke(leader, new object[] { forFaction });
-                    ResourcePack price = new ResourcePack(__result);
-                    float multiplier = 1f;
-                    if (relation.Diplomacy > -50 && relation.Diplomacy <= -25)
-                    {
-                        multiplier = 1.5f;
-                    }
-                    else if (relation.Diplomacy > -25 && relation.Diplomacy <= 0)
-                    {
-                        multiplier = 1.25f;
 
-                    }
-
-                    for (int i = 0; i < price.Count; i++)
-                    {
-                        //  TFTVLogger.Always("Price component is " + price[i].Type + " amount " + price[i].Value);
-                        ResourceUnit resourceUnit = price[i];
-                        price[i] = new ResourceUnit(resourceUnit.Type, resourceUnit.Value * multiplier);
-                    }
-
-                    __result = price;
-
-
-                }
-
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-
-            }
-        }
 
 
 
@@ -1682,47 +1472,12 @@ namespace TFTV
 
 
 
-        [HarmonyPatch(typeof(GeoHaven), "CheckShouldSpawnRecruit")]
-        public static class TFTV_Experimental_GeoHaven_CheckShouldSpawnRecruit_IncreaseCostDiplomacy_patch
-        {
-            public static void Postfix(GeoHaven __instance, ref bool __result, float modifier)
-            {
-                try
-                {
-                    if (__result == false)
-                    {
-                        if (!__instance.IsRecruitmentEnabled || !__instance.ZonesStats.CanGenerateRecruit)
-                        {
-                            __result = false;
-                        }
-                        else
-                        {
-                            GeoFaction phoenixFaction = __instance.Site.GeoLevel.PhoenixFaction;
-                            PartyDiplomacy.Relation relation = __instance.Leader.Diplomacy.GetRelation(phoenixFaction);
-                            if (relation.Diplomacy <= 0 && relation.Diplomacy > -50)
-                            {
-                                int num = __instance.HavenDef.RecruitmentBaseChance;
-                                num = Mathf.RoundToInt((float)num * modifier);
-
-
-                                __result = UnityEngine.Random.Range(0, 100) < num;
-                            }
-                        }
-                    }
-                }
-
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-
-            }
-        }
 
 
 
 
-    
+
+
 
 
 
@@ -1737,7 +1492,7 @@ namespace TFTV
 
 
 
-       
+
 
         /* [HarmonyPatch(typeof(GeoMission), "PrepareLevel")]
          public static class GeoMission_PrepareLevel_VOObjectives_Patch

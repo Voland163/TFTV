@@ -45,6 +45,10 @@ namespace TFTV
         public List<string> HopliteKillList;       
         public Dictionary<float, float> ConsolePositionsInBaseDefense;
         public Dictionary<int, int> CyclopsMolecularTargeting;
+        public int DeployedAircraftCaptureCapacity;
+        public bool ContainmentFacilityPresent;
+        public bool ScyllaCaptureModule;
+        public int AvailableContainment;
     }
 
     /// <summary>
@@ -94,13 +98,17 @@ namespace TFTV
             TFTVLogger.Always("Tactical start completed");
             TFTVLogger.Always("Difficulty level is " + tacController.Difficulty.Order);
             TFTVLogger.Always("LOTA rework active in tactical is " + TFTVAncients.LOTAReworkActive);
+            TFTVLogger.Always($"Deployed Aircraft capture capacity is {TFTVCapturePandorans.AircraftCaptureCapacity}");
+            TFTVLogger.Always($"Available containment is {TFTVCapturePandorans.ContainmentSpaceAvailable}");
+            TFTVLogger.Always($"Containment facility is present {TFTVCapturePandorans.ContainmentFacilityPresent}");
+            TFTVLogger.Always($"Scylla Capture Module is present {TFTVCapturePandorans.ScyllaCaptureModulePresent}");
             TFTVAncients.CheckResearchStateOnGeoscapeEndAndOnTacticalStart(null);
 
             TFTVBaseDefenseTactical.CheckConsoleSituation(Controller);
             //  TFTVBaseDefenseTactical.InteractionPointPlacement();
             //   TFTVBaseDefenseTactical.CheckIfConsoleActivated(Controller);
             TFTVSpecialDifficulties.CheckForSpecialDifficulties();
-            TFTVBetterEnemies.ImplementBetterEnemies();
+          //  TFTVBetterEnemies.ImplementBetterEnemies();
             TFTVRevenant.CheckIfRevenantPresent(Controller);
          
          //   TFTVBaseDefenseTactical.OjectivesDebbuger(Controller);
@@ -162,9 +170,14 @@ namespace TFTV
                 TFTVBaseDefenseTactical.UsedStrats = data.StratsAlreadyImplementedAtBD;
                 TFTVBaseDefenseTactical.ConsolePositions = data.ConsolePositionsInBaseDefense;
                 TFTVAncients.CyclopsMolecularDamageBuff = data.CyclopsMolecularTargeting;
+                TFTVCapturePandorans.AircraftCaptureCapacity = data.DeployedAircraftCaptureCapacity;
+                TFTVCapturePandorans.ContainmentFacilityPresent = data.ContainmentFacilityPresent;
+                TFTVCapturePandorans.ScyllaCaptureModulePresent = data.ScyllaCaptureModule;
                 TFTVBaseDefenseTactical.ModifyObjectives(Controller.TacMission.MissionData.MissionType);
                 TFTVAncients.AutomataResearched = data.AutomataResearched;
                 TFTVAncients.AlertedHoplites = data.HopliteKillList;
+                TFTVCapturePandorans.ContainmentSpaceAvailable = data.AvailableContainment;
+
                 TFTVBetaSaveGamesFixes.CheckNewLOTASavegame();
 
                 TurnZeroMethodsExecuted = data.TurnZeroMethodsExecuted;
@@ -203,7 +216,7 @@ namespace TFTV
                 infestedHavenPopulationSaveData = TFTVInfestationStory.HavenPopulation,
                 infestedHavenOriginalOwnerSaveData = TFTVInfestationStory.OriginalOwner,
                 RevenantId = TFTVRevenant.revenantID,
-      
+
                 LOTAReworkActiveInTactical = TFTVAncients.LOTAReworkActive,
                 BaseDefenseAttackProgress = TFTVBaseDefenseTactical.AttackProgress,
                 BaseDefenseStratToBeImplemented = TFTVBaseDefenseTactical.StratToBeImplemented,
@@ -213,6 +226,10 @@ namespace TFTV
                 AutomataResearched = TFTVAncients.AutomataResearched,
                 CyclopsMolecularTargeting = TFTVAncients.CyclopsMolecularDamageBuff,
                 HopliteKillList = TFTVAncients.AlertedHoplites,
+                DeployedAircraftCaptureCapacity = TFTVCapturePandorans.AircraftCaptureCapacity,
+                ContainmentFacilityPresent = TFTVCapturePandorans.ContainmentFacilityPresent,
+                ScyllaCaptureModule = TFTVCapturePandorans.ScyllaCaptureModulePresent,
+                AvailableContainment = TFTVCapturePandorans.ContainmentSpaceAvailable,
       
                 TurnZeroMethodsExecuted = TurnZeroMethodsExecuted
                 

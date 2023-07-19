@@ -1,6 +1,8 @@
-﻿using Base.UI;
+﻿using Base.Entities.Statuses;
+using Base.UI;
 using HarmonyLib;
 using PhoenixPoint.Common.ContextHelp;
+using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.Saves;
 using PhoenixPoint.Common.UI;
@@ -13,8 +15,10 @@ using PhoenixPoint.Geoscape.Events.Eventus;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Objectives;
 using PhoenixPoint.Tactical.Entities;
+using PhoenixPoint.Tactical.Entities.Effects.ApplicationConditions;
 using PhoenixPoint.Tactical.Entities.Effects.DamageTypes;
 using PhoenixPoint.Tactical.Entities.Statuses;
+using PhoenixPoint.Tactical.Levels.FactionObjectives;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -90,6 +94,9 @@ namespace TFTV
                 TFTVAncients.AutomataResearched = false;
                 TFTVAncients.AlertedHoplites.Clear();
                 TFTVUI.CharacterLoadouts?.Clear();
+                TFTVCapturePandoransGeoscape.PandasForFoodProcessing = 0;
+                TFTVCapturePandorans.AircraftCaptureCapacity = 0;
+                TFTVCapturePandorans.ContainmentFacilityPresent = false;
               //  TFTVUI.CurrentlyAvailableInv.Clear();
               //  TFTVUI.CurrentlyHiddenInv.Clear();
                 TFTVLogger.Always("Internal variables cleared");
@@ -452,6 +459,31 @@ namespace TFTV
             throw new InvalidOperationException();
         }
 
+        internal static ActorHasStatusEffectConditionDef CreateNewStatusEffectCondition(string gUID, StatusDef status, bool hasEffect = true)
+        {
+            try
+            {
+
+                string name = status.EffectName + "_ActorHasStatusEffectConditionDef";
+                ActorHasStatusEffectConditionDef source = DefCache.GetDef<ActorHasStatusEffectConditionDef>("HasParalysisStatus_ApplicationCondition");
+
+                ActorHasStatusEffectConditionDef newCondition = Helper.CreateDefFromClone(source, gUID, name);
+                newCondition.StatusDef = status;
+                newCondition.HasStatus = hasEffect;
+
+
+
+                return newCondition;
+            }
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
+        }
+
+
         public static void GenerateGeoEventChoice(GeoscapeEventDef geoEvent, string choice, string outcome)
         {
             try
@@ -682,6 +714,53 @@ namespace TFTV
 
         }
 
+        public static void CreateObjectiveReminder(string guid, string description_key, int experienceReward)
+        {
+            try
+            {
+
+                string objectiveName = description_key;
+                KeepSoldiersAliveFactionObjectiveDef keepSoldiersAliveObjectiveSource = DefCache.GetDef<KeepSoldiersAliveFactionObjectiveDef>("KeepSoldiersAliveFactionObjectiveDef");
+                KeepSoldiersAliveFactionObjectiveDef objective = Helper.CreateDefFromClone(keepSoldiersAliveObjectiveSource, guid, objectiveName);
+                objective.IsVictoryObjective = false;
+                objective.IsDefeatObjective = false;
+                objective.MissionObjectiveData.ExperienceReward = experienceReward;
+                objective.MissionObjectiveData.Description.LocalizationKey = description_key;
+                objective.MissionObjectiveData.Summary.LocalizationKey = description_key;
+                objective.IsUiSummaryHidden = true;
+                //   TFTVLogger.Always("FactionObjective " + DefCache.GetDef<FactionObjectiveDef>(objectiveName).name + " created");
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+        }
+
+
+        internal static GameTagDef CreateNewTag(string name, string guid)
+        {
+            try
+            {
+
+                GameTagDef source = DefCache.GetDef<GameTagDef>("Takeshi_Tutorial3_GameTagDef");
+                return Helper.CreateDefFromClone(
+                    source,
+                    guid,
+                    name + "_GameTagDef");
+
+
+
+            }
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
+
+        }
 
 
         [HarmonyPatch(typeof(GeoSite), "CreateHavenDefenseMission")]

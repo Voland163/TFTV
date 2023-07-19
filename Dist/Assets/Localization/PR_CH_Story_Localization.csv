@@ -116,6 +116,7 @@ KEY_CO_CORRUPTION_NAME,Text,,Co-Delirium,,Co-Delirium,,,,,,
 KEY_CO_CORRUPTION_DESCRIPTION,Text,,All Pandorans in battle deal Delirium damage,,Tous les Pandoriens en combat infligent des dégâts de Delirium.,,,,,,
 KEY_CONTACT_CORRUPTION_NAME,Text,,CONTACT DELIRIUM,,DELIRE DE CONTACT,,,,,,
 KEY_CONTACT_CORRUPTION_DESCRIPTION,Text,,Increases Delirium of attacker when suffering Melee or Bash attacks.,,Augmente le délire de l'attaquant lorsqu'il subit des attaques de mêlée.,,,,,,
+KEY_DAMAGE_TYPE_CORRUPTION,Text,,DELIRIUM,,,,,,,,
 DLC4 Hypnos/KEY_DAMAGE_TYPE_CORRUPTION,Text,,DELIRIUM,,DELIRIUM,,,,,,
 KEY_DAMAGE_TYPE_CORRUPTION_DESC,Text,,Applies Delirium to the target.,,Applique le Délire à la cible.,,,,,,
 KEY_CORRUPTION_IMMUNITY_NAME,Text,,DELIRIUM IMMUNITY,,IMMUNITÉ AU DÉLIRE,,,,,,
@@ -188,6 +189,7 @@ Le délire réduit la Volonté d'un montant égal. Plus la Volonté d'un soldat 
 Le délire a également d'autres effets <b>qui ne sont pas annulés par une meilleure endurance</b>. ",,,,,,
 KEY_TAC_HINT_STATUS_CORRUPTED_NAME,Text,,SUFFERS ONEIRIC DELIRIUM,,SUBIT UN DÉLIRE ONIRIQUE,,,,,,
 KEY_ROSTER_DEATH_CORRUPTED,Text,,DELIRIUM,,DELIRIUM,,,,,,
+DLC4 Hypnos/KEY_ROSTER_DEATH_CORRUPTED,Text,,DELIRIUM,,,,,,,,
 PROG_CH0_CHOICE_0_TEXT,Text,,OK.,,OK.,,,,,,
 PROG_CH0_FAIL_CHOICE_0_TEXT,Text,,OK.,,OK.,,,,,,
 PROG_CH0_FAIL_TEXT_GENERAL_0,Text,,Our attempts to secure the lab and eliminate all Pandoran threats resulted with failure. We better re-evaluate our tactics before trying again.,,Nos tentatives de sécuriser le labo et d'éliminer toutes les menaces pandoriennes se sont soldées par un échec. Nous devrions réévaluer nos tactiques avant de réessayer.,,,,,,
@@ -300,8 +302,7 @@ DELIRIUM_PERK_HYPERALGESIA_DESCRIPTION,Text,,"Lose 1 WP when taking damage, no W
 <i>Subject has extreme sensitivity to pain and exhibits symptoms of empathy fatigue</i>",,"Perte de 1 Point de Volonté en cas de dégâts, pas de perte de Point de Volonté en cas de mort d'alliés.
 <i>Le sujet est extrêmement sensible à la douleur et présente des symptômes de fatigue empathique.</i>",,,,,,
 "DELIRIUM_PERK_FERAL_NAME
-",Text,,"FERAL
-",,"SAUVAGE
+",Text,,"FERAL",,"SAUVAGE
 ",,,,,,
 "DELIRIUM_PERK_FERAL_DESCRIPTION
 ",Text,,"All actions have 10% chance to fumble, recover 1 AP from killing enemies
@@ -367,8 +368,9 @@ To Augment a soldier, navigate to the PERSONNEL tab, select EDIT UNIT and then s
 KEY_GEO_HINT_CYBERNETICS_LAB_BUILT_NAME,Text,,AUGMENTATION NOW AVAILABLE,,,,,,,,
 KEY_GEO_HINT_MUTATION_LAB_BUILT_DESCRIPTION,Text,,"The construction of your Mutation Lab is complete. You will now be able to MUTATE SOLDIERS, replacing their natural limbs with ones enhanced by Pandoravirus mutation.
 
+To Mutate a soldier, navigate to the PERSONNEL tab, select EDIT UNIT and then select MUTATE.
 
-To Mutate a soldier, navigate to the PERSONNEL tab, select EDIT UNIT and then select MUTATE.",,,,,,,,
+In addition, if you have completed the Mutagen harvesting technology, your mutation lab will automatically extract mutagens from any Pandorans held in your Containment facilities. ",,,,,,,,
 KEY_GEO_HINT_MUTATION_LAB_BUILT_NAME,Text,,MUTATION NOW AVAILABLE,,,,,,,,
 KEY_GEO_HINT_MUTATION_SCREEN_DESCRIPTION,Text,,"You are about to mutate your first soldier. A character can only have UP TO 2 BODY PARTS altered this way.
 
@@ -378,3 +380,17 @@ Once a mutation is applied, the operative won't be able to revert back to their 
 
 The :PRIEST: PRIEST soldier class has access to UNIQUE HEAD MUTATIONS greatly enhancing their powers.",,,,,,,,
 KEY_GEO_HINT_MUTATION_SCREEN_NAME,Text,,MUTATING A SOLDIER,,,,,,,,
+DELIRIUM_STAMINA_TOOLTIP,Text,,Character's current Stamina is reducing the effects of Delirium on Willpower by,,,,,,,,
+KEY_BASE_FACILITY_FOOD_PRODUCTION_DESCRIPTION_TFTV,Text,,A food production facility that generates enough food for 8 soldiers each day. Allows rendering captured Pandorans for food.,,,,,,,,
+KEY_BASE_FACILITY_MUTATION_LAB_DESCRIPTION_TFTV,Text,,"Allows soldiers to be mutated, and produces mutagens from captured Pandorans - the raw material for mutation.",,,,,,,,
+PX_MUTAGENHARVESTING_RESEARCHDEF_COMPLETE_TFTV,Text,,"We discovered that certain tissue samples retain the ability to mutate. The discovery was made when a test subject accidentally had a mutated sample injected into them. The error was discovered too late, but scientists observed the results and found that Pandorans have a set of cells, derived from the original Pandoravirus infection, that have unique properties. We call these mutagens. They were the same cells the Disciples of Anu use in rituals to “evolve closer to the Exalted.” Since the discovery, the process has been refined, allowing a creature’s mutagens to be continually harvested, as long as it remains alive.",,,,,,,,
+PX_MUTAGENHARVESTING_RESEARCHDEF_UNLOCK_TFTV,Text,,"<i>""Now I understand why they were keeping those worms around...""</i> - Alistair Ashby
+
+A method for extracting mutagens from captured Pandorans is being devised. The process is still in its infancy, but should it be successful it would provide us with a virtually endless source of mutagens.",,,,,,,,
+PX_FOODHAVRESTING_RESEARCHDEF_BENEFITS_TFTV,Text,,Captured Pandorans can now be rendered for food processing at our Food Production facilities.,,,,,,,,
+FOOD_POISONING_DESCRIPTION_1,Text,,"We have a bad case of food poisoning on our hands… I suspect that we must be overdoing it with the… new element… in our operatives' diet. It doesn't seem to be too bad at the moment, but I suspect it will get worse if we continue to consume these… nutrients in similar amounts. Just something to bear in mind, Director.",,,,,,,,
+FOOD_POISONING_TITLE_1,Text,,Project Cornucopia Assessment #1,,,,,,,,
+FOOD_POISONING_DESCRIPTION_2,Text,,"Another case of mass food poisoning, and this time worse than before. Director, I hate to say it, but I'm thinking of West and his Fort Bacon story.",,,,,,,,
+FOOD_POISONING_TITLE_2,Text,,Project Cornucopia Assessment #2,,,,,,,,
+FOOD_POISONING_DESCRIPTION_3,Text,,"Director, I fear that the latest incident... Our people, they are changing.",,,,,,,,
+FOOD_POISONING_TITLE_3,Text,,Project Cornucopia Assessment #3,,,,,,,,

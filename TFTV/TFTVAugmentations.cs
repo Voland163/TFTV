@@ -101,7 +101,7 @@ namespace TFTV
                         ____mutationAvailable = false;
                         MethodInfo methodInfo = typeof(EditUnitButtonsController).GetMethod("SetCircularButtonVisibility", BindingFlags.NonPublic | BindingFlags.Instance);
 
-                        methodInfo.Invoke(__instance, new object[] { __instance.BionicsButton, ____mutationAvailable });
+                        methodInfo.Invoke(__instance, new object[] { __instance.MutationButton, ____mutationAvailable });
                     }
 
                 }

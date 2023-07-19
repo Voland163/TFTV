@@ -30,6 +30,7 @@ using PhoenixPoint.Geoscape.Entities.PhoenixBases.FacilityComponents;
 using PhoenixPoint.Geoscape.Entities.Research;
 using PhoenixPoint.Geoscape.Entities.Research.Requirement;
 using PhoenixPoint.Geoscape.Entities.Research.Reward;
+using PhoenixPoint.Geoscape.Entities.Sites;
 using PhoenixPoint.Geoscape.Events.Eventus;
 using PhoenixPoint.Geoscape.Events.Eventus.Filters;
 using PhoenixPoint.Geoscape.Levels;
@@ -75,52 +76,32 @@ namespace TFTV
         public static Sprite UmbraIcon = Helper.CreateSpriteFromImageFile("Void-03P.png");
 
 
-        internal static GameTagDef CreateNewTag(string name, string guid)
-        {
-            try 
-            {
-               
-                GameTagDef source = DefCache.GetDef<GameTagDef>("Takeshi_Tutorial3_GameTagDef");
-                return Helper.CreateDefFromClone(
-                    source,
-                    guid,
-                    name + "_GameTagDef");
 
-                
 
-            }
 
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-                throw;
-            }
-
-        }
-
-       
 
 
 
         internal static void Print()
         {
-            try { 
+            try
+            {
 
-            
+
                 foreach (TacticalItemDef item in Repo.GetAllDefs<TacticalItemDef>()
                     .Where(ti => ti.name.Contains("Torso")).Where(ti => !ti.name.Contains("BIO"))
 
                 .Where(ti => ti.name.StartsWith("AN_") || ti.name.StartsWith("SY_") || ti.name.StartsWith("NJ_") || ti.name.StartsWith("NEU") || ti.name.StartsWith("PX_") || ti.name.StartsWith("IN_")))
                 {
-                   
-    
 
-                TFTVLogger.Always($"{item} might need a tag");
+
+
+                    TFTVLogger.Always($"{item} might need a tag");
 
                 }
 
             }
-              catch (Exception e)
+            catch (Exception e)
             {
                 TFTVLogger.Error(e);
             }
@@ -199,7 +180,7 @@ namespace TFTV
             FixUnarmedAspida();
             AddLoadingScreens();
             AddTips();
-            ModifyCratesToAddArmor();
+
             //   CreateMeleeChiron();
             FixMyrmidonFlee();
             //  Testing();
@@ -213,23 +194,88 @@ namespace TFTV
             ChangeUmbra();
             FixPriestScream();
             ModifyChironWormAndAoETargeting();
+
             // TestingHavenDefenseFix();
             // TestingKnockBackRepositionAlternative();
             // CreateCyclopsScreamStatus();
-            
-          
-          
+
+
+
             ChangesModulesAndAcid();
             ChangeVehicleInventorySlots();
-           
+            CreateReinforcementTag();
+            CreateFoodPoisoningEvents();
+
+            ModifyCratesToAddArmor();
         }
+
+
+        private static void CreateFoodPoisoningEvents()
+        {
+            try
+            {
+                string event1Name = "FoodPoisoning1";
+                string event1Title = "FOOD_POISONING_TITLE_1";
+                string event1Description = "FOOD_POISONING_DESCRIPTION_1";
+                string event1Outcome = "FOOD_POISONING_OUTCOME_1";
+
+                string event2Name = "FoodPoisoning2";
+                string event2Title = "FOOD_POISONING_TITLE_2";
+                string event2Description = "FOOD_POISONING_DESCRIPTION_2";
+                string event2Outcome = "FOOD_POISONING_OUTCOME_2";
+
+                string event3Name = "FoodPoisoning3";
+                string event3Title = "FOOD_POISONING_TITLE_3";
+                string event3Description = "FOOD_POISONING_DESCRIPTION_3";
+                string event3Outcome = "FOOD_POISONING_OUTCOME_3";
+
+                GeoscapeEventDef foodPoisoning1 = TFTVCommonMethods.CreateNewEvent(event1Name, event1Title, event1Description, event1Outcome);
+                foodPoisoning1.GeoscapeEventData.Choices[0].Outcome.DamageAllSoldiers = 20;
+                foodPoisoning1.GeoscapeEventData.Choices[0].Outcome.TireAllSoldiers = 10;
+
+
+                GeoscapeEventDef foodPoisoning2 = TFTVCommonMethods.CreateNewEvent(event2Name, event2Title, event2Description, event2Outcome);
+                foodPoisoning2.GeoscapeEventData.Choices[0].Outcome.DamageAllSoldiers = 40;
+                foodPoisoning2.GeoscapeEventData.Choices[0].Outcome.TireAllSoldiers = 20;
+
+                GeoscapeEventDef foodPoisoning3 = TFTVCommonMethods.CreateNewEvent(event3Name, event3Title, event3Description, event3Outcome);
+                foodPoisoning3.GeoscapeEventData.Choices[0].Outcome.DamageAllSoldiers = 80;
+                foodPoisoning3.GeoscapeEventData.Choices[0].Outcome.TireAllSoldiers = 40;
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+       
+
+        private static void CreateReinforcementTag()
+        {
+            try
+            {
+                TFTVCommonMethods.CreateNewTag("ReinforcementTag", "{8F24AAA0-676F-4740-9764-F7CDA47EECAC}");
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+
+        }
+
+     
+
+
 
         private static void ChangeVehicleInventorySlots()
         {
-            try {
+            try
+            {
 
                 DefCache.GetDef<BackpackFilterDef>("VehicleBackpackFilterDef").MaxItems = 12;
-            
+
             }
             catch (Exception e)
             {
@@ -241,7 +287,7 @@ namespace TFTV
         {
             try
             {
-                GameTagDef organicMeatbagTorsoTag = CreateNewTag("MeatBagTorso", "{8D13AAD6-BA65-4907-B3C8-C977B819BF48}");
+                GameTagDef organicMeatbagTorsoTag = TFTVCommonMethods.CreateNewTag("MeatBagTorso", "{8D13AAD6-BA65-4907-B3C8-C977B819BF48}");
 
                 foreach (TacticalItemDef item in Repo.GetAllDefs<TacticalItemDef>()
 
@@ -273,32 +319,7 @@ namespace TFTV
 
         }
 
-        internal static ActorHasStatusEffectConditionDef CreateNewStatusEffectCondition(string gUID, StatusDef status, bool hasEffect = true)
-        {
-            try
-            {
 
-                string name = status.EffectName + "_ActorHasStatusEffectConditionDef";
-                ActorHasStatusEffectConditionDef source = DefCache.GetDef<ActorHasStatusEffectConditionDef>("HasParalysisStatus_ApplicationCondition");
-
-                ActorHasStatusEffectConditionDef newCondition = Helper.CreateDefFromClone(source, gUID, name);
-                newCondition.StatusDef = status;
-                newCondition.HasStatus = hasEffect;
-
-
-
-                return newCondition;
-            }
-
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-                throw;
-            }
-
-
-
-        }
 
         internal static void ChangesModulesAndAcid()
         {
@@ -374,7 +395,7 @@ namespace TFTV
 
         }
 
-        private static void MakeMistRepellerLegModule() 
+        private static void MakeMistRepellerLegModule()
         {
             try
             {
@@ -411,9 +432,9 @@ namespace TFTV
                 }
 
 
-               
 
-         
+
+
             }
             catch (Exception e)
             {
@@ -458,7 +479,7 @@ namespace TFTV
                 statusName);
 
             nanoVestBuffStatus.Duration = -1;
-            
+
             nanoVestBuffStatus.Visuals.DisplayName1.LocalizationKey = "NANOVEST_ABILITY_NAME";
             nanoVestBuffStatus.Visuals.Description.LocalizationKey = "NANOVEST_ABILITY_DESCRIPTION";
             nanoVestBuffStatus.Visuals.LargeIcon = nanoVestAbility.ViewElementDef.LargeIcon;
@@ -514,11 +535,15 @@ namespace TFTV
         {
             try
             {
+
                 TacticalItemDef fireVest = DefCache.GetDef<TacticalItemDef>("NJ_FireResistanceVest_Attachment_ItemDef");
+                fireVest.Tags.Remove(DefCache.GetDef<FactionTagDef>("NewJerico_FactionTagDef"));
+                fireVest.Tags.Add(DefCache.GetDef<FactionTagDef>("PhoenixPoint_FactionTagDef"));
+
                 TacticalItemDef newNanoVest = Helper.CreateDefFromClone(fireVest, "{D07B639A-E1F4-46F4-91BB-1CCDCCCE8EC1}", "NanotechVest");
                 newNanoVest.ViewElementDef = Helper.CreateDefFromClone(fireVest.ViewElementDef, "{0F1BD9BA-1895-46C7-90AF-26FB92D702F6}", "Nanotech_ViewElement");
 
-                
+
                 newNanoVest.Abilities = new AbilityDef[] { DefCache.GetDef<ApplyStatusAbilityDef>("NanoVest_AbilityDef") };
                 newNanoVest.ViewElementDef.LargeIcon = Helper.CreateSpriteFromImageFile("modules_nanovest.png");
                 newNanoVest.ViewElementDef.DisplayName1.LocalizationKey = "NANOVEST_NAME";
@@ -562,7 +587,7 @@ namespace TFTV
 
         internal static void CreateNanotechFieldkit()
         {
-            try 
+            try
             {
 
                 EquipmentDef repairKit = DefCache.GetDef<EquipmentDef>("FieldRepairKit_EquipmentDef");
@@ -619,12 +644,12 @@ namespace TFTV
 
                 newEffectCondtions.OrConditions = new EffectConditionDef[]
                 {
-                CreateNewStatusEffectCondition("{0D32B04B-8EAA-4C76-9F24-F92F0FE8CD74}", DefCache.GetDef<StatusDef>("ActorStunned_StatusDef")),
-                CreateNewStatusEffectCondition("{BF5726D7-5E9C-4145-85E8-79545CBB3261}", DefCache.GetDef<StatusDef>("Acid_StatusDef")),
-                CreateNewStatusEffectCondition("{177E042A-B8F8-4302-9520-CC0610C045B0}", DefCache.GetDef<StatusDef>("Blinded_StatusDef")),
-                CreateNewStatusEffectCondition("{A054A669-8C7B-4005-8749-BA6CD71163CA}", DefCache.GetDef<StatusDef>("Slowed_StatusDef")),
-                CreateNewStatusEffectCondition("{F574791A-FAD0-4E1F-9295-5F2A3D9AAB2C}", DefCache.GetDef<StatusDef>("Trembling_StatusDef")),
-                CreateNewStatusEffectCondition("{A66DC742-B60F-409B-8B63-2D6AC7B5AD1D}", DefCache.GetDef<StatusDef>("Bleed_StatusDef")),
+                TFTVCommonMethods.CreateNewStatusEffectCondition("{0D32B04B-8EAA-4C76-9F24-F92F0FE8CD74}", DefCache.GetDef<StatusDef>("ActorStunned_StatusDef")),
+                TFTVCommonMethods.CreateNewStatusEffectCondition("{BF5726D7-5E9C-4145-85E8-79545CBB3261}", DefCache.GetDef<StatusDef>("Acid_StatusDef")),
+               TFTVCommonMethods.CreateNewStatusEffectCondition("{177E042A-B8F8-4302-9520-CC0610C045B0}", DefCache.GetDef<StatusDef>("Blinded_StatusDef")),
+                TFTVCommonMethods.CreateNewStatusEffectCondition("{A054A669-8C7B-4005-8749-BA6CD71163CA}", DefCache.GetDef<StatusDef>("Slowed_StatusDef")),
+               TFTVCommonMethods.CreateNewStatusEffectCondition("{F574791A-FAD0-4E1F-9295-5F2A3D9AAB2C}", DefCache.GetDef<StatusDef>("Trembling_StatusDef")),
+                TFTVCommonMethods.CreateNewStatusEffectCondition("{A66DC742-B60F-409B-8B63-2D6AC7B5AD1D}", DefCache.GetDef<StatusDef>("Bleed_StatusDef")),
                 DefCache.GetDef< ActorHasStatusEffectConditionDef>("HasParalysisStatus_ApplicationCondition"),
                 DefCache.GetDef< ActorHasStatusEffectConditionDef>("HasParalysedStatus_ApplicationCondition"),
                 DefCache.GetDef< ActorHasStatusEffectConditionDef>("HasInfectedStatus_ApplicationCondition"),
@@ -746,7 +771,7 @@ namespace TFTV
 
 
         }
-    
+
         internal static void AdjustResearches()
         {
             try
@@ -774,6 +799,13 @@ namespace TFTV
                 advNanotechRes.Unlocks = new ResearchRewardDef[] { advNanotechRes.Unlocks[0] };
 
                 EquipmentDef repairKit = DefCache.GetDef<EquipmentDef>("FieldRepairKit_EquipmentDef");
+
+
+                //removing nanokit from Bionic Reserach
+                ManufactureResearchRewardDef bionicsReward = DefCache.GetDef<ManufactureResearchRewardDef>("NJ_Bionics1_ResearchDef_ManufactureResearchRewardDef_0");
+                bionicsReward.Items = new ItemDef[] { bionicsReward.Items[0], bionicsReward.Items[1], bionicsReward.Items[2] };
+
+
                 TacticalItemDef newNanoVest = DefCache.GetDef<TacticalItemDef>("NanotechVest");
 
                 List<ItemDef> manuRewards = new List<ItemDef>() { repairKit, newNanoVest };
@@ -781,7 +813,7 @@ namespace TFTV
 
                 TacticalItemDef blastVest = DefCache.GetDef<TacticalItemDef>("PX_BlastResistanceVest_Attachment_ItemDef");
                 ManufactureResearchRewardDef njFireResReward = DefCache.GetDef<ManufactureResearchRewardDef>("NJ_FireResistanceTech_ResearchDef_ManufactureResearchRewardDef_0");
-                njFireResReward.Items = new ItemDef[] {blastVest};
+                njFireResReward.Items = new ItemDef[] { blastVest };
 
                 //Fireworm unlocks Vidar
                 DefCache.GetDef<ExistingResearchRequirementDef>("PX_AGL_ResearchDef_ExistingResearchRequirementDef_0").ResearchID = "PX_Alien_Fireworm_ResearchDef";
@@ -793,8 +825,8 @@ namespace TFTV
                 pxBlastResReward.Items = new ItemDef[] { acidVest };
                 DefCache.GetDef<ExistingResearchRequirementDef>("PX_BlastResistanceVest_ResearchDef_ExistingResearchRequirementDef_0").ResearchID = "PX_Alien_Acidworm_ResearchDef";
 
-                DefCache.GetDef<ResearchDef>("PX_Alien_Acidworm_ResearchDef").ViewElementDef.BenefitsText.LocalizationKey= "PX_ALIEN_ACIDWORM_RESEARCHDEF_BENEFITS";
-                
+                DefCache.GetDef<ResearchDef>("PX_Alien_Acidworm_ResearchDef").ViewElementDef.BenefitsText.LocalizationKey = "PX_ALIEN_ACIDWORM_RESEARCHDEF_BENEFITS";
+
 
 
             }
@@ -1025,7 +1057,7 @@ namespace TFTV
                     if (tacticalItemDef.Tags.CanAdd(electronic))
                     {
                         tacticalItemDef.Tags.Add(electronic);
-                       // TFTVLogger.Always($"added electronic tag to {tacticalItemDef.name}");
+                        // TFTVLogger.Always($"added electronic tag to {tacticalItemDef.name}");
 
                     }
 
@@ -1036,7 +1068,7 @@ namespace TFTV
                     if (groundVehicleWeaponDef.Tags.CanAdd(electronic))
                     {
                         groundVehicleWeaponDef.Tags.Add(electronic);
-                     //   TFTVLogger.Always($"added electronic tag to {groundVehicleWeaponDef.name}");
+                        //   TFTVLogger.Always($"added electronic tag to {groundVehicleWeaponDef.name}");
 
                     }
 
@@ -1424,7 +1456,20 @@ namespace TFTV
                 demoChiron.CapsuleStart = new Vector3(0f, 1f, 0f);
                 demoChiron.CapsuleEnd = new Vector3(0f, 3f, 0f);
 
+
+
+
                 //improve special Scylla cheat skill to avoid getting damaged from squishing things that blow up
+
+                DamageMultiplierStatusDef scyllaImmunitySource = DefCache.GetDef<DamageMultiplierStatusDef>("E_BlastImmunityStatus [Queen_GunsFire_ShootAbilityDef]");
+                DamageMultiplierStatusDef newScyllaImmunityStatus = Helper.CreateDefFromClone(scyllaImmunitySource, "{D4CF7113-AF7D-42CA-BBF6-2CB06B8DB31E}", abilityName);
+
+                TacStatusEffectDef scyllaImmunityEffect = DefCache.GetDef<TacStatusEffectDef>("E_MakeImmuneToBlastDamageEffect [Queen_GunsFire_ShootAbilityDef]");
+                TacStatusEffectDef newScyllaImmunityEffect = Helper.CreateDefFromClone(scyllaImmunityEffect, "{6FDC9695-F561-446E-9D8F-D9AF29A35F0F}", abilityName);
+
+                newScyllaImmunityEffect.StatusDef = newScyllaImmunityStatus;
+
+
                 // not good, makes them immune to fire...
                 /*   StandardDamageTypeEffectDef fireDamage = DefCache.GetDef<StandardDamageTypeEffectDef>("Fire_StandardDamageTypeEffectDef"); 
                    AcidDamageTypeEffectDef acidDamage = DefCache.GetDef<AcidDamageTypeEffectDef>("Acid_DamageOverTimeDamageTypeEffectDef");
@@ -2020,6 +2065,17 @@ namespace TFTV
                 loadingTipsRepositoryDef.GeoscapeLoadingTips.Add(new LocalizedTextBind() { LocalizationKey = "TFTV_TIP_GEOSCAPE_17" });
                 loadingTipsRepositoryDef.GeoscapeLoadingTips.Add(new LocalizedTextBind() { LocalizationKey = "TFTV_TIP_GEOSCAPE_18" });
                 loadingTipsRepositoryDef.GeoscapeLoadingTips.Add(new LocalizedTextBind() { LocalizationKey = "TFTV_TIP_GEOSCAPE_19" });
+                loadingTipsRepositoryDef.GeoscapeLoadingTips.Add(new LocalizedTextBind() { LocalizationKey = "TFTV_TIP_GEOSCAPE_20" });
+                loadingTipsRepositoryDef.GeoscapeLoadingTips.Add(new LocalizedTextBind() { LocalizationKey = "TFTV_TIP_GEOSCAPE_21" });
+                loadingTipsRepositoryDef.GeoscapeLoadingTips.Add(new LocalizedTextBind() { LocalizationKey = "TFTV_TIP_GEOSCAPE_22" });
+                loadingTipsRepositoryDef.GeoscapeLoadingTips.Add(new LocalizedTextBind() { LocalizationKey = "TFTV_TIP_GEOSCAPE_23" });
+                loadingTipsRepositoryDef.GeoscapeLoadingTips.Add(new LocalizedTextBind() { LocalizationKey = "TFTV_TIP_GEOSCAPE_24" });
+                loadingTipsRepositoryDef.GeoscapeLoadingTips.Add(new LocalizedTextBind() { LocalizationKey = "TFTV_TIP_GEOSCAPE_25" });
+                loadingTipsRepositoryDef.GeoscapeLoadingTips.Add(new LocalizedTextBind() { LocalizationKey = "TFTV_TIP_GEOSCAPE_26" });
+                loadingTipsRepositoryDef.GeoscapeLoadingTips.Add(new LocalizedTextBind() { LocalizationKey = "TFTV_TIP_GEOSCAPE_27" });
+                loadingTipsRepositoryDef.GeoscapeLoadingTips.Add(new LocalizedTextBind() { LocalizationKey = "TFTV_TIP_GEOSCAPE_28" });
+                loadingTipsRepositoryDef.GeoscapeLoadingTips.Add(new LocalizedTextBind() { LocalizationKey = "TFTV_TIP_GEOSCAPE_29" });
+                loadingTipsRepositoryDef.GeoscapeLoadingTips.Add(new LocalizedTextBind() { LocalizationKey = "TFTV_TIP_GEOSCAPE_30" });
 
 
                 loadingTipsRepositoryDef.TacticalLoadingTips.Add(new LocalizedTextBind() { LocalizationKey = "TFTV_TIP_TACTICAL_1" });
@@ -3016,13 +3072,13 @@ namespace TFTV
         {
             try
             {
-                CreateVoidOmenObjective("818B37C5-AC05-4245-A629-D84761838DE6", "VOID_OMEN_TITLE_3", 0);
-                CreateVoidOmenObjective("F0CCE047-352C-4AE4-8D12-6856FA57A5C7", "VOID_OMEN_TITLE_5", 0);
-                CreateVoidOmenObjective("BDBBD195-D07C-43CF-AB0F-50C7CEA8B044", "VOID_OMEN_TITLE_7", 0);
-                CreateVoidOmenObjective("EC9011E4-2C01-485B-8E89-7D0A20996899", "VOID_OMEN_TITLE_10", 0);
-                CreateVoidOmenObjective("3CBE9291-2241-428B-B6DD-776EFF316D4F", "VOID_OMEN_TITLE_15", 0);
-                CreateVoidOmenObjective("D25FC8F1-DB31-4BA2-9B9F-3787B9D3A664", "VOID_OMEN_TITLE_16", 0);
-                CreateVoidOmenObjective("BA859656-03E9-4BCD-AAAC-2A0B09506FEC", "VOID_OMEN_TITLE_19", 0);
+                TFTVCommonMethods.CreateObjectiveReminder("818B37C5-AC05-4245-A629-D84761838DE6", "VOID_OMEN_TITLE_3", 0);
+                TFTVCommonMethods.CreateObjectiveReminder("F0CCE047-352C-4AE4-8D12-6856FA57A5C7", "VOID_OMEN_TITLE_5", 0);
+                TFTVCommonMethods.CreateObjectiveReminder("BDBBD195-D07C-43CF-AB0F-50C7CEA8B044", "VOID_OMEN_TITLE_7", 0);
+                TFTVCommonMethods.CreateObjectiveReminder("EC9011E4-2C01-485B-8E89-7D0A20996899", "VOID_OMEN_TITLE_10", 0);
+                TFTVCommonMethods.CreateObjectiveReminder("3CBE9291-2241-428B-B6DD-776EFF316D4F", "VOID_OMEN_TITLE_15", 0);
+                TFTVCommonMethods.CreateObjectiveReminder("D25FC8F1-DB31-4BA2-9B9F-3787B9D3A664", "VOID_OMEN_TITLE_16", 0);
+                TFTVCommonMethods.CreateObjectiveReminder("BA859656-03E9-4BCD-AAAC-2A0B09506FEC", "VOID_OMEN_TITLE_19", 0);
 
                 //3, 5, 7, 10, 15, 16, 19
 
@@ -3034,29 +3090,7 @@ namespace TFTV
 
         }
 
-        public static void CreateVoidOmenObjective(string guid, string description_key, int experienceReward)
-        {
-            try
-            {
 
-                string objectiveName = description_key;
-                KeepSoldiersAliveFactionObjectiveDef keepSoldiersAliveObjectiveSource = DefCache.GetDef<KeepSoldiersAliveFactionObjectiveDef>("KeepSoldiersAliveFactionObjectiveDef");
-                KeepSoldiersAliveFactionObjectiveDef voidOmenObjective = Helper.CreateDefFromClone(keepSoldiersAliveObjectiveSource, guid, objectiveName);
-                voidOmenObjective.IsVictoryObjective = false;
-                voidOmenObjective.IsDefeatObjective = false;
-                voidOmenObjective.MissionObjectiveData.ExperienceReward = experienceReward;
-                voidOmenObjective.MissionObjectiveData.Description.LocalizationKey = description_key;
-                voidOmenObjective.MissionObjectiveData.Summary.LocalizationKey = description_key;
-                voidOmenObjective.IsUiSummaryHidden = true;
-                //   TFTVLogger.Always("FactionObjective " + DefCache.GetDef<FactionObjectiveDef>(objectiveName).name + " created");
-
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-
-        }
 
         internal static void ModifyCyclops()
         {
@@ -3490,7 +3524,7 @@ namespace TFTV
                 virophage.GeoscapeEventData.Choices[0].Outcome.Cinematic =
                                DefCache.GetDef<GeoscapeEventDef>("PROG_LE_FINAL_GeoscapeEventDef").GeoscapeEventData.Choices[0].Outcome.Cinematic;
 
-                TFTVLogger.Always("Lota events created");
+                // TFTVLogger.Always("Lota events created");
 
             }
             catch (Exception e)
@@ -5011,12 +5045,15 @@ namespace TFTV
                 cruisecontrolmodule.ManufactureMaterials = 600;
                 cruisecontrolmodule.ManufactureTech = 75;
                 cruisecontrolmodule.ManufacturePointsCost = 505;
+                //increasing bonus to speed 
+                cruisecontrolmodule.GeoVehicleModuleBonusValue = 250;
                 //Change Fuel Tank module
                 GeoVehicleModuleDef fueltankmodule = DefCache.GetDef<GeoVehicleModuleDef>("NJ_FuelTanks_GeoVehicleModuleDef");
                 //Increase cost to 50% of Vanilla Manti
                 fueltankmodule.ManufactureMaterials = 600;
                 fueltankmodule.ManufactureTech = 75;
                 fueltankmodule.ManufacturePointsCost = 505;
+                fueltankmodule.GeoVehicleModuleBonusValue = 2500;
 
 
                 //Make Hibernation module available for manufacture from start of game - doesn't work because HM is not an ItemDef
@@ -5416,7 +5453,7 @@ namespace TFTV
 
                 //removing unnecessary researches 
                 synResearchDB.Researches.Remove(DefCache.GetDef<ResearchDef>("SYN_Aircraft_SecurityStation_ResearchDef"));
-                ppResearchDB.Researches.Remove(DefCache.GetDef<ResearchDef>("PX_Aircraft_EscapePods_ResearchDef"));
+                //  ppResearchDB.Researches.Remove(DefCache.GetDef<ResearchDef>("PX_Aircraft_EscapePods_ResearchDef"));
                 njResearchDB.Researches.Remove(DefCache.GetDef<ResearchDef>("NJ_Aircraft_CruiseControl_ResearchDef"));
                 njResearchDB.Researches.Remove(DefCache.GetDef<ResearchDef>("NJ_Aircraft_FuelTank_ResearchDef"));
 

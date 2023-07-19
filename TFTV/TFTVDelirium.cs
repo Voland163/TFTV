@@ -107,14 +107,15 @@ namespace TFTV
                 {
                     currentDeliriumLevel = "equal to character's Willpower";
                 }
+                else if (odiPerc < 25)
+                {
+                    currentDeliriumLevel = "equal to a third of character's Willpower";
+                }
                 else if(odiPerc < 45) 
                 {
                     currentDeliriumLevel = "equal to half character's Willpower";
                 }
-                else if (odiPerc < 25) 
-                {
-                    currentDeliriumLevel = "equal to a third of character's Willpower";
-                }
+                
                                                 
                 return currentDeliriumLevel;
 
@@ -295,36 +296,38 @@ namespace TFTV
             {
                 try
                 {
+                    int deliriumReduction = 0;
+
                     if (character.Fatigue != null && (character.TemplateDef.IsHuman || character.TemplateDef.IsMutoid))
                     {
+                       // TFTVLogger.Always($"{character.DisplayName} has {character.Fatigue.Stamina}");
+                        
 
                         if (character.Fatigue.Stamina == 40)
                         {
-                            return 4;
+                            deliriumReduction = 4;
                         }
                         else if (character.Fatigue.Stamina < 40 && character.Fatigue.Stamina >= 30)
                         {
-                            return 3;
+                            deliriumReduction = 3;
                         }
                         else if (character.Fatigue.Stamina < 30 && character.Fatigue.Stamina >= 20)
                         {
-                            return 2;
+                            deliriumReduction = 2;
                         }
                         else if (character.Fatigue.Stamina < 20 && character.Fatigue.Stamina >= 10)
                         {
-                            return 1;
+                            deliriumReduction = 1;
                         }
-                        else
-                        {
-                            return 0;
-                        }
+                       
                     }
-                    else
-                    {
-                        return 0;
-                    }
+
+                 //   TFTVLogger.Always($"so Delirium for {character.DisplayName} with {character.Fatigue.Stamina} should be reduced by {deliriumReduction}");
+                    
+
+                    return deliriumReduction;
                 }
-                catch (System.Exception e)
+                catch (Exception e)
                 {
                     TFTVLogger.Error(e);
                 }

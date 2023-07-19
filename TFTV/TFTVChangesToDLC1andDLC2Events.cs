@@ -1,49 +1,104 @@
-﻿using Base.Defs;
-using Base.UI;
+﻿using Base.UI;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Levels.Missions;
 using PhoenixPoint.Common.UI;
-using PhoenixPoint.Geoscape.Entities.Research;
 using PhoenixPoint.Geoscape.Events;
 using PhoenixPoint.Geoscape.Events.Eventus;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Tactical.Entities;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace TFTV
 {
     internal class TFTVChangesToDLC1andDLC2Events
     {
-       
+
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
+
+        private static readonly GeoFactionDef PhoenixPoint = DefCache.GetDef<GeoFactionDef>("Phoenix_GeoPhoenixFactionDef");
+        private static readonly GeoFactionDef NewJericho = DefCache.GetDef<GeoFactionDef>("NewJericho_GeoFactionDef");
+        private static readonly GeoFactionDef Anu = DefCache.GetDef<GeoFactionDef>("Anu_GeoFactionDef");
+        private static readonly GeoFactionDef Synedrion = DefCache.GetDef<GeoFactionDef>("Synedrion_GeoFactionDef");
+
+
         public static void ChangesToDLC1andDLC2Defs()
         {
             try
             {
-              
-                ResearchViewElementDef njBionicsVEDef = DefCache.GetDef<ResearchViewElementDef>("NJ_Bionics1_ViewElementDef");
-                njBionicsVEDef.CompleteText.LocalizationKey = "TFTV_BIONICS_RESEARCHDEF_COMPLETE";
+                AdjustAugmenetationResearchTexts();
+                AddOptionsSubject24Intro();
+                AddOptionsUndefendable();
+                ChangingGuidedByWhispers();
 
-                ResearchViewElementDef anuBionicsVEDef = DefCache.GetDef<ResearchViewElementDef>("ANU_MutationTech_ViewElementDef");
-                anuBionicsVEDef.CompleteText.LocalizationKey = "TFTV_MUTATIONTECH_RESEARCHDEF_COMPLETE";
-                
-                //ID all the factions for later
-                GeoFactionDef PhoenixPoint = DefCache.GetDef<GeoFactionDef>("Phoenix_GeoPhoenixFactionDef");
-                GeoFactionDef NewJericho = DefCache.GetDef<GeoFactionDef>("NewJericho_GeoFactionDef");
-                GeoFactionDef Anu = DefCache.GetDef<GeoFactionDef>("Anu_GeoFactionDef");
-                GeoFactionDef Synedrion = DefCache.GetDef<GeoFactionDef>("Synedrion_GeoFactionDef");
+                ChangesToSavingHelena();
+                ReplaceAllSchemataMissions();
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
 
-                //Source for creating new events
-                GeoscapeEventDef sourceLoseGeoEvent = DefCache.GetDef<GeoscapeEventDef>("PROG_PU12_FAIL_GeoscapeEventDef");
+        }
 
-                //Adding peaceful option for Saving Helena
-                GeoscapeEventDef savingHelenaWin = DefCache.GetDef<GeoscapeEventDef>("PROG_LE0_WIN_GeoscapeEventDef");
-                GeoscapeEventDef savingHelenaMiss = DefCache.GetDef<GeoscapeEventDef>("PROG_LE0_MISS_GeoscapeEventDef");
-                savingHelenaMiss.GeoscapeEventData.Choices.Add(new GeoEventChoice()
+
+
+        private static void GuidedByWhispersLoss()
+        {
+            try
+            {
+
+                GeoscapeEventDef guidedByWhispersLost = DefCache.GetDef<GeoscapeEventDef>("PROG_PU12_FAIL_GeoscapeEventDef");
+                GeoscapeEventDef originalGuidedByWhispersWin = DefCache.GetDef<GeoscapeEventDef>("PROG_PU12_WIN_GeoscapeEventDef");
+                var pu12miss = originalGuidedByWhispersWin.GeoscapeEventData.Choices[0].Outcome.UntrackEncounters[0];
+
+                //Event if HD Failure
+                GeoscapeEventDef newFailPU12 = Helper.CreateDefFromClone(guidedByWhispersLost, "D77EB7A7-FE26-49EF-BB7A-449A51D4D519", "PROG_PU12_FAIL2_GeoscapeEventDef");
+                newFailPU12.GeoscapeEventData.EventID = "PROG_PU12FAIL2";
+                newFailPU12.GeoscapeEventData.Title.LocalizationKey = "PROG_PU12_FAIL2_TITLE";
+                newFailPU12.GeoscapeEventData.Description[0].General.LocalizationKey = "PROG_PU12_FAIL2_TEXT_GENERAL_0";
+                newFailPU12.GeoscapeEventData.Choices[0].Text.LocalizationKey = "PROG_PU12_FAIL2_CHOICE_0_TEXT";
+                newFailPU12.GeoscapeEventData.Choices[0].Outcome.UntrackEncounters.Add(pu12miss);
+                newFailPU12.GeoscapeEventData.Choices[0].Outcome.RemoveTimers.Add(pu12miss);
+
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+
+        }
+
+        private static void AddPeacefulOptions()
+
+        {
+            try
+            {
+                //Adding options to the original event, fetching it first
+                GeoscapeEventDef guidedByWhispers = DefCache.GetDef<GeoscapeEventDef>("PROG_PU12_MISS_GeoscapeEventDef");
+
+                //Fetching Syn HD vs Pure with protect civillians type, to use as alternative mission
+                CustomMissionTypeDef havenDefPureSY_CustomMissionTypeDef = DefCache.GetDef<CustomMissionTypeDef>("HavenDefPureSY_Civ_CustomMissionTypeDef");
+
+                //Adding Syn Aligned options
+                guidedByWhispers.GeoscapeEventData.Choices.Add(new GeoEventChoice()
                 {
-                    Text = new LocalizedTextBind("PROG_LE0_MISS_CHOICE_2_TEXT"),
+                    Text = (new LocalizedTextBind("PROG_PU12_MISS_CHOICE_2_TEXT")),
+                    Outcome = new GeoEventChoiceOutcome()
+                    {
+                        OutcomeText = new EventTextVariation()
+                        {
+                            General = new LocalizedTextBind("PROG_PU12_MISS_CHOICE_2_OUTCOME_GENERAL")
+                        },
+                        StartMission = new OutcomeStartMission()
+                        {
+                            MissionTypeDef = havenDefPureSY_CustomMissionTypeDef,
+                            WonEventID = "PROG_PU12WIN2",
+                            LostEventID = "PROG_PU12_FAIL2"
+                        }
+                    },
                     Requirments = new GeoEventChoiceRequirements()
                     {
                         Diplomacy = new List<GeoEventChoiceDiplomacy>()
@@ -53,24 +108,227 @@ namespace TFTV
                             {
                             Target = GeoEventChoiceDiplomacy.DiplomacyTarget.SiteFaction,
                             Operator = GeoEventChoiceDiplomacy.DiplomacyOperator.Greater,
-                            Value = 24,
+                            Value = 49,
                             }
                          },
                     },
-
-                    Outcome = new GeoEventChoiceOutcome()
-                    {
-                        UntrackEncounters = savingHelenaWin.GeoscapeEventData.Choices[0].Outcome.UntrackEncounters,
-                        VariablesChange = savingHelenaWin.GeoscapeEventData.Choices[0].Outcome.VariablesChange,
-                        Cinematic = savingHelenaWin.GeoscapeEventData.Choices[0].Outcome.Cinematic,
-                        OutcomeText = new EventTextVariation()
-                        {
-                            General = new LocalizedTextBind("PROG_LE0_MISS_CHOICE_2_OUTCOME_GENERAL")
-                        },
-                        TriggerEncounterID = "HelenaOnOlena"
-                    }
                 });
 
+                //Adding sell info to NJ option to original event
+                guidedByWhispers.GeoscapeEventData.Choices.Add(new GeoEventChoice()
+                {
+                    Text = (new LocalizedTextBind("PROG_PU12_MISS_CHOICE_3_TEXT")),
+                    Outcome = new GeoEventChoiceOutcome()
+                    {
+                        TriggerEncounterID = "PROG_PU12NewNJOption",
+                        Resources = new ResourcePack { new ResourceUnit()
+                        {
+                            Type = ResourceType.Materials,
+                            Value = 750
+                        }
+                        },
+                        Diplomacy = new List<OutcomeDiplomacyChange>() { new OutcomeDiplomacyChange()
+                        {
+                            PartyFaction = NewJericho,
+                            TargetFaction = PhoenixPoint,
+                            Value = 3,
+                            PartyType = (OutcomeDiplomacyChange.ChangeTarget)1,
+                        },
+                        }
+                    }
+
+
+                });
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+        private static void AddNewWinEvent()
+        {
+            try
+            {
+                GeoscapeEventDef originalGuidedByWhispersWin = DefCache.GetDef<GeoscapeEventDef>("PROG_PU12_WIN_GeoscapeEventDef");
+
+                GeoscapeEventDef newWinPU12 = Helper.CreateDefFromClone(originalGuidedByWhispersWin, "23435C5E-B933-484D-990E-5B4C0B2B32FE", "PROG_PU12_WIN2_GeoscapeEventDef");
+                newWinPU12.GeoscapeEventData.EventID = "PROG_PU12WIN2";
+                newWinPU12.GeoscapeEventData.Title.LocalizationKey = "PROG_PU12_WIN2_TITLE";
+                newWinPU12.GeoscapeEventData.Description[0].General.LocalizationKey = "PROG_PU12_WIN2_TEXT_GENERAL_0";
+                newWinPU12.GeoscapeEventData.Choices[0].Text.LocalizationKey = "PROG_PU12_WIN2_CHOICE_0_TEXT";
+                newWinPU12.GeoscapeEventData.Choices[0].Outcome.Diplomacy[0] = new OutcomeDiplomacyChange()
+
+                {
+                    PartyFaction = Synedrion,
+                    TargetFaction = PhoenixPoint,
+                    Value = 6,
+                    PartyType = (OutcomeDiplomacyChange.ChangeTarget)1,
+                };
+
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+
+
+
+        }
+
+        private static void CreateNewNJOutcomePanel()
+        {
+            try
+            {
+                //Event if HD successful
+                GeoscapeEventDef originalGuidedByWhispersWin = DefCache.GetDef<GeoscapeEventDef>("PROG_PU12_WIN_GeoscapeEventDef");
+                var pu12miss = originalGuidedByWhispersWin.GeoscapeEventData.Choices[0].Outcome.UntrackEncounters[0];
+
+                //New event for outcome if selling info about lab or research after stealing it by completing original mission                
+
+                GeoscapeEventDef guidedByWhispersLostSource = DefCache.GetDef<GeoscapeEventDef>("PROG_PU12_FAIL_GeoscapeEventDef");
+                GeoscapeEventDef newPU12NJOption = Helper.CreateDefFromClone(guidedByWhispersLostSource, "D556A16F-41D8-4852-8DC4-5FB945652C50", "PROG_PU12_NewNJOption_GeoscapeEventDef");
+                newPU12NJOption.GeoscapeEventData.EventID = "PROG_PU12NewNJOption";
+                newPU12NJOption.GeoscapeEventData.Leader = "NJ_Abongameli";
+                newPU12NJOption.GeoscapeEventData.Title.LocalizationKey = "PROG_PU12_NEWNJOPT_TITLE";
+                newPU12NJOption.GeoscapeEventData.Description[0].General.LocalizationKey = "PROG_PU12_NEWNJOPT_GENERAL";
+               
+                newPU12NJOption.GeoscapeEventData.Choices[0].Outcome.UntrackEncounters.Add(pu12miss);
+                newPU12NJOption.GeoscapeEventData.Choices[0].Outcome.RemoveTimers.Add(pu12miss);
+
+                //Add option after winning original mission to sell research to NJ
+                originalGuidedByWhispersWin.GeoscapeEventData.Choices.Add(new GeoEventChoice()
+                {
+                    Text = (new LocalizedTextBind("PROG_PU12_WIN_CHOICE_1_TEXT")),
+                    Outcome = new GeoEventChoiceOutcome()
+                    {
+                        TriggerEncounterID = "PROG_PU12NewNJOption",
+                        Resources = new ResourcePack {new ResourceUnit()
+                {
+                    Type = ResourceType.Materials,
+                    Value = 750
+                }
+                },
+                        Diplomacy = new List<OutcomeDiplomacyChange>() {new OutcomeDiplomacyChange()
+                {
+                    PartyFaction = NewJericho,
+                    TargetFaction = PhoenixPoint,
+                    Value = 3,
+                    PartyType = (OutcomeDiplomacyChange.ChangeTarget)1,
+                },
+                new OutcomeDiplomacyChange()
+                        {
+                            PartyFaction = Synedrion,
+                            TargetFaction = PhoenixPoint,
+                            Value = -6,
+                            PartyType = (OutcomeDiplomacyChange.ChangeTarget)1,
+                        }
+
+                },
+                        VariablesChange = originalGuidedByWhispersWin.GeoscapeEventData.Choices[0].Outcome.VariablesChange
+                    },
+
+                });
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+
+        }
+
+        private static void ChangingGuidedByWhispers()
+        {
+            try
+            {
+
+                //Add options to Guided by Whispers
+                //If relations with Synedrion Aligned, can opt for HD vs Pure
+                CreateNewNJOutcomePanel();
+                GuidedByWhispersLoss();
+                AddPeacefulOptions();
+                AddNewWinEvent();
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+        }
+
+        private static void ChangesToSavingHelena()
+        {
+            try 
+            { 
+            //Adding peaceful option for Saving Helena
+            GeoscapeEventDef savingHelenaWin = DefCache.GetDef<GeoscapeEventDef>("PROG_LE0_WIN_GeoscapeEventDef");
+            GeoscapeEventDef savingHelenaMiss = DefCache.GetDef<GeoscapeEventDef>("PROG_LE0_MISS_GeoscapeEventDef");
+            savingHelenaMiss.GeoscapeEventData.Choices.Add(new GeoEventChoice()
+            {
+                Text = new LocalizedTextBind("PROG_LE0_MISS_CHOICE_2_TEXT"),
+                Requirments = new GeoEventChoiceRequirements()
+                {
+                    Diplomacy = new List<GeoEventChoiceDiplomacy>()
+
+                        {
+                            new GeoEventChoiceDiplomacy ()
+                            {
+                            Target = GeoEventChoiceDiplomacy.DiplomacyTarget.SiteFaction,
+                            Operator = GeoEventChoiceDiplomacy.DiplomacyOperator.Greater,
+                            Value = 24,
+                            }
+                         },
+                },
+
+                Outcome = new GeoEventChoiceOutcome()
+                {
+                    UntrackEncounters = savingHelenaWin.GeoscapeEventData.Choices[0].Outcome.UntrackEncounters,
+                    VariablesChange = savingHelenaWin.GeoscapeEventData.Choices[0].Outcome.VariablesChange,
+                    Cinematic = savingHelenaWin.GeoscapeEventData.Choices[0].Outcome.Cinematic,
+                    OutcomeText = new EventTextVariation()
+                    {
+                        General = new LocalizedTextBind("PROG_LE0_MISS_CHOICE_2_OUTCOME_GENERAL")
+                    },
+                    TriggerEncounterID = "HelenaOnOlena"
+                }
+            });
+        }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+}
+
+        private static void AdjustAugmenetationResearchTexts() 
+        {
+            try
+            {
+                ResearchViewElementDef njBionicsVEDef = DefCache.GetDef<ResearchViewElementDef>("NJ_Bionics1_ViewElementDef");
+                njBionicsVEDef.CompleteText.LocalizationKey = "TFTV_BIONICS_RESEARCHDEF_COMPLETE";
+
+                ResearchViewElementDef anuBionicsVEDef = DefCache.GetDef<ResearchViewElementDef>("ANU_MutationTech_ViewElementDef");
+                anuBionicsVEDef.CompleteText.LocalizationKey = "TFTV_MUTATIONTECH_RESEARCHDEF_COMPLETE";
+
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+
+
+
+        }
+
+        private static void AddOptionsSubject24Intro() 
+        {
+            try 
+            {
                 // Add new choices to DLC1
                 // Snitch to NJ
                 GeoscapeEventDef prog_PU2_Choice2Event = TFTVCommonMethods.CreateNewEvent("PROG_PU2_CHOICE2EVENT", "PROG_PU2_CHOICE2EVENT_TITLE", "PROG_PU2_CHOICE2EVENT_TEXT_GENERAL_0", null);
@@ -113,6 +371,20 @@ namespace TFTV
                     }
                 });
 
+
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+
+        private static void AddOptionsUndefendable() 
+        {
+            try 
+            {
                 //Add options for DLC1MISS WIN
                 GeoscapeEventDef DLC1missWIN = DefCache.GetDef<GeoscapeEventDef>("PROG_PU4_WIN_GeoscapeEventDef");
 
@@ -202,119 +474,19 @@ namespace TFTV
                     Value = -3
                 });
 
-                //Add options to Guided by Whispers
-                //If relations with Synedrion Aligned, can opt for HD vs Pure
-                //Event if HD successful
-                GeoscapeEventDef sourceWinGeoEvent = DefCache.GetDef<GeoscapeEventDef>("PROG_PU12_WIN_GeoscapeEventDef");
-                var pu12miss = sourceWinGeoEvent.GeoscapeEventData.Choices[0].Outcome.UntrackEncounters[0];
-                GeoscapeEventDef newWinPU12 = Helper.CreateDefFromClone(sourceWinGeoEvent, "23435C5E-B933-484D-990E-5B4C0B2B32FE", "PROG_PU12_WIN2_GeoscapeEventDef");
-                newWinPU12.GeoscapeEventData.EventID = "PROG_PU12WIN2";
-                newWinPU12.GeoscapeEventData.Title.LocalizationKey = "PROG_PU12_WIN2_TITLE";
-                newWinPU12.GeoscapeEventData.Description[0].General.LocalizationKey = "PROG_PU12_WIN2_TEXT_GENERAL_0";
-                newWinPU12.GeoscapeEventData.Choices[0].Text.LocalizationKey = "PROG_PU12_WIN2_CHOICE_0_TEXT";
-                newWinPU12.GeoscapeEventData.Choices[0].Outcome.Diplomacy[0] = new OutcomeDiplomacyChange()
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
 
-                {
-                    PartyFaction = Synedrion,
-                    TargetFaction = PhoenixPoint,
-                    Value = 6,
-                    PartyType = (OutcomeDiplomacyChange.ChangeTarget)1,
-                };
 
-                //Event if HD Failure
-                GeoscapeEventDef newFailPU12 = Helper.CreateDefFromClone(sourceLoseGeoEvent, "D77EB7A7-FE26-49EF-BB7A-449A51D4D519", "PROG_PU12_FAIL2_GeoscapeEventDef");
-                newFailPU12.GeoscapeEventData.EventID = "PROG_PU12FAIL2";
-                newFailPU12.GeoscapeEventData.Title.LocalizationKey = "PROG_PU12_FAIL2_TITLE";
-                newFailPU12.GeoscapeEventData.Description[0].General.LocalizationKey = "PROG_PU12_FAIL2_TEXT_GENERAL_0";
-                newFailPU12.GeoscapeEventData.Choices[0].Text.LocalizationKey = "PROG_PU12_FAIL2_CHOICE_0_TEXT";
-                newFailPU12.GeoscapeEventData.Choices[0].Outcome.UntrackEncounters.Add(pu12miss);
-                newFailPU12.GeoscapeEventData.Choices[0].Outcome.RemoveTimers.Add(pu12miss);
+        }
 
-                //New event for outcome if selling info about lab or research after stealing it by completing original mission                
-                GeoscapeEventDef newPU12NJOption = Helper.CreateDefFromClone(sourceLoseGeoEvent, "D556A16F-41D8-4852-8DC4-5FB945652C50", "PROG_PU12_NewNJOption_GeoscapeEventDef");
-                newPU12NJOption.GeoscapeEventData.EventID = "PROG_PU12NewNJOption";
-                newPU12NJOption.GeoscapeEventData.Leader = "NJ_Abongameli";
-                newPU12NJOption.GeoscapeEventData.Title.LocalizationKey = "PROG_PU12_NEWNJOPT_TITLE";
-                newPU12NJOption.GeoscapeEventData.Description[0].General.LocalizationKey = "PROG_PU12_NEWNJOPT_GENERAL";
-                newPU12NJOption.GeoscapeEventData.Choices[0].Outcome.Resources.Add(new ResourceUnit()
-                {
-                    Type = ResourceType.Materials,
-                    Value = 750
-                });
-
-                newPU12NJOption.GeoscapeEventData.Choices[0].Outcome.Diplomacy.Add(new OutcomeDiplomacyChange()
-                {
-                    PartyFaction = NewJericho,
-                    TargetFaction = PhoenixPoint,
-                    Value = 3,
-                    PartyType = (OutcomeDiplomacyChange.ChangeTarget)1,
-                });
-               
-
-                newPU12NJOption.GeoscapeEventData.Choices[0].Outcome.UntrackEncounters.Add(pu12miss);
-                newPU12NJOption.GeoscapeEventData.Choices[0].Outcome.RemoveTimers.Add(pu12miss);
-
-                //Adding options to the original event, fetching it first
-                GeoscapeEventDef guidedByWhispers = DefCache.GetDef<GeoscapeEventDef>("PROG_PU12_MISS_GeoscapeEventDef");
-
-                //Fetching Syn HD vs Pure with protect civillians type, to use as alternative mission
-                CustomMissionTypeDef havenDefPureSY_CustomMissionTypeDef = DefCache.GetDef<CustomMissionTypeDef>("HavenDefPureSY_Civ_CustomMissionTypeDef");
-
-                //Adding Syn Aligned options
-                guidedByWhispers.GeoscapeEventData.Choices.Add(new GeoEventChoice()
-                {
-                    Text = (new LocalizedTextBind("PROG_PU12_MISS_CHOICE_2_TEXT")),
-                    Outcome = new GeoEventChoiceOutcome()
-                    {
-                        OutcomeText = new EventTextVariation()
-                        {
-                            General = new LocalizedTextBind("PROG_PU12_MISS_CHOICE_2_OUTCOME_GENERAL")
-                        },
-                        StartMission = new OutcomeStartMission()
-                        {
-                            MissionTypeDef = havenDefPureSY_CustomMissionTypeDef,
-                            WonEventID = "PROG_PU12WIN2",
-                            LostEventID = "PROG_PU12_FAIL2"
-                        }
-                    },
-                    Requirments = new GeoEventChoiceRequirements()
-                    {
-                        Diplomacy = new List<GeoEventChoiceDiplomacy>()
-
-                        {
-                            new GeoEventChoiceDiplomacy ()
-                            {
-                            Target = GeoEventChoiceDiplomacy.DiplomacyTarget.SiteFaction,
-                            Operator = GeoEventChoiceDiplomacy.DiplomacyOperator.Greater,
-                            Value = 49,
-                            }
-                         },
-                    },
-                });
-
-                //Adding sell info to NJ option to original event
-                guidedByWhispers.GeoscapeEventData.Choices.Add(new GeoEventChoice()
-                {
-                    Text = (new LocalizedTextBind("PROG_PU12_MISS_CHOICE_3_TEXT")),
-                    Outcome = new GeoEventChoiceOutcome()
-                    {
-                        TriggerEncounterID = "PROG_PU12NewNJOption",
-                    }
-                });
-
-                //Add option after winning original mission to sell research to NJ
-                sourceWinGeoEvent.GeoscapeEventData.Choices.Add(new GeoEventChoice()
-                {
-                    Text = (new LocalizedTextBind("PROG_PU12_WIN_CHOICE_1_TEXT")),
-                    Outcome = new GeoEventChoiceOutcome()
-                    {
-                        TriggerEncounterID = "PROG_PU12NewNJOption",
-                    },
-                });
-
-                sourceWinGeoEvent.GeoscapeEventData.Choices[1].Outcome.VariablesChange = sourceWinGeoEvent.GeoscapeEventData.Choices[0].Outcome.VariablesChange;
-               
-
+        private static void ReplaceAllSchemataMissions()
+        {
+            try 
+            {
                 //Replace all LOTA Schemata missions with KE2 mission
                 GeoscapeEventDef geoEventFS9 = DefCache.GetDef<GeoscapeEventDef>("PROG_FS9_GeoscapeEventDef");
                 GeoscapeEventDef KE2Miss = DefCache.GetDef<GeoscapeEventDef>("PROG_KE2_GeoscapeEventDef");
@@ -423,15 +595,21 @@ namespace TFTV
                 });
 
 
+
+
             }
             catch (Exception e)
             {
                 TFTVLogger.Error(e);
             }
 
+
+
         }
 
-      
+       
+
+
 
     }
 }

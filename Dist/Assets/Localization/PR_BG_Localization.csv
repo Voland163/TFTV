@@ -140,8 +140,7 @@ PROG_KE1_TEXT_OUTCOME_0,Text,,"As you step inside the crypt, alien thoughts are 
 
 <i>""Soon you will be contacted by string Subject integer twenty four. Accept proposal. Share data. Satisfactory outcome will lead to much preferred customer status. Beware of your Amygdala, it reeks of betrayal.""</i>
 
-There is no Drop-Ka stone to be found, but you suspect that's not why you were sent here anyway.
-",,"Lorsque vous entrez dans la crypte, des pensées extraterrestres sont projetées dans votre esprit. Vous *écoutez* une *voix* que vous ne pouvez pas *entendre*.
+There is no Drop-Ka stone to be found, but you suspect that's not why you were sent here anyway.",,"Lorsque vous entrez dans la crypte, des pensées extraterrestres sont projetées dans votre esprit. Vous *écoutez* une *voix* que vous ne pouvez pas *entendre*.
 
 <i>""Bientôt, vous serez contacté par Sujet numéro vingt-quatre. Accepter la proposition. Partager les données. Un résultat satisfaisant mènera à un statut de client privilégié. Méfiez-vous de votre Amygdale, elle sent la trahison.""</i>
 
@@ -266,8 +265,7 @@ West est naturellement bouleversé, mais nous avons obtenu un certain succès au
 PROG_PU4_WIN_CHOICE_1_TEXT,Text,,"An exercise in civic duty, with some unfortunate casualties",,"Un exercice de devoir civique, avec quelques malheureuses victimes",,,,,,
 PROG_PU4_WIN_CHOICE_2_OUTCOME_GENERAL,Text,,"We are not entirely in the clear, but New Jericho doesn't want to draw attention to its secret research and therefore avoids making an issue of the raid.
 
-At the same time, our strenuous denials result in West suspecting the involvement of other factions.
-",,"Nous ne sommes pas tout à fait dans la transparence, mais la Nouvelle Jericho ne veut pas attirer l’attention sur sa recherche secrète et évite donc de faire un problème de la descente.
+At the same time, our strenuous denials result in West suspecting the involvement of other factions.",,"Nous ne sommes pas tout à fait dans la transparence, mais la Nouvelle Jericho ne veut pas attirer l’attention sur sa recherche secrète et évite donc de faire un problème de la descente.
 
 En même temps, nos dénégations acharnées font que West soupçonne l’implication d’autres factions.
 ",,,,,,
@@ -412,7 +410,7 @@ ALN_CRABMANUMBRA_RESEARCHDEF_COMPLETE,Text,,"""What are they? You ask me, but I 
 
 - Kalus, a Disciple gene-smith
 
-""Our soldiers are under immense stress, not to mention the drug cocktail and direct cortical stimulation administered to them on a constant basis. If one or two of them start seeing 'oil monsters', I say it's a tolerable side effect"". 
+""Our soldiers are under immense stress, not to mention the drug cocktail and direct cortical stimulation administered to them on a constant basis. If one or two of them start seeing 'oil monsters', I say it's a tolerable side effect.""
 
 - Dr. Abongameli Smith, New Jericho",,"""Que sont-elles ? Vous me le demandez, mais je ne le sais pas. Il n'y a rien à analyser en eux. Peut-être devriez-vous parler à Martika la Prêtresse... Ces 'ombres violettes' dont parlent nos guerriers semblent être son domaine d'expertise.""
 
@@ -632,8 +630,7 @@ KEY_GEO_HINT_PANDORAN_BASE_DIPLOMACY_EFFECTS_DESCRIPTION,Text,,"In TFTV, Faction
 
 Each Pandoran colony contributes to Pandoran evolution: the more active Pandoran colonies there are, the faster the enemy will field more advanced units and the faster the Oneiric Delirium will grow. 
 
-In addition, destroying a more advanced Pandoran colony (a Lair or a Citadel) removes the earliest <b>Void Omen</b> currently in play. (On Rookie difficulty, destroying Nests also removes Void Omens). 
-",,"Dans TFTV, les factions ne réagiront <b>pas négativement</b> aux colonies pandoriennes révélées si vous ne parvenez pas à les détruire. Cependant, vous subirez une petite pénalité auprès des dirigeants des refuges proches.
+In addition, destroying a more advanced Pandoran colony (a Lair or a Citadel) removes the earliest <b>Void Omen</b> currently in play. (On Rookie difficulty, destroying Nests also removes Void Omens). ",,"Dans TFTV, les factions ne réagiront <b>pas négativement</b> aux colonies pandoriennes révélées si vous ne parvenez pas à les détruire. Cependant, vous subirez une petite pénalité auprès des dirigeants des refuges proches.
 
 Chaque colonie pandorienne contribue à l'évolution des Pandoriens : plus il y a de colonies pandoriennes actives, plus vite l'ennemi déploie des unités plus avancées et plus vite le délire onirique se développe.
 
@@ -876,11 +873,9 @@ HINT_ANCIENTS_HOPLITS_TITLE,Text,,"<i>“Frag me, what is that thing? Is that a�
 HINT_ANCIENTS_HOPLITS_TEXT,Text,,"This Ancient Automata is reactivating! While we have no intel on their capabilities, it seems like they are dormant while buried in the ground, but once they emerge they become alerted and gradually reactivate their systems, becoming stronger. The Automata also seem to be in varying states of disrepair.",,,,,,,,
 HINT_ANCIENTS_HOPLITSREPAIR_TITLE,Text,,<i>”The broken remains floated towards the damaged Automata.”</i>,,,,,,,,
 HINT_ANCIENTS_HOPLITSREPAIR_TEXT,Text,,This Ancient Automata is trying to repair itself using the remains of the destroyed robot in its vicinity! It has also drained some of its power.,,,,,,,,
-HINT_ANCIENTS_HOPLITSMAXPOWER_TITLE,Text,,"<i>”Whirl whirl whirl Vroom!”</i>
-",,,,,,,,
+HINT_ANCIENTS_HOPLITSMAXPOWER_TITLE,Text,,"<i>”Whirl whirl whirl Vroom!”</i>",,,,,,,,
 HINT_ANCIENTS_HOPLITSMAXPOWER_TEXT,Text,,The Ancient Automata is now fully charged; damage increased significantly and damage resistance gained.,,,,,,,,
-HELENA_ECHOES_TITLE,Text,,"The Echoes of the Ancients
-",,,,,,,,
+HELENA_ECHOES_TITLE,Text,,"The Echoes of the Ancients",,,,,,,,
 HELENA_ECHOES_TEXT,Text,,"This is something neither West nor Symes understood, or wanted to understand, although I tried explaining it to them many times. History is about making sense of the present by understanding the past. Cause and effect, reverberation and resonance. But when it comes to the Ancients, their echoes are getting stronger, and they started getting stronger with the First Mist. 
 
 Perhaps it's because both were hidden below the same melting permafrost. Even that 'coincidence' is not insignificant.
@@ -921,8 +916,7 @@ OLENA_ONEIROMANCY_TEXT,Text,,"Yes, the Living Crystal must be the “memory modu
 Data never really disappears unless the storage medium is destroyed or it is overwritten. In this case, the medium is beyond our understanding. I can’t explain how something like the Oneiric Delirium exists, or what the Living Crystals are, but they are related; our dreams can’t be a coincidence. I think they are part of, or use the same pathways, or “network”... What we need is a more direct interface, and one that we can use while awake.",,,,,,,,
 OLENA_ONEIROMANCY_CHOICE,Text,,So you want to repair and reactivate an ancient killer robot so that you can poke about in its memory banks? What could possibly go wrong.,,,,,,,,
 OLENA_ONEIROMANCY_OUTCOME,Text,,It's going to be OK.,,,,,,,,
-CYCLOP_DREAMS_TITLE,Text,,"Digitize my Dreams, the Cyclops Said
-",,,,,,,,
+CYCLOP_DREAMS_TITLE,Text,,"Digitize my Dreams, the Cyclops Said",,,,,,,,
 CYCLOP_DREAMS_TEXT,Text,,"The plan worked, but we can only understand a tiny fraction of the information contained in the data dump. It is enough. Enough to overturn much of what we thought we knew and, critical to our current existential threat, of what we thought we knew about the Pandoravirus. 
 
 It is ancient, yes; we suspected as much since the infection of our ecosystem began with the melting of the permafrost. But, thanks to the meticulous charts of our Solar system drawn up by the Ancients, we now know that the Pandoravirus didn’t originate on our planet: it arrived 1.8 million years ago on an asteroid that intersected the orbit of a “ninth planet” before it crashed into Earth.",,,,,,,,
@@ -1067,6 +1061,7 @@ BASEDEFENSE_BRIEFING_OBJECTIVES_DOUBLE,Text,,Destroy all Pandoran structures and
 BASEDEFENSE_BRIEFING_TACTICALADVANTAGE,Text,,"If we take the attackers on now, we can take optimal defensive positions. The mission gets harder over time. If we fail, we lose control of the base.",,,,,,,,
 BASEDEFENSE_BRIEFING_NESTING,Text,,"The enemy has breached our defenses and has spread throughout the base. It can yet get worse. If we fail, we lose control of the base.",,,,,,,,
 BASEDEFENSE_BRIEFING_INFESTATION,Text,,"Security footage shows the Pandorans have almost taken over the base. If we fail, we lose control of the base.",,,,,,,,
+BASEDEFENSE_CONTAINMENTBREACH_TEXT,Text ,,"Director! Our base is under attack and the containment structure has been breached from within! We are not sure how it happened, but everything that was <i>in</i>, got <i>out</i>. We need to deploy a squad to secure the base before it is completely taken over!",,,,,,,,
 BASEDEFENSE_EVENT_TEXT,Text ,,"Director! Our base is under attack! Our automated defenses and bullheads will buy us some time, but we need to deploy a squad to secure the base as soon as possible. The longer we take, the more time the enemy will have to achieve its objectives.",,,,,,,,
 BASEDEFENSE_EVENT_TITLE,Text ,,PHOENIX BASE UNDER ATTACK,,,,,,,,
 BASEDEFENSE_DEFEAT_TITLE,Text,,PHOENIX BASE INFESTED,,,,,,,,
@@ -1136,3 +1131,23 @@ NJ_FIRERESISTANCETECH_RESEARCHDEF_UNLOCK,Text,,"With the emergence of creatures 
 ACID_IMMUNITY_NAME,Text,,ACID IMMUNITY,,,,,,,,
 ACID_IMMUNITY_DESCRIPTION,Text,,Immune to Acid,,,,,,,,
 PX_LIGHTSNIPERRIFLE_RESEARCHDEF_UNLOCK,Text,,The appearance of Myrmidons has inspired our designers to consider developing a more agile sniper rifle that can deal quickly with small targets at range.,,,,,,,,
+CAPTURE_ABILITY_NAME,Text,,PRIORITY SKYHOOK EXTRACTION,,,,,,,,
+CAPTURE_ABILITY_DESCRIPTION,Text,,Marks the paralyzed Pandoran for priority extraction and capture at the end of the mission.,,,,,,,,
+CAPTURE_STATUS_NAME,Text,,PRIORITY FOR EXTRACTION AND CAPTURE,,,,,,,,
+CAPTURE_STATUS_DESCRIPTION,Text,,This Pandoran has been marked for priority extraction at the end of this mission; it will be extracted even if more valuable Pandorans have been paralyzed.,,,,,,,,
+CANCEL_CAPTURE_NAME,Text,,CANCEL PRIORITY SKYHOOK EXTRACTION,,,,,,,,
+CANCEL_CAPTURE_DESCRIPTION,Text,,Removes this paralyzed Pandoran from priority list for extraction at the end of the mission.,,,,,,,,
+CAPTURE_CAPACITY_BASE,Text,,"FUNCTIONING CONTAINMENT FACILITY PRESENT, FULLY PARALYZED PANDORANS WILL BE CAPTURED",,,,,,,,
+CAPTURE_CAPACITY_AIRCRAFT,Text,,CAPTURE SPACE REMAINING: ,,,,,,,,
+CAPTURE_CAPACITY_TOTAL,Text,,TOTAL AVAILABLE CONTAINMENT:,,,,,,,,
+CONTAINMENTBREACH_EVENT_TITLE,Text,,CONTAINMENT BREACH!,,,,,,,,
+CONTAINMENTBREACH_EVENT_TEXT,Text,,"We are not sure how it happened, but everything that was <i>in</i>, got <i>out</i>.
+
+Director, this base is already almost taken over by the Pandorans!",,,,,,,,
+PX_CAPTURETECH_RESEARCHDEF_COMPLETE_TFTV,Text,,"Specialized Pandoran Containment facilities have been designed and successfully tested, allowing us to safely keep Pandorans in a state of constant paralysis. 
+
+In addition, we have equipped all our aircraft with the Skyhook Retrieval and Transportation System (SRTS) which allows us to retrieve fully paralyzed Pandorans from the battlefield after a successful mission.
+
+The SRTS uses micro drones to attach tethers to the immobilized Pandoran organism. Total volume of transportable matter is determined by aircraft carrying capacity. For reference, we estimate that our Manticores should be able to carry up to 3 Arthrons or Tritons.
+
+This represents a step forward in our struggle to understand their biology.",,,,,,,,

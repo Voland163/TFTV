@@ -6,6 +6,7 @@ using HarmonyLib;
 using Newtonsoft.Json;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Game;
+using PhoenixPoint.Geoscape.View.ViewControllers;
 using PhoenixPoint.Home.View.ViewModules;
 using PhoenixPoint.Modding;
 using PRMBetterClasses;
@@ -15,6 +16,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 using static TFTV.TFTVConfig;
 
@@ -46,6 +48,8 @@ namespace TFTV
         //TFTV Adding references to DefRepo and SharedData
         internal static readonly DefRepository Repo = GameUtl.GameComponent<DefRepository>();
         internal static readonly SharedData Shared = GameUtl.GameComponent<SharedData>();
+
+        internal static bool ConfigImplemented = false;
 
         //TFTV We want at least the LogPath, but maybe other directories too...
         internal static string LogPath;
@@ -83,9 +87,9 @@ namespace TFTV
                 /// PhoenixGame is accessible at any time.
                 PhoenixGame game = GetGame();
 
-                TFTVversion = $"TFTV July 19 release #1 v{MetaData.Version}";
+                TFTVversion = $"TFTV August 3 release #1 v{MetaData.Version}";
 
-                Logger.LogInfo("TFTV July 19 release #1");
+                Logger.LogInfo("TFTV August 3 release #1");
 
                 ModDirectory = Instance.Entry.Directory;
                 //Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
@@ -98,7 +102,7 @@ namespace TFTV
                 TFTVLogger.Initialize(LogPath, Config.Debug, ModDirectory, nameof(TFTV));
                 PRMLogger.Initialize(LogPath, Settings.Debug, ModDirectory, nameof(PRMBetterClasses));
                 // DefCache.Initialize();
-                TFTVLogger.Always("TFTV July 19 release #1");
+                TFTVLogger.Always("TFTV August 3 release #1");
 
                 PRMBetterClasses.Helper.Initialize();
                 // Initialize Helper
@@ -173,6 +177,8 @@ namespace TFTV
             //    BCApplyDefChanges();
             //  WeaponModifications.Change_Crossbows();
 
+           
+
 
             if (Config.defaultSettings)
             {
@@ -204,9 +210,14 @@ namespace TFTV
                 Config.ActivateKERework = true;
                 Config.HavenSOS = true;
                 Config.Debug = true;
-               // Config.ShowFaces = true;
+                Config.EqualizeTrade = true;
+                Config.LimitedCapture = true;
+                Config.LimitedHarvesting = true;
+                Config.LimitedRaiding = true;
+                Config.ReinforcementsNoDrops = true;
+        // Config.ShowFaces = true;
 
-            }
+    }
             if (Config.OverrideRookieDifficultySettings =! false||
             Config.EasyTactical != false||
             Config.EasyGeoscape != false||
@@ -233,8 +244,13 @@ namespace TFTV
             Config.ActivateAirCombatChanges != true ||
             Config.ActivateKERework != true ||
             Config.HavenSOS != true ||
-            Config.Debug != true)
-         //   Config.ShowFaces!=true)
+            Config.Debug != true ||
+                Config.EqualizeTrade != true ||
+            Config.LimitedCapture != true ||
+            Config.LimitedHarvesting != true ||
+            Config.LimitedRaiding != true ||
+            Config.ReinforcementsNoDrops != true)
+            //   Config.ShowFaces!=true)
             {
 
                 Config.defaultSettings = false;
@@ -264,13 +280,18 @@ namespace TFTV
         /// <param name="state">New state of the level.</param>
         public override void OnLevelStateChanged(Level level, Level.State prevState, Level.State state)
         {
-         
-           // Logger.LogInfo($"{MethodBase.GetCurrentMethod().Name} called for level '{level}' with old state '{prevState}' and new state '{state}'");
-          /*  if (level.name.Contains("Intro") && prevState == Level.State.NotLoaded && state == Level.State.Uninitialized)
-            {
-              
 
-            }*/
+          
+
+
+           // Logger.LogInfo($"{MethodBase.GetCurrentMethod().Name} called for level '{level}' with old state '{prevState}' and new state '{state}'");
+            if (!ConfigImplemented && (level.name.Contains("GeoscapeLevel") || level.name.Contains("TacticalLevel")) && state == Level.State.Loading)
+            {
+                TFTVLogger.Always($"level {level.name} loading");
+                
+                TFTVDefsWithConfigDependency.ImplementConfigChoices();
+                ConfigImplemented = true;
+            }
 
             
           

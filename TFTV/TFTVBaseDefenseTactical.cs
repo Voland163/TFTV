@@ -35,6 +35,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using System.Security.Policy;
 using UnityEngine;
 
 namespace TFTV
@@ -142,6 +143,36 @@ namespace TFTV
                   }
               }
           }*/
+
+        [HarmonyPatch(typeof(TacticalActor), "OnAbilityExecuteFinished")]
+
+        public static class TacticalActor_OnAbilityExecuteFinished_ParasychosisBaseDefenseFix_patch
+        {
+            public static void Postfix(TacticalAbility ability, TacticalActor __instance, object parameter)
+            {
+                try
+                {
+              
+                    ApplyEffectAbilityDef parasychosis = DefCache.GetDef<ApplyEffectAbilityDef>("Parasychosis_AbilityDef");
+                    GameTagDef infestationSecondObjectiveTag = DefCache.GetDef<GameTagDef>("ScatterRemainingAttackers_GameTagDef");
+
+                    if (ability.TacticalAbilityDef == parasychosis && parameter is TacticalAbilityTarget target && target.GetTargetActor() != null && target.GetTargetActor() is TacticalActor tacticalActor && tacticalActor.HasGameTag(infestationSecondObjectiveTag))
+                    {
+                        //  TFTVLogger.Always($"Got here, target is {tacticalActor.name}");
+                        tacticalActor.GameTags.Remove(infestationSecondObjectiveTag);
+
+                    }
+
+                }
+
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+
+            }
+        }
+
 
         [HarmonyPatch(typeof(TacticalFaction), "HasUndeployedTacActors")]
         public static class SurviveTurnsFactionObjective_EvaluateObjective_BaseDefense_Patch
@@ -389,6 +420,49 @@ namespace TFTV
                     }
                 }
 
+                KeepSoldiersAliveFactionObjectiveDef containmentPresent = DefCache.GetDef<KeepSoldiersAliveFactionObjectiveDef>("CAPTURE_CAPACITY_BASE");
+                KeepSoldiersAliveFactionObjectiveDef aircraftCapture = DefCache.GetDef<KeepSoldiersAliveFactionObjectiveDef>("CAPTURE_CAPACITY_AIRCRAFT");
+
+                if (TFTVCapturePandorans.ContainmentFacilityPresent) 
+                {
+                   
+
+                if (!listOfFactionObjectives.Contains(containmentPresent))
+                    {
+                        listOfFactionObjectives.Add(containmentPresent);
+                    }
+                
+                
+                }
+                else 
+                {
+                    if (listOfFactionObjectives.Contains(containmentPresent))
+                    {
+                        listOfFactionObjectives.Remove(containmentPresent);
+                    }
+
+
+                }
+                if (TFTVCapturePandorans.AircraftCaptureCapacity < 0) 
+                {
+                    TFTVLogger.Always($"AircraftCaptureCapacity is {TFTVCapturePandorans.AircraftCaptureCapacity}");
+
+                    if (listOfFactionObjectives.Contains(aircraftCapture))
+                    {
+                        listOfFactionObjectives.Remove(aircraftCapture);
+                    }
+                }
+                else 
+                {
+                    if (!listOfFactionObjectives.Contains(aircraftCapture))
+                    {
+                        listOfFactionObjectives.Add(aircraftCapture);
+                        TFTVLogger.Always("objective added");
+                    }
+
+                }
+
+
                 if (missionType.Tags.Contains(baseDefense) && missionType.ParticipantsData[0].FactionDef == DefCache.GetDef<PPFactionDef>("Alien_FactionDef"))
                 {
 
@@ -504,9 +578,23 @@ namespace TFTV
                         {
                             timer = (__instance.Site.ExpiringTimerAt.DateTime - __instance.Level.Timing.Now.DateTime).Hours;
                         }
+                        
                         float timeToCompleteAttack = 18;
 
+                        if (TFTVBaseDefenseGeoscape.PhoenixBasesContainmentBreach.ContainsKey(__instance.Site.SiteId))
+                        {
+                            timeToCompleteAttack = TFTVBaseDefenseGeoscape.PhoenixBasesContainmentBreach[__instance.Site.SiteId];
+
+                        }
+
                         float progress = 1f - timer / timeToCompleteAttack;
+
+                        if(timeToCompleteAttack!=18 && progress < 0.3) 
+                        {
+
+                            progress = 0.3f;
+                       
+                        }
 
                         TFTVLogger.Always($"When modifying mission data, progress is {progress}");
 
@@ -549,7 +637,7 @@ namespace TFTV
                         AttackProgress = progress;
 
                     }
-
+                    TFTVCapturePandorans.CheckCaptureCapability(__instance);
                     ModifyObjectives(missionData.MissionType);
                     __instance.GameController.SaveManager.IsSaveEnabled = true;
                 }
@@ -1627,7 +1715,7 @@ namespace TFTV
                 {
                     TFTVLogger.Always($"Found console {console.name}");
 
-                    Status status = console.Status.GetStatusByName(activeConsoleStatusDef.EffectName);
+                    Status status = console?.Status?.GetStatusByName(activeConsoleStatusDef.EffectName);
                     TFTVLogger.Always($"found status {status.Def.EffectName}");
                     console.Status.UnapplyStatus(status);
 
@@ -2187,13 +2275,17 @@ namespace TFTV
                     }
                 }
 
-                foreach (TacticalActor pXOperative in targetablePhoenixOperatives.Keys)
+                for(int x=0; x<targetablePhoenixOperatives.Keys.Count(); x++) 
                 {
+                    TacticalActor pXOperative = targetablePhoenixOperatives.Keys.ElementAt(x);
 
+                    int deliriumScale = Math.Max((int)pXOperative.CharacterStats.Corruption/2, 2) + 2*x;
 
                     UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
 
-                    int roll = UnityEngine.Random.Range(1, 11 + controller.Difficulty.Order);
+                    int roll = UnityEngine.Random.Range(1, deliriumScale + controller.Difficulty.Order);
+
+                    TFTVLogger.Always($"{pXOperative.DisplayName} has {deliriumScale} deliriumScale, and the roll is {roll}");
 
                     TacticalDeployZone zone = targetablePhoenixOperatives[pXOperative];
 

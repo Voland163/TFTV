@@ -83,6 +83,48 @@ namespace TFTV
           }
         */
 
+        //Force Scylla to use Cannons
+        [HarmonyPatch(typeof(TacticalActor), "OnAbilityExecuteFinished")]
+
+        public static class TacticalActor_OnAbilityExecuteFinished_Scylla_Experiment_patch
+        {
+            public static void Postfix(TacticalAbility ability, TacticalActor __instance, object parameter)
+            {
+                try
+                {
+
+
+                    //    TacticalAbilityTarget target = parameter as TacticalAbilityTarget;
+                    //  TFTVLogger.Always($"ability {ability.TacticalAbilityDef.name} executed by {__instance.DisplayName} and the TacticalAbilityTarget position to apply is {target.PositionToApply} ");
+
+                    ShootAbilityDef scyllaSpit = DefCache.GetDef<ShootAbilityDef>("GooSpit_ShootAbilityDef");
+                    ShootAbilityDef scyllaScream = DefCache.GetDef<ShootAbilityDef>("SonicBlast_ShootAbilityDef");
+
+                    //   TFTVLogger.Always($"ability {ability.TacticalAbilityDef.name} executed by {__instance.DisplayName}");
+                    if (ability.TacticalAbilityDef == scyllaSpit || ability.TacticalAbilityDef == scyllaScream)
+                    {
+                        StartPreparingShootAbilityDef scyllaStartPreparing = DefCache.GetDef<StartPreparingShootAbilityDef>("Queen_StartPreparing_AbilityDef");
+                        //    TFTVLogger.Always("Got here");
+                        StartPreparingShootAbility startPreparingShootAbility = __instance.GetAbilityWithDef<StartPreparingShootAbility>(scyllaStartPreparing);
+
+                        if (startPreparingShootAbility != null)
+                        {
+                            startPreparingShootAbility.Activate(parameter);
+                        }
+
+                    }
+
+                }
+
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+
+            }
+        }
+
+
 
         [HarmonyPatch(typeof(ApplyDamageEffectAbility), "GetCharactersToIgnore")]
         public static class ApplyDamageEffectAbility_Activate_Scylla_Caterpillar_patch
@@ -91,6 +133,8 @@ namespace TFTV
             {
                 try
                 {
+                  //  TFTVLogger.Always($"applying damage effect ability {__instance.AbilityDef.name}");
+
                     TacticalLevelController controller = GameUtl.CurrentLevel().GetComponent<TacticalLevelController>();
                     GameTagDef damagedByCaterpillar = DefCache.GetDef<GameTagDef>("DamageByCaterpillarTracks_TagDef");
                     if (__instance.TacticalActor.HasGameTag(damagedByCaterpillar) && __instance.TacticalActor.TacticalFaction != controller.CurrentFaction)
@@ -121,7 +165,7 @@ namespace TFTV
         }
 
 
-        [HarmonyPatch(typeof(TacticalActor), "OnFinishedMovingActor")]
+       [HarmonyPatch(typeof(TacticalActor), "OnFinishedMovingActor")]
 
         public static class TacticalActor_OnFinishedMovingActor_Scylla_Experiment_patch
         {
@@ -138,13 +182,13 @@ namespace TFTV
                       || __instance.ActorDef.name.Equals("MediumGuardian_ActorDef")
                       || __instance.ActorDef.name.Equals("Chiron_ActorDef"))
                     {
-                        DamageMultiplierStatusDef scyllaImmunity = DefCache.GetDef<DamageMultiplierStatusDef>("E_BlastImmunityStatus [Queen_GunsFire_ShootAbilityDef]");
+                        DamageMultiplierStatusDef scyllaImmunity = DefCache.GetDef<DamageMultiplierStatusDef>("E_BlastImmunityStatus [ScyllaSquisher]");
 
                         //   TFTVLogger.Always($"{__instance.DisplayName} moved");
 
                         if (__instance.HasStatus(scyllaImmunity))
                         {
-                            //  TFTVLogger.Always($"{__instance.DisplayName} has {scyllaImmunity.name}");
+                            TFTVLogger.Always($"{__instance.DisplayName} has {scyllaImmunity.name}");
                             Status status = __instance.Status.GetStatusByName(scyllaImmunity.EffectName);
                             __instance.Status.Statuses.Remove(status);
                         }
@@ -174,7 +218,7 @@ namespace TFTV
                     {
                         EffectTarget effectTarget = new EffectTarget() { Object = __instance.TacticalActor.gameObject };
 
-                        TacStatusEffectDef scyllaImmunity = DefCache.GetDef<TacStatusEffectDef>("E_MakeImmuneToBlastDamageEffect [Queen_GunsFire_ShootAbilityDef]");
+                        TacStatusEffectDef scyllaImmunity = DefCache.GetDef<TacStatusEffectDef>("E_MakeImmuneToBlastDamageEffect [ScyllaSquisher]");
                         Effect.Apply(Repo, scyllaImmunity, effectTarget, __instance.TacticalActor);
 
 
