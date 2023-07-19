@@ -746,8 +746,7 @@ namespace TFTV
 
 
         }
-
-     
+    
         internal static void AdjustResearches()
         {
             try
