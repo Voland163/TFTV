@@ -1,26 +1,23 @@
-﻿using Base.Entities.Effects.ApplicationConditions;
+﻿using Base.Defs;
+using Base.Entities.Effects.ApplicationConditions;
+using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
+using PhoenixPoint.Common.UI;
+using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.Interception.Equipments;
 using PhoenixPoint.Geoscape.Entities.PhoenixBases.FacilityComponents;
-using PhoenixPoint.Geoscape.Entities.Research.Requirement;
 using PhoenixPoint.Geoscape.Entities.Research;
-using PhoenixPoint.Geoscape.Events.Eventus;
+using PhoenixPoint.Geoscape.Entities.Research.Requirement;
+using PhoenixPoint.Geoscape.Entities.Sites;
+using PhoenixPoint.Geoscape.Levels;
+using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.Effects.ApplicationConditions;
 using PhoenixPoint.Tactical.Entities.Statuses;
-using PhoenixPoint.Tactical.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using static TFTV.TFTVCapturePandorans;
-using Base.Defs;
-using PhoenixPoint.Common.Core;
-using PhoenixPoint.Common.UI;
-using PhoenixPoint.Geoscape.Entities.Sites;
-using PhoenixPoint.Geoscape.Levels;
-using PhoenixPoint.Geoscape.Entities;
 
 namespace TFTV
 {
@@ -39,10 +36,10 @@ namespace TFTV
 
         public static void ImplementConfigChoices()
         {
-            try 
+            try
             {
                 ChangesToFoodAndMutagenGeneration();
-                ChangesToCapturingPandorans();
+                ChangesToPandoranCapture();
                 EqualizeTrade();
                 IncreaseHavenAlertCoolDown();
                 TFTVBetterEnemies.ImplementBetterEnemies();
@@ -122,7 +119,7 @@ namespace TFTV
 
 
 
-        private static void ChangesToFoodAndMutagenGeneration() 
+        private static void ChangesToFoodAndMutagenGeneration()
         {
             try
             {
@@ -174,7 +171,7 @@ namespace TFTV
                 DefCache.GetDef<ViewElementDef>("E_ViewElement [MutationLab_PhoenixFacilityDef]").Description.LocalizationKey = "KEY_BASE_FACILITY_MUTATION_LAB_DESCRIPTION_TFTV";
                 DefCache.GetDef<ResearchViewElementDef>("PX_MutagenHarvesting_ViewElementDef").CompleteText.LocalizationKey = "PX_MUTAGENHARVESTING_RESEARCHDEF_COMPLETE_TFTV";
                 DefCache.GetDef<ResearchViewElementDef>("PX_FoodHavresting_ViewElementDef").BenefitsText.LocalizationKey = "PX_FOODHAVRESTING_RESEARCHDEF_BENEFITS_TFTV";
-                DefCache.GetDef<ResearchViewElementDef>("PX_CaptureTech_ViewElementDef").CompleteText.LocalizationKey = "PX_CAPTURETECH_RESEARCHDEF_COMPLETE_TFTV";              
+                DefCache.GetDef<ResearchViewElementDef>("PX_CaptureTech_ViewElementDef").CompleteText.LocalizationKey = "PX_CAPTURETECH_RESEARCHDEF_COMPLETE_TFTV";
             }
             catch (Exception e)
             {
@@ -182,7 +179,7 @@ namespace TFTV
             }
         }
 
-       
+
 
         private static void AdjustPandoranVolumes()
         {

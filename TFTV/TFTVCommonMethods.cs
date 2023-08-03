@@ -95,6 +95,7 @@ namespace TFTV
                 TFTVAncients.AlertedHoplites.Clear();
                 TFTVUI.CharacterLoadouts?.Clear();
                 TFTVCapturePandoransGeoscape.PandasForFoodProcessing = 0;
+                TFTVCapturePandorans.CachedACC = TFTVCapturePandorans.AircraftCaptureCapacity;
                 TFTVCapturePandorans.AircraftCaptureCapacity = 0;
                 TFTVCapturePandorans.ContainmentFacilityPresent = false;
               //  TFTVUI.CurrentlyAvailableInv.Clear();

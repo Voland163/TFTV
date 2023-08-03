@@ -77,11 +77,6 @@ namespace TFTV
 
 
 
-
-
-
-
-
         internal static void Print()
         {
             try
@@ -255,7 +250,7 @@ namespace TFTV
         {
             try
             {
-                TFTVCommonMethods.CreateNewTag("ReinforcementTag", "{8F24AAA0-676F-4740-9764-F7CDA47EECAC}");
+                TFTVCommonMethods.CreateNewTag("ReinforcementTag", "{19762255-93FC-4A7B-877D-914A3BD152C9}");
             }
             catch (Exception e)
             {
@@ -266,9 +261,6 @@ namespace TFTV
         }
 
      
-
-
-
         private static void ChangeVehicleInventorySlots()
         {
             try

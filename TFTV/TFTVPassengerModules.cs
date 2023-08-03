@@ -282,13 +282,30 @@ namespace TFTV
             {
                 try
                 {
-                    bool passengerModulePresent = __instance.Modules.Any
-                        (m => m.ModuleDef.BonusType != GeoVehicleModuleDef.GeoVehicleModuleBonusType.Speed ||
-                        m.ModuleDef.BonusType != GeoVehicleModuleDef.GeoVehicleModuleBonusType.SurvivalOdds ||
-                        m.ModuleDef.BonusType != GeoVehicleModuleDef.GeoVehicleModuleBonusType.Range ||
-                        m.ModuleDef.BonusType != GeoVehicleModuleDef.GeoVehicleModuleBonusType.Recuperation);
+                 /*   TFTVLogger.Always($"{__instance.VehicleDef.ViewElement.Name}");
+
+                    TFTVLogger.Always($"Modules present {__instance?.Modules?.Count()}");
+
+                    foreach(GeoVehicleEquipment geoVehicleEquipment in __instance.Modules) 
+                    {
+                        TFTVLogger.Always($"{geoVehicleEquipment?.ModuleDef?.name}");
+                    
+                    
+                    }*/
+
+
+                    bool passengerModulePresent = __instance.Modules != null && __instance.Modules.Count()>0 && __instance.Modules.Any(m =>
+                       m!=null && m.ModuleDef != null && (
+                            m.ModuleDef.BonusType == GeoVehicleModuleDef.GeoVehicleModuleBonusType.Speed ||
+                            m.ModuleDef.BonusType == GeoVehicleModuleDef.GeoVehicleModuleBonusType.SurvivalOdds ||
+                            m.ModuleDef.BonusType == GeoVehicleModuleDef.GeoVehicleModuleBonusType.Range ||
+                            m.ModuleDef.BonusType == GeoVehicleModuleDef.GeoVehicleModuleBonusType.Recuperation
+                        )
+                    );
 
                     string geoVehicle = __instance.VehicleDef.ViewElement.Name;
+
+                  //  TFTVLogger.Always($"{__instance.VehicleDef.ViewElement.Name} {passengerModulePresent}");
 
                     switch (geoVehicle)
                     {

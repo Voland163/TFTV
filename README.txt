@@ -2,6 +2,8 @@ Terror from the Void is an overhaul mod for Phoenix Point. If you think "Long Wa
 
 REQUIRES ALL DLC
 
+IF YOU INSTALL THE MOD MANUALLY, AFTER ACTIVATING IT IN THE MODS TAB, QUIT TO DESKTOP AND LAUNCH PHOENIX POINT AGAIN BEFORE STARTING A NEW GAME
+
 This is an Open Beta/Early Access. Expect bugs and balance issues. More below.
 
 Features

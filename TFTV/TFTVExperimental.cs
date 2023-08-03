@@ -29,23 +29,25 @@ namespace TFTV
             {
                 try
                 {
-                    if (__instance.TurnNumber > 1 && actor is TacticalActor tacticalActor)
+                    TFTVConfig config = TFTVMain.Main.Config;
+
+                    if (config.ReinforcementsNoDrops && __instance.TurnNumber > 1 && actor is TacticalActor tacticalActor)
                     {
 
                         if (tacticalActor.TacticalFaction != __instance.GetFactionByCommandName("PX"))
                         {
-                            GameTagDef reinforcementTag = DefCache.GetDef<GameTagDef>("ReinforcementTag");
+                            GameTagDef reinforcementTag = DefCache.GetDef<GameTagDef>("ReinforcementTag_GameTagDef");
+
+                          //  TFTVLogger.Always($"reinforcementTag is {reinforcementTag?.name}");
 
                            // TFTVLogger.Always("The turn number is " + __instance.TurnNumber);
 
                             if (!tacticalActor.HasGameTag(reinforcementTag))
                             {
-                                TFTVLogger.Always($"Reinforcement tag added to {actor?.name}");
-                                tacticalActor.GameTags.Add(reinforcementTag);
-
+                                tacticalActor?.GameTags?.Add(reinforcementTag);
+                                TFTVLogger.Always($"Reinforcement tag added to {actor?.name} {actor.HasGameTag(reinforcementTag)}");
+                               
                             }
-
-
                         }
                     }
 
@@ -66,9 +68,10 @@ namespace TFTV
             {
                 try
                 {
+                    TFTVConfig config = TFTVMain.Main.Config;
                     GameTagDef reinforcementTag = DefCache.GetDef<GameTagDef>("ReinforcementTag");
 
-                    if (__instance.TacticalActorBase.HasGameTag(reinforcementTag))
+                    if (config.ReinforcementsNoDrops &&__instance.TacticalActorBase.HasGameTag(reinforcementTag))
                     {
                         TFTVLogger.Always($"{__instance?.TacticalActorBase?.name} has reinforcement tag, so should drop no items on death");
                         __result = false;

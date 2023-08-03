@@ -57,6 +57,7 @@ namespace TFTV
         public static bool ContainmentFacilityPresent = false;
         public static bool ScyllaCaptureModulePresent = false;
         public static int ContainmentSpaceAvailable = 0;
+        public static int CachedACC = 0;
 
 
         [HarmonyPatch(typeof(ObjectivesManager), "Add")]
@@ -162,7 +163,8 @@ namespace TFTV
                                 if (geoMission.Site.GetComponent<GeoPhoenixBase>() is GeoPhoenixBase pxBase &&
                                     pxBase.Layout.Facilities.
                                     Where(f => f.Def.Equals(containmentFacility)).
-                                    Where(f => f.State == GeoPhoenixFacility.FacilityState.Functioning) != null)
+                                    Any(f => f.State == GeoPhoenixFacility.FacilityState.Functioning && f.State != GeoPhoenixFacility.FacilityState.Damaged))
+
                                 {
 
                                     TFTVLogger.Always($"This is a Phoenix base mission, and there is a functioning Containment Facility, so capture capacity is not limited");
@@ -220,7 +222,7 @@ namespace TFTV
                                 return;
                             }
                         }
-                    }                   
+                    }
                 }
                 AircraftCaptureCapacity = -1;
             }
@@ -249,24 +251,37 @@ namespace TFTV
                 ClassTagDef facehuggerTag = DefCache.GetDef<ClassTagDef>("Facehugger_ClassTagDef");
                 ClassTagDef swarmerTag = DefCache.GetDef<ClassTagDef>("Swarmer_ClassTagDef");
 
-                List<ClassTagDef> smallAndGruntsTags = new List<ClassTagDef>() { crabTag, fishTag, wormTag, facehuggerTag, swarmerTag };
+                List<ClassTagDef> smallAndGruntsTags = new List<ClassTagDef>() { wormTag, facehuggerTag, swarmerTag };
 
                 int captureSlots = 0;
 
                 if (gameTagDefs.Contains(queenTag))
                 {
-                    captureSlots = 5;
+                    if (ScyllaCaptureModulePresent)
+                    {
+                        captureSlots = 8;
+                    }
+                    else
+                    {
+                        captureSlots = 16;
+
+                    }
                     // TFTVLogger.Always($"{tacticalActor.name} has {largeDeploymentTag.name}, captureSlots set to {captureSlots}");
                 }
                 else if (gameTagDefs.Contains(chironTag) || gameTagDefs.Contains(acheronTag))
                 {
-                    captureSlots = 3;
+                    captureSlots = 4;
                     // TFTVLogger.Always($"{tacticalActor.name} has {mediumDeploymentTag.name}, captureSlots set to {captureSlots}");
                 }
                 else if (gameTagDefs.Contains(sirenTag))
                 {
-                    captureSlots = 2;
+                    captureSlots = 3;
                     // TFTVLogger.Always($"{tacticalActor.name} has {eliteDeploymentTag.name}, captureSlots set to {captureSlots}");
+                }
+                else if (gameTagDefs.Contains(crabTag) || gameTagDefs.Contains(fishTag))
+                {
+                    captureSlots = 2;
+
                 }
                 else if (gameTagDefs.Any(gt => smallAndGruntsTags.Contains(gt)))
                 {
@@ -491,12 +506,15 @@ namespace TFTV
 
                                 if (!Pandoran.HasStatus(readyForCaptureStatus))
                                 {
-                                    // TFTVLogger.Always($"the Pandoran is {Pandoran.name} and the selected actor is {selectedActor.DisplayName}");
+                                    if (AircraftCaptureCapacity >= CalculateCaptureSlotCost(Pandoran.GameTags.ToList()))
+                                    {
 
-                                    selectedActor.AddAbility(capturePandoranAbility, selectedActor);
-                                    ApplyStatusAbility markForCapture = selectedActor.GetAbilityWithDef<ApplyStatusAbility>(capturePandoranAbility);
-                                    rawAbilities.Add(markForCapture);
-                                    __state = 1;
+                                        TFTVLogger.Always($"the Pandoran is {Pandoran.name}, aircraft capture Capacity is {AircraftCaptureCapacity}, required space is {CalculateCaptureSlotCost(Pandoran.GameTags.ToList())}");
+                                        selectedActor.AddAbility(capturePandoranAbility, selectedActor);
+                                        ApplyStatusAbility markForCapture = selectedActor.GetAbilityWithDef<ApplyStatusAbility>(capturePandoranAbility);
+                                        rawAbilities.Add(markForCapture);
+                                        __state = 1;
+                                    }
                                 }
                                 else
                                 {
@@ -566,17 +584,20 @@ namespace TFTV
 
                     List<TacActorUnitResult> paralyzedList = tacActorUnitResults.ToList();
                     List<TacActorUnitResult> captureList = new List<TacActorUnitResult>(tacActorUnitResults.Where(taur => taur.HasStatus<ReadyForCapturesStatusDef>()));
-                    int availableCaptureslotsCounter = AircraftCaptureCapacity;
-
+                    int availableCaptureslotsCounter = CachedACC;
 
                     paralyzedList = paralyzedList.OrderByDescending(taur => CalculateCaptureSlotCost(taur.GameTags)).ToList();
 
                     foreach (TacActorUnitResult tacActorUnitResult1 in paralyzedList)
                     {
+                        TFTVLogger.Always($"paralyzed {tacActorUnitResult1.TacticalActorBaseDef.name}, aircraftCaptureCapacity is {availableCaptureslotsCounter}, space required is {CalculateCaptureSlotCost(tacActorUnitResult1.GameTags)}");
+
                         if (availableCaptureslotsCounter >= CalculateCaptureSlotCost(tacActorUnitResult1.GameTags))
                         {
+                            //  TFTVLogger.Always($"{tacActorUnitResult1.TacticalActorBaseDef.name} added to capture list; available slots before that {availableCaptureslotsCounter}");
                             captureList.Add(tacActorUnitResult1);
                             availableCaptureslotsCounter -= CalculateCaptureSlotCost(tacActorUnitResult1.GameTags);
+                            TFTVLogger.Always($"{tacActorUnitResult1.TacticalActorBaseDef.name} added to capture list; available slots after {availableCaptureslotsCounter}");
 
                         }
                     }
@@ -612,6 +633,7 @@ namespace TFTV
 
                     if (config.LimitedCapture)
                     {
+                        TFTVLogger.Always($"CaptureLiveAlienRunning");
 
                         GeoLevelController geoLevel = __instance.Site.GeoLevel;
                         _ = geoLevel.PhoenixFaction;
@@ -636,6 +658,8 @@ namespace TFTV
                                                                      where a.GameTags.Contains(captureTag)
                                                                      select a;
                         List<GeoUnitDescriptor> list = new List<GeoUnitDescriptor>();
+
+                        TFTVLogger.Always($"enumerable count is {enumerable.Count()}");
 
                         IEnumerable<TacActorUnitResult> finalCaptureList = GetCaptureList(enumerable);
 
@@ -680,6 +704,7 @@ namespace TFTV
                         __instance.Reward.CapturedAliens = list.ToList();
 
                         return false;
+
                     }
 
                     return true;
