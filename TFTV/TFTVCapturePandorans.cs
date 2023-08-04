@@ -207,7 +207,7 @@ namespace TFTV
                                     AircraftCaptureCapacity = 5;
                                 }
 
-                                if (geoVehicles.Any(gv => gv.Modules.Any(m => m.ModuleDef.BonusType == GeoVehicleModuleDef.GeoVehicleModuleBonusType.SurvivalOdds)))
+                                if (geoVehicles.Any(gv => gv.Modules.Any(m => m != null && m.ModuleDef != null && m.ModuleDef.BonusType == GeoVehicleModuleDef.GeoVehicleModuleBonusType.SurvivalOdds)))
                                 {
                                     ScyllaCaptureModulePresent = true;
                                     AircraftCaptureCapacity += 8;
@@ -216,6 +216,11 @@ namespace TFTV
 
                                 ContainmentSpaceAvailable = geoMission.Site.GeoLevel.PhoenixFaction.GetTotalContaimentCapacity() - geoMission.Site.GeoLevel.PhoenixFaction.ContaimentUsage;
 
+                                if (ContainmentSpaceAvailable == 0) 
+                                {
+                                    AircraftCaptureCapacity = -1;
+                                
+                                }
 
 
                                 TFTVLogger.Always($"There is an aircraft with {AircraftCaptureCapacity} slots available for capture and there is {ContainmentSpaceAvailable} containment capacity");

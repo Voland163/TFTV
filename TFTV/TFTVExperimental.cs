@@ -71,7 +71,7 @@ namespace TFTV
                     TFTVConfig config = TFTVMain.Main.Config;
                     GameTagDef reinforcementTag = DefCache.GetDef<GameTagDef>("ReinforcementTag");
 
-                    if (config.ReinforcementsNoDrops &&__instance.TacticalActorBase.HasGameTag(reinforcementTag))
+                    if (config.ReinforcementsNoDrops && (__instance.TacticalActorBase.HasGameTag(reinforcementTag) || __instance.TacticalActor.DeathInfo.IsAlreadyResurrected))
                     {
                         TFTVLogger.Always($"{__instance?.TacticalActorBase?.name} has reinforcement tag, so should drop no items on death");
                         __result = false;

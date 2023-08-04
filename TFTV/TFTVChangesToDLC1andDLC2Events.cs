@@ -492,6 +492,9 @@ namespace TFTV
                 GeoscapeEventDef KE2Miss = DefCache.GetDef<GeoscapeEventDef>("PROG_KE2_GeoscapeEventDef");
                 GeoscapeEventDef LE1Miss = DefCache.GetDef<GeoscapeEventDef>("PROG_LE1_MISS_GeoscapeEventDef");
                 LE1Miss.GeoscapeEventData.Choices[0].Outcome.StartMission.MissionTypeDef = KE2Miss.GeoscapeEventData.Choices[0].Outcome.StartMission.MissionTypeDef;
+
+                LE1Miss.GeoscapeEventData.Choices[0].Outcome.StartMission.MissionTypeDef.DontRecoverItems = true;
+
                 //Don't generate next Schemata mission
                 GeoscapeEventDef LE1Win = DefCache.GetDef<GeoscapeEventDef>("PROG_LE1_WIN_GeoscapeEventDef");
                 //GeoscapeEventDef geoEventFS9 = DefCache.GetDef<GeoscapeEventDef>("PROG_FS9_GeoscapeEventDef"));

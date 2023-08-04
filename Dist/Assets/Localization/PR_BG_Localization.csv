@@ -1146,8 +1146,9 @@ CONTAINMENTBREACH_EVENT_TEXT,Text,,"We are not sure how it happened, but everyth
 Director, this base is already almost taken over by the Pandorans!",,,,,,,,
 PX_CAPTURETECH_RESEARCHDEF_COMPLETE_TFTV,Text,,"Specialized Pandoran Containment facilities have been designed and successfully tested, allowing us to safely keep Pandorans in a state of constant paralysis. 
 
-In addition, we have equipped all our aircraft with the Skyhook Retrieval and Transportation System (SRTS) which allows us to retrieve fully paralyzed Pandorans from the battlefield after a successful mission.
+In addition, we have equipped all our aircraft with the Skyhook Retrieval and Transportation System (SRTS), which allows us to retrieve fully paralyzed Pandorans from the battlefield after a successful mission.
 
 The SRTS uses micro drones to attach tethers to the immobilized Pandoran organism. Total volume of transportable matter is determined by aircraft carrying capacity. For reference, we estimate that our Manticores should be able to carry up to 3 Arthrons or Tritons.
 
 This represents a step forward in our struggle to understand their biology.",,,,,,,,
+KEY_BASE_FACILITY_CONTAINMENT_DESCRIPTION,Text,,"Live Pandorans can be contained here and kept alive. Large creatures will take more space, and space is shared across all facilities. The facility has 25 containment space.",,,,,,,,

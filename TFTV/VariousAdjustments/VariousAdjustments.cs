@@ -1,18 +1,14 @@
-﻿using Base.AI.Defs;
-using Base.Core;
+﻿using Base.Core;
 using Base.Defs;
 using Base.Entities.Abilities;
 using Base.UI;
 using HarmonyLib;
-using Newtonsoft.Json.Linq;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.UI;
 using PhoenixPoint.Geoscape.Entities.Research;
 using PhoenixPoint.Geoscape.Entities.Research.Requirement;
-using PhoenixPoint.Tactical.AI.Actions;
-using PhoenixPoint.Tactical.AI.Considerations;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.Animations;
@@ -23,9 +19,7 @@ using PhoenixPoint.Tactical.Entities.Statuses;
 using PhoenixPoint.Tactical.Entities.Weapons;
 using PhoenixPoint.Tactical.View.ViewControllers;
 using PhoenixPoint.Tactical.View.ViewModules;
-using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using TFTV;
 using UnityEngine;
@@ -37,7 +31,7 @@ namespace PRMBetterClasses.VariousAdjustments
     {
         private static readonly DefRepository Repo = TFTVMain.Repo;
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
-       
+
 
         public static void ApplyChanges()
         {
@@ -129,23 +123,23 @@ namespace PRMBetterClasses.VariousAdjustments
                     tacticalItemDef.Tags.Add(combinedWeaponBodyPart_Tag);
                 }
             }
-/*
-            GameTagDef gameTag = (GameTagDef)Repo.GetDef("498a2ab2-cd1a-d104-f8fc-f37e875f76dc"); //DefCache.GetDef<GameTagDef>("CombinedWeaponBodyPart_TagDef");
-            TacticalItemDef EBloodsucker = (TacticalItemDef)Repo.GetDef("cb294fe3-a30b-5bc4-2ad0-3361cb1d0d84"); //DefCache.GetDef<TacticalItemDef>("FishmanElite_UpperArms_BloodSucker_BodyPartDef");
-            TacticalItemDef LEBloodsucker = (TacticalItemDef)Repo.GetDef("ed323004-0282-a354-3ae0-053791ad17c6"); //DefCache.GetDef<TacticalItemDef>("FishmanElite_Upper_LeftArm_BloodSucker_BodyPartDef");
-            TacticalItemDef REBloodsucker = (TacticalItemDef)Repo.GetDef("b5361644-9ac1-9fd4-d931-b144c1c7d329"); //DefCache.GetDef<TacticalItemDef>("FishmanElite_Upper_RightArm_BloodSucker_BodyPartDef");
-            EBloodsucker.HandsToUse = 0;
-            EBloodsucker.Tags.Add(gameTag);
-            LEBloodsucker.Tags.Add(gameTag);
-            REBloodsucker.Tags.Add(gameTag);
-            TacticalItemDef EParalysing = (TacticalItemDef)Repo.GetDef("32a6dd8e-0abb-3224-6b4b-33847fd67804"); //DefCache.GetDef<TacticalItemDef>("FishmanElite_UpperArms_Paralyzing_BodyPartDef");
-            TacticalItemDef LEParalysing = (TacticalItemDef)Repo.GetDef("9b96a46e-8b84-7b64-fa18-71ee51afa0dd"); //DefCache.GetDef<TacticalItemDef>("FishmanElite_Upper_LeftArm_Paralyzing_BodyPartDef");
-            TacticalItemDef REParalysing = (TacticalItemDef)Repo.GetDef("3cedbaa9-1574-5f94-e8b9-1afec1f57903"); //DefCache.GetDef<TacticalItemDef>("FishmanElite_Upper_RightArm_Paralyzing_BodyPartDef");
-            EParalysing.HandsToUse = 0;
-            EParalysing.Tags.Add(gameTag);
-            LEParalysing.Tags.Add(gameTag);
-            REParalysing.Tags.Add(gameTag);
-*/
+            /*
+                        GameTagDef gameTag = (GameTagDef)Repo.GetDef("498a2ab2-cd1a-d104-f8fc-f37e875f76dc"); //DefCache.GetDef<GameTagDef>("CombinedWeaponBodyPart_TagDef");
+                        TacticalItemDef EBloodsucker = (TacticalItemDef)Repo.GetDef("cb294fe3-a30b-5bc4-2ad0-3361cb1d0d84"); //DefCache.GetDef<TacticalItemDef>("FishmanElite_UpperArms_BloodSucker_BodyPartDef");
+                        TacticalItemDef LEBloodsucker = (TacticalItemDef)Repo.GetDef("ed323004-0282-a354-3ae0-053791ad17c6"); //DefCache.GetDef<TacticalItemDef>("FishmanElite_Upper_LeftArm_BloodSucker_BodyPartDef");
+                        TacticalItemDef REBloodsucker = (TacticalItemDef)Repo.GetDef("b5361644-9ac1-9fd4-d931-b144c1c7d329"); //DefCache.GetDef<TacticalItemDef>("FishmanElite_Upper_RightArm_BloodSucker_BodyPartDef");
+                        EBloodsucker.HandsToUse = 0;
+                        EBloodsucker.Tags.Add(gameTag);
+                        LEBloodsucker.Tags.Add(gameTag);
+                        REBloodsucker.Tags.Add(gameTag);
+                        TacticalItemDef EParalysing = (TacticalItemDef)Repo.GetDef("32a6dd8e-0abb-3224-6b4b-33847fd67804"); //DefCache.GetDef<TacticalItemDef>("FishmanElite_UpperArms_Paralyzing_BodyPartDef");
+                        TacticalItemDef LEParalysing = (TacticalItemDef)Repo.GetDef("9b96a46e-8b84-7b64-fa18-71ee51afa0dd"); //DefCache.GetDef<TacticalItemDef>("FishmanElite_Upper_LeftArm_Paralyzing_BodyPartDef");
+                        TacticalItemDef REParalysing = (TacticalItemDef)Repo.GetDef("3cedbaa9-1574-5f94-e8b9-1afec1f57903"); //DefCache.GetDef<TacticalItemDef>("FishmanElite_Upper_RightArm_Paralyzing_BodyPartDef");
+                        EParalysing.HandsToUse = 0;
+                        EParalysing.Tags.Add(gameTag);
+                        LEParalysing.Tags.Add(gameTag);
+                        REParalysing.Tags.Add(gameTag);
+            */
         }
 
         private static void Change_AdvancedResearches()
@@ -409,7 +403,7 @@ namespace PRMBetterClasses.VariousAdjustments
                     //    weaponDef.HandsToUse = 1;
                     //    break;
                     // Rebuke, add piercing scrap shred
-                   
+
                     case "831be08f-d0d7-2764-4833-02ce83ff7277": // AC_Rebuke_WeaponDef
                         if (config.impossibleWeaponsAdjustments)
                         {
@@ -428,8 +422,8 @@ namespace PRMBetterClasses.VariousAdjustments
                             //weaponDef.DamagePayload.ObjectMultiplier = 10;
                             //weaponDef.SpreadRadius = 6f;
                         }
-                            break;
-                        
+                        break;
+
                     // Danchev MG
                     case "434c4004-580f-10a4-995a-c5a64e6998dc": // PX_PoisonMachineGun_WeaponDef
                         weaponDef.DamagePayload.DamageKeywords.Add(new DamageKeywordPair { DamageKeywordDef = damageKeywords.ShreddingKeyword, Value = 3 });
@@ -495,7 +489,13 @@ namespace PRMBetterClasses.VariousAdjustments
             // Get poison spike weapon def
             WeaponDef poisonSpikeWeapon = DefCache.GetDef<WeaponDef>("AN_Berserker_Shooter_LeftArm_WeaponDef");
             // Add handgun item tag def for proficiency check
-            poisonSpikeWeapon.Tags.Add(DefCache.GetDef<GameTagDef>("HandgunItem_TagDef"));
+
+            GameTagDef handGunTag = DefCache.GetDef<GameTagDef>("HandgunItem_TagDef");
+
+            if (!poisonSpikeWeapon.Tags.Contains(handGunTag))
+            {
+                poisonSpikeWeapon.Tags.Add(handGunTag);
+            }
             // Add handgun prficiency to venom torso, makes the venom spikes to be a weapon with proficiency for several skills
             PassiveModifierAbilityDef handgunsProficiency = DefCache.GetDef<PassiveModifierAbilityDef>("HandgunsTalent_AbilityDef");
             if (!venomTorso.Abilities.Contains(handgunsProficiency))
@@ -603,7 +603,7 @@ namespace PRMBetterClasses.VariousAdjustments
             destiny3.FumblePerc = 50;
         }
     }
-    
+
     /// <summary>
     /// Harmony Patch to fix a bug when ability buttons in tactical missions does not show on certain circumstances.
     /// 

@@ -200,10 +200,27 @@ namespace TFTV
             ChangeVehicleInventorySlots();
             CreateReinforcementTag();
             CreateFoodPoisoningEvents();
+            StealAircraftMissionsNoItemRecovery();
 
             ModifyCratesToAddArmor();
         }
 
+        private static void StealAircraftMissionsNoItemRecovery()
+        {
+            try 
+            {
+               DefCache.GetDef<CustomMissionTypeDef>("StealAircraftAN_CustomMissionTypeDef").DontRecoverItems=true;
+                DefCache.GetDef<CustomMissionTypeDef>("StealAircraftNJ_CustomMissionTypeDef").DontRecoverItems = true;
+                DefCache.GetDef<CustomMissionTypeDef>("StealAircraftSY_CustomMissionTypeDef").DontRecoverItems = true;
+            
+            
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+        }
 
         private static void CreateFoodPoisoningEvents()
         {
@@ -243,9 +260,6 @@ namespace TFTV
                 TFTVLogger.Error(e);
             }
         }
-
-       
-
         private static void CreateReinforcementTag()
         {
             try
@@ -259,7 +273,6 @@ namespace TFTV
 
 
         }
-
      
         private static void ChangeVehicleInventorySlots()
         {
@@ -289,7 +302,10 @@ namespace TFTV
                     || ti.name.StartsWith("NEU") || ti.name.StartsWith("PX_") || ti.name.StartsWith("IN_")))
 
                 {
-                    item.Tags.Add(organicMeatbagTorsoTag);
+                    if (!item.Tags.Contains(organicMeatbagTorsoTag))
+                    {
+                        item.Tags.Add(organicMeatbagTorsoTag);
+                    }
                 }
 
 
@@ -310,7 +326,6 @@ namespace TFTV
             }
 
         }
-
 
 
         internal static void ChangesModulesAndAcid()
@@ -529,8 +544,22 @@ namespace TFTV
             {
 
                 TacticalItemDef fireVest = DefCache.GetDef<TacticalItemDef>("NJ_FireResistanceVest_Attachment_ItemDef");
-                fireVest.Tags.Remove(DefCache.GetDef<FactionTagDef>("NewJerico_FactionTagDef"));
-                fireVest.Tags.Add(DefCache.GetDef<FactionTagDef>("PhoenixPoint_FactionTagDef"));
+
+                FactionTagDef nJTag = DefCache.GetDef<FactionTagDef>("NewJerico_FactionTagDef");
+                FactionTagDef pXTag = DefCache.GetDef<FactionTagDef>("PhoenixPoint_FactionTagDef");
+
+
+                if(fireVest.Tags.Contains(nJTag)) 
+                { 
+                  fireVest.Tags.Remove(nJTag);
+                
+                }
+
+                if (!fireVest.Tags.Contains(pXTag))
+                {
+                    fireVest.Tags.Add(pXTag);
+
+                }
 
                 TacticalItemDef newNanoVest = Helper.CreateDefFromClone(fireVest, "{D07B639A-E1F4-46F4-91BB-1CCDCCCE8EC1}", "NanotechVest");
                 newNanoVest.ViewElementDef = Helper.CreateDefFromClone(fireVest.ViewElementDef, "{0F1BD9BA-1895-46C7-90AF-26FB92D702F6}", "Nanotech_ViewElement");
@@ -554,7 +583,6 @@ namespace TFTV
             }
 
         }
-
 
         internal static void CreateAcidResistantVest()
         {
