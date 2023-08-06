@@ -8,6 +8,7 @@ using PhoenixPoint.Geoscape.Entities.Interception.Equipments;
 using PhoenixPoint.Geoscape.Entities.PhoenixBases.FacilityComponents;
 using PhoenixPoint.Geoscape.Entities.Research;
 using PhoenixPoint.Geoscape.Entities.Research.Requirement;
+using PhoenixPoint.Geoscape.Entities.Research.Reward;
 using PhoenixPoint.Geoscape.Entities.Sites;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Tactical.Entities;
@@ -43,6 +44,7 @@ namespace TFTV
                 EqualizeTrade();
                 IncreaseHavenAlertCoolDown();
                 TFTVBetterEnemies.ImplementBetterEnemies();
+                ReverseEngineering();
 
 
             }
@@ -50,11 +52,106 @@ namespace TFTV
             {
                 TFTVLogger.Error(e);
             }
+        }
 
+        private static void ReverseEngineering()
+        {
+            try
+            {
 
+                TFTVConfig config = TFTVMain.Main.Config;
 
+                if (config.ActivateReverseEngineeringResearch)
+                {
+                    TFTVReverseEngineering.ModifyReverseEngineering();
+                    TFTVLogger.Always("Reverse Engineering changes to Defs injected");
+                }
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+        private static void ChangeResourceRewardsForAutopsies()
+        {
+            try
+            {
+                DefCache.GetDef<ResearchDef>("PX_Alien_Mindfragger_ResearchDef").Resources = new ResourcePack()
+                {
+                    new ResourceUnit { Type = ResourceType.Materials, Value = 75},
+                    new ResourceUnit {Type = ResourceType.Mutagen, Value = 50}
+                };
+
+                DefCache.GetDef<ResearchDef>("PX_Alien_Acidworm_ResearchDef").Resources = new ResourcePack()
+                {
+                        new ResourceUnit { Type = ResourceType.Materials, Value = 25},
+                     new ResourceUnit {Type = ResourceType.Mutagen, Value = 25}
+                };
+
+                DefCache.GetDef<ResearchDef>("PX_Alien_Poisonworm_ResearchDef").Resources = new ResourcePack()
+                {
+                        new ResourceUnit { Type = ResourceType.Materials, Value = 25},
+                     new ResourceUnit {Type = ResourceType.Mutagen, Value = 25}
+                };
+                DefCache.GetDef<ResearchDef>("PX_Alien_Fireworm_ResearchDef").Resources = new ResourcePack()
+                {
+                        new ResourceUnit { Type = ResourceType.Materials, Value = 25},
+                     new ResourceUnit {Type = ResourceType.Mutagen, Value = 25}
+                };
+
+                DefCache.GetDef<ResearchDef>("PX_AlienCrabman_ResearchDef").Resources = new ResourcePack()
+                {
+                    new ResourceUnit { Type = ResourceType.Materials, Value = 50 },
+                     new ResourceUnit { Type = ResourceType.Mutagen, Value = 75 }
+                };
+
+                DefCache.GetDef<ResearchDef>("PX_Alien_Fishman_ResearchDef").Resources = new ResourcePack()
+                {
+                    new ResourceUnit { Type = ResourceType.Materials, Value = 75 },
+                     new ResourceUnit { Type = ResourceType.Mutagen, Value = 100 }
+                };
+                DefCache.GetDef<ResearchDef>("PX_Alien_Siren_ResearchDef").Resources = new ResourcePack()
+                {
+                    new ResourceUnit { Type = ResourceType.Materials, Value = 100 },
+                     new ResourceUnit { Type = ResourceType.Mutagen, Value = 125 }
+                };
+                DefCache.GetDef<ResearchDef>("PX_Alien_Chiron_ResearchDef").Resources = new ResourcePack()
+                {
+                    new ResourceUnit { Type = ResourceType.Materials, Value = 200 },
+                     new ResourceUnit { Type = ResourceType.Mutagen, Value = 150 }
+                };
+
+                DefCache.GetDef<ResearchDef>("PX_Alien_Queen_ResearchDef").Resources = new ResourcePack()
+                {
+                    new ResourceUnit { Type = ResourceType.Materials, Value = 300 },
+                     new ResourceUnit { Type = ResourceType.Mutagen, Value = 250 }
+                };
+
+                DefCache.GetDef<ResearchDef>("PX_Alien_Swarmer_ResearchDef").Resources = new ResourcePack()
+                {
+                    new ResourceUnit { Type = ResourceType.Materials, Value = 50 },
+                     new ResourceUnit { Type = ResourceType.Mutagen, Value = 75 }
+                };
+                DefCache.GetDef<ResearchDef>("PX_Alien_WormEgg_ResearchDef").Resources = new ResourcePack()
+                {
+                    new ResourceUnit { Type = ResourceType.Materials, Value = 100 },
+                     new ResourceUnit { Type = ResourceType.Mutagen, Value = 75 }
+                };
+                DefCache.GetDef<ResearchDef>("PX_Alien_MindfraggerEgg_ResearchDef").Resources = new ResourcePack()
+                {
+                    new ResourceUnit { Type = ResourceType.Materials, Value = 100 },
+                     new ResourceUnit { Type = ResourceType.Mutagen, Value = 75 }
+                };
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
 
         }
+
 
         private static void IncreaseHavenAlertCoolDown()
         {
@@ -93,13 +190,15 @@ namespace TFTV
                     GeoFactionDef nj = DefCache.GetDef<GeoFactionDef>("NewJericho_GeoFactionDef");
                     GeoFactionDef syn = DefCache.GetDef<GeoFactionDef>("Synedrion_GeoFactionDef");
 
-                    List<TradingRatio> tradingRatios = new List<TradingRatio>();
-                    tradingRatios.Add(new TradingRatio() { OfferResource = ResourceType.Supplies, OfferQuantity = 5, RecieveQuantity = 1, RecieveResource = ResourceType.Tech });
-                    tradingRatios.Add(new TradingRatio() { OfferResource = ResourceType.Supplies, OfferQuantity = 1, RecieveQuantity = 1, RecieveResource = ResourceType.Materials });
-                    tradingRatios.Add(new TradingRatio() { OfferResource = ResourceType.Materials, OfferQuantity = 1, RecieveQuantity = 1, RecieveResource = ResourceType.Supplies });
-                    tradingRatios.Add(new TradingRatio() { OfferResource = ResourceType.Materials, OfferQuantity = 5, RecieveQuantity = 1, RecieveResource = ResourceType.Tech });
-                    tradingRatios.Add(new TradingRatio() { OfferResource = ResourceType.Tech, OfferQuantity = 1, RecieveQuantity = 5, RecieveResource = ResourceType.Supplies });
-                    tradingRatios.Add(new TradingRatio() { OfferResource = ResourceType.Tech, OfferQuantity = 1, RecieveQuantity = 5, RecieveResource = ResourceType.Materials });
+                    List<TradingRatio> tradingRatios = new List<TradingRatio>
+                    {
+                        new TradingRatio() { OfferResource = ResourceType.Supplies, OfferQuantity = 5, RecieveQuantity = 1, RecieveResource = ResourceType.Tech },
+                        new TradingRatio() { OfferResource = ResourceType.Supplies, OfferQuantity = 1, RecieveQuantity = 1, RecieveResource = ResourceType.Materials },
+                        new TradingRatio() { OfferResource = ResourceType.Materials, OfferQuantity = 1, RecieveQuantity = 1, RecieveResource = ResourceType.Supplies },
+                        new TradingRatio() { OfferResource = ResourceType.Materials, OfferQuantity = 5, RecieveQuantity = 1, RecieveResource = ResourceType.Tech },
+                        new TradingRatio() { OfferResource = ResourceType.Tech, OfferQuantity = 1, RecieveQuantity = 5, RecieveResource = ResourceType.Supplies },
+                        new TradingRatio() { OfferResource = ResourceType.Tech, OfferQuantity = 1, RecieveQuantity = 5, RecieveResource = ResourceType.Materials }
+                    };
 
                     anu.ResourceTradingRatios = tradingRatios;
                     nj.ResourceTradingRatios = tradingRatios;
@@ -128,10 +227,38 @@ namespace TFTV
                 if (!ChangesToFoodAndMutagenGenerationImplemented && config.LimitedHarvesting)
                 {
                     ModifyLocalizationKeys();
-
+                    RemoveMutagenHarvestingResearch();
+                    ChangeResourceRewardsForAutopsies();
                     ChangesToFoodAndMutagenGenerationImplemented = true;
                     TFTVLogger.Always($"ChangesToFoodAndMutagenGenerationImplemented");
                 }
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+        private static void RemoveMutagenHarvestingResearch()
+        {
+            try
+            {
+
+                ResearchDef mutagenHarvesting = DefCache.GetDef<ResearchDef>("PX_MutagenHarvesting_ResearchDef");
+                ExistingResearchRequirementDef researchRequirementDef = DefCache.GetDef<ExistingResearchRequirementDef>("PX_MutagenHarvesting_ResearchDef_ExistingResearchRequirementDef_2");
+
+                DefCache.GetDef<ResearchDbDef>("pp_ResearchDB").Researches.Remove(mutagenHarvesting);
+
+                ResearchDef mutationTech = DefCache.GetDef<ResearchDef>("ANU_MutationTech_ResearchDef");
+                List<ResearchRewardDef> mutationUnlocks = new List<ResearchRewardDef>(mutationTech.Unlocks)
+                {
+                    mutagenHarvesting.Unlocks[0]
+                };
+
+                mutationTech.Unlocks = mutationUnlocks.ToArray();
+
+
+
             }
             catch (Exception e)
             {
@@ -172,6 +299,7 @@ namespace TFTV
                 DefCache.GetDef<ResearchViewElementDef>("PX_MutagenHarvesting_ViewElementDef").CompleteText.LocalizationKey = "PX_MUTAGENHARVESTING_RESEARCHDEF_COMPLETE_TFTV";
                 DefCache.GetDef<ResearchViewElementDef>("PX_FoodHavresting_ViewElementDef").BenefitsText.LocalizationKey = "PX_FOODHAVRESTING_RESEARCHDEF_BENEFITS_TFTV";
                 DefCache.GetDef<ResearchViewElementDef>("PX_CaptureTech_ViewElementDef").CompleteText.LocalizationKey = "PX_CAPTURETECH_RESEARCHDEF_COMPLETE_TFTV";
+                DefCache.GetDef<ResearchViewElementDef>("ANU_MutationTech_ViewElementDef").CompleteText.LocalizationKey = "TFTV_MUTATIONTECH_RESEARCHDEF_COMPLETE_W_HARVESTING";
             }
             catch (Exception e)
             {

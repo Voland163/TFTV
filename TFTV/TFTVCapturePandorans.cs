@@ -155,7 +155,9 @@ namespace TFTV
 
                         PhoenixFacilityDef containmentFacility = DefCache.GetDef<PhoenixFacilityDef>("AlienContainment_PhoenixFacilityDef");
 
-                        if (geoMission.MissionDef.ParticipantsData[0].FactionDef == DefCache.GetDef<PPFactionDef>("Alien_FactionDef"))
+                       // TFTVLogger.Always($"are we here?");
+
+                        if (geoMission.MissionDef.ParticipantsData.Any(tcpd=>tcpd.FactionDef == DefCache.GetDef<PPFactionDef>("Alien_FactionDef")))
                         {
 
                             if (geoMission.MissionDef.Tags.Contains(Shared.SharedGameTags.BaseDefenseMissionTag) || geoMission.MissionDef.Tags.Contains(Shared.SharedGameTags.InfestHavenMissionTag))
@@ -174,7 +176,8 @@ namespace TFTV
                                 }
 
                             }
-                            else
+
+                            if(!ContainmentFacilityPresent)
                             {
                                 GeoVehicleDef manticore6slots = DefCache.GetDef<GeoVehicleDef>("PP_Manticore_Def_6_Slots");
                                 GeoVehicleDef manticore = DefCache.GetDef<GeoVehicleDef>("PP_Manticore_Def");
@@ -221,7 +224,6 @@ namespace TFTV
                                     AircraftCaptureCapacity = -1;
                                 
                                 }
-
 
                                 TFTVLogger.Always($"There is an aircraft with {AircraftCaptureCapacity} slots available for capture and there is {ContainmentSpaceAvailable} containment capacity");
                                 return;
@@ -306,8 +308,6 @@ namespace TFTV
             }
 
         }
-
-
 
         [HarmonyPatch(typeof(UIModuleTacticalContextualMenu), "OnAbilitySelected")]
         public static class UIModuleTacticalContextualMenu_OnAbilitySelected_CapturePandorans_patch
@@ -593,7 +593,7 @@ namespace TFTV
 
                     paralyzedList = paralyzedList.OrderByDescending(taur => CalculateCaptureSlotCost(taur.GameTags)).ToList();
 
-                    foreach (TacActorUnitResult tacActorUnitResult1 in paralyzedList)
+                    foreach (TacActorUnitResult tacActorUnitResult1 in paralyzedList.Where(taur=>!taur.HasStatus<ReadyForCapturesStatusDef>()))
                     {
                         TFTVLogger.Always($"paralyzed {tacActorUnitResult1.TacticalActorBaseDef.name}, aircraftCaptureCapacity is {availableCaptureslotsCounter}, space required is {CalculateCaptureSlotCost(tacActorUnitResult1.GameTags)}");
 

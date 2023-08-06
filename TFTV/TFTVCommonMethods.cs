@@ -55,7 +55,23 @@ namespace TFTV
 
         }
 
-        
+        public static string ConvertKeyToString(string key)
+        {
+            try 
+            { 
+
+                return new LocalizedTextBind(key).Localize();
+            
+            
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
+
+
+        }
 
         public static void ClearInternalVariables()
         {
@@ -287,6 +303,8 @@ namespace TFTV
                 {
                     TFTVLogger.Always("Research completed " + research.ResearchID);
                     GeoLevelController controller = research.Faction.GeoLevel;
+                    ResearchDef mutationTech = DefCache.GetDef<ResearchDef>("ANU_MutationTech_ResearchDef");
+                    ResearchElement mutationTechResearchElement = controller.PhoenixFaction.Research.GetResearchById(mutationTech.name);
 
                     if (research.ResearchID == "ALN_CrabmanUmbra_ResearchDef")
                     {
@@ -356,12 +374,12 @@ namespace TFTV
                         research.Faction.GeoLevel.EventSystem.TriggerGeoscapeEvent("Helena_Oneiromancy", context);
                         // GeoscapeEventSystem eventSystem = research.Faction.GeoLevel.EventSystem;
                         // eventSystem.SetVariable("ProteanMutaneResearched", eventSystem.GetVariable("ProteanMutaneResearched") + 1);
-                        TFTVAncients.SetReactivateCyclopsObjective(controller);
+                        TFTVAncientsGeo.SetReactivateCyclopsObjective(controller);
                     }
                     else if (research.ResearchID == "ExoticMaterialsResearch")
                     {
-                        TFTVAncients.AncientsCheckResearchState(research.Faction.GeoLevel);
-                        TFTVAncients.SetObtainLCandPMSamplesObjective(controller);
+                        TFTVAncientsGeo.AncientsCheckResearchState(research.Faction.GeoLevel);
+                        TFTVAncientsGeo.SetObtainLCandPMSamplesObjective(controller);
 
                         //   ResearchElement livingCrystalsResearch = research.Faction.GeoLevel.PhoenixFaction.Research.GetResearchById("PX_LivingCrystalResearchDef");
                         //   GeoFactionObjective researchLC = research.Faction.GeoLevel.FactionObjectiveSystem.CreateResearchObjective(research.Faction.GeoLevel.PhoenixFaction, livingCrystalsResearch);
@@ -374,7 +392,7 @@ namespace TFTV
                     {
                         GeoscapeEventSystem eventSystem = controller.EventSystem;
                         //  eventSystem.SetVariable("ProteanMutaneResearched", eventSystem.GetVariable("ProteanMutaneResearched") + 1);
-                        TFTVAncients.SetReactivateCyclopsObjective(controller);
+                        TFTVAncientsGeo.SetReactivateCyclopsObjective(controller);
                     }
 
                     else if (research.ResearchID == "NJ_Bionics2_ResearchDef")
@@ -388,8 +406,16 @@ namespace TFTV
 
                     }
 
+                    else if (research.ResearchID == "PX_Mutoid_ResearchDef" && !controller.PhoenixFaction.Research.HasCompleted(mutationTech.name) &&
+                   !controller.PhoenixFaction.Research.Researchable.Any(re => re.ResearchDef == mutationTech)) 
+                    {
+         
+                        mutationTechResearchElement.State = ResearchState.Unlocked;
+                        TFTVLogger.Always($"{mutationTech.name} available to PX? {mutationTechResearchElement.IsAvailableToFaction(controller.PhoenixFaction)}");
 
-                    TFTVAncients.CheckImpossibleWeaponsAdditionalRequirements(controller);
+                    }
+                    TFTVCapturePandoransGeoscape.RefreshFoodAndMutagenProductionTooltupUI();
+                    TFTVAncientsGeo.CheckImpossibleWeaponsAdditionalRequirements(controller);
 
 
                 }

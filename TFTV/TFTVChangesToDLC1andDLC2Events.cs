@@ -120,6 +120,11 @@ namespace TFTV
                     Text = (new LocalizedTextBind("PROG_PU12_MISS_CHOICE_3_TEXT")),
                     Outcome = new GeoEventChoiceOutcome()
                     {
+                        ReEneableEvent = false,
+                        OutcomeText = new EventTextVariation()
+                        {
+                            General = new LocalizedTextBind("", true)
+                        },
                         TriggerEncounterID = "PROG_PU12NewNJOption",
                         Resources = new ResourcePack { new ResourceUnit()
                         {
@@ -127,6 +132,7 @@ namespace TFTV
                             Value = 750
                         }
                         },
+
                         Diplomacy = new List<OutcomeDiplomacyChange>() { new OutcomeDiplomacyChange()
                         {
                             PartyFaction = NewJericho,
@@ -135,10 +141,10 @@ namespace TFTV
                             PartyType = (OutcomeDiplomacyChange.ChangeTarget)1,
                         },
                         }
+
                     }
 
-
-                });
+                }); 
             }
             catch (Exception e)
             {
@@ -231,6 +237,9 @@ namespace TFTV
                     },
 
                 });
+
+
+              
             }
             catch (Exception e)
             {

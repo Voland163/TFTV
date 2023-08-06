@@ -10,6 +10,7 @@ using PhoenixPoint.Common.Levels.Missions;
 using PhoenixPoint.Common.Levels.Params;
 using PhoenixPoint.Common.Utils;
 using PhoenixPoint.Common.View.ViewControllers;
+using PhoenixPoint.Common.View.ViewModules;
 using PhoenixPoint.Geoscape.Core;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.Missions;
@@ -28,6 +29,7 @@ using PhoenixPoint.Geoscape.View.ViewControllers.BaseRecruits;
 using PhoenixPoint.Geoscape.View.ViewControllers.Modal;
 using PhoenixPoint.Geoscape.View.ViewControllers.PhoenixBase;
 using PhoenixPoint.Geoscape.View.ViewModules;
+using PhoenixPoint.Geoscape.View.ViewStates;
 using PhoenixPoint.Tactical.AI.Considerations;
 using PhoenixPoint.Tactical.Levels;
 using System;
@@ -38,6 +40,7 @@ using System.Reflection;
 using System.Reflection.Emit;
 using System.Security.Policy;
 using UnityEngine;
+using UnityEngine.Android;
 using UnityEngine.UI;
 
 namespace TFTV
@@ -1003,7 +1006,10 @@ namespace TFTV
                         {
                             TFTVLogger.Always($"Containment Breached! There are {capturedUnits.Count()} captured aliens, all at this base {containmentFacilitiesOutsideBase > 0}");
 
-                            DefCache.GetDef<GeoscapeEventDef>("OlenaBaseDefense").GeoscapeEventData.Description[0].General.LocalizationKey = "BASEDEFENSE_CONTAINMENTBREACH_TEXT";
+                            GeoscapeEventDef olenaBaseDefense = DefCache.GetDef<GeoscapeEventDef>("OlenaBaseDefense");
+
+                            olenaBaseDefense.GeoscapeEventData.Description[0].General.LocalizationKey = "BASEDEFENSE_CONTAINMENTBREACH_TEXT";
+                           
 
                             AddToTFTVAttackSchedule(phoenixBase, controller, attacker, Math.Max(18 - capturedUnits.Count(), 4));
 
@@ -1164,8 +1170,9 @@ namespace TFTV
 
                                 if (progress == 1)
                                 {
+
+                               
                                     KludgeSite = site;
-                                    //   PhoenixBasesUnderAttack.Remove(site.SiteId);
                                     TFTVLogger.Always("Progress 1 reached!");
                                     MethodInfo registerMission = typeof(GeoSite).GetMethod("RegisterMission", BindingFlags.NonPublic | BindingFlags.Instance);
                                     registerMission.Invoke(site, new object[] { site.ActiveMission });
@@ -1179,7 +1186,7 @@ namespace TFTV
                                 }
                                 else if(progress >= 0.3 || totalTimeForAttack!=18) 
                                 {
-                                    TFTVLogger.Always($"Deactivating facilities at base {site.LocalizedSiteName}");
+                                   // TFTVLogger.Always($"Deactivating facilities at base {site.LocalizedSiteName}");
 
                                     DisableFacilitiesAtBase(site.GetComponent<GeoPhoenixBase>());
                                 
@@ -1225,8 +1232,6 @@ namespace TFTV
             }
         }
 
-
-
         //Patch to change briefing depending on attack progress
         [HarmonyPatch(typeof(PhoenixBaseDefenseDataBind), "ModalShowHandler")]
         public static class PhoenixBaseDefenseDataBind_ModalShowHandler_DontCancelMission_patch
@@ -1236,12 +1241,9 @@ namespace TFTV
                 try
                 {
 
-
                     GeoMission geoMission = (GeoMission)modal.Data;
 
-
                     if (PhoenixBasesUnderAttack.ContainsKey(geoMission.Site.SiteId))
-
                     {
 
                         float timer = (geoMission.Site.ExpiringTimerAt.DateTime - geoMission.Level.Timing.Now.DateTime).Hours;
@@ -1253,7 +1255,6 @@ namespace TFTV
 
                         }
 
-
                         float progress = 1f - timer / timeToCompleteAttack;
 
                         if (timeToCompleteAttack != 18 && progress < 0.3)
@@ -1264,7 +1265,6 @@ namespace TFTV
                         }
 
                         TFTVLogger.Always($"DontCancelMission: attack progress is {progress}");
-
 
                         FactionInfoMapping factionInfo = __instance.Resources.GetFactionInfo(geoMission.GetEnemyFaction());
                         LocalizedTextBind text = new LocalizedTextBind();
@@ -1290,6 +1290,9 @@ namespace TFTV
                             text = new LocalizedTextBind() { LocalizationKey = "BASEDEFENSE_BRIEFING_NESTING" };
                             objectivesText = new LocalizedTextBind() { LocalizationKey = "BASEDEFENSE_BRIEFING_OBJECTIVES_DOUBLE" };
                         }
+
+                      
+
 
                         /*  if (progress == 1 && geoMission.Site.CharactersCount > 0)
                           {
@@ -1328,6 +1331,9 @@ namespace TFTV
                         Text description = __instance.GetComponentInChildren<ObjectivesController>().Objectives;
                         description.GetComponent<I2.Loc.Localize>().enabled = false;
                         description.text = objectivesText.Localize();
+
+
+                      
                     }
                 }
                 catch (Exception e)
@@ -1483,10 +1489,39 @@ namespace TFTV
            }*/
 
 
-        /* [HarmonyPatch(typeof(GeoMission), "get_SkipDeploymentSelection")]
+
+        [HarmonyPatch(typeof(UIStateRosterDeployment), "EnterState")]
+        public static class TFTV_UIStateRosterDeployment_EnterState_BaseDefenseGeo_patch
+        {
+            public static void Postfix(UIStateRosterDeployment __instance)
+            {
+                try
+                {
+                    GeoLevelController controller = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
+                  
+                    UIModuleActorCycle uIModuleActorCycle = controller.View.GeoscapeModules.ActorCycleModule;
+                    UIModuleDeploymentMissionBriefing uIModuleDeploymentMissionBriefing = controller.View.GeoscapeModules.DeploymentMissionBriefingModule;
+
+                    if (uIModuleActorCycle.CurrentCharacter == null)
+                    {
+                        Type uiStateType = typeof(UIStateRosterDeployment);
+                        MethodInfo exitStateMethod = uiStateType.GetMethod("OnCancel", BindingFlags.NonPublic | BindingFlags.Instance);
+                        exitStateMethod.Invoke(__instance, null);
+                        TFTVLogger.Always("OnCancel exitState");
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+        }
+
+
+        [HarmonyPatch(typeof(GeoMission), "get_SkipDeploymentSelection")]
          public static class GeoMission_get_SkipDeploymentSelection_BaseDefenseProgressOne_patch
          {
-             public static void Postfix(GeoMission __instance, ref bool __result)
+             public static void Postfix(GeoMission __instance)
              {
                  try
                  {
@@ -1502,11 +1537,14 @@ namespace TFTV
 
                          TFTVLogger.Always($"attack progress is {progress}");
 
-                         if (progress == 1 && __instance.Site.CharactersCount > 0)
-                         {
-                             __result = true;
-                             TFTVLogger.Always("The Phoenix Base has people inside! Skip Deployment");
-                         }
+                        List<IGeoCharacterContainer> characterContainers = __instance.GetDeploymentSources(__instance.Site.Owner);
+
+                        IEnumerable<GeoCharacter> deployment = characterContainers.SelectMany((IGeoCharacterContainer s) => s.GetAllCharacters());
+
+                        if (deployment.Count() == 0 && progress == 1)
+                        {
+                            __instance.Cancel();
+                        } 
                      }
                  }
                  catch (Exception e)
@@ -1515,7 +1553,7 @@ namespace TFTV
                      throw;
                  }
              }
-         }*/
+         }
         /*
         [HarmonyPatch(typeof(GeoMission), "get_IsMandatoryMission")]
         public static class GeoMission_get_IsMandatoryMission_BaseDefenseProgressOne_patch
@@ -1809,7 +1847,9 @@ namespace TFTV
                                 TFTVLogger.Always("Closing modal because no troops to deploy in mission.");
                             }
 
+                          
 
+                         
                         }
 
                         /*  float timer = (geoMission.Site.ExpiringTimerAt.DateTime - geoMission.Level.Timing.Now.DateTime).Hours;

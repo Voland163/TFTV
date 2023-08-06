@@ -562,7 +562,7 @@ namespace TFTV
             {
                 try
                 {
-                    // TFTVLogger.Always($"ModifyMissionData invoked. Kludge site id is {TFTVBaseDefenseGeoscape.KludgeSite?.SiteId}. timer expiring at {__instance.Site.ExpiringTimerAt} ");
+                    TFTVLogger.Always($"ModifyMissionData invoked.");
                     if (TFTVBaseDefenseGeoscape.PhoenixBasesUnderAttack.ContainsKey(__instance.Site.SiteId) || TFTVBaseDefenseGeoscape.PhoenixBasesInfested.Contains(__instance.Site.SiteId))
                     {
                         PPFactionDef alienFaction = DefCache.GetDef<PPFactionDef>("Alien_FactionDef");

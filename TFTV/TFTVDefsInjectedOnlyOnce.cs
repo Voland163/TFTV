@@ -30,7 +30,6 @@ using PhoenixPoint.Geoscape.Entities.PhoenixBases.FacilityComponents;
 using PhoenixPoint.Geoscape.Entities.Research;
 using PhoenixPoint.Geoscape.Entities.Research.Requirement;
 using PhoenixPoint.Geoscape.Entities.Research.Reward;
-using PhoenixPoint.Geoscape.Entities.Sites;
 using PhoenixPoint.Geoscape.Events.Eventus;
 using PhoenixPoint.Geoscape.Events.Eventus.Filters;
 using PhoenixPoint.Geoscape.Levels;
@@ -207,13 +206,13 @@ namespace TFTV
 
         private static void StealAircraftMissionsNoItemRecovery()
         {
-            try 
+            try
             {
-               DefCache.GetDef<CustomMissionTypeDef>("StealAircraftAN_CustomMissionTypeDef").DontRecoverItems=true;
+                DefCache.GetDef<CustomMissionTypeDef>("StealAircraftAN_CustomMissionTypeDef").DontRecoverItems = true;
                 DefCache.GetDef<CustomMissionTypeDef>("StealAircraftNJ_CustomMissionTypeDef").DontRecoverItems = true;
                 DefCache.GetDef<CustomMissionTypeDef>("StealAircraftSY_CustomMissionTypeDef").DontRecoverItems = true;
-            
-            
+
+
             }
             catch (Exception e)
             {
@@ -273,7 +272,7 @@ namespace TFTV
 
 
         }
-     
+
         private static void ChangeVehicleInventorySlots()
         {
             try
@@ -525,6 +524,7 @@ namespace TFTV
                 blastVest.Abilities = new AbilityDef[] { fireVest.Abilities[0], blastVest.Abilities[0] };
                 blastVest.ViewElementDef.LargeIcon = Helper.CreateSpriteFromImageFile("modules_blastresvest.png");
                 blastVest.ViewElementDef.InventoryIcon = blastVest.ViewElementDef.LargeIcon;
+             
 
 
             }
@@ -549,10 +549,10 @@ namespace TFTV
                 FactionTagDef pXTag = DefCache.GetDef<FactionTagDef>("PhoenixPoint_FactionTagDef");
 
 
-                if(fireVest.Tags.Contains(nJTag)) 
-                { 
-                  fireVest.Tags.Remove(nJTag);
-                
+                if (fireVest.Tags.Contains(nJTag))
+                {
+                    fireVest.Tags.Remove(nJTag);
+
                 }
 
                 if (!fireVest.Tags.Contains(pXTag))
@@ -572,6 +572,8 @@ namespace TFTV
                 newNanoVest.ViewElementDef.Description.LocalizationKey = "NANOVEST_DESCRIPTION";
                 newNanoVest.ViewElementDef.InventoryIcon = newNanoVest.ViewElementDef.LargeIcon;
 
+                newNanoVest.ManufactureTech = 20;
+                newNanoVest.ManufactureMaterials = 30;
 
             }
 
@@ -832,9 +834,20 @@ namespace TFTV
                 advNanotechRewards.Items = manuRewards.ToArray();
 
                 TacticalItemDef blastVest = DefCache.GetDef<TacticalItemDef>("PX_BlastResistanceVest_Attachment_ItemDef");
-                ManufactureResearchRewardDef njFireResReward = DefCache.GetDef<ManufactureResearchRewardDef>("NJ_FireResistanceTech_ResearchDef_ManufactureResearchRewardDef_0");
-                njFireResReward.Items = new ItemDef[] { blastVest };
+                ManufactureResearchRewardDef njFireReward = DefCache.GetDef<ManufactureResearchRewardDef>("NJ_PurificationTech_ResearchDef_ManufactureResearchRewardDef_0");
+                List<ItemDef> itemDefs = new List<ItemDef>(njFireReward.Items) { blastVest };
+                njFireReward.Items = itemDefs.ToArray();
+                //remove NJ Fire Resistance tech, folding it into fire tech
 
+                ResearchDef fireTech = DefCache.GetDef<ResearchDef>("NJ_PurificationTech_ResearchDef");
+
+               /* List<ResearchRewardDef> fireTechRewards = fireTech.Unlocks.ToList();
+                fireTechRewards.Add(njFireResReward);
+                fireTech.Unlocks = fireTechRewards.ToArray();*/
+
+                ResearchDbDef njResearch = DefCache.GetDef<ResearchDbDef>("nj_ResearchDB");
+                njResearch.Researches.Remove(DefCache.GetDef<ResearchDef>("NJ_FireResistanceTech_ResearchDef"));
+                    
                 //Fireworm unlocks Vidar
                 DefCache.GetDef<ExistingResearchRequirementDef>("PX_AGL_ResearchDef_ExistingResearchRequirementDef_0").ResearchID = "PX_Alien_Fireworm_ResearchDef";
 
@@ -1603,8 +1616,8 @@ namespace TFTV
         {
             try
             {
-                TFTVCommonMethods.CreateNewEvent("OlenaBaseDefense", "BASEDEFENSE_EVENT_TITLE", "BASEDEFENSE_EVENT_TEXT", null);
-
+               GeoscapeEventDef baseDefense = TFTVCommonMethods.CreateNewEvent("OlenaBaseDefense", "BASEDEFENSE_EVENT_TITLE", "BASEDEFENSE_EVENT_TEXT", null);
+                baseDefense.GeoscapeEventData.Flavour = "DLC4_C1_S2";
 
             }
             catch (Exception e)
@@ -2983,19 +2996,18 @@ namespace TFTV
                 ChangeCostAncientProbe();
                 AddHoplitePortrait();
                 CyclopsMindCrushEffect();
-                //  CreateAdjustedHopliteBeams();
-                //  CreateAdjustedCyclopsBeams();
-                /* ChangeHoplites();
-                 ChangeAncientsWeapons();
-                 ChangeSchemataMissionRequirement();
-                 ChangeAncientSiteExploration();
-                 ChangeImpossibleWeapons();
-                 RemovePandoranVirusResearchRequirement();
-                 CreateEventsForLOTA();
-                 ChangeAncientDefenseMission();
-                 ChangeAncientSiteMissions();
-                 ModifyCyclops();
-                 CyclopsJoinStreamsAttack();*/
+                ChangeHoplites();
+                ChangeAncientsWeapons();
+                ChangeSchemataMissionRequirement();
+                ChangeAncientSiteExploration();
+                ChangeImpossibleWeapons();
+                RemovePandoranVirusResearchRequirement();
+                CreateEventsForLOTA();
+                ChangeAncientDefenseMission();
+                ChangeAncientSiteMissions();
+                ModifyCyclops();
+                CyclopsJoinStreamsAttack();
+                ImplementHintsAndResearches();
 
 
                 //  CreateImpossibleWeaponsManufactureRequirements();
@@ -3005,7 +3017,80 @@ namespace TFTV
                 TFTVLogger.Error(e);
             }
 
+
         }
+
+
+        private static void ImplementHintsAndResearches()
+        {
+            try
+            {
+
+                ContextHelpHintDef hintStory1 = DefCache.GetDef<ContextHelpHintDef>("ANCIENTS_STORY1");
+                ContextHelpHintDef hintCyclops = DefCache.GetDef<ContextHelpHintDef>("ANCIENTS_CYCLOPS");
+                ContextHelpHintDef hintCyclopsDefense = DefCache.GetDef<ContextHelpHintDef>("ANCIENTS_CYCLOPSDEFENSE");
+                ContextHelpHintDef hintHoplites = DefCache.GetDef<ContextHelpHintDef>("ANCIENTS_HOPLITS");
+                ContextHelpHintDef hintHopliteRepair = DefCache.GetDef<ContextHelpHintDef>("ANCIENTS_HOPLITSREPAIR");
+                ContextHelpHintDef hintHopliteMaxPower = DefCache.GetDef<ContextHelpHintDef>("ANCIENTS_HOPLITSMAXPOWER");
+
+                ContextHelpHintDbDef alwaysDisplayedTacticalHintsDbDef = DefCache.GetDef<ContextHelpHintDbDef>("AlwaysDisplayedTacticalHintsDbDef");
+
+                ResearchDbDef researchDB = DefCache.GetDef<ResearchDbDef>("pp_ResearchDB");
+
+                ResearchDef ancientAutomataResearch = DefCache.GetDef<ResearchDef>("AncientAutomataResearch");
+                ResearchDef pX_LivingCrystalResearch = DefCache.GetDef<ResearchDef>("PX_LivingCrystalResearchDef");
+                ResearchDef pX_ProteanMutaneResearch = DefCache.GetDef<ResearchDef>("PX_ProteanMutaneResearchDef");
+
+
+                AncientSiteProbeItemDef ancientSiteProbeItemDef = DefCache.GetDef<AncientSiteProbeItemDef>("AncientSiteProbeItemDef");
+
+
+
+                if (!researchDB.Researches.Contains(ancientAutomataResearch))
+                {
+                    researchDB.Researches.Add(ancientAutomataResearch);
+                }
+                if (!researchDB.Researches.Contains(pX_LivingCrystalResearch))
+                {
+                    researchDB.Researches.Add(pX_LivingCrystalResearch);
+                }
+                if (!researchDB.Researches.Contains(pX_ProteanMutaneResearch))
+                {
+                    researchDB.Researches.Add(pX_ProteanMutaneResearch);
+                }
+                if (!alwaysDisplayedTacticalHintsDbDef.Hints.Contains(hintStory1))
+                {
+                    alwaysDisplayedTacticalHintsDbDef.Hints.Add(hintStory1);
+                }
+                if (!alwaysDisplayedTacticalHintsDbDef.Hints.Contains(hintCyclops))
+                {
+                    alwaysDisplayedTacticalHintsDbDef.Hints.Add(hintCyclops);
+                }
+                if (!alwaysDisplayedTacticalHintsDbDef.Hints.Contains(hintCyclopsDefense))
+                {
+                    alwaysDisplayedTacticalHintsDbDef.Hints.Add(hintCyclopsDefense);
+                }
+                if (!alwaysDisplayedTacticalHintsDbDef.Hints.Contains(hintHoplites))
+                {
+                    alwaysDisplayedTacticalHintsDbDef.Hints.Add(hintHoplites);
+                }
+                if (!alwaysDisplayedTacticalHintsDbDef.Hints.Contains(hintHopliteRepair))
+                {
+                    alwaysDisplayedTacticalHintsDbDef.Hints.Add(hintHopliteRepair);
+                }
+                if (!alwaysDisplayedTacticalHintsDbDef.Hints.Contains(hintHopliteMaxPower))
+                {
+                    alwaysDisplayedTacticalHintsDbDef.Hints.Add(hintHopliteMaxPower);
+                }
+
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
 
         //deprecated, assumed everyone is playing with new LOTA
         public static void ChangesToLOTA2()

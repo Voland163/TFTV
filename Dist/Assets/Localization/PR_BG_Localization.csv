@@ -602,8 +602,7 @@ TFTV_MUTATIONTECH_RESEARCHDEF_COMPLETE,Text,,"<i>""Those that partake of the Wat
 
 This technology represents a first step towards mastering the mutation mechanics of the Pandoravirus. Test subjects have been injected with modified strains of the infection under carefully-controlled conditions, and with the additional of a chemical cocktail intended to keep the virus from asserting control over the subject. 
 
-The process is still experimental and there may be some side effects, but the potential benefits to our soldiers are worth the risk.
-",,"<i>""Ceux qui prennent part aux Eaux de la Vie disent que, à mesure que leurs rêves deviennent plus vifs, leur vie éveillée devient plus onirique, jusqu'à ce qu'ils ne sachent plus quand ils dorment et quand ils sont éveillés. Et ils se sentent capables d'incroyables faits d'armes et de vaincre leurs ennemis. Je suis exalté par leur confiance, mais je crains aussi leur brutalité.""</i>
+The process is still experimental and there may be some side effects, but the potential benefits to our soldiers are worth the risk.",,"<i>""Ceux qui prennent part aux Eaux de la Vie disent que, à mesure que leurs rêves deviennent plus vifs, leur vie éveillée devient plus onirique, jusqu'à ce qu'ils ne sachent plus quand ils dorment et quand ils sont éveillés. Et ils se sentent capables d'incroyables faits d'armes et de vaincre leurs ennemis. Je suis exalté par leur confiance, mais je crains aussi leur brutalité.""</i>
 
 - Neophyte Ryodik, Disciples of Anu
 
@@ -1128,6 +1127,9 @@ PX_ALIEN_ACIDWORM_RESEARCHDEF_BENEFITS,Text,,Can now research acid resistance te
 NJ_FIRERESISTANCETECH_RESEARCHDEF_COMPLETE,Text,,"New heat and blast resistant undersuits have been developed for use on the battlefield. The module is light to wear and can be incorporated into virtually any armor, increasing tolerance to flame and heat by 62%, and reducing the impact of explosive munitions by roughly half.",,,,,,,,
 NJ_FIRERESISTANCETECH_RESEARCHDEF_NAME,Text,,Blast and Fire Resistant Technology,,,,,,,,
 NJ_FIRERESISTANCETECH_RESEARCHDEF_UNLOCK,Text,,"With the emergence of creatures such as the Fireworms, it is becoming increasingly necessary to invest in better blast and fire resistance technology.",,,,,,,,
+NJ_PURIFICATIONTECH_RESEARCHDEF_COMPLETE,Text,,"A new type of bio-fuel has been created to use with modern flame throwers, and compact incendiary grenades have been developed from solid fuel technology. The new weapons will assist with clearance, especially inside alien structures.
+
+In addition, new heat and blast resistant undersuits have been developed for use on the battlefield. The module is light to wear and can be incorporated into virtually any armor, increasing tolerance to flame and heat by 62%, and reducing the impact of explosive munitions by roughly half.",,,,,,,,
 ACID_IMMUNITY_NAME,Text,,ACID IMMUNITY,,,,,,,,
 ACID_IMMUNITY_DESCRIPTION,Text,,Immune to Acid,,,,,,,,
 PX_LIGHTSNIPERRIFLE_RESEARCHDEF_UNLOCK,Text,,The appearance of Myrmidons has inspired our designers to consider developing a more agile sniper rifle that can deal quickly with small targets at range.,,,,,,,,
@@ -1152,3 +1154,29 @@ The SRTS uses micro drones to attach tethers to the immobilized Pandoran organis
 
 This represents a step forward in our struggle to understand their biology.",,,,,,,,
 KEY_BASE_FACILITY_CONTAINMENT_DESCRIPTION,Text,,"Live Pandorans can be contained here and kept alive. Large creatures will take more space, and space is shared across all facilities. The facility has 25 containment space.",,,,,,,,
+TFTV_HUMAN_ENEMIES_FEARSOME_TEXT,Text,,Enemies who can see the character lose 2 WP,,,,,,,,
+TFTV_HUMAN_ENEMIES_FEARSOME_TITLE,Text,,Fearsome,,,,,,,,
+TFTV_HUMAN_ENEMIES_VOLLEY_TEXT,Text,,Allies first attack with firearms costs 1 AP less,,,,,,,,
+TFTV_HUMAN_ENEMIES_VOLLEY_TITLE,Text,,Starting volley,,,,,,,,
+TFTV_HUMAN_ENEMIES_SELFREPAIR_TEXT,Text,,Allies gain self-repair ability that restores disabled limbs,,,,,,,,
+TFTV_HUMAN_ENEMIES_SELFREPAIR_TITLE,Text,,Self-repair protocol,,,,,,,,
+TFTV_HUMAN_ENEMIES_DRUGS_TEXT,Text,,All lowest tier friendlies gain 10 regeneration,,,,,,,,
+TFTV_HUMAN_ENEMIES_DRUGS_TITLE,Text,,Experimental drugs,,,,,,,,
+TFTV_HUMAN_ENEMIES_CAMO_TEXT,Text,,Character and allies within 12 tiles get +100% stealth,,,,,,,,
+TFTV_HUMAN_ENEMIES_CAMO_TITLE,Text,,Active camo,,,,,,,,
+TFTV_HUMAN_ENEMIES_DISCIPLINE_TEXT,Text,,Allies within 20 tiles have return fire ability,,,,,,,,
+TFTV_HUMAN_ENEMIES_DISCIPLINE_TITLE,Text,,Fire discipline,,,,,,,,
+TFTV_HUMAN_ENEMIES_FRENZY_TEXT,Text,,"When any high ranking character dies, allies gain frenzy status",,,,,,,,
+TFTV_HUMAN_ENEMIES_FRENZY_TITLE,Text,,Blood frenzy,,,,,,,,
+TFTV_HUMAN_ENEMIES_RETRIBUTION_TEXT,Text,,Enemy that attacks character becomes Marked for Death,,,,,,,,
+TFTV_HUMAN_ENEMIES_RETRIBUTION_TITLE,Text,,Retribution,,,,,,,,
+TFTV_HUMAN_ENEMIES_AMBUSH_TEXT,Text,,Each ally does +10% damage while leader is alive if there are no enemies in sight within 10 tiles at the start of its turn,,,,,,,,
+TFTV_HUMAN_ENEMIES_AMBUSH_TITLE,Text,,Ambush,,,,,,,,
+TFTV_HUMAN_ENEMIES_TARGETING_TEXT,Text,,"While leader is alive each ally gains +15% accuracy per ally within 12 tiles, up to +60%",,,,,,,,
+TFTV_HUMAN_ENEMIES_TARGETING_TITLE,Text,,Assisted targeting,,,,,,,,
+TFTV_HUMAN_ENEMIES_NJ,Text,,New Jericho,,,,,,,,
+TFTV_HUMAN_ENEMIES_ANU,Text,,Disciples of Anu,,,,,,,,
+TFTV_HUMAN_ENEMIES_UNIT_TYPE_GANG,Text,,a gang,,,,,,,,
+TFTV_HUMAN_ENEMIES_UNIT_TYPE_SQUAD,Text,,squad,,,,,,,,
+TFTV_HUMAN_ENEMIES_UNIT_TYPE_PACK,Text,,a pack of Forsaken,,,,,,,,
+TFTV_HUMAN_ENEMIES_UNIT_TYPE_ARRAY,Text,,an array of the Pure,,,,,,,,

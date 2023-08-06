@@ -276,7 +276,12 @@ namespace TFTV
                         {
                             __result.EventLeader = OlenaPic;
                         }
-                        __result.EventBackground = Helper.CreateSpriteFromImageFile("insidebase.jpg");//OlenaOffice;
+                        if (geoEvent.EventData.Description[0].General.LocalizationKey != "BASEDEFENSE_CONTAINMENTBREACH_TEXT")
+                        {
+                            __result.EventBackground = Helper.CreateSpriteFromImageFile("insidebase.jpg");
+                        }
+
+                        
                     }
 
                     else if(geoEvent.EventID == "PROG_FS20")
@@ -474,7 +479,11 @@ namespace TFTV
                         {
                             __result.EventLeader = OlenaPic;
                         }
-                        __result.EventBackground = Helper.CreateSpriteFromImageFile("insidebase.jpg");
+
+                        if (geoEvent.EventData.Description[0].General.LocalizationKey != "BASEDEFENSE_CONTAINMENTBREACH_TEXT")
+                        {
+                            __result.EventBackground = Helper.CreateSpriteFromImageFile("insidebase.jpg");
+                        }
                     }
 
                     else if (geoEvent.EventID.Equals("PROG_FS3"))

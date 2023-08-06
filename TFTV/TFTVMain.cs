@@ -87,9 +87,9 @@ namespace TFTV
                 /// PhoenixGame is accessible at any time.
                 PhoenixGame game = GetGame();
 
-                TFTVversion = $"TFTV August 6 release #1 (Hotfix 2) v{MetaData.Version}";
+                TFTVversion = $"TFTV August 9 release #1 v{MetaData.Version}";
 
-                Logger.LogInfo("TFTV August 6 release #1 (Hotfix 2)");
+                Logger.LogInfo("TFTV August 9 release #1");
 
                 ModDirectory = Instance.Entry.Directory;
                 //Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
@@ -102,7 +102,7 @@ namespace TFTV
                 TFTVLogger.Initialize(LogPath, Config.Debug, ModDirectory, nameof(TFTV));
                 PRMLogger.Initialize(LogPath, Settings.Debug, ModDirectory, nameof(PRMBetterClasses));
                 // DefCache.Initialize();
-                TFTVLogger.Always("TFTV August 6 release #1 (Hotfix 2)");
+                TFTVLogger.Always("TFTV August 9 release #1");
 
                 PRMBetterClasses.Helper.Initialize();
                 // Initialize Helper
@@ -126,11 +126,7 @@ namespace TFTV
                 TFTVHumanEnemiesNames.CreateRanksDictionary();
                 Logger.LogInfo("Ranks for human enemies created");
 
-                if (Config.ActivateReverseEngineeringResearch)
-                {
-                    TFTVReverseEngineering.ModifyReverseEngineering();
-                    Logger.LogInfo("Reverse Engineering changes to Defs injected");
-                }
+               
 
                 TFTVRevenantResearch.CreateRevenantRewardsDefs();
                 TFTVProjectOsiris.CreateProjectOsirisDefs();

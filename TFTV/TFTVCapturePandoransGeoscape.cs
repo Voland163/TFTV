@@ -19,7 +19,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.ConstrainedExecution;
 using UnityEngine;
+using static RootMotion.FinalIK.GenericPoser;
 
 namespace TFTV
 {
@@ -104,7 +106,7 @@ namespace TFTV
             }
         }
 
-        private static void RefreshFoodAndMutagenProductionTooltupUI()
+        public static void RefreshFoodAndMutagenProductionTooltupUI()
         {
             try 
             {
@@ -147,12 +149,14 @@ namespace TFTV
 
                 int mutationLabsCount = CountMutationLabs(controller.PhoenixFaction);
 
+                int incomeFromLabs = (int)(mutagenProductionDef.BaseResourcesOutput[0].Value * 24 * mutationLabsCount);
+                int incomeFromCapturedPandas = Mathf.Min((int)GetMutLabOutputPerDay(), foodProductionFacilitiesCount * ProcessingCapacity);
 
-                mutagenController.Income = (int)(mutagenProductionDef.BaseResourcesOutput[0].Value*24 * mutationLabsCount) + Mathf.Min((int)GetMutLabOutputPerDay(), foodProductionFacilitiesCount * ProcessingCapacity);
+                mutagenController.Income = incomeFromLabs + incomeFromCapturedPandas;
                 methodDisplayValue.Invoke(mutagenController, null);
                 if (mutagenController.Income > 0)
                 {
-                    string tipText = $"<b>Extracting mutagens from captured Pandorans</b>.\n-Max extraction per day: {50 * mutationLabsCount }";
+                    string tipText = $"<b>Extracting mutagens from captured Pandorans</b>.\n-Mutagens from facilities: {incomeFromLabs}\n-Mutagens from Pandorans: {incomeFromCapturedPandas}\n-Max extraction per day: {50 * mutationLabsCount}";
                     UITooltipText tooltipText = uIModuleInfoBar.GetComponentsInChildren<UITooltipText>().FirstOrDefault(utt => utt.TipKey.LocalizationKey.Equals("KEY_MUTAGENS_RESOURCE_TT") || utt.TipKey.LocalizeEnglish().Contains("Extracting mutagens"));
 
                   //  TFTVLogger.Always($"{tipText}");
@@ -336,7 +340,7 @@ namespace TFTV
 
                 controller.PhoenixFaction.Wallet.Give(mutagens, OperationReason.Production);
 
-                TFTVLogger.Always($"mutagen income shown should be {uIModuleInfoBar.MutagensController.Income} + {mutagens.Value}");
+             //   TFTVLogger.Always($"mutagen income shown should be {uIModuleInfoBar.MutagensController.Income} + {mutagens.Value}");
 
                 uIModuleInfoBar.MutagensController.RefreshResourceText(uIModuleInfoBar.MutagensController.Value, uIModuleInfoBar.MutagensController.Income + mutagens.Value, true);
 
@@ -363,7 +367,7 @@ namespace TFTV
 
                 controller.PhoenixFaction.Wallet.Give(supplies, OperationReason.Production);
 
-                TFTVLogger.Always($"supplies income shown should be {uIModuleInfoBar.FoodController.Income} + {supplies.Value}");
+              //  TFTVLogger.Always($"supplies income shown should be {uIModuleInfoBar.FoodController.Income} + {supplies.Value}");
 
                 uIModuleInfoBar.FoodController.RefreshResourceText(uIModuleInfoBar.FoodController.Value, uIModuleInfoBar.FoodController.Income + supplies.Value, false);
 

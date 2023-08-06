@@ -21,7 +21,6 @@ using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.Sites;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
-using PhoenixPoint.Geoscape.View;
 using PhoenixPoint.Geoscape.View.DataObjects;
 using PhoenixPoint.Geoscape.View.ViewControllers;
 using PhoenixPoint.Geoscape.View.ViewControllers.AugmentationScreen;
@@ -62,7 +61,7 @@ namespace TFTV
 
         //   public static UIModuleCharacterProgression hookToProgressionModule = null;
         //  public static GeoCharacter hookToCharacter = null;
-      //  internal static bool moduleInfoBarAdjustmentsExecuted = false;
+        //  internal static bool moduleInfoBarAdjustmentsExecuted = false;
         // public static bool showFaceNotHelmet = true;
 
         internal static Color red = new Color32(192, 32, 32, 255);
@@ -72,8 +71,8 @@ namespace TFTV
         internal static Color anu = new Color(0.9490196f, 0.0f, 1.0f, 1.0f);
         internal static Color nj = new Color(0.156862751f, 0.6156863f, 1.0f, 1.0f);
         internal static Color syn = new Color(0.160784319f, 0.8862745f, 0.145098045f, 1.0f);
-
-
+        internal static Color yellow = new Color(255, 255, 0, 1.0f);
+        internal static Color dark = new Color(52, 52, 61, 1.0f);
 
         /*  [HarmonyPatch(typeof(ModManager), "SerializeModObject")]
 
@@ -120,6 +119,193 @@ namespace TFTV
                   }
               }
           }*/
+
+
+
+
+        [HarmonyPatch(typeof(UIStateRosterDeployment), "EnterState")]
+        public static class TFTV_UIStateRosterDeployment_EnterState_patch
+        {
+            public static void Postfix(UIStateRosterDeployment __instance)
+            {
+                try
+                {
+                    GeoLevelController controller = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
+                    GeoSite geoSite = null;
+
+                    UIModuleActorCycle uIModuleActorCycle = controller.View.GeoscapeModules.ActorCycleModule;
+                    UIModuleDeploymentMissionBriefing uIModuleDeploymentMissionBriefing = controller.View.GeoscapeModules.DeploymentMissionBriefingModule;
+
+                    if (uIModuleActorCycle.CurrentCharacter != null)
+                    {
+
+                        foreach (GeoVehicle geoVehicle in controller.PhoenixFaction.Vehicles)
+                        {
+                            if (geoVehicle.Soldiers.Contains(uIModuleActorCycle.CurrentCharacter))
+                            {
+                                geoSite = geoVehicle.CurrentSite;
+                                break;
+                            }
+                        }
+
+                        int hourOfTheDay = geoSite.LocalTime.DateTime.Hour;
+                        int minuteOfTheHour = geoSite.LocalTime.DateTime.Minute;
+                        bool dayTimeMission = hourOfTheDay > 8 && hourOfTheDay < 21;
+
+                        TFTVLogger.Always($"LocalTime: {hourOfTheDay:00}:{minuteOfTheHour:00}");
+
+                        Transform objectives = uIModuleDeploymentMissionBriefing.ObjectivesTextContainer.transform;
+                        Transform lootContainer = uIModuleDeploymentMissionBriefing.AutolootContainer.transform;
+
+                        Transform newIcon = UnityEngine.Object.Instantiate(lootContainer.GetComponent<Transform>().GetComponentInChildren<Image>().transform, uIModuleDeploymentMissionBriefing.MissionNameText.transform);
+
+                        Sprite lightConditions = Helper.CreateSpriteFromImageFile(dayTimeMission ? "light_conditions_sun.png" : "light_conditions_moon.png");
+                        Color color = dayTimeMission ? yellow : dark;
+
+                        newIcon.GetComponentInChildren<Image>().sprite = lightConditions;
+                        newIcon.GetComponentInChildren<Image>().color = color;
+
+                        string text = $"Local time is {hourOfTheDay:00}:{minuteOfTheHour:00}";
+                        newIcon.gameObject.AddComponent<UITooltipText>().TipText = text;
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+        }
+
+        [HarmonyPatch(typeof(UIStateRosterDeployment), "ExitState")]
+        public static class TFTV_UIStateRosterDeployment_ExitState_patch
+        {
+            public static void Postfix(UIStateRosterDeployment __instance)
+            {
+                try
+                {
+
+                    GeoLevelController controller = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
+
+                    UIModuleDeploymentMissionBriefing uIModuleDeploymentMissionBriefing = controller.View.GeoscapeModules.DeploymentMissionBriefingModule;
+
+                    uIModuleDeploymentMissionBriefing.MissionNameText.transform.DestroyChildren();
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+        }
+
+        /*[HarmonyPatch(typeof(UIStateRosterDeployment), "EnterState")]
+
+        public static class TFTV_UIStateRosterDeployment_EnterState_patch
+        {
+            public static void Postfix(UIStateRosterDeployment __instance)
+            {
+                try
+                {
+
+                    GeoLevelController controller = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
+                    GeoSite geoSite = null;
+
+                    UIModuleActorCycle uIModuleActorCycle = controller.View.GeoscapeModules.ActorCycleModule;
+                    UIModuleDeploymentMissionBriefing uIModuleDeploymentMissionBriefing = controller.View.GeoscapeModules.DeploymentMissionBriefingModule;
+
+
+                    foreach (GeoVehicle geoVehicle in controller.PhoenixFaction.Vehicles)
+                    {
+                        if (geoVehicle.Soldiers.Contains(uIModuleActorCycle.CurrentCharacter))
+
+                        {
+                            geoSite = geoVehicle.CurrentSite;
+                            break;
+                        }
+
+                    }
+
+                    int hourOfTheDay = geoSite.LocalTime.DateTime.Hour;
+                    bool dayTimeMission = false;
+
+
+                    if(hourOfTheDay > 8 && hourOfTheDay < 21) 
+                    {
+                        dayTimeMission = true;              
+                    }
+
+
+                    TFTVLogger.Always($"LocalTime: {hourOfTheDay}:{geoSite.LocalTime.DateTime.Minute}");
+
+                    Transform objectives = uIModuleDeploymentMissionBriefing.ObjectivesTextContainer.transform;
+                    
+                    
+                    Transform lootContainer = uIModuleDeploymentMissionBriefing.AutolootContainer.transform;
+
+             
+                    Transform newIcon = UnityEngine.Object.Instantiate(lootContainer.GetComponent<Transform>().GetComponentInChildren<Image>().transform, uIModuleDeploymentMissionBriefing.MissionNameText.transform);
+
+                    Sprite lightConditions = Helper.CreateSpriteFromImageFile("light_conditions_moon.png");
+                    Color color = dark;
+
+                    if (dayTimeMission) 
+                    {
+                        lightConditions = Helper.CreateSpriteFromImageFile("light_conditions_sun.png");
+                        color = yellow;
+                    }
+
+                    newIcon.GetComponentInChildren<Image>().sprite = lightConditions;
+                    newIcon.GetComponentInChildren<Image>().color = color;
+                    
+                    string text = $"Local time is {geoSite.LocalTime.DateTime.Hour}:{geoSite.LocalTime.DateTime.Minute}";
+                    newIcon.gameObject.AddComponent<UITooltipText>().TipText = text;
+
+                }
+
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+        }*/
+
+
+
+
+
+        /*   [HarmonyPatch(typeof(UIModuleDeploymentMissionBriefing), "SetMissionDescription")]
+
+           public static class TFTV_UIModuleDeploymentMissionBriefing_SetMissionDescription_patch
+           {
+               public static void Postfix(UIModuleDeploymentMissionBriefing __instance, LocalizedTextBind description, ref List<Text> ____objectivesTexts)
+               {
+                   try
+                   {
+
+
+
+
+
+
+                       DateTime siteLocalTime = GeoMissionKludge.Site.LocalTime.DateTime;
+
+                       TFTVLogger.Always($"Got here {siteLocalTime.ToString()}");
+
+                       ____objectivesTexts[0].text += siteLocalTime;
+
+                       GeoMissionKludge = null;
+                   }
+
+                   catch (Exception e)
+                   {
+                       TFTVLogger.Error(e);
+                   }
+               }
+           }*/
+
+
+
+
 
         [HarmonyPatch(typeof(UIModuleMutationSection), "SelectMutation")]
 
@@ -527,7 +713,7 @@ namespace TFTV
         }
 
 
-       
+
 
 
         //Patch to show correct stats in Personnel Edit screen
@@ -2428,7 +2614,7 @@ namespace TFTV
                         __instance.StaminaSlider.maxValue = num2;
                         __instance.StaminaSlider.value = num;
 
-                      //  UITooltipText staminaTextTip = new UITooltipText();
+                        //  UITooltipText staminaTextTip = new UITooltipText();
                         if (__instance.StaminaStatText.gameObject.GetComponent<UITooltipText>() == null)
                         {
 

@@ -26,9 +26,9 @@ namespace TFTV
 {
     internal class TFTVBetaSaveGamesFixes
     {
-        public static bool LOTAapplied = false;
+       // public static bool LOTAapplied = false;
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
-        public static bool LOTAReworkGlobalCheck = false;
+       // public static bool LOTAReworkGlobalCheck = false;
 
         public static void CheckScyllaCaptureTechResearch(GeoLevelController controller) 
         {
@@ -76,6 +76,8 @@ namespace TFTV
                 ResearchDef fireWormRes = DefCache.GetDef<ResearchDef>("PX_Alien_Fireworm_ResearchDef");
                 ResearchDef acidRes = DefCache.GetDef<ResearchDef>("PX_BlastResistanceVest_ResearchDef");
 
+                ResearchDef mutationTech = DefCache.GetDef<ResearchDef>("ANU_MutationTech_ResearchDef");
+
                 ResearchDef agileGLRes = DefCache.GetDef<ResearchDef>("PX_AGL_ResearchDef");
 
                 if (controller.PhoenixFaction.Research.HasCompleted("PX_Alien_Acidworm_ResearchDef") &&
@@ -100,7 +102,20 @@ namespace TFTV
 
                 }
 
-               
+
+                if (controller.PhoenixFaction.Research.HasCompleted("PX_Mutoid_ResearchDef") &&
+                   (!controller.PhoenixFaction.Research.HasCompleted(mutationTech.name) &&
+                   !controller.PhoenixFaction.Research.Researchable.Any(re => re.ResearchDef == mutationTech)))
+
+                {
+
+                    TFTVLogger.Always($"Player has completed Mutoids research but didn't get Mutation tech");
+
+                    ResearchElement researchElement = controller.PhoenixFaction.Research.GetResearchById(mutationTech.name);
+                    researchElement.State = ResearchState.Unlocked;
+                    TFTVLogger.Always($"{mutationTech.name} available to PX? {researchElement.IsAvailableToFaction(controller.PhoenixFaction)}");
+
+                }
 
             }
             catch (Exception e)
@@ -128,7 +143,7 @@ namespace TFTV
         {
             try
             {
-                CheckNewLOTA(controller);
+              //  CheckNewLOTA(controller);
                 FixScyllaCounter(controller);
                 FixInfestedBase(controller);
                 CheckSaveGameEventChoices(controller);
@@ -255,8 +270,8 @@ namespace TFTV
 
 
 
-        //not yet deprecated, zig zag zog still playing with old LOTA
-        internal static void CheckNewLOTA(GeoLevelController controller)
+        //now deprecated
+       /* internal static void CheckNewLOTA(GeoLevelController controller)
         {
             try
             {
@@ -275,9 +290,9 @@ namespace TFTV
             {
                 TFTVLogger.Error(e);
             }
-        }
+        }*/
 
-        public static void CheckNewLOTASavegame()
+      /*  public static void CheckNewLOTASavegame()
         {
             try
             {
@@ -295,9 +310,9 @@ namespace TFTV
             {
                 TFTVLogger.Error(e);
             }
-        }
+        }*/
 
-        internal static void CheckIfLOTAReworkActive()
+     /*   internal static void CheckIfLOTAReworkActive()
         {
             try
             {
@@ -408,7 +423,7 @@ namespace TFTV
             }
 
 
-        }
+        }*/
 
 
         internal static void CheckSaveGameEventChoices(GeoLevelController controller)
