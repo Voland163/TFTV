@@ -64,7 +64,7 @@ namespace TFTV
 
         }
 
-        public static void CheckVestResearches(GeoLevelController controller)
+        public static void CheckResearches(GeoLevelController controller)
         {
             try
             {
@@ -117,6 +117,17 @@ namespace TFTV
 
                 }
 
+              //  TFTVLogger.Always($"{controller.PhoenixFaction.Research.HasCompleted("ANU_MutationTech_ResearchDef")} {controller.PhoenixFaction.HarvestAliensForMutagensUnlocked}");
+
+                if(controller.PhoenixFaction.Research.HasCompleted("ANU_MutationTech_ResearchDef") && !controller.PhoenixFaction.HarvestAliensForMutagensUnlocked) 
+                {
+
+                    TFTVLogger.Always("Player researched Mutation, but hasn't unlocked Mutagen harvesting");
+                    controller.PhoenixFaction.HarvestAliensForMutagensUnlocked = true;
+                
+                
+                }
+                    
             }
             catch (Exception e)
             {

@@ -4,7 +4,6 @@ using Base.UI;
 using Base.UI.MessageBox;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
-using PhoenixPoint.Common.Game;
 using PhoenixPoint.Common.View.ViewModules;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.PhoenixBases;
@@ -19,9 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.ConstrainedExecution;
 using UnityEngine;
-using static RootMotion.FinalIK.GenericPoser;
 
 namespace TFTV
 {
@@ -76,7 +73,7 @@ namespace TFTV
 
                     }
                 }
-                
+
             }
             catch (Exception e)
             {
@@ -87,7 +84,7 @@ namespace TFTV
 
         private static void FoodPoisoningEffects(GeoLevelController controller)
         {
-            try 
+            try
             {
                 controller.EventSystem.SetVariable(GeoVariableFoodPoisoning, controller.EventSystem.GetVariable(GeoVariableFoodPoisoning) + 1);
 
@@ -97,7 +94,7 @@ namespace TFTV
                 GeoscapeEventContext context = new GeoscapeEventContext(controller.PhoenixFaction, controller.PhoenixFaction);
 
                 controller.EventSystem.TriggerGeoscapeEvent(eventID, context);
-                       
+
             }
             catch (Exception e)
             {
@@ -108,7 +105,7 @@ namespace TFTV
 
         public static void RefreshFoodAndMutagenProductionTooltupUI()
         {
-            try 
+            try
             {
                 GeoLevelController controller = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
                 UIModuleInfoBar uIModuleInfoBar = controller.View.GeoscapeModules.ResourcesModule;
@@ -121,7 +118,7 @@ namespace TFTV
 
                 int foodProductionFacilitiesCount = CountFoodProductionFacilities(controller.PhoenixFaction);
 
-                foodController.Income = (int)(foodProductionDef.BaseResourcesOutput[0].Value * 24 * foodProductionFacilitiesCount) + Mathf.Min((int)GetFarmOutputPerDay(), foodProductionFacilitiesCount*ProcessingCapacity);
+                foodController.Income = (int)(foodProductionDef.BaseResourcesOutput[0].Value * 24 * foodProductionFacilitiesCount) + Mathf.Min((int)GetFarmOutputPerDay(), foodProductionFacilitiesCount * ProcessingCapacity);
 
                 methodDisplayValue.Invoke(foodController, null);
 
@@ -133,7 +130,7 @@ namespace TFTV
                         $"\n-Max storage: {StorageCapacity * foodProductionFacilitiesCount}" +
                            $"\n-Max processing per day: {ProcessingCapacity * foodProductionFacilitiesCount}";
 
-                   // TFTVLogger.Always($"{tipText}");
+                    // TFTVLogger.Always($"{tipText}");
 
                     if (tooltipText != null)
                     {
@@ -150,7 +147,7 @@ namespace TFTV
                 int mutationLabsCount = CountMutationLabs(controller.PhoenixFaction);
 
                 int incomeFromLabs = (int)(mutagenProductionDef.BaseResourcesOutput[0].Value * 24 * mutationLabsCount);
-                int incomeFromCapturedPandas = Mathf.Min((int)GetMutLabOutputPerDay(), foodProductionFacilitiesCount * ProcessingCapacity);
+                int incomeFromCapturedPandas = Mathf.Min((int)GetMutLabOutputPerDay(), mutationLabsCount * ProcessingCapacity);
 
                 mutagenController.Income = incomeFromLabs + incomeFromCapturedPandas;
                 methodDisplayValue.Invoke(mutagenController, null);
@@ -159,7 +156,7 @@ namespace TFTV
                     string tipText = $"<b>Extracting mutagens from captured Pandorans</b>.\n-Mutagens from facilities: {incomeFromLabs}\n-Mutagens from Pandorans: {incomeFromCapturedPandas}\n-Max extraction per day: {50 * mutationLabsCount}";
                     UITooltipText tooltipText = uIModuleInfoBar.GetComponentsInChildren<UITooltipText>().FirstOrDefault(utt => utt.TipKey.LocalizationKey.Equals("KEY_MUTAGENS_RESOURCE_TT") || utt.TipKey.LocalizeEnglish().Contains("Extracting mutagens"));
 
-                  //  TFTVLogger.Always($"{tipText}");
+                    //    TFTVLogger.Always($"{tipText}");
 
                     if (tooltipText != null)
                     {
@@ -176,7 +173,7 @@ namespace TFTV
             }
         }
 
-    
+
         [HarmonyPatch(typeof(UIAnimatedResourceController), "RefreshResourceText")]
         public static class UIAnimatedResourceController_RefreshResourceText_CapturePandorans_Patch
         {
@@ -201,7 +198,7 @@ namespace TFTV
             }
         }
 
-       
+
 
         [HarmonyPatch(typeof(UIStateRosterAliens), "OnDismantleForFood")]
         public static class UIStateRosterAliens_OnDismantleForFood_CapturePandorans_Patch
@@ -314,7 +311,7 @@ namespace TFTV
 
                     if (config.LimitedHarvesting)
                     {
-                     
+
                         GiveFood();
                         TriggerFoodPoisoning(__instance.GeoLevel);
                         GiveMutagens();
@@ -336,15 +333,15 @@ namespace TFTV
 
                 UIModuleInfoBar uIModuleInfoBar = controller.View.GeoscapeModules.ResourcesModule;
 
-                ResourceUnit mutagens = new ResourceUnit { Type = ResourceType.Mutagen, Value = GetMutLabOutputPerDay()/24 };
+                ResourceUnit mutagens = new ResourceUnit { Type = ResourceType.Mutagen, Value = GetMutLabOutputPerDay() / 24 };
 
                 controller.PhoenixFaction.Wallet.Give(mutagens, OperationReason.Production);
 
-             //   TFTVLogger.Always($"mutagen income shown should be {uIModuleInfoBar.MutagensController.Income} + {mutagens.Value}");
+                //   TFTVLogger.Always($"mutagen income shown should be {uIModuleInfoBar.MutagensController.Income} + {mutagens.Value}");
 
                 uIModuleInfoBar.MutagensController.RefreshResourceText(uIModuleInfoBar.MutagensController.Value, uIModuleInfoBar.MutagensController.Income + mutagens.Value, true);
 
-                //  TFTVLogger.Always($"giving mutagens {mutagens.Value}");
+                // TFTVLogger.Always($"giving mutagens {mutagens.Value}");
 
             }
             catch (Exception e)
@@ -362,12 +359,12 @@ namespace TFTV
 
                 UIModuleInfoBar uIModuleInfoBar = controller.View.GeoscapeModules.ResourcesModule;
 
-                ResourceUnit supplies = new ResourceUnit { Type = ResourceType.Supplies, Value = GetFarmOutputPerDay()/24 };
+                ResourceUnit supplies = new ResourceUnit { Type = ResourceType.Supplies, Value = GetFarmOutputPerDay() / 24 };
 
 
                 controller.PhoenixFaction.Wallet.Give(supplies, OperationReason.Production);
 
-              //  TFTVLogger.Always($"supplies income shown should be {uIModuleInfoBar.FoodController.Income} + {supplies.Value}");
+                //  TFTVLogger.Always($"supplies income shown should be {uIModuleInfoBar.FoodController.Income} + {supplies.Value}");
 
                 uIModuleInfoBar.FoodController.RefreshResourceText(uIModuleInfoBar.FoodController.Value, uIModuleInfoBar.FoodController.Income + supplies.Value, false);
 
@@ -388,22 +385,22 @@ namespace TFTV
 
         private static void AddToMeatProcessingBank(GeoPhoenixFaction geoPhoenixFaction, int amount)
         {
-            try 
+            try
             {
                 int capacity = CountFoodProductionFacilities(geoPhoenixFaction) * 100;
-                
-                if(amount + PandasForFoodProcessing > capacity) 
+
+                if (amount + PandasForFoodProcessing > capacity)
                 {
                     PandasForFoodProcessing = capacity;
-                
+
                 }
-                else 
-                { 
-                PandasForFoodProcessing+= amount;
-                
+                else
+                {
+                    PandasForFoodProcessing += amount;
+
                 }
-            
-            
+
+
             }
             catch (Exception e)
             {
@@ -586,9 +583,9 @@ namespace TFTV
                     {
 
                         mutagensPerDay += (float)pxFaction.GetHarvestingUnitResourceAmount(geoUnitDescriptor, ResourceType.Mutagen) / divisor;
-                     /*   TFTVLogger.Always($"{geoUnitDescriptor?.GetName()} resource amount {(float)pxFaction.GetHarvestingUnitResourceAmount(geoUnitDescriptor, ResourceType.Mutagen)}, " +
-                            $"divided by 10 = {(float)pxFaction.GetHarvestingUnitResourceAmount(geoUnitDescriptor, ResourceType.Mutagen) / divisor}" +
-                            $"so mutagens per day {mutagensPerDay}");*/
+                        /*   TFTVLogger.Always($"{geoUnitDescriptor?.GetName()} resource amount {(float)pxFaction.GetHarvestingUnitResourceAmount(geoUnitDescriptor, ResourceType.Mutagen)}, " +
+                               $"divided by 10 = {(float)pxFaction.GetHarvestingUnitResourceAmount(geoUnitDescriptor, ResourceType.Mutagen) / divisor}" +
+                               $"so mutagens per day {mutagensPerDay}");*/
                     }
 
                     if (mutagensPerDay > maxMutagensPerDay)
@@ -599,7 +596,7 @@ namespace TFTV
 
                     if (maxMutagensPerDay > 0)
                     {
-                       // TFTVLogger.Always($"so mutagens per hour {mutagensPerDay / 24}");
+                        //   TFTVLogger.Always($"so mutagens per day {mutagensPerDay}");
                         return mutagensPerDay;
 
                     }

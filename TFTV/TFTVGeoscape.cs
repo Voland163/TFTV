@@ -100,7 +100,7 @@ namespace TFTV
         //    TFTVBetterEnemies.ImplementBetterEnemies();
             TFTVPandoranProgress.ScyllaCount = 0;
             TFTVSDIandVoidOmenRoll.Calculate_ODI_Level(Controller);
-            TFTVBetaSaveGamesFixes.CheckVestResearches(Controller);
+            TFTVBetaSaveGamesFixes.CheckResearches(Controller);
             TFTVBetaSaveGamesFixes.CheckScyllaCaptureTechResearch(Controller);
 
           //  TFTVCapturePandorans.SetMutagenOutput(Controller);
