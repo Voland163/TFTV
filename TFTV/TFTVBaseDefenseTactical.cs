@@ -566,7 +566,7 @@ namespace TFTV
                     if (TFTVBaseDefenseGeoscape.PhoenixBasesUnderAttack.ContainsKey(__instance.Site.SiteId) || TFTVBaseDefenseGeoscape.PhoenixBasesInfested.Contains(__instance.Site.SiteId))
                     {
                         PPFactionDef alienFaction = DefCache.GetDef<PPFactionDef>("Alien_FactionDef");
-                        int difficulty = __instance.GameController.CurrentDifficulty.Order;
+                        int difficulty = TFTVReleaseOnly.DifficultyOrderConverter(__instance.GameController.CurrentDifficulty.Order);
                         // TFTVLogger.Always($"if passed");
 
 
@@ -737,7 +737,7 @@ namespace TFTV
                 {
                     UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
 
-                    int roll = UnityEngine.Random.Range(1, controller.Difficulty.Order);
+                    int roll = UnityEngine.Random.Range(1, TFTVReleaseOnly.DifficultyOrderConverter(controller.Difficulty.Order));
 
                     for (int x = 0; x < roll; x++)
                     {
@@ -794,7 +794,7 @@ namespace TFTV
                 otherCentralZones.Remove(centralZone);
 
 
-                for (int i = 0; i < controller.Difficulty.Order; i++)
+                for (int i = 0; i < TFTVReleaseOnly.DifficultyOrderConverter(controller.Difficulty.Order); i++)
                 {
 
                     ActorDeployData actorDeployData = sentinels[i].GenerateActorDeployData();
@@ -828,7 +828,7 @@ namespace TFTV
                 {
                     UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
 
-                    int roll = UnityEngine.Random.Range(1, 11 + controller.Difficulty.Order);
+                    int roll = UnityEngine.Random.Range(1, 11 + TFTVReleaseOnly.DifficultyOrderConverter(controller.Difficulty.Order));
 
 
                     if (roll > 6)
@@ -1182,7 +1182,7 @@ namespace TFTV
                     //need to check for completion of objectives...
 
                     ObjectivesManager phoenixObjectives = controller.GetFactionByCommandName("Px").Objectives;
-                    int difficulty = controller.Difficulty.Order;
+                    int difficulty = TFTVReleaseOnly.DifficultyOrderConverter(controller.Difficulty.Order);
 
                     foreach (FactionObjective objective in phoenixObjectives)
                     {
@@ -1289,7 +1289,7 @@ namespace TFTV
                            
 
 
-                            int roll = UnityEngine.Random.Range(1, 11 + controller.Difficulty.Order);
+                            int roll = UnityEngine.Random.Range(1, 11 + TFTVReleaseOnly.DifficultyOrderConverter(controller.Difficulty.Order));
 
 
                             if (roll >= 7)
@@ -1426,7 +1426,7 @@ namespace TFTV
                 {
                     UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
 
-                    int roll = UnityEngine.Random.Range(1, 11 + controller.Difficulty.Order);
+                    int roll = UnityEngine.Random.Range(1, 11 + TFTVReleaseOnly.DifficultyOrderConverter(controller.Difficulty.Order));
 
 
                     if (roll > 6)
@@ -2283,7 +2283,7 @@ namespace TFTV
 
                     UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
 
-                    int roll = UnityEngine.Random.Range(1, deliriumScale + controller.Difficulty.Order);
+                    int roll = UnityEngine.Random.Range(1, deliriumScale + TFTVReleaseOnly.DifficultyOrderConverter(controller.Difficulty.Order));
 
                     TFTVLogger.Always($"{pXOperative.DisplayName} has {deliriumScale} deliriumScale, and the roll is {roll}");
 
@@ -2359,7 +2359,7 @@ namespace TFTV
 
                 foreach (TacticalDeployZone tacticalDeployZone in tacticalDeployZones)
                 {
-                    int rollCap = controller.Difficulty.Order - 1;
+                    int rollCap = TFTVReleaseOnly.DifficultyOrderConverter(controller.Difficulty.Order) - 1;
 
                     UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
                     int myrmidonsToDeploy = UnityEngine.Random.Range(1, rollCap);
@@ -2413,7 +2413,7 @@ namespace TFTV
 
                 foreach (TacticalDeployZone tacticalDeployZone in tacticalDeployZones)
                 {
-                    int rollCap = controller.Difficulty.Order - 1;
+                    int rollCap = TFTVReleaseOnly.DifficultyOrderConverter(controller.Difficulty.Order) - 1;
 
                     UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
                     int wormsToDeploy = UnityEngine.Random.Range(1, rollCap);
@@ -2677,7 +2677,7 @@ namespace TFTV
 
                 Dictionary<TacCharacterDef, int> infiltrationTeam = new Dictionary<TacCharacterDef, int>();
 
-                int difficulty = controller.Difficulty.Order;
+                int difficulty = TFTVReleaseOnly.DifficultyOrderConverter(controller.Difficulty.Order);
 
                 foreach (TacCharacterDef tacCharacterDef in controller.TacMission.MissionData.UnlockedAlienTacCharacterDefs)
                 {
@@ -2727,7 +2727,7 @@ namespace TFTV
 
                 TacCharacterDef mindFragger = DefCache.GetDef<TacCharacterDef>("Facehugger_AlienMutationVariationDef");
 
-                int difficulty = controller.Difficulty.Order;
+                int difficulty = TFTVReleaseOnly.DifficultyOrderConverter(controller.Difficulty.Order);
 
                 List<TacCharacterDef> availableTemplatesOrdered = new List<TacCharacterDef>(controller.TacMission.MissionData.UnlockedAlienTacCharacterDefs.OrderByDescending(tcd => tcd.DeploymentCost));
 
@@ -2807,7 +2807,7 @@ namespace TFTV
                 }
             };
 
-            int numberOfSecondaryForces = controller.Difficulty.Order / 2;
+            int numberOfSecondaryForces = TFTVReleaseOnly.DifficultyOrderConverter(controller.Difficulty.Order) / 2;
 
             List<TacticalDeployZone> usedZones = new List<TacticalDeployZone>();
 

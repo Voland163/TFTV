@@ -144,6 +144,21 @@ namespace TFTV
                     new ResourceUnit { Type = ResourceType.Materials, Value = 100 },
                      new ResourceUnit { Type = ResourceType.Mutagen, Value = 75 }
                 };
+                DefCache.GetDef<ResearchDef>("PX_Alien_HatchingSentinel_ResearchDef").Resources = new ResourcePack()
+                { 
+                     new ResourceUnit { Type = ResourceType.Mutagen, Value = 75 }
+                };
+                DefCache.GetDef<ResearchDef>("PX_Alien_TerrorSentinel_ResearchDef").Resources = new ResourcePack()
+                {
+                     new ResourceUnit { Type = ResourceType.Mutagen, Value = 75 }
+                };
+                DefCache.GetDef<ResearchDef>("PX_Alien_MistSentinel_ResearchDef").Resources = new ResourcePack()
+                {
+                     new ResourceUnit { Type = ResourceType.Mutagen, Value = 75 }
+                };
+
+                
+
             }
             catch (Exception e)
             {
@@ -224,7 +239,7 @@ namespace TFTV
             {
                 TFTVConfig config = TFTVMain.Main.Config;
 
-                if (!ChangesToFoodAndMutagenGenerationImplemented && config.LimitedHarvesting)
+                if (!ChangesToFoodAndMutagenGenerationImplemented && TFTVNewGameOptions.LimitedHarvesting)
                 {
                     ModifyLocalizationKeys();
                     RemoveMutagenHarvestingResearch();
@@ -273,7 +288,7 @@ namespace TFTV
             {
                 TFTVConfig config = TFTVMain.Main.Config;
 
-                if (!ChangesToCapturingPandoransImplemented && config.LimitedCapture)
+                if (!ChangesToCapturingPandoransImplemented && TFTVNewGameOptions.LimitedCapture)
                 {
                     CreateCaptureModule();
                     ChangesToCapturingPandorans();

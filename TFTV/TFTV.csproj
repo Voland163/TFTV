@@ -156,6 +156,8 @@
     <Compile Include="TFTVDiplomacyPenalties.cs" />
     <Compile Include="TFTVFire.cs" />
     <Compile Include="TFTVHealing.cs" />
+    <Compile Include="TFTVNewGameOptions.cs" />
+    <Compile Include="TFTVReleaseOnly.cs" />
     <Compile Include="TFTVSpecialDifficulties.cs" />
     <Compile Include="TFTVExperimental.cs" />
     <Compile Include="TFTVGeoscape.cs" />

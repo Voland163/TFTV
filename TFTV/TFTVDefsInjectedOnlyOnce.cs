@@ -128,8 +128,6 @@ namespace TFTV
         public static void InjectDefsInjectedOnlyOnce()
         {
 
-            //  CreateNewDifficultyLevel();
-            //  CreateNewRookieDifficultyLevel();
             //   ReEnableFlinching();
             CreateRoboticSelfRestoreAbility();
             CreateAcidImmunity();
@@ -200,7 +198,7 @@ namespace TFTV
             CreateReinforcementTag();
             CreateFoodPoisoningEvents();
             StealAircraftMissionsNoItemRecovery();
-
+            TFTVReleaseOnly.OnReleasePrototypeDefs();
             ModifyCratesToAddArmor();
         }
 
@@ -892,52 +890,7 @@ namespace TFTV
 
         }
 
-        internal static void CreateNewRookieDifficultyLevel()
-        {
-            try
-            {
-                GameDifficultyLevelDef sourceDef = DefCache.GetDef<GameDifficultyLevelDef>("Easy_GameDifficultyLevelDef");
-                GameDifficultyLevelDef newDifficulty = Helper.CreateDefFromClone(sourceDef, "{B10E3C8C-1398-4398-B1A6-A93DB0C48781}", "NewEasyDifficulty");
-                newDifficulty.Order = 1;
-                newDifficulty.Name.LocalizationKey = "TFTV_DIFFICULTY_ROOKIE_TITLE";
-                newDifficulty.Description.LocalizationKey = "TFTV_DIFFICULTY_ROOKIE_DESCRIPTION";
-
-                List<GameDifficultyLevelDef> difficultyLevelDefs = new List<GameDifficultyLevelDef>(Shared.DifficultyLevels);
-
-                difficultyLevelDefs.Insert(0, newDifficulty);
-
-                Shared.DifficultyLevels = difficultyLevelDefs.ToArray();
-            }
-
-
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-        }
-
-        internal static void CreateNewDifficultyLevel()
-        {
-            try
-            {
-                GameDifficultyLevelDef sourceDef = DefCache.GetDef<GameDifficultyLevelDef>("VeryHard_GameDifficultyLevelDef");
-                GameDifficultyLevelDef newDifficulty = Helper.CreateDefFromClone(sourceDef, "{F713C90F-5D7D-4F95-B71A-CE094A7DA6AE}", "EtermesDifficulty");
-                newDifficulty.Order = 5;
-                newDifficulty.Name.LocalizationKey = "TFTV_DIFFICULTY_ETERMES_TITLE";
-                newDifficulty.Description.LocalizationKey = "TFTV_DIFFICULTY_ETERMES_DESCRIPTION";
-
-                List<GameDifficultyLevelDef> difficultyLevelDefs = new List<GameDifficultyLevelDef>(Shared.DifficultyLevels) { newDifficulty };
-
-                Shared.DifficultyLevels = difficultyLevelDefs.ToArray();
-            }
-
-
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-        }
-
+       
 
         internal static void CreateAcidImmunity()
         {
@@ -1639,7 +1592,7 @@ namespace TFTV
                 CreateCosmeticExplosion();
                 CreateFireExplosion();
                 CreateHintsForBaseDefense();
-                CreateSpawnCrabmanAbility();
+              //  CreateSpawnCrabmanAbility();
             }
             catch (Exception e)
             {

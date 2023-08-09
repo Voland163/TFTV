@@ -753,7 +753,7 @@ namespace TFTV
             try
             {
                 // GeoLevelController controller = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
-                int difficultyLevel = controller.CurrentDifficultyLevel.Order;
+                int difficultyLevel = TFTVReleaseOnly.DifficultyOrderConverter(controller.CurrentDifficultyLevel.Order);
 
                 if (CharactersDeliriumPerksAndMissions != null) //add difficulty/config option check
                 {

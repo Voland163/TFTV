@@ -184,7 +184,7 @@ namespace TFTV
                 {
                     TFTVConfig config = TFTVMain.Main.Config;
 
-                    if (config.LimitedHarvesting)
+                    if (TFTVNewGameOptions.LimitedHarvesting)
                     {
                         RefreshFoodAndMutagenProductionTooltupUI();
                     }
@@ -211,7 +211,7 @@ namespace TFTV
                 {
                     TFTVConfig config = TFTVMain.Main.Config;
 
-                    if (config.LimitedHarvesting)
+                    if (TFTVNewGameOptions.LimitedHarvesting)
                     {
                         UIModuleActorCycle actorCycleModule = GameUtl.CurrentLevel().GetComponent<GeoLevelController>().View.GeoscapeModules.ActorCycleModule;
                         GeoPhoenixFaction phoenixFaction = GameUtl.CurrentLevel().GetComponent<GeoLevelController>().PhoenixFaction;
@@ -260,7 +260,7 @@ namespace TFTV
                 {
                     TFTVConfig config = TFTVMain.Main.Config;
 
-                    if (config.LimitedHarvesting)
+                    if (TFTVNewGameOptions.LimitedHarvesting)
                     {
 
                         // TFTVLogger.Always($"running EnterState RosterAliens");
@@ -309,7 +309,7 @@ namespace TFTV
                 {
                     TFTVConfig config = TFTVMain.Main.Config;
 
-                    if (config.LimitedHarvesting)
+                    if (TFTVNewGameOptions.LimitedHarvesting)
                     {
 
                         GiveFood();
@@ -420,7 +420,7 @@ namespace TFTV
 
                     TFTVConfig config = TFTVMain.Main.Config;
 
-                    if (config.LimitedHarvesting)
+                    if (TFTVNewGameOptions.LimitedHarvesting)
                     {
                         if (returnResource == ResourceType.Supplies)
                         {

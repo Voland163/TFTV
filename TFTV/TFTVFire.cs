@@ -32,7 +32,7 @@ namespace TFTV
         {
             try
             {
-                if (controller.EventSystem.GetVariable("FireQuenchersAdded") == 0 && controller.CurrentDifficultyLevel.Order > 1)
+                if (controller.EventSystem.GetVariable("FireQuenchersAdded") == 0 && TFTVReleaseOnly.DifficultyOrderConverter(controller.CurrentDifficultyLevel.Order) > 1)
                 {
                     // TFTVLogger.Always("Checking fire weapons usage to decide wether to add Fire Quenchers");
 
@@ -75,7 +75,7 @@ namespace TFTV
                     if (scoreFireDamage > 1)
                     {
                         UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
-                        int roll = UnityEngine.Random.Range(0, 6) + controller.CurrentDifficultyLevel.Order + scoreFireDamage;
+                        int roll = UnityEngine.Random.Range(0, 6) + TFTVReleaseOnly.DifficultyOrderConverter(controller.CurrentDifficultyLevel.Order)   + scoreFireDamage;
 
                         //    TFTVLogger.Always("The roll is " + roll);
 

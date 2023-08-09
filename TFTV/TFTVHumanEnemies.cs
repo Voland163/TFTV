@@ -339,7 +339,7 @@ namespace TFTV
 
             {
                 TacticalFaction phoenix = controller.GetFactionByCommandName("PX");
-                int difficultyLevel = controller.Difficulty.Order;
+                int difficultyLevel = TFTVReleaseOnly.DifficultyOrderConverter(controller.Difficulty.Order);
 
                 foreach (TacticalFaction faction in GetHumanEnemyFactions(controller))
                 {
@@ -488,7 +488,7 @@ namespace TFTV
             try
             {
                 TacticalFaction phoenix = controller.GetFactionByCommandName("PX");
-                int difficultyLevel = controller.Difficulty.Order;
+                int difficultyLevel = TFTVReleaseOnly.DifficultyOrderConverter(controller.Difficulty.Order);
 
                 foreach (TacticalFaction faction in GetHumanEnemyFactions(controller))
                 {
@@ -1015,7 +1015,7 @@ namespace TFTV
 
         public static void AdjustStatsAndSkills(TacticalActor tacticalActor)
         {
-            int difficultyLevel = tacticalActor.TacticalLevel.Difficulty.Order;
+            int difficultyLevel = TFTVReleaseOnly.DifficultyOrderConverter(tacticalActor.TacticalLevel.Difficulty.Order);
 
             try
             {
@@ -1271,7 +1271,7 @@ namespace TFTV
 
         public static int GetStatBuffForTier(TacticalActor tacticalActor)
         {
-            int difficultyLevel = tacticalActor.TacticalLevel.Difficulty.Order;
+            int difficultyLevel = TFTVReleaseOnly.DifficultyOrderConverter(tacticalActor.TacticalLevel.Difficulty.Order);
 
             try
             {
@@ -1634,25 +1634,22 @@ namespace TFTV
                     {
                         if (faction.Faction.FactionDef.ShortName == factionName)
                         {
-                            foreach (TacticalActorBase tacticalActorBase in faction.Actors)
+                            foreach (TacticalActor enemyLeader in faction.TacticalActors)
                             {
-                                TacticalActor tacticalActor = tacticalActorBase as TacticalActor;
-
-                                if (tacticalActorBase.HasGameTag(HumanEnemyTier1GameTag))
+                                if (enemyLeader.HasGameTag(HumanEnemyTier1GameTag) && enemyLeader.IsAlive)
                                 {
-                                    foreach (TacticalActorBase phoenixSoldierBase in phoenix.Actors)
+                                    foreach (TacticalActor phoenixSoldier in phoenix.TacticalActors)
                                     {
-                                        if (phoenixSoldierBase.BaseDef.name == "Soldier_ActorDef" && phoenixSoldierBase.InPlay)
+                                        if (phoenixSoldier.BaseDef.name == "Soldier_ActorDef" && phoenixSoldier.InPlay)
                                         {
-                                            TacticalActor actor = phoenixSoldierBase as TacticalActor;
-                                            float magnitude = actor.GetAdjustedPerceptionValue();
+                                           
+                                            float magnitude = phoenixSoldier.GetAdjustedPerceptionValue();
 
-                                            if ((phoenixSoldierBase.Pos - tacticalActorBase.Pos).magnitude < magnitude
-                                                && TacticalFactionVision.CheckVisibleLineBetweenActors(phoenixSoldierBase, phoenixSoldierBase.Pos, tacticalActor, true)
-                                                && tacticalActor.IsAlive)
+                                            if ((phoenixSoldier.Pos - enemyLeader.Pos).magnitude < magnitude
+                                                && TacticalFactionVision.CheckVisibleLineBetweenActors(phoenixSoldier, phoenixSoldier.Pos, enemyLeader, true))
                                             {
-                                                TFTVLogger.Always(actor.GetDisplayName() + " is within perception range and has LoS on " + tacticalActor.name);
-                                                actor.CharacterStats.WillPoints.Subtract(2);
+                                                TFTVLogger.Always($"{phoenixSoldier.GetDisplayName()} is within perception range and has LoS on {enemyLeader.name}");
+                                                phoenixSoldier.CharacterStats?.WillPoints.Subtract(2);
                                             }
                                         }
                                     }

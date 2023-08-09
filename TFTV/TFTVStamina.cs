@@ -105,7 +105,7 @@ namespace TFTV
 
                         }
 
-                        if (controller.CurrentDifficultyLevel.Order != 1 || config.OverrideRookieDifficultySettings)
+                        if (TFTVReleaseOnly.DifficultyOrderConverter(controller.CurrentDifficultyLevel.Order) != 1)
                         {
                             TFTVCommonMethods.SetStaminaToZero(geoCharacter);
                         }
@@ -140,7 +140,7 @@ namespace TFTV
                     TFTVConfig config = TFTVMain.Main.Config;
                     GeoLevelController controller = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
 
-                    if (controller.CurrentDifficultyLevel.Order != 1 || config.OverrideRookieDifficultySettings)
+                    if (TFTVReleaseOnly.DifficultyOrderConverter(controller.CurrentDifficultyLevel.Order) != 1)
                     {
                         ____parentModule.CurrentCharacter.Fatigue.Stamina.SetToMin();
                     }
@@ -170,7 +170,7 @@ namespace TFTV
                     TFTVConfig config = TFTVMain.Main.Config;
                     GeoLevelController controller = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
 
-                    if (controller.CurrentDifficultyLevel.Order != 1 || config.OverrideRookieDifficultySettings)
+                    if (TFTVReleaseOnly.DifficultyOrderConverter(controller.CurrentDifficultyLevel.Order) != 1)
                     {
                         //set Stamina to zero after installing a bionic
                         __instance.CurrentCharacter.Fatigue.Stamina.SetToMin();

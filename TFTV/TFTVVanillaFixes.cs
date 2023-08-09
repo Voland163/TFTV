@@ -211,7 +211,6 @@ namespace TFTV
                     {
                         CheckFacilitesNotWorking(__instance.PxBase);
                         //  __instance.PxBase.RoutePower();
-
                     }
 
                     //

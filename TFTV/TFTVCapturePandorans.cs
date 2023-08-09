@@ -70,7 +70,7 @@ namespace TFTV
                 {
                     TFTVConfig config = TFTVMain.Main.Config;
 
-                    if (config.LimitedCapture)
+                    if (TFTVNewGameOptions.LimitedCapture)
                     {
 
                         KeepSoldiersAliveFactionObjectiveDef aircraftCapture = DefCache.GetDef<KeepSoldiersAliveFactionObjectiveDef>("CAPTURE_CAPACITY_AIRCRAFT");
@@ -105,7 +105,7 @@ namespace TFTV
                 {
                     TFTVConfig config = TFTVMain.Main.Config;
 
-                    if (config.LimitedCapture)
+                    if (TFTVNewGameOptions.LimitedCapture)
                     {
 
                         KeepSoldiersAliveFactionObjectiveDef containmentPresent = DefCache.GetDef<KeepSoldiersAliveFactionObjectiveDef>("CAPTURE_CAPACITY_BASE");
@@ -147,7 +147,7 @@ namespace TFTV
             {
                 TFTVConfig config = TFTVMain.Main.Config;
 
-                if (config.LimitedCapture)
+                if (TFTVNewGameOptions.LimitedCapture)
                 {
 
                     if (geoMission.Site.GeoLevel.PhoenixFaction.Research.HasCompleted("PX_CaptureTech_ResearchDef"))
@@ -320,7 +320,7 @@ namespace TFTV
                     __state = 0;
                     TFTVConfig config = TFTVMain.Main.Config;
 
-                    if (config.LimitedCapture)
+                    if (TFTVNewGameOptions.LimitedCapture)
                     {
 
 
@@ -431,7 +431,7 @@ namespace TFTV
                 {
                     TFTVConfig config = TFTVMain.Main.Config;
 
-                    if (config.LimitedCapture)
+                    if (TFTVNewGameOptions.LimitedCapture)
                     {
 
                         ApplyStatusAbilityDef capturePandoranAbility = DefCache.GetDef<ApplyStatusAbilityDef>("CapturePandoran_Ability");
@@ -489,7 +489,7 @@ namespace TFTV
 
                     TFTVConfig config = TFTVMain.Main.Config;
 
-                    if (config.LimitedCapture)
+                    if (TFTVNewGameOptions.LimitedCapture)
                     {
 
                         if (ContainmentFacilityPresent || AircraftCaptureCapacity >= 0)
@@ -551,7 +551,7 @@ namespace TFTV
                 {
                     TFTVConfig config = TFTVMain.Main.Config;
 
-                    if (config.LimitedCapture)
+                    if (TFTVNewGameOptions.LimitedCapture)
                     {
 
                         if (__state == 1)
@@ -636,7 +636,7 @@ namespace TFTV
                 {
                     TFTVConfig config = TFTVMain.Main.Config;
 
-                    if (config.LimitedCapture)
+                    if (TFTVNewGameOptions.LimitedCapture)
                     {
                         TFTVLogger.Always($"CaptureLiveAlienRunning");
 

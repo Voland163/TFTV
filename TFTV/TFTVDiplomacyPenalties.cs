@@ -142,7 +142,7 @@ namespace TFTV
 
                     GeoLevelController controller = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
 
-                    if (config.DiplomaticPenalties && (controller.CurrentDifficultyLevel.Order != 1 || config.OverrideRookieDifficultySettings))
+                    if (config.DiplomaticPenalties && TFTVReleaseOnly.DifficultyOrderConverter(controller.CurrentDifficultyLevel.Order) != 1)
                     {
 
 
@@ -289,7 +289,7 @@ namespace TFTV
 
                     GeoLevelController controller = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
 
-                    if (config.DiplomaticPenalties && (controller.CurrentDifficultyLevel.Order != 1 || config.OverrideRookieDifficultySettings))
+                    if (config.DiplomaticPenalties && TFTVReleaseOnly.DifficultyOrderConverter(controller.CurrentDifficultyLevel.Order) != 1)
                     {
 
 
@@ -438,7 +438,7 @@ namespace TFTV
                     TFTVConfig config = TFTVMain.Main.Config;
                     GeoLevelController controller = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
 
-                    if (config.DiplomaticPenalties && (controller.CurrentDifficultyLevel.Order != 1 || config.OverrideRookieDifficultySettings))
+                    if (config.DiplomaticPenalties && TFTVReleaseOnly.DifficultyOrderConverter(controller.CurrentDifficultyLevel.Order) != 1)
                     {
 
                         GeoFactionDef PhoenixPoint = DefCache.GetDef<GeoFactionDef>("Phoenix_GeoPhoenixFactionDef");

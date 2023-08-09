@@ -417,7 +417,7 @@ namespace TFTV
                 List<ClassTagDef> eligibleClassTagDefs = new List<ClassTagDef>();
 
 
-                int difficulty = controller.Difficulty.Order;
+                int difficulty = TFTVReleaseOnly.DifficultyOrderConverter(controller.Difficulty.Order);
 
                 foreach (TacCharacterDef tacCharacterDef in controller.TacMission.MissionData.UnlockedAlienTacCharacterDefs)
                 {
@@ -678,11 +678,11 @@ namespace TFTV
 
             if (level.EventSystem.GetVariable(TBTVVariableName) == 3 || level.EventSystem.GetVariable(TBTVVariableName) == 4)
             {
-                UmbraEvolution(125 * level.CurrentDifficultyLevel.Order, 20 * level.CurrentDifficultyLevel.Order, 20);
+                UmbraEvolution(125 * TFTVReleaseOnly.DifficultyOrderConverter(level.CurrentDifficultyLevel.Order), 20 * TFTVReleaseOnly.DifficultyOrderConverter(level.CurrentDifficultyLevel.Order), 20);
             }
             else if (level.EventSystem.GetVariable(TBTVVariableName) == 1 || level.EventSystem.GetVariable(TBTVVariableName) == 2)
             {
-                UmbraEvolution(80 * level.CurrentDifficultyLevel.Order, 20 * level.CurrentDifficultyLevel.Order, 0);
+                UmbraEvolution(80 * TFTVReleaseOnly.DifficultyOrderConverter(level.CurrentDifficultyLevel.Order), 20 * TFTVReleaseOnly.DifficultyOrderConverter(level.CurrentDifficultyLevel.Order), 0);
             }
         }
 

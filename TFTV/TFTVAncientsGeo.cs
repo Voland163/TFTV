@@ -4,17 +4,18 @@ using Base.Entities.Abilities;
 using Base.UI;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
-using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities;
+using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.Entities.Items;
 using PhoenixPoint.Common.UI;
-using PhoenixPoint.Geoscape.Entities.Abilities;
 using PhoenixPoint.Geoscape.Entities;
+using PhoenixPoint.Geoscape.Entities.Abilities;
 using PhoenixPoint.Geoscape.Events;
+using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
 using PhoenixPoint.Geoscape.Levels.Objectives;
-using PhoenixPoint.Geoscape.Levels;
+using PhoenixPoint.Geoscape.View.ViewControllers;
 using PhoenixPoint.Geoscape.View.ViewControllers.Modal;
 using PhoenixPoint.Geoscape.View.ViewModules;
 using PhoenixPoint.Tactical.Entities;
@@ -26,12 +27,9 @@ using PhoenixPoint.Tactical.Levels;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using static PhoenixPoint.Common.Entities.Items.ItemManufacturing;
 using UnityEngine;
-using PhoenixPoint.Geoscape.View.ViewControllers;
 using UnityEngine.UI;
+using static PhoenixPoint.Common.Entities.Items.ItemManufacturing;
 
 namespace TFTV
 {
@@ -107,34 +105,32 @@ namespace TFTV
                 if (config.impossibleWeaponsAdjustments)
                 {
 
-                    if (controller.EventSystem.GetVariable("NewGameStarted") == 1)
-                    {
 
-                        if (controller.PhoenixFaction.Research.HasCompleted("PX_Scorpion_ResearchDef"))
-                        {
-                            DefCache.GetDef<ResearchViewElementDef>("NJ_VehicleTech_ViewElementDef").BenefitsText.LocalizationKey = "TFTV_NJ_VEHICLETECH_RESEARCHDEF_BENEFITS";
-                        }
-                        else
-                        {
-                            DefCache.GetDef<ResearchViewElementDef>("NJ_VehicleTech_ViewElementDef").BenefitsText.LocalizationKey = "";
-                        }
-                        if (controller.PhoenixFaction.Research.HasCompleted("PX_ShardGun_ResearchDef"))
-                        {
-                            DefCache.GetDef<ResearchViewElementDef>("ANU_AdvancedInfectionTech_ViewElementDef").BenefitsText.LocalizationKey = "TFTV_ANU_ADVANCEDINFECTIONTECH_RESEARCHDEF_BENEFITS";
-                        }
-                        else
-                        {
-                            DefCache.GetDef<ResearchViewElementDef>("ANU_AdvancedInfectionTech_ViewElementDef").BenefitsText.LocalizationKey = "";
-                        }
-                        if (controller.PhoenixFaction.Research.HasCompleted("PX_Scyther_ResearchDef"))
-                        {
-                            DefCache.GetDef<ResearchViewElementDef>("SYN_Bionics3_ViewElementDef").BenefitsText.LocalizationKey = "TFTV_SYN_BIONICS3_RESEARCHDEF_BENEFITS";
-                        }
-                        else
-                        {
-                            DefCache.GetDef<ResearchViewElementDef>("SYN_Bionics3_ViewElementDef").BenefitsText.LocalizationKey = "SYN_BIONICS3_RESEARCHDEF_BENEFITS";
-                        }
+                    if (controller.PhoenixFaction.Research.HasCompleted("PX_Scorpion_ResearchDef"))
+                    {
+                        DefCache.GetDef<ResearchViewElementDef>("NJ_VehicleTech_ViewElementDef").BenefitsText.LocalizationKey = "TFTV_NJ_VEHICLETECH_RESEARCHDEF_BENEFITS";
                     }
+                    else
+                    {
+                        DefCache.GetDef<ResearchViewElementDef>("NJ_VehicleTech_ViewElementDef").BenefitsText.LocalizationKey = "";
+                    }
+                    if (controller.PhoenixFaction.Research.HasCompleted("PX_ShardGun_ResearchDef"))
+                    {
+                        DefCache.GetDef<ResearchViewElementDef>("ANU_AdvancedInfectionTech_ViewElementDef").BenefitsText.LocalizationKey = "TFTV_ANU_ADVANCEDINFECTIONTECH_RESEARCHDEF_BENEFITS";
+                    }
+                    else
+                    {
+                        DefCache.GetDef<ResearchViewElementDef>("ANU_AdvancedInfectionTech_ViewElementDef").BenefitsText.LocalizationKey = "";
+                    }
+                    if (controller.PhoenixFaction.Research.HasCompleted("PX_Scyther_ResearchDef"))
+                    {
+                        DefCache.GetDef<ResearchViewElementDef>("SYN_Bionics3_ViewElementDef").BenefitsText.LocalizationKey = "TFTV_SYN_BIONICS3_RESEARCHDEF_BENEFITS";
+                    }
+                    else
+                    {
+                        DefCache.GetDef<ResearchViewElementDef>("SYN_Bionics3_ViewElementDef").BenefitsText.LocalizationKey = "SYN_BIONICS3_RESEARCHDEF_BENEFITS";
+                    }
+
                 }
 
             }
@@ -531,102 +527,101 @@ namespace TFTV
                 {
                     GeoLevelController controller = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
 
-                    if (controller.EventSystem.GetVariable("NewGameStarted") == 1)
+
+                    //  TFTVLogger.Always("Set resources, got here");
+
+                    foreach (ResourceUnit resourceUnit in reward)
                     {
-                        //  TFTVLogger.Always("Set resources, got here");
+                        //  TFTVLogger.Always($"{resourceUnit.Type} {resourceUnit.Value}");
 
-                        foreach (ResourceUnit resourceUnit in reward)
+                        if (resourceUnit.Type == ResourceType.ProteanMutane)
                         {
-                            //  TFTVLogger.Always($"{resourceUnit.Type} {resourceUnit.Value}");
+                            UIModuleInfoBar uIModuleInfoBar = (UIModuleInfoBar)UnityEngine.Object.FindObjectOfType(typeof(UIModuleInfoBar));
 
-                            if (resourceUnit.Type == ResourceType.ProteanMutane)
-                            {
-                                UIModuleInfoBar uIModuleInfoBar = (UIModuleInfoBar)UnityEngine.Object.FindObjectOfType(typeof(UIModuleInfoBar));
-
-                                Resolution resolution = Screen.currentResolution;
-                                float resolutionFactorWidth = (float)resolution.width / 1920f;
-                                float resolutionFactorHeight = (float)resolution.height / 1080f;
+                            Resolution resolution = Screen.currentResolution;
+                            float resolutionFactorWidth = (float)resolution.width / 1920f;
+                            float resolutionFactorHeight = (float)resolution.height / 1080f;
 
 
-                                Transform tInfoBar = uIModuleInfoBar.PopulationBarRoot.transform.parent?.transform;
-                                Transform exoticResourceIcon = tInfoBar.GetComponent<Transform>().Find("ProteanMutaneRes").GetComponent<Transform>().Find("Requirement_Icon");
-                                Transform exoticResourceText = tInfoBar.GetComponent<Transform>().Find("ProteanMutaneRes").GetComponent<Transform>().Find("Requirement_Text");
+                            Transform tInfoBar = uIModuleInfoBar.PopulationBarRoot.transform.parent?.transform;
+                            Transform exoticResourceIcon = tInfoBar.GetComponent<Transform>().Find("ProteanMutaneRes").GetComponent<Transform>().Find("Requirement_Icon");
+                            Transform exoticResourceText = tInfoBar.GetComponent<Transform>().Find("ProteanMutaneRes").GetComponent<Transform>().Find("Requirement_Text");
 
-                                Transform exoticResourceIconCopy = UnityEngine.Object.Instantiate(exoticResourceIcon, __instance.ResourcesRewardsParentObject.transform);
-                                Transform exoticResourceTextCopy = UnityEngine.Object.Instantiate(exoticResourceText, __instance.ResourcesRewardsParentObject.transform);
+                            Transform exoticResourceIconCopy = UnityEngine.Object.Instantiate(exoticResourceIcon, __instance.ResourcesRewardsParentObject.transform);
+                            Transform exoticResourceTextCopy = UnityEngine.Object.Instantiate(exoticResourceText, __instance.ResourcesRewardsParentObject.transform);
 
-                                exoticResourceTextCopy.GetComponent<Text>().text = reward.Values[0].Value.ToString();
-                                // exoticResourceTextCopy.GetComponent<Text>().text = DefCache.GetDef<ResourceMissionOutcomeDef>("AncientsHarvestProteanMissionOutcomeDef").Resources[0].Value.ToString();
-                                exoticResourceTextCopy.SetParent(exoticResourceIconCopy);
-                                exoticResourceIconCopy.localScale = new Vector3(1.5f, 1.5f, 1f);
-                                exoticResourceTextCopy.Translate(new Vector3(0f, -10f * resolutionFactorHeight, 0f));
+                            exoticResourceTextCopy.GetComponent<Text>().text = reward.Values[0].Value.ToString();
+                            // exoticResourceTextCopy.GetComponent<Text>().text = DefCache.GetDef<ResourceMissionOutcomeDef>("AncientsHarvestProteanMissionOutcomeDef").Resources[0].Value.ToString();
+                            exoticResourceTextCopy.SetParent(exoticResourceIconCopy);
+                            exoticResourceIconCopy.localScale = new Vector3(1.5f, 1.5f, 1f);
+                            exoticResourceTextCopy.Translate(new Vector3(0f, -10f * resolutionFactorHeight, 0f));
 
-                                __instance.NoResourcesText.gameObject.SetActive(false);
-                                __instance.ResourcesRewardsParentObject.SetActive(true);
+                            __instance.NoResourcesText.gameObject.SetActive(false);
+                            __instance.ResourcesRewardsParentObject.SetActive(true);
 
-                                TFTVLogger.Always("Removing Protean Mutane Objective");
-                                TFTVCommonMethods.RemoveManuallySetObjective(controller, "OBTAIN_PM_OBJECTIVE");
-                            }
-                            else if (resourceUnit.Type == ResourceType.LivingCrystals)
-                            {
-                                UIModuleInfoBar uIModuleInfoBar = (UIModuleInfoBar)UnityEngine.Object.FindObjectOfType(typeof(UIModuleInfoBar));
+                            TFTVLogger.Always("Removing Protean Mutane Objective");
+                            TFTVCommonMethods.RemoveManuallySetObjective(controller, "OBTAIN_PM_OBJECTIVE");
+                        }
+                        else if (resourceUnit.Type == ResourceType.LivingCrystals)
+                        {
+                            UIModuleInfoBar uIModuleInfoBar = (UIModuleInfoBar)UnityEngine.Object.FindObjectOfType(typeof(UIModuleInfoBar));
 
-                                Resolution resolution = Screen.currentResolution;
-                                float resolutionFactorWidth = (float)resolution.width / 1920f;
-                                float resolutionFactorHeight = (float)resolution.height / 1080f;
+                            Resolution resolution = Screen.currentResolution;
+                            float resolutionFactorWidth = (float)resolution.width / 1920f;
+                            float resolutionFactorHeight = (float)resolution.height / 1080f;
 
-                                Transform tInfoBar = uIModuleInfoBar.PopulationBarRoot.transform.parent?.transform;
-                                Transform exoticResourceIcon = tInfoBar.GetComponent<Transform>().Find("LivingCrystalsRes").GetComponent<Transform>().Find("Requirement_Icon");
-                                Transform exoticResourceText = tInfoBar.GetComponent<Transform>().Find("LivingCrystalsRes").GetComponent<Transform>().Find("Requirement_Text");
-
-
-                                Transform exoticResourceIconCopy = UnityEngine.Object.Instantiate(exoticResourceIcon, __instance.ResourcesRewardsParentObject.transform);
-                                Transform exoticResourceTextCopy = UnityEngine.Object.Instantiate(exoticResourceText, __instance.ResourcesRewardsParentObject.transform);
-
-                                exoticResourceTextCopy.GetComponent<Text>().text = reward.Values[0].Value.ToString();
-                                // DefCache.GetDef<ResourceMissionOutcomeDef>("AncientsHarvestCrystalMissionOutcomeDef").Resources[0].Value.ToString();
-                                exoticResourceTextCopy.SetParent(exoticResourceIconCopy);
-                                exoticResourceIconCopy.localScale = new Vector3(1.5f, 1.5f, 1f);
-                                exoticResourceTextCopy.Translate(new Vector3(0f, -10f * resolutionFactorHeight, 0f));
-
-                                __instance.NoResourcesText.gameObject.SetActive(false);
-                                __instance.ResourcesRewardsParentObject.SetActive(true);
-
-                                TFTVLogger.Always("Removing Living Crystal Objective");
-                                TFTVCommonMethods.RemoveManuallySetObjective(controller, "OBTAIN_LC_OBJECTIVE");
-
-                            }
-                            else if (resourceUnit.Type == ResourceType.Orichalcum)
-                            {
-                                TFTVLogger.Always("Orichalcum, got here");
-                                UIModuleInfoBar uIModuleInfoBar = (UIModuleInfoBar)UnityEngine.Object.FindObjectOfType(typeof(UIModuleInfoBar));
-
-                                Resolution resolution = Screen.currentResolution;
-                                float resolutionFactorWidth = (float)resolution.width / 1920f;
-                                float resolutionFactorHeight = (float)resolution.height / 1080f;
+                            Transform tInfoBar = uIModuleInfoBar.PopulationBarRoot.transform.parent?.transform;
+                            Transform exoticResourceIcon = tInfoBar.GetComponent<Transform>().Find("LivingCrystalsRes").GetComponent<Transform>().Find("Requirement_Icon");
+                            Transform exoticResourceText = tInfoBar.GetComponent<Transform>().Find("LivingCrystalsRes").GetComponent<Transform>().Find("Requirement_Text");
 
 
-                                Transform tInfoBar = uIModuleInfoBar.PopulationBarRoot.transform.parent?.transform;
-                                Transform exoticResourceIcon = tInfoBar.GetComponent<Transform>().Find("OrichalcumRes").GetComponent<Transform>().Find("Requirement_Icon");
-                                Transform exoticResourceText = tInfoBar.GetComponent<Transform>().Find("OrichalcumRes").GetComponent<Transform>().Find("Requirement_Text");
+                            Transform exoticResourceIconCopy = UnityEngine.Object.Instantiate(exoticResourceIcon, __instance.ResourcesRewardsParentObject.transform);
+                            Transform exoticResourceTextCopy = UnityEngine.Object.Instantiate(exoticResourceText, __instance.ResourcesRewardsParentObject.transform);
+
+                            exoticResourceTextCopy.GetComponent<Text>().text = reward.Values[0].Value.ToString();
+                            // DefCache.GetDef<ResourceMissionOutcomeDef>("AncientsHarvestCrystalMissionOutcomeDef").Resources[0].Value.ToString();
+                            exoticResourceTextCopy.SetParent(exoticResourceIconCopy);
+                            exoticResourceIconCopy.localScale = new Vector3(1.5f, 1.5f, 1f);
+                            exoticResourceTextCopy.Translate(new Vector3(0f, -10f * resolutionFactorHeight, 0f));
+
+                            __instance.NoResourcesText.gameObject.SetActive(false);
+                            __instance.ResourcesRewardsParentObject.SetActive(true);
+
+                            TFTVLogger.Always("Removing Living Crystal Objective");
+                            TFTVCommonMethods.RemoveManuallySetObjective(controller, "OBTAIN_LC_OBJECTIVE");
+
+                        }
+                        else if (resourceUnit.Type == ResourceType.Orichalcum)
+                        {
+                            TFTVLogger.Always("Orichalcum, got here");
+                            UIModuleInfoBar uIModuleInfoBar = (UIModuleInfoBar)UnityEngine.Object.FindObjectOfType(typeof(UIModuleInfoBar));
+
+                            Resolution resolution = Screen.currentResolution;
+                            float resolutionFactorWidth = (float)resolution.width / 1920f;
+                            float resolutionFactorHeight = (float)resolution.height / 1080f;
 
 
-                                Transform exoticResourceIconCopy = UnityEngine.Object.Instantiate(exoticResourceIcon, __instance.ResourcesRewardsParentObject.transform);
-                                Transform exoticResourceTextCopy = UnityEngine.Object.Instantiate(exoticResourceText, __instance.ResourcesRewardsParentObject.transform);
-                                // TFTVLogger.Always($"{reward.Values[0].Value}");
-                                exoticResourceTextCopy.GetComponent<Text>().text = reward.Values[0].Value.ToString();
-                                //  TFTVLogger.Always($"{exoticResourceTextCopy.GetComponent<Text>().text}");
-                                //DefCache.GetDef<ResourceMissionOutcomeDef>("AncientsHarvestOrichalcumMissionOutcomeDef").Resources[0].Value.ToString();
-                                exoticResourceTextCopy.SetParent(exoticResourceIconCopy);
-                                exoticResourceIconCopy.localScale = new Vector3(1.5f, 1.5f, 1f);
-                                exoticResourceTextCopy.Translate(new Vector3(0f, -10f * resolutionFactorHeight, 0f));
+                            Transform tInfoBar = uIModuleInfoBar.PopulationBarRoot.transform.parent?.transform;
+                            Transform exoticResourceIcon = tInfoBar.GetComponent<Transform>().Find("OrichalcumRes").GetComponent<Transform>().Find("Requirement_Icon");
+                            Transform exoticResourceText = tInfoBar.GetComponent<Transform>().Find("OrichalcumRes").GetComponent<Transform>().Find("Requirement_Text");
 
-                                __instance.NoResourcesText.gameObject.SetActive(false);
-                                __instance.ResourcesRewardsParentObject.SetActive(true);
 
-                            }
+                            Transform exoticResourceIconCopy = UnityEngine.Object.Instantiate(exoticResourceIcon, __instance.ResourcesRewardsParentObject.transform);
+                            Transform exoticResourceTextCopy = UnityEngine.Object.Instantiate(exoticResourceText, __instance.ResourcesRewardsParentObject.transform);
+                            // TFTVLogger.Always($"{reward.Values[0].Value}");
+                            exoticResourceTextCopy.GetComponent<Text>().text = reward.Values[0].Value.ToString();
+                            //  TFTVLogger.Always($"{exoticResourceTextCopy.GetComponent<Text>().text}");
+                            //DefCache.GetDef<ResourceMissionOutcomeDef>("AncientsHarvestOrichalcumMissionOutcomeDef").Resources[0].Value.ToString();
+                            exoticResourceTextCopy.SetParent(exoticResourceIconCopy);
+                            exoticResourceIconCopy.localScale = new Vector3(1.5f, 1.5f, 1f);
+                            exoticResourceTextCopy.Translate(new Vector3(0f, -10f * resolutionFactorHeight, 0f));
+
+                            __instance.NoResourcesText.gameObject.SetActive(false);
+                            __instance.ResourcesRewardsParentObject.SetActive(true);
+
                         }
                     }
+
                 }
                 catch (Exception e)
                 {
@@ -644,10 +639,9 @@ namespace TFTV
             {
                 try
                 {
-                    if (__instance.GeoLevel.EventSystem.GetVariable("NewGameStarted") == 1)
-                    {
-                        __result = false;
-                    }
+
+                    __result = false;
+
                 }
                 catch (Exception e)
                 {
@@ -667,23 +661,21 @@ namespace TFTV
                 {
                     GeoLevelController controller = __instance.GeoLevel;
 
-                    if (controller.EventSystem.GetVariable("NewGameStarted") == 1)
+
+
+                    if (controller.PhoenixFaction.Research.HasCompleted("PX_LivingCrystalResearchDef")
+                        && controller.PhoenixFaction.Research.HasCompleted("PX_ProteanMutaneResearchDef")
+                        && controller.EventSystem.GetVariable(CyclopsBuiltVariable) == 0)
                     {
 
 
-                        if (controller.PhoenixFaction.Research.HasCompleted("PX_LivingCrystalResearchDef")
-                            && controller.PhoenixFaction.Research.HasCompleted("PX_ProteanMutaneResearchDef")
-                            && controller.EventSystem.GetVariable(CyclopsBuiltVariable) == 0)
-                        {
-
-
-                        }
-                        else
-                        {
-                            __result = GeoAbilityDisabledState.RequirementsNotMet;
-
-                        }
                     }
+                    else
+                    {
+                        __result = GeoAbilityDisabledState.RequirementsNotMet;
+
+                    }
+
 
                 }
                 catch (Exception e)
@@ -713,7 +705,7 @@ namespace TFTV
                     GameTagDef pmGuardian = DefCache.GetDef<GameTagDef>("ProteanMutaneGuardianGameTagDef");
                     List<GameTagDef> guardianTags = new List<GameTagDef> { lcGuardian, oGuardian, pmGuardian };
 
-                    if (controller.EventSystem.GetVariable("NewGameStarted") == 1 && guardianTags.Any(tag => ancientSite.GameTags.Contains(tag)))
+                    if (guardianTags.Any(tag => ancientSite.GameTags.Contains(tag)))
                     {
                         TFTVLogger.Always("AttackAncientSite " + ancientSite.Name + " Guardian");
                         SetProtectCyclopsObjective(controller);
@@ -743,16 +735,15 @@ namespace TFTV
                 {
                     GeoLevelController controller = __instance.GeoLevel;
 
-                    if (controller.EventSystem.GetVariable("NewGameStarted") == 1)
-                    {
-                        controller.EventSystem.SetVariable(CyclopsBuiltVariable, 1);
-                        GeoSite geoSite = (GeoSite)target.Actor;
 
-                        controller.AlienFaction.AttackAncientSite(geoSite, 8);
+                    controller.EventSystem.SetVariable(CyclopsBuiltVariable, 1);
+                    GeoSite geoSite = (GeoSite)target.Actor;
 
-                        GeoscapeEventContext context = new GeoscapeEventContext(controller.AlienFaction, controller.PhoenixFaction);
-                        controller.EventSystem.TriggerGeoscapeEvent("Helena_Beast", context);
-                    }
+                    controller.AlienFaction.AttackAncientSite(geoSite, 8);
+
+                    GeoscapeEventContext context = new GeoscapeEventContext(controller.AlienFaction, controller.PhoenixFaction);
+                    controller.EventSystem.TriggerGeoscapeEvent("Helena_Beast", context);
+
                 }
                 catch (Exception e)
                 {
@@ -766,7 +757,7 @@ namespace TFTV
 
         public static void EnsureNoHarvesting(GeoLevelController controller)
         {
-            try 
+            try
             {
                 List<GeoVehicle> geoVehicles = controller.PhoenixFaction.Vehicles.ToList();
                 foreach (GeoVehicle vehicle in geoVehicles)
@@ -794,65 +785,63 @@ namespace TFTV
                     GeoLevelController controller = __instance.Level;
                     GeoSite geoSite = __instance.Site;
 
-                    if (controller.EventSystem.GetVariable("NewGameStarted") == 1)
+
+                    MissionTypeTagDef ancientSiteDefense = DefCache.GetDef<MissionTypeTagDef>("MissionTypeAncientSiteDefense_MissionTagDef");
+                    if (__instance.MissionDef.SaveDefaultName == "AncientRuin" && !__instance.MissionDef.Tags.Contains(ancientSiteDefense))
                     {
 
-                        MissionTypeTagDef ancientSiteDefense = DefCache.GetDef<MissionTypeTagDef>("MissionTypeAncientSiteDefense_MissionTagDef");
-                        if (__instance.MissionDef.SaveDefaultName == "AncientRuin" && !__instance.MissionDef.Tags.Contains(ancientSiteDefense))
+                        controller.EventSystem.SetVariable(AncientsEncounterVariableName, controller.EventSystem.GetVariable(AncientsEncounterVariableName) + 1);
+                        TFTVLogger.Always(AncientsEncounterVariableName + " is now " + controller.EventSystem.GetVariable(AncientsEncounterVariableName));
+
+                        List<GeoVehicle> geoVehicles = __instance.Site.Vehicles.ToList();
+                        foreach (GeoVehicle vehicle in geoVehicles)
                         {
+                            vehicle.EndCollectingFromCurrentSite();
 
-                            controller.EventSystem.SetVariable(AncientsEncounterVariableName, controller.EventSystem.GetVariable(AncientsEncounterVariableName) + 1);
-                            TFTVLogger.Always(AncientsEncounterVariableName + " is now " + controller.EventSystem.GetVariable(AncientsEncounterVariableName));
-
-                            List<GeoVehicle> geoVehicles = __instance.Site.Vehicles.ToList();
-                            foreach (GeoVehicle vehicle in geoVehicles)
-                            {
-                                vehicle.EndCollectingFromCurrentSite();
-
-                            }
-                        }
-                        //if player wins the ancient defense mission, the variable triggering Yuggothian Entity research will be unlocked
-                        if (__instance.MissionDef.Tags.Contains(ancientSiteDefense))
-                        {
-                            if (viewerFactionResult.State == TacFactionState.Won)
-                            {
-                                if (controller.EventSystem.GetVariable("Sphere") == 0)
-                                {
-                                    controller.EventSystem.SetVariable("Sphere", 1);
-                                    //triggers Digitize my Dreams, the Cyclops said event
-                                    GeoscapeEventContext context = new GeoscapeEventContext(controller.AlienFaction, controller.PhoenixFaction);
-                                    controller.EventSystem.TriggerGeoscapeEvent("Cyclops_Dreams", context);
-                                    AncientsCheckResearchState(controller);
-                                }
-                                GameTagDef lcGuardian = DefCache.GetDef<GameTagDef>("LivingCrystalGuardianGameTagDef");
-                                GameTagDef oGuardian = DefCache.GetDef<GameTagDef>("OrichalcumGuardianGameTagDef");
-                                GameTagDef pmGuardian = DefCache.GetDef<GameTagDef>("ProteanMutaneGuardianGameTagDef");
-                                List<GameTagDef> guardianTags = new List<GameTagDef> { lcGuardian, oGuardian, pmGuardian };
-
-
-                                foreach (GameTagDef gameTagDef in guardianTags)
-                                {
-                                    if (geoSite.GameTags.Contains(gameTagDef))
-                                    {
-                                        geoSite.GameTags.Remove(gameTagDef);
-
-                                    }
-
-                                }
-
-                                TFTVCommonMethods.RemoveManuallySetObjective(controller, "BUILD_CYCLOPS_OBJECTIVE");
-
-                            }
-                            //if the player is defeated, the Cyclops variable will be reset so that the player may try again
-                            else if (viewerFactionResult.State == TacFactionState.Defeated)
-                            {
-                                controller.EventSystem.SetVariable(CyclopsBuiltVariable, 0);
-
-                            }
-
-                            TFTVCommonMethods.RemoveManuallySetObjective(controller, "PROTECT_THE_CYCLOPS_OBJECTIVE_GEO_TITLE");
                         }
                     }
+                    //if player wins the ancient defense mission, the variable triggering Yuggothian Entity research will be unlocked
+                    if (__instance.MissionDef.Tags.Contains(ancientSiteDefense))
+                    {
+                        if (viewerFactionResult.State == TacFactionState.Won)
+                        {
+                            if (controller.EventSystem.GetVariable("Sphere") == 0)
+                            {
+                                controller.EventSystem.SetVariable("Sphere", 1);
+                                //triggers Digitize my Dreams, the Cyclops said event
+                                GeoscapeEventContext context = new GeoscapeEventContext(controller.AlienFaction, controller.PhoenixFaction);
+                                controller.EventSystem.TriggerGeoscapeEvent("Cyclops_Dreams", context);
+                                AncientsCheckResearchState(controller);
+                            }
+                            GameTagDef lcGuardian = DefCache.GetDef<GameTagDef>("LivingCrystalGuardianGameTagDef");
+                            GameTagDef oGuardian = DefCache.GetDef<GameTagDef>("OrichalcumGuardianGameTagDef");
+                            GameTagDef pmGuardian = DefCache.GetDef<GameTagDef>("ProteanMutaneGuardianGameTagDef");
+                            List<GameTagDef> guardianTags = new List<GameTagDef> { lcGuardian, oGuardian, pmGuardian };
+
+
+                            foreach (GameTagDef gameTagDef in guardianTags)
+                            {
+                                if (geoSite.GameTags.Contains(gameTagDef))
+                                {
+                                    geoSite.GameTags.Remove(gameTagDef);
+
+                                }
+
+                            }
+
+                            TFTVCommonMethods.RemoveManuallySetObjective(controller, "BUILD_CYCLOPS_OBJECTIVE");
+
+                        }
+                        //if the player is defeated, the Cyclops variable will be reset so that the player may try again
+                        else if (viewerFactionResult.State == TacFactionState.Defeated)
+                        {
+                            controller.EventSystem.SetVariable(CyclopsBuiltVariable, 0);
+
+                        }
+
+                        TFTVCommonMethods.RemoveManuallySetObjective(controller, "PROTECT_THE_CYCLOPS_OBJECTIVE_GEO_TITLE");
+                    }
+
                 }
 
                 catch (Exception e)
@@ -919,11 +908,8 @@ namespace TFTV
                     GeoLevelController controller = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
 
 
-                    if (controller.EventSystem.GetVariable("NewGameStarted") == 1)
-                    {
+                    __result = new ResourcePack() { new ResourceUnit(ResourceType.Materials, value: 20), new ResourceUnit(ResourceType.Tech, value: 5) };
 
-                        __result = new ResourcePack() { new ResourceUnit(ResourceType.Materials, value: 20), new ResourceUnit(ResourceType.Tech, value: 5) };
-                    }
                 }
                 catch (Exception e)
                 {

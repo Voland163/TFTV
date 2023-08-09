@@ -43,11 +43,11 @@ namespace TFTV
 
 
 
-                if (config.tutorialCharacters == TFTVConfig.StartingSquadCharacters.UNBUFFED)
+                if (TFTVNewGameOptions.startingSquadCharacters == TFTVNewGameOptions.StartingSquadCharacters.UNBUFFED)
                 {
                     startingTemplates = TFTVStarts.SetInitialSquadUnbuffed(levelController);
                 }
-                else if (config.tutorialCharacters == TFTVConfig.StartingSquadCharacters.RANDOM)
+                else if (TFTVNewGameOptions.startingSquadCharacters == TFTVNewGameOptions.StartingSquadCharacters.RANDOM)
                 {
                     startingTemplates = TFTVStarts.SetInitialSquadRandom(levelController);
                 }
@@ -198,17 +198,17 @@ namespace TFTV
                     List<ItemUnit> startingStorage = currentDifficultyLevel.StartingStorage.ToList();
 
 
-                    if (config.startingSquad == TFTVConfig.StartingSquadFaction.ANU)
+                    if (TFTVNewGameOptions.startingSquad == TFTVNewGameOptions.StartingSquadFaction.ANU)
                     {
                         startingStorage.Add(new ItemUnit(redeemerAmmo, 10));
                     }
-                    else if (config.startingSquad == TFTVConfig.StartingSquadFaction.NJ)
+                    else if (TFTVNewGameOptions.startingSquad == TFTVNewGameOptions.StartingSquadFaction.NJ)
                     {
                         startingStorage.Add(new ItemUnit(pdwAmmo, 10));
                         startingStorage.Add(new ItemUnit(mechArmsAmmo, 5));
 
                     }
-                    else if (config.startingSquad == TFTVConfig.StartingSquadFaction.SYNEDRION)
+                    else if (TFTVNewGameOptions.startingSquad == TFTVNewGameOptions.StartingSquadFaction.SYNEDRION)
                     {
                         startingStorage.Add(new ItemUnit(boltsAmmo, 20));
                         startingStorage.Add(new ItemUnit(spidersAmmo, 5));

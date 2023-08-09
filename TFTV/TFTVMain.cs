@@ -179,21 +179,21 @@ namespace TFTV
             if (Config.defaultSettings)
             {
 
-                Config.OverrideRookieDifficultySettings = false;
-                Config.EasyTactical = false;
+              //  Config.OverrideRookieDifficultySettings = false;
+              //  Config.EasyTactical = false;
                 Config.EasyGeoscape = false;
                 Config.EtermesMode = false;
                 Config.MoreMistVO = true;
                 Config.SkipMovies = false;
                 Config.amountOfExoticResources = 1f;
                 Config.impossibleWeaponsAdjustments = true;
-                Config.startingSquad = StartingSquadFaction.PHOENIX;
-                Config.startingBaseLocation = StartingBaseLocation.Vanilla;
-                Config.tutorialCharacters = StartingSquadCharacters.UNBUFFED;
-                Config.InitialScavSites = 8;
-                Config.ChancesScavCrates = TFTVConfig.ScavengingWeight.High;
-                Config.ChancesScavSoldiers = TFTVConfig.ScavengingWeight.Low;
-                Config.ChancesScavGroundVehicleRescue = TFTVConfig.ScavengingWeight.Low;
+              //  Config.startingSquad = StartingSquadFaction.PHOENIX;
+              //  Config.startingBaseLocation = StartingBaseLocation.Vanilla;
+              //  Config.tutorialCharacters = StartingSquadCharacters.UNBUFFED;
+              //  Config.InitialScavSites = 8;
+              //  Config.ChancesScavCrates = TFTVConfig.ScavengingWeight.High;
+              //  Config.ChancesScavSoldiers = TFTVConfig.ScavengingWeight.Low;
+              //  Config.ChancesScavGroundVehicleRescue = TFTVConfig.ScavengingWeight.Low;
                 Config.ResourceMultiplier = 0.8f;
                 Config.DiplomaticPenalties = true;
                 Config.StaminaPenaltyFromInjury = true;
@@ -207,28 +207,20 @@ namespace TFTV
                 Config.HavenSOS = true;
                 Config.Debug = true;
                 Config.EqualizeTrade = true;
-                Config.LimitedCapture = true;
-                Config.LimitedHarvesting = true;
+            //    Config.LimitedCapture = true;
+            //    Config.LimitedHarvesting = true;
                 Config.LimitedRaiding = true;
                 Config.ReinforcementsNoDrops = true;
         // Config.ShowFaces = true;
 
     }
-            if (Config.OverrideRookieDifficultySettings =! false||
-            Config.EasyTactical != false||
+            if (
             Config.EasyGeoscape != false||
             Config.EtermesMode != false ||
             Config.MoreMistVO != true ||
             Config.SkipMovies != false ||
             Config.amountOfExoticResources != 1f ||
-            Config.impossibleWeaponsAdjustments != true ||
-            Config.startingSquad != StartingSquadFaction.PHOENIX ||
-            Config.tutorialCharacters != StartingSquadCharacters.UNBUFFED ||
-            Config.startingBaseLocation!=StartingBaseLocation.Vanilla||
-            Config.InitialScavSites != 8 ||
-               Config.ChancesScavCrates != TFTVConfig.ScavengingWeight.High ||
-               Config.ChancesScavSoldiers != TFTVConfig.ScavengingWeight.Low ||
-               Config.ChancesScavGroundVehicleRescue != TFTVConfig.ScavengingWeight.Low ||
+            Config.impossibleWeaponsAdjustments != true ||             
             Config.ResourceMultiplier != 0.8f ||
             Config.DiplomaticPenalties != true ||
             Config.StaminaPenaltyFromInjury != true ||
@@ -242,8 +234,7 @@ namespace TFTV
             Config.HavenSOS != true ||
             Config.Debug != true ||
                 Config.EqualizeTrade != true ||
-            Config.LimitedCapture != true ||
-            Config.LimitedHarvesting != true ||
+            
             Config.LimitedRaiding != true ||
             Config.ReinforcementsNoDrops != true)
             //   Config.ShowFaces!=true)

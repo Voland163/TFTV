@@ -59,24 +59,7 @@ namespace TFTV
                 {
 
                     GeoLevelController controller = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
-                   
-                  /*  if (eventID == "PROG_PU12NewNJOption" && controller.EventSystem.GetEventRecord("PROG_PU12_MISS")?.SelectedChoice == 0 && __instance.Diplomacy.Count()==1)
-                    {
-
-                        TFTVLogger.Always($"got here");
-                        GeoFactionDef PhoenixPoint = DefCache.GetDef<GeoFactionDef>("Phoenix_GeoPhoenixFactionDef");
-                        GeoFactionDef Synedrion = DefCache.GetDef<GeoFactionDef>("Synedrion_GeoFactionDef");
-
-                        __instance.Diplomacy.Add(new OutcomeDiplomacyChange()
-                        {
-                            PartyFaction = Synedrion,
-                            TargetFaction = PhoenixPoint,
-                            Value = -12,
-                            PartyType = (OutcomeDiplomacyChange.ChangeTarget)1,
-                        });
-                    }*/
-
-
+            
                     TFTVConfig config = TFTVMain.Main.Config;
 
                     if (config.DiplomaticPenalties && CheckGeoscapeSpecialDifficultySettings(controller) != 1)
@@ -408,12 +391,8 @@ namespace TFTV
 
                             multiplier *= 0.5f;
                         }
-
-
                         __result *= multiplier;
                     }
-
-
                 }
                 catch (Exception e)
                 {
@@ -528,11 +507,9 @@ namespace TFTV
                         }
                     }
 
-                    if (controller.EventSystem.GetVariable("NewGameStarted") == 1)
-                    {
-
+                  
                         TFTVConfig config = TFTVMain.Main.Config;
-                        float ResourceMultiplier = (6 - controller.CurrentDifficultyLevel.Order) * 0.5f;
+                        float ResourceMultiplier = (6 - TFTVReleaseOnly.DifficultyOrderConverter(controller.CurrentDifficultyLevel.Order)) * 0.5f;
 
                         if (config.amountOfExoticResources != 1)
                         {
@@ -607,7 +584,7 @@ namespace TFTV
                             }
 
                         }
-                    }
+                    
                 }
                 catch (Exception e)
                 {
@@ -850,14 +827,12 @@ namespace TFTV
             try
             {
                 TFTVConfig config = TFTVMain.Main.Config;
-                if ((controller.CurrentDifficultyLevel.Order == 1 &&
-                    (!config.OverrideRookieDifficultySettings || config.OverrideRookieDifficultySettings && config.EasyGeoscape))
-                    || config.EasyGeoscape)
+                if (TFTVReleaseOnly.DifficultyOrderConverter(controller.CurrentDifficultyLevel.Order) == 1)
                 {
                     return 1;
 
                 }
-                else if (config.EtermesMode)
+                else if (controller.CurrentDifficultyLevel.Order == 6)//(config.EtermesMode)
                 {
                     return 2;
 
@@ -875,22 +850,90 @@ namespace TFTV
             }
         }
 
+        public static int CheckOnGeoscapeSpecialDifficultySettingsForTactical(GeoLevelController controller)
+        {
+            try
+            {
+              //  TFTVLogger.Always($"is controller null? {controller == null}");
+
+                TFTVConfig config = TFTVMain.Main.Config;
+
+
+              //  TFTVLogger.Always($"is config null? {config == null}");
+
+             //   TFTVLogger.Always($"controller.CurrentDifficultyLevel.Order {controller?.CurrentDifficultyLevel?.Order}");
+
+                if (TFTVReleaseOnly.DifficultyOrderConverter(controller.CurrentDifficultyLevel.Order) == 1 || TFTVReleaseOnly.GetTacticalDifficulty() != null && TFTVReleaseOnly.GetTacticalDifficulty().Order==1)
+                {
+                    return 1;
+
+                }
+                else if (controller.CurrentDifficultyLevel.Order == 6)//(config.EtermesMode)
+                {
+                    return 2;
+
+                }
+                else
+                {
+                    return 0;
+
+                }
+
+
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
+        }
+
+        public static int CheckTacticalSpecialDifficultySettings(TacticalLevelController controller)
+        {
+            try
+            {
+                TFTVConfig config = TFTVMain.Main.Config;
+                if (TFTVReleaseOnly.DifficultyOrderConverter(controller.Difficulty.Order) == 1 || TFTVReleaseOnly.GetTacticalDifficulty() != null && TFTVReleaseOnly.GetTacticalDifficulty().Order == 1)
+                {
+                    return 1;
+
+                }
+                else if (controller.Difficulty.Order == 6)//(config.EtermesMode)
+                {
+                    return 2;
+
+                }
+                else
+                {
+                    return 0;
+
+                }
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
+        }
+
+
         public static bool ApplyImpossibleWeaponsAdjustmentsOnGeoscape(GeoLevelController controller)
         {
             try
             {
                 TFTVConfig config = TFTVMain.Main.Config;
 
-                if (controller.CurrentDifficultyLevel.Order != 1 && !config.EasyGeoscape && config.impossibleWeaponsAdjustments)
+                if (TFTVReleaseOnly.DifficultyOrderConverter(controller.CurrentDifficultyLevel.Order) != 1 && config.impossibleWeaponsAdjustments)
                 {
                     return true;
 
                 }
-                else if ((controller.CurrentDifficultyLevel.Order == 1 || config.EasyGeoscape) && config.OverrideRookieDifficultySettings && config.impossibleWeaponsAdjustments)
+             /*   else if ((TFTVReleaseOnly.DifficultyOrderConverter(controller.CurrentDifficultyLevel.Order) == 1  && config.OverrideRookieDifficultySettings && config.impossibleWeaponsAdjustments)
                 {
                     return true;
 
-                }
+                }*/
                 else
                 {
                     return false;
@@ -910,16 +953,16 @@ namespace TFTV
             {
                 TFTVConfig config = TFTVMain.Main.Config;
 
-                if (controller.Difficulty.Order != 1 && !config.EasyGeoscape && config.impossibleWeaponsAdjustments)
+                if (TFTVReleaseOnly.DifficultyOrderConverter(controller.Difficulty.Order) != 1 && config.impossibleWeaponsAdjustments)
                 {
                     return true;
 
                 }
-                else if ((controller.Difficulty.Order == 1 || config.EasyGeoscape) && config.OverrideRookieDifficultySettings && config.impossibleWeaponsAdjustments)
+              /*  else if ((TFTVReleaseOnly.DifficultyOrderConverter(controller.Difficulty.Order) == 1 || config.EasyGeoscape) && config.OverrideRookieDifficultySettings && config.impossibleWeaponsAdjustments)
                 {
                     return true;
 
-                }
+                }*/
                 else
                 {
                     return false;
@@ -934,65 +977,7 @@ namespace TFTV
         }
 
 
-        public static int CheckOnGeoscapeSpecialDifficultySettingsForTactical(GeoLevelController controller)
-        {
-            try
-            {
-                TFTVConfig config = TFTVMain.Main.Config;
-                if ((controller.CurrentDifficultyLevel.Order == 1 &&
-                    (!config.OverrideRookieDifficultySettings || config.OverrideRookieDifficultySettings && config.EasyTactical))
-                    || config.EasyTactical)
-                {
-                    return 1;
-
-                }
-                else if (config.EtermesMode)
-                {
-                    return 2;
-
-                }
-                else
-                {
-                    return 0;
-
-                }
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-                throw;
-            }
-        }
-
-        public static int CheckTacticalSpecialDifficultySettings(TacticalLevelController controller)
-        {
-            try
-            {
-                TFTVConfig config = TFTVMain.Main.Config;
-                if ((controller.Difficulty.Order == 1 &&
-                    (!config.OverrideRookieDifficultySettings || config.OverrideRookieDifficultySettings && config.EasyTactical))
-                    || config.EasyTactical)
-                {
-                    return 1;
-
-                }
-                else if (config.EtermesMode)
-                {
-                    return 2;
-
-                }
-                else
-                {
-                    return 0;
-
-                }
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-                throw;
-            }
-        }
+       
 
 
         //This patch checks game difficulty and config options 
@@ -1115,8 +1100,8 @@ namespace TFTV
             {
                 TFTVConfig config = TFTVMain.Main.Config;
 
-                GeoLevelController controllerGeo = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
-                TacticalLevelController controllerTactical = GameUtl.CurrentLevel().GetComponent<TacticalLevelController>();
+                GeoLevelController controllerGeo = GameUtl.CurrentLevel()?.GetComponent<GeoLevelController>();
+                TacticalLevelController controllerTactical = GameUtl.CurrentLevel()?.GetComponent<TacticalLevelController>();
 
                 if ((controllerGeo != null && CheckOnGeoscapeSpecialDifficultySettingsForTactical(controllerGeo) == 1)
                     || (controllerTactical != null && CheckTacticalSpecialDifficultySettings(controllerTactical) == 1))

@@ -30,7 +30,7 @@ namespace TFTV
                     TFTVConfig config = TFTVMain.Main.Config;
                     GeoLevelController controller = __instance.GetComponent<GeoLevelController>();
 
-                    if (controller.CurrentDifficultyLevel.Order != 1 || config.OverrideRookieDifficultySettings)
+                    if (TFTVReleaseOnly.DifficultyOrderConverter(controller.CurrentDifficultyLevel.Order) != 1)
                     {
                         __instance.AmbushExploredSitesProtection = 0;
                         __instance.StartingAmbushProtection = 0;

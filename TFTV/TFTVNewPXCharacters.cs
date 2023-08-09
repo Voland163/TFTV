@@ -50,7 +50,9 @@ namespace TFTV
                     GeoscapeEventContext geoscapeEventContext = new GeoscapeEventContext(level.PhoenixFaction, level.ViewerFaction);
                     level.EventSystem.TriggerGeoscapeEvent("IntroBetterGeo_2", geoscapeEventContext);
                     level.EventSystem.SetVariable("BG_Intro_Played", 3);
-                    level.EventSystem.SetVariable("NewGameStarted", 1);
+                    
+                    
+                    // level.EventSystem.SetVariable("NewDifficultiesImplemented", 1);
                     //  TFTVBetaSaveGamesFixes.CheckNewLOTA(level);
                 }
             }

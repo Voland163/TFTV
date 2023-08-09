@@ -21,13 +21,13 @@ namespace TFTV
     description: "Trade is always 1 tech for 5 food or 5 materials, so no profit can be made from trading. IF YOU SET THIS TO FALSE, PLEASE QUIT TO DESKTOP BEFORE STARTING A NEW GAME/LOADING A SAVE")]
         public bool EqualizeTrade = true;
 
-        [ConfigField(text: "CAPTURING PANDORANS IS LIMITED",
+ /*       [ConfigField(text: "CAPTURING PANDORANS IS LIMITED",
   description: "There is a limit to how many Pandorans you can capture per mission. IF YOU SET THIS TO FALSE, PLEASE QUIT TO DESKTOP BEFORE STARTING A NEW GAME/LOADING A SAVE")]
         public bool LimitedCapture = true;
 
         [ConfigField(text: "LIMITS ON RENDERING PANDORANS FOR FOOD OR MUTAGENS",
  description: "New mechanics make obtaining food or mutagens from captured Pandorans harder. IF YOU SET THIS TO FALSE, PLEASE QUIT TO DESKTOP BEFORE STARTING A NEW GAME/LOADING A SAVE")]
-        public bool LimitedHarvesting = true;
+        public bool LimitedHarvesting = true;*/
 
         [ConfigField(text: "LIMITED RAIDING",
 description: "After a raid, all faction havens are immediately set to highest alert and may not be raided in the next 7 days. IF YOU SET THIS TO FALSE, PLEASE QUIT TO DESKTOP BEFORE STARTING A NEW GAME/LOADING A SAVE")]
@@ -37,6 +37,13 @@ description: "After a raid, all faction havens are immediately set to highest al
 description: "Enemy reinforcements do not drop items on death; disallows farming for weapons on missions with infinite reinforcements.  IF YOU SET THIS TO FALSE, PLEASE QUIT TO DESKTOP BEFORE STARTING A NEW GAME/LOADING A SAVE")]
         public bool ReinforcementsNoDrops = true;
 
+        public enum DifficultyOnTactical
+        {
+           GEOSCAPE, STORY, ROOKIE, VETERAN, HERO, LEGEND, ETERMES
+        }
+        [ConfigField(text: "DIFFICULTY ON TACTICAL",
+         description: "You can choose a different difficulty setting for the tactical portion of the game at any time. Some changes will not take effect during a mission in progress. AFTER CHANGING THIS SETTING, PLEASE QUIT TO DESKTOP BEFORE STARTING A NEW GAME/LOADING A SAVE")]
+        public DifficultyOnTactical difficultyOnTactical = DifficultyOnTactical.GEOSCAPE;
 
         [ConfigField(text: "ANIMATIONS CONTINUE DURING SHOOTING (FLINCHING)",
             description: "The characters will continue to animate during shooting sequences and targets that are hit may flinch, " +
@@ -50,23 +57,16 @@ description: "Enemy reinforcements do not drop items on death; disallows farming
        description: "Applies the changes from Dtony BetterEnemies that make Pandorans more of a challenge.")]
         public bool BetterEnemiesOn = false;
 
-        [ConfigField(text: "OVERRIDE ROOKIE DIFFICULTY SETTINGS",
+    /*    [ConfigField(text: "OVERRIDE ROOKIE DIFFICULTY SETTINGS",
           description: "Certain config settings are set by default to a certain level for Rookie (see each config option for details). If you want to override them, check this box.")]
-        public bool OverrideRookieDifficultySettings = false;
+        public bool OverrideRookieDifficultySettings = false;*/
 
-        [ConfigField(text: "EASY TACTICAL",
+    /*    [ConfigField(text: "EASY TACTICAL",
           description: "All enemies gain a special trait increasing damage done to them by 50%, Pandorans never have more than 20 armor, Scylla and Node have less HP. " +
             "All Phoenix operatives gain a special trait increasing their damage resistance by 50%. Set to true on Rookie by default.")]
-        public bool EasyTactical = false;
+        public bool EasyTactical = false;*/
 
-        [ConfigField(text: "EASY GEOSCAPE",
-          description: "All diplo rewards, resource rewards from missions, research output are doubled, and all diplo penalties are halved. " +
-            " Set to true on Rookie by default.")]
-        public bool EasyGeoscape = false;
-
-        [ConfigField(text: "I AM ETERMES",
-                  description: "YOU ARE ETERMES... and everything is always too easy for you")]
-        public bool EtermesMode = false;
+      
 
         [ConfigField(text: "PLAY WITH MORE MIST VOID OMEN",
             description: "If you are playing on a Low-end system and experience lag with this Void Omen, you can turn it off here. This will prevent it from rolling" +
@@ -92,7 +92,7 @@ description: "Enemy reinforcements do not drop items on death; disallows farming
 
         //Starting squad
 
-        public enum StartingSquadFaction
+     /*   public enum StartingSquadFaction
         {
             PHOENIX, ANU, NJ, SYNEDRION
         }
@@ -100,10 +100,10 @@ description: "Enemy reinforcements do not drop items on death; disallows farming
          description: "You can choose a different starting squad. If you do, one of your Assaults and your starting Heavy on Legend and Hero, " +
             "Assault on Veteran, or Sniper on Rookie will be replaced by an operative of the elite class of the Faction of your choice. " +
             "You will also get the corresponding faction technology once the faction researches it.")]
-        public StartingSquadFaction startingSquad = StartingSquadFaction.PHOENIX;
+        public StartingSquadFaction startingSquad = StartingSquadFaction.PHOENIX;*/
 
 
-        public enum StartingBaseLocation
+      /*  public enum StartingBaseLocation
         {
             [Description("Vanilla selection")]
             Vanilla,
@@ -169,7 +169,7 @@ description: "Enemy reinforcements do not drop items on death; disallows farming
 
         [ConfigField(text: "Starting base",
          description: "You can choose a specific location to start from. Please note that some locations are harder to start from than others!")]
-        public StartingBaseLocation startingBaseLocation = StartingBaseLocation.Vanilla;
+        public StartingBaseLocation startingBaseLocation = StartingBaseLocation.Vanilla;*/
 
 
         /*
@@ -195,7 +195,7 @@ description: "Enemy reinforcements do not drop items on death; disallows farming
 
 
 
-        public enum StartingSquadCharacters
+    /*    public enum StartingSquadCharacters
         {
             UNBUFFED, BUFFED, RANDOM
         }
@@ -205,10 +205,10 @@ description: "Enemy reinforcements do not drop items on death; disallows farming
             "or a squad that will include Sophia Brown and Jacob with unbuffed stats (default on TFTV). " +
             "Note that Jacob is a sniper, as in the title screen :)")]
 
-        public StartingSquadCharacters tutorialCharacters = StartingSquadCharacters.UNBUFFED;
+        public StartingSquadCharacters tutorialCharacters = StartingSquadCharacters.UNBUFFED;*/
 
         // These settings determine amount of resources player can acquire:
-        [ConfigField(text: "Number of scavenging sites",
+     /*   [ConfigField(text: "Number of scavenging sites",
             description: "Total number of scavenging sites generated on game start, not counting overgrown sites\n" +
             "(Vanilla: 16, TFTV default 8, because Ambushes generate additional resources).\n" +
             "Will not have any effect on a game in progress.")]
@@ -234,7 +234,7 @@ description: "Enemy reinforcements do not drop items on death; disallows farming
             "Choose none to have 0 scavenging sites of this type (Vanilla and TFTV default: low)\n" +
             "Will not have any effect on a game in progress.")]
         public ScavengingWeight ChancesScavGroundVehicleRescue = ScavengingWeight.Low;
-
+     */
         // Determines amount of resources gained in Events. 1f = 100% if Azazoth level.
         // 0.8f = 80% of Azazoth = Pre-Azazoth level (default on BetterGeoscape).
         // For example, to double amount of resources from current Vanilla (Azazoth level), change to 2f 
@@ -330,6 +330,16 @@ description: "Enemy reinforcements do not drop items on death; disallows farming
         [ConfigField(text: "Psyche ammo",
             description: "Set the amount of bolts for the magazine of the advanced crossbow (Psyche CRB IV)")]
         public int VenomCrossbow_Ammo = 3;
+
+        [ConfigField(text: "EASY GEOSCAPE",
+        description: "All diplo rewards, resource rewards from missions, research output are doubled, and all diplo penalties are halved. " +
+          " Set to true on Rookie by default.")]
+        public bool EasyGeoscape = false;
+
+        [ConfigField(text: "I AM ETERMES",
+                  description: "YOU ARE ETERMES... and everything is always too easy for you")]
+        public bool EtermesMode = false;
+
 
         // Always show helmets
         /*  [ConfigField(text: "Operatives will appear without helmets in the personnel screen",

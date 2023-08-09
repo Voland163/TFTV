@@ -136,9 +136,8 @@ namespace TFTV
                     UIModuleActorCycle uIModuleActorCycle = controller.View.GeoscapeModules.ActorCycleModule;
                     UIModuleDeploymentMissionBriefing uIModuleDeploymentMissionBriefing = controller.View.GeoscapeModules.DeploymentMissionBriefingModule;
 
-                    if (uIModuleActorCycle.CurrentCharacter != null)
+                    if (uIModuleActorCycle.CurrentCharacter != null && !uIModuleActorCycle.CurrentCharacter.GameTags.Contains(Shared.SharedGameTags.VehicleClassTag))
                     {
-
                         foreach (GeoVehicle geoVehicle in controller.PhoenixFaction.Vehicles)
                         {
                             if (geoVehicle.Soldiers.Contains(uIModuleActorCycle.CurrentCharacter))

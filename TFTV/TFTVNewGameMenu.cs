@@ -27,7 +27,8 @@ namespace TFTV
     {
         private static readonly DefRepository Repo = TFTVMain.Repo;
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
-
+        private static readonly TFTVConfig config = TFTVMain.Main.Config;
+        private static readonly SharedData Shared = TFTVMain.Shared;
         //You will need to edit scene hierarchy to add new objects under GameSettingsModule, it has a UIModuleGameSettings script
         //Class UIStateNewGeoscapeGameSettings is responsible for accepting selected settings and start the game, so you'll have to dig inside
         //for changing behaviour.
@@ -37,7 +38,7 @@ namespace TFTV
 
 
         //This is for new game start screen. Commented out for the moment.
-      /*  [HarmonyPatch(typeof(GameOptionViewController), "OnClicked")]
+        [HarmonyPatch(typeof(GameOptionViewController), "OnClicked")]
         public static class OptionListViewController_Element_PointerExit_Patch
         {
             private static void Postfix(GameOptionViewController __instance)
@@ -52,7 +53,7 @@ namespace TFTV
 
                         TFTVLogger.Always($"Element is: {__instance.Description.Localize()}");
 
-                        HomeScreenViewContext context = HomeScreenViewContext;
+                        HomeScreenViewContext context = HomeScreenViewContextHook;
                         UIModuleGameSettings gameSettings = context.View.HomeScreenModules.GameSettings;
 
                         GameOptionViewController[] componentsInChildren = gameSettings.MainOptions.Container.GetComponentsInChildren<GameOptionViewController>();
@@ -84,9 +85,8 @@ namespace TFTV
                 }
             }
         }
-      */
 
-        public static HomeScreenViewContext HomeScreenViewContext = null;
+        public static HomeScreenViewContext HomeScreenViewContextHook = null;
         public static ModSettingController ModSettingControllerHook = null;
 
         [HarmonyPatch(typeof(HomeScreenView), "InitView")]
@@ -96,7 +96,7 @@ namespace TFTV
             {
                 try
                 {
-                    HomeScreenViewContext = ____context;
+                    HomeScreenViewContextHook = ____context;
                     ModSettingControllerHook = __instance.HomeScreenModules.ModManagerModule.SettingsModSettingPrefab;
 
                   
@@ -133,7 +133,7 @@ namespace TFTV
             }
         }
 
-/*
+
         [HarmonyPatch(typeof(UIModuleGameSettings), "InitFullContent")]
         internal static class UIStateNewGeoscapeGameSettings_InitFullContent_patch
         {
@@ -169,13 +169,13 @@ namespace TFTV
 
             private static string _titleStartingBase = "STARTING BASE LOCATION";
             private static string _descriptionStartingBase = "Select your starting base. You can choose a specific location to start from. Please note that some locations are harder to start from than others!";
-            private static string[] _optionsStartingBase = {"Vanilla Random (remote bases excluded)",
+            private static string[] _optionsStartingBase = {
+                "Vanilla Random (remote bases excluded)",
                   "Random (ALL bases included)",
                   "Antarctica",
                   "Asia (China)",
                   "Australia",
                   "Central America (Honduras)",
-                  "Central America (Mexico)",
                   "East Africa (Ethiopia)",
                   "Eastern Europe (Ukraine)",
                   "Greenland",
@@ -188,7 +188,8 @@ namespace TFTV
                   "South America (Bolivia)",
                   "South America (Tierra de Fuego)",
                   "Southeast Asia (Cambodia)",
-                  "West Africa (Ghana)" };
+                  "West Africa (Ghana)" 
+            };
 
             private static string _titleStartingSquad = "STARTING SQUAD";
             private static string _descriptionStartingSquad = "You can choose to get a completely random squad (as in Vanilla without doing the tutorial), " +
@@ -264,13 +265,13 @@ namespace TFTV
                     _recruitsPriority = recruitScavSitesController.ListField;
                     _vehiclePriority = vehicleScavSitesController.ListField;
 
-                    InstantiateArrowPickerController(startingFactionController, _startingFaction, _titleStartingFaction, _descriptionStartingFaction, _optionsStartingFaction, 0, OnStartingFactionValueChangedCallback);
-                    InstantiateArrowPickerController(startingBaseController, _startingBase, _titleStartingBase, _descriptionStartingBase, _optionsStartingBase, 0, OnStartingBaseValueChangedCallback);
-                    InstantiateArrowPickerController(startingSquadController, _startingSquad, _titleStartingSquad, _descriptionStartingSquad, _optionsStartingSquad, 0, OnStartingSquadValueChangedCallback);
-                    InstantiateArrowPickerController(startingScavSitesController, _startingScavSites, _titleScavSites, _descriptionScavSites, _optionsScavSites, 8, OnStartingScavSitesValueChangedCallback);
-                    InstantiateArrowPickerController(crateScavSitesController, _resCratePriority, _titleResCratePriority, _descriptionScavPriority, _optionsResCratePriority, 0, OnResScavPriorityValueChangedCallback);
-                    InstantiateArrowPickerController(recruitScavSitesController, _recruitsPriority, _titleRecruitsPriority, _descriptionScavPriority, _optionsRecruitsPriority, 2, OnRecruitsPriorityValueChangedCallback);
-                    InstantiateArrowPickerController(vehicleScavSitesController, _vehiclePriority, _titleVehiclePriority, _descriptionScavPriority, _optionsVehiclePriority, 2, OnVehiclePriorityValueChangedCallback);
+                    InstantiateArrowPickerController(startingFactionController, _startingFaction, _titleStartingFaction, _descriptionStartingFaction, _optionsStartingFaction, (int)(TFTVNewGameOptions.startingSquad), OnStartingFactionValueChangedCallback);
+                    InstantiateArrowPickerController(startingBaseController, _startingBase, _titleStartingBase, _descriptionStartingBase, _optionsStartingBase, (int)(TFTVNewGameOptions.startingBaseLocation), OnStartingBaseValueChangedCallback);
+                    InstantiateArrowPickerController(startingSquadController, _startingSquad, _titleStartingSquad, _descriptionStartingSquad, _optionsStartingSquad, (int)(TFTVNewGameOptions.startingSquad), OnStartingSquadValueChangedCallback);
+                    InstantiateArrowPickerController(startingScavSitesController, _startingScavSites, _titleScavSites, _descriptionScavSites, _optionsScavSites, TFTVNewGameOptions.initialScavSites, OnStartingScavSitesValueChangedCallback);
+                    InstantiateArrowPickerController(crateScavSitesController, _resCratePriority, _titleResCratePriority, _descriptionScavPriority, _optionsResCratePriority, (int)(TFTVNewGameOptions.chancesScavCrates), OnResScavPriorityValueChangedCallback);
+                    InstantiateArrowPickerController(recruitScavSitesController, _recruitsPriority, _titleRecruitsPriority, _descriptionScavPriority, _optionsRecruitsPriority, (int)(TFTVNewGameOptions.chancesScavSoldiers), OnRecruitsPriorityValueChangedCallback);
+                    InstantiateArrowPickerController(vehicleScavSitesController, _vehiclePriority, _titleVehiclePriority, _descriptionScavPriority, _optionsVehiclePriority, (int)(TFTVNewGameOptions.chancesScavGroundVehicleRescue), OnVehiclePriorityValueChangedCallback);
 
                 }
                 catch (Exception e)
@@ -283,41 +284,50 @@ namespace TFTV
             {        
 
                 _startingFaction.CurrentItemText.text = _optionsStartingFaction[newValue];
+                TFTVNewGameOptions.startingSquad = (TFTVNewGameOptions.StartingSquadFaction)newValue;
+               
+                
             }
 
             private static void OnStartingSquadValueChangedCallback(int newValue)
             {
             
                 _startingSquad.CurrentItemText.text = _optionsStartingSquad[newValue];
+                TFTVNewGameOptions.startingSquadCharacters = (TFTVNewGameOptions.StartingSquadCharacters)newValue;
             }
 
             private static void OnStartingBaseValueChangedCallback(int newValue)
             {
                 _startingBase.CurrentItemText.text = _optionsStartingBase[newValue];
+                TFTVNewGameOptions.startingBaseLocation = (TFTVNewGameOptions.StartingBaseLocation)newValue;
             }
 
             private static void OnStartingScavSitesValueChangedCallback(int newValue)
             {
 
                 _startingScavSites.CurrentItemText.text = _optionsScavSites[newValue];
+                TFTVNewGameOptions.initialScavSites = newValue;
             }
 
             private static void OnResScavPriorityValueChangedCallback(int newValue)
             {
                 string[] options = { "HIGH", "MEDIUM", "LOW", "NONE"};
                 _resCratePriority.CurrentItemText.text = options[newValue];
+                TFTVNewGameOptions.chancesScavCrates = (TFTVNewGameOptions.ScavengingWeight)newValue;
             }
 
             private static void OnRecruitsPriorityValueChangedCallback(int newValue)
             {
                 string[] options = { "HIGH", "MEDIUM", "LOW", "NONE" };
                 _recruitsPriority.CurrentItemText.text = options[newValue];
+                TFTVNewGameOptions.chancesScavSoldiers = (TFTVNewGameOptions.ScavengingWeight)newValue;
             }
 
             private static void OnVehiclePriorityValueChangedCallback(int newValue)
             {
                 string[] options = { "HIGH", "MEDIUM", "LOW", "NONE" };
                 _vehiclePriority.CurrentItemText.text = options[newValue];
+                TFTVNewGameOptions.chancesScavGroundVehicleRescue = (TFTVNewGameOptions.ScavengingWeight)newValue;
             }
 
 
@@ -337,31 +347,26 @@ namespace TFTV
 
 
 
-        */
+        
 
 
 
         public static bool EnterStateRun = false;
 
-    /*    [HarmonyPatch(typeof(UIStateNewGeoscapeGameSettings), "EnterState")]
+       [HarmonyPatch(typeof(UIStateNewGeoscapeGameSettings), "EnterState")]
         public static class UIStateNewGeoscapeGameSettings_EnterState_Patch
         {
             private static void Prefix(UIStateNewGeoscapeGameSettings __instance)
             {
                 try
                 {
+                    GameDifficultyLevelDef[] difficultyLevels = GameUtl.GameComponent<SharedData>().DifficultyLevels;
+
                     if (!EnterStateRun)
                     {
-
-                        GameDifficultyLevelDef[] difficultyLevels = GameUtl.GameComponent<SharedData>().DifficultyLevels;
-
-
-
-                        HomeScreenViewContext context = HomeScreenViewContext;
+                        HomeScreenViewContext context = HomeScreenViewContextHook;
 
                         UIModuleGameSettings gameSettings = context.View.HomeScreenModules.GameSettings;
-
-
 
                         Transform container = gameSettings.MainOptions.Container;
 
@@ -376,19 +381,32 @@ namespace TFTV
                             newController.SetParent(container, false);
                         }
 
-                        GameOptionViewController[] componentsInChildren = gameSettings.MainOptions.Container.GetComponentsInChildren<GameOptionViewController>();
+                       // GameOptionViewController[] componentsInChildren = gameSettings.MainOptions.Container.GetComponentsInChildren<GameOptionViewController>();
 
-                        MethodInfo method = typeof(PhoenixGeneralButton).GetMethod("SetNormalState", BindingFlags.NonPublic | BindingFlags.Instance);
-                        MethodInfo methodAnim = typeof(PhoenixGeneralButton).GetMethod("SetAnimationState", BindingFlags.NonPublic | BindingFlags.Instance);
+                      //  MethodInfo method = typeof(PhoenixGeneralButton).GetMethod("SetNormalState", BindingFlags.NonPublic | BindingFlags.Instance);
+                      //  MethodInfo methodAnim = typeof(PhoenixGeneralButton).GetMethod("SetAnimationState", BindingFlags.NonPublic | BindingFlags.Instance);
 
-                        foreach (GameOptionViewController component in componentsInChildren)
+                   /*     foreach (GameOptionViewController component in componentsInChildren)
                         {
-                            TFTVLogger.Always($"{component.name}");
+                            if (component.name.EndsWith((defaultVal).ToString())) 
+                            { 
+                            
+                            
+                            }
+                            else 
+                            { 
+                            TFTVLogger.Always($"{component.name}  {component.IsSelected} {component.CheckedToggle}");
+                                component.SelectButton.IsSelected = false;
+                            
+                            }
 
-                            component.SelectButton.IsSelected = false;
-                            method.Invoke(component.SelectButton, null);
-                            methodAnim.Invoke(component.SelectButton, new object[] { "HighlightedStateParameter", false });
-                        }
+                                
+                            
+                          //  method.Invoke(component.SelectButton, null);
+                          //  methodAnim.Invoke(component.SelectButton, new object[] { "HighlightedStateParameter", false });
+                        }*/
+
+                        
 
                         //  gameSettings.MainOptions.IsMultiselectable = false;
                         //  GameOptionViewController gameOptionViewController = gameSettings.MainOptions.Container.GetComponentInChildren<GameOptionViewController>();
@@ -401,8 +419,33 @@ namespace TFTV
                         TFTVLogger.Always($"Enter state invoked");
                         EnterStateRun = true;
                     }
+                   
+                    OptionsManager optionsManager = GameUtl.GameComponent<OptionsManager>();
+                    OptionsComponent optionsComponent = GameUtl.GameComponent<OptionsComponent>();
+
+                    OptionsManagerDef optionsManagerDef = optionsManager.OptionsManagerDef;
+                    int defaultVal = Math.Min(2, difficultyLevels.Length) - 1;
+                    defaultVal = optionsComponent.Options.Get(optionsManagerDef.NewGameDifficultyOption, defaultVal);
+
+                    TFTVLogger.Always($"default value is {defaultVal}");
 
 
+                    GameOptionViewController[] componentsInChildren = gameSettings.MainOptions.Container.GetComponentsInChildren<GameOptionViewController>();
+
+                    foreach (GameOptionViewController component in componentsInChildren)
+                    {
+                        if (component.name.EndsWith((defaultVal).ToString()))
+                        {
+
+                            component.SelectButton.IsSelected = true;
+                        }
+                        else
+                        {
+                            TFTVLogger.Always($"{component.name}  {component.IsSelected} {component.CheckedToggle}");
+                            component.SelectButton.IsSelected = false;
+
+                        }
+                    }
 
                 }
                 catch (Exception e)
@@ -413,7 +456,7 @@ namespace TFTV
             }
         }
 
-        */
+        
         //  public static bool BindSecondaryOptionRun = false;
 
         [HarmonyPatch(typeof(UIStateNewGeoscapeGameSettings), "BindSecondaryOptions")]
@@ -423,7 +466,7 @@ namespace TFTV
             {
                 try
                 {
-                    TFTVLogger.Always($"Element is {element.OptionText.text}");
+                  //  TFTVLogger.Always($"Element is {element.OptionText.text}");
                     //   GameOptionViewController viewController = new GameOptionViewController() { };
 
                     if (element.OptionText.text == "PLAY PROLOGUE AND TUTORIAL")
@@ -452,8 +495,93 @@ namespace TFTV
             }
         }
 
-        [HarmonyPatch(typeof(UIStateNewGeoscapeGameSettings), "CreateSceneBinding")]
+        [HarmonyPatch(typeof(UIModuleGameSettings), "GetActivatedEntitlements")]
+        public static class UIModuleGameSettings_GetActivatedEntitlements_Experiment_Patch
+        {
+            public static bool Prefix(UIModuleGameSettings __instance, ref List<EntitlementDef> __result, List<GameAdditionalContentEntry> ____gameEntitlementContentEntries)
+            {
+                try
+                {
+
+                    TFTVLogger.Always("Patch running");
+
+                    DefCache.GetDef<EntitlementDef>("BloodAndTitaniumEntitlementDef");
+                    DefCache.GetDef<EntitlementDef>("CorruptedHorizonsEntitlementDef");
+                    DefCache.GetDef<EntitlementDef>("FesteringSkiesEntitlementDef");
+                    DefCache.GetDef<EntitlementDef>("KaosEnginesEntitlementDef");
+                    DefCache.GetDef<EntitlementDef>("LegacyOfTheAncientsEntitlementDef");
+                    DefCache.GetDef<EntitlementDef>("LivingWeaponsEntitlementDef");
+                  //  DefCache.GetDef<EntitlementDef>("YOE_YearOneEditionEntitlementDef");
+
+
+                    __result = new List<EntitlementDef>() {
+                        DefCache.GetDef<EntitlementDef>("BloodAndTitaniumEntitlementDef"), DefCache.GetDef<EntitlementDef>("CorruptedHorizonsEntitlementDef"), DefCache.GetDef<EntitlementDef>("FesteringSkiesEntitlementDef"),
+                   DefCache.GetDef<EntitlementDef>("KaosEnginesEntitlementDef"), DefCache.GetDef<EntitlementDef>("LegacyOfTheAncientsEntitlementDef"), DefCache.GetDef<EntitlementDef>("LivingWeaponsEntitlementDef")};
+
+
+                    foreach(EntitlementDef entitlementDef in __result) 
+                    { 
+                    TFTVLogger.Always($"entitlement is {entitlementDef.name}");
+                    
+                    
+                    }
+
+                    return false;
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
+
+        [HarmonyPatch(typeof(UIModuleGameSettings), "GetDeactivatedEntitlements")]
+        public static class UIModuleGameSettings_GetDeactivatedEntitlements_Experiment_Patch
+        {
+            public static bool Prefix(UIModuleGameSettings __instance, ref List<EntitlementDef> __result, List<GameAdditionalContentEntry> ____gameEntitlementContentEntries)
+            {
+                try
+                {
+
+                  //  TFTVLogger.Always("Patch GetDeactivatedEntitlements running");
+                    return false;
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
+
+
+        [HarmonyPatch(typeof(UIStateNewGeoscapeGameSettings), "GameSettings_OnConfirm")]
         public static class UIStateNewGeoscapeGameSettings_GameSettings_OnConfirm_patch
+        {
+            public static void Prefix(UIStateNewGeoscapeGameSettings __instance)
+            {
+                try
+                {
+                   
+                    TFTVLogger.Always($"selected option: {gameSettings?.MainOptions?.Selected?.First()?.OptionIndex}");
+                    EnterStateRun = false;
+                    
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+        }
+
+
+
+     /*   [HarmonyPatch(typeof(UIStateNewGeoscapeGameSettings), "CreateSceneBinding")]
+        public static class UIStateNewGeoscapeGameSettings_CreateSceneBinding_patch
         {
             public static void Prefix(GeoscapeGameParams gameParams)
             {
@@ -465,19 +593,18 @@ namespace TFTV
                         TFTVConfig config = TFTVMain.Main.Config;
                         config.tutorialCharacters = TFTVConfig.StartingSquadCharacters.BUFFED;
                     }
-                    HomeScreenViewContext context = HomeScreenViewContext;
+                    HomeScreenViewContext context = HomeScreenViewContextHook;
                     UIModuleGameSettings gameSettings = context.View.HomeScreenModules.GameSettings;
                     List<EntitlementDef> entitlementDefs = new List<EntitlementDef>();
                     entitlementDefs.AddRange(gameSettings.GetActivatedEntitlements());
                     entitlementDefs.AddRange(gameSettings.GetDeactivatedEntitlements());
                     gameParams.EnabledDlc = entitlementDefs.ToArray();
-                }
                 catch (Exception e)
                 {
                     TFTVLogger.Error(e);
                 }
             }
-        }
+        }*/
 
 
     }
