@@ -88,7 +88,7 @@ namespace TFTV
             }
         }
 
-
+        
 
         [HarmonyPatch(typeof(GeoHaven), "IncreaseAlertness")]
         public static class GeoHaven_IncreaseAlertness_patch
@@ -97,23 +97,25 @@ namespace TFTV
             public static bool Prefix(GeoHaven __instance)
             {
                 try
-
-
                 {
-                    // Get the type of the GeoHaven class
-                    Type geoHavenType = typeof(GeoHaven);
+                    TFTVConfig config = TFTVMain.Main.Config;
 
-                    // Get the PropertyInfo object representing the AlertLevel property
-                    PropertyInfo alertLevelProperty = geoHavenType.GetProperty("AlertLevel", BindingFlags.Public | BindingFlags.Instance);
-
-                    // Set the value of the AlertLevel property using reflection
-                    if (alertLevelProperty != null && alertLevelProperty.CanWrite)
+                    if (config.LimitedRaiding)
                     {
-                        alertLevelProperty.SetValue(__instance, HavenAlertLevel.HighAlert);
+                        // Get the type of the GeoHaven class
+                        Type geoHavenType = typeof(GeoHaven);
+
+                        // Get the PropertyInfo object representing the AlertLevel property
+                        PropertyInfo alertLevelProperty = geoHavenType.GetProperty("AlertLevel", BindingFlags.Public | BindingFlags.Instance);
+
+                        // Set the value of the AlertLevel property using reflection
+                        if (alertLevelProperty != null && alertLevelProperty.CanWrite)
+                        {
+                            alertLevelProperty.SetValue(__instance, HavenAlertLevel.HighAlert);
+                        }
+
+                        __instance.AlertCooldownDaysLeft = 7;
                     }
-
-                    __instance.AlertCooldownDaysLeft = 7;
-
 
                     return false;
                 }

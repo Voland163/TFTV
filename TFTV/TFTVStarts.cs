@@ -64,7 +64,7 @@ namespace TFTV
             {
 
 
-                IOrderedEnumerable<GeoSite> orderedEnumerable = from s in geoFaction.GeoLevel.Map.GetConnectedSitesOfType_Land(phoenixPoint, GeoSiteType.Haven, activeOnly: false)
+                IOrderedEnumerable<GeoSite> orderedEnumerable = from s in geoFaction.GeoLevel.Map.AllSites
                                                                 orderby GeoMap.Distance(phoenixPoint, s)
                                                                 select s;
                 foreach (GeoSite geoHaven in orderedEnumerable)
@@ -150,8 +150,6 @@ namespace TFTV
                     level.EventSystem.SetVariable("BG_Start_Faction", 3);
                 }
 
-
-             
 
                 int strengthBonus = 0;
                 int willBonus = 0;
@@ -283,6 +281,27 @@ namespace TFTV
                     sniper
                 };
 
+
+                if (TFTVReleaseOnly.DifficultyOrderConverter(level.CurrentDifficultyLevel.Order) == 2 && TFTVNewGameOptions.startingSquad == TFTVNewGameOptions.StartingSquadFaction.PHOENIX)
+                {
+                    startingTemplates.Add(assault);
+                }
+                else if (TFTVReleaseOnly.DifficultyOrderConverter(level.CurrentDifficultyLevel.Order) == 2 && TFTVNewGameOptions.startingSquad != TFTVNewGameOptions.StartingSquadFaction.PHOENIX)
+                {
+                    startingTemplates.Add(heavy);
+                }
+                else if (TFTVReleaseOnly.DifficultyOrderConverter(level.CurrentDifficultyLevel.Order) == 1 && TFTVNewGameOptions.startingSquad == TFTVNewGameOptions.StartingSquadFaction.PHOENIX)
+                {
+                    startingTemplates.Add(assault);
+                    startingTemplates.Add(sniper);
+                }
+                else if (TFTVReleaseOnly.DifficultyOrderConverter(level.CurrentDifficultyLevel.Order) == 1 && TFTVNewGameOptions.startingSquad != TFTVNewGameOptions.StartingSquadFaction.PHOENIX)
+                {
+                    startingTemplates.Add(heavy);
+                    startingTemplates.Add(assault);
+                }
+
+
                 if (TFTVNewGameOptions.startingSquad == TFTVNewGameOptions.StartingSquadFaction.ANU)
                 {
                     startingTemplates.Remove(heavy);
@@ -306,24 +325,7 @@ namespace TFTV
                 }
 
 
-                if (TFTVReleaseOnly.DifficultyOrderConverter(level.CurrentDifficultyLevel.Order) == 2 && TFTVNewGameOptions.startingSquad == TFTVNewGameOptions.StartingSquadFaction.PHOENIX)
-                {
-                    startingTemplates.Add(assault);
-                }
-                else if (TFTVReleaseOnly.DifficultyOrderConverter(level.CurrentDifficultyLevel.Order) == 2 && TFTVNewGameOptions.startingSquad != TFTVNewGameOptions.StartingSquadFaction.PHOENIX)
-                {
-                    startingTemplates.Add(heavy);
-                }
-                else if (TFTVReleaseOnly.DifficultyOrderConverter(level.CurrentDifficultyLevel.Order) == 1 && TFTVNewGameOptions.startingSquad == TFTVNewGameOptions.StartingSquadFaction.PHOENIX)
-                {
-                    startingTemplates.Add(assault);
-                    startingTemplates.Add(sniper);
-                }
-                else if (TFTVReleaseOnly.DifficultyOrderConverter(level.CurrentDifficultyLevel.Order) == 1 && TFTVNewGameOptions.startingSquad != TFTVNewGameOptions.StartingSquadFaction.PHOENIX)
-                {
-                    startingTemplates.Add(heavy);
-                    startingTemplates.Add(assault);
-                }
+           
 
                 return startingTemplates;
             }

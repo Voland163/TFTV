@@ -57,7 +57,7 @@ namespace TFTV
         public static bool ContainmentFacilityPresent = false;
         public static bool ScyllaCaptureModulePresent = false;
         public static int ContainmentSpaceAvailable = 0;
-        public static int CachedACC = 0;
+     //   public static int CachedACC = 0;
 
 
         [HarmonyPatch(typeof(ObjectivesManager), "Add")]
@@ -70,7 +70,7 @@ namespace TFTV
                 {
                     TFTVConfig config = TFTVMain.Main.Config;
 
-                    if (TFTVNewGameOptions.LimitedCapture)
+                    if (TFTVNewGameOptions.LimitedCaptureSetting)
                     {
 
                         KeepSoldiersAliveFactionObjectiveDef aircraftCapture = DefCache.GetDef<KeepSoldiersAliveFactionObjectiveDef>("CAPTURE_CAPACITY_AIRCRAFT");
@@ -105,30 +105,28 @@ namespace TFTV
                 {
                     TFTVConfig config = TFTVMain.Main.Config;
 
-                    if (TFTVNewGameOptions.LimitedCapture)
+
+                    KeepSoldiersAliveFactionObjectiveDef containmentPresent = DefCache.GetDef<KeepSoldiersAliveFactionObjectiveDef>("CAPTURE_CAPACITY_BASE");
+                    KeepSoldiersAliveFactionObjectiveDef aircraftCapture = DefCache.GetDef<KeepSoldiersAliveFactionObjectiveDef>("CAPTURE_CAPACITY_AIRCRAFT");
+
+                    //   TFTVLogger.Always($"Evaluating objective {__instance.Summary.LocalizationKey}");
+
+
+                    if (__instance.Summary.LocalizationKey.Contains("CAPACITY_AIRCRAFT"))//Localize() == aircraftCapture.MissionObjectiveData.Description.Localize())
                     {
 
-                        KeepSoldiersAliveFactionObjectiveDef containmentPresent = DefCache.GetDef<KeepSoldiersAliveFactionObjectiveDef>("CAPTURE_CAPACITY_BASE");
-                        KeepSoldiersAliveFactionObjectiveDef aircraftCapture = DefCache.GetDef<KeepSoldiersAliveFactionObjectiveDef>("CAPTURE_CAPACITY_AIRCRAFT");
+                        LocalizedTextBind aircraftCapacityText = new LocalizedTextBind("CAPTURE_CAPACITY_AIRCRAFT");
+                        LocalizedTextBind totalCapacityText = new LocalizedTextBind("CAPTURE_CAPACITY_TOTAL");
+                        string aircraftContainment = $"{aircraftCapacityText.Localize()} {AircraftCaptureCapacity}. {totalCapacityText.Localize()} {ContainmentSpaceAvailable}";
+                        __instance.Description = new LocalizedTextBind(aircraftContainment, true);
+                        // TFTVLogger.Always($"FactionObjective check passed; description: {__instance.Description},{aircraftCapture.MissionObjectiveData.Description.Localize()} {AircraftCaptureCapacity} ");
+                        __result = FactionObjectiveState.InProgress;
+                    }
 
-                        //   TFTVLogger.Always($"Evaluating objective {__instance.Summary.LocalizationKey}");
-
-
-                        if (__instance.Summary.LocalizationKey.Contains("CAPACITY_AIRCRAFT"))//Localize() == aircraftCapture.MissionObjectiveData.Description.Localize())
-                        {
-
-                            // __instance.Description = new LocalizedTextBind($"{aircraftCapture.MissionObjectiveData.Description.Localize()} {AircraftCaptureCapacity}", true);
-                            // TFTVLogger.Always($"FactionObjective check passed; description: {__instance.Description},{aircraftCapture.MissionObjectiveData.Description.Localize()} {AircraftCaptureCapacity} ");
-                            __result = FactionObjectiveState.InProgress;
-                        }
-
-                        if (__instance.Summary.LocalizationKey.Contains("CAPACITY_BASE"))//__instance.Description.Localize() == containmentPresent.MissionObjectiveData.Description.Localize()) 
-                        {
-                            //    TFTVLogger.Always("FactionObjective check passed");
-                            __result = FactionObjectiveState.InProgress;
-
-                        }
-
+                    if (__instance.Summary.LocalizationKey.Contains("CAPACITY_BASE"))//__instance.Description.Localize() == containmentPresent.MissionObjectiveData.Description.Localize()) 
+                    {
+                        //    TFTVLogger.Always("FactionObjective check passed");
+                        __result = FactionObjectiveState.InProgress;
 
                     }
 
@@ -147,7 +145,7 @@ namespace TFTV
             {
                 TFTVConfig config = TFTVMain.Main.Config;
 
-                if (TFTVNewGameOptions.LimitedCapture)
+                if (TFTVNewGameOptions.LimitedCaptureSetting)
                 {
 
                     if (geoMission.Site.GeoLevel.PhoenixFaction.Research.HasCompleted("PX_CaptureTech_ResearchDef"))
@@ -155,9 +153,9 @@ namespace TFTV
 
                         PhoenixFacilityDef containmentFacility = DefCache.GetDef<PhoenixFacilityDef>("AlienContainment_PhoenixFacilityDef");
 
-                       // TFTVLogger.Always($"are we here?");
+                        // TFTVLogger.Always($"are we here?");
 
-                        if (geoMission.MissionDef.ParticipantsData.Any(tcpd=>tcpd.FactionDef == DefCache.GetDef<PPFactionDef>("Alien_FactionDef")))
+                        if (geoMission.MissionDef.ParticipantsData.Any(tcpd => tcpd.FactionDef == DefCache.GetDef<PPFactionDef>("Alien_FactionDef")))
                         {
 
                             if (geoMission.MissionDef.Tags.Contains(Shared.SharedGameTags.BaseDefenseMissionTag) || geoMission.MissionDef.Tags.Contains(Shared.SharedGameTags.InfestHavenMissionTag))
@@ -177,7 +175,7 @@ namespace TFTV
 
                             }
 
-                            if(!ContainmentFacilityPresent)
+                            if (!ContainmentFacilityPresent)
                             {
                                 GeoVehicleDef manticore6slots = DefCache.GetDef<GeoVehicleDef>("PP_Manticore_Def_6_Slots");
                                 GeoVehicleDef manticore = DefCache.GetDef<GeoVehicleDef>("PP_Manticore_Def");
@@ -219,10 +217,10 @@ namespace TFTV
 
                                 ContainmentSpaceAvailable = geoMission.Site.GeoLevel.PhoenixFaction.GetTotalContaimentCapacity() - geoMission.Site.GeoLevel.PhoenixFaction.ContaimentUsage;
 
-                                if (ContainmentSpaceAvailable == 0) 
+                                if (ContainmentSpaceAvailable == 0)
                                 {
                                     AircraftCaptureCapacity = -1;
-                                
+
                                 }
 
                                 TFTVLogger.Always($"There is an aircraft with {AircraftCaptureCapacity} slots available for capture and there is {ContainmentSpaceAvailable} containment capacity");
@@ -232,6 +230,7 @@ namespace TFTV
                     }
                 }
                 AircraftCaptureCapacity = -1;
+                TFTVLogger.Always($"No capture capacity; aircraft capture capacity {AircraftCaptureCapacity}");
             }
 
 
@@ -320,7 +319,7 @@ namespace TFTV
                     __state = 0;
                     TFTVConfig config = TFTVMain.Main.Config;
 
-                    if (TFTVNewGameOptions.LimitedCapture)
+                    if (TFTVNewGameOptions.LimitedCaptureSetting)
                     {
 
 
@@ -431,7 +430,7 @@ namespace TFTV
                 {
                     TFTVConfig config = TFTVMain.Main.Config;
 
-                    if (TFTVNewGameOptions.LimitedCapture)
+                    if (TFTVNewGameOptions.LimitedCaptureSetting)
                     {
 
                         ApplyStatusAbilityDef capturePandoranAbility = DefCache.GetDef<ApplyStatusAbilityDef>("CapturePandoran_Ability");
@@ -489,7 +488,7 @@ namespace TFTV
 
                     TFTVConfig config = TFTVMain.Main.Config;
 
-                    if (TFTVNewGameOptions.LimitedCapture)
+                    if (TFTVNewGameOptions.LimitedCaptureSetting)
                     {
 
                         if (ContainmentFacilityPresent || AircraftCaptureCapacity >= 0)
@@ -551,7 +550,7 @@ namespace TFTV
                 {
                     TFTVConfig config = TFTVMain.Main.Config;
 
-                    if (TFTVNewGameOptions.LimitedCapture)
+                    if (TFTVNewGameOptions.LimitedCaptureSetting)
                     {
 
                         if (__state == 1)
@@ -583,17 +582,23 @@ namespace TFTV
         internal static List<TacActorUnitResult> GetCaptureList(IEnumerable<TacActorUnitResult> tacActorUnitResults)
         {
             try
-            {
+            {  
+                
                 if (!ContainmentFacilityPresent)
                 {
+                    int availableCaptureslotsCounter = AircraftCaptureCapacity;//CachedACC;
 
                     List<TacActorUnitResult> paralyzedList = tacActorUnitResults.ToList();
                     List<TacActorUnitResult> captureList = new List<TacActorUnitResult>(tacActorUnitResults.Where(taur => taur.HasStatus<ReadyForCapturesStatusDef>()));
-                    int availableCaptureslotsCounter = CachedACC;
+                    
+                    foreach(TacActorUnitResult tacActorUnitResult in captureList) 
+                    {
+                        availableCaptureslotsCounter -= CalculateCaptureSlotCost(tacActorUnitResult.GameTags);  
+                    }
 
                     paralyzedList = paralyzedList.OrderByDescending(taur => CalculateCaptureSlotCost(taur.GameTags)).ToList();
 
-                    foreach (TacActorUnitResult tacActorUnitResult1 in paralyzedList.Where(taur=>!taur.HasStatus<ReadyForCapturesStatusDef>()))
+                    foreach (TacActorUnitResult tacActorUnitResult1 in paralyzedList.Where(taur => !taur.HasStatus<ReadyForCapturesStatusDef>()))
                     {
                         TFTVLogger.Always($"paralyzed {tacActorUnitResult1.TacticalActorBaseDef.name}, aircraftCaptureCapacity is {availableCaptureslotsCounter}, space required is {CalculateCaptureSlotCost(tacActorUnitResult1.GameTags)}");
 
@@ -636,7 +641,9 @@ namespace TFTV
                 {
                     TFTVConfig config = TFTVMain.Main.Config;
 
-                    if (TFTVNewGameOptions.LimitedCapture)
+                    CheckCaptureCapability(__instance);
+
+                    if (TFTVNewGameOptions.LimitedCaptureSetting)
                     {
                         TFTVLogger.Always($"CaptureLiveAlienRunning");
 

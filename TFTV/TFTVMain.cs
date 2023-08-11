@@ -49,7 +49,7 @@ namespace TFTV
         internal static readonly DefRepository Repo = GameUtl.GameComponent<DefRepository>();
         internal static readonly SharedData Shared = GameUtl.GameComponent<SharedData>();
 
-        internal static bool ConfigImplemented = false;
+     //   internal static bool ConfigImplemented = false;
 
         //TFTV We want at least the LogPath, but maybe other directories too...
         internal static string LogPath;
@@ -87,9 +87,9 @@ namespace TFTV
                 /// PhoenixGame is accessible at any time.
                 PhoenixGame game = GetGame();
 
-                TFTVversion = $"TFTV August 9 release #2 (Hotfix 1) v{MetaData.Version}";
+                TFTVversion = $"TFTV August 19 release #1 (Update #35) v{MetaData.Version}";
 
-                Logger.LogInfo("TFTV August 9 release #2 (Hotfix 1)");
+                Logger.LogInfo("TFTV August 19 release #1 (Update #35)");
 
                 ModDirectory = Instance.Entry.Directory;
                 //Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
@@ -102,7 +102,7 @@ namespace TFTV
                 TFTVLogger.Initialize(LogPath, Config.Debug, ModDirectory, nameof(TFTV));
                 PRMLogger.Initialize(LogPath, Settings.Debug, ModDirectory, nameof(PRMBetterClasses));
                 // DefCache.Initialize();
-                TFTVLogger.Always("TFTV August 9 release #2 (Hotfix 1)");
+                TFTVLogger.Always("TFTV August 19 release #1 (Update #35)");
 
                 PRMBetterClasses.Helper.Initialize();
                 // Initialize Helper
@@ -176,7 +176,7 @@ namespace TFTV
            
 
 
-            if (Config.defaultSettings)
+         /*   if (Config.defaultSettings)
             {
 
               //  Config.OverrideRookieDifficultySettings = false;
@@ -185,8 +185,8 @@ namespace TFTV
                 Config.EtermesMode = false;
                 Config.MoreMistVO = true;
                 Config.SkipMovies = false;
-                Config.amountOfExoticResources = 1f;
-                Config.impossibleWeaponsAdjustments = true;
+             //   Config.amountOfExoticResources = 1f;
+             //   Config.impossibleWeaponsAdjustments = true;
               //  Config.startingSquad = StartingSquadFaction.PHOENIX;
               //  Config.startingBaseLocation = StartingBaseLocation.Vanilla;
               //  Config.tutorialCharacters = StartingSquadCharacters.UNBUFFED;
@@ -194,16 +194,14 @@ namespace TFTV
               //  Config.ChancesScavCrates = TFTVConfig.ScavengingWeight.High;
               //  Config.ChancesScavSoldiers = TFTVConfig.ScavengingWeight.Low;
               //  Config.ChancesScavGroundVehicleRescue = TFTVConfig.ScavengingWeight.Low;
-                Config.ResourceMultiplier = 0.8f;
-                Config.DiplomaticPenalties = true;
-                Config.StaminaPenaltyFromInjury = true;
-                Config.StaminaPenaltyFromMutation = true;
-                Config.StaminaPenaltyFromBionics = true;
-                Config.MoreAmbushes = true;
+             //   Config.ResourceMultiplier = 1f;
+              //  Config.DiplomaticPenalties = true;
+              //  Config.StaminaPenaltyFromInjury = true;
+               // Config.StaminaPenaltyFromMutation = true;
+              //  Config.StaminaPenaltyFromBionics = true;
+            //    Config.MoreAmbushes = true;
                 Config.ActivateStaminaRecuperatonModule = true;
-                Config.ActivateReverseEngineeringResearch = true;
-                Config.ActivateAirCombatChanges = true;
-                Config.ActivateKERework = true;
+              //  Config.ActivateReverseEngineeringResearch = true;
                 Config.HavenSOS = true;
                 Config.Debug = true;
                 Config.EqualizeTrade = true;
@@ -219,18 +217,14 @@ namespace TFTV
             Config.EtermesMode != false ||
             Config.MoreMistVO != true ||
             Config.SkipMovies != false ||
-            Config.amountOfExoticResources != 1f ||
-            Config.impossibleWeaponsAdjustments != true ||             
-            Config.ResourceMultiplier != 0.8f ||
-            Config.DiplomaticPenalties != true ||
-            Config.StaminaPenaltyFromInjury != true ||
-            Config.StaminaPenaltyFromMutation != true ||
-            Config.StaminaPenaltyFromBionics != true ||
-            Config.MoreAmbushes != true ||
+           // Config.amountOfExoticResources != 1f ||
+          //  Config.impossibleWeaponsAdjustments != true ||             
+         //   Config.ResourceMultiplier != 1f ||
+         //   Config.DiplomaticPenalties != true ||
+         //   Config.StaminaPenaltyFromInjury != true ||          
+        //    Config.MoreAmbushes != true ||
             Config.ActivateStaminaRecuperatonModule != true ||
-            Config.ActivateReverseEngineeringResearch != true ||
-            Config.ActivateAirCombatChanges != true ||
-            Config.ActivateKERework != true ||
+          //  Config.ActivateReverseEngineeringResearch != true ||
             Config.HavenSOS != true ||
             Config.Debug != true ||
                 Config.EqualizeTrade != true ||
@@ -243,6 +237,7 @@ namespace TFTV
                 Config.defaultSettings = false;
 
             }
+         */
          /*   Harmony harmony = (Harmony)HarmonyInstance;
             //  injectionComplete = false;
             harmony.UnpatchAll();
@@ -272,13 +267,13 @@ namespace TFTV
 
 
            // Logger.LogInfo($"{MethodBase.GetCurrentMethod().Name} called for level '{level}' with old state '{prevState}' and new state '{state}'");
-            if (!ConfigImplemented && (level.name.Contains("GeoscapeLevel") || level.name.Contains("TacticalLevel")) && state == Level.State.Loading)
+          /*  if (!ConfigImplemented && (level.name.Contains("GeoscapeLevel") || level.name.Contains("TacticalLevel")) && state == Level.State.Loading)
             {
                 TFTVLogger.Always($"level {level.name} loading");
                 
                 TFTVDefsWithConfigDependency.ImplementConfigChoices();
                 ConfigImplemented = true;
-            }
+            }*/
 
             
           

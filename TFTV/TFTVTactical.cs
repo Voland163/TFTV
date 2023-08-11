@@ -1,6 +1,8 @@
+using Base.Core;
 using Base.Serialization.General;
 using EnviroSamples;
 using Epic.OnlineServices;
+using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Modding;
 using PhoenixPoint.Tactical.Levels;
 using System;
@@ -50,6 +52,8 @@ namespace TFTV
         public bool ContainmentFacilityPresent;
         public bool ScyllaCaptureModule;
         public int AvailableContainment;
+        public bool Update35TacticalCheck;
+
     }
 
     /// <summary>
@@ -112,8 +116,15 @@ namespace TFTV
             TFTVSpecialDifficulties.CheckForSpecialDifficulties();
           //  TFTVBetterEnemies.ImplementBetterEnemies();
             TFTVRevenant.CheckIfRevenantPresent(Controller);
-         
-         //   TFTVBaseDefenseTactical.OjectivesDebbuger(Controller);
+
+            if (config.disableSavingOnTactical)
+            {
+                GameUtl.CurrentLevel().GetComponent<TacticalLevelController>().GameController.SaveManager.IsSaveEnabled = false;
+            }
+
+            TFTVNewGameOptions.Change_Crossbows();
+
+            //   TFTVBaseDefenseTactical.OjectivesDebbuger(Controller);
             // TFTVBaseDefenseTactical.RevealAllSpawns(Controller);
 
             // TFTVBaseDefenseTactical.CheckingPortrait(Controller);
@@ -179,7 +190,7 @@ namespace TFTV
                 TFTVAncients.AutomataResearched = data.AutomataResearched;
                 TFTVAncients.AlertedHoplites = data.HopliteKillList;
                 TFTVCapturePandorans.ContainmentSpaceAvailable = data.AvailableContainment;
-
+                TFTVNewGameOptions.Update35Check = data.Update35TacticalCheck;
                 //Deprecated
               //  TFTVBetaSaveGamesFixes.CheckNewLOTASavegame();
 
@@ -233,7 +244,8 @@ namespace TFTV
                 ContainmentFacilityPresent = TFTVCapturePandorans.ContainmentFacilityPresent,
                 ScyllaCaptureModule = TFTVCapturePandorans.ScyllaCaptureModulePresent,
                 AvailableContainment = TFTVCapturePandorans.ContainmentSpaceAvailable,
-      
+                Update35TacticalCheck = TFTVNewGameOptions.Update35Check,
+
                 TurnZeroMethodsExecuted = TurnZeroMethodsExecuted
                 
             };

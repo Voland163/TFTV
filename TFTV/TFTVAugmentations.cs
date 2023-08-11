@@ -3,6 +3,7 @@ using Base.Defs;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities.GameTags;
+using PhoenixPoint.Common.Entities.Items;
 using PhoenixPoint.Common.View.ViewModules;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.PhoenixBases;
@@ -176,7 +177,7 @@ namespace TFTV
                     {
                         foreach (GeoItem mutation in geoCharacter.ArmourItems)
                         {
-                            if (mutation.ItemDef.Tags.Contains(mutationTag))
+                            if (mutation.ItemDef.Tags.Contains(mutationTag) && !mutation.ItemDef.name.Contains("Mutoid"))
                                 mutations += 1;
                         }
                     }

@@ -122,7 +122,7 @@ namespace TFTV
 
 
 
-
+        ///Patches to show mission light conditions
         [HarmonyPatch(typeof(UIStateRosterDeployment), "EnterState")]
         public static class TFTV_UIStateRosterDeployment_EnterState_patch
         {
@@ -149,7 +149,7 @@ namespace TFTV
 
                         int hourOfTheDay = geoSite.LocalTime.DateTime.Hour;
                         int minuteOfTheHour = geoSite.LocalTime.DateTime.Minute;
-                        bool dayTimeMission = hourOfTheDay > 8 && hourOfTheDay < 21;
+                        bool dayTimeMission = hourOfTheDay >= 6 && hourOfTheDay <= 21;
 
                         TFTVLogger.Always($"LocalTime: {hourOfTheDay:00}:{minuteOfTheHour:00}");
 
@@ -197,115 +197,11 @@ namespace TFTV
             }
         }
 
-        /*[HarmonyPatch(typeof(UIStateRosterDeployment), "EnterState")]
+        
 
-        public static class TFTV_UIStateRosterDeployment_EnterState_patch
-        {
-            public static void Postfix(UIStateRosterDeployment __instance)
-            {
-                try
-                {
-
-                    GeoLevelController controller = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
-                    GeoSite geoSite = null;
-
-                    UIModuleActorCycle uIModuleActorCycle = controller.View.GeoscapeModules.ActorCycleModule;
-                    UIModuleDeploymentMissionBriefing uIModuleDeploymentMissionBriefing = controller.View.GeoscapeModules.DeploymentMissionBriefingModule;
-
-
-                    foreach (GeoVehicle geoVehicle in controller.PhoenixFaction.Vehicles)
-                    {
-                        if (geoVehicle.Soldiers.Contains(uIModuleActorCycle.CurrentCharacter))
-
-                        {
-                            geoSite = geoVehicle.CurrentSite;
-                            break;
-                        }
-
-                    }
-
-                    int hourOfTheDay = geoSite.LocalTime.DateTime.Hour;
-                    bool dayTimeMission = false;
-
-
-                    if(hourOfTheDay > 8 && hourOfTheDay < 21) 
-                    {
-                        dayTimeMission = true;              
-                    }
-
-
-                    TFTVLogger.Always($"LocalTime: {hourOfTheDay}:{geoSite.LocalTime.DateTime.Minute}");
-
-                    Transform objectives = uIModuleDeploymentMissionBriefing.ObjectivesTextContainer.transform;
-                    
-                    
-                    Transform lootContainer = uIModuleDeploymentMissionBriefing.AutolootContainer.transform;
-
-             
-                    Transform newIcon = UnityEngine.Object.Instantiate(lootContainer.GetComponent<Transform>().GetComponentInChildren<Image>().transform, uIModuleDeploymentMissionBriefing.MissionNameText.transform);
-
-                    Sprite lightConditions = Helper.CreateSpriteFromImageFile("light_conditions_moon.png");
-                    Color color = dark;
-
-                    if (dayTimeMission) 
-                    {
-                        lightConditions = Helper.CreateSpriteFromImageFile("light_conditions_sun.png");
-                        color = yellow;
-                    }
-
-                    newIcon.GetComponentInChildren<Image>().sprite = lightConditions;
-                    newIcon.GetComponentInChildren<Image>().color = color;
-                    
-                    string text = $"Local time is {geoSite.LocalTime.DateTime.Hour}:{geoSite.LocalTime.DateTime.Minute}";
-                    newIcon.gameObject.AddComponent<UITooltipText>().TipText = text;
-
-                }
-
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-            }
-        }*/
-
-
-
-
-
-        /*   [HarmonyPatch(typeof(UIModuleDeploymentMissionBriefing), "SetMissionDescription")]
-
-           public static class TFTV_UIModuleDeploymentMissionBriefing_SetMissionDescription_patch
-           {
-               public static void Postfix(UIModuleDeploymentMissionBriefing __instance, LocalizedTextBind description, ref List<Text> ____objectivesTexts)
-               {
-                   try
-                   {
-
-
-
-
-
-
-                       DateTime siteLocalTime = GeoMissionKludge.Site.LocalTime.DateTime;
-
-                       TFTVLogger.Always($"Got here {siteLocalTime.ToString()}");
-
-                       ____objectivesTexts[0].text += siteLocalTime;
-
-                       GeoMissionKludge = null;
-                   }
-
-                   catch (Exception e)
-                   {
-                       TFTVLogger.Error(e);
-                   }
-               }
-           }*/
-
-
-
-
-
+        /// <summary>
+        /// Patches to fix repairing bionics
+        /// </summary>
         [HarmonyPatch(typeof(UIModuleMutationSection), "SelectMutation")]
 
         public static class TFTV_UIModuleMutationSection_SelectMutation_patch
@@ -370,25 +266,7 @@ namespace TFTV
             }
         }
 
-        /*  [HarmonyPatch(typeof(GeoCharacter), "RepairItem", new Type[] { typeof(ItemDef), typeof(bool) })]
-
-          public static class TFTV_GeoCharacter_RepairItem_patch
-          {
-
-              public static void Postfix(GeoCharacter __instance, bool __result)
-              {
-                  try
-                  {
-                      TFTVLogger.Always("GeoCharacter RepairItem invoked and result is " + __result);
-
-                  }
-                  catch (Exception e)
-                  {
-                      TFTVLogger.Error(e);
-                  }
-              }
-          }*/
-
+        
         [HarmonyPatch(typeof(UIModuleReplenish), "AddRepairableItem")]
 
         public static class TFTV_UIModuleReplenish_AddRepairableItem_patch
@@ -530,8 +408,11 @@ namespace TFTV
             }
         }
 
-        [HarmonyPatch(typeof(GeoCharacter), "GetClassViewElementDefs")]
+        /// <summary>
+        /// Patches to show class icons on Mutoids
+        /// </summary>
 
+        [HarmonyPatch(typeof(GeoCharacter), "GetClassViewElementDefs")]
         internal static class TFTV_GeoCharacter_GetClassViewElementDefs_patch
         {
             public static void Postfix(ref ICollection<ViewElementDef> __result, GeoCharacter __instance)
@@ -586,7 +467,7 @@ namespace TFTV
             }
         }
 
-        //UIStateBuyMutoid
+
 
         [HarmonyPatch(typeof(GeoPhoenixFaction), "AddRecruitToContainerFinal")]
 
@@ -885,27 +766,10 @@ namespace TFTV
 
         }
 
-        // public static UITooltipText StrengthToolTip = null;
 
-        /*     [HarmonyPatch(typeof(UIModuleCharacterProgression), "Awake")]
-
-             internal static class TFTV_UIModuleCharacterProgression_Awake_Hook_patch
-             {
-                 public static void Postfix(UIModuleCharacterProgression __instance)
-                 {
-                     try
-                     {
-                         hookToProgressionModule = __instance;
-                         //  StrengthToolTip = __instance.StrengthSlider.gameObject.GetComponent<UITooltipText>();
-
-                     }
-                     catch (Exception e)
-                     {
-                         TFTVLogger.Error(e);
-                     }
-
-                 }
-             }*/
+        /// <summary>
+        /// Patches to add toggle helment and loadouts buttons
+        /// </summary>        
 
         [HarmonyPatch(typeof(EditUnitButtonsController), "SetEditUnitButtonsBasedOnType")]
         internal static class TFTV_EditUnitButtonsController_SetEditUnitButtonsBasedOnType_ToggleHelmetButton_patch
@@ -1047,568 +911,7 @@ namespace TFTV
 
 
 
-        // public static List<ICommonItem> ItemsEquippedFromStorage = new List<ICommonItem>();
-
-        /*  public static List<ICommonItem> ConvertStringToICommonItem(List<string> itemDefNames)
-           {
-               try 
-               {
-                   List<ICommonItem> commonItems = new List<ICommonItem>();
-
-                   foreach(string itemName in itemDefNames)  
-                   { 
-                   ItemDef itemDef = (ItemDef)Repo.GetDef(itemName);
-                    GeoItem commonItem = new GeoItem();
-
-
-
-                   }
-
-
-
-
-                   return commonItems;
-
-               }
-               catch (Exception e)
-               {
-                   TFTVLogger.Error(e);
-                   throw;
-               }
-           }*/
-
-
-
-
-        internal static int LocateSoldier(GeoCharacter geoCharacter)
-        {
-            try
-            {
-                int geoVehicleID = 0;
-                GeoLevelController controller = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
-
-                foreach (GeoVehicle aircraft in controller.PhoenixFaction.Vehicles)
-                {
-                    if (aircraft.GetAllCharacters().Contains(geoCharacter))
-                    {
-
-                        geoVehicleID = aircraft.VehicleID;
-                        break;
-
-                    }
-                }
-
-
-                return geoVehicleID;
-
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-                throw;
-            }
-        }
-
-        internal static List<int> LocateOtherVehicles(int id)
-        {
-            try
-            {
-                List<int> vehicleIDs = new List<int>();
-
-                if (id != 0)
-                {
-                    GeoLevelController controller = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
-
-                    List<GeoVehicle> geoVehiclesAtSite = controller.PhoenixFaction?.Vehicles?.FirstOrDefault(v => v?.VehicleID == id)?.CurrentSite?.Vehicles?.Where(vs => vs?.Owner == controller.PhoenixFaction && vs?.VehicleID != id)?.ToList();
-
-                    if (geoVehiclesAtSite != null && geoVehiclesAtSite.Count > 0)
-                    {
-
-                        foreach (GeoVehicle vehicle in geoVehiclesAtSite)
-                        {
-                            vehicleIDs.Add(vehicle.VehicleID);
-
-                        }
-                    }
-                }
-
-                return vehicleIDs;
-
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-                throw;
-            }
-
-
-
-
-        }
-
-
-
-        //  public static GeoCharacter CharacterInventory = null;
-
-        /*   [HarmonyPatch(typeof(UIStateEditSoldier), "CharacterChangedHandler")]
-           internal static class TFTV_UIStateEditSoldier_UpdateSoldierEquipment_Patch
-           {
-
-               private static void Postfix(UIStateEditSoldier __instance, GeoCharacter lastCharacter, GeoCharacter newCharacter, bool initial)
-               {
-                   try
-                   {
-                       UIInventoryList storage = UIModuleSoldierEquipKludge.StorageList;
-
-
-
-
-
-                       if (CurrentlyHiddenInv.Keys.Count > 0 || CurrentlyAvailableInv.Keys.Count > 0)
-                       {
-                           TFTVLogger.Always($"Looking at {newCharacter.DisplayName}");
-
-
-                          //  UIInventoryList storage = UIModuleSoldierEquipKludge.StorageList;
-
-
-
-
-
-                           CharacterInventory = newCharacter;
-                           storage.Deinit();
-                           storage.Init(storage.UnfilteredItems, UIModuleSoldierEquipKludge);
-
-                           CharacterInventory = null;
-
-                       }
-                       else 
-                       {
-                           storage.Deinit();
-                           storage.Init(storage.UnfilteredItems, UIModuleSoldierEquipKludge);
-
-
-                       }
-
-
-
-                   }
-
-                   catch (Exception e)
-                   {
-                       TFTVLogger.Error(e);
-                       throw;
-                   }
-               }
-
-           }
-
-   */
-
-
-        /*   [HarmonyPatch(typeof(UIInventoryList), "Init")]
-           internal static class TFTV_UIInventoryList_Update_InventoryExperiment_patch
-           {
-               public static void Prefix(ref IEnumerable<ICommonItem> items, UIModuleSoldierEquip parentModule, UIInventoryList __instance)
-               {
-                   try
-                   {
-
-                       if(__instance.IsStorage && CharacterInventory!=null)
-                       {
-                           GeoCharacter character = CharacterInventory;
-
-                           int charactersAircraft = LocateSoldier(character);
-                           List<int> otherVehiclesAtSameLocation = LocateOtherVehicles(charactersAircraft);
-
-                           List<ICommonItem> commonItems = new List<ICommonItem>(items);
-
-                        //   TFTVLogger.Always($"there are {commonItems.Count} items in the new list, vs the starting list {items.Count()}");
-
-                           if (CurrentlyAvailableInv.Keys.Count > 0)
-                           {
-                               TFTVLogger.Always($"There are {CurrentlyAvailableInv.Keys.Count()} AircraftShowing inventories");
-                            //   List<int> geoVehiclesElsewhere = new List<int>();
-
-                               foreach (int geoVehicleAwayFromCharacter in CurrentlyAvailableInv.Keys)
-                               {
-                                   if (geoVehicleAwayFromCharacter != charactersAircraft &&
-                                       (otherVehiclesAtSameLocation?.Count == 0
-                                       || otherVehiclesAtSameLocation?.Count > 0 && !otherVehiclesAtSameLocation.Contains(geoVehicleAwayFromCharacter)))
-                                   {
-                                       TFTVLogger.Always($"{character?.DisplayName} is not in craft #{geoVehicleAwayFromCharacter} or at an aircraft at its location");
-
-                                       if (!CurrentlyHiddenInv.ContainsKey(geoVehicleAwayFromCharacter))
-                                       {
-                                           CurrentlyHiddenInv.Add(geoVehicleAwayFromCharacter, new List<ICommonItem>());
-                                           TFTVLogger.Always($"Creating new Hidden Inventory list for craft #{geoVehicleAwayFromCharacter}");
-                                       }
-
-                                       foreach (ICommonItem geoItem in CurrentlyAvailableInv[geoVehicleAwayFromCharacter])
-                                       {
-
-                                         //  ICommonItem commonItem = commonItems.Where((ICommonItem ufi) => ufi.ItemDef.Guid == geoItem).FirstOrDefault();
-
-                                           TFTVLogger.Always($"removing {geoItem}");
-
-                                           if (commonItems.Contains(geoItem))
-                                           {
-
-                                               commonItems.Remove(geoItem);
-                                               CurrentlyHiddenInv[geoVehicleAwayFromCharacter].Add(geoItem);
-
-
-
-
-                                               TFTVLogger.Always($"{geoItem} added to currently hidden list, count {CurrentlyHiddenInv[geoVehicleAwayFromCharacter].Count}");
-                                           }
-                                           else 
-                                           {
-                                               TFTVLogger.Always($"Item with guid {geoItem} not found!!!");
-                                           }
-                                       }
-
-                                       foreach (ICommonItem geoItem in CurrentlyHiddenInv[geoVehicleAwayFromCharacter])
-                                       {
-                                           CurrentlyAvailableInv[geoVehicleAwayFromCharacter].Remove(geoItem);
-                                       }
-
-                                       //   geoVehiclesElsewhere.Add(geoVehicleAwayFromCharacter);
-                                   }
-
-                               }
-
-
-                           }
-
-
-
-                           if (charactersAircraft != 0 && CurrentlyHiddenInv.Keys.Count > 0)
-                           {
-                               if (CurrentlyHiddenInv.Keys.Contains(charactersAircraft))
-                               {
-
-                                   TFTVLogger.Always($"{character.DisplayName} is at craft #{charactersAircraft}; adding items to storage");
-
-                                   if (!CurrentlyAvailableInv.ContainsKey(charactersAircraft))
-                                   {
-                                       CurrentlyAvailableInv.Add(charactersAircraft, new List<ICommonItem>());
-                                       TFTVLogger.Always($"Creating new Available Inventory list for craft #{charactersAircraft}");
-                                   }
-
-
-                                   foreach (ICommonItem geoItem in CurrentlyHiddenInv[charactersAircraft])
-                                   {
-                                      // GeoItem geoItem1 = new GeoItem((ItemDef)Repo.GetDef(geoItem));
-                                      // ICommonItem commonItem = geoItem1;//Repo.Instantiate<ICommonItem>(Repo.GetDef(geoItem));
-
-                                       commonItems.Add(geoItem);
-                                       CurrentlyAvailableInv[charactersAircraft].Add(geoItem);
-                                       TFTVLogger.Always($"{geoItem} added to storage");
-
-                                   }
-
-                                   CurrentlyHiddenInv.Remove(charactersAircraft);
-
-
-
-                               }
-
-                               if (otherVehiclesAtSameLocation != null && otherVehiclesAtSameLocation.Count > 0)
-                               {
-                                   TFTVLogger.Always($"There are other vehicles at the same location");
-
-                                   foreach (int geoVehicleAtSameLocation in otherVehiclesAtSameLocation)
-
-                                   {
-                                       if (CurrentlyHiddenInv.Keys.Contains(geoVehicleAtSameLocation))
-                                       {
-                                           if (!CurrentlyAvailableInv.ContainsKey(geoVehicleAtSameLocation))
-                                           {
-                                               CurrentlyAvailableInv.Add(geoVehicleAtSameLocation, new List<ICommonItem>());
-                                               TFTVLogger.Always($"Creating new Available Inventory list for craft #{geoVehicleAtSameLocation}");
-                                           }
-
-
-                                           foreach (ICommonItem geoItem in CurrentlyHiddenInv[geoVehicleAtSameLocation])
-                                           {
-                                           //    GeoItem geoItem1 = new GeoItem((ItemDef)Repo.GetDef(geoItem));
-                                           //    ICommonItem commonItem = geoItem1;//Repo.Instantiate<ICommonItem>(Repo.GetDef(geoItem));
-
-                                               commonItems.Add(geoItem);
-                                               CurrentlyAvailableInv[geoVehicleAtSameLocation].Add(geoItem);
-                                               TFTVLogger.Always($"{geoItem} added to storage");
-
-
-                                           }
-
-                                           CurrentlyHiddenInv.Remove(geoVehicleAtSameLocation);
-                                       }
-                                   }
-                               }
-                           }
-
-                           TFTVLogger.Always($"original list count vs old count {items.Count()} | {commonItems.Count()}");
-
-                           items = commonItems;
-                       }
-
-                   }
-                   catch (Exception e)
-                   {
-                       TFTVLogger.Error(e);
-                       throw;
-                   }
-               }
-
-           }*/
-        //  internal static List<ItemDef> CurrentlyShowingItems = new List<ItemDef>();
-        /*  internal static Sprite TestPic = Helper.CreateSpriteFromImageFile("Aircraft_Inventory.png");
-
-
-
-
-          [HarmonyPatch(typeof(UIInventorySlot), "Update")]
-          internal static class TFTV_UIInventorySlot_Update_InventoryExperiment_patch
-          {
-              public static void Postfix(UIInventorySlot __instance, ICommonItem ____item)
-              {
-                  try
-                  {
-
-
-                      // TFTVLogger.Always($"default color is {__instance.Highlight.color.}");
-
-                      if (CurrentlyAvailableInv.Count > 0)
-                      {
-                          foreach (List<ICommonItem> geoItemList in CurrentlyAvailableInv.Values)
-                          {
-                              foreach (ICommonItem geoItem in geoItemList)
-                              {
-
-
-                                  if (____item != null && __instance.ParentList.IsStorage && geoItem == ____item)
-                                  {
-
-                                      __instance.NotProficientNode.GetComponent<Image>().overrideSprite = TestPic;
-                                      //  __instance.NotProficientNode.GetComponent<Image>().transform.localScale = new Vector3(2f, 2f, 2f); 
-                                      //  __instance.NotProficientNode.enabled = true;
-                                      __instance.NotProficientNode.gameObject.SetActive(true);
-
-                                      if (__instance.NotProficientNode.gameObject.GetComponent<UITooltipText>() == null)
-
-                                      {
-                                          __instance.NotProficientNode.gameObject.AddComponent<UITooltipText>().TipText = "This item was unequipped by someone on a plane, and can only be equipped by someone at the same location";
-                                          // __instance.gameObject.AddComponent<Text>().text = "just ";
-                                      }
-
-                                      __instance.Highlight.color = red;
-                                      // ColoredItems.Add(____item);
-                                      return;
-                                  }
-                                  else
-                                  {
-                                      if (__instance.Highlight.color == red)
-                                      {
-                                          __instance.Highlight.color = new Color(1, 1, 1);
-                                          __instance.NotProficientNode.GetComponent<Image>().overrideSprite = null;
-
-                                      }
-
-                                  }
-                              }
-                          }
-                      }
-                      else
-                      {
-                          if (__instance.Highlight.color == red)
-                          {
-                              __instance.Highlight.color = new Color(1, 1, 1);
-
-                          }
-
-                      }
-
-                  }
-                  catch (Exception e)
-                  {
-                      TFTVLogger.Error(e);
-                      throw;
-                  }
-              }
-
-          }*/
-
-        internal static bool CheckPhoenixBasePresent(int vehicleID)
-        {
-            try
-            {
-
-
-                GeoLevelController controller = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
-
-                if (vehicleID == 0)
-                {
-                    return true;
-
-                }
-
-                if (controller.PhoenixFaction.Vehicles.FirstOrDefault(v => v.VehicleID == vehicleID)?.CurrentSite?.GetComponent<GeoPhoenixBase>() != null)
-                {
-                    return true;
-                }
-
-                return false;
-
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-                throw;
-            }
-
-
-
-
-
-
-        }
-
-        /* [HarmonyPatch(typeof(UIInventoryList), "AddItem")]
-         internal static class TFTV_UIInventoryList_AddItem_InventoryExperiment_patch
-         {
-             public static bool Prefix(UIInventoryList __instance, ICommonItem item, UIInventorySlot slot, UIInventoryList sourceList)
-             {
-                 try
-                 {
-                     GeoLevelController controller = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
-
-                     GeoCharacter character = CharacterInventory ?? hookToCharacter;
-
-                     int charactersAircraft = LocateSoldier(character);
-
-                     // GeoItem geoItem = item as GeoItem;
-
-                     if (charactersAircraft != 0 && !item.ItemDef.Tags.Contains(Shared.SharedGameTags.AmmoTag))
-                     {
-                         if (CheckPhoenixBasePresent(charactersAircraft))
-                         {
-                             TFTVLogger.Always($"{item.ItemDef.name} from {character.DisplayName} is going to be added to an inventory list. Is it storage? {__instance.IsStorage}");
-
-                             return true;
-                         }
-
-                         if (__instance.IsStorage)
-                         {
-                             if (ItemsEquippedFromStorage.Contains(item))
-                             {
-
-                                 ItemsEquippedFromStorage.Remove(item);
-                                 TFTVLogger.Always($"{item.ItemDef.name} came from storage, so it's not added to Aircraft Inventory. Count {ItemsEquippedFromStorage.Count}");
-
-                                 return true;
-                             }
-                             else
-
-                             {
-                                 __instance.AllowStacking = false;
-                                 MethodInfo TryStripAmmo = typeof(UIInventoryList).GetMethod("TryStripAmmo", BindingFlags.Instance | BindingFlags.NonPublic);
-                                 MethodInfo AddRowIfNeeded = typeof(UIInventoryList).GetMethod("AddRowIfNeeded", BindingFlags.Instance | BindingFlags.NonPublic);
-                                 FieldInfo slotItemChangedEventField = AccessTools.Field(typeof(UIInventoryList), "OnSlotItemChanged");
-                                 TryStripAmmo.Invoke(__instance, new object[] { item, null });
-
-                                 if (slot == null)
-                                 {
-                                     slot = __instance.GetFirstAvailableSlot(item.ItemDef);
-                                 }
-
-                                 slot.Item = item;
-
-                                 AddRowIfNeeded.Invoke(__instance, null);
-
-                                 SlotItemChangedHandler slotItemChangedHandler = (SlotItemChangedHandler)slotItemChangedEventField.GetValue(__instance);
-                                 slotItemChangedHandler?.Invoke(slot);
-
-                                 if (CurrentlyAvailableInv.Keys.Contains(charactersAircraft))
-                                 {
-                                     CurrentlyAvailableInv[charactersAircraft].Add(item);
-                                     TFTVLogger.Always($"craft #{charactersAircraft} not a PX base! {item.ItemDef.name} from {character.DisplayName} added to Currently Showing inv, count {CurrentlyAvailableInv[charactersAircraft].Count}");
-                                 }
-                                 else
-                                 {
-                                     TFTVLogger.Always($"craft #{charactersAircraft} not at a PX base! {item.ItemDef.name} from {character.DisplayName} added to Currently Showing inv. Creating new item list.");
-                                     CurrentlyAvailableInv.Add(charactersAircraft, new List<ICommonItem>() { item});
-
-                                 }
-                                 //   MethodInfo TryStripAmmo = typeof(UIInventoryList).GetMethod("TryStripAmmo", BindingFlags.Instance | BindingFlags.NonPublic);
-                                 //   TryStripAmmo.Invoke(__instance, new object[] { item, null });
-
-                                // CurrentlyShowingItems.Add(item.ItemDef);
-
-                                 return false;
-
-                             }
-                         }
-
-                         if (!__instance.IsStorage && CurrentlyAvailableInv.Keys.Count > 0 && CurrentlyAvailableInv.Keys.Contains(charactersAircraft) && CurrentlyAvailableInv[charactersAircraft].Any(i => i == item))
-                         {
-                             CurrentlyAvailableInv[charactersAircraft].Remove(item);
-                             TFTVLogger.Always($"{item.ItemDef.name} is coming from the craft #{charactersAircraft} inventory; current inventory count is {CurrentlyAvailableInv[charactersAircraft].Count} ");
-
-                             return true;
-                         }
-                         else if (!__instance.IsStorage && CurrentlyAvailableInv.Keys.Count > 0)
-                         {
-                             List<int> otherVehiclesAtSameLocation = LocateOtherVehicles(charactersAircraft);
-
-                             if (otherVehiclesAtSameLocation != null && otherVehiclesAtSameLocation.Count > 0)
-                             {
-                                 TFTVLogger.Always($"There are other vehicles at the same location");
-
-                                 foreach (int geoVehicleAtSameLocation in otherVehiclesAtSameLocation)
-                                 {
-                                     if (CurrentlyAvailableInv.Keys.Contains(geoVehicleAtSameLocation))
-                                     {
-                                         if (CurrentlyAvailableInv[geoVehicleAtSameLocation].Any(i => i == item))
-                                         {
-                                             CurrentlyAvailableInv[geoVehicleAtSameLocation].Remove(item);
-                                             TFTVLogger.Always($" craft #{geoVehicleAtSameLocation} is at the same location as craft #{charactersAircraft} and has {item.ItemDef.name}. Count {CurrentlyAvailableInv[geoVehicleAtSameLocation].Count}");
-                                             return true;
-                                         }
-                                     }
-                                 }
-                             }
-                         }
-
-                         if (!__instance.IsStorage)
-                         {
-
-                             ItemsEquippedFromStorage.Add(item);
-                             TFTVLogger.Always($"{item.ItemDef.name} coming from storage; saving to ItemEquippedFromStorage. Count{ItemsEquippedFromStorage.Count}");
-
-                         }
-
-                         return true;
-                     }
-                     TFTVLogger.Always($"{item.ItemDef.name} is going to be added to storage {__instance.IsStorage}");
-                     return true;
-
-                 }
-
-                 catch (Exception e)
-                 {
-                     TFTVLogger.Error(e);
-                     throw;
-                 }
-             }
-
-         }*/
-
-
-
-
-
-
+       
         public static Dictionary<int, Dictionary<string, List<string>>> CharacterLoadouts = new Dictionary<int, Dictionary<string, List<string>>>();
 
         public static bool HelmetsOff;
@@ -1715,30 +1018,8 @@ namespace TFTV
 
                             TFTVLogger.Always($"armor item is {item}");
                             uIModuleSoldierEquip.ArmorList.AddItem(item.GetSingleItem());
-
-
-
-                            /*     UIInventorySlot slot = UIModuleSoldierEquipKludge.ArmorList.Slots.FirstOrDefault(s => s.Item?.ItemDef == item.ItemDef);
-
-                                 foreach(UIInventorySlot uIInventorySlot in UIModuleSoldierEquipKludge.ArmorList.Slots) 
-                                 {
-                                     if (uIInventorySlot.Item != null)
-                                     {
-                                         TFTVLogger.Always($"slot has {uIInventorySlot?.Item}");
-                                     }
-                                 }
-
-
-                                 if (slot != null)
-                                 {
-                                     TFTVLogger.Always($"Found slot {slot.Item.ItemDef.name}");
-                                 }
-
-                                 UIModuleSoldierEquipKludge.ArmorList.TryLoadAmmo(item, slot, storage);*/
                             storage.RemoveItem(item.GetSingleItem(), null);
 
-
-                            //storage.RemoveItem(, null);
                         }
 
                     }
@@ -1749,65 +1030,19 @@ namespace TFTV
                         ICommonItem item = storage.UnfilteredItems.Where((ICommonItem ufi) => ufi.ItemDef.Guid == equipment).FirstOrDefault() ?? storage.FilteredItems.Where((ICommonItem ufi) => ufi.ItemDef.Guid == equipment).FirstOrDefault();
                         TFTVLogger.Always($"equipment item is {item}");
 
-                        uIModuleSoldierEquip.ReadyList.AddItem(item.GetSingleItem());
-                        storage.RemoveItem(item.GetSingleItem(), null);
-                        /* UIInventorySlot slot = UIModuleSoldierEquipKludge.ReadyList.Slots.FirstOrDefault(s => s.Item.ItemDef == item.ItemDef);
+                        if (item != null && uIModuleSoldierEquip.ReadyList.CanAddItem(item))
+                        {
 
-                         if (slot != null)
-                         {
-                             TFTVLogger.Always($"Found slot {slot.Item.ItemDef.name}");
-                         }*/
+                            TFTVLogger.Always($"equipment item is {item}");
+                            uIModuleSoldierEquip.ReadyList.AddItem(item.GetSingleItem());
+                            storage.RemoveItem(item.GetSingleItem(), null);
 
-
-                        //  if (item != null && UIModuleSoldierEquipKludge.ReadyList.CanAddItem(item))
-                        //  {
-
-                        /*  TacticalItemDef[] compatibleAmmunition = (item.ItemDef as EquipmentDef).CompatibleAmmunition;
-                          foreach (TacticalItemDef tacticalItemDef in compatibleAmmunition)
-                          {
-                              TFTVLogger.Always("Got here");
-                              bool foundSlot= false;
-                              foreach (UIInventorySlot storageSlot in storage.Slots)
-                              {
-                                  if (!storageSlot.Empty && !(storageSlot.Item.ItemDef != tacticalItemDef) && storage.TryLoadItemWithItem(item, storageSlot.Item, storageSlot))
-                                  {
-                                      slot?.UpdateItem();
-                                      TFTVLogger.Always("Got here2");
-                                      foundSlot = true;
-                                      break;
-                                  }
-                              }
-                              TFTVLogger.Always("Got here b");
-
-                              if (!foundSlot)
-                              {
-
-                                  foreach (ICommonItem unfilteredItem in storage.UnfilteredItems)
-                                  {
-                                      if (!(unfilteredItem.ItemDef != tacticalItemDef) && storage.TryLoadItemWithItem(item, unfilteredItem, null))
-                                      {
-                                          TFTVLogger.Always("Got here2b");
-
-                                          slot?.UpdateItem();
-                                          if (unfilteredItem.CommonItemData.IsEmpty())
-                                          {
-                                              storage.UnfilteredItems.Remove(unfilteredItem);
-                                          }
-
-                                          break;
-                                      }
-                                  }
-                              }
-                          }*/
-
-                        //   UIModuleSoldierEquipKludge.ReadyList.TryLoadAmmo(item, slot, storage);
-                        //   TFTVLogger.Always($" ammo: {item?.CommonItemData?.Ammo == null} charge: {item?.CommonItemData?.Ammo?.CurrentCharges >= item?.ItemDef?.ChargesMax} storage: {storage == null} allowstacking: {!storage?.AllowStacking}");
+                        }
 
 
+                      //  uIModuleSoldierEquip.ReadyList.AddItem(item.GetSingleItem());
+                        
 
-
-                        //  TFTVLogger.Always("this worked too");
-                        //  }
 
                     }
 
@@ -1821,8 +1056,6 @@ namespace TFTV
                         if (item != null && uIModuleSoldierEquip.InventoryList.CanAddItem(item))
                         {
                             TFTVLogger.Always($"inventory item is {item}");
-
-
                             uIModuleSoldierEquip.InventoryList.AddItem(item.GetSingleItem());
                             UIInventorySlot slot = uIModuleSoldierEquip.InventoryList.Slots.FirstOrDefault(s => s.Item == item);
                             //    UIModuleSoldierEquipKludge.InventoryList.TryLoadAmmo(item.GetSingleItem(), slot, storage);

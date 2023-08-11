@@ -405,7 +405,7 @@ namespace PRMBetterClasses.VariousAdjustments
                     // Rebuke, add piercing scrap shred
 
                     case "831be08f-d0d7-2764-4833-02ce83ff7277": // AC_Rebuke_WeaponDef
-                        if (config.impossibleWeaponsAdjustments)
+                        if (TFTVNewGameOptions.ImpossibleWeaponsAdjustmentsSetting)
                         {
                             //weaponDef.DamagePayload.DamageKeywords.Find(dkp => dkp.DamageKeywordDef == damageKeywords.ShreddingKeyword).Value = 1;
                             // Remove shredding

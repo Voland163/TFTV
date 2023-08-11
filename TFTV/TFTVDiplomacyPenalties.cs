@@ -22,18 +22,21 @@ namespace TFTV
         [HarmonyPatch(typeof(GeoFaction), "OnDiplomacyChanged")]
         public static class GeoBehemothActor_OnDiplomacyChanged_patch
         {
-            public static bool Prepare()
+       /*     public static bool Prepare()
             {
-                TFTVConfig config = TFTVMain.Main.Config;
+               TFTVConfig config = TFTVMain.Main.Config;
                 return config.DiplomaticPenalties;
-            }
+            }*/
 
             public static void Postfix(GeoFaction __instance, PartyDiplomacy.Relation relation, int newValue)
 
             {
                 try
                 {
-                    CheckPostponedFactionMissions(__instance, relation, newValue);
+                    if (TFTVNewGameOptions.DiplomaticPenaltiesSetting)
+                    {
+                        CheckPostponedFactionMissions(__instance, relation, newValue);
+                    }
                 }
                 catch (Exception e)
                 {
@@ -138,11 +141,11 @@ namespace TFTV
             {
                 try
                 {
-                    TFTVConfig config = TFTVMain.Main.Config;
+                  //  TFTVConfig config = TFTVMain.Main.Config;
 
                     GeoLevelController controller = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
 
-                    if (config.DiplomaticPenalties && TFTVReleaseOnly.DifficultyOrderConverter(controller.CurrentDifficultyLevel.Order) != 1)
+                    if (TFTVNewGameOptions.DiplomaticPenaltiesSetting)
                     {
 
 
@@ -285,11 +288,11 @@ namespace TFTV
             {
                 try
                 {
-                    TFTVConfig config = TFTVMain.Main.Config;
+                  //  TFTVConfig config = TFTVMain.Main.Config;
 
                     GeoLevelController controller = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
 
-                    if (config.DiplomaticPenalties && TFTVReleaseOnly.DifficultyOrderConverter(controller.CurrentDifficultyLevel.Order) != 1)
+                    if (TFTVNewGameOptions.DiplomaticPenaltiesSetting)
                     {
 
 
@@ -435,10 +438,10 @@ namespace TFTV
                 try
                 {
 
-                    TFTVConfig config = TFTVMain.Main.Config;
+                   // TFTVConfig config = TFTVMain.Main.Config;
                     GeoLevelController controller = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
 
-                    if (config.DiplomaticPenalties && TFTVReleaseOnly.DifficultyOrderConverter(controller.CurrentDifficultyLevel.Order) != 1)
+                    if (TFTVNewGameOptions.DiplomaticPenaltiesSetting)
                     {
 
                         GeoFactionDef PhoenixPoint = DefCache.GetDef<GeoFactionDef>("Phoenix_GeoPhoenixFactionDef");

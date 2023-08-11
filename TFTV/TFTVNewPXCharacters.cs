@@ -52,7 +52,7 @@ namespace TFTV
                     level.EventSystem.SetVariable("BG_Intro_Played", 3);
                     
                     
-                    // level.EventSystem.SetVariable("NewDifficultiesImplemented", 1);
+                    level.EventSystem.SetVariable("NewConfigImplemented", 1);
                     //  TFTVBetaSaveGamesFixes.CheckNewLOTA(level);
                 }
             }

@@ -461,7 +461,7 @@ namespace TFTV
 
                     if (TFTVVoidOmens.CheckFordVoidOmensInPlay(controller).Contains(10))
                     {
-                        deliriumToolTipText += "\n-<i>No limit to Delirium, regardless of ODI level</i> Void Omen is in effect.";
+                        deliriumToolTipText += "\n-<i>No limit to Delirium, regardless of ODI level</i>  Void Omen is in effect.";
                     }
 
                     if (controller.EventSystem.GetEventRecord("SDI_09")?.SelectedChoice == 0)

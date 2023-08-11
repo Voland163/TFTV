@@ -30,7 +30,7 @@ namespace PRMBetterClasses.VariousAdjustments
             Change_Ragnarok();
             Change_Iconoclast();
             Change_NergalsWrath();
-            Change_Crossbows();
+          //  Change_Crossbows();
             Change_PriestWeapons();
         }
 
@@ -311,11 +311,11 @@ namespace PRMBetterClasses.VariousAdjustments
             ItemDef ErosCrb_Ammo = DefCache.GetDef<ItemDef>("SY_Crossbow_AmmoClip_ItemDef");
             WeaponDef PsycheCrb = DefCache.GetDef<WeaponDef>("SY_Venombolt_WeaponDef");
             ItemDef PsycheCrb_Ammo = DefCache.GetDef<ItemDef>("SY_Venombolt_AmmoClip_ItemDef");
-            ErosCrb.ChargesMax = TFTVMain.Main.Settings.BaseCrossbow_Ammo;
-            BonusErosCrb.ChargesMax = TFTVMain.Main.Settings.BaseCrossbow_Ammo;
-            ErosCrb_Ammo.ChargesMax = TFTVMain.Main.Settings.BaseCrossbow_Ammo;
-            PsycheCrb.ChargesMax = TFTVMain.Main.Settings.VenomCrossbow_Ammo;
-            PsycheCrb_Ammo.ChargesMax = TFTVMain.Main.Settings.VenomCrossbow_Ammo;
+            ErosCrb.ChargesMax = 5;
+            BonusErosCrb.ChargesMax = 5;
+            ErosCrb_Ammo.ChargesMax = 5;
+            PsycheCrb.ChargesMax = 4;
+            PsycheCrb_Ammo.ChargesMax = 4;
         }
 
         public static void Change_PriestWeapons()

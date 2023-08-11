@@ -207,12 +207,7 @@ namespace TFTV
         [HarmonyPatch(typeof(GeoVehicle), "OnArrivedAtDestination")]
         public static class GeoVehicle_OnArrivedAtDestination
         {
-            public static bool Prepare()
-            {
-                TFTVConfig config = TFTVMain.Main.Config;
-                return config.ActivateAirCombatChanges;
-            }
-
+          
             public static void Postfix(GeoVehicle __instance, bool justPassing)
             {
                 try
@@ -248,11 +243,6 @@ namespace TFTV
         public static class GeoBehemothActor_PickSubmergeLocation_patch
         {
 
-            public static bool Prepare()
-            {
-                TFTVConfig config = TFTVMain.Main.Config;
-                return config.ActivateAirCombatChanges;
-            }
             public static void Postfix(GeoBehemothActor __instance)
 
 
@@ -302,11 +292,7 @@ namespace TFTV
         [HarmonyPatch(typeof(GeoscapeRaid), "StopBehemothFollowing")]
         public static class GeoscapeRaid_StopBehemothFollowing_patch
         {
-            public static bool Prepare()
-            {
-                TFTVConfig config = TFTVMain.Main.Config;
-                return config.ActivateAirCombatChanges;
-            }
+           
             public static void Prefix(GeoscapeRaid __instance)
             {
                 try
@@ -395,12 +381,6 @@ namespace TFTV
         public static class GeoBehemothActor_UpdateHourly_Patch
         {
 
-            public static bool Prepare()
-            {
-                TFTVConfig config = TFTVMain.Main.Config;
-                return config.ActivateAirCombatChanges;
-            }
-
             public static bool Prefix(GeoBehemothActor __instance, ref int ____disruptionThreshhold, int ____disruptionPoints, int ____nextActionHoursLeft)
             {
                 try
@@ -451,7 +431,7 @@ namespace TFTV
                     {
                         MethodInfo method_GenerateTargetData = AccessTools.Method(typeof(GeoBehemothActor), "PerformAction");
                         method_GenerateTargetData.Invoke(__instance, null);
-                        TFTVLogger.Always("Behemoth hourly update, " + ____nextActionHoursLeft + " hours left to move, so time to move");
+                        TFTVLogger.Always($"Behemoth hourly update{____nextActionHoursLeft} hours left to move, so time to move");
 
                     }
 
@@ -542,11 +522,7 @@ namespace TFTV
         [HarmonyPatch(typeof(GeoBehemothActor), "CalculateDisruptionThreshhold")]
         public static class GeoBehemothActor_CalculateDisruptionThreshhold_patch
         {
-            public static bool Prepare()
-            {
-                TFTVConfig config = TFTVMain.Main.Config;
-                return config.ActivateAirCombatChanges;
-            }
+           
             public static void Postfix(GeoBehemothActor __instance, ref int __result, int ____disruptionPoints)
             {
                 try
@@ -685,12 +661,7 @@ namespace TFTV
 
         public static class GeoBehemothActor_DamageHavenOutcome_Patch
         {
-            public static bool Prepare()
-            {
-                TFTVConfig config = TFTVMain.Main.Config;
-                return config.ActivateAirCombatChanges;
-            }
-
+ 
             public static void Postfix(GeoBehemothActor __instance, ref int ____disruptionPoints)
             {
                 try
@@ -723,11 +694,7 @@ namespace TFTV
         [HarmonyPatch(typeof(GeoBehemothActor), "ChooseNextHavenTarget")]
         public static class GeoBehemothActor_ChooseNextHavenTarget_Patch
         {
-            public static bool Prepare()
-            {
-                TFTVConfig config = TFTVMain.Main.Config;
-                return config.ActivateAirCombatChanges;
-            }
+       
 
             public static bool Prefix(GeoBehemothActor __instance)
             {
@@ -760,16 +727,16 @@ namespace TFTV
             {
                 GeoLevelController controller = geoBehemothActor.GeoLevel;
 
-                TFTVLogger.Always("TargetsForBehemoth counts " + targetsForBehemoth.Count() + " and/but counted as 0, so here we are");
+                TFTVLogger.Always($"TargetsForBehemoth counts {targetsForBehemoth.Count()} and/but counted as 0, so here we are");
 
              
                 //Get site closest to Behemoth  
-                GeoSite behemothSite = geoBehemothActor.GeoLevel.Map.GetClosestSite_Land(geoBehemothActor.WorldPosition, true);
+                GeoSite behemothSite = geoBehemothActor.GeoLevel.Map.GetClosestSite_Land(geoBehemothActor.WorldPosition, false);
 
                 if (behemothSite != null)
                 {
+                    TFTVLogger.Always("Found fallback site on same landmass near the Behemoth");
 
-                    
                 }
                 else 
                 {

@@ -28,47 +28,39 @@ namespace TFTV
         [HarmonyPatch(typeof(BodyPartAspect), "OnSetToDisabled")]
         internal static class BodyPartAspect_OnSetToDisabled_patch
         {
-            public static bool Prepare()
+         /*   public static bool Prepare()
             {
                 TFTVConfig config = TFTVMain.Main.Config;
                 return config.StaminaPenaltyFromInjury;
-            }
+            }*/
 
             [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051")]
             private static void Postfix(BodyPartAspect __instance)
             {
-
-                // The way to get access to base.OwnerItem
-                // 'base' it the class this object is derived from and with Harmony we can't directly access these base classes
-                // looking in dnSpy we can see, that 'base' is of type 'TacticalItemAspectBase' and we want to access it's property 'OwnerItem' that is of type 'TacticalItem'
-                // 'AccessTools.Property' are tools from Harmony to make such an access easier, the usual way through Reflections is a bit more complicated.
-                TacticalItem base_OwnerItem = (TacticalItem)AccessTools.Property(typeof(TacticalItemAspectBase), "OwnerItem").GetValue(__instance, null);
-                int unitId = base_OwnerItem.TacticalActorBase.GeoUnitId;
-              //  GameTagDef bionicalTag = GameUtl.GameComponent<SharedData>().SharedGameTags.BionicalTag;
-              //  string bodyPart = "";
-
-               // if (base_OwnerItem.ItemDef.Tags.Contains(bionicalTag))
-              //  {
+                if (TFTVNewGameOptions.StaminaPenaltyFromInjurySetting)
+                {                 
+                    TacticalItem base_OwnerItem = (TacticalItem)AccessTools.Property(typeof(TacticalItemAspectBase), "OwnerItem").GetValue(__instance, null);
+                    int unitId = base_OwnerItem.TacticalActorBase.GeoUnitId;
+              
                     ItemSlotDef itemSlotDef = base_OwnerItem.ItemDef.RequiredSlotBinds[0].RequiredSlot as ItemSlotDef;
 
-                  string  bodyPart = itemSlotDef.SlotName;
-              //  }
+                    string bodyPart = itemSlotDef.SlotName;
 
-                if (base_OwnerItem.TacticalActor.IsAlive)
-                {
-                    if (!charactersWithDisabledBodyParts.ContainsKey(unitId))
+                    if (base_OwnerItem.TacticalActor.IsAlive)
                     {
-                        charactersWithDisabledBodyParts.Add(unitId, new List<string> { bodyPart });
-                        TFTVLogger.Always(base_OwnerItem.TacticalActor.GetDisplayName() + " has a disabled " + bodyPart);
-                    }
-                    else if (charactersWithDisabledBodyParts.ContainsKey(unitId) && !charactersWithDisabledBodyParts[unitId].Contains(bodyPart) && bodyPart != null)
-                    {
+                        if (!charactersWithDisabledBodyParts.ContainsKey(unitId))
+                        {
+                            charactersWithDisabledBodyParts.Add(unitId, new List<string> { bodyPart });
+                            TFTVLogger.Always(base_OwnerItem.TacticalActor.GetDisplayName() + " has a disabled " + bodyPart);
+                        }
+                        else if (charactersWithDisabledBodyParts.ContainsKey(unitId) && !charactersWithDisabledBodyParts[unitId].Contains(bodyPart) && bodyPart != null)
+                        {
 
-                        charactersWithDisabledBodyParts[unitId].Add(bodyPart);
-                        TFTVLogger.Always(base_OwnerItem.TacticalActor.GetDisplayName() + " has a disabled " + bodyPart);
+                            charactersWithDisabledBodyParts[unitId].Add(bodyPart);
+                            TFTVLogger.Always(base_OwnerItem.TacticalActor.GetDisplayName() + " has a disabled " + bodyPart);
+                        }
                     }
                 }
-
             }
         }
 
@@ -76,7 +68,7 @@ namespace TFTV
         {
             try
             {
-                TFTVConfig config = TFTVMain.Main.Config;
+            
                 GameTagDef bionicalTag = GameUtl.GameComponent<SharedData>().SharedGameTags.BionicalTag;
 
 
@@ -105,7 +97,7 @@ namespace TFTV
 
                         }
 
-                        if (TFTVReleaseOnly.DifficultyOrderConverter(controller.CurrentDifficultyLevel.Order) != 1)
+                        if (TFTVNewGameOptions.StaminaPenaltyFromInjurySetting)
                         {
                             TFTVCommonMethods.SetStaminaToZero(geoCharacter);
                         }
@@ -127,20 +119,20 @@ namespace TFTV
         public static class UIModuleMutationSection_ApplyMutation_SetStaminaTo0_patch
         {
 
-            public static bool Prepare()
+         /*   public static bool Prepare()
             {
                 TFTVConfig config = TFTVMain.Main.Config;
-                return config.StaminaPenaltyFromMutation;
-            }
+                return config.StaminaPenaltyFromInjury;
+            }*/
 
             public static void Postfix(IAugmentationUIModule ____parentModule)
             {
                 try
                 {
-                    TFTVConfig config = TFTVMain.Main.Config;
+                 //   TFTVConfig config = TFTVMain.Main.Config;
                     GeoLevelController controller = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
 
-                    if (TFTVReleaseOnly.DifficultyOrderConverter(controller.CurrentDifficultyLevel.Order) != 1)
+                    if (TFTVNewGameOptions.StaminaPenaltyFromInjurySetting)
                     {
                         ____parentModule.CurrentCharacter.Fatigue.Stamina.SetToMin();
                     }
@@ -156,21 +148,21 @@ namespace TFTV
         [HarmonyPatch(typeof(UIModuleBionics), "OnAugmentApplied")]
         public static class UIModuleBionics_OnAugmentApplied_SetStaminaTo0_patch
         {
-            public static bool Prepare()
+        /*    public static bool Prepare()
             {
                 TFTVConfig config = TFTVMain.Main.Config;
-                return config.StaminaPenaltyFromBionics;
-            }
+                return config.StaminaPenaltyFromInjury;
+            }*/
 
 
             public static void Postfix(UIModuleBionics __instance)
             {
                 try
                 {
-                    TFTVConfig config = TFTVMain.Main.Config;
+                 //   TFTVConfig config = TFTVMain.Main.Config;
                     GeoLevelController controller = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
 
-                    if (TFTVReleaseOnly.DifficultyOrderConverter(controller.CurrentDifficultyLevel.Order) != 1)
+                    if (TFTVNewGameOptions.StaminaPenaltyFromInjurySetting)
                     {
                         //set Stamina to zero after installing a bionic
                         __instance.CurrentCharacter.Fatigue.Stamina.SetToMin();

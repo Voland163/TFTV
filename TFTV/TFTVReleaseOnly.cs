@@ -54,6 +54,9 @@ namespace TFTV
                         TFTVLogger.Always($"Easy Geoscape config option detected; switching to STORY difficulty");
                     }
                 }
+
+                TFTVNewGameOptions.SetInternalConfigOptions(geoController, tacticalController);
+
             }
             catch (Exception e)
             {
@@ -371,6 +374,19 @@ namespace TFTV
                 newDifficulty.Order = 6;
                 newDifficulty.Name.LocalizationKey = "TFTV_DIFFICULTY_ETERMES_TITLE";
                 newDifficulty.Description.LocalizationKey = "TFTV_DIFFICULTY_ETERMES_DESCRIPTION";
+
+                newDifficulty.RecruitCostPerLevelMultiplier = 0.5f;
+                newDifficulty.RecruitmentPriceModifier = 1.3f;
+                newDifficulty.NestLimitations.MaxNumber = 4;
+                newDifficulty.NestLimitations.HoursBuildTime = 73;
+                newDifficulty.LairLimitations.MaxNumber = 4; 
+                newDifficulty.LairLimitations.MaxConcurrent = 4; 
+                newDifficulty.LairLimitations.HoursBuildTime = 80; 
+                newDifficulty.CitadelLimitations.HoursBuildTime = 144;
+
+                newDifficulty.InitialDeploymentPoints = 812;
+                newDifficulty.FinalDeploymentPoints = 3125;
+                newDifficulty.DaysToReachFinalDeployment = 72;
 
                 List<GameDifficultyLevelDef> difficultyLevelDefs = new List<GameDifficultyLevelDef>(Shared.DifficultyLevels) { newDifficulty };
 

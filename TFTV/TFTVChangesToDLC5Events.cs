@@ -2,7 +2,6 @@
 using Base.Core;
 using Base.Defs;
 using HarmonyLib;
-using Mono.Cecil;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Geoscape.Entities;
@@ -60,6 +59,8 @@ namespace TFTV
 
                 List<GeoItem> phoenixStorageItems = level.PhoenixFaction.ItemStorage.ToList();
                 List<GeoCharacter> phoenixSoldiers = level.PhoenixFaction.Soldiers.ToList();
+                List<GeoCharacter> phoenixVehicles = level.PhoenixFaction.GroundVehicles.ToList();
+
                 GameTagDef dlc5Tag = GameUtl.GameComponent<SharedData>().SharedGameTags.Dlc5TagDef;
 
                 foreach (GeoItem item in phoenixStorageItems)
@@ -68,7 +69,7 @@ namespace TFTV
                     {
                         //TFTVLogger.Always(item.CommonItemData.GetDisplayName());
 
-                        
+
 
                         if (item.ItemDef.Equals(Obliterator))//item.CommonItemData.GetDisplayName() == "Obliterator")
                         {
@@ -91,6 +92,37 @@ namespace TFTV
                             kaosWeapons.Add("KEY_KS_TORMENTOR");
                         }
 
+                    }
+                }
+
+                foreach (GeoCharacter geoCharacter in phoenixVehicles)
+                {
+                    foreach (GeoItem inventoryItem in geoCharacter.InventoryItems)
+                    {
+                        if (inventoryItem.ItemDef.Tags.Contains(dlc5Tag))
+                        {
+                            //TFTVLogger.Always(inventoryItem.CommonItemData.GetDisplayName());
+                            if (inventoryItem.ItemDef.Equals(Obliterator))//inventoryItem.CommonItemData.GetDisplayName() == "Obliterator")
+                            {
+                                kaosWeapons.Add("KEY_KS_OBLITERATOR");
+                            }
+                            else if (inventoryItem.ItemDef.Equals(Subjector))//inventoryItem.CommonItemData.GetDisplayName() == "Subjector")
+                            {
+                                kaosWeapons.Add("KEY_KS_SUBJECTOR");
+                            }
+                            else if (inventoryItem.ItemDef.Equals(Redemptor)) //inventoryItem.CommonItemData.GetDisplayName() == "Redemptor")
+                            {
+                                kaosWeapons.Add("KEY_KS_REDEMPTOR");
+                            }
+                            else if (inventoryItem.ItemDef.Equals(Devastator)) //inventoryItem.CommonItemData.GetDisplayName() == "Devastator")
+                            {
+                                kaosWeapons.Add("KEY_KS_DEVASTATOR");
+                            }
+                            else if (inventoryItem.ItemDef.Equals(Tormentor)) //inventoryItem.CommonItemData.GetDisplayName() == "Tormentor")
+                            {
+                                kaosWeapons.Add("KEY_KS_TORMENTOR");
+                            }
+                        }
                     }
                 }
 
@@ -171,11 +203,11 @@ namespace TFTV
 
             private static readonly List<GeoMarketplaceItemOptionDef> geoMarketplaceItemOptionDefs = Repo.GetAllDefs<GeoMarketplaceItemOptionDef>().ToList();
 
-            public static bool Prepare()
+        /*    public static bool Prepare()
             {
                 TFTVConfig config = TFTVMain.Main.Config;
                 return config.ActivateKERework;
-            }
+            }*/
 
 
 
@@ -200,7 +232,7 @@ namespace TFTV
                         }
                     }
 
-                 }
+                }
                 catch (Exception e)
                 {
                     TFTVLogger.Error(e);
@@ -214,11 +246,11 @@ namespace TFTV
         [HarmonyPatch(typeof(GeoMarketplace), "OnSiteVisited")]
         public static class GeoMarketplace_OnSiteVisited_MarketPlace_patch
         {
-            public static bool Prepare()
+       /*     public static bool Prepare()
             {
                 TFTVConfig config = TFTVMain.Main.Config;
                 return config.ActivateKERework;
-            }
+            }*/
 
             public static void Prefix(GeoMarketplace __instance, GeoLevelController ____level, TheMarketplaceSettingsDef ____settings)
             {

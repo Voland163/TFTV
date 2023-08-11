@@ -30,10 +30,8 @@ namespace TFTV
 
         public static readonly ResearchTagDef CriticalResearchTag = DefCache.GetDef<ResearchTagDef>("CriticalPath_ResearchTagDef");
 
-        private static bool ChangesToCapturingPandoransImplemented = false;
-        private static bool ChangesToFoodAndMutagenGenerationImplemented = false;
-        private static bool EqualizeTradeImplemented = false;
-        private static bool IncreaseHavenAlertCooldownImplemented = false;
+        public static bool ChangesToCapturingPandoransImplemented = false;
+        public static bool ChangesToFoodAndMutagenGenerationImplemented = false;   
 
         public static void ImplementConfigChoices()
         {
@@ -44,7 +42,7 @@ namespace TFTV
                 EqualizeTrade();
                 IncreaseHavenAlertCoolDown();
                 TFTVBetterEnemies.ImplementBetterEnemies();
-                ReverseEngineering();
+             //   ReverseEngineering();
 
 
             }
@@ -54,7 +52,7 @@ namespace TFTV
             }
         }
 
-        private static void ReverseEngineering()
+  /*      private static void ReverseEngineering()
         {
             try
             {
@@ -72,7 +70,7 @@ namespace TFTV
             {
                 TFTVLogger.Error(e);
             }
-        }
+        }*/
 
         private static void ChangeResourceRewardsForAutopsies()
         {
@@ -173,15 +171,25 @@ namespace TFTV
             try
             {
                 TFTVConfig config = TFTVMain.Main.Config;
+                GeoHavenDef geoHavenDef = DefCache.GetDef<GeoHavenDef>("GeoHavenDef");
 
-                if (!IncreaseHavenAlertCooldownImplemented && config.LimitedRaiding)
+                if (config.LimitedRaiding)
                 {
 
-                    DefCache.GetDef<GeoHavenDef>("GeoHavenDef").AlertStateCooldownDays = 7;
-
-                    IncreaseHavenAlertCooldownImplemented = true;
-                    TFTVLogger.Always($"IncreaseHavenAlertCooldownImplemented");
+                    geoHavenDef.AlertStateCooldownDays = 7;
+                   
+                   
                 }
+                else 
+                {
+                    geoHavenDef.AlertStateCooldownDays = 3;
+                
+                
+                }
+
+
+                TFTVLogger.Always($"IncreaseHavenAlertCooldown set to {geoHavenDef.AlertStateCooldownDays}");
+
             }
             catch (Exception e)
             {
@@ -198,13 +206,13 @@ namespace TFTV
             {
                 TFTVConfig config = TFTVMain.Main.Config;
 
-                if (!EqualizeTradeImplemented && config.EqualizeTrade)
+                GeoFactionDef anu = DefCache.GetDef<GeoFactionDef>("Anu_GeoFactionDef");
+                GeoFactionDef nj = DefCache.GetDef<GeoFactionDef>("NewJericho_GeoFactionDef");
+                GeoFactionDef syn = DefCache.GetDef<GeoFactionDef>("Synedrion_GeoFactionDef");
+
+
+                if (config.EqualizeTrade)
                 {
-
-                    GeoFactionDef anu = DefCache.GetDef<GeoFactionDef>("Anu_GeoFactionDef");
-                    GeoFactionDef nj = DefCache.GetDef<GeoFactionDef>("NewJericho_GeoFactionDef");
-                    GeoFactionDef syn = DefCache.GetDef<GeoFactionDef>("Synedrion_GeoFactionDef");
-
                     List<TradingRatio> tradingRatios = new List<TradingRatio>
                     {
                         new TradingRatio() { OfferResource = ResourceType.Supplies, OfferQuantity = 5, RecieveQuantity = 1, RecieveResource = ResourceType.Tech },
@@ -218,10 +226,45 @@ namespace TFTV
                     anu.ResourceTradingRatios = tradingRatios;
                     nj.ResourceTradingRatios = tradingRatios;
                     syn.ResourceTradingRatios = tradingRatios;
-
-                    EqualizeTradeImplemented = true;
-                    TFTVLogger.Always($"EqualizeTradeImplemented");
+            
                 }
+                else 
+                {
+
+                    List<TradingRatio> tradingRatiosAnu = new List<TradingRatio>
+                    {
+                        new TradingRatio() { OfferResource = ResourceType.Supplies, OfferQuantity = 12, RecieveQuantity = 2, RecieveResource = ResourceType.Tech },
+                        new TradingRatio() { OfferResource = ResourceType.Supplies, OfferQuantity = 6, RecieveQuantity = 4, RecieveResource = ResourceType.Materials },
+                        new TradingRatio() { OfferResource = ResourceType.Materials, OfferQuantity = 6, RecieveQuantity = 4, RecieveResource = ResourceType.Supplies },
+                        new TradingRatio() { OfferResource = ResourceType.Materials, OfferQuantity = 10, RecieveQuantity = 2, RecieveResource = ResourceType.Tech },
+                        new TradingRatio() { OfferResource = ResourceType.Tech, OfferQuantity = 2, RecieveQuantity = 10, RecieveResource = ResourceType.Supplies },
+                        new TradingRatio() { OfferResource = ResourceType.Tech, OfferQuantity = 2, RecieveQuantity = 9, RecieveResource = ResourceType.Materials }
+                    };
+
+                    List<TradingRatio> tradingRatiosNJ = new List<TradingRatio>
+                    {
+                        new TradingRatio() { OfferResource = ResourceType.Supplies, OfferQuantity = 10, RecieveQuantity = 2, RecieveResource = ResourceType.Tech },
+                        new TradingRatio() { OfferResource = ResourceType.Supplies, OfferQuantity = 6, RecieveQuantity = 4, RecieveResource = ResourceType.Materials },
+                        new TradingRatio() { OfferResource = ResourceType.Materials, OfferQuantity = 6, RecieveQuantity = 4, RecieveResource = ResourceType.Supplies },
+                        new TradingRatio() { OfferResource = ResourceType.Materials, OfferQuantity = 12, RecieveQuantity = 2, RecieveResource = ResourceType.Tech },
+                        new TradingRatio() { OfferResource = ResourceType.Tech, OfferQuantity = 2, RecieveQuantity = 9, RecieveResource = ResourceType.Supplies },
+                        new TradingRatio() { OfferResource = ResourceType.Tech, OfferQuantity = 2, RecieveQuantity = 10, RecieveResource = ResourceType.Materials }
+                    };
+
+                    List<TradingRatio> tradingRatiosSyn = new List<TradingRatio>
+                    {
+                        new TradingRatio() { OfferResource = ResourceType.Supplies, OfferQuantity = 9, RecieveQuantity = 2, RecieveResource = ResourceType.Tech },
+                        new TradingRatio() { OfferResource = ResourceType.Supplies, OfferQuantity = 5, RecieveQuantity = 4, RecieveResource = ResourceType.Materials },
+                        new TradingRatio() { OfferResource = ResourceType.Materials, OfferQuantity = 5, RecieveQuantity = 4, RecieveResource = ResourceType.Supplies },
+                        new TradingRatio() { OfferResource = ResourceType.Materials, OfferQuantity = 9, RecieveQuantity = 2, RecieveResource = ResourceType.Tech },
+                        new TradingRatio() { OfferResource = ResourceType.Tech, OfferQuantity = 2, RecieveQuantity = 8, RecieveResource = ResourceType.Supplies },
+                        new TradingRatio() { OfferResource = ResourceType.Tech, OfferQuantity = 2, RecieveQuantity = 8, RecieveResource = ResourceType.Materials }
+                    };              
+
+                }
+
+                TFTVLogger.Always($"EqualizeTrade Implemented? {config.EqualizeTrade}");
+
             }
             catch (Exception e)
             {
@@ -231,15 +274,13 @@ namespace TFTV
 
         }
 
-
-
         private static void ChangesToFoodAndMutagenGeneration()
         {
             try
             {
                 TFTVConfig config = TFTVMain.Main.Config;
 
-                if (!ChangesToFoodAndMutagenGenerationImplemented && TFTVNewGameOptions.LimitedHarvesting)
+                if (!ChangesToFoodAndMutagenGenerationImplemented && TFTVNewGameOptions.LimitedHarvestingSetting)
                 {
                     ModifyLocalizationKeys();
                     RemoveMutagenHarvestingResearch();
@@ -288,13 +329,11 @@ namespace TFTV
             {
                 TFTVConfig config = TFTVMain.Main.Config;
 
-                if (!ChangesToCapturingPandoransImplemented && TFTVNewGameOptions.LimitedCapture)
+                if (!ChangesToCapturingPandoransImplemented && TFTVNewGameOptions.LimitedCaptureSetting)
                 {
                     CreateCaptureModule();
                     ChangesToCapturingPandorans();
                     AdjustPandoranVolumes();
-                    CreateObjectiveCaptureCapacity();
-
                     ChangesToCapturingPandoransImplemented = true;
                     TFTVLogger.Always($"ChangesToCapturingPandoransImplemented");
                 }
@@ -364,19 +403,7 @@ namespace TFTV
 
         }
 
-        private static void CreateObjectiveCaptureCapacity()
-        {
-            try
-            {
-                TFTVCommonMethods.CreateObjectiveReminder("{25590AE4-872B-4679-A15C-300C3DC48A53}", "CAPTURE_CAPACITY_AIRCRAFT", 0);
-                TFTVCommonMethods.CreateObjectiveReminder("{4EB4A290-8FE7-45CC-BF8B-914C52441EF4}", "CAPTURE_CAPACITY_BASE", 0);
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-
-        }
+       
 
         private static void CreateCaptureModule()
         {

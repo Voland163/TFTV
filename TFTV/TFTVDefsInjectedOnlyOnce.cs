@@ -200,6 +200,22 @@ namespace TFTV
             StealAircraftMissionsNoItemRecovery();
             TFTVReleaseOnly.OnReleasePrototypeDefs();
             ModifyCratesToAddArmor();
+            TFTVReverseEngineering.ModifyReverseEngineering();
+            CreateObjectiveCaptureCapacity();
+        }
+
+        private static void CreateObjectiveCaptureCapacity()
+        {
+            try
+            {
+                TFTVCommonMethods.CreateObjectiveReminder("{25590AE4-872B-4679-A15C-300C3DC48A53}", "CAPTURE_CAPACITY_AIRCRAFT", 0);
+                TFTVCommonMethods.CreateObjectiveReminder("{4EB4A290-8FE7-45CC-BF8B-914C52441EF4}", "CAPTURE_CAPACITY_BASE", 0);
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
         }
 
         private static void StealAircraftMissionsNoItemRecovery()
@@ -815,7 +831,7 @@ namespace TFTV
                 //Remove adv nanotech buff and add Repair Kit to manufacturing reward
 
                 ResearchDef advNanotechRes = DefCache.GetDef<ResearchDef>("SYN_NanoTech_ResearchDef");
-                advNanotechRes.ViewElementDef.BenefitsText.LocalizationKey = null;
+                advNanotechRes.ViewElementDef.BenefitsText = new LocalizedTextBind() { }; // DefCache.GetDef<ResearchViewElementDef>("PX_ShardGun_ViewElementDef").BenefitsText;
                 advNanotechRes.Unlocks = new ResearchRewardDef[] { advNanotechRes.Unlocks[0] };
 
                 EquipmentDef repairKit = DefCache.GetDef<EquipmentDef>("FieldRepairKit_EquipmentDef");
@@ -3134,6 +3150,7 @@ namespace TFTV
                 TFTVCommonMethods.CreateObjectiveReminder("F0CCE047-352C-4AE4-8D12-6856FA57A5C7", "VOID_OMEN_TITLE_5", 0);
                 TFTVCommonMethods.CreateObjectiveReminder("BDBBD195-D07C-43CF-AB0F-50C7CEA8B044", "VOID_OMEN_TITLE_7", 0);
                 TFTVCommonMethods.CreateObjectiveReminder("EC9011E4-2C01-485B-8E89-7D0A20996899", "VOID_OMEN_TITLE_10", 0);
+                TFTVCommonMethods.CreateObjectiveReminder("023E1C64-2FC7-48CB-BFD1-007509907FEE", "VOID_OMEN_TITLE_14", 0);
                 TFTVCommonMethods.CreateObjectiveReminder("3CBE9291-2241-428B-B6DD-776EFF316D4F", "VOID_OMEN_TITLE_15", 0);
                 TFTVCommonMethods.CreateObjectiveReminder("D25FC8F1-DB31-4BA2-9B9F-3787B9D3A664", "VOID_OMEN_TITLE_16", 0);
                 TFTVCommonMethods.CreateObjectiveReminder("BA859656-03E9-4BCD-AAAC-2A0B09506FEC", "VOID_OMEN_TITLE_19", 0);
@@ -5187,7 +5204,7 @@ namespace TFTV
                 easy.MinPopulationThreshold = 3;
 
 
-
+                veryhard.RecruitCostPerLevelMultiplier = 0.4f;
 
 
                 // PX_Jacob_Tutorial2_TacCharacterDef replace [3], with hard starting squad [1]
@@ -5213,6 +5230,7 @@ namespace TFTV
                 hard.StartingSquadTemplate[1] = hard.TutorialStartingSquadTemplate[1];
                 hard.StartingSquadTemplate[3] = hard.TutorialStartingSquadTemplate[2];
 
+                hard.RecruitCostPerLevelMultiplier = 0.3f;
 
                 //reducing evolution per day because there other sources of evolution points now
                 hard.EvolutionProgressPerDay = 50; //vanilla 70; moved from 60 in Update#6

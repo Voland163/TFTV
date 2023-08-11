@@ -11,6 +11,8 @@ using PhoenixPoint.Tactical.Entities.Equipments;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using static TFTV.TFTVNewGameMenu;
+using System.Reflection;
 
 namespace TFTV
 {
@@ -66,6 +68,32 @@ namespace TFTV
             throw new InvalidOperationException();
         }
 
+
+        public static void ImplementFarMConfig(GeoLevelController controller)
+        {
+            try 
+            {
+               
+
+                foreach (GeoVehicle geoVehicle in controller.PhoenixFaction.Vehicles) 
+                {
+                    MethodInfo methodInfo = typeof(GeoVehicle).GetMethod("UpdateVehicleBonusCache", BindingFlags.NonPublic | BindingFlags.Instance);
+
+                //    TFTVLogger.Always($"method is null? {methodInfo==null}");
+                    methodInfo.Invoke(geoVehicle, null);
+
+
+                }
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+
+
         [HarmonyPatch(typeof(GeoVehicle), "GetModuleBonusByType")]
 
         public static class TFTV_Experimental_GeoVehicle_GetModuleBonusByType_AdjustFARMRecuperationModule_patch
@@ -82,7 +110,7 @@ namespace TFTV
 
                         if (config.ActivateStaminaRecuperatonModule)
                         {
-                            TFTVLogger.Always($"geovehicle is {__instance.name}");
+                           // TFTVLogger.Always($"geovehicle is {__instance.name}");
                             __result = 0.35f;
 
                         }

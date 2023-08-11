@@ -1,4 +1,5 @@
-﻿using Base.Entities.Statuses;
+﻿using Base.Core;
+using Base.Entities.Statuses;
 using Base.UI;
 using HarmonyLib;
 using PhoenixPoint.Common.ContextHelp;
@@ -10,6 +11,7 @@ using PhoenixPoint.Common.View.ViewModules;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.Research;
 using PhoenixPoint.Geoscape.Entities.Research.Requirement;
+using PhoenixPoint.Geoscape.Entities.Sites;
 using PhoenixPoint.Geoscape.Events;
 using PhoenixPoint.Geoscape.Events.Eventus;
 using PhoenixPoint.Geoscape.Levels;
@@ -70,7 +72,6 @@ namespace TFTV
                 throw;
             }
 
-
         }
 
         public static void ClearInternalVariables()
@@ -111,12 +112,23 @@ namespace TFTV
                 TFTVAncients.AlertedHoplites.Clear();
                 TFTVUI.CharacterLoadouts?.Clear();
                 TFTVCapturePandoransGeoscape.PandasForFoodProcessing = 0;
-                TFTVCapturePandorans.CachedACC = TFTVCapturePandorans.AircraftCaptureCapacity;
-                TFTVCapturePandorans.AircraftCaptureCapacity = 0;
+              //  TFTVCapturePandorans.CachedACC = TFTVCapturePandorans.AircraftCaptureCapacity;
+                
                 TFTVCapturePandorans.ContainmentFacilityPresent = false;
-              //  TFTVUI.CurrentlyAvailableInv.Clear();
-              //  TFTVUI.CurrentlyHiddenInv.Clear();
-                TFTVLogger.Always("Internal variables cleared");
+                TFTVNewGameOptions.ConfigImplemented = false;
+              /*  TFTVNewGameOptions.AmountOfExoticResourcesSetting;
+                TFTVNewGameOptions.ResourceMultiplierSetting;
+                TFTVNewGameOptions.DiplomaticPenaltiesSetting;
+                TFTVNewGameOptions.StaminaPenaltyFromInjurySetting;
+                TFTVNewGameOptions.MoreAmbushesSetting;
+                TFTVNewGameOptions.LimitedCaptureSetting;
+                TFTVNewGameOptions.LimitedHarvestingSetting;
+                TFTVNewGameOptions.StrongerPandoransSetting;
+                TFTVNewGameOptions.ImpossibleWeaponsAdjustmentsSetting;*/
+
+        //  TFTVUI.CurrentlyAvailableInv.Clear();
+        //  TFTVUI.CurrentlyHiddenInv.Clear();
+        TFTVLogger.Always($"Internal variables cleared; {TFTVCapturePandorans.AircraftCaptureCapacity}");
             }
             catch (Exception e)
             {
@@ -168,7 +180,8 @@ namespace TFTV
                 TFTVBaseDefenseTactical.StratToBeAnnounced = 0;
                 TFTVBaseDefenseTactical.StratToBeImplemented = 0;
                 TFTVAncients.CyclopsMolecularDamageBuff.Clear();
-                TFTVAncients.AlertedHoplites.Clear();
+             //   TFTVAncients.AlertedHoplites.Clear();
+                TFTVCapturePandorans.AircraftCaptureCapacity = 0;
                 //  TFTVBaseDefenseTactical.VentingHintShown = false;
             }
             catch (Exception e)
@@ -822,7 +835,95 @@ namespace TFTV
                 }
             }
         }
+        internal static int LocateSoldier(GeoCharacter geoCharacter)
+        {
+            try
+            {
+                int geoVehicleID = 0;
+                GeoLevelController controller = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
 
+                foreach (GeoVehicle aircraft in controller.PhoenixFaction.Vehicles)
+                {
+                    if (aircraft.GetAllCharacters().Contains(geoCharacter))
+                    {
+
+                        geoVehicleID = aircraft.VehicleID;
+                        break;
+
+                    }
+                }
+
+
+                return geoVehicleID;
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
+        }
+
+        internal static List<int> LocateOtherVehicles(int id)
+        {
+            try
+            {
+                List<int> vehicleIDs = new List<int>();
+
+                if (id != 0)
+                {
+                    GeoLevelController controller = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
+
+                    List<GeoVehicle> geoVehiclesAtSite = controller.PhoenixFaction?.Vehicles?.FirstOrDefault(v => v?.VehicleID == id)?.CurrentSite?.Vehicles?.Where(vs => vs?.Owner == controller.PhoenixFaction && vs?.VehicleID != id)?.ToList();
+
+                    if (geoVehiclesAtSite != null && geoVehiclesAtSite.Count > 0)
+                    {
+
+                        foreach (GeoVehicle vehicle in geoVehiclesAtSite)
+                        {
+                            vehicleIDs.Add(vehicle.VehicleID);
+
+                        }
+                    }
+                }
+
+                return vehicleIDs;
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
+        }
+
+        internal static bool CheckPhoenixBasePresent(int vehicleID)
+        {
+            try
+            {
+                GeoLevelController controller = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
+
+                if (vehicleID == 0)
+                {
+                    return true;
+
+                }
+
+                if (controller.PhoenixFaction.Vehicles.FirstOrDefault(v => v.VehicleID == vehicleID)?.CurrentSite?.GetComponent<GeoPhoenixBase>() != null)
+                {
+                    return true;
+                }
+
+                return false;
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
+
+        }
     }
 }
 

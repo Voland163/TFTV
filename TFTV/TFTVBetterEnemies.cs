@@ -32,6 +32,7 @@ namespace TFTV
         private static readonly DefRepository Repo = TFTVMain.Repo;
         private static readonly SharedData Shared = TFTVMain.Shared;
 
+        public static bool StrongerPandoransImplemented = false;
       
         //Adapted from BetterEnemies by Dtony
 
@@ -54,7 +55,7 @@ namespace TFTV
                     BEChange_Perception();
                     // BEFixCaterpillarTracksDamage(); //already added to base
                     BEReducePandoranWillpower();
-                    if (config.BetterEnemiesOn)
+                    if (TFTVNewGameOptions.StrongerPandoransSetting)
                     {
                         TFTVLogger.Always("Stronger Pandorans is on!");
                         BEBuff_ArthronsTritons();
@@ -62,6 +63,7 @@ namespace TFTV
                         BEBuff_Queen();
                         BEBUff_SirenChiron();
                         BEBuff_SmallCharactersAndSentinels();
+                        StrongerPandoransImplemented = true;
                     }
                 }
                 else

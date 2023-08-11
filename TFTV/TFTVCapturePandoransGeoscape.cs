@@ -118,7 +118,7 @@ namespace TFTV
 
                 int foodProductionFacilitiesCount = CountFoodProductionFacilities(controller.PhoenixFaction);
 
-                foodController.Income = (int)(foodProductionDef.BaseResourcesOutput[0].Value * 24 * foodProductionFacilitiesCount) + Mathf.Min((int)GetFarmOutputPerDay(), foodProductionFacilitiesCount * ProcessingCapacity);
+                foodController.Income = (int)(foodProductionDef.BaseResourcesOutput[0].Value * 24 * foodProductionFacilitiesCount) + Mathf.Min((int)GetFarmOutputPerDay(), foodProductionFacilitiesCount * ProcessingCapacity) - controller.PhoenixFaction.Soldiers.Count();
 
                 methodDisplayValue.Invoke(foodController, null);
 
@@ -184,7 +184,7 @@ namespace TFTV
                 {
                     TFTVConfig config = TFTVMain.Main.Config;
 
-                    if (TFTVNewGameOptions.LimitedHarvesting)
+                    if (TFTVNewGameOptions.LimitedHarvestingSetting)
                     {
                         RefreshFoodAndMutagenProductionTooltupUI();
                     }
@@ -211,7 +211,7 @@ namespace TFTV
                 {
                     TFTVConfig config = TFTVMain.Main.Config;
 
-                    if (TFTVNewGameOptions.LimitedHarvesting)
+                    if (TFTVNewGameOptions.LimitedHarvestingSetting)
                     {
                         UIModuleActorCycle actorCycleModule = GameUtl.CurrentLevel().GetComponent<GeoLevelController>().View.GeoscapeModules.ActorCycleModule;
                         GeoPhoenixFaction phoenixFaction = GameUtl.CurrentLevel().GetComponent<GeoLevelController>().PhoenixFaction;
@@ -260,7 +260,7 @@ namespace TFTV
                 {
                     TFTVConfig config = TFTVMain.Main.Config;
 
-                    if (TFTVNewGameOptions.LimitedHarvesting)
+                    if (TFTVNewGameOptions.LimitedHarvestingSetting)
                     {
 
                         // TFTVLogger.Always($"running EnterState RosterAliens");
@@ -309,7 +309,7 @@ namespace TFTV
                 {
                     TFTVConfig config = TFTVMain.Main.Config;
 
-                    if (TFTVNewGameOptions.LimitedHarvesting)
+                    if (TFTVNewGameOptions.LimitedHarvestingSetting)
                     {
 
                         GiveFood();
@@ -420,7 +420,7 @@ namespace TFTV
 
                     TFTVConfig config = TFTVMain.Main.Config;
 
-                    if (TFTVNewGameOptions.LimitedHarvesting)
+                    if (TFTVNewGameOptions.LimitedHarvestingSetting)
                     {
                         if (returnResource == ResourceType.Supplies)
                         {

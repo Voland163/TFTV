@@ -17,11 +17,11 @@ namespace TFTV
 
         public static class GeoscapeEventSystem_PhoenixFaction_OnLevelStart_Patch
         {
-            public static bool Prepare()
+          /*  public static bool Prepare()
             {
                 TFTVConfig config = TFTVMain.Main.Config;
                 return config.MoreAmbushes;
-            }
+            }*/
 
             public static void Prefix(GeoscapeEventSystem __instance)
             {                
@@ -30,7 +30,7 @@ namespace TFTV
                     TFTVConfig config = TFTVMain.Main.Config;
                     GeoLevelController controller = __instance.GetComponent<GeoLevelController>();
 
-                    if (TFTVReleaseOnly.DifficultyOrderConverter(controller.CurrentDifficultyLevel.Order) != 1)
+                    if (TFTVNewGameOptions.MoreAmbushesSetting)
                     {
                         __instance.AmbushExploredSitesProtection = 0;
                         __instance.StartingAmbushProtection = 0;

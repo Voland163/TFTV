@@ -175,7 +175,7 @@ namespace TFTV
 
 
         [HarmonyPatch(typeof(TacticalFaction), "HasUndeployedTacActors")]
-        public static class SurviveTurnsFactionObjective_EvaluateObjective_BaseDefense_Patch
+        public static class SurviveTurnsFactionObjective_HasUndeployedTacActors_BaseDefense_Patch
         {
             public static void Postfix(TacticalFaction __instance, ref bool __result)
             {
@@ -372,6 +372,37 @@ namespace TFTV
 
         }
 
+
+      /*  [HarmonyPatch(typeof(CustomMissionTypeDef), "SetupFactionObjectives")]
+        public static class CustomMissionTypeDef_SetupFactionObjectives_Patch
+        {
+            public static void Prefix(CustomMissionTypeDef __instance, TacticalLevelController tacticalLevel)
+            {
+                try
+                {
+                    
+                        FactionObjectiveDef[] customObjectives = __instance.CustomObjectives;
+                        
+                    foreach(FactionObjectiveDef factionObjectiveDef in customObjectives) 
+                    {
+                        TFTVLogger.Always($"{factionObjectiveDef?.MissionObjectiveData?.Description?.LocalizationKey}");
+                    
+                    
+                    }
+                    TFTVLogger.Always($"while count is {customObjectives.Count()}");
+                    TFTVLogger.Always($"is null? {DefCache.GetDef<KeepSoldiersAliveFactionObjectiveDef>("CAPTURE_CAPACITY_AIRCRAFT")==null}");
+
+                    }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+        }*/
+
+
+
+
         //This method is NOT ONLY FOR BASE DEFENSE; also implements Void Omen objectives
         public static void ModifyObjectives(TacMissionTypeDef missionType)
         {
@@ -381,9 +412,15 @@ namespace TFTV
                 GameTagDef baseDefense = DefCache.GetDef<GameTagDef>("MissionTypePhoenixBaseDefence_MissionTagDef");
                 GameTagDef havenDefense = DefCache.GetDef<GameTagDef>("MissionTypeHavenDefense_MissionTagDef");
 
-                List<int> voidOmens = new List<int> { 3, 5, 7, 10, 15, 16, 19 };
+                List<int> voidOmens = new List<int> { 3, 5, 7, 10, 14, 15, 16, 19 };
 
                 List<FactionObjectiveDef> listOfFactionObjectives = missionType.CustomObjectives.ToList();
+
+           /*     foreach (FactionObjectiveDef factionObjectiveDef in listOfFactionObjectives) 
+                {
+                    TFTVLogger.Always($"objective: {factionObjectiveDef?.MissionObjectiveData.Description.LocalizationKey}");
+                
+                }*/
 
                 // Remove faction objectives that correspond to void omens that are not in play
                 for (int i = listOfFactionObjectives.Count - 1; i >= 0; i--)
@@ -457,7 +494,7 @@ namespace TFTV
                     if (!listOfFactionObjectives.Contains(aircraftCapture))
                     {
                         listOfFactionObjectives.Add(aircraftCapture);
-                        TFTVLogger.Always("objective added");
+                        TFTVLogger.Always("AircraftCapture capacity objective added");
                     }
 
                 }
@@ -2646,14 +2683,7 @@ namespace TFTV
                         //  TFTVLogger.Always($"{tacticalActor.DisplayName} spawned, has {tacticalActor.CharacterStats.ActionPoints} actions points");
 
                     }
-
-
-
                 }
-
-
-
-
             }
 
             catch (Exception e)
