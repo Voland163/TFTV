@@ -818,11 +818,27 @@ namespace TFTV
 
                 ResearchDef reverseEngineeringMVS = DefCache.GetDef<ResearchDef>("PX_SY_MultiVisualSensor_Attachment_ItemDef_ResearchDef");
 
+                ResearchDef reverseEngineeringMotionDetector = DefCache.GetDef<ResearchDef>("PX_SY_MotionDetector_Attachment_ItemDef_ResearchDef");
+
+                ResearchDef reverseEngineeringAcidVest = DefCache.GetDef<ResearchDef>("PX_NJ_FireResistanceVest_Attachment_ItemDef_ResearchDef");
+           
                 ResearchDbDef pxResearch = DefCache.GetDef<ResearchDbDef>("pp_ResearchDB");
 
                 if (pxResearch.Researches.Contains(reverseEngineeringMVS))
                 {
                     pxResearch.Researches.Remove(reverseEngineeringMVS);
+                }
+
+                if (pxResearch.Researches.Contains(reverseEngineeringMotionDetector)) 
+                {
+                    pxResearch.Researches.Remove(reverseEngineeringMotionDetector);
+                
+                }
+
+                if (pxResearch.Researches.Contains(reverseEngineeringAcidVest))
+                {
+                    pxResearch.Researches.Remove(reverseEngineeringAcidVest);
+
                 }
 
                 //Moving Motion Detection Module to Terror Sentinel Autopsy               

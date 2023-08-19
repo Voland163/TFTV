@@ -1,4 +1,5 @@
 using Base.Serialization.General;
+using Epic.OnlineServices;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Modding;
@@ -125,6 +126,8 @@ namespace TFTV
             TFTVBetaSaveGamesFixes.CheckScyllaCaptureTechResearch(Controller);
             TFTVPassengerModules.ImplementFarMConfig(Controller);
             TFTVNewGameOptions.Change_Crossbows();
+
+            TFTVLogger.Always($"Difficulty level on Geoscape is {Controller.CurrentDifficultyLevel.name}");
 
             //  TFTVCapturePandorans.SetMutagenOutput(Controller);
             //  TFTVDeliriumPerks.RemoveDeliriumPerks(Controller);
@@ -349,7 +352,7 @@ namespace TFTV
             TFTVMain main = (TFTVMain)Main;
             GeoLevelController gsController = Controller;
             TFTVConfig config = TFTVMain.Main.Config;
-            TFTVCommonMethods.ClearInternalVariables();
+           
 
             List<int> locations = new List<int>() { 0, 1, 584, 170, 191, 167, 169, 166, 187, 172, 165, 192, 185, 171, 189, 168, 193, 190, 188 };
 
@@ -407,7 +410,7 @@ namespace TFTV
                     foreach (GeoSiteSceneDef.SiteInfo siteInfo in worldSites.Where(ws => ws.SiteTags.Any(t => t.Contains("PhoenixBase"))))
                     {
                         int index = (int)TFTVNewGameOptions.startingBaseLocation;
-                        TFTVLogger.Always($"index is {index}");
+                      //  TFTVLogger.Always($"index is {index}");
 
                         if (TFTVNewGameOptions.startingBaseLocation == TFTVNewGameOptions.StartingBaseLocation.Vanilla)
                         {

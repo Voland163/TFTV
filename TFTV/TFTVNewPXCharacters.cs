@@ -241,6 +241,11 @@ namespace TFTV
                         __result.EventLeader = HelenaPic;
                     }
 
+                    else if (geoEvent.EventID.Contains("SDI"))
+                    {                      
+                        __result.EventBackground = Helper.CreateSpriteFromImageFile("ruins.png");//AlistairOffice;
+                    }
+
                     else if (geoEvent.EventID.Equals("VoidOmen") || geoEvent.EventID == "PROG_FS10" || geoEvent.EventID.Contains("Alistair")
                             || geoEvent.EventID.Equals("PROG_LE3_WARN"))
                     {

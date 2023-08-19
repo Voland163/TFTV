@@ -128,7 +128,7 @@ namespace TFTV
 
         //  TFTVUI.CurrentlyAvailableInv.Clear();
         //  TFTVUI.CurrentlyHiddenInv.Clear();
-        TFTVLogger.Always($"Internal variables cleared; {TFTVCapturePandorans.AircraftCaptureCapacity}");
+        TFTVLogger.Always($"Internal variables cleared");
             }
             catch (Exception e)
             {

@@ -149,7 +149,7 @@ namespace TFTV
 
                         int hourOfTheDay = geoSite.LocalTime.DateTime.Hour;
                         int minuteOfTheHour = geoSite.LocalTime.DateTime.Minute;
-                        bool dayTimeMission = hourOfTheDay >= 6 && hourOfTheDay <= 21;
+                        bool dayTimeMission = hourOfTheDay >= 6 && hourOfTheDay <= 20;
 
                         TFTVLogger.Always($"LocalTime: {hourOfTheDay:00}:{minuteOfTheHour:00}");
 

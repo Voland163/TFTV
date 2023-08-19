@@ -801,6 +801,8 @@ namespace TFTV
             {
                 try
                 {
+                  
+
                     Resolution resolution = Screen.currentResolution;
                     float resolutionFactorWidth = (float)resolution.width / 1920f;
                     float resolutionFactorHeight = (float)resolution.height / 1080f;
@@ -828,11 +830,13 @@ namespace TFTV
 
 
                     arrowPickerController.CurrentItemText.text = options[currentValue];
-                    arrowPickerController.GetComponent<RectTransform>().sizeDelta = new Vector2(arrowPickerController.GetComponent<RectTransform>().sizeDelta.x * lengthScale * resolutionFactorWidth, arrowPickerController.GetComponent<RectTransform>().sizeDelta.y);
-
+                  //  if (lengthScale != 1)
+                  //  {
+                        arrowPickerController.GetComponent<RectTransform>().sizeDelta = new Vector2(arrowPickerController.GetComponent<RectTransform>().sizeDelta.x * lengthScale * resolutionFactorWidth, arrowPickerController.GetComponent<RectTransform>().sizeDelta.y);
+                  //  }
 
                     PopulateOptions(arrowPickerController, options);
-
+                    TFTVLogger.Always($"instantiating {title}, got to the end");
                 }
 
                 catch (Exception e)
@@ -979,9 +983,11 @@ namespace TFTV
                     _staminaRecuperation = _staminaRecuperationModSettings.ListField;
                     _strongerPandorans = _strongerPandoransModSettings.ListField;
 
+                   
+
                     InstantiateArrowPickerController(_startingFactionModSettings, _startingFaction, _titleStartingFaction, _descriptionStartingFaction, _optionsStartingFaction, (int)(TFTVNewGameOptions.startingSquad), OnStartingFactionValueChangedCallback, 1f);
                     InstantiateArrowPickerController(_startingBaseModSettings, _startingBase, _titleStartingBase, _descriptionStartingBase, _optionsStartingBase, (int)(TFTVNewGameOptions.startingBaseLocation), OnStartingBaseValueChangedCallback, 1f);
-                    InstantiateArrowPickerController(_startingSquadModSettings, _startingSquad, _titleStartingSquad, _descriptionStartingSquad, _optionsStartingSquad, (int)(TFTVNewGameOptions.startingSquad), OnStartingSquadValueChangedCallback, 1f);
+                    InstantiateArrowPickerController(_startingSquadModSettings, _startingSquad, _titleStartingSquad, _descriptionStartingSquad, _optionsStartingSquad, (int)(TFTVNewGameOptions.startingSquadCharacters), OnStartingSquadValueChangedCallback, 1f);
                     InstantiateArrowPickerController(_startingScavSitesModSettings, _startingScavSites, _titleScavSites, _descriptionScavSites, _optionsScavSites, TFTVNewGameOptions.initialScavSites, OnStartingScavSitesValueChangedCallback, 1f);
                     InstantiateArrowPickerController(_resCratePriorityModSettings, _resCratePriority, _titleResCratePriority, _descriptionScavPriority, _optionsResCratePriority, (int)(TFTVNewGameOptions.chancesScavCrates), OnResScavPriorityValueChangedCallback, 1f);
                     InstantiateArrowPickerController(_recruitsPriorityModSettings, _recruitsPriority, _titleRecruitsPriority, _descriptionScavPriority, _optionsRecruitsPriority, (int)(TFTVNewGameOptions.chancesScavSoldiers), OnRecruitsPriorityValueChangedCallback, 1f);
@@ -1734,7 +1740,9 @@ namespace TFTV
                     __result = new List<EntitlementDef>() {
                         DefCache.GetDef<EntitlementDef>("BloodAndTitaniumEntitlementDef"), DefCache.GetDef<EntitlementDef>("CorruptedHorizonsEntitlementDef"), DefCache.GetDef<EntitlementDef>("FesteringSkiesEntitlementDef"),
                    DefCache.GetDef<EntitlementDef>("KaosEnginesEntitlementDef"), DefCache.GetDef<EntitlementDef>("LegacyOfTheAncientsEntitlementDef"), DefCache.GetDef<EntitlementDef>("LivingWeaponsEntitlementDef")};
-
+                   
+                    
+                    TFTVCommonMethods.ClearInternalVariables();
                     TFTVNewGameOptions.ConfigImplemented = true;
                     TFTVNewGameOptions.Update35Check = true;
                     NewGameOptionsSetUp = false;

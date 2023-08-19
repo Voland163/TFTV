@@ -33,7 +33,6 @@ namespace TFTV
 
                     if (config.ReinforcementsNoDrops && __instance.TurnNumber > 1 && actor is TacticalActor tacticalActor)
                     {
-
                         if (tacticalActor.TacticalFaction != __instance.GetFactionByCommandName("PX"))
                         {
                             GameTagDef reinforcementTag = DefCache.GetDef<GameTagDef>("ReinforcementTag_GameTagDef");

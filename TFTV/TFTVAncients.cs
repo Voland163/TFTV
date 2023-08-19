@@ -23,6 +23,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices.WindowsRuntime;
 using UnityEngine;
 
 
@@ -145,23 +146,37 @@ namespace TFTV
                 try
                 {
                     MethodInfo tryGetShootTargetMethod = typeof(MassShootTargetActorEffect).GetMethod("TryGetShootTarget", BindingFlags.Instance | BindingFlags.NonPublic);
+
+                    if (tryGetShootTargetMethod == null || target == null) 
+                    {
+
+                        return false;
+                    }
+
                     WeaponDef beamHead = DefCache.GetDef<WeaponDef>("HumanoidGuardian_Head_WeaponDef");
                     //   beamHead.APToUsePerc = 0;
 
                     TacticalAbilityTarget tacticalAbilityTarget = (TacticalAbilityTarget)tryGetShootTargetMethod.Invoke(__instance, new object[] { target });
-                    if (tacticalAbilityTarget == null || tacticalAbilityTarget.Actor.IsDead)
+                    if (tacticalAbilityTarget == null || tacticalAbilityTarget.Actor==null|| tacticalAbilityTarget.Actor.IsDead)
                     {
                         return false;
                     }
 
                     TacticalActorBase sourceTacticalActorBase = TacUtil.GetSourceTacticalActorBase(__instance.Source);
+
+                    if (sourceTacticalActorBase == null) 
+                    {
+                        return false;
+                    
+                    }
+
                     List<TacticalActor> list = sourceTacticalActorBase.TacticalFaction.TacticalActors.
                         Where((TacticalActor a) => a.TacticalActorBaseDef == __instance.MassShootTargetActorEffectDef.ShootersActorDef).
                         Where(ta => !ta.Status.HasStatus(AncientGuardianStealthStatus)).
                         Where(ta => ta.IsAlive).ToList();
                     using (new MultiForceTargetableLock(sourceTacticalActorBase.Map.GetActors<TacticalActor>().Where(ta => ta.IsAlive)))
                     {
-                        foreach (TacticalActor item in list)
+                        foreach (TacticalActor hoplite in list)
                         {
                             // TFTVLogger.Always($"hoplite {item.name} has stealth status? {item.Status.HasStatus(AncientGuardianStealthStatus)}");
 
@@ -169,7 +184,7 @@ namespace TFTV
 
                             Weapon selectedWeapon = null;
 
-                            foreach (Equipment equipment in item.Equipments.Equipments)
+                            foreach (Equipment equipment in hoplite.Equipments.Equipments)
                             {
                                 if (equipment.TacticalItemDef.Equals(beamHead))
                                 {
@@ -177,21 +192,21 @@ namespace TFTV
                                 }
                             }
 
-                            if (item.IsAlive && selectedWeapon != null && !(selectedWeapon.DefaultShootAbility.GetWeaponDisabledState(IgnoredAbilityDisabledStatesFilter.CreateDefaultFilter()) != AbilityDisabledState.NotDisabled))
+                            if (hoplite.IsAlive && selectedWeapon != null && !(selectedWeapon.DefaultShootAbility.GetWeaponDisabledState(IgnoredAbilityDisabledStatesFilter.CreateDefaultFilter()) != AbilityDisabledState.NotDisabled))
                             {
                                 TacticalActor hitFriend = null;
-                                if (!item.TacticalPerception.CheckFriendlyFire(selectedWeapon, item.Pos, tacticalAbilityTarget, out hitFriend) && selectedWeapon.TryGetShootTarget(tacticalAbilityTarget) != null)
+                                if (!hoplite.TacticalPerception.CheckFriendlyFire(selectedWeapon, hoplite.Pos, tacticalAbilityTarget, out hitFriend) && selectedWeapon.TryGetShootTarget(tacticalAbilityTarget) != null)
                                 {
-                                    if (item.HasStatus(shieldDeployed))
+                                    if (hoplite.HasStatus(shieldDeployed))
                                     {
-                                        Timing.Current.StartAndWaitFor(RaiseShield(item));
+                                        Timing.Current.StartAndWaitFor(RaiseShield(hoplite));
 
-                                        item.Equipments.SetSelectedEquipment(selectedWeapon);
+                                        hoplite.Equipments.SetSelectedEquipment(selectedWeapon);
                                     }
 
                                     MethodInfo faceAndShootAtTarget = typeof(MassShootTargetActorEffect).GetMethod("FaceAndShootAtTarget", BindingFlags.Instance | BindingFlags.NonPublic);
 
-                                    Timing.Current.Start((IEnumerator<NextUpdate>)faceAndShootAtTarget.Invoke(__instance, new object[] { item, selectedWeapon, tacticalAbilityTarget }));
+                                    Timing.Current.Start((IEnumerator<NextUpdate>)faceAndShootAtTarget.Invoke(__instance, new object[] { hoplite, selectedWeapon, tacticalAbilityTarget }));
 
 
                                 }

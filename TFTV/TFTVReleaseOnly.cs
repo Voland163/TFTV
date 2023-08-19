@@ -231,6 +231,8 @@ namespace TFTV
 
                 if (config.difficultyOnTactical != TFTVConfig.DifficultyOnTactical.GEOSCAPE)
                 {
+                    TFTVLogger.Always($"Difficulty level on Tactical is {config.difficultyOnTactical}");
+
                     switch (config.difficultyOnTactical)
                     {
                         case TFTVConfig.DifficultyOnTactical.STORY:
