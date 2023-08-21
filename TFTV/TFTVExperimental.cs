@@ -1,8 +1,14 @@
-﻿using Base.Defs;
+﻿using Base.Core;
+using Base.Defs;
+using Base.Serialization;
+using Base.UI.MessageBox;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities.GameTags;
+using PhoenixPoint.Common.Game;
+using PhoenixPoint.Common.Saves;
 using PhoenixPoint.Geoscape.Entities;
+using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.Equipments;
@@ -22,6 +28,187 @@ namespace TFTV
         private static readonly SharedData Shared = TFTVMain.Shared;
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
 
+
+
+        /*   [HarmonyPatch(typeof(PhoenixGame), "StartGame")]
+           public static class PhoenixGame_StartGame_patch
+           {
+
+               public static void Prefix()
+               {
+                   try
+                   {
+
+                    TFTVReleaseOnly.OnReleasePrototypeDefs();
+
+                   }
+                   catch (Exception e)
+                   {
+
+                       throw;
+                   }
+               }
+           }*/
+
+        public static void CorrrectPhoenixSaveManagerDifficulty()
+        {
+            try
+            {
+                PhoenixSaveManager phoenixSaveManager = GameUtl.GameComponent<PhoenixGame>().SaveManager;
+                FieldInfo currentDifficultyField = typeof(PhoenixSaveManager).GetField("_currentDifficulty", BindingFlags.NonPublic | BindingFlags.Instance);
+
+                GameDifficultyLevelDef difficulty = (GameDifficultyLevelDef)currentDifficultyField.GetValue(phoenixSaveManager);
+
+                if (difficulty != null)
+                {
+                    TFTVLogger.Always($"difficulty is {difficulty}");
+                }
+                else
+                {
+                    TFTVLogger.Always($"No difficulty set as current difficulty!");
+
+
+                    GeoLevelController geoLevelController = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
+
+                    if (geoLevelController != null)
+                    {
+
+                        currentDifficultyField.SetValue(phoenixSaveManager, geoLevelController.CurrentDifficultyLevel);
+
+                        GameDifficultyLevelDef newDifficulty = (GameDifficultyLevelDef)currentDifficultyField.GetValue(phoenixSaveManager);
+
+
+                        TFTVLogger.Always($"Current difficulty set to {newDifficulty?.name}");
+                    }
+                    else
+                    {
+                        GameDifficultyLevelDef gameDifficultyLevelDef = null;
+
+
+                        if (TFTVNewGameOptions.InternalDifficultyCheck != 0)
+                        {
+                            DefCache.GetDef<GameDifficultyLevelDef>("Easy_GameDifficultyLevelDef").Order = 2;
+                            DefCache.GetDef<GameDifficultyLevelDef>("Standard_GameDifficultyLevelDef").Order = 3;
+                            DefCache.GetDef<GameDifficultyLevelDef>("Hard_GameDifficultyLevelDef").Order = 4;
+                            DefCache.GetDef<GameDifficultyLevelDef>("VeryHard_GameDifficultyLevelDef").Order = 5;
+
+                            switch (TFTVNewGameOptions.InternalDifficultyCheck)
+                            {
+                                case 1:
+                                    gameDifficultyLevelDef = DefCache.GetDef<GameDifficultyLevelDef>("StoryMode_DifficultyLevelDef");
+                                    break;
+
+                                case 2:
+                                    gameDifficultyLevelDef = DefCache.GetDef<GameDifficultyLevelDef>("Easy_GameDifficultyLevelDef");
+                                    break;
+
+                                case 3:
+                                    gameDifficultyLevelDef = DefCache.GetDef<GameDifficultyLevelDef>("Standard_GameDifficultyLevelDef");
+                                    break;
+
+                                case 4:
+                                    gameDifficultyLevelDef = DefCache.GetDef<GameDifficultyLevelDef>("Hard_GameDifficultyLevelDef");
+                                    break;
+
+                                case 5:
+                                    gameDifficultyLevelDef = DefCache.GetDef<GameDifficultyLevelDef>("VeryHard_GameDifficultyLevelDef");
+                                    break;
+
+                                case 6:
+                                    gameDifficultyLevelDef = DefCache.GetDef<GameDifficultyLevelDef>("Etermes_DifficultyLevelDef");
+                                    break;
+                            }
+                            currentDifficultyField.SetValue(phoenixSaveManager, geoLevelController.CurrentDifficultyLevel);
+
+                            GameDifficultyLevelDef newDifficulty = (GameDifficultyLevelDef)currentDifficultyField.GetValue(phoenixSaveManager);
+
+
+                            TFTVLogger.Always($"Current difficulty set to {newDifficulty?.name}");
+
+
+                        }
+                        else 
+                        {
+                            string warning = $"Could not find difficulty! This is a tactical save made before Update# 36. Please load a Geoscape save before this mission; this save is doomed!";
+
+                            GameUtl.GetMessageBox().ShowSimplePrompt(warning, MessageBoxIcon.Warning, MessageBoxButtons.OK, null);
+                        }
+                    }
+
+                }
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
+
+
+
+        }
+
+
+
+        /*  if (TFTVNewGameOptions.InternalDifficultyCheck != 0) 
+          {
+              switch  (TFTVNewGameOptions.InternalDifficultyCheck)
+              {
+                  case 1: return 8;
+
+                  case 2: return 8;
+
+                  case 3: return 7;
+
+                  case 4: return 5;
+
+                  case 5: return 3;
+
+                  case 6: return 1;
+
+
+                      // { 0: "25%", 1: "50%", 2: "75%", 3: "100%", 4: "125%", 5: "150%", 6: "175%", 7: "200", 8: "250%", 9: "300%", 10 "400%"}
+
+                      //      By default, this is set by the difficulty level: 250% on Rookie, 200% on Veteran, 150% on Hero, 100% on Legend, 50% on ETERMES
+              }
+
+
+
+
+
+
+          }*/
+
+        [HarmonyPatch(typeof(PhoenixGame), "FinishLevelAndLoadGame")]
+        public static class DieAbility_LoadGame_patch
+        {
+
+            public static void Prefix(PPSavegameMetaData gameData)
+            {
+                try
+                {
+
+
+                    if (gameData.DifficultyDef != null)
+                    {
+                        TFTVLogger.Always($"{gameData?.DifficultyDef}");
+                    }
+                    else
+                    {
+                        gameData.DifficultyDef = DefCache.GetDef<GameDifficultyLevelDef>("Etermes_DifficultyLevelDef");
+                        TFTVLogger.Always($"{gameData?.DifficultyDef}");
+                    }
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
+
+
+
         [HarmonyPatch(typeof(TacticalLevelController), "ActorEnteredPlay")]
         public static class TacticalLevelController_ActorEnteredPlay_ReduceDrops_Patch
         {
@@ -37,15 +224,15 @@ namespace TFTV
                         {
                             GameTagDef reinforcementTag = DefCache.GetDef<GameTagDef>("ReinforcementTag_GameTagDef");
 
-                          //  TFTVLogger.Always($"reinforcementTag is {reinforcementTag?.name}");
+                            //  TFTVLogger.Always($"reinforcementTag is {reinforcementTag?.name}");
 
-                           // TFTVLogger.Always("The turn number is " + __instance.TurnNumber);
+                            // TFTVLogger.Always("The turn number is " + __instance.TurnNumber);
 
                             if (!tacticalActor.HasGameTag(reinforcementTag))
                             {
                                 tacticalActor?.GameTags?.Add(reinforcementTag);
                                 TFTVLogger.Always($"Reinforcement tag added to {actor?.name} {actor.HasGameTag(reinforcementTag)}");
-                               
+
                             }
                         }
                     }
@@ -87,7 +274,7 @@ namespace TFTV
             }
         }
 
-        
+
 
         [HarmonyPatch(typeof(GeoHaven), "IncreaseAlertness")]
         public static class GeoHaven_IncreaseAlertness_patch

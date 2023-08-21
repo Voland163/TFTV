@@ -42,6 +42,7 @@ namespace TFTV
         public float SuppliesFromProcessedPandas;
         public float ToxinsInFood;
 
+        public int DifficultySetting;
         public bool NewConfigUsedInstance;
         public float AmountOfExoticResourcesSettingInstance;
         public float ResourceMultiplierSettingInstance;
@@ -91,9 +92,11 @@ namespace TFTV
             DefCache.GetDef<TacticalTargetingDataDef>("E_TargetingData [PsychicWard_AbilityDef]").Origin.Range = 10; //Fix Dtony thing
                                                                                                                      //  TFTVBetaSaveGamesFixes.FixInfestedBase(gsController);
                                                                                                                      //  TFTVBetaSaveGamesFixes.CheckSaveGameEventChoices(gsController);
-                                                                                                                     //  TFTVBetaSaveGamesFixes.CheckUmbraResearchVariable(gsController);
-            TFTVReleaseOnly.ConvertDifficulty(gsController, null);
+            TFTVNewGameOptions.SetInternalConfigOptions(gsController);                                                                                                        //  TFTVBetaSaveGamesFixes.CheckUmbraResearchVariable(gsController);
             TFTVBetaSaveGamesFixes.OpenBetaSaveGameFixes(gsController);
+            TFTVLogger.Always($"Difficulty level on Geoscape is {Controller.CurrentDifficultyLevel.name}");
+            TFTVExperimental.CorrrectPhoenixSaveManagerDifficulty();
+
 
             TFTVCommonMethods.CheckGeoUIfunctionality(gsController);
             TFTVNewPXCharacters.PlayIntro(gsController);
@@ -127,7 +130,7 @@ namespace TFTV
             TFTVPassengerModules.ImplementFarMConfig(Controller);
             TFTVNewGameOptions.Change_Crossbows();
 
-            TFTVLogger.Always($"Difficulty level on Geoscape is {Controller.CurrentDifficultyLevel.name}");
+            
 
             //  TFTVCapturePandorans.SetMutagenOutput(Controller);
             //  TFTVDeliriumPerks.RemoveDeliriumPerks(Controller);
@@ -199,6 +202,7 @@ namespace TFTV
                 ToxinsInFood = TFTVCapturePandoransGeoscape.ToxinsInCirculation,
                 //AircraftCaptureCapacity = TFTVCapturePandorans.AircraftCaptureCapacity,
                 NewConfigUsedInstance = TFTVNewGameOptions.ConfigImplemented,
+                DifficultySetting = TFTVNewGameOptions.InternalDifficultyCheck,
                 AmountOfExoticResourcesSettingInstance = TFTVNewGameOptions.AmountOfExoticResourcesSetting,
                 ResourceMultiplierSettingInstance = TFTVNewGameOptions.ResourceMultiplierSetting,
                 DiplomaticPenaltiesSettingInstance = TFTVNewGameOptions.DiplomaticPenaltiesSetting,
@@ -267,6 +271,7 @@ namespace TFTV
             TFTVNewGameOptions.ConfigImplemented = data.NewConfigUsedInstance;
             if (TFTVNewGameOptions.ConfigImplemented)
             {
+                TFTVNewGameOptions.InternalDifficultyCheck = data.DifficultySetting;
                 TFTVNewGameOptions.AmountOfExoticResourcesSetting = data.AmountOfExoticResourcesSettingInstance;
                 TFTVNewGameOptions.ResourceMultiplierSetting = data.ResourceMultiplierSettingInstance;
                 TFTVNewGameOptions.DiplomaticPenaltiesSetting = data.DiplomaticPenaltiesSettingInstance;
@@ -336,8 +341,9 @@ namespace TFTV
             TFTVLogger.Always($"Supplies from Pandas pending processing {TFTVCapturePandoransGeoscape.PandasForFoodProcessing}");
             TFTVLogger.Always($"Toxins in food {TFTVCapturePandoransGeoscape.ToxinsInCirculation}");
             TFTVLogger.Always($"Scylla count {TFTVPandoranProgress.ScyllaCount}");
+            TFTVLogger.Always($"Internal difficulty check {TFTVNewGameOptions.InternalDifficultyCheck}");
             //  TFTVLogger.Always($"New Difficulties implemented {TFTVReleaseOnly.NewDifficultiesImplemented}");
-
+            // TFTVLogger.Always($"is record null? {Controller.EventSystem.GetEventRecord("PROG_CH0_GeoscapeEventDef")==null}");
         }
 
 

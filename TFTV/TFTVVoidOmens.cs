@@ -716,51 +716,59 @@ namespace TFTV
         {
             try
             {
-                string triggeredVoidOmensString = "TriggeredVoidOmen_";
-                string voidOmenTitleString = "VOID_OMEN_TITLE_";
-                string voidOmenString = "VoidOmen_";
-                int difficulty = TFTVReleaseOnly.DifficultyOrderConverter(geoLevelController.CurrentDifficultyLevel.Order);
-
-                GeoFactionObjective earliestVO = geoLevelController.PhoenixFaction.Objectives.FirstOrDefault(o => o.Title.LocalizationKey.Contains(voidOmenTitleString));
-
-                if (earliestVO != null)
+                if (CheckFordVoidOmensInPlay(geoLevelController).Count() > 0)
                 {
-                    string voidOmenTitleLocKey = earliestVO?.Title?.LocalizationKey;
-                    int voidOmen = int.Parse(voidOmenTitleLocKey.Substring(voidOmenTitleString.Length));
-                    TFTVLogger.Always($"The earliest VO is {voidOmenTitleLocKey}, {voidOmen}");
 
-                    int[] voidOmensinPlay = CheckFordVoidOmensInPlay(geoLevelController);
+                    string triggeredVoidOmensString = "TriggeredVoidOmen_";
+                    string voidOmenTitleString = "VOID_OMEN_TITLE_";
+                    string voidOmenString = "VoidOmen_";
+                    int difficulty = TFTVReleaseOnly.DifficultyOrderConverter(geoLevelController.CurrentDifficultyLevel.Order);
 
-                    for (int x = 0; x < voidOmensinPlay.Count(); x++)
+                    GeoFactionObjective earliestVO = geoLevelController.PhoenixFaction.Objectives.FirstOrDefault(o => o.Title.LocalizationKey.Contains(voidOmenTitleString));
+
+                    if (earliestVO != null)
                     {
-                        if (voidOmensinPlay[x] == voidOmen)
+                        string voidOmenTitleLocKey = earliestVO?.Title?.LocalizationKey;
+                        int voidOmen = int.Parse(voidOmenTitleLocKey.Substring(voidOmenTitleString.Length));
+                        TFTVLogger.Always($"The earliest VO is {voidOmenTitleLocKey}, {voidOmen}");
+
+                        int[] voidOmensinPlay = CheckFordVoidOmensInPlay(geoLevelController);
+
+                        for (int x = 0; x < voidOmensinPlay.Count(); x++)
                         {
-                            int voidOmenSlot = x+1;
-                            TFTVLogger.Always($"vo slot {voidOmenSlot} emptied");
-                            
-                            geoLevelController.EventSystem.SetVariable(voidOmenString + voidOmenSlot, 0);
-                         
-                            if (!CheckForAlreadyRolledVoidOmens(geoLevelController).Contains(voidOmen))
+                            if (voidOmensinPlay[x] == voidOmen)
                             {
-                                for (int y = 1; x < 100; x++)
+                                int voidOmenSlot = x + 1;
+                                TFTVLogger.Always($"vo slot {voidOmenSlot} emptied");
+
+                                geoLevelController.EventSystem.SetVariable(voidOmenString + voidOmenSlot, 0);
+
+                                if (!CheckForAlreadyRolledVoidOmens(geoLevelController).Contains(voidOmen))
                                 {
-                                    if (geoLevelController.EventSystem.GetVariable(triggeredVoidOmensString + y) == 0)
+                                    for (int y = 1; x < 100; x++)
                                     {
-                                        geoLevelController.EventSystem.SetVariable(triggeredVoidOmensString + y, voidOmen);
-                                        TFTVLogger.Always($"Recording that this VO has already rolled before");
-                                        break;
+                                        if (geoLevelController.EventSystem.GetVariable(triggeredVoidOmensString + y) == 0)
+                                        {
+                                            geoLevelController.EventSystem.SetVariable(triggeredVoidOmensString + y, voidOmen);
+                                            TFTVLogger.Always($"Recording that this VO has already rolled before");
+                                            break;
+                                        }
                                     }
                                 }
+
+                                TFTVLogger.Always($" VO {voidOmen} will be removed ");
+                                RemoveVoidOmenObjective(voidOmenTitleLocKey, geoLevelController);
+
+
                             }
-
-                            TFTVLogger.Always($" VO {voidOmen} will be removed ");
-                            RemoveVoidOmenObjective(voidOmenTitleLocKey, geoLevelController);
-
-
                         }
                     }
-                }
+                    else
+                    {
+                        TFTVLogger.Always($"Wanted to remove earliest Void Omen, but failed to find it!");
 
+                    }
+                }
 
 
                 /*
@@ -806,11 +814,7 @@ namespace TFTV
                        
                     }*/
 
-                else
-                {
-                    TFTVLogger.Always($"Wanted to remove earliest Void Omen, but failed to find it!");
-
-                }
+                
             }
             catch (Exception e)
             {

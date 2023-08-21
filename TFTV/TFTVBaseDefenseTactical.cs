@@ -2543,15 +2543,14 @@ namespace TFTV
 
                 TFTVLogger.Always($"Explosion preceding secondary force deployment at {zoneToDeployAt.Pos}");
 
+                zoneToDeployAt.SetFaction(controller.GetFactionByCommandName("ALN"), TacMissionParticipant.Intruder);
+                TFTVLogger.Always($"Changed deployzone to Alien and Intruder");
+
                 foreach (TacCharacterDef tacCharacterDef in secondaryForce.Keys)
                 {
                     for (int i = 0; i < secondaryForce[tacCharacterDef]; i++)
                     {
-
-                        zoneToDeployAt.SetFaction(controller.GetFactionByCommandName("ALN"), TacMissionParticipant.Intruder);
-                      
-                        
-                        TFTVLogger.Always($"Changed deployzone to Alien and Intruder");
+ 
                         TFTVLogger.Always($"going to generate actorDeployedData from {tacCharacterDef.name}");
                         ActorDeployData actorDeployData = tacCharacterDef.GenerateActorDeployData();
                         TFTVLogger.Always($"generated deployData");
@@ -2559,13 +2558,18 @@ namespace TFTV
                         TFTVLogger.Always($"data initialized");
                         TacticalActorBase tacticalActorBase = zoneToDeployAt.SpawnActor(actorDeployData.ComponentSetDef, actorDeployData.InstanceData, actorDeployData.DeploymentTags, null, true, zoneToDeployAt);
                         TFTVLogger.Always($"actor spawned");
-                        TacticalActor tacticalActor = tacticalActorBase as TacticalActor;
-                        tacticalActor.CharacterStats.ActionPoints.SetToMax();
-                        tacticalActor.ForceRestartTurn();
 
-                        if (i == 0) 
-                        { 
-                        tacticalActor.TacticalActorView.DoCameraChase();
+                        if (tacticalActorBase != null)
+                        {
+
+                            TacticalActor tacticalActor = tacticalActorBase as TacticalActor;
+                            tacticalActor.CharacterStats.ActionPoints.SetToMax();
+                            tacticalActor.ForceRestartTurn();
+
+                            if (i == 0)
+                            {
+                                tacticalActor.TacticalActorView.DoCameraChase();
+                            }
                         }
                     }
                 }

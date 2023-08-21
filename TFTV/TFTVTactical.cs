@@ -2,6 +2,7 @@ using Base.Core;
 using Base.Serialization.General;
 using EnviroSamples;
 using Epic.OnlineServices;
+using PhoenixPoint.Common.Game;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Modding;
 using PhoenixPoint.Tactical.Levels;
@@ -72,7 +73,7 @@ namespace TFTV
             /// Tactical level controller is accessible at any time.
             TacticalLevelController tacController = Controller;
             TFTVConfig config = TFTVMain.Main.Config;
-            TFTVReleaseOnly.ConvertDifficulty(null, tacController);
+          
             if (config.AnimateWhileShooting)
             {
                 TFTVLogger.Always($"Flinching should be on");
@@ -101,8 +102,11 @@ namespace TFTV
 
             TFTVHumanEnemies.RollCount = 0;
             TFTVAncients.CheckCyclopsDefense();
+            TFTVExperimental.CorrrectPhoenixSaveManagerDifficulty();
             TFTVLogger.Always("Tactical start completed");
+            TFTVLogger.Always($"GameUtl.GameComponent<PhoenixGame>().SaveManager.CurrentDifficulty null? {GameUtl.GameComponent<PhoenixGame>().SaveManager.CurrentDifficulty==null}");
             TFTVLogger.Always($"Difficulty level is {tacController.Difficulty.Order} and treated as {TFTVReleaseOnly.DifficultyOrderConverter(tacController.Difficulty.Order)}");
+           
          //   TFTVLogger.Always("LOTA rework active in tactical is " + TFTVAncients.LOTAReworkActive);
             TFTVLogger.Always($"Deployed Aircraft capture capacity is {TFTVCapturePandorans.AircraftCaptureCapacity}");
             TFTVLogger.Always($"Available containment is {TFTVCapturePandorans.ContainmentSpaceAvailable}");

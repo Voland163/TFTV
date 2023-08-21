@@ -2,6 +2,7 @@
 using Base.Eventus.Filters;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Geoscape.Entities.Abilities;
+using PhoenixPoint.Geoscape.Entities.PhoenixBases;
 using PhoenixPoint.Geoscape.Entities.Research;
 using PhoenixPoint.Geoscape.Entities.Research.Requirement;
 using PhoenixPoint.Geoscape.Entities.Research.Reward;
@@ -12,6 +13,7 @@ using PhoenixPoint.Geoscape.Events.Eventus.Filters;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.ContextHelp;
 using PhoenixPoint.Geoscape.Levels.ContextHelp.HintConditions;
+using PhoenixPoint.Geoscape.Levels.Factions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,8 +23,21 @@ using System.Threading.Tasks;
 
 namespace TFTV
 {
+
+    
+
+
     internal class TFTVChangesToDLC4Events
     {
+
+
+
+
+     //   GeoPhoenixFaction AddTag
+
+       //     ("AlienContainment_FactionFunctionalityTagDef");
+
+
 
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
         private static readonly DefRepository Repo = TFTVMain.Repo;
@@ -37,11 +52,16 @@ namespace TFTV
                 GeoFactionDef Anu = DefCache.GetDef<GeoFactionDef>("Anu_GeoFactionDef");
                 GeoFactionDef Synedrion = DefCache.GetDef<GeoFactionDef>("Synedrion_GeoFactionDef");
 
+                ResearchTagDef CriticalResearchTag = DefCache.GetDef<ResearchTagDef>("CriticalPath_ResearchTagDef");
+
                 // Put Barnabas in the [CHO] picture
                 GeoscapeEventDef CH0Event = DefCache.GetDef<GeoscapeEventDef>("PROG_CH0_GeoscapeEventDef");
                 CH0Event.GeoscapeEventData.Leader = "SY_Barnabas";
-              
 
+                GeoVariableChangedEventFilterDef favorForAFriendTrigger = Helper.CreateDefFromClone<GeoVariableChangedEventFilterDef>(null, "{F8133299-E340-4B54-9986-485C6F418D77}", "FakeVariableChange");
+                favorForAFriendTrigger.VariableName = "FavorForAFriend";
+                favorForAFriendTrigger.IsTimer = false;
+                
                 // Get corruption going from the start of the game... eh with intro to SDI
                 GeoscapeEventDef geoEventCH0WIN = DefCache.GetDef<GeoscapeEventDef>("PROG_CH0_WIN_GeoscapeEventDef");
                 var corruption = geoEventCH0WIN.GeoscapeEventData.Choices[0].Outcome.VariablesChange[1];
@@ -60,21 +80,24 @@ namespace TFTV
                 ResearchDef ALN_AcheronResearch1 = DefCache.GetDef<ResearchDef>("ALN_Acheron1_ResearchDef");
                 ALN_AcheronResearch1.RevealRequirements.Container[0] = requirementForAlienAcheronResearch;
 
-               
 
-
+            
                 // Make CH0 Mission appear when Player completes Acheron Autopsy and Capture and Containment 
                 GeoResearchEventFilterDef PP_ResearchConditionCH0_Miss = DefCache.GetDef<GeoResearchEventFilterDef>("E_PROG_CH0_ResearchCompleted [GeoResearchEventFilterDef]");
 
                 OrEventFilterDef triggerCH1 = DefCache.GetDef<OrEventFilterDef>("E_PROG_CH1_MultipleTriggers [OrEventFilterDef]");
                 triggerCH1.OR_Filters[1] = PP_ResearchConditionCH0_Miss;
                 GeoscapeEventDef CH0_Event = DefCache.GetDef<GeoscapeEventDef>("PROG_CH0_GeoscapeEventDef");
-                CH0Event.Filters[0] = triggerCH1;
+                //      CH0Event.Filters[0] = triggerCH1;
+                CH0Event.Filters[0] = favorForAFriendTrigger;
+               // CH0Event.GeoscapeEventData.Conditions = sdi1.GeoscapeEventData.Conditions;
 
-                // Make CH1 Mission appear when Player win CH0 Mission; CH1 Event will not be used!
-                GeoscapeEventDef CH1_Event = DefCache.GetDef<GeoscapeEventDef>("PROG_CH1_GeoscapeEventDef");
+                       // Make CH1 Mission appear when Player win CH0 Mission; CH1 Event will not be used!
+                       GeoscapeEventDef CH1_Event = DefCache.GetDef<GeoscapeEventDef>("PROG_CH1_GeoscapeEventDef");
                 CH0Event.GeoscapeEventData.Conditions.Add(CH1_Event.GeoscapeEventData.Conditions[1]);
                 CH0Event.GeoscapeEventData.Conditions.Add(CH1_Event.GeoscapeEventData.Conditions[3]);
+
+              //  CH0Event.GeoscapeEventData.Conditions = new List<GeoEventVariationConditionDef>();
 
                 var revealSiteCH1_Miss = CH1_Event.GeoscapeEventData.Choices[0].Outcome.RevealSites[0];
                 var setEventCH1_Miss = CH1_Event.GeoscapeEventData.Choices[0].Outcome.SetEvents[0];
@@ -89,17 +112,16 @@ namespace TFTV
                 // Copy unlock from Autopsy research to Specimen 2 (formerly Specimen 0) research and then remove it 
                 ResearchDef specimen2Research = DefCache.GetDef<ResearchDef>("PX_OriginalAcheron_ResearchDef");
                 specimen2Research.Unlocks = new ResearchRewardDef[]
-                {
-                       
+                {       
                         DefCache.GetDef<ResearchRewardDef>("PX_Alien_Acheron_ResearchDef_UnlockFunctionalityResearchRewardDef_0")
                 };
                 ResearchDef acheronAutopsy = DefCache.GetDef<ResearchDef>("PX_Alien_Acheron_ResearchDef");
                 acheronAutopsy.Unlocks = new ResearchRewardDef[] 
                 {
-
                      DefCache.GetDef<ResearchRewardDef>("PX_Alien_Acheron_ResearchDef_UnlockPandoranSpecializationResearchRewardDef_0"),
-
                 };
+                acheronAutopsy.Tags = new ResearchTagDef[] { CriticalResearchTag };
+
                 //Make Treatment hint appear when Specimen2 is researched
                 DefCache.GetDef<ResearchGeoHintConditionDef>("E_AcheronAutopsyResearchCompleted [GeoscapeHintsManagerDef]").ResearchID = "PX_OriginalAcheron_ResearchDef";
 

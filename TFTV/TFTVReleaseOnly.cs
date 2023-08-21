@@ -1,6 +1,7 @@
 ﻿using Base.Core;
 using Base.Defs;
 using HarmonyLib;
+using Mono.Cecil;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Levels;
@@ -18,62 +19,13 @@ namespace TFTV
 
         //   public static bool NewDifficultiesImplemented = false;
 
-        public static void ConvertDifficulty(GeoLevelController geoController, TacticalLevelController tacticalController)
-        {
-            try
-            {
-                TFTVConfig config = TFTVMain.Main.Config;
-
-                if (config.EtermesMode)
-                {
-                    if (geoController != null)
-                    {
-                        geoController.CurrentDifficultyLevel = GetDifficultyFromOrder(6);
-                        TFTVLogger.Always($"I AM ETERMES config option detected; switching to ETERMES difficulty");
-                    }
-
-                    if (tacticalController != null) 
-                    {
-                        geoController.CurrentDifficultyLevel = GetDifficultyFromOrder(6);
-                        TFTVLogger.Always($"I AM ETERMES config option detected; switching to ETERMES difficulty");
-
-                    }
-                }
-
-                if(config.EasyGeoscape) 
-                {
-                    if (geoController != null)
-                    {
-                        geoController.CurrentDifficultyLevel = GetDifficultyFromOrder(1);
-                        TFTVLogger.Always($"Easy Geoscape config option detected; switching to STORY difficulty");
-                    }
-
-                    if (tacticalController != null)
-                    {
-                        geoController.CurrentDifficultyLevel = GetDifficultyFromOrder(1);
-                        TFTVLogger.Always($"Easy Geoscape config option detected; switching to STORY difficulty");
-                    }
-                }
-
-                TFTVNewGameOptions.SetInternalConfigOptions(geoController, tacticalController);
-
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-                throw;
-            }
-
-
-        }
-
+      
         public static void OnReleasePrototypeDefs()
         {
             try
             {
                 CreateETERMESDifficultyLevel();
-                CreateStoryModeDifficultyLevel();
-                ModifyVanillaDifficultiesOrder();
+               
             }
 
             catch (Exception e)
@@ -325,7 +277,7 @@ namespace TFTV
 
 
 
-        private static void ModifyVanillaDifficultiesOrder()
+        public static void ModifyVanillaDifficultiesOrder()
         {
             try
             {
@@ -344,7 +296,7 @@ namespace TFTV
 
 
 
-        private static void CreateStoryModeDifficultyLevel()
+        public static void CreateStoryModeDifficultyLevel()
         {
             try
             {
@@ -381,9 +333,9 @@ namespace TFTV
                 newDifficulty.RecruitmentPriceModifier = 1.3f;
                 newDifficulty.NestLimitations.MaxNumber = 4;
                 newDifficulty.NestLimitations.HoursBuildTime = 73;
-                newDifficulty.LairLimitations.MaxNumber = 4; 
-                newDifficulty.LairLimitations.MaxConcurrent = 4; 
-                newDifficulty.LairLimitations.HoursBuildTime = 80; 
+                newDifficulty.LairLimitations.MaxNumber = 4;
+                newDifficulty.LairLimitations.MaxConcurrent = 4;
+                newDifficulty.LairLimitations.HoursBuildTime = 80;
                 newDifficulty.CitadelLimitations.HoursBuildTime = 144;
 
                 newDifficulty.InitialDeploymentPoints = 812;
@@ -393,9 +345,37 @@ namespace TFTV
                 List<GameDifficultyLevelDef> difficultyLevelDefs = new List<GameDifficultyLevelDef>(Shared.DifficultyLevels) { newDifficulty };
 
                 Shared.DifficultyLevels = difficultyLevelDefs.ToArray();
+
+                /* DefRepository _repo = GameUtl.GameComponent<DefRepository>();
+                 SharedData sharedData = GameUtl.GameComponent<SharedData>();
+
+
+                 GameDifficultyLevelDef sourceDef = (GameDifficultyLevelDef)_repo.GetDef("0e2f4034-9bb5-fe54-a889-ba56d739a855");
+                 GameDifficultyLevelDef newDifficulty = (GameDifficultyLevelDef)_repo.CreateDef("F713C90F-5D7D-4F95-B71A-CE094A7DA6AE", sourceDef, null);
+                 newDifficulty.name = "Etermes_DifficultyLevelDef";
+
+
+                 newDifficulty.Order = 6;
+                 newDifficulty.Name.LocalizationKey = "TFTV_DIFFICULTY_ETERMES_TITLE";
+                 newDifficulty.Description.LocalizationKey = "TFTV_DIFFICULTY_ETERMES_DESCRIPTION";
+
+                 newDifficulty.RecruitCostPerLevelMultiplier = 0.5f;
+                 newDifficulty.RecruitmentPriceModifier = 1.3f;
+                 newDifficulty.NestLimitations.MaxNumber = 4;
+                 newDifficulty.NestLimitations.HoursBuildTime = 73;
+                 newDifficulty.LairLimitations.MaxNumber = 4;
+                 newDifficulty.LairLimitations.MaxConcurrent = 4;
+                 newDifficulty.LairLimitations.HoursBuildTime = 80;
+                 newDifficulty.CitadelLimitations.HoursBuildTime = 144;
+
+                 newDifficulty.InitialDeploymentPoints = 812;
+                 newDifficulty.FinalDeploymentPoints = 3125;
+                 newDifficulty.DaysToReachFinalDeployment = 72;
+
+                 List<GameDifficultyLevelDef> difficultyLevelDefs = new List<GameDifficultyLevelDef>(sharedData.DifficultyLevels) { newDifficulty };
+
+                 sharedData.DifficultyLevels = difficultyLevelDefs.ToArray();*/
             }
-
-
             catch (Exception e)
             {
                 TFTVLogger.Error(e);

@@ -836,7 +836,7 @@ namespace TFTV
                   //  }
 
                     PopulateOptions(arrowPickerController, options);
-                    TFTVLogger.Always($"instantiating {title}, got to the end");
+                    //TFTVLogger.Always($"instantiating {title}, got to the end");
                 }
 
                 catch (Exception e)

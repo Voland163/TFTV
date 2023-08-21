@@ -15,6 +15,7 @@ using PhoenixPoint.Geoscape.Entities.Sites;
 using PhoenixPoint.Geoscape.Events;
 using PhoenixPoint.Geoscape.Events.Eventus;
 using PhoenixPoint.Geoscape.Levels;
+using PhoenixPoint.Geoscape.Levels.Factions;
 using PhoenixPoint.Geoscape.Levels.Objectives;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Effects.ApplicationConditions;
@@ -116,6 +117,7 @@ namespace TFTV
                 
                 TFTVCapturePandorans.ContainmentFacilityPresent = false;
                 TFTVNewGameOptions.ConfigImplemented = false;
+                TFTVNewGameOptions.InternalDifficultyCheck = 0;
               /*  TFTVNewGameOptions.AmountOfExoticResourcesSetting;
                 TFTVNewGameOptions.ResourceMultiplierSetting;
                 TFTVNewGameOptions.DiplomaticPenaltiesSetting;
@@ -306,6 +308,44 @@ namespace TFTV
         }
 
 
+
+
+       
+
+        [HarmonyPatch(typeof(GeoFaction), "AddTag")]
+        public static class GeoPhoenix_AddTag_FavorForAFriend_Patch
+        {
+
+            public static void Postfix(GameTagDef tag, GeoFaction __instance)
+            {
+                try
+                {
+                    FactionFunctionalityTagDef alienContainmentFunctionality = DefCache.GetDef< FactionFunctionalityTagDef>("AlienContainment_FactionFunctionalityTagDef");
+
+                    if (tag == alienContainmentFunctionality && __instance.GeoLevel.PhoenixFaction.Research.HasCompleted("PX_Alien_Acheron_ResearchDef")
+                        && __instance.GeoLevel.EventSystem.GetEventRecord("PROG_CH0") == null)
+                    {
+
+
+                        TFTVLogger.Always($"Built containment facility and has completed PX_Alien_Acheron_ResearchDef, triggering CH0");
+
+                     //   __instance.GeoLevel.EventSystem.SetVariable("FavorForAFriend", 1);
+
+                           GeoscapeEventContext context = new GeoscapeEventContext(__instance.GeoLevel.PhoenixFaction.Bases.First().Site, __instance.GeoLevel.AlienFaction);
+                           __instance.GeoLevel.EventSystem.TriggerGeoscapeEvent("PROG_CH0", context);
+
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+        }
+
+
+
+
         [HarmonyPatch(typeof(Research), "CompleteResearch")]
         public static class Research_NewTurnEvent_CalculateDelirium_Patch
         {
@@ -427,6 +467,27 @@ namespace TFTV
                         TFTVLogger.Always($"{mutationTech.name} available to PX? {mutationTechResearchElement.IsAvailableToFaction(controller.PhoenixFaction)}");
 
                     }
+
+
+                    FactionFunctionalityTagDef alienContainmentFunctionality = DefCache.GetDef<FactionFunctionalityTagDef>("AlienContainment_FactionFunctionalityTagDef");
+
+                    if (research.ResearchID=="PX_Alien_Acheron_ResearchDef" && controller.PhoenixFaction.GameTags.Contains(alienContainmentFunctionality) 
+                        && controller.EventSystem.GetEventRecord("PROG_CH0") == null)
+                    {
+
+                       
+                        TFTVLogger.Always($"Built containment facility and has completed PX_Alien_Acheron_ResearchDef, triggering CH0");
+
+                   //     controller.EventSystem.SetVariable("FavorForAFriend", 1);
+
+
+                        GeoscapeEventContext context = new GeoscapeEventContext(controller.PhoenixFaction.Bases.First().Site, controller.AlienFaction);
+                        controller.EventSystem.TriggerGeoscapeEvent("PROG_CH0", context);
+
+                    }
+
+
+
                     TFTVCapturePandoransGeoscape.RefreshFoodAndMutagenProductionTooltupUI();
                     TFTVAncientsGeo.CheckImpossibleWeaponsAdditionalRequirements(controller);
 

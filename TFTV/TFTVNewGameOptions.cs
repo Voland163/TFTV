@@ -10,6 +10,10 @@ namespace TFTV
     {
 
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
+
+
+        public static int InternalDifficultyCheck = 0;
+        
         public enum StartingSquadFaction
         {
             PHOENIX, ANU, NJ, SYNEDRION
@@ -76,15 +80,33 @@ namespace TFTV
         public static ScavengingWeight chancesScavGroundVehicleRescue = ScavengingWeight.Low;
 
 
-        public static void SetInternalConfigOptions(GeoLevelController geoLevelController, TacticalLevelController tacticalLevelController)
+        public static void SetInternalConfigOptions(GeoLevelController geoLevelController)
         {
             if (!ConfigImplemented)
             {
                 try
                 {
                     TFTVLogger.Always($"This game started before update #35; adjusting config");
-
                     TFTVConfig config = TFTVMain.Main.Config;
+
+                    if (config.EtermesMode)
+                    {
+                        if (geoLevelController != null)
+                        {
+                            geoLevelController.CurrentDifficultyLevel = TFTVReleaseOnly.GetDifficultyFromOrder(6);
+                            TFTVLogger.Always($"I AM ETERMES config option detected; switching to ETERMES difficulty");
+                        }
+                    }
+
+                    if (config.EasyGeoscape)
+                    {
+                        if (geoLevelController != null)
+                        {
+                            geoLevelController.CurrentDifficultyLevel = TFTVReleaseOnly.GetDifficultyFromOrder(1);
+                            TFTVLogger.Always($"Easy Geoscape config option detected; switching to STORY difficulty");
+                        }
+                    }
+
 
                     int difficultyOrder = 0;
 
@@ -92,10 +114,7 @@ namespace TFTV
                     {
                         difficultyOrder = geoLevelController.CurrentDifficultyLevel.Order;
                     }
-                    else if (tacticalLevelController != null)
-                    {
-                        difficultyOrder = tacticalLevelController.Difficulty.Order;
-                    }
+                   
 
                     float scaling_factor = 1f / 0.8f;
 

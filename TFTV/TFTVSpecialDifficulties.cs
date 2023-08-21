@@ -866,7 +866,7 @@ namespace TFTV
 
                 if (TFTVReleaseOnly.DifficultyOrderConverter(controller.CurrentDifficultyLevel.Order) == 1 || TFTVReleaseOnly.GetTacticalDifficulty() != null && TFTVReleaseOnly.GetTacticalDifficulty().Order == 1)
                 {
-                    TFTVLogger.Always($"Geoscape check re Tactical returns that it's Rookie!");
+                   // TFTVLogger.Always($"Geoscape check re Tactical returns that it's Rookie!");
                     return 1;
 
                 }

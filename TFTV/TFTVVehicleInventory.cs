@@ -129,7 +129,7 @@ namespace TFTV
                             {
                                 foreach (Transform transform1 in transform.GetComponentInChildren<Transform>())
                                 {
-                                    TFTVLogger.Always($"child is {transform1}");
+                                 //   TFTVLogger.Always($"child is {transform1}");
 
                                     if (transform1.name == "UIScrollView")
                                     {
@@ -156,7 +156,7 @@ namespace TFTV
                              {
                                  foreach (Transform transform1 in transform.GetComponentInChildren<Transform>())
                                  {
-                                     TFTVLogger.Always($"child is {transform1}");
+                                   //  TFTVLogger.Always($"child is {transform1}");
 
                                      if (transform1.name == "UIScrollView")
                                      {

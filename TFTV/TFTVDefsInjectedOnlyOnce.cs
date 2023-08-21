@@ -6,6 +6,8 @@ using Base.Entities.Abilities;
 using Base.Entities.Effects;
 using Base.Entities.Effects.ApplicationConditions;
 using Base.Entities.Statuses;
+using Base.Serialization.General;
+using Base.Serialization;
 using Base.UI;
 using Base.Utils;
 using Code.PhoenixPoint.Tactical.Entities.Equipments;
@@ -19,6 +21,7 @@ using PhoenixPoint.Common.Entities.Characters;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.Entities.Items;
+using PhoenixPoint.Common.Game;
 using PhoenixPoint.Common.Levels.Missions;
 using PhoenixPoint.Common.UI;
 using PhoenixPoint.Geoscape.Entities;
@@ -60,6 +63,7 @@ using UnityEngine;
 using static PhoenixPoint.Tactical.Entities.Abilities.HealAbilityDef;
 using static PhoenixPoint.Tactical.Entities.Statuses.ItemSlotStatsModifyStatusDef;
 using ResourceType = PhoenixPoint.Common.Core.ResourceType;
+using PhoenixPoint.Common.Saves;
 
 namespace TFTV
 {
@@ -198,10 +202,48 @@ namespace TFTV
             CreateReinforcementTag();
             CreateFoodPoisoningEvents();
             StealAircraftMissionsNoItemRecovery();
-            TFTVReleaseOnly.OnReleasePrototypeDefs();
+         
             ModifyCratesToAddArmor();
             TFTVReverseEngineering.ModifyReverseEngineering();
             CreateObjectiveCaptureCapacity();
+           
+            TFTVReleaseOnly.OnReleasePrototypeDefs();
+            TFTVReleaseOnly.CreateStoryModeDifficultyLevel();
+            TFTVReleaseOnly.ModifyVanillaDifficultiesOrder();
+           // ReinitSaves();
+        }
+
+
+
+         private static void ReinitSaves()
+        {
+            try 
+            {
+
+                
+                
+                PhoenixSaveManager phoenixSaveManager =  GameUtl.GameComponent<PhoenixGame>().SaveManager;
+
+               List <SavegameMetaData> saves = phoenixSaveManager.GetSaves().ToList();
+
+                foreach (SavegameMetaData save in saves) 
+                {
+                    PPSavegameMetaData ppSave = save as PPSavegameMetaData;
+
+                    TFTVLogger.Always($"{ppSave.Name} has difficulty {ppSave.DifficultyDef.name}");
+                 
+                }
+               
+               
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+
+
         }
 
         private static void CreateObjectiveCaptureCapacity()

@@ -241,10 +241,68 @@ namespace TFTV
                         __result.EventLeader = HelenaPic;
                     }
 
-                  /*  else if (geoEvent.EventID.Contains("SDI"))
+                    else if (geoEvent.EventID.Equals("SDI_02"))
                     {                      
-                        __result.EventBackground = Helper.CreateSpriteFromImageFile("ruins.png");//AlistairOffice;
-                    }*/
+                        __result.EventBackground = Helper.CreateSpriteFromImageFile("odi2.png");//AlistairOffice;
+                    }
+                    else if (geoEvent.EventID.Equals("SDI_03"))
+                    {
+                        __result.EventBackground = Helper.CreateSpriteFromImageFile("odi3.png");//AlistairOffice;
+                    }
+
+                    else if (geoEvent.EventID.Equals("SDI_04"))
+                    {
+                        __result.EventBackground = Helper.CreateSpriteFromImageFile("odi4.png");//AlistairOffice;
+                    }
+
+                    else if (geoEvent.EventID.Equals("SDI_05"))
+                    {
+                        __result.EventBackground = Helper.CreateSpriteFromImageFile("odi5.png");//AlistairOffice;
+                    }
+
+
+                    else if (geoEvent.EventID.Equals("SDI_06"))
+                    {
+                        __result.EventBackground = Helper.CreateSpriteFromImageFile("odi6.png");//AlistairOffice;
+                    }
+
+                    else if (geoEvent.EventID.Equals("SDI_07"))
+                    {
+                        __result.EventBackground = Helper.CreateSpriteFromImageFile("odi7.png");//AlistairOffice;
+                    }
+
+                    else if (geoEvent.EventID.Equals("SDI_08"))
+                    {
+                        __result.EventBackground = Helper.CreateSpriteFromImageFile("odi8.png");//AlistairOffice;
+                    }
+                    else if (geoEvent.EventID.Equals("SDI_09"))
+                    {
+                        __result.EventBackground = Helper.CreateSpriteFromImageFile("odi9.png");//AlistairOffice;
+                    }
+                    else if (geoEvent.EventID.Equals("SDI_10"))
+                    {
+                        __result.EventBackground = Helper.CreateSpriteFromImageFile("odi10.png");//AlistairOffice;
+                    }
+                    else if (geoEvent.EventID.Equals("SDI_11"))
+                    {
+                        __result.EventBackground = Helper.CreateSpriteFromImageFile("odi11.png");//AlistairOffice;
+                    }
+                    else if (geoEvent.EventID.Equals("SDI_12"))
+                    {
+                        __result.EventBackground = Helper.CreateSpriteFromImageFile("odi12.png");//AlistairOffice;
+                    }
+                    else if (geoEvent.EventID.Equals("SDI_13"))
+                    {
+                        __result.EventBackground = Helper.CreateSpriteFromImageFile("odi13.png");//AlistairOffice;
+                    }
+                    else if (geoEvent.EventID.Equals("SDI_14"))
+                    {
+                        __result.EventBackground = Helper.CreateSpriteFromImageFile("odi14.png");//AlistairOffice;
+                    }
+                    else if (geoEvent.EventID.Equals("SDI_15"))
+                    {
+                        __result.EventBackground = Helper.CreateSpriteFromImageFile("odi15.png");//AlistairOffice;
+                    }
 
                     else if (geoEvent.EventID.Equals("VoidOmen") || geoEvent.EventID == "PROG_FS10" || geoEvent.EventID.Contains("Alistair")
                             || geoEvent.EventID.Equals("PROG_LE3_WARN"))

@@ -49,7 +49,7 @@ namespace TFTV
         internal static readonly DefRepository Repo = GameUtl.GameComponent<DefRepository>();
         internal static readonly SharedData Shared = GameUtl.GameComponent<SharedData>();
 
-     //   internal static bool ConfigImplemented = false;
+        internal static bool ReleaseStuffCreated = false;
 
         //TFTV We want at least the LogPath, but maybe other directories too...
         internal static string LogPath;
@@ -87,9 +87,9 @@ namespace TFTV
                 /// PhoenixGame is accessible at any time.
                 PhoenixGame game = GetGame();
 
-                TFTVversion = $"TFTV August 21 release #1 (Hotfix1 for Update #35) v{MetaData.Version}";
+                TFTVversion = $"TFTV August 25 release #1 (Update #36) v{MetaData.Version}";
 
-                Logger.LogInfo("TFTV August 21 release #1 (Hotfix1 for Update #35)");
+                Logger.LogInfo("TFTV August 25 release #1 (Update #36)");
 
                 ModDirectory = Instance.Entry.Directory;
                 //Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
@@ -102,7 +102,7 @@ namespace TFTV
                 TFTVLogger.Initialize(LogPath, Config.Debug, ModDirectory, nameof(TFTV));
                 PRMLogger.Initialize(LogPath, Settings.Debug, ModDirectory, nameof(PRMBetterClasses));
                 // DefCache.Initialize();
-                TFTVLogger.Always("TFTV August 21 release #1 (Hotfix1 for Update #35)");
+                TFTVLogger.Always("TFTV August 25 release #1 (Update #36)");
 
                 PRMBetterClasses.Helper.Initialize();
                 // Initialize Helper
@@ -263,20 +263,22 @@ namespace TFTV
         public override void OnLevelStateChanged(Level level, Level.State prevState, Level.State state)
         {
 
-          
+         
+
+           // TFTVLogger.Always($"level {level.name} loading");
+           
+
+            // Logger.LogInfo($"{MethodBase.GetCurrentMethod().Name} called for level '{level}' with old state '{prevState}' and new state '{state}'");
+            /*  if (!ConfigImplemented && (level.name.Contains("GeoscapeLevel") || level.name.Contains("TacticalLevel")) && state == Level.State.Loading)
+              {
+                  TFTVLogger.Always($"level {level.name} loading");
+
+                  TFTVDefsWithConfigDependency.ImplementConfigChoices();
+                  ConfigImplemented = true;
+              }*/
 
 
-           // Logger.LogInfo($"{MethodBase.GetCurrentMethod().Name} called for level '{level}' with old state '{prevState}' and new state '{state}'");
-          /*  if (!ConfigImplemented && (level.name.Contains("GeoscapeLevel") || level.name.Contains("TacticalLevel")) && state == Level.State.Loading)
-            {
-                TFTVLogger.Always($"level {level.name} loading");
-                
-                TFTVDefsWithConfigDependency.ImplementConfigChoices();
-                ConfigImplemented = true;
-            }*/
 
-            
-          
 
             /// Alternative way to access current level at any time.
             //Level l = GetLevel();
@@ -291,8 +293,8 @@ namespace TFTV
         /// <param name="level">Level that starts.</param>
         public override void OnLevelStart(Level level)
         {
-          
-
+           // TFTVLogger.Always($"level is {level.name}");
+           
         }
 
         /// <summary>
@@ -368,6 +370,8 @@ namespace TFTV
             // Apply various adjustments
             VariousAdjustmentsMain.ApplyChanges();
         }
+
+       
 
         [HarmonyPatch(typeof(UIModuleBuildRevision), "SetRevisionNumber")]
         internal static class UIModuleBuildRevision_SetRevisionNumber

@@ -159,6 +159,7 @@ namespace TFTV
                 FixInfestedBase(controller);
                 CheckSaveGameEventChoices(controller);
                 CheckUmbraResearchVariable(controller);
+                AddInteranlDifficultyCheckSaveData(controller);
             }
             catch (Exception e)
             {
@@ -166,6 +167,25 @@ namespace TFTV
             }
 
 
+        }
+
+        private static void AddInteranlDifficultyCheckSaveData(GeoLevelController controller) 
+        {
+            try
+            {
+                if (TFTVNewGameOptions.InternalDifficultyCheck == 0) 
+                {
+
+                    TFTVNewGameOptions.InternalDifficultyCheck = controller.CurrentDifficultyLevel.Order;
+                
+                }
+
+              
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
         }
 
 
