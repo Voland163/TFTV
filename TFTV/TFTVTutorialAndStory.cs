@@ -322,7 +322,7 @@ namespace TFTV
                                 }
                                 else if (hintDef.Text.LocalizeEnglish().Contains("a pack of Forsaken"))
                                 {
-                                    __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("fo_squad.png");
+                                    __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("fo_squad.jng");
                                 }
                                 else if (hintDef.Text.LocalizeEnglish().Contains("New Jericho"))
                                 {
