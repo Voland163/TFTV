@@ -434,7 +434,7 @@ namespace TFTV
                     }
                     else if (TFTVProjectOsiris.ProjectOsirisDeliveryEvents.Contains(geoEvent.EventID))
                     {
-                        __result.EventBackground = Helper.CreateSpriteFromImageFile("Project_Osiris_Bionics.png");
+                        __result.EventBackground = Helper.CreateSpriteFromImageFile("project_Osiris.jpg");
 
                         /* if (geoEvent.EventID == TFTVProjectOsiris.ProjectOsirisEvent)
                          {

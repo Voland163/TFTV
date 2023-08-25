@@ -160,6 +160,7 @@ namespace TFTV
                 CheckSaveGameEventChoices(controller);
                 CheckUmbraResearchVariable(controller);
                 AddInteranlDifficultyCheckSaveData(controller);
+                FixReactivateCyclopsMission(controller);
             }
             catch (Exception e)
             {
@@ -168,6 +169,30 @@ namespace TFTV
 
 
         }
+
+        private static void FixReactivateCyclopsMission(GeoLevelController controller) 
+        {
+            try
+            {
+               if(controller.EventSystem.GetVariable(TFTVAncientsGeo.CyclopsBuiltVariable)==1 && controller.Map.AllSites.Any(s=>(s.Type == GeoSiteType.AncientHarvest || s.Type == GeoSiteType.AncientRefinery) && s.Owner == controller.AlienFaction)) 
+                
+                {
+                    TFTVLogger.Always($"Player failed the Cyclops mission, need to clean up");
+                    controller.EventSystem.SetVariable(TFTVAncientsGeo.CyclopsBuiltVariable, 0);
+                    TFTVCommonMethods.RemoveManuallySetObjective(controller, "PROTECT_THE_CYCLOPS_OBJECTIVE_GEO_TITLE");
+                    controller.Map.AllSites.FirstOrDefault(s => (s.Type == GeoSiteType.AncientHarvest || s.Type == GeoSiteType.AncientRefinery) && s.Owner == controller.AlienFaction).Owner = controller.PhoenixFaction;
+                }
+
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+
+        }
+
 
         private static void AddInteranlDifficultyCheckSaveData(GeoLevelController controller) 
         {

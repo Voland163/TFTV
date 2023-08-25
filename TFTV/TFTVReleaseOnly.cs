@@ -50,7 +50,7 @@ namespace TFTV
                     {
                         TFTVLogger.Always($"difficulty order level: {__state}");
                         controller.CurrentDifficultyLevel = GetTacticalDifficulty();
-                        TFTVLogger.Always($"Checking that difficulty order level did not change: {__state}");
+                      //  TFTVLogger.Always($"Checking that difficulty order level did not change: {__state}");
                     }
 
                     return true;
@@ -101,7 +101,7 @@ namespace TFTV
                     {
                         TFTVLogger.Always($"difficulty order level: {__state}");
                         controller.CurrentDifficultyLevel = GetTacticalDifficulty();
-                        TFTVLogger.Always($"Checking that difficulty order level did not change: {__state}");
+                      //  TFTVLogger.Always($"Checking that difficulty order level did not change: {__state}");
                     }
 
                     return true;
@@ -183,7 +183,7 @@ namespace TFTV
 
                 if (config.difficultyOnTactical != TFTVConfig.DifficultyOnTactical.GEOSCAPE)
                 {
-                    TFTVLogger.Always($"Difficulty level on Tactical is {config.difficultyOnTactical}");
+                  //  TFTVLogger.Always($"Difficulty level on Tactical is {config.difficultyOnTactical}");
 
                     switch (config.difficultyOnTactical)
                     {

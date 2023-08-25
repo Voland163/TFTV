@@ -275,17 +275,17 @@ namespace TFTV
                 {
                     if (objective1.Title == null)
                     {
-                        TFTVLogger.Always("objective1.Title is missing!");
+                       // TFTVLogger.Always("objective1.Title is missing!");
                     }
                     else
                     {
                         if (objective1.Title.LocalizationKey == null)
                         {
-                            TFTVLogger.Always("objective1.Title.LocalizationKey is missing!");
+                           // TFTVLogger.Always("objective1.Title.LocalizationKey is missing!");
                         }
                         else
                         {
-                            TFTVLogger.Always("objective1.Title.LocalizationKey is " + objective1.Title.LocalizationKey);
+                          //  TFTVLogger.Always("objective1.Title.LocalizationKey is " + objective1.Title.LocalizationKey);
 
                             if (objective1.Title.LocalizationKey == title)
                             {

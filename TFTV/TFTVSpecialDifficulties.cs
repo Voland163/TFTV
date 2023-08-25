@@ -828,7 +828,7 @@ namespace TFTV
             try
             {
                 TFTVConfig config = TFTVMain.Main.Config;
-                if (TFTVReleaseOnly.DifficultyOrderConverter(controller.CurrentDifficultyLevel.Order) == 1)
+                if (controller.CurrentDifficultyLevel.Order == 1)
                 {
                     return 1;
 
@@ -864,7 +864,7 @@ namespace TFTV
 
                 //   TFTVLogger.Always($"controller.CurrentDifficultyLevel.Order {controller?.CurrentDifficultyLevel?.Order}");
 
-                if (TFTVReleaseOnly.DifficultyOrderConverter(controller.CurrentDifficultyLevel.Order) == 1 || TFTVReleaseOnly.GetTacticalDifficulty() != null && TFTVReleaseOnly.GetTacticalDifficulty().Order == 1)
+                if (controller.CurrentDifficultyLevel.Order == 1 || TFTVReleaseOnly.GetTacticalDifficulty() != null && TFTVReleaseOnly.GetTacticalDifficulty().Order == 1)
                 {
                    // TFTVLogger.Always($"Geoscape check re Tactical returns that it's Rookie!");
                     return 1;
@@ -896,7 +896,7 @@ namespace TFTV
             try
             {
                 TFTVConfig config = TFTVMain.Main.Config;
-                if (TFTVReleaseOnly.DifficultyOrderConverter(controller.Difficulty.Order) == 1 || TFTVReleaseOnly.GetTacticalDifficulty() != null && TFTVReleaseOnly.GetTacticalDifficulty().Order == 1)
+                if (controller.Difficulty.Order == 1 || TFTVReleaseOnly.GetTacticalDifficulty() != null && TFTVReleaseOnly.GetTacticalDifficulty().Order == 1)
                 {
                     return 1;
 

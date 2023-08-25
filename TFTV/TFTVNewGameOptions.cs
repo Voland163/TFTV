@@ -30,6 +30,7 @@ namespace TFTV
             China,
             Australia,
             Honduras,
+            Mexico,
             Ethiopia,
             Ukraine,
             Greenland,

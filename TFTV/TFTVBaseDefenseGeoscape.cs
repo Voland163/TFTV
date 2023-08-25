@@ -1808,6 +1808,12 @@ namespace TFTV
 
                         }
 
+                        MissionTypeTagDef ancientSiteDefense = DefCache.GetDef<MissionTypeTagDef>("MissionTypeAncientSiteDefense_MissionTagDef");
+                        if (geoSite.ActiveMission != null && (geoSite.Type == GeoSiteType.AncientHarvest || geoSite.Type == GeoSiteType.AncientRefinery) && geoSite.ActiveMission.MissionDef.MissionTags.Contains(ancientSiteDefense))
+                        {
+                            geoSite.ActiveMission.Launch(new GeoSquad() { });
+                        }
+
                         /*  float timer = (geoMission.Site.ExpiringTimerAt.DateTime - geoMission.Level.Timing.Now.DateTime).Hours;
                           float timeToCompleteAttack = 18;
                           float progress = 1f - timer / timeToCompleteAttack;

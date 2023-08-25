@@ -1,5 +1,4 @@
 ﻿using Base.Core;
-using Base.Defs;
 using Base.Entities.Abilities;
 using Base.UI;
 using HarmonyLib;
@@ -19,8 +18,6 @@ using PhoenixPoint.Geoscape.View.ViewControllers;
 using PhoenixPoint.Geoscape.View.ViewControllers.Modal;
 using PhoenixPoint.Geoscape.View.ViewModules;
 using PhoenixPoint.Tactical.Entities;
-using PhoenixPoint.Tactical.Entities.Abilities;
-using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.Entities.Statuses;
 using PhoenixPoint.Tactical.Entities.Weapons;
 using PhoenixPoint.Tactical.Levels;
@@ -36,7 +33,7 @@ namespace TFTV
     internal class TFTVAncientsGeo
     {
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
-      
+
 
         public static readonly string CyclopsBuiltVariable = "CyclopsBuiltVariable";
         //   public static bool LOTAReworkActive = false;
@@ -811,9 +808,11 @@ namespace TFTV
 
                         }
                         //if the player is defeated, the Cyclops variable will be reset so that the player may try again
-                        else if (viewerFactionResult.State == TacFactionState.Defeated)
+                        else //if (viewerFactionResult.State == TacFactionState.Defeated)
                         {
                             controller.EventSystem.SetVariable(CyclopsBuiltVariable, 0);
+                            TFTVLogger.Always($"Player failed the Cyclops mission, need to clean up");
+                            controller.Map.AllSites.FirstOrDefault(s => (s.Type == GeoSiteType.AncientHarvest || s.Type == GeoSiteType.AncientRefinery) && s.Owner == controller.AlienFaction).Owner = controller.PhoenixFaction;
 
                         }
 

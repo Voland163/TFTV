@@ -412,7 +412,7 @@ namespace TFTV
                 }
                 if (CheckFordVoidOmensInPlay(level).Contains(14))
                 {
-                 //   tacticalPerceptionDef.MistBlobPerceptionRangeCost = 0;
+                    //   tacticalPerceptionDef.MistBlobPerceptionRangeCost = 0;
                     tacticalPerceptionDef.PerceptionRange = 20;
                     // Logger.Always(voidOmen + j + " is now in effect, held in variable " + voidOmen + i);
                     VoidOmensCheck[14] = true;
@@ -420,7 +420,7 @@ namespace TFTV
                 else if (!CheckFordVoidOmensInPlay(level).Contains(14) && VoidOmensCheck[14])
                 {
 
-                //    tacticalPerceptionDef.MistBlobPerceptionRangeCost = 10;
+                    //    tacticalPerceptionDef.MistBlobPerceptionRangeCost = 10;
                     tacticalPerceptionDef.PerceptionRange = 30;
                     VoidOmensCheck[14] = false;
                     TFTVLogger.Always("The check for VO#14 went ok");
@@ -716,15 +716,22 @@ namespace TFTV
         {
             try
             {
-                if (CheckFordVoidOmensInPlay(geoLevelController).Count() > 0)
+
+
+                // TFTVLogger.Always($"got here");
+
+                if (CheckFordVoidOmensInPlay(geoLevelController).Any(vo => vo != 0))
                 {
+
 
                     string triggeredVoidOmensString = "TriggeredVoidOmen_";
                     string voidOmenTitleString = "VOID_OMEN_TITLE_";
                     string voidOmenString = "VoidOmen_";
                     int difficulty = TFTVReleaseOnly.DifficultyOrderConverter(geoLevelController.CurrentDifficultyLevel.Order);
 
-                    GeoFactionObjective earliestVO = geoLevelController.PhoenixFaction.Objectives.FirstOrDefault(o => o.Title.LocalizationKey.Contains(voidOmenTitleString));
+                    GeoFactionObjective earliestVO = geoLevelController.PhoenixFaction.Objectives?.FirstOrDefault(o => o.Title.LocalizationKey.Contains(voidOmenTitleString));
+
+                //    TFTVLogger.Always($"got here 2");
 
                     if (earliestVO != null)
                     {
@@ -763,58 +770,14 @@ namespace TFTV
                             }
                         }
                     }
-                    else
-                    {
-                        TFTVLogger.Always($"Wanted to remove earliest Void Omen, but failed to find it!");
-
-                    }
                 }
 
+                else
+                {
+                    TFTVLogger.Always($"Wanted to remove earliest Void Omen, but failed to find it!");
 
-                /*
-                    int difficulty = geoLevelController.CurrentDifficultyLevel.Order;
-                    
-                    string voidOmen = "VoidOmen_";
-                   
+                }
 
-                    // And an array to record which variables hold which Dark Events
-                    
-                    //    TFTVLogger.Always("Checking if method invocation is working, these are all the Void Omens in play " + voidOmensinPlay[0] + " "
-                    //       + voidOmensinPlay[1] + " " + voidOmensinPlay[2] + " " + voidOmensinPlay[3]);
-
-                    int replacedVoidOmen = 0;
-
-                    for (int x = 1; x < 20; x++)
-                    {
-                        // We check, starting from the earliest, which Void Omen is still in play
-                        if (voidOmensinPlay.Contains(geoLevelController.EventSystem.GetVariable(triggeredVoidOmens + x)))
-                        {
-                            // Then we locate in which Variable it is recorded
-                            for (int y = 0; y < difficulty; y++)
-                            {
-                                // Once we find it, we want to remove it
-                                // Added the check to skip empty Void Omen variables, to hopefully make this method work even when list is not full
-                                if (voidOmensinPlay[difficulty - y - 1] == geoLevelController.EventSystem.GetVariable(triggeredVoidOmens + x) && voidOmensinPlay[difficulty - y - 1] != 0)
-                                {
-                                    TFTVLogger.Always("The Void Omen Variable to be replaced is " + voidOmen + (difficulty - y) +
-                                       " now holds VO " + geoLevelController.EventSystem.GetVariable(voidOmen + (difficulty - y)));
-                                    replacedVoidOmen = geoLevelController.EventSystem.GetVariable(voidOmen + (difficulty - y));
-                                    geoLevelController.EventSystem.SetVariable(voidOmen + (difficulty - y), 0);
-                                    TFTVLogger.Always("The Void Omen Variable " + voidOmen + (difficulty - y) +
-                                        " is now " + geoLevelController.EventSystem.GetVariable(voidOmen + (difficulty - y)));
-                                    y = difficulty;
-                                    x = 20;
-                                }
-                            }
-                        }
-                    }
-
-                    if (replacedVoidOmen != 0)
-                    {
-                       
-                    }*/
-
-                
             }
             catch (Exception e)
             {
@@ -834,7 +797,7 @@ namespace TFTV
                 int[] voidOmensinPlay = CheckFordVoidOmensInPlay(geoLevelController);
                 int difficulty = TFTVReleaseOnly.DifficultyOrderConverter(geoLevelController.CurrentDifficultyLevel.Order);
 
-                List <GeoFactionObjective> allVoidOmenObjectives = geoLevelController.PhoenixFaction.Objectives.Where(o => o.Title.LocalizationKey.Contains(voidOmenTitleString)).ToList();
+                List<GeoFactionObjective> allVoidOmenObjectives = geoLevelController.PhoenixFaction.Objectives.Where(o => o.Title.LocalizationKey.Contains(voidOmenTitleString)).ToList();
 
                 if (allVoidOmenObjectives != null)
                 {
@@ -848,7 +811,7 @@ namespace TFTV
                         {
                             if (voidOmensinPlay[x] == voidOmen)
                             {
-                                int voidOmenSlot = x+1;
+                                int voidOmenSlot = x + 1;
                                 TFTVLogger.Always($"vo slot {voidOmenSlot} emptied");
 
                                 geoLevelController.EventSystem.SetVariable(voidOmenString + voidOmenSlot, 0);
@@ -878,46 +841,46 @@ namespace TFTV
 
 
 
-             /*   int difficulty = geoLevelController.CurrentDifficultyLevel.Order;
-                string triggeredVoidOmens = "TriggeredVoidOmen_";
-                string voidOmen = "VoidOmen_";
-                string voidOmenTitle = "VOID_OMEN_TITLE_";
+                /*   int difficulty = geoLevelController.CurrentDifficultyLevel.Order;
+                   string triggeredVoidOmens = "TriggeredVoidOmen_";
+                   string voidOmen = "VoidOmen_";
+                   string voidOmenTitle = "VOID_OMEN_TITLE_";
 
 
-                // And an array to record which variables hold which Dark Events
-                int[] voidOmensinPlay = CheckFordVoidOmensInPlay(geoLevelController);
-                //   TFTVLogger.Always("Checking if method invocation is working, these are all the Void Omens in play " + voidOmensinPlay[0] + " "
-                //       + voidOmensinPlay[1] + " " + voidOmensinPlay[2] + " " + voidOmensinPlay[3]);
+                   // And an array to record which variables hold which Dark Events
+                   int[] voidOmensinPlay = CheckFordVoidOmensInPlay(geoLevelController);
+                   //   TFTVLogger.Always("Checking if method invocation is working, these are all the Void Omens in play " + voidOmensinPlay[0] + " "
+                   //       + voidOmensinPlay[1] + " " + voidOmensinPlay[2] + " " + voidOmensinPlay[3]);
 
-                int replacedVoidOmen = 0;
+                   int replacedVoidOmen = 0;
 
-                for (int x = 1; x < 20; x++)
-                {
-                    // We check, starting from the earliest, which Void Omen is still in play
-                    if (voidOmensinPlay.Contains(geoLevelController.EventSystem.GetVariable(triggeredVoidOmens + x)))
-                    {
-                        // Then we locate in which Variable it is recorded
-                        for (int y = 0; y < difficulty; y++)
-                        {
-                            // Once we find it, we want to remove it
-                            if (voidOmensinPlay[difficulty - y - 1] == geoLevelController.EventSystem.GetVariable(triggeredVoidOmens + x))
-                            {
-                                TFTVLogger.Always("The Void Omen Variable to be replaced is " + voidOmen + (difficulty - y) +
-                                   " now holds VO " + geoLevelController.EventSystem.GetVariable(voidOmen + (difficulty - y)));
-                                replacedVoidOmen = geoLevelController.EventSystem.GetVariable(voidOmen + (difficulty - y));
-                                geoLevelController.EventSystem.SetVariable(voidOmen + (difficulty - y), 0);
-                                TFTVLogger.Always("The Void Omen Variable " + voidOmen + (difficulty - y) +
-                                    " is now " + geoLevelController.EventSystem.GetVariable(voidOmen + (difficulty - y)));
-                            }
-                        }
-                    }
-                    if (replacedVoidOmen != 0)
-                    {
-                        TFTVLogger.Always("The target event that will be replaced is " + voidOmenTitle + replacedVoidOmen);
-                        RemoveVoidOmenObjective(voidOmenTitle + replacedVoidOmen, geoLevelController);
+                   for (int x = 1; x < 20; x++)
+                   {
+                       // We check, starting from the earliest, which Void Omen is still in play
+                       if (voidOmensinPlay.Contains(geoLevelController.EventSystem.GetVariable(triggeredVoidOmens + x)))
+                       {
+                           // Then we locate in which Variable it is recorded
+                           for (int y = 0; y < difficulty; y++)
+                           {
+                               // Once we find it, we want to remove it
+                               if (voidOmensinPlay[difficulty - y - 1] == geoLevelController.EventSystem.GetVariable(triggeredVoidOmens + x))
+                               {
+                                   TFTVLogger.Always("The Void Omen Variable to be replaced is " + voidOmen + (difficulty - y) +
+                                      " now holds VO " + geoLevelController.EventSystem.GetVariable(voidOmen + (difficulty - y)));
+                                   replacedVoidOmen = geoLevelController.EventSystem.GetVariable(voidOmen + (difficulty - y));
+                                   geoLevelController.EventSystem.SetVariable(voidOmen + (difficulty - y), 0);
+                                   TFTVLogger.Always("The Void Omen Variable " + voidOmen + (difficulty - y) +
+                                       " is now " + geoLevelController.EventSystem.GetVariable(voidOmen + (difficulty - y)));
+                               }
+                           }
+                       }
+                       if (replacedVoidOmen != 0)
+                       {
+                           TFTVLogger.Always("The target event that will be replaced is " + voidOmenTitle + replacedVoidOmen);
+                           RemoveVoidOmenObjective(voidOmenTitle + replacedVoidOmen, geoLevelController);
 
-                    }
-                }*/
+                       }
+                   }*/
             }
             catch (Exception e)
             {
@@ -1496,27 +1459,27 @@ namespace TFTV
             }
         }
 
-      /*  [HarmonyPatch(typeof(GeoBehemothActor), "get_DisruptionMax")]
-        public static class GeoBehemothActor_get_DisruptionMax_VoidOmenBehemothRoamsMore_Patch
-        {
-            public static void Postfix(ref int __result, GeoBehemothActor __instance)
-            {
-                try
-                {
-                    int[] voidOmensInEffect = CheckFordVoidOmensInPlay(__instance.GeoLevel);
-                    if (voidOmensInEffect.Contains(11))
-                    {
-                        __result += 3 * __instance.GeoLevel.CurrentDifficultyLevel.Order;
-                    }
-                }
+        /*  [HarmonyPatch(typeof(GeoBehemothActor), "get_DisruptionMax")]
+          public static class GeoBehemothActor_get_DisruptionMax_VoidOmenBehemothRoamsMore_Patch
+          {
+              public static void Postfix(ref int __result, GeoBehemothActor __instance)
+              {
+                  try
+                  {
+                      int[] voidOmensInEffect = CheckFordVoidOmensInPlay(__instance.GeoLevel);
+                      if (voidOmensInEffect.Contains(11))
+                      {
+                          __result += 3 * __instance.GeoLevel.CurrentDifficultyLevel.Order;
+                      }
+                  }
 
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
+                  catch (Exception e)
+                  {
+                      TFTVLogger.Error(e);
+                  }
 
-            }
-        }*/
+              }
+          }*/
 
 
 
@@ -1758,7 +1721,7 @@ namespace TFTV
                     KeepSoldiersAliveFactionObjectiveDef VOID_OMEN_TITLE_16 = DefCache.GetDef<KeepSoldiersAliveFactionObjectiveDef>("VOID_OMEN_TITLE_16");
                     KeepSoldiersAliveFactionObjectiveDef VOID_OMEN_TITLE_19 = DefCache.GetDef<KeepSoldiersAliveFactionObjectiveDef>("VOID_OMEN_TITLE_19");
 
-                    List<KeepSoldiersAliveFactionObjectiveDef> voidOmens = new List<KeepSoldiersAliveFactionObjectiveDef> {VOID_OMEN_TITLE_3, VOID_OMEN_TITLE_5, VOID_OMEN_TITLE_7, VOID_OMEN_TITLE_10, VOID_OMEN_TITLE_14, VOID_OMEN_TITLE_15, VOID_OMEN_TITLE_16, VOID_OMEN_TITLE_19 };
+                    List<KeepSoldiersAliveFactionObjectiveDef> voidOmens = new List<KeepSoldiersAliveFactionObjectiveDef> { VOID_OMEN_TITLE_3, VOID_OMEN_TITLE_5, VOID_OMEN_TITLE_7, VOID_OMEN_TITLE_10, VOID_OMEN_TITLE_14, VOID_OMEN_TITLE_15, VOID_OMEN_TITLE_16, VOID_OMEN_TITLE_19 };
 
                     //  TFTVLogger.Always("FactionObjective Evaluate " + __instance.Description.ToString());
                     foreach (KeepSoldiersAliveFactionObjectiveDef keepSoldiersAliveFactionObjectiveDef in voidOmens)

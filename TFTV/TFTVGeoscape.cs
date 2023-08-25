@@ -360,29 +360,49 @@ namespace TFTV
             TFTVConfig config = TFTVMain.Main.Config;
            
 
-            List<int> locations = new List<int>() { 0, 1, 584, 170, 191, 167, 169, 166, 187, 172, 165, 192, 185, 171, 189, 168, 193, 190, 188 };
+            List<int> locations = new List<int>() { 
+                0, // "Vanilla Random"
+                1, //"Random (ALL bases included)"
+                584, //"Antarctica"
+                170, //"Asia (China)"
+                191, //"Australia"
+                186, //"Central America (Honduras)"
+                167, //"Central America (Mexico)"
+                169, //"East Africa (Ethiopia)"
+                166, //"Eastern Europe (Ukraine)"
+                187, //"Greenland"
+                172, //"Middle East (Afghanistan)"
+                165, //"North Africa (Algeria)"
+                192, //"North America (Alaska)"
+                185, //"North America (Quebec)"
+                171, //"Northern Asia (Siberia)"
+                189, //"South Africa (Zimbabwe)"
+                168, // "South America (Bolivia)"
+                193, //"South America (Tierra de Fuego)"
+                190, //"Southeast Asia (Cambodia)"
+                188  // "West Africa (Ghana)
+            };
 
-            /*
-        Vanilla,
-        Random, 
-        Antarctica, 
-        China,
-        Australia,
-        Honduras,
-        Ethiopia,
-        Ukraine,
-        Greenland,
-        Afghanistan,
-        Algeria,
-        Alaska,
-        Quebec,
-        Siberia,
-        Zimbabwe,
-        Bolivia,
-        Argentina,
-        Cambodia,
-        Ghana*/
-
+            List<int> phoenixBases = new List<int>(){
+                584, //"Antarctica"
+                170, //"Asia (China)"
+                191, //"Australia"
+                186, //"Central America (Honduras)"
+                167, //"Central America (Mexico)"
+                169, //"East Africa (Ethiopia)"
+                166, //"Eastern Europe (Ukraine)"
+                187, //"Greenland"
+                172, //"Middle East (Afghanistan)"
+                165, //"North Africa (Algeria)"
+                192, //"North America (Alaska)"
+                185, //"North America (Quebec)"
+                171, //"Northern Asia (Siberia)"
+                189, //"South Africa (Zimbabwe)"
+                168, // "South America (Bolivia)"
+                193, //"South America (Tierra de Fuego)"
+                190, //"Southeast Asia (Cambodia)"
+                188  // "West Africa (Ghana)
+            };
 
             /*
             (-0.4f, 3.7f, 5.2f),  North Africa (Algeria) 165 
@@ -413,10 +433,10 @@ namespace TFTV
                 }
                 else
                 {
-                    foreach (GeoSiteSceneDef.SiteInfo siteInfo in worldSites.Where(ws => ws.SiteTags.Any(t => t.Contains("PhoenixBase"))))
+                    foreach (GeoSiteSceneDef.SiteInfo siteInfo in worldSites.Where(ws => phoenixBases.Any(id=>id.Equals(ws.SiteId))))
                     {
                         int index = (int)TFTVNewGameOptions.startingBaseLocation;
-                      //  TFTVLogger.Always($"index is {index}");
+                        TFTVLogger.Always($"chosen base is {locations[index]}");
 
                         if (TFTVNewGameOptions.startingBaseLocation == TFTVNewGameOptions.StartingBaseLocation.Vanilla)
                         {
@@ -469,7 +489,7 @@ namespace TFTV
                         }
                         else
                         {
-                            TFTVLogger.Always($"{siteInfo.SiteId} world position is {siteInfo.WorldPosition}");
+                            TFTVLogger.Always($"checking {siteInfo.SiteId}");
                             if (siteInfo.SiteId == locations[index])   //SiteDescription.LocalizationKey== "KEY_OBJECTIVE_PHOENIXBASE_NAME_18") 
                             {
                                 if (!siteInfo.SiteTags.Contains("StartingPhoenixBase"))
@@ -483,7 +503,7 @@ namespace TFTV
                                 if (siteInfo.SiteTags.Contains("StartingPhoenixBase"))
                                 {
                                     siteInfo.SiteTags.Remove("StartingPhoenixBase");
-                                    //  TFTVLogger.Always($"{siteInfo.SiteId} has site tag removed");
+                                    TFTVLogger.Always($"{siteInfo.SiteId} has site tag removed");
                                     // GeoSitesMapper
 
                                 }
