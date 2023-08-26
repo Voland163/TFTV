@@ -373,7 +373,7 @@ namespace TFTV
                 OnProductionUpdate(supplies.Value);
 
 
-                //  TFTVLogger.Always($"giving supplies {supplies.Value}, reducing PandasForFoodProcessing to {PandasForFoodProcessing}");
+                TFTVLogger.Always($"giving supplies {supplies.Value}, reducing PandasForFoodProcessing to {PandasForFoodProcessing}");
 
             }
             catch (Exception e)
@@ -532,9 +532,11 @@ namespace TFTV
             {
                 GeoLevelController controller = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
                 GeoPhoenixFaction pxFaction = controller.PhoenixFaction;
+              //  TFTVLogger.Always($"HarvestAliensForSuppliesUnlocked {pxFaction.HarvestAliensForSuppliesUnlocked}");
+                
                 if (pxFaction.HarvestAliensForSuppliesUnlocked)
-
                 {
+                //    TFTVLogger.Always($"got passed the check");
 
                     float suppliesPerDay = PandasForFoodProcessing;
                     int farms = CountFoodProductionFacilities(pxFaction);

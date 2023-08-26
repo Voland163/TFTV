@@ -474,21 +474,24 @@ namespace TFTV
                 }
                 if (CheckFordVoidOmensInPlay(level).Contains(19))
                 {
-                    GeoMarketplaceResearchOptionDef randomMarketResearch = DefCache.GetDef<GeoMarketplaceResearchOptionDef>("Random_MarketplaceResearchOptionDef");
+                 /*   GeoMarketplaceResearchOptionDef randomMarketResearch = DefCache.GetDef<GeoMarketplaceResearchOptionDef>("Random_MarketplaceResearchOptionDef");
                     randomMarketResearch.MaxPrice = 1200;
-                    randomMarketResearch.MinPrice = 960;
+                    randomMarketResearch.MinPrice = 960;*/
 
                     // Logger.Always(voidOmen + j + " is now in effect, held in variable " + voidOmen + i);
                     VoidOmensCheck[19] = true;
                 }
                 else if (!CheckFordVoidOmensInPlay(level).Contains(19) && VoidOmensCheck[19])
                 {
-                    GeoMarketplaceResearchOptionDef randomMarketResearch = DefCache.GetDef<GeoMarketplaceResearchOptionDef>("Random_MarketplaceResearchOptionDef");
+                /*    GeoMarketplaceResearchOptionDef randomMarketResearch = DefCache.GetDef<GeoMarketplaceResearchOptionDef>("Random_MarketplaceResearchOptionDef");
                     randomMarketResearch.MaxPrice = 1500;
-                    randomMarketResearch.MinPrice = 1200;
+                    randomMarketResearch.MinPrice = 1200;*/
 
                     VoidOmensCheck[19] = false;
+                    TFTVChangesToDLC5Events.ForceMarketPlaceUpdate();
                     TFTVLogger.Always("The check for VO#19 went ok");
+
+                    
                 }
 
                 List<int> VoidOmensInPLay = new List<int>();
@@ -796,14 +799,17 @@ namespace TFTV
                 string voidOmenString = "VoidOmen_";
                 int[] voidOmensinPlay = CheckFordVoidOmensInPlay(geoLevelController);
                 int difficulty = TFTVReleaseOnly.DifficultyOrderConverter(geoLevelController.CurrentDifficultyLevel.Order);
+               
+                List<GeoFactionObjective> allVoidOmenObjectives = FindVoidOmenObjectives(geoLevelController);
+ 
+               // TFTVLogger.Always($"got here");
 
-                List<GeoFactionObjective> allVoidOmenObjectives = geoLevelController.PhoenixFaction.Objectives.Where(o => o.Title.LocalizationKey.Contains(voidOmenTitleString)).ToList();
-
-                if (allVoidOmenObjectives != null)
+                if (allVoidOmenObjectives.Count>0)
                 {
                     foreach (GeoFactionObjective voObjective in allVoidOmenObjectives)
                     {
                         string voidOmenTitleLocKey = voObjective?.Title?.LocalizationKey;
+                        TFTVLogger.Always($"voidOmenTitleLocKey is {voidOmenTitleLocKey}");
                         int voidOmen = int.Parse(voidOmenTitleLocKey.Substring(voidOmenTitleString.Length));
                         TFTVLogger.Always($"VO is {voidOmenTitleString}, {voidOmen}");
 
@@ -834,6 +840,8 @@ namespace TFTV
                             }
                         }
                     }
+
+                    ImplementVoidOmens(geoLevelController);
                 }
 
 
@@ -908,6 +916,52 @@ namespace TFTV
             }
 
         }
+
+        public static List<GeoFactionObjective> FindVoidOmenObjectives(GeoLevelController level)
+        {
+            try
+            {
+                string voidOmenTitleString = "VOID_OMEN_TITLE_";
+
+                List<GeoFactionObjective> listOfObjectives = level.PhoenixFaction.Objectives.ToList();
+
+                List<GeoFactionObjective> voidOmens = new List<GeoFactionObjective>();
+
+                foreach (GeoFactionObjective objective in listOfObjectives)
+                {
+                    if (objective.Title == null)
+                    {
+                        TFTVLogger.Always("objective1.Title is missing!");
+                    }
+                    else
+                    {
+                        if (objective.Title.LocalizationKey == null)
+                        {
+                            TFTVLogger.Always("objective1.Title.LocalizationKey is missing!");
+                        }
+                        else
+                        {
+                            if (objective.Title.LocalizationKey.Contains(voidOmenTitleString))
+                            {
+                                voidOmens.Add(objective);
+                            }
+                        }
+                    }
+
+                }
+
+                return voidOmens;
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
+
+        }
+
+
 
         public static void RemoveVoidOmenObjective(string title, GeoLevelController level)
         {
@@ -1351,6 +1405,7 @@ namespace TFTV
             {
                 try
                 {
+                
                     if (__result > 0)
                     {
                         if (VoidOmensCheck[3] && __instance.TacticalActor != null)

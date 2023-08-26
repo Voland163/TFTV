@@ -89,18 +89,13 @@ namespace TFTV
 
 
             /// ModMain is accesible at any time
-            DefCache.GetDef<TacticalTargetingDataDef>("E_TargetingData [PsychicWard_AbilityDef]").Origin.Range = 10; //Fix Dtony thing
-                                                                                                                     //  TFTVBetaSaveGamesFixes.FixInfestedBase(gsController);
-                                                                                                                     //  TFTVBetaSaveGamesFixes.CheckSaveGameEventChoices(gsController);
-            TFTVNewGameOptions.SetInternalConfigOptions(gsController);                                                                                                        //  TFTVBetaSaveGamesFixes.CheckUmbraResearchVariable(gsController);
+            DefCache.GetDef<TacticalTargetingDataDef>("E_TargetingData [PsychicWard_AbilityDef]").Origin.Range = 10; //Fix Dtony thing                                                                                                                 
+            TFTVNewGameOptions.SetInternalConfigOptions(gsController);                                                                                                        
             TFTVBetaSaveGamesFixes.OpenBetaSaveGameFixes(gsController);
             TFTVLogger.Always($"Difficulty level on Geoscape is {Controller.CurrentDifficultyLevel.name}");
             TFTVExperimental.CorrrectPhoenixSaveManagerDifficulty();
-
-
             TFTVCommonMethods.CheckGeoUIfunctionality(gsController);
             TFTVNewPXCharacters.PlayIntro(gsController);
-            //  TFTVVoidOmens.CheckVoidOmensBeforeImplementing(gsController);
             TFTVVoidOmens.ImplementVoidOmens(gsController);
             TFTVUmbra.CheckForUmbraResearch(gsController);
             TFTVUmbra.SetUmbraEvolution(gsController);
@@ -129,9 +124,8 @@ namespace TFTV
             TFTVBetaSaveGamesFixes.CheckScyllaCaptureTechResearch(Controller);
             TFTVPassengerModules.ImplementFarMConfig(Controller);
             TFTVNewGameOptions.Change_Crossbows();
-
-            
-
+            TFTVChangesToDLC5Events.ForceMarketPlaceUpdate();
+         //   TFTVVoidOmens.RemoveAllVoidOmens(gsController);
             //  TFTVCapturePandorans.SetMutagenOutput(Controller);
             //  TFTVDeliriumPerks.RemoveDeliriumPerks(Controller);
 
@@ -366,14 +360,14 @@ namespace TFTV
                 584, //"Antarctica"
                 170, //"Asia (China)"
                 191, //"Australia"
-                186, //"Central America (Honduras)"
-                167, //"Central America (Mexico)"
+                186, //"Central America (Honduras)"                
                 169, //"East Africa (Ethiopia)"
                 166, //"Eastern Europe (Ukraine)"
                 187, //"Greenland"
                 172, //"Middle East (Afghanistan)"
                 165, //"North Africa (Algeria)"
                 192, //"North America (Alaska)"
+                167, //"North America (Mexico)"
                 185, //"North America (Quebec)"
                 171, //"Northern Asia (Siberia)"
                 189, //"South Africa (Zimbabwe)"
@@ -388,13 +382,13 @@ namespace TFTV
                 170, //"Asia (China)"
                 191, //"Australia"
                 186, //"Central America (Honduras)"
-                167, //"Central America (Mexico)"
                 169, //"East Africa (Ethiopia)"
                 166, //"Eastern Europe (Ukraine)"
                 187, //"Greenland"
                 172, //"Middle East (Afghanistan)"
                 165, //"North Africa (Algeria)"
                 192, //"North America (Alaska)"
+                167, //"North America (Mexico)"
                 185, //"North America (Quebec)"
                 171, //"Northern Asia (Siberia)"
                 189, //"South Africa (Zimbabwe)"
@@ -592,7 +586,7 @@ namespace TFTV
                     }
                 }
 
-
+                TFTVDefsWithConfigDependency.ImplementConfigChoices();
             }
             catch (Exception e)
             {

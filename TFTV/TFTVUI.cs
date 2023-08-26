@@ -74,53 +74,7 @@ namespace TFTV
         internal static Color yellow = new Color(255, 255, 0, 1.0f);
         internal static Color dark = new Color(52, 52, 61, 1.0f);
 
-        /*  [HarmonyPatch(typeof(ModManager), "SerializeModObject")]
-
-          public static class TFTV_ModManager_SerializeModObject_patch
-          {
-              public static bool Prefix(ModMain mod, object data, ModManager __instance, ref ModInstanceData __result)
-              {
-                  try
-                  {
-                      if (data == null)
-                      {
-                         __result = null;
-                      }
-
-                      try
-                      {
-                          var settings = new JsonSerializerSettings
-                          {
-                              ReferenceLoopHandling = ReferenceLoopHandling.Ignore
-                          };
-
-                          string jsonData = JsonConvert.SerializeObject(data, settings);
-                          __result = new ModInstanceData
-                          {
-                              JsonData = jsonData,
-                              TypeName = data.GetType().FullName
-                          };
-                      }
-                      catch (Exception e)
-                      {          
-                          TFTVLogger.Error(e);
-                      }
-
-
-                      __result = null;
-
-                      return false;
-                  }
-
-                  catch (Exception e)
-                  {
-                      TFTVLogger.Error(e);
-                      throw;
-                  }
-              }
-          }*/
-
-
+      
 
         ///Patches to show mission light conditions
         [HarmonyPatch(typeof(UIStateRosterDeployment), "EnterState")]
@@ -230,8 +184,6 @@ namespace TFTV
         }
 
 
-
-
         [HarmonyPatch(typeof(UIModuleMutationSection), "RepairItem")]
 
         public static class TFTV_UIModuleMutationSection_RepairItem_patch
@@ -316,8 +268,6 @@ namespace TFTV
                 }
             }
         }
-
-
 
 
         [HarmonyPatch(typeof(GeoCharacter), "RepairItem", new Type[] { typeof(GeoItem), typeof(bool) })]
@@ -608,14 +558,7 @@ namespace TFTV
                     ApplyStatusAbilityDef derealization = DefCache.GetDef<ApplyStatusAbilityDef>("DerealizationIgnorePain_AbilityDef");
                     float bonusSpeed = 0;
                     float bonusWillpower = 0;
-                    float bonusStrength = 0;
-
-
-
-                    //   string forStrengthToolTip = "";
-
-
-                    //  GeoLevelController level = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
+                    float bonusStrength = 0;                 
 
                     foreach (ICommonItem armorItem in ____character.ArmourItems)
                     {
@@ -732,11 +675,17 @@ namespace TFTV
                     {
                         if (____character.CharacterStats.Corruption > TFTVDelirium.CalculateStaminaEffectOnDelirium(____character) && TFTVVoidOmens.VoidOmensCheck[3] == false)
                         {
+                           // TFTVLogger.Always($"current Delirium value is {____character.CharacterStats.Corruption.Value}; effect of Stamina is {TFTVDelirium.CalculateStaminaEffectOnDelirium(____character)}, " +
+                           //     $"current attribute value is {currentAttributeValue}, bonusWillpower is {bonusWillpower}, max {____character.Progression.GetMaxBaseStat(CharacterBaseAttribute.Will)}");
+
                             __result = $"{currentAttributeValue} / {____character.Progression.GetMaxBaseStat(CharacterBaseAttribute.Will)}" +
                                 $"<color=#da5be3> ({currentAttributeValue + bonusWillpower - ____character.CharacterStats.Corruption.Value + TFTVDelirium.CalculateStaminaEffectOnDelirium(____character)}</color>)";
                         }
                         else
                         {
+                          //  TFTVLogger.Always($"current Delirium value is {____character.CharacterStats.Corruption.Value}; effect of Stamina is {TFTVDelirium.CalculateStaminaEffectOnDelirium(____character)}, " +
+                         //      $"current attribute value is {currentAttributeValue}, bonusWillpower is {bonusWillpower}, TFTVVoidOmens.VoidOmensCheck[3] {TFTVVoidOmens.VoidOmensCheck[3]}");
+
                             if (bonusWillpower > 0)
                             {
 
@@ -754,6 +703,9 @@ namespace TFTV
                                 __result = $"{currentAttributeValue} / {____character.Progression.GetMaxBaseStat(attribute)}";
                             }
                         }
+
+
+
                     }
 
                 }
@@ -769,7 +721,23 @@ namespace TFTV
 
         /// <summary>
         /// Patches to add toggle helment and loadouts buttons
-        /// </summary>        
+        /// </summary>      
+        /// 
+
+        public static bool HelmetsOff;
+
+        public static PhoenixGeneralButton HelmetToggle = null;
+        public static PhoenixGeneralButton UnequipAll = null;
+        public static PhoenixGeneralButton SaveLoadout = null;
+        public static PhoenixGeneralButton LoadLoadout = null;
+
+        public static Dictionary<int, Dictionary<string, List<string>>> CharacterLoadouts = new Dictionary<int, Dictionary<string, List<string>>>();
+
+        private static bool toggleState = false;  // Initial toggle state
+        private static readonly string armourItems = "ArmourItems";
+        private static readonly string equipmentItems = "EquipmentItems";
+        private static readonly string inventoryItems = "InventoryItems";
+
 
         [HarmonyPatch(typeof(EditUnitButtonsController), "SetEditUnitButtonsBasedOnType")]
         internal static class TFTV_EditUnitButtonsController_SetEditUnitButtonsBasedOnType_ToggleHelmetButton_patch
@@ -778,29 +746,33 @@ namespace TFTV
             {
                 try
                 {
-
+                  
                     if (____parentModule.CurrentUnit != null)
                     {
-                        //   TFTVLogger.Always("Actually here");
+                      //  TFTVLogger.Always($"Actually here; {____parentModule.CurrentState}");
 
                         switch (____parentModule.CurrentState)
                         {
                             case UIModuleActorCycle.ActorCycleState.RosterSection:
 
-                                HelmetToggle.gameObject.SetActive(false);
-                                HelmetToggle.ResetButtonAnimations();
-                                UnequipAll.gameObject.SetActive(false);
-                                UnequipAll.ResetButtonAnimations();
-                                SaveLoadout.gameObject.SetActive(false);
-                                SaveLoadout.ResetButtonAnimations();
-                                LoadLoadout.gameObject.SetActive(false);
-                                LoadLoadout.ResetButtonAnimations();
+                                if (HelmetToggle != null)
+                                {
+
+                                    HelmetToggle.gameObject.SetActive(false);
+                                    HelmetToggle.ResetButtonAnimations();
+                                    UnequipAll.gameObject.SetActive(false);
+                                    UnequipAll.ResetButtonAnimations();
+                                    SaveLoadout.gameObject.SetActive(false);
+                                    SaveLoadout.ResetButtonAnimations();
+                                    LoadLoadout.gameObject.SetActive(false);
+                                    LoadLoadout.ResetButtonAnimations();
+                                }
 
                                 break;
 
                             case UIModuleActorCycle.ActorCycleState.EditSoldierSection:
 
-                                //   TFTVLogger.Always("And even here!");
+                               
                                 //  HelmetToggle.gameObject.SetActive(true);
                                 //  HelmetToggle.ResetButtonAnimations();
                                 UnequipAll.gameObject.SetActive(true);
@@ -836,61 +808,74 @@ namespace TFTV
 
                                 break;
                             case UIModuleActorCycle.ActorCycleState.EditVehicleSection:
-                                HelmetToggle.gameObject.SetActive(false);
-                                HelmetToggle.ResetButtonAnimations();
-                                UnequipAll.gameObject.SetActive(false);
-                                UnequipAll.ResetButtonAnimations();
-                                SaveLoadout.gameObject.SetActive(false);
-                                SaveLoadout.ResetButtonAnimations();
-                                LoadLoadout.gameObject.SetActive(false);
-                                LoadLoadout.ResetButtonAnimations();
+                                if (HelmetToggle != null)
+                                {
+                                    HelmetToggle.gameObject.SetActive(false);
+                                    HelmetToggle.ResetButtonAnimations();
+                                    UnequipAll.gameObject.SetActive(false);
+                                    UnequipAll.ResetButtonAnimations();
+                                    SaveLoadout.gameObject.SetActive(false);
+                                    SaveLoadout.ResetButtonAnimations();
+                                    LoadLoadout.gameObject.SetActive(false);
+                                    LoadLoadout.ResetButtonAnimations();
+                                }
                                 break;
                             case UIModuleActorCycle.ActorCycleState.EditMutogSection:
-                                HelmetToggle.gameObject.SetActive(false);
-                                HelmetToggle.ResetButtonAnimations();
-                                UnequipAll.gameObject.SetActive(false);
-                                UnequipAll.ResetButtonAnimations();
-                                SaveLoadout.gameObject.SetActive(false);
-                                SaveLoadout.ResetButtonAnimations();
-                                LoadLoadout.gameObject.SetActive(false);
-                                LoadLoadout.ResetButtonAnimations();
+                                if (HelmetToggle != null)
+                                {
+                                    HelmetToggle.gameObject.SetActive(false);
+                                    HelmetToggle.ResetButtonAnimations();
+                                    UnequipAll.gameObject.SetActive(false);
+                                    UnequipAll.ResetButtonAnimations();
+                                    SaveLoadout.gameObject.SetActive(false);
+                                    SaveLoadout.ResetButtonAnimations();
+                                    LoadLoadout.gameObject.SetActive(false);
+                                    LoadLoadout.ResetButtonAnimations();
+                                }
                                 break;
                             case UIModuleActorCycle.ActorCycleState.CapturedAlienSection:
-                                HelmetToggle.gameObject.SetActive(false);
-                                HelmetToggle.ResetButtonAnimations();
-                                UnequipAll.gameObject.SetActive(false);
-                                UnequipAll.ResetButtonAnimations();
-                                SaveLoadout.gameObject.SetActive(false);
-                                SaveLoadout.ResetButtonAnimations();
-                                LoadLoadout.gameObject.SetActive(false);
-                                LoadLoadout.ResetButtonAnimations();
+                                if (HelmetToggle != null)
+                                {
+                                    HelmetToggle.gameObject.SetActive(false);
+                                    HelmetToggle.ResetButtonAnimations();
+                                    UnequipAll.gameObject.SetActive(false);
+                                    UnequipAll.ResetButtonAnimations();
+                                    SaveLoadout.gameObject.SetActive(false);
+                                    SaveLoadout.ResetButtonAnimations();
+                                    LoadLoadout.gameObject.SetActive(false);
+                                    LoadLoadout.ResetButtonAnimations();
+                                }
                                 break;
 
 
                         }
 
-                        if (!____parentModule.EditUnitButtonsController.CustomizeButton.gameObject.activeInHierarchy)
+                        if (____parentModule.CurrentState== UIModuleActorCycle.ActorCycleState.SubmenuSection)//EditUnitButtonsController.CustomizeButton.gameObject.activeInHierarchy)
                         {
 
-
-                            // TFTVLogger.Always($"Customize button enabled is {____parentModule.EditUnitButtonsController.CustomizeButton.enabled}");
-                            HelmetToggle.gameObject.SetActive(false);
-                            HelmetToggle.ResetButtonAnimations();
-                            UnequipAll.gameObject.SetActive(false);
-                            UnequipAll.ResetButtonAnimations();
-                            SaveLoadout.gameObject.SetActive(false);
-                            SaveLoadout.ResetButtonAnimations();
-                            LoadLoadout.gameObject.SetActive(false);
-                            LoadLoadout.ResetButtonAnimations();
+                            TFTVLogger.Always($"Customize button enabled is {____parentModule.EditUnitButtonsController.CustomizeButton.enabled}");
+                            if (HelmetToggle != null)
+                            {
+                                HelmetToggle.gameObject.SetActive(false);
+                                HelmetToggle.ResetButtonAnimations();
+                                UnequipAll.gameObject.SetActive(false);
+                                UnequipAll.ResetButtonAnimations();
+                                SaveLoadout.gameObject.SetActive(false);
+                                SaveLoadout.ResetButtonAnimations();
+                                LoadLoadout.gameObject.SetActive(false);
+                                LoadLoadout.ResetButtonAnimations();
+                            }
                             // HelmetsOff = false;
                         }
 
                         if (____parentModule.CurrentCharacter != null && (CharacterLoadouts == null || CharacterLoadouts != null && !CharacterLoadouts.ContainsKey(____parentModule.CurrentCharacter.Id)))
                         {
+                            if (HelmetToggle != null)
+                            {
 
-
-                            LoadLoadout.gameObject.SetActive(false);
-                            LoadLoadout.ResetButtonAnimations();
+                                LoadLoadout.gameObject.SetActive(false);
+                                LoadLoadout.ResetButtonAnimations();
+                            }
                         }
 
 
@@ -912,77 +897,95 @@ namespace TFTV
 
 
        
-        public static Dictionary<int, Dictionary<string, List<string>>> CharacterLoadouts = new Dictionary<int, Dictionary<string, List<string>>>();
+       
 
-        public static bool HelmetsOff;
+      
 
-        public static PhoenixGeneralButton HelmetToggle = null;
-        public static PhoenixGeneralButton UnequipAll = null;
-        public static PhoenixGeneralButton SaveLoadout = null;
-        public static PhoenixGeneralButton LoadLoadout = null;
 
-        [HarmonyPatch(typeof(EditUnitButtonsController), "Awake")]
+
+
+     [HarmonyPatch(typeof(EditUnitButtonsController), "Awake")]
         internal static class TFTV_EditUnitButtonsController_Awake_ToggleHelmetButton_patch
         {
-            private static bool toggleState = false;  // Initial toggle state
-            private static readonly string armourItems = "ArmourItems";
-            private static readonly string equipmentItems = "EquipmentItems";
-            private static readonly string inventoryItems = "InventoryItems";
+           
+
+           
 
             public static void Postfix(EditUnitButtonsController __instance)
             {
-                try
+                try 
                 {
-                    Resolution resolution = Screen.currentResolution;
 
-                    // TFTVLogger.Always("Resolution is " + Screen.currentResolution.width);
-                    float resolutionFactorWidth = (float)resolution.width / 1920f;
-                    //   TFTVLogger.Always("ResolutionFactorWidth is " + resolutionFactorWidth);
-                    float resolutionFactorHeight = (float)resolution.height / 1080f;
-                    //   TFTVLogger.Always("ResolutionFactorHeight is " + resolutionFactorHeight);
-
-                    // TFTVLogger.Always($"checking");
-
-                    PhoenixGeneralButton helmetToggleButton = UnityEngine.Object.Instantiate(__instance.EditButton, __instance.transform);
-                    helmetToggleButton.gameObject.AddComponent<UITooltipText>().TipText = "Toggles helmet visibility on/off.";
-                    // TFTVLogger.Always($"original icon position {newPhoenixGeneralButton.transform.position}, edit button position {__instance.EditButton.transform.position}");
-                    helmetToggleButton.transform.position += new Vector3(-50 * resolutionFactorWidth, -35 * resolutionFactorHeight, 0);
-
-                    // TFTVLogger.Always($"new icon position {newPhoenixGeneralButton.transform.position}");
-
-                    PhoenixGeneralButton unequipAllPhoenixGeneralButton = UnityEngine.Object.Instantiate(__instance.EditButton, __instance.transform);
-                    unequipAllPhoenixGeneralButton.gameObject.AddComponent<UITooltipText>().TipText = "Unequips all the items currently equipped by the operative.";
-                    unequipAllPhoenixGeneralButton.transform.position = helmetToggleButton.transform.position + new Vector3(0, -100 * resolutionFactorHeight, 0);
-
-                    PhoenixGeneralButton saveLoadout = UnityEngine.Object.Instantiate(__instance.EditButton, __instance.transform);
-                    saveLoadout.transform.position = unequipAllPhoenixGeneralButton.transform.position + new Vector3(0, -100 * resolutionFactorHeight, 0);
-                    saveLoadout.gameObject.AddComponent<UITooltipText>().TipText = "Saves the current loadout of the operative.";
-
-                    PhoenixGeneralButton loadLoadout = UnityEngine.Object.Instantiate(__instance.EditButton, __instance.transform);
-                    loadLoadout.transform.position = saveLoadout.transform.position + new Vector3(0, -100 * resolutionFactorHeight, 0);
-                    loadLoadout.gameObject.AddComponent<UITooltipText>().TipText = "Loads the previously saved loadout for this operative.";
-
-
-                    helmetToggleButton.PointerClicked += () => ToggleButtonClicked(helmetToggleButton);
-                    unequipAllPhoenixGeneralButton.PointerClicked += () => UnequipButtonClicked();
-                    saveLoadout.PointerClicked += () => SaveLoadoutButtonClicked();
-                    loadLoadout.PointerClicked += () => LoadLoadoutButtonClicked();
-
-                    helmetToggleButton.transform.GetChildren().First().GetChildren().Where(t => t.name.Equals("UI_Icon")).FirstOrDefault().GetComponent<Image>().sprite = Helper.CreateSpriteFromImageFile("TFTV_helmet_off_icon.png");
-                    unequipAllPhoenixGeneralButton.transform.GetChildren().First().GetChildren().Where(t => t.name.Equals("UI_Icon")).FirstOrDefault().GetComponent<Image>().sprite = Helper.CreateSpriteFromImageFile("lockers.png");
-                    saveLoadout.transform.GetChildren().First().GetChildren().Where(t => t.name.Equals("UI_Icon")).FirstOrDefault().GetComponent<Image>().sprite = Helper.CreateSpriteFromImageFile("loadout_load.png");
-                    loadLoadout.transform.GetChildren().First().GetChildren().Where(t => t.name.Equals("UI_Icon")).FirstOrDefault().GetComponent<Image>().sprite = Helper.CreateSpriteFromImageFile("loadout_save.png");
-
-                    HelmetToggle = helmetToggleButton;
-                    UnequipAll = unequipAllPhoenixGeneralButton;
-                    SaveLoadout = saveLoadout;
-                    LoadLoadout = loadLoadout;
+                    CreateAdditionalButtonsForUIEditScreen(__instance);
+                
                 }
                 catch (Exception e)
                 {
                     TFTVLogger.Error(e);
                 }
             }
+
+            private static void CreateAdditionalButtonsForUIEditScreen(EditUnitButtonsController editUnitButtonsController)
+            {
+                try
+                {
+                    if (HelmetToggle == null)
+                    {
+
+                        Resolution resolution = Screen.currentResolution;
+
+                        // TFTVLogger.Always("Resolution is " + Screen.currentResolution.width);
+                        float resolutionFactorWidth = (float)resolution.width / 1920f;
+                        //   TFTVLogger.Always("ResolutionFactorWidth is " + resolutionFactorWidth);
+                        float resolutionFactorHeight = (float)resolution.height / 1080f;
+                        //   TFTVLogger.Always("ResolutionFactorHeight is " + resolutionFactorHeight);
+
+                        // TFTVLogger.Always($"checking");
+
+                        PhoenixGeneralButton helmetToggleButton = UnityEngine.Object.Instantiate(editUnitButtonsController.EditButton, editUnitButtonsController.transform);
+                        helmetToggleButton.gameObject.AddComponent<UITooltipText>().TipText = "Toggles helmet visibility on/off.";
+                        // TFTVLogger.Always($"original icon position {newPhoenixGeneralButton.transform.position}, edit button position {__instance.EditButton.transform.position}");
+                        helmetToggleButton.transform.position += new Vector3(-50 * resolutionFactorWidth, -35 * resolutionFactorHeight, 0);
+
+                        // TFTVLogger.Always($"new icon position {newPhoenixGeneralButton.transform.position}");
+
+                        PhoenixGeneralButton unequipAllPhoenixGeneralButton = UnityEngine.Object.Instantiate(editUnitButtonsController.EditButton, editUnitButtonsController.transform);
+                        unequipAllPhoenixGeneralButton.gameObject.AddComponent<UITooltipText>().TipText = "Unequips all the items currently equipped by the operative.";
+                        unequipAllPhoenixGeneralButton.transform.position = helmetToggleButton.transform.position + new Vector3(0, -100 * resolutionFactorHeight, 0);
+
+                        PhoenixGeneralButton saveLoadout = UnityEngine.Object.Instantiate(editUnitButtonsController.EditButton, editUnitButtonsController.transform);
+                        saveLoadout.transform.position = unequipAllPhoenixGeneralButton.transform.position + new Vector3(0, -100 * resolutionFactorHeight, 0);
+                        saveLoadout.gameObject.AddComponent<UITooltipText>().TipText = "Saves the current loadout of the operative.";
+
+                        PhoenixGeneralButton loadLoadout = UnityEngine.Object.Instantiate(editUnitButtonsController.EditButton, editUnitButtonsController.transform);
+                        loadLoadout.transform.position = saveLoadout.transform.position + new Vector3(0, -100 * resolutionFactorHeight, 0);
+                        loadLoadout.gameObject.AddComponent<UITooltipText>().TipText = "Loads the previously saved loadout for this operative.";
+
+
+                        helmetToggleButton.PointerClicked += () => ToggleButtonClicked(helmetToggleButton);
+                        unequipAllPhoenixGeneralButton.PointerClicked += () => UnequipButtonClicked();
+                        saveLoadout.PointerClicked += () => SaveLoadoutButtonClicked();
+                        loadLoadout.PointerClicked += () => LoadLoadoutButtonClicked();
+
+                        helmetToggleButton.transform.GetChildren().First().GetChildren().Where(t => t.name.Equals("UI_Icon")).FirstOrDefault().GetComponent<Image>().sprite = Helper.CreateSpriteFromImageFile("TFTV_helmet_off_icon.png");
+                        unequipAllPhoenixGeneralButton.transform.GetChildren().First().GetChildren().Where(t => t.name.Equals("UI_Icon")).FirstOrDefault().GetComponent<Image>().sprite = Helper.CreateSpriteFromImageFile("lockers.png");
+                        saveLoadout.transform.GetChildren().First().GetChildren().Where(t => t.name.Equals("UI_Icon")).FirstOrDefault().GetComponent<Image>().sprite = Helper.CreateSpriteFromImageFile("loadout_load.png");
+                        loadLoadout.transform.GetChildren().First().GetChildren().Where(t => t.name.Equals("UI_Icon")).FirstOrDefault().GetComponent<Image>().sprite = Helper.CreateSpriteFromImageFile("loadout_save.png");
+
+                        HelmetToggle = helmetToggleButton;
+                        UnequipAll = unequipAllPhoenixGeneralButton;
+                        SaveLoadout = saveLoadout;
+                        LoadLoadout = loadLoadout;
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+
+
+
 
             private static void LoadLoadoutButtonClicked()
             {
@@ -1140,11 +1143,11 @@ namespace TFTV
                     // Perform any actions based on the toggle state
                     if (toggleState)
                     {
-                        /*  if (uIModuleSoldierCustomization != null)
-                          {
-                              uIModuleSoldierCustomization.HideHelmetToggle.isOn = true;
+                        //  if (uIModuleSoldierCustomization != null)
+                        //  {
+                        //      uIModuleSoldierCustomization.HideHelmetToggle.isOn = true;
 
-                          }*/
+                        //  }
                         helmetToggleButton.transform.GetChildren().First().GetChildren().Where(t => t.name.Equals("UI_Icon")).FirstOrDefault().GetComponent<Image>().sprite = Helper.CreateSpriteFromImageFile("TFTV_helmet_on_icon.png");
                         HelmetsOff = true;
                         // TFTVLogger.Always($"{uIModuleSoldierCustomization.HideHelmetToggle.isOn}");
@@ -1153,10 +1156,11 @@ namespace TFTV
                     else
                     {
 
-                        /*  if (uIModuleSoldierCustomization != null)
-                          {
-                              uIModuleSoldierCustomization.HideHelmetToggle.isOn = false;
-                          }*/
+      //                    if (uIModuleSoldierCustomization != null)
+        //                  {
+          //                    uIModuleSoldierCustomization.HideHelmetToggle.isOn = false;
+            //              }
+
                         helmetToggleButton.transform.GetChildren().First().GetChildren().Where(t => t.name.Equals("UI_Icon")).FirstOrDefault().GetComponent<Image>().sprite = Helper.CreateSpriteFromImageFile("TFTV_helmet_off_icon.png");
                         HelmetsOff = false;
 
@@ -1672,7 +1676,7 @@ namespace TFTV
                     GeoCharacter geoCharacter = GameUtl.CurrentLevel().GetComponent<GeoLevelController>().View.GeoscapeModules.ActorCycleModule.CurrentCharacter;//
 
                     HelmetsOff = false;
-                    //  TFTVLogger.Always("Trying to set helmets off if character has mutated head");
+                   //  TFTVLogger.Always("Trying to set helmets off if character has mutated head");
                     if (geoCharacter != null && (geoCharacter.TemplateDef.IsHuman || geoCharacter.TemplateDef.IsMutoid))
                     {
                         //     TFTVLogger.Always("character is " + hookToCharacter.DisplayName + " and is human or mutoid");
@@ -1777,9 +1781,9 @@ namespace TFTV
 
                             ____classWorldDisplay.SetDisplay(character.GetClassViewElementDefs(), (float)character.CharacterStats.Corruption > 0f);
 
-                            if (HelmetsOff)
+                            if (HelmetsOff && __instance.CurrentState != UIModuleActorCycle.ActorCycleState.SubmenuSection)
                             {
-
+                              
                                 // if (uIModuleSoldierCustomization == null && HelmetsOff || uIModuleSoldierCustomization.HideHelmetToggle.isOn)
                                 // {
                                 __instance.DisplaySoldier(unitDisplayData, resetAnimation, addWeapon, showHelmet = false);

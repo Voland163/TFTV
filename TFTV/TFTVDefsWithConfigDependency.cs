@@ -285,6 +285,7 @@ namespace TFTV
                     ModifyLocalizationKeys();
                     RemoveMutagenHarvestingResearch();
                     ChangeResourceRewardsForAutopsies();
+                    MoveFoodProductionFacilityToFoodHarvestingTechnology();
                     ChangesToFoodAndMutagenGenerationImplemented = true;
                     TFTVLogger.Always($"ChangesToFoodAndMutagenGenerationImplemented");
                 }
@@ -294,6 +295,35 @@ namespace TFTV
                 TFTVLogger.Error(e);
             }
         }
+
+
+        private static void MoveFoodProductionFacilityToFoodHarvestingTechnology()
+        {
+            try
+            {
+                ResearchDef fungusResearchDef = DefCache.GetDef<ResearchDef>("ANU_AnuFungusFood_ResearchDef");
+
+                FacilityResearchRewardDef foodProductionFacilityResearch = DefCache.GetDef<FacilityResearchRewardDef>("ANU_AnuFungusFood_ResearchDef_FacilityResearchRewardDef_0");
+
+                UnlockFunctionalityResearchRewardDef foodHarvestingFunctionalityUnlock = DefCache.GetDef<UnlockFunctionalityResearchRewardDef>("PX_FoodHavresting_ResearchDef_UnlockFunctionalityResearchRewardDef_0");
+
+                ResearchDef foodHarvetingResearchDef = DefCache.GetDef<ResearchDef>("PX_FoodHavresting_ResearchDef");
+                List<ResearchRewardDef> researchRewardFoodHarvesting = new List<ResearchRewardDef>() { foodProductionFacilityResearch, foodHarvestingFunctionalityUnlock };
+
+                foodHarvetingResearchDef.Unlocks = researchRewardFoodHarvesting.ToArray();
+                fungusResearchDef.Unlocks = new ResearchRewardDef[] { fungusResearchDef.Unlocks[1] };
+
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+
+
+        }
+
 
         private static void RemoveMutagenHarvestingResearch()
         {

@@ -5,11 +5,15 @@ using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Geoscape.Entities;
+using PhoenixPoint.Geoscape.Entities.Research;
+using PhoenixPoint.Geoscape.Events;
 using PhoenixPoint.Geoscape.Levels;
+using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.Weapons;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 
 namespace TFTV
 {
@@ -196,6 +200,69 @@ namespace TFTV
             }
             throw new InvalidOperationException();
         }
+
+        public static void ForceMarketPlaceUpdate() 
+        {
+
+            try
+            {
+                GeoLevelController controller = GameUtl.CurrentLevel()?.GetComponent<GeoLevelController>();
+
+                GeoMarketplace geoMarketplace = controller.Marketplace;
+                MethodInfo updateOptionsMethod = typeof(GeoMarketplace).GetMethod("UpdateOptions", BindingFlags.NonPublic | BindingFlags.Instance);
+               
+                updateOptionsMethod.Invoke(geoMarketplace, null);
+                TFTVLogger.Always($"Forced Marketplace options update");
+
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+
+
+
+
+
+
+        }
+
+
+        [HarmonyPatch(typeof(GeoMarketplace), "GenerateResearchChoice")]
+        public static class GeoMarketplace_GenerateResearchChoice_MarketPlace_patch
+        {
+           
+            public static void Prefix(GeoMarketplace __instance, ResearchDef researchDef, ref float price)
+            {
+                try
+                {
+                    GeoLevelController controller = GameUtl.CurrentLevel()?.GetComponent<GeoLevelController>();
+                  //  TFTVLogger.Always($"{researchDef.name} at {price}; new price should be {price*0.5f}");
+                    if (controller != null) 
+                    {
+
+                        if (TFTVVoidOmens.CheckFordVoidOmensInPlay(controller).Contains(19)) 
+                        {
+
+                            price *= 0.5f; 
+                        
+                        }
+                   
+                    }
+
+                   
+                   
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+        }
+
 
         [HarmonyPatch(typeof(GeoMarketplace), "UpdateOptions", new Type[] { })]
         public static class GeoMarketplace_UpdateOptions_MarketPlace_patch

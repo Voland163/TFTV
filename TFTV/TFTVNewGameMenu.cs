@@ -26,11 +26,7 @@ namespace TFTV
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
         private static readonly TFTVConfig config = TFTVMain.Main.Config;
         private static readonly SharedData Shared = TFTVMain.Shared;
-        //You will need to edit scene hierarchy to add new objects under GameSettingsModule, it has a UIModuleGameSettings script
-        //Class UIStateNewGeoscapeGameSettings is responsible for accepting selected settings and start the game, so you'll have to dig inside
-        //for changing behaviour.
-
-
+       
         private static bool NewGameOptionsSetUp = false;
 
         private static int SelectedDifficulty = 0;
@@ -142,10 +138,10 @@ namespace TFTV
                     limitedCapture = 0;
                     limitedHarvesting = 0;
                 }
-
+                UIModuleGameSettings gameSettings = GameUtl.CurrentLevel().GetComponent<HomeScreenView>().HomeScreenModules.GameSettings;
 
                 MethodInfo diploPenaltiesChangedCallback = typeof(UIStateNewGeoscapeGameSettings_InitFullContent_patch).GetMethod("OnDiploPenaltiesValueChangedCallback", BindingFlags.NonPublic | BindingFlags.Static);
-
+                
                 diploPenaltiesChangedCallback.Invoke(gameSettings, new object[] { diploPenalty });
 
                 MethodInfo staminaDrainValueChangedCallback = typeof(UIStateNewGeoscapeGameSettings_InitFullContent_patch).GetMethod("OnStaminaDrainValueChangedCallback", BindingFlags.NonPublic | BindingFlags.Static);
@@ -179,7 +175,6 @@ namespace TFTV
         }
 
 
-
         //This is for new game start screen. Commented out for the moment.
         [HarmonyPatch(typeof(GameOptionViewController), "OnClicked")]
         public static class OptionListViewController_Element_PointerExit_Patch
@@ -193,8 +188,8 @@ namespace TFTV
 
                     if (__instance.name.Contains("TFTVDifficulty_RadioButton"))
                     {
-                        HomeScreenViewContext context = HomeScreenViewContextHook;
-                        UIModuleGameSettings gameSettings = context.View.HomeScreenModules.GameSettings;
+                  
+                        UIModuleGameSettings gameSettings = GameUtl.CurrentLevel().GetComponent<HomeScreenView>().HomeScreenModules.GameSettings;
 
                         SelectedDifficulty = int.Parse(__instance.name.Last().ToString()) + 1;
                         TFTVLogger.Always($"Element is: {__instance.name} and the selected difficulty is now {SelectedDifficulty}");
@@ -230,54 +225,6 @@ namespace TFTV
                 }
             }
         }
-
-        public static HomeScreenViewContext HomeScreenViewContextHook = null;
-        public static ModSettingController ModSettingControllerHook = null;
-
-        [HarmonyPatch(typeof(HomeScreenView), "InitView")]
-        public static class HomeScreenView_InitView_Patch
-        {
-            private static void Postfix(HomeScreenView __instance, HomeScreenViewContext ____context)
-            {
-                try
-                {
-                    HomeScreenViewContextHook = ____context;
-                    ModSettingControllerHook = __instance.HomeScreenModules.ModManagerModule.SettingsModSettingPrefab;
-
-
-
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                    throw;
-                }
-            }
-        }
-
-        public static UIModuleGameSettings gameSettings = null;
-
-        [HarmonyPatch(typeof(UIModuleGameSettings), "Awake")]
-        public static class UIModuleGameSettings_Awake_Patch
-        {
-            private static void Postfix(UIModuleGameSettings __instance)
-            {
-                try
-                {
-
-                    gameSettings = __instance;
-
-
-                    //TFTVLogger.Always("Awake run");
-
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-            }
-        }
-
 
         [HarmonyPatch(typeof(UIModuleGameSettings), "InitFullContent")]
         internal static class UIStateNewGeoscapeGameSettings_InitFullContent_patch
@@ -484,13 +431,13 @@ namespace TFTV
                      "Asia (China)",
                      "Australia",
                      "Central America (Honduras)",
-                     "Central America (Mexico)",
                      "East Africa (Ethiopia)",
                      "Eastern Europe (Ukraine)",
                      "Greenland",
                      "Middle East (Afghanistan)",
                      "North Africa (Algeria)",
                      "North America (Alaska)",
+                     "North America (Mexico)",
                      "North America (Quebec)",
                      "Northern Asia (Siberia)",
                      "South Africa (Zimbabwe)",
@@ -812,12 +759,15 @@ namespace TFTV
                     modSettingController.transform.localScale *= 0.75f;
                     arrowPickerController.transform.position += new Vector3(270 * resolutionFactorWidth, 0, 0);
 
+                 //   TFTVLogger.Always($"{resolutionFactorWidth} {lengthScale}");
+
                     if (lengthScale != 1)
                     {
 
                         arrowPickerController.transform.position += new Vector3(150 * resolutionFactorWidth * lengthScale, 0, 0);
 
                     }
+                  //  TFTVLogger.Always($"{resolutionFactorWidth} {lengthScale} {arrowPickerController.transform.position}");
 
                     modSettingController.Label.rectTransform.Translate(new Vector3(-270 * resolutionFactorWidth, 0, 0), arrowPickerController.transform);
                     modSettingController.Label.alignment = TextAnchor.MiddleLeft;
@@ -833,9 +783,9 @@ namespace TFTV
                     arrowPickerController.CurrentItemText.text = options[currentValue];
                   //  if (lengthScale != 1)
                   //  {
-                        arrowPickerController.GetComponent<RectTransform>().sizeDelta = new Vector2(arrowPickerController.GetComponent<RectTransform>().sizeDelta.x * lengthScale * resolutionFactorWidth, arrowPickerController.GetComponent<RectTransform>().sizeDelta.y);
-                  //  }
-
+                        arrowPickerController.GetComponent<RectTransform>().sizeDelta = new Vector2(arrowPickerController.GetComponent<RectTransform>().sizeDelta.x * lengthScale, arrowPickerController.GetComponent<RectTransform>().sizeDelta.y);
+                    //  }
+                   // TFTVLogger.Always($"{arrowPickerController.GetComponent<RectTransform>().sizeDelta}");
                     PopulateOptions(arrowPickerController, options);
                     //TFTVLogger.Always($"instantiating {title}, got to the end");
                 }
@@ -891,7 +841,7 @@ namespace TFTV
             {
                 try
                 {
-
+                    ModSettingController ModSettingControllerHook = GameUtl.CurrentLevel().GetComponent<HomeScreenView>().HomeScreenModules.ModManagerModule.SettingsModSettingPrefab;
                     RectTransform rectTransform = __instance.GameAddiotionalContentGroup.GetComponentInChildren<RectTransform>();
 
                     rectTransform.DestroyChildren();
@@ -1025,38 +975,7 @@ namespace TFTV
                     UpdateOptionsOnSelectingDifficutly();
 
                     NewGameOptionsSetUp = true;
-                  //  TFTVLogger.Always($"finished running big method");
-                    /*    _startingFaction.gameObject.SetActive(false);
-                        _startingFactionModSettings.gameObject.SetActive(false);
-                        _startingBase.gameObject.SetActive(false);
-                        _startingBaseModSettings.gameObject.SetActive(false);
-                        _startingSquad.gameObject.SetActive(false);
-                        _startingSquadModSettings.gameObject.SetActive(false);*/
-                    /*   _startingScavSites.gameObject.SetActive(false);
-                       _startingScavSitesModSettings.gameObject.SetActive(false);
-                       _resCratePriority.gameObject.SetActive(false);
-                       _resCratePriorityModSettings.gameObject.SetActive(false);
-                       _recruitsPriority.gameObject.SetActive(false);
-                       _recruitsPriorityModSettings.gameObject.SetActive(false);
-                       _vehiclePriority.gameObject.SetActive(false);
-                       _vehiclePriorityModSettings.gameObject.SetActive(false);*/
-
-
-                    /*       _limitedCapture.gameObject.SetActive(false);
-                           _limitedCaptureModSettings.gameObject.SetActive(false);
-                           _limitedHarvesting.gameObject.SetActive(false);
-                           _limitedHarvestingModSettings.gameObject.SetActive(false);
-                           _tacticalDifficulty.gameObject.SetActive(false);
-                           _tacticalDifficultyModSettings.gameObject.SetActive(false);*/
-
-
-                    /*   _trading.gameObject.SetActive(false);
-                       _tradingModSettings.gameObject.SetActive(false);
-                       _limitedRaiding.gameObject.SetActive(false);
-                       _limitedRaidingModSettings.gameObject.SetActive(false);
-                       _noDropReinforcements.gameObject.SetActive(false);
-                       _noDropReinforcementsModSettings.gameObject.SetActive(false);*/
-
+             
                 }
                 catch (Exception e)
                 {
@@ -1082,29 +1001,6 @@ namespace TFTV
                     throw;
                 }
             }
-
-
-            /*   private static ArrowPickerController _diploPenalties = null;
-
-
-               private static ArrowPickerController _staminaDrain = null;
-
-
-               private static ArrowPickerController _harderAmbush = null;
-
-
-               private static ArrowPickerController _staminaRecuperation = null;
-
-
-               private static ArrowPickerController _reverseEngineering = null;
-
-
-               private static ArrowPickerController _havenSOS = null;
-
-
-               private static ArrowPickerController _learnFirstSkill = null;*/
-
-
 
 
             private static void OnExoticResourcesValueChangedCallback(int newValue)
@@ -1133,7 +1029,6 @@ namespace TFTV
                 }
             }
 
-
             private static void OnDisableTacSavesValueChangedCallback(int newValue)
             {
                 try
@@ -1158,7 +1053,6 @@ namespace TFTV
                 }
             }
 
-
             private static void OnDiploPenaltiesValueChangedCallback(int newValue)
             {
                 try
@@ -1173,7 +1067,6 @@ namespace TFTV
                     TFTVLogger.Error(e);
                 }
             }
-
 
             private static void OnStaminaDrainValueChangedCallback(int newValue)
             {
@@ -1205,9 +1098,6 @@ namespace TFTV
                 }
             }
 
-
-
-
             private static void OnStaminaRecuperationValueChangedCallback(int newValue)
             {
                 try
@@ -1222,24 +1112,6 @@ namespace TFTV
                     TFTVLogger.Error(e);
                 }
             }
-
-
-
-            /*    private static void OnReverseEngineeringValueChangedCallback(int newValue)
-                {
-                    try
-                    {
-                        bool option = newValue == 0;
-                        string[] options = { "YES", "NO" };
-                        _reverseEngineering.CurrentItemText.text = options[newValue];
-                        config.ActivateReverseEngineeringResearch = option;
-                    }
-                    catch (Exception e)
-                    {
-                        TFTVLogger.Error(e);
-                    }
-                }*/
-
 
             private static void OnHavenSOSValueChangedCallback(int newValue)
             {
@@ -1256,8 +1128,6 @@ namespace TFTV
                 }
             }
 
-
-
             private static void OnLearnFirstSchoolValueChangedCallback(int newValue)
             {
                 try
@@ -1272,8 +1142,6 @@ namespace TFTV
                     TFTVLogger.Error(e);
                 }
             }
-
-
 
             private static void OnStrongerPandoransValueChangedCallback(int newValue)
             {
@@ -1298,8 +1166,6 @@ namespace TFTV
                 }
             }
 
-
-
             private static void OnImpossibleWeaponsValueChangedCallback(int newValue)
             {
                 try
@@ -1314,8 +1180,6 @@ namespace TFTV
                     TFTVLogger.Error(e);
                 }
             }
-
-
 
             private static void OnSkipMoviesValueChangedCallback(int newValue)
             {
@@ -1346,7 +1210,6 @@ namespace TFTV
                     TFTVLogger.Error(e);
                 }
             }
-
 
             private static void OnMoreMistValueChangedCallback(int newValue)
             {
@@ -1410,7 +1273,6 @@ namespace TFTV
                 }
             }
 
-
             private static void OnTacticalDifficultyValueChangedCallback(int newValue)
             {
                 try
@@ -1418,6 +1280,7 @@ namespace TFTV
 
                     _tacticalDifficulty.CurrentItemText.text = _optionsTacticalDifficulty[newValue];
                     config.difficultyOnTactical = (TFTVConfig.DifficultyOnTactical)newValue;
+                    //TFTVLogger.Always($"new difficulty on tactical showing in config: {config.difficultyOnTactical}");
                 }
                 catch (Exception e)
                 {
@@ -1426,7 +1289,6 @@ namespace TFTV
 
 
             }
-
 
             private static void OnStartingFactionValueChangedCallback(int newValue)
             {
@@ -1572,7 +1434,6 @@ namespace TFTV
                 }
             }
 
-
             private static void PopulateOptions(ArrowPickerController arrowPickerController, string[] options)
             {
                 try
@@ -1595,12 +1456,6 @@ namespace TFTV
             }
         }
 
-
-
-
-
-
-
         public static bool EnterStateRun = false;
 
         [HarmonyPatch(typeof(UIStateNewGeoscapeGameSettings), "EnterState")]
@@ -1611,12 +1466,16 @@ namespace TFTV
                 try
                 {
                     GameDifficultyLevelDef[] difficultyLevels = GameUtl.GameComponent<SharedData>().DifficultyLevels;
-
+                    HomeScreenView homescreenview = GameUtl.CurrentLevel().GetComponent<HomeScreenView>();
+                    UIModuleGameSettings gameSettings = homescreenview.HomeScreenModules.GameSettings;
                     if (!EnterStateRun)
                     {
-                        HomeScreenViewContext context = HomeScreenViewContextHook;
+                        
 
-                        UIModuleGameSettings gameSettings = context.View.HomeScreenModules.GameSettings;
+                   
+                         //  HomeScreenViewContext context = HomeScreenViewContextHook;
+
+                        //context.View.HomeScreenModules.GameSettings;
 
                         Transform container = gameSettings.MainOptions.Container;
 
@@ -1647,9 +1506,9 @@ namespace TFTV
                     int defaultVal = Math.Min(2, difficultyLevels.Length) - 1;
                     defaultVal = optionsComponent.Options.Get(optionsManagerDef.NewGameDifficultyOption, defaultVal);
 
-                 //   TFTVLogger.Always($"default value is {defaultVal}");
+                    //   TFTVLogger.Always($"default value is {defaultVal}");
 
-
+                    
                     GameOptionViewController[] componentsInChildren = gameSettings.MainOptions.Container.GetComponentsInChildren<GameOptionViewController>();
 
                     foreach (GameOptionViewController component in componentsInChildren)
@@ -1678,9 +1537,6 @@ namespace TFTV
                 }
             }
         }
-
-
-        //  public static bool BindSecondaryOptionRun = false;
 
         [HarmonyPatch(typeof(UIStateNewGeoscapeGameSettings), "BindSecondaryOptions")]
         internal static class UIStateNewGeoscapeGameSettings_BindSecondaryOptions_patch
@@ -1779,7 +1635,6 @@ namespace TFTV
             }
         }
 
-
         [HarmonyPatch(typeof(UIStateNewGeoscapeGameSettings), "GameSettings_OnConfirm")]
         public static class UIStateNewGeoscapeGameSettings_GameSettings_OnConfirm_patch
         {
@@ -1788,7 +1643,7 @@ namespace TFTV
                 try
                 {
 
-                    TFTVLogger.Always($"selected option: {gameSettings?.MainOptions?.Selected?.First()?.OptionIndex}");
+                    TFTVLogger.Always($"selected option: {GameUtl.CurrentLevel().GetComponent<HomeScreenView>().HomeScreenModules.GameSettings?.MainOptions?.Selected?.First()?.OptionIndex}");
                     EnterStateRun = false;
 
 

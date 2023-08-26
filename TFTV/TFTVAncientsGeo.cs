@@ -718,7 +718,7 @@ namespace TFTV
 
                     GeoscapeEventContext context = new GeoscapeEventContext(controller.AlienFaction, controller.PhoenixFaction);
                     controller.EventSystem.TriggerGeoscapeEvent("Helena_Beast", context);
-
+                     
                 }
                 catch (Exception e)
                 {

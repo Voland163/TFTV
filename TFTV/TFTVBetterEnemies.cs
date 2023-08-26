@@ -439,7 +439,7 @@ namespace TFTV
                 headSpitter.DamagePayload.DamageKeywords.Add(new DamageKeywordPair { DamageKeywordDef = acid, Value = 30 });
                 //    WeaponDef headSonic = DefCache.GetDef<WeaponDef>("Queen_Head_Sonic_WeaponDef");
 
-                BEGiveDRToAllScylla();
+               
 
             }
             catch (Exception e)
@@ -448,79 +448,7 @@ namespace TFTV
             }
         }
 
-        internal static void BEGiveDRToAllScylla()
-        {
-            try
-            {
-                try
-                {
-
-                    StandardDamageTypeEffectDef fireDamage = DefCache.GetDef<StandardDamageTypeEffectDef>("Fire_StandardDamageTypeEffectDef");
-                    StandardDamageTypeEffectDef standardDamageTypeEffectDef = DefCache.GetDef<StandardDamageTypeEffectDef>("Projectile_StandardDamageTypeEffectDef");
-                    AcidDamageTypeEffectDef acidDamage = DefCache.GetDef<AcidDamageTypeEffectDef>("Acid_DamageOverTimeDamageTypeEffectDef");
-
-                    string statusName = "ScyllaDamageResistance";
-                    string gUID = "{CE61D05C-5A75-4354-BEC8-73EC0357F971}";
-                    string gUIDVisuals = "{6272B177-49AA-4F81-9C05-9CB9026A26C5}";
-
-                    DamageMultiplierStatusDef source = DefCache.GetDef<DamageMultiplierStatusDef>("BionicResistances_StatusDef");
-
-                 //   TFTVLogger.Always($"{source.DamageTypeDefs.Count()}");
-
-                    DamageMultiplierStatusDef newStatus = Helper.CreateDefFromClone(
-                        source,
-                        gUID,
-                        statusName);
-                    newStatus.EffectName = statusName;
-                    newStatus.VisibleOnHealthbar = TacStatusDef.HealthBarVisibility.Hidden;
-                    newStatus.VisibleOnPassiveBar = true;
-                    newStatus.VisibleOnStatusScreen = TacStatusDef.StatusScreenVisibility.VisibleOnStatusesList;
-                    newStatus.ApplicationConditions = new EffectConditionDef[] { };
-
-                    newStatus.Visuals = Helper.CreateDefFromClone(
-                        source.Visuals,
-                        gUIDVisuals,
-                        statusName + "Visuals");
-                    newStatus.Multiplier = 0.75f;
-                    newStatus.MultiplierType = DamageMultiplierType.Incoming;
-                    newStatus.Range = -1;
-                    newStatus.DamageTypeDefs = source.DamageTypeDefs;
-
-                 //   TFTVLogger.Always($"{newStatus.DamageTypeDefs.Count()}");
-
-                    List<DamageTypeBaseEffectDef> damageTypeBaseEffectDefs = new List<DamageTypeBaseEffectDef>();
-                    damageTypeBaseEffectDefs.AddRange(newStatus.DamageTypeDefs);
-                    damageTypeBaseEffectDefs.Add(fireDamage);
-                    damageTypeBaseEffectDefs.Add(standardDamageTypeEffectDef);
-                    damageTypeBaseEffectDefs.Add(acidDamage);
-
-               //     TFTVLogger.Always($"damageTypeBaseEffectDefs {damageTypeBaseEffectDefs.Count()}");
-
-                    newStatus.DamageTypeDefs = damageTypeBaseEffectDefs.ToArray();
-
-                  //  TFTVLogger.Always($"{newStatus.DamageTypeDefs.Count()}");
-
-                    newStatus.Visuals.LargeIcon = Helper.CreateSpriteFromImageFile("UI_AbilitiesIcon_HunkerDown_2-2.png");
-                    newStatus.Visuals.SmallIcon = Helper.CreateSpriteFromImageFile("UI_AbilitiesIcon_HunkerDown_2-2.png");
-
-
-                    newStatus.Visuals.DisplayName1.LocalizationKey = "SCYLLA_DAMAGERESISTANCE_NAME";
-                    newStatus.Visuals.Description.LocalizationKey = "SCYLLA_DAMAGERESISTANCE_DESCRIPTION";
-
-
-
-                }
-
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-        }
+       
 
         public static void BEBuff_StartingEvolution()
         {

@@ -138,14 +138,13 @@ namespace TFTV
             }
         }
 
-
         public static void CheckCaptureCapability(GeoMission geoMission)
         {
             try
             {
                 TFTVConfig config = TFTVMain.Main.Config;
 
-                if (TFTVNewGameOptions.LimitedCaptureSetting)
+                if (TFTVNewGameOptions.LimitedCaptureSetting && !geoMission.MissionDef.FinalMission)
                 {
 
                     if (geoMission.Site.GeoLevel.PhoenixFaction.Research.HasCompleted("PX_CaptureTech_ResearchDef"))

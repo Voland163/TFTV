@@ -2,19 +2,17 @@
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Geoscape.Levels;
+using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.Effects.DamageTypes;
 using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.Entities.Statuses;
 using PhoenixPoint.Tactical.Entities.Weapons;
-using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Levels.Mist;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 
 namespace TFTV
@@ -75,7 +73,7 @@ namespace TFTV
                     if (scoreFireDamage > 1)
                     {
                         UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
-                        int roll = UnityEngine.Random.Range(0, 6) + TFTVReleaseOnly.DifficultyOrderConverter(controller.CurrentDifficultyLevel.Order)   + scoreFireDamage;
+                        int roll = UnityEngine.Random.Range(0, 6) + TFTVReleaseOnly.DifficultyOrderConverter(controller.CurrentDifficultyLevel.Order) + scoreFireDamage;
 
                         //    TFTVLogger.Always("The roll is " + roll);
 
@@ -193,57 +191,56 @@ namespace TFTV
             }
         }
 
-
-
-        [HarmonyPatch(typeof(TacticalActor), "OnAbilityExecuteFinished")]
-
-        public static class TacticalActor_OnAbilityExecuteFinished_Experiment_patch
+        public static void ActivateFireQuencherAbility()
         {
-            public static void Postfix()
+            try
             {
-                try
+                if (VoxelsOnFire != null)
                 {
-                    if (VoxelsOnFire != null)
+
+                    if (VoxelsOnFire.Count > 0)
                     {
-
-                        if (VoxelsOnFire.Count > 0)
+                        //  TFTVLogger.Always("Voxels on fire count is " + TFTVExperimental.VoxelsOnFire.Count);
+                        // List<TacticalVoxel> voxelsForMist = new List<TacticalVoxel>();
+                        foreach (TacticalVoxel voxel in VoxelsOnFire)
                         {
-                            //  TFTVLogger.Always("Voxels on fire count is " + TFTVExperimental.VoxelsOnFire.Count);
-                            // List<TacticalVoxel> voxelsForMist = new List<TacticalVoxel>();
-                            foreach (TacticalVoxel voxel in VoxelsOnFire)
+                            if (voxel != null && voxel.GetVoxelType() == TacticalVoxelType.Fire)
                             {
-                                if (voxel != null && voxel.GetVoxelType() == TacticalVoxelType.Fire)
-                                {
-                                    //    TFTVLogger.Always("Got past the if check");
+                                //    TFTVLogger.Always("Got past the if check");
 
-                                    voxel.SetVoxelType(TacticalVoxelType.Empty, 1);
-                                }
+                                voxel.SetVoxelType(TacticalVoxelType.Empty, 1);
                             }
                         }
-
-                        if (VoxelsOnFire.Count > 0)
-                        {
-                            foreach (TacticalVoxel voxel in VoxelsOnFire)
-                            {
-                                if (voxel != null && voxel.GetVoxelType() == TacticalVoxelType.Empty)
-                                {
-                                    //TFTVLogger.Always("Got past the if check for Mist");
-                                    voxel.SetVoxelType(TacticalVoxelType.Mist, 2, 10);
-                                }
-                            }
-                        }
-
-                        VoxelsOnFire.Clear();
                     }
-                }
 
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
+                    if (VoxelsOnFire.Count > 0)
+                    {
+                        foreach (TacticalVoxel voxel in VoxelsOnFire)
+                        {
+                            if (voxel != null && voxel.GetVoxelType() == TacticalVoxelType.Empty)
+                            {
+                                //TFTVLogger.Always("Got past the if check for Mist");
+                                voxel.SetVoxelType(TacticalVoxelType.Mist, 2, 10);
+                            }
+                        }
+                    }
 
+                    VoxelsOnFire.Clear();
+                }
             }
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
         }
 
+
+
     }
+
+
+
+
 }

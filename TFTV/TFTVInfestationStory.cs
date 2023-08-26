@@ -27,46 +27,6 @@ namespace TFTV
         public static string OriginalOwner = "";
       
 
-        [HarmonyPatch(typeof(TacticalLevelController), "ActorDied")]
-        public static class TacticalLevelController_ActorDied_InfestationOutro_Patch
-        {
-            public static void Prefix(DeathReport deathReport, TacticalLevelController __instance)
-            {
-                try
-                {
-                    if (deathReport.Actor.HasGameTag(nodeTag))
-                    {
-                        CreateOutroInfestation(__instance);   
-                                       
-                    }
-
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-            }
-
-            public static void Postfix(DeathReport deathReport)
-            {
-                try
-                {
-                    if (deathReport.Actor.HasGameTag(nodeTag))
-                    {
-                       // CreateOutroInfestation(__instance);
-                       
-                    }
-
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-            }
-        }
-
-
-
         [HarmonyPatch(typeof(GeoMission), "Launch")]
         public static class GeoMission_Launch_InfestationStory_Patch
         {
@@ -162,28 +122,30 @@ namespace TFTV
 
         }
 
-        public static void CreateOutroInfestation(TacticalLevelController level)
+        public static void CreateOutroInfestation(TacticalLevelController controller, DeathReport deathReport)
         {
             try
             {
-                if (GetTacticalActorsPhoenix(level).Count >= 1)
+                if (deathReport.Actor.HasGameTag(nodeTag))
                 {
-                    string nameOfOperative = GetTacticalActorsPhoenix(level)[0].DisplayName;
-                    string title = "Awakening";
-                    string text = " <i>”There were a few survivors here and there. The couple of soldiers who were lucky to get mindfragged during the initial attack; " +
-                        "but also civilians, who were not fully taken by the creature. They came out of it, as if waking up from a nightmare. " +
-                        "It was then that I understood what Alistair meant when he joked that we were waging a war for our place in the new food chain: " +
-                        "the Pandorans didn’t want to exterminate us. That would have been too merciful. They wanted us for something else.”</i>\n\n" + nameOfOperative
-                        + ", Phoenix Project";
 
-                    ContextHelpHintDef infestationOutro = DefCache.GetDef<ContextHelpHintDef>("InfestationMissionEnd");
-                    infestationOutro.Trigger = HintTrigger.MissionOver;
+                    if (GetTacticalActorsPhoenix(controller).Count >= 1)
+                    {
+                        string nameOfOperative = GetTacticalActorsPhoenix(controller)[0].DisplayName;
+                        string title = "Awakening";
+                        string text = " <i>”There were a few survivors here and there. The couple of soldiers who were lucky to get mindfragged during the initial attack; " +
+                            "but also civilians, who were not fully taken by the creature. They came out of it, as if waking up from a nightmare. " +
+                            "It was then that I understood what Alistair meant when he joked that we were waging a war for our place in the new food chain: " +
+                            "the Pandorans didn’t want to exterminate us. That would have been too merciful. They wanted us for something else.”</i>\n\n" + nameOfOperative
+                            + ", Phoenix Project";
 
-                    infestationOutro.Text = new Base.UI.LocalizedTextBind(text, true);
-                    infestationOutro.Title = new Base.UI.LocalizedTextBind(title, true);
+                        ContextHelpHintDef infestationOutro = DefCache.GetDef<ContextHelpHintDef>("InfestationMissionEnd");
+                        infestationOutro.Trigger = HintTrigger.MissionOver;
 
+                        infestationOutro.Text = new Base.UI.LocalizedTextBind(text, true);
+                        infestationOutro.Title = new Base.UI.LocalizedTextBind(title, true);
 
-
+                    }
                 }
             }
             catch (Exception e)

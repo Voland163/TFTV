@@ -2,6 +2,7 @@ using Base.Core;
 using Base.UI.MessageBox;
 using HarmonyLib;
 using PhoenixPoint.Home.View.ViewControllers;
+using PhoenixPoint.Home.View.ViewModules;
 using PhoenixPoint.Modding;
 using System;
 
@@ -16,9 +17,36 @@ namespace TFTV
 
     public class TFTVConfig : ModConfig
     {
+     
+     /*   [HarmonyPatch(typeof(UIModuleModManager), "OnModEnabledChanged")]
+        public static class UIModuleModManager_OnModEnabledChanged_Patch
+        {
+            private static void Postfix(UIModuleModManager __instance, ModItemController controller, bool enabled)
+            {
+                try
+                {
+                    TFTVLogger.Always($"{controller.NameLabel.text} is enabled {enabled}");
+
+
+                    if (controller.NameLabel.text == "TFTV" && enabled) 
+                    {
+                        TFTVLogger.Always($"TFTV is enabled!");
+                        string warning = $"Terror from the Void is now enabled! PLEASE QUIT TO DESKTOP BEFORE STARTING OR LOADING A GAME";
+
+                        GameUtl.GetMessageBox().ShowSimplePrompt(warning, MessageBoxIcon.Warning, MessageBoxButtons.OK, null);
+                    } 
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }*/
 
 
 
+        
         [HarmonyPatch(typeof(ModSettingController), "ApplyModification")]
         public static class ModSettingController_ApplyModification_Patch
         {
@@ -168,7 +196,7 @@ description: "Enemy reinforcements do not drop items on death; disallows farming
      description: "Havens under attack will send an SOS, revealing their location to the player.")]
         public bool HavenSOS = true;
 
-     
+
 
         [ConfigField(text: "Learn the first personal skill",
            description: "If enabled, the first personal skill (level 1) is set right after a character is created (starting soldiers, new recruits on haven, rewards ect)")]
@@ -200,12 +228,12 @@ description: "Enemy reinforcements do not drop items on death; disallows farming
  description: "New mechanics make obtaining food or mutagens from captured Pandorans harder. IF YOU SET THIS TO FALSE, PLEASE QUIT TO DESKTOP BEFORE STARTING A NEW GAME/LOADING A SAVE")]
         public bool LimitedHarvesting = true;
 
-     
 
-      
-       
 
-     
+
+
+
+
 
         //BetterEnemies
         [ConfigField(text: "MAKE PANDORANS STRONGER",
@@ -213,9 +241,9 @@ description: "Enemy reinforcements do not drop items on death; disallows farming
         public bool StrongerPandorans = false;
 
 
-       
 
-       
+
+
 
         //New LOTA settings
         [ConfigField(text: "AMOUNT OF EXOTIC RESOURCES",
@@ -277,7 +305,7 @@ description: "Enemy reinforcements do not drop items on death; disallows farming
 
         // If set to true, the passenger module FAR-M will no longer regenerate Stamina in flight
         // For players who prefer having to come back to base more often
-        
+
 
         /* // If set to true reversing engineering an item allows to research the faction technology that allows manufacturing the item 
          [ConfigField(text: "Enhanced Reverse Engineering",
@@ -297,7 +325,7 @@ description: "Enemy reinforcements do not drop items on death; disallows farming
              public bool ActivateKERework = true;*/
 
         // If set to true, unrevealed havens will be revealed when attacked
-      
+
 
         // Infiltrator Crossbow Ammo changes
         [ConfigField(text: "Eros ammo",

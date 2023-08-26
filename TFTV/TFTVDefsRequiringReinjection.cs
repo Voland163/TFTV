@@ -886,28 +886,45 @@ namespace TFTV
 
         public static void Create_DerealizationIgnorePain()
         {
-            
-            string skillName = "DerealizationIgnorePain_AbilityDef";
-            ApplyStatusAbilityDef source = DefCache.GetDef<ApplyStatusAbilityDef>("IgnorePain_AbilityDef");
-            ApplyStatusAbilityDef derealizationIgnorePain = Helper.CreateDefFromClone(
-                source,
-                "eea26659-d54f-48d8-8025-cb7ca53c1749",
-                skillName);
-            derealizationIgnorePain.CharacterProgressionData = Helper.CreateDefFromClone(
-                source.CharacterProgressionData,
-                "d99c2d2f-0cff-412c-ad99-218b39158c88",
-                skillName);
-            derealizationIgnorePain.ViewElementDef = Helper.CreateDefFromClone(
-                source.ViewElementDef,
-                "3f8b13e1-70ff-4964-923d-1e2c73f66f4f",
-                skillName);
+            try
+            {
+                string statusName = "IgnoreDisabledLimbs_StatusDef";
 
-            derealizationIgnorePain.ViewElementDef.DisplayName1.LocalizationKey = "DELIRIUM_PERK_DEREALIZATION_NAME";
-            derealizationIgnorePain.ViewElementDef.Description.LocalizationKey = "DELIRIUM_PERK_DEREALIZATION_DESCRIPTION";
-            Sprite icon = Helper.CreateSpriteFromImageFile("TFTV_DeliriumPerks_Derealization.png");
-            derealizationIgnorePain.ViewElementDef.LargeIcon = icon;
-            derealizationIgnorePain.ViewElementDef.SmallIcon = icon;
+                FreezeAspectStatsStatusDef sourceStatus = DefCache.GetDef<FreezeAspectStatsStatusDef>("IgnorePain_StatusDef");
+                FreezeAspectStatsStatusDef newStatus = Helper.CreateDefFromClone(sourceStatus, "{B86D5C6C-C644-4B77-92DD-18E8C85D1F15}", statusName);
+
+
+                string skillName = "DerealizationIgnorePain_AbilityDef";
+                ApplyStatusAbilityDef source = DefCache.GetDef<ApplyStatusAbilityDef>("IgnorePain_AbilityDef");
+                ApplyStatusAbilityDef derealizationIgnorePain = Helper.CreateDefFromClone(
+                    source,
+                    "eea26659-d54f-48d8-8025-cb7ca53c1749",
+                    skillName);
+                derealizationIgnorePain.CharacterProgressionData = Helper.CreateDefFromClone(
+                    source.CharacterProgressionData,
+                    "d99c2d2f-0cff-412c-ad99-218b39158c88",
+                    skillName);
+                derealizationIgnorePain.ViewElementDef = Helper.CreateDefFromClone(
+                    source.ViewElementDef,
+                    "3f8b13e1-70ff-4964-923d-1e2c73f66f4f",
+                    skillName);
+
+                derealizationIgnorePain.StatusDef = newStatus;
+
+                derealizationIgnorePain.ViewElementDef.DisplayName1.LocalizationKey = "DELIRIUM_PERK_DEREALIZATION_NAME";
+                derealizationIgnorePain.ViewElementDef.Description.LocalizationKey = "DELIRIUM_PERK_DEREALIZATION_DESCRIPTION";
+                Sprite icon = Helper.CreateSpriteFromImageFile("TFTV_DeliriumPerks_Derealization.png");
+                derealizationIgnorePain.ViewElementDef.LargeIcon = icon;
+                derealizationIgnorePain.ViewElementDef.SmallIcon = icon;
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
         }
+
+       
+
         public static void CreateRevenantDefs()
         {
             try

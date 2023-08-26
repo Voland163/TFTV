@@ -2,6 +2,7 @@ using Base.Build;
 using Base.Core;
 using Base.Defs;
 using Base.Levels;
+using Base.UI.MessageBox;
 using HarmonyLib;
 using Newtonsoft.Json;
 using PhoenixPoint.Common.Core;
@@ -131,6 +132,15 @@ namespace TFTV
 
                 harmony.PatchAll();
 
+              /*  if(GetLevel()!=null && GetLevel().name.Contains("HomeScreenLevel")) 
+                {
+                    TFTVLogger.Always($"TFTV is enabled!");
+                    string warning = $"Terror from the Void is now enabled! PLEASE QUIT TO DESKTOP BEFORE STARTING OR LOADING A GAME";
+
+                    GameUtl.GetMessageBox().ShowSimplePrompt(warning, MessageBoxIcon.Warning, MessageBoxButtons.OK, null);
+
+
+                }*/
                 // if (!injectionComplete)
                 // {
 

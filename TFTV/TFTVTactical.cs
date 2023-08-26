@@ -54,7 +54,7 @@ namespace TFTV
         public bool ScyllaCaptureModule;
         public int AvailableContainment;
         public bool Update35TacticalCheck;
-
+       
     }
 
     /// <summary>
@@ -73,7 +73,8 @@ namespace TFTV
             /// Tactical level controller is accessible at any time.
             TacticalLevelController tacController = Controller;
             TFTVConfig config = TFTVMain.Main.Config;
-          
+
+         
             if (config.AnimateWhileShooting)
             {
                 TFTVLogger.Always($"Flinching should be on");
@@ -117,6 +118,10 @@ namespace TFTV
             TFTVBaseDefenseTactical.CheckConsoleSituation(Controller);
             //  TFTVBaseDefenseTactical.InteractionPointPlacement();
             //   TFTVBaseDefenseTactical.CheckIfConsoleActivated(Controller);
+            //Testing
+            TFTVNewGameOptions.ImpossibleWeaponsAdjustmentsSetting = true;
+            TFTVNewGameOptions.StrongerPandoransSetting = true;
+
             TFTVSpecialDifficulties.CheckForSpecialDifficulties();
           //  TFTVBetterEnemies.ImplementBetterEnemies();
             TFTVRevenant.CheckIfRevenantPresent(Controller);
@@ -134,7 +139,12 @@ namespace TFTV
             // TFTVBaseDefenseTactical.CheckingPortrait(Controller);
 
             //  TFTVBaseDefenseTactical.ModifyObjectives(Controller);
+            TFTVLogger.Always($"Mission: {Controller.TacMission.MissionData.MissionType.name}");
+            TFTVTacticalUtils.RevealAllSpawns(Controller);
+            
+           
 
+            TFTVPalaceMission.CheckPalaceMission();
         }
 
         /// <summary>
@@ -162,7 +172,9 @@ namespace TFTV
             {
 
                 TFTVLogger.Always("Tactical save is being processed");
-                TFTVCommonMethods.ClearInternalVariables();                
+
+                TFTVCommonMethods.ClearInternalVariables();
+                TFTVBetterEnemies.ImplementBetterEnemies();
                 TFTVTacInstanceData data = (TFTVTacInstanceData)instanceData;
                 TFTVStamina.charactersWithDisabledBodyParts = data.charactersWithBrokenLimbs;
                 TFTVVoidOmens.VoidOmensCheck = data.VoidOmensCheck;
@@ -200,8 +212,8 @@ namespace TFTV
 
                 TurnZeroMethodsExecuted = data.TurnZeroMethodsExecuted;
 
+  
 
-               
 
 
             }
@@ -278,14 +290,16 @@ namespace TFTV
                         TFTVHumanEnemies.CheckMissionType(Controller);
                     }
 
-                    if (turnNumber == 0 && TFTVAncients.CheckIfAncientsPresent(Controller))
-                    {
-                        TFTVAncients.AdjustAncientsOnDeployment(Controller);
-                    }
+                   
 
                     if (turnNumber == 0 && !TurnZeroMethodsExecuted)
                     {
                         TFTVLogger.Always("Turn 0 check");
+                        if (TFTVAncients.CheckIfAncientsPresent(Controller))
+                        {
+                            TFTVAncients.AdjustAncientsOnDeployment(Controller);
+                        }
+
                         TFTVRevenant.ModifyRevenantResistanceAbility(Controller);
                         TFTVRevenant.CheckForNotDeadSoldiers(Controller);
                         TFTVRevenant.RevenantCheckAndSpawn(Controller);
@@ -299,6 +313,7 @@ namespace TFTV
                     TFTVRevenant.revenantSpecialResistance.Clear();
                     TFTVUmbra.SpawnUmbra(Controller);
                     TFTVHumanEnemies.ChampRecoverWPAura(Controller);
+                  
                    // TFTVHumanEnemies.ApplyTactic(Controller);
 
 

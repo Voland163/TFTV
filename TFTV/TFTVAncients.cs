@@ -23,7 +23,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.InteropServices.WindowsRuntime;
 using UnityEngine;
 
 
@@ -147,75 +146,88 @@ namespace TFTV
                 {
                     MethodInfo tryGetShootTargetMethod = typeof(MassShootTargetActorEffect).GetMethod("TryGetShootTarget", BindingFlags.Instance | BindingFlags.NonPublic);
 
-                    if (tryGetShootTargetMethod == null || target == null) 
+                    if (tryGetShootTargetMethod == null || target == null)
                     {
 
                         return false;
                     }
 
-                    WeaponDef beamHead = DefCache.GetDef<WeaponDef>("HumanoidGuardian_Head_WeaponDef");
+                  //  WeaponDef beamHead = DefCache.GetDef<WeaponDef>("HumanoidGuardian_Head_WeaponDef");
                     //   beamHead.APToUsePerc = 0;
 
                     TacticalAbilityTarget tacticalAbilityTarget = (TacticalAbilityTarget)tryGetShootTargetMethod.Invoke(__instance, new object[] { target });
-                    if (tacticalAbilityTarget == null || tacticalAbilityTarget.Actor==null|| tacticalAbilityTarget.Actor.IsDead)
+             
+                    if (tacticalAbilityTarget == null || tacticalAbilityTarget.Actor == null || tacticalAbilityTarget.Actor.IsDead)
                     {
                         return false;
                     }
 
                     TacticalActorBase sourceTacticalActorBase = TacUtil.GetSourceTacticalActorBase(__instance.Source);
 
-                    if (sourceTacticalActorBase == null) 
+                    if (sourceTacticalActorBase == null)
                     {
                         return false;
-                    
+
                     }
 
                     List<TacticalActor> list = sourceTacticalActorBase.TacticalFaction.TacticalActors.
                         Where((TacticalActor a) => a.TacticalActorBaseDef == __instance.MassShootTargetActorEffectDef.ShootersActorDef).
-                        Where(ta => !ta.Status.HasStatus(AncientGuardianStealthStatus)).
-                        Where(ta => ta.IsAlive).ToList();
-                    using (new MultiForceTargetableLock(sourceTacticalActorBase.Map.GetActors<TacticalActor>().Where(ta => ta.IsAlive)))
-                    {
-                        foreach (TacticalActor hoplite in list)
+                        Where(ta => ta.IsAlive).
+                        Where(ta => !ta.Status.HasStatus(AncientGuardianStealthStatus)).ToList();
+
+                    TFTVLogger.Always($"Hoplites that can shoot in the cross-beam shooting {list.Count()}");
+
+                  if (list.Count > 0)
+                  {
+                       using (new MultiForceTargetableLock(sourceTacticalActorBase.Map.GetActors<TacticalActor>()))
                         {
-                            // TFTVLogger.Always($"hoplite {item.name} has stealth status? {item.Status.HasStatus(AncientGuardianStealthStatus)}");
-
-                            ShieldDeployedStatusDef shieldDeployed = DefCache.GetDef<ShieldDeployedStatusDef>("ShieldDeployed_StatusDef");
-
-                            Weapon selectedWeapon = null;
-
-                            foreach (Equipment equipment in hoplite.Equipments.Equipments)
+                      
+                            foreach (TacticalActor hoplite in list)
                             {
-                                if (equipment.TacticalItemDef.Equals(beamHead))
-                                {
-                                    selectedWeapon = equipment as Weapon;
-                                }
-                            }
+                               
 
-                            if (hoplite.IsAlive && selectedWeapon != null && !(selectedWeapon.DefaultShootAbility.GetWeaponDisabledState(IgnoredAbilityDisabledStatesFilter.CreateDefaultFilter()) != AbilityDisabledState.NotDisabled))
-                            {
-                                TacticalActor hitFriend = null;
-                                if (!hoplite.TacticalPerception.CheckFriendlyFire(selectedWeapon, hoplite.Pos, tacticalAbilityTarget, out hitFriend) && selectedWeapon.TryGetShootTarget(tacticalAbilityTarget) != null)
+                                ShieldDeployedStatusDef shieldDeployed = DefCache.GetDef<ShieldDeployedStatusDef>("ShieldDeployed_StatusDef");
+
+                                Weapon selectedWeapon = null;
+
+                                foreach (Equipment equipment in hoplite.Equipments.Equipments)
                                 {
-                                    if (hoplite.HasStatus(shieldDeployed))
+                                    if (equipment.TacticalItemDef.Equals(BeamHead))
                                     {
-                                        Timing.Current.StartAndWaitFor(RaiseShield(hoplite));
+                                        selectedWeapon = equipment as Weapon;
+                                        TFTVLogger.Always($"{hoplite.name} has a beam weapon");
+                                    }
+                                }
 
-                                        hoplite.Equipments.SetSelectedEquipment(selectedWeapon);
+                                if (hoplite.IsAlive && selectedWeapon != null && !(selectedWeapon.DefaultShootAbility.GetWeaponDisabledState(IgnoredAbilityDisabledStatesFilter.CreateDefaultFilter()) != AbilityDisabledState.NotDisabled))
+                                {
+                                    TFTVLogger.Always($"{hoplite.name} can shoot");
+                                    TacticalActor hitFriend = null;
+                                    if (!hoplite.TacticalPerception.CheckFriendlyFire(selectedWeapon, hoplite.Pos, tacticalAbilityTarget, out hitFriend) && selectedWeapon.TryGetShootTarget(tacticalAbilityTarget) != null)
+                                    {
+                                        TFTVLogger.Always($"{hoplite.name} won't hit a friendly");
+
+                                        if (hoplite.HasStatus(shieldDeployed))
+                                        {
+                                            TFTVLogger.Always($"{hoplite.name} has deployed shield");
+
+                                            Timing.Current.StartAndWaitFor(RaiseShield(hoplite));
+
+                                            hoplite.Equipments.SetSelectedEquipment(selectedWeapon);
+                                        }
+
+                                        MethodInfo faceAndShootAtTarget = typeof(MassShootTargetActorEffect).GetMethod("FaceAndShootAtTarget", BindingFlags.Instance | BindingFlags.NonPublic);
+
+                                        Timing.Current.Start((IEnumerator<NextUpdate>)faceAndShootAtTarget.Invoke(__instance, new object[] { hoplite, selectedWeapon, tacticalAbilityTarget }));
+
+
                                     }
 
-                                    MethodInfo faceAndShootAtTarget = typeof(MassShootTargetActorEffect).GetMethod("FaceAndShootAtTarget", BindingFlags.Instance | BindingFlags.NonPublic);
-
-                                    Timing.Current.Start((IEnumerator<NextUpdate>)faceAndShootAtTarget.Invoke(__instance, new object[] { hoplite, selectedWeapon, tacticalAbilityTarget }));
-
 
                                 }
-
-
                             }
-                        }
-                    }
-
+                       }
+                   }
 
 
                     return false;
@@ -238,9 +250,6 @@ namespace TFTV
 
         public static class MassShootTargetActorEffect_FaceAndShootAtTarget_GuardiansCrossBeams_Patch
         {
-
-
-
             public static void Postfix(TacticalActor shooterActor)
             {
                 try
@@ -382,69 +391,64 @@ namespace TFTV
             }
         }
 
-
-
-        [HarmonyPatch(typeof(TacticalActor), "OnAbilityExecuteFinished")]
-
-        public static class TacticalActor_OnAbilityExecuteFinished_CyclopsScream_patch
+        public static void AddMindCrushEffectToCyclposScreamAndRedeployHopliteShieldsAfterMassShootAttack(TacticalAbility ability, TacticalActor actor, object parameter)
         {
-            public static void Postfix(TacticalAbility ability, TacticalActor __instance, object parameter)
+
+            try
             {
-                try
+                // TFTVLogger.Always($"aptouseperc is {DefCache.GetDef<WeaponDef>("HumanoidGuardian_Head_WeaponDef").APToUsePerc}");
+
+
+                if (ability.TacticalAbilityDef.name.Equals("CyclopsScream"))
                 {
-                    // TFTVLogger.Always($"aptouseperc is {DefCache.GetDef<WeaponDef>("HumanoidGuardian_Head_WeaponDef").APToUsePerc}");
+
+                    SilencedStatusDef silencedStatusDef = DefCache.GetDef<SilencedStatusDef>("ActorSilenced_StatusDef");
+                    DamageEffectDef mindCrushEffect = DefCache.GetDef<DamageEffectDef>("E_Effect [Cyclops_MindCrush]");
 
 
-                    if (ability.TacticalAbilityDef.name.Equals("CyclopsScream"))
+                    foreach (TacticalAbilityTarget target in ability.GetTargets())
                     {
 
-                        SilencedStatusDef silencedStatusDef = DefCache.GetDef<SilencedStatusDef>("ActorSilenced_StatusDef");
-                        DamageEffectDef mindCrushEffect = DefCache.GetDef<DamageEffectDef>("E_Effect [Cyclops_MindCrush]");
 
-
-                        foreach (TacticalAbilityTarget target in ability.GetTargets())
+                        if (target.GetTargetActor() != null && target.GetTargetActor() is TacticalActor targetedTacticalActor)
                         {
-
-
-                            if (target.GetTargetActor() != null && target.GetTargetActor() is TacticalActor targetedTacticalActor)
+                            targetedTacticalActor.ApplyDamage(new DamageResult
                             {
-                                targetedTacticalActor.ApplyDamage(new DamageResult
-                                {
-                                    ApplyStatuses = new List<StatusApplication>
+                                ApplyStatuses = new List<StatusApplication>
                                 { new StatusApplication
-                                { StatusDef = silencedStatusDef, StatusSource = __instance, StatusTarget = targetedTacticalActor } }
-                                });
-                                targetedTacticalActor.ApplyDamage(new DamageResult { ActorEffects = new List<EffectDef> { mindCrushEffect } });//, Source = __instance.Source });
+                                { StatusDef = silencedStatusDef, StatusSource = actor, StatusTarget = targetedTacticalActor } }
+                            });
+                            targetedTacticalActor.ApplyDamage(new DamageResult { ActorEffects = new List<EffectDef> { mindCrushEffect } });//, Source = __instance.Source });
 
 
-
-                            }
 
                         }
+
                     }
-
-                    ReDeployHopliteShield(ability, __instance, parameter);
-
-                    if (HopliteAPMassShoot.Count > 0)
-                    {
-                        if (HopliteAPMassShoot.ContainsKey(__instance))
-                        {
-                            TFTVLogger.Always($"{__instance?.name} has {__instance?.CharacterStats?.ActionPoints} ");
-                            __instance?.CharacterStats?.ActionPoints?.Set(HopliteAPMassShoot[__instance]);
-                            TFTVLogger.Always($"but now {__instance?.name} has {__instance?.CharacterStats?.ActionPoints} ");
-                            HopliteAPMassShoot.Remove(__instance);
-                        }
-                    }
-
                 }
 
-                catch (Exception e)
+                ReDeployHopliteShield(ability, actor, parameter);
+
+                if (HopliteAPMassShoot.Count > 0)
                 {
-                    TFTVLogger.Error(e);
+                    if (HopliteAPMassShoot.ContainsKey(actor))
+                    {
+                        TFTVLogger.Always($"{actor?.name} has {actor?.CharacterStats?.ActionPoints} ");
+                        actor?.CharacterStats?.ActionPoints?.Set(HopliteAPMassShoot[actor]);
+                        TFTVLogger.Always($"but now {actor?.name} has {actor?.CharacterStats?.ActionPoints} ");
+                        HopliteAPMassShoot.Remove(actor);
+                    }
                 }
 
             }
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
         }
+
+
 
 
         [HarmonyPatch(typeof(TacticalLevelController), "ActorDamageDealt")]
@@ -465,39 +469,37 @@ namespace TFTV
         }
 
 
-        [HarmonyPatch(typeof(TacticalFactionVision), "OnFactionStartTurn")]
-        public static class TacticalFactionVision_OnFactionStartTurn_SelfRepair_Patch
+        public static void AncientsNewTurnCheck(TacticalFaction tacticalFaction)
         {
-            public static void Postfix(TacticalFactionVision __instance)
+
+            try
             {
-                try
+                if (!tacticalFaction.TacticalLevel.IsLoadingSavedGame)
                 {
-                    if (!__instance.Faction.TacticalLevel.IsLoadingSavedGame)
+
+
+                    TFTVLogger.Always($"starting turn {tacticalFaction.TurnNumber} for faction {tacticalFaction.Faction.FactionDef.name}");
+                    CheckRoboticSelfRepairStatus(tacticalFaction);
+                    ApplyRoboticSelfHealingStatus(tacticalFaction);
+                    CheckHopliteKillList();
+
+                    if (tacticalFaction.TurnNumber > 0)
                     {
-                        TacticalLevelController controller = __instance.Faction.TacticalLevel;
-                        TacticalFaction tacticalFaction = __instance.Faction;
+                        CheckForAutoRepairAbility(tacticalFaction);
+                        AdjustAutomataStats(tacticalFaction);
 
-                        TFTVLogger.Always($"starting turn {tacticalFaction.TurnNumber} for faction {tacticalFaction.Faction.FactionDef.name}");
-                        CheckRoboticSelfRepairStatus(tacticalFaction);
-                        ApplyRoboticSelfHealingStatus(tacticalFaction);
-                        CheckHopliteKillList();
-
-                        if (tacticalFaction.TurnNumber > 0)
-                        {
-                            CheckForAutoRepairAbility(__instance.Faction);
-                            AdjustAutomataStats(__instance.Faction);
-
-                        }
                     }
+                }
 
-                    AdjustHopliteAndCyclopsBeam();
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
+                AdjustHopliteAndCyclopsBeam();
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
             }
         }
+
+
 
 
 
@@ -1154,10 +1156,6 @@ namespace TFTV
         }
 
 
-
-
-
-
         [HarmonyPatch(typeof(DamageKeyword), "ProcessKeywordDataInternal")]
         internal static class TFTV_DamageKeyword_ProcessKeywordDataInternal_DamageResistant_patch
         {
@@ -1184,128 +1182,131 @@ namespace TFTV
             }
         }
 
-
-        [HarmonyPatch(typeof(TacticalLevelController), "ActorDied")]
-        public static class TacticalLevelController_ActorDied_Ancients_Patch
+        public static void AncientKilled(TacticalLevelController controller, DeathReport deathReport)
         {
-            public static void Postfix(TacticalLevelController __instance, DeathReport deathReport)
+
+            ClassTagDef cyclopsTag = DefCache.GetDef<ClassTagDef>("MediumGuardian_ClassTagDef");
+            try
             {
-                ClassTagDef cyclopsTag = DefCache.GetDef<ClassTagDef>("MediumGuardian_ClassTagDef");
-                try
+                if (CheckIfAncientsPresent(controller))
                 {
-                    if (CheckIfAncientsPresent(__instance))
+                    TacticalFaction faction = deathReport.Actor.TacticalFaction;
+
+                    if (deathReport.Actor is TacticalActor)
                     {
-                        TacticalFaction faction = deathReport.Actor.TacticalFaction;
-
-                        if (deathReport.Actor is TacticalActor)
+                        TacticalActor actor = deathReport.Actor as TacticalActor;
+                        if (actor.HasGameTag(hopliteTag))
                         {
-                            TacticalActor actor = deathReport.Actor as TacticalActor;
-                            if (actor.HasGameTag(hopliteTag))
+                            foreach (TacticalActor actorAlly in faction.TacticalActors)
                             {
-                                foreach (TacticalActor actorAlly in faction.TacticalActors)
+                                if (actorAlly != actor && (actorAlly.HasGameTag(hopliteTag) || actorAlly.HasGameTag(cyclopsTag)))
                                 {
-                                    if (actorAlly != actor && (actorAlly.HasGameTag(hopliteTag) || actorAlly.HasGameTag(cyclopsTag)))
+                                    // TacticalActor actorAlly = allyTacticalActorBase as TacticalActor;
+                                    float magnitude = 7;
+
+                                    if ((actorAlly.Pos - actor.Pos).magnitude <= magnitude)
                                     {
-                                        // TacticalActor actorAlly = allyTacticalActorBase as TacticalActor;
-                                        float magnitude = 7;
+                                        TFTVLogger.Always("Actor in range and will be receiving power from dead friendly");
+                                        actorAlly.CharacterStats.WillPoints.AddRestrictedToMax(5);
 
-                                        if ((actorAlly.Pos - actor.Pos).magnitude <= magnitude)
+                                        if ((CheckGuardianBodyParts(actorAlly)[0] == null
+                                        || CheckGuardianBodyParts(actorAlly)[1] == null
+                                        || CheckGuardianBodyParts(actorAlly)[2] == null))
                                         {
-                                            TFTVLogger.Always("Actor in range and will be receiving power from dead friendly");
-                                            actorAlly.CharacterStats.WillPoints.AddRestrictedToMax(5);
-
-                                            if ((CheckGuardianBodyParts(actorAlly)[0] == null
-                                            || CheckGuardianBodyParts(actorAlly)[1] == null
-                                            || CheckGuardianBodyParts(actorAlly)[2] == null))
+                                            TFTVLogger.Always("Actor in range and missing bodyparts, getting spare parts");
+                                            if (!actorAlly.HasStatus(AddAutoRepairStatusAbility) && !actorAlly.HasGameTag(cyclopsTag))
                                             {
-                                                TFTVLogger.Always("Actor in range and missing bodyparts, getting spare parts");
-                                                if (!actorAlly.HasStatus(AddAutoRepairStatusAbility) && !actorAlly.HasGameTag(cyclopsTag))
-                                                {
-                                                    actorAlly.Status.ApplyStatus(AddAutoRepairStatusAbility);
-                                                    TFTVLogger.Always("AutoRepairStatus added to " + actorAlly.name);
+                                                actorAlly.Status.ApplyStatus(AddAutoRepairStatusAbility);
+                                                TFTVLogger.Always("AutoRepairStatus added to " + actorAlly.name);
 
 
-                                                    TacContextHelpManager tacContextHelpManager = (TacContextHelpManager)UnityEngine.Object.FindObjectOfType(typeof(TacContextHelpManager));
-                                                    tacContextHelpManager.EventTypeTriggered(HintTrigger.ActorSeen, actorAlly, actorAlly);
-
-                                                }
-
-                                            }
-                                            else
-                                            {
-                                                if (actorAlly.GetHealth() < actorAlly.TotalMaxHealth)
-                                                {
-                                                    if (actorAlly.GetHealth() + 50 >= actorAlly.TotalMaxHealth)
-                                                    {
-                                                        actorAlly.Health.Set(actorAlly.TotalMaxHealth);
-                                                    }
-                                                    else
-                                                    {
-                                                        actorAlly.Health.Set(actorAlly.GetHealth() + 50);
-                                                    }
-
-                                                }
                                                 TacContextHelpManager tacContextHelpManager = (TacContextHelpManager)UnityEngine.Object.FindObjectOfType(typeof(TacContextHelpManager));
                                                 tacContextHelpManager.EventTypeTriggered(HintTrigger.ActorSeen, actorAlly, actorAlly);
+
                                             }
+
+                                        }
+                                        else
+                                        {
+                                            if (actorAlly.GetHealth() < actorAlly.TotalMaxHealth)
+                                            {
+                                                if (actorAlly.GetHealth() + 50 >= actorAlly.TotalMaxHealth)
+                                                {
+                                                    actorAlly.Health.Set(actorAlly.TotalMaxHealth);
+                                                }
+                                                else
+                                                {
+                                                    actorAlly.Health.Set(actorAlly.GetHealth() + 50);
+                                                }
+
+                                            }
+                                            TacContextHelpManager tacContextHelpManager = (TacContextHelpManager)UnityEngine.Object.FindObjectOfType(typeof(TacContextHelpManager));
+                                            tacContextHelpManager.EventTypeTriggered(HintTrigger.ActorSeen, actorAlly, actorAlly);
                                         }
                                     }
                                 }
+                            }
 
-                                if (actor.HasGameTag(hopliteTag))
+                            if (actor.HasGameTag(hopliteTag))
+                            {
+                                if (CyclopsDefenseStatus.Multiplier <= 0.99f)
                                 {
-                                    if (CyclopsDefenseStatus.Multiplier <= 0.99f)
+                                    float baseMultiplier = 0.5f;
+
+                                    if (TFTVSpecialDifficulties.CheckTacticalSpecialDifficultySettings(controller) == 2)
                                     {
-                                        float baseMultiplier = 0.5f;
-
-                                        if (TFTVSpecialDifficulties.CheckTacticalSpecialDifficultySettings(__instance) == 2)
-                                        {
-                                            baseMultiplier = 0.0f;
-                                        }
-
-                                        List<TacticalActor> allHoplites = actor.TacticalFaction.TacticalActors.Where(ta => ta.HasGameTag(hopliteTag)).ToList();
-                                        int deadHoplites = allHoplites.Where(h => h.IsDead).Count();
-                                        float proportion = ((float)deadHoplites / (float)(allHoplites.Count));
-                                        CyclopsDefenseStatus.Multiplier = baseMultiplier + proportion * 0.5f; //+ HoplitesKilled * 0.1f;
-                                        TFTVLogger.Always($"There are {allHoplites.Count} hoplites in total, {deadHoplites} are dead. Proportion is {proportion} and base multiplier is {baseMultiplier}. Cyclops Defense level is {CyclopsDefenseStatus.Multiplier}");
-
-
-                                        //  CyclopsDefenseStatus.Multiplier += 0.1f;
-                                        TFTVLogger.Always("Hoplite killed, decreasing Cyclops defense. Cyclops defense now " + CyclopsDefenseStatus.Multiplier);
+                                        baseMultiplier = 0.0f;
                                     }
-                                    else
-                                    {
-                                        CyclopsDefenseStatus.Multiplier = 1;
-                                        if (AutomataResearched)
-                                        {
-                                            foreach (TacticalActorBase allyTacticalActorBase in faction.Actors)
-                                            {
-                                                if (allyTacticalActorBase is TacticalActor && allyTacticalActorBase != actor)
-                                                {
-                                                    TacticalActor actorAlly = allyTacticalActorBase as TacticalActor;
-                                                    if (actorAlly.HasStatus(CyclopsDefenseStatus))
-                                                    {
-                                                        Status status = actorAlly.Status.GetStatusByName(CyclopsDefenseStatus.EffectName);
-                                                        actorAlly.Status.Statuses.Remove(status);
-                                                        TFTVLogger.Always("Cyclops defense removed from " + actorAlly.name);
 
-                                                    }
+                                    List<TacticalActor> allHoplites = actor.TacticalFaction.TacticalActors.Where(ta => ta.HasGameTag(hopliteTag)).ToList();
+                                    int deadHoplites = allHoplites.Where(h => h.IsDead).Count();
+                                    float proportion = ((float)deadHoplites / (float)(allHoplites.Count));
+                                    CyclopsDefenseStatus.Multiplier = baseMultiplier + proportion * 0.5f; //+ HoplitesKilled * 0.1f;
+                                    TFTVLogger.Always($"There are {allHoplites.Count} hoplites in total, {deadHoplites} are dead. Proportion is {proportion} and base multiplier is {baseMultiplier}. Cyclops Defense level is {CyclopsDefenseStatus.Multiplier}");
+
+
+                                    //  CyclopsDefenseStatus.Multiplier += 0.1f;
+                                    TFTVLogger.Always("Hoplite killed, decreasing Cyclops defense. Cyclops defense now " + CyclopsDefenseStatus.Multiplier);
+                                }
+                                else
+                                {
+                                    CyclopsDefenseStatus.Multiplier = 1;
+                                    if (AutomataResearched)
+                                    {
+                                        foreach (TacticalActorBase allyTacticalActorBase in faction.Actors)
+                                        {
+                                            if (allyTacticalActorBase is TacticalActor && allyTacticalActorBase != actor)
+                                            {
+                                                TacticalActor actorAlly = allyTacticalActorBase as TacticalActor;
+                                                if (actorAlly.HasStatus(CyclopsDefenseStatus))
+                                                {
+                                                    Status status = actorAlly.Status.GetStatusByName(CyclopsDefenseStatus.EffectName);
+                                                    actorAlly.Status.Statuses.Remove(status);
+                                                    TFTVLogger.Always("Cyclops defense removed from " + actorAlly.name);
+
                                                 }
                                             }
                                         }
                                     }
-
                                 }
+
                             }
                         }
                     }
                 }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
             }
         }
+
+
+
+
+
+
+
 
         public static void CheckForAutoRepairAbility(TacticalFaction faction)
         {

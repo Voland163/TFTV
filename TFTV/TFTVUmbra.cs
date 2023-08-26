@@ -20,6 +20,7 @@ using System.Reflection;
 using System.Runtime.InteropServices.WindowsRuntime;
 using UnityEngine;
 using static PhoenixPoint.Tactical.Entities.Abilities.CallReinforcementsAbilityDef;
+using static UnityStandardAssets.Utility.TimedObjectActivator;
 
 namespace TFTV
 {
@@ -71,125 +72,125 @@ namespace TFTV
 
         private static readonly GameTagDef anyRevenantGameTag = DefCache.GetDef<GameTagDef>("Any_Revenant_TagDef");
 
-        [HarmonyPatch(typeof(TacticalFaction), "RequestEndTurn")]
-        public static class TacticalFaction_RequestEndTurn_TBTVReinforcements_Patch
+        public static void ImplementCallReinforcementsTBTV(TacticalFaction tacticalFaction) 
         {
-            public static void Prefix(TacticalFaction __instance)
+            try
             {
-                try
+                if (tacticalFaction.TacticalLevel.TurnNumber > 0 && tacticalFaction.TacticalLevel.GetFactionByCommandName("PX") == tacticalFaction)
                 {
-                    if (__instance.TacticalLevel.TurnNumber > 0 && __instance.TacticalLevel.GetFactionByCommandName("PX") == __instance)
-                    {
-                        ActivateReinforcementAbility(__instance.TacticalLevel);
-                    }
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
+                    ActivateReinforcementAbility(tacticalFaction.TacticalLevel);
                 }
             }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+
         }
 
+       
 
-        [HarmonyPatch(typeof(TacticalLevelController), "ActorDied")]
-        public static class TacticalLevelController_ActorDied_TBTV_Patch
+        public static void TouchByTheVoidDeath(DeathReport deathReport) 
         {
-            public static void Prefix(DeathReport deathReport)
+            try
             {
-                try
+                if (deathReport.Actor != null && deathReport.Actor is TacticalActor)
                 {
-                    if (deathReport.Actor != null && deathReport.Actor is TacticalActor)
+                    TacticalActor actor = deathReport.Actor as TacticalActor;
+
+                    if (actor.GameTags.Contains(voidTouchedTag))
                     {
-                        TacticalActor actor = deathReport.Actor as TacticalActor;
+                        actor.RemoveAbility(hiddenTBTVAbilityDef);
+                        actor.GameTags.Remove(voidTouchedTag);
+                        int roll = MakeTBTVRoll();
 
-                        if (actor.GameTags.Contains(voidTouchedTag))
+                        if (roll > 30)
                         {
-                            actor.RemoveAbility(hiddenTBTVAbilityDef);
-                            actor.GameTags.Remove(voidTouchedTag);
-                            int roll = MakeTBTVRoll();
-
-                            if (roll > 30)
-                            {
-                                RemoveDeathBelcherAbilities(actor);
-                                GiveTBTVAbility(actor, roll);
-                            }
+                            RemoveDeathBelcherAbilities(actor);
+                            GiveTBTVAbility(actor, roll);
                         }
+                    }
 
-                        if (actor.GetAbilityWithDef<PassiveModifierAbility>(acheronTributary) != null)
+                    if (actor.GetAbilityWithDef<PassiveModifierAbility>(acheronTributary) != null)
+                    {
+                        foreach (TacticalActorBase allyTacticalActorBase in actor.TacticalFaction.Actors)
                         {
-                            foreach (TacticalActorBase allyTacticalActorBase in actor.TacticalFaction.Actors)
+                            if (allyTacticalActorBase.InPlay && allyTacticalActorBase is TacticalActor && allyTacticalActorBase != actor)
                             {
-                                if (allyTacticalActorBase.InPlay && allyTacticalActorBase is TacticalActor && allyTacticalActorBase != actor)
-                                {
-                                    TacticalActor tacticalActor = allyTacticalActorBase as TacticalActor;
-                                    float magnitude = 10;
+                                TacticalActor tacticalActor = allyTacticalActorBase as TacticalActor;
+                                float magnitude = 10;
 
-                                    if ((allyTacticalActorBase.Pos - actor.Pos).magnitude <= magnitude)
+                                if ((allyTacticalActorBase.Pos - actor.Pos).magnitude <= magnitude)
+                                {
+                                    if (tacticalActor.GameTags.Contains(crabTag) && !tacticalActor.GameTags.Contains(voidTouchedTag)
+                                        && !tacticalActor.name.Contains("Oilcrab") && !tacticalActor.GameTags.Contains(anyRevenantGameTag)
+                                        && !tacticalActor.GameTags.Contains(voidTouchedOnTurnEndTag) && !tacticalActor.GameTags.Contains(voidTouchedOnAttackTag)
+                                        && !tacticalActor.HasStatus(oilCrabAddAbilityStatus))
                                     {
-                                        if (tacticalActor.GameTags.Contains(crabTag) && !tacticalActor.GameTags.Contains(voidTouchedTag)
-                                            && !tacticalActor.name.Contains("Oilcrab") && !tacticalActor.GameTags.Contains(anyRevenantGameTag)
-                                            && !tacticalActor.GameTags.Contains(voidTouchedOnTurnEndTag) && !tacticalActor.GameTags.Contains(voidTouchedOnAttackTag)
-                                            && !tacticalActor.HasStatus(oilCrabAddAbilityStatus))
+                                        tacticalActor.Status.ApplyStatus(hiddenTBTVAddAbilityStatus);
+                                        if (!tacticalActor.HasGameTag(voidTouchedTag))
                                         {
-                                            tacticalActor.Status.ApplyStatus(hiddenTBTVAddAbilityStatus);
-                                            if (!tacticalActor.HasGameTag(voidTouchedTag))
+                                            tacticalActor.GameTags.Add(voidTouchedTag);
+                                            tacticalActor.AddAbility(oilcrabDeathBelcherAbility, tacticalActor);
+                                        }
+                                        TFTVLogger.Always("The actor who will receive TBTV from the Tributary is " + tacticalActor.name);
+                                    }
+
+                                    else if (tacticalActor.GameTags.Contains(fishTag) && tacticalActor.GameTags.Contains(voidTouchedTag)
+                                        && !tacticalActor.name.Contains("Oilfish") && !actor.GameTags.Contains(anyRevenantGameTag)
+                                         && !tacticalActor.GameTags.Contains(voidTouchedOnTurnEndTag) && !tacticalActor.GameTags.Contains(voidTouchedOnAttackTag)
+                                        && !tacticalActor.HasStatus(oilTritonAddAbilityStatus))
+                                    {
+
+                                        tacticalActor.Status.ApplyStatus(hiddenTBTVAddAbilityStatus);
+                                        if (!tacticalActor.HasGameTag(voidTouchedTag))
+                                        {
+                                            tacticalActor.GameTags.Add(voidTouchedTag);
+                                            tacticalActor.AddAbility(oilfishDeathBelcherAbility, tacticalActor);
+                                        }
+                                        TFTVLogger.Always("The actor who will receive TBTV from the Tributary is " + tacticalActor.name);
+                                    }
+                                    else if (!tacticalActor.GameTags.Contains(voidTouchedTag)
+                                        && !tacticalActor.name.Contains("Oilfish") && !tacticalActor.name.Contains("Oilcrab") && !tacticalActor.GameTags.Contains(anyRevenantGameTag)
+                                         && !tacticalActor.GameTags.Contains(voidTouchedOnTurnEndTag) && !tacticalActor.GameTags.Contains(voidTouchedOnAttackTag)
+                                        && !tacticalActor.HasStatus(oilCrabAddAbilityStatus) && !tacticalActor.HasStatus(oilTritonAddAbilityStatus))
+                                    {
+
+                                        tacticalActor.Status.ApplyStatus(hiddenTBTVAddAbilityStatus);
+                                        if (!tacticalActor.HasGameTag(voidTouchedTag))
+                                        {
+                                            tacticalActor.GameTags.Add(voidTouchedTag);
+                                            UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
+                                            int roll = UnityEngine.Random.Range(1, 11);
+                                            if (roll <= 5)
                                             {
-                                                tacticalActor.GameTags.Add(voidTouchedTag);
+                                                tacticalActor.AddAbility(oilfishDeathBelcherAbility, tacticalActor);
+                                            }
+                                            else
+                                            {
                                                 tacticalActor.AddAbility(oilcrabDeathBelcherAbility, tacticalActor);
                                             }
                                             TFTVLogger.Always("The actor who will receive TBTV from the Tributary is " + tacticalActor.name);
                                         }
 
-                                        else if (tacticalActor.GameTags.Contains(fishTag) && tacticalActor.GameTags.Contains(voidTouchedTag)
-                                            && !tacticalActor.name.Contains("Oilfish") && !actor.GameTags.Contains(anyRevenantGameTag)
-                                             && !tacticalActor.GameTags.Contains(voidTouchedOnTurnEndTag) && !tacticalActor.GameTags.Contains(voidTouchedOnAttackTag)
-                                            && !tacticalActor.HasStatus(oilTritonAddAbilityStatus))
-                                        {
-
-                                            tacticalActor.Status.ApplyStatus(hiddenTBTVAddAbilityStatus);
-                                            if (!tacticalActor.HasGameTag(voidTouchedTag))
-                                            {
-                                                tacticalActor.GameTags.Add(voidTouchedTag);
-                                                tacticalActor.AddAbility(oilfishDeathBelcherAbility, tacticalActor);
-                                            }
-                                            TFTVLogger.Always("The actor who will receive TBTV from the Tributary is " + tacticalActor.name);
-                                        }
-                                        else if (!tacticalActor.GameTags.Contains(voidTouchedTag)
-                                            && !tacticalActor.name.Contains("Oilfish") && !tacticalActor.name.Contains("Oilcrab") && !tacticalActor.GameTags.Contains(anyRevenantGameTag)
-                                             && !tacticalActor.GameTags.Contains(voidTouchedOnTurnEndTag) && !tacticalActor.GameTags.Contains(voidTouchedOnAttackTag)
-                                            && !tacticalActor.HasStatus(oilCrabAddAbilityStatus) && !tacticalActor.HasStatus(oilTritonAddAbilityStatus))
-                                        {
-
-                                            tacticalActor.Status.ApplyStatus(hiddenTBTVAddAbilityStatus);
-                                            if (!tacticalActor.HasGameTag(voidTouchedTag))
-                                            {
-                                                tacticalActor.GameTags.Add(voidTouchedTag);
-                                                UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
-                                                int roll = UnityEngine.Random.Range(1, 11);
-                                                if (roll <= 5)
-                                                {
-                                                    tacticalActor.AddAbility(oilfishDeathBelcherAbility, tacticalActor);
-                                                }
-                                                else
-                                                {
-                                                    tacticalActor.AddAbility(oilcrabDeathBelcherAbility, tacticalActor);
-                                                }
-                                                TFTVLogger.Always("The actor who will receive TBTV from the Tributary is " + tacticalActor.name);
-                                            }
-
-                                        }
                                     }
                                 }
                             }
                         }
                     }
                 }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
             }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+
+
+
         }
+
 
         [HarmonyPatch(typeof(TacticalActor), "OnEquipmentHealthChange")]
         public static class TacticalActor_OnEquipmentHealthChange_TBTV_Patch
@@ -870,84 +871,84 @@ namespace TFTV
             }
         }
 
-        [HarmonyPatch(typeof(TacticalLevelController), "ActorEnteredPlay")]
-        public static class TacticalLevelController_ActorEnteredPlay_Umbra_Patch
+        public static void UmbraEverywhereVoidOmenImplementation(TacticalActorBase actor, TacticalLevelController controller) 
         {
-            public static void Postfix(TacticalActorBase actor, TacticalLevelController __instance)
+
+            try
             {
-                try
+                // TFTVLogger.Always("ActorEnteredPlay invoked");
+                if (UmbraResearched)
                 {
-                    // TFTVLogger.Always("ActorEnteredPlay invoked");
-                    if (UmbraResearched)
+
+                    if (controller.Factions.Any(f => f.Faction.FactionDef.MatchesShortName("aln")) && TFTVVoidOmens.VoidOmensCheck[16])
                     {
+                        //   TFTVLogger.Always("found aln faction and checked that VO is in place");
 
-                        if (__instance.Factions.Any(f => f.Faction.FactionDef.MatchesShortName("aln")) && TFTVVoidOmens.VoidOmensCheck[16])
+                        if (actor.GameTags.Contains(crabTag) && !actor.GameTags.Contains(voidTouchedTag)
+                        && !actor.name.Contains("Oilcrab") && !actor.GameTags.Contains(anyRevenantGameTag)
+                        && actor.TacticalFaction.Faction.FactionDef.MatchesShortName("aln") && !CheckForTBTVAbilities(actor as TacticalActor))
+
                         {
-                            //   TFTVLogger.Always("found aln faction and checked that VO is in place");
+                            TacticalActor tacticalActor = actor as TacticalActor;
 
-                            if (actor.GameTags.Contains(crabTag) && !actor.GameTags.Contains(voidTouchedTag)
-                                        && !actor.name.Contains("Oilcrab") && !actor.GameTags.Contains(anyRevenantGameTag)
-                                        && actor.TacticalFaction.Faction.FactionDef.MatchesShortName("aln") && !CheckForTBTVAbilities(actor as TacticalActor))
-
+                            UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
+                            int roll = UnityEngine.Random.Range(1, 101);
+                            // TFTVLogger.Always("The roll is " + roll);
+                            if (TFTVVoidOmens.VoidOmensCheck[15] && roll <= 32 + CheckForAcheronHarbingers(controller) * 10)
                             {
-                                TacticalActor tacticalActor = actor as TacticalActor;
+                                TFTVLogger.Always("VO16+VO15 This Arthron here " + actor + ", got past the TBTV check!");
+                                tacticalActor.Status.ApplyStatus(hiddenTBTVAddAbilityStatus);
 
-                                UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
-                                int roll = UnityEngine.Random.Range(1, 101);
-                                // TFTVLogger.Always("The roll is " + roll);
-                                if (TFTVVoidOmens.VoidOmensCheck[15] && roll <= 32 + CheckForAcheronHarbingers(__instance) * 10)
-                                {
-                                    TFTVLogger.Always("VO16+VO15 This Arthron here " + actor + ", got past the TBTV check!");
-                                    tacticalActor.Status.ApplyStatus(hiddenTBTVAddAbilityStatus);
+                                actor.GameTags.Add(voidTouchedTag);
 
-                                    actor.GameTags.Add(voidTouchedTag);
-
-
-                                }
-                                else if (!TFTVVoidOmens.VoidOmensCheck[15] && roll <= 16 + CheckForAcheronHarbingers(__instance) * 5)
-                                {
-                                    TFTVLogger.Always("VO16 This Arthron here " + actor + ", got past the TBTV check!");
-                                    tacticalActor.Status.ApplyStatus(hiddenTBTVAddAbilityStatus);
-
-                                    actor.GameTags.Add(voidTouchedTag);
-
-                                }
 
                             }
-                            if (actor.GameTags.Contains(fishTag) && !actor.GameTags.Contains(voidTouchedTag)
-                                && !actor.name.Contains("Oilfish") && !actor.GameTags.Contains(anyRevenantGameTag)
-                                && actor.TacticalFaction.Faction.FactionDef.MatchesShortName("aln") && !CheckForTBTVAbilities(actor as TacticalActor))
+                            else if (!TFTVVoidOmens.VoidOmensCheck[15] && roll <= 16 + CheckForAcheronHarbingers(controller) * 5)
                             {
-                                TacticalActor tacticalActor = actor as TacticalActor;
+                                TFTVLogger.Always("VO16 This Arthron here " + actor + ", got past the TBTV check!");
+                                tacticalActor.Status.ApplyStatus(hiddenTBTVAddAbilityStatus);
 
-                                UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
-                                int roll = UnityEngine.Random.Range(1, 101);
-                                if (TFTVVoidOmens.VoidOmensCheck[15] && roll <= 32 + CheckForAcheronHarbingers(__instance) * 10)
-                                {
-                                    TFTVLogger.Always("VO16+VO15 This Triton here " + actor + ", got past the TBTV check!");
-                                    tacticalActor.Status.ApplyStatus(hiddenTBTVAddAbilityStatus);
+                                actor.GameTags.Add(voidTouchedTag);
+                            }
+                        }
+                        if (actor.GameTags.Contains(fishTag) && !actor.GameTags.Contains(voidTouchedTag)
+                        && !actor.name.Contains("Oilfish") && !actor.GameTags.Contains(anyRevenantGameTag)
+                        && actor.TacticalFaction.Faction.FactionDef.MatchesShortName("aln") && !CheckForTBTVAbilities(actor as TacticalActor))
+                        {
+                            TacticalActor tacticalActor = actor as TacticalActor;
 
-                                    actor.GameTags.Add(voidTouchedTag);
+                            UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
+                            int roll = UnityEngine.Random.Range(1, 101);
+                            if (TFTVVoidOmens.VoidOmensCheck[15] && roll <= 32 + CheckForAcheronHarbingers(controller) * 10)
+                            {
+                                TFTVLogger.Always("VO16+VO15 This Triton here " + actor + ", got past the TBTV check!");
+                                tacticalActor.Status.ApplyStatus(hiddenTBTVAddAbilityStatus);
 
-                                }
-                                else if (!TFTVVoidOmens.VoidOmensCheck[15] && roll <= 16 + CheckForAcheronHarbingers(__instance) * 5)
-                                {
-                                    TFTVLogger.Always("VO16 This Triton here " + actor + ", got past the TBTV check!");
-                                    tacticalActor.Status.ApplyStatus(hiddenTBTVAddAbilityStatus);
+                                actor.GameTags.Add(voidTouchedTag);
 
-                                    actor.GameTags.Add(voidTouchedTag);
+                            }
+                            else if (!TFTVVoidOmens.VoidOmensCheck[15] && roll <= 16 + CheckForAcheronHarbingers(controller) * 5)
+                            {
+                                TFTVLogger.Always("VO16 This Triton here " + actor + ", got past the TBTV check!");
+                                tacticalActor.Status.ApplyStatus(hiddenTBTVAddAbilityStatus);
 
-                                }
+                                actor.GameTags.Add(voidTouchedTag);
+
                             }
                         }
                     }
                 }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
             }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+
         }
+
+
+      
 
         /* public static void CheckForActorsInMist(TacticalLevelController controller)
          {

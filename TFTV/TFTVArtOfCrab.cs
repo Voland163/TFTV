@@ -1,7 +1,9 @@
 ﻿using Base.Core;
 using Base.Defs;
+using Base.Entities.Abilities;
 using Base.Entities.Effects;
 using Base.Entities.Statuses;
+using Epic.OnlineServices;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities.GameTags;
@@ -18,6 +20,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using static UnityEngine.GraphicsBuffer;
+using static UnityStandardAssets.Utility.TimedObjectActivator;
 
 namespace TFTV
 {
@@ -83,46 +87,42 @@ namespace TFTV
           }
         */
 
-        //Force Scylla to use Cannons
-        [HarmonyPatch(typeof(TacticalActor), "OnAbilityExecuteFinished")]
-
-        public static class TacticalActor_OnAbilityExecuteFinished_Scylla_Experiment_patch
+        public static void ForceScyllaToUseCannonsAfterUsingHeadAttack(TacticalAbility ability, TacticalActor actor, object parameter) 
         {
-            public static void Postfix(TacticalAbility ability, TacticalActor __instance, object parameter)
+
+            try
             {
-                try
+
+
+                //    TacticalAbilityTarget target = parameter as TacticalAbilityTarget;
+                //  TFTVLogger.Always($"ability {ability.TacticalAbilityDef.name} executed by {__instance.DisplayName} and the TacticalAbilityTarget position to apply is {target.PositionToApply} ");
+
+                ShootAbilityDef scyllaSpit = DefCache.GetDef<ShootAbilityDef>("GooSpit_ShootAbilityDef");
+                ShootAbilityDef scyllaScream = DefCache.GetDef<ShootAbilityDef>("SonicBlast_ShootAbilityDef");
+
+                //   TFTVLogger.Always($"ability {ability.TacticalAbilityDef.name} executed by {__instance.DisplayName}");
+                if (ability.TacticalAbilityDef == scyllaSpit || ability.TacticalAbilityDef == scyllaScream)
                 {
+                    StartPreparingShootAbilityDef scyllaStartPreparing = DefCache.GetDef<StartPreparingShootAbilityDef>("Queen_StartPreparing_AbilityDef");
+                    //    TFTVLogger.Always("Got here");
+                    StartPreparingShootAbility startPreparingShootAbility = actor.GetAbilityWithDef<StartPreparingShootAbility>(scyllaStartPreparing);
 
-
-                    //    TacticalAbilityTarget target = parameter as TacticalAbilityTarget;
-                    //  TFTVLogger.Always($"ability {ability.TacticalAbilityDef.name} executed by {__instance.DisplayName} and the TacticalAbilityTarget position to apply is {target.PositionToApply} ");
-
-                    ShootAbilityDef scyllaSpit = DefCache.GetDef<ShootAbilityDef>("GooSpit_ShootAbilityDef");
-                    ShootAbilityDef scyllaScream = DefCache.GetDef<ShootAbilityDef>("SonicBlast_ShootAbilityDef");
-
-                    //   TFTVLogger.Always($"ability {ability.TacticalAbilityDef.name} executed by {__instance.DisplayName}");
-                    if (ability.TacticalAbilityDef == scyllaSpit || ability.TacticalAbilityDef == scyllaScream)
+                    if (startPreparingShootAbility != null)
                     {
-                        StartPreparingShootAbilityDef scyllaStartPreparing = DefCache.GetDef<StartPreparingShootAbilityDef>("Queen_StartPreparing_AbilityDef");
-                        //    TFTVLogger.Always("Got here");
-                        StartPreparingShootAbility startPreparingShootAbility = __instance.GetAbilityWithDef<StartPreparingShootAbility>(scyllaStartPreparing);
-
-                        if (startPreparingShootAbility != null)
-                        {
-                            startPreparingShootAbility.Activate(parameter);
-                        }
-
+                        startPreparingShootAbility.Activate(parameter);
                     }
 
                 }
 
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
+            }
 
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
             }
         }
+
+ 
 
 
 
@@ -324,8 +324,8 @@ namespace TFTV
             }*/
 
 
-           //Patch to prevent Scylla from targeting tiny critters like worms and spider drones
-           [HarmonyPatch(typeof(TacticalAbility), "GetTargetActors", new Type[] { typeof(TacticalTargetData), typeof(TacticalActorBase), typeof(Vector3) })]
+        //Patch to prevent Scylla from targeting tiny critters like worms and spider drones
+        [HarmonyPatch(typeof(TacticalAbility), "GetTargetActors", new Type[] { typeof(TacticalTargetData), typeof(TacticalActorBase), typeof(Vector3) })]
         public static class TFTV_TacticalAbility_GetTargetActors_Scylla_Patch
         {
             public static void Postfix(ref IEnumerable<TacticalAbilityTarget> __result, TacticalActorBase sourceActor, TacticalAbility __instance)
@@ -334,9 +334,12 @@ namespace TFTV
                 {
                     if (sourceActor is TacticalActor tacticalActor && tacticalActor.IsControlledByAI)
                     {
-                        
+                      //  TFTVLogger.Always($"{tacticalActor.DisplayName} is looking for targets, before culling has {__result.Count()} targets");
+
                         // TFTVLogger.Always($"{tacticalActor.DisplayName} is looking for targets");
                         __result = CullTargetsLists(__result, sourceActor, __instance);
+
+                      //  TFTVLogger.Always($"{tacticalActor.DisplayName} after culling has {__result.Count()} targets");
                     }
                 }
                 catch (Exception e)
@@ -346,7 +349,127 @@ namespace TFTV
             }
         }
 
-       // AIActionMoveAndAttack
+
+        [HarmonyPatch(typeof(ShootAbility), "GetTargets")]
+        public static class TFTV_ShootAbility_GetTargets_Scylla_Patch
+        {
+            public static void Postfix(ref IEnumerable<TacticalAbilityTarget> __result, TacticalActorBase sourceActor, ShootAbility __instance)
+            {
+                try
+                {
+                    if (sourceActor is TacticalActor tacticalActor && tacticalActor.IsControlledByAI)
+                    {
+                       // if (tacticalActor.HasGameTag(DefCache.GetDef<ClassTagDef>("Chiron_ClassTagDef")))
+                       // {
+                         //   TFTVLogger.Always($"{tacticalActor.DisplayName} is looking for targets for ability {__instance.TacticalAbilityDef.name}, before culling has {__result.Count()} targets");
+                            __result = CullTargetsLists(__result, sourceActor, __instance);
+                         //   TFTVLogger.Always($"{tacticalActor.DisplayName} after culling has {__result.Count()} targets");
+                       // }
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+        }
+        public static bool IsValidTarget(TacticalActor actor, TacticalAbilityTarget target, Weapon weapon)
+        {
+            try
+            {
+                bool isValid = true;
+
+
+                ClassTagDef swarmerTag = DefCache.GetDef<ClassTagDef>("Swarmer_ClassTagDef");
+                ClassTagDef crabTag = DefCache.GetDef<ClassTagDef>("Crabman_ClassTagDef");
+                ClassTagDef sirenTag = DefCache.GetDef<ClassTagDef>("Siren_ClassTagDef");
+                ClassTagDef queenTag = DefCache.GetDef<ClassTagDef>("Queen_ClassTagDef");
+                ClassTagDef tritonTag = DefCache.GetDef<ClassTagDef>("Fishman_ClassTagDef");
+                ClassTagDef acheronTag = DefCache.GetDef<ClassTagDef>("Acheron_ClassTagDef");
+                ClassTagDef chironTag = DefCache.GetDef<ClassTagDef>("Chiron_ClassTagDef");
+                ClassTagDef cyclopsTag = DefCache.GetDef<ClassTagDef>("MediumGuardian_ClassTagDef");
+
+                GameTagDef humanTag = DefCache.GetDef<GameTagDef>("Human_TagDef");
+                GameTagDef caterpillarDamage = DefCache.GetDef<GameTagDef>("DamageByCaterpillarTracks_TagDef");
+                ItemClassificationTagDef meleeTag = DefCache.GetDef<ItemClassificationTagDef>("MeleeWeapon_TagDef");
+
+                AttenuatingDamageTypeEffectDef paralysisDamage = DefCache.GetDef<AttenuatingDamageTypeEffectDef>("Electroshock_AttenuatingDamageTypeEffectDef");
+                DamageOverTimeDamageTypeEffectDef virusDamage = DefCache.GetDef<DamageOverTimeDamageTypeEffectDef>("Virus_DamageOverTimeDamageTypeEffectDef");
+
+                if (weapon.WeaponDef.Tags.Contains(meleeTag) && !actor.GameTags.Contains(queenTag))
+                {
+
+                }
+                else if (actor.GameTags.Contains(queenTag) || actor.GameTags.Contains(acheronTag) || actor.GameTags.Contains(chironTag) || actor.GameTags.Contains(cyclopsTag))
+                {
+                    if (target.GetTargetActor() is TacticalActor tacticalActor && tacticalActor.GameTags.Contains(caterpillarDamage) && tacticalActor.TacticalFaction != actor.TacticalFaction)
+                    {
+                        isValid = false;
+                    }
+                }
+                else
+                {
+                    if (target.GetTargetActor() is TacticalActor tacticalActor && tacticalActor.GameTags.Contains(caterpillarDamage) && (tacticalActor.Pos - target.Actor.Pos).magnitude > 8)
+                    {
+                        isValid = false;
+                    }
+                }
+
+                return isValid;
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
+        }
+
+        [HarmonyPatch(typeof(Weapon), "GetShootTargets")]
+        public static class TFTV_Weapon_GetShootTargets_Patch
+        {
+            public static IEnumerable<TacticalAbilityTarget> Postfix(IEnumerable<TacticalAbilityTarget> results, Weapon __instance)
+            {
+                foreach (TacticalAbilityTarget target in results)
+                {
+                    if (IsValidTarget(__instance.TacticalActor, target, __instance)) // <- create a method to check the target
+                    {
+                        yield return target;
+                    }
+                  
+                }
+            }
+        }
+
+        /*    [HarmonyPatch(typeof(Weapon), "GetShootTargets")]
+            public static class TFTV_Weapony_GetShootTargets_Patch
+            {
+
+                public static void Postfix(ref IEnumerable<TacticalAbilityTarget> __result, Weapon __instance)
+                {
+                    try
+                    {
+                        if (__result.Count() > 0)
+                        {
+                            TFTVLogger.Always($"{__instance?.TacticalActor?.DisplayName} has {__result.Count()} targets for {__instance.WeaponDef.name}, the target is {__result.First()?.Actor?.name} or position {__result.First()?.PositionToApply} ");
+                            __result = CullTargetsLists(__result, __instance?.TacticalActorBase, __instance.DefaultShootAbility);
+
+                            TFTVLogger.Always($"after culling result count is {__result.Count()}");
+
+
+                        }
+
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                    }
+                }
+            }*/
+
+
+
+        // AIActionMoveAndAttack
 
         //implement method to cull small target
         public static IEnumerable<TacticalAbilityTarget> CullTargetsLists(IEnumerable<TacticalAbilityTarget> targetList, TacticalActorBase actor, TacticalAbility ability)
@@ -421,15 +544,7 @@ namespace TFTV
 
                 }
 
-                foreach (TacticalAbilityTarget tacticalAbilityTarget in culledList)
-                {
-
-                  //  TFTVLogger.Always($"target is {tacticalAbilityTarget.GetTargetActor()}");
-
-                }
-
               return culledList;
-
 
             }
             catch (Exception e)
@@ -822,31 +937,6 @@ namespace TFTV
 
         }
 
-
-
-        [HarmonyPatch(typeof(TacticalFaction), "GetSortedAIActors")]
-
-        public static class TFTV_TacticalFactionn_GetSortedAIActors_ArtOfCrab_patch
-        {
-            public static void Postfix(List<TacticalActor> __result, TacticalFaction __instance)
-            {
-                try
-                {
-                    if (__result.Count > 0)
-                    {
-                        SortOutAITurnOrder(__result);
-                        __result.Sort((TacticalActor a, TacticalActor b) => a.AIActor.TurnOrderPriority - b.AIActor.TurnOrderPriority);
-                        TFTVHumanEnemies.ApplyTactic(__instance.TacticalLevel);
-                        TFTVLogger.Always("TFTV: Art of Crab: Sorted AI Turn Order");
-                    }
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-            }
-
-
-        }
+   
     }
 }

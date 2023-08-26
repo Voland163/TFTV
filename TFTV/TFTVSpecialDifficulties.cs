@@ -18,10 +18,13 @@ using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.Entities.Statuses;
 using PhoenixPoint.Tactical.Entities.Weapons;
 using PhoenixPoint.Tactical.Levels;
+using PhoenixPoint.Tactical.Levels.Missions;
+using PhoenixPoint.Tactical.View.ViewStates;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using static UnityStandardAssets.Utility.TimedObjectActivator;
 
 namespace TFTV
 {
@@ -35,6 +38,42 @@ namespace TFTV
         private static List<TacticalItemDef> AlienBodyParts = new List<TacticalItemDef>();
 
 
+        /// <summary>
+        /// Reinforcements will come with full AP on ETERMES!
+        /// </summary>
+        [HarmonyPatch(typeof(TacParticipantSpawn), "AdjustSpawned")]
+        public static class TFTV_TacParticipantSpawn_AdjustSpawned_Patch
+        {
+            public static bool Prefix(TacParticipantSpawn __instance, TacticalLevelController tacticalLevel)
+            {
+                try
+                {
+                    if (tacticalLevel.Difficulty.Order > 5) 
+                    {
+
+                        return false;
+                    
+                    }
+
+                    else 
+                    {
+
+                        return true;
+                    
+                    }
+
+
+
+                }
+
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+
+            }
+        }
 
 
 
@@ -444,6 +483,7 @@ namespace TFTV
 
 
         //These patches modify resource rewards on special difficulties and for haven defenses when the VO18 is in play
+        //Also reduces to 25% Mutagen reward from infested havens on ETERMES
         [HarmonyPatch(typeof(ResourceMissionOutcomeDef), "FillPotentialReward")]
         public static class TFTV_ResourceMissionOutcomeDef_FillPotentialReward_SpecialDifficultiesAndVO18_Patch
 
@@ -454,16 +494,35 @@ namespace TFTV
                 {
                     MissionTagDef havenDefenseTag = DefCache.GetDef<MissionTagDef>("MissionTypeHavenDefense_MissionTagDef");
 
-                    if (mission.MissionDef.Tags.Contains(havenDefenseTag))
+                    MissionTagDef infestedHavenTag = DefCache.GetDef<MissionTagDef>("HavenInfestation_MissionTypeTagDef");
+                    GeoLevelController controller = mission.Site.GeoLevel;
+
+                    if (mission.MissionDef.Tags.Contains(infestedHavenTag) && CheckGeoscapeSpecialDifficultySettings(controller)==2)
                     {
 
-                        GeoLevelController geoLevel = mission.Site.GeoLevel;
+                        ResourcePack resources = new ResourcePack(__instance.Resources);
+                        float multiplier = 0.25f;
 
 
+                        for (int i = 0; i < __instance.Resources.Count(); i++)
+                        {
+                            ResourceUnit resourceUnit = __instance.Resources[i];
+                            resources[i] = new ResourceUnit(resourceUnit.Type, resourceUnit.Value * multiplier);
+                        }
+
+                        rewardDescription.Resources.Clear();
+                        rewardDescription.Resources.AddRange(resources);
+                        TFTVLogger.Always($"Resource reward from mission {mission.MissionName.LocalizeEnglish()} modified to {resources[0].Value}");
+
+                    }
+
+
+                    if (mission.MissionDef.Tags.Contains(havenDefenseTag))
+                    {
                         ResourcePack resources = new ResourcePack(__instance.Resources);
                         float multiplier = TFTVNewGameOptions.ResourceMultiplierSetting;
 
-                        if (TFTVVoidOmens.CheckFordVoidOmensInPlay(geoLevel).Contains(18) && __instance.name.Contains("Haven"))
+                        if (TFTVVoidOmens.CheckFordVoidOmensInPlay(controller).Contains(18) && __instance.name.Contains("Haven"))
                         {
                             multiplier *= 0.5f;
                         }
@@ -505,7 +564,6 @@ namespace TFTV
 
                     if (mission.MissionDef.Tags.Contains(havenDefenseTag))
                     {
-
 
                         ResourcePack resources = new ResourcePack(__instance.Resources);
                         float multiplier = TFTVNewGameOptions.ResourceMultiplierSetting;
@@ -982,7 +1040,7 @@ namespace TFTV
 
 
 
-        //This patch checks game difficulty and config options 
+        //This method checks game difficulty and config options 
         //If playing on Rookie and difficulty override option not selected, easy tactical will apply
         //IF playing I AM ETERMES, extra difficulty will apply
         //Easy difficulty adds a special perk to all Phoenix Operatives that reduces damage from projecticle, fire, poison, paralysis, virus, acid  by 50%
@@ -990,91 +1048,91 @@ namespace TFTV
         //Etermes difficulty adds the same perks in reverse, and with a 25% 
         //Doesn't apply during Tutorial
 
-        [HarmonyPatch(typeof(TacticalLevelController), "ActorEnteredPlay")]
-        public static class TacticalLevelController_ActorEnteredPlay_HumanEnemies_Patch
+
+        public static void AddSpecialDifficultiesBuffsAndVulnerabilities(TacticalActorBase actor, TacticalLevelController __instance) 
         {
-            public static void Postfix(TacticalActorBase actor, TacticalLevelController __instance)
+
+            try
             {
-                try
+                if (!__instance.TacMission.MissionData.MissionType.name.Contains("Tutorial"))
                 {
-                    if (!__instance.TacMission.MissionData.MissionType.name.Contains("Tutorial"))
+
+                    TFTVConfig config = TFTVMain.Main.Config;
+                    DamageMultiplierStatusDef protectionStatus = DefCache.GetDef<DamageMultiplierStatusDef>("RookieProtectionStatus");
+                    DamageMultiplierStatusDef vulnerabilityStatus = DefCache.GetDef<DamageMultiplierStatusDef>("RookieVulnerabilityStatus");
+                    DamageMultiplierStatusDef protectionEtermesStatus = DefCache.GetDef<DamageMultiplierStatusDef>("EtermesProtectionStatus");
+                    DamageMultiplierStatusDef vulnerabilityEtermesStatus = DefCache.GetDef<DamageMultiplierStatusDef>("EtermesVulnerabilityStatus");
+                    DamageMultiplierStatusDef scyllaDamageResistance = DefCache.GetDef<DamageMultiplierStatusDef>("ScyllaDamageResistance");
+                    ClassTagDef cyclopsTag = DefCache.GetDef<ClassTagDef>("MediumGuardian_ClassTagDef");
+
+                    if (CheckTacticalSpecialDifficultySettings(__instance) == 1)
                     {
 
-                        TFTVConfig config = TFTVMain.Main.Config;
-                        DamageMultiplierStatusDef protectionStatus = DefCache.GetDef<DamageMultiplierStatusDef>("RookieProtectionStatus");
-                        DamageMultiplierStatusDef vulnerabilityStatus = DefCache.GetDef<DamageMultiplierStatusDef>("RookieVulnerabilityStatus");
-                        DamageMultiplierStatusDef protectionEtermesStatus = DefCache.GetDef<DamageMultiplierStatusDef>("EtermesProtectionStatus");
-                        DamageMultiplierStatusDef vulnerabilityEtermesStatus = DefCache.GetDef<DamageMultiplierStatusDef>("EtermesVulnerabilityStatus");
-                        DamageMultiplierStatusDef scyllaDamageResistance = DefCache.GetDef<DamageMultiplierStatusDef>("ScyllaDamageResistance");
-                        ClassTagDef cyclopsTag = DefCache.GetDef<ClassTagDef>("MediumGuardian_ClassTagDef");
-
-                        if (CheckTacticalSpecialDifficultySettings(__instance) == 1)
+                        if (__instance.GetFactionByCommandName("PX") != null)
                         {
+                            TacticalFaction phoenixFaction = __instance.GetFactionByCommandName("PX");
 
-                            if (__instance.GetFactionByCommandName("PX") != null)
+                            if (actor is TacticalActor tacticalActor && tacticalActor.TacticalFaction.GetRelationTo(phoenixFaction) == FactionRelation.Enemy)
                             {
-                                TacticalFaction phoenixFaction = __instance.GetFactionByCommandName("PX");
-
-                                if (actor is TacticalActor tacticalActor && tacticalActor.TacticalFaction.GetRelationTo(phoenixFaction) == FactionRelation.Enemy)
+                                if (tacticalActor.IsActive && !tacticalActor.HasStatus(vulnerabilityStatus))
                                 {
-                                    if (tacticalActor.IsActive && !tacticalActor.HasStatus(vulnerabilityStatus))
-                                    {
-                                        tacticalActor.Status.ApplyStatus(vulnerabilityStatus);
-
-                                    }
+                                    tacticalActor.Status.ApplyStatus(vulnerabilityStatus);
                                 }
-
-                                if (actor is TacticalActor phoenixActor && phoenixActor.TacticalFaction == phoenixFaction)
-                                {
-                                    if (phoenixActor.IsActive && !phoenixActor.HasStatus(protectionStatus))
-                                    {
-                                        phoenixActor.Status.ApplyStatus(protectionStatus);
-                                    }
-                                }
-
                             }
+
+                            if (actor is TacticalActor phoenixActor && phoenixActor.TacticalFaction == phoenixFaction)
+                            {
+                                if (phoenixActor.IsActive && !phoenixActor.HasStatus(protectionStatus))
+                                {
+                                    phoenixActor.Status.ApplyStatus(protectionStatus);
+                                }
+                            }
+
                         }
-                        if (CheckTacticalSpecialDifficultySettings(__instance) == 2)
+                    }
+                    if (CheckTacticalSpecialDifficultySettings(__instance) == 2)
+                    {
+                        if (__instance.GetFactionByCommandName("PX") != null)
                         {
-                            if (__instance.GetFactionByCommandName("PX") != null)
+                            TacticalFaction phoenixFaction = __instance.GetFactionByCommandName("PX");
+
+                            if (actor is TacticalActor tacticalActor && tacticalActor.TacticalFaction.GetRelationTo(phoenixFaction) == FactionRelation.Enemy)
                             {
-                                TacticalFaction phoenixFaction = __instance.GetFactionByCommandName("PX");
-
-                                if (actor is TacticalActor tacticalActor && tacticalActor.TacticalFaction.GetRelationTo(phoenixFaction) == FactionRelation.Enemy)
+                                if (tacticalActor.IsActive && !tacticalActor.HasStatus(protectionEtermesStatus) && !tacticalActor.HasGameTag(cyclopsTag))
                                 {
-                                    if (tacticalActor.IsActive && !tacticalActor.HasStatus(protectionEtermesStatus) && !tacticalActor.HasGameTag(cyclopsTag))
-                                    {
-                                        tacticalActor.Status.ApplyStatus(protectionEtermesStatus);
-
-                                    }
+                                    tacticalActor.Status.ApplyStatus(protectionEtermesStatus);
                                 }
-
-                                if (actor is TacticalActor phoenixActor && phoenixActor.TacticalFaction == phoenixFaction)
-                                {
-                                    if (phoenixActor.IsActive && !phoenixActor.HasStatus(vulnerabilityEtermesStatus))
-                                    {
-                                        phoenixActor.Status.ApplyStatus(vulnerabilityEtermesStatus);
-                                    }
-                                }
-
                             }
+
+                            if (actor is TacticalActor phoenixActor && phoenixActor.TacticalFaction == phoenixFaction)
+                            {
+                                if (phoenixActor.IsActive && !phoenixActor.HasStatus(vulnerabilityEtermesStatus))
+                                {
+                                    phoenixActor.Status.ApplyStatus(vulnerabilityEtermesStatus);
+                                }
+                            }
+
                         }
-                        if (TFTVNewGameOptions.StrongerPandoransSetting && scyllaDamageResistance != null)
+                    }
+                    if (TFTVNewGameOptions.StrongerPandoransSetting && scyllaDamageResistance != null)
+                    {
+                        if (actor.ActorDef.name.Equals("Queen_ActorDef") && !actor.Status.HasStatus(scyllaDamageResistance))
                         {
-                            if (actor.ActorDef.name.Equals("Queen_ActorDef") && !actor.Status.HasStatus(scyllaDamageResistance))
-                            {
-                                actor.Status.ApplyStatus(scyllaDamageResistance);
+                            actor.Status.ApplyStatus(scyllaDamageResistance);
 
-                            }
                         }
                     }
                 }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
             }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+
+
         }
+
 
 
 
@@ -1214,9 +1272,12 @@ namespace TFTV
                 GeoLevelController controllerGeo = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
                 TacticalLevelController controllerTactical = GameUtl.CurrentLevel().GetComponent<TacticalLevelController>();
 
+                TFTVLogger.Always($"got here. tac controller null? {controllerTactical==null}. IW adjustments on? {TFTVNewGameOptions.ImpossibleWeaponsAdjustmentsSetting}");
 
                 if ((controllerGeo != null && ApplyImpossibleWeaponsAdjustmentsOnGeoscape(controllerGeo) || controllerTactical != null && ApplyImpossibleWeaponsAdjustmentsOnTactical(controllerTactical)) && !ImpossibleWeaponsAdjusted)
                 {
+                    
+
                     foreach (WeaponDef weaponDef in Repo.GetAllDefs<WeaponDef>())
                     {
 

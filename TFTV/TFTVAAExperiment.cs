@@ -281,43 +281,44 @@ namespace TFTV
                 }
             }
 
-            // Store some sprites to use them in tracker and objectives list
-            [HarmonyPatch(typeof(UIModuleInfoBar), "Init")]
-            public static class UIModuleInfoBar_Init_Patch
+
+            public static void StoreSpritesForTrackerAndObjectivesList(UIModuleInfoBar uIModuleInfoBar) 
             {
-
-                public static void Postfix(UIModuleInfoBar __instance)
+                try
                 {
-                    try
+                    DefRepository defRepository = GameUtl.GameComponent<DefRepository>();
+
+                    if (aircraftSprite == null)
                     {
-                        DefRepository defRepository = GameUtl.GameComponent<DefRepository>();
-
-                        if (aircraftSprite == null)
-                        {
-                            aircraftSprite = __instance.AirVehiclesLabel.transform.parent.gameObject.GetComponentInChildren<Image>(true).sprite;
-                        }
-
-                        if (ancientSiteProbeSprite == null)
-                        {
-                            ancientSiteProbeSprite = defRepository.DefRepositoryDef.AllDefs.OfType<ViewElementDef>().Where(def => def.name.Contains("AncientSiteProbeAbilityDef")).FirstOrDefault().SmallIcon;
-                        }
-
-                        if (archeologyLabSprite == null)
-                        {
-                            archeologyLabSprite = defRepository.DefRepositoryDef.AllDefs.OfType<ViewElementDef>().Where(def => def.name.Contains("ArcheologyLab_PhoenixFacilityDef")).FirstOrDefault().SmallIcon;
-                        }
-
-                        if (phoenixFactionSprite == null)
-                        {
-                            phoenixFactionSprite = defRepository.DefRepositoryDef.AllDefs.OfType<GeoFactionViewDef>().Where(def => def.name.Contains("Phoenix")).FirstOrDefault().FactionIcon;
-                        }
+                        aircraftSprite = uIModuleInfoBar.AirVehiclesLabel.transform.parent.gameObject.GetComponentInChildren<Image>(true).sprite;
                     }
-                    catch (Exception e)
+
+                    if (ancientSiteProbeSprite == null)
                     {
-                        TFTVLogger.Error(e);
+                        ancientSiteProbeSprite = defRepository.DefRepositoryDef.AllDefs.OfType<ViewElementDef>().Where(def => def.name.Contains("AncientSiteProbeAbilityDef")).FirstOrDefault().SmallIcon;
+                    }
+
+                    if (archeologyLabSprite == null)
+                    {
+                        archeologyLabSprite = defRepository.DefRepositoryDef.AllDefs.OfType<ViewElementDef>().Where(def => def.name.Contains("ArcheologyLab_PhoenixFacilityDef")).FirstOrDefault().SmallIcon;
+                    }
+
+                    if (phoenixFactionSprite == null)
+                    {
+                        phoenixFactionSprite = defRepository.DefRepositoryDef.AllDefs.OfType<GeoFactionViewDef>().Where(def => def.name.Contains("Phoenix")).FirstOrDefault().FactionIcon;
                     }
                 }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+
+
+
+
+
             }
+
 
             // Disable the last safeguard for starting a base defense mission.
             // Vanilla will cancel the assault if no alien base in range is active anymore (because it was detected after a haven defence and subsequently destroyed)
@@ -370,31 +371,6 @@ namespace TFTV
                 }
             }
 
-            // Add an icon for *secondary* objectives of a faction without icon set (Environment, Inactive)
-            [HarmonyPatch(typeof(GeoObjectiveElementController), "SetObjective")]
-            public static class GeoObjectiveElementController_SetObjective_Patch
-            {
-
-
-                public static void Prefix(ref Sprite icon, ref Color iconColor)
-                {
-                    try
-                    {
-                        if (icon == null)
-                        {
-                            TFTVLogger.Debug($"[GeoObjectiveElementController_SetObjective_PREFIX] Icon is null, setting a custom one.");
-
-                            // Fallback to some prepared sprite
-                            icon = archeologyLabSprite;
-                            iconColor = Color.white;
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        TFTVLogger.Error(e);
-                    }
-                }
-            }
 
             // Prefix the times with an "~"
             [HarmonyPatch(typeof(UIFactionDataTrackerElement), "SetTime")]
@@ -416,114 +392,114 @@ namespace TFTV
                 }
             }
 
-            // Recolor the timer on geoscape sites for base/ancient site attacks
-            [HarmonyPatch(typeof(GeoSiteVisualsController), "RefreshSiteVisuals")]
-            public static class GeoSiteVisualsController_RefreshSiteVisuals_Patch
+            public static void RecolorTimerBaseAndAncientSiteAttacks(GeoSiteVisualsController geoSiteVisualsController, GeoSite site) 
             {
 
-                public static void Postfix(GeoSiteVisualsController __instance, GeoSite site)
+                try
                 {
-                    try
+                    bool isRelevantPhoenixBase = site.Type == GeoSiteType.PhoenixBase && site.IsActiveSite;
+                    bool isRelevantAncientSite = site.IsArcheologySite && site.Owner is GeoPhoenixFaction;
+                    bool isRelevantSite = isRelevantPhoenixBase || isRelevantAncientSite;
+
+                    if (!isRelevantSite)
                     {
-                        bool isRelevantPhoenixBase = site.Type == GeoSiteType.PhoenixBase && site.IsActiveSite;
-                        bool isRelevantAncientSite = site.IsArcheologySite && site.Owner is GeoPhoenixFaction;
-                        bool isRelevantSite = isRelevantPhoenixBase || isRelevantAncientSite;
+                        return;
+                    }
 
-                        if (!isRelevantSite)
-                        {
-                            return;
-                        }
-
-                        GeoLevelController geoLevel = site.GeoLevel;
+                    GeoLevelController geoLevel = site.GeoLevel;
 
 
-                        /*  if (site.Type == GeoSiteType.PhoenixBase && MissionDeployment.PhoenixBasesUnderAttack.ContainsKey(site))
+                    /*  if (site.Type == GeoSiteType.PhoenixBase && MissionDeployment.PhoenixBasesUnderAttack.ContainsKey(site))
+                      {
+                          foreach (Renderer r in __instance.TimerController.gameObject.GetComponentsInChildren<Renderer>())
                           {
-                              foreach (Renderer r in __instance.TimerController.gameObject.GetComponentsInChildren<Renderer>())
+
+                              r.gameObject.SetActive(true);
+                              if (r.name == "TimedIcon")
                               {
+                                  r.material.color = baseAttackTrackerColor;
+                              }
 
-                                  r.gameObject.SetActive(true);
-                                  if (r.name == "TimedIcon")
+                              if (r.name == "TimeText")
+                              {
+                                  foreach (GeoSite phoenixBase in MissionDeployment.PhoenixBasesUnderAttack.Keys)
                                   {
-                                      r.material.color = baseAttackTrackerColor;
-                                  }
-
-                                  if (r.name == "TimeText")
-                                  {
-                                      foreach (GeoSite phoenixBase in MissionDeployment.PhoenixBasesUnderAttack.Keys)
+                                      if (site == phoenixBase)
                                       {
-                                          if (site == phoenixBase)
-                                          {
-                                              TimeUnit attackTime = TimeUnit.FromHours((float)(MissionDeployment.PhoenixBasesUnderAttack[phoenixBase].First().Value - site.GeoLevel.Timing.Now).TimeSpan.TotalHours);
-                                              //TFTVLogger.Debug($"[UIModuleFactionAgendaTracker_UpdateData_PREFIX] element.TrackedObject: {element.TrackedObject}, attackTime: {attackTime}");
+                                          TimeUnit attackTime = TimeUnit.FromHours((float)(MissionDeployment.PhoenixBasesUnderAttack[phoenixBase].First().Value - site.GeoLevel.Timing.Now).TimeSpan.TotalHours);
+                                          //TFTVLogger.Debug($"[UIModuleFactionAgendaTracker_UpdateData_PREFIX] element.TrackedObject: {element.TrackedObject}, attackTime: {attackTime}");
 
-                                              r.gameObject.GetComponent<Text>().text = attackTime.ToString();
-                                          }
-
+                                          r.gameObject.GetComponent<Text>().text = attackTime.ToString();
                                       }
+
                                   }
                               }
-                          }*/
+                          }
+                      }*/
 
 
 
 
-                        bool isScheduledForAttack = false;
-                        foreach (GeoFaction geoFaction in geoLevel.Factions)
-                        {
-                            if (geoFaction.IsViewerFaction || geoFaction.IsEnvironmentFaction || geoFaction.IsNeutralFaction || geoFaction.IsInactiveFaction)
-                            {
-                                continue;
-                            }
-                            foreach (SiteAttackSchedule phoenixBaseAttackSchedule in geoFaction.PhoenixBaseAttackSchedule)
-                            {
-                                if (phoenixBaseAttackSchedule.HasAttackScheduled && phoenixBaseAttackSchedule.Site == site)
-                                {
-                                    isScheduledForAttack = true;
-                                    goto quitLoop;
-                                }
-                            }
-                            foreach (SiteAttackSchedule ancientSiteAttackSchedule in geoFaction.AncientSiteAttackSchedule)
-                            {
-                                if (ancientSiteAttackSchedule.HasAttackScheduled && ancientSiteAttackSchedule.Site == site)
-                                {
-                                    isScheduledForAttack = true;
-                                    goto quitLoop;
-                                }
-                            }
-                        }
-
-                    quitLoop:
-                        if (isScheduledForAttack && site.Type != GeoSiteType.PhoenixBase)
-                        {
-                            TFTVLogger.Debug($"[GeoSiteVisualsController_RefreshSiteVisuals_POSTFIX] Site: {site.Name} is scheduled for an attack.");
-
-                            // Works
-                            foreach (Renderer r in __instance.TimerController.gameObject.GetComponentsInChildren<Renderer>())
-                            {
-
-                                r.gameObject.SetActive(true);
-                                if (r.name == "TimedIcon")
-                                {
-                                    r.material.color = baseAttackTrackerColor;
-                                  
-                                }
-
-                                // } 
-                            }
-                        }
-                        else if(isScheduledForAttack)
-                        {
-                            __instance.TimerController.gameObject.SetChildrenVisibility(false);                
-                           
-                        }
-                        
-                    }
-                    catch (Exception e)
+                    bool isScheduledForAttack = false;
+                    foreach (GeoFaction geoFaction in geoLevel.Factions)
                     {
-                        TFTVLogger.Error(e);
+                        if (geoFaction.IsViewerFaction || geoFaction.IsEnvironmentFaction || geoFaction.IsNeutralFaction || geoFaction.IsInactiveFaction)
+                        {
+                            continue;
+                        }
+                        foreach (SiteAttackSchedule phoenixBaseAttackSchedule in geoFaction.PhoenixBaseAttackSchedule)
+                        {
+                            if (phoenixBaseAttackSchedule.HasAttackScheduled && phoenixBaseAttackSchedule.Site == site)
+                            {
+                                isScheduledForAttack = true;
+                                goto quitLoop;
+                            }
+                        }
+                        foreach (SiteAttackSchedule ancientSiteAttackSchedule in geoFaction.AncientSiteAttackSchedule)
+                        {
+                            if (ancientSiteAttackSchedule.HasAttackScheduled && ancientSiteAttackSchedule.Site == site)
+                            {
+                                isScheduledForAttack = true;
+                                goto quitLoop;
+                            }
+                        }
                     }
+
+                quitLoop:
+                    if (isScheduledForAttack && site.Type != GeoSiteType.PhoenixBase)
+                    {
+                        TFTVLogger.Debug($"[GeoSiteVisualsController_RefreshSiteVisuals_POSTFIX] Site: {site.Name} is scheduled for an attack.");
+
+                        // Works
+                        foreach (Renderer r in geoSiteVisualsController.TimerController.gameObject.GetComponentsInChildren<Renderer>())
+                        {
+
+                            r.gameObject.SetActive(true);
+                            if (r.name == "TimedIcon")
+                            {
+                                r.material.color = baseAttackTrackerColor;
+
+                            }
+
+                            // } 
+                        }
+                    }
+                    else if (isScheduledForAttack)
+                    {
+                        geoSiteVisualsController.TimerController.gameObject.SetChildrenVisibility(false);
+
+                    }
+
                 }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+
+
+
+
+
             }
 
             /*     // Just an informational patch for now

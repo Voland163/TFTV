@@ -74,6 +74,7 @@ namespace PRMBetterClasses.SkillModifications
         {
             //PassiveModifierAbilityDef SurpriseAttack = DefCache.GetDef<PassiveModifierAbilityDef>("SurpriseAttack_AbilityDef");
             StunDamageKeywordDataDef SurpriseAttack_DamageKeywordDataDef = DefCache.GetDef<StunDamageKeywordDataDef>("SurpriseAttack_DamageKeywordDataDef");
+            SurpriseAttack_DamageKeywordDataDef.ApplyOnlyOnHealthDamage = true;
             SurpriseAttack_DamageKeywordDataDef.ValueMultiplier = 5.0f;
         }
 

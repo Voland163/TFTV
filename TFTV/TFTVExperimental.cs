@@ -29,26 +29,26 @@ namespace TFTV
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
 
 
+        [HarmonyPatch(typeof(GeoFaction), "ScheduleAttackOnSite")]
+        public static class PhoenixGame_ScheduleAttackOnSite_patch
+        {
 
-        /*   [HarmonyPatch(typeof(PhoenixGame), "StartGame")]
-           public static class PhoenixGame_StartGame_patch
-           {
+            public static void Postfix(GeoSite site, TimeUnit attackAfter)
+            {
+                try
+                {
+                    TFTVLogger.Always($"scheduleAttackOnSite run {site.LocalizedSiteName} {attackAfter}");
 
-               public static void Prefix()
-               {
-                   try
-                   {
 
-                    TFTVReleaseOnly.OnReleasePrototypeDefs();
 
-                   }
-                   catch (Exception e)
-                   {
-
-                       throw;
-                   }
-               }
-           }*/
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
 
         public static void CorrrectPhoenixSaveManagerDifficulty()
         {
@@ -127,7 +127,7 @@ namespace TFTV
 
 
                         }
-                        else 
+                        else
                         {
                             string warning = $"Could not find difficulty! This is a tactical save made before Update# 36. Please load a Geoscape save before this mission; this save is doomed!";
 
@@ -207,43 +207,43 @@ namespace TFTV
             }
         }
 
-
-
-        [HarmonyPatch(typeof(TacticalLevelController), "ActorEnteredPlay")]
-        public static class TacticalLevelController_ActorEnteredPlay_ReduceDrops_Patch
+        public static void AddReinforcementTagToImplementNoDropsOption(TacticalActorBase actor, TacticalLevelController __instance)
         {
-            public static void Postfix(TacticalActorBase actor, TacticalLevelController __instance)
+            try
             {
-                try
+                TFTVConfig config = TFTVMain.Main.Config;
+
+                if (config.ReinforcementsNoDrops && __instance.TurnNumber > 1 && !__instance.IsLoadingSavedGame && actor is TacticalActor tacticalActor)
                 {
-                    TFTVConfig config = TFTVMain.Main.Config;
-
-                    if (config.ReinforcementsNoDrops && __instance.TurnNumber > 1 && actor is TacticalActor tacticalActor)
+                    if (tacticalActor.TacticalFaction != __instance.GetFactionByCommandName("PX"))
                     {
-                        if (tacticalActor.TacticalFaction != __instance.GetFactionByCommandName("PX"))
+                        GameTagDef reinforcementTag = DefCache.GetDef<GameTagDef>("ReinforcementTag_GameTagDef");
+
+                        //  TFTVLogger.Always($"reinforcementTag is {reinforcementTag?.name}");
+
+                        // TFTVLogger.Always("The turn number is " + __instance.TurnNumber);
+
+                        if (!tacticalActor.HasGameTag(reinforcementTag))
                         {
-                            GameTagDef reinforcementTag = DefCache.GetDef<GameTagDef>("ReinforcementTag_GameTagDef");
+                            tacticalActor?.GameTags?.Add(reinforcementTag);
+                            TFTVLogger.Always($"Reinforcement tag added to {actor?.name} {actor.HasGameTag(reinforcementTag)}");
 
-                            //  TFTVLogger.Always($"reinforcementTag is {reinforcementTag?.name}");
-
-                            // TFTVLogger.Always("The turn number is " + __instance.TurnNumber);
-
-                            if (!tacticalActor.HasGameTag(reinforcementTag))
-                            {
-                                tacticalActor?.GameTags?.Add(reinforcementTag);
-                                TFTVLogger.Always($"Reinforcement tag added to {actor?.name} {actor.HasGameTag(reinforcementTag)}");
-
-                            }
                         }
                     }
+                }
 
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
             }
         }
+
+
+
+
+
+
 
 
         [HarmonyPatch(typeof(DieAbility), "ShouldDestroyItem")]

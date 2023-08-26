@@ -118,19 +118,20 @@ namespace TFTV
                 TFTVCapturePandorans.ContainmentFacilityPresent = false;
                 TFTVNewGameOptions.ConfigImplemented = false;
                 TFTVNewGameOptions.InternalDifficultyCheck = 0;
-              /*  TFTVNewGameOptions.AmountOfExoticResourcesSetting;
-                TFTVNewGameOptions.ResourceMultiplierSetting;
-                TFTVNewGameOptions.DiplomaticPenaltiesSetting;
-                TFTVNewGameOptions.StaminaPenaltyFromInjurySetting;
-                TFTVNewGameOptions.MoreAmbushesSetting;
-                TFTVNewGameOptions.LimitedCaptureSetting;
-                TFTVNewGameOptions.LimitedHarvestingSetting;
-                TFTVNewGameOptions.StrongerPandoransSetting;
-                TFTVNewGameOptions.ImpossibleWeaponsAdjustmentsSetting;*/
+                TFTVCapturePandoransGeoscape.ToxinsInCirculation = 0;
+                /*  TFTVNewGameOptions.AmountOfExoticResourcesSetting;
+                  TFTVNewGameOptions.ResourceMultiplierSetting;
+                  TFTVNewGameOptions.DiplomaticPenaltiesSetting;
+                  TFTVNewGameOptions.StaminaPenaltyFromInjurySetting;
+                  TFTVNewGameOptions.MoreAmbushesSetting;
+                  TFTVNewGameOptions.LimitedCaptureSetting;
+                  TFTVNewGameOptions.LimitedHarvestingSetting;
+                  TFTVNewGameOptions.StrongerPandoransSetting;
+                  TFTVNewGameOptions.ImpossibleWeaponsAdjustmentsSetting;*/
 
-        //  TFTVUI.CurrentlyAvailableInv.Clear();
-        //  TFTVUI.CurrentlyHiddenInv.Clear();
-        TFTVLogger.Always($"Internal variables cleared");
+                //  TFTVUI.CurrentlyAvailableInv.Clear();
+                //  TFTVUI.CurrentlyHiddenInv.Clear();
+                TFTVLogger.Always($"Internal variables cleared");
             }
             catch (Exception e)
             {

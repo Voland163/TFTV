@@ -304,6 +304,11 @@ namespace TFTV
                         __result.EventBackground = Helper.CreateSpriteFromImageFile("odi15.jpg");//AlistairOffice;
                     }
 
+                    else if (geoEvent.EventID.Equals("SDI_16"))
+                    {
+                        __result.EventBackground = Helper.CreateSpriteFromImageFile("odi16.jpg");//AlistairOffice;
+                    }
+
                     else if (geoEvent.EventID.Equals("VoidOmen") || geoEvent.EventID == "PROG_FS10" || geoEvent.EventID.Contains("Alistair")
                             || geoEvent.EventID.Equals("PROG_LE3_WARN"))
                     {
