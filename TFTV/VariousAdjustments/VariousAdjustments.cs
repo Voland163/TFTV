@@ -6,6 +6,7 @@ using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.GameTags;
+using PhoenixPoint.Common.Entities.Items;
 using PhoenixPoint.Common.UI;
 using PhoenixPoint.Geoscape.Entities.Research;
 using PhoenixPoint.Geoscape.Entities.Research.Requirement;
@@ -580,22 +581,32 @@ namespace PRMBetterClasses.VariousAdjustments
         }
         public static void Change_VidarGL(SharedData shared)
         {
-            int vGLNormal = 50;
-            int vGLShred = 20;
-            int vGLAcid = 10;
+            //int vGLNormal = 50;
+            //int vGLShred = 20;
+            //int vGLAcid = 10;
             int vGlAPCost = 50;
 
             WeaponDef vGL = DefCache.GetDef<WeaponDef>("FS_AssaultGrenadeLauncher_WeaponDef");
 
-            vGL.DamagePayload.DamageKeywords = new List<DamageKeywordPair>
-            {
-                new DamageKeywordPair{DamageKeywordDef = shared.SharedDamageKeywords.BlastKeyword, Value = vGLNormal },
-                new DamageKeywordPair{DamageKeywordDef = shared.SharedDamageKeywords.ShreddingKeyword, Value = vGLShred },
-                new DamageKeywordPair{DamageKeywordDef = shared.SharedDamageKeywords.AcidKeyword, Value = vGLAcid },
-            };
+           
+            //vGL.DamagePayload.DamageKeywords = new List<DamageKeywordPair>
+            //{
+            //    new DamageKeywordPair{DamageKeywordDef = shared.SharedDamageKeywords.BlastKeyword, Value = vGLNormal },
+            //    new DamageKeywordPair{DamageKeywordDef = shared.SharedDamageKeywords.ShreddingKeyword, Value = vGLShred },
+            //    new DamageKeywordPair{DamageKeywordDef = shared.SharedDamageKeywords.AcidKeyword, Value = vGLAcid },
+            //};
 
             vGL.APToUsePerc = vGlAPCost;
+            vGL.ChargesMax = 3;
 
+            ItemDef vGLammo = DefCache.GetDef<ItemDef>("FS_AssaultGrenadeLauncher_AmmoClip_ItemDef");
+            vGLammo.ChargesMax = 3;
+
+            vGLammo.ManufactureMaterials = 34;
+            vGLammo.ManufactureTech = 4;
+            Sprite vGLammoIcon = Helper.CreateSpriteFromImageFile("Vidar_Ammo_3x_v3.png");
+            vGLammo.ViewElementDef.InventoryIcon = vGLammoIcon;
+            vGLammo.ViewElementDef.RosterIcon = vGLammoIcon;
         }
         public static void Change_Destiny()
         {

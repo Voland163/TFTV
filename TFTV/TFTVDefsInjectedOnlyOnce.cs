@@ -10,6 +10,7 @@ using Base.Serialization;
 using Base.UI;
 using Base.Utils;
 using Code.PhoenixPoint.Tactical.Entities.Equipments;
+using Epic.OnlineServices.Stats;
 using HarmonyLib;
 using PhoenixPoint.Common.ContextHelp;
 using PhoenixPoint.Common.ContextHelp.HintConditions;
@@ -55,10 +56,12 @@ using PhoenixPoint.Tactical.Entities.Weapons;
 using PhoenixPoint.Tactical.Eventus;
 using PhoenixPoint.Tactical.Levels;
 using PhoenixPoint.Tactical.Levels.FactionObjectives;
+using PhoenixPoint.Tactical.Levels.Mist;
 using PhoenixPoint.Tactical.Prompts;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Policy;
 using UnityEngine;
 using static PhoenixPoint.Tactical.Entities.Abilities.HealAbilityDef;
 using static PhoenixPoint.Tactical.Entities.Statuses.ItemSlotStatsModifyStatusDef;
@@ -226,15 +229,63 @@ namespace TFTV
             RestrictCanBeRecruitedIntoPhoenix();
             ChangePalaceMissions();
             FixBionic3ResearchNotGivingAccessToFacility();
-            CreateFakeFacility();
+            CreateFakeFacilityToFixBadBaseDefenseMaps();
+            ChangeFireNadeCostAndDamage();
+        }
+
+        //NEU_Assault_Torso_BodyPartDef
+        //NEU_Assault_Legs_ItemDef
+        //NEU_Sniper_Helmet_BodyPartDef
+        //NEU_Sniper_Torso_BodyPartDef
+        //NEU_Sniper_Legs_ItemDef
+
+
+
+
+        private static void ChangeFireNadeCostAndDamage() 
+        {
+            try
+            {
+                WeaponDef fireNade = DefCache.GetDef<WeaponDef>("NJ_IncindieryGrenade_WeaponDef");
+
+
+                //change fire damage to 30 from 40
+                foreach(DamageKeywordPair damageKeywordPair in fireNade.DamagePayload.DamageKeywords) 
+                {
+                    if (damageKeywordPair.DamageKeywordDef == Shared.SharedDamageKeywords.BurningKeyword) 
+                    {
+
+                        damageKeywordPair.Value = 30;
+                    }
+                
+                }
+
+                fireNade.ManufactureTech = 5;
+                fireNade.ManufactureMaterials = 20;
+
+                WeaponDef healNade = DefCache.GetDef<WeaponDef>("PX_HealGrenade_WeaponDef");
+
+                healNade.ManufactureTech = 6;
+                healNade.ManufactureMaterials = 28;
+                
+
+            }
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+
+
 
         }
-       
+
        
 
-        private static void CreateFakeFacility()
+        private static void CreateFakeFacilityToFixBadBaseDefenseMaps()
         {
-            try 
+            try
             {
                 PhoenixFacilityDef storesFacility = DefCache.GetDef<PhoenixFacilityDef>("SecurityStation_PhoenixFacilityDef");
 
@@ -250,9 +301,6 @@ namespace TFTV
             {
                 TFTVLogger.Error(e);
             }
-
-
-
         }
 
 
@@ -263,7 +311,7 @@ namespace TFTV
             {
                 ResearchDef researchDef = DefCache.GetDef<ResearchDef>("SYN_Bionics3_ResearchDef");
                 FacilityResearchRewardDef facilityRewardDef = DefCache.GetDef<FacilityResearchRewardDef>("NJ_Bionics2_ResearchDef_FacilityResearchRewardDef_0");
-                List <ResearchRewardDef> rewards = new List<ResearchRewardDef>(researchDef.Unlocks){facilityRewardDef };
+                List<ResearchRewardDef> rewards = new List<ResearchRewardDef>(researchDef.Unlocks) { facilityRewardDef };
 
 
 
@@ -275,12 +323,7 @@ namespace TFTV
             {
                 TFTVLogger.Error(e);
             }
-
-
         }
-
-
-
 
         private static void ChangePalaceMissions()
         {
@@ -290,8 +333,31 @@ namespace TFTV
                 CreateForceYuggothianReceptacleGatesAbilityAndStatus();
                 CreateNewStatusOnDisablingYugothianEyes();
                 AdjustYuggothianEntity();
-                CreateTaxiarchNergal();
                 ChangePalaceMissionDefs();
+                CreatePalaceMissionHints();
+                CreateCharactersForPalaceMission();
+            }
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+        private static void CreatePalaceIntroHint(MissionTypeTagDef missionTag, string hintName, string titleKey, string textKey, string textKey2, string gUID1, string gUID2)
+        {
+            try
+            {
+                ContextHelpHintDef palaceStart0Hint = TFTVTutorialAndStory.CreateNewTacticalHint(hintName + "0", HintTrigger.MissionStart, missionTag.name, titleKey, textKey, 3, false, gUID1);
+                ContextHelpHintDef palaceStart1Hint = TFTVTutorialAndStory.CreateNewManualTacticalHint(hintName + "1", gUID2, titleKey, textKey2);
+
+                palaceStart0Hint.AnyCondition = true;
+                // palaceStart1Hint.IsTutorialHint = false;
+                palaceStart1Hint.Conditions = new List<HintConditionDef>() { TFTVTutorialAndStory.LevelHasTagHintConditionForTacticalHint(missionTag.name) };
+                palaceStart1Hint.AnyCondition = true;
+                palaceStart0Hint.NextHint = palaceStart1Hint;
+
+
             }
 
             catch (Exception e)
@@ -299,9 +365,74 @@ namespace TFTV
                 TFTVLogger.Error(e);
             }
 
+        }
 
+
+        private static void CreatePalaceMissionHints()
+        {
+            try
+            {
+                CreatePalaceIntroHint(DefCache.GetDef<MissionTypeTagDef>("PXPalace"),
+                    "TFTVPXPalaceStart",
+                    "PX_VICTORY_MISSION_START_TITLE", "PX_VICTORY_MISSION_START0", "PX_VICTORY_MISSION_START1",
+                    "{71C7DB4D-1C0D-4AF0-BE4E-2BB90E96CF61}",
+                    "{A5AE9410-69F7-4DDF-9517-A85B8ADA118A}");
+
+                CreatePalaceIntroHint(DefCache.GetDef<MissionTypeTagDef>("NJPalace"),
+                   "TFTVNJPalaceStart",
+                   "NJ_VICTORY_MISSION_START_TITLE", "NJ_VICTORY_MISSION_START0", "NJ_VICTORY_MISSION_START1",
+                   "{C38C52CA-8CFA-4F4D-867F-024ED8BB1FFA}",
+                   "{67041692-4508-4D90-AEFA-9E145DA5E830}");
+
+                CreatePalaceIntroHint(DefCache.GetDef<MissionTypeTagDef>("ANPalace"),
+                  "TFTVANPalaceStart",
+                  "AN_VICTORY_MISSION_START_TITLE", "AN_VICTORY_MISSION_START0", "AN_VICTORY_MISSION_START1",
+                  "{8C41089E-BD4A-4D99-A066-17C10570F10B}",
+                  "{87256303-4DD6-4EDC-B907-F8C02F8CFD02}");
+
+                CreatePalaceIntroHint(DefCache.GetDef<MissionTypeTagDef>("SYPolyPalace"),
+                 "TFTVSYPolyPalaceStart",
+                 "SY_POLY_VICTORY_MISSION_START_TITLE", "SY_POLY_VICTORY_MISSION_START0", "SY_POLY_VICTORY_MISSION_START1",
+                 "{BEDF6DAD-9DF4-41C6-9A81-5913B0B8253A}",
+                 "{D6C6CC71-A471-45CB-A59D-6EB52C3075EE}");
+
+                CreatePalaceIntroHint(DefCache.GetDef<MissionTypeTagDef>("SYTerraPalace"),
+                 "TFTVSYTerraPalaceStart",
+                 "SY_TERRA_VICTORY_MISSION_START_TITLE", "SY_TERRA_VICTORY_MISSION_START0", "SY_TERRA_VICTORY_MISSION_START1",
+                 "{634FF698-80B8-4859-8ACF-956B16BD5B90}",
+                 "{CBE4D317-A0A4-49D0-963D-9EE646D601B8}");
+
+
+                string nameGateHint0 = "ReceptacleGateHint0";
+                string nameGateHint1 = "ReceptacleGateHint1";
+                ContextHelpHintDef palaceGateHint0 = TFTVTutorialAndStory.CreateNewManualTacticalHint(nameGateHint0, "{589E3AA7-07AB-4F36-9C22-05937FE77486}", "VICTORY_MISSION_GATES_TITLE", "VICTORY_MISSION_GATES0");
+                ContextHelpHintDef palaceGateHint1 = TFTVTutorialAndStory.CreateNewManualTacticalHint(nameGateHint1, "{8861E55F-486A-4A53-991C-E94F9917CFF1}", "VICTORY_MISSION_GATES_TITLE", "VICTORY_MISSION_GATES1");
+
+                string nameRevenantHint0 = "PalaceRevenantHint0";
+                string nameRevenantHint1 = "PalaceRevenantHint1";
+
+                ContextHelpHintDef palaceRevenantHint0 = TFTVTutorialAndStory.CreateNewManualTacticalHint(nameRevenantHint0, "{7D5440F0-DF8B-44E2-BB67-A02F72FB1628}", "VICTORY_MISSION_REVENANT_TO_PX_TITLE", "VICTORY_MISSION_REVENANT_TO_PX");
+                ContextHelpHintDef palaceRevenantHint1 = TFTVTutorialAndStory.CreateNewManualTacticalHint(nameRevenantHint1, "{8B9B2ACE-7790-4F1A-A5F4-4835FB16F972}", "VICTORY_MISSION_REVENANT_TO_YR_TITLE", "VICTORY_MISSION_REVENANT_TO_YR");
+
+                string nameHisMinionsHint = "PalaceHisMinionsHint";
+                ContextHelpHintDef palaceHisMinionsHint = TFTVTutorialAndStory.CreateNewManualTacticalHint(nameHisMinionsHint, "{9EB02D9C-CC19-4D2F-920F-32A8227B685C}", "VICTORY_MISSION_HIS_MINIONS_TITLE", "VICTORY_MISSION_HIS_MINIONS");
+
+                string nameEyesHint = "PalaceEyesHint";
+                string nameTag = "Yuggothian_ClassTagDef";
+                
+                TFTVTutorialAndStory.CreateNewTacticalHint(nameEyesHint, HintTrigger.ActorSeen, nameTag, "VICTORY_MISSION_FOR_THE_EYES_TITLE", "VICTORY_MISSION_FOR_THE_EYES_TEXT", 1, true, "{FF77A9F0-EB84-4CBE-AD78-298399B33956}");
+                    
+
+
+            }
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
 
         }
+
 
         private static void CreateNewStatusOnDisablingYugothianEyes()
         {
@@ -415,9 +546,11 @@ namespace TFTV
                 newFinishGateAbility.ViewElementDef = Helper.CreateDefFromClone(finishHackingDef.ViewElementDef, "{BE486198-CB7E-47D9-8041-64F747D9548A}", finishGateAbilityName);
                 newCancelGateAbility.ViewElementDef = Helper.CreateDefFromClone(cancelHackingDef.ViewElementDef, "{{3309F86B-45F2-4C7A-A639-F12E1B17B5FD}}", cancelGateAbilityName);
 
-                newForceGateAbility.ViewElementDef.DisplayName1 = new LocalizedTextBind("Testing Force Yuggothian Gate", true);
-                newCancelGateAbility.ViewElementDef.DisplayName1 = new LocalizedTextBind("Testing Cancel Force Yuggothian Gate", true);
-
+                newForceGateAbility.ViewElementDef.DisplayName1.LocalizationKey = "FORCE_GATE_ABILITY";
+                newForceGateAbility.ViewElementDef.Description.LocalizationKey = "FORCE_GATE_ABILITY_DESCRIPTION";
+                newCancelGateAbility.ViewElementDef.DisplayName1.LocalizationKey = "CANCEL_FORCE_GATE_ABILITY";
+                newCancelGateAbility.ViewElementDef.Description.LocalizationKey = "CANCEL_FORCE_GATE_ABILITY_DESCRIPTION";
+              //  TFTVLogger.Always($"got here");
 
                 //Then create the statuses
 
@@ -446,9 +579,12 @@ namespace TFTV
                 newActorToObjectiveStatus.Visuals = Helper.CreateDefFromClone(actorToConsoleBridgingStatusDef.Visuals, "{6B002C8D-F28D-4A61-83BB-81E06BFF51FE}", actorToObjectiveBridgeStatusName);
                 newObjectiveToActorStatus.Visuals = Helper.CreateDefFromClone(consoleToActorBridgingStatusDef.Visuals, "{75E47B2A-6598-4635-882C-C763681E2C6D}", objectiveToActorBridgeStatusName);
                 newStatusOnActor.Visuals = Helper.CreateDefFromClone(hackingStatusDef.Visuals, "{A315B3DF-7F7C-4887-B875-007EB58DB61F}", statusOnActorName);
+             //   TFTVLogger.Always($"got here2");
 
-                newStatusOnActor.Visuals.DisplayName1 = new LocalizedTextBind("Testing force Yuggothian Gate status", true);
+                newActorToObjectiveStatus.Visuals.DisplayName1.LocalizationKey = "FORCE_GATE_STATUS";
+                newActorToObjectiveStatus.Visuals.Description.LocalizationKey = "FORCE_GATE_STATUS_DESCRIPTION";
 
+               // TFTVLogger.Always($"got here3");
                 //Hacking_Start_AbilityDef is conditioned on Objective not having ConsoleActivated_StatusDef and it applies
                 //1) ActiveHackableChannelingConsole_StatusDef to the Console (this is just a tag)
                 //2) Hacking_ConsoleToActorBridge_StatusDef to the Objective
@@ -734,17 +870,822 @@ namespace TFTV
 
         }
 
+
+        private static void CreateCharactersForPalaceMission()
+        {
+
+            /*Nikolai
+    Stas
+    Zhara
+    Sophia_Villanova
+    Colonel_Jack_Harlson
+    Captain_Richter*/
+            try
+            {
+                CreateHarlson();
+                CreateRichter();
+                CreateSofia();
+
+                CreateZhara();
+                CreateStas();
+                CreateNikolai();
+
+                CreateTaxiarchNergal();
+                ChangeExalted();
+
+
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+
+
+
+
+
+
+        }
+        private static void ChangeExalted()
+        {
+
+          
+            try
+            {
+
+                TacCharacterDef exalted = DefCache.GetDef<TacCharacterDef>("AN_Exalted_TacCharacterDef");
+
+                List<TacticalAbilityDef> tacticalAbilities = exalted.Data.Abilites.ToList();
+
+               
+
+                ApplyStatusAbilityDef sowerOfChange = DefCache.GetDef<ApplyStatusAbilityDef>("SowerOfChange_AbilityDef");
+                ApplyStatusAbilityDef bioChemist = DefCache.GetDef<ApplyStatusAbilityDef>("BC_Biochemist_AbilityDef");
+                ApplyEffectAbilityDef layWaste = DefCache.GetDef<ApplyEffectAbilityDef>("LayWaste_AbilityDef");
+
+                tacticalAbilities.Add(sowerOfChange);
+                tacticalAbilities.Add(bioChemist);
+                tacticalAbilities.Add(layWaste);
+
+                exalted.Data.Abilites = tacticalAbilities.ToArray();
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+        }
+       
+
+        private static void CreateHarlson()
+        {
+            try
+            {
+            
+                JetJumpAbilityDef jetpackControl = DefCache.GetDef<JetJumpAbilityDef>("JetpackControl_AbilityDef");
+                ApplyStatusAbilityDef boomBlast = DefCache.GetDef<ApplyStatusAbilityDef>("BigBooms_AbilityDef");
+                ApplyStatusAbilityDef takedown = DefCache.GetDef<ApplyStatusAbilityDef>("BC_Takedown_AbilityDef");
+                PassiveModifierAbilityDef punisher = DefCache.GetDef<PassiveModifierAbilityDef>("Punisher_AbilityDef");
+
+
+
+                string nameDef = "Harlson_TacCharacterDef";
+
+                TacCharacterDef harlson = Helper.CreateDefFromClone(DefCache.GetDef<TacCharacterDef>("NJ_Heavy7_CharacterTemplateDef"), "{88465F1E-64E1-4EAC-BCB2-A42CC8F915A8}", nameDef);
+                harlson.Data.Name = "Colonel_Jack_Harlson";
+
+                List<TacticalAbilityDef> abilities = new List<TacticalAbilityDef>()
+                {
+                jetpackControl, boomBlast, takedown, punisher
+
+
+                };
+
+                harlson.Data.Abilites = abilities.ToArray();
+
+
+                WeaponDef archangel = DefCache.GetDef<WeaponDef>("NJ_HeavyRocketLauncher_WeaponDef");
+                WeaponDef fireNade = DefCache.GetDef<WeaponDef>("NJ_IncindieryGrenade_WeaponDef");
+                WeaponDef deceptor = DefCache.GetDef<WeaponDef>("NJ_Gauss_MachineGun_WeaponDef");
+
+                WeaponDef guidedMissileLauncher = DefCache.GetDef<WeaponDef>("NJ_GuidedMissileLauncherPack_WeaponDef");
+
+                TacticalItemDef hmgAmmo = DefCache.GetDef<TacticalItemDef>("NJ_Gauss_MachineGun_AmmoClip_ItemDef");
+                TacticalItemDef hrAmmo = DefCache.GetDef<TacticalItemDef>("NJ_HeavyRocketLauncher_AmmoClip_ItemDef");
+                TacticalItemDef gmAmmo = DefCache.GetDef<TacticalItemDef>("NJ_GuidedMissileLauncher_AmmoClip_ItemDef");
+
+
+               EquipmentDef medkit = DefCache.GetDef<EquipmentDef>("Medkit_EquipmentDef");
+               
+
+                harlson.Data.EquipmentItems = new ItemDef[] {archangel, fireNade, medkit};
+                harlson.Data.InventoryItems = new ItemDef[] { gmAmmo, gmAmmo, hrAmmo, hrAmmo, hrAmmo, hrAmmo };
+
+                harlson.Data.LevelProgression.SetLevel(7);
+                harlson.Data.Strength = 20;
+                harlson.Data.Will = 14;
+                harlson.Data.Speed = 10;
+
+                GameTagDef characterTag = TFTVCommonMethods.CreateNewTag(nameDef, "{8AF3B063-8B77-4B3C-94BC-93A3D90B18C7}");
+                GenderTagDef maleGenderTag = DefCache.GetDef<GenderTagDef>("Male_GenderTagDef");
+                // FacialHairTagDef noFacialHairTag = DefCache.GetDef<FacialHairTagDef>("FacialHairTagDef_Empty");
+
+                //  VoiceProfileTagDef newEmptyVoiceTag = Helper.CreateDefFromClone<VoiceProfileTagDef>(DefCache.GetDef<VoiceProfileTagDef>("1_VoiceProfileTagDef"), "{6935EA8D-95AB-4035-AB9B-B7390138733F}", "EmptyVoiceTag");
+
+                // CustomizationColorTagDef_10 green
+                // CustomizationColorTagDef_14 pink
+                // CustomizationColorTagDef_0 grey
+                // CustomizationColorTagDef_7 red
+
+                CustomizationSecondaryColorTagDef secondaryBlackColor = DefCache.GetDef<CustomizationSecondaryColorTagDef>("CustomizationSecondaryColorTagDef_9");
+                CustomizationSecondaryColorTagDef secondaryBlueColor = DefCache.GetDef<CustomizationSecondaryColorTagDef>("CustomizationSecondaryColorTagDef_2");
+
+                CustomizationPrimaryColorTagDef whitePrimaryColor = DefCache.GetDef<CustomizationPrimaryColorTagDef>("CustomizationColorTagDef_5");
+                CustomizationPrimaryColorTagDef blackPrimaryColor = DefCache.GetDef<CustomizationPrimaryColorTagDef>("CustomizationColorTagDef_9");
+                CustomizationPrimaryColorTagDef greyPrimaryColor = DefCache.GetDef<CustomizationPrimaryColorTagDef>("CustomizationColorTagDef_0");
+
+                CustomizationPatternTagDef noPattern = DefCache.GetDef<CustomizationPatternTagDef>("CustomizationPatternTagDef_0");
+                CustomizationPatternTagDef linesPattern = DefCache.GetDef<CustomizationPatternTagDef>("CustomizationPatternTagDef_11");
+                CustomizationPatternTagDef pattern9 = DefCache.GetDef<CustomizationPatternTagDef>("CustomizationPatternTagDef_8");
+
+                // CustomizationPrimaryColorTagDef blackColor = DefCache.GetDef<CustomizationPrimaryColorTagDef>("CustomizationColorTagDef_9");
+                List<GameTagDef> gameTags = harlson.Data.GameTags.ToList();
+                gameTags.Add(greyPrimaryColor);
+                gameTags.Add(secondaryBlackColor);
+                gameTags.Add(noPattern);
+                gameTags.Add(maleGenderTag);
+                gameTags.Add(characterTag);
+
+                harlson.SpawnCommandId = "HarlsonTFTV";
+                harlson.Data.GameTags = gameTags.ToArray();
+                harlson.CustomizationParams.KeepExistingCustomizationTags = true;
+
+
+
+                TacticalItemDef head = DefCache.GetDef<TacticalItemDef>("NJ_Heavy_Helmet_BodyPartDef");
+
+                SquadPortraitsDef squadPortraits = DefCache.GetDef<SquadPortraitsDef>("SquadPortraitsDef");
+
+                TacticalItemDef newHead = Helper.CreateDefFromClone(head, "{D5A73379-CAA3-4C49-B9E3-FE37F4A2DD9A}", nameDef);
+                newHead.ViewElementDef = Helper.CreateDefFromClone(head.ViewElementDef, "{879D3FB4-BCDF-4E79-BF27-E5100B60ECCC}", nameDef);
+                newHead.BodyPartAspectDef = Helper.CreateDefFromClone(head.BodyPartAspectDef, "{99281C28-6764-444A-B06E-458B4374ED3B}", nameDef);
+
+                TacticalItemDef legs = DefCache.GetDef<TacticalItemDef>("NJ_Heavy_Legs_ItemDef");
+                TacticalItemDef torso = DefCache.GetDef<TacticalItemDef>("NJ_Heavy_Torso_BodyPartDef");
+
+                harlson.Data.BodypartItems = new ItemDef[] { newHead, legs, torso, guidedMissileLauncher };
+
+
+                squadPortraits.ManualPortraits.Add(new SquadPortraitsDef.ManualPortrait { HeadPart = newHead, Portrait = Helper.CreateSpriteFromImageFile("PM_Jack.jpg") });
+
+
+
+
+                List<TacMissionTypeParticipantData.UniqueChatarcterBind> tacCharacterDefs = DefCache.GetDef<CustomMissionTypeDef>("NJVictory_CustomMissionTypeDef").ParticipantsData[0].UniqueUnits.ToList();
+                TacMissionTypeParticipantData.UniqueChatarcterBind uniqueChatarcterBind = new TacMissionTypeParticipantData.UniqueChatarcterBind
+                {
+                    Character = harlson,
+                    Amount = new RangeDataInt { Max = 1, Min = 1 },
+                };
+                tacCharacterDefs.Add(uniqueChatarcterBind);
+                DefCache.GetDef<CustomMissionTypeDef>("NJVictory_CustomMissionTypeDef").ParticipantsData[0].UniqueUnits = tacCharacterDefs.ToArray();
+
+
+
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+
+
+
+        }
+
+        private static void CreateRichter()
+        {
+            try
+            {
+                ShootAbilityDef aimedBurst = DefCache.GetDef<ShootAbilityDef>("AimedBurst_AbilityDef");
+                PassiveModifierAbilityDef quarterback = DefCache.GetDef<PassiveModifierAbilityDef>("Pitcher_AbilityDef");
+                ApplyStatusAbilityDef takedown = DefCache.GetDef<ApplyStatusAbilityDef>("BC_Takedown_AbilityDef");
+                PassiveModifierAbilityDef punisher = DefCache.GetDef<PassiveModifierAbilityDef>("Punisher_AbilityDef");
+
+                string nameDef = "Richter_TacCharacterDef";
+
+                TacCharacterDef richter = Helper.CreateDefFromClone(DefCache.GetDef<TacCharacterDef>("NJ_Assault7_CharacterTemplateDef"), "{A275168C-03EA-4734-8B6D-A373E988C19B}", nameDef);
+                richter.Data.Name = "Captain_Richter";
+                List<TacticalAbilityDef> abilities = new List<TacticalAbilityDef>()
+                {
+                aimedBurst, quarterback, takedown, punisher
+
+
+                };
+
+                richter.Data.Abilites = abilities.ToArray();
+
+                EquipmentDef medkit = DefCache.GetDef<EquipmentDef>("Medkit_EquipmentDef");
+                WeaponDef deimosWhite = DefCache.GetDef<WeaponDef>("SY_LaserAssaultRifle_WhiteNeon_WeaponDef");
+                WeaponDef poisonGrenade = DefCache.GetDef<WeaponDef>("SY_PoisonGrenade_WeaponDef");
+                WeaponDef sonicGrenade = DefCache.GetDef<WeaponDef>("SY_SonicGrenade_WeaponDef");
+
+                TacticalItemDef laserAmmo = DefCache.GetDef<TacticalItemDef>("SY_LaserAssaultRifle_AmmoClip_ItemDef");
+
+                //  sofia.Data.EquipmentItems = new ItemDef[] { deimosWhite, poisonGrenade, sonicGrenade };
+                //  sofia.Data.InventoryItems = new ItemDef[] { laserAmmo, laserAmmo, laserAmmo, medkit, medkit };
+
+                richter.Data.LevelProgression.SetLevel(7);
+                richter.Data.Strength = 16;
+                richter.Data.Will = 14;
+                richter.Data.Speed = 14;
+
+                GameTagDef characterTag = TFTVCommonMethods.CreateNewTag(nameDef, "{AFCAF5E5-1E97-4564-9249-370AF8170756}");
+                GenderTagDef maleGenderTag = DefCache.GetDef<GenderTagDef>("Male_GenderTagDef");
+                // FacialHairTagDef noFacialHairTag = DefCache.GetDef<FacialHairTagDef>("FacialHairTagDef_Empty");
+
+                //  VoiceProfileTagDef newEmptyVoiceTag = Helper.CreateDefFromClone<VoiceProfileTagDef>(DefCache.GetDef<VoiceProfileTagDef>("1_VoiceProfileTagDef"), "{6935EA8D-95AB-4035-AB9B-B7390138733F}", "EmptyVoiceTag");
+
+                // CustomizationColorTagDef_10 green
+                // CustomizationColorTagDef_14 pink
+                // CustomizationColorTagDef_0 grey
+                // CustomizationColorTagDef_7 red
+
+                FacialHairTagDef beard = DefCache.GetDef<FacialHairTagDef>("FacialHairTagDef_Ind1");
+
+                CustomizationSecondaryColorTagDef secondaryBlackColor = DefCache.GetDef<CustomizationSecondaryColorTagDef>("CustomizationSecondaryColorTagDef_9");
+                CustomizationSecondaryColorTagDef secondaryBlueColor = DefCache.GetDef<CustomizationSecondaryColorTagDef>("CustomizationSecondaryColorTagDef_2");
+
+                CustomizationPrimaryColorTagDef whitePrimaryColor = DefCache.GetDef<CustomizationPrimaryColorTagDef>("CustomizationColorTagDef_5");
+                CustomizationPrimaryColorTagDef blackPrimaryColor = DefCache.GetDef<CustomizationPrimaryColorTagDef>("CustomizationColorTagDef_9");
+
+
+                CustomizationPatternTagDef linesPattern = DefCache.GetDef<CustomizationPatternTagDef>("CustomizationPatternTagDef_11");
+                CustomizationPatternTagDef pattern9 = DefCache.GetDef<CustomizationPatternTagDef>("CustomizationPatternTagDef_8");
+
+                CustomizationHairColorTagDef whiteFacialHair = DefCache.GetDef<CustomizationHairColorTagDef>("CustomizationHairColorTagDef_6");
+                RaceTagDef caucasian = DefCache.GetDef<RaceTagDef>("Caucasian_RaceTagDef");
+
+                FaceTagDef face3 = DefCache.GetDef<FaceTagDef>("3_FaceTagDef");
+
+
+                // CustomizationPrimaryColorTagDef blackColor = DefCache.GetDef<CustomizationPrimaryColorTagDef>("CustomizationColorTagDef_9");
+                List<GameTagDef> gameTags = richter.Data.GameTags.ToList();
+                gameTags.Add(caucasian);
+                gameTags.Add(face3);
+                gameTags.Add(beard);
+                gameTags.Add(pattern9);
+                gameTags.Add(whitePrimaryColor);
+                gameTags.Add(secondaryBlueColor);
+                gameTags.Add(whiteFacialHair);
+                gameTags.Add(maleGenderTag);
+                gameTags.Add(characterTag);
+
+                richter.SpawnCommandId = "RichterTFTV";
+                richter.Data.GameTags = gameTags.ToArray();
+                richter.CustomizationParams.KeepExistingCustomizationTags = true;
+
+
+
+                TacticalItemDef head = DefCache.GetDef<TacticalItemDef>("NJ_Assault_Helmet_BodyPartDef");
+
+                SquadPortraitsDef squadPortraits = DefCache.GetDef<SquadPortraitsDef>("SquadPortraitsDef");
+
+                TacticalItemDef newHead = Helper.CreateDefFromClone(head, "{9DC824DF-50CE-408C-9804-E37B9ECFD74C}", nameDef);
+                newHead.ViewElementDef = Helper.CreateDefFromClone(head.ViewElementDef, "{346BF292-8F76-417F-B30E-83709F592A84}", nameDef);
+                newHead.BodyPartAspectDef = Helper.CreateDefFromClone(head.BodyPartAspectDef, "{89A1F3F2-DB35-45D8-AE6E-C1C9C3F33704}", nameDef);
+
+                TacticalItemDef legs = DefCache.GetDef<TacticalItemDef>("NJ_Assault_Legs_ItemDef");
+                TacticalItemDef torso = DefCache.GetDef<TacticalItemDef>("NJ_Assault_Torso_BodyPartDef");
+
+                richter.Data.BodypartItems = new ItemDef[] { newHead, legs, torso };
+
+
+                squadPortraits.ManualPortraits.Add(new SquadPortraitsDef.ManualPortrait { HeadPart = newHead, Portrait = Helper.CreateSpriteFromImageFile("PM_Richter.jpg") });
+
+
+
+
+                List<TacMissionTypeParticipantData.UniqueChatarcterBind> tacCharacterDefs = DefCache.GetDef<CustomMissionTypeDef>("NJVictory_CustomMissionTypeDef").ParticipantsData[0].UniqueUnits.ToList();
+                TacMissionTypeParticipantData.UniqueChatarcterBind uniqueChatarcterBind = new TacMissionTypeParticipantData.UniqueChatarcterBind
+                {
+                    Character = richter,
+                    Amount = new RangeDataInt { Max = 1, Min = 1 },
+                };
+                tacCharacterDefs.Add(uniqueChatarcterBind);
+                DefCache.GetDef<CustomMissionTypeDef>("NJVictory_CustomMissionTypeDef").ParticipantsData[0].UniqueUnits = tacCharacterDefs.ToArray();
+
+
+
+
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+        }
+        private static void CreateSofia()
+        {
+            try
+            {
+                ApplyStatusAbilityDef manualControl = DefCache.GetDef<ApplyStatusAbilityDef>("ManualControl_AbilityDef");
+                PassiveModifierAbilityDef remoteDeployment = DefCache.GetDef<PassiveModifierAbilityDef>("RemoteDeployment_AbilityDef");
+                ApplyStatusAbilityDef takedown = DefCache.GetDef<ApplyStatusAbilityDef>("BC_Takedown_AbilityDef");
+                ApplyStatusAbilityDef arTargeting = DefCache.GetDef<ApplyStatusAbilityDef>("BC_ARTargeting_AbilityDef");
+
+                string nameDef = "Sofia_TacCharacterDef";
+
+                TacCharacterDef sofia = Helper.CreateDefFromClone(DefCache.GetDef<TacCharacterDef>("NJ_Technician7_CharacterTemplateDef"), "{033AA4BB-AA41-45AF-B84B-CFD3F1C76014}", nameDef);
+                sofia.Data.Name = "Sophia_Villanova";
+
+                List<TacticalAbilityDef> abilities = new List<TacticalAbilityDef>()
+                {
+                manualControl, remoteDeployment, takedown, arTargeting
+
+
+                };
+
+                sofia.Data.Abilites = abilities.ToArray();
+
+
+                WeaponDef scorcher = DefCache.GetDef < WeaponDef>("PX_LaserPDW_WeaponDef");
+                WeaponDef mechArms = DefCache.GetDef<WeaponDef>("NJ_Technician_MechArms_WeaponDef");
+
+                TacticalItemDef laserAmmo = DefCache.GetDef<TacticalItemDef>("PX_LaserPDW_AmmoClip_ItemDef");
+                TacticalItemDef mechArmsAmmo = DefCache.GetDef<TacticalItemDef>("MechArms_AmmoClip_ItemDef");
+                EquipmentDef medkit = DefCache.GetDef<EquipmentDef>("Medkit_EquipmentDef");
+                WeaponDef fireNade = DefCache.GetDef<WeaponDef>("NJ_IncindieryGrenade_WeaponDef");
+                TacticalItemDef laserTurret = DefCache.GetDef<TacticalItemDef>("PX_LaserTechTurretItem_ItemDef");
+
+                sofia.Data.EquipmentItems = new ItemDef[] {scorcher, laserTurret, laserTurret };
+                sofia.Data.InventoryItems = new ItemDef[] { laserAmmo, mechArmsAmmo, mechArmsAmmo, laserAmmo };
+
+                sofia.Data.LevelProgression.SetLevel(7);
+                sofia.Data.Strength = 16;
+                sofia.Data.Will = 14;
+                sofia.Data.Speed = 14;
+
+                GameTagDef sofiaTag = TFTVCommonMethods.CreateNewTag(nameDef, "{1B969433-9925-454D-9EF5-15AC081EC607}");
+                GenderTagDef femaleGenderTag = DefCache.GetDef<GenderTagDef>("Female_GenderTagDef");
+                // FacialHairTagDef noFacialHairTag = DefCache.GetDef<FacialHairTagDef>("FacialHairTagDef_Empty");
+
+                //  VoiceProfileTagDef newEmptyVoiceTag = Helper.CreateDefFromClone<VoiceProfileTagDef>(DefCache.GetDef<VoiceProfileTagDef>("1_VoiceProfileTagDef"), "{6935EA8D-95AB-4035-AB9B-B7390138733F}", "EmptyVoiceTag");
+
+                // CustomizationColorTagDef_10 green
+                // CustomizationColorTagDef_14 pink
+                // CustomizationColorTagDef_0 grey
+                // CustomizationColorTagDef_7 red
+
+                CustomizationSecondaryColorTagDef secondaryBlackColor = DefCache.GetDef<CustomizationSecondaryColorTagDef>("CustomizationSecondaryColorTagDef_9");
+                CustomizationSecondaryColorTagDef secondaryBlueColor = DefCache.GetDef<CustomizationSecondaryColorTagDef>("CustomizationSecondaryColorTagDef_2");
+
+                CustomizationPrimaryColorTagDef whitePrimaryColor = DefCache.GetDef<CustomizationPrimaryColorTagDef>("CustomizationColorTagDef_5");
+                CustomizationPrimaryColorTagDef blackPrimaryColor = DefCache.GetDef<CustomizationPrimaryColorTagDef>("CustomizationColorTagDef_9");
+
+                CustomizationPatternTagDef linesPattern = DefCache.GetDef<CustomizationPatternTagDef>("CustomizationPatternTagDef_11");
+                CustomizationPatternTagDef pattern9 = DefCache.GetDef<CustomizationPatternTagDef>("CustomizationPatternTagDef_8");
+
+                // CustomizationPrimaryColorTagDef blackColor = DefCache.GetDef<CustomizationPrimaryColorTagDef>("CustomizationColorTagDef_9");
+                List<GameTagDef> gameTags = sofia.Data.GameTags.ToList();
+                gameTags.Add(blackPrimaryColor);
+                gameTags.Add(secondaryBlueColor);
+                gameTags.Add(pattern9);
+                gameTags.Add(femaleGenderTag);
+                gameTags.Add(sofiaTag);
+
+                sofia.SpawnCommandId = "SofiaTFTV";
+                sofia.Data.GameTags = gameTags.ToArray();
+                sofia.CustomizationParams.KeepExistingCustomizationTags = true;
+
+                
+
+               TacticalItemDef head = DefCache.GetDef<TacticalItemDef>("NJ_Technician_Helmet_BodyPartDef");
+
+                SquadPortraitsDef squadPortraits = DefCache.GetDef<SquadPortraitsDef>("SquadPortraitsDef");
+
+                TacticalItemDef newHead = Helper.CreateDefFromClone(head, "{354840D7-6543-4381-854E-472B5B126CE7}", nameDef);
+                newHead.ViewElementDef = Helper.CreateDefFromClone(head.ViewElementDef, "{358AB930-0194-419B-BE25-2AADFFE8E97E}", nameDef);
+                newHead.BodyPartAspectDef = Helper.CreateDefFromClone(head.BodyPartAspectDef, "{34155BEC-A605-4A0A-91A6-E1723606F118}", nameDef);
+
+                TacticalItemDef legs = DefCache.GetDef<TacticalItemDef>("NJ_Technician_Legs_ItemDef");
+                TacticalItemDef torso = DefCache.GetDef<TacticalItemDef>("NJ_Technician_Torso_BodyPartDef");
+
+                sofia.Data.BodypartItems = new ItemDef[] { newHead, legs, torso, mechArms };
+
+
+                squadPortraits.ManualPortraits.Add(new SquadPortraitsDef.ManualPortrait { HeadPart = newHead, Portrait = Helper.CreateSpriteFromImageFile("PM_Sofia.jpg") });
+
+
+
+
+                List<TacMissionTypeParticipantData.UniqueChatarcterBind> tacCharacterDefs = DefCache.GetDef<CustomMissionTypeDef>("NJVictory_CustomMissionTypeDef").ParticipantsData[0].UniqueUnits.ToList();
+                TacMissionTypeParticipantData.UniqueChatarcterBind uniqueChatarcterBind = new TacMissionTypeParticipantData.UniqueChatarcterBind
+                {
+                    Character = sofia,
+                    Amount = new RangeDataInt { Max = 1, Min = 1 },
+                };
+                tacCharacterDefs.Add(uniqueChatarcterBind);
+                DefCache.GetDef<CustomMissionTypeDef>("NJVictory_CustomMissionTypeDef").ParticipantsData[0].UniqueUnits = tacCharacterDefs.ToArray();
+
+
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+        }
+
+
+
+
+
+        private static void CreateStas()
+        {
+            try
+            {
+                OverwatchFocusAbilityDef overwatchFocus = DefCache.GetDef<OverwatchFocusAbilityDef>("OverwatchFocus_AbilityDef");              
+                ApplyStatusAbilityDef saboteur = DefCache.GetDef<ApplyStatusAbilityDef>("Saboteur_AbilityDef");
+                RepositionAbilityDef vanish = DefCache.GetDef<RepositionAbilityDef>("Vanish_AbilityDef");
+                ShootAbilityDef deployDronePack = DefCache.GetDef<ShootAbilityDef>("DeployDronePack_ShootAbilityDef");
+
+                string nameDef = "Stas_TacCharacterDef";
+
+                TacCharacterDef stas = Helper.CreateDefFromClone(DefCache.GetDef<TacCharacterDef>("SY_Infiltrator7_CharacterTemplateDef"), "{FBB2FE80-E86B-4C0F-9B02-19E52FF1F745}", nameDef);
+                stas.Data.Name = "Stas";
+
+                List<TacticalAbilityDef> abilities = new List<TacticalAbilityDef>()
+                {
+                saboteur, overwatchFocus, vanish, deployDronePack
+
+
+                };
+
+                stas.Data.Abilites = abilities.ToArray();
+
+
+                WeaponDef laserSniper = DefCache.GetDef<WeaponDef>("SY_LaserSniperRifle_WeaponDef");
+                WeaponDef laserPistol = DefCache.GetDef<WeaponDef>("SY_LaserPistol_WeaponDef");
+                EquipmentDef medkit = DefCache.GetDef<EquipmentDef>("Medkit_EquipmentDef");
+                WeaponDef poisonGrenade = DefCache.GetDef<WeaponDef>("SY_PoisonGrenade_WeaponDef");
+                WeaponDef sonicGrenade = DefCache.GetDef<WeaponDef>("SY_SonicGrenade_WeaponDef");
+
+                TacticalItemDef laserRifleAmmo = DefCache.GetDef<TacticalItemDef>("SY_LaserSniperRifle_AmmoClip_ItemDef");
+                TacticalItemDef laserPistolAmmo = DefCache.GetDef<TacticalItemDef>("SY_LaserPistol_AmmoClip_ItemDef");
+
+
+             //   stas.Data.EquipmentItems = new ItemDef[] { laserSniper, laserPistol, medkit };
+              //  stas.Data.InventoryItems = new ItemDef[] { laserRifleAmmo, laserRifleAmmo, laserPistolAmmo, laserPistolAmmo, medkit };
+
+                stas.Data.LevelProgression.SetLevel(7);
+                stas.Data.Strength = 16;
+                stas.Data.Will = 14;
+                stas.Data.Speed = 14;
+
+                GameTagDef nikolaiTag = TFTVCommonMethods.CreateNewTag(nameDef, "{17647EF3-1D4D-4F9C-8525-6F8C3ADD9B5A}");
+                GenderTagDef maleGenderTag = DefCache.GetDef<GenderTagDef>("Male_GenderTagDef");
+                // FacialHairTagDef noFacialHairTag = DefCache.GetDef<FacialHairTagDef>("FacialHairTagDef_Empty");
+
+                //  VoiceProfileTagDef newEmptyVoiceTag = Helper.CreateDefFromClone<VoiceProfileTagDef>(DefCache.GetDef<VoiceProfileTagDef>("1_VoiceProfileTagDef"), "{6935EA8D-95AB-4035-AB9B-B7390138733F}", "EmptyVoiceTag");
+
+                // CustomizationColorTagDef_10 green
+                // CustomizationColorTagDef_14 pink
+                // CustomizationColorTagDef_0 grey
+                // CustomizationColorTagDef_7 red
+
+                //CustomizationPatternTagDef_11
+                //CustomizationSecondaryColorTagDef_9
+
+      
+
+                List<GameTagDef> gameTags = stas.Data.GameTags.ToList();
+
+                gameTags.Add(maleGenderTag);
+                gameTags.Add(nikolaiTag);
+
+                stas.SpawnCommandId = "StasTFTV";
+                stas.Data.GameTags = gameTags.ToArray();
+                stas.CustomizationParams.KeepExistingCustomizationTags = true;
+
+
+                TacticalItemDef head = DefCache.GetDef<TacticalItemDef>("SY_Infiltrator_Bonus_Helmet_BodyPartDef");
+
+                SquadPortraitsDef squadPortraits = DefCache.GetDef<SquadPortraitsDef>("SquadPortraitsDef");
+
+                TacticalItemDef newHead = Helper.CreateDefFromClone(head, "{734C5B3A-DA43-4045-B10D-E3799866D98D}", nameDef);
+                newHead.ViewElementDef = Helper.CreateDefFromClone(head.ViewElementDef, "{BDC0706A-8A86-4E20-B479-CAA65856E4FC}", nameDef);
+                newHead.BodyPartAspectDef = Helper.CreateDefFromClone(head.BodyPartAspectDef, "{F4D611AB-B89D-40E4-AAD6-6382BCE5D74B}", nameDef);
+
+                TacticalItemDef legs = DefCache.GetDef<TacticalItemDef>("SY_Infiltrator_Bonus_Legs_ItemDef");
+                TacticalItemDef torso = DefCache.GetDef<TacticalItemDef>("SY_Infiltrator_Bonus_Torso_BodyPartDef");
+
+                stas.Data.BodypartItems = new ItemDef[] { newHead, legs, torso };
+
+
+                squadPortraits.ManualPortraits.Add(new SquadPortraitsDef.ManualPortrait { HeadPart = newHead, Portrait = Helper.CreateSpriteFromImageFile("PM_Stas.jpg") });
+
+
+
+
+                List<TacMissionTypeParticipantData.UniqueChatarcterBind> tacCharacterDefs = DefCache.GetDef<CustomMissionTypeDef>("SYPolyVictory_CustomMissionTypeDef").ParticipantsData[0].UniqueUnits.ToList();
+                TacMissionTypeParticipantData.UniqueChatarcterBind uniqueChatarcterBind = new TacMissionTypeParticipantData.UniqueChatarcterBind
+                {
+                    Character = stas,
+                    Amount = new RangeDataInt { Max = 1, Min = 1 },
+                };
+                tacCharacterDefs.Add(uniqueChatarcterBind);
+                DefCache.GetDef<CustomMissionTypeDef>("SYPolyVictory_CustomMissionTypeDef").ParticipantsData[0].UniqueUnits = tacCharacterDefs.ToArray();
+                DefCache.GetDef<CustomMissionTypeDef>("SYTerraVictory_CustomMissionTypeDef").ParticipantsData[0].UniqueUnits = tacCharacterDefs.ToArray();
+
+
+
+
+
+
+
+
+
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+        }
+        
+
+        private static void CreateNikolai()
+        {
+            try
+            {
+                PassiveModifierAbilityDef endurance = DefCache.GetDef<PassiveModifierAbilityDef>("Endurance_AbilityDef");
+                OverwatchFocusAbilityDef overwatchFocus = DefCache.GetDef<OverwatchFocusAbilityDef>("OverwatchFocus_AbilityDef");
+
+                ShootAbilityDef gunslinger = DefCache.GetDef<ShootAbilityDef>("BC_Gunslinger_AbilityDef");
+                PassiveModifierAbilityDef killzone = DefCache.GetDef<PassiveModifierAbilityDef>("KillZone_AbilityDef");
+
+                List<TacticalAbilityDef> abilitiesToAdd = new List<TacticalAbilityDef>()
+                {
+                endurance, overwatchFocus, gunslinger, killzone
+
+                };
+
+                string nameDef = "Nikolai_TacCharacterDef";
+
+                TacCharacterDef nikolai = Helper.CreateDefFromClone(DefCache.GetDef<TacCharacterDef>("SY_Sniper7_CharacterTemplateDef"), "{99DA6A62-BF24-471C-B966-1954C6F5A9E1}", nameDef);
+                nikolai.Data.Name = "Nikolai";
+
+                nikolai.Data.Abilites = abilitiesToAdd.ToArray();
+                
+
+                WeaponDef laserSniper = DefCache.GetDef<WeaponDef>("SY_LaserSniperRifle_WeaponDef");
+                WeaponDef laserPistol = DefCache.GetDef<WeaponDef>("SY_LaserPistol_WeaponDef");
+                EquipmentDef medkit = DefCache.GetDef<EquipmentDef>("Medkit_EquipmentDef");
+                WeaponDef poisonGrenade = DefCache.GetDef<WeaponDef>("SY_PoisonGrenade_WeaponDef");
+                WeaponDef sonicGrenade = DefCache.GetDef<WeaponDef>("SY_SonicGrenade_WeaponDef");
+
+                TacticalItemDef laserRifleAmmo = DefCache.GetDef<TacticalItemDef>("SY_LaserSniperRifle_AmmoClip_ItemDef");
+                TacticalItemDef laserPistolAmmo = DefCache.GetDef<TacticalItemDef>("SY_LaserPistol_AmmoClip_ItemDef");
+
+
+                nikolai.Data.EquipmentItems = new ItemDef[] { laserSniper, laserPistol, medkit };
+                nikolai.Data.InventoryItems = new ItemDef[] { laserRifleAmmo, laserRifleAmmo, laserPistolAmmo, laserPistolAmmo, medkit };
+
+                nikolai.Data.LevelProgression.SetLevel(7);
+                nikolai.Data.Strength = 16;
+                nikolai.Data.Will = 14;
+                nikolai.Data.Speed = 14;
+
+                GameTagDef nikolaiTag = TFTVCommonMethods.CreateNewTag(nameDef, "{E9013ABC-E6C3-4F43-876D-B1DE64053F75}");
+                GenderTagDef maleGenderTag = DefCache.GetDef<GenderTagDef>("Male_GenderTagDef");
+                // FacialHairTagDef noFacialHairTag = DefCache.GetDef<FacialHairTagDef>("FacialHairTagDef_Empty");
+
+                //  VoiceProfileTagDef newEmptyVoiceTag = Helper.CreateDefFromClone<VoiceProfileTagDef>(DefCache.GetDef<VoiceProfileTagDef>("1_VoiceProfileTagDef"), "{6935EA8D-95AB-4035-AB9B-B7390138733F}", "EmptyVoiceTag");
+
+                // CustomizationColorTagDef_10 green
+                // CustomizationColorTagDef_14 pink
+                // CustomizationColorTagDef_0 grey
+                // CustomizationColorTagDef_7 red
+
+                //CustomizationPatternTagDef_11
+                //CustomizationSecondaryColorTagDef_9
+
+                CustomizationSecondaryColorTagDef secondaryBlackColor = DefCache.GetDef<CustomizationSecondaryColorTagDef>("CustomizationSecondaryColorTagDef_9");
+
+                CustomizationPrimaryColorTagDef whitePrimaryColor = DefCache.GetDef<CustomizationPrimaryColorTagDef>("CustomizationColorTagDef_5");
+
+                CustomizationPatternTagDef linesPattern = DefCache.GetDef<CustomizationPatternTagDef>("CustomizationPatternTagDef_11");
+
+                List<GameTagDef> gameTags = nikolai.Data.GameTags.ToList();
+                gameTags.Add(secondaryBlackColor);
+                gameTags.Add(whitePrimaryColor);
+                gameTags.Add(linesPattern);
+                gameTags.Add(maleGenderTag);
+                gameTags.Add(nikolaiTag);
+
+                nikolai.SpawnCommandId = "NikolaiTFTV";
+                nikolai.Data.GameTags = gameTags.ToArray();
+                nikolai.CustomizationParams.KeepExistingCustomizationTags = true;
+
+
+                TacticalItemDef head = DefCache.GetDef<TacticalItemDef>("SY_Sniper_Helmet_BodyPartDef");
+
+                SquadPortraitsDef squadPortraits = DefCache.GetDef<SquadPortraitsDef>("SquadPortraitsDef");
+
+                TacticalItemDef newHead = Helper.CreateDefFromClone(head, "{FF4FF18F-B701-4CE5-94F6-DF513A349072}", nameDef);
+                newHead.ViewElementDef = Helper.CreateDefFromClone(head.ViewElementDef, "{9F811161-BC19-45F6-BA4B-B17910101CA7}", nameDef);
+                newHead.BodyPartAspectDef = Helper.CreateDefFromClone(head.BodyPartAspectDef, "{06D4E1A5-B036-4683-9B5B-DE2864F2D4A9}", nameDef);
+
+                TacticalItemDef legs = DefCache.GetDef<TacticalItemDef>("SY_Sniper_Legs_ItemDef");
+                TacticalItemDef torso = DefCache.GetDef<TacticalItemDef>("SY_Sniper_Torso_BodyPartDef");
+
+                nikolai.Data.BodypartItems = new ItemDef[] { newHead, legs, torso };
+
+
+                squadPortraits.ManualPortraits.Add(new SquadPortraitsDef.ManualPortrait { HeadPart = newHead, Portrait = Helper.CreateSpriteFromImageFile("PM_Nikolai.jpg") });
+
+
+
+
+                List<TacMissionTypeParticipantData.UniqueChatarcterBind> tacCharacterDefs = DefCache.GetDef<CustomMissionTypeDef>("SYPolyVictory_CustomMissionTypeDef").ParticipantsData[0].UniqueUnits.ToList();
+                TacMissionTypeParticipantData.UniqueChatarcterBind uniqueChatarcterBind = new TacMissionTypeParticipantData.UniqueChatarcterBind
+                {
+                    Character = nikolai,
+                    Amount = new RangeDataInt { Max = 1, Min = 1 },
+                };
+                tacCharacterDefs.Add(uniqueChatarcterBind);
+                DefCache.GetDef<CustomMissionTypeDef>("SYPolyVictory_CustomMissionTypeDef").ParticipantsData[0].UniqueUnits = tacCharacterDefs.ToArray();
+                DefCache.GetDef<CustomMissionTypeDef>("SYTerraVictory_CustomMissionTypeDef").ParticipantsData[0].UniqueUnits = tacCharacterDefs.ToArray();
+
+
+
+
+
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+        }
+
+
+
+        private static void CreateZhara()
+        {
+            try
+            {
+                
+                PassiveModifierAbilityDef endurance = DefCache.GetDef<PassiveModifierAbilityDef>("Endurance_AbilityDef");
+                OverwatchFocusAbilityDef overwatchFocus = DefCache.GetDef<OverwatchFocusAbilityDef> ("OverwatchFocus_AbilityDef");
+
+                ShootAbilityDef aimedBurst = DefCache.GetDef<ShootAbilityDef>("AimedBurst_AbilityDef");
+                PassiveModifierAbilityDef quarterback = DefCache.GetDef<PassiveModifierAbilityDef>("Pitcher_AbilityDef");
+
+                string nameDef = "Zhara_TacCharacterDef";
+
+                TacCharacterDef zhara = Helper.CreateDefFromClone(DefCache.GetDef<TacCharacterDef>("SY_Assault7_CharacterTemplateDef"), "{CBC16AB7-7469-4251-AF06-35122B4412DD}", nameDef);
+                zhara.Data.Name = "Zhara";
+
+                List<TacticalAbilityDef> abilities = new List<TacticalAbilityDef>()
+                {
+                endurance, overwatchFocus, aimedBurst, quarterback
+
+
+                };
+
+                zhara.Data.Abilites = abilities.ToArray();
+
+                EquipmentDef medkit = DefCache.GetDef<EquipmentDef>("Medkit_EquipmentDef");
+                WeaponDef deimosWhite = DefCache.GetDef<WeaponDef>("SY_LaserAssaultRifle_WhiteNeon_WeaponDef");
+                WeaponDef poisonGrenade = DefCache.GetDef<WeaponDef>("SY_PoisonGrenade_WeaponDef");
+                WeaponDef sonicGrenade = DefCache.GetDef<WeaponDef>("SY_SonicGrenade_WeaponDef");
+
+                TacticalItemDef laserAmmo = DefCache.GetDef<TacticalItemDef>("SY_LaserAssaultRifle_AmmoClip_ItemDef");
+
+                zhara.Data.EquipmentItems = new ItemDef[] { deimosWhite, poisonGrenade, sonicGrenade };
+                zhara.Data.InventoryItems = new ItemDef[] { laserAmmo, laserAmmo, laserAmmo, medkit, medkit };
+
+                zhara.Data.LevelProgression.SetLevel(7);
+                zhara.Data.Strength = 16;
+                zhara.Data.Will = 14;
+                zhara.Data.Speed = 14;
+
+                GameTagDef zharaTag = TFTVCommonMethods.CreateNewTag(nameDef, "{24DB53A2-3710-4900-A15B-D1B673BED535}");
+                GenderTagDef femaleGenderTag = DefCache.GetDef<GenderTagDef>("Female_GenderTagDef");
+                // FacialHairTagDef noFacialHairTag = DefCache.GetDef<FacialHairTagDef>("FacialHairTagDef_Empty");
+
+                //  VoiceProfileTagDef newEmptyVoiceTag = Helper.CreateDefFromClone<VoiceProfileTagDef>(DefCache.GetDef<VoiceProfileTagDef>("1_VoiceProfileTagDef"), "{6935EA8D-95AB-4035-AB9B-B7390138733F}", "EmptyVoiceTag");
+
+                // CustomizationColorTagDef_10 green
+                // CustomizationColorTagDef_14 pink
+                // CustomizationColorTagDef_0 grey
+                // CustomizationColorTagDef_7 red
+
+                // CustomizationPrimaryColorTagDef blackColor = DefCache.GetDef<CustomizationPrimaryColorTagDef>("CustomizationColorTagDef_9");
+                List<GameTagDef> gameTags = zhara.Data.GameTags.ToList();
+                //   gameTags.Add(blackColor);
+                gameTags.Add(femaleGenderTag);
+                gameTags.Add(zharaTag);
+
+                zhara.SpawnCommandId = "ZharaTFTV";
+                zhara.Data.GameTags = gameTags.ToArray();
+                zhara.CustomizationParams.KeepExistingCustomizationTags = true;
+
+
+                TacticalItemDef assaultHead = DefCache.GetDef<TacticalItemDef>("SY_Assault_Helmet_WhiteNeon_BodyPartDef");
+
+                SquadPortraitsDef squadPortraits = DefCache.GetDef<SquadPortraitsDef>("SquadPortraitsDef");
+
+                TacticalItemDef zharaHead = Helper.CreateDefFromClone(assaultHead, "{D583A19E-2238-431D-BD70-4A058E2B46EC}", "ZharaHead_ItemDef");
+                zharaHead.ViewElementDef = Helper.CreateDefFromClone(assaultHead.ViewElementDef, "{3ADA66FA-2307-4D48-96CB-959882176617}", "ZharaHead_ItemDef");
+                zharaHead.BodyPartAspectDef = Helper.CreateDefFromClone(assaultHead.BodyPartAspectDef, "{B1160987-6DD3-410E-B6D9-536274CC0645}", "ZharaHead_ItemDef");
+
+                TacticalItemDef assaultLegs = DefCache.GetDef<TacticalItemDef>("SY_Assault_Legs_WhiteNeon_ItemDef");
+                TacticalItemDef assaultTorso = DefCache.GetDef<TacticalItemDef>("SY_Assault_Torso_WhiteNeon_BodyPartDef");
+
+                zhara.Data.BodypartItems = new ItemDef[] { zharaHead, assaultLegs, assaultTorso };
+
+
+                squadPortraits.ManualPortraits.Add(new SquadPortraitsDef.ManualPortrait { HeadPart = zharaHead, Portrait = Helper.CreateSpriteFromImageFile("PM_Zhara.jpg") });
+
+
+
+
+                List<TacMissionTypeParticipantData.UniqueChatarcterBind> tacCharacterDefs = DefCache.GetDef<CustomMissionTypeDef>("SYPolyVictory_CustomMissionTypeDef").ParticipantsData[0].UniqueUnits.ToList();
+                TacMissionTypeParticipantData.UniqueChatarcterBind uniqueChatarcterBind = new TacMissionTypeParticipantData.UniqueChatarcterBind
+                {
+                    Character = zhara,
+                    Amount = new RangeDataInt { Max = 1, Min = 1 },
+                };
+                tacCharacterDefs.Add(uniqueChatarcterBind);
+                DefCache.GetDef<CustomMissionTypeDef>("SYPolyVictory_CustomMissionTypeDef").ParticipantsData[0].UniqueUnits = tacCharacterDefs.ToArray();
+                DefCache.GetDef<CustomMissionTypeDef>("SYTerraVictory_CustomMissionTypeDef").ParticipantsData[0].UniqueUnits = tacCharacterDefs.ToArray();
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+        }
+
+
+
+
         private static void CreateTaxiarchNergal()
         {
             try
             {
+                // ApplyEffectAbilityDef LayWaste_AbilityDef
+                //ApplyStatusAbilityDef BC_Biochemist_AbilityDef
+
+                ApplyEffectAbilityDef mistBreather = DefCache.GetDef<ApplyEffectAbilityDef>("MistBreather_AbilityDef");
+                ApplyStatusAbilityDef sowerOfChange = DefCache.GetDef<ApplyStatusAbilityDef>("SowerOfChange_AbilityDef");
+               
+
+                ShootAbilityDef aimedBurst = DefCache.GetDef<ShootAbilityDef>("AimedBurst_AbilityDef");
+                PassiveModifierAbilityDef quarterback = DefCache.GetDef<PassiveModifierAbilityDef>("Pitcher_AbilityDef");
+
                 string nameDef = "TaxiarchNergal_TacCharacterDef";
 
                 TacCharacterDef taxiarchNergal = Helper.CreateDefFromClone(DefCache.GetDef<TacCharacterDef>("AN_Assault7_CharacterTemplateDef"), "{3AA9BBC1-FCE2-4274-AEA1-7CD00E3677DC}", nameDef);
                 taxiarchNergal.Data.Name = "Taxiarch_Nergal";
 
+                List<TacticalAbilityDef> abilities = new List<TacticalAbilityDef>()
+                {
+                mistBreather, sowerOfChange, aimedBurst, quarterback
+
+
+                };
+
+                taxiarchNergal.Data.Abilites = abilities.ToArray();
+
+                WeaponDef shreddingShotgun = DefCache.GetDef<WeaponDef>("AN_ShreddingShotgun_WeaponDef");
+                WeaponDef acidGrenade = DefCache.GetDef<WeaponDef>("AN_AcidGrenade_WeaponDef");
+                TacticalItemDef shreddingAmmo = DefCache.GetDef<TacticalItemDef>("AN_ShreddingShotgun_AmmoClip_ItemDef");
+                EquipmentDef medkit = DefCache.GetDef<EquipmentDef>("Medkit_EquipmentDef");
+
+                taxiarchNergal.Data.EquipmentItems = new ItemDef[] { shreddingShotgun, acidGrenade,  medkit};
+                taxiarchNergal.Data.InventoryItems = new ItemDef[] { shreddingAmmo, shreddingAmmo, shreddingAmmo };
+
+                taxiarchNergal.Data.LevelProgression.SetLevel(7);
+                taxiarchNergal.Data.Strength = 16;
+                taxiarchNergal.Data.Will = 14;
+                taxiarchNergal.Data.Speed = 14;
+
                 GameTagDef taxiarchTag = TFTVCommonMethods.CreateNewTag(nameDef, "{AD9711B0-2A39-4E82-BF9C-BDB8111C3697}");
                 GenderTagDef maleGenderTag = DefCache.GetDef<GenderTagDef>("Male_GenderTagDef");
+                FacialHairTagDef noFacialHairTag = DefCache.GetDef<FacialHairTagDef>("FacialHairTagDef_Empty");
 
                 //  VoiceProfileTagDef newEmptyVoiceTag = Helper.CreateDefFromClone<VoiceProfileTagDef>(DefCache.GetDef<VoiceProfileTagDef>("1_VoiceProfileTagDef"), "{6935EA8D-95AB-4035-AB9B-B7390138733F}", "EmptyVoiceTag");
 
@@ -758,6 +1699,7 @@ namespace TFTV
                 gameTags.Add(blackColor);
                 gameTags.Add(maleGenderTag);
                 gameTags.Add(taxiarchTag);
+                gameTags.Add(noFacialHairTag);
                 //   gameTags.Add(newEmptyVoiceTag);
                 taxiarchNergal.SpawnCommandId = "TaxiarchNergalTFTV";
                 taxiarchNergal.Data.GameTags = gameTags.ToArray();
@@ -770,8 +1712,7 @@ namespace TFTV
 
                 TacticalItemDef taxiarchNergalHead = Helper.CreateDefFromClone(assaultHead, "{6BA24E77-F104-4979-A8CC-720B988AB344}", "TaxiarchNergalHead_ItemDef");
                 taxiarchNergalHead.ViewElementDef = Helper.CreateDefFromClone(assaultHead.ViewElementDef, "{064E1B24-E796-4E6D-97CF-00EF59BF1FC6}", "TaxiarchNergalHead_ItemDef");
-                taxiarchNergalHead.ViewElementDef.DisplayName1.LocalizationKey = "testing";
-                taxiarchNergalHead.ViewElementDef.DisplayName2.LocalizationKey = "testing";
+          
                 taxiarchNergalHead.BodyPartAspectDef = Helper.CreateDefFromClone(assaultHead.BodyPartAspectDef, "{A7FAAFE1-3EF6-4DB7-A5B1-43FC3DE2A335}", "TaxiarchNergalHead_ItemDef");
 
                 TacticalItemDef assaultLegs = DefCache.GetDef<TacticalItemDef>("AN_Assault_Legs_ItemDef");
@@ -826,13 +1767,13 @@ namespace TFTV
                 ActivateConsoleFactionObjectiveDef interactWithYRObjectiveSyTerra = DefCache.GetDef<ActivateConsoleFactionObjectiveDef>("InteractWithYuggothianTerra_CustomMissionObjective");
 
                 List<ActivateConsoleFactionObjectiveDef> victoryMissionInteractObjectives = new List<ActivateConsoleFactionObjectiveDef>()
-                {
-                    interactWithYRObjectivePX,
-                    interactWithYRObjectiveAnu,
-                    interactWithYRObjectiveNJ,
-                    interactWithYRObjectiveSyPoly,
-                    interactWithYRObjectiveSyTerra
-                };
+                    {
+                        interactWithYRObjectivePX,
+                        interactWithYRObjectiveAnu,
+                        interactWithYRObjectiveNJ,
+                        interactWithYRObjectiveSyPoly,
+                        interactWithYRObjectiveSyTerra
+                    };
 
                 foreach (ActivateConsoleFactionObjectiveDef activateConsoleFactionObjectiveDef in victoryMissionInteractObjectives)
                 {
@@ -842,19 +1783,33 @@ namespace TFTV
                 }
 
                 CustomMissionTypeDef pxPalaceMissionDef = DefCache.GetDef<CustomMissionTypeDef>("PXVictory_CustomMissionTypeDef");
+
+                pxPalaceMissionDef.Tags.Add(TFTVCommonMethods.CreateNewMissionTag("PXPalace", "{0CF66B9B-2E8F-4195-A688-A52DECD1982A}"));
+
                 CustomMissionTypeDef njPalaceMissionDef = DefCache.GetDef<CustomMissionTypeDef>("NJVictory_CustomMissionTypeDef");
+                njPalaceMissionDef.Tags.Add(TFTVCommonMethods.CreateNewMissionTag("NJPalace", "{5D7A9365-7BC2-4CAA-9D0E-2B6A06FA67A3}"));
+                njPalaceMissionDef.MaxPlayerUnits = 7;
+
                 CustomMissionTypeDef anuPalaceMissionDef = DefCache.GetDef<CustomMissionTypeDef>("ANVictory_CustomMissionTypeDef");
+                anuPalaceMissionDef.Tags.Add(TFTVCommonMethods.CreateNewMissionTag("ANPalace", "{AAFC6643-110D-48AB-8730-AC7A86C6B8F3}"));
+                anuPalaceMissionDef.MaxPlayerUnits = 7;
+
                 CustomMissionTypeDef syPolyPalaceMissionDef = DefCache.GetDef<CustomMissionTypeDef>("SYPolyVictory_CustomMissionTypeDef");
+                syPolyPalaceMissionDef.Tags.Add(TFTVCommonMethods.CreateNewMissionTag("SYPolyPalace", "{B8156DBC-5188-436C-A6B1-B00EA5362A11}"));
+                syPolyPalaceMissionDef.MaxPlayerUnits = 7;
+
                 CustomMissionTypeDef syTerraPalaceMissionDef = DefCache.GetDef<CustomMissionTypeDef>("SYTerraVictory_CustomMissionTypeDef");
+                syTerraPalaceMissionDef.Tags.Add(TFTVCommonMethods.CreateNewMissionTag("SYTerraPalace", "{D2049387-C2C7-426A-82DB-E367851B5437}"));
+                syTerraPalaceMissionDef.MaxPlayerUnits = 7;
 
                 List<CustomMissionTypeDef> victoryMissions = new List<CustomMissionTypeDef>()
-                {
-                pxPalaceMissionDef,
-                njPalaceMissionDef,
-               // anuPalaceMissionDef,
-                syPolyPalaceMissionDef,
-                syTerraPalaceMissionDef
-                };
+                    {
+                    pxPalaceMissionDef,
+                    njPalaceMissionDef,
+                   // anuPalaceMissionDef,
+                    syPolyPalaceMissionDef,
+                    syTerraPalaceMissionDef
+                    };
 
                 anuPalaceMissionDef.ParticipantsData[1].ActorDeployParams.Clear();
                 anuPalaceMissionDef.CustomObjectives = new FactionObjectiveDef[] { anuPalaceMissionDef.CustomObjectives[0].NextOnSuccess[0].NextOnSuccess[0], anuPalaceMissionDef.CustomObjectives[1] };
@@ -1910,10 +2865,12 @@ namespace TFTV
                 WeaponDef ares = DefCache.GetDef<WeaponDef>("PX_AssaultRifle_WeaponDef");
                 dcoyTacCharacter.Data.EquipmentItems = new ItemDef[] { ares };
 
+                GameTagDef decoyTag = TFTVCommonMethods.CreateNewTag("DecoyTag", "{55D78B77-AE12-452B-B3FB-BB559DDBF8AE}");
+
                 TacticalActorDef dcoy = DefCache.GetDef<TacticalActorDef>("Decoy_ActorDef");
                 dcoy.EnduranceToHealthMultiplier = 20;
 
-                List<GameTagDef> gameTagDefs = new List<GameTagDef>(dcoy.GameTags) { assaultClassTag, deploymentTagDef };
+                List<GameTagDef> gameTagDefs = new List<GameTagDef>(dcoy.GameTags) { assaultClassTag, deploymentTagDef, decoyTag };
 
                 dcoyTacCharacter.Data.GameTags = gameTagDefs.ToArray();
                 //  OnActorDazedEffectStatus.ShouldApplyEffect
@@ -1944,14 +2901,16 @@ namespace TFTV
                 string hintDecoyDiscoveredGUID = "{D75AC0EA-89C1-4DF7-8E67-CFD83F8F6ED1}";
                 string hintDecoyDiscoveredTitle = "HINT_DECOYDISCOVERED_TITLE";
                 string hintDecoyDiscoveredText = "HINT_DECOYDISCOVERED_TEXT";
-                TFTVTutorialAndStory.CreateNewTacticalHint(hintDecoyDiscoveredName, HintTrigger.ActorHurt, dcoyTacCharacter.name, hintDecoyDiscoveredTitle, hintDecoyDiscoveredText, 0, true, hintDecoyDiscoveredGUID);
+                TFTVTutorialAndStory.CreateNewTacticalHint(hintDecoyDiscoveredName, HintTrigger.Manual, decoyTag.name, hintDecoyDiscoveredTitle, hintDecoyDiscoveredText, 1, true, hintDecoyDiscoveredGUID);
+
+
 
                 string hintDecoyScyllaName = "HintDecoyScylla";
                 string hintDecoyScyllaGUID = "{06D96E1B-758C-4178-9D9B-13A40686E90F}";
                 string hintDecoyScyllaTitle = "HINT_DECOYSCYLLA_TITLE";
                 string hintDecoyScyllaText = "HINT_DECOYSCYLLA_TEXT";
                 TFTVTutorialAndStory.CreateNewTacticalHint(hintDecoyScyllaName, HintTrigger.ActorDied, dcoyTacCharacter.name, hintDecoyScyllaTitle, hintDecoyScyllaText, 0, true, hintDecoyScyllaGUID);
-
+                
             }
 
             catch (Exception e)

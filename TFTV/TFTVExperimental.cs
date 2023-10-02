@@ -1,5 +1,6 @@
 ﻿using Base.Core;
 using Base.Defs;
+using Base.Levels.Nav;
 using Base.Serialization;
 using Base.UI.MessageBox;
 using HarmonyLib;
@@ -12,7 +13,9 @@ using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.Equipments;
+using PhoenixPoint.Tactical.Entities.Statuses;
 using PhoenixPoint.Tactical.Levels;
+using PhoenixPoint.Tactical.Levels.Mist;
 using System;
 using System.Reflection;
 using UnityEngine;
@@ -28,6 +31,8 @@ namespace TFTV
         private static readonly SharedData Shared = TFTVMain.Shared;
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
 
+
+       
 
         [HarmonyPatch(typeof(GeoFaction), "ScheduleAttackOnSite")]
         public static class PhoenixGame_ScheduleAttackOnSite_patch

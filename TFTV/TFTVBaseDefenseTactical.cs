@@ -17,7 +17,6 @@ using PhoenixPoint.Common.Levels.ActorDeployment;
 using PhoenixPoint.Common.Levels.Missions;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.PhoenixBases;
-using PhoenixPoint.Geoscape.Entities.Sites;
 using PhoenixPoint.Tactical.ContextHelp;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
@@ -62,7 +61,14 @@ namespace TFTV
         // private static readonly GameTagDef InfestationFirstObjectiveTag = DefCache.GetDef<GameTagDef>("PhoenixBaseInfestation_GameTagDef");
         private static readonly GameTagDef InfestationSecondObjectiveTag = DefCache.GetDef<GameTagDef>("ScatterRemainingAttackers_GameTagDef");
 
+        private static readonly ClassTagDef crabTag = DefCache.GetDef<ClassTagDef>("Crabman_ClassTagDef");
+        private static readonly ClassTagDef fishmanTag = DefCache.GetDef<ClassTagDef>("Fishman_ClassTagDef");
+        private static readonly ClassTagDef sirenTag = DefCache.GetDef<ClassTagDef>("Siren_ClassTagDef");
 
+
+        private static readonly DelayedEffectStatusDef reinforcementStatusUnder1AP = DefCache.GetDef<DelayedEffectStatusDef>("E_Status [ReinforcementStatusUnder1AP]");
+        private static readonly DelayedEffectStatusDef reinforcementStatus1AP = DefCache.GetDef<DelayedEffectStatusDef>("E_Status [ReinforcementStatus1AP]");
+        private static readonly DelayedEffectStatusDef reinforcementStatusUnder2AP = DefCache.GetDef<DelayedEffectStatusDef>("E_Status [ReinforcementStatusUnder2AP]");
         public static void OjectivesDebbuger(TacticalLevelController controller)
         {
             try
@@ -580,16 +586,16 @@ namespace TFTV
             {
                 try
                 {
-                   
+
                     TFTVLogger.Always("ModifyMissionData");
                     if (!CheckIfBaseLayoutOK(__instance))
                     {
                         TFTVLogger.Always("Bad layout!");
                         FixBadLayout(__instance);
 
-                       
+
                     }
-               
+
                 }
                 catch (Exception e)
                 {
@@ -612,16 +618,16 @@ namespace TFTV
                     TFTVLogger.Always($"ModifyMissionData invoked.");
                     if (TFTVBaseDefenseGeoscape.PhoenixBasesUnderAttack.ContainsKey(__instance.Site.SiteId) || TFTVBaseDefenseGeoscape.PhoenixBasesInfested.Contains(__instance.Site.SiteId))
                     {
-                     /*   GeoPhoenixBaseLayout baseLayout = __instance.Site.GetComponent<GeoPhoenixBase>().Layout;
+                        /*   GeoPhoenixBaseLayout baseLayout = __instance.Site.GetComponent<GeoPhoenixBase>().Layout;
 
-                        if (!CheckIfBaseLayoutOK(baseLayout))
-                        {
-                            TFTVLogger.Always("Bad layout!");
-                            FixBadLayout(baseLayout);
+                           if (!CheckIfBaseLayoutOK(baseLayout))
+                           {
+                               TFTVLogger.Always("Bad layout!");
+                               FixBadLayout(baseLayout);
 
 
-                        }*/
-                        
+                           }*/
+
                         PPFactionDef alienFaction = DefCache.GetDef<PPFactionDef>("Alien_FactionDef");
                         int difficulty = TFTVReleaseOnly.DifficultyOrderConverter(__instance.GameController.CurrentDifficulty.Order);
                         // TFTVLogger.Always($"if passed");
@@ -1242,10 +1248,10 @@ namespace TFTV
                 if (tacticalFaction.TacticalLevel.Factions.Any(f => f.Faction.FactionDef.MatchesShortName("aln")))
                 {
 
-                    if (CheckIfBaseDefense(tacticalFaction.TacticalLevel) && tacticalFaction.Equals(tacticalFaction.TacticalLevel.GetFactionByCommandName("aln")))
+                    if (CheckIfBaseDefense(tacticalFaction.TacticalLevel) && tacticalFaction.Equals(tacticalFaction.TacticalLevel.GetFactionByCommandName("px")))
                     {
 
-                        StratPicker(tacticalFaction.TacticalLevel);
+                        // StratPicker(tacticalFaction.TacticalLevel);
 
                         //These strats get implemented before alien turn starts: triton infiltration team and secondary force
 
@@ -2538,7 +2544,7 @@ namespace TFTV
             try
             {
                 TFTVLogger.Always("Spawning Secondary Force");
-
+                int difficulty = controller.Difficulty.Order;
                 List<TacticalDeployZone> tacticalDeployZones = GetAllBottomDeployZones(controller);
                 TFTVLogger.Always($"there are {tacticalDeployZones.Count()} bottom deploy zones");
 
@@ -2614,8 +2620,41 @@ namespace TFTV
                         {
 
                             TacticalActor tacticalActor = tacticalActorBase as TacticalActor;
-                            tacticalActor.CharacterStats.ActionPoints.SetToMax();
-                            tacticalActor.ForceRestartTurn();
+
+                            if (difficulty < 6)
+                            {
+                                if (tacticalActor != null)
+                                {
+                                    if (tacticalActor.HasGameTag(crabTag)||tacticalActor.HasGameTag(fishmanTag))
+                                    {
+                                        if (TFTVArtOfCrab.Has1APWeapon(tacCharacterDef))
+                                        {
+
+                                            tacticalActor.Status.ApplyStatus(reinforcementStatus1AP);
+
+                                        }
+                                        else
+                                        {
+
+                                            tacticalActor.Status.ApplyStatus(reinforcementStatusUnder2AP);
+                                            TFTVLogger.Always($"{tacticalActor.name} receiving {reinforcementStatusUnder2AP.EffectName}");
+
+                                        }
+                                    }
+                                    else if (tacticalActor.HasGameTag(sirenTag))
+                                    {
+                                        tacticalActor.Status.ApplyStatus(reinforcementStatusUnder1AP);
+                                        TFTVLogger.Always($"{tacticalActor.name} receiving {reinforcementStatusUnder1AP.EffectName}");
+                                    }
+                                    else
+                                    {
+
+                                        tacticalActor.Status.ApplyStatus(reinforcementStatusUnder2AP);
+                                        TFTVLogger.Always($"{tacticalActor.name} receiving {reinforcementStatusUnder2AP.EffectName}");
+
+                                    }
+                                }
+                            }
 
                             if (i == 0)
                             {
@@ -2638,7 +2677,7 @@ namespace TFTV
             try
             {
                 TFTVLogger.Always("Spawning Triton Infiltration team");
-
+                int difficulty = controller.Difficulty.Order;
                 List<TacticalDeployZone> tacticalDeployZones = GetAllBottomDeployZones(controller);
                 List<TacticalActor> pxOperatives = controller.GetFactionByCommandName("px").TacticalActors.ToList();
 
@@ -2728,8 +2767,30 @@ namespace TFTV
                         TacticalActorBase tacticalActorBase = zoneToDeployAt.SpawnActor(actorDeployData.ComponentSetDef, actorDeployData.InstanceData, actorDeployData.DeploymentTags, null, true, zoneToDeployAt);
 
                         TacticalActor tacticalActor = tacticalActorBase as TacticalActor;
-                        tacticalActor.CharacterStats.ActionPoints.SetToMax();
-                        tacticalActor.ForceRestartTurn();
+
+                        if (difficulty < 6)
+                        {
+                            if (tacticalActor != null)
+                            {
+
+                                if (TFTVArtOfCrab.Has1APWeapon(tacCharacterDef))
+                                {
+
+                                    tacticalActor.Status.ApplyStatus(reinforcementStatus1AP);
+
+                                }
+                                else
+                                {
+
+                                    tacticalActor.Status.ApplyStatus(reinforcementStatusUnder2AP);
+                                    TFTVLogger.Always($"{tacticalActor.name} receiving {reinforcementStatusUnder2AP.EffectName}");
+
+                                }
+
+                            }
+                        }
+
+
 
                         if (i == 0)
                         {

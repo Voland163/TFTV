@@ -1,4 +1,5 @@
-﻿using Base.Defs;
+﻿using Base.Core;
+using Base.Defs;
 using Base.Entities.Statuses;
 using Base.UI;
 using HarmonyLib;
@@ -8,12 +9,15 @@ using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.View.ViewModules;
 using PhoenixPoint.Geoscape.Levels;
+using PhoenixPoint.Tactical.ContextHelp;
 using PhoenixPoint.Tactical.ContextHelp.HintConditions;
 using PhoenixPoint.Tactical.Entities;
+using PhoenixPoint.Tactical.Levels;
 using PhoenixPoint.Tactical.View.ViewModules;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 
 namespace TFTV
 {
@@ -279,7 +283,10 @@ namespace TFTV
                         {
                             __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("decoy_hint.jpg");
                         }
-                        
+                        else if (hintDef.name.Equals("HintDecoyDiscovered"))
+                        {
+                            __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("decoy_removed_hint.jpg");
+                        }
                         else if (hintDef.name.Equals("BaseDefenseUmbraStrat") 
                             || hintDef.name.Equals("BaseDefenseWormsStrat") 
                             || hintDef.name.Equals("BaseDefenseForce2Strat")
@@ -303,12 +310,80 @@ namespace TFTV
                             }
 
                         }
+                        else if (hintDef.name.Equals("TFTVPXPalaceStart0"))
+                        {
+                            __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("PX_VICTORY_START0.jpg");
+                        }
+                        else if (hintDef.name.Equals("TFTVNJPalaceStart0"))
+                        {
+                            __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("NJ_VICTORY_START0.jpg");
+                        }
+                        else if (hintDef.name.Equals("TFTVANPalaceStart0"))
+                        {
+                            __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("AN_VICTORY_START0.jpg");
+                        }
+                        else if (hintDef.name.Equals("TFTVNJPalaceStart1"))
+                        {
+                            __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("NJ_VICTORY_START1.jpg");
+                        }
+                        else if (hintDef.name.Equals("TFTVPXPalaceStart1"))
+                        {
+                            __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("PX_VICTORY_START1.jpg");
+                        }
+                        else if (hintDef.name.Equals("TFTVANPalaceStart1"))
+                        {
+                            __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("AN_VICTORY_START1.jpg");
+                        }
+                        else if (hintDef.name.Equals("TFTVSYPolyPalaceStart0"))
+                        {
+                            __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("SY_POLY_VICTORY_START0.jpg");
+                        }
+                        else if (hintDef.name.Equals("TFTVSYPolyPalaceStart1"))
+                        {
+                            __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("SY_POLY_VICTORY_START1.jpg");
+                        }
+                        else if (hintDef.name.Equals("TFTVSYTerraPalaceStart0"))
+                        {
+                            __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("SY_Terra_VICTORY_START0.jpg");
+                        }
+                        else if (hintDef.name.Equals("TFTVSYTerraPalaceStart1"))
+                        {
+                            __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("SY_TERRA_VICTORY_START1.jpg");
+                        }
+
+                        else if (hintDef.name.Equals("ReceptacleGateHint0"))
+                        {
+                            __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("VICTORY_GATE.jpg");
+                        }
+                        else if (hintDef.name.Equals("ReceptacleGateHint1"))
+                        {
+                            __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("VICTORY_GATE.jpg");
+                        }
+                        else if (hintDef.name.Equals("PalaceRevenantHint0"))
+                        {
+                            __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("VICTORY_REVENANT_TO_PX.jpg");
+                        }
+                        else if (hintDef.name.Equals("PalaceRevenantHint1"))
+                        {
+                            __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("Hint_Revenant.png");
+                        }
+                        else if (hintDef.name.Equals("PalaceHisMinionsHint"))
+                        {
+                            __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("VICTORY_MINIONS.jpg");
+                        }
+                        else if (hintDef.name.Equals("PalaceEyesHint"))
+                        {
+                            __instance.Image.overrideSprite = Helper.CreateSpriteFromImageFile("VICTORY_EYES.jpg");
+                        }
+
+
+
                         else
                         {
                             __instance.Image.overrideSprite = null;//Helper.CreateSpriteFromImageFile("missing_hint_pic.jpg");
                         }
 
-
+                        
 
                         foreach (ContextHelpHintDef tacticsHint in TFTVHumanEnemies.TacticsHint)
                         {
@@ -370,6 +445,135 @@ namespace TFTV
             }
 
         }
+
+        private static void AddHintToDisplayedHints(ContextHelpManager contextHelpManager, ContextHelpHintDef contextHelpHintDef)
+        {
+            try
+            {
+                Type type = typeof(ContextHelpManager);
+
+                // Use BindingFlags to specify that you want to access private fields
+                BindingFlags flags = BindingFlags.Instance | BindingFlags.NonPublic;
+
+                // Get the FieldInfo for the _shownHints field
+                FieldInfo fieldInfo = type.GetField("_shownHints", flags);
+
+                if (fieldInfo != null)
+                {
+                    // Get the current value of _shownHints
+                    HashSet<ContextHelpHintDef> currentHints = (HashSet<ContextHelpHintDef>)fieldInfo.GetValue(contextHelpManager);
+
+                    // Add your hint to the HashSet
+                    if (!currentHints.Contains(contextHelpHintDef))
+                    {
+                        currentHints.Add(contextHelpHintDef);
+                    }
+                    else
+                    {
+                        TFTVLogger.Always($"{contextHelpHintDef.name} was not added to _shownHints because already in the list.");
+
+
+                    }
+                }
+                else
+                {
+                    TFTVLogger.Always("_shownHints field not found.");
+                }
+
+
+
+            }
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+
+
+        }
+
+
+        public static void ShowStoryPanel(TacticalLevelController controller, string nameFirstHint, string nameSecondHint = null)
+        {
+            try
+            {
+
+                TacContextHelpManager hintManager = GameUtl.CurrentLevel().GetComponent<TacContextHelpManager>();
+                ContextHelpHintDef firstHint = DefCache.GetDef<ContextHelpHintDef>(nameFirstHint);
+                FieldInfo hintsPendingDisplayField = typeof(ContextHelpManager).GetField("_hintsPendingDisplay", BindingFlags.NonPublic | BindingFlags.Instance);
+
+
+                if (!hintManager.WasHintShown(firstHint))
+                {
+
+                    if (!hintManager.RegisterContextHelpHint(firstHint, isMandatory: true, null))
+                    {
+                        //TFTVLogger.Always($"got here too");
+
+                        ContextHelpHint item = new ContextHelpHint(firstHint, isMandatory: true, null);
+
+                        // Get the current value of _hintsPendingDisplay
+                        List<ContextHelpHint> hintsPendingDisplay = (List<ContextHelpHint>)hintsPendingDisplayField.GetValue(hintManager);
+
+                        // Add the new hint to _hintsPendingDisplay
+                        hintsPendingDisplay.Add(item);
+
+                        // Set the modified _hintsPendingDisplay value back to the hintManager instance
+                        hintsPendingDisplayField.SetValue(hintManager, hintsPendingDisplay);
+                    }
+
+                    MethodInfo startLoadingHintAssetsMethod = typeof(TacContextHelpManager).GetMethod("StartLoadingHintAssets", BindingFlags.NonPublic | BindingFlags.Instance);
+
+                    object[] args = new object[] { firstHint }; // Replace hintDef with your desired argument value
+
+                    // Invoke the StartLoadingHintAssets method using reflection
+                    startLoadingHintAssetsMethod.Invoke(hintManager, args);
+
+                    controller.View.TryShowContextHint();
+
+                    AddHintToDisplayedHints(hintManager, firstHint);
+
+                    if (nameSecondHint != null)
+                    {
+
+                        ContextHelpHintDef secondHint = DefCache.GetDef<ContextHelpHintDef>(nameSecondHint);
+
+                        if (!hintManager.RegisterContextHelpHint(secondHint, isMandatory: true, null))
+                        {
+
+                            ContextHelpHint item = new ContextHelpHint(secondHint, isMandatory: true, null);
+
+                            // Get the current value of _hintsPendingDisplay
+                            List<ContextHelpHint> hintsPendingDisplay = (List<ContextHelpHint>)hintsPendingDisplayField.GetValue(hintManager);
+
+                            // Add the new hint to _hintsPendingDisplay
+                            hintsPendingDisplay.Add(item);
+
+                            // Set the modified _hintsPendingDisplay value back to the hintManager instance
+                            hintsPendingDisplayField.SetValue(hintManager, hintsPendingDisplay);
+                        }
+
+                        args = new object[] { secondHint }; // Replace hintDef with your desired argument value
+
+                        // Invoke the StartLoadingHintAssets method using reflection
+                        startLoadingHintAssetsMethod.Invoke(hintManager, args);
+
+                        controller.View.TryShowContextHint();
+                        AddHintToDisplayedHints(hintManager, secondHint);
+                    }
+                }
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+
+
+
 
         public static ActorHasTemplateHintConditionDef ActorHasTemplateCreateNewConditionForTacticalHint(string name)
         {
@@ -478,7 +682,7 @@ namespace TFTV
 
 
 
-        public static void CreateNewTacticalHint(string name, HintTrigger trigger, string conditionName, string title, string text, int typeHint, bool oneTime, string gUID)
+        public static ContextHelpHintDef CreateNewTacticalHint(string name, HintTrigger trigger, string conditionName, string title, string text, int typeHint, bool oneTime, string gUID)
         {
             try
             {
@@ -585,16 +789,17 @@ namespace TFTV
                         SInt64 m_PathID = 37247*/
 
 
-
+                        return newContextHelpHintDef;
 
             }
             catch (Exception e)
             {
                 TFTVLogger.Error(e);
+                throw;
             }
         }
 
-        public static void CreateNewManualTacticalHint(string name, string gUID, string titleKey, string textKey)
+        public static ContextHelpHintDef CreateNewManualTacticalHint(string name, string gUID, string titleKey, string textKey)
         {
             try
             {
@@ -604,15 +809,17 @@ namespace TFTV
                 newContextHelpHintDef.AnyCondition = false;
                 newContextHelpHintDef.Title.LocalizationKey = titleKey;
                 newContextHelpHintDef.Text.LocalizationKey = textKey;
-                newContextHelpHintDef.IsTutorialHint = true;
+                newContextHelpHintDef.IsTutorialHint = false;
                 ContextHelpHintDbDef tacticalHintsDB = DefCache.GetDef<ContextHelpHintDbDef>("TacticalHintsDbDef");
                 tacticalHintsDB.Hints.Add(newContextHelpHintDef);
 
+                return newContextHelpHintDef;
 
             }
             catch (Exception e)
             {
                 TFTVLogger.Error(e);
+                throw;
             }
 
 

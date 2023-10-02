@@ -512,7 +512,7 @@ namespace TFTV
 
                 catch (Exception e)
                 {
-                    TFTVLogger.Error(e);
+                   // TFTVLogger.Error(e);
                 }
                 return true;
             }
@@ -802,7 +802,7 @@ namespace TFTV
 
             catch (Exception e)
             {
-                TFTVLogger.Error(e);
+              //  TFTVLogger.Error(e);
             }
             throw new InvalidOperationException();
         }

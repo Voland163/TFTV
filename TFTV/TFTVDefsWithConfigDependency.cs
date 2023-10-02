@@ -1,16 +1,19 @@
 ﻿using Base.Defs;
 using Base.Entities.Effects.ApplicationConditions;
 using PhoenixPoint.Common.Core;
+using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.UI;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.Interception.Equipments;
+using PhoenixPoint.Geoscape.Entities.PhoenixBases;
 using PhoenixPoint.Geoscape.Entities.PhoenixBases.FacilityComponents;
 using PhoenixPoint.Geoscape.Entities.Research;
 using PhoenixPoint.Geoscape.Entities.Research.Requirement;
 using PhoenixPoint.Geoscape.Entities.Research.Reward;
 using PhoenixPoint.Geoscape.Entities.Sites;
 using PhoenixPoint.Geoscape.Levels;
+using PhoenixPoint.Geoscape.Levels.Factions;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.Effects.ApplicationConditions;
@@ -31,18 +34,22 @@ namespace TFTV
         public static readonly ResearchTagDef CriticalResearchTag = DefCache.GetDef<ResearchTagDef>("CriticalPath_ResearchTagDef");
 
         public static bool ChangesToCapturingPandoransImplemented = false;
-        public static bool ChangesToFoodAndMutagenGenerationImplemented = false;   
+        public static bool ChangesToFoodAndMutagenGenerationImplemented = false;
+
 
         public static void ImplementConfigChoices()
         {
             try
             {
+
                 ChangesToFoodAndMutagenGeneration();
                 ChangesToPandoranCapture();
                 EqualizeTrade();
                 IncreaseHavenAlertCoolDown();
                 TFTVBetterEnemies.ImplementBetterEnemies();
-             //   ReverseEngineering();
+
+
+                //   ReverseEngineering();
 
 
             }
@@ -52,25 +59,25 @@ namespace TFTV
             }
         }
 
-  /*      private static void ReverseEngineering()
-        {
-            try
-            {
+        /*      private static void ReverseEngineering()
+              {
+                  try
+                  {
 
-                TFTVConfig config = TFTVMain.Main.Config;
+                      TFTVConfig config = TFTVMain.Main.Config;
 
-                if (config.ActivateReverseEngineeringResearch)
-                {
-                    TFTVReverseEngineering.ModifyReverseEngineering();
-                    TFTVLogger.Always("Reverse Engineering changes to Defs injected");
-                }
+                      if (config.ActivateReverseEngineeringResearch)
+                      {
+                          TFTVReverseEngineering.ModifyReverseEngineering();
+                          TFTVLogger.Always("Reverse Engineering changes to Defs injected");
+                      }
 
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-        }*/
+                  }
+                  catch (Exception e)
+                  {
+                      TFTVLogger.Error(e);
+                  }
+              }*/
 
         private static void ChangeResourceRewardsForAutopsies()
         {
@@ -143,7 +150,7 @@ namespace TFTV
                      new ResourceUnit { Type = ResourceType.Mutagen, Value = 75 }
                 };
                 DefCache.GetDef<ResearchDef>("PX_Alien_HatchingSentinel_ResearchDef").Resources = new ResourcePack()
-                { 
+                {
                      new ResourceUnit { Type = ResourceType.Mutagen, Value = 75 }
                 };
                 DefCache.GetDef<ResearchDef>("PX_Alien_TerrorSentinel_ResearchDef").Resources = new ResourcePack()
@@ -155,7 +162,7 @@ namespace TFTV
                      new ResourceUnit { Type = ResourceType.Mutagen, Value = 75 }
                 };
 
-                
+
 
             }
             catch (Exception e)
@@ -177,14 +184,14 @@ namespace TFTV
                 {
 
                     geoHavenDef.AlertStateCooldownDays = 7;
-                   
-                   
+
+
                 }
-                else 
+                else
                 {
                     geoHavenDef.AlertStateCooldownDays = 3;
-                
-                
+
+
                 }
 
 
@@ -226,9 +233,9 @@ namespace TFTV
                     anu.ResourceTradingRatios = tradingRatios;
                     nj.ResourceTradingRatios = tradingRatios;
                     syn.ResourceTradingRatios = tradingRatios;
-            
+
                 }
-                else 
+                else
                 {
 
                     List<TradingRatio> tradingRatiosAnu = new List<TradingRatio>
@@ -259,7 +266,7 @@ namespace TFTV
                         new TradingRatio() { OfferResource = ResourceType.Materials, OfferQuantity = 9, RecieveQuantity = 2, RecieveResource = ResourceType.Tech },
                         new TradingRatio() { OfferResource = ResourceType.Tech, OfferQuantity = 2, RecieveQuantity = 8, RecieveResource = ResourceType.Supplies },
                         new TradingRatio() { OfferResource = ResourceType.Tech, OfferQuantity = 2, RecieveQuantity = 8, RecieveResource = ResourceType.Materials }
-                    };              
+                    };
 
                 }
 
@@ -285,7 +292,7 @@ namespace TFTV
                     ModifyLocalizationKeys();
                     RemoveMutagenHarvestingResearch();
                     ChangeResourceRewardsForAutopsies();
-                    MoveFoodProductionFacilityToFoodHarvestingTechnology();
+                    MoveFoodProductionFacilityToImmediatelyAvailable();
                     ChangesToFoodAndMutagenGenerationImplemented = true;
                     TFTVLogger.Always($"ChangesToFoodAndMutagenGenerationImplemented");
                 }
@@ -297,21 +304,40 @@ namespace TFTV
         }
 
 
-        private static void MoveFoodProductionFacilityToFoodHarvestingTechnology()
+        private static void MoveFoodProductionFacilityToImmediatelyAvailable()
         {
             try
             {
+                GeoPhoenixFactionDef geoPhoenixFactionDef = DefCache.GetDef<GeoPhoenixFactionDef>("Phoenix_GeoPhoenixFactionDef");
+
+                List<PhoenixFacilityDef> phoenixFacilities = geoPhoenixFactionDef.StartingFacilities.ToList();
+                PhoenixFacilityDef foodProductionFacility = DefCache.GetDef<PhoenixFacilityDef>("FoodProduction_PhoenixFacilityDef");
+
+                phoenixFacilities.Add(foodProductionFacility);
+                geoPhoenixFactionDef.StartingFacilities = phoenixFacilities.ToArray();
+
                 ResearchDef fungusResearchDef = DefCache.GetDef<ResearchDef>("ANU_AnuFungusFood_ResearchDef");
 
-                FacilityResearchRewardDef foodProductionFacilityResearch = DefCache.GetDef<FacilityResearchRewardDef>("ANU_AnuFungusFood_ResearchDef_FacilityResearchRewardDef_0");
+                FacilityBuffResearchRewardDef foodProductionBuff = Helper.CreateDefFromClone(DefCache.GetDef<FacilityBuffResearchRewardDef>("NJ_AutomatedFactories_ResearchDef_FacilityBuffResearchRewardDef_0"),
+                    "{99DE6ED5-37E0-4CF5-8511-D59A51D0B5F0}",
+                    "FoodProductionBuff");
 
-                UnlockFunctionalityResearchRewardDef foodHarvestingFunctionalityUnlock = DefCache.GetDef<UnlockFunctionalityResearchRewardDef>("PX_FoodHavresting_ResearchDef_UnlockFunctionalityResearchRewardDef_0");
+                foodProductionBuff.Facility = foodProductionFacility;
+                //  foodProductionBuff.Increase = 0.0f;
+                foodProductionBuff.ModificationType = GeoFactionFacilityBuff.FacilityComponentModificationType.Multiply;
 
-                ResearchDef foodHarvetingResearchDef = DefCache.GetDef<ResearchDef>("PX_FoodHavresting_ResearchDef");
-                List<ResearchRewardDef> researchRewardFoodHarvesting = new List<ResearchRewardDef>() { foodProductionFacilityResearch, foodHarvestingFunctionalityUnlock };
 
-                foodHarvetingResearchDef.Unlocks = researchRewardFoodHarvesting.ToArray();
-                fungusResearchDef.Unlocks = new ResearchRewardDef[] { fungusResearchDef.Unlocks[1] };
+
+                //  FacilityResearchRewardDef foodProductionFacilityResearch = DefCache.GetDef<FacilityResearchRewardDef>("ANU_AnuFungusFood_ResearchDef_FacilityResearchRewardDef_0");
+
+                //  UnlockFunctionalityResearchRewardDef foodHarvestingFunctionalityUnlock = DefCache.GetDef<UnlockFunctionalityResearchRewardDef>("PX_FoodHavresting_ResearchDef_UnlockFunctionalityResearchRewardDef_0");
+
+                //      ResearchDef foodHarvetingResearchDef = DefCache.GetDef<ResearchDef>("PX_FoodHavresting_ResearchDef");
+                //    List<ResearchRewardDef> researchRewardFoodHarvesting = new List<ResearchRewardDef>() { foodProductionFacilityResearch, foodHarvestingFunctionalityUnlock };
+
+                //  foodHarvetingResearchDef.Unlocks = researchRewardFoodHarvesting.ToArray();
+
+                fungusResearchDef.Unlocks = new ResearchRewardDef[] { fungusResearchDef.Unlocks[1], foodProductionBuff };
 
 
             }
@@ -433,7 +459,7 @@ namespace TFTV
 
         }
 
-       
+
 
         private static void CreateCaptureModule()
         {

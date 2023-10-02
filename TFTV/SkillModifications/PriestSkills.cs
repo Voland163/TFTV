@@ -183,10 +183,13 @@ namespace PRMBetterClasses.SkillModifications
                 "E_LayWaste_CameraAbilityFilter [NoDieCamerasTacticalCameraDirectorDef]");
             (cameraAbility.FilterDef as TacCameraAbilityFilterDef).TacticalAbilityDef = LayWaste;
 
-            TacticalAbilityDef animSource = DefCache.GetDef<TacticalAbilityDef>("Priest_MindControl_AbilityDef");
+            TacticalAbilityDef priestMcAnimSource = DefCache.GetDef<TacticalAbilityDef>("Priest_MindControl_AbilityDef");
+            TacticalAbilityDef exaltetMcAnimSource = DefCache.GetDef<TacticalAbilityDef>("Exalted_MindControl_AbilityDef");
             foreach (TacActorSimpleAbilityAnimActionDef animActionDef in Repo.GetAllDefs<TacActorSimpleAbilityAnimActionDef>().Where(aad => aad.name.Contains("Soldier_Utka_AnimActionsDef")))
             {
-                if (animActionDef.AbilityDefs != null && animActionDef.AbilityDefs.Contains(animSource) && !animActionDef.AbilityDefs.Contains(LayWaste))
+                if (animActionDef.AbilityDefs != null
+                    && (animActionDef.AbilityDefs.Contains(priestMcAnimSource) || animActionDef.AbilityDefs.Contains(exaltetMcAnimSource))
+                    && !animActionDef.AbilityDefs.Contains(LayWaste))
                 {
                     animActionDef.AbilityDefs = animActionDef.AbilityDefs.Append(LayWaste).ToArray();
                     PRMLogger.Debug("Anim Action '" + animActionDef.name + "' set for abilities:");

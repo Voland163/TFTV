@@ -1,0 +1,85 @@
+Key,Type,Desc,English,Chinese (Simplified),French,German,Italian,Polish,Russian,Spanish,UI_Tester
+VOID_OMEN_TITLE_1,Text,,"Ambushes more dangerous and more likely, but have more crates",,"Les embuscades sont plus dangereuses et plus fréquentes, mais il y a plus de caisses de stockage.",,,,,,
+VOID_OMEN_TITLE_2,Text,,All diplomatic penalties and rewards halved,,Toutes les pénalités et récompenses diplomatiques sont réduites de moitié,,,,,,
+VOID_OMEN_TITLE_3,Text,,"All abilities cost +50% WP, but Delirium has no effect on WP",,"Toutes les capacités coûtent +50% de Points de Volonté, mais le délire n'a aucun effet sur les Points de Volonté.",,,,,,
+VOID_OMEN_TITLE_4,Text,,"Max operatives that can be deployed reduced by 2, but +100% experience ",,"6 agents maximum peuvent être déployés sur n'importe quelle mission, mais +100% d'expérience. ",,,,,,
+VOID_OMEN_TITLE_5,Text,,"Haven defenders always hostile, but crates available for looting ",,"Les défenseurs des refuges sont toujours hostiles, mais des caisses sont disponibles pour le pillage. ",,,,,,
+VOID_OMEN_TITLE_6,Text,,"Pandorans evolve as they lose missions and colonies, but Phoenix research output increased by 50%",,Les pandoriens évoluent au fur et à mesure qu'ils perdent des missions et des colonies.,,,,,,
+VOID_OMEN_TITLE_7,Text,,"More Mist in missions, can deploy one more operative on standard missions",,Plus de brume dans les missions,,,,,,
+VOID_OMEN_TITLE_8,Text,,"Diplomatic penalties among factions +50%, but double faction research",,"Pénalités diplomatiques entre factions +50%, mais recherche de factions doublée",,,,,,
+VOID_OMEN_TITLE_9,Text,,Attacks on havens twice as frequent,,Des attaques deux fois plus fréquentes contre les refuges,,,,,,
+VOID_OMEN_TITLE_10,Text,,"No limit to Delirium, regardless of ODI level",,"Aucune limite au délire, quel que soit le niveau d'ODI",,,,,,
+VOID_OMEN_TITLE_11,Text,,Behemoth disruption threshold increased,,Augmentation du seuil de perturbation du Béhémoth,,,,,,
+VOID_OMEN_TITLE_12,Text,,Strength of Pandoran attacks on Havens increased by 50%,,La force des attaques des Pandoriens sur les refuges est augmentée de 50%.,,,,,,
+VOID_OMEN_TITLE_13,Text,,New Pandoran Colonies are built 100% faster,,Les nouvelles colonies pandoriennes sont construites 100 % plus rapidement.,,,,,,
+VOID_OMEN_TITLE_14,Text,,Human perception lowered to 20 from 30,,Perception humaine diminuée de 35 à 20,,,,,,
+VOID_OMEN_TITLE_15,Text,,More Touched by the Void,,Plus d'Ombres,,,,,,
+VOID_OMEN_TITLE_16,Text,,Touched by the Void can appear anywhere and Umbras can attack anyone,,Les Ombres peuvent apparaître n'importe où et attaquer n'importe qui,,,,,,
+VOID_OMEN_TITLE_17,Text,,Destroyed havens in Mist always become infested ,,Les refuges détruits dans la brume deviennent toujours infestés,,,,,,
+VOID_OMEN_TITLE_18,Text,,"Havens defense rating higher, rewards from haven defense missions lower",,"Le taux de défense des refuges est plus élevé, mais les récompenses des missions de défense sont plus faibles.",,,,,,
+VOID_OMEN_TITLE_19,Text,,"Pandorans gain reactive evolutionary resistance, cost of faction tech in Bazaar reduced",,"Les Pandorans acquièrent une résistance évolutive réactive, le coût de la technologie du Bazar est réduit",,,,,,
+VOID_OMEN_TITLE_20,Text,,Behemoth can deploy experimental (lower strength) Abbadons,,Le Behemoth peut déployer des Abbadons expérimentaux (de force inférieure).,,,,,,
+VOID_OMEN_DESCRIPTION_TEXT_1,Text,,"<i>""The reports we are intercepting from both faction and independent scavenging teams is that it's getting more dangerous out there… But we will probably see more loot, because… fewer competitors.""</i> ",,"<i>"" Les rapports que nous interceptons des équipes de récupérateurs, qu'ils soient de faction ou indépendants, indiquent que cela devient plus dangereux là-bas... Mais nous verrons probablement plus de butin, car... moins de concurrence. ""</i>",,,,,,
+VOID_OMEN_DESCRIPTION_TEXT_2,Text,,"<i>""We are losing our moral compass, if we ever had one.""</i> ",,"<i>""Nous perdons notre boussole éthique, si nous en avons jamais eu une.""</i> ",,,,,,
+VOID_OMEN_DESCRIPTION_TEXT_3,Text,,"<i>""It's a waking nightmare. Can you get used to nightmares?""</i> ",,"<i>""C'est un cauchemar éveillé. Peut-on s'habituer aux cauchemars ?""</i> ",,,,,,
+VOID_OMEN_DESCRIPTION_TEXT_4,Text,,"<i>""Have you seen the latest psych-evals? 'Trust issues' is putting it mildly: they can start shooting each other any minute. If you want my advice, keep the combat units small, at least for a while.""</i>",,"<i>""Vous avez vu les derniers tests psychologiques ? Les ""problèmes de confiance"" sont un euphémisme : ils peuvent commencer à se tirer dessus à tout moment. Si vous voulez mon avis, gardez les unités de combat réduites, au moins pour un moment.""</i> ",,,,,,
+VOID_OMEN_DESCRIPTION_TEXT_5,Text,,"<i>""They went Paranoid cuckoo! They think we are not there to defend them, but to take their stuff. Honestly, I think we should, just to teach them a lesson.""</i>",,"<i>""Ils sont devenus paranoïaques ! Ils pensent que nous ne sommes pas là pour les défendre, mais pour prendre leurs biens. Honnêtement, je pense que nous devrions, juste pour leur donner une leçon.""</i> ",,,,,,
+VOID_OMEN_DESCRIPTION_TEXT_6,Text,,"<i> ""What did you expect? They too are capable of learning from their mistakes.""</i>",,"<i>""A quoi vous attendiez-vous ? Eux aussi sont capables d'apprendre de leurs erreurs.""</i> ",,,,,,
+VOID_OMEN_DESCRIPTION_TEXT_7,Text,,"<i> ""It has nothing to do with meteorology. We know nothing about the Mist: why it moves, where to, why there is so much more of it all of a sudden. Yes, as a ""Mist Expert"" I admit I'm a fraud."" </i>",,"<i>""Cela n'a rien à voir avec la météorologie. Nous ne savons rien de la brume : pourquoi elle se déplace, où elle va, pourquoi il y en a tellement plus tout d'un coup. Oui, en tant qu'""expert en brouillard"", j'admets que je suis un imposteur.""</i> ",,,,,,
+VOID_OMEN_DESCRIPTION_TEXT_8,Text,,"<i> ""Them and us, we can't help but see the world that way. Odd how sometimes that peaks and we forget that we are all part of the same species. A species that is currently facing extinction.""</i>",,"<i>""Eux et nous, on ne peut s'empêcher de voir le monde de cette façon. C'est étrange comme parfois cela culmine et nous oublions que nous faisons tous partie de la même espèce. Une espèce qui est actuellement en voie d'extinction.""</i> ",,,,,,
+VOID_OMEN_DESCRIPTION_TEXT_9,Text,,"<i> ""I would say they are off the leash now, but, if so, who was holding it?""</i>",,"<i>""C'est un cauchemar éveillé. Tu peux t'habituer aux cauchemars ?""</i>",,,,,,
+VOID_OMEN_DESCRIPTION_TEXT_10,Text,,<i>I can't wake up I can't wake up I can't wake up <b> I CAN'T WAKE UP</b></i>,,<i>Je ne peux pas me réveiller Je ne peux pas me réveiller Je ne peux pas me réveiller <b>JE NE PEUX PAS ME REVEILLER</b></i>,,,,,,
+VOID_OMEN_DESCRIPTION_TEXT_11,Text,,<i>It just won't quit</i>,,<i>Il ne veut pas s'arrêter</i>,,,,,,
+VOID_OMEN_DESCRIPTION_TEXT_12,Text,,<i>They are throwing everything they have at us</i>,,<i>Ils nous envoient tout ce qu'ils ont</i>,,,,,,
+VOID_OMEN_DESCRIPTION_TEXT_13,Text,,"<i>""Look, the Pandron Colonies don't just happen… They follow some pattern; I can't tell you what it is because we don't understand it… yet. But I can tell you that something has changed. </i>",,"<i>""Ecoutez, les Colonies Pandoriennes ne se créent pas par hasard... Elles suivent un certain modèle ; je ne peux pas vous dire lequel car nous ne le comprenons pas... pour le moment. Mais je peux vous dire que quelque chose a changé.""</i>",,,,,,
+VOID_OMEN_DESCRIPTION_TEXT_14,Text,,"<i>Have you noticed how things look less substantial these days? Like they were covered in fog, or made of cotton candy. Maybe it's just me.</i>",,<i>Avez-vous remarqué que les choses ont l'air moins importantes de nos jours ? Comme si elles étaient couvertes de brouillard ou faites de barbe à papa. Peut-être que c'est juste moi.</i>,,,,,,
+VOID_OMEN_DESCRIPTION_TEXT_15,Text,,"<i>""Our people are seeing <b>more</b> oil monsters in the field. I look forward to the strict adherents of the scientific method explaining this away as our operatives going <b>more</b> crazy.""</i>",,"<i>""Nos hommes voient de <b>plus en plus</b> de monstres pétroliers sur le terrain. J'ai hâte que les adeptes de la méthode scientifique expliquent cela par le fait que nos agents deviennent de <b>plus en plus</b> fous.""</i>",,,,,,
+VOID_OMEN_DESCRIPTION_TEXT_16,Text,,<i>It just isn't fair! Demons are supposed to follow rules too!</i>,,<i>Ce n'est pas juste ! Les démons sont censés suivre des règles aussi !</i>,,,,,,
+VOID_OMEN_DESCRIPTION_TEXT_17,Text,,<i>What if this is their end game? To turn us all into the puppets of an alien intelligence?</i>,,<i>Et si c'était leur but ultime ? Faire de nous tous les marionnettes d'une intelligence extraterrestre ?</i>,,,,,,
+VOID_OMEN_DESCRIPTION_TEXT_18,Text,,"<i>""To keep the Synedrion dream alive, we must keep our people alive. Join the volunteer militia today! Service guarantees basic alimentary allocation."" </i>
+
+- Public notice on a Synedrion feed",,"<i>"" To keep the Synedrion dream alive, we must keep our people alive. Join the volunteer militia today ! Service guarantees basic alimentary allocation."" </i>
+
+- Public notice on a Synedrion feed",,,,,,
+VOID_OMEN_DESCRIPTION_TEXT_19,Text,,"<i>They *know* us. Is it really all that surprsing? We are seeing their nightmares, they learn our tactics""</i>",,"<i>Ils nous ""connaissent"". Est-ce vraiment si surprenant ? Nous voyons leurs cauchemars, ils apprennent nos tactiques.""</i>",,,,,,
+VOID_OMEN_DESCRIPTION_TEXT_20,Text,,<i>They are always coming up with something new</i>,,<i>Ils sont toujours en train d'inventer quelque chose de nouveau.</i>,,,,,,
+VOID_OMEN_INTRO,Text,,"We believe we are observing the first effects of the Oneiric Delirium on a collective scale. The phenomenon is akin to mass hysteria.
+
+Synedrion psycho-sociologists are rationalizing the documented instances of widespread psychosis as the result of stresses to which our communities are subjected when our species is facing the possibility of extinction.
+
+However, the global scale and eerie thematic homogeneity of these events suggests a different causal relationship.
+
+Given what we know about the Oneiric Delirium and its connection to the Mist, there is little room for doubt: our collective psyche has become another battleground in our struggle with the Pandoravirus.",,"Nous pensons que nous observons les premiers effets du délire onirique à l'échelle collective. Le phénomène s'apparente à une hystérie de masse.
+
+Les psychosociologues de Synedrion rationalisent les cas documentés de psychose généralisée comme étant le résultat du stress auquel nos communautés sont soumises lorsque notre espèce est confrontée à la possibilité d'extinction.
+
+Cependant, l'échelle mondiale et l'étrange homogénéité thématique de ces événements suggèrent une relation causale différente.
+
+Compte tenu de ce que nous savons du délire onirique et de son lien avec la Brume, le doute n'est plus permis : notre psyché collective est devenue un autre champ de bataille dans notre lutte contre le pandoravirus.",,,,,,
+VOID_OMEN_INTRO_TITLE,Text,,Omens of the Void,,Les présages du vide,,,,,,
+SDI_01_TEXT_GENERAL_0,Text,,"We are ready to share our preliminary findings regarding the new Pandoravirus outbreak.
+
+The viral mist is an extremely unusual phenomenon. It is in fact a highly complex aerosol, capable of moving with deliberation and transporting viral DNA and other microbes.
+
+It is our belief that the vast waves of mist that helped cause the destruction of civilization were generated underwater by gigantic, mutated structures. Each wave, including the current one (referred to by the population as the Third Mist), has slightly different properties.
+",,,,,,,,
+SDI1_OUTCOME,Text,,"We have received reports of a variety of afflictions suffered by individuals who have traveled or reside in areas covered by the mist: tiredness, lack of energy, brain fog, anguish, and sometimes hallucinations.
+
+So far we can conclude the following:
+
+1) Symptoms never fully disappear, but are negligible when the subjects are fully rested, and progressively become worse as they exert themselves.
+2) Symptoms get worse if the subject stays or returns to locations where mist is present.
+
+We have termed this condition ""Oneiric Delirium"", on account of the subjects complaining of nightmares, or ""crazy dreams"", with similar themes of monstrous degeneration and smothering.
+
+<color=#ec9006><b>Our operatives can now be afflicted with a Delirium status of up to a third of their Willpower</b></color>",,,,,,,,
+SDI_01_TITLE,Text,,The Third Mist,,,,,,,,
+SDI6_OUTCOME,Text,,"The Oneiric Delirium grows stronger.
+
+<color=#e8bcf0><b>Our operatives can now be afflicted with a Delirium status of up to half of their Willpower</b></color>",,,,,,,,
+SDI7_OUTCOME,Text,,<color=#e8bcf0><b>Havens in the Mist can become infested instead of destroyed when attacked by Pandorans. Infested havens accelerate Pandoran evolution.</b></color>,,,,,,,,
+SDI09_OUTCOME,Text,,<color=#e8bcf0><b>The Umbra grow in strength</b></color>,,,,,,,,
+SDI10_OUTCOME,Text,,"The Oneiric Delirium grows stronger.
+
+<color=#e8bcf0><b>Our operatives can now be afflicted with a Delirium status equal to their Willpower</b></color>",,,,,,,,
+SDI11_OUTCOME,Text,,<b> Berith are coming! </b>,,,,,,,,

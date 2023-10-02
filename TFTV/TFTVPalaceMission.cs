@@ -6,6 +6,7 @@ using Base.Entities.Effects;
 using Base.Entities.Statuses;
 using Base.Levels;
 using HarmonyLib;
+using PhoenixPoint.Common.ContextHelp;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.GameTags;
@@ -13,6 +14,7 @@ using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.Entities.Items;
 using PhoenixPoint.Common.Levels.ActorDeployment;
 using PhoenixPoint.Common.Levels.Missions;
+using PhoenixPoint.Tactical.ContextHelp;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.ActorsInstance;
@@ -76,7 +78,7 @@ namespace TFTV
         private static readonly DefRepository Repo = TFTVMain.Repo;
         private static readonly SharedData Shared = TFTVMain.Shared;
 
-       // private static readonly GameTagDef revenantTier1GameTag = DefCache.GetDef<GameTagDef>("RevenantTier_1_GameTagDef");
+        // private static readonly GameTagDef revenantTier1GameTag = DefCache.GetDef<GameTagDef>("RevenantTier_1_GameTagDef");
         private static readonly GameTagDef revenantTier2GameTag = DefCache.GetDef<GameTagDef>("RevenantTier_2_GameTagDef");
         private static readonly GameTagDef revenantTier3GameTag = DefCache.GetDef<GameTagDef>("RevenantTier_3_GameTagDef");
         private static readonly GameTagDef anyRevenantGameTag = DefCache.GetDef<GameTagDef>("Any_Revenant_TagDef");
@@ -101,7 +103,7 @@ namespace TFTV
         private static List<string> ActivatedObjectives = new List<string>();
 
 
-//        private static readonly DelayedEffectStatusDef ReinforcementStatus = DefCache.GetDef<DelayedEffectStatusDef>("E_Status [ReinforcementStatus]");
+        //        private static readonly DelayedEffectStatusDef ReinforcementStatus = DefCache.GetDef<DelayedEffectStatusDef>("E_Status [ReinforcementStatus]");
 
         private static readonly DelayedEffectStatusDef reinforcementStatusUnder1AP = DefCache.GetDef<DelayedEffectStatusDef>("E_Status [ReinforcementStatusUnder1AP]");
         private static readonly DelayedEffectStatusDef reinforcementStatus1AP = DefCache.GetDef<DelayedEffectStatusDef>("E_Status [ReinforcementStatus1AP]");
@@ -109,6 +111,42 @@ namespace TFTV
 
 
         private static readonly DamageMultiplierStatusDef RecepctacleDisrupted = DefCache.GetDef<DamageMultiplierStatusDef>("YR_Disrupted");
+
+        public static void CheckIfPlayerCloseToGate(TacticalActor tacticalActor)
+        {
+            try
+            {
+               
+                TacticalLevelController controller = tacticalActor.TacticalLevel;
+
+                if (controller!=null && controller.TacMission.MissionData.IsFinalMission && tacticalActor.IsControlledByPlayer)
+                {
+                  //  TFTVLogger.Always($"passed if check");
+
+                    if (tacticalActor.Pos.z <= 60)
+                    {
+                        //    TFTVLogger.Always($"passed second if check");
+
+                        TFTVTutorialAndStory.ShowStoryPanel(controller, "ReceptacleGateHint0", "ReceptacleGateHint1");
+                        
+                      //  GateHintShown = true;
+
+                    }
+                }
+                
+
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+
+            }
+        }
+
+
+        
 
 
         //  private static int TurnsBeforeReceptacleResurrects = 2;
@@ -552,35 +590,7 @@ namespace TFTV
 
 
 
-        public static bool Has1APWeapon(TacCharacterDef tacCharacterDef)
-        {
-            try
-            {
-                foreach (ItemDef itemDef in tacCharacterDef.Data.BodypartItems)
-                {
-                    TFTVLogger.Always($"{itemDef.name}");
-
-                    if (itemDef.name.Contains("Pincer"))
-                    {
-
-                        TFTVLogger.Always($"reinforcement {tacCharacterDef.name} has {itemDef.name}, so should get {reinforcementStatus1AP.EffectName}");
-                        return true;
-                    }
-                }
-
-                TFTVLogger.Always($"reinforcement {tacCharacterDef.name} has no 1AP weapon, so applying {reinforcementStatusUnder2AP.EffectName}");
-                return false;
-
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-                throw;
-            }
-
-
-
-        }
+       
 
 
         /// <summary>
@@ -592,9 +602,22 @@ namespace TFTV
 
             try
             {
-                if (actor.GameTags.Contains(DefCache.GetDef<GameTagDef>("TaxiarchNergal_TacCharacterDef_GameTagDef")))
+                List<GameTagDef> gameTagsToCheck = new List<GameTagDef>()
                 {
-                    TFTVLogger.Always($"found Taxiarch Nergal");
+                 DefCache.GetDef<GameTagDef>("TaxiarchNergal_TacCharacterDef_GameTagDef"),
+                DefCache.GetDef<GameTagDef>("Zhara_TacCharacterDef_GameTagDef"),
+                DefCache.GetDef<GameTagDef>("Stas_TacCharacterDef_GameTagDef"),
+                DefCache.GetDef<GameTagDef>("Nikolai_TacCharacterDef_GameTagDef"),
+                 DefCache.GetDef<GameTagDef>("Richter_TacCharacterDef_GameTagDef"),
+                DefCache.GetDef<GameTagDef>("Harlson_TacCharacterDef_GameTagDef"),
+                DefCache.GetDef<GameTagDef>("Sofia_TacCharacterDef_GameTagDef"),
+
+                };
+
+                if (gameTagsToCheck.Any(gt => actor.GameTags.Contains(gt)))
+
+                {
+    
                     actor.GameTags.Remove(DefCache.GetDef<GameTagDef>("Human_TagDef"));
 
                 }
@@ -613,9 +636,23 @@ namespace TFTV
         {
             try
             {
+                List<GameTagDef> gameTagsToCheck = new List<GameTagDef>()
+                {
+              DefCache.GetDef<GameTagDef>("TaxiarchNergal_TacCharacterDef_GameTagDef"),
+                DefCache.GetDef<GameTagDef>("Zhara_TacCharacterDef_GameTagDef"),
+                DefCache.GetDef<GameTagDef>("Stas_TacCharacterDef_GameTagDef"),
+                DefCache.GetDef<GameTagDef>("Nikolai_TacCharacterDef_GameTagDef"),
+                 DefCache.GetDef<GameTagDef>("Richter_TacCharacterDef_GameTagDef"),
+                DefCache.GetDef<GameTagDef>("Harlson_TacCharacterDef_GameTagDef"),
+                DefCache.GetDef<GameTagDef>("Sofia_TacCharacterDef_GameTagDef"),
 
 
-                if (actor.GameTags.Contains(DefCache.GetDef<GameTagDef>("TaxiarchNergal_TacCharacterDef_GameTagDef")))
+
+
+
+                };
+
+                if (gameTagsToCheck.Any(gt=>actor.GameTags.Contains(gt)))
 
                 {
                     actor.TacticalActorView.TacticalActorViewDef.PortraitSource = TacticalActorViewDef.PortraitMode.ManualPortrait;
@@ -1127,14 +1164,14 @@ namespace TFTV
         private static readonly string RightTopSpawn = "Deploy_Resident_3x3 (1)";
         private static readonly Vector3 RightTopPosition = new Vector3(-8.5f, -2.4f, 54.5f);
 
-      //  private static readonly string ShouldNotBeUsedSpawn = "Deploy_Resident_1x1_Grunt_Elite_and_Tiny";
-      //  private static readonly Vector3 ShouldNotBeUsedPosition = new Vector3(9.0f, 0.0f, 62.0f);
+        //  private static readonly string ShouldNotBeUsedSpawn = "Deploy_Resident_1x1_Grunt_Elite_and_Tiny";
+        //  private static readonly Vector3 ShouldNotBeUsedPosition = new Vector3(9.0f, 0.0f, 62.0f);
 
         private static readonly string LeftBottomSpawn = "Deploy_Resident_3x3 (7)";
         private static readonly Vector3 LeftBottomPosition = new Vector3(31.5f, -2.4f, 74.5f);
 
-      //  private static readonly string PlayerGruntSpawn = "Deploy_Player_1x1_Elite_Grunt_Drone";
-      //  private static readonly Vector3 PlayerGruntPosition = new Vector3(10.5f, 0.0f, 89.5f);
+        //  private static readonly string PlayerGruntSpawn = "Deploy_Player_1x1_Elite_Grunt_Drone";
+        //  private static readonly Vector3 PlayerGruntPosition = new Vector3(10.5f, 0.0f, 89.5f);
 
         private static readonly Vector3 altEggPosition0 = new Vector3(-4.5f, 0.0f, 75.5f);
         private static readonly Vector3 altEggPosition1 = new Vector3(-1.5f, 0.0f, 72.5f);
@@ -1186,8 +1223,9 @@ namespace TFTV
 
         public static void CheckFinalMissionWinConditionForExalted(TacticalAbility ability)
         {
-            try { 
-            
+            try
+            {
+
 
                 TacticalLevelController controller = GameUtl.CurrentLevel()?.GetComponent<TacticalLevelController>();
                 if (controller != null)
@@ -1269,9 +1307,9 @@ namespace TFTV
 
                     if (__instance.InteractWithObjectAbilityDef == DefCache.GetDef<InteractWithObjectAbilityDef>("InteractWithYuggothian_AbilityDef") || __instance.InteractWithObjectAbilityDef == DefCache.GetDef<InteractWithObjectAbilityDef>("ExaltedInteractWithYuggothian_AbilityDef"))
                     {
-                        
+
                     }
-                    else 
+                    else
                     {
                         TFTVLogger.Always($"not interacting with Yuggoth! set result to null");
                         __result = null;
@@ -1382,7 +1420,7 @@ namespace TFTV
 
                                 if (tacticalActor != null)
                                 {
-                                    if (Has1APWeapon(crabToSpawn))
+                                    if (TFTVArtOfCrab.Has1APWeapon(crabToSpawn))
                                     {
 
                                         tacticalActor.Status.ApplyStatus(reinforcementStatus1AP);
@@ -1497,7 +1535,7 @@ namespace TFTV
                             {
                                 if (tacticalActor.HasGameTag(crabTag))
                                 {
-                                    if (Has1APWeapon(enemyToSpawn))
+                                    if (TFTVArtOfCrab.Has1APWeapon(enemyToSpawn))
                                     {
 
                                         tacticalActor.Status.ApplyStatus(reinforcementStatus1AP);
@@ -1967,8 +2005,9 @@ namespace TFTV
 
                             if (roll <= chance)
                             {
-                                revenant.SetFaction(controller.GetFactionByCommandName("aln"), PhoenixPoint.Common.Levels.Missions.TacMissionParticipant.Residents);
+                                revenant.SetFaction(controller.GetFactionByCommandName("aln"), TacMissionParticipant.Residents);
                                 revenant.TacticalActorView.DoCameraChase();
+                                TFTVTutorialAndStory.ShowStoryPanel(controller, "PalaceRevenantHint1");
 
                             }
 
@@ -2010,12 +2049,15 @@ namespace TFTV
                             TFTVLogger.Always($"stray {minion.name} heeds the Master's Call!");
 
 
-                            minion.SetFaction(controller.GetFactionByCommandName("aln"), PhoenixPoint.Common.Levels.Missions.TacMissionParticipant.Residents);
+                            minion.SetFaction(controller.GetFactionByCommandName("aln"), TacMissionParticipant.Residents);
                             minion.TacticalActorView.DoCameraChase();
 
-
+                            TFTVTutorialAndStory.ShowStoryPanel(controller, "PalaceHisMinionsHint");
 
                         }
+
+
+
                     }
                 }
             }
@@ -2065,6 +2107,7 @@ namespace TFTV
                             {
                                 revenant.SetFaction(controller.GetFactionByCommandName("px"), TacMissionParticipant.Player);
                                 revenant.TacticalActorView.DoCameraChase();
+                                TFTVTutorialAndStory.ShowStoryPanel(controller, "PalaceRevenantHint0");
 
                             }
 
@@ -2145,12 +2188,6 @@ namespace TFTV
             }
 
         }
-
-
-
-
-
-
 
         public static void SpawnMistToHideReceptacleBody(TacticalFaction tacticalFaction)
         {
@@ -2534,17 +2571,17 @@ namespace TFTV
                  * 
 
 
-[TFTV @ 8/29/2023 3:46:32 PM] Deploy_Resident_3x3 (2) at position (12.0, 6.8, 1.0), belongs to Residents
-[TFTV @ 8/29/2023 3:46:32 PM] Deploy_Resident_3x3 (2) will spawn S_Chiron_Mortar_TacCharacterDef
-[TFTV @ 8/29/2023 3:46:32 PM] Deploy_Resident_3x3 (3) at position (-17.0, 4.2, 3.0), belongs to Residents
-[TFTV @ 8/29/2023 3:46:32 PM] Deploy_Resident_3x3 (3) will spawn S_Chiron_Mortar_TacCharacterDef
+        [TFTV @ 8/29/2023 3:46:32 PM] Deploy_Resident_3x3 (2) at position (12.0, 6.8, 1.0), belongs to Residents
+        [TFTV @ 8/29/2023 3:46:32 PM] Deploy_Resident_3x3 (2) will spawn S_Chiron_Mortar_TacCharacterDef
+        [TFTV @ 8/29/2023 3:46:32 PM] Deploy_Resident_3x3 (3) at position (-17.0, 4.2, 3.0), belongs to Residents
+        [TFTV @ 8/29/2023 3:46:32 PM] Deploy_Resident_3x3 (3) will spawn S_Chiron_Mortar_TacCharacterDef
 
 
 
-[TFTV @ 8/29/2023 3:46:32 PM] Deploy_Resident_3x3 (6) at position (12.0, 6.6, 1.0), belongs to Residents
-[TFTV @ 8/29/2023 3:46:32 PM] Deploy_Resident_3x3 (6) will spawn S_Fishman_Praetorian_TacCharacterDef
-[TFTV @ 8/29/2023 3:46:32 PM] Deploy_Resident_3x3 (7) at position (-17.0, 4.2, 3.0), belongs to Residents
-[TFTV @ 8/29/2023 3:46:32 PM] Deploy_Resident_3x3 (7) will spawn S_Fishman_Praetorian_TacCharacterDef*/
+        [TFTV @ 8/29/2023 3:46:32 PM] Deploy_Resident_3x3 (6) at position (12.0, 6.6, 1.0), belongs to Residents
+        [TFTV @ 8/29/2023 3:46:32 PM] Deploy_Resident_3x3 (6) will spawn S_Fishman_Praetorian_TacCharacterDef
+        [TFTV @ 8/29/2023 3:46:32 PM] Deploy_Resident_3x3 (7) at position (-17.0, 4.2, 3.0), belongs to Residents
+        [TFTV @ 8/29/2023 3:46:32 PM] Deploy_Resident_3x3 (7) will spawn S_Fishman_Praetorian_TacCharacterDef*/
 
 
 

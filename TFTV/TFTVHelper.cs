@@ -18,11 +18,21 @@ namespace TFTV
         internal static string LocalizationDirectory;
 
 
-        public static readonly string GeoscapeLocalizationFileName = "PR_BG_Localization.csv";
-        public static readonly string CHStoryLocalizationFileName = "PR_CH_Story_Localization.csv";
-        public static readonly string FsStoryLocalizationFileName = "PR_FS_Story_Localization.csv";
-        public static readonly string LoreLocalizationFileName = "PR_Lore_Localization.csv";
+        public static readonly string AbilitiesLocalizationFileName = "TFTV_AbilitiesEffectsStatusesTactical_Localization.csv";
+        public static readonly string CharactersLocalizationFileName = "TFTV_CharactersItemsFacilities_Localization.csv";
+        public static readonly string EventsLocalizationFileName = "TFTV_Events_Localization.csv";
+          
+        public static readonly string GeoUIElementsLocalizationFileName = "TFTV_GeoUIElements_Localization.csv";      
+        public static readonly string HintsGeoLocalizationFileName = "TFTV_HintsGeo_Localization.csv";
+        public static readonly string HintsTacticalLocalizationFileName = "TFTV_HintsTactical_Localization.csv";
+
+        public static readonly string LoreLocalizationFileName = "TFTV_LoreAndTips_Localization.csv";
+        public static readonly string MissionObjectivesLocalizationFileName = "TFTV_MissionObjectives_Localization.csv";
         public static readonly string OptionsLocalizationFileName = "TFTV_Options_Localization.csv";
+        public static readonly string ResearchLocalizationFileName = "TFTV_Research_Localization.csv";
+        public static readonly string VoidOmensAndODIyLocalizationFileName = "TFTV_VoidOmensAndODI_Localization.csv";
+        
+        
         
 
         public static void Initialize()
@@ -31,28 +41,52 @@ namespace TFTV
             {
                 ModDirectory = TFTVMain.ModDirectory;
                 LocalizationDirectory = TFTVMain.LocalizationDirectory;
-                if (File.Exists(Path.Combine(LocalizationDirectory, GeoscapeLocalizationFileName)))
+                if (File.Exists(Path.Combine(LocalizationDirectory, AbilitiesLocalizationFileName)))
                 {
-                    AddLocalizationFromCSV(GeoscapeLocalizationFileName, null);
+                    AddLocalizationFromCSV(AbilitiesLocalizationFileName, null);
                 }
-                if (File.Exists(Path.Combine(LocalizationDirectory, FsStoryLocalizationFileName)))
+                if (File.Exists(Path.Combine(LocalizationDirectory, CharactersLocalizationFileName)))
                 {
-                    AddLocalizationFromCSV(FsStoryLocalizationFileName, null);
+                    AddLocalizationFromCSV(CharactersLocalizationFileName, null);
                 }
-                if (File.Exists(Path.Combine(LocalizationDirectory, CHStoryLocalizationFileName)))
+                if (File.Exists(Path.Combine(LocalizationDirectory, EventsLocalizationFileName)))
                 {
-                    AddLocalizationFromCSV(CHStoryLocalizationFileName, null);
+                    AddLocalizationFromCSV(EventsLocalizationFileName, null);
                 }
+
+                if (File.Exists(Path.Combine(LocalizationDirectory, GeoUIElementsLocalizationFileName)))
+                {
+                    AddLocalizationFromCSV(GeoUIElementsLocalizationFileName, null);
+                }
+                if (File.Exists(Path.Combine(LocalizationDirectory, HintsGeoLocalizationFileName)))
+                {
+                    AddLocalizationFromCSV(HintsGeoLocalizationFileName, null);
+                }
+                if (File.Exists(Path.Combine(LocalizationDirectory, HintsTacticalLocalizationFileName)))
+                {
+                    AddLocalizationFromCSV(HintsTacticalLocalizationFileName, null);
+                }
+
                 if (File.Exists(Path.Combine(LocalizationDirectory, LoreLocalizationFileName)))
                 {
                     AddLocalizationFromCSV(LoreLocalizationFileName, null);
                 }
-                if (File.Exists(Path.Combine(LocalizationDirectory, LoreLocalizationFileName)))
+                if (File.Exists(Path.Combine(LocalizationDirectory, OptionsLocalizationFileName)))
                 {
                     AddLocalizationFromCSV(OptionsLocalizationFileName, null);
                 }
-
-
+                if (File.Exists(Path.Combine(LocalizationDirectory, ResearchLocalizationFileName)))
+                {
+                    AddLocalizationFromCSV(ResearchLocalizationFileName, null);
+                }
+                if (File.Exists(Path.Combine(LocalizationDirectory, VoidOmensAndODIyLocalizationFileName)))
+                {
+                    AddLocalizationFromCSV(VoidOmensAndODIyLocalizationFileName, null);
+                }
+                if (File.Exists(Path.Combine(LocalizationDirectory, MissionObjectivesLocalizationFileName)))
+                {
+                    AddLocalizationFromCSV(MissionObjectivesLocalizationFileName, null);
+                }
 
 
             }

@@ -90,10 +90,16 @@ namespace TFTV
         {
             try
             {
+
+               // TFTVLogger.Always($"{tacticalActor.TacticalActorDef.name} with ability {ability.AbilityDef.name}");
+
                 if (tacticalActor.TacticalActorDef.name.Equals("HumanoidGuardian_ActorDef") && ability.AbilityDef.name.Equals("Guardian_Beam_ShootAbilityDef") && !tacticalActor.IsControlledByPlayer && tacticalActor.IsAlive)
 
 
                 {
+
+                    TFTVLogger.Always($"{tacticalActor.name} should be redeploying shield");
+
                     DeployShieldAbilityDef deployShieldAbilityDef = DefCache.GetDef<DeployShieldAbilityDef>("DeployShield_Guardian_AbilityDef");
 
                     DeployShieldAbilityDef deployShieldAbilityDualDef = DefCache.GetDef<DeployShieldAbilityDef>("DeployShield_Guardian_Dual_AbilityDef");
@@ -117,6 +123,7 @@ namespace TFTV
                     if (deployShieldAbility != null)
                     {
 
+                        TFTVLogger.Always($"{tacticalActor.name} found the ability to activate");
                         TacticalAbilityTarget targetOfTheAttack = parameter as TacticalAbilityTarget;
 
                         Vector3 directionShieldDeploy = tacticalActor.gameObject.transform.position + 2 * (targetOfTheAttack.ActorGridPosition - tacticalActor.gameObject.transform.position).normalized;
@@ -179,13 +186,11 @@ namespace TFTV
 
                   if (list.Count > 0)
                   {
-                       using (new MultiForceTargetableLock(sourceTacticalActorBase.Map.GetActors<TacticalActor>()))
-                        {
+                      using (new MultiForceTargetableLock(sourceTacticalActorBase.Map.GetActors<TacticalActor>()))
+                      {
                       
                             foreach (TacticalActor hoplite in list)
                             {
-                               
-
                                 ShieldDeployedStatusDef shieldDeployed = DefCache.GetDef<ShieldDeployedStatusDef>("ShieldDeployed_StatusDef");
 
                                 Weapon selectedWeapon = null;
@@ -195,30 +200,32 @@ namespace TFTV
                                     if (equipment.TacticalItemDef.Equals(BeamHead))
                                     {
                                         selectedWeapon = equipment as Weapon;
-                                        TFTVLogger.Always($"{hoplite.name} has a beam weapon");
+                                      //  TFTVLogger.Always($"{hoplite.name} has a beam weapon");
                                     }
                                 }
 
                                 if (hoplite.IsAlive && selectedWeapon != null && !(selectedWeapon.DefaultShootAbility.GetWeaponDisabledState(IgnoredAbilityDisabledStatesFilter.CreateDefaultFilter()) != AbilityDisabledState.NotDisabled))
                                 {
-                                    TFTVLogger.Always($"{hoplite.name} can shoot");
+                                 //   TFTVLogger.Always($"{hoplite.name} can shoot");
                                     TacticalActor hitFriend = null;
                                     if (!hoplite.TacticalPerception.CheckFriendlyFire(selectedWeapon, hoplite.Pos, tacticalAbilityTarget, out hitFriend) && selectedWeapon.TryGetShootTarget(tacticalAbilityTarget) != null)
                                     {
-                                        TFTVLogger.Always($"{hoplite.name} won't hit a friendly");
+                                       // TFTVLogger.Always($"{hoplite.name} won't hit a friendly");
 
                                         if (hoplite.HasStatus(shieldDeployed))
                                         {
-                                            TFTVLogger.Always($"{hoplite.name} has deployed shield");
+                                          //  TFTVLogger.Always($"{hoplite.name} has deployed shield");
 
-                                            Timing.Current.StartAndWaitFor(RaiseShield(hoplite));
+                                         //   Timing.Current.StartAndWaitFor(RaiseShield(hoplite));
 
                                             hoplite.Equipments.SetSelectedEquipment(selectedWeapon);
+
+                                         //   TFTVLogger.Always($"selected weapon: {hoplite.Equipments.SelectedWeapon}");
                                         }
 
                                         MethodInfo faceAndShootAtTarget = typeof(MassShootTargetActorEffect).GetMethod("FaceAndShootAtTarget", BindingFlags.Instance | BindingFlags.NonPublic);
 
-                                        Timing.Current.Start((IEnumerator<NextUpdate>)faceAndShootAtTarget.Invoke(__instance, new object[] { hoplite, selectedWeapon, tacticalAbilityTarget }));
+                                        Timing.Current.StartAndWaitFor((IEnumerator<NextUpdate>)faceAndShootAtTarget.Invoke(__instance, new object[] { hoplite, selectedWeapon, tacticalAbilityTarget }));
 
 
                                     }

@@ -1,0 +1,406 @@
+Key,Type,Desc,English,Chinese (Simplified),French,German,Italian,Polish,Russian,Spanish,UI_Tester
+PX_CRYSTALCROSSBOW_RESEARCHDEF_COMPLETE,Text,,"At a first glance it seemed to us that Kristian Luft came up with a design for a very high air powered bow; a long shot from the marvels of the other projects of the NG+ Vanadium division. This until we realized that Prof. Luft did away with the glaring deficiency of all crossbows: that they require bolts. The Crystal Crossbow does not shoot bolts at all, but rather air particles accelerated to incredible speeds!
+
+Requires completing Living Crystal research.",,"À première vue, il nous a semblé que Kristian Luft avait conçu un arc pneumatique à très haute puissance. Bien loin des merveilles des autres projets de la division NG+ Vanadium. Jusqu’à ce que nous nous rendions compte que le Prof. Luft avait éliminé la déficience flagrante de toutes les arbalètes : elles ont besoin de carreaux. L’arbalète de cristal ne tire pas du tout des carreaux, mais plutôt des particules d’air accélérées à des vitesses incroyables !",,,,,,
+PX_CRYSTALCROSSBOW_RESEARCHDEF_NAME,Text,,Crystal Crossbow,,Arbalète de cristal,,,,,,
+PX_CRYSTALCROSSBOW_RESEARCHDEF_UNLOCK,Text,,"A design for what appears to be a high powered pneumatic crossbow by Kristian Luft, acclaimed particle physicist and medieval history buff.",,"Une conception pour ce qui semble être une arbalète pneumatique de haute puissance par Kristian Luft, physicien des particules acclamé et passionné d’histoire médiévale.",,,,,,
+PX_MATTOCKOFTHEANCIENTS_RESEARCHDEF_COMPLETE,Text,,"The Reaper appears to have been designed by Valygar Prazac to address in hand to hand combat a variety of diverse hypothetical adversaries such as Golems, Gargoyles and (interestingly enough) intelligent crustaceans from outer space.
+
+Requires completing Protean Mutane research.",,"Le Hoyau semble avoir été conçu par Valygar Prazac pour affronter au corps à corps une variété d'adversaires hypothétiques tels que des Golems, des Gargouilles et (ce qui est intéressant) des crustacés intelligents venus de l'espace.",,,,,,
+PX_MATTOCKOFTHEANCIENTS_RESEARCHDEF_NAME,Text,,Reaper,,Le Hoyau des anciens,,,,,,
+PX_MATTOCKOFTHEANCIENTS_RESEARCHDEF_UNLOCK,Text,,"An impossible melee weapon dreamt up by Valygar Prazac of the NG+ Weapon Systems at Vanadium Co., and former professor in the experimental physics department of the Taras Shevchenko University of Kyiv.",,"Une arme de mêlée improbable imaginée par Valygar Prazac des systèmes d’armes NG+ à Vanadium Co., et ancien professeur au département de physique expérimentale de l’Université Taras Shevchenko de Kiev.",,,,,,
+PX_REBUKE_RESEARCHDEF_COMPLETE,Text,,"Mr. Stridrahen was an imminently practical man and this practicality paradoxically shows throughout the impracticable (before the Antediluvian materials) Rebuke. It is somewhat of a misnomer to describe this weapon as a grenade launcher, and what happens when it is activated as an explosion, but it will have to do until we are ready to update our physics models to account for the Antediluvian materials.
+
+Requires completing Protean Mutane research.",,"M. Stridrahen était un homme d’une pratique imminente et cette pratique se manifeste paradoxalement tout au long de la réprimande de l'infaisabilité (avant les matériaux antédiluviens). Il est un peu erroné de décrire cette arme comme un lance-grenades, et ce qui se passe quand il est activé, comme une explosion. Mais cela devra le faire jusqu’à ce que nous sommes prêts à mettre à jour nos modèles de physique pour tenir compte des matériaux antédiluviens.",,,,,,
+PX_REBUKE_RESEARCHDEF_NAME,Text,,Rebuke,,Querelleur,,,,,,
+PX_REBUKE_RESEARCHDEF_UNLOCK,Text,,"Hristos Stridrahen, the mind behind the Rebuke, rose from Vanadium Mining and Rare Earths division to NG+ Weapon Systems through his passion for high explosives.",,"Hristos Stridrahen, l’esprit derrière le Querelleur, est passé de la division des mines et des terres rares de Vanadium à NG+ Weapons Systems grâce à sa passion pour les explosifs.",,,,,,
+TFTV_PX_SCORPION_RESEARCHDEF_COMPLETE,Text,,"The ultimate purpose of the Scorpion is to make all forms of armor obsolete. Surprisingly, it seems like Mr. Antonasov’s work has provided a foundational basis for a lot of technologies with practical applications developed first by Vanadium and later New Jericho.
+
+Frustratingly, we are missing the know-how to produce certain critical components required to build a Scorpion prototype. We speculate that New Jericho is pursuing research in that direction for the development of a new land vehicle. 
+
+In addition, requires completing Living Crystal and Protean Mutane researches.",,,,,,,,
+TFTV_NJ_VEHICLETECH_RESEARCHDEF_BENEFITS,Text,,The breakthrough we have been waiting for! We can now manufacture the Scorpion Impossible Weapon.,,,,,,,,
+PX_SCORPION_RESEARCHDEF_COMPLETE,Text,,"The ultimate purpose of the Scorpion is to make all forms of armor obsolete. Surprisingly, it seems like Mr. Antonasov’s work has provided a foundational basis for a lot of technologies with practical applications developed first by Vanadium and later New Jericho.
+
+Requires completing Living Crystal and Protean Mutane researches.",,"Le but ultime du Scorpion est de rendre toutes les formes d’armure obsolètes. Étonnamment, il semble que le travail de M. Antonasov ait fourni une base fondamentale à de nombreuses technologies avec des applications pratiques développées d’abord par Vanadium et plus tard par la Nouvelle Jericho.",,,,,,
+PX_SCORPION_RESEARCHDEF_NAME,Text,,Scorpion,,Scorpion,,,,,,
+PX_SCORPION_RESEARCHDEF_UNLOCK,Text,,This blueprint by renowned rocket engineer John Antonasov is for some sort of long rifle with incredible damage capacity.,,Ce plan du célèbre ingénieur en fusée John Antonasov est pour une sorte de long fusil avec une capacité de pénétration et de dégâts incroyable.,,,,,,
+TFTV_SYN_BIONICS3_RESEARCHDEF_BENEFITS,Text,,Cybernetics Lab facility and additional designs. The breakthrough we have been waiting for! We can now manufacture the Scyther Impossible Weapon.,,,,,,,,
+TFTV_PX_SCYTHER_RESEARCHDEF_COMPLETE,Text,,"According to the notes accompanying the recovered data, Jules Godfry designed the Scyther after his disappointing performance in some sort of corporate ludic e-competition called ""Chaos Reborn 2022 Annual Tournament”. In psychological terms it is the expression of unfathomable anger directed at all things, living and inanimate, though its practical military applications in the real world were doubtful until the appearance of the Pandoran monstrosities.
+
+Unfortunately, elemental safety concerns prevent us from manufacturing the Scyther, a bladed weapon with an area of effect. This weapon requires very fine sensors that can re-balance the weapon while in full swing to avoid harming its wielder. The reaction times demanded of these sensors are beyond what our own technology can provide, but New Jericho’s Project Purity was making strides in the right direction. Perhaps further development of bionics technology will give us the solution we need. Until then, the Scyther remains a dream.
+
+In addition, requires completing Living Crystal and Protean Mutane researches.",,,,,,,,
+PX_SCYTHER_RESEARCHDEF_COMPLETE,Text,,"According to the notes accompanying the recovered data, Jules Godfry designed the Scyther after his disappointing performance in some sort of corporate ludic e-competition called ""Chaos Reborn 2022 Annual Tournament"". In psychological terms it is the expression of unfathomable anger directed at all things, living and inanimate, though its practical military applications in the real world were doubtful until the appearance of the Pandoran monstrosities.
+
+Requires completing Living Crystal and Protean Mutane researches.",,"Selon les notes accompagnant les données récupérées, Jules Godfry a conçu la Scyther après sa performance décevante dans une sorte de compétition électronique ludique d’entreprise appelée ""Chaos Reborn 2022 Annual Tournament"". En termes psychologiques, c’est l’expression d’une colère insondable dirigée vers toutes choses, vivantes ou inanimées, bien que ses applications militaires pratiques dans le monde réel étaient douteuses jusqu’à l’apparition des monstruosités pandoriennes.",,,,,,
+PX_SCYTHER_RESEARCHDEF_NAME,Text,,Scyther,,Scyther,,,,,,
+PX_SCYTHER_RESEARCHDEF_UNLOCK,Text,,"A curious design by Jules Godfry, head of NG+ Weapon Systems at Vanadium, that looks like an electro blade powered by a miniaturized fusion reactor.",,"Une curieuse conception de Jules Godfry, directeur de NG+ Weapon Systems chez Vanadium, qui ressemble à une lame électro alimentée par un réacteur à fusion miniaturisé.",,,,,,
+TFTV_ANU_ADVANCEDINFECTIONTECH_RESEARCHDEF_BENEFITS,Text,,The breakthrough we have been waiting for! We can now manufacture the Shardgun Impossible Weapon.,,,,,,,,
+TFTV_PX_SHARDGUN_RESEARCHDEF_COMPLETE,Text,,"The Shard Gun is perhaps the less theoretically impressive of the NG+ Weapon Systems designs. But what it lacks in mathematical panache, it compensates in sheer effectiveness; in the words of its promoter, Emmanuel ""SG"" Erickson, ""it will be a bad*** shotgun that will **** you up, you trespassing ***********"" (Mr. Erickson's streams were notable for their profanity. They tragically ended at the beginning of the First Mist, when a Triton invaded Emmanuel's Malibu beachfront, ironically vindicating the streamer's plea for a next generation home defense weapon).
+
+A crucial aspect of this weapon's design is that the shards must deliver a nerve agent that will demoralize the target on impact. Surely the Disciples of Anu must be working on some advanced technology for their ""Priest"" class operatives that we can advantage of to finally make the Shard Gun a reality. 
+
+In addition, requires completing Living Crystal and Protean Mutane researches.",,,,,,,,
+PX_SHARDGUN_RESEARCHDEF_COMPLETE,Text,,"The Shard Gun is perhaps the less theoretically impressive of the NG+ Weapon Systems designs. But what it lacks in mathematical panache, it compensates in sheer effectiveness; in the words of its promoter, Emmanuel ""SG"" Erickson, ""it will be a bad*** shotgun that will **** you up, you trespassing ***********"" (Mr. Erickson's streams were notable for their profanity. They tragically ended at the beginning of the First Mist, when a Triton invaded Emmanuel's Malibu beachfront, ironically vindicating the streamer's plea for a next generation home defense weapon).
+
+Requires completing Living Crystal and Protean Mutane researches.",,"Le Shard Gun est peut-être le moins impressionnant en théorie des systèmes d’armes NG+. Mais ce qui lui manque en panache mathématique, il compense en efficacité; selon les mots de son promoteur, Emmanuel ""SG"" Erickson, ""ce sera un mauvais*** fusil de chasse qui **** vous, vous pénétrez ***********"" (Les flots d'insultes de M. Erickson étaient remarquables pour leur blasphème. Ils ont pris fin tragiquement au début de la Première Brume, quand un Triton a envahi le front de mer de Malibu, justifiant ironiquement le plaidoyer d’Emmanuel pour une arme de défense du domicile de prochaine génération).",,,,,,
+PX_SHARDGUN_RESEARCHDEF_NAME,Text,,Shard Gun,,Shard Gun,,,,,,
+PX_SHARDGUN_RESEARCHDEF_UNLOCK,Text,,"Emmanuel ""Shotgun"" Erickson, publicist, streaming celebrity and the face of NG+ Weapon Systems, advertised the work of his team as ""the next generation home defense weapons against next generation home invaders"".",,"Emmanuel ""Shotgun"" Erickson, publiciste, célébrité du streaming et visage de NG+ Weapons Systems, a annoncé le travail de son équipe comme ""la prochaine génération d’armes de défense du domicile contre les envahisseurs de la prochaine génération"".",,,,,,
+KEY_FS_SYN_HYBERNATION_PODS_MODULE_RESEARCHDEF_BENEFITS,Text,,First Assault Recon (FAR) module is available for production,,Le module First Assault Recon (FAR) est disponible pour la production,,,,,,
+KEY_FS_SYN_HYBERNATION_PODS_MODULE_RESEARCHDEF_COMPLETE,Text,,"The First Assault Recon (FAR) module was conceived to give the Manticore a personnel transport, insertion and evacuation role, but thanks to its modular design it can be fitted on any craft to increase its passenger capacity. In addition, the FAR module accelerates recuperation from combat fatigue: targeted alterations in the ordinary metabolic processes of our operatives are introduced via a complex drug cocktail, external sensory stimulus and direct brain-wave manipulation.",,"Le module First Assault Recon (FAR) a été conçu pour donner au Manticore un rôle de transport, d’insertion et d’évacuation du personnel. Mais grâce à sa conception modulaire, il peut être monté sur n’importe quel engin pour augmenter sa capacité de passagers. De plus, le module FAR accélère la récupération de la fatigue de combat : des altérations ciblées dans les processus métaboliques ordinaires de nos agents sont introduites via un cocktail de drogue complexe, un stimulus sensoriel externe et une manipulation directe des ondes cérébrales.",,,,,,
+KEY_FS_SYN_HYBERNATION_PODS_MODULE_RESEARCHDEF_NAME,Text,,First Assault Recon (FAR) Module,,Module First Assault Recon (FAR),,,,,,
+KEY_FS_SYN_HYBERNATION_PODS_MODULE_RESEARCHDEF_UNLOCK,Text,,"Among the Phoenix Archives we have found the original designs for the First Assault Recon (FAR) Module, to carry up to four additional operatives in any aircraft. The FAR module also allows soldiers to effectively rest and recuperate mid-air.",,"Parmi les archives de Phoenix Point, nous avons trouvé les conceptions originales du module First Assault Recon (FAR), pour transporter jusqu’à quatre agents supplémentaires dans n’importe quel aéronef. Le module FAR permet également aux soldats de se reposer et de récupérer efficacement en vol.",,,,,,
+ALN_CRABMANUMBRA_RESEARCHDEF_COMPLETE,Text,,"""What are they? You ask me, but I do not know; there is nothing in them to sequence. Perhaps you should talk to Martika the Priest... These 'purple shadows' our warriors speak of sound like her field of expertise.""
+
+- Kalus, a Disciple gene-smith
+
+""Our soldiers are under immense stress, not to mention the drug cocktail and direct cortical stimulation administered to them on a constant basis. If one or two of them start seeing 'oil monsters', I say it's a tolerable side effect.""
+
+- Dr. Abongameli Smith, New Jericho",,"""Que sont-elles ? Vous me le demandez, mais je ne le sais pas. Il n'y a rien à analyser en eux. Peut-être devriez-vous parler à Martika la Prêtresse... Ces 'ombres violettes' dont parlent nos guerriers semblent être son domaine d'expertise.""
+
+- Kalus, un disciple généticien
+
+""Nos soldats sont soumis à un stress immense, sans parler du cocktail de drogues et de la stimulation corticale directe qui leur sont administrés en permanence. Si un ou deux d'entre eux commencent à voir des 'monstres de pétrole', je dis que c'est un effet secondaire tolérable.""
+
+- Dr. Abongameli Smith, Nouvelle Jericho",,,,,,
+ALN_CRABMANUMBRA_RESEARCHDEF_NAME,Text,,ARTHRON UMBRA,,OMBRE ARTHRON,,,,,,
+ALN_FISHMANUMBRA_RESEARCHDEF_COMPLETE,Text,,"""It grew from the fishman’s pool of blood in the ground... Like water from a spigot... flowing in reverse. I shot it! We all shot it, we emptied our mags into the fragging thing!... Then it just melted... There was nothing left... I don't know what got the rest of the squad, maybe there was more of... those things, maybe it was the regular crabbies. I lost it, I ran away, never looking back.""
+
+- Citizen Brackman, sole survivor of recon team Echo, Synedrion 
+
+""Oh, but the Umbra are quite real, I assure you. Why wouldn't they be, when we live in the age of horrors?"" 
+
+- Alistair Ashby, Phoenix Project",,"""Il a grandi à partir de la mare de sang du pêcheur au sol... Comme l'eau d'un robinet... coulant à l'envers. Je l'ai tué ! Nous avons tous tiré, nous avons vidé nos chargeurs dans cette chose fragile !... Puis il a juste fondu... Il n'y avait plus rien... Je ne sais pas ce qui a eu le reste de l'équipe, peut-être qu'il y avait plus de... ces choses, peut-être que c'était les Crabbies habituels. Je les ai perdu, je me suis enfui, sans jamais regarder en arrière.""
+
+- Citizen Brackman, seul survivant de l'équipe de reconnaissance Echo, Synedrion.
+
+""Oh, mais les Ombres sont bien réelles, je vous assure. Pourquoi ne le seraient-ils pas, alors que nous vivons dans l'âge des horreurs ?""
+
+- Alistair Ashby, Projet Phoenix",,,,,,
+ALN_FISHMANUMBRA_RESEARCHDEF_NAME,Text,,TRITON UMBRA,,OMBRE TRITON,,,,,,
+TFTV_BIONICS_RESEARCHDEF_COMPLETE,Text,,"<i>""Which brings us back to Project Purity... This PV strain is even worse than the previous ones. In the Second Mist, we knew the human from the abomination. But now... We all have those nightmares. The chems may dull them, but they never go away. Even West has them, I'm sure. We don't fully understand how or why it happens, but the correlation is undeniable: the users of substantial bionic prosthetics are outperforming their non-augmented peers in psycho-evaluations by 30 to 60 percent. It's the opposite of what we expected! Want another interesting data point? They dream less.""</i>
+
+- Dr. Abongameli Smith, New Jericho
+
+Vastly improved from the first New Jericho attempts, the technology no longer leaves the subjects dead or crippled. A new set of bio-implants have successfully been developed thanks to advancements in neural co-processors and light metal alloy development. The new implants allow personnel to withstand heavy amounts of damage, land safely from great heights, and even run through walls if needed.",,"<i>""Ce qui nous ramène au Projet Pureté... Cette souche de Pandoravirus est encore pire que les précédentes. Dans la seconde brume, nous savions distinguer l'humain de l'abomination. Mais maintenant, nous avons tous ces cauchemars. Les médicaments peuvent les atténuer, mais ils ne disparaissent jamais.  Même West en a, j'en suis sûr. Nous ne comprenons pas entièrement comment ou pourquoi cela se produit, mais la corrélation est indéniable : les utilisateurs de prothèses bioniques majeures ont des performances supérieures de 30 à 60 % à celles de leurs pairs non équipés dans les évaluations psychologiques. C'est le contraire de ce a quoi nous nous attendions ! Vous voulez un autre point de données intéressant ? Ils rêvent moins.""</i>
+
+- Dr. Abongameli Smith, Nouvelle Jericho
+
+Largement améliorée par rapport aux premières tentatives de la Nouvelle Jericho, la technologie bionique ne laisse plus les sujets morts ou estropiés. Une nouvelle série de bio-implants a été développée avec succès grâce à des avancées dans les coprocesseurs neuronaux et le développement d'alliages de métaux légers. Ces nouveaux implants permettent au personnel de résister à des dommages importants, d'atterrir en toute sécurité depuis de grandes hauteurs et même de traverser les murs si nécessaire.",,,,,,
+TFTV_MUTATIONTECH_RESEARCHDEF_COMPLETE,Text,,"<i>""Those that partake of the Waters of Life say that, as their dreams become more vivid, their waking life becomes more dreamlike, till they know not when they are asleep and when they are awake. And always they feel most capable of incredible feats of arms and of vanquishing their enemies. I'm exhilarated by their confidence, yet I also fear their brutality.""</i>
+
+- Neophyte Ryodik, Disciples of Anu 
+
+This technology represents a first step towards mastering the mutation mechanics of the Pandoravirus. Test subjects have been injected with modified strains of the infection under carefully-controlled conditions, and with the additional of a chemical cocktail intended to keep the virus from asserting control over the subject. 
+
+The process is still experimental and there may be some side effects, but the potential benefits to our soldiers are worth the risk.",,"<i>""Ceux qui prennent part aux Eaux de la Vie disent que, à mesure que leurs rêves deviennent plus vifs, leur vie éveillée devient plus onirique, jusqu'à ce qu'ils ne sachent plus quand ils dorment et quand ils sont éveillés. Et ils se sentent capables d'incroyables faits d'armes et de vaincre leurs ennemis. Je suis exalté par leur confiance, mais je crains aussi leur brutalité.""</i>
+
+- Neophyte Ryodik, Disciples of Anu
+
+Cette technologie représente un premier pas vers la maîtrise des mécanismes de mutation du pandoravirus. Des sujets d'essai ont été injectés avec des souches modifiées de l'infection dans des conditions soigneusement contrôlées, et avec l'ajout d'un cocktail chimique destiné à empêcher le virus de prendre le contrôle du sujet.
+
+Le processus est encore expérimental et il peut y avoir des effets secondaires, mais les avantages potentiels pour nos soldats en valent la peine.",,,,,,
+PX_REVENANT_LIVE_RESEARCH_TITLE,Text,,Captured Revenant,,Revenant capturé,,,,,,
+PX_REVENANT_LIVE_RESEARCH_REVEAL,Text,,"The operatives who captured this creature claim that it is a former comrade, returned as a Pandoran monstrosity. We should examine it as soon as possible.",,"Les agents qui ont capturé cette créature prétendent que c'est un ancien camarade, revenu sous la forme d'une monstruosité pandorienne. Nous devrions l'examiner dès que possible.",,,,,,
+PX_REVENANT_LIVE_RESEARCH_COMPLETE,Text,,"There is no room for doubt: this creature is, or used to be one of our operatives. What has been done to our friend and how... I would rather not try to imagine it. I wanted to hope that there was no shred of consciousness of the former self left in that monstrosity, but... I could swear it recognized me.
+
+There is nothing we can do for our comrade now, and I'm afraid that killing it won't provide any release. We might encounter it again and again: the Pandorans splice and clone their victims ad infinitum.
+
+We have to defeat the Pandoravirus once and for all. It's the only way to be sure.",,"Il n'y a pas de place pour le doute : cette créature est, ou était, un de nos agents. Ce qui a été fait à notre ami et comment... Je préfère ne pas essayer de l'imaginer. Je voulais espérer qu'il ne restait aucune trace de conscience de l'ancienne personne dans cette monstruosité, mais... Je pourrais jurer qu'elle m'a reconnu.
+
+Il n'y a rien que nous puissions faire pour notre camarade maintenant, et j'ai peur que le tuer ne nous libère en rien. Nous pourrions le rencontrer encore et encore : les Pandoriens dédoublent et clonent leurs victimes à l'infini.
+
+Nous devons vaincre le Pandoravirus une fois pour toutes. C'est la seule façon d'être sûrs.",,,,,,
+PX_REVENANT_LIVE_RESEARCH_BENEFITS,Text,,Killing or capturing Revenants may grant access to additional research,,,,,,,,
+PX_PROJECT_OSIRIS_TITLE,Text,,Project Osiris,,Projet Osiris,,,,,,
+PX_PROJECT_OSIRIS_REVEAL,Text,,Defeating Revenants in the field has brought us closer to understanding how they are created. We may yet harness this knowledge in the war for the future of our species.,,Vaincre les Revenants sur le terrain nous a permis de mieux comprendre comment ils sont créés. Nous pouvons encore exploiter ces connaissances dans la guerre pour l'avenir de notre espèce.,,,,,,
+PX_PROJECT_OSIRIS_COMPLETE,Text,,"The Pandorans use the Oneiric Delirium to tap into our consciousness and partially replicate it. 
+
+At first we assumed that they could only access information stored in our genes. However, subsequent encounters with Revenants demonstrated that they retained memories of their former lives. Furthermore, we have evidence that the act of remembering triggers an emotional response in them. 
+
+All this leads us to conclude that the Oneiric Delirium taps into a variety of data streams or information centers of the infected. It's a process that we cannot even begin to understand, even as it puts into question our basic notions of consciousness. 
+
+Nevertheless, we have managed to extract some practical applications from our research into Revenants. We believe we are  now capable of sometimes saving critically wounded operatives by giving them new, artificial bodies.",,"Les Pandoriens utilisent le délire onirique pour puiser dans notre conscience et la répliquer partiellement.
+
+Au début, nous avons supposé qu'ils ne pouvaient accéder qu'aux informations stockées dans nos gènes. Cependant, des rencontres ultérieures avec des Revenants ont démontré qu'ils conservaient des souvenirs de leurs vies antérieures. De plus, nous avons la preuve que l'acte de se souvenir déclenche une réponse émotionnelle chez eux.
+
+Tout cela nous amène à conclure que le délire onirique puise dans une variété de flux de données ou de centres d'information des infectés. C'est un processus que nous ne pouvons même pas commencer à comprendre, même s'il remet en question nos notions de base de la conscience.
+
+Néanmoins, nous avons réussi à extraire quelques applications pratiques de nos recherches sur les Revenants. Nous pensons que nous sommes maintenant capables de sauver parfois des agents gravement blessés en leur donnant de nouveaux corps artificiels.",,,,,,
+PX_PROJECT_OSIRIS_BENEFITS,Text,,"With a mutation and/or a bionic lab, a Phoenix KIA operative may be given a new lease on life. Limited to one deceased operative per mission. Chances are highest for the more experienced operatives.",,,,,,,,
+PX_ANTEDILUVIANARCHAEOLOGY_RESEARCHDEF_COMPLETE,Text,,"<i>""Our planet is over 4.5 billion years old. Pre-collapse, no more than 3% of Earth's surface was urbanized. Dinosaurs lived on Earth for about 165 million years, going extinct some 65 million years ago. In a little over two centuries we found around 11,000 Dinosaur bones, which comes to one bone for every 15,000 years they spent on our planet. 
+
+Do the math, Tobias... A million years from now someone might be proposing 'crackpot theories' suggesting that something like our civilization might have existed.""</i>
+
+- Dr Helena Lewandowski
+
+Over the past decades, the melting permafrost and the ecological changes wrought by the Pandoravirus have brought to the surface sites long hidden by sediment and water. With the help of Dr. Helena we have devised a scanner probe which can be produced in the Archaeology Facility. When launched from one of our aircraft, it can detect anomalies pointing to promising archaeological sites. Then, the hazardous process of exploration can begin.
+",,,,,,,,
+PX_ANTEDILUVIANARCHAEOLOGY_RESEARCHDEF_UNLOCK,Text,,"Pre-Collapse there had been many attempts to find evidence of advanced precursor civilizations on Earth. Could those out-of-place artifacts have been real? What was behind the myths of Atlantis and of the Great Flood? If we want to learn the truth, we must pursue a more scientific approach.",,,,,,,,
+AUTOMATA_RESEARCH_TITLE,Text,,Ancient Automata,,,,,,,,
+AUTOMATA_RESEARCH_REVEAL,Text,,"
+
+We have retrieved the remains of the automata that we encountered at the site. We should analyze them immediately.",,,,,,,,
+AUTOMATA_RESEARCH_COMPLETE,Text,,"<i>""What do their Automata tell us about the Ancients? Yes, they were far more technologically advanced than us, that's a given. But how different was their society from ours? These weaponized Automata tell us there was violence, there was fear. But what were they fighting, what did they fear?""</i> - Alistair Ashby 
+
+We encountered these entities during our exploration of the ancient site. This is the single most important archaeological discovery ever made! 
+
+Our analysis concludes that these entities are inorganic and that they have been inactive for more than 1.8m years. The technology permitting the creation of such constructs is beyond our understanding; we are facing the artifacts of a civilization far in advance of our own. 
+
+However, we have achieved two major breakthroughs in the course of our research into these creations:
+
+1) We have gained new insight into the behavior and capabilities of the Ancient automata, which we will be able to leverage in the field from now on.
+2) We have identified the type of materials from which they are made of, and are already theorizing on possible applications.",,,,,,,,
+AUTOMATA_RESEARCH_BENEFITS,Text,,New information about Ancient Automata abilities available in tactical missions; Ancient Automata no longer immune to Daze effects from our weaponry,,,,,,,,
+EXOTIC_RESEARCH_TITLE,Text,,Exotic Materials,,,,,,,,
+EXOTIC_RESEARCH_REVEAL,Text,,"We have identified 3 distinct previously unknown substances in the composition of the Ancient Automata.
+",,,,,,,,
+EXOTIC_RESEARCH_COMPLETE,Text,,"<i>""Dr. Helena Lewandowski has claimed naming rights on the Exotic Materials on the basis that this is an archaeological find. I want it to be a matter of record that this is the reason why, what is in fact an object in a previously unobserved state of matter, but vaguely reminiscent of Quark-gluon plasma, shall be confusingly known as 'Living Crystal'.""</i> - Dr. Rupert Everett-Bancroft
+
+The frames of the Ancient Automata are made of an extremely light and resistant alloy, dubbed “Orichalculm” by the Archaelogy department. Initial experimentation has further revealed that the alloy has the ability to change its conductivity properties in response to external stimuli.
+
+The Automata appear to draw electric power from a self-sustained and self-modulated miniaturized fusion reaction within a super-heated plasma compound: the “Living Crystal”. We need to secure and analyze an undamaged sample of this material.
+
+We have not found a device that would be turning the electric power generated by the Living Crystal into mechanical power; that is, we do not know how the Automata are able to move. This, taken with the fact that, according to the field report, the parts that make up the entity were suspended at a distance from each other, leads us to speculate on the presence of a third exotic material that is capable of nullifying gravity and providing motor function, a “Protean Mutane”.
+
+We are not capable of replicating these Exotic Materials, or even of providing any reasonable hypothesis as to where they could come from. However, we are confident that we can find practical applications if we are able to secure them in their unaltered form in sufficient quantities, and once we can examine samples of the Living Crystal and of the Protean Mutane.",,,,,,,,
+EXOTIC_RESEARCH_BENEFITS,Text,,This brings us a step closer to uncovering what happened to the Ancients and of using Exotic Materials for weapon research and development,,,,,,,,
+PX_YUGGOTHIANENTITY_RESEARCHDEF_REVEALED_TFTV_ALTERNATIVE,Text,,"The astrological charts were easy enough to extract, but we have to dig deeper into the data dump if we want to learn more.",,,,,,,,
+PX_YUGGOTHIANENTITY_RESEARCHDEF_COMPLETE,Text,,"Our analysis of the Antediluvian texts, combined with the knowledge gathered by the Phoenix Project over the course of the last century, has forced us to acknowledge a shocking truth: the war against Earth is being waged by an alien entity. This being of unimaginable age and power is located on Yuggoth, the ninth planet of our solar system.
+
+Around 1.8 million years ago it planted a bioweapon on an asteroid on a collision trajectory with Earth: the Pandoravirus, intended to radically transform the Earth's ecosystem to the advantage of the Yuggothian Entity.
+
+The Entity communicates with its creatures via some form of quasi-telepathic signal. Evidence suggests that some human beings are sensitive to these transmissions, explaining the occurrence of the name ""Yuggoth"" and variations thereof in the work of artists such as H.P. Lovecraft, Virginia Gutierrez, John Bellairs, Ralph Pabodie, and many others. This presumably represents an earlier, less powerful expression of the phenomenon we have termed Oneiric Delirium.
+
+We have concluded that the ultimate purpose of the Entity is to create the ecological conditions that will allow it to come to Earth, and have hypothesized the existence of the Yuggothian Receptacle, a clone or replica to which the Entity will transfer its consciousness. We believe the Pandorans are already in the process of accumulating biomass and genetic material for this purpose.",,,,,,,,
+LIVING_CRYSTAL_RESEARCH_TITLE,Text,,Living Crystal Analysis,,,,,,,,
+LIVING_CRYSTAL_RESEARCH_REVEAL,Text,,We have finally obtained an undamaged sample of the Living Crystal,,,,,,,,
+LIVING_CRYSTAL_RESEARCH_COMPLETE,Text,,"<i>""I have always known about the 'Ancients'. I have these memories of my parents talking about them when I was a child... They weren't just real, they were more real to them than everything else. And I have seen the 'Living Crystal' before. My dad kept a small notebook with brown leather covers. Every page was crammed with Hangul writing and sketches. Sometimes I would sit on his lap and he would show me the drawings and explain what they were. The crystal stuck with me because dad joked that it would make my toys come alive.""</i> - Olena Kim 
+
+Initial examination of an unaltered ""Living Crystal"" sample has revealed that it is capable of generating immense amounts of energy, potentially through an as-yet-unknown mechanism. Additionally, the material has the ability to store large amounts of information, similar to a computer memory. It appears to be able to process and manipulate this stored information in ways that are currently beyond our understanding.
+
+A lucky accident has revealed another extraordinary property of the ""Living Crystal"", as one of our researchers slipped in the lab and hit his head, receiving a severe brain injury, putting him in a coma. Since this incident, the rest of the research team has been seeing Dr. Rupert Everett-Bancroft's dreams while asleep!
+
+The crystal must be able to emit some form of signal or energy that interacts with the human brain, allowing the stored memories to seep into our consciousness while we sleep.
+
+It is hypothesized the crystal could be able to tap into a form of collective memory, where information is stored not just within the crystal itself but also in a larger, interconnected network of crystals.",,,,,,,,
+LIVING_CRYSTAL_RESEARCH_BENEFITS,Text,,We can now manufacture weapons that require Living Crystal,,,,,,,,
+PROTEAN_MUTANE_RESEARCH_TITLE,Text,,Protean Mutane Analysis,,,,,,,,
+PROTEAN_MUTANE_RESEARCH_REVEAL,Text,,We have finally secured a sample of the Protean Mutane,,,,,,,,
+PROTEAN_MUTANE_RESEARCH_COMPLETE,Text,,"<i> ""Make no mistake: for the ancients, our ancestors were little more than curious animals. Perhaps they had laws to ensure our protection along with that of the other primates. Maybe they came from somewhere else and brought their own primordial soup with them… These are gods we are talking about, only they cleaned their roadside picnic pretty well when they left. Fortunately for us, we were able to grow without the burden of familiarity with our precursors' magic. Can you imagine how long it would have taken us to invent the lever had we been cursed with the power of ""protean mutane"" in our infancy?""</i> - Alistair Ashby
+
+Protean Mutane possesses the extraordinary ability to manipulate gravitational forces, providing a powerful motor-like effect.
+
+The material is composed of a complex array of molecular structures, including a high concentration of exotic particles known as gravitons. These particles are believed to be responsible for mediating the gravitational force and have only been theorized to exist by physicists.
+
+Protean Mutane appears to harness the energy of these gravitons in a way that has yet to be fully understood. The material's structure also appears to be in a state of constant flux, hence its name is strikingly appropriate; ""Protean"" meaning able to change shape easily and ""Mutane"" meaning mutation.",,,,,,,,
+PROTEAN_MUTANE_RESEARCH_BENEFITS,Text,,"We can now manufacture weapons that require Protean Mutane, and probably reactivate one of the defeated Cyclops, if needed",,,,,,,,
+ALN_ELITERANGER_RESEARCHDEF_NAME,Text,,ARTHRON SKIRMISHER CHAMPION,,,,,,,,
+ALN_ELITERANGER2_RESEARCHDEF_NAME,Text,,ARTHRON SKIRMISHER CHAMPION,,,,,,,,
+ALN_ELITERANGER3_RESEARCHDEF_NAME,Text,,ARTHRON SKIRMISHER CHAMPION,,,,,,,,
+ALN_ULTRARANGER_RESEARCHDEF_NAME,Text,,ARTHRON SKIRMISHER  PRIME,,,,,,,,
+PX_BLASTRESISTANCEVEST_RESEARCHDEF_NAME,Text,,Acid Resistance Technology,,,,,,,,
+PX_BLASTRESISTANCEVEST_RESEARCHDEF_UNLOCK,Text,,The natural resistance to Pandoran acid possessed by this creature has promising applications for our own research into a device that would reduce the damage caused by the acid to our operarives.,,,,,,,,
+PX_BLASTRESISTANCEVEST_RESEARCHDEF_COMPLETE,Text,,"The new acid resistance vest can be fitted under all torso armor sections. It reduces the damage to body parts from Acid by roughly half, providing valuable protection against this new Pandoran threat.",,,,,,,,
+PX_BLASTRESISTANCEVEST_RESEARCHDEF_BENEFITS,Text,,Acid-Res Vest is available for production,,,,,,,,
+PX_ALIEN_ACIDWORM_RESEARCHDEF_BENEFITS,Text,,Can now research acid resistance technology!,,,,,,,,
+NJ_FIRERESISTANCETECH_RESEARCHDEF_COMPLETE,Text,,"New heat and blast resistant undersuits have been developed for use on the battlefield. The module is light to wear and can be incorporated into virtually any armor, increasing tolerance to flame and heat by 62%, and reducing the impact of explosive munitions by roughly half.",,,,,,,,
+NJ_FIRERESISTANCETECH_RESEARCHDEF_NAME,Text,,Blast and Fire Resistant Technology,,,,,,,,
+NJ_FIRERESISTANCETECH_RESEARCHDEF_UNLOCK,Text,,"With the emergence of creatures such as the Fireworms, it is becoming increasingly necessary to invest in better blast and fire resistance technology.",,,,,,,,
+NJ_PURIFICATIONTECH_RESEARCHDEF_COMPLETE,Text,,"A new type of bio-fuel has been created to use with modern flame throwers, and compact incendiary grenades have been developed from solid fuel technology. The new weapons will assist with clearance, especially inside alien structures.
+
+In addition, new heat and blast resistant undersuits have been developed for use on the battlefield. The module is light to wear and can be incorporated into virtually any armor, increasing tolerance to flame and heat by 62%, and reducing the impact of explosive munitions by roughly half.",,,,,,,,
+PX_LIGHTSNIPERRIFLE_RESEARCHDEF_UNLOCK,Text,,The appearance of Myrmidons has inspired our designers to consider developing a more agile sniper rifle that can deal quickly with small targets at range.,,,,,,,,
+PX_CAPTURETECH_RESEARCHDEF_COMPLETE_TFTV,Text,,"Specialized Pandoran Containment facilities have been designed and successfully tested, allowing us to safely keep Pandorans in a state of constant paralysis. 
+
+In addition, we have equipped all our aircraft with the Skyhook Retrieval and Transportation System (SRTS), which allows us to retrieve fully paralyzed Pandorans from the battlefield after a successful mission.
+
+The SRTS uses micro drones to attach tethers to the immobilized Pandoran organism. Total volume of transportable matter is determined by aircraft carrying capacity. For reference, we estimate that our Manticores should be able to carry up to 3 Arthrons or Tritons.
+
+This represents a step forward in our struggle to understand their biology.",,,,,,,,
+NJ_EXPLOSIVETECH_RESEARCHDEF_COMPLETE,Text,,"A breakthrough in explosives technology has led to the development of a new rocket launcher design. Unlike conventional rockets, this weapon fires armor-piercing projectiles that deal massive damage to a single target. It is ideal for quickly crippling the biggest and toughest Pandoran creatures, as each rocket can inflict three times the normal damage to the limb it hits. The rockets are expensive to produce, but will be worth it if used strategically.
+",,,,,,,,
+SYN_NANOTECH_RESEARCHDEF_BENEFITS,Text,,Allows manufacturing Nanotech Fieldkit and Vest,,,,,,,,
+KEY_FS_ALN_MEDIUM_FLYER_RESEARCHDEF_COMPLETE,Text,,"Species classification PF-M
+This new mutation spawned from the Festering Skies is aggressive and tenacious. Its well-coordinated flight patterns indicate a sinister sense of purpose. Field reports and collected footage shows that Berith strikes are carefully planned in advance and executed with alarming haste and precision. Threat level: very high.",,,,,,,,
+KEY_FS_ALN_LARGE_FLYER_RESEARCHDEF_COMPLETE,Text,,"Species classification PF-Alpha
+The largest species of winged Pandoran discovered to date shows superior strength and intelligence. Its complex and unpredictable behavioral patterns make it the greatest airborne threat to humanity. The study of its movements is of utmost importance given its cunning and destructive potential. Threat level: critical.",,,,,,,,
+ANU_ANUFUNGUSFOOD_RESEARCHDEF_BENEFITS,Text,,Output of Food Production facilities increased by around 50%,,,,,,,,
+KEY_CH_ALN_ACHERON_ACHLYS_CHAMPION_RESEARCHDEF_COMPLETE,Text,,"Species classification AC-Beta-2
+Possibly the most lethal specimen of Acheron. In addition to projecting corrosive goo and transforming corpses into Pandorans, and possessing the capability of evolved Acherons that enables other Pandorans on the battlefield to spread Delirium, reports indicate that the death of this specimen is invariably accompanied by excess Umbra sightings.",,"Classification de l'espèce AC-Beta-2
+Considéré comme le spécimen le plus mortel de l'Achéron, cette créature est capable de libérer des substances biochimiques qui rendent les humains fous, temporairement aveugles ou même immobilisés au sol. Le spécimen peut muter et transformer les cadavres en Pandoriens, et aussi libérer des substances corrosives dans une large zone affectant tout ce qui s'y trouve. A tuer à distance.",,,,,,
+KEY_CH_ALN_ACHERON_ACHLYS_CHAMPION_RESEARCHDEF_NAME,Text,,ACHERON ACHLYS CHAMPION,,ACHERON ACHLYS CHAMPION,,,,,,
+KEY_CH_ALN_ACHERON_ACHLYS_RESEARCHDEF_COMPLETE,Text,,"Species classification AC-Beta-1 “Achlys”
+An enhanced species of Acheron that has evolved to release chemicals capable of partially paralyzing humans by temporarily reducing their speed, or trapping them or vehicles in corrosive goo. Field observations have found that the creature is also capable of granting Pandorans the ability to spread the Third Mist strain of the Pandoraviurs on people, driving them to delirium, and also can mutate dead corpses, transforming them into Arthrons and Tritons.
+",,"Classification de l'espèce AC-Beta-1
+Une espèce améliorée d'Achéron qui a évolué pour libérer des produits chimiques capables de paralyser partiellement les humains en réduisant temporairement leur vitesse ou en désactivant un membre. Des observations sur le terrain ont révélé que la créature est également capable de donner aux Pandoriens la capacité de propager la souche de la Troisieme Brume du Pandoravirus sur les gens, les poussant au délire, et peut également faire muter les cadavres, les transformant en Arthrons et en Tritons. À traiter avec prudence.",,,,,,
+KEY_CH_ALN_ACHERON_ACHLYS_RESEARCHDEF_NAME,Text,,ACHERON ACHLYS,,ACHERON ACHLYS,,,,,,
+KEY_CH_ALN_ACHERON_ASCLEPIUS_CHAMPION_RESEARCHDEF_COMPLETE,Text,,"Species classification AC-Alpha-2
+Considered a superior version of the Acheron Asclepius the specimen is of superior strength and able to project a neuro-toxic spray that temporarily disables limbs. The creature retains the ability to recover the health and armor of other Pandorans, as well as grant them the ability to inflict corruption in combat. The Acheron is also capable of calling reinforcements to its aid.",,"Classification de l'espèce AC-Alpha-2
+Considéré comme une version supérieure de l'Acheron Asclepius, le spécimen est d'une force supérieure et est capable de lancer du goo sur ses ennemis pour les immobiliser. La créature conserve la capacité de restaurer la santé et l'armure des autres Pandoriens, ainsi que de leur accorder la capacité d'infliger la corruption en combat. L'Achéron est également capable de faire muter des Pandoriens vivants à partir de cadavres.",,,,,,
+KEY_CH_ALN_ACHERON_ASCLEPIUS_CHAMPION_RESEARCHDEF_NAME,Text,,ACHERON ASCLEPIUS CHAMPION,,ACHERON ASCLEPIUS CHAMPION,,,,,,
+KEY_CH_ALN_ACHERON_ASCLEPIUS_RESEARCHDEF_COMPLETE,Text,,"Species classification AC-Alpha-1 “Asclepius”
+An advanced form of Acheron, this specimen has mutated to use regenerative spray to remove negative status effects from enemies as well as restore their armor. The greatest threat of the entity is its ability to call reinforcements. While on the battlefield, the creature releases organic chemicals, allowing all Pandorans to spread Oneiric Delirium.",,"Classification de l'espèce AC-Alpha-1
+Forme avancée de l'Achéron, ce spécimen a muté pour utiliser un spray régénérateur afin de supprimer les effets d'état négatifs et de restaurer leur armure. La plus grande menace de cette entité est sa capacité à muter et à transformer les cadavres en Tritons et en Arthrons. Lorsqu'elle est sur le champ de bataille, la créature libère des produits chimiques organiques, permettant à tous les Pandoriens de propager le délire onirique.",,,,,,
+KEY_CH_ALN_ACHERON_ASCLEPIUS_RESEARCHDEF_NAME,Text,,ACHERON ASCLEPIUS,,ACHERON ASCLEPIUS,,,,,,
+KEY_CH_ALN_ACHERON_PRIME_RESEARCHDEF_COMPLETE,Text,,"Species classification AC-2
+A mutation of the Acheron that spreads the Third Mist Pandoravirus strain more effectively, releasing the infectious compound in cloud form and somehow allowing other Pandorans to spread it too through their attacks. Also has a more dangerous long range acid and Mist attack. As with the previous variation, wherever this creature appears, Umbra sightings and reports of other unexplainable phenomena significantly increase.",,"Classification de l'espèce AC-2
+Une mutation de l'Achéron, capable d'infecter l'esprit de nos soldats au contact ainsi que de libérer une substance régénératrice dans une large zone qui restaure les armures des Pandoriens. ",,,,,,
+KEY_CH_ALN_ACHERON_PRIME_RESEARCHDEF_NAME,Text,,ACHERON PRIME,,ACHERON PRIME,,,,,,
+KEY_CH_ALN_ACHERON_RESEARCHDEF_COMPLETE,Text,,"Species classification AC-1
+A previously unknown creature, named the Acheron due to its ability to spread the Third Mist Pandoravirus strain affecting people's minds and will. Can launch an acid and Mist attack at long range. Sightings of this species have been accompanied by more frequent reports of Umbra presence.",,"Classification de l'espèce AC-1
+Une créature jusqu'alors inconnue, nommée l'Acheron en raison de sa capacité à propager la souche du pandoravirus de la Troisième Brume affectant l'esprit et la volonté des gens. Contrairement à d'autres spécimens pandoriens, celui-ci ne repose pas sur une attaque directe, mais affecte plutôt les cibles dans une zone autour de lui. L'Acheron a la capacité d'affecter temporairement la précision humaine, ainsi que d'appeler des renforts pandoriens.",,,,,,
+KEY_CH_ALN_ACHERON_RESEARCHDEF_NAME,Text,,ACHERON,,ACHERON,,,,,,
+PX_ACHERON_DISSECTION_RESEARCHDEF_BENEFITS,Text,,Delirium treatment available,,Traitement du délire onirique disponible,,,,,,
+PX_ACHERON_DISSECTION_RESEARCHDEF_COMPLETE,Text,,"Summary: The most surprising fact arising out of the autopsy is that the Acheron is genetically mostly human, much closer to us than any other Pandoran species so far encountered. This is astounding, given that the only noticeable resemblance to our species is the atrophied human body suspended from the creature's oversized limbs and carapace. 
+
+Genetic origins: 70% homosapiens.
+
+Function: intelligence remains undetermined. It's speculated that its goal is to spread the Third Mist Pandoravirus strain throughout the world.
+
+Offensive mutations: strong dispersal glands located on the creature's husk allow it to disperse biochemical droplets in a large area. Additionally the creature can squirt concentrated liquid through organs in its hands.
+
+Mobility: the creature is fast and has the ability to jump at great distances.
+
+Weakness: the creature has been observed to adapt to any type of damage once dealt. It is recommended that attacks of various nature are used on it simultaneously before it can adjust.",,"Résumé post-recherche : Le fait le plus surprenant découlant de l'autopsie est que l'Achéron est génétiquement majoritairement humain, bien plus proche de nous que toute autre espèce pandorienne rencontrée jusqu'à présent. C'est stupéfiant, étant donné que la seule ressemblance notable avec notre espèce est le corps humain atrophié suspendu aux membres et à la carapace surdimensionnés de la créature.
+
+Origines génétiques : 70% homosapiens
+
+Fonction : l'intelligence reste indéterminée. On suppose que son but est de répandre la souche du pandoravirus de la Troisième Brume dans le monde entier.
+
+Mutations offensives : de puissantes glandes de dispersion situées sur l'enveloppe de la créature lui permettent de disperser des gouttelettes biochimiques dans une large zone. De plus, la créature peut projeter un liquide concentré à travers les organes de ses mains.
+
+Mobilité : la créature est rapide et a la capacité de sauter à de grandes distances.
+
+Faiblesse : il a été observé que la créature s'adapte à tous les types de dégâts une fois qu'ils sont infligés. Il est recommandé d'utiliser simultanément des attaques de nature différente avant qu'elle puisse s'adapter.",,,,,,
+PX_ACHERON_DISSECTION_RESEARCHDEF_NAME,Text,,Acheron Autopsy,,Autopsie d'Achéron,,,,,,
+PX_ACHERON_DISSECTION_RESEARCHDEF_UNLOCK,Text,,"Specimen: ACHERON
+Acherons are large sized creatures that focus more on affecting living creatures in a specific area than attacking directly. They are the only known Pandoran capable of spreading the new strain of Pandoravirus that is slowly driving the remnants of humanity insane.",,"Spécimen : ACHERON
+Les Acherons sont des créatures de grande taille qui se concentrent davantage sur les effets sur les créatures vivantes dans une zone spécifique que sur les attaques directes. Ils sont les seuls Pandoriens connus capables de propager la nouvelle souche de Pandoravirus qui rend lentement fous les restes de l'humanité.",,,,,,
+PX_ALIEN_LIVEACHERON_RESEARCHDEF_BENEFITS,Text,,Damage inflicted on Acherons is increased by 10%.,,Les dégâts infligés aux Acherons sont augmentés de 10%.,,,,,,
+PX_ALIEN_LIVEACHERON_RESEARCHDEF_COMPLETE,Text,,"Summary: The creature produces and disperses biochemicals that stimulate diverse reactions in the exposed subjects; these stimulants seem to act as ""keys"" that ""unlock"" pre-existing potentialities in the subjects. The almost supernatural powers that the Acherons manifest in the field must result from their ability to somehow harness the Oneiric Delirium, and we suspect that they are a clue to gaining a further understanding of this phenomenon. Could it be that the Oneiric Delirium is not the result of an infection, but rather of some sort of signal?
+ 
+Language: The specimen appears to retain some understanding of human speech, but is unable or unwilling to speak. Careful experimentation has shown that communications with other Pandorans take place via release of pheromones, which appear to convey instructions and information with uncanny precision. 
+
+Countermeasures: tests have concluded that the Acheron becomes resistant to any type of weapon after receiving damage from it. The good news is that the creature's resistance doesn't improve further after that.",,"Résumé : La créature produit et disperse des substances biochimiques qui stimulent diverses réactions chez les sujets exposés ; ces stimulants semblent agir comme des ""clés"" qui ""débloquent"" des potentialités préexistantes chez les sujets. Les pouvoirs presque surnaturels que les Acherons manifestent sur le terrain doivent résulter de leur capacité à maîtriser d'une manière ou d'une autre le délire onirique, et nous pensons qu'ils constituent un indice pour mieux comprendre ce phénomène. Se pourrait-il que le délire onirique ne soit pas le résultat d'une infection, mais plutôt d'une sorte de signal ?
+
+Le langage : Le spécimen semble avoir une certaine compréhension du langage humain, mais il ne peut ou ne veut pas parler. Des expériences minutieuses ont montré que la communication avec les autres Pandoriens se fait par la libération de phéromones, qui semblent transmettre des instructions et des informations avec une précision étonnante.
+
+Contre-mesures : des tests ont conclu que l'Achéron devient résistant à tout type d'arme après avoir reçu des dégâts de celle-ci. La bonne nouvelle est que la résistance de la créature ne s'améliore plus par la suite.",,,,,,
+PX_ALIEN_LIVEACHERON_RESEARCHDEF_NAME,Text,,Acheron Vivisection,,Vivisection de l'Achéron,,,,,,
+PX_ALIEN_LIVEACHERON_RESEARCHDEF_REVEAL,Text,,An Acheron specimen is required for the research to take place.,,Un spécimen d'Achéron est nécessaire pour que la recherche puisse avoir lieu.,,,,,,
+PX_ALIEN_LIVEACHERON_RESEARCHDEF_SHORT,Text,,Capture 1 Acheron,,Capture 1 Acheron,,,,,,
+PX_ALIEN_LIVEACHERON_RESEARCHDEF_UNLOCK,Text,,"The specimen is the only known Pandoran that can alter on the spot its own biochemistry and that of others, humans and Pandorans alike, sometimes even when they appear fully deceased, to aid its allies and hinder its enemies. ",,"Le spécimen est le seul Pandorien connu capable de modifier sur place sa propre biochimie et celle des autres, humains et Pandoriens, parfois même lorsqu'ils semblent complètement décédés, pour aider ses alliés et gêner ses ennemis. ",,,,,,
+PX_CORRUPTION_RESEARCHDEF_BENEFITS,Text,need change,Corruption Sample Mission available,,Corruption Exemple de mission disponible,,,,,,
+PX_CORRUPTION_RESEARCHDEF_COMPLETE,Text,need change,"Thanks to the Phoenix Initiative's processing power, a solution to treat the Corruption has been found. Testing on living specimens has confirmed that genetically enhanced mutagens could be used to treat anyone infected by this dangerous pandoravirus strain. While all medical facilities have been equipped with the necessary equipment, the treatment is highly individual and requires a fresh supply of mutagens. Finding a permanent cure would require access to an original sample of the new Pandoravirus strain.",,"Grâce à la puissance de traitement de l'Initiative Phoenix, une solution pour traiter la Corruption a été trouvée. Les tests effectués sur des spécimens vivants ont confirmé que des mutagènes génétiquement améliorés pouvaient être utilisés pour traiter toute personne infectée par cette dangereuse souche de pandoravirus. Bien que toutes les installations médicales aient été équipées du matériel nécessaire, le traitement est très individuel et nécessite un nouvel approvisionnement en mutagènes. Pour trouver un remède permanent, il faudrait avoir accès à un échantillon original de la nouvelle souche de pandoravirus.",,,,,,
+PX_CORRUPTION_RESEARCHDEF_NAME,Text,need change,Corruption Research,,Recherche sur la corruption,,,,,,
+PX_CORRUPTION_RESEARCHDEF_UNLOCK,Text,need change,Finding a way to treat the new strain of Pandoravirus could be vital for the survival of humanity. With luck a permanent cure could also be discovered.,,"Trouver un moyen de traiter la nouvelle souche du pandoravirus pourrait être vital pour la survie de l'humanité. Avec de la chance, un remède permanent pourrait également être découvert.",,,,,,
+PX_HEAL_GRENADE_RESEARCHDEF_BENEFITS,Text,,VIta Grenades available for production,,Grenades Vita disponibles pour la production,,,,,,
+PX_HEAL_GRENADE_RESEARCHDEF_COMPLETE,Text,,"After dozens of attempts we have finally discovered a way to make the Acheron spray useful in grenade form. Compact and efficient, the Vita grenade has the power to close minor wounds of all organic beings in a radius of several meters.",,"Après des dizaines de tentatives, nous avons enfin découvert un moyen de rendre le spray d'Achéron utilisable sous forme de grenade. Compacte et efficace, la grenade Vita a le pouvoir de refermer les blessures mineures de tous les êtres organiques dans un rayon de plusieurs mètres.",,,,,,
+PX_HEAL_GRENADE_RESEARCHDEF_NAME,Text,,Vita Grenade,,Grenade Vita,,,,,,
+PX_HEAL_GRENADE_RESEARCHDEF_UNLOCK,Text,,Discoveries made during the Acheron autopsy have allowed us to make a theoretical model of a grenade with the ability to heal soldiers at a distance. Making a prototype of this is a key priority!,,Les découvertes faites lors de l'autopsie de l'Achéron nous ont permis de réaliser un modèle théorique de grenade ayant la capacité de soigner les soldats à distance. La fabrication d'un prototype de cette grenade est une priorité absolue !,,,,,,
+PX_MUTOID_RESEARCHDEF_BENEFITS,Text,,Mutoid production available,,Production de mutoides disponible,,,,,,
+PX_MUTOID_RESEARCHDEF_COMPLETE,Text,,"***Classified. Access restricted*** —- *** QKD verification in progress…*** — ***Granted***
+
+Just as speculated, it has proven possible to create ""super-soldiers"" using mutagens and the RDNA techniques developed by Barnabas in his research into the Oneiric Delirium treatment. We call them “Mutoids”. The newly created Mutoid soldiers are immune to the effects of the Oneiric Delirium and are capable of learning all human skills, and many of the Pandorans' as well (provided DNA samples are available). We have purposefully “advertised” that Mutoids are created entirely from Mutagens, but unfortunately the process does require a humanoid specimen with certain (though not uncommon) genetic markers. 
+
+////
+
+I am surprised. Of course I saw the possibilities myself but I thought this avenue of research crossed boundaries that should not be crossed. Perhaps I was wrong and it is time I addressed the biases that come with being a member of my species. Thanks to you I am beginning to appreciate that the pursuit of greater good sometimes requires sacrificing personal morals.  
+
+-B
+
+PD: Please accept my apologies for the liberties taken with your security protocols",,"***Classified. Accès restreint. - Vérification QKD en cours... - Accordé.
+
+Comme prévu, il s'est avéré possible de créer des ""super-soldats"" en utilisant des mutagènes et les techniques RDNA développées par Barnabas dans ses recherches sur le traitement du délire onirique. On les appelle les ""mutoïdes"". Les soldats mutoïdes nouvellement créés sont immunisés contre les effets du délire onirique et sont capables d'apprendre toutes les compétences humaines, ainsi que de nombreuses compétences des Pandoriens (à condition que des échantillons d'ADN soient disponibles). Nous avons volontairement ""annoncé"" que les mutoïdes sont créés entièrement à partir de mutagènes, mais malheureusement le processus nécessite un spécimen humanoïde avec certains marqueurs génétiques (bien que assez commun). La procédure efface complètement tous les souvenirs et les traits de personnalité. Nous pouvons facilement nous procurer des sujets appropriés en nombre suffisant dans des refuges amis.
+
+////
+
+Je suis surpris. Bien sûr, j'ai vu les possibilités moi-même, mais je pensais que cette voie de recherche franchissait des limites qui ne devraient pas être franchies. J'avais peut-être tort et il est temps que je m'attaque aux préjugés qui accompagnent le fait d'être membre de mon espèce. Grâce à vous, je commence à comprendre que la poursuite du bien commun exige parfois de sacrifier sa morale personnelle.
+
+-B
+
+PD : Veuillez accepter mes excuses pour les libertés prises avec vos protocoles de sécurité.",,,,,,
+PX_MUTOID_RESEARCHDEF_NAME,Text,,Mutoid Genetics,,Génétique Mutoïde,,,,,,
+PX_MUTOID_RESEARCHDEF_UNLOCK,Text,,"Data found in the old Firebird Initiative lab points to an interesting application of the research pursued by Barnabas into the use of RDNA viruses and mutagens. We believe that it should be relatively easy to use these techniques to radically alter a human to turn it into a ""super-soldier"". It should be mentioned that not all of us are comfortable with pursuing this research.",,"Les données trouvées dans l'ancien laboratoire de l'Initiative Phoenix indiquent une application intéressante des recherches poursuivies par Barnabas sur l'utilisation des virus RDNA et des mutagènes. Nous pensons qu'il devrait être relativement facile d'utiliser ces techniques pour modifier radicalement un humain et le transformer en ""super-soldat"". Il convient de mentionner que nous ne sommes pas tous à l'aise avec la poursuite de ces recherches.",,,,,,
+PX_ORIGINAL_ACHERON_RESEARCHDEF_BENEFITS,Text,,Corruption Sample Mission available,,Mission Echantillon de Corruption disponible,,,,,,
+PX_ORIGINAL_ACHERON_RESEARCHDEF_COMPLETE,Text,,"By applying different stimulations to Specimen 2, we have “taught” it to release zeta-blockers in aerosol or cloud form which, when a human is exposed to it, dim the excitations of the amygdala associated with Oneiric Delirium incidents. However, the procedure is largely impractical (requiring the afflicted to be unarmored and in close proximity to the Acheron) and not entirely effective. Fortunately, the study of the chemical process taking place in the Acheron has allowed us to synthesize an easily administrable and highly effective biochemical compound.     
+
+While all medical facilities have been equipped with the necessary equipment, the treatment is highly individual and requires a fresh supply of mutagens. 
+
+In addition, our experiments have revealed that the Specimen 2, under the right stimulation, is capable of producing other biochemical compounds that may be of use in the battlefield. We recommend allocating additional resources to this research.",,"En appliquant différentes stimulations au spécimen 2, nous lui avons ""appris"" à libérer des zêta-bloquants sous forme d'aérosol ou de nuage qui, lorsqu'un humain y est exposé, atténuent les excitations de l'amygdale associées aux incidents de délire onirique. Cependant, la procédure est très peu pratique (elle exige que la personne touchée ne soit pas armée et se trouve à proximité de l'Achéron) et n'est pas entièrement efficace. Heureusement, l'étude du processus chimique qui se déroule dans l'Achéron nous a permis de synthétiser un composé biochimique facilement administrable et très efficace.
+
+Bien que toutes les installations médicales aient été équipées du matériel nécessaire, le traitement est très individuel et nécessite un approvisionnement  en mutagènes frais.
+
+De plus, nos expériences ont révélé que le spécimen 2, sous une stimulation appropriée, est capable de produire d'autres composés biochimiques qui pourraient être utiles sur le champ de bataille. Nous recommandons d'allouer des ressources supplémentaires à cette recherche.",,,,,,
+PX_ORIGINAL_ACHERON_RESEARCHDEF_NAME,Text,,Specimen 2,,Specimen 2,,,,,,
+PX_ORIGINAL_ACHERON_RESEARCHDEF_UNLOCK,Text,,"We have captured Specimen 2, the Acheron infected with the RDNA virus that holds the key to creating a treatment for the Oneiric Delirium.",,"Nous avons capturé le spécimen 2, l'Achéron infecté par le virus RDNA qui détient la clé pour créer un traitement contre le délire onirique.",,,,,,
+PX_MUTAGENHARVESTING_RESEARCHDEF_COMPLETE_TFTV,Text,,"We discovered that certain tissue samples retain the ability to mutate. The discovery was made when a test subject accidentally had a mutated sample injected into them. The error was discovered too late, but scientists observed the results and found that Pandorans have a set of cells, derived from the original Pandoravirus infection, that have unique properties. We call these mutagens. They were the same cells the Disciples of Anu use in rituals to “evolve closer to the Exalted.” Since the discovery, the process has been refined, allowing a creature’s mutagens to be continually harvested, as long as it remains alive.",,,,,,,,
+PX_MUTAGENHARVESTING_RESEARCHDEF_UNLOCK_TFTV,Text,,"<i>""Now I understand why they were keeping those worms around...""</i> - Alistair Ashby
+
+A method for extracting mutagens from captured Pandorans is being devised. The process is still in its infancy, but should it be successful it would provide us with a virtually endless source of mutagens.",,,,,,,,
+PX_FOODHAVRESTING_RESEARCHDEF_BENEFITS_TFTV,Text,,Captured Pandorans can now be rendered for food processing at our Food Production facilities.,,,,,,,,
+TFTV_MUTATIONTECH_RESEARCHDEF_COMPLETE_W_HARVESTING,Text,,"<i>“Those that partake of the Waters of Life say that, as their dreams become more vivid, their waking life becomes more dreamlike, until they know not when they are asleep and when they are awake. And always they feel more capable of incredible feats of arms, and of vanquishing their enemies. I’m exhilarated by their confidence, yet I also fear their brutality.”</i>
+
+- Neophyte Ryodik, Disciples of Anu 
+
+<i>""Now I understand why they were keeping those worms around...""</i> 
+
+- Alistair Ashby
+
+The Disciples of Anu use genetic material derived from Pandorans in their rituals to “evolve closer to the Exalted”; in essence, a process of controlled mutation. We have learned both how to extract mutagens from Pandorans and to replicate some of their mutation techniques, naturally without all the superfluous elements of liturgy. We can synthesize a limited amount of mutagens in each of our mutation labs, but to scale the production we need live Pandoran subjects in captivity.",,,,,,,,
+KEY_FS_ALN_CORRUPTION_NODE_RESEARCHDEF_NAME,Text,,NODE,,NOEUD ONIRIQUE,,,,,,
+KEY_FS_ALN_CORRUPTION_NODE_RESEARCHDEF_UNLOCK,Text,,A monstrous entity whose anatomy doesn't resemble any Pandoravirus mutation in our database able to take over machines and entire settlements by telepathic attacks.,,Une entité monstrueuse dont l’anatomie ne ressemble à aucune mutation du Pandoravirus dans notre base de données. Elle est capable de prendre le contrôle de machines et de colonies entières par des attaques télépathiques.,,,,,,
+KEY_FS_ALN_CORRUPTION_NODE_RESEARCHDEF_COMPLETE,Text,,"Species classification CN-Alpha
+A highly evolved form of the Pandoravirus has been reported to attack human settlements by attaching itself to structures and machinery to form a powerful symbiotic connection. Affected havens are completely overtaken by the creature and all of their citizens are kept in a mindless state serving the Pandorans.
+Recent reports indicate Nodes are able to establish a similar telepathic connection with AI-operated aircraft and use it to attack other humans. Despite the evidence of high intelligence, no attempt at peaceful contact with the creature has been successful yet.",,"Classification des espèces CN-Alpha
+Une forme très évoluée du pandoravirus aurait attaqué les établissements humains en s’attachant aux structures et aux machines pour former une puissante connexion symbiotique. Les refuges affectés sont complètement dépassés par la créature et tous leurs citoyens sont maintenus dans un état aveugle au service des Pandoriens.
+Des rapports récents indiquent que les noeuds sont capables d’établir une connexion télépathique similaire avec des aéronefs exploités par l’IA et de l’utiliser pour attaquer d’autres humains. Malgré les preuves d’une grande intelligence, aucune tentative de contact pacifique avec la créature n’a encore réussi.",,,,,,
+KEY_FS_PX_ALIEN_CORRUPTION_NODE_RESEARCHDEF_COMPLETE,Text,,"Summary: What we have uncovered is deeply troubling. It is certain that the Node is not created through genetic aggregation and manipulation, either via cloning or aggressively mutating a live subject, as are all the other Pandoran species that we have encountered so far. Biologically, it is nothing but a random collection of cells: we are at a loss as to how it is even able to maintain a coherent shape. What we have autopsied is little more than a broken vessel that was previously inhabited by something that left no trace of itself upon leaving it.
+
+We are only left with the esoteric as a plausible explanation: the Node must be a physical manifestation of the Oneiric Delirium; it is quite literally the product of nightmares. We hypothesize that a Pandoran creature with telepathic ability provoked a massive OD event at the haven and that brought the Node into being. We can further hypothesize that this required a substantial amount of biomass and a period of time. Once the Node appeared, it took over the haven and everything and everyone in it at the time: the unfortunate inhabitants were somehow used to invoke the intelligence that subdued them.
+
+Genetic origins: none
+
+Function: unknown
+
+Offensive capabilities: Takes over and controls entire human settlements and technology, including aircraft. We speculate that the creature is somehow harnessing the Oneiric Delirium phenomenon. Should this speculation prove correct, the fact that the creature's control extends to inanimate objects such as terrestrial and aerial vehicles would have tremendous implications for our understanding of this phenomenon.
+
+Defensive capabilities: Spreads viral agents around its body to fend off attackers.
+
+Mobility: Once attached, the body remains completely immobile.
+
+Weakness: It seems to have a one-sided telepathic connection with its victims. Once the body is dead, all mind-control connection with all entities is broken.",,"Résumé : Ce que nous avons découvert est profondément troublant. Il est certain que le Node n'est pas créé par agrégation et manipulation génétique, soit par clonage, soit par mutation agressive d'un sujet vivant, comme le sont toutes les autres espèces pandorannes que nous avons rencontrées jusqu'à présent. Biologiquement, il n'est rien d'autre qu'une collection aléatoire de cellules : nous ne savons pas comment il est capable de maintenir une forme cohérente. Ce que nous avons autopsié n'est guère plus qu'un vaisseau brisé qui était auparavant habité par quelque chose qui n'a laissé aucune trace de lui en le quittant.
+
+Il ne nous reste que l’ésotérique comme explication plausible : le Nœud doit être une manifestation physique du Délire Onirique ; il est littéralement le produit des cauchemars. Nous supposons qu’une créature pandorane avec une capacité télépathique a provoqué un événement de Délire Onirique massif au refuge et qui a amené l’existence du Noeud. Nous pouvons également émettre l’hypothèse que cela a nécessité une quantité substantielle de biomasse et du temps. Une fois le Nœud apparu, il a pris le contrôle du refuge et tout ce qui s'y trouvait à l’époque : les malheureux habitants ont été en quelque sorte utilisés pour invoquer l’intelligence qui les a soumis.
+
+Origine génétique : aucune
+
+Fonction : inconnue
+
+Capacités offensives : Prend en charge et contrôle l’ensemble des humains et de la technologie, y compris les aéronefs. Nous supposons que la créature exploite le phénomène du délire onirique. Si cette spéculation s’avérait correcte, le fait que le contrôle de la créature s’étende aux objets inanimés tels que les véhicules terrestres et aériens aurait d’énormes implications pour notre compréhension de ce phénomène.
+
+Capacités défensives : Propage des agents viraux autour de son corps pour repousser les attaquants.
+
+Mobilité : Une fois attaché, le corps reste complètement immobile.
+
+Faiblesse : Il semble avoir un lien télépathique unilatéral avec ses victimes. Une fois le corps mort, toute connexion de contrôle mental avec les victimes est brisée.",,,,,,
+KEY_FS_PX_ALIEN_CORRUPTION_NODE_RESEARCHDEF_NAME,Text,,Node Autopsy,,Autopsie du Noeud Onirique,,,,,,
+KEY_FS_PX_ALIEN_CORRUPTION_NODE_RESEARCHDEF_UNLOCK,Text,,"Specimen: NODE
+A species that looks utterly alien, even compared to other highly mutated Pandorans. We must commence study as soon as possible to understand how the infestation occurred.",,"Spécimen : NOEUD ONIRIQUE
+Une espèce qui semble totalement étrangère, même comparée à d’autres Pandoriens hautement mutés. Nous devons commencer l’étude le plus tôt possible pour comprendre comment l’infestation s’est produite.",,,,,,
+MASKED_MANTICORE_RESEARCHDEF_TFTV,Text,,"""See, I think the Manti was designed in different times, when aircraft needed to be certified for flight and such… Long story short, it has many in-built redundancies to satisfy safety inspectors who have long turned to crab. We can get rid of <i>that</i> stuff and then we will have space to put in <i>other</i> stuff, know what I'm saying? Beats me why you want to cover it in slime, but you're the boss… or the Director… or whatever"".
+
+Ralph ""Wrench"" Mulligan, Phoenix Project
+",,"""Voyez-vous, je pense que le Manticore a été conçu à différentes époques, alors que les aéronefs devaient être certifiés pour le vol, etc. Bref, il y a de nombreuses redondances pour satisfaire les inspecteurs de la sécurité qui se sont depuis longtemps transformé en crabe. On peut se débarrasser de <i>ça</i> et on aura de la place pour mettre d’<i>autres</i> trucs, tu vois ce que je veux dire ? Ça m’étonne que tu veuilles le couvrir de bave, mais tu es le patron… ou le directeur… ou peu importe.""
+
+Ralph Wrench Mulligan, Projet Phoenix
+",,,,,,
+KEY_FS_ALN_SMALL_FLYER_RESEARCHDEF_COMPLETE,Text,,"<i>""A flying stingray bigger than our haven? And did you guys see that before or after you scavenged the marijuana dispensary?""</i>
+
+We are getting unconfirmed reports of dorsoventrally flattened flying creatures, some claiming them to be of improbable size. We will continue to monitor the situation until we can confirm or discard these rumors.",,,,,,,,
+KEY_FS_PX_ESCAPE_PODS_MODULE_RESEARCHDEF_NAME,Text,,Scylla Capture Technology,,,,,,,,
+KEY_FS_PX_ESCAPE_PODS_MODULE_RESEARCHDEF_REVEAL,Text,,"The Scylla is the most formidable Pandoran creature we have encountered so far. Its massive size, multiple mutations, and high intelligence make it a terrifying adversary and a valuable specimen for study. However, capturing a Scylla alive is no easy task. We need to develop a special capture module that can be attached to our aircraft and used to transport a fully paralyzed Scylla to our base.",,,,,,,,
+KEY_FS_PX_ESCAPE_PODS_MODULE_RESEARCHDEF_UNLOCK,Text,,"The Scylla is the most formidable Pandoran creature we have encountered so far. Its massive size, multiple mutations, and high intelligence make it a terrifying adversary and a valuable specimen for study. However, capturing a Scylla alive is no easy task. We need to develop a special capture module that can be attached to our aircraft and used to transport a fully paralyzed Scylla to our base.",,,,,,,,
+KEY_FS_PX_ESCAPE_PODS_MODULE_RESEARCHDEF_COMPLETE,Text,,"This module consists of a large metal cage with advanced life support systems, shock absorbers, and security measures. It can be used to capture and transport a fully paralyzed Scylla to our base for interrogation and analysis. The module can also be used to capture more Pandorans of other kinds, as long as they fit inside the cage and are fully paralyzed. The structure is suspended from an internal passenger module; someone will have to immobilize the monster!",,,,,,,,

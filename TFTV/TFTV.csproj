@@ -156,6 +156,7 @@
     <Compile Include="TFTVDeliriumPerks.cs" />
     <Compile Include="TFTVDiplomacyPenalties.cs" />
     <Compile Include="TFTVFire.cs" />
+    <Compile Include="TFTVGoo.cs" />
     <Compile Include="TFTVHarmonyGeoscapeUI.cs" />
     <Compile Include="TFTVHarmonyTactical.cs" />
     <Compile Include="TFTVHealing.cs" />
@@ -205,15 +206,17 @@
     <None Include="Assets\Localization\PR_BC_Localization.csv">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="Assets\Localization\PR_BG_Localization.csv">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="Assets\Localization\PR_CH_Story_Localization.csv">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="Assets\Localization\PR_FS_Story_Localization.csv">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
+    <None Include="Assets\Localization\TFTV_AbilitiesEffectsStatusesTactical_Localization.csv" />
+    <None Include="Assets\Localization\TFTV_CharactersItemsFacilities_Localization.csv" />
+    <None Include="Assets\Localization\TFTV_Events_Localization.csv" />
+    <None Include="Assets\Localization\TFTV_GeoUIElements_Localization.csv" />
+    <None Include="Assets\Localization\TFTV_HintsGeo_Localization.csv" />
+    <None Include="Assets\Localization\TFTV_HintsTactical_Localization.csv" />
+    <None Include="Assets\Localization\TFTV_LoreAndTips_Localization.csv" />
+    <None Include="Assets\Localization\TFTV_MissionObjectives_Localization.csv" />
+    <None Include="Assets\Localization\TFTV_Options_Localization.csv" />
+    <None Include="Assets\Localization\TFTV_Research_Localization.csv" />
+    <None Include="Assets\Localization\TFTV_VoidOmensAndODI_Localization.csv" />
     <None Include="Assets\Presets\AbilityDefToNameDict.json" />
     <None Include="Assets\Presets\NotLocalizedTextMap.json" />
     <None Include="meta.json">

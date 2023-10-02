@@ -1,0 +1,200 @@
+Key,Type,Desc,English,Chinese (Simplified),French,German,Italian,Polish,Russian,Spanish,UI_Tester
+KEY_GEO_HINT_CUSTOMIZE_DESC,Text,,"Maybe it's time to introduce all these purple numbers and pibs!
+
+Example: Margareta has 12 Willpower and 5 Delirium. Because she has 36 Stamina, and each 10 points in Stamina reduce effects of Delirium by 1, effect of Delirium on Margareta's Willpower is reduced by 3. Therefore she has 12-(5-3)=10 Willpower available.
+
+1) This is character's actual Willpower. Number in <color=#A020F0>() in purple</color> means Willpower is being reduced by Delirium.
+2) This shows the Delirium character has over the total Delirium character can have, depending on progress of Oneiric Delirium. At first, character may not have Delirium in excess of one third of their Willpower. By midgame this is increased to a half, and by late game there is no cap. <b>Pay attention to Oneiric Delirium events to learn when the cap is changed</b>.
+3) Stamina is reducing effects of Delirium on Willpower: each <color=#A020F0><b> -</b></color> signifies that effect is reduced by 1. ",,"Peut-être qu'il est temps d'expliquer tous ces chiffres violets et les hyphens !
+
+Exemple : Margareta a 12 Points de Volonté et 5 Points de Delirium. Comme elle a 36 points d'Endurance, et que chaque 10 points d'Endurance, les effets du Délire sont réduit de 1, l'effet du Délire sur la Volonté de Margareta est réduit de 3. Elle a donc 12-(5-3)=10 Volontés disponibles.
+
+1) C'est la volonté réelle du personnage. Le chiffre <color=#A020F0>() en violet</color> signifie que la Volonté est réduite par le Délire.
+2) Cela montre que le délire du personnage est supérieur au délire total qu'il peut avoir, en fonction de la progression du délire onirique. Au début, le personnage ne peut pas avoir un délire supérieur à un tiers de sa Volonté. En milieu de partie, cette limite passe à la moitié, et en fin de partie, il n'y a plus de limite. <b>Faites attention aux événements lié au Délire onirique pour savoir quand le plafond est modifié.</b>
+3) L'endurance réduit les effets du Délire sur la Volonté : chaque <color=#A020F0><b> -</b></color> signifie que cet effet est réduit de 1.",,,,,,
+KEY_GEO_HINT_CUSTOMIZE_TITLE,Text,,DELIRIUM,,DELIRIUM,,,,,,
+KEY_GEO_HINT_PANDORAN_BASE_DIPLOMACY_EFFECTS_DESCRIPTION,Text,,"In TFTV, Factions will <b>not</b> react negatively to revealed Pandoran Colonies if you fail to destroy them. However, you will suffer a small penalty with the leaders of the nearby havens.
+
+Each Pandoran colony contributes to Pandoran evolution: the more active Pandoran colonies there are, the faster the enemy will field more advanced units and the faster the Oneiric Delirium will grow. 
+
+In addition, destroying a more advanced Pandoran colony (a Lair or a Citadel) removes the earliest <b>Void Omen</b> currently in play. (On Rookie difficulty, destroying Nests also removes Void Omens). ",,"Dans TFTV, les factions ne réagiront <b>pas négativement</b> aux colonies pandoriennes révélées si vous ne parvenez pas à les détruire. Cependant, vous subirez une petite pénalité auprès des dirigeants des refuges proches.
+
+Chaque colonie pandorienne contribue à l'évolution des Pandoriens : plus il y a de colonies pandoriennes actives, plus vite l'ennemi déploie des unités plus avancées et plus vite le délire onirique se développe.
+
+En outre, la destruction d'une colonie pandorienne avancée (une tanière ou une citadelle) supprime le plus ancien présage du vide actuellement en jeu. (En difficulté ""Bleu"", la destruction des Nids pandoriens supprime également les présages du vide). 
+",,,,,,
+KEY_GEO_HINT_PANDORAN_BASE_DIPLOMACY_EFFECTS_TITLE,Text,,"PANDORAN COLONIES: DIPLOMACY, EVOLUTION AND VOID OMENS",,"COLONIES PANDORIENNES : DIPLOMATIE, ÉVOLUTION ET PRÉSAGES DU VIDE",,,,,,
+KEY_GEO_HINT_MORE_AIRCRAFT_DESC,Text,,"In TFTV, all aircraft, except Anu Blimp, seat 4 less passengers than in Vanilla. To increase the space for units by 4, you need to equip your craft with one of the passenger modules. The starting Manticore comes with the FAR passenger module, which also (very slowly) recuperates the Stamina of all those on board. To manufacture additional FAR modules, you need to research the corresponding technology, which is unlocked after you research Phoenix Archives. There are two additional passenger modules that you may unlock in the course of the game.
+
+Passenger modules cost half the resources and take half as much time to manufacture as a Manticore in Vanilla. The cost of all craft in the game has been, in turn, reduced by this amount. Therefore, a Manticore now costs only half the amount of resources and takes twice as fast to be manufactured.
+
+The aircraft have a modular design, and you will want to use some of them for interception (and trading), and others for exploration (because of the risk of ambushes) and transporting operatives to tactical missions.",,"Dans TFTV, tous les avions, à l'exception du dirigeable Anu, peuvent accueillir 4 passagers de moins que dans Vanilla. Pour augmenter l'espace pour les unités de 4, vous devez équiper votre vaisseau avec l'un des modules passagers. La Manticore de départ est équipée du module de passager FAR. les agents récupèrent (très lentement) de l'endurance lorsque ils sont à bord. Pour fabriquer des modules FAR supplémentaires, vous devez rechercher la technologie correspondante, qui est débloquée après avoir fait des recherches sur les Archives du Phoenix Point. Il existe deux modules passagers supplémentaires que vous pouvez débloquer au cours du jeu.
+
+Les modules passagers coûtent deux fois moins de ressources et prennent deux fois moins de temps à fabriquer qu'une Manticore dans Vanilla. Le coût de tous les vaisseaux du jeu a été réduit de ce montant. Par conséquent, une Manticore ne coûte que la moitié des ressources et prend deux fois moins de temps pour être fabriquée.
+
+Les avions sont de conception modulaire, et vous voudrez utiliser certains d'entre eux pour l'interception (et le commerce), et d'autres pour l'exploration (en raison du risque d'embuscades) et le transport de troupe vers les missions tactiques.",,,,,,
+KEY_GEO_HINT_MORE_AIRCRAFT_TITLE,Text,,AIRCRAFT AND PASSENGER MODULES,,AÉRONEFS ET MODULES PASSAGERS,,,,,,
+KEY_DLC3_TUT_SUPPLY_DESCRIPTION,Text,,"A Pandoran flyer has separated itself from the Festering Skies. It may come upon a haven and attack it. If the haven is not yet revealed, it will send an SOS disclosing its postion. 
+
+Should the stray Pandoran flyer return to the swarm, the haven will be targeted by the Behemoth. Once a haven is targeted for attack, nothing can be done to prevent it: once the Behemoth reaches the haven, it will damage all its facilities and harvest about half of its population. 
+
+Destroy Pandoran flyers to protect the havens, to colllect rewards from factions and to force the Behemoth to submerge.",,"Un chasseur pandorien s'est séparé du ciel fétide. Il peut tomber sur un refuge et l'attaquer. Si le refuge n'a pas encore été révélé, il enverra un SOS indiquant sa position.
+
+Si l'aéronef pandorien errant retourne dans l'essaim, le refuge sera pris pour cible par le Béhémoth. Une fois qu'un refuge est visé par une attaque, rien ne peut être fait pour l'empêcher : une fois que le Béhémoth aura atteint le refuge, il endommagera toutes ses installations et récoltera environ la moitié de sa population. 
+
+Détruisez les pandoriens volants pour protéger les refuges, pour collecter les récompenses des factions et pour forcer le Béhémoth à s'immerger.",,,,,,
+KEY_DLC3_TUT_SUPPLY_NAME,Text,,PANDORAN FLYER,,PANDORIEN VOLANT,,,,,,
+KEY_DLC3_TUT_BOMBARDMENT_DESCRIPTION,Text,,"A Pandoran flyer has separated itself from the Festering Skies. It may come upon a haven and attack it. If the haven is not yet revealed, it will send an SOS disclosing its postion. 
+
+Should the stray Pandoran flyer return to the swarm, the haven will be targeted by the Behemoth. Once a haven is targeted for attack, nothing can be done to prevent it: once the Behemoth reaches the haven, it will damage all its facilities and harvest about half of its population. 
+
+Destroy Pandoran flyers to protect the havens, to colllect rewards from factions and to force the Behemoth to submerge.",,"Un chasseur pandorien s'est séparé du ciel fétide. Il peut tomber sur un refuge et l'attaquer. Si le refuge n'a pas encore été révélé, il enverra un SOS indiquant sa position.
+
+Si l'aéronef pandorien errant retourne dans l'essaim, le refuge sera pris pour cible par le Béhémoth. Une fois qu'un refuge est visé par une attaque, rien ne peut être fait pour l'empêcher : une fois que le Béhémoth aura atteint le refuge, il endommagera toutes ses installations et récoltera environ la moitié de sa population.
+
+Détruisez les pandoriens volants pour protéger les refuges, pour collecter les récompenses des factions et pour forcer le Béhémoth à s'immerger.",,,,,,
+KEY_DLC3_TUT_BOMBARDMENT_NAME,Text,,PANDORAN FLYER,,PANDORIEN VOLANT,,,,,,
+KEY_DLC3_TUT_RAID_DESCRIPTION,Text,,"A Pandoran flyer has separated itself from the Festering Skies. It may come upon a haven and attack it. If the haven is not yet revealed, it will send an SOS disclosing its postion. 
+
+Should the stray Pandoran flyer return to the swarm, the haven will be targeted by the Behemoth. Once a haven is targeted for attack, nothing can be done to prevent it: once the Behemoth reaches the haven, it will damage all its facilities and harvest about half of its population. 
+
+Destroy Pandoran flyers to protect the havens, to colllect rewards from factions and to force the Behemoth to submerge.",,"Un chasseur pandorien s'est séparé du ciel fétide. Il peut tomber sur un refuge et l'attaquer. Si le refuge n'a pas encore été révélé, il enverra un SOS indiquant sa position.
+
+Si l'aéronef pandorien errant retourne dans l'essaim, le refuge sera pris pour cible par le Béhémoth. Une fois qu'un refuge est visé par une attaque, rien ne peut être fait pour l'empêcher : une fois que le Béhémoth aura atteint le refuge, il endommagera toutes ses installations et récoltera environ la moitié de sa population.
+
+Détruisez les pandoriens volants pour protéger les refuges, pour collecter les récompenses des factions et pour forcer le Béhémoth à s'immerger.",,,,,,
+KEY_DLC3_TUT_RAID_NAME,Text,,PANDORAN FLYER,,PANDORIEN VOLANT,,,,,,
+KEY_DLC3_TUT_RECON_DESCRIPTION,Text,,"A Pandoran flyer has separated itself from the Festering Skies. It may come upon a haven and attack it. If the haven is not yet revealed, it will send an SOS disclosing its postion. 
+
+Should the stray Pandoran flyer return to the swarm, the haven will be targeted by the Behemoth. Once a haven is targeted for attack, nothing can be done to prevent it: once the Behemoth reaches the haven, it will damage all its facilities and harvest about half of its population. 
+
+Destroy Pandoran flyers to protect the havens, to colllect rewards from factions and to force the Behemoth to submerge.",,"Un chasseur pandorien s'est séparé du ciel fétide. Il peut tomber sur un refuge et l'attaquer. Si le refuge n'a pas encore été révélé, il enverra un SOS indiquant sa position.
+
+Si l'aéronef pandorien errant retourne dans l'essaim, le refuge sera pris pour cible par le Béhémoth. Une fois qu'un refuge est visé par une attaque, rien ne peut être fait pour l'empêcher : une fois que le Béhémoth aura atteint le refuge, il endommagera toutes ses installations et récoltera environ la moitié de sa population.
+
+Détruisez les pandoriens volants pour protéger les refuges, pour collecter les récompenses des factions et pour forcer le Béhémoth à s'immerger.",,,,,,
+KEY_DLC3_TUT_RECON_NAME,Text,,PANDORAN FLYER,,PANDORIEN VOLANT,,,,,,
+KEY_DLC3_TUT_BEHEMOTH_DISRUPTION_DESCRIPTION,Text,,"The Behemoth harvests all the biomass it encounters on its path, showing particular predilection for human havens. Any haven visited by a Pandoran flyer that successfully returns to the Festering Skies will be targeted for harvesting by the Behemoth. Once the Behemoth has collected enough biomass, it will submerge in the ocean. It will emerge again at a different point, sometimes fielding stronger flyers. 
+
+The Behemoth will submerge sooner if it is able to harvest havens or if its harvesting operations are disrupted. The Behemoth will gain Disruption Points (DP) when:
+- a haven is harvested (1 DP)
+- a Pandoran flyer is destroyed (1 DP if Charun, 2 DP if Berith, and 4 DP if Abaddon)
+- a Node is destroyed (5 DP)
+
+Once the Disruption Threshold is reached, the Behemoth will go back to the ocean.",,"Le Béhémoth récolte toute la biomasse qu'il rencontre sur son chemin, montrant une prédilection particulière pour les refuges humains. Tout refuge visité par un aéronef pandorien qui réussit à retourner dans le ciel fétide sera ciblé pour être récolté par le Béhémoth. Une fois que le Béhémoth aura collecté suffisamment de biomasse, il s'immergera dans l'océan. Il en ressortira à un autre endroit, avec parfois des aéronefs plus puissants.
+
+Le Béhémoth s'immergera plus tôt s'il est capable de récolter des refuges ou si ses opérations de récolte sont perturbées. Le Béhémoth gagne des points de perturbation (PD) lorsque :
+- un refuge est récolté (1 PD)
+- un pandorien volant est détruit (Charun : 1 PD, Berith : 2 PD, et Abaddon : 4 PD)
+- un nœud de corruption est détruit (5 PD)
+
+Une fois le seuil de perturbation atteint, le Béhémoth retourne dans l'océan.",,,,,,
+KEY_DLC3_TUT_BEHEMOTH_DISRUPTION_NAME,Text,,BEHEMOTH BEHAVIOR,,COMPORTEMENT DU BEHEMOTH,,,,,,
+KEY_DLC3_TUT_BEHEMOTH_DESCRIPTION,Text,,"The Behemoth will inexorably attack any haven that has been visited by a Pandoran flyer that has successfully returned to the Festering Skies. Once the Behemoth reaches the haven, it will harvest about half of its population and severely damage all of its facilities. To prevent Behemoth's attacks on havens, destroy all Pandoran flyers.",,"Le Béhémoth attaquera inexorablement tout refuge qui a été visité par un pandorien volant qui a réussi à retourner dans le ciel fétide. Une fois que le Béhémoth aura atteint le refuge, il récoltera environ la moitié de sa population et endommagera gravement toutes ses installations. Pour empêcher les attaques du Béhémoth sur les refuges, détruisez tous les pandoriens volants.",,,,,,
+KEY_TUTORIAL_DLC2_ANCIENT_SITE_DESCRIPTION,Text,,"Send an aircraft to set up an Exploration operation at the site. Once Exploration starts, the presence of aircraft is no longer needed.",,,,,,,,
+KEY_TUTORIAL_DLC2_EXCAVATION_DONE_NAME,Text,,We've completed our first ancient site Exploration!,,,,,,,,
+KEY_TUTORIAL_DLC2_HARVESITNG_DESCRIPTION,Text,,"In TFTV, you immediately gain some amount of an exotic resource when you take control of an ancient site from the Automata. The amount of resources depends on type of resource and difficulty level, or alternatively the manual setting used in the Mod config. ",,,,,,,,
+KEY_TUTORIAL_DLC2_HARVESITNG_NAME,Text,,ANCIENT SITE,,,,,,,,
+KEY_TUTORIAL_DLC2_REFINERY_DESCRIPTIOY,Text,,"In TFTV, you immediately gain some amount of an exotic resource when you take control of an ancient site from the Automata. The amount of resources depends on type of resource and difficulty level, or alternatively the manual setting used in the Mod config. ",,,,,,,,
+KEY_TUTORIAL_DLC2_REFINERY_NAME,Text,,ANCIENT SITE,,,,,,,,
+KEY_TUTORIAL_DLC2_ARCHEOLOGY_NAME,Text,,We've completed our Archaeology Lab!,,,,,,,,
+HINT_HOSTILE_DEFENDERS_TITLE,Text,,Hostile haven defenders,,,,,,,,
+HINT_HOSTILE_DEFENDERS_TEXT,Text,,"<i>""Come to rescue us, have they? They are the ones who brought the damn critters on us in the first place! Fragging nerds…""</i>
+
+While this Void Omen is in effect, haven defenders will be hostile to you and attack your operatives on sight, but <b>killing them is not required to win the mission</b>.
+
+Gain XP by protecting structures or civilians as usual.
+
+You can loot crates with faction weapons, but only the equipment in your operatives or vehicles inventory will be recovered.",,,,,,,,
+HINT_FIRE_QUENCHER_TITLE,Text,,Fire Quencher,,,,,,,,
+HINT_FIRE_QUENCHER_TEXT,Text,,"<i>“There was nothing special about this one… Here comes the bisque, I thought… Boy was I wrong.”</i>
+
+Some Arthrons have evolved the ability to instantly quench the fire they come in contact with, replacing it with Mist. They are apparently doing this by spraying some biochemical compound  from their <b>heads</b>. Disabling their heads should remove both their immunity to fire and their ability to quench it.",,,,,,,,
+KEY_GEO_HINT_AUGMENTATION_SCREEN_DESCRIPTION,Text,,"You are about to augment your first soldier. A character can only have UP TO 2 BODY PARTS replaced this way.
+
+Once an augmentation is installed, the soldier will not be able to revert back to their natural limbs. However, augmented body parts CAN BE SWAPPED with different cybernetic parts.
+
+Augmented body parts are IMMUNE TO BLEEDING and RESISTANT TO VIRAL DAMAGE, POISON, AND PARALYSIS. Damaged cybernetics CAN BE REPAIRED after battle at the expense of Tech and Materials. 
+
+In addition, each bionic augmentation reduces the maximum Delirium the character can have by 1/3, and removes up to that amount of Delirium from the character. 
+
+Augmenting a character will reduce their Stamina to zero.",,,,,,,,
+KEY_GEO_HINT_ACHERON_CAPTURE_DESCRIPTION,Text,need to change,"Despite our best efforts the finding a cure to the new corruption strain ended in failure. Apparently, the virus in all newer specimens has mutated to such a degree that it is useless for our needs. In order to be successful, we need to find one of the original specimens that escaped from the Lab.",,"Malgré tous nos efforts, la recherche d'un remède à la nouvelle souche de corruption s'est soldée par un échec. Apparemment, le virus dans tous les nouveaux spécimens a muté à un tel point qu'il est inutile pour nos besoins. Pour réussir, nous devons trouver l'un des spécimens originaux qui s'est échappé du laboratoire.",,,,,,
+KEY_GEO_HINT_ACHERON_CAPTURE_NAME,Text,need to change,CORRUPTION CURE RESEARCH FAILURE,,ECHEC DE LA RECHERCHE D’UN REMEDE A LA CORRUPTION,,,,,,
+KEY_GEO_HINT_ENEMY_SPECIAL_CORRUPTION_DESCRIPTION,Text,,"In this Third Mist the Pandoravirus has mutated yet again. The new strain is slowly driving the survivors insane. 
+
+WP are reduced by the amount of Delirium a character has. This effect is, in turn, reduced when the character is well rested: each 10 points in Stamina reduces the effect of Delirium by 1. The maximum amount of Delirium a character can acquire depends on the Oneiric Delirium Index. 
+
+Delirium is gained by participating in missions where Mist is present (""Delirium Areas"") or suffering attacks from Pandorans with Delirium or Co-Delirium damage.
+
+Different ways of dealing or living with Delirium will become avaliable with Phoenix and faction research.",,"Dans cette troisième brume, le pandoravirus a encore muté. La nouvelle souche rend les survivants lentement fous.
+
+Les Points de Volonté sont réduits par la quantité de Delirium qui affecte le personnage. Cet effet est à son tour réduit lorsque le personnage est bien reposé : chaque tranche de 10 points d'endurance réduit l'effet du délire de 1. La quantité maximale de délire qu'un personnage peut acquérir dépend de l'Indice de Délire Onirique.
+
+Le délire s'acquiert en participant à des missions où la brume est présente (""zones de Délirium"") ou en subissant des attaques de Pandoriens avec des dégâts de Délirium ou de Co-Délirium.
+
+Différentes façons de gérer ou de vivre avec le délire deviendront disponibles avec la recherche de Phoenix Point et des autres factions.",,,,,,
+KEY_GEO_HINT_ENEMY_SPECIAL_CORRUPTION_NAME,Text,,ONEIRIC DELIRIUM VIRUS STRAIN,,SOUCHE VIRALE DU DÉLIRE ONIRIQUE,,,,,,
+KEY_GEO_HINT_ENEMY_SPECIAL_CORRUPTION_OVER_DESCRIPTION,Text,NEED TO CHANGE,"After hours of research we have finally found a vaccine that will eliminate the corruption strain for good. As soldiers are being inoculated against the disease, our planes are spreading it over battlefields ensuring that the dead there pose no further threat.
+ 
+Your soldiers can no longer become corrupted. Those that are currently corrupted still need treatment, though.",,"Après des heures de recherche, nous avons enfin trouvé un vaccin qui éliminera définitivement la souche de corruption. Tandis que les soldats sont inoculés contre la maladie, nos avions le répandent sur les champs de bataille en s'assurant que les morts ne constituent plus une menace.
+
+Vos soldats ne peuvent plus être corrompus. Cependant, ceux qui sont actuellement corrompus ont encore besoin d'un traitement.",,,,,,
+KEY_GEO_HINT_ENEMY_SPECIAL_CORRUPTION_OVER_NAME,Text,NEED TO CHANGE,CORRUPTION VACCINE,,VACCIN CONTRE LA CORRUPTION,,,,,,
+KEY_GEO_HINT_ENEMY_SPECIAL_CURE_DESCRIPTION,Text,,"Now that you have researched a treatment for the Oneiric Delirium, you can remove this condition from your operatives, though they will acquire it again if they operate in an area covered by mist or are attacked by Pandorans with the Delirium attack. In addition, be aware that the treatment can cause SERIOUS and LONG LASTING side effects: every time you make use of it, there is a 25% chance that the operative will acquire one of the special Delirium perks, which grant a negative and a positive ability. The same operative can acquire any number of these special Delirium perks. They will lose these perks eventually as they complete missions, provided that they do not acquire new Delirium perks.
+ 
+In order to treat a soldier you need to pay 50 MUTAGENS for every 25% of Delirium that has affected the soldier as compared to their Willpower.",,"Maintenant que vous avez recherché un traitement pour le délire onirique, vous pouvez supprimer cette affection de vos agents, bien qu'ils la contractent à nouveau s'ils opèrent dans une zone couverte de brume ou s'ils sont attaqués par des Pandoriens avec l'attaque Délire. De plus, sachez que le traitement peut avoir des effets secondaires GRAVES et PERMANENTS : chaque fois que vous l'utilisez, il y a 25% de chances que l'agent acquière l'un des avantages spéciaux du délire, qui confèrent une capacité négative et une capacité positive. Le même agent peut acquérir n'importe quel nombre de ces effets spéciaux du délire. 
+
+Pour traiter un soldat, vous devez utiliser 50 MUTAGENS pour chaque tranche de 25% de délire qui a affecté le soldat par rapport à sa volonté.",,,,,,
+KEY_GEO_HINT_ENEMY_SPECIAL_CURE_NAME,Text,,ONEIRIC DELIRIUM EXPERIMENTAL TREATMENT,,TRAITEMENT EXPERIMENTAL DU DELIRE ONIRIQUE,,,,,,
+KEY_GEO_HINT_ENEMY_SPECIAL_MUTOID_DESCRIPTION,Text,,"Mutoids are artificially created by aggresively mutating suitable humans using MUTAGENS. Immune to the Delirium they can learn abilities from all researched Soldier Classes, as well as some Pandoran abilities after an autopsy has been performed.
+
+While a Mutoid can learn many abilities, it can only select one Soldier ability and one Pandoran ability per level. For this additional Mutagens are required.
+
+Mutoids can only be healed at a base using MUTAGENS.",,"Les mutoïdes sont créés artificiellement par la mutation forcée d'humains compatibles à l'aide de MUTAGENS. Immunisés au Délire, ils peuvent apprendre les capacités de toutes les classes de soldats connues, ainsi que certaines capacités pandoriennes après une autopsie.
+
+Bien qu'un Mutoïde puisse apprendre de nombreuses capacités, il ne peut choisir qu'une capacité de Soldat et une capacité de Pandorien par niveau. Pour cela, des mutagènes supplémentaires sont nécessaires.
+
+Les mutoïdes ne peuvent être soignés que dans une base utilisant du MUTAGENS.",,,,,,
+KEY_GEO_HINT_ENEMY_SPECIAL_MUTOID_NAME,Text,,MUTOID SOLDIERS,,SOLDAT MUTOIDE,,,,,,
+KEY_GEOSCAPE_CLEAN_LAIR_MISSION_OBJECTIVE_TITLE,Text,NEED TO CHANGE,Obtain Corruption Sample from Lair,,Obtenir un échantillon de corruption dans une Tanière,,,,,,
+KEY_TAC_HINT_STATUS_CORRUPTED_DESCRIPTION,Text,,"Your soldiers have gained one point of Delirium. At the start of the game, Delirium is capped at one third of the character's willpower. This cap will increase as the game progresses.
+
+Delirium reduces Willpower by an equal amount. The lower a soldier's Willpower becomes, the more susceptible they are to panic or mind control, and the less they can use their skills. <b>Each 10 points in Stamina negate the effects of 1 point of Delirium</b>.
+
+Delirium has other effects as well <b>that are not negated by higher Stamina</b>. ",,"Vos soldats ont gagné un point de Délire. Au début du jeu, le délire est plafonné à un tiers de la volonté du personnage. Ce plafond augmente au fur et à mesure que le jeu progresse.
+
+Le délire réduit la Volonté d'un montant égal. Plus la Volonté d'un soldat est faible, plus il est sensible à la panique ou au contrôle mental, et moins il peut utiliser ses compétences. <b>Chaque tranche de 10 points d'Endurance annule les effets de 1 point de Délire</b>.
+
+Le délire a également d'autres effets <b>qui ne sont pas annulés par une meilleure endurance</b>. ",,,,,,
+KEY_TAC_HINT_STATUS_CORRUPTED_NAME,Text,,SUFFERS ONEIRIC DELIRIUM,,SUBIT UN DÉLIRE ONIRIQUE,,,,,,
+KEY_GEO_HINT_AUGMENTATION_SCREEN_DESCRIPTION,Text,,"You are about to augment your first soldier. A character can only have UP TO 2 BODY PARTS replaced this way.
+
+Once an augmentation is installed, the soldier will not be able to revert back to their natural limbs. However, augmented body parts CAN BE SWAPPED with different cybernetic parts.
+
+Augmented body parts are IMMUNE TO BLEEDING and RESISTANT TO VIRAL DAMAGE, POISON, AND PARALYSIS. Damaged cybernetics CAN BE REPAIRED after battle at the expense of Tech and Materials. 
+
+In addition, each bionic augmentation reduces the maximum Delirium the character can have by 1/3, and removes up to that amount of Delirium from the character. 
+
+Augmenting a character will reduce their Stamina to zero.",,,,,,,,
+KEY_GEO_HINT_AUGMENTATION_SCREEN_NAME,Text,,AUGMENTING A SOLDIER,,,,,,,,
+KEY_GEO_HINT_CYBERNETICS_LAB_BUILT_DESCRIPTION,Text,,"The construction of your Cybernetics Lab is complete. You will now be able to AUGMENT SOLDIERS, replacing their natural limbs with powerful cybernetics.
+
+Each augmentation reduces the maximum Delirium a character may have by 1/3 and also immediately removes that much Delirium from the character.  
+
+To Augment a soldier, navigate to the PERSONNEL tab, select EDIT UNIT and then select AUGMENT.",,,,,,,,
+KEY_GEO_HINT_CYBERNETICS_LAB_BUILT_NAME,Text,,AUGMENTATION NOW AVAILABLE,,,,,,,,
+KEY_GEO_HINT_MUTATION_LAB_BUILT_DESCRIPTION,Text,,"The construction of your Mutation Lab is complete. You will now be able to MUTATE SOLDIERS, replacing their natural limbs with ones enhanced by Pandoravirus mutation.
+
+To Mutate a soldier, navigate to the PERSONNEL tab, select EDIT UNIT and then select MUTATE.
+
+In addition, if you have completed the Mutagen harvesting technology, your mutation lab will automatically extract mutagens from any Pandorans held in your Containment facilities. ",,,,,,,,
+KEY_GEO_HINT_MUTATION_LAB_BUILT_NAME,Text,,MUTATION NOW AVAILABLE,,,,,,,,
+KEY_GEO_HINT_MUTATION_SCREEN_DESCRIPTION,Text,,"You are about to mutate your first soldier. A character can only have UP TO 2 BODY PARTS altered this way.
+
+Each mutated body part increases damage dealt by character by 2% per each Delirium point that the character has.
+
+Once a mutation is applied, the operative won't be able to revert back to their natural limbs. However, mutated body parts CAN BE SWAPPED with different mutation variants.
+
+The :PRIEST: PRIEST soldier class has access to UNIQUE HEAD MUTATIONS greatly enhancing their powers.",,,,,,,,
+KEY_GEO_HINT_MUTATION_SCREEN_NAME,Text,,MUTATING A SOLDIER,,,,,,,,

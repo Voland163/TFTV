@@ -140,7 +140,7 @@ namespace TFTV
 
             //  TFTVBaseDefenseTactical.ModifyObjectives(Controller);
             TFTVLogger.Always($"Mission: {Controller.TacMission.MissionData.MissionType.name}");
-            TFTVTacticalUtils.RevealAllSpawns(Controller);
+          //  TFTVTacticalUtils.RevealAllSpawns(Controller);
             
            
 
@@ -276,6 +276,7 @@ namespace TFTV
             {
                 TFTVLogger.Always("The turn is " + turnNumber);
 
+              
                 //   TFTVLogger.Always("AI Actions influenced by Safety consideration during previous turn " + TFTVExperimental.CounterAIActionsInfluencedBySafetyConsideration);
                 //   TFTVExperimental.CounterAIActionsInfluencedBySafetyConsideration = 0;
 

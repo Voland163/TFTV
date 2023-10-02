@@ -1,9 +1,11 @@
 ﻿using Base.Core;
 using Base.Defs;
+using Base.Entities.Abilities;
 using Base.UI;
 using Base.UI.MessageBox;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
+using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.View.ViewModules;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.PhoenixBases;
@@ -107,18 +109,26 @@ namespace TFTV
         {
             try
             {
+                PhoenixFacilityDef foodProductionFacility = DefCache.GetDef<PhoenixFacilityDef>("FoodProduction_PhoenixFacilityDef");
+
                 GeoLevelController controller = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
                 UIModuleInfoBar uIModuleInfoBar = controller.View.GeoscapeModules.ResourcesModule;
-
-                ResourceGeneratorFacilityComponentDef foodProductionDef = DefCache.GetDef<ResourceGeneratorFacilityComponentDef>("E_ResourceGenerator [FoodProduction_PhoenixFacilityDef]");
+               
+               ResourceGeneratorFacilityComponentDef foodProductionDef = DefCache.GetDef<ResourceGeneratorFacilityComponentDef>("E_ResourceGenerator [FoodProduction_PhoenixFacilityDef]");
 
                 UIAnimatedResourceController foodController = uIModuleInfoBar.FoodController;
+
+                float buff = controller.PhoenixFaction.FacilityBuffs.GetValue(foodProductionFacility, foodProductionDef, foodProductionDef.BaseResourcesOutput[0].Value);
+
+              //  TFTVLogger.Always($"buff is {buff}");
 
                 MethodInfo methodDisplayValue = typeof(UIAnimatedResourceController).GetMethod("DisplayValue", BindingFlags.NonPublic | BindingFlags.Instance);
 
                 int foodProductionFacilitiesCount = CountFoodProductionFacilities(controller.PhoenixFaction);
 
-                foodController.Income = (int)(foodProductionDef.BaseResourcesOutput[0].Value * 24 * foodProductionFacilitiesCount) + Mathf.Min((int)GetFarmOutputPerDay(), foodProductionFacilitiesCount * ProcessingCapacity) - controller.PhoenixFaction.Soldiers.Count();
+                foodController.Income = (int)(buff * 24 * foodProductionFacilitiesCount) + Mathf.Min((int)GetFarmOutputPerDay(), foodProductionFacilitiesCount * ProcessingCapacity) - controller.PhoenixFaction.Soldiers.Count();
+
+                TFTVLogger.Always($"income {foodController.Income}, from {(int)(buff * 24 * foodProductionFacilitiesCount)} plus {Mathf.Min((int)GetFarmOutputPerDay(), foodProductionFacilitiesCount * ProcessingCapacity)} minus {controller.PhoenixFaction.Soldiers.Count()}");
 
                 methodDisplayValue.Invoke(foodController, null);
 
@@ -283,9 +293,13 @@ namespace TFTV
                         }
                         else
                         {
-                            editUnitButtonsController.DismantleForFood.gameObject.SetActive(true);
-                            editUnitButtonsController.DismantleForFoodResourcesText.gameObject.SetActive(true);
-                            buttonContainer.GetComponentInChildren<Transform>().Find("Alien_Harvest_Food").gameObject.SetActive(true);
+                            if (controller.PhoenixFaction.HarvestAliensForSuppliesUnlocked)
+                            {
+
+                                editUnitButtonsController.DismantleForFood.gameObject.SetActive(true);
+                                editUnitButtonsController.DismantleForFoodResourcesText.gameObject.SetActive(true);
+                                buttonContainer.GetComponentInChildren<Transform>().Find("Alien_Harvest_Food").gameObject.SetActive(true);
+                            }
                         }
 
                     }
@@ -532,6 +546,7 @@ namespace TFTV
             {
                 GeoLevelController controller = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
                 GeoPhoenixFaction pxFaction = controller.PhoenixFaction;
+                
               //  TFTVLogger.Always($"HarvestAliensForSuppliesUnlocked {pxFaction.HarvestAliensForSuppliesUnlocked}");
                 
                 if (pxFaction.HarvestAliensForSuppliesUnlocked)
@@ -547,7 +562,7 @@ namespace TFTV
                         suppliesPerDay = maxSuppliesPerDay;
 
                     }
-
+                    TFTVLogger.Always($"food for processing: {PandasForFoodProcessing}, max supplies per day {maxSuppliesPerDay}, supples per day {suppliesPerDay}");
                     return suppliesPerDay;
                 }
 

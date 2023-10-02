@@ -119,6 +119,8 @@ namespace TFTV
                 TFTVNewGameOptions.ConfigImplemented = false;
                 TFTVNewGameOptions.InternalDifficultyCheck = 0;
                 TFTVCapturePandoransGeoscape.ToxinsInCirculation = 0;
+                TFTVNewGameMenu.NewGameOptionsSetUp = false;
+                TFTVNewGameMenu.EnterStateRun = false;
                 /*  TFTVNewGameOptions.AmountOfExoticResourcesSetting;
                   TFTVNewGameOptions.ResourceMultiplierSetting;
                   TFTVNewGameOptions.DiplomaticPenaltiesSetting;
@@ -836,6 +838,29 @@ namespace TFTV
             catch (Exception e)
             {
                 TFTVLogger.Error(e);
+            }
+
+        }
+
+        internal static GameTagDef CreateNewMissionTag(string name, string guid)
+        {
+            try
+            {
+
+                MissionTypeTagDef source = DefCache.GetDef<MissionTypeTagDef>("MissionTypeStoryMissionPX_MissionTagDef");
+                return Helper.CreateDefFromClone(
+                    source,
+                    guid,
+                    name);
+
+
+
+            }
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
             }
 
         }

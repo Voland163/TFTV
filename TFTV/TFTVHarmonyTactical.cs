@@ -34,6 +34,7 @@ namespace TFTV
                     TFTVUmbra.ImplementCallReinforcementsTBTV(__instance);
                     TFTVPalaceMission.PalaceReinforcements(__instance);
                     TFTVPalaceMission.SpawnMistToHideReceptacleBody(__instance);
+                    TFTVBaseDefenseTactical.ImplementBaseDefenseVsAliensPreAITurn(__instance);
                 }
                 catch (Exception e)
                 {
@@ -47,20 +48,6 @@ namespace TFTV
 
         public static class TFTV_TacticalFactionn_GetSortedAIActors_patch
         {
-
-            public static void Prefix(TacticalFaction __instance)
-            {
-                try
-                {
-                    TFTVBaseDefenseTactical.ImplementBaseDefenseVsAliensPreAITurn(__instance);
-
-
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-            }
 
             public static void Postfix(List<TacticalActor> __result, TacticalFaction __instance)
             {
@@ -264,6 +251,7 @@ namespace TFTV
                     TFTVFire.ActivateFireQuencherAbility();
                     TFTVBaseDefenseTactical.RemoveScatterRemainingAttackersTagFromEnemiesWithParasychosis(ability, parameter);
                     TFTVPalaceMission.CheckFinalMissionWinConditionForExalted(ability);
+                    TFTVPalaceMission.CheckIfPlayerCloseToGate(__instance);
                 }
 
                 catch (Exception e)
