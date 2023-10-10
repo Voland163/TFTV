@@ -265,7 +265,7 @@
     <None Include="Assets\Localization\TFTV_Options_Localization.csv" />
     <None Include="Assets\Localization\TFTV_Research_Localization.csv" />
     <None Include="Assets\Localization\TFTV_VoidOmensAndODI_Localization.csv" />
-    <None Include="Assets\Localization\Vehicles.csv">
+    <None Include="Assets\Localization\Vehicles.csv"/>
     <None Include="Assets\Presets\AbilityDefToNameDict.json" />
     <None Include="Assets\Presets\NotLocalizedTextMap.json" />
     <None Include="meta.json">
