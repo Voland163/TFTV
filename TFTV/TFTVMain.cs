@@ -124,6 +124,9 @@ namespace TFTV
                 TFTVHumanEnemiesNames.CreateRanksDictionary();
                 Logger.LogInfo("Ranks for human enemies created");
 
+                Logger.LogInfo("Loading Vehicle Rework");
+                TFTVVehicleRework.VehiclesMain.ReworkVehicles(this);
+                Logger.LogInfo("Vehicle Rework Loaded");
 
 
                 TFTVRevenantResearch.CreateRevenantRewardsDefs();
