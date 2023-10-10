@@ -128,7 +128,7 @@ namespace TFTV
 
                 foodController.Income = (int)(buff * 24 * foodProductionFacilitiesCount) + Mathf.Min((int)GetFarmOutputPerDay(), foodProductionFacilitiesCount * ProcessingCapacity) - controller.PhoenixFaction.Soldiers.Count();
 
-                TFTVLogger.Always($"income {foodController.Income}, from {(int)(buff * 24 * foodProductionFacilitiesCount)} plus {Mathf.Min((int)GetFarmOutputPerDay(), foodProductionFacilitiesCount * ProcessingCapacity)} minus {controller.PhoenixFaction.Soldiers.Count()}");
+               // TFTVLogger.Always($"income {foodController.Income}, from {(int)(buff * 24 * foodProductionFacilitiesCount)} plus {Mathf.Min((int)GetFarmOutputPerDay(), foodProductionFacilitiesCount * ProcessingCapacity)} minus {controller.PhoenixFaction.Soldiers.Count()}");
 
                 methodDisplayValue.Invoke(foodController, null);
 
@@ -562,7 +562,7 @@ namespace TFTV
                         suppliesPerDay = maxSuppliesPerDay;
 
                     }
-                    TFTVLogger.Always($"food for processing: {PandasForFoodProcessing}, max supplies per day {maxSuppliesPerDay}, supples per day {suppliesPerDay}");
+                   // TFTVLogger.Always($"food for processing: {PandasForFoodProcessing}, max supplies per day {maxSuppliesPerDay}, supples per day {suppliesPerDay}");
                     return suppliesPerDay;
                 }
 

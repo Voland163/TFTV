@@ -2304,7 +2304,7 @@ namespace TFTV
 
                     UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
                     int roll = UnityEngine.Random.Range(0, 2);
-                    TFTVLogger.Always($"found {tdz.name} at {tdz.Pos}, roll is {roll}");
+                  //  TFTVLogger.Always($"found {tdz.name} at {tdz.Pos}, roll is {roll}");
 
                     if (roll == 0)
                     {

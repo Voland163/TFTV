@@ -75,7 +75,7 @@ namespace TFTV
 
                         KeepSoldiersAliveFactionObjectiveDef aircraftCapture = DefCache.GetDef<KeepSoldiersAliveFactionObjectiveDef>("CAPTURE_CAPACITY_AIRCRAFT");
 
-                        TFTVLogger.Always($"FactionObjective Invoked, {objective.Summary.LocalizationKey}");
+                      //  TFTVLogger.Always($"FactionObjective Invoked, {objective.Summary.LocalizationKey}");
                         if (objective.Summary.LocalizationKey.Contains("CAPACITY_AIRCRAFT"))
                         {
                             LocalizedTextBind aircraftCapacityText = new LocalizedTextBind("CAPTURE_CAPACITY_AIRCRAFT");

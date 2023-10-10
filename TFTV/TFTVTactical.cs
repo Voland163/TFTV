@@ -54,6 +54,8 @@ namespace TFTV
         public bool ScyllaCaptureModule;
         public int AvailableContainment;
         public bool Update35TacticalCheck;
+        public bool StrongerPandoransTactical;
+        public bool NerfAncientsWeaponsTactical;
        
     }
 
@@ -113,14 +115,16 @@ namespace TFTV
             TFTVLogger.Always($"Available containment is {TFTVCapturePandorans.ContainmentSpaceAvailable}");
             TFTVLogger.Always($"Containment facility is present {TFTVCapturePandorans.ContainmentFacilityPresent}");
             TFTVLogger.Always($"Scylla Capture Module is present {TFTVCapturePandorans.ScyllaCaptureModulePresent}");
+            TFTVLogger.Always($"Stronger Pandorans {TFTVNewGameOptions.StrongerPandoransSetting}");
+            TFTVLogger.Always($"Nerf ancients weapons {TFTVNewGameOptions.ImpossibleWeaponsAdjustmentsSetting}");
             TFTVAncientsGeo.CheckResearchStateOnGeoscapeEndAndOnTacticalStart(null);
 
             TFTVBaseDefenseTactical.CheckConsoleSituation(Controller);
             //  TFTVBaseDefenseTactical.InteractionPointPlacement();
             //   TFTVBaseDefenseTactical.CheckIfConsoleActivated(Controller);
             //Testing
-            TFTVNewGameOptions.ImpossibleWeaponsAdjustmentsSetting = true;
-            TFTVNewGameOptions.StrongerPandoransSetting = true;
+          //  TFTVNewGameOptions.ImpossibleWeaponsAdjustmentsSetting = true;
+          //  TFTVNewGameOptions.StrongerPandoransSetting = true;
 
             TFTVSpecialDifficulties.CheckForSpecialDifficulties();
           //  TFTVBetterEnemies.ImplementBetterEnemies();
@@ -207,6 +211,8 @@ namespace TFTV
                 TFTVAncients.AlertedHoplites = data.HopliteKillList;
                 TFTVCapturePandorans.ContainmentSpaceAvailable = data.AvailableContainment;
                 TFTVNewGameOptions.Update35Check = data.Update35TacticalCheck;
+                TFTVNewGameOptions.StrongerPandoransSetting = data.StrongerPandoransTactical;
+                TFTVNewGameOptions.ImpossibleWeaponsAdjustmentsSetting = data.NerfAncientsWeaponsTactical;
                 //Deprecated
               //  TFTVBetaSaveGamesFixes.CheckNewLOTASavegame();
 
@@ -261,6 +267,8 @@ namespace TFTV
                 ScyllaCaptureModule = TFTVCapturePandorans.ScyllaCaptureModulePresent,
                 AvailableContainment = TFTVCapturePandorans.ContainmentSpaceAvailable,
                 Update35TacticalCheck = TFTVNewGameOptions.Update35Check,
+                NerfAncientsWeaponsTactical = TFTVNewGameOptions.ImpossibleWeaponsAdjustmentsSetting,
+                StrongerPandoransTactical = TFTVNewGameOptions.StrongerPandoransSetting,
 
                 TurnZeroMethodsExecuted = TurnZeroMethodsExecuted
                 
