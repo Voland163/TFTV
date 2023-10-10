@@ -201,6 +201,54 @@
     <Compile Include="VariousAdjustments\VariousAdjustments.cs" />
     <Compile Include="VariousAdjustments\VariousAdjustmentsMain.cs" />
     <Compile Include="VariousAdjustments\WeaponModifications.cs" />
+    <!-- Vehicle Rework Files -->
+    <Compile Include="Vehicles\Abilities\AdjustAccessCostStatus.cs" />
+    <Compile Include="Vehicles\Abilities\AdjustAccessCostStatusDef.cs" />
+    <Compile Include="Vehicles\Abilities\ApplyStatusAfterAbilityExecutedAbility.cs" />
+    <Compile Include="Vehicles\Abilities\ApplyStatusAfterAbilityExecutedAbilityDef.cs" />
+    <Compile Include="Vehicles\Abilities\ExtendedEnterVehicle.cs" />
+    <Compile Include="Vehicles\Abilities\ExtendedEnterVehicleDef.cs" />
+    <Compile Include="Vehicles\Abilities\ExtendedExitVehicle.cs" />
+    <Compile Include="Vehicles\Abilities\ExtendedExitVehicleDef.cs" />
+    <Compile Include="Vehicles\Abilities\FreeReloadAbility.cs" />
+    <Compile Include="Vehicles\Abilities\FreeReloadAbilityDef.cs" />
+    <Compile Include="Vehicles\Abilities\HealPassengersStatus.cs" />
+    <Compile Include="Vehicles\Abilities\HealPassengersStatusDef.cs" />
+    <Compile Include="Vehicles\Armadillo\Armadillo.cs" />
+    <Compile Include="Vehicles\Armadillo\GasTanks.cs" />
+    <Compile Include="Vehicles\Armadillo\GaussTurret.cs" />
+    <Compile Include="Vehicles\Armadillo\ImprovedTraction.cs" />
+    <Compile Include="Vehicles\Armadillo\LightweightAlloy.cs" />
+    <Compile Include="Vehicles\Armadillo\Mephistopheles.cs" />
+    <Compile Include="Vehicles\Armadillo\Purgatory.cs" />
+    <Compile Include="Vehicles\Armadillo\ReinforcedPlating.cs" />
+    <Compile Include="Vehicles\Aspida\Aspida.cs" />
+    <Compile Include="Vehicles\Aspida\ClericX2.cs" />
+    <Compile Include="Vehicles\Aspida\HermesX1.cs" />
+    <Compile Include="Vehicles\Aspida\PsychicJammer.cs" />
+    <Compile Include="Vehicles\Aspida\StasisChamber.cs" />
+    <Compile Include="Vehicles\Buggy\Deathproof.cs" />
+    <Compile Include="Vehicles\Buggy\Kamikaze.cs" />
+    <Compile Include="Vehicles\Buggy\KaosBuggy.cs" />
+    <Compile Include="Vehicles\Buggy\MannedGunner.cs" />
+    <Compile Include="Vehicles\Buggy\Slaughterhouse.cs" />
+    <Compile Include="Vehicles\HarmonyPatches\GeoCharacter_Patches.cs" />
+    <Compile Include="Vehicles\HarmonyPatches\SwitchStanceAbility_Patches.cs" />
+    <Compile Include="Vehicles\HarmonyPatches\TacticalAbility_Patches.cs" />
+    <Compile Include="Vehicles\HarmonyPatches\TacticalActor_Patches.cs" />
+    <Compile Include="Vehicles\HarmonyPatches\UIItemToolTip_Patches.cs" />
+    <Compile Include="Vehicles\Misc\MarketplaceOptions.cs" />
+    <Compile Include="Vehicles\Misc\MiscChanges.cs" />
+    <Compile Include="Vehicles\Misc\NewTags.cs" />
+    <Compile Include="Vehicles\Misc\SoldierMounting.cs" />
+    <Compile Include="Vehicles\Misc\VehicleStatusTags.cs" />
+    <Compile Include="Vehicles\Mutog\Mutog.cs" />
+    <Compile Include="Vehicles\Scarab\Scarab.cs" />
+    <Compile Include="Vehicles\Scarab\LazarusShield.cs" />
+    <Compile Include="Vehicles\Scarab\AmmunitionRacks.cs" />
+    <Compile Include="Vehicles\Scarab\DeploymentBay.cs" />
+    <Compile Include="Vehicles\Scarab\ReinforcedStabilisers.cs" />
+    <Compile Include="Vehicles\VehiclesMain.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\Localization\PR_BC_Localization.csv">
@@ -217,6 +265,7 @@
     <None Include="Assets\Localization\TFTV_Options_Localization.csv" />
     <None Include="Assets\Localization\TFTV_Research_Localization.csv" />
     <None Include="Assets\Localization\TFTV_VoidOmensAndODI_Localization.csv" />
+    <None Include="Assets\Localization\Vehicles.csv">
     <None Include="Assets\Presets\AbilityDefToNameDict.json" />
     <None Include="Assets\Presets\NotLocalizedTextMap.json" />
     <None Include="meta.json">
@@ -526,6 +575,12 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Assets\Textures\VO_15.jpg">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\Textures\BlastVulnerability.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\Textures\car_wheel.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
