@@ -1,6 +1,7 @@
 ﻿using Base;
 using Base.Core;
 using Base.Defs;
+using Base.Levels;
 using Base.UI;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
@@ -41,7 +42,11 @@ namespace TFTV
         internal static class ExtendedAgendaTracker
         {
             internal static bool fetchedSiteNames = false;
-            internal static string unexploredSiteName = "UNEXPLORED SITE";
+            internal static string unexploredSiteName = "KEY_UNEXPLORED_SITE";
+
+            
+
+           // internal static string unexploredSiteName = "UNEXPLORED SITE";
             internal static string explorationSiteName = "EXPLORATION SITE";
             internal static string scavengingSiteName = "SCAVENGING SITE";
             internal static string ancientSiteName = "ANCIENT SITE";
@@ -89,6 +94,9 @@ namespace TFTV
             */
             private static bool GetTravelTime(GeoVehicle vehicle, out float travelTime, GeoSite target = null)
             {
+                string unExploredSiteNameText = new LocalizedTextBind() { LocalizationKey = unexploredSiteName }.Localize();
+
+
                 travelTime = 0f;
 
                 if (target == null && vehicle.FinalDestination == null)

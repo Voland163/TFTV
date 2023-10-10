@@ -52,22 +52,21 @@ namespace TFTV
 
 
 
-        [HarmonyPatch(typeof(GooVoxelManager), "StartTurn")]
-        public static class GooVoxelManager_StartTurn_patch
+        [HarmonyPatch(typeof(TacticalVoxelMatrix), "StartTurn")]
+        public static class TacticalVoxelMatrix_StartTurn_patch
         {
 
-            public static void Postfix(TacticalVoxel ____voxel, GooVoxelManager __instance)
+            public static void Postfix(TacticalVoxelMatrix __instance, bool ____duringDeserialization)
             {
                 try
                 {
-
-                    __instance.TurnNumberSpawned = __instance.TurnNumber;
-
-                    foreach (TacticalActor actor in ____voxel.Matrix.TacticalLevel.Map.GetActors<TacticalActor>())
+                    if (!____duringDeserialization)
                     {
-                        AddGooedStatus(actor, actor.Pos);
+                        foreach (TacticalActor actor in __instance.TacticalLevel.Map.GetActors<TacticalActor>())
+                        {
+                            AddGooedStatus(actor, actor.Pos);
+                        }
                     }
-
 
                 }
                 catch (Exception e)
