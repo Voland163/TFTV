@@ -254,6 +254,9 @@
     <None Include="Assets\Localization\PR_BC_Localization.csv">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Include="Assets\Localization\Vehicles.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="Assets\Localization\TFTV_AbilitiesEffectsStatusesTactical_Localization.csv" />
     <None Include="Assets\Localization\TFTV_CharactersItemsFacilities_Localization.csv" />
     <None Include="Assets\Localization\TFTV_Events_Localization.csv" />
@@ -265,7 +268,7 @@
     <None Include="Assets\Localization\TFTV_Options_Localization.csv" />
     <None Include="Assets\Localization\TFTV_Research_Localization.csv" />
     <None Include="Assets\Localization\TFTV_VoidOmensAndODI_Localization.csv" />
-    <None Include="Assets\Localization\Vehicles.csv">
+    <!-- <None Include="Assets\Localization\Vehicles.csv" /> -->
     <None Include="Assets\Presets\AbilityDefToNameDict.json" />
     <None Include="Assets\Presets\NotLocalizedTextMap.json" />
     <None Include="meta.json">
