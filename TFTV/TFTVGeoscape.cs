@@ -234,10 +234,8 @@ namespace TFTV
             TFTVGSInstanceData data = (TFTVGSInstanceData)instanceData;
             //  TFTVLogger.Always($"currently infested bases {data.InfestedPhoenixBases.Count}");
             TFTVCommonMethods.ClearInternalVariables();
-            //  TFTVLogger.Always($"currently infested bases {data.InfestedPhoenixBases.Count}");
-            // TFTVLogger.Always($"Items currently hidden in Aircraft inventory {data.HiddenInventories.Values.Count}");
-            //  TFTVUI.CurrentlyAvailableInv = data.AvailableInventories;
-            //  TFTVUI.CurrentlyHiddenInv = data.HiddenInventories;
+            TFTVLogger.Always($"currently infested bases {data.InfestedPhoenixBases.Count}");
+            
             TFTVStamina.charactersWithDisabledBodyParts = data.charactersWithDisabledBodyParts;
             TFTVAirCombat.targetsForBehemoth = data.targetsForBehemoth;
             TFTVAirCombat.flyersAndHavens = data.flyersAndHavens;
@@ -250,10 +248,6 @@ namespace TFTV
             TFTVInfestationStory.HavenPopulation = data.infestedHavenPopulationSaveData;
             TFTVInfestationStory.OriginalOwner = data.infestedHavenOriginalOwnerSaveData;
             TFTVRevenantResearch.ProjectOsirisStats = data.ProjectOsirisStatsSaveData;
-          //  TFTVCapturePandorans.AircraftCaptureCapacity = data.AircraftCaptureCapacity;
-           
-            //  TFTVVoidOmens.VoidOmensCheck = data.VoidOmensCheck;
-            //   TFTVBetaSaveGamesFixes.LOTAReworkGlobalCheck = data.GlobalLOTAReworkCheck;
             TFTVBaseDefenseGeoscape.PhoenixBasesUnderAttack = data.PhoenixBasesUnderAttack;
             TFTVBaseDefenseGeoscape.PhoenixBasesContainmentBreach = data.PhoenixBasesContainmentBreach;
             TFTVBaseDefenseGeoscape.PhoenixBasesInfested = data.InfestedPhoenixBases;

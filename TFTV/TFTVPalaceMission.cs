@@ -1303,6 +1303,25 @@ namespace TFTV
             {
                 try
                 {
+                    if(GameUtl.CurrentLevel()!=null && GameUtl.CurrentLevel().GetComponent<TacticalLevelController>() != null) 
+                    {
+
+                        TacticalLevelController controller = GameUtl.CurrentLevel().GetComponent<TacticalLevelController>();
+
+                        if(controller.TacMission!=null && !controller.TacMission.IsFinalMission) 
+                        {
+                            return;
+                        
+                        }
+
+                    }
+                    else 
+                    {
+
+                        return;
+                    
+                    }
+
 
 
                     if (__instance.InteractWithObjectAbilityDef == DefCache.GetDef<InteractWithObjectAbilityDef>("InteractWithYuggothian_AbilityDef") || __instance.InteractWithObjectAbilityDef == DefCache.GetDef<InteractWithObjectAbilityDef>("ExaltedInteractWithYuggothian_AbilityDef"))

@@ -160,7 +160,7 @@ namespace TFTV
             {
               //  CheckNewLOTA(controller);
                 FixScyllaCounter(controller);
-              //  FixInfestedBase(controller);
+           //    FixInfestedBase(controller);
                 CheckSaveGameEventChoices(controller);
                 CheckUmbraResearchVariable(controller);
                 AddInteranlDifficultyCheckSaveData(controller);
@@ -326,7 +326,6 @@ namespace TFTV
                 List<GeoPhoenixBase> bases = (List<GeoPhoenixBase>)basesField.GetValue(controller.PhoenixFaction);
 
                 foreach (GeoSite geoSite in controller.Map.AllSites)
-
                 {
                     if (geoSite.GetComponent<GeoPhoenixBase>() != null && geoSite.Owner == controller.PhoenixFaction && !bases.Contains(geoSite.GetComponent<GeoPhoenixBase>()))
                     {

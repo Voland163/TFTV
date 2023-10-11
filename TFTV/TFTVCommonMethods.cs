@@ -121,6 +121,7 @@ namespace TFTV
                 TFTVCapturePandoransGeoscape.ToxinsInCirculation = 0;
                 TFTVNewGameMenu.NewGameOptionsSetUp = false;
                 TFTVNewGameMenu.EnterStateRun = false;
+              //  TFTVChangesToDLC5Events.SecretMPCounter = 0;
                 /*  TFTVNewGameOptions.AmountOfExoticResourcesSetting;
                   TFTVNewGameOptions.ResourceMultiplierSetting;
                   TFTVNewGameOptions.DiplomaticPenaltiesSetting;

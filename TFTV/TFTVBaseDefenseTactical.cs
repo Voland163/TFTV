@@ -720,10 +720,17 @@ namespace TFTV
                 List<GeoPhoenixFacility> geoPhoenixFacilities = layout.Facilities.ToList();
                 GeoPhoenixFacility hangar = layout.BasicFacilities.FirstOrDefault(bf => bf.FacilityTiles.Count > 1);
 
+                
+
                 foreach (GeoPhoenixFacility geoPhoenixFacility in geoPhoenixFacilities)
                 {
                     TFTVLogger.Always($"{geoPhoenixFacility.Def.name} at {geoPhoenixFacility.GridPosition}");
 
+                }
+
+                if (hangar.GridPosition.y == 0) 
+                {
+                    return true;        
                 }
 
 
@@ -739,8 +746,6 @@ namespace TFTV
                     return false;
 
                 }
-
-
 
             }
             catch (Exception e)
@@ -1755,10 +1760,12 @@ namespace TFTV
                         StructuralTarget console = statusComponent.transform.GetComponent<StructuralTarget>();
                         List<StructuralTarget> generators = UnityEngine.Object.FindObjectsOfType<StructuralTarget>().Where(st => st.Deployment != null).Where(st => st.Deployment.name.Equals("PP_Cover_Generator_2x2_A_StructuralTarget")).ToList();
 
-                        TFTVLogger.Always($"Console {console.name} activated");
+                        TFTVLogger.Always($"Console {console.name} activated. Generators count: {generators.Count}");
 
                         for (int i = 0; i < 3; i++)
                         {
+                            TFTVLogger.Always($"Console {console.name}  {ConsoleName + i}? {ConsolePositions.ElementAt(i).Value} ");
+
                             if (console.name.Equals(ConsoleName + i) && ConsolePositions.ElementAt(i).Value != 1000)
                             {
                                 //  TFTVLogger.Always($"Console {console.name} activation logged");
