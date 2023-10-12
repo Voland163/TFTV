@@ -690,11 +690,11 @@ namespace TFTV
         {
             try
             {
-
                 TriggerAbilityZoneOfControlStatusDef canBeRecruited1x1 = DefCache.GetDef<TriggerAbilityZoneOfControlStatusDef>("CanBeRecruitedIntoPhoenix_1x1_StatusDef");
                 TriggerAbilityZoneOfControlStatusDef canBeRecruited3x3 = DefCache.GetDef<TriggerAbilityZoneOfControlStatusDef>("CanBeRecruitedIntoPhoenix_3x3_StatusDef");
 
-                List<EffectConditionDef> effectConditionDefs = canBeRecruited1x1.ApplicationConditions.ToList();
+                List<EffectConditionDef> effectConditionDefs1x1 = canBeRecruited1x1.TriggerConditions.ToList();
+                List<EffectConditionDef> effectConditionDefs3x3 = canBeRecruited3x3.TriggerConditions.ToList();
                 ActorHasTagEffectConditionDef source = DefCache.GetDef<ActorHasTagEffectConditionDef>("HasCombatantTag_ApplicationCondition");
                 ActorHasTagEffectConditionDef notDroneCondition = Helper.CreateDefFromClone(source, "{87709AA5-4B10-44A7-9810-1E0502726A48}", "NotADroneEffectConditionDef");
 
@@ -705,19 +705,20 @@ namespace TFTV
                 notAlienCondition.HasTag = false;
                 notAlienCondition.GameTag = DefCache.GetDef<GameTagDef>("Alien_RaceTagDef");
 
-                effectConditionDefs.Add(notAlienCondition);
-                effectConditionDefs.Add(notDroneCondition);
+                effectConditionDefs1x1.Add(notAlienCondition);
+                effectConditionDefs1x1.Add(notDroneCondition);
 
-                canBeRecruited1x1.ApplicationConditions = effectConditionDefs.ToArray();
-                canBeRecruited3x3.ApplicationConditions = effectConditionDefs.ToArray();
+                effectConditionDefs3x3.Add(notAlienCondition);
+                effectConditionDefs3x3.Add(notDroneCondition);
+
+                canBeRecruited1x1.TriggerConditions = effectConditionDefs1x1.ToArray();
+                canBeRecruited3x3.TriggerConditions = effectConditionDefs3x3.ToArray();
 
             }
             catch (Exception e)
             {
                 TFTVLogger.Error(e);
             }
-
-
         }
 
 

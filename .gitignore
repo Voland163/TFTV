@@ -361,3 +361,6 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+/TFTV/Vehicles/Helper/Helper.cs
+/.gitignore
+/Dist/TFTV.dll
