@@ -1,4 +1,5 @@
 ﻿using Assets.Code.PhoenixPoint.Geoscape.Entities.Sites.TheMarketplace;
+using Base;
 using Base.Core;
 using Base.Defs;
 using HarmonyLib;
@@ -307,6 +308,24 @@ namespace TFTV
 
             }
 
+            public static void Postfix(GeoMarketplace __instance)
+            {
+                List<GeoEventChoice> temp = new List<GeoEventChoice>();
+                foreach (GeoEventChoice choice in __instance.MarketplaceChoices)
+                {
+                    if(choice.Outcome.GiveResearches.Count() == 0)
+                    {
+                        temp.Add(choice);
+                        continue;
+                    }
+                    if(!temp.Any(c => c.Outcome.GiveResearches.Contains(choice.Outcome.GiveResearches.First())))
+                    {
+                        temp.Add(choice);
+                    }
+                }
+                __instance.MarketplaceChoices.Clear();
+                __instance.MarketplaceChoices.AddList(temp);
+            }
         }
 
 
