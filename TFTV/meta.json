@@ -1,5 +1,5 @@
 {
-  "ID": "phoenixrising.tftv",
+  "ID": "phoenixrising.tftv.bettervehicles",
   "AssemblyName": "TFTV.dll",
   "Author": [
     {
@@ -7,17 +7,17 @@
       "Value": "PhoenixRising"
     }
   ],
-  "Version": "1.0.6.0",
+  "Version": "1.0.0.1",
   "Name": [
     {
       "Key": "English",
-      "Value": "TFTV"
+      "Value": "BetterVehiclesTFTV"
     }
   ],
   "Description": [
     {
       "Key": "English",
-      "Value": "Open Beta of TFTV"
+      "Value": "Closed Beta of TFTV"
     }
   ],
   "Dependencies": [ ]
