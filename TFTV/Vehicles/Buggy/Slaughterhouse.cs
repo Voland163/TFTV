@@ -46,13 +46,10 @@ namespace TFTVVehicleRework.KaosBuggy
                     BodyPart.HitPoints = 200;
                     BodyPart.Armor = 30;
                 }
-                else if (BodyPart.name == "KS_Kaos_Buggy_Spiked_Armor_LeftBackTyre_BodyPartDef")
-                {
-                    BodyPart.HitPoints = 150;
-                }
                 else
                 {
                     BodyPart.HitPoints = 150;
+                    BodyPart.BodyPartAspectDef.Speed = 0f;
                 }
             }
         }
