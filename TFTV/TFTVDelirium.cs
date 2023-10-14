@@ -2,6 +2,7 @@
 using Base.Core;
 using Base.Entities.Statuses;
 using Base.Levels.SceneObjectIds;
+using Base.UI;
 using Base.UI.MessageBox;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
@@ -99,21 +100,25 @@ namespace TFTV
             {
                 string currentDeliriumLevel = "";
 
+                string maxDelirium = new LocalizedTextBind() { LocalizationKey = "KEY_DELIRIUM_CAP_MAX"}.Localize();
+                string medDelirium = new LocalizedTextBind() { LocalizationKey = "KEY_DELIRIUM_CAP_MED" }.Localize();
+                string lowDelirium = new LocalizedTextBind() { LocalizationKey = "KEY_DELIRIUM_CAP_LOW" }.Localize();
+
                 int currentODIlevel = controller.EventSystem.GetVariable("BC_SDI");
                 // TFTVLogger.Always("CurrentODIlevel is " + currentODIlevel);
                 int odiPerc = currentODIlevel * 100 / 20; //TFTVSDIandVoidOmenRoll.ODI_EventIDs.Length;
 
                 if (TFTVVoidOmens.VoidOmensCheck[10] || odiPerc >= 45)
                 {
-                    currentDeliriumLevel = "equal to character's Willpower";
+                    currentDeliriumLevel =maxDelirium;
                 }
                 else if (odiPerc < 25)
                 {
-                    currentDeliriumLevel = "equal to a third of character's Willpower";
+                    currentDeliriumLevel = medDelirium;
                 }
                 else if(odiPerc < 45) 
                 {
-                    currentDeliriumLevel = "equal to half character's Willpower";
+                    currentDeliriumLevel = lowDelirium;
                 }
                 
                                                 
@@ -462,8 +467,8 @@ namespace TFTV
                     {
                         __result = Mathf.Min(__instance.CorruptionStatusDef.ValueIncrement, maxCorruption - base_TacticalActor.CharacterStats.Corruption.IntValue);
                     }
-                        TFTVLogger.Always($"{base_TacticalActor.DisplayName} bionics: {numberOfBionics} odi {odiPerc} willpower max: {base_TacticalActor.CharacterStats.Willpower.IntMax}, max delirium {maxCorruption} " +
-                        $"Delirium {base_TacticalActor.CharacterStats.Corruption.IntValue}, result: {__result} ");
+                       // TFTVLogger.Always($"{base_TacticalActor.DisplayName} bionics: {numberOfBionics} odi {odiPerc} willpower max: {base_TacticalActor.CharacterStats.Willpower.IntMax}, max delirium {maxCorruption} " +
+                      //  $"Delirium {base_TacticalActor.CharacterStats.Corruption.IntValue}, result: {__result} ");
 
                 }
                 catch (Exception e)
@@ -683,12 +688,15 @@ namespace TFTV
                             TFTVLogger.Always("The randomly chosen ability is " + abilityToAdd.name);
 
                             __instance.Progression.AddAbility(abilityToAdd);
-                          
-                            GameUtl.GetMessageBox().ShowSimplePrompt($"{__instance.GetName()} is afflicted with <b>{abilityToAdd.ViewElementDef.DisplayName1.LocalizeEnglish()}</b>" +
-                                $" as a result of the experimental mutagen treatment." +
-                                $" The subject may overcome this condition as they continue to be deployed in the field. " +
-                                $"However, acquiring additional afflictions from this experimental treatment will reset any progress made in adjusting to this condition."
-                                + "\n\n" + $"<i>{abilityToAdd.ViewElementDef.Description.LocalizeEnglish()}</i>", MessageBoxIcon.None, MessageBoxButtons.OK, null);
+
+                            string afflictedWithConnector = new LocalizedTextBind() { LocalizationKey = "KEY_DELIRIUM_PERK_PROMPT_CONNECTOR" }.Localize();
+                            string afflictionRules = new LocalizedTextBind() { LocalizationKey = "KEY_DELIRIUM_PERK_PROMPT_RULES" }.Localize();
+
+                            string messagePrompt = $"{__instance.GetName()} {afflictedWithConnector} <b>{abilityToAdd.ViewElementDef.DisplayName1.LocalizeEnglish()}</b> {afflictionRules}"
+                                +$"\n\n <i>{abilityToAdd.ViewElementDef.Description.LocalizeEnglish()}</i>";
+
+
+                            GameUtl.GetMessageBox().ShowSimplePrompt(messagePrompt, MessageBoxIcon.None, MessageBoxButtons.OK, null);
                             
                             TFTVLogger.Always("Added ability " + abilityToAdd.ViewElementDef.DisplayName1.LocalizeEnglish());
                            
@@ -711,8 +719,9 @@ namespace TFTV
                     else if (num > 50 && num <= 125)
                     {
                         TFTVCommonMethods.SetStaminaToZero(__instance);
-                        GameUtl.GetMessageBox().ShowSimplePrompt($"{__instance.GetName()}" + " did not suffer any lasting side effects, but had to be heavily sedated"
-                                    + "\n\n" + $"<i>STAMINA reduced to zero</i>", MessageBoxIcon.None, MessageBoxButtons.OK, null);
+                        string messagePromptNoPerk = new LocalizedTextBind() { LocalizationKey = "KEY_DELIRIUM_PERK_PROMPT_NO_PERK"}.Localize();
+
+                        GameUtl.GetMessageBox().ShowSimplePrompt($"{__instance.GetName()} {messagePromptNoPerk}", MessageBoxIcon.None, MessageBoxButtons.OK, null);
                     }
                 }
 
@@ -828,7 +837,9 @@ namespace TFTV
                     if(CharactersDeliriumPerksAndMissions!=null && ____parentModule.CurrentCharacter!=null && ____parentModule.CurrentCharacter.Id!=null && CharactersDeliriumPerksAndMissions.ContainsKey(____parentModule.CurrentCharacter.Id) &&
                         CharactersDeliriumPerksAndMissions[____parentModule.CurrentCharacter.Id] == -1)                    
                     {
-                        GameUtl.GetMessageBox().ShowSimplePrompt($"{____parentModule.CurrentCharacter.GetName()} has fully recovered from the effects caused by the experimental Delirium Treatment!", MessageBoxIcon.None, MessageBoxButtons.OK, null);
+                        string messagePrompt = new LocalizedTextBind() { LocalizationKey = "KEY_DELIRIUM_PERK_RECOVERY" }.Localize();
+
+                        GameUtl.GetMessageBox().ShowSimplePrompt($"{____parentModule.CurrentCharacter.GetName()} {messagePrompt}", MessageBoxIcon.None, MessageBoxButtons.OK, null);
                         CharactersDeliriumPerksAndMissions.Remove(____parentModule.CurrentCharacter.Id);
                     }
 

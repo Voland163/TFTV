@@ -29,31 +29,7 @@ namespace TFTV
         internal static Color purple = new Color32(149, 23, 151, 255);
         private static readonly DefRepository Repo = TFTVMain.Repo;
         private static readonly SharedData Shared = TFTVMain.Shared;
-        private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
-
-
-       
-
-        [HarmonyPatch(typeof(GeoFaction), "ScheduleAttackOnSite")]
-        public static class PhoenixGame_ScheduleAttackOnSite_patch
-        {
-
-            public static void Postfix(GeoSite site, TimeUnit attackAfter)
-            {
-                try
-                {
-                    TFTVLogger.Always($"scheduleAttackOnSite run {site.LocalizedSiteName} {attackAfter}");
-
-
-
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                    throw;
-                }
-            }
-        }
+        private static readonly DefCache DefCache = TFTVMain.Main.DefCache; 
 
         public static void CorrrectPhoenixSaveManagerDifficulty()
         {

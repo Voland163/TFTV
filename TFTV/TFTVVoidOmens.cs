@@ -25,6 +25,7 @@ using PhoenixPoint.Tactical.Levels;
 using PhoenixPoint.Tactical.Levels.FactionEffects;
 using PhoenixPoint.Tactical.Levels.FactionObjectives;
 using PhoenixPoint.Tactical.Levels.Mist;
+using PhoenixPoint.Tactical.View.ViewStates;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -37,6 +38,7 @@ namespace TFTV
         public static readonly TFTVConfig Config = new TFTVConfig();
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
         private static readonly DefRepository Repo = TFTVMain.Repo;
+        private static readonly SharedData sharedData = TFTVMain.Shared;
 
         private static readonly FesteringSkiesSettingsDef festeringSkiesSettingsDef = DefCache.GetDef<FesteringSkiesSettingsDef>("FesteringSkiesSettingsDef");
         private static readonly TacticalPerceptionDef tacticalPerceptionDef = DefCache.GetDef<TacticalPerceptionDef>("Soldier_PerceptionDef");
@@ -1536,12 +1538,33 @@ namespace TFTV
               }
           }*/
 
+        public static void ImplementStrongerHavenDefenseVO(ref HavenAttacker attacker)
+        {
+            try 
+            {
+                if (VoidOmensCheck[12])
+                {
+                    if (attacker.Faction.PPFactionDef == sharedData.AlienFactionDef)
+                    {
+                        TFTVLogger.Always("Alien deployment was " + attacker.Deployment);
+                        attacker.Deployment = Mathf.RoundToInt(attacker.Deployment * 1.5f);
+                        TFTVLogger.Always("Alien deployment is now " + attacker.Deployment);
+                    }
+                }
 
 
-        [HarmonyPatch(typeof(GeoSite), "CreateHavenDefenseMission")]
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+        }
+
+      /*  [HarmonyPatch(typeof(GeoSite), "CreateHavenDefenseMission")]
         public static class GeoSite_CreateHavenDefenseMission_IncreaseAttackHavenVoidOmen_patch
         {
-            private static readonly SharedData sharedData = GameUtl.GameComponent<SharedData>();
+            
 
             public static void Prefix(ref HavenAttacker attacker)
             {
@@ -1565,7 +1588,7 @@ namespace TFTV
                     TFTVLogger.Error(e);
                 }
             }
-        }
+        }*/
 
 
 

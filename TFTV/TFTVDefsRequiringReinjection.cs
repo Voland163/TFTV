@@ -34,7 +34,7 @@ namespace TFTV
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
         public static Sprite VoidIcon = Helper.CreateSpriteFromImageFile("Void-04P.png");
 
-        public static void InjectDefsRequiringReinjection()
+        public static void InjectDefsInjectedOnlyOnceBatch2()
         {
             try
             {
@@ -1979,13 +1979,14 @@ namespace TFTV
                 { new ItemStatModification {TargetStat = StatModificationTarget.BonusAttackDamage, Modification = StatModificationType.Multiply, Value = 1.10f},
                 };
                 ambushAbility.ItemTagStatModifications = new EquipmentItemTagStatModification[0];
-                ambushAbility.ViewElementDef.DisplayName1 = new LocalizedTextBind("Ambush (Tactics)", true);
-                ambushAbility.ViewElementDef.Description = new LocalizedTextBind
-                    ("+10% damage. Received ability because Leader was alive and there were no enemies in sight within 10 tiles at the start of the turn.", true);
+                ambushAbility.ViewElementDef.DisplayName1.LocalizationKey = "HUMAN_ENEMIES_KEY_AMBUSH";
+                ambushAbility.ViewElementDef.Description.LocalizationKey = "HUMAN_ENEMIES_KEY_AMBUSH_DESCRIPTION";
+                   
                 Sprite icon = Helper.CreateSpriteFromImageFile("UI_AbilitiesIcon_PersonalTrack_TacticalAnalyst.png");
                 ambushAbility.ViewElementDef.LargeIcon = icon;
                 ambushAbility.ViewElementDef.SmallIcon = icon;
 
+                
             }
             catch (Exception e)
             {

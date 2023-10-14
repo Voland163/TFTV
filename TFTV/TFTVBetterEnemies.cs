@@ -213,9 +213,9 @@ namespace TFTV
                 sAEEffect.DamagePayload.DamageKeywords[1].Value = faceHuggerAcidDamage;
                 sAEEffect.DamagePayload.AoeRadius = faceHuggerAOERadius;
 
-                sAE.ViewElementDef.DisplayName1 = new LocalizedTextBind("ACID EXPLOSION");
-                sAE.ViewElementDef.Description = new LocalizedTextBind("Upon death, the mindfragger bursts in an acid explosion damaging nearby targets");
-
+                sAE.ViewElementDef.DisplayName1.LocalizationKey = "KEY_MINDFRAGGER_ACID_EXPLOSION";
+                sAE.ViewElementDef.Description.LocalizationKey = "KEY_MINDFRAGGER_ACID_EXPLOSION_DESCRIPTION"; 
+                
                 RagdollDieAbilityDef FHDie = (RagdollDieAbilityDef)faceHugger.Abilities[2];
                 FHDie.DeathEffect = sAEEffect;
 

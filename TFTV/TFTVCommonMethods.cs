@@ -889,39 +889,38 @@ namespace TFTV
 
         }
 
-
-        [HarmonyPatch(typeof(GeoSite), "CreateHavenDefenseMission")]
-        public static class GeoSite_CreateHavenDefenseMission_RevealHD_Patch
+        public static void RevealHavenUnderAttack(GeoSite geoSite, GeoLevelController controller) 
         {
-            public static bool Prepare()
+            try
             {
                 TFTVConfig config = TFTVMain.Main.Config;
-                return config.HavenSOS;
-            }
 
-            public static void Postfix(GeoSite __instance)
-            {
-                try
+                if (config.HavenSOS)
                 {
-                    // if (__instance.GetVisible(__instance.GeoLevel.PhoenixFaction)==false)
-                    // {
-                    __instance.RevealSite(__instance.GeoLevel.PhoenixFaction);
+                    string sOSBroadcast = new LocalizedTextBind() { LocalizationKey = "KEY_SOS_BROADCAST" }.Localize();
 
+                    geoSite.RevealSite(controller.PhoenixFaction);
                     GeoscapeLogEntry entry = new GeoscapeLogEntry
                     {
-                        Text = new LocalizedTextBind(__instance.Owner + " " + __instance.LocalizedSiteName + " is broadcasting an SOS, they are under attack!", true)
+                        Text = new LocalizedTextBind($"{geoSite.Owner} {geoSite.LocalizedSiteName} {sOSBroadcast}", true)
                     };
-                    typeof(GeoscapeLog).GetMethod("AddEntry", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(__instance.GeoLevel.Log, new object[] { entry, null });
-
-                    __instance.GeoLevel.View.SetGamePauseState(true);
-                    //  }
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
+                    typeof(GeoscapeLog).GetMethod("AddEntry", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(controller.Log, new object[] { entry, null });
+                    controller.View.SetGamePauseState(true);
                 }
             }
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
+
+
+
         }
+
+
+       
         internal static int LocateSoldier(GeoCharacter geoCharacter)
         {
             try
