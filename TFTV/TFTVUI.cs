@@ -18,7 +18,6 @@ using PhoenixPoint.Common.View.ViewControllers;
 using PhoenixPoint.Common.View.ViewControllers.Inventory;
 using PhoenixPoint.Common.View.ViewModules;
 using PhoenixPoint.Geoscape.Entities;
-using PhoenixPoint.Geoscape.Entities.Sites;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
 using PhoenixPoint.Geoscape.View.DataObjects;
@@ -74,7 +73,7 @@ namespace TFTV
         internal static Color yellow = new Color(255, 255, 0, 1.0f);
         internal static Color dark = new Color(52, 52, 61, 1.0f);
 
-      
+
 
         ///Patches to show mission light conditions
         [HarmonyPatch(typeof(UIStateRosterDeployment), "EnterState")]
@@ -151,7 +150,7 @@ namespace TFTV
             }
         }
 
-        
+
 
         /// <summary>
         /// Patches to fix repairing bionics
@@ -218,7 +217,7 @@ namespace TFTV
             }
         }
 
-        
+
         [HarmonyPatch(typeof(UIModuleReplenish), "AddRepairableItem")]
 
         public static class TFTV_UIModuleReplenish_AddRepairableItem_patch
@@ -460,7 +459,7 @@ namespace TFTV
                         {
                             if (recruit.ClassTags.Contains(classTag))
                             {
-                                recruit.Identity.Name = "Mutoid " + dictionary[classTag].DisplayName2.Localize();
+                                recruit.Identity.Name = $"{TFTVCommonMethods.ConvertKeyToString("KEY_MUTOID_CLASS")} {dictionary[classTag].DisplayName2.Localize()}";
                             }
                         }
                     }
@@ -558,7 +557,7 @@ namespace TFTV
                     ApplyStatusAbilityDef derealization = DefCache.GetDef<ApplyStatusAbilityDef>("DerealizationIgnorePain_AbilityDef");
                     float bonusSpeed = 0;
                     float bonusWillpower = 0;
-                    float bonusStrength = 0;                 
+                    float bonusStrength = 0;
 
                     foreach (ICommonItem armorItem in ____character.ArmourItems)
                     {
@@ -675,16 +674,16 @@ namespace TFTV
                     {
                         if (____character.CharacterStats.Corruption > TFTVDelirium.CalculateStaminaEffectOnDelirium(____character) && TFTVVoidOmens.VoidOmensCheck[3] == false)
                         {
-                           // TFTVLogger.Always($"current Delirium value is {____character.CharacterStats.Corruption.Value}; effect of Stamina is {TFTVDelirium.CalculateStaminaEffectOnDelirium(____character)}, " +
-                           //     $"current attribute value is {currentAttributeValue}, bonusWillpower is {bonusWillpower}, max {____character.Progression.GetMaxBaseStat(CharacterBaseAttribute.Will)}");
+                            // TFTVLogger.Always($"current Delirium value is {____character.CharacterStats.Corruption.Value}; effect of Stamina is {TFTVDelirium.CalculateStaminaEffectOnDelirium(____character)}, " +
+                            //     $"current attribute value is {currentAttributeValue}, bonusWillpower is {bonusWillpower}, max {____character.Progression.GetMaxBaseStat(CharacterBaseAttribute.Will)}");
 
                             __result = $"{currentAttributeValue} / {____character.Progression.GetMaxBaseStat(CharacterBaseAttribute.Will)}" +
                                 $"<color=#da5be3> ({currentAttributeValue + bonusWillpower - ____character.CharacterStats.Corruption.Value + TFTVDelirium.CalculateStaminaEffectOnDelirium(____character)}</color>)";
                         }
                         else
                         {
-                          //  TFTVLogger.Always($"current Delirium value is {____character.CharacterStats.Corruption.Value}; effect of Stamina is {TFTVDelirium.CalculateStaminaEffectOnDelirium(____character)}, " +
-                         //      $"current attribute value is {currentAttributeValue}, bonusWillpower is {bonusWillpower}, TFTVVoidOmens.VoidOmensCheck[3] {TFTVVoidOmens.VoidOmensCheck[3]}");
+                            //  TFTVLogger.Always($"current Delirium value is {____character.CharacterStats.Corruption.Value}; effect of Stamina is {TFTVDelirium.CalculateStaminaEffectOnDelirium(____character)}, " +
+                            //      $"current attribute value is {currentAttributeValue}, bonusWillpower is {bonusWillpower}, TFTVVoidOmens.VoidOmensCheck[3] {TFTVVoidOmens.VoidOmensCheck[3]}");
 
                             if (bonusWillpower > 0)
                             {
@@ -746,10 +745,10 @@ namespace TFTV
             {
                 try
                 {
-                  
+
                     if (____parentModule.CurrentUnit != null)
                     {
-                      //  TFTVLogger.Always($"Actually here; {____parentModule.CurrentState}");
+                        //  TFTVLogger.Always($"Actually here; {____parentModule.CurrentState}");
 
                         switch (____parentModule.CurrentState)
                         {
@@ -772,7 +771,7 @@ namespace TFTV
 
                             case UIModuleActorCycle.ActorCycleState.EditSoldierSection:
 
-                               
+
                                 //  HelmetToggle.gameObject.SetActive(true);
                                 //  HelmetToggle.ResetButtonAnimations();
                                 UnequipAll.gameObject.SetActive(true);
@@ -850,7 +849,7 @@ namespace TFTV
 
                         }
 
-                        if (____parentModule.CurrentState== UIModuleActorCycle.ActorCycleState.SubmenuSection)//EditUnitButtonsController.CustomizeButton.gameObject.activeInHierarchy)
+                        if (____parentModule.CurrentState == UIModuleActorCycle.ActorCycleState.SubmenuSection)//EditUnitButtonsController.CustomizeButton.gameObject.activeInHierarchy)
                         {
 
                             TFTVLogger.Always($"Customize button enabled is {____parentModule.EditUnitButtonsController.CustomizeButton.enabled}");
@@ -896,28 +895,25 @@ namespace TFTV
 
 
 
-       
-       
-
-      
 
 
 
 
-     [HarmonyPatch(typeof(EditUnitButtonsController), "Awake")]
+
+
+
+
+        [HarmonyPatch(typeof(EditUnitButtonsController), "Awake")]
         internal static class TFTV_EditUnitButtonsController_Awake_ToggleHelmetButton_patch
         {
-           
-
-           
 
             public static void Postfix(EditUnitButtonsController __instance)
             {
-                try 
+                try
                 {
 
                     CreateAdditionalButtonsForUIEditScreen(__instance);
-                
+
                 }
                 catch (Exception e)
                 {
@@ -943,23 +939,23 @@ namespace TFTV
                         // TFTVLogger.Always($"checking");
 
                         PhoenixGeneralButton helmetToggleButton = UnityEngine.Object.Instantiate(editUnitButtonsController.EditButton, editUnitButtonsController.transform);
-                        helmetToggleButton.gameObject.AddComponent<UITooltipText>().TipText = "Toggles helmet visibility on/off.";
+                        helmetToggleButton.gameObject.AddComponent<UITooltipText>().TipText = TFTVCommonMethods.ConvertKeyToString("KEY_UI_EDIT_SCREEN_TOGGLEHELMET_TIP");// "Toggles helmet visibility on/off.";
                         // TFTVLogger.Always($"original icon position {newPhoenixGeneralButton.transform.position}, edit button position {__instance.EditButton.transform.position}");
                         helmetToggleButton.transform.position += new Vector3(-50 * resolutionFactorWidth, -35 * resolutionFactorHeight, 0);
 
                         // TFTVLogger.Always($"new icon position {newPhoenixGeneralButton.transform.position}");
 
                         PhoenixGeneralButton unequipAllPhoenixGeneralButton = UnityEngine.Object.Instantiate(editUnitButtonsController.EditButton, editUnitButtonsController.transform);
-                        unequipAllPhoenixGeneralButton.gameObject.AddComponent<UITooltipText>().TipText = "Unequips all the items currently equipped by the operative.";
+                        unequipAllPhoenixGeneralButton.gameObject.AddComponent<UITooltipText>().TipText = TFTVCommonMethods.ConvertKeyToString("KEY_UI_EDIT_SCREEN_UNEQUIP_TIP");// "Unequips all the items currently equipped by the operative.";
                         unequipAllPhoenixGeneralButton.transform.position = helmetToggleButton.transform.position + new Vector3(0, -100 * resolutionFactorHeight, 0);
 
                         PhoenixGeneralButton saveLoadout = UnityEngine.Object.Instantiate(editUnitButtonsController.EditButton, editUnitButtonsController.transform);
                         saveLoadout.transform.position = unequipAllPhoenixGeneralButton.transform.position + new Vector3(0, -100 * resolutionFactorHeight, 0);
-                        saveLoadout.gameObject.AddComponent<UITooltipText>().TipText = "Saves the current loadout of the operative.";
+                        saveLoadout.gameObject.AddComponent<UITooltipText>().TipText = TFTVCommonMethods.ConvertKeyToString("KEY_UI_EDIT_SCREEN_SAVELOAD_TIP");//"Saves the current loadout of the operative.";
 
                         PhoenixGeneralButton loadLoadout = UnityEngine.Object.Instantiate(editUnitButtonsController.EditButton, editUnitButtonsController.transform);
                         loadLoadout.transform.position = saveLoadout.transform.position + new Vector3(0, -100 * resolutionFactorHeight, 0);
-                        loadLoadout.gameObject.AddComponent<UITooltipText>().TipText = "Loads the previously saved loadout for this operative.";
+                        loadLoadout.gameObject.AddComponent<UITooltipText>().TipText = TFTVCommonMethods.ConvertKeyToString("KEY_UI_EDIT_SCREEN_LOADLOAD_TIP");//"Loads the previously saved loadout for this operative.";
 
 
                         helmetToggleButton.PointerClicked += () => ToggleButtonClicked(helmetToggleButton);
@@ -1043,8 +1039,8 @@ namespace TFTV
                         }
 
 
-                      //  uIModuleSoldierEquip.ReadyList.AddItem(item.GetSingleItem());
-                        
+                        //  uIModuleSoldierEquip.ReadyList.AddItem(item.GetSingleItem());
+
 
 
                     }
@@ -1156,10 +1152,10 @@ namespace TFTV
                     else
                     {
 
-      //                    if (uIModuleSoldierCustomization != null)
-        //                  {
-          //                    uIModuleSoldierCustomization.HideHelmetToggle.isOn = false;
-            //              }
+                        //                    if (uIModuleSoldierCustomization != null)
+                        //                  {
+                        //                    uIModuleSoldierCustomization.HideHelmetToggle.isOn = false;
+                        //              }
 
                         helmetToggleButton.transform.GetChildren().First().GetChildren().Where(t => t.name.Equals("UI_Icon")).FirstOrDefault().GetComponent<Image>().sprite = Helper.CreateSpriteFromImageFile("TFTV_helmet_off_icon.png");
                         HelmetsOff = false;
@@ -1676,7 +1672,7 @@ namespace TFTV
                     GeoCharacter geoCharacter = GameUtl.CurrentLevel().GetComponent<GeoLevelController>().View.GeoscapeModules.ActorCycleModule.CurrentCharacter;//
 
                     HelmetsOff = false;
-                   //  TFTVLogger.Always("Trying to set helmets off if character has mutated head");
+                    //  TFTVLogger.Always("Trying to set helmets off if character has mutated head");
                     if (geoCharacter != null && (geoCharacter.TemplateDef.IsHuman || geoCharacter.TemplateDef.IsMutoid))
                     {
                         //     TFTVLogger.Always("character is " + hookToCharacter.DisplayName + " and is human or mutoid");
@@ -1783,7 +1779,7 @@ namespace TFTV
 
                             if (HelmetsOff && __instance.CurrentState != UIModuleActorCycle.ActorCycleState.SubmenuSection)
                             {
-                              
+
                                 // if (uIModuleSoldierCustomization == null && HelmetsOff || uIModuleSoldierCustomization.HideHelmetToggle.isOn)
                                 // {
                                 __instance.DisplaySoldier(unitDisplayData, resetAnimation, addWeapon, showHelmet = false);
@@ -1841,7 +1837,7 @@ namespace TFTV
                         __instance.CorruptionSlider.value = delirium;
 
                         UITooltipText corruptionSliderTip = __instance.CorruptionSlider.gameObject.AddComponent<UITooltipText>();
-                        corruptionSliderTip.TipText = $"Delirium is gained in Tactical missions. Current max Delirium is {TFTVDelirium.CurrentDeliriumLevel(____character.Faction.GeoLevel)}.";
+                        corruptionSliderTip.TipText = $"{TFTVCommonMethods.ConvertKeyToString("KEY_UI_DELIRIUM_EXPLANATION")} {TFTVDelirium.CurrentDeliriumLevel(____character.Faction.GeoLevel)}.";
                         __instance.CorruptionStatText.text = $"{Mathf.RoundToInt(delirium)}/{Mathf.RoundToInt(__instance.CorruptionSlider.maxValue)}";
 
                         int num = (int)(float)____character.Fatigue.Stamina;

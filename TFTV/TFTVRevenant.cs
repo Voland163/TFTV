@@ -380,9 +380,11 @@ namespace TFTV
                         }
                     }
                     string newGuid = Guid.NewGuid().ToString();
-                    string hintDescription = revenantResistanceStatus.Visuals.Description.LocalizeEnglish() +
-                        ".\nKilling the Revenant will not remove this resistance from any Pandoran that already has it." +
-                        "\nPandorans arriving as reinforcements will not receive the resistance.";
+
+
+
+                    string hintDescription = $"{revenantResistanceStatus.Visuals.Description.LocalizeEnglish()}\n{TFTVCommonMethods.ConvertKeyToString("KEY_REVENANT_RESISTANCE_HINT")}";
+                       
 
                     // TFTVLogger.Always("Got to before hint");
 
@@ -505,7 +507,11 @@ namespace TFTV
                         string actorName = __instance.TacticalActor.name;
                         string additionalDescription =
                             GetDescriptionOfRevenantClassAbility(actorName, __instance.TacticalActor.TacticalLevel);
-                        __result = "This is your fallen comrade, " + actorName + ", returned as Pandoran monstrosity. " + additionalDescription;
+
+                        string fallenComrade0 = TFTVCommonMethods.ConvertKeyToString("KEY_REVENANT_ABILITY_DESCRIPION0");
+                        string fallenComrade1 = TFTVCommonMethods.ConvertKeyToString("KEY_REVENANT_ABILITY_DESCRIPION1");
+
+                        __result = $"{fallenComrade0} {actorName} {fallenComrade1} {additionalDescription}";
 
                     }
                 }
@@ -528,17 +534,17 @@ namespace TFTV
                     if (__instance.GameTags.Contains(revenantTier1GameTag))
                     {
 
-                        string name = __instance.name + " Mimic";
+                        string name = $"{__instance.name} {TFTVCommonMethods.ConvertKeyToString("KEY_REVENANT_MIMIC")}"; //" Mimic";
                         __result = name;
                     }
                     else if (__instance.GameTags.Contains(revenantTier2GameTag))
                     {
-                        string name = __instance.name + " Dybbuk";
+                        string name = $"{__instance.name} {TFTVCommonMethods.ConvertKeyToString("KEY_REVENANT_DYBBUK")}"; // __instance.name + " Dybbuk";
                         __result = name;
                     }
                     else if (__instance.GameTags.Contains(revenantTier3GameTag))
                     {
-                        string name = __instance.name + " Nemesis";
+                        string name = $"{__instance.name} {TFTVCommonMethods.ConvertKeyToString("KEY_REVENANT_NEMESIS")}"; //__instance.name + " Nemesis";
                         __result = name;
                     }
                 }
@@ -670,31 +676,31 @@ namespace TFTV
 
                 if (specializations.Contains(assaultSpecialization))
                 {
-                    description += "Increased damage potential and speed.";
+                    description += TFTVCommonMethods.ConvertKeyToString("KEY_REVENANT_DESCRIPTION_ASSAULT");// "Increased damage potential and speed.";
                 }
                 if (specializations.Contains(berserkerSpecialization))
                 {
-                    description += "Fearless, fast, unstoppable...";
+                    description += TFTVCommonMethods.ConvertKeyToString("KEY_REVENANT_DESCRIPTION_SERKER");//"Fearless, fast, unstoppable...";
                 }
                 if (specializations.Contains(heavySpecialization))
                 {
-                    description += "Bullet sponge.";
+                    description += TFTVCommonMethods.ConvertKeyToString("KEY_REVENANT_DESCRIPTION_HEAVY");//"Bullet sponge.";
                 }
                 if (specializations.Contains(infiltratorSpecialization))
                 {
-                    description += "Scary quiet.";
+                    description += TFTVCommonMethods.ConvertKeyToString("KEY_REVENANT_DESCRIPTION_INFILTRATOR");//"Scary quiet.";
                 }
                 if (specializations.Contains(priestSpecialization))
                 {
-                    description += "Power overflowing.";
+                    description += TFTVCommonMethods.ConvertKeyToString("KEY_REVENANT_DESCRIPTION_PRIEST");//"Power overflowing.";
                 }
                 if (specializations.Contains(sniperSpecialization))
                 {
-                    description += "All seeing.";
+                    description += TFTVCommonMethods.ConvertKeyToString("KEY_REVENANT_DESCRIPTION_SNIPER");//"All seeing.";
                 }
                 else if (specializations.Contains(technicianSpecialization))
                 {
-                    description += "Surge!";
+                    description += TFTVCommonMethods.ConvertKeyToString("KEY_REVENANT_DESCRIPTION_TECH");//"Surge!";
                 }
 
                 return description;
@@ -944,42 +950,41 @@ namespace TFTV
 
                 if (revenantResistanceStatus.DamageTypeDefs[0] == acidDamage)
                 {
-                    descriptionDamage = "<b>acid damage</b>";
+                    descriptionDamage = $"<b>{TFTVCommonMethods.ConvertKeyToString("KEY_PHOENIXPEDIA_GUIDE_ACID_NAME")}</b>";//"<b>acid damage</b>";
                 }
                 else if (revenantResistanceStatus.DamageTypeDefs[0] == blastDamage)
                 {
-                    descriptionDamage = "<b>blast damage</b>";
+                    descriptionDamage = $"<b>{TFTVCommonMethods.ConvertKeyToString("KEY_PHOENIXPEDIA_GUIDE_BLAST_NAME")}</b>";
                 }
                 else if (revenantResistanceStatus.DamageTypeDefs[0] == fireDamage)
                 {
-                    descriptionDamage = "<b>fire damage</b>";
+                    descriptionDamage = $"<b>{TFTVCommonMethods.ConvertKeyToString("KEY_PHOENIXPEDIA_GUIDE_FIRE_NAME")}</b>"; //"<b>fire damage</b>";
                 }
                 else if (revenantResistanceStatus.DamageTypeDefs[0] == shredDamage)
                 {
-                    descriptionDamage = "<b>shred damage</b>";
+                    descriptionDamage = $"<b>{TFTVCommonMethods.ConvertKeyToString("KEY_PHOENIXPEDIA_GUIDE_SHRED_NAME")}</b>"; //"<b>shred damage</b>";
                 }
                 else if (revenantResistanceStatus.DamageTypeDefs[0] == virusDamage)
                 {
-                    descriptionDamage = "<b>virus damage</b>";
+                    descriptionDamage = $"<b>{TFTVCommonMethods.ConvertKeyToString("KEY_PHOENIXPEDIA_GUIDE_VIRUS_NAME")}</b>"; //"<b>virus damage</b>";
                 }
                 else if (revenantResistanceStatus.DamageTypeDefs[0] == paralysisDamage)
                 {
-                    descriptionDamage = "<b>paralysis damage</b>";
+                    descriptionDamage = $"<b>{TFTVCommonMethods.ConvertKeyToString("KEY_PHOENIXPEDIA_GUIDE_PARALYSE_NAME")}</b>"; //"<b>paralysis damage</b>";
                 }
                 else if (revenantResistanceStatus.DamageTypeDefs[0] == null)
                 {
-                    descriptionDamage = "<b>high damage attacks </b>";
+                    descriptionDamage = $"<b>{TFTVCommonMethods.ConvertKeyToString("KEY_REVENANT_HIGH_DAMAGE")}</b>"; //high damage attacks
                     revenantResistanceStatus.Multiplier = 1f;
                 }
 
-                revenantResistanceStatus.Visuals.DisplayName1 = new LocalizedTextBind("REVENANT RESISTANCE - " + descriptionDamage.ToUpper(), true);
-                revenantResistanceStatus.Visuals.Description = new LocalizedTextBind((1 - revenantResistanceStatus.Multiplier) * 100 + "%" + " resistance gained to " + descriptionDamage + " from knowledge of Phoenix ways", true);
+                revenantResistanceStatus.Visuals.DisplayName1 = new LocalizedTextBind($"{TFTVCommonMethods.ConvertKeyToString("KEY_REVENANT_RESISTANCE0")} - {descriptionDamage.ToUpper()}", true);
+                revenantResistanceStatus.Visuals.Description = new LocalizedTextBind($"{(1 - revenantResistanceStatus.Multiplier) * 100}% {TFTVCommonMethods.ConvertKeyToString("KEY_REVENANT_RESISTANCE1")} {descriptionDamage} {TFTVCommonMethods.ConvertKeyToString("KEY_REVENANT_RESISTANCE1")}", true);
 
                 if (revenantResistanceStatus.DamageTypeDefs[0] == null)
                 {
-                    revenantResistanceStatus.Visuals.DisplayName1 = new LocalizedTextBind("REVENANT RESISTANCE - " + descriptionDamage.ToUpper(), true);
-                    revenantResistanceStatus.Visuals.Description = new LocalizedTextBind("<b>Damage from first hit in a turn is reduced by 75%</b>, " +
-                        "an evolutionary response to Phoenix Project overwhelming use of weapons with high damage per projectile/strike", true);
+                    revenantResistanceStatus.Visuals.DisplayName1 = new LocalizedTextBind($"{TFTVCommonMethods.ConvertKeyToString("KEY_REVENANT_RESISTANCE0")} - {descriptionDamage.ToUpper()}", true);
+                    revenantResistanceStatus.Visuals.Description = new LocalizedTextBind($"{TFTVCommonMethods.ConvertKeyToString("KEY_REVENANT_RESISTANCE3")}", true);
                 }
 
             }

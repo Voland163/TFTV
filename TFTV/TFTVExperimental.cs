@@ -10,6 +10,7 @@ using PhoenixPoint.Common.Game;
 using PhoenixPoint.Common.Saves;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Levels;
+using PhoenixPoint.Geoscape.View.ViewModules;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.Equipments;
@@ -30,6 +31,9 @@ namespace TFTV
         private static readonly DefRepository Repo = TFTVMain.Repo;
         private static readonly SharedData Shared = TFTVMain.Shared;
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache; 
+
+        UIModuleTheMarketplace
+
 
         public static void CorrrectPhoenixSaveManagerDifficulty()
         {

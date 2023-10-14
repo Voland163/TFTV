@@ -279,30 +279,28 @@ namespace TFTV
 
                 string descriptionHint = "";
 
+                string youAreFacing = TFTVCommonMethods.ConvertKeyToString("KEY_HUMAN_ENEMIES_FACING");
+                string called = TFTVCommonMethods.ConvertKeyToString("KEY_HUMAN_ENEMIES_GANG_CALLED");
+                string leaderIs = TFTVCommonMethods.ConvertKeyToString("KEY_HUMAN_ENEMIES_LEADER_IS");
+                string usingTactic = TFTVCommonMethods.ConvertKeyToString("KEY_HUMAN_ENEMIES_USING_TACTIC");
+
+                string pureArrayDescription = TFTVCommonMethods.ConvertKeyToString("KEY_HUMAN_ENEMIES_SUBJECT24_ARRAY_DESCRIPTION");
+
                 if (nameOfLeader != "Subject 24")
                 {
-                    descriptionHint = "You are facing " + unitType + ", called the " + nameOfGang +
-                        ". Their leader is " + nameOfLeader + ", using the tactic " + nameOfTactic + ": " + descriptionOfTactic;
+                    descriptionHint = $"{youAreFacing} {unitType}{called} {nameOfGang}{leaderIs} {nameOfLeader}{usingTactic} {nameOfTactic}: {descriptionOfTactic}";
                 }
                 else
                 {
-                    descriptionHint = "You are finally facing Subject 24, protected by an array of the Pure, " +
-                        "using the tactic " + nameOfTactic + ": " + descriptionOfTactic;
+                    descriptionHint = $"{pureArrayDescription} {nameOfTactic}: {descriptionOfTactic}";
                 }
 
                 TFTVTutorialAndStory.CreateNewTacticalHintForHumanEnemies(nameOfGang, HintTrigger.ActorSeen, "HumanEnemyFaction_" + enemyHumanFaction.TacticalFactionDef.ShortName + "_GameTagDef", nameOfGang, descriptionHint);
                 ContextHelpHintDef humanEnemySightedHint = Repo.GetAllDefs<ContextHelpHintDef>().FirstOrDefault(ged => ged.name.Equals(nameOfGang));
-                //humanEnemySightedHint.Title = new LocalizedTextBind(nameOfGang, true);
-                //humanEnemySightedHint.Text = new LocalizedTextBind(descriptionHint, true);
+
                 TacticsHint.Add(humanEnemySightedHint);
 
-                //  LocalizedTextBind title = new LocalizedTextBind(nameOfGang, true);
-                //  LocalizedTextBind text = new LocalizedTextBind(descriptionHint, true);
-                //  Sprite sprite = Helper.CreateSpriteFromImageFile(FileNameSquadPic);
-                //  leaderSightedHint.AnyCondition = true;
-                // UIModuleContextHelp uIModuleContextHelp = (UIModuleContextHelp)UnityEngine.Object.FindObjectOfType(typeof(UIModuleContextHelp));
-                // uIModuleContextHelp.Show(title, text, sprite, leaderSightedHint.VideoDef, false, leaderSightedHint, true);
-                //  TFTVLogger.Always("The hint should have appeared");
+                
             }
             catch (Exception e)
             {
@@ -356,8 +354,8 @@ namespace TFTV
                             if (tacticalActor.HasGameTag(DefCache.GetDef<CustomizationPrimaryColorTagDef>("CustomizationColorTagDef_9")))
                             {
                                 leader = tacticalActor;
-                                TFTVLogger.Always("Found Subject24");
-                                leader.name = "Subject 24";
+                                TFTVLogger.Always("Found Subject24"); 
+                                leader.name = TFTVCommonMethods.ConvertKeyToString("KEY_LORE_TITLE_SUBJECT24");
                             }
                             else
                             {

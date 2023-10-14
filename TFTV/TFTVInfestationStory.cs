@@ -90,15 +90,18 @@ namespace TFTV
                                 }
                             }
 
-                            string name = "InfestationMissionIntro";
-                            string title = "Search and Rescue";
-                            string text = "Director, " + characterName + " reporting. We are at " + __instance.Site.LocalizedSiteName + ". Are you seeing this? The green shimmering…  I… I feel like I have been here before…";
+                            string name =  "InfestationMissionIntro";
+                            string title = TFTVCommonMethods.ConvertKeyToString("KEY_INFESTATION_STORY_INTRO_TITLE");//"Search and Rescue";
+                            string director = TFTVCommonMethods.ConvertKeyToString("KEY_TEXT_DIRECTOR");
+                            string infestationStory0 = TFTVCommonMethods.ConvertKeyToString("KEY_INFESTATION_STORY0");
+                            string infestationStory1 = TFTVCommonMethods.ConvertKeyToString("KEY_INFESTATION_STORY1");
+
+                            string text = $"{director} {characterName} {infestationStory0} {__instance.Site.LocalizedSiteName}{infestationStory1}";
 
 
-
-                            string reply = characterName + " snap out of it! " +
-                                "We are still Phoenix operatives and we got a job to do. " +
-                                "Scans show that there are survivors out there. Stay frosty and be ready for anything. " + orderedOperatives[0].DisplayName + " out.";
+                            string infestationStory2 = TFTVCommonMethods.ConvertKeyToString("KEY_INFESTATION_STORY2");
+                            string infestationStory3 = TFTVCommonMethods.ConvertKeyToString("KEY_INFESTATION_STORY3");
+                            string reply = $"{characterName} {infestationStory2} {orderedOperatives[0].DisplayName} {infestationStory3}";
 
                             ContextHelpHintDef infestationIntro2 = DefCache.GetDef<ContextHelpHintDef>(name + "2");
                             ContextHelpHintDef infestationIntro = DefCache.GetDef<ContextHelpHintDef>(name);
@@ -132,12 +135,12 @@ namespace TFTV
                     if (GetTacticalActorsPhoenix(controller).Count >= 1)
                     {
                         string nameOfOperative = GetTacticalActorsPhoenix(controller)[0].DisplayName;
-                        string title = "Awakening";
-                        string text = " <i>”There were a few survivors here and there. The couple of soldiers who were lucky to get mindfragged during the initial attack; " +
-                            "but also civilians, who were not fully taken by the creature. They came out of it, as if waking up from a nightmare. " +
-                            "It was then that I understood what Alistair meant when he joked that we were waging a war for our place in the new food chain: " +
-                            "the Pandorans didn’t want to exterminate us. That would have been too merciful. They wanted us for something else.”</i>\n\n" + nameOfOperative
-                            + ", Phoenix Project";
+                        string title = TFTVCommonMethods.ConvertKeyToString("KEY_INFESTATION_STORY_OUTRO_TITLE"); //"Awakening";
+
+                        string infestationStory3 = TFTVCommonMethods.ConvertKeyToString("KEY_INFESTATION_STORY3");
+                        string infestationStory4 = TFTVCommonMethods.ConvertKeyToString("KEY_INFESTATION_STORY4");
+
+                        string text = $"{infestationStory3}\n\n{nameOfOperative}{infestationStory4}";
 
                         ContextHelpHintDef infestationOutro = DefCache.GetDef<ContextHelpHintDef>("InfestationMissionEnd");
                         infestationOutro.Trigger = HintTrigger.MissionOver;

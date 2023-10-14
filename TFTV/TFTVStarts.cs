@@ -23,10 +23,16 @@ namespace TFTV
             {
                 GeoscapeEventDef intro =DefCache.GetDef<GeoscapeEventDef>("IntroBetterGeo_0");
 
-                intro.GeoscapeEventData.Description[0].General = new LocalizedTextBind("After all these years, you finally got the call. It meant that Symes and his deputies were dead or unreachable. Phoenix Project had gone dark. " +
-                            "You had spent many years waiting, dreading that this would happen, living a discrete and simple life at " + FindNearestHaven(geoFaction, site) + ", a " + geoFaction.Name.LocalizeEnglish()
-                            + " haven.\n\nThe trek to Phoenix Point was long and dangerous, and you wouldn't have made it without " + geoFaction.GeoLevel.PhoenixFaction.Vehicles.First().Soldiers.Last().DisplayName + ", a " + geoFaction.Name.LocalizeEnglish()
-                            + " " + geoFaction.GeoLevel.PhoenixFaction.Vehicles.First().Soldiers.Last().ClassTag.className + ".\n\nWhen you reached Phoenix Point, somebody was already home...", true);
+                string factionStartIntroText0 = TFTVCommonMethods.ConvertKeyToString("KEY_FACTION_START_INTROTEXT0");
+                string factionStartIntroText1 = TFTVCommonMethods.ConvertKeyToString("KEY_FACTION_START_INTROTEXT1");
+                string a = TFTVCommonMethods.ConvertKeyToString("KEY_GRAMMAR_INDEFINITEARTICLE");
+                string factionStartIntroText2 = TFTVCommonMethods.ConvertKeyToString("KEY_FACTION_START_INTROTEXT2");
+
+                intro.GeoscapeEventData.Description[0].General = new LocalizedTextBind($"{factionStartIntroText0} " +
+                    $"{FindNearestHaven(geoFaction, site)},{a}{geoFaction.Name.LocalizeEnglish()} {factionStartIntroText1}" +
+                    $"{geoFaction.GeoLevel.PhoenixFaction.Vehicles.First().Soldiers.Last().DisplayName}{a}{geoFaction.Name.LocalizeEnglish()} " +
+                    $"{geoFaction.GeoLevel.PhoenixFaction.Vehicles.First().Soldiers.Last().ClassTag.className}." +
+                    $"\n\n{factionStartIntroText2}", true);
 
             }
 
@@ -44,8 +50,7 @@ namespace TFTV
             {
                 GeoscapeEventDef intro =DefCache.GetDef<GeoscapeEventDef>("IntroBetterGeo_0");
 
-                intro.GeoscapeEventData.Description[0].General = new LocalizedTextBind("After all these years, you finally got the call. It meant that Symes and his deputies were dead or unreachable. " +
-                    "Phoenix Project had gone dark. \n\nThe trek to Phoenix Point was long and dangerous, and when you finally reached it, somebody was already home…", true);
+                intro.GeoscapeEventData.Description[0].General = new LocalizedTextBind($"{TFTVCommonMethods.ConvertKeyToString("BG_INTRO_0_DESCRIPTION")}", true);
 
             }
 

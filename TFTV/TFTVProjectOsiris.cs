@@ -182,23 +182,33 @@ namespace TFTV
             try
             {
 
+                /*KEY_GRAMMAR_PRONOUNS_SHE
+KEY_GRAMMAR_PRONOUNS_HER
+KEY_GRAMMAR_PRONOUNS_HE
+KEY_GRAMMAR_PRONOUNS_HIM
+KEY_GRAMMAR_PRONOUNS_THEY
+KEY_GRAMMAR_PRONOUNS_THEM
+KEY_GRAMMAR_PLURAL_SUFFIX
+KEY_GRAMMAR_SINGLE_SUFFIX*/
+
+
                 string name = deadSoldierDescriptor.Identity.Name;
                 string pronoun = "";
                 string possesivePronoun = "";
                 if (deadSoldierDescriptor.Identity.Sex == GeoCharacterSex.Male)
                 {
-                    pronoun = "He";
-                    possesivePronoun = "him";
+                    pronoun = TFTVCommonMethods.ConvertKeyToString("KEY_GRAMMAR_PRONOUNS_HE");// He";
+                    possesivePronoun = TFTVCommonMethods.ConvertKeyToString("KEY_GRAMMAR_PRONOUNS_HIM"); //"him";
                 }
                 else if (deadSoldierDescriptor.Identity.Sex == GeoCharacterSex.Female)
                 {
-                    pronoun = "She";
-                    possesivePronoun = "her";
+                    pronoun = TFTVCommonMethods.ConvertKeyToString("KEY_GRAMMAR_PRONOUNS_SHE"); //"She";
+                    possesivePronoun = TFTVCommonMethods.ConvertKeyToString("KEY_GRAMMAR_PRONOUNS_HER"); //"She";"her";
                 }
                 else
                 {
-                    pronoun = "They";
-                    pronoun = "them";
+                    pronoun = TFTVCommonMethods.ConvertKeyToString("KEY_GRAMMAR_PRONOUNS_THEY"); //"They";
+                    pronoun = TFTVCommonMethods.ConvertKeyToString("KEY_GRAMMAR_PRONOUNS_THEM"); //"them";
                 }
 
                 string typeOfBodyAvailable = "";
@@ -208,17 +218,17 @@ namespace TFTV
 
                 if (CheckLabs(controller)[0] && CheckLabs(controller)[1])
                 {
-                    typeOfBodyAvailable = "made of titanium or of mutagen flesh";
+                    typeOfBodyAvailable = TFTVCommonMethods.ConvertKeyToString("KEY_OSIRIS_TITANIUM_OR_MUTAGEN"); //"made of titanium or of mutagen flesh";
                 }
                 else if (CheckLabs(controller)[0] && !CheckLabs(controller)[1])
                 {
-                    typeOfBodyAvailable = "made of titanium";
-                    buildAdditionalLab = " build a mutation lab ";
+                    typeOfBodyAvailable = TFTVCommonMethods.ConvertKeyToString("KEY_OSIRIS_ONLY_TITANIUM"); // "made of titanium";
+                    buildAdditionalLab = $" {TFTVCommonMethods.ConvertKeyToString("KEY_OSIRIS_BUILD_MUTA_LAB")} "; //" build a mutation lab ";
                 }
                 else if (!CheckLabs(controller)[0] && CheckLabs(controller)[1])
                 {
-                    typeOfBodyAvailable = "made of mutagen flesh";
-                    buildAdditionalLab = " build a bionics lab ";
+                    typeOfBodyAvailable = TFTVCommonMethods.ConvertKeyToString("KEY_OSIRIS_ONLY_MUTAGEN");// "made of mutagen flesh";
+                    buildAdditionalLab = $" {TFTVCommonMethods.ConvertKeyToString("KEY_OSIRIS_BUILD_BIO_LAB")}"; //" build a bionics lab ";
                 }
 
                 string increaseOptions = "";
@@ -230,37 +240,43 @@ namespace TFTV
 
                 if (!controller.PhoenixFaction.Research.HasCompleted("NJ_Bionics2_ResearchDef") || !controller.PhoenixFaction.Research.HasCompleted("SYN_Bionics3_ResearchDef"))
                 {
-                    researchAdditionalTech1 = "new bionic";
+                    researchAdditionalTech1 = TFTVCommonMethods.ConvertKeyToString("KEY_OSIRIS_NEW_BIONIC");// "new bionic";
                 }
 
                 if (!controller.PhoenixFaction.Research.HasCompleted("ANU_MutationTech2_ResearchDef") || !controller.PhoenixFaction.Research.HasCompleted("ANU_MutationTech3_ResearchDef"))
                 {
-                    researchAdditionalTech2 = "new mutation";
+                    researchAdditionalTech2 = TFTVCommonMethods.ConvertKeyToString("KEY_OSIRIS_NEW_MUTATION");//"new mutation";
                 }
 
                 if (buildAdditionalLab != "" || researchAdditionalTech1 != "" || researchAdditionalTech2 != "")
                 {
-                    increaseOptions = "\nTo enhance Project Osiris and increase our options we should ";
+                    increaseOptions = $"\n{TFTVCommonMethods.ConvertKeyToString("KEY_OSIRIS_TO_ENHANCE0")}";//}To enhance Project Osiris and increase our options we should ";
                 }
 
                 if ((researchAdditionalTech1 != "" || researchAdditionalTech2 != "") && buildAdditionalLab != "")
                 {
-                    and1 = "and";
+                    and1 = TFTVCommonMethods.ConvertKeyToString("KEY_GRAMMAR_AND"); //"and";
 
                 }
                 if (researchAdditionalTech1 != "" && researchAdditionalTech2 != "")
                 {
-                    and2 = " and ";
+                    and2 = $" {TFTVCommonMethods.ConvertKeyToString("KEY_GRAMMAR_AND")} ";
                 }
                 if (researchAdditionalTech1 != "" || researchAdditionalTech2 != "")
                 {
-                    anyAdditionalResearch = " acquire ";
-                    anyAdditionalResearch2 = " research.";
+                    anyAdditionalResearch = $" {TFTVCommonMethods.ConvertKeyToString("KEY_OSIRIS_ACQUIRE")} ";//acquire ";
+                    anyAdditionalResearch2 = $" {TFTVCommonMethods.ConvertKeyToString("KEY_OSIRIS_RESEARCH")}"; // " research.";
                 }
 
-                string modularEventText = "<i>-''I'm... a mess.''\n-''They will fix you. They fix everything.''</i>\n\nWe have recovered " + name + "(" + deadSoldierDescriptor.GetClassViewElementDefs().First().Name + ") from the battlefield. "
-                    + pronoun + " is clinically dead, but with the Project Osiris now operational we can bring " + possesivePronoun + " back with a new body " + typeOfBodyAvailable + ". " +
-                    increaseOptions + buildAdditionalLab + and1 + anyAdditionalResearch + researchAdditionalTech1 + and2 + researchAdditionalTech2 + anyAdditionalResearch2;
+                string osirisText0 = TFTVCommonMethods.ConvertKeyToString("KEY_OSIRIS_TEXT0");
+                string osirisText1 = TFTVCommonMethods.ConvertKeyToString("KEY_OSIRIS_TEXT1");
+                string osirisText2 = TFTVCommonMethods.ConvertKeyToString("KEY_OSIRIS_TEXT2");
+                string osirisText3 = TFTVCommonMethods.ConvertKeyToString("KEY_OSIRIS_TEXT3");
+            
+
+                string modularEventText = $"{osirisText0} {name} ({deadSoldierDescriptor.GetClassViewElementDefs().First().Name}) {osirisText1} " +
+                    $"{pronoun} {osirisText2} {possesivePronoun} {osirisText3} {typeOfBodyAvailable}. {increaseOptions} {buildAdditionalLab} " +
+                    $"{and1}{anyAdditionalResearch}{researchAdditionalTech1}{and2}{researchAdditionalTech2}{anyAdditionalResearch2}";
 
                 return modularEventText;
 

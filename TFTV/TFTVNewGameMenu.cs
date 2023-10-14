@@ -555,7 +555,7 @@ namespace TFTV
                 {
                     _scavengingOptionsVisibilityController.IsSelected = show;
                     _additionalStartOptionsVisibilityController.IsSelected = show;
-
+                    _anytimeOptionsVisibilityController.IsSelected = show;
                     //   _tacticalOptionsVisibilityController.IsSelected = show;
                     //   _geoscapeOptionsVisibilityController.IsSelected = show;
                     //   _otherOptionsVisibilityController.IsSelected = show;
@@ -1062,7 +1062,7 @@ namespace TFTV
                     {
                         TFTVLogger.Always($"disable tactical saving warning called now");
 
-                        string warning = $"Saving and loading on Tactical can result in odd behavior and bugs (Vanilla issues). It is recommended to save only on Geoscape (and use several saves, in case one of them gets corrupted). And, you know what... losing soldiers in TFTV is fun :)";
+                        string warning = TFTVCommonMethods.ConvertKeyToString("KEY_OPTIONS_TACTICAL_SAVING_WARNING");// $"Saving and loading on Tactical can result in odd behavior and bugs (Vanilla issues). It is recommended to save only on Geoscape (and use several saves, in case one of them gets corrupted). And, you know what... losing soldiers in TFTV is fun :)";
 
                         GameUtl.GetMessageBox().ShowSimplePrompt(warning, MessageBoxIcon.Warning, MessageBoxButtons.OK, null);
                     }
@@ -1176,7 +1176,9 @@ namespace TFTV
                 {
                     if (TFTVBetterEnemies.StrongerPandoransImplemented && newValue == 1 && NewGameOptionsSetUp)
                     {
-                        string warning = $"Previous setting for {_titleStrongerPandorans} has already been implemetend on starting or a loading a game! PLEASE QUIT TO DESKTOP BEFORE STARTING OR LOADING A GAME";
+                       
+
+                        string warning = $"{TFTVCommonMethods.ConvertKeyToString("KEY_OPTIONS_CHANGED_SETTING_WARNING0")} {_titleStrongerPandorans} {TFTVCommonMethods.ConvertKeyToString("KEY_OPTIONS_CHANGED_SETTING_WARNING1")}";
 
                         GameUtl.GetMessageBox().ShowSimplePrompt(warning, MessageBoxIcon.Warning, MessageBoxButtons.OK, null);
 
@@ -1461,7 +1463,7 @@ namespace TFTV
                 {
                     if (TFTVDefsWithConfigDependency.ChangesToCapturingPandoransImplemented && newValue == 1 && NewGameOptionsSetUp)
                     {
-                        string warning = $"Previous setting for {_titleLimitedCapture} has already been implemetend on starting or a loading a game! PLEASE QUIT TO DESKTOP BEFORE STARTING OR LOADING A GAME";
+                        string warning = $"{TFTVCommonMethods.ConvertKeyToString("KEY_OPTIONS_CHANGED_SETTING_WARNING0")} {_titleLimitedCapture} {TFTVCommonMethods.ConvertKeyToString("KEY_OPTIONS_CHANGED_SETTING_WARNING1")}";
 
                         GameUtl.GetMessageBox().ShowSimplePrompt(warning, MessageBoxIcon.Warning, MessageBoxButtons.OK, null);
 
@@ -1484,8 +1486,8 @@ namespace TFTV
                 {
                     if (TFTVDefsWithConfigDependency.ChangesToFoodAndMutagenGenerationImplemented && newValue == 1 && NewGameOptionsSetUp)
                     {
-                        string warning = $"Previous setting for {_titleLimitedHarvesting} has already been implemetend on starting or a loading a game! PLEASE QUIT TO DESKTOP BEFORE STARTING OR LOADING A GAME";
-
+                        string warning = $"{TFTVCommonMethods.ConvertKeyToString("KEY_OPTIONS_CHANGED_SETTING_WARNING0")} {_titleLimitedHarvesting} {TFTVCommonMethods.ConvertKeyToString("KEY_OPTIONS_CHANGED_SETTING_WARNING1")}";
+                      
                         GameUtl.GetMessageBox().ShowSimplePrompt(warning, MessageBoxIcon.Warning, MessageBoxButtons.OK, null);
 
                     }

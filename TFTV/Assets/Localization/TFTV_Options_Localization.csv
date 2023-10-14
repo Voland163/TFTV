@@ -100,3 +100,6 @@ LIMITED_RAIDING_DESCRIPTION,Text,,"After a raid, all faction havens are immediat
 LIMITED_RAIDING,Text,,LIMITED RAIDING,,,,,,,,
 TRADING_PROFIT_DESCRIPTION,Text,,"Trade is always 1 tech for 5 food or 5 materials, so no profit can be made from trading.",,,,,,,,
 TRADING_PROFIT,Text,,NO PROFIT FROM TRADING,,,,,,,,
+KEY_OPTIONS_TACTICAL_SAVING_WARNING,Text,,"Saving and loading on Tactical can result in odd behavior and bugs (Vanilla issues). It is recommended to save only on Geoscape (and use several saves, in case one of them gets corrupted). And, you know what... losing soldiers in TFTV is fun :)",,,,,,,,
+KEY_OPTIONS_CHANGED_SETTING_WARNING0,Text,,Previous setting for,,,,,,,,
+KEY_OPTIONS_CHANGED_SETTING_WARNING1,Text,,has already been implemetend on starting or a loading a game! PLEASE QUIT TO DESKTOP BEFORE STARTING OR LOADING A GAME,,,,,,,,
