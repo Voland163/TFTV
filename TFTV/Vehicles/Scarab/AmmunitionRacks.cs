@@ -58,7 +58,10 @@ namespace TFTVVehicleRework.Scarab
             AmmoRack_Back_Armour.Armor = 10;
             AmmoRack_Left_Armour.Armor = AmmoRack_Right_Armour.Armor = 20;
             AmmoRack_LFT.Armor = AmmoRack_LBT.Armor = AmmoRack_RFT.Armor = AmmoRack_RBT.Armor = 10;
-
+            
+            //New armours need to set WeakAddons to false to avoid Softlocking when used with Stability Module. Likely due to Stability Module not hiding subaddons.
+            AmmoRack_Front_Armour.WeakAddon = AmmoRack_Back_Armour.WeakAddon = AmmoRack_Left_Armour.WeakAddon = AmmoRack_Right_Armour.WeakAddon = false;
+            AmmoRack_LFT.WeakAddon = AmmoRack_RFT.WeakAddon = AmmoRack_LBT.WeakAddon = AmmoRack_RBT.WeakAddon = false;
             
             //Need to clone the bodypartaspectdef of these parts and reduce Endurance to 0 on these clones:
             AmmoRack_Front_Armour.BodyPartAspectDef = (BodyPartAspectDef)Repo.CreateDef("5b54fd09-522d-475c-9c04-0d9fd410e2e6", DefaultHull[ScarabMain.HullModules.Front].BodyPartAspectDef);
