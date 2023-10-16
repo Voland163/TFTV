@@ -1,26 +1,38 @@
-﻿using Base.Core;
+﻿using Assets.Code.PhoenixPoint.Geoscape.Entities.Sites.TheMarketplace;
+using Base;
+using Base.Core;
 using Base.Defs;
-using Base.Levels.Nav;
 using Base.Serialization;
+using Base.UI;
 using Base.UI.MessageBox;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities.GameTags;
+using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.Game;
+using PhoenixPoint.Common.Levels.Missions;
 using PhoenixPoint.Common.Saves;
+using PhoenixPoint.Common.View.ViewControllers;
+using PhoenixPoint.Common.View.ViewModules;
 using PhoenixPoint.Geoscape.Entities;
+using PhoenixPoint.Geoscape.Events;
 using PhoenixPoint.Geoscape.Levels;
+using PhoenixPoint.Geoscape.View.ViewControllers;
 using PhoenixPoint.Geoscape.View.ViewModules;
+using PhoenixPoint.Home.View.ViewControllers;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.Equipments;
-using PhoenixPoint.Tactical.Entities.Statuses;
 using PhoenixPoint.Tactical.Levels;
-using PhoenixPoint.Tactical.Levels.Mist;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
+using System.Runtime.Remoting.Contexts;
 using UnityEngine;
+using UnityEngine.UI;
 using static PhoenixPoint.Geoscape.Entities.GeoHaven;
+using static PhoenixPoint.Geoscape.Levels.GeoMissionGenerator;
 
 namespace TFTV
 {
@@ -30,9 +42,504 @@ namespace TFTV
         internal static Color purple = new Color32(149, 23, 151, 255);
         private static readonly DefRepository Repo = TFTVMain.Repo;
         private static readonly SharedData Shared = TFTVMain.Shared;
-        private static readonly DefCache DefCache = TFTVMain.Main.DefCache; 
+        private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
 
-        
+        public static bool MarketToggle = false;
+
+        [HarmonyPatch(typeof(GeoMissionGenerator), "GetRandomMission", new Type[] { typeof(IEnumerable<MissionTagDef>), typeof(ParticipantFilter), typeof(Func<TacMissionTypeDef, bool>) })]
+        public static class GeoMissionGenerator_GetRandomMission_patch
+        {
+
+            public static void Prefix(GeoMissionGenerator __instance, IEnumerable<MissionTagDef> tags, out List<CustomMissionTypeDef> __state, GeoLevelController ____level)
+            {
+                try
+                {
+                    ClassTagDef aspida = DefCache.GetDef<ClassTagDef>("Aspida_ClassTagDef");
+                    ClassTagDef armadillo = DefCache.GetDef<ClassTagDef>("Armadillo_ClassTagDef");
+
+                    MissionTagDef requiresVehicle = DefCache.GetDef<MissionTagDef>("Contains_RescueVehicle_MissionTagDef");
+
+                    __state = new List<CustomMissionTypeDef>();
+
+
+                    if (tags.Contains(requiresVehicle) && ____level !=null)
+                    {
+                        TFTVLogger.Always($"Generating rescue Vehicle scav; checking if factions have researched Aspida/Armadillo");
+                        GeoLevelController controller = ____level;
+
+                        if (!CheckResearchCompleted(controller.NewJerichoFaction, "NJ_VehicleTech_ResearchDef"))
+                        {
+
+                            TFTVLogger.Always($"Armadillo not researched by New Jericho");
+
+                            foreach (CustomMissionTypeDef customMissionTypeDef in Repo.GetAllDefs<CustomMissionTypeDef>().Where(m => m.Tags.Contains(requiresVehicle)))
+                            {
+                                if (customMissionTypeDef.ParticipantsData[1].ActorDeployParams[0].Limit.ActorTag == armadillo)
+                                {
+                                    
+                                    __state.Add(customMissionTypeDef);
+
+                                }
+
+                            }
+
+                        }
+                        if (!CheckResearchCompleted(controller.SynedrionFaction, "SYN_Rover_ResearchDef"))
+                        {
+                            TFTVLogger.Always($"Aspida not researched by Synedrion");
+
+                            foreach (CustomMissionTypeDef customMissionTypeDef in Repo.GetAllDefs<CustomMissionTypeDef>().Where(m => m.Tags.Contains(requiresVehicle)))
+                            {
+                                if (customMissionTypeDef.ParticipantsData[1].ActorDeployParams[0].Limit.ActorTag == aspida)
+                                {
+
+                                    __state.Add(customMissionTypeDef);
+
+                                }
+                            }
+                        }
+
+                        if (__state.Count > 0)
+                        {
+                            TFTVLogger.Always($"Removing rescue vehicle missions with not researched vehicles from generation pool");
+
+                            foreach (CustomMissionTypeDef mission in __state)
+                            {
+                                mission.Tags.Remove(requiresVehicle);
+
+                                
+
+                            }
+                        }
+                    }
+                }
+
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+
+
+            public static void Postfix(GeoMissionGenerator __instance, IEnumerable<MissionTagDef> tags, in List<CustomMissionTypeDef> __state)
+            {
+                try
+                {
+                    ClassTagDef aspida = DefCache.GetDef<ClassTagDef>("Aspida_ClassTagDef");
+                    ClassTagDef armadillo = DefCache.GetDef<ClassTagDef>("Armadillo_ClassTagDef");
+             
+
+                    MissionTagDef requiresVehicle = DefCache.GetDef<MissionTagDef>("Contains_RescueVehicle_MissionTagDef");
+
+                    if (tags.Contains(DefCache.GetDef<MissionTagDef>("Contains_RescueVehicle_MissionTagDef")) && __state.Count>0)
+                    {
+                        TFTVLogger.Always($"Adding back missions that were removed from the pool");
+
+                        foreach(CustomMissionTypeDef mission in __state) 
+                        {
+
+                            if (!mission.Tags.Contains(requiresVehicle)) 
+                            {
+                                mission.Tags.Add(requiresVehicle);
+                            
+                            }
+                        
+                        }
+                       
+                    }
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
+
+
+        public static bool CheckResearchCompleted(GeoFaction faction, string researchID)
+        {
+            try
+            {
+                if (faction!=null && faction.Research != null && faction.Research.HasCompleted(researchID))
+                {
+                    return true;
+
+                }
+
+                else return false;
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
+        }
+
+        /* public void CompleteMarketplaceEvent()
+         {
+             GeoLevelController component = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
+             GeoscapeEventContext geoscapeEventContext = new GeoscapeEventContext(component.PhoenixFaction.StartingBase, component.PhoenixFaction, Context.Site.Vehicles.SingleOrDefault());
+             ChoiceReward = choice.Outcome.GenerateFactionReward(faction, geoscapeEventContext, EventID);
+             ChoiceReward.Apply(faction, geoscapeEventContext.Site, geoscapeEventContext.Vehicle);
+             if (choice.Outcome.ReEneableEvent)
+             {
+                 GameUtl.CurrentLevel().GetComponent<GeoscapeEventSystem>().EnableGeoscapeEvent(EventID);
+             }
+         }*/
+
+        //OnChoiceSelected(GeoEventChoice choice)
+
+       
+
+      
+
+
+
+        [HarmonyPatch(typeof(GeoscapeEvent), "CompleteMarketplaceEvent")]
+        public static class GeoscapeEvent_OnLevelStart_patch
+        {
+
+            public static bool Prefix(GeoscapeEvent __instance, GeoEventChoice choice, GeoFaction faction)
+            {
+                try
+                {
+                    TFTVLogger.Always($"CompleteMarketplaceEvent triggered for choice {choice.Outcome.Items[0].ItemDef?.name}");
+
+                    if (__instance.Context.Site.Vehicles.Count() > 1)
+                    {
+                        TFTVLogger.Always($"There is a more than one vehicle at {__instance.Context.Site.LocalizedSiteName}! Need to execute alternative code");
+
+                        PropertyInfo propertyInfo = typeof(GeoscapeEvent).GetProperty("ChoiceReward", BindingFlags.Instance | BindingFlags.Public);
+                        
+
+
+
+                        GeoLevelController component = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
+                        GeoscapeEventContext geoscapeEventContext = new GeoscapeEventContext(component.PhoenixFaction.StartingBase, component.PhoenixFaction, __instance.Context.Site.Vehicles.First());
+                       // TFTVLogger.Always($"geoscapeEventContext is null? {geoscapeEventContext==null} is faction null? {faction==null}");
+                        
+                        propertyInfo?.SetValue(__instance, choice.Outcome.GenerateFactionReward(faction, geoscapeEventContext, __instance.EventID));
+
+                       // TFTVLogger.Always($"got here. is propertyInfo null? {propertyInfo==null} is choiceReward null? {__instance.ChoiceReward==null}");
+
+                        // __instance.ChoiceReward = choice.Outcome.GenerateFactionReward(faction, geoscapeEventContext, __instance.EventID);
+                        __instance.ChoiceReward.Apply(faction, geoscapeEventContext.Site, geoscapeEventContext.Vehicle);
+                       // TFTVLogger.Always($"got here2");
+
+                        if (choice.Outcome.ReEneableEvent)
+                        {
+                         //   TFTVLogger.Always($"got here");
+                            GameUtl.CurrentLevel().GetComponent<GeoscapeEventSystem>().EnableGeoscapeEvent(__instance.EventID);
+                        }
+
+
+                        return false;
+                    }
+                    return true;
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
+
+
+
+        /*
+                [HarmonyPatch(typeof(GeoMarketplace), "OnLevelStart")]
+                public static class GeoMarketplace_OnLevelStart_patch
+                {
+
+                    public static void Postfix(GeoMarketplace __instance)
+                    {
+                        try
+                        {
+                            CreateTestingButton();
+
+
+                        }
+                        catch (Exception e)
+                        {
+                            TFTVLogger.Error(e);
+                            throw;
+                        }
+                    }
+                }
+
+                private static void InstantiateArrowPickerController(ModSettingController modSettingController,
+                       ArrowPickerController arrowPickerController, string titleKey, string descriptionKey, string[] optionsKeys, int currentValue, Action<int> onValueChanged, float lengthScale)
+                {
+                    try
+                    {
+
+
+                        Resolution resolution = Screen.currentResolution;
+                        float resolutionFactorWidth = (float)resolution.width / 1920f;
+                        float resolutionFactorHeight = (float)resolution.height / 1080f;
+
+                        LocalizedTextBind titleTextBindKey = new LocalizedTextBind() { LocalizationKey = titleKey };
+                        LocalizedTextBind descriptionTextBindKey = new LocalizedTextBind() { LocalizationKey = descriptionKey };
+
+                        string title = titleTextBindKey.Localize();
+                        string description = descriptionTextBindKey.Localize();
+
+
+                        string[] options = new string[optionsKeys.Length];
+                        if (optionsKeys[0] != "0" || optionsKeys[0] != "25%")
+                        {
+                            for (int i = 0; i < optionsKeys.Length; i++)
+                            {
+                                LocalizedTextBind optionTextBindKey = new LocalizedTextBind() { LocalizationKey = optionsKeys[i] };
+                                options[i] = optionTextBindKey.Localize();
+
+                            }
+
+                        }
+                        else
+                        {
+                            options = optionsKeys;
+
+                        }
+
+
+                        modSettingController.Label.text = title;
+                        modSettingController.transform.localScale *= 0.75f;
+                        arrowPickerController.transform.position += new Vector3(270 * resolutionFactorWidth, 0, 0);
+
+                        //   TFTVLogger.Always($"{resolutionFactorWidth} {lengthScale}");
+
+                        if (lengthScale != 1)
+                        {
+
+                            arrowPickerController.transform.position += new Vector3(150 * resolutionFactorWidth * lengthScale, 0, 0);
+
+                        }
+                        //  TFTVLogger.Always($"{resolutionFactorWidth} {lengthScale} {arrowPickerController.transform.position}");
+
+                        modSettingController.Label.rectTransform.Translate(new Vector3(-270 * resolutionFactorWidth, 0, 0), arrowPickerController.transform);
+                        modSettingController.Label.alignment = TextAnchor.MiddleLeft;
+                        UnityEngine.Object.Destroy(modSettingController.GetComponentInChildren<UITooltipText>());
+
+                        UITooltipText uITooltipText = modSettingController.Label.gameObject.AddComponent<UITooltipText>();
+
+                        uITooltipText.TipText = description;
+
+                        arrowPickerController.Init(options.Length, currentValue, onValueChanged);
+
+
+                        arrowPickerController.CurrentItemText.text = options[currentValue];
+                        //  if (lengthScale != 1)
+                        //  {
+                        arrowPickerController.GetComponent<RectTransform>().sizeDelta = new Vector2(arrowPickerController.GetComponent<RectTransform>().sizeDelta.x * lengthScale, arrowPickerController.GetComponent<RectTransform>().sizeDelta.y);
+                        //  }
+                        // TFTVLogger.Always($"{arrowPickerController.GetComponent<RectTransform>().sizeDelta}");
+                        PopulateOptions(arrowPickerController, options);
+                        //TFTVLogger.Always($"instantiating {title}, got to the end");
+                    }
+
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                        throw;
+                    }
+                }
+
+                private static void PopulateOptions(ArrowPickerController arrowPickerController, string[] options)
+                {
+                    try
+                    {
+                        for (int i = 0; i < options.Length; i++)
+                        {
+
+                            arrowPickerController.CurrentItemText.text = options[i];
+
+                            MethodInfo OnNewValue = arrowPickerController.GetType().GetMethod("OnNewValue", BindingFlags.NonPublic | BindingFlags.Instance);
+
+                            OnNewValue.Invoke(arrowPickerController, null);
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                    }
+
+                }
+
+
+
+                private static void CreateTestingButton()
+                {
+                    try
+                    {
+                        UIModuleTheMarketplace marketplaceUI = GameUtl.CurrentLevel().GetComponent<GeoLevelController>().View.GeoscapeModules.TheMarketplaceModule;
+                        UIModuleManufacturing sourceModule = GameUtl.CurrentLevel().GetComponent<GeoLevelController>().View.GeoscapeModules.ManufacturingModule;//.CommonModules.PauseScreenModule.OptionsSubmenuModule;
+                        Resolution resolution = Screen.currentResolution;
+
+                        // TFTVLogger.Always("Resolution is " + Screen.currentResolution.width);
+                        float resolutionFactorWidth = (float)resolution.width / 1920f;
+                        //   TFTVLogger.Always("ResolutionFactorWidth is " + resolutionFactorWidth);
+                        float resolutionFactorHeight = (float)resolution.height / 1080f;
+                        //   TFTVLogger.Always("ResolutionFactorHeight is " + resolutionFactorHeight);
+
+                        // TFTVLogger.Always($"checking");
+
+
+
+                       PhoenixGeneralButton marketToggle = UnityEngine.Object.Instantiate(marketplaceUI.AcceptMissionButton, marketplaceUI.MissionDescriptionText.transform);
+                        PhoenixGeneralButton marketToggle1 = UnityEngine.Object.Instantiate(marketplaceUI.LocateMissionButton, marketplaceUI.MissionDescriptionText.transform);
+                        PhoenixGeneralButton marketToggle2 = UnityEngine.Object.Instantiate(sourceModule.ManufactureModeButton, marketplaceUI.MissionDescriptionText.transform);
+                        marketToggle.gameObject.AddComponent<UITooltipText>().TipText = "testing"; //TFTVCommonMethods.ConvertKeyToString("KEY_UI_EDIT_SCREEN_TOGGLEHELMET_TIP");// "Toggles helmet visibility on/off.";
+                       // TFTVLogger.Always($"original icon position {marketToggle.transform.position}, edit button position {marketplaceUI.AcceptMissionButton.transform.position}");
+                        // marketToggle.transform.position += new Vector3(-50 * resolutionFactorWidth, -35 * resolutionFactorHeight, 0);
+
+                        // TFTVLogger.Always($"new icon position {newPhoenixGeneralButton.transform.position}");
+                        marketToggle.gameObject.SetActive(true);
+                        marketToggle1.gameObject.SetActive(true);
+                        marketToggle2.gameObject.SetActive(true);
+
+                        marketToggle.transform.localScale *= 0.5f;
+                        marketToggle1.transform.position -= new Vector3(20 * resolutionFactorWidth, 0, 0);
+
+                        marketToggle1.transform.localScale *= 0.5f;
+                        marketToggle1.transform.position -= new Vector3(-190 * resolutionFactorWidth, 0, 0);
+
+                        marketToggle2.transform.localScale *= 0.35f;
+                        marketToggle2.transform.position -= new Vector3(-420 * resolutionFactorWidth, 0, 0);
+
+                        marketToggle.PointerClicked += () => ToggleButtonClicked();
+
+                        TFTVLogger.Always($"has {marketToggle.transform.GetChildren().Count()} children");
+
+                        foreach(Transform transform in marketToggle.transform.GetChildren()) 
+                        {
+                            TFTVLogger.Always($"{transform.name} {transform.GetComponent<Text>()?.text} level 1");
+
+                            if (transform.GetComponent<Text>() != null)
+                            {
+                                TFTVLogger.Always($"got here, {transform.GetComponent<Text>().text}");
+                                transform.GetComponent<Text>().text = "000000000000000000000";
+                                transform.GetComponent<Text>().resizeTextForBestFit = true;
+                            }
+
+                            foreach (Transform transform1 in transform.GetChildren())
+                            {
+                                TFTVLogger.Always($"{transform.name} {transform.GetComponent<Text>()?.text} level 2");
+                                if (transform1.GetComponent<Text>() != null)
+                                {
+                                    transform1.GetComponent<Text>().text = "000000000000000000000";
+
+                                }
+
+                                foreach (Transform transform2 in transform1.GetChildren())
+                                {
+                                    TFTVLogger.Always($"{transform.name} {transform.GetComponent<Text>()?.text} level3");
+                                    if (transform2.GetComponent<Text>() != null)
+                                    {
+                                        transform2.GetComponent<Text>().text = "000000000000000000000";
+
+                                    }
+                                }
+
+                            }
+
+
+
+
+
+                        }
+
+                        foreach (Transform transform in marketToggle1.transform.GetChildren())
+                        {
+
+                            TFTVLogger.Always($"{transform.name} {transform.GetComponent<Text>()?.text}");
+                            if (transform.GetComponent<Text>() != null)
+                            {
+                                transform.GetComponent<Text>().SetText ("11111111111111111111");
+
+                            }
+
+                        }
+
+                        foreach (Transform transform in marketToggle2.transform.GetChildren())
+                        {
+
+                            TFTVLogger.Always($"{transform.name} {transform.GetComponent<Text>()?.text}");
+                            if (transform.GetComponent<Text>() != null)
+                            {
+                                transform.GetComponent<Text>().text = "2222222222222222222";
+
+                            }
+
+                        }
+
+
+
+                        //MarketToggle = marketToggle;
+
+
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                    }
+                }
+
+
+                private static void ToggleButtonClicked()
+                {
+                    try
+                    {
+                        GeoMarketplace geoMarketplace = GameUtl.CurrentLevel().GetComponent<GeoLevelController>().Marketplace;
+                        UIModuleTheMarketplace marketplaceUI = GameUtl.CurrentLevel().GetComponent<GeoLevelController>().View.GeoscapeModules.TheMarketplaceModule;
+                        MarketToggle = !MarketToggle;  // Flip the toggle state
+
+                        //List<GeoEventChoice> choicesToRemove = new List<GeoEventChoice>();
+                        // Perform any actions based on the toggle state
+                        if (MarketToggle)
+                        {
+
+                            for (int x = 0; x < geoMarketplace.MarketplaceChoices.Count; x++)
+                            {
+
+                                if (geoMarketplace.MarketplaceChoices[x].Outcome != null && geoMarketplace.MarketplaceChoices[x].Outcome.Items != null && geoMarketplace.MarketplaceChoices[x].Outcome.Items.Count > 0)
+                                {
+                                    TFTVLogger.Always($"item number {x} {geoMarketplace.MarketplaceChoices[x].Outcome?.Items[0].ItemDef?.name}");
+
+                                    if (geoMarketplace.MarketplaceChoices[x].Outcome.Items[0].ItemDef.name.Contains("GroundVehicleModuleDef"))
+                                    {
+                                        marketplaceUI.ListScrollRect.HideElement(x);
+
+                                        //  choicesToRemove.Add(geoMarketplace.MarketplaceChoices[x]);
+
+                                    }
+
+                                }
+
+                            }
+
+                            // geoMarketplace.MarketplaceChoices.RemoveRange(choicesToRemove);
+
+                        }
+                        else
+                        {
+
+
+
+                        }
+                        TFTVLogger.Always($"MarketToggle is {MarketToggle}");
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                    }
+                }*/
 
 
         public static void CorrrectPhoenixSaveManagerDifficulty()

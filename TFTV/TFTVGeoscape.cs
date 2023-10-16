@@ -147,7 +147,7 @@ namespace TFTV
             TFTVRevenantResearch.CheckProjectOsiris(gsController);
             TFTVDiplomacyPenalties.VoidOmensImplemented = false;
             TFTVAncientsGeo.CheckResearchStateOnGeoscapeEndAndOnTacticalStart(gsController);
-
+           // TFTVExperimental.CheckAvailableVehiclesBasedOnFactionResearch(Controller);
         }
 
         /// <summary>

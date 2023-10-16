@@ -1,4 +1,5 @@
-﻿using Base;
+﻿using Assets.Code.PhoenixPoint.Geoscape.Entities.Sites.TheMarketplace;
+using Base;
 using Base.AI.Defs;
 using Base.Core;
 using Base.Defs;
@@ -205,6 +206,7 @@ namespace TFTV
             FixBionic3ResearchNotGivingAccessToFacility();
             CreateFakeFacilityToFixBadBaseDefenseMaps();
             ChangeFireNadeCostAndDamage();
+           // ExperimentKaosWeaponAmmo();
         }
 
         //NEU_Assault_Torso_BodyPartDef
@@ -214,7 +216,96 @@ namespace TFTV
         //NEU_Sniper_Legs_ItemDef
 
 
+        private static void CreateAmmoForKG(WeaponDef weaponDef, string gUID0, string gUID1, string gUID2, string spriteFileName)
+        {
+            try 
+            {
+                TacticalItemDef sourceAmmo = DefCache.GetDef<TacticalItemDef>("PX_AssaultRifle_AmmoClip_ItemDef");
+                string name = $"{weaponDef.name}_AmmoClipDef";
 
+                TacticalItemDef newAmmo = Helper.CreateDefFromClone(sourceAmmo, gUID0, name);
+                newAmmo.ViewElementDef = Helper.CreateDefFromClone(sourceAmmo.ViewElementDef, gUID1, name);
+                newAmmo.ViewElementDef.DisplayName1.LocalizationKey = $"KEY_KAOSGUNS_AMMO_{weaponDef.name}";
+                newAmmo.ViewElementDef.Description.LocalizationKey = $"KEY_KAOSGUNS_AMMO_DESCRIPTION_{weaponDef.name}";
+                newAmmo.ViewElementDef.InventoryIcon = Helper.CreateSpriteFromImageFile(spriteFileName);
+                
+
+                newAmmo.ChargesMax = 3;
+                newAmmo.CrateSpawnWeight = 10;
+                weaponDef.ChargesMax = 3;
+                weaponDef.CompatibleAmmunition = new TacticalItemDef[] { newAmmo };
+
+               GeoMarketplaceItemOptionDef newMarketplaceItem = Helper.CreateDefFromClone
+                    (DefCache.GetDef<GeoMarketplaceItemOptionDef>("Obliterator_MarketplaceItemOptionDef"), gUID2, name);
+
+                newMarketplaceItem.MinPrice = 40;
+                newMarketplaceItem.MaxPrice = 60;
+                newMarketplaceItem.ItemDef = newAmmo;
+                newMarketplaceItem.DisallowDuplicates = false;
+
+                TheMarketplaceSettingsDef marketplaceSettings = DefCache.GetDef<TheMarketplaceSettingsDef>("TheMarketplaceSettingsDef");
+
+                List<GeoMarketplaceOptionDef> geoMarketplaceItemOptionDefs = marketplaceSettings.PossibleOptions.ToList();
+
+                geoMarketplaceItemOptionDefs.Add(newMarketplaceItem);
+
+
+                marketplaceSettings.PossibleOptions = geoMarketplaceItemOptionDefs.ToArray();
+
+                weaponDef.WeaponMalfunction = DefCache.GetDef<WeaponDef>("PX_AssaultRifle_WeaponDef").WeaponMalfunction;
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+
+
+        }
+
+
+        private static void ExperimentKaosWeaponAmmo()
+        {
+            try 
+            {
+                WeaponDef Obliterator = DefCache.GetDef<WeaponDef>("KS_Obliterator_WeaponDef");
+                WeaponDef Subjector = DefCache.GetDef<WeaponDef>("KS_Subjector_WeaponDef");
+                WeaponDef Redemptor = DefCache.GetDef<WeaponDef>("KS_Redemptor_WeaponDef");
+                WeaponDef Devastator = DefCache.GetDef<WeaponDef>("KS_Devastator_WeaponDef");
+                WeaponDef Tormentor = DefCache.GetDef<WeaponDef>("KS_Tormentor_WeaponDef");
+
+              
+
+                //KEY_KAOSGUNS_AMMO_
+                //KEY_KAOSGUNS_AMMO_DESCRIPTION_
+
+                CreateAmmoForKG(Tormentor, "e1875c26-0494-4d0f-9e5d-3c74a17c3b2d",
+"79f6bb60-8ca3-4bbf-a0f1-c819f5ebf09e",
+"ee89b5c3-6d06-4c5e-856b-96e7ff411c77", "KG_Pistol_Ammo.png");
+                CreateAmmoForKG(Subjector, "2e5be682-1f85-4610-bbb7-c2f2bf41d4c6",
+"b03d78d4-c7e7-49c3-b097-3448e253a1e7",
+"70a0a172-2b57-48d3-94c2-7cb4e428c3c4", "KG_Sniper_Ammo.png");
+                CreateAmmoForKG(Redemptor, "8f7ff5ca-4b8d-4677-86d3-7f21e41a3a70",
+"d60e04a0-c873-4c16-9a83-2f9d6e1c163d",
+"dc92d8ca-1b8d-4f85-9d90-d8eb9e63d5a3", "KG_Shotgun_Ammo.png");
+                CreateAmmoForKG(Devastator, "99aa40e5-5415-44b9-98ed-34d746a99b52",
+"3b647fa3-1e06-4f2a-9d1c-82edf8a6dbff",
+"605d3c8a-7b9c-481a-8c0d-7ff4be94901a", "KG_Cannon_Ammo.png");
+                CreateAmmoForKG(Obliterator, "2c86774f-4889-4c06-9f7a-8971e62ff267",
+"587b1a5b-1665-48c9-8b9c-4156231712c1",
+"1a1230fc-0e5d-4c4c-9be5-563879d2471f", "KG_Assault_Rifle_Ammo.png");
+
+            }
+
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+      
 
         private static void ChangeFireNadeCostAndDamage()
         {
@@ -249,10 +340,6 @@ namespace TFTV
             {
                 TFTVLogger.Error(e);
             }
-
-
-
-
         }
 
 
@@ -855,8 +942,8 @@ namespace TFTV
     Sophia_Villanova
     Colonel_Jack_Harlson
     Captain_Richter*/
-            try
-            {
+                try
+                {
                 CreateHarlson();
                 CreateRichter();
                 CreateSofia();
