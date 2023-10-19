@@ -124,7 +124,7 @@ namespace TFTV
             TFTVBetaSaveGamesFixes.CheckScyllaCaptureTechResearch(Controller);
             TFTVPassengerModules.ImplementFarMConfig(Controller);
             TFTVNewGameOptions.Change_Crossbows();
-            TFTVChangesToDLC5Events.ForceMarketPlaceUpdate();
+         //   TFTVChangesToDLC5Events.ForceMarketPlaceUpdate();
          //   TFTVVoidOmens.RemoveAllVoidOmens(gsController);
             //  TFTVCapturePandorans.SetMutagenOutput(Controller);
             //  TFTVDeliriumPerks.RemoveDeliriumPerks(Controller);

@@ -310,6 +310,7 @@ namespace TFTV
 
             public static void Postfix(GeoMarketplace __instance)
             {
+              //  TFTVLogger.Always($"got here!");
                 List<GeoEventChoice> temp = new List<GeoEventChoice>();
                 foreach (GeoEventChoice choice in __instance.MarketplaceChoices)
                 {
@@ -325,7 +326,59 @@ namespace TFTV
                 }
                 __instance.MarketplaceChoices.Clear();
                 __instance.MarketplaceChoices.AddList(temp);
+
+                SecondCurbing();
+
             }
+        }
+
+        private static void SecondCurbing()
+        {
+            try
+            {
+              //  TFTVLogger.Always($"got here2!");
+
+                if (GameUtl.CurrentLevel() != null)
+                {
+                //    TFTVLogger.Always($"got here3!");
+
+                    GeoLevelController geoLevelController = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
+
+                    if (geoLevelController != null && geoLevelController.NewJerichoFaction != null && geoLevelController.SynedrionFaction != null)
+                    {
+                  //      TFTVLogger.Always($"got here4!");
+
+                        GeoMarketplace geoMarketplace = geoLevelController.Marketplace;
+
+                        bool armadilloResearched = TFTVExperimental.CheckResearchCompleted(geoLevelController.NewJerichoFaction, "NJ_VehicleTech_ResearchDef");
+                        bool aspidaResearched = TFTVExperimental.CheckResearchCompleted(geoLevelController.SynedrionFaction, "SYN_Rover_ResearchDef");
+
+                        List<GeoEventChoice> temp = new List<GeoEventChoice>();
+                        foreach (GeoEventChoice choice in geoMarketplace.MarketplaceChoices)
+                        {
+
+                            if (choice.Outcome.Items.Count() > 0 &&
+                            (! armadilloResearched && choice.Outcome.Items[0].ItemDef.name.Contains("NJ")
+                            ||
+                            (! aspidaResearched && choice.Outcome.Items[0].ItemDef.name.Contains("SY")))
+                            )
+                            {
+                                TFTVLogger.Always($"{choice.Outcome.Items[0].ItemDef.name} removed from choices because corresponding vehicle not researched yet");
+                                temp.Add(choice);
+                            }
+                        }
+                        geoMarketplace.MarketplaceChoices.RemoveAll(c => temp.Contains(c));
+                    }
+                }
+            }
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+
+
         }
 
 
@@ -347,7 +400,9 @@ namespace TFTV
                         ____level.EventSystem.SetVariable(____settings.NumberOfDLC5MissionsCompletedVariable, 4);
                         ____level.EventSystem.SetVariable(____settings.DLC5IntroCompletedVariable, 1);
                         ____level.EventSystem.SetVariable(____settings.DLC5FinalMovieCompletedVariable, 1);
-                        __instance.UpdateOptions(____level.Timing);
+                        ForceMarketPlaceUpdate();
+                        
+                        //__instance.UpdateOptions(____level.Timing);
                     }
 
                 }

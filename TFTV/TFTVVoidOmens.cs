@@ -476,10 +476,10 @@ namespace TFTV
                 }
                 if (CheckFordVoidOmensInPlay(level).Contains(19))
                 {
-                 /*   GeoMarketplaceResearchOptionDef randomMarketResearch = DefCache.GetDef<GeoMarketplaceResearchOptionDef>("Random_MarketplaceResearchOptionDef");
-                    randomMarketResearch.MaxPrice = 1200;
-                    randomMarketResearch.MinPrice = 960;*/
-
+                    /*   GeoMarketplaceResearchOptionDef randomMarketResearch = DefCache.GetDef<GeoMarketplaceResearchOptionDef>("Random_MarketplaceResearchOptionDef");
+                       randomMarketResearch.MaxPrice = 1200;
+                       randomMarketResearch.MinPrice = 960;*/
+                    TFTVChangesToDLC5Events.ForceMarketPlaceUpdate();
                     // Logger.Always(voidOmen + j + " is now in effect, held in variable " + voidOmen + i);
                     VoidOmensCheck[19] = true;
                 }

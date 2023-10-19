@@ -156,6 +156,7 @@ namespace PRMBetterClasses.SkillModifications
                         DefCache.GetDef<StatusDef>("Bleed_StatusDef"),
                         DefCache.GetDef<StatusDef>("Poison_DamageOverTimeStatusDef"),
                         DefCache.GetDef<StatusDef>("Paralysis_DamageOverTimeStatusDef"),
+                        DefCache.GetDef<StatusDef>("Fire_StatusDef"),
                         DefCache.GetDef<StatusDef>("Acid_StatusDef"),
                         DefCache.GetDef<StatusDef>("Infected_StatusDef"), // = virus applied
             };
@@ -203,8 +204,11 @@ namespace PRMBetterClasses.SkillModifications
                         }
                     }
 
+                    PRMLogger.Always($"Die Hard for {__instance}: Original damage value = {damageResult.HealthDamage}, actor health = {__instance.Health.IntValue} ...");
                     // Set damage value to actors HP -1 so he has 1 HP left
-                    damageResult.HealthDamage = __instance.Health.IntValue - 1;
+                    damageResult.HealthDamage = __instance.Health - 1 < 0 ? 0 : __instance.Health - 1;
+
+                    PRMLogger.Always($"Die Hard for {__instance}:  ... new damage value = {damageResult.HealthDamage}.");
 
                     // Clear all effects, statuses, stat modifier if set from the damage result
                     damageResult.ActorEffects?.Clear();
@@ -224,13 +228,16 @@ namespace PRMBetterClasses.SkillModifications
             {
                 try
                 {
+                    PRMLogger.Always($"Die Hard OnFactionStartTurn() event handler called ...");
                     if (DieHardActorsToKeepAlive.IsEmpty())
                     {
+                        PRMLogger.Always($"  ... no actors triggered Die Hard, early exit!");
                         return;
                     }
                     // Unapply any existent DoT on the actor
                     foreach (TacticalActorBase actor in DieHardActorsToKeepAlive)
                     {
+                        PRMLogger.Always($"  ... cleaning DoTs and keep alive stuff from actor {actor}.");
                         actor.Status.UnapplyAllStatusesFiltered(status => StatusesToRemove.Contains(status.BaseDef));
                         (actor as TacticalActor)?.SetSpecialShader(null);
                         _ = actor.RemoveGameTags(new GameTagsList() { ExcludeFromAiBlackboard });

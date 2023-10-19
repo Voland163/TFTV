@@ -1,10 +1,13 @@
 ﻿using Base;
+using Base.Core;
 using HarmonyLib;
 using PhoenixPoint.Common.Levels.Missions;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.PhoenixBases;
 using PhoenixPoint.Geoscape.Entities.PhoenixBases.FacilityComponents;
 using PhoenixPoint.Geoscape.Entities.Sites;
+using PhoenixPoint.Geoscape.Events;
+using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.View.ViewControllers.HavenDetails;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Levels.Missions;
@@ -12,6 +15,7 @@ using PhoenixPoint.Tactical.View;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Reflection.Emit;
 using UnityEngine.SceneManagement;
 
@@ -20,7 +24,63 @@ namespace TFTV
     internal class TFTVVanillaFixes
     {
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
-       
+
+        /// <summary>
+        /// Fixes money spent no purchase made at Marketplace if 2 or more aircraft at Marketplace
+        /// </summary>
+        [HarmonyPatch(typeof(GeoscapeEvent), "CompleteMarketplaceEvent")]
+        public static class GeoscapeEvent_CompleteMarketplaceEvent_patch
+        {
+
+            public static bool Prefix(GeoscapeEvent __instance, GeoEventChoice choice, GeoFaction faction)
+            {
+                try
+                {
+                   // TFTVLogger.Always($"CompleteMarketplaceEvent triggered for choice {choice.Outcome.Items[0].ItemDef?.name}");
+
+                    if (__instance.Context.Site.Vehicles.Count() > 1)
+                    {
+                        TFTVLogger.Always($"There is a more than one vehicle at {__instance.Context.Site.LocalizedSiteName}! Need to execute alternative code");
+
+                        PropertyInfo propertyInfo = typeof(GeoscapeEvent).GetProperty("ChoiceReward", BindingFlags.Instance | BindingFlags.Public);
+
+
+
+
+                        GeoLevelController component = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
+                        GeoscapeEventContext geoscapeEventContext = new GeoscapeEventContext(component.PhoenixFaction.StartingBase, component.PhoenixFaction, __instance.Context.Site.Vehicles.First());
+                        // TFTVLogger.Always($"geoscapeEventContext is null? {geoscapeEventContext==null} is faction null? {faction==null}");
+
+                        propertyInfo?.SetValue(__instance, choice.Outcome.GenerateFactionReward(faction, geoscapeEventContext, __instance.EventID));
+
+                        // TFTVLogger.Always($"got here. is propertyInfo null? {propertyInfo==null} is choiceReward null? {__instance.ChoiceReward==null}");
+
+                        // __instance.ChoiceReward = choice.Outcome.GenerateFactionReward(faction, geoscapeEventContext, __instance.EventID);
+                        __instance.ChoiceReward.Apply(faction, geoscapeEventContext.Site, geoscapeEventContext.Vehicle);
+                        // TFTVLogger.Always($"got here2");
+
+                        if (choice.Outcome.ReEneableEvent)
+                        {
+                            //   TFTVLogger.Always($"got here");
+                            GameUtl.CurrentLevel().GetComponent<GeoscapeEventSystem>().EnableGeoscapeEvent(__instance.EventID);
+                        }
+
+
+                        return false;
+                    }
+                    return true;
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
+
+
+
         //Factions attacking Phoenix bases fix
         //Method by Dimitar "Codemite" Evtimov from Snapshot Games
         public static void PatchInAllBaseDefenseDefs()

@@ -70,6 +70,10 @@ namespace TFTVVehicleRework.Misc
                 y = 2.6f,
                 z = 2.9f,
             };
+
+            //"SY_Aspida_DemolitionComponentDef"
+            TacticalDemolitionComponentDef AspidaDemoComponentDef = (TacticalDemolitionComponentDef)Repo.GetDef("19e54d43-7eb6-ebf4-da14-abe67676b845");
+            AspidaDemoComponentDef.CapsuleRadius = 0.95f;
         }
     }
 }

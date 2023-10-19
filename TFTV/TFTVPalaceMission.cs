@@ -457,7 +457,7 @@ namespace TFTV
                         int receptacleEyesDamaged = CountReceptacleEyes(actor);
                         TFTVLogger.Always($"Receptacle eye disabled! Eyes disabled count: {receptacleEyesDamaged}");
 
-                        if (receptacleEyesDamaged >= TFTVReleaseOnly.DifficultyOrderConverter(controller.Difficulty.Order) - 1)
+                        if (receptacleEyesDamaged >= Math.Max(TFTVReleaseOnly.DifficultyOrderConverter(controller.Difficulty.Order), 4))
                         {
 
                             actor.ApplyDamage(new DamageResult() { HealthDamage = 2000000 });
@@ -1356,8 +1356,10 @@ namespace TFTV
             {
                 try
                 {
-                    if (__instance.TacticalLevel.TacMission.IsFinalMission)
+                    if (__instance.TacticalLevel!=null && __instance.TacticalLevel.TacMission!=null && __instance.TacticalLevel.TacMission.IsFinalMission)
                     {
+
+
                         if (__instance.name == RightBottomSpawn || __instance.name == LeftBottomSpawn || __instance.name == RightTopSpawn)
                         {
                             List<Vector3> verifiedPositions = new List<Vector3>();

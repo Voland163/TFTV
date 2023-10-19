@@ -66,7 +66,7 @@ namespace TFTV
 
                     float ProbabilityRoll = UnityEngine.Random.Range(0f, 100f);
 
-                    TFTVLogger.Always($"rolling for poisoning! chance {PoisoningChance}, roll {ProbabilityRoll}");
+                  //  TFTVLogger.Always($"rolling for poisoning! chance {PoisoningChance}, roll {ProbabilityRoll}");
 
                     if (ProbabilityRoll < PoisoningChance)
                     {
