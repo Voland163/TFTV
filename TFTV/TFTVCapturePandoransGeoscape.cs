@@ -401,7 +401,7 @@ namespace TFTV
                 OnProductionUpdate(supplies.Value);
 
 
-                TFTVLogger.Always($"giving supplies {supplies.Value}, reducing PandasForFoodProcessing to {PandasForFoodProcessing}");
+              //  TFTVLogger.Always($"giving supplies {supplies.Value}, reducing PandasForFoodProcessing to {PandasForFoodProcessing}");
 
             }
             catch (Exception e)

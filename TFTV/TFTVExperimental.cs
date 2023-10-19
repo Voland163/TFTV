@@ -233,7 +233,7 @@ namespace TFTV
                 try
                 {
 
-                    TFTVLogger.Always($"Running UpdateVisuals");
+                 //   TFTVLogger.Always($"Running UpdateVisuals");
 
                     CreateTestingButton();
 
@@ -255,10 +255,10 @@ namespace TFTV
                 try
                 {
 
-                    TFTVLogger.Always($"Running OnChoiceSelected");
+                  //  TFTVLogger.Always($"Running OnChoiceSelected");
                     if (MPGeoEventChoices!=null && MPGeoEventChoices.Contains(choice))
                     {
-                        TFTVLogger.Always($"Removing choice from internally saved list");
+                    //    TFTVLogger.Always($"Removing choice from internally saved list");
 
                         MPGeoEventChoices.Remove(choice);
                     }
@@ -285,7 +285,7 @@ namespace TFTV
                 try
                 {
 
-                    TFTVLogger.Always($"Running ExitState marketplace");
+                 //   TFTVLogger.Always($"Running ExitState marketplace");
                     GeoMarketplace geoMarketplace = GameUtl.CurrentLevel().GetComponent<GeoLevelController>().Marketplace;
                     if (MPGeoEventChoices != null && MPGeoEventChoices.Count > 0)
                     {
@@ -529,12 +529,12 @@ namespace TFTV
 
                 if (MPGeoEventChoices == null)
                 {
-                    TFTVLogger.Always($"saving all Choices to internal list, count is {geoMarketplace.MarketplaceChoices.Count}");
+                  //  TFTVLogger.Always($"saving all Choices to internal list, count is {geoMarketplace.MarketplaceChoices.Count}");
                     MPGeoEventChoices = geoMarketplace.MarketplaceChoices;
                 }
                 else
                 {
-                    TFTVLogger.Always($"passing all Choices from internal list, count {MPGeoEventChoices.Count}, to proper list, count {geoMarketplace.MarketplaceChoices.Count}");
+                  //  TFTVLogger.Always($"passing all Choices from internal list, count {MPGeoEventChoices.Count}, to proper list, count {geoMarketplace.MarketplaceChoices.Count}");
                     propertyInfo?.SetValue(geoMarketplace, MPGeoEventChoices);
 
                 }
@@ -545,7 +545,7 @@ namespace TFTV
                 {
                     if (filter == 1)
                     {
-                        TFTVLogger.Always($"There are {geoMarketplace.MarketplaceChoices.Count} choices");
+                      //  TFTVLogger.Always($"There are {geoMarketplace.MarketplaceChoices.Count} choices");
 
                         for (int i = 0; i < geoMarketplace.MarketplaceChoices.Count; i++)
                         {
@@ -561,7 +561,7 @@ namespace TFTV
                     }
                     else if (filter == 2)
                     {
-                        TFTVLogger.Always($"There are {geoMarketplace.MarketplaceChoices.Count} choices");
+                     //   TFTVLogger.Always($"There are {geoMarketplace.MarketplaceChoices.Count} choices");
 
                         for (int i = 0; i < geoMarketplace.MarketplaceChoices.Count; i++)
                         {
@@ -575,7 +575,7 @@ namespace TFTV
                     }
                     else if (filter == 3)
                     {
-                        TFTVLogger.Always($"There are {geoMarketplace.MarketplaceChoices.Count} choices");
+                     //   TFTVLogger.Always($"There are {geoMarketplace.MarketplaceChoices.Count} choices");
 
                         for (int i = 0; i < geoMarketplace.MarketplaceChoices.Count; i++)
                         {
@@ -589,7 +589,7 @@ namespace TFTV
 
                     propertyInfo.SetValue(geoMarketplace, choicesToShow);
                 }
-                TFTVLogger.Always($"Count of proper list (that will be shown) is {geoMarketplace.MarketplaceChoices.Count}");
+              //  TFTVLogger.Always($"Count of proper list (that will be shown) is {geoMarketplace.MarketplaceChoices.Count}");
 
             }
             catch (Exception e)
@@ -606,7 +606,7 @@ namespace TFTV
                 UIModuleTheMarketplace marketplaceUI = GameUtl.CurrentLevel().GetComponent<GeoLevelController>().View.GeoscapeModules.TheMarketplaceModule;
                 FieldInfo fieldInfo = typeof(VirtualScrollRect).GetField("_visibleElements", BindingFlags.NonPublic | BindingFlags.Instance);
 
-                TFTVLogger.Always($"Checking before filtering: visible elements {fieldInfo.GetValue(marketplaceUI.ListScrollRect)}");
+             //   TFTVLogger.Always($"Checking before filtering: visible elements {fieldInfo.GetValue(marketplaceUI.ListScrollRect)}");
 
                 switch (filter)
                 {
@@ -638,7 +638,7 @@ namespace TFTV
                 int visibleElements = (int)fieldInfo.GetValue(marketplaceUI.ListScrollRect);
                 int selectionChoices = geoMarketplace.MarketplaceChoices.Count();
 
-                TFTVLogger.Always($"Checking after filtering: {visibleElements} visible elements  vs {selectionChoices} elements in selection");
+              //  TFTVLogger.Always($"Checking after filtering: {visibleElements} visible elements  vs {selectionChoices} elements in selection");
 
                 if (visibleElements > selectionChoices)
                 {
@@ -650,11 +650,11 @@ namespace TFTV
 
                 }
 
-                TFTVLogger.Always($"Checking after filtering and after manually setting the field: : {visibleElements} visible elements  vs {selectionChoices} elements in selection");
+             //   TFTVLogger.Always($"Checking after filtering and after manually setting the field: : {visibleElements} visible elements  vs {selectionChoices} elements in selection");
 
                 marketplaceUI.ListScrollRect.RefreshContents(true);
 
-                TFTVLogger.Always($"Checking after refreshing contents:: {visibleElements} visible elements  vs {selectionChoices} elements in selection");
+             //   TFTVLogger.Always($"Checking after refreshing contents:: {visibleElements} visible elements  vs {selectionChoices} elements in selection");
 
             }
             catch (Exception e)
