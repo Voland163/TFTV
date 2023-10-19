@@ -114,6 +114,7 @@ namespace TFTVVehicleRework.Scarab
 
             ScarabReload.ViewElementDef = (TacticalAbilityViewElementDef)Repo.CreateDef("e91bdf96-62c5-4f5d-b85b-b21ac077fef2", Reload.ViewElementDef);
             ScarabReload.ViewElementDef.name = "E_View [ScarabFreeReload_AbilityDef]";
+            ScarabReload.ViewElementDef.Description = new LocalizedTextBind("UI_RELOAD_DESC");
             ScarabReload.ViewElementDef.ShowInInventoryItemTooltip = true;
 
             return ScarabReload;

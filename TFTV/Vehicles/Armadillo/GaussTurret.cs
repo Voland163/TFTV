@@ -1,4 +1,5 @@
 using Base.Defs;
+using Base.UI;
 using Code.PhoenixPoint.Tactical.Entities.Equipments;
 using HarmonyLib;
 using PhoenixPoint.Common.Entities.GameTags;
@@ -36,6 +37,7 @@ namespace TFTVVehicleRework.Armadillo
 
             ArmadilloReload.ViewElementDef = (TacticalAbilityViewElementDef)Repo.CreateDef("f66de850-07d9-4339-9ee8-9f5839fd66c7", Reload.ViewElementDef);
             ArmadilloReload.ViewElementDef.name = "E_View [FreeReload_AbilityDef]";
+            ArmadilloReload.ViewElementDef.Description = new LocalizedTextBind("UI_RELOAD_DESC");
             ArmadilloReload.ViewElementDef.ShowInInventoryItemTooltip = true;
 
             GaussTurret.Abilities = GaussTurret.Abilities.AddToArray(ArmadilloReload);
