@@ -36,6 +36,7 @@ namespace TFTVVehicleRework.KaosBuggy
                 TacticalItemDef BodyPart = (TacticalItemDef)addon.SubAddon;
                 BodyPart.HitPoints = 150f;
                 BodyPart.Armor = 20f;
+                BodyPart.BodyPartAspectDef.Speed = 0f;
             }
         }
 
