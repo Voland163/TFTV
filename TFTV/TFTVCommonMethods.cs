@@ -9,6 +9,7 @@ using PhoenixPoint.Common.Saves;
 using PhoenixPoint.Common.UI;
 using PhoenixPoint.Common.View.ViewModules;
 using PhoenixPoint.Geoscape.Entities;
+using PhoenixPoint.Geoscape.Entities.PhoenixBases.FacilityComponents;
 using PhoenixPoint.Geoscape.Entities.Research;
 using PhoenixPoint.Geoscape.Entities.Research.Requirement;
 using PhoenixPoint.Geoscape.Entities.Sites;
@@ -346,19 +347,20 @@ namespace TFTV
             }
         }
 
-
-
+    
 
         [HarmonyPatch(typeof(Research), "CompleteResearch")]
-        public static class Research_NewTurnEvent_CalculateDelirium_Patch
+        public static class Research_CompleteResearch_TFTV_Patch
         {
-
             public static void Postfix(ResearchElement research)
             {
+             
                 try
                 {
-                    TFTVLogger.Always("Research completed " + research.ResearchID);
+                    TFTVLogger.Always($"{research.ResearchID} completed by {research.Faction}");
+                    
                     GeoLevelController controller = research.Faction.GeoLevel;
+                    GeoPhoenixFaction phoenixFaction = controller.PhoenixFaction;
                     ResearchDef mutationTech = DefCache.GetDef<ResearchDef>("ANU_MutationTech_ResearchDef");
                     ResearchElement mutationTechResearchElement = controller.PhoenixFaction.Research.GetResearchById(mutationTech.name);
 
@@ -367,18 +369,37 @@ namespace TFTV
                         research.Faction.GeoLevel.EventSystem.SetVariable("UmbraResearched", 1);
                         TFTVLogger.Always("Umbra Researched variable is set to " + research.Faction.GeoLevel.EventSystem.GetVariable("UmbraResearched"));
                     }
-                    else if (research.ResearchID == "ANU_AnuPriest_ResearchDef" && research.Faction.GeoLevel.EventSystem.GetVariable("BG_Start_Faction") == 1)
+                    else if (research.Faction != research.Faction.GeoLevel.PhoenixFaction && research.ResearchID == "ANU_AnuPriest_ResearchDef" && research.Faction.GeoLevel.EventSystem.GetVariable("BG_Start_Faction") == 1)
                     {
+
+                        TFTVLogger.Always("Research completed " + research.ResearchID + " and corresponding flag triggered");
+
                         research.Faction.GeoLevel.PhoenixFaction.Research.GiveResearch(research, true);
+
+                        ResearchElement phoenixResearch = controller.PhoenixFaction.Research.GetResearchById(research.ResearchID);
+                        phoenixFaction.Research.CompleteResearch(phoenixResearch);
                     }
-                    else if (research.ResearchID == "NJ_Technician_ResearchDef" && research.Faction.GeoLevel.EventSystem.GetVariable("BG_Start_Faction") == 2)
+
+                    else if (research.Faction != phoenixFaction && research.ResearchID == "NJ_Technician_ResearchDef" && research.Faction.GeoLevel.EventSystem.GetVariable("BG_Start_Faction") == 2)
                     {
                         TFTVLogger.Always("Research completed " + research.ResearchID + " and corresponding flag triggered");
+
                         research.Faction.GeoLevel.PhoenixFaction.Research.GiveResearch(research, true);
+
+                        ResearchElement phoenixResearch = controller.PhoenixFaction.Research.GetResearchById(research.ResearchID);
+                        controller.PhoenixFaction.Research.CompleteResearch(phoenixResearch);
                     }
-                    else if (research.ResearchID == "SYN_InfiltratorTech_ResearchDef" && research.Faction.GeoLevel.EventSystem.GetVariable("BG_Start_Faction") == 3)
+                    else if (research.Faction != phoenixFaction && research.ResearchID == "SYN_InfiltratorTech_ResearchDef" && controller.EventSystem.GetVariable("BG_Start_Faction") == 3)
                     {
+
+                        TFTVLogger.Always("Research completed " + research.ResearchID + " and corresponding flag triggered");
+
                         research.Faction.GeoLevel.PhoenixFaction.Research.GiveResearch(research, true);
+
+                        ResearchElement phoenixResearch = controller.PhoenixFaction.Research.GetResearchById(research.ResearchID);
+                        phoenixFaction.Research.CompleteResearch(phoenixResearch);
+
+
                     }
                     //To trigger change of rate in Pandoran Evolution
                     else if (research.ResearchID == "ALN_Citadel_ResearchDef")
@@ -463,9 +484,9 @@ namespace TFTV
                     }
 
                     else if (research.ResearchID == "PX_Mutoid_ResearchDef" && !controller.PhoenixFaction.Research.HasCompleted(mutationTech.name) &&
-                   !controller.PhoenixFaction.Research.Researchable.Any(re => re.ResearchDef == mutationTech)) 
+                   !controller.PhoenixFaction.Research.Researchable.Any(re => re.ResearchDef == mutationTech))
                     {
-         
+
                         mutationTechResearchElement.State = ResearchState.Unlocked;
                         TFTVLogger.Always($"{mutationTech.name} available to PX? {mutationTechResearchElement.IsAvailableToFaction(controller.PhoenixFaction)}");
 

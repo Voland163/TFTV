@@ -37,6 +37,7 @@ namespace TFTV
         private static Dictionary<string, int> AlienBodyPartsDictionary = new Dictionary<string, int>();
         private static List<TacticalItemDef> AlienBodyParts = new List<TacticalItemDef>();
 
+        public static int CounterSpawned = 0;
 
         /// <summary>
         /// Reinforcements will come with full AP on ETERMES!
@@ -48,9 +49,11 @@ namespace TFTV
             {
                 try
                 {
-                    if (tacticalLevel.Difficulty.Order > 5) 
-                    {
+                    CounterSpawned++;
 
+                    if (tacticalLevel.Difficulty.Order > 5 && CounterSpawned<2) 
+                    {
+                        TFTVLogger.Always($"first spawn on Etermes keeps full AP");
                         return false;
                     
                     }

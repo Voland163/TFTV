@@ -97,61 +97,6 @@ namespace TFTV
 
         }
 
-
-
-
-        /*
-        [HarmonyPatch(typeof(WipeEnemyFactionObjective), "EvaluateObjective")]
-        public static class WipeEnemyFactionObjective_EvaluateObjective_BaseDefense_Patch
-        {
-            public static void Prefix(WipeEnemyFactionObjective __instance, FactionObjectiveState __result)
-            {
-                try
-                {
-                    TacticalLevelController controller = GameUtl.CurrentLevel().GetComponent<TacticalLevelController>();
-
-                    if (__result == FactionObjectiveState.Failed && __instance.Faction!= controller.GetFactionByCommandName("px"))
-                    { 
-                        FactionObjective baseDefenseSurvive5turns = controller.GetFactionByCommandName("px").Objectives.FirstOrDefault(o => o.Description.LocalizationKey == "BASEDEFENSE_SURVIVE5_OBJECTIVE");
-
-                        if (baseDefenseSurvive5turns != null && baseDefenseSurvive5turns.State != FactionObjectiveState.Achieved)
-                        {
-                            baseDefenseSurvive5turns.Evaluate();
-                            
-                            TFTVLogger.Always($"Wipe enemy objective {__instance.Faction} state is {__result}, baseDefenseSurvive objective is {baseDefenseSurvive5turns.State}");
-                           
-
-
-                        }
-
-
-                    
-                    }
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-            }
-        }*/
-
-        /* [HarmonyPatch(typeof(KillActorFactionObjective), "EvaluateObjective")]
-          public static class KillActorFactionObjective_EvaluateObjective_BaseDefense_Patch
-          {
-              public static void Postfix(KillActorFactionObjective __instance, FactionObjectiveState __result)
-              {
-                  try
-                  {
-                      TFTVLogger.Always($"Kill actor objective {__instance.GetDescription()} state is {__result}");
-                  }
-                  catch (Exception e)
-                  {
-                      TFTVLogger.Error(e);
-                  }
-              }
-          }*/
-
-
         public static void RemoveScatterRemainingAttackersTagFromEnemiesWithParasychosis(TacticalAbility ability, object parameter)
         {
             try
