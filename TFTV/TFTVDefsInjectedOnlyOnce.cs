@@ -35,6 +35,7 @@ using PhoenixPoint.Geoscape.Events.Eventus;
 using PhoenixPoint.Geoscape.Events.Eventus.Filters;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.ContextHelp.HintConditions;
+using PhoenixPoint.Geoscape.Levels.Factions;
 using PhoenixPoint.Tactical.AI;
 using PhoenixPoint.Tactical.AI.Actions;
 using PhoenixPoint.Tactical.AI.Considerations;
@@ -272,6 +273,11 @@ namespace TFTV
                 WeaponDef Devastator = DefCache.GetDef<WeaponDef>("KS_Devastator_WeaponDef");
                 WeaponDef Tormentor = DefCache.GetDef<WeaponDef>("KS_Tormentor_WeaponDef");
 
+                Obliterator.ManufactureMaterials = 100;
+                Subjector.ManufactureMaterials = 100;
+                Redemptor.ManufactureMaterials = 100;
+                Devastator.ManufactureMaterials = 100;
+                Tormentor.ManufactureMaterials = 100;
 
 
                 //KEY_KAOSGUNS_AMMO_
@@ -3427,12 +3433,31 @@ namespace TFTV
                 CreateCosmeticExplosion();
                 CreateFireExplosion();
                 CreateHintsForBaseDefense();
+                ReduceDamageFromInfestation();
                 //  CreateSpawnCrabmanAbility();
             }
             catch (Exception e)
             {
                 TFTVLogger.Error(e);
             }
+        }
+
+        private static void ReduceDamageFromInfestation()
+        {
+            try 
+            {
+                DefCache.GetDef<GeoPhoenixFactionDef>("Phoenix_GeoPhoenixFactionDef").FacilityDamageOnBaseAbandoned = new RangeDataInt() { Min = 20, Max = 40 };
+            
+            
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+
+
+
         }
 
         internal static void CreateSpawnCrabmanAbility()

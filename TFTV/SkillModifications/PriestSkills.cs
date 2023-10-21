@@ -185,7 +185,7 @@ namespace PRMBetterClasses.SkillModifications
 
             TacticalAbilityDef priestMcAnimSource = DefCache.GetDef<TacticalAbilityDef>("Priest_MindControl_AbilityDef");
             TacticalAbilityDef exaltetMcAnimSource = DefCache.GetDef<TacticalAbilityDef>("Exalted_MindControl_AbilityDef");
-            foreach (TacActorSimpleAbilityAnimActionDef animActionDef in Repo.GetAllDefs<TacActorSimpleAbilityAnimActionDef>().Where(aad => aad.name.Contains("Soldier_Utka_AnimActionsDef")))
+            foreach (TacActorSimpleAbilityAnimActionDef animActionDef in Repo.GetAllDefs<TacActorSimpleAbilityAnimActionDef>().Where(aad => aad.name.Contains("Soldier_Utka_AnimActionsDef") || aad.name.Contains("Exalted_AnimActionsDef")))
             {
                 if (animActionDef.AbilityDefs != null
                     && (animActionDef.AbilityDefs.Contains(priestMcAnimSource) || animActionDef.AbilityDefs.Contains(exaltetMcAnimSource))

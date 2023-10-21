@@ -764,7 +764,7 @@ namespace TFTV
                         {
                             if (ammoOffers.Contains(item)) 
                             {
-                                price *= 2f;
+                                price = UnityEngine.Random.Range(geoMarketplaceOptionDef.MinPrice, geoMarketplaceOptionDef.MaxPrice *2f);
                                 result = GenerateItemChoice(item, price * priceMultiplierVO19);
                                 
 

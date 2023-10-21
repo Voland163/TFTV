@@ -885,6 +885,8 @@ namespace TFTV
                 {
                     if (status.Def == DefCache.GetDef<StatusDef>("ConsoleActivated_StatusDef"))
                     {
+                        TFTVLogger.Always($"yes, this stuff is getting activated");
+
                         StructuralTarget console = statusComponent.transform.GetComponent<StructuralTarget>();
                         TacticalActorYuggoth yuggoth = controller.Map.GetActors<TacticalActorYuggoth>().First();
                         YuggothShieldsAbility lowerShields = yuggoth.GetAbility<YuggothShieldsAbility>();
@@ -1181,7 +1183,7 @@ namespace TFTV
             {
 
                 TacticalActorBaseDef injectorBomb = DefCache.GetDef<TacticalActorBaseDef>("InjectorBomb_ActorDef");
-                // TFTVLogger.Always($"deploying {tacticalActorBase.TacticalActorBaseDef.name}");
+              //  TFTVLogger.Always($"deploying {tacticalActorBase.TacticalActorBaseDef.name}");
 
                 if (tacticalActorBase.TacticalActorBaseDef == injectorBomb)
                 {
@@ -1704,7 +1706,7 @@ namespace TFTV
             {
                 TacCharacterDef acheronAsclepiusChampion = DefCache.GetDef<TacCharacterDef>("AcheronAsclepiusChampion_TacCharacterDef");
                 TacCharacterDef acheronAchlysChampion = DefCache.GetDef<TacCharacterDef>("AcheronAchlysChampion_TacCharacterDef");
-                TacCharacterDef acheronPrime = DefCache.GetDef<TacCharacterDef>("AcheronPrime_TacCharacterDef");
+              //  TacCharacterDef acheronPrime = DefCache.GetDef<TacCharacterDef>("AcheronPrime_TacCharacterDef");
                 TacCharacterDef acheronAsclepius = DefCache.GetDef<TacCharacterDef>("AcheronAsclepius_TacCharacterDef");
                 TacCharacterDef acheronAchlys = DefCache.GetDef<TacCharacterDef>("AcheronAchlys_TacCharacterDef");
 
@@ -1736,14 +1738,14 @@ namespace TFTV
                 else if (difficulty == 3) //veteran
                 {
                     temporaryAcheronList.Add(acheronAsclepiusChampion);
-                    temporaryAcheronList.Add(acheronPrime);
+                    temporaryAcheronList.Add(acheronAchlys);
                     acheronReinforcements.Add(temporaryAcheronList.GetRandomElement());
 
                 }
                 else
                 {
                     temporaryAcheronList.Add(acheronAchlys);
-                    temporaryAcheronList.Add(acheronPrime);
+                    temporaryAcheronList.Add(acheronAsclepius);
                     acheronReinforcements.Add(temporaryAcheronList.GetRandomElement());
 
                 }
@@ -1769,6 +1771,7 @@ namespace TFTV
         {
             try
             {
+               
                 if (controller.TurnNumber < 16 && controller.TurnNumber % 4 == 0)
                 {
 
@@ -1826,6 +1829,7 @@ namespace TFTV
             try
             {
                 TFTVRevenant.DeadSoldiersDelirium.Remove(id);
+                
 
             }
 
@@ -1947,7 +1951,7 @@ namespace TFTV
 
                         if (GetChosenRevenant(GetRequiredDelirium(actorClassTag)))
                         {
-                            int chance = TFTVRevenant.DeadSoldiersDelirium.Keys.Count() * 3;
+                            int chance = 50;
 
                             UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
                             int roll = UnityEngine.Random.Range(1, 101);
@@ -1959,10 +1963,12 @@ namespace TFTV
                                 GeoTacUnitId theChosen = _choosenRevenant;
 
                                 TFTVRevenant.SetRevenantTierTag(theChosen, tacticalActorBase, controller);
+
                                 tacticalActorBase.name = TFTVRevenant.GetDeadSoldiersNameFromID(theChosen, controller);
                                 // SetDeathTime(theChosen, __instance, timeOfMissionStart);
 
                                 TacticalActor tacticalActor = tacticalActorBase as TacticalActor;
+                                TFTVRevenant.AddRevenantStatusEffect(tacticalActorBase);
                                 TFTVRevenant.SetRevenantClassAbility(theChosen, controller, tacticalActor);
 
                                 //  SpreadResistance(__instance);

@@ -64,44 +64,7 @@ namespace TFTV
 
         }
 
-        //Behemoth roaming
-      /*  [HarmonyPatch(typeof(GeoBehemothActor), "OnBehemothEmerged")]
-        public static class GeoBehemothActor_OnBehemothEmerged_patch
-        {
-            public static bool Prepare()
-            {
-                TFTVConfig config = TFTVMain.Main.Config;
-                return config.ActivateAirCombatChanges;
-            }
-            public static void Postfix(GeoBehemothActor __instance)
-
-            {
-                try
-                {
-                    TFTVLogger.Always("Behemoth emerging");
-
-                    __instance.GeoLevel.EventSystem.SetVariable(BehemothRoamings, __instance.GeoLevel.EventSystem.GetVariable(BehemothRoamings) + 1);
-
-                    if (__instance.GeoLevel.PhoenixFaction.Research.HasCompleted("PX_YuggothianEntity_ResearchDef")
-                        && __instance.GeoLevel.PhoenixFaction.Research.HasCompleted("PX_Alien_Citadel_ResearchDef")
-                        && __instance.GeoLevel.EventSystem.GetVariable("BehemothPatternEventTriggered") != 1)
-                    {
-                        GeoscapeEventContext context = new GeoscapeEventContext(__instance.GeoLevel.AlienFaction, __instance.GeoLevel.PhoenixFaction);
-                        __instance.GeoLevel.EventSystem.TriggerGeoscapeEvent("OlenaOnBehemothPattern", context);
-                        __instance.GeoLevel.EventSystem.SetVariable("BehemothPatternEventTriggered", 1);
-                        TFTVLogger.Always("Event on Behemoth pattern should trigger");
-
-                    }
-
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-
-            }
-
-        }*/
+      
 
         //Hammerfall
         [HarmonyPatch(typeof(GeoAlienFaction), "SpawnEgg", new Type[] { typeof(Vector3) })]

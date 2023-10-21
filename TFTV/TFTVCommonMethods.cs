@@ -9,7 +9,6 @@ using PhoenixPoint.Common.Saves;
 using PhoenixPoint.Common.UI;
 using PhoenixPoint.Common.View.ViewModules;
 using PhoenixPoint.Geoscape.Entities;
-using PhoenixPoint.Geoscape.Entities.PhoenixBases.FacilityComponents;
 using PhoenixPoint.Geoscape.Entities.Research;
 using PhoenixPoint.Geoscape.Entities.Research.Requirement;
 using PhoenixPoint.Geoscape.Entities.Sites;
@@ -22,12 +21,12 @@ using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Effects.ApplicationConditions;
 using PhoenixPoint.Tactical.Entities.Effects.DamageTypes;
 using PhoenixPoint.Tactical.Entities.Statuses;
+using PhoenixPoint.Tactical.Levels;
 using PhoenixPoint.Tactical.Levels.FactionObjectives;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using UnityEngine;
 using static PhoenixPoint.Tactical.Entities.Statuses.TacStatusDef;
 
 namespace TFTV
@@ -37,8 +36,7 @@ namespace TFTV
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
         //  private static readonly DefRepository Repo = TFTVMain.Repo;
 
-        public static object View { get; private set; }
-
+     
         public static void CheckGeoUIfunctionality(GeoLevelController controller)
         {
             try
@@ -61,12 +59,12 @@ namespace TFTV
 
         public static string ConvertKeyToString(string key)
         {
-            try 
-            { 
+            try
+            {
 
                 return new LocalizedTextBind(key).Localize();
-            
-            
+
+
             }
             catch (Exception e)
             {
@@ -102,7 +100,7 @@ namespace TFTV
                 TFTVInfestation.InfestationMissionWon = false;
                 ClearHints();
                 TFTVUI.uIModuleSoldierCustomization = null;
-            //    TFTVBetaSaveGamesFixes.LOTAReworkGlobalCheck = false;
+                //    TFTVBetaSaveGamesFixes.LOTAReworkGlobalCheck = false;
                 TFTVTactical.TurnZeroMethodsExecuted = false;
                 TFTVBaseDefenseGeoscape.PhoenixBasesUnderAttack = new Dictionary<int, Dictionary<string, double>>();
                 TFTVBaseDefenseGeoscape.PhoenixBasesInfested.Clear();
@@ -114,14 +112,15 @@ namespace TFTV
                 TFTVAncients.AlertedHoplites.Clear();
                 TFTVUI.CharacterLoadouts?.Clear();
                 TFTVCapturePandoransGeoscape.PandasForFoodProcessing = 0;
-              //  TFTVCapturePandorans.CachedACC = TFTVCapturePandorans.AircraftCaptureCapacity;
-                
+                //  TFTVCapturePandorans.CachedACC = TFTVCapturePandorans.AircraftCaptureCapacity;
+
                 TFTVCapturePandorans.ContainmentFacilityPresent = false;
                 TFTVNewGameOptions.ConfigImplemented = false;
                 TFTVNewGameOptions.InternalDifficultyCheck = 0;
                 TFTVCapturePandoransGeoscape.ToxinsInCirculation = 0;
                 TFTVNewGameMenu.NewGameOptionsSetUp = false;
                 TFTVNewGameMenu.EnterStateRun = false;
+
                 /*  TFTVNewGameOptions.AmountOfExoticResourcesSetting;
                   TFTVNewGameOptions.ResourceMultiplierSetting;
                   TFTVNewGameOptions.DiplomaticPenaltiesSetting;
@@ -186,7 +185,8 @@ namespace TFTV
                 TFTVBaseDefenseTactical.StratToBeAnnounced = 0;
                 TFTVBaseDefenseTactical.StratToBeImplemented = 0;
                 TFTVAncients.CyclopsMolecularDamageBuff.Clear();
-             //   TFTVAncients.AlertedHoplites.Clear();
+                TFTVExperimental.AttackedLairSites = new Dictionary<int, int>();
+                //   TFTVAncients.AlertedHoplites.Clear();
                 TFTVCapturePandorans.AircraftCaptureCapacity = 0;
                 //  TFTVBaseDefenseTactical.VentingHintShown = false;
             }
@@ -279,17 +279,17 @@ namespace TFTV
                 {
                     if (objective1.Title == null)
                     {
-                       // TFTVLogger.Always("objective1.Title is missing!");
+                        // TFTVLogger.Always("objective1.Title is missing!");
                     }
                     else
                     {
                         if (objective1.Title.LocalizationKey == null)
                         {
-                           // TFTVLogger.Always("objective1.Title.LocalizationKey is missing!");
+                            // TFTVLogger.Always("objective1.Title.LocalizationKey is missing!");
                         }
                         else
                         {
-                          //  TFTVLogger.Always("objective1.Title.LocalizationKey is " + objective1.Title.LocalizationKey);
+                            //  TFTVLogger.Always("objective1.Title.LocalizationKey is " + objective1.Title.LocalizationKey);
 
                             if (objective1.Title.LocalizationKey == title)
                             {
@@ -314,7 +314,7 @@ namespace TFTV
 
 
 
-       
+
 
         [HarmonyPatch(typeof(GeoFaction), "AddTag")]
         public static class GeoPhoenix_AddTag_FavorForAFriend_Patch
@@ -324,7 +324,7 @@ namespace TFTV
             {
                 try
                 {
-                    FactionFunctionalityTagDef alienContainmentFunctionality = DefCache.GetDef< FactionFunctionalityTagDef>("AlienContainment_FactionFunctionalityTagDef");
+                    FactionFunctionalityTagDef alienContainmentFunctionality = DefCache.GetDef<FactionFunctionalityTagDef>("AlienContainment_FactionFunctionalityTagDef");
 
                     if (tag == alienContainmentFunctionality && __instance.GeoLevel.PhoenixFaction.Research.HasCompleted("PX_Alien_Acheron_ResearchDef")
                         && __instance.GeoLevel.EventSystem.GetEventRecord("PROG_CH0") == null)
@@ -333,10 +333,10 @@ namespace TFTV
 
                         TFTVLogger.Always($"Built containment facility and has completed PX_Alien_Acheron_ResearchDef, triggering CH0");
 
-                     //   __instance.GeoLevel.EventSystem.SetVariable("FavorForAFriend", 1);
+                        //   __instance.GeoLevel.EventSystem.SetVariable("FavorForAFriend", 1);
 
-                           GeoscapeEventContext context = new GeoscapeEventContext(__instance.GeoLevel.PhoenixFaction.Bases.First().Site, __instance.GeoLevel.AlienFaction);
-                           __instance.GeoLevel.EventSystem.TriggerGeoscapeEvent("PROG_CH0", context);
+                        GeoscapeEventContext context = new GeoscapeEventContext(__instance.GeoLevel.PhoenixFaction.Bases.First().Site, __instance.GeoLevel.AlienFaction);
+                        __instance.GeoLevel.EventSystem.TriggerGeoscapeEvent("PROG_CH0", context);
 
                     }
                 }
@@ -347,18 +347,18 @@ namespace TFTV
             }
         }
 
-    
+
 
         [HarmonyPatch(typeof(Research), "CompleteResearch")]
         public static class Research_CompleteResearch_TFTV_Patch
         {
             public static void Postfix(ResearchElement research)
             {
-             
+
                 try
                 {
                     TFTVLogger.Always($"{research.ResearchID} completed by {research.Faction}");
-                    
+
                     GeoLevelController controller = research.Faction.GeoLevel;
                     GeoPhoenixFaction phoenixFaction = controller.PhoenixFaction;
                     ResearchDef mutationTech = DefCache.GetDef<ResearchDef>("ANU_MutationTech_ResearchDef");
@@ -495,14 +495,14 @@ namespace TFTV
 
                     FactionFunctionalityTagDef alienContainmentFunctionality = DefCache.GetDef<FactionFunctionalityTagDef>("AlienContainment_FactionFunctionalityTagDef");
 
-                    if (research.ResearchID=="PX_Alien_Acheron_ResearchDef" && controller.PhoenixFaction.GameTags.Contains(alienContainmentFunctionality) 
+                    if (research.ResearchID == "PX_Alien_Acheron_ResearchDef" && controller.PhoenixFaction.GameTags.Contains(alienContainmentFunctionality)
                         && controller.EventSystem.GetEventRecord("PROG_CH0") == null)
                     {
 
-                       
+
                         TFTVLogger.Always($"Built containment facility and has completed PX_Alien_Acheron_ResearchDef, triggering CH0");
 
-                   //     controller.EventSystem.SetVariable("FavorForAFriend", 1);
+                        //     controller.EventSystem.SetVariable("FavorForAFriend", 1);
 
 
                         GeoscapeEventContext context = new GeoscapeEventContext(controller.PhoenixFaction.Bases.First().Site, controller.AlienFaction);
@@ -910,7 +910,7 @@ namespace TFTV
 
         }
 
-        public static void RevealHavenUnderAttack(GeoSite geoSite, GeoLevelController controller) 
+        public static void RevealHavenUnderAttack(GeoSite geoSite, GeoLevelController controller)
         {
             try
             {
@@ -941,7 +941,7 @@ namespace TFTV
         }
 
 
-       
+
         internal static int LocateSoldier(GeoCharacter geoCharacter)
         {
             try
