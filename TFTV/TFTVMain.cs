@@ -114,15 +114,16 @@ namespace TFTV
                 Logger.LogInfo("BC stuff loaded");
                 //TFTV 
                 Logger.LogInfo("TFTV stuff loading");
-                TFTVDefsInjectedOnlyOnce.InjectDefsInjectedOnlyOnce();
+                TFTVDefsInjectedOnlyOnce.InjectDefsInjectedOnlyOnceBatch1();
                 Logger.LogInfo("First batch of Defs injected");
-                TFTVDefsRequiringReinjection.InjectDefsRequiringReinjection();
+                TFTVDefsRequiringReinjection.InjectDefsInjectedOnlyOnceBatch2();
                 Logger.LogInfo("Second batch of Defs injected");
 
                 TFTVHumanEnemiesNames.CreateNamesDictionary();
                 Logger.LogInfo("Names for human enemies created");
                 TFTVHumanEnemiesNames.CreateRanksDictionary();
                 Logger.LogInfo("Ranks for human enemies created");
+                TFTVHumanEnemiesNames.CreateTierDescriptions();
 
 
 

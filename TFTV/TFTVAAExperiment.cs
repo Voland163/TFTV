@@ -1,7 +1,6 @@
 ﻿using Base;
 using Base.Core;
 using Base.Defs;
-using Base.Levels;
 using Base.UI;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
@@ -25,7 +24,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Security.Policy;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -37,16 +35,12 @@ namespace TFTV
         //This has been copy pasted from the great Mad's Assorted Adjustments (all hail Mad!) with minimal adjustments
         //https://github.com/Mad-Mods-Phoenix-Point/AssortedAdjustments/tree/main/Source/AssortedAdjustments
 
-      //  public static bool KludgeCheck = false;
+        //  public static bool KludgeCheck = false;
 
         internal static class ExtendedAgendaTracker
         {
             internal static bool fetchedSiteNames = false;
-            internal static string unexploredSiteName = "KEY_UNEXPLORED_SITE";
-
-            
-
-           // internal static string unexploredSiteName = "UNEXPLORED SITE";
+            internal static string unexploredSiteName = "UNEXPLORED SITE";
             internal static string explorationSiteName = "EXPLORATION SITE";
             internal static string scavengingSiteName = "SCAVENGING SITE";
             internal static string ancientSiteName = "ANCIENT SITE";
@@ -58,6 +52,33 @@ namespace TFTV
             internal static string actionAcquire = "SECURE";
             internal static string actionAttack = "WILL ATTACK:";
             internal static string actionAttackOnPX = "WILL COMPLETE ATTACK ON";
+
+
+            public static void LocalizeExtendedAgendaUI()
+            {
+                try
+                {
+                    unexploredSiteName = new LocalizedTextBind() { LocalizationKey = "EXTENDED_AGENDA_KEY_UNEXPLORED_SITE" }.Localize();
+                    explorationSiteName = new LocalizedTextBind() { LocalizationKey = "EXTENDED_AGENDA_KEY_EXPLORATION_SITE" }.Localize();
+                    scavengingSiteName = new LocalizedTextBind() { LocalizationKey = "EXTENDED_AGENDA_KEY_SCAVENGING_SITE" }.Localize();
+                    ancientSiteName = new LocalizedTextBind() { LocalizationKey = "EXTENDED_AGENDA_KEY_ANCIENT_SITE" }.Localize();
+                    actionExploring = new LocalizedTextBind() { LocalizationKey = "EXTENDED_AGENDA_KEY_INVESTIGATES" }.Localize();
+                    actionTraveling = new LocalizedTextBind() { LocalizationKey = "EXTENDED_AGENDA_KEY_TRAVELS_TO" }.Localize();
+                    actionRepairing = new LocalizedTextBind() { LocalizationKey = "EXTENDED_AGENDA_KEY_REPAIRING" }.Localize();
+                    actionExcavating = new LocalizedTextBind() { LocalizationKey = "EXTENDED_AGENDA_KEY_EXCAVATING" }.Localize();
+                    actionAcquire = new LocalizedTextBind() { LocalizationKey = "EXTENDED_AGENDA_KEY_SECURE" }.Localize();
+                    actionAttack = new LocalizedTextBind() { LocalizationKey = "EXTENDED_AGENDA_KEY_WILL_ATTACK" }.Localize();
+                    actionAttackOnPX = new LocalizedTextBind() { LocalizationKey = "EXTENDED_AGENDA_KEY_WILL_COMPLETE_ATTACK_ON" }.Localize();
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+
+
+            }
+
+
             //internal static string actionAttack = "DEFEND {0} AGAINST {1}";
 
             internal static Sprite aircraftSprite = null;
@@ -92,11 +113,8 @@ namespace TFTV
              *** Utility methods
              ** 
             */
-            private static bool GetTravelTime(GeoVehicle vehicle, out float travelTime, GeoSite target = null)
+                    private static bool GetTravelTime(GeoVehicle vehicle, out float travelTime, GeoSite target = null)
             {
-                string unExploredSiteNameText = new LocalizedTextBind() { LocalizationKey = unexploredSiteName }.Localize();
-
-
                 travelTime = 0f;
 
                 if (target == null && vehicle.FinalDestination == null)
@@ -290,7 +308,7 @@ namespace TFTV
             }
 
 
-            public static void StoreSpritesForTrackerAndObjectivesList(UIModuleInfoBar uIModuleInfoBar) 
+            public static void StoreSpritesForTrackerAndObjectivesList(UIModuleInfoBar uIModuleInfoBar)
             {
                 try
                 {
@@ -400,7 +418,7 @@ namespace TFTV
                 }
             }
 
-            public static void RecolorTimerBaseAndAncientSiteAttacks(GeoSiteVisualsController geoSiteVisualsController, GeoSite site) 
+            public static void RecolorTimerBaseAndAncientSiteAttacks(GeoSiteVisualsController geoSiteVisualsController, GeoSite site)
             {
 
                 try
@@ -1184,70 +1202,70 @@ namespace TFTV
                             else if (geoSite.Type == GeoSiteType.PhoenixBase)
                             {
 
-                              /*  foreach (GeoFaction geoFaction in ____context.Level.Factions)
+                                /*  foreach (GeoFaction geoFaction in ____context.Level.Factions)
+                                  {
+                                      if (geoFaction.IsViewerFaction || geoFaction.IsEnvironmentFaction || geoFaction.IsNeutralFaction || geoFaction.IsInactiveFaction)
+                                      {
+                                          continue;
+                                      }
+                                      //TFTVLogger.Debug($"[UIModuleFactionAgendaTracker_UpdateData_PREFIX] geoFaction: {geoFaction.Name.Localize()}");
+                                */
+
+                                if (TFTVBaseDefenseGeoscape.PhoenixBasesUnderAttack.Keys.Count > 0)
                                 {
-                                    if (geoFaction.IsViewerFaction || geoFaction.IsEnvironmentFaction || geoFaction.IsNeutralFaction || geoFaction.IsInactiveFaction)
+
+                                    /*  bool isFactionPresent = false;
+                                      foreach (Dictionary<GeoFaction, TimeUnit> factionTimeUnits in MissionDeployment.PhoenixBasesUnderAttack.Values)
+                                      {
+                                          if (factionTimeUnits.ContainsKey(geoFaction))
+                                          {
+                                              isFactionPresent = true;
+                                              break;
+                                          }
+                                      }*/
+
+                                    //  if (isFactionPresent)
+                                    //  {
+                                    foreach (int phoenixBaseId in TFTVBaseDefenseGeoscape.PhoenixBasesUnderAttack.Keys)
                                     {
-                                        continue;
-                                    }
-                                    //TFTVLogger.Debug($"[UIModuleFactionAgendaTracker_UpdateData_PREFIX] geoFaction: {geoFaction.Name.Localize()}");
-                              */
-
-                                    if (TFTVBaseDefenseGeoscape.PhoenixBasesUnderAttack.Keys.Count > 0)
-                                    {
-
-                                      /*  bool isFactionPresent = false;
-                                        foreach (Dictionary<GeoFaction, TimeUnit> factionTimeUnits in MissionDeployment.PhoenixBasesUnderAttack.Values)
-                                        {
-                                            if (factionTimeUnits.ContainsKey(geoFaction))
-                                            {
-                                                isFactionPresent = true;
-                                                break;
-                                            }
-                                        }*/
-
-                                      //  if (isFactionPresent)
-                                      //  {
-                                            foreach (int phoenixBaseId in TFTVBaseDefenseGeoscape.PhoenixBasesUnderAttack.Keys)
-                                            {
-                                                if (geoSite.SiteId == phoenixBaseId)
+                                        if (geoSite.SiteId == phoenixBaseId)
                                         {
 
                                             TimeUnit timer = TimeUnit.FromSeconds((float)(3600 * TFTVBaseDefenseGeoscape.PhoenixBasesUnderAttack[phoenixBaseId].First().Value));
 
                                             TimeUnit attackTime = timer - ____context.Level.Timing.Now; //.TimeSpan.TotalHours)); //;
-                                                                                                                                                                                                                          //TFTVLogger.Debug($"[UIModuleFactionAgendaTracker_UpdateData_PREFIX] element.TrackedObject: {element.TrackedObject}, attackTime: {attackTime}");
-                                                                                                                                                                                                                          // TFTVLogger.Always($"attack time is {attackTime}");
+                                                                                                        //TFTVLogger.Debug($"[UIModuleFactionAgendaTracker_UpdateData_PREFIX] element.TrackedObject: {element.TrackedObject}, attackTime: {attackTime}");
+                                                                                                        // TFTVLogger.Always($"attack time is {attackTime}");
                                             element.UpdateData(attackTime, true, null);
-                                                   /* __result = attackTime <= TimeUnit.Zero;
-                                                    if (__result) //&& !KludgeCheck)
-                                                    {                                                    
-                                                        MethodInfo registerMission = typeof(GeoSite).GetMethod("RegisterMission", BindingFlags.NonPublic | BindingFlags.Instance);
-                                                        registerMission.Invoke(geoSite, new object[] { geoSite.ActiveMission });
-                                                        TFTVLogger.Always("this method in AA is invoked");
-                                                      //  KludgeCheck = true;
-                                                    }*/
-                                                    geoSite.RefreshVisuals();
-                                                    
-                                                }
-                                            }
-                                       // }
+                                            /* __result = attackTime <= TimeUnit.Zero;
+                                             if (__result) //&& !KludgeCheck)
+                                             {                                                    
+                                                 MethodInfo registerMission = typeof(GeoSite).GetMethod("RegisterMission", BindingFlags.NonPublic | BindingFlags.Instance);
+                                                 registerMission.Invoke(geoSite, new object[] { geoSite.ActiveMission });
+                                                 TFTVLogger.Always("this method in AA is invoked");
+                                               //  KludgeCheck = true;
+                                             }*/
+                                            geoSite.RefreshVisuals();
+
+                                        }
                                     }
+                                    // }
+                                }
 
-                                    /*  foreach (SiteAttackSchedule phoenixBaseAttackSchedule in geoFaction.PhoenixBaseAttackSchedule)
+                                /*  foreach (SiteAttackSchedule phoenixBaseAttackSchedule in geoFaction.PhoenixBaseAttackSchedule)
+                                  {
+                                      if (phoenixBaseAttackSchedule.HasAttackScheduled && phoenixBaseAttackSchedule.Site == geoSite)
                                       {
-                                          if (phoenixBaseAttackSchedule.HasAttackScheduled && phoenixBaseAttackSchedule.Site == geoSite)
-                                          {
-                                              TimeUnit attackTime = TimeUnit.FromHours((float)(phoenixBaseAttackSchedule.ScheduledFor - ____context.Level.Timing.Now).TimeSpan.TotalHours);
-                                              //TFTVLogger.Debug($"[UIModuleFactionAgendaTracker_UpdateData_PREFIX] element.TrackedObject: {element.TrackedObject}, attackTime: {attackTime}");
+                                          TimeUnit attackTime = TimeUnit.FromHours((float)(phoenixBaseAttackSchedule.ScheduledFor - ____context.Level.Timing.Now).TimeSpan.TotalHours);
+                                          //TFTVLogger.Debug($"[UIModuleFactionAgendaTracker_UpdateData_PREFIX] element.TrackedObject: {element.TrackedObject}, attackTime: {attackTime}");
 
-                                              element.UpdateData(attackTime, true, null);
-                                              __result = attackTime <= TimeUnit.Zero;
-                                          }
-                                      }*/
+                                          element.UpdateData(attackTime, true, null);
+                                          __result = attackTime <= TimeUnit.Zero;
+                                      }
+                                  }*/
 
 
-                               // }
+                                // }
 
 
 
@@ -1403,7 +1421,7 @@ namespace TFTV
                                     }
                                 }
 
-                                
+
                                 foreach (SiteAttackSchedule ancientSiteAttackSchedule in geoFaction.AncientSiteAttackSchedule)
                                 {
                                     if (ancientSiteAttackSchedule.HasAttackScheduled && ancientSiteAttackSchedule.Site.Owner == ____context.ViewerFaction)

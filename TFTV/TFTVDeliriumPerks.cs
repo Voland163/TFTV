@@ -127,8 +127,11 @@ namespace TFTV
 
         }
 
+        /// <summary>
+        /// Removed, because this Feral is gone.
+        /// </summary>
 
-        [HarmonyPatch(typeof(TacticalAbility), "FumbleActionCheck")]
+      /*  [HarmonyPatch(typeof(TacticalAbility), "FumbleActionCheck")]
         public static class TacticalAbility_FumbleActionCheck_Patch
         {
             private static readonly TacticalAbilityDef feral = DefCache.GetDef<TacticalAbilityDef>("Feral_AbilityDef");
@@ -139,7 +142,7 @@ namespace TFTV
                     if (__instance.TacticalActor.GetAbilityWithDef<TacticalAbility>(feral) != null && __instance.Source is Equipment)
                     {
                         __result = __result || UnityEngine.Random.Range(0, 100) < 20;
-                        TFTVLogger.Always("The fumble action is " + __instance.GetAbilityDescription() + " and the fumble result is " + __result);
+                        TFTVLogger.Always($"The fumble action is {__instance.GetAbilityDescription()} and the fumble result is {__result}");
                     }
 
                 }
@@ -148,7 +151,7 @@ namespace TFTV
                     TFTVLogger.Error(e);
                 }
             }
-        }
+        }*/
 
 
 

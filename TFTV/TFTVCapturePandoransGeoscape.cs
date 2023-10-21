@@ -66,7 +66,7 @@ namespace TFTV
 
                     float ProbabilityRoll = UnityEngine.Random.Range(0f, 100f);
 
-                    TFTVLogger.Always($"rolling for poisoning! chance {PoisoningChance}, roll {ProbabilityRoll}");
+                  //  TFTVLogger.Always($"rolling for poisoning! chance {PoisoningChance}, roll {ProbabilityRoll}");
 
                     if (ProbabilityRoll < PoisoningChance)
                     {
@@ -126,7 +126,7 @@ namespace TFTV
 
                 int foodProductionFacilitiesCount = CountFoodProductionFacilities(controller.PhoenixFaction);
 
-                foodController.Income = (int)(buff * 24 * foodProductionFacilitiesCount) + Mathf.Min((int)GetFarmOutputPerDay(), foodProductionFacilitiesCount * ProcessingCapacity) - controller.PhoenixFaction.Soldiers.Count();
+                foodController.Income = (int)Math.Ceiling(buff * 24 * foodProductionFacilitiesCount) + Mathf.Min((int)GetFarmOutputPerDay(), foodProductionFacilitiesCount * ProcessingCapacity) - controller.PhoenixFaction.Soldiers.Count();
 
                // TFTVLogger.Always($"income {foodController.Income}, from {(int)(buff * 24 * foodProductionFacilitiesCount)} plus {Mathf.Min((int)GetFarmOutputPerDay(), foodProductionFacilitiesCount * ProcessingCapacity)} minus {controller.PhoenixFaction.Soldiers.Count()}");
 
@@ -136,9 +136,15 @@ namespace TFTV
                 {
                     UITooltipText tooltipText = uIModuleInfoBar.GetComponentsInChildren<UITooltipText>().FirstOrDefault(utt => utt.TipKey.LocalizeEnglish().Contains("FOOD") || utt.TipKey.LocalizeEnglish().Contains("Pandoran meat"));
 
-                    string tipText = $"<b>Processing Pandoran meat</b>.\n-Meat to process: {(int)PandasForFoodProcessing}" +
-                        $"\n-Max storage: {StorageCapacity * foodProductionFacilitiesCount}" +
-                           $"\n-Max processing per day: {ProcessingCapacity * foodProductionFacilitiesCount}";
+                    string processingPandoranMeat = new LocalizedTextBind() { LocalizationKey = "KEY_PANDORAN_MEAT_PROCESSING" }.Localize();
+                    string pandoranMeatToProcess = new LocalizedTextBind() { LocalizationKey = "KEY_PANDORAN_MEAT_TO_PROCESS" }.Localize();
+                    string pandoranMeatStorage = new LocalizedTextBind() { LocalizationKey = "KEY_PANDORAN_MEAT_STORAGE" }.Localize();
+                    string pandoranMeatProcessingCapacity = new LocalizedTextBind() { LocalizationKey = "KEY_PANDORAN_MEAT_MAX_PROCESS" }.Localize();
+
+                    string tipText = $"{processingPandoranMeat} " +
+                        $"\n{pandoranMeatToProcess} {(int)PandasForFoodProcessing}" +
+                        $"\n{pandoranMeatStorage} {StorageCapacity * foodProductionFacilitiesCount}" +
+                           $"\n{pandoranMeatProcessingCapacity} {ProcessingCapacity * foodProductionFacilitiesCount}";
 
                     // TFTVLogger.Always($"{tipText}");
 
@@ -163,7 +169,13 @@ namespace TFTV
                 methodDisplayValue.Invoke(mutagenController, null);
                 if (mutagenController.Income > 0)
                 {
-                    string tipText = $"<b>Extracting mutagens from captured Pandorans</b>.\n-Mutagens from facilities: {incomeFromLabs}\n-Mutagens from Pandorans: {incomeFromCapturedPandas}\n-Max extraction per day: {50 * mutationLabsCount}";
+
+                    string extractingMutagens = new LocalizedTextBind() { LocalizationKey = "KEY_EXTRACTING_MUTAGENS_TFTV"}.Localize();
+                    string mutagenFromFacilities = new LocalizedTextBind() { LocalizationKey = "KEY_MUTAGENS_FROM_FACILITIES_TFTV"}.Localize();
+                    string mutagenFromPandorans = new LocalizedTextBind() { LocalizationKey = "KEY_MUTAGENS_FROM_PANDORANS_TFTV"}.Localize();
+                    string maxExtractionPerDay = new LocalizedTextBind() { LocalizationKey = "KEY_MAX_EXTRACTION_PER_DAY_TFTV"}.Localize();
+
+                    string tipText = $"{extractingMutagens}.\n{mutagenFromFacilities} {incomeFromLabs}\n{mutagenFromPandorans} {incomeFromCapturedPandas}\n{maxExtractionPerDay} {50 * mutationLabsCount}";
                     UITooltipText tooltipText = uIModuleInfoBar.GetComponentsInChildren<UITooltipText>().FirstOrDefault(utt => utt.TipKey.LocalizationKey.Equals("KEY_MUTAGENS_RESOURCE_TT") || utt.TipKey.LocalizeEnglish().Contains("Extracting mutagens"));
 
                     //    TFTVLogger.Always($"{tipText}");
@@ -232,7 +244,9 @@ namespace TFTV
 
                         if (PandasForFoodProcessing + amount > capacity && !OnDismantleRun)
                         {
-                            string warning = $"Food processing facilities storage capacity almost reached! Rendering this Pandoran for food will waste {PandasForFoodProcessing + amount - capacity} units";
+                            string warningText = new LocalizedTextBind() { LocalizationKey = "KEY_FOOD_PROCESSING_WARNING_TFTV" }.Localize();
+
+                            string warning = $"{warningText} {PandasForFoodProcessing + amount - capacity}";
 
                             /*   MethodInfo methodInfo = typeof(UIStateRosterAliens).GetMethod("OnDismantpleForFoodDialogCallback", BindingFlags.Instance | BindingFlags.NonPublic);
 
@@ -387,7 +401,7 @@ namespace TFTV
                 OnProductionUpdate(supplies.Value);
 
 
-                TFTVLogger.Always($"giving supplies {supplies.Value}, reducing PandasForFoodProcessing to {PandasForFoodProcessing}");
+              //  TFTVLogger.Always($"giving supplies {supplies.Value}, reducing PandasForFoodProcessing to {PandasForFoodProcessing}");
 
             }
             catch (Exception e)

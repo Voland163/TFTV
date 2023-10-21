@@ -223,8 +223,10 @@ namespace TFTV
                             }
                             else
                             {
+                                string succumbedToInfestation = TFTVCommonMethods.ConvertKeyToString("KEY_LOG_ENTRY_SUCCUMB_INFESTATION");
+
                                 // TFTVLogger.Always("Entry.text is not null");
-                                entry.Text = new LocalizedTextBind(GeoSiteForInfestation.Owner + " " + DefenseMission.Haven.Site.Name + " has succumbed to Pandoran infestation!", true);
+                                entry.Text = new LocalizedTextBind($"{GeoSiteForInfestation.Owner} {DefenseMission.Haven.Site.Name} {succumbedToInfestation}", true);
                                 // TFTVLogger.Always("The following entry to Log was added" + GeoSiteForInfestation.Owner + " " + DefenseMission.Haven.Site.Name + " has succumbed to Pandoran infestation!");
 
                             }
@@ -319,19 +321,25 @@ namespace TFTV
 
                             string dynamicDescription = "";
 
+
+                            string destroyedMonstrosity = TFTVCommonMethods.ConvertKeyToString("KEY_INFESTATION_MONSTROSITY");
+                            string around = TFTVCommonMethods.ConvertKeyToString("KEY_INFESTATION_AROUND");
+                            string fortunateFew = TFTVCommonMethods.ConvertKeyToString("KEY_INFESTATION_FORTUNATE");
+                            string nodeDesroyed = TFTVCommonMethods.ConvertKeyToString("KEY_INFESTATION_NODE_DESTROYED_TITLE");
+
                             if (havenToReceiveRefugees.Count > 0)
                             {
-                                dynamicDescription = " Around " + (Mathf.RoundToInt(populationSaved / 100)) * 100 + " of them were fortunate enough to survive and have relocated to friendly nearby havens.";
+                                dynamicDescription = $"{around} {(Mathf.RoundToInt(populationSaved / 100)) * 100} {fortunateFew}";
 
                             }
 
 
                             Text description = __instance.GetComponentInChildren<DescriptionController>().Description;
                             description.GetComponent<I2.Loc.Localize>().enabled = false;
-                            description.text = "We destroyed the monstrosity that had taken over the inhabitants of the haven, delivering them from a fate worse than death." + dynamicDescription;
+                            description.text = $"{destroyedMonstrosity} {dynamicDescription}";
                             Text title = __instance.TopBar.Title;
                             title.GetComponent<I2.Loc.Localize>().enabled = false;
-                            title.text = "NODE DESTOYED";
+                            title.text = nodeDesroyed;
 
 
                             __instance.Background.sprite = Helper.CreateSpriteFromImageFile("NodeAlt.jpg");
@@ -358,9 +366,14 @@ namespace TFTV
                                     if (refugeesToHaven > 0)
                                     {
                                         haven.Population += refugeesToHaven;
+
+                                        string survivorsFrom = TFTVCommonMethods.ConvertKeyToString("KEY_INFESTATION_SURVIVORS_FROM");
+                                        string haveFledTo = TFTVCommonMethods.ConvertKeyToString("KEY_INFESTATION_FLED_TO");
+
+
                                         GeoscapeLogEntry entry = new GeoscapeLogEntry
-                                        {
-                                            Text = new LocalizedTextBind(refugeesToHaven + " survivors from " + site.LocalizedSiteName + " have fled to  " + haven.Site.LocalizedSiteName, true)
+                                        {   
+                                            Text = new LocalizedTextBind($"{refugeesToHaven} {survivorsFrom} {site.LocalizedSiteName} {haveFledTo} {haven.Site.LocalizedSiteName}", true)
                                         };
                                         typeof(GeoscapeLog).GetMethod("AddEntry", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(site.GeoLevel.Log, new object[] { entry, null });
 
@@ -373,26 +386,37 @@ namespace TFTV
                             TFTVInfestationStory.OriginalOwner = "";
                             TFTVLogger.Always("LivingWeaponsAcquired variables is " + site.GeoLevel.EventSystem.GetVariable(LivingWeaponsAcquired));
 
-                            string pronoun = "they";
-                            string nameMainCharacter = "Phoenix operatives";
-                            string plural = "";
-                            string possesivePronoun = "them";
+                            /*
+                             * KEY_GRAMMAR_PRONOUNS_SHE
+                             * KEY_GRAMMAR_PRONOUNS_HER
+                             * KEY_GRAMMAR_PRONOUNS_HE
+                             * KEY_GRAMMAR_PRONOUNS_HIM
+                             * KEY_GRAMMAR_PRONOUNS_THEY
+                             * KEY_GRAMMAR_PRONOUNS_THEM
+                             * KEY_GRAMMAR_PLURAL_SUFFIX
+                             * KEY_GRAMMAR_SINGLE_SUFFIX
+                             */
+
+                            string pronoun = TFTVCommonMethods.ConvertKeyToString("KEY_GRAMMAR_PRONOUNS_THEY");//"they";
+                            string nameMainCharacter = TFTVCommonMethods.ConvertKeyToString("KEY_TEXT_PHOENIX_OPERATIVES"); //"Phoenix operatives";
+                            string plural = TFTVCommonMethods.ConvertKeyToString("KEY_GRAMMAR_SINGLE_SUFFIX");
+                            string possesivePronoun = TFTVCommonMethods.ConvertKeyToString("KEY_GRAMMAR_PRONOUNS_THEM"); ;
                             string havenName = site.LocalizedSiteName;
 
                             if (FindCharactersOnSite(site).Count() > 0)
                             {
                                 if (FindCharactersOnSite(site).First().Identity.Sex == GeoCharacterSex.Female)
                                 {
-                                    pronoun = "she";
-                                    possesivePronoun = "her";
+                                    pronoun = TFTVCommonMethods.ConvertKeyToString("KEY_GRAMMAR_PRONOUNS_SHE");
+                                    possesivePronoun = TFTVCommonMethods.ConvertKeyToString("KEY_GRAMMAR_PRONOUNS_HER");
                                 }
                                 else
                                 {
-                                    pronoun = "he";
-                                    possesivePronoun = "him";
+                                    pronoun = TFTVCommonMethods.ConvertKeyToString("KEY_GRAMMAR_PRONOUNS_HE");
+                                    possesivePronoun = TFTVCommonMethods.ConvertKeyToString("KEY_GRAMMAR_PRONOUNS_HIM");
                                 }
                                 nameMainCharacter = FindCharactersOnSite(site).First().DisplayName;
-                                plural = "s";
+                                plural = TFTVCommonMethods.ConvertKeyToString("KEY_GRAMMAR_PLURAL_SUFFIX");
                             }
 
 
@@ -400,28 +424,34 @@ namespace TFTV
                             GeoscapeEventDef LW2Miss = DefCache.GetDef<GeoscapeEventDef>("PROG_LW2_WIN_GeoscapeEventDef");
                             GeoscapeEventDef LW3Miss = DefCache.GetDef<GeoscapeEventDef>("PROG_LW3_WIN_GeoscapeEventDef");
 
-                            LocalizedTextBind lWDescription1 = new LocalizedTextBind(
-                                    "As your team searches for survivors and salvage in " + havenName + ", they come across a former clinic. " +
-                                    "It is full of horrors: mutilated bodies litter the floor, and the walls are covered in incomprehensible symbols scrawled in thick, dark blood. " +
-                                    "\r\n\r\nOne of the exam tables draws the attention of " + nameMainCharacter + ": \r\n\"It looks like an altar in a temple... Is this an offering? Whoa, it's alive!\"\r\n\r\n" +
-                                    "It turns out to be a remarkable armored suit: a mutated, living organism bio-engineered using some unknown technology. \r\n", true);
+                            string firstHavenDescription0 = TFTVCommonMethods.ConvertKeyToString("KEY_INFESTATION_FIRST_HAVEN0");
+                            string firstHavenDescription1 = TFTVCommonMethods.ConvertKeyToString("KEY_INFESTATION_FIRST_HAVEN1");
+                            string firstHavenDescription2 = TFTVCommonMethods.ConvertKeyToString("KEY_INFESTATION_FIRST_HAVEN2");
+                            
 
-                            LocalizedTextBind lWDescription2 = new LocalizedTextBind("As with the first infested haven, your operatives encounter another temple to the horrors that took " +
-                                "possession of the infected; this time in an underground warehouse.\r\n\r\nIn a corner on the floor there sits a man, seemingly lost in thought, " +
-                                "a strange weapon lying in front of him. As " + nameMainCharacter + " come" + plural + " nearer, " + pronoun + " notice" + plural + " that the man is covered in acid burns and is completely catatonic. " +
-                                "By the rags of the uniform he must have been a janitor once.\r\n", true);
+                            LocalizedTextBind lWDescription1 = new LocalizedTextBind($"{firstHavenDescription0} {havenName} {firstHavenDescription1} {nameMainCharacter} \n {firstHavenDescription2}", true);
 
-                            LocalizedTextBind lWDescription3text = new LocalizedTextBind("A man comes running, stumbling and falling through the ruins of " + havenName + " towards your team. " +
-                                "At first " + nameMainCharacter + " mistake" + plural + " his eagerness for madness and hostile intent, and almost shoot" + plural + " him. " +
-                                "\r\n\r\n“I have something for you, I have something for you! You <i>must</i> take it! Come with me!”\r\n", true);
+                            string secondHavenDescription0 = TFTVCommonMethods.ConvertKeyToString("KEY_INFESTATION_SECOND_HAVEN0");
+                            string secondHavenDescription1 = TFTVCommonMethods.ConvertKeyToString("KEY_INFESTATION_SECOND_HAVEN1");
+                            string secondHavenDescription2 = TFTVCommonMethods.ConvertKeyToString("KEY_INFESTATION_SECOND_HAVEN2");
+                            string secondHavenDescription3 = TFTVCommonMethods.ConvertKeyToString("KEY_INFESTATION_SECOND_HAVEN3");
+                            string secondHavenDescription4 = TFTVCommonMethods.ConvertKeyToString("KEY_INFESTATION_SECOND_HAVEN4");
 
-                            LocalizedTextBind lWDescription3outcome = new LocalizedTextBind("As your operatives walk after him, he keeps running ahead and coming back, all the while repeating " +
-                                "“You have to take it! You have to take it! Yes! Take it, and Malachi Constant shall be free! Free!”" +
-                                "\r\n\r\nMalachi takes your team to a workshop behind the haven’s main generator. " +
-                                "On a workbench is another mysterious device that looks like a multi-projectile heavy weapon. " +
-                                "He looks pleadingly at " + nameMainCharacter + ", begging " + possesivePronoun + " to take the weapon." +
-                                "\r\n\r\nWhen " + pronoun + " does, Malachi erupts in boundless joy “They chose me to give it to you! Somebody up there really likes me!”" +
-                                "\r\n\r\nUnfortunately, this exertion was too much for him. He collapses, dead, but with a smile of bliss on his face. \r\n", true);
+                            LocalizedTextBind lWDescription2 = new LocalizedTextBind($"{secondHavenDescription0} {nameMainCharacter} {secondHavenDescription1}{plural} {secondHavenDescription2} {pronoun} {secondHavenDescription3}{plural} {secondHavenDescription4}", true);
+
+                            string thirdHavenDescription0 = TFTVCommonMethods.ConvertKeyToString("KEY_INFESTATION_THIRD_HAVEN0");
+                            string thirdHavenDescription1 = TFTVCommonMethods.ConvertKeyToString("KEY_INFESTATION_THIRD_HAVEN1");
+                            string thirdHavenDescription2 = TFTVCommonMethods.ConvertKeyToString("KEY_INFESTATION_THIRD_HAVEN2");
+                            string thirdHavenDescription3 = TFTVCommonMethods.ConvertKeyToString("KEY_INFESTATION_THIRD_HAVEN3");
+                            string thirdHavenDescription4 = TFTVCommonMethods.ConvertKeyToString("KEY_INFESTATION_THIRD_HAVEN4");
+                            string thirdHavenDescription5 = TFTVCommonMethods.ConvertKeyToString("KEY_INFESTATION_THIRD_HAVEN5");
+                            string thirdHavenDescription6 = TFTVCommonMethods.ConvertKeyToString("KEY_INFESTATION_THIRD_HAVEN6");
+                            string thirdHavenDescription7 = TFTVCommonMethods.ConvertKeyToString("KEY_INFESTATION_THIRD_HAVEN7");
+                            string thirdHavenDescription8 = TFTVCommonMethods.ConvertKeyToString("KEY_INFESTATION_THIRD_HAVEN8");
+                           
+                            LocalizedTextBind lWDescription3text = new LocalizedTextBind($"{thirdHavenDescription0} {havenName} {thirdHavenDescription1} {nameMainCharacter} {thirdHavenDescription2}{plural} {thirdHavenDescription3}{plural} {thirdHavenDescription4}", true);
+
+                            LocalizedTextBind lWDescription3outcome = new LocalizedTextBind($"{thirdHavenDescription5} {nameMainCharacter}{thirdHavenDescription6} {possesivePronoun} {thirdHavenDescription7} {pronoun} {thirdHavenDescription8}", true);
 
 
                             if (site.GeoLevel.EventSystem.GetVariable(LivingWeaponsAcquired) == 0)
@@ -455,12 +485,14 @@ namespace TFTV
                     }
                     else
                     {
+                      
+
                         Text description = __instance.GetComponentInChildren<DescriptionController>().Description;
                         description.GetComponent<I2.Loc.Localize>().enabled = false;
-                        description.text = "We failed to destroy the monstrosity that has taken over the inhabitants of the haven.";
+                        description.text = TFTVCommonMethods.ConvertKeyToString("KEY_INFESTATION_MISSION_FAILED_TEXT"); //"We failed to destroy the monstrosity that has taken over the inhabitants of the haven.";
                         Text title = __instance.TopBar.Title;
                         title.GetComponent<I2.Loc.Localize>().enabled = false;
-                        title.text = "MISSION FAILED";
+                        title.text = TFTVCommonMethods.ConvertKeyToString("KEY_MISSION_SUMMARY_FAILED");
 
 
                         __instance.Background.sprite = Helper.CreateSpriteFromImageFile("Node.jpg");

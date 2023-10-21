@@ -188,7 +188,6 @@
     <Compile Include="TFTVTactical.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TFTVTacticalUtils.cs" />
-    <Compile Include="TFTVThirdAct.cs" />
     <Compile Include="TFTVTradingRecruiting.cs" />
     <Compile Include="TFTVTutorialAndStory.cs" />
     <Compile Include="TFTVUI.cs" />

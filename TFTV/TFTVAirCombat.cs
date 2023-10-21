@@ -14,6 +14,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Web;
 using UnityEngine;
 using static PhoenixPoint.Geoscape.Entities.GeoBehemothActor;
 
@@ -120,6 +121,10 @@ namespace TFTV
                         int count = 0;
                         int damage = UnityEngine.Random.Range(25, 200);
 
+                        string destroyedByHammerfall = new LocalizedTextBind() { LocalizationKey = "KEY_DESTROYED_HAMMERFALL" }.Localize();
+                        string heavyDamageByHammerfall = new LocalizedTextBind() { LocalizationKey = "KEY_HEAVY_DAMAGE_HAMMERFALL" }.Localize();
+                        string damageByHammerfall = new LocalizedTextBind() { LocalizationKey = "KEY_DAMAGE_HAMMERFALL" }.Localize();
+
                         foreach (GeoHaven haven in geoHavens)
                         {
                             //TFTVLogger.Always("Got Here");
@@ -131,7 +136,7 @@ namespace TFTV
                                 {
                                     GeoscapeLogEntry entry = new GeoscapeLogEntry
                                     {
-                                        Text = new LocalizedTextBind(haven.Site.Owner + " " + haven.Site.LocalizedSiteName + " was destroyed by Hammerfall!", true)
+                                        Text = new LocalizedTextBind($"{haven.Site.Owner} {haven.Site.LocalizedSiteName} {destroyedByHammerfall}", true)
                                     };
                                     typeof(GeoscapeLog).GetMethod("AddEntry", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(__instance.GeoLevel.Log, new object[] { entry, null });
                                     haven.Site.DestroySite();
@@ -147,16 +152,16 @@ namespace TFTV
                                     string destructionDescription;
                                     if (haven.Zones.First().Health <= 500 || startingPopulation >= haven.Population + 1000)
                                     {
-                                        destructionDescription = " suffered heavy damage from Harmmerfall!";
+                                        destructionDescription = heavyDamageByHammerfall;
                                     }
                                     else
                                     {
-                                        destructionDescription = " suffered some damage from Hammerfall";
+                                        destructionDescription = damageByHammerfall;
 
                                     }
                                     GeoscapeLogEntry entry = new GeoscapeLogEntry
                                     {
-                                        Text = new LocalizedTextBind(haven.Site.Owner + " " + haven.Site.LocalizedSiteName + destructionDescription, true)
+                                        Text = new LocalizedTextBind($"{haven.Site.Owner} {haven.Site.LocalizedSiteName} {destructionDescription}", true)
                                     };
                                     typeof(GeoscapeLog).GetMethod("AddEntry", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(__instance.GeoLevel.Log, new object[] { entry, null });
                                     checkHammerfall = true;
@@ -177,23 +182,12 @@ namespace TFTV
         [HarmonyPatch(typeof(GeoscapeRaid), "StartAttackEffect")]
         public static class GeoscapeRaid_StartAttackEffect_patch
         {
-            public static bool Prepare()
-            {
-                TFTVConfig config = TFTVMain.Main.Config;
-                return config.HavenSOS;
-            }
-
             public static void Postfix(GeoscapeRaid __instance)
             {
                 try
                 {
-                    __instance.GeoVehicle.CurrentSite.RevealSite(__instance.GeoVehicle.GeoLevel.PhoenixFaction);
-                    GeoscapeLogEntry entry = new GeoscapeLogEntry
-                    {
-                        Text = new LocalizedTextBind(__instance.GeoVehicle.CurrentSite.Owner + " " + __instance.GeoVehicle.CurrentSite.LocalizedSiteName + " is broadcasting an SOS, they are under attack!", true)
-                    };
-                    typeof(GeoscapeLog).GetMethod("AddEntry", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(__instance.GeoVehicle.GeoLevel.Log, new object[] { entry, null });
-                    __instance.GeoVehicle.GeoLevel.View.SetGamePauseState(true);
+
+                    TFTVCommonMethods.RevealHavenUnderAttack(__instance.GeoVehicle.CurrentSite, __instance.GeoVehicle.GeoLevel);
                 }
 
                 catch (Exception e)
@@ -510,7 +504,7 @@ namespace TFTV
                     return false;
                 }//end of try
 
-                catch (Exception e)
+                catch //(Exception e)
                 {
                    // TFTVLogger.Error(e);
                 }
@@ -800,7 +794,7 @@ namespace TFTV
                 return chosenTarget;
             }
 
-            catch (Exception e)
+            catch //(Exception e)
             {
               //  TFTVLogger.Error(e);
             }

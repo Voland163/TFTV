@@ -721,3 +721,57 @@ FOOD_POISONING_DESCRIPTION_2,Text,,"Another case of mass food poisoning, and thi
 FOOD_POISONING_TITLE_2,Text,,Project Cornucopia Assessment #2,,,,,,,,
 FOOD_POISONING_DESCRIPTION_3,Text,,"Director, I fear that the latest incident... Our people, they are changing.",,,,,,,,
 FOOD_POISONING_TITLE_3,Text,,Project Cornucopia Assessment #3,,,,,,,,
+KEY_INFESTATION_FIRST_HAVEN0,Text,,As your team searches for survivors and salvage in,,,,,,,,
+KEY_INFESTATION_FIRST_HAVEN1,Text,,", they come across a former clinic. It is full of horrors: mutilated bodies litter the floor, and the walls are covered in incomprehensible symbols scrawled in thick, dark blood. 
+
+One of the exam tables draws the attention of ",,,,,,,,
+KEY_INFESTATION_FIRST_HAVEN2,Text,,"""It looks like an altar in a temple... Is this an offering? Whoa, it's alive!""
+
+It turns out to be a remarkable armored suit: a mutated, living organism bio-engineered using some unknown technology.",,,,,,,,
+KEY_INFESTATION_SECOND_HAVEN0,Text,,"As with the first infested haven, your operatives encounter another temple to the horrors that took possession of the infected; this time in an underground warehouse.
+
+In a corner on the floor there sits a man, seemingly lost in thought, a strange weapon lying in front of him. As",,,,,,,,
+KEY_INFESTATION_SECOND_HAVEN1,Text,,come,,,,,,,,
+KEY_INFESTATION_SECOND_HAVEN2,Text,,"nearer,",,,,,,,,
+KEY_INFESTATION_SECOND_HAVEN3,Text,,notice,,,,,,,,
+KEY_INFESTATION_SECOND_HAVEN4,Text,,that the man is covered in acid burns and is completely catatonic. By the rags of the uniform he must have been a janitor once.,,,,,,,,
+KEY_INFESTATION_THIRD_HAVEN0,Text,,"A man comes running, stumbling and falling through the ruins of",,,,,,,,
+KEY_INFESTATION_THIRD_HAVEN1,Text,,towards your team. At first ,,,,,,,,
+KEY_INFESTATION_THIRD_HAVEN2,Text,,mistake,,,,,,,,
+KEY_INFESTATION_THIRD_HAVEN3,Text,,"his eagerness for madness and hostile intent, and almost shoot",,,,,,,,
+KEY_INFESTATION_THIRD_HAVEN4,Text,,"him.
+ 
+“I have something for you, I have something for you! You <i>must</i> take it! Come with me!”",,,,,,,,
+KEY_INFESTATION_THIRD_HAVEN5,Text,,"As your operatives walk after him, he keeps running ahead and coming back, all the while repeating “You have to take it! You have to take it! Yes! Take it, and Malachi Constant shall be free! Free!”
+
+Malachi takes your team to a workshop behind the haven’s main generator. On a workbench is another mysterious device that looks like a multi-projectile heavy weapon. He looks pleadingly at ",,,,,,,,
+KEY_INFESTATION_THIRD_HAVEN6,Text,,", begging",,,,,,,,
+KEY_INFESTATION_THIRD_HAVEN7,Text,,"to take the weapon.
+
+When",,,,,,,,
+KEY_INFESTATION_THIRD_HAVEN8,Text,,"does, Malachi erupts in boundless joy “They chose me to give it to you! Somebody up there really likes me!”
+ 
+Unfortunately, this exertion was too much for him. He collapses, dead, but with a smile of bliss on his face.",,,,,,,,
+KEY_INFESTATION_MISSION_FAILED_TEXT,Text,,We failed to destroy the monstrosity that has taken over the inhabitants of the haven.,,,,,,,,
+KEY_OSIRIS_TITANIUM_OR_MUTAGEN,Text,,made of titanium or of mutagen flesh,,,,,,,,
+KEY_OSIRIS_ONLY_TITANIUM,Text,,made of titanium,,,,,,,,
+KEY_OSIRIS_BUILD_MUTA_LAB,Text,,build a mutation lab,,,,,,,,
+KEY_OSIRIS_ONLY_MUTAGEN,Text,,made of mutagen flesh,,,,,,,,
+KEY_OSIRIS_BUILD_BIO_LAB,Text,,build a bionics lab,,,,,,,,
+KEY_OSIRIS_NEW_BIONIC,Text,,new bionic,,,,,,,,
+KEY_OSIRIS_NEW_MUTATION,Text,,new mutation,,,,,,,,
+KEY_OSIRIS_TO_ENHANCE0,Text,,To enhance Project Osiris and increase our options we should,,,,,,,,
+KEY_OSIRIS_ACQUIRE,Text,,acquire,,,,,,,,
+KEY_OSIRIS_RESEARCH,Text,,research.,,,,,,,,
+KEY_OSIRIS_TEXT0,Text,,"<i>-''I'm... a mess.''
+-''They will fix you. They fix everything.''</i>
+
+We have recovered",,,,,,,,
+KEY_OSIRIS_TEXT1,Text,,from the battlefield.,,,,,,,,
+KEY_OSIRIS_TEXT2,Text,,"is clinically dead, but with the Project Osiris now operational we can bring",,,,,,,,
+KEY_OSIRIS_TEXT3,Text,,back with a new body,,,,,,,,
+KEY_FACTION_START_INTROTEXT0,Text,,"After all these years, you finally got the call. It meant that Symes and his deputies were dead or unreachable. Phoenix Project had gone dark. You had spent many years waiting, dreading that this would happen, living a discrete and simple life at ",,,,,,,,
+KEY_FACTION_START_INTROTEXT1,Text,,"haven.
+
+The trek to Phoenix Point was long and dangerous, and you wouldn't have made it without ",,,,,,,,
+KEY_FACTION_START_INTROTEXT2,Text,,"When you reached Phoenix Point, somebody was already home...",,,,,,,,

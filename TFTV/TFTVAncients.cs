@@ -91,7 +91,7 @@ namespace TFTV
             try
             {
 
-               // TFTVLogger.Always($"{tacticalActor.TacticalActorDef.name} with ability {ability.AbilityDef.name}");
+                // TFTVLogger.Always($"{tacticalActor.TacticalActorDef.name} with ability {ability.AbilityDef.name}");
 
                 if (tacticalActor.TacticalActorDef.name.Equals("HumanoidGuardian_ActorDef") && ability.AbilityDef.name.Equals("Guardian_Beam_ShootAbilityDef") && !tacticalActor.IsControlledByPlayer && tacticalActor.IsAlive)
 
@@ -155,15 +155,14 @@ namespace TFTV
 
                     if (tryGetShootTargetMethod == null || target == null)
                     {
-
                         return false;
                     }
 
-                  //  WeaponDef beamHead = DefCache.GetDef<WeaponDef>("HumanoidGuardian_Head_WeaponDef");
+                    //  WeaponDef beamHead = DefCache.GetDef<WeaponDef>("HumanoidGuardian_Head_WeaponDef");
                     //   beamHead.APToUsePerc = 0;
 
                     TacticalAbilityTarget tacticalAbilityTarget = (TacticalAbilityTarget)tryGetShootTargetMethod.Invoke(__instance, new object[] { target });
-             
+
                     if (tacticalAbilityTarget == null || tacticalAbilityTarget.Actor == null || tacticalAbilityTarget.Actor.IsDead)
                     {
                         return false;
@@ -184,57 +183,61 @@ namespace TFTV
 
                     TFTVLogger.Always($"Hoplites that can shoot in the cross-beam shooting {list.Count()}");
 
-                  if (list.Count > 0)
-                  {
-                      using (new MultiForceTargetableLock(sourceTacticalActorBase.Map.GetActors<TacticalActor>()))
-                      {
-                      
+                    if (list.Count > 0)
+                    {
+                        using (new MultiForceTargetableLock(sourceTacticalActorBase.Map.GetActors<TacticalActor>()))
+                        {
                             foreach (TacticalActor hoplite in list)
                             {
                                 ShieldDeployedStatusDef shieldDeployed = DefCache.GetDef<ShieldDeployedStatusDef>("ShieldDeployed_StatusDef");
 
                                 Weapon selectedWeapon = null;
-
-                                foreach (Equipment equipment in hoplite.Equipments.Equipments)
+                                if (hoplite.Equipments != null)
                                 {
-                                    if (equipment.TacticalItemDef.Equals(BeamHead))
+                                    foreach (Equipment equipment in hoplite.Equipments.Equipments)
                                     {
-                                        selectedWeapon = equipment as Weapon;
-                                      //  TFTVLogger.Always($"{hoplite.name} has a beam weapon");
-                                    }
-                                }
-
-                                if (hoplite.IsAlive && selectedWeapon != null && !(selectedWeapon.DefaultShootAbility.GetWeaponDisabledState(IgnoredAbilityDisabledStatesFilter.CreateDefaultFilter()) != AbilityDisabledState.NotDisabled))
-                                {
-                                 //   TFTVLogger.Always($"{hoplite.name} can shoot");
-                                    TacticalActor hitFriend = null;
-                                    if (!hoplite.TacticalPerception.CheckFriendlyFire(selectedWeapon, hoplite.Pos, tacticalAbilityTarget, out hitFriend) && selectedWeapon.TryGetShootTarget(tacticalAbilityTarget) != null)
-                                    {
-                                       // TFTVLogger.Always($"{hoplite.name} won't hit a friendly");
-
-                                        if (hoplite.HasStatus(shieldDeployed))
+                                        if (equipment.TacticalItemDef.Equals(BeamHead))
                                         {
-                                          //  TFTVLogger.Always($"{hoplite.name} has deployed shield");
+                                            selectedWeapon = equipment as Weapon;
+                                            TFTVLogger.Always($"{hoplite.name} has a beam weapon");
+                                        }
+                                    }
 
-                                         //   Timing.Current.StartAndWaitFor(RaiseShield(hoplite));
+                                    if (hoplite.IsAlive && selectedWeapon != null && !(selectedWeapon.DefaultShootAbility.GetWeaponDisabledState(IgnoredAbilityDisabledStatesFilter.CreateDefaultFilter()) != AbilityDisabledState.NotDisabled))
+                                    {
+                                        TFTVLogger.Always($"{hoplite.name} can shoot");
+                                        TacticalActor hitFriend = null;
+                                        if (!hoplite.TacticalPerception.CheckFriendlyFire(selectedWeapon, hoplite.Pos, tacticalAbilityTarget, out hitFriend) && selectedWeapon.TryGetShootTarget(tacticalAbilityTarget) != null)
+                                        {
+                                            TFTVLogger.Always($"{hoplite.name} won't hit a friendly");
 
-                                            hoplite.Equipments.SetSelectedEquipment(selectedWeapon);
+                                            if (hoplite.HasStatus(shieldDeployed))
+                                            {
+                                                TFTVLogger.Always($"{hoplite.name} has deployed shield");
 
-                                         //   TFTVLogger.Always($"selected weapon: {hoplite.Equipments.SelectedWeapon}");
+                                                //   Timing.Current.StartAndWaitFor(RaiseShield(hoplite));
+
+                                                hoplite.Equipments.SetSelectedEquipment(selectedWeapon);
+
+                                                //   TFTVLogger.Always($"selected weapon: {hoplite.Equipments.SelectedWeapon}");
+                                            }
+
+                                            MethodInfo faceAndShootAtTarget = typeof(MassShootTargetActorEffect).GetMethod("FaceAndShootAtTarget", BindingFlags.Instance | BindingFlags.NonPublic);
+
+                                            if (faceAndShootAtTarget != null)
+                                            {
+
+                                                Timing.Current.StartAndWaitFor((IEnumerator<NextUpdate>)faceAndShootAtTarget.Invoke(__instance, new object[] { hoplite, selectedWeapon, tacticalAbilityTarget }));
+                                            }
+
                                         }
 
-                                        MethodInfo faceAndShootAtTarget = typeof(MassShootTargetActorEffect).GetMethod("FaceAndShootAtTarget", BindingFlags.Instance | BindingFlags.NonPublic);
-
-                                        Timing.Current.StartAndWaitFor((IEnumerator<NextUpdate>)faceAndShootAtTarget.Invoke(__instance, new object[] { hoplite, selectedWeapon, tacticalAbilityTarget }));
-
 
                                     }
-
-
                                 }
                             }
-                       }
-                   }
+                        }
+                    }
 
 
                     return false;

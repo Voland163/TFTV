@@ -188,3 +188,13 @@ VICTORY_MISSION_FOR_THE_EYES_TITLE,Text,,Go for the eyes!,,,,,,,,
 VICTORY_MISSION_FOR_THE_EYES_TEXT,Text,,"<i>""This fragging thing won't die!""</i>
 
 Attack the Receptacle's eyes to stun it, so that your operatives can then complete the objective.",,,,,,,,
+KEY_INFESTATION_STORY_INTRO_TITLE,Text,,Search and Rescue,,,,,,,,
+KEY_INFESTATION_STORY0,Text,,reporting. We are at,,,,,,,,
+KEY_INFESTATION_STORY1,Text,,. Are you seeing this? The green shimmering…  I… I feel like I have been here before…,,,,,,,,
+KEY_INFESTATION_STORY2,Text,,snap out of it! We got a job to do. Scans show that there are survivors out there. Stay frosty and be ready for anything.,,,,,,,,
+KEY_INFESTATION_STORY3,Text,,out.,,,,,,,,
+KEY_INFESTATION_STORY4,Text,,"<i>”There were a few survivors here and there. The couple of soldiers who were lucky to get mindfragged during the initial attack; but also civilians, who were not fully taken by the creature. They came out of it, as if waking up from a nightmare. It was then that I understood what Alistair meant when he joked that we were waging a war for our place in the new food chain: the Pandorans didn’t want to exterminate us. That would have been too merciful. They wanted us for something else.”</i>",,,,,,,,
+KEY_INFESTATION_STORY5,Text,,", Phoenix Project.",,,,,,,,
+KEY_REVENANT_RESISTANCE_HINT,Text,,"Killing the Revenant will not remove this resistance from any Pandoran that already has it.
+
+Pandorans arriving as reinforcements will not receive the resistance.",,,,,,,,

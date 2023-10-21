@@ -389,9 +389,9 @@ namespace TFTV
                     Transform synTooltip = populationBar.GetComponent<Transform>().Find("SynIcon").GetComponent<Transform>().Find("SynTooltip");
 
 
-                    string anuToolTipText = "<b>The Disciples of Anu</b>";
-                    string njToolTipText = "<b>New Jericho</b>";
-                    string synToolTipText = "<b>Synedrion</b>";
+                    string anuToolTipText = $"<b>{TFTVCommonMethods.ConvertKeyToString("KEY_FACTION_NAME_ANU")}</b>";
+                    string njToolTipText = $"<b>{TFTVCommonMethods.ConvertKeyToString("KEY_FACTION_NAME_NEW_JERICHO")}</b>";
+                    string synToolTipText = $"<b>{TFTVCommonMethods.ConvertKeyToString("KEY_FACTION_NAME_SYNEDRION")}</b>";
 
                     if (controller.PhoenixFaction.GameTags.Contains(DefCache.GetDef<DiplomacyStateTagDef>("AN_Discovered_DiplomacyStateTagDef")))
                     {
@@ -429,6 +429,9 @@ namespace TFTV
 
                     //    TFTVLogger.Always("Got here 4");
 
+                    
+
+
                     string deliriumToolTipText = "";
                     if (controller.EventSystem.GetEventRecord("SDI_10")?.SelectedChoice == 0 || TFTVVoidOmens.CheckFordVoidOmensInPlay(controller).Contains(10))
                     {
@@ -436,7 +439,7 @@ namespace TFTV
                         populationBar.gameObject.SetActive(true);
                         deliriumIconHolder.gameObject.SetActive(true);
                         deliriumIcon.sprite = TFTVDefsRequiringReinjection.VoidIcon;
-                        deliriumToolTipText = "<color=#ec9006><b>-Our operatives can now be afflicted with a Delirium status equal to their Willpower</b></color>";
+                        deliriumToolTipText = $"<color=#ec9006><b>{TFTVCommonMethods.ConvertKeyToString("KEY_DELIRIUM_UI_MAX_TIP")}</b></color>";
                         separator.gameObject.SetActive(true);
                         separator2.gameObject.SetActive(true);
                     }
@@ -446,7 +449,7 @@ namespace TFTV
                         __instance.PopulationBarRoot.gameObject.SetActive(true);
                         deliriumIconHolder.gameObject.SetActive(true);
                         deliriumIcon.sprite = Helper.CreateSpriteFromImageFile("Void-04Phalf.png");
-                        deliriumToolTipText = "<color=#ec9006><b>-Our operatives can now be afflicted with a Delirium status of up to half of their Willpower</b></color>";
+                        deliriumToolTipText = $"<color=#ec9006><b>{TFTVCommonMethods.ConvertKeyToString("KEY_DELIRIUM_UI_MED_TIP")}</b></color>";
                         separator.gameObject.SetActive(true);
                         separator2.gameObject.SetActive(true);
                     }
@@ -457,27 +460,27 @@ namespace TFTV
                         populationBar.gameObject.SetActive(true);
                         __instance.PopulationBarRoot.gameObject.SetActive(true);
                         deliriumIconHolder.gameObject.SetActive(true);
-                        deliriumToolTipText = "<color=#ec9006><b>-Our operatives can now be afflicted with a Delirium status of up to a third of their Willpower</b></color>";
+                        deliriumToolTipText = $"<color=#ec9006><b>{TFTVCommonMethods.ConvertKeyToString("KEY_DELIRIUM_UI_LOW_TIP")}</b></color>";
                         separator.gameObject.SetActive(true);
                         separator2.gameObject.SetActive(true);
                     }
 
                     if (TFTVVoidOmens.CheckFordVoidOmensInPlay(controller).Contains(10))
                     {
-                        deliriumToolTipText += "\n-<i>No limit to Delirium, regardless of ODI level</i>  Void Omen is in effect.";
+                        deliriumToolTipText += $"\n{TFTVCommonMethods.ConvertKeyToString("KEY_DELIRIUM_UI_VO_TIP")}";
                     }
 
                     if (controller.EventSystem.GetEventRecord("SDI_09")?.SelectedChoice == 0)
                     {
-                        deliriumToolTipText += "\n-Evolved Umbra sighted.";
+                        deliriumToolTipText += $"\n{TFTVCommonMethods.ConvertKeyToString("KEY_DELIRIUM_UI_EVOLVED_UMBRA_TIP")}";
                     }
                     else if (controller.EventSystem.GetVariable("UmbraResearched") == 1)
                     {
-                        deliriumToolTipText += "\n-Sightings of Umbra have been reported";
+                        deliriumToolTipText += $"\n{TFTVCommonMethods.ConvertKeyToString("KEY_DELIRIUM_UI_UMBRA_TIP")}";
                     }
                     if (controller.EventSystem.GetEventRecord("SDI_07")?.SelectedChoice == 0)
                     {
-                        deliriumToolTipText += "\n-Havens in the Mist can become infested instead of destroyed when attacked by Pandorans. Infested havens accelerate Pandoran evolution.";
+                        deliriumToolTipText += $"\n{TFTVCommonMethods.ConvertKeyToString("KEY_DELIRIUM_UI_MIST_INFESTATION_TIP")}";
                     }
 
 
@@ -498,7 +501,7 @@ namespace TFTV
                     Image evolutionIcon = evolutionIconHolder.GetComponent<Image>();
 
                     Transform evolutionTooltip = populationBar.GetComponent<Transform>().Find("PandoranEvolutionIcon").GetComponent<Transform>().Find("PandoranEvolutionTooltip");
-                    string evolutionToolTipText = "Based on reports and field observations, we estimate that the Pandorans are evolving ";
+                    string evolutionToolTipText = $"{TFTVCommonMethods.ConvertKeyToString("KEY_DELIRIUM_UI_PANDORAN_EVO_TIP0")} ";
                     if (controller.PhoenixFaction.Research.HasCompleted("PX_Alien_EvolvedAliens_ResearchDef"))
                     {
                         // TFTVLogger.Always("Got here 5");
@@ -510,17 +513,17 @@ namespace TFTV
                         if (pEPerDay >= 12)
                         {
                             evolutionIcon.sprite = Helper.CreateSpriteFromImageFile("FactionIcons_Aliens_Evo_fast.png");
-                            evolutionToolTipText += "<b>very rapidly</b>. We must destroy Pandoran Colonies and Infested Havens before we are overwhelmed!";
+                            evolutionToolTipText += $"{TFTVCommonMethods.ConvertKeyToString("KEY_DELIRIUM_UI_PANDORAN_EVO_TIP1")}";
                         }
                         else if (pEPerDay >= 6)
                         {
                             evolutionIcon.sprite = Helper.CreateSpriteFromImageFile("FactionIcons_Aliens_Evo_medium.png");
-                            evolutionToolTipText += "<b>rapidly</b>. We must keep the number of Pandoran Colonies and Infested Havens in check.";
+                            evolutionToolTipText += $"{TFTVCommonMethods.ConvertKeyToString("KEY_DELIRIUM_UI_PANDORAN_EVO_TIP2")}";
                         }
                         else
                         {
                             evolutionIcon.sprite = Helper.CreateSpriteFromImageFile("FactionIcons_Aliens_Evo_slow.png");
-                            evolutionToolTipText += ". We are monitoring the situation and will report any newly discovered Pandoran Colonies.";
+                            evolutionToolTipText += $"{TFTVCommonMethods.ConvertKeyToString("KEY_DELIRIUM_UI_PANDORAN_EVO_TIP3")}";
                         }
                     }
 
@@ -548,28 +551,28 @@ namespace TFTV
 
                 if (controller.EventSystem.GetEventRecord("PROG_AN6")?.SelectedChoice == 2 || controller.EventSystem.GetEventRecord("PROG_AN6_2")?.SelectedChoice == 1)
                 {
-                    text += "\n-You have postponed the third special mission offered by this faction (will be offered again at 74%)";
+                    text += $"\n{TFTVCommonMethods.ConvertKeyToString("KEY_UI_DIPLOMACY_TIP_ALLY_ALMOST")}";
                 }
                 else if (controller.EventSystem.GetEventRecord("PROG_AN4")?.SelectedChoice == 1)
                 {
-                    text += "\n-You have postponed the second special mission offered by this faction (will be offered again at 49%)";
+                    text += $"\n{TFTVCommonMethods.ConvertKeyToString("KEY_UI_DIPLOMACY_TIP_ALIGNED_ALMOST")}";
                 }
                 else if (controller.EventSystem.GetEventRecord("PROG_AN2")?.SelectedChoice == 0)
                 {
-                    text += "\n-You have postponed the first special mission offered by this faction (will be offered again at 24%)";
+                    text += $"\n{TFTVCommonMethods.ConvertKeyToString("KEY_UI_DIPLOMACY_TIP_SUPPORTIVE_ALMOST")}";
                 }
 
                 if (controller.EventSystem.GetEventRecord("PROG_AN6_WIN1")?.SelectedChoice == 0 || controller.EventSystem.GetEventRecord("PROG_AN6_WIN2")?.SelectedChoice == 0)
                 {
-                    text += "\n-You have completed all the special missions for this faction; you have full access to their research tree";
+                    text += $"\n{TFTVCommonMethods.ConvertKeyToString("KEY_UI_DIPLOMACY_TIP_ALLY")}";
                 }
                 else if (controller.EventSystem.GetEventRecord("PROG_AN4_WIN")?.SelectedChoice == 0)
                 {
-                    text += "\n-You have completed the second special mission for this faction; you will gain access to any technology researched by the faction";
+                    text += $"\n{TFTVCommonMethods.ConvertKeyToString("KEY_UI_DIPLOMACY_TIP_ALIGNED")}";
                 }
                 else if (controller.EventSystem.GetEventRecord("PROG_AN2_WIN")?.SelectedChoice == 0)
                 {
-                    text += "\n-You have completed the first special misssion for this faction; all their havens have been revealed to you";
+                    text += $"\n{TFTVCommonMethods.ConvertKeyToString("KEY_UI_DIPLOMACY_TIP_SUPPORTIVE")}";
                 }
 
 
@@ -599,35 +602,35 @@ namespace TFTV
 
                 if (controller.EventSystem.GetEventRecord("PROG_SY4_T")?.SelectedChoice == 1 || controller.EventSystem.GetEventRecord("PROG_SY4_P")?.SelectedChoice == 1)
                 {
-                    text += "\n-You have postponed the third special mission offered by this faction (will be offered again at 74%)";
+                    text += $"\n{TFTVCommonMethods.ConvertKeyToString("KEY_UI_DIPLOMACY_TIP_ALLY_ALMOST")}";
                 }
 
                 else if (controller.EventSystem.GetEventRecord("PROG_SY1")?.SelectedChoice == 2)
                 {
-                    text += "\n-You have postponed the first special mission offered by this faction (will be offered again at 24%)";
+                    text += $"\n{TFTVCommonMethods.ConvertKeyToString("KEY_UI_DIPLOMACY_TIP_SUPPORTIVE_ALMOST")}";
                 }
 
                 if (controller.EventSystem.GetEventRecord("PROG_SY4_WIN1")?.SelectedChoice == 0 || controller.EventSystem.GetEventRecord("PROG_SY4_WIN2")?.SelectedChoice == 0)
                 {
-                    text += "\n-You have completed all the special missions for this faction; you have full access to their research tree";
+                    text += $"\n{TFTVCommonMethods.ConvertKeyToString("KEY_UI_DIPLOMACY_TIP_ALLY")}";
                 }
                 else if (controller.EventSystem.GetEventRecord("PROG_SY3_WIN")?.SelectedChoice != null)
                 {
-                    text += "\n-You have completed the second special mission for this faction; you will gain access to any technology researched by the faction";
+                    text += $"\n{TFTVCommonMethods.ConvertKeyToString("KEY_UI_DIPLOMACY_TIP_ALIGNED")}";
                 }
                 else if (controller.EventSystem.GetEventRecord("PROG_SY1_WIN1")?.SelectedChoice != null || controller.EventSystem.GetEventRecord("PROG_SY1_WIN2")?.SelectedChoice != null)
                 {
-                    text += "\n-You have completed the first special misssion for this faction; all their havens have been revealed to you";
+                    text += $"\n{TFTVCommonMethods.ConvertKeyToString("KEY_UI_DIPLOMACY_TIP_SUPPORTIVE")}";
                 }
 
                 if (polyCounter > terraCounter)
                 {
-                    text += "\n-Through Phoenix Project influence, the Polyphonic tendency is currently ascendant in Synedrion";
+                    text += $"\n{TFTVCommonMethods.ConvertKeyToString("KEY_UI_DIPLOMACY_TIP_POLY")}";
 
                 }
                 else if (polyCounter < terraCounter)
                 {
-                    text += "\n-Through Phoenix Project influence, the Terraformers are currently ascendant in Synedrion";
+                    text += $"\n{TFTVCommonMethods.ConvertKeyToString("KEY_UI_DIPLOMACY_TIP_TERRA")}";
                 }
 
 
@@ -659,28 +662,28 @@ namespace TFTV
 
                 if (controller.EventSystem.GetEventRecord("PROG_NJ3")?.SelectedChoice == 1)
                 {
-                    text += "\n-You have postponed the third special mission offered by this faction (will be offered again at 74%)";
+                    text += $"\n{TFTVCommonMethods.ConvertKeyToString("KEY_UI_DIPLOMACY_TIP_ALLY_ALMOST")}";
                 }
                 else if (controller.EventSystem.GetEventRecord("PROG_NJ2")?.SelectedChoice == 1)
                 {
-                    text += "\n-You have postponed the second special mission offered by this faction (will be offered again at 49%)";
+                    text += $"\n{TFTVCommonMethods.ConvertKeyToString("KEY_UI_DIPLOMACY_TIP_ALIGNED_ALMOST")}";
                 }
                 else if (controller.EventSystem.GetEventRecord("PROG_NJ1")?.SelectedChoice == 1)
                 {
-                    text += "\n-You have postponed the first special mission offered by this faction (will be offered again at 24%)";
+                    text += $"\n{TFTVCommonMethods.ConvertKeyToString("KEY_UI_DIPLOMACY_TIP_SUPPORTIVE_ALMOST")}";
                 }
 
                 if (controller.EventSystem.GetEventRecord("PROG_NJ3_WIN")?.SelectedChoice == 0)
                 {
-                    text += "\n-You have completed all the special missions for this faction; you have full access to their research tree";
+                    text += $"\n{TFTVCommonMethods.ConvertKeyToString("KEY_UI_DIPLOMACY_TIP_ALLY")}";
                 }
                 else if (controller.EventSystem.GetEventRecord("PROG_NJ2__WIN")?.SelectedChoice == 0 || controller.EventSystem.GetEventRecord("PROG_NJ2__WIN")?.SelectedChoice == 1)
                 {
-                    text += "\n-You have completed the second special mission for this faction; you will gain access to any technology researched by the faction";
+                    text += $"\n{TFTVCommonMethods.ConvertKeyToString("KEY_UI_DIPLOMACY_TIP_ALIGNED")}";
                 }
                 else if (controller.EventSystem.GetEventRecord("PROG_NJ1_WIN")?.SelectedChoice == 0)
                 {
-                    text += "\n-You have completed the first special misssion for this faction; all their havens have been revealed to you";
+                    text += $"\n{TFTVCommonMethods.ConvertKeyToString("KEY_UI_DIPLOMACY_TIP_SUPPORTIVE")}";
                 }
 
 

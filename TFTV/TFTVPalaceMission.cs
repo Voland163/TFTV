@@ -6,7 +6,6 @@ using Base.Entities.Effects;
 using Base.Entities.Statuses;
 using Base.Levels;
 using HarmonyLib;
-using PhoenixPoint.Common.ContextHelp;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.GameTags;
@@ -14,7 +13,6 @@ using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.Entities.Items;
 using PhoenixPoint.Common.Levels.ActorDeployment;
 using PhoenixPoint.Common.Levels.Missions;
-using PhoenixPoint.Tactical.ContextHelp;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.ActorsInstance;
@@ -116,24 +114,24 @@ namespace TFTV
         {
             try
             {
-               
+
                 TacticalLevelController controller = tacticalActor.TacticalLevel;
 
-                if (controller!=null && controller.TacMission.MissionData.IsFinalMission && tacticalActor.IsControlledByPlayer)
+                if (controller != null && controller.TacMission.MissionData.IsFinalMission && tacticalActor.IsControlledByPlayer)
                 {
-                  //  TFTVLogger.Always($"passed if check");
+                    //  TFTVLogger.Always($"passed if check");
 
                     if (tacticalActor.Pos.z <= 60)
                     {
                         //    TFTVLogger.Always($"passed second if check");
 
                         TFTVTutorialAndStory.ShowStoryPanel(controller, "ReceptacleGateHint0", "ReceptacleGateHint1");
-                        
-                      //  GateHintShown = true;
+
+                        //  GateHintShown = true;
 
                     }
                 }
-                
+
 
 
             }
@@ -146,7 +144,7 @@ namespace TFTV
         }
 
 
-        
+
 
 
         //  private static int TurnsBeforeReceptacleResurrects = 2;
@@ -459,7 +457,7 @@ namespace TFTV
                         int receptacleEyesDamaged = CountReceptacleEyes(actor);
                         TFTVLogger.Always($"Receptacle eye disabled! Eyes disabled count: {receptacleEyesDamaged}");
 
-                        if (receptacleEyesDamaged >= TFTVReleaseOnly.DifficultyOrderConverter(controller.Difficulty.Order) - 1)
+                        if (receptacleEyesDamaged >= Math.Max(TFTVReleaseOnly.DifficultyOrderConverter(controller.Difficulty.Order), 4))
                         {
 
                             actor.ApplyDamage(new DamageResult() { HealthDamage = 2000000 });
@@ -590,7 +588,7 @@ namespace TFTV
 
 
 
-       
+
 
 
         /// <summary>
@@ -617,7 +615,7 @@ namespace TFTV
                 if (gameTagsToCheck.Any(gt => actor.GameTags.Contains(gt)))
 
                 {
-    
+
                     actor.GameTags.Remove(DefCache.GetDef<GameTagDef>("Human_TagDef"));
 
                 }
@@ -652,7 +650,7 @@ namespace TFTV
 
                 };
 
-                if (gameTagsToCheck.Any(gt=>actor.GameTags.Contains(gt)))
+                if (gameTagsToCheck.Any(gt => actor.GameTags.Contains(gt)))
 
                 {
                     actor.TacticalActorView.TacticalActorViewDef.PortraitSource = TacticalActorViewDef.PortraitMode.ManualPortrait;
@@ -1303,25 +1301,6 @@ namespace TFTV
             {
                 try
                 {
-                    if(GameUtl.CurrentLevel()!=null && GameUtl.CurrentLevel().GetComponent<TacticalLevelController>() != null) 
-                    {
-
-                        TacticalLevelController controller = GameUtl.CurrentLevel().GetComponent<TacticalLevelController>();
-
-                        if(controller.TacMission!=null && !controller.TacMission.IsFinalMission) 
-                        {
-                            return;
-                        
-                        }
-
-                    }
-                    else 
-                    {
-
-                        return;
-                    
-                    }
-
 
 
                     if (__instance.InteractWithObjectAbilityDef == DefCache.GetDef<InteractWithObjectAbilityDef>("InteractWithYuggothian_AbilityDef") || __instance.InteractWithObjectAbilityDef == DefCache.GetDef<InteractWithObjectAbilityDef>("ExaltedInteractWithYuggothian_AbilityDef"))
@@ -1377,8 +1356,10 @@ namespace TFTV
             {
                 try
                 {
-                    if (__instance.TacticalLevel.TacMission.IsFinalMission)
+                    if (__instance.TacticalLevel!=null && __instance.TacticalLevel.TacMission!=null && __instance.TacticalLevel.TacMission.IsFinalMission)
                     {
+
+
                         if (__instance.name == RightBottomSpawn || __instance.name == LeftBottomSpawn || __instance.name == RightTopSpawn)
                         {
                             List<Vector3> verifiedPositions = new List<Vector3>();
@@ -2323,7 +2304,7 @@ namespace TFTV
 
                     UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
                     int roll = UnityEngine.Random.Range(0, 2);
-                  //  TFTVLogger.Always($"found {tdz.name} at {tdz.Pos}, roll is {roll}");
+                    //  TFTVLogger.Always($"found {tdz.name} at {tdz.Pos}, roll is {roll}");
 
                     if (roll == 0)
                     {
