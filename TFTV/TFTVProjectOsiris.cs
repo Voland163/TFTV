@@ -360,7 +360,7 @@ KEY_GRAMMAR_SINGLE_SUFFIX*/
                     deadTemplateDef.Data.BodypartItems = new ItemDef[] { shooterHead, shooterTorso, shooterLegs };
                 }
 
-                LocalizedTextBind projectOsirisDescription = new LocalizedTextBind(CreateDescriptionForEvent(controller, deadSoldierDescriptor) + "\n\nProject Osiris has given " + name + " a new body.", true);
+                LocalizedTextBind projectOsirisDescription = new LocalizedTextBind($"{CreateDescriptionForEvent(controller, deadSoldierDescriptor)} {TFTVCommonMethods.ConvertKeyToString("KEY_OSIRIS_NEW_BODY")} {name}.", true);
 
                 GeoscapeEventDef deliveryEvent = controller.EventSystem.GetEventByID(RoboCopDeliveryEvent);
                 GeoscapeEventDef scoutDeliveryEvent = controller.EventSystem.GetEventByID(ScoutDeliveryEvent);
