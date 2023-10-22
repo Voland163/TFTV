@@ -46,6 +46,7 @@ namespace TFTVVehicleRework.KaosBuggy
             Fix_GeoTooltip();
             Update_ItemCost();
             Give_VehicleEntity();
+            Adjust_WeaponPrices();
             Kamikaze.Change();
             Deathproof.Change();
             MannedGunner.Change();
@@ -61,7 +62,7 @@ namespace TFTVVehicleRework.KaosBuggy
                 Minigun.ChargesMax = 80;
                 Minigun.DamagePayload.DamageKeywords.Find(dkp => dkp.DamageKeywordDef == keywords.DamageKeyword).Value = 35;
                 Minigun.DamagePayload.DamageKeywords.Find(dkp => dkp.DamageKeywordDef == keywords.ShreddingKeyword).Value = 2;
-                Minigun.DamagePayload.AutoFireShotCount = 10;
+                Minigun.DamagePayload.AutoFireShotCount = 8;
                 Minigun.SpreadDegrees = (41f/19); //= 19 effective range; ER = 41/Spread
                 switch(Module)
                 {
@@ -147,6 +148,16 @@ namespace TFTVVehicleRework.KaosBuggy
             GeoMarketplaceItemOptionDef KaosBuggy = (GeoMarketplaceItemOptionDef)Repo.GetDef("52f7984c-ce31-a844-4a2c-82f00563eb91");
             KaosBuggy.MinPrice = 550f;
             KaosBuggy.MaxPrice = 750f;
+        }
+
+        private static void Adjust_WeaponPrices()
+        {
+            // "TheScreamer_MarketplaceItemOptionDef"
+            GeoMarketplaceItemOptionDef Screamer = (GeoMarketplaceItemOptionDef)Repo.GetDef("cdd843f2-374f-4f04-abf6-2d438be2b454");
+            // "TheFullstop_MarketplaceItemOptionDef"
+            GeoMarketplaceItemOptionDef Fullstop = (GeoMarketplaceItemOptionDef)Repo.GetDef("1a4ccc7f-3b33-e8c4-898a-95c143f9be92");
+            Screamer.MinPrice = Fullstop.MinPrice = 200f;
+            Screamer.MaxPrice = Fullstop.MaxPrice = 300f;
         }
     }
 }
