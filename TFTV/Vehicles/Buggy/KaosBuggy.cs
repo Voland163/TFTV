@@ -1,5 +1,6 @@
 using Assets.Code.PhoenixPoint.Geoscape.Entities.Sites.TheMarketplace;
 using Base.Defs;
+using Base.UI;
 using HarmonyLib;
 using PhoenixPoint.Common.Entities.Addons;
 using PhoenixPoint.Common.Entities.Equipments;
@@ -140,6 +141,8 @@ namespace TFTVVehicleRework.KaosBuggy
             KaosBuggy.DataDef.HitPoints = 750f;
             KaosBuggy.DataDef.Capacity = 2f;
             KaosBuggy.DataDef.Armor = 28f;
+
+            KaosBuggy.ViewElementDef.DisplayName1 = new LocalizedTextBind("UI_JUNKER_NAME");
         }
 
         private static void Update_ItemCost()
