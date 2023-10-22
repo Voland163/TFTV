@@ -1,3 +1,4 @@
+using Assets.Code.PhoenixPoint.Geoscape.Entities.Sites.TheMarketplace;
 using Base.Cameras.ExecutionNodes;
 using Base.Defs;
 using Base.Entities.Abilities;
@@ -25,12 +26,14 @@ namespace TFTVVehicleRework.KaosBuggy
             //"KS_Kaos_Buggy_Experimental_Exhaust_System_Engine_GroundVehicleModuleDef"
             GroundVehicleModuleDef Exhaust = (GroundVehicleModuleDef)Repo.GetDef("2ed4297c-ccaa-0aa4-ab78-b56e53f9b074");
             Exhaust.ViewElementDef.DisplayName1 = new LocalizedTextBind("KB_DEATHPROOF_NAME");
+            Exhaust.ViewElementDef.Description = new LocalizedTextBind("UI_JUNKER_ENGINE");
             Exhaust.BodyPartAspectDef.Speed = -4f;
             Exhaust.Abilities = new AbilityDef[]
             {
                 KillNRun(),
             };
             Update_ChaserCam();
+            Adjust_Cost();
         }
 
         private static ApplyStatusAbilityDef KillNRun()
@@ -155,6 +158,13 @@ namespace TFTVVehicleRework.KaosBuggy
 
             NewDashCam.FilterDef = NewDashFilter;
             NewDashFilter.TacticalAbilityDef = Run_Ability();            
+        }
+
+        private static void Adjust_Cost()
+        {
+            //"ExperimentalExhaustSystem_MarketplaceItemOptionDef"
+            GeoMarketplaceItemOptionDef MarketOption = (GeoMarketplaceItemOptionDef)Repo.GetDef("4f63e91b-5bcb-b364-9903-083a98161a66");
+            MarketOption.MaxPrice = 500f;
         }
     }
 }
