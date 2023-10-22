@@ -70,8 +70,9 @@ namespace TFTVVehicleRework.Armadillo
             TacticalItemDef RF_Traction = Repo.CreateDef<TacticalItemDef>("ca52112b-d2c8-44c1-a0de-a214215aa18c", RFT);
             TacticalItemDef RB_Traction = Repo.CreateDef<TacticalItemDef>("d83939e9-dcd0-4dd8-8e07-c446808d3ed9", RBT);
 
-            LF_Traction.HitPoints = LB_Traction.HitPoints = RF_Traction.HitPoints = RB_Traction.HitPoints = 350f;
-            LF_Traction.Armor = LB_Traction.Armor = RF_Traction.Armor = RB_Traction.Armor = 30f;
+            //Wheels stack armour and hitpoints
+            LF_Traction.HitPoints = LB_Traction.HitPoints = RF_Traction.HitPoints = RB_Traction.HitPoints = 100f;
+            LF_Traction.Armor = LB_Traction.Armor = RF_Traction.Armor = RB_Traction.Armor = 10f;
 
             LF_Traction.BodyPartAspectDef = Repo.CreateDef<BodyPartAspectDef>("bbfbda93-fac3-4c85-b641-f6d4914fa678", LFT.BodyPartAspectDef);
             LB_Traction.BodyPartAspectDef = Repo.CreateDef<BodyPartAspectDef>("eaab3ca3-1320-4a82-92e0-fe633fc6c3ae", LBT.BodyPartAspectDef);
