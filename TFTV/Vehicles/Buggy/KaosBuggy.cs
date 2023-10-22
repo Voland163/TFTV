@@ -48,6 +48,7 @@ namespace TFTVVehicleRework.KaosBuggy
             Update_ItemCost();
             Give_VehicleEntity();
             Adjust_WeaponPrices();
+            Fix_WheelSlots();
             Kamikaze.Change();
             Deathproof.Change();
             MannedGunner.Change();
@@ -161,6 +162,19 @@ namespace TFTVVehicleRework.KaosBuggy
             GeoMarketplaceItemOptionDef Fullstop = (GeoMarketplaceItemOptionDef)Repo.GetDef("1a4ccc7f-3b33-e8c4-898a-95c143f9be92");
             Screamer.MinPrice = Fullstop.MinPrice = 200f;
             Screamer.MaxPrice = Fullstop.MaxPrice = 300f;
+        }
+
+        private static void Fix_WheelSlots()
+        {
+            //"Kaos_LeftBackWheel_SlotDef"
+            ItemSlotDef BW = (ItemSlotDef)Repo.GetDef("00fa8a15-3b55-fc24-3834-3061c6abbd48");
+            //"Kaos_LeftFrontWheel_SlotDef"
+            ItemSlotDef LFW = (ItemSlotDef)Repo.GetDef("f5aa29b3-18fe-1554-9a3c-6b31683b1df4");
+            //"Kaos_RightFrontWheel_SlotDef"
+            ItemSlotDef RFW = (ItemSlotDef)Repo.GetDef("d674a04a-7aac-d014-ab3f-b48ead1995c5");
+            
+            //Setting to true means that armour is overridden by higher layers
+            BW.DontStackArmorAndHealth = LFW.DontStackArmorAndHealth = RFW.DontStackArmorAndHealth = true;
         }
     }
 }
