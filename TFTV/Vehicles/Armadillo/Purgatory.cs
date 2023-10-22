@@ -116,6 +116,7 @@ namespace TFTVVehicleRework.Armadillo
                 IncendiaryStatus.Visuals = IncendiaryVED();
                 IncendiaryStatus.ExpireOnEndOfTurn = false;
                 IncendiaryStatus.DurationTurns = -1;
+                IncendiaryStatus.WeaponTagFilter = null;
                 IncendiaryStatus.NumberOfAttacks = -1;
                 IncendiaryStatus.DamageKeywordPairs = new DamageKeywordPair[]
                 {
@@ -171,6 +172,7 @@ namespace TFTVVehicleRework.Armadillo
                 ConcussionBoost.Visuals = ConcussionVED();
                 ConcussionBoost.ExpireOnEndOfTurn = false;
                 ConcussionBoost.DurationTurns = -1;
+                ConcussionBoost.WeaponTagFilter = null;
                 ConcussionBoost.NumberOfAttacks = -1;
                 ConcussionBoost.DamageKeywordPairs = new DamageKeywordPair[]
                 {
