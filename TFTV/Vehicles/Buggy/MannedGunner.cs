@@ -1,3 +1,4 @@
+using Assets.Code.PhoenixPoint.Geoscape.Entities.Sites.TheMarketplace;
 using Base.Defs;
 using Base.Entities.Effects.ApplicationConditions;
 using Base.UI;
@@ -24,7 +25,8 @@ namespace TFTVVehicleRework.KaosBuggy
             //"KS_Kaos_Buggy_Revised_Armor_Plating_Hull_GroundVehicleModuleDef"
             GroundVehicleModuleDef RevisedPlating = (GroundVehicleModuleDef)Repo.GetDef("342b97d0-ac19-67a4-2a48-118b5a12980b");
             RevisedPlating.Armor = 0f;
-            // RevisedPlating.Abilities = RevisedPlating.Abilities.AddToArray(BuggyQuickAttack);
+            RevisedPlating.ViewElementDef.DisplayName1 = new LocalizedTextBind("KB_GUNNERMODULE_NAME");
+            RevisedPlating.ViewElementDef.Description = new LocalizedTextBind("UI_JUNKER_HULL");
             RevisedPlating.Abilities = new TacticalAbilityDef[]
             {
                 MannedGunnerStatus(),
@@ -38,6 +40,7 @@ namespace TFTVVehicleRework.KaosBuggy
                 BodyPart.Armor = 20f;
                 BodyPart.BodyPartAspectDef.Speed = 0f;
             }
+            Adjust_Cost();
         }
 
         public static ApplyStatusAbilityDef BuggyExitCost()
@@ -132,6 +135,14 @@ namespace TFTVVehicleRework.KaosBuggy
             KBStatusCarrier.StatusToApply = BuggyQuickAttackStatus;
 
             return KBStatusCarrier;
+        }
+
+        private static void Adjust_Cost()
+        {
+            //"RevisedArmorPlating_MarketplaceItemOptionDef"
+            GeoMarketplaceItemOptionDef MarketOption = (GeoMarketplaceItemOptionDef)Repo.GetDef("d1a7a199-6cbc-0534-592c-66076d905d37");
+            MarketOption.MinPrice = 350f;
+            MarketOption.MaxPrice = 550f;
         }
     }
 }

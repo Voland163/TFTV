@@ -1,3 +1,4 @@
+using Assets.Code.PhoenixPoint.Geoscape.Entities.Sites.TheMarketplace;
 using Base.Defs;
 using Base.UI;
 using PhoenixPoint.Common.Entities.Addons;
@@ -15,8 +16,9 @@ namespace TFTVVehicleRework.KaosBuggy
         internal static readonly GroundVehicleModuleDef SpikedHull = (GroundVehicleModuleDef)Repo.GetDef("387d72e4-a573-9e54-eb56-6198349753b8");
         public static void Change()
         {
-            SpikedHull.Armor = 0f; 
+            SpikedHull.Armor = 10f; 
             SpikedHull.ViewElementDef.DisplayName1 = new LocalizedTextBind("KB_SLAUGHTERHOUSE_NAME");
+            SpikedHull.ViewElementDef.Description = new LocalizedTextBind("UI_JUNKER_HULL");
             SpikedHull.BodyPartAspectDef.StatModifications = new ItemStatModification[]
             {
                 new ItemStatModification
@@ -26,9 +28,10 @@ namespace TFTVVehicleRework.KaosBuggy
                     Value = -1f
                 }
             };
-            SpikedHull.BodyPartAspectDef.Endurance = 35;
+            SpikedHull.BodyPartAspectDef.Endurance = 25;
             Adjust_BodyParts();
             Fix_Spikes();
+            Adjust_Cost();
         }
 
         private static void Adjust_BodyParts()
@@ -38,17 +41,18 @@ namespace TFTVVehicleRework.KaosBuggy
                 TacticalItemDef BodyPart = (TacticalItemDef)addon.SubAddon;
                 if (BodyPart.name == "KS_Kaos_Buggy_Spiked_Armor_Front_BodyPartDef")
                 {
-                    BodyPart.HitPoints = 250;
-                    BodyPart.Armor = 40;
+                    BodyPart.HitPoints = 250f;
+                    BodyPart.Armor = 50f;
                 }
                 else if (BodyPart.name == "KS_Kaos_Buggy_Spiked_Armor_Left_BodyPartDef" || BodyPart.name == "KS_Kaos_Buggy_Spiked_Armor_Right_BodyPartDef")
                 {
-                    BodyPart.HitPoints = 200;
-                    BodyPart.Armor = 30;
+                    BodyPart.HitPoints = 200f;
+                    BodyPart.Armor = 40f;
                 }
                 else
                 {
-                    BodyPart.HitPoints = 150;
+                    BodyPart.HitPoints = 150f;
+                    BodyPart.Armor = 30f;
                     BodyPart.BodyPartAspectDef.Speed = 0f;
                 }
             }
@@ -60,6 +64,14 @@ namespace TFTVVehicleRework.KaosBuggy
 			SpikesRetaliation.ApplyTraitsOnActivate = false;
 			SpikesRetaliation.minDamage = 0;
 			SpikesRetaliation.ViewElementDef.ShowInStatusScreen = true;
+        }
+
+        private static void Adjust_Cost()
+        {
+            //"SpikedArmorPlating_MarketplaceItemOptionDef"
+            GeoMarketplaceItemOptionDef MarketOption = (GeoMarketplaceItemOptionDef)Repo.GetDef("5b6b5b9a-8418-d984-0937-6bab2f3fa4d5");
+            MarketOption.MinPrice = 350f;
+            MarketOption.MaxPrice = 500f;
         }
     }
 }
