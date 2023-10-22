@@ -1,3 +1,4 @@
+using Assets.Code.PhoenixPoint.Geoscape.Entities.Sites.TheMarketplace;
 using Base.Defs;
 using Base.Entities.Effects;
 using Base.Entities.Effects.ApplicationConditions;
@@ -24,13 +25,14 @@ namespace TFTVVehicleRework.KaosBuggy
         {
             // "KS_Kaos_Buggy_Dog_Ring_Gearbox_Engine_GroundVehicleModuleDef"
             GroundVehicleModuleDef DogRingGearBox = (GroundVehicleModuleDef)Repo.GetDef("8a9401fa-77fe-4844-2b7c-f33c9c796c1f");
-            DogRingGearBox.Armor = -10f;
+            // DogRingGearBox.Armor = -10f;
             DogRingGearBox.BodyPartAspectDef.Speed = 14f;
-            DogRingGearBox.SubAddons = DogRingGearBox.SubAddons.AddRangeToArray(NewArmours());
+            // DogRingGearBox.SubAddons = DogRingGearBox.SubAddons.AddRangeToArray(NewArmours());
             DogRingGearBox.ChargesMax = 0;
             DogRingGearBox.Abilities = DogRingGearBox.Abilities.AddToArray(ExplodeOnDeath());
 
-            //TODO: ViewElementDef on the Explosion Ability, maybe tidy it up too
+            DogRingGearBox.ViewElementDef.Description = new LocalizedTextBind("UI_JUNKER_ENGINE");
+            Adjust_Cost();
         }
 
         public static AddonDef.SubaddonBind[] NewArmours()
@@ -164,6 +166,14 @@ namespace TFTVVehicleRework.KaosBuggy
                 VED.Description = new LocalizedTextBind("KB_KAMIKAZE_DESC");
             }
             return VED;
+        }
+
+        private static void Adjust_Cost()
+        {
+            //"JetBoosters_MarketplaceItemOptionDef"
+            GeoMarketplaceItemOptionDef MarketOption = (GeoMarketplaceItemOptionDef)Repo.GetDef("4b3f066b-0e75-1cc4-797b-c50912666690");
+            MarketOption.MinPrice = 250f;
+            MarketOption.MaxPrice = 400f;
         }
     }
 }
