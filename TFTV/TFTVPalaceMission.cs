@@ -634,29 +634,38 @@ namespace TFTV
         {
             try
             {
-                List<GameTagDef> gameTagsToCheck = new List<GameTagDef>()
+                if (actor.TacticalLevel != null && actor.TacticalLevel.TacMission != null && actor.TacticalLevel.TacMission.IsFinalMission)
                 {
-              DefCache.GetDef<GameTagDef>("TaxiarchNergal_TacCharacterDef_GameTagDef"),
+                    List<GameTagDef> gameTagsToCheck = new List<GameTagDef>()
+                {
+                DefCache.GetDef<GameTagDef>("TaxiarchNergal_TacCharacterDef_GameTagDef"),
                 DefCache.GetDef<GameTagDef>("Zhara_TacCharacterDef_GameTagDef"),
                 DefCache.GetDef<GameTagDef>("Stas_TacCharacterDef_GameTagDef"),
                 DefCache.GetDef<GameTagDef>("Nikolai_TacCharacterDef_GameTagDef"),
-                 DefCache.GetDef<GameTagDef>("Richter_TacCharacterDef_GameTagDef"),
+                DefCache.GetDef<GameTagDef>("Richter_TacCharacterDef_GameTagDef"),
                 DefCache.GetDef<GameTagDef>("Harlson_TacCharacterDef_GameTagDef"),
                 DefCache.GetDef<GameTagDef>("Sofia_TacCharacterDef_GameTagDef"),
-
+                DefCache.GetDef<GameTagDef>("Exalted_ClassTagDef")
 
 
 
 
                 };
 
-                if (gameTagsToCheck.Any(gt => actor.GameTags.Contains(gt)))
+                    if (gameTagsToCheck.Any(gt => actor.GameTags.Contains(gt)))
 
-                {
-                    actor.TacticalActorView.TacticalActorViewDef.PortraitSource = TacticalActorViewDef.PortraitMode.ManualPortrait;
+                    {
+                        //  TFTVLogger.Always($"ForceSpecialCharacterPortraitInSetupProperPortrait actor is {actor.name}");
+                        actor.TacticalActorView.TacticalActorViewDef.PortraitSource = TacticalActorViewDef.PortraitMode.ManualPortrait;
 
+                    }
+                    else
+                    {
+                        // TFTVLogger.Always($"ForceSpecialCharacterPortraitInSetupProperPortrait rendered actor is {actor.name}");
+                        actor.TacticalActorView.TacticalActorViewDef.PortraitSource = TacticalActorViewDef.PortraitMode.RenderedPortrait;
+
+                    }
                 }
-
 
 
             }
@@ -885,27 +894,32 @@ namespace TFTV
                 {
                     if (status.Def == DefCache.GetDef<StatusDef>("ConsoleActivated_StatusDef"))
                     {
-                        TFTVLogger.Always($"yes, this stuff is getting activated");
+                      
 
                         StructuralTarget console = statusComponent.transform.GetComponent<StructuralTarget>();
                         TacticalActorYuggoth yuggoth = controller.Map.GetActors<TacticalActorYuggoth>().First();
                         YuggothShieldsAbility lowerShields = yuggoth.GetAbility<YuggothShieldsAbility>();
 
-                        TFTVLogger.Always($"Console {console.name} activated");
+                        TFTVLogger.Always($"console name {console.name} at position {console.Pos}");
+                     
+                      if (console.Pos.z == 0)
+                      {
+                            TFTVLogger.Always($"Console {console.name} activated");
 
-                        ActivatedObjectives.Add(ObjectiveName1);
+                            ActivatedObjectives.Add(ObjectiveName1);
 
-                        if (ActivatedObjectives.Count() == 3)
-                        {
-                            TFTVLogger.Always($"All consoles activated! Lowering the gate!");
-                            lowerShields.LowerQueensWall();
-                            ActivatedObjectives.Clear();
+                            if (ActivatedObjectives.Count() == 3)
+                            {
+                                TFTVLogger.Always($"All consoles activated! Lowering the gate!");
+                                lowerShields.LowerQueensWall();
+                                ActivatedObjectives.Clear();
 
-                            TFTVLogger.Always($"shields down on turn {yuggoth.QueenWallDownOnTurn}");
+                                TFTVLogger.Always($"shields down on turn {yuggoth.QueenWallDownOnTurn}");
 
-                            // TurnsBeforeGatesRaised = 2;
-                            //  SpawnReinforcements(QueenReinforcementsSpawn);
-                        }
+                                // TurnsBeforeGatesRaised = 2;
+                                //  SpawnReinforcements(QueenReinforcementsSpawn);
+                            }
+                      }
                     }
                 }
             }
@@ -1399,9 +1413,9 @@ namespace TFTV
                 {
                     UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
 
-                    int roll = UnityEngine.Random.Range(0, 10);
+                    int roll = TFTVCommonMethods.D12DifficultyModifiedRoll(controller.Difficulty.Order);
 
-                    if (roll <= DifficultyBasedChance(2))
+                    if (roll <= 6)
                     {
                         TacticalDeployZone tacticalDeployZone = FindTDZ(LeftBottomSpawn);
 
@@ -1464,9 +1478,9 @@ namespace TFTV
 
                     UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
 
-                    int roll = UnityEngine.Random.Range(0, 10);
+                    int roll = TFTVCommonMethods.D12DifficultyModifiedRoll(controller.Difficulty.Order);
 
-                    if (roll <= DifficultyBasedChance(2))
+                    if (roll <= 6)
                     {
 
                         TacticalDeployZone tacticalDeployZone = FindTDZ(spawnName);
@@ -1514,9 +1528,9 @@ namespace TFTV
                 {
                     UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
 
-                    int roll = UnityEngine.Random.Range(0, 10);
+                    int roll = TFTVCommonMethods.D12DifficultyModifiedRoll(controller.Difficulty.Order);
 
-                    if (roll <= DifficultyBasedChance(2))
+                    if (roll <= 6)
                     {
 
                         TacticalDeployZone tacticalDeployZone = FindTDZ(spawnName);
@@ -1706,7 +1720,7 @@ namespace TFTV
             {
                 TacCharacterDef acheronAsclepiusChampion = DefCache.GetDef<TacCharacterDef>("AcheronAsclepiusChampion_TacCharacterDef");
                 TacCharacterDef acheronAchlysChampion = DefCache.GetDef<TacCharacterDef>("AcheronAchlysChampion_TacCharacterDef");
-              //  TacCharacterDef acheronPrime = DefCache.GetDef<TacCharacterDef>("AcheronPrime_TacCharacterDef");
+              //  TacCharacterDef acheronPrime = DefCache.GetDef<TacCharacterDef>("AcheronPrime_TacCharacterDef"); causes softlock for some reason
                 TacCharacterDef acheronAsclepius = DefCache.GetDef<TacCharacterDef>("AcheronAsclepius_TacCharacterDef");
                 TacCharacterDef acheronAchlys = DefCache.GetDef<TacCharacterDef>("AcheronAchlys_TacCharacterDef");
 
@@ -1943,6 +1957,8 @@ namespace TFTV
             {
                 if (controller.TacMission.IsFinalMission && controller.TurnNumber > 1)
                 {
+                  //  TFTVLogger.Always($"this is at least the right version");
+
                     if (TFTVRevenant.DeadSoldiersDelirium.Keys.Count > 0 && RevenantEligibleClasses.Any(t => tacticalActorBase.HasGameTag(t)))
                     {
                         TFTVLogger.Always($"{tacticalActorBase.name} class is eligible to be a Revenant and there are still {TFTVRevenant.DeadSoldiersDelirium.Keys.Count} in the list");

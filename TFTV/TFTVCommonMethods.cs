@@ -36,6 +36,22 @@ namespace TFTV
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
         //  private static readonly DefRepository Repo = TFTVMain.Repo;
 
+
+        public static int D12DifficultyModifiedRoll(int unModifiedDifficultyOrder)
+        {
+            try 
+            {
+                return UnityEngine.Random.Range(1, 13 - TFTVReleaseOnly.DifficultyOrderConverter(unModifiedDifficultyOrder));
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
+
+        }
+
      
         public static void CheckGeoUIfunctionality(GeoLevelController controller)
         {

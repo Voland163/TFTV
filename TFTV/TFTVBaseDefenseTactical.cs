@@ -1021,9 +1021,7 @@ namespace TFTV
 
         }
 
-        private static string DeployZonePlayerVehicle = "Deploy_Player_3x3_Vehicle";
-        private static string DeployZonePlayerGrunts = "Deploy_Player_1x1_Elite_Grunt_Drone (1)";
-
+     
 
        private static Vector3 PlayerSpawn0 = new Vector3(-15.5f, 1.2f, 13.5f);
        private static Vector3 PlayerSpawn1 = new Vector3(-12f, 1.2f, 9.5f);

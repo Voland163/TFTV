@@ -15,6 +15,7 @@ using PhoenixPoint.Common.Saves;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
+using PhoenixPoint.Geoscape.View.ViewModules;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.ActorsInstance;

@@ -655,6 +655,55 @@ namespace TFTV
         }
 
 
+        [HarmonyPatch(typeof(HavenDefenceOutcomeDataBind), "ModalShowHandler")]
+        public static class HavenDefenceOutcomeDataBind_ModalShowHandler_Experiment_patch
+        {
+            public static void Postfix(HavenDefenceOutcomeDataBind __instance, UIModal modal)
+            {
+                try
+                {
+                   // GeoLevelController controller = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
+                    
+
+                    TFTVLogger.Always($"Haven Defense mission outcome showing.");
+
+                    GeoMission geoMission = (GeoMission)modal.Data;
+
+                    if (geoMission.GetMissionOutcomeState() == TacFactionState.Defeated) 
+                    {
+                        GeoHavenDefenseMission geoHavenDefenseMission = (GeoHavenDefenseMission)modal.Data;
+                        int result = geoHavenDefenseMission.DefenderDeployment - geoHavenDefenseMission.AttackerDeployment;
+
+                        if(result>0) 
+                        {
+                            TFTVLogger.Always($"Haven Defense mission won.");
+                            geoMission.Site.ActiveMission = null;
+                            geoMission.Site.RefreshVisuals();
+                      
+                        }
+                        else
+                        {
+                            TFTVLogger.Always($"Haven Defense mission lost.");
+                            geoMission.Site.DestroySite();
+                        }
+
+                       
+
+
+                    }
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
+
+
+        
+
 
         [HarmonyPatch(typeof(PhoenixBaseDefenseOutcomeDataBind), "ModalShowHandler")]
         public static class PhoenixBaseDefenseOutcomeDataBind_ModalShowHandler_Experiment_patch

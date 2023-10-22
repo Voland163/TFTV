@@ -205,6 +205,8 @@ namespace TFTV
             CreateFakeFacilityToFixBadBaseDefenseMaps();
             ChangeFireNadeCostAndDamage();
             ExperimentKaosWeaponAmmo();
+            ExperimentAcidDisabledStatus();
+           // ExperimentHavenDefenseMissionCancel();
         }
 
         //NEU_Assault_Torso_BodyPartDef
@@ -213,6 +215,29 @@ namespace TFTV
         //NEU_Sniper_Torso_BodyPartDef
         //NEU_Sniper_Legs_ItemDef
 
+        
+
+
+        private static void ExperimentAcidDisabledStatus()
+        {
+            try 
+            {
+
+                SlotStateStatusDef disabledSource = DefCache.GetDef<SlotStateStatusDef>("DisabledElectronicSlot_StatusDef");
+                string name = "DisabledElectronicSlotFromAcid_StatusDef";
+                SlotStateStatusDef newDisabled = Helper.CreateDefFromClone(disabledSource, "{1C5E47B5-6CE1-4A41-A711-07652506A901}", name);
+                newDisabled.DurationTurns = 0;
+                newDisabled.Visuals = Helper.CreateDefFromClone(disabledSource.Visuals, "{606C38AD-8AA7-4D7E-B031-733BCB7D2C42}", name);
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+
+
+        }
 
         private static void CreateAmmoForKG(WeaponDef weaponDef, int amount, int minPrice, string gUID0, string gUID1, string gUID2, string spriteFileName)
         {
@@ -230,7 +255,9 @@ namespace TFTV
 
                 newAmmo.ChargesMax = amount;
                 newAmmo.CrateSpawnWeight = 500;
+                newAmmo.Tags.Remove(DefCache.GetDef<GameTagDef>("ManufacturableItem_TagDef"));
                 weaponDef.ChargesMax = amount;
+
                 weaponDef.CompatibleAmmunition = new TacticalItemDef[] { newAmmo };
 
                 GeoMarketplaceItemOptionDef newMarketplaceItem = Helper.CreateDefFromClone
@@ -240,6 +267,7 @@ namespace TFTV
                 newMarketplaceItem.MaxPrice = minPrice + minPrice*1.25f;
                 newMarketplaceItem.ItemDef = newAmmo;
                 newMarketplaceItem.DisallowDuplicates = false;
+                
 
                 TheMarketplaceSettingsDef marketplaceSettings = DefCache.GetDef<TheMarketplaceSettingsDef>("TheMarketplaceSettingsDef");
 
