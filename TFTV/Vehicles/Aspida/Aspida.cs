@@ -44,6 +44,7 @@ namespace TFTVVehicleRework.Aspida
             Themis.DamagePayload.DamageKeywords.Find(dkp => dkp.DamageKeywordDef == keywords.ParalysingKeyword).Value = 10f;
             Themis.APToUsePerc = 75;
             Themis.ChargesMax = 32;
+            Themis.ManufacturePointsCost = 250f;
             Themis.Abilities = new AbilityDef[]
             {
                 AspidaShootAbility()
