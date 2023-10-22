@@ -2,6 +2,7 @@ using Base.Core;
 using Base.UI;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
+using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.Equipments;
 using PhoenixPoint.Common.View.ViewControllers.Inventory;
 using PhoenixPoint.Tactical.Entities.DamageKeywords;
@@ -37,6 +38,12 @@ namespace TFTVVehicleRework.HarmonyPatches
             {
                 string text = $"{moduledef.BodyPartAspectDef.Endurance * 10f}";
                 parameters = new object[] {HealthText, secondObject, text, text, null, subItemIndex};
+                SetStat.Invoke(__instance, parameters);
+            }
+            float UnitsInside = moduledef.BodyPartAspectDef.GetStatModification(StatModificationTarget.UnitsInside).Value;
+            if(UnitsInside != 0)
+            {
+                parameters = new object[] {__instance.SeatsName, secondObject, UIUtil.StatsWithSign(UnitsInside), UnitsInside, null, subItemIndex};
                 SetStat.Invoke(__instance, parameters);
             }
         }
