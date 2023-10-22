@@ -41,63 +41,6 @@ namespace TFTV
         private static readonly HasSeenHintHintConditionDef sourceHasSeenHintConditionDef = DefCache.GetDef<HasSeenHintHintConditionDef>("HasSeenHint_TUT2_Overwatch_HintDef-False_HintConditionDef");
         private static readonly LevelHasTagHintConditionDef sourceInfestationMission = DefCache.GetDef<LevelHasTagHintConditionDef>("LevelHasTag_MissionTypeBaseInfestation_MissionTagDef_HintConditionDef");
         private static readonly MissionTypeTagDef infestationMissionTagDef = DefCache.GetDef<MissionTypeTagDef>("HavenInfestation_MissionTypeTagDef");
-        // private static readonly IsDefHintConditionDef sourceIsDefHintConditionDef = DefCache.GetDef<IsDefHintConditionDef>("IsDef_Strained_StatusDef_HintConditionDef");
-
-        /*  public static void RemoveAlreadyShownTacticalHints()
-          {
-              try
-              {
-                  if (TacticalHintsToShow.Count > 0)
-                  {
-                      foreach (string hintDefName in TacticalHintsToShow)
-                      {
-                          ContextHelpHintDef hint = DefCache.GetDef<ContextHelpHintDef>(hintDefName);
-                          TFTVLogger.Always("Hint already shown is " + hintDefName);
-
-                          if (alwaysDisplayedTacticalHintsDbDef.Hints.Contains(hint))
-                          {
-                              alwaysDisplayedTacticalHintsDbDef.Hints.Remove(hint);
-                          }
-                      }
-                  }
-              }
-              catch (Exception e)
-              {
-                  TFTVLogger.Error(e);
-              }
-          }*/
-
-
-
-        /* [HarmonyPatch(typeof(UIStateGeoCutscene), "ExitState")] //, new Type[] { typeof(GeoscapeTutorialStepType), typeof(int)})]
-         public static class GeoscapeTutorial_Finished_Patch
-         {
-             public static void Postfix(UIStateGeoCutscene __instance)
-             {
-                 try
-                 {
-
-                     TFTVLogger.Always("ExitState");
-
-                         GeoLevelController controller = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
-                         TFTVLogger.Always("Intro variable is " + controller.EventSystem.GetVariable("BG_Intro_Played"));
-                         //controller.EventSystem.SetVariable("BG_Intro_Played", 0);
-                         TFTVNewPXCharacters.PlayIntro(controller);
-                         TFTVLogger.Always("Intro should have triggered");
-
-                 }
-                 catch (Exception e)
-                 {
-                     TFTVLogger.Error(e);
-                 }
-
-             }
-         }
-        */
-
-
-
-
 
         [HarmonyPatch(typeof(UIModuleTutorialModal), "SetTutorialStep")]
         public static class UIModuleTutorialModal_SetTutorialStep_Hints_Patch

@@ -228,7 +228,7 @@ namespace TFTV
 
 
                 newAmmo.ChargesMax = amount;
-                newAmmo.CrateSpawnWeight = 150;
+                newAmmo.CrateSpawnWeight = 500;
                 weaponDef.ChargesMax = amount;
                 weaponDef.CompatibleAmmunition = new TacticalItemDef[] { newAmmo };
 
@@ -236,7 +236,7 @@ namespace TFTV
                      (DefCache.GetDef<GeoMarketplaceItemOptionDef>("Obliterator_MarketplaceItemOptionDef"), gUID2, name);
 
                 newMarketplaceItem.MinPrice = minPrice;
-                newMarketplaceItem.MaxPrice = minPrice + minPrice*1.5f;
+                newMarketplaceItem.MaxPrice = minPrice + minPrice*1.25f;
                 newMarketplaceItem.ItemDef = newAmmo;
                 newMarketplaceItem.DisallowDuplicates = false;
 
@@ -280,16 +280,16 @@ namespace TFTV
                 CreateAmmoForKG(Tormentor, 8, 30, "e1875c26-0494-4d0f-9e5d-3c74a17c3b2d",
 "79f6bb60-8ca3-4bbf-a0f1-c819f5ebf09e",
 "ee89b5c3-6d06-4c5e-856b-96e7ff411c77", "KG_Pistol_Ammo.png");
-                CreateAmmoForKG(Subjector, 5, 40,  "2e5be682-1f85-4610-bbb7-c2f2bf41d4c6",
+                CreateAmmoForKG(Subjector, 5, 30,  "2e5be682-1f85-4610-bbb7-c2f2bf41d4c6",
 "b03d78d4-c7e7-49c3-b097-3448e253a1e7",
 "70a0a172-2b57-48d3-94c2-7cb4e428c3c4", "KG_Sniper_Ammo.png");
-                CreateAmmoForKG(Redemptor, 3, 70,  "8f7ff5ca-4b8d-4677-86d3-7f21e41a3a70",
+                CreateAmmoForKG(Redemptor, 24, 30,  "8f7ff5ca-4b8d-4677-86d3-7f21e41a3a70",
 "d60e04a0-c873-4c16-9a83-2f9d6e1c163d",
 "dc92d8ca-1b8d-4f85-9d90-d8eb9e63d5a3", "KG_Shotgun_Ammo.png");
-                CreateAmmoForKG(Devastator, 6, 70, "99aa40e5-5415-44b9-98ed-34d746a99b52",
+                CreateAmmoForKG(Devastator, 6, 30, "99aa40e5-5415-44b9-98ed-34d746a99b52",
 "3b647fa3-1e06-4f2a-9d1c-82edf8a6dbff",
 "605d3c8a-7b9c-481a-8c0d-7ff4be94901a", "KG_Cannon_Ammo.png");
-                CreateAmmoForKG(Obliterator, 24, 70,  "2c86774f-4889-4c06-9f7a-8971e62ff267",
+                CreateAmmoForKG(Obliterator, 32, 30,  "2c86774f-4889-4c06-9f7a-8971e62ff267",
 "587b1a5b-1665-48c9-8b9c-4156231712c1",
 "1a1230fc-0e5d-4c4c-9be5-563879d2471f", "KG_Assault_Rifle_Ammo.png");
 

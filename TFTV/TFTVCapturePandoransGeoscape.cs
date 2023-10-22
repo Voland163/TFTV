@@ -126,7 +126,7 @@ namespace TFTV
 
                 int foodProductionFacilitiesCount = CountFoodProductionFacilities(controller.PhoenixFaction);
 
-                foodController.Income = (int)(buff * 24 * foodProductionFacilitiesCount) + Mathf.Min((int)GetFarmOutputPerDay(), foodProductionFacilitiesCount * ProcessingCapacity) - controller.PhoenixFaction.Soldiers.Count();
+                foodController.Income = (int)Math.Ceiling(buff * 24 * foodProductionFacilitiesCount) + Mathf.Min((int)GetFarmOutputPerDay(), foodProductionFacilitiesCount * ProcessingCapacity) - controller.PhoenixFaction.Soldiers.Count();
 
                // TFTVLogger.Always($"income {foodController.Income}, from {(int)(buff * 24 * foodProductionFacilitiesCount)} plus {Mathf.Min((int)GetFarmOutputPerDay(), foodProductionFacilitiesCount * ProcessingCapacity)} minus {controller.PhoenixFaction.Soldiers.Count()}");
 
