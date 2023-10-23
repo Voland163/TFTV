@@ -206,7 +206,7 @@ namespace TFTV
             ChangeFireNadeCostAndDamage();
             ExperimentKaosWeaponAmmo();
             ExperimentAcidDisabledStatus();
-           // ExperimentHavenDefenseMissionCancel();
+           
         }
 
         //NEU_Assault_Torso_BodyPartDef
@@ -257,7 +257,6 @@ namespace TFTV
                 newAmmo.CrateSpawnWeight = 500;
                 newAmmo.Tags.Remove(DefCache.GetDef<GameTagDef>("ManufacturableItem_TagDef"));
                 weaponDef.ChargesMax = amount;
-
                 weaponDef.CompatibleAmmunition = new TacticalItemDef[] { newAmmo };
 
                 GeoMarketplaceItemOptionDef newMarketplaceItem = Helper.CreateDefFromClone
