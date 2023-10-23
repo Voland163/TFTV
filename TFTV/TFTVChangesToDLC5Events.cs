@@ -1,4 +1,5 @@
 ﻿using Assets.Code.PhoenixPoint.Geoscape.Entities.Sites.TheMarketplace;
+using Base;
 using Base.Core;
 using Base.Defs;
 using Base.UI;
@@ -496,7 +497,7 @@ namespace TFTV
         {
             try
             {
-                PropertyInfo propertyInfo = typeof(GeoMarketplace).GetProperty("MarketplaceChoices", BindingFlags.Instance | BindingFlags.Public);
+                PropertyInfo propertyInfoMarketPlaceChoicesGeoEventChoice = typeof(GeoMarketplace).GetProperty("MarketplaceChoices", BindingFlags.Instance | BindingFlags.Public);
 
                 if (MPGeoEventChoices == null)
                 {
@@ -506,7 +507,7 @@ namespace TFTV
                 else
                 {
                     //  TFTVLogger.Always($"passing all Choices from internal list, count {MPGeoEventChoices.Count}, to proper list, count {geoMarketplace.MarketplaceChoices.Count}");
-                    propertyInfo?.SetValue(geoMarketplace, MPGeoEventChoices);
+                    propertyInfoMarketPlaceChoicesGeoEventChoice?.SetValue(geoMarketplace, MPGeoEventChoices);
 
                 }
 
@@ -527,7 +528,7 @@ namespace TFTV
                             }
                         }
 
-                        propertyInfo.SetValue(geoMarketplace, choicesToShow);
+                        propertyInfoMarketPlaceChoicesGeoEventChoice.SetValue(geoMarketplace, choicesToShow);
 
                     }
                     else if (filter == 2)
@@ -558,7 +559,7 @@ namespace TFTV
                         }
                     }
 
-                    propertyInfo.SetValue(geoMarketplace, choicesToShow);
+                    propertyInfoMarketPlaceChoicesGeoEventChoice.SetValue(geoMarketplace, choicesToShow);
                 }
                 //  TFTVLogger.Always($"Count of proper list (that will be shown) is {geoMarketplace.MarketplaceChoices.Count}");
 
@@ -575,8 +576,12 @@ namespace TFTV
             {
                 GeoMarketplace geoMarketplace = GameUtl.CurrentLevel().GetComponent<GeoLevelController>().Marketplace;
                 UIModuleTheMarketplace marketplaceUI = GameUtl.CurrentLevel().GetComponent<GeoLevelController>().View.GeoscapeModules.TheMarketplaceModule;
-                FieldInfo fieldInfo = typeof(VirtualScrollRect).GetField("_visibleElements", BindingFlags.NonPublic | BindingFlags.Instance);
+                FieldInfo fieldInfoVisibleElementsInt = typeof(VirtualScrollRect).GetField("_visibleElements", BindingFlags.NonPublic | BindingFlags.Instance);
+             
+                //   MethodInfo methodInfoPopulateElements = typeof(VirtualScrollRect).GetMethod("PopulateElements", BindingFlags.NonPublic | BindingFlags.Instance);
 
+              //  FieldInfo fieldInfoElementsComponentArray = typeof(VirtualScrollRect).GetField("_elements", BindingFlags.NonPublic | BindingFlags.Instance);
+              
                 //   TFTVLogger.Always($"Checking before filtering: visible elements {fieldInfo.GetValue(marketplaceUI.ListScrollRect)}");
 
                 switch (filter)
@@ -606,24 +611,45 @@ namespace TFTV
                 marketplaceUI.ListScrollRect.ScrollToElement(0);
                 FilterMarketPlaceOptions(geoMarketplace, filter);
 
-                int visibleElements = (int)fieldInfo.GetValue(marketplaceUI.ListScrollRect);
+                int visibleElements = (int)fieldInfoVisibleElementsInt.GetValue(marketplaceUI.ListScrollRect);
                 int selectionChoices = geoMarketplace.MarketplaceChoices.Count();
 
                 //  TFTVLogger.Always($"Checking after filtering: {visibleElements} visible elements  vs {selectionChoices} elements in selection");
 
                 if (visibleElements > selectionChoices)
                 {
-                    fieldInfo.SetValue(marketplaceUI.ListScrollRect, selectionChoices);
+                    fieldInfoVisibleElementsInt.SetValue(marketplaceUI.ListScrollRect, selectionChoices);
                 }
                 else if (selectionChoices > visibleElements && visibleElements < 7)
                 {
-                    fieldInfo.SetValue(marketplaceUI.ListScrollRect, Math.Min(selectionChoices, 7));
+                    fieldInfoVisibleElementsInt.SetValue(marketplaceUI.ListScrollRect, Math.Min(selectionChoices, 7));
 
                 }
 
                 //   TFTVLogger.Always($"Checking after filtering and after manually setting the field: : {visibleElements} visible elements  vs {selectionChoices} elements in selection");
+          /*      marketplaceUI.ListScrollRect.Clear();
+                bool forceRefresh = true;
+
+                methodInfoPopulateElements.Invoke(marketplaceUI.ListScrollRect, new object[] { forceRefresh });*/
+
 
                 marketplaceUI.ListScrollRect.RefreshContents(true);
+            
+
+             //   TFTVLogger.Always($"total _totalNumElements: {marketplaceUI.ListScrollRect.TotalRows}");
+
+
+               /* Component[] elements = (Component[])fieldInfoElementsComponentArray.GetValue(marketplaceUI.ListScrollRect);
+
+                List<Component> adjustedElementsList = new List<Component>(elements.ToList());
+
+                TFTVLogger.Always($"elements count: {adjustedElementsList.Count}");
+
+                adjustedElementsList.RemoveLast();
+
+                fieldInfoElementsComponentArray.SetValue(marketplaceUI.ListScrollRect, adjustedElementsList.ToArray());*/
+
+
 
                 //   TFTVLogger.Always($"Checking after refreshing contents:: {visibleElements} visible elements  vs {selectionChoices} elements in selection");
 
@@ -633,6 +659,29 @@ namespace TFTV
                 TFTVLogger.Error(e);
             }
         }
+
+
+     /*  [HarmonyPatch(typeof(VirtualScrollRect), "RefreshContents")]
+        public static class VirtualScrollRect_PopulateElements_patch
+        {
+
+            public static void Prefix(VirtualScrollRect __instance, bool forceRefresh)
+            {
+                try
+                {
+                    TFTVLogger.Always($"running RefreshContents, forceRefresh is {forceRefresh}");
+
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+        }*/
+
+
+
 
 
         public static void ForceMarketPlaceUpdate()
@@ -746,11 +795,22 @@ namespace TFTV
 
                         if (item.Tags.Contains(Shared.SharedGameTags.AmmoTag))
                         {
+                          //  TFTVLogger.Always($"ammo {item.name}");
+
                             if (ammoOffers.Contains(item))
                             {
-                                price = UnityEngine.Random.Range(geoMarketplaceOptionDef.MinPrice, geoMarketplaceOptionDef.MaxPrice * 2f);
-                                result = GenerateItemChoice(item, price * priceMultiplierVO19);
+                             //   TFTVLogger.Always($"ammo {item.name}; there are already {ammoOffers.Where(i => i==item).Count()} ammo of this type in stock");
 
+                                if (ammoOffers.Where(i => i == item).Count() == 3)
+                                {
+                                    continue;
+                                }
+                                else
+                                {
+                                    price = UnityEngine.Random.Range(geoMarketplaceOptionDef.MinPrice, geoMarketplaceOptionDef.MaxPrice * 2f);
+                                    ammoOffers.Add(item);
+                                    result = GenerateItemChoice(item, price * priceMultiplierVO19);
+                                }
 
                             }
                             else
@@ -880,7 +940,8 @@ namespace TFTV
             }
         }
 
-
+        
+    
 
 
         [HarmonyPatch(typeof(GeoMarketplace), "OnSiteVisited")]

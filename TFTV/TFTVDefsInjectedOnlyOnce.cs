@@ -246,6 +246,8 @@ namespace TFTV
                 TacticalItemDef sourceAmmo = DefCache.GetDef<TacticalItemDef>("PX_AssaultRifle_AmmoClip_ItemDef");
                 string name = $"{weaponDef.name}_AmmoClipDef";
 
+                ClassTagDef classTagDef = weaponDef.Tags.FirstOrDefault<ClassTagDef>();
+
                 TacticalItemDef newAmmo = Helper.CreateDefFromClone(sourceAmmo, gUID0, name);
                 newAmmo.ViewElementDef = Helper.CreateDefFromClone(sourceAmmo.ViewElementDef, gUID1, name);
                 newAmmo.ViewElementDef.DisplayName1.LocalizationKey = $"KEY_KAOSGUNS_AMMO_{weaponDef.name}";
@@ -256,6 +258,8 @@ namespace TFTV
                 newAmmo.ChargesMax = amount;
                 newAmmo.CrateSpawnWeight = 500;
                 newAmmo.Tags.Remove(DefCache.GetDef<GameTagDef>("ManufacturableItem_TagDef"));
+                newAmmo.Tags.Remove(DefCache.GetDef<ClassTagDef>("Assault_ClassTagDef"));
+                newAmmo.Tags.Add(classTagDef);
                 weaponDef.ChargesMax = amount;
                 weaponDef.CompatibleAmmunition = new TacticalItemDef[] { newAmmo };
 
