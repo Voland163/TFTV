@@ -1,6 +1,7 @@
 ﻿using Assets.Code.PhoenixPoint.Geoscape.Entities.Sites.TheMarketplace;
 using Base.Core;
 using Base.Defs;
+using Base.Levels;
 using Base.UI;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
@@ -663,13 +664,6 @@ namespace TFTV
             {
                 TFTVLogger.Error(e);
             }
-
-
-
-
-
-
-
         }
 
 
@@ -829,9 +823,74 @@ namespace TFTV
             }
         }
 
-            
 
-        
+       
+
+    [HarmonyPatch(typeof(GeoMarketplace), "UpdateOptions", new Type[] { })]
+
+        public static class GeoMarketplace_UpdateOptions_MarketPlace_patch
+    {
+            /*     public static bool Prepare()
+                 {
+                     TFTVConfig config = TFTVMain.Main.Config;
+                     return config.ActivateKERework;
+                 }*/
+
+            public static bool Prefix(GeoMarketplace __instance, GeoLevelController ____level, TheMarketplaceSettingsDef ____settings)
+            {
+                try
+                {
+                    __instance.MarketplaceChoices.Clear();
+
+
+                    UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
+
+                    int num = UnityEngine.Random.Range(30, 41);
+
+                    List<GeoMarketplaceOptionDef> currentlyPossibleOptions = ____settings.PossibleOptions.ToList();
+                    List<ResearchDef> researchOffers = new List<ResearchDef>();
+                    List<ItemDef> ammoOffers = new List<ItemDef>();
+
+                    for (int x = currentlyPossibleOptions.Count - 1; x >= 0; x--)
+                    {
+                        GeoMarketplaceOptionDef geoMarketplaceOptionDef = currentlyPossibleOptions[x];
+                        GeoMarketplaceResearchOptionDef currentlyPossibleResearchOption;
+                        if ((currentlyPossibleResearchOption = geoMarketplaceOptionDef as GeoMarketplaceResearchOptionDef) is object && currentlyPossibleResearchOption.ConcreteResearch != null && ____level.PhoenixFaction.Research.RevealedAndCompleted.Any((ResearchElement research) => research.ResearchID == currentlyPossibleResearchOption.ConcreteResearch.Id))
+                        {
+                            currentlyPossibleOptions.Remove(geoMarketplaceOptionDef);
+                        }
+                    }
+
+                    float voPriceMultiplier = 1;
+
+                    if (TFTVVoidOmens.CheckFordVoidOmensInPlay(____level).Contains(19)) 
+                    {
+
+                        voPriceMultiplier = 0.5f;
+                    
+                    }
+
+
+                    for (int i = 0; i < num; i++)
+                    {
+                        GeoEventChoice item = GenerateRandomChoiceTFTV(____level, currentlyPossibleOptions, ____settings, researchOffers, ammoOffers, voPriceMultiplier);
+                        __instance.MarketplaceChoices.Add(item);
+                    }
+
+                    return false;
+
+
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
+
+
 
 
         [HarmonyPatch(typeof(GeoMarketplace), "OnSiteVisited")]
@@ -852,7 +911,7 @@ namespace TFTV
                         ____level.EventSystem.SetVariable(____settings.NumberOfDLC5MissionsCompletedVariable, 4);
                         ____level.EventSystem.SetVariable(____settings.DLC5IntroCompletedVariable, 1);
                         ____level.EventSystem.SetVariable(____settings.DLC5FinalMovieCompletedVariable, 1);
-                        __instance.UpdateOptions(____level.Timing);
+                        ForceMarketPlaceUpdate();
                     }
 
                 }
