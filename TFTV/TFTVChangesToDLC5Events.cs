@@ -1,23 +1,18 @@
 ﻿using Assets.Code.PhoenixPoint.Geoscape.Entities.Sites.TheMarketplace;
 using Base.Core;
 using Base.Defs;
-using Base.Levels;
 using Base.UI;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
-using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.Entities.Items;
 using PhoenixPoint.Common.Levels.Missions;
 using PhoenixPoint.Common.View.ViewControllers;
-using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.Research;
 using PhoenixPoint.Geoscape.Events;
 using PhoenixPoint.Geoscape.Levels;
-using PhoenixPoint.Geoscape.View.ViewControllers.Interception;
 using PhoenixPoint.Geoscape.View.ViewModules;
 using PhoenixPoint.Geoscape.View.ViewStates;
-using PhoenixPoint.Tactical.Entities.Weapons;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -33,11 +28,6 @@ namespace TFTV
     {
         private static readonly DefRepository Repo = TFTVMain.Repo;
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
-        private static readonly WeaponDef Obliterator = DefCache.GetDef<WeaponDef>("KS_Obliterator_WeaponDef");
-        private static readonly WeaponDef Subjector = DefCache.GetDef<WeaponDef>("KS_Subjector_WeaponDef");
-        private static readonly WeaponDef Redemptor = DefCache.GetDef<WeaponDef>("KS_Redemptor_WeaponDef");
-        private static readonly WeaponDef Devastator = DefCache.GetDef<WeaponDef>("KS_Devastator_WeaponDef");
-        private static readonly WeaponDef Tormentor = DefCache.GetDef<WeaponDef>("KS_Tormentor_WeaponDef");
         private static readonly SharedData Shared = TFTVMain.Shared;
         public static void ChangesToDLC5Defs()
         {
@@ -65,7 +55,7 @@ namespace TFTV
             }
         }
 
-      
+
 
 
         /// <summary>
@@ -667,7 +657,7 @@ namespace TFTV
         }
 
 
-      
+
 
         private static GeoEventChoice GenerateResearchChoice(ResearchDef researchDef, float price)
         {
@@ -706,7 +696,7 @@ namespace TFTV
 
 
 
-        private static GeoEventChoice GenerateRandomChoiceTFTV(GeoLevelController controller, List<GeoMarketplaceOptionDef> currentlyPossibleOptions, TheMarketplaceSettingsDef settings, List <ResearchDef> researchOffers, List <ItemDef> ammoOffers, float priceMultiplierVO19)
+        private static GeoEventChoice GenerateRandomChoiceTFTV(GeoLevelController controller, List<GeoMarketplaceOptionDef> currentlyPossibleOptions, TheMarketplaceSettingsDef settings, List<ResearchDef> researchOffers, List<ItemDef> ammoOffers, float priceMultiplierVO19)
         {
             try
             {
@@ -714,13 +704,13 @@ namespace TFTV
                 bool flag = false;
                 GeoEventChoice result = null;
 
-               // float ammoCostMultiplier = 2.5f;
-               
+                // float ammoCostMultiplier = 2.5f;
+
                 GeoMarketplaceOptionDef geoMarketplaceOptionDef;
                 do
                 {
                     geoMarketplaceOptionDef = currentlyPossibleOptions[UnityEngine.Random.Range(0, currentlyPossibleOptions.Count)];
-                                  
+
                     GeoMarketplaceOptionDef geoMarketplaceOptionDef2 = geoMarketplaceOptionDef;
                     if (geoMarketplaceOptionDef2 is null)
                     {
@@ -729,7 +719,7 @@ namespace TFTV
 
                     float price = UnityEngine.Random.Range(geoMarketplaceOptionDef.MinPrice, geoMarketplaceOptionDef.MaxPrice);
 
-                    
+
 
 
                     GeoMarketplaceItemOptionDef geoMarketplaceItemOptionDef;
@@ -756,14 +746,14 @@ namespace TFTV
 
                         if (item.Tags.Contains(Shared.SharedGameTags.AmmoTag))
                         {
-                            if (ammoOffers.Contains(item)) 
+                            if (ammoOffers.Contains(item))
                             {
-                                price = UnityEngine.Random.Range(geoMarketplaceOptionDef.MinPrice, geoMarketplaceOptionDef.MaxPrice *2f);
+                                price = UnityEngine.Random.Range(geoMarketplaceOptionDef.MinPrice, geoMarketplaceOptionDef.MaxPrice * 2f);
                                 result = GenerateItemChoice(item, price * priceMultiplierVO19);
-                                
+
 
                             }
-                            else 
+                            else
                             {
                                 ammoOffers.Add(item);
                                 result = GenerateItemChoice(item, price * priceMultiplierVO19);
@@ -773,19 +763,19 @@ namespace TFTV
 
 
                         }
-                        else if (item.name.Contains("SY")|| item.name.Contains("NJ")) 
+                        else if (item.name.Contains("SY") || item.name.Contains("NJ"))
                         {
                             if (controller != null && controller.NewJerichoFaction != null && controller.SynedrionFaction != null)
                             {
-                                
+
                                 bool armadilloResearched = CheckResearchCompleted(controller.NewJerichoFaction, "NJ_VehicleTech_ResearchDef");
                                 bool aspidaResearched = CheckResearchCompleted(controller.SynedrionFaction, "SYN_Rover_ResearchDef");
 
-                                if((item.name.Contains("SY") && !aspidaResearched)||(item.name.Contains("NJ") && !armadilloResearched)) 
+                                if ((item.name.Contains("SY") && !aspidaResearched) || (item.name.Contains("NJ") && !armadilloResearched))
                                 {
-                                    continue;                               
+                                    continue;
                                 }
-                                
+
                             }
 
 
@@ -795,10 +785,10 @@ namespace TFTV
                         }
                         else
                         {
-                            if (ammoOffers.Count() < 5) 
+                            if (ammoOffers.Count() < 5)
                             {
                                 continue;
-                            
+
                             }
 
                             result = GenerateItemChoice(item, price * priceMultiplierVO19);
@@ -824,12 +814,12 @@ namespace TFTV
         }
 
 
-       
 
-    [HarmonyPatch(typeof(GeoMarketplace), "UpdateOptions", new Type[] { })]
+
+        [HarmonyPatch(typeof(GeoMarketplace), "UpdateOptions", new Type[] { })]
 
         public static class GeoMarketplace_UpdateOptions_MarketPlace_patch
-    {
+        {
             /*     public static bool Prepare()
                  {
                      TFTVConfig config = TFTVMain.Main.Config;
@@ -863,11 +853,11 @@ namespace TFTV
 
                     float voPriceMultiplier = 1;
 
-                    if (TFTVVoidOmens.CheckFordVoidOmensInPlay(____level).Contains(19)) 
+                    if (TFTVVoidOmens.CheckFordVoidOmensInPlay(____level).Contains(19))
                     {
 
                         voPriceMultiplier = 0.5f;
-                    
+
                     }
 
 
@@ -942,7 +932,7 @@ namespace TFTV
                 {
 
                     TFTVLogger.Always("Should trigger MP EE");
-                   // TFTVLogger.Always($"{marketplaceUI.MissionDescriptionText.text}");
+                    // TFTVLogger.Always($"{marketplaceUI.MissionDescriptionText.text}");
 
                     marketplaceUI.Loca_AllMissionsFinishedDesc.LocalizationKey = "KEY_SECRET_MARKETPLACE_TEXT" + (SecretMPCounter - 20);
 
