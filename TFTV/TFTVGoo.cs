@@ -20,6 +20,8 @@ namespace TFTV
         /// </summary>
         /// 
 
+        public static bool DontUseGooNavigationPatch = false;
+
         [HarmonyPatch(typeof(TacticalNavCostFactorFuncs), "CostFactorFunc")]
         public static class TacticalNavCostFactorFuncs_CostFactorFunc_patch
         {
@@ -28,18 +30,24 @@ namespace TFTV
             {
                 try
                 {
-                    TacStatsModifyStatusDef slowedStatus = DefCache.GetDef<TacStatsModifyStatusDef>("Slowed_StatusDef");
-                    GooDamageMultiplierAbilityDef gooImmunity = DefCache.GetDef<GooDamageMultiplierAbilityDef>("GooImmunity_AbilityDef");
-
-                    TacticalVoxel voxel = ____actor.TacticalLevel.VoxelMatrix.GetVoxel(dstPos);
-                    TacStatsModifyStatus status = ____actor.Status.GetStatus<TacStatsModifyStatus>(slowedStatus);
-                    float actorRadius = ____actor.NavigationComponent.AgentNavSettings.AgentRadius;
-
-                    if (voxel != null && voxel.GetVoxelType() == TacticalVoxelType.Goo && status == null && actorRadius <= TacticalMap.HalfTileSize && ____actor.GetAbilityWithDef<GooDamageMultiplierAbility>(gooImmunity) == null)
+                    if (!DontUseGooNavigationPatch)
                     {
-                        __result = 2f;
-                    }
+                        TacStatsModifyStatusDef slowedStatus = DefCache.GetDef<TacStatsModifyStatusDef>("Slowed_StatusDef");
+                        GooDamageMultiplierAbilityDef gooImmunity = DefCache.GetDef<GooDamageMultiplierAbilityDef>("GooImmunity_AbilityDef");
 
+                        TacticalVoxel voxel = ____actor.TacticalLevel.VoxelMatrix.GetVoxel(dstPos);
+
+                        TacStatsModifyStatus status = ____actor.Status.GetStatus<TacStatsModifyStatus>(slowedStatus);
+
+                        float actorRadius = ____actor.NavigationComponent.AgentNavSettings.AgentRadius;
+
+
+
+                        if (voxel != null && voxel.GetVoxelType() == TacticalVoxelType.Goo && status == null && actorRadius <= TacticalMap.HalfTileSize && ____actor.GetAbilityWithDef<GooDamageMultiplierAbility>(gooImmunity) == null)
+                        {
+                            __result = 2f;
+                        }
+                    }
 
                 }
                 catch (Exception e)

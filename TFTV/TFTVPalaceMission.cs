@@ -29,6 +29,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
+using static UnityStandardAssets.Utility.TimedObjectActivator;
 
 namespace TFTV
 {
@@ -142,9 +143,6 @@ namespace TFTV
 
             }
         }
-
-
-
 
 
         //  private static int TurnsBeforeReceptacleResurrects = 2;
@@ -886,6 +884,8 @@ namespace TFTV
 
         }
 
+
+
         public static void PalaceConsoleActivated(StatusComponent statusComponent, Status status, TacticalLevelController controller)
         {
             try
@@ -894,16 +894,20 @@ namespace TFTV
                 {
                     if (status.Def == DefCache.GetDef<StatusDef>("ConsoleActivated_StatusDef"))
                     {
-                      
+
 
                         StructuralTarget console = statusComponent.transform.GetComponent<StructuralTarget>();
                         TacticalActorYuggoth yuggoth = controller.Map.GetActors<TacticalActorYuggoth>().First();
                         YuggothShieldsAbility lowerShields = yuggoth.GetAbility<YuggothShieldsAbility>();
 
                         TFTVLogger.Always($"console name {console.name} at position {console.Pos}");
-                     
-                      if (console.Pos.z == 0)
-                      {
+
+                        if (console.Pos == new Vector3(0.5f, 0.0f, -15.5f))
+                        {
+                            TFTVGoo.DontUseGooNavigationPatch = true;
+                        }
+                        else if (console.Pos.z == 0)
+                        {
                             TFTVLogger.Always($"Console {console.name} activated");
 
                             ActivatedObjectives.Add(ObjectiveName1);
@@ -919,7 +923,7 @@ namespace TFTV
                                 // TurnsBeforeGatesRaised = 2;
                                 //  SpawnReinforcements(QueenReinforcementsSpawn);
                             }
-                      }
+                        }
                     }
                 }
             }
@@ -1002,27 +1006,6 @@ namespace TFTV
         }
 
 
-
-
-
-
-        private static int DifficultyBasedChance(int baseChance)
-        {
-            try
-            {
-
-                TacticalLevelController controller = GameUtl.CurrentLevel().GetComponent<TacticalLevelController>();
-
-                return baseChance + controller.Difficulty.Order;
-
-
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-                throw;
-            }
-        }
 
 
 
@@ -1121,10 +1104,8 @@ namespace TFTV
             }
         }
 
-
         private static void ClearAndMoveReinforcementDeploymentZone(TacticalDeployZone tacticalDeployZone, Vector3 position)
         {
-
             try
             {
                 tacticalDeployZone.FixedDeployment.Clear();
@@ -1197,7 +1178,7 @@ namespace TFTV
             {
 
                 TacticalActorBaseDef injectorBomb = DefCache.GetDef<TacticalActorBaseDef>("InjectorBomb_ActorDef");
-              //  TFTVLogger.Always($"deploying {tacticalActorBase.TacticalActorBaseDef.name}");
+                //  TFTVLogger.Always($"deploying {tacticalActorBase.TacticalActorBaseDef.name}");
 
                 if (tacticalActorBase.TacticalActorBaseDef == injectorBomb)
                 {
@@ -1372,7 +1353,7 @@ namespace TFTV
             {
                 try
                 {
-                    if (__instance.TacticalLevel!=null && __instance.TacticalLevel.TacMission!=null && __instance.TacticalLevel.TacMission.IsFinalMission)
+                    if (__instance.TacticalLevel != null && __instance.TacticalLevel.TacMission != null && __instance.TacticalLevel.TacMission.IsFinalMission)
                     {
 
 
@@ -1720,7 +1701,7 @@ namespace TFTV
             {
                 TacCharacterDef acheronAsclepiusChampion = DefCache.GetDef<TacCharacterDef>("AcheronAsclepiusChampion_TacCharacterDef");
                 TacCharacterDef acheronAchlysChampion = DefCache.GetDef<TacCharacterDef>("AcheronAchlysChampion_TacCharacterDef");
-              //  TacCharacterDef acheronPrime = DefCache.GetDef<TacCharacterDef>("AcheronPrime_TacCharacterDef"); causes softlock for some reason
+                //  TacCharacterDef acheronPrime = DefCache.GetDef<TacCharacterDef>("AcheronPrime_TacCharacterDef"); causes softlock for some reason
                 TacCharacterDef acheronAsclepius = DefCache.GetDef<TacCharacterDef>("AcheronAsclepius_TacCharacterDef");
                 TacCharacterDef acheronAchlys = DefCache.GetDef<TacCharacterDef>("AcheronAchlys_TacCharacterDef");
 
@@ -1785,7 +1766,7 @@ namespace TFTV
         {
             try
             {
-               
+
                 if (controller.TurnNumber < 16 && controller.TurnNumber % 4 == 0)
                 {
 
@@ -1843,7 +1824,7 @@ namespace TFTV
             try
             {
                 TFTVRevenant.DeadSoldiersDelirium.Remove(id);
-                
+
 
             }
 
@@ -1957,7 +1938,7 @@ namespace TFTV
             {
                 if (controller.TacMission.IsFinalMission && controller.TurnNumber > 1)
                 {
-                  //  TFTVLogger.Always($"this is at least the right version");
+                    //  TFTVLogger.Always($"this is at least the right version");
 
                     if (TFTVRevenant.DeadSoldiersDelirium.Keys.Count > 0 && RevenantEligibleClasses.Any(t => tacticalActorBase.HasGameTag(t)))
                     {
@@ -2147,7 +2128,7 @@ namespace TFTV
             }
 
         }
-        private static bool CheckIfPlayerPastFirstChamber()
+        private static bool AllOperativesNorthOfGates()
         {
             try
             {
@@ -2185,7 +2166,7 @@ namespace TFTV
                 if (controller.TacMission.IsFinalMission && tacticalFaction.Faction.FactionDef.Equals(Shared.PhoenixFactionDef))
                 {
                     TFTVLogger.Always($"Palace mission. End of Turn {controller.TurnNumber} for {tacticalFaction.Faction.FactionDef.name}. Reinforcements.");
-                    if (!CheckIfPlayerPastFirstChamber() && controller.TurnNumber > 1)
+                    if (!AllOperativesNorthOfGates() && controller.TurnNumber > 1)
                     {
                         GruntOrSirenReinforcementAlreadySpawnedThisTurn = false;
                         SpawnGruntAndSirenReinforcements(RightTopSpawn, controller);
@@ -2247,6 +2228,34 @@ namespace TFTV
 
 
         }
+
+        private static void KIllAllPandoransSouthOfTheGates(TacticalLevelController controller)
+        {
+            try
+            {
+                TFTVLogger.Always($"Player has no units south of the closed gates; setting all Pandorans to not alerted!");
+
+                List<TacticalActor> pandorans = controller.GetFactionByCommandName("aln").TacticalActors.Where(ta => ta.IsAlive && ta.Pos.z > 42).ToList();
+
+                TFTVLogger.Always($"count: {pandorans.Count}");
+
+                foreach (TacticalActor tacticalActor in pandorans)
+                {
+                    //   TFTVLogger.Always($"{tacticalActor.name}");
+                    tacticalActor.AIActor.IsAlerted = false;
+
+
+                }
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+
+            }
+
+        }
+
         public static void PalaceTacticalNewTurn(TacticalFaction tacticalFaction)
         {
             try
@@ -2255,8 +2264,15 @@ namespace TFTV
 
                 if (controller.TacMission.IsFinalMission && tacticalFaction.Faction.FactionDef.Equals(Shared.AlienFactionDef) && !tacticalFaction.TacticalLevel.IsLoadingSavedGame)
                 {
+                    TacticalActorYuggoth tacticalActorYuggoth = controller.Map.GetActors<TacticalActorYuggoth>().FirstOrDefault();
+                    bool wallsDown = false;
+                    if (tacticalActorYuggoth != null && tacticalActorYuggoth.QueenWallDownOnTurn == -1)
+                    {
+                        wallsDown = true;
+                    }
+
                     TFTVLogger.Always($"Palace mission. Turn  {controller.TurnNumber} for {tacticalFaction.Faction.FactionDef.name}");
-                    if (!CheckIfPlayerPastFirstChamber() && controller.TurnNumber > 1)
+                    if (!AllOperativesNorthOfGates() && controller.TurnNumber > 1)
                     {
                         CheckTimeToLowerGatesAgain();
 
@@ -2270,6 +2286,11 @@ namespace TFTV
                         //  SpawnJumpingArthronsReinforcements(controller);
                         //  AlertAllPandorans();
                     }
+                    else if (AllOperativesNorthOfGates() && wallsDown)
+                    {
+                        KIllAllPandoransSouthOfTheGates(controller);
+                    }
+
                     TheyAreMyMinions();
                     PhoenixFalling();
 
