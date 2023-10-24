@@ -19,6 +19,7 @@ namespace TFTVVehicleRework.Armadillo
         {
             //"NJ_Armadillo_Supercharger_GroundVehicleModuleDef"
             GroundVehicleModuleDef SuperCharger = (GroundVehicleModuleDef)Repo.GetDef("ab7d5fb0-dea1-d724-395d-2ff291368d18");
+            SuperCharger.ViewElementDef.DisplayName1 = new LocalizedTextBind("NJ_GASTANKS_NAME");
             SuperCharger.BodyPartAspectDef.Speed = 6f;
             SuperCharger.BodyPartAspectDef.StatModifications = new ItemStatModification[]
             {
