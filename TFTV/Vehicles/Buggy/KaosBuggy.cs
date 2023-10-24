@@ -69,16 +69,16 @@ namespace TFTVVehicleRework.KaosBuggy
                 switch(Module)
                 {
                     case KSWeapons.Fullstop:
-                        BuggyGuns[Module].ViewElementDef.DisplayName1 = new LocalizedTextBind("UI_JUNKER_GOOGUN");
+                        BuggyGuns[Module].ViewElementDef.Description = new LocalizedTextBind("UI_JUNKER_GOOGUN");
                         WeaponDef GooGun = (WeaponDef)BuggyGuns[Module].SubAddons[1].SubAddon; 
                         // GooGun.ViewElementDef.DisplayName1 = new LocalizedTextBind("Sticky", true);
                         GooGun.ChargesMax = 4;
                         break;
                     case KSWeapons.Screamer:
-                        BuggyGuns[Module].ViewElementDef.DisplayName1 = new LocalizedTextBind("UI_JUNKER_SCREAMER");
+                        BuggyGuns[Module].ViewElementDef.Description = new LocalizedTextBind("UI_JUNKER_SCREAMER");
                         break;
                     case KSWeapons.Vishnu:
-                        BuggyGuns[Module].ViewElementDef.DisplayName1 = new LocalizedTextBind("UI_JUNKER_TITAN");
+                        BuggyGuns[Module].ViewElementDef.Description = new LocalizedTextBind("UI_JUNKER_TITAN");
                         WeaponDef TitanGL = (WeaponDef)BuggyGuns[Module].SubAddons[1].SubAddon;
                         TitanGL.APToUsePerc = 50;
                         TitanGL.DamagePayload.DamageKeywords.Find(dkp => dkp.DamageKeywordDef == keywords.BlastKeyword).Value = 50;
