@@ -71,6 +71,7 @@ namespace TFTVVehicleRework.Armadillo
                 MephClone.DamagePayload.Speed = 200f;
                 MephClone.DamagePayload.AutoFireShotCount = 1;
                 MephClone.DamagePayload.ProjectilesPerShot = 5;
+                MephClone.DamagePayload.AoeRadius = 1f;
 
                 //"PX_ShotgunRifle_WeaponDef"
                 WeaponDef PXShotgun = (WeaponDef)Repo.GetDef("f7e8e44c-bfc4-4364-ca81-7b4b1cf57c15");
@@ -78,7 +79,7 @@ namespace TFTVVehicleRework.Armadillo
                 MephClone.MainSwitch = PXShotgun.MainSwitch; 
                 MephClone.DamagePayload.ProjectileVisuals = PXShotgun.DamagePayload.ProjectileVisuals;
                 MephClone.VisualEffects = PXShotgun.VisualEffects;
-                MephClone.SpreadDegrees = 30f;
+                MephClone.SpreadDegrees = 10f;
                 
                 MephClone.DamagePayload.DamageKeywords = new List<DamageKeywordPair>
                 {
