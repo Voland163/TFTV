@@ -10,6 +10,7 @@ using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.DamageKeywords;
 using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.Entities.Weapons;
+using PhoenixPoint.Tactical.Eventus;
 using System.Collections.Generic;
 
 namespace TFTVVehicleRework.KaosBuggy
@@ -27,6 +28,11 @@ namespace TFTVVehicleRework.KaosBuggy
             {KSWeapons.Vishnu, (GroundVehicleModuleDef)Repo.GetDef("0a2e541a-8501-a894-9b6a-fc1e229d8979")} //"KS_Buggy_The_Vishnu_Gun_GroundVehicleModuleDef"
         };
         
+        //"NE_AssaultRifle_WeaponDef"
+        internal static WeaponDef Yat = (WeaponDef)Repo.GetDef("8f49ef31-b08a-1634-59d1-e21183d444ca");
+        
+        //"ShootShot_EventDef"
+        internal static TacticalEventDef ShootShotEvent = (TacticalEventDef)Repo.GetDef("fdb197bf-f1f4-b1e4-9be5-c455b8ec8caf");
         internal enum HullModules {Front, Back, Left, Right, Top, LFT, RFT, BT}
 
         internal static readonly Dictionary<HullModules, TacticalItemDef> DefaultHull = new Dictionary<HullModules, TacticalItemDef>
@@ -61,10 +67,12 @@ namespace TFTVVehicleRework.KaosBuggy
             {
                 BuggyGuns[Module].BodyPartAspectDef.Endurance = 0; //Prevents random bonus HP because of weapons
                 WeaponDef Minigun = (WeaponDef)BuggyGuns[Module].SubAddons[0].SubAddon; //Reference to the three miniguns
+                Minigun.ShootingEvent = ShootShotEvent;
+                Minigun.MainSwitch = Yat.MainSwitch;
                 Minigun.ChargesMax = 80;
                 Minigun.DamagePayload.DamageKeywords.Find(dkp => dkp.DamageKeywordDef == keywords.DamageKeyword).Value = 35;
                 Minigun.DamagePayload.DamageKeywords.Find(dkp => dkp.DamageKeywordDef == keywords.ShreddingKeyword).Value = 2;
-                Minigun.DamagePayload.AutoFireShotCount = 8;
+                Minigun.DamagePayload.AutoFireShotCount = 10;
                 Minigun.SpreadDegrees = (41f/19); //= 19 effective range; ER = 41/Spread
                 switch(Module)
                 {
