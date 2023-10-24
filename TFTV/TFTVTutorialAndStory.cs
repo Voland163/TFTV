@@ -441,6 +441,12 @@ namespace TFTV
         {
             try
             {
+                if(GameUtl.CurrentLevel()==null || GameUtl.CurrentLevel().GetComponent<TacContextHelpManager>() == null) 
+                {
+                    TFTVLogger.Always("no level/hint manager found!");
+                    return;
+                
+                }
 
                 TacContextHelpManager hintManager = GameUtl.CurrentLevel().GetComponent<TacContextHelpManager>();
                 ContextHelpHintDef firstHint = DefCache.GetDef<ContextHelpHintDef>(nameFirstHint);

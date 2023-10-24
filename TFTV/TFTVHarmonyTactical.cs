@@ -151,7 +151,7 @@ namespace TFTV
             {
                 try
                 {
-                    TFTVPalaceMission.ForceSpecialCharacterPortraitInSetupProperPortrait(actor);
+                  TFTVPalaceMission.ForceSpecialCharacterPortraitInSetupProperPortrait(actor);
 
 
                 }

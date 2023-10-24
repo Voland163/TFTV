@@ -120,14 +120,9 @@ namespace TFTV
             TFTVAncientsGeo.CheckResearchStateOnGeoscapeEndAndOnTacticalStart(null);
 
             TFTVBaseDefenseTactical.CheckConsoleSituation(Controller);
-            //  TFTVBaseDefenseTactical.InteractionPointPlacement();
-            //   TFTVBaseDefenseTactical.CheckIfConsoleActivated(Controller);
-            //Testing
-          //  TFTVNewGameOptions.ImpossibleWeaponsAdjustmentsSetting = true;
-          //  TFTVNewGameOptions.StrongerPandoransSetting = true;
+           
 
             TFTVSpecialDifficulties.CheckForSpecialDifficulties();
-          //  TFTVBetterEnemies.ImplementBetterEnemies();
             TFTVRevenant.CheckIfRevenantPresent(Controller);
 
             if (config.disableSavingOnTactical)
@@ -138,13 +133,13 @@ namespace TFTV
             TFTVNewGameOptions.Change_Crossbows();
 
             //   TFTVBaseDefenseTactical.OjectivesDebbuger(Controller);
-            // TFTVBaseDefenseTactical.RevealAllSpawns(Controller);
+           
 
             // TFTVBaseDefenseTactical.CheckingPortrait(Controller);
 
             //  TFTVBaseDefenseTactical.ModifyObjectives(Controller);
             TFTVLogger.Always($"Mission: {Controller.TacMission.MissionData.MissionType.name}");
-          //  TFTVTacticalUtils.RevealAllSpawns(Controller);
+           // TFTVTacticalUtils.RevealAllSpawns(Controller);
             
            
 

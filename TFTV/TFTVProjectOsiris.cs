@@ -416,7 +416,7 @@ KEY_GRAMMAR_SINGLE_SUFFIX*/
                             {
                                 SoldierStats deadSoldierStats = statisticsManager.CurrentGameStats.DeadSoldiers[geoTacUnitId];
                                 int numMissions = deadSoldierStats.MissionsParticipated;
-                                int enemiesKilled = deadSoldierStats.EnemiesKilled.Count;
+                                int enemiesKilled = Math.Min(deadSoldierStats.EnemiesKilled.Count, 25);
                                 int soldierLevel = deadSoldierStats.Level;
                                 int baseScore = 0;
                                 if (numMissions > 3)
