@@ -128,7 +128,7 @@
     <Compile Include="Tactical\Entities\Statuses\FumbleChanceStatusDef.cs" />
     <Compile Include="Tactical\Entities\Statuses\OnActorDazedEffectStatus.cs" />
     <Compile Include="Tactical\Entities\Statuses\OnActorDazedEffectStatusDef.cs" />
-    <Compile Include="TFTVAAExperiment.cs" />
+    <Compile Include="TFTVAAAgendaTracker.cs" />
     <Compile Include="TFTVAcid.cs" />
     <Compile Include="TFTVAirCombat.cs" />
     <Compile Include="TFTVAmbushes.cs" />
@@ -159,6 +159,7 @@
     <Compile Include="TFTVGoo.cs" />
     <Compile Include="TFTVHarmonyGeoscapeUI.cs" />
     <Compile Include="TFTVHarmonyTactical.cs" />
+    <Compile Include="TFTVHarmonyTacticalUI.cs" />
     <Compile Include="TFTVHealing.cs" />
     <Compile Include="TFTVNewGameOptions.cs" />
     <Compile Include="TFTVPalaceMission.cs" />

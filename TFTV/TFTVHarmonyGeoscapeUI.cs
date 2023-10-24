@@ -36,7 +36,7 @@ namespace TFTV
             {
                 try
                 {
-                    TFTVAAExperiment.ExtendedAgendaTracker.StoreSpritesForTrackerAndObjectivesList(__instance);
+                    TFTVAAAgendaTracker.ExtendedAgendaTracker.StoreSpritesForTrackerAndObjectivesList(__instance);
                 }
                 catch (Exception e)
                 {
@@ -77,7 +77,7 @@ namespace TFTV
                         TFTVLogger.Debug($"[GeoObjectiveElementController_SetObjective_PREFIX] Icon is null, setting a custom one.");
 
                         // Fallback to some prepared sprite
-                        icon = TFTVAAExperiment.ExtendedAgendaTracker.archeologyLabSprite;
+                        icon = TFTVAAAgendaTracker.ExtendedAgendaTracker.archeologyLabSprite;
                         iconColor = Color.white;
                     }
                 }
@@ -101,7 +101,7 @@ namespace TFTV
             {
                 try
                 {
-                    TFTVAAExperiment.ExtendedAgendaTracker.RecolorTimerBaseAndAncientSiteAttacks(__instance, site);
+                    TFTVAAAgendaTracker.ExtendedAgendaTracker.RecolorTimerBaseAndAncientSiteAttacks(__instance, site);
                     TFTVBaseDefenseGeoscape.RefreshBaseDefenseVisuals(__instance, site);
                 }
                 catch (Exception e)

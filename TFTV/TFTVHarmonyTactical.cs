@@ -263,5 +263,29 @@ namespace TFTV
         }
 
 
+        [HarmonyPatch(typeof(TacticalPerceptionBase), "IsTouchingVoxel")]
+
+        public static class TFTV_TacticalPerceptionBase_IsTouchingVoxel_patch
+        {
+            public static void Postfix(TacticalPerceptionBase __instance)
+            {
+                try
+                {
+                    TFTVFire.CheckFireQuencherTouchingFire(__instance);
+
+
+                }
+
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+
+            }
+        }
+
+
+
+
     }
 }

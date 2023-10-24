@@ -10,6 +10,7 @@ using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
+using PhoenixPoint.Common.Game;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
@@ -470,11 +471,19 @@ namespace TFTV
                         {
                             TFTVLogger.Always("Dead actor " + deathReport.Actor.DisplayName + " is " + controller.TacticalGameParams.Statistics.LivingSoldiers[deathReport.Actor.GeoUnitId].Name +
                                 " in the files. Files will be updated");
-                            PhoenixStatisticsManager statisticsManager = (PhoenixStatisticsManager)UnityEngine.Object.FindObjectOfType(typeof(PhoenixStatisticsManager));
-                            statisticsManager.CurrentGameStats.DeadSoldiers[deathReport.Actor.GeoUnitId].Name = deathReport.Actor.DisplayName;
+
+                            PhoenixStatisticsManager phoenixStatisticsManager = GameUtl.GameComponent<PhoenixGame>().GetComponent<PhoenixStatisticsManager>();
+
+                            if (phoenixStatisticsManager == null)
+                            {
+                                TFTVLogger.Always($"Failed to get stat manager in RecordPhoenixDeadForRevenantAndOsiris");
+                                return;
+                            }
+                          //  PhoenixStatisticsManager statisticsManager = (PhoenixStatisticsManager)UnityEngine.Object.FindObjectOfType(typeof(PhoenixStatisticsManager));
+                            phoenixStatisticsManager.CurrentGameStats.DeadSoldiers[deathReport.Actor.GeoUnitId].Name = deathReport.Actor.DisplayName;
                             controller.TacticalGameParams.Statistics.LivingSoldiers[deathReport.Actor.GeoUnitId].Name = deathReport.Actor.DisplayName;
                             TFTVLogger.Always("Name in files of Living Soldiers changed to " + controller.TacticalGameParams.Statistics.LivingSoldiers[deathReport.Actor.GeoUnitId].Name);
-                            TFTVLogger.Always("Name in files of currentstats changed to " + statisticsManager.CurrentGameStats.DeadSoldiers[deathReport.Actor.GeoUnitId].Name);
+                            TFTVLogger.Always("Name in files of currentstats changed to " + phoenixStatisticsManager.CurrentGameStats.DeadSoldiers[deathReport.Actor.GeoUnitId].Name);
                         }
                     }
                 }

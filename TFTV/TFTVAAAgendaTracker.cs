@@ -30,7 +30,7 @@ using UnityEngine.UI;
 
 namespace TFTV
 {
-    internal class TFTVAAExperiment
+    internal class TFTVAAAgendaTracker
     {
         //This has been copy pasted from the great Mad's Assorted Adjustments (all hail Mad!) with minimal adjustments
         //https://github.com/Mad-Mods-Phoenix-Point/AssortedAdjustments/tree/main/Source/AssortedAdjustments
@@ -53,7 +53,6 @@ namespace TFTV
             internal static string actionAttack = "WILL ATTACK:";
             internal static string actionAttackOnPX = "WILL COMPLETE ATTACK ON";
 
-
             public static void LocalizeExtendedAgendaUI()
             {
                 try
@@ -74,8 +73,6 @@ namespace TFTV
                 {
                     TFTVLogger.Error(e);
                 }
-
-
             }
 
 
@@ -113,7 +110,7 @@ namespace TFTV
              *** Utility methods
              ** 
             */
-                    private static bool GetTravelTime(GeoVehicle vehicle, out float travelTime, GeoSite target = null)
+            private static bool GetTravelTime(GeoVehicle vehicle, out float travelTime, GeoSite target = null)
             {
                 travelTime = 0f;
 
@@ -346,10 +343,17 @@ namespace TFTV
             }
 
 
+            /// <summary>
+            /// This is not necesary in TFTV, because StartPhoenixBaseAssault is what initiates the attack
+            /// </summary>
+
+
             // Disable the last safeguard for starting a base defense mission.
             // Vanilla will cancel the assault if no alien base in range is active anymore (because it was detected after a haven defence and subsequently destroyed)
             // With this patch the assault WILL happen and there's no silent abort (because it feels like a bug)
-            [HarmonyPatch(typeof(GeoAlienFaction), "StartPhoenixBaseAssault")]
+  
+            
+            /*        [HarmonyPatch(typeof(GeoAlienFaction), "StartPhoenixBaseAssault")]
             public static class GeoAlienFaction_StartPhoenixBaseAssault_Patch
             {
 
@@ -377,7 +381,7 @@ namespace TFTV
                         return true;
                     }
                 }
-            }
+            }*/
 
             // Disables the big dumb buttons for excavations and base defense
             [HarmonyPatch(typeof(UIModuleStatusBarMessages), "Update")]
@@ -433,39 +437,7 @@ namespace TFTV
                     }
 
                     GeoLevelController geoLevel = site.GeoLevel;
-
-
-                    /*  if (site.Type == GeoSiteType.PhoenixBase && MissionDeployment.PhoenixBasesUnderAttack.ContainsKey(site))
-                      {
-                          foreach (Renderer r in __instance.TimerController.gameObject.GetComponentsInChildren<Renderer>())
-                          {
-
-                              r.gameObject.SetActive(true);
-                              if (r.name == "TimedIcon")
-                              {
-                                  r.material.color = baseAttackTrackerColor;
-                              }
-
-                              if (r.name == "TimeText")
-                              {
-                                  foreach (GeoSite phoenixBase in MissionDeployment.PhoenixBasesUnderAttack.Keys)
-                                  {
-                                      if (site == phoenixBase)
-                                      {
-                                          TimeUnit attackTime = TimeUnit.FromHours((float)(MissionDeployment.PhoenixBasesUnderAttack[phoenixBase].First().Value - site.GeoLevel.Timing.Now).TimeSpan.TotalHours);
-                                          //TFTVLogger.Debug($"[UIModuleFactionAgendaTracker_UpdateData_PREFIX] element.TrackedObject: {element.TrackedObject}, attackTime: {attackTime}");
-
-                                          r.gameObject.GetComponent<Text>().text = attackTime.ToString();
-                                      }
-
-                                  }
-                              }
-                          }
-                      }*/
-
-
-
-
+                
                     bool isScheduledForAttack = false;
                     foreach (GeoFaction geoFaction in geoLevel.Factions)
                     {
@@ -521,32 +493,9 @@ namespace TFTV
                 {
                     TFTVLogger.Error(e);
                 }
-
-
-
-
-
             }
 
-            /*     // Just an informational patch for now
-                 [HarmonyPatch(typeof(UIModuleFactionAgendaTracker), "Dispose")]
-                 public static class UIModuleFactionAgendaTracker_Dispose_Patch
-                 {
-
-                     public static void Prefix(UIModuleFactionAgendaTracker __instance, UIFactionDataTrackerElement element)
-                     {
-                         try
-                         {
-                             TFTVLogger.Debug($"[UIModuleFactionAgendaTracker_Dispose_PREFIX] element.TrackedObject: {element.TrackedObject}");
-                             // Further cleanup or optimizations?
-                         }
-                         catch (Exception e)
-                         {
-                             TFTVLogger.Error(e);
-                         }
-                     }
-                 }*/
-
+           
             // Displays expected durations of Move and Explore abilities to the contect menu
             [HarmonyPatch(typeof(UIModuleSiteContextualMenu), "SetMenuItems")]
             public static class UIModuleSiteContextualMenu_SetMenuItems_Patch
@@ -658,8 +607,6 @@ namespace TFTV
                 {
                     try
                     {
-
-
                         if (___factionTracker == null)
                         {
                             return;

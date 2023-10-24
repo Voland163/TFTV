@@ -126,6 +126,7 @@ namespace TFTV
                 TFTVHumanEnemiesNames.CreateRanksDictionary();
                 Logger.LogInfo("Ranks for human enemies created");
                 TFTVHumanEnemiesNames.CreateTierDescriptions();
+                TFTVAAAgendaTracker.ExtendedAgendaTracker.LocalizeExtendedAgendaUI();
 
 
 

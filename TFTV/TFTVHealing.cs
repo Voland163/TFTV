@@ -12,6 +12,7 @@ using Base.Entities;
 using HarmonyLib;
 using PhoenixPoint.Common.Entities.GameTags;
 using System.Reflection;
+using PhoenixPoint.Tactical.View.ViewModules;
 
 namespace TFTV
 {
@@ -20,10 +21,6 @@ namespace TFTV
         private static readonly DefRepository Repo = TFTVMain.Repo;
         private static readonly SharedData Shared = TFTVMain.Shared;
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
-
-
-
-
 
         public static TacticalActor mutoidReceivingHealing = null;
 
@@ -101,9 +98,56 @@ namespace TFTV
                             {
                                 __result = true;
                             }
-                        }
+                        }                       
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+        }
 
-                       
+        //DoT Medkit UI adjustments to prevent 0 healing appearing when selecting ability
+        [HarmonyPatch(typeof(UIModuleAbilityConfirmationButton), "SetAbility")]
+        public static class UIModuleAbilityConfirmationButton_SetAbility_patch
+        {
+            public static void Postfix(UIModuleAbilityConfirmationButton __instance, TacticalAbility ability)
+            {
+                try
+                {
+                    // EquipmentDef repairKit = DefCache.GetDef<EquipmentDef>("FieldRepairKit_EquipmentDef");
+
+
+                    if (ability.AbilityDef.name == "DoTMedkit")
+                    {
+                        //   TFTVLogger.Always($"the ability is {ability.AbilityDef.name}");                    
+                        __instance.DamageTypeTemplateShort.gameObject.SetActive(false);
+                        __instance.DamageTypeTemplateExtended.gameObject.SetActive(false);
+
+
+                    }
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
+
+        [HarmonyPatch(typeof(UIModuleWeaponSelection), "SetHealAmount")]
+        public static class UIModuleWeaponSelection_SetHealAmount_patch
+        {
+            public static void Prefix(UIModuleWeaponSelection __instance, ref float amount)
+            {
+                try
+                {
+                    if (amount <= 1)
+                    {
+
+                        amount = 0;
                     }
 
 
@@ -112,6 +156,7 @@ namespace TFTV
                 catch (Exception e)
                 {
                     TFTVLogger.Error(e);
+                    throw;
                 }
             }
         }
