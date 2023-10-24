@@ -749,17 +749,12 @@ namespace TFTV
         {
             try
             {
-
                 bool flag = false;
                 GeoEventChoice result = null;
-
-                // float ammoCostMultiplier = 2.5f;
-
                 GeoMarketplaceOptionDef geoMarketplaceOptionDef;
                 do
                 {
                     geoMarketplaceOptionDef = currentlyPossibleOptions[UnityEngine.Random.Range(0, currentlyPossibleOptions.Count)];
-
                     GeoMarketplaceOptionDef geoMarketplaceOptionDef2 = geoMarketplaceOptionDef;
                     if (geoMarketplaceOptionDef2 is null)
                     {
@@ -767,9 +762,6 @@ namespace TFTV
                     }
 
                     float price = UnityEngine.Random.Range(geoMarketplaceOptionDef.MinPrice, geoMarketplaceOptionDef.MaxPrice);
-
-
-
 
                     GeoMarketplaceItemOptionDef geoMarketplaceItemOptionDef;
                     if ((geoMarketplaceItemOptionDef = geoMarketplaceOptionDef2 as GeoMarketplaceItemOptionDef) is null)
@@ -792,17 +784,15 @@ namespace TFTV
 
                         ItemDef item = geoMarketplaceItemOptionDef2.ItemDef;
 
-
                         if (item.Tags.Contains(Shared.SharedGameTags.AmmoTag))
                         {
-                          //  TFTVLogger.Always($"ammo {item.name}");
-
+                            //  TFTVLogger.Always($"ammo {item.name}");
                             if (ammoOffers.Contains(item))
                             {
-                             //   TFTVLogger.Always($"ammo {item.name}; there are already {ammoOffers.Where(i => i==item).Count()} ammo of this type in stock");
-
+                                //   TFTVLogger.Always($"ammo {item.name}; there are already {ammoOffers.Where(i => i==item).Count()} ammo of this type in stock");
                                 if (ammoOffers.Where(i => i == item).Count() == 3)
                                 {
+                                    currentlyPossibleOptions.Remove(geoMarketplaceItemOptionDef2); //Removes the ammo item if there are already 3 available to purchase
                                     continue;
                                 }
                                 else
@@ -817,42 +807,9 @@ namespace TFTV
                             {
                                 ammoOffers.Add(item);
                                 result = GenerateItemChoice(item, price * priceMultiplierVO19);
-
-
                             }
-
-
                         }
-                        else if (item.name.Contains("SY") || item.name.Contains("NJ"))
-                        {
-                            if (controller != null && controller.NewJerichoFaction != null && controller.SynedrionFaction != null)
-                            {
-
-                                bool armadilloResearched = CheckResearchCompleted(controller.NewJerichoFaction, "NJ_VehicleTech_ResearchDef");
-                                bool aspidaResearched = CheckResearchCompleted(controller.SynedrionFaction, "SYN_Rover_ResearchDef");
-
-                                if ((item.name.Contains("SY") && !aspidaResearched) || (item.name.Contains("NJ") && !armadilloResearched))
-                                {
-                                    continue;
-                                }
-
-                            }
-
-
-                            result = GenerateItemChoice(item, price * priceMultiplierVO19);
-
-
-                        }
-                        else
-                        {
-                            if (ammoOffers.Count() < 5)
-                            {
-                                continue;
-
-                            }
-
-                            result = GenerateItemChoice(item, price * priceMultiplierVO19);
-                        }
+                        result = GenerateItemChoice(item, price * priceMultiplierVO19);
                         flag = true;
                     }
                 }
@@ -861,10 +818,7 @@ namespace TFTV
                 {
                     currentlyPossibleOptions.Remove(geoMarketplaceOptionDef);
                 }
-
                 return result;
-
-
             }
             catch (Exception e)
             {
@@ -873,64 +827,86 @@ namespace TFTV
             }
         }
 
+        private static GeoMarketplaceItemOptionDef[] NewJericho_Items()
+        {
+            GeoMarketplaceItemOptionDef[] Options = new GeoMarketplaceItemOptionDef[]
+            {
+                (GeoMarketplaceItemOptionDef)Repo.GetDef("a5833903-97b1-71f4-9b7c-b0755e8decf7"), //Purgatory
+                (GeoMarketplaceItemOptionDef)Repo.GetDef("03ebb7ca-08d7-36a4-2bf6-851b47682476"), //Lightweight Alloy
+                (GeoMarketplaceItemOptionDef)Repo.GetDef("46a57a6d-7163-8ef4-99b3-8167efb46edc"), //Supercharger
+            };
+            return Options;
+        }
 
+        private static GeoMarketplaceItemOptionDef[] Synedrion_Items()
+        {
+            GeoMarketplaceItemOptionDef[] Options = new GeoMarketplaceItemOptionDef[]
+            {
+                (GeoMarketplaceItemOptionDef)Repo.GetDef("017b69c2-8a8f-e784-6b36-70cc804ece5d"), //Apollo
+                (GeoMarketplaceItemOptionDef)Repo.GetDef("456bf1a1-82ce-2f54-9a0a-27600107d5b4"), //Psychic Jammer
+                (GeoMarketplaceItemOptionDef)Repo.GetDef("3e192929-51ba-29e4-7ac1-e9ab2836f076"), //Experimental Thrusters
+            };
+            return Options;
+        }
 
 
         [HarmonyPatch(typeof(GeoMarketplace), "UpdateOptions", new Type[] { })]
 
         public static class GeoMarketplace_UpdateOptions_MarketPlace_patch
         {
-            /*     public static bool Prepare()
-                 {
-                     TFTVConfig config = TFTVMain.Main.Config;
-                     return config.ActivateKERework;
-                 }*/
-
             public static bool Prefix(GeoMarketplace __instance, GeoLevelController ____level, TheMarketplaceSettingsDef ____settings)
             {
                 try
                 {
                     __instance.MarketplaceChoices.Clear();
-
-
                     UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
 
-                    int num = UnityEngine.Random.Range(30, 41);
+                    int num = 26;
 
                     List<GeoMarketplaceOptionDef> currentlyPossibleOptions = ____settings.PossibleOptions.ToList();
                     List<ResearchDef> researchOffers = new List<ResearchDef>();
                     List<ItemDef> ammoOffers = new List<ItemDef>();
 
-                    for (int x = currentlyPossibleOptions.Count - 1; x >= 0; x--)
+                    if (____level != null && ____level.NewJerichoFaction != null && ____level.SynedrionFaction != null)
                     {
-                        GeoMarketplaceOptionDef geoMarketplaceOptionDef = currentlyPossibleOptions[x];
-                        GeoMarketplaceResearchOptionDef currentlyPossibleResearchOption;
-                        if ((currentlyPossibleResearchOption = geoMarketplaceOptionDef as GeoMarketplaceResearchOptionDef) is object && currentlyPossibleResearchOption.ConcreteResearch != null && ____level.PhoenixFaction.Research.RevealedAndCompleted.Any((ResearchElement research) => research.ResearchID == currentlyPossibleResearchOption.ConcreteResearch.Id))
+                        if(CheckResearchCompleted(____level.NewJerichoFaction, "NJ_VehicleTech_ResearchDef"))
                         {
-                            currentlyPossibleOptions.Remove(geoMarketplaceOptionDef);
+                            //If complete, add more options
+                            num += 3;
+                        }
+                        else
+                        {
+                            //Otherwise we remove NJ items from being rolled by GenerateRandomChoiceTFTV
+                            currentlyPossibleOptions.RemoveRange(NewJericho_Items());
+                        }
+                        if(CheckResearchCompleted(____level.SynedrionFaction, "SYN_Rover_ResearchDef"))
+                        {
+                            num += 3;
+                        }
+                        else
+                        {
+                            currentlyPossibleOptions.RemoveRange(Synedrion_Items());
                         }
                     }
 
                     float voPriceMultiplier = 1;
-
                     if (TFTVVoidOmens.CheckFordVoidOmensInPlay(____level).Contains(19))
                     {
-
                         voPriceMultiplier = 0.5f;
-
                     }
-
 
                     for (int i = 0; i < num; i++)
                     {
+                        if(currentlyPossibleOptions.Count() == 0)
+                        {
+                            //Exit condition when there aren't any other options to roll. This will make it leave the for() loop even if i < num.
+                            break;
+                        }
                         GeoEventChoice item = GenerateRandomChoiceTFTV(____level, currentlyPossibleOptions, ____settings, researchOffers, ammoOffers, voPriceMultiplier);
                         __instance.MarketplaceChoices.Add(item);
                     }
 
                     return false;
-
-
-
                 }
                 catch (Exception e)
                 {
