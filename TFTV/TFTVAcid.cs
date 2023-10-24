@@ -231,11 +231,11 @@ namespace TFTV
                                 DamageTypeDef = __instance.AcidDamageEffectDef.DamageTypeDef
                             }
                         };
-                        SlotStateStatusDef disabled = DefCache.GetDef<SlotStateStatusDef>("DisabledElectronicSlot_StatusDef");
+                        SlotStateStatusDef disabled = DefCache.GetDef<SlotStateStatusDef>("DisabledElectronicSlotFromAcid_StatusDef");//"DisabledElectronicSlot_StatusDef");
                         ItemMaterialTagDef electronicTag = DefCache.GetDef<ItemMaterialTagDef>("Electronic_ItemMaterialTagDef");
 
 
-
+                       
 
 
                         if (num2 > 0 && itemSlot != null && itemSlot.HasDirectGameTag(electronicTag, false))

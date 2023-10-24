@@ -35,6 +35,7 @@ using PhoenixPoint.Geoscape.Events.Eventus;
 using PhoenixPoint.Geoscape.Events.Eventus.Filters;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.ContextHelp.HintConditions;
+using PhoenixPoint.Geoscape.Levels.Factions;
 using PhoenixPoint.Tactical.AI;
 using PhoenixPoint.Tactical.AI.Actions;
 using PhoenixPoint.Tactical.AI.Considerations;
@@ -204,6 +205,8 @@ namespace TFTV
             CreateFakeFacilityToFixBadBaseDefenseMaps();
             ChangeFireNadeCostAndDamage();
             ExperimentKaosWeaponAmmo();
+            ExperimentAcidDisabledStatus();
+           
         }
 
         //NEU_Assault_Torso_BodyPartDef
@@ -212,6 +215,29 @@ namespace TFTV
         //NEU_Sniper_Torso_BodyPartDef
         //NEU_Sniper_Legs_ItemDef
 
+        
+
+
+        private static void ExperimentAcidDisabledStatus()
+        {
+            try 
+            {
+
+                SlotStateStatusDef disabledSource = DefCache.GetDef<SlotStateStatusDef>("DisabledElectronicSlot_StatusDef");
+                string name = "DisabledElectronicSlotFromAcid_StatusDef";
+                SlotStateStatusDef newDisabled = Helper.CreateDefFromClone(disabledSource, "{1C5E47B5-6CE1-4A41-A711-07652506A901}", name);
+                newDisabled.DurationTurns = 0;
+                newDisabled.Visuals = Helper.CreateDefFromClone(disabledSource.Visuals, "{606C38AD-8AA7-4D7E-B031-733BCB7D2C42}", name);
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+
+
+        }
 
         private static void CreateAmmoForKG(WeaponDef weaponDef, int amount, int minPrice, string gUID0, string gUID1, string gUID2, string spriteFileName)
         {
@@ -219,6 +245,8 @@ namespace TFTV
             {
                 TacticalItemDef sourceAmmo = DefCache.GetDef<TacticalItemDef>("PX_AssaultRifle_AmmoClip_ItemDef");
                 string name = $"{weaponDef.name}_AmmoClipDef";
+
+                ClassTagDef classTagDef = weaponDef.Tags.FirstOrDefault<ClassTagDef>();
 
                 TacticalItemDef newAmmo = Helper.CreateDefFromClone(sourceAmmo, gUID0, name);
                 newAmmo.ViewElementDef = Helper.CreateDefFromClone(sourceAmmo.ViewElementDef, gUID1, name);
@@ -229,6 +257,9 @@ namespace TFTV
 
                 newAmmo.ChargesMax = amount;
                 newAmmo.CrateSpawnWeight = 500;
+                newAmmo.Tags.Remove(DefCache.GetDef<GameTagDef>("ManufacturableItem_TagDef"));
+                newAmmo.Tags.Remove(DefCache.GetDef<ClassTagDef>("Assault_ClassTagDef"));
+                newAmmo.Tags.Add(classTagDef);
                 weaponDef.ChargesMax = amount;
                 weaponDef.CompatibleAmmunition = new TacticalItemDef[] { newAmmo };
 
@@ -239,6 +270,7 @@ namespace TFTV
                 newMarketplaceItem.MaxPrice = minPrice + minPrice*1.25f;
                 newMarketplaceItem.ItemDef = newAmmo;
                 newMarketplaceItem.DisallowDuplicates = false;
+                
 
                 TheMarketplaceSettingsDef marketplaceSettings = DefCache.GetDef<TheMarketplaceSettingsDef>("TheMarketplaceSettingsDef");
 
@@ -272,6 +304,11 @@ namespace TFTV
                 WeaponDef Devastator = DefCache.GetDef<WeaponDef>("KS_Devastator_WeaponDef");
                 WeaponDef Tormentor = DefCache.GetDef<WeaponDef>("KS_Tormentor_WeaponDef");
 
+                Obliterator.ManufactureMaterials = 100;
+                Subjector.ManufactureMaterials = 100;
+                Redemptor.ManufactureMaterials = 100;
+                Devastator.ManufactureMaterials = 100;
+                Tormentor.ManufactureMaterials = 100;
 
 
                 //KEY_KAOSGUNS_AMMO_
@@ -3427,12 +3464,31 @@ namespace TFTV
                 CreateCosmeticExplosion();
                 CreateFireExplosion();
                 CreateHintsForBaseDefense();
+                ReduceDamageFromInfestation();
                 //  CreateSpawnCrabmanAbility();
             }
             catch (Exception e)
             {
                 TFTVLogger.Error(e);
             }
+        }
+
+        private static void ReduceDamageFromInfestation()
+        {
+            try 
+            {
+                DefCache.GetDef<GeoPhoenixFactionDef>("Phoenix_GeoPhoenixFactionDef").FacilityDamageOnBaseAbandoned = new RangeDataInt() { Min = 20, Max = 40 };
+            
+            
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+
+
+
         }
 
         internal static void CreateSpawnCrabmanAbility()

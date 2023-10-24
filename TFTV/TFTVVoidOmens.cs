@@ -1652,6 +1652,7 @@ namespace TFTV
             {
                 try
                 {
+                   // TFTVLogger.Always($"PrepareTacticalGame is running");
 
                     if (VoidOmensCheck[5] && __instance.MissionDef.name.Contains("HavenDef"))
                     {

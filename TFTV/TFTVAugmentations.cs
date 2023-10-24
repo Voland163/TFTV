@@ -318,65 +318,7 @@ namespace TFTV
 
         }
 
-        /*
-        public static void AttackPhoenixBase(GeoLevelController level)
-        {
-            try
-            {
-                /*
-
-                List<GeoPhoenixFacility> list = GeoVehicle.CurrentSite.GetComponent<GeoPhoenixBase>().Layout.Facilities.Where((GeoPhoenixFacility z) => z.HealthPercentage > 0f).ToList();
-                if (list.Any())
-                {
-                    GeoPhoenixFacility randomElement = list.GetRandomElement();
-                    int damagePercent = _raidManager.RaidsSetup.LargeFlyeirDamage;
-                    if ((GeoVehicle.AircraftType & AircraftType.Small) != 0)
-                    {
-                        damagePercent = _raidManager.RaidsSetup.SmallFlyerDamage;
-                    }
-                    else if ((GeoVehicle.AircraftType & AircraftType.Medium) != 0)
-                    {
-                        damagePercent = _raidManager.RaidsSetup.MediumFlierDamage;
-                    }
-
-                    randomElement.DamageFacility(damagePercent);
-                }
-
-                */
-
-
-        /*
-                List<GeoSite> phoenixBases = level.PhoenixFaction.Sites.ToList();
-                TimeUnit timeUnit = TimeUnit.FromHours(6);
-
-                foreach (GeoSite site in phoenixBases)
-                {
-                    if (site.Type == GeoSiteType.PhoenixBase)
-                    {
-                        foreach (GeoHaven haven in level.SynedrionFaction.Havens)
-                        {
-                            //  if (Vector3.Distance(site.WorldPosition, haven.Site.WorldPosition) < 1)
-                            //  {
-                            foreach (GeoVehicle vehicle in level.SynedrionFaction.Vehicles.Where(vehicle => vehicle.CurrentSite.Type == GeoSiteType.Haven))
-
-                            {
-                                level.SynedrionFaction.ScheduleAttackOnSite(site, timeUnit);
-                                level.SynedrionFaction.AttackPhoenixBaseFromVehicle(vehicle, site);
-                            }
-
-                            //                            }
-                        }
-
-
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-
-        }*/
+    
 
     }
 

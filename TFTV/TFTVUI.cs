@@ -33,6 +33,7 @@ using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.DamageKeywords;
 using PhoenixPoint.Tactical.Entities.Effects.DamageTypes;
 using PhoenixPoint.Tactical.Entities.Equipments;
+using PhoenixPoint.Tactical.Entities.Weapons;
 using PhoenixPoint.Tactical.View.ViewControllers;
 using PhoenixPoint.Tactical.View.ViewStates;
 using System;
@@ -41,6 +42,7 @@ using System.Linq;
 using System.Reflection;
 using UnityEngine;
 using UnityEngine.UI;
+using static RootMotion.FinalIK.IKSolverVR;
 
 namespace TFTV
 {
@@ -1008,32 +1010,48 @@ namespace TFTV
                     //    UIModuleSoldierEquipKludge.RefreshSideButtons();
 
 
-                    foreach (string armor in CharacterLoadouts[character.Id][armourItems])
+                    foreach (string armorPiece in CharacterLoadouts[character.Id][armourItems])
                     {
-
-                        ICommonItem item = storage.UnfilteredItems.Where((ICommonItem ufi) => ufi.ItemDef.Guid == armor).FirstOrDefault() ?? storage.FilteredItems.Where((ICommonItem ufi) => ufi.ItemDef.Guid == armor).FirstOrDefault();
-                        if (item != null && uIModuleSoldierEquip.ArmorList.CanAddItem(item))
+                        ICommonItem item = storage.UnfilteredItems.Where((ICommonItem ufi) => ufi.ItemDef.Guid == armorPiece).FirstOrDefault() ?? storage.FilteredItems.Where((ICommonItem ufi) => ufi.ItemDef.Guid == armorPiece).FirstOrDefault();
+                     
+                        for (int x = 0; x < uIModuleSoldierEquip.ArmorList.Slots.Count(); x++)
                         {
+                         //   TFTVLogger.Always($"looking at slot{uIModuleSoldierEquip.ArmorList.Slots[x].name} for {item}");
 
-                            TFTVLogger.Always($"armor item is {item}");
-                            uIModuleSoldierEquip.ArmorList.AddItem(item.GetSingleItem());
-                            storage.RemoveItem(item.GetSingleItem(), null);
+                            if (item != null && uIModuleSoldierEquip.ArmorList.CanAddItem(item, uIModuleSoldierEquip.ArmorList.Slots[x]))
+                            {
+
+                            //    TFTVLogger.Always($"found slot {uIModuleSoldierEquip.ArmorList.Slots[x].name} for armor item {item}");
+                                uIModuleSoldierEquip.ArmorList.AddItem(item.GetSingleItem(), uIModuleSoldierEquip.ArmorList.Slots[x], storage);
+                                storage.RemoveItem(item.GetSingleItem(), null);
+
+                            }
 
                         }
-
                     }
 
-                    foreach (string equipment in CharacterLoadouts[character.Id][equipmentItems])
-                    {
 
+                    for (int x = 0; x < CharacterLoadouts[character.Id][equipmentItems].Count(); x++)
+
+                    {
+                        string equipment = CharacterLoadouts[character.Id][equipmentItems][x];   
                         ICommonItem item = storage.UnfilteredItems.Where((ICommonItem ufi) => ufi.ItemDef.Guid == equipment).FirstOrDefault() ?? storage.FilteredItems.Where((ICommonItem ufi) => ufi.ItemDef.Guid == equipment).FirstOrDefault();
-                        TFTVLogger.Always($"equipment item is {item}");
+                      //  TFTVLogger.Always($"equipment item is {item}");
 
                         if (item != null && uIModuleSoldierEquip.ReadyList.CanAddItem(item))
                         {
 
-                            TFTVLogger.Always($"equipment item is {item}");
-                            uIModuleSoldierEquip.ReadyList.AddItem(item.GetSingleItem());
+                          //  TFTVLogger.Always($"equipment item is {item}");
+                            uIModuleSoldierEquip.ReadyList.AddItem(item.GetSingleItem(), uIModuleSoldierEquip.ReadyList.Slots[x], storage);
+
+                         /*   if(item.ItemDef is WeaponDef weaponDef && weaponDef.CompatibleAmmunition!=null && weaponDef.CompatibleAmmunition.Count()>0) 
+                            {
+                                TFTVLogger.Always($"{item.ItemDef.name} is a weapon that takes ammo");
+                                UIInventorySlot slot = uIModuleSoldierEquip.ReadyList.Slots.FirstOrDefault(s => s.Item == item);
+                                uIModuleSoldierEquip.ReadyList.TryLoadAmmo(item.GetSingleItem(), slot, storage);
+                            }*/
+
+                           
                             storage.RemoveItem(item.GetSingleItem(), null);
 
                         }
@@ -1045,23 +1063,30 @@ namespace TFTV
 
                     }
 
-                    foreach (string inventory in CharacterLoadouts[character.Id][inventoryItems])
+                    for(int x = 0; x< CharacterLoadouts[character.Id][inventoryItems].Count(); x++) 
+        
                     {
-
-
-
-                        ICommonItem item = storage.UnfilteredItems.Where((ICommonItem ufi) => ufi.ItemDef.Guid == inventory).FirstOrDefault() ?? storage.FilteredItems.Where((ICommonItem ufi) => ufi.ItemDef.Guid == inventory).FirstOrDefault();
+                        string inventory = CharacterLoadouts[character.Id][inventoryItems][x];
+                        ICommonItem item = storage.UnfilteredItems.Where(
+                            (ICommonItem ufi) => ufi.ItemDef.Guid == inventory).FirstOrDefault() ?? storage.FilteredItems.Where((ICommonItem ufi) => ufi.ItemDef.Guid == inventory).FirstOrDefault();
 
                         if (item != null && uIModuleSoldierEquip.InventoryList.CanAddItem(item))
                         {
-                            TFTVLogger.Always($"inventory item is {item}");
-                            uIModuleSoldierEquip.InventoryList.AddItem(item.GetSingleItem());
-                            UIInventorySlot slot = uIModuleSoldierEquip.InventoryList.Slots.FirstOrDefault(s => s.Item == item);
-                            //    UIModuleSoldierEquipKludge.InventoryList.TryLoadAmmo(item.GetSingleItem(), slot, storage);
+                          //  TFTVLogger.Always($"inventory item is {item}");
+                            uIModuleSoldierEquip.InventoryList.AddItem(item.GetSingleItem(), uIModuleSoldierEquip.InventoryList.Slots[x], storage);
+                            /*  if (item.ItemDef is WeaponDef weaponDef && weaponDef.CompatibleAmmunition != null && weaponDef.CompatibleAmmunition.Count() > 0)
+                              {
+                                  UIInventorySlot slot = uIModuleSoldierEquip.InventoryList.Slots.FirstOrDefault(s => s.Item == item);
+                                  uIModuleSoldierEquip.InventoryList.TryLoadAmmo(item.GetSingleItem(), slot, storage);
+                              }*/
                             storage.RemoveItem(item.GetSingleItem(), null);
                         }
-
+                    
                     }
+
+                   
+
+                
 
                 }
 

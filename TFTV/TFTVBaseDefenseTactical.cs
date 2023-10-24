@@ -17,6 +17,7 @@ using PhoenixPoint.Common.Levels.ActorDeployment;
 using PhoenixPoint.Common.Levels.Missions;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.PhoenixBases;
+using PhoenixPoint.Geoscape.Entities.PhoenixBases.FacilityComponents;
 using PhoenixPoint.Tactical.ContextHelp;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
@@ -657,6 +658,7 @@ namespace TFTV
             }
         }
 
+        public static bool TutorialPhoenixBase = false;
 
         private static bool CheckIfBaseLayoutOK(GeoPhoenixBaseLayout layout)
         {
@@ -665,7 +667,20 @@ namespace TFTV
                 List<GeoPhoenixFacility> geoPhoenixFacilities = layout.Facilities.ToList();
                 GeoPhoenixFacility hangar = layout.BasicFacilities.FirstOrDefault(bf => bf.FacilityTiles.Count > 1);
 
-                
+                GeoPhoenixFacility powerGenerator = geoPhoenixFacilities.FirstOrDefault(f=>f.GetComponent<PowerFacilityComponent>()!=null);
+
+                if(powerGenerator.HealthPercentage == 0) 
+                {
+                    FieldInfo fieldInfo = typeof(GeoPhoenixFacility).GetField("_health", BindingFlags.NonPublic | BindingFlags.Instance);
+                    if (fieldInfo != null)
+                    {
+                        fieldInfo.SetValue(powerGenerator, 50);
+                        TFTVLogger.Always($"{powerGenerator.HealthPercentage}");
+                    }
+
+                    
+   
+                }
 
                 foreach (GeoPhoenixFacility geoPhoenixFacility in geoPhoenixFacilities)
                 {
@@ -675,6 +690,8 @@ namespace TFTV
 
                 if (hangar.GridPosition.y == 0) 
                 {
+                    TutorialPhoenixBase = true;
+
                     return true;        
                 }
 
@@ -729,17 +746,38 @@ namespace TFTV
             {
                 TFTVLogger.Always($"Attack on base progress is {AttackProgress}");
 
+                TFTVLogger.Always($"Tutorial Base defense? {TutorialPhoenixBase}");
+
                 if (controller.Factions.Any(f => f.Faction.FactionDef.MatchesShortName("aln")))
                 {
+
+
                     if (AttackProgress >= 0.8)
                     {
-                        SetPlayerSpawnTunnels(controller);
+                        if (TutorialPhoenixBase)
+                        {
+                           
+                            SetPlayerSpawnEntrance(controller);
+
+                        }
+                        else
+                        {
+                            SetPlayerSpawnTunnels(controller);
+                        }
                         InfestationStrat(controller);
                     }
                     else if (AttackProgress >= 0.3 && AttackProgress < 0.8)
                     {
-                        SetPlayerSpawnTunnels(controller);
-                        NestingStrat(controller);
+                        if (TutorialPhoenixBase)
+                        {
+                            SetPlayerSpawnEntrance(controller);
+
+                        }
+                        else
+                        {
+                            SetPlayerSpawnTunnels(controller);
+                        }
+                            NestingStrat(controller);
                     }
                     else
                     {
@@ -747,6 +785,8 @@ namespace TFTV
 
                     }
                 }
+
+               
 
             }
             catch (Exception e)
@@ -924,6 +964,75 @@ namespace TFTV
                 TFTVLogger.Error(e);
             }
 
+        }
+
+     
+
+       private static Vector3 PlayerSpawn0 = new Vector3(-15.5f, 1.2f, 13.5f);
+       private static Vector3 PlayerSpawn1 = new Vector3(-12f, 1.2f, 9.5f);
+       // private static Vector3 PlayerSpawn2 = new Vector3(-21.5f, 1.2f, 15.5f);
+      //  private static Vector3 PlayerSpawn3 = new Vector3(-20.5f, 1.2f, 7.5f);
+      //  private static Vector3 PlayerSpawn4 = new Vector3(-27.5f, 1.2f, 5.5f);
+    
+        private static Vector3 ReinforcementSpawn0 = new Vector3(-9.5f, 4.8f, 60.5f);
+        private static Vector3 ReinforcementSpawn1 = new Vector3(-9.5f, 4.8f, 59.5f);
+        private static Vector3 ReinforcementSpawn2 = new Vector3(-9.5f, 4.8f, 58.5f);
+
+       // private static List<Vector3> PlayerSpawns = new List<Vector3>() { PlayerSpawn1, PlayerSpawn3 };
+        private static readonly List<Vector3> ReinforcementSpawns = new List<Vector3>() { ReinforcementSpawn0, ReinforcementSpawn1, ReinforcementSpawn2 };
+
+        public static void SetPlayerSpawnEntrance(TacticalLevelController controller)
+        {
+            try 
+            {
+                List<TacticalDeployZone> allDeployZones = new List<TacticalDeployZone>(controller.Map.GetActors<TacticalDeployZone>());
+
+
+                TFTVLogger.Always($"Tutorial base mission; setting up player to spawn at entrance. AllDeployZones Count: {allDeployZones.Count}");
+
+                List<Vector3> reinforcementSpawns = new List<Vector3>(ReinforcementSpawns);
+
+                foreach (TacticalDeployZone tacticalDeployZone in allDeployZones) 
+                {
+                   TFTVLogger.Always($"located {tacticalDeployZone.name} at {tacticalDeployZone.Pos}");
+
+                    if (tacticalDeployZone.Pos.z == 0.5f || tacticalDeployZone.Pos.z == 1f) 
+                    {
+
+                        Vector3 vector3 = reinforcementSpawns.First();
+                        TFTVLogger.Always($"located tdz at {tacticalDeployZone.Pos}; changing it to position {vector3}");
+                        tacticalDeployZone.SetPosition(vector3);
+
+                        reinforcementSpawns.Remove(vector3);     
+                    }
+                    else if (tacticalDeployZone.Pos==PlayerSpawn0 || tacticalDeployZone.Pos == PlayerSpawn1) 
+                    {
+                        TFTVLogger.Always($"Player spawn {tacticalDeployZone.name} at {tacticalDeployZone.Pos}");
+                        tacticalDeployZone.SetFaction(controller.GetFactionByCommandName("px"), TacMissionParticipant.Player);
+                   //
+                    }
+                   
+                    else if (tacticalDeployZone.Pos.z<=21.5)
+                    {
+                        TFTVLogger.Always($"located tdz to be removed {tacticalDeployZone.Pos}");
+
+                        tacticalDeployZone.gameObject.SetActive(false);
+                        
+                    }
+                    else 
+                    {
+
+                        tacticalDeployZone.SetFaction(controller.GetFactionByCommandName("aln"), TacMissionParticipant.Intruder);
+                    
+                    }
+               
+                }
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
         }
 
         public static void SetPlayerSpawnTunnels(TacticalLevelController controller)
@@ -2329,7 +2438,7 @@ namespace TFTV
 
                     UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
 
-                    int roll = UnityEngine.Random.Range(1, deliriumScale + TFTVReleaseOnly.DifficultyOrderConverter(controller.Difficulty.Order));
+                    int roll = UnityEngine.Random.Range(TFTVReleaseOnly.DifficultyOrderConverter(controller.Difficulty.Order), Math.Max(deliriumScale, controller.Difficulty.Order));
 
                     TFTVLogger.Always($"{pXOperative.DisplayName} has {deliriumScale} deliriumScale, and the roll is {roll}");
 
