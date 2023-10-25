@@ -70,11 +70,8 @@ namespace TFTV
 
     internal class TFTVPalaceMission
     {
-
-
-
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
-        private static readonly DefRepository Repo = TFTVMain.Repo;
+       // private static readonly DefRepository Repo = TFTVMain.Repo;
         private static readonly SharedData Shared = TFTVMain.Shared;
 
         // private static readonly GameTagDef revenantTier1GameTag = DefCache.GetDef<GameTagDef>("RevenantTier_1_GameTagDef");
@@ -107,8 +104,6 @@ namespace TFTV
         private static readonly DelayedEffectStatusDef reinforcementStatusUnder1AP = DefCache.GetDef<DelayedEffectStatusDef>("E_Status [ReinforcementStatusUnder1AP]");
         private static readonly DelayedEffectStatusDef reinforcementStatus1AP = DefCache.GetDef<DelayedEffectStatusDef>("E_Status [ReinforcementStatus1AP]");
         private static readonly DelayedEffectStatusDef reinforcementStatusUnder2AP = DefCache.GetDef<DelayedEffectStatusDef>("E_Status [ReinforcementStatusUnder2AP]");
-
-
         private static readonly DamageMultiplierStatusDef RecepctacleDisrupted = DefCache.GetDef<DamageMultiplierStatusDef>("YR_Disrupted");
 
         public static void CheckIfPlayerCloseToGate(TacticalActor tacticalActor)

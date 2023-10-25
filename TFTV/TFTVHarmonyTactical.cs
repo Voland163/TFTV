@@ -90,6 +90,7 @@ namespace TFTV
                     TFTVBaseDefenseTactical.BaseDefenseConsoleActivated(__instance, status, controller);
 
                     TFTVPalaceMission.PalaceConsoleActivated(__instance, status, controller);
+                    TFTVExperimental.TalkingPointConsoleActivated(__instance, status, controller);
 
                 }
                 catch (Exception e)

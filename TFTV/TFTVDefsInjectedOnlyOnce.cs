@@ -205,7 +205,7 @@ namespace TFTV
             CreateFakeFacilityToFixBadBaseDefenseMaps();
             ChangeFireNadeCostAndDamage();
             ExperimentKaosWeaponAmmo();
-            ExperimentAcidDisabledStatus();
+            ModifyRescueCiviliansMissions();
            
         }
 
@@ -215,10 +215,362 @@ namespace TFTV
         //NEU_Sniper_Torso_BodyPartDef
         //NEU_Sniper_Legs_ItemDef
 
-        
+        private static void CreateConvinceCivilianStatus()
+        {
+            try
+            {
+                Sprite talkSprite = Helper.CreateSpriteFromImageFile("UI_AbilitiesIcon_PersonalTrack_Warcry.png");
+                Sprite cancelTalkSprite = Helper.CreateSpriteFromImageFile("UI_AbilitiesIcon_PersonalTrack_Warcry_Cancel.png");
+
+                //how hacking works:
+                //Hacking_Start_AbilityDef is conditioned on Objective not having ConsoleActivated_StatusDef and it applies
+                //1) ActiveHackableChannelingConsole_StatusDef to the Console (this is just a tag)
+                //2) Hacking_ConsoleToActorBridge_StatusDef to the Objective
+                //
+                //Hacking_ActorToConsoleBridge_StatusDef is paired with Hacking_ConsoleToActorBridge_StatusDef and it triggers an event when it is applied
+                //This is event is E_EventOnApply [Hacking_ActorToConsoleBridge_StatusDef]
+                //
+                //E_EventOnApply [Hacking_ActorToConsoleBridge_StatusDef], provided that a game is not being loaded, applies
+                //Hacking_Channeling_StatusDef, which
+                //1) gives the ability Hacking_Cancel_AbilityDef
+                //2) on UnApply triggers the event E_EventOnUnapply [Hacking_Channeling_StatusDef]
+                //
+                //Hacking_Cancel_AbilityDef has the effect RemoveActorHackingStatuses_EffectDef, which removes status with the effectname HackingChannel (Hacking_Channeling_StatusDef)
+                //
+                //E_EventOnUnapply [Hacking_Channeling_StatusDef] triggers 2 effects:
+                //1) E_ActivateHackingFinishAbility [Hacking_Channeling_StatusDef]
+                //2) E_RemoveBridgeStatusEffect [Hacking_Channeling_StatusDef], which removes the status with the effectname ActorToConsoleBridge (Hacking_ActorToConsoleBridge_StatusDef)
+                //
+                //E_ActivateHackingFinishAbility [Hacking_Channeling_StatusDef], provided that 
+                //1) E_ActorIsAlive [Hacking_Channeling_StatusDef]
+                //2) E_StatusElapsedInTurns for status Hacking_ActorToConsoleBridge_StatusDef is 2
+                //will activate the ability Hacking_Finish_AbilityDef, which
+                //1) looks at the status Hacking_ConsoleToActorBridge_StatusDef
+                //2) and triggers the status ConsoleActivated_StatusDef
+
+                //First create all the abilities
+
+                //sources for new abilities
+                InteractWithObjectAbilityDef startHackingDef = DefCache.GetDef<InteractWithObjectAbilityDef>("Hacking_Start_AbilityDef");
+                ApplyEffectAbilityDef cancelHackingDef = DefCache.GetDef<ApplyEffectAbilityDef>("Hacking_Cancel_AbilityDef");
+                InteractWithObjectAbilityDef finishHackingDef = DefCache.GetDef<InteractWithObjectAbilityDef>("Hacking_Finish_AbilityDef");
+
+                //new abilities
+                string convinceCivilianAbilityName = "ConvinceCivilianToJoinAbility";
+                string cancelConvinceCivilianAbilityName = "CancelConvinceCivilianToJoinAbility";
+                string finishConvinceCivilianAbilityName = "FinishConvinceCivilianToJoinAbility";
+
+                InteractWithObjectAbilityDef newConvinceCivilianAbility = Helper.CreateDefFromClone(
+                    startHackingDef,
+                    "{8F36E864-4C97-4CFD-A13E-3CFA59A47A43}",
+                    convinceCivilianAbilityName
+                );
+                InteractWithObjectAbilityDef newFinishConvinceCivilianAbility = Helper.CreateDefFromClone(
+                    finishHackingDef,
+                    "{29B0EEF2-1AB5-4011-9553-0C93799FB271}",
+                    finishConvinceCivilianAbilityName
+                );
+
+                ApplyEffectAbilityDef newCancelConvinceCivilianAbility = Helper.CreateDefFromClone(
+                    cancelHackingDef,
+                    "{9CFD91E8-F98F-458C-B03C-0B92C72E8439}",
+                    cancelConvinceCivilianAbilityName
+                );
+
+                newConvinceCivilianAbility.ViewElementDef = Helper.CreateDefFromClone(
+                    startHackingDef.ViewElementDef,
+                    "{F2E38123-B8CD-409F-95B2-23AE232472D8}",
+                    convinceCivilianAbilityName
+                );
+                newFinishConvinceCivilianAbility.ViewElementDef = Helper.CreateDefFromClone(
+                    finishHackingDef.ViewElementDef,
+                    "{1FD84A13-321A-4BA8-880A-ABC787BA2636}",
+                    finishConvinceCivilianAbilityName
+                );
+                newCancelConvinceCivilianAbility.ViewElementDef = Helper.CreateDefFromClone(
+                    cancelHackingDef.ViewElementDef,
+                    "{3489BA68-A8ED-49D5-A6C6-89B2C1444E94}",
+                    cancelConvinceCivilianAbilityName
+                );
+
+                newConvinceCivilianAbility.ViewElementDef.DisplayName1.LocalizationKey = "KEY_CONVINCE_ABILITY";
+                newConvinceCivilianAbility.ViewElementDef.Description.LocalizationKey = "KEY_CONVINCE_ABILITY_DESCRIPTION";
+                newConvinceCivilianAbility.ViewElementDef.LargeIcon = talkSprite;
+                newConvinceCivilianAbility.ViewElementDef.SmallIcon = talkSprite;
+
+                newCancelConvinceCivilianAbility.ViewElementDef.DisplayName1.LocalizationKey = "KEY_CANCEL_CONVINCE_ABILITY";
+                newCancelConvinceCivilianAbility.ViewElementDef.Description.LocalizationKey = "KEY_CANCEL_CONVINCE_ABILITY_DESCRIPTION";
+                newCancelConvinceCivilianAbility.ViewElementDef.SmallIcon = cancelTalkSprite;
+                newCancelConvinceCivilianAbility.ViewElementDef.LargeIcon = cancelTalkSprite;
+                //Then create the statuses
+
+                //sources for new statuses
+                TacStatusDef activateHackableChannelingStatus = DefCache.GetDef<TacStatusDef>("ActiveHackableChannelingConsole_StatusDef"); //status on console, this is just a tag of sorts
+                ActorBridgeStatusDef actorToConsoleBridgingStatusDef = DefCache.GetDef<ActorBridgeStatusDef>("Hacking_ActorToConsoleBridge_StatusDef");
+
+                AddAbilityStatusDef hackingStatusDef = DefCache.GetDef<AddAbilityStatusDef>("Hacking_Channeling_StatusDef"); //status on actor
+                ActorBridgeStatusDef consoleToActorBridgingStatusDef = DefCache.GetDef<ActorBridgeStatusDef>("Hacking_ConsoleToActorBridge_StatusDef");
+
+                string statusOnObjectiveName = "ConvinceCivilianOnObjectiveStatus";
+                string objectiveToActorBridgeStatusName = "ConvinceCivilianObjectiveToActorBridgeStatus";
+                string actorToObjectiveBridgeStatusName = "ConvinceCivilianActorToObjectiveBridgeStatus";
+                string statusOnActorName = "ConvinceCivilianOnActorStatus";
+
+                TacStatusDef newStatusOnObjective = Helper.CreateDefFromClone(
+                    activateHackableChannelingStatus,
+                    "{546FF54E-1422-40F6-9C55-134E780F3E2C}",
+                    statusOnObjectiveName
+                );
+                ActorBridgeStatusDef newActorToObjectiveStatus = Helper.CreateDefFromClone(
+                    actorToConsoleBridgingStatusDef,
+                    "{169D6712-9055-4D47-8585-5F832BBBFD47}",
+                    actorToObjectiveBridgeStatusName
+                );
+
+                AddAbilityStatusDef newStatusOnActor = Helper.CreateDefFromClone(
+                    hackingStatusDef,
+                    "{998B630E-46C1-4BDB-BC4A-86F26B4651FB}",
+                    statusOnActorName
+                );
+                ActorBridgeStatusDef newObjectiveToActorStatus = Helper.CreateDefFromClone(
+                    consoleToActorBridgingStatusDef,
+                    "{E090EF24-826D-442A-9BB8-D713EBE200A4}",
+                    objectiveToActorBridgeStatusName
+                );
+
+                //need to create visuals for the new statuses
+
+                newStatusOnObjective.Visuals = Helper.CreateDefFromClone(
+                    activateHackableChannelingStatus.Visuals,
+                    "{D9251544-3E29-4DC7-9963-74E445F46E7B}",
+                    statusOnObjectiveName
+                );
+                newActorToObjectiveStatus.Visuals = Helper.CreateDefFromClone(
+                    actorToConsoleBridgingStatusDef.Visuals,
+                    "{FBA2DC77-2FFC-45CD-813C-2E244CA701CB}",
+                    actorToObjectiveBridgeStatusName
+                );
+                newObjectiveToActorStatus.Visuals = Helper.CreateDefFromClone(
+                    consoleToActorBridgingStatusDef.Visuals,
+                    "{5756C65B-053B-4AFF-ADEF-514B980ECA02}",
+                    objectiveToActorBridgeStatusName
+                );
+                newStatusOnActor.Visuals = Helper.CreateDefFromClone(
+                    hackingStatusDef.Visuals,
+                    "{AF4B1C45-70AD-49F9-85EA-6878B9CBB527}",
+                    statusOnActorName
+                );
+
+                newActorToObjectiveStatus.Visuals.DisplayName1.LocalizationKey = "KEY_CONVINCE_STATUS";
+                newActorToObjectiveStatus.Visuals.Description.LocalizationKey = "KEY_CONVINCE_STATUS_DESCRIPTION";
+                newActorToObjectiveStatus.Visuals.SmallIcon = talkSprite;
 
 
-        private static void ExperimentAcidDisabledStatus()
+                //Hacking_Start_AbilityDef is conditioned on Objective not having ConsoleActivated_StatusDef and it applies
+                //1) ActiveHackableChannelingConsole_StatusDef to the Console (this is just a tag)
+                //2) Hacking_ConsoleToActorBridge_StatusDef to the Objective
+
+                //Force Gate ability
+                newConvinceCivilianAbility.ActiveInteractableConsoleStatusDef = newStatusOnObjective; //status on the objective
+                newConvinceCivilianAbility.ActivatedConsoleStatusDef = newObjectiveToActorStatus; //bridge status from objective to Actor
+                                                                                                  //we don't change newForceGateAbility.StatusesBlockingActivation because we keep using Console_ActivatedStatusDef unchanged, for now
+
+                //Hacking_ActorToConsoleBridge_StatusDef is paired with Hacking_ConsoleToActorBridge_StatusDef
+
+                //so let's pair the new bridging statuses
+                newActorToObjectiveStatus.PairedStatusDef = newObjectiveToActorStatus;
+                newObjectiveToActorStatus.PairedStatusDef = newActorToObjectiveStatus;
+
+                //and it triggers an event when it is applied
+                //This is event is E_EventOnApply [Hacking_ActorToConsoleBridge_StatusDef]
+
+                TacticalEventDef newEventOnApplyConvinceCvilian = Helper.CreateDefFromClone(
+                    DefCache.GetDef<TacticalEventDef>("E_EventOnApply [Hacking_ActorToConsoleBridge_StatusDef]"),
+                    "{5C6A2F85-5F7F-48C0-AA14-A3D9EC435198}",
+                    statusOnActorName
+                );
+
+                //E_EventOnApply [Hacking_ActorToConsoleBridge_StatusDef], provided that a game is not being loaded, applies
+                //Hacking_Channeling_StatusDef
+
+                TacStatusEffectDef newEffectToApplyActiveStatusOnActor = Helper.CreateDefFromClone(
+                    DefCache.GetDef<TacStatusEffectDef>("E_ApplyHackingChannelingStatus [Hacking_ActorToConsoleBridge_StatusDef]"),
+                    "{E94A91FB-F8ED-4C09-9012-91F6B20549DA}",
+                    statusOnObjectiveName
+                );
+                newEffectToApplyActiveStatusOnActor.StatusDef = newStatusOnActor;
+                newEventOnApplyConvinceCvilian.EffectData.EffectDefs = new EffectDef[] { newEffectToApplyActiveStatusOnActor };
+
+                newActorToObjectiveStatus.EventOnApply = newEventOnApplyConvinceCvilian;
+
+                //which
+                //1) gives the ability Hacking_Cancel_AbilityDef
+                newStatusOnActor.AbilityDef = newCancelConvinceCivilianAbility; //the status gives the actor the ability to cancel the hacking/forcing the gate
+                                                                                //2) on UnApply triggers the event E_EventOnUnapply [Hacking_Channeling_StatusDef]
+
+                //we need to create a new event for when the effect is unapplied, to apply 2 new effects:
+                //1) finish executing the ability (original E_ActivateHackingFinishAbility [Hacking_Channeling_StatusDef]),
+                //2) remove bridge effect from ActorToObjective, and we don't change the original because the effect name hasn't been changed E_RemoveBridgeStatusEffect [Hacking_Channeling_StatusDef]
+                TacticalEventDef newEventOnUnApplyConvinceCivilian = Helper.CreateDefFromClone(
+                    DefCache.GetDef<TacticalEventDef>("E_EventOnUnapply [Hacking_Channeling_StatusDef]"),
+                    "{A85B34A6-73F9-4500-BA48-2B9C463C838D}",
+                    statusOnActorName
+                );
+                ActivateAbilityEffectDef newActivateFinishConvincingCivilianEffect = Helper.CreateDefFromClone(
+                    DefCache.GetDef<ActivateAbilityEffectDef>("E_ActivateHackingFinishAbility [Hacking_Channeling_StatusDef]"),
+                    "{5F617C39-F133-43BB-8294-80205964DA49}",
+                    statusOnActorName
+                );
+                newEventOnUnApplyConvinceCivilian.EffectData.EffectDefs = new EffectDef[] { newActivateFinishConvincingCivilianEffect, newEventOnUnApplyConvinceCivilian.EffectData.EffectDefs[1] };
+
+                newStatusOnActor.EventOnUnapply = newEventOnUnApplyConvinceCivilian;
+
+                //we start by changing the ability our clone is pointing at
+                newActivateFinishConvincingCivilianEffect.AbilityDef = newFinishConvinceCivilianAbility;
+
+                //but it has also 2 application conditions:
+                //1) E_ActorIsAlive [Hacking_Channeling_StatusDef], we can probably keep it as it is
+                //2) "E_StatusElapsedInTurns", and this one we have to replace because it is pointing at ActorToConsole bridge, and we want it pointing at our new ActorToObjective bridge
+                MinStatusDurationInTurnsEffectConditionDef newTurnDurationCondition = Helper.CreateDefFromClone(
+                    DefCache.GetDef<MinStatusDurationInTurnsEffectConditionDef>("E_StatusElapsedInTurns"),
+                    "{258124D4-C85A-4084-840E-5015CD100123}",
+                    newFinishConvinceCivilianAbility + "ElapsedTurnsCondition"
+                );
+
+                newTurnDurationCondition.TacStatusDef = newActorToObjectiveStatus;
+                newActivateFinishConvincingCivilianEffect.ApplicationConditions = new EffectConditionDef[] { newActivateFinishConvincingCivilianEffect.ApplicationConditions[0], newTurnDurationCondition };
+
+                //Hacking_Cancel_AbilityDef has the effect RemoveActorHackingStatuses_EffectDef, which removes status with the effectname HackingChannel (Hacking_Channeling_StatusDef)
+                //
+                //E_EventOnUnapply [Hacking_Channeling_StatusDef] triggers 2 effects:
+                //1) E_ActivateHackingFinishAbility [Hacking_Channeling_StatusDef]
+                //2) E_RemoveBridgeStatusEffect [Hacking_Channeling_StatusDef], which removes the status with the effectname ActorToConsoleBridge (Hacking_ActorToConsoleBridge_StatusDef)
+                //
+                //E_ActivateHackingFinishAbility [Hacking_Channeling_StatusDef], provided that 
+                //1) E_ActorIsAlive [Hacking_Channeling_StatusDef]
+                //2) E_StatusElapsedInTurns for status Hacking_ActorToConsoleBridge_StatusDef is 2
+                //will activate the ability Hacking_Finish_AbilityDef, which
+                //1) looks at the status Hacking_ConsoleToActorBridge_StatusDef
+                //2) and triggers the status ConsoleActivated_StatusDef
+
+                //Force Gate Cancel ability shouldn't require changing, as the effect in RemoveActorHackingStatuses_EffectDef is still called "HackingChannel"
+
+                //Force Gate Finish ability activatedConsoleStatus is the same, for now, Console_ActivatedStatusDef,  but we need to change ActiveInteractableConsoleStatusDef to the new objective to actor Bridge
+                newFinishConvinceCivilianAbility.ActiveInteractableConsoleStatusDef = newObjectiveToActorStatus;
+
+                //We need to add the forcegateability to the actor template
+                //and apparently the finishgateability too
+                TacticalActorDef soldierActorDef = DefCache.GetDef<TacticalActorDef>("Soldier_ActorDef");
+
+                List<AbilityDef> abilityDefs = new List<AbilityDef>(soldierActorDef.Abilities) { newConvinceCivilianAbility, newFinishConvinceCivilianAbility };
+                soldierActorDef.Abilities = abilityDefs.ToArray();
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+
+
+        private static void ModifyRescueCiviliansMissions()
+        {
+            try 
+            {
+                PPFactionDef neutralFaction = DefCache.GetDef<PPFactionDef>("Neutral_FactionDef");
+
+              //  CustomMissionTypeDef rescueHelenaMisson = DefCache.GetDef<CustomMissionTypeDef>("StoryLE0_CustomMissionTypeDef");
+
+                CustomMissionTypeDef rescueSparkMisson = DefCache.GetDef<CustomMissionTypeDef>("Bcr5_CustomMissionTypeDef");
+                CustomMissionTypeDef rescueFelipeMisson = DefCache.GetDef<CustomMissionTypeDef>("Bcr7_CustomMissionTypeDef");
+               // CustomMissionTypeDef rescueHelenaMisson = DefCache.GetDef<CustomMissionTypeDef>("StoryLE0_CustomMissionTypeDef");
+                //  TacMissionTypeParticipantData sourceEnvironmentParcipantData = rescueHelenaMisson.ParticipantsData[2];
+
+                TacMissionTypeParticipantData newEnvironmentParcipantData = new TacMissionTypeParticipantData
+                {
+                    ParticipantKind = TacMissionParticipant.Environment,
+                    ActorDeployParams = new List<MissionDeployParams>() { },
+                    FactionDef = neutralFaction,
+                    GenerateGeoCharacters = false,
+                    PredeterminedFactionEffects = new EffectDef[] { },
+                    ReinforcementsDeploymentPart = new RangeData() { Min = 0, Max = 0 },
+                    ReinforcementsTurns = new RangeDataInt() { Min = 0, Max = 0 },
+                    InfiniteReinforcements = false,
+                    UniqueUnits = new TacMissionTypeParticipantData.UniqueChatarcterBind[] { },
+                    DeploymentRule = new TacMissionTypeParticipantData.DeploymentRuleData()
+                    {
+                        IncludeNearbyFactionSites = false,
+                        DeploymentPoints = 0,
+                        MinDeployment = 0,
+                        MaxDeployment = 1000000,
+                        DeploymentPercentage = 100,
+                        DeploymentType = 0,
+                        OverrideUnitDeployment = new List<TacMissionTypeParticipantData.DeploymentRuleData.UnitDeploymentOverride>() { }
+
+                    }
+                };
+
+                rescueSparkMisson.ParticipantsData.Add(newEnvironmentParcipantData);
+                rescueFelipeMisson.ParticipantsData.Add(newEnvironmentParcipantData);
+                
+                CreateConvinceCivilianStatus();
+
+                rescueSparkMisson.CustomObjectives[1] = CreateNewActivateConsoleObjective("ConvinceCivilianObjectiveSpark", "{75C311B3-B34C-4460-BB8C-95D1963E6F90}", "{EADCDE10-1B4F-4956-AC44-42FDF959F069}", "KEY_OBJECTIVE_CONVINCE_SPARKS");
+                rescueFelipeMisson.CustomObjectives[1] = CreateNewActivateConsoleObjective("ConvinceCivilianObjectiveFelipe", "{12780334-2607-48DF-8F93-16B1665078F0}", "{D19D79E5-EA2F-44C7-B05F-F19D9B58A462}", "KEY_OBJECTIVE_CONVINCE_FELIPE");
+
+            }
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+        }
+
+        private static WipeEnemyFactionObjectiveDef CreateNewActivateConsoleObjective(string name, string gUID, string gUID1, string key)
+        {
+            try 
+            {
+
+                WipeEnemyFactionObjectiveDef sourceWipeEnemyFactionObjective = DefCache.GetDef<WipeEnemyFactionObjectiveDef>("WipeEnemy_CustomMissionObjective");
+                WipeEnemyFactionObjectiveDef newDummyObjective = Helper.CreateDefFromClone(sourceWipeEnemyFactionObjective, gUID, "DummyObjective");
+                newDummyObjective.MissionObjectiveData.ExperienceReward = 0;
+                newDummyObjective.IsUiHidden = true;
+                newDummyObjective.IsDefeatObjective = false;
+                newDummyObjective.IsVictoryObjective = false;
+
+                ActivateConsoleFactionObjectiveDef sourceActivateFactionObjective = DefCache.GetDef<ActivateConsoleFactionObjectiveDef>("StealResearch_HackConsole_CustomMissionObjective");
+                ActivateConsoleFactionObjectiveDef newObjective = Helper.CreateDefFromClone(sourceActivateFactionObjective, name, gUID1);
+                newObjective.ObjectiveData.ActiveInteractables = -1;
+                newObjective.ObjectiveData.InteractablesToActivate = -1;
+
+                newObjective.IsDefeatObjective = false;
+                newObjective.MissionObjectiveData.Summary.LocalizationKey = key;
+                newObjective.MissionObjectiveData.Description.LocalizationKey = key;
+
+                TacStatusDef activateHackableChannelingStatus = DefCache.GetDef<TacStatusDef>("ConvinceCivilianOnObjectiveStatus"); //status on console, this is just a tag of sorts
+             
+                newObjective.ObjectiveData.InteractableStatusDef = activateHackableChannelingStatus;
+
+                newDummyObjective.NextOnSuccess = new FactionObjectiveDef[] { newObjective };
+                newDummyObjective.NextOnFail = new FactionObjectiveDef[] { newObjective };
+                //  newObjective.ObjectiveData.ActivatedInteractableStatusDef = 
+
+
+                return newDummyObjective;
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
+
+
+
+        }
+
+        private static void CreateAcidDisabledStatus()
         {
             try 
             {
@@ -2186,6 +2538,7 @@ namespace TFTV
                 MakeVestsOnlyForOrganicMeatbags();
                 MakeMistRepellerLegModule();
                 CreateNanotechFieldkit();
+                CreateAcidDisabledStatus();
             }
 
 
