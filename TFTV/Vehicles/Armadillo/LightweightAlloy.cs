@@ -21,15 +21,7 @@ namespace TFTVVehicleRework.Armadillo
         public static void Change()
         {
             GroundVehicleModuleDef LightweightAlloy = (GroundVehicleModuleDef)Repo.GetDef("32c107bb-d282-d2c4-fbae-9830a46a2e14");
-            // LightweightAlloy.BodyPartAspectDef.StatModifications = new ItemStatModification[] 
-			// {
-			// 	new ItemStatModification
-			// 	{
-			// 		TargetStat = StatModificationTarget.UnitsInside,
-			// 		Modification = StatModificationType.Add,
-			// 		Value = 1f
-			// 	}
-			// };
+            LightweightAlloy.BodyPartAspectDef.StatModifications = new ItemStatModification[]{};
             LightweightAlloy.Abilities = LightweightAlloy.Abilities.AddToArray(EnterVehicle());
         }
 
