@@ -26,6 +26,7 @@ namespace TFTVVehicleRework.Armadillo
             // "NJ_Armadillo_Purgatory_GroundVehicleWeaponDef"
             GroundVehicleWeaponDef VanillaPurg = (GroundVehicleWeaponDef)Repo.GetDef("3986d735-5c23-ef24-6983-7d0132068f1b");
             VanillaPurg.ChargesMax = 8;
+            VanillaPurg.DamagePayload.DamageValue = 0f;
             VanillaPurg.DamagePayload.DamageKeywords = new List<DamageKeywordPair>
             {
                 new DamageKeywordPair
