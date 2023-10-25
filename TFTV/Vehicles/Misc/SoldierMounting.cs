@@ -8,6 +8,7 @@ using System.Linq;
 using TFTVVehicleRework.Abilities;
 using PRMBetterClasses;
 using Base.Defs;
+using Base;
 
 namespace TFTVVehicleRework.Misc
 {
@@ -23,13 +24,24 @@ namespace TFTVVehicleRework.Misc
         
         public static void Change()
         {
-            TacticalActorDef Soldier_ActorDef = (TacticalActorDef)Repo.GetDef("958fa60e-4ee3-5d74-b90d-9acd1fab332d"); //"Soldier_ActorDef"
-			List<AbilityDef> Temp = Soldier_ActorDef.Abilities.ToList();
-			Temp.Remove(EnterVehicleAbilityDef);
-			Temp.Remove(ExitVehicleAbilityDef);
-			Soldier_ActorDef.Abilities = Temp.ToArray();
-			Soldier_ActorDef.Abilities = Soldier_ActorDef.Abilities.AddToArray(get_EnterVehicleAbility());
-			Soldier_ActorDef.Abilities = Soldier_ActorDef.Abilities.AddToArray(get_ExitVehicleAbility());
+			List<AbilityDef> AbilitiesToRemove = new List<AbilityDef>
+			{
+				EnterVehicleAbilityDef,
+				ExitVehicleAbilityDef,
+			};
+			List<AbilityDef> AbilitiesToAdd = new List<AbilityDef>
+			{
+				get_EnterVehicleAbility(),
+				get_ExitVehicleAbility(),
+			};
+
+			TacticalActorDef Soldier_ActorDef = (TacticalActorDef)Repo.GetDef("958fa60e-4ee3-5d74-b90d-9acd1fab332d"); //"Soldier_ActorDef"
+			Soldier_ActorDef.Abilities.RemoveRange(AbilitiesToRemove);
+			Soldier_ActorDef.Abilities.AddRange(AbilitiesToAdd);
+
+            TacticalActorDef Civilian_ActorDef = (TacticalActorDef)Repo.GetDef("28d0e424-280d-fa34-c8c4-778b92d26bc5"); //"Civilian_ActorDef"
+			Civilian_ActorDef.Abilities.RemoveRange(AbilitiesToRemove);
+			Civilian_ActorDef.Abilities.AddRange(AbilitiesToAdd);
         }
 
         public static ExtendedEnterVehicleAbilityDef get_EnterVehicleAbility()
