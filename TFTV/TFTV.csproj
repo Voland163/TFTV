@@ -198,6 +198,7 @@
     <Compile Include="TFTVVehicleInventory.cs" />
     <Compile Include="TFTVVoidOmens.cs" />
     <Compile Include="VanillaPatches\TacticalAbility_EnqueueAction_FumbleFix.cs" />
+    <Compile Include="VanillaPatches\Weapon_GetThrowingRange_Fix.cs" />
     <Compile Include="VariousAdjustments\VariousAdjustments.cs" />
     <Compile Include="VariousAdjustments\VariousAdjustmentsMain.cs" />
     <Compile Include="VariousAdjustments\WeaponModifications.cs" />

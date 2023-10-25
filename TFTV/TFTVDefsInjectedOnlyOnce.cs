@@ -206,7 +206,7 @@ namespace TFTV
             ChangeFireNadeCostAndDamage();
             ExperimentKaosWeaponAmmo();
             ModifyRescueCiviliansMissions();
-           
+
         }
 
         //NEU_Assault_Torso_BodyPartDef
@@ -470,20 +470,17 @@ namespace TFTV
                 TFTVLogger.Error(e);
             }
         }
-
-
-
         private static void ModifyRescueCiviliansMissions()
         {
-            try 
+            try
             {
                 PPFactionDef neutralFaction = DefCache.GetDef<PPFactionDef>("Neutral_FactionDef");
 
-              //  CustomMissionTypeDef rescueHelenaMisson = DefCache.GetDef<CustomMissionTypeDef>("StoryLE0_CustomMissionTypeDef");
+                //  CustomMissionTypeDef rescueHelenaMisson = DefCache.GetDef<CustomMissionTypeDef>("StoryLE0_CustomMissionTypeDef");
 
                 CustomMissionTypeDef rescueSparkMisson = DefCache.GetDef<CustomMissionTypeDef>("Bcr5_CustomMissionTypeDef");
                 CustomMissionTypeDef rescueFelipeMisson = DefCache.GetDef<CustomMissionTypeDef>("Bcr7_CustomMissionTypeDef");
-               // CustomMissionTypeDef rescueHelenaMisson = DefCache.GetDef<CustomMissionTypeDef>("StoryLE0_CustomMissionTypeDef");
+                CustomMissionTypeDef rescueHelenaMisson = DefCache.GetDef<CustomMissionTypeDef>("StoryLE0_CustomMissionTypeDef");
                 //  TacMissionTypeParticipantData sourceEnvironmentParcipantData = rescueHelenaMisson.ParticipantsData[2];
 
                 TacMissionTypeParticipantData newEnvironmentParcipantData = new TacMissionTypeParticipantData
@@ -512,11 +509,24 @@ namespace TFTV
 
                 rescueSparkMisson.ParticipantsData.Add(newEnvironmentParcipantData);
                 rescueFelipeMisson.ParticipantsData.Add(newEnvironmentParcipantData);
-                
+
                 CreateConvinceCivilianStatus();
+
+                string nameTalkingPointConsoleTag = "TalkingPointConsoleTag";
+
+                StructuralTargetTypeTagDef interactableConsoleTag = Helper.CreateDefFromClone
+                    (DefCache.GetDef<StructuralTargetTypeTagDef>("InteractableConsole_StructuralTargetTypeTagDef"),
+                    "{E39FE24B-468B-46EA-B1D1-65908A4F550F}", nameTalkingPointConsoleTag);
+
 
                 rescueSparkMisson.CustomObjectives[1] = CreateNewActivateConsoleObjective("ConvinceCivilianObjectiveSpark", "{75C311B3-B34C-4460-BB8C-95D1963E6F90}", "{EADCDE10-1B4F-4956-AC44-42FDF959F069}", "KEY_OBJECTIVE_CONVINCE_SPARKS");
                 rescueFelipeMisson.CustomObjectives[1] = CreateNewActivateConsoleObjective("ConvinceCivilianObjectiveFelipe", "{12780334-2607-48DF-8F93-16B1665078F0}", "{D19D79E5-EA2F-44C7-B05F-F19D9B58A462}", "KEY_OBJECTIVE_CONVINCE_FELIPE");
+                rescueHelenaMisson.CustomObjectives[1] = CreateNewActivateConsoleObjective("ConvinceCivilianObjectiveHelena", "{AC2A9633-6D6F-4261-8315-06899D4A47BF}", "{6E492142-7500-4C71-B6E2-0B16BF2C4AE6}", "KEY_OBJECTIVE_CONVINCE_HELENA");
+
+                //Add inifinite reinforcements to Helena
+                rescueHelenaMisson.ParticipantsData[0].InfiniteReinforcements = true;
+                rescueHelenaMisson.ParticipantsData[0].ReinforcementsTurns = new RangeDataInt() { Min =0, Max =1 };
+                rescueHelenaMisson.ParticipantsData[0].ReinforcementsDeploymentPart = new RangeData() { Min = 0.1f, Max = 0.1f };
 
             }
 
@@ -529,8 +539,11 @@ namespace TFTV
 
         private static WipeEnemyFactionObjectiveDef CreateNewActivateConsoleObjective(string name, string gUID, string gUID1, string key)
         {
-            try 
+            try
             {
+
+             
+                StructuralTargetTypeTagDef interactableConsoleTag =DefCache.GetDef<StructuralTargetTypeTagDef>("TalkingPointConsoleTag");
 
                 WipeEnemyFactionObjectiveDef sourceWipeEnemyFactionObjective = DefCache.GetDef<WipeEnemyFactionObjectiveDef>("WipeEnemy_CustomMissionObjective");
                 WipeEnemyFactionObjectiveDef newDummyObjective = Helper.CreateDefFromClone(sourceWipeEnemyFactionObjective, gUID, "DummyObjective");
@@ -543,13 +556,14 @@ namespace TFTV
                 ActivateConsoleFactionObjectiveDef newObjective = Helper.CreateDefFromClone(sourceActivateFactionObjective, name, gUID1);
                 newObjective.ObjectiveData.ActiveInteractables = -1;
                 newObjective.ObjectiveData.InteractablesToActivate = -1;
+                newObjective.ObjectiveData.InteractableTagDef = interactableConsoleTag;
 
                 newObjective.IsDefeatObjective = false;
                 newObjective.MissionObjectiveData.Summary.LocalizationKey = key;
                 newObjective.MissionObjectiveData.Description.LocalizationKey = key;
 
                 TacStatusDef activateHackableChannelingStatus = DefCache.GetDef<TacStatusDef>("ConvinceCivilianOnObjectiveStatus"); //status on console, this is just a tag of sorts
-             
+
                 newObjective.ObjectiveData.InteractableStatusDef = activateHackableChannelingStatus;
 
                 newDummyObjective.NextOnSuccess = new FactionObjectiveDef[] { newObjective };
@@ -572,7 +586,7 @@ namespace TFTV
 
         private static void CreateAcidDisabledStatus()
         {
-            try 
+            try
             {
 
                 SlotStateStatusDef disabledSource = DefCache.GetDef<SlotStateStatusDef>("DisabledElectronicSlot_StatusDef");
@@ -608,10 +622,13 @@ namespace TFTV
 
 
                 newAmmo.ChargesMax = amount;
-                newAmmo.CrateSpawnWeight = 500;
+                newAmmo.CrateSpawnWeight = 1000;
                 newAmmo.Tags.Remove(DefCache.GetDef<GameTagDef>("ManufacturableItem_TagDef"));
                 newAmmo.Tags.Remove(DefCache.GetDef<ClassTagDef>("Assault_ClassTagDef"));
                 newAmmo.Tags.Add(classTagDef);
+                //  newAmmo.CombineWhenStacking = false;
+                newAmmo.ManufactureTech = 0;
+                newAmmo.ManufactureMaterials = minPrice;
                 weaponDef.ChargesMax = amount;
                 weaponDef.CompatibleAmmunition = new TacticalItemDef[] { newAmmo };
 
@@ -619,10 +636,10 @@ namespace TFTV
                      (DefCache.GetDef<GeoMarketplaceItemOptionDef>("Obliterator_MarketplaceItemOptionDef"), gUID2, name);
 
                 newMarketplaceItem.MinPrice = minPrice;
-                newMarketplaceItem.MaxPrice = minPrice + minPrice*1.25f;
+                newMarketplaceItem.MaxPrice = minPrice + minPrice * 1.25f;
                 newMarketplaceItem.ItemDef = newAmmo;
                 newMarketplaceItem.DisallowDuplicates = false;
-                
+
 
                 TheMarketplaceSettingsDef marketplaceSettings = DefCache.GetDef<TheMarketplaceSettingsDef>("TheMarketplaceSettingsDef");
 
@@ -634,6 +651,10 @@ namespace TFTV
                 marketplaceSettings.PossibleOptions = geoMarketplaceItemOptionDefs.ToArray();
 
                 weaponDef.WeaponMalfunction = DefCache.GetDef<WeaponDef>("PX_AssaultRifle_WeaponDef").WeaponMalfunction;
+
+
+                AmmoWeaponDatabase.AmmoToWeaponDictionary.Add(newAmmo, new List<TacticalItemDef>() { weaponDef });
+
 
             }
             catch (Exception e)
@@ -669,16 +690,16 @@ namespace TFTV
                 CreateAmmoForKG(Tormentor, 8, 30, "e1875c26-0494-4d0f-9e5d-3c74a17c3b2d",
 "79f6bb60-8ca3-4bbf-a0f1-c819f5ebf09e",
 "ee89b5c3-6d06-4c5e-856b-96e7ff411c77", "KG_Pistol_Ammo.png");
-                CreateAmmoForKG(Subjector, 5, 30,  "2e5be682-1f85-4610-bbb7-c2f2bf41d4c6",
+                CreateAmmoForKG(Subjector, 5, 30, "2e5be682-1f85-4610-bbb7-c2f2bf41d4c6",
 "b03d78d4-c7e7-49c3-b097-3448e253a1e7",
 "70a0a172-2b57-48d3-94c2-7cb4e428c3c4", "KG_Sniper_Ammo.png");
-                CreateAmmoForKG(Redemptor, 24, 30,  "8f7ff5ca-4b8d-4677-86d3-7f21e41a3a70",
+                CreateAmmoForKG(Redemptor, 24, 30, "8f7ff5ca-4b8d-4677-86d3-7f21e41a3a70",
 "d60e04a0-c873-4c16-9a83-2f9d6e1c163d",
 "dc92d8ca-1b8d-4f85-9d90-d8eb9e63d5a3", "KG_Shotgun_Ammo.png");
                 CreateAmmoForKG(Devastator, 6, 30, "99aa40e5-5415-44b9-98ed-34d746a99b52",
 "3b647fa3-1e06-4f2a-9d1c-82edf8a6dbff",
 "605d3c8a-7b9c-481a-8c0d-7ff4be94901a", "KG_Cannon_Ammo.png");
-                CreateAmmoForKG(Obliterator, 32, 30,  "2c86774f-4889-4c06-9f7a-8971e62ff267",
+                CreateAmmoForKG(Obliterator, 32, 30, "2c86774f-4889-4c06-9f7a-8971e62ff267",
 "587b1a5b-1665-48c9-8b9c-4156231712c1",
 "1a1230fc-0e5d-4c4c-9be5-563879d2471f", "KG_Assault_Rifle_Ammo.png");
 
@@ -694,6 +715,22 @@ namespace TFTV
                 new TheMarketplaceSettingsDef.TheMarketplaceItemOfferAmount { NumberOfMissionsCompleted = 4, MinNumberOfOffers = 30, MaxNumberOfOffers = 45 }
                 };
 
+              
+
+                List<GeoMarketplaceOptionDef> geoMarketplaceOptionDefs = new List<GeoMarketplaceOptionDef>(marketplaceSettings.PossibleOptions.ToList());
+
+                geoMarketplaceOptionDefs.Remove(DefCache.GetDef<GeoMarketplaceResearchOptionDef>("Random_MarketplaceResearchOptionDef"));
+
+                marketplaceSettings.PossibleOptions = geoMarketplaceOptionDefs.ToArray();
+
+             /*   foreach(GeoMarketplaceOptionDef geoMarketplaceOptionDef in marketplaceSettings.PossibleOptions) 
+                {
+
+                    TFTVLogger.Always($"{geoMarketplaceOptionDef.name}");
+                
+                }*/
+
+               
 
             }
 
@@ -3828,11 +3865,11 @@ namespace TFTV
 
         private static void ReduceDamageFromInfestation()
         {
-            try 
+            try
             {
                 DefCache.GetDef<GeoPhoenixFactionDef>("Phoenix_GeoPhoenixFactionDef").FacilityDamageOnBaseAbandoned = new RangeDataInt() { Min = 20, Max = 40 };
-            
-            
+
+
             }
             catch (Exception e)
             {

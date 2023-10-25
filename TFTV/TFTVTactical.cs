@@ -139,11 +139,12 @@ namespace TFTV
 
             //  TFTVBaseDefenseTactical.ModifyObjectives(Controller);
             TFTVLogger.Always($"Mission: {Controller.TacMission.MissionData.MissionType.name}");
-            // TFTVTacticalUtils.RevealAllSpawns(Controller);
+          //  TFTVTacticalUtils.RevealAllSpawns(Controller);
 
 
             TFTVExperimental.CheckBCR5Mission(Controller);
             TFTVPalaceMission.CheckPalaceMission();
+           
         }
 
         /// <summary>

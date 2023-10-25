@@ -1161,6 +1161,8 @@ namespace TFTV
                 {
                     toggleState = !toggleState;  // Flip the toggle state
 
+                    TFTVExperimental.GetPartialMagazinesInfo();
+
                     // Perform any actions based on the toggle state
                     if (toggleState)
                     {

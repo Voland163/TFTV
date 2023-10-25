@@ -308,59 +308,7 @@ namespace TFTV
 
                     Resolution resolution = Screen.currentResolution;
 
-                    /*     List<Image> images = marketplaceUI.transform.GetComponentsInChildren<Image>().ToList();
-
-                         TFTVLogger.Always($"there are {images.Count} images");
-
-                         foreach (Image image in images) 
-                         {
-                             TFTVLogger.Always($"{image.name}");
-
-
-                         }
-
-
-
-
-
-                         foreach (Transform transform in marketplaceUI.transform.GetChildren())
-                         {
-                             TFTVLogger.Always($"{transform.name}, it's level 1, has {transform.GetChildren().Count()} children");
-
-                             foreach (Transform transform1 in transform.GetChildren())
-                             {
-                                 TFTVLogger.Always($"{transform1.name}, it's level 2, has {transform1.GetChildren().Count()} children");
-
-                                 foreach (Transform transform2 in transform1.GetChildren())
-                                 {
-                                     TFTVLogger.Always($"{transform2.name},  level3, has {transform2.GetChildren().Count()} children");
-
-                                     foreach (Transform transform3 in transform2.GetChildren())
-                                     {
-                                         TFTVLogger.Always($"{transform3.name},  level3, has {transform3.GetChildren().Count()} children");
-
-                                         foreach (Transform transform4 in transform3.GetChildren())
-                                         {
-                                             TFTVLogger.Always($"{transform4.name},  level3, has {transform4.GetChildren().Count()} children");
-
-                                             foreach (Transform transform5 in transform4.GetChildren())
-                                             {
-                                                 TFTVLogger.Always($"{transform5.name},  level3, has {transform5.GetChildren().Count()} children");
-
-
-
-                                             }
-
-                                         }
-
-                                     }
-
-                                 }
-
-                             }
-                         }*/
-
-
+                   
 
                     // TFTVLogger.Always("Resolution is " + Screen.currentResolution.width);
                     float resolutionFactorWidth = (float)resolution.width / 1920f;
@@ -501,12 +449,12 @@ namespace TFTV
 
                 if (MPGeoEventChoices == null)
                 {
-                    //  TFTVLogger.Always($"saving all Choices to internal list, count is {geoMarketplace.MarketplaceChoices.Count}");
+                    // TFTVLogger.Always($"saving all Choices to internal list, count is {geoMarketplace.MarketplaceChoices.Count}");
                     MPGeoEventChoices = geoMarketplace.MarketplaceChoices;
                 }
                 else
                 {
-                    //  TFTVLogger.Always($"passing all Choices from internal list, count {MPGeoEventChoices.Count}, to proper list, count {geoMarketplace.MarketplaceChoices.Count}");
+                     // TFTVLogger.Always($"passing all Choices from internal list, count {MPGeoEventChoices.Count}, to proper list, count {geoMarketplace.MarketplaceChoices.Count}");
                     propertyInfoMarketPlaceChoicesGeoEventChoice?.SetValue(geoMarketplace, MPGeoEventChoices);
 
                 }
@@ -517,13 +465,13 @@ namespace TFTV
                 {
                     if (filter == 1)
                     {
-                        //  TFTVLogger.Always($"There are {geoMarketplace.MarketplaceChoices.Count} choices");
+                         // TFTVLogger.Always($"There are {geoMarketplace.MarketplaceChoices.Count} choices");
 
                         for (int i = 0; i < geoMarketplace.MarketplaceChoices.Count; i++)
                         {
                             if (CheckIfMarketChoiceVehicle(geoMarketplace.MarketplaceChoices[i]))
                             {
-                                // TFTVLogger.Always($"the vehicle equipment choice number {i} is {geoMarketplace.MarketplaceChoices[i].Outcome.Items[0].ItemDef.name}");
+                                //TFTVLogger.Always($"the vehicle equipment choice number {i} is {geoMarketplace.MarketplaceChoices[i].Outcome.Items[0].ItemDef.name}");
                                 choicesToShow.Add(geoMarketplace.MarketplaceChoices[i]);
                             }
                         }
@@ -577,8 +525,8 @@ namespace TFTV
                 GeoMarketplace geoMarketplace = GameUtl.CurrentLevel().GetComponent<GeoLevelController>().Marketplace;
                 UIModuleTheMarketplace marketplaceUI = GameUtl.CurrentLevel().GetComponent<GeoLevelController>().View.GeoscapeModules.TheMarketplaceModule;
                 FieldInfo fieldInfoVisibleElementsInt = typeof(VirtualScrollRect).GetField("_visibleElements", BindingFlags.NonPublic | BindingFlags.Instance);
-
-                //   MethodInfo methodInfoPopulateElements = typeof(VirtualScrollRect).GetMethod("PopulateElements", BindingFlags.NonPublic | BindingFlags.Instance);
+                FieldInfo fieldInfoGeoEventGeoscapeEvent = typeof(UIModuleTheMarketplace).GetField("_geoEvent", BindingFlags.NonPublic | BindingFlags.Instance);             
+                MethodInfo methodInfoUpdateList = typeof(UIModuleTheMarketplace).GetMethod("UpdateList", BindingFlags.NonPublic | BindingFlags.Instance);
 
                 //  FieldInfo fieldInfoElementsComponentArray = typeof(VirtualScrollRect).GetField("_elements", BindingFlags.NonPublic | BindingFlags.Instance);
 
@@ -611,47 +559,8 @@ namespace TFTV
                 marketplaceUI.ListScrollRect.ScrollToElement(0);
                 FilterMarketPlaceOptions(geoMarketplace, filter);
 
-                int visibleElements = (int)fieldInfoVisibleElementsInt.GetValue(marketplaceUI.ListScrollRect);
-                int selectionChoices = geoMarketplace.MarketplaceChoices.Count();
-
-                //  TFTVLogger.Always($"Checking after filtering: {visibleElements} visible elements  vs {selectionChoices} elements in selection");
-
-                if (visibleElements > selectionChoices)
-                {
-                    fieldInfoVisibleElementsInt.SetValue(marketplaceUI.ListScrollRect, selectionChoices);
-                }
-                else if (selectionChoices > visibleElements && visibleElements < 7)
-                {
-                    fieldInfoVisibleElementsInt.SetValue(marketplaceUI.ListScrollRect, Math.Min(selectionChoices, 7));
-
-                }
-
-                //   TFTVLogger.Always($"Checking after filtering and after manually setting the field: : {visibleElements} visible elements  vs {selectionChoices} elements in selection");
-                /*      marketplaceUI.ListScrollRect.Clear();
-                      bool forceRefresh = true;
-
-                      methodInfoPopulateElements.Invoke(marketplaceUI.ListScrollRect, new object[] { forceRefresh });*/
-
-
-                marketplaceUI.ListScrollRect.RefreshContents(true);
-
-
-                //   TFTVLogger.Always($"total _totalNumElements: {marketplaceUI.ListScrollRect.TotalRows}");
-
-
-                /* Component[] elements = (Component[])fieldInfoElementsComponentArray.GetValue(marketplaceUI.ListScrollRect);
-
-                 List<Component> adjustedElementsList = new List<Component>(elements.ToList());
-
-                 TFTVLogger.Always($"elements count: {adjustedElementsList.Count}");
-
-                 adjustedElementsList.RemoveLast();
-
-                 fieldInfoElementsComponentArray.SetValue(marketplaceUI.ListScrollRect, adjustedElementsList.ToArray());*/
-
-
-
-                //   TFTVLogger.Always($"Checking after refreshing contents:: {visibleElements} visible elements  vs {selectionChoices} elements in selection");
+                methodInfoUpdateList.Invoke(marketplaceUI, new object[] { fieldInfoGeoEventGeoscapeEvent.GetValue(marketplaceUI) });
+              
 
             }
             catch (Exception e)
@@ -661,28 +570,7 @@ namespace TFTV
         }
 
 
-        /*  [HarmonyPatch(typeof(VirtualScrollRect), "RefreshContents")]
-           public static class VirtualScrollRect_PopulateElements_patch
-           {
-
-               public static void Prefix(VirtualScrollRect __instance, bool forceRefresh)
-               {
-                   try
-                   {
-                       TFTVLogger.Always($"running RefreshContents, forceRefresh is {forceRefresh}");
-
-
-                   }
-                   catch (Exception e)
-                   {
-                       TFTVLogger.Error(e);
-                   }
-               }
-           }*/
-
-
-
-
+     
 
         public static void ForceMarketPlaceUpdate()
         {
@@ -861,7 +749,7 @@ namespace TFTV
                     __instance.MarketplaceChoices.Clear();
                     UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
 
-                    int num = 26;
+                    int num = 31;
 
                     List<GeoMarketplaceOptionDef> currentlyPossibleOptions = ____settings.PossibleOptions.ToList();
                     List<ResearchDef> researchOffers = new List<ResearchDef>();
