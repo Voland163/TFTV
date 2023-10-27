@@ -1,5 +1,6 @@
 using Assets.Code.PhoenixPoint.Geoscape.Entities.Sites.TheMarketplace;
 using Base.Defs;
+using Base.Entities.Abilities;
 using Base.UI;
 using HarmonyLib;
 using PhoenixPoint.Common.Entities.Addons;
@@ -8,6 +9,7 @@ using PhoenixPoint.Common.Entities.Items;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.DamageKeywords;
+using PhoenixPoint.Tactical.Entities.Effects.DamageTypes;
 using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.Entities.Weapons;
 using PhoenixPoint.Tactical.Eventus;
@@ -28,11 +30,10 @@ namespace TFTVVehicleRework.KaosBuggy
             {KSWeapons.Vishnu, (GroundVehicleModuleDef)Repo.GetDef("0a2e541a-8501-a894-9b6a-fc1e229d8979")} //"KS_Buggy_The_Vishnu_Gun_GroundVehicleModuleDef"
         };
         
-        //"NE_AssaultRifle_WeaponDef"
-        internal static WeaponDef Yat = (WeaponDef)Repo.GetDef("8f49ef31-b08a-1634-59d1-e21183d444ca");
         
-        //"ShootShot_EventDef"
-        internal static TacticalEventDef ShootShotEvent = (TacticalEventDef)Repo.GetDef("fdb197bf-f1f4-b1e4-9be5-c455b8ec8caf");
+        private static readonly TacticalEventDef ShootShotEvent = (TacticalEventDef)Repo.GetDef("fdb197bf-f1f4-b1e4-9be5-c455b8ec8caf"); //"ShootShot_EventDef"
+        private static readonly WeaponDef Yat = (WeaponDef)Repo.GetDef("8f49ef31-b08a-1634-59d1-e21183d444ca"); //"NE_AssaultRifle_WeaponDef"
+        private static readonly ShootAbilityDef LaunchGrenade = (ShootAbilityDef)Repo.GetDef("81fbb5db-1b12-b8f4-998e-6591f0771a2d"); //LaunchGrenade_ShootAbilityDef
         internal enum HullModules {Front, Back, Left, Right, Top, LFT, RFT, BT}
 
         internal static readonly Dictionary<HullModules, TacticalItemDef> DefaultHull = new Dictionary<HullModules, TacticalItemDef>
@@ -73,25 +74,42 @@ namespace TFTVVehicleRework.KaosBuggy
                 Minigun.DamagePayload.DamageKeywords.Find(dkp => dkp.DamageKeywordDef == keywords.DamageKeyword).Value = 35;
                 Minigun.DamagePayload.DamageKeywords.Find(dkp => dkp.DamageKeywordDef == keywords.ShreddingKeyword).Value = 2;
                 Minigun.DamagePayload.AutoFireShotCount = 10;
-                Minigun.SpreadDegrees = (41f/19); //= 19 effective range; ER = 41/Spread
+                Minigun.SpreadDegrees = (40.99f/19f); //= 19 effective range; ER = 41/Spread
                 switch(Module)
                 {
                     case KSWeapons.Fullstop:
                         BuggyGuns[Module].ViewElementDef.Description = new LocalizedTextBind("UI_JUNKER_GOOGUN");
                         WeaponDef GooGun = (WeaponDef)BuggyGuns[Module].SubAddons[1].SubAddon; 
-                        // GooGun.ViewElementDef.DisplayName1 = new LocalizedTextBind("Sticky", true);
-                        GooGun.ChargesMax = 4;
+                        GooGun.ChargesMax = 6;
+                        GooGun.Abilities = new AbilityDef[]
+                        {
+                            LaunchGrenade
+                        };
+                        GooGun.DamagePayload.DamageKeywords.Add(new DamageKeywordPair{DamageKeywordDef = keywords.BlastKeyword, Value = 10f});
+                        GooGun.DamagePayload.DamageKeywords.Add(new DamageKeywordPair{DamageKeywordDef = keywords.AcidKeyword, Value = 20f});
                         break;
                     case KSWeapons.Screamer:
                         BuggyGuns[Module].ViewElementDef.Description = new LocalizedTextBind("UI_JUNKER_SCREAMER");
+                        WeaponDef Screamer = (WeaponDef)BuggyGuns[Module].SubAddons[1].SubAddon;
+                        Screamer.ChargesMax = 6;
+                        Screamer.DamagePayload.DamageDeliveryType = DamageDeliveryType.Sphere;
+                        Screamer.DamagePayload.ParabolaHeightToLengthRatio = 0;
+                        Screamer.DamagePayload.AoeRadius = 1.5f;
+                        Change_ScreamerSceneView();
                         break;
                     case KSWeapons.Vishnu:
                         BuggyGuns[Module].ViewElementDef.Description = new LocalizedTextBind("UI_JUNKER_TITAN");
                         WeaponDef TitanGL = (WeaponDef)BuggyGuns[Module].SubAddons[1].SubAddon;
                         TitanGL.APToUsePerc = 50;
+                        TitanGL.Abilities = new AbilityDef[]
+                        {
+                            LaunchGrenade
+                        };
                         TitanGL.DamagePayload.DamageKeywords.Find(dkp => dkp.DamageKeywordDef == keywords.BlastKeyword).Value = 50;
+                        TitanGL.DamagePayload.AoeRadius = 2.5f;
+                        TitanGL.DamagePayload.Range = 24f;
                         break;
-                    default: //Catches Screamer and anything unexpected
+                    default: //Catches anything unexpected
                         break;
                 }
             }
@@ -186,6 +204,14 @@ namespace TFTVVehicleRework.KaosBuggy
             
             //Setting to true means that armour is overridden by higher layers
             BW.DontStackArmorAndHealth = LFW.DontStackArmorAndHealth = RFW.DontStackArmorAndHealth = true;
+        }
+        
+        private static void Change_ScreamerSceneView()
+        {
+            //"E_Element0 [KS_Buggy_Screamer_WeaponDef]"
+            ShootAbilityDef ScreamerShooting = (ShootAbilityDef)Repo.GetDef("e2dc5d29-f46b-ef62-f6bc-d8c15c42fa28");
+            ScreamerShooting.SceneViewElementDef = LaunchGrenade.SceneViewElementDef;
+            ScreamerShooting.UpdatePrediction = true;
         }
     }
 }
