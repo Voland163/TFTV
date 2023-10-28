@@ -229,7 +229,7 @@ namespace TFTV
                 {
                     TFTVBaseDefenseTactical.InitDeployZonesForBaseDefenseVsAliens(__instance.TacticalLevel);
                     TFTVPalaceMission.InitDeployZonesForPalaceMission(__instance.TacticalLevel);
-                    TFTVExperimental.SavingHelenaDeploymentZoneSetup(__instance.TacticalLevel);
+                 //   TFTVExperimental.SavingHelenaDeploymentZoneSetup(__instance.TacticalLevel);
 
                 }
                 catch (Exception e)

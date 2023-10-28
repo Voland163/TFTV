@@ -157,6 +157,7 @@
     <Compile Include="TFTVDiplomacyPenalties.cs" />
     <Compile Include="TFTVFire.cs" />
     <Compile Include="TFTVGoo.cs" />
+    <Compile Include="TFTVHarmonyGeoscape.cs" />
     <Compile Include="TFTVHarmonyGeoscapeUI.cs" />
     <Compile Include="TFTVHarmonyTactical.cs" />
     <Compile Include="TFTVHarmonyTacticalUI.cs" />
@@ -193,6 +194,7 @@
     <Compile Include="TFTVTutorialAndStory.cs" />
     <Compile Include="TFTVUI.cs" />
     <Compile Include="TFTVUIGeoMap.cs" />
+    <Compile Include="TFTVUITactical.cs" />
     <Compile Include="TFTVUmbra.cs" />
     <Compile Include="TFTVVanillaFixes.cs" />
     <Compile Include="TFTVVehicleInventory.cs" />

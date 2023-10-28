@@ -215,6 +215,9 @@ namespace TFTV
         //NEU_Sniper_Torso_BodyPartDef
         //NEU_Sniper_Legs_ItemDef
 
+
+    
+
         private static void CreateConvinceCivilianStatus()
         {
             try
@@ -524,9 +527,12 @@ namespace TFTV
                 rescueHelenaMisson.CustomObjectives[1] = CreateNewActivateConsoleObjective("ConvinceCivilianObjectiveHelena", "{AC2A9633-6D6F-4261-8315-06899D4A47BF}", "{6E492142-7500-4C71-B6E2-0B16BF2C4AE6}", "KEY_OBJECTIVE_CONVINCE_HELENA");
 
                 //Add inifinite reinforcements to Helena
-                rescueHelenaMisson.ParticipantsData[0].InfiniteReinforcements = true;
-                rescueHelenaMisson.ParticipantsData[0].ReinforcementsTurns = new RangeDataInt() { Min =0, Max =1 };
-                rescueHelenaMisson.ParticipantsData[0].ReinforcementsDeploymentPart = new RangeData() { Min = 0.1f, Max = 0.1f };
+                rescueHelenaMisson.ParticipantsData[1].InfiniteReinforcements = true;
+                rescueHelenaMisson.ParticipantsData[1].ReinforcementsTurns = new RangeDataInt() { Min =0, Max =1 };
+                rescueHelenaMisson.ParticipantsData[1].ReinforcementsDeploymentPart = new RangeData() { Min = 0.1f, Max = 0.1f };
+             rescueHelenaMisson.DontRecoverItems = true;
+
+
 
             }
 

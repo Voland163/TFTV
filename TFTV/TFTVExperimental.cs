@@ -17,8 +17,9 @@ using PhoenixPoint.Common.Levels.MapGeneration;
 using PhoenixPoint.Common.Levels.Missions;
 using PhoenixPoint.Common.Saves;
 using PhoenixPoint.Common.View.ViewControllers.Inventory;
-using PhoenixPoint.Common.View.ViewModules;
 using PhoenixPoint.Geoscape.Entities;
+using PhoenixPoint.Geoscape.Events;
+using PhoenixPoint.Geoscape.Events.Eventus;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
 using PhoenixPoint.Tactical.Entities;
@@ -31,11 +32,14 @@ using PhoenixPoint.Tactical.Entities.Weapons;
 using PhoenixPoint.Tactical.Levels;
 using PhoenixPoint.Tactical.Levels.ActorDeployment;
 using PhoenixPoint.Tactical.Levels.FactionObjectives;
+using PhoenixPoint.Tactical.View.ViewModules;
+using PhoenixPoint.Tactical.View.ViewStates;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
+using UnityEngine.UI;
 using static PhoenixPoint.Geoscape.Entities.GeoHaven;
 
 namespace TFTV
@@ -50,34 +54,46 @@ namespace TFTV
 
         public static Dictionary<int, int> AttackedLairSites;
 
-        [HarmonyPatch(typeof(GeoMission), "TryReloadItem")]
-        public static class GeoMission_TryReloadItem_patch
-        {
+       
 
-            public static bool Prefix(GeoMission __instance, GeoItem item, ItemStorage storage, string storageName)
+
+       
+
+
+
+
+
+
+      
+
+        [HarmonyPatch(typeof(ItemDef), "get_ScrapPrice")]
+        public static class ItemDef_get_ScrapPrice_patch
+        {
+            public static void Postfix(ItemDef __instance, ref ResourcePack __result, ResourcePack ____scrapPrice)
             {
                 try
                 {
-                    // TFTVLogger.Always($"{item} storage {storage} storageName {storageName}");
 
-                    WeaponDef Obliterator = DefCache.GetDef<WeaponDef>("KS_Obliterator_WeaponDef");
-                    WeaponDef Subjector = DefCache.GetDef<WeaponDef>("KS_Subjector_WeaponDef");
-                    WeaponDef Redemptor = DefCache.GetDef<WeaponDef>("KS_Redemptor_WeaponDef");
-                    WeaponDef Devastator = DefCache.GetDef<WeaponDef>("KS_Devastator_WeaponDef");
-                    WeaponDef Tormentor = DefCache.GetDef<WeaponDef>("KS_Tormentor_WeaponDef");
-
-                    List<WeaponDef> kaosGuns = new List<WeaponDef>() { Obliterator, Subjector, Redemptor, Devastator, Tormentor };
-
-
-                    if (kaosGuns.Contains(item.ItemDef) && item.CommonItemData.Ammo == null)
+                    if (__instance.Tags.Contains(Shared.SharedGameTags.AmmoTag))
                     {
+                        TacticalItemDef tacticalItemDef = __instance as TacticalItemDef;
 
-                        TFTVLogger.Always($"trying to reload an old {item} that doesn't have compatible ammo! Canceling reload to avoid softlock");
+                        WeaponDef weaponDef = (WeaponDef)AmmoWeaponDatabase.AmmoToWeaponDictionary[tacticalItemDef][0];
 
-                        return false;
+                        float costMultiplier = Math.Max(weaponDef.DamagePayload.AutoFireShotCount, 2);
+                        __result = new ResourcePack(new ResourceUnit[]
+                             {
+                        new ResourceUnit(ResourceType.Tech, Mathf.Floor(__instance.ManufactureTech / costMultiplier)),
+                        new ResourceUnit(ResourceType.Materials, Mathf.Floor(__instance.ManufactureMaterials / costMultiplier)),
+                        new ResourceUnit(ResourceType.Mutagen, Mathf.Floor(__instance.ManufactureMutagen / costMultiplier)),
+                        new ResourceUnit(ResourceType.LivingCrystals, Mathf.Floor(__instance.ManufactureLivingCrystals / costMultiplier)),
+                        new ResourceUnit(ResourceType.Orichalcum, Mathf.Floor(__instance.ManufactureOricalcum / costMultiplier)),
+                        new ResourceUnit(ResourceType.ProteanMutane, Mathf.Floor(__instance.ManufactureProteanMutane / costMultiplier))
+                             });
+
 
                     }
-                    return true;
+
 
                 }
                 catch (Exception e)
@@ -88,48 +104,7 @@ namespace TFTV
             }
         }
 
-        public static void GetPartialMagazinesInfo()
-        {
-            try
-            {
-                UIModuleSoldierEquip soldierEquipModule = GameUtl.CurrentLevel().GetComponent<GeoLevelController>().View.GeoscapeModules.SoldierEquipModule;
-                TFTVLogger.Always($"looking for partial magazines, storage used:  {soldierEquipModule.StorageList.PartialMagazines.GetStorageUsed()}," +
-                    $"item count: {soldierEquipModule.StorageList.PartialMagazines.Items.Count}");
 
-
-
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-                throw;
-            }
-
-
-
-        }
-
-
-
-
-        [HarmonyPatch(typeof(UIInventoryList), "SetItems")]
-        public static class UIInventoryList_SetItems_patch
-        {
-            public static void Prefix(UIInventoryList __instance)
-            {
-                try
-                {
-                    //   TFTVLogger.Always($"running SetItems and setting shouldhidePartialMagazinestofalse");
-
-                    __instance.ShouldHidePartialMagazines = false;
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                    throw;
-                }
-            }
-        }
 
         //Code provided by Codemite
         [HarmonyPatch(typeof(UIInventorySlot), "UpdateItem")]
@@ -139,98 +114,6 @@ namespace TFTV
             {
                 try
                 {
-                    /*
-
-                    __instance.HideAllImages();
-                    __instance.Sounds.enabled = ____item != null;
-                    if (____item != null)
-                    {
-                        __instance.ImageNode.gameObject.SetActive(value: true);
-                        __instance.ImageNode.sprite = ____item.ItemDef.ViewElementDef.InventoryIcon;
-                        __instance.FactionOutlineNode.gameObject.SetActive(value: true);
-                        __instance.FactionOutlineNode.sprite = ____item.ItemDef.ViewElementDef.InventoryIcon;
-                        __instance.Highlight.gameObject.SetActive(value: true);
-                        FactionTagDef factionTagDef = ____item.ItemDef.Tags.OfType<FactionTagDef>().FirstOrDefault((FactionTagDef s) => (object)s != null);
-                        Color color = ((!(factionTagDef == null)) ? GeoFactionDef.GetFactionByTag(factionTagDef).GeoFactionViewDef.FactionColor : Color.white);
-                        __instance.FactionOutlineNode.color = color;
-                        TacticalItemDef tacticalItemDef = ____item.ItemDef as TacticalItemDef;
-                      
-                        
-                        if (tacticalItemDef != null && tacticalItemDef.CompatibleAmmunition.Any())
-                        {
-                            __instance.AmmoImageNode.sprite = tacticalItemDef.CompatibleAmmunition[0].ViewElementDef.SmallIcon;
-                            __instance.EmptyAmmoImageNode.sprite = tacticalItemDef.CompatibleAmmunition[0].ViewElementDef.SmallIcon;
-                            Vector3 localScale = __instance.EmptyAmmoScaleNode.transform.localScale;
-                            localScale.y = 1f;
-                            if (__instance.Item.ItemDef.ChargesMax > 0)
-                            {
-                                localScale.y = 1f - Mathf.Clamp((float)____item.CommonItemData.CurrentCharges / (float)__instance.Item.ItemDef.ChargesMax, 0f, 1f);
-                            }
-
-                            __instance.EmptyAmmoScaleNode.transform.localScale = localScale;
-                            __instance.AmmoImageNode.gameObject.SetActive(value: true);
-                            __instance.EmptyAmmoImageNode.gameObject.SetActive(value: true);
-                        }
-                        else if (tacticalItemDef != null && AmmoWeaponDatabase.AmmoToWeaponDictionary.ContainsKey(tacticalItemDef))
-                        {
-                          //  TFTVLogger.Always($"does ammoweapondatabase dictionary contain {tacticalItemDef.name} ammo? {AmmoWeaponDatabase.AmmoToWeaponDictionary.ContainsKey(tacticalItemDef)}?");
-                            //  TFTVLogger.Always($"got into the else if check for {____item}");
-
-                            TacticalItemDef tacticalItemDef2 = AmmoWeaponDatabase.AmmoToWeaponDictionary[tacticalItemDef][0];
-                            __instance.AmmoImageNode.sprite = tacticalItemDef2.ViewElementDef.SmallIcon;
-                            __instance.EmptyAmmoImageNode.sprite = __instance.AmmoImageNode.sprite;
-                            Vector3 localScale2 = __instance.EmptyAmmoScaleNode.transform.localScale;
-                            localScale2.y = 0f;
-                          
-                            if (__instance.Item.ItemDef.ChargesMax > 0)
-                            {
-                               // TFTVLogger.Always($"got past chargesmax check for {____item}");
-                                localScale2.y = 1 - Mathf.Clamp(((float)____item.CommonItemData.CurrentCharges) / ((float)__instance.Item.ItemDef.ChargesMax), 0, 1);
-                            }
-
-
-                            __instance.EmptyAmmoScaleNode.transform.localScale = localScale2;
-                            __instance.AmmoImageNode.gameObject.SetActive(true);
-                            __instance.EmptyAmmoImageNode.gameObject.SetActive(true);
-                        }
-
-
-
-                        float a = 1f;
-                        if (__instance.ParentList != null)
-                        {
-                            a = __instance.ParentList.ParentModule.ModuleData.PrimarySoldierData.GetEquippedItemHealth(____item.ItemDef);
-                        }
-
-                        if (Utl.Equals(a, 0f))
-                        {
-                            __instance.ImageNode.material = __instance.BrokenMaterial;
-                            __instance.FactionOutlineNode.material = __instance.BrokenMaterial;
-                        }
-                        else
-                        {
-                            __instance.ImageNode.material = null;
-                            __instance.FactionOutlineNode.material = null;
-                        }
-                    }
-                    MethodInfo isVehicleEquipmemtMethod = AccessTools.Method(typeof(UIInventorySlot), "IsVehicleEquipment");
-
-
-                    if (____item == null || (bool)isVehicleEquipmemtMethod.Invoke(__instance, new object[] { ____item }))
-                    {
-                        __instance.AmmoImageNode.gameObject.SetActive(value: false);
-                        __instance.EmptyAmmoImageNode.gameObject.SetActive(value: false);
-                    }
-
-                    if (__instance.Animator?.isActiveAndEnabled ?? false)
-                    {
-                        __instance.Animator?.SetBool("Empty", __instance.Empty);
-                    }
-
-
-                  //  __instance.NumericBackground.gameObject.SetActive(value: true);
-                  //  __instance.NumericField.text = ____item.CommonItemData.Count.ToString();
-                  */
                     if (____item == null || ____item.CommonItemData.Count == 1 && (____item.CommonItemData.CurrentCharges == ____item.ItemDef.ChargesMax || ____item.CommonItemData.CurrentCharges == 0))
                     {
                         __instance.NumericBackground.gameObject.SetActive(false);
@@ -245,19 +128,28 @@ namespace TFTV
                         }
                         else
                         {
-                            string ammoCount;
+                            string ammoCount = $"{____item.CommonItemData.CurrentCharges}/{____item.ItemDef.ChargesMax}";
+                            string textToShow;
+                            string greyColor = "<color=#b6b6b6>";
 
                             if (____item.CommonItemData.Count - 1 == 0)
                             {
-                                ammoCount = $"<color=#b6b6b6>(1) {____item.CommonItemData.CurrentCharges}/{____item.ItemDef.ChargesMax}</color>";
+                                if (____item.ItemDef.Tags.Contains(Shared.SharedGameTags.AmmoTag))
+                                {
+                                    textToShow = $"{greyColor}(1) {ammoCount}</color>";
+                                }
+                                else
+                                {
+                                    textToShow = $"{greyColor} {ammoCount}</color>";
+                                }
                             }
                             else
                             {
 
-                                ammoCount = $"{____item.CommonItemData.Count - 1} <color=#b6b6b6>+ {____item.CommonItemData.CurrentCharges}/{____item.ItemDef.ChargesMax}</color>";
+                                textToShow = $"{____item.CommonItemData.Count - 1} {greyColor}+ {____item.CommonItemData.CurrentCharges}/{____item.ItemDef.ChargesMax}</color>";
                             }
 
-                            __instance.NumericField.text = ammoCount;
+                            __instance.NumericField.text = textToShow;
                             __instance.NumericField.alignment = TextAnchor.MiddleLeft;
                         }
                     }
@@ -270,42 +162,6 @@ namespace TFTV
                     throw;
                 }
             }
-        }
-
-        public static void SavingHelenaDeploymentZoneSetup(TacticalLevelController controller)
-        {
-            try 
-            {
-                CustomMissionTypeDef rescueHelenaMisson = DefCache.GetDef<CustomMissionTypeDef>("StoryLE0_CustomMissionTypeDef");
-
-                if (controller.TacMission.MissionData.MissionType == rescueHelenaMisson) 
-                {
-                    List<TacticalDeployZone> reinforcementZones = controller.Map.GetActors<TacticalDeployZone>().Where(tdz => tdz.name.Contains("Reinforcement_Intruder_")).ToList();
-
-                    foreach(TacticalDeployZone tacticalDeployZone in reinforcementZones) 
-                    {
-
-                        tacticalDeployZone.SetFaction(controller.GetFactionByCommandName("NJ"), TacMissionParticipant.Residents);
-                        TFTVLogger.Always($"Saving Helena adjusting TDZ: {tacticalDeployZone.name} {tacticalDeployZone.Pos}");
-                    
-                    }
-
-
-
-                }
-            
-            
-            
-            
-            }
-
-
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-                throw;
-            }
-
         }
 
         public static void CheckBCR5Mission(TacticalLevelController controller)
@@ -437,14 +293,15 @@ namespace TFTV
 
                 List<Vector3> vector3s = new List<Vector3>()
                 {
+                    new Vector3(-1f, 0.0f, -1f) +position,
+                     new Vector3(1f, 0.0f, -1f) +position,
+                      new Vector3(-1f, 0.0f, 1f) +position,
+                       new Vector3(1f, 0.0f, 1f) +position,
+                       new Vector3(0.0f, 0.0f, -1f) +position,
+                          new Vector3(0.0f, 0.0f, 1f) +position,
+                          new Vector3(-1f, 0.0f, 0.0f) +position,
                 new Vector3(1f, 0.0f, 0.0f) +position,
-                 new Vector3(-1f, 0.0f, 0.0f) +position,
-                  new Vector3(0.0f, 0.0f, 1f) +position,
-                  new Vector3(0.0f, 0.0f, -1f) +position,
-                  new Vector3(1f, 0.0f, 1f) +position,
-                  new Vector3(-1f, 0.0f, 1f) +position,
-                  new Vector3(1f, 0.0f, -1f) +position,
-                  new Vector3(-1f, 0.0f, -1f) +position,
+
                 };
 
 

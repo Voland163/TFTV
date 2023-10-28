@@ -66,6 +66,7 @@ namespace TFTV
         public static bool LimitedHarvestingSetting;
         public static bool StrongerPandoransSetting;
         public static bool ImpossibleWeaponsAdjustmentsSetting;
+        public static bool NoSecondChances;
 
         public static int initialScavSites = 8; // 16 on Vanilla
 

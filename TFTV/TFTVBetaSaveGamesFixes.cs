@@ -15,6 +15,7 @@ using PhoenixPoint.Geoscape.Events;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
 using PhoenixPoint.Tactical.Entities.Equipments;
+using PhoenixPoint.Tactical.Entities.Weapons;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -28,10 +29,47 @@ namespace TFTV
     {
        // public static bool LOTAapplied = false;
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
-       // public static bool LOTAReworkGlobalCheck = false;
+        // public static bool LOTAReworkGlobalCheck = false;
 
 
 
+        [HarmonyPatch(typeof(GeoMission), "TryReloadItem")]
+        public static class GeoMission_TryReloadItem_patch
+        {
+
+            public static bool Prefix(GeoMission __instance, GeoItem item, ItemStorage storage, string storageName)
+            {
+                try
+                {
+                    // TFTVLogger.Always($"{item} storage {storage} storageName {storageName}");
+
+                    WeaponDef Obliterator = DefCache.GetDef<WeaponDef>("KS_Obliterator_WeaponDef");
+                    WeaponDef Subjector = DefCache.GetDef<WeaponDef>("KS_Subjector_WeaponDef");
+                    WeaponDef Redemptor = DefCache.GetDef<WeaponDef>("KS_Redemptor_WeaponDef");
+                    WeaponDef Devastator = DefCache.GetDef<WeaponDef>("KS_Devastator_WeaponDef");
+                    WeaponDef Tormentor = DefCache.GetDef<WeaponDef>("KS_Tormentor_WeaponDef");
+
+                    List<WeaponDef> kaosGuns = new List<WeaponDef>() { Obliterator, Subjector, Redemptor, Devastator, Tormentor };
+
+
+                    if (kaosGuns.Contains(item.ItemDef) && item.CommonItemData.Ammo == null)
+                    {
+
+                        TFTVLogger.Always($"trying to reload an old {item} that doesn't have compatible ammo! Canceling reload to avoid softlock");
+
+                        return false;
+
+                    }
+                    return true;
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
 
         public static void CheckScyllaCaptureTechResearch(GeoLevelController controller) 
         {

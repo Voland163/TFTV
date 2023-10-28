@@ -53,6 +53,7 @@ namespace TFTV
         public bool LimitedHarvestingSettingInstance;
         public bool StrongerPandoransSettingInstance;
         public bool ImpossibleWeaponsAdjustmentsSettingInstance;
+        public bool NoSecondChances;
 
         public bool Update35GeoscapeCheck;
 
@@ -208,6 +209,7 @@ namespace TFTV
                 LimitedHarvestingSettingInstance = TFTVNewGameOptions.LimitedHarvestingSetting,
                 StrongerPandoransSettingInstance = TFTVNewGameOptions.StrongerPandoransSetting,
                 ImpossibleWeaponsAdjustmentsSettingInstance = TFTVNewGameOptions.ImpossibleWeaponsAdjustmentsSetting,
+                NoSecondChances = TFTVNewGameOptions.NoSecondChances,
 
                 Update35GeoscapeCheck = TFTVNewGameOptions.Update35Check,
 
@@ -277,6 +279,7 @@ namespace TFTV
                 TFTVNewGameOptions.LimitedHarvestingSetting = data.LimitedHarvestingSettingInstance;
                 TFTVNewGameOptions.StrongerPandoransSetting = data.StrongerPandoransSettingInstance;
                 TFTVNewGameOptions.ImpossibleWeaponsAdjustmentsSetting = data.ImpossibleWeaponsAdjustmentsSettingInstance;
+                TFTVNewGameOptions.NoSecondChances = data.NoSecondChances;
             }
             TFTVNewGameOptions.Update35Check = data.Update35GeoscapeCheck;
 

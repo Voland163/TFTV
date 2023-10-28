@@ -6,6 +6,7 @@ using PhoenixPoint.Common.Game;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Modding;
 using PhoenixPoint.Tactical.Levels;
+using PhoenixPoint.Tactical.View.ViewModules;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -144,7 +145,7 @@ namespace TFTV
 
             TFTVExperimental.CheckBCR5Mission(Controller);
             TFTVPalaceMission.CheckPalaceMission();
-           
+            TFTVUITactical.RemoveDamagePredictionBar();
         }
 
         /// <summary>
@@ -320,8 +321,33 @@ namespace TFTV
                     TFTVUmbra.SpawnUmbra(Controller);
                     TFTVHumanEnemies.ChampRecoverWPAura(Controller);
                     TFTVSpecialDifficulties.CounterSpawned = 0;
-                   // TFTVHumanEnemies.ApplyTactic(Controller);
+                    // TFTVHumanEnemies.ApplyTactic(Controller);
+                  //  UIModuleShootTargetHealthbar uIModuleShootTargetHealthbar = GameUtl.CurrentLevel().GetComponent<TacticalLevelController>().View.TacticalModules.ShootTargetHealthBar;
+                    
+                   /* foreach (Transform transform in uIModuleShootTargetHealthbar.GetComponentInChildren<Transform>())
+                    {
+                        TFTVLogger.Always($"{transform.name} level 0");
+                        foreach (Transform transform1 in transform.GetComponentInChildren<Transform>())
+                        {
+                            TFTVLogger.Always($"{transform1.name} level 1");
+                            foreach (Transform transform2 in transform1.GetComponentInChildren<Transform>())
+                            {
+                                TFTVLogger.Always($"{transform2.name} level 2");
+                               
+                                
+                                foreach (Transform transform3 in transform2.GetComponentInChildren<Transform>())
+                                {
+                                    TFTVLogger.Always($"{transform3.name} level 3");
+                                   
+                                 
 
+                                }
+
+                            }
+
+                        }
+
+                    }*/
 
                 }
 

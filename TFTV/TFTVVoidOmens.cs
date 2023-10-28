@@ -403,10 +403,20 @@ namespace TFTV
                 }
                 else if (!CheckFordVoidOmensInPlay(level).Contains(13) && VoidOmensCheck[13])
                 {
-                    level.CurrentDifficultyLevel.NestLimitations.HoursBuildTime = 90;
-                    level.CurrentDifficultyLevel.LairLimitations.HoursBuildTime = 100;
-                    level.CurrentDifficultyLevel.CitadelLimitations.HoursBuildTime = 180;
+                    if (level.CurrentDifficultyLevel.Order > 5)
+                    {
+                        level.CurrentDifficultyLevel.NestLimitations.HoursBuildTime = 73;
+                        level.CurrentDifficultyLevel.LairLimitations.HoursBuildTime = 80;
+                        level.CurrentDifficultyLevel.CitadelLimitations.HoursBuildTime = 144;
 
+                    }
+                    else
+                    {
+
+                        level.CurrentDifficultyLevel.NestLimitations.HoursBuildTime = 90;
+                        level.CurrentDifficultyLevel.LairLimitations.HoursBuildTime = 100;
+                        level.CurrentDifficultyLevel.CitadelLimitations.HoursBuildTime = 180;
+                    }
                     VoidOmensCheck[13] = false;
 
                     TFTVLogger.Always("The check for VO#13 went ok" + " so Pandoran nests take " + level.CurrentDifficultyLevel.NestLimitations.HoursBuildTime + " hours");
