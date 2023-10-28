@@ -139,11 +139,12 @@ namespace TFTV
 
             //  TFTVBaseDefenseTactical.ModifyObjectives(Controller);
             TFTVLogger.Always($"Mission: {Controller.TacMission.MissionData.MissionType.name}");
-           // TFTVTacticalUtils.RevealAllSpawns(Controller);
-            
-           
+          //  TFTVTacticalUtils.RevealAllSpawns(Controller);
 
+
+            TFTVExperimental.CheckBCR5Mission(Controller);
             TFTVPalaceMission.CheckPalaceMission();
+           
         }
 
         /// <summary>
@@ -310,6 +311,7 @@ namespace TFTV
                         TFTVRevenant.ImplementVO19(Controller);
                         TFTVVoidOmens.VO5TurnHostileCivviesFriendly(Controller);
                         TFTVBaseDefenseTactical.GetConsoles();
+                     
                         //  TFTVBaseDefenseTactical.ModifyObjectives(Controller.TacMission.MissionData.MissionType);
                         TurnZeroMethodsExecuted = true;
                     }

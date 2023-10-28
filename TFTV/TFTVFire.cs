@@ -1,6 +1,8 @@
-﻿using Base.Defs;
+﻿using Base.Core;
+using Base.Defs;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
+using PhoenixPoint.Common.Game;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
@@ -26,7 +28,14 @@ namespace TFTV
 
         public static List<TacticalVoxel> VoxelsOnFire = new List<TacticalVoxel>();
 
-        public static void CheckUseFireWeaponsAndDifficulty(GeoLevelController controller)
+        /// <summary>
+        /// This method check on Geoscape start if the player has used fire weapons yet.
+        /// Based on roll that scales with difficulty gives special FireQuencher ability to arthrons with non-poison head.
+        /// As long as the head is not disabled, they are immune to fire and turn fire tiles that they come in contact with into Mist.
+        /// </summary>
+        /// <param name="controller"></param>
+
+        private static void CheckUseFireWeaponsAndDifficulty(GeoLevelController controller)
         {
             try
             {
@@ -34,10 +43,16 @@ namespace TFTV
                 {
                     // TFTVLogger.Always("Checking fire weapons usage to decide wether to add Fire Quenchers");
 
-                    PhoenixStatisticsManager statisticsManager = (PhoenixStatisticsManager)UnityEngine.Object.FindObjectOfType(typeof(PhoenixStatisticsManager));
+                    PhoenixStatisticsManager phoenixStatisticsManager = GameUtl.GameComponent<PhoenixGame>().GetComponent<PhoenixStatisticsManager>();
+                 
+                    if (phoenixStatisticsManager == null)
+                    {
+                        TFTVLogger.Always($"Failed to get stat manager in CheckUseFireWeaponsAndDifficulty");
+                        return;
+                    }
 
-                    List<SoldierStats> allSoldierStats = new List<SoldierStats>(statisticsManager.CurrentGameStats.LivingSoldiers.Values.ToList());
-                    allSoldierStats.AddRange(statisticsManager.CurrentGameStats.DeadSoldiers.Values.ToList());
+                    List<SoldierStats> allSoldierStats = new List<SoldierStats>(phoenixStatisticsManager.CurrentGameStats.LivingSoldiers.Values.ToList());
+                    allSoldierStats.AddRange(phoenixStatisticsManager.CurrentGameStats.DeadSoldiers.Values.ToList());
                     List<UsedWeaponStat> usedWeapons = new List<UsedWeaponStat>();
 
                     int scoreFireDamage = 0;
@@ -76,7 +91,6 @@ namespace TFTV
                         int roll = UnityEngine.Random.Range(0, 6) + TFTVReleaseOnly.DifficultyOrderConverter(controller.CurrentDifficultyLevel.Order) + scoreFireDamage;
 
                         //    TFTVLogger.Always("The roll is " + roll);
-
                         if (roll >= 10)
                         {
                             //    TFTVLogger.Always("The roll is passed!");
@@ -119,21 +133,18 @@ namespace TFTV
             }
         }
 
-        public static void AddFireQuencherAbility()
+        private static void AddFireQuencherAbility()
         {
             try
             {
                 ApplyStatusAbilityDef fireQuencherAbility = DefCache.GetDef<ApplyStatusAbilityDef>("FireQuencherAbility");
                 DamageMultiplierAbilityDef fireImmunity = DefCache.GetDef<DamageMultiplierAbilityDef>("FireImmunityInvisibleAbility");
                 List<TacticalAbilityDef> abilities = new List<TacticalAbilityDef>() { fireQuencherAbility, fireImmunity };
-                //  DefCache.GetDef<TacticalItemDef>("Crabman_Legs_Armoured_ItemDef").Abilities = abilities.ToArray();
-                //  DefCache.GetDef<TacticalItemDef>("Crabman_Legs_EliteArmoured_ItemDef").Abilities = new TacticalAbilityDef[] { fireImmunity };
-                //    DefCache.GetDef<TacCharacterDef>("Crabman9_Shielder_AlienMutationVariationDef").Data.Abilites = abilities.ToArray();
+               
 
                 DefCache.GetDef<TacticalItemDef>("Crabman_Head_Humanoid_BodyPartDef").Abilities = abilities.ToArray();
                 DefCache.GetDef<TacticalItemDef>("Crabman_Head_EliteHumanoid_BodyPartDef").Abilities = abilities.ToArray();
-                // DefCache.GetDef<TacticalItemDef>("Crabman_LeftLeg_Armoured_BodyPartDef").Abilities = abilities.ToArray();
-                //  DefCache.GetDef<TacticalItemDef>("Crabman_RightLeg_Armoured_BodyPartDef").Abilities = abilities.ToArray();
+               
             }
             catch (Exception e)
             {
@@ -142,54 +153,59 @@ namespace TFTV
 
         }
 
+        /// <summary>
+        /// This method is called every time the game checks if a character is touch some voxel (goo, fire, Mist).
+        /// If the character has the FireQuencherStatus, given by the FireQuencherAbility, surrouding voxels are recorded in a list.
+        /// </summary>
+        /// <param name="tacticalPerceptionBase"></param>
 
-
-        [HarmonyPatch(typeof(TacticalPerceptionBase), "IsTouchingVoxel")]
-
-        public static class TFTV_Experimental_Evaluate_Experiment_patch
+        public static void CheckFireQuencherTouchingFire(TacticalPerceptionBase tacticalPerceptionBase)
         {
-            public static void Postfix(TacticalPerceptionBase __instance)
+
+            try
             {
-                try
+                DamageMultiplierStatusDef fireQuencherStatus = DefCache.GetDef<DamageMultiplierStatusDef>("FireQuencherStatus");
+
+                TacticalActorBase tacticalActorBase = tacticalPerceptionBase.TacActorBase;
+
+                if (tacticalActorBase is TacticalActor && tacticalActorBase.GetActor().Status.HasStatus(fireQuencherStatus))
                 {
-                    DamageMultiplierStatusDef fireQuencherStatus = DefCache.GetDef<DamageMultiplierStatusDef>("FireQuencherStatus");
-                    //   DamageMultiplierAbilityDef fireImmunity = DefCache.GetDef<DamageMultiplierAbilityDef>("FireImmunity_DamageMultiplierAbilityDef");
-
-                    TacticalActorBase tacticalActorBase = __instance.TacActorBase;
-
-                    //
-                    if (tacticalActorBase is TacticalActor && tacticalActorBase.GetActor().Status.HasStatus(fireQuencherStatus)) //tacticalActorBase.GetActor().GetAbility<DamageMultiplierAbility>(fireImmunity)!=null 
-                                                                                                                                 // && tacticalActorBase.GetActor().HasGameTag(DefCache.GetDef<GameTagDef>("Crabman_ClassTagDef")))
+                    foreach (TacticalVoxel voxel in tacticalActorBase.TacticalLevel.VoxelMatrix.GetVoxels(tacticalPerceptionBase.GetBounds()))
                     {
-                        foreach (TacticalVoxel voxel in tacticalActorBase.TacticalLevel.VoxelMatrix.GetVoxels(__instance.GetBounds()))
+                        if (voxel.GetVoxelType() == TacticalVoxelType.Fire)
                         {
-                            if (voxel.GetVoxelType() == TacticalVoxelType.Fire)
-                            {
-                                VoxelsOnFire.Add(voxel);
-                                VoxelsOnFire.Add(tacticalActorBase.TacticalLevel.VoxelMatrix.GetVoxel(voxel.Position + new Vector3(0.5f, 0, 0.5f)));
-                                VoxelsOnFire.Add(tacticalActorBase.TacticalLevel.VoxelMatrix.GetVoxel(voxel.Position + new Vector3(-0.5f, 0, -0.5f)));
-                                VoxelsOnFire.Add(tacticalActorBase.TacticalLevel.VoxelMatrix.GetVoxel(voxel.Position + new Vector3(-0.5f, 0, 0.5f)));
-                                VoxelsOnFire.Add(tacticalActorBase.TacticalLevel.VoxelMatrix.GetVoxel(voxel.Position + new Vector3(0.5f, 0, -0.5f)));
-                                // VoxelsOnFire.Add(tacticalActorBase.TacticalLevel.VoxelMatrix.GetVoxel(voxel.Position + new Vector3(1.5f, 0, 1.5f)));
-                                //  VoxelsOnFire.Add(tacticalActorBase.TacticalLevel.VoxelMatrix.GetVoxel(voxel.Position + new Vector3(-1.5f, 0, -1.5f)));
-                                VoxelsOnFire.Add(tacticalActorBase.TacticalLevel.VoxelMatrix.GetVoxel(voxel.Position + new Vector3(1, 0, 1)));
-                                VoxelsOnFire.Add(tacticalActorBase.TacticalLevel.VoxelMatrix.GetVoxel(voxel.Position + new Vector3(-1, 0, -1)));
-                                VoxelsOnFire.Add(tacticalActorBase.TacticalLevel.VoxelMatrix.GetVoxel(voxel.Position + new Vector3(1, 0, -1)));
-                                VoxelsOnFire.Add(tacticalActorBase.TacticalLevel.VoxelMatrix.GetVoxel(voxel.Position + new Vector3(-1, 0, 1)));
-                                //  VoxelsOnFire.Add(tacticalActorBase.TacticalLevel.VoxelMatrix.GetVoxel(voxel.Position + new Vector3(1.5f, 0, 0.5f)));
-                                // VoxelsOnFire.Add(tacticalActorBase.TacticalLevel.VoxelMatrix.GetVoxel(voxel.Position + new Vector3(-1.5f, 0, -0.5f)));
-                            }
+                            VoxelsOnFire.Add(voxel);
+                            VoxelsOnFire.Add(tacticalActorBase.TacticalLevel.VoxelMatrix.GetVoxel(voxel.Position + new Vector3(0.5f, 0, 0.5f)));
+                            VoxelsOnFire.Add(tacticalActorBase.TacticalLevel.VoxelMatrix.GetVoxel(voxel.Position + new Vector3(-0.5f, 0, -0.5f)));
+                            VoxelsOnFire.Add(tacticalActorBase.TacticalLevel.VoxelMatrix.GetVoxel(voxel.Position + new Vector3(-0.5f, 0, 0.5f)));
+                            VoxelsOnFire.Add(tacticalActorBase.TacticalLevel.VoxelMatrix.GetVoxel(voxel.Position + new Vector3(0.5f, 0, -0.5f)));
+
+                            VoxelsOnFire.Add(tacticalActorBase.TacticalLevel.VoxelMatrix.GetVoxel(voxel.Position + new Vector3(1, 0, 1)));
+                            VoxelsOnFire.Add(tacticalActorBase.TacticalLevel.VoxelMatrix.GetVoxel(voxel.Position + new Vector3(-1, 0, -1)));
+                            VoxelsOnFire.Add(tacticalActorBase.TacticalLevel.VoxelMatrix.GetVoxel(voxel.Position + new Vector3(1, 0, -1)));
+                            VoxelsOnFire.Add(tacticalActorBase.TacticalLevel.VoxelMatrix.GetVoxel(voxel.Position + new Vector3(-1, 0, 1)));
+
                         }
                     }
                 }
-
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-
             }
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
         }
+
+        /// <summary>
+        /// This method is called every time an ability finishes executing.
+        /// It checks if the VoxelsOnFire list has any voxels in it and if the voxel has fire on it,
+        /// 1) in a first loop removes fire from all the voxels that have it, 
+        /// 2) in a second loop, adds mist to the tiles that are empty,
+        /// 3) clears the list
+        /// Steps 1 and 2 are necessary because changing a fire voxel directly to a mist voxel causes issues.
+        /// </summary>
+
 
         public static void ActivateFireQuencherAbility()
         {

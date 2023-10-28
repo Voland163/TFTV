@@ -262,14 +262,15 @@ namespace TFTV
                     else
                     {
                         int activeCitadels = controller.AlienFaction.Bases.Where(b => b.AlienBaseTypeDef.MonsterClassType != null).Count();
-                        PhoenixStatisticsManager phoenixStatisticsManager = GameUtl.GameComponent<PhoenixGame>().GetComponent<PhoenixStatisticsManager>();//(PhoenixStatisticsManager)UnityEngine.Object.FindObjectOfType(typeof(PhoenixStatisticsManager));
-
-                        int destroyedCitadels = phoenixStatisticsManager.CurrentGameStats.GeoscapeStats.DestroyedCitadels;
+                        PhoenixStatisticsManager phoenixStatisticsManager = GameUtl.GameComponent<PhoenixGame>().GetComponent<PhoenixStatisticsManager>();
 
                         if (phoenixStatisticsManager == null)
                         {
-                            TFTVLogger.Always($"Failed to get stat manager");
-                        }
+                            TFTVLogger.Always($"Failed to get stat manager in FixScyllaCounter");
+                            return;
+                        }     
+                        
+                        int destroyedCitadels = phoenixStatisticsManager.CurrentGameStats.GeoscapeStats.DestroyedCitadels;
 
                         ClassTagDef queenTag = DefCache.GetDef<ClassTagDef>("Queen_ClassTagDef");
                         int scyllaActuallyKilled = 0;

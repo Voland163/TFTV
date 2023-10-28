@@ -7,6 +7,7 @@ using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.Entities.Items;
+using PhoenixPoint.Common.Game;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Events;
 using PhoenixPoint.Geoscape.Events.Eventus;
@@ -403,18 +404,27 @@ KEY_GRAMMAR_SINGLE_SUFFIX*/
                 if (TFTVRevenantResearch.ProjectOsirisStats.Count > 0 && (CheckLabs(controller)[0] || CheckLabs(controller)[1]))
                 {
                     TFTVLogger.Always("ProjectOsirisStats has people in it and player has a bionic or a mutation lab");
-                    PhoenixStatisticsManager statisticsManager = (PhoenixStatisticsManager)UnityEngine.Object.FindObjectOfType(typeof(PhoenixStatisticsManager));
+
+                    PhoenixStatisticsManager phoenixStatisticsManager = GameUtl.GameComponent<PhoenixGame>().GetComponent<PhoenixStatisticsManager>();
+
+                    if (phoenixStatisticsManager == null)
+                    {
+                        TFTVLogger.Always($"Failed to get stat manager in RunProjectOsiris");
+                        return;
+                    }
+
+                   // PhoenixStatisticsManager statisticsManager = (PhoenixStatisticsManager)UnityEngine.Object.FindObjectOfType(typeof(PhoenixStatisticsManager));
 
                     Dictionary<GeoTacUnitId, int> allProjectOsirisCandidates = new Dictionary<GeoTacUnitId, int>();
 
-                    foreach (GeoTacUnitId geoTacUnitId in statisticsManager.CurrentGameStats.DeadSoldiers.Keys)
+                    foreach (GeoTacUnitId geoTacUnitId in phoenixStatisticsManager.CurrentGameStats.DeadSoldiers.Keys)
                     {
 
                         foreach (int id in TFTVRevenantResearch.ProjectOsirisStats.Keys)
                         {
                             if (geoTacUnitId == id)
                             {
-                                SoldierStats deadSoldierStats = statisticsManager.CurrentGameStats.DeadSoldiers[geoTacUnitId];
+                                SoldierStats deadSoldierStats = phoenixStatisticsManager.CurrentGameStats.DeadSoldiers[geoTacUnitId];
                                 int numMissions = deadSoldierStats.MissionsParticipated;
                                 int enemiesKilled = Math.Min(deadSoldierStats.EnemiesKilled.Count, 25);
                                 int soldierLevel = deadSoldierStats.Level;
@@ -596,31 +606,40 @@ KEY_GRAMMAR_SINGLE_SUFFIX*/
                     {
 
                         GeoLevelController controller = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
-                        PhoenixStatisticsManager statisticsManager = (PhoenixStatisticsManager)UnityEngine.Object.FindObjectOfType(typeof(PhoenixStatisticsManager));
+
+                        PhoenixStatisticsManager phoenixStatisticsManager = GameUtl.GameComponent<PhoenixGame>().GetComponent<PhoenixStatisticsManager>();
+
+                        if (phoenixStatisticsManager == null)
+                        {
+                            TFTVLogger.Always($"Failed to get stat manager in TriggerGeoscapeEvent for ProjectOsiris");
+                            return;
+                        }
+
+                      //  PhoenixStatisticsManager statisticsManager = (PhoenixStatisticsManager)UnityEngine.Object.FindObjectOfType(typeof(PhoenixStatisticsManager));
                         GeoCharacter geoCharacterCloneFromDead = controller.DeadSoldiers[IdProjectOsirisCandidate].SpawnAsCharacter();
                         TacCharacterDef deadTemplateDef = geoCharacterCloneFromDead.TemplateDef;
 
 
                         GeoTacUnitId geoTacUnitNewCharacter = NewBodyGeoID;
-                        TFTVLogger.Always($"geoCharacterCloneFromDead.Id is {geoCharacterCloneFromDead.Id}, compared to last living soldier id: {statisticsManager.CurrentGameStats.LivingSoldiers.Last().Key}");
+                        TFTVLogger.Always($"geoCharacterCloneFromDead.Id is {geoCharacterCloneFromDead.Id}, compared to last living soldier id: {phoenixStatisticsManager.CurrentGameStats.LivingSoldiers.Last().Key}");
                         // statisticsManager.CurrentGameStats.LivingSoldiers.Last().Key;
 
 
-                        if (statisticsManager.CurrentGameStats.LivingSoldiers.ContainsKey(geoTacUnitNewCharacter))
+                        if (phoenixStatisticsManager.CurrentGameStats.LivingSoldiers.ContainsKey(geoTacUnitNewCharacter))
                         {
                           //  TFTVLogger.Always("tis true");
-                            statisticsManager.CurrentGameStats.LivingSoldiers[geoTacUnitNewCharacter] = statisticsManager.CurrentGameStats.DeadSoldiers[IdProjectOsirisCandidate];
+                            phoenixStatisticsManager.CurrentGameStats.LivingSoldiers[geoTacUnitNewCharacter] = phoenixStatisticsManager.CurrentGameStats.DeadSoldiers[IdProjectOsirisCandidate];
                         }
                         else
                         {
-                            statisticsManager.CurrentGameStats.LivingSoldiers.Add(geoTacUnitNewCharacter, statisticsManager.CurrentGameStats.DeadSoldiers[IdProjectOsirisCandidate]);
+                            phoenixStatisticsManager.CurrentGameStats.LivingSoldiers.Add(geoTacUnitNewCharacter, phoenixStatisticsManager.CurrentGameStats.DeadSoldiers[IdProjectOsirisCandidate]);
                         }
 
                         if (controller.DeadSoldiers.ContainsKey(IdProjectOsirisCandidate))
                         {
                             controller.DeadSoldiers.Remove(IdProjectOsirisCandidate);
 
-                            statisticsManager.CurrentGameStats.DeadSoldiers.Remove(IdProjectOsirisCandidate);
+                            phoenixStatisticsManager.CurrentGameStats.DeadSoldiers.Remove(IdProjectOsirisCandidate);
                         }
 
 

@@ -1,9 +1,13 @@
-﻿using Base.Core;
+﻿using Base;
+using Base.Core;
 using Base.Defs;
+using Base.Entities;
+using Base.Entities.Statuses;
 using Base.Serialization;
 using Base.UI.MessageBox;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
+using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.Entities.Items;
@@ -12,15 +16,21 @@ using PhoenixPoint.Common.Levels.ActorDeployment;
 using PhoenixPoint.Common.Levels.MapGeneration;
 using PhoenixPoint.Common.Levels.Missions;
 using PhoenixPoint.Common.Saves;
+using PhoenixPoint.Common.View.ViewControllers.Inventory;
+using PhoenixPoint.Common.View.ViewModules;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
-using PhoenixPoint.Geoscape.View.ViewModules;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.ActorsInstance;
 using PhoenixPoint.Tactical.Entities.Equipments;
+using PhoenixPoint.Tactical.Entities.Statuses;
+using PhoenixPoint.Tactical.Entities.StructuralTargets;
+using PhoenixPoint.Tactical.Entities.Weapons;
 using PhoenixPoint.Tactical.Levels;
+using PhoenixPoint.Tactical.Levels.ActorDeployment;
+using PhoenixPoint.Tactical.Levels.FactionObjectives;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -40,10 +50,655 @@ namespace TFTV
 
         public static Dictionary<int, int> AttackedLairSites;
 
+        [HarmonyPatch(typeof(GeoMission), "TryReloadItem")]
+        public static class GeoMission_TryReloadItem_patch
+        {
+
+            public static bool Prefix(GeoMission __instance, GeoItem item, ItemStorage storage, string storageName)
+            {
+                try
+                {
+                    // TFTVLogger.Always($"{item} storage {storage} storageName {storageName}");
+
+                    WeaponDef Obliterator = DefCache.GetDef<WeaponDef>("KS_Obliterator_WeaponDef");
+                    WeaponDef Subjector = DefCache.GetDef<WeaponDef>("KS_Subjector_WeaponDef");
+                    WeaponDef Redemptor = DefCache.GetDef<WeaponDef>("KS_Redemptor_WeaponDef");
+                    WeaponDef Devastator = DefCache.GetDef<WeaponDef>("KS_Devastator_WeaponDef");
+                    WeaponDef Tormentor = DefCache.GetDef<WeaponDef>("KS_Tormentor_WeaponDef");
+
+                    List<WeaponDef> kaosGuns = new List<WeaponDef>() { Obliterator, Subjector, Redemptor, Devastator, Tormentor };
+
+
+                    if (kaosGuns.Contains(item.ItemDef) && item.CommonItemData.Ammo == null)
+                    {
+
+                        TFTVLogger.Always($"trying to reload an old {item} that doesn't have compatible ammo! Canceling reload to avoid softlock");
+
+                        return false;
+
+                    }
+                    return true;
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
+
+        public static void GetPartialMagazinesInfo()
+        {
+            try
+            {
+                UIModuleSoldierEquip soldierEquipModule = GameUtl.CurrentLevel().GetComponent<GeoLevelController>().View.GeoscapeModules.SoldierEquipModule;
+                TFTVLogger.Always($"looking for partial magazines, storage used:  {soldierEquipModule.StorageList.PartialMagazines.GetStorageUsed()}," +
+                    $"item count: {soldierEquipModule.StorageList.PartialMagazines.Items.Count}");
+
+
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
+
+
+
+        }
+
+
+
+
+        [HarmonyPatch(typeof(UIInventoryList), "SetItems")]
+        public static class UIInventoryList_SetItems_patch
+        {
+            public static void Prefix(UIInventoryList __instance)
+            {
+                try
+                {
+                    //   TFTVLogger.Always($"running SetItems and setting shouldhidePartialMagazinestofalse");
+
+                    __instance.ShouldHidePartialMagazines = false;
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
+
+        //Code provided by Codemite
+        [HarmonyPatch(typeof(UIInventorySlot), "UpdateItem")]
+        public static class UIInventorySlot_UpdateItem_patch
+        {
+            public static void Postfix(UIInventorySlot __instance, ICommonItem ____item)
+            {
+                try
+                {
+                    /*
+
+                    __instance.HideAllImages();
+                    __instance.Sounds.enabled = ____item != null;
+                    if (____item != null)
+                    {
+                        __instance.ImageNode.gameObject.SetActive(value: true);
+                        __instance.ImageNode.sprite = ____item.ItemDef.ViewElementDef.InventoryIcon;
+                        __instance.FactionOutlineNode.gameObject.SetActive(value: true);
+                        __instance.FactionOutlineNode.sprite = ____item.ItemDef.ViewElementDef.InventoryIcon;
+                        __instance.Highlight.gameObject.SetActive(value: true);
+                        FactionTagDef factionTagDef = ____item.ItemDef.Tags.OfType<FactionTagDef>().FirstOrDefault((FactionTagDef s) => (object)s != null);
+                        Color color = ((!(factionTagDef == null)) ? GeoFactionDef.GetFactionByTag(factionTagDef).GeoFactionViewDef.FactionColor : Color.white);
+                        __instance.FactionOutlineNode.color = color;
+                        TacticalItemDef tacticalItemDef = ____item.ItemDef as TacticalItemDef;
+                      
+                        
+                        if (tacticalItemDef != null && tacticalItemDef.CompatibleAmmunition.Any())
+                        {
+                            __instance.AmmoImageNode.sprite = tacticalItemDef.CompatibleAmmunition[0].ViewElementDef.SmallIcon;
+                            __instance.EmptyAmmoImageNode.sprite = tacticalItemDef.CompatibleAmmunition[0].ViewElementDef.SmallIcon;
+                            Vector3 localScale = __instance.EmptyAmmoScaleNode.transform.localScale;
+                            localScale.y = 1f;
+                            if (__instance.Item.ItemDef.ChargesMax > 0)
+                            {
+                                localScale.y = 1f - Mathf.Clamp((float)____item.CommonItemData.CurrentCharges / (float)__instance.Item.ItemDef.ChargesMax, 0f, 1f);
+                            }
+
+                            __instance.EmptyAmmoScaleNode.transform.localScale = localScale;
+                            __instance.AmmoImageNode.gameObject.SetActive(value: true);
+                            __instance.EmptyAmmoImageNode.gameObject.SetActive(value: true);
+                        }
+                        else if (tacticalItemDef != null && AmmoWeaponDatabase.AmmoToWeaponDictionary.ContainsKey(tacticalItemDef))
+                        {
+                          //  TFTVLogger.Always($"does ammoweapondatabase dictionary contain {tacticalItemDef.name} ammo? {AmmoWeaponDatabase.AmmoToWeaponDictionary.ContainsKey(tacticalItemDef)}?");
+                            //  TFTVLogger.Always($"got into the else if check for {____item}");
+
+                            TacticalItemDef tacticalItemDef2 = AmmoWeaponDatabase.AmmoToWeaponDictionary[tacticalItemDef][0];
+                            __instance.AmmoImageNode.sprite = tacticalItemDef2.ViewElementDef.SmallIcon;
+                            __instance.EmptyAmmoImageNode.sprite = __instance.AmmoImageNode.sprite;
+                            Vector3 localScale2 = __instance.EmptyAmmoScaleNode.transform.localScale;
+                            localScale2.y = 0f;
+                          
+                            if (__instance.Item.ItemDef.ChargesMax > 0)
+                            {
+                               // TFTVLogger.Always($"got past chargesmax check for {____item}");
+                                localScale2.y = 1 - Mathf.Clamp(((float)____item.CommonItemData.CurrentCharges) / ((float)__instance.Item.ItemDef.ChargesMax), 0, 1);
+                            }
+
+
+                            __instance.EmptyAmmoScaleNode.transform.localScale = localScale2;
+                            __instance.AmmoImageNode.gameObject.SetActive(true);
+                            __instance.EmptyAmmoImageNode.gameObject.SetActive(true);
+                        }
+
+
+
+                        float a = 1f;
+                        if (__instance.ParentList != null)
+                        {
+                            a = __instance.ParentList.ParentModule.ModuleData.PrimarySoldierData.GetEquippedItemHealth(____item.ItemDef);
+                        }
+
+                        if (Utl.Equals(a, 0f))
+                        {
+                            __instance.ImageNode.material = __instance.BrokenMaterial;
+                            __instance.FactionOutlineNode.material = __instance.BrokenMaterial;
+                        }
+                        else
+                        {
+                            __instance.ImageNode.material = null;
+                            __instance.FactionOutlineNode.material = null;
+                        }
+                    }
+                    MethodInfo isVehicleEquipmemtMethod = AccessTools.Method(typeof(UIInventorySlot), "IsVehicleEquipment");
+
+
+                    if (____item == null || (bool)isVehicleEquipmemtMethod.Invoke(__instance, new object[] { ____item }))
+                    {
+                        __instance.AmmoImageNode.gameObject.SetActive(value: false);
+                        __instance.EmptyAmmoImageNode.gameObject.SetActive(value: false);
+                    }
+
+                    if (__instance.Animator?.isActiveAndEnabled ?? false)
+                    {
+                        __instance.Animator?.SetBool("Empty", __instance.Empty);
+                    }
+
+
+                  //  __instance.NumericBackground.gameObject.SetActive(value: true);
+                  //  __instance.NumericField.text = ____item.CommonItemData.Count.ToString();
+                  */
+                    if (____item == null || ____item.CommonItemData.Count == 1 && (____item.CommonItemData.CurrentCharges == ____item.ItemDef.ChargesMax || ____item.CommonItemData.CurrentCharges == 0))
+                    {
+                        __instance.NumericBackground.gameObject.SetActive(false);
+                    }
+                    else
+                    {
+                        __instance.NumericBackground.gameObject.SetActive(true);
+
+                        if (____item.CommonItemData.CurrentCharges == ____item.ItemDef.ChargesMax)
+                        {
+                            __instance.NumericField.text = ____item.CommonItemData.Count.ToString();
+                        }
+                        else
+                        {
+                            string ammoCount;
+
+                            if (____item.CommonItemData.Count - 1 == 0)
+                            {
+                                ammoCount = $"<color=#b6b6b6>(1) {____item.CommonItemData.CurrentCharges}/{____item.ItemDef.ChargesMax}</color>";
+                            }
+                            else
+                            {
+
+                                ammoCount = $"{____item.CommonItemData.Count - 1} <color=#b6b6b6>+ {____item.CommonItemData.CurrentCharges}/{____item.ItemDef.ChargesMax}</color>";
+                            }
+
+                            __instance.NumericField.text = ammoCount;
+                            __instance.NumericField.alignment = TextAnchor.MiddleLeft;
+                        }
+                    }
+
+                    // return false;
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
+
+        public static void SavingHelenaDeploymentZoneSetup(TacticalLevelController controller)
+        {
+            try 
+            {
+                CustomMissionTypeDef rescueHelenaMisson = DefCache.GetDef<CustomMissionTypeDef>("StoryLE0_CustomMissionTypeDef");
+
+                if (controller.TacMission.MissionData.MissionType == rescueHelenaMisson) 
+                {
+                    List<TacticalDeployZone> reinforcementZones = controller.Map.GetActors<TacticalDeployZone>().Where(tdz => tdz.name.Contains("Reinforcement_Intruder_")).ToList();
+
+                    foreach(TacticalDeployZone tacticalDeployZone in reinforcementZones) 
+                    {
+
+                        tacticalDeployZone.SetFaction(controller.GetFactionByCommandName("NJ"), TacMissionParticipant.Residents);
+                        TFTVLogger.Always($"Saving Helena adjusting TDZ: {tacticalDeployZone.name} {tacticalDeployZone.Pos}");
+                    
+                    }
+
+
+
+                }
+            
+            
+            
+            
+            }
+
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
+
+        }
+
+        public static void CheckBCR5Mission(TacticalLevelController controller)
+        {
+            try
+            {
+
+                if (CheckIfMissionISBCR_Rescue(controller))
+                {
+                    TFTVLogger.Always($"Instantiating rescue VIP objectives on Mission Start, Load or Restart");
+                    ChangeRescueeAllegiance(controller);
+                    CreateStructuralTargetForObjective(controller);
+                    MoveAndCheckStatusOfTalkingPoint(controller);
+                }
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+
+        //for later, to put all the special missions here
+        public static void ImplementSpecialMission(TacticalLevelController controller)
+        {
+            try
+            {
+
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
+
+        }
+
+
+
+
+
+        private static bool CheckIfMissionISBCR_Rescue(TacticalLevelController controller)
+        {
+            try
+            {
+                CustomMissionTypeDef rescueSparkMisson = DefCache.GetDef<CustomMissionTypeDef>("Bcr5_CustomMissionTypeDef");
+                CustomMissionTypeDef rescueFelipeMisson = DefCache.GetDef<CustomMissionTypeDef>("Bcr7_CustomMissionTypeDef");
+                CustomMissionTypeDef rescueHelenaMission = DefCache.GetDef<CustomMissionTypeDef>("StoryLE0_CustomMissionTypeDef");
+
+                if (controller.TacMission.MissionData.MissionType == rescueSparkMisson || controller.TacMission.MissionData.MissionType == rescueFelipeMisson || controller.TacMission.MissionData.MissionType == rescueHelenaMission)
+                {
+                    //TFTVLogger.Always($"The mission is to rescue Mr. Sparks!");
+                    return true;
+                }
+                return false;
+            }
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
+        }
+
+
+
+        private static void ChangeRescueeAllegiance(TacticalLevelController controller)
+        {
+            try
+            {
+                if (CheckIfMissionISBCR_Rescue(controller)) //need another check after Sparks becomes Phoenix
+                {
+                    TFTVLogger.Always($"The mission is to rescue Mr. Sparks or Felipe and we have to make him Neutral so he doesn't die!");
+                    TacticalActor phoenixCivilian = controller.GetFactionByCommandName("px").TacticalActors.FirstOrDefault(a => a.HasGameTag(Shared.SharedGameTags.CivilianTag));
+
+                    if (phoenixCivilian != null)
+                    {
+                        phoenixCivilian.SetFaction(controller.GetFactionByCommandName("neut"), TacMissionParticipant.Environment);
+                    }
+                    else
+                    {
+                        TacticalActor civilian = controller.GetFactionByCommandName("neut").TacticalActors.FirstOrDefault(a => a.HasGameTag(Shared.SharedGameTags.CivilianTag));
+
+                        TriggerAbilityZoneOfControlStatusDef zoneOfControlStatusDef = DefCache.GetDef<TriggerAbilityZoneOfControlStatusDef>("CanBeRecruitedIntoPhoenix_1x1_StatusDef");
+
+                        if (civilian != null && civilian.Status.HasStatus(zoneOfControlStatusDef))
+                        {
+                            civilian.Status.UnapplyStatus(civilian.Status.GetStatusByName(zoneOfControlStatusDef.EffectName));
+
+                        }
+
+                    }
+                }
+            }
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
+        }
+
+        private static TacticalActor FindNeutralCivilian(TacticalLevelController controller)
+        {
+
+            try
+            {
+                if (CheckIfMissionISBCR_Rescue(controller))
+                {
+                    return controller.GetFactionByCommandName("neut").TacticalActors.FirstOrDefault(a => a.HasGameTag(Shared.SharedGameTags.CivilianTag));
+                }
+                return null;
+            }
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
+        }
+
+
+        private static Vector3 FindSpotForSpawnPoint(TacticalActor tacticalActor, TacticalLevelController controller)
+        {
+            try
+            {
+                Vector3 position = tacticalActor.Pos;
+
+                List<Vector3> vector3s = new List<Vector3>()
+                {
+                new Vector3(1f, 0.0f, 0.0f) +position,
+                 new Vector3(-1f, 0.0f, 0.0f) +position,
+                  new Vector3(0.0f, 0.0f, 1f) +position,
+                  new Vector3(0.0f, 0.0f, -1f) +position,
+                  new Vector3(1f, 0.0f, 1f) +position,
+                  new Vector3(-1f, 0.0f, 1f) +position,
+                  new Vector3(1f, 0.0f, -1f) +position,
+                  new Vector3(-1f, 0.0f, -1f) +position,
+                };
+
+
+                TacCharacterDef siren = DefCache.GetDef<TacCharacterDef>("Siren1_Basic_AlienMutationVariationDef");
+
+                ActorDeployData actorDeployData = siren.GenerateActorDeployData();
+                actorDeployData.InitializeInstanceData();
+
+
+
+                foreach (Vector3 vector3 in vector3s)
+                {
+                    if (controller.Map.CanStandAt(tacticalActor.NavigationComponent.NavMeshDef, tacticalActor.TacticalPerception.TacticalPerceptionDef, vector3) &&
+                        TacticalFactionVision.CheckVisibleLineBetweenActorsInTheory(tacticalActor, tacticalActor.Pos, actorDeployData.ComponentSetDef, vector3))
+                    {
+                        TFTVLogger.Always($"found suitable position {vector3}");
+                        return vector3;
+
+                    }
+
+
+                }
+
+                return vector3s.GetRandomElement();
+
+
+            }
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
+
+
+        }
+
+
+        private static void CreateStructuralTargetForObjective(TacticalLevelController controller)
+        {
+            try
+            {
+
+                TFTVLogger.Always($"Creating TalkingPointConsole");
+                Vector3 position = FindSpotForSpawnPoint(FindNeutralCivilian(controller), controller);
+                string name = "TalkingPoint";
+
+                StructuralTargetTypeTagDef structuralTargetTypeTagDef = DefCache.GetDef<StructuralTargetTypeTagDef>("TalkingPointConsoleTag");
+
+                StructuralTargetDeploymentDef stdDef = DefCache.GetDef<StructuralTargetDeploymentDef>("HackableConsoleStructuralTargetDeploymentDef");
+
+                TacActorData tacActorData = new TacActorData
+                {
+                    ComponentSetTemplate = stdDef.ComponentSet
+                };
+
+
+                StructuralTargetInstanceData structuralTargetInstanceData = tacActorData.GenerateInstanceData() as StructuralTargetInstanceData;
+                structuralTargetInstanceData.SourceTemplate = stdDef;
+                structuralTargetInstanceData.Source = tacActorData;
+
+
+                StructuralTarget structuralTarget = ActorSpawner.SpawnActor<StructuralTarget>(tacActorData.GenerateInstanceComponentSetDef(), structuralTargetInstanceData, callEnterPlayOnActor: false);
+                GameObject obj = structuralTarget.gameObject;
+                structuralTarget.name = name;
+                structuralTarget.Source = obj;
+                structuralTarget.GameTags.Add(structuralTargetTypeTagDef);
+
+                var ipCols = new GameObject("InteractionPointColliders");
+                ipCols.transform.SetParent(obj.transform);
+                ipCols.tag = InteractWithObjectAbilityDef.ColliderTag;
+
+                ipCols.transform.SetPositionAndRotation(position, Quaternion.identity);
+                var collider = ipCols.AddComponent<BoxCollider>();
+
+
+                structuralTarget.Initialize();
+                //TFTVLogger.Always($"Spawning interaction point with name {name} at position {position}");
+                structuralTarget.DoEnterPlay();
+
+                TFTVLogger.Always($"structural target {name} created at position {position}");
+
+
+
+                CheckStatusInteractionPoint(controller, name);
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+
+            }
+
+
+        }
+
+        private static void AdjustObjectives()
+        {
+            try
+            {
+                TacticalLevelController controller = GameUtl.CurrentLevel().GetComponent<TacticalLevelController>();
+                ObjectivesManager factionObjectives = controller.GetFactionByCommandName("px").Objectives;
+                //    ActivateConsoleFactionObjectiveDef convinceCivilianObjectiveDef = DefCache.GetDef<ActivateConsoleFactionObjectiveDef>("ConvinceCivilianObjective");
+                WipeEnemyFactionObjective dummyObjective = (WipeEnemyFactionObjective)factionObjectives.FirstOrDefault(obj => obj is WipeEnemyFactionObjective objective);
+
+                TFTVLogger.Always($"dummyObjective is {dummyObjective.Description.LocalizationKey}");
+
+                factionObjectives.Add(dummyObjective.NextOnSuccess[0]);
+                factionObjectives.Remove(dummyObjective);
+                //   factionObjectives.Add(convinceCivilianObjective);
+
+                //  TFTVLogger.Always($"objective should have been removed");
+
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+
+            }
+
+
+
+        }
+
+        internal static void MoveAndCheckStatusOfTalkingPoint(TacticalLevelController controller)
+        {
+            try
+            {
+
+                AdjustObjectives();
+            }
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+
+            }
+        }
+
+
+        /// <summary>
+        /// This attempts to assign correct status to objective
+        /// </summary>
+        internal static void CheckStatusInteractionPoint(TacticalLevelController controller, string name)
+        {
+            try
+            {
+
+
+                StatusDef activeHackableChannelingStatusDef = DefCache.GetDef<StatusDef>("ConvinceCivilianOnObjectiveStatus");
+                StatusDef hackingStatusDef = DefCache.GetDef<StatusDef>("ConvinceCivilianOnActorStatus");
+                StatusDef consoleToActorBridgingStatusDef = DefCache.GetDef<StatusDef>("ConvinceCivilianObjectiveToActorBridgeStatus");
+                StatusDef actorToConsoleBridgingStatusDef = DefCache.GetDef<StatusDef>("ConvinceCivilianActorToObjectiveBridgeStatus");
+                StatusDef activatedStatusDef = DefCache.GetDef<StatusDef>("ConsoleActivated_StatusDef");
+
+
+                StructuralTarget structuralTarget = UnityEngine.Object.FindObjectsOfType<StructuralTarget>().FirstOrDefault(b => b.name.Equals(name));
+
+                TacticalActor tacticalActor = controller.Map.FindActorOverlapping(structuralTarget.Pos);
+
+                if (tacticalActor != null && tacticalActor.HasStatus(hackingStatusDef))
+                {
+                    void reflectionSet(TacStatus status, int value)
+                    {
+                        var prop = status.GetType().GetProperty("TurnApplied", BindingFlags.Public | BindingFlags.Instance);
+                        prop.SetValue(status, value);
+                    }
+
+                    TacStatus actorBridge = (TacStatus)tacticalActor.Status.GetStatusByName(actorToConsoleBridgingStatusDef.EffectName);
+                    int turnApplied = actorBridge.TurnApplied;
+
+                    tacticalActor.Status.UnapplyStatus(actorBridge);
+                    //  TFTVLogger.Always($"{actorToConsoleBridgingStatusDef.EffectName} unapplied");
+                    TacStatus newTargetBridge = (TacStatus)structuralTarget.Status.ApplyStatus(consoleToActorBridgingStatusDef, tacticalActor.GetActor());
+                    TacStatus newActorBridge = (TacStatus)tacticalActor.Status.GetStatusByName(actorToConsoleBridgingStatusDef.EffectName);
+
+                    TFTVLogger.Always($"found {tacticalActor?.DisplayName} trying to convince civillian");
+
+                    reflectionSet(newTargetBridge, turnApplied);
+                    reflectionSet(newActorBridge, turnApplied);
+
+                }
+                else
+                {
+                    TFTVLogger.Always($"are we here? has the activated status?{structuralTarget.Status.HasStatus(activatedStatusDef) == true} has the activatable status? {structuralTarget.Status.HasStatus(activeHackableChannelingStatusDef) == true} ");
+
+                    if (!structuralTarget.Status.HasStatus(activatedStatusDef) && !structuralTarget.Status.HasStatus(activeHackableChannelingStatusDef))
+                    {
+                        structuralTarget.Status.ApplyStatus(activeHackableChannelingStatusDef);//(activeConsoleStatusDef);
+
+                        TFTVLogger.Always($"applying {activeHackableChannelingStatusDef.name} to TalkingPointConsole");
+
+                    }
+                }
+
+            }
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+
+            }
+        }
+
+        private static void TurnRescueeOverToPhoenix(TacticalLevelController controller)
+        {
+            try
+            {
+                TacticalActor sparks = FindNeutralCivilian(controller);
+                sparks.SetFaction(controller.GetFactionByCommandName("px"), TacMissionParticipant.Player);
+                sparks.ForceRestartTurn();
+
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+
+            }
+        }
+
+
+        public static void TalkingPointConsoleActivated(StatusComponent statusComponent, Status status, TacticalLevelController controller)
+        {
+            try
+            {
+                if (controller != null && CheckIfMissionISBCR_Rescue(controller) && !controller.IsLoadingSavedGame)
+                {
+                    if (status.Def == DefCache.GetDef<StatusDef>("ConsoleActivated_StatusDef"))
+                    {
+                        StructuralTarget console = statusComponent.transform.GetComponent<StructuralTarget>();
+                        TFTVLogger.Always($"console name {console.name} at position {console.Pos}");
+
+                        TurnRescueeOverToPhoenix(controller);
+
+
+
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+
+            }
+        }
+
+
+
+
         [HarmonyPatch(typeof(GeoMission), "AddCratesToMissionData")]
         public static class GeoMission_AddEquipmentCrates_patch
         {
-           
+
             public static bool Prefix(GeoMission __instance, TacMissionData missionData, MapPlotDef plotDef)
             {
                 try
@@ -77,7 +732,7 @@ namespace TFTV
                                 TacMissionFactionData tacMissionFactionData = (TacMissionFactionData)addEnvironmentParticipantdMethod.Invoke(__instance, new object[] { missionData, environmentFactionDef });
                                 if (missionData.MissionType.MissionSpecificCrates != null)
                                 {
-                                    tacMissionFactionData.InitialDeploymentPoints = Math.Max(__instance.MissionDef.CratesDeploymentPointsRange.RandomValue() - AttackedLairSites[siteId]*50,0);
+                                    tacMissionFactionData.InitialDeploymentPoints = Math.Max(__instance.MissionDef.CratesDeploymentPointsRange.RandomValue() - AttackedLairSites[siteId] * 50, 0);
                                     ActorDeployData actorDeployData = missionData.MissionType.MissionSpecificCrates.EquipmentCratesDeployData.Clone();
                                     TacEquipmentCrateDef tacEquipmentCrateDef = actorDeployData.InstanceDef as TacEquipmentCrateDef;
                                     TacEquipmentCrateData tacEquipmentCrateData = new TacEquipmentCrateData
@@ -604,7 +1259,7 @@ namespace TFTV
                         MethodInfo methodRefreshStorageLabel = typeof(UIStateInventory).GetMethod("RefreshStorageLabel", BindingFlags.Instance | BindingFlags.NonPublic);
 
                         MethodInfo methodInitInitialItems = typeof(UIStateInventory).GetMethod("InitInitialItems", BindingFlags.Instance | BindingFlags.NonPublic);
-                       
+
                         MethodInfo methodSetupGroundMarkers = typeof(UIStateInventory).GetMethod("SetupGroundMarkers", BindingFlags.Instance | BindingFlags.NonPublic);
 
 
@@ -614,7 +1269,7 @@ namespace TFTV
                         methodSetupGroundMarkers.Invoke(__instance, null);
                         methodRefreshStorageLabel.Invoke(__instance, null);
                         methodInitInitialItems.Invoke(__instance, null);
-                  
+
 
                         //
                         // __instance.ResetInventoryQueries();
