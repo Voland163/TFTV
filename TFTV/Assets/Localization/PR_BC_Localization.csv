@@ -1,11 +1,4 @@
 Key,Type,Desc,English,Chinese (Simplified),French,German,Italian,Polish,Russian,,UI_Tester
-KEY_IGNORE_PAIN_DESCRIPTION,Text,,Disabled body parts remain functional and cannot Panic.,,,,,,,,
-KEY_NJ_HEAVY_ROCKET_LAUNCHER_NAME,Text,,Archangel AP-RL,,,,,,,,
-KEY_NJ_HEAVY_ROCKET_LAUNCHER_DESCRIPTION,Text,,NJ Armour Piercing Rocket Launcher,,,,,,,,
-BC_KEY_ITEM_STAT_BODYPART_DAMAGE,Text,,DAMAGE TO BODY PART,,,,,,,,
-KEY_PSYCHIC_IMMUNITY_DESCRIPTION,Text,,Immune to Psychic Scream,,Immunisé contre le cri psychique,,,,,,
-KEY_ELECTRIC_STRIKE_DESCRIPTION,Text,,Inflict Shock and EMP damage on target once per turn,,Inflige des dégâts Electrique et d'EMP à la cible une fois par tour.,,,,,,
-KEY_MUTATION_ELECTROKICK_DESCRIPTION,Text,,"Perform a melee kick, and daze target if sonic value is greater than target's Will Points",,,,,,,,
 PR_BC_MOUNTED_ITEMS_PROF,Text,,MOUNTED ITEM PROFICIENCY,,MAÎTRISE DES OBJETS MONTÉS,,,,ОБРАЩЕНИЕ С НЕЙРО-ИНТЕРФЕЙСОМ,,
 PR_BC_MOUNTED_ITEMS_PROF_DESC,Text,,Proficiency with Robotic Arms and Mounted Weapons.,,Compétence avec les bras robotiques et les armes montées.,,,,Умение пользоваться механизированными манипуляторами техника и пусковыми установками,,
 PR_BC_STIMPACK_ITEM_DESC,Text,,A potent stimulant that regnerate body parts and instils Frenzy.,,Un stimulant puissant qui régénère les parties du corps et instille la frénésie.,,,,"Мощный стимулятор, который залечивает травмы и вводит цель в Буйство",,
@@ -65,7 +58,6 @@ PR_BC_KILLER_INSTINCT_STATUS,Text,,KILLER INSTINCT TRIGGERED,,,,,,,,
 PR_BC_KILLER_INSTINCT_STATUS_DESC,Text,,"There is an enemy within 5 tiles, your next attack costs -2AP.",,,,,,,,
 PR_BC_SNEAK_ATTACK,Text,,SNEAK ATTACK,,ATTAQUE SURPRISE,,,,СКРЫТАЯ АТАКА,,
 PR_BC_SNEAK_ATTACK_DESC,Text,,Attacks while hidden deal +50% and while located +25% damage,,Les attaques lorsque vous êtes caché infligent +50% de dégâts et lorsque vous êtes localisé +25% de dégâts.,,,,"Если вы спрятаны, ваши атаки наносят +50% урона. Если вас услышали, но не раскрыли, то лишь +25% урона",,
-KEY_SURPRISE_ATTACK_DESCRIPTION,Text,,Attacks from behind gain shock value equal to 5 times the damage dealt,,,,,,,,
 PR_BC_SA_HIDDEN_DESC,Text,,HIDDEN: Deal +50% damage,,CACHÉ : inflige +50% de dégâts.,,,,СПРЯТАН: Урон увеличен на 50%,,
 PR_BC_SA_LOCATED_DESC,Text,,LOCATED: Deal +25% damage,,LOCALISÉ : inflige +25% de dégâts,,,,УСЛЫШАН: Урон увеличен на 25%,,
 PR_BC_HOMING_DRONE,Text,,HOMING DRONE,,DRONE AUTOGUIDÉ,,,,,,
@@ -215,20 +207,3 @@ PR_BC_PRIVILEGED_DESC,Text,,"<b>Speed +2, Perception +4, Carry Weight -25%</b>
 PR_BC_FRENZY,Text,,FRENZY,,FRENESIE,,,,БУЙСТВО,,
 PR_BC_FRENZY_DESC,Text,,"Instils Frenzy in friendly characters within 20 tiles for two turns, increasing their Speed by 33% and making them immune to panic",,"Instille la frénésie aux personnages alliés situés dans un rayon de 20 cases pendant deux tours, augmentant leur vitesse de 33% et les rendant immunisés contre la panique.",,,,"Союзники в радиусе 20 клеток впадают в Буйство на 2 хода, их скорость увеличивается на 33% и они получают иммунитет к панике",,
 PR_BC_FRENZY_STATUS_DESC,Text,,Speed increased by 33% and immune to panic,,Vitesse augmentée de 33% et immunisée contre la panique,,,,Скорость увеличена на 33% и иммунитет к панике,,
-PX_HAVENRECRUITS_RESEARCHDEF_UNLOCK,Text,,"We need recruits and there is no lack of candidates. However, very few of them fulfill the operational requirements. We should put in place a proper selection process.",,"Nous avons besoin de recrues et les candidats ne manquent pas. Cependant, très peu d'entre eux répondent aux exigences opérationnelles. Nous devrions mettre en place un processus de sélection adéquat.",,,,Нам нужны рекруты и нет недостатка в кандидатах. Тем не менее лишь немногие отвечают нашим стандартам. Нам следует разработать подходящие протоколы для отбора.,,
-PX_HAVENRECRUITS_RESEARCHDEF_COMPLETE,Text,,"We have created a set of biometric and psych-eval tests in order to select potential recruits. We hope to pick at least one suitable individual every few days. On signing up with us the recruit or their dependents receive a single allotment of comestibles as compensation for their services. 
-
-We can also recruit in havens with leaders favorable to our cause. We expect that the candidates the havens will offer will not be exactly the pick of the litter; they will want to get rid of people they don't want to have. In addition, they will insist on us buying the equipment for the recruit with a mark-up. 
-
-On the upside, we can expect the recruits to be completely loyal to our cause. However, if necessary, a reliable indoctrination program can be implemented to supplement any deficiencies in that aspect.",,"Nous avons créé un ensemble de tests biométriques et psycho-évaluatifs afin de sélectionner les recrues potentielles. Nous espérons pouvoir sélectionner au moins une personne appropriée tous les quelques jours. En s'engageant avec nous, la recrue ou les personnes à sa charge reçoivent une allocation unique de comestibles en compensation de leurs services.
-
-Nous pouvons également recruter dans les refuges dont les dirigeants sont favorables à notre cause. Nous nous attendons à ce que les candidats proposés par les refuges ne soient pas exactement les meilleurs ; ils voudront se débarrasser des personnes qu'ils ne veulent pas avoir. En outre, ils insisteront pour que nous achetions l'équipement de la recrue avec une majoration.
-
-D'un autre côté, nous pouvons nous attendre à ce que les recrues soient totalement loyales à notre cause. Cependant, si nécessaire, un programme d'endoctrinement fiable peut être mis en place pour pallier toute déficience à cet égard.",,,,"Мы создали набор биометрических и психологических тестов для отбора потенциальных рекрутов. Мы надеемся, что удастся отбирать хотя бы одного подходящего каждые несколько дней. При подписании контакта рекрут или его родственники получают единовременную выдачу пищевых пайков, в качестве компенсации за услуги.
-
-Мы также можем рекрутировать новобранцев в убежищах, в случае установления хороших отношений с главой поселения. Мы ожидаем, что рекруты, которых нам предоставляют убежища, едва ли будут лучшими из лучших, напротив, вероятно они попытаются сбагрить нам отбросов. В дополнение, они настаивают, чтобы мы оплатили экипировку рекрута с очевидной накруткой.
-
-И к хорошим новостям - вероятнее всего рекруты будут абсолютно лояльны нам. Тем не менее, при необходимости, пропаганда может быть использована в случае каких-либо отклонений от курса и ценностей проекта Феникс",,
-PX_HAVENRECRUITS_RESEARCHDEF_BENEFITS,Text,,We can now recruit soldiers from havens and among candidates found elsewhere by our agents.,,Nous pouvons désormais recruter des soldats dans les refuges et parmi les candidats trouvés ailleurs par nos agents.,,,,"Теперь в убежищах мы можем нанимать солдат, и иных кандидатов, которых нашли наши агенты",,
-KEY_JET_JUMP_DESCRIPTION,Text,,Jet jump to a location within 20 tiles. Limited to one use per turn,,,,,,,,
-KEY_SHINOBI_LEAP_DESCRIPTION,Text,,Leap to target location. Limited to 2 uses per turn,,,,,,,,

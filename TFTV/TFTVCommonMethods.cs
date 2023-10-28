@@ -3,12 +3,14 @@ using Base.Entities.Statuses;
 using Base.UI;
 using HarmonyLib;
 using PhoenixPoint.Common.ContextHelp;
+using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.Saves;
 using PhoenixPoint.Common.UI;
 using PhoenixPoint.Common.View.ViewModules;
 using PhoenixPoint.Geoscape.Entities;
+using PhoenixPoint.Geoscape.Entities.PhoenixBases.FacilityComponents;
 using PhoenixPoint.Geoscape.Entities.Research;
 using PhoenixPoint.Geoscape.Entities.Research.Requirement;
 using PhoenixPoint.Geoscape.Entities.Sites;
@@ -20,7 +22,9 @@ using PhoenixPoint.Geoscape.Levels.Objectives;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Effects.ApplicationConditions;
 using PhoenixPoint.Tactical.Entities.Effects.DamageTypes;
+using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.Entities.Statuses;
+using PhoenixPoint.Tactical.Entities.Weapons;
 using PhoenixPoint.Tactical.Levels;
 using PhoenixPoint.Tactical.Levels.FactionObjectives;
 using System;
@@ -136,6 +140,7 @@ namespace TFTV
                 TFTVCapturePandoransGeoscape.ToxinsInCirculation = 0;
                 TFTVNewGameMenu.NewGameOptionsSetUp = false;
                 TFTVNewGameMenu.EnterStateRun = false;
+                TFTVGoo.DontUseGooNavigationPatch = false;
 
                 /*  TFTVNewGameOptions.AmountOfExoticResourcesSetting;
                   TFTVNewGameOptions.ResourceMultiplierSetting;
@@ -540,8 +545,7 @@ namespace TFTV
             }
         }
 
-
-
+       
         public static void SetStaminaToZero(GeoCharacter __instance)
         {
             try

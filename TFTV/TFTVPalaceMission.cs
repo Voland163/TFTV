@@ -29,6 +29,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
+using UnityTools.SurfaceBlender;
 using static UnityStandardAssets.Utility.TimedObjectActivator;
 
 namespace TFTV
@@ -70,11 +71,8 @@ namespace TFTV
 
     internal class TFTVPalaceMission
     {
-
-
-
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
-        private static readonly DefRepository Repo = TFTVMain.Repo;
+       // private static readonly DefRepository Repo = TFTVMain.Repo;
         private static readonly SharedData Shared = TFTVMain.Shared;
 
         // private static readonly GameTagDef revenantTier1GameTag = DefCache.GetDef<GameTagDef>("RevenantTier_1_GameTagDef");
@@ -107,8 +105,6 @@ namespace TFTV
         private static readonly DelayedEffectStatusDef reinforcementStatusUnder1AP = DefCache.GetDef<DelayedEffectStatusDef>("E_Status [ReinforcementStatusUnder1AP]");
         private static readonly DelayedEffectStatusDef reinforcementStatus1AP = DefCache.GetDef<DelayedEffectStatusDef>("E_Status [ReinforcementStatus1AP]");
         private static readonly DelayedEffectStatusDef reinforcementStatusUnder2AP = DefCache.GetDef<DelayedEffectStatusDef>("E_Status [ReinforcementStatusUnder2AP]");
-
-
         private static readonly DamageMultiplierStatusDef RecepctacleDisrupted = DefCache.GetDef<DamageMultiplierStatusDef>("YR_Disrupted");
 
         public static void CheckIfPlayerCloseToGate(TacticalActor tacticalActor)
@@ -885,7 +881,6 @@ namespace TFTV
         }
 
 
-
         public static void PalaceConsoleActivated(StatusComponent statusComponent, Status status, TacticalLevelController controller)
         {
             try
@@ -1006,7 +1001,7 @@ namespace TFTV
         }
 
 
-
+       
 
 
         private static TacCharacterDef GenerateRandomMyrmidonReinforcements(TacticalLevelController controller)
@@ -1997,23 +1992,29 @@ namespace TFTV
 
                     if (revenants.Count > 0)
                     {
-
                         foreach (TacticalActor revenant in revenants)
                         {
-                            int chance = 50;
-
-                            UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
-                            int roll = UnityEngine.Random.Range(1, 101);
-                            TFTVLogger.Always($"Chance to turn Pheonix {revenant.name} Revenant is {chance} and the roll is {roll}");
-
-                            if (roll <= chance)
+                            if (revenant.CharacterStats.WillPoints > 0) 
+                            {
+                                revenant.CharacterStats.WillPoints.Set(revenant.CharacterStats.WillPoints - revenant.CharacterStats.Willpower / 4);
+                                                      
+                            }
+                            else 
                             {
                                 revenant.SetFaction(controller.GetFactionByCommandName("aln"), TacMissionParticipant.Residents);
+
+                                if(revenant.GameTags.Contains(anyRevenantGameTag)) 
+                                {
+                                    revenant.GameTags.Remove(anyRevenantGameTag);
+
+                                    
+                                }
+                                
+                               
                                 revenant.TacticalActorView.DoCameraChase();
                                 TFTVTutorialAndStory.ShowStoryPanel(controller, "PalaceRevenantHint1");
-
+                                TFTVLogger.Always($"Pheonix {revenant.name} is back on the Dark Side!");
                             }
-
                         }
                     }
                 }
@@ -2109,6 +2110,9 @@ namespace TFTV
                             if (roll <= chance)
                             {
                                 revenant.SetFaction(controller.GetFactionByCommandName("px"), TacMissionParticipant.Player);
+                                revenant.CharacterStats.WillPoints.SetToMax();
+                                revenant.UpdateStats();
+                                TFTVLogger.Always($"{revenant.name} has {revenant.CharacterStats.WillPoints} willpoints, should be max");
                                 revenant.TacticalActorView.DoCameraChase();
                                 TFTVTutorialAndStory.ShowStoryPanel(controller, "PalaceRevenantHint0");
 
@@ -2152,9 +2156,32 @@ namespace TFTV
                 throw;
 
             }
+        }
+
+        private static bool AllOperativesSouthOfGates()
+        {
+            try
+            {
+                TacticalLevelController controller = GameUtl.CurrentLevel().GetComponent<TacticalLevelController>();
+
+                List<TacticalActor> tacticalActors = controller.GetFactionByCommandName("px").TacticalActors.
+                    Where(a => a.IsAlive && a.Pos.z < 41.5).ToList();
+
+                if (tacticalActors.Count > 0)
+                {
+                    return false;
+
+                }
+                return true;
 
 
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
 
+            }
         }
 
         public static void PalaceReinforcements(TacticalFaction tacticalFaction)
@@ -2229,13 +2256,15 @@ namespace TFTV
 
         }
 
-        private static void KIllAllPandoransSouthOfTheGates(TacticalLevelController controller)
+
+
+        private static void RemoveAlertPandoransNorthOfTheGates(TacticalLevelController controller)
         {
             try
             {
-                TFTVLogger.Always($"Player has no units south of the closed gates; setting all Pandorans to not alerted!");
+                TFTVLogger.Always($"Player has no units north of the closed gates; setting all Pandorans to not alerted!");
 
-                List<TacticalActor> pandorans = controller.GetFactionByCommandName("aln").TacticalActors.Where(ta => ta.IsAlive && ta.Pos.z > 42).ToList();
+                List<TacticalActor> pandorans = controller.GetFactionByCommandName("aln").TacticalActors.Where(ta => ta.IsAlive && ta.Pos.z < 42).ToList();
 
                 TFTVLogger.Always($"count: {pandorans.Count}");
 
@@ -2256,6 +2285,33 @@ namespace TFTV
 
         }
 
+        private static void RemoveAlertPandoransSouthOfTheGates(TacticalLevelController controller)
+        {
+            try 
+            {
+                TFTVLogger.Always($"Player has no units south of the closed gates; setting all Pandorans to not alerted!");
+
+                List<TacticalActor> pandorans = controller.GetFactionByCommandName("aln").TacticalActors.Where(ta => ta.IsAlive && ta.Pos.z > 42).ToList();
+
+                TFTVLogger.Always($"count: {pandorans.Count}");
+
+                foreach(TacticalActor tacticalActor in pandorans) 
+                {
+                 //   TFTVLogger.Always($"{tacticalActor.name}");
+                    tacticalActor.AIActor.IsAlerted = false;
+                    
+                
+                }
+               
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+
+            }
+
+        }
+        
         public static void PalaceTacticalNewTurn(TacticalFaction tacticalFaction)
         {
             try
@@ -2266,7 +2322,7 @@ namespace TFTV
                 {
                     TacticalActorYuggoth tacticalActorYuggoth = controller.Map.GetActors<TacticalActorYuggoth>().FirstOrDefault();
                     bool wallsDown = false;
-                    if (tacticalActorYuggoth != null && tacticalActorYuggoth.QueenWallDownOnTurn == -1)
+                    if (tacticalActorYuggoth != null && tacticalActorYuggoth.QueenWallDownOnTurn == -1) 
                     {
                         wallsDown = true;
                     }
@@ -2288,7 +2344,11 @@ namespace TFTV
                     }
                     else if (AllOperativesNorthOfGates() && wallsDown)
                     {
-                        KIllAllPandoransSouthOfTheGates(controller);
+                        RemoveAlertPandoransSouthOfTheGates(controller);
+                    }
+                    else if (AllOperativesSouthOfGates() && wallsDown)
+                    {
+                        RemoveAlertPandoransNorthOfTheGates(controller);
                     }
 
                     TheyAreMyMinions();

@@ -90,6 +90,7 @@ namespace TFTV
                     TFTVBaseDefenseTactical.BaseDefenseConsoleActivated(__instance, status, controller);
 
                     TFTVPalaceMission.PalaceConsoleActivated(__instance, status, controller);
+                    TFTVExperimental.TalkingPointConsoleActivated(__instance, status, controller);
 
                 }
                 catch (Exception e)
@@ -228,6 +229,7 @@ namespace TFTV
                 {
                     TFTVBaseDefenseTactical.InitDeployZonesForBaseDefenseVsAliens(__instance.TacticalLevel);
                     TFTVPalaceMission.InitDeployZonesForPalaceMission(__instance.TacticalLevel);
+                    TFTVExperimental.SavingHelenaDeploymentZoneSetup(__instance.TacticalLevel);
 
                 }
                 catch (Exception e)
@@ -261,6 +263,30 @@ namespace TFTV
 
             }
         }
+
+
+        [HarmonyPatch(typeof(TacticalPerceptionBase), "IsTouchingVoxel")]
+
+        public static class TFTV_TacticalPerceptionBase_IsTouchingVoxel_patch
+        {
+            public static void Postfix(TacticalPerceptionBase __instance)
+            {
+                try
+                {
+                    TFTVFire.CheckFireQuencherTouchingFire(__instance);
+
+
+                }
+
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+
+            }
+        }
+
+
 
 
     }

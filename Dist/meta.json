@@ -7,7 +7,11 @@
       "Value": "PhoenixRising"
     }
   ],
+<<<<<<< HEAD
   "Version": "1.0.0.4",
+=======
+  "Version": "1.0.6.3",
+>>>>>>> master
   "Name": [
     {
       "Key": "English",

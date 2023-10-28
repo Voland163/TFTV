@@ -1,15 +1,25 @@
 ﻿using Base;
+using Base.Entities.Statuses;
 using HarmonyLib;
+using PhoenixPoint.Geoscape.Entities;
+using PhoenixPoint.Geoscape.Levels;
+using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Levels;
 using PhoenixPoint.Tactical.Levels.ActorDeployment;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 
 namespace TFTV
 {
     internal class TFTVTacticalUtils
     {
+      
+
+
+       
+
         internal static void RevealAllSpawns(TacticalLevelController controller)
         {
             try
@@ -30,12 +40,23 @@ namespace TFTV
                     createVisuals.Invoke(tacticalDeployZone, null);
                   //  TFTVLogger.Always($"{tacticalDeployZone.name} at position {tacticalDeployZone.Pos}, belongs to {tacticalDeployZone.MissionParticipant.GetName()}");
                     
-                /*    foreach(FixedDeployConditionData fixedDeployConditionData in tacticalDeployZone.FixedDeployment) 
+                    foreach(FixedDeployConditionData fixedDeployConditionData in tacticalDeployZone.FixedDeployment) 
                     {
 
                         TFTVLogger.Always($"{tacticalDeployZone.name} will spawn {fixedDeployConditionData.TacActorDef.name}");
                     
-                    }*/
+                    }
+
+
+                    foreach (MissionDeployConditionData fixedDeployConditionData in tacticalDeployZone.MissionDeployment)
+                    {
+
+                        TFTVLogger.Always($"{tacticalDeployZone.name} activates on turn {fixedDeployConditionData.ActivateOnTurn}, tag: {fixedDeployConditionData.ActorTagDef}, " +
+                            $"deactivate after turn: {fixedDeployConditionData.DeactivateAfterTurn}");
+
+                    }
+
+                    TFTVLogger.Always($"{tacticalDeployZone.DeployConditions}");
                     
 
                 }

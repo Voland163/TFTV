@@ -1,5 +1,6 @@
 using Base.Defs;
 using Base.Entities.Effects;
+using Base.Entities.Statuses;
 using Base.UI;
 using HarmonyLib;
 using PhoenixPoint.Common.Entities.Addons;
@@ -9,6 +10,7 @@ using PhoenixPoint.Common.UI;
 using PhoenixPoint.Geoscape.Entities.Research;
 using PhoenixPoint.Geoscape.Entities.Research.Reward;
 using PhoenixPoint.Tactical.Entities.Abilities;
+using PhoenixPoint.Tactical.Entities.Effects;
 using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.Entities.Statuses;
 using PRMBetterClasses;
@@ -19,18 +21,20 @@ namespace TFTVVehicleRework.Scarab
     {
         private static readonly DefRepository Repo = ScarabMain.Repo;
         private static readonly RepositionAbilityDef VanishAbility = (RepositionAbilityDef)Repo.GetDef("36c30c9d-c1ae-3a74-d987-1b3dc9d3412a");
+        private static readonly ApplyStatusAbilityDef StealthAbility = (ApplyStatusAbilityDef)Repo.GetDef("49aecd44-d46e-b314-1815-f373056bb822"); //"Stealth_AbilityDef"
         public static void Change()
         {
             GroundVehicleModuleDef FiberPlating = (GroundVehicleModuleDef)Repo.GetDef("983eb90b-29bf-15e4-fa76-d7f731069bd1"); //"PX_Scarab_Fiber_Plating_GroundVehicleModuleDef"
             FiberPlating.ViewElementDef.DisplayName1 = new LocalizedTextBind("PX_LAZARUS_NAME");
             FiberPlating.Armor = 0f;
-            FiberPlating.BodyPartAspectDef.Stealth = 0.95f;
+            FiberPlating.BodyPartAspectDef.Stealth = 1f;
             FiberPlating.ManufactureTech = 30f;
 
             AdjustSubaddons(FiberPlating);
             FiberPlating.Abilities = new TacticalAbilityDef[]
             {
-                ScarabVanish()
+                ScarabVanish(),
+                ScarabHiddenStatus()
             };
 
             Update_ResearchReqs(FiberPlating);
@@ -73,7 +77,7 @@ namespace TFTVVehicleRework.Scarab
         {
             ApplyEffectAbilityDef Scarab_Vanish = Repo.CreateDef<ApplyEffectAbilityDef>("ecebe31a-e951-4bb4-a46f-a61eb02cd294");
             Helper.CopyFieldsByReflection(VanishAbility, Scarab_Vanish);
-
+            Scarab_Vanish.name = "ScarabVanish_AbilityDef";
             //"_Self_TargetingDataDef"
             Scarab_Vanish.TargetingDataDef = (TacticalTargetingDataDef)Repo.GetDef("e1ac5f1b-c196-57c4-0a6b-223b33f7bca3");
             Scarab_Vanish.ViewElementDef = VanishVED(VanishAbility.ViewElementDef);
@@ -81,8 +85,10 @@ namespace TFTVVehicleRework.Scarab
             Scarab_Vanish.UsesPerTurn = 1;
             Scarab_Vanish.WillPointCost = 0f;
             Scarab_Vanish.ActionPointCost = 0.5f;
-            Scarab_Vanish.EffectDef = VanishEffects();
+            Scarab_Vanish.EffectDef = (HideEffectDef)Repo.GetDef("88c6e025-39b9-04d4-39a3-14ac659afdb1"); //"HideActorFromOtherFactions_EffectDef"
+            // Scarab_Vanish.EffectDef = VanishEffects();
             // Scarab_Vanish.EffectDef = VanishAbility.PreparationActorEffectDef;
+            Scarab_Vanish.DisablingStatuses = new StatusDef[]{HiddenStance()};
             Scarab_Vanish.ApplyOnStartTurn = false;
             Scarab_Vanish.ApplyToAllTargets = true;
             Scarab_Vanish.ApplyOnMove = false;
@@ -91,6 +97,50 @@ namespace TFTVVehicleRework.Scarab
             Scarab_Vanish.MultipleTargetSimulation = false;
 
             return Scarab_Vanish;            
+        }
+
+        private static ApplyStatusAbilityDef ScarabHiddenStatus()
+        {
+            ApplyStatusAbilityDef ScarabStealth = (ApplyStatusAbilityDef)Repo.GetDef("44bab08f-444c-45ff-ae4f-0f73dd1dc255");
+            if (ScarabStealth == null)
+            {
+                ScarabStealth = Repo.CreateDef<ApplyStatusAbilityDef>("44bab08f-444c-45ff-ae4f-0f73dd1dc255", StealthAbility);
+                ScarabStealth.name = "ScarabStealth_AbilityDef";
+                ScarabStealth.ViewElementDef = HiddenVED();
+                ScarabStealth.StatusDef = FactionVisibilityStatus();
+            }
+            return ScarabStealth;
+        }
+
+        private static FactionVisibilityConditionStatusDef FactionVisibilityStatus()
+        {   
+            FactionVisibilityConditionStatusDef VisibilityStatus = (FactionVisibilityConditionStatusDef)Repo.GetDef("2c712822-130e-4bdb-9d93-d895060aab42");
+            if (VisibilityStatus == null)
+            {
+                //"StealthVisibilityCondition_StatusDef"
+                FactionVisibilityConditionStatusDef VisibilityCondition = (FactionVisibilityConditionStatusDef)Repo.GetDef("9eefa0d4-4834-b834-2944-d3cccf5c9b3d");
+                VisibilityStatus = Repo.CreateDef<FactionVisibilityConditionStatusDef>("2c712822-130e-4bdb-9d93-d895060aab42", VisibilityCondition);
+                VisibilityStatus.name = "Scarab_StealthVisibilityCondition_StatusDef";
+                VisibilityStatus.HiddenStateStatusDef = VisibilityStatus.LocatedStateStatusDef = HiddenStance();
+            }
+            return VisibilityStatus;
+        }
+
+        private static StanceStatusDef HiddenStance()
+        {
+            StanceStatusDef HiddenStance = (StanceStatusDef)Repo.GetDef("bd37d91a-5905-4316-9843-eb4f5ae568a0");
+            if (HiddenStance == null)
+            {
+                // "E_VanishedStatus [Vanish_AbilityDef]"
+                StanceStatusDef VanishedStatus = (StanceStatusDef)Repo.GetDef("dd27cb97-d80e-3be2-d340-ffd669cad72b");
+                HiddenStance = Repo.CreateDef<StanceStatusDef>("bd37d91a-5905-4316-9843-eb4f5ae568a0", VanishedStatus);
+                HiddenStance.DurationTurns = -1;
+                HiddenStance.ExpireOnEndOfTurn = false;
+                HiddenStance.StatModifications = new ItemStatModification[]{};
+                HiddenStance.EquipmentsStatModifications = new EquipmentItemTagStatModification[]{};
+                HiddenStance.Visuals = HiddenVED();
+            }
+            return HiddenStance;
         }
 
         private static void Update_ResearchReqs(GroundVehicleModuleDef module)
@@ -110,23 +160,26 @@ namespace TFTVVehicleRework.Scarab
             MistSentinel.Unlocks = MistSentinel.Unlocks.AddToArray(Sentinel_ResearchReward);
         }
 
-        private static EffectDef VanishEffects()
-        {
-            MultiEffectDef Effects = Repo.CreateDef<MultiEffectDef>("9753181e-7eff-46b0-9947-4ea552fefa44", VanishAbility.PreparationActorEffectDef);
-            Effects.name = "E_MultiEffect [ScarabVanish_AbilityDef]";
-            Effects.EffectDefs[0] = ScarabVanishStatus(Effects.EffectDefs[0]);
-            return Effects;
-        }
+        // private static EffectDef VanishEffects()
+        // {
+        //     MultiEffectDef Effects = Repo.CreateDef<MultiEffectDef>("9753181e-7eff-46b0-9947-4ea552fefa44", VanishAbility.PreparationActorEffectDef);
+        //     Effects.name = "E_MultiEffect [ScarabVanish_AbilityDef]";
+        //     Effects.EffectDefs[0] = ScarabVanishStatus(Effects.EffectDefs[0]);
+        //     return Effects;
+        // }
 
-        private static StatusEffectDef ScarabVanishStatus(EffectDef template)
-        {
-            StatusEffectDef VanishStatusEffect = Repo.CreateDef<StatusEffectDef>("2559fe10-9958-472f-b88c-b34a719cf83e", template);
-            VanishStatusEffect.name = "E_ApplyVanishStatusEffect [ScarabVanish_AbilityDef]";
-            VanishStatusEffect.StatusDef = Repo.CreateDef<StanceStatusDef>("bd37d91a-5905-4316-9843-eb4f5ae568a0",(template as StatusEffectDef).StatusDef);
-            VanishStatusEffect.StatusDef.name = "E_VanishedStatus [ScarabVanish_AbilityDef]";
-            (VanishStatusEffect.StatusDef as StanceStatusDef).Visuals = VanishVED(VanishAbility.ViewElementDef);
-            return VanishStatusEffect;
-        }
+        // private static StatusEffectDef ScarabVanishStatus(EffectDef template)
+        // {
+        //     StatusEffectDef VanishStatusEffect = Repo.CreateDef<StatusEffectDef>("2559fe10-9958-472f-b88c-b34a719cf83e", template);
+        //     VanishStatusEffect.name = "E_ApplyVanishStatusEffect [ScarabVanish_AbilityDef]";
+        //     VanishStatusEffect.StatusDef = Repo.CreateDef<StanceStatusDef>("bd37d91a-5905-4316-9843-eb4f5ae568a0",(template as StatusEffectDef).StatusDef);
+        //     VanishStatusEffect.StatusDef.name = "E_VanishedStatus [ScarabVanish_AbilityDef]";
+        //     (VanishStatusEffect.StatusDef as StanceStatusDef).DurationTurns = -1;
+        //     (VanishStatusEffect.StatusDef as StanceStatusDef).ExpireOnEndOfTurn = false;
+        //     (VanishStatusEffect.StatusDef as StanceStatusDef).StatModifications[0].Value = 0.1f;
+        //     (VanishStatusEffect.StatusDef as StanceStatusDef).Visuals = VanishVED(VanishAbility.ViewElementDef);
+        //     return VanishStatusEffect;
+        // }
         private static TacticalAbilityViewElementDef VanishVED(TacticalAbilityViewElementDef template)
         {
             TacticalAbilityViewElementDef VED = (TacticalAbilityViewElementDef)Repo.GetDef("bbde0400-452d-4dc6-9c63-d6d574f7012b");
@@ -138,6 +191,21 @@ namespace TFTVVehicleRework.Scarab
                 VED.Description = new LocalizedTextBind("PX_VANISH_DESC");
                 VED.HideConfirmationButton = false;
                 VED.ShowInInventoryItemTooltip = true;
+            }
+            return VED;
+        }
+
+        private static TacticalAbilityViewElementDef HiddenVED()
+        {
+            TacticalAbilityViewElementDef VED = (TacticalAbilityViewElementDef)Repo.GetDef("4257cc44-ff99-403f-b8b7-923e27e8ca6f");
+            if (VED == null)
+            {
+                VED = Repo.CreateDef<TacticalAbilityViewElementDef>("4257cc44-ff99-403f-b8b7-923e27e8ca6f", StealthAbility.ViewElementDef);
+                VED.name = "E_View [ScarabHidden_AbilityDef]";
+                VED.DisplayName1 = new LocalizedTextBind("PX_HIDDEN_NAME");
+                VED.Description = new LocalizedTextBind("PX_HIDDEN_DESC");
+                VED.HideFromPassives = true;
+                VED.ShowInStatusScreen = true;
             }
             return VED;
         }

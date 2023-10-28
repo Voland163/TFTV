@@ -125,7 +125,7 @@ namespace TFTV
                 TFTVHumanEnemiesNames.CreateRanksDictionary();
                 Logger.LogInfo("Ranks for human enemies created");
                 TFTVHumanEnemiesNames.CreateTierDescriptions();
-                TFTVAAExperiment.ExtendedAgendaTracker.LocalizeExtendedAgendaUI();
+                TFTVAAAgendaTracker.ExtendedAgendaTracker.LocalizeExtendedAgendaUI();
 
                 Logger.LogInfo("Loading Vehicle Rework");
                 TFTVVehicleRework.VehiclesMain.ReworkVehicles(this);

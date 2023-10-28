@@ -18,10 +18,11 @@ namespace TFTVVehicleRework.Armadillo
             // "NJ_Armadillo_Gauss_Turret_GroundVehicleWeaponDef"
             GroundVehicleWeaponDef GaussTurret = (GroundVehicleWeaponDef)Repo.GetDef("510bf01c-22d0-4b04-597b-c4eaff0b0de9");
             GaussTurret.ChargesMax = 32;
-            GaussTurret.SpreadDegrees = 40.99f/13f;
+            GaussTurret.SpreadDegrees = 40.99f/19f;
             GaussTurret.HitPoints = 360f;
+            GaussTurret.BodyPartAspectDef.Perception = 4;
 
-            // //"Reload_AbilityDef"
+            //"Reload_AbilityDef"
             ReloadAbilityDef Reload = (ReloadAbilityDef)Repo.GetDef("3d6a71c7-c27b-5374-5a51-0ba31db93d41");
             
             //"ReturnFire_AbilityDef"
