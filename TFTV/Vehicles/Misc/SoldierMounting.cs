@@ -36,12 +36,27 @@ namespace TFTVVehicleRework.Misc
 			};
 
 			TacticalActorDef Soldier_ActorDef = (TacticalActorDef)Repo.GetDef("958fa60e-4ee3-5d74-b90d-9acd1fab332d"); //"Soldier_ActorDef"
-			Soldier_ActorDef.Abilities.RemoveRange(AbilitiesToRemove);
-			Soldier_ActorDef.Abilities.AddRange(AbilitiesToAdd);
+
+			List<AbilityDef> soldierAbilities = new List<AbilityDef>(Soldier_ActorDef.Abilities);
+			soldierAbilities.RemoveRange(AbilitiesToRemove);
+			soldierAbilities.AddRange(AbilitiesToAdd);
+
+			Soldier_ActorDef.Abilities = soldierAbilities.ToArray();
+
+		//	Soldier_ActorDef.Abilities.RemoveRange(AbilitiesToRemove);
+		//	Soldier_ActorDef.Abilities.AddRange(AbilitiesToAdd);
 
             TacticalActorDef Civilian_ActorDef = (TacticalActorDef)Repo.GetDef("28d0e424-280d-fa34-c8c4-778b92d26bc5"); //"Civilian_ActorDef"
-			Civilian_ActorDef.Abilities.RemoveRange(AbilitiesToRemove);
-			Civilian_ActorDef.Abilities.AddRange(AbilitiesToAdd);
+
+            List<AbilityDef> civilianAbilities = new List<AbilityDef>(Civilian_ActorDef.Abilities);
+            civilianAbilities.RemoveRange(AbilitiesToRemove);
+            civilianAbilities.AddRange(AbilitiesToAdd);
+
+            Civilian_ActorDef.Abilities = civilianAbilities.ToArray();
+
+
+           // Civilian_ActorDef.Abilities.RemoveRange(AbilitiesToRemove);
+		//	Civilian_ActorDef.Abilities.AddRange(AbilitiesToAdd);
         }
 
         public static ExtendedEnterVehicleAbilityDef get_EnterVehicleAbility()

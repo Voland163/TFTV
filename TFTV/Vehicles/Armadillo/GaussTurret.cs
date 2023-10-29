@@ -20,7 +20,7 @@ namespace TFTVVehicleRework.Armadillo
             GaussTurret.ChargesMax = 32;
             GaussTurret.SpreadDegrees = 40.99f/19f;
             GaussTurret.HitPoints = 360f;
-            GaussTurret.BodyPartAspectDef.Perception = 4;
+            // GaussTurret.BodyPartAspectDef.Perception = 4;
 
             //"Reload_AbilityDef"
             ReloadAbilityDef Reload = (ReloadAbilityDef)Repo.GetDef("3d6a71c7-c27b-5374-5a51-0ba31db93d41");

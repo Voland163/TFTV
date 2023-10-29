@@ -285,7 +285,7 @@ namespace TFTV
                     foreach(TacticalDeployZone tacticalDeployZone in reinforcementZones) 
                     {
 
-                        tacticalDeployZone.SetFaction(controller.GetFactionByCommandName("NJ"), TacMissionParticipant.Residents);
+                        tacticalDeployZone.SetFaction(controller.GetFactionByCommandName("NJ"), TacMissionParticipant.Intruder);
                         TFTVLogger.Always($"Saving Helena adjusting TDZ: {tacticalDeployZone.name} {tacticalDeployZone.Pos}");
                     
                     }
