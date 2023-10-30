@@ -1,46 +1,15 @@
-﻿using Base;
-using Base.Core;
+﻿using Base.Core;
 using Base.Defs;
-using Base.Entities;
-using Base.Entities.Statuses;
-using Base.Serialization;
-using Base.UI.MessageBox;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
-using PhoenixPoint.Common.Entities;
-using PhoenixPoint.Common.Entities.GameTags;
-using PhoenixPoint.Common.Entities.GameTagsTypes;
-using PhoenixPoint.Common.Entities.Items;
-using PhoenixPoint.Common.Game;
-using PhoenixPoint.Common.Levels.ActorDeployment;
-using PhoenixPoint.Common.Levels.MapGeneration;
-using PhoenixPoint.Common.Levels.Missions;
-using PhoenixPoint.Common.Saves;
-using PhoenixPoint.Common.View.ViewControllers.Inventory;
+using PhoenixPoint.Geoscape.Core;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Events;
-using PhoenixPoint.Geoscape.Events.Eventus;
 using PhoenixPoint.Geoscape.Levels;
-using PhoenixPoint.Geoscape.Levels.Factions;
 using PhoenixPoint.Tactical.Entities;
-using PhoenixPoint.Tactical.Entities.Abilities;
-using PhoenixPoint.Tactical.Entities.ActorsInstance;
-using PhoenixPoint.Tactical.Entities.Equipments;
-using PhoenixPoint.Tactical.Entities.Statuses;
-using PhoenixPoint.Tactical.Entities.StructuralTargets;
-using PhoenixPoint.Tactical.Entities.Weapons;
-using PhoenixPoint.Tactical.Levels;
-using PhoenixPoint.Tactical.Levels.ActorDeployment;
-using PhoenixPoint.Tactical.Levels.FactionObjectives;
-using PhoenixPoint.Tactical.View.ViewModules;
-using PhoenixPoint.Tactical.View.ViewStates;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
 using UnityEngine;
-using UnityEngine.UI;
-using static PhoenixPoint.Geoscape.Entities.GeoHaven;
 
 namespace TFTV
 {
@@ -51,6 +20,54 @@ namespace TFTV
         private static readonly DefRepository Repo = TFTVMain.Repo;
         private static readonly SharedData Shared = TFTVMain.Shared;
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
+
+
+        //NJ AN11
+        //NJ EX7
+        //NJ SY22
+
+
+        private static List<string> _eventsRewardingNJCharacters = new List<string>() { "AN11", "EX7", "SY22" };
+
+        [HarmonyPatch(typeof(GeoEventChoiceOutcome), "GenerateFactionReward")]
+        public static class GeoEventChoiceOutcome_GenerateFactionReward_patch
+        {
+
+            public static void Postfix(GeoEventChoiceOutcome __instance, GeoFaction faction, GeoscapeEventContext context, string eventID, ref GeoFactionReward __result)
+            {
+                try
+                {
+                    GeoLevelController level = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
+
+                    if (eventID == "PROG_PU4_WIN" && __result.Units.Count > 0)
+                    {
+                        __result.Units.Clear();
+                        GeoFaction faction2 = level.AnuFaction;
+                        GeoUnitDescriptor geoUnitDescriptor = level.CharacterGenerator.GenerateUnit(faction2, __instance.Units[0]);
+                        level.CharacterGenerator.ApplyRecruitDifficultyParameters(geoUnitDescriptor);
+                        GeoCharacter item2 = geoUnitDescriptor.SpawnAsCharacter();
+                        __result.Units.Add(item2);
+
+                    }
+                    else if (_eventsRewardingNJCharacters.Contains(eventID) && __result.Units.Count > 0)
+                    {
+                        __result.Units.Clear();
+                        GeoFaction faction2 = level.NewJerichoFaction;
+                        GeoUnitDescriptor geoUnitDescriptor = level.CharacterGenerator.GenerateUnit(faction2, __instance.Units[0]);
+                        level.CharacterGenerator.ApplyRecruitDifficultyParameters(geoUnitDescriptor);
+                        GeoCharacter item2 = geoUnitDescriptor.SpawnAsCharacter();
+                        __result.Units.Add(item2);
+                    }
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
+
 
 
         /*  public static int KludgeStartingWeight = 0;

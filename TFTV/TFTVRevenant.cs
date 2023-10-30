@@ -102,15 +102,6 @@ namespace TFTV
         //private static readonly DamageKeywordDef paralisingDamageKeywordDef =DefCache.GetDef<DamageKeywordDef>("Paralysing_DamageKeywordDataDef"));
 
 
-        /*   private static readonly DamageMultiplierStatusDef RevenantAssaultStatus = DefCache.GetDef<DamageMultiplierStatusDef>("RevenantAssaultStatus");
-           private static readonly DamageMultiplierStatusDef RevenantHeavyStatus = DefCache.GetDef<DamageMultiplierStatusDef>("RevenantHeavyStatus");
-           private static readonly DamageMultiplierStatusDef RevenantBerserkerStatus = DefCache.GetDef<DamageMultiplierStatusDef>("RevenantBerserkerStatus");
-           private static readonly DamageMultiplierStatusDef RevenantInfiltratorStatus = DefCache.GetDef<DamageMultiplierStatusDef>("RevenantInfiltratorStatus");
-           private static readonly DamageMultiplierStatusDef RevenantSniperStatus = DefCache.GetDef<DamageMultiplierStatusDef>("RevenantSniperStatus");
-           private static readonly DamageMultiplierStatusDef RevenantTechnician = DefCache.GetDef<DamageMultiplierStatusDef>("RevenantTechnicianStatus");
-           private static readonly DamageMultiplierStatusDef RevenantPriestStatus = DefCache.GetDef<DamageMultiplierStatusDef>("RevenantPriestStatus");
-           */
-
         public static void CheckIfRevenantPresent(TacticalLevelController controller)
         {
             try 
@@ -1559,7 +1550,7 @@ namespace TFTV
 
             try
             {
-                if (deathReport.Actor.HasGameTag(anyRevenantGameTag) && !controller.TacMission.IsFinalMission)
+                if (deathReport.Actor.HasGameTag(anyRevenantGameTag))
                 {
                     revenantSpawned = true;
                     TFTVLogger.Always("Revenant was killed, so revenantSpawned is now " + revenantSpawned);

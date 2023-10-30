@@ -12,8 +12,10 @@ using PhoenixPoint.Common.View.ViewControllers;
 using PhoenixPoint.Geoscape.Entities.Research;
 using PhoenixPoint.Geoscape.Events;
 using PhoenixPoint.Geoscape.Levels;
+using PhoenixPoint.Geoscape.View.ViewControllers.Manufacturing;
 using PhoenixPoint.Geoscape.View.ViewModules;
 using PhoenixPoint.Geoscape.View.ViewStates;
+using PhoenixPoint.Tactical.Entities;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -194,6 +196,43 @@ namespace TFTV
                 throw;
             }
         }
+
+
+        [HarmonyPatch(typeof(VehicleManufactureInfoController), "SetGroundVehicleInfo")]
+        public static class VehicleManufactureInfoController_SetGroundVehicleInfo_patch
+        {
+
+            public static void Postfix(VehicleManufactureInfoController __instance, GroundVehicleItemDef groundVehicleItem)
+            {
+                try
+                {
+                    TFTVLogger.Always($"SetGroundVehicleInfo running");
+
+                    if (groundVehicleItem.name.Equals("CitizenForSale"))
+                    {
+                        TFTVLogger.Always($"got here");
+                        MethodInfo methodInfoSetEntry = typeof(VehicleManufactureInfoController).GetMethod("SetEntry", BindingFlags.NonPublic | BindingFlags.Instance);
+                        MethodInfo methodInfoPrepareEntries = typeof(VehicleManufactureInfoController).GetMethod("PrepareEntries", BindingFlags.NonPublic | BindingFlags.Instance);
+
+                        methodInfoPrepareEntries.Invoke(__instance, null);
+
+                     //   (int index, LocalizedTextBind bind, float value)
+
+                        LocalizedTextBind description = new LocalizedTextBind() {LocalizationKey = "TestingHackingDescription" };
+
+                        methodInfoSetEntry.Invoke(__instance, new object[] { 0, description, 0 });  
+
+                    }
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
+
 
 
         [HarmonyPatch(typeof(UIModuleTheMarketplace), "UpdateVisuals")]
@@ -594,19 +633,47 @@ namespace TFTV
         }
 
 
+      /*  private static GeoEventChoice GenerateCharacterChoice(TacCharacterDef tacCharacterDef, float price)
+        {
+            try
+            {
+                GeoEventChoice geoEventChoice = GenerateChoice(price);
+                geoEventChoice.Outcome.Units.Add(tacCharacterDef);
+                geoEventChoice.Text = new LocalizedTextBind($"{tacCharacterDef.Data.Name} {tacCharacterDef.Data.Strength}"  , true);
+                return geoEventChoice;
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
+        }*/
+
+
+
 
 
         private static GeoEventChoice GenerateResearchChoice(ResearchDef researchDef, float price)
         {
-            GeoEventChoice geoEventChoice = GenerateChoice(price);
-            geoEventChoice.Outcome.GiveResearches.Add(researchDef.Id);
-            geoEventChoice.Text = researchDef.ViewElementDef?.ResearchName;
-            return geoEventChoice;
+            try
+            {
+                GeoEventChoice geoEventChoice = GenerateChoice(price);
+                geoEventChoice.Outcome.GiveResearches.Add(researchDef.Id);
+                geoEventChoice.Text = researchDef.ViewElementDef?.ResearchName;
+                return geoEventChoice;
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
         }
 
         private static GeoEventChoice GenerateItemChoice(ItemDef itemDef, float price)
         {
-            GeoEventChoice geoEventChoice = GenerateChoice(price);
+            try
+            {
+                GeoEventChoice geoEventChoice = GenerateChoice(price);
             GroundVehicleItemDef groundVehicleItemDef;
             if ((object)(groundVehicleItemDef = itemDef as GroundVehicleItemDef) != null)
             {
@@ -619,16 +686,30 @@ namespace TFTV
 
             geoEventChoice.Text = itemDef.GetDisplayName();
             return geoEventChoice;
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
         }
 
         private static GeoEventChoice GenerateChoice(float price)
-        {
-            GeoEventChoice geoEventChoice = new GeoEventChoice();
+            {
+                try
+                {
+                    GeoEventChoice geoEventChoice = new GeoEventChoice();
             geoEventChoice.Requirments = new GeoEventChoiceRequirements();
             geoEventChoice.Outcome = new GeoEventChoiceOutcome();
             geoEventChoice.Requirments.Resources.Add(new ResourceUnit(ResourceType.Materials, price));
             geoEventChoice.Outcome.ReEneableEvent = true;
             return geoEventChoice;
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
         }
 
 
@@ -755,6 +836,7 @@ namespace TFTV
                     List<ResearchDef> researchOffers = new List<ResearchDef>();
                     List<ItemDef> ammoOffers = new List<ItemDef>();
 
+                    
                     if (____level != null && ____level.NewJerichoFaction != null && ____level.SynedrionFaction != null)
                     {
                         if (CheckResearchCompleted(____level.NewJerichoFaction, "NJ_VehicleTech_ResearchDef"))

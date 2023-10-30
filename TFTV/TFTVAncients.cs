@@ -459,26 +459,6 @@ namespace TFTV
         }
 
 
-
-
-        [HarmonyPatch(typeof(TacticalLevelController), "ActorDamageDealt")]
-        public static class TacticalLevelController_ActorDamageDealt_CyclopsMolecularTargeting_Patch
-        {
-            public static void Postfix(TacticalActor actor, IDamageDealer damageDealer)
-            {
-                try
-                {
-                    CyclopsMolecularTargeting(actor, damageDealer);
-                    // CyclopsSelfHealing(actor);
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-            }
-        }
-
-
         public static void AncientsNewTurnCheck(TacticalFaction tacticalFaction)
         {
 

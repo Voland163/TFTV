@@ -78,27 +78,20 @@ namespace TFTV
 
         // ResurrectAbilityRulesDef to mess with later
 
-
-
-
-
-
-        internal static void ModifyChironWormAndAoETargeting()
+        private static void Print()
         {
-            try
-            {
-                DefCache.GetDef<TacticalTargetingDataDef>("E_TargetingData [AreaStun_AbilityDef]").Target.CullTargetTags = new GameTagsList { DefCache.GetDef<GameTagDef>("DamageByCaterpillarTracks_TagDef") };
-                DefCache.GetDef<TacticalTargetingDataDef>("E_TargetingData [AreaStun_AbilityDef]").Origin.CullTargetTags = new GameTagsList { DefCache.GetDef<GameTagDef>("DamageByCaterpillarTracks_TagDef") };
+            try 
+            { 
+                foreach(GeoscapeEventDef geoscapeEventDef in Repo.GetAllDefs<GeoscapeEventDef>().Where(e => e.GeoscapeEventData.Choices.Any(c => c.Outcome.Units.Count > 0) || e.GeoscapeEventData.Choices.Any(c => c.Outcome.CustomCharacters.Count > 0)))
+                {
+                    TFTVLogger.Always($"Event {geoscapeEventDef.EventID} offers some unit or custom character");
+                
+                
+                }
 
-                DefCache.GetDef<TacticalTargetingDataDef>("E_TargetingData [LaunchMortar_ShootAbilityDef]").Target.CullTargetTags = new GameTagsList { DefCache.GetDef<GameTagDef>("DamageByCaterpillarTracks_TagDef") };
-
-                DefCache.GetDef<TacticalTargetingDataDef>("E_TargetingData [LaunchMortar_ShootAbilityDef]").Origin.CullTargetTags = new GameTagsList { DefCache.GetDef<GameTagDef>("DamageByCaterpillarTracks_TagDef") };
-
-                DefCache.GetDef<TacticalTargetingDataDef>("E_TargetingData [LaunchGoo_ShootAbilityDef]").Target.CullTargetTags = new GameTagsList { DefCache.GetDef<GameTagDef>("DamageByCaterpillarTracks_TagDef") };
-                DefCache.GetDef<TacticalTargetingDataDef>("E_TargetingData [LaunchPoisonWorm_ShootAbilityDef]").Target.CullTargetTags = new GameTagsList { DefCache.GetDef<GameTagDef>("DamageByCaterpillarTracks_TagDef") };
-                DefCache.GetDef<TacticalTargetingDataDef>("E_TargetingData [LaunchAcidWorm_ShootAbilityDef]").Target.CullTargetTags = new GameTagsList { DefCache.GetDef<GameTagDef>("DamageByCaterpillarTracks_TagDef") };
-                DefCache.GetDef<TacticalTargetingDataDef>("E_TargetingData [LaunchFireWorm_ShootAbilityDef]").Target.CullTargetTags = new GameTagsList { DefCache.GetDef<GameTagDef>("DamageByCaterpillarTracks_TagDef") };
-
+            
+            
+            
             }
             catch (Exception e)
             {
@@ -108,6 +101,11 @@ namespace TFTV
 
 
         }
+
+
+
+
+
 
 
         public static void InjectDefsInjectedOnlyOnceBatch1()
@@ -206,7 +204,8 @@ namespace TFTV
             ChangeFireNadeCostAndDamage();
             ExperimentKaosWeaponAmmo();
             ModifyRescueCiviliansMissions();
-
+            CreateEilenForSale();
+            //Print();
         }
 
         //NEU_Assault_Torso_BodyPartDef
@@ -216,7 +215,65 @@ namespace TFTV
         //NEU_Sniper_Legs_ItemDef
 
 
-    
+        private static void CreateEilenForSale()
+        {
+            try 
+            {
+
+                CreateMarketPlaceRecruit("CitizenForSale", "{245C3931-295D-4E44-AF26-FF028E8909AC}", "{166357DB-A49B-42B1-BA22-78A5106297D4}", "{41F2A80B-FE20-4DAE-9C4F-DD78649A57E2}", 
+                    "{CB9D731A-D829-4699-9C06-5D5182451CFC}", "TestingCitizenForSaleTitle", "TestingCitizenForSaleDescription", DefCache.GetDef<TacCharacterDef>("S_SY_Eileen_CharacterTemplateDef"));
+            
+            
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+
+
+
+        }
+
+        private static void CreateMarketPlaceRecruit(string name, string gUID, string gUID2, string gUID3, string gUID4, string keyTitle, string keyDescription, TacCharacterDef tacCharacterDef)
+        {
+            try 
+            {
+
+              
+
+                GeoMarketplaceItemOptionDef sourceItemOption = DefCache.GetDef<GeoMarketplaceItemOptionDef>("KasoBuggy_MarketplaceItemOptionDef");
+                GeoMarketplaceItemOptionDef newOption = Helper.CreateDefFromClone(sourceItemOption, gUID, name);
+                GroundVehicleItemDef sourceVehicleItemDef = DefCache.GetDef<GroundVehicleItemDef>("KS_Kaos_Buggy_ItemDef");
+
+                GroundVehicleItemDef vehicleItemDef = Helper.CreateDefFromClone(sourceVehicleItemDef, gUID2, name);
+                vehicleItemDef.ViewElementDef = Helper.CreateDefFromClone(sourceVehicleItemDef.ViewElementDef, gUID3, name);
+                vehicleItemDef.ViewElementDef.DisplayName1.LocalizationKey = keyTitle;
+                vehicleItemDef.ViewElementDef.Description.LocalizationKey = keyDescription;
+                vehicleItemDef.DataDef = Helper.CreateDefFromClone(vehicleItemDef.DataDef, gUID4, name);
+
+                vehicleItemDef.ViewElementDef.InventoryIcon = Helper.CreateSpriteFromImageFile("UI_Portrait_Grunt.png");
+
+                vehicleItemDef.VehicleTemplateDef = tacCharacterDef;
+
+                newOption.ItemDef = vehicleItemDef;
+                tacCharacterDef.Data.ViewElementDef = vehicleItemDef.ViewElementDef;
+
+
+                TheMarketplaceSettingsDef marketplaceSettings = DefCache.GetDef<TheMarketplaceSettingsDef>("TheMarketplaceSettingsDef");
+                List<GeoMarketplaceOptionDef> geoMarketplaceItemOptionDefs = marketplaceSettings.PossibleOptions.ToList();
+                geoMarketplaceItemOptionDefs.Add(newOption);
+                marketplaceSettings.PossibleOptions = geoMarketplaceItemOptionDefs.ToArray();
+            }
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+
+        }
+
 
         private static void CreateConvinceCivilianStatus()
         {
@@ -3205,6 +3262,33 @@ namespace TFTV
             {
                 TFTVLogger.Error(e);
             }
+        }
+
+
+        internal static void ModifyChironWormAndAoETargeting()
+        {
+            try
+            {
+                DefCache.GetDef<TacticalTargetingDataDef>("E_TargetingData [AreaStun_AbilityDef]").Target.CullTargetTags = new GameTagsList { DefCache.GetDef<GameTagDef>("DamageByCaterpillarTracks_TagDef") };
+                DefCache.GetDef<TacticalTargetingDataDef>("E_TargetingData [AreaStun_AbilityDef]").Origin.CullTargetTags = new GameTagsList { DefCache.GetDef<GameTagDef>("DamageByCaterpillarTracks_TagDef") };
+
+                DefCache.GetDef<TacticalTargetingDataDef>("E_TargetingData [LaunchMortar_ShootAbilityDef]").Target.CullTargetTags = new GameTagsList { DefCache.GetDef<GameTagDef>("DamageByCaterpillarTracks_TagDef") };
+
+                DefCache.GetDef<TacticalTargetingDataDef>("E_TargetingData [LaunchMortar_ShootAbilityDef]").Origin.CullTargetTags = new GameTagsList { DefCache.GetDef<GameTagDef>("DamageByCaterpillarTracks_TagDef") };
+
+                DefCache.GetDef<TacticalTargetingDataDef>("E_TargetingData [LaunchGoo_ShootAbilityDef]").Target.CullTargetTags = new GameTagsList { DefCache.GetDef<GameTagDef>("DamageByCaterpillarTracks_TagDef") };
+                DefCache.GetDef<TacticalTargetingDataDef>("E_TargetingData [LaunchPoisonWorm_ShootAbilityDef]").Target.CullTargetTags = new GameTagsList { DefCache.GetDef<GameTagDef>("DamageByCaterpillarTracks_TagDef") };
+                DefCache.GetDef<TacticalTargetingDataDef>("E_TargetingData [LaunchAcidWorm_ShootAbilityDef]").Target.CullTargetTags = new GameTagsList { DefCache.GetDef<GameTagDef>("DamageByCaterpillarTracks_TagDef") };
+                DefCache.GetDef<TacticalTargetingDataDef>("E_TargetingData [LaunchFireWorm_ShootAbilityDef]").Target.CullTargetTags = new GameTagsList { DefCache.GetDef<GameTagDef>("DamageByCaterpillarTracks_TagDef") };
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+
+
         }
 
         //Maybe will be used later
