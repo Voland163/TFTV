@@ -94,7 +94,7 @@ namespace TFTV
             TFTVNewGameOptions.SetInternalConfigOptions(gsController);                                                                                                        
             TFTVBetaSaveGamesFixes.OpenBetaSaveGameFixes(gsController);
             TFTVLogger.Always($"Difficulty level on Geoscape is {Controller.CurrentDifficultyLevel.name}");
-            TFTVExperimental.CorrrectPhoenixSaveManagerDifficulty();
+            TFTVBetaSaveGamesFixes.CorrrectPhoenixSaveManagerDifficulty();
             TFTVCommonMethods.CheckGeoUIfunctionality(gsController);
             TFTVNewPXCharacters.PlayIntro(gsController);
             TFTVVoidOmens.ImplementVoidOmens(gsController);

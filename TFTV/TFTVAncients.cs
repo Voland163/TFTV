@@ -1166,140 +1166,77 @@ namespace TFTV
         }
 
 
-        [HarmonyPatch(typeof(DamageKeyword), "ProcessKeywordDataInternal")]
-        internal static class TFTV_DamageKeyword_ProcessKeywordDataInternal_DamageResistant_patch
+        public static void ApplyDamageResistanceToHopliteInHiding(ref DamageAccumulation.TargetData data)
         {
-            public static void Postfix(ref DamageAccumulation.TargetData data)
-            {
-                try
-                {
-
-                    if (data.Target.GetActor() != null && data.Target.GetActor().Status != null && data.Target.GetActor().Status.HasStatus(AncientGuardianStealthStatus))
-                    {
-                        //  TFTVLogger.Always("Statis check passed");
-
-                        float multiplier = 0.1f;
-
-                        data.DamageResult.HealthDamage = Math.Min(data.Target.GetHealth(), data.DamageResult.HealthDamage * multiplier);
-                        data.AmountApplied = Math.Min(data.Target.GetHealth(), data.AmountApplied * multiplier);
-                    }
-
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-            }
-        }
-
-        public static void AncientKilled(TacticalLevelController controller, DeathReport deathReport)
-        {
-
-            ClassTagDef cyclopsTag = DefCache.GetDef<ClassTagDef>("MediumGuardian_ClassTagDef");
             try
             {
-                if (CheckIfAncientsPresent(controller))
+
+                if (data.Target.GetActor() != null && data.Target.GetActor().Status != null && data.Target.GetActor().Status.HasStatus(AncientGuardianStealthStatus))
                 {
-                    TacticalFaction faction = deathReport.Actor.TacticalFaction;
 
-                    if (deathReport.Actor is TacticalActor)
+                    float multiplier = 0.1f;
+                    data.DamageResult.HealthDamage = Math.Min(data.Target.GetHealth(), data.DamageResult.HealthDamage * multiplier);
+                    data.AmountApplied = Math.Min(data.Target.GetHealth(), data.AmountApplied * multiplier);
+                }
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+
+
+        }
+
+
+        private static void ApplyAutoRepairAbilityStatusOrHealNearbyHoplites(TacticalFaction faction, TacticalActor actor)
+        {
+            try
+            {
+                foreach (TacticalActor actorAlly in faction.TacticalActors)
+                {
+                    if (actorAlly != actor && (actorAlly.HasGameTag(hopliteTag) || actorAlly.HasGameTag(cyclopsTag)))
                     {
-                        TacticalActor actor = deathReport.Actor as TacticalActor;
-                        if (actor.HasGameTag(hopliteTag))
+                        // TacticalActor actorAlly = allyTacticalActorBase as TacticalActor;
+                        float magnitude = 7;
+
+                        if ((actorAlly.Pos - actor.Pos).magnitude <= magnitude)
                         {
-                            foreach (TacticalActor actorAlly in faction.TacticalActors)
+                            TFTVLogger.Always("Actor in range and will be receiving power from dead friendly");
+                            actorAlly.CharacterStats.WillPoints.AddRestrictedToMax(5);
+
+                            if ((CheckGuardianBodyParts(actorAlly)[0] == null
+                            || CheckGuardianBodyParts(actorAlly)[1] == null
+                            || CheckGuardianBodyParts(actorAlly)[2] == null))
                             {
-                                if (actorAlly != actor && (actorAlly.HasGameTag(hopliteTag) || actorAlly.HasGameTag(cyclopsTag)))
+                                TFTVLogger.Always("Actor in range and missing bodyparts, getting spare parts");
+                                if (!actorAlly.HasStatus(AddAutoRepairStatusAbility) && !actorAlly.HasGameTag(cyclopsTag))
                                 {
-                                    // TacticalActor actorAlly = allyTacticalActorBase as TacticalActor;
-                                    float magnitude = 7;
-
-                                    if ((actorAlly.Pos - actor.Pos).magnitude <= magnitude)
-                                    {
-                                        TFTVLogger.Always("Actor in range and will be receiving power from dead friendly");
-                                        actorAlly.CharacterStats.WillPoints.AddRestrictedToMax(5);
-
-                                        if ((CheckGuardianBodyParts(actorAlly)[0] == null
-                                        || CheckGuardianBodyParts(actorAlly)[1] == null
-                                        || CheckGuardianBodyParts(actorAlly)[2] == null))
-                                        {
-                                            TFTVLogger.Always("Actor in range and missing bodyparts, getting spare parts");
-                                            if (!actorAlly.HasStatus(AddAutoRepairStatusAbility) && !actorAlly.HasGameTag(cyclopsTag))
-                                            {
-                                                actorAlly.Status.ApplyStatus(AddAutoRepairStatusAbility);
-                                                TFTVLogger.Always("AutoRepairStatus added to " + actorAlly.name);
+                                    actorAlly.Status.ApplyStatus(AddAutoRepairStatusAbility);
+                                    TFTVLogger.Always("AutoRepairStatus added to " + actorAlly.name);
 
 
-                                                TacContextHelpManager tacContextHelpManager = (TacContextHelpManager)UnityEngine.Object.FindObjectOfType(typeof(TacContextHelpManager));
-                                                tacContextHelpManager.EventTypeTriggered(HintTrigger.ActorSeen, actorAlly, actorAlly);
-
-                                            }
-
-                                        }
-                                        else
-                                        {
-                                            if (actorAlly.GetHealth() < actorAlly.TotalMaxHealth)
-                                            {
-                                                if (actorAlly.GetHealth() + 50 >= actorAlly.TotalMaxHealth)
-                                                {
-                                                    actorAlly.Health.Set(actorAlly.TotalMaxHealth);
-                                                }
-                                                else
-                                                {
-                                                    actorAlly.Health.Set(actorAlly.GetHealth() + 50);
-                                                }
-
-                                            }
-                                            TacContextHelpManager tacContextHelpManager = (TacContextHelpManager)UnityEngine.Object.FindObjectOfType(typeof(TacContextHelpManager));
-                                            tacContextHelpManager.EventTypeTriggered(HintTrigger.ActorSeen, actorAlly, actorAlly);
-                                        }
-                                    }
+                                    TacContextHelpManager tacContextHelpManager = (TacContextHelpManager)UnityEngine.Object.FindObjectOfType(typeof(TacContextHelpManager));
+                                    tacContextHelpManager.EventTypeTriggered(HintTrigger.ActorSeen, actorAlly, actorAlly);
                                 }
                             }
-
-                            if (actor.HasGameTag(hopliteTag))
+                            else
                             {
-                                if (CyclopsDefenseStatus.Multiplier <= 0.99f)
+                                if (actorAlly.GetHealth() < actorAlly.TotalMaxHealth)
                                 {
-                                    float baseMultiplier = 0.5f;
-
-                                    if (TFTVSpecialDifficulties.CheckTacticalSpecialDifficultySettings(controller) == 2)
+                                    if (actorAlly.GetHealth() + 50 >= actorAlly.TotalMaxHealth)
                                     {
-                                        baseMultiplier = 0.0f;
+                                        actorAlly.Health.Set(actorAlly.TotalMaxHealth);
+                                    }
+                                    else
+                                    {
+                                        actorAlly.Health.Set(actorAlly.GetHealth() + 50);
                                     }
 
-                                    List<TacticalActor> allHoplites = actor.TacticalFaction.TacticalActors.Where(ta => ta.HasGameTag(hopliteTag)).ToList();
-                                    int deadHoplites = allHoplites.Where(h => h.IsDead).Count();
-                                    float proportion = ((float)deadHoplites / (float)(allHoplites.Count));
-                                    CyclopsDefenseStatus.Multiplier = baseMultiplier + proportion * 0.5f; //+ HoplitesKilled * 0.1f;
-                                    TFTVLogger.Always($"There are {allHoplites.Count} hoplites in total, {deadHoplites} are dead. Proportion is {proportion} and base multiplier is {baseMultiplier}. Cyclops Defense level is {CyclopsDefenseStatus.Multiplier}");
-
-
-                                    //  CyclopsDefenseStatus.Multiplier += 0.1f;
-                                    TFTVLogger.Always("Hoplite killed, decreasing Cyclops defense. Cyclops defense now " + CyclopsDefenseStatus.Multiplier);
                                 }
-                                else
-                                {
-                                    CyclopsDefenseStatus.Multiplier = 1;
-                                    if (AutomataResearched)
-                                    {
-                                        foreach (TacticalActorBase allyTacticalActorBase in faction.Actors)
-                                        {
-                                            if (allyTacticalActorBase is TacticalActor && allyTacticalActorBase != actor)
-                                            {
-                                                TacticalActor actorAlly = allyTacticalActorBase as TacticalActor;
-                                                if (actorAlly.HasStatus(CyclopsDefenseStatus))
-                                                {
-                                                    Status status = actorAlly.Status.GetStatusByName(CyclopsDefenseStatus.EffectName);
-                                                    actorAlly.Status.Statuses.Remove(status);
-                                                    TFTVLogger.Always("Cyclops defense removed from " + actorAlly.name);
-
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-
+                                TacContextHelpManager tacContextHelpManager = (TacContextHelpManager)UnityEngine.Object.FindObjectOfType(typeof(TacContextHelpManager));
+                                tacContextHelpManager.EventTypeTriggered(HintTrigger.ActorSeen, actorAlly, actorAlly);
                             }
                         }
                     }
@@ -1311,11 +1248,89 @@ namespace TFTV
             }
         }
 
+        private static void ReduceCyclopsResistance(TacticalFaction faction, TacticalLevelController controller, TacticalActor actor)
+        {
+            try
+            {
+                if (CyclopsDefenseStatus.Multiplier <= 0.99f)
+                {
+                    float baseMultiplier = 0.5f;
+
+                    if (TFTVSpecialDifficulties.CheckTacticalSpecialDifficultySettings(controller) == 2)
+                    {
+                        baseMultiplier = 0.0f;
+                    }
+
+                    List<TacticalActor> allHoplites = actor.TacticalFaction.TacticalActors.Where(ta => ta.HasGameTag(hopliteTag)).ToList();
+                    int deadHoplites = allHoplites.Where(h => h.IsDead).Count();
+                    float proportion = ((float)deadHoplites / (float)(allHoplites.Count));
+                    CyclopsDefenseStatus.Multiplier = baseMultiplier + proportion * 0.5f; //+ HoplitesKilled * 0.1f;
+                    TFTVLogger.Always($"There are {allHoplites.Count} hoplites in total, {deadHoplites} are dead. Proportion is {proportion} and base multiplier is {baseMultiplier}. Cyclops Defense level is {CyclopsDefenseStatus.Multiplier}");
+
+
+                    //  CyclopsDefenseStatus.Multiplier += 0.1f;
+                    TFTVLogger.Always("Hoplite killed, decreasing Cyclops defense. Cyclops defense now " + CyclopsDefenseStatus.Multiplier);
+                }
+                else
+                {
+                    CyclopsDefenseStatus.Multiplier = 1;
+                    if (AutomataResearched)
+                    {
+                        foreach (TacticalActorBase allyTacticalActorBase in faction.Actors)
+                        {
+                            if (allyTacticalActorBase is TacticalActor && allyTacticalActorBase != actor)
+                            {
+                                TacticalActor actorAlly = allyTacticalActorBase as TacticalActor;
+                                if (actorAlly.HasStatus(CyclopsDefenseStatus))
+                                {
+                                    Status status = actorAlly.Status.GetStatusByName(CyclopsDefenseStatus.EffectName);
+                                    actorAlly.Status.Statuses.Remove(status);
+                                    TFTVLogger.Always("Cyclops defense removed from " + actorAlly.name);
+
+                                }
+                            }
+                        }
+                    }
+                }
 
 
 
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
 
 
+
+        }
+
+        public static void AncientKilled(TacticalLevelController controller, DeathReport deathReport)
+        {
+            try
+            {
+                if (CheckIfAncientsPresent(controller))
+                {
+                    ClassTagDef cyclopsTag = DefCache.GetDef<ClassTagDef>("MediumGuardian_ClassTagDef");
+                    TacticalFaction faction = deathReport.Actor.TacticalFaction;
+
+                    if (deathReport.Actor is TacticalActor)
+                    {
+                        TacticalActor actor = deathReport.Actor as TacticalActor;
+                        if (actor.HasGameTag(hopliteTag))
+                        {
+                            ApplyAutoRepairAbilityStatusOrHealNearbyHoplites(faction, actor);
+                            ReduceCyclopsResistance(faction, controller, actor);
+                        }
+                    }
+                }
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
 
 
         public static void CheckForAutoRepairAbility(TacticalFaction faction)

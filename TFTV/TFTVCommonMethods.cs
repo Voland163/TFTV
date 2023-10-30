@@ -206,7 +206,7 @@ namespace TFTV
                 TFTVBaseDefenseTactical.StratToBeAnnounced = 0;
                 TFTVBaseDefenseTactical.StratToBeImplemented = 0;
                 TFTVAncients.CyclopsMolecularDamageBuff.Clear();
-                TFTVExperimental.AttackedLairSites = new Dictionary<int, int>();
+                TFTVKillingExploits.AttackedLairSites = new Dictionary<int, int>();
                 //   TFTVAncients.AlertedHoplites.Clear();
                 TFTVCapturePandorans.AircraftCaptureCapacity = 0;
                 //  TFTVBaseDefenseTactical.VentingHintShown = false;

@@ -6,6 +6,7 @@ using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
+using PhoenixPoint.Tactical.Entities.DamageKeywords;
 using PhoenixPoint.Tactical.Levels;
 using PhoenixPoint.Tactical.Levels.ActorDeployment;
 using PhoenixPoint.Tactical.Levels.Missions;
@@ -88,9 +89,8 @@ namespace TFTV
                     TacticalLevelController controller = GameUtl.CurrentLevel().GetComponent<TacticalLevelController>();
 
                     TFTVBaseDefenseTactical.BaseDefenseConsoleActivated(__instance, status, controller);
-
                     TFTVPalaceMission.PalaceConsoleActivated(__instance, status, controller);
-                    TFTVExperimental.TalkingPointConsoleActivated(__instance, status, controller);
+                    TFTVRescueVIPMissions.TalkingPointConsoleActivated(__instance, status, controller);
 
                 }
                 catch (Exception e)
@@ -127,7 +127,7 @@ namespace TFTV
                 try
                 {
                     TFTVDeliriumPerks.ImplementDeliriumPerks(actor, __instance);
-                    TFTVExperimental.AddReinforcementTagToImplementNoDropsOption(actor, __instance);
+                    TFTVKillingExploits.AddReinforcementTagToImplementNoDropsOption(actor, __instance);
                     TFTVHumanEnemies.GiveRankAndNameToHumaoidEnemy(actor, __instance);
                     TFTVUmbra.UmbraEverywhereVoidOmenImplementation(actor, __instance);
                     TFTVBaseDefenseTactical.AddScatterObjectiveTagForBaseDefense(actor, __instance);
@@ -286,6 +286,25 @@ namespace TFTV
             }
         }
 
+
+        [HarmonyPatch(typeof(DamageKeyword), "ProcessKeywordDataInternal")]
+        internal static class TFTV_DamageKeyword_ProcessKeywordDataInternal_patch
+        {
+            public static void Postfix(ref DamageAccumulation.TargetData data)
+            {
+                try
+                {
+                    TFTVAncients.ApplyDamageResistanceToHopliteInHiding(ref data);
+                    TFTVRevenant.ApplyRevenantSpecialResistance(ref data);
+
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+        }
 
 
 

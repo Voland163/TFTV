@@ -340,7 +340,7 @@ namespace TFTV
 
                     GeoLevelController controller = __instance.GeoLevel;
 
-                    if (__instance.CurrentBehemothStatus == GeoBehemothActor.BehemothStatus.Dormant)//first check
+                    if (__instance.CurrentBehemothStatus == BehemothStatus.Dormant)//first check
                     {
                         //   TFTVLogger.Always("Behemoth's target lists are cleared because he is sleeping");
                         targetsForBehemoth.Clear();
@@ -527,8 +527,6 @@ namespace TFTV
                 try
                 {
                     GeoLevelController controller = __instance.GeoLevel;
-
-                  
 
                     __instance.GeoLevel.EventSystem.SetVariable(BehemothRoamings, __instance.GeoLevel.EventSystem.GetVariable(BehemothRoamings) + 1);
 

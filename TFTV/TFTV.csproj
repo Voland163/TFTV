@@ -143,6 +143,7 @@
     <Compile Include="TFTVBetaSaveGamesFixes.cs" />
     <Compile Include="TFTVBetterEnemies.cs" />
     <Compile Include="TFTVCapturePandorans.cs" />
+    <Compile Include="TFTVCriticalStuff.cs" />
     <Compile Include="TFTVDefsWithConfigDependency.cs" />
     <Compile Include="TFTVCapturePandoransGeoscape.cs" />
     <Compile Include="TFTVChangesToDLC1andDLC2Events.cs" />
@@ -162,9 +163,11 @@
     <Compile Include="TFTVHarmonyTactical.cs" />
     <Compile Include="TFTVHarmonyTacticalUI.cs" />
     <Compile Include="TFTVHealing.cs" />
+    <Compile Include="TFTVKillingExploits.cs" />
     <Compile Include="TFTVNewGameOptions.cs" />
     <Compile Include="TFTVPalaceMission.cs" />
     <Compile Include="TFTVReleaseOnly.cs" />
+    <Compile Include="TFTVRescueVIPMissions.cs" />
     <Compile Include="TFTVSpecialDifficulties.cs" />
     <Compile Include="TFTVExperimental.cs" />
     <Compile Include="TFTVGeoscape.cs" />
