@@ -151,7 +151,7 @@ namespace TFTV
                     if (tooltipText != null)
                     {
                         tooltipText.TipKey = new LocalizedTextBind(tipText, true);
-                        //  TFTVLogger.Always($"got here, {tipText}");
+                        //  TFTVLogger.Always($", {tipText}");
                     }
 
                 }

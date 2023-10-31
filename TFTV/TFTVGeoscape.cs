@@ -3,6 +3,7 @@ using Epic.OnlineServices;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Modding;
+using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using System;
 using System.Collections.Generic;
@@ -84,7 +85,7 @@ namespace TFTV
         {
             TFTVLogger.Always($"OnGeoscapeStart");
 
-
+         
             /// Geoscape level controller is accessible at any time.
             GeoLevelController gsController = Controller;
 
@@ -231,7 +232,7 @@ namespace TFTV
         {
 
             DateTime myDate = new DateTime(1, 1, 1);
-
+         
             TFTVLogger.Always("Geoscape data will be processed");
 
 

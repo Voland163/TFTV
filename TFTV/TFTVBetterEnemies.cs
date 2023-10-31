@@ -448,8 +448,7 @@ namespace TFTV
             }
         }
 
-       
-
+      
         public static void BEBuff_StartingEvolution()
         {
             try
@@ -675,9 +674,9 @@ namespace TFTV
                 BodyPartAspectDef bodyPartAspectDef3 = DefCache.GetDef<BodyPartAspectDef>("E_BodyPartAspect [AN_Berserker_Helmet_BodyPartDef]");
                 bodyPartAspectDef3.Perception = 5f;
                 bodyPartAspectDef3.WillPower = 2f;
-                BodyPartAspectDef bodyPartAspectDef4 = DefCache.GetDef<BodyPartAspectDef>("E_BodyPartAspect [AN_Berserker_Helmet_Viking_BodyPartDef]");
-                bodyPartAspectDef4.Perception = 5f;
-                bodyPartAspectDef4.WillPower = 2f;
+               // BodyPartAspectDef bodyPartAspectDef4 = DefCache.GetDef<BodyPartAspectDef>("E_BodyPartAspect [AN_Berserker_Helmet_Viking_BodyPartDef]");
+               // bodyPartAspectDef4.Perception = 5f;
+              //  bodyPartAspectDef4.WillPower = 2f;
                 BodyPartAspectDef bodyPartAspectDef5 = DefCache.GetDef<BodyPartAspectDef>("E_BodyPartAspect [AN_Priest_Legs_ItemDef]");
                 bodyPartAspectDef5.Perception = 2f;
                 BodyPartAspectDef bodyPartAspectDef6 = DefCache.GetDef<BodyPartAspectDef>("E_BodyPartAspect [AN_Priest_Torso_BodyPartDef]");

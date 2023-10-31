@@ -1376,8 +1376,8 @@ namespace TFTV
                     skillName);
                 revenantAbility.StatModifications = new ItemStatModification[0];
                 revenantAbility.ItemTagStatModifications = new EquipmentItemTagStatModification[0];
-                revenantAbility.ViewElementDef.DisplayName1 = new LocalizedTextBind("REVENANT", true);
-                revenantAbility.ViewElementDef.Description = new LocalizedTextBind("Nothing because fail", true);
+                revenantAbility.ViewElementDef.DisplayName1.LocalizationKey = "KEY_ABILITY_REVENANT";
+                revenantAbility.ViewElementDef.Description.LocalizationKey = "KEY_ABILITY_REVENANT_DESCRIPTION";
                 revenantAbility.ViewElementDef.LargeIcon = Helper.CreateSpriteFromImageFile("ODI_Skull.png");
                 revenantAbility.ViewElementDef.SmallIcon = Helper.CreateSpriteFromImageFile("ODI_Skull.png");
                 // revenantAbility.ViewElementDef.ShowInStatusScreen = false;

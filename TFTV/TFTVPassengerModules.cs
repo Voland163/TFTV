@@ -440,36 +440,47 @@ namespace TFTV
                 {
 
                     GeoVehicle geoVehicle = __instance.View.SelectedActor as GeoVehicle;
+                    //      
+                    //  TFTVLogger.Always($"Phoenix characters on site: {geoVehicle.CurrentSite.GetAllCharacters().Where(c => c.Faction == geoVehicle.Owner).Count()}");
+
+                    //  if (__instance.EventSystem.IsEventTriggered("PROG_FS1_FAIL"))//geoVehicle.CurrentSite.GetAllCharacters().Any(c=>c.Faction==geoVehicle.Owner))//)
+                    //  {
                     string componentName = "PP_Manticore";
-                    if (geoVehicle.VehicleDef.name.Contains("ANU_Blimp"))
-                    {
-                        componentName = "ANU_Blimp";
-                    }
-                    else if (geoVehicle.VehicleDef.name.Contains("NJ_Thunderbird"))
-                    {
-                        componentName = "NJ_Thunderbird";
-                    }
-                    else if (geoVehicle.VehicleDef.name.Contains("SYN_Helios"))
-                    {
-                        componentName = "SYN_Helios";
-                    }
-                    ComponentSetDef sourceAircraftComponentDef = DefCache.GetDef<ComponentSetDef>(componentName);
-                    clonedAircraft = __instance.PhoenixFaction.CreateVehicle(geoVehicle.CurrentSite, sourceAircraftComponentDef);
-                    clonedAircraft.RenameVehicle(geoVehicle.Name);
-                    foreach (GeoVehicleEquipment equipment in geoVehicle.Equipments)
-                    {
-                        clonedAircraft.AddEquipment(equipment);
-                    }
+                        if (geoVehicle.VehicleDef.name.Contains("ANU_Blimp"))
+                        {
+                            componentName = "ANU_Blimp";
+                        }
+                        else if (geoVehicle.VehicleDef.name.Contains("NJ_Thunderbird"))
+                        {
+                            componentName = "NJ_Thunderbird";
+                        }
+                        else if (geoVehicle.VehicleDef.name.Contains("SYN_Helios"))
+                        {
+                            componentName = "SYN_Helios";
+                        }
+                        ComponentSetDef sourceAircraftComponentDef = DefCache.GetDef<ComponentSetDef>(componentName);
+                        clonedAircraft = __instance.PhoenixFaction.CreateVehicle(geoVehicle.CurrentSite, sourceAircraftComponentDef);
+                        clonedAircraft.RenameVehicle(geoVehicle.Name);
+                        foreach (GeoVehicleEquipment equipment in geoVehicle.Equipments)
+                        {
+                            clonedAircraft.AddEquipment(equipment);
+                        }
 
-                    GeoSite geoSite = (from p in __instance.Map.SitesByType[GeoSiteType.PhoenixBase]
-                                       where p.Owner == __instance.PhoenixFaction && p.State == GeoSiteState.Functioning
-                                       select p into d
-                                       orderby GeoMap.Distance(d, clonedAircraft.CurrentSite)
-                                       select d).FirstOrDefault();
-                    clonedAircraft.TeleportToSite(geoSite);
-                    clonedAircraft.ReloadAllEquipments();
+                        GeoSite geoSite = (from p in __instance.Map.SitesByType[GeoSiteType.PhoenixBase]
+                                           where p.Owner == __instance.PhoenixFaction && p.State == GeoSiteState.Functioning
+                                           select p into d
+                                           orderby GeoMap.Distance(d, clonedAircraft.CurrentSite)
+                                           select d).FirstOrDefault();
+                        clonedAircraft.TeleportToSite(geoSite);
+                        clonedAircraft.ReloadAllEquipments();
 
+                 /*   }
+                    else 
+                    {
 
+                        TFTVLogger.Always($"Failed the Hatching, so not getting your original craft back!");
+                    
+                    }*/
 
 
                 }

@@ -1,4 +1,5 @@
-﻿using Base;
+﻿using Assets.Code.PhoenixPoint.Geoscape.Entities.Sites.TheMarketplace;
+using Base;
 using Base.Core;
 using Base.UI.MessageBox;
 using HarmonyLib;
@@ -131,6 +132,33 @@ namespace TFTV
 
         }
 
+        private static void SetMarketPlaceRotations(GeoLevelController controller)
+        {
+            try
+            {
+                GeoMarketplace geoMarketplace = controller.Marketplace;
+
+                DateTime cutoffDay = new DateTime(2047, 1, 5); // January 5th, 2047
+
+                if (geoMarketplace.AllMissionsCompleted && controller.Timing.Now.DateTime > cutoffDay && controller.EventSystem.GetVariable("MarketPlaceRotations") == 0)
+                {
+                    // Calculate the number of days from the cutoff day to the current date and divide by 4
+                    TimeSpan timeDifference = controller.Timing.Now.DateTime - cutoffDay;
+                    int variable = (int)(timeDifference.TotalDays / 4);
+
+                    // Set the "MarketPlaceRotations" variable
+                    TFTVLogger.Always($"Adjusting old save to new Marketplace! today is {controller.Timing.Now.DateTime}, so setting MarketPlaceRotation to {variable}");
+
+                    controller.EventSystem.SetVariable("MarketPlaceRotations", variable);
+                    TFTVChangesToDLC5.ForceMarketPlaceUpdate();
+                }
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
+        }
 
 
 
@@ -303,6 +331,7 @@ namespace TFTV
                 CheckSaveGameEventChoices(controller);
                 CheckUmbraResearchVariable(controller);
                 AddInteranlDifficultyCheckSaveData(controller);
+                SetMarketPlaceRotations(controller);
                 //  FixReactivateCyclopsMission(controller);
               //  SetStrongerPandoransOn();
             }

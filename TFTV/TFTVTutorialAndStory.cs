@@ -458,7 +458,7 @@ namespace TFTV
 
                     if (!hintManager.RegisterContextHelpHint(firstHint, isMandatory: true, null))
                     {
-                        //TFTVLogger.Always($"got here too");
+                        //TFTVLogger.Always($" too");
 
                         ContextHelpHint item = new ContextHelpHint(firstHint, isMandatory: true, null);
 

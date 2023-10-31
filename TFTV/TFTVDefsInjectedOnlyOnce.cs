@@ -67,6 +67,8 @@ namespace TFTV
 {
     internal class TFTVDefsInjectedOnlyOnce
     {
+     
+        
         //  private static readonly DefRepository Repo = TFTVMain.Repo;
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
         private static readonly DefRepository Repo = TFTVMain.Repo;
@@ -133,7 +135,6 @@ namespace TFTV
             TFTVChangesToDLC1andDLC2Events.ChangesToDLC1andDLC2Defs();
             TFTVChangesToDLC3Events.ChangesToDLC3Defs();
             TFTVChangesToDLC4Events.ChangesToDLC4Defs();
-            TFTVChangesToDLC5Events.ChangesToDLC5Defs();
             ChangesToAcherons();
             RemoveCensusResearch();
             AllowMedkitsToTargetMutoidsAndChangesToMutoidSkillSet();
@@ -202,9 +203,11 @@ namespace TFTV
             FixBionic3ResearchNotGivingAccessToFacility();
             CreateFakeFacilityToFixBadBaseDefenseMaps();
             ChangeFireNadeCostAndDamage();
-            ExperimentKaosWeaponAmmo();
+           
             ModifyRescueCiviliansMissions();
-            CreateEilenForSale();
+            TFTVChangesToDLC5.TFTVMercenaries.CreateMercenaries();
+            TFTVChangesToDLC5.TFTVKaosGuns.CreateKaosWeaponAmmo();
+            TFTVChangesToDLC5.TFTVMarketPlaceItems.AdjustMarketPlaceOptions();
             //Print();
         }
 
@@ -214,65 +217,7 @@ namespace TFTV
         //NEU_Sniper_Torso_BodyPartDef
         //NEU_Sniper_Legs_ItemDef
 
-
-        private static void CreateEilenForSale()
-        {
-            try 
-            {
-
-                CreateMarketPlaceRecruit("CitizenForSale", "{245C3931-295D-4E44-AF26-FF028E8909AC}", "{166357DB-A49B-42B1-BA22-78A5106297D4}", "{41F2A80B-FE20-4DAE-9C4F-DD78649A57E2}", 
-                    "{CB9D731A-D829-4699-9C06-5D5182451CFC}", "TestingCitizenForSaleTitle", "TestingCitizenForSaleDescription", DefCache.GetDef<TacCharacterDef>("S_SY_Eileen_CharacterTemplateDef"));
-            
-            
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-
-
-
-
-        }
-
-        private static void CreateMarketPlaceRecruit(string name, string gUID, string gUID2, string gUID3, string gUID4, string keyTitle, string keyDescription, TacCharacterDef tacCharacterDef)
-        {
-            try 
-            {
-
-              
-
-                GeoMarketplaceItemOptionDef sourceItemOption = DefCache.GetDef<GeoMarketplaceItemOptionDef>("KasoBuggy_MarketplaceItemOptionDef");
-                GeoMarketplaceItemOptionDef newOption = Helper.CreateDefFromClone(sourceItemOption, gUID, name);
-                GroundVehicleItemDef sourceVehicleItemDef = DefCache.GetDef<GroundVehicleItemDef>("KS_Kaos_Buggy_ItemDef");
-
-                GroundVehicleItemDef vehicleItemDef = Helper.CreateDefFromClone(sourceVehicleItemDef, gUID2, name);
-                vehicleItemDef.ViewElementDef = Helper.CreateDefFromClone(sourceVehicleItemDef.ViewElementDef, gUID3, name);
-                vehicleItemDef.ViewElementDef.DisplayName1.LocalizationKey = keyTitle;
-                vehicleItemDef.ViewElementDef.Description.LocalizationKey = keyDescription;
-                vehicleItemDef.DataDef = Helper.CreateDefFromClone(vehicleItemDef.DataDef, gUID4, name);
-
-                vehicleItemDef.ViewElementDef.InventoryIcon = Helper.CreateSpriteFromImageFile("UI_Portrait_Grunt.png");
-
-                vehicleItemDef.VehicleTemplateDef = tacCharacterDef;
-
-                newOption.ItemDef = vehicleItemDef;
-                tacCharacterDef.Data.ViewElementDef = vehicleItemDef.ViewElementDef;
-
-
-                TheMarketplaceSettingsDef marketplaceSettings = DefCache.GetDef<TheMarketplaceSettingsDef>("TheMarketplaceSettingsDef");
-                List<GeoMarketplaceOptionDef> geoMarketplaceItemOptionDefs = marketplaceSettings.PossibleOptions.ToList();
-                geoMarketplaceItemOptionDefs.Add(newOption);
-                marketplaceSettings.PossibleOptions = geoMarketplaceItemOptionDefs.ToArray();
-            }
-
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-
-
-        }
+       
 
 
         private static void CreateConvinceCivilianStatus()
@@ -668,141 +613,10 @@ namespace TFTV
 
         }
 
-        private static void CreateAmmoForKG(WeaponDef weaponDef, int amount, int minPrice, string gUID0, string gUID1, string gUID2, string spriteFileName)
-        {
-            try
-            {
-                TacticalItemDef sourceAmmo = DefCache.GetDef<TacticalItemDef>("PX_AssaultRifle_AmmoClip_ItemDef");
-                string name = $"{weaponDef.name}_AmmoClipDef";
-
-                ClassTagDef classTagDef = weaponDef.Tags.FirstOrDefault<ClassTagDef>();
-
-                TacticalItemDef newAmmo = Helper.CreateDefFromClone(sourceAmmo, gUID0, name);
-                newAmmo.ViewElementDef = Helper.CreateDefFromClone(sourceAmmo.ViewElementDef, gUID1, name);
-                newAmmo.ViewElementDef.DisplayName1.LocalizationKey = $"KEY_KAOSGUNS_AMMO_{weaponDef.name}";
-                newAmmo.ViewElementDef.Description.LocalizationKey = $"KEY_KAOSGUNS_AMMO_DESCRIPTION_{weaponDef.name}";
-                newAmmo.ViewElementDef.InventoryIcon = Helper.CreateSpriteFromImageFile(spriteFileName);
+        
 
 
-                newAmmo.ChargesMax = amount;
-                newAmmo.CrateSpawnWeight = 1000;
-                newAmmo.Tags.Remove(DefCache.GetDef<GameTagDef>("ManufacturableItem_TagDef"));
-                newAmmo.Tags.Remove(DefCache.GetDef<ClassTagDef>("Assault_ClassTagDef"));
-                newAmmo.Tags.Add(classTagDef);
-                //  newAmmo.CombineWhenStacking = false;
-                newAmmo.ManufactureTech = 0;
-                newAmmo.ManufactureMaterials = minPrice;
-                weaponDef.ChargesMax = amount;
-                weaponDef.CompatibleAmmunition = new TacticalItemDef[] { newAmmo };
-
-                GeoMarketplaceItemOptionDef newMarketplaceItem = Helper.CreateDefFromClone
-                     (DefCache.GetDef<GeoMarketplaceItemOptionDef>("Obliterator_MarketplaceItemOptionDef"), gUID2, name);
-
-                newMarketplaceItem.MinPrice = minPrice;
-                newMarketplaceItem.MaxPrice = minPrice + minPrice * 1.25f;
-                newMarketplaceItem.ItemDef = newAmmo;
-                newMarketplaceItem.DisallowDuplicates = false;
-
-
-                TheMarketplaceSettingsDef marketplaceSettings = DefCache.GetDef<TheMarketplaceSettingsDef>("TheMarketplaceSettingsDef");
-
-                List<GeoMarketplaceOptionDef> geoMarketplaceItemOptionDefs = marketplaceSettings.PossibleOptions.ToList();
-
-                geoMarketplaceItemOptionDefs.Add(newMarketplaceItem);
-
-
-                marketplaceSettings.PossibleOptions = geoMarketplaceItemOptionDefs.ToArray();
-
-                weaponDef.WeaponMalfunction = DefCache.GetDef<WeaponDef>("PX_AssaultRifle_WeaponDef").WeaponMalfunction;
-
-
-                AmmoWeaponDatabase.AmmoToWeaponDictionary.Add(newAmmo, new List<TacticalItemDef>() { weaponDef });
-
-
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-
-
-
-        }
-
-
-        private static void ExperimentKaosWeaponAmmo()
-        {
-            try
-            {
-                WeaponDef Obliterator = DefCache.GetDef<WeaponDef>("KS_Obliterator_WeaponDef");
-                WeaponDef Subjector = DefCache.GetDef<WeaponDef>("KS_Subjector_WeaponDef");
-                WeaponDef Redemptor = DefCache.GetDef<WeaponDef>("KS_Redemptor_WeaponDef");
-                WeaponDef Devastator = DefCache.GetDef<WeaponDef>("KS_Devastator_WeaponDef");
-                WeaponDef Tormentor = DefCache.GetDef<WeaponDef>("KS_Tormentor_WeaponDef");
-
-                Obliterator.ManufactureMaterials = 100;
-                Subjector.ManufactureMaterials = 100;
-                Redemptor.ManufactureMaterials = 100;
-                Devastator.ManufactureMaterials = 100;
-                Tormentor.ManufactureMaterials = 100;
-
-
-                //KEY_KAOSGUNS_AMMO_
-                //KEY_KAOSGUNS_AMMO_DESCRIPTION_
-
-                CreateAmmoForKG(Tormentor, 8, 30, "e1875c26-0494-4d0f-9e5d-3c74a17c3b2d",
-"79f6bb60-8ca3-4bbf-a0f1-c819f5ebf09e",
-"ee89b5c3-6d06-4c5e-856b-96e7ff411c77", "KG_Pistol_Ammo.png");
-                CreateAmmoForKG(Subjector, 5, 30, "2e5be682-1f85-4610-bbb7-c2f2bf41d4c6",
-"b03d78d4-c7e7-49c3-b097-3448e253a1e7",
-"70a0a172-2b57-48d3-94c2-7cb4e428c3c4", "KG_Sniper_Ammo.png");
-                CreateAmmoForKG(Redemptor, 24, 30, "8f7ff5ca-4b8d-4677-86d3-7f21e41a3a70",
-"d60e04a0-c873-4c16-9a83-2f9d6e1c163d",
-"dc92d8ca-1b8d-4f85-9d90-d8eb9e63d5a3", "KG_Shotgun_Ammo.png");
-                CreateAmmoForKG(Devastator, 6, 30, "99aa40e5-5415-44b9-98ed-34d746a99b52",
-"3b647fa3-1e06-4f2a-9d1c-82edf8a6dbff",
-"605d3c8a-7b9c-481a-8c0d-7ff4be94901a", "KG_Cannon_Ammo.png");
-                CreateAmmoForKG(Obliterator, 32, 30, "2c86774f-4889-4c06-9f7a-8971e62ff267",
-"587b1a5b-1665-48c9-8b9c-4156231712c1",
-"1a1230fc-0e5d-4c4c-9be5-563879d2471f", "KG_Assault_Rifle_Ammo.png");
-
-                TheMarketplaceSettingsDef marketplaceSettings = DefCache.GetDef<TheMarketplaceSettingsDef>("TheMarketplaceSettingsDef");
-
-
-                marketplaceSettings.TheMarketplaceItemOfferAmounts = new TheMarketplaceSettingsDef.TheMarketplaceItemOfferAmount[]
-                {
-                new TheMarketplaceSettingsDef.TheMarketplaceItemOfferAmount { NumberOfMissionsCompleted = 0, MinNumberOfOffers = 30, MaxNumberOfOffers = 45 },
-                new TheMarketplaceSettingsDef.TheMarketplaceItemOfferAmount { NumberOfMissionsCompleted = 1, MinNumberOfOffers = 30, MaxNumberOfOffers = 45 },
-                new TheMarketplaceSettingsDef.TheMarketplaceItemOfferAmount { NumberOfMissionsCompleted = 2, MinNumberOfOffers = 30, MaxNumberOfOffers = 45 },
-                new TheMarketplaceSettingsDef.TheMarketplaceItemOfferAmount { NumberOfMissionsCompleted = 3, MinNumberOfOffers = 30, MaxNumberOfOffers = 45 },
-                new TheMarketplaceSettingsDef.TheMarketplaceItemOfferAmount { NumberOfMissionsCompleted = 4, MinNumberOfOffers = 30, MaxNumberOfOffers = 45 }
-                };
-
-              
-
-                List<GeoMarketplaceOptionDef> geoMarketplaceOptionDefs = new List<GeoMarketplaceOptionDef>(marketplaceSettings.PossibleOptions.ToList());
-
-                geoMarketplaceOptionDefs.Remove(DefCache.GetDef<GeoMarketplaceResearchOptionDef>("Random_MarketplaceResearchOptionDef"));
-
-                marketplaceSettings.PossibleOptions = geoMarketplaceOptionDefs.ToArray();
-
-             /*   foreach(GeoMarketplaceOptionDef geoMarketplaceOptionDef in marketplaceSettings.PossibleOptions) 
-                {
-
-                    TFTVLogger.Always($"{geoMarketplaceOptionDef.name}");
-                
-                }*/
-
-               
-
-            }
-
-
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-        }
+       
 
 
 
@@ -1110,7 +924,7 @@ namespace TFTV
                 newForceGateAbility.ViewElementDef.Description.LocalizationKey = "FORCE_GATE_ABILITY_DESCRIPTION";
                 newCancelGateAbility.ViewElementDef.DisplayName1.LocalizationKey = "CANCEL_FORCE_GATE_ABILITY";
                 newCancelGateAbility.ViewElementDef.Description.LocalizationKey = "CANCEL_FORCE_GATE_ABILITY_DESCRIPTION";
-                //  TFTVLogger.Always($"got here");
+                //  TFTVLogger.Always($"");
 
                 //Then create the statuses
 
@@ -1139,12 +953,12 @@ namespace TFTV
                 newActorToObjectiveStatus.Visuals = Helper.CreateDefFromClone(actorToConsoleBridgingStatusDef.Visuals, "{6B002C8D-F28D-4A61-83BB-81E06BFF51FE}", actorToObjectiveBridgeStatusName);
                 newObjectiveToActorStatus.Visuals = Helper.CreateDefFromClone(consoleToActorBridgingStatusDef.Visuals, "{75E47B2A-6598-4635-882C-C763681E2C6D}", objectiveToActorBridgeStatusName);
                 newStatusOnActor.Visuals = Helper.CreateDefFromClone(hackingStatusDef.Visuals, "{A315B3DF-7F7C-4887-B875-007EB58DB61F}", statusOnActorName);
-                //   TFTVLogger.Always($"got here2");
+                //   TFTVLogger.Always($"2");
 
                 newActorToObjectiveStatus.Visuals.DisplayName1.LocalizationKey = "FORCE_GATE_STATUS";
                 newActorToObjectiveStatus.Visuals.Description.LocalizationKey = "FORCE_GATE_STATUS_DESCRIPTION";
 
-                // TFTVLogger.Always($"got here3");
+                // TFTVLogger.Always($"3");
                 //Hacking_Start_AbilityDef is conditioned on Objective not having ConsoleActivated_StatusDef and it applies
                 //1) ActiveHackableChannelingConsole_StatusDef to the Console (this is just a tag)
                 //2) Hacking_ConsoleToActorBridge_StatusDef to the Objective
@@ -4435,7 +4249,7 @@ namespace TFTV
                 loadingTipsRepositoryDef.GeoscapeLoadingTips.Add(new LocalizedTextBind() { LocalizationKey = "TFTV_TIP_GEOSCAPE_28" });
                 loadingTipsRepositoryDef.GeoscapeLoadingTips.Add(new LocalizedTextBind() { LocalizationKey = "TFTV_TIP_GEOSCAPE_29" });
                 loadingTipsRepositoryDef.GeoscapeLoadingTips.Add(new LocalizedTextBind() { LocalizationKey = "TFTV_TIP_GEOSCAPE_30" });
-
+                loadingTipsRepositoryDef.GeoscapeLoadingTips.Add(new LocalizedTextBind() { LocalizationKey = "TFTV_TIP_GEOSCAPE_31" });
 
                 loadingTipsRepositoryDef.TacticalLoadingTips.Add(new LocalizedTextBind() { LocalizationKey = "TFTV_TIP_TACTICAL_1" });
                 loadingTipsRepositoryDef.TacticalLoadingTips.Add(new LocalizedTextBind() { LocalizationKey = "TFTV_TIP_TACTICAL_2" });

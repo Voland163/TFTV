@@ -149,7 +149,7 @@
     <Compile Include="TFTVChangesToDLC1andDLC2Events.cs" />
     <Compile Include="TFTVChangesToDLC3Events.cs" />
     <Compile Include="TFTVChangesToDLC4Events.cs" />
-    <Compile Include="TFTVChangesToDLC5Events.cs" />
+    <Compile Include="TFTVChangesToDLC5.cs" />
     <Compile Include="TFTVCommonMethods.cs" />
     <Compile Include="TFTVDefsInjectedOnlyOnce.cs" />
     <Compile Include="TFTVDefsRequiringReinjection.cs" />

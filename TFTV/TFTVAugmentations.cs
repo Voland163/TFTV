@@ -2,6 +2,7 @@
 using Base.Defs;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
+using PhoenixPoint.Common.Entities.Addons;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.Items;
 using PhoenixPoint.Common.View.ViewModules;
@@ -14,6 +15,7 @@ using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
 using PhoenixPoint.Geoscape.View.ViewControllers.AugmentationScreen;
 using PhoenixPoint.Geoscape.View.ViewModules;
+using PhoenixPoint.Tactical.Entities.Abilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,14 +25,19 @@ namespace TFTV
 {
     internal class TFTVAugmentations
     {
+
+        private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
+        private static readonly DefRepository Repo = TFTVMain.Repo;
+
         
 
-        private static readonly DefRepository Repo = TFTVMain.Repo;
+       
+
 
         [HarmonyPatch(typeof(EditUnitButtonsController), "CheckIsBionicsIsAvailable")]
         public static class EditUnitButtonsController_CheckIsBionicsIsAvailable_Bionics_patch
         {
-            public static void Postfix(GeoPhoenixFaction phoenixFaction, ref bool ____bionicsAvailable, EditUnitButtonsController __instance)
+            public static void Postfix(GeoPhoenixFaction phoenixFaction, ref bool ____bionicsAvailable, EditUnitButtonsController __instance, UIModuleActorCycle ____parentModule)
             {
                 try
                 {
@@ -48,9 +55,11 @@ namespace TFTV
                         }
                     }
 
-                    if (flag)
-                    {
+                  //  PassiveModifierAbilityDef noAugAbility = DefCache.GetDef<PassiveModifierAbilityDef>("NoAug_AbilityDef");
 
+                    if (flag) //&& ____parentModule != null && ____parentModule.CurrentCharacter != null && !____parentModule.CurrentCharacter.GetTacticalAbilities().Contains(noAugAbility))
+                    {
+                        
 
                     }
                     else
@@ -74,7 +83,7 @@ namespace TFTV
         [HarmonyPatch(typeof(EditUnitButtonsController), "CheckIsMutationIsAvailable")]
         public static class EditUnitButtonsController_CheckIsMutationIsAvailable_Mutations_patch
         {                   
-            public static void Postfix(GeoPhoenixFaction phoenixFaction, ref bool ____mutationAvailable, EditUnitButtonsController __instance)
+            public static void Postfix(GeoPhoenixFaction phoenixFaction, ref bool ____mutationAvailable, EditUnitButtonsController __instance, UIModuleActorCycle ____parentModule)
             {
                 try
                 {
@@ -92,7 +101,9 @@ namespace TFTV
                         }
                     }
 
-                    if (flag)
+                   // PassiveModifierAbilityDef noAugAbility = DefCache.GetDef<PassiveModifierAbilityDef>("NoAug_AbilityDef");
+
+                    if (flag) //&& ____parentModule !=null && ____parentModule.CurrentCharacter!=null && !____parentModule.CurrentCharacter.GetTacticalAbilities().Contains(noAugAbility))
                     {
 
 

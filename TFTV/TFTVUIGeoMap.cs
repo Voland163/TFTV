@@ -210,7 +210,7 @@ namespace TFTV
                 deliriumTooltip.gameObject.GetComponent<UITooltipText>().TipKey.LocalizationKey = "";
                 deliriumTooltip.gameObject.name = "DeliriumTooltip";
                 deliriumTooltip.gameObject.SetActive(false);
-                //TFTVLogger.Always("Got here");
+                //TFTVLogger.Always("");
 
                 Transform evolutionTooltip = UnityEngine.Object.Instantiate(thingsToUse[0], tInfoBar.GetComponent<Transform>().
                  Find("PopulationDoom_Meter").GetComponent<Transform>().Find("PandoranEvolutionIcon"));
@@ -364,7 +364,7 @@ namespace TFTV
                     Transform tInfoBar = __instance.PopulationBarRoot.transform.parent?.transform;
                     Transform populationBar = tInfoBar.GetComponent<Transform>().Find("PopulationDoom_Meter");
 
-                    //     TFTVLogger.Always("Got here");
+                    //     TFTVLogger.Always("");
 
 
                     Transform anuInfo = populationBar.GetComponent<Transform>().Find("AnuPercentage");
@@ -382,7 +382,7 @@ namespace TFTV
                     Transform njIcon = populationBar.GetComponent<Transform>().Find("NJIcon");
                     Transform synIcon = populationBar.GetComponent<Transform>().Find("SynIcon");
 
-                    //   TFTVLogger.Always("Got here 2");
+                    //   TFTVLogger.Always(" 2");
 
                     Transform anuTooltip = populationBar.GetComponent<Transform>().Find("AnuIcon").GetComponent<Transform>().Find("AnuTooltip");
                     Transform njTooltip = populationBar.GetComponent<Transform>().Find("NJIcon").GetComponent<Transform>().Find("NJTooltip");
@@ -420,14 +420,14 @@ namespace TFTV
                         synTooltip.gameObject.GetComponent<UITooltipText>().TipText = synToolTipText + "\n" + CreateTextForSynTooltipText(controller);
                     }
 
-                    //   TFTVLogger.Always("Got here 3");
+                    //   TFTVLogger.Always(" 3");
                     Transform deliriumIconHolder = populationBar.GetComponent<Transform>().Find("DeliriumIcon");
                     Image deliriumIcon = deliriumIconHolder.GetComponent<Image>();
                     Transform separator = populationBar.GetComponent<Transform>().Find("ODISeparator1");
 
                     Transform separator2 = populationBar.GetComponent<Transform>().Find("ODISeparator2");
 
-                    //    TFTVLogger.Always("Got here 4");
+                    //    TFTVLogger.Always(" 4");
 
                     
 
@@ -487,7 +487,7 @@ namespace TFTV
                     Transform deliriumTooltip = populationBar.GetComponent<Transform>().Find("DeliriumIcon").GetComponent<Transform>().Find("DeliriumTooltip");
                     deliriumTooltip.gameObject.GetComponent<UITooltipText>().TipText = deliriumToolTipText;
                     deliriumTooltip.gameObject.SetActive(true);
-                    //TFTVLogger.Always("Got here");
+                    //TFTVLogger.Always("");
 
 
 
@@ -504,7 +504,7 @@ namespace TFTV
                     string evolutionToolTipText = $"{TFTVCommonMethods.ConvertKeyToString("KEY_DELIRIUM_UI_PANDORAN_EVO_TIP0")} ";
                     if (controller.PhoenixFaction.Research.HasCompleted("PX_Alien_EvolvedAliens_ResearchDef"))
                     {
-                        // TFTVLogger.Always("Got here 5");
+                        // TFTVLogger.Always(" 5");
                         evolutionIconHolder.gameObject.SetActive(true);
                         populationBar.gameObject.SetActive(true);
                         __instance.PopulationBarRoot.gameObject.SetActive(true);

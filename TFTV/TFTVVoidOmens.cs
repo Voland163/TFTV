@@ -1,6 +1,4 @@
-﻿using Assets.Code.PhoenixPoint.Geoscape.Entities.Sites.TheMarketplace;
-using Base;
-using Base.Core;
+﻿using Base;
 using Base.Defs;
 using Base.Entities.Effects;
 using Base.UI;
@@ -10,6 +8,7 @@ using PhoenixPoint.Common.ContextHelp;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.GameTags;
+using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.Levels.Missions;
 using PhoenixPoint.Geoscape.Core;
 using PhoenixPoint.Geoscape.Entities;
@@ -25,7 +24,6 @@ using PhoenixPoint.Tactical.Levels;
 using PhoenixPoint.Tactical.Levels.FactionEffects;
 using PhoenixPoint.Tactical.Levels.FactionObjectives;
 using PhoenixPoint.Tactical.Levels.Mist;
-using PhoenixPoint.Tactical.View.ViewStates;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -489,21 +487,21 @@ namespace TFTV
                     /*   GeoMarketplaceResearchOptionDef randomMarketResearch = DefCache.GetDef<GeoMarketplaceResearchOptionDef>("Random_MarketplaceResearchOptionDef");
                        randomMarketResearch.MaxPrice = 1200;
                        randomMarketResearch.MinPrice = 960;*/
-                    TFTVChangesToDLC5Events.ForceMarketPlaceUpdate();
+                    TFTVChangesToDLC5.ForceMarketPlaceUpdate();
                     // Logger.Always(voidOmen + j + " is now in effect, held in variable " + voidOmen + i);
                     VoidOmensCheck[19] = true;
                 }
                 else if (!CheckFordVoidOmensInPlay(level).Contains(19) && VoidOmensCheck[19])
                 {
-                /*    GeoMarketplaceResearchOptionDef randomMarketResearch = DefCache.GetDef<GeoMarketplaceResearchOptionDef>("Random_MarketplaceResearchOptionDef");
-                    randomMarketResearch.MaxPrice = 1500;
-                    randomMarketResearch.MinPrice = 1200;*/
+                    /*    GeoMarketplaceResearchOptionDef randomMarketResearch = DefCache.GetDef<GeoMarketplaceResearchOptionDef>("Random_MarketplaceResearchOptionDef");
+                        randomMarketResearch.MaxPrice = 1500;
+                        randomMarketResearch.MinPrice = 1200;*/
 
                     VoidOmensCheck[19] = false;
-                    TFTVChangesToDLC5Events.ForceMarketPlaceUpdate();
+                    TFTVChangesToDLC5.ForceMarketPlaceUpdate();
                     TFTVLogger.Always("The check for VO#19 went ok");
 
-                    
+
                 }
 
                 List<int> VoidOmensInPLay = new List<int>();
@@ -733,7 +731,7 @@ namespace TFTV
             {
 
 
-                // TFTVLogger.Always($"got here");
+                // TFTVLogger.Always($"");
 
                 if (CheckFordVoidOmensInPlay(geoLevelController).Any(vo => vo != 0))
                 {
@@ -746,7 +744,7 @@ namespace TFTV
 
                     GeoFactionObjective earliestVO = geoLevelController.PhoenixFaction.Objectives?.FirstOrDefault(o => o.Title.LocalizationKey.Contains(voidOmenTitleString));
 
-                //    TFTVLogger.Always($"got here 2");
+                    //    TFTVLogger.Always($" 2");
 
                     if (earliestVO != null)
                     {
@@ -811,12 +809,12 @@ namespace TFTV
                 string voidOmenString = "VoidOmen_";
                 int[] voidOmensinPlay = CheckFordVoidOmensInPlay(geoLevelController);
                 int difficulty = TFTVReleaseOnly.DifficultyOrderConverter(geoLevelController.CurrentDifficultyLevel.Order);
-               
-                List<GeoFactionObjective> allVoidOmenObjectives = FindVoidOmenObjectives(geoLevelController);
- 
-               // TFTVLogger.Always($"got here");
 
-                if (allVoidOmenObjectives.Count>0)
+                List<GeoFactionObjective> allVoidOmenObjectives = FindVoidOmenObjectives(geoLevelController);
+
+                // TFTVLogger.Always($"");
+
+                if (allVoidOmenObjectives.Count > 0)
                 {
                     foreach (GeoFactionObjective voObjective in allVoidOmenObjectives)
                     {
@@ -1397,7 +1395,7 @@ namespace TFTV
                                   phoenix.State = TacFactionState.Won;
 
 
-                                  TFTVLogger.Always("Got here, GameOver method invoked");
+                                  TFTVLogger.Always(", GameOver method invoked");
                               }
                           }
                       }
@@ -1417,7 +1415,7 @@ namespace TFTV
             {
                 try
                 {
-                
+
                     if (__result > 0)
                     {
                         if (VoidOmensCheck[3] && __instance.TacticalActor != null)
@@ -1454,30 +1452,51 @@ namespace TFTV
                 try
                 {
                     TFTVConfig config = TFTVMain.Main.Config;
-                    int difficultyLevel = TFTVReleaseOnly.DifficultyOrderConverter(__instance.TacticalLevel.Difficulty.Order);
 
 
                     if (VoidOmensCheck[7] && config.MoreMistVO)
                     {
+                        int difficultyLevel = TFTVReleaseOnly.DifficultyOrderConverter(__instance.TacticalLevel.Difficulty.Order);
+
+                        MissionTagDef nestAssaultTag = DefCache.GetDef<MissionTagDef>("MissionTypeAlienNestAssault_MissionTagDef");
+                        MissionTagDef lairAssaultTag = DefCache.GetDef<MissionTagDef>("MissionTypeAlienLairAssault_MissionTagDef");
+                        MissionTagDef citadelAssaultTag = DefCache.GetDef<MissionTagDef>("MissionTypeAlienCitadelAssault_MissionTagDef");
+
+                        TFTVLogger.Always($"More Mist VO is in effect and it is turned on in the config options");
 
                         float missionTypeModifer = 1;
-                        string saveDefaultName = __instance.TacticalLevel.TacMission.MissionData.MissionType.SaveDefaultName;
 
-                        if (saveDefaultName.Contains("Nest") || saveDefaultName.Contains("Lair"))
+                        MissionTagDef missionTag = __instance.TacticalLevel.TacMission.MissionData.MissionType.MissionTypeTag;
+
+                        //  string saveDefaultName = __instance.TacticalLevel.TacMission.MissionData.MissionType.SaveDefaultName;
+
+                        if (missionTag != null)
                         {
-                            missionTypeModifer = 0.25f;
-                        }
-                        else if (saveDefaultName.Contains("Citadel"))
-                        {
-                            missionTypeModifer = 0.5f;
+
+                            if (missionTag == nestAssaultTag)
+                            {
+                                TFTVLogger.Always($"The mission is in a nest");
+
+                                missionTypeModifer = 0.25f;
+                            }
+                            else if (missionTag == citadelAssaultTag || missionTag == lairAssaultTag)
+                            {
+                                TFTVLogger.Always($"The mission is in a lair or in a Citadel");
+                                missionTypeModifer = 0.5f;
+                            }
                         }
 
-                        __instance.VoxelMatrixData.InitialMistEntitiesToSpawn.Min = 0 + difficultyLevel * (int)(7 * missionTypeModifer);
-                        __instance.VoxelMatrixData.InitialMistEntitiesToSpawn.Max = 10 + difficultyLevel * (int)(7 * missionTypeModifer);
+                      
+                    
+                        __instance.VoxelMatrixData.InitialMistEntitiesToSpawn.Min = 3 + difficultyLevel * (int)(6 * missionTypeModifer);
+                        __instance.VoxelMatrixData.InitialMistEntitiesToSpawn.Max = 8 + difficultyLevel * (int)(6 * missionTypeModifer);
+                        TFTVLogger.Always($"min blobs: {__instance.VoxelMatrixData.InitialMistEntitiesToSpawn.Min}, max blobs: {__instance.VoxelMatrixData.InitialMistEntitiesToSpawn.Max}");
                         return true;
                     }
                     else
                     {
+
+
                         __instance.VoxelMatrixData.InitialMistEntitiesToSpawn.Min = 1;
                         __instance.VoxelMatrixData.InitialMistEntitiesToSpawn.Max = 3;
                         return true;
@@ -1550,7 +1569,7 @@ namespace TFTV
 
         public static void ImplementStrongerHavenDefenseVO(ref HavenAttacker attacker)
         {
-            try 
+            try
             {
                 if (VoidOmensCheck[12])
                 {
@@ -1571,34 +1590,34 @@ namespace TFTV
 
         }
 
-      /*  [HarmonyPatch(typeof(GeoSite), "CreateHavenDefenseMission")]
-        public static class GeoSite_CreateHavenDefenseMission_IncreaseAttackHavenVoidOmen_patch
-        {
-            
-
-            public static void Prefix(ref HavenAttacker attacker)
-            {
-                try
-                {
-
-                    if (VoidOmensCheck[12])
-                    {
-                        if (attacker.Faction.PPFactionDef == sharedData.AlienFactionDef)
-                        {
-                            TFTVLogger.Always("Alien deployment was " + attacker.Deployment);
-                            attacker.Deployment = Mathf.RoundToInt(attacker.Deployment * 1.5f);
-                            TFTVLogger.Always("Alien deployment is now " + attacker.Deployment);
-                        }
-                    }
+        /*  [HarmonyPatch(typeof(GeoSite), "CreateHavenDefenseMission")]
+          public static class GeoSite_CreateHavenDefenseMission_IncreaseAttackHavenVoidOmen_patch
+          {
 
 
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-            }
-        }*/
+              public static void Prefix(ref HavenAttacker attacker)
+              {
+                  try
+                  {
+
+                      if (VoidOmensCheck[12])
+                      {
+                          if (attacker.Faction.PPFactionDef == sharedData.AlienFactionDef)
+                          {
+                              TFTVLogger.Always("Alien deployment was " + attacker.Deployment);
+                              attacker.Deployment = Mathf.RoundToInt(attacker.Deployment * 1.5f);
+                              TFTVLogger.Always("Alien deployment is now " + attacker.Deployment);
+                          }
+                      }
+
+
+                  }
+                  catch (Exception e)
+                  {
+                      TFTVLogger.Error(e);
+                  }
+              }
+          }*/
 
 
 
@@ -1662,7 +1681,7 @@ namespace TFTV
             {
                 try
                 {
-                   // TFTVLogger.Always($"PrepareTacticalGame is running");
+                    // TFTVLogger.Always($"PrepareTacticalGame is running");
 
                     if (VoidOmensCheck[5] && __instance.MissionDef.name.Contains("HavenDef"))
                     {

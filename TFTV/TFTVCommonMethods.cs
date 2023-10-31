@@ -139,7 +139,7 @@ namespace TFTV
                 TFTVCapturePandoransGeoscape.ToxinsInCirculation = 0;
                 TFTVNewGameMenu.NewGameOptionsSetUp = false;
                 TFTVNewGameMenu.EnterStateRun = false;
-                TFTVGoo.DontUseGooNavigationPatch = false;
+              //  TFTVGoo.DontUseGooNavigationPatch = false;
 
                 /*  TFTVNewGameOptions.AmountOfExoticResourcesSetting;
                   TFTVNewGameOptions.ResourceMultiplierSetting;
@@ -162,39 +162,7 @@ namespace TFTV
         }
 
 
-        public static TacCharacterDef CreateTacCharaterDef(ClassTagDef classTagDef, string name, string gUID, List <TacticalAbilityDef> abilities, 
-            List <ItemDef> readySlots, List<ItemDef> armorSlots, List<ItemDef> inventorySlots, List<GameTagDef> customizationTags, int level, int[] stats)
-        {
-            try
-            {
-
-                TacCharacterDef characterSource = DefCache.GetDef<TacCharacterDef>("AN_Assault1_CharacterTemplateDef");
-                TacCharacterDef newCharacter = Helper.CreateDefFromClone(characterSource, gUID, name);
-
-                newCharacter.Data.Name = name;
-                newCharacter.Data.GameTags = customizationTags != null ? new List<GameTagDef>(customizationTags) {classTagDef }.ToArray() : new List<GameTagDef>() { classTagDef }.ToArray();
-                newCharacter.Data.Abilites = abilities?.ToArray();
-                newCharacter.Data.EquipmentItems = readySlots?.ToArray();
-                newCharacter.Data.InventoryItems = inventorySlots?.ToArray();
-                newCharacter.Data.BodypartItems = armorSlots?.ToArray();                 
-                newCharacter.Data.LevelProgression.SetLevel(level);
-
-                if (stats != null)
-                {
-                    newCharacter.Data.Strength = stats[0];
-                    newCharacter.Data.Will = stats[1];
-                    newCharacter.Data.Speed = stats[2];
-                }
-
-                return newCharacter;
-
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-                throw;
-            }
-        }
+       
 
      /*   public static void ModifyGeoCharacterDef(GeoCharacter character, string name, List<TacticalAbilityDef> abilities,
             List<ItemDef> readySlots, List<ItemDef> armorSlots, List<ItemDef> inventorySlots, List<GameTagDef> customizationTags, int level, int[] stats) 

@@ -1275,7 +1275,7 @@ namespace TFTV
                 GeoLevelController controllerGeo = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
                 TacticalLevelController controllerTactical = GameUtl.CurrentLevel().GetComponent<TacticalLevelController>();
 
-                TFTVLogger.Always($"got here. tac controller null? {controllerTactical==null}. IW adjustments on? {TFTVNewGameOptions.ImpossibleWeaponsAdjustmentsSetting}");
+                TFTVLogger.Always($". tac controller null? {controllerTactical==null}. IW adjustments on? {TFTVNewGameOptions.ImpossibleWeaponsAdjustmentsSetting}");
 
                 if ((controllerGeo != null && ApplyImpossibleWeaponsAdjustmentsOnGeoscape(controllerGeo) || controllerTactical != null && ApplyImpossibleWeaponsAdjustmentsOnTactical(controllerTactical)) && !ImpossibleWeaponsAdjusted)
                 {

@@ -415,6 +415,18 @@ namespace TFTV
                     //This is a bool to check if the list of possible Void Omens has been repopulated
                     bool voidOmenListRepopulated = false;
 
+                    if (oDIEventToTrigger.GeoscapeEventData.Choices[0].Outcome.VariablesChange.Count > 0) 
+                    {
+                        for(int i = 0; i < oDIEventToTrigger.GeoscapeEventData.Choices[0].Outcome.VariablesChange.Count; i++) 
+                        {
+                            TFTVLogger.Always($"variable {i} in {oDIEventToTrigger.EventID} {oDIEventToTrigger.GeoscapeEventData.Choices[0].Outcome.VariablesChange[i].VariableName}");
+                                   
+                        }
+                        oDIEventToTrigger.GeoscapeEventData.Choices[0].Outcome.VariablesChange.RemoveWhere(v => v.VariableName.Contains(voidOmen));
+                        TFTVLogger.Always($"New variable count: {oDIEventToTrigger.GeoscapeEventData.Choices[0].Outcome.VariablesChange.Count}");
+                    }
+
+                   
                     if (geoLevelController.EventSystem.GetVariable("BC_SDI") > 0)
                     {
                         // Here comes the roll, with 1/10 chance of no VO happening    

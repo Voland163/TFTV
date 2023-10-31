@@ -483,7 +483,7 @@ namespace TFTV
                     GeoLevelController controller = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
 
 
-                    //  TFTVLogger.Always("Set resources, got here");
+                    //  TFTVLogger.Always("Set resources, ");
 
                     foreach (ResourceUnit resourceUnit in reward)
                     {
@@ -548,7 +548,7 @@ namespace TFTV
                         }
                         else if (resourceUnit.Type == ResourceType.Orichalcum)
                         {
-                            TFTVLogger.Always("Orichalcum, got here");
+                            TFTVLogger.Always("Orichalcum, ");
                             UIModuleInfoBar uIModuleInfoBar = (UIModuleInfoBar)UnityEngine.Object.FindObjectOfType(typeof(UIModuleInfoBar));
 
                             Resolution resolution = Screen.currentResolution;

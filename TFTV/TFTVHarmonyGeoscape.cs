@@ -44,7 +44,7 @@ namespace TFTV
             {
                 try
                 {
-                    if (TFTVNewGameOptions.NoSecondChances && @event.EventID.Contains("FAIL"))
+                    if (TFTVNewGameOptions.NoSecondChances && @event.EventID.Contains("FAIL") && @event.EventID!="PROG_FS1_FAIL")
                     {
 
                         TFTVLogger.Always($"Canceling event {@event.EventID} because No Second Chances is in effect!");

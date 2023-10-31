@@ -740,11 +740,11 @@ namespace TFTV
             {
                 try
                 {
-                   // TFTVLogger.Always($"got here {result.FactionResults.Find(r => r.FactionDef == Shared.PhoenixFactionDef).State}");
+                   // TFTVLogger.Always($" {result.FactionResults.Find(r => r.FactionDef == Shared.PhoenixFactionDef).State}");
 
                     if (result.FactionResults.Find(r => r.FactionDef == Shared.PhoenixFactionDef).State == PhoenixPoint.Tactical.Levels.TacFactionState.Won) 
                     {
-                      //  TFTVLogger.Always($"got here passed the if");
+                      //  TFTVLogger.Always($" passed the if");
                         RemoveDeliriumPerks(__instance.Site.GeoLevel, squad); 
                     }
 
@@ -766,7 +766,7 @@ namespace TFTV
 
                 if (CharactersDeliriumPerksAndMissions != null) //add difficulty/config option check
                 {
-                   // TFTVLogger.Always($"got here");
+                   // TFTVLogger.Always($"");
 
                     foreach (GeoCharacter geoCharacter in squad.Soldiers)
                     {

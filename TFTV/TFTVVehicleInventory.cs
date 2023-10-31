@@ -142,7 +142,7 @@ namespace TFTV
 
                         }
 
-                     //   TFTVLogger.Always($"got here {controller.View.TacticalModules.TacticalSoldierEquipModule.StorageList.name} ");*/
+                     //   TFTVLogger.Always($" {controller.View.TacticalModules.TacticalSoldierEquipModule.StorageList.name} ");*/
 
                     }
                     else
