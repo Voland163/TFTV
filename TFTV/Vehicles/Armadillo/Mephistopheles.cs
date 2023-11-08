@@ -4,6 +4,7 @@ using Base.UI;
 using Code.PhoenixPoint.Tactical.Entities.Equipments;
 using HarmonyLib;
 using PhoenixPoint.Common.UI;
+using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.Animations;
 using PhoenixPoint.Tactical.Entities.DamageKeywords;
@@ -66,20 +67,32 @@ namespace TFTVVehicleRework.Armadillo
             if (MephClone == null)
             {                               
                 MephClone = (GroundVehicleWeaponDef)Repo.CreateDef("ffb34012-b1fd-4b24-8236-ba2eb23db0b7", Meph);
+                
                 MephClone.ChargesMax = 15;
-                MephClone.DamagePayload.ObjectMultiplier = 1f;
-                MephClone.DamagePayload.Speed = 200f;
+                MephClone.DamagePayload.ObjectMultiplier = 2f;
+                MephClone.DamagePayload.Speed = 30f;
                 MephClone.DamagePayload.AutoFireShotCount = 1;
                 MephClone.DamagePayload.ProjectilesPerShot = 5;
-                MephClone.DamagePayload.AoeRadius = 1f;
+                // MephClone.DamagePayload.ProjectilesPerShot = 3;
+                MephClone.DamagePayload.Range = 20f;
+                MephClone.DamagePayload.DamageDeliveryType = DamageDeliveryType.Sphere;
+                MephClone.DamagePayload.ParabolaHeightToLengthRatio = 0.000001f;
+                MephClone.DamagePayload.AoeRadius = 1.5f;
+                MephClone.SpreadRadius = 5f;
+                MephClone.SpreadRadiusDistanceModifier = ((GroundVehicleWeaponDef)Repo.GetDef("3986d735-5c23-ef24-6983-7d0132068f1b")).SpreadRadiusDistanceModifier; //Purgatory
 
                 //"PX_ShotgunRifle_WeaponDef"
-                WeaponDef PXShotgun = (WeaponDef)Repo.GetDef("f7e8e44c-bfc4-4364-ca81-7b4b1cf57c15");
+                // WeaponDef PXShotgun = (WeaponDef)Repo.GetDef("f7e8e44c-bfc4-4364-ca81-7b4b1cf57c15");
+                //"PX_HeavyCannon_WeaponDef"
+                WeaponDef Hell2 = (WeaponDef)Repo.GetDef("112a754d-413f-27f4-180c-b052cab71d70");
 
-                MephClone.MainSwitch = PXShotgun.MainSwitch; 
-                MephClone.DamagePayload.ProjectileVisuals = PXShotgun.DamagePayload.ProjectileVisuals;
-                MephClone.VisualEffects = PXShotgun.VisualEffects;
-                MephClone.SpreadDegrees = 10f;
+                // MephClone.MainSwitch = PXShotgun.MainSwitch; 
+                MephClone.MainSwitch = Hell2.MainSwitch; 
+                // MephClone.DamagePayload.ProjectileVisuals = PXShotgun.DamagePayload.ProjectileVisuals;
+                MephClone.DamagePayload.ProjectileVisuals = Hell2.DamagePayload.ProjectileVisuals;
+                // MephClone.VisualEffects = PXShotgun.VisualEffects;
+                MephClone.VisualEffects = Hell2.VisualEffects;
+                // MephClone.SpreadDegrees = 5f;
                 
                 MephClone.DamagePayload.DamageKeywords = new List<DamageKeywordPair>
                 {
@@ -93,6 +106,11 @@ namespace TFTVVehicleRework.Armadillo
                         DamageKeywordDef = keywords.ShreddingKeyword,
                         Value = 10f
                     },
+                };
+
+                MephClone.Abilities = new AbilityDef[]
+                {
+                    ObliteratorShoot()
                 };
             }
             return MephClone;
@@ -113,6 +131,22 @@ namespace TFTVVehicleRework.Armadillo
                 VED.SmallIcon = VED.LargeIcon = ShootAbilityVED.SmallIcon;
             }
             return VED;
+        }
+
+        private static ShootAbilityDef ObliteratorShoot()
+        {
+            ShootAbilityDef Shoot = (ShootAbilityDef)Repo.GetDef("eb9d9c3d-77cd-4723-84ed-0284140f5eb3");
+            if (Shoot == null)
+            {
+                // "LaunchGrenade_ShootAbilityDef"
+                ShootAbilityDef LaunchGrenade = (ShootAbilityDef)Repo.GetDef("81fbb5db-1b12-b8f4-998e-6591f0771a2d");
+                Shoot = Repo.CreateDef<ShootAbilityDef>("eb9d9c3d-77cd-4723-84ed-0284140f5eb3", LaunchGrenade);
+                Shoot.name = "Obliterate_ShootAbilityDef";
+                Shoot.TargetingDataDef = LaunchGrenade.TargetingDataDef;
+                Shoot.ViewElementDef = (TacticalAbilityViewElementDef)Repo.GetDef("50c4bdf1-effe-0553-f2c4-d7a32d9d6a36"); //"E_View [Weapon_ShootAbilityDef]"
+                Shoot.SceneViewElementDef = LaunchGrenade.SceneViewElementDef;
+            }
+            return Shoot;
         }
 
         private static void ShootingAnims(GroundVehicleWeaponDef weapon)
