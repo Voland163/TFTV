@@ -108,7 +108,7 @@ namespace TFTV
 
                 if (ability.TacticalAbilityDef == parasychosis && parameter is TacticalAbilityTarget target && target.GetTargetActor() != null && target.GetTargetActor() is TacticalActor tacticalActor && tacticalActor.HasGameTag(infestationSecondObjectiveTag))
                 {
-                    //  TFTVLogger.Always($"Got here, target is {tacticalActor.name}");
+                    //  TFTVLogger.Always($", target is {tacticalActor.name}");
                     tacticalActor.GameTags.Remove(infestationSecondObjectiveTag);
 
                 }
@@ -2929,7 +2929,7 @@ namespace TFTV
                 Dictionary<ClassTagDef, int> reinforcements = TFTVUmbra.PickReinforcements(controller);
 
 
-                // TFTVLogger.Always("Got here2");
+                // TFTVLogger.Always("2");
                 Dictionary<TacCharacterDef, int> secondaryForce = new Dictionary<TacCharacterDef, int>();
 
                 TacCharacterDef mindFragger = DefCache.GetDef<TacCharacterDef>("Facehugger_AlienMutationVariationDef");
@@ -2949,9 +2949,9 @@ namespace TFTV
 
                     }
                 }
-                //   TFTVLogger.Always("Got here3");
+                //   TFTVLogger.Always("3");
                 secondaryForce.Add(mindFragger, difficulty);
-                //    TFTVLogger.Always("Got here4");
+                //    TFTVLogger.Always("4");
                 return secondaryForce;
             }
             catch (Exception e)
@@ -3142,7 +3142,7 @@ internal static void AlternativeMistAndUmbraStrat(TacticalLevelController contro
             }
         }
 
-        //  TFTVLogger.Always("Got here");
+        //  TFTVLogger.Always("");
 
         foreach (TacticalDeployZone deployZone in topsideDeployZones)
         {
@@ -3213,7 +3213,7 @@ internal static void AlternativeMistAndUmbraStrat(TacticalLevelController contro
                 }
             }
 
-            //  TFTVLogger.Always("Got here");
+            //  TFTVLogger.Always("");
 
             for (int x = 0; x <= umbraCount; x++)
             {

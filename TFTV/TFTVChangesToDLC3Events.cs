@@ -116,7 +116,12 @@ namespace TFTV
                 TFTVCommonMethods.GenerateDiplomacyOutcome(synedrion, anu, 50), TFTVCommonMethods.GenerateDiplomacyOutcome(synedrion, newJericho, 50),
                 };
 
+                CustomMissionTypeDef theHatching = DefCache.GetDef<CustomMissionTypeDef>("StoryFS1_CustomMissionTypeDef");
 
+                theHatching.CustomObjectives[2] = Helper.CreateDefFromClone(theHatching.CustomObjectives[2], "{AA07AD33-16CD-4027-9246-70032CB3A63F}", "SpecialEvacObjective");
+                theHatching.CustomObjectives[2].MissionObjectiveData.ExperienceReward = 1200;
+
+             
                 //All the stuff below was removed after new implementation, 23/9/2022
 
 

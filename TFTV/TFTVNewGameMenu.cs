@@ -118,6 +118,7 @@ namespace TFTV
                 int impossibleWeapons = 1;
                 int limitedHarvesting = 1;
                 int limitedCapture = 1;
+                int noSecondChances = 1;
 
                 if (SelectedDifficulty > 4)
                 {
@@ -128,6 +129,7 @@ namespace TFTV
                     impossibleWeapons = 0;
                     limitedCapture = 0;
                     limitedHarvesting = 0;
+                    noSecondChances = 0;
                 }
                 else if (SelectedDifficulty > 2)
                 {
@@ -150,6 +152,8 @@ namespace TFTV
                 MethodInfo impossibleWeaponsValueChangedCallback = typeof(UIStateNewGeoscapeGameSettings_InitFullContent_patch).GetMethod("OnImpossibleWeaponsValueChangedCallback", BindingFlags.NonPublic | BindingFlags.Static);
                 MethodInfo limitedHarvestingValueChangedCallback = typeof(UIStateNewGeoscapeGameSettings_InitFullContent_patch).GetMethod("OnLimitedHarvestingValueChangedCallback", BindingFlags.NonPublic | BindingFlags.Static);
                 MethodInfo limitedCaptureValueChangedCallback = typeof(UIStateNewGeoscapeGameSettings_InitFullContent_patch).GetMethod("OnLimitedCaptureValueChangedCallback", BindingFlags.NonPublic | BindingFlags.Static);
+                MethodInfo noSecondChancesValueChangedCallback = typeof(UIStateNewGeoscapeGameSettings_InitFullContent_patch).GetMethod("OnNoSecondChancesValueChangedCallback", BindingFlags.NonPublic | BindingFlags.Static);
+
 
                 staminaDrainValueChangedCallback.Invoke(gameSettings, new object[] { staminaDrain });
                 harderAmbushValueChangedCallback.Invoke(gameSettings, new object[] { harderAmnbush });
@@ -157,6 +161,7 @@ namespace TFTV
                 impossibleWeaponsValueChangedCallback.Invoke(gameSettings, new object[] { impossibleWeapons });
                 limitedHarvestingValueChangedCallback.Invoke(gameSettings, new object[] { limitedHarvesting });
                 limitedCaptureValueChangedCallback.Invoke(gameSettings, new object[] { limitedCapture });
+                noSecondChancesValueChangedCallback.Invoke(gameSettings, new object[] { noSecondChances });
 
                 MethodInfo exoticResourcesChangedCallback = typeof(UIStateNewGeoscapeGameSettings_InitFullContent_patch).GetMethod("OnExoticResourcesValueChangedCallback", BindingFlags.NonPublic | BindingFlags.Static);
                 exoticResourcesChangedCallback.Invoke(gameSettings, new object[] { ConvertDifficultyToIndexExoticResources() });
@@ -454,6 +459,12 @@ namespace TFTV
             //  "Note that Jacob is a sniper, as in the title screen :)";
             private static string[] _optionsStartingSquad = { "UNBUFFED", "BUFFED", "RANDOM" };
 
+            private static ModSettingController _noSecondChancesModSettings = null;
+            private static ArrowPickerController _noSecondChances = null;
+
+
+            private static string _titleNoSecondChances = "NO_SECOND_CHANCES";
+            private static string _descriptionNoSecondChances = "NO_SECOND_CHANCES_DESCRIPTION";
 
 
             private static GameOptionViewController InstantiateGameOptionViewController(RectTransform rectTransform, UIModuleGameSettings uIModuleGameSettings, string titleKey, string descriptionKey, string onToggleMethod)
@@ -598,6 +609,8 @@ namespace TFTV
                     _impossibleWeaponsModSettings.gameObject.SetActive(show);
                     _resourcesEventsModSettings.gameObject.SetActive(show);
                     _impossibleWeapons.gameObject.SetActive(show);
+                    _noSecondChances.gameObject.SetActive(show);
+                    _noSecondChancesModSettings.gameObject.SetActive(show);
 
                 }
                 catch (Exception e)
@@ -640,95 +653,6 @@ namespace TFTV
                 }
 
             }
-
-
-
-            /*   private static void SetMinorOptionsVisibility(bool show)
-               {
-                   try
-                   {
-                       _skipMoviesModSettings.gameObject.SetActive(show); 
-                       _havenSOSModSettings.gameObject.SetActive(show);
-                       _staminaRecuperationModSettings.gameObject.SetActive(show); 
-                       _learnFirstSkillModSettings.gameObject.SetActive(show); 
-                       _moreMistVOModSettings.gameObject.SetActive(show); 
-                   //    _staminaDrainModSettings.gameObject.SetActive(show);
-
-                       _skipMovies.gameObject.SetActive(show);
-                       _havenSOS.gameObject.SetActive(show);
-
-                       _learnFirstSkill.gameObject.SetActive(show);
-                       _moreMistVO.gameObject.SetActive(show);
-                       _noDropReinforcementsModSettings.gameObject.SetActive(show);
-                       _flinchingModSettings.gameObject.SetActive(show);
-
-
-
-                       //    _reverseEngineeringModSettings.gameObject.SetActive(show); 
-
-
-
-                       _trading.gameObject.SetActive(show);
-                       _limitedRaiding.gameObject.SetActive(show);
-                       //  _staminaDrain.gameObject.SetActive(show);
-
-                   }
-                   catch (Exception e)
-                   {
-                       TFTVLogger.Error(e);
-                       throw;
-                   }
-
-               }*/
-
-            /*   private static void SetTacticalOptionsVisibility(bool show)
-               {
-                   try
-                   {
-                       _noDropReinforcementsModSettings.gameObject.SetActive(show);
-                       _flinchingModSettings.gameObject.SetActive(show);
-
-                       _noDropReinforcements.gameObject.SetActive(show);
-                       _flinching.gameObject.SetActive(show);
-
-
-                   }
-                   catch (Exception e)
-                   {
-                       TFTVLogger.Error(e);
-                       throw;
-                   }
-
-               }
-
-               private static void SetGeoscapeOptionsVisibility(bool show)
-               {
-                   try
-                   {
-
-                       _tradingModSettings.gameObject.SetActive(show);
-                       _limitedRaidingModSettings.gameObject.SetActive(show);
-
-                   //    _reverseEngineeringModSettings.gameObject.SetActive(show); 
-
-
-
-                       _trading.gameObject.SetActive(show);
-                       _limitedRaiding.gameObject.SetActive(show);
-
-
-                     //  _reverseEngineering.gameObject.SetActive(show);
-
-
-                   }
-                   catch (Exception e)
-                   {
-                       TFTVLogger.Error(e);
-                       throw;
-                   }
-
-               }*/
-
 
             private static void OnPointerEnterCallback(GameOptionViewController gameOptionViewController)
             {
@@ -904,6 +828,7 @@ namespace TFTV
                     _exoticResourcesModSettings = UnityEngine.Object.Instantiate(ModSettingControllerHook, rectTransform);
                     _harderAmbushModSettings = UnityEngine.Object.Instantiate(ModSettingControllerHook, rectTransform);
                     _impossibleWeaponsModSettings = UnityEngine.Object.Instantiate(ModSettingControllerHook, rectTransform);
+                    _noSecondChancesModSettings = UnityEngine.Object.Instantiate(ModSettingControllerHook, rectTransform);
                     //    _reverseEngineeringModSettings = UnityEngine.Object.Instantiate(ModSettingControllerHook, rectTransform);
                     _resourcesEventsModSettings = UnityEngine.Object.Instantiate(ModSettingControllerHook, rectTransform);
 
@@ -948,6 +873,7 @@ namespace TFTV
                     _harderAmbush = _harderAmbushModSettings.ListField;
                     _havenSOS = _havenSOSModSettings.ListField;
                     _impossibleWeapons = _impossibleWeaponsModSettings.ListField;
+                    _noSecondChances = _noSecondChancesModSettings.ListField;
                     _learnFirstSkill = _learnFirstSkillModSettings.ListField;
                     _moreMistVO = _moreMistVOModSettings.ListField;
                     //   _reverseEngineering = _reverseEngineeringModSettings.ListField;
@@ -985,6 +911,7 @@ namespace TFTV
                     InstantiateArrowPickerController(_harderAmbushModSettings, _harderAmbush, _titleHarderAmbush, _descriptionHarderAmbush, _optionsBool, ConvertBoolToInt(TFTVNewGameOptions.MoreAmbushesSetting), OnHarderAmbushValueChangedCallback, 0.5f);
                     InstantiateArrowPickerController(_havenSOSModSettings, _havenSOS, _titleHavenSOS, _descriptionHavenSOS, _optionsBool, ConvertBoolToInt(config.HavenSOS), OnHavenSOSValueChangedCallback, 0.5f);
                     InstantiateArrowPickerController(_impossibleWeaponsModSettings, _impossibleWeapons, _titleImpossibleWeapons, _descriptionImpossibleWeapons, _optionsBool, ConvertBoolToInt(TFTVNewGameOptions.ImpossibleWeaponsAdjustmentsSetting), OnImpossibleWeaponsValueChangedCallback, 0.5f);
+                    InstantiateArrowPickerController(_noSecondChancesModSettings, _noSecondChances, _titleNoSecondChances, _descriptionNoSecondChances, _optionsBool, ConvertBoolToInt(TFTVNewGameOptions.NoSecondChances), OnNoSecondChancesValueChangedCallback, 0.5f); 
                     InstantiateArrowPickerController(_learnFirstSkillModSettings, _learnFirstSkill, _titleLearnFirstSkill, _descriptionLearnFirstSkill, _optionsBool, ConvertBoolToInt(config.LearnFirstPersonalSkill), OnLearnFirstSchoolValueChangedCallback, 0.5f);
                     InstantiateArrowPickerController(_moreMistVOModSettings, _moreMistVO, _titleMoreMistVO, _descriptionMoreMistVO, _optionsBool, ConvertBoolToInt(config.MoreMistVO), OnMoreMistValueChangedCallback, 0.5f);
                     //     InstantiateArrowPickerController(_reverseEngineeringModSettings, _reverseEngineering, _titleReverseEngineering, _descriptionReverseEngineering, _optionsBool, ConvertBoolToInt(config.ActivateReverseEngineeringResearch), OnReverseEngineeringValueChangedCallback, 0.5f);
@@ -1209,6 +1136,23 @@ namespace TFTV
                     TFTVLogger.Error(e);
                 }
             }
+
+
+            private static void OnNoSecondChancesValueChangedCallback(int newValue)
+            {
+                try
+                {
+                    bool option = newValue == 0;
+                    string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
+                    _noSecondChances.CurrentItemText.text = options[newValue];
+                    TFTVNewGameOptions.NoSecondChances = option;
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+
 
             private static void OnSkipMoviesValueChangedCallback(int newValue)
             {

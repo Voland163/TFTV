@@ -389,12 +389,6 @@ namespace TFTV
                 List<AbilityDef> abilitiesToRemove = new List<AbilityDef>() { poisonResistance };
                 List<AbilityDef> abilitiesToAdd = new List<AbilityDef>() { poisonImmunity, paralysisImmunity, fireImmunity };
 
-
-                /* if (GameUtl.CurrentLevel()?.GetComponent<GeoLevelController>() != null)
-                 {
-                     GeoLevelController controller = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
-                     TFTVLogger.Always("Got here");*/
-
                 if (controller != null && controller.PhoenixFaction.Research.HasCompleted("AncientAutomataResearch"))
                 {
                     AutomataResearched = true;
@@ -464,20 +458,6 @@ namespace TFTV
                     }
                 }
 
-
-
-                /*   TFTVLogger.Always("The count of Hoplite abilities is " + hopliteAbilities.Count);
-                   foreach (AbilityDef ability in hopliteAbilities)
-                   {
-                       TFTVLogger.Always("The ability is " + ability.name);
-                   }
-
-                   TFTVLogger.Always("The count of Cyclops abilities is " + cyclopsAbilites.Count);
-                   foreach (AbilityDef ability in cyclopsAbilites)
-                   {
-                       TFTVLogger.Always("The ability is " + ability.name);
-                   }
-                */
                 hopliteActorDef.Abilities = hopliteAbilities.ToArray();
                 cyclopsActorDef.Abilities = cyclopsAbilites.ToArray();
                 TFTVLogger.Always($"Tactical: Automata researched is {AutomataResearched}");
@@ -503,7 +483,7 @@ namespace TFTV
                     GeoLevelController controller = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
 
 
-                    //  TFTVLogger.Always("Set resources, got here");
+                    //  TFTVLogger.Always("Set resources, ");
 
                     foreach (ResourceUnit resourceUnit in reward)
                     {
@@ -568,7 +548,7 @@ namespace TFTV
                         }
                         else if (resourceUnit.Type == ResourceType.Orichalcum)
                         {
-                            TFTVLogger.Always("Orichalcum, got here");
+                            TFTVLogger.Always("Orichalcum, ");
                             UIModuleInfoBar uIModuleInfoBar = (UIModuleInfoBar)UnityEngine.Object.FindObjectOfType(typeof(UIModuleInfoBar));
 
                             Resolution resolution = Screen.currentResolution;

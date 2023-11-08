@@ -102,25 +102,30 @@ namespace TFTV
                             }
                         }
 
-                        int hourOfTheDay = geoSite.LocalTime.DateTime.Hour;
-                        int minuteOfTheHour = geoSite.LocalTime.DateTime.Minute;
-                        bool dayTimeMission = hourOfTheDay >= 6 && hourOfTheDay <= 20;
+                        if (geoSite != null)
+                        {
 
-                        TFTVLogger.Always($"LocalTime: {hourOfTheDay:00}:{minuteOfTheHour:00}");
+                            int hourOfTheDay = geoSite.LocalTime.DateTime.Hour;
+                            int minuteOfTheHour = geoSite.LocalTime.DateTime.Minute;
+                            bool dayTimeMission = hourOfTheDay >= 6 && hourOfTheDay <= 20;
 
-                        Transform objectives = uIModuleDeploymentMissionBriefing.ObjectivesTextContainer.transform;
-                        Transform lootContainer = uIModuleDeploymentMissionBriefing.AutolootContainer.transform;
+                            TFTVLogger.Always($"LocalTime: {hourOfTheDay:00}:{minuteOfTheHour:00}");
 
-                        Transform newIcon = UnityEngine.Object.Instantiate(lootContainer.GetComponent<Transform>().GetComponentInChildren<Image>().transform, uIModuleDeploymentMissionBriefing.MissionNameText.transform);
+                            Transform objectives = uIModuleDeploymentMissionBriefing.ObjectivesTextContainer.transform;
+                            Transform lootContainer = uIModuleDeploymentMissionBriefing.AutolootContainer.transform;
 
-                        Sprite lightConditions = Helper.CreateSpriteFromImageFile(dayTimeMission ? "light_conditions_sun.png" : "light_conditions_moon.png");
-                        Color color = dayTimeMission ? yellow : dark;
+                            Transform newIcon = UnityEngine.Object.Instantiate(lootContainer.GetComponent<Transform>().GetComponentInChildren<Image>().transform, uIModuleDeploymentMissionBriefing.MissionNameText.transform);
 
-                        newIcon.GetComponentInChildren<Image>().sprite = lightConditions;
-                        newIcon.GetComponentInChildren<Image>().color = color;
+                            Sprite lightConditions = Helper.CreateSpriteFromImageFile(dayTimeMission ? "light_conditions_sun.png" : "light_conditions_moon.png");
+                            Color color = dayTimeMission ? yellow : dark;
 
-                        string text = $"Local time is {hourOfTheDay:00}:{minuteOfTheHour:00}";
-                        newIcon.gameObject.AddComponent<UITooltipText>().TipText = text;
+                            newIcon.GetComponentInChildren<Image>().sprite = lightConditions;
+                            newIcon.GetComponentInChildren<Image>().color = color;
+
+                            string text = $"Local time is {hourOfTheDay:00}:{minuteOfTheHour:00}";
+                            newIcon.gameObject.AddComponent<UITooltipText>().TipText = text;
+
+                        }
                     }
                 }
                 catch (Exception e)
@@ -854,7 +859,7 @@ namespace TFTV
                         if (____parentModule.CurrentState == UIModuleActorCycle.ActorCycleState.SubmenuSection)//EditUnitButtonsController.CustomizeButton.gameObject.activeInHierarchy)
                         {
 
-                            TFTVLogger.Always($"Customize button enabled is {____parentModule.EditUnitButtonsController.CustomizeButton.enabled}");
+                           // TFTVLogger.Always($"Customize button enabled is {____parentModule.EditUnitButtonsController.CustomizeButton.enabled}");
                             if (HelmetToggle != null)
                             {
                                 HelmetToggle.gameObject.SetActive(false);
@@ -1160,8 +1165,6 @@ namespace TFTV
                 try
                 {
                     toggleState = !toggleState;  // Flip the toggle state
-
-                    TFTVExperimental.GetPartialMagazinesInfo();
 
                     // Perform any actions based on the toggle state
                     if (toggleState)

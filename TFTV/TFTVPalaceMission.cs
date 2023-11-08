@@ -899,7 +899,7 @@ namespace TFTV
 
                         if (console.Pos == new Vector3(0.5f, 0.0f, -15.5f))
                         {
-                            TFTVGoo.DontUseGooNavigationPatch = true;
+                          //  TFTVGoo.DontUseGooNavigationPatch = true;
                         }
                         else if (console.Pos.z == 0)
                         {
@@ -1177,7 +1177,7 @@ namespace TFTV
 
                 if (tacticalActorBase.TacticalActorBaseDef == injectorBomb)
                 {
-                    // TFTVLogger.Always($"got here");
+                    // TFTVLogger.Always($"");
                     TacticalFaction phoenix = controller.GetFactionByCommandName("px");
 
                     phoenix.State = TacFactionState.Won;
@@ -1225,7 +1225,7 @@ namespace TFTV
 
                     if (ability.TacticalAbilityDef == DefCache.GetDef<InteractWithObjectAbilityDef>("ExaltedInteractWithYuggothian_AbilityDef"))
                     {
-                        // TFTVLogger.Always($"got here");
+                        // TFTVLogger.Always($"");
                         TacticalFaction phoenix = controller.GetFactionByCommandName("px");
 
                         phoenix.State = TacFactionState.Won;

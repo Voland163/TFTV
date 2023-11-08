@@ -121,7 +121,7 @@ namespace PRMBetterClasses.SkillModifications
                 "E_AbilityCostModifier [HunkerDown_AbilityDef]");
             hunkerDownApCostModifier.DurationTurns = 1;
             hunkerDownApCostModifier.ExpireOnEndOfTurn = true;
-            hunkerDownApCostModifier.SingleInstance = true;
+            hunkerDownApCostModifier.SingleInstance = false;
             //hunkerDownApCostModifier.AbilityCostModification.ActionPointModType = TacticalAbilityModificationType.Multiply;
             //hunkerDownApCostModifier.AbilityCostModification.ActionPointMod = 2f / 3;
 

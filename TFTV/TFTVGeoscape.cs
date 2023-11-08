@@ -3,6 +3,7 @@ using Epic.OnlineServices;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Modding;
+using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using System;
 using System.Collections.Generic;
@@ -53,6 +54,7 @@ namespace TFTV
         public bool LimitedHarvestingSettingInstance;
         public bool StrongerPandoransSettingInstance;
         public bool ImpossibleWeaponsAdjustmentsSettingInstance;
+        public bool NoSecondChances;
 
         public bool Update35GeoscapeCheck;
 
@@ -83,7 +85,7 @@ namespace TFTV
         {
             TFTVLogger.Always($"OnGeoscapeStart");
 
-
+         
             /// Geoscape level controller is accessible at any time.
             GeoLevelController gsController = Controller;
 
@@ -93,7 +95,7 @@ namespace TFTV
             TFTVNewGameOptions.SetInternalConfigOptions(gsController);                                                                                                        
             TFTVBetaSaveGamesFixes.OpenBetaSaveGameFixes(gsController);
             TFTVLogger.Always($"Difficulty level on Geoscape is {Controller.CurrentDifficultyLevel.name}");
-            TFTVExperimental.CorrrectPhoenixSaveManagerDifficulty();
+            TFTVBetaSaveGamesFixes.CorrrectPhoenixSaveManagerDifficulty();
             TFTVCommonMethods.CheckGeoUIfunctionality(gsController);
             TFTVNewPXCharacters.PlayIntro(gsController);
             TFTVVoidOmens.ImplementVoidOmens(gsController);
@@ -208,6 +210,7 @@ namespace TFTV
                 LimitedHarvestingSettingInstance = TFTVNewGameOptions.LimitedHarvestingSetting,
                 StrongerPandoransSettingInstance = TFTVNewGameOptions.StrongerPandoransSetting,
                 ImpossibleWeaponsAdjustmentsSettingInstance = TFTVNewGameOptions.ImpossibleWeaponsAdjustmentsSetting,
+                NoSecondChances = TFTVNewGameOptions.NoSecondChances,
 
                 Update35GeoscapeCheck = TFTVNewGameOptions.Update35Check,
 
@@ -229,7 +232,7 @@ namespace TFTV
         {
 
             DateTime myDate = new DateTime(1, 1, 1);
-
+         
             TFTVLogger.Always("Geoscape data will be processed");
 
 
@@ -277,6 +280,7 @@ namespace TFTV
                 TFTVNewGameOptions.LimitedHarvestingSetting = data.LimitedHarvestingSettingInstance;
                 TFTVNewGameOptions.StrongerPandoransSetting = data.StrongerPandoransSettingInstance;
                 TFTVNewGameOptions.ImpossibleWeaponsAdjustmentsSetting = data.ImpossibleWeaponsAdjustmentsSettingInstance;
+                TFTVNewGameOptions.NoSecondChances = data.NoSecondChances;
             }
             TFTVNewGameOptions.Update35Check = data.Update35GeoscapeCheck;
 

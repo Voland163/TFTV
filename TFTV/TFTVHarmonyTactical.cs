@@ -1,18 +1,16 @@
-﻿using Base;
-using Base.Core;
+﻿using Base.Core;
 using Base.Defs;
 using Base.Entities.Statuses;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
+using PhoenixPoint.Tactical.Entities.DamageKeywords;
 using PhoenixPoint.Tactical.Levels;
-using PhoenixPoint.Tactical.Levels.ActorDeployment;
 using PhoenixPoint.Tactical.Levels.Missions;
 using PhoenixPoint.Tactical.View.ViewControllers;
 using System;
 using System.Collections.Generic;
-using UnityEngine;
 
 namespace TFTV
 {
@@ -59,11 +57,11 @@ namespace TFTV
                         __result.Sort((TacticalActor a, TacticalActor b) => a.AIActor.TurnOrderPriority - b.AIActor.TurnOrderPriority);
                         TFTVHumanEnemies.ApplyTactic(__instance.TacticalLevel);
                         TFTVLogger.Always("TFTV: Art of Crab: Sorted AI Turn Order");
-                      //  TFTVPalaceMission.LogEnemyAP(__instance);
+                        //  TFTVPalaceMission.LogEnemyAP(__instance);
                     }
 
                     TFTVBaseDefenseTactical.ImplementBaseDefenseVsAliensPostAISortingOut(__instance);
-                  //  TFTVPalaceMission.PalaceReinforcements(__instance);
+                    //  TFTVPalaceMission.PalaceReinforcements(__instance);
 
                     //   TFTVPalaceMission.PalaceTacticalNewTurn(__instance);
 
@@ -83,14 +81,13 @@ namespace TFTV
             {
                 try
                 {
-                  //  TFTVLogger.Always($"the status is {status.Def.name}");
+                    //  TFTVLogger.Always($"the status is {status.Def.name}");
 
                     TacticalLevelController controller = GameUtl.CurrentLevel().GetComponent<TacticalLevelController>();
 
                     TFTVBaseDefenseTactical.BaseDefenseConsoleActivated(__instance, status, controller);
-
                     TFTVPalaceMission.PalaceConsoleActivated(__instance, status, controller);
-                    TFTVExperimental.TalkingPointConsoleActivated(__instance, status, controller);
+                    TFTVRescueVIPMissions.TalkingPointConsoleActivated(__instance, status, controller);
 
                 }
                 catch (Exception e)
@@ -101,7 +98,7 @@ namespace TFTV
             }
         }
 
-     
+
 
 
 
@@ -127,14 +124,14 @@ namespace TFTV
                 try
                 {
                     TFTVDeliriumPerks.ImplementDeliriumPerks(actor, __instance);
-                    TFTVExperimental.AddReinforcementTagToImplementNoDropsOption(actor, __instance);
+                    TFTVKillingExploits.AddReinforcementTagToImplementNoDropsOption(actor, __instance);
                     TFTVHumanEnemies.GiveRankAndNameToHumaoidEnemy(actor, __instance);
                     TFTVUmbra.UmbraEverywhereVoidOmenImplementation(actor, __instance);
                     TFTVBaseDefenseTactical.AddScatterObjectiveTagForBaseDefense(actor, __instance);
                     TFTVSpecialDifficulties.AddSpecialDifficultiesBuffsAndVulnerabilities(actor, __instance);
                     TFTVPalaceMission.TryToTurnIntoRevenant(actor, __instance);
                     TFTVPalaceMission.CheckFinalMissionWinConditionWhereDeployingItem(actor, __instance);
-                   
+
                 }
                 catch (Exception e)
                 {
@@ -152,7 +149,7 @@ namespace TFTV
             {
                 try
                 {
-                  TFTVPalaceMission.ForceSpecialCharacterPortraitInSetupProperPortrait(actor);
+                    TFTVPalaceMission.ForceSpecialCharacterPortraitInSetupProperPortrait(actor);
 
 
                 }
@@ -164,7 +161,7 @@ namespace TFTV
             }
         }
 
-       
+
 
         [HarmonyPatch(typeof(TacticalFactionVision), "OnFactionStartTurn")]
         public static class TFTV_TacticalFactionVision_OnFactionStartTurn_Patch
@@ -183,6 +180,43 @@ namespace TFTV
                 }
             }
         }
+
+
+
+        [HarmonyPatch(typeof(TacticalLevelController), "ActorDamageDealt")]
+        public static class TFTV_TacticalLevelController_ActorDamageDealt_Patch
+        {
+            public static void Prefix(TacticalActor actor, IDamageDealer damageDealer)
+            {
+                try
+                {
+                    TFTVUmbra.TBTVTriggerOnActorDamageDealt(actor, damageDealer);
+                   
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+
+
+            public static void Postfix(TacticalActor actor, IDamageDealer damageDealer)
+            {
+                try
+                {      
+                    TFTVAncients.CyclopsMolecularTargeting(actor, damageDealer);
+                    TFTVBallistics.RemoveDCoy(actor, damageDealer);
+                    TFTVHumanEnemies.HumanEnemiesRetributionTacticCheckOnActorDamageDealt(actor, damageDealer);
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+        }
+
+
+
 
 
         [HarmonyPatch(typeof(TacticalLevelController), "ActorDied")]
@@ -229,7 +263,7 @@ namespace TFTV
                 {
                     TFTVBaseDefenseTactical.InitDeployZonesForBaseDefenseVsAliens(__instance.TacticalLevel);
                     TFTVPalaceMission.InitDeployZonesForPalaceMission(__instance.TacticalLevel);
-                    TFTVExperimental.SavingHelenaDeploymentZoneSetup(__instance.TacticalLevel);
+                    //   TFTVExperimental.SavingHelenaDeploymentZoneSetup(__instance.TacticalLevel);
 
                 }
                 catch (Exception e)
@@ -265,6 +299,10 @@ namespace TFTV
         }
 
 
+
+
+
+
         [HarmonyPatch(typeof(TacticalPerceptionBase), "IsTouchingVoxel")]
 
         public static class TFTV_TacticalPerceptionBase_IsTouchingVoxel_patch
@@ -286,6 +324,25 @@ namespace TFTV
             }
         }
 
+
+        [HarmonyPatch(typeof(DamageKeyword), "ProcessKeywordDataInternal")]
+        internal static class TFTV_DamageKeyword_ProcessKeywordDataInternal_patch
+        {
+            public static void Postfix(ref DamageAccumulation.TargetData data)
+            {
+                try
+                {
+                    TFTVAncients.ApplyDamageResistanceToHopliteInHiding(ref data);
+                    TFTVRevenant.ApplyRevenantSpecialResistance(ref data);
+
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+        }
 
 
 

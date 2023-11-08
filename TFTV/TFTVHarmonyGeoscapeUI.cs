@@ -1,5 +1,6 @@
 ﻿using Base.Core;
 using HarmonyLib;
+using PhoenixPoint.Common.View.ViewControllers.Inventory;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.View;
@@ -110,5 +111,26 @@ namespace TFTV
                 }
             }
         }
+
+
+
+
+        [HarmonyPatch(typeof(UIInventoryList), "SetItems")]
+        public static class UIInventoryList_SetItems_patch
+        {
+            public static void Prefix(UIInventoryList __instance)
+            {
+                try
+                {               
+                    __instance.ShouldHidePartialMagazines = false;
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
+
     }
 }

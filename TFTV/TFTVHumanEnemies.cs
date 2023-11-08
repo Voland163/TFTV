@@ -22,6 +22,7 @@ using System.Linq;
 using UnityEngine;
 using static PhoenixPoint.Tactical.View.ViewModules.UIModuleCharacterStatus;
 using static PhoenixPoint.Tactical.View.ViewModules.UIModuleCharacterStatus.CharacterData;
+using static UnityStandardAssets.Utility.TimedObjectActivator;
 
 namespace TFTV
 {
@@ -2121,12 +2122,10 @@ namespace TFTV
             }
         }
 
-   
 
-        [HarmonyPatch(typeof(TacticalLevelController), "ActorDamageDealt")]
-        public static class TacticalLevelController_ActorDamageDealt_HumanEnemiesTactics_Retribution_Patch
+        public static void HumanEnemiesRetributionTacticCheckOnActorDamageDealt(TacticalActor actor, IDamageDealer damageDealer)
         {
-            public static void Postfix(TacticalActor actor, IDamageDealer damageDealer)
+            try
             {
                 try
                 {
@@ -2149,8 +2148,24 @@ namespace TFTV
                 {
                     TFTVLogger.Error(e);
                 }
+
+
+
             }
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+
+
+
+
         }
+   
+
+       
 
         public static void TestingAura(TacticalLevelController controller)
         {

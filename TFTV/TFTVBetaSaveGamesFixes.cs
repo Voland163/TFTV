@@ -1,11 +1,14 @@
-﻿using Base;
+﻿using Assets.Code.PhoenixPoint.Geoscape.Entities.Sites.TheMarketplace;
+using Base;
 using Base.Core;
+using Base.UI.MessageBox;
 using HarmonyLib;
 using PhoenixPoint.Common.ContextHelp;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.Entities.Items;
 using PhoenixPoint.Common.Game;
+using PhoenixPoint.Common.Saves;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.Research;
 using PhoenixPoint.Geoscape.Entities.Research.Requirement;
@@ -15,6 +18,7 @@ using PhoenixPoint.Geoscape.Events;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
 using PhoenixPoint.Tactical.Entities.Equipments;
+using PhoenixPoint.Tactical.Entities.Weapons;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -28,10 +32,173 @@ namespace TFTV
     {
        // public static bool LOTAapplied = false;
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
-       // public static bool LOTAReworkGlobalCheck = false;
+        // public static bool LOTAReworkGlobalCheck = false;
+
+
+        public static void CorrrectPhoenixSaveManagerDifficulty()
+        {
+            try
+            {
+                PhoenixSaveManager phoenixSaveManager = GameUtl.GameComponent<PhoenixGame>().SaveManager;
+                FieldInfo currentDifficultyField = typeof(PhoenixSaveManager).GetField("_currentDifficulty", BindingFlags.NonPublic | BindingFlags.Instance);
+
+                GameDifficultyLevelDef difficulty = (GameDifficultyLevelDef)currentDifficultyField.GetValue(phoenixSaveManager);
+
+                if (difficulty != null)
+                {
+                    TFTVLogger.Always($"difficulty is {difficulty}");
+                }
+                else
+                {
+                    TFTVLogger.Always($"No difficulty set as current difficulty!");
+
+
+                    GeoLevelController geoLevelController = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
+
+                    if (geoLevelController != null)
+                    {
+
+                        currentDifficultyField.SetValue(phoenixSaveManager, geoLevelController.CurrentDifficultyLevel);
+
+                        GameDifficultyLevelDef newDifficulty = (GameDifficultyLevelDef)currentDifficultyField.GetValue(phoenixSaveManager);
+
+
+                        TFTVLogger.Always($"Current difficulty set to {newDifficulty?.name}");
+                    }
+                    else
+                    {
+                        GameDifficultyLevelDef gameDifficultyLevelDef = null;
+
+
+                        if (TFTVNewGameOptions.InternalDifficultyCheck != 0)
+                        {
+                            DefCache.GetDef<GameDifficultyLevelDef>("Easy_GameDifficultyLevelDef").Order = 2;
+                            DefCache.GetDef<GameDifficultyLevelDef>("Standard_GameDifficultyLevelDef").Order = 3;
+                            DefCache.GetDef<GameDifficultyLevelDef>("Hard_GameDifficultyLevelDef").Order = 4;
+                            DefCache.GetDef<GameDifficultyLevelDef>("VeryHard_GameDifficultyLevelDef").Order = 5;
+
+                            switch (TFTVNewGameOptions.InternalDifficultyCheck)
+                            {
+                                case 1:
+                                    gameDifficultyLevelDef = DefCache.GetDef<GameDifficultyLevelDef>("StoryMode_DifficultyLevelDef");
+                                    break;
+
+                                case 2:
+                                    gameDifficultyLevelDef = DefCache.GetDef<GameDifficultyLevelDef>("Easy_GameDifficultyLevelDef");
+                                    break;
+
+                                case 3:
+                                    gameDifficultyLevelDef = DefCache.GetDef<GameDifficultyLevelDef>("Standard_GameDifficultyLevelDef");
+                                    break;
+
+                                case 4:
+                                    gameDifficultyLevelDef = DefCache.GetDef<GameDifficultyLevelDef>("Hard_GameDifficultyLevelDef");
+                                    break;
+
+                                case 5:
+                                    gameDifficultyLevelDef = DefCache.GetDef<GameDifficultyLevelDef>("VeryHard_GameDifficultyLevelDef");
+                                    break;
+
+                                case 6:
+                                    gameDifficultyLevelDef = DefCache.GetDef<GameDifficultyLevelDef>("Etermes_DifficultyLevelDef");
+                                    break;
+                            }
+                            currentDifficultyField.SetValue(phoenixSaveManager, geoLevelController.CurrentDifficultyLevel);
+
+                            GameDifficultyLevelDef newDifficulty = (GameDifficultyLevelDef)currentDifficultyField.GetValue(phoenixSaveManager);
+
+
+                            TFTVLogger.Always($"Current difficulty set to {newDifficulty?.name}");
+
+
+                        }
+                        else
+                        {
+                            string warning = $"Could not find difficulty! This is a tactical save made before Update# 36. Please load a Geoscape save before this mission; this save is doomed!";
+
+                            GameUtl.GetMessageBox().ShowSimplePrompt(warning, MessageBoxIcon.Warning, MessageBoxButtons.OK, null);
+                        }
+                    }
+
+                }
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
 
 
 
+        }
+
+        private static void SetMarketPlaceRotations(GeoLevelController controller)
+        {
+            try
+            {
+                GeoMarketplace geoMarketplace = controller.Marketplace;
+
+                DateTime cutoffDay = new DateTime(2047, 1, 5); // January 5th, 2047
+
+                if (geoMarketplace.AllMissionsCompleted && controller.Timing.Now.DateTime > cutoffDay && controller.EventSystem.GetVariable("MarketPlaceRotations") == 0)
+                {
+                    // Calculate the number of days from the cutoff day to the current date and divide by 4
+                    TimeSpan timeDifference = controller.Timing.Now.DateTime - cutoffDay;
+                    int variable = (int)(timeDifference.TotalDays / 4);
+
+                    // Set the "MarketPlaceRotations" variable
+                    TFTVLogger.Always($"Adjusting old save to new Marketplace! today is {controller.Timing.Now.DateTime}, so setting MarketPlaceRotation to {variable}");
+
+                    controller.EventSystem.SetVariable("MarketPlaceRotations", variable);
+                    TFTVChangesToDLC5.ForceMarketPlaceUpdate();
+                }
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
+        }
+
+
+
+        [HarmonyPatch(typeof(GeoMission), "TryReloadItem")]
+        public static class GeoMission_TryReloadItem_patch
+        {
+
+            public static bool Prefix(GeoMission __instance, GeoItem item, ItemStorage storage, string storageName)
+            {
+                try
+                {
+                    // TFTVLogger.Always($"{item} storage {storage} storageName {storageName}");
+
+                    WeaponDef Obliterator = DefCache.GetDef<WeaponDef>("KS_Obliterator_WeaponDef");
+                    WeaponDef Subjector = DefCache.GetDef<WeaponDef>("KS_Subjector_WeaponDef");
+                    WeaponDef Redemptor = DefCache.GetDef<WeaponDef>("KS_Redemptor_WeaponDef");
+                    WeaponDef Devastator = DefCache.GetDef<WeaponDef>("KS_Devastator_WeaponDef");
+                    WeaponDef Tormentor = DefCache.GetDef<WeaponDef>("KS_Tormentor_WeaponDef");
+
+                    List<WeaponDef> kaosGuns = new List<WeaponDef>() { Obliterator, Subjector, Redemptor, Devastator, Tormentor };
+
+
+                    if (kaosGuns.Contains(item.ItemDef) && item.CommonItemData.Ammo == null)
+                    {
+
+                        TFTVLogger.Always($"trying to reload an old {item} that doesn't have compatible ammo! Canceling reload to avoid softlock");
+
+                        return false;
+
+                    }
+                    return true;
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
 
         public static void CheckScyllaCaptureTechResearch(GeoLevelController controller) 
         {
@@ -164,6 +331,7 @@ namespace TFTV
                 CheckSaveGameEventChoices(controller);
                 CheckUmbraResearchVariable(controller);
                 AddInteranlDifficultyCheckSaveData(controller);
+                SetMarketPlaceRotations(controller);
                 //  FixReactivateCyclopsMission(controller);
               //  SetStrongerPandoransOn();
             }

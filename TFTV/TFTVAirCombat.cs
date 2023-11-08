@@ -85,7 +85,7 @@ namespace TFTV
 
                         foreach (GeoHaven haven in geoHavens)
                         {
-                            //TFTVLogger.Always("Got Here");
+                            //TFTVLogger.Always("");
                             if (Vector3.Distance(haven.Site.WorldPosition, worldPos) <= 1)
 
                             {
@@ -340,7 +340,7 @@ namespace TFTV
 
                     GeoLevelController controller = __instance.GeoLevel;
 
-                    if (__instance.CurrentBehemothStatus == GeoBehemothActor.BehemothStatus.Dormant)//first check
+                    if (__instance.CurrentBehemothStatus == BehemothStatus.Dormant)//first check
                     {
                         //   TFTVLogger.Always("Behemoth's target lists are cleared because he is sleeping");
                         targetsForBehemoth.Clear();
@@ -528,8 +528,6 @@ namespace TFTV
                 {
                     GeoLevelController controller = __instance.GeoLevel;
 
-                  
-
                     __instance.GeoLevel.EventSystem.SetVariable(BehemothRoamings, __instance.GeoLevel.EventSystem.GetVariable(BehemothRoamings) + 1);
 
                     TFTVLogger.Always($"Behemoth emerging, this is romaing # {  __instance.GeoLevel.EventSystem.GetVariable(BehemothRoamings)}");
@@ -715,7 +713,7 @@ namespace TFTV
                 {
 
                     //Get all sites connected to it, excluding the BehemothSite, ordered by distance from it
-                    IOrderedEnumerable<GeoSite> sitesBehemothCanVisit = from s in controller.Map.GetConnectedSitesOfType_Land(behemothSite, GeoSiteType.Exploration).Where(gs => gs != behemothSite)
+                    IOrderedEnumerable<GeoSite> sitesBehemothCanVisit = from s in controller.Map.GetConnectedSitesOfType_Land(behemothSite, GeoSiteType.Exploration).Where(gs => gs != behemothSite && gs.SiteTags.Count==0)
                                                                         orderby GeoMap.Distance(behemothSite, s)
                                                                         select s;
                     if (sitesBehemothCanVisit.Count() > 0)

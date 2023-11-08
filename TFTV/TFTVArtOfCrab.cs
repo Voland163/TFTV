@@ -61,7 +61,7 @@ namespace TFTV
                       {
 
                           SpawnActorAbilityDef spawnSpawneryAbilityDef = DefCache.GetDef<SpawnActorAbilityDef>("SpawnerySpawnAbility");
-                          //    TFTVLogger.Always("Got here");
+                          //    TFTVLogger.Always("");
                           SpawnActorAbility spawnSpawneryAbility = __instance.GetAbilityWithDef<SpawnActorAbility>(spawnSpawneryAbilityDef);
 
                           if (spawnSpawneryAbility != null)
@@ -136,7 +136,7 @@ namespace TFTV
                 if (ability.TacticalAbilityDef == scyllaSpit || ability.TacticalAbilityDef == scyllaScream)
                 {
                     StartPreparingShootAbilityDef scyllaStartPreparing = DefCache.GetDef<StartPreparingShootAbilityDef>("Queen_StartPreparing_AbilityDef");
-                    //    TFTVLogger.Always("Got here");
+                    //    TFTVLogger.Always("");
                     StartPreparingShootAbility startPreparingShootAbility = actor.GetAbilityWithDef<StartPreparingShootAbility>(scyllaStartPreparing);
 
                     if (startPreparingShootAbility != null)

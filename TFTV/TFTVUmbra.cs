@@ -217,42 +217,42 @@ namespace TFTV
 
 
 
-
-        [HarmonyPatch(typeof(TacticalLevelController), "ActorDamageDealt")]
-        public static class TacticalLevelController_ActorDamageDealt_TBTV_Trigger_Patch
+        public static void TBTVTriggerOnActorDamageDealt(TacticalActor actor, IDamageDealer damageDealer)
         {
-            public static void Prefix(TacticalActor actor, IDamageDealer damageDealer)
+            try 
             {
-                try
+                if (actor.GameTags.Contains(voidTouchedTag))
                 {
-                    if (actor.GameTags.Contains(voidTouchedTag))
+                    RemoveDeathBelcherAbilities(actor);
+                    int roll = MakeTBTVRoll();
+                    actor.RemoveAbility(hiddenTBTVAbilityDef);
+                    actor.GameTags.Remove(voidTouchedTag);
+                    GiveTBTVAbility(actor, roll);
+                }
+
+                if (actor.HasStatus(onAttackTBTVStatus) && damageDealer != null)
+                {
+                    TacticalActorBase attackerBase = damageDealer.GetTacticalActorBase();
+                    TacticalActor attacker = attackerBase as TacticalActor;
+
+                    if (!attacker.Status.HasStatus(mFDStatus) && actor.TacticalFaction != attacker.TacticalFaction)
                     {
-                        RemoveDeathBelcherAbilities(actor);
-                        int roll = MakeTBTVRoll();
-                        actor.RemoveAbility(hiddenTBTVAbilityDef);
-                        actor.GameTags.Remove(voidTouchedTag);
-                        GiveTBTVAbility(actor, roll);
-                    }
-
-                    if (actor.HasStatus(onAttackTBTVStatus) && damageDealer != null)
-                    {
-                        TacticalActorBase attackerBase = damageDealer.GetTacticalActorBase();
-                        TacticalActor attacker = attackerBase as TacticalActor;
-
-                        if (!attacker.Status.HasStatus(mFDStatus) && actor.TacticalFaction != attacker.TacticalFaction)
-                        {
-                            attacker.Status.ApplyStatus(mFDStatus);
-                        }
-
+                        attacker.Status.ApplyStatus(mFDStatus);
                     }
 
                 }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
+
+
             }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
         }
+
+
+      
 
         public static int MakeTBTVRoll()
         {

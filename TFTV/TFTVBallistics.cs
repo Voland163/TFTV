@@ -247,85 +247,89 @@ namespace TFTV
             }
         }
 
-
         //D-Coy patch to remove if attacked by "smart" enemy
-        [HarmonyPatch(typeof(TacticalLevelController), "ActorDamageDealt")]
-        public static class TacticalLevelController_ActorDamageDealt_Decoy_Patch
+        public static void RemoveDCoy(TacticalActor actor, IDamageDealer damageDealer) 
         {
-            public static void Postfix(TacticalActor actor, IDamageDealer damageDealer)
+
+            try
             {
-                try
+                if (damageDealer != null)
                 {
-                    if (damageDealer != null)
+
+                    TacticalActorDef dcoy = DefCache.GetDef<TacticalActorDef>("Decoy_ActorDef");
+                    ClassTagDef sirenTag = DefCache.GetDef<ClassTagDef>("Siren_ClassTagDef");
+                    ClassTagDef queenTag = DefCache.GetDef<ClassTagDef>("Queen_ClassTagDef");
+                    ClassTagDef tritonTag = DefCache.GetDef<ClassTagDef>("Fishman_ClassTagDef");
+                    ClassTagDef acheronTag = DefCache.GetDef<ClassTagDef>("Acheron_ClassTagDef");
+                    ClassTagDef hopliteTag = DefCache.GetDef<ClassTagDef>("HumanoidGuardian_ClassTagDef");
+                    ClassTagDef cyclopsTag = DefCache.GetDef<ClassTagDef>("MediumGuardian_ClassTagDef");
+
+                    GameTagDef humanTag = DefCache.GetDef<GameTagDef>("Human_TagDef");
+
+                    /* TFTVLogger.Always($"actor is null? {actor == null}");
+                     TFTVLogger.Always($"actor is {actor.name}");
+                     TFTVLogger.Always($"damagedealer null? {damageDealer == null}");
+                     TFTVLogger.Always($"damagePayload null? {damageDealer.GetDamagePayload() == null}");*/
+
+                    if (damageDealer.GetDamagePayload() == null || actor == null) //|| damageDealer.GetDamagePayload().DamageKeywords.Count==0) 
                     {
-                        
-                        TacticalActorDef dcoy = DefCache.GetDef<TacticalActorDef>("Decoy_ActorDef");
-                        ClassTagDef sirenTag = DefCache.GetDef<ClassTagDef>("Siren_ClassTagDef");
-                        ClassTagDef queenTag = DefCache.GetDef<ClassTagDef>("Queen_ClassTagDef");
-                        ClassTagDef tritonTag = DefCache.GetDef<ClassTagDef>("Fishman_ClassTagDef");
-                        ClassTagDef acheronTag = DefCache.GetDef<ClassTagDef>("Acheron_ClassTagDef");
-                        ClassTagDef hopliteTag = DefCache.GetDef<ClassTagDef>("HumanoidGuardian_ClassTagDef");
-                        ClassTagDef cyclopsTag = DefCache.GetDef<ClassTagDef>("MediumGuardian_ClassTagDef");
+                        return;
+                    }
 
-                        GameTagDef humanTag = DefCache.GetDef<GameTagDef>("Human_TagDef");
+                    if (damageDealer.GetDamagePayload().DamageKeywords.Count() == 0)
+                    {
+                        return;
 
-                       /* TFTVLogger.Always($"actor is null? {actor == null}");
-                        TFTVLogger.Always($"actor is {actor.name}");
-                        TFTVLogger.Always($"damagedealer null? {damageDealer == null}");
-                        TFTVLogger.Always($"damagePayload null? {damageDealer.GetDamagePayload() == null}");*/
+                    }
 
-                        if (damageDealer.GetDamagePayload() == null || actor == null) //|| damageDealer.GetDamagePayload().DamageKeywords.Count==0) 
+                    //TFTVLogger.Always($"running ActorDamageDealt damage: {damageDealer.GetDamagePayload()?.DamageKeywords?.First()?.DamageKeywordDef.name}");
+
+                    if (actor.IsAlive)
+                    {
+                        if (actor.TacticalActorDef == dcoy && damageDealer != null && damageDealer != null && !damageDealer.GetDamagePayload().DamageKeywords.First().DamageKeywordDef.Equals(Shared.SharedDamageKeywords.ShockKeyword) && damageDealer.GetTacticalActorBase() != null)
                         {
-                            return;
-                        }
+                            TacticalActorBase attackerBase = damageDealer.GetTacticalActorBase();
+                            TacticalActor attacker = attackerBase as TacticalActor;
 
-                        if (damageDealer.GetDamagePayload().DamageKeywords.Count() == 0) 
-                        {
-                            return;
-                        
-                        }
-
-                        //TFTVLogger.Always($"running ActorDamageDealt damage: {damageDealer.GetDamagePayload()?.DamageKeywords?.First()?.DamageKeywordDef.name}");
-
-                        if (actor.IsAlive)
-                        {
-                            if (actor.TacticalActorDef == dcoy && damageDealer != null && damageDealer != null && !damageDealer.GetDamagePayload().DamageKeywords.First().DamageKeywordDef.Equals(Shared.SharedDamageKeywords.ShockKeyword) && damageDealer.GetTacticalActorBase() != null)
+                            if (!attacker.IsControlledByPlayer)
                             {
-                                TacticalActorBase attackerBase = damageDealer.GetTacticalActorBase();
-                                TacticalActor attacker = attackerBase as TacticalActor;
-
-                                if (!attacker.IsControlledByPlayer)
+                                //Decoy despawned if attacked by Siren or Scylla
+                                if (attacker.GameTags.Contains(sirenTag) || attacker.GameTags.Contains(queenTag)
+                                    || attacker.GameTags.Contains(hopliteTag) || attacker.GameTags.Contains(cyclopsTag))
                                 {
-                                    //Decoy despawned if attacked by Siren or Scylla
-                                    if (attacker.GameTags.Contains(sirenTag) || attacker.GameTags.Contains(queenTag)
-                                        || attacker.GameTags.Contains(hopliteTag) || attacker.GameTags.Contains(cyclopsTag))
-                                    {
-                                        actor.ApplyDamage(new DamageResult() { HealthDamage = actor.Health });
-                                        //  TacContextHelpManager tacContextHelpManager = (TacContextHelpManager)UnityEngine.Object.FindObjectOfType(typeof(TacContextHelpManager));
-                                        //  tacContextHelpManager.EventTypeTriggered(HintTrigger.ActorHurt, actor, actor);
-                                        TFTVTutorialAndStory.ShowStoryPanel(actor.TacticalLevel, "HintDecoyDiscovered");
-                                    }
-                                    //Decoy despawned if attacked within 5 tiles by human, triton or acheron
-                                    else if ((attacker.GameTags.Contains(tritonTag)
-                                        || attacker.GameTags.Contains(humanTag)
-                                        || attacker.GameTags.Contains(acheronTag))
-                                        && (actor.Pos - attacker.Pos).magnitude <= 5)
-                                    {
-                                        actor.ApplyDamage(new DamageResult() { HealthDamage = actor.Health });
-                                        //  TacContextHelpManager tacContextHelpManager = (TacContextHelpManager)UnityEngine.Object.FindObjectOfType(typeof(TacContextHelpManager));
-                                        //  tacContextHelpManager.EventTypeTriggered(HintTrigger.ActorHurt, actor, actor);
-                                    }
+                                    actor.ApplyDamage(new DamageResult() { HealthDamage = actor.Health });
+                                    //  TacContextHelpManager tacContextHelpManager = (TacContextHelpManager)UnityEngine.Object.FindObjectOfType(typeof(TacContextHelpManager));
+                                    //  tacContextHelpManager.EventTypeTriggered(HintTrigger.ActorHurt, actor, actor);
+                                    TFTVTutorialAndStory.ShowStoryPanel(actor.TacticalLevel, "HintDecoyDiscovered");
+                                }
+                                //Decoy despawned if attacked within 5 tiles by human, triton or acheron
+                                else if ((attacker.GameTags.Contains(tritonTag)
+                                    || attacker.GameTags.Contains(humanTag)
+                                    || attacker.GameTags.Contains(acheronTag))
+                                    && (actor.Pos - attacker.Pos).magnitude <= 5)
+                                {
+                                    actor.ApplyDamage(new DamageResult() { HealthDamage = actor.Health });
+                                    //  TacContextHelpManager tacContextHelpManager = (TacContextHelpManager)UnityEngine.Object.FindObjectOfType(typeof(TacContextHelpManager));
+                                    //  tacContextHelpManager.EventTypeTriggered(HintTrigger.ActorHurt, actor, actor);
                                 }
                             }
                         }
                     }
                 }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
             }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+
+
+
+
         }
+
+        
+       
 
 
     }

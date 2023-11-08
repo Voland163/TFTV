@@ -1,7 +1,11 @@
 ﻿using Base;
 using Base.Core;
 using HarmonyLib;
+using PhoenixPoint.Common.Core;
+using PhoenixPoint.Common.Entities.Items;
+using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Levels.Missions;
+using PhoenixPoint.Common.View.ViewControllers.Inventory;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.PhoenixBases;
 using PhoenixPoint.Geoscape.Entities.PhoenixBases.FacilityComponents;
@@ -10,6 +14,8 @@ using PhoenixPoint.Geoscape.Events;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.View.ViewControllers.HavenDetails;
 using PhoenixPoint.Tactical.Entities;
+using PhoenixPoint.Tactical.Entities.Equipments;
+using PhoenixPoint.Tactical.Entities.Weapons;
 using PhoenixPoint.Tactical.Levels.Missions;
 using PhoenixPoint.Tactical.View;
 using System;
@@ -17,13 +23,177 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
+using UnityEngine;
 using UnityEngine.SceneManagement;
+using Assets.Code.PhoenixPoint.Geoscape.Entities.Sites.TheMarketplace;
+using PhoenixPoint.Geoscape.View.ViewControllers.SiteEncounters;
+using PhoenixPoint.Geoscape.View.ViewModules;
 
 namespace TFTV
 {
     internal class TFTVVanillaFixes
     {
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
+        private static readonly SharedData Shared = TFTVMain.Shared;
+
+        /// <summary>
+        /// Fix to prevent last item being removed in Marketplace when number of offers > 7 
+        /// Leaving the loggers in for now in case the threshold is not 7
+        /// </summary>
+
+        [HarmonyPatch(typeof(UIModuleTheMarketplace), "UpdateList")]
+        public static class UIModuleTheMarketplace_UpdateList_patch
+        {
+            public static bool Prefix(UIModuleTheMarketplace __instance, GeoscapeEvent geoEvent, bool ____isInit,
+                List<TheMarketplaceChoiceButton> ____marketplaceChoiceButtons, GeoMarketplace ____geoMarketplace)
+            {
+              //  try
+              //  {
+                    MethodInfo setChoiceMethod = typeof(TheMarketplaceChoicesController).GetMethod("SetChoice", BindingFlags.NonPublic | BindingFlags.Instance);
+
+                    if (____isInit)
+                    {
+                        __instance.ListScrollRect.Scroll.verticalNormalizedPosition = 1f;
+                    }
+
+                    ____marketplaceChoiceButtons.Clear();
+
+                //    TFTVLogger.Always($"____geoMarketplace.MarketplaceChoices.Count {____geoMarketplace.MarketplaceChoices.Count}");
+
+                    int count = ____geoMarketplace.MarketplaceChoices.Count;
+
+                    if (____geoMarketplace.MarketplaceChoices.Count > 7) //&& !TFTVChangesToDLC5.TFTVMarketPlaceUI.MarketplaceOfferListAdjustedOnce)
+                    {
+                        count = ____geoMarketplace.MarketplaceChoices.Count + 1;
+                    }
+
+
+
+                    __instance.ListScrollRect.InitVertical(__instance.MarketplaceChoiceButtonPrefab.GetComponent<TheMarketplaceChoiceButton>(), count, delegate (int index, Component element)
+                    {
+                        TheMarketplaceChoiceButton component = element.GetComponent<TheMarketplaceChoiceButton>();
+                        setChoiceMethod.Invoke(__instance.TheMarketplaceChoicesController, new object[] { __instance.Context.ViewerFaction, ____geoMarketplace.MarketplaceChoices[index], component, geoEvent.Context });
+                        ____marketplaceChoiceButtons.Add(component);
+                    });
+
+                   // TFTVLogger.Always($"____marketplaceChoiceButtons.Count {____marketplaceChoiceButtons.Count}");
+
+                    return false;
+              //  }
+              /*  catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }*/
+            }
+        }
+
+
+        /// <summary>
+        /// Not strictly a bug, but once partial magazines become visible, without this patch they can be scrapped for the same price as a full one.
+        /// This patch ensures that scrapping ammo is never profitable.
+        /// </summary>
+
+        [HarmonyPatch(typeof(ItemDef), "get_ScrapPrice")]
+        public static class ItemDef_get_ScrapPrice_patch
+        {
+            public static void Postfix(ItemDef __instance, ref ResourcePack __result, ResourcePack ____scrapPrice)
+            {
+                try
+                {
+
+                    if (__instance.Tags.Contains(Shared.SharedGameTags.AmmoTag))
+                    {
+                        TacticalItemDef tacticalItemDef = __instance as TacticalItemDef;
+
+                        WeaponDef weaponDef = (WeaponDef)AmmoWeaponDatabase.AmmoToWeaponDictionary[tacticalItemDef][0];
+
+                        float costMultiplier = Math.Max(weaponDef.DamagePayload.AutoFireShotCount, 2);
+                        __result = new ResourcePack(new ResourceUnit[]
+                             {
+                        new ResourceUnit(ResourceType.Tech, Mathf.Floor(__instance.ManufactureTech / costMultiplier)),
+                        new ResourceUnit(ResourceType.Materials, Mathf.Floor(__instance.ManufactureMaterials / costMultiplier)),
+                        new ResourceUnit(ResourceType.Mutagen, Mathf.Floor(__instance.ManufactureMutagen / costMultiplier)),
+                        new ResourceUnit(ResourceType.LivingCrystals, Mathf.Floor(__instance.ManufactureLivingCrystals / costMultiplier)),
+                        new ResourceUnit(ResourceType.Orichalcum, Mathf.Floor(__instance.ManufactureOricalcum / costMultiplier)),
+                        new ResourceUnit(ResourceType.ProteanMutane, Mathf.Floor(__instance.ManufactureProteanMutane / costMultiplier))
+                             });
+
+
+                    }
+
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
+
+
+
+        //Code provided by Codemite
+        [HarmonyPatch(typeof(UIInventorySlot), "UpdateItem")]
+        public static class UIInventorySlot_UpdateItem_patch
+        {
+            public static void Postfix(UIInventorySlot __instance, ICommonItem ____item)
+            {
+                try
+                {
+                    if (____item == null || ____item.CommonItemData.Count == 1 && (____item.CommonItemData.CurrentCharges == ____item.ItemDef.ChargesMax || ____item.CommonItemData.CurrentCharges == 0))
+                    {
+                        __instance.NumericBackground.gameObject.SetActive(false);
+                    }
+                    else
+                    {
+                        __instance.NumericBackground.gameObject.SetActive(true);
+
+                        if (____item.CommonItemData.CurrentCharges == ____item.ItemDef.ChargesMax)
+                        {
+                            __instance.NumericField.text = ____item.CommonItemData.Count.ToString();
+                        }
+                        else
+                        {
+                            string ammoCount = $"{____item.CommonItemData.CurrentCharges}/{____item.ItemDef.ChargesMax}";
+                            string textToShow;
+                            string greyColor = "<color=#b6b6b6>";
+
+                            if (____item.CommonItemData.Count - 1 == 0)
+                            {
+                                if (____item.ItemDef.Tags.Contains(Shared.SharedGameTags.AmmoTag))
+                                {
+                                    textToShow = $"{greyColor}(1) {ammoCount}</color>";
+                                }
+                                else
+                                {
+                                    textToShow = $"{greyColor} {ammoCount}</color>";
+                                }
+                            }
+                            else
+                            {
+
+                                textToShow = $"{____item.CommonItemData.Count - 1} {greyColor}+ {____item.CommonItemData.CurrentCharges}/{____item.ItemDef.ChargesMax}</color>";
+                            }
+
+                            __instance.NumericField.text = textToShow;
+                            __instance.NumericField.alignment = TextAnchor.MiddleLeft;
+                        }
+                    }
+
+                    // return false;
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
+
+
+
 
         /// <summary>
         /// Fixes money spent no purchase made at Marketplace if 2 or more aircraft at Marketplace
@@ -53,15 +223,15 @@ namespace TFTV
 
                         propertyInfo?.SetValue(__instance, choice.Outcome.GenerateFactionReward(faction, geoscapeEventContext, __instance.EventID));
 
-                        // TFTVLogger.Always($"got here. is propertyInfo null? {propertyInfo==null} is choiceReward null? {__instance.ChoiceReward==null}");
+                        // TFTVLogger.Always($". is propertyInfo null? {propertyInfo==null} is choiceReward null? {__instance.ChoiceReward==null}");
 
                         // __instance.ChoiceReward = choice.Outcome.GenerateFactionReward(faction, geoscapeEventContext, __instance.EventID);
                         __instance.ChoiceReward.Apply(faction, geoscapeEventContext.Site, geoscapeEventContext.Vehicle);
-                        // TFTVLogger.Always($"got here2");
+                        // TFTVLogger.Always($"2");
 
                         if (choice.Outcome.ReEneableEvent)
                         {
-                            //   TFTVLogger.Always($"got here");
+                            //   TFTVLogger.Always($"");
                             GameUtl.CurrentLevel().GetComponent<GeoscapeEventSystem>().EnableGeoscapeEvent(__instance.EventID);
                         }
 

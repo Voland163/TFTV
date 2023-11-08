@@ -1,16 +1,16 @@
 ﻿using Base.Core;
 using Base.Entities.Statuses;
+using Base.Levels;
 using Base.UI;
 using HarmonyLib;
 using PhoenixPoint.Common.ContextHelp;
-using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
+using PhoenixPoint.Common.Entities.Items;
 using PhoenixPoint.Common.Saves;
 using PhoenixPoint.Common.UI;
 using PhoenixPoint.Common.View.ViewModules;
 using PhoenixPoint.Geoscape.Entities;
-using PhoenixPoint.Geoscape.Entities.PhoenixBases.FacilityComponents;
 using PhoenixPoint.Geoscape.Entities.Research;
 using PhoenixPoint.Geoscape.Entities.Research.Requirement;
 using PhoenixPoint.Geoscape.Entities.Sites;
@@ -20,17 +20,16 @@ using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
 using PhoenixPoint.Geoscape.Levels.Objectives;
 using PhoenixPoint.Tactical.Entities;
+using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.Effects.ApplicationConditions;
 using PhoenixPoint.Tactical.Entities.Effects.DamageTypes;
-using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.Entities.Statuses;
-using PhoenixPoint.Tactical.Entities.Weapons;
-using PhoenixPoint.Tactical.Levels;
 using PhoenixPoint.Tactical.Levels.FactionObjectives;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using TFTV.PortedAATweaks;
 using static PhoenixPoint.Tactical.Entities.Statuses.TacStatusDef;
 
 namespace TFTV
@@ -43,7 +42,7 @@ namespace TFTV
 
         public static int D12DifficultyModifiedRoll(int unModifiedDifficultyOrder)
         {
-            try 
+            try
             {
                 return UnityEngine.Random.Range(1, 13 - TFTVReleaseOnly.DifficultyOrderConverter(unModifiedDifficultyOrder));
 
@@ -56,7 +55,7 @@ namespace TFTV
 
         }
 
-     
+
         public static void CheckGeoUIfunctionality(GeoLevelController controller)
         {
             try
@@ -140,7 +139,7 @@ namespace TFTV
                 TFTVCapturePandoransGeoscape.ToxinsInCirculation = 0;
                 TFTVNewGameMenu.NewGameOptionsSetUp = false;
                 TFTVNewGameMenu.EnterStateRun = false;
-                TFTVGoo.DontUseGooNavigationPatch = false;
+              //  TFTVGoo.DontUseGooNavigationPatch = false;
 
                 /*  TFTVNewGameOptions.AmountOfExoticResourcesSetting;
                   TFTVNewGameOptions.ResourceMultiplierSetting;
@@ -161,6 +160,54 @@ namespace TFTV
                 TFTVLogger.Error(e);
             }
         }
+
+
+       
+
+     /*   public static void ModifyGeoCharacterDef(GeoCharacter character, string name, List<TacticalAbilityDef> abilities,
+            List<ItemDef> readySlots, List<ItemDef> armorSlots, List<ItemDef> inventorySlots, List<GameTagDef> customizationTags, int level, int[] stats) 
+        {
+            try
+            {
+                character.Rename(name);
+                
+                foreach(TacticalAbilityDef ab in abilities) 
+                {
+                    character.Progression.AddAbility(ab); 
+                }
+
+                character.Progression.LevelProgression.SetLevel(level);
+               
+              
+
+                newCharacter.Data.GameTags = new List<GameTagDef>(customizationTags) { classTagDef }.ToArray();
+                newCharacter.Data.Abilites = new List<TacticalAbilityDef>(abilities).ToArray();
+                newCharacter.Data.EquipmentItems = new List<ItemDef>(readySlots).ToArray();
+                newCharacter.Data.InventoryItems = new List<ItemDef>(inventorySlots).ToArray();
+                newCharacter.Data.BodypartItems = new List<ItemDef>(armorSlots).ToArray();
+                newCharacter.Data.LevelProgression.SetLevel(level);
+                newCharacter.Data.Strength = stats[0];
+                newCharacter.Data.Will = stats[1];
+                newCharacter.Data.Speed = stats[2];
+
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
+
+
+
+
+
+
+
+        }*/
+
+
+
 
         public static void ClearHints()
         {
@@ -206,7 +253,7 @@ namespace TFTV
                 TFTVBaseDefenseTactical.StratToBeAnnounced = 0;
                 TFTVBaseDefenseTactical.StratToBeImplemented = 0;
                 TFTVAncients.CyclopsMolecularDamageBuff.Clear();
-                TFTVExperimental.AttackedLairSites = new Dictionary<int, int>();
+                TFTVKillingExploits.AttackedLairSites = new Dictionary<int, int>();
                 //   TFTVAncients.AlertedHoplites.Clear();
                 TFTVCapturePandorans.AircraftCaptureCapacity = 0;
                 //  TFTVBaseDefenseTactical.VentingHintShown = false;
@@ -545,7 +592,7 @@ namespace TFTV
             }
         }
 
-       
+
         public static void SetStaminaToZero(GeoCharacter __instance)
         {
             try

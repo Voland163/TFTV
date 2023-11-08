@@ -353,7 +353,7 @@ namespace TFTV
             // With this patch the assault WILL happen and there's no silent abort (because it feels like a bug)
   
             
-            /*        [HarmonyPatch(typeof(GeoAlienFaction), "StartPhoenixBaseAssault")]
+            [HarmonyPatch(typeof(GeoAlienFaction), "StartPhoenixBaseAssault")]
             public static class GeoAlienFaction_StartPhoenixBaseAssault_Patch
             {
 
@@ -381,7 +381,7 @@ namespace TFTV
                         return true;
                     }
                 }
-            }*/
+            }
 
             // Disables the big dumb buttons for excavations and base defense
             [HarmonyPatch(typeof(UIModuleStatusBarMessages), "Update")]

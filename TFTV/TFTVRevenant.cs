@@ -102,15 +102,6 @@ namespace TFTV
         //private static readonly DamageKeywordDef paralisingDamageKeywordDef =DefCache.GetDef<DamageKeywordDef>("Paralysing_DamageKeywordDataDef"));
 
 
-        /*   private static readonly DamageMultiplierStatusDef RevenantAssaultStatus = DefCache.GetDef<DamageMultiplierStatusDef>("RevenantAssaultStatus");
-           private static readonly DamageMultiplierStatusDef RevenantHeavyStatus = DefCache.GetDef<DamageMultiplierStatusDef>("RevenantHeavyStatus");
-           private static readonly DamageMultiplierStatusDef RevenantBerserkerStatus = DefCache.GetDef<DamageMultiplierStatusDef>("RevenantBerserkerStatus");
-           private static readonly DamageMultiplierStatusDef RevenantInfiltratorStatus = DefCache.GetDef<DamageMultiplierStatusDef>("RevenantInfiltratorStatus");
-           private static readonly DamageMultiplierStatusDef RevenantSniperStatus = DefCache.GetDef<DamageMultiplierStatusDef>("RevenantSniperStatus");
-           private static readonly DamageMultiplierStatusDef RevenantTechnician = DefCache.GetDef<DamageMultiplierStatusDef>("RevenantTechnicianStatus");
-           private static readonly DamageMultiplierStatusDef RevenantPriestStatus = DefCache.GetDef<DamageMultiplierStatusDef>("RevenantPriestStatus");
-           */
-
         public static void CheckIfRevenantPresent(TacticalLevelController controller)
         {
             try 
@@ -1520,38 +1511,38 @@ namespace TFTV
         }*/
 
 
-        // Harmony Patch to calculate damage resistance
-        [HarmonyPatch(typeof(DamageKeyword), "ProcessKeywordDataInternal")]
-        internal static class TFTV_DamageKeyword_ProcessKeywordDataInternal_DamageResistant_patch
+        public static void ApplyRevenantSpecialResistance(ref DamageAccumulation.TargetData data) 
         {
-            public static void Postfix(ref DamageAccumulation.TargetData data)
+            try
             {
-                try
+
+                if (data.Target.GetActor() != null && revenantResistanceStatus.DamageTypeDefs[0] == null
+                    && data.Target.GetActor().Status != null && data.Target.GetActor().Status.HasStatus(revenantResistanceStatus))
                 {
+                    float multiplier = 0.25f;
 
-                    if (data.Target.GetActor() != null && revenantResistanceStatus.DamageTypeDefs[0] == null
-                        && data.Target.GetActor().Status != null && data.Target.GetActor().Status.HasStatus(revenantResistanceStatus))
+                    if (!revenantSpecialResistance.Contains(data.Target.GetActor().name))
                     {
-                        float multiplier = 0.25f;
-
-                        if (!revenantSpecialResistance.Contains(data.Target.GetActor().name))
+                        //  TFTVLogger.Always("This check was passed");
+                        data.DamageResult.HealthDamage = Math.Min(data.Target.GetHealth(), data.DamageResult.HealthDamage * multiplier);
+                        data.AmountApplied = Math.Min(data.Target.GetHealth(), data.AmountApplied * multiplier);
+                        if (!data.Target.IsBodyPart())
                         {
-                            //  TFTVLogger.Always("This check was passed");
-                            data.DamageResult.HealthDamage = Math.Min(data.Target.GetHealth(), data.DamageResult.HealthDamage * multiplier);
-                            data.AmountApplied = Math.Min(data.Target.GetHealth(), data.AmountApplied * multiplier);
-                            if (!data.Target.IsBodyPart())
-                            {
-                                revenantSpecialResistance.Add(data.Target.GetActor().name);
-                            }
+                            revenantSpecialResistance.Add(data.Target.GetActor().name);
                         }
                     }
                 }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
             }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+
+
+
         }
+
 
 
         public static void RevenantKilled(DeathReport deathReport, TacticalLevelController controller) 
@@ -1559,7 +1550,7 @@ namespace TFTV
 
             try
             {
-                if (deathReport.Actor.HasGameTag(anyRevenantGameTag) && !controller.TacMission.IsFinalMission)
+                if (deathReport.Actor.HasGameTag(anyRevenantGameTag))
                 {
                     revenantSpawned = true;
                     TFTVLogger.Always("Revenant was killed, so revenantSpawned is now " + revenantSpawned);
