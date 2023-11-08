@@ -47,20 +47,33 @@ namespace TFTVVehicleRework.Misc
         private static void Give_VehiclesTrample()
         {
             // get ActorDefs
-            TacticalActorBaseDef Aspida = (TacticalActorBaseDef)Repo.GetDef("16cd2345-36a9-a6c4-1afa-104e9c72833b");
-            TacticalActorBaseDef Armadillo = (TacticalActorBaseDef)Repo.GetDef("aaac8f86-772c-cf44-e8cd-0f07a8b6bf83");
-            TacticalActorBaseDef Buggy = (TacticalActorBaseDef)Repo.GetDef("fc5539b5-5390-8324-5bf6-9d53a7ec092c");
-            TacticalActorBaseDef Scarab = (TacticalActorBaseDef)Repo.GetDef("42a5c739-fa43-cf94-ea55-7c5d2e09527f");
+            TacticalActorBaseDef[] VehicleActorDefs = new TacticalActorBaseDef[]
+            {
+                (TacticalActorBaseDef)Repo.GetDef("aaac8f86-772c-cf44-e8cd-0f07a8b6bf83"), // Armadillo
+                (TacticalActorBaseDef)Repo.GetDef("16cd2345-36a9-a6c4-1afa-104e9c72833b"), // Aspida
+                (TacticalActorBaseDef)Repo.GetDef("fc5539b5-5390-8324-5bf6-9d53a7ec092c"), // Buggy
+                (TacticalActorBaseDef)Repo.GetDef("42a5c739-fa43-cf94-ea55-7c5d2e09527f")  // Scarab
+            };
 
             //"CaterpillarMoveAbilityDef"
             CaterpillarMoveAbilityDef TrampleAbility = (CaterpillarMoveAbilityDef)Repo.GetDef("943eb31e-aae8-f134-cbd3-8b49a4fc896c");
-            TrampleAbility.ViewElementDef.DisplayName1 = new LocalizedTextBind("UI_TRAMPLE_NAME");
-            TrampleAbility.ViewElementDef.Description = new LocalizedTextBind("UI_TRAMPLE_DESC");
 
-            Aspida.Abilities = Aspida.Abilities.AddToArray(TrampleAbility);
-            Armadillo.Abilities = Armadillo.Abilities.AddToArray(TrampleAbility);
-            Buggy.Abilities = Buggy.Abilities.AddToArray(TrampleAbility);
-            Scarab.Abilities = Scarab.Abilities.AddToArray(TrampleAbility);
+            //"Mutog_CanLeap_AbilityDef"
+            PassiveModifierAbilityDef MutogCanLeap = (PassiveModifierAbilityDef)Repo.GetDef("af29cfc4-9b22-b774-682f-1dabc6ac13d3");
+            PassiveModifierAbilityDef DummyTrample = Repo.CreateDef<PassiveModifierAbilityDef>("a72fbfc4-17fe-4db1-aaf9-cec0eb350215", MutogCanLeap);
+            DummyTrample.name = "Trample_DummyAbilityDef";
+            DummyTrample.ViewElementDef = TrampleAbility.ViewElementDef;
+            DummyTrample.ViewElementDef.DisplayName1 = new LocalizedTextBind("UI_TRAMPLE_NAME");
+            DummyTrample.ViewElementDef.Description = new LocalizedTextBind("UI_TRAMPLE_DESC");
+
+            //Change Trample's ViewElementDef to the same as regular moving abilities.
+            TrampleAbility.ViewElementDef = (TacticalAbilityViewElementDef)Repo.GetDef("6333fa2e-6e95-8124-48ea-8f7a60a2e22c"); //"Move_AbilityViewDef"
+
+            foreach(TacticalActorBaseDef ActorDef in VehicleActorDefs)
+            {
+                ActorDef.Abilities = ActorDef.Abilities.AddToArray(TrampleAbility);
+                ActorDef.Abilities = ActorDef.Abilities.AddToArray(DummyTrample);
+            }
 
 			// "NJ_Armadillo_DemolitionComponentDef" -> Adjusting size of Armadillo Demolition Model so that it can crush worms;
             TacticalDemolitionComponentDef ArmadilloDemoComponentDef = (TacticalDemolitionComponentDef)Repo.GetDef("ca58e419-1c40-fba4-2922-b03e787f96c9");
