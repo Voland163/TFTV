@@ -34,6 +34,7 @@ namespace TFTVVehicleRework.Armadillo
             Helper.CopyFieldsByReflection(Reload, ArmadilloReload);
             ArmadilloReload.name = "FreeReload_AbilityDef";
             ArmadilloReload.ResourcePath = "Defs/Tactical/Actors/_Common/Abilities/FreeReload_AbilityDef";
+            ArmadilloReload.InputAction = "";
             ArmadilloReload.ActionPointCost = 0.5f;
 
             ArmadilloReload.ViewElementDef = (TacticalAbilityViewElementDef)Repo.CreateDef("f66de850-07d9-4339-9ee8-9f5839fd66c7", Reload.ViewElementDef);

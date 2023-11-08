@@ -110,6 +110,7 @@ namespace TFTVVehicleRework.Scarab
             Helper.CopyFieldsByReflection(Reload, ScarabReload);
             ScarabReload.name = "ScarabFreeReload_AbilityDef";
             ScarabReload.ResourcePath = "Defs/Tactical/Actors/_Common/Abilities/FreeReload_AbilityDef";
+            ScarabReload.InputAction = "";
             ScarabReload.ActionPointCost = 0.5f;
 
             ScarabReload.ViewElementDef = (TacticalAbilityViewElementDef)Repo.CreateDef("e91bdf96-62c5-4f5d-b85b-b21ac077fef2", Reload.ViewElementDef);
