@@ -93,6 +93,7 @@ namespace TFTVVehicleRework.KaosBuggy
                         WeaponDef Screamer = (WeaponDef)BuggyGuns[Module].SubAddons[1].SubAddon;
                         Screamer.ChargesMax = 6;
                         Screamer.DamagePayload.DamageDeliveryType = DamageDeliveryType.Sphere;
+                        Screamer.DamagePayload.ParabolaHeightToLengthRatio = 0.00000001f;
                         Screamer.DamagePayload.ParabolaHeightToLengthRatio = 0;
                         Screamer.DamagePayload.AoeRadius = 1.5f;
                         Change_ScreamerSceneView();
