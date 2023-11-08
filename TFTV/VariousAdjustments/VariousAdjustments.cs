@@ -232,12 +232,14 @@ namespace PRMBetterClasses.VariousAdjustments
             {
                 if (__instance.TacEffectStatusDef.name.Equals("Poison_DamageOverTimeStatusDef"))
                 {
-                    TacticalActor base_TacticalActor = (TacticalActor)AccessTools.Property(typeof(TacStatus), "TacticalActor").GetValue(__instance, null);
                     //StatMultiplierStatusDef trembling = Repo.GetAllDefs<StatMultiplierStatusDef>().FirstOrDefault(sms => sms.name.Equals("Trembling_StatusDef"));
-                    if (base_TacticalActor.Status.HasStatus(trembling))
+                    if (__instance.TacticalActor != null && __instance.TacticalActor.Status.HasStatus(trembling))
                     {
-                        StatMultiplierStatus status = base_TacticalActor.Status.GetStatus<StatMultiplierStatus>(trembling);
-                        status.RequestUnapply(status.StatusComponent);
+                        StatMultiplierStatus status = __instance.TacticalActor.Status.GetStatus<StatMultiplierStatus>(trembling);
+                        if (status != null)
+                        {
+                            status.RequestUnapply(status.StatusComponent);
+                        }
                         return;
                     }
                 }

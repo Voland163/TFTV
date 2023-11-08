@@ -28,6 +28,7 @@ using UnityEngine.SceneManagement;
 using Assets.Code.PhoenixPoint.Geoscape.Entities.Sites.TheMarketplace;
 using PhoenixPoint.Geoscape.View.ViewControllers.SiteEncounters;
 using PhoenixPoint.Geoscape.View.ViewModules;
+using PhoenixPoint.Geoscape.Core;
 
 namespace TFTV
 {
@@ -35,6 +36,52 @@ namespace TFTV
     {
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
         private static readonly SharedData Shared = TFTVMain.Shared;
+
+        /// <summary>
+        /// Fix to prevent characters given in events from spawning with wrong faction origin
+        /// </summary>
+
+        private static List<string> _eventsRewardingNJCharacters = new List<string>() { "AN11", "EX7", "SY22" };
+
+        [HarmonyPatch(typeof(GeoEventChoiceOutcome), "GenerateFactionReward")]
+        public static class GeoEventChoiceOutcome_GenerateFactionReward_patch
+        {
+
+            public static void Postfix(GeoEventChoiceOutcome __instance, string eventID, ref GeoFactionReward __result)
+            {
+                try
+                {
+                    GeoLevelController level = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
+
+                    if (eventID == "PROG_PU4_WIN" && __result.Units.Count > 0)
+                    {
+                        __result.Units.Clear();
+                        GeoFaction faction2 = level.AnuFaction;
+                        GeoUnitDescriptor geoUnitDescriptor = level.CharacterGenerator.GenerateUnit(faction2, __instance.Units[0]);
+                        level.CharacterGenerator.ApplyRecruitDifficultyParameters(geoUnitDescriptor);
+                        GeoCharacter item2 = geoUnitDescriptor.SpawnAsCharacter();
+                        __result.Units.Add(item2);
+
+                    }
+                    else if (_eventsRewardingNJCharacters.Contains(eventID) && __result.Units.Count > 0)
+                    {
+                        __result.Units.Clear();
+                        GeoFaction faction2 = level.NewJerichoFaction;
+                        GeoUnitDescriptor geoUnitDescriptor = level.CharacterGenerator.GenerateUnit(faction2, __instance.Units[0]);
+                        level.CharacterGenerator.ApplyRecruitDifficultyParameters(geoUnitDescriptor);
+                        GeoCharacter item2 = geoUnitDescriptor.SpawnAsCharacter();
+                        __result.Units.Add(item2);
+                    }
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
+
 
         /// <summary>
         /// Fix to prevent last item being removed in Marketplace when number of offers > 7 

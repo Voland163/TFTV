@@ -781,6 +781,34 @@ namespace TFTV
                 TFTVLogger.Error(e);
             }
         }
+
+        /// <summary>
+        /// To ensure that mission critical sites do not get blocked by Behemoth targetting them.
+        /// </summary>
+
+        [HarmonyPatch(typeof(GeoSite), "get_IsFreeForEncounter")]
+        public static class GeoSite_IsFreeForEncounter_TImeVaultBugHung_patch
+        {
+            public static void Postfix(GeoSite __instance, ref bool __result)
+            {
+                try
+                {
+
+                    if (__result == false && __instance.Type == GeoSiteType.Exploration && __instance.IsTargetedByBehemoth)
+                    {
+
+                        TFTVLogger.Always($"reverting result of IsFreeForEncounter for site {__instance.SiteId}");
+                        __result = true;
+                    }
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
     }
 }
 

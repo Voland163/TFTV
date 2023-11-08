@@ -199,7 +199,7 @@ namespace TFTV
 
                 foreach (GeoItem bionic in character.ArmourItems)
                 {
-                    if (bionic.ItemDef.Tags.Contains(bionicalTag))
+                    if (bionic.ItemDef.Tags.Contains(bionicalTag) && !bionic.ItemDef.Tags.Contains(TFTVChangesToDLC5.MercenaryTag))
 
                         bionics += 1;
                 }
@@ -371,7 +371,7 @@ namespace TFTV
 
                     foreach (TacticalItem armourItem in base_TacticalActor.BodyState.GetArmourItems())
                     {
-                        if (armourItem.GameTags.Contains(bionicalTag))
+                        if (armourItem.GameTags.Contains(bionicalTag) && !armourItem.GameTags.Contains(TFTVChangesToDLC5.MercenaryTag))
                         {
                             numberOfBionics++;
                         }
