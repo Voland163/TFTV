@@ -84,7 +84,7 @@ namespace TFTV
                 GameObject go = ModGO;
                 /// PhoenixGame is accessible at any time.
                 PhoenixGame game = GetGame();
-                string version = $"TFTV October 28 release #1 v{MetaData.Version}";
+                string version = $"TFTV November 8 release #1 v{MetaData.Version}";
 
                 TFTVversion = version;
 

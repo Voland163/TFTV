@@ -88,6 +88,7 @@ namespace TFTVVehicleRework.Scarab
             Taurus.ChargesMax = 8;
             Taurus.ManufactureTech = 30f;
             Taurus.ManufactureMaterials = 250f;
+            Taurus.APToUsePerc = 50;
 
             //"PX_HelCannon_ResearchDef_ManufactureResearchRewardDef_0"
             ManufactureResearchRewardDef HellCannonResearchReward = (ManufactureResearchRewardDef)Repo.GetDef("80d2b708-8ee3-228b-278e-acfa09815d64");
