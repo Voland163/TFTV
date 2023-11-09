@@ -117,7 +117,7 @@ namespace TFTV
             TFTVAncientsGeo.AncientsCheckResearchState(gsController);
             TFTVAncientsGeo.CheckImpossibleWeaponsAdditionalRequirements(gsController);
             TFTVAncientsGeo.EnsureNoHarvesting(gsController);
-            TFTVFire.CheckForFireQuenchers(gsController);
+            TFTVVoxels.TFTVFire.CheckForFireQuenchers(gsController);
             TFTVSpecialDifficulties.CheckForSpecialDifficulties();
             //    TFTVBetterEnemies.ImplementBetterEnemies();
             TFTVPandoranProgress.ScyllaCount = 0;
