@@ -284,7 +284,7 @@ namespace TFTV
                     TFTVBallistics.ClearBallisticInfoOnAbilityExecuteFinished();
                     TFTVArtOfCrab.ForceScyllaToUseCannonsAfterUsingHeadAttack(ability, __instance, parameter);
                     TFTVAncients.AddMindCrushEffectToCyclposScreamAndRedeployHopliteShieldsAfterMassShootAttack(ability, __instance, parameter);
-                    TFTVFire.ActivateFireQuencherAbility();
+                    TFTVVoxels.TFTVFire.ActivateFireQuencherAbility();
                     TFTVBaseDefenseTactical.RemoveScatterRemainingAttackersTagFromEnemiesWithParasychosis(ability, parameter);
                     TFTVPalaceMission.CheckFinalMissionWinConditionForExalted(ability);
                     TFTVPalaceMission.CheckIfPlayerCloseToGate(__instance);
@@ -311,7 +311,7 @@ namespace TFTV
             {
                 try
                 {
-                    TFTVFire.CheckFireQuencherTouchingFire(__instance);
+                    TFTVVoxels.TFTVFire.CheckFireQuencherTouchingFire(__instance);
 
 
                 }

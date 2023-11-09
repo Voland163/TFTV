@@ -42,7 +42,7 @@ namespace TFTV
         private static readonly DefRepository Repo = TFTVMain.Repo;
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
         private static readonly SharedData Shared = TFTVMain.Shared;
-        private static GameTagDef _mercenaryTag;
+        public static GameTagDef MercenaryTag;
 
         internal class TFTVMercenaries
         {
@@ -140,7 +140,7 @@ namespace TFTV
 
                         //  TFTVLogger.Always($"current character is {newCharacter.DisplayName} and it has mercenary tag? {newCharacter.TemplateDef.GetGameTags().Contains(_mercenaryTag)}");
 
-                        if (newCharacter.TemplateDef.GetGameTags().Contains(_mercenaryTag))
+                        if (newCharacter.TemplateDef.GetGameTags().Contains(MercenaryTag))
                         {
 
                             foreach (KeyValuePair<AddonSlotDef, UIModuleMutationSection> augmentSection in ____augmentSections)
@@ -184,7 +184,7 @@ namespace TFTV
             {
                 try
                 {
-                    if (character.GameTags.Contains(_mercenaryTag))
+                    if (character.GameTags.Contains(MercenaryTag))
                     {
                         AdjustMercenaryProficiencyPerks(character, geoUnitDescriptor);
 
@@ -395,12 +395,17 @@ namespace TFTV
                     spyMasterLegs.Weight = 2;
                     spyMasterLegs.BodyPartAspectDef.Speed = -1;
 
+
+                    slugHelmet.Tags.Add(MercenaryTag);
+                    slugHelmet.Tags.Add(Shared.SharedGameTags.BionicalTag);
                     slugHelmet.Armor = 20;
                     slugHelmet.Weight = 0;
                     slugHelmet.BodyPartAspectDef.Endurance = 1;
                     slugHelmet.BodyPartAspectDef.Accuracy = 0;
                     slugTorso.BodyPartAspectDef.Stealth = 0;
 
+                    slugTorso.Tags.Add(MercenaryTag);
+                    slugTorso.Tags.Add(Shared.SharedGameTags.BionicalTag);
 
                     slugTorso.Armor = 20;
                     slugTorso.Weight = 0;
@@ -408,6 +413,12 @@ namespace TFTV
                     slugTorso.BodyPartAspectDef.Speed = 0;
                     slugTorso.BodyPartAspectDef.Accuracy = 0;
                     slugTorso.BodyPartAspectDef.Stealth = -0.1f;
+
+                    slugLegs.Tags.Add(MercenaryTag);
+                    slugLegs.Tags.Add(Shared.SharedGameTags.BionicalTag);
+
+                    slugMechArms.Tags.Add(MercenaryTag);
+                    slugMechArms.Tags.Add(Shared.SharedGameTags.BionicalTag);
 
                     slugLegs.Armor = 20;
                     slugLegs.Weight = 0;
@@ -431,7 +442,7 @@ namespace TFTV
                     }
                     };
                     doomAC.ChargesMax = 12;
-                    doomAC.DamagePayload.ProjectilesPerShot = 2;
+                    doomAC.DamagePayload.AutoFireShotCount= 2;
 
                     sectarianAxe.DamagePayload.DamageKeywords = new List<PhoenixPoint.Tactical.Entities.DamageKeywords.DamageKeywordPair>()
                     {
@@ -489,47 +500,60 @@ namespace TFTV
 
 
                     GameTagDef mercenaryTag = TFTVCommonMethods.CreateNewTag("Mercenary", "{49BDADBC-A411-48B2-8773-533EE9247F4C}");
-                    _mercenaryTag = mercenaryTag;
+                    MercenaryTag = mercenaryTag;
 
                     TacCharacterDef ghost = CreateTacCharaterDef(priestTag, "Mercenary_Ghost", "{05C7ED24-1300-4336-94FB-82AE09CC45AF}",
                         ghostSniperRifle, ghostArmor, new List<GameTagDef>() { mercenaryTag }, 1, null);
 
-                    CreateMarketPlaceRecruit(ghost.name, "{FA72C430-158D-4F44-99B4-08AF9BF2493F}", "{F2BBE15C-54D1-44D0-9299-D10E56E7314F}", "{D01434F1-4A5E-4354-8272-58CF2CC1C41C}",
-                        "{65ACF823-241A-4EF5-890E-51F88FF0F6C6}", "KEY_EXPENDABLE_ARCHETYPE_GHOST_NAME", "KEY_EXPENDABLE_ARCHETYPE_GHOST_DESCRIPTION", "KEY_EXPENDABLE_ARCHETYPE_GHOST_QUOTE", ghost, 500, Helper.CreateSpriteFromImageFile("MERCENARY_GHOST.png"));
+                    CreateMarketPlaceRecruit(ghost.name, 
+                        "{FA72C430-158D-4F44-99B4-08AF9BF2493F}", "{F2BBE15C-54D1-44D0-9299-D10E56E7314F}", 
+                        "{D01434F1-4A5E-4354-8272-58CF2CC1C41C}", "{65ACF823-241A-4EF5-890E-51F88FF0F6C6}", 
+                        "KEY_EXPENDABLE_ARCHETYPE_GHOST_NAME", "KEY_EXPENDABLE_ARCHETYPE_GHOST_DESCRIPTION", "KEY_EXPENDABLE_ARCHETYPE_GHOST_QUOTE", 
+                        ghost, 500, Helper.CreateSpriteFromImageFile("MERCENARY_GHOST.png"), 4);
 
                     TacCharacterDef doom = CreateTacCharaterDef(heavyTag, "Mercenary_Heavy", "{96628AFA-B8EF-4350-B451-72B24593993B}",
                         doomAC, doomArmor, new List<GameTagDef> { mercenaryTag }, 1, null);
 
-                    CreateMarketPlaceRecruit(doom.name, "{4FC1981D-C5B5-40E2-83D7-238486503215}", "{546E79A5-FFBE-45A2-852E-9D83E41FFA61}", "{93FA4108-B4B3-45BA-9764-6069D1705228}", "{1ED716FA-EE9C-43C3-B68E-C851DB31BADF}",
-                         "KEY_EXPENDABLE_ARCHETYPE_DOOM_NAME", "KEY_EXPENDABLE_ARCHETYPE_DOOM_DESCRIPTION", "KEY_EXPENDABLE_ARCHETYPE_DOOM_QUOTE", doom, 500, Helper.CreateSpriteFromImageFile("MERCENARY_DOOM.png"));
+                    CreateMarketPlaceRecruit(doom.name, "{4FC1981D-C5B5-40E2-83D7-238486503215}", "{546E79A5-FFBE-45A2-852E-9D83E41FFA61}", 
+                        "{93FA4108-B4B3-45BA-9764-6069D1705228}", "{1ED716FA-EE9C-43C3-B68E-C851DB31BADF}",
+                         "KEY_EXPENDABLE_ARCHETYPE_DOOM_NAME", "KEY_EXPENDABLE_ARCHETYPE_DOOM_DESCRIPTION", "KEY_EXPENDABLE_ARCHETYPE_DOOM_QUOTE", 
+                         doom, 500, Helper.CreateSpriteFromImageFile("MERCENARY_DOOM.png"), 0);
 
                     TacCharacterDef slug =
                         CreateTacCharaterDef(technicianTag, "Mercenary_Slug", "{BFB4540F-CE02-4934-ACDC-FF2CC5B02DA9}",
                         slugPistol, slugArmor, new List<GameTagDef>() { mercenaryTag }, 1, null);
 
-                    CreateMarketPlaceRecruit(slug.name, "{A8CBE9E4-7EA4-4AA9-93C0-09165C121F1F}", "{FC92AA97-F85A-46BD-9168-985578BF44B2}", "{66D149CB-8ADA-46B5-BEAA-102C18B1F83D}", "{21084D35-84CE-4AD1-AA5A-70EF27C1A247}",
-                        "KEY_EXPENDABLE_ARCHETYPE_SLUG_NAME", "KEY_EXPENDABLE_ARCHETYPE_SLUG_DESCRIPTION", "KEY_EXPENDABLE_ARCHETYPE_SLUG_QUOTE", slug, 500, Helper.CreateSpriteFromImageFile("MERCENARY_SLUG.png"));
+                    CreateMarketPlaceRecruit(slug.name, "{A8CBE9E4-7EA4-4AA9-93C0-09165C121F1F}", "{FC92AA97-F85A-46BD-9168-985578BF44B2}", 
+                        "{66D149CB-8ADA-46B5-BEAA-102C18B1F83D}", "{21084D35-84CE-4AD1-AA5A-70EF27C1A247}",
+                        "KEY_EXPENDABLE_ARCHETYPE_SLUG_NAME", "KEY_EXPENDABLE_ARCHETYPE_SLUG_DESCRIPTION", "KEY_EXPENDABLE_ARCHETYPE_SLUG_QUOTE", 
+                        slug, 500, Helper.CreateSpriteFromImageFile("MERCENARY_SLUG.png"), 4);
 
                     TacCharacterDef spyMaster =
                          CreateTacCharaterDef(infiltratorTag, "Mercenary_Spymaster", "{BFB2B1E0-FA98-450E-83C0-F16EA953E7EB}",
                          spyMasterXbow, spyMasterArmor, new List<GameTagDef>() { mercenaryTag }, 1, null);
 
-                    CreateMarketPlaceRecruit(spyMaster.name, "{BD808894-2F9C-4490-ABF3-7EC8B3815589}", "{7316428E-394A-424D-92B9-1DF621B4AAC9}", "{2FAD7A35-3444-4606-8951-6DB8A4BEA26E}", "{C145BEC5-CBCE-49C5-8BEA-ADDED4936E40}",
-                       "KEY_EXPENDABLE_ARCHETYPE_SPYMASTER_NAME", "KEY_EXPENDABLE_ARCHETYPE_SPYMASTER_DESCRIPTION", "KEY_EXPENDABLE_ARCHETYPE_SPYMASTER_QUOTE", spyMaster, 500, Helper.CreateSpriteFromImageFile("MERCENARY_SPYMASTER.png"));
+                    CreateMarketPlaceRecruit(spyMaster.name, "{BD808894-2F9C-4490-ABF3-7EC8B3815589}", "{7316428E-394A-424D-92B9-1DF621B4AAC9}", 
+                        "{2FAD7A35-3444-4606-8951-6DB8A4BEA26E}", "{C145BEC5-CBCE-49C5-8BEA-ADDED4936E40}",
+                       "KEY_EXPENDABLE_ARCHETYPE_SPYMASTER_NAME", "KEY_EXPENDABLE_ARCHETYPE_SPYMASTER_DESCRIPTION", "KEY_EXPENDABLE_ARCHETYPE_SPYMASTER_QUOTE", 
+                       spyMaster, 500, Helper.CreateSpriteFromImageFile("MERCENARY_SPYMASTER.png"),3);
 
                     TacCharacterDef sectarian =
                         CreateTacCharaterDef(berserkerTag, "Mercenary_Sectarian", "{52C42AFC-F1A8-43FB-B1E1-DF1D68D71A7A}",
                         sectarianAxe, sectarianArmor, new List<GameTagDef>() { mercenaryTag }, 1, null);
 
-                    CreateMarketPlaceRecruit(sectarian.name, "{BE81203F-F0C7-4C42-A556-09DDE55ED15F}", "{CDA90EDA-9FA7-4C68-A593-DBD7140D6820}", "{76EACAB3-3F2E-4A9C-AB3B-A6AEFDAB817D}", "{141EBDFD-7712-4357-8AEF-176F1C7DBD23}",
-                       "KEY_EXPENDABLE_ARCHETYPE_SECTARIAN_NAME", "KEY_EXPENDABLE_ARCHETYPE_SECTARIAN_DESCRIPTION", "KEY_EXPENDABLE_ARCHETYPE_SECTARIAN_QUOTE", sectarian, 500, Helper.CreateSpriteFromImageFile("MERCENARY_SECTARIAN.png"));
+                    CreateMarketPlaceRecruit(sectarian.name, "{BE81203F-F0C7-4C42-A556-09DDE55ED15F}", "{CDA90EDA-9FA7-4C68-A593-DBD7140D6820}", 
+                        "{76EACAB3-3F2E-4A9C-AB3B-A6AEFDAB817D}", "{141EBDFD-7712-4357-8AEF-176F1C7DBD23}",
+                       "KEY_EXPENDABLE_ARCHETYPE_SECTARIAN_NAME", "KEY_EXPENDABLE_ARCHETYPE_SECTARIAN_DESCRIPTION", "KEY_EXPENDABLE_ARCHETYPE_SECTARIAN_QUOTE", 
+                       sectarian, 500, Helper.CreateSpriteFromImageFile("MERCENARY_SECTARIAN.png"), 0);
 
                     TacCharacterDef exile =
                        CreateTacCharaterDef(assaultTag, "Mercenary_Exile", "{3FBC2BB0-0235-41C7-BB28-6848A74858AB}",
                        exileAssaultRifle, exileArmor, new List<GameTagDef>() { mercenaryTag }, 1, null);
 
-                    CreateMarketPlaceRecruit(exile.name, "{46D893B9-9DC7-4068-8348-6F66FBFF0AF7}", "{E93DFF70-669E-4699-B005-6A7F4FD42706}", "{00F16431-56A8-418E-9E28-C1F55B3A7AF7}", "{241F3A70-43B2-4771-87A8-06F735F8C8F5}",
-                       "KEY_EXPENDABLE_ARCHETYPE_EXILE_NAME", "KEY_EXPENDABLE_ARCHETYPE_EXILE_DESCRIPTION", "KEY_EXPENDABLE_ARCHETYPE_EXILE_QUOTE", exile, 500, Helper.CreateSpriteFromImageFile("MERCENARY_EXILE.png"));
+                    CreateMarketPlaceRecruit(exile.name, "{46D893B9-9DC7-4068-8348-6F66FBFF0AF7}", "{E93DFF70-669E-4699-B005-6A7F4FD42706}", 
+                        "{00F16431-56A8-418E-9E28-C1F55B3A7AF7}", "{241F3A70-43B2-4771-87A8-06F735F8C8F5}",
+                       "KEY_EXPENDABLE_ARCHETYPE_EXILE_NAME", "KEY_EXPENDABLE_ARCHETYPE_EXILE_DESCRIPTION", "KEY_EXPENDABLE_ARCHETYPE_EXILE_QUOTE", 
+                       exile, 500, Helper.CreateSpriteFromImageFile("MERCENARY_EXILE.png"),0);
 
 
 
@@ -540,7 +564,7 @@ namespace TFTV
                 }
             }
 
-            private static void CreateMarketPlaceRecruit(string name, string gUID, string gUID2, string gUID3, string gUID4, string keyTitle, string keyDescription, string keyQuote, TacCharacterDef tacCharacterDef, int price, Sprite icon)
+            private static void CreateMarketPlaceRecruit(string name, string gUID, string gUID2, string gUID3, string gUID4, string keyTitle, string keyDescription, string keyQuote, TacCharacterDef tacCharacterDef, int price, Sprite icon, int availability)
             {
                 try
                 {
@@ -555,7 +579,7 @@ namespace TFTV
                     vehicleItemDef.ViewElementDef.Category.LocalizationKey = keyQuote;
                     vehicleItemDef.ViewElementDef.Description.LocalizationKey = keyDescription;
                     vehicleItemDef.DataDef = Helper.CreateDefFromClone(vehicleItemDef.DataDef, gUID4, name);
-                    vehicleItemDef.Tags.Add(_mercenaryTag);
+                    vehicleItemDef.Tags.Add(MercenaryTag);
 
                     vehicleItemDef.ViewElementDef.InventoryIcon = icon;
 
@@ -566,6 +590,7 @@ namespace TFTV
                     tacCharacterDef.ItemDef = vehicleItemDef;
                     newOption.MinPrice = price - price / 10;
                     newOption.MaxPrice = price + price / 10;
+                    newOption.Availability = availability;
 
                     TheMarketplaceSettingsDef marketplaceSettings = DefCache.GetDef<TheMarketplaceSettingsDef>("TheMarketplaceSettingsDef");
                     List<GeoMarketplaceOptionDef> geoMarketplaceItemOptionDefs = marketplaceSettings.PossibleOptions.ToList();
@@ -720,6 +745,54 @@ namespace TFTV
 
                     marketplaceSettings.PossibleOptions = geoMarketplaceOptionDefs.ToArray();
 
+                    DefCache.GetDef<GeoMarketplaceOptionDef>("Redemptor_MarketplaceItemOptionDef").Availability = 3;
+                    DefCache.GetDef<GeoMarketplaceOptionDef>("Subjector_MarketplaceItemOptionDef").Availability =1;
+                    DefCache.GetDef<GeoMarketplaceOptionDef>("Tormentor_MarketplaceItemOptionDef").Availability =1;
+                    DefCache.GetDef<GeoMarketplaceOptionDef>("Devastator_Redemptor_MarketplaceItemOptionDef").Availability = 2;
+                /*    DefCache.GetDef<GeoMarketplaceOptionDef>("");
+                    DefCache.GetDef<GeoMarketplaceOptionDef>("");
+                    DefCache.GetDef<GeoMarketplaceOptionDef>("");
+                    DefCache.GetDef<GeoMarketplaceOptionDef>("");
+                    DefCache.GetDef<GeoMarketplaceOptionDef>("");*/
+
+                    /*
+                     * 
+                     
+[TFTV @ 11/9/2023 12:00:24 PM] AdvancedEngineMappingModule_MarketplaceItemOptionDef 1
+[TFTV @ 11/9/2023 12:00:24 PM] Apollo_MarketplaceItemOptionDef 3
+[TFTV @ 11/9/2023 12:00:24 PM] ArmadilloSuperchargerTechnology_MarketplaceItemOptionDef 2
+[TFTV @ 11/9/2023 12:00:24 PM] Bi-TurboEngineUpgrade_MarketplaceItemOptionDef 2
+[TFTV @ 11/9/2023 12:00:24 PM] CarbonFiberPlating_MarketplaceItemOptionDef 1
+[TFTV @ 11/9/2023 12:00:24 PM] ExperimentalArmadilloTechnology_MarketplaceResearchOptionDef 2
+[TFTV @ 11/9/2023 12:00:24 PM] ExperimentalExhaustSystem_MarketplaceItemOptionDef 4
+[TFTV @ 11/9/2023 12:00:24 PM] ExperimentalThrustersTechnology_MarketplaceItemOptionDef 3
+[TFTV @ 11/9/2023 12:00:24 PM] HybridEngineTechnology_MarketplaceItemOptionDef 3
+[TFTV @ 11/9/2023 12:00:24 PM] ImprovedChassis_MarketplaceItemOptionDef 3
+[TFTV @ 11/9/2023 12:00:24 PM] JetBoosters_MarketplaceItemOptionDef 4
+[TFTV @ 11/9/2023 12:00:24 PM] LightweightAlloyPlating_MarketplaceItemOptionDef 2
+[TFTV @ 11/9/2023 12:00:24 PM] Maphistopheles_MarketplaceItemOptionDef 2
+[TFTV @ 11/9/2023 12:00:24 PM] PsychicJammer_MarketplaceItemOptionDef 3
+[TFTV @ 11/9/2023 12:00:24 PM] Purgatory_MarketplaceItemOptionDef 2
+[TFTV @ 11/9/2023 12:00:24 PM] ReinforcedCargoRacks_MarketplaceItemOptionDef 1
+[TFTV @ 11/9/2023 12:00:24 PM] ReinforcedCaterpillarTracks_MarketplaceItemOptionDef 1
+[TFTV @ 11/9/2023 12:00:24 PM] ReinforcedPlating_MarketplaceItemOptionDef 2
+[TFTV @ 11/9/2023 12:00:24 PM] RevisedArmorPlating_MarketplaceItemOptionDef 4
+[TFTV @ 11/9/2023 12:00:24 PM] Scorpio_MarketplaceItemOptionDef 1
+[TFTV @ 11/9/2023 12:00:24 PM] SpikedArmorPlating_MarketplaceItemOptionDef 4
+[TFTV @ 11/9/2023 12:00:24 PM] Taurus_MarketplaceItemOptionDef 1
+[TFTV @ 11/9/2023 12:00:24 PM] TheFullstop_MarketplaceItemOptionDef 4
+[TFTV @ 11/9/2023 12:00:24 PM] Themis_MarketplaceItemOptionDef 3
+[TFTV @ 11/9/2023 12:00:24 PM] TheScreamer_MarketplaceItemOptionDef 4
+
+                     */
+
+
+                /*    foreach (GeoMarketplaceOptionDef geoMarketplaceOptionDef in marketplaceSettings.PossibleOptions) 
+                    {
+                        TFTVLogger.Always($"{geoMarketplaceOptionDef.name} {geoMarketplaceOptionDef.Availability}");
+                    
+                    
+                    }*/
 
 
                 }
@@ -1016,7 +1089,7 @@ namespace TFTV
                         UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
                         int coinToss = UnityEngine.Random.Range(0, 2);
 
-                        if (geoMarketplaceOptionDef.Availability + coinToss <= numberOfStockRotations)
+                        if (geoMarketplaceOptionDef.Availability - coinToss <= numberOfStockRotations)
                         {
                             currentlyPossibleOptions.Add(geoMarketplaceOptionDef);
                         }
@@ -1038,7 +1111,7 @@ namespace TFTV
                         else if (_currentMarketPlaceSpecial == _vehicleMarketPlaceSpecial)
                         {
                             TFTVLogger.Always($"Marketspecial is {_currentMarketPlaceSpecial}, so generating more vehicle choices");
-                            GenerateVehicleChoices(currentlyPossibleOptions, Math.Min(numberOfOffers / 4, 10), geoMarketPlace, voPriceMultiplier * 0.75f);
+                            GenerateVehicleChoices(currentlyPossibleOptions, Math.Min(numberOfOffers / 4, 20), geoMarketPlace, voPriceMultiplier * 0.75f);
                         }
                         else if (_currentMarketPlaceSpecial == _mercenaryMarketPlaceSpecial)
                         {
@@ -1202,7 +1275,7 @@ namespace TFTV
             {
                 try
                 {
-                    List<GeoMarketplaceOptionDef> mercernariesAvailable = GetOptionsByType(availableOptions, _mercenaryTag);
+                    List<GeoMarketplaceOptionDef> mercernariesAvailable = GetOptionsByType(availableOptions, MercenaryTag);
 
                     List<GeoEventChoice> list = new List<GeoEventChoice>();
 
@@ -1406,6 +1479,7 @@ namespace TFTV
                     researchElement.State = ResearchState.Revealed;
                     uIModuleTheMarketplace.ResearchInfo.Init(researchElement);
 
+
                 }
                 catch (Exception e)
                 {
@@ -1421,7 +1495,7 @@ namespace TFTV
 
 
                     if (choice != null && choice.Outcome != null && choice.Outcome.Units != null && choice.Outcome.Units.Count > 0
-                        && choice.Outcome.Units[0] is TacCharacterDef tacCharacterDef && tacCharacterDef.Data.GameTags.Contains(_mercenaryTag))
+                        && choice.Outcome.Units[0] is TacCharacterDef tacCharacterDef && tacCharacterDef.Data.GameTags.Contains(MercenaryTag))
                     {
                         FakeResearchOptionToSetupCharacterSale(uIModuleTheMarketplace);
 
@@ -1429,6 +1503,15 @@ namespace TFTV
                         uIModuleTheMarketplace.ResearchRoot.SetActive(true);
 
                         uIModuleTheMarketplace.ResearchInfo.Title.text = TFTVCommonMethods.ConvertKeyToString(tacCharacterDef.Data.ViewElementDef.DisplayName1.LocalizationKey);
+                        /*  uIModuleTheMarketplace.ResearchInfo.Title.rectTransform.sizeDelta =
+                              new Vector2(uIModuleTheMarketplace.ResearchInfo.Title.rectTransform.sizeDelta.x * 2, uIModuleTheMarketplace.ResearchInfo.Title.rectTransform.sizeDelta.y);
+                          uIModuleTheMarketplace.ResearchInfo.Title.resizeTextMaxSize = 48;*/
+
+                     /*   TFTVLogger.Always($"font size: {uIModuleTheMarketplace.ResearchInfo.Title.fontSize}; " +
+                            $"size of rectransfrom {uIModuleTheMarketplace.ResearchInfo.Title.rectTransform.sizeDelta}; " +
+                            $"resize text max size: {uIModuleTheMarketplace.ResearchInfo.Title.resizeTextMaxSize};" +
+                            $"resize text min size:{uIModuleTheMarketplace.ResearchInfo.Title.resizeTextMinSize}" +
+                            $"resize text for best fit: {uIModuleTheMarketplace.ResearchInfo.Title.resizeTextForBestFit}");*/
 
                         uIModuleTheMarketplace.ResearchInfo.Description.text = TFTVCommonMethods.ConvertKeyToString(tacCharacterDef.Data.ViewElementDef.Description.LocalizationKey);
                         uIModuleTheMarketplace.ResearchInfo.BenefitsContainer.SetActive(false);
@@ -1508,7 +1591,7 @@ namespace TFTV
                             
                         }
 
-                        if (choice.Outcome.Units.Count > 0 && choice.Outcome.Units[0] is TacCharacterDef tacCharacterDef && tacCharacterDef.Data.GameTags.Contains(_mercenaryTag))
+                        if (choice.Outcome.Units.Count > 0 && choice.Outcome.Units[0] is TacCharacterDef tacCharacterDef && tacCharacterDef.Data.GameTags.Contains(MercenaryTag))
                         {
 
 

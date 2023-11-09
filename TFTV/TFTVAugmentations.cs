@@ -144,7 +144,7 @@ namespace TFTV
                     {
                         foreach (GeoItem bionic in geoCharacter.ArmourItems)
                         {
-                            if (bionic.ItemDef.Tags.Contains(bionicalTag))
+                            if (bionic.ItemDef.Tags.Contains(bionicalTag) && !bionic.ItemDef.Tags.Contains(TFTVChangesToDLC5.MercenaryTag))
 
                                 bionics += 1;
                         }
