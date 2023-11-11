@@ -2,11 +2,13 @@
 using Base;
 using Base.Core;
 using Base.Defs;
+using Base.Entities.Abilities;
 using Base.UI;
-using Epic.OnlineServices.P2P;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
+using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.Addons;
+using PhoenixPoint.Common.Entities.Characters;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.Entities.Items;
@@ -16,11 +18,11 @@ using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.Research;
 using PhoenixPoint.Geoscape.Events;
 using PhoenixPoint.Geoscape.Levels;
-using PhoenixPoint.Geoscape.View.ViewControllers;
 using PhoenixPoint.Geoscape.View.ViewModules;
 using PhoenixPoint.Geoscape.View.ViewStates;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
+using PhoenixPoint.Tactical.Entities.Animations;
 using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.Entities.Weapons;
 using System;
@@ -30,6 +32,7 @@ using System.Linq;
 using System.Reflection;
 using UnityEngine;
 using UnityEngine.UI;
+using static PhoenixPoint.Geoscape.Entities.GeoUnitDescriptor;
 using static PhoenixPoint.Geoscape.Levels.GeoMissionGenerator;
 
 namespace TFTV
@@ -43,6 +46,34 @@ namespace TFTV
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
         private static readonly SharedData Shared = TFTVMain.Shared;
         public static GameTagDef MercenaryTag;
+
+        public static void SlugHealTraumaEffect(TacticalAbility tacticalAbility, TacticalActor tacticalActor)
+        {
+            try
+            {
+               // TFTVLogger.Always($"Ability: {tacticalAbility.TacticalAbilityDef.name}");
+
+                List<TacticalAbilityDef> slugAbilities = new List<TacticalAbilityDef>() {
+                    TFTVMercenaries.SlugTechnicianHeal, TFTVMercenaries.SlugTechnicianRepair, TFTVMercenaries.SlugTechnicianRestore, TFTVMercenaries.SlugFieldMedic,
+                TFTVMercenaries.SlugRemoveFaceHugger, TFTVMercenaries.SlugTechnicianZap};
+
+                if (slugAbilities.Contains(tacticalAbility.TacticalAbilityDef))
+                {
+                    int enduranceToSubtract = (int)Math.Ceiling(tacticalActor.CharacterStats.Endurance.IntMax * 0.15);
+
+                    tacticalActor.CharacterStats.Endurance.Subtract(enduranceToSubtract);
+                    tacticalActor.UpdateStats();
+                    TFTVLogger.Always($"reducing endurance of {tacticalActor.DisplayName} by {enduranceToSubtract} from use of {tacticalAbility.TacticalAbilityDef.name}");
+                }
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+        }
+
 
         internal class TFTVMercenaries
         {
@@ -124,6 +155,19 @@ namespace TFTV
             internal static WeaponDef doomAC = DefCache.GetDef<WeaponDef>("PX_HeavyCannon_Headhunter_WeaponDef");
             internal static WeaponDef sectarianAxe = DefCache.GetDef<WeaponDef>("AN_Blade_Viking_WeaponDef");
 
+            internal static HealAbilityDef SlugTechnicianRepair;
+            internal static HealAbilityDef SlugTechnicianHeal;
+            internal static HealAbilityDef SlugTechnicianRestore;
+            internal static HealAbilityDef SlugFieldMedic;
+            internal static RemoveFacehuggerAbilityDef SlugRemoveFaceHugger;
+            internal static BashAbilityDef SlugTechnicianZap;
+
+            internal static SpecializationDef SlugSpecialization;
+            internal static ClassTagDef SlugClassTagDef;
+
+            //TechnicianRemoveFacehugger_AbilityDef RemoveFacehuggerAbilityDef
+
+            //TechnicianBashStrike_AbilityDef BashAbilityDef
 
 
             //PX_AssaultRifle_Gold_WeaponDef
@@ -140,7 +184,7 @@ namespace TFTV
 
                         //  TFTVLogger.Always($"current character is {newCharacter.DisplayName} and it has mercenary tag? {newCharacter.TemplateDef.GetGameTags().Contains(_mercenaryTag)}");
 
-                        if (newCharacter.TemplateDef.GetGameTags().Contains(MercenaryTag))
+                        if (newCharacter.TemplateDef != null && newCharacter.TemplateDef.GetGameTags().Contains(MercenaryTag))
                         {
 
                             foreach (KeyValuePair<AddonSlotDef, UIModuleMutationSection> augmentSection in ____augmentSections)
@@ -164,6 +208,23 @@ namespace TFTV
             [HarmonyPatch(typeof(GeoUnitDescriptor), "FinishInitCharacter")]
             public static class GeoUnitDescriptor_FinishInitCharacter_patch
             {
+
+                public static void Prefix(GeoUnitDescriptor __instance, GeoCharacter character)
+                {
+                    try
+                    {
+                        ImplementPerkTossMercenariesOnHirePrefix(__instance);
+
+
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                        throw;
+                    }
+                }
+
+
                 public static void Postfix(GeoUnitDescriptor __instance, GeoCharacter character)
                 {
                     try
@@ -180,15 +241,114 @@ namespace TFTV
                 }
             }
 
+            private static void ImplementPerkTossMercenariesOnHirePrefix(GeoUnitDescriptor geoUnitDescriptor)
+            {
+                try
+                {
+                    PassiveModifierAbilityDef handGunsProf = DefCache.GetDef<PassiveModifierAbilityDef>("HandgunsTalent_AbilityDef");
+                    PassiveModifierAbilityDef heavyWepProf = DefCache.GetDef<PassiveModifierAbilityDef>("HeavyWeaponsTalent_AbilityDef");
+                    PassiveModifierAbilityDef meleeProf = DefCache.GetDef<PassiveModifierAbilityDef>("MeleeWeaponTalent_AbilityDef");
+                    PassiveModifierAbilityDef pDWProf = DefCache.GetDef<PassiveModifierAbilityDef>("PDWTalent_AbilityDef");
+                    PassiveModifierAbilityDef shotgunProf = DefCache.GetDef<PassiveModifierAbilityDef>("ShotgunTalent_AbilityDef");
+                    PassiveModifierAbilityDef sniperProf = DefCache.GetDef<PassiveModifierAbilityDef>("SniperTalent_AbilityDef");
+                    PassiveModifierAbilityDef assaultRiflesProf = DefCache.GetDef<PassiveModifierAbilityDef>("AssaultRiflesTalent_AbilityDef");
+
+                    List<PassiveModifierAbilityDef> proficiencies = new List<PassiveModifierAbilityDef>()
+                                { handGunsProf, heavyWepProf, meleeProf, pDWProf, shotgunProf, sniperProf, assaultRiflesProf};
+
+                    if (geoUnitDescriptor.GetGameTags().Contains(MercenaryTag))
+                    {
+                        if (geoUnitDescriptor.ClassTag == priestTag)
+                        {
+
+                            if (geoUnitDescriptor.Progression.PersonalAbilities[3] == DefCache.GetDef<PassiveModifierAbilityDef>("SniperTalent_AbilityDef"))
+                            {
+                                proficiencies.Remove(sniperProf);
+                                geoUnitDescriptor.Progression.PersonalAbilities[3] = proficiencies.GetRandomElement();
+                            }
+
+                            geoUnitDescriptor.Progression.PersonalAbilities[2] = DefCache.GetDef<RepositionAbilityDef>("Vanish_AbilityDef");
+                            geoUnitDescriptor.Progression.PersonalAbilities[5] = DefCache.GetDef<ApplyStatusAbilityDef>("BC_ARTargeting_AbilityDef");
+
+                            TFTVLogger.Always($"{geoUnitDescriptor.ClassTag}");
+                        }
+                        else if (geoUnitDescriptor.ClassTag == technicianTag)
+                        {
+
+                            if (geoUnitDescriptor.Progression.PersonalAbilities[3] == DefCache.GetDef<PassiveModifierAbilityDef>("SniperTalent_AbilityDef"))
+                            {
+                                proficiencies.Remove(handGunsProf);
+                                proficiencies.Remove(pDWProf);
+                                geoUnitDescriptor.Progression.PersonalAbilities[3] = proficiencies.GetRandomElement();
+                            }
+
+                            geoUnitDescriptor.Progression.PersonalAbilities[1] = DefCache.GetDef<ApplyEffectAbilityDef>("MistBreather_AbilityDef");
+                            geoUnitDescriptor.Progression.PersonalAbilities[6] = DefCache.GetDef<ResurrectAbilityDef>("Mutoid_ResurrectAbilityDef");
+
+                            
+
+                            // Get the FieldInfo for the MainSpecDef field
+                            FieldInfo mainSpecDefField = typeof(ProgressionDescriptor).GetField("MainSpecDef", BindingFlags.Instance | BindingFlags.Public);
+
+                            mainSpecDefField.SetValue(geoUnitDescriptor.Progression, SlugSpecialization);
+
+
+                            TFTVLogger.Always($"{geoUnitDescriptor.ClassTag}");
+                        }
+                        else if (geoUnitDescriptor.ClassTag == infiltratorTag)
+                        {
+                            geoUnitDescriptor.Progression.PersonalAbilities[1] = DefCache.GetDef<ApplyStatusAbilityDef>("BC_Takedown_AbilityDef");
+                            geoUnitDescriptor.Progression.PersonalAbilities[2] = DefCache.GetDef<PassiveModifierAbilityDef>("BioChemist_AbilityDef");
+
+                            TFTVLogger.Always($"{geoUnitDescriptor.ClassTag}");
+                        }
+                        else if (geoUnitDescriptor.ClassTag == berserkerTag)
+                        {
+                            geoUnitDescriptor.Progression.PersonalAbilities[1] = DefCache.GetDef<PassiveModifierAbilityDef>("DieHard_AbilityDef");
+                            geoUnitDescriptor.Progression.PersonalAbilities[6] = DefCache.GetDef<PassiveModifierAbilityDef>("Punisher_AbilityDef");
+
+                            TFTVLogger.Always($"{geoUnitDescriptor.ClassTag}");
+                        }
+                        else if (geoUnitDescriptor.ClassTag == heavyTag)
+                        {
+                            geoUnitDescriptor.Progression.PersonalAbilities[1] = DefCache.GetDef<ApplyStatusAbilityDef>("BC_Takedown_AbilityDef");
+                            geoUnitDescriptor.Progression.PersonalAbilities[6] = DefCache.GetDef<PassiveModifierAbilityDef>("BattleHardened_AbilityDef");
+
+                            TFTVLogger.Always($"{geoUnitDescriptor.ClassTag}");
+                        }
+                        else if (geoUnitDescriptor.ClassTag == assaultTag)
+                        {
+                            geoUnitDescriptor.Progression.PersonalAbilities[1] = DefCache.GetDef<PassiveModifierAbilityDef>("DieHard_AbilityDef");
+
+                            TFTVLogger.Always($"{geoUnitDescriptor.ClassTag}");
+
+                        }
+
+
+
+                    }
+
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+
+
             private static void AdjustmentsToMercernariesOnHire(GeoCharacter character, GeoUnitDescriptor geoUnitDescriptor)
             {
                 try
                 {
-                    if (character.GameTags.Contains(MercenaryTag))
+
+
+                    if (geoUnitDescriptor.GetGameTags().Contains(MercenaryTag))
                     {
                         AdjustMercenaryProficiencyPerks(character, geoUnitDescriptor);
 
-                        if (!character.GameTags.Contains(berserkerTag))
+                        if (geoUnitDescriptor.ClassTag != berserkerTag)
                         {
                             GiveAmmoToMercenaryOnCreation(character);
                         }
@@ -205,6 +365,7 @@ namespace TFTV
 
 
             }
+
 
             private static void AdjustMercenaryProficiencyPerks(GeoCharacter character, GeoUnitDescriptor geoUnitDescriptor)
             {
@@ -226,24 +387,17 @@ namespace TFTV
                     {
                         character.Progression.AddAbility(sniperProf);
 
-                        if (geoUnitDescriptor.Progression.PersonalAbilities[3] == DefCache.GetDef<PassiveModifierAbilityDef>("SniperTalent_AbilityDef"))
-                        {
-                            proficiencies.Remove(sniperProf);
-                            geoUnitDescriptor.Progression.PersonalAbilities[3] = proficiencies.GetRandomElement();
-                        }
+                                
                     }
                     else if (character.GameTags.Contains(technicianTag))
                     {
                         character.Progression.AddAbility(handGunsProf);
 
-                        if (geoUnitDescriptor.Progression.PersonalAbilities[3] == DefCache.GetDef<PassiveModifierAbilityDef>("SniperTalent_AbilityDef"))
-                        {
-                            proficiencies.Remove(handGunsProf);
-                            proficiencies.Remove(pDWProf);
-                            geoUnitDescriptor.Progression.PersonalAbilities[3] = proficiencies.GetRandomElement();
-                        }
+                     
                     }
-                }
+                   
+
+               }
                 catch (Exception e)
                 {
                     TFTVLogger.Error(e);
@@ -294,6 +448,7 @@ namespace TFTV
                     TacCharacterDef characterSource = DefCache.GetDef<TacCharacterDef>("AN_Assault1_CharacterTemplateDef");
                     TacCharacterDef newCharacter = Helper.CreateDefFromClone(characterSource, gUID, name);
 
+                    newCharacter.SpawnCommandId = name;
                     newCharacter.Data.Name = name;
                     newCharacter.Data.GameTags = tags != null ? new List<GameTagDef>(tags) { classTagDef }.ToArray() : new List<GameTagDef>() { classTagDef }.ToArray();
                     newCharacter.Data.EquipmentItems = new ItemDef[] { weaponDef };
@@ -321,11 +476,15 @@ namespace TFTV
             {
                 try
                 {
+                  
                     MakeSlugArmorNonRemovable();
                     CreateExpendableArchetypes();
                     AdjustMercenaryArmorsAndWeapons();
-                    // CreateNoAugAbility();
+                    ChangeSlugArms();
+                    CloneTechnicianSpec();
 
+
+                    // CreateNoAugAbility();
 
                 }
                 catch (Exception e)
@@ -333,6 +492,33 @@ namespace TFTV
                     TFTVLogger.Error(e);
                     throw;
                 }
+            }
+
+            private static void CloneTechnicianSpec()
+            {
+                try 
+                {
+                    SlugClassTagDef = Helper.CreateDefFromClone(technicianTag, "{E513B9D9-D461-4274-B903-C24A98FD3B6B}", $"Slug_ClassTagDef");
+                    SpecializationDef specializationDefSource = DefCache.GetDef<SpecializationDef>("TechnicianSpecializationDef");
+                    SpecializationDef newSpec = Helper.CreateDefFromClone(specializationDefSource, "{B680BA89-C421-4D09-8ACC-F08CC7F19E24}", $"SlugSpecializationDef");
+                    newSpec.ViewElementDef = Helper.CreateDefFromClone(specializationDefSource.ViewElementDef, "{7D5C1467-3DCC-4A33-95FA-91E4AE42F9CE}", $"{newSpec.name}");
+                    newSpec.AbilityTrack = Helper.CreateDefFromClone(specializationDefSource.AbilityTrack, "{14CDBFDA-DE81-48BA-B8DD-AC2192858982}", $"{newSpec.name}");
+
+                    newSpec.AbilityTrack.AbilitiesByLevel[5].Ability = SlugFieldMedic;
+                    newSpec.ClassTag = SlugClassTagDef;
+
+                    SlugSpecialization = newSpec;
+
+                    
+                  
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+
+
 
 
 
@@ -343,6 +529,18 @@ namespace TFTV
                 try
                 {
                     //From Belial's spreadsheet 
+
+                    doomHelmet.ViewElementDef = Helper.CreateDefFromClone(doomHelmet.ViewElementDef, "{D618A564-1508-471E-94D8-518DBA2F3953}", doomHelmet.name);
+                    doomHelmet.ViewElementDef.Description.LocalizationKey = $"DOOM_SLAYER_HELMET_NAME";
+                    doomHelmet.ViewElementDef.DisplayName2.LocalizationKey = $"DOOM_SLAYER_HELMET_DESCRIPTION";
+
+                    doomTorso.ViewElementDef = Helper.CreateDefFromClone(doomTorso.ViewElementDef, "{A3CCA23F-A1D6-4A0F-9576-083B52209D38}", doomTorso.name);
+                    doomTorso.ViewElementDef.Description.LocalizationKey = $"DOOM_SLAYER_TORSO_NAME";
+                    doomTorso.ViewElementDef.DisplayName2.LocalizationKey = $"DOOM_SLAYER_TORSO_DESCRIPTION";
+
+                    doomLegs.ViewElementDef = Helper.CreateDefFromClone(doomLegs.ViewElementDef, "{6158C99A-6BAB-4D6D-B01F-6E087FD85ED0}", doomLegs.name);
+                    doomLegs.ViewElementDef.Description.LocalizationKey = $"DOOM_SLAYER_LEGS_NAME";
+                    doomLegs.ViewElementDef.DisplayName2.LocalizationKey = $"DOOM_SLAYER_LEGS_DESCRIPTION";
 
                     doomHelmet.Armor = 23;
                     doomTorso.Armor = 24;
@@ -362,6 +560,18 @@ namespace TFTV
                     sectarianHelmet.BodyPartAspectDef.Perception = -5f;
                     sectarianHelmet.BodyPartAspectDef.Stealth = -0.05f;
 
+                    sectarianHelmet.ViewElementDef = Helper.CreateDefFromClone(sectarianHelmet.ViewElementDef, "{94121874-BC28-4E01-A986-36E28854BB5E}", sectarianHelmet.name);
+                    sectarianHelmet.ViewElementDef.Description.LocalizationKey = $"SECTARIAN_HELMET_NAME";
+                    sectarianHelmet.ViewElementDef.DisplayName2.LocalizationKey = $"SECTARIAN_HELMET_DESCRIPTION";
+
+                    sectarianTorso.ViewElementDef = Helper.CreateDefFromClone(sectarianTorso.ViewElementDef, "{ED8A94B2-F867-4FB7-852A-624301A15F00}", sectarianTorso.name);
+                    sectarianTorso.ViewElementDef.Description.LocalizationKey = $"SECTARIAN_TORSO_NAME";
+                    sectarianTorso.ViewElementDef.DisplayName2.LocalizationKey = $"SECTARIAN_TORSO_DESCRIPTION";
+
+                    sectarianLegs.ViewElementDef = Helper.CreateDefFromClone(sectarianLegs.ViewElementDef, "{820C3551-507A-4C54-B6E4-F32195AAA00C}", sectarianLegs.name);
+                    sectarianLegs.ViewElementDef.Description.LocalizationKey = $"SECTARIAN_LEGS_NAME";
+                    sectarianLegs.ViewElementDef.DisplayName2.LocalizationKey = $"SECTARIAN_LEGS_DESCRIPTION";
+
                     sectarianTorso.Armor = 18;
                     sectarianTorso.Weight = 3;
                     sectarianTorso.BodyPartAspectDef.Endurance = 2;
@@ -377,6 +587,18 @@ namespace TFTV
                     sectarianLegs.BodyPartAspectDef.Accuracy = -0.05f;
 
 
+                    ghostHelmet.ViewElementDef = Helper.CreateDefFromClone(ghostHelmet.ViewElementDef, "{9F9E3468-2771-4267-BF3B-8214DD908D78}", ghostHelmet.name);
+                    ghostHelmet.ViewElementDef.Description.LocalizationKey = $"GHOST_HELMET_NAME";
+                    ghostHelmet.ViewElementDef.DisplayName2.LocalizationKey = $"GHOST_HELMET_DESCRIPTION";
+
+                    ghostLegs.ViewElementDef = Helper.CreateDefFromClone(ghostLegs.ViewElementDef, "{5AAFFFC7-E143-4FC4-86E1-B00752037483}", ghostLegs.name);
+                    ghostLegs.ViewElementDef.Description.LocalizationKey = $"GHOST_LEGS_NAME";
+                    ghostLegs.ViewElementDef.DisplayName2.LocalizationKey = $"GHOST_LEGS_DESCRIPTION";
+
+                    ghostTorso.ViewElementDef = Helper.CreateDefFromClone(ghostTorso.ViewElementDef, "{69973138-4F25-49D8-8E30-167E53CC253B}", ghostTorso.name);
+                    ghostTorso.ViewElementDef.Description.LocalizationKey = $"GHOST_TORSO_NAME";
+                    ghostTorso.ViewElementDef.DisplayName2.LocalizationKey = $"GHOST_TORSO_DESCRIPTION";
+
                     ghostHelmet.Armor = 14;
                     ghostHelmet.BodyPartAspectDef.Stealth = 0.05f;
 
@@ -385,6 +607,19 @@ namespace TFTV
 
                     ghostLegs.Armor = 14;
                     ghostLegs.BodyPartAspectDef.Stealth = 0.05f;
+
+                    spyMasterHelmet.ViewElementDef = Helper.CreateDefFromClone(spyMasterHelmet.ViewElementDef, "{8CFFE705-55CA-4370-BDD7-7132423C9F4F}", spyMasterHelmet.name);
+                    spyMasterHelmet.ViewElementDef.Description.LocalizationKey = $"SPYMASTER_HELMET_NAME";
+                    spyMasterHelmet.ViewElementDef.DisplayName2.LocalizationKey = $"SPYMASTER_HELMET_DESCRIPTION";
+
+                    spyMasterTorso.ViewElementDef = Helper.CreateDefFromClone(spyMasterTorso.ViewElementDef, "{ACCAB3BF-24B6-40E9-8D14-1095E4117FFF}", spyMasterTorso.name);
+                    spyMasterTorso.ViewElementDef.Description.LocalizationKey = $"SPYMASTER_TORSO_NAME";
+                    spyMasterTorso.ViewElementDef.DisplayName2.LocalizationKey = $"SPYMASTER_TORSO_DESCRIPTION";
+
+                    spyMasterLegs.ViewElementDef = Helper.CreateDefFromClone(spyMasterLegs.ViewElementDef, "{40A39154-49E0-4F3F-9169-00732BD8F07F}", spyMasterLegs.name);
+                    spyMasterLegs.ViewElementDef.Description.LocalizationKey = $"SPYMASTER_LEGS_NAME";
+                    spyMasterLegs.ViewElementDef.DisplayName2.LocalizationKey = $"SPYMASTER_LEGS_DESCRIPTION";
+
 
                     spyMasterHelmet.Weight = 1;
                     spyMasterHelmet.BodyPartAspectDef.Perception = 4;
@@ -395,6 +630,17 @@ namespace TFTV
                     spyMasterLegs.Weight = 2;
                     spyMasterLegs.BodyPartAspectDef.Speed = -1;
 
+                    slugHelmet.ViewElementDef = Helper.CreateDefFromClone(slugHelmet.ViewElementDef, "{9B73B5BD-FAD7-4451-949C-2D6F66968AAA}", slugHelmet.name);
+                    slugHelmet.ViewElementDef.Description.LocalizationKey = $"SLUG_HELMET_NAME";
+                    slugHelmet.ViewElementDef.DisplayName2.LocalizationKey = $"SLUG_HELMET_DESCRIPTION";
+
+                    slugTorso.ViewElementDef = Helper.CreateDefFromClone(slugTorso.ViewElementDef, "{A14755F4-50EE-40F4-AF58-ECF449002E98}", slugTorso.name);
+                    slugTorso.ViewElementDef.Description.LocalizationKey = $"SLUG_TORSO_NAME";
+                    slugTorso.ViewElementDef.DisplayName2.LocalizationKey = $"SLUG_TORSO_DESCRIPTION";
+
+                    slugLegs.ViewElementDef = Helper.CreateDefFromClone(slugLegs.ViewElementDef, "{E7B0B281-E919-4599-9E37-B5F7348BA2B2}", slugLegs.name);
+                    slugLegs.ViewElementDef.Description.LocalizationKey = $"SLUG_LEGS_NAME";
+                    slugLegs.ViewElementDef.DisplayName2.LocalizationKey = $"SLUG_LEGS_DESCRIPTION";
 
                     slugHelmet.Tags.Add(MercenaryTag);
                     slugHelmet.Tags.Add(Shared.SharedGameTags.BionicalTag);
@@ -417,15 +663,24 @@ namespace TFTV
                     slugLegs.Tags.Add(MercenaryTag);
                     slugLegs.Tags.Add(Shared.SharedGameTags.BionicalTag);
 
-                    slugMechArms.Tags.Add(MercenaryTag);
-                    slugMechArms.Tags.Add(Shared.SharedGameTags.BionicalTag);
-
                     slugLegs.Armor = 20;
                     slugLegs.Weight = 0;
                     slugLegs.BodyPartAspectDef.Endurance = 1;
                     slugLegs.BodyPartAspectDef.Speed = 0;
                     slugLegs.BodyPartAspectDef.Accuracy = 0;
                     slugLegs.BodyPartAspectDef.Stealth = -0.05f;
+
+                    exileHelmet.ViewElementDef = Helper.CreateDefFromClone(exileHelmet.ViewElementDef, "{16AD85B5-7C8F-4EC8-9E74-CF23DBE3CE98}", exileHelmet.name);
+                    exileHelmet.ViewElementDef.Description.LocalizationKey = "EXILE_HELMET_NAME";
+                    exileHelmet.ViewElementDef.DisplayName2.LocalizationKey = "EXILE_HELMET_DESCRIPTION";
+
+                    exileTorso.ViewElementDef = Helper.CreateDefFromClone(exileTorso.ViewElementDef, "{58D71B43-BCC4-41D0-BEC5-1ACCFADB9D63}", exileTorso.name);
+                    exileTorso.ViewElementDef.Description.LocalizationKey = "EXILE_TORSO_NAME";
+                    exileTorso.ViewElementDef.DisplayName2.LocalizationKey = "EXILE_TORSO_DESCRIPTION";
+
+                    exileLegs.ViewElementDef = Helper.CreateDefFromClone(exileLegs.ViewElementDef, "{334A8591-4FCC-45FB-AB39-37B7AFBD4AB0}", exileLegs.name);
+                    exileLegs.ViewElementDef.Description.LocalizationKey = "EXILE_LEGS_NAME";
+                    exileLegs.ViewElementDef.DisplayName2.LocalizationKey = "EXILE_LEGS_DESCRIPTION";
 
 
                     doomAC.CompatibleAmmunition = new TacticalItemDef[] { DefCache.GetDef<TacticalItemDef>("FS_Autocannon_AmmoClip_ItemDef") };
@@ -442,7 +697,13 @@ namespace TFTV
                     }
                     };
                     doomAC.ChargesMax = 12;
-                    doomAC.DamagePayload.AutoFireShotCount= 2;
+                    doomAC.DamagePayload.AutoFireShotCount = 2;
+
+                    doomAC.ViewElementDef = Helper.CreateDefFromClone(doomAC.ViewElementDef, "{3973F99D-1CB9-4E14-9515-F37B9CC1C668}", doomAC.name);
+                    doomAC.ViewElementDef.Description.LocalizationKey = $"DOOM_SLAYER_GROM_NAME";
+                    doomAC.ViewElementDef.DisplayName2.LocalizationKey = $"DOOM_SLAYER_GROM_DESCRIPTION";
+
+
 
                     sectarianAxe.DamagePayload.DamageKeywords = new List<PhoenixPoint.Tactical.Entities.DamageKeywords.DamageKeywordPair>()
                     {
@@ -461,6 +722,11 @@ namespace TFTV
                     }
                     };
 
+                    sectarianAxe.ViewElementDef = Helper.CreateDefFromClone(sectarianAxe.ViewElementDef, "{C6DE2658-0012-4D8E-8813-EE77546DA64B}", sectarianAxe.name);
+                    sectarianAxe.ViewElementDef.Description.LocalizationKey = $"SECTARIAN_AXE_NAME";
+                    sectarianAxe.ViewElementDef.DisplayName2.LocalizationKey = $"SECTARIAN_AXE_DESCRIPTION";
+
+
                 }
 
                 catch (Exception e)
@@ -468,6 +734,165 @@ namespace TFTV
                     TFTVLogger.Error(e);
                     throw;
                 }
+            }
+
+            private static void NewTechnicianHealAndRepairForSlug()
+            {
+
+                try
+                {
+
+                    HealAbilityDef technicianHealSource = DefCache.GetDef<HealAbilityDef>("TechnicianHeal_AbilityDef");
+
+                    HealAbilityDef slugTechnicianHeal = Helper.CreateDefFromClone(technicianHealSource, "{438EDB0E-72C3-4A4D-87CA-1AE252AC6B12}", $"SLUG_{technicianHealSource.name}");
+                    slugTechnicianHeal.ViewElementDef = Helper.CreateDefFromClone(technicianHealSource.ViewElementDef, "{E03CA208-096D-4122-94F6-F221BF086034}", $"SLUG_{technicianHealSource.name}");
+                    slugTechnicianHeal.CharacterProgressionData = Helper.CreateDefFromClone(technicianHealSource.CharacterProgressionData, "{236DF14B-4FAE-4371-83D2-67CACA2B226C}", $"SLUG_{technicianHealSource.name}");
+                    //   slugTechnicianHeal.SceneViewElementDef = Helper.CreateDefFromClone(technicianHealSource.SceneViewElementDef, "{0E8F534F-F8A6-462D-A78F-C11433446121}", $"SLUG_{technicianHealSource.name}");
+
+
+                    slugTechnicianHeal.ViewElementDef.Description.LocalizationKey = $"SLUG_{slugTechnicianHeal.ViewElementDef.Description.LocalizationKey}";
+                    slugTechnicianHeal.ConsumedCharges = 0;
+                    slugTechnicianHeal.RequiredCharges = 0;
+
+
+                    SlugTechnicianHeal = slugTechnicianHeal;
+
+                    HealAbilityDef technicianRepairSource = DefCache.GetDef<HealAbilityDef>("TechnicianRepair_AbilityDef");
+                    HealAbilityDef slugTechnicianRepair = Helper.CreateDefFromClone(technicianRepairSource, "{10A5D4D5-D9E4-4C5C-8C2F-A27385F4802C}", $"SLUG_{technicianRepairSource.name}");
+                    slugTechnicianRepair.ViewElementDef = Helper.CreateDefFromClone(technicianRepairSource.ViewElementDef, "{C82EEDF3-69DB-43C0-B2E5-957CCB8CB4AC}", $"SLUG_{technicianRepairSource.name}");
+                    slugTechnicianRepair.ViewElementDef.Description.LocalizationKey = $"SLUG_{slugTechnicianRepair.ViewElementDef.Description.LocalizationKey}";
+                    slugTechnicianRepair.CharacterProgressionData = Helper.CreateDefFromClone(technicianRepairSource.CharacterProgressionData, "{36244BF9-CCC6-4258-A8CB-9CF0972A627D}", $"SLUG_{technicianRepairSource.name}");
+                    // slugTechnicianRepair.SceneViewElementDef = Helper.CreateDefFromClone(technicianRepairSource.SceneViewElementDef, "{79EA1AC2-6751-4BA4-9421-BF454D4669FE}", $"SLUG_{technicianRepairSource.name}");
+
+                    slugTechnicianRepair.ConsumedCharges = 0;
+                    slugTechnicianRepair.RequiredCharges = 0;
+
+                    SlugTechnicianRepair = slugTechnicianRepair;
+
+                    HealAbilityDef technicianRestoreSource = DefCache.GetDef<HealAbilityDef>("TechnicianRestoreBodyPart_AbilityDef");
+                    HealAbilityDef slugTechnicianRestore = Helper.CreateDefFromClone(technicianRestoreSource, "{AC352394-2920-4F3D-B35B-98293759159C}", $"SLUG_{technicianRestoreSource.name}");
+                    slugTechnicianRestore.ViewElementDef = Helper.CreateDefFromClone(technicianRestoreSource.ViewElementDef, "{2493766F-6981-46B0-9B50-5025E9D943F2}", $"SLUG_{technicianRestoreSource.name}");
+                    slugTechnicianRestore.ViewElementDef.Description.LocalizationKey = $"SLUG_{slugTechnicianRestore.ViewElementDef.Description.LocalizationKey}";
+                    slugTechnicianRestore.CharacterProgressionData = Helper.CreateDefFromClone(technicianRestoreSource.CharacterProgressionData, "{655A5F2A-59D5-4139-83C9-0361A971955B}", $"SLUG_{technicianRestoreSource.name}");
+                    //  slugTechnicianRestore.SceneViewElementDef = Helper.CreateDefFromClone(technicianRestoreSource.SceneViewElementDef, "{AF4F11AD-433F-4340-B46C-362CBB2B7DA7}", $"SLUG_{technicianRestoreSource.name}");
+                    slugTechnicianRepair.ConsumedCharges = 0;
+                    slugTechnicianRestore.RequiredCharges = 0;
+
+
+                    SlugTechnicianRestore = slugTechnicianRestore;
+
+                    HealAbilityDef technicianFieldMedicSource = DefCache.GetDef<HealAbilityDef>("FieldMedic_AbilityDef");
+                    HealAbilityDef slugFieldMedic = Helper.CreateDefFromClone(technicianFieldMedicSource, "{E1E2A1D1-1124-4101-B7E2-B5892792536F}", $"SLUG_{technicianFieldMedicSource.name}");
+                    slugFieldMedic.ViewElementDef = Helper.CreateDefFromClone(technicianFieldMedicSource.ViewElementDef, "{{9F83FB76-59D1-4294-B1E0-95F2204BAAAC}}", $"SLUG_{technicianFieldMedicSource.name}");
+                    slugFieldMedic.ViewElementDef.Description.LocalizationKey = $"SLUG_{slugFieldMedic.ViewElementDef.Description.LocalizationKey}";
+                    slugFieldMedic.CharacterProgressionData = Helper.CreateDefFromClone(technicianFieldMedicSource.CharacterProgressionData, "{{2289C6C0-68FB-4892-815E-949CDF79C0CA}}", $"SLUG_{technicianFieldMedicSource.name}");
+                    slugFieldMedic.ConsumedCharges = 0;
+                    slugFieldMedic.RequiredCharges = 0;
+                    slugFieldMedic.ContributionPointsOnUse = 600;
+
+                    SlugFieldMedic = slugFieldMedic;
+
+                    RemoveFacehuggerAbilityDef technicianRemoveFaceHuggerSource = DefCache.GetDef<RemoveFacehuggerAbilityDef>("TechnicianRemoveFacehugger_AbilityDef");
+                    RemoveFacehuggerAbilityDef slugRemoveFaceHugger = Helper.CreateDefFromClone(technicianRemoveFaceHuggerSource, "{E33312E2-0844-453E-AEAB-23886992FDE5}", $"SLUG_{technicianRemoveFaceHuggerSource.name}");
+                    slugRemoveFaceHugger.ViewElementDef = Helper.CreateDefFromClone(technicianRemoveFaceHuggerSource.ViewElementDef, "{4C0870A0-ABC9-4706-9832-AF10E32D17BC}", $"SLUG_{technicianRemoveFaceHuggerSource.name}");
+                    slugRemoveFaceHugger.ViewElementDef.Description.LocalizationKey = $"SLUG_{slugRemoveFaceHugger.ViewElementDef.Description.LocalizationKey}";
+                    slugRemoveFaceHugger.RequiredCharges = 0;
+                    slugRemoveFaceHugger.ContributionPointsOnUse = 750;
+
+                    SlugRemoveFaceHugger = slugRemoveFaceHugger;
+
+                    BashAbilityDef technicianZapSource = DefCache.GetDef<BashAbilityDef>("TechnicianBashStrike_AbilityDef");
+                    BashAbilityDef slugZapAbility = Helper.CreateDefFromClone(technicianZapSource, "{04C76A21-CCA6-4F7D-94C8-496A2A8B4FA3}", $"SLUG_{technicianZapSource.name}");
+                    slugZapAbility.ViewElementDef = Helper.CreateDefFromClone(technicianZapSource.ViewElementDef, "{4F13650B-DC48-40E8-8F74-95919014B130}", $"SLUG_{technicianZapSource.name}");
+                    slugZapAbility.ViewElementDef.Description.LocalizationKey = $"SLUG_{slugZapAbility.ViewElementDef.Description.LocalizationKey}";
+                    slugZapAbility.RequiredCharges = 0;
+                    slugZapAbility.ConsumedCharges = 0;
+
+                    SlugTechnicianZap = slugZapAbility;
+
+                    TacActorSimpleInteractionAnimActionDef technicianHealAnimations = DefCache.GetDef<TacActorSimpleInteractionAnimActionDef>("E_TechnicianHeal [Soldier_Utka_AnimActionsDef]");
+                    technicianHealAnimations.Abilities = new List<TacticalAbilityDef>(technicianHealAnimations.Abilities) { slugTechnicianHeal, slugTechnicianRestore, slugFieldMedic }.ToArray();
+
+                    TacActorSimpleInteractionAnimActionDef technicianRepairAnimations = DefCache.GetDef<TacActorSimpleInteractionAnimActionDef>("E_TechnicianRepair [Soldier_Utka_AnimActionsDef]");
+                    technicianRepairAnimations.Abilities = new List<TacticalAbilityDef>(technicianRepairAnimations.Abilities) { slugTechnicianRepair }.ToArray();
+
+                    TacActorAimingAbilityAnimActionDef technicianZapAnimations = DefCache.GetDef<TacActorAimingAbilityAnimActionDef>("E_TechnicianBashStrike [Soldier_Utka_AnimActionsDef]");
+                    technicianZapAnimations.AbilityDefs = new List<AbilityDef>(technicianZapAnimations.AbilityDefs) { slugZapAbility }.ToArray();
+
+                    TacActorSimpleInteractionAnimActionDef technicianRemoveFHAnimations = DefCache.GetDef<TacActorSimpleInteractionAnimActionDef>("E_TechnicianRemoveFacehugger [Soldier_Utka_AnimActionsDef]");
+                    technicianRemoveFHAnimations.Abilities = new List<TacticalAbilityDef>(technicianRemoveFHAnimations.Abilities) { slugRemoveFaceHugger }.ToArray();
+
+                    TacItemSimpleInteractionAnimActionDef technicianHealArmsAnimations = (TacItemSimpleInteractionAnimActionDef)Repo.GetDef("dd0c72a0-1c28-89fc-6760-745127bc231d");
+
+                    TacItemSimpleInteractionAnimActionDef technicianRepairArmsAnimations = (TacItemSimpleInteractionAnimActionDef)Repo.GetDef("eb0e026c-7fcf-89fc-ab10-7667c0df231d");
+
+                    TacItemSimpleInteractionAnimActionDef technicianRemoveFHArmsAnimations = (TacItemSimpleInteractionAnimActionDef)Repo.GetDef("d8257790-45e6-89f2-5765-5d54e9e52d1d");
+
+                    technicianHealArmsAnimations.Abilities = new List<TacticalAbilityDef>(technicianHealArmsAnimations.Abilities) { slugTechnicianHeal, slugFieldMedic, slugTechnicianRestore }.ToArray();
+                    technicianRepairArmsAnimations.Abilities = new List<TacticalAbilityDef>(technicianRepairArmsAnimations.Abilities) { slugTechnicianRepair }.ToArray();
+                    technicianRemoveFHArmsAnimations.Abilities = new List<TacticalAbilityDef>(technicianRepairArmsAnimations.Abilities) { slugRemoveFaceHugger }.ToArray();
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+
+
+            private static void ChangeSlugArms()
+            {
+                try
+                {
+
+                    slugMechArms.Tags.Add(MercenaryTag);
+                    slugMechArms.Tags.Add(Shared.SharedGameTags.BionicalTag);
+
+                    WeaponDef slugArmsWeapon = slugMechArms as WeaponDef;
+
+                    slugMechArms.CompatibleAmmunition = new TacticalItemDef[] { };
+                    slugMechArms.ChargesMax = -1;
+
+                    NewTechnicianHealAndRepairForSlug();
+
+                    HealAbilityDef technicianHealSource = DefCache.GetDef<HealAbilityDef>("TechnicianHeal_AbilityDef");
+                    HealAbilityDef technicianRepairSource = DefCache.GetDef<HealAbilityDef>("TechnicianRepair_AbilityDef");
+
+                    
+                    
+
+                    List<AbilityDef> slugArmsAbilities = slugMechArms.Abilities.ToList();
+
+                    slugArmsAbilities.Remove(technicianHealSource);
+                    slugArmsAbilities.Remove(technicianRepairSource);
+                    slugArmsAbilities.Remove(DefCache.GetDef<ReloadAbilityDef>("Reload_AbilityDef"));
+                    slugArmsAbilities.Remove(DefCache.GetDef<RemoveFacehuggerAbilityDef>("TechnicianRemoveFacehugger_AbilityDef"));
+                    slugArmsAbilities.Remove(DefCache.GetDef<BashAbilityDef>("TechnicianBashStrike_AbilityDef"));
+
+                    slugArmsAbilities.Add(SlugTechnicianHeal);
+                    slugArmsAbilities.Add(SlugTechnicianRepair);
+                    slugArmsAbilities.Add(SlugTechnicianZap);
+                    slugArmsAbilities.Add(SlugRemoveFaceHugger);
+
+                    slugArmsWeapon.ViewElementDef = Helper.CreateDefFromClone(
+                        slugArmsWeapon.ViewElementDef,
+                        "{329C56E7-FE67-49FD-8C0D-D713D09749A6}", $"SLUG_{slugArmsWeapon.name}");
+
+                    slugArmsWeapon.ViewElementDef.DisplayName1.LocalizationKey = $"SLUG_{slugArmsWeapon.ViewElementDef.DisplayName1.LocalizationKey}";
+                    slugArmsWeapon.ViewElementDef.DisplayName2.LocalizationKey = slugArmsWeapon.ViewElementDef.DisplayName1.LocalizationKey;
+                    slugArmsWeapon.ViewElementDef.Description.LocalizationKey = slugArmsWeapon.ViewElementDef.DisplayName1.LocalizationKey;
+
+                    slugMechArms.Abilities = slugArmsAbilities.ToArray();
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+
+
             }
 
             private static void MakeSlugArmorNonRemovable()
@@ -491,69 +916,71 @@ namespace TFTV
 
             }
 
-
             private static void CreateExpendableArchetypes()
             {
 
                 try
                 {
 
-
                     GameTagDef mercenaryTag = TFTVCommonMethods.CreateNewTag("Mercenary", "{49BDADBC-A411-48B2-8773-533EE9247F4C}");
                     MercenaryTag = mercenaryTag;
 
-                    TacCharacterDef ghost = CreateTacCharaterDef(priestTag, "Mercenary_Ghost", "{05C7ED24-1300-4336-94FB-82AE09CC45AF}",
-                        ghostSniperRifle, ghostArmor, new List<GameTagDef>() { mercenaryTag }, 1, null);
+                    int[] basicStats = new int[3] { 2, 2, 0 };
+                    int[] oldStats = new int[3] { 2, 2, -2 };
+                    int[] eliteGhostStats = new int[3] { 0, 4, 0 };
 
-                    CreateMarketPlaceRecruit(ghost.name, 
-                        "{FA72C430-158D-4F44-99B4-08AF9BF2493F}", "{F2BBE15C-54D1-44D0-9299-D10E56E7314F}", 
-                        "{D01434F1-4A5E-4354-8272-58CF2CC1C41C}", "{65ACF823-241A-4EF5-890E-51F88FF0F6C6}", 
-                        "KEY_EXPENDABLE_ARCHETYPE_GHOST_NAME", "KEY_EXPENDABLE_ARCHETYPE_GHOST_DESCRIPTION", "KEY_EXPENDABLE_ARCHETYPE_GHOST_QUOTE", 
+                    TacCharacterDef ghost = CreateTacCharaterDef(priestTag, "Mercenary_Ghost", "{05C7ED24-1300-4336-94FB-82AE09CC45AF}",
+                        ghostSniperRifle, ghostArmor, new List<GameTagDef>() { mercenaryTag }, 1, eliteGhostStats);
+
+                    CreateMarketPlaceRecruit(ghost.name,
+                        "{FA72C430-158D-4F44-99B4-08AF9BF2493F}", "{F2BBE15C-54D1-44D0-9299-D10E56E7314F}",
+                        "{D01434F1-4A5E-4354-8272-58CF2CC1C41C}", "{65ACF823-241A-4EF5-890E-51F88FF0F6C6}",
+                        "KEY_EXPENDABLE_ARCHETYPE_GHOST_NAME", "KEY_EXPENDABLE_ARCHETYPE_GHOST_DESCRIPTION", "KEY_EXPENDABLE_ARCHETYPE_GHOST_QUOTE",
                         ghost, 500, Helper.CreateSpriteFromImageFile("MERCENARY_GHOST.png"), 4);
 
                     TacCharacterDef doom = CreateTacCharaterDef(heavyTag, "Mercenary_Heavy", "{96628AFA-B8EF-4350-B451-72B24593993B}",
-                        doomAC, doomArmor, new List<GameTagDef> { mercenaryTag }, 1, null);
+                        doomAC, doomArmor, new List<GameTagDef> { mercenaryTag }, 1, oldStats);
 
-                    CreateMarketPlaceRecruit(doom.name, "{4FC1981D-C5B5-40E2-83D7-238486503215}", "{546E79A5-FFBE-45A2-852E-9D83E41FFA61}", 
+                    CreateMarketPlaceRecruit(doom.name, "{4FC1981D-C5B5-40E2-83D7-238486503215}", "{546E79A5-FFBE-45A2-852E-9D83E41FFA61}",
                         "{93FA4108-B4B3-45BA-9764-6069D1705228}", "{1ED716FA-EE9C-43C3-B68E-C851DB31BADF}",
-                         "KEY_EXPENDABLE_ARCHETYPE_DOOM_NAME", "KEY_EXPENDABLE_ARCHETYPE_DOOM_DESCRIPTION", "KEY_EXPENDABLE_ARCHETYPE_DOOM_QUOTE", 
+                         "KEY_EXPENDABLE_ARCHETYPE_DOOM_NAME", "KEY_EXPENDABLE_ARCHETYPE_DOOM_DESCRIPTION", "KEY_EXPENDABLE_ARCHETYPE_DOOM_QUOTE",
                          doom, 500, Helper.CreateSpriteFromImageFile("MERCENARY_DOOM.png"), 0);
 
                     TacCharacterDef slug =
                         CreateTacCharaterDef(technicianTag, "Mercenary_Slug", "{BFB4540F-CE02-4934-ACDC-FF2CC5B02DA9}",
-                        slugPistol, slugArmor, new List<GameTagDef>() { mercenaryTag }, 1, null);
+                        slugPistol, slugArmor, new List<GameTagDef>() { mercenaryTag }, 1, basicStats);
 
-                    CreateMarketPlaceRecruit(slug.name, "{A8CBE9E4-7EA4-4AA9-93C0-09165C121F1F}", "{FC92AA97-F85A-46BD-9168-985578BF44B2}", 
+                    CreateMarketPlaceRecruit(slug.name, "{A8CBE9E4-7EA4-4AA9-93C0-09165C121F1F}", "{FC92AA97-F85A-46BD-9168-985578BF44B2}",
                         "{66D149CB-8ADA-46B5-BEAA-102C18B1F83D}", "{21084D35-84CE-4AD1-AA5A-70EF27C1A247}",
-                        "KEY_EXPENDABLE_ARCHETYPE_SLUG_NAME", "KEY_EXPENDABLE_ARCHETYPE_SLUG_DESCRIPTION", "KEY_EXPENDABLE_ARCHETYPE_SLUG_QUOTE", 
+                        "KEY_EXPENDABLE_ARCHETYPE_SLUG_NAME", "KEY_EXPENDABLE_ARCHETYPE_SLUG_DESCRIPTION", "KEY_EXPENDABLE_ARCHETYPE_SLUG_QUOTE",
                         slug, 500, Helper.CreateSpriteFromImageFile("MERCENARY_SLUG.png"), 4);
 
                     TacCharacterDef spyMaster =
                          CreateTacCharaterDef(infiltratorTag, "Mercenary_Spymaster", "{BFB2B1E0-FA98-450E-83C0-F16EA953E7EB}",
-                         spyMasterXbow, spyMasterArmor, new List<GameTagDef>() { mercenaryTag }, 1, null);
+                         spyMasterXbow, spyMasterArmor, new List<GameTagDef>() { mercenaryTag }, 1, basicStats);
 
-                    CreateMarketPlaceRecruit(spyMaster.name, "{BD808894-2F9C-4490-ABF3-7EC8B3815589}", "{7316428E-394A-424D-92B9-1DF621B4AAC9}", 
+                    CreateMarketPlaceRecruit(spyMaster.name, "{BD808894-2F9C-4490-ABF3-7EC8B3815589}", "{7316428E-394A-424D-92B9-1DF621B4AAC9}",
                         "{2FAD7A35-3444-4606-8951-6DB8A4BEA26E}", "{C145BEC5-CBCE-49C5-8BEA-ADDED4936E40}",
-                       "KEY_EXPENDABLE_ARCHETYPE_SPYMASTER_NAME", "KEY_EXPENDABLE_ARCHETYPE_SPYMASTER_DESCRIPTION", "KEY_EXPENDABLE_ARCHETYPE_SPYMASTER_QUOTE", 
-                       spyMaster, 500, Helper.CreateSpriteFromImageFile("MERCENARY_SPYMASTER.png"),3);
+                       "KEY_EXPENDABLE_ARCHETYPE_SPYMASTER_NAME", "KEY_EXPENDABLE_ARCHETYPE_SPYMASTER_DESCRIPTION", "KEY_EXPENDABLE_ARCHETYPE_SPYMASTER_QUOTE",
+                       spyMaster, 500, Helper.CreateSpriteFromImageFile("MERCENARY_SPYMASTER.png"), 3);
 
                     TacCharacterDef sectarian =
                         CreateTacCharaterDef(berserkerTag, "Mercenary_Sectarian", "{52C42AFC-F1A8-43FB-B1E1-DF1D68D71A7A}",
-                        sectarianAxe, sectarianArmor, new List<GameTagDef>() { mercenaryTag }, 1, null);
+                        sectarianAxe, sectarianArmor, new List<GameTagDef>() { mercenaryTag }, 1, basicStats);
 
-                    CreateMarketPlaceRecruit(sectarian.name, "{BE81203F-F0C7-4C42-A556-09DDE55ED15F}", "{CDA90EDA-9FA7-4C68-A593-DBD7140D6820}", 
+                    CreateMarketPlaceRecruit(sectarian.name, "{BE81203F-F0C7-4C42-A556-09DDE55ED15F}", "{CDA90EDA-9FA7-4C68-A593-DBD7140D6820}",
                         "{76EACAB3-3F2E-4A9C-AB3B-A6AEFDAB817D}", "{141EBDFD-7712-4357-8AEF-176F1C7DBD23}",
-                       "KEY_EXPENDABLE_ARCHETYPE_SECTARIAN_NAME", "KEY_EXPENDABLE_ARCHETYPE_SECTARIAN_DESCRIPTION", "KEY_EXPENDABLE_ARCHETYPE_SECTARIAN_QUOTE", 
+                       "KEY_EXPENDABLE_ARCHETYPE_SECTARIAN_NAME", "KEY_EXPENDABLE_ARCHETYPE_SECTARIAN_DESCRIPTION", "KEY_EXPENDABLE_ARCHETYPE_SECTARIAN_QUOTE",
                        sectarian, 500, Helper.CreateSpriteFromImageFile("MERCENARY_SECTARIAN.png"), 0);
 
                     TacCharacterDef exile =
                        CreateTacCharaterDef(assaultTag, "Mercenary_Exile", "{3FBC2BB0-0235-41C7-BB28-6848A74858AB}",
-                       exileAssaultRifle, exileArmor, new List<GameTagDef>() { mercenaryTag }, 1, null);
+                       exileAssaultRifle, exileArmor, new List<GameTagDef>() { mercenaryTag }, 1, basicStats);
 
-                    CreateMarketPlaceRecruit(exile.name, "{46D893B9-9DC7-4068-8348-6F66FBFF0AF7}", "{E93DFF70-669E-4699-B005-6A7F4FD42706}", 
+                    CreateMarketPlaceRecruit(exile.name, "{46D893B9-9DC7-4068-8348-6F66FBFF0AF7}", "{E93DFF70-669E-4699-B005-6A7F4FD42706}",
                         "{00F16431-56A8-418E-9E28-C1F55B3A7AF7}", "{241F3A70-43B2-4771-87A8-06F735F8C8F5}",
-                       "KEY_EXPENDABLE_ARCHETYPE_EXILE_NAME", "KEY_EXPENDABLE_ARCHETYPE_EXILE_DESCRIPTION", "KEY_EXPENDABLE_ARCHETYPE_EXILE_QUOTE", 
-                       exile, 500, Helper.CreateSpriteFromImageFile("MERCENARY_EXILE.png"),0);
+                       "KEY_EXPENDABLE_ARCHETYPE_EXILE_NAME", "KEY_EXPENDABLE_ARCHETYPE_EXILE_DESCRIPTION", "KEY_EXPENDABLE_ARCHETYPE_EXILE_QUOTE",
+                       exile, 500, Helper.CreateSpriteFromImageFile("MERCENARY_EXILE.png"), 0);
 
 
 
@@ -746,54 +1173,15 @@ namespace TFTV
                     marketplaceSettings.PossibleOptions = geoMarketplaceOptionDefs.ToArray();
 
                     DefCache.GetDef<GeoMarketplaceOptionDef>("Redemptor_MarketplaceItemOptionDef").Availability = 3;
-                    DefCache.GetDef<GeoMarketplaceOptionDef>("Subjector_MarketplaceItemOptionDef").Availability =1;
-                    DefCache.GetDef<GeoMarketplaceOptionDef>("Tormentor_MarketplaceItemOptionDef").Availability =1;
+                    DefCache.GetDef<GeoMarketplaceOptionDef>("Subjector_MarketplaceItemOptionDef").Availability = 1;
+                    DefCache.GetDef<GeoMarketplaceOptionDef>("Tormentor_MarketplaceItemOptionDef").Availability = 1;
                     DefCache.GetDef<GeoMarketplaceOptionDef>("Devastator_Redemptor_MarketplaceItemOptionDef").Availability = 2;
-                /*    DefCache.GetDef<GeoMarketplaceOptionDef>("");
-                    DefCache.GetDef<GeoMarketplaceOptionDef>("");
-                    DefCache.GetDef<GeoMarketplaceOptionDef>("");
-                    DefCache.GetDef<GeoMarketplaceOptionDef>("");
-                    DefCache.GetDef<GeoMarketplaceOptionDef>("");*/
-
-                    /*
-                     * 
-                     
-[TFTV @ 11/9/2023 12:00:24 PM] AdvancedEngineMappingModule_MarketplaceItemOptionDef 1
-[TFTV @ 11/9/2023 12:00:24 PM] Apollo_MarketplaceItemOptionDef 3
-[TFTV @ 11/9/2023 12:00:24 PM] ArmadilloSuperchargerTechnology_MarketplaceItemOptionDef 2
-[TFTV @ 11/9/2023 12:00:24 PM] Bi-TurboEngineUpgrade_MarketplaceItemOptionDef 2
-[TFTV @ 11/9/2023 12:00:24 PM] CarbonFiberPlating_MarketplaceItemOptionDef 1
-[TFTV @ 11/9/2023 12:00:24 PM] ExperimentalArmadilloTechnology_MarketplaceResearchOptionDef 2
-[TFTV @ 11/9/2023 12:00:24 PM] ExperimentalExhaustSystem_MarketplaceItemOptionDef 4
-[TFTV @ 11/9/2023 12:00:24 PM] ExperimentalThrustersTechnology_MarketplaceItemOptionDef 3
-[TFTV @ 11/9/2023 12:00:24 PM] HybridEngineTechnology_MarketplaceItemOptionDef 3
-[TFTV @ 11/9/2023 12:00:24 PM] ImprovedChassis_MarketplaceItemOptionDef 3
-[TFTV @ 11/9/2023 12:00:24 PM] JetBoosters_MarketplaceItemOptionDef 4
-[TFTV @ 11/9/2023 12:00:24 PM] LightweightAlloyPlating_MarketplaceItemOptionDef 2
-[TFTV @ 11/9/2023 12:00:24 PM] Maphistopheles_MarketplaceItemOptionDef 2
-[TFTV @ 11/9/2023 12:00:24 PM] PsychicJammer_MarketplaceItemOptionDef 3
-[TFTV @ 11/9/2023 12:00:24 PM] Purgatory_MarketplaceItemOptionDef 2
-[TFTV @ 11/9/2023 12:00:24 PM] ReinforcedCargoRacks_MarketplaceItemOptionDef 1
-[TFTV @ 11/9/2023 12:00:24 PM] ReinforcedCaterpillarTracks_MarketplaceItemOptionDef 1
-[TFTV @ 11/9/2023 12:00:24 PM] ReinforcedPlating_MarketplaceItemOptionDef 2
-[TFTV @ 11/9/2023 12:00:24 PM] RevisedArmorPlating_MarketplaceItemOptionDef 4
-[TFTV @ 11/9/2023 12:00:24 PM] Scorpio_MarketplaceItemOptionDef 1
-[TFTV @ 11/9/2023 12:00:24 PM] SpikedArmorPlating_MarketplaceItemOptionDef 4
-[TFTV @ 11/9/2023 12:00:24 PM] Taurus_MarketplaceItemOptionDef 1
-[TFTV @ 11/9/2023 12:00:24 PM] TheFullstop_MarketplaceItemOptionDef 4
-[TFTV @ 11/9/2023 12:00:24 PM] Themis_MarketplaceItemOptionDef 3
-[TFTV @ 11/9/2023 12:00:24 PM] TheScreamer_MarketplaceItemOptionDef 4
-
-                     */
-
-
-                /*    foreach (GeoMarketplaceOptionDef geoMarketplaceOptionDef in marketplaceSettings.PossibleOptions) 
-                    {
-                        TFTVLogger.Always($"{geoMarketplaceOptionDef.name} {geoMarketplaceOptionDef.Availability}");
-                    
-                    
-                    }*/
-
+                    DefCache.GetDef<GeoMarketplaceOptionDef>("JetBoosters_MarketplaceItemOptionDef").Availability = 1;
+                    DefCache.GetDef<GeoMarketplaceOptionDef>("TheFullstop_MarketplaceItemOptionDef").Availability = 5;
+                    DefCache.GetDef<GeoMarketplaceOptionDef>("TheScreamer_MarketplaceItemOptionDef").Availability = 3;
+                    DefCache.GetDef<GeoMarketplaceOptionDef>("AdvancedEngineMappingModule_MarketplaceItemOptionDef").Availability = 0;
+                    DefCache.GetDef<GeoMarketplaceOptionDef>("SpikedArmorPlating_MarketplaceItemOptionDef").Availability = 2;
+                    DefCache.GetDef<GeoMarketplaceOptionDef>("ReinforcedCargoRacks_MarketplaceItemOptionDef").Availability = 3;
 
                 }
                 catch (Exception e)
@@ -802,12 +1190,9 @@ namespace TFTV
                 }
             }
 
-
-
-
         }
 
-        internal class TFTVMarketPlaceGenerateOffers 
+        internal class TFTVMarketPlaceGenerateOffers
         {
             private static readonly ClassTagDef _vehicle_ClassTagDef = DefCache.GetDef<ClassTagDef>("Vehicle_ClassTagDef");
 
@@ -922,7 +1307,7 @@ namespace TFTV
                 return Options;
             }
 
-         
+
             /// <summary>
             /// When MarketPlace is discovered, 
             /// 
@@ -951,12 +1336,12 @@ namespace TFTV
                         }
                         else
                         {
-                          /*  UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
-                            int hours = UnityEngine.Random.Range(65, 90);
+                            /*  UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
+                              int hours = UnityEngine.Random.Range(65, 90);
 
 
-                            ____updateOptionsNextTime = TimeUtils.GetNextTimeInHours(____level.Timing, hours);*/
-                         
+                              ____updateOptionsNextTime = TimeUtils.GetNextTimeInHours(____level.Timing, hours);*/
+
                             //TFTVLogger.Always($"After trigger: UpdateOptionsWithRespectToTime: ____updateOptionsNextTime is {____updateOptionsNextTime.DateTime}, ____level.Timing.Now is {____level.Timing.Now.DateTime} ");
                             __instance.UpdateOptions(____level.Timing);
 
@@ -997,14 +1382,14 @@ namespace TFTV
 
                         TFTVLogger.Always($"UpdateOptions(Timing) is called (Prefix) Current time: {____level.Timing.Now.DateTime}. Next update: {____updateOptionsNextTime.DateTime}");
 
-                        if (timing.Now>= ____updateOptionsNextTime && ____level.EventSystem.GetVariable(____settings.NumberOfDLC5MissionsCompletedVariable) > 0)
+                        if (timing.Now >= ____updateOptionsNextTime && ____level.EventSystem.GetVariable(____settings.NumberOfDLC5MissionsCompletedVariable) > 0)
                         {
                             MethodInfo updateOptionsMethod = typeof(GeoMarketplace).GetMethod("UpdateOptions", BindingFlags.NonPublic | BindingFlags.Instance);
                             updateOptionsMethod.Invoke(__instance, null);
                             UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
                             int hours = UnityEngine.Random.Range(65, 90);
                             ____updateOptionsNextTime = TimeUtils.GetNextTimeInHours(____level.Timing, hours);
-                           
+
                             CreateLogEntryAndRollSpecialsMarketplaceUpdated(____level);
 
                             ____level.EventSystem.SetVariable(_marketPlaceStockRotated, ____level.EventSystem.GetVariable(_marketPlaceStockRotated) + 1);
@@ -1068,7 +1453,12 @@ namespace TFTV
 
                     if (controller.EventSystem.GetVariable(_marketPlaceStockRotated) > 2)
                     {
-                        _currentMarketPlaceSpecial = _marketPlaceSpecials.GetRandomElement();
+                        UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
+                        int diceRoll = UnityEngine.Random.Range(1, 11);
+                        if (diceRoll <= 3)
+                        {
+                            _currentMarketPlaceSpecial = _marketPlaceSpecials.GetRandomElement();
+                        }
                     }
 
 
@@ -1080,7 +1470,7 @@ namespace TFTV
 
                     int numberOfOffers = Math.Min(8 + numberOfStockRotations * 4, 40);
 
-                    TFTVLogger.Always($"Number of offers is {numberOfOffers}; divided by 4 {numberOfOffers/4}");
+                    TFTVLogger.Always($"Number of offers is {numberOfOffers}; divided by 4 {numberOfOffers / 4}");
 
                     List<GeoMarketplaceOptionDef> currentlyPossibleOptions = new List<GeoMarketplaceOptionDef>();
 
@@ -1464,7 +1854,7 @@ namespace TFTV
 
         internal class TFTVMarketPlaceUI
         {
-            
+
 
             private static void FakeResearchOptionToSetupCharacterSale(UIModuleTheMarketplace uIModuleTheMarketplace)
             {
@@ -1507,11 +1897,11 @@ namespace TFTV
                               new Vector2(uIModuleTheMarketplace.ResearchInfo.Title.rectTransform.sizeDelta.x * 2, uIModuleTheMarketplace.ResearchInfo.Title.rectTransform.sizeDelta.y);
                           uIModuleTheMarketplace.ResearchInfo.Title.resizeTextMaxSize = 48;*/
 
-                     /*   TFTVLogger.Always($"font size: {uIModuleTheMarketplace.ResearchInfo.Title.fontSize}; " +
-                            $"size of rectransfrom {uIModuleTheMarketplace.ResearchInfo.Title.rectTransform.sizeDelta}; " +
-                            $"resize text max size: {uIModuleTheMarketplace.ResearchInfo.Title.resizeTextMaxSize};" +
-                            $"resize text min size:{uIModuleTheMarketplace.ResearchInfo.Title.resizeTextMinSize}" +
-                            $"resize text for best fit: {uIModuleTheMarketplace.ResearchInfo.Title.resizeTextForBestFit}");*/
+                        /*   TFTVLogger.Always($"font size: {uIModuleTheMarketplace.ResearchInfo.Title.fontSize}; " +
+                               $"size of rectransfrom {uIModuleTheMarketplace.ResearchInfo.Title.rectTransform.sizeDelta}; " +
+                               $"resize text max size: {uIModuleTheMarketplace.ResearchInfo.Title.resizeTextMaxSize};" +
+                               $"resize text min size:{uIModuleTheMarketplace.ResearchInfo.Title.resizeTextMinSize}" +
+                               $"resize text for best fit: {uIModuleTheMarketplace.ResearchInfo.Title.resizeTextForBestFit}");*/
 
                         uIModuleTheMarketplace.ResearchInfo.Description.text = TFTVCommonMethods.ConvertKeyToString(tacCharacterDef.Data.ViewElementDef.Description.LocalizationKey);
                         uIModuleTheMarketplace.ResearchInfo.BenefitsContainer.SetActive(false);
@@ -1576,8 +1966,8 @@ namespace TFTV
             [HarmonyPatch(typeof(UIModuleTheMarketplace), "OnChoiceSelected")]
             public static class UIModuleTheMarketplace_OnChoiceSelected_patch
             {
-               
-                    public static void Postfix(UIModuleTheMarketplace __instance, GeoEventChoice choice)
+
+                public static void Postfix(UIModuleTheMarketplace __instance, GeoEventChoice choice)
                 {
                     try
                     {
@@ -1588,7 +1978,7 @@ namespace TFTV
                             //    TFTVLogger.Always($"Removing choice from internally saved list");
 
                             MPGeoEventChoices.Remove(choice);
-                            
+
                         }
 
                         if (choice.Outcome.Units.Count > 0 && choice.Outcome.Units[0] is TacCharacterDef tacCharacterDef && tacCharacterDef.Data.GameTags.Contains(MercenaryTag))
@@ -1637,7 +2027,7 @@ namespace TFTV
                             UIModuleTheMarketplace marketplaceUI = GameUtl.CurrentLevel().GetComponent<GeoLevelController>().View.GeoscapeModules.TheMarketplaceModule;
                             marketplaceUI.transform.GetComponentsInChildren<Image>().FirstOrDefault(c => c.name.Equals("Picture")).sprite = Helper.CreateSpriteFromImageFile("UI_KaosMarket_Image_uinomipmaps.jpg");
                         }
-                     
+
 
                     }
                     catch (Exception e)
@@ -1663,7 +2053,7 @@ namespace TFTV
                     {
 
                         UIModuleTheMarketplace marketplaceUI = GameUtl.CurrentLevel().GetComponent<GeoLevelController>().View.GeoscapeModules.TheMarketplaceModule;
-           
+
                         marketplaceUI.MissionRewardHeaderText.gameObject.SetActive(true);
                         marketplaceUI.MissionRewardDescriptionText.gameObject.SetActive(true);
 
@@ -1703,7 +2093,7 @@ namespace TFTV
                         vehicleToggle.PointerClicked += () => ToggleButtonClicked(1);
                         vehicleToggle.transform.GetComponentInChildren<Text>().text = "VEHICLES";
                         vehicleToggle.transform.GetComponentsInChildren<Image>().FirstOrDefault(c => c.name == "Icon").sprite = Helper.CreateSpriteFromImageFile("UI_Vehicle_FilterIcon.png");
-                      
+
                         vehicleToggle.transform.position -= new Vector3(150 * resolutionFactorWidth, 0, 0); //new Vector3(150 * resolutionFactorWidth, 100 * resolutionFactorHeight, 0);
                         vehicleToggle.GetComponent<RectTransform>().sizeDelta = new Vector2(allToggle.GetComponent<RectTransform>().sizeDelta.x, allToggle.GetComponent<RectTransform>().sizeDelta.y);
 
@@ -1955,7 +2345,7 @@ namespace TFTV
 
         }
 
-       
+
 
         /// <summary>
         /// Ensures that rescue vehicle missions will not contain faction vehicles if they haven't been researched by the faction yet.
@@ -1982,7 +2372,7 @@ namespace TFTV
                         TFTVLogger.Always($"Generating rescue Vehicle scav; checking if factions have researched Aspida/Armadillo");
                         GeoLevelController controller = ____level;
 
-                        if (controller.NewJerichoFaction.Research!=null && !controller.NewJerichoFaction.Research.HasCompleted("NJ_VehicleTech_ResearchDef"))
+                        if (controller.NewJerichoFaction.Research != null && !controller.NewJerichoFaction.Research.HasCompleted("NJ_VehicleTech_ResearchDef"))
                         {
 
                             TFTVLogger.Always($"Armadillo not researched by New Jericho");
@@ -1999,8 +2389,8 @@ namespace TFTV
                             }
 
                         }
-                        if (controller.SynedrionFaction.Research != null && !controller.SynedrionFaction.Research.HasCompleted("SYN_Rover_ResearchDef"))   
-                            {
+                        if (controller.SynedrionFaction.Research != null && !controller.SynedrionFaction.Research.HasCompleted("SYN_Rover_ResearchDef"))
+                        {
                             TFTVLogger.Always($"Aspida not researched by Synedrion");
 
                             foreach (CustomMissionTypeDef customMissionTypeDef in Repo.GetAllDefs<CustomMissionTypeDef>().Where(m => m.Tags.Contains(requiresVehicle)))
@@ -2073,7 +2463,7 @@ namespace TFTV
             }
         }
 
-    
+
         public static void ForceMarketPlaceUpdate()
         {
 
@@ -2098,7 +2488,7 @@ namespace TFTV
             }
         }
 
-      
+
 
         [HarmonyPatch(typeof(GeoMarketplace), "OnSiteVisited")]
         public static class GeoMarketplace_OnSiteVisited_MarketPlace_patch
@@ -2132,7 +2522,7 @@ namespace TFTV
         /// </summary>
 
 
-      
+
 
     }
 }

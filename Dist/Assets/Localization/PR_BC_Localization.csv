@@ -85,7 +85,7 @@ PR_BC_ENDURANCE_DESC,Text,,"Recover restores additional 25% Willpower and remove
 PR_BC_SABOTEUR,Text,,SABOTEUR,,SABOTEUR,,,,ДИВЕРСАНТ,,
 PR_BC_SABOTEUR_DESC,Text,,When you are hidden AP cost of non-weapon skills and spider drone skills decreased by 1 AP,,"Lorsque vous êtes caché, le coût en points d'actions des compétences sans arme et des compétences de drone-araignée est réduit de 1 point d'action.",,,,"Пока вы спрятаны, стоимость не атакующих навыков и паучьих дронов уменьшена на 1 ОД",,
 PR_BC_DIE_HARD,Text,,DIE HARD,,,,,,,,
-PR_BC_DIE_HARD_DESC,Text,,When you take lethal damage there is a chance to survive with 1HP and have all negative effects cleared and limbs restored. Can only trigger once per mission.,,,,,,,,
+PR_BC_DIE_HARD_DESC,Text,,When you take lethal damage there is a chance to survive with 1HP and have all negative effects cleared. Can only trigger once per mission.,,,,,,,,
 PR_BC_DIE_HARD_TRIGGERED,Text,,DIE HARD,,,,,,,,
 PR_BC_DIE_HARD_TRIGGERED_DESC,Text,,"Die Hard has saved your life once already, so there is no more chance for this mission!",,,,,,,,
 PR_BC_DIE_HARD_KEEPALIVE,Text,,DIE HARDER,,,,,,,,
