@@ -268,7 +268,7 @@ namespace TFTV
             try
             {
                 TFTVConfig config = TFTVMain.Main.Config;
-                List<int> voidOmensList = new List<int> { 1, 2, 4, 5, 6, 8, 9, 12, 13, 14, 18 };
+                List<int> voidOmensList = new List<int> { 1, 2, 5, 6, 8, 9, 12, 13, 14, 18 };
                 int currentODIlevel = controller.EventSystem.GetVariable("BC_SDI");
                 // TFTVLogger.Always("CurrentODIlevel is " + currentODIlevel);
                 int odiPerc = currentODIlevel * 5;
@@ -277,6 +277,11 @@ namespace TFTV
                 if (config.MoreMistVO)
                 {
                     voidOmensList.Add(7);
+                }
+
+                if (config.LimitedDeploymentVO)
+                {
+                    voidOmensList.Add(4);
                 }
 
                 if (odiPerc < 30) //45) //only add unlimited Delirium if max Delirium is not reached

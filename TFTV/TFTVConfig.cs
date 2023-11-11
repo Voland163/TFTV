@@ -186,6 +186,11 @@ description: "Enemy reinforcements do not drop items on death; disallows farming
            " and if already rolled, will prevent it from having any effect.")]
         public bool MoreMistVO = true;
 
+        [ConfigField(text: "PLAY WITH LIMITED DEPLOYMENT VOID OMEN",
+           description: "If you are finding the VOID OMEN reducing Maximum Deployment by 2 (and increasing soldier XP by 100%) unfun, you can turn it off here. This will prevent it from rolling and, if already rolled, will prevent it from having any effect.")]
+        public bool LimitedDeploymentVO = true;
+
+
         [ConfigField(text: "Stamina recuperation from FAR-M",
          description: "The starting type of passenger module, FAR-M, will slowly recuperate the stamina of the operatives on board.\n" +
             "Switch off if you prefer to have to return to base more often")]

@@ -20,6 +20,7 @@ using PhoenixPoint.Common.Entities.Characters;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.Entities.Items;
+using PhoenixPoint.Common.Entities.RedeemableCodes;
 using PhoenixPoint.Common.Levels.Missions;
 using PhoenixPoint.Common.UI;
 using PhoenixPoint.Geoscape.Entities;
@@ -208,6 +209,8 @@ namespace TFTV
             TFTVChangesToDLC5.TFTVMercenaries.CreateMercenaries();
             TFTVChangesToDLC5.TFTVKaosGuns.CreateKaosWeaponAmmo();
             TFTVChangesToDLC5.TFTVMarketPlaceItems.AdjustMarketPlaceOptions();
+            ReducePromoSkins();
+          //  TFTVChangesToDLC5.AdjustMarketPlaceAbilityDef();
             //Print();
         }
 
@@ -218,6 +221,40 @@ namespace TFTV
         //NEU_Sniper_Legs_ItemDef
 
        
+        private static void ReducePromoSkins()
+        {
+            try 
+            {
+                RedeemableCodeDef redeemableCodePriestTechnicianDef = DefCache.GetDef<RedeemableCodeDef>("CompleteEdition_RedeemableCodeDef");
+                RedeemableCodeDef redeemableCodeDoomSlayer = DefCache.GetDef<RedeemableCodeDef>("HeadhunterSet_RedeemableCodeDef");
+                RedeemableCodeDef redeemableCodeInfiltrator = DefCache.GetDef<RedeemableCodeDef>("Infiltrator_RedeemableCodeDef");
+                RedeemableCodeDef redeemableCodeViking = DefCache.GetDef<RedeemableCodeDef>("Viking_RedeemableCodeDef");
+                RedeemableCodeDef redeemableCodeWhiteSet = DefCache.GetDef<RedeemableCodeDef>("WhiteSet_RedeemableCodeDef");
+                RedeemableCodeDef redeemableCodeNeoSet = DefCache.GetDef<RedeemableCodeDef>("NeonSet_RedeemableCodeDef");
+              
+                redeemableCodePriestTechnicianDef.GiftedItems.RemoveWhere(i => i.name.Contains("ALN")|| i.name.Contains("MechArms"));
+
+                List<RedeemableCodeDef> redeemableCodeDefs = new List<RedeemableCodeDef>()
+                {
+                redeemableCodeDoomSlayer, redeemableCodeInfiltrator, redeemableCodeViking, redeemableCodeWhiteSet, redeemableCodeNeoSet
+
+                };
+                
+                foreach(RedeemableCodeDef redeemableCodeDef in redeemableCodeDefs) 
+                {
+                    redeemableCodeDef.AutoRedeem = false;
+                    redeemableCodeDef.RedeemableCode = "noskinforyou";
+                    redeemableCodeDef.Allowed = false;               
+                }
+
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+        }
 
 
         private static void CreateConvinceCivilianStatus()
@@ -2453,6 +2490,7 @@ namespace TFTV
                 MakeMistRepellerLegModule();
                 CreateNanotechFieldkit();
                 CreateAcidDisabledStatus();
+                ChangeArchaelogyLab();
             }
 
 
@@ -2464,15 +2502,38 @@ namespace TFTV
 
         }
 
+        private static void ChangeArchaelogyLab() 
+        {
+            try
+            {
+               PhoenixFacilityDef archlab = DefCache.GetDef<PhoenixFacilityDef>("ArcheologyLab_PhoenixFacilityDef");
+
+                archlab.FacilityLimitPerBase = 1;
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
+        }
 
         internal static void AdjustAcidDamage()
         {
             try
             {
+                //nerfed on 13/11
+                DefCache.GetDef<DamagePayloadEffectDef>("E_Element0 [SwarmerAcidExplosion_Die_AbilityDef]").DamagePayload.DamageKeywords[1].Value = 20;
 
-                DefCache.GetDef<DamagePayloadEffectDef>("E_Element0 [SwarmerAcidExplosion_Die_AbilityDef]").DamagePayload.DamageKeywords[1].Value = 30;
+                DefCache.GetDef<WeaponDef>("AcidSwarmer_Torso_BodyPartDef").DamagePayload.DamageKeywords[1].Value = 10;
 
-                DefCache.GetDef<WeaponDef>("AcidSwarmer_Torso_BodyPartDef").DamagePayload.DamageKeywords[1].Value = 20;
+                //this is reduced in Stronger Pandorans to 20 acid
+                ApplyDamageEffectAbilityDef aWormDamage = DefCache.GetDef<ApplyDamageEffectAbilityDef>("AcidwormExplode_AbilityDef");
+
+                aWormDamage.DamagePayload.DamageKeywords = new List<DamageKeywordPair>()
+                {
+                new DamageKeywordPair{DamageKeywordDef = Shared.SharedDamageKeywords.BlastKeyword, Value = 10 },
+                new DamageKeywordPair{DamageKeywordDef = Shared.SharedDamageKeywords.AcidKeyword, Value = 20 },               
+                };
 
                 //All Acheron acid attacks reduced by 10.
 
@@ -4250,6 +4311,8 @@ namespace TFTV
                 loadingTipsRepositoryDef.GeoscapeLoadingTips.Add(new LocalizedTextBind() { LocalizationKey = "TFTV_TIP_GEOSCAPE_29" });
                 loadingTipsRepositoryDef.GeoscapeLoadingTips.Add(new LocalizedTextBind() { LocalizationKey = "TFTV_TIP_GEOSCAPE_30" });
                 loadingTipsRepositoryDef.GeoscapeLoadingTips.Add(new LocalizedTextBind() { LocalizationKey = "TFTV_TIP_GEOSCAPE_31" });
+                loadingTipsRepositoryDef.GeoscapeLoadingTips.Add(new LocalizedTextBind() { LocalizationKey = "TFTV_TIP_GEOSCAPE_32" });
+                loadingTipsRepositoryDef.GeoscapeLoadingTips.Add(new LocalizedTextBind() { LocalizationKey = "TFTV_TIP_GEOSCAPE_33" });
 
                 loadingTipsRepositoryDef.TacticalLoadingTips.Add(new LocalizedTextBind() { LocalizationKey = "TFTV_TIP_TACTICAL_1" });
                 loadingTipsRepositoryDef.TacticalLoadingTips.Add(new LocalizedTextBind() { LocalizationKey = "TFTV_TIP_TACTICAL_2" });
@@ -6740,7 +6803,7 @@ namespace TFTV
                 //Adjust Acheron leap so it can only be used once per turn and doesn't cost any AP
                 JetJumpAbilityDef acheronLeap = DefCache.GetDef<JetJumpAbilityDef>("Acheron_Leap_AbilityDef");
                 acheronLeap.UsesPerTurn = 1;
-                acheronLeap.ActionPointCost = 0;
+                //acheronLeap.ActionPointCost = 0;
 
                 //Removing Resurrect and Delirium Clouds from Asclepius Husks
 
@@ -6834,6 +6897,11 @@ namespace TFTV
                 acheronPrimeArms.DamagePayload.AoeRadius = 5;
                 acheronPrimeArms.DamagePayload.Range = 30;
                 acheronPrimeArms.DamagePayload.DamageDeliveryType = DamageDeliveryType.Cone;
+
+                DefCache.GetDef<ShootAbilityDef>("Acheron_GooSpray_ShootAbilityDef").UsesPerTurn = 2;
+                DefCache.GetDef<ShootAbilityDef>("Acheron_CorruptiveSpray_AbilityDef").UsesPerTurn = 2;
+                DefCache.GetDef<ShootAbilityDef>("Acheron_ParalyticSpray_AbilityDef").UsesPerTurn = 2;
+
 
             }
             catch (Exception e)

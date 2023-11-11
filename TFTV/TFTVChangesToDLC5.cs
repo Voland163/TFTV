@@ -13,11 +13,14 @@ using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.Entities.Items;
 using PhoenixPoint.Common.Levels.Missions;
+using PhoenixPoint.Common.UI;
 using PhoenixPoint.Common.View.ViewControllers;
 using PhoenixPoint.Geoscape.Entities;
+using PhoenixPoint.Geoscape.Entities.Abilities;
 using PhoenixPoint.Geoscape.Entities.Research;
 using PhoenixPoint.Geoscape.Events;
 using PhoenixPoint.Geoscape.Levels;
+using PhoenixPoint.Geoscape.View.ViewControllers.SiteEncounters;
 using PhoenixPoint.Geoscape.View.ViewModules;
 using PhoenixPoint.Geoscape.View.ViewStates;
 using PhoenixPoint.Tactical.Entities;
@@ -47,6 +50,32 @@ namespace TFTV
         private static readonly SharedData Shared = TFTVMain.Shared;
         public static GameTagDef MercenaryTag;
 
+
+        [HarmonyPatch(typeof(MarketplaceAbility), "GetTargetDisabledStateInternal")]
+        public static class MarketplaceAbility_GetTargetDisabledStateInternal_patch
+        {
+
+            public static void Postfix(ref GeoAbilityTargetDisabledState __result, MarketplaceAbility __instance)
+            {
+                try
+                {
+                    if (__instance.GeoLevel.EventSystem.GetVariable("NumberOfDLC5MissionsCompletedVariable") > 0)
+                    {
+
+                        __result = GeoAbilityTargetDisabledState.NotDisabled;
+
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
+
+
+
         public static void SlugHealTraumaEffect(TacticalAbility tacticalAbility, TacticalActor tacticalActor)
         {
             try
@@ -74,6 +103,22 @@ namespace TFTV
 
         }
 
+        //Seems like not necessary
+       /* public static void AdjustMarketPlaceAbilityDef() 
+        {
+            try
+            {
+                GeoscapeAbilityViewElementDef marketPlaceViewElement = DefCache.GetDef<GeoscapeAbilityViewElementDef>("E_ViewElement [MarketplaceAbilityDef]");
+
+                marketPlaceViewElement.ContextMenuVisibility.TargetDisabledStateFilters = new List<PhoenixPoint.Geoscape.Entities.Abilities.GeoAbilityTargetDisabledState>()
+                {};
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }*/
 
         internal class TFTVMercenaries
         {
@@ -269,6 +314,7 @@ namespace TFTV
 
                             geoUnitDescriptor.Progression.PersonalAbilities[2] = DefCache.GetDef<RepositionAbilityDef>("Vanish_AbilityDef");
                             geoUnitDescriptor.Progression.PersonalAbilities[5] = DefCache.GetDef<ApplyStatusAbilityDef>("BC_ARTargeting_AbilityDef");
+                            geoUnitDescriptor.Progression.PersonalAbilities[6] = DefCache.GetDef<PassiveModifierAbilityDef>("Endurance_AbilityDef");
 
                             TFTVLogger.Always($"{geoUnitDescriptor.ClassTag}");
                         }
@@ -299,7 +345,8 @@ namespace TFTV
                         {
                             geoUnitDescriptor.Progression.PersonalAbilities[1] = DefCache.GetDef<ApplyStatusAbilityDef>("BC_Takedown_AbilityDef");
                             geoUnitDescriptor.Progression.PersonalAbilities[2] = DefCache.GetDef<PassiveModifierAbilityDef>("BioChemist_AbilityDef");
-
+                            geoUnitDescriptor.Progression.PersonalAbilities[6] = DefCache.GetDef<ApplyStatusAbilityDef>("Saboteur_AbilityDef");
+                         
                             TFTVLogger.Always($"{geoUnitDescriptor.ClassTag}");
                         }
                         else if (geoUnitDescriptor.ClassTag == berserkerTag)
@@ -319,11 +366,11 @@ namespace TFTV
                         else if (geoUnitDescriptor.ClassTag == assaultTag)
                         {
                             geoUnitDescriptor.Progression.PersonalAbilities[1] = DefCache.GetDef<PassiveModifierAbilityDef>("DieHard_AbilityDef");
-
-                            TFTVLogger.Always($"{geoUnitDescriptor.ClassTag}");
+                            geoUnitDescriptor.Progression.PersonalAbilities[6] = DefCache.GetDef<PassiveModifierAbilityDef>("Endurance_AbilityDef");
+                           TFTVLogger.Always($"{geoUnitDescriptor.ClassTag}");
 
                         }
-
+                        
 
 
                     }
@@ -671,15 +718,15 @@ namespace TFTV
                     slugLegs.BodyPartAspectDef.Stealth = -0.05f;
 
                     exileHelmet.ViewElementDef = Helper.CreateDefFromClone(exileHelmet.ViewElementDef, "{16AD85B5-7C8F-4EC8-9E74-CF23DBE3CE98}", exileHelmet.name);
-                    exileHelmet.ViewElementDef.Description.LocalizationKey = "EXILE_HELMET_NAME";
+                  //  exileHelmet.ViewElementDef.Description.LocalizationKey = "EXILE_HELMET_NAME";
                     exileHelmet.ViewElementDef.DisplayName2.LocalizationKey = "EXILE_HELMET_DESCRIPTION";
 
                     exileTorso.ViewElementDef = Helper.CreateDefFromClone(exileTorso.ViewElementDef, "{58D71B43-BCC4-41D0-BEC5-1ACCFADB9D63}", exileTorso.name);
-                    exileTorso.ViewElementDef.Description.LocalizationKey = "EXILE_TORSO_NAME";
+                  //  exileTorso.ViewElementDef.Description.LocalizationKey = "EXILE_TORSO_NAME";
                     exileTorso.ViewElementDef.DisplayName2.LocalizationKey = "EXILE_TORSO_DESCRIPTION";
 
                     exileLegs.ViewElementDef = Helper.CreateDefFromClone(exileLegs.ViewElementDef, "{334A8591-4FCC-45FB-AB39-37B7AFBD4AB0}", exileLegs.name);
-                    exileLegs.ViewElementDef.Description.LocalizationKey = "EXILE_LEGS_NAME";
+                  //  exileLegs.ViewElementDef.Description.LocalizationKey = "EXILE_LEGS_NAME";
                     exileLegs.ViewElementDef.DisplayName2.LocalizationKey = "EXILE_LEGS_DESCRIPTION";
 
 
@@ -881,7 +928,7 @@ namespace TFTV
 
                     slugArmsWeapon.ViewElementDef.DisplayName1.LocalizationKey = $"SLUG_{slugArmsWeapon.ViewElementDef.DisplayName1.LocalizationKey}";
                     slugArmsWeapon.ViewElementDef.DisplayName2.LocalizationKey = slugArmsWeapon.ViewElementDef.DisplayName1.LocalizationKey;
-                    slugArmsWeapon.ViewElementDef.Description.LocalizationKey = slugArmsWeapon.ViewElementDef.DisplayName1.LocalizationKey;
+                    slugArmsWeapon.ViewElementDef.Description.LocalizationKey = "SLUG_KEY_MECH_ARMS_DESCRIPTION";
 
                     slugMechArms.Abilities = slugArmsAbilities.ToArray();
 
@@ -1856,7 +1903,8 @@ namespace TFTV
         {
 
 
-            private static void FakeResearchOptionToSetupCharacterSale(UIModuleTheMarketplace uIModuleTheMarketplace)
+
+                private static void FakeResearchOptionToSetupCharacterSale(UIModuleTheMarketplace uIModuleTheMarketplace)
             {
                 try
                 {
@@ -1949,7 +1997,7 @@ namespace TFTV
                 {
                     try
                     {
-
+                        __instance.NoOffersAvailableHint.SetActive(false);
                         //   TFTVLogger.Always($"Running UpdateVisuals");
 
                         CreateTestingButton();
@@ -2327,7 +2375,7 @@ namespace TFTV
 
                     }
 
-                    if (SecretMPCounter >= 43)
+                    if (SecretMPCounter >= 40)
                     {
                         SecretMPCounter = 0;
                         marketplaceUI.Loca_AllMissionsFinishedDesc.LocalizationKey = "KEY_MARKETPLACE_DESCRIPTION_5";

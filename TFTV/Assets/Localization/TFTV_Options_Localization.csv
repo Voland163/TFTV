@@ -104,4 +104,6 @@ KEY_OPTIONS_TACTICAL_SAVING_WARNING,Text,,"Saving and loading on Tactical can re
 KEY_OPTIONS_CHANGED_SETTING_WARNING0,Text,,Previous setting for,,,,,,,,
 KEY_OPTIONS_CHANGED_SETTING_WARNING1,Text,,has already been implemetend on starting or a loading a game! PLEASE QUIT TO DESKTOP BEFORE STARTING OR LOADING A GAME,,,,,,,,
 NO_SECOND_CHANCES,Text,,NO SECOND CHANCES,,,,,,,,
-NO_SECOND_CHANCES_DESCRIPTION,Text,,"If you fail a mission offered by a Faction, that is it; you may not retry it again. ",,,,,,,,
+NO_SECOND_CHANCES_DESCRIPTION,Text,,"If you fail a story mission, that is <i>it</i>; you may not retry it again. On by default on Legend and ETERMES.",,,,,,,,
+LIMITED_DEPLOYMENT_VO,Text,,PLAY WITH LIMITED DEPLOYMENT VOID OMEN,,,,,,,,
+LIMITED_DEPLOYMENT_VO_DESCRIPTION,Text,,"If you are finding the VOID OMEN reducing Maximum Deployment by 2 (and increasing soldier XP by 100%) unfun, you can turn it off here. This will prevent it from rolling and, if already rolled, will prevent it from having any effect.",,,,,,,,

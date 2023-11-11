@@ -3,6 +3,8 @@ using Base.Defs;
 using Base.Entities.Statuses;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
+using PhoenixPoint.Common.Entities.GameTags;
+using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.DamageKeywords;
@@ -253,6 +255,77 @@ namespace TFTV
         }
 
 
+        //Adapted Lucus solution to avoid Ancient Automata receiving WP penalty on ally death/also used for Human Enemies
+        [HarmonyPatch(typeof(TacticalActor), "OnAnotherActorDeath")]
+        public static class TacticalActor_OnAnotherActorDeath_HumanEnemies_Patch
+        {
+            private static readonly ClassTagDef cyclopsTag = DefCache.GetDef<ClassTagDef>("MediumGuardian_ClassTagDef");
+            private static readonly ClassTagDef hopliteTag = DefCache.GetDef<ClassTagDef>("HumanoidGuardian_ClassTagDef");
+            private static readonly GameTagDef HumanEnemyTier1GameTag = DefCache.GetDef<GameTagDef>("HumanEnemyTier_1_GameTagDef");
+            private static readonly GameTagDef HumanEnemyTier2GameTag = DefCache.GetDef<GameTagDef>("HumanEnemyTier_2_GameTagDef");
+            private static readonly GameTagDef HumanEnemyTier3GameTag = DefCache.GetDef<GameTagDef>("HumanEnemyTier_3_GameTagDef");
+            private static readonly GameTagDef HumanEnemyTier4GameTag = DefCache.GetDef<GameTagDef>("HumanEnemyTier_4_GameTagDef");
+            private static readonly GameTagDef humanEnemyTagDef = DefCache.GetDef<GameTagDef>("HumanEnemy_GameTagDef");
+
+          
+            public static void Prefix(TacticalActor __instance, DeathReport death, out int __state)
+            {
+                __state = 0; //Set this to zero so that the method still works for other actors.
+
+                //Postfix checks for relevant GameTags then saves and zeroes the WPWorth of the dying actor before main method is executed.
+
+                GameTagsList<GameTagDef> RelevantTags = new GameTagsList<GameTagDef> { cyclopsTag, hopliteTag, HumanEnemyTier4GameTag, HumanEnemyTier2GameTag, HumanEnemyTier1GameTag };
+                if (__instance.TacticalFaction == death.Actor.TacticalFaction && death.Actor.HasGameTags(RelevantTags, false))
+                {
+                    __state = death.Actor.TacticalActorBaseDef.WillPointWorth;
+                    death.Actor.TacticalActorBaseDef.WillPointWorth = 0;
+                }
+
+            }
+
+            public static void Postfix(TacticalActor __instance, DeathReport death, int __state)
+            {
+
+                //Postfix will remove necessary Willpoints from allies and restore WPWorth's value to the def of the dying actor.
+                if (__instance.TacticalFaction == death.Actor.TacticalFaction)
+                {
+                    foreach (GameTagDef Tag in death.Actor.GameTags)
+                    {
+                        if (Tag == cyclopsTag || Tag == hopliteTag)
+                        {
+                            //Death has no effect on allies
+                            death.Actor.TacticalActorBaseDef.WillPointWorth = __state;
+                        }
+                        else if (Tag == HumanEnemyTier4GameTag)
+                        {
+                            //Death has no effect on allies
+                            death.Actor.TacticalActorBaseDef.WillPointWorth = __state;
+                        }
+                        else if (Tag == HumanEnemyTier2GameTag)
+                        {
+                            //Allies lose 3WP
+                            __instance.CharacterStats.WillPoints.Subtract((__state + 1));
+                            death.Actor.TacticalActorBaseDef.WillPointWorth = __state;
+                        }
+                        else if (Tag == HumanEnemyTier1GameTag)
+                        {
+                            //Allies lose 6WP
+                            __instance.CharacterStats.WillPoints.Subtract((__state * 3));
+                            death.Actor.TacticalActorBaseDef.WillPointWorth = __state;
+                        }
+
+                    }
+                }
+
+
+            }
+        }
+
+
+
+
+
+
         [HarmonyPatch(typeof(TacMission), "InitDeployZones")]
 
         public static class TFTV_TacMission_InitDeployZones_patch
@@ -298,10 +371,6 @@ namespace TFTV
 
             }
         }
-
-
-
-
 
 
         [HarmonyPatch(typeof(TacticalPerceptionBase), "IsTouchingVoxel")]

@@ -1,5 +1,5 @@
-﻿using Base.Defs;
-using PhoenixPoint.Common.Core;
+﻿using HarmonyLib;
+using PhoenixPoint.Geoscape.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities;
 using System;
 using UnityEngine;
@@ -9,12 +9,139 @@ namespace TFTV
     internal class TFTVExperimental
     {
 
-      //  internal static Color purple = new Color32(149, 23, 151, 255);
-     //   private static readonly DefRepository Repo = TFTVMain.Repo;
-      //  private static readonly SharedData Shared = TFTVMain.Shared;
-      //  private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
+        //  internal static Color purple = new Color32(149, 23, 151, 255);
+        //    private static readonly DefRepository Repo = TFTVMain.Repo;
+        //  private static readonly SharedData Shared = TFTVMain.Shared;
+        //  private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
 
 
+
+
+
+
+        /*  [HarmonyPatch(typeof(GeoAbility), "GetDisabledState")]
+          public static class GeoAbility_GetDisabledState_patch
+          {
+
+              public static void Postfix(GeoAbility __instance, ref GeoAbilityDisabledState __result, List<GeoAbilityTarget> ____targets)
+              {
+                  try
+                  {
+
+
+
+
+                      __result = GeoAbilityDisabledState.NotDisabled;
+                  }
+                  catch (Exception e)
+                  {
+                      TFTVLogger.Error(e);
+                      throw;
+                  }
+              }
+          }
+
+
+
+          [HarmonyPatch(typeof(LaunchMissionAbility), "GetDisabledStateInternal")]
+          public static class LaunchMissionAbility_GetDisabledStateInternal_patch
+          {
+
+              public static void Postfix(ref GeoAbilityDisabledState __result, LaunchMissionAbility __instance, List<GeoAbilityTarget> ____targets)
+              {
+                  try
+                  {
+                      TFTVLogger.Always($"GetDisabledStateInternal for {__instance.GeoActor.name}");
+                      GeoSite geoSite = __instance.GeoActor as GeoSite;
+
+                      if (geoSite != null)
+                      {
+                          TFTVLogger.Always($"geosite {geoSite?.LocalizedSiteName}");
+
+                          TFTVLogger.Always($"geosite has Phoenix base? {geoSite.GetComponent<GeoPhoenixBase>() != null}");
+
+                          TFTVLogger.Always($"geosite has characters in it? {geoSite.CharactersCount > 0}");
+
+                          if (geoSite.GetComponent<GeoPhoenixBase>() != null && geoSite.CharactersCount > 0)
+                          {
+                              __result = GeoAbilityDisabledState.NotDisabled;
+
+                          }
+                      }
+
+
+                  }
+                  catch (Exception e)
+                  {
+                      TFTVLogger.Error(e);
+                      throw;
+                  }
+              }
+          }
+
+
+
+          [HarmonyPatch(typeof(LaunchMissionAbility), "GetTargetDisabledStateInternal")]
+          public static class LaunchMissionAbility_SetMenuItems_patch
+          {
+
+              public static void Postfix(ref GeoAbilityTargetDisabledState __result, GeoAbilityTarget target, LaunchMissionAbility __instance)
+              {
+                  try
+                  {
+                      TFTVLogger.Always($"GetTargetDisabledStateInternal for {target.Actor.name}");
+                      GeoSite geoSite = target.Actor as GeoSite;
+
+                      TFTVLogger.Always($"geosite null? {geoSite==null}");
+
+                      TFTVLogger.Always($"geosite has Phoenix base? {geoSite.GetComponent<GeoPhoenixBase>() != null}");
+
+                      TFTVLogger.Always($"geosite has characters in it? {geoSite.CharactersCount > 0}");
+
+                      if (target.Actor is GeoSite geosite && geosite.GetComponent<GeoPhoenixBase>() != null && geosite.CharactersCount > 0)
+                      {
+                          __result = GeoAbilityTargetDisabledState.NotDisabled;
+
+                      }
+                  }
+                  catch (Exception e)
+                  {
+                      TFTVLogger.Error(e);
+                      throw;
+                  }
+              }
+          }
+
+  */
+
+
+      
+
+
+
+        /*    [HarmonyPatch(typeof(UIModuleSiteContextualMenu), "SetMenuItems")]
+            public static class UIModuleSiteContextualMenu_SetMenuItems_patch
+            {
+
+                public static void Postfix(GeoSite site, List<GeoAbility> rawAbilities, Vector3 position, UIModuleSiteContextualMenu __instance)
+                {
+                    try
+                    {
+                        TFTVLogger.Always($"geosite is {site.name}. Ability Filter null? {__instance.AbilityFilter==null}");
+
+
+                        foreach(GeoAbility geoAbility in rawAbilities) 
+                        {
+                            TFTVLogger.Always($"geoAbilityDef {geoAbility.GeoscapeAbilityDef?.name}");       
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                        throw;
+                    }
+                }
+            }*/
 
         /*  public static int KludgeStartingWeight = 0;
           public static int KludgeCurrentWeight = 0;
