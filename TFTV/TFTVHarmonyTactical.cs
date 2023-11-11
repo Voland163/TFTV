@@ -288,6 +288,7 @@ namespace TFTV
                     TFTVBaseDefenseTactical.RemoveScatterRemainingAttackersTagFromEnemiesWithParasychosis(ability, parameter);
                     TFTVPalaceMission.CheckFinalMissionWinConditionForExalted(ability);
                     TFTVPalaceMission.CheckIfPlayerCloseToGate(__instance);
+                    TFTVChangesToDLC5.SlugHealTraumaEffect(ability, __instance);
                 }
 
                 catch (Exception e)

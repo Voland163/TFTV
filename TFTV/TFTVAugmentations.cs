@@ -28,16 +28,67 @@ namespace TFTV
 
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
         private static readonly DefRepository Repo = TFTVMain.Repo;
+        private static readonly SharedData Shared = TFTVMain.Shared;
 
-        
+        [HarmonyPatch(typeof(UIModuleBionics), "InitPossibleMutations")]
+        public static class UIModuleBionics_InitPossibleMutations_patch
+        {
+            public static bool Prefix(UIModuleBionics __instance, Dictionary<AddonSlotDef, UIModuleMutationSection> ____augmentSections)
+            {
+                try
+                {
+                    if (____augmentSections.Any())
+                    {
+                        ____augmentSections.Clear();
+                    }
 
-       
+                    UIModuleMutationSection[] componentsInChildren = __instance.GetComponentsInChildren<UIModuleMutationSection>();
+                    UIModuleMutationSection[] array = componentsInChildren;
+                    foreach (UIModuleMutationSection uIModuleMutationSection in array)
+                    {
+                        ____augmentSections[uIModuleMutationSection.SlotForMutation] = uIModuleMutationSection;
+                        ____augmentSections[uIModuleMutationSection.SlotForMutation].PossibleMutations.Clear();
+                    }
+
+                    foreach (ItemDef item in (from p in GameUtl.GameComponent<DefRepository>().GetAllDefs<ItemDef>()
+                                              where p.Tags.Contains(Shared.SharedGameTags.BionicalTag) && (!p.Tags.Contains(TFTVChangesToDLC5.MercenaryTag)) && p.ViewElementDef != null
+                                              select p).ToList())
+                    {
+                        AddonDef.RequiredSlotBind[] requiredSlotBinds = item.RequiredSlotBinds;
+                        for (int i = 0; i < requiredSlotBinds.Length; i++)
+                        {
+                            AddonDef.RequiredSlotBind requiredSlotBind = requiredSlotBinds[i];
+                            if (____augmentSections.ContainsKey(requiredSlotBind.RequiredSlot))
+                            {
+                                ____augmentSections[requiredSlotBind.RequiredSlot].PossibleMutations.Add(item);
+                            }
+                        }
+                    }
+
+                    array = componentsInChildren;
+                    for (int i = 0; i < array.Length; i++)
+                    {
+                        array[i].InitView(__instance);
+                    }
+
+                    return false;
+                }
+
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
+
 
 
         [HarmonyPatch(typeof(EditUnitButtonsController), "CheckIsBionicsIsAvailable")]
         public static class EditUnitButtonsController_CheckIsBionicsIsAvailable_Bionics_patch
         {
-            public static void Postfix(GeoPhoenixFaction phoenixFaction, ref bool ____bionicsAvailable, EditUnitButtonsController __instance, UIModuleActorCycle ____parentModule)
+            public static void Postfix(GeoPhoenixFaction phoenixFaction, ref bool ____bionicsAvailable, 
+                EditUnitButtonsController __instance, UIModuleActorCycle ____parentModule)
             {
                 try
                 {
