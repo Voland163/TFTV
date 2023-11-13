@@ -344,7 +344,7 @@ namespace TFTV
                         else if (geoUnitDescriptor.ClassTag == infiltratorTag)
                         {
                             geoUnitDescriptor.Progression.PersonalAbilities[1] = DefCache.GetDef<ApplyStatusAbilityDef>("BC_Takedown_AbilityDef");
-                            geoUnitDescriptor.Progression.PersonalAbilities[2] = DefCache.GetDef<PassiveModifierAbilityDef>("BioChemist_AbilityDef");
+                            geoUnitDescriptor.Progression.PersonalAbilities[2] = DefCache.GetDef<PassiveModifierAbilityDef>("BC_Biochemist_AbilityDef");
                             geoUnitDescriptor.Progression.PersonalAbilities[6] = DefCache.GetDef<ApplyStatusAbilityDef>("Saboteur_AbilityDef");
                          
                             TFTVLogger.Always($"{geoUnitDescriptor.ClassTag}");

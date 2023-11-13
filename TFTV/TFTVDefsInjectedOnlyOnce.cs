@@ -62,6 +62,8 @@ using System.Linq;
 using UnityEngine;
 using static PhoenixPoint.Tactical.Entities.Abilities.HealAbilityDef;
 using static PhoenixPoint.Tactical.Entities.Statuses.ItemSlotStatsModifyStatusDef;
+using static TFTV.TFTVCapturePandorans;
+using static TFTV.TFTVExperimental;
 using ResourceType = PhoenixPoint.Common.Core.ResourceType;
 
 namespace TFTV
@@ -210,6 +212,7 @@ namespace TFTV
             TFTVChangesToDLC5.TFTVKaosGuns.CreateKaosWeaponAmmo();
             TFTVChangesToDLC5.TFTVMarketPlaceItems.AdjustMarketPlaceOptions();
             ReducePromoSkins();
+          //  CreateNewLaunchBaseDefenseMissionGeoAbility();
           //  TFTVChangesToDLC5.AdjustMarketPlaceAbilityDef();
             //Print();
         }
@@ -220,6 +223,28 @@ namespace TFTV
         //NEU_Sniper_Torso_BodyPartDef
         //NEU_Sniper_Legs_ItemDef
 
+     /*   private static void CreateNewLaunchBaseDefenseMissionGeoAbility()
+        {
+            try 
+            {
+                LaunchMissionAbilityDef source = DefCache.GetDef<LaunchMissionAbilityDef>("LaunchMissionAbilityDef");
+                LaunchBaseDefenseAbilityDef  newLaunchBaseDefenseAbility = Helper.CreateDefFromClone<LaunchBaseDefenseAbilityDef>
+                    (null, "{707D5CBC-7C56-4EFA-8D95-CE05ED9EEAF7}", "LaunchBaseDefenseMissionDef");
+
+                newLaunchBaseDefenseAbility.ViewElementDef = Helper.CreateDefFromClone(source.ViewElementDef, "{0B2AC90E-B574-40AB-AEB8-386644F2BAB8}", "LaunchMissionAbilityDef");
+                newLaunchBaseDefenseAbility.Cost = new ResourcePack();
+                newLaunchBaseDefenseAbility.name = "LaunchMissionAbilityDef";
+
+
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+
+        }*/
        
         private static void ReducePromoSkins()
         {
@@ -4263,6 +4288,14 @@ namespace TFTV
                 loadingScreenArtCollectionDef.LoadingScreenImages.Add(Helper.CreateSpriteFromImageFile("Encounter_3_aspida_uinomipmaps.jpg"));
                 loadingScreenArtCollectionDef.LoadingScreenImages.Add(Helper.CreateSpriteFromImageFile("Encounter_4_Kaos_Buggy_uinomipmaps.jpg"));
                 loadingScreenArtCollectionDef.LoadingScreenImages.Add(Helper.CreateSpriteFromImageFile("UI_KaosMarket_Image_uinomipmaps.jpg"));
+                loadingScreenArtCollectionDef.LoadingScreenImages.Add(Helper.CreateSpriteFromImageFile("UI_KaosMarket_Image_uinomipmaps.jpg"));
+               
+                for (int i = 1; i <= 15; i++)
+                {
+                    string fileName = $"loading_screen{i:D2}.jpg";
+                    loadingScreenArtCollectionDef.LoadingScreenImages.Add(Helper.CreateSpriteFromImageFile(fileName));
+                }
+
 
                 loadingScreenArtCollectionDef.LoadingScreenImages.Add(forsaken);
                 loadingScreenArtCollectionDef.LoadingScreenImages.Add(pure);
