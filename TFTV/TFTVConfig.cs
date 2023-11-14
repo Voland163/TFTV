@@ -5,6 +5,8 @@ using PhoenixPoint.Home.View.ViewControllers;
 using PhoenixPoint.Home.View.ViewModules;
 using PhoenixPoint.Modding;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace TFTV
 {
@@ -17,36 +19,52 @@ namespace TFTV
 
     public class TFTVConfig : ModConfig
     {
-     
-     /*   [HarmonyPatch(typeof(UIModuleModManager), "OnModEnabledChanged")]
-        public static class UIModuleModManager_OnModEnabledChanged_Patch
+
+    /*    public readonly Dictionary<string, object> Fields = new Dictionary<string, object>();
+
+        public override List<ModConfigField> GetConfigFields()
         {
-            private static void Postfix(UIModuleModManager __instance, ModItemController controller, bool enabled)
+            return Fields.Select(f => new ModConfigField(f.Key, f.Value.GetType())
             {
-                try
-                {
-                    TFTVLogger.Always($"{controller.NameLabel.text} is enabled {enabled}");
-
-
-                    if (controller.NameLabel.text == "TFTV" && enabled) 
-                    {
-                        TFTVLogger.Always($"TFTV is enabled!");
-                        string warning = $"Terror from the Void is now enabled! PLEASE QUIT TO DESKTOP BEFORE STARTING OR LOADING A GAME";
-
-                        GameUtl.GetMessageBox().ShowSimplePrompt(warning, MessageBoxIcon.Warning, MessageBoxButtons.OK, null);
-                    } 
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                    throw;
-                }
-            }
+                GetValue = () => f.Value,
+                SetValue = (o) => Fields[f.Key] = o,
+                GetDescription = () => "<<custom description>>"
+            }).ToList();
         }*/
 
-
-
         
+        
+
+
+        /*   [HarmonyPatch(typeof(UIModuleModManager), "OnModEnabledChanged")]
+           public static class UIModuleModManager_OnModEnabledChanged_Patch
+           {
+               private static void Postfix(UIModuleModManager __instance, ModItemController controller, bool enabled)
+               {
+                   try
+                   {
+                       TFTVLogger.Always($"{controller.NameLabel.text} is enabled {enabled}");
+
+
+                       if (controller.NameLabel.text == "TFTV" && enabled) 
+                       {
+                           TFTVLogger.Always($"TFTV is enabled!");
+                           string warning = $"Terror from the Void is now enabled! PLEASE QUIT TO DESKTOP BEFORE STARTING OR LOADING A GAME";
+
+                           GameUtl.GetMessageBox().ShowSimplePrompt(warning, MessageBoxIcon.Warning, MessageBoxButtons.OK, null);
+                       } 
+                   }
+                   catch (Exception e)
+                   {
+                       TFTVLogger.Error(e);
+                       throw;
+                   }
+               }
+           }*/
+
+
+
+
         [HarmonyPatch(typeof(ModSettingController), "ApplyModification")]
         public static class ModSettingController_ApplyModification_Patch
         {
@@ -137,7 +155,7 @@ namespace TFTV
             }
         }
 
-
+      
 
         //Default settings
         /*   [ConfigField(text: "MANUALLY OVERRIDE SETTINGS CHOSEN ON GAME START",

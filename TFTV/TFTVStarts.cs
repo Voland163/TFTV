@@ -48,9 +48,11 @@ namespace TFTV
         {
             try
             {
+     
                 GeoscapeEventDef intro =DefCache.GetDef<GeoscapeEventDef>("IntroBetterGeo_0");
 
-                intro.GeoscapeEventData.Description[0].General = new LocalizedTextBind($"{TFTVCommonMethods.ConvertKeyToString("BG_INTRO_0_DESCRIPTION")}", true);
+                intro.GeoscapeEventData.Description[0].General = new LocalizedTextBind(TFTVCommonMethods.ConvertKeyToString("BG_INTRO_0_DESCRIPTION"), true);
+
 
             }
 
