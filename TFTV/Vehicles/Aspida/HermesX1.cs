@@ -1,40 +1,16 @@
-using System;
-using Assets.Code.PhoenixPoint.Geoscape.Entities.Sites.TheMarketplace;
 using Base.Defs;
-using Base.Core;
-using Base.Levels;
+using Base.Entities.Abilities;
 using Base.Entities.Effects;
 using Base.Entities.Effects.ApplicationConditions;
-using Base.Entities.Abilities;
-using Base.Entities.Statuses;
 using Base.UI;
-using Base.Utils;
-using Code.PhoenixPoint.Tactical.Entities.Equipments;
-using HarmonyLib;
-using PhoenixPoint.Common.Game;
-using PhoenixPoint.Common.Core;
-using PhoenixPoint.Common.Entities;
-using PhoenixPoint.Common.Entities.Addons;
-using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.Equipments;
 using PhoenixPoint.Common.UI;
-using PhoenixPoint.Common.Entities.GameTagsTypes;
-using PhoenixPoint.Geoscape.Entities.Research.Reward;
 using PhoenixPoint.Tactical.Entities.Abilities;
-using PhoenixPoint.Tactical.Entities.DamageKeywords;
-using PhoenixPoint.Tactical.Entities.Effects;
 using PhoenixPoint.Tactical.Entities.Effects.ApplicationConditions;
-using PhoenixPoint.Tactical.Entities.Effects.DamageTypes;
-using PhoenixPoint.Tactical.Entities.Equipments;
-using PhoenixPoint.Tactical.Entities.Weapons;
-using PhoenixPoint.Tactical.Entities.Statuses;
-using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Eventus;
-using PhoenixPoint.Modding;
-using System.Collections.Generic;
-using System.Linq;
-using UnityEngine;
 using PRMBetterClasses;
+using TFTVVehicleRework.Effects;
+using UnityEngine;
 
 namespace TFTVVehicleRework.Aspida
 {
@@ -50,6 +26,7 @@ namespace TFTVVehicleRework.Aspida
                 StimSprayCloud()
             };
             HybridEngine.ViewElementDef.DisplayName1 = new LocalizedTextBind("SY_HYBRID_NAME");
+            // HybridEngine.ManufactureTech = 30f;
             AspidaMain.Update_Requirements(HybridEngine);
         }
 
@@ -68,7 +45,10 @@ namespace TFTVVehicleRework.Aspida
             StimSpray.ActionPointCost = 0.75f;
 
             StatusEffectDef StimSprayStatusEffect = Repo.CreateDef<StatusEffectDef>("4cd27b0c-af38-44e9-adfc-fe425efd9491");
-            StimSprayStatusEffect.ApplicationConditions = new EffectConditionDef[]{};
+            StimSprayStatusEffect.ApplicationConditions = new EffectConditionDef[]
+            {
+                StimSprayConditions(),
+            };
             StimSprayStatusEffect.StatusDef = DetAdv.StatusDef;
             
             //"E_Effect [DeterminedAdvance_AbilityDef]"
@@ -78,7 +58,7 @@ namespace TFTVVehicleRework.Aspida
             StimSpray.ApplyOnStartTurn = false;
             StimSpray.ApplyToAllTargets = true;
             StimSpray.ApplyOnMove = false;
-            StimSpray.CheckApplicationConditions = false;
+            StimSpray.CheckApplicationConditions = true;
             StimSpray.SimulatesDamage = false;
             StimSpray.MultipleTargetSimulation = false;
 
@@ -114,14 +94,48 @@ namespace TFTVVehicleRework.Aspida
             AspidaMist3.AttachmentSocketName = "Pipes01_L";         // Left side, 0,0,0 rotation
             AspidaMist4.AttachmentSocketName = "Pipes01_R";         // Right side, 0,0,0 rotation
 
+            AddedRotationParticleEffectDef AspidaMist5 = Repo.CreateDef<AddedRotationParticleEffectDef>("bde10c1b-7990-4895-94b3-e8572fa9af96");
+            Helper.CopyFieldsByReflection(AspidaMist3, AspidaMist5);
+            AspidaMist5.RotationAxis = new Vector3(0,0,0);
+            AspidaMist5.UseTransformOrientation = true;
+            AspidaMist5.RotationDirection = AddedRotationParticleEffectDef.Direction.Y;
+            AspidaMist5.RotationDegrees = 180f;
+
+            AddedRotationParticleEffectDef AspidaMist6 = Repo.CreateDef<AddedRotationParticleEffectDef>("8fd0da3f-e3a1-491c-836d-902de211acef", AspidaMist5);
+            AspidaMist6.AttachmentSocketName = "Pipes01_R";
+            AddedRotationParticleEffectDef AspidaMist7 = Repo.CreateDef<AddedRotationParticleEffectDef>("96f167a3-f147-4c96-a181-a4a4c0659a6f",AspidaMist5);
+            AspidaMist7.AttachmentSocketName = "Hydraulics02_L";
+            AddedRotationParticleEffectDef AspidaMist8 = Repo.CreateDef<AddedRotationParticleEffectDef>("96833cda-5fd7-4608-a573-931896791ddd",AspidaMist5);
+            AspidaMist8.AttachmentSocketName = "Hydraulics02_R";
+
+
             AspidaStimParticle.EffectData.EffectDefs = new EffectDef[]
             {
                 AspidaMist1,
                 AspidaMist2,
                 AspidaMist3,
-                AspidaMist4
+                AspidaMist4,
+                AspidaMist5,
+                AspidaMist6,
+                AspidaMist7,
+                AspidaMist8,
             };
             return AspidaStimParticle;
+        }
+
+        private static StatThresholdEffectConditionDef StimSprayConditions()
+        {
+            StatThresholdEffectConditionDef Condition = (StatThresholdEffectConditionDef)Repo.GetDef("1c4543f1-82d4-4dad-ad91-5aa67b017920");
+            if (Condition == null)
+            {
+                Condition = Repo.CreateDef<StatThresholdEffectConditionDef>("1c4543f1-82d4-4dad-ad91-5aa67b017920");
+                Condition.name = "E_ApplicationConditions [Aspida_StimSpray_AbilityDef]";
+                Condition.ThresholdCondition = ThresholdCondition.LesserThan;
+                Condition.StatName = "ActionPoints";
+                Condition.Value = 1f;
+                Condition.ValueAsFractionOfMax = true;
+            }
+            return Condition;
         }
 
         private static TacticalAbilityViewElementDef VED(ApplyStatusAbilityDef Template)
