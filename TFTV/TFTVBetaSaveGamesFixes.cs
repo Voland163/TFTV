@@ -3,7 +3,6 @@ using Base;
 using Base.Core;
 using Base.UI.MessageBox;
 using HarmonyLib;
-using PhoenixPoint.Common.ContextHelp;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.Entities.Items;
@@ -11,13 +10,10 @@ using PhoenixPoint.Common.Game;
 using PhoenixPoint.Common.Saves;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.Research;
-using PhoenixPoint.Geoscape.Entities.Research.Requirement;
-using PhoenixPoint.Geoscape.Entities.Research.Reward;
 using PhoenixPoint.Geoscape.Entities.Sites;
 using PhoenixPoint.Geoscape.Events;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
-using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.Entities.Weapons;
 using System;
 using System.Collections.Generic;
@@ -30,10 +26,11 @@ namespace TFTV
 {
     internal class TFTVBetaSaveGamesFixes
     {
-       // public static bool LOTAapplied = false;
+        // public static bool LOTAapplied = false;
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
         // public static bool LOTAReworkGlobalCheck = false;
 
+        private static readonly SharedData Shared = TFTVMain.Shared;
 
         public static void CorrrectPhoenixSaveManagerDifficulty()
         {
@@ -132,6 +129,83 @@ namespace TFTV
 
         }
 
+        public static void RemoveBadSlug(GeoLevelController controller)
+        {
+            try
+            {
+                TFTVLogger.Always($"Looking for bad slugs...");
+
+                List<GeoCharacter> deathList = new List<GeoCharacter>();
+
+                List<GeoItem> destroyList = new List<GeoItem>();
+
+                ItemDef slugArmsDef = DefCache.GetDef<ItemDef>("NJ_Technician_MechArms_ALN_WeaponDef");
+
+                foreach (ItemDef itemDef in controller.PhoenixFaction.ItemStorage.Items.Keys)
+                {
+                    if (itemDef == slugArmsDef)
+                    {
+                        destroyList.Add(controller.PhoenixFaction.ItemStorage.Items[slugArmsDef]);
+                        TFTVLogger.Always($"found bad slug arms");
+                    }
+                }
+
+                foreach (GeoItem item in destroyList)
+                {
+                    controller.PhoenixFaction.ItemStorage.RemoveItem(item);
+                    TFTVLogger.Always($"destroyed bad slug arms");
+
+                }
+
+
+
+                foreach (GeoCharacter geoCharacter in controller.PhoenixFaction.Soldiers)
+                {
+
+                    //  if (geoCharacter.GameTags.Contains(TFTVChangesToDLC5.MercenaryTag)) 
+                    //  {
+                    //    TFTVLogger.Always($"found mercenary {geoCharacter.DisplayName}");
+
+                    if (geoCharacter.ArmourItems.Any(i => i.ItemDef == DefCache.GetDef<ItemDef>("NJ_Technician_MechArms_ALN_WeaponDef")))
+                    {
+
+                        TFTVLogger.Always($"{geoCharacter.DisplayName} has aln tech arms");
+
+                        foreach (GeoItem geoItem in geoCharacter.ArmourItems)
+                        {
+                            if (geoItem.ItemDef == slugArmsDef && geoItem.CommonItemData.Ammo != null)
+                            {
+                                TFTVLogger.Always($"{geoCharacter.DisplayName} has in armor {geoItem.ItemDef.name}, and it has {geoItem.CommonItemData.Ammo.CurrentCharges} charges ");
+                                deathList.Add(geoCharacter);
+                            }
+                        }
+                    }
+
+
+                }
+
+                if (deathList.Count > 0)
+                {
+                    foreach (GeoCharacter geoCharacter in deathList)
+                    {
+                        TFTVLogger.Always($"dismising bad slug {geoCharacter.DisplayName}");
+                        controller.PhoenixFaction.KillCharacter(geoCharacter, CharacterDeathReason.Dismissed);
+
+                    }
+
+
+                }
+
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
+
+        }
+
         private static void SetMarketPlaceRotations(GeoLevelController controller)
         {
             try
@@ -200,14 +274,14 @@ namespace TFTV
             }
         }
 
-        public static void CheckScyllaCaptureTechResearch(GeoLevelController controller) 
+        public static void CheckScyllaCaptureTechResearch(GeoLevelController controller)
         {
             try
             {
                 ResearchDef scyllaCaptureModule = DefCache.GetDef<ResearchDef>("PX_Aircraft_EscapePods_ResearchDef");
-             
 
-             
+
+
 
                 if (controller.PhoenixFaction.Research.HasCompleted("PX_Alien_Queen_ResearchDef") &&
                     (!controller.PhoenixFaction.Research.HasCompleted(scyllaCaptureModule.name) &&
@@ -257,8 +331,8 @@ namespace TFTV
                     TFTVLogger.Always($"Player has completed acidworm research but didn't get acid res tech");
                     ResearchElement researchElement = controller.PhoenixFaction.Research.GetResearchById(acidRes.name);
                     researchElement.State = ResearchState.Unlocked;
-                    TFTVLogger.Always($"{acidRes.name} available to PX? {researchElement.IsAvailableToFaction(controller.PhoenixFaction)}");                
-                
+                    TFTVLogger.Always($"{acidRes.name} available to PX? {researchElement.IsAvailableToFaction(controller.PhoenixFaction)}");
+
                 }
 
                 if (controller.PhoenixFaction.Research.HasCompleted("PX_Alien_Fireworm_ResearchDef") &&
@@ -287,18 +361,18 @@ namespace TFTV
 
                 }
 
-              //  TFTVLogger.Always($"{controller.PhoenixFaction.Research.HasCompleted("ANU_MutationTech_ResearchDef")} {controller.PhoenixFaction.HarvestAliensForMutagensUnlocked}");
+                //  TFTVLogger.Always($"{controller.PhoenixFaction.Research.HasCompleted("ANU_MutationTech_ResearchDef")} {controller.PhoenixFaction.HarvestAliensForMutagensUnlocked}");
 
-                if(controller.PhoenixFaction.Research.HasCompleted("ANU_MutationTech_ResearchDef") && !controller.PhoenixFaction.HarvestAliensForMutagensUnlocked) 
+                if (controller.PhoenixFaction.Research.HasCompleted("ANU_MutationTech_ResearchDef") && !controller.PhoenixFaction.HarvestAliensForMutagensUnlocked)
                 {
 
                     TFTVLogger.Always("Player researched Mutation, but hasn't unlocked Mutagen harvesting");
                     controller.PhoenixFaction.HarvestAliensForMutagensUnlocked = true;
-                
-                
+
+
                 }
 
-              
+
             }
             catch (Exception e)
             {
@@ -325,15 +399,15 @@ namespace TFTV
         {
             try
             {
-              //  CheckNewLOTA(controller);
+                //  CheckNewLOTA(controller);
                 FixScyllaCounter(controller);
-              //  FixInfestedBase(controller);
+                //  FixInfestedBase(controller);
                 CheckSaveGameEventChoices(controller);
                 CheckUmbraResearchVariable(controller);
                 AddInteranlDifficultyCheckSaveData(controller);
                 SetMarketPlaceRotations(controller);
                 //  FixReactivateCyclopsMission(controller);
-              //  SetStrongerPandoransOn();
+                //  SetStrongerPandoransOn();
             }
             catch (Exception e)
             {
@@ -343,7 +417,7 @@ namespace TFTV
 
         }
 
-        private static void SetStrongerPandoransOn() 
+        private static void SetStrongerPandoransOn()
         {
             try
             {
@@ -359,17 +433,17 @@ namespace TFTV
         }
 
 
-        private static void FixReactivateCyclopsMission(GeoLevelController controller) 
+        private static void FixReactivateCyclopsMission(GeoLevelController controller)
         {
             try
             {
-               if(controller.EventSystem.GetVariable(TFTVAncientsGeo.CyclopsBuiltVariable)==1 && controller.Map.AllSites.Any(s=>(s.Type == GeoSiteType.AncientHarvest || s.Type == GeoSiteType.AncientRefinery) && s.Owner == controller.AlienFaction)) 
-                
+                if (controller.EventSystem.GetVariable(TFTVAncientsGeo.CyclopsBuiltVariable) == 1 && controller.Map.AllSites.Any(s => (s.Type == GeoSiteType.AncientHarvest || s.Type == GeoSiteType.AncientRefinery) && s.Owner == controller.AlienFaction))
+
                 {
-                    foreach(GeoSite geoSite in controller.Map.AllSites.Where(s => (s.Type == GeoSiteType.AncientHarvest || s.Type == GeoSiteType.AncientRefinery) && s.Owner == controller.AlienFaction)) 
+                    foreach (GeoSite geoSite in controller.Map.AllSites.Where(s => (s.Type == GeoSiteType.AncientHarvest || s.Type == GeoSiteType.AncientRefinery) && s.Owner == controller.AlienFaction))
                     {
                         TFTVLogger.Always($"{geoSite.LocalizedSiteName}, {geoSite.IsExcavated()}");
-                    
+
                     }
 
                     TFTVLogger.Always($"Player failed the Cyclops mission, need to clean up");
@@ -389,18 +463,18 @@ namespace TFTV
         }
 
 
-        private static void AddInteranlDifficultyCheckSaveData(GeoLevelController controller) 
+        private static void AddInteranlDifficultyCheckSaveData(GeoLevelController controller)
         {
             try
             {
-                if (TFTVNewGameOptions.InternalDifficultyCheck == 0) 
+                if (TFTVNewGameOptions.InternalDifficultyCheck == 0)
                 {
 
                     TFTVNewGameOptions.InternalDifficultyCheck = controller.CurrentDifficultyLevel.Order;
-                
+
                 }
 
-              
+
             }
             catch (Exception e)
             {
@@ -436,8 +510,8 @@ namespace TFTV
                         {
                             TFTVLogger.Always($"Failed to get stat manager in FixScyllaCounter");
                             return;
-                        }     
-                        
+                        }
+
                         int destroyedCitadels = phoenixStatisticsManager.CurrentGameStats.GeoscapeStats.DestroyedCitadels;
 
                         ClassTagDef queenTag = DefCache.GetDef<ClassTagDef>("Queen_ClassTagDef");
@@ -523,159 +597,159 @@ namespace TFTV
 
 
         //now deprecated
-       /* internal static void CheckNewLOTA(GeoLevelController controller)
-        {
-            try
-            {
-                if (controller.EventSystem.GetVariable("NewGameStarted") == 1 && !LOTAapplied)
-                {
-                    LOTAapplied = true;
-                    TFTVDefsInjectedOnlyOnce.ChangesToLOTA2();
-                    TFTVAncients.LOTAReworkActive = true;
-                    LOTAReworkGlobalCheck = true;
-                    TFTVLogger.Always("LOTA rework activated!");
-                }
-                CheckIfLOTAReworkActive();
-            }
+        /* internal static void CheckNewLOTA(GeoLevelController controller)
+         {
+             try
+             {
+                 if (controller.EventSystem.GetVariable("NewGameStarted") == 1 && !LOTAapplied)
+                 {
+                     LOTAapplied = true;
+                     TFTVDefsInjectedOnlyOnce.ChangesToLOTA2();
+                     TFTVAncients.LOTAReworkActive = true;
+                     LOTAReworkGlobalCheck = true;
+                     TFTVLogger.Always("LOTA rework activated!");
+                 }
+                 CheckIfLOTAReworkActive();
+             }
 
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-        }*/
+             catch (Exception e)
+             {
+                 TFTVLogger.Error(e);
+             }
+         }*/
 
-      /*  public static void CheckNewLOTASavegame()
-        {
-            try
-            {
-                if ((LOTAReworkGlobalCheck || TFTVAncients.LOTAReworkActive) && !LOTAapplied)
-                {
-                    LOTAapplied = true;
-                    TFTVDefsInjectedOnlyOnce.ChangesToLOTA2();
-                    TFTVAncients.LOTAReworkActive = true;
-                    TFTVLogger.Always("LOTA rework activated!");
-                }
-                CheckIfLOTAReworkActive();
-            }
+        /*  public static void CheckNewLOTASavegame()
+          {
+              try
+              {
+                  if ((LOTAReworkGlobalCheck || TFTVAncients.LOTAReworkActive) && !LOTAapplied)
+                  {
+                      LOTAapplied = true;
+                      TFTVDefsInjectedOnlyOnce.ChangesToLOTA2();
+                      TFTVAncients.LOTAReworkActive = true;
+                      TFTVLogger.Always("LOTA rework activated!");
+                  }
+                  CheckIfLOTAReworkActive();
+              }
 
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-        }*/
+              catch (Exception e)
+              {
+                  TFTVLogger.Error(e);
+              }
+          }*/
 
-     /*   internal static void CheckIfLOTAReworkActive()
-        {
-            try
-            {
+        /*   internal static void CheckIfLOTAReworkActive()
+           {
+               try
+               {
 
-                ContextHelpHintDef hintStory1 = DefCache.GetDef<ContextHelpHintDef>("ANCIENTS_STORY1");
-                ContextHelpHintDef hintCyclops = DefCache.GetDef<ContextHelpHintDef>("ANCIENTS_CYCLOPS");
-                ContextHelpHintDef hintCyclopsDefense = DefCache.GetDef<ContextHelpHintDef>("ANCIENTS_CYCLOPSDEFENSE");
-                ContextHelpHintDef hintHoplites = DefCache.GetDef<ContextHelpHintDef>("ANCIENTS_HOPLITS");
-                ContextHelpHintDef hintHopliteRepair = DefCache.GetDef<ContextHelpHintDef>("ANCIENTS_HOPLITSREPAIR");
-                ContextHelpHintDef hintHopliteMaxPower = DefCache.GetDef<ContextHelpHintDef>("ANCIENTS_HOPLITSMAXPOWER");
+                   ContextHelpHintDef hintStory1 = DefCache.GetDef<ContextHelpHintDef>("ANCIENTS_STORY1");
+                   ContextHelpHintDef hintCyclops = DefCache.GetDef<ContextHelpHintDef>("ANCIENTS_CYCLOPS");
+                   ContextHelpHintDef hintCyclopsDefense = DefCache.GetDef<ContextHelpHintDef>("ANCIENTS_CYCLOPSDEFENSE");
+                   ContextHelpHintDef hintHoplites = DefCache.GetDef<ContextHelpHintDef>("ANCIENTS_HOPLITS");
+                   ContextHelpHintDef hintHopliteRepair = DefCache.GetDef<ContextHelpHintDef>("ANCIENTS_HOPLITSREPAIR");
+                   ContextHelpHintDef hintHopliteMaxPower = DefCache.GetDef<ContextHelpHintDef>("ANCIENTS_HOPLITSMAXPOWER");
 
-                ContextHelpHintDbDef alwaysDisplayedTacticalHintsDbDef = DefCache.GetDef<ContextHelpHintDbDef>("AlwaysDisplayedTacticalHintsDbDef");
+                   ContextHelpHintDbDef alwaysDisplayedTacticalHintsDbDef = DefCache.GetDef<ContextHelpHintDbDef>("AlwaysDisplayedTacticalHintsDbDef");
 
-                ResearchDbDef researchDB = DefCache.GetDef<ResearchDbDef>("pp_ResearchDB");
+                   ResearchDbDef researchDB = DefCache.GetDef<ResearchDbDef>("pp_ResearchDB");
 
-                ResearchDef ancientAutomataResearch = DefCache.GetDef<ResearchDef>("AncientAutomataResearch");
-                ResearchDef pX_LivingCrystalResearch = DefCache.GetDef<ResearchDef>("PX_LivingCrystalResearchDef");
-                ResearchDef pX_ProteanMutaneResearch = DefCache.GetDef<ResearchDef>("PX_ProteanMutaneResearchDef");
-
-
-                AncientSiteProbeItemDef ancientSiteProbeItemDef = DefCache.GetDef<AncientSiteProbeItemDef>("AncientSiteProbeItemDef");
+                   ResearchDef ancientAutomataResearch = DefCache.GetDef<ResearchDef>("AncientAutomataResearch");
+                   ResearchDef pX_LivingCrystalResearch = DefCache.GetDef<ResearchDef>("PX_LivingCrystalResearchDef");
+                   ResearchDef pX_ProteanMutaneResearch = DefCache.GetDef<ResearchDef>("PX_ProteanMutaneResearchDef");
 
 
-                if (TFTVAncients.LOTAReworkActive)
-                {
-                    if (!researchDB.Researches.Contains(ancientAutomataResearch))
-                    {
-                        researchDB.Researches.Add(ancientAutomataResearch);
-                    }
-                    if (!researchDB.Researches.Contains(pX_LivingCrystalResearch))
-                    {
-                        researchDB.Researches.Add(pX_LivingCrystalResearch);
-                    }
-                    if (!researchDB.Researches.Contains(pX_ProteanMutaneResearch))
-                    {
-                        researchDB.Researches.Add(pX_ProteanMutaneResearch);
-                    }
-                    if (!alwaysDisplayedTacticalHintsDbDef.Hints.Contains(hintStory1))
-                    {
-                        alwaysDisplayedTacticalHintsDbDef.Hints.Add(hintStory1);
-                    }
-                    if (!alwaysDisplayedTacticalHintsDbDef.Hints.Contains(hintCyclops))
-                    {
-                        alwaysDisplayedTacticalHintsDbDef.Hints.Add(hintCyclops);
-                    }
-                    if (!alwaysDisplayedTacticalHintsDbDef.Hints.Contains(hintCyclopsDefense))
-                    {
-                        alwaysDisplayedTacticalHintsDbDef.Hints.Add(hintCyclopsDefense);
-                    }
-                    if (!alwaysDisplayedTacticalHintsDbDef.Hints.Contains(hintHoplites))
-                    {
-                        alwaysDisplayedTacticalHintsDbDef.Hints.Add(hintHoplites);
-                    }
-                    if (!alwaysDisplayedTacticalHintsDbDef.Hints.Contains(hintHopliteRepair))
-                    {
-                        alwaysDisplayedTacticalHintsDbDef.Hints.Add(hintHopliteRepair);
-                    }
-                    if (!alwaysDisplayedTacticalHintsDbDef.Hints.Contains(hintHopliteMaxPower))
-                    {
-                        alwaysDisplayedTacticalHintsDbDef.Hints.Add(hintHopliteMaxPower);
-                    }
-                }
-                else
-                {
-                    if (researchDB.Researches.Contains(ancientAutomataResearch))
-                    {
-                        researchDB.Researches.Remove(ancientAutomataResearch);
-                    }
-                    if (researchDB.Researches.Contains(pX_LivingCrystalResearch))
-                    {
-                        researchDB.Researches.Remove(pX_LivingCrystalResearch);
-                    }
-                    if (researchDB.Researches.Contains(pX_ProteanMutaneResearch))
-                    {
-                        researchDB.Researches.Remove(pX_ProteanMutaneResearch);
-                    }
-                    if (alwaysDisplayedTacticalHintsDbDef.Hints.Contains(hintStory1))
-                    {
-                        alwaysDisplayedTacticalHintsDbDef.Hints.Remove(hintStory1);
-                    }
-                    if (alwaysDisplayedTacticalHintsDbDef.Hints.Contains(hintCyclops))
-                    {
-                        alwaysDisplayedTacticalHintsDbDef.Hints.Remove(hintCyclops);
-                    }
-                    if (alwaysDisplayedTacticalHintsDbDef.Hints.Contains(hintCyclopsDefense))
-                    {
-                        alwaysDisplayedTacticalHintsDbDef.Hints.Remove(hintCyclopsDefense);
-                    }
-                    if (alwaysDisplayedTacticalHintsDbDef.Hints.Contains(hintHoplites))
-                    {
-                        alwaysDisplayedTacticalHintsDbDef.Hints.Remove(hintHoplites);
-                    }
-                    if (alwaysDisplayedTacticalHintsDbDef.Hints.Contains(hintHopliteRepair))
-                    {
-                        alwaysDisplayedTacticalHintsDbDef.Hints.Remove(hintHopliteRepair);
-                    }
-                    if (alwaysDisplayedTacticalHintsDbDef.Hints.Contains(hintHopliteMaxPower))
-                    {
-                        alwaysDisplayedTacticalHintsDbDef.Hints.Remove(hintHopliteMaxPower);
-                    }
-                    ancientSiteProbeItemDef.ManufactureTech = 25;
-                    ancientSiteProbeItemDef.ManufactureMaterials = 75;
-                }
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
+                   AncientSiteProbeItemDef ancientSiteProbeItemDef = DefCache.GetDef<AncientSiteProbeItemDef>("AncientSiteProbeItemDef");
 
 
-        }*/
+                   if (TFTVAncients.LOTAReworkActive)
+                   {
+                       if (!researchDB.Researches.Contains(ancientAutomataResearch))
+                       {
+                           researchDB.Researches.Add(ancientAutomataResearch);
+                       }
+                       if (!researchDB.Researches.Contains(pX_LivingCrystalResearch))
+                       {
+                           researchDB.Researches.Add(pX_LivingCrystalResearch);
+                       }
+                       if (!researchDB.Researches.Contains(pX_ProteanMutaneResearch))
+                       {
+                           researchDB.Researches.Add(pX_ProteanMutaneResearch);
+                       }
+                       if (!alwaysDisplayedTacticalHintsDbDef.Hints.Contains(hintStory1))
+                       {
+                           alwaysDisplayedTacticalHintsDbDef.Hints.Add(hintStory1);
+                       }
+                       if (!alwaysDisplayedTacticalHintsDbDef.Hints.Contains(hintCyclops))
+                       {
+                           alwaysDisplayedTacticalHintsDbDef.Hints.Add(hintCyclops);
+                       }
+                       if (!alwaysDisplayedTacticalHintsDbDef.Hints.Contains(hintCyclopsDefense))
+                       {
+                           alwaysDisplayedTacticalHintsDbDef.Hints.Add(hintCyclopsDefense);
+                       }
+                       if (!alwaysDisplayedTacticalHintsDbDef.Hints.Contains(hintHoplites))
+                       {
+                           alwaysDisplayedTacticalHintsDbDef.Hints.Add(hintHoplites);
+                       }
+                       if (!alwaysDisplayedTacticalHintsDbDef.Hints.Contains(hintHopliteRepair))
+                       {
+                           alwaysDisplayedTacticalHintsDbDef.Hints.Add(hintHopliteRepair);
+                       }
+                       if (!alwaysDisplayedTacticalHintsDbDef.Hints.Contains(hintHopliteMaxPower))
+                       {
+                           alwaysDisplayedTacticalHintsDbDef.Hints.Add(hintHopliteMaxPower);
+                       }
+                   }
+                   else
+                   {
+                       if (researchDB.Researches.Contains(ancientAutomataResearch))
+                       {
+                           researchDB.Researches.Remove(ancientAutomataResearch);
+                       }
+                       if (researchDB.Researches.Contains(pX_LivingCrystalResearch))
+                       {
+                           researchDB.Researches.Remove(pX_LivingCrystalResearch);
+                       }
+                       if (researchDB.Researches.Contains(pX_ProteanMutaneResearch))
+                       {
+                           researchDB.Researches.Remove(pX_ProteanMutaneResearch);
+                       }
+                       if (alwaysDisplayedTacticalHintsDbDef.Hints.Contains(hintStory1))
+                       {
+                           alwaysDisplayedTacticalHintsDbDef.Hints.Remove(hintStory1);
+                       }
+                       if (alwaysDisplayedTacticalHintsDbDef.Hints.Contains(hintCyclops))
+                       {
+                           alwaysDisplayedTacticalHintsDbDef.Hints.Remove(hintCyclops);
+                       }
+                       if (alwaysDisplayedTacticalHintsDbDef.Hints.Contains(hintCyclopsDefense))
+                       {
+                           alwaysDisplayedTacticalHintsDbDef.Hints.Remove(hintCyclopsDefense);
+                       }
+                       if (alwaysDisplayedTacticalHintsDbDef.Hints.Contains(hintHoplites))
+                       {
+                           alwaysDisplayedTacticalHintsDbDef.Hints.Remove(hintHoplites);
+                       }
+                       if (alwaysDisplayedTacticalHintsDbDef.Hints.Contains(hintHopliteRepair))
+                       {
+                           alwaysDisplayedTacticalHintsDbDef.Hints.Remove(hintHopliteRepair);
+                       }
+                       if (alwaysDisplayedTacticalHintsDbDef.Hints.Contains(hintHopliteMaxPower))
+                       {
+                           alwaysDisplayedTacticalHintsDbDef.Hints.Remove(hintHopliteMaxPower);
+                       }
+                       ancientSiteProbeItemDef.ManufactureTech = 25;
+                       ancientSiteProbeItemDef.ManufactureMaterials = 75;
+                   }
+               }
+               catch (Exception e)
+               {
+                   TFTVLogger.Error(e);
+               }
+
+
+           }*/
 
 
         internal static void CheckSaveGameEventChoices(GeoLevelController controller)

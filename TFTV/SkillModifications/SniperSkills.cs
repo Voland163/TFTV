@@ -203,7 +203,10 @@ namespace PRMBetterClasses.SkillModifications
             public static void Postfix(OnActorDeathEffectStatus __instance, ref bool __result, DeathReport deathReport)
             {
                 TacticalAbilityDef inspireAbilityDef = DefCache.GetDef<TacticalAbilityDef>("Inspire_AbilityDef");
-                if (__instance.TacticalActorBase.GetAbilityWithDef<TacticalAbility>(inspireAbilityDef) != null)
+                TacticalAbilityDef bloodThirstyAbilityDef = DefCache.GetDef<TacticalAbilityDef>("Bloodthirsty_AbilityDef");
+
+                if (__instance.TacticalActorBase.GetAbilityWithDef<TacticalAbility>(inspireAbilityDef) != null
+                    || __instance.TacticalActorBase.GetAbilityWithDef<TacticalAbility>(bloodThirstyAbilityDef) != null)
                 {
                     __result = __result && deathReport.Actor.TacticalActorBaseDef.WillPointWorth > 0;
                 }

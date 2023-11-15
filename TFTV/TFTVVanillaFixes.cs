@@ -85,7 +85,7 @@ namespace TFTV
 
         /// <summary>
         /// Fix to prevent last item being removed in Marketplace when number of offers > 7 
-        /// Leaving the loggers in for now in case the threshold is not 7
+        /// No try/catch because harmless error on buying item
         /// </summary>
 
         [HarmonyPatch(typeof(UIModuleTheMarketplace), "UpdateList")]
@@ -155,7 +155,7 @@ namespace TFTV
 
                         WeaponDef weaponDef = (WeaponDef)AmmoWeaponDatabase.AmmoToWeaponDictionary[tacticalItemDef][0];
 
-                        float costMultiplier = Math.Max(weaponDef.DamagePayload.AutoFireShotCount, 2);
+                        float costMultiplier = Math.Max(__instance.ChargesMax/weaponDef.DamagePayload.AutoFireShotCount, 2);
                         __result = new ResourcePack(new ResourceUnit[]
                              {
                         new ResourceUnit(ResourceType.Tech, Mathf.Floor(__instance.ManufactureTech / costMultiplier)),

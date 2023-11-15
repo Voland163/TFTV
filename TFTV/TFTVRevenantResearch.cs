@@ -1,9 +1,5 @@
-﻿using Base.Defs;
-using EnviroSamples;
-using PhoenixPoint.Common.Core;
-using PhoenixPoint.Common.Entities;
+﻿using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.GameTags;
-using PhoenixPoint.Common.UI;
 using PhoenixPoint.Geoscape.Entities.Research;
 using PhoenixPoint.Geoscape.Entities.Research.Requirement;
 using PhoenixPoint.Geoscape.Levels;
@@ -13,7 +9,6 @@ using PhoenixPoint.Tactical.Levels;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using UnityTools;
 
 namespace TFTV
 {
@@ -21,7 +16,7 @@ namespace TFTV
     {
 
         private static readonly DefCache DefCache = new DefCache();
-     //   private static readonly DefRepository Repo = TFTVMain.Repo;
+        //   private static readonly DefRepository Repo = TFTVMain.Repo;
 
         public static bool RevenantCaptured = false;
 
@@ -35,7 +30,7 @@ namespace TFTV
         public static int RevenantPoints = 0;
         public static bool ProjectOsiris = false;
         public static Dictionary<int, int[]> ProjectOsirisStats = new Dictionary<int, int[]>();
-      
+
 
 
 
@@ -53,13 +48,13 @@ namespace TFTV
             try
             {
 
-              
+
                 TacticalActor actor = deadSoldier as TacticalActor;
                 int endurance = actor.CharacterStats.Endurance.Value.BaseValueInt;
                 int willpower = actor.CharacterStats.Willpower.Value.BaseValueInt;
                 int speed = actor.CharacterStats.Speed.Value.BaseValueInt;
 
-                ProjectOsirisStats.Add(deadSoldier.GeoUnitId, new int[] {endurance, willpower, speed});
+                ProjectOsirisStats.Add(deadSoldier.GeoUnitId, new int[] { endurance, willpower, speed });
 
             }
             catch (Exception e)
@@ -92,7 +87,7 @@ namespace TFTV
             try
             {
                 string defName = "PX_Revenant_Live_Research";
-                
+
                 string title = "PX_REVENANT_LIVE_RESEARCH_TITLE";
                 string reveal = "";
                 string unlock = "PX_REVENANT_LIVE_RESEARCH_REVEAL";
@@ -102,7 +97,7 @@ namespace TFTV
                 string gUID2 = "B5CC42DE-016F-4151-ACFA-8604C9C4CCCF";
                 int cost = 200;
 
-               
+
 
                 ResearchDef revenantCaptureResearch =
                     TFTVCommonMethods.CreateNewPXResearch(defName, cost, gUID, gUID2, title, reveal, unlock, complete, benefits, null);
@@ -133,7 +128,7 @@ namespace TFTV
             try
             {
                 string defName = "PX_Project_Osiris_Research";
-              
+
 
                 string title = "PX_PROJECT_OSIRIS_TITLE";
                 string reveal = "";
@@ -145,7 +140,7 @@ namespace TFTV
                 int cost = 400;
 
 
-          
+
                 ResearchDef enoughRevenantsKilledResearch =
                     TFTVCommonMethods.CreateNewPXResearch(defName, cost, gUID, gUID2, title, reveal, unlock, complete, benefits, null);
 
@@ -174,7 +169,7 @@ namespace TFTV
         {
             try
             {
-         
+
                 if (RevenantCaptured && controller.EventSystem.GetVariable(RevenantCapturedVariable) == 0)
                 {
 
@@ -209,7 +204,7 @@ namespace TFTV
                 {
                     RevenantCaptured = false;
                     controller.EventSystem.SetVariable(RevenantsDestroyed, controller.EventSystem.GetVariable(RevenantsDestroyed) + RevenantPoints);
-                   
+
                 }
                 else
                 {
@@ -249,11 +244,11 @@ namespace TFTV
                             {
                                 TFTVRevenant.revenantSpawned = true;
                                 TFTVLogger.Always("Revenant was captured, so revenantSpawned is now " + TFTVRevenant.revenantSpawned);
-                                
+
                                 RevenantCaptured = true;
                                 if (pandoranActor.HasGameTag(revenantTier1GameTag))
                                 {
-                                    RevenantPoints = 1; 
+                                    RevenantPoints = 1;
                                 }
                                 else if (pandoranActor.HasGameTag(revenantTier2GameTag))
                                 {
