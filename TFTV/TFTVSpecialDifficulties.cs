@@ -10,8 +10,10 @@ using PhoenixPoint.Geoscape.Core;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.Missions;
 using PhoenixPoint.Geoscape.Entities.Missions.Outcomes;
+using PhoenixPoint.Geoscape.Entities.Research;
 using PhoenixPoint.Geoscape.Events;
 using PhoenixPoint.Geoscape.Levels;
+using PhoenixPoint.Geoscape.Levels.Factions;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.DamageKeywords;
 using PhoenixPoint.Tactical.Entities.Equipments;
@@ -444,46 +446,7 @@ namespace TFTV
 
         }
 
-        //Adjust Research output based on difficulty/VO6
-        /*    [HarmonyPatch(typeof(Research), "GetHourlyResearchProduction")]
-            public static class TFTV_Research_GetHourlyResearchProductionVO6_Patch
-            {
-                public static void Postfix(ref float __result, Research __instance)
-                {
-                    try
-                    {
-                        //TFTVLogger.Always("GetHourlyResearchProduction invoked");
-
-                        GeoLevelController controller = __instance.Faction.GeoLevel;
-
-                        if (TFTVVoidOmens.VoidOmensCheck[6] || CheckGeoscapeSpecialDifficultySettings(controller) != 0)
-                        {
-
-                            float multiplier = 1f;
-
-                            if (TFTVVoidOmens.VoidOmensCheck[6])
-                            {
-                                multiplier *= 1.5f;
-                            }
-                            if (CheckGeoscapeSpecialDifficultySettings(controller) == 1)
-                            {
-                                multiplier *= 2f;
-                            }
-                            if (CheckGeoscapeSpecialDifficultySettings(controller) == 2)
-                            {
-
-                                multiplier *= 0.5f;
-                            }
-                            __result *= multiplier;
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        TFTVLogger.Error(e);
-                    }
-                }
-            }*/
-
+       
 
         //These patches modify resource rewards on special difficulties and for haven defenses when the VO18 is in play
         //Also reduces to 25% Mutagen reward from infested havens on ETERMES
