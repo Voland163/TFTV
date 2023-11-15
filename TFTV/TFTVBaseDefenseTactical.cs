@@ -1904,9 +1904,12 @@ namespace TFTV
                     TFTVLogger.Always($"Found console {console.name}");
 
                     Status status = console?.Status?.GetStatusByName(activeConsoleStatusDef.EffectName);
-                    TFTVLogger.Always($"found status {status.Def.EffectName}");
-                    console.Status.UnapplyStatus(status);
 
+                    if (status != null)
+                    {
+                        TFTVLogger.Always($"found status {status.Def.EffectName}");
+                        console.Status.UnapplyStatus(status);
+                    }
                 }
             }
             catch (Exception e)

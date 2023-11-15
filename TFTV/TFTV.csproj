@@ -237,6 +237,9 @@
     <Compile Include="Vehicles\Buggy\KaosBuggy.cs" />
     <Compile Include="Vehicles\Buggy\MannedGunner.cs" />
     <Compile Include="Vehicles\Buggy\Slaughterhouse.cs" />
+    <Compile Include="Vehicles\Effects\ActorArmourThresholdEffectConditionDef.cs" />
+    <Compile Include="Vehicles\Effects\AddedRotationParticleEffect.cs" />
+    <Compile Include="Vehicles\Effects\AddedRotationParticleEffectDef.cs" />
     <Compile Include="Vehicles\HarmonyPatches\GeoCharacter_Patches.cs" />
     <Compile Include="Vehicles\HarmonyPatches\SwitchStanceAbility_Patches.cs" />
     <Compile Include="Vehicles\HarmonyPatches\TacticalAbility_Patches.cs" />

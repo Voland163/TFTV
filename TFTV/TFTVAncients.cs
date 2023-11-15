@@ -1358,46 +1358,6 @@ namespace TFTV
                 TFTVLogger.Error(e);
             }
         }
-
-
-        //Adapted Lucus solution to avoid Ancient Automata receiving WP penalty on ally death
-        [HarmonyPatch(typeof(TacticalActor), "OnAnotherActorDeath")]
-        public static class TacticalActor_OnAnotherActorDeath_HumanEnemies_Patch
-        {
-            public static void Prefix(TacticalActor __instance, DeathReport death, out int __state)
-            {
-                __state = 0; //Set this to zero so that the method still works for other actors.
-
-                //Postfix checks for relevant GameTags then saves and zeroes the WPWorth of the dying actor before main method is executed.
-
-                GameTagsList<GameTagDef> RelevantTags = new GameTagsList<GameTagDef> { cyclopsTag, hopliteTag };
-                if (__instance.TacticalFaction == death.Actor.TacticalFaction && death.Actor.HasGameTags(RelevantTags, false))
-                {
-                    __state = death.Actor.TacticalActorBaseDef.WillPointWorth;
-                    death.Actor.TacticalActorBaseDef.WillPointWorth = 0;
-                }
-
-            }
-
-            public static void Postfix(TacticalActor __instance, DeathReport death, int __state)
-            {
-
-                //Postfix will remove necessary Willpoints from allies and restore WPWorth's value to the def of the dying actor.
-                if (__instance.TacticalFaction == death.Actor.TacticalFaction)
-                {
-                    foreach (GameTagDef Tag in death.Actor.GameTags)
-                    {
-                        if (Tag == cyclopsTag || Tag == hopliteTag)
-                        {
-                            //Death has no effect on allies
-                            death.Actor.TacticalActorBaseDef.WillPointWorth = __state;
-                        }
-                    }
-                }
-
-
-            }
-        }
     }
 }
 

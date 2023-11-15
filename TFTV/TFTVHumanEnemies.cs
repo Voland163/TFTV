@@ -22,7 +22,6 @@ using System.Linq;
 using UnityEngine;
 using static PhoenixPoint.Tactical.View.ViewModules.UIModuleCharacterStatus;
 using static PhoenixPoint.Tactical.View.ViewModules.UIModuleCharacterStatus.CharacterData;
-using static UnityStandardAssets.Utility.TimedObjectActivator;
 
 namespace TFTV
 {
@@ -149,8 +148,6 @@ namespace TFTV
             }
             throw new InvalidOperationException();
         }
-
-
 
         public static void GenerateHumanEnemyUnit(TacticalFaction enemyHumanFaction, string nameOfLeader, int roll)
         {
@@ -301,7 +298,7 @@ namespace TFTV
 
                 TacticsHint.Add(humanEnemySightedHint);
 
-                
+
             }
             catch (Exception e)
             {
@@ -355,7 +352,7 @@ namespace TFTV
                             if (tacticalActor.HasGameTag(DefCache.GetDef<CustomizationPrimaryColorTagDef>("CustomizationColorTagDef_9")))
                             {
                                 leader = tacticalActor;
-                                TFTVLogger.Always("Found Subject24"); 
+                                TFTVLogger.Always("Found Subject24");
                                 leader.name = TFTVCommonMethods.ConvertKeyToString("KEY_LORE_TITLE_SUBJECT24");
                             }
                             else
@@ -1290,49 +1287,7 @@ namespace TFTV
             throw new InvalidOperationException();
         }
 
-        [HarmonyPatch(typeof(TacticalActor), "OnAnotherActorDeath")]
-        public static class TacticalActor_OnAnotherActorDeath_HumanEnemies_Patch
-        {
-            public static void Prefix(TacticalActor __instance, DeathReport death, out int __state)
-            {
-                //Postfix checks for relevant GameTags then saves and zeroes the WPWorth of the dying actor before main method is executed.
-                __state = 0; //Set this to zero so that the method still works for other actors.
-                GameTagsList<GameTagDef> RelevantTags = new GameTagsList<GameTagDef> { HumanEnemyTier4GameTag, HumanEnemyTier2GameTag, HumanEnemyTier1GameTag };
-                if (__instance.TacticalFaction == death.Actor.TacticalFaction && death.Actor.HasGameTags(RelevantTags, false))
-                {
-                    __state = death.Actor.TacticalActorBaseDef.WillPointWorth;
-                    death.Actor.TacticalActorBaseDef.WillPointWorth = 0;
-                }
-            }
 
-            public static void Postfix(TacticalActor __instance, DeathReport death, int __state)
-            {
-                //Postfix will remove necessary Willpoints from allies and restore WPWorth's value to the def of the dying actor.
-                if (__instance.TacticalFaction == death.Actor.TacticalFaction)
-                {
-                    foreach (GameTagDef Tag in death.Actor.GameTags)
-                    {
-                        if (Tag == HumanEnemyTier4GameTag)
-                        {
-                            //Death has no effect on allies
-                            death.Actor.TacticalActorBaseDef.WillPointWorth = __state;
-                        }
-                        else if (Tag == HumanEnemyTier2GameTag)
-                        {
-                            //Allies lose 3WP
-                            __instance.CharacterStats.WillPoints.Subtract((__state + 1));
-                            death.Actor.TacticalActorBaseDef.WillPointWorth = __state;
-                        }
-                        else if (Tag == HumanEnemyTier1GameTag)
-                        {
-                            //Allies lose 4WP
-                            __instance.CharacterStats.WillPoints.Subtract((__state * 2));
-                            death.Actor.TacticalActorBaseDef.WillPointWorth = __state;
-                        }
-                    }
-                }
-            }
-        }
 
         public static void GiveRankAndNameToHumaoidEnemy(TacticalActorBase actor, TacticalLevelController __instance)
         {
@@ -1403,9 +1358,6 @@ namespace TFTV
                 TFTVLogger.Error(e);
             }
         }
-
-
-
 
         public static void ChampRecoverWPAura(TacticalLevelController controller)
         {
@@ -2088,7 +2040,7 @@ namespace TFTV
             }
         }
 
-        public static void HumanEnemiesBloodRushTactic(DeathReport deathReport) 
+        public static void HumanEnemiesBloodRushTactic(DeathReport deathReport)
         {
             try
             {
@@ -2121,7 +2073,6 @@ namespace TFTV
                 TFTVLogger.Error(e);
             }
         }
-
 
         public static void HumanEnemiesRetributionTacticCheckOnActorDamageDealt(TacticalActor actor, IDamageDealer damageDealer)
         {
@@ -2163,55 +2114,8 @@ namespace TFTV
 
 
         }
-   
 
-       
-
-        public static void TestingAura(TacticalLevelController controller)
-        {
-            try
-            {
-                List<TacticalFaction> enemyHumanFactions = TFTVHumanEnemies.GetHumanEnemyFactions(controller);
-
-                foreach (TacticalFaction faction in enemyHumanFactions)
-                {
-                    foreach (TacticalActorBase tacticalActorBase in faction.Actors)
-                    {
-                        TacticalActor tacticalActor = tacticalActorBase as TacticalActor;
-
-                        if (tacticalActorBase.HasGameTag(DefCache.GetDef<GameTagDef>("HumanEnemyTier_1_GameTagDef")))
-                        {
-                            foreach (TacticalActorBase allyTacticalActorBase in faction.Actors)
-                            {
-                                // TFTVLogger.Always("Ally pos " + allyTacticalActorBase.Pos);
-                                //   TFTVLogger.Always("Actor pos " + tacticalActor.Pos);
-                                // TFTVLogger.Always("ActorBase pos " + tacticalActorBase.Pos);
-                                float magnitude = 24;
-
-                                if ((allyTacticalActorBase.Pos - tacticalActorBase.Pos).magnitude < magnitude
-                                    && allyTacticalActorBase.BaseDef.name == "Soldier_ActorDef" && allyTacticalActorBase.InPlay
-                                    && TacticalFactionVision.CheckVisibleLineBetweenActors(allyTacticalActorBase, allyTacticalActorBase.Pos, tacticalActor, true))
-                                {
-                                    // TFTVLogger.Always("Actor in range and has LoS");
-                                    ItemSlotStatsModifyStatusDef eRStatusEffect = DefCache.GetDef<ItemSlotStatsModifyStatusDef>("E_Status [ElectricReinforcement_AbilityDef]");
-                                    allyTacticalActorBase.Status.ApplyStatus(eRStatusEffect);
-                                }
-
-                            }
-                        }
-
-                    }
-                }
-
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-        }
-
-
-        public static void ImplementStartingVolleyHumanEnemiesTactic(TacticalFaction tacticalFaction) 
+        public static void ImplementStartingVolleyHumanEnemiesTactic(TacticalFaction tacticalFaction)
         {
             try
             {
@@ -2230,6 +2134,6 @@ namespace TFTV
 
         }
 
-     
+
     }
 }

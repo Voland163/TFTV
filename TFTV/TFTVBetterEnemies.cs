@@ -237,7 +237,7 @@ namespace TFTV
 
                 int wormSpeed = 9;
                 int wormShredDamage = 3;
-                int aWormAcidDamage = 30;
+                int aWormAcidDamage = 20; //nerfed on 13/11
                 int aWormBlastDamage = 10;
                 int fWormFireDamage = 40;
                 int pWormBlastDamage = 25;

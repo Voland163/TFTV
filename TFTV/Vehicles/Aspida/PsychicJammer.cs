@@ -63,7 +63,14 @@ namespace TFTVVehicleRework.Aspida
             };
 
             //"Acheron_RestoreArmorCast_ParticleEventDef"
-            Aspida_PsychicJammer.EventOnActivate = (TacticalEventDef)Repo.GetDef("6253e5de-a558-73e4-f8a6-970f49af1dc1");
+            // Aspida_PsychicJammer.EventOnActivate = (TacticalEventDef)Repo.GetDef("6253e5de-a558-73e4-f8a6-970f49af1dc1");
+
+            //"Priest_PsychicScream_ParticleEventDef"
+            TacticalEventDef PsyScream = (TacticalEventDef)Repo.GetDef("b09f4229-0538-2364-b9ae-e915011f2e8c");
+            TacticalEventDef AspidaScream = Repo.CreateDef<TacticalEventDef>("7297fc24-035a-40e3-85fd-bf70a3834cd6", PsyScream);
+            AspidaScream.EventTransformName = "Root";
+            Aspida_PsychicJammer.EventOnActivate = AspidaScream;
+            
             
             Aspida_PsychicJammer.ViewElementDef = VED(NeuralDisruption.ViewElementDef);
             return Aspida_PsychicJammer;

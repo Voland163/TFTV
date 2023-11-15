@@ -310,6 +310,14 @@ namespace TFTV
             private static string _titleMoreMistVO = "MORE_MIST_VO";//"PLAY WITH MORE MIST VOID OMEN";
             private static string _descriptionMoreMistVO = "MORE_MIST_VO_DESCRIPTION";//"If you are playing on a Low-end system and experience lag with this Void Omen, you can turn it off here. This will prevent it from rolling.";
 
+
+            private static ModSettingController _limitedDeploymentVOModSettings = null;
+            private static ArrowPickerController _limitedDeploymentVO = null;
+
+            private static string _titlelimitedDeploymentVO = "LIMITED_DEPLOYMENT_VO";//"PLAY WITH MORE MIST VOID OMEN";
+            private static string _descriptionlimitedDeploymentVO = "LIMITED_DEPLOYMENT_VO_DESCRIPTION";
+
+
             private static ModSettingController _skipMoviesModSettings = null;
             private static ArrowPickerController _skipMovies = null;
 
@@ -630,6 +638,7 @@ namespace TFTV
                     _staminaRecuperationModSettings.gameObject.SetActive(show);
                     _learnFirstSkillModSettings.gameObject.SetActive(show);
                     _moreMistVOModSettings.gameObject.SetActive(show);
+                    _limitedDeploymentVOModSettings.gameObject.SetActive(show);
                     //    _staminaDrainModSettings.gameObject.SetActive(show);
 
                     _skipMovies.gameObject.SetActive(show);
@@ -637,6 +646,7 @@ namespace TFTV
 
                     _learnFirstSkill.gameObject.SetActive(show);
                     _moreMistVO.gameObject.SetActive(show);
+                    _limitedDeploymentVO.gameObject.SetActive(show);
                     _noDropReinforcements.gameObject.SetActive(show);
                     _noDropReinforcementsModSettings.gameObject.SetActive(show);
                     _flinching.gameObject.SetActive(show);
@@ -851,6 +861,7 @@ namespace TFTV
                     _learnFirstSkillModSettings = UnityEngine.Object.Instantiate(ModSettingControllerHook, rectTransform);
                     _moreMistVOModSettings = UnityEngine.Object.Instantiate(ModSettingControllerHook, rectTransform);
                     _tradingModSettings = UnityEngine.Object.Instantiate(ModSettingControllerHook, rectTransform);
+                    _limitedDeploymentVOModSettings = UnityEngine.Object.Instantiate(ModSettingControllerHook, rectTransform);
                     _limitedRaidingModSettings = UnityEngine.Object.Instantiate(ModSettingControllerHook, rectTransform);
 
 
@@ -876,6 +887,7 @@ namespace TFTV
                     _noSecondChances = _noSecondChancesModSettings.ListField;
                     _learnFirstSkill = _learnFirstSkillModSettings.ListField;
                     _moreMistVO = _moreMistVOModSettings.ListField;
+                    _limitedDeploymentVO = _limitedDeploymentVOModSettings.ListField;
                     //   _reverseEngineering = _reverseEngineeringModSettings.ListField;
                     _skipMovies = _skipMoviesModSettings.ListField;
                     _resourcesEvents = _resourcesEventsModSettings.ListField;
@@ -914,6 +926,8 @@ namespace TFTV
                     InstantiateArrowPickerController(_noSecondChancesModSettings, _noSecondChances, _titleNoSecondChances, _descriptionNoSecondChances, _optionsBool, ConvertBoolToInt(TFTVNewGameOptions.NoSecondChances), OnNoSecondChancesValueChangedCallback, 0.5f); 
                     InstantiateArrowPickerController(_learnFirstSkillModSettings, _learnFirstSkill, _titleLearnFirstSkill, _descriptionLearnFirstSkill, _optionsBool, ConvertBoolToInt(config.LearnFirstPersonalSkill), OnLearnFirstSchoolValueChangedCallback, 0.5f);
                     InstantiateArrowPickerController(_moreMistVOModSettings, _moreMistVO, _titleMoreMistVO, _descriptionMoreMistVO, _optionsBool, ConvertBoolToInt(config.MoreMistVO), OnMoreMistValueChangedCallback, 0.5f);
+                    InstantiateArrowPickerController(_limitedDeploymentVOModSettings, _limitedDeploymentVO, _titlelimitedDeploymentVO, _descriptionlimitedDeploymentVO, _optionsBool, ConvertBoolToInt(config.LimitedDeploymentVO), OnLimitedDeploymentValueChangedCallback, 0.5f);
+
                     //     InstantiateArrowPickerController(_reverseEngineeringModSettings, _reverseEngineering, _titleReverseEngineering, _descriptionReverseEngineering, _optionsBool, ConvertBoolToInt(config.ActivateReverseEngineeringResearch), OnReverseEngineeringValueChangedCallback, 0.5f);
 
                     InstantiateArrowPickerController(_disableTacSavesModSettings, _disableTacSaves, _titleDisableTacSaves, _descriptionDisableTacSaves, _optionsBool, ConvertBoolToInt(config.disableSavingOnTactical), OnDisableTacSavesValueChangedCallback, 0.5f);
@@ -1198,6 +1212,23 @@ namespace TFTV
                     TFTVLogger.Error(e);
                 }
             }
+
+            private static void OnLimitedDeploymentValueChangedCallback(int newValue)
+            {
+                try
+                {
+                    bool option = newValue == 0;
+                    string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
+                    _limitedDeploymentVO.CurrentItemText.text = options[newValue];
+                    config.MoreMistVO = option;
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+
+
 
             private static void OnTradingValueChangedCallback(int newValue)
             {
