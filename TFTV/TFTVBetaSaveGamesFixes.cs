@@ -140,10 +140,14 @@ namespace TFTV
                 List<GeoItem> destroyList = new List<GeoItem>();
 
                 ItemDef slugArmsDef = DefCache.GetDef<ItemDef>("NJ_Technician_MechArms_ALN_WeaponDef");
+                ItemDef slugHelmet = DefCache.GetDef<ItemDef>("NJ_Technician_Helmet_ALN_BodyPartDef");
+                ItemDef slugLegs = DefCache.GetDef<ItemDef>("NJ_Technician_Legs_ALN_ItemDef");
+                ItemDef slugTorso = DefCache.GetDef<ItemDef>("NJ_Technician_Torso_ALN_BodyPartDef");
+
 
                 foreach (ItemDef itemDef in controller.PhoenixFaction.ItemStorage.Items.Keys)
                 {
-                    if (itemDef == slugArmsDef)
+                    if (itemDef == slugArmsDef || itemDef == slugHelmet || itemDef == slugTorso || itemDef == slugLegs)
                     {
                         destroyList.Add(controller.PhoenixFaction.ItemStorage.Items[slugArmsDef]);
                         TFTVLogger.Always($"found bad slug arms");
