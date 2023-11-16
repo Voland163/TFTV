@@ -142,6 +142,7 @@ namespace TFTVVehicleRework.Armadillo
                 ShootAbilityDef LaunchGrenade = (ShootAbilityDef)Repo.GetDef("81fbb5db-1b12-b8f4-998e-6591f0771a2d");
                 Shoot = Repo.CreateDef<ShootAbilityDef>("eb9d9c3d-77cd-4723-84ed-0284140f5eb3", LaunchGrenade);
                 Shoot.name = "Obliterate_ShootAbilityDef";
+                Shoot.CanShootOnEnemyBodyParts = true;
                 Shoot.TargetingDataDef = LaunchGrenade.TargetingDataDef;
                 Shoot.ViewElementDef = (TacticalAbilityViewElementDef)Repo.GetDef("50c4bdf1-effe-0553-f2c4-d7a32d9d6a36"); //"E_View [Weapon_ShootAbilityDef]"
                 Shoot.SceneViewElementDef = LaunchGrenade.SceneViewElementDef;

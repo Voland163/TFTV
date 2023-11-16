@@ -4158,9 +4158,9 @@ namespace TFTV
                 GameTagDef nj = DefCache.GetDef<GameTagDef>("NewJerico_FactionTagDef");
 
                 List<ItemDef> synArmors = new List<ItemDef>() {
-                DefCache.GetDef<ItemDef>("SY_Infiltrator_Bonus_Helmet_BodyPartDef"),
-                DefCache.GetDef<ItemDef>("SY_Infiltrator_Bonus_Legs_ItemDef"),
-                DefCache.GetDef<ItemDef>("SY_Infiltrator_Bonus_Torso_BodyPartDef"),
+            //    DefCache.GetDef<ItemDef>("SY_Infiltrator_Bonus_Helmet_BodyPartDef"),
+            //    DefCache.GetDef<ItemDef>("SY_Infiltrator_Bonus_Legs_ItemDef"),
+            //    DefCache.GetDef<ItemDef>("SY_Infiltrator_Bonus_Torso_BodyPartDef"),
                 DefCache.GetDef<ItemDef>("SY_MistRepeller_Attachment_ItemDef"),
                 DefCache.GetDef<ItemDef>("SY_MotionDetector_Attachment_ItemDef"),
                 DefCache.GetDef<ItemDef>("SY_MultiVisualSensor_Attachment_ItemDef"),
@@ -4177,9 +4177,9 @@ namespace TFTV
                 DefCache.GetDef<ItemDef>("SY_Infiltrator_Helmet_BodyPartDef"),
                 DefCache.GetDef<ItemDef>("SY_Infiltrator_Legs_ItemDef"),
                 DefCache.GetDef<ItemDef>("SY_Infiltrator_Torso_BodyPartDef"),
-                DefCache.GetDef<ItemDef>("SY_Infiltrator_Venom_Helmet_BodyPartDef"),
-                DefCache.GetDef<ItemDef>("SY_Infiltrator_Venom_Legs_ItemDef"),
-                DefCache.GetDef<ItemDef>("SY_Infiltrator_Venom_Torso_BodyPartDef"),
+            //    DefCache.GetDef<ItemDef>("SY_Infiltrator_Venom_Helmet_BodyPartDef"),
+            //    DefCache.GetDef<ItemDef>("SY_Infiltrator_Venom_Legs_ItemDef"),
+            //    DefCache.GetDef<ItemDef>("SY_Infiltrator_Venom_Torso_BodyPartDef"),
                 DefCache.GetDef<ItemDef>("SY_Sniper_Helmet_BodyPartDef"),
                 DefCache.GetDef<ItemDef>("SY_Sniper_Legs_ItemDef"),
                 DefCache.GetDef<ItemDef>("SY_Sniper_Torso_BodyPartDef"),
@@ -4216,8 +4216,8 @@ namespace TFTV
                 DefCache.GetDef<ItemDef>("AN_Berserker_Torso_BodyPartDef"),
                 DefCache.GetDef<ItemDef>("AN_Priest_Legs_ItemDef"),
                 DefCache.GetDef<ItemDef>("AN_Priest_Torso_BodyPartDef"),
-                DefCache.GetDef<ItemDef>("AN_Priest_Legs_AZ_ItemDef"),
-                DefCache.GetDef<ItemDef>("AN_Priest_Torso_AZ_BodyPartDef"),
+           //     DefCache.GetDef<ItemDef>("AN_Priest_Legs_AZ_ItemDef"),
+           //     DefCache.GetDef<ItemDef>("AN_Priest_Torso_AZ_BodyPartDef"),
 
                 };
 
