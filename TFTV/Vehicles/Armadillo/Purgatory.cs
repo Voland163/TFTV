@@ -46,9 +46,25 @@ namespace TFTVVehicleRework.Armadillo
             VanillaPurg.Abilities = new AbilityDef[]
             {
                 LaunchGrenade,
+                DefaultAmmoAbility(),
                 LoadIncendiaryAbility(),
                 LoadConcussionAbility(),
             };
+        }
+
+        private static ApplyStatusAbilityDef DefaultAmmoAbility()
+        {
+            ApplyStatusAbilityDef DefaultAmmo = (ApplyStatusAbilityDef)Repo.GetDef("b4ea1c6f-0107-422c-a3f7-8c60ab4609ab");
+            if (DefaultAmmo == null)
+            {
+                ApplyStatusAbilityDef FastUse = (ApplyStatusAbilityDef)Repo.GetDef("3f8b32f5-6084-f544-aba0-c98af7db93c3"); //"FastUse_AbilityDef"
+                DefaultAmmo = Repo.CreateDef<ApplyStatusAbilityDef>("b4ea1c6f-0107-422c-a3f7-8c60ab4609ab", FastUse);
+                DefaultAmmo.name = "DefaultIncendiaryAmmo_AbilityDef";
+                DefaultAmmo.ViewElementDef = null;
+                DefaultAmmo.AnimType = -1;
+                DefaultAmmo.StatusDef = IncendiaryAmmoStatus();
+            }
+            return DefaultAmmo;
         }
 
         private static ApplyEffectAbilityDef LoadConcussionAbility()
