@@ -127,7 +127,7 @@ namespace TFTV
 
                 GeoPhoenixFacility powerGenerator = geoPhoenixFacilities.FirstOrDefault(f => f.GetComponent<PowerFacilityComponent>() != null);
 
-                if (powerGenerator.HealthPercentage == 0)
+                if (powerGenerator!=null && powerGenerator.HealthPercentage == 0)
                 {
                     FieldInfo fieldInfo = typeof(GeoPhoenixFacility).GetField("_health", BindingFlags.NonPublic | BindingFlags.Instance);
                     if (fieldInfo != null)
@@ -135,9 +135,6 @@ namespace TFTV
                         fieldInfo.SetValue(powerGenerator, 50);
                         TFTVLogger.Always($"{powerGenerator.HealthPercentage}");
                     }
-
-
-
                 }
 
 

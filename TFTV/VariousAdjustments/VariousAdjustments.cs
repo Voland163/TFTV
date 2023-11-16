@@ -7,6 +7,7 @@ using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.Items;
+using PhoenixPoint.Common.Levels.Missions;
 using PhoenixPoint.Common.UI;
 using PhoenixPoint.Geoscape.Entities.Research;
 using PhoenixPoint.Geoscape.Entities.Research.Requirement;
@@ -86,7 +87,10 @@ namespace PRMBetterClasses.VariousAdjustments
 
         private static void Change_AccessLift()
         {
-            DefCache.GetDef<PhoenixFacilityDef>("AccessLift_PhoenixFacilityDef").CannotDemolish = true;
+            PhoenixFacilityDef accessLifts = DefCache.GetDef<PhoenixFacilityDef>("AccessLift_PhoenixFacilityDef");
+
+            accessLifts.CannotDemolish = true;
+            accessLifts.FacilityLimitPerBase = 1;
         }
 
         private static void Change_BashWeaponDamage()

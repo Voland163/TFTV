@@ -2,11 +2,8 @@ using Base.Core;
 using Base.UI.MessageBox;
 using HarmonyLib;
 using PhoenixPoint.Home.View.ViewControllers;
-using PhoenixPoint.Home.View.ViewModules;
 using PhoenixPoint.Modding;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace TFTV
 {
@@ -20,50 +17,17 @@ namespace TFTV
     public class TFTVConfig : ModConfig
     {
 
-    /*    public readonly Dictionary<string, object> Fields = new Dictionary<string, object>();
+        /*    public readonly Dictionary<string, object> Fields = new Dictionary<string, object>();
 
-        public override List<ModConfigField> GetConfigFields()
-        {
-            return Fields.Select(f => new ModConfigField(f.Key, f.Value.GetType())
+            public override List<ModConfigField> GetConfigFields()
             {
-                GetValue = () => f.Value,
-                SetValue = (o) => Fields[f.Key] = o,
-                GetDescription = () => "<<custom description>>"
-            }).ToList();
-        }*/
-
-        
-        
-
-
-        /*   [HarmonyPatch(typeof(UIModuleModManager), "OnModEnabledChanged")]
-           public static class UIModuleModManager_OnModEnabledChanged_Patch
-           {
-               private static void Postfix(UIModuleModManager __instance, ModItemController controller, bool enabled)
-               {
-                   try
-                   {
-                       TFTVLogger.Always($"{controller.NameLabel.text} is enabled {enabled}");
-
-
-                       if (controller.NameLabel.text == "TFTV" && enabled) 
-                       {
-                           TFTVLogger.Always($"TFTV is enabled!");
-                           string warning = $"Terror from the Void is now enabled! PLEASE QUIT TO DESKTOP BEFORE STARTING OR LOADING A GAME";
-
-                           GameUtl.GetMessageBox().ShowSimplePrompt(warning, MessageBoxIcon.Warning, MessageBoxButtons.OK, null);
-                       } 
-                   }
-                   catch (Exception e)
-                   {
-                       TFTVLogger.Error(e);
-                       throw;
-                   }
-               }
-           }*/
-
-
-
+                return Fields.Select(f => new ModConfigField(f.Key, f.Value.GetType())
+                {
+                    GetValue = () => f.Value,
+                    SetValue = (o) => Fields[f.Key] = o,
+                    GetDescription = () => "<<custom description>>"
+                }).ToList();
+            }*/
 
         [HarmonyPatch(typeof(ModSettingController), "ApplyModification")]
         public static class ModSettingController_ApplyModification_Patch
@@ -80,29 +44,14 @@ namespace TFTV
                         string warning = $"Previous setting for {__instance.Label.text} has already been implemetend on starting or a loading a game! PLEASE QUIT TO DESKTOP BEFORE STARTING OR LOADING A GAME";
 
                         GameUtl.GetMessageBox().ShowSimplePrompt(warning, MessageBoxIcon.Warning, MessageBoxButtons.OK, null);
-
                     }
-
 
                     if (__instance.Label.text == "DISABLE SAVING ON TACTICAL")
                     {
                         string warning = $"Saving and loading on Tactical can result in odd behavior and bugs (Vanilla issues). It is recommended to save only on Geoscape (and use several saves, in case one of them gets corrupted). And, you know what... losing soldiers in TFTV is fun :)";
 
                         GameUtl.GetMessageBox().ShowSimplePrompt(warning, MessageBoxIcon.Warning, MessageBoxButtons.OK, null);
-
                     }
-
-
-
-                    /*   if (__instance.Label.text== "MANUALLY OVERRIDE SETTINGS CHOSEN ON GAME START")
-                       {
-                           string warning = $"";
-
-                           GameUtl.GetMessageBox().ShowSimplePrompt(warning, MessageBoxIcon.Warning, MessageBoxButtons.OK, null);
-
-                       }*/
-
-
                 }
                 catch (Exception e)
                 {
@@ -144,8 +93,6 @@ namespace TFTV
                         __instance.gameObject.SetActive(false);
 
                     }
-
-
                 }
                 catch (Exception e)
                 {
@@ -155,12 +102,7 @@ namespace TFTV
             }
         }
 
-      
 
-        //Default settings
-        /*   [ConfigField(text: "MANUALLY OVERRIDE SETTINGS CHOSEN ON GAME START",
-             description: "You can customize any and all settings when you start a new game, on the new game screen. You can override most of these settings here (except those that only concern game start). ")]
-           public bool overrideStartSettings = false;*/
 
         [ConfigField(text: "SKIP MOVIES",
             description: "Choose whether to skip Logos on game launch, Intro and Landing cinematics. Adapted from Mad's Assorted Adjustments.")]

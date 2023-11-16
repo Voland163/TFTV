@@ -77,7 +77,6 @@ namespace TFTV
         }
 
 
-
         public static void SlugHealTraumaEffect(TacticalAbility tacticalAbility, TacticalActor tacticalActor)
         {
             try
@@ -882,6 +881,8 @@ namespace TFTV
                     slugMechArms.Tags.Add(Shared.SharedGameTags.BionicalTag);
 
                     WeaponDef slugArmsWeapon = slugMechArms as WeaponDef;
+
+                    slugArmsWeapon.BehaviorOnDisable = EDisableBehavior.Disable;
 
                     slugMechArms.CompatibleAmmunition = new TacticalItemDef[] { };
                     slugMechArms.ChargesMax = -1;

@@ -281,17 +281,17 @@ namespace TFTV
                         //           if (!DontUseGooNavigationPatch)
                         //         {
                         TacStatsModifyStatusDef slowedStatus = DefCache.GetDef<TacStatsModifyStatusDef>("Slowed_StatusDef");
-                        GooDamageMultiplierAbilityDef gooImmunity = DefCache.GetDef<GooDamageMultiplierAbilityDef>("GooImmunity_AbilityDef");
+                     //   GooDamageMultiplierAbilityDef gooImmunity = DefCache.GetDef<GooDamageMultiplierAbilityDef>("GooImmunity_AbilityDef");
 
                         TacticalVoxel voxel = ____actor.TacticalLevel.VoxelMatrix.GetVoxel(dstPos);
 
                         //      TacStatsModifyStatus status = ____actor.Status.GetStatus<TacStatsModifyStatus>(slowedStatus);
 
-
+                        ;
 
                         float actorRadius = ____actor.NavigationComponent.AgentNavSettings.AgentRadius;
 
-                        if (voxel != null && voxel.GetVoxelType() == TacticalVoxelType.Goo && !____actor.HasStatus(slowedStatus) && actorRadius <= TacticalMap.HalfTileSize && ____actor.GetAbilityWithDef<GooDamageMultiplierAbility>(gooImmunity) == null)
+                        if (voxel != null && voxel.GetVoxelType() == TacticalVoxelType.Goo && !____actor.HasStatus(slowedStatus) && actorRadius <= TacticalMap.HalfTileSize && ____actor.GetAbility<GooDamageMultiplierAbility>() == null)
                         {
                             __result = 2f;
                         }
