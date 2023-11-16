@@ -1144,7 +1144,8 @@ namespace TFTV
 
                     _kGWeaponsAndAmmo.Add(weaponMarketPlaceOption, newMarketplaceItem);
 
-                   
+                    InventoryComponentDef neutralCrateInventoryComponent = DefCache.GetDef<InventoryComponentDef>("Crate_NE_InventoryComponentDef");
+                    neutralCrateInventoryComponent.ItemDefs = neutralCrateInventoryComponent.ItemDefs.AddToArray(newAmmo);
                     
                 }
                 catch (Exception e)
@@ -2362,7 +2363,7 @@ namespace TFTV
 
                         case 1:
 
-                            marketplaceUI.transform.GetComponentsInChildren<Image>().FirstOrDefault(c => c.name.Equals("Picture")).sprite = Helper.CreateSpriteFromImageFile("Encounter_4_Kaos_Buggy_uinomipmaps.jpg");
+                            marketplaceUI.transform.GetComponentsInChildren<Image>().FirstOrDefault(c => c.name.Equals("Picture")).sprite = Helper.CreateSpriteFromImageFile("loading_screen26.jpg");
                             break;
 
                         case 2:
