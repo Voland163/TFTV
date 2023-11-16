@@ -523,33 +523,7 @@ namespace TFTV
 
 
 
-        [HarmonyPatch(typeof(GeoPhoenixBaseLayout), "ModifyMissionData")]
-        public static class TFTV_GeoPhoenixBaseLayout_ModifyMissionData_patch
-        {
-
-
-            public static void Prefix(GeoPhoenixBaseLayout __instance, GeoMission mission, TacMissionData missionData)
-            {
-                try
-                {
-
-                    TFTVLogger.Always("ModifyMissionData");
-                    if (!CheckIfBaseLayoutOK(__instance))
-                    {
-                        TFTVLogger.Always("Bad layout!");
-                        FixBadLayout(__instance);
-
-
-                    }
-
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                    throw;
-                }
-            }
-        }
+      
 
 
 
@@ -658,87 +632,8 @@ namespace TFTV
             }
         }
 
+
         public static bool TutorialPhoenixBase = false;
-
-        private static bool CheckIfBaseLayoutOK(GeoPhoenixBaseLayout layout)
-        {
-            try
-            {
-                List<GeoPhoenixFacility> geoPhoenixFacilities = layout.Facilities.ToList();
-                GeoPhoenixFacility hangar = layout.BasicFacilities.FirstOrDefault(bf => bf.FacilityTiles.Count > 1);
-
-                GeoPhoenixFacility powerGenerator = geoPhoenixFacilities.FirstOrDefault(f=>f.GetComponent<PowerFacilityComponent>()!=null);
-
-                if(powerGenerator.HealthPercentage == 0) 
-                {
-                    FieldInfo fieldInfo = typeof(GeoPhoenixFacility).GetField("_health", BindingFlags.NonPublic | BindingFlags.Instance);
-                    if (fieldInfo != null)
-                    {
-                        fieldInfo.SetValue(powerGenerator, 50);
-                        TFTVLogger.Always($"{powerGenerator.HealthPercentage}");
-                    }
-
-                    
-   
-                }
-
-                foreach (GeoPhoenixFacility geoPhoenixFacility in geoPhoenixFacilities)
-                {
-                    TFTVLogger.Always($"{geoPhoenixFacility.Def.name} at {geoPhoenixFacility.GridPosition}");
-
-                }
-
-                if (hangar.GridPosition.y == 0) 
-                {
-                    TutorialPhoenixBase = true;
-
-                    return true;        
-                }
-
-
-                if (layout.GetFacilityAtPosition(hangar.GridPosition - new Vector2Int(0, 1)) != null || layout.GetFacilityAtPosition(hangar.GridPosition - new Vector2Int(-1, 1)) != null)
-                {
-                    return true;
-
-                }
-                else
-                {
-
-                    TFTVLogger.Always($"there are no facilities at grid {hangar.GridPosition - new Vector2Int(0, 1)} or {hangar.GridPosition - new Vector2Int(-1, 1)}");
-                    return false;
-
-                }
-
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-                throw;
-            }
-        }
-
-        private static void FixBadLayout(GeoPhoenixBaseLayout layout)
-        {
-            try
-            {
-                PhoenixFacilityDef fakeFacility = DefCache.GetDef<PhoenixFacilityDef>("FakeFacility");
-
-                List<GeoPhoenixFacility> geoPhoenixFacilities = layout.Facilities.ToList();
-                GeoPhoenixFacility hangar = layout.BasicFacilities.FirstOrDefault(bf => bf.FacilityTiles.Count > 1);
-
-                layout.PlaceFacility(fakeFacility, hangar.GridPosition - new Vector2Int(0, 1), false);
-                layout.PlaceFacility(fakeFacility, hangar.GridPosition - new Vector2Int(-1, 1), false);
-
-
-
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-                throw;
-            }
-        }
-
         //Method to set situation at start of base defense; currently only for alien assault
         public static void StartingSitrep(TacticalLevelController controller)
         {

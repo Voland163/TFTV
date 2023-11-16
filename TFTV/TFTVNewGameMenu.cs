@@ -1687,7 +1687,7 @@ namespace TFTV
             {
                 try
                 {
-
+                    TFTVStarts.RevertIntroToNormalStart();
                     TFTVLogger.Always($"selected option: {GameUtl.CurrentLevel().GetComponent<HomeScreenView>().HomeScreenModules.GameSettings?.MainOptions?.Selected?.First()?.OptionIndex}");
                     EnterStateRun = false;
 

@@ -218,10 +218,7 @@ namespace TFTV
                     {
                         TFTVStarts.ModifyIntroForSpecialStart(__instance.GeoLevel.SynedrionFaction, site);
                     }
-                    else
-                    {
-                        TFTVStarts.RevertIntroToNormalStart();
-                    }
+                  
 
                     List<ItemUnit> startingStorage = currentDifficultyLevel.StartingStorage.ToList();
 

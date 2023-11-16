@@ -4,6 +4,7 @@ using Base.Core;
 using Base.Defs;
 using Base.Entities.Abilities;
 using Base.UI;
+using com.ootii.Collections;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities;
@@ -20,6 +21,7 @@ using PhoenixPoint.Geoscape.Entities.Abilities;
 using PhoenixPoint.Geoscape.Entities.Research;
 using PhoenixPoint.Geoscape.Events;
 using PhoenixPoint.Geoscape.Levels;
+using PhoenixPoint.Geoscape.Levels.Factions;
 using PhoenixPoint.Geoscape.View.ViewControllers.SiteEncounters;
 using PhoenixPoint.Geoscape.View.ViewModules;
 using PhoenixPoint.Geoscape.View.ViewStates;
@@ -102,23 +104,6 @@ namespace TFTV
             }
 
         }
-
-        //Seems like not necessary
-       /* public static void AdjustMarketPlaceAbilityDef() 
-        {
-            try
-            {
-                GeoscapeAbilityViewElementDef marketPlaceViewElement = DefCache.GetDef<GeoscapeAbilityViewElementDef>("E_ViewElement [MarketplaceAbilityDef]");
-
-                marketPlaceViewElement.ContextMenuVisibility.TargetDisabledStateFilters = new List<PhoenixPoint.Geoscape.Entities.Abilities.GeoAbilityTargetDisabledState>()
-                {};
-
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-        }*/
 
         internal class TFTVMercenaries
         {
@@ -344,7 +329,7 @@ namespace TFTV
                         else if (geoUnitDescriptor.ClassTag == infiltratorTag)
                         {
                             geoUnitDescriptor.Progression.PersonalAbilities[1] = DefCache.GetDef<ApplyStatusAbilityDef>("BC_Takedown_AbilityDef");
-                            geoUnitDescriptor.Progression.PersonalAbilities[2] = DefCache.GetDef<PassiveModifierAbilityDef>("BC_Biochemist_AbilityDef");
+                            geoUnitDescriptor.Progression.PersonalAbilities[2] = DefCache.GetDef<ApplyStatusAbilityDef>("BC_Biochemist_AbilityDef");
                             geoUnitDescriptor.Progression.PersonalAbilities[6] = DefCache.GetDef<ApplyStatusAbilityDef>("Saboteur_AbilityDef");
                          
                             TFTVLogger.Always($"{geoUnitDescriptor.ClassTag}");
@@ -384,13 +369,10 @@ namespace TFTV
                 }
             }
 
-
             private static void AdjustmentsToMercernariesOnHire(GeoCharacter character, GeoUnitDescriptor geoUnitDescriptor)
             {
                 try
                 {
-
-
                     if (geoUnitDescriptor.GetGameTags().Contains(MercenaryTag))
                     {
                         AdjustMercenaryProficiencyPerks(character, geoUnitDescriptor);
@@ -412,7 +394,6 @@ namespace TFTV
 
 
             }
-
 
             private static void AdjustMercenaryProficiencyPerks(GeoCharacter character, GeoUnitDescriptor geoUnitDescriptor)
             {
@@ -452,31 +433,37 @@ namespace TFTV
                 }
             }
 
-
             public static void GiveAmmoToMercenaryOnCreation(GeoCharacter character)
             {
 
                 try
                 {
-                    ItemDef weapon = character.TemplateDef.Data.EquipmentItems[0];
-                    ItemDef ammo = character.TemplateDef.Data.EquipmentItems[0].CompatibleAmmunition[0];
-
-                    List<GeoItem> inventoryList = new List<GeoItem>();
-
-                    if (character.ClassTag.Equals(infiltratorTag))
+                    if (character.TemplateDef.Data.EquipmentItems.Count() > 0)
                     {
-                        inventoryList = new List<GeoItem>() {
-                                new GeoItem(new ItemUnit { ItemDef = ammo, Quantity = 1 }),
-                             new GeoItem(new ItemUnit { ItemDef = ammo, Quantity = 1 })};
-                    }
 
-                    List<GeoItem> equipmentList = new List<GeoItem>() {
-                            new GeoItem(new ItemUnit { ItemDef = weapon, Quantity = 1 }),
+                        ItemDef weapon = character.TemplateDef.Data.EquipmentItems[0];
+                        ItemDef ammo = character.TemplateDef.Data.EquipmentItems[0].CompatibleAmmunition[0];
+
+                        List<GeoItem> inventoryList = new List<GeoItem>();
+
+                        if (character.ClassTag.Equals(infiltratorTag))
+                        {
+                            inventoryList = new List<GeoItem>()
+                        {
+                             new GeoItem(new ItemUnit { ItemDef = ammo, Quantity = 1 }),
+                             new GeoItem(new ItemUnit { ItemDef = ammo, Quantity = 1 })
+                        };
+                        }
+
+                        List<GeoItem> equipmentList = new List<GeoItem>()
+                    {
+                            new GeoItem(new ItemUnit { ItemDef = weapon, Quantity = 1}),
                             new GeoItem(new ItemUnit { ItemDef = ammo, Quantity = 1 }),
-                            new GeoItem(new ItemUnit { ItemDef = ammo, Quantity = 1 })};
+                            new GeoItem(new ItemUnit { ItemDef = ammo, Quantity = 1 })
+                    };
 
-                    character.SetItems(null, equipmentList, inventoryList, true);
-
+                        character.SetItems(null, equipmentList, inventoryList, true);
+                    }
                 }
                 catch (Exception e)
                 {
@@ -529,10 +516,6 @@ namespace TFTV
                     AdjustMercenaryArmorsAndWeapons();
                     ChangeSlugArms();
                     CloneTechnicianSpec();
-
-
-                    // CreateNoAugAbility();
-
                 }
                 catch (Exception e)
                 {
@@ -554,20 +537,13 @@ namespace TFTV
                     newSpec.AbilityTrack.AbilitiesByLevel[5].Ability = SlugFieldMedic;
                     newSpec.ClassTag = SlugClassTagDef;
 
-                    SlugSpecialization = newSpec;
-
-                    
-                  
+                    SlugSpecialization = newSpec;              
                 }
                 catch (Exception e)
                 {
                     TFTVLogger.Error(e);
                     throw;
                 }
-
-
-
-
 
             }
 
@@ -669,13 +645,22 @@ namespace TFTV
 
 
                     spyMasterHelmet.Weight = 1;
+                    spyMasterHelmet.ManufactureMaterials = 0;
+                    spyMasterHelmet.ManufactureTech = 0;
                     spyMasterHelmet.BodyPartAspectDef.Perception = 4;
 
                     spyMasterTorso.Weight = 2;
                     spyMasterTorso.BodyPartAspectDef.Speed = -1;
+                    spyMasterTorso.ManufactureMaterials = 0;
+                    spyMasterTorso.ManufactureTech = 0;
 
                     spyMasterLegs.Weight = 2;
                     spyMasterLegs.BodyPartAspectDef.Speed = -1;
+                    spyMasterLegs.ManufactureMaterials = 0;
+                    spyMasterLegs.ManufactureTech = 0;
+
+                    spyMasterXbow.ManufactureTech = 0;
+                    spyMasterXbow.ManufactureMaterials = 0;
 
                     slugHelmet.ViewElementDef = Helper.CreateDefFromClone(slugHelmet.ViewElementDef, "{9B73B5BD-FAD7-4451-949C-2D6F66968AAA}", slugHelmet.name);
                     slugHelmet.ViewElementDef.Description.LocalizationKey = $"SLUG_HELMET_NAME";
@@ -906,9 +891,6 @@ namespace TFTV
                     HealAbilityDef technicianHealSource = DefCache.GetDef<HealAbilityDef>("TechnicianHeal_AbilityDef");
                     HealAbilityDef technicianRepairSource = DefCache.GetDef<HealAbilityDef>("TechnicianRepair_AbilityDef");
 
-                    
-                    
-
                     List<AbilityDef> slugArmsAbilities = slugMechArms.Abilities.ToList();
 
                     slugArmsAbilities.Remove(technicianHealSource);
@@ -1096,10 +1078,12 @@ namespace TFTV
             internal static Dictionary<GeoMarketplaceItemOptionDef, GeoMarketplaceItemOptionDef> _kGWeaponsAndAmmo = new Dictionary<GeoMarketplaceItemOptionDef, GeoMarketplaceItemOptionDef>();
             internal static GameTagDef _kGTag;
 
-            private static void CreateAmmoForKG(WeaponDef weaponDef, int amount, int minPrice, string gUID0, string gUID1, string gUID2, string spriteFileName)
+            private static void AdjustKGAndCreateAmmoForThem(WeaponDef weaponDef, int amount, int minPrice, string gUID0, string gUID1, string gUID2, string spriteFileName)
             {
                 try
                 {
+                    DefCache.GetDef<ItemTypeTagDef>("AssaultRifleItem_TagDef");
+
                     TacticalItemDef sourceAmmo = DefCache.GetDef<TacticalItemDef>("PX_AssaultRifle_AmmoClip_ItemDef");
                     string name = $"{weaponDef.name}_AmmoClipDef";
 
@@ -1145,12 +1129,23 @@ namespace TFTV
 
                     weaponDef.WeaponMalfunction = DefCache.GetDef<WeaponDef>("PX_AssaultRifle_WeaponDef").WeaponMalfunction;
 
+                    if (weaponDef.Tags.Contains(DefCache.GetDef<ItemTypeTagDef>("AssaultRifleItem_TagDef")))
+                    {
+                        newAmmo.Tags.Add(Shared.SharedGameTags.MutoidClassTag);
+                    }
+                    if (weaponDef.Tags.Contains(DefCache.GetDef<ItemTypeTagDef>("HandgunItem_TagDef")))
+                    {
+                        newAmmo.Tags.Add(Shared.SharedGameTags.MutoidClassTag);
+                        newAmmo.Tags.Add(TFTVMercenaries.berserkerTag);
+                    }
 
                     AmmoWeaponDatabase.AmmoToWeaponDictionary.Add(newAmmo, new List<TacticalItemDef>() { weaponDef });
                     GeoMarketplaceItemOptionDef weaponMarketPlaceOption = (GeoMarketplaceItemOptionDef)geoMarketplaceItemOptionDefs.Find(o => o is GeoMarketplaceItemOptionDef marketOption && marketOption.ItemDef == weaponDef);
 
                     _kGWeaponsAndAmmo.Add(weaponMarketPlaceOption, newMarketplaceItem);
 
+                   
+                    
                 }
                 catch (Exception e)
                 {
@@ -1175,22 +1170,24 @@ namespace TFTV
 
                     _kGTag = TFTVCommonMethods.CreateNewTag("KaosGun", "{2DA3F33A-8D39-4DA6-8BA5-38C3114A21F7}");
 
+                    //("Mutoid_ClassTagDef");
+
                     //KEY_KAOSGUNS_AMMO_
                     //KEY_KAOSGUNS_AMMO_DESCRIPTION_
 
-                    CreateAmmoForKG(_tormentor, 8, 30, "e1875c26-0494-4d0f-9e5d-3c74a17c3b2d",
+                    AdjustKGAndCreateAmmoForThem(_tormentor, 8, 30, "e1875c26-0494-4d0f-9e5d-3c74a17c3b2d",
                     "79f6bb60-8ca3-4bbf-a0f1-c819f5ebf09e",
                     "ee89b5c3-6d06-4c5e-856b-96e7ff411c77", "KG_Pistol_Ammo.png");
-                    CreateAmmoForKG(_subjector, 5, 30, "2e5be682-1f85-4610-bbb7-c2f2bf41d4c6",
+                    AdjustKGAndCreateAmmoForThem(_subjector, 5, 30, "2e5be682-1f85-4610-bbb7-c2f2bf41d4c6",
                     "b03d78d4-c7e7-49c3-b097-3448e253a1e7",
                     "70a0a172-2b57-48d3-94c2-7cb4e428c3c4", "KG_Sniper_Ammo.png");
-                    CreateAmmoForKG(_redemptor, 24, 30, "8f7ff5ca-4b8d-4677-86d3-7f21e41a3a70",
+                    AdjustKGAndCreateAmmoForThem(_redemptor, 24, 30, "8f7ff5ca-4b8d-4677-86d3-7f21e41a3a70",
                     "d60e04a0-c873-4c16-9a83-2f9d6e1c163d",
                     "dc92d8ca-1b8d-4f85-9d90-d8eb9e63d5a3", "KG_Shotgun_Ammo.png");
-                    CreateAmmoForKG(_devastator, 6, 30, "99aa40e5-5415-44b9-98ed-34d746a99b52",
+                    AdjustKGAndCreateAmmoForThem(_devastator, 6, 30, "99aa40e5-5415-44b9-98ed-34d746a99b52",
                     "3b647fa3-1e06-4f2a-9d1c-82edf8a6dbff",
                     "605d3c8a-7b9c-481a-8c0d-7ff4be94901a", "KG_Cannon_Ammo.png");
-                    CreateAmmoForKG(_obliterator, 32, 30, "2c86774f-4889-4c06-9f7a-8971e62ff267",
+                    AdjustKGAndCreateAmmoForThem(_obliterator, 32, 30, "2c86774f-4889-4c06-9f7a-8971e62ff267",
                     "587b1a5b-1665-48c9-8b9c-4156231712c1",
                     "1a1230fc-0e5d-4c4c-9be5-563879d2471f", "KG_Assault_Rifle_Ammo.png");
 
@@ -1250,6 +1247,33 @@ namespace TFTV
             private static readonly string _mercenaryMarketPlaceSpecial = "KEY_MARKETPLACE_SPECIAL_MERCENARY";
             private static readonly string _researchMarketPlaceSpecial = "KEY_MARKETPLACE_SPECIAL_RESEARCH";
             private static readonly string[] _marketPlaceSpecials = new string[] { _vehicleMarketPlaceSpecial, _researchMarketPlaceSpecial, _mercenaryMarketPlaceSpecial, _weaponsMarketPlaceSpecial };
+
+        
+
+
+            [HarmonyPatch(typeof(GeoEventChoice), "PassRequirements")]
+            public static class GeoEventChoice_PassRequirements_patch
+            {
+                public static void Postfix(GeoEventChoice __instance, GeoFaction faction, ref bool __result)
+                {
+                    try
+                    {
+                        if(__instance.Outcome!=null && __instance.Outcome.Units!=null && __instance.Outcome.Units.Count>0 && __instance.Outcome.Units[0].Data.GameTags.Contains(MercenaryTag) && faction is GeoPhoenixFaction phoenixFaction && phoenixFaction.LivingQuarterFull) 
+                        {
+                           // TFTVLogger.Always($"Living Quarters are full! Can't recruit Mercenary");
+                            __result = false;
+                        }
+
+                       
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                        throw;
+                    }
+                }
+            }
+
 
 
             private static GeoEventChoice GenerateResearchChoice(ResearchDef researchDef, float price)
@@ -1817,7 +1841,20 @@ namespace TFTV
                     try
                     {
                         GeoLevelController level = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
-                        List<ResearchElement> list = level.FactionsWithDiplomacy.ElementAt(UnityEngine.Random.Range(0, level.FactionsWithDiplomacy.Count())).Research.Completed.Where((ResearchElement x) => x.IsAvailableToFaction(level.PhoenixFaction)).ToList();
+
+                        List<ResearchElement> list = new List<ResearchElement>();
+
+                        for(int x=0; x < level.FactionsWithDiplomacy.Count(); x++) 
+                        {
+                            list.AddRange(level.FactionsWithDiplomacy.ElementAt(x).Research.Completed.Where((ResearchElement r) => r.IsAvailableToFaction(level.PhoenixFaction)).ToList());
+                        }
+
+                        if (list.Count == 0) 
+                        {
+                            TFTVLogger.Always($"No researches! Player knows all!");
+                            return false;                        
+                        }
+
                         List<ResearchElement> phoenixFactionCompletedResearches = level.PhoenixFaction.Research.RevealedAndCompleted.ToList();
                         list.RemoveAll((ResearchElement research) => phoenixFactionCompletedResearches.Any((ResearchElement phoenixResearch) => research.ResearchID == phoenixResearch.ResearchID));
 
@@ -1831,6 +1868,7 @@ namespace TFTV
 
                         if (list.Count != 0)
                         {
+                            TFTVLogger.Always($"There are {list.Count} researches that could be offered to the player in the Marketplace");
                             __result = list.ElementAt(UnityEngine.Random.Range(0, list.Count)).ResearchDef;
                             _researchesAlreadyRolled.Add(__result);
                         }
@@ -1955,8 +1993,7 @@ namespace TFTV
                         uIModuleTheMarketplace.ResearchInfo.BenefitsContainer.SetActive(false);
                         uIModuleTheMarketplace.ResearchInfo.ResourceContainer.SetActive(false);
                         uIModuleTheMarketplace.ResearchInfo.RequirementsContainer.SetActive(false);
-                        uIModuleTheMarketplace.ResearchInfo.Icon.sprite = tacCharacterDef.Data.ViewElementDef.InventoryIcon;
-
+                        uIModuleTheMarketplace.ResearchInfo.Icon.sprite = tacCharacterDef.Data.ViewElementDef.InventoryIcon; 
                     }
 
                 }
