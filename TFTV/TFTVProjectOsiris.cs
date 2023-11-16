@@ -16,6 +16,7 @@ using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.ActorsInstance;
 using PhoenixPoint.Tactical.Entities.Equipments;
+using PhoenixPoint.Tactical.Levels.FactionObjectives;
 using PRMBetterClasses;
 using System;
 using System.Collections.Generic;
@@ -212,6 +213,8 @@ KEY_GRAMMAR_SINGLE_SUFFIX*/
                     pronoun = TFTVCommonMethods.ConvertKeyToString("KEY_GRAMMAR_PRONOUNS_THEM"); //"them";
                 }
 
+                pronoun = char.ToUpper(pronoun[0]) + pronoun.Substring(1);
+
                 string typeOfBodyAvailable = "";
                 string buildAdditionalLab = "";
                 string and1 = "";
@@ -273,12 +276,17 @@ KEY_GRAMMAR_SINGLE_SUFFIX*/
                 string osirisText1 = TFTVCommonMethods.ConvertKeyToString("KEY_OSIRIS_TEXT1");
                 string osirisText2 = TFTVCommonMethods.ConvertKeyToString("KEY_OSIRIS_TEXT2");
                 string osirisText3 = TFTVCommonMethods.ConvertKeyToString("KEY_OSIRIS_TEXT3");
-            
+
 
                 string modularEventText = $"{osirisText0} {name} ({deadSoldierDescriptor.GetClassViewElementDefs().First().Name}) {osirisText1} " +
-                    $"{pronoun} {osirisText2} {possesivePronoun} {osirisText3} {typeOfBodyAvailable}. {increaseOptions} {buildAdditionalLab} " +
-                    $"{and1}{anyAdditionalResearch}{researchAdditionalTech1}{and2}{researchAdditionalTech2}{anyAdditionalResearch2}";
+                    $"{pronoun} {osirisText2} {possesivePronoun} {osirisText3} {typeOfBodyAvailable}.";
 
+                if (increaseOptions != "")
+                {
+
+                    modularEventText +=$"{ increaseOptions} { buildAdditionalLab} " +
+                    $"{and1}{anyAdditionalResearch}{researchAdditionalTech1}{and2}{researchAdditionalTech2}{anyAdditionalResearch2}";
+                }
                 return modularEventText;
 
             }

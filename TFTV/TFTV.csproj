@@ -248,6 +248,7 @@
     <Compile Include="Vehicles\Misc\MarketplaceOptions.cs" />
     <Compile Include="Vehicles\Misc\MiscChanges.cs" />
     <Compile Include="Vehicles\Misc\NewTags.cs" />
+    <Compile Include="Vehicles\Misc\RescueMissions.cs" />
     <Compile Include="Vehicles\Misc\SoldierMounting.cs" />
     <Compile Include="Vehicles\Misc\VehicleStatusTags.cs" />
     <Compile Include="Vehicles\Mutog\Mutog.cs" />
