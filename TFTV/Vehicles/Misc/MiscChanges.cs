@@ -20,6 +20,8 @@ namespace TFTVVehicleRework.Misc
             Give_VehiclesTrample();
             Update_LaunchMissileInfo();
             MarketplaceOptions.Remove_Options();
+            RescueMissions.GenerateMissions();
+            RescueMissions.Fix_BuggyDeploymentTemplate();
             SoldierMounting.Change();
             VehicleStatusTags.GiveTags();
         }
