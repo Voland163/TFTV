@@ -415,7 +415,7 @@ namespace TFTV
         {
             try
             {
-                int capacity = CountFoodProductionFacilities(geoPhoenixFaction) * 100;
+                int capacity = CountFoodProductionFacilities(geoPhoenixFaction) * 250;
 
                 if (amount + PandasForFoodProcessing > capacity)
                 {

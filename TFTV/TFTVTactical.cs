@@ -1,15 +1,10 @@
 using Base.Core;
 using Base.Serialization.General;
-using EnviroSamples;
-using Epic.OnlineServices;
-using PhoenixPoint.Common.Game;
-using PhoenixPoint.Geoscape.Levels;
+using PhoenixPoint.Common.Levels.Missions;
 using PhoenixPoint.Modding;
 using PhoenixPoint.Tactical.Levels;
-using PhoenixPoint.Tactical.View.ViewModules;
 using System;
 using System.Collections.Generic;
-using UnityEngine;
 
 namespace TFTV
 {
@@ -47,7 +42,7 @@ namespace TFTV
         public int BaseDefenseStratToBeImplemented;
         public bool[] StratsAlreadyImplementedAtBD;
         public bool AutomataResearched;
-        public List<string> HopliteKillList;       
+        public List<string> HopliteKillList;
         public Dictionary<float, float> ConsolePositionsInBaseDefense;
         public Dictionary<int, int> CyclopsMolecularTargeting;
         public int DeployedAircraftCaptureCapacity;
@@ -57,7 +52,7 @@ namespace TFTV
         public bool Update35TacticalCheck;
         public bool StrongerPandoransTactical;
         public bool NerfAncientsWeaponsTactical;
-       
+
     }
 
     /// <summary>
@@ -84,7 +79,7 @@ namespace TFTV
 
         }
 
-        private static void ImplementConfigOptions(TacticalLevelController controller) 
+        private static void ImplementConfigOptions(TacticalLevelController controller)
         {
             try
             {
@@ -121,7 +116,7 @@ namespace TFTV
 
         private static void RunChecksForAllMissions(TacticalLevelController controller)
         {
-            try 
+            try
             {
                 TFTVHumanEnemies.RollCount = 0;
                 TFTVSpecialDifficulties.CheckForSpecialDifficulties();
@@ -138,7 +133,7 @@ namespace TFTV
 
         }
 
-        private static void RunBetaTestChecks() 
+        private static void RunBetaTestChecks()
         {
             try
             {
@@ -165,7 +160,7 @@ namespace TFTV
 
             /// Tactical level controller is accessible at any time.
             TacticalLevelController tacController = Controller;
-            
+
             /// ModMain is accesible at any time
 
             TFTVLogger.Always("OnTacticalStarted");
@@ -205,7 +200,7 @@ namespace TFTV
             TFTVLogger.Always("OnTacticalEnd check");
             TFTVRevenant.revenantCanSpawn = false;
             TFTVRevenantResearch.CheckRevenantCapturedOrKilled(Controller);
-        
+
             base.OnTacticalEnd();
 
         }
@@ -242,7 +237,7 @@ namespace TFTV
                 TFTVRevenant.revenantID = data.RevenantId;
                 TFTVBaseDefenseTactical.AttackProgress = data.BaseDefenseAttackProgress;
                 TFTVBaseDefenseTactical.StratToBeAnnounced = data.BaseDefenseStratToBeAnnounced;
-                TFTVBaseDefenseTactical.StratToBeImplemented = data.BaseDefenseStratToBeImplemented;  
+                TFTVBaseDefenseTactical.StratToBeImplemented = data.BaseDefenseStratToBeImplemented;
                 TFTVBaseDefenseTactical.UsedStrats = data.StratsAlreadyImplementedAtBD;
                 TFTVBaseDefenseTactical.ConsolePositions = data.ConsolePositionsInBaseDefense;
                 TFTVAncients.CyclopsMolecularDamageBuff = data.CyclopsMolecularTargeting;
@@ -256,11 +251,11 @@ namespace TFTV
                 TFTVNewGameOptions.Update35Check = data.Update35TacticalCheck;
                 TFTVNewGameOptions.StrongerPandoransSetting = data.StrongerPandoransTactical;
                 TFTVNewGameOptions.ImpossibleWeaponsAdjustmentsSetting = data.NerfAncientsWeaponsTactical;
-               
+
 
                 TurnZeroMethodsExecuted = data.TurnZeroMethodsExecuted;
 
-  
+
 
 
 
@@ -311,7 +306,7 @@ namespace TFTV
                 StrongerPandoransTactical = TFTVNewGameOptions.StrongerPandoransSetting,
 
                 TurnZeroMethodsExecuted = TurnZeroMethodsExecuted
-                
+
             };
         }
         /// <summary>
@@ -325,7 +320,15 @@ namespace TFTV
                 TFTVLogger.Always("The turn is " + turnNumber);
 
                 if (!Controller.TacMission.MissionData.MissionType.name.Contains("Tutorial"))
-                {                 
+                {
+                    if (Controller.CurrentFaction == Controller.GetTacticalFaction(Controller.TacticalLevelControllerDef.WildBeastFaction)
+    && turnNumber < Controller.GetTacticalFaction(TacMissionParticipant.Player).TurnNumber)
+                    {
+                        turnNumber = Controller.GetTacticalFaction(TacMissionParticipant.Player).TurnNumber;
+                        Controller.CurrentFaction.TurnNumber = turnNumber;
+                    }
+
+
                     if (turnNumber == 0 && TFTVHumanEnemies.HumanEnemiesAndTactics.Count == 0)
                     {
                         TFTVHumanEnemies.CheckMissionType(Controller);
@@ -345,7 +348,7 @@ namespace TFTV
                         TFTVRevenant.ImplementVO19(Controller);
                         TFTVVoidOmens.VO5TurnHostileCivviesFriendly(Controller);
                         TFTVBaseDefenseTactical.GetConsoles();
-                     
+
                         //  TFTVBaseDefenseTactical.ModifyObjectives(Controller.TacMission.MissionData.MissionType);
                         TurnZeroMethodsExecuted = true;
                     }
@@ -354,14 +357,14 @@ namespace TFTV
                     TFTVUmbra.SpawnUmbra(Controller);
                     TFTVHumanEnemies.ChampRecoverWPAura(Controller);
                     TFTVSpecialDifficulties.CounterSpawned = 0;
-                   
+
 
                 }
-                else 
+                else
                 {
                     TFTVLogger.Always($"Playing tutorial mission");
-                
-                
+
+
                 }
 
             }
