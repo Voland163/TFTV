@@ -23,15 +23,23 @@ namespace TFTVVehicleRework.Armadillo
             BiTurbo.SubAddons = BiTurbo.SubAddons.AddRangeToArray(NewArmours());
             BiTurbo.ManufactureMaterials = 300f;
 
-            //"GooImmunity_AbilityDef"
-            // GooDamageMultiplierAbilityDef GooImmunity = (GooDamageMultiplierAbilityDef)Repo.GetDef("f7bfd2ad-6534-65f4-180b-479a7a63dfff");
             BiTurbo.Abilities = new AbilityDef[]
             {
-                (GooDamageMultiplierAbilityDef)Repo.GetDef("f7bfd2ad-6534-65f4-180b-479a7a63dfff"), // "GooImmunity_AbilityDef"
+                ArmadilloGooImmunity(),
                 BodyPartHPBuff()
             };
 
             ArmadilloMain.Update_Requirements(BiTurbo);
+        }
+
+        private static GooDamageMultiplierAbilityDef ArmadilloGooImmunity()
+        {
+            // "GooImmunity_AbilityDef"
+            GooDamageMultiplierAbilityDef GooImmunity = (GooDamageMultiplierAbilityDef)Repo.GetDef("f7bfd2ad-6534-65f4-180b-479a7a63dfff");
+            GooDamageMultiplierAbilityDef ArmadilloGooImmunity = Repo.CreateDef<GooDamageMultiplierAbilityDef>("46c257f4-ae90-4a01-9327-fe3f448937aa", GooImmunity);
+            ArmadilloGooImmunity.name = "ArmadilloGooImmunity_AbilityDef";
+            ArmadilloGooImmunity.NavAreas = new string[]{};
+            return ArmadilloGooImmunity;
         }
 
         private static TacticalAbilityDef BodyPartHPBuff()
@@ -62,9 +70,6 @@ namespace TFTVVehicleRework.Armadillo
             TacticalItemDef RFT = (TacticalItemDef)Repo.GetDef("1d02cd5b-7618-a144-98a3-22c266e0ad47"); // RightFrontTyre
             TacticalItemDef RBT = (TacticalItemDef)Repo.GetDef("fc744614-d7aa-f0f4-3a08-39459fbf438a"); // RightBackTyre
 
-            //Change Weakaddon setting so that the clones don't break mesh properties
-            LFT.WeakAddon = LBT.WeakAddon = RFT.WeakAddon = RBT.WeakAddon = true;
-
             TacticalItemDef LF_Traction = Repo.CreateDef<TacticalItemDef>("0be0ed2a-d9fa-44fc-ba15-770b0cce21fc", LFT);
             TacticalItemDef LB_Traction = Repo.CreateDef<TacticalItemDef>("db89f124-6e28-4083-9bfd-fe2c0f04a69c", LBT);
             TacticalItemDef RF_Traction = Repo.CreateDef<TacticalItemDef>("ca52112b-d2c8-44c1-a0de-a214215aa18c", RFT);
@@ -80,6 +85,9 @@ namespace TFTVVehicleRework.Armadillo
             RB_Traction.BodyPartAspectDef = Repo.CreateDef<BodyPartAspectDef>("82ef41df-e74c-45b3-8679-dfd88c967983", RBT.BodyPartAspectDef);
 
             LF_Traction.BodyPartAspectDef.Speed = LB_Traction.BodyPartAspectDef.Speed = RF_Traction.BodyPartAspectDef.Speed = RB_Traction.BodyPartAspectDef.Speed = 0f;
+
+            //Change Weakaddon setting so that the clones don't break mesh properties
+            LFT.WeakAddon = LBT.WeakAddon = RFT.WeakAddon = RBT.WeakAddon = true;
 
             AddonDef.SubaddonBind[] Traction_Tires = new AddonDef.SubaddonBind[]
             {
