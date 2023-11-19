@@ -39,7 +39,8 @@ namespace TFTVVehicleRework.Aspida
             ApplyEffectAbilityDef CureSprayCloud = Repo.CreateDef<ApplyEffectAbilityDef>("2c50ada9-7f6b-462f-86c1-3f10e6db199b", CureCloud);
             CureSprayCloud.name = "Aspida_CureCloud_AbilityDef";
             CureSprayCloud.WillPointCost = 0f;
-            CureSprayCloud.ActionPointCost = 0.5f;
+            CureSprayCloud.ActionPointCost = 0.25f;
+            CureSprayCloud.UsesPerTurn = 1;
             CureSprayCloud.AnimType = -1;
             CureSprayCloud.EffectDef = CureEffects();
             CureSprayCloud.CheckApplicationConditions = true;
@@ -56,7 +57,8 @@ namespace TFTVVehicleRework.Aspida
             ApplyEffectAbilityDef Aspida_RestoreArmour = (ApplyEffectAbilityDef)Repo.CreateDef("19b49bf8-2d85-43cb-be38-1b2694e7182b", RestoreArmour);
             Aspida_RestoreArmour.name = "Aspida_RestoreArmour_AbilityDef";
             Aspida_RestoreArmour.WillPointCost = 0;
-            Aspida_RestoreArmour.ActionPointCost = 0.5f;
+            Aspida_RestoreArmour.ActionPointCost = 0.25f;
+            Aspida_RestoreArmour.UsesPerTurn = 1;
             Aspida_RestoreArmour.AnimType = -1;
             Aspida_RestoreArmour.EffectDef = RestoreArmourEffect(RestoreArmour.EffectDef);
             Aspida_RestoreArmour.CheckApplicationConditions = true;
