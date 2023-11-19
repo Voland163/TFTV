@@ -42,8 +42,9 @@ namespace TFTVVehicleRework.Aspida
             // "SY_Aspida_Themis_GroundVehicleWeaponDef"
             GroundVehicleWeaponDef Themis = (GroundVehicleWeaponDef)Repo.GetDef("544551d2-6de2-7304-9af1-870037ec8e82");
             Themis.DamagePayload.DamageKeywords.Find(dkp => dkp.DamageKeywordDef == keywords.ParalysingKeyword).Value = 10f;
-            Themis.APToUsePerc = 75;
-            Themis.ChargesMax = 32;
+            // Themis.APToUsePerc = 75;
+            // Themis.ChargesMax = 32;
+            Themis.ChargesMax = 40;
             Themis.ManufacturePointsCost = 250f;
             Themis.Abilities = new AbilityDef[]
             {
@@ -53,6 +54,7 @@ namespace TFTVVehicleRework.Aspida
 
             // "SY_Aspida_Apollo_GroundVehicleWeaponDef"
             GroundVehicleWeaponDef Apollo = (GroundVehicleWeaponDef)Repo.GetDef("f2032edf-1890-7784-a974-6718e2000b16");
+            Apollo.ChargesMax = 20;
             Apollo.Abilities = new AbilityDef[]
             {
                 AspidaShootAbility()
@@ -119,6 +121,8 @@ namespace TFTVVehicleRework.Aspida
                 ShootAbilityDef LaserArrayShoot = (ShootAbilityDef)Repo.GetDef("17d71e44-c07c-3e04-e977-1ff7eeb23a43");
                 
                 AspidaShoot = Repo.CreateDef<ShootAbilityDef>("3d138af1-1420-44e8-bfc8-44fff8f4e416", LaserArrayShoot);
+                AspidaShoot.CanShootOnEnemyBodyParts = true;
+                AspidaShoot.SnapToBodyparts = false;
                 AspidaShoot.UsesPerTurn = -1;
             }
             return AspidaShoot;
