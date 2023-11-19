@@ -37,7 +37,11 @@ namespace TFTVVehicleRework.Aspida
             AspidaHealStatus.ShowNotification = true;
             AspidaHealStatus.RestoreHP = 80f;
             AspidaHealStatus.RestoreWP = 5f;
-            AspidaHealStatus.EffectToApply = (StatusRemoverEffectDef)Repo.GetDef("e10ae455-7042-0be4-4899-969be2197c7f"); //"BleedRemover_EffectDef"
+            AspidaHealStatus.EffectsToApply = new EffectDef[]
+            {
+                (StatusRemoverEffectDef)Repo.GetDef("e10ae455-7042-0be4-4899-969be2197c7f"), //"BleedRemover_EffectDef"
+                (StatusRemoverEffectDef)Repo.GetDef("216fc588-a16f-f5c4-abe8-044dd50d6589"), //"PoisonRemover_EffectDef"
+            } ;
             AspidaHealStatus.EventOnStartTurn = (TacticalEventDef)Repo.GetDef("f59bbc65-0bc3-40c4-9b5a-adf38e6d0b21"); //"Regenerate_TargetEffect_EventDef"
 
             AspidaHealAbility.StatusDef = AspidaHealStatus;
@@ -50,6 +54,7 @@ namespace TFTVVehicleRework.Aspida
             AspidaHealVED.Description = new LocalizedTextBind("SY_STASIS_DESC");
 
             AspidaHealAbility.ViewElementDef = AspidaHealVED;
+            AspidaHealStatus.Visuals = AspidaHealVED;
 
             return AspidaHealAbility;
         }
