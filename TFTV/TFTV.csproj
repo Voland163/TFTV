@@ -219,6 +219,8 @@
     <Compile Include="Vehicles\Abilities\FreeReloadAbilityDef.cs" />
     <Compile Include="Vehicles\Abilities\HealPassengersStatus.cs" />
     <Compile Include="Vehicles\Abilities\HealPassengersStatusDef.cs" />
+    <Compile Include="Vehicles\Abilities\InvertedDamageMultiplierStatus.cs" />
+    <Compile Include="Vehicles\Abilities\InvertedDamageMultiplierStatusDef.cs" />
     <Compile Include="Vehicles\Armadillo\Armadillo.cs" />
     <Compile Include="Vehicles\Armadillo\GasTanks.cs" />
     <Compile Include="Vehicles\Armadillo\GaussTurret.cs" />
