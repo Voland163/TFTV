@@ -3,8 +3,11 @@ using Base.UI;
 using Base.Entities.Abilities;
 using Base.Entities.Effects.ApplicationConditions;
 using PhoenixPoint.Common.Entities.Equipments;
+using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.UI;
 using PhoenixPoint.Tactical.Entities.Abilities;
+using PhoenixPoint.Tactical.Entities.DamageKeywords;
+using PhoenixPoint.Tactical.Entities.Effects;
 using PhoenixPoint.Tactical.Entities.Effects.ApplicationConditions;
 using PhoenixPoint.Tactical.Entities.Statuses;
 using PhoenixPoint.Tactical.Eventus;
@@ -14,14 +17,115 @@ namespace TFTVVehicleRework.Aspida
     public static class PsychicJammer
     {
         private static readonly DefRepository Repo = AspidaMain.Repo;
+        private static readonly SharedDamageKeywordsDataDef keywords = VehiclesMain.keywords;
         public static void Change()
         {
             // "SY_Aspida_Psyshic_Jammer_GroundVehicleModuleDef"
             GroundVehicleModuleDef Jammer = (GroundVehicleModuleDef)Repo.GetDef("e75548ae-e9e5-28a4-1a67-78e7a1486e47");
+            Jammer.ViewElementDef.DisplayName1 = new LocalizedTextBind("SY_NAVMODULE_NAME");
             Jammer.Abilities = new AbilityDef[]
             {
-                JammerAbility(),
+                // JammerAbility(),
+                LocatorAbility(),
+                RepelMist(),
+                MistAura()
             };
+        }
+
+        private static ApplyStatusAbilityDef LocatorAbility()
+        {
+            //"MotionDetection_AbilityDef" -> template ability
+            ApplyStatusAbilityDef MotionDetection = (ApplyStatusAbilityDef)Repo.GetDef("636ba84c-7481-0544-79c1-822813b214cd");
+            ApplyStatusAbilityDef AspidaMotionDetector = Repo.CreateDef<ApplyStatusAbilityDef>("2c011787-bba8-4eca-bbdf-73e352032b28", MotionDetection);
+            AspidaMotionDetector.name = "AspidaMotionDetection_AbilityDef";
+
+            TacticalTargetingDataDef DetectorTargeting = Repo.CreateDef<TacticalTargetingDataDef>("9df5838e-cd5e-4aa0-a315-c0de7b86c69c", MotionDetection.TargetingDataDef);
+            DetectorTargeting.name = "E_TargetingDataDef [AspidaMotionDetection_AbilityDef]";
+            DetectorTargeting.Origin.Range = 20f;
+
+            TacticalAbilityViewElementDef DetectorVED = Repo.CreateDef<TacticalAbilityViewElementDef>("b6a3a3c9-0cca-4dfa-8193-92da3ba9f8d0", MotionDetection.ViewElementDef);
+            DetectorVED.name = "E_ViewElement [AspidaMotionDetection_AbilityDef]";
+            DetectorVED.DisplayName1 = new LocalizedTextBind("SY_DETECTION_NAME");
+            DetectorVED.Description = new LocalizedTextBind("SY_DETECTION_DESC");
+
+            AspidaMotionDetector.TargetingDataDef = DetectorTargeting;
+            AspidaMotionDetector.ViewElementDef = DetectorVED;
+            return AspidaMotionDetector;
+        }
+
+        private static ApplyEffectAbilityDef RepelMist()
+        {
+            //"MistRepeller_AbilityDef"
+            ApplyEffectAbilityDef MistRepeller = (ApplyEffectAbilityDef)Repo.GetDef("f9349490-72e5-5784-0b76-af8f403162a5");        
+            MistRepeller.EffectDef.ApplicationConditions = new EffectConditionDef[]
+            {
+                MistRepellerCondition()
+            };
+            MistRepeller.CheckApplicationConditions = true;
+
+            ApplyEffectAbilityDef AspidaMistRepeller = Repo.CreateDef<ApplyEffectAbilityDef>("91b48569-27c8-4461-aabd-4aa10100a4dd", MistRepeller);
+            AspidaMistRepeller.name = "AspidaMistRepeller_AbilityDef";
+            AspidaMistRepeller.ApplyOnStartTurn = true;
+
+            RemoveTacticalVoxelEffectDef RemoveMistEffect = Repo.CreateDef<RemoveTacticalVoxelEffectDef>("dbf7384c-2f45-44fa-a58e-084d13d9143f", MistRepeller.EffectDef);
+            RemoveMistEffect.name = "E_RemoveMistEffect [AspidaMistRepeller_AbilityDef]";
+            RemoveMistEffect.Radius = 5f;
+
+            TacticalAbilityViewElementDef VED = Repo.CreateDef<TacticalAbilityViewElementDef>("54528190-d45c-433f-955f-ed9ba159d163", MistRepeller.ViewElementDef);
+            VED.name = "E_ViewElementDef [AspidaMistRepeller_AbilityDef]";
+            VED.DisplayName1 = new LocalizedTextBind("SY_MISTREPELLER_NAME");
+            VED.Description = new LocalizedTextBind("SY_MISTREPELLER_DESC");
+
+            AspidaMistRepeller.ViewElementDef = VED;
+            AspidaMistRepeller.EffectDef = RemoveMistEffect;
+            return AspidaMistRepeller;
+        }
+
+        private static ActorHasStatusEffectConditionDef MistRepellerCondition()
+        {
+            ActorHasStatusEffectConditionDef Condition = Repo.CreateDef<ActorHasStatusEffectConditionDef>("41d5807b-cb97-4951-aa1a-fbc0c77ad668");
+            Condition.name = "ActorIsOnMap_EffectConditionDef";
+            Condition.StatusDef = (TacStatusDef)Repo.GetDef("d91ab356-3acc-4204-ca48-46da05874bb0"); //"OffMap_StatusDef"
+            Condition.HasStatus = false;
+            return Condition;
+        }
+
+        private static ApplyStatusAbilityDef MistAura()
+        {
+            //"ApplyStatus_MindControlImmunity_AbilityDef"
+            ApplyStatusAbilityDef MCAura = (ApplyStatusAbilityDef)Repo.GetDef("cf5b7bba-e467-7aa4-88e4-1dd54d24f630");
+
+            ApplyStatusAbilityDef MistAura = Repo.CreateDef<ApplyStatusAbilityDef>("67bf9486-82ed-4fb6-b642-991c84b976d6", MCAura);
+            MistAura.name = "AspidaMistImmunityAura_AbilityDef";
+            MistAura.CanApplyToOffMapTarget = true;
+            MistAura.TargetApplicationConditions = new EffectConditionDef[]{};
+            
+            TacticalTargetingDataDef AuraTargeting = Repo.CreateDef<TacticalTargetingDataDef>("3fe70fec-de93-4135-b1af-ff12fcaf36d5", MCAura.TargetingDataDef);
+            AuraTargeting.Origin.Range = 3.5f;
+            AuraTargeting.Origin.TargetTags = new GameTagsList();
+
+            TacticalAbilityViewElementDef AuraVED = Repo.CreateDef<TacticalAbilityViewElementDef>("043fde66-85cd-4db8-88db-4ae943536446", MCAura.ViewElementDef);
+            AuraVED.name = "E_ViewElement [AspidaMistImmunityAura_AbilityDef]";
+            AuraVED.DisplayName1 = new LocalizedTextBind("SY_MISTIMMUNITY_NAME");
+            AuraVED.Description = new LocalizedTextBind("SY_MISTIMMUNITY_DESC");
+            AuraVED.SmallIcon = AuraVED.LargeIcon = keywords.MistKeyword.Visuals.SmallIcon;
+            AuraVED.ShowInInventoryItemTooltip = false;
+
+            //"MistResistance_StatusDef"
+            DamageMultiplierStatusDef MistResistance = (DamageMultiplierStatusDef)Repo.GetDef("9126e1d4-3c31-8934-e90c-1c3d6ddabd92");
+            DamageMultiplierStatusDef MistImmunity = Repo.CreateDef<DamageMultiplierStatusDef>("", MistResistance);
+            MistImmunity.name = "MistImmunity_StatusDef";
+            MistImmunity.EffectName = "MistImmunity";
+            MistImmunity.Visuals = AuraVED;
+            MistImmunity.Multiplier = 0.0f;
+            MistImmunity.ShowNotification = true;
+            MistImmunity.VisibleOnPassiveBar = true;
+            MistImmunity.VisibleOnHealthbar = TacStatusDef.HealthBarVisibility.AlwaysVisible;
+
+            MistAura.TargetingDataDef = AuraTargeting;
+            MistAura.StatusDef = MistImmunity;
+            MistAura.ViewElementDef = AuraVED;
+            return MistAura;
         }
 
         private static ApplyStatusAbilityDef JammerAbility()
