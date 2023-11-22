@@ -155,6 +155,22 @@ namespace TFTVVehicleRework.Aspida
             Rover.Items = Rover.Items.AddToArray(VehicleWeapon);
         }
 
+        internal static AreaOfEffectAbilitySceneViewDef AspidaSceneView()
+        {
+            AreaOfEffectAbilitySceneViewDef SceneView = (AreaOfEffectAbilitySceneViewDef)Repo.GetDef("23218419-bd47-4dca-b344-75710a40cefc");
+            if (SceneView == null)
+            {
+                //"_Generic_FriendlyAreaOfEffectSceneViewElementDef"
+                AreaOfEffectAbilitySceneViewDef FriendlyAOE = (AreaOfEffectAbilitySceneViewDef)Repo.GetDef("a6df7e16-a178-69d4-cad5-9c517518150f"); 
+                SceneView = Repo.CreateDef<AreaOfEffectAbilitySceneViewDef>("23218419-bd47-4dca-b344-75710a40cefc", FriendlyAOE);
+                SceneView.name = "Aspida_FriendlyAreaOfEffect_SceneViewElementDef";
+                // SceneView.TargetRadiusMarker = PhoenixPoint.Tactical.View.GroundMarkerType.AreaOfEffectAura;
+                SceneView.UseOriginData = false;
+            }
+            return SceneView;
+        }
+
+
         private static ShootAbilityDef AspidaShootAbility()
         {
             ShootAbilityDef AspidaShoot = (ShootAbilityDef)Repo.GetDef("3d138af1-1420-44e8-bfc8-44fff8f4e416");
