@@ -103,6 +103,7 @@ namespace TFTVVehicleRework.Aspida
             TacticalTargetingDataDef AuraTargeting = Repo.CreateDef<TacticalTargetingDataDef>("3fe70fec-de93-4135-b1af-ff12fcaf36d5", MCAura.TargetingDataDef);
             AuraTargeting.Origin.Range = 3.5f;
             AuraTargeting.Origin.TargetTags = new GameTagsList();
+            AuraTargeting.Target.Range = 4.1f;
 
             TacticalAbilityViewElementDef AuraVED = Repo.CreateDef<TacticalAbilityViewElementDef>("043fde66-85cd-4db8-88db-4ae943536446", MCAura.ViewElementDef);
             AuraVED.name = "E_ViewElement [AspidaMistImmunityAura_AbilityDef]";
@@ -111,6 +112,9 @@ namespace TFTVVehicleRework.Aspida
             AuraVED.SmallIcon = AuraVED.LargeIcon = keywords.MistKeyword.Visuals.SmallIcon;
             AuraVED.ShowInInventoryItemTooltip = false;
 
+            AreaOfEffectAbilitySceneViewDef AspidaScene = Repo.CreateDef<AreaOfEffectAbilitySceneViewDef>("5443d9fc-baca-4898-87c0-5614c5644c83", MCAura.SceneViewElementDef);
+            AspidaScene.UseOriginData = false;
+
             //"MistResistance_StatusDef"
             DamageMultiplierStatusDef MistResistance = (DamageMultiplierStatusDef)Repo.GetDef("9126e1d4-3c31-8934-e90c-1c3d6ddabd92");
             DamageMultiplierStatusDef MistImmunity = Repo.CreateDef<DamageMultiplierStatusDef>("", MistResistance);
@@ -118,12 +122,14 @@ namespace TFTVVehicleRework.Aspida
             MistImmunity.EffectName = "MistImmunity";
             MistImmunity.Visuals = AuraVED;
             MistImmunity.Multiplier = 0.0f;
+            MistImmunity.SingleInstance = true;
             MistImmunity.ShowNotification = true;
             MistImmunity.VisibleOnPassiveBar = true;
             MistImmunity.VisibleOnHealthbar = TacStatusDef.HealthBarVisibility.AlwaysVisible;
 
             MistAura.TargetingDataDef = AuraTargeting;
             MistAura.StatusDef = MistImmunity;
+            MistAura.SceneViewElementDef = AspidaScene;
             MistAura.ViewElementDef = AuraVED;
             return MistAura;
         }

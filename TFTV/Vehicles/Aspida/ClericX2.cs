@@ -45,7 +45,14 @@ namespace TFTVVehicleRework.Aspida
             CureSprayCloud.EffectDef = CureEffects();
             CureSprayCloud.CheckApplicationConditions = true;
             CureSprayCloud.EventOnActivate = CureParticleEffects();
+            
+            TacticalTargetingDataDef CureSprayTargeting = Repo.CreateDef<TacticalTargetingDataDef>("1d0b2e39-ff71-4b86-b943-f73769b2f8ba", CureCloud.TargetingDataDef);
+            CureSprayTargeting.Origin.LineOfSight = LineOfSightType.Ignore;
+            CureSprayTargeting.Target.Range = 11.5f;
+
+            CureSprayCloud.TargetingDataDef = CureSprayTargeting;
             CureSprayCloud.ViewElementDef = Cure_VED(CureCloud.ViewElementDef);
+            CureSprayCloud.SceneViewElementDef = AspidaMain.AspidaSceneView();
             return CureSprayCloud;
         }
 
@@ -66,10 +73,13 @@ namespace TFTVVehicleRework.Aspida
             TacticalTargetingDataDef Aspida_RA_Target = (TacticalTargetingDataDef)Repo.CreateDef("d8123e9e-f62d-41fd-9b16-b6e0262eedcf",RestoreArmour.TargetingDataDef);
             Aspida_RA_Target.name = "E_TargetingData [Aspida_RestoreArmour_AbilityDef]";
             Aspida_RA_Target.Origin.TargetTags = new GameTagsList{};
+            Aspida_RA_Target.Origin.LineOfSight = LineOfSightType.Ignore;
+            Aspida_RA_Target.Target.Range = 11.5f;
 
             Aspida_RestoreArmour.EventOnActivate = RestoreArmourParticleEffects();
             Aspida_RestoreArmour.TargetingDataDef = Aspida_RA_Target;
             Aspida_RestoreArmour.ViewElementDef = Armour_VED();
+            Aspida_RestoreArmour.SceneViewElementDef = AspidaMain.AspidaSceneView();
             return Aspida_RestoreArmour;
         }
 
