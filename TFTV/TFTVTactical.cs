@@ -61,6 +61,7 @@ namespace TFTV
     /// </summary>
     public class TFTVTactical : ModTactical
     {
+        private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
         private static void ImplementSpecialMissions(TacticalLevelController controller)
         {
             try

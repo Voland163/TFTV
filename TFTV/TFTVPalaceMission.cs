@@ -1,11 +1,14 @@
 ﻿using Base;
+using Base.Audio;
 using Base.Core;
-using Base.Defs;
 using Base.Entities;
 using Base.Entities.Effects;
 using Base.Entities.Statuses;
+using Base.Eventus;
+using Base.Eventus.Filters;
 using Base.Levels;
-using Epic.OnlineServices;
+using Base.Utils;
+using Epic.OnlineServices.RTCAudio;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities;
@@ -14,12 +17,14 @@ using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.Entities.Items;
 using PhoenixPoint.Common.Levels.ActorDeployment;
 using PhoenixPoint.Common.Levels.Missions;
+using PhoenixPoint.Geoscape.View.DataObjects;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.ActorsInstance;
 using PhoenixPoint.Tactical.Entities.Effects;
 using PhoenixPoint.Tactical.Entities.Statuses;
 using PhoenixPoint.Tactical.Entities.StructuralTargets;
+using PhoenixPoint.Tactical.Eventus.Filters;
 using PhoenixPoint.Tactical.Levels;
 using PhoenixPoint.Tactical.Levels.ActorDeployment;
 using PhoenixPoint.Tactical.Levels.FactionObjectives;
@@ -30,8 +35,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
-using UnityTools.SurfaceBlender;
-using static UnityStandardAssets.Utility.TimedObjectActivator;
 
 namespace TFTV
 {
@@ -73,7 +76,7 @@ namespace TFTV
     internal class TFTVPalaceMission
     {
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
-       // private static readonly DefRepository Repo = TFTVMain.Repo;
+        // private static readonly DefRepository Repo = TFTVMain.Repo;
         private static readonly SharedData Shared = TFTVMain.Shared;
 
         // private static readonly GameTagDef revenantTier1GameTag = DefCache.GetDef<GameTagDef>("RevenantTier_1_GameTagDef");
@@ -582,57 +585,13 @@ namespace TFTV
         }
 
 
-
-
-
-
-        /// <summary>
-        /// Stuff to include special characters, WIP
-        /// </summary>
-        /// <param name="actor"></param>
-        public static void RemoveVoiceFromSpecialCharactersByRemovingHumanTagOnEntryIntoPlay(TacticalActorBase actor)
-        {
-
-            try
-            {
-                TFTVConfig config = TFTVMain.Main.Config;
-
-                GameTagDef humanTag = DefCache.GetDef<GameTagDef>("Human_TagDef");
-
-                List<GameTagDef> gameTagsToCheck = new List<GameTagDef>()
-                {
-                 DefCache.GetDef<GameTagDef>("TaxiarchNergal_TacCharacterDef_GameTagDef"),
-                DefCache.GetDef<GameTagDef>("Zhara_TacCharacterDef_GameTagDef"),
-                DefCache.GetDef<GameTagDef>("Stas_TacCharacterDef_GameTagDef"),
-                DefCache.GetDef<GameTagDef>("Nikolai_TacCharacterDef_GameTagDef"),
-                 DefCache.GetDef<GameTagDef>("Richter_TacCharacterDef_GameTagDef"),
-                DefCache.GetDef<GameTagDef>("Harlson_TacCharacterDef_GameTagDef"),
-                DefCache.GetDef<GameTagDef>("Sofia_TacCharacterDef_GameTagDef"),
-
-                };
-
-                if (gameTagsToCheck.Any(gt => actor.GameTags.Contains(gt)) || config.NoBarks)
-                {
-                    if (actor.HasGameTag(humanTag))
-                    {
-                        actor.GameTags.Remove(humanTag);
-                    }
-                }
-
-
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-
-
-        }
-
         public static void ForceSpecialCharacterPortraitInSetupProperPortrait(TacticalActor actor)
         {
             try
             {
+                
+             
+
                 if (actor.TacticalLevel != null && actor.TacticalLevel.TacMission != null && actor.TacticalLevel.TacMission.IsFinalMission)
                 {
                     List<GameTagDef> gameTagsToCheck = new List<GameTagDef>()
@@ -645,9 +604,6 @@ namespace TFTV
                 DefCache.GetDef<GameTagDef>("Harlson_TacCharacterDef_GameTagDef"),
                 DefCache.GetDef<GameTagDef>("Sofia_TacCharacterDef_GameTagDef"),
                 DefCache.GetDef<GameTagDef>("Exalted_ClassTagDef")
-
-
-
 
                 };
 
@@ -904,7 +860,7 @@ namespace TFTV
 
                         if (console.Pos == new Vector3(0.5f, 0.0f, -15.5f))
                         {
-                          //  TFTVGoo.DontUseGooNavigationPatch = true;
+                            //  TFTVGoo.DontUseGooNavigationPatch = true;
                         }
                         else if (console.Pos.z == 0)
                         {
@@ -1006,7 +962,7 @@ namespace TFTV
         }
 
 
-       
+
 
 
         private static TacCharacterDef GenerateRandomMyrmidonReinforcements(TacticalLevelController controller)
@@ -1999,23 +1955,23 @@ namespace TFTV
                     {
                         foreach (TacticalActor revenant in revenants)
                         {
-                            if (revenant.CharacterStats.WillPoints > 0) 
+                            if (revenant.CharacterStats.WillPoints > 0)
                             {
                                 revenant.CharacterStats.WillPoints.Set(revenant.CharacterStats.WillPoints - revenant.CharacterStats.Willpower / 4);
-                                                      
+
                             }
-                            else 
+                            else
                             {
                                 revenant.SetFaction(controller.GetFactionByCommandName("aln"), TacMissionParticipant.Residents);
 
-                                if(revenant.GameTags.Contains(anyRevenantGameTag)) 
+                                if (revenant.GameTags.Contains(anyRevenantGameTag))
                                 {
                                     revenant.GameTags.Remove(anyRevenantGameTag);
 
-                                    
+
                                 }
-                                
-                               
+
+
                                 revenant.TacticalActorView.DoCameraChase();
                                 TFTVTutorialAndStory.ShowStoryPanel(controller, "PalaceRevenantHint1");
                                 TFTVLogger.Always($"Pheonix {revenant.name} is back on the Dark Side!");
@@ -2292,7 +2248,7 @@ namespace TFTV
 
         private static void RemoveAlertPandoransSouthOfTheGates(TacticalLevelController controller)
         {
-            try 
+            try
             {
                 TFTVLogger.Always($"Player has no units south of the closed gates; setting all Pandorans to not alerted!");
 
@@ -2300,14 +2256,14 @@ namespace TFTV
 
                 TFTVLogger.Always($"count: {pandorans.Count}");
 
-                foreach(TacticalActor tacticalActor in pandorans) 
+                foreach (TacticalActor tacticalActor in pandorans)
                 {
-                 //   TFTVLogger.Always($"{tacticalActor.name}");
+                    //   TFTVLogger.Always($"{tacticalActor.name}");
                     tacticalActor.AIActor.IsAlerted = false;
-                    
-                
+
+
                 }
-               
+
             }
             catch (Exception e)
             {
@@ -2316,7 +2272,7 @@ namespace TFTV
             }
 
         }
-        
+
         public static void PalaceTacticalNewTurn(TacticalFaction tacticalFaction)
         {
             try
@@ -2327,7 +2283,7 @@ namespace TFTV
                 {
                     TacticalActorYuggoth tacticalActorYuggoth = controller.Map.GetActors<TacticalActorYuggoth>().FirstOrDefault();
                     bool wallsDown = false;
-                    if (tacticalActorYuggoth != null && tacticalActorYuggoth.QueenWallDownOnTurn == -1) 
+                    if (tacticalActorYuggoth != null && tacticalActorYuggoth.QueenWallDownOnTurn == -1)
                     {
                         wallsDown = true;
                     }

@@ -214,11 +214,20 @@ namespace TFTV
             TFTVChangesToDLC5.TFTVKaosGuns.CreateKaosWeaponAmmo();
             TFTVChangesToDLC5.TFTVMarketPlaceItems.AdjustMarketPlaceOptions();
             ReducePromoSkins();
-           // ChangeStoryAN4_CustomMissionTypeDef();
+
+            TFTVBetterEnemies.BECreateAIActionDefs();
+            //  TFTVLogger.Always("BE AIActionDefs created");
+            TFTVBetterEnemies.BEFixesToAI();
+            //   TFTVLogger.Always("BE Fixes to AI applied");
+            TFTVBetterEnemies.BEChange_Perception();
+            // BEFixCaterpillarTracksDamage(); //already added to base
+            TFTVBetterEnemies.BEReducePandoranWillpower();
+
+            // ChangeStoryAN4_CustomMissionTypeDef();
             //  CreateNewLaunchBaseDefenseMissionGeoAbility();
             //  TFTVChangesToDLC5.AdjustMarketPlaceAbilityDef();
             //Print();
-         //   GenerateMissions();
+            //   GenerateMissions();
         }
 
         //NEU_Assault_Torso_BodyPartDef

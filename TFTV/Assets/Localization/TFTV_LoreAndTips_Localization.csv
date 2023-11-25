@@ -47,7 +47,7 @@ TFTV_TIP_GEOSCAPE_15,Text,,Havens destroyed inside the Mist can become Infested.
 TFTV_TIP_GEOSCAPE_16,Text,,"Infested Havens cannot be saved, but unique rewards can be salvaged and some population recovered.",,,,,,,,
 TFTV_TIP_GEOSCAPE_17,Text,,"If you are looking for a challenge, check the Make Pandorans Stronger option at the start of the game. If you are still finding everything too easy, try the ETERMES difficulty. Report if you survive, would you kindly. ",,,,,,,,
 TFTV_TIP_GEOSCAPE_18,Text,,"If you are finding the game too hard, try playing on Story Mode or Rookie. You can also choose a different difficulty setting for the Tactical portion of the game. You can do so either on starting a new game or in the mod config.",,,,,,,,
-TFTV_TIP_GEOSCAPE_19,Text,,"If you run into any Error Messages or other bugs, please report them in our #bug-reporting channel at the Phoenix Rising Discord server.",,,,,,,,
+TFTV_TIP_GEOSCAPE_19,Text,,"If you run into any Error Messages or other bugs, please report them in our #bug-reporting channel at the Terror from the Void Discord server.",,,,,,,,
 TFTV_TIP_TACTICAL_1,Text,,The total amount of Delirium of all your operatives present on the mission determines the chance that an Arthron or a Triton will be Touched by the Void.,,,,,,,,
 TFTV_TIP_TACTICAL_2,Text,,"Umbras can only attack characters that have at least one Delirium point, or are inside the Mist.",,,,,,,,
 TFTV_TIP_TACTICAL_3,Text,,The impact of Delirium on Willpower is weakened if your operative is well rested. Every 10 Stamina will reduce the effect of Delirium on Willpower by 1.,,,,,,,,

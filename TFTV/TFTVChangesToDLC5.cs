@@ -1814,7 +1814,7 @@ namespace TFTV
 
                         GeoMarketplaceItemOptionDef weaponOffer = (GeoMarketplaceItemOptionDef)weaponsAvailable.GetRandomElement();
 
-                        TFTVLogger.Always($"weaponOffer is {weaponOffer.name}");
+                       // TFTVLogger.Always($"weaponOffer is {weaponOffer.name}");
 
                         weaponsAvailable.Remove(weaponOffer);
 
@@ -1834,7 +1834,7 @@ namespace TFTV
 
                         geoMarketplace.MarketplaceChoices.Add(item);
                         geoMarketplace.MarketplaceChoices.AddRange(ammo);
-                        TFTVLogger.Always($"should have added {weaponOffer.name} and 3 ammo for it");
+                      //  TFTVLogger.Always($"should have added {weaponOffer.name} and 3 ammo for it");
                     }
 
                     return list;
@@ -1883,7 +1883,7 @@ namespace TFTV
 
                         geoMarketplace.MarketplaceChoices.Add(item);
 
-                        TFTVLogger.Always($"should have added {vehicleItemToOffer.name}");
+                       // TFTVLogger.Always($"should have added {vehicleItemToOffer.name}");
                     }
 
                     return list;
@@ -1921,7 +1921,7 @@ namespace TFTV
                         GeoEventChoice item = GenerateItemChoice(mercenaryToOffer.ItemDef, price);
 
                         geoMarketplace.MarketplaceChoices.Add(item);
-                        TFTVLogger.Always($"should have added {mercenaryToOffer.name}");
+                       // TFTVLogger.Always($"should have added {mercenaryToOffer.name}");
                     }
 
                     return list;
@@ -1983,7 +1983,7 @@ namespace TFTV
                         GeoEventChoice item = GenerateResearchChoice(researchDef, price);
 
                         geoMarketplace.MarketplaceChoices.Add(item);
-                        TFTVLogger.Always($"should have added {researchDef.Id}");
+                      //  TFTVLogger.Always($"should have added {researchDef.Id}");
                     }
 
                     _researchesAlreadyRolled.Clear();
@@ -2023,17 +2023,17 @@ namespace TFTV
                         List<ResearchElement> phoenixFactionCompletedResearches = level.PhoenixFaction.Research.RevealedAndCompleted.ToList();
                         list.RemoveAll((ResearchElement research) => phoenixFactionCompletedResearches.Any((ResearchElement phoenixResearch) => research.ResearchID == phoenixResearch.ResearchID));
 
-                        TFTVLogger.Always($"_researchesAlreadyRolled has any elements in it? {_researchesAlreadyRolled.Count > 0}");
+                       // TFTVLogger.Always($"_researchesAlreadyRolled has any elements in it? {_researchesAlreadyRolled.Count > 0}");
 
                         if (_researchesAlreadyRolled.Count > 0)
                         {
                             list.RemoveAll(e => _researchesAlreadyRolled.Contains(e.ResearchDef));
-                            TFTVLogger.Always($"removing already rolled researches from pool");
+                          //  TFTVLogger.Always($"removing already rolled researches from pool");
                         }
 
                         if (list.Count != 0)
                         {
-                            TFTVLogger.Always($"There are {list.Count} researches that could be offered to the player in the Marketplace");
+                           // TFTVLogger.Always($"There are {list.Count} researches that could be offered to the player in the Marketplace");
                             __result = list.ElementAt(UnityEngine.Random.Range(0, list.Count)).ResearchDef;
                             _researchesAlreadyRolled.Add(__result);
                         }

@@ -1,16 +1,14 @@
-﻿using Base.Serialization.General;
-using Epic.OnlineServices.Sessions;
+﻿using Base.Eventus;
 using HarmonyLib;
-using PhoenixPoint.Common.UI;
+using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.Abilities;
-using PhoenixPoint.Geoscape.Entities.Missions;
 using PhoenixPoint.Geoscape.Entities.Sites;
 using PhoenixPoint.Geoscape.View.ViewControllers;
 using PhoenixPoint.Geoscape.View.ViewModules;
-using PhoenixPoint.Geoscape.View.ViewStates;
 using PhoenixPoint.Tactical.Entities;
-using PhoenixPoint.Tactical.Entities.Statuses;
+using PhoenixPoint.Tactical.Eventus.Contexts;
+using PhoenixPoint.Tactical.Eventus.Filters;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -30,44 +28,75 @@ namespace TFTV
         //EnterBaseAbilityDef
 
         //
+        private static readonly List<GameTagDef> _palaceMissionGameTagsToCheck = new List<GameTagDef>()
+                 {
+                 DefCache.GetDef<GameTagDef>("TaxiarchNergal_TacCharacterDef_GameTagDef"),
+                DefCache.GetDef<GameTagDef>("Zhara_TacCharacterDef_GameTagDef"),
+                DefCache.GetDef<GameTagDef>("Stas_TacCharacterDef_GameTagDef"),
+                DefCache.GetDef<GameTagDef>("Nikolai_TacCharacterDef_GameTagDef"),
+                 DefCache.GetDef<GameTagDef>("Richter_TacCharacterDef_GameTagDef"),
+                DefCache.GetDef<GameTagDef>("Harlson_TacCharacterDef_GameTagDef"),
+                DefCache.GetDef<GameTagDef>("Sofia_TacCharacterDef_GameTagDef"),
+                 };
+
+        [HarmonyPatch(typeof(TacActorHeadMutationsFilterDef), "ShouldPlayEvent")]
+        public static class UTacActorHeadMutationsFilterDef_ShouldPlayEvent_patch
+        {
+            public static void Postfix(BaseEventContext context, ref bool __result)
+            {
+                try
+                {
+                    if (!(context is TacActorEventContext tacActorEventContext))
+                    {
+
+                    }
+                    else
+                    {
+                        GameTagDef humanTag = DefCache.GetDef<GameTagDef>("Human_TagDef");
+                        TFTVConfig config = TFTVMain.Main.Config;
+
+                        if (tacActorEventContext.Actor.HasGameTag(humanTag) && config.NoBarks || _palaceMissionGameTagsToCheck.Any(gt => tacActorEventContext.Actor.GameTags.Contains(gt)))
+                        {
+                            //  TFTVLogger.Always($"stopping bark from {tacActorEventContext.Actor.name}");
+                            __result = false;
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
 
 
-      
 
         [HarmonyPatch(typeof(UIModuleSiteContextualMenu), "SetMenuItems")]
         public static class UIModuleSiteContextualMenu_SetMenuItems_patch
         {
-
             public static void Postfix(GeoSite site, List<GeoAbility> rawAbilities, Vector3 position, UIModuleSiteContextualMenu __instance)
             {
                 try
                 {
-                    if (site.GetComponent<GeoPhoenixBase>()!=null && site.ActiveMission != null && site.CharactersCount > 0 && 
-                        (site.Vehicles.Count()==0 || !site.Vehicles.Any(v=>v.GetCharacterCount()>0)))
+                    if (site.GetComponent<GeoPhoenixBase>() != null && site.ActiveMission != null && site.CharactersCount > 0 &&
+                        (site.Vehicles.Count() == 0 || !site.Vehicles.Any(v => v.GetCharacterCount() > 0)))
                     {
-                       
 
                         FieldInfo fieldInfoListSiteContextualMenuItem = typeof(UIModuleSiteContextualMenu).GetField("_menuItems", BindingFlags.NonPublic | BindingFlags.Instance);
                         List<SiteContextualMenuItem> menuItems = fieldInfoListSiteContextualMenuItem.GetValue(__instance) as List<SiteContextualMenuItem>;
 
                         foreach (SiteContextualMenuItem menuItem in menuItems)
                         {
-                           // TFTVLogger.Always($"menu item: {menuItem?.ItemText?.text}");
-
+                            // TFTVLogger.Always($"menu item: {menuItem?.ItemText?.text}");
                             if (menuItem.ItemText.text == DefCache.GetDef<EnterBaseAbilityDef>("EnterBaseAbilityDef").ViewElementDef.DisplayName1.Localize())
                             {
                                 menuItem.ItemText.text = TFTVCommonMethods.ConvertKeyToString("KEY_DEPLOY_BASE_DEFENSE_TEXT");
                                 menuItem.gameObject.AddComponent<UITooltipText>().TipText = TFTVCommonMethods.ConvertKeyToString("KEY_DEPLOY_BASE_DEFENSE_TIP");
-                               // TFTVLogger.Always($"menu item: {menuItem?.ItemText?.text}");
-
+                                // TFTVLogger.Always($"menu item: {menuItem?.ItemText?.text}");
                             }
-
                         }
-
-
                     }
-
-
                 }
                 catch (Exception e)
                 {
@@ -126,28 +155,28 @@ namespace TFTV
         [HarmonyPatch(typeof(EnterBaseAbility), "ActivateInternal")]
         public static class EnterBaseAbility_ActivateInternal_patch
         {
-           
+
             public static bool Prefix(EnterBaseAbility __instance, GeoAbilityTarget target)
             {
                 try
                 {
                     TFTVLogger.Always($"ActivateInternalfor ability {__instance.GeoscapeAbilityDef.name}");
 
-                    if(target.Actor is GeoSite site && site.ActiveMission != null && site.CharactersCount>0
+                    if (target.Actor is GeoSite site && site.ActiveMission != null && site.CharactersCount > 0
                         &&
-                        (site.Vehicles.Count() == 0 || !site.Vehicles.Any(v => v.GetCharacterCount() > 0))) 
+                        (site.Vehicles.Count() == 0 || !site.Vehicles.Any(v => v.GetCharacterCount() > 0)))
                     {
                         TFTVLogger.Always($"Deploying Base Defense");
                         GeoSite geoSite = (GeoSite)target.Actor;
                         //  GeoVehicle initialContainer = (GeoVehicle)base.Actor;
 
-                    
-                       __instance.GeoLevel.View.LaunchMission(geoSite.ActiveMission);
+
+                        __instance.GeoLevel.View.LaunchMission(geoSite.ActiveMission);
                         return false;
                     }
 
                     return true;
-                    
+
 
                 }
                 catch (Exception e)
