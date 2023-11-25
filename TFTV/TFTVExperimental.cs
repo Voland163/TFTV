@@ -52,13 +52,13 @@ namespace TFTV
 
                         foreach (SiteContextualMenuItem menuItem in menuItems)
                         {
-                            TFTVLogger.Always($"menu item: {menuItem?.ItemText?.text}");
+                           // TFTVLogger.Always($"menu item: {menuItem?.ItemText?.text}");
 
                             if (menuItem.ItemText.text == DefCache.GetDef<EnterBaseAbilityDef>("EnterBaseAbilityDef").ViewElementDef.DisplayName1.Localize())
                             {
                                 menuItem.ItemText.text = TFTVCommonMethods.ConvertKeyToString("KEY_DEPLOY_BASE_DEFENSE_TEXT");
                                 menuItem.gameObject.AddComponent<UITooltipText>().TipText = TFTVCommonMethods.ConvertKeyToString("KEY_DEPLOY_BASE_DEFENSE_TIP");
-                                TFTVLogger.Always($"menu item: {menuItem?.ItemText?.text}");
+                               // TFTVLogger.Always($"menu item: {menuItem?.ItemText?.text}");
 
                             }
 

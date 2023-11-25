@@ -44,6 +44,7 @@ using PhoenixPoint.Tactical.AI.TargetGenerators;
 using PhoenixPoint.Tactical.ContextHelp.HintConditions;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
+using PhoenixPoint.Tactical.Entities.ActorsInstance;
 using PhoenixPoint.Tactical.Entities.Animations;
 using PhoenixPoint.Tactical.Entities.DamageKeywords;
 using PhoenixPoint.Tactical.Entities.Effects;
@@ -2430,28 +2431,28 @@ namespace TFTV
                 string event1Name = "FoodPoisoning1";
                 string event1Title = "FOOD_POISONING_TITLE_1";
                 string event1Description = "FOOD_POISONING_DESCRIPTION_1";
-                string event1Outcome = "FOOD_POISONING_OUTCOME_1";
+              //  string event1Outcome = "FOOD_POISONING_OUTCOME_1";
 
                 string event2Name = "FoodPoisoning2";
                 string event2Title = "FOOD_POISONING_TITLE_2";
                 string event2Description = "FOOD_POISONING_DESCRIPTION_2";
-                string event2Outcome = "FOOD_POISONING_OUTCOME_2";
+              //  string event2Outcome = "FOOD_POISONING_OUTCOME_2";
 
                 string event3Name = "FoodPoisoning3";
                 string event3Title = "FOOD_POISONING_TITLE_3";
                 string event3Description = "FOOD_POISONING_DESCRIPTION_3";
-                string event3Outcome = "FOOD_POISONING_OUTCOME_3";
+              //  string event3Outcome = "FOOD_POISONING_OUTCOME_3";
 
-                GeoscapeEventDef foodPoisoning1 = TFTVCommonMethods.CreateNewEvent(event1Name, event1Title, event1Description, event1Outcome);
+                GeoscapeEventDef foodPoisoning1 = TFTVCommonMethods.CreateNewEvent(event1Name, event1Title, event1Description, null);
                 foodPoisoning1.GeoscapeEventData.Choices[0].Outcome.DamageAllSoldiers = 20;
                 foodPoisoning1.GeoscapeEventData.Choices[0].Outcome.TireAllSoldiers = 10;
 
 
-                GeoscapeEventDef foodPoisoning2 = TFTVCommonMethods.CreateNewEvent(event2Name, event2Title, event2Description, event2Outcome);
+                GeoscapeEventDef foodPoisoning2 = TFTVCommonMethods.CreateNewEvent(event2Name, event2Title, event2Description, null);
                 foodPoisoning2.GeoscapeEventData.Choices[0].Outcome.DamageAllSoldiers = 40;
                 foodPoisoning2.GeoscapeEventData.Choices[0].Outcome.TireAllSoldiers = 20;
 
-                GeoscapeEventDef foodPoisoning3 = TFTVCommonMethods.CreateNewEvent(event3Name, event3Title, event3Description, event3Outcome);
+                GeoscapeEventDef foodPoisoning3 = TFTVCommonMethods.CreateNewEvent(event3Name, event3Title, event3Description, null);
                 foodPoisoning3.GeoscapeEventData.Choices[0].Outcome.DamageAllSoldiers = 80;
                 foodPoisoning3.GeoscapeEventData.Choices[0].Outcome.TireAllSoldiers = 40;
 
@@ -7153,8 +7154,11 @@ namespace TFTV
         {
             try
             {
-                //Changing ambush missions so that all of them have crates
-                CustomMissionTypeDef AmbushALN = DefCache.GetDef<CustomMissionTypeDef>("AmbushAlien_CustomMissionTypeDef");
+                
+               
+
+                  //Changing ambush missions so that all of them have crates
+                  CustomMissionTypeDef AmbushALN = DefCache.GetDef<CustomMissionTypeDef>("AmbushAlien_CustomMissionTypeDef");
                 CustomMissionTypeDef SourceScavCratesALN = DefCache.GetDef<CustomMissionTypeDef>("ScavCratesALN_CustomMissionTypeDef");
                 var pickResourceCratesObjective = SourceScavCratesALN.CustomObjectives[2];
                 AmbushALN.ParticipantsData[0].ReinforcementsTurns.Max = 2;

@@ -315,17 +315,22 @@ namespace PRMBetterClasses
         };
 
         // Learn the first personal ability = is set rigth from the start
-        public bool LearnFirstPersonalSkill = true;
+      //  public bool LearnFirstPersonalSkill = true;
 
+
+        /// <summary>
+        /// commented out BCSettings that are set in TFTV Settings (auto standby + learn first personal skill), 
+        /// plus removed crossbow ammo settings and activate story rework because no longer used. - Voland
+        /// </summary>
         // Deactivate auto standy in tactical missions
-        public bool DeactivateTacticalAutoStandby = false;
+     //   public bool DeactivateTacticalAutoStandby = false;
 
         // Activate story rework
-        public bool ActivateStoryRework = false;
+       // public bool ActivateStoryRework = false;
 
         // Infiltrator Crossbow Ammo changes
-        public int BaseCrossbow_Ammo = 6;
-        public int VenomCrossbow_Ammo = 4;
+      //  public int BaseCrossbow_Ammo = 6;
+      //  public int VenomCrossbow_Ammo = 4;
 
         // Flag if UI texts should be changed to default (Enlish) text or set by localization
         public bool DoNotLocalizeChangedTexts = true;

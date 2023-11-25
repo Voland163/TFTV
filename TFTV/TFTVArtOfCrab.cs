@@ -7,13 +7,10 @@ using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.Entities.Items;
-using PhoenixPoint.Geoscape.Entities;
-using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Tactical;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.DamageKeywords;
-using PhoenixPoint.Tactical.Entities.Effects;
 using PhoenixPoint.Tactical.Entities.Effects.DamageTypes;
 using PhoenixPoint.Tactical.Entities.Statuses;
 using PhoenixPoint.Tactical.Entities.Weapons;
@@ -22,7 +19,6 @@ using PhoenixPoint.Tactical.Levels.Mist;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
 using UnityEngine;
 
 namespace TFTV
@@ -123,7 +119,7 @@ namespace TFTV
 
         }
 
-    
+
         public static void ForceScyllaToUseCannonsAfterUsingHeadAttack(TacticalAbility ability, TacticalActor actor, object parameter)
         {
 
@@ -163,23 +159,23 @@ namespace TFTV
         [HarmonyPatch(typeof(DieAbility), "SpawnDeathEffect")]
         internal static class TFTV_DieAbility_SpawnDeathEffect_patch
         {
-           
+
             public static bool Prefix(DieAbility __instance)
             {
                 try
                 {
-              
-                    TFTVLogger.Always($"running SpawnDeathEffect for {__instance.TacticalAbilityDef.name}.");
+
+                    //  TFTVLogger.Always($"running SpawnDeathEffect for {__instance.TacticalAbilityDef.name}.");
                     TacticalAbility tacticalAbility = TacUtil.GetSourceOfType<TacticalAbility>(__instance.TacticalActorBase.LastDamageSource);
 
-                    if (tacticalAbility != null) 
+                    if (tacticalAbility != null)
                     {
 
-                        TFTVLogger.Always($"tactical ability def is {tacticalAbility.TacticalAbilityDef.name}");
-                        if(tacticalAbility.TacticalAbilityDef is RemoveFacehuggerAbilityDef) 
+                        // TFTVLogger.Always($"tactical ability def is {tacticalAbility.TacticalAbilityDef.name}");
+                        if (tacticalAbility.TacticalAbilityDef is RemoveFacehuggerAbilityDef)
                         {
                             return false;
-                        
+
                         }
                     }
 
@@ -194,7 +190,7 @@ namespace TFTV
         }
 
 
-        
+
 
 
 

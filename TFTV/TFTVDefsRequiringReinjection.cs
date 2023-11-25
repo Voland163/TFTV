@@ -5,6 +5,7 @@ using Base.Entities.Effects;
 using Base.Entities.Effects.ApplicationConditions;
 using Base.Entities.Statuses;
 using Base.UI;
+using HarmonyLib;
 using PhoenixPoint.Common.ContextHelp;
 using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.GameTags;
@@ -417,7 +418,7 @@ namespace TFTV
                 TFTVLogger.Error(e);
             }
         }
-
+       
         public static void Create_Bloodthirsty()
         {
             try
@@ -819,6 +820,8 @@ namespace TFTV
         }
         public static void Create_AnxietyStatus()
         {
+            MindControlAbilityDef priestMindControlAbility = DefCache.GetDef<MindControlAbilityDef>("Priest_MindControl_AbilityDef");
+
             string skillName = "Anxiety_StatusDef";
             SilencedStatusDef source = DefCache.GetDef<SilencedStatusDef>("ActorSilenced_StatusDef");
             SilencedStatusDef hallucinatingStatus = Helper.CreateDefFromClone(
@@ -827,6 +830,8 @@ namespace TFTV
                 skillName);
 
             hallucinatingStatus.DurationTurns = 2;
+
+            priestMindControlAbility.DisablingStatuses = priestMindControlAbility.DisablingStatuses.AddToArray(hallucinatingStatus);
         }
 
 

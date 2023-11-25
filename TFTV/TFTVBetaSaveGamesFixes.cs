@@ -14,6 +14,7 @@ using PhoenixPoint.Geoscape.Entities.Sites;
 using PhoenixPoint.Geoscape.Events;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
+using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.Entities.Weapons;
 using System;
 using System.Collections.Generic;
@@ -145,11 +146,13 @@ namespace TFTV
                 ItemDef slugTorso = DefCache.GetDef<ItemDef>("NJ_Technician_Torso_ALN_BodyPartDef");
 
 
+             
+
                 foreach (ItemDef itemDef in controller.PhoenixFaction.ItemStorage.Items.Keys)
                 {
                     if (itemDef == slugArmsDef || itemDef == slugHelmet || itemDef == slugTorso || itemDef == slugLegs)
                     {
-                        destroyList.Add(controller.PhoenixFaction.ItemStorage.Items[slugArmsDef]);
+                        destroyList.Add(controller.PhoenixFaction.ItemStorage.Items[itemDef]);
                         TFTVLogger.Always($"found bad slug arms");
                     }
                 }

@@ -9,12 +9,10 @@ using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.Addons;
-using PhoenixPoint.Common.Entities.Characters;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.Entities.Items;
 using PhoenixPoint.Common.Levels.Missions;
-using PhoenixPoint.Common.UI;
 using PhoenixPoint.Common.View.ViewControllers;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.Abilities;
@@ -22,7 +20,6 @@ using PhoenixPoint.Geoscape.Entities.Research;
 using PhoenixPoint.Geoscape.Events;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
-using PhoenixPoint.Geoscape.View.ViewControllers.SiteEncounters;
 using PhoenixPoint.Geoscape.View.ViewModules;
 using PhoenixPoint.Geoscape.View.ViewStates;
 using PhoenixPoint.Tactical.Entities;
@@ -52,6 +49,97 @@ namespace TFTV
         private static readonly SharedData Shared = TFTVMain.Shared;
         public static GameTagDef MercenaryTag;
 
+        private static bool AmbushOrScavTemp = false;
+
+        [HarmonyPatch(typeof(GeoMission), "AddCratesToMissionData")]
+        public static class GeoMission_AddCratesToMissionData_patch
+        {
+
+            public static void Prefix(GeoMission __instance)
+            {
+                try
+                {
+                    if (__instance.MissionDef.Tags.Contains(DefCache.GetDef<MissionTagDef>("MissionTypeAmbush_MissionTagDef"))
+                        ||
+                        __instance.MissionDef.Tags.Contains(DefCache.GetDef<MissionTagDef>("MissionTypeScavenging_MissionTagDef")))
+                    {
+
+                        AmbushOrScavTemp = true;
+
+                    }
+
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+            public static void Postfix(GeoMission __instance)
+            {
+                try
+                {
+                    if (__instance.MissionDef.Tags.Contains(DefCache.GetDef<MissionTagDef>("MissionTypeAmbush_MissionTagDef"))
+                        ||
+                        __instance.MissionDef.Tags.Contains(DefCache.GetDef<MissionTagDef>("MissionTypeScavenging_MissionTagDef")))
+                    {
+
+                        AmbushOrScavTemp = false;
+
+                    }
+
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+
+        }
+
+        [HarmonyPatch(typeof(GeoLevelController), "GetAvailableFactionEquipment")]
+        public static class GeoLevelController_GetAvailableFactionEquipment_patch
+        {
+
+
+            public static void Postfix(ref List<TacticalItemDef> __result)
+            {
+                try
+                {
+                    if (AmbushOrScavTemp)
+                    {
+                        TFTVLogger.Always($"It's an ambush or scavenging mission, adding KG ammo to GetAvailableFactionEquipment");
+
+                        List<TacticalItemDef> kgAmmo = new List<TacticalItemDef>()
+                        {
+                            TFTVKaosGuns._subjector.CompatibleAmmunition[0],
+                            TFTVKaosGuns._obliterator.CompatibleAmmunition[0],
+                            TFTVKaosGuns._tormentor.CompatibleAmmunition[0],
+                            TFTVKaosGuns._devastator.CompatibleAmmunition[0],
+                            TFTVKaosGuns._redemptor.CompatibleAmmunition[0]
+
+                        };
+
+                        __result.AddRange(kgAmmo
+
+                        );
+
+
+                    }
+
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+
+        }
 
         [HarmonyPatch(typeof(MarketplaceAbility), "GetTargetDisabledStateInternal")]
         public static class MarketplaceAbility_GetTargetDisabledStateInternal_patch
@@ -77,12 +165,11 @@ namespace TFTV
         }
 
 
-
         public static void SlugHealTraumaEffect(TacticalAbility tacticalAbility, TacticalActor tacticalActor)
         {
             try
             {
-               // TFTVLogger.Always($"Ability: {tacticalAbility.TacticalAbilityDef.name}");
+                // TFTVLogger.Always($"Ability: {tacticalAbility.TacticalAbilityDef.name}");
 
                 List<TacticalAbilityDef> slugAbilities = new List<TacticalAbilityDef>() {
                     TFTVMercenaries.SlugTechnicianHeal, TFTVMercenaries.SlugTechnicianRepair, TFTVMercenaries.SlugTechnicianRestore, TFTVMercenaries.SlugFieldMedic,
@@ -204,6 +291,35 @@ namespace TFTV
             //PX_SniperRifle_Gold_WeaponDef
             //
 
+
+            [HarmonyPatch(typeof(UIModuleMutate), "OnNewCharacter")]//InitCharacterInfo")]
+            public static class UIModuleMutate_InitCharacterInfo_Patch
+            {
+                public static void Postfix(Dictionary<AddonSlotDef, UIModuleMutationSection> ____augmentSections, GeoCharacter newCharacter)
+                {
+                    try
+                    {
+                        if (newCharacter.TemplateDef != null && newCharacter.TemplateDef.GetGameTags().Contains(MercenaryTag))
+                        {
+                            TFTVLogger.Always($"current character is {newCharacter.DisplayName} and it has mercenary tag? {newCharacter.TemplateDef.GetGameTags().Contains(MercenaryTag)}");
+
+                            foreach (KeyValuePair<AddonSlotDef, UIModuleMutationSection> augmentSection in ____augmentSections)
+                            {
+                                augmentSection.Value.ResetContainer(AugumentSlotState.BlockedByPermenantAugument, "KEY_ABILITY_NOAUGMENTATONS");
+                            }
+
+                        }
+
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                    }
+                }
+            }
+
+
+
             [HarmonyPatch(typeof(UIModuleBionics), "OnNewCharacter")]//InitCharacterInfo")]
             public static class UIModuleBionics_InitCharacterInfo_Patch
             {
@@ -211,20 +327,16 @@ namespace TFTV
                 {
                     try
                     {
-
-                        //  TFTVLogger.Always($"current character is {newCharacter.DisplayName} and it has mercenary tag? {newCharacter.TemplateDef.GetGameTags().Contains(_mercenaryTag)}");
-
                         if (newCharacter.TemplateDef != null && newCharacter.TemplateDef.GetGameTags().Contains(MercenaryTag))
                         {
+                            TFTVLogger.Always($"current character is {newCharacter.DisplayName} and it has mercenary tag? {newCharacter.TemplateDef.GetGameTags().Contains(MercenaryTag)}");
 
                             foreach (KeyValuePair<AddonSlotDef, UIModuleMutationSection> augmentSection in ____augmentSections)
                             {
                                 augmentSection.Value.ResetContainer(AugumentSlotState.BlockedByPermenantAugument, "KEY_ABILITY_NOAUGMENTATONS");
                             }
 
-
                         }
-
 
                     }
                     catch (Exception e)
@@ -316,7 +428,7 @@ namespace TFTV
                             geoUnitDescriptor.Progression.PersonalAbilities[1] = DefCache.GetDef<ApplyEffectAbilityDef>("MistBreather_AbilityDef");
                             geoUnitDescriptor.Progression.PersonalAbilities[6] = DefCache.GetDef<ResurrectAbilityDef>("Mutoid_ResurrectAbilityDef");
 
-                            
+
 
                             // Get the FieldInfo for the MainSpecDef field
                             FieldInfo mainSpecDefField = typeof(ProgressionDescriptor).GetField("MainSpecDef", BindingFlags.Instance | BindingFlags.Public);
@@ -331,7 +443,7 @@ namespace TFTV
                             geoUnitDescriptor.Progression.PersonalAbilities[1] = DefCache.GetDef<ApplyStatusAbilityDef>("BC_Takedown_AbilityDef");
                             geoUnitDescriptor.Progression.PersonalAbilities[2] = DefCache.GetDef<ApplyStatusAbilityDef>("BC_Biochemist_AbilityDef");
                             geoUnitDescriptor.Progression.PersonalAbilities[6] = DefCache.GetDef<ApplyStatusAbilityDef>("Saboteur_AbilityDef");
-                         
+
                             TFTVLogger.Always($"{geoUnitDescriptor.ClassTag}");
                         }
                         else if (geoUnitDescriptor.ClassTag == berserkerTag)
@@ -352,10 +464,10 @@ namespace TFTV
                         {
                             geoUnitDescriptor.Progression.PersonalAbilities[1] = DefCache.GetDef<PassiveModifierAbilityDef>("DieHard_AbilityDef");
                             geoUnitDescriptor.Progression.PersonalAbilities[6] = DefCache.GetDef<PassiveModifierAbilityDef>("Endurance_AbilityDef");
-                           TFTVLogger.Always($"{geoUnitDescriptor.ClassTag}");
+                            TFTVLogger.Always($"{geoUnitDescriptor.ClassTag}");
 
                         }
-                        
+
 
 
                     }
@@ -415,17 +527,17 @@ namespace TFTV
                     {
                         character.Progression.AddAbility(sniperProf);
 
-                                
+
                     }
                     else if (character.GameTags.Contains(technicianTag))
                     {
                         character.Progression.AddAbility(handGunsProf);
 
-                     
-                    }
-                   
 
-               }
+                    }
+
+
+                }
                 catch (Exception e)
                 {
                     TFTVLogger.Error(e);
@@ -510,7 +622,7 @@ namespace TFTV
             {
                 try
                 {
-                  
+
                     MakeSlugArmorNonRemovable();
                     CreateExpendableArchetypes();
                     AdjustMercenaryArmorsAndWeapons();
@@ -526,7 +638,7 @@ namespace TFTV
 
             private static void CloneTechnicianSpec()
             {
-                try 
+                try
                 {
                     SlugClassTagDef = Helper.CreateDefFromClone(technicianTag, "{E513B9D9-D461-4274-B903-C24A98FD3B6B}", $"Slug_ClassTagDef");
                     SpecializationDef specializationDefSource = DefCache.GetDef<SpecializationDef>("TechnicianSpecializationDef");
@@ -537,7 +649,7 @@ namespace TFTV
                     newSpec.AbilityTrack.AbilitiesByLevel[5].Ability = SlugFieldMedic;
                     newSpec.ClassTag = SlugClassTagDef;
 
-                    SlugSpecialization = newSpec;              
+                    SlugSpecialization = newSpec;
                 }
                 catch (Exception e)
                 {
@@ -546,6 +658,30 @@ namespace TFTV
                 }
 
             }
+
+            private static void AdjustToBeDroppedOnDeath(List<TacticalItemDef> list)
+            {
+
+                try
+                {
+
+                    foreach (TacticalItemDef item in list)
+                    {
+
+                        item.DropOnActorDeath = true;
+
+                    }
+
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+
+            }
+
 
             private static void AdjustMercenaryArmorsAndWeapons()
             {
@@ -565,6 +701,14 @@ namespace TFTV
                     doomLegs.ViewElementDef.Description.LocalizationKey = $"DOOM_SLAYER_LEGS_NAME";
                     doomLegs.ViewElementDef.DisplayName2.LocalizationKey = $"DOOM_SLAYER_LEGS_DESCRIPTION";
 
+
+                    AdjustToBeDroppedOnDeath(doomArmor);
+                    AdjustToBeDroppedOnDeath(ghostArmor);
+                    AdjustToBeDroppedOnDeath(exileArmor);
+                    AdjustToBeDroppedOnDeath(sectarianArmor);
+                    AdjustToBeDroppedOnDeath(spyMasterArmor);
+                    AdjustToBeDroppedOnDeath(new List<TacticalItemDef>() { doomAC, spyMasterXbow, sectarianAxe });
+
                     doomHelmet.Armor = 23;
                     doomTorso.Armor = 24;
                     doomLegs.Armor = 22;
@@ -576,6 +720,15 @@ namespace TFTV
 
                     doomLegs.BodyPartAspectDef.Speed = 0.0f;
                     doomLegs.BodyPartAspectDef.Accuracy = -0.04f;
+
+                    foreach (TacticalItemDef doomArmorPiece in sectarianArmor)
+                    {
+
+                        doomArmorPiece.DropOnActorDeath = true;
+
+                    }
+
+
 
                     sectarianHelmet.Armor = 14;
                     sectarianHelmet.Weight = 1;
@@ -703,15 +856,15 @@ namespace TFTV
                     slugLegs.BodyPartAspectDef.Stealth = -0.05f;
 
                     exileHelmet.ViewElementDef = Helper.CreateDefFromClone(exileHelmet.ViewElementDef, "{16AD85B5-7C8F-4EC8-9E74-CF23DBE3CE98}", exileHelmet.name);
-                  //  exileHelmet.ViewElementDef.Description.LocalizationKey = "EXILE_HELMET_NAME";
+                    //  exileHelmet.ViewElementDef.Description.LocalizationKey = "EXILE_HELMET_NAME";
                     exileHelmet.ViewElementDef.DisplayName2.LocalizationKey = "EXILE_HELMET_DESCRIPTION";
 
                     exileTorso.ViewElementDef = Helper.CreateDefFromClone(exileTorso.ViewElementDef, "{58D71B43-BCC4-41D0-BEC5-1ACCFADB9D63}", exileTorso.name);
-                  //  exileTorso.ViewElementDef.Description.LocalizationKey = "EXILE_TORSO_NAME";
+                    //  exileTorso.ViewElementDef.Description.LocalizationKey = "EXILE_TORSO_NAME";
                     exileTorso.ViewElementDef.DisplayName2.LocalizationKey = "EXILE_TORSO_DESCRIPTION";
 
                     exileLegs.ViewElementDef = Helper.CreateDefFromClone(exileLegs.ViewElementDef, "{334A8591-4FCC-45FB-AB39-37B7AFBD4AB0}", exileLegs.name);
-                  //  exileLegs.ViewElementDef.Description.LocalizationKey = "EXILE_LEGS_NAME";
+                    //  exileLegs.ViewElementDef.Description.LocalizationKey = "EXILE_LEGS_NAME";
                     exileLegs.ViewElementDef.DisplayName2.LocalizationKey = "EXILE_LEGS_DESCRIPTION";
 
 
@@ -882,6 +1035,8 @@ namespace TFTV
                     slugMechArms.Tags.Add(Shared.SharedGameTags.BionicalTag);
 
                     WeaponDef slugArmsWeapon = slugMechArms as WeaponDef;
+
+                    slugArmsWeapon.BehaviorOnDisable = EDisableBehavior.Disable;
 
                     slugMechArms.CompatibleAmmunition = new TacticalItemDef[] { };
                     slugMechArms.ChargesMax = -1;
@@ -1069,11 +1224,11 @@ namespace TFTV
         internal class TFTVKaosGuns
         {
 
-            private static readonly WeaponDef _obliterator = DefCache.GetDef<WeaponDef>("KS_Obliterator_WeaponDef");
-            private static readonly WeaponDef _subjector = DefCache.GetDef<WeaponDef>("KS_Subjector_WeaponDef");
-            private static readonly WeaponDef _redemptor = DefCache.GetDef<WeaponDef>("KS_Redemptor_WeaponDef");
-            private static readonly WeaponDef _devastator = DefCache.GetDef<WeaponDef>("KS_Devastator_WeaponDef");
-            private static readonly WeaponDef _tormentor = DefCache.GetDef<WeaponDef>("KS_Tormentor_WeaponDef");
+            internal static readonly WeaponDef _obliterator = DefCache.GetDef<WeaponDef>("KS_Obliterator_WeaponDef");
+            internal static readonly WeaponDef _subjector = DefCache.GetDef<WeaponDef>("KS_Subjector_WeaponDef");
+            internal static readonly WeaponDef _redemptor = DefCache.GetDef<WeaponDef>("KS_Redemptor_WeaponDef");
+            internal static readonly WeaponDef _devastator = DefCache.GetDef<WeaponDef>("KS_Devastator_WeaponDef");
+            internal static readonly WeaponDef _tormentor = DefCache.GetDef<WeaponDef>("KS_Tormentor_WeaponDef");
 
             internal static Dictionary<GeoMarketplaceItemOptionDef, GeoMarketplaceItemOptionDef> _kGWeaponsAndAmmo = new Dictionary<GeoMarketplaceItemOptionDef, GeoMarketplaceItemOptionDef>();
             internal static GameTagDef _kGTag;
@@ -1082,7 +1237,9 @@ namespace TFTV
             {
                 try
                 {
-                    DefCache.GetDef<ItemTypeTagDef>("AssaultRifleItem_TagDef");
+
+                    FactionTagDef neutralFactionTag = DefCache.GetDef<FactionTagDef>("Neutral_FactionTagDef");
+                    FactionTagDef phoenixFactionTag = DefCache.GetDef<FactionTagDef>("PhoenixPoint_FactionTagDef");
 
                     TacticalItemDef sourceAmmo = DefCache.GetDef<TacticalItemDef>("PX_AssaultRifle_AmmoClip_ItemDef");
                     string name = $"{weaponDef.name}_AmmoClipDef";
@@ -1098,7 +1255,8 @@ namespace TFTV
 
                     newAmmo.ChargesMax = amount;
                     newAmmo.CrateSpawnWeight = 1000;
-                    newAmmo.Tags.Remove(DefCache.GetDef<GameTagDef>("ManufacturableItem_TagDef"));
+                    newAmmo.Tags.Remove(phoenixFactionTag);
+                    newAmmo.Tags.Add(neutralFactionTag);
                     newAmmo.Tags.Remove(DefCache.GetDef<ClassTagDef>("Assault_ClassTagDef"));
                     newAmmo.Tags.Add(classTagDef);
                     //  newAmmo.CombineWhenStacking = false;
@@ -1144,9 +1302,15 @@ namespace TFTV
 
                     _kGWeaponsAndAmmo.Add(weaponMarketPlaceOption, newMarketplaceItem);
 
-                    InventoryComponentDef neutralCrateInventoryComponent = DefCache.GetDef<InventoryComponentDef>("Crate_NE_InventoryComponentDef");
+                    GeoFactionDef neutralFaction = DefCache.GetDef<GeoFactionDef>("Neutral_GeoFactionDef");
+
+                    neutralFaction.StartingManufacturableItems = neutralFaction.StartingManufacturableItems.AddToArray(newAmmo);
+
+                    InventoryComponentDef neutralCrateInventoryComponent = DefCache.GetDef<InventoryComponentDef>("Crate_PX_InventoryComponentDef");
                     neutralCrateInventoryComponent.ItemDefs = neutralCrateInventoryComponent.ItemDefs.AddToArray(newAmmo);
-                    
+
+
+
                 }
                 catch (Exception e)
                 {
@@ -1249,7 +1413,7 @@ namespace TFTV
             private static readonly string _researchMarketPlaceSpecial = "KEY_MARKETPLACE_SPECIAL_RESEARCH";
             private static readonly string[] _marketPlaceSpecials = new string[] { _vehicleMarketPlaceSpecial, _researchMarketPlaceSpecial, _mercenaryMarketPlaceSpecial, _weaponsMarketPlaceSpecial };
 
-        
+
 
 
             [HarmonyPatch(typeof(GeoEventChoice), "PassRequirements")]
@@ -1259,13 +1423,13 @@ namespace TFTV
                 {
                     try
                     {
-                        if(__instance.Outcome!=null && __instance.Outcome.Units!=null && __instance.Outcome.Units.Count>0 && __instance.Outcome.Units[0].Data.GameTags.Contains(MercenaryTag) && faction is GeoPhoenixFaction phoenixFaction && phoenixFaction.LivingQuarterFull) 
+                        if (__instance.Outcome != null && __instance.Outcome.Units != null && __instance.Outcome.Units.Count > 0 && __instance.Outcome.Units[0].Data.GameTags.Contains(MercenaryTag) && faction is GeoPhoenixFaction phoenixFaction && phoenixFaction.LivingQuarterFull)
                         {
-                           // TFTVLogger.Always($"Living Quarters are full! Can't recruit Mercenary");
+                            // TFTVLogger.Always($"Living Quarters are full! Can't recruit Mercenary");
                             __result = false;
                         }
 
-                       
+
                     }
                     catch (Exception e)
                     {
@@ -1845,15 +2009,15 @@ namespace TFTV
 
                         List<ResearchElement> list = new List<ResearchElement>();
 
-                        for(int x=0; x < level.FactionsWithDiplomacy.Count(); x++) 
+                        for (int x = 0; x < level.FactionsWithDiplomacy.Count(); x++)
                         {
                             list.AddRange(level.FactionsWithDiplomacy.ElementAt(x).Research.Completed.Where((ResearchElement r) => r.IsAvailableToFaction(level.PhoenixFaction)).ToList());
                         }
 
-                        if (list.Count == 0) 
+                        if (list.Count == 0)
                         {
                             TFTVLogger.Always($"No researches! Player knows all!");
-                            return false;                        
+                            return false;
                         }
 
                         List<ResearchElement> phoenixFactionCompletedResearches = level.PhoenixFaction.Research.RevealedAndCompleted.ToList();
@@ -1943,7 +2107,7 @@ namespace TFTV
 
 
 
-                private static void FakeResearchOptionToSetupCharacterSale(UIModuleTheMarketplace uIModuleTheMarketplace)
+            private static void FakeResearchOptionToSetupCharacterSale(UIModuleTheMarketplace uIModuleTheMarketplace)
             {
                 try
                 {
@@ -1994,7 +2158,7 @@ namespace TFTV
                         uIModuleTheMarketplace.ResearchInfo.BenefitsContainer.SetActive(false);
                         uIModuleTheMarketplace.ResearchInfo.ResourceContainer.SetActive(false);
                         uIModuleTheMarketplace.ResearchInfo.RequirementsContainer.SetActive(false);
-                        uIModuleTheMarketplace.ResearchInfo.Icon.sprite = tacCharacterDef.Data.ViewElementDef.InventoryIcon; 
+                        uIModuleTheMarketplace.ResearchInfo.Icon.sprite = tacCharacterDef.Data.ViewElementDef.InventoryIcon;
                     }
 
                 }
@@ -2038,7 +2202,7 @@ namespace TFTV
                         __instance.NoOffersAvailableHint.SetActive(false);
                         //   TFTVLogger.Always($"Running UpdateVisuals");
 
-                        CreateTestingButton();
+                        CreateItemFilter();
 
                     }
                     catch (Exception e)
@@ -2131,7 +2295,7 @@ namespace TFTV
             public static PhoenixGeneralButton MarketToggleButton = null;
 
 
-            private static void CreateTestingButton()
+            private static void CreateItemFilter()
             {
                 try
                 {
