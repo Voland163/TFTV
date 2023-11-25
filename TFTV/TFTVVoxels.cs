@@ -2,6 +2,7 @@
 using Base.Levels.Nav;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
+using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
@@ -28,7 +29,7 @@ namespace TFTV
         public static bool FireVoxelSpawnAlreadyChecked = false;
 
         [HarmonyPatch(typeof(TacticalVoxelMatrix), "VoxelSpawned")]
-        public static class TacticalVoxelMatrix_IsFreeForEncounter_TImeVaultBugHung_patch
+        public static class TacticalVoxelMatrix_VoxelSpawned_patch
         {
             public static void Postfix(TacticalVoxelMatrix __instance, TacticalVoxel voxel)
             {
@@ -53,7 +54,7 @@ namespace TFTV
                             {
                                 PropertyInfo propertyInfo = typeof(TacticalVoxelMatrix).GetProperty("HadGoo", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
 
-                                propertyInfo.SetValue(__instance, new object[] { false });
+                                propertyInfo.SetValue(__instance, false);
 
                             }
                         }
@@ -77,6 +78,7 @@ namespace TFTV
             }
         }
 
+        
 
         internal class TFTVFire
         {
@@ -281,17 +283,17 @@ namespace TFTV
                         //           if (!DontUseGooNavigationPatch)
                         //         {
                         TacStatsModifyStatusDef slowedStatus = DefCache.GetDef<TacStatsModifyStatusDef>("Slowed_StatusDef");
-                        GooDamageMultiplierAbilityDef gooImmunity = DefCache.GetDef<GooDamageMultiplierAbilityDef>("GooImmunity_AbilityDef");
+                     //   GooDamageMultiplierAbilityDef gooImmunity = DefCache.GetDef<GooDamageMultiplierAbilityDef>("GooImmunity_AbilityDef");
 
                         TacticalVoxel voxel = ____actor.TacticalLevel.VoxelMatrix.GetVoxel(dstPos);
 
                         //      TacStatsModifyStatus status = ____actor.Status.GetStatus<TacStatsModifyStatus>(slowedStatus);
 
-
+                        ;
 
                         float actorRadius = ____actor.NavigationComponent.AgentNavSettings.AgentRadius;
 
-                        if (voxel != null && voxel.GetVoxelType() == TacticalVoxelType.Goo && !____actor.HasStatus(slowedStatus) && actorRadius <= TacticalMap.HalfTileSize && ____actor.GetAbilityWithDef<GooDamageMultiplierAbility>(gooImmunity) == null)
+                        if (voxel != null && voxel.GetVoxelType() == TacticalVoxelType.Goo && !____actor.HasStatus(slowedStatus) && actorRadius <= TacticalMap.HalfTileSize && ____actor.GetAbility<GooDamageMultiplierAbility>() == null)
                         {
                             __result = 2f;
                         }

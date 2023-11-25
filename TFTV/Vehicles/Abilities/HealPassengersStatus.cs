@@ -31,7 +31,10 @@ namespace TFTVVehicleRework.Abilities
                     {
                         tacticalactor.CharacterStats.Health.AddRestrictedToMax(this.HealPassengersStatusDef.RestoreHP);
                         tacticalactor.CharacterStats.WillPoints.AddRestrictedToMax(this.HealPassengersStatusDef.RestoreWP);
-                        Effect.Apply(base.Repo, this.HealPassengersStatusDef.EffectToApply, TacUtil.GetActorEffectTarget(passenger, null), null);
+                        foreach(EffectDef effect in this.HealPassengersStatusDef.EffectsToApply)
+                        {
+                            Effect.Apply(base.Repo, effect, TacUtil.GetActorEffectTarget(passenger, null), null);
+                        }
                     }
                 }
                 this.CallEvent();

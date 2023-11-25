@@ -35,6 +35,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
+using UnityEngine.Android;
 using UnityEngine.UI;
 
 namespace TFTV
@@ -90,23 +91,82 @@ namespace TFTV
         }
 
 
+
+        private static List<GeoPhoenixFacility> SetFacilitiesUnderConstructionToCompleted(GeoPhoenixBaseLayout layout) 
+        {
+            try 
+            {
+                List<GeoPhoenixFacility> geoPhoenixFacilities = layout.Facilities.Where(f=>f.State==GeoPhoenixFacility.FacilityState.UnderContstruction).ToList();
+
+                PropertyInfo stateProperty = typeof(GeoPhoenixFacility).GetProperty("State", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+
+
+                if (geoPhoenixFacilities.Count > 0) 
+                {
+                    TFTVLogger.Always($"Facilities under construction at base under attack detected; setting to damaged");
+
+                    foreach(GeoPhoenixFacility facility in geoPhoenixFacilities) 
+                    {
+                        stateProperty.SetValue(facility, GeoPhoenixFacility.FacilityState.Damaged);  
+                    }
+                
+                
+                }
+
+                return geoPhoenixFacilities;
+            }
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
+        }
+
+        private static void RestoreFacilityState(List<GeoPhoenixFacility> geoPhoenixFacilities)
+        {
+            try
+            {
+               
+                PropertyInfo stateProperty = typeof(GeoPhoenixFacility).GetProperty("State", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+
+                if (geoPhoenixFacilities.Count > 0)
+                {
+                    TFTVLogger.Always($"Restoring faciliites");
+
+                    foreach (GeoPhoenixFacility facility in geoPhoenixFacilities)
+                    {
+                        stateProperty.SetValue(facility, GeoPhoenixFacility.FacilityState.UnderContstruction);
+                    }
+                }
+            }
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
+        }
+
+
+
+
         [HarmonyPatch(typeof(GeoPhoenixBaseLayout), "ModifyMissionData")]
         public static class TFTV_GeoPhoenixBaseLayout_ModifyMissionData_patch
         {
 
 
-            public static void Prefix(GeoPhoenixBaseLayout __instance, GeoMission mission, TacMissionData missionData)
+            public static void Prefix(GeoPhoenixBaseLayout __instance, GeoMission mission, TacMissionData missionData, out List<GeoPhoenixFacility> __state)
             {
                 try
                 {
+                    __state = SetFacilitiesUnderConstructionToCompleted(__instance);
 
                     TFTVLogger.Always("ModifyMissionData");
                     if ((PhoenixBasesUnderAttack.ContainsKey(mission.Site.SiteId) || PhoenixBasesInfested.Contains(mission.Site.SiteId)) && !CheckIfBaseLayoutOK(__instance))
                     {
                         TFTVLogger.Always("Bad layout!");
                         FixBadLayout(__instance);
-
-
                     }
 
                 }
@@ -116,6 +176,23 @@ namespace TFTV
                     throw;
                 }
             }
+            public static void Postfix(GeoPhoenixBaseLayout __instance, GeoMission mission, TacMissionData missionData, in List<GeoPhoenixFacility> __state)
+            {
+                try
+                {
+                    RestoreFacilityState(__state);
+                    RemoveFakeFacilities(mission.Site.GetComponent<GeoPhoenixBase>().Layout);
+
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+
+
         }
 
         private static bool CheckIfBaseLayoutOK(GeoPhoenixBaseLayout layout)
@@ -127,7 +204,7 @@ namespace TFTV
 
                 GeoPhoenixFacility powerGenerator = geoPhoenixFacilities.FirstOrDefault(f => f.GetComponent<PowerFacilityComponent>() != null);
 
-                if (powerGenerator.HealthPercentage == 0)
+                if (powerGenerator!=null && powerGenerator.HealthPercentage == 0)
                 {
                     FieldInfo fieldInfo = typeof(GeoPhoenixFacility).GetField("_health", BindingFlags.NonPublic | BindingFlags.Instance);
                     if (fieldInfo != null)
@@ -135,9 +212,6 @@ namespace TFTV
                         fieldInfo.SetValue(powerGenerator, 50);
                         TFTVLogger.Always($"{powerGenerator.HealthPercentage}");
                     }
-
-
-
                 }
 
 
@@ -887,7 +961,7 @@ namespace TFTV
 
                                 geoMission.Site.RefreshVisuals();
                                 TFTVVanillaFixes.CheckFacilitesNotWorking(geoMission.Site.GetComponent<GeoPhoenixBase>());
-                                RemoveFakeFacilities(geoMission.Site.GetComponent<GeoPhoenixBase>().Layout);
+                                
 
                             }
                             else
@@ -1782,9 +1856,9 @@ namespace TFTV
 
             try
             {
-                PhoenixFacilityDef storesFacility = DefCache.GetDef<PhoenixFacilityDef>("FakeFacility");
+                PhoenixFacilityDef fakeFacility = DefCache.GetDef<PhoenixFacilityDef>("FakeFacility");
 
-                List<GeoPhoenixFacility> geoPhoenixFacilities = layout.Facilities.Where(f => f.Def == storesFacility).ToList();
+                List<GeoPhoenixFacility> geoPhoenixFacilities = layout.Facilities.Where(f => f.Def == fakeFacility).ToList();
 
                 if (geoPhoenixFacilities.Count > 0)
                 {

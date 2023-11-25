@@ -65,10 +65,13 @@ namespace TFTVVehicleRework.Aspida
             // "Acheron_CureCloud_ApplyEffectAbilityDef"
             ApplyEffectAbilityDef CureCloud = (ApplyEffectAbilityDef)Repo.GetDef("dba1a2a5-39de-2294-6877-1f4296038057");
             TacticalTargetingDataDef StimSprayTargeting = Repo.CreateDef<TacticalTargetingDataDef>("e41969a2-7b86-4466-b83d-fb33e5a35ef3", CureCloud.TargetingDataDef);
-            StimSprayTargeting.Origin.Range = 5f;            
+            StimSprayTargeting.Origin.Range = 5f;
+            StimSprayTargeting.Origin.LineOfSight = LineOfSightType.Ignore; 
+            StimSprayTargeting.Target.Range = 6.5f;       
 
             StimSpray.TargetingDataDef = StimSprayTargeting;
             StimSpray.ViewElementDef = VED(DetAdv);
+            StimSpray.SceneViewElementDef = AspidaMain.AspidaSceneView();
             StimSpray.EventOnActivate = StimParticleEffects();
 
             return StimSpray;

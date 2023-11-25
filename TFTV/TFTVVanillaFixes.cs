@@ -155,11 +155,15 @@ namespace TFTV
 
                         WeaponDef weaponDef = (WeaponDef)AmmoWeaponDatabase.AmmoToWeaponDictionary[tacticalItemDef][0];
 
-                        float costMultiplier = Math.Max(__instance.ChargesMax/weaponDef.DamagePayload.AutoFireShotCount, 2);
+                        float costMultiplier = Math.Max(__instance.ChargesMax/Math.Max(weaponDef.DamagePayload.AutoFireShotCount, weaponDef.DamagePayload.ProjectilesPerShot), 2);
+                        
+                        
+
+                        
                         __result = new ResourcePack(new ResourceUnit[]
                              {
-                        new ResourceUnit(ResourceType.Tech, Mathf.Floor(__instance.ManufactureTech / costMultiplier)),
-                        new ResourceUnit(ResourceType.Materials, Mathf.Floor(__instance.ManufactureMaterials / costMultiplier)),
+                        new ResourceUnit(ResourceType.Tech, Mathf.Max(Mathf.FloorToInt(__instance.ManufactureTech / costMultiplier), Mathf.FloorToInt(__instance.ManufactureTech/10))),
+                        new ResourceUnit(ResourceType.Materials, Mathf.Max(Mathf.CeilToInt(__instance.ManufactureMaterials / costMultiplier), Mathf.CeilToInt(__instance.ManufactureMaterials/10))),
                         new ResourceUnit(ResourceType.Mutagen, Mathf.Floor(__instance.ManufactureMutagen / costMultiplier)),
                         new ResourceUnit(ResourceType.LivingCrystals, Mathf.Floor(__instance.ManufactureLivingCrystals / costMultiplier)),
                         new ResourceUnit(ResourceType.Orichalcum, Mathf.Floor(__instance.ManufactureOricalcum / costMultiplier)),

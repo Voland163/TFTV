@@ -5,6 +5,7 @@ using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Modding;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
+using PhoenixPoint.Tactical.Entities.Equipments;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -92,7 +93,7 @@ namespace TFTV
 
             /// ModMain is accesible at any time
             DefCache.GetDef<TacticalTargetingDataDef>("E_TargetingData [PsychicWard_AbilityDef]").Origin.Range = 10; //Fix Dtony thing                                                                                                                 
-            TFTVNewGameOptions.SetInternalConfigOptions(gsController);                                                                                                        
+          //  TFTVNewGameOptions.SetInternalConfigOptions(gsController);                                                                                                        
             TFTVBetaSaveGamesFixes.OpenBetaSaveGameFixes(gsController);
             TFTVLogger.Always($"Difficulty level on Geoscape is {Controller.CurrentDifficultyLevel.name}");
             TFTVBetaSaveGamesFixes.CorrrectPhoenixSaveManagerDifficulty();
@@ -127,6 +128,28 @@ namespace TFTV
             TFTVPassengerModules.ImplementFarMConfig(Controller);
             TFTVNewGameOptions.Change_Crossbows();
             TFTVBetaSaveGamesFixes.RemoveBadSlug(Controller);
+
+            TFTVConfig config = TFTVMain.Main.Config;
+
+        /*    List<TacticalItemDef> availableItems = Controller.GetAvailableFactionEquipment(true);
+
+            foreach (TacticalItemDef tacticalItemDef in availableItems) 
+            {
+                TFTVLogger.Always($"{tacticalItemDef.name}");
+            
+            
+            }
+
+
+
+            TFTVLogger.Always(
+                $"Learn first personal skill? {config.LearnFirstPersonalSkill}; " +
+                $"Flinching? {config.AnimateWhileShooting}" +
+                $"Equalize Trade? {config.EqualizeTrade}"
+                );
+        */
+
+
           //  TFTVTacticalUtils.CheckHPGeoscape(Controller);
          //   TFTVChangesToDLC5Events.ForceMarketPlaceUpdate();
          //   TFTVVoidOmens.RemoveAllVoidOmens(gsController);

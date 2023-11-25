@@ -112,6 +112,7 @@ namespace TFTV
                 try
                 {
                     TFTVPalaceMission.RemoveVoiceFromSpecialCharactersByRemovingHumanTagOnEntryIntoPlay(actor);
+
                 }
                 catch (Exception e)
                 {

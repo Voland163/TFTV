@@ -8,6 +8,7 @@ using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.View.ViewControllers;
 using PhoenixPoint.Geoscape.View.ViewControllers;
+using PhoenixPoint.Home;
 using PhoenixPoint.Home.View;
 using PhoenixPoint.Home.View.ViewControllers;
 using PhoenixPoint.Home.View.ViewModules;
@@ -17,6 +18,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace TFTV
 {
@@ -30,6 +32,61 @@ namespace TFTV
         public static bool NewGameOptionsSetUp = false;
 
         private static int SelectedDifficulty = 0;
+
+        [HarmonyPatch(typeof(HomeScreenView), "InitView")]
+        public static class HomeScreenView_InitView_Patch
+        {
+            private static void Postfix(HomeScreenView __instance)
+            {
+                try
+                {
+                    Resolution resolution = Screen.currentResolution;
+                    float resolutionFactorWidth = (float)resolution.width / 1920f;
+                    //   TFTVLogger.Always("ResolutionFactorWidth is " + resolutionFactorWidth);
+                    float resolutionFactorHeight = (float)resolution.height / 1080f;
+
+                    Image logoText =  __instance.HomeScreenModules.MainMenuButtonsModule.VanillaVisuals[0].GetComponentsInChildren<Image>().FirstOrDefault(i => i.name == "PhoenixLogo_text");
+                    Image logoImage = __instance.HomeScreenModules.MainMenuButtonsModule.VanillaVisuals[0].GetComponentsInChildren<Image>().FirstOrDefault(i => i.name == "PhoenixLogo_symbol");
+
+                     logoImage.sprite = Helper.CreateSpriteFromImageFile("TFTV_logo5.png");
+                    // logoText.sprite = Helper.CreateSpriteFromImageFile("TFTV_logo3.png");
+                    //  logoText.transform.position += new Vector3(0, 500 * resolutionFactorHeight, 0);
+                     logoImage.transform.position += new Vector3(0, 200 * resolutionFactorHeight, 0);
+                     logoImage.transform.localScale *= 2.25f;
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
+
+
+
+
+        [HarmonyPatch(typeof(EditionVisualsController), "DetermineEdition")]
+        public static class EditionVisualsController_DetermineEdition_Patch
+        {
+            private static bool Prefix(EditionVisualsController __instance)
+            {
+                try
+                {
+                   
+                   
+                    __instance.SwitchToVanillaVisuals();
+
+                    return false;
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
 
         private static int ConvertDifficultyToIndexExoticResources()
         {
@@ -180,7 +237,7 @@ namespace TFTV
         }
 
 
-        //This is for new game start screen. Commented out for the moment.
+
         [HarmonyPatch(typeof(GameOptionViewController), "OnClicked")]
         public static class OptionListViewController_Element_PointerExit_Patch
         {
@@ -276,27 +333,30 @@ namespace TFTV
             private static ModSettingController _tradingModSettings = null;
             private static ArrowPickerController _trading = null;
 
-            private static string _titleTrading = "TRADING_PROFIT"; //"NO PROFIT FROM TRADING";
-            private static string _descriptionTrading = "TRADING_PROFIT_DESCRIPTION"; //"Trade is always 1 tech for 5 food or 5 materials, so no profit can be made from trading.";
+
+
+
+            private static string _titleTrading = "KEY_EqualizeTrade"; //"NO PROFIT FROM TRADING";
+            private static string _descriptionTrading = "KEY_EqualizeTrade_DESCRIPTION"; //"Trade is always 1 tech for 5 food or 5 materials, so no profit can be made from trading.";
 
             private static ModSettingController _limitedRaidingModSettings = null;
             private static ArrowPickerController _limitedRaiding = null;
 
-            private static string _titleLimitedRaiding = "LIMITED_RAIDING";//"LIMITED RAIDING";
-            private static string _descriptionLimitedRaiding = "LIMITED_RAIDING_DESCRIPTION";//"After a raid, all faction havens are immediately set to highest alert and may not be raided in the next 7 days.";
+            private static string _titleLimitedRaiding = "KEY_LimitedRaiding";//"LIMITED RAIDING";
+            private static string _descriptionLimitedRaiding = "KEY_LimitedRaiding_DESCRIPTION";//"After a raid, all faction havens are immediately set to highest alert and may not be raided in the next 7 days.";
 
 
             private static ModSettingController _noDropReinforcementsModSettings = null;
             private static ArrowPickerController _noDropReinforcements = null;
 
-            private static string _titleNoDropReinforcements = "REINFORCEMENTS_DROPS";//"NO ITEM DROPS FROM REINFORCEMENTS";
-            private static string _descriptionNoDropReinforcements = "REINFORCEMENTS_DROPS_DESCRIPTION";//"Enemy reinforcements do not drop items on death; disallows farming for weapons on missions with infinite reinforcements.";
+            private static string _titleNoDropReinforcements = "KEY_ReinforcementsNoDrops";//"NO ITEM DROPS FROM REINFORCEMENTS";
+            private static string _descriptionNoDropReinforcements = "KEY_ReinforcementsNoDrops_DESCRIPTION";//"Enemy reinforcements do not drop items on death; disallows farming for weapons on missions with infinite reinforcements.";
 
             private static ModSettingController _flinchingModSettings = null;
             private static ArrowPickerController _flinching = null;
 
-            private static string _titleFlinching = "FLINCHING";
-            private static string _descriptionFlinching = "FLINCHING_DESCRIPTION";//"The characters will continue to animate during shooting sequences and targets that are hit may flinch, causing subsequent shots in a burst to miss when shooting in freeaim mode.";
+            private static string _titleFlinching = "KEY_AnimateWhileShooting";
+            private static string _descriptionFlinching = "KEY_AnimateWhileShooting_DESCRIPTION";//"The characters will continue to animate during shooting sequences and targets that are hit may flinch, causing subsequent shots in a burst to miss when shooting in freeaim mode.";
 
             private static ModSettingController _strongerPandoransModSettings = null;
             private static ArrowPickerController _strongerPandorans = null;
@@ -307,22 +367,21 @@ namespace TFTV
             private static ModSettingController _moreMistVOModSettings = null;
             private static ArrowPickerController _moreMistVO = null;
 
-            private static string _titleMoreMistVO = "MORE_MIST_VO";//"PLAY WITH MORE MIST VOID OMEN";
-            private static string _descriptionMoreMistVO = "MORE_MIST_VO_DESCRIPTION";//"If you are playing on a Low-end system and experience lag with this Void Omen, you can turn it off here. This will prevent it from rolling.";
+            private static string _titleMoreMistVO = "KEY_MoreMistVO";//"PLAY WITH MORE MIST VOID OMEN";
+            private static string _descriptionMoreMistVO = "KEY_MoreMistVO_DESCRIPTION";//"If you are playing on a Low-end system and experience lag with this Void Omen, you can turn it off here. This will prevent it from rolling.";
 
 
             private static ModSettingController _limitedDeploymentVOModSettings = null;
             private static ArrowPickerController _limitedDeploymentVO = null;
 
-            private static string _titlelimitedDeploymentVO = "LIMITED_DEPLOYMENT_VO";//"PLAY WITH MORE MIST VOID OMEN";
-            private static string _descriptionlimitedDeploymentVO = "LIMITED_DEPLOYMENT_VO_DESCRIPTION";
-
+            private static string _titlelimitedDeploymentVO = "KEY_LimitedDeploymentVO";//"PLAY WITH MORE MIST VOID OMEN";
+            private static string _descriptionlimitedDeploymentVO = "KEY_LimitedDeploymentVO_DESCRIPTION";
 
             private static ModSettingController _skipMoviesModSettings = null;
             private static ArrowPickerController _skipMovies = null;
 
-            private static string _titleSkipMovies = "SKIP_MOVIES";//"SKIP MOVIES";
-            private static string _descriptionSkipMovies = "SKIP_MOVIES_DESCRIPTION";//"Choose whether to skip Logos on game launch, Intro and Landing cinematics. Adapted from Mad's Assorted Adjustments.";
+            private static string _titleSkipMovies = "KEY_SkipMovies";//"SKIP MOVIES";
+            private static string _descriptionSkipMovies = "KEY_SkipMovies_DESCRIPTION";//"Choose whether to skip Logos on game launch, Intro and Landing cinematics. Adapted from Mad's Assorted Adjustments.";
 
             private static ModSettingController _exoticResourcesModSettings = null;
             private static ArrowPickerController _exoticResources = null;
@@ -370,14 +429,14 @@ namespace TFTV
             private static ModSettingController _staminaRecuperationModSettings = null;
             private static ArrowPickerController _staminaRecuperation = null;
 
-            private static string _titleStaminaRecuperation = "STAMINA_RECUPERATION";// STAMINA RECUPERATION FAR-M";
-            private static string _descriptionStaminaRecuperation = "STAMINA_RECUPERATION_DESCRIPTION";//"The starting type of passenger module, FAR-M, will slowly recuperate the stamina of the operatives on board. Switch off if you prefer to have to return to base more often.";
+            private static string _titleStaminaRecuperation = "KEY_ActivateStaminaRecuperatonModule";// STAMINA RECUPERATION FAR-M";
+            private static string _descriptionStaminaRecuperation = "KEY_ActivateStaminaRecuperatonModule_DESCRIPTION";//"The starting type of passenger module, FAR-M, will slowly recuperate the stamina of the operatives on board. Switch off if you prefer to have to return to base more often.";
 
             private static ModSettingController _disableTacSavesModSettings = null;
             private static ArrowPickerController _disableTacSaves = null;
 
-            private static string _titleDisableTacSaves = "DISABLE_TACTICAL_SAVES";//"DISABLE SAVING ON TACTICAL";
-            private static string _descriptionDisableTacSaves = "DISABLE_TACTICAL_SAVES_DESCRIPTION";//"You can still restart the mission though.";
+            private static string _titleDisableTacSaves = "KEY_disableSavingOnTactical";//"DISABLE SAVING ON TACTICAL";
+            private static string _descriptionDisableTacSaves = "KEY_disableSavingOnTactical_DESCRIPTION";//"You can still restart the mission though.";
 
 
             /*      private static ModSettingController _reverseEngineeringModSettings = null;
@@ -389,19 +448,19 @@ namespace TFTV
             private static ModSettingController _havenSOSModSettings = null;
             private static ArrowPickerController _havenSOS = null;
 
-            private static string _titleHavenSOS = "HAVENS_SOS";//"HAVENS SEND SOS";
-            private static string _descriptionHavenSOS = "HAVENS_SOS_DESCRIPTION";//"Havens under attack will send an SOS, revealing their location to the player.";
+            private static string _titleHavenSOS = "KEY_HavenSOS";//"HAVENS SEND SOS";
+            private static string _descriptionHavenSOS = "KEY_HavenSOS_DESCRIPTION";//"Havens under attack will send an SOS, revealing their location to the player.";
 
 
             private static ModSettingController _learnFirstSkillModSettings = null;
             private static ArrowPickerController _learnFirstSkill = null;
 
-            private static string _titleLearnFirstSkill = "LEARN_FIRST_BACKGROUND_PERK";//"LEARN FIRST BACKGROUND PERK";
-            private static string _descriptionLearnFirstSkill = "LEARN_FIRST_BACKGROUND_PERK_DESCRIPTION";//"If enabled, the first personal skill (level 1) is set right after a character is created (starting soldiers, new recruits in havens, rewards, etc).";
+            private static string _titleLearnFirstSkill = "KEY_LearnFirstPersonalSkill";//"LEARN FIRST BACKGROUND PERK";
+            private static string _descriptionLearnFirstSkill = "KEY_LearnFirstPersonalSkill_DESCRIPTION";//"If enabled, the first personal skill (level 1) is set right after a character is created (starting soldiers, new recruits in havens, rewards, etc).";
 
 
-            private static string _titleTacticalDifficulty = "TACTICAL_DIFFICULTY";//"DIFFICULTY ON TACTICAL";
-            private static string _descriotionTacticalDifficulty = "TACTICAL_DIFFICULTY_DESCRIPTION";//"You can choose a different difficulty setting for the tactical portion of the game at any time.";
+            private static string _titleTacticalDifficulty = "KEY_difficultyOnTactical";//"DIFFICULTY ON TACTICAL";
+            private static string _descriotionTacticalDifficulty = "KEY_difficultyOnTactical_DESCRIPTION";//"You can choose a different difficulty setting for the tactical portion of the game at any time.";
             private static string[] _optionsTacticalDifficulty = { "NO_CHANGE", "TFTV_DIFFICULTY_ROOKIE_TITLE", "KEY_DIFFICULTY_EASY", "KEY_DIFFICULTY_STANDARD", "KEY_DIFFICULTY_DIFFICULT", "KEY_DIFFICULTY_VERY_DIFFICULT", "TFTV_DIFFICULTY_ETERMES_TITLE" };
 
 
@@ -474,6 +533,30 @@ namespace TFTV
             private static string _titleNoSecondChances = "NO_SECOND_CHANCES";
             private static string _descriptionNoSecondChances = "NO_SECOND_CHANCES_DESCRIPTION";
 
+            private static ModSettingController _noBarksModSettings = null;
+            private static ArrowPickerController _noBarks = null;
+
+
+            private static string _titleNoBarks = "KEY_NoBarks";
+            private static string _descriptionNoBarks = "KEY_NoBarks_DESCRIPTION";
+
+            private static void ModifyConfigFields(string configField, object value)
+            {
+                try
+                {
+
+                    //   config.modConfigFields[configField] = value;
+
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+
+
+            }
 
             private static GameOptionViewController InstantiateGameOptionViewController(RectTransform rectTransform, UIModuleGameSettings uIModuleGameSettings, string titleKey, string descriptionKey, string onToggleMethod)
             {
@@ -634,6 +717,7 @@ namespace TFTV
                 try
                 {
                     _skipMoviesModSettings.gameObject.SetActive(show);
+                    _noBarksModSettings.gameObject.SetActive(show);
                     _havenSOSModSettings.gameObject.SetActive(show);
                     _staminaRecuperationModSettings.gameObject.SetActive(show);
                     _learnFirstSkillModSettings.gameObject.SetActive(show);
@@ -642,6 +726,8 @@ namespace TFTV
                     //    _staminaDrainModSettings.gameObject.SetActive(show);
 
                     _skipMovies.gameObject.SetActive(show);
+                    _noBarks.gameObject.SetActive(show);
+
                     _havenSOS.gameObject.SetActive(show);
 
                     _learnFirstSkill.gameObject.SetActive(show);
@@ -663,17 +749,6 @@ namespace TFTV
                 }
 
             }
-
-            private static void OnPointerEnterCallback(GameOptionViewController gameOptionViewController)
-            {
-                // Handle pointer enter event if needed
-            }
-
-            private static void OnPointerExitCallback(GameOptionViewController gameOptionViewController)
-            {
-                // Handle pointer exit event if needed
-            }
-
 
 
 
@@ -863,6 +938,7 @@ namespace TFTV
                     _tradingModSettings = UnityEngine.Object.Instantiate(ModSettingControllerHook, rectTransform);
                     _limitedDeploymentVOModSettings = UnityEngine.Object.Instantiate(ModSettingControllerHook, rectTransform);
                     _limitedRaidingModSettings = UnityEngine.Object.Instantiate(ModSettingControllerHook, rectTransform);
+                    _noBarksModSettings = UnityEngine.Object.Instantiate(ModSettingControllerHook, rectTransform);
 
 
                     _startingFaction = _startingFactionModSettings.ListField;
@@ -896,7 +972,7 @@ namespace TFTV
                     _staminaDrain = _staminaDrainModSettings.ListField;
                     _staminaRecuperation = _staminaRecuperationModSettings.ListField;
                     _strongerPandorans = _strongerPandoransModSettings.ListField;
-
+                    _noBarks = _noBarksModSettings.ListField;
 
 
                     InstantiateArrowPickerController(_startingFactionModSettings, _startingFaction, _titleStartingFaction, _descriptionStartingFaction, _optionsStartingFaction, (int)(TFTVNewGameOptions.startingSquad), OnStartingFactionValueChangedCallback, 1f);
@@ -923,7 +999,7 @@ namespace TFTV
                     InstantiateArrowPickerController(_harderAmbushModSettings, _harderAmbush, _titleHarderAmbush, _descriptionHarderAmbush, _optionsBool, ConvertBoolToInt(TFTVNewGameOptions.MoreAmbushesSetting), OnHarderAmbushValueChangedCallback, 0.5f);
                     InstantiateArrowPickerController(_havenSOSModSettings, _havenSOS, _titleHavenSOS, _descriptionHavenSOS, _optionsBool, ConvertBoolToInt(config.HavenSOS), OnHavenSOSValueChangedCallback, 0.5f);
                     InstantiateArrowPickerController(_impossibleWeaponsModSettings, _impossibleWeapons, _titleImpossibleWeapons, _descriptionImpossibleWeapons, _optionsBool, ConvertBoolToInt(TFTVNewGameOptions.ImpossibleWeaponsAdjustmentsSetting), OnImpossibleWeaponsValueChangedCallback, 0.5f);
-                    InstantiateArrowPickerController(_noSecondChancesModSettings, _noSecondChances, _titleNoSecondChances, _descriptionNoSecondChances, _optionsBool, ConvertBoolToInt(TFTVNewGameOptions.NoSecondChances), OnNoSecondChancesValueChangedCallback, 0.5f); 
+                    InstantiateArrowPickerController(_noSecondChancesModSettings, _noSecondChances, _titleNoSecondChances, _descriptionNoSecondChances, _optionsBool, ConvertBoolToInt(TFTVNewGameOptions.NoSecondChances), OnNoSecondChancesValueChangedCallback, 0.5f);
                     InstantiateArrowPickerController(_learnFirstSkillModSettings, _learnFirstSkill, _titleLearnFirstSkill, _descriptionLearnFirstSkill, _optionsBool, ConvertBoolToInt(config.LearnFirstPersonalSkill), OnLearnFirstSchoolValueChangedCallback, 0.5f);
                     InstantiateArrowPickerController(_moreMistVOModSettings, _moreMistVO, _titleMoreMistVO, _descriptionMoreMistVO, _optionsBool, ConvertBoolToInt(config.MoreMistVO), OnMoreMistValueChangedCallback, 0.5f);
                     InstantiateArrowPickerController(_limitedDeploymentVOModSettings, _limitedDeploymentVO, _titlelimitedDeploymentVO, _descriptionlimitedDeploymentVO, _optionsBool, ConvertBoolToInt(config.LimitedDeploymentVO), OnLimitedDeploymentValueChangedCallback, 0.5f);
@@ -932,6 +1008,7 @@ namespace TFTV
 
                     InstantiateArrowPickerController(_disableTacSavesModSettings, _disableTacSaves, _titleDisableTacSaves, _descriptionDisableTacSaves, _optionsBool, ConvertBoolToInt(config.disableSavingOnTactical), OnDisableTacSavesValueChangedCallback, 0.5f);
                     InstantiateArrowPickerController(_skipMoviesModSettings, _skipMovies, _titleSkipMovies, _descriptionSkipMovies, _optionsBool, ConvertBoolToInt(config.SkipMovies), OnSkipMoviesValueChangedCallback, 0.5f);
+                    InstantiateArrowPickerController(_noBarksModSettings, _noBarks, _titleNoBarks, _descriptionNoBarks, _optionsBool, ConvertBoolToInt(config.NoBarks), OnNoBarksValueChangedCallback, 0.5f);
 
                     InstantiateArrowPickerController(_exoticResourcesModSettings, _exoticResources, _titleExoticResources, _descriptionExoticResources, _amountPercentageResources, ConvertDifficultyToIndexExoticResources(), OnExoticResourcesValueChangedCallback, 0.5f);
                     InstantiateArrowPickerController(_resourcesEventsModSettings, _resourcesEvents, _titleResourcesEvents, _descriptionResourcesEvents, _amountPercentageResources, ConvertDifficultyToIndexEventsResources(), OnResourcesEventsValueChangedCallback, 0.5f);
@@ -1014,6 +1091,7 @@ namespace TFTV
                     string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
                     _disableTacSaves.CurrentItemText.text = options[newValue];
                     config.disableSavingOnTactical = option;
+                    ModifyConfigFields("disableSavingOnTactical", option);
                 }
                 catch (Exception e)
                 {
@@ -1074,6 +1152,7 @@ namespace TFTV
                     string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
                     _staminaRecuperation.CurrentItemText.text = options[newValue];
                     config.ActivateStaminaRecuperatonModule = option;
+                    ModifyConfigFields("ActivateStaminaRecuperatonModule", option);
                 }
                 catch (Exception e)
                 {
@@ -1089,6 +1168,7 @@ namespace TFTV
                     string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
                     _havenSOS.CurrentItemText.text = options[newValue];
                     config.HavenSOS = option;
+                    ModifyConfigFields("HavenSOS", option);
                 }
                 catch (Exception e)
                 {
@@ -1104,6 +1184,7 @@ namespace TFTV
                     string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
                     _learnFirstSkill.CurrentItemText.text = options[newValue];
                     config.LearnFirstPersonalSkill = option;
+                    ModifyConfigFields("LearnFirstPersonalSkill", option);
                 }
                 catch (Exception e)
                 {
@@ -1117,7 +1198,7 @@ namespace TFTV
                 {
                     if (TFTVBetterEnemies.StrongerPandoransImplemented && newValue == 1 && NewGameOptionsSetUp)
                     {
-                       
+
 
                         string warning = $"{TFTVCommonMethods.ConvertKeyToString("KEY_OPTIONS_CHANGED_SETTING_WARNING0")} {_titleStrongerPandorans} {TFTVCommonMethods.ConvertKeyToString("KEY_OPTIONS_CHANGED_SETTING_WARNING1")}";
 
@@ -1160,6 +1241,7 @@ namespace TFTV
                     string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
                     _noSecondChances.CurrentItemText.text = options[newValue];
                     TFTVNewGameOptions.NoSecondChances = option;
+
                 }
                 catch (Exception e)
                 {
@@ -1176,12 +1258,31 @@ namespace TFTV
                     string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
                     _skipMovies.CurrentItemText.text = options[newValue];
                     config.SkipMovies = option;
+                    ModifyConfigFields("SkipMovies", option);
                 }
                 catch (Exception e)
                 {
                     TFTVLogger.Error(e);
                 }
             }
+
+            private static void OnNoBarksValueChangedCallback(int newValue)
+            {
+                try
+                {
+                    bool option = newValue == 0;
+                    string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
+                    _noBarks.CurrentItemText.text = options[newValue];
+                    config.NoBarks = option;
+                    ModifyConfigFields("NoBarks", option);
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+
+
 
             private static void OnFlinchingValueChangedCallback(int newValue)
             {
@@ -1191,6 +1292,7 @@ namespace TFTV
                     string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
                     _flinching.CurrentItemText.text = options[newValue];
                     config.AnimateWhileShooting = option;
+                    ModifyConfigFields("AnimateWhileShooting", option);
                 }
                 catch (Exception e)
                 {
@@ -1206,7 +1308,9 @@ namespace TFTV
                     string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
                     _moreMistVO.CurrentItemText.text = options[newValue];
                     config.MoreMistVO = option;
+                    ModifyConfigFields("MoreMistVO", option);
                 }
+
                 catch (Exception e)
                 {
                     TFTVLogger.Error(e);
@@ -1220,7 +1324,8 @@ namespace TFTV
                     bool option = newValue == 0;
                     string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
                     _limitedDeploymentVO.CurrentItemText.text = options[newValue];
-                    config.MoreMistVO = option;
+                    config.LimitedDeploymentVO = option;
+                    ModifyConfigFields("LimitedDeploymentVO", option);
                 }
                 catch (Exception e)
                 {
@@ -1238,6 +1343,7 @@ namespace TFTV
                     string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
                     _trading.CurrentItemText.text = options[newValue];
                     config.EqualizeTrade = option;
+                    ModifyConfigFields("EqualizeTrade", option);
                 }
                 catch (Exception e)
                 {
@@ -1254,6 +1360,7 @@ namespace TFTV
                     string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
                     _limitedRaiding.CurrentItemText.text = options[newValue];
                     config.LimitedRaiding = option;
+                    ModifyConfigFields("LimitedRaiding", option);
                 }
                 catch (Exception e)
                 {
@@ -1270,6 +1377,7 @@ namespace TFTV
                     string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
                     _noDropReinforcements.CurrentItemText.text = options[newValue];
                     config.ReinforcementsNoDrops = option;
+                    ModifyConfigFields("ReinforcementsNoDrops", option);
                 }
                 catch (Exception e)
                 {
@@ -1294,6 +1402,10 @@ namespace TFTV
                     _tacticalDifficulty.CurrentItemText.text = options[newValue];
                     config.difficultyOnTactical = (TFTVConfig.DifficultyOnTactical)newValue;
                     //TFTVLogger.Always($"new difficulty on tactical showing in config: {config.difficultyOnTactical}");
+
+                    TFTVConfig.DifficultyOnTactical difficulty = (TFTVConfig.DifficultyOnTactical)newValue;
+
+                    ModifyConfigFields("difficultyOnTactical", difficulty);
                 }
                 catch (Exception e)
                 {
@@ -1448,6 +1560,7 @@ namespace TFTV
                     string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
                     _limitedCapture.CurrentItemText.text = options[newValue];
                     TFTVNewGameOptions.LimitedCaptureSetting = limitedCapture;
+
                 }
                 catch (Exception e)
                 {
@@ -1462,7 +1575,7 @@ namespace TFTV
                     if (TFTVDefsWithConfigDependency.ChangesToFoodAndMutagenGenerationImplemented && newValue == 1 && NewGameOptionsSetUp)
                     {
                         string warning = $"{TFTVCommonMethods.ConvertKeyToString("KEY_OPTIONS_CHANGED_SETTING_WARNING0")} {_titleLimitedHarvesting} {TFTVCommonMethods.ConvertKeyToString("KEY_OPTIONS_CHANGED_SETTING_WARNING1")}";
-                      
+
                         GameUtl.GetMessageBox().ShowSimplePrompt(warning, MessageBoxIcon.Warning, MessageBoxButtons.OK, null);
 
                     }
@@ -1502,6 +1615,30 @@ namespace TFTV
         }
 
         public static bool EnterStateRun = false;
+
+
+
+
+        [HarmonyPatch(typeof(UIStateHomeLoadGame), "EnterState")]
+        public static class UIStateHomeLoadGame_EnterState_Patch
+        {
+            private static void Postfix(UIStateHomeLoadGame __instance)
+            {
+                try
+                {
+                    TFTVLogger.Always($"UIStateHomeLoadGame.EnterState PostFix running");
+                    TFTVDefsWithConfigDependency.ImplementConfigChoices();
+
+
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
 
         [HarmonyPatch(typeof(UIStateNewGeoscapeGameSettings), "EnterState")]
         public static class UIStateNewGeoscapeGameSettings_EnterState_Patch

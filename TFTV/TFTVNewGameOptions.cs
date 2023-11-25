@@ -82,7 +82,7 @@ namespace TFTV
         public static ScavengingWeight chancesScavGroundVehicleRescue = ScavengingWeight.Low;
 
 
-        public static void SetInternalConfigOptions(GeoLevelController geoLevelController)
+     /*   public static void SetInternalConfigOptions(GeoLevelController geoLevelController)
         {
             if (!ConfigImplemented)
             {
@@ -164,7 +164,7 @@ namespace TFTV
                     TFTVLogger.Error(e);
                 }
             }
-        }
+        }*/
 
         public static void Change_Crossbows()
         {

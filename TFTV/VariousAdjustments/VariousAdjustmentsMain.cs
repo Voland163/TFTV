@@ -83,7 +83,7 @@ namespace PRMBetterClasses.VariousAdjustments
         {
             public static bool Prepare()
             {
-                return TFTVMain.Main.Settings.DeactivateTacticalAutoStandby;
+                return TFTVMain.Main.Config.DeactivateTacticalAutoStandby;
             }
             [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051")]
             // If actor NOT has ended turn (manually, OW, HD) set result to false and don't excecute original method TrySetStandBy() (return false)
@@ -97,7 +97,7 @@ namespace PRMBetterClasses.VariousAdjustments
         {
             public static bool Prepare()
             {
-                return TFTVMain.Main.Settings.DeactivateTacticalAutoStandby;
+                return TFTVMain.Main.Config.DeactivateTacticalAutoStandby;
             }
             [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051")]
             private static void Postfix(TacticalActorBase __instance, ref bool __result)

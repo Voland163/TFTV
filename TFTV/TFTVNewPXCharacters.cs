@@ -572,6 +572,26 @@ namespace TFTV
                         }
                       
                     }
+                    else if (geoEvent.EventID.Contains("FoodPoisoning"))
+                    {
+                        if (controller.EventSystem.GetEventRecord("SDI_10")?.SelectedChoice == 0 || TFTVVoidOmens.CheckFordVoidOmensInPlay(controller).Contains(10))
+                        {
+                            __result.EventLeader = AlistairExhausted;
+                        }
+                        else if (controller.EventSystem.GetEventRecord("SDI_06")?.SelectedChoice == 0)
+                        {
+                            __result.EventLeader = AlistairTired;
+                        }
+                        else
+                        {
+                            __result.EventLeader = AlistairPic;
+                        }
+
+
+                        __result.EventBackground = Helper.CreateSpriteFromImageFile("background_alistair_office.jpg");//AlistairOffice;
+
+
+                    }
 
                 }
                 catch (Exception e)

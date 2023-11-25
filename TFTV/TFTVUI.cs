@@ -1217,10 +1217,10 @@ namespace TFTV
 
                         armorItems.AddRange(character.ArmourItems.
                             Where(a => !a.ItemDef.Tags.Contains(Shared.SharedGameTags.AnuMutationTag)).
-                            Where(a => !a.ItemDef.Tags.Contains(Shared.SharedGameTags.BionicalTag)).
-                            Where(a => !a.ItemDef.RequiredSlotBinds[0].RequiredSlot.name.Contains("Attachment")).
-                            Where(a => !a.ItemDef.RequiredSlotBinds[0].RequiredSlot.name.Contains("BackPack")).
-                            Where(a => !a.ItemDef.RequiredSlotBinds[0].RequiredSlot.name.Contains("MechArm"))
+                            Where(a => !a.ItemDef.Tags.Contains(Shared.SharedGameTags.BionicalTag))//.
+                          //  Where(a => !a.ItemDef.RequiredSlotBinds[0].RequiredSlot.name.Contains("Attachment")).
+                          //  Where(a => !a.ItemDef.RequiredSlotBinds[0].RequiredSlot.name.Contains("BackPack")).
+                          //  Where(a => !a.ItemDef.RequiredSlotBinds[0].RequiredSlot.name.Contains("MechArm"))
                             );
                         equipmentItems.AddRange(character.EquipmentItems);
                         inventoryItems.AddRange(character.InventoryItems);
@@ -1256,29 +1256,7 @@ namespace TFTV
 
         }
 
-        // public static UIModuleSoldierEquip UIModuleSoldierEquipKludge = null;
-
-        /*   [HarmonyPatch(typeof(UIInventoryList), "TryLoadItemWithItem")]
-           internal static class TFTV_UIInventoryList_TryLoadItemWithItem_Patch
-           {
-               private static readonly ApplyStatusAbilityDef derealization = DefCache.GetDef<ApplyStatusAbilityDef>("DerealizationIgnorePain_AbilityDef");
-               private static void Postfix(bool __result, ICommonItem item, ICommonItem ammoItem, UIInventorySlot ammoSlot)
-               {
-                   try
-                   {
-                       TFTVLogger.Always($"result is {__result}. item is {item} ammoItem is {ammoItem}. ammonslot is {ammoSlot?.name}");
-
-
-                   }
-                   catch (Exception e)
-                   {
-                       TFTVLogger.Error(e);
-                   }
-               }
-           }*/
-
-
-
+    
 
         //Patch to show correct encumbrance
         [HarmonyPatch(typeof(UIModuleSoldierEquip), "RefreshWeightSlider")]
@@ -1557,41 +1535,7 @@ namespace TFTV
             }
         }
 
-        /*[HarmonyPatch(typeof(CorruptionSettingsDef), "CalculateCorruptionShaderValue")]
-
-        internal static class TFTV_UI_CorruptionSettingsDef_DeliriumFace_patch
-        {
-            private static void Prefix(float corruption01)
-            {
-                try
-                {
-                    if (hookToCharacter != null)
-                    {
-                        GeoCharacter geoCharacter = hookToCharacter;
-                        if (geoCharacter.CharacterStats.Corruption > 0)
-                        {
-                            // corruption01 = ((geoCharacter.CharacterStats.Corruption-(geoCharacter.Fatigue.Stamina/10))/ geoCharacter.CharacterStats.WillPoints.IntMax)*0.25f;
-
-                          //  TFTVLogger.Always("This character is " + geoCharacter.DisplayName + " has CorruptionProgressRel of " + geoCharacter.CharacterStats.CorruptionProgressRel
-                          //      + " Delirium of " + geoCharacter.CharacterStats.Corruption + " and WP of " + geoCharacter.CharacterStats.WillPoints.IntMax + " and floatcorruption is " + corruption01);
-
-                        }
-
-                    }
-
-
-
-
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-            }
-
-
-        }*/
-
+  
 
 
         [HarmonyPatch(typeof(UIModuleSoldierCustomization), "OnNewCharacter")]
@@ -1837,8 +1781,6 @@ namespace TFTV
             }
         }
 
-
-
         //This changes display of Delirium bar in personnel edit screen to show current Delirium value vs max delirium value the character can have
         // taking into account ODI level and bionics
         [HarmonyPatch(typeof(UIModuleCharacterProgression), "SetStatusesPanel")]
@@ -1977,6 +1919,7 @@ namespace TFTV
                 }
             }
         }
+
         [HarmonyPatch(typeof(UIStateTacticalCutscene), "EnterState")]
         public static class TFTV_PhoenixGame_RunGameLevel_SkipLanding_Patch
         {

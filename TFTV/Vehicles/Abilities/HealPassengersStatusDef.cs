@@ -18,8 +18,8 @@ namespace TFTVVehicleRework.Abilities
 		[Header("Increase Passenger WillPoints by quantity:")]
 		public float RestoreWP;
 
-    [Header("Apply effect to Passenger:")]
-    public EffectDef EffectToApply;
+    [Header("Apply effects to Passenger:")]
+    public EffectDef[] EffectsToApply;
 
     [Header("Event Data")]
 		public TacticalEventDef EventOnStartTurn;
