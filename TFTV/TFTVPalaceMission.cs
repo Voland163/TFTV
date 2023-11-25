@@ -5,6 +5,7 @@ using Base.Entities;
 using Base.Entities.Effects;
 using Base.Entities.Statuses;
 using Base.Levels;
+using Epic.OnlineServices;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities;
@@ -594,6 +595,10 @@ namespace TFTV
 
             try
             {
+                TFTVConfig config = TFTVMain.Main.Config;
+
+                GameTagDef humanTag = DefCache.GetDef<GameTagDef>("Human_TagDef");
+
                 List<GameTagDef> gameTagsToCheck = new List<GameTagDef>()
                 {
                  DefCache.GetDef<GameTagDef>("TaxiarchNergal_TacCharacterDef_GameTagDef"),
@@ -606,12 +611,12 @@ namespace TFTV
 
                 };
 
-                if (gameTagsToCheck.Any(gt => actor.GameTags.Contains(gt)))
-
+                if (gameTagsToCheck.Any(gt => actor.GameTags.Contains(gt)) || config.NoBarks)
                 {
-
-                    actor.GameTags.Remove(DefCache.GetDef<GameTagDef>("Human_TagDef"));
-
+                    if (actor.HasGameTag(humanTag))
+                    {
+                        actor.GameTags.Remove(humanTag);
+                    }
                 }
 
 

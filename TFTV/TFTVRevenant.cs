@@ -375,7 +375,7 @@ namespace TFTV
 
 
 
-                    string hintDescription = $"{revenantResistanceStatus.Visuals.Description.LocalizeEnglish()}\n{TFTVCommonMethods.ConvertKeyToString("KEY_REVENANT_RESISTANCE_HINT")}";
+                    string hintDescription = $"{revenantResistanceStatus.Visuals.Description.Localize()}\n{TFTVCommonMethods.ConvertKeyToString("KEY_REVENANT_RESISTANCE_HINT")}";
                        
 
                     // TFTVLogger.Always("Got to before hint");
@@ -416,7 +416,7 @@ namespace TFTV
                         }
                     }
                     string newGuid = Guid.NewGuid().ToString();
-                    string hintDescription = revenantResistanceStatus.Visuals.Description.LocalizeEnglish();
+                    string hintDescription = revenantResistanceStatus.Visuals.Description.Localize();
 
                     // TFTVLogger.Always("Got to before hint");
 
@@ -979,7 +979,7 @@ namespace TFTV
                 }
 
                 revenantResistanceStatus.Visuals.DisplayName1 = new LocalizedTextBind($"{TFTVCommonMethods.ConvertKeyToString("KEY_REVENANT_RESISTANCE0")} - {descriptionDamage.ToUpper()}", true);
-                revenantResistanceStatus.Visuals.Description = new LocalizedTextBind($"{(1 - revenantResistanceStatus.Multiplier) * 100}% {TFTVCommonMethods.ConvertKeyToString("KEY_REVENANT_RESISTANCE1")} {descriptionDamage} {TFTVCommonMethods.ConvertKeyToString("KEY_REVENANT_RESISTANCE1")}", true);
+                revenantResistanceStatus.Visuals.Description = new LocalizedTextBind($"{(1 - revenantResistanceStatus.Multiplier) * 100}% {TFTVCommonMethods.ConvertKeyToString("KEY_REVENANT_RESISTANCE1")} {descriptionDamage} {TFTVCommonMethods.ConvertKeyToString("KEY_REVENANT_RESISTANCE2")}", true);
 
                 if (revenantResistanceStatus.DamageTypeDefs[0] == null)
                 {

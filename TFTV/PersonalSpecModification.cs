@@ -174,7 +174,7 @@ namespace PRMBetterClasses
             {
                 try
                 {
-                    BCSettings Config = TFTVMain.Main.Settings;
+                    TFTVConfig Config = TFTVMain.Main.Config;
                     if (Config.LearnFirstPersonalSkill && __instance.UnitType.IsHuman && !__instance.UnitType.IsMutoid && !__instance.UnitType.TemplateDef.IsAlien)
                     {
                         // Personal ability 0 = first skill in the row

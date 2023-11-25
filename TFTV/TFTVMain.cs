@@ -7,6 +7,7 @@ using HarmonyLib;
 using Newtonsoft.Json;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Game;
+using PhoenixPoint.Home.View;
 using PhoenixPoint.Home.View.ViewModules;
 using PhoenixPoint.Modding;
 using PRMBetterClasses;
@@ -85,7 +86,7 @@ namespace TFTV
                 /// PhoenixGame is accessible at any time.
                 PhoenixGame game = GetGame();
 
-                string version = $"TFTV November 16 release #2 (Hotfix 1 to Update #42) v{MetaData.Version}";
+                string version = $"TFTV November 25 release #1 (Update #43) v{MetaData.Version}";
 
                 TFTVversion = version;
 
@@ -111,7 +112,7 @@ namespace TFTV
 
                 //BC stuff
                 Logger.LogInfo("BC stuff loading");
-                BCApplyInGameConfig();
+              //  BCApplyInGameConfig();
                 BCApplyDefChanges();
                 Logger.LogInfo("BC stuff loaded");
                 //TFTV 
@@ -135,10 +136,13 @@ namespace TFTV
 
                 TFTVRevenantResearch.CreateRevenantRewardsDefs();
                 TFTVProjectOsiris.CreateProjectOsirisDefs();
+
                 //  TFTVAncients.CheckResearchesRequiringThings();
-
+                
+                Config.PopulateConfigFields();
+              //  Config.RetrieveConfigOptions();
                 harmony.PatchAll();
-
+                
               /*  if(GetLevel()!=null && GetLevel().name.Contains("HomeScreenLevel")) 
                 {
                     TFTVLogger.Always($"TFTV is enabled!");
@@ -182,8 +186,12 @@ namespace TFTV
         /// </summary>
         public override void OnConfigChanged()
         {
+          // Config.RetrieveConfigOptions();
+          //  TFTVLogger.Always($"Config changed. Skip movies is now {Config.SkipMovies}");
 
-            BCApplyInGameConfig();
+            
+
+          //  BCApplyInGameConfig();
             //    BCApplyDefChanges();
             //  WeaponModifications.Change_Crossbows();
 
@@ -276,8 +284,7 @@ namespace TFTV
         /// <param name="state">New state of the level.</param>
         public override void OnLevelStateChanged(Level level, Level.State prevState, Level.State state)
         {
-
-
+                
 
             // TFTVLogger.Always($"level {level.name} loading");
 
@@ -331,10 +338,10 @@ namespace TFTV
 
         private void BCApplyInGameConfig()
         {
-            Settings.LearnFirstPersonalSkill = Config.LearnFirstPersonalSkill;
-            Settings.DeactivateTacticalAutoStandby = Config.DeactivateTacticalAutoStandby;
-            Settings.BaseCrossbow_Ammo = Config.BaseCrossbow_Ammo;
-            Settings.VenomCrossbow_Ammo = Config.VenomCrossbow_Ammo;
+           // Settings.LearnFirstPersonalSkill = Config.LearnFirstPersonalSkill;
+          //  Settings.DeactivateTacticalAutoStandby = Config.DeactivateTacticalAutoStandby;
+          //  Settings.BaseCrossbow_Ammo = Config.BaseCrossbow_Ammo;
+          //  Settings.VenomCrossbow_Ammo = Config.VenomCrossbow_Ammo;
         }
 
         /// <summary>

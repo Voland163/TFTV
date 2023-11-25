@@ -237,10 +237,6 @@ namespace TFTV
 
         }
 
-
-
-
-
         //Not used, because everything included now elsewhere
         public static void BaseDefenseTurnStartChecks(TacticalLevelController controller, TacticalFaction faction)
         {
@@ -328,8 +324,6 @@ namespace TFTV
 
 
         }
-
-
 
 
         //This method is NOT ONLY FOR BASE DEFENSE; also implements Void Omen objectives
@@ -519,13 +513,6 @@ namespace TFTV
             }
 
         }
-
-
-
-
-      
-
-
 
         //Invokes changes to MissionObjectives always, and if base defense vs aliens changes deployment and hint
         [HarmonyPatch(typeof(GeoMission), "ModifyMissionData")]

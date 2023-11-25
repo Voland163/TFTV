@@ -1,24 +1,26 @@
 {
-  "ID": "phoenixrising.tftv.bettervehicles",
-  "AssemblyName": "TFTV.dll",
-  "Author": [
-    {
-      "Key": "English",
-      "Value": "PhoenixRising"
-    }
-  ],
-  "Version": "1.0.1.1",
-  "Name": [
-    {
-      "Key": "English",
-      "Value": "BetterVehiclesTFTV"
-    }
-  ],
-  "Description": [
-    {
-      "Key": "English",
-      "Value": "Closed Beta of TFTV"
-    }
-  ],
-  "Dependencies": [ ]
+  
+    "ID": "phoenixrising.tftv",
+    "AssemblyName": "TFTV.dll",
+    "Author": [
+      {
+        "Key": "English",
+        "Value": "PhoenixRising"
+      }
+    ],
+    "Version": "1.0.7.1",
+    "Name": [
+      {
+        "Key": "English",
+        "Value": "TFTV"
+      }
+    ],
+    "Description": [
+      {
+        "Key": "English",
+        "Value": "Open Beta of TFTV"
+      }
+    ],
+    "Dependencies": []
+  
 }

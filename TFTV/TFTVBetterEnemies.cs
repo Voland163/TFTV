@@ -2,8 +2,6 @@
 using Base.Core;
 using Base.Defs;
 using Base.Entities.Abilities;
-using Base.Entities.Effects.ApplicationConditions;
-using Base.UI;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
@@ -16,9 +14,7 @@ using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.Animations;
 using PhoenixPoint.Tactical.Entities.DamageKeywords;
 using PhoenixPoint.Tactical.Entities.Effects;
-using PhoenixPoint.Tactical.Entities.Effects.DamageTypes;
 using PhoenixPoint.Tactical.Entities.Equipments;
-using PhoenixPoint.Tactical.Entities.Statuses;
 using PhoenixPoint.Tactical.Entities.Weapons;
 using System;
 using System.Collections.Generic;
@@ -33,7 +29,7 @@ namespace TFTV
         private static readonly SharedData Shared = TFTVMain.Shared;
 
         public static bool StrongerPandoransImplemented = false;
-      
+
         //Adapted from BetterEnemies by Dtony
 
         internal static void ImplementBetterEnemies()
@@ -158,7 +154,7 @@ namespace TFTV
             }
         }
 
-      
+
 
         public static void BEBuff_SmallCharactersAndSentinels()
         {
@@ -214,8 +210,8 @@ namespace TFTV
                 sAEEffect.DamagePayload.AoeRadius = faceHuggerAOERadius;
 
                 sAE.ViewElementDef.DisplayName1.LocalizationKey = "KEY_MINDFRAGGER_ACID_EXPLOSION";
-                sAE.ViewElementDef.Description.LocalizationKey = "KEY_MINDFRAGGER_ACID_EXPLOSION_DESCRIPTION"; 
-                
+                sAE.ViewElementDef.Description.LocalizationKey = "KEY_MINDFRAGGER_ACID_EXPLOSION_DESCRIPTION";
+
                 RagdollDieAbilityDef FHDie = (RagdollDieAbilityDef)faceHugger.Abilities[2];
                 FHDie.DeathEffect = sAEEffect;
 
@@ -439,7 +435,7 @@ namespace TFTV
                 headSpitter.DamagePayload.DamageKeywords.Add(new DamageKeywordPair { DamageKeywordDef = acid, Value = 30 });
                 //    WeaponDef headSonic = DefCache.GetDef<WeaponDef>("Queen_Head_Sonic_WeaponDef");
 
-               
+
 
             }
             catch (Exception e)
@@ -448,7 +444,7 @@ namespace TFTV
             }
         }
 
-      
+
         public static void BEBuff_StartingEvolution()
         {
             try
@@ -641,7 +637,7 @@ namespace TFTV
             {
                 GameTagDef damagedByCaterpillar = DefCache.GetDef<GameTagDef>("DamageByCaterpillarTracks_TagDef");
 
-                foreach (TacticalActorDef actor in Repo.GetAllDefs<TacticalActorDef>().Where(a => a.name.Contains("worm") || a.name.Contains("SpiderDrone")||a.name.Contains("TechTurret")))
+                foreach (TacticalActorDef actor in Repo.GetAllDefs<TacticalActorDef>().Where(a => a.name.Contains("worm") || a.name.Contains("SpiderDrone") || a.name.Contains("TechTurret")))
                 {
                     actor.GameTags.Add(damagedByCaterpillar);
                 }
@@ -674,9 +670,9 @@ namespace TFTV
                 BodyPartAspectDef bodyPartAspectDef3 = DefCache.GetDef<BodyPartAspectDef>("E_BodyPartAspect [AN_Berserker_Helmet_BodyPartDef]");
                 bodyPartAspectDef3.Perception = 5f;
                 bodyPartAspectDef3.WillPower = 2f;
-               // BodyPartAspectDef bodyPartAspectDef4 = DefCache.GetDef<BodyPartAspectDef>("E_BodyPartAspect [AN_Berserker_Helmet_Viking_BodyPartDef]");
-               // bodyPartAspectDef4.Perception = 5f;
-              //  bodyPartAspectDef4.WillPower = 2f;
+                // BodyPartAspectDef bodyPartAspectDef4 = DefCache.GetDef<BodyPartAspectDef>("E_BodyPartAspect [AN_Berserker_Helmet_Viking_BodyPartDef]");
+                // bodyPartAspectDef4.Perception = 5f;
+                //  bodyPartAspectDef4.WillPower = 2f;
                 BodyPartAspectDef bodyPartAspectDef5 = DefCache.GetDef<BodyPartAspectDef>("E_BodyPartAspect [AN_Priest_Legs_ItemDef]");
                 bodyPartAspectDef5.Perception = 2f;
                 BodyPartAspectDef bodyPartAspectDef6 = DefCache.GetDef<BodyPartAspectDef>("E_BodyPartAspect [AN_Priest_Torso_BodyPartDef]");
@@ -753,8 +749,8 @@ namespace TFTV
                 AIProximityToEnemiesConsiderationDef Consideration1 = (AIProximityToEnemiesConsiderationDef)MindCrushAI.Evaluations[0].Considerations[0].Consideration;
                 Consideration1.MaxRange = 10;
                 AIAbilityNumberOfTargetsConsiderationDef Consideration2 = (AIAbilityNumberOfTargetsConsiderationDef)MindCrushAI.Evaluations[0].Considerations[1].Consideration;
-              Consideration2.Ability = MindCrush;
-    
+                Consideration2.Ability = MindCrush;
+
                 AIWillpointsLeftAfterAbilityConsiderationDef Consideration3 = (AIWillpointsLeftAfterAbilityConsiderationDef)MindCrushAI.Evaluations[0].Considerations[2].Consideration;
                 Consideration3.Ability = MindCrush;
             }
