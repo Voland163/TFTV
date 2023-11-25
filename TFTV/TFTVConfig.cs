@@ -70,7 +70,7 @@ namespace TFTV
 
                     Dictionary<string, ModRawConfig> modConfigs = JsonConvert.DeserializeObject<Dictionary<string, ModRawConfig>>(File.ReadAllText(path));
 
-                    if (modConfigFields != null)
+                    if (modConfigs != null)
                     {
                         ModRawConfig rawTFTVConfig = modConfigs["phoenixrising.tftv"];
 
