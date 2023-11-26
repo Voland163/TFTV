@@ -10,14 +10,11 @@ using com.ootii.Geometry;
 using HarmonyLib;
 using PhoenixPoint.Common.ContextHelp;
 using PhoenixPoint.Common.Core;
-using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.Levels.ActorDeployment;
 using PhoenixPoint.Common.Levels.Missions;
 using PhoenixPoint.Geoscape.Entities;
-using PhoenixPoint.Geoscape.Entities.PhoenixBases;
-using PhoenixPoint.Geoscape.Entities.PhoenixBases.FacilityComponents;
 using PhoenixPoint.Tactical.ContextHelp;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
@@ -78,7 +75,7 @@ namespace TFTV
                                                               where x.HasGameTag(InfestationSecondObjectiveTag)
                                                               select x;
                 if (allPandorans.Count() > 0)
-                {
+                { 
                     foreach (TacticalActorBase tacticalActor in allPandorans)
                     {
                         if (tacticalActor.IsOffMap)
@@ -87,9 +84,10 @@ namespace TFTV
                             tacticalActor.GameTags.Remove(InfestationSecondObjectiveTag);
 
                         }
+                       
                     }
-                }
 
+                }
             }
             catch (Exception e)
             {
@@ -97,6 +95,47 @@ namespace TFTV
             }
 
         }
+
+        [HarmonyPatch(typeof(KillActorFactionObjective), "GetTargets")]
+        public static class TFTV_KillActorFactionObjective_GetTargets_Patch
+        {
+            public static void Postfix(FactionObjective __instance, ref IEnumerable<TacticalActorBase> __result)
+            {
+                try
+                {
+                    if (__instance.Description.LocalizationKey == "BASEDEFENSE_INFESTATION_OBJECTIVE" && __result.Count() > 0)
+                    {
+                        //  TFTVLogger.Always("Got passed if check");
+
+                        List<TacticalActorBase> actorsToKeep = new List<TacticalActorBase>();
+
+                        foreach (TacticalActorBase tacticalActorBase in __result)
+                        {
+                            if (!tacticalActorBase.Status.HasStatus<MindControlStatus>())
+                            {
+                                //  
+                                actorsToKeep.Add(tacticalActorBase);
+                            }
+                            else
+                            {
+                                TFTVLogger.Always($"{tacticalActorBase.name} has mind controlled status!");
+
+                            }
+                        }
+
+                        __result = actorsToKeep;
+
+                    }
+                }
+
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
+
 
         public static void RemoveScatterRemainingAttackersTagFromEnemiesWithParasychosis(TacticalAbility ability, object parameter)
         {
@@ -106,7 +145,8 @@ namespace TFTV
                 ApplyEffectAbilityDef parasychosis = DefCache.GetDef<ApplyEffectAbilityDef>("Parasychosis_AbilityDef");
                 GameTagDef infestationSecondObjectiveTag = DefCache.GetDef<GameTagDef>("ScatterRemainingAttackers_GameTagDef");
 
-                if (ability.TacticalAbilityDef == parasychosis && parameter is TacticalAbilityTarget target && target.GetTargetActor() != null && target.GetTargetActor() is TacticalActor tacticalActor && tacticalActor.HasGameTag(infestationSecondObjectiveTag))
+                if (ability.TacticalAbilityDef == parasychosis && parameter is TacticalAbilityTarget target
+                    && target.GetTargetActor() != null && target.GetTargetActor() is TacticalActor tacticalActor && tacticalActor.HasGameTag(infestationSecondObjectiveTag))
                 {
                     //  TFTVLogger.Always($", target is {tacticalActor.name}");
                     tacticalActor.GameTags.Remove(infestationSecondObjectiveTag);
@@ -638,7 +678,7 @@ namespace TFTV
                     {
                         if (TutorialPhoenixBase)
                         {
-                           
+
                             SetPlayerSpawnEntrance(controller);
 
                         }
@@ -659,7 +699,7 @@ namespace TFTV
                         {
                             SetPlayerSpawnTunnels(controller);
                         }
-                            NestingStrat(controller);
+                        NestingStrat(controller);
                     }
                     else
                     {
@@ -668,7 +708,7 @@ namespace TFTV
                     }
                 }
 
-               
+
 
             }
             catch (Exception e)
@@ -848,24 +888,24 @@ namespace TFTV
 
         }
 
-     
 
-       private static Vector3 PlayerSpawn0 = new Vector3(-15.5f, 1.2f, 13.5f);
-       private static Vector3 PlayerSpawn1 = new Vector3(-12f, 1.2f, 9.5f);
-       // private static Vector3 PlayerSpawn2 = new Vector3(-21.5f, 1.2f, 15.5f);
-      //  private static Vector3 PlayerSpawn3 = new Vector3(-20.5f, 1.2f, 7.5f);
-      //  private static Vector3 PlayerSpawn4 = new Vector3(-27.5f, 1.2f, 5.5f);
-    
+
+        private static Vector3 PlayerSpawn0 = new Vector3(-15.5f, 1.2f, 13.5f);
+        private static Vector3 PlayerSpawn1 = new Vector3(-12f, 1.2f, 9.5f);
+        // private static Vector3 PlayerSpawn2 = new Vector3(-21.5f, 1.2f, 15.5f);
+        //  private static Vector3 PlayerSpawn3 = new Vector3(-20.5f, 1.2f, 7.5f);
+        //  private static Vector3 PlayerSpawn4 = new Vector3(-27.5f, 1.2f, 5.5f);
+
         private static Vector3 ReinforcementSpawn0 = new Vector3(-9.5f, 4.8f, 60.5f);
         private static Vector3 ReinforcementSpawn1 = new Vector3(-9.5f, 4.8f, 59.5f);
         private static Vector3 ReinforcementSpawn2 = new Vector3(-9.5f, 4.8f, 58.5f);
 
-       // private static List<Vector3> PlayerSpawns = new List<Vector3>() { PlayerSpawn1, PlayerSpawn3 };
+        // private static List<Vector3> PlayerSpawns = new List<Vector3>() { PlayerSpawn1, PlayerSpawn3 };
         private static readonly List<Vector3> ReinforcementSpawns = new List<Vector3>() { ReinforcementSpawn0, ReinforcementSpawn1, ReinforcementSpawn2 };
 
         public static void SetPlayerSpawnEntrance(TacticalLevelController controller)
         {
-            try 
+            try
             {
                 List<TacticalDeployZone> allDeployZones = new List<TacticalDeployZone>(controller.Map.GetActors<TacticalDeployZone>());
 
@@ -874,40 +914,40 @@ namespace TFTV
 
                 List<Vector3> reinforcementSpawns = new List<Vector3>(ReinforcementSpawns);
 
-                foreach (TacticalDeployZone tacticalDeployZone in allDeployZones) 
+                foreach (TacticalDeployZone tacticalDeployZone in allDeployZones)
                 {
-                   TFTVLogger.Always($"located {tacticalDeployZone.name} at {tacticalDeployZone.Pos}");
+                    TFTVLogger.Always($"located {tacticalDeployZone.name} at {tacticalDeployZone.Pos}");
 
-                    if (tacticalDeployZone.Pos.z == 0.5f || tacticalDeployZone.Pos.z == 1f) 
+                    if (tacticalDeployZone.Pos.z == 0.5f || tacticalDeployZone.Pos.z == 1f)
                     {
 
                         Vector3 vector3 = reinforcementSpawns.First();
                         TFTVLogger.Always($"located tdz at {tacticalDeployZone.Pos}; changing it to position {vector3}");
                         tacticalDeployZone.SetPosition(vector3);
 
-                        reinforcementSpawns.Remove(vector3);     
+                        reinforcementSpawns.Remove(vector3);
                     }
-                    else if (tacticalDeployZone.Pos==PlayerSpawn0 || tacticalDeployZone.Pos == PlayerSpawn1) 
+                    else if (tacticalDeployZone.Pos == PlayerSpawn0 || tacticalDeployZone.Pos == PlayerSpawn1)
                     {
                         TFTVLogger.Always($"Player spawn {tacticalDeployZone.name} at {tacticalDeployZone.Pos}");
                         tacticalDeployZone.SetFaction(controller.GetFactionByCommandName("px"), TacMissionParticipant.Player);
-                   //
+                        //
                     }
-                   
-                    else if (tacticalDeployZone.Pos.z<=21.5)
+
+                    else if (tacticalDeployZone.Pos.z <= 21.5)
                     {
                         TFTVLogger.Always($"located tdz to be removed {tacticalDeployZone.Pos}");
 
                         tacticalDeployZone.gameObject.SetActive(false);
-                        
+
                     }
-                    else 
+                    else
                     {
 
                         tacticalDeployZone.SetFaction(controller.GetFactionByCommandName("aln"), TacMissionParticipant.Intruder);
-                    
+
                     }
-               
+
                 }
 
             }
@@ -2368,10 +2408,7 @@ namespace TFTV
 
                         TacticalActor tacticalActor = tacticalActorBase as TacticalActor;
 
-                        if (tacticalActor != null)
-                        {
-                            tacticalActor.TacticalActorView.DoCameraChase();
-                        }
+                        tacticalActor?.TacticalActorView.DoCameraChase();
 
                     }
                 }
@@ -2571,7 +2608,7 @@ namespace TFTV
                             {
                                 if (tacticalActor != null)
                                 {
-                                    if (tacticalActor.HasGameTag(crabTag)||tacticalActor.HasGameTag(fishmanTag))
+                                    if (tacticalActor.HasGameTag(crabTag) || tacticalActor.HasGameTag(fishmanTag))
                                     {
                                         if (TFTVArtOfCrab.Has1APWeapon(tacCharacterDef))
                                         {
@@ -2811,7 +2848,7 @@ namespace TFTV
             {
                 TFTVLogger.Always("Generating Secondary Force");
 
-                Dictionary<ClassTagDef, int> reinforcements = TFTVUmbra.PickReinforcements(controller);
+                Dictionary<ClassTagDef, int> reinforcements = TFTVTouchedByTheVoid.TBTVCallReinforcements.PickReinforcements(controller);
 
 
                 // TFTVLogger.Always("2");
@@ -2952,7 +2989,6 @@ namespace TFTV
 
                         tacticalDeployZone.SpawnActor(actorDeployData.ComponentSetDef, actorDeployData.InstanceData, actorDeployData.DeploymentTags, null, true, tacticalDeployZone);
                     }
-
 
 
                     if (tacticalDeployZone.Pos.y < 4)
@@ -3122,52 +3158,7 @@ internal static void AlternativeMistAndUmbraStrat(TacticalLevelController contro
 
     }*/
 
-/* [HarmonyPatch(typeof(KillActorFactionObjective), "EvaluateObjective")]
- public static class TFTV_KillActorFactionObjective_EvaluateObjective_Patch
- {
-     public static void Prefix(FactionObjective __instance, FactionObjectiveState __result)
-     {
-         try
-         {
-             TFTVLogger.Always($"{__instance.Description.LocalizationKey} {__result}");
 
-             if (__instance.Description.LocalizationKey == "BASEDEFENSE_INFESTATION_OBJECTIVE" && __result == FactionObjectiveState.Achieved)
-             {
-                 TFTVLogger.Always("Got passed if check");
-
-                 TacticalLevelController controller = __instance.Level;
-
-                 GameTagDef gameTag = DefCache.GetDef<GameTagDef>("ScatterRemainingAttackers_GameTagDef");
-
-                 foreach (TacticalActorBase tacticalActorBase in controller.GetFactionByCommandName("aln").Actors) 
-                 { 
-
-                     if(tacticalActorBase is TacticalActor tacticalActor && tacticalActor.CharacterStats.Endurance > 10) 
-                     {
-
-                         if (!tacticalActorBase.GameTags.Contains(gameTag)) 
-                         {
-                             tacticalActorBase.GameTags.Add(gameTag);
-                             TFTVLogger.Always($"{tacticalActorBase.name} got the {gameTag.name}");
-
-                         }
-
-                     }
-
-                 }
-
-
-             }
-
-         }
-
-         catch (Exception e)
-         {
-             TFTVLogger.Error(e);
-             throw;
-         }
-     }
- }*/
 
 
 /*  [HarmonyPatch(typeof(TacticalDeployZone), "GetOrderedSpawnPositions")]

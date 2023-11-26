@@ -36,9 +36,32 @@ namespace TFTV
         public static string LivingWeaponsAcquired = "Living_Weapons_Acquired";
         public static int roll = 0;
 
+        private static readonly string TrappedInTheMistVariable = "TrappedInTheMistTriggered";
         public static bool InfestationMissionWon = false;
 
+        public static bool CancelProgFS3IfTrappedInMistAlreadyTriggered(GeoscapeEventData eventData, GeoscapeEventSystem eventSystem)
+        {
+            try 
+            {
+                if(eventData.EventID == "PROG_FS3" && eventSystem.GetVariable(TrappedInTheMistVariable) == 1) 
+                {
 
+                    TFTVLogger.Always($"Cancelling Science of Madness because a haven has already been infested");
+                    return false;
+                }
+
+                return true;
+            }
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
+
+
+
+        }
         
         //force Corruption of the Mind to spawn in a haven covered in Mist
 
@@ -70,21 +93,11 @@ namespace TFTV
                             }
                         }
 
-                        level.EventSystem.SetVariable("TrappedInTheMistTriggered", 1);
-                        level.EventSystem.SetVariable("Number_of_Infested_Havens", level.EventSystem.GetVariable(InfestedHavensVariable) + 1);
+                        level.EventSystem.SetVariable(TrappedInTheMistVariable, 1);
+                        level.EventSystem.SetVariable(InfestedHavensVariable, level.EventSystem.GetVariable(InfestedHavensVariable) + 1);
                         level.AlienFaction.InfestHaven(anuHaven);
                         anuHaven.RevealSite(level.PhoenixFaction);
-                        anuHaven.RefreshVisuals();
-
-                        /* DiplomaticGeoFactionObjective cyclopsObjective = new DiplomaticGeoFactionObjective(controller.PhoenixFaction, controller.PhoenixFaction)
-                  {
-                      Title = new LocalizedTextBind("BUILD_CYCLOPS_OBJECTIVE"),
-                      Description = new LocalizedTextBind("BUILD_CYCLOPS_OBJECTIVE"),
-                  };
-                  cyclopsObjective.IsCriticalPath = true;
-                  controller.PhoenixFaction.AddObjective(cyclopsObjective);*/
-
-
+                        anuHaven.RefreshVisuals();  
                     }
                 }
                 catch (Exception e)

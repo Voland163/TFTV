@@ -108,14 +108,14 @@ namespace TFTV
                 try
                 {
 
-                    if ((TFTVDefsWithConfigDependency.ChangesToCapturingPandoransImplemented && __instance.Label.text == "CAPTURING PANDORANS IS LIMITED")
-                        || (TFTVBetterEnemies.StrongerPandoransImplemented && __instance.Label.text == "MAKE PANDORANS STRONGER") ||
+                /*    if ((TFTVDefsWithConfigDependency.ChangesToCapturingPandoransImplemented && __instance.Label.text == "CAPTURING PANDORANS IS LIMITED")
+                        || (TFTVDefsWithConfigDependency.StrongerPandorans.StrongerPandoransImplemented && __instance.Label.text == "MAKE PANDORANS STRONGER") ||
                        (TFTVDefsWithConfigDependency.ChangesToFoodAndMutagenGenerationImplemented && __instance.Label.text == "LIMITS ON RENDERING PANDORANS FOR FOOD OR MUTAGENS"))
                     {
                         string warning = $"{TFTVCommonMethods.ConvertKeyToString("KEY_OPTIONS_CHANGED_SETTING_WARNING0")} {__instance.Label.text} {TFTVCommonMethods.ConvertKeyToString("KEY_OPTIONS_CHANGED_SETTING_WARNING0")}";
 
                         GameUtl.GetMessageBox().ShowSimplePrompt(warning, MessageBoxIcon.Warning, MessageBoxButtons.OK, null);
-                    }
+                    }*/
 
                     if (__instance.Label.text == "DISABLE SAVING ON TACTICAL")
                     {

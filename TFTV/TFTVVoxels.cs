@@ -2,7 +2,6 @@
 using Base.Levels.Nav;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
-using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
@@ -37,25 +36,24 @@ namespace TFTV
                 {
                     if (!GooVoxelSpawnAlreadyChecked && __instance.HadGoo)
                     {
+                        PropertyInfo propertyInfo = typeof(TacticalVoxelMatrix).GetProperty("HadGoo", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+
                         if (!__instance.TacticalLevel.Factions.Any(f => f.Faction.FactionDef.MatchesShortName("aln")))
                         {
-
-                            GooVoxelSpawnAlreadyChecked = true;
+                            propertyInfo.SetValue(__instance, false);
                             return;
-
                         }
                         else
                         {
                             if (__instance.TacticalLevel.CurrentFaction == __instance.TacticalLevel.GetFactionByCommandName("aln"))
                             {
+                                TFTVLogger.Always($"Pandorans used goo!");
                                 GooVoxelSpawnAlreadyChecked = true;
                             }
                             else
                             {
-                                PropertyInfo propertyInfo = typeof(TacticalVoxelMatrix).GetProperty("HadGoo", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-
                                 propertyInfo.SetValue(__instance, false);
-
+                                // TFTVLogger.Always($"Someone else used goo! HadGoo is {(bool)propertyInfo.GetValue(__instance)}");
                             }
                         }
                     }
@@ -64,11 +62,7 @@ namespace TFTV
                     {
                         TFTVLogger.Always($"Player used fire vs Pandorans! (lets assume)");
                         FireVoxelSpawnAlreadyChecked = true;
-
                     }
-
-
-
                 }
                 catch (Exception e)
                 {
@@ -77,8 +71,6 @@ namespace TFTV
                 }
             }
         }
-
-        
 
         internal class TFTVFire
         {
@@ -255,9 +247,6 @@ namespace TFTV
                 }
 
             }
-
-
-
         }
 
 
@@ -280,16 +269,9 @@ namespace TFTV
                 {
                     try
                     {
-                        //           if (!DontUseGooNavigationPatch)
-                        //         {
                         TacStatsModifyStatusDef slowedStatus = DefCache.GetDef<TacStatsModifyStatusDef>("Slowed_StatusDef");
-                     //   GooDamageMultiplierAbilityDef gooImmunity = DefCache.GetDef<GooDamageMultiplierAbilityDef>("GooImmunity_AbilityDef");
 
                         TacticalVoxel voxel = ____actor.TacticalLevel.VoxelMatrix.GetVoxel(dstPos);
-
-                        //      TacStatsModifyStatus status = ____actor.Status.GetStatus<TacStatsModifyStatus>(slowedStatus);
-
-                        ;
 
                         float actorRadius = ____actor.NavigationComponent.AgentNavSettings.AgentRadius;
 
@@ -297,7 +279,6 @@ namespace TFTV
                         {
                             __result = 2f;
                         }
-                        //       }
 
                     }
                     catch (Exception e)
@@ -325,8 +306,6 @@ namespace TFTV
                         {
                             AddGooedStatus(actor, actor.Pos);
                         }
-
-
                     }
                     catch (Exception e)
                     {
@@ -366,7 +345,6 @@ namespace TFTV
 
             private static void AddGooedStatus(TacticalActor actor, Vector3 pos)
             {
-
                 try
                 {
                     if (actor.Status == null || actor.TacticalPerceptionBase == null)
@@ -385,8 +363,6 @@ namespace TFTV
                             actor.Status.ApplyStatus(slowedStatus);
                         }
                     }
-
-
                 }
                 catch (Exception e)
                 {
@@ -399,7 +375,6 @@ namespace TFTV
             [HarmonyPatch(typeof(TacticalVoxelMatrix), "UpdateGooedStatus")]
             public static class TacticalVoxelMatrix_UpdateGooedStatus_patch
             {
-
                 public static bool Prefix()
                 {
                     try
@@ -411,8 +386,6 @@ namespace TFTV
                         TFTVLogger.Error(e);
                         throw;
                     }
-
-
                 }
             }
         }

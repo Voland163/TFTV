@@ -100,8 +100,8 @@ namespace TFTV
             TFTVCommonMethods.CheckGeoUIfunctionality(gsController);
             TFTVNewPXCharacters.PlayIntro(gsController);
             TFTVVoidOmens.ImplementVoidOmens(gsController);
-            TFTVUmbra.CheckForUmbraResearch(gsController);
-            TFTVUmbra.SetUmbraEvolution(gsController);
+            TFTVTouchedByTheVoid.Umbra.UmbraGeoscape.CheckForUmbraResearch(gsController);
+            TFTVTouchedByTheVoid.Umbra.UmbraGeoscape.SetUmbraEvolution(gsController);
             TFTVAirCombat.SetBehemothOnRampageMod(gsController);
             TFTVStamina.CheckBrokenLimbs(gsController.PhoenixFaction.Soldiers.ToList(), gsController);
             TFTVRevenant.UpdateRevenantTimer(gsController);
@@ -112,24 +112,24 @@ namespace TFTV
 
             TFTVRevenantResearch.CheckRevenantResearchRequirements(Controller);
             TFTVProjectOsiris.RunProjectOsiris(gsController);
-            Main.Logger.LogInfo("UmbraEvolution variable is " + Controller.EventSystem.GetVariable(TFTVUmbra.TBTVVariableName));
-            TFTVLogger.Always("UmbraEvolution variable is " + Controller.EventSystem.GetVariable(TFTVUmbra.TBTVVariableName));
+            Main.Logger.LogInfo("UmbraEvolution variable is " + Controller.EventSystem.GetVariable(TFTVTouchedByTheVoid.TBTVVariableName));
+            TFTVLogger.Always("UmbraEvolution variable is " + Controller.EventSystem.GetVariable(TFTVTouchedByTheVoid.TBTVVariableName));
             // TFTVBetaSaveGamesFixes.CheckNewLOTA(gsController);
-            TFTVAncientsGeo.AncientsCheckResearchState(gsController);
-            TFTVAncientsGeo.CheckImpossibleWeaponsAdditionalRequirements(gsController);
-            TFTVAncientsGeo.EnsureNoHarvesting(gsController);
+            TFTVAncientsGeo.AncientsResearch.AncientsCheckResearchState(gsController);
+            TFTVAncientsGeo.ImpossibleWeapons.CheckImpossibleWeaponsAdditionalRequirements(gsController);
+            TFTVAncientsGeo.ExoticResources.EnsureNoHarvesting(gsController);
             TFTVVoxels.TFTVFire.CheckForFireQuenchers(gsController);
             TFTVSpecialDifficulties.CheckForSpecialDifficulties();
             //    TFTVBetterEnemies.ImplementBetterEnemies();
             TFTVPandoranProgress.ScyllaCount = 0;
             TFTVSDIandVoidOmenRoll.Calculate_ODI_Level(Controller);
             TFTVBetaSaveGamesFixes.CheckResearches(Controller);
-            TFTVBetaSaveGamesFixes.CheckScyllaCaptureTechResearch(Controller);
+          //  TFTVBetaSaveGamesFixes.CheckScyllaCaptureTechResearch(Controller);
             TFTVPassengerModules.ImplementFarMConfig(Controller);
             TFTVNewGameOptions.Change_Crossbows();
             TFTVBetaSaveGamesFixes.RemoveBadSlug(Controller);
 
-            TFTVConfig config = TFTVMain.Main.Config;
+         //   TFTVConfig config = TFTVMain.Main.Config;
 
         /*    List<TacticalItemDef> availableItems = Controller.GetAvailableFactionEquipment(true);
 
@@ -166,14 +166,14 @@ namespace TFTV
             TFTVLogger.Always($"OnGeoscapeEnd");
             GeoLevelController gsController = Controller;
 
-            TFTVUmbra.CheckForUmbraResearch(gsController);
-            TFTVUmbra.SetUmbraEvolution(gsController);
+            TFTVTouchedByTheVoid.Umbra.UmbraGeoscape.CheckForUmbraResearch(gsController);
+            TFTVTouchedByTheVoid.Umbra.UmbraGeoscape.SetUmbraEvolution(gsController);
             TFTVVoidOmens.CheckForVoidOmensRequiringTacticalPatching(gsController);
             //  TFTVUI.hookToCharacter = null;
             TFTVRevenant.CheckRevenantTime(gsController);
             TFTVRevenantResearch.CheckProjectOsiris(gsController);
             TFTVDiplomacyPenalties.VoidOmensImplemented = false;
-            TFTVAncientsGeo.CheckResearchStateOnGeoscapeEndAndOnTacticalStart(gsController);
+            TFTVAncientsGeo.AncientsResearch.CheckResearchStateOnGeoscapeEndAndOnTacticalStart(gsController);
            // TFTVExperimental.CheckAvailableVehiclesBasedOnFactionResearch(Controller);
         }
 

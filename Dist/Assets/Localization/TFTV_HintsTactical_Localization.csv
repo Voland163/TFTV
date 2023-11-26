@@ -4,7 +4,7 @@ UMBRA_SIGHTED_TEXT,Text,,"<i>""They say an Umbra doesn't just kill you: it steal
 
 In TFTV, the Umbra can spawn in place of a dead Arthron or Triton with the <b>Touched by the Void</b> ability, which they have a chance to roll at the start of each complete turn. The chance to roll is the total amount of Delirium of all your operatives on the mission divided by two.
 
-The Umbra can only attack characters with Delirium or characters caught in the Mist, but they can be attacked by all characters.",,"<i>""On dit qu'une Ombre ne fait pas que vous tuer : elle vous vole votre âme.""</i>
+The Umbra can only attack characters with Delirium or characters in contact with the Mist, but they can be attacked by all characters.",,"<i>""On dit qu'une Ombre ne fait pas que vous tuer : elle vous vole votre âme.""</i>
 
 Dans TFTV, l'Ombre apparaîtra à la place d'un Arthron ou d'un Triton avec la capacité <b>Touché par le Néant</b>, lorsque il meurt. Ils ont une chance au début de chaque tour complet, de faire un jet contre le montant total de Délire de tous vos agents engagés sur la mission divisé par deux.
 
@@ -188,6 +188,7 @@ VICTORY_MISSION_FOR_THE_EYES_TITLE,Text,,Go for the eyes!,,,,,,,,
 VICTORY_MISSION_FOR_THE_EYES_TEXT,Text,,"<i>""This fragging thing won't die!""</i>
 
 Attack the Receptacle's eyes to stun it, so that your operatives can then complete the objective.",,,,,,,,
+KEY_INFESTATION_STORY_OUTRO_TITLE,Text,,Awakening,,,,,,,,
 KEY_INFESTATION_STORY_INTRO_TITLE,Text,,Search and Rescue,,,,,,,,
 KEY_INFESTATION_STORY0,Text,,reporting. We are at,,,,,,,,
 KEY_INFESTATION_STORY1,Text,,. Are you seeing this? The green shimmering…  I… I feel like I have been here before…,,,,,,,,

@@ -1,5 +1,6 @@
 ﻿using HarmonyLib;
 using PhoenixPoint.Common.Core;
+using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Geoscape.Core;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Events;
@@ -11,7 +12,26 @@ namespace TFTV
 {
     internal class TFTVHarmonyGeoscape
     {
+        [HarmonyPatch(typeof(GeoMission), "ApplyOutcomes")]
+        public static class GeoMission_ModifyMissionData_Patch
+        {
 
+            public static void Postfix(GeoMission __instance, FactionResult viewerFactionResult)
+            {
+                try
+                {
+                    TFTVAncientsGeo.AncientSites.OnTakingAncientSiteFromAncients(__instance);
+                    TFTVAncientsGeo.DefendCyclopsStoryMission.OnCompletingDefendCyclopsMission(__instance, viewerFactionResult);
+
+
+                }
+
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+        }
 
 
 
@@ -40,7 +60,7 @@ namespace TFTV
         [HarmonyPatch(typeof(GeoscapeEventSystem), "OnEventTriggered")]
         public static class GeoscapeEventSystem_OnGeoscapeEvent_patch
         {
-            public static bool Prefix(GeoscapeEventData @event)// @event)
+            public static bool Prefix(GeoscapeEventData @event, GeoscapeEventSystem __instance)// @event)
             {
                 try
                 {
@@ -55,7 +75,7 @@ namespace TFTV
                     TFTVDiplomacyPenalties.ImplementDiplomaticPenalties(@event, null);
 
 
-                    return true;
+                    return TFTVInfestation.CancelProgFS3IfTrappedInMistAlreadyTriggered(@event, __instance);
 
                 }
 

@@ -1558,8 +1558,8 @@ namespace TFTV
                     {
                         tacticalActor.AddAbility(SelfRepairAbility, tacticalActor);
                     }
-                    TFTVAncients.CheckRoboticSelfRepairStatus(tacticalFaction);
-                    TFTVAncients.ApplyRoboticSelfHealingStatus(tacticalFaction);
+                    TFTVAncients.AncientsNewTurn.CheckRoboticSelfRepairStatus(tacticalFaction);
+                    TFTVAncients.AncientsNewTurn.ApplyRoboticSelfHealingStatus(tacticalFaction);
                 }
             }
             catch (Exception e)

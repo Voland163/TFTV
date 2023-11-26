@@ -1,6 +1,7 @@
 ﻿using Base.Eventus;
 using HarmonyLib;
 using PhoenixPoint.Common.Entities.GameTags;
+using PhoenixPoint.Common.Entities.Items.SkinData;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.Abilities;
 using PhoenixPoint.Geoscape.Entities.Sites;
@@ -9,6 +10,8 @@ using PhoenixPoint.Geoscape.View.ViewModules;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Eventus.Contexts;
 using PhoenixPoint.Tactical.Eventus.Filters;
+using PhoenixPoint.Tactical.Levels;
+using PhoenixPoint.Tactical.Levels.Missions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -25,9 +28,8 @@ namespace TFTV
         //  private static readonly SharedData Shared = TFTVMain.Shared;
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
 
-        //EnterBaseAbilityDef
+      
 
-        //
         private static readonly List<GameTagDef> _palaceMissionGameTagsToCheck = new List<GameTagDef>()
                  {
                  DefCache.GetDef<GameTagDef>("TaxiarchNergal_TacCharacterDef_GameTagDef"),

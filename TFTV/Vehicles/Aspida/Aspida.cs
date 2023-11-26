@@ -180,8 +180,8 @@ namespace TFTVVehicleRework.Aspida
                 ShootAbilityDef LaserArrayShoot = (ShootAbilityDef)Repo.GetDef("17d71e44-c07c-3e04-e977-1ff7eeb23a43");
                 
                 AspidaShoot = Repo.CreateDef<ShootAbilityDef>("3d138af1-1420-44e8-bfc8-44fff8f4e416", LaserArrayShoot);
-                AspidaShoot.CanShootOnEnemyBodyParts = true;
-                AspidaShoot.SnapToBodyparts = false;
+                // AspidaShoot.CanShootOnEnemyBodyParts = true;
+                // AspidaShoot.SnapToBodyparts = false;
                 AspidaShoot.UsesPerTurn = -1;
             }
             return AspidaShoot;

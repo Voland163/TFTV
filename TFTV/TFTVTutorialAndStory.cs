@@ -759,9 +759,9 @@ namespace TFTV
                 newContextHelpHintDef.Title.LocalizationKey = titleKey;
                 newContextHelpHintDef.Text.LocalizationKey = textKey;
                 newContextHelpHintDef.IsTutorialHint = false;
-                ContextHelpHintDbDef tacticalHintsDB = DefCache.GetDef<ContextHelpHintDbDef>("TacticalHintsDbDef");
+                ContextHelpHintDbDef tacticalHintsDB = DefCache.GetDef<ContextHelpHintDbDef>("AlwaysDisplayedTacticalHintsDbDef"); // TacticalHintsDbDef");
                 tacticalHintsDB.Hints.Add(newContextHelpHintDef);
-
+               
                 return newContextHelpHintDef;
 
             }

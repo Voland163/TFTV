@@ -1398,43 +1398,43 @@ namespace TFTV
             }
         }
 
-      /*  public static void CheckForRevenantResistance(TacticalLevelController controller)
-        {
-            try
-            {
-                if (controller.Factions.Any(f => f.Faction.FactionDef.MatchesShortName("aln")))
-                {
-                    TFTVLogger.Always("Aliens are present");
+        /*  public static void CheckForRevenantResistance(TacticalLevelController controller)
+          {
+              try
+              {
+                  if (controller.Factions.Any(f => f.Faction.FactionDef.MatchesShortName("aln")))
+                  {
+                      TFTVLogger.Always("Aliens are present");
 
-                    TacticalFaction aliens = controller.GetFactionByCommandName("aln");
-                    TFTVLogger.Always("Alien faction is " + aliens.Faction.FactionDef.name);
+                      TacticalFaction aliens = controller.GetFactionByCommandName("aln");
+                      TFTVLogger.Always("Alien faction is " + aliens.Faction.FactionDef.name);
 
-                    foreach (TacticalActorBase actorBase in aliens.Actors)
-                    {
-                        //  TacticalActor tacticalActor = actorBase as TacticalActor;
-                        if (actorBase.Status.HasStatus(revenantResistanceStatus))
-                        {
-                            revenantPresent = true;
-                        }
-                        if (revenantPresent)
-                        {
-                            return;
-                        }
-                    }
-                    return;
-                }
-                else
-                {
-                    TFTVLogger.Always("Alien faction is not present");
-                }
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-        }*/
+                      foreach (TacticalActorBase actorBase in aliens.Actors)
+                      {
+                          //  TacticalActor tacticalActor = actorBase as TacticalActor;
+                          if (actorBase.Status.HasStatus(revenantResistanceStatus))
+                          {
+                              revenantPresent = true;
+                          }
+                          if (revenantPresent)
+                          {
+                              return;
+                          }
+                      }
+                      return;
+                  }
+                  else
+                  {
+                      TFTVLogger.Always("Alien faction is not present");
+                  }
+              }
+              catch (Exception e)
+              {
+                  TFTVLogger.Error(e);
+              }
+          }*/
 
-        // Adopted from MadSkunky BetterClasses. Harmony Patch to calcualte shred resistance, vanilla has no implementation for this
+        // Adopted from MadSkunky BetterClasses. Harmony Patch to calculate shred resistance, vanilla has no implementation for this
         [HarmonyPatch(typeof(ShreddingDamageKeywordData), "ProcessKeywordDataInternal")]
         internal static class BC_ShreddingDamageKeywordData_ProcessKeywordDataInternal_ShredResistant_patch
         {
@@ -1449,6 +1449,13 @@ namespace TFTV
                     if (actor.Status.HasStatus(revenantResistanceStatus) && revenantResistanceStatus.DamageTypeDefs[0] == shredDamage)
                     {
                         data.DamageResult.ArmorDamage = Mathf.Floor(data.DamageResult.ArmorDamage * revenantResistanceStatus.Multiplier);
+                    }
+
+                    DamageMultiplierAbilityDef shredResistanceAbilityDef = DefCache.GetDef<DamageMultiplierAbilityDef>("ShredResistant_DamageMultiplierAbilityDef");
+
+                    if (actor.GetAbilityWithDef<DamageMultiplierAbility>(shredResistanceAbilityDef) != null)
+                    {
+                        data.DamageResult.ArmorDamage = Mathf.Floor(data.DamageResult.ArmorDamage * shredResistanceAbilityDef.Multiplier);
                     }
                 }
             }

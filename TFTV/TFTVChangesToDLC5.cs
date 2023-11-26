@@ -5,10 +5,10 @@ using Base.Defs;
 using Base.Entities.Abilities;
 using Base.UI;
 using com.ootii.Collections;
+using Epic.OnlineServices;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities;
-using PhoenixPoint.Common.Entities.Addons;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.Entities.Items;
@@ -51,95 +51,11 @@ namespace TFTV
 
         private static bool AmbushOrScavTemp = false;
 
-        [HarmonyPatch(typeof(GeoMission), "AddCratesToMissionData")]
-        public static class GeoMission_AddCratesToMissionData_patch
-        {
-
-            public static void Prefix(GeoMission __instance)
-            {
-                try
-                {
-                    if (__instance.MissionDef.Tags.Contains(DefCache.GetDef<MissionTagDef>("MissionTypeAmbush_MissionTagDef"))
-                        ||
-                        __instance.MissionDef.Tags.Contains(DefCache.GetDef<MissionTagDef>("MissionTypeScavenging_MissionTagDef")))
-                    {
-
-                        AmbushOrScavTemp = true;
-
-                    }
 
 
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                    throw;
-                }
-            }
-            public static void Postfix(GeoMission __instance)
-            {
-                try
-                {
-                    if (__instance.MissionDef.Tags.Contains(DefCache.GetDef<MissionTagDef>("MissionTypeAmbush_MissionTagDef"))
-                        ||
-                        __instance.MissionDef.Tags.Contains(DefCache.GetDef<MissionTagDef>("MissionTypeScavenging_MissionTagDef")))
-                    {
-
-                        AmbushOrScavTemp = false;
-
-                    }
-
-
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                    throw;
-                }
-            }
-
-        }
-
-        [HarmonyPatch(typeof(GeoLevelController), "GetAvailableFactionEquipment")]
-        public static class GeoLevelController_GetAvailableFactionEquipment_patch
-        {
-
-
-            public static void Postfix(ref List<TacticalItemDef> __result)
-            {
-                try
-                {
-                    if (AmbushOrScavTemp)
-                    {
-                        TFTVLogger.Always($"It's an ambush or scavenging mission, adding KG ammo to GetAvailableFactionEquipment");
-
-                        List<TacticalItemDef> kgAmmo = new List<TacticalItemDef>()
-                        {
-                            TFTVKaosGuns._subjector.CompatibleAmmunition[0],
-                            TFTVKaosGuns._obliterator.CompatibleAmmunition[0],
-                            TFTVKaosGuns._tormentor.CompatibleAmmunition[0],
-                            TFTVKaosGuns._devastator.CompatibleAmmunition[0],
-                            TFTVKaosGuns._redemptor.CompatibleAmmunition[0]
-
-                        };
-
-                        __result.AddRange(kgAmmo
-
-                        );
-
-
-                    }
-
-
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                    throw;
-                }
-            }
-
-        }
+        /// <summary>
+        /// Allows to buy in Marketplace without an aircraft at the site.
+        /// </summary>
 
         [HarmonyPatch(typeof(MarketplaceAbility), "GetTargetDisabledStateInternal")]
         public static class MarketplaceAbility_GetTargetDisabledStateInternal_patch
@@ -164,7 +80,11 @@ namespace TFTV
             }
         }
 
-
+        /// <summary>
+        /// Reduces Slug strength when it uses its Mech Arms
+        /// </summary>
+        /// <param name="tacticalAbility"></param>
+        /// <param name="tacticalActor"></param>
         public static void SlugHealTraumaEffect(TacticalAbility tacticalAbility, TacticalActor tacticalActor)
         {
             try
@@ -292,61 +212,6 @@ namespace TFTV
             //
 
 
-            [HarmonyPatch(typeof(UIModuleMutate), "OnNewCharacter")]//InitCharacterInfo")]
-            public static class UIModuleMutate_InitCharacterInfo_Patch
-            {
-                public static void Postfix(Dictionary<AddonSlotDef, UIModuleMutationSection> ____augmentSections, GeoCharacter newCharacter)
-                {
-                    try
-                    {
-                        if (newCharacter.TemplateDef != null && newCharacter.TemplateDef.GetGameTags().Contains(MercenaryTag))
-                        {
-                            TFTVLogger.Always($"current character is {newCharacter.DisplayName} and it has mercenary tag? {newCharacter.TemplateDef.GetGameTags().Contains(MercenaryTag)}");
-
-                            foreach (KeyValuePair<AddonSlotDef, UIModuleMutationSection> augmentSection in ____augmentSections)
-                            {
-                                augmentSection.Value.ResetContainer(AugumentSlotState.BlockedByPermenantAugument, "KEY_ABILITY_NOAUGMENTATONS");
-                            }
-
-                        }
-
-                    }
-                    catch (Exception e)
-                    {
-                        TFTVLogger.Error(e);
-                    }
-                }
-            }
-
-
-
-            [HarmonyPatch(typeof(UIModuleBionics), "OnNewCharacter")]//InitCharacterInfo")]
-            public static class UIModuleBionics_InitCharacterInfo_Patch
-            {
-                public static void Postfix(UIModuleBionics __instance, Dictionary<AddonSlotDef, UIModuleMutationSection> ____augmentSections, GeoCharacter newCharacter)
-                {
-                    try
-                    {
-                        if (newCharacter.TemplateDef != null && newCharacter.TemplateDef.GetGameTags().Contains(MercenaryTag))
-                        {
-                            TFTVLogger.Always($"current character is {newCharacter.DisplayName} and it has mercenary tag? {newCharacter.TemplateDef.GetGameTags().Contains(MercenaryTag)}");
-
-                            foreach (KeyValuePair<AddonSlotDef, UIModuleMutationSection> augmentSection in ____augmentSections)
-                            {
-                                augmentSection.Value.ResetContainer(AugumentSlotState.BlockedByPermenantAugument, "KEY_ABILITY_NOAUGMENTATONS");
-                            }
-
-                        }
-
-                    }
-                    catch (Exception e)
-                    {
-                        TFTVLogger.Error(e);
-                    }
-                }
-            }
-
-
             [HarmonyPatch(typeof(GeoUnitDescriptor), "FinishInitCharacter")]
             public static class GeoUnitDescriptor_FinishInitCharacter_patch
             {
@@ -403,7 +268,7 @@ namespace TFTV
                         if (geoUnitDescriptor.ClassTag == priestTag)
                         {
 
-                            if (geoUnitDescriptor.Progression.PersonalAbilities[3] == DefCache.GetDef<PassiveModifierAbilityDef>("SniperTalent_AbilityDef"))
+                            if (geoUnitDescriptor.Progression.PersonalAbilities[3] == sniperProf)
                             {
                                 proficiencies.Remove(sniperProf);
                                 geoUnitDescriptor.Progression.PersonalAbilities[3] = proficiencies.GetRandomElement();
@@ -418,7 +283,7 @@ namespace TFTV
                         else if (geoUnitDescriptor.ClassTag == technicianTag)
                         {
 
-                            if (geoUnitDescriptor.Progression.PersonalAbilities[3] == DefCache.GetDef<PassiveModifierAbilityDef>("SniperTalent_AbilityDef"))
+                            if (geoUnitDescriptor.Progression.PersonalAbilities[3] == handGunsProf)
                             {
                                 proficiencies.Remove(handGunsProf);
                                 proficiencies.Remove(pDWProf);
@@ -526,17 +391,12 @@ namespace TFTV
                     if (character.GameTags.Contains(priestTag))
                     {
                         character.Progression.AddAbility(sniperProf);
-
-
                     }
+
                     else if (character.GameTags.Contains(technicianTag))
                     {
                         character.Progression.AddAbility(handGunsProf);
-
-
                     }
-
-
                 }
                 catch (Exception e)
                 {
@@ -1233,6 +1093,97 @@ namespace TFTV
             internal static Dictionary<GeoMarketplaceItemOptionDef, GeoMarketplaceItemOptionDef> _kGWeaponsAndAmmo = new Dictionary<GeoMarketplaceItemOptionDef, GeoMarketplaceItemOptionDef>();
             internal static GameTagDef _kGTag;
 
+            [HarmonyPatch(typeof(GeoMission), "AddCratesToMissionData")]
+            public static class GeoMission_AddCratesToMissionData_patch
+            {
+
+                public static void Prefix(GeoMission __instance)
+                {
+                    try
+                    {
+                        if (__instance.MissionDef.Tags.Contains(DefCache.GetDef<MissionTagDef>("MissionTypeAmbush_MissionTagDef"))
+                            ||
+                            __instance.MissionDef.Tags.Contains(DefCache.GetDef<MissionTagDef>("MissionTypeScavenging_MissionTagDef")))
+                        {
+
+                            AmbushOrScavTemp = true;
+
+                        }
+
+
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                        throw;
+                    }
+                }
+                public static void Postfix(GeoMission __instance)
+                {
+                    try
+                    {
+                        if (__instance.MissionDef.Tags.Contains(DefCache.GetDef<MissionTagDef>("MissionTypeAmbush_MissionTagDef"))
+                            ||
+                            __instance.MissionDef.Tags.Contains(DefCache.GetDef<MissionTagDef>("MissionTypeScavenging_MissionTagDef")))
+                        {
+
+                            AmbushOrScavTemp = false;
+
+                        }
+
+
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                        throw;
+                    }
+                }
+
+            }
+
+            [HarmonyPatch(typeof(GeoLevelController), "GetAvailableFactionEquipment")]
+            public static class GeoLevelController_GetAvailableFactionEquipment_patch
+            {
+
+
+                public static void Postfix(ref List<TacticalItemDef> __result)
+                {
+                    try
+                    {
+                        if (AmbushOrScavTemp)
+                        {
+                            TFTVLogger.Always($"It's an ambush or scavenging mission, adding KG ammo to GetAvailableFactionEquipment");
+
+                            List<TacticalItemDef> kgAmmo = new List<TacticalItemDef>()
+                        {
+                            TFTVKaosGuns._subjector.CompatibleAmmunition[0],
+                            TFTVKaosGuns._obliterator.CompatibleAmmunition[0],
+                            TFTVKaosGuns._tormentor.CompatibleAmmunition[0],
+                            TFTVKaosGuns._devastator.CompatibleAmmunition[0],
+                            TFTVKaosGuns._redemptor.CompatibleAmmunition[0]
+
+                        };
+
+                            __result.AddRange(kgAmmo
+
+                            );
+
+
+                        }
+
+
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                        throw;
+                    }
+                }
+
+            }
+
+
             private static void AdjustKGAndCreateAmmoForThem(WeaponDef weaponDef, int amount, int minPrice, string gUID0, string gUID1, string gUID2, string spriteFileName)
             {
                 try
@@ -1414,7 +1365,9 @@ namespace TFTV
             private static readonly string[] _marketPlaceSpecials = new string[] { _vehicleMarketPlaceSpecial, _researchMarketPlaceSpecial, _mercenaryMarketPlaceSpecial, _weaponsMarketPlaceSpecial };
 
 
-
+            /// <summary>
+            /// Can't hire mercenaries if Living Quarters are full and can't buy tech that has already been researched
+            /// </summary>
 
             [HarmonyPatch(typeof(GeoEventChoice), "PassRequirements")]
             public static class GeoEventChoice_PassRequirements_patch
@@ -1423,11 +1376,7 @@ namespace TFTV
                 {
                     try
                     {
-                        if (__instance.Outcome != null && __instance.Outcome.Units != null && __instance.Outcome.Units.Count > 0 && __instance.Outcome.Units[0].Data.GameTags.Contains(MercenaryTag) && faction is GeoPhoenixFaction phoenixFaction && phoenixFaction.LivingQuarterFull)
-                        {
-                            // TFTVLogger.Always($"Living Quarters are full! Can't recruit Mercenary");
-                            __result = false;
-                        }
+                        RemoveBadChoices(__instance, faction, ref __result);
 
 
                     }
@@ -1437,6 +1386,41 @@ namespace TFTV
                         throw;
                     }
                 }
+            }
+
+            private static void RemoveBadChoices(GeoEventChoice eventChoice, GeoFaction faction, ref bool result)
+            {
+                try
+                {
+
+
+
+                    if (eventChoice.Outcome != null && eventChoice.Outcome.GiveResearches != null && eventChoice.Outcome.GiveResearches.Count > 0 &&
+                        eventChoice.Text == faction.Research.GetResearchById(eventChoice.Outcome.GiveResearches[0]).ResearchDef.ViewElementDef.ResearchName &&
+                        faction.Research.HasCompleted(eventChoice.Outcome.GiveResearches[0]))
+                    {
+                        TFTVLogger.Always($"Phoenix Porject has already completed {eventChoice.Text}");
+
+                       result = false;
+
+                    }
+
+                    if (eventChoice.Outcome != null && eventChoice.Outcome.Units != null && eventChoice.Outcome.Units.Count > 0 && eventChoice.Outcome.Units[0].Data.GameTags.Contains(MercenaryTag) && faction is GeoPhoenixFaction phoenixFaction && phoenixFaction.LivingQuarterFull)
+                    {
+                        // TFTVLogger.Always($"Living Quarters are full! Can't recruit Mercenary");
+                        result = false;
+                    }
+
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+
+
+
             }
 
 
@@ -1814,7 +1798,7 @@ namespace TFTV
 
                         GeoMarketplaceItemOptionDef weaponOffer = (GeoMarketplaceItemOptionDef)weaponsAvailable.GetRandomElement();
 
-                       // TFTVLogger.Always($"weaponOffer is {weaponOffer.name}");
+                        // TFTVLogger.Always($"weaponOffer is {weaponOffer.name}");
 
                         weaponsAvailable.Remove(weaponOffer);
 
@@ -1834,7 +1818,7 @@ namespace TFTV
 
                         geoMarketplace.MarketplaceChoices.Add(item);
                         geoMarketplace.MarketplaceChoices.AddRange(ammo);
-                      //  TFTVLogger.Always($"should have added {weaponOffer.name} and 3 ammo for it");
+                        //  TFTVLogger.Always($"should have added {weaponOffer.name} and 3 ammo for it");
                     }
 
                     return list;
@@ -1883,7 +1867,7 @@ namespace TFTV
 
                         geoMarketplace.MarketplaceChoices.Add(item);
 
-                       // TFTVLogger.Always($"should have added {vehicleItemToOffer.name}");
+                        // TFTVLogger.Always($"should have added {vehicleItemToOffer.name}");
                     }
 
                     return list;
@@ -1921,7 +1905,7 @@ namespace TFTV
                         GeoEventChoice item = GenerateItemChoice(mercenaryToOffer.ItemDef, price);
 
                         geoMarketplace.MarketplaceChoices.Add(item);
-                       // TFTVLogger.Always($"should have added {mercenaryToOffer.name}");
+                        // TFTVLogger.Always($"should have added {mercenaryToOffer.name}");
                     }
 
                     return list;
@@ -1983,7 +1967,7 @@ namespace TFTV
                         GeoEventChoice item = GenerateResearchChoice(researchDef, price);
 
                         geoMarketplace.MarketplaceChoices.Add(item);
-                      //  TFTVLogger.Always($"should have added {researchDef.Id}");
+                        //  TFTVLogger.Always($"should have added {researchDef.Id}");
                     }
 
                     _researchesAlreadyRolled.Clear();
@@ -2023,17 +2007,17 @@ namespace TFTV
                         List<ResearchElement> phoenixFactionCompletedResearches = level.PhoenixFaction.Research.RevealedAndCompleted.ToList();
                         list.RemoveAll((ResearchElement research) => phoenixFactionCompletedResearches.Any((ResearchElement phoenixResearch) => research.ResearchID == phoenixResearch.ResearchID));
 
-                       // TFTVLogger.Always($"_researchesAlreadyRolled has any elements in it? {_researchesAlreadyRolled.Count > 0}");
+                        // TFTVLogger.Always($"_researchesAlreadyRolled has any elements in it? {_researchesAlreadyRolled.Count > 0}");
 
                         if (_researchesAlreadyRolled.Count > 0)
                         {
                             list.RemoveAll(e => _researchesAlreadyRolled.Contains(e.ResearchDef));
-                          //  TFTVLogger.Always($"removing already rolled researches from pool");
+                            //  TFTVLogger.Always($"removing already rolled researches from pool");
                         }
 
                         if (list.Count != 0)
                         {
-                           // TFTVLogger.Always($"There are {list.Count} researches that could be offered to the player in the Marketplace");
+                            // TFTVLogger.Always($"There are {list.Count} researches that could be offered to the player in the Marketplace");
                             __result = list.ElementAt(UnityEngine.Random.Range(0, list.Count)).ResearchDef;
                             _researchesAlreadyRolled.Add(__result);
                         }
@@ -2051,7 +2035,6 @@ namespace TFTV
                     }
                 }
             }
-
 
             private static void CreateLogEntryAndRollSpecialsMarketplaceUpdated(GeoLevelController controller)
             {
@@ -2077,8 +2060,6 @@ namespace TFTV
                 }
 
             }
-
-
 
             [HarmonyPatch(typeof(GeoMarketplace), "AfterMissionComplete")]
             public static class GeoMarketplace_AfterMissionComplete_patch
@@ -2170,7 +2151,6 @@ namespace TFTV
             }
 
 
-
             [HarmonyPatch(typeof(UIModuleTheMarketplace), "SetupChoiceInfoBlock")]
             public static class UIModuleTheMarketplace_SetupChoiceInfoBlock_patch
             {
@@ -2190,11 +2170,9 @@ namespace TFTV
                 }
             }
 
-
             [HarmonyPatch(typeof(UIModuleTheMarketplace), "UpdateVisuals")]
             public static class UIModuleTheMarketplace_UpdateVisuals_patch
             {
-
                 public static void Postfix(UIModuleTheMarketplace __instance)
                 {
                     try

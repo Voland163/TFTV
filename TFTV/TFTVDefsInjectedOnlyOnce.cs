@@ -91,28 +91,14 @@ namespace TFTV
             { 
                 foreach(GeoscapeEventDef geoscapeEventDef in Repo.GetAllDefs<GeoscapeEventDef>().Where(e => e.GeoscapeEventData.Choices.Any(c => c.Outcome.Units.Count > 0) || e.GeoscapeEventData.Choices.Any(c => c.Outcome.CustomCharacters.Count > 0)))
                 {
-                    TFTVLogger.Always($"Event {geoscapeEventDef.EventID} offers some unit or custom character");
-                
-                
-                }
-
-            
-            
-            
+                    TFTVLogger.Always($"Event {geoscapeEventDef.EventID} offers some unit or custom character"); 
+                }     
             }
             catch (Exception e)
             {
                 TFTVLogger.Error(e);
             }
-
-
-
         }
-
-
-
-
-
 
 
         public static void InjectDefsInjectedOnlyOnceBatch1()
@@ -222,7 +208,7 @@ namespace TFTV
             TFTVBetterEnemies.BEChange_Perception();
             // BEFixCaterpillarTracksDamage(); //already added to base
             TFTVBetterEnemies.BEReducePandoranWillpower();
-
+            CreateAndAdjustDefsForLimitedCapture();
             // ChangeStoryAN4_CustomMissionTypeDef();
             //  CreateNewLaunchBaseDefenseMissionGeoAbility();
             //  TFTVChangesToDLC5.AdjustMarketPlaceAbilityDef();
@@ -235,32 +221,6 @@ namespace TFTV
         //NEU_Sniper_Helmet_BodyPartDef
         //NEU_Sniper_Torso_BodyPartDef
         //NEU_Sniper_Legs_ItemDef
-
-
-
-
-        /*   private static void CreateNewLaunchBaseDefenseMissionGeoAbility()
-           {
-               try 
-               {
-                   LaunchMissionAbilityDef source = DefCache.GetDef<LaunchMissionAbilityDef>("LaunchMissionAbilityDef");
-                   LaunchBaseDefenseAbilityDef  newLaunchBaseDefenseAbility = Helper.CreateDefFromClone<LaunchBaseDefenseAbilityDef>
-                       (null, "{707D5CBC-7C56-4EFA-8D95-CE05ED9EEAF7}", "LaunchBaseDefenseMissionDef");
-
-                   newLaunchBaseDefenseAbility.ViewElementDef = Helper.CreateDefFromClone(source.ViewElementDef, "{0B2AC90E-B574-40AB-AEB8-386644F2BAB8}", "LaunchMissionAbilityDef");
-                   newLaunchBaseDefenseAbility.Cost = new ResourcePack();
-                   newLaunchBaseDefenseAbility.name = "LaunchMissionAbilityDef";
-
-
-
-               }
-               catch (Exception e)
-               {
-                   TFTVLogger.Error(e);
-               }
-
-
-           }*/
 
         private static void ChangeStoryAN4_CustomMissionTypeDef()
         {
@@ -293,6 +253,241 @@ namespace TFTV
 
 
         }
+
+        private static void CreateAndAdjustDefsForLimitedCapture()
+        {
+            try 
+            {
+                ChangeResourceRewardsForAutopsies();
+                AdjustPandoranVolumes();
+                ChangesToCapturingPandorans();
+                CreateCaptureModule();
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+        private static void CreateCaptureModule()
+        {
+            try
+            {
+
+                ResearchDef scyllaCaptureModule = DefCache.GetDef<ResearchDef>("PX_Aircraft_EscapePods_ResearchDef");
+                ExistingResearchRequirementDef existingResearchRequirementDef = DefCache.GetDef<ExistingResearchRequirementDef>("PX_Aircraft_EscapePods_ResearchDef_ExistingResearchRequirementDef_1");
+                existingResearchRequirementDef.ResearchID = "PX_Alien_Queen_ResearchDef";
+
+                scyllaCaptureModule.Tags = new ResearchTagDef[] { CriticalResearchTag };
+                scyllaCaptureModule.RevealRequirements.Container =
+                    new ReseachRequirementDefOpContainer[] { new ReseachRequirementDefOpContainer()
+                    { Operation = ResearchContainerOperation.ANY, Requirements = new ResearchRequirementDef[] { existingResearchRequirementDef } } };
+                scyllaCaptureModule.ResearchCost = 500;
+
+                GeoVehicleModuleDef captureModule = DefCache.GetDef<GeoVehicleModuleDef>("PX_EscapePods_GeoVehicleModuleDef");
+                captureModule.ManufactureMaterials = 600;
+                captureModule.ManufactureTech = 75;
+                captureModule.ManufacturePointsCost = 505;
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+        private static void ChangesToCapturingPandorans()
+        {
+            try
+            {
+
+                string captureAbilityName = "CapturePandoran_Ability";
+                ApplyStatusAbilityDef applyStatusAbilitySource = DefCache.GetDef<ApplyStatusAbilityDef>("MarkedForDeath_AbilityDef");
+                ApplyStatusAbilityDef newCaptureAbility = Helper.CreateDefFromClone(applyStatusAbilitySource, "{8850B4B0-5545-4FCE-852A-E56AFA19DED6}", captureAbilityName);
+
+                string removeCaptureAbilityName = "RemoveCapturePandoran_Ability";
+                ApplyStatusAbilityDef removeCaptureStatusAbility = Helper.CreateDefFromClone(applyStatusAbilitySource, "{1D24098D-5C9A-4698-8062-5BAF974ADE35}", removeCaptureAbilityName);
+                removeCaptureStatusAbility.ViewElementDef = Helper.CreateDefFromClone(applyStatusAbilitySource.ViewElementDef, "{19FF369F-868B-4DFA-90AE-E72D4075B868}", removeCaptureAbilityName);
+                removeCaptureStatusAbility.ViewElementDef.DisplayName1.LocalizationKey = "CANCEL_CAPTURE_NAME";
+                removeCaptureStatusAbility.ViewElementDef.Description.LocalizationKey = "CANCEL_CAPTURE_DESCRIPTION";
+
+                newCaptureAbility.ViewElementDef = Helper.CreateDefFromClone(applyStatusAbilitySource.ViewElementDef, "{C740EF09-6068-4ADB-9E38-7F6F504ACC07}", captureAbilityName);
+                newCaptureAbility.ViewElementDef.LargeIcon = Helper.CreateSpriteFromImageFile("ability_capture.png");
+                newCaptureAbility.ViewElementDef.SmallIcon = Helper.CreateSpriteFromImageFile("ability_capture_small.png");
+                newCaptureAbility.ViewElementDef.DisplayName1.LocalizationKey = "CAPTURE_ABILITY_NAME";
+                newCaptureAbility.ViewElementDef.Description.LocalizationKey = "CAPTURE_ABILITY_DESCRIPTION";
+
+                newCaptureAbility.TargetingDataDef = Helper.CreateDefFromClone(applyStatusAbilitySource.TargetingDataDef, "{AB7A060C-2CB1-4DD6-A21F-A018BC8B0600}", captureAbilityName);
+                newCaptureAbility.WillPointCost = 0;
+
+                string captureStatusName = "CapturePandoran_Status";
+                ParalysedStatusDef paralysedStatusDef = DefCache.GetDef<ParalysedStatusDef>("Paralysed_StatusDef");
+                ReadyForCapturesStatusDef newCapturedStatus = Helper.CreateDefFromClone<ReadyForCapturesStatusDef>(null, "{96B40C5A-7FF2-4C67-83DA-ACEF0BE7D2E8}", captureStatusName);
+                newCapturedStatus.EffectName = "ReadyForCapture";
+                newCapturedStatus.Duration = paralysedStatusDef.Duration;
+                newCapturedStatus.DurationTurns = -1;
+                newCapturedStatus.ExpireOnEndOfTurn = false;
+                newCapturedStatus.ApplicationConditions = paralysedStatusDef.ApplicationConditions;
+                newCapturedStatus.DisablesActor = true;
+                newCapturedStatus.SingleInstance = false;
+                newCapturedStatus.ShowNotification = true;
+                newCapturedStatus.VisibleOnHealthbar = TacStatusDef.HealthBarVisibility.AlwaysVisible;
+                newCapturedStatus.VisibleOnPassiveBar = true;
+                newCapturedStatus.VisibleOnStatusScreen = TacStatusDef.StatusScreenVisibility.VisibleOnStatusesList;
+                newCapturedStatus.HealthbarPriority = 300;
+                newCapturedStatus.StackMultipleStatusesAsSingleIcon = true;
+                newCapturedStatus.Visuals = Helper.CreateDefFromClone(paralysedStatusDef.Visuals, "{4305BE38-4408-4565-A440-A989C07467A0}", captureStatusName);
+                newCapturedStatus.EventOnApply = paralysedStatusDef.EventOnApply;
+
+                newCapturedStatus.Visuals.LargeIcon = newCaptureAbility.ViewElementDef.LargeIcon;
+                newCapturedStatus.Visuals.SmallIcon = newCaptureAbility.ViewElementDef.SmallIcon;
+                newCapturedStatus.Visuals.DisplayName1.LocalizationKey = "CAPTURE_STATUS_NAME";
+                newCapturedStatus.Visuals.Description.LocalizationKey = "CAPTURE_STATUS_DESCRIPTION";
+
+                ActorHasStatusEffectConditionDef actorIsParalyzedEffectCondition = TFTVCommonMethods.CreateNewStatusEffectCondition("{C9422E7A-B17E-4DFE-A2FD-D91311119B3B}", paralysedStatusDef, true);
+                ActorHasStatusEffectConditionDef actorIsNotReadyForCaptureEffectCondition = TFTVCommonMethods.CreateNewStatusEffectCondition("{B89D9D5F-436E-47C8-8BF5-853E1721DFCF}", newCapturedStatus, false);
+
+                newCaptureAbility.StatusDef = newCapturedStatus;
+                newCaptureAbility.TargetApplicationConditions = new EffectConditionDef[] { actorIsParalyzedEffectCondition, actorIsNotReadyForCaptureEffectCondition };
+                newCaptureAbility.UsableOnDisabledActor = true;
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+
+        }
+
+        private static void AdjustPandoranVolumes()
+        {
+            try
+            {
+                ClassTagDef crabTag = DefCache.GetDef<ClassTagDef>("Crabman_ClassTagDef");
+                ClassTagDef fishTag = DefCache.GetDef<ClassTagDef>("Fishman_ClassTagDef");
+                ClassTagDef sirenTag = DefCache.GetDef<ClassTagDef>("Siren_ClassTagDef");
+                ClassTagDef chironTag = DefCache.GetDef<ClassTagDef>("Chiron_ClassTagDef");
+                ClassTagDef acheronTag = DefCache.GetDef<ClassTagDef>("Acheron_ClassTagDef");
+                ClassTagDef queenTag = DefCache.GetDef<ClassTagDef>("Queen_ClassTagDef");
+                ClassTagDef wormTag = DefCache.GetDef<ClassTagDef>("Worm_ClassTagDef");
+                ClassTagDef facehuggerTag = DefCache.GetDef<ClassTagDef>("Facehugger_ClassTagDef");
+                ClassTagDef swarmerTag = DefCache.GetDef<ClassTagDef>("Swarmer_ClassTagDef");
+
+                foreach (TacCharacterDef tacCharacterDef in Repo.GetAllDefs<TacCharacterDef>().Where(tcd => tcd.IsAlien))
+                {
+                    if (tacCharacterDef.Data.GameTags.Contains(swarmerTag) || tacCharacterDef.Data.GameTags.Contains(facehuggerTag) || tacCharacterDef.Data.GameTags.Contains(wormTag))
+                    {
+                        tacCharacterDef.Volume = 1;
+                    }
+                    else if (tacCharacterDef.Data.GameTags.Contains(sirenTag))
+                    {
+                        tacCharacterDef.Volume = 3;
+                    }
+                }
+
+                DefCache.GetDef<PrisonFacilityComponentDef>("E_Prison [AlienContainment_PhoenixFacilityDef]").ContaimentCapacity = 25;
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+        private static void ChangeResourceRewardsForAutopsies()
+        {
+            try
+            {
+                DefCache.GetDef<ResearchDef>("PX_Alien_Mindfragger_ResearchDef").Resources = new ResourcePack()
+                {
+                    new ResourceUnit { Type = ResourceType.Materials, Value = 75},
+                    new ResourceUnit {Type = ResourceType.Mutagen, Value = 50}
+                };
+
+                DefCache.GetDef<ResearchDef>("PX_Alien_Acidworm_ResearchDef").Resources = new ResourcePack()
+                {
+                        new ResourceUnit { Type = ResourceType.Materials, Value = 25},
+                     new ResourceUnit {Type = ResourceType.Mutagen, Value = 25}
+                };
+
+                DefCache.GetDef<ResearchDef>("PX_Alien_Poisonworm_ResearchDef").Resources = new ResourcePack()
+                {
+                        new ResourceUnit { Type = ResourceType.Materials, Value = 25},
+                     new ResourceUnit {Type = ResourceType.Mutagen, Value = 25}
+                };
+                DefCache.GetDef<ResearchDef>("PX_Alien_Fireworm_ResearchDef").Resources = new ResourcePack()
+                {
+                        new ResourceUnit { Type = ResourceType.Materials, Value = 25},
+                     new ResourceUnit {Type = ResourceType.Mutagen, Value = 25}
+                };
+
+                DefCache.GetDef<ResearchDef>("PX_AlienCrabman_ResearchDef").Resources = new ResourcePack()
+                {
+                    new ResourceUnit { Type = ResourceType.Materials, Value = 50 },
+                     new ResourceUnit { Type = ResourceType.Mutagen, Value = 75 }
+                };
+
+                DefCache.GetDef<ResearchDef>("PX_Alien_Fishman_ResearchDef").Resources = new ResourcePack()
+                {
+                    new ResourceUnit { Type = ResourceType.Materials, Value = 75 },
+                     new ResourceUnit { Type = ResourceType.Mutagen, Value = 100 }
+                };
+                DefCache.GetDef<ResearchDef>("PX_Alien_Siren_ResearchDef").Resources = new ResourcePack()
+                {
+                    new ResourceUnit { Type = ResourceType.Materials, Value = 100 },
+                     new ResourceUnit { Type = ResourceType.Mutagen, Value = 125 }
+                };
+                DefCache.GetDef<ResearchDef>("PX_Alien_Chiron_ResearchDef").Resources = new ResourcePack()
+                {
+                    new ResourceUnit { Type = ResourceType.Materials, Value = 200 },
+                     new ResourceUnit { Type = ResourceType.Mutagen, Value = 150 }
+                };
+
+                DefCache.GetDef<ResearchDef>("PX_Alien_Queen_ResearchDef").Resources = new ResourcePack()
+                {
+                    new ResourceUnit { Type = ResourceType.Materials, Value = 300 },
+                     new ResourceUnit { Type = ResourceType.Mutagen, Value = 250 }
+                };
+
+                DefCache.GetDef<ResearchDef>("PX_Alien_Swarmer_ResearchDef").Resources = new ResourcePack()
+                {
+                    new ResourceUnit { Type = ResourceType.Materials, Value = 50 },
+                     new ResourceUnit { Type = ResourceType.Mutagen, Value = 75 }
+                };
+                DefCache.GetDef<ResearchDef>("PX_Alien_WormEgg_ResearchDef").Resources = new ResourcePack()
+                {
+                    new ResourceUnit { Type = ResourceType.Materials, Value = 100 },
+                     new ResourceUnit { Type = ResourceType.Mutagen, Value = 75 }
+                };
+                DefCache.GetDef<ResearchDef>("PX_Alien_MindfraggerEgg_ResearchDef").Resources = new ResourcePack()
+                {
+                    new ResourceUnit { Type = ResourceType.Materials, Value = 100 },
+                     new ResourceUnit { Type = ResourceType.Mutagen, Value = 75 }
+                };
+                DefCache.GetDef<ResearchDef>("PX_Alien_HatchingSentinel_ResearchDef").Resources = new ResourcePack()
+                {
+                     new ResourceUnit { Type = ResourceType.Mutagen, Value = 75 }
+                };
+                DefCache.GetDef<ResearchDef>("PX_Alien_TerrorSentinel_ResearchDef").Resources = new ResourcePack()
+                {
+                     new ResourceUnit { Type = ResourceType.Mutagen, Value = 75 }
+                };
+                DefCache.GetDef<ResearchDef>("PX_Alien_MistSentinel_ResearchDef").Resources = new ResourcePack()
+                {
+                     new ResourceUnit { Type = ResourceType.Mutagen, Value = 75 }
+                };
+
+
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+        }
+
 
         private static void ReducePromoSkins()
         {
@@ -3263,26 +3458,26 @@ namespace TFTV
 
                 string abilityName = "RoboticSelfRepair_AbilityDef";
                 PassiveModifierAbilityDef source = DefCache.GetDef<PassiveModifierAbilityDef>("SelfDefenseSpecialist_AbilityDef");
-                PassiveModifierAbilityDef ambushAbility = Helper.CreateDefFromClone(
+                PassiveModifierAbilityDef ability = Helper.CreateDefFromClone(
                     source,
                    abilityGUID,
                     abilityName);
-                ambushAbility.CharacterProgressionData = Helper.CreateDefFromClone(
+                ability.CharacterProgressionData = Helper.CreateDefFromClone(
                     source.CharacterProgressionData,
                     "{76838266-6249-46AF-A541-66065F102BD5}",
                     abilityName);
-                ambushAbility.ViewElementDef = Helper.CreateDefFromClone(
+                ability.ViewElementDef = Helper.CreateDefFromClone(
                     source.ViewElementDef,
                     "{C464B230-D5D9-4798-A765-CF2398B3A49C}",
                     abilityName);
-                ambushAbility.StatModifications = new ItemStatModification[] { };
-                ambushAbility.ItemTagStatModifications = new EquipmentItemTagStatModification[0];
-                ambushAbility.ViewElementDef.DisplayName1.LocalizationKey = "ROBOTIC_SELF_REPAIR_TITLE";
-                ambushAbility.ViewElementDef.Description.LocalizationKey = "ROBOTIC_SELF_REPAIR_ABILITY_TEXT";
+                ability.StatModifications = new ItemStatModification[] { };
+                ability.ItemTagStatModifications = new EquipmentItemTagStatModification[0];
+                ability.ViewElementDef.DisplayName1.LocalizationKey = "ROBOTIC_SELF_REPAIR_TITLE";
+                ability.ViewElementDef.Description.LocalizationKey = "ROBOTIC_SELF_REPAIR_ABILITY_TEXT";
 
                 Sprite icon = Helper.CreateSpriteFromImageFile("TFTV_status_self_repair.png");
-                ambushAbility.ViewElementDef.LargeIcon = icon;
-                ambushAbility.ViewElementDef.SmallIcon = icon;
+                ability.ViewElementDef.LargeIcon = icon;
+                ability.ViewElementDef.SmallIcon = icon;
 
             }
             catch (Exception e)
@@ -6583,6 +6778,8 @@ namespace TFTV
                 tutorialTFTV1.NextHint = tutorialTFTV2;
                 tutorialTFTV1.Conditions = tutorial3MissionEnd.Conditions;
                 tutorialTFTV2.Conditions = tutorial3MissionEnd.Conditions;
+                tutorialTFTV1.IsTutorialHint = true;
+                tutorialTFTV2.IsTutorialHint = true;
 
                 HasSeenHintHintConditionDef seenOilCrabConditionDef = DefCache.GetDef<HasSeenHintHintConditionDef>("UmbraSightedHasSeenHintConditionDef");
                 HasSeenHintHintConditionDef seenFishCrabConditionDef = DefCache.GetDef<HasSeenHintHintConditionDef>("UmbraSightedTritonHasSeenHintConditionDef");
@@ -6594,8 +6791,6 @@ namespace TFTV
                 TFTVTutorialAndStory.CreateNewTacticalHintInfestationMissionEnd("InfestationMissionEnd");
                 CreateStaminaHint();
                 CreateUIDeliriumHint();
-
-
 
                 TFTVTutorialAndStory.CreateNewTacticalHint("HostileDefenders", HintTrigger.MissionStart, "MissionTypeHavenDefense_MissionTagDef", "HINT_HOSTILE_DEFENDERS_TITLE", "HINT_HOSTILE_DEFENDERS_TEXT", 3, true, "F2F5E5B1-5B9B-4F5B-8F5C-9B5E5B5F5B5F");
                 ContextHelpHintDbDef alwaysDisplayedTacticalHintsDbDef = DefCache.GetDef<ContextHelpHintDbDef>("AlwaysDisplayedTacticalHintsDbDef");
@@ -7164,8 +7359,6 @@ namespace TFTV
             try
             {
                 
-               
-
                   //Changing ambush missions so that all of them have crates
                   CustomMissionTypeDef AmbushALN = DefCache.GetDef<CustomMissionTypeDef>("AmbushAlien_CustomMissionTypeDef");
                 CustomMissionTypeDef SourceScavCratesALN = DefCache.GetDef<CustomMissionTypeDef>("ScavCratesALN_CustomMissionTypeDef");
@@ -7702,7 +7895,7 @@ namespace TFTV
 
                 //removing unnecessary researches 
                 synResearchDB.Researches.Remove(DefCache.GetDef<ResearchDef>("SYN_Aircraft_SecurityStation_ResearchDef"));
-                //  ppResearchDB.Researches.Remove(DefCache.GetDef<ResearchDef>("PX_Aircraft_EscapePods_ResearchDef"));
+               // ppResearchDB.Researches.Remove(DefCache.GetDef<ResearchDef>("PX_Aircraft_EscapePods_ResearchDef"));
                 njResearchDB.Researches.Remove(DefCache.GetDef<ResearchDef>("NJ_Aircraft_CruiseControl_ResearchDef"));
                 njResearchDB.Researches.Remove(DefCache.GetDef<ResearchDef>("NJ_Aircraft_FuelTank_ResearchDef"));
 

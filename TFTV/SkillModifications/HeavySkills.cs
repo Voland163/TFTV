@@ -331,7 +331,7 @@ namespace PRMBetterClasses.SkillModifications
             }
         }
         // Harmony Patch to calcualte shred resistance, vanilla has no implementation for this
-        [HarmonyPatch(typeof(ShreddingDamageKeywordData), "ProcessKeywordDataInternal")]
+      /*  [HarmonyPatch(typeof(ShreddingDamageKeywordData), "ProcessKeywordDataInternal")]
         internal static class BC_ShreddingDamageKeywordData_ProcessKeywordDataInternal_ShredResistant_patch
         {
             //public static DamageMultiplierAbilityDef shredResistanceAbilityDef = DefCache.GetDef<DamageMultiplierAbilityDef>("ShredResistant_DamageMultiplierAbilityDef");
@@ -344,7 +344,7 @@ namespace PRMBetterClasses.SkillModifications
                     data.DamageResult.ArmorDamage = Mathf.Floor(data.DamageResult.ArmorDamage * shredResistanceAbilityDef.Multiplier);
                 }
             }
-        }
+        }*/ //added to TFTVRevenant.cs for revenants
 
         private static void Change_RageBurst()
         {

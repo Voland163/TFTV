@@ -454,6 +454,8 @@ namespace TFTV
                         maxCorruption = 0;
                     }
 
+
+
                     // Like the original calculation, but adapted with 'maxCorruption'
                     // Also '__result' for 'return', '__instance' for 'this' and 'base_TacticalActor' for 'base.TacticalActor'
 
@@ -462,10 +464,12 @@ namespace TFTV
                     if (base_TacticalActor.GetAbilityWithDef<PassiveModifierAbility>(oneOfThemDef) != null)
                     {
                         __result = Mathf.Min(__instance.CorruptionStatusDef.ValueIncrement*2, maxCorruption - base_TacticalActor.CharacterStats.Corruption.IntValue);
+                        TFTVLogger.Always($"Applying Delirium to {base_TacticalActor.DisplayName} with One of Them, {__result}");
                     }
                     else
                     {
                         __result = Mathf.Min(__instance.CorruptionStatusDef.ValueIncrement, maxCorruption - base_TacticalActor.CharacterStats.Corruption.IntValue);
+                        TFTVLogger.Always($"Applying Delirium to {base_TacticalActor.DisplayName}, {__result}");
                     }
                        // TFTVLogger.Always($"{base_TacticalActor.DisplayName} bionics: {numberOfBionics} odi {odiPerc} willpower max: {base_TacticalActor.CharacterStats.Willpower.IntMax}, max delirium {maxCorruption} " +
                       //  $"Delirium {base_TacticalActor.CharacterStats.Corruption.IntValue}, result: {__result} ");

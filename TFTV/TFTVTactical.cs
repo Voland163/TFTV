@@ -61,7 +61,7 @@ namespace TFTV
     /// </summary>
     public class TFTVTactical : ModTactical
     {
-        private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
+       // private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
         private static void ImplementSpecialMissions(TacticalLevelController controller)
         {
             try
@@ -69,8 +69,8 @@ namespace TFTV
                 TFTVBaseDefenseTactical.CheckConsoleSituation(controller);
                 TFTVRescueVIPMissions.CheckAndImplementVIPRescueMIssions(controller);
                 TFTVPalaceMission.CheckPalaceMission();
-                TFTVAncients.CheckCyclopsDefense();
-                TFTVAncientsGeo.CheckResearchStateOnGeoscapeEndAndOnTacticalStart(null);
+                TFTVAncients.CyclopsAbilities.CyclopsResistance.CheckCyclopsDefense();
+                TFTVAncientsGeo.AncientsResearch.CheckResearchStateOnGeoscapeEndAndOnTacticalStart(null);
             }
             catch (Exception e)
             {
@@ -218,12 +218,12 @@ namespace TFTV
                 TFTVLogger.Always("Tactical save is being processed");
 
                 TFTVCommonMethods.ClearInternalVariables();
-                TFTVBetterEnemies.ImplementBetterEnemies();
+                TFTVDefsWithConfigDependency.StrongerPandorans.ImplementStrongerPandorans();
                 TFTVTacInstanceData data = (TFTVTacInstanceData)instanceData;
                 TFTVStamina.charactersWithDisabledBodyParts = data.charactersWithBrokenLimbs;
                 TFTVVoidOmens.VoidOmensCheck = data.VoidOmensCheck;
-                TFTVUmbra.TBTVVariable = data.TBTVVariable;
-                TFTVUmbra.UmbraResearched = data.UmbraResearched;
+                TFTVTouchedByTheVoid.TBTVVariable = data.TBTVVariable;
+                TFTVTouchedByTheVoid.UmbraResearched = data.UmbraResearched;
                 TFTVRevenant.DeadSoldiersDelirium = data.DeadSoldiersDelirium;
 
                 TFTVRevenant.revenantSpawned = data.revenantSpawned;
@@ -278,8 +278,8 @@ namespace TFTV
             {
                 charactersWithBrokenLimbs = TFTVStamina.charactersWithDisabledBodyParts,
                 VoidOmensCheck = TFTVVoidOmens.VoidOmensCheck,
-                TBTVVariable = TFTVUmbra.TBTVVariable,
-                UmbraResearched = TFTVUmbra.UmbraResearched,
+                TBTVVariable = TFTVTouchedByTheVoid.TBTVVariable,
+                UmbraResearched = TFTVTouchedByTheVoid.UmbraResearched,
                 DeadSoldiersDelirium = TFTVRevenant.DeadSoldiersDelirium,
                 revenantSpawned = TFTVRevenant.revenantSpawned,
                 revenantSpecialResistance = TFTVRevenant.revenantSpecialResistance,
@@ -340,7 +340,7 @@ namespace TFTV
                         TFTVLogger.Always("Turn 0 check");
                         if (TFTVAncients.CheckIfAncientsPresent(Controller))
                         {
-                            TFTVAncients.AdjustAncientsOnDeployment(Controller);
+                            TFTVAncients.AncientDeployment.AdjustAncientsOnDeployment(Controller);
                         }
 
                         TFTVRevenant.ModifyRevenantResistanceAbility(Controller);
@@ -355,7 +355,7 @@ namespace TFTV
                     }
 
                     TFTVRevenant.revenantSpecialResistance.Clear();
-                    TFTVUmbra.SpawnUmbra(Controller);
+                    TFTVTouchedByTheVoid.Umbra.UmbraTactical.SpawnUmbra(Controller);
                     TFTVHumanEnemies.ChampRecoverWPAura(Controller);
                     TFTVSpecialDifficulties.CounterSpawned = 0;
 

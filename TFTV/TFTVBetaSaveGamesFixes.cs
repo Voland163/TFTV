@@ -31,7 +31,7 @@ namespace TFTV
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
         // public static bool LOTAReworkGlobalCheck = false;
 
-        private static readonly SharedData Shared = TFTVMain.Shared;
+     //   private static readonly SharedData Shared = TFTVMain.Shared;
 
         public static void CorrrectPhoenixSaveManagerDifficulty()
         {
@@ -247,7 +247,7 @@ namespace TFTV
         public static class GeoMission_TryReloadItem_patch
         {
 
-            public static bool Prefix(GeoMission __instance, GeoItem item, ItemStorage storage, string storageName)
+            public static bool Prefix(GeoItem item)
             {
                 try
                 {
@@ -786,18 +786,18 @@ namespace TFTV
             {
                 if (controller.EventSystem.GetEventRecord("SDI_10")?.SelectedChoice == 0) //|| controller.AlienFaction.EvolutionProgress>=4700)
                 {
-                    controller.EventSystem.SetVariable(TFTVUmbra.TBTVVariableName, 4);
-                    TFTVLogger.Always(TFTVUmbra.TBTVVariableName + " is set to " + controller.EventSystem.GetVariable(TFTVUmbra.TBTVVariableName));
+                    controller.EventSystem.SetVariable(TFTVTouchedByTheVoid.TBTVVariableName, 4);
+                    TFTVLogger.Always(TFTVTouchedByTheVoid.TBTVVariableName + " is set to " + controller.EventSystem.GetVariable(TFTVTouchedByTheVoid.TBTVVariableName));
                 }
                 else if (controller.EventSystem.GetEventRecord("SDI_09")?.SelectedChoice == 0)// || controller.AlienFaction.EvolutionProgress >= 4230)
                 {
-                    controller.EventSystem.SetVariable(TFTVUmbra.TBTVVariableName, 3);
-                    TFTVLogger.Always(TFTVUmbra.TBTVVariableName + " is set to " + controller.EventSystem.GetVariable(TFTVUmbra.TBTVVariableName));
+                    controller.EventSystem.SetVariable(TFTVTouchedByTheVoid.TBTVVariableName, 3);
+                    TFTVLogger.Always(TFTVTouchedByTheVoid.TBTVVariableName + " is set to " + controller.EventSystem.GetVariable(TFTVTouchedByTheVoid.TBTVVariableName));
                 }
                 else if (controller.EventSystem.GetEventRecord("SDI_06")?.SelectedChoice == 0)// || controller.AlienFaction.EvolutionProgress >= 2820)
                 {
-                    controller.EventSystem.SetVariable(TFTVUmbra.TBTVVariableName, 2);
-                    TFTVLogger.Always(TFTVUmbra.TBTVVariableName + " is set to " + controller.EventSystem.GetVariable(TFTVUmbra.TBTVVariableName));
+                    controller.EventSystem.SetVariable(TFTVTouchedByTheVoid.TBTVVariableName, 2);
+                    TFTVLogger.Always(TFTVTouchedByTheVoid.TBTVVariableName + " is set to " + controller.EventSystem.GetVariable(TFTVTouchedByTheVoid.TBTVVariableName));
                 }
 
             }

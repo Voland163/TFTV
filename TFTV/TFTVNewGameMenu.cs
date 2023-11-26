@@ -76,15 +76,36 @@ namespace TFTV
                     //   TFTVLogger.Always("ResolutionFactorWidth is " + resolutionFactorWidth);
                     float resolutionFactorHeight = (float)resolution.height / 1080f;
 
+
+
+                    GameObject source = __instance.HomeScreenModules.MainMenuButtonsModule.VanillaVisuals[0];
+
                     Image logoText = __instance.HomeScreenModules.MainMenuButtonsModule.VanillaVisuals[0].GetComponentsInChildren<Image>().FirstOrDefault(i => i.name == "PhoenixLogo_text");
+                  
+                    
                     Image logoImage = __instance.HomeScreenModules.MainMenuButtonsModule.VanillaVisuals[0].GetComponentsInChildren<Image>().FirstOrDefault(i => i.name == "PhoenixLogo_symbol");
 
-                    logoImage.sprite = Helper.CreateSpriteFromImageFile("TFTV_logo5.png");
+
+                    Transform tftvLogo = UnityEngine.Object.Instantiate(source.GetComponentsInChildren<Transform>().FirstOrDefault(i => i.name == "PhoenixLogo_text"), 
+                        source.GetComponentsInChildren<Transform>().FirstOrDefault(i => i.name == "PhoenixLogo_text"));
+
+                    TFTVLogger.Always($"logo null? {tftvLogo==null}? source.transform null? {source.transform==null} tftvLogo.gameObject.GetComponent<Image>() null? {tftvLogo.gameObject.GetComponent<Image>()==null}");
+                    
+                    tftvLogo.gameObject.GetComponent<Image>().sprite = Helper.CreateSpriteFromImageFile("TFTV_logo4.png");
+
                     // logoText.sprite = Helper.CreateSpriteFromImageFile("TFTV_logo3.png");
                     //  logoText.transform.position += new Vector3(0, 500 * resolutionFactorHeight, 0);
-                    logoImage.transform.position += new Vector3(0, 200 * resolutionFactorHeight, 0);
-                    logoImage.transform.localScale *= 2.25f;
-
+                //    tftvLogo.position += new Vector3(0, 825 * resolutionFactorHeight, 0); //470 //825
+                //  tftvLogo.position += new Vector3(220 * resolutionFactorWidth,0, 0);
+                    tftvLogo.localScale *= 2.8f;
+                    Vector3 pos = new Vector3() { x= tftvLogo.position.x, y = tftvLogo.position.y - 50 * resolutionFactorHeight, z = tftvLogo.position.z};
+                    logoText.transform.localScale *= 0.4f;//0.65f; 
+                    logoText.transform.position += new Vector3(0, -150 * resolutionFactorWidth, 0); //-25 //700
+                    logoText.transform.position += new Vector3(-770 * resolutionFactorHeight, 0, 0); //-850
+                    logoImage.transform.localScale *= 0.4f; //0.65f;
+                    logoImage.transform.position += new Vector3(0, -260 * resolutionFactorHeight, 0); //-95 //590
+                    logoImage.transform.position += new Vector3(-770 * resolutionFactorWidth, 0, 0); //-850
+                    tftvLogo.transform.position = pos;
                 }
                 catch (Exception e)
                 {
@@ -577,9 +598,19 @@ namespace TFTV
             {
                 try
                 {
+                    
                     Resolution resolution = Screen.currentResolution;
                     float resolutionFactorWidth = (float)resolution.width / 1920f;
                     float resolutionFactorHeight = (float)resolution.height / 1080f;
+
+
+                    float aspectFactor = 1;
+
+                    if ((float)resolution.width / (float)resolution.height > 1920 / 1080)
+                    {
+                        aspectFactor = resolutionFactorWidth / resolutionFactorHeight;
+                        TFTVLogger.Always($"aspect factor is {aspectFactor}, resolutionFactorWidth {resolutionFactorWidth}, resolutionFactorHeight{resolutionFactorHeight} ");
+                    }
 
                     GameOptionViewController gameOptionViewController = UnityEngine.Object.Instantiate(uIModuleGameSettings.SecondaryOptions.Container.GetComponentsInChildren<GameOptionViewController>().First(), rectTransform);
 
@@ -603,7 +634,7 @@ namespace TFTV
 
                     // TFTVLogger.Always($"position {gameOptionViewController.transform.position} local pos {gameOptionViewController.transform.localPosition} button {gameOptionViewController.SelectButton.transform.position}");
 
-                    gameOptionViewController.SelectButton.transform.position -= new Vector3(250 * resolutionFactorWidth, 0, 0);
+                    gameOptionViewController.SelectButton.transform.position -= new Vector3(250 * resolutionFactorWidth * aspectFactor, 0, 0);
                     gameOptionViewController.transform.localScale *= 0.70f;
 
 
@@ -1211,15 +1242,11 @@ namespace TFTV
             {
                 try
                 {
-                    if (TFTVBetterEnemies.StrongerPandoransImplemented && newValue == 1 && NewGameOptionsSetUp)
+                  /*  if (TFTVDefsWithConfigDependency.StrongerPandorans.StrongerPandoransImplemented && newValue == 1 && NewGameOptionsSetUp)
                     {
-
-
                         string warning = $"{TFTVCommonMethods.ConvertKeyToString("KEY_OPTIONS_CHANGED_SETTING_WARNING0")} {_titleStrongerPandorans} {TFTVCommonMethods.ConvertKeyToString("KEY_OPTIONS_CHANGED_SETTING_WARNING1")}";
-
                         GameUtl.GetMessageBox().ShowSimplePrompt(warning, MessageBoxIcon.Warning, MessageBoxButtons.OK, null);
-
-                    }
+                    }*/
 
                     bool option = newValue == 0;
                     string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
@@ -1563,13 +1590,13 @@ namespace TFTV
             {
                 try
                 {
-                    if (TFTVDefsWithConfigDependency.ChangesToCapturingPandoransImplemented && newValue == 1 && NewGameOptionsSetUp)
+                   /* if (TFTVDefsWithConfigDependency.ChangesToCapturingPandoransImplemented && newValue == 1 && NewGameOptionsSetUp)
                     {
                         string warning = $"{TFTVCommonMethods.ConvertKeyToString("KEY_OPTIONS_CHANGED_SETTING_WARNING0")} {_titleLimitedCapture} {TFTVCommonMethods.ConvertKeyToString("KEY_OPTIONS_CHANGED_SETTING_WARNING1")}";
 
                         GameUtl.GetMessageBox().ShowSimplePrompt(warning, MessageBoxIcon.Warning, MessageBoxButtons.OK, null);
 
-                    }
+                    }*/
 
                     bool limitedCapture = newValue == 0;
                     string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
@@ -1587,13 +1614,13 @@ namespace TFTV
             {
                 try
                 {
-                    if (TFTVDefsWithConfigDependency.ChangesToFoodAndMutagenGenerationImplemented && newValue == 1 && NewGameOptionsSetUp)
+                   /* if (TFTVDefsWithConfigDependency.ChangesToFoodAndMutagenGenerationImplemented && newValue == 1 && NewGameOptionsSetUp)
                     {
                         string warning = $"{TFTVCommonMethods.ConvertKeyToString("KEY_OPTIONS_CHANGED_SETTING_WARNING0")} {_titleLimitedHarvesting} {TFTVCommonMethods.ConvertKeyToString("KEY_OPTIONS_CHANGED_SETTING_WARNING1")}";
 
                         GameUtl.GetMessageBox().ShowSimplePrompt(warning, MessageBoxIcon.Warning, MessageBoxButtons.OK, null);
 
-                    }
+                    }*/
 
 
                     bool limitedHarvesting = newValue == 0;

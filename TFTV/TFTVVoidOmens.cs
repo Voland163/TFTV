@@ -1236,7 +1236,7 @@ namespace TFTV
                 {
                     TFTVConfig config = TFTVMain.Main.Config;
 
-                    if (VoidOmensCheck[7] && __instance.Mission.MissionDef.MaxPlayerUnits == 8 && config.MoreMistVO)
+                    if (VoidOmensCheck[7] && config.MoreMistVO)
                     {
                         __result += 1;
                     }
@@ -1247,6 +1247,11 @@ namespace TFTV
                     if (__instance.Mission.MissionDef.name.Equals("StoryFS2_CustomMissionTypeDef"))
                     {
                         __result = 8;
+                    }
+                    if (__instance.Mission.MissionDef.MissionTypeTag == DefCache.GetDef<MissionTagDef>("MissionTypePhoenixBaseDefence_MissionTagDef"))
+                    {
+                        TFTVLogger.Always($"Base defense mission: setting max deployment to 9");
+                        __result = 9;                
                     }
                 }
 
@@ -1303,7 +1308,6 @@ namespace TFTV
 
         }
 
-
         [HarmonyPatch(typeof(GeoHavenDefenseMission), "GetDefenseDeployment")]
         public static class GeoHavenDefenseMission_GetDefenseDeployment_Mobilization_Patch
         {
@@ -1352,12 +1356,10 @@ namespace TFTV
             }
         }
 
-
         //VO5 increase chance to spawn weapons in crates
         [HarmonyPatch(typeof(GeoMission), "PrepareTacticalGame")]
         public static class TFTV_GeoMission_ModifyCratesVO5_Patch
         {
-
             public static void Prefix(GeoMission __instance, ref List<WeaponDef> __state)
             {
                 try
