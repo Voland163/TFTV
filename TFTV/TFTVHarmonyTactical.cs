@@ -107,25 +107,11 @@ namespace TFTV
         [HarmonyPatch(typeof(TacticalLevelController), "ActorEnteredPlay")]
         public static class TFTV_TacticalLevelController_ActorEnteredPlay_Patch
         {
-            public static void Prefix(TacticalActorBase actor)
+            public static void Postfix(TacticalActorBase actor, TacticalLevelController __instance, in bool __state)
             {
                 try
                 {
-                    TFTVPalaceMission.RemoveVoiceFromSpecialCharactersByRemovingHumanTagOnEntryIntoPlay(actor);
-
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-
-            }
-
-
-            public static void Postfix(TacticalActorBase actor, TacticalLevelController __instance)
-            {
-                try
-                {
+                   
                     TFTVDeliriumPerks.ImplementDeliriumPerks(actor, __instance);
                     TFTVKillingExploits.AddReinforcementTagToImplementNoDropsOption(actor, __instance);
                     TFTVHumanEnemies.GiveRankAndNameToHumaoidEnemy(actor, __instance);

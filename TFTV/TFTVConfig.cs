@@ -33,7 +33,7 @@ namespace TFTV
             GEOSCAPE, STORY, ROOKIE, VETERAN, HERO, LEGEND, ETERMES
         }
         public DifficultyOnTactical difficultyOnTactical = DifficultyOnTactical.GEOSCAPE;
-        public bool AnimateWhileShooting = true;
+        public bool AnimateWhileShooting = false;
         public bool ReinforcementsNoDrops = true;
         public bool MoreMistVO = true;
         public bool LimitedDeploymentVO = true;
@@ -44,7 +44,7 @@ namespace TFTV
         public bool Debug = true;
         public bool LimitedCapture = true;
         public bool LimitedHarvesting = true;
-        public bool NoBarks = true;
+        public bool NoBarks = false;
 
         internal List<ModConfigField> modConfigFields = new List<ModConfigField>();
         public void PopulateConfigFields()
@@ -70,13 +70,17 @@ namespace TFTV
 
                     Dictionary<string, ModRawConfig> modConfigs = JsonConvert.DeserializeObject<Dictionary<string, ModRawConfig>>(File.ReadAllText(path));
 
-                    ModRawConfig rawTFTVConfig = modConfigs["phoenixrising.tftv"];
-
-                    if (rawTFTVConfig != null)
+                    if (modConfigs != null && modConfigs.ContainsKey("phoenixrising.tftv"))
                     {
-                        TFTVLogger.Always($"Found the raw config!");
-                        LoadFromRawConfig(rawTFTVConfig);
+                        ModRawConfig rawTFTVConfig = modConfigs["phoenixrising.tftv"];
 
+                       
+                        if (rawTFTVConfig != null && rawTFTVConfig.Count == modConfigFields.Count)
+                        {
+                            TFTVLogger.Always($"Found the raw config! Count: {rawTFTVConfig.Count}");
+                            LoadFromRawConfig(rawTFTVConfig);
+
+                        }
                     }
                 }
 
@@ -93,85 +97,6 @@ namespace TFTV
             return modConfigFields;
 
         }
-
-
-        /*
-        internal Dictionary<string, object> Fields = new Dictionary<string, object>()
-        {
-
-        };
-
-        public void PopulateConfigFields()
-        {
-            try
-            {
-                foreach (var fieldInfo in GetType().GetFields(BindingFlags.Instance | BindingFlags.Public).ToList())
-                {
-                 //   TFTVLogger.Always($"fieldInfo is {fieldInfo}");
-
-                    string key = fieldInfo.Name;
-
-                    object value = fieldInfo.GetValue(this);
-
-                    Fields.Add(key, value);
-                }
-
-                string filePathRoot = GameUtl.GameComponent<PlatformComponent>().Platform.GetPlatformData().GetFilePathRoot();
-
-                string path = Path.Combine(filePathRoot, ConfigFileName);
-                if (File.Exists(path))
-                {
-
-                    Dictionary<string, ModRawConfig> modConfigs = JsonConvert.DeserializeObject<Dictionary<string, ModRawConfig>>(File.ReadAllText(path));
-
-                    ModRawConfig rawTFTVConfig = modConfigs["phoenixrising.tftv"];
-
-                    if (rawTFTVConfig != null)
-                    {
-                        TFTVLogger.Always($"Found the raw config!");
-                        LoadFromRawConfig(rawTFTVConfig);
-
-                    }
-                }
-
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-                throw;
-            }
-        }
-
-        public void RetrieveConfigOptions()
-        {
-            try
-            {
-                foreach (var fieldInfo in GetType().GetFields(BindingFlags.Instance | BindingFlags.Public).ToList())
-                {
-                    fieldInfo.SetValue(this, Fields[fieldInfo.Name]);
-                }
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-                throw;
-            }
-        }
-
-
-
-        public override List<ModConfigField> GetConfigFields()
-        {
-            return Fields.Select(f => new ModConfigField(f.Key, f.Value.GetType())
-            {
-                GetValue = () => f.Value,
-                SetValue = (o) => Fields[f.Key] = o,
-                GetText = () => TFTVCommonMethods.ConvertKeyToString($"KEY_{f.Key}"),
-                GetDescription = () => TFTVCommonMethods.ConvertKeyToString($"KEY_{f.Key}_DESCRIPTION"),
-            }).ToList();
-
-        }
-        */
 
 
 

@@ -13,6 +13,7 @@ using PhoenixPoint.Home.View;
 using PhoenixPoint.Home.View.ViewControllers;
 using PhoenixPoint.Home.View.ViewModules;
 using PhoenixPoint.Home.View.ViewStates;
+using PhoenixPoint.Modding;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -40,19 +41,49 @@ namespace TFTV
             {
                 try
                 {
+                    UIModuleModManager modManagerUI = __instance.HomeScreenModules.ModManagerModule;
+                    ModManager modManager = TFTVMain.Main.GetGame().ModManager;
+
+                    foreach (ModEntry modEntry in modManager.Mods)
+                    {
+
+                        TFTVLogger.Always($"{modEntry.ID} is enabled {modEntry.Enabled}");
+                        if (modEntry.Enabled && (modEntry.ID == "com.example.Better_Enemies" || modEntry.ID == "com.example.BetterVehicles"))
+                        {
+                            //  TFTVLogger.Always($"Should disable {modEntry.LocalizedName}");
+                            //  modManager.TryDisableMod(modEntry);
+
+                            string warning = $"{TFTVCommonMethods.ConvertKeyToString("KEY_Warning_Disable_Mod0")} {modEntry.LocalizedName.ToUpper()}{TFTVCommonMethods.ConvertKeyToString("KEY_Warning_Disable_Mod1")}";
+
+                            GameUtl.GetMessageBox().ShowSimplePrompt(warning, MessageBoxIcon.Warning, MessageBoxButtons.OK, null);
+
+                            //    string filePathRoot = GameUtl.GameComponent<PlatformComponent>().Platform.GetPlatformData().GetFilePathRoot();
+
+                            //   string path = Path.Combine(filePathRoot, "ModConfig.json");
+                            /*   if (File.Exists(path))
+                               {
+                                   File.Delete(path);
+
+                                   //   PropertyInfo fieldInfoEnabled = typeof(ModEntry).GetProperty("Enabled", BindingFlags.Public | BindingFlags.Instance);
+
+                                   //   fieldInfoEnabled.SetValue(modEntry, false);
+                               }*/
+                        }
+                    }
+
                     Resolution resolution = Screen.currentResolution;
                     float resolutionFactorWidth = (float)resolution.width / 1920f;
                     //   TFTVLogger.Always("ResolutionFactorWidth is " + resolutionFactorWidth);
                     float resolutionFactorHeight = (float)resolution.height / 1080f;
 
-                    Image logoText =  __instance.HomeScreenModules.MainMenuButtonsModule.VanillaVisuals[0].GetComponentsInChildren<Image>().FirstOrDefault(i => i.name == "PhoenixLogo_text");
+                    Image logoText = __instance.HomeScreenModules.MainMenuButtonsModule.VanillaVisuals[0].GetComponentsInChildren<Image>().FirstOrDefault(i => i.name == "PhoenixLogo_text");
                     Image logoImage = __instance.HomeScreenModules.MainMenuButtonsModule.VanillaVisuals[0].GetComponentsInChildren<Image>().FirstOrDefault(i => i.name == "PhoenixLogo_symbol");
 
-                     logoImage.sprite = Helper.CreateSpriteFromImageFile("TFTV_logo5.png");
+                    logoImage.sprite = Helper.CreateSpriteFromImageFile("TFTV_logo5.png");
                     // logoText.sprite = Helper.CreateSpriteFromImageFile("TFTV_logo3.png");
                     //  logoText.transform.position += new Vector3(0, 500 * resolutionFactorHeight, 0);
-                     logoImage.transform.position += new Vector3(0, 200 * resolutionFactorHeight, 0);
-                     logoImage.transform.localScale *= 2.25f;
+                    logoImage.transform.position += new Vector3(0, 200 * resolutionFactorHeight, 0);
+                    logoImage.transform.localScale *= 2.25f;
 
                 }
                 catch (Exception e)
@@ -73,8 +104,8 @@ namespace TFTV
             {
                 try
                 {
-                   
-                   
+
+
                     __instance.SwitchToVanillaVisuals();
 
                     return false;
@@ -474,11 +505,11 @@ namespace TFTV
             private static string[] _optionsVehiclePriority = { "HIGH", "MEDIUM", "LOW", "NONE" };
 
             private static string _titleScavSites = "SCAVENGING_SITES";//"SCAVENGING SITES #";
-            private static string _titleLimitedCapture = "LIMITED_CAPTURING";//"LIMITED CAPTURING";
-            private static string _titleLimitedHarvesting = "LIMITED_HARVESTING";//"LIMITED HARVESTING";
+            private static string _titleLimitedCapture = "KEY_LimitedCapture";//"LIMITED CAPTURING";
+            private static string _titleLimitedHarvesting = "KEY_LimitedHarvesting";//"LIMITED HARVESTING";
 
-            private static string _descriptionLimitedCapture = "LIMITED_CAPTURING_DESCRIPTION";//"Play with game mechanics that set a limit to how many Pandorans you can capture per mission.";
-            private static string _descriptionLimitedHarvesting = "LIMITED_HARVESTING_DESCRIPTION";//"Play with game mechanics that make obtaining food or mutagens from captured Pandorans harder.";
+            private static string _descriptionLimitedCapture = "KEY_LimitedCapture_DESCRIPTION";//"Play with game mechanics that set a limit to how many Pandorans you can capture per mission.";
+            private static string _descriptionLimitedHarvesting = "KEY_LimitedHarvesting_DESCRIPTION";//"Play with game mechanics that make obtaining food or mutagens from captured Pandorans harder.";
 
             private static string[] _optionsBool = { "YES", "NO" };
 
@@ -540,23 +571,7 @@ namespace TFTV
             private static string _titleNoBarks = "KEY_NoBarks";
             private static string _descriptionNoBarks = "KEY_NoBarks_DESCRIPTION";
 
-            private static void ModifyConfigFields(string configField, object value)
-            {
-                try
-                {
 
-                    //   config.modConfigFields[configField] = value;
-
-
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                    throw;
-                }
-
-
-            }
 
             private static GameOptionViewController InstantiateGameOptionViewController(RectTransform rectTransform, UIModuleGameSettings uIModuleGameSettings, string titleKey, string descriptionKey, string onToggleMethod)
             {
@@ -1091,7 +1106,7 @@ namespace TFTV
                     string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
                     _disableTacSaves.CurrentItemText.text = options[newValue];
                     config.disableSavingOnTactical = option;
-                    ModifyConfigFields("disableSavingOnTactical", option);
+
                 }
                 catch (Exception e)
                 {
@@ -1152,7 +1167,7 @@ namespace TFTV
                     string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
                     _staminaRecuperation.CurrentItemText.text = options[newValue];
                     config.ActivateStaminaRecuperatonModule = option;
-                    ModifyConfigFields("ActivateStaminaRecuperatonModule", option);
+
                 }
                 catch (Exception e)
                 {
@@ -1168,7 +1183,7 @@ namespace TFTV
                     string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
                     _havenSOS.CurrentItemText.text = options[newValue];
                     config.HavenSOS = option;
-                    ModifyConfigFields("HavenSOS", option);
+
                 }
                 catch (Exception e)
                 {
@@ -1184,7 +1199,7 @@ namespace TFTV
                     string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
                     _learnFirstSkill.CurrentItemText.text = options[newValue];
                     config.LearnFirstPersonalSkill = option;
-                    ModifyConfigFields("LearnFirstPersonalSkill", option);
+
                 }
                 catch (Exception e)
                 {
@@ -1258,7 +1273,7 @@ namespace TFTV
                     string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
                     _skipMovies.CurrentItemText.text = options[newValue];
                     config.SkipMovies = option;
-                    ModifyConfigFields("SkipMovies", option);
+
                 }
                 catch (Exception e)
                 {
@@ -1274,7 +1289,7 @@ namespace TFTV
                     string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
                     _noBarks.CurrentItemText.text = options[newValue];
                     config.NoBarks = option;
-                    ModifyConfigFields("NoBarks", option);
+
                 }
                 catch (Exception e)
                 {
@@ -1292,7 +1307,7 @@ namespace TFTV
                     string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
                     _flinching.CurrentItemText.text = options[newValue];
                     config.AnimateWhileShooting = option;
-                    ModifyConfigFields("AnimateWhileShooting", option);
+
                 }
                 catch (Exception e)
                 {
@@ -1308,7 +1323,7 @@ namespace TFTV
                     string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
                     _moreMistVO.CurrentItemText.text = options[newValue];
                     config.MoreMistVO = option;
-                    ModifyConfigFields("MoreMistVO", option);
+
                 }
 
                 catch (Exception e)
@@ -1325,7 +1340,7 @@ namespace TFTV
                     string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
                     _limitedDeploymentVO.CurrentItemText.text = options[newValue];
                     config.LimitedDeploymentVO = option;
-                    ModifyConfigFields("LimitedDeploymentVO", option);
+
                 }
                 catch (Exception e)
                 {
@@ -1343,7 +1358,7 @@ namespace TFTV
                     string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
                     _trading.CurrentItemText.text = options[newValue];
                     config.EqualizeTrade = option;
-                    ModifyConfigFields("EqualizeTrade", option);
+
                 }
                 catch (Exception e)
                 {
@@ -1360,7 +1375,7 @@ namespace TFTV
                     string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
                     _limitedRaiding.CurrentItemText.text = options[newValue];
                     config.LimitedRaiding = option;
-                    ModifyConfigFields("LimitedRaiding", option);
+
                 }
                 catch (Exception e)
                 {
@@ -1377,7 +1392,7 @@ namespace TFTV
                     string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
                     _noDropReinforcements.CurrentItemText.text = options[newValue];
                     config.ReinforcementsNoDrops = option;
-                    ModifyConfigFields("ReinforcementsNoDrops", option);
+
                 }
                 catch (Exception e)
                 {
@@ -1405,7 +1420,7 @@ namespace TFTV
 
                     TFTVConfig.DifficultyOnTactical difficulty = (TFTVConfig.DifficultyOnTactical)newValue;
 
-                    ModifyConfigFields("difficultyOnTactical", difficulty);
+
                 }
                 catch (Exception e)
                 {

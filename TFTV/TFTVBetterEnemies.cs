@@ -40,34 +40,16 @@ namespace TFTV
 
                 TFTVLogger.Always($"AtImplementStrongerPandorans check");
 
-                if (!CheckIfBEActive())
+                if (TFTVNewGameOptions.StrongerPandoransSetting && !StrongerPandoransImplemented)
                 {
-                    TFTVLogger.Always("BetterEnemies not found and StrongerPandorans not implemented yet");
-
-                    BECreateAIActionDefs();
-                    //  TFTVLogger.Always("BE AIActionDefs created");
-                    BEFixesToAI();
-                    //   TFTVLogger.Always("BE Fixes to AI applied");
-                    BEChange_Perception();
-                    // BEFixCaterpillarTracksDamage(); //already added to base
-                    BEReducePandoranWillpower();
-                    if (TFTVNewGameOptions.StrongerPandoransSetting)
-                    {
-                        TFTVLogger.Always("Stronger Pandorans is on!");
-                        BEBuff_ArthronsTritons();
-                        BEBuff_StartingEvolution();
-                        BEBuff_Queen();
-                        BEBUff_SirenChiron();
-                        BEBuff_SmallCharactersAndSentinels();
-                        StrongerPandoransImplemented = true;
-                    }
+                    TFTVLogger.Always("Stronger Pandorans is on!");
+                    BEBuff_ArthronsTritons();
+                    BEBuff_StartingEvolution();
+                    BEBuff_Queen();
+                    BEBUff_SirenChiron();
+                    BEBuff_SmallCharactersAndSentinels();
+                    StrongerPandoransImplemented = true;
                 }
-                else
-                {
-                    TFTVLogger.Always("BetterEnemies mod found or StrongerPandorans already implemented, reverting changes to Scylla just in case");
-                    RevertScyllaAIFromBE();
-                }
-
             }
             catch (Exception e)
             {
