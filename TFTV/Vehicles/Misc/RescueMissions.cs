@@ -66,6 +66,7 @@ namespace TFTVVehicleRework.Misc
         {
             //"KS_Kaos_Buggy_CharacterTemplateDef"
             TacCharacterDef BuggyCharacterDef = (TacCharacterDef)Repo.GetDef("147c1dfa-411a-4114-4b3c-5a2e1cfcd1d2");
+            BuggyCharacterDef.Data.Name = "JUNKER";
             BuggyCharacterDef.Data.GameTags = BuggyCharacterDef.Data.GameTags.AddToArray(BuggyClassTag);
             BuggyCharacterDef.DeploymentCost = 500;
 
