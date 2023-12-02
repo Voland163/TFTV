@@ -70,7 +70,7 @@ namespace PRMBetterClasses
             foreach (FieldInfo dstFieldInfo in dst.GetType().GetFields(bindFlags))
             {
                 FieldInfo srcField = srcType.GetField(dstFieldInfo.Name, bindFlags);
-                if (srcField != null)
+                if (srcField != null && srcField.Name != "Guid")
                 {
                     dstFieldInfo.SetValue(dst, srcField.GetValue(src));
                 }
