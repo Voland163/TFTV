@@ -28,10 +28,6 @@ Presentation Better Classes: https://drive.google.com/file/d/19L8sXoFmxc2MsWlaHS
 TftV Discord Server: https://discord.gg/Ypt5p5trNx
 Wiki: http://wiki.phoenixpoint.com/Terror_from_the_Void
 
-RECOMMENDED MODS:
-PRM Better Enemies: https://steamcommunity.com/sharedfiles/filedetails/?id=2841735816
-PRM Better Vehicles: https://steamcommunity.com/sharedfiles/filedetails/?id=2842171493
-
 OPEN BETA
 
 The Beta is feature complete for version 1.0 of the development. But some features are still unfinished because we are not certain which direction to take them. As such we really need your feedback about everything.
