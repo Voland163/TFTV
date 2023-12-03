@@ -746,6 +746,7 @@ namespace TFTV
 
                     doomAC.ViewElementDef = Helper.CreateDefFromClone(doomAC.ViewElementDef, "{3973F99D-1CB9-4E14-9515-F37B9CC1C668}", doomAC.name);
                     doomAC.ViewElementDef.Description.LocalizationKey = $"DOOM_SLAYER_GROM_NAME";
+                    doomAC.ViewElementDef.DisplayName1.LocalizationKey = $"DOOM_SLAYER_GROM_NAME";
                     doomAC.ViewElementDef.DisplayName2.LocalizationKey = $"DOOM_SLAYER_GROM_DESCRIPTION";
 
 
@@ -769,6 +770,7 @@ namespace TFTV
 
                     sectarianAxe.ViewElementDef = Helper.CreateDefFromClone(sectarianAxe.ViewElementDef, "{C6DE2658-0012-4D8E-8813-EE77546DA64B}", sectarianAxe.name);
                     sectarianAxe.ViewElementDef.Description.LocalizationKey = $"SECTARIAN_AXE_NAME";
+                    sectarianAxe.ViewElementDef.DisplayName1.LocalizationKey = $"SECTARIAN_AXE_NAME";
                     sectarianAxe.ViewElementDef.DisplayName2.LocalizationKey = $"SECTARIAN_AXE_DESCRIPTION";
 
 
