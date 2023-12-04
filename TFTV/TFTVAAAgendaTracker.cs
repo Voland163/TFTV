@@ -39,6 +39,8 @@ namespace TFTV
 
         internal static class ExtendedAgendaTracker
         {
+            private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
+
             internal static bool fetchedSiteNames = false;
             internal static string unexploredSiteName = "UNEXPLORED SITE";
             internal static string explorationSiteName = "EXPLORATION SITE";
@@ -309,8 +311,6 @@ namespace TFTV
             {
                 try
                 {
-                    DefRepository defRepository = GameUtl.GameComponent<DefRepository>();
-
                     if (aircraftSprite == null)
                     {
                         aircraftSprite = uIModuleInfoBar.AirVehiclesLabel.transform.parent.gameObject.GetComponentInChildren<Image>(true).sprite;
@@ -318,34 +318,24 @@ namespace TFTV
 
                     if (ancientSiteProbeSprite == null)
                     {
-                        ancientSiteProbeSprite = defRepository.DefRepositoryDef.AllDefs.OfType<ViewElementDef>().Where(def => def.name.Contains("AncientSiteProbeAbilityDef")).FirstOrDefault().SmallIcon;
+                        ancientSiteProbeSprite = DefCache.GetDef<ViewElementDef>("E_ViewElement [AncientSiteProbeAbilityDef]").SmallIcon;
                     }
 
                     if (archeologyLabSprite == null)
                     {
-                        archeologyLabSprite = defRepository.DefRepositoryDef.AllDefs.OfType<ViewElementDef>().Where(def => def.name.Contains("ArcheologyLab_PhoenixFacilityDef")).FirstOrDefault().SmallIcon;
+                        archeologyLabSprite = DefCache.GetDef<ViewElementDef>("E_ViewElement [ArcheologyLab_PhoenixFacilityDef]").SmallIcon; 
                     }
 
                     if (phoenixFactionSprite == null)
                     {
-                        phoenixFactionSprite = defRepository.DefRepositoryDef.AllDefs.OfType<GeoFactionViewDef>().Where(def => def.name.Contains("Phoenix")).FirstOrDefault().FactionIcon;
+                        phoenixFactionSprite = DefCache.GetDef<GeoFactionViewDef>("E_Phoenix_GeoFactionView [Phoenix_GeoPhoenixFactionDef]").FactionIcon; 
                     }
                 }
                 catch (Exception e)
                 {
                     TFTVLogger.Error(e);
                 }
-
-
-
-
-
             }
-
-
-            /// <summary>
-            /// This is not necesary in TFTV, because StartPhoenixBaseAssault is what initiates the attack
-            /// </summary>
 
 
             // Disable the last safeguard for starting a base defense mission.
@@ -601,8 +591,6 @@ namespace TFTV
             [HarmonyPatch(typeof(GeoscapeLog), "ShowSiteDefenseTimer")]
             public static class GeoscapeLog_ShowSiteDefenseTimer_Patch
             {
-
-
                 public static void Postfix(GeoFaction faction, SiteAttackSchedule target)
                 {
                     try
@@ -677,8 +665,6 @@ namespace TFTV
             [HarmonyPatch(typeof(UIStateVehicleSelected), "OnContextualItemSelected")]
             public static class UIStateVehicleSelected_OnContextualItemSelected_Patch
             {
-
-
                 public static void Postfix(GeoAbility ability)
                 {
                     try
@@ -753,7 +739,6 @@ namespace TFTV
             [HarmonyPatch(typeof(UIStateVehicleSelected), "AddTravelSite")]
             public static class UIStateVehicleSelected_AddTravelSite_Patch
             {
-
                 public static void Postfix(UIStateVehicleSelected __instance, GeoSite site)
                 {
                     try
@@ -828,8 +813,6 @@ namespace TFTV
             [HarmonyPatch(typeof(UIStateVehicleSelected), "OnVehicleSiteExcavated")]
             public static class UIStateVehicleSelected_OnVehicleSiteExcavated_Patch
             {
-
-
                 public static void Postfix(GeoPhoenixFaction faction, SiteExcavationState excavation)
                 {
                     try
@@ -871,8 +854,6 @@ namespace TFTV
             [HarmonyPatch(typeof(UIStateVehicleSelected), "OnVehicleArrived")]
             public static class UIStateVehicleSelected_OnVehicleArrived_Patch
             {
-
-
                 public static void Postfix(GeoVehicle vehicle, bool justPassing)
                 {
                     try
@@ -916,7 +897,6 @@ namespace TFTV
             [HarmonyPatch(typeof(UIStateVehicleSelected), "OnVehicleSiteExplored")]
             public static class UIStateVehicleSelected_OnVehicleSiteExplored_Patch
             {
-
                 public static void Postfix(GeoVehicle vehicle)
                 {
                     try
@@ -962,7 +942,6 @@ namespace TFTV
             [HarmonyPatch(typeof(UIModuleFactionAgendaTracker), "UpdateData", new Type[] { typeof(UIFactionDataTrackerElement) })]
             public static class UIModuleFactionAgendaTracker_UpdateData_Patch
             {
-
                 public static bool Prefix(ref bool __result, UIFactionDataTrackerElement element, GeoscapeViewContext ____context)
                 {
                     try
@@ -1122,18 +1101,6 @@ namespace TFTV
                                         }
                                     }
 
-                                    /*
-                                    // @ToDo: Check all factions
-                                    SiteAttackSchedule siteAttackSchedule = geoSite.GeoLevel.AlienFaction.AncientSiteAttackSchedule.FirstOrDefault((SiteAttackSchedule s) => s.Site == geoSite);
-                                    TimeUnit attackTime = TimeUnit.FromHours((float)(siteAttackSchedule.ScheduledFor - ____context.Level.Timing.Now).TimeSpan.TotalHours);
-                                    //TFTVLogger.Debug($"[UIModuleFactionAgendaTracker_UpdateData_PREFIX] element.TrackedObject: {element.TrackedObject}, attackTime: {attackTime}");
-
-                                    element.UpdateData(attackTime, true, null);
-                                    __result = attackTime <= TimeUnit.Zero;
-                                    */
-
-
-
                                 }
                                 // Excavating
                                 else
@@ -1148,31 +1115,8 @@ namespace TFTV
                             }
                             else if (geoSite.Type == GeoSiteType.PhoenixBase)
                             {
-
-                                /*  foreach (GeoFaction geoFaction in ____context.Level.Factions)
-                                  {
-                                      if (geoFaction.IsViewerFaction || geoFaction.IsEnvironmentFaction || geoFaction.IsNeutralFaction || geoFaction.IsInactiveFaction)
-                                      {
-                                          continue;
-                                      }
-                                      //TFTVLogger.Debug($"[UIModuleFactionAgendaTracker_UpdateData_PREFIX] geoFaction: {geoFaction.Name.Localize()}");
-                                */
-
                                 if (TFTVBaseDefenseGeoscape.PhoenixBasesUnderAttack.Keys.Count > 0)
-                                {
-
-                                    /*  bool isFactionPresent = false;
-                                      foreach (Dictionary<GeoFaction, TimeUnit> factionTimeUnits in MissionDeployment.PhoenixBasesUnderAttack.Values)
-                                      {
-                                          if (factionTimeUnits.ContainsKey(geoFaction))
-                                          {
-                                              isFactionPresent = true;
-                                              break;
-                                          }
-                                      }*/
-
-                                    //  if (isFactionPresent)
-                                    //  {
+                                {       
                                     foreach (int phoenixBaseId in TFTVBaseDefenseGeoscape.PhoenixBasesUnderAttack.Keys)
                                     {
                                         if (geoSite.SiteId == phoenixBaseId)
@@ -1184,47 +1128,12 @@ namespace TFTV
                                                                                                         //TFTVLogger.Debug($"[UIModuleFactionAgendaTracker_UpdateData_PREFIX] element.TrackedObject: {element.TrackedObject}, attackTime: {attackTime}");
                                                                                                         // TFTVLogger.Always($"attack time is {attackTime}");
                                             element.UpdateData(attackTime, true, null);
-                                            /* __result = attackTime <= TimeUnit.Zero;
-                                             if (__result) //&& !KludgeCheck)
-                                             {                                                    
-                                                 MethodInfo registerMission = typeof(GeoSite).GetMethod("RegisterMission", BindingFlags.NonPublic | BindingFlags.Instance);
-                                                 registerMission.Invoke(geoSite, new object[] { geoSite.ActiveMission });
-                                                 TFTVLogger.Always("this method in AA is invoked");
-                                               //  KludgeCheck = true;
-                                             }*/
+                                          
                                             geoSite.RefreshVisuals();
 
                                         }
                                     }
-                                    // }
                                 }
-
-                                /*  foreach (SiteAttackSchedule phoenixBaseAttackSchedule in geoFaction.PhoenixBaseAttackSchedule)
-                                  {
-                                      if (phoenixBaseAttackSchedule.HasAttackScheduled && phoenixBaseAttackSchedule.Site == geoSite)
-                                      {
-                                          TimeUnit attackTime = TimeUnit.FromHours((float)(phoenixBaseAttackSchedule.ScheduledFor - ____context.Level.Timing.Now).TimeSpan.TotalHours);
-                                          //TFTVLogger.Debug($"[UIModuleFactionAgendaTracker_UpdateData_PREFIX] element.TrackedObject: {element.TrackedObject}, attackTime: {attackTime}");
-
-                                          element.UpdateData(attackTime, true, null);
-                                          __result = attackTime <= TimeUnit.Zero;
-                                      }
-                                  }*/
-
-
-                                // }
-
-
-
-                                /*
-                                // @ToDo: Check all factions
-                                SiteAttackSchedule siteAttackSchedule = geoSite.GeoLevel.AlienFaction.PhoenixBaseAttackSchedule.FirstOrDefault((SiteAttackSchedule s) => s.Site == geoSite);
-                                TimeUnit attackTime = TimeUnit.FromHours((float)(siteAttackSchedule.ScheduledFor - ____context.Level.Timing.Now).TimeSpan.TotalHours);
-                                //TFTVLogger.Debug($"[UIModuleFactionAgendaTracker_UpdateData_PREFIX] element.TrackedObject: {element.TrackedObject}, attackTime: {attackTime}");
-
-                                element.UpdateData(attackTime, true, null);
-                                __result = attackTime <= TimeUnit.Zero;
-                                */
                             }
 
                             return false;
@@ -1248,6 +1157,8 @@ namespace TFTV
                 // Store UIFactionDataTrackerElement prefab to be able to reset visuals of the items in UIFactionDataTrackerElement.Init()
                 public static void Prefix(UIModuleFactionAgendaTracker __instance)
                 {
+                   // TFTVLogger.Always($"InitialSetup Prefix running");
+
                     trackerElementDefault = __instance.TrackerRowPrefab;
                 }
 
@@ -1257,6 +1168,7 @@ namespace TFTV
                     {
                         if (____faction is GeoPhoenixFaction geoPhoenixFaction)
                         {
+                           // TFTVLogger.Always($"InitialSetup Postfix running post if");
                             //MethodInfo ___GetFreeElement = typeof(UIModuleFactionAgendaTracker).GetMethod("GetFreeElement", BindingFlags.NonPublic | BindingFlags.Instance);
                             //MethodInfo ___OnAddedElement = typeof(UIModuleFactionAgendaTracker).GetMethod("OnAddedElement", BindingFlags.NonPublic | BindingFlags.Instance);
 

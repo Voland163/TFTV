@@ -603,27 +603,21 @@ namespace TFTV
                     float resolutionFactorWidth = (float)resolution.width / 1920f;
                     float resolutionFactorHeight = (float)resolution.height / 1080f;
 
-
-                    float aspectFactor = 1;
-
-                    if ((float)resolution.width / (float)resolution.height > 1920 / 1080)
-                    {
-                        aspectFactor = resolutionFactorWidth / resolutionFactorHeight;
-                        TFTVLogger.Always($"aspect factor is {aspectFactor}, resolutionFactorWidth {resolutionFactorWidth}, resolutionFactorHeight{resolutionFactorHeight} ");
-                    }
-
+                    bool ultrawideresolution = resolutionFactorWidth / resolutionFactorHeight > 2;
+ 
                     GameOptionViewController gameOptionViewController = UnityEngine.Object.Instantiate(uIModuleGameSettings.SecondaryOptions.Container.GetComponentsInChildren<GameOptionViewController>().First(), rectTransform);
 
-                    LocalizedTextBind description = new LocalizedTextBind();
-                    description.LocalizationKey = descriptionKey; // Replace with the actual localization key
+                    LocalizedTextBind description = new LocalizedTextBind
+                    {
+                        LocalizationKey = descriptionKey // Replace with the actual localization key
+                    };
 
-                    LocalizedTextBind text = new LocalizedTextBind();
-                    text.LocalizationKey = titleKey; // Replace with the actual localization key
+                    LocalizedTextBind text = new LocalizedTextBind
+                    {
+                        LocalizationKey = titleKey // Replace with the actual localization key
+                    };
 
-                    gameOptionViewController.Set(text, null);
-                    //   gameOptionViewController.PointerEnter += OnPointerEnterCallback;
-                    //   gameOptionViewController.PointerExit += OnPointerExitCallback;
-
+                    gameOptionViewController.Set(text, null);                 
 
                     MethodInfo method = typeof(UIStateNewGeoscapeGameSettings_InitFullContent_patch).GetMethod(onToggleMethod, BindingFlags.NonPublic | BindingFlags.Static);
                     Action<bool> setNewSettingsVisibility = (Action<bool>)Delegate.CreateDelegate(typeof(Action<bool>), method);
@@ -633,13 +627,11 @@ namespace TFTV
                     });
 
                     // TFTVLogger.Always($"position {gameOptionViewController.transform.position} local pos {gameOptionViewController.transform.localPosition} button {gameOptionViewController.SelectButton.transform.position}");
-
-                    gameOptionViewController.SelectButton.transform.position -= new Vector3(250 * resolutionFactorWidth * aspectFactor, 0, 0);
+                    if (!ultrawideresolution)
+                    {
+                        gameOptionViewController.SelectButton.transform.position -= new Vector3(250 * resolutionFactorWidth, 0, 0);
+                    }
                     gameOptionViewController.transform.localScale *= 0.70f;
-
-
-
-
 
 
                     //  gameOptionViewController.SelectButton.transform.position += new Vector3(270 * resolutionFactorWidth, 0, 0);
@@ -810,6 +802,8 @@ namespace TFTV
                     float resolutionFactorWidth = (float)resolution.width / 1920f;
                     float resolutionFactorHeight = (float)resolution.height / 1080f;
 
+                    bool ultrawideresolution = resolutionFactorWidth / resolutionFactorHeight > 2;
+
                     LocalizedTextBind titleTextBindKey = new LocalizedTextBind() { LocalizationKey = titleKey };
                     LocalizedTextBind descriptionTextBindKey = new LocalizedTextBind() { LocalizationKey = descriptionKey };
 
@@ -837,20 +831,24 @@ namespace TFTV
 
                     modSettingController.Label.text = title;
                     modSettingController.transform.localScale *= 0.75f;
-                    arrowPickerController.transform.position += new Vector3(270 * resolutionFactorWidth, 0, 0);
 
-                    //   TFTVLogger.Always($"{resolutionFactorWidth} {lengthScale}");
-
-                    if (lengthScale != 1)
+                    if (!ultrawideresolution)
                     {
+                        arrowPickerController.transform.position += new Vector3(270 * resolutionFactorWidth, 0, 0);
 
-                        arrowPickerController.transform.position += new Vector3(150 * resolutionFactorWidth * lengthScale, 0, 0);
+                        //   TFTVLogger.Always($"{resolutionFactorWidth} {lengthScale}");
 
+                        if (lengthScale != 1)
+                        {
+
+                            arrowPickerController.transform.position += new Vector3(150 * resolutionFactorWidth * lengthScale, 0, 0);
+
+                        }
+                        //  TFTVLogger.Always($"{resolutionFactorWidth} {lengthScale} {arrowPickerController.transform.position}");
+
+                        modSettingController.Label.rectTransform.Translate(new Vector3(-270 * resolutionFactorWidth, 0, 0), arrowPickerController.transform);
                     }
-                    //  TFTVLogger.Always($"{resolutionFactorWidth} {lengthScale} {arrowPickerController.transform.position}");
-
-                    modSettingController.Label.rectTransform.Translate(new Vector3(-270 * resolutionFactorWidth, 0, 0), arrowPickerController.transform);
-                    modSettingController.Label.alignment = TextAnchor.MiddleLeft;
+                        modSettingController.Label.alignment = TextAnchor.MiddleLeft;
                     UnityEngine.Object.Destroy(modSettingController.GetComponentInChildren<UITooltipText>());
 
                     UITooltipText uITooltipText = modSettingController.Label.gameObject.AddComponent<UITooltipText>();
@@ -877,7 +875,7 @@ namespace TFTV
                 }
             }
 
-            private static void InstantiateArrowPickerControllerForAmount(ModSettingController modSettingController,
+         /*   private static void InstantiateArrowPickerControllerForAmount(ModSettingController modSettingController,
                ArrowPickerController arrowPickerController, string title, string description, float currentValue, Action<int> onValueChanged)
             {
                 try
@@ -915,7 +913,7 @@ namespace TFTV
                     TFTVLogger.Error(e);
                     throw;
                 }
-            }
+            }*/
 
             private static void Postfix(UIModuleGameSettings __instance)
             {

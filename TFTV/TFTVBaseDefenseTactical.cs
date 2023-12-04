@@ -67,63 +67,215 @@ namespace TFTV
         private static readonly DelayedEffectStatusDef reinforcementStatusUnder1AP = DefCache.GetDef<DelayedEffectStatusDef>("E_Status [ReinforcementStatusUnder1AP]");
         private static readonly DelayedEffectStatusDef reinforcementStatus1AP = DefCache.GetDef<DelayedEffectStatusDef>("E_Status [ReinforcementStatus1AP]");
         private static readonly DelayedEffectStatusDef reinforcementStatusUnder2AP = DefCache.GetDef<DelayedEffectStatusDef>("E_Status [ReinforcementStatusUnder2AP]");
-        public static void OjectivesDebbuger(TacticalLevelController controller)
+
+        internal class Objectives
         {
-            try
-            {
-                IEnumerable<TacticalActorBase> allPandorans = from x in controller.Map.GetActors<TacticalActorBase>()
-                                                              where x.HasGameTag(InfestationSecondObjectiveTag)
-                                                              select x;
-                if (allPandorans.Count() > 0)
-                { 
-                    foreach (TacticalActorBase tacticalActor in allPandorans)
-                    {
-                        if (tacticalActor.IsOffMap)
-                        {
-                            TFTVLogger.Always($"this Pandoran {tacticalActor.name} is OffMap. Removing KillObjective tag.");
-                            tacticalActor.GameTags.Remove(InfestationSecondObjectiveTag);
-
-                        }
-                       
-                    }
-
-                }
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-
-        }
-
-        [HarmonyPatch(typeof(KillActorFactionObjective), "GetTargets")]
-        public static class TFTV_KillActorFactionObjective_GetTargets_Patch
-        {
-            public static void Postfix(FactionObjective __instance, ref IEnumerable<TacticalActorBase> __result)
+            public static void OjectivesDebbuger(TacticalLevelController controller)
             {
                 try
                 {
-                    if (__instance.Description.LocalizationKey == "BASEDEFENSE_INFESTATION_OBJECTIVE" && __result.Count() > 0)
+                    IEnumerable<TacticalActorBase> allPandorans = from x in controller.Map.GetActors<TacticalActorBase>()
+                                                                  where x.HasGameTag(InfestationSecondObjectiveTag)
+                                                                  select x;
+                    if (allPandorans.Count() > 0)
                     {
-                        //  TFTVLogger.Always("Got passed if check");
-
-                        List<TacticalActorBase> actorsToKeep = new List<TacticalActorBase>();
-
-                        foreach (TacticalActorBase tacticalActorBase in __result)
+                        foreach (TacticalActorBase tacticalActor in allPandorans)
                         {
-                            if (!tacticalActorBase.Status.HasStatus<MindControlStatus>())
+                            if (tacticalActor.IsOffMap)
                             {
-                                //  
-                                actorsToKeep.Add(tacticalActorBase);
-                            }
-                            else
-                            {
-                                TFTVLogger.Always($"{tacticalActorBase.name} has mind controlled status!");
+                                TFTVLogger.Always($"this Pandoran {tacticalActor.name} is OffMap. Removing KillObjective tag.");
+                                tacticalActor.GameTags.Remove(InfestationSecondObjectiveTag);
 
                             }
+
                         }
 
-                        __result = actorsToKeep;
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+
+            }
+
+            [HarmonyPatch(typeof(KillActorFactionObjective), "GetTargets")]
+            public static class TFTV_KillActorFactionObjective_GetTargets_Patch
+            {
+                public static void Postfix(FactionObjective __instance, ref IEnumerable<TacticalActorBase> __result)
+                {
+                    try
+                    {
+                        if (__instance.Description.LocalizationKey == "BASEDEFENSE_INFESTATION_OBJECTIVE" && __result.Count() > 0)
+                        {
+                            //  TFTVLogger.Always("Got passed if check");
+
+                            List<TacticalActorBase> actorsToKeep = new List<TacticalActorBase>();
+
+                            foreach (TacticalActorBase tacticalActorBase in __result)
+                            {
+                                if (!tacticalActorBase.Status.HasStatus<MindControlStatus>())
+                                {
+                                    //  
+                                    actorsToKeep.Add(tacticalActorBase);
+                                }
+                                else
+                                {
+                                    TFTVLogger.Always($"{tacticalActorBase.name} has mind controlled status!");
+
+                                }
+                            }
+
+                            __result = actorsToKeep;
+
+                        }
+                    }
+
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                        throw;
+                    }
+                }
+            }
+
+
+            public static void RemoveScatterRemainingAttackersTagFromEnemiesWithParasychosis(TacticalAbility ability, object parameter)
+            {
+                try
+                {
+
+                    ApplyEffectAbilityDef parasychosis = DefCache.GetDef<ApplyEffectAbilityDef>("Parasychosis_AbilityDef");
+                    GameTagDef infestationSecondObjectiveTag = DefCache.GetDef<GameTagDef>("ScatterRemainingAttackers_GameTagDef");
+
+                    if (ability.TacticalAbilityDef == parasychosis && parameter is TacticalAbilityTarget target
+                        && target.GetTargetActor() != null && target.GetTargetActor() is TacticalActor tacticalActor && tacticalActor.HasGameTag(infestationSecondObjectiveTag))
+                    {
+                        //  TFTVLogger.Always($", target is {tacticalActor.name}");
+                        tacticalActor.GameTags.Remove(infestationSecondObjectiveTag);
+
+                    }
+
+                }
+
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+
+
+
+            }
+
+
+
+            [HarmonyPatch(typeof(TacticalFaction), "HasUndeployedTacActors")]
+            public static class SurviveTurnsFactionObjective_HasUndeployedTacActors_BaseDefense_Patch
+            {
+                public static void Postfix(TacticalFaction __instance, ref bool __result)
+                {
+                    try
+                    {
+                        if (__instance.Faction.FactionDef == Shared.AlienFactionDef && __result == false)
+                        {
+                            FactionObjective survive5turns = __instance.TacticalLevel.GetFactionByCommandName("px").Objectives.FirstOrDefault(o => o.Description.LocalizationKey == "BASEDEFENSE_SURVIVE5_OBJECTIVE");
+
+                            if (survive5turns != null && survive5turns.State != FactionObjectiveState.Achieved)
+
+                            {
+                                //   TFTVLogger.Always($"Survive 5 turns active, so result {__result} is being changed to true");
+                                __result = true;
+                            }
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                    }
+                }
+            }
+
+
+            //Method to add objective tag on Pandorans for the Scatter Attackers objective
+            //Doesn't activate if Pandoran faction not present
+
+            public static void AddScatterObjectiveTagForBaseDefense(TacticalActorBase actor, TacticalLevelController __instance)
+            {
+                try
+                {
+                    ClassTagDef crabTag = DefCache.GetDef<ClassTagDef>("Crabman_ClassTagDef");
+                    ClassTagDef fishTag = DefCache.GetDef<ClassTagDef>("Fishman_ClassTagDef");
+                    ClassTagDef SirenTag = DefCache.GetDef<ClassTagDef>("Siren_ClassTagDef");
+                    ClassTagDef AcheronTag = DefCache.GetDef<ClassTagDef>("Acheron_ClassTagDef");
+
+
+                    // TFTVLogger.Always("ActorEnteredPlay invoked");
+                    if (CheckIfBaseDefense(__instance))
+                    {
+
+                        if (__instance.Factions.Any(f => f.Faction.FactionDef.MatchesShortName("aln")))
+                        {
+                            //   TFTVLogger.Always("found aln faction and checked that VO is in place");
+
+                            if (actor.TacticalFaction.Faction.FactionDef.MatchesShortName("aln")
+                                && actor is TacticalActor tacticalActor
+                                && (actor.GameTags.Contains(crabTag) || actor.GameTags.Contains(fishTag) || actor.GameTags.Contains(SirenTag) || actor.GameTags.Contains(AcheronTag))
+                                && !actor.GameTags.Contains(InfestationSecondObjectiveTag)
+                                )
+                            {
+                                actor.GameTags.Add(InfestationSecondObjectiveTag);
+                            }
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+
+            public static void AuxiliaryCheckForMissionAccomplished(TacticalLevelController controller)
+            {
+                try
+                {
+
+                    if (CheckIfBaseDefense(controller))
+                    {
+                        //need to check for completion of objectives...
+
+                        ObjectivesManager phoenixObjectives = controller.GetFactionByCommandName("Px").Objectives;
+                        // int difficulty = controller.Difficulty.Order;
+
+                        // bool otherObjectivesCompleted = false;
+
+                        foreach (FactionObjective objective in phoenixObjectives)
+                        {
+                            if (objective.Description.LocalizationKey != "BASEDEFENSE_SECOND_OBJECTIVE" && objective.GetCompletion() == 0)
+                            {
+
+                                TFTVLogger.Always($"the Phoenix objective is {objective.GetDescription()}; completion is at {objective.GetCompletion()}");
+
+                                IEnumerable<TacticalActorBase> allPandorans = from x in controller.Map.GetActors<TacticalActorBase>()
+                                                                              where x.HasGameTag(InfestationSecondObjectiveTag)
+                                                                              select x;
+
+                                if (allPandorans.Count() > 0)
+                                {
+                                    foreach (TacticalActorBase tacticalActor in allPandorans)
+                                    {
+                                        if (!tacticalActor.Status.HasStatus<ParalysedStatus>() && tacticalActor.IsAlive)
+                                        {
+                                            return;
+                                        }
+                                    }
+                                }
+                                else
+                                {
+
+
+                                }
+                            }
+                        }
 
                     }
                 }
@@ -131,138 +283,28 @@ namespace TFTV
                 catch (Exception e)
                 {
                     TFTVLogger.Error(e);
-                    throw;
                 }
             }
         }
-
-
-        public static void RemoveScatterRemainingAttackersTagFromEnemiesWithParasychosis(TacticalAbility ability, object parameter)
-        {
-            try
-            {
-
-                ApplyEffectAbilityDef parasychosis = DefCache.GetDef<ApplyEffectAbilityDef>("Parasychosis_AbilityDef");
-                GameTagDef infestationSecondObjectiveTag = DefCache.GetDef<GameTagDef>("ScatterRemainingAttackers_GameTagDef");
-
-                if (ability.TacticalAbilityDef == parasychosis && parameter is TacticalAbilityTarget target
-                    && target.GetTargetActor() != null && target.GetTargetActor() is TacticalActor tacticalActor && tacticalActor.HasGameTag(infestationSecondObjectiveTag))
-                {
-                    //  TFTVLogger.Always($", target is {tacticalActor.name}");
-                    tacticalActor.GameTags.Remove(infestationSecondObjectiveTag);
-
-                }
-
-            }
-
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-
-
-
-        }
-
-
-
-        [HarmonyPatch(typeof(TacticalFaction), "HasUndeployedTacActors")]
-        public static class SurviveTurnsFactionObjective_HasUndeployedTacActors_BaseDefense_Patch
-        {
-            public static void Postfix(TacticalFaction __instance, ref bool __result)
-            {
-                try
-                {
-                    if (__instance.Faction.FactionDef == Shared.AlienFactionDef && __result == false)
-                    {
-                        FactionObjective survive5turns = __instance.TacticalLevel.GetFactionByCommandName("px").Objectives.FirstOrDefault(o => o.Description.LocalizationKey == "BASEDEFENSE_SURVIVE5_OBJECTIVE");
-
-                        if (survive5turns != null && survive5turns.State != FactionObjectiveState.Achieved)
-
-                        {
-                            //   TFTVLogger.Always($"Survive 5 turns active, so result {__result} is being changed to true");
-                            __result = true;
-
-                        }
-
-
-                    }
-
-
-
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-            }
-        }
-
-
-        //Method to add objective tag on Pandorans for the Scatter Attackers objective
-        //Doesn't activate if Pandoran faction not present
-
-        public static void AddScatterObjectiveTagForBaseDefense(TacticalActorBase actor, TacticalLevelController __instance)
-        {
-            try
-            {
-                ClassTagDef crabTag = DefCache.GetDef<ClassTagDef>("Crabman_ClassTagDef");
-                ClassTagDef fishTag = DefCache.GetDef<ClassTagDef>("Fishman_ClassTagDef");
-                ClassTagDef SirenTag = DefCache.GetDef<ClassTagDef>("Siren_ClassTagDef");
-                ClassTagDef AcheronTag = DefCache.GetDef<ClassTagDef>("Acheron_ClassTagDef");
-
-
-                // TFTVLogger.Always("ActorEnteredPlay invoked");
-                if (CheckIfBaseDefense(__instance))
-                {
-
-                    if (__instance.Factions.Any(f => f.Faction.FactionDef.MatchesShortName("aln")))
-                    {
-                        //   TFTVLogger.Always("found aln faction and checked that VO is in place");
-
-                        if (actor.TacticalFaction.Faction.FactionDef.MatchesShortName("aln")
-                            && actor is TacticalActor tacticalActor
-                            && (actor.GameTags.Contains(crabTag) || actor.GameTags.Contains(fishTag) || actor.GameTags.Contains(SirenTag) || actor.GameTags.Contains(AcheronTag))
-                            && !actor.GameTags.Contains(InfestationSecondObjectiveTag)
-                            )
-                        {
-                            actor.GameTags.Add(InfestationSecondObjectiveTag);
-                        }
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-        }
-
 
         //Method that does what needs to be done at start of Phoenix turn when defending vs Aliens
-
         public static void PhoenixBaseDefenseVSAliensTurnStart(TacticalLevelController controller, TacticalFaction tacticalFaction)
         {
-
             try
             {
                 if (!controller.IsLoadingSavedGame)
                 {
-
-
                     if (CheckIfBaseDefense(controller) && controller.Factions.Any(f => f.Faction.FactionDef.MatchesShortName("aln")))
                     {
-                        TacticalFaction alienFaction = controller.GetFactionByCommandName("aln");
-
-                        //TacticalFaction pandorans = controller.GetFactionByCommandName("aln");
+                        TacticalFaction alienFaction = controller.GetFactionByCommandName("aln");               
                         TacticalFaction phoenix = controller.GetFactionByCommandName("px");
-                        OjectivesDebbuger(controller);
+
+                        Objectives.OjectivesDebbuger(controller);
 
                         if (tacticalFaction == phoenix && StratToBeAnnounced != 0)
                         {
                             StratAnnouncer(controller);
                         }
-
-
                     }
                 }
             }
@@ -270,102 +312,9 @@ namespace TFTV
             {
                 TFTVLogger.Error(e);
             }
-
-
-
-
-
         }
 
-        //Not used, because everything included now elsewhere
-        public static void BaseDefenseTurnStartChecks(TacticalLevelController controller, TacticalFaction faction)
-        {
-            try
-            {
-                if (CheckIfBaseDefense(controller) && controller.Factions.Any(f => f.Faction.FactionDef.MatchesShortName("aln")))
-                {
-                    //TacticalFaction pandorans = controller.GetFactionByCommandName("aln");
-                    TacticalFaction phoenix = controller.GetFactionByCommandName("px");
-
-
-                    /*  if (controller.TurnNumber > 0)
-                      {
-                          CheckForLossOfObjectiveTag(controller);
-                      }
-                      if (faction == phoenix && StratToBeImplemented != 0)
-                      {
-                       //   StratImplementer(controller);
-                      }*/
-                    if (faction == phoenix && StratToBeAnnounced != 0)
-                    {
-                        StratAnnouncer(controller);
-                    }
-
-                }
-
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-        }
-
-        //safety check to avoid mission not completing properly
-        public static void AuxiliaryCheckForMissionAccomplished(TacticalLevelController controller)
-        {
-            try
-            {
-
-                if (CheckIfBaseDefense(controller))
-                {
-                    //need to check for completion of objectives...
-
-                    ObjectivesManager phoenixObjectives = controller.GetFactionByCommandName("Px").Objectives;
-                    // int difficulty = controller.Difficulty.Order;
-
-                    // bool otherObjectivesCompleted = false;
-
-                    foreach (FactionObjective objective in phoenixObjectives)
-                    {
-                        if (objective.Description.LocalizationKey != "BASEDEFENSE_SECOND_OBJECTIVE" && objective.GetCompletion() == 0)
-                        {
-
-                            TFTVLogger.Always($"the Phoenix objective is {objective.GetDescription()}; completion is at {objective.GetCompletion()}");
-
-                            IEnumerable<TacticalActorBase> allPandorans = from x in controller.Map.GetActors<TacticalActorBase>()
-                                                                          where x.HasGameTag(InfestationSecondObjectiveTag)
-                                                                          select x;
-
-                            if (allPandorans.Count() > 0)
-                            {
-                                foreach (TacticalActorBase tacticalActor in allPandorans)
-                                {
-                                    if (!tacticalActor.Status.HasStatus<ParalysedStatus>() && tacticalActor.IsAlive)
-                                    {
-                                        return;
-                                    }
-                                }
-                            }
-                            else
-                            {
-
-
-                            }
-                        }
-                    }
-
-                }
-            }
-
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-
-
-        }
-
-
+       
         //This method is NOT ONLY FOR BASE DEFENSE; also implements Void Omen objectives
         public static void ModifyObjectives(TacMissionTypeDef missionType)
         {
@@ -378,12 +327,6 @@ namespace TFTV
                 List<int> voidOmens = new List<int> { 3, 5, 7, 10, 14, 15, 16, 19 };
 
                 List<FactionObjectiveDef> listOfFactionObjectives = missionType.CustomObjectives.ToList();
-
-                /*     foreach (FactionObjectiveDef factionObjectiveDef in listOfFactionObjectives) 
-                     {
-                         TFTVLogger.Always($"objective: {factionObjectiveDef?.MissionObjectiveData.Description.LocalizationKey}");
-
-                     }*/
 
                 // Remove faction objectives that correspond to void omens that are not in play
                 for (int i = listOfFactionObjectives.Count - 1; i >= 0; i--)
@@ -565,21 +508,10 @@ namespace TFTV
                     TFTVLogger.Always($"ModifyMissionData invoked.");
                     if (TFTVBaseDefenseGeoscape.PhoenixBasesUnderAttack.ContainsKey(__instance.Site.SiteId) || TFTVBaseDefenseGeoscape.PhoenixBasesInfested.Contains(__instance.Site.SiteId))
                     {
-                        /*   GeoPhoenixBaseLayout baseLayout = __instance.Site.GetComponent<GeoPhoenixBase>().Layout;
-
-                           if (!CheckIfBaseLayoutOK(baseLayout))
-                           {
-                               TFTVLogger.Always("Bad layout!");
-                               FixBadLayout(baseLayout);
-
-
-                           }*/
-
+                   
                         PPFactionDef alienFaction = DefCache.GetDef<PPFactionDef>("Alien_FactionDef");
                         int difficulty = TFTVReleaseOnly.DifficultyOrderConverter(__instance.GameController.CurrentDifficulty.Order);
-                        // TFTVLogger.Always($"if passed");
-
-
+                
                         ContextHelpHintDef hintDef = DefCache.GetDef<ContextHelpHintDef>("TFTVBaseDefense");
 
                         int timer = 0;
@@ -594,19 +526,18 @@ namespace TFTV
                         if (TFTVBaseDefenseGeoscape.PhoenixBasesContainmentBreach.ContainsKey(__instance.Site.SiteId))
                         {
                             timeToCompleteAttack = TFTVBaseDefenseGeoscape.PhoenixBasesContainmentBreach[__instance.Site.SiteId];
-
                         }
 
                         float progress = 1f - timer / timeToCompleteAttack;
 
                         if (timeToCompleteAttack != 18 && progress < 0.3)
                         {
-
                             progress = 0.3f;
-
                         }
 
                         TFTVLogger.Always($"When modifying mission data, progress is {progress}");
+
+                        string spriteFileName = "base_defense_hint.jpg";
 
                         if (progress >= 0.3)
                         {
@@ -628,25 +559,27 @@ namespace TFTV
 
                             hintDef.Title.LocalizationKey = "BASEDEFENSE_TACTICAL_ADVANTAGE_TITLE";
                             hintDef.Text.LocalizationKey = "BASEDEFENSE_TACTICAL_ADVANTAGE_DESCRIPTION";
-
+                            spriteFileName = "base_defense_hint.jpg";
                         }
                         else if (progress >= 0.3 && progress < 0.8)
                         {
 
                             hintDef.Title.LocalizationKey = "BASEDEFENSE_NESTING_TITLE";
                             hintDef.Text.LocalizationKey = "BASEDEFENSE_NESTING_DESCRIPTION";
+                            spriteFileName = "base_defense_hint_nesting.jpg";
                         }
                         else
                         {
 
                             hintDef.Title.LocalizationKey = "BASEDEFENSE_INFESTATION_TITLE";
                             hintDef.Text.LocalizationKey = "BASEDEFENSE_INFESTATION_DESCRIPTION";
-
+                            spriteFileName = "base_defense_hint_infestation.jpg";
                         }
+                        TFTVHints._hintDefSpriteFileNameDictionary[hintDef] = spriteFileName;
 
                         AttackProgress = progress;
-
                     }
+
                     TFTVCapturePandorans.CheckCaptureCapability(__instance);
                     ModifyObjectives(missionData.MissionType);
                     __instance.GameController.SaveManager.IsSaveEnabled = true;

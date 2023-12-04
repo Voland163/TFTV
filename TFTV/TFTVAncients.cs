@@ -95,7 +95,6 @@ namespace TFTV
                 try
                 {
                     // TFTVLogger.Always($"aptouseperc is {DefCache.GetDef<WeaponDef>("HumanoidGuardian_Head_WeaponDef").APToUsePerc}");
-
                     if (ability.TacticalAbilityDef.name.Equals("CyclopsScream"))
                     {
                         SilencedStatusDef silencedStatusDef = DefCache.GetDef<SilencedStatusDef>("ActorSilenced_StatusDef");

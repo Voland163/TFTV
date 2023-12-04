@@ -6,12 +6,14 @@ using Base.ParticleSystems;
 using Base.UI;
 using HarmonyLib;
 using PhoenixPoint.Common.ContextHelp;
+using PhoenixPoint.Common.ContextHelp.HintConditions;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.Game;
 using PhoenixPoint.Geoscape.Levels;
+using PhoenixPoint.Tactical.ContextHelp.HintConditions;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.DamageKeywords;
@@ -380,7 +382,7 @@ namespace TFTV
 
                     // TFTVLogger.Always("Got to before hint");
 
-                    TFTVTutorialAndStory.CreateNewTacticalHintForRevenantResistance("RevenantResistanceSighted", HintTrigger.ActorSeen, "RevenantResistance_GameTagDef", "Revenant resistance", hintDescription);
+                    TFTVHints.HintDefs.DynamicallyCreatedHints.CreateNewTacticalHintForRevenantResistance("RevenantResistanceSighted", HintTrigger.ActorSeen, "RevenantResistance_GameTagDef", "Revenant resistance", hintDescription);
                     revenantResistanceHintCreated = true;
                 }
             }
@@ -390,6 +392,9 @@ namespace TFTV
                 TFTVLogger.Error(e);
             }
         }
+
+       
+
 
         public static void ImplementVO19(TacticalLevelController controller)
         {
@@ -420,7 +425,7 @@ namespace TFTV
 
                     // TFTVLogger.Always("Got to before hint");
 
-                    TFTVTutorialAndStory.CreateNewTacticalHintForRevenantResistance("RevenantResistanceSighted", HintTrigger.ActorSeen, "RevenantResistance_GameTagDef", "Revenant resistance", hintDescription);
+                    TFTVHints.HintDefs.DynamicallyCreatedHints.CreateNewTacticalHintForRevenantResistance("RevenantResistanceSighted", HintTrigger.ActorSeen, "RevenantResistance_GameTagDef", "Revenant resistance", hintDescription);
                     revenantResistanceHintCreated = true;
 
                 }
