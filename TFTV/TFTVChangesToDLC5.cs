@@ -216,7 +216,7 @@ namespace TFTV
             public static class GeoUnitDescriptor_FinishInitCharacter_patch
             {
 
-                public static void Prefix(GeoUnitDescriptor __instance, GeoCharacter character)
+                public static void Prefix(GeoUnitDescriptor __instance)
                 {
                     try
                     {
@@ -352,7 +352,7 @@ namespace TFTV
                 {
                     if (geoUnitDescriptor.GetGameTags().Contains(MercenaryTag))
                     {
-                        AdjustMercenaryProficiencyPerks(character, geoUnitDescriptor);
+                        AdjustMercenaryProficiencyPerks(character);
 
                         if (geoUnitDescriptor.ClassTag != berserkerTag)
                         {
@@ -372,7 +372,7 @@ namespace TFTV
 
             }
 
-            private static void AdjustMercenaryProficiencyPerks(GeoCharacter character, GeoUnitDescriptor geoUnitDescriptor)
+            private static void AdjustMercenaryProficiencyPerks(GeoCharacter character)
             {
                 try
                 {
@@ -583,12 +583,8 @@ namespace TFTV
 
                     foreach (TacticalItemDef doomArmorPiece in sectarianArmor)
                     {
-
                         doomArmorPiece.DropOnActorDeath = true;
-
                     }
-
-
 
                     sectarianHelmet.Armor = 14;
                     sectarianHelmet.Weight = 1;
@@ -622,7 +618,6 @@ namespace TFTV
                     sectarianLegs.BodyPartAspectDef.Stealth = -0.1f;
                     sectarianLegs.BodyPartAspectDef.Accuracy = -0.05f;
 
-
                     ghostHelmet.ViewElementDef = Helper.CreateDefFromClone(ghostHelmet.ViewElementDef, "{9F9E3468-2771-4267-BF3B-8214DD908D78}", ghostHelmet.name);
                     ghostHelmet.ViewElementDef.Description.LocalizationKey = $"GHOST_HELMET_NAME";
                     ghostHelmet.ViewElementDef.DisplayName2.LocalizationKey = $"GHOST_HELMET_DESCRIPTION";
@@ -655,7 +650,6 @@ namespace TFTV
                     spyMasterLegs.ViewElementDef = Helper.CreateDefFromClone(spyMasterLegs.ViewElementDef, "{40A39154-49E0-4F3F-9169-00732BD8F07F}", spyMasterLegs.name);
                     spyMasterLegs.ViewElementDef.Description.LocalizationKey = $"SPYMASTER_LEGS_NAME";
                     spyMasterLegs.ViewElementDef.DisplayName2.LocalizationKey = $"SPYMASTER_LEGS_DESCRIPTION";
-
 
                     spyMasterHelmet.Weight = 1;
                     spyMasterHelmet.ManufactureMaterials = 0;
@@ -727,7 +721,6 @@ namespace TFTV
                     //  exileLegs.ViewElementDef.Description.LocalizationKey = "EXILE_LEGS_NAME";
                     exileLegs.ViewElementDef.DisplayName2.LocalizationKey = "EXILE_LEGS_DESCRIPTION";
 
-
                     doomAC.CompatibleAmmunition = new TacticalItemDef[] { DefCache.GetDef<TacticalItemDef>("FS_Autocannon_AmmoClip_ItemDef") };
                     doomAC.DamagePayload.DamageKeywords = new List<PhoenixPoint.Tactical.Entities.DamageKeywords.DamageKeywordPair>()
                     {
@@ -748,8 +741,6 @@ namespace TFTV
                     doomAC.ViewElementDef.Description.LocalizationKey = $"DOOM_SLAYER_GROM_NAME";
                     doomAC.ViewElementDef.DisplayName1.LocalizationKey = $"DOOM_SLAYER_GROM_NAME";
                     doomAC.ViewElementDef.DisplayName2.LocalizationKey = $"DOOM_SLAYER_GROM_DESCRIPTION";
-
-
 
                     sectarianAxe.DamagePayload.DamageKeywords = new List<PhoenixPoint.Tactical.Entities.DamageKeywords.DamageKeywordPair>()
                     {
@@ -773,7 +764,6 @@ namespace TFTV
                     sectarianAxe.ViewElementDef.DisplayName1.LocalizationKey = $"SECTARIAN_AXE_NAME";
                     sectarianAxe.ViewElementDef.DisplayName2.LocalizationKey = $"SECTARIAN_AXE_DESCRIPTION";
 
-
                 }
 
                 catch (Exception e)
@@ -788,7 +778,6 @@ namespace TFTV
 
                 try
                 {
-
                     HealAbilityDef technicianHealSource = DefCache.GetDef<HealAbilityDef>("TechnicianHeal_AbilityDef");
 
                     HealAbilityDef slugTechnicianHeal = Helper.CreateDefFromClone(technicianHealSource, "{438EDB0E-72C3-4A4D-87CA-1AE252AC6B12}", $"SLUG_{technicianHealSource.name}");
@@ -887,7 +876,6 @@ namespace TFTV
                 }
             }
 
-
             private static void ChangeSlugArms()
             {
                 try
@@ -947,11 +935,8 @@ namespace TFTV
                 {
                     foreach (TacticalItemDef itemDef in slugArmor)
                     {
-
                         itemDef.IsPermanentAugment = true;
-
                     }
-
                 }
 
                 catch (Exception e)
@@ -967,7 +952,6 @@ namespace TFTV
 
                 try
                 {
-
                     GameTagDef mercenaryTag = TFTVCommonMethods.CreateNewTag("Mercenary", "{49BDADBC-A411-48B2-8773-533EE9247F4C}");
                     MercenaryTag = mercenaryTag;
 
@@ -1450,8 +1434,7 @@ namespace TFTV
                     // TFTVLogger.Always($"item def is {itemDef.name}");
 
                     GeoEventChoice geoEventChoice = GenerateChoice(price);
-                    GroundVehicleItemDef groundVehicleItemDef;
-                    if ((object)(groundVehicleItemDef = itemDef as GroundVehicleItemDef) != null)
+                    if (itemDef is GroundVehicleItemDef groundVehicleItemDef)
                     {
                         geoEventChoice.Outcome.Units.Add(groundVehicleItemDef.VehicleTemplateDef);
                     }
@@ -2066,7 +2049,7 @@ namespace TFTV
             [HarmonyPatch(typeof(GeoMarketplace), "AfterMissionComplete")]
             public static class GeoMarketplace_AfterMissionComplete_patch
             {
-                public static bool Prefix(TimeUnit ____updateOptionsNextTime, GeoLevelController ____level)
+                public static bool Prefix()
                 {
                     try
                     {
@@ -2180,6 +2163,7 @@ namespace TFTV
                     try
                     {
                         __instance.NoOffersAvailableHint.SetActive(false);
+                        
                         //   TFTVLogger.Always($"Running UpdateVisuals");
 
                         CreateItemFilter();
@@ -2242,7 +2226,6 @@ namespace TFTV
                 {
                     try
                     {
-
                         //   TFTVLogger.Always($"Running ExitState marketplace");
                         GeoMarketplace geoMarketplace = GameUtl.CurrentLevel().GetComponent<GeoLevelController>().Marketplace;
                         if (MPGeoEventChoices != null && MPGeoEventChoices.Count > 0)
@@ -2257,8 +2240,6 @@ namespace TFTV
                             UIModuleTheMarketplace marketplaceUI = GameUtl.CurrentLevel().GetComponent<GeoLevelController>().View.GeoscapeModules.TheMarketplaceModule;
                             marketplaceUI.transform.GetComponentsInChildren<Image>().FirstOrDefault(c => c.name.Equals("Picture")).sprite = Helper.CreateSpriteFromImageFile("UI_KaosMarket_Image_uinomipmaps.jpg");
                         }
-
-
                     }
                     catch (Exception e)
                     {
@@ -2270,10 +2251,7 @@ namespace TFTV
 
 
 
-
-
             public static PhoenixGeneralButton MarketToggleButton = null;
-
 
             private static void CreateItemFilter()
             {
@@ -2366,13 +2344,9 @@ namespace TFTV
                     if (choice.Outcome.Items.Count > 0 && choice.Outcome.Items[0].ItemDef.name.Contains("GroundVehicle")
                         || choice.Outcome.Units.Count > 0 && choice.Outcome.Units[0].name.Contains("KS_Kaos_Buggy")) //&& choice.Outcome.Units[0].name.Contains("KS_Kaos_Buggy")))
                     {
-
                         return true;
-
                     }
                     else return false;
-
-
                 }
 
 
@@ -2381,7 +2355,6 @@ namespace TFTV
                     TFTVLogger.Error(e);
                     throw;
                 }
-
             }
 
             private static bool CheckIfMarketChoiceWeaponOrAmmo(GeoEventChoice choice)
@@ -2535,6 +2508,13 @@ namespace TFTV
                 }
             }
 
+
+
+            /// <summary>
+            /// Easter egg conversation in the Marketplace after player makes a lot of purchases
+            /// </summary>
+
+
             public static int SecretMPCounter;
             private static void CheckSecretMPCounter()
             {
@@ -2572,7 +2552,6 @@ namespace TFTV
                     throw;
                 }
             }
-
         }
 
 
@@ -2585,7 +2564,7 @@ namespace TFTV
         public static class GeoMissionGenerator_GetRandomMission_patch
         {
 
-            public static void Prefix(GeoMissionGenerator __instance, IEnumerable<MissionTagDef> tags, out List<CustomMissionTypeDef> __state, GeoLevelController ____level)
+            public static void Prefix(IEnumerable<MissionTagDef> tags, out List<CustomMissionTypeDef> __state, GeoLevelController ____level)
             {
                 try
                 {
@@ -2604,20 +2583,15 @@ namespace TFTV
 
                         if (controller.NewJerichoFaction.Research != null && !controller.NewJerichoFaction.Research.HasCompleted("NJ_VehicleTech_ResearchDef"))
                         {
-
                             TFTVLogger.Always($"Armadillo not researched by New Jericho");
 
                             foreach (CustomMissionTypeDef customMissionTypeDef in Repo.GetAllDefs<CustomMissionTypeDef>().Where(m => m.Tags.Contains(requiresVehicle)))
                             {
                                 if (customMissionTypeDef.ParticipantsData[1].ActorDeployParams[0].Limit.ActorTag == armadillo)
                                 {
-
                                     __state.Add(customMissionTypeDef);
-
                                 }
-
                             }
-
                         }
                         if (controller.SynedrionFaction.Research != null && !controller.SynedrionFaction.Research.HasCompleted("SYN_Rover_ResearchDef"))
                         {
@@ -2627,9 +2601,7 @@ namespace TFTV
                             {
                                 if (customMissionTypeDef.ParticipantsData[1].ActorDeployParams[0].Limit.ActorTag == aspida)
                                 {
-
                                     __state.Add(customMissionTypeDef);
-
                                 }
                             }
                         }
@@ -2641,9 +2613,6 @@ namespace TFTV
                             foreach (CustomMissionTypeDef mission in __state)
                             {
                                 mission.Tags.Remove(requiresVehicle);
-
-
-
                             }
                         }
                     }
@@ -2657,7 +2626,7 @@ namespace TFTV
             }
 
 
-            public static void Postfix(GeoMissionGenerator __instance, IEnumerable<MissionTagDef> tags, in List<CustomMissionTypeDef> __state)
+            public static void Postfix(IEnumerable<MissionTagDef> tags, in List<CustomMissionTypeDef> __state)
             {
                 try
                 {
@@ -2677,13 +2646,9 @@ namespace TFTV
                             if (!mission.Tags.Contains(requiresVehicle))
                             {
                                 mission.Tags.Add(requiresVehicle);
-
                             }
-
                         }
-
                     }
-
                 }
                 catch (Exception e)
                 {
@@ -2696,7 +2661,6 @@ namespace TFTV
 
         public static void ForceMarketPlaceUpdate()
         {
-
             try
             {
                 GeoLevelController controller = GameUtl.CurrentLevel()?.GetComponent<GeoLevelController>();
@@ -2709,8 +2673,6 @@ namespace TFTV
                 TFTVLogger.Always($"Forced Marketplace options update; changing next update time to now, {controller.Timing.Now.DateTime}");
 
                 updateOptionsWithRespectToTimeMethod.Invoke(geoMarketplace, null);
-
-
             }
             catch (Exception e)
             {
@@ -2745,11 +2707,6 @@ namespace TFTV
             }
         }
 
-
-
-        /// <summary>
-        /// Easter egg conversation in the Marketplace after player makes a lot of purchases
-        /// </summary>
 
 
 

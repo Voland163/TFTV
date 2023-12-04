@@ -179,7 +179,7 @@ namespace TFTV
                     {
                         if (tacticalActor.Pos.z <= 60)
                         {
-                            TFTVTutorialAndStory.ShowStoryPanel(controller, "ReceptacleGateHint0", "ReceptacleGateHint1");
+                            TFTVHints.TacticalHints.ShowStoryPanel(controller, "ReceptacleGateHint0", "ReceptacleGateHint1");
                         }
                     }
                 }
@@ -2343,7 +2343,7 @@ namespace TFTV
                                     }
 
                                     revenant.TacticalActorView.DoCameraChase();
-                                    TFTVTutorialAndStory.ShowStoryPanel(controller, "PalaceRevenantHint1");
+                                    TFTVHints.TacticalHints.ShowStoryPanel(controller, "PalaceRevenantHint1");
                                     TFTVLogger.Always($"Pheonix {revenant.name} is back on the Dark Side!");
                                 }
                             }
@@ -2381,7 +2381,7 @@ namespace TFTV
                                 minion.SetFaction(controller.GetFactionByCommandName("aln"), TacMissionParticipant.Residents);
                                 minion.TacticalActorView.DoCameraChase();
 
-                                TFTVTutorialAndStory.ShowStoryPanel(controller, "PalaceHisMinionsHint");
+                                TFTVHints.TacticalHints.ShowStoryPanel(controller, "PalaceHisMinionsHint");
                             }
                         }
                     }
@@ -2429,7 +2429,7 @@ namespace TFTV
                                     revenant.UpdateStats();
                                     TFTVLogger.Always($"{revenant.name} has {revenant.CharacterStats.WillPoints} willpoints, should be max");
                                     revenant.TacticalActorView.DoCameraChase();
-                                    TFTVTutorialAndStory.ShowStoryPanel(controller, "PalaceRevenantHint0");
+                                    TFTVHints.TacticalHints.ShowStoryPanel(controller, "PalaceRevenantHint0");
                                 }
                             }
                         }

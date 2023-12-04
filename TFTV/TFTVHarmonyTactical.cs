@@ -116,7 +116,7 @@ namespace TFTV
                     TFTVKillingExploits.AddReinforcementTagToImplementNoDropsOption(actor, __instance);
                     TFTVHumanEnemies.GiveRankAndNameToHumaoidEnemy(actor, __instance);
                     TFTVTouchedByTheVoid.Umbra.UmbraTactical.UmbraEverywhereVoidOmenImplementation(actor, __instance);
-                    TFTVBaseDefenseTactical.AddScatterObjectiveTagForBaseDefense(actor, __instance);
+                    TFTVBaseDefenseTactical.Objectives.AddScatterObjectiveTagForBaseDefense(actor, __instance);
                     TFTVSpecialDifficulties.AddSpecialDifficultiesBuffsAndVulnerabilities(actor, __instance);
                     TFTVPalaceMission.Revenants.TryToTurnIntoRevenant(actor, __instance);
                     TFTVPalaceMission.MissionObjectives.CheckFinalMissionWinConditionWhereDeployingItem(actor, __instance);
@@ -339,7 +339,7 @@ namespace TFTV
                     TFTVAncients.CyclopsAbilities.AddMindCrushEffectToCyclposScream(ability, __instance, parameter);
                     TFTVAncients.CyclopsAbilities.CyclopsCrossBeamShooting.RedeployHopliteShieldsAfterMassShootAttackAndRestoreTheirAP(ability, __instance, parameter);
                     TFTVVoxels.TFTVFire.ActivateFireQuencherAbility();
-                    TFTVBaseDefenseTactical.RemoveScatterRemainingAttackersTagFromEnemiesWithParasychosis(ability, parameter);
+                    TFTVBaseDefenseTactical.Objectives.RemoveScatterRemainingAttackersTagFromEnemiesWithParasychosis(ability, parameter);
                     TFTVPalaceMission.MissionObjectives.CheckFinalMissionWinConditionForExalted(ability);
                     TFTVPalaceMission.Gates.CheckIfPlayerCloseToGate(__instance);
                     TFTVChangesToDLC5.SlugHealTraumaEffect(ability, __instance);

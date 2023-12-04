@@ -1,5 +1,4 @@
-﻿using Assets.Code.PhoenixPoint.Geoscape.Entities.Sites.TheMarketplace;
-using Base;
+﻿using Base;
 using Base.AI.Defs;
 using Base.Core;
 using Base.Defs;
@@ -35,16 +34,13 @@ using PhoenixPoint.Geoscape.Entities.Research.Reward;
 using PhoenixPoint.Geoscape.Events.Eventus;
 using PhoenixPoint.Geoscape.Events.Eventus.Filters;
 using PhoenixPoint.Geoscape.Levels;
-using PhoenixPoint.Geoscape.Levels.ContextHelp.HintConditions;
 using PhoenixPoint.Geoscape.Levels.Factions;
 using PhoenixPoint.Tactical.AI;
 using PhoenixPoint.Tactical.AI.Actions;
 using PhoenixPoint.Tactical.AI.Considerations;
 using PhoenixPoint.Tactical.AI.TargetGenerators;
-using PhoenixPoint.Tactical.ContextHelp.HintConditions;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
-using PhoenixPoint.Tactical.Entities.ActorsInstance;
 using PhoenixPoint.Tactical.Entities.Animations;
 using PhoenixPoint.Tactical.Entities.DamageKeywords;
 using PhoenixPoint.Tactical.Entities.Effects;
@@ -60,20 +56,18 @@ using PhoenixPoint.Tactical.Prompts;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.InteropServices;
 using UnityEngine;
 using static PhoenixPoint.Tactical.Entities.Abilities.HealAbilityDef;
 using static PhoenixPoint.Tactical.Entities.Statuses.ItemSlotStatsModifyStatusDef;
 using static TFTV.TFTVCapturePandorans;
-using static TFTV.TFTVExperimental;
 using ResourceType = PhoenixPoint.Common.Core.ResourceType;
 
 namespace TFTV
 {
     internal class TFTVDefsInjectedOnlyOnce
     {
-     
-        
+
+
         //  private static readonly DefRepository Repo = TFTVMain.Repo;
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
         private static readonly DefRepository Repo = TFTVMain.Repo;
@@ -87,18 +81,19 @@ namespace TFTV
 
         private static void Print()
         {
-            try 
-            { 
-                foreach(GeoscapeEventDef geoscapeEventDef in Repo.GetAllDefs<GeoscapeEventDef>().Where(e => e.GeoscapeEventData.Choices.Any(c => c.Outcome.Units.Count > 0) || e.GeoscapeEventData.Choices.Any(c => c.Outcome.CustomCharacters.Count > 0)))
+            try
+            {
+                foreach (GeoscapeEventDef geoscapeEventDef in Repo.GetAllDefs<GeoscapeEventDef>().Where(e => e.GeoscapeEventData.Choices.Any(c => c.Outcome.Units.Count > 0) || e.GeoscapeEventData.Choices.Any(c => c.Outcome.CustomCharacters.Count > 0)))
                 {
-                    TFTVLogger.Always($"Event {geoscapeEventDef.EventID} offers some unit or custom character"); 
-                }     
+                    TFTVLogger.Always($"Event {geoscapeEventDef.EventID} offers some unit or custom character");
+                }
             }
             catch (Exception e)
             {
                 TFTVLogger.Error(e);
             }
         }
+
 
 
         public static void InjectDefsInjectedOnlyOnceBatch1()
@@ -110,7 +105,9 @@ namespace TFTV
 
             AugmentationEventsDefs();
             ChangesAmbushMissions();
-            CreateHints();
+
+
+
             CreateIntro();
             Create_VoidOmen_Events();
             ChangeInfestationDefs();
@@ -194,7 +191,7 @@ namespace TFTV
             FixBionic3ResearchNotGivingAccessToFacility();
             CreateFakeFacilityToFixBadBaseDefenseMaps();
             ChangeFireNadeCostAndDamage();
-           
+
             ModifyRescueCiviliansMissions();
             TFTVChangesToDLC5.TFTVMercenaries.CreateMercenaries();
             TFTVChangesToDLC5.TFTVKaosGuns.CreateKaosWeaponAmmo();
@@ -209,6 +206,8 @@ namespace TFTV
             // BEFixCaterpillarTracksDamage(); //already added to base
             TFTVBetterEnemies.BEReducePandoranWillpower();
             CreateAndAdjustDefsForLimitedCapture();
+
+            TFTVHints.HintDefs.CreateHints();
             // ChangeStoryAN4_CustomMissionTypeDef();
             //  CreateNewLaunchBaseDefenseMissionGeoAbility();
             //  TFTVChangesToDLC5.AdjustMarketPlaceAbilityDef();
@@ -224,7 +223,7 @@ namespace TFTV
 
         private static void ChangeStoryAN4_CustomMissionTypeDef()
         {
-            try 
+            try
             {
                 WipeEnemyFactionObjectiveDef sourceWipeEnemyObjective = DefCache.GetDef<WipeEnemyFactionObjectiveDef>("300WipeEnemy_CustomMissionObjective");
 
@@ -234,15 +233,15 @@ namespace TFTV
 
 
 
-               CustomMissionTypeDef anStory4 = DefCache.GetDef<CustomMissionTypeDef>("StoryAN4_CustomMissionTypeDef");
+                CustomMissionTypeDef anStory4 = DefCache.GetDef<CustomMissionTypeDef>("StoryAN4_CustomMissionTypeDef");
 
-                anStory4.CustomObjectives= anStory4.CustomObjectives.AddToArray(newWipeEnemyObjective);
+                anStory4.CustomObjectives = anStory4.CustomObjectives.AddToArray(newWipeEnemyObjective);
 
-                foreach(FactionObjectiveDef factionObjective in anStory4.CustomObjectives) 
+                foreach (FactionObjectiveDef factionObjective in anStory4.CustomObjectives)
                 {
                     TFTVLogger.Always($"{factionObjective.name}");
-                
-                
+
+
                 }
 
             }
@@ -256,7 +255,7 @@ namespace TFTV
 
         private static void CreateAndAdjustDefsForLimitedCapture()
         {
-            try 
+            try
             {
                 ChangeResourceRewardsForAutopsies();
                 AdjustPandoranVolumes();
@@ -491,7 +490,7 @@ namespace TFTV
 
         private static void ReducePromoSkins()
         {
-            try 
+            try
             {
                 RedeemableCodeDef redeemableCodePriestTechnicianDef = DefCache.GetDef<RedeemableCodeDef>("CompleteEdition_RedeemableCodeDef");
                 RedeemableCodeDef redeemableCodeDoomSlayer = DefCache.GetDef<RedeemableCodeDef>("HeadhunterSet_RedeemableCodeDef");
@@ -499,20 +498,20 @@ namespace TFTV
                 RedeemableCodeDef redeemableCodeViking = DefCache.GetDef<RedeemableCodeDef>("Viking_RedeemableCodeDef");
                 RedeemableCodeDef redeemableCodeWhiteSet = DefCache.GetDef<RedeemableCodeDef>("WhiteSet_RedeemableCodeDef");
                 RedeemableCodeDef redeemableCodeNeoSet = DefCache.GetDef<RedeemableCodeDef>("NeonSet_RedeemableCodeDef");
-              
-                redeemableCodePriestTechnicianDef.GiftedItems.RemoveWhere(i => i.name.Contains("ALN")|| i.name.Contains("MechArms"));
+
+                redeemableCodePriestTechnicianDef.GiftedItems.RemoveWhere(i => i.name.Contains("ALN") || i.name.Contains("MechArms"));
 
                 List<RedeemableCodeDef> redeemableCodeDefs = new List<RedeemableCodeDef>()
                 {
                 redeemableCodeDoomSlayer, redeemableCodeInfiltrator, redeemableCodeViking, redeemableCodeWhiteSet, redeemableCodeNeoSet
 
                 };
-                
-                foreach(RedeemableCodeDef redeemableCodeDef in redeemableCodeDefs) 
+
+                foreach (RedeemableCodeDef redeemableCodeDef in redeemableCodeDefs)
                 {
                     redeemableCodeDef.AutoRedeem = false;
                     redeemableCodeDef.RedeemableCode = "noskinforyou";
-                    redeemableCodeDef.Allowed = false;               
+                    redeemableCodeDef.Allowed = false;
                 }
 
 
@@ -835,9 +834,9 @@ namespace TFTV
 
                 //Add inifinite reinforcements to Helena
                 rescueHelenaMisson.ParticipantsData[1].InfiniteReinforcements = true;
-                rescueHelenaMisson.ParticipantsData[1].ReinforcementsTurns = new RangeDataInt() { Min =0, Max =1 };
+                rescueHelenaMisson.ParticipantsData[1].ReinforcementsTurns = new RangeDataInt() { Min = 0, Max = 1 };
                 rescueHelenaMisson.ParticipantsData[1].ReinforcementsDeploymentPart = new RangeData() { Min = 0.1f, Max = 0.1f };
-             rescueHelenaMisson.DontRecoverItems = true;
+                rescueHelenaMisson.DontRecoverItems = true;
 
 
 
@@ -855,8 +854,8 @@ namespace TFTV
             try
             {
 
-             
-                StructuralTargetTypeTagDef interactableConsoleTag =DefCache.GetDef<StructuralTargetTypeTagDef>("TalkingPointConsoleTag");
+
+                StructuralTargetTypeTagDef interactableConsoleTag = DefCache.GetDef<StructuralTargetTypeTagDef>("TalkingPointConsoleTag");
 
                 WipeEnemyFactionObjectiveDef sourceWipeEnemyFactionObjective = DefCache.GetDef<WipeEnemyFactionObjectiveDef>("WipeEnemy_CustomMissionObjective");
                 WipeEnemyFactionObjectiveDef newDummyObjective = Helper.CreateDefFromClone(sourceWipeEnemyFactionObjective, gUID, "DummyObjective");
@@ -918,10 +917,10 @@ namespace TFTV
 
         }
 
-        
 
 
-       
+
+
 
 
 
@@ -1013,7 +1012,6 @@ namespace TFTV
                 CreateNewStatusOnDisablingYugothianEyes();
                 AdjustYuggothianEntity();
                 ChangePalaceMissionDefs();
-                CreatePalaceMissionHints();
                 CreateCharactersForPalaceMission();
             }
 
@@ -1023,94 +1021,7 @@ namespace TFTV
             }
         }
 
-        private static void CreatePalaceIntroHint(MissionTypeTagDef missionTag, string hintName, string titleKey, string textKey, string textKey2, string gUID1, string gUID2)
-        {
-            try
-            {
-                ContextHelpHintDef palaceStart0Hint = TFTVTutorialAndStory.CreateNewTacticalHint(hintName + "0", HintTrigger.MissionStart, missionTag.name, titleKey, textKey, 3, false, gUID1);
-                ContextHelpHintDef palaceStart1Hint = TFTVTutorialAndStory.CreateNewManualTacticalHint(hintName + "1", gUID2, titleKey, textKey2);
 
-                palaceStart0Hint.AnyCondition = true;
-                // palaceStart1Hint.IsTutorialHint = false;
-                palaceStart1Hint.Conditions = new List<HintConditionDef>() { TFTVTutorialAndStory.LevelHasTagHintConditionForTacticalHint(missionTag.name) };
-                palaceStart1Hint.AnyCondition = true;
-                palaceStart0Hint.NextHint = palaceStart1Hint;
-
-
-            }
-
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-
-        }
-
-
-        private static void CreatePalaceMissionHints()
-        {
-            try
-            {
-                CreatePalaceIntroHint(DefCache.GetDef<MissionTypeTagDef>("PXPalace"),
-                    "TFTVPXPalaceStart",
-                    "PX_VICTORY_MISSION_START_TITLE", "PX_VICTORY_MISSION_START0", "PX_VICTORY_MISSION_START1",
-                    "{71C7DB4D-1C0D-4AF0-BE4E-2BB90E96CF61}",
-                    "{A5AE9410-69F7-4DDF-9517-A85B8ADA118A}");
-
-                CreatePalaceIntroHint(DefCache.GetDef<MissionTypeTagDef>("NJPalace"),
-                   "TFTVNJPalaceStart",
-                   "NJ_VICTORY_MISSION_START_TITLE", "NJ_VICTORY_MISSION_START0", "NJ_VICTORY_MISSION_START1",
-                   "{C38C52CA-8CFA-4F4D-867F-024ED8BB1FFA}",
-                   "{67041692-4508-4D90-AEFA-9E145DA5E830}");
-
-                CreatePalaceIntroHint(DefCache.GetDef<MissionTypeTagDef>("ANPalace"),
-                  "TFTVANPalaceStart",
-                  "AN_VICTORY_MISSION_START_TITLE", "AN_VICTORY_MISSION_START0", "AN_VICTORY_MISSION_START1",
-                  "{8C41089E-BD4A-4D99-A066-17C10570F10B}",
-                  "{87256303-4DD6-4EDC-B907-F8C02F8CFD02}");
-
-                CreatePalaceIntroHint(DefCache.GetDef<MissionTypeTagDef>("SYPolyPalace"),
-                 "TFTVSYPolyPalaceStart",
-                 "SY_POLY_VICTORY_MISSION_START_TITLE", "SY_POLY_VICTORY_MISSION_START0", "SY_POLY_VICTORY_MISSION_START1",
-                 "{BEDF6DAD-9DF4-41C6-9A81-5913B0B8253A}",
-                 "{D6C6CC71-A471-45CB-A59D-6EB52C3075EE}");
-
-                CreatePalaceIntroHint(DefCache.GetDef<MissionTypeTagDef>("SYTerraPalace"),
-                 "TFTVSYTerraPalaceStart",
-                 "SY_TERRA_VICTORY_MISSION_START_TITLE", "SY_TERRA_VICTORY_MISSION_START0", "SY_TERRA_VICTORY_MISSION_START1",
-                 "{634FF698-80B8-4859-8ACF-956B16BD5B90}",
-                 "{CBE4D317-A0A4-49D0-963D-9EE646D601B8}");
-
-
-                string nameGateHint0 = "ReceptacleGateHint0";
-                string nameGateHint1 = "ReceptacleGateHint1";
-                ContextHelpHintDef palaceGateHint0 = TFTVTutorialAndStory.CreateNewManualTacticalHint(nameGateHint0, "{589E3AA7-07AB-4F36-9C22-05937FE77486}", "VICTORY_MISSION_GATES_TITLE", "VICTORY_MISSION_GATES0");
-                ContextHelpHintDef palaceGateHint1 = TFTVTutorialAndStory.CreateNewManualTacticalHint(nameGateHint1, "{8861E55F-486A-4A53-991C-E94F9917CFF1}", "VICTORY_MISSION_GATES_TITLE", "VICTORY_MISSION_GATES1");
-
-                string nameRevenantHint0 = "PalaceRevenantHint0";
-                string nameRevenantHint1 = "PalaceRevenantHint1";
-
-                ContextHelpHintDef palaceRevenantHint0 = TFTVTutorialAndStory.CreateNewManualTacticalHint(nameRevenantHint0, "{7D5440F0-DF8B-44E2-BB67-A02F72FB1628}", "VICTORY_MISSION_REVENANT_TO_PX_TITLE", "VICTORY_MISSION_REVENANT_TO_PX");
-                ContextHelpHintDef palaceRevenantHint1 = TFTVTutorialAndStory.CreateNewManualTacticalHint(nameRevenantHint1, "{8B9B2ACE-7790-4F1A-A5F4-4835FB16F972}", "VICTORY_MISSION_REVENANT_TO_YR_TITLE", "VICTORY_MISSION_REVENANT_TO_YR");
-
-                string nameHisMinionsHint = "PalaceHisMinionsHint";
-                ContextHelpHintDef palaceHisMinionsHint = TFTVTutorialAndStory.CreateNewManualTacticalHint(nameHisMinionsHint, "{9EB02D9C-CC19-4D2F-920F-32A8227B685C}", "VICTORY_MISSION_HIS_MINIONS_TITLE", "VICTORY_MISSION_HIS_MINIONS");
-
-                string nameEyesHint = "PalaceEyesHint";
-                string nameTag = "Yuggothian_ClassTagDef";
-
-                TFTVTutorialAndStory.CreateNewTacticalHint(nameEyesHint, HintTrigger.ActorSeen, nameTag, "VICTORY_MISSION_FOR_THE_EYES_TITLE", "VICTORY_MISSION_FOR_THE_EYES_TEXT", 1, true, "{FF77A9F0-EB84-4CBE-AD78-298399B33956}");
-
-
-
-            }
-
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-
-        }
 
 
         private static void CreateNewStatusOnDisablingYugothianEyes()
@@ -2635,17 +2546,17 @@ namespace TFTV
                 string event1Name = "FoodPoisoning1";
                 string event1Title = "FOOD_POISONING_TITLE_1";
                 string event1Description = "FOOD_POISONING_DESCRIPTION_1";
-              //  string event1Outcome = "FOOD_POISONING_OUTCOME_1";
+                //  string event1Outcome = "FOOD_POISONING_OUTCOME_1";
 
                 string event2Name = "FoodPoisoning2";
                 string event2Title = "FOOD_POISONING_TITLE_2";
                 string event2Description = "FOOD_POISONING_DESCRIPTION_2";
-              //  string event2Outcome = "FOOD_POISONING_OUTCOME_2";
+                //  string event2Outcome = "FOOD_POISONING_OUTCOME_2";
 
                 string event3Name = "FoodPoisoning3";
                 string event3Title = "FOOD_POISONING_TITLE_3";
                 string event3Description = "FOOD_POISONING_DESCRIPTION_3";
-              //  string event3Outcome = "FOOD_POISONING_OUTCOME_3";
+                //  string event3Outcome = "FOOD_POISONING_OUTCOME_3";
 
                 GeoscapeEventDef foodPoisoning1 = TFTVCommonMethods.CreateNewEvent(event1Name, event1Title, event1Description, null);
                 foodPoisoning1.GeoscapeEventData.Choices[0].Outcome.DamageAllSoldiers = 20;
@@ -2770,11 +2681,11 @@ namespace TFTV
 
         }
 
-        private static void ChangeArchaelogyLab() 
+        private static void ChangeArchaelogyLab()
         {
             try
             {
-               PhoenixFacilityDef archlab = DefCache.GetDef<PhoenixFacilityDef>("ArcheologyLab_PhoenixFacilityDef");
+                PhoenixFacilityDef archlab = DefCache.GetDef<PhoenixFacilityDef>("ArcheologyLab_PhoenixFacilityDef");
 
                 archlab.FacilityLimitPerBase = 1;
             }
@@ -2800,7 +2711,7 @@ namespace TFTV
                 aWormDamage.DamagePayload.DamageKeywords = new List<DamageKeywordPair>()
                 {
                 new DamageKeywordPair{DamageKeywordDef = Shared.SharedDamageKeywords.BlastKeyword, Value = 10 },
-                new DamageKeywordPair{DamageKeywordDef = Shared.SharedDamageKeywords.AcidKeyword, Value = 20 },               
+                new DamageKeywordPair{DamageKeywordDef = Shared.SharedDamageKeywords.AcidKeyword, Value = 20 },
                 };
 
                 //All Acheron acid attacks reduced by 10.
@@ -3595,7 +3506,7 @@ namespace TFTV
                 string hintDecoyPlacedTitle = "HINT_DECOYPLACED_TITLE";
                 string hintDecoyPlacedText = "HINT_DECOYPLACED_TEXT";
 
-                TFTVTutorialAndStory.CreateNewTacticalHint(hintDecoyPlacedName, HintTrigger.AbilityExecuted, decoyAbility.name, hintDecoyPlacedTitle, hintDecoyPlacedText, 4, true, hintDecoyPlacedGUID);
+                TFTVHints.HintDefs.CreateNewTacticalHint(hintDecoyPlacedName, HintTrigger.AbilityExecuted, decoyAbility.name, hintDecoyPlacedTitle, hintDecoyPlacedText, 4, true, hintDecoyPlacedGUID, "decoy_hint.jpg");
 
                 IsDefHintConditionDef conditionDef = DefCache.GetDef<IsDefHintConditionDef>(decoyAbility.name + "_HintConditionDef");
                 conditionDef.TargetDef = decoyAbility;
@@ -3604,23 +3515,19 @@ namespace TFTV
                 string hintDecoyDiscoveredGUID = "{D75AC0EA-89C1-4DF7-8E67-CFD83F8F6ED1}";
                 string hintDecoyDiscoveredTitle = "HINT_DECOYDISCOVERED_TITLE";
                 string hintDecoyDiscoveredText = "HINT_DECOYDISCOVERED_TEXT";
-                TFTVTutorialAndStory.CreateNewTacticalHint(hintDecoyDiscoveredName, HintTrigger.Manual, decoyTag.name, hintDecoyDiscoveredTitle, hintDecoyDiscoveredText, 1, true, hintDecoyDiscoveredGUID);
-
-
+                TFTVHints.HintDefs.CreateNewTacticalHint(hintDecoyDiscoveredName, HintTrigger.Manual, decoyTag.name, hintDecoyDiscoveredTitle, hintDecoyDiscoveredText, 1, true, hintDecoyDiscoveredGUID, "decoy_removed_hint.jpg");
 
                 string hintDecoyScyllaName = "HintDecoyScylla";
                 string hintDecoyScyllaGUID = "{06D96E1B-758C-4178-9D9B-13A40686E90F}";
                 string hintDecoyScyllaTitle = "HINT_DECOYSCYLLA_TITLE";
                 string hintDecoyScyllaText = "HINT_DECOYSCYLLA_TEXT";
-                TFTVTutorialAndStory.CreateNewTacticalHint(hintDecoyScyllaName, HintTrigger.ActorDied, dcoyTacCharacter.name, hintDecoyScyllaTitle, hintDecoyScyllaText, 0, true, hintDecoyScyllaGUID);
-
+                TFTVHints.HintDefs.CreateNewTacticalHint(hintDecoyScyllaName, HintTrigger.ActorDied, dcoyTacCharacter.name, hintDecoyScyllaTitle, hintDecoyScyllaText, 0, true, hintDecoyScyllaGUID, "decoy_removed_hint.jpg");
             }
 
             catch (Exception e)
             {
                 TFTVLogger.Error(e);
             }
-
         }
 
         internal static void CreateConsolePromptBaseDefense()
@@ -3973,34 +3880,7 @@ namespace TFTV
         }
 
 
-        internal static void CreateHintsForBaseDefense()
-        {
-            try
-            {
-                MissionTypeTagDef baseDefenseMissionTag = DefCache.GetDef<MissionTypeTagDef>("MissionTypePhoenixBaseDefence_MissionTagDef");
 
-                TFTVTutorialAndStory.CreateNewManualTacticalHint("BaseDefenseUmbraStrat", "{B6B31D16-82B6-462D-A220-388447F2C9D8}", "BASEDEFENSE_UMBRASTRAT_TITLE", "BASEDEFENSE_UMBRASTRAT_TEXT");
-                TFTVTutorialAndStory.CreateNewManualTacticalHint("BaseDefenseWormsStrat", "{1CA6F9FB-BD41-430B-A4BF-04867245BEBF}", "BASEDEFENSE_WORMSSTRAT_TITLE", "BASEDEFENSE_WORMSSTRAT_TEXT");
-                TFTVTutorialAndStory.CreateNewManualTacticalHint("BaseDefenseForce2Strat", "{22DF1F91-2D1A-4F34-AD9A-E9881E60CCD5}", "BASEDEFENSE_FORCE2STRAT_TITLE", "BASEDEFENSE_FORCE2STRAT_TEXT");
-                TFTVTutorialAndStory.CreateNewTacticalHint("TFTVBaseDefense", HintTrigger.MissionStart, baseDefenseMissionTag.name, "BASEDEFENSE_TACTICAL_ADVANTAGE_TITLE", "BASEDEFENSE_TACTICAL_ADVANTAGE_DESCRIPTION", 3, false, "{DB7CF4DE-D59F-4990-90AE-4C0B43550468}");
-                /*TFTVTutorialAndStory.CreateNewManualTacticalHint("BaseDefenseInfestation", "{34A92A89-DECF-45F2-82E5-52E1D721A1B3}", "BASEDEFENSE_INFESTATION_TITLE", "BASEDEFENSE_INFESTATION_DESCRIPTION");
-                TFTVTutorialAndStory.CreateNewManualTacticalHint("BaseDefenseNesting", "{34A92A89-DECF-45F2-82E5-52E1D721A1B3}", "BASEDEFENSE_NESTING_TITLE ", "BASEDEFENSE_NESTING_DESCRIPTION");
-                TFTVTutorialAndStory.CreateNewManualTacticalHint("BaseDefenseTacticalAdvantage", "{34A92A89-DECF-45F2-82E5-52E1D721A1B3}", "BASEDEFENSE_TACTICAL_ADVANTAGE_TITLE", "BASEDEFENSE_TACTICAL_ADVANTAGE_DESCRIPTION"); */
-                ContextHelpHintDef baseDefenseStartHint = DefCache.GetDef<ContextHelpHintDef>("TFTVBaseDefense");
-                baseDefenseStartHint.AnyCondition = true;
-
-                TFTVTutorialAndStory.CreateNewManualTacticalHint("BaseDefenseVenting", "{AE6CE201-816F-4363-A80E-5CD07D8263CF}", "BASEDEFENSE_VENTING_TITLE", "BASEDEFENSE_VENTING_TEXT");
-
-
-
-            }
-
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-
-        }
 
 
         internal static void CreateFireExplosion()
@@ -4086,7 +3966,7 @@ namespace TFTV
                 CreateBaseDefenseEvents();
                 CreateCosmeticExplosion();
                 CreateFireExplosion();
-                CreateHintsForBaseDefense();
+
                 ReduceDamageFromInfestation();
                 //  CreateSpawnCrabmanAbility();
             }
@@ -4363,9 +4243,7 @@ namespace TFTV
                 GameTagDef nj = DefCache.GetDef<GameTagDef>("NewJerico_FactionTagDef");
 
                 List<ItemDef> synArmors = new List<ItemDef>() {
-            //    DefCache.GetDef<ItemDef>("SY_Infiltrator_Bonus_Helmet_BodyPartDef"),
-            //    DefCache.GetDef<ItemDef>("SY_Infiltrator_Bonus_Legs_ItemDef"),
-            //    DefCache.GetDef<ItemDef>("SY_Infiltrator_Bonus_Torso_BodyPartDef"),
+
                 DefCache.GetDef<ItemDef>("SY_MistRepeller_Attachment_ItemDef"),
                 DefCache.GetDef<ItemDef>("SY_MotionDetector_Attachment_ItemDef"),
                 DefCache.GetDef<ItemDef>("SY_MultiVisualSensor_Attachment_ItemDef"),
@@ -4382,9 +4260,6 @@ namespace TFTV
                 DefCache.GetDef<ItemDef>("SY_Infiltrator_Helmet_BodyPartDef"),
                 DefCache.GetDef<ItemDef>("SY_Infiltrator_Legs_ItemDef"),
                 DefCache.GetDef<ItemDef>("SY_Infiltrator_Torso_BodyPartDef"),
-            //    DefCache.GetDef<ItemDef>("SY_Infiltrator_Venom_Helmet_BodyPartDef"),
-            //    DefCache.GetDef<ItemDef>("SY_Infiltrator_Venom_Legs_ItemDef"),
-            //    DefCache.GetDef<ItemDef>("SY_Infiltrator_Venom_Torso_BodyPartDef"),
                 DefCache.GetDef<ItemDef>("SY_Sniper_Helmet_BodyPartDef"),
                 DefCache.GetDef<ItemDef>("SY_Sniper_Legs_ItemDef"),
                 DefCache.GetDef<ItemDef>("SY_Sniper_Torso_BodyPartDef"),
@@ -4421,26 +4296,18 @@ namespace TFTV
                 DefCache.GetDef<ItemDef>("AN_Berserker_Torso_BodyPartDef"),
                 DefCache.GetDef<ItemDef>("AN_Priest_Legs_ItemDef"),
                 DefCache.GetDef<ItemDef>("AN_Priest_Torso_BodyPartDef"),
-           //     DefCache.GetDef<ItemDef>("AN_Priest_Legs_AZ_ItemDef"),
-           //     DefCache.GetDef<ItemDef>("AN_Priest_Torso_AZ_BodyPartDef"),
-
                 };
 
                 foreach (TacticalItemDef item in anuArmors)
                 {
                     item.CrateSpawnWeight = 200;
                     item.IsPickable = true;
-
-                    //    TFTVLogger.Always(item.name + " has a chance of " + item.CrateSpawnWeight + " to spawn");
-
                 }
 
                 foreach (TacticalItemDef item in njArmors)
                 {
                     item.CrateSpawnWeight = 200;
                     item.IsPickable = true;
-                    //  TFTVLogger.Always(item.name + " has a chance of " + item.CrateSpawnWeight + " to spawn");
-
                 }
 
                 foreach (TacticalItemDef item in synArmors)
@@ -4448,57 +4315,17 @@ namespace TFTV
                     item.CrateSpawnWeight = 200;
                     item.IsPickable = true;
 
-                    //TFTVLogger.Always(item.name + " has a chance of " + item.CrateSpawnWeight + " to spawn");
-
                 }
 
-
-
                 InventoryComponentDef anuCrates = DefCache.GetDef<InventoryComponentDef>("Crate_AN_InventoryComponentDef");
-
                 anuCrates.ItemDefs.AddRangeToArray(anuArmors.ToArray());
 
 
                 InventoryComponentDef njCrates = DefCache.GetDef<InventoryComponentDef>("Crate_NJ_InventoryComponentDef");
-
                 njCrates.ItemDefs.AddRangeToArray(njArmors.ToArray());
 
                 InventoryComponentDef synCrates = DefCache.GetDef<InventoryComponentDef>("Crate_SY_InventoryComponentDef");
-
                 synCrates.ItemDefs.AddRangeToArray(synArmors.ToArray());
-
-
-                /* List<ItemDef> synCratesList = new List<ItemDef>();
-                 synCratesList.AddRange(synCrates.ItemDefs.ToList());
-                 synCratesList.AddRange(synArmors);
-
-                 synCrates.ItemDefs = synCratesList.ToArray();*/
-
-                /*   foreach(TacticalItemDef tacticalItemDef in Repo.GetAllDefs<TacticalItemDef>().Where(tid => tid.Tags.Contains(armourTag)))
-                       {
-
-                       if (tacticalItemDef.Tags.Contains(anu)) 
-                       { 
-                       anuCrates.ItemDefs.AddToArray(tacticalItemDef);
-                           TFTVLogger.Always("Added " + tacticalItemDef.name + " to Anu crates");
-
-                       }
-                       else if (tacticalItemDef.Tags.Contains(nj))
-                       {
-                           njCrates.ItemDefs.AddToArray(tacticalItemDef);
-                           TFTVLogger.Always("Added " + tacticalItemDef.name + " to NJ crates");
-
-                       }
-                       else if (tacticalItemDef.Tags.Contains(synedrion))
-                       {
-                           synCrates.ItemDefs.AddToArray(tacticalItemDef);
-                           TFTVLogger.Always("Added " + tacticalItemDef.name + " to Syn crates");
-
-                       }
-
-
-                   }*/
-
 
             }
 
@@ -4522,18 +4349,18 @@ namespace TFTV
 
                 loadingScreenArtCollectionDef.LoadingScreenImages.Clear();
 
-            /*    loadingScreenArtCollectionDef.LoadingScreenImages.Add(Helper.CreateSpriteFromImageFile("CrisisAnu_1_uinomipmaps.jpg"));
-                loadingScreenArtCollectionDef.LoadingScreenImages.Add(Helper.CreateSpriteFromImageFile("CrisisNJ_1_uinomipmaps.jpg"));
-                loadingScreenArtCollectionDef.LoadingScreenImages.Add(Helper.CreateSpriteFromImageFile("CrisisNJ_2_uinomipmaps.jpg"));
-                loadingScreenArtCollectionDef.LoadingScreenImages.Add(Helper.CreateSpriteFromImageFile("CrisisOther_1_uinomipmaps.jpg"));
-                loadingScreenArtCollectionDef.LoadingScreenImages.Add(Helper.CreateSpriteFromImageFile("CrisisSyn_1_uinomipmaps.jpg"));
-                loadingScreenArtCollectionDef.LoadingScreenImages.Add(Helper.CreateSpriteFromImageFile("DebateNJ_1_uinomipmaps.jpg"));
-                loadingScreenArtCollectionDef.LoadingScreenImages.Add(Helper.CreateSpriteFromImageFile("Encounter_1_scarab_uinomipmaps.jpg"));
-                loadingScreenArtCollectionDef.LoadingScreenImages.Add(Helper.CreateSpriteFromImageFile("Encounter_2_armadillo_uinomipmaps.jpg"));
-                loadingScreenArtCollectionDef.LoadingScreenImages.Add(Helper.CreateSpriteFromImageFile("Encounter_3_aspida_uinomipmaps.jpg"));
-                loadingScreenArtCollectionDef.LoadingScreenImages.Add(Helper.CreateSpriteFromImageFile("Encounter_4_Kaos_Buggy_uinomipmaps.jpg"));
-                loadingScreenArtCollectionDef.LoadingScreenImages.Add(Helper.CreateSpriteFromImageFile("UI_KaosMarket_Image_uinomipmaps.jpg"));*/
-                         
+                /*    loadingScreenArtCollectionDef.LoadingScreenImages.Add(Helper.CreateSpriteFromImageFile("CrisisAnu_1_uinomipmaps.jpg"));
+                    loadingScreenArtCollectionDef.LoadingScreenImages.Add(Helper.CreateSpriteFromImageFile("CrisisNJ_1_uinomipmaps.jpg"));
+                    loadingScreenArtCollectionDef.LoadingScreenImages.Add(Helper.CreateSpriteFromImageFile("CrisisNJ_2_uinomipmaps.jpg"));
+                    loadingScreenArtCollectionDef.LoadingScreenImages.Add(Helper.CreateSpriteFromImageFile("CrisisOther_1_uinomipmaps.jpg"));
+                    loadingScreenArtCollectionDef.LoadingScreenImages.Add(Helper.CreateSpriteFromImageFile("CrisisSyn_1_uinomipmaps.jpg"));
+                    loadingScreenArtCollectionDef.LoadingScreenImages.Add(Helper.CreateSpriteFromImageFile("DebateNJ_1_uinomipmaps.jpg"));
+                    loadingScreenArtCollectionDef.LoadingScreenImages.Add(Helper.CreateSpriteFromImageFile("Encounter_1_scarab_uinomipmaps.jpg"));
+                    loadingScreenArtCollectionDef.LoadingScreenImages.Add(Helper.CreateSpriteFromImageFile("Encounter_2_armadillo_uinomipmaps.jpg"));
+                    loadingScreenArtCollectionDef.LoadingScreenImages.Add(Helper.CreateSpriteFromImageFile("Encounter_3_aspida_uinomipmaps.jpg"));
+                    loadingScreenArtCollectionDef.LoadingScreenImages.Add(Helper.CreateSpriteFromImageFile("Encounter_4_Kaos_Buggy_uinomipmaps.jpg"));
+                    loadingScreenArtCollectionDef.LoadingScreenImages.Add(Helper.CreateSpriteFromImageFile("UI_KaosMarket_Image_uinomipmaps.jpg"));*/
+
                 for (int i = 1; i <= 25; i++)
                 {
                     string fileName = $"loading_screen{i}.jpg";
@@ -4990,8 +4817,6 @@ namespace TFTV
                 CloneFireImmunityAbility();
                 CreateFireQuencherStatus();
                 CreateFireQuencherAbility();
-                CreateFireQuencherHint();
-
             }
             catch (Exception e)
             {
@@ -5001,32 +4826,7 @@ namespace TFTV
         }
 
 
-        public static void CreateFireQuencherHint()
-        {
-            try
-            {
-                DamageMultiplierStatusDef status = DefCache.GetDef<DamageMultiplierStatusDef>("FireQuencherStatus");
 
-
-
-                string hintName = "FIRE_QUENCHER";
-                string hintTitle = "HINT_FIRE_QUENCHER_TITLE";
-                string hintText = "HINT_FIRE_QUENCHER_TEXT";
-
-
-                TFTVTutorialAndStory.CreateNewTacticalHint(hintName, HintTrigger.ActorSeen, status.name, hintTitle, hintText, 2, true, "5F24B699-455E-44E5-831D-1CA79B9E3EED");
-
-
-
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-
-
-
-        }
 
 
 
@@ -5325,7 +5125,7 @@ namespace TFTV
                 string name = "Helena_Lore";
                 string title = "TFTV_LORE_HELENA_TITLE";
                 string description = "TFTV_LORE_HELAN_DESCRIPTION";
-                string pic = "lore_helena.png";
+                string pic = "lore_helena.jpg";
                 GeoPhoenixpediaEntryDef alistairEntry = CreateLoreEntry(name, gUID, title, description, pic);
                 DefCache.GetDef<GeoscapeEventDef>("HelenaOnOlena").GeoscapeEventData.Choices[0].Outcome.GivePhoenixpediaEntries = new List<GeoPhoenixpediaEntryDef>() { alistairEntry };
             }
@@ -5345,7 +5145,7 @@ namespace TFTV
                 string name = "Bennu_Lore";
                 string title = "TFTV_LORE_BENNU_TITLE";
                 string description = "TFTV_LORE_BENNU_DESCRIPTION";
-                string pic = "lore_bennu.png";
+                string pic = "lore_bennu.jpg";
                 GeoPhoenixpediaEntryDef alistairEntry = CreateLoreEntry(name, gUID, title, description, pic);
                 DefCache.GetDef<GeoscapeEventDef>("IntroBetterGeo_2").GeoscapeEventData.Choices[0].Outcome.GivePhoenixpediaEntries = new List<GeoPhoenixpediaEntryDef>() { alistairEntry };
             }
@@ -5365,7 +5165,7 @@ namespace TFTV
                 string name = "Olena_Lore";
                 string title = "TFTV_LORE_OLENA_TITLE";
                 string description = "TFTV_LORE_OLENA_DESCRIPTION";
-                string pic = "lore_olena.png";
+                string pic = "lore_olena.jpg";
                 GeoPhoenixpediaEntryDef alistairEntry = CreateLoreEntry(name, gUID, title, description, pic);
                 DefCache.GetDef<GeoscapeEventDef>("IntroBetterGeo_1").GeoscapeEventData.Choices[0].Outcome.GivePhoenixpediaEntries = new List<GeoPhoenixpediaEntryDef>() { alistairEntry };
             }
@@ -5386,7 +5186,7 @@ namespace TFTV
                 string name = "Alistair_Lore";
                 string title = "TFTV_LORE_ALISTAIR_TITLE";
                 string description = "TFTV_LORE_ALISTAIR_DESCRIPTION";
-                string pic = "lore_alistair.png";
+                string pic = "lore_alistair.jpg";
                 GeoPhoenixpediaEntryDef alistairEntry = CreateLoreEntry(name, gUID, title, description, pic);
                 DefCache.GetDef<GeoscapeEventDef>("IntroBetterGeo_0").GeoscapeEventData.Choices[0].Outcome.GivePhoenixpediaEntries = new List<GeoPhoenixpediaEntryDef>() { alistairEntry };
             }
@@ -5468,7 +5268,6 @@ namespace TFTV
                 CreateAbilitiesForAncients();
                 CreateAncientStatusEffects();
                 CreateParalysisDamageImmunity();
-                CreateLOTAHints();
                 CreateAncientAutomataResearch();
                 CreateExoticMaterialsResearch();
                 CreateLivingCrystalResearch();
@@ -5487,10 +5286,7 @@ namespace TFTV
                 ChangeAncientSiteMissions();
                 ModifyCyclops();
                 CyclopsJoinStreamsAttack();
-                ImplementHintsAndResearches();
-
-
-                //  CreateImpossibleWeaponsManufactureRequirements();
+               
             }
             catch (Exception e)
             {
@@ -5505,16 +5301,6 @@ namespace TFTV
         {
             try
             {
-
-                ContextHelpHintDef hintStory1 = DefCache.GetDef<ContextHelpHintDef>("ANCIENTS_STORY1");
-                ContextHelpHintDef hintCyclops = DefCache.GetDef<ContextHelpHintDef>("ANCIENTS_CYCLOPS");
-                ContextHelpHintDef hintCyclopsDefense = DefCache.GetDef<ContextHelpHintDef>("ANCIENTS_CYCLOPSDEFENSE");
-                ContextHelpHintDef hintHoplites = DefCache.GetDef<ContextHelpHintDef>("ANCIENTS_HOPLITS");
-                ContextHelpHintDef hintHopliteRepair = DefCache.GetDef<ContextHelpHintDef>("ANCIENTS_HOPLITSREPAIR");
-                ContextHelpHintDef hintHopliteMaxPower = DefCache.GetDef<ContextHelpHintDef>("ANCIENTS_HOPLITSMAXPOWER");
-
-                ContextHelpHintDbDef alwaysDisplayedTacticalHintsDbDef = DefCache.GetDef<ContextHelpHintDbDef>("AlwaysDisplayedTacticalHintsDbDef");
-
                 ResearchDbDef researchDB = DefCache.GetDef<ResearchDbDef>("pp_ResearchDB");
 
                 ResearchDef ancientAutomataResearch = DefCache.GetDef<ResearchDef>("AncientAutomataResearch");
@@ -5538,32 +5324,6 @@ namespace TFTV
                 {
                     researchDB.Researches.Add(pX_ProteanMutaneResearch);
                 }
-                if (!alwaysDisplayedTacticalHintsDbDef.Hints.Contains(hintStory1))
-                {
-                    alwaysDisplayedTacticalHintsDbDef.Hints.Add(hintStory1);
-                }
-                if (!alwaysDisplayedTacticalHintsDbDef.Hints.Contains(hintCyclops))
-                {
-                    alwaysDisplayedTacticalHintsDbDef.Hints.Add(hintCyclops);
-                }
-                if (!alwaysDisplayedTacticalHintsDbDef.Hints.Contains(hintCyclopsDefense))
-                {
-                    alwaysDisplayedTacticalHintsDbDef.Hints.Add(hintCyclopsDefense);
-                }
-                if (!alwaysDisplayedTacticalHintsDbDef.Hints.Contains(hintHoplites))
-                {
-                    alwaysDisplayedTacticalHintsDbDef.Hints.Add(hintHoplites);
-                }
-                if (!alwaysDisplayedTacticalHintsDbDef.Hints.Contains(hintHopliteRepair))
-                {
-                    alwaysDisplayedTacticalHintsDbDef.Hints.Add(hintHopliteRepair);
-                }
-                if (!alwaysDisplayedTacticalHintsDbDef.Hints.Contains(hintHopliteMaxPower))
-                {
-                    alwaysDisplayedTacticalHintsDbDef.Hints.Add(hintHopliteMaxPower);
-                }
-
-
             }
             catch (Exception e)
             {
@@ -5974,7 +5734,8 @@ namespace TFTV
                 research.Tags = new ResearchTagDef[] { CriticalResearchTag };
 
 
-
+                ResearchDbDef researchDB = DefCache.GetDef<ResearchDbDef>("pp_ResearchDB");
+                researchDB.Researches.Add(research);
             }
             catch (Exception e)
             {
@@ -6026,6 +5787,8 @@ namespace TFTV
                 research.Unlocks = new ResearchRewardDef[] { proteanMutaneFunctionalityResearchReward };
                 research.Tags = new ResearchTagDef[] { CriticalResearchTag };
 
+                ResearchDbDef researchDB = DefCache.GetDef<ResearchDbDef>("pp_ResearchDB");
+                researchDB.Researches.Add(research);
             }
             catch (Exception e)
             {
@@ -6095,58 +5858,7 @@ namespace TFTV
 
         }
 
-        public static void CreateLOTAHints()
-        {
-            try
-            {
 
-
-                ClassTagDef cyclopsTag = DefCache.GetDef<ClassTagDef>("MediumGuardian_ClassTagDef");
-                ClassTagDef hopliteTag = DefCache.GetDef<ClassTagDef>("HumanoidGuardian_ClassTagDef");
-                MissionTypeTagDef ancientMissionTag = DefCache.GetDef<MissionTypeTagDef>("MissionTypeAncientSiteAttack_MissionTagDef");
-
-                DamageMultiplierStatusDef AddAutoRepairStatusAbility = DefCache.GetDef<DamageMultiplierStatusDef>("AutoRepair_AddAbilityStatusDef");
-                DamageMultiplierStatusDef ancientsPowerUpStatus = DefCache.GetDef<DamageMultiplierStatusDef>("AncientsPoweredUp");
-
-                string hintStory1 = "ANCIENTS_STORY1";
-                string story1Title = "HINT_ANCIENTS_STORY1_TITLE";
-                string story1Text = "HINT_ANCIENTS_STORY1_TEXT";
-                string hintCyclops = "ANCIENTS_CYCLOPS";
-                string cyclopsTitle = "HINT_ANCIENTS_CYCLOPS_TITLE";
-                string cyclopsText = "HINT_ANCIENTS_CYCLOPS_TEXT";
-                string hintCyclopsDefense = "ANCIENTS_CYCLOPSDEFENSE";
-                string cyclopsDefenseTitle = "HINT_ANCIENTS_CYCLOPSDEFENSE_TITLE";
-                string cyclopsDefenseText = "HINT_ANCIENTS_CYCLOPSDEFENSE_TEXT";
-                string hintHoplites = "ANCIENTS_HOPLITS";
-                string hoplitesTitle = "HINT_ANCIENTS_HOPLITS_TITLE";
-                string hoplitesText = "HINT_ANCIENTS_HOPLITS_TEXT";
-                string hintHopliteRepair = "ANCIENTS_HOPLITSREPAIR";
-                string hoplitesRepairTitle = "HINT_ANCIENTS_HOPLITSREPAIR_TITLE";
-                string hoplitesRepairText = "HINT_ANCIENTS_HOPLITSREPAIR_TEXT";
-                string hintHopliteMaxPower = "ANCIENTS_HOPLITSMAXPOWER";
-                string hopliteMaxPowerTitle = "HINT_ANCIENTS_HOPLITSMAXPOWER_TITLE";
-                string hopliteMaxPowerText = "HINT_ANCIENTS_HOPLITSMAXPOWER_TEXT";
-
-                TFTVTutorialAndStory.CreateNewTacticalHint(hintCyclops, HintTrigger.ActorSeen, cyclopsTag.name, cyclopsTitle, cyclopsText, 1, true, "41B73D60-433A-4F75-9E8B-CA30FBE45622");
-                TFTVTutorialAndStory.CreateNewTacticalHint(hintHoplites, HintTrigger.ActorSeen, hopliteTag.name, hoplitesTitle, hoplitesText, 1, true, "2DC1BC66-F42F-4E84-9680-826A57C28E48");
-                TFTVTutorialAndStory.CreateNewTacticalHint(hintCyclopsDefense, HintTrigger.ActorHurt, cyclopsTag.name, cyclopsDefenseTitle, cyclopsDefenseText, 1, true, "E4A4FB8B-10ED-49CF-870A-6ED9497F6895");
-                TFTVTutorialAndStory.CreateNewTacticalHint(hintStory1, HintTrigger.MissionStart, ancientMissionTag.name, story1Title, story1Text, 3, true, "24C57D44-3CBA-4310-AB09-AE9444822C91");
-                ContextHelpHintDef hoplitesHint = DefCache.GetDef<ContextHelpHintDef>(hintHoplites);
-                hoplitesHint.Conditions.Add(TFTVTutorialAndStory.ActorHasStatusHintConditionDefCreateNewConditionForTacticalHint("Alerted_StatusDef"));
-                TFTVTutorialAndStory.CreateNewTacticalHint(hintHopliteRepair, HintTrigger.ActorSeen, AddAutoRepairStatusAbility.name, hoplitesRepairTitle, hoplitesRepairText, 2, true, "B25F1794-5641-40D3-88B5-0AA104FC75A1");
-                TFTVTutorialAndStory.CreateNewTacticalHint(hintHopliteMaxPower, HintTrigger.ActorSeen, ancientsPowerUpStatus.name, hopliteMaxPowerTitle, hopliteMaxPowerText, 2, true, "0DC75121-325A-406E-AC37-5F1AAB4E7778");
-
-
-
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-
-
-
-        }
 
         public static void RemovePandoranVirusResearchRequirement()
         {
@@ -6278,6 +5990,7 @@ namespace TFTV
         {
             try
             {
+               
                 ActorResearchRequirementDef sourceActorResearchRequirement = DefCache.GetDef<ActorResearchRequirementDef>("PX_Alien_Fishman_ResearchDef_ActorResearchRequirementDef_0");
                 TacticalActorDef humanoidGuardianTacticalActor = DefCache.GetDef<TacticalActorDef>("HumanoidGuardian_ActorDef");
                 ActorResearchRequirementDef requirementDef = Helper.CreateDefFromClone(sourceActorResearchRequirement, "14163A38-C07E-4BFF-8366-6E30F524F85D", "HumanoidActorResearchRequirement");
@@ -6303,6 +6016,9 @@ namespace TFTV
                 research.RevealRequirements.Container = revealRequirementContainer;
                 research.RevealRequirements.Operation = ResearchContainerOperation.ALL;
                 research.Tags = new ResearchTagDef[] { CriticalResearchTag };
+
+                ResearchDbDef researchDB = DefCache.GetDef<ResearchDbDef>("pp_ResearchDB");
+                researchDB.Researches.Add(research);
             }
             catch (Exception e)
             {
@@ -6338,7 +6054,9 @@ namespace TFTV
                 research.RevealRequirements.Container = revealRequirementContainer;
                 research.RevealRequirements.Operation = ResearchContainerOperation.ALL;
                 research.Tags = new ResearchTagDef[] { CriticalResearchTag };
-
+              
+                ResearchDbDef researchDB = DefCache.GetDef<ResearchDbDef>("pp_ResearchDB");
+                researchDB.Researches.Add(research);
             }
             catch (Exception e)
             {
@@ -6754,56 +6472,7 @@ namespace TFTV
             }
         }
 
-        public static void CreateHints()
-        {
-            try
-            {
-                TFTVTutorialAndStory.CreateNewTacticalHint("UmbraSighted", HintTrigger.ActorSeen, "Oilcrab_TacCharacterDef", "UMBRA_SIGHTED_TITLE", "UMBRA_SIGHTED_TEXT", 0, true, "C63F5953-9D29-4245-8FCD-1B8B875C007D");
-                TFTVTutorialAndStory.CreateNewTacticalHint("UmbraSightedTriton", HintTrigger.ActorSeen, "Oilfish_TacCharacterDef", "UMBRA_SIGHTED_TITLE", "UMBRA_SIGHTED_TEXT", 0, true, "7F85AF7F-D7F0-41F3-B6EF-839509FCCF00");
-                TFTVTutorialAndStory.CreateNewTacticalHint("AcheronPrime", HintTrigger.ActorSeen, "AcheronPrime_TacCharacterDef", "HINT_ACHERON_PRIME_TITLE", "HINT_ACHERON_PRIME_DESCRIPTION", 0, true, "0266C7C5-B5A4-41B8-9987-653248113CC5");
-                TFTVTutorialAndStory.CreateNewTacticalHint("AcheronAsclepius", HintTrigger.ActorSeen, "AcheronAsclepius_TacCharacterDef", "HINT_ACHERON_ASCLEPIUS_TITLE", "HINT_ACHERON_ASCLEPIUS_DESCRIPTION", 0, true, "F34ED218-BF6D-44CD-B653-9EC8C7AB0D84");
-                TFTVTutorialAndStory.CreateNewTacticalHint("AcheronAsclepiusChampion", HintTrigger.ActorSeen, "AcheronAsclepiusChampion_TacCharacterDef", "HINT_ACHERON_ASCLEPIUS_CHAMPION_TITLE", "HINT_ACHERON_ASCLEPIUS_CHAMPION_DESCRIPTION", 0, true, "2FA6F938-0928-4C3A-A514-91F3BD90E048");
-                TFTVTutorialAndStory.CreateNewTacticalHint("AcheronAchlys", HintTrigger.ActorSeen, "AcheronAchlys_TacCharacterDef", "HINT_ACHERON_ACHLYS_TITLE", "HINT_ACHERON_ACHLYS_DESCRIPTION", 0, true, "06EEEA6B-1264-4616-AC78-1A2A56911E72");
-                TFTVTutorialAndStory.CreateNewTacticalHint("AcheronAchlysChampion", HintTrigger.ActorSeen, "AcheronAchlysChampion_TacCharacterDef", "HINT_ACHERON_ACHLYS_CHAMPION_TITLE", "HINT_ACHERON_ACHLYS_CHAMPION_DESCRIPTION", 0, true, "760FDBB6-1556-4B1D-AFE0-59C906672A5D");
-                TFTVTutorialAndStory.CreateNewTacticalHint("RevenantSighted", HintTrigger.ActorSeen, "Any_Revenant_TagDef", "REVENANT_SIGHTED_TITLE", "REVENANT_SIGHTED_TEXT", 1, true, "194317EC-67DF-4775-BAFD-98499F82C2D7");
 
-                TFTVTutorialAndStory.CreateNewTacticalHintInfestationMission("InfestationMissionIntro", "BBC5CAD0-42FF-4BBB-8E13-7611DC5695A6", "1ED63949-4375-4A9D-A017-07CF483F05D5", "2A01E924-A26B-44FB-AD67-B1B590B4E1D5");
-                TFTVTutorialAndStory.CreateNewTacticalHintInfestationMission("InfestationMissionIntro2", "164A4170-F7DC-4350-90C0-D5C1A0284E0D", "CA236EF2-6E6B-4CE4-89E9-17157930F91A", "422A7D39-0110-4F5B-98BB-66B1B5F616DD");
-                TFTVTutorialAndStory.CreateNewManualTacticalHint("TFTV_Tutorial1", "0D36F3D5-9A39-4A5C-B6A4-85B5A3007655", "KEY_TUT3_TFTV1_TITLE", "KEY_TUT3_TFTV1_DESCRIPTION");
-                TFTVTutorialAndStory.CreateNewManualTacticalHint("TFTV_Tutorial2", "EA319607-D2F3-4293-AECE-91AC26C9BD5E", "KEY_TUT3_TFTV2_TITLE", "KEY_TUT3_TFTV2_DESCRIPTION");
-                ContextHelpHintDef tutorialTFTV1 = DefCache.GetDef<ContextHelpHintDef>("TFTV_Tutorial1");
-                ContextHelpHintDef tutorialTFTV2 = DefCache.GetDef<ContextHelpHintDef>("TFTV_Tutorial2");
-                ContextHelpHintDef tutorial3MissionEnd = DefCache.GetDef<ContextHelpHintDef>("TUT3_MissionSuccess_HintDef");
-                tutorial3MissionEnd.NextHint = tutorialTFTV1;
-                tutorialTFTV1.NextHint = tutorialTFTV2;
-                tutorialTFTV1.Conditions = tutorial3MissionEnd.Conditions;
-                tutorialTFTV2.Conditions = tutorial3MissionEnd.Conditions;
-                tutorialTFTV1.IsTutorialHint = true;
-                tutorialTFTV2.IsTutorialHint = true;
-
-                HasSeenHintHintConditionDef seenOilCrabConditionDef = DefCache.GetDef<HasSeenHintHintConditionDef>("UmbraSightedHasSeenHintConditionDef");
-                HasSeenHintHintConditionDef seenFishCrabConditionDef = DefCache.GetDef<HasSeenHintHintConditionDef>("UmbraSightedTritonHasSeenHintConditionDef");
-                ContextHelpHintDef oilCrabHint = DefCache.GetDef<ContextHelpHintDef>("UmbraSighted");
-                ContextHelpHintDef oilFishHint = DefCache.GetDef<ContextHelpHintDef>("UmbraSightedTriton");
-                oilCrabHint.Conditions.Add(seenFishCrabConditionDef);
-                oilFishHint.Conditions.Add(seenOilCrabConditionDef);
-
-                TFTVTutorialAndStory.CreateNewTacticalHintInfestationMissionEnd("InfestationMissionEnd");
-                CreateStaminaHint();
-                CreateUIDeliriumHint();
-
-                TFTVTutorialAndStory.CreateNewTacticalHint("HostileDefenders", HintTrigger.MissionStart, "MissionTypeHavenDefense_MissionTagDef", "HINT_HOSTILE_DEFENDERS_TITLE", "HINT_HOSTILE_DEFENDERS_TEXT", 3, true, "F2F5E5B1-5B9B-4F5B-8F5C-9B5E5B5F5B5F");
-                ContextHelpHintDbDef alwaysDisplayedTacticalHintsDbDef = DefCache.GetDef<ContextHelpHintDbDef>("AlwaysDisplayedTacticalHintsDbDef");
-                ContextHelpHintDef hostileDefenders = DefCache.GetDef<ContextHelpHintDef>("HostileDefenders");
-                alwaysDisplayedTacticalHintsDbDef.Hints.Remove(hostileDefenders);
-
-
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-        }
 
         public static void ChangesToAcherons()
         {
@@ -7188,56 +6857,7 @@ namespace TFTV
 
 
         }
-        public static void CreateUIDeliriumHint()
-        {
-            try
-            {
-                GeoTimeElapsedGeoHintConditionDef geoTimeElapsedGeoHintConditionDef = DefCache.GetDef<GeoTimeElapsedGeoHintConditionDef>("E_MinTimeElapsedForCustomizationHint [GeoscapeHintsManagerDef]");
-                geoTimeElapsedGeoHintConditionDef.TimeRangeInDays.Min = 14.0f;
 
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-
-        }
-
-        public static void CreateStaminaHint()
-        {
-            try
-            {
-                string name = "TFTV_StaminaHintDef";
-                ContextHelpHintDef sourceHint = DefCache.GetDef<ContextHelpHintDef>("TUT4_BodyPartDisabled_HintDef");
-                ContextHelpHintDef staminaHint = Helper.CreateDefFromClone(sourceHint, "DE4949BA-D178-4036-9827-00A0E1C9BE5E", name);
-
-                staminaHint.IsTutorialHint = false;
-                HasSeenHintHintConditionDef sourceHasSeenHintConditionDef = DefCache.GetDef<HasSeenHintHintConditionDef>("HasSeenHint_TUT2_Overwatch_HintDef-False_HintConditionDef");
-
-                HasSeenHintHintConditionDef newHasSeenHintConditionDef = Helper.CreateDefFromClone(sourceHasSeenHintConditionDef, "DC1E6A07-F1DA-47F4-875B-CA18144F56C4", name + "HasSeenHintConditionDef");
-                newHasSeenHintConditionDef.HintDef = staminaHint;
-                staminaHint.Conditions[1] = newHasSeenHintConditionDef;
-                staminaHint.AnyCondition = false;
-                staminaHint.Text.LocalizationKey = "TFTV_STAMINAHINT_TEXT";
-                staminaHint.Title.LocalizationKey = "TFTV_STAMINAHINT_TITLE";
-
-                ActorHasTagHintConditionDef sourceActorHasTagHintConditionDef = DefCache.GetDef<ActorHasTagHintConditionDef>("ActorHasTag_Takeshi_Tutorial3_GameTagDef_HintConditionDef");
-
-                ActorHasTagHintConditionDef newActorHasTemplateHintConditionDef = Helper.CreateDefFromClone(sourceActorHasTagHintConditionDef, "3DC53C38-BB43-4F2B-9165-475F7CE2D237", "ActorHasTag_" + name + "_HintConditionDef");
-                GameTagDef gameTagDef = DefCache.GetDef<GameTagDef>("PhoenixPoint_UniformTagDef");
-                newActorHasTemplateHintConditionDef.GameTagDef = gameTagDef;
-                staminaHint.Conditions.Add(newActorHasTemplateHintConditionDef);
-
-                ContextHelpHintDbDef alwaysDisplayedTacticalHintsDbDef = DefCache.GetDef<ContextHelpHintDbDef>("AlwaysDisplayedTacticalHintsDbDef");
-                alwaysDisplayedTacticalHintsDbDef.Hints.Add(staminaHint);
-
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-
-        }
         public static void ChangeInfestationDefs()
         {
             try
@@ -7358,9 +6978,9 @@ namespace TFTV
         {
             try
             {
-                
-                  //Changing ambush missions so that all of them have crates
-                  CustomMissionTypeDef AmbushALN = DefCache.GetDef<CustomMissionTypeDef>("AmbushAlien_CustomMissionTypeDef");
+
+                //Changing ambush missions so that all of them have crates
+                CustomMissionTypeDef AmbushALN = DefCache.GetDef<CustomMissionTypeDef>("AmbushAlien_CustomMissionTypeDef");
                 CustomMissionTypeDef SourceScavCratesALN = DefCache.GetDef<CustomMissionTypeDef>("ScavCratesALN_CustomMissionTypeDef");
                 var pickResourceCratesObjective = SourceScavCratesALN.CustomObjectives[2];
                 AmbushALN.ParticipantsData[0].ReinforcementsTurns.Max = 2;
@@ -7895,7 +7515,7 @@ namespace TFTV
 
                 //removing unnecessary researches 
                 synResearchDB.Researches.Remove(DefCache.GetDef<ResearchDef>("SYN_Aircraft_SecurityStation_ResearchDef"));
-               // ppResearchDB.Researches.Remove(DefCache.GetDef<ResearchDef>("PX_Aircraft_EscapePods_ResearchDef"));
+                // ppResearchDB.Researches.Remove(DefCache.GetDef<ResearchDef>("PX_Aircraft_EscapePods_ResearchDef"));
                 njResearchDB.Researches.Remove(DefCache.GetDef<ResearchDef>("NJ_Aircraft_CruiseControl_ResearchDef"));
                 njResearchDB.Researches.Remove(DefCache.GetDef<ResearchDef>("NJ_Aircraft_FuelTank_ResearchDef"));
 

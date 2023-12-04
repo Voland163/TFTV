@@ -153,6 +153,8 @@ namespace TFTV
         {
             try
             {
+
+                string fileNameSquadPic = "";
                 string nameOfGang = "";
 
                 if (nameOfLeader != "Subject 24")
@@ -162,7 +164,7 @@ namespace TFTV
                 else
                 {
                     nameOfGang = "Subject 24";
-
+                    fileNameSquadPic = "subject24_squad.jpg";
                 }
                 string unitType = "";
 
@@ -235,7 +237,7 @@ namespace TFTV
                 {
                     unitType = TFTVCommonMethods.ConvertKeyToString("TFTV_HUMAN_ENEMIES_UNIT_TYPE_GANG");
                     //  factionTag= "NEU_Bandits_TacticalFactionDef";
-                    //  FileNameSquadPic = "ban_squad.png";
+                    fileNameSquadPic = "ban_squad.png";
                 }
                 else if (enemyHumanFaction.TacticalFactionDef.ShortName.Equals("nj") || enemyHumanFaction.Faction.FactionDef.ShortName.Equals("anu") || enemyHumanFaction.Faction.FactionDef.ShortName.Equals("syn"))
                 {
@@ -244,19 +246,19 @@ namespace TFTV
                     {
                         factionName = TFTVCommonMethods.ConvertKeyToString("TFTV_HUMAN_ENEMIES_NJ");
                         //  factionTag = "NewJericho_TacticalFactionDef";
-                        // FileNameSquadPic = "nj_squad.jpg";
+                        fileNameSquadPic = "nj_squad.jpg";
                     }
                     else if (enemyHumanFaction.TacticalFactionDef.ShortName.Equals("anu"))
                     {
                         factionName = TFTVCommonMethods.ConvertKeyToString("TFTV_HUMAN_ENEMIES_ANU");
                         //  factionTag = "Anu_TacticalFactionDef";
-                        //  FileNameSquadPic = "anu_squad.jpg";
+                        fileNameSquadPic = "anu_squad.jpg";
                     }
                     else
                     {
                         factionName = Shared.SynedrionFactionDef.GetName();
                         //  factionTag = "Synedrion_TacticalFactionDef";                        
-                        //  FileNameSquadPic = "syn_squad.jpg";
+                        fileNameSquadPic = "syn_squad.jpg";
                     }
 
                     unitType = $"a {factionName} {TFTVCommonMethods.ConvertKeyToString("TFTV_HUMAN_ENEMIES_UNIT_TYPE_SQUAD")}";
@@ -265,14 +267,17 @@ namespace TFTV
                 {
                     unitType = TFTVCommonMethods.ConvertKeyToString("TFTV_HUMAN_ENEMIES_UNIT_TYPE_PACK");
                     // factionTag = "AN_FallenOnes_TacticalFactionDef";
-                    //  FileNameSquadPic = "fo_squad.png";
+                    fileNameSquadPic = "fo_squad.png";
                 }
                 else if (enemyHumanFaction.TacticalFactionDef.ShortName.Equals("Purists"))
                 {
                     unitType = TFTVCommonMethods.ConvertKeyToString("TFTV_HUMAN_ENEMIES_UNIT_TYPE_ARRAY");
                     // factionTag = "NJ_Purists_TacticalFactionDef";
 
-                    //  FileNameSquadPic = "pu_squad.jpg";
+                    if (fileNameSquadPic == "")
+                    {
+                        fileNameSquadPic = "pu_squad.jpg";
+                    }
                 }
 
                 string descriptionHint = "";
@@ -293,9 +298,8 @@ namespace TFTV
                     descriptionHint = $"{pureArrayDescription} {nameOfTactic}: {descriptionOfTactic}";
                 }
 
-                TFTVTutorialAndStory.CreateNewTacticalHintForHumanEnemies(nameOfGang, HintTrigger.ActorSeen, "HumanEnemyFaction_" + enemyHumanFaction.TacticalFactionDef.ShortName + "_GameTagDef", nameOfGang, descriptionHint);
-                ContextHelpHintDef humanEnemySightedHint = Repo.GetAllDefs<ContextHelpHintDef>().FirstOrDefault(ged => ged.name.Equals(nameOfGang));
-
+                ContextHelpHintDef humanEnemySightedHint = TFTVHints.HintDefs.DynamicallyCreatedHints.CreateNewTacticalHintForHumanEnemies(nameOfGang, HintTrigger.ActorSeen, "HumanEnemyFaction_" + enemyHumanFaction.TacticalFactionDef.ShortName + "_GameTagDef", nameOfGang, descriptionHint, fileNameSquadPic);
+                
                 TacticsHint.Add(humanEnemySightedHint);
 
 

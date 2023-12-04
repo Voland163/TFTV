@@ -960,7 +960,6 @@ namespace TFTV
             {
                 CreateTouchedByTheVoidAbilities();
                 CreateTBTVStatuses();
-                CreateTBTVTag();
             }
             catch (Exception e)
             {
@@ -970,55 +969,7 @@ namespace TFTV
         }
 
         //Need the tag for the Hint
-        public static void CreateTBTVTag()
-        {
-            try
-            {
-                string tagTBTVName = "VoidTouched";
-                GameTagDef source = DefCache.GetDef<GameTagDef>("Takeshi_Tutorial3_GameTagDef");
-                Helper.CreateDefFromClone(
-                    source,
-                    "D7E21666-5953-4773-A0EE-D8646D278FE5",
-                    tagTBTVName + "_" + "GameTagDef");
-
-                TFTVTutorialAndStory.CreateNewTacticalHint("VoidTouchedSighted", HintTrigger.ActorSeen, "VoidTouched_GameTagDef", "VOID_TOUCHED_TITLE", "VOID_TOUCHED_TEXT", 1, true, "D3FC85FA-465C-4085-8A40-84B960DB5D25");
-
-                string tagTBTVOnAttackName = "VoidTouchedOnAttack";
-
-                Helper.CreateDefFromClone(
-                    source,
-                    "B715978B-0ABF-48C2-BEC5-1B72C5AC4389",
-                    tagTBTVOnAttackName + "_" + "GameTagDef");
-
-                TFTVTutorialAndStory.CreateNewTacticalHint(tagTBTVOnAttackName + "_Hint", HintTrigger.ActorHurt, "VoidTouchedOnAttack_GameTagDef", "TBTV_ON_ATTACK_TITLE_HINT", "TBTV_ON_ATTACK_TEXT_HINT", 1, true, "6B34678C-6C8F-4462-B1DB-ED6A4B236B3D");
-
-                string tagTBTVOnTurnEndName = "VoidTouchedOnTurnEnd";
-
-                Helper.CreateDefFromClone(
-                    source,
-                    "6620CBB3-D199-4A25-A10E-46F29359174F",
-                    tagTBTVOnTurnEndName + "_" + "GameTagDef");
-
-
-                TFTVTutorialAndStory.CreateNewTacticalHint(tagTBTVOnTurnEndName + "_Hint", HintTrigger.ActorHurt, "VoidTouchedOnTurnEnd_GameTagDef", "TBTV_ON_TURN_END_TITLE_HINT", "TBTV_ON_TURN_END_TEXT_HINT", 1, true, "E7365C33-7222-44E3-B397-77DA892E6D9F");
-
-                string tagVoidBlightName = "VoidBlight";
-
-                Helper.CreateDefFromClone(
-                    source,
-                    "D3276B4D-4A50-48AF-B21D-EB831287811B",
-                    tagVoidBlightName + "_GameTagDef");
-
-                TFTVTutorialAndStory.CreateNewTacticalHint(tagVoidBlightName, HintTrigger.StatusApplied, "TBTV_Target", "VOID_BLIGHT_NAME_HINT", "VOID_BLIGHT_DESCRIPTION_HINT", 2, true, "24D1EE1C-90A2-47FC-A999-FC0A4B63997C");
-
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-
-
-        }
+        
 
         public static void CreateTBTVStatuses()
         {

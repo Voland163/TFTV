@@ -193,7 +193,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TFTVTacticalUtils.cs" />
     <Compile Include="TFTVTradingRecruiting.cs" />
-    <Compile Include="TFTVTutorialAndStory.cs" />
+    <Compile Include="TFTVHints.cs" />
     <Compile Include="TFTVUI.cs" />
     <Compile Include="TFTVUIGeoMap.cs" />
     <Compile Include="TFTVUITactical.cs" />
@@ -287,16 +287,10 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Assets\Textures\alistair.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
     <Content Include="Assets\Textures\anu_squad.jpg">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Assets\Textures\ban_squad.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Assets\Textures\BG_alistair_small.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Assets\Textures\BG_HammerFall.jpg">
@@ -311,40 +305,16 @@
     <Content Include="Assets\Textures\BG_Hammerfall_impact2.jpg">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Assets\Textures\BG_Hint_Delirium.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
     <Content Include="Assets\Textures\BG_Intro_0.jpg">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Assets\Textures\BG_Intro_1.jpg">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Assets\Textures\BG_Olena_small.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Assets\Textures\broken_limb_stamina.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Assets\Textures\FesteringSkiesAfterHamerfall.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
     <Content Include="Assets\Textures\Helena_fire2.jpg">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Assets\Textures\Helena_fire2_closeup.jpg">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Assets\Textures\Hint_PandoranEvolution.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Assets\Textures\Hint_Revenant.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Assets\Textures\Hint_Umbra.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Assets\Textures\makeshift_lab.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Assets\Textures\nj_squad.jpg">
@@ -359,7 +329,6 @@
     <Content Include="Assets\Textures\NodeAlt.jpg">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Assets\Textures\Olena.png" />
     <Content Include="Assets\Textures\pu_squad.jpg">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

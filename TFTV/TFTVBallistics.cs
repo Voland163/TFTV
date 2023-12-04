@@ -300,7 +300,7 @@ namespace TFTV
                                     actor.ApplyDamage(new DamageResult() { HealthDamage = actor.Health });
                                     //  TacContextHelpManager tacContextHelpManager = (TacContextHelpManager)UnityEngine.Object.FindObjectOfType(typeof(TacContextHelpManager));
                                     //  tacContextHelpManager.EventTypeTriggered(HintTrigger.ActorHurt, actor, actor);
-                                    TFTVTutorialAndStory.ShowStoryPanel(actor.TacticalLevel, "HintDecoyDiscovered");
+                                    TFTVHints.TacticalHints.ShowStoryPanel(actor.TacticalLevel, "HintDecoyDiscovered");
                                 }
                                 //Decoy despawned if attacked within 5 tiles by human, triton or acheron
                                 else if ((attacker.GameTags.Contains(tritonTag)

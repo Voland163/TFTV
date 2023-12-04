@@ -19,15 +19,15 @@ namespace TFTV
         //  public static readonly Sprite HelenaOffice = Helper.CreateSpriteFromImageFile("background_office.jpg");
         //  public static readonly Sprite AncientBackground = Helper.CreateSpriteFromImageFile("background_ancients.jpg");
 
-        private static readonly Sprite OlenaPic = Helper.CreateSpriteFromImageFile("BG_Olena_small.png");
-        private static readonly Sprite AlistairPic = Helper.CreateSpriteFromImageFile("BG_alistair_small.png");
-        private static readonly Sprite OlenaTired = Helper.CreateSpriteFromImageFile("BG_Olena_tired.png");
-        private static readonly Sprite AlistairTired = Helper.CreateSpriteFromImageFile("BG_alistair_tired.png");
-        private static readonly Sprite OlenaExhausted = Helper.CreateSpriteFromImageFile("BG_Olena_exhausted.png");
-        private static readonly Sprite AlistairExhausted = Helper.CreateSpriteFromImageFile("BG_alistair_exhausted.png");
-        private static readonly Sprite HelenaPic = Helper.CreateSpriteFromImageFile("helena.png");
-        private static readonly Sprite HelenaTired = Helper.CreateSpriteFromImageFile("helena_tired.png");
-        private static readonly Sprite HelenaExhausted = Helper.CreateSpriteFromImageFile("helena_exhausted.png");
+        private static readonly Sprite OlenaPic = Helper.CreateSpriteFromImageFile("BG_Olena_small.jpg");
+        private static readonly Sprite AlistairPic = Helper.CreateSpriteFromImageFile("BG_alistair_small.jpg");
+        private static readonly Sprite OlenaTired = Helper.CreateSpriteFromImageFile("BG_Olena_tired.jpg");
+        private static readonly Sprite AlistairTired = Helper.CreateSpriteFromImageFile("BG_alistair_tired.jpg");
+        private static readonly Sprite OlenaExhausted = Helper.CreateSpriteFromImageFile("BG_Olena_exhausted.jpg");
+        private static readonly Sprite AlistairExhausted = Helper.CreateSpriteFromImageFile("BG_alistair_exhausted.jpg");
+        private static readonly Sprite HelenaPic = Helper.CreateSpriteFromImageFile("helena.jpg");
+        private static readonly Sprite HelenaTired = Helper.CreateSpriteFromImageFile("helena_tired.jpg");
+        private static readonly Sprite HelenaExhausted = Helper.CreateSpriteFromImageFile("helena_exhausted.jpg");
 
         public static void PlayIntro(GeoLevelController level)
         {
@@ -435,7 +435,7 @@ namespace TFTV
                     }
                     else if (geoEvent.EventID == "PROG_LW1_WIN")
                     {
-                        __result.EventBackground = Helper.CreateSpriteFromImageFile("makeshift_lab.png");
+                        __result.EventBackground = Helper.CreateSpriteFromImageFile("makeshift_lab.jpg");
                     }
                     else if (TFTVProjectOsiris.ProjectOsirisDeliveryEvents.Contains(geoEvent.EventID))
                     {
@@ -587,10 +587,7 @@ namespace TFTV
                             __result.EventLeader = AlistairPic;
                         }
 
-
                         __result.EventBackground = Helper.CreateSpriteFromImageFile("background_alistair_office.jpg");//AlistairOffice;
-
-
                     }
 
                 }
