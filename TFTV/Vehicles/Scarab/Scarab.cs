@@ -7,6 +7,7 @@ using PhoenixPoint.Geoscape.Entities.Research.Reward;
 using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.Entities.DamageKeywords;
 using System.Collections.Generic;
+using PhoenixPoint.Tactical.Entities.Weapons;
 
 namespace TFTVVehicleRework.Scarab
 {
@@ -89,6 +90,12 @@ namespace TFTVVehicleRework.Scarab
             Taurus.ManufactureTech = 30f;
             Taurus.ManufactureMaterials = 250f;
             Taurus.APToUsePerc = 75;
+
+            //"PX_HeavyCannon_WeaponDef"
+            WeaponDef Hell2 = (WeaponDef)Repo.GetDef("112a754d-413f-27f4-180c-b052cab71d70");
+            Taurus.MainSwitch = Hell2.MainSwitch;
+            Taurus.VisualEffects = Hell2.VisualEffects;
+            Taurus.DamagePayload.ProjectileVisuals = Hell2.DamagePayload.ProjectileVisuals;
 
             //"PX_HelCannon_ResearchDef_ManufactureResearchRewardDef_0"
             ManufactureResearchRewardDef HellCannonResearchReward = (ManufactureResearchRewardDef)Repo.GetDef("80d2b708-8ee3-228b-278e-acfa09815d64");
