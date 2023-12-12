@@ -26,6 +26,8 @@ namespace TFTVVehicleRework.KaosBuggy
             // "KS_Kaos_Buggy_Dog_Ring_Gearbox_Engine_GroundVehicleModuleDef"
             GroundVehicleModuleDef DogRingGearBox = (GroundVehicleModuleDef)Repo.GetDef("8a9401fa-77fe-4844-2b7c-f33c9c796c1f");
             DogRingGearBox.Armor = 0f;
+            DogRingGearBox.ManufactureMaterials = 200f;
+            DogRingGearBox.ManufactureTech = 20f;
             DogRingGearBox.BodyPartAspectDef.Speed = 14f;
             // DogRingGearBox.SubAddons = DogRingGearBox.SubAddons.AddRangeToArray(NewArmours());
             DogRingGearBox.ChargesMax = 0;

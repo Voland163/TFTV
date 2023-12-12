@@ -25,6 +25,7 @@ namespace TFTVVehicleRework.KaosBuggy
         {
             //"KS_Kaos_Buggy_Experimental_Exhaust_System_Engine_GroundVehicleModuleDef"
             GroundVehicleModuleDef Exhaust = (GroundVehicleModuleDef)Repo.GetDef("2ed4297c-ccaa-0aa4-ab78-b56e53f9b074");
+            Exhaust.ManufactureMaterials = 250f;
             Exhaust.ViewElementDef.DisplayName1 = new LocalizedTextBind("KB_DEATHPROOF_NAME");
             Exhaust.ViewElementDef.Description = new LocalizedTextBind("UI_JUNKER_ENGINE");
             Exhaust.BodyPartAspectDef.Speed = -4f;

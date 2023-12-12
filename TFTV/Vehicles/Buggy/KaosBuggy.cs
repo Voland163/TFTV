@@ -120,6 +120,8 @@ namespace TFTVVehicleRework.KaosBuggy
         {
             // Base hull properties: Speed 21->28; HP 1480 -> 750; Various nerfs to Hull HP/Armour
             ItemDef BuggyChassis  = (ItemDef)Repo.GetDef("cbf9ba5d-5178-6204-d987-dbca1bec838c"); //"KS_Kaos_Buggy_Chassis_ItemDef"
+            BuggyChassis.ManufactureMaterials = 450f;
+            BuggyChassis.ManufactureTech = 50f;
             foreach (AddonDef.SubaddonBind addon in BuggyChassis.SubAddons)
             {
                 TacticalItemDef BodyPart = (TacticalItemDef)addon.SubAddon;

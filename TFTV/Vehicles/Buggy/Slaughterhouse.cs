@@ -17,6 +17,7 @@ namespace TFTVVehicleRework.KaosBuggy
         public static void Change()
         {
             SpikedHull.Armor = 10f; 
+            SpikedHull.ManufactureMaterials = 400f;
             SpikedHull.ViewElementDef.DisplayName1 = new LocalizedTextBind("KB_SLAUGHTERHOUSE_NAME");
             SpikedHull.ViewElementDef.Description = new LocalizedTextBind("UI_JUNKER_HULL");
             SpikedHull.BodyPartAspectDef.StatModifications = new ItemStatModification[]
