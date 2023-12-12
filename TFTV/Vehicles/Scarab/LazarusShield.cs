@@ -6,6 +6,7 @@ using HarmonyLib;
 using PhoenixPoint.Common.Entities.Addons;
 using PhoenixPoint.Common.Entities.Equipments;
 using PhoenixPoint.Common.Entities.Items;
+using PhoenixPoint.Common.Entities.Items.SkinData;
 using PhoenixPoint.Common.UI;
 using PhoenixPoint.Geoscape.Entities.Research;
 using PhoenixPoint.Geoscape.Entities.Research.Reward;
@@ -46,6 +47,7 @@ namespace TFTVVehicleRework.Scarab
             foreach (AddonDef.SubaddonBind addon in module.SubAddons)
             {
                 TacticalItemDef BodyPart = (TacticalItemDef)addon.SubAddon;
+                ((SimpleBodyPartSkinDataDef)BodyPart.SkinData).DisabledPrefab = new UnityEngine.AddressableAssets.AssetReferenceGameObject("");
                 if (BodyPart.Guid == "c1935a9b-f2f7-88e4-fa88-5d471d653296") //"PX_Scarab_Fiber_Plating_Front_BodyPartDef"
                 {
                     BodyPart.HitPoints = 300;
