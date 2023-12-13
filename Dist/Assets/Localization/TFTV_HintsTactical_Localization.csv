@@ -106,7 +106,7 @@ BASEDEFENSE_TACTICAL_ADVANTAGE_TITLE ,Text,,Tactical Advantage!,,,,,,,,
 BASEDEFENSE_TACTICAL_ADVANTAGE_DESCRIPTION,Text,,"<i>""You're down there, we're up here! You walked into the wrong goddamn room...""</i>
 
 We have taken defensive positions around the main entrance. As long as we hold this choke point we should be fine. ",,,,,,,,
-BASEDEFENSE_UMBRASTRAT_TEXT,Text,,"Director, we are detecting something in the air vents. It's the Mist. Could be a Triton inflitration team. Could be something worse... ",,,,,,,,
+BASEDEFENSE_UMBRASTRAT_TEXT,Text,,"Director, we are detecting something in the air vents. It's the Mist. Could be a Triton infiltration team. Could be something worse... ",,,,,,,,
 BASEDEFENSE_UMBRASTRAT_TITLE,Text,,Umbra or Tritons,,,,,,,,
 BASEDEFENSE_WORMSSTRAT_TEXT,Text,,"Director, there is something burrowing down towards your team. Small, multiple targets bearing on the hangar.",,,,,,,,
 BASEDEFENSE_WORMSSTRAT_TITLE,Text,,Worms or Myrmidons,,,,,,,,
@@ -199,3 +199,5 @@ KEY_INFESTATION_STORY5,Text,,", Phoenix Project.",,,,,,,,
 KEY_REVENANT_RESISTANCE_HINT,Text,,"Killing the Revenant will not remove this resistance from any Pandoran that already has it.
 
 Pandorans arriving as reinforcements will not receive the resistance.",,,,,,,,
+KEY_REVENANT_RESISTANCE_VO19_TITLE,Text,,Adaptive Resistance Void Omen,,,,,,,,
+KEY_REVENANT_RESISTANCE_TITLE,Text,,Revenant resistance,,,,,,,,

@@ -31,6 +31,7 @@ using PhoenixPoint.Geoscape.Entities.PhoenixBases.FacilityComponents;
 using PhoenixPoint.Geoscape.Entities.Research;
 using PhoenixPoint.Geoscape.Entities.Research.Requirement;
 using PhoenixPoint.Geoscape.Entities.Research.Reward;
+using PhoenixPoint.Geoscape.Events;
 using PhoenixPoint.Geoscape.Events.Eventus;
 using PhoenixPoint.Geoscape.Events.Eventus.Filters;
 using PhoenixPoint.Geoscape.Levels;
@@ -83,9 +84,23 @@ namespace TFTV
         {
             try
             {
-                foreach (GeoscapeEventDef geoscapeEventDef in Repo.GetAllDefs<GeoscapeEventDef>().Where(e => e.GeoscapeEventData.Choices.Any(c => c.Outcome.Units.Count > 0) || e.GeoscapeEventData.Choices.Any(c => c.Outcome.CustomCharacters.Count > 0)))
+                foreach (GeoscapeEventDef geoscapeEventDef in Repo.GetAllDefs<GeoscapeEventDef>().Where(e => e.GeoscapeEventData.Choices.Any(c => c.Outcome.SubfactionFactionMissionWeight.Count()>0)))
                 {
-                    TFTVLogger.Always($"Event {geoscapeEventDef.EventID} offers some unit or custom character");
+                    TFTVLogger.Always($"Event {geoscapeEventDef.EventID} alters subfaction mission weight");
+
+                    foreach (GeoEventChoice geoEventChoice in geoscapeEventDef.GeoscapeEventData.Choices) 
+                    { 
+                        foreach(OutcomeFactionMissionWeightChange outcome in geoEventChoice.Outcome.SubfactionFactionMissionWeight) 
+                        {
+                            TFTVLogger.Always($"{outcome.SubFaction} {outcome.Value}");
+                        
+                        
+                        }
+                    
+                    
+                    }
+
+                  
                 }
             }
             catch (Exception e)
@@ -105,9 +120,6 @@ namespace TFTV
 
             AugmentationEventsDefs();
             ChangesAmbushMissions();
-
-
-
             CreateIntro();
             Create_VoidOmen_Events();
             ChangeInfestationDefs();
@@ -193,7 +205,7 @@ namespace TFTV
             ChangeFireNadeCostAndDamage();
 
             ModifyRescueCiviliansMissions();
-            TFTVChangesToDLC5.TFTVMercenaries.CreateMercenaries();
+            TFTVChangesToDLC5.TFTVMercenaries.Defs.CreateMercenariesDefs();
             TFTVChangesToDLC5.TFTVKaosGuns.CreateKaosWeaponAmmo();
             TFTVChangesToDLC5.TFTVMarketPlaceItems.AdjustMarketPlaceOptions();
             ReducePromoSkins();
@@ -208,6 +220,7 @@ namespace TFTV
             CreateAndAdjustDefsForLimitedCapture();
 
             TFTVHints.HintDefs.CreateHints();
+         //   Print();
             // ChangeStoryAN4_CustomMissionTypeDef();
             //  CreateNewLaunchBaseDefenseMissionGeoAbility();
             //  TFTVChangesToDLC5.AdjustMarketPlaceAbilityDef();
@@ -8022,8 +8035,9 @@ namespace TFTV
         public static void Create_VoidOmen_Events()
 
         {
-            TFTVCommonMethods.CreateNewEvent("VoidOmen", "", "", null);
-            TFTVCommonMethods.CreateNewEvent("VoidOmenIntro", "", "", null);
+          GeoscapeEventDef geoscapeEventDef =  TFTVCommonMethods.CreateNewEvent("VoidOmen_0", "", "", null);
+            geoscapeEventDef.GeoscapeEventData.Flavour = "IntroducingSymes";
+            TFTVCommonMethods.CreateNewEvent("IntroVoidOmen", "", "", null);
 
         }
 

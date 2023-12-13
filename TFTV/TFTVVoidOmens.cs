@@ -1,7 +1,9 @@
 ﻿using Base;
+using Base.Core;
 using Base.Defs;
 using Base.Entities.Effects;
 using Base.UI;
+using Base.UI.MessageBox;
 using com.ootii.Helpers;
 using HarmonyLib;
 using PhoenixPoint.Common.ContextHelp;
@@ -29,6 +31,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using static EnviroSeasons;
 
 namespace TFTV
 {
@@ -68,6 +71,60 @@ namespace TFTV
 
         //V0#18 is extra defense points, less rewards
 
+        public static void ModifyVoidOmenTacticalObjectives(TacMissionTypeDef missionType)
+        {
+            try
+            {
+                List<int> voidOmens = new List<int> { 3, 5, 7, 10, 14, 15, 16, 19 };
+
+                List<FactionObjectiveDef> listOfFactionObjectives = missionType.CustomObjectives.ToList();
+
+                GameTagDef havenDefense = DefCache.GetDef<GameTagDef>("MissionTypeHavenDefense_MissionTagDef");
+
+                // Remove faction objectives that correspond to void omens that are not in play
+                for (int i = listOfFactionObjectives.Count - 1; i >= 0; i--)
+                {
+                    FactionObjectiveDef objective = listOfFactionObjectives[i];
+                    if (objective.name.StartsWith("VOID_OMEN_TITLE_"))
+                    {
+                        int vo = int.Parse(objective.name.Substring("VOID_OMEN_TITLE_".Length));
+                        if (!TFTVVoidOmens.VoidOmensCheck[i])
+                        {
+                            TFTVLogger.Always("Removing VO " + vo + " from faction objectives");
+                            listOfFactionObjectives.RemoveAt(i);
+                        }
+                        if (i == 5 && TFTVVoidOmens.VoidOmensCheck[i] && !missionType.Tags.Contains(havenDefense))
+                        {
+                            TFTVLogger.Always("Removing VO " + vo + " (hostile defenders) from faction objectives because not a haven defense mission");
+                            listOfFactionObjectives.RemoveAt(i);
+                        }
+                    }
+                }
+
+                // Add faction objectives for void omens that are in play
+                foreach (int vo in voidOmens)
+                {
+                    if (TFTVVoidOmens.VoidOmensCheck[vo])
+                    {
+                        if (vo != 5 || vo == 5 && missionType.Tags.Contains(havenDefense))
+                        {
+
+                            if (!listOfFactionObjectives.Any(o => o.name == "VOID_OMEN_TITLE_" + vo))
+                            {
+                                TFTVLogger.Always("Adding VO " + vo + " to faction objectives");
+                                listOfFactionObjectives.Add(DefCache.GetDef<FactionObjectiveDef>("VOID_OMEN_TITLE_" + vo));
+                            }
+
+                        }
+                    }
+                }
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
 
         public static void CheckVoidOmensBeforeImplementing(GeoLevelController level)
         {
@@ -128,9 +185,95 @@ namespace TFTV
             {
                 TFTVLogger.Error(e);
             }
-
-
         }
+
+
+        public static void ImplementHavenDefendersAlwaysHostile(TacticalLevelController controller)
+        {
+            try 
+            {
+                if (controller.TacMission.MissionData.MissionType.MissionTypeTag != sharedData.SharedGameTags.HavenDefenseMissionTag) 
+                {
+                    return;    
+                }
+
+                if (VoidOmensCheck[5])
+                {
+                    TFTVLogger.Always("Haven defenders always hostile, but crates available for looting");
+
+                    ContextHelpHintDbDef alwaysDisplayedTacticalHintsDbDef = DefCache.GetDef<ContextHelpHintDbDef>("AlwaysDisplayedTacticalHintsDbDef");
+                    ContextHelpHintDef hostileDefenders = DefCache.GetDef<ContextHelpHintDef>("HostileDefenders");
+
+                    if (!alwaysDisplayedTacticalHintsDbDef.Hints.Contains(hostileDefenders))
+                    {
+                        alwaysDisplayedTacticalHintsDbDef.Hints.Add(hostileDefenders);
+                    }
+
+                    foreach (CustomMissionTypeDef missionTypeDef in Repo.GetAllDefs<CustomMissionTypeDef>())
+                    {
+                        if (missionTypeDef.name.Contains("Haven") && !missionTypeDef.name.Contains("Infestation"))
+                        {
+                            if (missionTypeDef.name.Contains("Civ"))
+                            {
+                                missionTypeDef.ParticipantsRelations[1].MutualRelation = FactionRelation.Enemy;
+                            }
+                            else if (!missionTypeDef.name.Contains("Civ"))
+                            {
+                                missionTypeDef.ParticipantsRelations[2].MutualRelation = FactionRelation.Enemy;
+                            }
+
+                            missionTypeDef.ParticipantsData[1].PredeterminedFactionEffects = missionTypeDef.ParticipantsData[0].PredeterminedFactionEffects;
+                            missionTypeDef.MissionSpecificCrates = cratesNotResources;
+                            missionTypeDef.FactionItemsRange.Min = 2;
+                            missionTypeDef.FactionItemsRange.Max = 7;
+                            missionTypeDef.CratesDeploymentPointsRange.Min = 20;
+                            missionTypeDef.CratesDeploymentPointsRange.Max = 30;
+                            missionTypeDef.DontRecoverItems = true;
+                        }
+                    }
+                }
+                else
+                {
+                    ContextHelpHintDbDef alwaysDisplayedTacticalHintsDbDef = DefCache.GetDef<ContextHelpHintDbDef>("AlwaysDisplayedTacticalHintsDbDef");
+                    ContextHelpHintDef hostileDefenders = DefCache.GetDef<ContextHelpHintDef>("HostileDefenders");
+                    if (alwaysDisplayedTacticalHintsDbDef.Hints.Contains(hostileDefenders))
+                    {
+                        alwaysDisplayedTacticalHintsDbDef.Hints.Remove(hostileDefenders);
+                    }
+
+                    foreach (CustomMissionTypeDef missionTypeDef in Repo.GetAllDefs<CustomMissionTypeDef>())
+                    {
+                        if (missionTypeDef.name.Contains("Haven") && !missionTypeDef.name.Contains("Infestation"))
+                        {
+                            if (missionTypeDef.name.Contains("Civ"))
+                            {
+                                missionTypeDef.ParticipantsRelations[1].MutualRelation = FactionRelation.Friend;
+                            }
+                            else if (!missionTypeDef.name.Contains("Civ"))
+                            {
+                                missionTypeDef.ParticipantsRelations[2].MutualRelation = FactionRelation.Friend;
+                            }
+                     
+                            EffectDef[] predeterminedFactionEffects = new EffectDef[1] { defendersCanBeRecruited };
+                            missionTypeDef.ParticipantsData[1].PredeterminedFactionEffects = predeterminedFactionEffects;
+                            missionTypeDef.FactionItemsRange.Min = 0;
+                            missionTypeDef.FactionItemsRange.Max = 0;
+                            missionTypeDef.CratesDeploymentPointsRange.Min = 0;
+                            missionTypeDef.CratesDeploymentPointsRange.Max = 0;
+                            missionTypeDef.DontRecoverItems = false;
+
+                        }
+                    }
+                }
+            }
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+
         public static void ImplementVoidOmens(GeoLevelController level)
         {
             try
@@ -162,16 +305,13 @@ namespace TFTV
                 }
                 if (CheckFordVoidOmensInPlay(level).Contains(2))
                 {
-
                     PartyDiplomacySettingsDef partyDiplomacySettingsDef = DefCache.GetDef<PartyDiplomacySettingsDef>("PartyDiplomacySettingsDef");
                     partyDiplomacySettingsDef.InfiltrationFactionMultiplier = 0.5f;
                     partyDiplomacySettingsDef.InfiltrationLeaderMultiplier = 0.75f;
                     VoidOmensCheck[2] = true;
-
                 }
                 else if (!CheckFordVoidOmensInPlay(level).Contains(2) && VoidOmensCheck[2])
                 {
-
                     PartyDiplomacySettingsDef partyDiplomacySettingsDef = DefCache.GetDef<PartyDiplomacySettingsDef>("PartyDiplomacySettingsDef");
                     partyDiplomacySettingsDef.InfiltrationFactionMultiplier = 1f;
                     partyDiplomacySettingsDef.InfiltrationLeaderMultiplier = 1.5f;
@@ -207,6 +347,7 @@ namespace TFTV
                 {
                     ContextHelpHintDbDef alwaysDisplayedTacticalHintsDbDef = DefCache.GetDef<ContextHelpHintDbDef>("AlwaysDisplayedTacticalHintsDbDef");
                     ContextHelpHintDef hostileDefenders = DefCache.GetDef<ContextHelpHintDef>("HostileDefenders");
+                   
                     if (!alwaysDisplayedTacticalHintsDbDef.Hints.Contains(hostileDefenders))
                     {
                         alwaysDisplayedTacticalHintsDbDef.Hints.Add(hostileDefenders);
@@ -726,17 +867,12 @@ namespace TFTV
             throw new InvalidOperationException();
         }
 
-        public static void RemoveEarliestVoidOmen(GeoLevelController geoLevelController)
+        public static string RemoveEarliestVoidOmen(GeoLevelController geoLevelController, int reason)
         {
             try
             {
-
-
-                // TFTVLogger.Always($"");
-
                 if (CheckFordVoidOmensInPlay(geoLevelController).Any(vo => vo != 0))
                 {
-
 
                     string triggeredVoidOmensString = "TriggeredVoidOmen_";
                     string voidOmenTitleString = "VOID_OMEN_TITLE_";
@@ -779,23 +915,40 @@ namespace TFTV
 
                                 TFTVLogger.Always($" VO {voidOmen} will be removed ");
                                 RemoveVoidOmenObjective(voidOmenTitleLocKey, geoLevelController);
-
-
+                                
                             }
                         }
+
+                     /*   string explanation =
+                            $"{TFTVCommonMethods.ConvertKeyToString("KEY_VOID_OMEN_REMOVED"+reason)}" +
+                            $"{TFTVCommonMethods.ConvertKeyToString("KEY_VOID_OMEN_REMOVED_TEXT0")} " +
+                            $"<i>{TFTVCommonMethods.ConvertKeyToString(voidOmenTitleLocKey)}</i> " +
+                            $"{TFTVCommonMethods.ConvertKeyToString("KEY_VOID_OMEN_REMOVED_TEXT1")}";
+
+                        if (reason == 1) 
+                        {
+                            explanation = $"{TFTVCommonMethods.ConvertKeyToString("KEY_VOID_OMEN_REMOVED_TEXT0")} " +
+                            $"<i>{TFTVCommonMethods.ConvertKeyToString(voidOmenTitleLocKey)}</i> " +
+                            $"{TFTVCommonMethods.ConvertKeyToString("KEY_VOID_OMEN_REMOVED_TEXT1")}";
+                        }
+
+
+                        GameUtl.GetMessageBox().ShowSimplePrompt(explanation, MessageBoxIcon.None, MessageBoxButtons.OK, null);*/
+                        return voidOmenTitleLocKey;
                     }
                 }
 
                 else
                 {
                     TFTVLogger.Always($"Wanted to remove earliest Void Omen, but failed to find it!");
-
+                    
                 }
-
+                return null;
             }
             catch (Exception e)
             {
                 TFTVLogger.Error(e);
+                throw;
             }
         }
 
@@ -850,6 +1003,11 @@ namespace TFTV
                                 RemoveVoidOmenObjective(voidOmenTitleLocKey, geoLevelController);
                             }
                         }
+                        string explanation =
+                          $"{TFTVCommonMethods.ConvertKeyToString("KEY_VOID_OMEN_REMOVED_BEHEMOTH")}";
+
+                        GameUtl.GetMessageBox().ShowSimplePrompt(explanation, MessageBoxIcon.None, MessageBoxButtons.OK, null);
+                      
                     }
 
                     ImplementVoidOmens(geoLevelController);
@@ -978,7 +1136,6 @@ namespace TFTV
         {
             try
             {
-
                 List<GeoFactionObjective> listOfObjectives = level.PhoenixFaction.Objectives.ToList();
 
                 foreach (GeoFactionObjective objective1 in listOfObjectives)
@@ -1259,7 +1416,6 @@ namespace TFTV
                 {
                     TFTVLogger.Error(e);
                 }
-
             }
         }
 
@@ -1344,9 +1500,8 @@ namespace TFTV
                     if (alienBase.AlienBaseTypeDef.Keyword == "lair" || alienBase.AlienBaseTypeDef.Keyword == "citadel"
                         || (alienBase.AlienBaseTypeDef.Keyword == "nest" && TFTVReleaseOnly.DifficultyOrderConverter(__instance.GeoLevel.CurrentDifficultyLevel.Order) == 1))
                     {
-                        TFTVLogger.Always("Lair or Citadal destroyed, Void Omen should be removed");
-                        RemoveEarliestVoidOmen(__instance.GeoLevel);
-
+                        TFTVLogger.Always("Lair or Citadal destroyed, Void Omen should be removed and Void Omen event triggered");
+                        TFTVODIandVoidOmenRoll.GenerateVoidOmenEvent(__instance.GeoLevel, TFTVODIandVoidOmenRoll.GenerateReportData(__instance.GeoLevel), false, RemoveEarliestVoidOmen(__instance.GeoLevel, 0));
                     }
                 }
                 catch (Exception e)

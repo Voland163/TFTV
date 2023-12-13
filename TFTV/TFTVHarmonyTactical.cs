@@ -1,8 +1,6 @@
 ﻿using Base.Core;
-using Base.Defs;
 using Base.Entities.Statuses;
 using HarmonyLib;
-using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Tactical.Entities;
@@ -19,11 +17,10 @@ namespace TFTV
     internal class TFTVHarmonyTactical
     {
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
-     //   private static readonly DefRepository Repo = TFTVMain.Repo;
-     //   private static readonly SharedData Shared = TFTVMain.Shared;
+        //   private static readonly DefRepository Repo = TFTVMain.Repo;
+        //   private static readonly SharedData Shared = TFTVMain.Shared;
 
         [HarmonyPatch(typeof(TacticalFaction), "RequestEndTurn")]
-
         public static class TFTV_TacticalFactionn_RequestEndTurn_patch
         {
             public static void Postfix(TacticalFaction __instance)
@@ -34,7 +31,7 @@ namespace TFTV
                     TFTVTouchedByTheVoid.TBTVCallReinforcements.ImplementCallReinforcementsTBTV(__instance);
                     TFTVPalaceMission.EnemyDeployments.Reinforcements.PalaceReinforcements(__instance);
                     TFTVPalaceMission.YuggothDefeat.SpawnMistToHideReceptacleBody(__instance);
-                    TFTVBaseDefenseTactical.ImplementBaseDefenseVsAliensPreAITurn(__instance);
+                    TFTVBaseDefenseTactical.PandoranTurn.ImplementBaseDefenseVsAliensPreAITurn(__instance);
                 }
                 catch (Exception e)
                 {
@@ -55,14 +52,14 @@ namespace TFTV
                 {
                     if (__result.Count > 0)
                     {
-                        TFTVArtOfCrab.SortOutAITurnOrder(__result);
+                        TFTVArtOfCrab.TurnOrder.SortOutAITurnOrder(__result);
                         __result.Sort((TacticalActor a, TacticalActor b) => a.AIActor.TurnOrderPriority - b.AIActor.TurnOrderPriority);
                         TFTVHumanEnemies.ApplyTactic(__instance.TacticalLevel);
                         TFTVLogger.Always("TFTV: Art of Crab: Sorted AI Turn Order");
                         //  TFTVPalaceMission.LogEnemyAP(__instance);
                     }
 
-                    TFTVBaseDefenseTactical.ImplementBaseDefenseVsAliensPostAISortingOut(__instance);
+                    TFTVBaseDefenseTactical.PandoranTurn.ImplementBaseDefenseVsAliensPostAISortingOut(__instance);
                     //  TFTVPalaceMission.PalaceReinforcements(__instance);
 
                     //   TFTVPalaceMission.PalaceTacticalNewTurn(__instance);
@@ -75,7 +72,6 @@ namespace TFTV
             }
         }
 
-
         [HarmonyPatch(typeof(StatusComponent), "AddStatus")]
         public static class TFTV_StatusComponent_AddStatus_patch
         {
@@ -87,7 +83,7 @@ namespace TFTV
 
                     TacticalLevelController controller = GameUtl.CurrentLevel().GetComponent<TacticalLevelController>();
 
-                    TFTVBaseDefenseTactical.BaseDefenseConsoleActivated(__instance, status, controller);
+                    TFTVBaseDefenseTactical.Map.Consoles.ActivateConsole.BaseDefenseConsoleActivated(__instance, status, controller);
                     TFTVPalaceMission.Consoles.PalaceConsoleActivated(__instance, status, controller);
                     TFTVRescueVIPMissions.TalkingPointConsoleActivated(__instance, status, controller);
 
@@ -100,10 +96,6 @@ namespace TFTV
             }
         }
 
-
-
-
-
         [HarmonyPatch(typeof(TacticalLevelController), "ActorEnteredPlay")]
         public static class TFTV_TacticalLevelController_ActorEnteredPlay_Patch
         {
@@ -111,9 +103,9 @@ namespace TFTV
             {
                 try
                 {
-                   
+
                     TFTVDeliriumPerks.ImplementDeliriumPerks(actor, __instance);
-                    TFTVKillingExploits.AddReinforcementTagToImplementNoDropsOption(actor, __instance);
+                    TFTVEconomyExploitsFixes.AddReinforcementTagToImplementNoDropsOption(actor, __instance);
                     TFTVHumanEnemies.GiveRankAndNameToHumaoidEnemy(actor, __instance);
                     TFTVTouchedByTheVoid.Umbra.UmbraTactical.UmbraEverywhereVoidOmenImplementation(actor, __instance);
                     TFTVBaseDefenseTactical.Objectives.AddScatterObjectiveTagForBaseDefense(actor, __instance);
@@ -161,7 +153,7 @@ namespace TFTV
                 {
                     TFTVAncients.AncientsNewTurn.AncientsNewTurnCheck(__instance.Faction);
                     TFTVPalaceMission.PalaceTacticalNewTurn(__instance.Faction);
-                    TFTVBaseDefenseTactical.PhoenixBaseDefenseVSAliensTurnStart(__instance.Faction.TacticalLevel, __instance.Faction);
+                    TFTVBaseDefenseTactical.PlayerTurn.PhoenixBaseDefenseVSAliensTurnStart(__instance.Faction.TacticalLevel, __instance.Faction);
                     TFTVTouchedByTheVoid.Umbra.UmbraTactical.CheckVO15(__instance.Faction.TacticalLevel, __instance.Faction);
                 }
                 catch (Exception e)
@@ -181,7 +173,7 @@ namespace TFTV
                 try
                 {
                     TFTVTouchedByTheVoid.TBTVRolls.TBTVTriggeres.TBTVTriggerOnActorDamageDealt(actor, damageDealer);
-                   
+
                 }
                 catch (Exception e)
                 {
@@ -193,7 +185,7 @@ namespace TFTV
             public static void Postfix(TacticalActor actor, IDamageDealer damageDealer)
             {
                 try
-                {      
+                {
                     TFTVAncients.HoplitesAbilities.HoplitesMolecularTargeting.CyclopsMolecularTargeting(actor, damageDealer);
                     TFTVBallistics.RemoveDCoy(actor, damageDealer);
                     TFTVHumanEnemies.HumanEnemiesRetributionTacticCheckOnActorDamageDealt(actor, damageDealer);
@@ -214,7 +206,7 @@ namespace TFTV
             {
                 try
                 {
-                    TFTVInfestationStory.CreateOutroInfestation(__instance, deathReport);
+                    TFTVInfestation.StoryFirstInfestedHaven.CreateOutroInfestation(__instance, deathReport);
                     TFTVTouchedByTheVoid.TBTVRolls.TBTVTriggeres.TouchByTheVoidDeath(deathReport);
                 }
                 catch (Exception e)
@@ -228,8 +220,8 @@ namespace TFTV
             {
                 try
                 {
-                    TFTVRevenant.RecordPhoenixDeadForRevenantsAndOsiris(deathReport, __instance);
-                    TFTVRevenant.RevenantKilled(deathReport, __instance);
+                    TFTVRevenant.RecordUpkeep.RecordPhoenixDeadForRevenantsAndOsiris(deathReport, __instance);
+                    TFTVRevenant.RecordUpkeep.RevenantKilled(deathReport, __instance);
                     TFTVAncients.CyclopsAbilities.CyclopsResistance.AncientKilled(__instance, deathReport);
                     TFTVHumanEnemies.HumanEnemiesBloodRushTactic(deathReport);
                 }
@@ -249,11 +241,11 @@ namespace TFTV
             private static readonly ClassTagDef hopliteTag = DefCache.GetDef<ClassTagDef>("HumanoidGuardian_ClassTagDef");
             private static readonly GameTagDef HumanEnemyTier1GameTag = DefCache.GetDef<GameTagDef>("HumanEnemyTier_1_GameTagDef");
             private static readonly GameTagDef HumanEnemyTier2GameTag = DefCache.GetDef<GameTagDef>("HumanEnemyTier_2_GameTagDef");
-          //  private static readonly GameTagDef HumanEnemyTier3GameTag = DefCache.GetDef<GameTagDef>("HumanEnemyTier_3_GameTagDef");
+            //  private static readonly GameTagDef HumanEnemyTier3GameTag = DefCache.GetDef<GameTagDef>("HumanEnemyTier_3_GameTagDef");
             private static readonly GameTagDef HumanEnemyTier4GameTag = DefCache.GetDef<GameTagDef>("HumanEnemyTier_4_GameTagDef");
-          //  private static readonly GameTagDef humanEnemyTagDef = DefCache.GetDef<GameTagDef>("HumanEnemy_GameTagDef");
+            //  private static readonly GameTagDef humanEnemyTagDef = DefCache.GetDef<GameTagDef>("HumanEnemy_GameTagDef");
 
-          
+
             public static void Prefix(TacticalActor __instance, DeathReport death, out int __state)
             {
                 __state = 0; //Set this to zero so that the method still works for other actors.
@@ -316,7 +308,7 @@ namespace TFTV
             {
                 try
                 {
-                    TFTVBaseDefenseTactical.InitDeployZonesForBaseDefenseVsAliens(__instance.TacticalLevel);
+                    TFTVBaseDefenseTactical.Map.DeploymentZones.InitDeployZonesForBaseDefenseVsAliens(__instance.TacticalLevel);
                     TFTVPalaceMission.EnemyDeployments.TacticalDeployZones.InitDeployZonesForPalaceMission(__instance.TacticalLevel);
                 }
                 catch (Exception e)
@@ -335,14 +327,14 @@ namespace TFTV
                 try
                 {
                     TFTVBallistics.ClearBallisticInfoOnAbilityExecuteFinished();
-                    TFTVArtOfCrab.ForceScyllaToUseCannonsAfterUsingHeadAttack(ability, __instance, parameter);
+                    TFTVArtOfCrab.ScyllaBlasterAttack.ForceScyllaToUseCannonsAfterUsingHeadAttack(ability, __instance, parameter);
                     TFTVAncients.CyclopsAbilities.AddMindCrushEffectToCyclposScream(ability, __instance, parameter);
                     TFTVAncients.CyclopsAbilities.CyclopsCrossBeamShooting.RedeployHopliteShieldsAfterMassShootAttackAndRestoreTheirAP(ability, __instance, parameter);
                     TFTVVoxels.TFTVFire.ActivateFireQuencherAbility();
                     TFTVBaseDefenseTactical.Objectives.RemoveScatterRemainingAttackersTagFromEnemiesWithParasychosis(ability, parameter);
                     TFTVPalaceMission.MissionObjectives.CheckFinalMissionWinConditionForExalted(ability);
                     TFTVPalaceMission.Gates.CheckIfPlayerCloseToGate(__instance);
-                    TFTVChangesToDLC5.SlugHealTraumaEffect(ability, __instance);
+                    TFTVChangesToDLC5.TFTVMercenaries.Tactical.SlugHealTraumaEffect(ability, __instance);
                 }
 
                 catch (Exception e)
@@ -382,7 +374,7 @@ namespace TFTV
                 try
                 {
                     TFTVAncients.HoplitesAbilities.ApplyDamageResistanceToHopliteInHiding(ref data);
-                    TFTVRevenant.ApplyRevenantSpecialResistance(ref data);
+                    TFTVRevenant.Resistance.ApplyRevenantSpecialResistance(ref data);
                 }
                 catch (Exception e)
                 {

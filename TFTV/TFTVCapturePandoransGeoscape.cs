@@ -592,7 +592,6 @@ namespace TFTV
 
         }
 
-
         public static float GetMutLabOutputPerDay()
         {
             try

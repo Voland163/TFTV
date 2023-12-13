@@ -118,7 +118,7 @@ namespace TFTV
                 TFTVHumanEnemiesNames.CreateNamesDictionary();
                 TFTVInfestation.InfestationMissionWon = false;
                 ClearHints();
-                TFTVUI.uIModuleSoldierCustomization = null;
+                TFTVUI.ShowWithoutHelmet.uIModuleSoldierCustomization = null;
                 //    TFTVBetaSaveGamesFixes.LOTAReworkGlobalCheck = false;
                 TFTVTactical.TurnZeroMethodsExecuted = false;
                 TFTVBaseDefenseGeoscape.PhoenixBasesUnderAttack = new Dictionary<int, Dictionary<string, double>>();
@@ -129,7 +129,7 @@ namespace TFTV
                 TFTVPandoranProgress.ScyllaCount = 0;
                 TFTVAncients.AutomataResearched = false;
                 TFTVAncients.AlertedHoplites.Clear();
-                TFTVUI.CharacterLoadouts?.Clear();
+                TFTVUI.EditScreen.LoadoutsAndHelmetToggle.CharacterLoadouts?.Clear();
                 TFTVCapturePandoransGeoscape.PandasForFoodProcessing = 0;
                 //  TFTVCapturePandorans.CachedACC = TFTVCapturePandorans.AircraftCaptureCapacity;
 
@@ -253,7 +253,7 @@ namespace TFTV
                 TFTVBaseDefenseTactical.StratToBeAnnounced = 0;
                 TFTVBaseDefenseTactical.StratToBeImplemented = 0;
                 TFTVAncients.CyclopsMolecularDamageBuff.Clear();
-                TFTVKillingExploits.AttackedLairSites = new Dictionary<int, int>();
+                TFTVEconomyExploitsFixes.AttackedLairSites = new Dictionary<int, int>();
                 //   TFTVAncients.AlertedHoplites.Clear();
                 TFTVCapturePandorans.AircraftCaptureCapacity = 0;
                 //  TFTVBaseDefenseTactical.VentingHintShown = false;

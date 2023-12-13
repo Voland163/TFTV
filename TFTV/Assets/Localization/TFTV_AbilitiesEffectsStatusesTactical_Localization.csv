@@ -260,3 +260,4 @@ SLUG_KEY_TECHNICIAN_REPAIR_DESCRIPTION,Text,,Restore {GeneralHealAmount} Hit Poi
 SLUG_KEY_TECHNICIAN_RESTORE_DESCRIPTION,Text,,Restore {GeneralHealAmount} to the general Hit Points and remove 50% paralysis of an allied unit. <b>COSTS 15% OF MAX STRENGTH/HP</b>,,,,,,,,
 SLUG_KEY_ELECTRIC_STRIKE_DESCRIPTION,Text,,Target is paralyzed if shock value is greater than target's current Hit Points. <b>COSTS 15% OF MAX STRENGTH/HP</b>,,,,,,,,
 SLUG_KEY_REMOVE_LARVA_DESCRIPTION,Text,,Remove Mindfragger from ally. <b>COSTS 15% OF MAX STRENGTH/HP</b>,,,,,,,,
+KEY_GOOED_STATUS_DESCRIPTION,Text,,"Moving through a tile covered in Goo costs more movement points and starting the turn it applies Slow status on the character, unless they are Immune to Goo.",,,,,,,,

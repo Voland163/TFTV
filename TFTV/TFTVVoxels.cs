@@ -74,7 +74,6 @@ namespace TFTV
 
         internal class TFTVFire
         {
-
             public static List<TacticalVoxel> VoxelsOnFire = new List<TacticalVoxel>();
 
             /// <summary>
@@ -84,22 +83,41 @@ namespace TFTV
             /// </summary>
             /// <param name="controller"></param>
 
-            private static void CheckUseFireWeaponsAndDifficulty(GeoLevelController controller)
+            private static bool FireUseThresholdPassed(GeoLevelController controller)
             {
                 try
                 {
-                    if (controller.EventSystem.GetVariable("FireQuenchersAdded") == 0
-                        && TFTVReleaseOnly.DifficultyOrderConverter(controller.CurrentDifficultyLevel.Order) > 1 && FireVoxelSpawnAlreadyChecked)
+                    int difficulty = controller.CurrentDifficultyLevel.Order;
+                    int fireUsedInMissions = controller.EventSystem.GetVariable("FireQuenchersAdded");
+
+                    if (FireVoxelSpawnAlreadyChecked)
                     {
 
-                        controller.EventSystem.SetVariable("FireQuenchersAdded", 1);
+                        if (fireUsedInMissions > 10 - difficulty)
+                        {
+                            TFTVLogger.Always($"FireQuenchers should be already implemented; fire has been used in {fireUsedInMissions} missions vs Pandorans");
+
+                            return true;
+                        }
+                        else
+                        {
+                            fireUsedInMissions++;
+                            controller.EventSystem.SetVariable("FireQuenchersAdded", fireUsedInMissions);
+                        }
+                    }
+
+                    if (fireUsedInMissions > 10 - difficulty)
+                    {
+                        return true;
 
                     }
+                    return false;
                 }
 
                 catch (Exception e)
                 {
                     TFTVLogger.Error(e);
+                    throw;
                 }
             }
 
@@ -107,19 +125,15 @@ namespace TFTV
             {
                 try
                 {
-                    CheckUseFireWeaponsAndDifficulty(controller);
-
-                    if (controller.EventSystem.GetVariable("FireQuenchersAdded") == 1)
+                    if (FireUseThresholdPassed(controller))
                     {
                         AddFireQuencherAbility();
                         TFTVLogger.Always("Fire Quenchers added!");
                     }
                     else
                     {
-
                         DefCache.GetDef<TacticalItemDef>("Crabman_Head_Humanoid_BodyPartDef").Abilities = new TacticalAbilityDef[] { };
                         DefCache.GetDef<TacticalItemDef>("Crabman_Head_EliteHumanoid_BodyPartDef").Abilities = new TacticalAbilityDef[] { };
-
                     }
                 }
 

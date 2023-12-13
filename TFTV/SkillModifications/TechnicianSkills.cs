@@ -26,6 +26,9 @@ namespace PRMBetterClasses.SkillModifications
 
         public static void ApplyChanges()
         {
+            // Fix Field Medic for mutoids
+            Fix_FieldMedic();
+
             // Remote Deployment: change cost 0->2 WP
             Change_RemoteDeployment();
 
@@ -37,6 +40,15 @@ namespace PRMBetterClasses.SkillModifications
 
             // Amplify Pain: If your next attack deals special damage, double that damage (Bleeding, Paralysis, Viral, Poison, Fire, EMP, Sonic, Shock, Virophage)
             Create_AmplifyPain();
+        }
+
+        private static void Fix_FieldMedic()
+        {
+            HealAbilityDef fieldMedic = DefCache.GetDef<HealAbilityDef>("FieldMedic_AbilityDef");
+            if (fieldMedic != null)
+            {
+                fieldMedic.AdaptiveWeaponStatusDef = null;
+            }
         }
 
         private static void Change_RemoteDeployment()

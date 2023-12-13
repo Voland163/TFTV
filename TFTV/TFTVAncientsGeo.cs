@@ -714,8 +714,8 @@ namespace TFTV
                         {
                             Title = new LocalizedTextBind("BUILD_CYCLOPS_OBJECTIVE"),
                             Description = new LocalizedTextBind("BUILD_CYCLOPS_OBJECTIVE"),
+                            IsCriticalPath = true
                         };
-                        cyclopsObjective.IsCriticalPath = true;
                         controller.PhoenixFaction.AddObjective(cyclopsObjective);
                     }
                 }

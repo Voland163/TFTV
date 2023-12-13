@@ -49,8 +49,7 @@ namespace TFTV
 
         //Adapted from Mad´s Assorted Adjustments; this patch changes Geoescape UI
 
-        public static void AdjustInfoBarGeoscape(UIModuleInfoBar uIModuleInfoBar) 
-        
+        public static void AdjustInfoBarGeoscape(UIModuleInfoBar uIModuleInfoBar)       
         {
             try
             {

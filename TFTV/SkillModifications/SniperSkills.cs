@@ -196,20 +196,29 @@ namespace PRMBetterClasses.SkillModifications
             }
         }
 
-        // Patch to change Inspire not giving any WP when the killed actor has WillPointsWorth = 0
+        // Patch to change Inspire and Bloodthirsty not giving any WP when the killed actor has WillPointsWorth = 0
         [HarmonyPatch(typeof(OnActorDeathEffectStatus), "ShouldApplyEffect")]
         internal static class OnActorDeathEffectStatus_ShouldApplyEffect_Patch
         {
             public static void Postfix(OnActorDeathEffectStatus __instance, ref bool __result, DeathReport deathReport)
             {
-                TacticalAbilityDef inspireAbilityDef = DefCache.GetDef<TacticalAbilityDef>("Inspire_AbilityDef");
-                TacticalAbilityDef bloodThirstyAbilityDef = DefCache.GetDef<TacticalAbilityDef>("Bloodthirsty_AbilityDef");
+                if (__instance.OnActorDeathEffectStatusDef == DefCache.GetDef<ApplyStatusAbilityDef>("Inspire_AbilityDef").StatusDef
+                    || __instance.OnActorDeathEffectStatusDef == DefCache.GetDef<ApplyStatusAbilityDef>("Bloodthirsty_AbilityDef").StatusDef)
+                {
+                    __result = __result && deathReport.Actor.TacticalActorBaseDef.WillPointWorth > 0;
+                }
 
+
+                // OLD version, has side effects with other death effect statuses ...
+
+                /*TacticalAbilityDef inspireAbilityDef = DefCache.GetDef<TacticalAbilityDef>("Inspire_AbilityDef");
+                TacticalAbilityDef bloodThirstyAbilityDef = DefCache.GetDef<TacticalAbilityDef>("Bloodthirsty_AbilityDef");
+                
                 if (__instance.TacticalActorBase.GetAbilityWithDef<TacticalAbility>(inspireAbilityDef) != null
                     || __instance.TacticalActorBase.GetAbilityWithDef<TacticalAbility>(bloodThirstyAbilityDef) != null)
                 {
                     __result = __result && deathReport.Actor.TacticalActorBaseDef.WillPointWorth > 0;
-                }
+                }*/
             }
         }
     }

@@ -1,6 +1,7 @@
 ﻿using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities;
+using PhoenixPoint.Common.Levels.Missions;
 using PhoenixPoint.Geoscape.Core;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Events;
@@ -12,6 +13,33 @@ namespace TFTV
 {
     internal class TFTVHarmonyGeoscape
     {
+        //Invokes changes to MissionObjectives always, and if base defense vs aliens changes deployment and hint
+        [HarmonyPatch(typeof(GeoMission), "ModifyMissionData")]
+        public static class GeoMission_ModifyMissionData_patch
+        {
+            public static void Postfix(GeoMission __instance, TacMissionData missionData)
+            {
+                try
+                {
+                    TFTVLogger.Always($"GeoMission.ModifyMissionData invoked.");
+                   
+                    TFTVCapturePandorans.CheckCaptureCapability(__instance);
+                    TFTVBaseDefenseTactical.Objectives.ModifyMissionDataBaseDefense(__instance, missionData);
+                    TFTVVoidOmens.ModifyVoidOmenTacticalObjectives(missionData.MissionType);
+                    TFTVCapturePandorans.ModifyCapturePandoransTacticalObjectives(missionData.MissionType);          
+                    TFTVBaseDefenseTactical.Objectives.ModifyBaseDefenseTacticalObjectives(missionData.MissionType);
+
+                    // __instance.GameController.SaveManager.IsSaveEnabled = true;
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+
+                }
+            }
+        }
+
+
         [HarmonyPatch(typeof(GeoMission), "ApplyOutcomes")]
         public static class GeoMission_ModifyMissionData_Patch
         {
@@ -22,8 +50,6 @@ namespace TFTV
                 {
                     TFTVAncientsGeo.AncientSites.OnTakingAncientSiteFromAncients(__instance);
                     TFTVAncientsGeo.DefendCyclopsStoryMission.OnCompletingDefendCyclopsMission(__instance, viewerFactionResult);
-
-
                 }
 
                 catch (Exception e)
@@ -32,8 +58,6 @@ namespace TFTV
                 }
             }
         }
-
-
 
         [HarmonyPatch(typeof(GeoscapeEvent), "PostSerializationInit")]
         public static class GeoscapeEventSystem_PostSerializationInit_patch
@@ -52,10 +76,7 @@ namespace TFTV
                     throw;
                 }
             }
-
-
         }
-
 
         [HarmonyPatch(typeof(GeoscapeEventSystem), "OnEventTriggered")]
         public static class GeoscapeEventSystem_OnGeoscapeEvent_patch
@@ -75,7 +96,7 @@ namespace TFTV
                     TFTVDiplomacyPenalties.ImplementDiplomaticPenalties(@event, null);
 
 
-                    return TFTVInfestation.CancelProgFS3IfTrappedInMistAlreadyTriggered(@event, __instance);
+                    return TFTVInfestation.ScienceOfMadness.CancelProgFS3IfTrappedInMistAlreadyTriggered(@event, __instance);
 
                 }
 
@@ -86,20 +107,17 @@ namespace TFTV
                     throw;
                 }
             }
-
-
         }
 
         [HarmonyPatch(typeof(GeoscapeEvent), "CompleteEvent")]
-
         public static class GeoscapeEvent_CompleteEvent_patch
         {
-            public static void Postfix(GeoscapeEvent __instance)
+            public static void Postfix(GeoscapeEvent __instance, GeoFaction faction)
             {
                 try
                 {
                     TFTVDiplomacyPenalties.RestoreStateDiplomaticPenalties(__instance);
-
+                    
                 }
 
                 catch (Exception e)
@@ -110,7 +128,6 @@ namespace TFTV
 
             }
         }
-
 
 
         [HarmonyPatch(typeof(GeoSite), "CreateHavenDefenseMission")]

@@ -135,6 +135,7 @@
     <Compile Include="TFTVAncients.cs" />
     <Compile Include="TFTVAncientsGeo.cs" />
     <Compile Include="TFTVArtOfCrab.cs" />
+    <Compile Include="TFTVAudio.cs" />
     <Compile Include="TFTVAugmentations.cs" />
     <Compile Include="TFTVBallistics.cs" />
     <Compile Include="TFTVBaseDefenseGeoscape.cs" />
@@ -160,9 +161,8 @@
     <Compile Include="TFTVHarmonyGeoscape.cs" />
     <Compile Include="TFTVHarmonyGeoscapeUI.cs" />
     <Compile Include="TFTVHarmonyTactical.cs" />
-    <Compile Include="TFTVHarmonyTacticalUI.cs" />
     <Compile Include="TFTVHealing.cs" />
-    <Compile Include="TFTVKillingExploits.cs" />
+    <Compile Include="TFTVEconomyExploitsFixes.cs" />
     <Compile Include="TFTVNewGameOptions.cs" />
     <Compile Include="TFTVPalaceMission.cs" />
     <Compile Include="TFTVReleaseOnly.cs" />
@@ -175,7 +175,6 @@
     <Compile Include="TFTVHumanEnemies.cs" />
     <Compile Include="TFTVHumanEnemiesNames.cs" />
     <Compile Include="TFTVInfestation.cs" />
-    <Compile Include="TFTVInfestationStory.cs" />
     <Compile Include="TFTVLogger.cs" />
     <Compile Include="TFTVMain.cs" />
     <Compile Include="TFTVNewGameMenu.cs" />
@@ -186,7 +185,7 @@
     <Compile Include="TFTVRevenant.cs" />
     <Compile Include="TFTVRevenantResearch.cs" />
     <Compile Include="TFTVReverseEngineering.cs" />
-    <Compile Include="TFTVSDIandVoidOmenRoll.cs" />
+    <Compile Include="TFTVODIandVoidOmenRoll.cs" />
     <Compile Include="TFTVStamina.cs" />
     <Compile Include="TFTVStarts.cs" />
     <Compile Include="TFTVTactical.cs" />

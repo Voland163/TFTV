@@ -29,8 +29,8 @@ namespace TFTV
         public int behemothTarget = TFTVAirCombat.behemothTarget;
         public int behemothWaitHours = TFTVAirCombat.behemothWaitHours;
         public int timeRevenantLasteSeenSaveData = TFTVRevenant.daysRevenantLastSeen;
-        public int infestedHavenPopulationSaveData = TFTVInfestationStory.HavenPopulation;
-        public string infestedHavenOriginalOwnerSaveData = TFTVInfestationStory.OriginalOwner;
+        public int infestedHavenPopulationSaveData = TFTVInfestation.HavenPopulation;
+        public string infestedHavenOriginalOwnerSaveData = TFTVInfestation.OriginalOwner;
         public Dictionary<int, int[]> ProjectOsirisStatsSaveData = TFTVRevenantResearch.ProjectOsirisStats;
         //   public bool[] VoidOmensCheck = TFTVVoidOmens.VoidOmensCheck;
         //   public bool GlobalLOTAReworkCheck = TFTVBetaSaveGamesFixes.LOTAReworkGlobalCheck;
@@ -104,7 +104,7 @@ namespace TFTV
             TFTVTouchedByTheVoid.Umbra.UmbraGeoscape.SetUmbraEvolution(gsController);
             TFTVAirCombat.SetBehemothOnRampageMod(gsController);
             TFTVStamina.CheckBrokenLimbs(gsController.PhoenixFaction.Soldiers.ToList(), gsController);
-            TFTVRevenant.UpdateRevenantTimer(gsController);
+            TFTVRevenant.RecordUpkeep.UpdateRevenantTimer(gsController);
             if (TFTVRevenant.revenantID != 0 && TFTVRevenant.DeadSoldiersDelirium.ContainsKey(TFTVRevenant.revenantID))
             {
                 TFTVRevenant.DeadSoldiersDelirium[TFTVRevenant.revenantID] += 1;
@@ -122,7 +122,7 @@ namespace TFTV
             TFTVSpecialDifficulties.CheckForSpecialDifficulties();
             //    TFTVBetterEnemies.ImplementBetterEnemies();
             TFTVPandoranProgress.ScyllaCount = 0;
-            TFTVSDIandVoidOmenRoll.Calculate_ODI_Level(Controller);
+            TFTVODIandVoidOmenRoll.Calculate_ODI_Level(Controller);
             TFTVBetaSaveGamesFixes.CheckResearches(Controller);
           //  TFTVBetaSaveGamesFixes.CheckScyllaCaptureTechResearch(Controller);
             TFTVPassengerModules.ImplementFarMConfig(Controller);
@@ -170,7 +170,7 @@ namespace TFTV
             TFTVTouchedByTheVoid.Umbra.UmbraGeoscape.SetUmbraEvolution(gsController);
             TFTVVoidOmens.CheckForVoidOmensRequiringTacticalPatching(gsController);
             //  TFTVUI.hookToCharacter = null;
-            TFTVRevenant.CheckRevenantTime(gsController);
+            TFTVRevenant.PrespawnChecks.CheckRevenantTime(gsController);
             TFTVRevenantResearch.CheckProjectOsiris(gsController);
             TFTVDiplomacyPenalties.VoidOmensImplemented = false;
             TFTVAncientsGeo.AncientsResearch.CheckResearchStateOnGeoscapeEndAndOnTacticalStart(gsController);
@@ -194,7 +194,7 @@ namespace TFTV
 
             //  TFTVLogger.Always($"Items currently available in Aircraft inventory {TFTVUI.CurrentlyAvailableInv.Values.Count}");
             //  TFTVLogger.Always($"Items currently hidden in Aircraft inventory {TFTVUI.CurrentlyHiddenInv.Values.Count}");
-            TFTVRevenant.UpdateRevenantTimer(Controller);
+            TFTVRevenant.RecordUpkeep.UpdateRevenantTimer(Controller);
             return new TFTVGSInstanceData()
             {
                 // HiddenInventories = TFTVUI.CurrentlyHiddenInv,
@@ -208,8 +208,8 @@ namespace TFTV
                 behemothTarget = TFTVAirCombat.behemothTarget,
                 behemothWaitHours = TFTVAirCombat.behemothWaitHours,
                 timeRevenantLasteSeenSaveData = TFTVRevenant.daysRevenantLastSeen,
-                infestedHavenOriginalOwnerSaveData = TFTVInfestationStory.OriginalOwner,
-                infestedHavenPopulationSaveData = TFTVInfestationStory.HavenPopulation,
+                infestedHavenOriginalOwnerSaveData = TFTVInfestation.OriginalOwner,
+                infestedHavenPopulationSaveData = TFTVInfestation.HavenPopulation,
                 ProjectOsirisStatsSaveData = TFTVRevenantResearch.ProjectOsirisStats,
                 //  VoidOmensCheck = TFTVVoidOmens.VoidOmensCheck,
                 //   GlobalLOTAReworkCheck = TFTVBetaSaveGamesFixes.LOTAReworkGlobalCheck,
@@ -217,7 +217,7 @@ namespace TFTV
                 PhoenixBasesContainmentBreach = TFTVBaseDefenseGeoscape.PhoenixBasesContainmentBreach,
                 InfestedPhoenixBases = TFTVBaseDefenseGeoscape.PhoenixBasesInfested,
                 SpawnedScyllas = TFTVPandoranProgress.ScyllaCount,
-                CharacterLoadouts = TFTVUI.CharacterLoadouts,
+                CharacterLoadouts = TFTVUI.EditScreen.LoadoutsAndHelmetToggle.CharacterLoadouts,
                 CharactersDeliriumPerksAndMissions = TFTVDelirium.CharactersDeliriumPerksAndMissions,
                 SuppliesFromProcessedPandas = TFTVCapturePandoransGeoscape.PandasForFoodProcessing,
                 ToxinsInFood = TFTVCapturePandoransGeoscape.ToxinsInCirculation,
@@ -275,8 +275,8 @@ namespace TFTV
             TFTVAirCombat.behemothScenicRoute = data.behemothScenicRoute;
             TFTVAirCombat.behemothTarget = data.behemothTarget;
             TFTVAirCombat.behemothWaitHours = data.behemothWaitHours;
-            TFTVInfestationStory.HavenPopulation = data.infestedHavenPopulationSaveData;
-            TFTVInfestationStory.OriginalOwner = data.infestedHavenOriginalOwnerSaveData;
+            TFTVInfestation.HavenPopulation = data.infestedHavenPopulationSaveData;
+            TFTVInfestation.OriginalOwner = data.infestedHavenOriginalOwnerSaveData;
             TFTVRevenantResearch.ProjectOsirisStats = data.ProjectOsirisStatsSaveData;
           //  TFTVCapturePandorans.AircraftCaptureCapacity = data.AircraftCaptureCapacity;
            
@@ -286,7 +286,7 @@ namespace TFTV
             TFTVBaseDefenseGeoscape.PhoenixBasesContainmentBreach = data.PhoenixBasesContainmentBreach;
             TFTVBaseDefenseGeoscape.PhoenixBasesInfested = data.InfestedPhoenixBases;
             TFTVPandoranProgress.ScyllaCount = data.SpawnedScyllas;
-            TFTVUI.CharacterLoadouts = data.CharacterLoadouts;
+            TFTVUI.EditScreen.LoadoutsAndHelmetToggle.CharacterLoadouts = data.CharacterLoadouts;
             TFTVDelirium.CharactersDeliriumPerksAndMissions = data.CharactersDeliriumPerksAndMissions;
             TFTVCapturePandoransGeoscape.PandasForFoodProcessing = data.SuppliesFromProcessedPandas;
             TFTVCapturePandoransGeoscape.ToxinsInCirculation = data.ToxinsInFood;
@@ -340,7 +340,7 @@ namespace TFTV
             Main.Logger.LogInfo($"Supplies from Pandas pending processing {TFTVCapturePandoransGeoscape.PandasForFoodProcessing}");
             Main.Logger.LogInfo($"Toxins in food {TFTVCapturePandoransGeoscape.ToxinsInCirculation}");
             Main.Logger.LogInfo($"Scylla count {TFTVPandoranProgress.ScyllaCount}");
-            Main.Logger.LogInfo($"infested haven population save data {TFTVInfestationStory.HavenPopulation}");
+            Main.Logger.LogInfo($"infested haven population save data {TFTVInfestation.HavenPopulation}");
             Main.Logger.LogInfo($"aircraft capacity {TFTVCapturePandorans.AircraftCaptureCapacity}");
 
             // Main.Logger.LogInfo($"New Difficulties implemented {TFTVReleaseOnly.NewDifficultiesImplemented}");

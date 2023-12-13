@@ -445,7 +445,7 @@ namespace TFTV
                             TFTVLogger.Always($"More Umbras VO in effect; killing Umbra at start of player's turn");
 
                             foreach (TacticalActor tacticalActor in controller.GetFactionByCommandName("Aln").
-                                     TacticalActors.Where(ta => ta.IsAlive && (ta.ActorDef.name.Equals("Oilcrab_ActorDef") || ta.ActorDef.name.Equals("Oilfish_ActorDef"))))
+                                     TacticalActors.Where(ta => ta.IsAlive && !ta.Status.HasStatus<PreparingStatus>() && (ta.ActorDef.name.Equals("Oilcrab_ActorDef") || ta.ActorDef.name.Equals("Oilfish_ActorDef"))))
                             {
                                 tacticalActor.ApplyDamage(new DamageResult { HealthDamage = 1000 });
                                 TFTVLogger.Always($"More Umbras VO in effect; killing {tacticalActor.name} at start of player's turn");

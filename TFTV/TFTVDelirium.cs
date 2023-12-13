@@ -378,7 +378,7 @@ namespace TFTV
                     }
 
                     // Calculate the percentage of current ODI level, these two variables are globally set by our ODI event patches
-                    int odiPerc = TFTVSDIandVoidOmenRoll.CurrentODI_Level * 100 / 20; //TFTVSDIandVoidOmenRoll.ODI_EventIDs.Length;
+                    int odiPerc = TFTVODIandVoidOmenRoll.CurrentODI_Level * 100 / 20; //TFTVSDIandVoidOmenRoll.ODI_EventIDs.Length;
 
                     int maxCorruption = 0;
                     // Get max corruption dependent on max WP of the selected actor

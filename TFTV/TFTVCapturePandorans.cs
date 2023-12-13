@@ -7,6 +7,7 @@ using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
+using PhoenixPoint.Common.Levels.Missions;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.Interception.Equipments;
 using PhoenixPoint.Geoscape.Entities.Missions;
@@ -57,7 +58,62 @@ namespace TFTV
         public static bool ContainmentFacilityPresent = false;
         public static bool ScyllaCaptureModulePresent = false;
         public static int ContainmentSpaceAvailable = 0;
-     //   public static int CachedACC = 0;
+        //   public static int CachedACC = 0;
+
+
+        public static void ModifyCapturePandoransTacticalObjectives(TacMissionTypeDef missionType)
+        {
+            try
+            {
+                TFTVLogger.Always("ModifyCapturePandoransObjectives");
+
+                List<FactionObjectiveDef> listOfFactionObjectives = missionType.CustomObjectives.ToList();
+
+                KeepSoldiersAliveFactionObjectiveDef containmentPresent = DefCache.GetDef<KeepSoldiersAliveFactionObjectiveDef>("CAPTURE_CAPACITY_BASE");
+                KeepSoldiersAliveFactionObjectiveDef aircraftCapture = DefCache.GetDef<KeepSoldiersAliveFactionObjectiveDef>("CAPTURE_CAPACITY_AIRCRAFT");
+
+                if (TFTVCapturePandorans.ContainmentFacilityPresent)
+                {
+                    if (!listOfFactionObjectives.Contains(containmentPresent))
+                    {
+                        listOfFactionObjectives.Add(containmentPresent);
+                    }
+                }
+                else
+                {
+                    if (listOfFactionObjectives.Contains(containmentPresent))
+                    {
+                        listOfFactionObjectives.Remove(containmentPresent);
+                    }
+                }
+                if (TFTVCapturePandorans.AircraftCaptureCapacity < 0)
+                {
+                    TFTVLogger.Always($"AircraftCaptureCapacity is {TFTVCapturePandorans.AircraftCaptureCapacity}");
+
+                    if (listOfFactionObjectives.Contains(aircraftCapture))
+                    {
+                        listOfFactionObjectives.Remove(aircraftCapture);
+                    }
+                }
+                else
+                {
+                    if (!listOfFactionObjectives.Contains(aircraftCapture))
+                    {
+                        listOfFactionObjectives.Add(aircraftCapture);
+                        TFTVLogger.Always("AircraftCapture capacity objective added");
+                    }
+
+                }
+
+                missionType.CustomObjectives = listOfFactionObjectives.ToArray();
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+        }
 
 
         [HarmonyPatch(typeof(ObjectivesManager), "Add")]

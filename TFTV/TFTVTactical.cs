@@ -66,7 +66,7 @@ namespace TFTV
         {
             try
             {
-                TFTVBaseDefenseTactical.CheckConsoleSituation(controller);
+                TFTVBaseDefenseTactical.Map.Consoles.SpawnConsoles.PlaceObjectives(controller);
                 TFTVRescueVIPMissions.CheckAndImplementVIPRescueMIssions(controller);
                 TFTVPalaceMission.CheckPalaceMission();
                 TFTVAncients.CyclopsAbilities.CyclopsResistance.CheckCyclopsDefense();
@@ -121,7 +121,7 @@ namespace TFTV
             {
                 TFTVHumanEnemies.RollCount = 0;
                 TFTVSpecialDifficulties.CheckForSpecialDifficulties();
-                TFTVRevenant.CheckIfRevenantPresent(controller);
+                TFTVRevenant.Resistance.CheckIfRevenantPresent(controller);
                 TFTVUITactical.RemoveDamagePredictionBar();
             }
 
@@ -233,8 +233,8 @@ namespace TFTV
                 TFTVRevenantResearch.ProjectOsiris = data.ProjectOrisisCompletedSaveData;
 
                 TFTVHumanEnemies.HumanEnemiesAndTactics = data.humanEnemiesLeaderTacticsSaveData;
-                TFTVInfestationStory.HavenPopulation = data.infestedHavenPopulationSaveData;
-                TFTVInfestationStory.OriginalOwner = data.infestedHavenOriginalOwnerSaveData;
+                TFTVInfestation.HavenPopulation = data.infestedHavenPopulationSaveData;
+                TFTVInfestation.OriginalOwner = data.infestedHavenOriginalOwnerSaveData;
                 TFTVRevenant.revenantID = data.RevenantId;
                 TFTVBaseDefenseTactical.AttackProgress = data.BaseDefenseAttackProgress;
                 TFTVBaseDefenseTactical.StratToBeAnnounced = data.BaseDefenseStratToBeAnnounced;
@@ -245,7 +245,11 @@ namespace TFTV
                 TFTVCapturePandorans.AircraftCaptureCapacity = data.DeployedAircraftCaptureCapacity;
                 TFTVCapturePandorans.ContainmentFacilityPresent = data.ContainmentFacilityPresent;
                 TFTVCapturePandorans.ScyllaCaptureModulePresent = data.ScyllaCaptureModule;
-                TFTVBaseDefenseTactical.ModifyObjectives(Controller.TacMission.MissionData.MissionType);
+
+                TFTVVoidOmens.ModifyVoidOmenTacticalObjectives(Controller.TacMission.MissionData.MissionType);
+                TFTVCapturePandorans.ModifyCapturePandoransTacticalObjectives(Controller.TacMission.MissionData.MissionType);
+                TFTVBaseDefenseTactical.Objectives.ModifyBaseDefenseTacticalObjectives(Controller.TacMission.MissionData.MissionType);
+                TFTVVoidOmens.ImplementHavenDefendersAlwaysHostile(Controller);
                 TFTVAncients.AutomataResearched = data.AutomataResearched;
                 TFTVAncients.AlertedHoplites = data.HopliteKillList;
                 TFTVCapturePandorans.ContainmentSpaceAvailable = data.AvailableContainment;
@@ -287,8 +291,8 @@ namespace TFTV
                 ProjectOsirisStatsTacticalSaveData = TFTVRevenantResearch.ProjectOsirisStats,
                 ProjectOrisisCompletedSaveData = TFTVRevenantResearch.ProjectOsiris,
                 humanEnemiesLeaderTacticsSaveData = TFTVHumanEnemies.HumanEnemiesAndTactics,
-                infestedHavenPopulationSaveData = TFTVInfestationStory.HavenPopulation,
-                infestedHavenOriginalOwnerSaveData = TFTVInfestationStory.OriginalOwner,
+                infestedHavenPopulationSaveData = TFTVInfestation.HavenPopulation,
+                infestedHavenOriginalOwnerSaveData = TFTVInfestation.OriginalOwner,
                 RevenantId = TFTVRevenant.revenantID,
                 BaseDefenseAttackProgress = TFTVBaseDefenseTactical.AttackProgress,
                 BaseDefenseStratToBeImplemented = TFTVBaseDefenseTactical.StratToBeImplemented,
@@ -322,13 +326,13 @@ namespace TFTV
 
                 if (!Controller.TacMission.MissionData.MissionType.name.Contains("Tutorial"))
                 {
+                    //This is to ensure correct functionality of parapsychosis; otherwise wild faction turns out of sync for status effects
                     if (Controller.CurrentFaction == Controller.GetTacticalFaction(Controller.TacticalLevelControllerDef.WildBeastFaction)
-    && turnNumber < Controller.GetTacticalFaction(TacMissionParticipant.Player).TurnNumber)
+                        && turnNumber < Controller.GetTacticalFaction(TacMissionParticipant.Player).TurnNumber)
                     {
                         turnNumber = Controller.GetTacticalFaction(TacMissionParticipant.Player).TurnNumber;
                         Controller.CurrentFaction.TurnNumber = turnNumber;
                     }
-
 
                     if (turnNumber == 0 && TFTVHumanEnemies.HumanEnemiesAndTactics.Count == 0)
                     {
@@ -343,12 +347,12 @@ namespace TFTV
                             TFTVAncients.AncientDeployment.AdjustAncientsOnDeployment(Controller);
                         }
 
-                        TFTVRevenant.ModifyRevenantResistanceAbility(Controller);
-                        TFTVRevenant.CheckForNotDeadSoldiers(Controller);
-                        TFTVRevenant.RevenantCheckAndSpawn(Controller);
-                        TFTVRevenant.ImplementVO19(Controller);
+                        TFTVRevenant.Resistance.ModifyRevenantResistanceAbility(Controller);
+                        TFTVRevenant.PrespawnChecks.CheckForNotDeadSoldiers(Controller);
+                        TFTVRevenant.Spawning.RevenantCheckAndSpawn(Controller);
+                        TFTVRevenant.Resistance.ImplementVO19(Controller);
                         TFTVVoidOmens.VO5TurnHostileCivviesFriendly(Controller);
-                        TFTVBaseDefenseTactical.GetConsoles();
+                        TFTVBaseDefenseTactical.Map.Consoles.GetConsoles();
 
                         //  TFTVBaseDefenseTactical.ModifyObjectives(Controller.TacMission.MissionData.MissionType);
                         TurnZeroMethodsExecuted = true;

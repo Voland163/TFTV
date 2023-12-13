@@ -12,6 +12,7 @@ using PhoenixPoint.Common.View.ViewControllers;
 using PhoenixPoint.Common.View.ViewModules;
 using PhoenixPoint.Geoscape.Core;
 using PhoenixPoint.Geoscape.Entities;
+using PhoenixPoint.Geoscape.Entities.Abilities;
 using PhoenixPoint.Geoscape.Entities.Missions;
 using PhoenixPoint.Geoscape.Entities.PhoenixBases;
 using PhoenixPoint.Geoscape.Entities.PhoenixBases.FacilityComponents;
@@ -51,6 +52,76 @@ namespace TFTV
         internal static Color purple = new Color32(149, 23, 151, 255);
         internal static Color red = new Color32(192, 32, 32, 255);
         internal static Color brightRed = new Color32(255, 0, 0, 255);
+
+        [HarmonyPatch(typeof(UIModuleSiteContextualMenu), "SetMenuItems")]
+        public static class UIModuleSiteContextualMenu_SetMenuItems_patch
+        {
+            public static void Postfix(GeoSite site, List<GeoAbility> rawAbilities, Vector3 position, UIModuleSiteContextualMenu __instance)
+            {
+                try
+                {
+                    if (site.GetComponent<GeoPhoenixBase>() != null && site.ActiveMission != null && site.CharactersCount > 0 &&
+                        (site.Vehicles.Count() == 0 || !site.Vehicles.Any(v => v.GetCharacterCount() > 0)))
+                    {
+
+                        FieldInfo fieldInfoListSiteContextualMenuItem = typeof(UIModuleSiteContextualMenu).GetField("_menuItems", BindingFlags.NonPublic | BindingFlags.Instance);
+                        List<SiteContextualMenuItem> menuItems = fieldInfoListSiteContextualMenuItem.GetValue(__instance) as List<SiteContextualMenuItem>;
+
+                        foreach (SiteContextualMenuItem menuItem in menuItems)
+                        {
+                            // TFTVLogger.Always($"menu item: {menuItem?.ItemText?.text}");
+                            if (menuItem.ItemText.text == DefCache.GetDef<EnterBaseAbilityDef>("EnterBaseAbilityDef").ViewElementDef.DisplayName1.Localize())
+                            {
+                                menuItem.ItemText.text = TFTVCommonMethods.ConvertKeyToString("KEY_DEPLOY_BASE_DEFENSE_TEXT");
+                                menuItem.gameObject.AddComponent<UITooltipText>().TipText = TFTVCommonMethods.ConvertKeyToString("KEY_DEPLOY_BASE_DEFENSE_TIP");
+                                // TFTVLogger.Always($"menu item: {menuItem?.ItemText?.text}");
+                            }
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
+
+        [HarmonyPatch(typeof(EnterBaseAbility), "ActivateInternal")]
+        public static class EnterBaseAbility_ActivateInternal_patch
+        {
+
+            public static bool Prefix(EnterBaseAbility __instance, GeoAbilityTarget target)
+            {
+                try
+                {
+                    TFTVLogger.Always($"ActivateInternalfor ability {__instance.GeoscapeAbilityDef.name}");
+
+                    if (target.Actor is GeoSite site && site.ActiveMission != null && site.CharactersCount > 0
+                        &&
+                        (site.Vehicles.Count() == 0 || !site.Vehicles.Any(v => v.GetCharacterCount() > 0)))
+                    {
+                        TFTVLogger.Always($"Deploying Base Defense");
+                        GeoSite geoSite = (GeoSite)target.Actor;
+                        //  GeoVehicle initialContainer = (GeoVehicle)base.Actor;
+
+
+                        __instance.GeoLevel.View.LaunchMission(geoSite.ActiveMission);
+                        return false;
+                    }
+
+                    return true;
+
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
+
 
         internal static void RemoveBaseDefenseObjective(string baseName)
         {

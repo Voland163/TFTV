@@ -2226,7 +2226,7 @@ namespace TFTV
                     {
                         if (deadSoldier >= delirium)
                         {
-                            candidates.Add(TFTVRevenant.GetDeadSoldiersIdFromInt(deadSoldier, controller));
+                            candidates.Add(TFTVRevenant.Spawning.GetDeadSoldiersIdFromInt(deadSoldier, controller));
                         }
                     }
 
@@ -2238,7 +2238,7 @@ namespace TFTV
                         TFTVLogger.Always("The total number of candidates is " + candidates.Count() + " and the roll is " + roll);
 
                         GeoTacUnitId theChosen = candidates[roll];
-                        TFTVLogger.Always($"The Chosen is {TFTVRevenant.GetDeadSoldiersNameFromID(theChosen, controller)}");
+                        TFTVLogger.Always($"The Chosen is {TFTVRevenant.Spawning.GetDeadSoldiersNameFromID(theChosen, controller)}");
 
                         _choosenRevenant = theChosen;
                         return true;
@@ -2246,7 +2246,7 @@ namespace TFTV
                     else if (candidates.Count == 1)
                     {
                         GeoTacUnitId theChosen = candidates[0];
-                        TFTVLogger.Always($"The Chosen is {TFTVRevenant.GetDeadSoldiersNameFromID(theChosen, controller)}");
+                        TFTVLogger.Always($"The Chosen is {TFTVRevenant.Spawning.GetDeadSoldiersNameFromID(theChosen, controller)}");
 
                         _choosenRevenant = theChosen;
                         return true;
@@ -2290,14 +2290,14 @@ namespace TFTV
 
                                     GeoTacUnitId theChosen = _choosenRevenant;
 
-                                    TFTVRevenant.SetRevenantTierTag(theChosen, tacticalActorBase, controller);
+                                    TFTVRevenant.Spawning.SetRevenantTierTag(theChosen, tacticalActorBase, controller);
 
-                                    tacticalActorBase.name = TFTVRevenant.GetDeadSoldiersNameFromID(theChosen, controller);
+                                    tacticalActorBase.name = TFTVRevenant.Spawning.GetDeadSoldiersNameFromID(theChosen, controller);
                                     // SetDeathTime(theChosen, __instance, timeOfMissionStart);
 
                                     TacticalActor tacticalActor = tacticalActorBase as TacticalActor;
-                                    TFTVRevenant.AddRevenantStatusEffect(tacticalActorBase);
-                                    TFTVRevenant.SetRevenantClassAbility(theChosen, controller, tacticalActor);
+                                    TFTVRevenant.UIandFX.Breath.AddRevenantStatusEffect(tacticalActorBase);
+                                    TFTVRevenant.StatsAndClasses.SetRevenantClassAbility(theChosen, controller, tacticalActor);
 
                                     //  SpreadResistance(__instance);
                                     tacticalActorBase.UpdateStats();
