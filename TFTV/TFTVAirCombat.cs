@@ -118,7 +118,6 @@ namespace TFTV
         internal class Flyers
         {
             // 
-
             private static AlienRaidBand AlienRaidBandGenerator(GeoLevelController controller)
             {
                 try
@@ -188,7 +187,7 @@ namespace TFTV
                     {
                         TFTVLogger.Always($"AlienRaidManager.RollForRaid running");
 
-                        if (__instance.AlienFaction.Behemoth.CurrentBehemothStatus == BehemothStatus.Dormant)
+                        if (__instance.AlienFaction.Behemoth.CurrentBehemothStatus == BehemothStatus.Dormant || __instance.AlienFaction.Behemoth.IsSubmerging)
                         {
                             TFTVLogger.Always($"AlienRaidManager.RollForRaid running, Behemoth not dormant");
                             return false;
@@ -210,7 +209,7 @@ namespace TFTV
                         for (int x = 0; x < behemothRoamings+1; x++)
                         {
                             AlienRaidBand raidBand = AlienRaidBandGenerator(__instance.AlienFaction.GeoLevel);
-                            TFTVLogger.Always($"generetaed raidband for {raidBand.AircraftTypesAllowed}");
+                            TFTVLogger.Always($"generated raidband for {raidBand.AircraftTypesAllowed}");
                             GeoscapeRaid geoscapeRaid = (GeoscapeRaid)tryGenerateRaidMethod.Invoke(__instance, new object[] { raidBand, dummyList });
 
                             if (geoscapeRaid != null)
@@ -499,6 +498,7 @@ namespace TFTV
                         flyersAndHavens.Clear();
                         targetsForBehemoth.Clear();
                         behemothScenicRoute.Clear();
+
                         //  BehemothSubmerging = true;
                         if (__instance.GeoLevel.EventSystem.GetVariable(BehemothRoamings) < 1)//4 - __instance.GeoLevel.CurrentDifficultyLevel.Order <= roaming) 
                         {

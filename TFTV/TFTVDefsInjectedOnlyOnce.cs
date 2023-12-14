@@ -7662,6 +7662,8 @@ namespace TFTV
                 InterceptionGameDataDef interceptionGameDataDef = DefCache.GetDef<InterceptionGameDataDef>("InterceptionGameDataDef");
                 interceptionGameDataDef.DisengageDuration = 3;
 
+                DefCache.GetDef<AlienRaidsSetupDef>("_AlienRaidsSetupDef").RaidPeriodHrs = 15;
+
                 RemoveHardFlyersTemplates();
             }
 
