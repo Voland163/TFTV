@@ -596,7 +596,9 @@ Si nous éliminons le Béhémoth, nous affaiblirons son emprise sur nous, peut-�
 PROG_FS2_WIN_CHOICE_0_TEXT,Text,,We deserve a good night sleep...,,Nous méritons une bonne nuit de sommeil…,,,,,,
 PROG_FS2_WIN_TEXT_GENERAL_0,Text,,"Today we were finally able to deal a serious blow to our enemy. If only for a while, our dreams and nightmares are once again our own.  
 
-This victory has galvanized the factions into setting aside their differences until the survival of humanity can be ensured and has cemented Phoenix Project as the only actor capable of dealing with the threat of the Yuggothian Entity. ",,"Aujourd’hui, nous avons finalement pu porter un sérieux coup à notre ennemi. Le Délire Onirique a disparu. Nos rêves et nos cauchemars nous appartiennent à nouveau. L’humanité peut encore périr, mais elle ne sera pas asservie.",,,,,,
+This victory has galvanized the factions into setting aside their differences until the survival of humanity can be ensured and has cemented Phoenix Project as the only actor capable of dealing with the threat of the Yuggothian Entity. 
+
+<i>All Void Omens removed and all non-mutated operatives clear of Delirium.</i>",,"Aujourd’hui, nous avons finalement pu porter un sérieux coup à notre ennemi. Le Délire Onirique a disparu. Nos rêves et nos cauchemars nous appartiennent à nouveau. L’humanité peut encore périr, mais elle ne sera pas asservie.",,,,,,
 PROG_FS2_WIN_TITLE,Text,,Will Not Go Gentle Into That Night,,N’entre pas doucement dans cette nuit,,,,,,
 PROG_FS3_CHOICE_0_TEXT,Text,,OK.,,,,,,,,
 PROG_FS3_FAIL_CHOICE_0_TEXT,Text,,OK.,,,,,,,,

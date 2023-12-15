@@ -33,6 +33,7 @@ namespace TFTV
             GEOSCAPE, STORY, ROOKIE, VETERAN, HERO, LEGEND, ETERMES
         }
         public DifficultyOnTactical difficultyOnTactical = DifficultyOnTactical.GEOSCAPE;
+
         public bool AnimateWhileShooting = false;
         public bool ReinforcementsNoDrops = true;
         public bool MoreMistVO = true;
@@ -42,9 +43,11 @@ namespace TFTV
         public bool LearnFirstPersonalSkill = true;
         public bool DeactivateTacticalAutoStandby = true;
         public bool Debug = true;
-        public bool LimitedCapture = true;
-        public bool LimitedHarvesting = true;
+       // public bool LimitedCapture = true;
+      //  public bool LimitedHarvesting = true;
         public bool NoBarks = false;
+
+
 
         internal List<ModConfigField> modConfigFields = new List<ModConfigField>();
         public void PopulateConfigFields()

@@ -910,8 +910,6 @@ namespace TFTV
                 }
             }
 
-
-
             private static void ChangeHintBackground(UIModuleContextHelp contextHelpModule, ContextHelpHintDef hintDef)
             {
                 try
@@ -919,6 +917,10 @@ namespace TFTV
                     if (_hintDefSpriteFileNameDictionary.ContainsKey(hintDef))
                     {
                         contextHelpModule.Image.overrideSprite = Helper.CreateSpriteFromImageFile(_hintDefSpriteFileNameDictionary[hintDef]);
+                    }
+                    else 
+                    {
+                        contextHelpModule.Image.overrideSprite = null;
                     }
                 }
                 catch (Exception e)
@@ -928,7 +930,6 @@ namespace TFTV
             }
 
         
-
             [HarmonyPatch(typeof(UIModuleContextHelp), "ShowPanel")]
             public static class UIModuleContextHelp_Show_Hints_Patch
             {

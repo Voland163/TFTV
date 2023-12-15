@@ -11,6 +11,7 @@ using PhoenixPoint.Tactical.Levels.Missions;
 using PhoenixPoint.Tactical.View.ViewControllers;
 using System;
 using System.Collections.Generic;
+using static PhoenixPoint.Tactical.View.ViewControllers.SquadMemberScrollerController;
 
 namespace TFTV
 {
@@ -109,7 +110,7 @@ namespace TFTV
                     TFTVHumanEnemies.GiveRankAndNameToHumaoidEnemy(actor, __instance);
                     TFTVTouchedByTheVoid.Umbra.UmbraTactical.UmbraEverywhereVoidOmenImplementation(actor, __instance);
                     TFTVBaseDefenseTactical.Objectives.AddScatterObjectiveTagForBaseDefense(actor, __instance);
-                    TFTVSpecialDifficulties.AddSpecialDifficultiesBuffsAndVulnerabilities(actor, __instance);
+                    TFTVSpecialDifficulties.OnTactical.AddSpecialDifficultiesBuffsAndVulnerabilities(actor, __instance);
                     TFTVPalaceMission.Revenants.TryToTurnIntoRevenant(actor, __instance);
                     TFTVPalaceMission.MissionObjectives.CheckFinalMissionWinConditionWhereDeployingItem(actor, __instance);
 
@@ -126,19 +127,18 @@ namespace TFTV
         [HarmonyPatch(typeof(SquadMemberScrollerController), "SetupProperPortrait")]
         public static class TFTV_SquadMemberScrollerController_SetupProperPortrait_Patch
         {
-            public static void Prefix(TacticalActor actor)
+            public static bool Prefix(TacticalActor actor, Dictionary<TacticalActor, PortraitSprites> ____soldierPortraits, 
+                SquadMemberScrollerController __instance, bool ____renderingInProgress)
             {
                 try
                 {
-                    TFTVPalaceMission.MissionObjectives.ForceSpecialCharacterPortraitInSetupProperPortrait(actor);
-
-
+                   return TFTVPalaceMission.MissionObjectives.ForceSpecialCharacterPortraitInSetupProperPortrait(actor, ____soldierPortraits, __instance, ____renderingInProgress);
                 }
                 catch (Exception e)
                 {
                     TFTVLogger.Error(e);
+                    throw;
                 }
-
             }
         }
 

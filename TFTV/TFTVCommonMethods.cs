@@ -119,7 +119,6 @@ namespace TFTV
                 TFTVInfestation.InfestationMissionWon = false;
                 ClearHints();
                 TFTVUI.ShowWithoutHelmet.uIModuleSoldierCustomization = null;
-                //    TFTVBetaSaveGamesFixes.LOTAReworkGlobalCheck = false;
                 TFTVTactical.TurnZeroMethodsExecuted = false;
                 TFTVBaseDefenseGeoscape.PhoenixBasesUnderAttack = new Dictionary<int, Dictionary<string, double>>();
                 TFTVBaseDefenseGeoscape.PhoenixBasesInfested.Clear();
@@ -131,15 +130,13 @@ namespace TFTV
                 TFTVAncients.AlertedHoplites.Clear();
                 TFTVUI.EditScreen.LoadoutsAndHelmetToggle.CharacterLoadouts?.Clear();
                 TFTVCapturePandoransGeoscape.PandasForFoodProcessing = 0;
-                //  TFTVCapturePandorans.CachedACC = TFTVCapturePandorans.AircraftCaptureCapacity;
-
                 TFTVCapturePandorans.ContainmentFacilityPresent = false;
                 TFTVNewGameOptions.ConfigImplemented = false;
                 TFTVNewGameOptions.InternalDifficultyCheck = 0;
                 TFTVCapturePandoransGeoscape.ToxinsInCirculation = 0;
                 TFTVNewGameMenu.NewGameOptionsSetUp = false;
                 TFTVNewGameMenu.EnterStateRun = false;
-              //  TFTVGoo.DontUseGooNavigationPatch = false;
+             
 
                 /*  TFTVNewGameOptions.AmountOfExoticResourcesSetting;
                   TFTVNewGameOptions.ResourceMultiplierSetting;

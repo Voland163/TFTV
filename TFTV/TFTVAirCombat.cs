@@ -185,11 +185,11 @@ namespace TFTV
                 {
                     try
                     {
-                        TFTVLogger.Always($"AlienRaidManager.RollForRaid running");
+                      //  TFTVLogger.Always($"AlienRaidManager.RollForRaid running");
 
                         if (__instance.AlienFaction.Behemoth.CurrentBehemothStatus == BehemothStatus.Dormant || __instance.AlienFaction.Behemoth.IsSubmerging)
                         {
-                            TFTVLogger.Always($"AlienRaidManager.RollForRaid running, Behemoth not dormant");
+                           // TFTVLogger.Always($"AlienRaidManager.RollForRaid running, Behemoth not dormant");
                             return false;
                         }
 
@@ -206,7 +206,7 @@ namespace TFTV
                         int behemothRoamings = controller.EventSystem.GetVariable(BehemothRoamings);
                         int flyers = Math.Min(behemothRoamings, 2);
 
-                        for (int x = 0; x < behemothRoamings+1; x++)
+                        for (int x = 0; x < flyers+1; x++)
                         {
                             AlienRaidBand raidBand = AlienRaidBandGenerator(__instance.AlienFaction.GeoLevel);
                             TFTVLogger.Always($"generated raidband for {raidBand.AircraftTypesAllowed}");
@@ -318,6 +318,12 @@ namespace TFTV
                         if (flyersAndHavens.ContainsKey(__instance.GeoVehicle.VehicleID))
                         {
                             TFTVLogger.Always("Flyer returning to B passed first check");
+
+                            if (targetsForBehemoth.Count > 1000) 
+                            {
+                                targetsForBehemoth.Clear();                            
+                            }
+
 
                             foreach (int haven in flyersAndHavens[__instance.GeoVehicle.VehicleID])
                             {

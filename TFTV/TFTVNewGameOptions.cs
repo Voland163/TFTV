@@ -1,7 +1,4 @@
-﻿using PhoenixPoint.Common.Entities.Items;
-using PhoenixPoint.Geoscape.Levels;
-using PhoenixPoint.Tactical.Entities.Weapons;
-using PhoenixPoint.Tactical.Levels;
+﻿using PhoenixPoint.Geoscape.Levels;
 using System;
 
 namespace TFTV
@@ -13,7 +10,7 @@ namespace TFTV
 
 
         public static int InternalDifficultyCheck = 0;
-        
+
         public enum StartingSquadFaction
         {
             PHOENIX, ANU, NJ, SYNEDRION
@@ -82,131 +79,88 @@ namespace TFTV
         public static ScavengingWeight chancesScavGroundVehicleRescue = ScavengingWeight.Low;
 
 
-     /*   public static void SetInternalConfigOptions(GeoLevelController geoLevelController)
-        {
-            if (!ConfigImplemented)
-            {
-                try
-                {
-                    TFTVLogger.Always($"This game started before update #35; adjusting config");
-                    TFTVConfig config = TFTVMain.Main.Config;
-
-                    if (config.EtermesMode)
-                    {
-                        if (geoLevelController != null)
-                        {
-                            geoLevelController.CurrentDifficultyLevel = TFTVReleaseOnly.GetDifficultyFromOrder(6);
-                            TFTVLogger.Always($"I AM ETERMES config option detected; switching to ETERMES difficulty");
-                        }
-                    }
-
-                    if (config.EasyGeoscape)
-                    {
-                        if (geoLevelController != null)
-                        {
-                            geoLevelController.CurrentDifficultyLevel = TFTVReleaseOnly.GetDifficultyFromOrder(1);
-                            TFTVLogger.Always($"Easy Geoscape config option detected; switching to STORY difficulty");
-                        }
-                    }
-
-
-                    int difficultyOrder = 0;
-
-                    if (geoLevelController != null)
-                    {
-                        difficultyOrder = geoLevelController.CurrentDifficultyLevel.Order;
-                    }
-                   
-
-                    float scaling_factor = 1f / 0.8f;
-
-                    if (difficultyOrder == 1 && !config.OverrideRookieDifficultySettings)
-                    {
-                        AmountOfExoticResourcesSetting = 2.5f;
-                        ResourceMultiplierSetting = 2f;
-                        DiplomaticPenaltiesSetting = false;
-                        StaminaPenaltyFromInjurySetting = false;
-                        MoreAmbushesSetting = false;
-                        StrongerPandoransSetting = false;
-                        ImpossibleWeaponsAdjustmentsSetting = false;
-                    }
-                    else
-                    {
-                        AmountOfExoticResourcesSetting = config.amountOfExoticResources;
-                        TFTVLogger.Always($"config.amountOfExoticResources:  {config.amountOfExoticResources}");
-                        ResourceMultiplierSetting = config.ResourceMultiplier * scaling_factor;
-                        TFTVLogger.Always($"config.ResourceMultiplier * scaling_factor:  {config.ResourceMultiplier * scaling_factor}");
-                        DiplomaticPenaltiesSetting = config.DiplomaticPenalties;
-                        TFTVLogger.Always($"config.DiplomaticPenalties:  {config.DiplomaticPenalties}");
-                        StaminaPenaltyFromInjurySetting = config.StaminaPenaltyFromInjury;
-                        TFTVLogger.Always($"config.StaminaPenaltyFromInjury:  {config.StaminaPenaltyFromInjury}");
-                        MoreAmbushesSetting = config.MoreAmbushes;
-                        TFTVLogger.Always($"config.MoreAmbushes:  {config.MoreAmbushes}");
-                        LimitedCaptureSetting = config.LimitedCapture;
-                        TFTVLogger.Always($"config.LimitedCapture:  {config.LimitedCapture}");
-                        LimitedHarvestingSetting = config.LimitedHarvesting;
-                        TFTVLogger.Always($"config.LimitedHarvesting:  {config.LimitedHarvesting}");
-                        StrongerPandoransSetting = config.StrongerPandorans;
-                        TFTVLogger.Always($"config.StrongerPandorans:  {config.StrongerPandorans}");
-                        ImpossibleWeaponsAdjustmentsSetting = config.impossibleWeaponsAdjustments;
-                        TFTVLogger.Always($"config.impossibleWeaponsAdjustments:  {config.impossibleWeaponsAdjustments}");
-                    }
-
-                    if (difficultyOrder == 6)
-                    {
-                        ResourceMultiplierSetting = 0.5f;
-                    }
-
-                    ConfigImplemented = true;
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-            }
-        }*/
-
-        public static void Change_Crossbows()
+        public static void SetInternalConfigOptions(GeoLevelController geoLevelController)
         {
             try
             {
-                if (Update35Check)
-                {
-                    TFTVLogger.Always($"Game started after Update 35 check passed; applying changes to crossbows");
-                    WeaponDef ErosCrb = DefCache.GetDef<WeaponDef>("SY_Crossbow_WeaponDef");
-                    WeaponDef BonusErosCrb = DefCache.GetDef<WeaponDef>("SY_Crossbow_Bonus_WeaponDef");
-                    ItemDef ErosCrb_Ammo = DefCache.GetDef<ItemDef>("SY_Crossbow_AmmoClip_ItemDef");
-                    WeaponDef PsycheCrb = DefCache.GetDef<WeaponDef>("SY_Venombolt_WeaponDef");
-                    ItemDef PsycheCrb_Ammo = DefCache.GetDef<ItemDef>("SY_Venombolt_AmmoClip_ItemDef");
-                    ErosCrb.ChargesMax = 5;
-                    BonusErosCrb.ChargesMax = 5;
-                    ErosCrb_Ammo.ChargesMax = 5;
-                    PsycheCrb.ChargesMax = 4;
-                    PsycheCrb_Ammo.ChargesMax = 4;
+                TFTVLogger.Always($"This game lost its config; probably saved, quit and loaded during Tutotial. Restoring default values for difficulty");
+                TFTVConfig config = TFTVMain.Main.Config;
 
+                if (geoLevelController == null)
+                {
+                    return;
                 }
+
+                int difficulty = geoLevelController.CurrentDifficultyLevel.Order;
+
+                switch (difficulty)
+                {
+                    case 1:
+                        AmountOfExoticResourcesSetting = 2.5f;
+                        ResourceMultiplierSetting = 2f;
+                        break;
+                    case 2:
+                        AmountOfExoticResourcesSetting = 2.5f;
+                        ResourceMultiplierSetting = 1.5f;
+                        break;
+                    case 3:
+                        AmountOfExoticResourcesSetting = 2f;
+                        ResourceMultiplierSetting = 1.25f;
+                        break;
+                    case 4:
+                        AmountOfExoticResourcesSetting = 1.5f;
+                        ResourceMultiplierSetting = 1f;
+                        break;
+                    case 5:
+                        AmountOfExoticResourcesSetting = 1f;
+                        ResourceMultiplierSetting = 1f;
+                        break;
+                    case 6:
+                        AmountOfExoticResourcesSetting = 0.5f;
+                        ResourceMultiplierSetting = 0.75f;
+                        break;
+                }
+
+
+                if (difficulty > 4)
+                {
+                    DiplomaticPenaltiesSetting = true;
+                    StaminaPenaltyFromInjurySetting = true;
+                    MoreAmbushesSetting = true;
+                    StrongerPandoransSetting = true;
+                    ImpossibleWeaponsAdjustmentsSetting = true;
+                    LimitedCaptureSetting = true;
+                    LimitedHarvestingSetting = true;
+                    NoSecondChances = true;
+                }
+                else if(difficulty > 2) 
+                {
+                    DiplomaticPenaltiesSetting = true;
+                    StaminaPenaltyFromInjurySetting = true;
+                    MoreAmbushesSetting = true; 
+                    ImpossibleWeaponsAdjustmentsSetting = true;
+                    LimitedCaptureSetting = true;
+                    LimitedHarvestingSetting = true;
+                }
+                else 
+                {
+                    DiplomaticPenaltiesSetting = false;
+                    StaminaPenaltyFromInjurySetting = false;
+                    MoreAmbushesSetting = false;
+                    StrongerPandoransSetting = false;
+                    ImpossibleWeaponsAdjustmentsSetting = false;
+                    LimitedCaptureSetting = false;
+                    LimitedHarvestingSetting = false;
+                    NoSecondChances = false;
+                }
+
+                ConfigImplemented = true;
             }
+
             catch (Exception e)
             {
                 TFTVLogger.Error(e);
             }
         }
-
-
-        /*  public static void SetInternalConfigOptions(GeoLevelController geoLevelController, TacticalLevelController tacticalLevelController) 
-          {
-              if (!NewConfigUsed) 
-              {
-              float[] amountMultiplierResources = { 0.25f, 0.5f, 0.75f, 1f, 1.25f, 1.5f, 1.75f, 2f, 2.5f, 3f, 4f };
-
-                  amountOfExoticResources = amountMultiplierResources[ConvertDifficultyToIndexExoticResources(geoLevelController, tacticalLevelController)];
-                  ResourceMultiplier = amountMultiplierResources[ConvertDifficultyToIndexEventsResources(geoLevelController, tacticalLevelController)];
-
-
-
-
-
-              } 
-          }*/
     }
 }

@@ -120,7 +120,7 @@ namespace TFTV
             try
             {
                 TFTVHumanEnemies.RollCount = 0;
-                TFTVSpecialDifficulties.CheckForSpecialDifficulties();
+                TFTVSpecialDifficulties.DefModifying.CheckForSpecialDifficulties();
                 TFTVRevenant.Resistance.CheckIfRevenantPresent(controller);
                 TFTVUITactical.RemoveDamagePredictionBar();
             }
@@ -139,7 +139,7 @@ namespace TFTV
             try
             {
                 TFTVBetaSaveGamesFixes.CorrrectPhoenixSaveManagerDifficulty();
-                TFTVNewGameOptions.Change_Crossbows();
+               // TFTVNewGameOptions.Change_Crossbows();
             }
 
             catch (Exception e)
@@ -169,7 +169,7 @@ namespace TFTV
             ImplementConfigOptions(tacController);
             RunChecksForAllMissions(tacController);
             RunBetaTestChecks();
-
+          //  TFTVTacticalUtils.RevealAllSpawns(tacController);
 
             TFTVLogger.Always("The count of Human tactics in play is " + TFTVHumanEnemies.HumanEnemiesAndTactics.Count);
             TFTVLogger.Always("VO3 Active " + TFTVVoidOmens.VoidOmensCheck[3]);
@@ -257,6 +257,10 @@ namespace TFTV
                 TFTVNewGameOptions.StrongerPandoransSetting = data.StrongerPandoransTactical;
                 TFTVNewGameOptions.ImpossibleWeaponsAdjustmentsSetting = data.NerfAncientsWeaponsTactical;
 
+                TFTVLogger.Always($"Config settings:" +                  
+                    $"\nStrongerPandoransSetting {TFTVNewGameOptions.StrongerPandoransSetting}\nImpossibleWeaponsAdjustmentsSetting: {TFTVNewGameOptions.ImpossibleWeaponsAdjustmentsSetting}");
+
+                TFTVDefsWithConfigDependency.ImplementConfigChoices();
 
                 TurnZeroMethodsExecuted = data.TurnZeroMethodsExecuted;
 

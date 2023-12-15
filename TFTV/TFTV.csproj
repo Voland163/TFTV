@@ -178,7 +178,7 @@
     <Compile Include="TFTVLogger.cs" />
     <Compile Include="TFTVMain.cs" />
     <Compile Include="TFTVNewGameMenu.cs" />
-    <Compile Include="TFTVNewPXCharacters.cs" />
+    <Compile Include="TFTVBackgroundsAndCharacters.cs" />
     <Compile Include="TFTVPandoranProgress.cs" />
     <Compile Include="TFTVPassengerModules.cs" />
     <Compile Include="TFTVProjectOsiris.cs" />
@@ -200,8 +200,6 @@
     <Compile Include="TFTVVanillaFixes.cs" />
     <Compile Include="TFTVVehicleInventory.cs" />
     <Compile Include="TFTVVoidOmens.cs" />
-    <Compile Include="VanillaPatches\TacticalAbility_EnqueueAction_FumbleFix.cs" />
-    <Compile Include="VanillaPatches\Weapon_GetThrowingRange_Fix.cs" />
     <Compile Include="VariousAdjustments\VariousAdjustments.cs" />
     <Compile Include="VariousAdjustments\VariousAdjustmentsMain.cs" />
     <Compile Include="VariousAdjustments\WeaponModifications.cs" />

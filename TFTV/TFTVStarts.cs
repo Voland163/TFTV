@@ -124,7 +124,7 @@ namespace TFTV
                 {
                     startingTemplates.Add(heavy);
                 }
-                else if (level.CurrentDifficultyLevel.Order == 1 && TFTVNewGameOptions.startingSquad == TFTVNewGameOptions.StartingSquadFaction.PHOENIX)
+                else if (TFTVReleaseOnly.DifficultyOrderConverter(level.CurrentDifficultyLevel.Order) == 1 && TFTVNewGameOptions.startingSquad == TFTVNewGameOptions.StartingSquadFaction.PHOENIX)
                 {
                     startingTemplates.Add(assault);
                     startingTemplates.Add(sniper);

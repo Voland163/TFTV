@@ -1621,7 +1621,7 @@ namespace TFTV
                     try
                     {
 
-                        TFTVLogger.Always($"UpdateOptions(Timing) is called (Prefix) Current time: {____level.Timing.Now.DateTime}. Next update: {____updateOptionsNextTime.DateTime}");
+                       // TFTVLogger.Always($"UpdateOptions(Timing) is called (Prefix) Current time: {____level.Timing.Now.DateTime}. Next update: {____updateOptionsNextTime.DateTime}");
 
                         if (timing.Now >= ____updateOptionsNextTime && ____level.EventSystem.GetVariable(____settings.NumberOfDLC5MissionsCompletedVariable) > 0)
                         {
@@ -1647,20 +1647,18 @@ namespace TFTV
                     }
                 }
 
-                public static void Postfix(TimeUnit ____updateOptionsNextTime, GeoLevelController ____level)
+           /*     public static void Postfix(TimeUnit ____updateOptionsNextTime, GeoLevelController ____level)
                 {
                     try
                     {
-                        TFTVLogger.Always($"UpdateOptions(Timing) Postfix: Current time: {____level.Timing.Now.DateTime}. Next update: {____updateOptionsNextTime.DateTime}");
-
-
+                      //  TFTVLogger.Always($"UpdateOptions(Timing) Postfix: Current time: {____level.Timing.Now.DateTime}. Next update: {____updateOptionsNextTime.DateTime}");
                     }
                     catch (Exception e)
                     {
                         TFTVLogger.Error(e);
                         throw;
                     }
-                }
+                }*/
 
 
             }

@@ -11,7 +11,7 @@ using UnityEngine;
 
 namespace TFTV
 {
-    internal class TFTVNewPXCharacters
+    internal class TFTVBackgroundsAndCharacters
     {
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
 
@@ -223,7 +223,6 @@ namespace TFTV
 
 
         private static Sprite GetRightPXCharacterPic(GeoLevelController controller, string name)
-
         {
             try
             {
@@ -271,13 +270,17 @@ namespace TFTV
                         case 5:
 
                             // art.EventBackground = Helper.CreateSpriteFromImageFile("VO_05.jpg");
-                            if (controller.EventSystem.GetEventRecord("PROG_LE0_WIN").SelectedChoice >= 0)
+                            if (controller.EventSystem.GetEventRecord("HelenaOnOlena") !=null && 
+                                controller.EventSystem.GetEventRecord("HelenaOnOlena")?.SelectedChoice !=null &&
+                                 controller.EventSystem.GetEventRecord("HelenaOnOlena")?.SelectedChoice== 0)
                             {
                                 art.EventLeader = GetRightPXCharacterPic(controller, "Helena");
                             }
                             break;
                         case 6:
-                            if (controller.EventSystem.GetEventRecord("PROG_LE0_WIN").SelectedChoice >= 0)
+                            if (controller.EventSystem.GetEventRecord("HelenaOnOlena") != null &&
+                                controller.EventSystem.GetEventRecord("HelenaOnOlena")?.SelectedChoice != null &&
+                                 controller.EventSystem.GetEventRecord("HelenaOnOlena")?.SelectedChoice == 0)
                             {
                                 art.EventLeader = GetRightPXCharacterPic(controller, "Helena");
                             }

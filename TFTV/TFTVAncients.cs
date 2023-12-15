@@ -384,7 +384,7 @@ namespace TFTV
 
                             if (TFTVSpecialDifficulties.CheckTacticalSpecialDifficultySettings(controller) == 2)
                             {
-                                baseMultiplier = 0.0f;
+                                baseMultiplier = 0.25f; //adjusted on 22/12 from 0.0f
                             }
 
                             IEnumerable<TacticalActor> allHoplites = from x in controller.Map.GetActors<TacticalActor>()

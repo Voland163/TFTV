@@ -14,6 +14,7 @@ using PhoenixPoint.Geoscape.Entities.Sites;
 using PhoenixPoint.Geoscape.Events;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
+using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.Entities.Weapons;
 using System;
@@ -32,6 +33,58 @@ namespace TFTV
         // public static bool LOTAReworkGlobalCheck = false;
 
      //   private static readonly SharedData Shared = TFTVMain.Shared;
+
+        public static void SpecialFixForNarvi() 
+        {
+            try 
+            {
+
+             /*   TFTVRevenant.DeadSoldiersDelirium.Add(17, 11);
+                 TFTVRevenant.DeadSoldiersDelirium.Add(5, 15);
+                 TFTVRevenant.DeadSoldiersDelirium.Add(27, 5);
+                 TFTVRevenant.DeadSoldiersDelirium.Add(28, 2);
+
+                 TFTVAirCombat.checkHammerfall = true;
+
+                TFTVDelirium.CharactersDeliriumPerksAndMissions.Add(21, -1);
+                TFTVDelirium.CharactersDeliriumPerksAndMissions.Add(6, 5);
+                TFTVDelirium.CharactersDeliriumPerksAndMissions.Add(1, 7);*/
+
+                foreach (int id in TFTVRevenant.DeadSoldiersDelirium.Keys) 
+                {
+                    TFTVLogger.Always($"{id} {TFTVRevenant.DeadSoldiersDelirium[id]}");
+                }
+
+                TFTVLogger.Always($"Delirium Perks:");
+
+                foreach (int id in TFTVDelirium.CharactersDeliriumPerksAndMissions.Keys)
+                {
+                    TFTVLogger.Always($"{id} {TFTVDelirium.CharactersDeliriumPerksAndMissions[id]}");
+                }
+
+                /*
+                 * 
+                 * resutls:
+                 * [TFTV @ 12/25/2023 12:17:44 PM] 17 11
+    [TFTV @ 12/25/2023 12:17:44 PM] 5 15
+    [TFTV @ 12/25/2023 12:17:44 PM] 27 5
+    [TFTV @ 12/25/2023 12:17:44 PM] 28 2
+
+                delirium perks:
+
+                [TFTV @ 12/25/2023 12:25:34 PM] 21 -1
+[TFTV @ 12/25/2023 12:25:34 PM] 6 5
+[TFTV @ 12/25/2023 12:25:34 PM] 1 7
+
+                 */
+            }
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
+        }
 
         public static void CorrrectPhoenixSaveManagerDifficulty()
         {
@@ -484,15 +537,11 @@ namespace TFTV
 
                 int internalScyllaVariable = TFTVPandoranProgress.ScyllaCount;
 
-
-
                 if (eventSystem.GetVariable("ScyllaCounter") == 0)
                 {
                     if (internalScyllaVariable > 0)
                     {
                         eventSystem.SetVariable("ScyllaCounter", internalScyllaVariable);
-
-
                     }
                     else
                     {

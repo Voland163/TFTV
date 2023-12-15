@@ -37,12 +37,11 @@ namespace TFTV
 
                 foreach (TacticalDeployZone tacticalDeployZone in zones)
                 {
-                    createVisuals.Invoke(tacticalDeployZone, null);
+                  //  createVisuals.Invoke(tacticalDeployZone, null);
                   //  TFTVLogger.Always($"{tacticalDeployZone.name} at position {tacticalDeployZone.Pos}, belongs to {tacticalDeployZone.MissionParticipant.GetName()}");
                     
                     foreach(FixedDeployConditionData fixedDeployConditionData in tacticalDeployZone.FixedDeployment) 
                     {
-
                         TFTVLogger.Always($"{tacticalDeployZone.name} will spawn {fixedDeployConditionData.TacActorDef.name}");
                     
                     }
@@ -50,8 +49,7 @@ namespace TFTV
 
                     foreach (MissionDeployConditionData fixedDeployConditionData in tacticalDeployZone.MissionDeployment)
                     {
-
-                        TFTVLogger.Always($"{tacticalDeployZone.name} activates on turn {fixedDeployConditionData.ActivateOnTurn}, tag: {fixedDeployConditionData.ActorTagDef}, " +
+                        TFTVLogger.Always($"{tacticalDeployZone.name} at {tacticalDeployZone.Pos} activates on turn {fixedDeployConditionData.ActivateOnTurn}, tag: {fixedDeployConditionData.ActorTagDef}, " +
                             $"deactivate after turn: {fixedDeployConditionData.DeactivateAfterTurn}");
 
                     }

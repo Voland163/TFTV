@@ -223,9 +223,9 @@ NJ_EXPLOSIVETECH_RESEARCHDEF_COMPLETE,Text,,"A breakthrough in explosives techno
 ",,,,,,,,
 SYN_NANOTECH_RESEARCHDEF_BENEFITS,Text,,Allows manufacturing Nanotech Fieldkit and Vest,,,,,,,,
 KEY_FS_ALN_MEDIUM_FLYER_RESEARCHDEF_COMPLETE,Text,,"Species classification PF-M
-This new mutation spawned from the Festering Skies is aggressive and tenacious. Its well-coordinated flight patterns indicate a sinister sense of purpose. Field reports and collected footage shows that Berith strikes are carefully planned in advance and executed with alarming haste and precision. Threat level: very high.",,,,,,,,
+We have confirmed sightings of a new mutation in the Behemoth ecosystem. As in the case of its predecessor, Charun, the cephalopod origins of the creature are obvious to the naked eye. Expect increased survivability and superior armaments.",,,,,,,,
 KEY_FS_ALN_LARGE_FLYER_RESEARCHDEF_COMPLETE,Text,,"Species classification PF-Alpha
-The largest species of winged Pandoran discovered to date shows superior strength and intelligence. Its complex and unpredictable behavioral patterns make it the greatest airborne threat to humanity. The study of its movements is of utmost importance given its cunning and destructive potential. Threat level: critical.",,,,,,,,
+The latest mutation to come out of the Festering Skies is humongous. The cephalopod origins of the creature can still be visually discerned, but how it can remain airborne given its tonnage and no obvious means of propulsion is a baffling mystery. Our aircraft are likely to require advanced weaponry or several sorties to destroy this beast.",,,,,,,,
 ANU_ANUFUNGUSFOOD_RESEARCHDEF_BENEFITS,Text,,Output of Food Production facilities increased by around 50%,,,,,,,,
 KEY_CH_ALN_ACHERON_ACHLYS_CHAMPION_RESEARCHDEF_COMPLETE,Text,,"Species classification AC-Beta-2
 Possibly the most lethal specimen of Acheron. In addition to projecting corrosive goo and transforming corpses into Pandorans, and possessing the capability of evolved Acherons that enables other Pandorans on the battlefield to spread Delirium, reports indicate that the death of this specimen is invariably accompanied by excess Umbra sightings.",,"Classification de l'espèce AC-Beta-2
@@ -421,3 +421,7 @@ D'un autre côté, nous pouvons nous attendre à ce que les recrues soient total
 
 И к хорошим новостям - вероятнее всего рекруты будут абсолютно лояльны нам. Тем не менее, при необходимости, пропаганда может быть использована в случае каких-либо отклонений от курса и ценностей проекта Феникс",,
 PX_HAVENRECRUITS_RESEARCHDEF_BENEFITS,Text,,We can now recruit soldiers from havens and among candidates found elsewhere by our agents.,,Nous pouvons désormais recruter des soldats dans les refuges et parmi les candidats trouvés ailleurs par nos agents.,,,,"Теперь в убежищах мы можем нанимать солдат, и иных кандидатов, которых нашли наши агенты",,
+KEY_FS_PX_AERIAL_WARFARE_RESEARCHDEF_COMPLETE,Text,,"Our researchers have been tirelessly analyzing intelligence reports, footage, and witness testimonials to learn everything they can about the Behemoth, the newly discovered flying species, and the Festering Skies. 
+
+Our course of action is clear: arm a squadron of Manticores and systematically attack the Pandoran patrols to prevent their rampage. While we intercept the attacks, a dedicated research unit will be working around the clock to study the Pandorans' behavior further and make ongoing improvements to our air-to-air arsenal.
+",,,,,,,,

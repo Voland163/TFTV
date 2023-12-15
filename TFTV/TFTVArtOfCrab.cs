@@ -1,13 +1,18 @@
-﻿using Base.Core;
+﻿using Base.AI;
+using Base;
+using Base.Core;
 using Base.Defs;
 using Base.Entities.Effects;
 using Base.Entities.Statuses;
+using Base.Utils.Maths;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.Entities.Items;
 using PhoenixPoint.Tactical;
+using PhoenixPoint.Tactical.AI.Considerations;
+using PhoenixPoint.Tactical.AI;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.DamageKeywords;
@@ -657,6 +662,99 @@ namespace TFTV
 
         internal class TargetCulling 
         {
+            [HarmonyPatch(typeof(AIClosestEnemyConsideration), "Evaluate")]
+            public static class AIClosestEnemyConsideration_Evaluate_patch
+            {
+
+                public static bool Prefix(AIClosestEnemyConsideration __instance, IAIActor actor, IAITarget target, object context, ref float __result)
+                {
+                    try
+                    {
+
+                        AIClosestEnemyConsiderationDef queenConsideration = DefCache.GetDef<AIClosestEnemyConsiderationDef>("Queen_ClosestEnemy_AIConsiderationDef");
+                        AIClosestEnemyConsiderationDef chironConsideration = DefCache.GetDef<AIClosestEnemyConsiderationDef>("Chiron_ClosestEnemy_AIConsiderationDef");
+                        AIClosestEnemyConsiderationDef acheronConsideration = DefCache.GetDef<AIClosestEnemyConsiderationDef>("Acheron_ClosestLineToEnemy_AIConsiderationDef");
+
+                        List<AIClosestEnemyConsiderationDef> aIClosestEnemyConsiderationDefs = new List<AIClosestEnemyConsiderationDef>() { queenConsideration, chironConsideration, acheronConsideration };
+
+                        GameTagDef caterpillarDamage = DefCache.GetDef<GameTagDef>("DamageByCaterpillarTracks_TagDef");
+
+                        if (aIClosestEnemyConsiderationDefs.Contains(__instance.BaseDef))
+                        {
+
+                            AIClosestEnemyConsiderationDef Def = (AIClosestEnemyConsiderationDef)__instance.BaseDef;
+                            TacticalActor tacticalActor = (TacticalActor)actor;
+                            TacAITarget tacAITarget = (TacAITarget)target;
+                            float num = 0f;
+                            TacticalActorBase tacticalActorBase = null;
+
+                          //  TFTVLogger.Always($"{tacticalActor.name} considering closest enemy");
+
+                            foreach (TacticalActorBase enemy in tacticalActor.TacticalFaction.AIBlackboard.GetEnemies(tacticalActor.AIActor.GetEnemyMask(Def.EnemyMask)).Where(ta => !ta.HasGameTag(caterpillarDamage)))
+                            {
+
+                                float num2 = 0f;
+                                if (Def.DistanceType == DistanceType.Line)
+                                {
+                                    num2 = (tacAITarget.Pos - enemy.Pos).magnitude;
+                                }
+                                else if (Def.DistanceType == DistanceType.PathLength)
+                                {
+                                    float num3 = TacticalNavigationComponent.ExtendRangeWithNavAgentRadius(0f, tacticalActor);
+                                    float num4 = TacticalNavigationComponent.ExtendRangeWithNavAgentRadius(0f, enemy);
+                                    float destinationRadius = num3 + num4 + Def.DestinationRadius;
+                                    num2 = AIUtil.GetPathLength(tacticalActor, tacAITarget.Pos, enemy.Pos, useAStar: true, destinationRadius);
+                                }
+
+                                float num5 = num2.Clamp(Def.MinDistance, Def.MaxDistance);
+                                float num6 = 1f - (num5 - Def.MinDistance) / (Def.MaxDistance - Def.MinDistance);
+                                if (Def.ConsiderEnemyWeight)
+                                {
+                                    num6 *= AIUtil.GetEnemyWeight(tacticalActor.TacticalFaction.AIBlackboard, enemy);
+                                }
+
+                                if (num6 > num)
+                                {
+                                    num = num6;
+                                    tacticalActorBase = enemy;
+                                }
+
+                               // TFTVLogger.Always($"the enemy is {enemy.name} and their score is {num6}");
+                            }
+
+                            if (tacticalActorBase == null)
+                            {
+                                __result = Def.NoEnemiesValue;
+                                //  TFTVLogger.Always($"no enemies!");
+                                return false;
+                            }
+
+                            if (Def.SetEnemyAsTarget)
+                            {
+                                tacAITarget.Actor = tacticalActorBase;
+                            }
+
+                            num = Mathf.Clamp(num, 0f, 1f);
+                            if (Utl.Equals(num, 0f, 0.01f))
+                            {
+                                num = 0.1f;
+                            }
+
+                            __result = num;
+                          //  TFTVLogger.Always($"the score is {num}");
+                            return false;
+                        }
+                        return true;
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                        throw;
+                    }
+                }
+            }
+
+
             //Patch to prevent Scylla from targeting tiny critters like worms and spider drones
             [HarmonyPatch(typeof(TacticalAbility), "GetTargetActors", new Type[] { typeof(TacticalTargetData), typeof(TacticalActorBase), typeof(Vector3) })]
             public static class TFTV_TacticalAbility_GetTargetActors_Scylla_Patch
@@ -811,11 +909,12 @@ namespace TFTV
                         {
 
                         }
-                        else if (actor.GameTags.Contains(queenTag) || actor.GameTags.Contains(acheronTag) || actor.GameTags.Contains(chironTag) || actor.GameTags.Contains(cyclopsTag))
+                        else if (actor.GameTags.Contains(queenTag) //&& actor.GetAbility<CaterpillarMoveAbility>() != null
+                            || actor.GameTags.Contains(acheronTag) || actor.GameTags.Contains(chironTag)) //|| actor.GameTags.Contains(cyclopsTag))
                         {
                             if (target.GetTargetActor() is TacticalActor tacticalActor && tacticalActor.GameTags.Contains(caterpillarDamage) && tacticalActor.TacticalFaction != actor.TacticalFaction)
                             {
-                                //    TFTVLogger.Always($"{tacticalActor.name} culled");
+                               // TFTVLogger.Always($"{tacticalActor.name} culled for {actor.name}");
                                 culledList.Remove(target);
                             }
                         }

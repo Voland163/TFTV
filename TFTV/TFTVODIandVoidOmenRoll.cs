@@ -5,7 +5,6 @@ using PhoenixPoint.Geoscape.Events;
 using PhoenixPoint.Geoscape.Events.Eventus;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
-using PhoenixPoint.Tactical.View.ViewStates;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -546,7 +545,7 @@ namespace TFTV
                     geoLevelController.EventSystem.TriggerGeoscapeEvent(oDIEventToTrigger.EventID, geoscapeEventContext);
                     geoLevelController.EventSystem.SetVariable("BC_SDI", CurrentODI_Level);
 
-                    if (voidOmenRolled || removedVoidOmen != "")
+                    if (voidOmenRolled || removedVoidOmen != null && removedVoidOmen != "")
                     {
                         GenerateVoidOmenEvent(geoLevelController, reportData, voidOmenRolled, removedVoidOmen, voidOmenRoll);
                     }
@@ -566,10 +565,10 @@ namespace TFTV
 
         public static string GenerateReportData(GeoLevelController geoLevelController)
         {
-            try 
-            { 
-            return $"{CurrentODI_Level}/{geoLevelController.Timing.Now.DateTime.Date:yyyy/MM/dd}/OD/" +
-                        $"{CurrentODI_Level - 1}{UnityEngine.Random.Range(0, 10)}{UnityEngine.Random.Range(0, 10)}{UnityEngine.Random.Range(0, 10)}-{(char)('A' + UnityEngine.Random.Range(0, 26))}";
+            try
+            {
+                return $"{CurrentODI_Level}/{geoLevelController.Timing.Now.DateTime.Date:yyyy/MM/dd}/OD/" +
+                            $"{CurrentODI_Level - 1}{UnityEngine.Random.Range(0, 10)}{UnityEngine.Random.Range(0, 10)}{UnityEngine.Random.Range(0, 10)}-{(char)('A' + UnityEngine.Random.Range(0, 26))}";
 
             }
             catch (Exception e)
@@ -582,7 +581,7 @@ namespace TFTV
 
         public static void GenerateVoidOmenEvent(GeoLevelController geoLevelController, string reportData, bool voidOmenRolled, string removedVoidOmen, int voidOmenRoll = 0)
         {
-            try 
+            try
             {
                 string voidOmenTitle = "";
                 string voidOmenEventTextToDisplay = $"{TFTVCommonMethods.ConvertKeyToString("KEY_ODPIA_TEXT")} {reportData}";
@@ -604,9 +603,12 @@ namespace TFTV
 
                     voidOmenEventTextToDisplay += $"\n\n{TFTVCommonMethods.ConvertKeyToString(voidOmenFlavor)}";
 
-                    if ((voidOmenRoll == 5 || voidOmenRoll == 6) && geoLevelController.EventSystem.GetEventRecord("PROG_LE0_WIN")?.SelectedChoice >= 0)
+                    // TFTVLogger.Always($"record for HelenaOnOlena exists? {geoLevelController.EventSystem.GetEventRecord("HelenaOnOlena") !=null}");
+
+                    if ((voidOmenRoll == 5 || voidOmenRoll == 6) && geoLevelController.EventSystem.GetEventRecord("HelenaOnOlena")?.SelectedChoice == 0)
                     {
-                        voidOmenFlavor += $"\n\n{TFTVCommonMethods.ConvertKeyToString("VOID_OMEN_DESCRIPTION_TEXT_EXTRA_HELENA_" + voidOmenRoll)}";
+                        //  TFTVLogger.Always($"got here?");
+                        voidOmenEventTextToDisplay += $"\n\n{TFTVCommonMethods.ConvertKeyToString("VOID_OMEN_DESCRIPTION_TEXT_EXTRA_HELENA_" + voidOmenRoll)}";
                     }
 
                     TFTVVoidOmens.CreateVoidOmenObjective(voidOmenTitleFormat + voidOmenRoll, voidOmenDescriptionFormat + voidOmenRoll, geoLevelController);

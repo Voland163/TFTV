@@ -1652,7 +1652,7 @@ namespace TFTV
 
 
 
-        [HarmonyPatch(typeof(UIStateHomeLoadGame), "EnterState")]
+    /*    [HarmonyPatch(typeof(UIStateHomeLoadGame), "EnterState")]
         public static class UIStateHomeLoadGame_EnterState_Patch
         {
             private static void Postfix(UIStateHomeLoadGame __instance)
@@ -1660,10 +1660,15 @@ namespace TFTV
                 try
                 {
                     TFTVLogger.Always($"UIStateHomeLoadGame.EnterState PostFix running");
+
+                    TFTVLogger.Always($"Config settings:" +
+                    $"\nAmountOfExoticResourcesSetting: {TFTVNewGameOptions.AmountOfExoticResourcesSetting}\nResourceMultiplierSetting: {TFTVNewGameOptions.ResourceMultiplierSetting}" +
+                    $"\nDiplomaticPenaltiesSetting: {TFTVNewGameOptions.DiplomaticPenaltiesSetting}\nStaminaPenaltyFromInjurySetting: {TFTVNewGameOptions.StaminaPenaltyFromInjurySetting}" +
+                    $"\nMoreAmbushesSetting: {TFTVNewGameOptions.MoreAmbushesSetting}\nLimitedCaptureSetting: {TFTVNewGameOptions.LimitedCaptureSetting}\nLimitedHarvestingSetting: {TFTVNewGameOptions.LimitedHarvestingSetting}" +
+                    $"\nStrongerPandoransSetting {TFTVNewGameOptions.StrongerPandoransSetting}\nImpossibleWeaponsAdjustmentsSetting: {TFTVNewGameOptions.ImpossibleWeaponsAdjustmentsSetting}" +
+                    $"\nNoSecondChances: {TFTVNewGameOptions.NoSecondChances}");
+
                     TFTVDefsWithConfigDependency.ImplementConfigChoices();
-
-
-
                 }
                 catch (Exception e)
                 {
@@ -1671,7 +1676,7 @@ namespace TFTV
                     throw;
                 }
             }
-        }
+        }*/
 
         [HarmonyPatch(typeof(UIStateNewGeoscapeGameSettings), "EnterState")]
         public static class UIStateNewGeoscapeGameSettings_EnterState_Patch

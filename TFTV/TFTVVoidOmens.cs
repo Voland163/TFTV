@@ -1003,10 +1003,10 @@ namespace TFTV
                                 RemoveVoidOmenObjective(voidOmenTitleLocKey, geoLevelController);
                             }
                         }
-                        string explanation =
+                     /*   string explanation =
                           $"{TFTVCommonMethods.ConvertKeyToString("KEY_VOID_OMEN_REMOVED_BEHEMOTH")}";
 
-                        GameUtl.GetMessageBox().ShowSimplePrompt(explanation, MessageBoxIcon.None, MessageBoxButtons.OK, null);
+                        GameUtl.GetMessageBox().ShowSimplePrompt(explanation, MessageBoxIcon.None, MessageBoxButtons.OK, null);*/
                       
                     }
 

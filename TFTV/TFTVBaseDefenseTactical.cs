@@ -527,16 +527,30 @@ namespace TFTV
                         if (CheckIfBaseDefense(controller))
                         {
                             List<Breakable> consoles = UnityEngine.Object.FindObjectsOfType<Breakable>().Where(b => b.name.StartsWith("NJR_LoCov_Console")).ToList();
-                            Vector3[] position = new Vector3[3];
+                            Vector3[] position = new Vector3[consoles.Count];
 
                             consoles = consoles.OrderByDescending(c => c.transform.position.z).ToList();
 
-                            ConsolePositions.Add(consoles[0].transform.position.z + 1, consoles[0].transform.position.x);
-                            TFTVLogger.Always($"there is a console at {consoles[0].transform.position}, recording it in the dictionary as {ConsolePositions.ElementAt(0).Key} for z coordinate, and {ConsolePositions.ElementAt(0).Value} for x coordinate ");
+                            for (int x=0; x<consoles.Count; x++) 
+                            {
+                                if (consoles[x].transform.rotation.y == 1.0f) 
+                                {
+                                    ConsolePositions.Add(consoles[x].transform.position.z + 1, consoles[x].transform.position.x);
+                                    TFTVLogger.Always($"there is a console at {consoles[x].transform.position} with rotation {consoles[x].transform.rotation}, recording it in the dictionary as {ConsolePositions.ElementAt(x).Key} for z coordinate, and {ConsolePositions.ElementAt(x).Value} for x coordinate ");
+                                }
+                                else 
+                                {
+                                    ConsolePositions.Add(consoles[x].transform.position.z, consoles[x].transform.position.x+1);
+                                    TFTVLogger.Always($"there is a console at {consoles[x].transform.position} with rotation {consoles[x].transform.rotation}, recording it in the dictionary as {ConsolePositions.ElementAt(x).Key} for z coordinate, and {ConsolePositions.ElementAt(x).Value} for x coordinate ");
+                                }      
+                            }
+
+                          /*  ConsolePositions.Add(consoles[0].transform.position.z + 1, consoles[0].transform.position.x);
+                            TFTVLogger.Always($"there is a console at {consoles[0].transform.position} with rotation {consoles[0].transform.rotation}, recording it in the dictionary as {ConsolePositions.ElementAt(0).Key} for z coordinate, and {ConsolePositions.ElementAt(0).Value} for x coordinate ");
                             ConsolePositions.Add(consoles[1].transform.position.z, consoles[1].transform.position.x + 1);
-                            TFTVLogger.Always($"there is a console at {consoles[1].transform.position}, recording it in the dictionary as {ConsolePositions.ElementAt(1).Key} for z coordinate, and {ConsolePositions.ElementAt(1).Value} for x coordinate ");
+                            TFTVLogger.Always($"there is a console at {consoles[1].transform.position} with rotation {consoles[1].transform.rotation}, recording it in the dictionary as {ConsolePositions.ElementAt(1).Key} for z coordinate, and {ConsolePositions.ElementAt(1).Value} for x coordinate ");
                             ConsolePositions.Add(consoles[2].transform.position.z, consoles[2].transform.position.x + 1);
-                            TFTVLogger.Always($"there is a console at {consoles[2].transform.position}, recording it in the dictionary as {ConsolePositions.ElementAt(2).Key} for z coordinate, and {ConsolePositions.ElementAt(2).Value} for x coordinate ");
+                            TFTVLogger.Always($"there is a console at {consoles[2].transform.position} with rotation {consoles[2].transform.rotation}, recording it in the dictionary as {ConsolePositions.ElementAt(2).Key} for z coordinate, and {ConsolePositions.ElementAt(2).Value} for x coordinate ");*/
                         }
                     }
                     catch (Exception e)
@@ -625,7 +639,7 @@ namespace TFTV
 
                             if (CheckIfBaseDefense(controller))
                             {
-                                List<Breakable> consoles = UnityEngine.Object.FindObjectsOfType<Breakable>().Where(b => b.name.StartsWith("NJR_LoCov_Console")).ToList();
+                                List<Breakable> consoles = UnityEngine.Object.FindObjectsOfType<Breakable>().Where(b => b.name.StartsWith("NJR_LoCov_Console") && b.GetToughness()>0).ToList();
                                 Vector3[] culledConsolePositions = new Vector3[3];
 
                                 consoles = consoles.OrderByDescending(c => c.transform.position.z).ToList();
@@ -637,7 +651,9 @@ namespace TFTV
                                     GetConsoles();
                                 }
 
-                                for (int x = 0; x < 3; x++)
+                                TFTVLogger.Always($"Console Positions count: {ConsolePositions.Count()}");
+
+                                for (int x = 0; x < ConsolePositions.Count; x++)
                                 {
                                     foreach (Breakable breakable in consoles)
                                     {
@@ -652,12 +668,11 @@ namespace TFTV
                                             culledConsolePositions[x].y = breakable.transform.position.y;
                                             culledConsolePositions[x].x = ConsolePositions.ElementAt(x).Value;
                                             culledConsolePositions[x].z = ConsolePositions.ElementAt(x).Key;
-
                                         }
                                     }
                                 }
 
-                                for (int x = 0; x < 3; x++)
+                                for (int x = 0; x < culledConsolePositions.Count(); x++)
                                 {
                                     if (culledConsolePositions[x] != null && culledConsolePositions[x] != new Vector3(0, 0, 0))
                                     {
@@ -1546,7 +1561,7 @@ namespace TFTV
                         otherCentralZones.Remove(centralZone);
 
 
-                        for (int i = 0; i < TFTVReleaseOnly.DifficultyOrderConverter(controller.Difficulty.Order); i++)
+                        for (int i = 0; i < Mathf.Min(TFTVReleaseOnly.DifficultyOrderConverter(controller.Difficulty.Order), 4); i++)
                         {
                             ActorDeployData actorDeployData = sentinels[i].GenerateActorDeployData();
                             actorDeployData.InitializeInstanceData();

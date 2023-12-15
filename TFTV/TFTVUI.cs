@@ -1895,7 +1895,7 @@ namespace TFTV
 
                         try
                         {
-                            TFTVLogger.Always($"Skip Movies check passed");
+                          //  TFTVLogger.Always($"Skip Movies check passed");
 
                             if (____sourcePlaybackDef == null)
                             {
@@ -1903,7 +1903,7 @@ namespace TFTV
                             }
                             if (____sourcePlaybackDef.ResourcePath.Contains("LandingSequences"))
                             {
-                                TFTVLogger.Always($"LandingSequence getting canceled");
+                               // TFTVLogger.Always($"LandingSequence getting canceled");
                                 typeof(UIStateTacticalCutscene).GetMethod("OnCancel", BindingFlags.NonPublic | BindingFlags.Instance)?.Invoke(__instance, null);
                             }
                         }

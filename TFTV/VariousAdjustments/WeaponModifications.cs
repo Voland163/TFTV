@@ -214,7 +214,7 @@ namespace PRMBetterClasses.VariousAdjustments
             foreach (WeaponDef kaosWepaon in kaosWeapons)
             {
                 // Reduce base malfunction chance for all to -30% (from -20%)
-                kaosWepaon.WeaponMalfunction.BaseMalfunctionPercent = -30;
+               /// kaosWepaon.WeaponMalfunction.BaseMalfunctionPercent = -30;
                 // Different changes based on weapon GUID
                 switch (kaosWepaon.Guid)
                 {
@@ -226,6 +226,8 @@ namespace PRMBetterClasses.VariousAdjustments
                     case RedemptorGUID: // KS_Redemptor_WeaponDef -> ER 13, damage 40
                         kaosWepaon.SpreadDegrees = 40.99f / 13;
                         kaosWepaon.DamagePayload.DamageKeywords.Find(dkp => dkp.DamageKeywordDef == damageKeywords.DamageKeyword).Value = 40;
+                        kaosWepaon.DamagePayload.ArmourShred = 0.0f;
+                        kaosWepaon.DamagePayload.ArmourPiercing = 0.0f;
                         break;
                     case SubjectorGUID: // KS_Subjector_WeaponDef -> no changes yet
                         break;

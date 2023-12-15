@@ -188,14 +188,12 @@ namespace TFTV
                     switch (config.difficultyOnTactical)
                     {
                         case TFTVConfig.DifficultyOnTactical.STORY:
-
                             return DefCache.GetDef<GameDifficultyLevelDef>("StoryMode_DifficultyLevelDef");
 
                         case TFTVConfig.DifficultyOnTactical.ROOKIE:
                             return DefCache.GetDef<GameDifficultyLevelDef>("Easy_GameDifficultyLevelDef");
 
                         case TFTVConfig.DifficultyOnTactical.VETERAN:
-
                             return DefCache.GetDef<GameDifficultyLevelDef>("Standard_GameDifficultyLevelDef");
 
                         case TFTVConfig.DifficultyOnTactical.HERO:
@@ -206,12 +204,10 @@ namespace TFTV
 
                         case TFTVConfig.DifficultyOnTactical.ETERMES:
                             return DefCache.GetDef<GameDifficultyLevelDef>("Etermes_DifficultyLevelDef");
-
                     }
                 }
 
                 return null;
-
             }
 
             catch (Exception e)

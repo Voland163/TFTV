@@ -1,5 +1,4 @@
 ﻿using Base;
-using Base.Core;
 using Base.Defs;
 using Base.Entities.Abilities;
 using Base.Entities.Effects;
@@ -46,7 +45,6 @@ namespace TFTV
                 FoodAndMutagenGeneration.ChangesToFoodAndMutagenGeneration();
                 PandoranCapture.ChangesToPandoranCapture();
                 StrongerPandorans.ImplementStrongerPandorans();
-
             }
             catch (Exception e)
             {
@@ -120,7 +118,7 @@ namespace TFTV
                         anu.ResourceTradingRatios = tradingRatios;
                         nj.ResourceTradingRatios = tradingRatios;
                         syn.ResourceTradingRatios = tradingRatios;
-
+                        TFTVLogger.Always($"EqualizeTrade is on");
                     }
                     else
                     {
@@ -154,10 +152,14 @@ namespace TFTV
                         new TradingRatio() { OfferResource = ResourceType.Tech, OfferQuantity = 2, RecieveQuantity = 8, RecieveResource = ResourceType.Supplies },
                         new TradingRatio() { OfferResource = ResourceType.Tech, OfferQuantity = 2, RecieveQuantity = 8, RecieveResource = ResourceType.Materials }
                     };
+                        anu.ResourceTradingRatios = tradingRatiosAnu;
+                        nj.ResourceTradingRatios = tradingRatiosNJ;
+                        syn.ResourceTradingRatios = tradingRatiosSyn;
 
+                        TFTVLogger.Always($"EqualizeTrade is off");
                     }
 
-                    TFTVLogger.Always($"EqualizeTrade Implemented? {config.EqualizeTrade}");
+
                 }
                 catch (Exception e)
                 {
@@ -180,7 +182,8 @@ namespace TFTV
                         RemoveMutagenHarvestingResearch();
                         MoveFoodProductionFacilityToImmediatelyAvailable();
                         ChangesToFoodAndMutagenGenerationImplemented = true;
-                        TFTVLogger.Always($"Limited Harvesting Setting implemented");
+                        TFTVLogger.Always($"Limited Harvesting is on");
+                        return;
                     }
                     else if (ChangesToFoodAndMutagenGenerationImplemented && !TFTVNewGameOptions.LimitedHarvestingSetting)
                     {
@@ -190,6 +193,7 @@ namespace TFTV
                         ChangesToFoodAndMutagenGenerationImplemented = false;
                         TFTVLogger.Always($"Limited Harvesting Setting reverted");
                     }
+                    TFTVLogger.Always($"Limited Harvesting Setting is off");
                 }
                 catch (Exception e)
                 {
@@ -310,6 +314,7 @@ namespace TFTV
                     DefCache.GetDef<ResearchDbDef>("pp_ResearchDB").Researches.Remove(mutagenHarvesting);
 
                     ResearchDef mutationTech = DefCache.GetDef<ResearchDef>("ANU_MutationTech_ResearchDef");
+
                     List<ResearchRewardDef> mutationUnlocks = new List<ResearchRewardDef>(mutationTech.Unlocks)
                 {
                     mutagenHarvesting.Unlocks[0]
@@ -317,8 +322,7 @@ namespace TFTV
 
                     mutationTech.Unlocks = mutationUnlocks.ToArray();
 
-
-
+                  //  TFTVLogger.Always($"PX_MutagenHarvesting_ResearchDef should have been removed; functionality added to MutationTech");
                 }
                 catch (Exception e)
                 {
@@ -330,12 +334,19 @@ namespace TFTV
             {
                 try
                 {
-
                     ResearchDef mutagenHarvesting = DefCache.GetDef<ResearchDef>("PX_MutagenHarvesting_ResearchDef");
                     DefCache.GetDef<ResearchDbDef>("pp_ResearchDB").Researches.Add(mutagenHarvesting);
                     ResearchDef mutationTech = DefCache.GetDef<ResearchDef>("ANU_MutationTech_ResearchDef");
+                    ResearchRewardDef mutagenHarvestingResearchReward = mutagenHarvesting.Unlocks[0];
 
-                    mutationTech.Unlocks = mutationTech.Unlocks.RemoveAt(mutationTech.Unlocks.Length - 1);
+                    if (mutationTech.Unlocks.Contains(mutagenHarvestingResearchReward))
+                    {
+                      //  TFTVLogger.Always($"mutation tech contains {mutagenHarvestingResearchReward.name}");
+
+                        List<ResearchRewardDef> mutationUnlocks = new List<ResearchRewardDef>(mutationTech.Unlocks);
+                        mutationUnlocks.Remove(mutagenHarvestingResearchReward);
+                        mutationTech.Unlocks = mutationUnlocks.ToArray();
+                    }
                 }
                 catch (Exception e)
                 {
@@ -357,14 +368,18 @@ namespace TFTV
                     {
                         MakeCaptureModuleResearchAvailable(TFTVNewGameOptions.LimitedCaptureSetting);
                         ChangesToCapturingPandoransImplemented = true;
-                        TFTVLogger.Always($"Limited Capture implemented; on");
+                        TFTVLogger.Always($"Limited Capture is on");
+                        return;
                     }
                     else if (ChangesToCapturingPandoransImplemented && !TFTVNewGameOptions.LimitedCaptureSetting)
                     {
                         MakeCaptureModuleResearchAvailable(TFTVNewGameOptions.LimitedCaptureSetting);
                         ChangesToCapturingPandoransImplemented = false;
-                        TFTVLogger.Always($"Limited Capture implemented; off");
+                        TFTVLogger.Always($"Limited Capture reverted");
                     }
+
+                    TFTVLogger.Always($"Limited Capture is off");
+
                 }
                 catch (Exception e)
                 {
@@ -412,34 +427,34 @@ namespace TFTV
                 {
                     TFTVConfig config = TFTVMain.Main.Config;
 
-                    TFTVLogger.Always($"AtImplementStrongerPandorans check");
-
                     if (TFTVNewGameOptions.StrongerPandoransSetting && !StrongerPandoransImplemented)
                     {
-                        TFTVLogger.Always("Stronger Pandorans is on!");
+                        TFTVLogger.Always("Stronger Pandorans is on");
                         BEBuff_ArthronsTritons();
                         BEBuff_StartingEvolution();
                         BEBuff_Queen();
                         BEBUff_SirenChiron();
                         BEBuff_SmallCharactersAndSentinels();
                         StrongerPandoransImplemented = true;
+                        return;
                     }
-                    else if(!TFTVNewGameOptions.StrongerPandoransSetting && StrongerPandoransImplemented)
+                    else if (!TFTVNewGameOptions.StrongerPandoransSetting && StrongerPandoransImplemented)
                     {
-                     
+
                         Revert_BEBuff_ArthronsTritons();
                         Revert_BEBuff_StartingEvolution();
                         Revert_BEBuff_Queen();
                         Revert_BEBUff_SirenChiron();
                         Revert_BEBuff_SmallCharactersAndSentinels();
                         StrongerPandoransImplemented = false;
-                        TFTVLogger.Always("Stronger Pandorans is off!");
+                        TFTVLogger.Always("Stronger Pandorans reverted");
                     }
+
+                    TFTVLogger.Always("Stronger Pandorans is off");
                 }
                 catch (Exception e)
                 {
                     TFTVLogger.Error(e);
-
                 }
             }
 
@@ -484,7 +499,7 @@ namespace TFTV
                     {
                         TriotonSniper.Data.Abilites = new TacticalAbilityDef[]
                         {
-                   
+
                         };
                     }
 
@@ -492,7 +507,7 @@ namespace TFTV
                     {
                         crab.Data.Abilites = new TacticalAbilityDef[]
                         {
-                    
+
                         };
                     }
 
@@ -552,8 +567,8 @@ namespace TFTV
                     TacticalAbilityDef extremeFocus = DefCache.GetDef<TacticalAbilityDef>("ExtremeFocus_AbilityDef");
                     TacticalAbilityDef closeQuarters = DefCache.GetDef<TacticalAbilityDef>("CloseQuarters_AbilityDef");
                     TacticalAbilityDef bloodlust = DefCache.GetDef<TacticalAbilityDef>("BloodLust_AbilityDef");
-               
-                    
+
+
                     fishArmsParalyze.DamagePayload.DamageKeywords[1].Value = 8;
                     fishArmsEliteParalyze.DamagePayload.DamageKeywords[1].Value = 16;
 
@@ -621,7 +636,7 @@ namespace TFTV
                     crabGunResearch.InitialStates[4].State = ResearchState.Unlocked;
                     fishWretchResearch.InitialStates[4].State = ResearchState.Unlocked;
                     fishFootpadResearch.InitialStates[4].State = ResearchState.Unlocked;
-                    fishBasicResearch.Unlocks = new ResearchRewardDef[] {DefCache.GetDef<UnitTemplateResearchRewardDef>("ALN_FishmanBasic_ResearchDef_UnitTemplateResearchRewardDef_0") };
+                    fishBasicResearch.Unlocks = new ResearchRewardDef[] { DefCache.GetDef<UnitTemplateResearchRewardDef>("ALN_FishmanBasic_ResearchDef_UnitTemplateResearchRewardDef_0") };
                 }
                 catch (Exception e)
                 {
@@ -637,7 +652,7 @@ namespace TFTV
                     ResearchDef fishWretchResearch = DefCache.GetDef<ResearchDef>("ALN_FishmanSneaker_ResearchDef");
                     ResearchDef fishBasicResearch = DefCache.GetDef<ResearchDef>("ALN_FishmanBasic_ResearchDef");
                     ResearchDef fishFootpadResearch = DefCache.GetDef<ResearchDef>("ALN_FishmanAssault_ResearchDef");
-                   
+
 
                     crabGunResearch.InitialStates[4].State = ResearchState.Completed;
                     fishWretchResearch.InitialStates[4].State = ResearchState.Completed;
@@ -685,7 +700,7 @@ namespace TFTV
             {
                 queenSmasher.DamagePayload.DamageKeywords[0],
                 queenSmasher.DamagePayload.DamageKeywords[1],
-               
+
 
             };
 
@@ -700,7 +715,7 @@ namespace TFTV
                     WeaponDef headSpitter = DefCache.GetDef<WeaponDef>("Queen_Head_Spitter_Goo_WeaponDef");
                     DamageKeywordDef acid = DefCache.GetDef<DamageKeywordDef>("Acid_DamageKeywordDataDef");
                     headSpitter.DamagePayload.DamageKeywords.RemoveLast();
-                        
+
                 }
                 catch (Exception e)
                 {
@@ -795,10 +810,10 @@ namespace TFTV
                     WeaponDef sirenArmisAcidTorso = DefCache.GetDef<WeaponDef>("Siren_Torso_Orichalcum_WeaponDef");
                     ShootAbilityDef AcidSpray = DefCache.GetDef<ShootAbilityDef>("Siren_SpitAcid_AbilityDef");
 
-                   
+
 
                     sirenPerception.PerceptionRange = 30;
-                    
+
                     sirenBanshee.Data.Will = 8;
                     sirenBanshee.Data.BodypartItems[0] = DefCache.GetDef<TacticalItemDef>("Siren_Head_Buffer_BodyPartDef");
                     sirenBanshee.Data.Speed = 4;
@@ -825,7 +840,7 @@ namespace TFTV
                     sirenArmis.Data.Abilites = new TacticalAbilityDef[]
                     {
                 sirenArmis.Data.Abilites[0]
-              
+
                     };
 
                     /*  sirenArmisHead.Abilities = new AbilityDef[]
@@ -880,9 +895,9 @@ namespace TFTV
                 try
                 {
 
-              
+
                     TacticalItemDef sirenLegsAgile = DefCache.GetDef<TacticalItemDef>("Siren_Legs_Agile_BodyPartDef");
-     
+
                     TacticalItemDef sirenScremingHead = DefCache.GetDef<TacticalItemDef>("Siren_Head_Screamer_BodyPartDef");
                     PsychicScreamAbilityDef sirenPsychicScream = DefCache.GetDef<PsychicScreamAbilityDef>("Siren_PsychicScream_AbilityDef");
 
@@ -895,7 +910,7 @@ namespace TFTV
                     WeaponDef sirenAcidTorso = DefCache.GetDef<WeaponDef>("Siren_Torso_AcidSpitter_WeaponDef");
                     WeaponDef sirenArmisAcidTorso = DefCache.GetDef<WeaponDef>("Siren_Torso_Orichalcum_WeaponDef");
                     ShootAbilityDef AcidSpray = DefCache.GetDef<ShootAbilityDef>("Siren_SpitAcid_AbilityDef");
-                
+
                     WeaponDef chironBlastMortar = DefCache.GetDef<WeaponDef>("Chiron_Abdomen_Mortar_WeaponDef");
                     WeaponDef chironCristalMortar = DefCache.GetDef<WeaponDef>("Chiron_Abdomen_Crystal_Mortar_WeaponDef");
                     WeaponDef chironAcidMortar = DefCache.GetDef<WeaponDef>("Chiron_Abdomen_Acid_Mortar_WeaponDef");
@@ -932,10 +947,10 @@ namespace TFTV
                 DefCache.GetDef<TacticalAbilityDef>("IgnorePain_AbilityDef"),
                     };
 
-                 /*   sirenArmisHead.Abilities = new AbilityDef[]
-                    {
-                sirenArmisHead.Abilities[0],
-                    };*/
+                    /*   sirenArmisHead.Abilities = new AbilityDef[]
+                       {
+                   sirenArmisHead.Abilities[0],
+                       };*/
 
                     chironFireHeavy.Data.Speed = 8;
                     chironPoisonHeavy.Data.Speed = 8;
@@ -1020,8 +1035,8 @@ namespace TFTV
                     fireworm.DeploymentCost = 35;    // 35
                     acidworm.DeploymentCost = 35;    // 35
                     poisonworm.DeploymentCost = 35;  // 35
-                    
-                    
+
+
                     acidWorm.Speed = wormSpeed;
                     fireWorm.Speed = wormSpeed;
                     poisonWorm.Speed = wormSpeed;
@@ -1035,7 +1050,7 @@ namespace TFTV
                     fWormDamage.DamagePayload.DamageKeywords = new List<DamageKeywordPair>()
                 {
                 new DamageKeywordPair{DamageKeywordDef = Shared.SharedDamageKeywords.BurningKeyword, Value = fWormFireDamage },
-               
+
                 };
 
                     pWormDamage.DamagePayload.DamageKeywords = new List<DamageKeywordPair>()

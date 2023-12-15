@@ -91,12 +91,13 @@ namespace TFTV
 
                 newAIStatusConsiderationTBTV.StatusDef = onTurnEndTBTV;
 
-                string nameAIStatusConsiderationTBTV_OnAttack = "AIConsiderationNoFleeOnAttack";
+                //counter-productive, if it has no weapons, player won't attack it
+             /*   string nameAIStatusConsiderationTBTV_OnAttack = "AIConsiderationNoFleeOnAttack";
                 string gUIDAIStatusConsiderationTBTV_OnAttack = "{908A99C2-AC90-4BC6-A812-9DC3953DAE00}";
 
                 AIStatusConsiderationDef newAIStatusConsiderationTBTVOnAttack = Helper.CreateDefFromClone(sourceStatusConsideration, gUIDAIStatusConsiderationTBTV_OnAttack, nameAIStatusConsiderationTBTV_OnAttack);
 
-                newAIStatusConsiderationTBTVOnAttack.StatusDef = onAttackTBTV;
+                newAIStatusConsiderationTBTVOnAttack.StatusDef = onAttackTBTV;*/
 
 
                 string nameAIStatusConsiderationOilCrab = "AIConsiderationNoFleeOilCrab";
@@ -125,7 +126,7 @@ namespace TFTV
 
                 AIAdjustedConsideration aIAdjustedConsiderationSelfRepair = new AIAdjustedConsideration() { Consideration = newAIStatusConsiderationSelfRepair, ScoreCurve = moveToRandomWP.EarlyExitConsiderations[0].ScoreCurve };
                 AIAdjustedConsideration aIAdjustedConsiderationTBTV = new AIAdjustedConsideration() { Consideration = newAIStatusConsiderationTBTV, ScoreCurve = moveToRandomWP.EarlyExitConsiderations[0].ScoreCurve };
-                AIAdjustedConsideration aIAdjustedConsiderationTBTVonAttack = new AIAdjustedConsideration() { Consideration = newAIStatusConsiderationTBTVOnAttack, ScoreCurve = moveToRandomWP.EarlyExitConsiderations[0].ScoreCurve };
+               // AIAdjustedConsideration aIAdjustedConsiderationTBTVonAttack = new AIAdjustedConsideration() { Consideration = newAIStatusConsiderationTBTVOnAttack, ScoreCurve = moveToRandomWP.EarlyExitConsiderations[0].ScoreCurve };
                 AIAdjustedConsideration aIAdjustedConsiderationOilCrab = new AIAdjustedConsideration() { Consideration = newAIStatusConsiderationOilCrab, ScoreCurve = moveToRandomWP.EarlyExitConsiderations[0].ScoreCurve };
                 AIAdjustedConsideration aIAdjustedConsiderationOilFish = new AIAdjustedConsideration() { Consideration = newAIStatusConsiderationOilFish, ScoreCurve = moveToRandomWP.EarlyExitConsiderations[0].ScoreCurve };
 
@@ -133,7 +134,7 @@ namespace TFTV
 
                 List<AIAdjustedConsideration> aIAdjustedConsiderationsHumanoidsFlee = new List<AIAdjustedConsideration>()
                 {
-                  aIAdjustedConsiderationSelfRepair, aIAdjustedConsiderationTBTV, aIAdjustedConsiderationTBTV, aIAdjustedConsiderationTBTVonAttack, aIAdjustedConsiderationOilCrab, aIAdjustedConsiderationOilFish
+                  aIAdjustedConsiderationSelfRepair, aIAdjustedConsiderationTBTV, aIAdjustedConsiderationTBTV, aIAdjustedConsiderationOilCrab, aIAdjustedConsiderationOilFish
                 };
 
                 /*   List<AIAdjustedConsideration> aIAdjustedConsiderationsCrabmenFlee = new List<AIAdjustedConsideration>()

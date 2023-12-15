@@ -198,3 +198,12 @@ Once a mutation is applied, the operative won't be able to revert back to their 
 
 The :PRIEST: PRIEST soldier class has access to UNIQUE HEAD MUTATIONS greatly enhancing their powers.",,,,,,,,
 KEY_GEO_HINT_MUTATION_SCREEN_NAME,Text,,MUTATING A SOLDIER,,,,,,,,
+KEY_TUTORIAL_RESOURCES_DESCRIPTION,Text,,"On completing a mission, all gathered items and resources are added to your overall SUPPLIES. These can be accessed instantly anywhere on the GEOSCAPE, regardless of location.
+
+Soldiers get fatigued during battle, LOSING 1 STAMINA POINT PER TURN (max 10 per battle).They also lose ALL STAMINA if one of their bodyparts is disabled during the mission.
+
+If an operative starts a mission with 10 STAMINA OR LESS, they will only have 3 Action Points, instead of 4. If the operative has 0 STAMINA, they will only have 2 Action Points.
+
+Your soldiers will slowly recover STAMINA in the aircraft if it has a FAR-M passenger module, and much faster at base, as long as it has a functioning Living Quarters. They can also recover HITPOINTS at the base if it has a functioning Medical Facility.
+
+RETURN TO YOUR BASE SO YOUR SOLDIERS CAN RECOVER",,,,,,,,
