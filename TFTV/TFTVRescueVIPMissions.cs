@@ -1,25 +1,23 @@
-﻿using Base.Core;
-using Base.Entities.Statuses;
+﻿using Base;
+using Base.Core;
 using Base.Entities;
-using Base;
+using Base.Entities.Statuses;
+using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.Levels.ActorDeployment;
 using PhoenixPoint.Common.Levels.Missions;
+using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.ActorsInstance;
 using PhoenixPoint.Tactical.Entities.Statuses;
 using PhoenixPoint.Tactical.Entities.StructuralTargets;
-using PhoenixPoint.Tactical.Entities;
-using PhoenixPoint.Tactical.Levels.FactionObjectives;
 using PhoenixPoint.Tactical.Levels;
+using PhoenixPoint.Tactical.Levels.FactionObjectives;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
-using PhoenixPoint.Common.Core;
 
 namespace TFTV
 {
@@ -27,6 +25,17 @@ namespace TFTV
     {
         private static readonly SharedData Shared = TFTVMain.Shared;
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
+
+        private static readonly List<CustomMissionTypeDef> _VIPRescueMissions = new List<CustomMissionTypeDef>()
+
+                {DefCache.GetDef<CustomMissionTypeDef>("Bcr5_CustomMissionTypeDef"),
+                DefCache.GetDef<CustomMissionTypeDef>("Bcr7_CustomMissionTypeDef"),
+                DefCache.GetDef<CustomMissionTypeDef>("StoryLE0_CustomMissionTypeDef"),
+                DefCache.GetDef<CustomMissionTypeDef>("Bcr1_CustomMissionTypeDef")
+
+                };
+
+
         public static void CheckAndImplementVIPRescueMIssions(TacticalLevelController controller)
         {
             try
@@ -50,11 +59,7 @@ namespace TFTV
         {
             try
             {
-                CustomMissionTypeDef rescueSparkMisson = DefCache.GetDef<CustomMissionTypeDef>("Bcr5_CustomMissionTypeDef");
-                CustomMissionTypeDef rescueFelipeMisson = DefCache.GetDef<CustomMissionTypeDef>("Bcr7_CustomMissionTypeDef");
-                CustomMissionTypeDef rescueHelenaMission = DefCache.GetDef<CustomMissionTypeDef>("StoryLE0_CustomMissionTypeDef");
-
-                if (controller.TacMission.MissionData.MissionType == rescueSparkMisson || controller.TacMission.MissionData.MissionType == rescueFelipeMisson || controller.TacMission.MissionData.MissionType == rescueHelenaMission)
+                if (_VIPRescueMissions.Contains(controller.TacMission.MissionData.MissionType))
                 {
                     //TFTVLogger.Always($"The mission is to rescue Mr. Sparks!");
                     return true;
@@ -69,15 +74,13 @@ namespace TFTV
             }
         }
 
-
-
         private static void ChangeRescueeAllegiance(TacticalLevelController controller)
         {
             try
             {
                 if (CheckIfMissionIsVIPRescue(controller)) //need another check after Sparks becomes Phoenix
                 {
-                    TFTVLogger.Always($"The mission is to rescue Mr. Sparks, Felipe or Dr. Helena and we have to make him Neutral so he doesn't die!");
+                    TFTVLogger.Always($"The mission is to rescue Mr. Sparks, Felipe, Dr. Calendar or Dr. Helena and we have to make him Neutral so he doesn't die!");
                     TacticalActor phoenixCivilian = controller.GetFactionByCommandName("px").TacticalActors.FirstOrDefault(a => a.HasGameTag(Shared.SharedGameTags.CivilianTag));
 
                     if (phoenixCivilian != null)
@@ -93,7 +96,6 @@ namespace TFTV
                         if (civilian != null && civilian.Status.HasStatus(zoneOfControlStatusDef))
                         {
                             civilian.Status.UnapplyStatus(civilian.Status.GetStatusByName(zoneOfControlStatusDef.EffectName));
-
                         }
 
                     }
@@ -125,7 +127,6 @@ namespace TFTV
                 throw;
             }
         }
-
 
         private static Vector3 FindSpotForSpawnPoint(TacticalActor tacticalActor, TacticalLevelController controller)
         {
@@ -180,7 +181,6 @@ namespace TFTV
 
 
         }
-
 
         private static void CreateStructuralTargetForObjective(TacticalLevelController controller)
         {
@@ -350,7 +350,6 @@ namespace TFTV
             }
         }
 
-
         public static void TalkingPointConsoleActivated(StatusComponent statusComponent, Status status, TacticalLevelController controller)
         {
             try
@@ -363,9 +362,6 @@ namespace TFTV
                         TFTVLogger.Always($"console name {console.name} at position {console.Pos}");
 
                         TurnRescueeOverToPhoenix(controller);
-
-
-
                     }
                 }
             }

@@ -1,9 +1,7 @@
 ﻿using Base;
-using Base.Core;
 using Base.Defs;
 using Base.Entities.Effects;
 using Base.UI;
-using Base.UI.MessageBox;
 using com.ootii.Helpers;
 using HarmonyLib;
 using PhoenixPoint.Common.ContextHelp;
@@ -31,7 +29,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using static EnviroSeasons;
 
 namespace TFTV
 {
@@ -190,11 +187,11 @@ namespace TFTV
 
         public static void ImplementHavenDefendersAlwaysHostile(TacticalLevelController controller)
         {
-            try 
+            try
             {
-                if (controller.TacMission.MissionData.MissionType.MissionTypeTag != sharedData.SharedGameTags.HavenDefenseMissionTag) 
+                if (controller.TacMission.MissionData.MissionType.MissionTypeTag != sharedData.SharedGameTags.HavenDefenseMissionTag)
                 {
-                    return;    
+                    return;
                 }
 
                 if (VoidOmensCheck[5])
@@ -253,7 +250,7 @@ namespace TFTV
                             {
                                 missionTypeDef.ParticipantsRelations[2].MutualRelation = FactionRelation.Friend;
                             }
-                     
+
                             EffectDef[] predeterminedFactionEffects = new EffectDef[1] { defendersCanBeRecruited };
                             missionTypeDef.ParticipantsData[1].PredeterminedFactionEffects = predeterminedFactionEffects;
                             missionTypeDef.FactionItemsRange.Min = 0;
@@ -274,13 +271,13 @@ namespace TFTV
         }
 
 
-        public static void ImplementVoidOmens(GeoLevelController level)
+        public static void ImplementVoidOmens(GeoLevelController controller)
         {
             try
             {
                 // VoidOmensCheck = new bool[20];
 
-                if (CheckFordVoidOmensInPlay(level).Contains(1))
+                if (CheckFordVoidOmensInPlay(controller).Contains(1))
                 {
                     //VoidOmen1Active = true;
                     VoidOmensCheck[1] = true;
@@ -292,7 +289,7 @@ namespace TFTV
                     AmbushALN.CratesDeploymentPointsRange.Max = 70;
                     // VoidOmensCheck[1] = true;
                 }
-                else if (!CheckFordVoidOmensInPlay(level).Contains(1) && VoidOmensCheck[1])
+                else if (!CheckFordVoidOmensInPlay(controller).Contains(1) && VoidOmensCheck[1])
                 {
                     VoidOmensCheck[1] = false;
                     AmbushALN.ParticipantsData[0].ReinforcementsTurns.Max = 2;
@@ -303,14 +300,14 @@ namespace TFTV
                     //  VoidOmensCheck[1] = false;
                     TFTVLogger.Always("The check for VO#1 went ok");
                 }
-                if (CheckFordVoidOmensInPlay(level).Contains(2))
+                if (CheckFordVoidOmensInPlay(controller).Contains(2))
                 {
                     PartyDiplomacySettingsDef partyDiplomacySettingsDef = DefCache.GetDef<PartyDiplomacySettingsDef>("PartyDiplomacySettingsDef");
                     partyDiplomacySettingsDef.InfiltrationFactionMultiplier = 0.5f;
                     partyDiplomacySettingsDef.InfiltrationLeaderMultiplier = 0.75f;
                     VoidOmensCheck[2] = true;
                 }
-                else if (!CheckFordVoidOmensInPlay(level).Contains(2) && VoidOmensCheck[2])
+                else if (!CheckFordVoidOmensInPlay(controller).Contains(2) && VoidOmensCheck[2])
                 {
                     PartyDiplomacySettingsDef partyDiplomacySettingsDef = DefCache.GetDef<PartyDiplomacySettingsDef>("PartyDiplomacySettingsDef");
                     partyDiplomacySettingsDef.InfiltrationFactionMultiplier = 1f;
@@ -318,36 +315,36 @@ namespace TFTV
                     VoidOmensCheck[2] = false;
                     TFTVLogger.Always("The check for VO#2 went ok");
                 }
-                if (CheckFordVoidOmensInPlay(level).Contains(3))
+                if (CheckFordVoidOmensInPlay(controller).Contains(3))
                 {
                     VoidOmensCheck[3] = true;
                     // Logger.Always(voidOmen + j + " is now in effect, held in variable " + voidOmen + i);
                     //  VoidOmensCheck[3] = true;
                 }
-                else if (!CheckFordVoidOmensInPlay(level).Contains(3) && VoidOmensCheck[3])
+                else if (!CheckFordVoidOmensInPlay(controller).Contains(3) && VoidOmensCheck[3])
                 {
                     VoidOmensCheck[3] = false;
                     //  VoidOmensCheck[3] = false;
                     TFTVLogger.Always("The check for VO#3 went ok");
                 }
-                if (CheckFordVoidOmensInPlay(level).Contains(4))
+                if (CheckFordVoidOmensInPlay(controller).Contains(4))
                 {
                     VoidOmensCheck[4] = true;
 
                     //  VoidOmensCheck[4] = true;
                 }
-                else if (!CheckFordVoidOmensInPlay(level).Contains(4) && VoidOmensCheck[4])
+                else if (!CheckFordVoidOmensInPlay(controller).Contains(4) && VoidOmensCheck[4])
                 {
                     VoidOmensCheck[4] = false;
                     // VoidOmensCheck[4] = false;
                     TFTVLogger.Always("The check for VO#4 went ok");
 
                 }
-                if (CheckFordVoidOmensInPlay(level).Contains(5))
+                if (CheckFordVoidOmensInPlay(controller).Contains(5))
                 {
                     ContextHelpHintDbDef alwaysDisplayedTacticalHintsDbDef = DefCache.GetDef<ContextHelpHintDbDef>("AlwaysDisplayedTacticalHintsDbDef");
                     ContextHelpHintDef hostileDefenders = DefCache.GetDef<ContextHelpHintDef>("HostileDefenders");
-                   
+
                     if (!alwaysDisplayedTacticalHintsDbDef.Hints.Contains(hostileDefenders))
                     {
                         alwaysDisplayedTacticalHintsDbDef.Hints.Add(hostileDefenders);
@@ -382,7 +379,7 @@ namespace TFTV
                     //Logger.Always(voidOmen + j + " is now in effect, held in variable " + voidOmen + i);
                     VoidOmensCheck[5] = true;
                 }
-                else if (!CheckFordVoidOmensInPlay(level).Contains(5) && VoidOmensCheck[5])
+                else if (!CheckFordVoidOmensInPlay(controller).Contains(5) && VoidOmensCheck[5])
                 {
                     ContextHelpHintDbDef alwaysDisplayedTacticalHintsDbDef = DefCache.GetDef<ContextHelpHintDbDef>("AlwaysDisplayedTacticalHintsDbDef");
                     ContextHelpHintDef hostileDefenders = DefCache.GetDef<ContextHelpHintDef>("HostileDefenders");
@@ -417,18 +414,18 @@ namespace TFTV
                     TFTVLogger.Always("The check for VO#5 went ok");
 
                 }
-                if (CheckFordVoidOmensInPlay(level).Contains(6))
+                if (CheckFordVoidOmensInPlay(controller).Contains(6))
                 {
-                    level.CurrentDifficultyLevel.EvolutionPointsGainOnMissionLoss = 20;
-                    level.CurrentDifficultyLevel.AlienBaseTypeEvolutionParams[0].EvolutionPerDestroyedBase = 30;
-                    level.CurrentDifficultyLevel.AlienBaseTypeEvolutionParams[1].EvolutionPerDestroyedBase = 60;
-                    level.CurrentDifficultyLevel.AlienBaseTypeEvolutionParams[2].EvolutionPerDestroyedBase = 90;
+                    controller.CurrentDifficultyLevel.EvolutionPointsGainOnMissionLoss = 20;
+                    controller.CurrentDifficultyLevel.AlienBaseTypeEvolutionParams[0].EvolutionPerDestroyedBase = 30;
+                    controller.CurrentDifficultyLevel.AlienBaseTypeEvolutionParams[1].EvolutionPerDestroyedBase = 60;
+                    controller.CurrentDifficultyLevel.AlienBaseTypeEvolutionParams[2].EvolutionPerDestroyedBase = 90;
                     /*   ResourceGeneratorFacilityComponentDef researchLab = DefCache.GetDef<ResourceGeneratorFacilityComponentDef>("E_ResourceGenerator [ResearchLab_PhoenixFacilityDef]");
                        ResourceGeneratorFacilityComponentDef bionicsLab = DefCache.GetDef<ResourceGeneratorFacilityComponentDef>("E_ResourceGenerator [BionicsLab_PhoenixFacilityDef]");
                        researchLab.BaseResourcesOutput.Values[0] = new ResourceUnit { Type = ResourceType.Research, Value = 6 };
                        bionicsLab.BaseResourcesOutput.Values[0] = new ResourceUnit { Type = ResourceType.Research, Value = 6 };*/
                     VoidOmensCheck[6] = true;
-                    level.PhoenixFaction.Research.Update();
+                    controller.PhoenixFaction.Research.Update();
 
                     /*    foreach(GeoPhoenixBase phoenixBase in level.PhoenixFaction.Bases) 
                         { 
@@ -443,12 +440,12 @@ namespace TFTV
 
                     //  TFTVLogger.Always("VoidOmen6 is " + VoidOmensCheck[6]);
                 }
-                else if (!CheckFordVoidOmensInPlay(level).Contains(6) && VoidOmensCheck[6])
+                else if (!CheckFordVoidOmensInPlay(controller).Contains(6) && VoidOmensCheck[6])
                 {
-                    level.CurrentDifficultyLevel.EvolutionPointsGainOnMissionLoss = 0;
-                    level.CurrentDifficultyLevel.AlienBaseTypeEvolutionParams[0].EvolutionPerDestroyedBase = 0;
-                    level.CurrentDifficultyLevel.AlienBaseTypeEvolutionParams[1].EvolutionPerDestroyedBase = 0;
-                    level.CurrentDifficultyLevel.AlienBaseTypeEvolutionParams[2].EvolutionPerDestroyedBase = 0;
+                    controller.CurrentDifficultyLevel.EvolutionPointsGainOnMissionLoss = 0;
+                    controller.CurrentDifficultyLevel.AlienBaseTypeEvolutionParams[0].EvolutionPerDestroyedBase = 0;
+                    controller.CurrentDifficultyLevel.AlienBaseTypeEvolutionParams[1].EvolutionPerDestroyedBase = 0;
+                    controller.CurrentDifficultyLevel.AlienBaseTypeEvolutionParams[2].EvolutionPerDestroyedBase = 0;
                     /*    ResourceGeneratorFacilityComponentDef researchLab = DefCache.GetDef<ResourceGeneratorFacilityComponentDef>("E_ResourceGenerator [ResearchLab_PhoenixFacilityDef]");
                         ResourceGeneratorFacilityComponentDef bionicsLab = DefCache.GetDef<ResourceGeneratorFacilityComponentDef>("E_ResourceGenerator [BionicsLab_PhoenixFacilityDef]");
                         researchLab.BaseResourcesOutput.Values[0] = new ResourceUnit { Type = ResourceType.Research, Value = 4 };
@@ -457,39 +454,39 @@ namespace TFTV
                     TFTVLogger.Always("The check for VO#6 went ok");
 
                 }
-                if (CheckFordVoidOmensInPlay(level).Contains(7))
+                if (CheckFordVoidOmensInPlay(controller).Contains(7))
                 {
                     VoidOmensCheck[7] = true;
                     //  Logger.Always(voidOmen + j + " is now in effect, held in variable " + voidOmen + i);
                 }
-                else if (!CheckFordVoidOmensInPlay(level).Contains(7) && VoidOmensCheck[7])
+                else if (!CheckFordVoidOmensInPlay(controller).Contains(7) && VoidOmensCheck[7])
                 {
                     VoidOmensCheck[7] = false;
 
                     TFTVLogger.Always("The check for VO#7 went ok");
 
                 }
-                if (CheckFordVoidOmensInPlay(level).Contains(8))
+                if (CheckFordVoidOmensInPlay(controller).Contains(8))
                 {
 
                     havenLab.ProvidesResearch = 2;
                     VoidOmensCheck[8] = true;
                 }
-                else if (!CheckFordVoidOmensInPlay(level).Contains(8) && VoidOmensCheck[8])
+                else if (!CheckFordVoidOmensInPlay(controller).Contains(8) && VoidOmensCheck[8])
                 {
                     havenLab.ProvidesResearch = 1;
                     TFTVLogger.Always("The check for VO#8 went ok");
                     VoidOmensCheck[8] = false;
 
                 }
-                if (CheckFordVoidOmensInPlay(level).Contains(9))
+                if (CheckFordVoidOmensInPlay(controller).Contains(9))
                 {
 
                     festeringSkiesSettingsDef.HavenAttackCounterModifier = 0.66f;
                     //  Logger.Always(voidOmen + j + " is now in effect, held in variable " + voidOmen + i);
                     VoidOmensCheck[9] = true;
                 }
-                else if (!CheckFordVoidOmensInPlay(level).Contains(9) && VoidOmensCheck[9])
+                else if (!CheckFordVoidOmensInPlay(controller).Contains(9) && VoidOmensCheck[9])
                 {
 
                     festeringSkiesSettingsDef.HavenAttackCounterModifier = 1.33f;
@@ -497,79 +494,83 @@ namespace TFTV
                     TFTVLogger.Always("The check for VO#9 went ok");
 
                 }
-                if (CheckFordVoidOmensInPlay(level).Contains(10))
+                if (CheckFordVoidOmensInPlay(controller).Contains(10))
                 {
                     // Logger.Always(voidOmen + j + " is now in effect, held in variable " + voidOmen + i);
                     VoidOmensCheck[10] = true;
                 }
-                else if (!CheckFordVoidOmensInPlay(level).Contains(10) && VoidOmensCheck[10])
+                else if (!CheckFordVoidOmensInPlay(controller).Contains(10) && VoidOmensCheck[10])
                 {
                     VoidOmensCheck[10] = false;
 
                     TFTVLogger.Always("The check for VO#10 went ok");
 
                 }
-                /*   if (CheckFordVoidOmensInPlay(level).Contains(11))
-                   {
-                       VoidOmensCheck[11] = true;
-                   }
-                   else if (!CheckFordVoidOmensInPlay(level).Contains(11) && CheckForAlreadyRolledVoidOmens(level).Contains(11))
-                   {
+                if (CheckFordVoidOmensInPlay(controller).Contains(11))
+                {
+                    VoidOmensCheck[11] = true;
+                    controller.AlienFaction.Behemoth?.UpdateHourly();
 
-                       VoidOmensCheck[11] = false;
-                       TFTVLogger.Always("The check for VO#11 went ok");
 
-                   }*/
-                if (CheckFordVoidOmensInPlay(level).Contains(12))
+                }
+                else if (!CheckFordVoidOmensInPlay(controller).Contains(11) && VoidOmensCheck[11])
+                {
+
+                    VoidOmensCheck[11] = false;
+                    controller.AlienFaction.Behemoth?.UpdateHourly();
+                    TFTVLogger.Always("The check for VO#11 went ok");
+
+                }
+                if (CheckFordVoidOmensInPlay(controller).Contains(12))
                 {
 
                     // Logger.Always(voidOmen + j + " is now in effect, held in variable " + voidOmen + i);
                     VoidOmensCheck[12] = true;
                 }
-                else if (!CheckFordVoidOmensInPlay(level).Contains(12) && VoidOmensCheck[12])
+                else if (!CheckFordVoidOmensInPlay(controller).Contains(12) && VoidOmensCheck[12])
                 {
 
                     VoidOmensCheck[12] = false;
                     TFTVLogger.Always("The check for VO#12 went ok");
 
                 }
-                if (CheckFordVoidOmensInPlay(level).Contains(13))
+                if (CheckFordVoidOmensInPlay(controller).Contains(13))
                 {
-                    level.CurrentDifficultyLevel.NestLimitations.HoursBuildTime = 45;
-                    level.CurrentDifficultyLevel.LairLimitations.HoursBuildTime = 50;
-                    level.CurrentDifficultyLevel.CitadelLimitations.HoursBuildTime = 90;
+                    controller.CurrentDifficultyLevel.NestLimitations.HoursBuildTime = 45;
+                    controller.CurrentDifficultyLevel.LairLimitations.HoursBuildTime = 50;
+                    controller.CurrentDifficultyLevel.CitadelLimitations.HoursBuildTime = 90;
                     // TFTVLogger.Always(voidOmen + i + " is now in effect, held in variable " + voidOmen + i + ", so Pandoran nests take " + level.CurrentDifficultyLevel.NestLimitations.HoursBuildTime + " hours");
                     VoidOmensCheck[13] = true;
                 }
-                else if (!CheckFordVoidOmensInPlay(level).Contains(13) && VoidOmensCheck[13])
+                else if (!CheckFordVoidOmensInPlay(controller).Contains(13) && VoidOmensCheck[13])
                 {
-                    if (level.CurrentDifficultyLevel.Order > 5)
+                    if (controller.CurrentDifficultyLevel.Order > 5)
                     {
-                        level.CurrentDifficultyLevel.NestLimitations.HoursBuildTime = 73;
-                        level.CurrentDifficultyLevel.LairLimitations.HoursBuildTime = 80;
-                        level.CurrentDifficultyLevel.CitadelLimitations.HoursBuildTime = 144;
+                        controller.CurrentDifficultyLevel.NestLimitations.HoursBuildTime = 73;
+                        controller.CurrentDifficultyLevel.LairLimitations.HoursBuildTime = 80;
+                        controller.CurrentDifficultyLevel.CitadelLimitations.HoursBuildTime = 144;
 
                     }
                     else
                     {
 
-                        level.CurrentDifficultyLevel.NestLimitations.HoursBuildTime = 90;
-                        level.CurrentDifficultyLevel.LairLimitations.HoursBuildTime = 100;
-                        level.CurrentDifficultyLevel.CitadelLimitations.HoursBuildTime = 180;
+                        controller.CurrentDifficultyLevel.NestLimitations.HoursBuildTime = 90;
+                        controller.CurrentDifficultyLevel.LairLimitations.HoursBuildTime = 100;
+                        controller.CurrentDifficultyLevel.CitadelLimitations.HoursBuildTime = 180;
                     }
                     VoidOmensCheck[13] = false;
 
-                    TFTVLogger.Always("The check for VO#13 went ok" + " so Pandoran nests take " + level.CurrentDifficultyLevel.NestLimitations.HoursBuildTime + " hours");
+                    TFTVLogger.Always("The check for VO#13 went ok" + " so Pandoran nests take " + controller.CurrentDifficultyLevel.NestLimitations.HoursBuildTime + " hours");
 
                 }
-                if (CheckFordVoidOmensInPlay(level).Contains(14))
+                if (CheckFordVoidOmensInPlay(controller).Contains(14))
                 {
                     //   tacticalPerceptionDef.MistBlobPerceptionRangeCost = 0;
                     tacticalPerceptionDef.PerceptionRange = 20;
                     // Logger.Always(voidOmen + j + " is now in effect, held in variable " + voidOmen + i);
                     VoidOmensCheck[14] = true;
                 }
-                else if (!CheckFordVoidOmensInPlay(level).Contains(14) && VoidOmensCheck[14])
+                else if (!CheckFordVoidOmensInPlay(controller).Contains(14) && VoidOmensCheck[14])
                 {
 
                     //    tacticalPerceptionDef.MistBlobPerceptionRangeCost = 10;
@@ -578,23 +579,23 @@ namespace TFTV
                     TFTVLogger.Always("The check for VO#14 went ok");
 
                 }
-                if (CheckFordVoidOmensInPlay(level).Contains(15))
+                if (CheckFordVoidOmensInPlay(controller).Contains(15))
                 {
                     //  Logger.Always(voidOmen + j + " is now in effect, held in variable " + voidOmen + i);
                     VoidOmensCheck[15] = true;
                 }
-                else if (!CheckFordVoidOmensInPlay(level).Contains(15) && VoidOmensCheck[15])
+                else if (!CheckFordVoidOmensInPlay(controller).Contains(15) && VoidOmensCheck[15])
                 {
                     VoidOmensCheck[15] = false;
                     TFTVLogger.Always("The check for VO#15 went ok");
 
                 }
-                if (CheckFordVoidOmensInPlay(level).Contains(16))
+                if (CheckFordVoidOmensInPlay(controller).Contains(16))
                 {
 
                     VoidOmensCheck[16] = true;
                 }
-                else if (!CheckFordVoidOmensInPlay(level).Contains(16) && VoidOmensCheck[16])
+                else if (!CheckFordVoidOmensInPlay(controller).Contains(16) && VoidOmensCheck[16])
                 {
                     // TFTVUmbra.SetUmbraRandomValue(0);
 
@@ -602,29 +603,29 @@ namespace TFTV
                     TFTVLogger.Always("The check for VO#16 went ok");
 
                 }
-                if (CheckFordVoidOmensInPlay(level).Contains(17))
+                if (CheckFordVoidOmensInPlay(controller).Contains(17))
                 {
                     VoidOmensCheck[17] = true;
                 }
-                else if (!CheckFordVoidOmensInPlay(level).Contains(17) && VoidOmensCheck[17])
+                else if (!CheckFordVoidOmensInPlay(controller).Contains(17) && VoidOmensCheck[17])
                 {
                     VoidOmensCheck[17] = false;
                     TFTVLogger.Always("The check for VO#17 went ok");
                 }
-                if (CheckFordVoidOmensInPlay(level).Contains(18))
+                if (CheckFordVoidOmensInPlay(controller).Contains(18))
                 {
 
 
                     // Logger.Always(voidOmen + j + " is now in effect, held in variable " + voidOmen + i);
                     VoidOmensCheck[18] = true;
                 }
-                else if (!CheckFordVoidOmensInPlay(level).Contains(18) && VoidOmensCheck[18])
+                else if (!CheckFordVoidOmensInPlay(controller).Contains(18) && VoidOmensCheck[18])
                 {
 
                     VoidOmensCheck[18] = false;
                     TFTVLogger.Always("The check for VO#18 went ok");
                 }
-                if (CheckFordVoidOmensInPlay(level).Contains(19))
+                if (CheckFordVoidOmensInPlay(controller).Contains(19))
                 {
                     /*   GeoMarketplaceResearchOptionDef randomMarketResearch = DefCache.GetDef<GeoMarketplaceResearchOptionDef>("Random_MarketplaceResearchOptionDef");
                        randomMarketResearch.MaxPrice = 1200;
@@ -633,7 +634,7 @@ namespace TFTV
                     // Logger.Always(voidOmen + j + " is now in effect, held in variable " + voidOmen + i);
                     VoidOmensCheck[19] = true;
                 }
-                else if (!CheckFordVoidOmensInPlay(level).Contains(19) && VoidOmensCheck[19])
+                else if (!CheckFordVoidOmensInPlay(controller).Contains(19) && VoidOmensCheck[19])
                 {
                     /*    GeoMarketplaceResearchOptionDef randomMarketResearch = DefCache.GetDef<GeoMarketplaceResearchOptionDef>("Random_MarketplaceResearchOptionDef");
                         randomMarketResearch.MaxPrice = 1500;
@@ -649,18 +650,18 @@ namespace TFTV
                 List<int> VoidOmensInPLay = new List<int>();
                 List<int> AlreadyRolledVoidOmens = new List<int>();
 
-                int difficulty = TFTVReleaseOnly.DifficultyOrderConverter(level.CurrentDifficultyLevel.Order);
+                int difficulty = TFTVReleaseOnly.DifficultyOrderConverter(controller.CurrentDifficultyLevel.Order);
 
-                for (int i = 0; i < CheckFordVoidOmensInPlay(level).Count(); i++)
+                for (int i = 0; i < CheckFordVoidOmensInPlay(controller).Count(); i++)
                 {
-                    TFTVLogger.Always("Void Omen " + CheckFordVoidOmensInPlay(level)[i] + " is in play");
-                    VoidOmensInPLay.Add(CheckFordVoidOmensInPlay(level)[i]);
+                    TFTVLogger.Always("Void Omen " + CheckFordVoidOmensInPlay(controller)[i] + " is in play");
+                    VoidOmensInPLay.Add(CheckFordVoidOmensInPlay(controller)[i]);
                 }
 
-                for (int x = 0; x < CheckForAlreadyRolledVoidOmens(level).Count; x++)
+                for (int x = 0; x < CheckForAlreadyRolledVoidOmens(controller).Count; x++)
                 {
-                    TFTVLogger.Always("Void Omen " + CheckForAlreadyRolledVoidOmens(level)[x] + " rolled at some point");
-                    AlreadyRolledVoidOmens.Add(CheckForAlreadyRolledVoidOmens(level)[x]);
+                    TFTVLogger.Always("Void Omen " + CheckForAlreadyRolledVoidOmens(controller)[x] + " rolled at some point");
+                    AlreadyRolledVoidOmens.Add(CheckForAlreadyRolledVoidOmens(controller)[x]);
                 }
 
                 //pending baby abbadons
@@ -915,25 +916,25 @@ namespace TFTV
 
                                 TFTVLogger.Always($" VO {voidOmen} will be removed ");
                                 RemoveVoidOmenObjective(voidOmenTitleLocKey, geoLevelController);
-                                
+
                             }
                         }
 
-                     /*   string explanation =
-                            $"{TFTVCommonMethods.ConvertKeyToString("KEY_VOID_OMEN_REMOVED"+reason)}" +
-                            $"{TFTVCommonMethods.ConvertKeyToString("KEY_VOID_OMEN_REMOVED_TEXT0")} " +
-                            $"<i>{TFTVCommonMethods.ConvertKeyToString(voidOmenTitleLocKey)}</i> " +
-                            $"{TFTVCommonMethods.ConvertKeyToString("KEY_VOID_OMEN_REMOVED_TEXT1")}";
+                        /*   string explanation =
+                               $"{TFTVCommonMethods.ConvertKeyToString("KEY_VOID_OMEN_REMOVED"+reason)}" +
+                               $"{TFTVCommonMethods.ConvertKeyToString("KEY_VOID_OMEN_REMOVED_TEXT0")} " +
+                               $"<i>{TFTVCommonMethods.ConvertKeyToString(voidOmenTitleLocKey)}</i> " +
+                               $"{TFTVCommonMethods.ConvertKeyToString("KEY_VOID_OMEN_REMOVED_TEXT1")}";
 
-                        if (reason == 1) 
-                        {
-                            explanation = $"{TFTVCommonMethods.ConvertKeyToString("KEY_VOID_OMEN_REMOVED_TEXT0")} " +
-                            $"<i>{TFTVCommonMethods.ConvertKeyToString(voidOmenTitleLocKey)}</i> " +
-                            $"{TFTVCommonMethods.ConvertKeyToString("KEY_VOID_OMEN_REMOVED_TEXT1")}";
-                        }
+                           if (reason == 1) 
+                           {
+                               explanation = $"{TFTVCommonMethods.ConvertKeyToString("KEY_VOID_OMEN_REMOVED_TEXT0")} " +
+                               $"<i>{TFTVCommonMethods.ConvertKeyToString(voidOmenTitleLocKey)}</i> " +
+                               $"{TFTVCommonMethods.ConvertKeyToString("KEY_VOID_OMEN_REMOVED_TEXT1")}";
+                           }
 
 
-                        GameUtl.GetMessageBox().ShowSimplePrompt(explanation, MessageBoxIcon.None, MessageBoxButtons.OK, null);*/
+                           GameUtl.GetMessageBox().ShowSimplePrompt(explanation, MessageBoxIcon.None, MessageBoxButtons.OK, null);*/
                         return voidOmenTitleLocKey;
                     }
                 }
@@ -941,7 +942,7 @@ namespace TFTV
                 else
                 {
                     TFTVLogger.Always($"Wanted to remove earliest Void Omen, but failed to find it!");
-                    
+
                 }
                 return null;
             }
@@ -1003,11 +1004,11 @@ namespace TFTV
                                 RemoveVoidOmenObjective(voidOmenTitleLocKey, geoLevelController);
                             }
                         }
-                     /*   string explanation =
-                          $"{TFTVCommonMethods.ConvertKeyToString("KEY_VOID_OMEN_REMOVED_BEHEMOTH")}";
+                        /*   string explanation =
+                             $"{TFTVCommonMethods.ConvertKeyToString("KEY_VOID_OMEN_REMOVED_BEHEMOTH")}";
 
-                        GameUtl.GetMessageBox().ShowSimplePrompt(explanation, MessageBoxIcon.None, MessageBoxButtons.OK, null);*/
-                      
+                           GameUtl.GetMessageBox().ShowSimplePrompt(explanation, MessageBoxIcon.None, MessageBoxButtons.OK, null);*/
+
                     }
 
                     ImplementVoidOmens(geoLevelController);
@@ -1176,7 +1177,7 @@ namespace TFTV
             public static void Postfix(ref float __result)
             {
                 try
-                {                 
+                {
                     TFTVConfig config = TFTVMain.Main.Config;
 
                     if (VoidOmensCheck[4] && config.LimitedDeploymentVO)
@@ -1249,10 +1250,10 @@ namespace TFTV
 
         //Adjust Research output based on difficulty/VO6
 
-       
 
-       [HarmonyPatch(typeof(Research), "GetHourlyResearchProduction")]
-            public static class TFTV_Research_GetHourlyResearchProductionVO6_Patch
+
+        [HarmonyPatch(typeof(Research), "GetHourlyResearchProduction")]
+        public static class TFTV_Research_GetHourlyResearchProductionVO6_Patch
         {
             public static void Postfix(ref float __result, Research __instance)
             {
@@ -1262,12 +1263,12 @@ namespace TFTV
 
                     GeoLevelController controller = __instance.Faction.GeoLevel;
 
-                    if (__instance.Faction==controller.PhoenixFaction && VoidOmensCheck[6])
+                    if (__instance.Faction == controller.PhoenixFaction && VoidOmensCheck[6])
                     {
                         //TFTVLogger.Always($"VO6 should be working");
                         float multiplier = 1.5f;
                         __result *= multiplier;
-                        
+
                     }
                 }
                 catch (Exception e)
@@ -1356,8 +1357,8 @@ namespace TFTV
                             }
                         }
 
-                      
-                    
+
+
                         __instance.VoxelMatrixData.InitialMistEntitiesToSpawn.Min = 3 + difficultyLevel * (int)(6 * missionTypeModifer);
                         __instance.VoxelMatrixData.InitialMistEntitiesToSpawn.Max = 8 + difficultyLevel * (int)(6 * missionTypeModifer);
                         TFTVLogger.Always($"min blobs: {__instance.VoxelMatrixData.InitialMistEntitiesToSpawn.Min}, max blobs: {__instance.VoxelMatrixData.InitialMistEntitiesToSpawn.Max}");
@@ -1408,7 +1409,7 @@ namespace TFTV
                     if (__instance.Mission.MissionDef.MissionTypeTag == DefCache.GetDef<MissionTagDef>("MissionTypePhoenixBaseDefence_MissionTagDef"))
                     {
                         TFTVLogger.Always($"Base defense mission: setting max deployment to 9");
-                        __result = 9;                
+                        __result = 9;
                     }
                 }
 

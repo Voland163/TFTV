@@ -3,8 +3,13 @@ using Base.Defs;
 using Base.UI.MessageBox;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
+using PhoenixPoint.Common.Entities.Items;
+using PhoenixPoint.Common.Levels.Missions;
 using PhoenixPoint.Geoscape;
+using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.Missions;
+using PhoenixPoint.Geoscape.Entities.Research;
+using PhoenixPoint.Geoscape.Entities.Research.Reward;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Modding;
 using PhoenixPoint.Tactical.Entities;
@@ -23,7 +28,50 @@ namespace TFTV
         private static readonly SharedData Shared = TFTVMain.Shared;
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
 
+        /*   [HarmonyPatch(typeof(GeoPhoenixpedia), "AddItemEntry")]
+           public static class GeoPhoenixpedia_ProcessGeoscapeInstanceData_patch
+           {
+
+               public static void Prefix(GeoPhoenixpedia __instance, ItemDef item)
+               {
+                   try
+                   {
+                       TFTVLogger.Always($"Running GeoPhoenixpedia.AddItemEntry");
+                       TFTVLogger.Always($"{item}");
+
+
+                   }
+                   catch (Exception e)
+                   {
+                       TFTVLogger.Error(e);
+                       throw;
+                   }
+               }
+           }*/
+
        
+
+        public static void CheckAutomataResearch()
+        {
+            try
+            {
+                ResearchDbDef researchDB = DefCache.GetDef<ResearchDbDef>("pp_ResearchDB");
+
+                foreach (ResearchDef researchDef in researchDB.Researches)
+                {
+                    TFTVLogger.Always($"{researchDef.name}");
+
+                }
+
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+
+            }
+        }
+
 
 
         [HarmonyPatch(typeof(ModManager), "ProcessGeoscapeInstanceData")]

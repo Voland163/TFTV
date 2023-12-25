@@ -7,6 +7,7 @@ using PhoenixPoint.Geoscape.Entities.Research;
 using PhoenixPoint.Geoscape.Entities.Research.Requirement;
 using PhoenixPoint.Geoscape.Entities.Research.Reward;
 using PhoenixPoint.Geoscape.Events;
+using PhoenixPoint.Geoscape.Events.Conditions;
 using PhoenixPoint.Geoscape.Events.Eventus;
 using PhoenixPoint.Geoscape.Events.Eventus.Filters;
 using PhoenixPoint.Geoscape.Levels;
@@ -100,6 +101,7 @@ namespace TFTV
                 GeoTimePassedEventFilterDef timePassedFS3 = DefCache.GetDef<GeoTimePassedEventFilterDef>("E_PROG_FS3_TimePassed [GeoTimePassedEventFilterDef]");
                 timePassedFS3.TimePassedHours = UnityEngine.Random.Range(950, 1100);
 
+                DefCache.GetDef<GeoLevelConditionDef>("[PROG_FS3] Condition 2").Variable="TrappedInTheMistTriggered";
 
           
 

@@ -34,6 +34,8 @@ namespace TFTV
 
         private static int SelectedDifficulty = 0;
 
+      
+
         [HarmonyPatch(typeof(HomeScreenView), "InitView")]
         public static class HomeScreenView_InitView_Patch
         {
@@ -585,7 +587,7 @@ namespace TFTV
             private static readonly string _titleNoBarks = "KEY_NoBarks";
             private static readonly string _descriptionNoBarks = "KEY_NoBarks_DESCRIPTION";
 
-
+   
 
             private static GameOptionViewController InstantiateGameOptionViewController(RectTransform rectTransform, UIModuleGameSettings uIModuleGameSettings, string titleKey, string descriptionKey, string onToggleMethod)
             {
@@ -811,16 +813,13 @@ namespace TFTV
                         {
                             LocalizedTextBind optionTextBindKey = new LocalizedTextBind() { LocalizationKey = optionsKeys[i] };
                             options[i] = optionTextBindKey.Localize();
-
                         }
 
                     }
                     else
                     {
                         options = optionsKeys;
-
                     }
-
 
                     modSettingController.Label.text = title;
                     modSettingController.transform.localScale *= 0.75f;
@@ -914,6 +913,8 @@ namespace TFTV
                 {
                     ModSettingController ModSettingControllerHook = GameUtl.CurrentLevel().GetComponent<HomeScreenView>().HomeScreenModules.ModManagerModule.SettingsModSettingPrefab;
                     RectTransform rectTransform = __instance.GameAddiotionalContentGroup.GetComponentInChildren<RectTransform>();
+
+                   
 
                     rectTransform.DestroyChildren();
 
@@ -1128,7 +1129,7 @@ namespace TFTV
                     string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
                     _disableTacSaves.CurrentItemText.text = options[newValue];
                     config.disableSavingOnTactical = option;
-
+                    
                 }
                 catch (Exception e)
                 {
@@ -1189,7 +1190,7 @@ namespace TFTV
                     string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
                     _staminaRecuperation.CurrentItemText.text = options[newValue];
                     config.ActivateStaminaRecuperatonModule = option;
-
+                  
                 }
                 catch (Exception e)
                 {
@@ -1205,7 +1206,7 @@ namespace TFTV
                     string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
                     _havenSOS.CurrentItemText.text = options[newValue];
                     config.HavenSOS = option;
-
+                   
                 }
                 catch (Exception e)
                 {
@@ -1221,7 +1222,7 @@ namespace TFTV
                     string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
                     _learnFirstSkill.CurrentItemText.text = options[newValue];
                     config.LearnFirstPersonalSkill = option;
-
+                    
                 }
                 catch (Exception e)
                 {
@@ -1291,7 +1292,7 @@ namespace TFTV
                     string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
                     _skipMovies.CurrentItemText.text = options[newValue];
                     config.SkipMovies = option;
-
+                   
                 }
                 catch (Exception e)
                 {
@@ -1307,7 +1308,7 @@ namespace TFTV
                     string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
                     _noBarks.CurrentItemText.text = options[newValue];
                     config.NoBarks = option;
-
+                 
                 }
                 catch (Exception e)
                 {
@@ -1325,7 +1326,7 @@ namespace TFTV
                     string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
                     _flinching.CurrentItemText.text = options[newValue];
                     config.AnimateWhileShooting = option;
-
+                  
                 }
                 catch (Exception e)
                 {
@@ -1341,7 +1342,7 @@ namespace TFTV
                     string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
                     _moreMistVO.CurrentItemText.text = options[newValue];
                     config.MoreMistVO = option;
-
+                   
                 }
 
                 catch (Exception e)
@@ -1358,7 +1359,7 @@ namespace TFTV
                     string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
                     _limitedDeploymentVO.CurrentItemText.text = options[newValue];
                     config.LimitedDeploymentVO = option;
-
+                   
                 }
                 catch (Exception e)
                 {
@@ -1376,6 +1377,7 @@ namespace TFTV
                     string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
                     _trading.CurrentItemText.text = options[newValue];
                     config.EqualizeTrade = option;
+                  
 
                 }
                 catch (Exception e)
@@ -1393,7 +1395,7 @@ namespace TFTV
                     string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
                     _limitedRaiding.CurrentItemText.text = options[newValue];
                     config.LimitedRaiding = option;
-
+                   
                 }
                 catch (Exception e)
                 {
@@ -1410,7 +1412,7 @@ namespace TFTV
                     string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
                     _noDropReinforcements.CurrentItemText.text = options[newValue];
                     config.ReinforcementsNoDrops = option;
-
+                  
                 }
                 catch (Exception e)
                 {
@@ -1437,7 +1439,7 @@ namespace TFTV
                     //TFTVLogger.Always($"new difficulty on tactical showing in config: {config.difficultyOnTactical}");
 
                     TFTVConfig.DifficultyOnTactical difficulty = (TFTVConfig.DifficultyOnTactical)newValue;
-
+                  
 
                 }
                 catch (Exception e)
@@ -1867,6 +1869,26 @@ namespace TFTV
                     EnterStateRun = false;
 
 
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+        }
+
+        [HarmonyPatch(typeof(UIStateNewGeoscapeGameSettings), "ExitState")]
+        public static class UIStateNewGeoscapeGameSettings_ExitState_patch
+        {
+            public static void Postfix(UIStateNewGeoscapeGameSettings __instance)
+            {
+                try
+                {
+                    ModManager modManager = TFTVMain.Main.GetGame().ModManager;
+
+                    modManager.OnConfigChanged(TFTVMain.Main.Instance.Entry);
+                    modManager.SaveModConfig();
+                    TFTVLogger.Always($"Exiting new game, saving config");
                 }
                 catch (Exception e)
                 {

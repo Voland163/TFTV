@@ -96,7 +96,7 @@ namespace TFTV
                     TFTVDiplomacyPenalties.ImplementDiplomaticPenalties(@event, null);
 
 
-                    return TFTVInfestation.ScienceOfMadness.CancelProgFS3IfTrappedInMistAlreadyTriggered(@event, __instance);
+                    return true; //TFTVInfestation.ScienceOfMadness.CancelProgFS3IfTrappedInMistAlreadyTriggered(@event, __instance);
 
                 }
 

@@ -617,16 +617,16 @@ namespace TFTV
                                 GeoFaction viewerFaction = mission.Site.GeoLevel.ViewerFaction;
                                 GeoFaction faction = geoLevel.GetFaction(__instance.ToFaction);
                                 rewardDescription.SetDiplomacyChange(faction, viewerFaction, Mathf.RoundToInt(__instance.DiplomacyToFaction.RandomValue() * 2f));
-                                TFTVLogger.Always("In preview, applying Easy Geoscape settings. Original diplo reward from mission " + mission.MissionName.LocalizeEnglish() + " was at the least " + __instance.DiplomacyToFaction.Min
-                                   + "; now it is at the least  " + __instance.DiplomacyToFaction.Min * 2f);
+                                TFTVLogger.Always($"In preview, applying Easy Geoscape settings. Original diplo reward from mission {mission?.MissionDef?.name} was at the least" +
+                                    $"{__instance.DiplomacyToFaction.Min} now it is at the least {__instance.DiplomacyToFaction.Min * 2f}");
                             }
                             else
                             {
                                 GeoFaction viewerFaction = mission.Site.GeoLevel.ViewerFaction;
                                 GeoFaction faction = geoLevel.GetFaction(__instance.ToFaction);
                                 rewardDescription.SetDiplomacyChange(faction, viewerFaction, Mathf.RoundToInt(__instance.DiplomacyToFaction.RandomValue() * 0.5f));
-                                TFTVLogger.Always("In preview, applying Easy Geoscape settings. Original diplo reward from mission " + mission.MissionName.LocalizeEnglish() + " was at the least " + __instance.DiplomacyToFaction.Min
-                                   + "; now it is at the least  " + __instance.DiplomacyToFaction.Min * 0.5f);
+                                TFTVLogger.Always($"In preview, applying Easy Geoscape settings. Original diplo reward from mission {mission?.MissionDef?.name} was at the least " +
+                                    $"{__instance.DiplomacyToFaction.Min} now it is at the least {__instance.DiplomacyToFaction.Min * 0.5f}");
                             }
                         }
 
@@ -658,8 +658,8 @@ namespace TFTV
                             GeoFaction viewerFaction = mission.Site.GeoLevel.ViewerFaction;
                             GeoFaction faction = geoLevel.GetFaction(__instance.ToFaction);
                             rewardDescription.SetDiplomacyChange(faction, viewerFaction, Mathf.RoundToInt(__instance.DiplomacyToFaction.Min * 0.5f));
-                            TFTVLogger.Always("In preview, applying VO2. Original diplo reward from mission " + mission.MissionName + " was " + __instance.DiplomacyToFaction.Min
-                                + "; now it is  " + __instance.DiplomacyToFaction.Min * 0.5f);
+                            TFTVLogger.Always($"In preview, applying VO2. Original diplo reward from mission {mission?.MissionDef?.name} was " +
+                                $"{__instance.DiplomacyToFaction.Min}; now it is {__instance.DiplomacyToFaction.Min * 0.5f}");
                         }
                     }
                     catch (Exception e)

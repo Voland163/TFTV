@@ -2192,7 +2192,6 @@ namespace TFTV
 
                         // SpawnBlob_Internal(TacticalVoxelType type, Vector3 pos, int horizontalRadius, int height, bool circular, bool updateMatrix = true)
 
-
                         if (roll > 6)
                         {
                             TacCharacterDef chosenEnemy = enemies.GetRandomElement(new System.Random((int)Stopwatch.GetTimestamp()));

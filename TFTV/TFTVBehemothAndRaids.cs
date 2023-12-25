@@ -1,5 +1,6 @@
 ﻿using Base;
 using Base.Core;
+using Base.Entities.Statuses;
 using Base.UI;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
@@ -8,6 +9,7 @@ using PhoenixPoint.Geoscape.Events;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
 using PhoenixPoint.Geoscape.Levels.Factions.FesteringSkies;
+using PhoenixPoint.Tactical.View.ViewStates;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -18,7 +20,7 @@ using static PhoenixPoint.Geoscape.Entities.GeoBehemothActor;
 
 namespace TFTV
 {
-    internal class TFTVAirCombat
+    internal class TFTVBehemothAndRaids
     {
 
         // private static readonly DefRepository Repo = TFTVMain.Repo;
@@ -187,7 +189,7 @@ namespace TFTV
                     {
                       //  TFTVLogger.Always($"AlienRaidManager.RollForRaid running");
 
-                        if (__instance.AlienFaction.Behemoth.CurrentBehemothStatus == BehemothStatus.Dormant || __instance.AlienFaction.Behemoth.IsSubmerging)
+                        if (__instance.AlienFaction.Behemoth.CurrentBehemothStatus == BehemothStatus.Dormant || __instance.AlienFaction.Behemoth.IsSubmerging)//__instance.AlienFaction!=null && __instance.AlienFaction.Behemoth!=null && )
                         {
                            // TFTVLogger.Always($"AlienRaidManager.RollForRaid running, Behemoth not dormant");
                             return false;
@@ -324,18 +326,21 @@ namespace TFTV
                                 targetsForBehemoth.Clear();                            
                             }
 
-
                             foreach (int haven in flyersAndHavens[__instance.GeoVehicle.VehicleID])
-                            {
-                                TFTVLogger.Always("Checking each haven visited by the flyer");
+                            {  
+                                GeoSite geoSite = Behemoth.ConvertIntIDToGeosite(behemoth.GeoLevel, haven);
 
-                                if (!targetsForBehemoth.Contains(haven)) //&& !targetsVisitedByBehemoth.Contains(haven)) //&& (behemoth != null && !behemoth.IsSubmerging && behemoth.CurrentBehemothStatus != GeoBehemothActor.BehemothStatus.Dormant))
+                                TFTVLogger.Always($"Checking {geoSite?.LocalizedSiteName} visited by the flyer. Is it now destroyed? {geoSite?.State == GeoSiteState.Destroyed} Does it have an Active Mission? {geoSite.HasActiveMission}");
+
+                                if (!targetsForBehemoth.Contains(haven) && geoSite!=null && geoSite.State!=GeoSiteState.Destroyed && !geoSite.HasActiveMission) //&& !targetsVisitedByBehemoth.Contains(haven)) //&& (behemoth != null && !behemoth.IsSubmerging && behemoth.CurrentBehemothStatus != GeoBehemothActor.BehemothStatus.Dormant))
                                 {
                                     targetsForBehemoth.Add(haven);
 
-                                    TFTVLogger.Always("Haven " + haven + " added to the list of targets");
+                                    TFTVLogger.Always($"{geoSite?.LocalizedSiteName} added to the list of targets");
                                 }
-                            }
+                            }              
+
+                            flyersAndHavens.Remove(__instance.GeoVehicle.VehicleID);
                         }
                     }
 
@@ -372,19 +377,43 @@ namespace TFTV
                             return true;
                         }
 
+                        if (behemothTarget <0) 
+                        {
+                            TFTVLogger.Always($"Somehow Behemoth Target was -1, so setting it to 0");
+                            behemothTarget = 0;
+                        }
+
+                      /*  foreach(int targetId in targetsForBehemoth) 
+                        {
+                            TFTVLogger.Always($"{targetId}");
+                        
+                        }*/
+
+                        if (targetsForBehemoth.Count > 1000)
+                        {
+                            TFTVLogger.Always($"Somehow Behemoth Targets were at more than 1k, setting them to 0");
+                            targetsForBehemoth.Clear();
+                        }
+
+                        if (behemothScenicRoute.Count > 1000)
+                        {
+                            TFTVLogger.Always($"Somehow Behemoth scenic route were at more than 1k, setting them to 0");
+                            behemothScenicRoute.Clear();
+                        }
+
                         /*  if (__instance.GeoLevel.EventSystem.GetVariable("ThirdActStarted") == 1)
                           {
                               ____disruptionThreshhold = 200;
                           }*/
 
-                        if (____disruptionThreshhold <= 0)
-                        {
-                            MethodInfo CalculateDisruptionThreshholdMethod = AccessTools.Method(typeof(GeoBehemothActor), "CalculateDisruptionThreshhold");
+                        //   if (____disruptionThreshhold <= 0)
+                        //   {
+                        MethodInfo CalculateDisruptionThreshholdMethod = AccessTools.Method(typeof(GeoBehemothActor), "CalculateDisruptionThreshhold");
 
                             ____disruptionThreshhold = (int)CalculateDisruptionThreshholdMethod.Invoke(__instance, null);
 
                             TFTVLogger.Always($"Behemoth hourly update, disruption threshold set to {____disruptionThreshhold}, disruption points are {____disruptionPoints}");
-                        }
+                      //  }
 
                         if (!__instance.IsSubmerging && ____disruptionPoints >= ____disruptionThreshhold)
                         {
@@ -418,7 +447,10 @@ namespace TFTV
                             return false;
                         }
 
-                        if (behemothTarget != 0 && ConvertIntIDToGeosite(__instance.GeoLevel, behemothTarget) != null && ConvertIntIDToGeosite(__instance.GeoLevel, behemothTarget).State == GeoSiteState.Destroyed)
+                        GeoSite targetHaven = ConvertIntIDToGeosite(__instance.GeoLevel, behemothTarget);
+
+
+                        if (behemothTarget != 0 && targetHaven != null && (targetHaven.State == GeoSiteState.Destroyed || targetHaven.ActiveMission!=null))
                         {
                             behemothTarget = 0;
                         }
@@ -433,6 +465,8 @@ namespace TFTV
                                 TFTVLogger.Always("OlenaOnFirstHavenTarget event triggered");
                             }
                         }
+
+                        CullTargetList(controller);
 
                         if (behemothTarget == 0 && targetsForBehemoth.Count > 0)
                         {
@@ -554,7 +588,7 @@ namespace TFTV
                         TFTVLogger.Always($"Calculating Disruption Threshold for Big B. " +
                             $"Base value: {festeringSkiesSettings.DisruptionThreshholdBaseValue} " +
                             $"From Difficulty: {currentDifficultyLevel.DisruptionDueToDifficulty}  " +
-                            $"Roaming: {__instance.GeoLevel.EventSystem.GetVariable(BehemothRoamings)}" +
+                            $"Roaming: {__instance.GeoLevel.EventSystem.GetVariable(BehemothRoamings)} " +
                             $"Total: {num}");
 
                         int[] voidOmensInEffect = TFTVVoidOmens.CheckFordVoidOmensInPlay(__instance.GeoLevel);
@@ -682,7 +716,7 @@ namespace TFTV
 
 
                         behemothTarget = 0;
-                        ____disruptionPoints += 1;
+                        ____disruptionPoints += 4; //increase on 28/12 from 1 
                         TFTVLogger.Always("The DP are " + ____disruptionPoints);
                         // TFTVLogger.Always("DamageHavenOutcome method invoked and Behemoth target is now " + behemothTarget);
                     }
@@ -723,6 +757,38 @@ namespace TFTV
                     return false;
                 }
             }
+
+            private static void CullTargetList(GeoLevelController controller)
+            {
+                try 
+                {
+                    List<int> targetsToBeCulled = new List<int>();
+                    
+                    foreach(int siteId in targetsForBehemoth) 
+                    {
+                        GeoSite targetHaven = ConvertIntIDToGeosite(controller, siteId);
+                        
+                        if(targetHaven.State == GeoSiteState.Destroyed || targetHaven.ActiveMission != null) 
+                        {
+                            targetsToBeCulled.Add(targetHaven.SiteId);
+                        }
+                    
+                    }
+
+                    if (targetsToBeCulled.Count > 0) 
+                    {
+                        targetsForBehemoth.RemoveRange(targetsToBeCulled);
+                    
+                    }
+                   
+                
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+
             private static GeoSite GetTargetHaven(GeoLevelController level)
             {
                 try
@@ -751,7 +817,7 @@ namespace TFTV
                 throw new InvalidOperationException();
             }
 
-            private static GeoSite ConvertIntIDToGeosite(GeoLevelController controller, int siteID)
+            internal static GeoSite ConvertIntIDToGeosite(GeoLevelController controller, int siteID)
             {
                 try
                 {

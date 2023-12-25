@@ -17,13 +17,13 @@ namespace TFTV
     public class TFTVGSInstanceData
     {
         public Dictionary<int, List<string>> charactersWithDisabledBodyParts = TFTVStamina.charactersWithDisabledBodyParts;
-        public List<int> targetsForBehemoth = TFTVAirCombat.targetsForBehemoth;
-        public Dictionary<int, List<int>> flyersAndHavens = TFTVAirCombat.flyersAndHavens;
-        public bool checkHammerfall = TFTVAirCombat.checkHammerfall;
+        public List<int> targetsForBehemoth = TFTVBehemothAndRaids.targetsForBehemoth;
+        public Dictionary<int, List<int>> flyersAndHavens = TFTVBehemothAndRaids.flyersAndHavens;
+        public bool checkHammerfall = TFTVBehemothAndRaids.checkHammerfall;
         public Dictionary<int, int> DeadSoldiersDelirium = TFTVRevenant.DeadSoldiersDelirium;
-        public List<int> behemothScenicRoute = TFTVAirCombat.behemothScenicRoute;
-        public int behemothTarget = TFTVAirCombat.behemothTarget;
-        public int behemothWaitHours = TFTVAirCombat.behemothWaitHours;
+        public List<int> behemothScenicRoute = TFTVBehemothAndRaids.behemothScenicRoute;
+        public int behemothTarget = TFTVBehemothAndRaids.behemothTarget;
+        public int behemothWaitHours = TFTVBehemothAndRaids.behemothWaitHours;
         public int timeRevenantLasteSeenSaveData = TFTVRevenant.daysRevenantLastSeen;
         public int infestedHavenPopulationSaveData = TFTVInfestation.HavenPopulation;
         public string infestedHavenOriginalOwnerSaveData = TFTVInfestation.OriginalOwner;
@@ -86,7 +86,7 @@ namespace TFTV
             TFTVVoidOmens.ImplementVoidOmens(gsController);
             TFTVTouchedByTheVoid.Umbra.UmbraGeoscape.CheckForUmbraResearch(gsController);
             TFTVTouchedByTheVoid.Umbra.UmbraGeoscape.SetUmbraEvolution(gsController);
-            TFTVAirCombat.SetBehemothOnRampageMod(gsController);
+            TFTVBehemothAndRaids.SetBehemothOnRampageMod(gsController);
             TFTVStamina.CheckBrokenLimbs(gsController.PhoenixFaction.Soldiers.ToList(), gsController);
             TFTVRevenant.RecordUpkeep.UpdateRevenantTimer(gsController);
             if (TFTVRevenant.revenantID != 0 && TFTVRevenant.DeadSoldiersDelirium.ContainsKey(TFTVRevenant.revenantID))
@@ -109,6 +109,7 @@ namespace TFTV
             TFTVPassengerModules.ImplementFarMConfig(Controller);
           //  TFTVNewGameOptions.Change_Crossbows();
             TFTVBetaSaveGamesFixes.RemoveBadSlug(Controller);
+            
            // TFTVBetaSaveGamesFixes.SpecialFixForNarvi();
         }
         /// <summary>
@@ -152,13 +153,13 @@ namespace TFTV
             {
 
                 charactersWithDisabledBodyParts = TFTVStamina.charactersWithDisabledBodyParts,
-                targetsForBehemoth = TFTVAirCombat.targetsForBehemoth,
-                flyersAndHavens = TFTVAirCombat.flyersAndHavens,
-                checkHammerfall = TFTVAirCombat.checkHammerfall,
+                targetsForBehemoth = TFTVBehemothAndRaids.targetsForBehemoth,
+                flyersAndHavens = TFTVBehemothAndRaids.flyersAndHavens,
+                checkHammerfall = TFTVBehemothAndRaids.checkHammerfall,
                 DeadSoldiersDelirium = TFTVRevenant.DeadSoldiersDelirium,
-                behemothScenicRoute = TFTVAirCombat.behemothScenicRoute,
-                behemothTarget = TFTVAirCombat.behemothTarget,
-                behemothWaitHours = TFTVAirCombat.behemothWaitHours,
+                behemothScenicRoute = TFTVBehemothAndRaids.behemothScenicRoute,
+                behemothTarget = TFTVBehemothAndRaids.behemothTarget,
+                behemothWaitHours = TFTVBehemothAndRaids.behemothWaitHours,
                 timeRevenantLasteSeenSaveData = TFTVRevenant.daysRevenantLastSeen,
                 infestedHavenOriginalOwnerSaveData = TFTVInfestation.OriginalOwner,
                 infestedHavenPopulationSaveData = TFTVInfestation.HavenPopulation,
@@ -205,14 +206,14 @@ namespace TFTV
                 TFTVCommonMethods.ClearInternalVariables();
 
                 TFTVStamina.charactersWithDisabledBodyParts = data.charactersWithDisabledBodyParts;
-                TFTVAirCombat.targetsForBehemoth = data.targetsForBehemoth;
-                TFTVAirCombat.flyersAndHavens = data.flyersAndHavens;
-                TFTVAirCombat.checkHammerfall = data.checkHammerfall;
+                TFTVBehemothAndRaids.targetsForBehemoth = data.targetsForBehemoth;
+                TFTVBehemothAndRaids.flyersAndHavens = data.flyersAndHavens;
+                TFTVBehemothAndRaids.checkHammerfall = data.checkHammerfall;
                 TFTVRevenant.DeadSoldiersDelirium = data.DeadSoldiersDelirium;
                 TFTVRevenant.daysRevenantLastSeen = data.timeRevenantLasteSeenSaveData;
-                TFTVAirCombat.behemothScenicRoute = data.behemothScenicRoute;
-                TFTVAirCombat.behemothTarget = data.behemothTarget;
-                TFTVAirCombat.behemothWaitHours = data.behemothWaitHours;
+                TFTVBehemothAndRaids.behemothScenicRoute = data.behemothScenicRoute;
+                TFTVBehemothAndRaids.behemothTarget = data.behemothTarget;
+                TFTVBehemothAndRaids.behemothWaitHours = data.behemothWaitHours;
                 TFTVInfestation.HavenPopulation = data.infestedHavenPopulationSaveData;
                 TFTVInfestation.OriginalOwner = data.infestedHavenOriginalOwnerSaveData;
                 TFTVRevenantResearch.ProjectOsirisStats = data.ProjectOsirisStatsSaveData;
@@ -260,14 +261,14 @@ namespace TFTV
 
                 //  Main.Logger.LogInfo("UmbraEvolution variable is " + Controller.EventSystem.GetVariable(TFTVUmbra.TBTVVariableName));
                 Main.Logger.LogInfo("# Characters with broken limbs: " + TFTVStamina.charactersWithDisabledBodyParts.Count);
-                Main.Logger.LogInfo("# Behemoth targets for this emergence: " + TFTVAirCombat.targetsForBehemoth.Count);
+                Main.Logger.LogInfo("# Behemoth targets for this emergence: " + TFTVBehemothAndRaids.targetsForBehemoth.Count);
                 //    Main.Logger.LogInfo("# Targets already hit by Behemoth on this emergence: " + TFTVAirCombat.targetsVisitedByBehemoth.Count);
-                Main.Logger.LogInfo("# Pandoran flyers that have visited havens on this emergence:  " + TFTVAirCombat.flyersAndHavens.Count);
-                Main.Logger.LogInfo("Hammerfall: " + TFTVAirCombat.checkHammerfall);
+                Main.Logger.LogInfo("# Pandoran flyers that have visited havens on this emergence:  " + TFTVBehemothAndRaids.flyersAndHavens.Count);
+                Main.Logger.LogInfo("Hammerfall: " + TFTVBehemothAndRaids.checkHammerfall);
                 Main.Logger.LogInfo("# Lost operatives: " + TFTVRevenant.DeadSoldiersDelirium.Count);
-                Main.Logger.LogInfo("# sites on Behemoth scenic route " + TFTVAirCombat.behemothScenicRoute.Count);
-                Main.Logger.LogInfo("Behemoth target id number is " + TFTVAirCombat.behemothTarget);
-                Main.Logger.LogInfo("Behemoth will wait for " + TFTVAirCombat.behemothWaitHours + " hours before moving");
+                Main.Logger.LogInfo("# sites on Behemoth scenic route " + TFTVBehemothAndRaids.behemothScenicRoute.Count);
+                Main.Logger.LogInfo("Behemoth target id number is " + TFTVBehemothAndRaids.behemothTarget);
+                Main.Logger.LogInfo("Behemoth will wait for " + TFTVBehemothAndRaids.behemothWaitHours + " hours before moving");
                 Main.Logger.LogInfo("Last time a Revenant was seen was on  " + myDate.Add(new TimeSpan(TFTVRevenant.daysRevenantLastSeen, 0, 0, 0)) + ", and now it is day " + myDate.Add(new TimeSpan(Controller.Timing.Now.TimeSpan.Ticks)));
                 Main.Logger.LogInfo("Project Osiris stats count " + TFTVRevenantResearch.ProjectOsirisStats.Count);
                 //  Main.Logger.LogInfo("LOTAGlobalReworkCheck is " + TFTVBetaSaveGamesFixes.LOTAReworkGlobalCheck);
@@ -284,14 +285,14 @@ namespace TFTV
                 //   Main.Logger.LogInfo($"Items currently hidden in Aircraft inventory {TFTVUI.CurrentlyAvailableInv.Values.Count}");
                 //  
                 TFTVLogger.Always("# Characters with broken limbs: " + TFTVStamina.charactersWithDisabledBodyParts.Count);
-                TFTVLogger.Always("# Behemoth targets for this emergence: " + TFTVAirCombat.targetsForBehemoth.Count);
+                TFTVLogger.Always("# Behemoth targets for this emergence: " + TFTVBehemothAndRaids.targetsForBehemoth.Count);
                 //   TFTVLogger.Always("# Targets already hit by Behemoth on this emergence: " + TFTVAirCombat.targetsVisitedByBehemoth.Count);
-                TFTVLogger.Always("# Pandoran flyers that have visited havens on this emergence:  " + TFTVAirCombat.flyersAndHavens.Count);
-                TFTVLogger.Always("Hammerfall: " + TFTVAirCombat.checkHammerfall);
+                TFTVLogger.Always("# Pandoran flyers that have visited havens on this emergence:  " + TFTVBehemothAndRaids.flyersAndHavens.Count);
+                TFTVLogger.Always("Hammerfall: " + TFTVBehemothAndRaids.checkHammerfall);
                 TFTVLogger.Always("# Lost operatives: " + TFTVRevenant.DeadSoldiersDelirium.Count);
-                TFTVLogger.Always("# sites on Behemoth scenic route " + TFTVAirCombat.behemothScenicRoute.Count);
-                TFTVLogger.Always("Behemoth target id number is " + TFTVAirCombat.behemothTarget);
-                TFTVLogger.Always("Behemoth will wait for another  " + TFTVAirCombat.behemothWaitHours + " before moving");
+                TFTVLogger.Always("# sites on Behemoth scenic route " + TFTVBehemothAndRaids.behemothScenicRoute.Count);
+                TFTVLogger.Always("Behemoth target id number is " + TFTVBehemothAndRaids.behemothTarget);
+                TFTVLogger.Always("Behemoth will wait for another  " + TFTVBehemothAndRaids.behemothWaitHours + " before moving");
                 TFTVLogger.Always("Last time a Revenant was seen was on  " + myDate.Add(new TimeSpan(TFTVRevenant.daysRevenantLastSeen, 0, 0, 0)) + ", and now it is day " + myDate.Add(new TimeSpan(Controller.Timing.Now.TimeSpan.Ticks)));
                 TFTVLogger.Always("Project Osiris stats count " + TFTVRevenantResearch.ProjectOsirisStats.Count);
                 //   TFTVLogger.Always("LOTAGlobalReworkCheck is " + TFTVBetaSaveGamesFixes.LOTAReworkGlobalCheck);

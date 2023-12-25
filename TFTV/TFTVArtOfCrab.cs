@@ -1,22 +1,24 @@
-﻿using Base.AI;
-using Base;
+﻿using Base;
+using Base.AI;
 using Base.Core;
 using Base.Defs;
 using Base.Entities.Effects;
 using Base.Entities.Statuses;
 using Base.Utils.Maths;
 using HarmonyLib;
+using Mono.Cecil;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.Entities.Items;
 using PhoenixPoint.Tactical;
-using PhoenixPoint.Tactical.AI.Considerations;
 using PhoenixPoint.Tactical.AI;
+using PhoenixPoint.Tactical.AI.Considerations;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.DamageKeywords;
 using PhoenixPoint.Tactical.Entities.Effects.DamageTypes;
+using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.Entities.Statuses;
 using PhoenixPoint.Tactical.Entities.Weapons;
 using PhoenixPoint.Tactical.Levels;
@@ -24,6 +26,7 @@ using PhoenixPoint.Tactical.Levels.Mist;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using UnityEngine;
 
 namespace TFTV
@@ -33,7 +36,7 @@ namespace TFTV
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
         private static readonly DefRepository Repo = TFTVMain.Repo;
 
-        internal class TurnOrder 
+        internal class TurnOrder
         {
             public static void SortOutAITurnOrder(List<TacticalActor> tacticalActors)
             {
@@ -660,78 +663,162 @@ namespace TFTV
             }
         }
 
-        internal class TargetCulling 
+        internal class TargetCulling
         {
-            [HarmonyPatch(typeof(AIClosestEnemyConsideration), "Evaluate")]
-            public static class AIClosestEnemyConsideration_Evaluate_patch
+            internal class Umbra
             {
+                //Need to patch to check if enemy has Delirium, is in Mist or VO in effect
+                //  AIVisibleEnemiesConsiderationDef aIVisibleEnemiesConsiderationDef = DefCache.GetDef<AIVisibleEnemiesConsiderationDef>("AnyFactionVisibleEnemy_AIConsiderationDef");
 
-                public static bool Prefix(AIClosestEnemyConsideration __instance, IAIActor actor, IAITarget target, object context, ref float __result)
+                //Need to patch to check if enemy has Delirium, is in Mist or VO in effect, so it mirrors anyFactionVisibleEnemyConsideration
+                //   AIVisibleEnemiesConsiderationDef NOaIVisibleEnemiesConsiderationDef = DefCache.GetDef<AIVisibleEnemiesConsiderationDef>("NoFactionVisibleEnemy_AIConsiderationDef");
+
+                private static bool CheckIfUmbra(TacticalActor actor)
                 {
                     try
                     {
+                        if (TFTVVoidOmens.VoidOmensCheck[16])
+                        {
+                            return false;
+                        }
 
-                        AIClosestEnemyConsiderationDef queenConsideration = DefCache.GetDef<AIClosestEnemyConsiderationDef>("Queen_ClosestEnemy_AIConsiderationDef");
-                        AIClosestEnemyConsiderationDef chironConsideration = DefCache.GetDef<AIClosestEnemyConsiderationDef>("Chiron_ClosestEnemy_AIConsiderationDef");
-                        AIClosestEnemyConsiderationDef acheronConsideration = DefCache.GetDef<AIClosestEnemyConsiderationDef>("Acheron_ClosestLineToEnemy_AIConsiderationDef");
+                        if (actor.ActorDef.name.Equals("Oilcrab_ActorDef") || actor.ActorDef.name.Equals("Oilfish_ActorDef"))
+                        {
+                            return true;
+                        }
 
-                        List<AIClosestEnemyConsiderationDef> aIClosestEnemyConsiderationDefs = new List<AIClosestEnemyConsiderationDef>() { queenConsideration, chironConsideration, acheronConsideration };
+                        return false;
 
-                        GameTagDef caterpillarDamage = DefCache.GetDef<GameTagDef>("DamageByCaterpillarTracks_TagDef");
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                        throw;
+                    }
+                }
 
-                        if (aIClosestEnemyConsiderationDefs.Contains(__instance.BaseDef))
+                private static bool CheckValidTarget(TacticalActor targetActor)
+                {
+                    try
+                    {
+                        return targetActor.CharacterStats.Corruption > 0 || targetActor.TacticalPerceptionBase.IsTouchingVoxel(TacticalVoxelType.Mist);
+
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                        throw;
+                    }
+                }
+
+                [HarmonyPatch(typeof(AIVisibleEnemiesConsideration), "Evaluate")]
+                public static class AIVisibleEnemiesConsideration_Evaluate_patch
+                {
+                    public static bool Prefix(AIVisibleEnemiesConsideration __instance, IAIActor actor, IAITarget target, object context, ref float __result)
+                    {
+                        try
                         {
 
-                            AIClosestEnemyConsiderationDef Def = (AIClosestEnemyConsiderationDef)__instance.BaseDef;
                             TacticalActor tacticalActor = (TacticalActor)actor;
+
+                            if (!CheckIfUmbra(tacticalActor))
+                            {
+                                return true;
+                            }
+
+                            MethodInfo enemiesToConsiderMethod = typeof(AIVisibleEnemiesConsideration).GetMethod("EnemiesToConsider", BindingFlags.Instance | BindingFlags.NonPublic);
+                            TacAITarget tacTarget = target as TacAITarget;
+
+
+                            if (__instance.Def.VisibilityType == VisibilityType.Faction)
+                            {
+                                IEnumerable<TacticalActorBase> source = (IEnumerable<TacticalActorBase>)enemiesToConsiderMethod.Invoke(__instance, new object[] { tacTarget, tacticalActor.TacticalFaction.AIBlackboard.GetEnemies(tacticalActor.AIActor.GetEnemyMask(__instance.Def.EnemyMask)) });
+                                IEnumerable<TacticalActorBase> culledSource = source.Where(tab => tab is TacticalActor tacActor && CheckValidTarget(tacActor));
+
+                                if (__instance.Def.Visible)
+                                {
+                                    if (!culledSource.Any())
+                                    {
+                                        __result = 0f;
+                                        return false;
+                                    }
+
+                                    __result = 1f;
+                                    return false;
+                                }
+
+                                if (!culledSource.Any())
+                                {
+                                    __result = 1f;
+                                    return false;
+                                }
+
+                                __result = 0f;
+                                return false;
+                            }
+
+                            __result = 0f;
+
+                            return false;
+
+                        }
+                        catch (Exception e)
+                        {
+                            TFTVLogger.Error(e);
+                            throw;
+                        }
+                    }
+                }
+
+                [HarmonyPatch(typeof(AIClosestEnemyConsideration), "Evaluate")]
+                public static class AIClosestEnemyConsideration_Evaluate_patch
+                {
+                    public static bool Prefix(AIClosestEnemyConsideration __instance, IAIActor actor, IAITarget target, object context, ref float __result)
+                    {
+                        try
+                        {
+                            AIClosestEnemyConsiderationDef aIClosestEnemyConsiderationDef = DefCache.GetDef<AIClosestEnemyConsiderationDef>("Umbra_ClosestPathToEnemy_AIConsiderationDef");
+
+                            if (__instance.BaseDef != aIClosestEnemyConsiderationDef)
+                            {
+                                return true;
+                            }
+
+                            TacticalActor tacticalActor = (TacticalActor)actor;
+
+                            if (!CheckIfUmbra(tacticalActor))
+                            {
+                                return true;
+                            }
+
                             TacAITarget tacAITarget = (TacAITarget)target;
                             float num = 0f;
                             TacticalActorBase tacticalActorBase = null;
-
-                          //  TFTVLogger.Always($"{tacticalActor.name} considering closest enemy");
-
-                            foreach (TacticalActorBase enemy in tacticalActor.TacticalFaction.AIBlackboard.GetEnemies(tacticalActor.AIActor.GetEnemyMask(Def.EnemyMask)).Where(ta => !ta.HasGameTag(caterpillarDamage)))
+                            foreach (TacticalActorBase enemy in tacticalActor.TacticalFaction.AIBlackboard.GetEnemies(tacticalActor.AIActor.GetEnemyMask(aIClosestEnemyConsiderationDef.EnemyMask)))
                             {
-
-                                float num2 = 0f;
-                                if (Def.DistanceType == DistanceType.Line)
+                                if (enemy is TacticalActor targetActor && CheckValidTarget(targetActor))
                                 {
-                                    num2 = (tacAITarget.Pos - enemy.Pos).magnitude;
-                                }
-                                else if (Def.DistanceType == DistanceType.PathLength)
-                                {
+                                    float num2 = 0f;
                                     float num3 = TacticalNavigationComponent.ExtendRangeWithNavAgentRadius(0f, tacticalActor);
                                     float num4 = TacticalNavigationComponent.ExtendRangeWithNavAgentRadius(0f, enemy);
-                                    float destinationRadius = num3 + num4 + Def.DestinationRadius;
+                                    float destinationRadius = num3 + num4 + aIClosestEnemyConsiderationDef.DestinationRadius;
                                     num2 = AIUtil.GetPathLength(tacticalActor, tacAITarget.Pos, enemy.Pos, useAStar: true, destinationRadius);
-                                }
 
-                                float num5 = num2.Clamp(Def.MinDistance, Def.MaxDistance);
-                                float num6 = 1f - (num5 - Def.MinDistance) / (Def.MaxDistance - Def.MinDistance);
-                                if (Def.ConsiderEnemyWeight)
-                                {
-                                    num6 *= AIUtil.GetEnemyWeight(tacticalActor.TacticalFaction.AIBlackboard, enemy);
-                                }
+                                    float num5 = num2.Clamp(aIClosestEnemyConsiderationDef.MinDistance, aIClosestEnemyConsiderationDef.MaxDistance);
+                                    float num6 = 1f - (num5 - aIClosestEnemyConsiderationDef.MinDistance) / (aIClosestEnemyConsiderationDef.MaxDistance - aIClosestEnemyConsiderationDef.MinDistance);
 
-                                if (num6 > num)
-                                {
-                                    num = num6;
-                                    tacticalActorBase = enemy;
+                                    if (num6 > num)
+                                    {
+                                        num = num6;
+                                        tacticalActorBase = enemy;
+                                    }
                                 }
-
-                               // TFTVLogger.Always($"the enemy is {enemy.name} and their score is {num6}");
                             }
 
                             if (tacticalActorBase == null)
                             {
-                                __result = Def.NoEnemiesValue;
-                                //  TFTVLogger.Always($"no enemies!");
+                                __result = 0f;
                                 return false;
-                            }
-
-                            if (Def.SetEnemyAsTarget)
-                            {
-                                tacAITarget.Actor = tacticalActorBase;
                             }
 
                             num = Mathf.Clamp(num, 0f, 1f);
@@ -741,10 +828,438 @@ namespace TFTV
                             }
 
                             __result = num;
-                          //  TFTVLogger.Always($"the score is {num}");
                             return false;
                         }
-                        return true;
+                        catch (Exception e)
+                        {
+                            TFTVLogger.Error(e);
+                            throw;
+                        }
+                    }
+                }
+            }
+            internal class Healing
+            {
+
+                [HarmonyPatch(typeof(AIHealPositionConsideration), "Evaluate")]
+                public static class AIHealPositionConsideration_Evaluate_patch
+                {
+                    private static bool CheckActorSuitability(TacticalActor targetActor, TacticalActor actor)
+                    {
+                        try
+                        {
+                            //if target or actor is MCed, don't heal
+                            if (targetActor.Status.HasStatus<MindControlStatus>() || actor.Status.HasStatus<MindControlStatus>())
+                            {
+                                return false;
+                            }
+
+                            //unless actor is Aspida, don't heal actor in fire, unless the target is actor, don't heal actors with disabled hands unless they have ignore pain
+                            if (actor.GetAbilityWithDef<HealAbility>(DefCache.GetDef<HealAbilityDef>("SY_FullRestoration_AbilityDef")) != null)
+                            {
+                                if ((targetActor.TacticalPerception.IsTouchingVoxel(TacticalVoxelType.Fire) && targetActor != actor)
+                                    || !actor.Status.HasStatus<FreezeAspectStatsStatus>() && actor.HasLostHandStatus())
+                                {
+
+                                    return false;
+                                }
+                            }
+
+                            return true;
+                        }
+                        catch (Exception e)
+                        {
+                            TFTVLogger.Error(e);
+                            throw;
+                        }
+                    }
+
+
+                    public static bool Prefix(AIHealPositionConsideration __instance, IAIActor actor, IAITarget target, object context, ref float __result)
+                    {
+                        try
+                        {
+
+                            TacticalActor obj = (TacticalActor)actor;
+                            TacAITarget tacAITarget = (TacAITarget)target;
+                            HealAbility healAbility = obj.GetAbilities<HealAbility>().FirstOrDefault();
+                            if (healAbility == null)
+                            {
+                                __result = 0f;
+                                return false;
+                            }
+
+                            IEnumerable<TacticalAbilityTarget> targetsAt = healAbility.GetTargetsAt(tacAITarget.Pos);
+                            TacticalAbilityTarget tacticalAbilityTarget = null;
+                            float num = 0f;
+                            foreach (TacticalAbilityTarget item in targetsAt)
+                            {
+                                float num2 = item.Actor.Health.Value;
+                                float num3 = (float)item.Actor.Health.Max - num2;
+
+                                //adding check if actor or target are mindcontrolled, etc.
+                                if (item.Actor is TacticalActor tacticalActor && !CheckActorSuitability(tacticalActor, obj))
+                                {
+                                    num3 = 0;
+                                }
+
+                                if (num3 > num)
+                                {
+                                    tacticalAbilityTarget = item;
+                                    num = num3;
+                                }
+                            }
+
+                            if (num > 0f)
+                            {
+                                tacAITarget.Actor = tacticalAbilityTarget.Actor;
+                                __result = num / (float)tacAITarget.Actor.Health.Max;
+                                return false;
+                            }
+
+                            __result = 0f;
+
+                            return false;
+                        }
+                        catch (Exception e)
+                        {
+                            TFTVLogger.Error(e);
+                            throw;
+                        }
+                    }
+                }
+
+            }
+            internal class MindControl
+            {
+
+                [HarmonyPatch(typeof(AIMindControlPickAvailableTargetConsideration), "Evaluate")]
+                public static class AIMindControlPickAvailableTargetConsideration_Evaluate_patch
+                {
+
+                    private static float CheckActorSuitability(TacticalActor actor)
+                    {
+                        try
+                        {
+                            float score = 1f;
+                            int hands = 2;
+                            int legs = 2;
+
+                            if (actor.Status.HasStatus<FreezeAspectStatsStatus>())
+                            {
+                                return score;
+                            }
+
+                            foreach (ItemSlot bodyPart in actor.BodyState.GetHealthSlots().Where(hs => !hs.Enabled))
+                            {
+                                if (bodyPart.ItemSlotDef.ProvidesHand)
+                                {
+                                    hands--;
+                                }
+                                else if (bodyPart.ItemSlotDef.SlotName == "LeftLeg" || bodyPart.ItemSlotDef.SlotName == "RightLeg")
+                                {
+                                    legs--;
+                                }
+                            }
+
+                            if (hands == 0 || legs == 0)
+                            {
+                                score = 0f;
+                            }
+                            else
+                            {
+                                score -= 0.25f * (2 - hands);
+                                score -= 0.25f * (2 - legs);
+                            }
+
+                            return score;
+                        }
+                        catch (Exception e)
+                        {
+                            TFTVLogger.Error(e);
+                            throw;
+                        }
+                    }
+
+                    public static bool Prefix(AIMindControlPickAvailableTargetConsideration __instance, IAIActor actor, IAITarget target, object context, ref float __result)
+                    {
+                        try
+                        {
+
+                            TacticalActor tacticalActor = (TacticalActor)actor;
+                            TacAITarget tacAITarget = (TacAITarget)target;
+                            MindControlAbility mindControlAbility = __instance.Def.GetAbility(tacticalActor, tacAITarget) as MindControlAbility;
+                            if (mindControlAbility == null)
+                            {
+                                __result = 0f;
+                                return false;
+                            }
+
+                            IEnumerable<TacticalAbilityTarget> abilityTargets = null;
+                            if (tacAITarget.IsPosValid)
+                            {
+                                abilityTargets = mindControlAbility.GetTargetsAt(tacAITarget.Pos);
+                            }
+                            else
+                            {
+                                abilityTargets = mindControlAbility.GetTargets();
+                            }
+
+                            abilityTargets = abilityTargets.Where((TacticalAbilityTarget t) => t.Actor != null && !t.Actor.IsDisabled || !t.Actor.IsDeadNextTurn()); //added checks IsDisabled and IsDeadNextTurn
+                            IEnumerable<TacticalActorBase> enumerable = from a in tacticalActor.TacticalFaction.AIBlackboard.GetEnemies(tacticalActor.AIActor.GetEnemyMask(__instance.Def.EnemyMask))
+                                                                        where abilityTargets.Any((TacticalAbilityTarget t) => t.Actor == a)
+                                                                        select a;
+                            float num = -1f;
+                            TacticalActorBase enemyWithMaxWeight = null;
+                            foreach (TacticalActorBase item in enumerable)
+                            {
+                                float enemyWeight = AIUtil.GetEnemyWeight(tacticalActor.TacticalFaction.AIBlackboard, item);
+                                float num2 = 1f;
+                                if ((int)(float)tacticalActor.CharacterStats.Willpower != 0)
+                                {
+                                    num2 = Mathf.Clamp(((float)tacticalActor.CharacterStats.WillPoints - (float)((TacticalActor)item).CharacterStats.WillPoints - (float)((TacticalActor)item).TacticalActorDef.WillPointWorth) / (float)tacticalActor.CharacterStats.Willpower, 0f, 1f);
+                                }
+                                else if (mindControlAbility.MindControlAbilityDef.CheckAgainstTargetWillPoints)
+                                {
+                                    __result = 0f;
+                                    return false;
+                                }
+
+                                //Adding to make targets touching fire less appealing
+                                if (item != null)
+                                {
+                                    if (item.TacticalPerceptionBase != null && item.TacticalPerceptionBase.IsTouchingVoxel(TacticalVoxelType.Fire))
+                                    {
+                                        num2 *= 0.5f;
+                                    }
+
+                                    //setting score to 0 if both arms or both legs disabled, reducing by 0.25f per disabled arm or leg otherwise
+                                    if (item is TacticalActor targetTacticalActor)
+                                    {
+                                        num2 *= CheckActorSuitability(targetTacticalActor);
+                                    }
+                                }
+                                enemyWeight *= num2;
+                                if (enemyWeight > num)
+                                {
+                                    num = enemyWeight;
+                                    enemyWithMaxWeight = item;
+                                }
+                            }
+
+                            TacticalAbilityTarget tacticalAbilityTarget = abilityTargets.FirstOrDefault((TacticalAbilityTarget t) => t.Actor == enemyWithMaxWeight);
+                            if (tacticalAbilityTarget == null)
+                            {
+                                __result = 0f;
+                                return false;
+                            }
+
+                            tacAITarget.Actor = tacticalAbilityTarget.Actor;
+                            __result = Mathf.Clamp(num, 0f, 1f);
+
+
+                            return false;
+
+                        }
+                        catch (Exception e)
+                        {
+                            TFTVLogger.Error(e);
+                            throw;
+                        }
+                    }
+                }
+
+            }
+            internal class SmallCritters
+
+            {
+
+                [HarmonyPatch(typeof(AIClosestEnemyConsideration), "Evaluate")]
+                public static class AIClosestEnemyConsideration_Evaluate_patch
+                {
+
+                    public static bool Prefix(AIClosestEnemyConsideration __instance, IAIActor actor, IAITarget target, object context, ref float __result)
+                    {
+                        try
+                        {
+
+                            AIClosestEnemyConsiderationDef queenConsideration = DefCache.GetDef<AIClosestEnemyConsiderationDef>("Queen_ClosestEnemy_AIConsiderationDef");
+                            AIClosestEnemyConsiderationDef chironConsideration = DefCache.GetDef<AIClosestEnemyConsiderationDef>("Chiron_ClosestEnemy_AIConsiderationDef");
+                            AIClosestEnemyConsiderationDef acheronConsideration = DefCache.GetDef<AIClosestEnemyConsiderationDef>("Acheron_ClosestLineToEnemy_AIConsiderationDef");
+
+                            List<AIClosestEnemyConsiderationDef> aIClosestEnemyConsiderationDefs = new List<AIClosestEnemyConsiderationDef>() { queenConsideration, chironConsideration, acheronConsideration };
+
+                            GameTagDef caterpillarDamage = DefCache.GetDef<GameTagDef>("DamageByCaterpillarTracks_TagDef");
+
+                            if (aIClosestEnemyConsiderationDefs.Contains(__instance.BaseDef))
+                            {
+
+                                AIClosestEnemyConsiderationDef Def = (AIClosestEnemyConsiderationDef)__instance.BaseDef;
+                                TacticalActor tacticalActor = (TacticalActor)actor;
+                                TacAITarget tacAITarget = (TacAITarget)target;
+                                float num = 0f;
+                                TacticalActorBase tacticalActorBase = null;
+
+                                //  TFTVLogger.Always($"{tacticalActor.name} considering closest enemy");
+
+                                foreach (TacticalActorBase enemy in tacticalActor.TacticalFaction.AIBlackboard.GetEnemies(tacticalActor.AIActor.GetEnemyMask(Def.EnemyMask)).Where(ta => !ta.HasGameTag(caterpillarDamage)))
+                                {
+
+                                    float num2 = 0f;
+                                    if (Def.DistanceType == DistanceType.Line)
+                                    {
+                                        num2 = (tacAITarget.Pos - enemy.Pos).magnitude;
+                                    }
+                                    else if (Def.DistanceType == DistanceType.PathLength)
+                                    {
+                                        float num3 = TacticalNavigationComponent.ExtendRangeWithNavAgentRadius(0f, tacticalActor);
+                                        float num4 = TacticalNavigationComponent.ExtendRangeWithNavAgentRadius(0f, enemy);
+                                        float destinationRadius = num3 + num4 + Def.DestinationRadius;
+                                        num2 = AIUtil.GetPathLength(tacticalActor, tacAITarget.Pos, enemy.Pos, useAStar: true, destinationRadius);
+                                    }
+
+                                    float num5 = num2.Clamp(Def.MinDistance, Def.MaxDistance);
+                                    float num6 = 1f - (num5 - Def.MinDistance) / (Def.MaxDistance - Def.MinDistance);
+                                    if (Def.ConsiderEnemyWeight)
+                                    {
+                                        num6 *= AIUtil.GetEnemyWeight(tacticalActor.TacticalFaction.AIBlackboard, enemy);
+                                    }
+
+                                    if (num6 > num)
+                                    {
+                                        num = num6;
+                                        tacticalActorBase = enemy;
+                                    }
+
+                                    // TFTVLogger.Always($"the enemy is {enemy.name} and their score is {num6}");
+                                }
+
+                                if (tacticalActorBase == null)
+                                {
+                                    __result = Def.NoEnemiesValue;
+                                    //  TFTVLogger.Always($"no enemies!");
+                                    return false;
+                                }
+
+                                if (Def.SetEnemyAsTarget)
+                                {
+                                    tacAITarget.Actor = tacticalActorBase;
+                                }
+
+                                num = Mathf.Clamp(num, 0f, 1f);
+                                if (Utl.Equals(num, 0f, 0.01f))
+                                {
+                                    num = 0.1f;
+                                }
+
+                                __result = num;
+                                //  TFTVLogger.Always($"the score is {num}");
+                                return false;
+                            }
+                            return true;
+                        }
+                        catch (Exception e)
+                        {
+                            TFTVLogger.Error(e);
+                            throw;
+                        }
+                    }
+                }
+
+
+                //Patch to prevent Scylla from targeting tiny critters like worms and spider drones
+                [HarmonyPatch(typeof(TacticalAbility), "GetTargetActors", new Type[] { typeof(TacticalTargetData), typeof(TacticalActorBase), typeof(Vector3) })]
+                public static class TFTV_TacticalAbility_GetTargetActors_Scylla_Patch
+                {
+                    public static void Postfix(ref IEnumerable<TacticalAbilityTarget> __result, TacticalActorBase sourceActor, TacticalAbility __instance)
+                    {
+                        try
+                        {
+                            if (sourceActor is TacticalActor tacticalActor && tacticalActor.IsControlledByAI)
+                            {
+                                //  TFTVLogger.Always($"{tacticalActor.DisplayName} is looking for targets, before culling has {__result.Count()} targets");
+
+                                // TFTVLogger.Always($"{tacticalActor.DisplayName} is looking for targets");
+                                __result = CullTargetsLists(__result, sourceActor, __instance);
+
+                                //  TFTVLogger.Always($"{tacticalActor.DisplayName} after culling has {__result.Count()} targets");
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            TFTVLogger.Error(e);
+                        }
+                    }
+                }
+
+
+                [HarmonyPatch(typeof(ShootAbility), "GetTargets")]
+                public static class TFTV_ShootAbility_GetTargets_Scylla_Patch
+                {
+                    public static void Postfix(ref IEnumerable<TacticalAbilityTarget> __result, TacticalActorBase sourceActor, ShootAbility __instance)
+                    {
+                        try
+                        {
+                            if (sourceActor is TacticalActor tacticalActor && tacticalActor.IsControlledByAI)
+                            {
+                                // if (tacticalActor.HasGameTag(DefCache.GetDef<ClassTagDef>("Chiron_ClassTagDef")))
+                                // {
+                                //   TFTVLogger.Always($"{tacticalActor.DisplayName} is looking for targets for ability {__instance.TacticalAbilityDef.name}, before culling has {__result.Count()} targets");
+                                __result = CullTargetsLists(__result, sourceActor, __instance);
+                                //   TFTVLogger.Always($"{tacticalActor.DisplayName} after culling has {__result.Count()} targets");
+                                // }
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            TFTVLogger.Error(e);
+                        }
+                    }
+                }
+                public static bool IsValidTarget(TacticalActor actor, TacticalAbilityTarget target, Weapon weapon)
+                {
+                    try
+                    {
+                        bool isValid = true;
+
+
+                        ClassTagDef swarmerTag = DefCache.GetDef<ClassTagDef>("Swarmer_ClassTagDef");
+                        ClassTagDef crabTag = DefCache.GetDef<ClassTagDef>("Crabman_ClassTagDef");
+                        ClassTagDef sirenTag = DefCache.GetDef<ClassTagDef>("Siren_ClassTagDef");
+                        ClassTagDef queenTag = DefCache.GetDef<ClassTagDef>("Queen_ClassTagDef");
+                        ClassTagDef tritonTag = DefCache.GetDef<ClassTagDef>("Fishman_ClassTagDef");
+                        ClassTagDef acheronTag = DefCache.GetDef<ClassTagDef>("Acheron_ClassTagDef");
+                        ClassTagDef chironTag = DefCache.GetDef<ClassTagDef>("Chiron_ClassTagDef");
+                        ClassTagDef cyclopsTag = DefCache.GetDef<ClassTagDef>("MediumGuardian_ClassTagDef");
+
+                        GameTagDef humanTag = DefCache.GetDef<GameTagDef>("Human_TagDef");
+                        GameTagDef caterpillarDamage = DefCache.GetDef<GameTagDef>("DamageByCaterpillarTracks_TagDef");
+                        ItemClassificationTagDef meleeTag = DefCache.GetDef<ItemClassificationTagDef>("MeleeWeapon_TagDef");
+
+                        AttenuatingDamageTypeEffectDef paralysisDamage = DefCache.GetDef<AttenuatingDamageTypeEffectDef>("Electroshock_AttenuatingDamageTypeEffectDef");
+                        DamageOverTimeDamageTypeEffectDef virusDamage = DefCache.GetDef<DamageOverTimeDamageTypeEffectDef>("Virus_DamageOverTimeDamageTypeEffectDef");
+
+                        if (weapon.WeaponDef.Tags.Contains(meleeTag) && !actor.GameTags.Contains(queenTag))
+                        {
+
+                        }
+                        else if (actor.GameTags.Contains(queenTag) || actor.GameTags.Contains(acheronTag) || actor.GameTags.Contains(chironTag) || actor.GameTags.Contains(cyclopsTag))
+                        {
+                            if (target.GetTargetActor() is TacticalActor tacticalActor && tacticalActor.GameTags.Contains(caterpillarDamage) && tacticalActor.TacticalFaction != actor.TacticalFaction)
+                            {
+                                isValid = false;
+                            }
+                        }
+                        else
+                        {
+                            if (target.GetTargetActor() is TacticalActor tacticalActor && tacticalActor.GameTags.Contains(caterpillarDamage) && (tacticalActor.Pos - target.Actor.Pos).magnitude > 8)
+                            {
+                                isValid = false;
+                            }
+                        }
+
+                        return isValid;
+
                     }
                     catch (Exception e)
                     {
@@ -752,213 +1267,111 @@ namespace TFTV
                         throw;
                     }
                 }
-            }
+
+                [HarmonyPatch(typeof(Weapon), "GetShootTargets")]
+                public static class TFTV_Weapon_GetShootTargets_Patch
+                {
+                    public static IEnumerable<TacticalAbilityTarget> Postfix(IEnumerable<TacticalAbilityTarget> results, Weapon __instance)
+                    {
+                        foreach (TacticalAbilityTarget target in results)
+                        {
+                            if (IsValidTarget(__instance.TacticalActor, target, __instance)) // <- create a method to check the target
+                            {
+                                yield return target;
+                            }
+
+                        }
+                    }
+                }
 
 
-            //Patch to prevent Scylla from targeting tiny critters like worms and spider drones
-            [HarmonyPatch(typeof(TacticalAbility), "GetTargetActors", new Type[] { typeof(TacticalTargetData), typeof(TacticalActorBase), typeof(Vector3) })]
-            public static class TFTV_TacticalAbility_GetTargetActors_Scylla_Patch
-            {
-                public static void Postfix(ref IEnumerable<TacticalAbilityTarget> __result, TacticalActorBase sourceActor, TacticalAbility __instance)
+                // AIActionMoveAndAttack
+
+                //implement method to cull small target
+                public static IEnumerable<TacticalAbilityTarget> CullTargetsLists(IEnumerable<TacticalAbilityTarget> targetList, TacticalActorBase actor, TacticalAbility ability)
                 {
                     try
                     {
-                        if (sourceActor is TacticalActor tacticalActor && tacticalActor.IsControlledByAI)
+                        //   TFTVLogger.Always($"{actor.name} using {ability?.TacticalAbilityDef?.name} and target list has {targetList.Count()} elements");
+
+
+
+                        List<TacticalAbilityTarget> culledList = new List<TacticalAbilityTarget>(targetList);
+
+                        ClassTagDef swarmerTag = DefCache.GetDef<ClassTagDef>("Swarmer_ClassTagDef");
+                        ClassTagDef crabTag = DefCache.GetDef<ClassTagDef>("Crabman_ClassTagDef");
+                        ClassTagDef sirenTag = DefCache.GetDef<ClassTagDef>("Siren_ClassTagDef");
+                        ClassTagDef queenTag = DefCache.GetDef<ClassTagDef>("Queen_ClassTagDef");
+                        ClassTagDef tritonTag = DefCache.GetDef<ClassTagDef>("Fishman_ClassTagDef");
+                        ClassTagDef acheronTag = DefCache.GetDef<ClassTagDef>("Acheron_ClassTagDef");
+                        ClassTagDef chironTag = DefCache.GetDef<ClassTagDef>("Chiron_ClassTagDef");
+                        ClassTagDef cyclopsTag = DefCache.GetDef<ClassTagDef>("MediumGuardian_ClassTagDef");
+
+
+                        GameTagDef humanTag = DefCache.GetDef<GameTagDef>("Human_TagDef");
+                        GameTagDef caterpillarDamage = DefCache.GetDef<GameTagDef>("DamageByCaterpillarTracks_TagDef");
+                        SkillTagDef meleeSkillTag = DefCache.GetDef<SkillTagDef>("MeleeAbility_SkillTagDef");
+
+
+                        AttenuatingDamageTypeEffectDef paralysisDamage = DefCache.GetDef<AttenuatingDamageTypeEffectDef>("Electroshock_AttenuatingDamageTypeEffectDef");
+                        DamageOverTimeDamageTypeEffectDef virusDamage = DefCache.GetDef<DamageOverTimeDamageTypeEffectDef>("Virus_DamageOverTimeDamageTypeEffectDef");
+                        foreach (TacticalAbilityTarget target in targetList)
                         {
-                            //  TFTVLogger.Always($"{tacticalActor.DisplayName} is looking for targets, before culling has {__result.Count()} targets");
-
-                            // TFTVLogger.Always($"{tacticalActor.DisplayName} is looking for targets");
-                            __result = CullTargetsLists(__result, sourceActor, __instance);
-
-                            //  TFTVLogger.Always($"{tacticalActor.DisplayName} after culling has {__result.Count()} targets");
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        TFTVLogger.Error(e);
-                    }
-                }
-            }
-
-
-            [HarmonyPatch(typeof(ShootAbility), "GetTargets")]
-            public static class TFTV_ShootAbility_GetTargets_Scylla_Patch
-            {
-                public static void Postfix(ref IEnumerable<TacticalAbilityTarget> __result, TacticalActorBase sourceActor, ShootAbility __instance)
-                {
-                    try
-                    {
-                        if (sourceActor is TacticalActor tacticalActor && tacticalActor.IsControlledByAI)
-                        {
-                            // if (tacticalActor.HasGameTag(DefCache.GetDef<ClassTagDef>("Chiron_ClassTagDef")))
-                            // {
-                            //   TFTVLogger.Always($"{tacticalActor.DisplayName} is looking for targets for ability {__instance.TacticalAbilityDef.name}, before culling has {__result.Count()} targets");
-                            __result = CullTargetsLists(__result, sourceActor, __instance);
-                            //   TFTVLogger.Always($"{tacticalActor.DisplayName} after culling has {__result.Count()} targets");
-                            // }
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        TFTVLogger.Error(e);
-                    }
-                }
-            }
-            public static bool IsValidTarget(TacticalActor actor, TacticalAbilityTarget target, Weapon weapon)
-            {
-                try
-                {
-                    bool isValid = true;
-
-
-                    ClassTagDef swarmerTag = DefCache.GetDef<ClassTagDef>("Swarmer_ClassTagDef");
-                    ClassTagDef crabTag = DefCache.GetDef<ClassTagDef>("Crabman_ClassTagDef");
-                    ClassTagDef sirenTag = DefCache.GetDef<ClassTagDef>("Siren_ClassTagDef");
-                    ClassTagDef queenTag = DefCache.GetDef<ClassTagDef>("Queen_ClassTagDef");
-                    ClassTagDef tritonTag = DefCache.GetDef<ClassTagDef>("Fishman_ClassTagDef");
-                    ClassTagDef acheronTag = DefCache.GetDef<ClassTagDef>("Acheron_ClassTagDef");
-                    ClassTagDef chironTag = DefCache.GetDef<ClassTagDef>("Chiron_ClassTagDef");
-                    ClassTagDef cyclopsTag = DefCache.GetDef<ClassTagDef>("MediumGuardian_ClassTagDef");
-
-                    GameTagDef humanTag = DefCache.GetDef<GameTagDef>("Human_TagDef");
-                    GameTagDef caterpillarDamage = DefCache.GetDef<GameTagDef>("DamageByCaterpillarTracks_TagDef");
-                    ItemClassificationTagDef meleeTag = DefCache.GetDef<ItemClassificationTagDef>("MeleeWeapon_TagDef");
-
-                    AttenuatingDamageTypeEffectDef paralysisDamage = DefCache.GetDef<AttenuatingDamageTypeEffectDef>("Electroshock_AttenuatingDamageTypeEffectDef");
-                    DamageOverTimeDamageTypeEffectDef virusDamage = DefCache.GetDef<DamageOverTimeDamageTypeEffectDef>("Virus_DamageOverTimeDamageTypeEffectDef");
-
-                    if (weapon.WeaponDef.Tags.Contains(meleeTag) && !actor.GameTags.Contains(queenTag))
-                    {
-
-                    }
-                    else if (actor.GameTags.Contains(queenTag) || actor.GameTags.Contains(acheronTag) || actor.GameTags.Contains(chironTag) || actor.GameTags.Contains(cyclopsTag))
-                    {
-                        if (target.GetTargetActor() is TacticalActor tacticalActor && tacticalActor.GameTags.Contains(caterpillarDamage) && tacticalActor.TacticalFaction != actor.TacticalFaction)
-                        {
-                            isValid = false;
-                        }
-                    }
-                    else
-                    {
-                        if (target.GetTargetActor() is TacticalActor tacticalActor && tacticalActor.GameTags.Contains(caterpillarDamage) && (tacticalActor.Pos - target.Actor.Pos).magnitude > 8)
-                        {
-                            isValid = false;
-                        }
-                    }
-
-                    return isValid;
-
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                    throw;
-                }
-            }
-
-            [HarmonyPatch(typeof(Weapon), "GetShootTargets")]
-            public static class TFTV_Weapon_GetShootTargets_Patch
-            {
-                public static IEnumerable<TacticalAbilityTarget> Postfix(IEnumerable<TacticalAbilityTarget> results, Weapon __instance)
-                {
-                    foreach (TacticalAbilityTarget target in results)
-                    {
-                        if (IsValidTarget(__instance.TacticalActor, target, __instance)) // <- create a method to check the target
-                        {
-                            yield return target;
-                        }
-
-                    }
-                }
-            }
-
-         
-            // AIActionMoveAndAttack
-
-            //implement method to cull small target
-            public static IEnumerable<TacticalAbilityTarget> CullTargetsLists(IEnumerable<TacticalAbilityTarget> targetList, TacticalActorBase actor, TacticalAbility ability)
-            {
-                try
-                {
-                    //   TFTVLogger.Always($"{actor.name} using {ability?.TacticalAbilityDef?.name} and target list has {targetList.Count()} elements");
-
-
-
-                    List<TacticalAbilityTarget> culledList = new List<TacticalAbilityTarget>(targetList);
-
-                    ClassTagDef swarmerTag = DefCache.GetDef<ClassTagDef>("Swarmer_ClassTagDef");
-                    ClassTagDef crabTag = DefCache.GetDef<ClassTagDef>("Crabman_ClassTagDef");
-                    ClassTagDef sirenTag = DefCache.GetDef<ClassTagDef>("Siren_ClassTagDef");
-                    ClassTagDef queenTag = DefCache.GetDef<ClassTagDef>("Queen_ClassTagDef");
-                    ClassTagDef tritonTag = DefCache.GetDef<ClassTagDef>("Fishman_ClassTagDef");
-                    ClassTagDef acheronTag = DefCache.GetDef<ClassTagDef>("Acheron_ClassTagDef");
-                    ClassTagDef chironTag = DefCache.GetDef<ClassTagDef>("Chiron_ClassTagDef");
-                    ClassTagDef cyclopsTag = DefCache.GetDef<ClassTagDef>("MediumGuardian_ClassTagDef");
-
-
-                    GameTagDef humanTag = DefCache.GetDef<GameTagDef>("Human_TagDef");
-                    GameTagDef caterpillarDamage = DefCache.GetDef<GameTagDef>("DamageByCaterpillarTracks_TagDef");
-                    SkillTagDef meleeSkillTag = DefCache.GetDef<SkillTagDef>("MeleeAbility_SkillTagDef");
-
-
-                    AttenuatingDamageTypeEffectDef paralysisDamage = DefCache.GetDef<AttenuatingDamageTypeEffectDef>("Electroshock_AttenuatingDamageTypeEffectDef");
-                    DamageOverTimeDamageTypeEffectDef virusDamage = DefCache.GetDef<DamageOverTimeDamageTypeEffectDef>("Virus_DamageOverTimeDamageTypeEffectDef");
-                    foreach (TacticalAbilityTarget target in targetList)
-                    {
-                        if (actor.GameTags.Contains(swarmerTag) || (ability.TacticalAbilityDef.SkillTags.Contains(meleeSkillTag) && actor.GameTags.Contains(crabTag)))
-                        {
-
-                        }
-                        else if (actor.GameTags.Contains(queenTag) //&& actor.GetAbility<CaterpillarMoveAbility>() != null
-                            || actor.GameTags.Contains(acheronTag) || actor.GameTags.Contains(chironTag)) //|| actor.GameTags.Contains(cyclopsTag))
-                        {
-                            if (target.GetTargetActor() is TacticalActor tacticalActor && tacticalActor.GameTags.Contains(caterpillarDamage) && tacticalActor.TacticalFaction != actor.TacticalFaction)
+                            if (actor.GameTags.Contains(swarmerTag) || (ability.TacticalAbilityDef.SkillTags.Contains(meleeSkillTag) && actor.GameTags.Contains(crabTag)))
                             {
-                               // TFTVLogger.Always($"{tacticalActor.name} culled for {actor.name}");
-                                culledList.Remove(target);
+
+                            }
+                            else if (actor.GameTags.Contains(queenTag) //&& actor.GetAbility<CaterpillarMoveAbility>() != null
+                                || actor.GameTags.Contains(acheronTag) || actor.GameTags.Contains(chironTag)) //|| actor.GameTags.Contains(cyclopsTag))
+                            {
+                                if (target.GetTargetActor() is TacticalActor tacticalActor && tacticalActor.GameTags.Contains(caterpillarDamage) && tacticalActor.TacticalFaction != actor.TacticalFaction)
+                                {
+                                    // TFTVLogger.Always($"{tacticalActor.name} culled for {actor.name}");
+                                    culledList.Remove(target);
+                                }
+                            }
+                            else
+                            {
+                                if (target.GetTargetActor() is TacticalActor tacticalActor && tacticalActor.GameTags.Contains(caterpillarDamage) && (tacticalActor.Pos - target.Actor.Pos).magnitude > 8)
+                                {
+                                    // TFTVLogger.Always($"{tacticalActor.name} culled");
+                                    culledList.Remove(target);
+                                }
                             }
                         }
-                        else
-                        {
-                            if (target.GetTargetActor() is TacticalActor tacticalActor && tacticalActor.GameTags.Contains(caterpillarDamage) && (tacticalActor.Pos - target.Actor.Pos).magnitude > 8)
-                            {
-                                // TFTVLogger.Always($"{tacticalActor.name} culled");
-                                culledList.Remove(target);
-                            }
-                        }
-                    }
 
-                    DamageKeywordDef[] excludeDamageDefs =
-                    {
+                        DamageKeywordDef[] excludeDamageDefs =
+                        {
                     GameUtl.GameComponent<SharedData>().SharedDamageKeywords.ParalysingKeyword,
                     GameUtl.GameComponent<SharedData>().SharedDamageKeywords.ViralKeyword
                 };
 
-                    if (ability.Equipment != null && ability.Equipment is Weapon weapon
-                        && weapon.GetDamagePayload().DamageKeywords.Any(damageKeyordPair => excludeDamageDefs.Contains(damageKeyordPair.DamageKeywordDef)))
-                    {
-                        foreach (TacticalAbilityTarget target in targetList)
+                        if (ability.Equipment != null && ability.Equipment is Weapon weapon
+                            && weapon.GetDamagePayload().DamageKeywords.Any(damageKeyordPair => excludeDamageDefs.Contains(damageKeyordPair.DamageKeywordDef)))
                         {
-                            if (target.GetTargetActor() is TacticalActor tacticalActor && (tacticalActor.ActorDef.name.Equals("SpiderDrone_ActorDef") ||
-                                tacticalActor.ActorDef.name.Contains("Turret_ActorDef")) && culledList.Contains(target))
+                            foreach (TacticalAbilityTarget target in targetList)
                             {
-                                //   TFTVLogger.Always($"{tacticalActor.name} culled");
-                                culledList.Remove(target);
+                                if (target.GetTargetActor() is TacticalActor tacticalActor && (tacticalActor.ActorDef.name.Equals("SpiderDrone_ActorDef") ||
+                                    tacticalActor.ActorDef.name.Contains("Turret_ActorDef")) && culledList.Contains(target))
+                                {
+                                    //   TFTVLogger.Always($"{tacticalActor.name} culled");
+                                    culledList.Remove(target);
+                                }
                             }
+
                         }
 
+                        return culledList;
+
                     }
-
-                    return culledList;
-
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                        throw;
+                    }
                 }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                    throw;
-                }
+
             }
-
         }
 
         public static bool Has1APWeapon(TacCharacterDef tacCharacterDef)
@@ -1013,11 +1426,11 @@ namespace TFTV
          }*/
 
 
-       
 
 
 
-        
+
+
 
         /*   [HarmonyPatch(typeof(SpawnActorAbility), "Activate")]
           internal static class TFTV_SpawnActorAbility_Activate_SpawnerySpawn_patch

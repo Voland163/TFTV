@@ -111,126 +111,333 @@ namespace TFTV
 
 
 
+
         public static void InjectDefsInjectedOnlyOnceBatch1()
         {
+            try
+            {
+                VanillaFixes();
 
-            //   ReEnableFlinching();
-            CreateRoboticSelfRestoreAbility();
-            CreateAcidImmunity();
+                GeoscapeEvents();
 
-            AugmentationEventsDefs();
-            ChangesAmbushMissions();
-            CreateIntro();
-            Create_VoidOmen_Events();
-            ChangeInfestationDefs();
-            ChangesToMedbay();
-            InjectAlistairAhsbyLines();
-            InjectOlenaKimLines();
-            MistOnAllMissions();
-            ModifyAirCombatDefs();
-            ModifyDefsForPassengerModules();
-            ModifyMissionDefsToReplaceNeutralWithBandit();
-            ModifyPandoranProgress();
-            RemoveCorruptionDamageBuff();
-            TFTVChangesToDLC1andDLC2Events.ChangesToDLC1andDLC2Defs();
-            TFTVChangesToDLC3Events.ChangesToDLC3Defs();
-            TFTVChangesToDLC4Events.ChangesToDLC4Defs();
-            ChangesToAcherons();
-            RemoveCensusResearch();
-            AllowMedkitsToTargetMutoidsAndChangesToMutoidSkillSet();
-            ChangesToLOTA();
-            CreateSubject24();
-            CreateVoidOmenRemindersInTactical();
-            RemoveMindControlImmunityVFX();
-            AddContributionPointsToPriestAndTech();
-            SyphonAttackFix();
-            AddLoreEntries();
-            CreateFireQuenchers();
-            ChangeMyrmidonAndFirewormResearchRewards();
-            RemovePirateKing();
-            CreateRookieVulnerability();
-            CreateRookieProtectionStatus();
-            CreateEtermesStatuses();
-            ModifyRecruitsCost();
-            RemoveScyllaAndNodeResearches();
-            FixUnarmedAspida();
-            AddLoadingScreens();
-            AddTips();
+                CreateRoboticSelfRestoreAbility();
 
-            //   CreateMeleeChiron();
-            FixMyrmidonFlee();
-            //  Testing();
-            CreateNewBaseDefense();
+                LoadingScreensAndLore();
 
-            // TestingKnockBack();
-            CreateConsolePromptBaseDefense();
-            ModifyDecoyAbility();
-            ImproveScyllaAcheronsChironsAndCyclops();
-            AddMissingElectronicTags();
-            ChangeUmbra();
-            FixPriestScream();
-            ModifyChironWormAndAoETargeting();
+                ModifyAirCombatDefs();
 
-            // TestingHavenDefenseFix();
-            // TestingKnockBackRepositionAlternative();
-            // CreateCyclopsScreamStatus();
+                ModifyDefsForPassengerModules();
 
+                ChangesToLOTA();
 
+                CreateVoidOmenRemindersInTactical();
 
-            ChangesModulesAndAcid();
-            ChangeVehicleInventorySlots();
-            CreateReinforcementTag();
-            CreateFoodPoisoningEvents();
-            StealAircraftMissionsNoItemRecovery();
+                CreateFireQuenchers();
 
-            ModifyCratesToAddArmor();
-            TFTVReverseEngineering.ModifyReverseEngineering();
-            CreateObjectiveCaptureCapacity();
+                CreateNewBaseDefense();
 
-            TFTVReleaseOnly.OnReleasePrototypeDefs();
-            TFTVReleaseOnly.CreateStoryModeDifficultyLevel();
-            TFTVReleaseOnly.ModifyVanillaDifficultiesOrder();
-            // ReinitSaves();
+                ScyllaAcheronsChironsAndCyclops();
 
-            CreateScyllaDamageResistanceForStrongerPandorans();
+                ChangeUmbra();
 
+                ChangesModulesAndAcid();
 
-            //   TFTVBaseDefenseNJ.CreateNewNJTemplates();
-            CreateReinforcementStatuses();
+                ChangePalaceMissions();
 
-            RestrictCanBeRecruitedIntoPhoenix();
-            ChangePalaceMissions();
-            FixBionic3ResearchNotGivingAccessToFacility();
-            CreateFakeFacilityToFixBadBaseDefenseMaps();
-            ChangeFireNadeCostAndDamage();
+                CreateAndAdjustDefsForLimitedCapture();
 
-            ModifyRescueCiviliansMissions();
-            TFTVChangesToDLC5.TFTVMercenaries.Defs.CreateMercenariesDefs();
-            TFTVChangesToDLC5.TFTVKaosGuns.CreateKaosWeaponAmmo();
-            TFTVChangesToDLC5.TFTVMarketPlaceItems.AdjustMarketPlaceOptions();
-            ReducePromoSkins();
+                TFTVHints.HintDefs.CreateHints();
 
-            TFTVBetterEnemies.BECreateAIActionDefs();
-            //  TFTVLogger.Always("BE AIActionDefs created");
-            TFTVBetterEnemies.BEFixesToAI();
-            //   TFTVLogger.Always("BE Fixes to AI applied");
-            TFTVBetterEnemies.BEChange_Perception();
-            // BEFixCaterpillarTracksDamage(); //already added to base
-            TFTVBetterEnemies.BEReducePandoranWillpower();
-            CreateAndAdjustDefsForLimitedCapture();
+                Marketplace();
 
-            TFTVHints.HintDefs.CreateHints();
-            MakeMindControlImmunityRemovable();
-            ChangesToAI();
-            Change_Crossbows();
-            //   Print();
-            // ChangeStoryAN4_CustomMissionTypeDef();
-            //  CreateNewLaunchBaseDefenseMissionGeoAbility();
-            //  TFTVChangesToDLC5.AdjustMarketPlaceAbilityDef();
-            //Print();
-            //   GenerateMissions();
+                ChangesToAI();
+
+                SpecialDifficulties();
+
+                VariousMinorAdjustments();
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
         }
 
+        private static void LoadingScreensAndLore()
+        {
+            try
+            {
+                AddLoadingScreens();
+                AddTips();
+                AddLoreEntries();
+
+            }
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+
+        }
+
+        private static void GeoscapeEvents()
+        {
+            try
+            {
+                AugmentationEventsDefs();
+                CreateFoodPoisoningEvents();
+                CreateIntro();
+                Create_VoidOmen_Events();
+                InjectAlistairAhsbyLines();
+                InjectOlenaKimLines();
+                TFTVChangesToDLC1andDLC2Events.ChangesToDLC1andDLC2Defs();
+                TFTVChangesToDLC3Events.ChangesToDLC3Defs();
+                TFTVChangesToDLC4Events.ChangesToDLC4Defs();
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+        private static void Marketplace()
+        {
+            try
+            {
+                TFTVChangesToDLC5.TFTVMercenaries.Defs.CreateMercenariesDefs();
+                TFTVChangesToDLC5.TFTVKaosGuns.CreateKaosWeaponAmmo();
+                TFTVChangesToDLC5.TFTVMarketPlaceItems.AdjustMarketPlaceOptions();
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+        private static void SpecialDifficulties()
+        {
+            try
+            {
+                CreateRookieVulnerability();
+                CreateRookieProtectionStatus();
+                CreateEtermesStatuses();
+                CreateETERMESDifficultyLevel();
+                CreateStoryModeDifficultyLevel();
+                ModifyVanillaDifficultiesOrder();
+                CreateScyllaDamageResistanceForStrongerPandorans();
+
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+
+        private static void VariousMinorAdjustments()
+        {
+            try
+            {
+                ModifyPandoranProgress();
+                ModifyDecoyAbility();
+                CreateSubject24();
+                RemoveCorruptionDamageBuff();
+                ModifyCratesToAddArmor();
+                TFTVReverseEngineering.ModifyReverseEngineering();
+                ChangeInfestationDefs();
+                ChangesAmbushMissions();
+                CreateAcidImmunity();
+                RemoveCensusResearch();
+                AllowMedkitsToTargetMutoidsAndChangesToMutoidSkillSet();
+                MistOnAllMissions();
+                RemoveScyllaAndNodeResearches();
+                ChangeMyrmidonAndFirewormResearchRewards();
+                ModifyMissionDefsToReplaceNeutralWithBandit();
+                CreateReinforcementTag();
+                Change_Crossbows();
+                MakeMindControlImmunityRemovable();
+                ReducePromoSkins();
+                ChangeFireNadeCostAndDamage();
+                ChangesToMedbay();
+                RestrictCanBeRecruitedIntoPhoenix();
+                RemoveMindControlImmunityVFX();
+                RemovePirateKing();
+                ChangeVehicleInventorySlots();
+                StealAircraftMissionsNoItemRecovery();
+                AddMissingElectronicTags();
+                AddContributionPointsToPriestAndTech();
+                ModifyRecruitsCost();
+                ModifyRescueCiviliansMissions();
+                TFTVBetterEnemies.BEChange_Perception();
+                TFTVBetterEnemies.BEReducePandoranWillpower();
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+
+        private static void VanillaFixes()
+        {
+            try
+            {
+                FixUnarmedAspida();
+                FixPriestScream();
+                SyphonAttackFix();
+                FixMyrmidonFlee();
+                FixBionic3ResearchNotGivingAccessToFacility();
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+        private static void ChangesToAI()
+        {
+            try
+            {
+                TFTVBetterEnemies.BECreateAIActionDefs();
+                TFTVBetterEnemies.BEFixesToAI();
+                IncreaseRangeClosestEnemyConsideration();
+                ModifyChironWormAndAoETargeting();
+                GiveNewActorAIToUmbra();
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+        private static void GiveNewActorAIToUmbra()
+        {
+            try
+            {
+                TacAIActorDef newAI = NewUmbraAI();
+
+                ComponentSetDef oilCrabComponentSetDef = DefCache.GetDef<ComponentSetDef>("Oilcrab_ComponentSetDef");
+                ComponentSetDef oilFishComponentSetDef = DefCache.GetDef<ComponentSetDef>("Oilfish_ComponentSetDef");
+
+                oilCrabComponentSetDef.Components[10] = newAI;
+                oilFishComponentSetDef.Components[10] = newAI;         
+            }
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+        private static TacAIActorDef NewUmbraAI()
+        {
+            try
+            {
+                TacAIActorDef source = DefCache.GetDef<TacAIActorDef>("CrabmanBrawler_AIActorDef");
+                string name = "Umbra_AIActor";
+                TacAIActorDef newTacAIActor = Helper.CreateDefFromClone(source, "{1D65840C-D754-44AA-8C2F-A294BF4A55DF}", name);
+
+                newTacAIActor.AIActorData.IsAlerted = true;
+                newTacAIActor.AIActionsTemplateDef = Helper.CreateDefFromClone(source.AIActionsTemplateDef, "{2FD1975C-2AC5-44CA-BE56-9B01FBD2A736}", name);
+
+                //EndCharacterTurn_AIActionDef [0]
+                //Advance_Aggressive_AIActionDef [1]
+                //MoveAndStrike_AIActionDef [2]
+                //DeployShield_AIActionDef [3] - NO COPY
+                //MoveToRandomWaypoint_AIActionDef [4]
+                //MoveToSafePosition_AIActionDef [5] - NO COPY
+
+                //Early exit consideration requires an enemy to be visible by the faction - used by [1] and [2]
+                //Need to patch to check if enemy has Delirium, is in Mist or VO in effect
+                AIVisibleEnemiesConsiderationDef aIVisibleEnemiesConsiderationDef = DefCache.GetDef<AIVisibleEnemiesConsiderationDef>("AnyFactionVisibleEnemy_AIConsiderationDef");
+
+                //This is set to 32 tiles, should probably increase to 100. [1].Evaluations[1]
+                //Need to patch to check if enemy has Delirium, is in Mist or VO in effect
+                AIClosestEnemyConsiderationDef aIClosestEnemyConsiderationDef = DefCache.GetDef<AIClosestEnemyConsiderationDef>("Worm_ClosestPathToEnemy_AIConsiderationDef");
+                aIClosestEnemyConsiderationDef.DistanceType = DistanceType.PathLength;
+
+                string umbraAIClosestEnemyConsiderationName = "Umbra_ClosestPathToEnemy_AIConsiderationDef";
+
+                newTacAIActor.AIActionsTemplateDef.ActionDefs[1].Evaluations[0].Considerations[1].Consideration = Helper.CreateDefFromClone(
+                    aIClosestEnemyConsiderationDef, "{28943F5A-9432-496F-9415-81087C686C9F}", umbraAIClosestEnemyConsiderationName);
+                AIClosestEnemyConsiderationDef umbraClosestEnemyConsiderationDef = (AIClosestEnemyConsiderationDef)newTacAIActor.AIActionsTemplateDef.ActionDefs[1].Evaluations[0].Considerations[1].Consideration;
+                umbraClosestEnemyConsiderationDef.MaxDistance = 100;
+
+                AIActionMoveAndAttackDef moveAndStrikeAIActionDef = DefCache.GetDef<AIActionMoveAndAttackDef>("MoveAndStrike_AIActionDef");
+                string umbraMoveAndStrikeActionName = "Umbra_MoveAndStrike_AIActionDef";
+                AIActionMoveAndAttackDef umbraMoveAndStrikeActionDef = Helper.CreateDefFromClone(moveAndStrikeAIActionDef, "{87D7753B-E778-45D8-82E8-965B3B8D9380}", umbraMoveAndStrikeActionName);
+
+
+                TFTVLogger.Always($"got here");
+                //used by [2], consider removing consideartions [0] and [1]
+                // AIStrategicPositionConsiderationDef aIStrategicPositionConsiderationDef = DefCache.GetDef<AIStrategicPositionConsiderationDef>("StrategicPositionOff_AIConsiderationDef");
+                // AILineOfSightToEnemiesConsiderationDef aILineOfSightToEnemiesConsiderationDef = DefCache.GetDef<AILineOfSightToEnemiesConsiderationDef>("NoLineofSight_AIConsiderationDef");
+
+                List<AITargetEvaluation> aITargetEvaluationsMoveAndStrike = umbraMoveAndStrikeActionDef.Evaluations.ToList();
+
+                /*
+                 * 
+                 * [TFTV @ 12/28/2023 4:21:41 PM] There are Base.AI.Defs.AIAdjustedConsideration[] evaluations
+[TFTV @ 12/28/2023 4:21:41 PM] There are Base.AI.Defs.AIAdjustedConsideration[] evaluations now
+[TFTV @ 12/28/2023 4:21:41 PM] Checking considerations in umbraMoveAndStrikeActionDef evaluations, count Base.AI.Defs.AITargetEvaluation[]
+[TFTV @ 12/28/2023 4:21:41 PM] StrategicPositionOff_AIConsiderationDef
+[TFTV @ 12/28/2023 4:21:41 PM] NoLineofSight_AIConsiderationDef
+[TFTV @ 12/28/2023 4:21:41 PM] AttackPosition_AIConsiderationDef
+[TFTV @ 12/28/2023 4:21:41 PM] NumberOfAttacks_AIConsiderationDef
+                 */
+
+
+             /*   TFTVLogger.Always($"There are {umbraMoveAndStrikeActionDef.Evaluations.Count()} evaluations");
+                foreach (AIAdjustedConsideration aITargetEvaluation in umbraMoveAndStrikeActionDef.Evaluations[1].Considerations)
+                {
+                    TFTVLogger.Always($"{aITargetEvaluation.Consideration.name}");
+                }*/
+
+
+                List<AIAdjustedConsideration> adjustedConsiderations = aITargetEvaluationsMoveAndStrike[1].Considerations.ToList();
+
+                adjustedConsiderations.Remove(aITargetEvaluationsMoveAndStrike[1].Considerations[0]);
+                adjustedConsiderations.Remove(aITargetEvaluationsMoveAndStrike[1].Considerations[1]);
+        
+               // TFTVLogger.Always($"There are {aITargetEvaluationsMoveAndStrike[1].Considerations} evaluations now");
+
+                aITargetEvaluationsMoveAndStrike[1].Considerations = adjustedConsiderations.ToArray();
+                umbraMoveAndStrikeActionDef.Evaluations = aITargetEvaluationsMoveAndStrike.ToArray();
+
+           /*     TFTVLogger.Always($"Checking considerations in umbraMoveAndStrikeActionDef evaluations, count {umbraMoveAndStrikeActionDef.Evaluations.Count()}");
+                foreach (AIAdjustedConsideration aITargetEvaluation in umbraMoveAndStrikeActionDef.Evaluations[1].Considerations)
+                {
+                    TFTVLogger.Always($"{aITargetEvaluation.Consideration.name}");
+                }*/
+
+                //consideration [2], using bash, this already takes into account that target has to have Delirium, be in Mist or VO must be active, because it gets Targets given by bash ability
+                //However, to make targets with more Delirium more attractive, would need to patch
+                AIAttackPositionConsiderationDef aIAttackPositionConsiderationDef = DefCache.GetDef<AIAttackPositionConsiderationDef>("AttackPosition_AIConsiderationDef");
+
+                //consideration [3], AINumberOfAttacksConsiderationDef can be left as is.
+
+                //used by [4], Need to patch to check if enemy has Delirium, is in Mist or VO in effect, so it mirrors anyFactionVisibleEnemyConsideration
+                AIVisibleEnemiesConsiderationDef NOaIVisibleEnemiesConsiderationDef = DefCache.GetDef<AIVisibleEnemiesConsiderationDef>("NoFactionVisibleEnemy_AIConsiderationDef");
+
+                List<AIActionDef> aIActionDefs = new List<AIActionDef>() {
+                    source.AIActionsTemplateDef.ActionDefs[0],
+                    source.AIActionsTemplateDef.ActionDefs[1],
+                    umbraMoveAndStrikeActionDef,
+                    source.AIActionsTemplateDef.ActionDefs[4],
+                };
+
+                newTacAIActor.AIActionsTemplateDef.ActionDefs = aIActionDefs.ToArray();
+
+                return newTacAIActor;
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
+        }
 
 
         //NEU_Assault_Torso_BodyPartDef
@@ -260,8 +467,7 @@ namespace TFTV
             }
         }
 
-
-        private static void ChangesToAI()
+        private static void IncreaseRangeClosestEnemyConsideration()
         {
             try
             {
@@ -276,21 +482,89 @@ namespace TFTV
             }
         }
 
+        public static void ModifyVanillaDifficultiesOrder()
+        {
+            try
+            {
+                DefCache.GetDef<GameDifficultyLevelDef>("Easy_GameDifficultyLevelDef").Order = 2;
+                DefCache.GetDef<GameDifficultyLevelDef>("Standard_GameDifficultyLevelDef").Order = 3;
+                DefCache.GetDef<GameDifficultyLevelDef>("Hard_GameDifficultyLevelDef").Order = 4;
+                DefCache.GetDef<GameDifficultyLevelDef>("VeryHard_GameDifficultyLevelDef").Order = 5;
+
+            }
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+        private static void CreateETERMESDifficultyLevel()
+        {
+            try
+            {
+                GameDifficultyLevelDef sourceDef = DefCache.GetDef<GameDifficultyLevelDef>("VeryHard_GameDifficultyLevelDef");
+                GameDifficultyLevelDef newDifficulty = Helper.CreateDefFromClone(sourceDef, "{F713C90F-5D7D-4F95-B71A-CE094A7DA6AE}", "Etermes_DifficultyLevelDef");
+                newDifficulty.Order = 6;
+                newDifficulty.Name.LocalizationKey = "TFTV_DIFFICULTY_ETERMES_TITLE";
+                newDifficulty.Description.LocalizationKey = "TFTV_DIFFICULTY_ETERMES_DESCRIPTION";
+
+                newDifficulty.RecruitCostPerLevelMultiplier = 0.5f;
+                newDifficulty.RecruitmentPriceModifier = 1.3f;
+                newDifficulty.NestLimitations.MaxNumber = 4;
+                newDifficulty.NestLimitations.HoursBuildTime = 73;
+                newDifficulty.LairLimitations.MaxNumber = 4;
+                newDifficulty.LairLimitations.MaxConcurrent = 4;
+                newDifficulty.LairLimitations.HoursBuildTime = 80;
+                newDifficulty.CitadelLimitations.HoursBuildTime = 144;
+
+                newDifficulty.InitialDeploymentPoints = 812;
+                newDifficulty.FinalDeploymentPoints = 3125;
+                newDifficulty.DaysToReachFinalDeployment = 72;
+
+                List<GameDifficultyLevelDef> difficultyLevelDefs = new List<GameDifficultyLevelDef>(Shared.DifficultyLevels) { newDifficulty };
+
+                Shared.DifficultyLevels = difficultyLevelDefs.ToArray();
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+        public static void CreateStoryModeDifficultyLevel()
+        {
+            try
+            {
+                GameDifficultyLevelDef sourceDef = DefCache.GetDef<GameDifficultyLevelDef>("Easy_GameDifficultyLevelDef");
+                GameDifficultyLevelDef newDifficulty = Helper.CreateDefFromClone(sourceDef, "{B10E3C8C-1398-4398-B1A6-A93DB0C48781}", "StoryMode_DifficultyLevelDef");
+                newDifficulty.Order = 1;
+                newDifficulty.Name.LocalizationKey = "TFTV_DIFFICULTY_ROOKIE_TITLE";
+                newDifficulty.Description.LocalizationKey = "TFTV_DIFFICULTY_ROOKIE_DESCRIPTION";
+
+                List<GameDifficultyLevelDef> difficultyLevelDefs = new List<GameDifficultyLevelDef>(Shared.DifficultyLevels);
+                difficultyLevelDefs.Insert(0, newDifficulty);
+
+                Shared.DifficultyLevels = difficultyLevelDefs.ToArray();
+            }
+
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
 
         private static void MakeMindControlImmunityRemovable()
         {
             try
             {
                 DefCache.GetDef<ApplyStatusAbilityDef>("MindControlImmunity_AbilityDef").RemoveStatusOnAbilityRemoving = true;
-
-
             }
             catch (Exception e)
             {
                 TFTVLogger.Error(e);
             }
-
-
         }
 
         private static void ChangeStoryAN4_CustomMissionTypeDef()
@@ -329,6 +603,7 @@ namespace TFTV
         {
             try
             {
+                CreateObjectiveCaptureCapacity();
                 ChangeResourceRewardsForAutopsies();
                 AdjustPandoranVolumes();
                 ChangesToCapturingPandorans();
@@ -585,14 +860,11 @@ namespace TFTV
                     redeemableCodeDef.RedeemableCode = "noskinforyou";
                     redeemableCodeDef.Allowed = false;
                 }
-
-
             }
             catch (Exception e)
             {
                 TFTVLogger.Error(e);
             }
-
         }
 
 
@@ -862,6 +1134,8 @@ namespace TFTV
                 CustomMissionTypeDef rescueSparkMisson = DefCache.GetDef<CustomMissionTypeDef>("Bcr5_CustomMissionTypeDef");
                 CustomMissionTypeDef rescueFelipeMisson = DefCache.GetDef<CustomMissionTypeDef>("Bcr7_CustomMissionTypeDef");
                 CustomMissionTypeDef rescueHelenaMisson = DefCache.GetDef<CustomMissionTypeDef>("StoryLE0_CustomMissionTypeDef");
+
+                CustomMissionTypeDef rescueCalendarMisson = DefCache.GetDef<CustomMissionTypeDef>("Bcr1_CustomMissionTypeDef");
                 //  TacMissionTypeParticipantData sourceEnvironmentParcipantData = rescueHelenaMisson.ParticipantsData[2];
 
                 TacMissionTypeParticipantData newEnvironmentParcipantData = new TacMissionTypeParticipantData
@@ -884,12 +1158,12 @@ namespace TFTV
                         DeploymentPercentage = 100,
                         DeploymentType = 0,
                         OverrideUnitDeployment = new List<TacMissionTypeParticipantData.DeploymentRuleData.UnitDeploymentOverride>() { }
-
                     }
                 };
 
                 rescueSparkMisson.ParticipantsData.Add(newEnvironmentParcipantData);
                 rescueFelipeMisson.ParticipantsData.Add(newEnvironmentParcipantData);
+                rescueCalendarMisson.ParticipantsData.Add(newEnvironmentParcipantData);
 
                 CreateConvinceCivilianStatus();
 
@@ -902,6 +1176,7 @@ namespace TFTV
 
                 rescueSparkMisson.CustomObjectives[1] = CreateNewActivateConsoleObjective("ConvinceCivilianObjectiveSpark", "{75C311B3-B34C-4460-BB8C-95D1963E6F90}", "{EADCDE10-1B4F-4956-AC44-42FDF959F069}", "KEY_OBJECTIVE_CONVINCE_SPARKS");
                 rescueFelipeMisson.CustomObjectives[1] = CreateNewActivateConsoleObjective("ConvinceCivilianObjectiveFelipe", "{12780334-2607-48DF-8F93-16B1665078F0}", "{D19D79E5-EA2F-44C7-B05F-F19D9B58A462}", "KEY_OBJECTIVE_CONVINCE_FELIPE");
+                rescueCalendarMisson.CustomObjectives[1] = CreateNewActivateConsoleObjective("ConvinceCivilianObjectiveCalendar", "{84DFB63C-A79A-49DA-94DE-5C401FE2B7FD}", "{A663C9EF-2A06-457F-999D-B80657863503}", "KEY_OBJECTIVE_CONVINCE_CALENDAR");
                 rescueHelenaMisson.CustomObjectives[1] = CreateNewActivateConsoleObjective("ConvinceCivilianObjectiveHelena", "{AC2A9633-6D6F-4261-8315-06899D4A47BF}", "{6E492142-7500-4C71-B6E2-0B16BF2C4AE6}", "KEY_OBJECTIVE_CONVINCE_HELENA");
 
                 //Add inifinite reinforcements to Helena
@@ -909,9 +1184,6 @@ namespace TFTV
                 rescueHelenaMisson.ParticipantsData[1].ReinforcementsTurns = new RangeDataInt() { Min = 0, Max = 1 };
                 rescueHelenaMisson.ParticipantsData[1].ReinforcementsDeploymentPart = new RangeData() { Min = 0.1f, Max = 0.1f };
                 rescueHelenaMisson.DontRecoverItems = true;
-
-
-
             }
 
             catch (Exception e)
@@ -1002,16 +1274,13 @@ namespace TFTV
             {
                 WeaponDef fireNade = DefCache.GetDef<WeaponDef>("NJ_IncindieryGrenade_WeaponDef");
 
-
                 //change fire damage to 30 from 40
                 foreach (DamageKeywordPair damageKeywordPair in fireNade.DamagePayload.DamageKeywords)
                 {
                     if (damageKeywordPair.DamageKeywordDef == Shared.SharedDamageKeywords.BurningKeyword)
                     {
-
                         damageKeywordPair.Value = 30;
                     }
-
                 }
 
                 fireNade.ManufactureTech = 5;
@@ -1021,7 +1290,6 @@ namespace TFTV
 
                 healNade.ManufactureTech = 6;
                 healNade.ManufactureMaterials = 28;
-
 
             }
 
@@ -1062,9 +1330,6 @@ namespace TFTV
                 ResearchDef researchDef = DefCache.GetDef<ResearchDef>("SYN_Bionics3_ResearchDef");
                 FacilityResearchRewardDef facilityRewardDef = DefCache.GetDef<FacilityResearchRewardDef>("NJ_Bionics2_ResearchDef_FacilityResearchRewardDef_0");
                 List<ResearchRewardDef> rewards = new List<ResearchRewardDef>(researchDef.Unlocks) { facilityRewardDef };
-
-
-
                 researchDef.Unlocks = rewards.ToArray();
 
             }
@@ -1079,12 +1344,12 @@ namespace TFTV
         {
             try
             {
-
                 CreateForceYuggothianReceptacleGatesAbilityAndStatus();
                 CreateNewStatusOnDisablingYugothianEyes();
                 AdjustYuggothianEntity();
                 ChangePalaceMissionDefs();
                 CreateCharactersForPalaceMission();
+                CreateReinforcementStatuses();
             }
 
             catch (Exception e)
@@ -1355,8 +1620,11 @@ namespace TFTV
                 TriggerAbilityZoneOfControlStatusDef canBeRecruited1x1 = DefCache.GetDef<TriggerAbilityZoneOfControlStatusDef>("CanBeRecruitedIntoPhoenix_1x1_StatusDef");
                 TriggerAbilityZoneOfControlStatusDef canBeRecruited3x3 = DefCache.GetDef<TriggerAbilityZoneOfControlStatusDef>("CanBeRecruitedIntoPhoenix_3x3_StatusDef");
 
+                TriggerAbilityZoneOfControlStatusDef canBeRecruited3x3_disabled = DefCache.GetDef<TriggerAbilityZoneOfControlStatusDef>("CanBeRecruitedIntoPhoenix_3x3_Disabled_StatusDef");
+
                 List<EffectConditionDef> effectConditionDefs1x1 = canBeRecruited1x1.TriggerConditions.ToList();
                 List<EffectConditionDef> effectConditionDefs3x3 = canBeRecruited3x3.TriggerConditions.ToList();
+                List<EffectConditionDef> effectConditionDefs3x3_disabled = canBeRecruited3x3_disabled.TriggerConditions.ToList();
                 ActorHasTagEffectConditionDef source = DefCache.GetDef<ActorHasTagEffectConditionDef>("HasCombatantTag_ApplicationCondition");
                 ActorHasTagEffectConditionDef notDroneCondition = Helper.CreateDefFromClone(source, "{87709AA5-4B10-44A7-9810-1E0502726A48}", "NotADroneEffectConditionDef");
 
@@ -1373,8 +1641,12 @@ namespace TFTV
                 effectConditionDefs3x3.Add(notAlienCondition);
                 effectConditionDefs3x3.Add(notDroneCondition);
 
+                effectConditionDefs3x3_disabled.Add(notAlienCondition);
+                effectConditionDefs3x3_disabled.Add(notDroneCondition);
+
                 canBeRecruited1x1.TriggerConditions = effectConditionDefs1x1.ToArray();
                 canBeRecruited3x3.TriggerConditions = effectConditionDefs3x3.ToArray();
+                canBeRecruited3x3_disabled.TriggerConditions = effectConditionDefs3x3_disabled.ToArray();
 
             }
             catch (Exception e)
@@ -1382,7 +1654,6 @@ namespace TFTV
                 TFTVLogger.Error(e);
             }
         }
-
 
         private static void AdjustYuggothianEntity()
         {
@@ -2653,17 +2924,13 @@ namespace TFTV
             {
                 TFTVLogger.Error(e);
             }
-
-
         }
 
         private static void ChangeVehicleInventorySlots()
         {
             try
             {
-
                 DefCache.GetDef<BackpackFilterDef>("VehicleBackpackFilterDef").MaxItems = 12;
-
             }
             catch (Exception e)
             {
@@ -3620,11 +3887,11 @@ namespace TFTV
 
 
 
-        internal static void ImproveScyllaAcheronsChironsAndCyclops()
+        internal static void ScyllaAcheronsChironsAndCyclops()
         {
             try
             {
-
+                ChangesToAcherons();
                 ModifyPalaceGuardians();
                 ModifyScyllaAIAndHeads();
                 MedAndBigMonstersSquishers();
@@ -4071,8 +4338,9 @@ namespace TFTV
                 CreateBaseDefenseEvents();
                 CreateCosmeticExplosion();
                 CreateFireExplosion();
-
+                CreateFakeFacilityToFixBadBaseDefenseMaps();
                 ReduceDamageFromInfestation();
+                CreateConsolePromptBaseDefense();
                 //  CreateSpawnCrabmanAbility();
             }
             catch (Exception e)
@@ -4900,18 +5168,11 @@ namespace TFTV
 
                 DefCache.GetDef<ResearchDef>("PX_Alien_Fireworm_ResearchDef").Resources.Add(ResourceType.Supplies, 150);
                 DefCache.GetDef<ResearchDef>("PX_Alien_SwarmerEgg_ResearchDef").Resources.Add(ResourceType.Supplies, 400);
-
-
-
-
             }
             catch (Exception e)
             {
                 TFTVLogger.Error(e);
             }
-
-
-
         }
 
 
@@ -5813,8 +6074,6 @@ namespace TFTV
 
                 ExistingResearchRequirementDef requiremen2tDef = TFTVCommonMethods.CreateNewExistingResearchResearchRequirementDef(id + "ResearchReq", "F0D428A7-9D51-4746-9C60-1EFADD5457B8", "ExoticMaterialsResearch");
 
-
-
                 ResearchViewElementDef imageSource = DefCache.GetDef<ResearchViewElementDef>("PX_AntediluvianArchaeology_ViewElementDef");
 
                 string gUID = "14E1635F-6663-41C8-B04E-A8C91890BC5B";
@@ -5833,8 +6092,8 @@ namespace TFTV
                 research.Tags = new ResearchTagDef[] { CriticalResearchTag };
 
 
-                ResearchDbDef researchDB = DefCache.GetDef<ResearchDbDef>("pp_ResearchDB");
-                researchDB.Researches.Add(research);
+                //   ResearchDbDef researchDB = DefCache.GetDef<ResearchDbDef>("pp_ResearchDB");
+                //  researchDB.Researches.Add(research);
             }
             catch (Exception e)
             {
@@ -5886,8 +6145,8 @@ namespace TFTV
                 research.Unlocks = new ResearchRewardDef[] { proteanMutaneFunctionalityResearchReward };
                 research.Tags = new ResearchTagDef[] { CriticalResearchTag };
 
-                ResearchDbDef researchDB = DefCache.GetDef<ResearchDbDef>("pp_ResearchDB");
-                researchDB.Researches.Add(research);
+                //   ResearchDbDef researchDB = DefCache.GetDef<ResearchDbDef>("pp_ResearchDB");
+                //   researchDB.Researches.Add(research);
             }
             catch (Exception e)
             {
@@ -6085,6 +6344,8 @@ namespace TFTV
 
         }
 
+
+
         public static void CreateAncientAutomataResearch()
         {
             try
@@ -6116,8 +6377,8 @@ namespace TFTV
                 research.RevealRequirements.Operation = ResearchContainerOperation.ALL;
                 research.Tags = new ResearchTagDef[] { CriticalResearchTag };
 
-                ResearchDbDef researchDB = DefCache.GetDef<ResearchDbDef>("pp_ResearchDB");
-                researchDB.Researches.Add(research);
+                //   ResearchDbDef researchDB = DefCache.GetDef<ResearchDbDef>("pp_ResearchDB");
+                //   researchDB.Researches.Add(research);
             }
             catch (Exception e)
             {
@@ -6154,8 +6415,8 @@ namespace TFTV
                 research.RevealRequirements.Operation = ResearchContainerOperation.ALL;
                 research.Tags = new ResearchTagDef[] { CriticalResearchTag };
 
-                ResearchDbDef researchDB = DefCache.GetDef<ResearchDbDef>("pp_ResearchDB");
-                researchDB.Researches.Add(research);
+                //  ResearchDbDef researchDB = DefCache.GetDef<ResearchDbDef>("pp_ResearchDB");
+                // researchDB.Researches.Add(research);
             }
             catch (Exception e)
             {
@@ -6889,10 +7150,16 @@ namespace TFTV
                 spitArmsAcheronAchlysChampion.DamagePayload.DamageType = blastDamage;
                 spitArmsAcheronAchlysChampion.DamagePayload.AoeRadius = 2f;
                 spitArmsAcheronAchlysChampion.DamagePayload.DamageDeliveryType = DamageDeliveryType.Cone;
+                spitArmsAcheronAchlysChampion.HandsToUse = 1;
+
 
                 WeaponDef spitArmsAcheronAsclepiusChampion = DefCache.GetDef<WeaponDef>("AcheronAsclepiusChampion_Arms_WeaponDef");
 
+                spitArmsAcheronAsclepiusChampion.HandsToUse = 1;
+
                 WeaponDef achlysArms = DefCache.GetDef<WeaponDef>("AcheronAchlys_Arms_WeaponDef");
+
+                achlysArms.HandsToUse = 1;
 
                 //   string guid = "2B294E66-1BE9-425B-B088-F5A9075167A6";
                 WeaponDef neuroArmsCopy = new WeaponDef();//Repo.CreateDef<WeaponDef>(guid);
@@ -6922,6 +7189,7 @@ namespace TFTV
                 acheronArms.DamagePayload.AoeRadius = 5;
                 acheronArms.DamagePayload.Range = 30;
                 acheronArms.DamagePayload.DamageDeliveryType = DamageDeliveryType.Cone;
+                acheronArms.HandsToUse = 1;
                 //   acheronArms.Abilities[0] = DefCache.GetDef<ShootAbilityDef>("MistLaunch_ShootAbilityDef"); 
 
 
@@ -6942,6 +7210,7 @@ namespace TFTV
                 acheronPrimeArms.DamagePayload.AoeRadius = 5;
                 acheronPrimeArms.DamagePayload.Range = 30;
                 acheronPrimeArms.DamagePayload.DamageDeliveryType = DamageDeliveryType.Cone;
+                acheronPrimeArms.HandsToUse = 1;
 
                 DefCache.GetDef<ShootAbilityDef>("Acheron_GooSpray_ShootAbilityDef").UsesPerTurn = 2;
                 DefCache.GetDef<ShootAbilityDef>("Acheron_CorruptiveSpray_AbilityDef").UsesPerTurn = 2;

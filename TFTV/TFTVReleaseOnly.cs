@@ -20,20 +20,6 @@ namespace TFTV
         //   public static bool NewDifficultiesImplemented = false;
 
       
-        public static void OnReleasePrototypeDefs()
-        {
-            try
-            {
-                CreateETERMESDifficultyLevel();
-               
-            }
-
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-                throw;
-            }
-        }
 
         [HarmonyPatch(typeof(GeoMission), "ApplyTacticalMissionResult")]
         public class ApplyTacticalMissionResult
@@ -269,87 +255,6 @@ namespace TFTV
                 throw;
             }
         }
-
-
-
-
-        public static void ModifyVanillaDifficultiesOrder()
-        {
-            try
-            {
-                DefCache.GetDef<GameDifficultyLevelDef>("Easy_GameDifficultyLevelDef").Order = 2;
-                DefCache.GetDef<GameDifficultyLevelDef>("Standard_GameDifficultyLevelDef").Order = 3;
-                DefCache.GetDef<GameDifficultyLevelDef>("Hard_GameDifficultyLevelDef").Order = 4;
-                DefCache.GetDef<GameDifficultyLevelDef>("VeryHard_GameDifficultyLevelDef").Order = 5;
-
-            }
-
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-        }
-
-
-
-        public static void CreateStoryModeDifficultyLevel()
-        {
-            try
-            {
-                GameDifficultyLevelDef sourceDef = DefCache.GetDef<GameDifficultyLevelDef>("Easy_GameDifficultyLevelDef");
-                GameDifficultyLevelDef newDifficulty = Helper.CreateDefFromClone(sourceDef, "{B10E3C8C-1398-4398-B1A6-A93DB0C48781}", "StoryMode_DifficultyLevelDef");
-                newDifficulty.Order = 1;
-                newDifficulty.Name.LocalizationKey = "TFTV_DIFFICULTY_ROOKIE_TITLE";
-                newDifficulty.Description.LocalizationKey = "TFTV_DIFFICULTY_ROOKIE_DESCRIPTION";
-
-                List<GameDifficultyLevelDef> difficultyLevelDefs = new List<GameDifficultyLevelDef>(Shared.DifficultyLevels);
-                difficultyLevelDefs.Insert(0, newDifficulty);
-
-                Shared.DifficultyLevels = difficultyLevelDefs.ToArray();
-            }
-
-
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-        }
-
-        private static void CreateETERMESDifficultyLevel()
-        {
-            try
-            {
-                GameDifficultyLevelDef sourceDef = DefCache.GetDef<GameDifficultyLevelDef>("VeryHard_GameDifficultyLevelDef");
-                GameDifficultyLevelDef newDifficulty = Helper.CreateDefFromClone(sourceDef, "{F713C90F-5D7D-4F95-B71A-CE094A7DA6AE}", "Etermes_DifficultyLevelDef");
-                newDifficulty.Order = 6;
-                newDifficulty.Name.LocalizationKey = "TFTV_DIFFICULTY_ETERMES_TITLE";
-                newDifficulty.Description.LocalizationKey = "TFTV_DIFFICULTY_ETERMES_DESCRIPTION";
-
-                newDifficulty.RecruitCostPerLevelMultiplier = 0.5f;
-                newDifficulty.RecruitmentPriceModifier = 1.3f;
-                newDifficulty.NestLimitations.MaxNumber = 4;
-                newDifficulty.NestLimitations.HoursBuildTime = 73;
-                newDifficulty.LairLimitations.MaxNumber = 4;
-                newDifficulty.LairLimitations.MaxConcurrent = 4;
-                newDifficulty.LairLimitations.HoursBuildTime = 80;
-                newDifficulty.CitadelLimitations.HoursBuildTime = 144;
-
-                newDifficulty.InitialDeploymentPoints = 812;
-                newDifficulty.FinalDeploymentPoints = 3125;
-                newDifficulty.DaysToReachFinalDeployment = 72;
-
-                List<GameDifficultyLevelDef> difficultyLevelDefs = new List<GameDifficultyLevelDef>(Shared.DifficultyLevels) { newDifficulty };
-
-                Shared.DifficultyLevels = difficultyLevelDefs.ToArray();
-
-             
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-        }
-
-
+       
     }
 }

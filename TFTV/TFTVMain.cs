@@ -84,7 +84,7 @@ namespace TFTV
                 /// PhoenixGame is accessible at any time.
                 PhoenixGame game = GetGame();
 
-                string version = $"TFTV December 25 release #1 (Update #46) v{MetaData.Version}";
+                string version = $"TFTV December 29 release #1 (Update #47) v{MetaData.Version}";
 
                 TFTVversion = version;
 
@@ -184,6 +184,8 @@ namespace TFTV
         /// </summary>
         public override void OnConfigChanged()
         {
+           
+
             // Config.RetrieveConfigOptions();
             //  TFTVLogger.Always($"Config changed. Skip movies is now {Config.SkipMovies}");
 

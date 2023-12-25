@@ -20,6 +20,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using UnityEngine;
 
 namespace TFTV
 {
@@ -43,7 +44,7 @@ namespace TFTV
             private static readonly HasSeenHintHintConditionDef sourceHasSeenHintConditionDef = DefCache.GetDef<HasSeenHintHintConditionDef>("HasSeenHint_TUT2_Overwatch_HintDef-False_HintConditionDef");
             private static readonly LevelHasTagHintConditionDef sourceInfestationMission = DefCache.GetDef<LevelHasTagHintConditionDef>("LevelHasTag_MissionTypeBaseInfestation_MissionTagDef_HintConditionDef");
             private static readonly MissionTypeTagDef infestationMissionTagDef = DefCache.GetDef<MissionTypeTagDef>("HavenInfestation_MissionTypeTagDef");
-        
+
             public static void CreateHints()
             {
                 try
@@ -314,8 +315,8 @@ namespace TFTV
                     newContextHelpHintDef.IsTutorialHint = false;
                     ContextHelpHintDbDef tacticalHintsDB = DefCache.GetDef<ContextHelpHintDbDef>("TacticalHintsDbDef");
                     tacticalHintsDB.Hints.Add(newContextHelpHintDef);
-                  // alwaysDisplayedTacticalHintsDbDef.Hints.Add(newContextHelpHintDef );
-                    
+                    // alwaysDisplayedTacticalHintsDbDef.Hints.Add(newContextHelpHintDef );
+
                     _hintDefSpriteFileNameDictionary.Add(newContextHelpHintDef, spriteFileName);
 
                     return newContextHelpHintDef;
@@ -405,7 +406,7 @@ namespace TFTV
                     CreateNewTacticalHintInfestationMission("InfestationMissionIntro2", "164A4170-F7DC-4350-90C0-D5C1A0284E0D", "CA236EF2-6E6B-4CE4-89E9-17157930F91A", "422A7D39-0110-4F5B-98BB-66B1B5F616DD");
                     ContextHelpHintDef tutorialTFTV1 = CreateNewManualTacticalHint("TFTV_Tutorial1", "0D36F3D5-9A39-4A5C-B6A4-85B5A3007655", "KEY_TUT3_TFTV1_TITLE", "KEY_TUT3_TFTV1_DESCRIPTION", "alistair.jpg");
                     ContextHelpHintDef tutorialTFTV2 = CreateNewManualTacticalHint("TFTV_Tutorial2", "EA319607-D2F3-4293-AECE-91AC26C9BD5E", "KEY_TUT3_TFTV2_TITLE", "KEY_TUT3_TFTV2_DESCRIPTION", "Olena.jpg");
-                  
+
                     ContextHelpHintDef tutorial3MissionEnd = DefCache.GetDef<ContextHelpHintDef>("TUT3_MissionSuccess_HintDef");
                     tutorial3MissionEnd.NextHint = tutorialTFTV1;
                     tutorialTFTV1.NextHint = tutorialTFTV2;
@@ -416,7 +417,7 @@ namespace TFTV
 
                     HasSeenHintHintConditionDef seenOilCrabConditionDef = DefCache.GetDef<HasSeenHintHintConditionDef>("UmbraSightedHasSeenHintConditionDef");
                     HasSeenHintHintConditionDef seenFishCrabConditionDef = DefCache.GetDef<HasSeenHintHintConditionDef>("UmbraSightedTritonHasSeenHintConditionDef");
-     
+
                     oilCrabHint.Conditions.Add(seenFishCrabConditionDef);
                     oilFishHint.Conditions.Add(seenOilCrabConditionDef);
 
@@ -424,7 +425,7 @@ namespace TFTV
                     CreateStaminaHint();
                     CreateUIDeliriumHint();
 
-                    ContextHelpHintDef hostileDefenders = CreateNewTacticalHint("HostileDefenders", HintTrigger.MissionStart, "MissionTypeHavenDefense_MissionTagDef", "HINT_HOSTILE_DEFENDERS_TITLE", "HINT_HOSTILE_DEFENDERS_TEXT", 3, true, "F2F5E5B1-5B9B-4F5B-8F5C-9B5E5B5F5B5F", "TFTV_Hint_HostileDefenders.jpg");         
+                    ContextHelpHintDef hostileDefenders = CreateNewTacticalHint("HostileDefenders", HintTrigger.MissionStart, "MissionTypeHavenDefense_MissionTagDef", "HINT_HOSTILE_DEFENDERS_TITLE", "HINT_HOSTILE_DEFENDERS_TEXT", 3, true, "F2F5E5B1-5B9B-4F5B-8F5C-9B5E5B5F5B5F", "TFTV_Hint_HostileDefenders.jpg");
                     alwaysDisplayedTacticalHintsDbDef.Hints.Remove(hostileDefenders);
 
                 }
@@ -753,58 +754,145 @@ namespace TFTV
 
         internal class TacticalHints
         {
-           /* private static readonly Dictionary<string, string> hintImageDictionary = new Dictionary<string, string>
-{
-    {"InfestationMissionIntro", "px_squad.jpg"},
-    {"InfestationMissionEnd", "px_squad.jpg"},
-    {"UmbraSighted", "VO_15.jpg"},
-    {"RevenantSighted", "Hint_Revenant.png"},
-    {"TFTV_StaminaHintDef", "broken_limb_stamina.png"},
-    {"RevenantResistanceSighted", "Hint_Revenant.png"},
-    {"VoidTouchedSighted", "Hint_TBTV.png"},
-    {"VoidTouchedOnAttack", "Hint_TBTV_MfD.png"},
-    {"VoidTouchedOnTurnEnd", "Hint_TBTV_EoT.png"},
-    {"TUT_DLC4_Acheron_HintDef", "Acheron.png"},
-    {"AcheronPrime", "AcheronPrime.png"},
-    {"AcheronAchlys", "AcheronAchlys.png"},
-    {"AcheronAchlysChampion", "AcheronAchlysChampion.png"},
-    {"AcheronAsclepius", "AcheronAsclepius.png"},
-    {"AcheronAsclepiusChampion", "AcheronAsclepiusChampion.png"},
-    {"VoidBlight", "acheron_void_blight.png"},
-    {"TFTV_Tutorial1", "alistair.png"},
-    {"TFTV_Tutorial2", "Olena.png"},
-    {"ANCIENTS_STORY1", "HINT_TFTV_Ancients_Tactical_Story_1.jpg"},
-    {"ANCIENTS_CYCLOPS", "HINT_TFTV_Ancients_Tactical_CyclopsDefense.jpg"},
-    {"ANCIENTS_CYCLOPSDEFENSE", "HINT_TFTV_Ancients_Tactical_CyclopsDefense.jpg"},
-    {"ANCIENTS_HOPLITS", "HINT_TFTV_Ancients_Tactical_Hoplites.jpg"},
-    {"ANCIENTS_HOPLITSREPAIR", "HINT_TFTV_Ancients_Tactical_Hoplites_Overpower.jpg"},
-    {"ANCIENTS_HOPLITSMAXPOWER", "HINT_TFTV_Ancients_Tactical_Hoplites_Overpower.jpg"},
-    {"HostileDefenders", "TFTV_Hint_HostileDefenders.jpg"},
-    {"FIRE_QUENCHER", "hint_firequencher.png"},
-    {"HintDecoyPlaced", "decoy_hint.jpg"},
-    {"HintDecoyDiscovered", "decoy_removed_hint.jpg"},
-    {"BaseDefenseUmbraStrat", "Olena_static.jpg"},
-    {"BaseDefenseWormsStrat", "Olena_static.jpg"},
-    {"BaseDefenseForce2Strat", "Olena_static.jpg"},
-    {"BaseDefenseVenting", "Olena_static.jpg"},
-    {"TFTVPXPalaceStart0", "PX_VICTORY_START0.jpg"},
-    {"TFTVNJPalaceStart0", "NJ_VICTORY_START0.jpg"},
-    {"TFTVANPalaceStart0", "AN_VICTORY_START0.jpg"},
-    {"TFTVNJPalaceStart1", "NJ_VICTORY_START1.jpg"},
-    {"TFTVPXPalaceStart1", "PX_VICTORY_START1.jpg"},
-    {"TFTVANPalaceStart1", "AN_VICTORY_START1.jpg"},
-    {"TFTVSYPolyPalaceStart0", "SY_POLY_VICTORY_START0.jpg"},
-    {"TFTVSYPolyPalaceStart1", "SY_POLY_VICTORY_START1.jpg"},
-    {"TFTVSYTerraPalaceStart0", "SY_Terra_VICTORY_START0.jpg"},
-    {"TFTVSYTerraPalaceStart1", "SY_TERRA_VICTORY_START1.jpg"},
-    {"ReceptacleGateHint0", "VICTORY_GATE.jpg"},
-    {"ReceptacleGateHint1", "VICTORY_GATE.jpg"},
-    {"PalaceRevenantHint0", "VICTORY_REVENANT_TO_PX.jpg"},
-    {"PalaceRevenantHint1", "Hint_Revenant.png"},
-    {"PalaceHisMinionsHint", "VICTORY_MINIONS.jpg"},
-    {"PalaceEyesHint", "VICTORY_EYES.jpg"},
-};
-           */
+            private static void InfestationStoryTest(ContextHelpHintDef hintDef, UIModuleContextHelp contextHelpModule)
+            {
+                try
+                {
+                    if (hintDef.name.Equals("InfestationMissionIntro"))
+                    {
+                        TFTVLogger.Always($"InfestationMissionIntro Hint check passed");
+
+                        contextHelpModule.Image.overrideSprite = Helper.CreateSpriteFromImageFile("UI_Portrait_Grunt.png");
+                        //GetCharacterPortrait();
+
+                        RectTransform rectTransform = contextHelpModule.Image.GetComponent<RectTransform>();
+                        rectTransform.sizeDelta = new Vector2(750f, 300f); // Set width and height
+
+                        rectTransform.anchorMin = new Vector2(0f, 0f);
+                        rectTransform.anchorMax = new Vector2(0f, 0f);
+
+                        rectTransform.pivot = new Vector2(0f, 0f);
+
+                        rectTransform.anchoredPosition = Vector2.zero;
+                        //contextHelpModule.ImageContainer.transform.localScale = new Vector2(900f, 1000f);
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+
+            /*   private static Sprite GetCharacterPortrait()
+               {
+                   try 
+                   {
+                       TacticalLevelController controller = GameUtl.CurrentLevel().GetComponent<TacticalLevelController>();
+
+                       //Dictionary<TacticalActor, PortraitSprites> _soldierPortraits
+
+                       SquadMemberScrollerController squadMemberScrollerController = controller.View.TacticalModules.SquadManagementModule.SquadMemberScroller;
+
+
+                       Type type = typeof(SquadMemberScrollerController);
+                       BindingFlags flags = BindingFlags.Instance | BindingFlags.NonPublic;
+                       FieldInfo fieldInfo = type.GetField("_soldierPortraits", flags);
+
+                       Dictionary<TacticalActor, PortraitSprites> soldierPortraits = (Dictionary<TacticalActor, PortraitSprites>)fieldInfo.GetValue(squadMemberScrollerController);
+
+                       TFTVLogger.Always($"soldierPortraits count: {soldierPortraits.Count}");
+                     //  TFTVLogger.Always($"{TFTVInfestation.StoryFirstInfestedHaven._nameOfTopCharacter}");
+
+                       foreach (TacticalActor tacticalActor in soldierPortraits.Keys) 
+                       {
+                           TFTVLogger.Always($"{tacticalActor.DisplayName}");
+
+
+                       }
+
+                    //   PortraitSprites portrait = soldierPortraits[soldierPortraits.Keys.FirstOrDefault(ta => ta.DisplayName.Contains(TFTVInfestation.StoryFirstInfestedHaven._nameOfTopCharacter))];
+
+                       TFTVLogger.Always($"portrait null? {portrait==null}; rendered portrait null? {portrait.RenderedPortrait==null}");
+
+                       if(portrait.RenderedPortrait == null) 
+                       {
+                           MethodInfo recapturePortraitsMethod = type.GetMethod("ForceRecapturePortraits", flags);
+
+                           recapturePortraitsMethod.Invoke(squadMemberScrollerController, null);
+
+                       }
+
+
+                       Sprite sprite = Sprite.Create(portrait.RenderedPortrait, new Rect(0, 0, portrait.RenderedPortrait.width, portrait.RenderedPortrait.height), new Vector2(0.0f, 0.0f));
+
+                       TFTVLogger.Always($"sprite null? {sprite==null}");
+
+                       return sprite;
+
+                      // portrait.RenderedPortrait; //but this is a Texture2D!
+
+                   }
+                   catch (Exception e)
+                   {
+                       TFTVLogger.Error(e);
+                       throw;
+                   }
+               }*/
+
+
+            /* private static readonly Dictionary<string, string> hintImageDictionary = new Dictionary<string, string>
+ {
+     {"InfestationMissionIntro", "px_squad.jpg"},
+     {"InfestationMissionEnd", "px_squad.jpg"},
+     {"UmbraSighted", "VO_15.jpg"},
+     {"RevenantSighted", "Hint_Revenant.png"},
+     {"TFTV_StaminaHintDef", "broken_limb_stamina.png"},
+     {"RevenantResistanceSighted", "Hint_Revenant.png"},
+     {"VoidTouchedSighted", "Hint_TBTV.png"},
+     {"VoidTouchedOnAttack", "Hint_TBTV_MfD.png"},
+     {"VoidTouchedOnTurnEnd", "Hint_TBTV_EoT.png"},
+     {"TUT_DLC4_Acheron_HintDef", "Acheron.png"},
+     {"AcheronPrime", "AcheronPrime.png"},
+     {"AcheronAchlys", "AcheronAchlys.png"},
+     {"AcheronAchlysChampion", "AcheronAchlysChampion.png"},
+     {"AcheronAsclepius", "AcheronAsclepius.png"},
+     {"AcheronAsclepiusChampion", "AcheronAsclepiusChampion.png"},
+     {"VoidBlight", "acheron_void_blight.png"},
+     {"TFTV_Tutorial1", "alistair.png"},
+     {"TFTV_Tutorial2", "Olena.png"},
+     {"ANCIENTS_STORY1", "HINT_TFTV_Ancients_Tactical_Story_1.jpg"},
+     {"ANCIENTS_CYCLOPS", "HINT_TFTV_Ancients_Tactical_CyclopsDefense.jpg"},
+     {"ANCIENTS_CYCLOPSDEFENSE", "HINT_TFTV_Ancients_Tactical_CyclopsDefense.jpg"},
+     {"ANCIENTS_HOPLITS", "HINT_TFTV_Ancients_Tactical_Hoplites.jpg"},
+     {"ANCIENTS_HOPLITSREPAIR", "HINT_TFTV_Ancients_Tactical_Hoplites_Overpower.jpg"},
+     {"ANCIENTS_HOPLITSMAXPOWER", "HINT_TFTV_Ancients_Tactical_Hoplites_Overpower.jpg"},
+     {"HostileDefenders", "TFTV_Hint_HostileDefenders.jpg"},
+     {"FIRE_QUENCHER", "hint_firequencher.png"},
+     {"HintDecoyPlaced", "decoy_hint.jpg"},
+     {"HintDecoyDiscovered", "decoy_removed_hint.jpg"},
+     {"BaseDefenseUmbraStrat", "Olena_static.jpg"},
+     {"BaseDefenseWormsStrat", "Olena_static.jpg"},
+     {"BaseDefenseForce2Strat", "Olena_static.jpg"},
+     {"BaseDefenseVenting", "Olena_static.jpg"},
+     {"TFTVPXPalaceStart0", "PX_VICTORY_START0.jpg"},
+     {"TFTVNJPalaceStart0", "NJ_VICTORY_START0.jpg"},
+     {"TFTVANPalaceStart0", "AN_VICTORY_START0.jpg"},
+     {"TFTVNJPalaceStart1", "NJ_VICTORY_START1.jpg"},
+     {"TFTVPXPalaceStart1", "PX_VICTORY_START1.jpg"},
+     {"TFTVANPalaceStart1", "AN_VICTORY_START1.jpg"},
+     {"TFTVSYPolyPalaceStart0", "SY_POLY_VICTORY_START0.jpg"},
+     {"TFTVSYPolyPalaceStart1", "SY_POLY_VICTORY_START1.jpg"},
+     {"TFTVSYTerraPalaceStart0", "SY_Terra_VICTORY_START0.jpg"},
+     {"TFTVSYTerraPalaceStart1", "SY_TERRA_VICTORY_START1.jpg"},
+     {"ReceptacleGateHint0", "VICTORY_GATE.jpg"},
+     {"ReceptacleGateHint1", "VICTORY_GATE.jpg"},
+     {"PalaceRevenantHint0", "VICTORY_REVENANT_TO_PX.jpg"},
+     {"PalaceRevenantHint1", "Hint_Revenant.png"},
+     {"PalaceHisMinionsHint", "VICTORY_MINIONS.jpg"},
+     {"PalaceEyesHint", "VICTORY_EYES.jpg"},
+ };
+            */
             private static void AddHintToDisplayedHints(ContextHelpManager contextHelpManager, ContextHelpHintDef contextHelpHintDef)
             {
                 try
@@ -918,7 +1006,7 @@ namespace TFTV
                     {
                         contextHelpModule.Image.overrideSprite = Helper.CreateSpriteFromImageFile(_hintDefSpriteFileNameDictionary[hintDef]);
                     }
-                    else 
+                    else
                     {
                         contextHelpModule.Image.overrideSprite = null;
                     }
@@ -929,7 +1017,7 @@ namespace TFTV
                 }
             }
 
-        
+
             [HarmonyPatch(typeof(UIModuleContextHelp), "ShowPanel")]
             public static class UIModuleContextHelp_Show_Hints_Patch
             {
@@ -940,20 +1028,22 @@ namespace TFTV
                         ContextHelpHintDef hintDef = ____context as ContextHelpHintDef;
 
                         if (hintDef != null)
-                        {                        
+                        {
                             TFTVLogger.Always($"Show hint method invoked, the hint is {hintDef.name}");
                             ChangeHintBackground(__instance, hintDef);
-                                                 
+
                             foreach (ContextHelpHintDef tacticsHint in TFTVHumanEnemies.TacticsHint)
                             {
                                 if (tacticsHint.name == hintDef.name)  //hintDef.Text.LocalizeEnglish().Contains("Their leader is"))
                                 {
-                                     alwaysDisplayedTacticalHintsDbDef.Hints.Remove(hintDef);
+                                    alwaysDisplayedTacticalHintsDbDef.Hints.Remove(hintDef);
                                     _hintDefSpriteFileNameDictionary.Remove(hintDef);
                                     TFTVHumanEnemies.TacticsHint.Remove(hintDef);
                                     break;
                                 }
                             }
+
+                            //  InfestationStoryTest(hintDef, __instance);
                         }
                     }
                     catch (Exception e)

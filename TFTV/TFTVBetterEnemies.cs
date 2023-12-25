@@ -175,15 +175,30 @@ namespace TFTV
 
                 MindCrushAI.Weight = 999;
                 MindCrushAI.AbilityToExecute = MindCrush;
+                
+
                 AIAbilityDisabledStateConsiderationDef EarlyExitConsideration1 = (AIAbilityDisabledStateConsiderationDef)MindCrushAI.EarlyExitConsiderations[1].Consideration;
+               
+                
                 EarlyExitConsideration1.Ability = MindCrush;
+
+       
+
                 AIProximityToEnemiesConsiderationDef Consideration1 = (AIProximityToEnemiesConsiderationDef)MindCrushAI.Evaluations[0].Considerations[0].Consideration;
+                
                 Consideration1.MaxRange = 10;
+
+
                 AIAbilityNumberOfTargetsConsiderationDef Consideration2 = (AIAbilityNumberOfTargetsConsiderationDef)MindCrushAI.Evaluations[0].Considerations[1].Consideration;
                 Consideration2.Ability = MindCrush;
 
+ 
+
                 AIWillpointsLeftAfterAbilityConsiderationDef Consideration3 = (AIWillpointsLeftAfterAbilityConsiderationDef)MindCrushAI.Evaluations[0].Considerations[2].Consideration;
                 Consideration3.Ability = MindCrush;
+
+
+
             }
             catch (Exception e)
             {

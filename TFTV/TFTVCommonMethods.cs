@@ -97,16 +97,16 @@ namespace TFTV
         {
             try
             {
-                TFTVAirCombat.targetsForBehemoth = new List<int>();
-                TFTVAirCombat.flyersAndHavens = new Dictionary<int, List<int>>();
-                TFTVAirCombat.checkHammerfall = false;
+                TFTVBehemothAndRaids.targetsForBehemoth = new List<int>();
+                TFTVBehemothAndRaids.flyersAndHavens = new Dictionary<int, List<int>>();
+                TFTVBehemothAndRaids.checkHammerfall = false;
                 TFTVRevenant.DeadSoldiersDelirium = new Dictionary<int, int>();
                 TFTVTouchedByTheVoid.TBTVVariable = 0;
                 TFTVRevenant.daysRevenantLastSeen = 0;
                 TFTVStamina.charactersWithDisabledBodyParts = new Dictionary<int, List<string>>();
-                TFTVAirCombat.behemothScenicRoute = new List<int>();
-                TFTVAirCombat.behemothTarget = 0;
-                TFTVAirCombat.behemothWaitHours = 12;
+                TFTVBehemothAndRaids.behemothScenicRoute = new List<int>();
+                TFTVBehemothAndRaids.behemothTarget = 0;
+                TFTVBehemothAndRaids.behemothWaitHours = 12;
                 TFTVRevenant.revenantSpecialResistance = new List<string>();
                 TFTVRevenant.revenantCanSpawn = false;
                 TFTVHumanEnemies.HumanEnemiesAndTactics = new Dictionary<string, int>();
@@ -364,21 +364,12 @@ namespace TFTV
                     }
 
                 }
-
-
-
             }
             catch (Exception e)
             {
                 TFTVLogger.Error(e);
             }
-
-
         }
-
-
-
-
 
 
         [HarmonyPatch(typeof(GeoFaction), "AddTag")]

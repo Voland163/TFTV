@@ -54,6 +54,10 @@ namespace TFTV
 
             private static readonly MissionTypeTagDef infestationMissionTagDef = DefCache.GetDef<MissionTypeTagDef>("HavenInfestation_MissionTypeTagDef");
 
+          // internal static string _nameOfTopCharacter = "";
+         //   private static string _nameOfSecondCharacter = "";
+
+
             [HarmonyPatch(typeof(GeoMission), "Launch")]
             public static class GeoMission_Launch_InfestationStory_Patch
             {
@@ -125,6 +129,7 @@ namespace TFTV
 
                                 string text = $"{director} {characterName} {infestationStory0} {__instance.Site.LocalizedSiteName}{infestationStory1}";
 
+                               // _nameOfTopCharacter = characterName;
 
                                 string infestationStory2 = TFTVCommonMethods.ConvertKeyToString("KEY_INFESTATION_STORY2");
                                 string infestationStory3 = TFTVCommonMethods.ConvertKeyToString("KEY_INFESTATION_STORY3");
@@ -136,10 +141,10 @@ namespace TFTV
                                 infestationIntro.NextHint = infestationIntro2;
 
 
-                                infestationIntro.Text = new Base.UI.LocalizedTextBind(text, true);
-                                infestationIntro.Title = new Base.UI.LocalizedTextBind(title, true);
-                                infestationIntro2.Text = new Base.UI.LocalizedTextBind(reply, true);
-                                infestationIntro2.Title = new Base.UI.LocalizedTextBind(title, true);
+                                infestationIntro.Text = new LocalizedTextBind(text, true);
+                                infestationIntro.Title = new LocalizedTextBind(title, true);
+                                infestationIntro2.Text = new LocalizedTextBind(reply, true);
+                                infestationIntro2.Title = new LocalizedTextBind(title, true);
                             }
                         }
                     }
@@ -172,8 +177,8 @@ namespace TFTV
                             ContextHelpHintDef infestationOutro = DefCache.GetDef<ContextHelpHintDef>("InfestationMissionEnd");
                             infestationOutro.Trigger = HintTrigger.MissionOver;
 
-                            infestationOutro.Text = new Base.UI.LocalizedTextBind(text, true);
-                            infestationOutro.Title = new Base.UI.LocalizedTextBind(title, true);
+                            infestationOutro.Text = new LocalizedTextBind(text, true);
+                            infestationOutro.Title = new LocalizedTextBind(title, true);
 
                         }
                     }
@@ -421,7 +426,7 @@ namespace TFTV
         
         internal class ScienceOfMadness 
         {
-            public static bool CancelProgFS3IfTrappedInMistAlreadyTriggered(GeoscapeEventData eventData, GeoscapeEventSystem eventSystem)
+           /* public static bool CancelProgFS3IfTrappedInMistAlreadyTriggered(GeoscapeEventData eventData, GeoscapeEventSystem eventSystem)
             {
                 try
                 {
@@ -440,7 +445,7 @@ namespace TFTV
                     TFTVLogger.Error(e);
                     throw;
                 }
-            }
+            }*/
 
             //force Corruption of the Mind to spawn in a haven covered in Mist
 
