@@ -1,12 +1,10 @@
 ﻿using Base.Core;
 using Base.Entities.Statuses;
-using Base.Levels;
 using Base.UI;
 using HarmonyLib;
 using PhoenixPoint.Common.ContextHelp;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
-using PhoenixPoint.Common.Entities.Items;
 using PhoenixPoint.Common.Saves;
 using PhoenixPoint.Common.UI;
 using PhoenixPoint.Common.View.ViewModules;
@@ -20,7 +18,6 @@ using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
 using PhoenixPoint.Geoscape.Levels.Objectives;
 using PhoenixPoint.Tactical.Entities;
-using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.Effects.ApplicationConditions;
 using PhoenixPoint.Tactical.Entities.Effects.DamageTypes;
 using PhoenixPoint.Tactical.Entities.Statuses;
@@ -29,7 +26,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using TFTV.PortedAATweaks;
 using static PhoenixPoint.Tactical.Entities.Statuses.TacStatusDef;
 
 namespace TFTV
@@ -136,7 +132,7 @@ namespace TFTV
                 TFTVCapturePandoransGeoscape.ToxinsInCirculation = 0;
                 TFTVNewGameMenu.NewGameOptionsSetUp = false;
                 TFTVNewGameMenu.EnterStateRun = false;
-             
+
 
                 /*  TFTVNewGameOptions.AmountOfExoticResourcesSetting;
                   TFTVNewGameOptions.ResourceMultiplierSetting;
@@ -159,49 +155,49 @@ namespace TFTV
         }
 
 
-       
-
-     /*   public static void ModifyGeoCharacterDef(GeoCharacter character, string name, List<TacticalAbilityDef> abilities,
-            List<ItemDef> readySlots, List<ItemDef> armorSlots, List<ItemDef> inventorySlots, List<GameTagDef> customizationTags, int level, int[] stats) 
-        {
-            try
-            {
-                character.Rename(name);
-                
-                foreach(TacticalAbilityDef ab in abilities) 
-                {
-                    character.Progression.AddAbility(ab); 
-                }
-
-                character.Progression.LevelProgression.SetLevel(level);
-               
-              
-
-                newCharacter.Data.GameTags = new List<GameTagDef>(customizationTags) { classTagDef }.ToArray();
-                newCharacter.Data.Abilites = new List<TacticalAbilityDef>(abilities).ToArray();
-                newCharacter.Data.EquipmentItems = new List<ItemDef>(readySlots).ToArray();
-                newCharacter.Data.InventoryItems = new List<ItemDef>(inventorySlots).ToArray();
-                newCharacter.Data.BodypartItems = new List<ItemDef>(armorSlots).ToArray();
-                newCharacter.Data.LevelProgression.SetLevel(level);
-                newCharacter.Data.Strength = stats[0];
-                newCharacter.Data.Will = stats[1];
-                newCharacter.Data.Speed = stats[2];
 
 
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-                throw;
-            }
+        /*   public static void ModifyGeoCharacterDef(GeoCharacter character, string name, List<TacticalAbilityDef> abilities,
+               List<ItemDef> readySlots, List<ItemDef> armorSlots, List<ItemDef> inventorySlots, List<GameTagDef> customizationTags, int level, int[] stats) 
+           {
+               try
+               {
+                   character.Rename(name);
+
+                   foreach(TacticalAbilityDef ab in abilities) 
+                   {
+                       character.Progression.AddAbility(ab); 
+                   }
+
+                   character.Progression.LevelProgression.SetLevel(level);
 
 
+
+                   newCharacter.Data.GameTags = new List<GameTagDef>(customizationTags) { classTagDef }.ToArray();
+                   newCharacter.Data.Abilites = new List<TacticalAbilityDef>(abilities).ToArray();
+                   newCharacter.Data.EquipmentItems = new List<ItemDef>(readySlots).ToArray();
+                   newCharacter.Data.InventoryItems = new List<ItemDef>(inventorySlots).ToArray();
+                   newCharacter.Data.BodypartItems = new List<ItemDef>(armorSlots).ToArray();
+                   newCharacter.Data.LevelProgression.SetLevel(level);
+                   newCharacter.Data.Strength = stats[0];
+                   newCharacter.Data.Will = stats[1];
+                   newCharacter.Data.Speed = stats[2];
+
+
+               }
+               catch (Exception e)
+               {
+                   TFTVLogger.Error(e);
+                   throw;
+               }
 
 
 
 
 
-        }*/
+
+
+           }*/
 
 
 

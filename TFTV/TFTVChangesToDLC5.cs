@@ -11,7 +11,6 @@ using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.Entities.Items;
-using PhoenixPoint.Common.Levels.Missions;
 using PhoenixPoint.Common.View.ViewControllers;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.Abilities;
@@ -34,7 +33,6 @@ using System.Reflection;
 using UnityEngine;
 using UnityEngine.UI;
 using static PhoenixPoint.Geoscape.Entities.GeoUnitDescriptor;
-using static PhoenixPoint.Geoscape.Levels.GeoMissionGenerator;
 
 namespace TFTV
 {
@@ -1621,7 +1619,7 @@ namespace TFTV
                     try
                     {
 
-                       // TFTVLogger.Always($"UpdateOptions(Timing) is called (Prefix) Current time: {____level.Timing.Now.DateTime}. Next update: {____updateOptionsNextTime.DateTime}");
+                        // TFTVLogger.Always($"UpdateOptions(Timing) is called (Prefix) Current time: {____level.Timing.Now.DateTime}. Next update: {____updateOptionsNextTime.DateTime}");
 
                         if (timing.Now >= ____updateOptionsNextTime && ____level.EventSystem.GetVariable(____settings.NumberOfDLC5MissionsCompletedVariable) > 0)
                         {
@@ -1647,18 +1645,18 @@ namespace TFTV
                     }
                 }
 
-           /*     public static void Postfix(TimeUnit ____updateOptionsNextTime, GeoLevelController ____level)
-                {
-                    try
-                    {
-                      //  TFTVLogger.Always($"UpdateOptions(Timing) Postfix: Current time: {____level.Timing.Now.DateTime}. Next update: {____updateOptionsNextTime.DateTime}");
-                    }
-                    catch (Exception e)
-                    {
-                        TFTVLogger.Error(e);
-                        throw;
-                    }
-                }*/
+                /*     public static void Postfix(TimeUnit ____updateOptionsNextTime, GeoLevelController ____level)
+                     {
+                         try
+                         {
+                           //  TFTVLogger.Always($"UpdateOptions(Timing) Postfix: Current time: {____level.Timing.Now.DateTime}. Next update: {____updateOptionsNextTime.DateTime}");
+                         }
+                         catch (Exception e)
+                         {
+                             TFTVLogger.Error(e);
+                             throw;
+                         }
+                     }*/
 
 
             }
@@ -2628,105 +2626,106 @@ namespace TFTV
 
         /// <summary>
         /// Ensures that rescue vehicle missions will not contain faction vehicles if they haven't been researched by the faction yet.
+        /// commented out 2/1 because 1) less variety in vehicles gained, and 2) introduced weird meta to wait until vehicles researched
         /// </summary>
 
-        [HarmonyPatch(typeof(GeoMissionGenerator), "GetRandomMission", new Type[] { typeof(IEnumerable<MissionTagDef>), typeof(ParticipantFilter), typeof(Func<TacMissionTypeDef, bool>) })]
-        public static class GeoMissionGenerator_GetRandomMission_patch
-        {
+        /*   [HarmonyPatch(typeof(GeoMissionGenerator), "GetRandomMission", new Type[] { typeof(IEnumerable<MissionTagDef>), typeof(ParticipantFilter), typeof(Func<TacMissionTypeDef, bool>) })]
+           public static class GeoMissionGenerator_GetRandomMission_patch
+           {
 
-            public static void Prefix(IEnumerable<MissionTagDef> tags, out List<CustomMissionTypeDef> __state, GeoLevelController ____level)
-            {
-                try
-                {
-                    ClassTagDef aspida = DefCache.GetDef<ClassTagDef>("Aspida_ClassTagDef");
-                    ClassTagDef armadillo = DefCache.GetDef<ClassTagDef>("Armadillo_ClassTagDef");
+               public static void Prefix(IEnumerable<MissionTagDef> tags, out List<CustomMissionTypeDef> __state, GeoLevelController ____level)
+               {
+                   try
+                   {
+                       ClassTagDef aspida = DefCache.GetDef<ClassTagDef>("Aspida_ClassTagDef");
+                       ClassTagDef armadillo = DefCache.GetDef<ClassTagDef>("Armadillo_ClassTagDef");
 
-                    MissionTagDef requiresVehicle = DefCache.GetDef<MissionTagDef>("Contains_RescueVehicle_MissionTagDef");
+                       MissionTagDef requiresVehicle = DefCache.GetDef<MissionTagDef>("Contains_RescueVehicle_MissionTagDef");
 
-                    __state = new List<CustomMissionTypeDef>();
-
-
-                    if (tags.Contains(requiresVehicle) && ____level != null)
-                    {
-                        TFTVLogger.Always($"Generating rescue Vehicle scav; checking if factions have researched Aspida/Armadillo");
-                        GeoLevelController controller = ____level;
-
-                        if (controller.NewJerichoFaction.Research != null && !controller.NewJerichoFaction.Research.HasCompleted("NJ_VehicleTech_ResearchDef"))
-                        {
-                            TFTVLogger.Always($"Armadillo not researched by New Jericho");
-
-                            foreach (CustomMissionTypeDef customMissionTypeDef in Repo.GetAllDefs<CustomMissionTypeDef>().Where(m => m.Tags.Contains(requiresVehicle)))
-                            {
-                                if (customMissionTypeDef.ParticipantsData[1].ActorDeployParams[0].Limit.ActorTag == armadillo)
-                                {
-                                    __state.Add(customMissionTypeDef);
-                                }
-                            }
-                        }
-                        if (controller.SynedrionFaction.Research != null && !controller.SynedrionFaction.Research.HasCompleted("SYN_Rover_ResearchDef"))
-                        {
-                            TFTVLogger.Always($"Aspida not researched by Synedrion");
-
-                            foreach (CustomMissionTypeDef customMissionTypeDef in Repo.GetAllDefs<CustomMissionTypeDef>().Where(m => m.Tags.Contains(requiresVehicle)))
-                            {
-                                if (customMissionTypeDef.ParticipantsData[1].ActorDeployParams[0].Limit.ActorTag == aspida)
-                                {
-                                    __state.Add(customMissionTypeDef);
-                                }
-                            }
-                        }
-
-                        if (__state.Count > 0)
-                        {
-                            TFTVLogger.Always($"Removing rescue vehicle missions with not researched vehicles from generation pool");
-
-                            foreach (CustomMissionTypeDef mission in __state)
-                            {
-                                mission.Tags.Remove(requiresVehicle);
-                            }
-                        }
-                    }
-                }
-
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                    throw;
-                }
-            }
+                       __state = new List<CustomMissionTypeDef>();
 
 
-            public static void Postfix(IEnumerable<MissionTagDef> tags, in List<CustomMissionTypeDef> __state)
-            {
-                try
-                {
-                    ClassTagDef aspida = DefCache.GetDef<ClassTagDef>("Aspida_ClassTagDef");
-                    ClassTagDef armadillo = DefCache.GetDef<ClassTagDef>("Armadillo_ClassTagDef");
+                       if (tags.Contains(requiresVehicle) && ____level != null)
+                       {
+                           TFTVLogger.Always($"Generating rescue Vehicle scav; checking if factions have researched Aspida/Armadillo");
+                           GeoLevelController controller = ____level;
+
+                           if (controller.NewJerichoFaction.Research != null && !controller.NewJerichoFaction.Research.HasCompleted("NJ_VehicleTech_ResearchDef"))
+                           {
+                               TFTVLogger.Always($"Armadillo not researched by New Jericho");
+
+                               foreach (CustomMissionTypeDef customMissionTypeDef in Repo.GetAllDefs<CustomMissionTypeDef>().Where(m => m.Tags.Contains(requiresVehicle)))
+                               {
+                                   if (customMissionTypeDef.ParticipantsData[1].ActorDeployParams[0].Limit.ActorTag == armadillo)
+                                   {
+                                       __state.Add(customMissionTypeDef);
+                                   }
+                               }
+                           }
+                           if (controller.SynedrionFaction.Research != null && !controller.SynedrionFaction.Research.HasCompleted("SYN_Rover_ResearchDef"))
+                           {
+                               TFTVLogger.Always($"Aspida not researched by Synedrion");
+
+                               foreach (CustomMissionTypeDef customMissionTypeDef in Repo.GetAllDefs<CustomMissionTypeDef>().Where(m => m.Tags.Contains(requiresVehicle)))
+                               {
+                                   if (customMissionTypeDef.ParticipantsData[1].ActorDeployParams[0].Limit.ActorTag == aspida)
+                                   {
+                                       __state.Add(customMissionTypeDef);
+                                   }
+                               }
+                           }
+
+                           if (__state.Count > 0)
+                           {
+                               TFTVLogger.Always($"Removing rescue vehicle missions with not researched vehicles from generation pool");
+
+                               foreach (CustomMissionTypeDef mission in __state)
+                               {
+                                   mission.Tags.Remove(requiresVehicle);
+                               }
+                           }
+                       }
+                   }
+
+                   catch (Exception e)
+                   {
+                       TFTVLogger.Error(e);
+                       throw;
+                   }
+               }
 
 
-                    MissionTagDef requiresVehicle = DefCache.GetDef<MissionTagDef>("Contains_RescueVehicle_MissionTagDef");
+               public static void Postfix(IEnumerable<MissionTagDef> tags, in List<CustomMissionTypeDef> __state)
+               {
+                   try
+                   {
+                       ClassTagDef aspida = DefCache.GetDef<ClassTagDef>("Aspida_ClassTagDef");
+                       ClassTagDef armadillo = DefCache.GetDef<ClassTagDef>("Armadillo_ClassTagDef");
 
-                    if (tags.Contains(DefCache.GetDef<MissionTagDef>("Contains_RescueVehicle_MissionTagDef")) && __state.Count > 0)
-                    {
-                        TFTVLogger.Always($"Adding back missions that were removed from the pool");
 
-                        foreach (CustomMissionTypeDef mission in __state)
-                        {
+                       MissionTagDef requiresVehicle = DefCache.GetDef<MissionTagDef>("Contains_RescueVehicle_MissionTagDef");
 
-                            if (!mission.Tags.Contains(requiresVehicle))
-                            {
-                                mission.Tags.Add(requiresVehicle);
-                            }
-                        }
-                    }
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                    throw;
-                }
-            }
-        }
+                       if (tags.Contains(DefCache.GetDef<MissionTagDef>("Contains_RescueVehicle_MissionTagDef")) && __state.Count > 0)
+                       {
+                           TFTVLogger.Always($"Adding back missions that were removed from the pool");
+
+                           foreach (CustomMissionTypeDef mission in __state)
+                           {
+
+                               if (!mission.Tags.Contains(requiresVehicle))
+                               {
+                                   mission.Tags.Add(requiresVehicle);
+                               }
+                           }
+                       }
+                   }
+                   catch (Exception e)
+                   {
+                       TFTVLogger.Error(e);
+                       throw;
+                   }
+               }
+           }*/
 
 
         public static void ForceMarketPlaceUpdate()

@@ -230,6 +230,7 @@ namespace TFTV
 
                                 if (roll > 30)
                                 {
+                                    TFTVLogger.Always($"{actor.name} getting TBTV on death");
                                     RemoveDeathBelcherAbilities(actor);
                                     GiveTBTVAbility(actor, roll);
                                 }
@@ -319,6 +320,7 @@ namespace TFTV
                         {
                             if (__instance.GameTags.Contains(voidTouchedTag))
                             {
+                                TFTVLogger.Always($"{__instance.name} getting TBTV ability on equipment damaged");
                                 RemoveDeathBelcherAbilities(__instance);
                                 int roll = MakeTBTVRoll();
                                 __instance.RemoveAbility(hiddenTBTVAbilityDef);
@@ -339,6 +341,7 @@ namespace TFTV
                     {
                         if (actor.GameTags.Contains(voidTouchedTag))
                         {
+                            TFTVLogger.Always($"{actor.name} getting TBTV on getting damaged");
                             RemoveDeathBelcherAbilities(actor);
                             int roll = MakeTBTVRoll();
                             actor.RemoveAbility(hiddenTBTVAbilityDef);
@@ -440,7 +443,7 @@ namespace TFTV
                     {
                         if (TFTVVoidOmens.VoidOmensCheck[15] && 
                             controller.Factions.Any(f => f.Faction.FactionDef.MatchesShortName("aln")) && 
-                            controller.GetFactionByCommandName("Px") == faction)
+                            controller.GetFactionByCommandName("Px") == faction && !controller.IsLoadingSavedGame)
                         {
                             TFTVLogger.Always($"More Umbras VO in effect; killing Umbra at start of player's turn");
 

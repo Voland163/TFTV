@@ -84,7 +84,7 @@ namespace TFTV
                 /// PhoenixGame is accessible at any time.
                 PhoenixGame game = GetGame();
 
-                string version = $"TFTV December 29 release #1 (Update #47) v{MetaData.Version}";
+                string version = $"TFTV 20240103 release #1 (Update #48) v{MetaData.Version}";
 
                 TFTVversion = version;
 
@@ -133,7 +133,7 @@ namespace TFTV
 
 
                 TFTVRevenantResearch.CreateRevenantRewardsDefs();
-                TFTVProjectOsiris.CreateProjectOsirisDefs();
+                TFTVProjectOsiris.Defs.CreateProjectOsirisDefs();
 
                 //  TFTVAncients.CheckResearchesRequiringThings();
 

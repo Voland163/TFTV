@@ -1,5 +1,6 @@
 using Base.Serialization.General;
 using PhoenixPoint.Geoscape.Entities;
+using PhoenixPoint.Geoscape.Entities.Research;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Modding;
 using System;
@@ -109,8 +110,14 @@ namespace TFTV
             TFTVPassengerModules.ImplementFarMConfig(Controller);
           //  TFTVNewGameOptions.Change_Crossbows();
             TFTVBetaSaveGamesFixes.RemoveBadSlug(Controller);
+           
+         /*   foreach(ResearchElement element in Controller.PhoenixFaction.Research.FactionResearches) 
+            {
+                TFTVLogger.Always($"{element.ResearchID}");
+            }*/
             
-           // TFTVBetaSaveGamesFixes.SpecialFixForNarvi();
+            // TFTVDefsInjectedOnlyOnce.Print();
+         //  TFTVBetaSaveGamesFixes.SpecialFixForNarvi();
         }
         /// <summary>
         /// Called when Geoscape ends.

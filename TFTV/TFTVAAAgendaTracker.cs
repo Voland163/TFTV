@@ -1259,7 +1259,7 @@ namespace TFTV
 
                                         foreach (int geoSiteId in TFTVBaseDefenseGeoscape.PhoenixBasesUnderAttack.Keys)
                                         {
-                                            GeoSite phoenixBase = TFTVBaseDefenseGeoscape.FindPhoenixBase(geoSiteId, controller);
+                                            GeoSite phoenixBase = TFTVBaseDefenseGeoscape.InitAttack.FindPhoenixBase(geoSiteId, controller);
 
                                             if (phoenixBase.HasActiveMission)
                                             {

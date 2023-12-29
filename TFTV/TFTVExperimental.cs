@@ -1,4 +1,5 @@
-﻿using Base.Core;
+﻿using Base.AI.Defs;
+using Base.Core;
 using Base.Defs;
 using Base.UI.MessageBox;
 using HarmonyLib;
@@ -6,17 +7,24 @@ using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities.Items;
 using PhoenixPoint.Common.Levels.Missions;
 using PhoenixPoint.Geoscape;
+using PhoenixPoint.Geoscape.Core;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.Missions;
+using PhoenixPoint.Geoscape.Entities.PhoenixBases.FacilityComponents;
+using PhoenixPoint.Geoscape.Entities.PhoenixBases;
 using PhoenixPoint.Geoscape.Entities.Research;
 using PhoenixPoint.Geoscape.Entities.Research.Reward;
 using PhoenixPoint.Geoscape.Levels;
+using PhoenixPoint.Geoscape.Levels.Factions;
 using PhoenixPoint.Modding;
 using PhoenixPoint.Tactical.Entities;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using UnityEngine;
+using PhoenixPoint.Geoscape.Entities.Sites;
+using PhoenixPoint.Common.Entities.GameTagsTypes;
 
 namespace TFTV
 {
@@ -49,7 +57,107 @@ namespace TFTV
                }
            }*/
 
-       
+
+        [HarmonyPatch(typeof(GeoAlienFaction), "PhoenixBaseAttackCheck")]
+        public static class GeoAlienFaction_PhoenixBaseAttackCheck_patch
+        {
+
+            public static bool Prefix(GeoAlienFaction __instance)
+            {
+                try
+                {
+                    foreach (SiteAttackSchedule item in __instance.PhoenixBaseAttackSchedule)
+                    {
+                        if (item.HasAttackScheduled)
+                        {
+                            continue;
+                        }
+
+                        GeoSite pxBase = item.Site;
+                        if (pxBase.State != GeoSiteState.Functioning || !pxBase.GetInspected(__instance))
+                        {
+                            continue;
+                        }
+
+                        foreach (GeoAlienBase colony in __instance.Bases)
+                        {
+                            if (colony.SitesInRange.Contains(pxBase))
+                            {
+                                GeoLevelController controller = __instance.GeoLevel;
+                                GeoPhoenixFaction phoenixFaction = controller.PhoenixFaction;
+
+                                float distance = Vector3.Distance(colony.Site.WorldPosition, pxBase.WorldPosition);
+                                bool pxBaseInMist = pxBase.IsInMist;
+                                bool hasTelepathicCaptive = 
+                                    phoenixFaction.ContaimentUsage>0 && 
+                                    pxBase.GetComponent<GeoPhoenixBase>().Layout.Facilities.Any(f => f.GetComponent<PrisonFacilityComponent>() != null) &&
+                                    phoenixFaction.CapturedUnits.Any(gud=>gud.ClassTag==DefCache.GetDef<ClassTagDef>("Siren_ClassTagDef") 
+                                    || gud.ClassTag == DefCache.GetDef<ClassTagDef>("Queen_ClassTagDef"));
+
+                                //Nest 5 per day
+                                //Lair 10 per day
+                                //Citadel 20 per day
+                                //Palace 0 per day
+
+                                // bool researchedWalls = phoenixFaction.Research.HasCompleted("NJ_WallsOfJericho_ResearchDef");
+                                bool researchedDomovoy = phoenixFaction.Research.HasCompleted("SYN_SafeZoneProject_ResearchDef");
+
+                                int colonyCounter = colony.AlienBaseTypeDef.PhoenixBaseAttackCounterPerDay;
+                                float multiplier = 1;
+
+                                if (distance < 2) 
+                                {
+                                    multiplier += 2 - distance;  
+                                }
+                                
+                                if (pxBaseInMist) 
+                                {
+                                    multiplier *= 1.5f; 
+                                }
+
+                                if (hasTelepathicCaptive) 
+                                {
+                                    multiplier *= 1.5f; 
+                                }
+
+                                if (researchedDomovoy) 
+                                {
+                                    multiplier *= 0.5f;  
+                                }
+
+                                int adjustedCounter = (int)(colonyCounter * multiplier);
+
+                                item.Counter += adjustedCounter;
+
+                                TFTVLogger.Always($"{colony.AlienBaseTypeDef.Name.LocalizeEnglish()} " +
+                                 $"is {distance} from {pxBase.LocalizedSiteName} in mist? {pxBaseInMist} with a telepathic captive? {hasTelepathicCaptive}" +
+                                 $" player researched Project Domovoy? {researchedDomovoy}, colonyCounter is {colonyCounter}, multiplier is {multiplier}, so adjusted counter per day is {adjustedCounter}," +
+                                 $"and accumulated counter is {item.Counter}");                     
+                            }
+                        }
+
+                        if (item.Counter >= __instance.FactionDef.PhoenixBaseAttackMissionCounter && !item.Site.HasActiveMission)
+                        {
+                            (from b in __instance.Bases
+                             where b.SitesInRange.Contains(pxBase)
+                             select b.Site).ToList();
+                            __instance.AttackPhoenixBase(pxBase);
+                        }
+                    }
+
+                    return false;
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
+
+
+        
+
 
         public static void CheckAutomataResearch()
         {

@@ -141,39 +141,9 @@ namespace TFTV
                 float bonusWillpower = 0;
 
 
-                //  GeoLevelController level = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
-
-                /*  foreach (ICommonItem armorItem in character.ArmourItems)
-                  {
-                      TacticalItemDef tacticalItemDef = armorItem.ItemDef as TacticalItemDef;
-                      if (!(tacticalItemDef == null) && !(tacticalItemDef.BodyPartAspectDef == null))
-                      {
-
-                          bonusWillpower += tacticalItemDef.BodyPartAspectDef.WillPower;
-
-                      }
-                  }*/
-
                 if (character.Progression != null)
                 {
-                    /*   foreach (TacticalAbilityDef ability in character.Progression.Abilities)
-                       {
-                           PassiveModifierAbilityDef passiveModifierAbilityDef = ability as PassiveModifierAbilityDef;
-                           if (!(passiveModifierAbilityDef == null))
-                           {
-                               ItemStatModification[] statModifications = passiveModifierAbilityDef.StatModifications;
-                               foreach (ItemStatModification statModifier in statModifications)
-                               {
-
-                                   if (statModifier.TargetStat == StatModificationTarget.Willpower && statModifier.Modification == StatModificationType.AddMax)
-                                   {
-                                       bonusWillpower += statModifier.Value;
-                                   }
-                               }
-                           }
-                       }*/
-
-
+                   
                     foreach (PassiveModifierAbilityDef passiveModifier in character.PassiveModifiers)
                     {
                         ItemStatModification[] statModifications = passiveModifier.StatModifications;
@@ -342,6 +312,10 @@ namespace TFTV
         }
 
 
+        //  AddAttackBoostStatus
+        // ShootAbility
+
+
         // Harmony patch to change the result of CorruptionStatus.CalculateValueIncrement() to be capped by ODI
         // When ODI is <25%, max corruption is 1/3, between 25 and 50% ODI, max corruption is 2/3, and ODI >50%, corruption can be 100%
         // Tell Harmony what original method in what class should get patched, the following class after this directive will be used to perform own code by injection
@@ -364,12 +338,12 @@ namespace TFTV
                 try
                 {
                     // With Harmony patches we cannot directly access base.TacticalActor, Harmony's AccessTools uses Reflection to get it through the backdoor
-                    TacticalActor base_TacticalActor = (TacticalActor)AccessTools.Property(typeof(TacStatus), "TacticalActor").GetValue(__instance, null);
-
+                    TacticalActor tacticalActor = __instance.TacticalActor; //(TacticalActor)AccessTools.Property(typeof(TacStatus), "TacticalActor").GetValue(__instance, null);
+            
                     //Check for bionics
                     int numberOfBionics = 0;
 
-                    foreach (TacticalItem armourItem in base_TacticalActor.BodyState.GetArmourItems())
+                    foreach (TacticalItem armourItem in tacticalActor.BodyState.GetArmourItems())
                     {
                         if (armourItem.GameTags.Contains(bionicalTag) && !armourItem.GameTags.Contains(TFTVChangesToDLC5.MercenaryTag))
                         {
@@ -384,10 +358,9 @@ namespace TFTV
                     // Get max corruption dependent on max WP of the selected actor
                     if (!TFTVVoidOmens.VoidOmensCheck[10])
                     {
-
                         if (odiPerc < 25)
                         {
-                            maxCorruption = base_TacticalActor.CharacterStats.Willpower.IntMax / 3;
+                            maxCorruption = tacticalActor.CharacterStats.Willpower.IntMax / 3;
 
                             if (numberOfBionics == 1)
                             {
@@ -404,7 +377,7 @@ namespace TFTV
                         {
                             if (odiPerc < 45)
                             {
-                                maxCorruption = base_TacticalActor.CharacterStats.Willpower.IntMax * 1 / 2;
+                                maxCorruption = tacticalActor.CharacterStats.Willpower.IntMax * 1 / 2;
 
                                 if (numberOfBionics == 1)
                                 {
@@ -418,7 +391,7 @@ namespace TFTV
                             }
                             else // > 50%
                             {
-                                maxCorruption = base_TacticalActor.CharacterStats.Willpower.IntMax;
+                                maxCorruption = tacticalActor.CharacterStats.Willpower.IntMax;
 
                                 if (numberOfBionics == 1)
                                 {
@@ -435,7 +408,7 @@ namespace TFTV
                     }
                     if (TFTVVoidOmens.VoidOmensCheck[10])
                     {
-                        maxCorruption = base_TacticalActor.CharacterStats.Willpower.IntMax;
+                        maxCorruption = tacticalActor.CharacterStats.Willpower.IntMax;
 
                         if (numberOfBionics == 1)
                         {
@@ -461,14 +434,14 @@ namespace TFTV
 
                     TacticalAbilityDef oneOfThemDef = DefCache.GetDef<TacticalAbilityDef>("OneOfThemPassive_AbilityDef");
 
-                    if (base_TacticalActor.GetAbilityWithDef<PassiveModifierAbility>(oneOfThemDef) != null)
+                    if (tacticalActor.GetAbilityWithDef<PassiveModifierAbility>(oneOfThemDef) != null)
                     {
-                        __result = Mathf.Min(__instance.CorruptionStatusDef.ValueIncrement*2, maxCorruption - base_TacticalActor.CharacterStats.Corruption.IntValue);
+                        __result = Mathf.Min(__instance.CorruptionStatusDef.ValueIncrement*2, maxCorruption - tacticalActor.CharacterStats.Corruption.IntValue);
                        // TFTVLogger.Always($"Applying Delirium to {base_TacticalActor.DisplayName} with One of Them, {__result}");
                     }
                     else
                     {
-                        __result = Mathf.Min(__instance.CorruptionStatusDef.ValueIncrement, maxCorruption - base_TacticalActor.CharacterStats.Corruption.IntValue);
+                        __result = Mathf.Min(__instance.CorruptionStatusDef.ValueIncrement, maxCorruption - tacticalActor.CharacterStats.Corruption.IntValue);
                        // TFTVLogger.Always($"Applying Delirium to {base_TacticalActor.DisplayName}, {__result}");
                     }
                        // TFTVLogger.Always($"{base_TacticalActor.DisplayName} bionics: {numberOfBionics} odi {odiPerc} willpower max: {base_TacticalActor.CharacterStats.Willpower.IntMax}, max delirium {maxCorruption} " +
@@ -514,6 +487,7 @@ namespace TFTV
             }
         }
 
+      
 
         // Harmony patch to change the result of CorruptionStatus.GetStatModification() to take Stamina into account
         // Corruption application get reduced by 100% when Stamina is between 35-40, by 75% between 30-35, by 50% between 25-30.
@@ -897,7 +871,5 @@ namespace TFTV
                 }
             }
         }
-
-
     }
 }

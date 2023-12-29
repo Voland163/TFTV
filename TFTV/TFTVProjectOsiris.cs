@@ -68,39 +68,43 @@ namespace TFTV
         public static TacCharacterData SaveTemplateData = new TacCharacterData();
         public static GeoTacUnitId IdProjectOsirisCandidate = new GeoTacUnitId();
 
-        public static void CreateProjectOsirisDefs()
+        internal class Defs
         {
 
-            CreateProjectOsirisEvents();
+
+            public static void CreateProjectOsirisDefs()
+            {
+                CreateProjectOsirisEvents();
+            }
 
 
+            public static void CreateProjectOsirisEvents()
+            {
+                try
+                {
+                    GeoscapeEventDef projectOsirisEvent = TFTVCommonMethods.CreateNewEvent(ProjectOsirisEvent, "PROJECT_OSIRIS_TITLE", "PROJECT_OSIRIS_TEXT", null);
+                    TFTVCommonMethods.GenerateGeoEventChoice(projectOsirisEvent, "PROJECT_OSIRIS_CHOOSE_MUTANT", null);
+                    projectOsirisEvent.GeoscapeEventData.Choices[0].Text.LocalizationKey = "PROJECT_OSIRIS_CHOOSE_ROBOCOP";
+
+                    TFTVCommonMethods.CreateNewEvent(RobocopEvent, "ROBOCOP_DELIVERY_TITLE", "ROBOCOP_DELIVERY_TEXT", null);
+                    TFTVCommonMethods.CreateNewEvent(FullMutantEvent, "FULL_MUTANT_TITLE", "FULL_MUTANT_TEXT", null);
+                    TFTVCommonMethods.CreateNewEvent(RoboCopDeliveryEvent, "ROBOCOP_DELIVERY_TITLE", "HEAVY_DELIVERY_TEXT", null);
+                    TFTVCommonMethods.CreateNewEvent(ScoutDeliveryEvent, "ROBOCOP_DELIVERY_TITLE", "SCOUT_DELIVERY_TEXT", null);
+                    TFTVCommonMethods.CreateNewEvent(ShinobiDeliveryEvent, "ROBOCOP_DELIVERY_TITLE", "SHINOBI_DELIVERY_TEXT", null);
+                    TFTVCommonMethods.CreateNewEvent(HeavyMutantDeliveryEvent, "FULL_MUTANT_TITLE", "HEAVY_MUTANT_DELIVERY_TEXT", null);
+                    TFTVCommonMethods.CreateNewEvent(WatcherMutantDeliveryEvent, "FULL_MUTANT_TITLE", "WATCHER_MUTANT_DELIVERY_TEXT", null);
+                    TFTVCommonMethods.CreateNewEvent(ShooterMutantDeliveryEvent, "FULL_MUTANT_TITLE", "SHOOTER_MUTANT_DELIVERY_TEXT", null);
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+
+            }
         }
 
 
-        public static void CreateProjectOsirisEvents()
-        {
-            try
-            {
-                GeoscapeEventDef projectOsirisEvent = TFTVCommonMethods.CreateNewEvent(ProjectOsirisEvent, "PROJECT_OSIRIS_TITLE", "PROJECT_OSIRIS_TEXT", null);
-                TFTVCommonMethods.GenerateGeoEventChoice(projectOsirisEvent, "PROJECT_OSIRIS_CHOOSE_MUTANT", null);
-                projectOsirisEvent.GeoscapeEventData.Choices[0].Text.LocalizationKey = "PROJECT_OSIRIS_CHOOSE_ROBOCOP";
-
-                TFTVCommonMethods.CreateNewEvent(RobocopEvent, "ROBOCOP_DELIVERY_TITLE", "ROBOCOP_DELIVERY_TEXT", null);
-                TFTVCommonMethods.CreateNewEvent(FullMutantEvent, "FULL_MUTANT_TITLE", "FULL_MUTANT_TEXT", null);
-                TFTVCommonMethods.CreateNewEvent(RoboCopDeliveryEvent, "ROBOCOP_DELIVERY_TITLE", "HEAVY_DELIVERY_TEXT", null);
-                TFTVCommonMethods.CreateNewEvent(ScoutDeliveryEvent, "ROBOCOP_DELIVERY_TITLE", "SCOUT_DELIVERY_TEXT", null);
-                TFTVCommonMethods.CreateNewEvent(ShinobiDeliveryEvent, "ROBOCOP_DELIVERY_TITLE", "SHINOBI_DELIVERY_TEXT", null);
-                TFTVCommonMethods.CreateNewEvent(HeavyMutantDeliveryEvent, "FULL_MUTANT_TITLE", "HEAVY_MUTANT_DELIVERY_TEXT", null);
-                TFTVCommonMethods.CreateNewEvent(WatcherMutantDeliveryEvent, "FULL_MUTANT_TITLE", "WATCHER_MUTANT_DELIVERY_TEXT", null);
-                TFTVCommonMethods.CreateNewEvent(ShooterMutantDeliveryEvent, "FULL_MUTANT_TITLE", "SHOOTER_MUTANT_DELIVERY_TEXT", null);
-
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-
-        }
 
         public static bool[] CheckLabs(GeoLevelController controller)
         {
@@ -216,9 +220,7 @@ KEY_GRAMMAR_SINGLE_SUFFIX*/
                 pronoun = char.ToUpper(pronoun[0]) + pronoun.Substring(1);
 
                 string typeOfBodyAvailable = "";
-                string buildAdditionalLab = "";
-                string and1 = "";
-                string and2 = "";
+                string increaseOptionsKeyString = "KEY_OSIRIS_MORE";
 
                 if (CheckLabs(controller)[0] && CheckLabs(controller)[1])
                 {
@@ -227,49 +229,42 @@ KEY_GRAMMAR_SINGLE_SUFFIX*/
                 else if (CheckLabs(controller)[0] && !CheckLabs(controller)[1])
                 {
                     typeOfBodyAvailable = TFTVCommonMethods.ConvertKeyToString("KEY_OSIRIS_ONLY_TITANIUM"); // "made of titanium";
-                    buildAdditionalLab = $" {TFTVCommonMethods.ConvertKeyToString("KEY_OSIRIS_BUILD_MUTA_LAB")} "; //" build a mutation lab ";
+                    increaseOptionsKeyString += "_MUTATION_LAB"; 
+                    //buildAdditionalLab = $" {TFTVCommonMethods.ConvertKeyToString("KEY_OSIRIS_BUILD_MUTA_LAB")} "; //" build a mutation lab ";
                 }
                 else if (!CheckLabs(controller)[0] && CheckLabs(controller)[1])
                 {
                     typeOfBodyAvailable = TFTVCommonMethods.ConvertKeyToString("KEY_OSIRIS_ONLY_MUTAGEN");// "made of mutagen flesh";
-                    buildAdditionalLab = $" {TFTVCommonMethods.ConvertKeyToString("KEY_OSIRIS_BUILD_BIO_LAB")}"; //" build a bionics lab ";
+                    //buildAdditionalLab = $" {TFTVCommonMethods.ConvertKeyToString("KEY_OSIRIS_BUILD_BIO_LAB")}"; //" build a bionics lab ";
+                    increaseOptionsKeyString += "_BIONICS_LAB";
                 }
-
-                string increaseOptions = "";
-
-                string researchAdditionalTech1 = "";
-                string researchAdditionalTech2 = "";
-                string anyAdditionalResearch = "";
-                string anyAdditionalResearch2 = "";
-
-                if (!controller.PhoenixFaction.Research.HasCompleted("NJ_Bionics2_ResearchDef") || !controller.PhoenixFaction.Research.HasCompleted("SYN_Bionics3_ResearchDef"))
-                {
-                    researchAdditionalTech1 = TFTVCommonMethods.ConvertKeyToString("KEY_OSIRIS_NEW_BIONIC");// "new bionic";
-                }
+              
+                /*
+                 * 
+                 * KEY_OSIRIS_MORE_MUTATION_LAB
+KEY_OSIRIS_MORE_BIONICS_LAB
+KEY_OSIRIS_MORE_MUTATION_LAB_MUTATION_RESEARCH
+KEY_OSIRIS_MORE_MUTATION_LAB_BIONICS_RESEARCH
+KEY_OSIRIS_MORE_MUTATION_LAB_MUTATION_BIONICS_RESEARCH
+KEY_OSIRIS_MORE_BIONICS_LAB_BIONICS_RESEARCH
+KEY_OSIRIS_MORE_BIONICS_LAB_MUTATION_RESEARCH
+KEY_OSIRIS_MORE_BIONICS_LAB_MUTATION_BIONICS_RESEARCH
+KEY_OSIRIS_MORE_MUTATION_RESEARCH
+KEY_OSIRIS_MORE_BIONICS_RESEARCH
+KEY_OSIRIS_MORE_MUTATION_BIONICS_RESEARCH
+                 * 
+                 * 
+                 */
 
                 if (!controller.PhoenixFaction.Research.HasCompleted("ANU_MutationTech2_ResearchDef") || !controller.PhoenixFaction.Research.HasCompleted("ANU_MutationTech3_ResearchDef"))
                 {
-                    researchAdditionalTech2 = TFTVCommonMethods.ConvertKeyToString("KEY_OSIRIS_NEW_MUTATION");//"new mutation";
+                    increaseOptionsKeyString += "_MUTATION_RESEARCH";
                 }
 
-                if (buildAdditionalLab != "" || researchAdditionalTech1 != "" || researchAdditionalTech2 != "")
-                {
-                    increaseOptions = $"\n{TFTVCommonMethods.ConvertKeyToString("KEY_OSIRIS_TO_ENHANCE0")}";//}To enhance Project Osiris and increase our options we should ";
-                }
 
-                if ((researchAdditionalTech1 != "" || researchAdditionalTech2 != "") && buildAdditionalLab != "")
+                if (!controller.PhoenixFaction.Research.HasCompleted("NJ_Bionics2_ResearchDef") || !controller.PhoenixFaction.Research.HasCompleted("SYN_Bionics3_ResearchDef"))
                 {
-                    and1 = TFTVCommonMethods.ConvertKeyToString("KEY_GRAMMAR_AND"); //"and";
-
-                }
-                if (researchAdditionalTech1 != "" && researchAdditionalTech2 != "")
-                {
-                    and2 = $" {TFTVCommonMethods.ConvertKeyToString("KEY_GRAMMAR_AND")} ";
-                }
-                if (researchAdditionalTech1 != "" || researchAdditionalTech2 != "")
-                {
-                    anyAdditionalResearch = $" {TFTVCommonMethods.ConvertKeyToString("KEY_OSIRIS_ACQUIRE")} ";//acquire ";
-                    anyAdditionalResearch2 = $" {TFTVCommonMethods.ConvertKeyToString("KEY_OSIRIS_RESEARCH")}"; // " research.";
+                    increaseOptionsKeyString += "_BIONICS_RESEARCH";
                 }
 
                 string osirisText0 = TFTVCommonMethods.ConvertKeyToString("KEY_OSIRIS_TEXT0");
@@ -277,21 +272,15 @@ KEY_GRAMMAR_SINGLE_SUFFIX*/
                 string osirisText2 = TFTVCommonMethods.ConvertKeyToString("KEY_OSIRIS_TEXT2");
                 string osirisText3 = TFTVCommonMethods.ConvertKeyToString("KEY_OSIRIS_TEXT3");
 
-
                 string modularEventText = $"{osirisText0} {name} ({deadSoldierDescriptor.GetClassViewElementDefs().First().Name}) {osirisText1} " +
                     $"{pronoun} {osirisText2} {possesivePronoun} {osirisText3} {typeOfBodyAvailable}.";
 
-                if (increaseOptions != "")
+                if (increaseOptionsKeyString != "KEY_OSIRIS_MORE")
                 {
-
-                    modularEventText +=$"{ increaseOptions} { buildAdditionalLab} " +
-                    $"{and1}{anyAdditionalResearch}{researchAdditionalTech1}{and2}{researchAdditionalTech2}{anyAdditionalResearch2}";
+                    modularEventText +=$"\n{TFTVCommonMethods.ConvertKeyToString(increaseOptionsKeyString)}";
                 }
                 return modularEventText;
-
             }
-
-
 
             catch (Exception e)
             {

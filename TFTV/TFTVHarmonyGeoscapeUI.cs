@@ -103,7 +103,7 @@ namespace TFTV
                 try
                 {
                     TFTVAAAgendaTracker.ExtendedAgendaTracker.RecolorTimerBaseAndAncientSiteAttacks(__instance, site);
-                    TFTVBaseDefenseGeoscape.RefreshBaseDefenseVisuals(__instance, site);
+                    TFTVBaseDefenseGeoscape.Visuals.RefreshBaseDefenseVisuals(__instance, site);
                 }
                 catch (Exception e)
                 {

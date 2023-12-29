@@ -498,15 +498,19 @@ namespace TFTV
                                 {
                                     // This is the regular code to modify a Def, in this case the ODI event to which the Void Omen will be attached,
                                     // so that it sets the Void Omen variable
-                                    oDIEventToTrigger.GeoscapeEventData.Choices[0].Outcome.VariablesChange.Add(new OutcomeVariableChange
+                                    // Modified this on 30/12, to remove ODI events as conduits for Void Omen implementation.
+                                    // This way we can avoid having an ODI when they run out.
+                                    
+                                 /*   oDIEventToTrigger.GeoscapeEventData.Choices[0].Outcome.VariablesChange.Add(new OutcomeVariableChange
                                     {
                                         VariableName = voidOmen + (difficulty - t),
                                         Value = { Min = voidOmenRoll, Max = voidOmenRoll },
                                         IsSetOperation = true,
-                                    });
+                                    });*/
                                     // This records which ODI event triggered which Void Omen
                                     int variableRolledVoidOmen = geoAlienFaction.EvolutionProgress / 470;
                                     geoLevelController.EventSystem.SetVariable(triggeredVoidOmens + variableRolledVoidOmen, voidOmenRoll);
+                                    geoLevelController.EventSystem.SetVariable(voidOmen + (difficulty - t), voidOmenRoll);
                                     // Raise the flag, we have a Void Omen!
                                     voidOmenRolled = true;
                                     // Then close the loop:
@@ -525,24 +529,33 @@ namespace TFTV
                         geoLevelController.EventSystem.TriggerGeoscapeEvent(voidOmenIntro.EventID, geoscapeEventContext);
                     }
 
-                    // The ODI event is triggered
+                    // The ODI event is triggered if it's not SDI_20
 
-                    //This step is necessary because we will be modifying the ODI event,
-                    //and if the player loads the game later, this modified event will be triggered.
-                    string originalODIEventKey = $"{oDIEventToTrigger.EventID}_TEXT_GENERAL_0";
-
-                    TFTVLogger.Always($"odi event is {oDIEventToTrigger}");
-
-                    oDIEventToTrigger.GeoscapeEventData.Description[0].General = new LocalizedTextBind(originalODIEventKey);
-
-                    string newVoidOmen = voidOmenTitleFormat + voidOmenRoll;
-                    string newVoidOmenDescription = voidOmenDescriptionFormat + voidOmenRoll;
                     string reportData = GenerateReportData(geoLevelController);
-                    string oDIEventTextToDisplay = $"<i>{TFTVCommonMethods.ConvertKeyToString("KEY_EXCREPT")} {TFTVCommonMethods.ConvertKeyToString("KEY_ODPIA_TEXT")} {reportData}</i>\n\n***\n\n{TFTVCommonMethods.ConvertKeyToString(originalODIEventKey)}";
 
+                    if (oDIEventToTrigger.EventID == "SDI_20")
+                    {
+                        //This step is necessary because we will be modifying the ODI event,
+                        //and if the player loads the game later, this modified event will be triggered.
+                        string originalODIEventKey = $"{oDIEventToTrigger.EventID}_TEXT_GENERAL_0";
 
-                    oDIEventToTrigger.GeoscapeEventData.Description[0].General = new LocalizedTextBind(oDIEventTextToDisplay, true);
-                    geoLevelController.EventSystem.TriggerGeoscapeEvent(oDIEventToTrigger.EventID, geoscapeEventContext);
+                        TFTVLogger.Always($"odi event is {oDIEventToTrigger}");
+
+                        oDIEventToTrigger.GeoscapeEventData.Description[0].General = new LocalizedTextBind(originalODIEventKey);
+
+                        string newVoidOmen = voidOmenTitleFormat + voidOmenRoll;
+                        string newVoidOmenDescription = voidOmenDescriptionFormat + voidOmenRoll;
+                        
+                        string oDIEventTextToDisplay = $"<i>{TFTVCommonMethods.ConvertKeyToString("KEY_EXCREPT")} {TFTVCommonMethods.ConvertKeyToString("KEY_ODPIA_TEXT")} {reportData}</i>\n\n***\n\n{TFTVCommonMethods.ConvertKeyToString(originalODIEventKey)}";
+
+                        oDIEventToTrigger.GeoscapeEventData.Description[0].General = new LocalizedTextBind(oDIEventTextToDisplay, true);
+                        geoLevelController.EventSystem.TriggerGeoscapeEvent(oDIEventToTrigger.EventID, geoscapeEventContext);
+                    }
+                    else 
+                    {
+                        TFTVLogger.Always($"SDI_20! so not triggered"); 
+                    } 
+
                     geoLevelController.EventSystem.SetVariable("BC_SDI", CurrentODI_Level);
 
                     if (voidOmenRolled || removedVoidOmen != null && removedVoidOmen != "")

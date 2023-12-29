@@ -6,7 +6,6 @@ using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
-using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.Entities.Statuses;
 using PhoenixPoint.Tactical.Levels;
 using System;
@@ -131,27 +130,27 @@ namespace TFTV
         /// Removed, because this Feral is gone.
         /// </summary>
 
-      /*  [HarmonyPatch(typeof(TacticalAbility), "FumbleActionCheck")]
-        public static class TacticalAbility_FumbleActionCheck_Patch
-        {
-            private static readonly TacticalAbilityDef feral = DefCache.GetDef<TacticalAbilityDef>("Feral_AbilityDef");
-            public static void Postfix(TacticalAbility __instance, ref bool __result)
-            {
-                try
-                {
-                    if (__instance.TacticalActor.GetAbilityWithDef<TacticalAbility>(feral) != null && __instance.Source is Equipment)
-                    {
-                        __result = __result || UnityEngine.Random.Range(0, 100) < 20;
-                        TFTVLogger.Always($"The fumble action is {__instance.GetAbilityDescription()} and the fumble result is {__result}");
-                    }
+        /*  [HarmonyPatch(typeof(TacticalAbility), "FumbleActionCheck")]
+          public static class TacticalAbility_FumbleActionCheck_Patch
+          {
+              private static readonly TacticalAbilityDef feral = DefCache.GetDef<TacticalAbilityDef>("Feral_AbilityDef");
+              public static void Postfix(TacticalAbility __instance, ref bool __result)
+              {
+                  try
+                  {
+                      if (__instance.TacticalActor.GetAbilityWithDef<TacticalAbility>(feral) != null && __instance.Source is Equipment)
+                      {
+                          __result = __result || UnityEngine.Random.Range(0, 100) < 20;
+                          TFTVLogger.Always($"The fumble action is {__instance.GetAbilityDescription()} and the fumble result is {__result}");
+                      }
 
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-            }
-        }*/
+                  }
+                  catch (Exception e)
+                  {
+                      TFTVLogger.Error(e);
+                  }
+              }
+          }*/
 
 
 

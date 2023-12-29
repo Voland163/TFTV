@@ -10,6 +10,7 @@ namespace TFTV
 
 
         public static int InternalDifficultyCheck = 0;
+        public static int InternalDifficultyCheckTactical = 0;
 
         public enum StartingSquadFaction
         {

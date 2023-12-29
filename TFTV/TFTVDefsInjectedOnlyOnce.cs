@@ -31,7 +31,6 @@ using PhoenixPoint.Geoscape.Entities.PhoenixBases.FacilityComponents;
 using PhoenixPoint.Geoscape.Entities.Research;
 using PhoenixPoint.Geoscape.Entities.Research.Requirement;
 using PhoenixPoint.Geoscape.Entities.Research.Reward;
-using PhoenixPoint.Geoscape.Events;
 using PhoenixPoint.Geoscape.Events.Eventus;
 using PhoenixPoint.Geoscape.Events.Eventus.Filters;
 using PhoenixPoint.Geoscape.Levels;
@@ -80,37 +79,52 @@ namespace TFTV
 
         // ResurrectAbilityRulesDef to mess with later
 
-        private static void Print()
+        internal static void Print()
         {
             try
             {
-                foreach (GeoscapeEventDef geoscapeEventDef in Repo.GetAllDefs<GeoscapeEventDef>().Where(e => e.GeoscapeEventData.Choices.Any(c => c.Outcome.SubfactionFactionMissionWeight.Count() > 0)))
+                ItemClassificationTagDef meleeTagDef = DefCache.GetDef<ItemClassificationTagDef>("MeleeWeapon_TagDef");
+
+                foreach (WeaponDef weaponDef in Repo.GetAllDefs<WeaponDef>().Where(w => w.Tags.Contains(meleeTagDef)))
                 {
-                    TFTVLogger.Always($"Event {geoscapeEventDef.EventID} alters subfaction mission weight");
-
-                    foreach (GeoEventChoice geoEventChoice in geoscapeEventDef.GeoscapeEventData.Choices)
-                    {
-                        foreach (OutcomeFactionMissionWeightChange outcome in geoEventChoice.Outcome.SubfactionFactionMissionWeight)
-                        {
-                            TFTVLogger.Always($"{outcome.SubFaction} {outcome.Value}");
-
-
-                        }
-
-
-                    }
+                    TFTVLogger.Always($"{weaponDef.name} has {meleeTagDef.name}");
 
 
                 }
+
+
+                /*  ResearchDbDef researchDB = DefCache.GetDef<ResearchDbDef>("pp_ResearchDB");
+
+                  foreach (ResearchDef researchDef in researchDB.Researches)
+                  {
+                      TFTVLogger.Always($"{researchDef}");
+
+                  }*/
+
+                /*  foreach (GeoscapeEventDef geoscapeEventDef in Repo.GetAllDefs<GeoscapeEventDef>().Where(e => e.GeoscapeEventData.Choices.Any(c => c.Outcome.SubfactionFactionMissionWeight.Count() > 0)))
+                  {
+                      TFTVLogger.Always($"Event {geoscapeEventDef.EventID} alters subfaction mission weight");
+
+                      foreach (GeoEventChoice geoEventChoice in geoscapeEventDef.GeoscapeEventData.Choices)
+                      {
+                          foreach (OutcomeFactionMissionWeightChange outcome in geoEventChoice.Outcome.SubfactionFactionMissionWeight)
+                          {
+                              TFTVLogger.Always($"{outcome.SubFaction} {outcome.Value}");
+
+
+                          }
+
+
+                      }
+
+
+                  }*/
             }
             catch (Exception e)
             {
                 TFTVLogger.Error(e);
             }
         }
-
-
-
 
         public static void InjectDefsInjectedOnlyOnceBatch1()
         {
@@ -156,6 +170,8 @@ namespace TFTV
 
                 VariousMinorAdjustments();
 
+                Print();
+
             }
             catch (Exception e)
             {
@@ -170,15 +186,12 @@ namespace TFTV
                 AddLoadingScreens();
                 AddTips();
                 AddLoreEntries();
-
             }
 
             catch (Exception e)
             {
                 TFTVLogger.Error(e);
             }
-
-
         }
 
         private static void GeoscapeEvents()
@@ -226,8 +239,6 @@ namespace TFTV
                 CreateStoryModeDifficultyLevel();
                 ModifyVanillaDifficultiesOrder();
                 CreateScyllaDamageResistanceForStrongerPandorans();
-
-
             }
             catch (Exception e)
             {
@@ -240,6 +251,7 @@ namespace TFTV
         {
             try
             {
+                // LimitCoDeliriumAttack();
                 ModifyPandoranProgress();
                 ModifyDecoyAbility();
                 CreateSubject24();
@@ -272,10 +284,32 @@ namespace TFTV
                 ModifyRescueCiviliansMissions();
                 TFTVBetterEnemies.BEChange_Perception();
                 TFTVBetterEnemies.BEReducePandoranWillpower();
+                BringBackArmisAndCrystalChiron();
+                LimitCoDeliriumAttack();
             }
             catch (Exception e)
             {
                 TFTVLogger.Error(e);
+            }
+        }
+
+        private static void BringBackArmisAndCrystalChiron()
+        {
+            try
+            {
+                ResearchDef siren5 = DefCache.GetDef<ResearchDef>("ALN_Siren5_ResearchDef");
+                siren5.ResearchCost = 200;
+                DefCache.GetDef<ExistingResearchRequirementDef>("ALN_Siren5_ResearchDef_ExistingResearchRequirementDef_1").ResearchID = "ALN_Siren4_ResearchDef";
+
+                ResearchDef chiron13 = DefCache.GetDef<ResearchDef>("ALN_Chiron13_ResearchDef");
+                siren5.ResearchCost = 200;
+                DefCache.GetDef<ExistingResearchRequirementDef>("ALN_Chiron13_ResearchDef_ExistingResearchRequirementDef_1").ResearchID = "ALN_Chiron12_ResearchDef";
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+
             }
         }
 
@@ -322,7 +356,7 @@ namespace TFTV
                 ComponentSetDef oilFishComponentSetDef = DefCache.GetDef<ComponentSetDef>("Oilfish_ComponentSetDef");
 
                 oilCrabComponentSetDef.Components[10] = newAI;
-                oilFishComponentSetDef.Components[10] = newAI;         
+                oilFishComponentSetDef.Components[10] = newAI;
             }
 
             catch (Exception e)
@@ -389,28 +423,28 @@ namespace TFTV
                  */
 
 
-             /*   TFTVLogger.Always($"There are {umbraMoveAndStrikeActionDef.Evaluations.Count()} evaluations");
-                foreach (AIAdjustedConsideration aITargetEvaluation in umbraMoveAndStrikeActionDef.Evaluations[1].Considerations)
-                {
-                    TFTVLogger.Always($"{aITargetEvaluation.Consideration.name}");
-                }*/
+                /*   TFTVLogger.Always($"There are {umbraMoveAndStrikeActionDef.Evaluations.Count()} evaluations");
+                   foreach (AIAdjustedConsideration aITargetEvaluation in umbraMoveAndStrikeActionDef.Evaluations[1].Considerations)
+                   {
+                       TFTVLogger.Always($"{aITargetEvaluation.Consideration.name}");
+                   }*/
 
 
                 List<AIAdjustedConsideration> adjustedConsiderations = aITargetEvaluationsMoveAndStrike[1].Considerations.ToList();
 
                 adjustedConsiderations.Remove(aITargetEvaluationsMoveAndStrike[1].Considerations[0]);
                 adjustedConsiderations.Remove(aITargetEvaluationsMoveAndStrike[1].Considerations[1]);
-        
-               // TFTVLogger.Always($"There are {aITargetEvaluationsMoveAndStrike[1].Considerations} evaluations now");
+
+                // TFTVLogger.Always($"There are {aITargetEvaluationsMoveAndStrike[1].Considerations} evaluations now");
 
                 aITargetEvaluationsMoveAndStrike[1].Considerations = adjustedConsiderations.ToArray();
                 umbraMoveAndStrikeActionDef.Evaluations = aITargetEvaluationsMoveAndStrike.ToArray();
 
-           /*     TFTVLogger.Always($"Checking considerations in umbraMoveAndStrikeActionDef evaluations, count {umbraMoveAndStrikeActionDef.Evaluations.Count()}");
-                foreach (AIAdjustedConsideration aITargetEvaluation in umbraMoveAndStrikeActionDef.Evaluations[1].Considerations)
-                {
-                    TFTVLogger.Always($"{aITargetEvaluation.Consideration.name}");
-                }*/
+                /*     TFTVLogger.Always($"Checking considerations in umbraMoveAndStrikeActionDef evaluations, count {umbraMoveAndStrikeActionDef.Evaluations.Count()}");
+                     foreach (AIAdjustedConsideration aITargetEvaluation in umbraMoveAndStrikeActionDef.Evaluations[1].Considerations)
+                     {
+                         TFTVLogger.Always($"{aITargetEvaluation.Consideration.name}");
+                     }*/
 
                 //consideration [2], using bash, this already takes into account that target has to have Delirium, be in Mist or VO must be active, because it gets Targets given by bash ability
                 //However, to make targets with more Delirium more attractive, would need to patch
@@ -445,6 +479,23 @@ namespace TFTV
         //NEU_Sniper_Helmet_BodyPartDef
         //NEU_Sniper_Torso_BodyPartDef
         //NEU_Sniper_Legs_ItemDef
+
+        private static void LimitCoDeliriumAttack()
+        {
+            try
+            {
+                AddAttackBoostStatusDef codelirium = DefCache.GetDef<AddAttackBoostStatusDef>("CorruptionAttack_StatusDef");
+
+                codelirium.WeaponTagFilter = DefCache.GetDef<ItemClassificationTagDef>("MeleeWeapon_TagDef");
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+
+
+            }
+        }
 
         private static void Change_Crossbows()
         {
@@ -2197,8 +2248,6 @@ namespace TFTV
                 sofia.Data.GameTags = gameTags.ToArray();
                 sofia.CustomizationParams.KeepExistingCustomizationTags = true;
 
-
-
                 TacticalItemDef head = DefCache.GetDef<TacticalItemDef>("NJ_Technician_Helmet_BodyPartDef");
 
                 SquadPortraitsDef squadPortraits = DefCache.GetDef<SquadPortraitsDef>("SquadPortraitsDef");
@@ -2212,11 +2261,7 @@ namespace TFTV
 
                 sofia.Data.BodypartItems = new ItemDef[] { newHead, legs, torso, mechArms };
 
-
                 squadPortraits.ManualPortraits.Add(new SquadPortraitsDef.ManualPortrait { HeadPart = newHead, Portrait = Helper.CreateSpriteFromImageFile("PM_Sofia.jpg") });
-
-
-
 
                 List<TacMissionTypeParticipantData.UniqueChatarcterBind> tacCharacterDefs = DefCache.GetDef<CustomMissionTypeDef>("NJVictory_CustomMissionTypeDef").ParticipantsData[0].UniqueUnits.ToList();
                 TacMissionTypeParticipantData.UniqueChatarcterBind uniqueChatarcterBind = new TacMissionTypeParticipantData.UniqueChatarcterBind
@@ -2227,8 +2272,6 @@ namespace TFTV
                 tacCharacterDefs.Add(uniqueChatarcterBind);
                 DefCache.GetDef<CustomMissionTypeDef>("NJVictory_CustomMissionTypeDef").ParticipantsData[0].UniqueUnits = tacCharacterDefs.ToArray();
 
-
-
             }
             catch (Exception e)
             {
@@ -2236,10 +2279,6 @@ namespace TFTV
             }
 
         }
-
-
-
-
 
         private static void CreateStas()
         {
@@ -2264,26 +2303,30 @@ namespace TFTV
 
                 stas.Data.Abilites = abilities.ToArray();
 
-
+                WeaponDef venomBolt = DefCache.GetDef<WeaponDef>("SY_Venombolt_WeaponDef");
+                WeaponDef arachlauncher = DefCache.GetDef<WeaponDef>("SY_SpiderDroneLauncher_WeaponDef");
                 WeaponDef laserSniper = DefCache.GetDef<WeaponDef>("SY_LaserSniperRifle_WeaponDef");
                 WeaponDef laserPistol = DefCache.GetDef<WeaponDef>("SY_LaserPistol_WeaponDef");
                 EquipmentDef medkit = DefCache.GetDef<EquipmentDef>("Medkit_EquipmentDef");
                 WeaponDef poisonGrenade = DefCache.GetDef<WeaponDef>("SY_PoisonGrenade_WeaponDef");
                 WeaponDef sonicGrenade = DefCache.GetDef<WeaponDef>("SY_SonicGrenade_WeaponDef");
 
+                TacticalItemDef arachAmmo = DefCache.GetDef<TacticalItemDef>("SY_SpiderDroneLauncher_AmmoClip_ItemDef");
+                TacticalItemDef venomBoltAmmo = DefCache.GetDef<TacticalItemDef>("SY_Venombolt_AmmoClip_ItemDef");
+
                 TacticalItemDef laserRifleAmmo = DefCache.GetDef<TacticalItemDef>("SY_LaserSniperRifle_AmmoClip_ItemDef");
                 TacticalItemDef laserPistolAmmo = DefCache.GetDef<TacticalItemDef>("SY_LaserPistol_AmmoClip_ItemDef");
 
 
-                //   stas.Data.EquipmentItems = new ItemDef[] { laserSniper, laserPistol, medkit };
-                //  stas.Data.InventoryItems = new ItemDef[] { laserRifleAmmo, laserRifleAmmo, laserPistolAmmo, laserPistolAmmo, medkit };
+                stas.Data.EquipmentItems = new ItemDef[] { venomBolt, arachlauncher, sonicGrenade };
+                stas.Data.InventoryItems = new ItemDef[] { venomBoltAmmo, venomBoltAmmo, arachAmmo, venomBoltAmmo, venomBoltAmmo, medkit };
 
                 stas.Data.LevelProgression.SetLevel(7);
                 stas.Data.Strength = 16;
                 stas.Data.Will = 14;
                 stas.Data.Speed = 14;
 
-                GameTagDef nikolaiTag = TFTVCommonMethods.CreateNewTag(nameDef, "{17647EF3-1D4D-4F9C-8525-6F8C3ADD9B5A}");
+                GameTagDef stasTag = TFTVCommonMethods.CreateNewTag(nameDef, "{17647EF3-1D4D-4F9C-8525-6F8C3ADD9B5A}");
                 GenderTagDef maleGenderTag = DefCache.GetDef<GenderTagDef>("Male_GenderTagDef");
                 // FacialHairTagDef noFacialHairTag = DefCache.GetDef<FacialHairTagDef>("FacialHairTagDef_Empty");
 
@@ -2302,7 +2345,7 @@ namespace TFTV
                 List<GameTagDef> gameTags = stas.Data.GameTags.ToList();
 
                 gameTags.Add(maleGenderTag);
-                gameTags.Add(nikolaiTag);
+                gameTags.Add(stasTag);
 
                 stas.SpawnCommandId = "StasTFTV";
                 stas.Data.GameTags = gameTags.ToArray();
@@ -7632,6 +7675,10 @@ namespace TFTV
 
                 nestType.FactionDiplomacyPenaltyPerHaven = 0; //vanilla -1
                 nestType.HavenLeaderDiplomacyReward = 12; //vanilla 8 
+                nestType.PhoenixBaseAttackCounterPerDay = 5;
+                lairType.PhoenixBaseAttackCounterPerDay = 10;
+                citadelType.PhoenixBaseAttackCounterPerDay = 20;
+
                 lairType.FactionDiplomacyPenaltyPerHaven = 0; //vanilla -1
                 lairType.HavenLeaderDiplomacyReward = 16; //vanilla 12 
                 citadelType.FactionDiplomacyPenaltyPerHaven = 0; //vanilla -1
@@ -8166,14 +8213,12 @@ namespace TFTV
                 }
                 if (njResearchDB.Researches.Contains(researchDef))
                 {
-                    anuResearchDB.Researches.Remove(researchDef);
+                    njResearchDB.Researches.Remove(researchDef);
                 }
                 if (synResearchDB.Researches.Contains(researchDef))
                 {
-                    anuResearchDB.Researches.Remove(researchDef);
+                    synResearchDB.Researches.Remove(researchDef);
                 }
-
-
             }
             catch (Exception e)
             {
@@ -8302,9 +8347,12 @@ namespace TFTV
                 AbilityDef poisonImmunity = DefCache.GetDef<AbilityDef>("PoisonImmunity_DamageMultiplierAbilityDef");
                 AbilityDef psychicResistance = DefCache.GetDef<AbilityDef>("PsychicResistant_DamageMultiplierAbilityDef");
 
+                AddAttackBoostStatusDef corruptionAttack = DefCache.GetDef<AddAttackBoostStatusDef>("CorruptionAttack_StatusDef");
+
                 List<AbilityDef> abilityDefs = new List<AbilityDef>() { paralysisImmunity, poisonImmunity, psychicResistance };
 
                 TacticalActorDef oilcrabDef = DefCache.GetDef<TacticalActorDef>("Oilcrab_ActorDef");
+                oilcrabDef.StatusEffects.Add(corruptionAttack);
 
                 List<AbilityDef> ocAbilities = new List<AbilityDef>(oilcrabDef.Abilities);
                 ocAbilities.AddRange(abilityDefs);
@@ -8314,6 +8362,7 @@ namespace TFTV
                 List<AbilityDef> ofAbilities = new List<AbilityDef>(oilfishDef.Abilities);
                 ofAbilities.AddRange(abilityDefs);
                 oilfishDef.Abilities = ofAbilities.ToArray();
+                oilfishDef.StatusEffects.Add(corruptionAttack);
             }
 
             catch (Exception e)

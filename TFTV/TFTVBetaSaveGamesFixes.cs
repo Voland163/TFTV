@@ -17,6 +17,7 @@ using PhoenixPoint.Geoscape.Levels.Factions;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.Entities.Weapons;
+using PhoenixPoint.Tactical.Levels;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -38,17 +39,19 @@ namespace TFTV
         {
             try 
             {
-
-             /*   TFTVRevenant.DeadSoldiersDelirium.Add(17, 11);
-                 TFTVRevenant.DeadSoldiersDelirium.Add(5, 15);
+              /*  TFTVRevenant.DeadSoldiersDelirium.Add(30, 9);
+                TFTVRevenant.DeadSoldiersDelirium.Add(17, 11);
+                TFTVRevenant.DeadSoldiersDelirium.Add(5, 16);      
                  TFTVRevenant.DeadSoldiersDelirium.Add(27, 5);
-                 TFTVRevenant.DeadSoldiersDelirium.Add(28, 2);
+                 TFTVRevenant.DeadSoldiersDelirium.Add(28, 2);          
+                TFTVRevenant.DeadSoldiersDelirium.Add(40, 10);
 
-                 TFTVAirCombat.checkHammerfall = true;
 
-                TFTVDelirium.CharactersDeliriumPerksAndMissions.Add(21, -1);
-                TFTVDelirium.CharactersDeliriumPerksAndMissions.Add(6, 5);
-                TFTVDelirium.CharactersDeliriumPerksAndMissions.Add(1, 7);*/
+                TFTVBehemothAndRaids.checkHammerfall = true;
+
+                TFTVDelirium.CharactersDeliriumPerksAndMissions.Add(6, 9);
+
+                TFTVDelirium.CharactersDeliriumPerksAndMissions.Add(1, 10);*/
 
                 foreach (int id in TFTVRevenant.DeadSoldiersDelirium.Keys) 
                 {
@@ -65,16 +68,16 @@ namespace TFTV
                 /*
                  * 
                  * resutls:
-                 * [TFTV @ 12/25/2023 12:17:44 PM] 17 11
-    [TFTV @ 12/25/2023 12:17:44 PM] 5 15
-    [TFTV @ 12/25/2023 12:17:44 PM] 27 5
-    [TFTV @ 12/25/2023 12:17:44 PM] 28 2
+                 *[TFTV @ 12/29/2023 2:04:08 PM] 30 9
+[TFTV @ 12/29/2023 2:04:08 PM] 17 13
+[TFTV @ 12/29/2023 2:04:08 PM] 5 16
+[TFTV @ 12/29/2023 2:04:08 PM] 27 5
+[TFTV @ 12/29/2023 2:04:08 PM] 28 2
+[TFTV @ 12/29/2023 2:04:08 PM] 40 10
 
-                delirium perks:
-
-                [TFTV @ 12/25/2023 12:25:34 PM] 21 -1
-[TFTV @ 12/25/2023 12:25:34 PM] 6 5
-[TFTV @ 12/25/2023 12:25:34 PM] 1 7
+[TFTV @ 12/29/2023 2:04:08 PM] Delirium Perks:
+[TFTV @ 12/29/2023 2:04:08 PM] 6 9
+[TFTV @ 12/29/2023 2:04:08 PM] 1 10
 
                  */
             }
@@ -105,30 +108,42 @@ namespace TFTV
 
 
                     GeoLevelController geoLevelController = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
-
+                 
                     if (geoLevelController != null)
                     {
 
                         currentDifficultyField.SetValue(phoenixSaveManager, geoLevelController.CurrentDifficultyLevel);
 
                         GameDifficultyLevelDef newDifficulty = (GameDifficultyLevelDef)currentDifficultyField.GetValue(phoenixSaveManager);
+                        phoenixSaveManager.LatestLoad.DifficultyDef = newDifficulty;
 
-
-                        TFTVLogger.Always($"Current difficulty set to {newDifficulty?.name}");
-                    }
+                        TFTVLogger.Always($"Current difficulty set to {newDifficulty?.name} via geo controller");
+                    }                   
                     else
                     {
                         GameDifficultyLevelDef gameDifficultyLevelDef = null;
 
+                        int internalDifficultyCheck = 0;
 
-                        if (TFTVNewGameOptions.InternalDifficultyCheck != 0)
+                        if (TFTVNewGameOptions.InternalDifficultyCheck != 0) 
                         {
+                            internalDifficultyCheck = TFTVNewGameOptions.InternalDifficultyCheck;
+                        }
+                        else 
+                        {
+                            internalDifficultyCheck = TFTVNewGameOptions.InternalDifficultyCheckTactical;
+                        }
+                        TFTVLogger.Always($"internalDifficultyCheck is {internalDifficultyCheck}");
+                        if (internalDifficultyCheck != 0)
+                        {
+                           // TFTVLogger.Always($"so got here internalDifficultyCheck is {internalDifficultyCheck}");
+
                             DefCache.GetDef<GameDifficultyLevelDef>("Easy_GameDifficultyLevelDef").Order = 2;
                             DefCache.GetDef<GameDifficultyLevelDef>("Standard_GameDifficultyLevelDef").Order = 3;
                             DefCache.GetDef<GameDifficultyLevelDef>("Hard_GameDifficultyLevelDef").Order = 4;
                             DefCache.GetDef<GameDifficultyLevelDef>("VeryHard_GameDifficultyLevelDef").Order = 5;
 
-                            switch (TFTVNewGameOptions.InternalDifficultyCheck)
+                            switch (internalDifficultyCheck)
                             {
                                 case 1:
                                     gameDifficultyLevelDef = DefCache.GetDef<GameDifficultyLevelDef>("StoryMode_DifficultyLevelDef");
@@ -154,20 +169,20 @@ namespace TFTV
                                     gameDifficultyLevelDef = DefCache.GetDef<GameDifficultyLevelDef>("Etermes_DifficultyLevelDef");
                                     break;
                             }
-                            currentDifficultyField.SetValue(phoenixSaveManager, geoLevelController.CurrentDifficultyLevel);
+                            currentDifficultyField.SetValue(phoenixSaveManager, gameDifficultyLevelDef);  
+                            phoenixSaveManager.LatestLoad.DifficultyDef = gameDifficultyLevelDef;
 
-                            GameDifficultyLevelDef newDifficulty = (GameDifficultyLevelDef)currentDifficultyField.GetValue(phoenixSaveManager);
-
-
-                            TFTVLogger.Always($"Current difficulty set to {newDifficulty?.name}");
-
-
+                            TFTVLogger.Always($"Current difficulty set to {gameDifficultyLevelDef?.name}");
                         }
                         else
                         {
-                            string warning = $"Could not find difficulty! This is a tactical save made before Update# 36. Please load a Geoscape save before this mission; this save is doomed!";
+                            GameDifficultyLevelDef etermesDifficulty = DefCache.GetDef<GameDifficultyLevelDef>("Etermes_DifficultyLevelDef");
+                            currentDifficultyField.SetValue(phoenixSaveManager, etermesDifficulty);
+                            TFTVLogger.Always($"Could not find difficulty! setting difficulty to Etermes");
 
-                            GameUtl.GetMessageBox().ShowSimplePrompt(warning, MessageBoxIcon.Warning, MessageBoxButtons.OK, null);
+                          /*  string warning = $"Could not find difficulty! This is a tactical save made before Update# 36. Please load a Geoscape save before this mission; this save is doomed!";
+
+                            GameUtl.GetMessageBox().ShowSimplePrompt(warning, MessageBoxIcon.Warning, MessageBoxButtons.OK, null);*/
                         }
                     }
 
@@ -509,18 +524,15 @@ namespace TFTV
         }
 
 
+
         private static void AddInteranlDifficultyCheckSaveData(GeoLevelController controller)
         {
             try
             {
                 if (TFTVNewGameOptions.InternalDifficultyCheck == 0)
                 {
-
                     TFTVNewGameOptions.InternalDifficultyCheck = controller.CurrentDifficultyLevel.Order;
-
                 }
-
-
             }
             catch (Exception e)
             {

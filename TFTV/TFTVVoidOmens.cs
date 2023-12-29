@@ -1502,7 +1502,13 @@ namespace TFTV
                         || (alienBase.AlienBaseTypeDef.Keyword == "nest" && TFTVReleaseOnly.DifficultyOrderConverter(__instance.GeoLevel.CurrentDifficultyLevel.Order) == 1))
                     {
                         TFTVLogger.Always("Lair or Citadal destroyed, Void Omen should be removed and Void Omen event triggered");
-                        TFTVODIandVoidOmenRoll.GenerateVoidOmenEvent(__instance.GeoLevel, TFTVODIandVoidOmenRoll.GenerateReportData(__instance.GeoLevel), false, RemoveEarliestVoidOmen(__instance.GeoLevel, 0));
+
+                        string removedVoidOmen = RemoveEarliestVoidOmen(__instance.GeoLevel, 0);
+
+                        if (removedVoidOmen != null)
+                        {
+                            TFTVODIandVoidOmenRoll.GenerateVoidOmenEvent(__instance.GeoLevel, TFTVODIandVoidOmenRoll.GenerateReportData(__instance.GeoLevel), false, removedVoidOmen);
+                        }
                     }
                 }
                 catch (Exception e)

@@ -52,6 +52,8 @@ namespace TFTV
         public bool Update35TacticalCheck;
         public bool StrongerPandoransTactical;
         public bool NerfAncientsWeaponsTactical;
+        public int ODILevel;
+        public int internalDifficultyCheck;
 
     }
 
@@ -188,6 +190,7 @@ namespace TFTV
             TFTVLogger.Always($"Stronger Pandorans {TFTVNewGameOptions.StrongerPandoransSetting}");
             TFTVLogger.Always($"Nerf ancients weapons {TFTVNewGameOptions.ImpossibleWeaponsAdjustmentsSetting}");
             TFTVLogger.Always($"Mission: {Controller.TacMission.MissionData.MissionType.name}");
+            TFTVLogger.Always($"Current ODI level: {TFTVODIandVoidOmenRoll.CurrentODI_Level}");
             TFTVLogger.Always($"Difficulty level is {tacController.Difficulty.name} and treated as {TFTVReleaseOnly.DifficultyOrderConverter(tacController.Difficulty.Order)} after TFTV conversion.");
             TFTVLogger.Always("Tactical start completed");
         }
@@ -245,6 +248,7 @@ namespace TFTV
                 TFTVCapturePandorans.AircraftCaptureCapacity = data.DeployedAircraftCaptureCapacity;
                 TFTVCapturePandorans.ContainmentFacilityPresent = data.ContainmentFacilityPresent;
                 TFTVCapturePandorans.ScyllaCaptureModulePresent = data.ScyllaCaptureModule;
+                TFTVODIandVoidOmenRoll.CurrentODI_Level = data.ODILevel;
 
                 TFTVVoidOmens.ModifyVoidOmenTacticalObjectives(Controller.TacMission.MissionData.MissionType);
                 TFTVCapturePandorans.ModifyCapturePandoransTacticalObjectives(Controller.TacMission.MissionData.MissionType);
@@ -256,17 +260,14 @@ namespace TFTV
                 TFTVNewGameOptions.Update35Check = data.Update35TacticalCheck;
                 TFTVNewGameOptions.StrongerPandoransSetting = data.StrongerPandoransTactical;
                 TFTVNewGameOptions.ImpossibleWeaponsAdjustmentsSetting = data.NerfAncientsWeaponsTactical;
+                TFTVNewGameOptions.InternalDifficultyCheckTactical = data.internalDifficultyCheck;
 
                 TFTVLogger.Always($"Config settings:" +                  
                     $"\nStrongerPandoransSetting {TFTVNewGameOptions.StrongerPandoransSetting}\nImpossibleWeaponsAdjustmentsSetting: {TFTVNewGameOptions.ImpossibleWeaponsAdjustmentsSetting}");
 
-                TFTVDefsWithConfigDependency.ImplementConfigChoices();
+            //    TFTVDefsWithConfigDependency.ImplementConfigChoices();
 
                 TurnZeroMethodsExecuted = data.TurnZeroMethodsExecuted;
-
-
-
-
 
             }
             catch (Exception e)
@@ -313,6 +314,8 @@ namespace TFTV
                 Update35TacticalCheck = TFTVNewGameOptions.Update35Check,
                 NerfAncientsWeaponsTactical = TFTVNewGameOptions.ImpossibleWeaponsAdjustmentsSetting,
                 StrongerPandoransTactical = TFTVNewGameOptions.StrongerPandoransSetting,
+                ODILevel = TFTVODIandVoidOmenRoll.CurrentODI_Level,    
+                internalDifficultyCheck = Controller.Difficulty.Order,
 
                 TurnZeroMethodsExecuted = TurnZeroMethodsExecuted
 

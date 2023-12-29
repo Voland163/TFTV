@@ -323,6 +323,35 @@ namespace TFTV
                 }
             }
 
+          
+            [HarmonyPatch(typeof(YuggothShieldsAbility), "IsQueenWallDown")]
+
+            public static class TFTV_YuggothShieldsAbility_IsQueenWallDown_patch
+            {
+                public static bool Prefix(YuggothShieldsAbility __instance)
+                {
+                    try
+                    {
+                        TacticalActorYuggoth actor = __instance.Actor as TacticalActorYuggoth;
+
+                        if (actor.QueenWallDownOnTurn > 0) 
+                        {
+                            return true;                    
+                        }
+
+                        return false;
+
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                        throw;
+                    }
+                }
+            }
+
+           
+
 
             /// <summary>
             /// This returns true if:
@@ -387,7 +416,7 @@ namespace TFTV
                     TacticalLevelController controller = GameUtl.CurrentLevel().GetComponent<TacticalLevelController>();
 
                     List<TacticalActor> tacticalActors = controller.GetFactionByCommandName("px").TacticalActors.
-                        Where(a => a.IsAlive && a.HasGameTag(Shared.SharedGameTags.HumanTag) && a.Pos.z >= 41.5).ToList();
+                        Where(a => a.IsAlive && a.Pos.z >= 41.5 && (a.HasGameTag(Shared.SharedGameTags.HumanTag) || a.HasGameTag(Shared.SharedGameTags.VehicleTag))).ToList();
 
                     if (tacticalActors.Count > 0)
                     {
@@ -454,16 +483,30 @@ namespace TFTV
             {
                 try
                 {
-                    TFTVLogger.Always($"Player has no units south of the closed gates; setting all Pandorans to not alerted!");
+                    
 
-                    List<TacticalActor> pandorans = controller.GetFactionByCommandName("aln").TacticalActors.Where(ta => ta.IsAlive && ta.Pos.z > 42).ToList();
+                    TFTVLogger.Always($"Player has no units south of the closed gates; setting all Pandorans to not alerted and destroying turrets and spider drones!");
 
-                    TFTVLogger.Always($"count: {pandorans.Count}");
+                    List<TacticalActor> pandorans = controller.GetFactionByCommandName("aln").TacticalActors.Where(ta => ta.IsAlive && ta.Pos.z >= 42.5).ToList();
+
+                    TFTVLogger.Always($"Pandorans to be set unalerted count: {pandorans.Count}");
 
                     foreach (TacticalActor tacticalActor in pandorans)
                     {
-                        //   TFTVLogger.Always($"{tacticalActor.name}");
-                        tacticalActor.AIActor.IsAlerted = false;
+                        tacticalActor.Status.UnapplyAllStatuses();
+                        tacticalActor.CharacterStats.Stealth.Set(1000);
+                        TacticalFactionVision.ForgetForAll(tacticalActor, true);
+                        tacticalActor.SetFaction(controller.GetFactionByCommandName("env"), TacMissionParticipant.Environment);
+                    }
+                    List<TacticalActor> playerToys = controller.GetFactionByCommandName("px").TacticalActors.Where(ta => ta.IsAlive && ta.Pos.z > 42 
+                    && ta.HasGameTag(Shared.SharedGameTags.DamageByCaterpillarTracks)).ToList();
+
+                    TFTVLogger.Always($"Player toys count: {playerToys.Count}");
+
+                    foreach (TacticalActor tacticalActor in playerToys)
+                    {
+                        TFTVLogger.Always($"destroying {tacticalActor.name}");
+                        tacticalActor.ApplyDamage(new DamageResult() { HealthDamage=1000});
                     }
                 }
                 catch (Exception e)
@@ -638,6 +681,7 @@ namespace TFTV
                         turnGatesLowered = tacticalActorYuggoth.QueenWallDownOnTurn;
                     }
 
+                
                     TFTVLogger.Always($"yuggoth found? {tacticalActorYuggoth != null} gates lowered on turn {turnGatesLowered} (how many yuggoths found? {controller.Map.GetActors<TacticalActorYuggoth>().Count()}");
 
 
@@ -1320,6 +1364,10 @@ namespace TFTV
                                 SpawnMyrmidonReinforcements(myrmidonSpawns.GetRandomElement(), controller);
                                 SpawnJumpingArthronsReinforcements(controller);
                             }
+                            else 
+                            {
+                              Gates.RemoveAlertPandoransSouthOfTheGates(controller);                            
+                            }
                         }
                        
                     }
@@ -1480,8 +1528,6 @@ namespace TFTV
 
                     }
                 }
-
-
 
                 private static TacCharacterDef GenerateRandomMyrmidonReinforcements(TacticalLevelController controller)
                 {
@@ -1934,97 +1980,6 @@ namespace TFTV
 
                     }
                 }
-
-                /* private static List<FixedDeployConditionData> GenerateRandomDeplyConditionData(TacticalLevelController controller)
-                 {
-                     try
-                     {
-                         List<FixedDeployConditionData> fixedDeployConditionDatas = new List<FixedDeployConditionData>();
-
-
-                         int difficulty = controller.Difficulty.Order;
-
-                         for (int x = 2; x < 23; x++)
-                         {
-                             TacActorDef tacActorDef = GenerateRandomGruntAndSirenReinforcements(controller);
-                             int turnNumber = x + 5 - difficulty;
-
-                             fixedDeployConditionDatas.Add(new FixedDeployConditionData()
-                             {
-                                 TacActorDef = tacActorDef,
-                                 TurnNumber = turnNumber
-
-
-                             });
-
-                             // TFTVLogger.Always($"{tacActorDef.name} will spawn on turn number {turnNumber}");
-                         }
-
-                         return fixedDeployConditionDatas;
-
-                     }
-                     catch (Exception e)
-                     {
-                         TFTVLogger.Error(e);
-                         throw;
-                     }
-                 }
-                 private static TacCharacterDef GenerateRandomChironReinforcements(TacticalLevelController controller)
-                 {
-                     try
-                     {
-
-                         TacCharacterDef pickedEnemy = null;
-
-                         ClassTagDef chironTag = DefCache.GetDef<ClassTagDef>("Chiron_ClassTagDef");
-
-                         List<TacCharacterDef> availableTemplatesOrdered = new List<TacCharacterDef>(controller.TacMission.MissionData.UnlockedAlienTacCharacterDefs.OrderByDescending(tcd => tcd.DeploymentCost));
-
-                         List<TacCharacterDef> chironsOrdered = new List<TacCharacterDef>(availableTemplatesOrdered.Where(t => t.ClassTag == chironTag));
-
-                         pickedEnemy = chironsOrdered.GetRandomElement();
-
-
-                         return pickedEnemy;
-
-                     }
-                     catch (Exception e)
-                     {
-                         TFTVLogger.Error(e);
-                         throw;
-                     }
-                 }
-
-                 private static TacCharacterDef GenerateRandomAcheronReinforcements(TacticalLevelController controller)
-                 {
-                     try
-                     {
-
-                         TacCharacterDef pickedEnemy = null;
-
-                         ClassTagDef acheronTag = DefCache.GetDef<ClassTagDef>("Acheron_ClassTagDef");
-
-
-                         List<TacCharacterDef> availableTemplatesOrdered = new List<TacCharacterDef>(controller.TacMission.MissionData.UnlockedAlienTacCharacterDefs.OrderByDescending(tcd => tcd.DeploymentCost));
-
-
-                         List<TacCharacterDef> acheronsOrdered = new List<TacCharacterDef>(availableTemplatesOrdered.Where(t => t.ClassTag == acheronTag));
-
-
-                         pickedEnemy = acheronsOrdered.GetRandomElement();
-
-
-                         return pickedEnemy;
-
-                     }
-                     catch (Exception e)
-                     {
-                         TFTVLogger.Error(e);
-                         throw;
-                     }
-                 }*/
-
-
             }
 
             internal class TacticalDeployZones
@@ -2422,6 +2377,7 @@ namespace TFTV
                 try
                 {
                     TFTVRevenant.DeadSoldiersDelirium.Remove(id);
+                    TFTVLogger.Always($"Removing {id} from DeadSolidersDelirium list");
                 }
 
                 catch (Exception e)
@@ -2528,7 +2484,7 @@ namespace TFTV
             {
                 try
                 {
-                    if (controller.TacMission.IsFinalMission && controller.TurnNumber > 1)
+                    if (controller.TacMission.IsFinalMission && controller.TurnNumber > 1 && !controller.IsLoadingSavedGame)
                     {
                         //  TFTVLogger.Always($"this is at least the right version");
 
@@ -2640,6 +2596,11 @@ namespace TFTV
                                 TFTVLogger.Always($"stray {minion.name} heeds the Master's Call!");
 
                                 minion.SetFaction(controller.GetFactionByCommandName("aln"), TacMissionParticipant.Residents);
+                                if (minion.Status.HasStatus<MindControlStatus>()) 
+                                {
+                                    minion.Status.UnapplyStatus(minion.Status.GetStatus<MindControlStatus>());
+                                    TFTVLogger.Always($"stray {minion.name} has MC status removed!");
+                                }
                                 minion.TacticalActorView.DoCameraChase();
 
                                 TFTVHints.TacticalHints.ShowStoryPanel(controller, "PalaceHisMinionsHint");
@@ -2669,28 +2630,31 @@ namespace TFTV
                         {
                             foreach (TacticalActor revenant in revenants)
                             {
-                                int chance = 10;
-                                if (revenant.HasGameTag(revenantTier3GameTag))
+                                if (revenant.Pos.z >= 41.5 && !Gates.AllOperativesNorthOfGates() || revenant.Pos.z < 41.5 && !Gates.AllOperativesSouthOfGates())
                                 {
-                                    chance += 20;
-                                }
-                                else if (revenant.HasGameTag(revenantTier2GameTag))
-                                {
-                                    chance += 10;
-                                }
+                                    int chance = 10;
+                                    if (revenant.HasGameTag(revenantTier3GameTag))
+                                    {
+                                        chance += 20;
+                                    }
+                                    else if (revenant.HasGameTag(revenantTier2GameTag))
+                                    {
+                                        chance += 10;
+                                    }
 
-                                UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
-                                int roll = UnityEngine.Random.Range(1, 101);
-                                TFTVLogger.Always($"Chance to turn Pandoran {revenant.name} Revenant is {chance} and the roll is {roll}");
+                                    UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
+                                    int roll = UnityEngine.Random.Range(1, 101);
+                                    TFTVLogger.Always($"Chance to turn Pandoran {revenant.name} Revenant is {chance} and the roll is {roll}");
 
-                                if (roll <= chance)
-                                {
-                                    revenant.SetFaction(controller.GetFactionByCommandName("px"), TacMissionParticipant.Player);
-                                    revenant.CharacterStats.WillPoints.SetToMax();
-                                    revenant.UpdateStats();
-                                    TFTVLogger.Always($"{revenant.name} has {revenant.CharacterStats.WillPoints} willpoints, should be max");
-                                    revenant.TacticalActorView.DoCameraChase();
-                                    TFTVHints.TacticalHints.ShowStoryPanel(controller, "PalaceRevenantHint0");
+                                    if (roll <= chance)
+                                    {
+                                        revenant.SetFaction(controller.GetFactionByCommandName("px"), TacMissionParticipant.Player);
+                                        revenant.CharacterStats.WillPoints.SetToMax();
+                                        revenant.UpdateStats();
+                                        TFTVLogger.Always($"{revenant.name} has {revenant.CharacterStats.WillPoints} willpoints, should be max");
+                                        revenant.TacticalActorView.DoCameraChase();
+                                        TFTVHints.TacticalHints.ShowStoryPanel(controller, "PalaceRevenantHint0");
+                                    }
                                 }
                             }
                         }
@@ -2702,9 +2666,6 @@ namespace TFTV
 
                 }
             }
-
-
-
         }
 
 

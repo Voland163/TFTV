@@ -824,16 +824,14 @@ namespace TFTV
                     {
                         CounterSpawned++;
 
-                        if (tacticalLevel.Difficulty.Order > 5 && CounterSpawned < 2)
+                        if (CheckTacticalSpecialDifficultySettings(tacticalLevel)==2 && CounterSpawned < 2)
                         {
                             TFTVLogger.Always($"first spawn on Etermes keeps full AP");
                             return false;
                         }
 
-                        else
-                        {
-                            return true;
-                        }
+                        return true;
+
                     }
 
                     catch (Exception e)
@@ -976,7 +974,7 @@ namespace TFTV
                             {
                                 if (itemDef.Armor > 20)
                                 {
-                                    TFTVLogger.Always(itemDef.name + " has " + itemDef.Armor + " armor");
+                                  //  TFTVLogger.Always(itemDef.name + " has " + itemDef.Armor + " armor");
                                     AlienBodyPartsDictionary.Add(itemDef.name, (int)itemDef.Armor);
                                     AlienBodyParts.Add(itemDef);
                                 }
@@ -1073,7 +1071,7 @@ namespace TFTV
                     GeoLevelController controllerGeo = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
                     TacticalLevelController controllerTactical = GameUtl.CurrentLevel().GetComponent<TacticalLevelController>();
 
-                    TFTVLogger.Always($". tac controller null? {controllerTactical == null}. IW adjustments on? {TFTVNewGameOptions.ImpossibleWeaponsAdjustmentsSetting}");
+                 //   TFTVLogger.Always($". tac controller null? {controllerTactical == null}. IW adjustments on? {TFTVNewGameOptions.ImpossibleWeaponsAdjustmentsSetting}");
 
                     if ((controllerGeo != null && ApplyImpossibleWeaponsAdjustmentsOnGeoscape(controllerGeo) || controllerTactical != null && ApplyImpossibleWeaponsAdjustmentsOnTactical(controllerTactical)) && !ImpossibleWeaponsAdjusted)
                     {

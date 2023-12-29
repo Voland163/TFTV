@@ -31,13 +31,14 @@ namespace TFTV
 
 
         [HarmonyPatch(typeof(PhoenixGame), "FinishLevelAndLoadGame")]
-        public static class DieAbility_LoadGame_patch
+        public static class PhoenixGame_FinishLevelAndLoadGame_patch
         {
 
             public static void Prefix(PPSavegameMetaData gameData)
             {
                 try
                 {
+
                     if (gameData.DifficultyDef != null)
                     {
                         TFTVLogger.Always($"{gameData?.DifficultyDef}");
@@ -45,7 +46,7 @@ namespace TFTV
                     else
                     {
                         gameData.DifficultyDef = DefCache.GetDef<GameDifficultyLevelDef>("Etermes_DifficultyLevelDef");
-                        TFTVLogger.Always($"{gameData?.DifficultyDef}");
+                        TFTVLogger.Always($"setting to {gameData?.DifficultyDef}");
                     }
 
                 }
