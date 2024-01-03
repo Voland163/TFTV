@@ -528,8 +528,6 @@ namespace TFTV
                         TFTVLogger.Always($"Setting {tacticalActor.name} alert");
                         tacticalActor.AIActor.IsAlerted = true;
                     }
-
-
                 }
                 catch (Exception e)
                 {

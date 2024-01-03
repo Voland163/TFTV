@@ -1,21 +1,20 @@
-﻿using Base.AI.Defs;
-using Base.Core;
+﻿using Base.Core;
 using Base.Defs;
 using Base.UI.MessageBox;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
-using PhoenixPoint.Common.Entities.Items;
-using PhoenixPoint.Common.Levels.Missions;
+using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Geoscape;
 using PhoenixPoint.Geoscape.Core;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.Missions;
 using PhoenixPoint.Geoscape.Entities.PhoenixBases.FacilityComponents;
-using PhoenixPoint.Geoscape.Entities.PhoenixBases;
 using PhoenixPoint.Geoscape.Entities.Research;
-using PhoenixPoint.Geoscape.Entities.Research.Reward;
+using PhoenixPoint.Geoscape.Entities.Sites;
+using PhoenixPoint.Geoscape.Events;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
+using PhoenixPoint.Geoscape.View.ViewModules;
 using PhoenixPoint.Modding;
 using PhoenixPoint.Tactical.Entities;
 using System;
@@ -23,8 +22,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
-using PhoenixPoint.Geoscape.Entities.Sites;
-using PhoenixPoint.Common.Entities.GameTagsTypes;
 
 namespace TFTV
 {
@@ -35,6 +32,7 @@ namespace TFTV
         private static readonly DefRepository Repo = TFTVMain.Repo;
         private static readonly SharedData Shared = TFTVMain.Shared;
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
+        
 
         /*   [HarmonyPatch(typeof(GeoPhoenixpedia), "AddItemEntry")]
            public static class GeoPhoenixpedia_ProcessGeoscapeInstanceData_patch
@@ -88,10 +86,10 @@ namespace TFTV
 
                                 float distance = Vector3.Distance(colony.Site.WorldPosition, pxBase.WorldPosition);
                                 bool pxBaseInMist = pxBase.IsInMist;
-                                bool hasTelepathicCaptive = 
-                                    phoenixFaction.ContaimentUsage>0 && 
+                                bool hasTelepathicCaptive =
+                                    phoenixFaction.ContaimentUsage > 0 &&
                                     pxBase.GetComponent<GeoPhoenixBase>().Layout.Facilities.Any(f => f.GetComponent<PrisonFacilityComponent>() != null) &&
-                                    phoenixFaction.CapturedUnits.Any(gud=>gud.ClassTag==DefCache.GetDef<ClassTagDef>("Siren_ClassTagDef") 
+                                    phoenixFaction.CapturedUnits.Any(gud => gud.ClassTag == DefCache.GetDef<ClassTagDef>("Siren_ClassTagDef")
                                     || gud.ClassTag == DefCache.GetDef<ClassTagDef>("Queen_ClassTagDef"));
 
                                 //Nest 5 per day
@@ -105,24 +103,24 @@ namespace TFTV
                                 int colonyCounter = colony.AlienBaseTypeDef.PhoenixBaseAttackCounterPerDay;
                                 float multiplier = 1;
 
-                                if (distance < 2) 
+                                if (distance < 2)
                                 {
-                                    multiplier += 2 - distance;  
-                                }
-                                
-                                if (pxBaseInMist) 
-                                {
-                                    multiplier *= 1.5f; 
+                                    multiplier += 2 - distance;
                                 }
 
-                                if (hasTelepathicCaptive) 
+                                if (pxBaseInMist)
                                 {
-                                    multiplier *= 1.5f; 
+                                    multiplier *= 1.5f;
                                 }
 
-                                if (researchedDomovoy) 
+                                if (hasTelepathicCaptive)
                                 {
-                                    multiplier *= 0.5f;  
+                                    multiplier *= 1.5f;
+                                }
+
+                                if (researchedDomovoy)
+                                {
+                                    multiplier *= 0.5f;
                                 }
 
                                 int adjustedCounter = (int)(colonyCounter * multiplier);
@@ -132,7 +130,7 @@ namespace TFTV
                                 TFTVLogger.Always($"{colony.AlienBaseTypeDef.Name.LocalizeEnglish()} " +
                                  $"is {distance} from {pxBase.LocalizedSiteName} in mist? {pxBaseInMist} with a telepathic captive? {hasTelepathicCaptive}" +
                                  $" player researched Project Domovoy? {researchedDomovoy}, colonyCounter is {colonyCounter}, multiplier is {multiplier}, so adjusted counter per day is {adjustedCounter}," +
-                                 $"and accumulated counter is {item.Counter}");                     
+                                 $"and accumulated counter is {item.Counter}");
                             }
                         }
 
@@ -156,7 +154,7 @@ namespace TFTV
         }
 
 
-        
+
 
 
         public static void CheckAutomataResearch()
@@ -210,20 +208,20 @@ namespace TFTV
 
                         TFTVLogger.Always($"modData null? {modData == null}");
 
-                        if(modData==null && mod.Main.Instance.Entry.LocalizedName == "TFTV") 
+                        if (modData == null && mod.Main.Instance.Entry.LocalizedName == "TFTV")
                         {
                             string warning = "TFTV save data is null! This save is borked! Please load an earlier save.";
 
                             GameUtl.GetMessageBox().ShowSimplePrompt(warning, MessageBoxIcon.Warning, MessageBoxButtons.OK, null);
                         }
 
-                     /*   if (modData != null)
-                        {
-                            __instance.TryInvokeModMethod(mod, delegate
-                            {
-                                mod.ProcessGeoscapeInstanceData(modData);
-                            }, "ProcessGeoscapeInstanceData");
-                        }*/
+                        /*   if (modData != null)
+                           {
+                               __instance.TryInvokeModMethod(mod, delegate
+                               {
+                                   mod.ProcessGeoscapeInstanceData(modData);
+                               }, "ProcessGeoscapeInstanceData");
+                           }*/
 
                     }
                 }
@@ -238,29 +236,8 @@ namespace TFTV
         //   
 
 
-        [HarmonyPatch(typeof(GeoLevelController), "GetAllPossibleEnemyMissionParticipants")]
-        public static class GeoLevelController_GetAllPossibleEnemyMissionParticipants_patch
-        {
 
-            public static void Postfix(GeoLevelController __instance, List<Tuple<IGeoFactionMissionParticipant, int>> __result)
-            {
-                try
-                {
-                    TFTVLogger.Always($"Running GeoLevelController.GetAllPossibleEnemyMissionParticipants");
 
-                    foreach (Tuple<IGeoFactionMissionParticipant, int> tuple in __result)
-                    {
-                        TFTVLogger.Always($"{tuple.Item1.ParticipantName.LocalizeEnglish()} scored {tuple.Item2}");
-                    }
-
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                    throw;
-                }
-            }
-        }
 
 
 

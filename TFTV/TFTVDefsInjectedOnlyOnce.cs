@@ -170,7 +170,7 @@ namespace TFTV
 
                 VariousMinorAdjustments();
 
-                Print();
+              //  Print();
 
             }
             catch (Exception e)
@@ -286,11 +286,28 @@ namespace TFTV
                 TFTVBetterEnemies.BEReducePandoranWillpower();
                 BringBackArmisAndCrystalChiron();
                 LimitCoDeliriumAttack();
+                AdjustAlienAmbushChance();
             }
             catch (Exception e)
             {
                 TFTVLogger.Error(e);
             }
+        }
+
+        private static void AdjustAlienAmbushChance()
+        {
+            try 
+            {
+                GeoAlienFactionDef geoAlienFactionDef = DefCache.GetDef<GeoAlienFactionDef>("Alien_GeoAlienFactionDef");
+                geoAlienFactionDef.ScavengingAmbushBaseWeight=60;
+                geoAlienFactionDef.ScavengingAmbushSitesRange.Value = 2000;
+            
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
         }
 
         private static void BringBackArmisAndCrystalChiron()

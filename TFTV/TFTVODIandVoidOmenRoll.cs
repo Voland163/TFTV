@@ -533,7 +533,7 @@ namespace TFTV
 
                     string reportData = GenerateReportData(geoLevelController);
 
-                    if (oDIEventToTrigger.EventID == "SDI_20")
+                    if (oDIEventToTrigger.EventID != "SDI_20")
                     {
                         //This step is necessary because we will be modifying the ODI event,
                         //and if the player loads the game later, this modified event will be triggered.

@@ -1823,7 +1823,7 @@ namespace TFTV
 
                     TFTVCommonMethods.ClearInternalVariables();
                     TFTVNewGameOptions.ConfigImplemented = true;
-                    TFTVNewGameOptions.Update35Check = true;
+                   // TFTVNewGameOptions.Update35Check = true;
                     NewGameOptionsSetUp = false;
 
                     return false;

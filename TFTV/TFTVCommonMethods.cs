@@ -132,7 +132,8 @@ namespace TFTV
                 TFTVCapturePandoransGeoscape.ToxinsInCirculation = 0;
                 TFTVNewGameMenu.NewGameOptionsSetUp = false;
                 TFTVNewGameMenu.EnterStateRun = false;
-
+                TFTVAmbushes.AN_FallenOnes_Hotspots = new List<int>();
+                TFTVAmbushes.NJ_Purists_Hotspots = new List<int>();
 
                 /*  TFTVNewGameOptions.AmountOfExoticResourcesSetting;
                   TFTVNewGameOptions.ResourceMultiplierSetting;

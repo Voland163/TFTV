@@ -750,7 +750,7 @@ namespace TFTV
                     {
                         if (CharactersDeliriumPerksAndMissions.ContainsKey(geoCharacter.Id))
                         {
-                        //    TFTVLogger.Always($"and here");
+                       
 
                             CharactersDeliriumPerksAndMissions[geoCharacter.Id] += 1;
 
