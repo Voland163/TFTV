@@ -6,6 +6,7 @@ using HarmonyLib;
 using Newtonsoft.Json;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Game;
+using PhoenixPoint.Home.View;
 using PhoenixPoint.Home.View.ViewModules;
 using PhoenixPoint.Modding;
 using PRMBetterClasses;
@@ -63,6 +64,23 @@ namespace TFTV
         /// Unsafely disabled mods usually cannot revert thier changes in OnModDisabled
         public override bool CanSafelyDisable => false;
 
+
+        private static void ChangeTitleScreen(PhoenixGame game)
+        {
+            try 
+            { 
+            
+                
+            
+            
+            
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
         /// <summary>
         /// Callback for when mod is enabled. Called even on game starup.
         /// </summary>
@@ -84,7 +102,7 @@ namespace TFTV
                 /// PhoenixGame is accessible at any time.
                 PhoenixGame game = GetGame();
 
-                string version = $"TFTV 20240104 release #1 (Hotfix 1 for Update #48) v{MetaData.Version}";
+                string version = $"TFTV 20240107 release #1 (Update #49) v{MetaData.Version}";
 
                 TFTVversion = version;
 
@@ -140,6 +158,23 @@ namespace TFTV
                 Config.PopulateConfigFields();
                 //  Config.RetrieveConfigOptions();
                 harmony.PatchAll();
+
+                if(GameUtl.CurrentLevel()!=null && GameUtl.CurrentLevel().GetComponent<HomeScreenView>() != null) 
+                {
+                    TFTVLogger.Always($"enabling TFTV for the first time!");
+                    HomeScreenView homeScreenView = GameUtl.CurrentLevel().GetComponent<HomeScreenView>();
+
+                    homeScreenView.EditionVisualsController.SwitchToVanillaVisuals();
+
+                    TFTVNewGameMenu.TitleScreen.SetTFTVLogo(homeScreenView);
+
+
+                }
+
+               
+
+                
+
 
                 /*  if(GetLevel()!=null && GetLevel().name.Contains("HomeScreenLevel")) 
                   {

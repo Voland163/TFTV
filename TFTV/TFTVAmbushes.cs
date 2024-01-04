@@ -41,7 +41,7 @@ namespace TFTV
                         return;
                     }
 
-                    TFTVLogger.Always($"got past the check, {eventID}");
+                  //  TFTVLogger.Always($"got past the check, {eventID}");
 
                     GeoSubFactionDef forsakenDef = DefCache.GetDef<GeoSubFactionDef>("AN_FallenOnes_GeoSubFactionDef");
                     GeoSubFactionDef pureDef = DefCache.GetDef<GeoSubFactionDef>("NJ_Purists_GeoSubFactionDef");
@@ -56,7 +56,7 @@ namespace TFTV
                     }
                     else if (pure != null)
                     {
-                        TFTVLogger.Always($"Pure mission registered, setting hotspot");
+                        TFTVLogger.Always($"Pure event {eventID} registered, setting hotspot");
                         SetPureHotspotVariable(site.SiteId);
                     }
                 }
@@ -105,7 +105,9 @@ namespace TFTV
 
                     string expectedFaction = results[0].Item1.ParticipantViewDef.Name.Localize();
 
-                    __instance.SiteTittleText.text += $"\n <i>Satellite scans indicate increased presence of {expectedFaction} in the area</i>";
+                    string additionalText = $"{TFTVCommonMethods.ConvertKeyToString("KEY_AMBUSH_SAT_SCAN_TEXT0")} {expectedFaction.ToUpper()} {TFTVCommonMethods.ConvertKeyToString("KEY_AMBUSH_SAT_SCAN_TEXT1")}";
+
+                    __instance.SiteTittleText.text += $"\n <i>{additionalText}</i>";
 
                 }
                 catch (Exception e)

@@ -170,6 +170,8 @@ namespace TFTV
 
                 VariousMinorAdjustments();
 
+               // TFTVRaiders.Defs.CreateRaiderDefs();
+
               //  Print();
 
             }
@@ -287,6 +289,7 @@ namespace TFTV
                 BringBackArmisAndCrystalChiron();
                 LimitCoDeliriumAttack();
                 AdjustAlienAmbushChance();
+                IncreaseBionicLabCost();
             }
             catch (Exception e)
             {
@@ -330,6 +333,22 @@ namespace TFTV
             }
         }
 
+        private static void IncreaseBionicLabCost()
+        {
+            try 
+            {
+                DefCache.GetDef<PhoenixFacilityDef>("BionicsLab_PhoenixFacilityDef").ResourceCost = new ResourcePack()
+                {
+                    new ResourceUnit(){ Type = ResourceType.Materials, Value = 300},
+                    new ResourceUnit(){ Type = ResourceType.Tech, Value = 225},
+                };
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+        }
 
         private static void VanillaFixes()
         {
@@ -8458,8 +8477,13 @@ namespace TFTV
         public static void Create_VoidOmen_Events()
 
         {
-            GeoscapeEventDef geoscapeEventDef = TFTVCommonMethods.CreateNewEvent("VoidOmen_0", "", "", null);
-            geoscapeEventDef.GeoscapeEventData.Flavour = "IntroducingSymes";
+            for(int x = 0; x<20 ; x++) 
+            {
+                GeoscapeEventDef geoscapeEventDef = TFTVCommonMethods.CreateNewEvent($"VoidOmen_{x}", "", "", null);
+                geoscapeEventDef.GeoscapeEventData.Flavour = "IntroducingSymes";
+            }
+
+            
             TFTVCommonMethods.CreateNewEvent("IntroVoidOmen", "", "", null);
 
         }

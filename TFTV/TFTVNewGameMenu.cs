@@ -34,57 +34,23 @@ namespace TFTV
 
         private static int SelectedDifficulty = 0;
 
-      
-
-        [HarmonyPatch(typeof(HomeScreenView), "InitView")]
-        public static class HomeScreenView_InitView_Patch
+        internal class TitleScreen
         {
-            private static void Postfix(HomeScreenView __instance)
+
+            internal static void SetTFTVLogo(HomeScreenView homeScreenView)
             {
-                try
+                try 
                 {
-                    UIModuleModManager modManagerUI = __instance.HomeScreenModules.ModManagerModule;
-                    ModManager modManager = TFTVMain.Main.GetGame().ModManager;
-
-                    foreach (ModEntry modEntry in modManager.Mods)
-                    {
-
-                        TFTVLogger.Always($"{modEntry.ID} is enabled {modEntry.Enabled}");
-                        if (modEntry.Enabled && (modEntry.ID == "com.example.Better_Enemies" || modEntry.ID == "com.example.BetterVehicles"))
-                        {
-                            //  TFTVLogger.Always($"Should disable {modEntry.LocalizedName}");
-                            //  modManager.TryDisableMod(modEntry);
-
-                            string warning = $"{TFTVCommonMethods.ConvertKeyToString("KEY_Warning_Disable_Mod0")} {modEntry.LocalizedName.ToUpper()}{TFTVCommonMethods.ConvertKeyToString("KEY_Warning_Disable_Mod1")}";
-
-                            GameUtl.GetMessageBox().ShowSimplePrompt(warning, MessageBoxIcon.Warning, MessageBoxButtons.OK, null);
-
-                            //    string filePathRoot = GameUtl.GameComponent<PlatformComponent>().Platform.GetPlatformData().GetFilePathRoot();
-
-                            //   string path = Path.Combine(filePathRoot, "ModConfig.json");
-                            /*   if (File.Exists(path))
-                               {
-                                   File.Delete(path);
-
-                                   //   PropertyInfo fieldInfoEnabled = typeof(ModEntry).GetProperty("Enabled", BindingFlags.Public | BindingFlags.Instance);
-
-                                   //   fieldInfoEnabled.SetValue(modEntry, false);
-                               }*/
-                        }
-                    }
-
                     Resolution resolution = Screen.currentResolution;
                     float resolutionFactorWidth = (float)resolution.width / 1920f;
                     //   TFTVLogger.Always("ResolutionFactorWidth is " + resolutionFactorWidth);
                     float resolutionFactorHeight = (float)resolution.height / 1080f;
 
 
-                    GameObject source = __instance.HomeScreenModules.MainMenuButtonsModule.VanillaVisuals[0];
+                    GameObject source = homeScreenView.HomeScreenModules.MainMenuButtonsModule.VanillaVisuals[0];
 
-                    Image logoText = __instance.HomeScreenModules.MainMenuButtonsModule.VanillaVisuals[0].GetComponentsInChildren<Image>().FirstOrDefault(i => i.name == "PhoenixLogo_text");
-
-
-                    Image logoImage = __instance.HomeScreenModules.MainMenuButtonsModule.VanillaVisuals[0].GetComponentsInChildren<Image>().FirstOrDefault(i => i.name == "PhoenixLogo_symbol");
+                    Image logoText = homeScreenView.HomeScreenModules.MainMenuButtonsModule.VanillaVisuals[0].GetComponentsInChildren<Image>().FirstOrDefault(i => i.name == "PhoenixLogo_text");
+                    Image logoImage = homeScreenView.HomeScreenModules.MainMenuButtonsModule.VanillaVisuals[0].GetComponentsInChildren<Image>().FirstOrDefault(i => i.name == "PhoenixLogo_symbol");
 
 
                     Transform tftvLogo = UnityEngine.Object.Instantiate(source.GetComponentsInChildren<Transform>().FirstOrDefault(i => i.name == "PhoenixLogo_text"),
@@ -107,6 +73,8 @@ namespace TFTV
                     logoImage.transform.position += new Vector3(0, -260 * resolutionFactorHeight, 0); //-95 //590
                     logoImage.transform.position += new Vector3(-770 * resolutionFactorWidth, 0, 0); //-850
                     tftvLogo.transform.position = pos;
+
+
                 }
                 catch (Exception e)
                 {
@@ -114,28 +82,78 @@ namespace TFTV
                     throw;
                 }
             }
-        }
 
-        [HarmonyPatch(typeof(EditionVisualsController), "DetermineEdition")]
-        public static class EditionVisualsController_DetermineEdition_Patch
-        {
-            private static bool Prefix(EditionVisualsController __instance)
+
+            [HarmonyPatch(typeof(HomeScreenView), "InitView")]
+            public static class HomeScreenView_InitView_Patch
             {
-                try
+                private static void Postfix(HomeScreenView __instance)
                 {
+                    try
+                    {
+                        UIModuleModManager modManagerUI = __instance.HomeScreenModules.ModManagerModule;
+                        ModManager modManager = TFTVMain.Main.GetGame().ModManager;
 
-                    __instance.SwitchToVanillaVisuals();
+                        foreach (ModEntry modEntry in modManager.Mods)
+                        {
 
-                    return false;
+                            TFTVLogger.Always($"{modEntry.ID} is enabled {modEntry.Enabled}");
+                            if (modEntry.Enabled && (modEntry.ID == "com.example.Better_Enemies" || modEntry.ID == "com.example.BetterVehicles"))
+                            {
+                                //  TFTVLogger.Always($"Should disable {modEntry.LocalizedName}");
+                                //  modManager.TryDisableMod(modEntry);
 
+                                string warning = $"{TFTVCommonMethods.ConvertKeyToString("KEY_Warning_Disable_Mod0")} {modEntry.LocalizedName.ToUpper()}{TFTVCommonMethods.ConvertKeyToString("KEY_Warning_Disable_Mod1")}";
+
+                                GameUtl.GetMessageBox().ShowSimplePrompt(warning, MessageBoxIcon.Warning, MessageBoxButtons.OK, null);
+
+                                //    string filePathRoot = GameUtl.GameComponent<PlatformComponent>().Platform.GetPlatformData().GetFilePathRoot();
+
+                                //   string path = Path.Combine(filePathRoot, "ModConfig.json");
+                                /*   if (File.Exists(path))
+                                   {
+                                       File.Delete(path);
+
+                                       //   PropertyInfo fieldInfoEnabled = typeof(ModEntry).GetProperty("Enabled", BindingFlags.Public | BindingFlags.Instance);
+
+                                       //   fieldInfoEnabled.SetValue(modEntry, false);
+                                   }*/
+                            }
+                        }
+
+                        SetTFTVLogo(__instance);
+                     
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                        throw;
+                    }
                 }
-                catch (Exception e)
+            }
+
+            [HarmonyPatch(typeof(EditionVisualsController), "DetermineEdition")]
+            public static class EditionVisualsController_DetermineEdition_Patch
+            {
+                private static bool Prefix(EditionVisualsController __instance)
                 {
-                    TFTVLogger.Error(e);
-                    throw;
+                    try
+                    {
+
+                        __instance.SwitchToVanillaVisuals();
+
+                        return false;
+
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                        throw;
+                    }
                 }
             }
         }
+
 
         private static int ConvertDifficultyToIndexExoticResources()
         {

@@ -443,8 +443,7 @@ namespace TFTV
                         {
                             removedVoidOmen = TFTVVoidOmens.RemoveEarliestVoidOmen(geoLevelController, 1);
                         }
-
-                        if (roll >= 2 && roll <= 10)
+                        else if (roll >= 2 && roll <= 10)
                         {
 
                             // If a Void Omen rolls
@@ -604,8 +603,8 @@ namespace TFTV
 
                 GeoscapeEventContext geoscapeEventContext = new GeoscapeEventContext(geoLevelController.AlienFaction, geoLevelController.ViewerFaction);
 
-                GeoscapeEventDef voidOmenEvent = geoLevelController.EventSystem.GetEventByID(geoLevelController.EventSystem.GetEventIDs().FirstOrDefault(e => e.StartsWith("VoidOmen_")));
-                voidOmenEvent.GeoscapeEventData.EventID = "VoidOmen_0";
+
+                GeoscapeEventDef voidOmenEvent = geoLevelController.EventSystem.GetEventByID($"VoidOmen_{voidOmenRoll}");
 
 
                 // This adds the Void Omen to the objective list
@@ -624,8 +623,7 @@ namespace TFTV
                         voidOmenEventTextToDisplay += $"\n\n{TFTVCommonMethods.ConvertKeyToString("VOID_OMEN_DESCRIPTION_TEXT_EXTRA_HELENA_" + voidOmenRoll)}";
                     }
 
-                    TFTVVoidOmens.CreateVoidOmenObjective(voidOmenTitleFormat + voidOmenRoll, voidOmenDescriptionFormat + voidOmenRoll, geoLevelController);
-                    voidOmenEvent.GeoscapeEventData.EventID = $"VoidOmen_" + voidOmenRoll;
+                    TFTVVoidOmens.CreateVoidOmenObjective(voidOmenTitleFormat + voidOmenRoll, voidOmenDescriptionFormat + voidOmenRoll, geoLevelController);                   
                 }
 
 

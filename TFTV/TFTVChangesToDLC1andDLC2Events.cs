@@ -2,7 +2,9 @@
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Levels.Missions;
 using PhoenixPoint.Common.UI;
+using PhoenixPoint.Geoscape.Entities.Research.Reward;
 using PhoenixPoint.Geoscape.Events;
+using PhoenixPoint.Geoscape.Events.Conditions;
 using PhoenixPoint.Geoscape.Events.Eventus;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Tactical.Entities;
@@ -33,14 +35,27 @@ namespace TFTV
 
                 ChangesToSavingHelena();
                 ReplaceAllSchemataMissions();
+              //  ReduceWeightInfiltratorResearch();
             }
             catch (Exception e)
             {
                 TFTVLogger.Error(e);
             }
-
         }
 
+        private static void ReduceWeightInfiltratorResearch()
+        {
+            try 
+            {
+                
+
+                DefCache.GetDef<EncounterVarResearchRewardDef>("SYN_InfiltratorTech_ResearchDef_EncounterVarResearchRewardDef_0").VariableValue=1; 
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
 
 
         private static void GuidedByWhispersLoss()
@@ -171,17 +186,11 @@ namespace TFTV
                     Value = 6,
                     PartyType = (OutcomeDiplomacyChange.ChangeTarget)1,
                 };
-
-
             }
             catch (Exception e)
             {
                 TFTVLogger.Error(e);
             }
-
-
-
-
         }
 
         private static void CreateNewNJOutcomePanel()

@@ -36,15 +36,17 @@ This Pandoran will call reinforcements if it <b>survives (in whatever shape)</b>
 - Spawn Umbra on death",,,,,,,,
 TFTV_STAMINAHINT_TEXT,Text,,"In TFTV, when one of your operatives gets a bodypart disabled in Tactical, once back in Geoscape its stamina will be reduced to 0. <b>Healing the injured bodypart in Tactical will not prevent this effect</b>. Stamina will also be set to 0 when the character gets a mutation or a bionic augmentation.",,"Dans TFTV, lorsque une partie du corps de vos agents est  désactivée lors d'une mission tactique, une fois de retour sur le Geoscape, son endurance sera réduite à 0. <b>La guérison de la partie du corps blessée lors de la mission tactique n'empêchera pas la perte d'endurance</b>. L'endurance sera également mise à 0 lorsque le personnage obtient une mutation ou une augmentation bionique.",,,,,,
 TFTV_STAMINAHINT_TITLE,Text,,STAMINA LOSS FROM DISABLED LIMBS,,PERTE D'ENDURANCE DUE À DES PARTIES DU CORPS HANDICAPES,,,,,,
-HINT_ACHERON_PRIME_DESCRIPTION,Text,,"This Acheron is a direct evolution of the basic Acheron, its Delirium spray inflicting more <b>acid damage</b>. In addition to <b>""Harbinger of the Void"" passive ability</b> (<i>increases the chances that an Arthron or a Triton will be Touched by the Void</i>), it has the <b>""Co-Delirium"" passive ability</b> (<i>all Pandorans in battle deal Delirium damage</i>).
+HINT_ACHERON_PRIME_DESCRIPTION,Text,,"This Acheron is a direct evolution of the basic Acheron, its Delirium spray inflicting more <b>acid damage</b>. In addition to <b>""Harbinger of the Void"" passive ability</b> (<i>increases the chances that an Arthron or a Triton will be Touched by the Void</i>), it has the <b>""Co-Delirium"" passive ability</b> (<i>all Pandorans deal Delirium damage when attacking with a melee weapon.</i>).
 
 Remember that characters or units caught in the Mist can always be targeted by Umbra.",,,,,,,,
 HINT_ACHERON_PRIME_TITLE,Text,,Acheron Prime ,,,,,,,,
-HINT_ACHERON_ASCLEPIUS_DESCRIPTION,Text,,"The Asclepius Acheron mutation has the <b>""Call Reinforcements"" active ability</b> (<i>instantly call a group of Arthrons and Tritons</i>) and the <b>""Co-Delirium"" passive ability</b> (<i>all Pandorans in battle deal Delirium damage</i>). 
+HINT_ACHERON_ASCLEPIUS_DESCRIPTION,Text,,"The Asclepius Acheron mutation has the <b>""Call Reinforcements"" active ability</b> (<i>instantly call a group of Arthrons and Tritons</i>) and the <b>""Co-Delirium"" passive ability</b> (<i>all Pandorans deal Delirium damage when attacking with a melee weapon.</i>). 
 
 It specializes in healing and aiding other Pandorans and does not have any direct offensive capabilities.",,,,,,,,
 HINT_ACHERON_ASCLEPIUS_TITLE,Text,,Acheron Asclepius,,,,,,,,
-HINT_ACHERON_ASCLEPIUS_CHAMPION_DESCRIPTION,Text,,"This Acheron is a direct evolution of the Asclepius variant. In addition to the <b>""Call Reinforcements"" active ability</b> (<i>instantly call a group of Arthrons and Tritons</i>) and the <b>""Co-Delirium"" passive ability</b> (<i>all Pandorans in battle deal Delirium damage</i>), it has the <b>Neurotoxic Spray</b> (<i>disable a body part for 1 turn</i>).",,,,,,,,
+HINT_ACHERON_ASCLEPIUS_CHAMPION_DESCRIPTION,Text,,"This Acheron is a direct evolution of the basic Acheron, its Delirium spray inflicting more <b>acid damage</b>. In addition to <b>""Harbinger of the Void"" passive ability</b> (<i>increases the chances that an Arthron or a Triton will be Touched by the Void</i>), it has the <b>""Co-Delirium"" passive ability</b> (<i>all Pandorans deal Delirium damage when attacking with a melee weapon.</i>).
+
+Remember that characters or units caught in the Mist can always be targeted by Umbra.",,,,,,,,
 HINT_ACHERON_ASCLEPIUS_CHAMPION_TITLE,Text,,Acheron Asclepius Champion,,,,,,,,
 HINT_ACHERON_ACHLYS_DESCRIPTION,Text,,"The Achlys Acheron mutation has the <b>""Resurrect"" active ability</b> (<i>transform all human sized corpses within 10 tiles into Arthrons or Tritons</i>)",,,,,,,,
 HINT_ACHERON_ACHLYS_TITLE,Text,,Acheron Achlys,,,,,,,,
@@ -76,8 +78,7 @@ HINT_ANCIENTS_HOPLITS_TITLE,Text,,"<i>“Frag me, what is that thing? Is that a�
 HINT_ANCIENTS_HOPLITS_TEXT,Text,,"This Ancient Automata is reactivating! While we have no intel on their capabilities, it seems like they are dormant while buried in the ground, but once they emerge they become alerted and gradually reactivate their systems, becoming stronger. The Automata also seem to be in varying states of disrepair.",,,,,,,,
 HINT_ANCIENTS_HOPLITSREPAIR_TITLE,Text,,<i>”The broken remains floated towards the damaged Automata.”</i>,,,,,,,,
 HINT_ANCIENTS_HOPLITSREPAIR_TEXT,Text,,This Ancient Automata is trying to repair itself using the remains of the destroyed robot in its vicinity! It has also drained some of its power.,,,,,,,,
-HINT_ANCIENTS_HOPLITSMAXPOWER_TITLE,Text,,"<i>”Whirl whirl whirl Vroom!”</i>
-",,,,,,,,
+HINT_ANCIENTS_HOPLITSMAXPOWER_TITLE,Text,,"<i>”Whirl whirl whirl Vroom!”</i>",,,,,,,,
 HINT_ANCIENTS_HOPLITSMAXPOWER_TEXT,Text,,The Ancient Automata is now fully charged; damage increased significantly and damage resistance gained.,,,,,,,,
 HINT_HOSTILE_DEFENDERS_TITLE,Text,,Hostile haven defenders,,,,,,,,
 HINT_HOSTILE_DEFENDERS_TEXT,Text,,"<i>""Come to rescue us, have they? They are the ones who brought the damn critters on us in the first place! Fragging nerds…""</i>

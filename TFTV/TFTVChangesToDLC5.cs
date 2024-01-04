@@ -346,6 +346,7 @@ namespace TFTV
                         spyMasterHelmet.BodyPartAspectDef.Perception = 4;
 
                         spyMasterTorso.Weight = 2;
+                        spyMasterTorso.ForceShowInPortratis = true;
                         spyMasterTorso.BodyPartAspectDef.Speed = -1;
                         spyMasterTorso.ManufactureMaterials = 0;
                         spyMasterTorso.ManufactureTech = 0;

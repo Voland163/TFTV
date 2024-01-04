@@ -187,9 +187,9 @@ namespace TFTV
                 {
                     try
                     {
-                      //  TFTVLogger.Always($"AlienRaidManager.RollForRaid running");
-
-                        if (__instance.AlienFaction.Behemoth.CurrentBehemothStatus == BehemothStatus.Dormant || __instance.AlienFaction.Behemoth.IsSubmerging)//__instance.AlienFaction!=null && __instance.AlienFaction.Behemoth!=null && )
+                        //  TFTVLogger.Always($"AlienRaidManager.RollForRaid running");
+                        // 
+                        if (__instance.AlienFaction.Behemoth == null || __instance.AlienFaction.Behemoth.CurrentBehemothStatus == BehemothStatus.Dormant || __instance.AlienFaction.Behemoth.IsSubmerging)//__instance.AlienFaction!=null && __instance.AlienFaction.Behemoth!=null && )
                         {
                            // TFTVLogger.Always($"AlienRaidManager.RollForRaid running, Behemoth not dormant");
                             return false;

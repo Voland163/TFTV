@@ -1,27 +1,34 @@
 ﻿using Base.Core;
 using Base.Defs;
+using Base.UI;
 using Base.UI.MessageBox;
+using Base.UI.Tweens;
+using Base.Utils.Maths;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
+using PhoenixPoint.Common.View.ViewControllers.Inventory;
 using PhoenixPoint.Geoscape;
 using PhoenixPoint.Geoscape.Core;
 using PhoenixPoint.Geoscape.Entities;
-using PhoenixPoint.Geoscape.Entities.Missions;
 using PhoenixPoint.Geoscape.Entities.PhoenixBases.FacilityComponents;
 using PhoenixPoint.Geoscape.Entities.Research;
+using PhoenixPoint.Geoscape.Entities.Research.Reward;
 using PhoenixPoint.Geoscape.Entities.Sites;
-using PhoenixPoint.Geoscape.Events;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
-using PhoenixPoint.Geoscape.View.ViewModules;
 using PhoenixPoint.Modding;
 using PhoenixPoint.Tactical.Entities;
+using PhoenixPoint.Tactical.Entities.Equipments;
+using PhoenixPoint.Tactical.Entities.Statuses;
+using PhoenixPoint.Tactical.View.ViewControllers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
+using UnityEngine.UI;
+using static PhoenixPoint.Tactical.View.ViewControllers.SoldierResultElement;
 
 namespace TFTV
 {
@@ -32,7 +39,169 @@ namespace TFTV
         private static readonly DefRepository Repo = TFTVMain.Repo;
         private static readonly SharedData Shared = TFTVMain.Shared;
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
-        
+
+
+        [HarmonyPatch(typeof(SquadMemberPortraitController), "SetSoldierPortrait")]
+        public static class SquadMemberPortraitController_SetSoldierPortrait_patch
+        {
+
+            public static bool Prefix(SquadMemberPortraitController __instance, SquadMemberScrollerController.PortraitSprites portraitSprites)
+            {
+                try
+                {
+                    if (Application.platform == RuntimePlatform.OSXPlayer ||
+            Application.platform == RuntimePlatform.OSXEditor)
+                    {
+                        TFTVLogger.Always($"Unholy Mac detected!");
+
+                        Image[] background = __instance.SoldierPortraitImages.Background;
+                        for (int i = 0; i < background.Length; i++)
+                        {
+                            //  background[i].sprite = portraitSprites.Background;
+                            background[i].color = Color.black;
+                        }
+
+                        __instance.UpdatePortrait(portraitSprites);
+                        background = __instance.SoldierPortraitImages.Foreground;
+                        foreach (Image image in background)
+                        {
+                            BasicTween component = image.GetComponent<BasicTween>();
+                            image.sprite = null;
+                            image.color = Color.clear;
+                            if (__instance.Actor.IsAlive)
+                            {
+                                if (!(component == null))
+                                {
+                                    if (Utl.LesserThan(__instance.Actor.Health.Ratio, __instance.LowHealthRatio))
+                                    {
+                                        image.sprite = __instance.LowHealthSprite;
+                                        component.StartTween();
+                                    }
+                                    else
+                                    {
+                                        component.StopTween();
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                if (component != null)
+                                {
+                                    component.StopTween();
+                                }
+
+                                image.sprite = __instance.DeathSprite;
+                                image.color = __instance.DeathColor;
+                            }
+                        }
+
+                        background = __instance.SoldierPortraitImages.CorruptionEffect;
+                        foreach (Image obj in background)
+                        {
+                            bool active = __instance.Actor.Status.HasStatus<CorruptionStatus>();
+                            obj.gameObject.SetActive(active);
+                        }
+
+                        return false;
+
+                    }
+                    return true;
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
+
+
+        [HarmonyPatch(typeof(EncounterVarResearchReward), "GiveReward")]
+        public static class EncounterVarResearchReward_GiveReward_patch
+        {
+
+            public static void Postfix(EncounterVarResearchReward __instance, GeoFaction faction)
+            {
+                try
+                {
+                    EncounterVarResearchRewardDef def = __instance.BaseDef as EncounterVarResearchRewardDef;
+
+                    TFTVLogger.Always($"{def.name} {def.VariableName} {faction.Name.Localize()}");
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
+
+
+
+
+        [HarmonyPatch(typeof(UIItemTooltip), "SetTacItemStats")]
+        public static class UIItemTooltip_SetTacItemStats_patch
+        {
+
+            public static void Postfix(UIItemTooltip __instance, TacticalItemDef tacItemDef, bool secondObject, int subItemIndex = -1)
+            {
+                try
+                {
+                    BodyPartAspectDef bodyPartAspectDef = tacItemDef.BodyPartAspectDef;
+                    if (bodyPartAspectDef != null)
+                    {
+                        if (bodyPartAspectDef.Endurance > 0)
+                        {
+                            MethodInfo methodInfo = typeof(UIItemTooltip).GetMethod("SetStat", BindingFlags.NonPublic | BindingFlags.Instance);
+                            object[] parameters = { new LocalizedTextBind("KEY_PROGRESSION_STRENGTH"), secondObject, UIUtil.StatsWithSign(bodyPartAspectDef.Endurance), bodyPartAspectDef.Endurance, null, subItemIndex };
+
+                            methodInfo.Invoke(__instance, parameters);
+                        }
+
+                        if (bodyPartAspectDef.WillPower > 0)
+                        {
+                            MethodInfo methodInfo = typeof(UIItemTooltip).GetMethod("SetStat", BindingFlags.NonPublic | BindingFlags.Instance);
+                            object[] parameters = { new LocalizedTextBind("KEY_PROGRESSION_WILLPOWER"), secondObject, UIUtil.StatsWithSign(bodyPartAspectDef.WillPower), bodyPartAspectDef.WillPower, null, subItemIndex };
+
+                            methodInfo.Invoke(__instance, parameters);
+                        }
+                    }
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
+
+
+
+
+        [HarmonyPatch(typeof(SoldierResultElement), "SetStatus", new Type[] { typeof(SoldierStatus), typeof(object[]) })]
+        public static class SoldierResultElement_SetStatus_patch
+        {
+
+            public static void Postfix(SoldierResultElement __instance)
+            {
+                try
+                {
+                    if (TFTVStamina.charactersWithDisabledBodyParts.ContainsKey(__instance.Actor.GeoUnitId))
+                    {
+                        string badlyInjuredText = TFTVCommonMethods.ConvertKeyToString("KEY_BADLY_INJURED_OPERATIVE");
+
+                        __instance.Status.text = badlyInjuredText;
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
+
 
         /*   [HarmonyPatch(typeof(GeoPhoenixpedia), "AddItemEntry")]
            public static class GeoPhoenixpedia_ProcessGeoscapeInstanceData_patch

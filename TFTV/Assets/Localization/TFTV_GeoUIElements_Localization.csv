@@ -174,3 +174,6 @@ KEY_DEPLOY_BASE_DEFENSE_TIP,Text,,Deploy the operatives at the base under attack
 KEY_DAYS,Text,,days,,,,,,,,
 KEY_DAY,Text,,day,,,,,,,,
 KEY_MESSAGE_GEO_MISSION_WHILE_TRAVELLING,Text,,Can't launch mission while travelling.,,,,,,,,
+KEY_AMBUSH_SAT_SCAN_TEXT0,Text,,Satellite scans indicate increased presence of,,,,,,,,
+KEY_AMBUSH_SAT_SCAN_TEXT1,Text,,in the area,,,,,,,,
+KEY_WARNING_STORAGE_EXCEEDED,Text,,You do not have enough space in storage for this operative's items! ,,,,,,,,

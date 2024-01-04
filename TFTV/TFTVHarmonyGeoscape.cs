@@ -1,4 +1,5 @@
-﻿using HarmonyLib;
+﻿using Base.Core;
+using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Levels.Missions;
@@ -60,13 +61,24 @@ namespace TFTV
         }
 
         [HarmonyPatch(typeof(GeoscapeEvent), "PostSerializationInit")]
-        public static class GeoscapeEventSystem_PostSerializationInit_patch
+        public static class GeoscapeEvent_PostSerializationInit_patch
         {
             public static void Prefix(GeoscapeEvent __instance)//GeoscapeEventData @event)
             {
                 try
                 {
+                 /*   TFTVLogger.Always($"trying to load event");
+                    TFTVLogger.Always($"event is {__instance.EventID} ");
+
+                    if (__instance.EventID.Contains("VoidOmen")) 
+                    {
+                        GeoLevelController component = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
+
+                        TFTVODIandVoidOmenRoll.GenerateVoidOmenEvent(component, TFTVODIandVoidOmenRoll.GenerateReportData(component), true, "", 15);   
+                    }*/
+
                     TFTVDiplomacyPenalties.ImplementDiplomaticPenalties(null, __instance);
+
 
                 }
 
