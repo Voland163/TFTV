@@ -34,7 +34,6 @@ namespace TFTV
             private static readonly TacticalItemDef neuSniperCoat = DefCache.GetDef<TacticalItemDef>("NEU_Sniper_Torso_BodyPartDef");
             private static readonly TacticalItemDef neuSniperLegs = DefCache.GetDef<TacticalItemDef>("NEU_Sniper_Legs_ItemDef");
 
-
             //indie armors
             private static readonly TacticalItemDef inAssaultHelmet = DefCache.GetDef<TacticalItemDef>("IN_Assault_Helmet_BodyPartDef");
             private static readonly TacticalItemDef inAssaultTorso = DefCache.GetDef<TacticalItemDef>("IN_Assault_Torso_BodyPartDef");
@@ -179,24 +178,47 @@ namespace TFTV
                 try
                 {
                     List<ItemDef> bersekerWeapons0 = new List<ItemDef>() { sectarianAxe, nePistol, nePistol.CompatibleAmmunition[0] };
-                    List<TacticalItemDef> berserkerArmor0 = new List<TacticalItemDef>() { sectarianHelmet, neuHeavyTshirt, inAssaultLegs };
+                    List<ItemDef> bersekerWeaponsGrenade0 = new List<ItemDef>() { sectarianAxe, grenade, grenade };
+ 
+                    List<TacticalItemDef> berserkerArmor0 = new List<TacticalItemDef>() { inSniperHelmet, neuSniperCoat, neuAssaultLegs };
+                    List<TacticalItemDef> berserkerArmor0b = new List<TacticalItemDef>() { sectarianHelmet, neuAssaultJacket, neuAssaultLegs};
+                    List<TacticalItemDef> berserkerArmor0c = new List<TacticalItemDef>() { inAssaultHelmet, neuAssaultJacket, neuHeavyLegs};
 
                     CreateTacCharaterDef(berserkerTag, "RoadKill", "{C5A4C006-3FF9-47A3-B64A-B32A8781F0A7}", bersekerWeapons0, berserkerArmor0, null, null, 1, 0);
-
-                    List<ItemDef> bersekerWeapons1 = new List<ItemDef>() { sectarianAxe, anuPistol, anuPistol.CompatibleAmmunition[0] };
+                    CreateTacCharaterDef(berserkerTag, "RoadKillb", "{8CFD7DDC-EC70-4E9E-90E0-FD27FB156A20}", bersekerWeapons0, berserkerArmor0b, null, null, 1, 0);
+                    CreateTacCharaterDef(berserkerTag, "RoadKillc", "{66B25F71-0CDD-4466-BD57-85FA9684869C}", bersekerWeapons0, berserkerArmor0c, null, null, 1, 0);
+        
                     List<TacticalItemDef> berserkerArmor1 = new List<TacticalItemDef>() { inAssaultHelmet, neuAssaultJacket, doomLegs };
+                    List<TacticalItemDef> berserkerArmor1grenade = new List<TacticalItemDef>() { sectarianHelmet, neuHeavyTshirt, inAssaultLegs };
+                    List<TacticalItemDef> berserkerArmor1grenadeb = new List<TacticalItemDef>() { spyMasterHelmet, neuHeavyTshirt, inAssaultLegs };
 
-                    CreateTacCharaterDef(berserkerTag, "RoadWarrior", "{5C08A5A2-4AA7-4334-A216-1C1A6F85541E}", bersekerWeapons1, berserkerArmor1, null, null, 1, 1);
+                    CreateTacCharaterDef(berserkerTag, "RoadWarrior", "{5C08A5A2-4AA7-4334-A216-1C1A6F85541E}", bersekerWeapons0, berserkerArmor1, null, null, 2, 1);
+                    CreateTacCharaterDef(berserkerTag, "RoadWarriorb", "{89F01E89-D796-4084-884D-75E78F88159B}", bersekerWeaponsGrenade0, berserkerArmor1grenade, null, null, 2, 1);
+                    CreateTacCharaterDef(berserkerTag, "RoadWarriorc", "{AD21E7B7-80C1-4B9F-AFF0-104B3ACFF0EE}", bersekerWeaponsGrenade0, berserkerArmor1grenadeb, null, null, 2, 1);
 
                     List<ItemDef> bersekerWeapons2 = new List<ItemDef>() { sectarianAxe, anuPistol, anuPistol.CompatibleAmmunition[0] };
-                    List<TacticalItemDef> berserkerArmor2 = new List<TacticalItemDef>() { doomHelmet, neuSniperCoat, inAssaultLegs };
+                    List<TacticalItemDef> berserkerArmor2 = new List<TacticalItemDef>() { doomHelmet, _assaultGoldNakedRight, inAssaultLegs};
+                    List<TacticalItemDef> berserkerArmor2grenade = new List<TacticalItemDef>() { goldHeavyHelmet, neuHeavyTshirt, inAssaultLegs };
+                    List<TacticalItemDef> berserkerArmor2b = new List<TacticalItemDef>() { inAssaultHelmet, _assaultGoldNakedLeft, neuAssaultLegs };
 
-                    CreateTacCharaterDef(berserkerTag, "RoadBeast", "{2A77F7CB-9F49-44D9-B319-5A04C5FE2E24}", bersekerWeapons2, berserkerArmor2, null, null, 2, 2);
+                    CreateTacCharaterDef(berserkerTag, "RoadBeast", "{2A77F7CB-9F49-44D9-B319-5A04C5FE2E24}", bersekerWeapons2, berserkerArmor2, null, null, 3, 2);
+                    CreateTacCharaterDef(berserkerTag, "RoadBeastc", "{5BE72413-B99F-43A8-AFE5-C2CE31B0F17D}", bersekerWeapons2, berserkerArmor2b, null, null, 3, 2);
+                    CreateTacCharaterDef(berserkerTag, "RoadBeastb", "{F08DD1E8-1DAD-4116-800A-DBCDF3A73F65}", bersekerWeaponsGrenade0, berserkerArmor2grenade, null, null, 3, 2);
 
-                    List<ItemDef> bersekerWeapons3 = new List<ItemDef>() { DefCache.GetDef<WeaponDef>("PX_StunRod_WeaponDef"), _tormentor, _tormentor.CompatibleAmmunition[0] };
-                    List<TacticalItemDef> berserkerArmor3 = new List<TacticalItemDef>() { neuSniperBandana, _heavyGoldNakedBoth, _heavyLegsNakedRight};
+                    List<ItemDef> bersekerWeapons3grenade = new List<ItemDef>() { DefCache.GetDef<WeaponDef>("PX_StunRod_WeaponDef"), grenade, grenade };
+                    List<ItemDef> bersekerWeapons3 = new List<ItemDef>() { sectarianAxe, _tormentor, _tormentor.CompatibleAmmunition[0] };
 
-                    CreateTacCharaterDef(berserkerTag, "RoadBoss", "{DC9A0366-6238-4EFA-B61C-BB41A62E418C}", bersekerWeapons3, berserkerArmor3, null, null, 3, 3);
+                    List<TacticalItemDef> berserkerArmor3 = new List<TacticalItemDef>() { neuSniperBandana, _heavyGoldNakedBoth, neuAssaultLegs};
+                    List<TacticalItemDef> berserkerArmor3grenade = new List<TacticalItemDef>() { goldHeavyHelmet, neuHeavyTshirt, neuAssaultLegs };
+                    List<TacticalItemDef> berserkerArmor3b = new List<TacticalItemDef>() { spyMasterHelmet, _heavyGoldNakedBoth, inAssaultLegs };
+
+                    CreateTacCharaterDef(berserkerTag, "RoadBoss", "{DC9A0366-6238-4EFA-B61C-BB41A62E418C}", bersekerWeapons3, berserkerArmor3, null, null, 4, 3);
+                    CreateTacCharaterDef(berserkerTag, "RoadBossb", "{967BFAF4-88E4-4A6C-A05D-D78B58A157D7}", bersekerWeapons3, berserkerArmor3b, null, null, 4, 3);
+                    CreateTacCharaterDef(berserkerTag, "RoadBossc", "{8CFADF47-FFBB-432D-BCB8-9E40DE88EB1C}", bersekerWeapons3grenade, berserkerArmor3grenade, null, null, 4, 3);
+
+
+
+
 
                     List<ItemDef> assaultWeapons0 = new List<ItemDef>() { neAssaultRifle, neAssaultRifle.CompatibleAmmunition[0] };
                     List<TacticalItemDef> assaultArmor0 = new List<TacticalItemDef>() { neuAssaultJacket, neuAssaultLegs };
@@ -204,7 +226,7 @@ namespace TFTV
                     CreateTacCharaterDef(assaultTag, "Fodder", "{542B4D12-EB73-4A85-9B45-66A69357E367}", assaultWeapons0, assaultArmor0, null, null, 1, 0);
 
                     List<ItemDef> assaultWeapons1 = new List<ItemDef>() { neAssaultRifle, neAssaultRifle.CompatibleAmmunition[0] };
-                    List<TacticalItemDef> assaultArmor1 = new List<TacticalItemDef>() { inAssaultHelmet, _risingSunJacketBoth, neuAssaultLegs };
+                    List<TacticalItemDef> assaultArmor1 = new List<TacticalItemDef>() { inAssaultHelmet, risingSunTorso, neuAssaultLegs };
 
                     CreateTacCharaterDef(assaultTag, "Doer", "{6166CDEF-63B5-4B24-B210-EDB585F09739}", assaultWeapons1, assaultArmor1, null, null, 1, 1);
 

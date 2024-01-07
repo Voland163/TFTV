@@ -170,7 +170,7 @@ namespace TFTV
 
                 VariousMinorAdjustments();
 
-               // TFTVRaiders.Defs.CreateRaiderDefs();
+             //  TFTVRaiders.Defs.CreateRaiderDefs();
 
               //  Print();
 

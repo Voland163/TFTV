@@ -4,13 +4,17 @@ using Base.UI;
 using Base.UI.MessageBox;
 using Base.UI.Tweens;
 using Base.Utils.Maths;
+using Code.PhoenixPoint.Tactical.Entities.Equipments;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
+using PhoenixPoint.Common.Entities.Equipments;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
+using PhoenixPoint.Common.Entities.Items;
 using PhoenixPoint.Common.View.ViewControllers.Inventory;
 using PhoenixPoint.Geoscape;
 using PhoenixPoint.Geoscape.Core;
 using PhoenixPoint.Geoscape.Entities;
+using PhoenixPoint.Geoscape.Entities.Interception.Equipments;
 using PhoenixPoint.Geoscape.Entities.PhoenixBases.FacilityComponents;
 using PhoenixPoint.Geoscape.Entities.Research;
 using PhoenixPoint.Geoscape.Entities.Research.Reward;
@@ -116,7 +120,7 @@ namespace TFTV
         }
 
 
-        [HarmonyPatch(typeof(EncounterVarResearchReward), "GiveReward")]
+      /*  [HarmonyPatch(typeof(EncounterVarResearchReward), "GiveReward")]
         public static class EncounterVarResearchReward_GiveReward_patch
         {
 
@@ -134,7 +138,7 @@ namespace TFTV
                     throw;
                 }
             }
-        }
+        }*/
 
 
 
@@ -142,11 +146,26 @@ namespace TFTV
         [HarmonyPatch(typeof(UIItemTooltip), "SetTacItemStats")]
         public static class UIItemTooltip_SetTacItemStats_patch
         {
-
+            
             public static void Postfix(UIItemTooltip __instance, TacticalItemDef tacItemDef, bool secondObject, int subItemIndex = -1)
             {
                 try
                 {
+                    if (tacItemDef == null) 
+                    {
+                        return;
+                    }
+
+                    if(tacItemDef is GroundVehicleModuleDef || tacItemDef is ItemDef itemDef && 
+                        (itemDef is GeoVehicleEquipmentDef|| itemDef is VehicleItemDef || itemDef is GroundVehicleWeaponDef)) 
+                    {
+                        //TFTVLogger.Always($"{tacItemDef.name}");
+                        return;
+                    
+                    }
+                   
+                  //  TFTVLogger.Always($"is not GroundVehicleModuleDef or GeoVehicleEquipmentDef");
+
                     BodyPartAspectDef bodyPartAspectDef = tacItemDef.BodyPartAspectDef;
                     if (bodyPartAspectDef != null)
                     {
