@@ -65,7 +65,7 @@ namespace TFTV
         public override bool CanSafelyDisable => false;
 
 
-        private static void ChangeTitleScreen(PhoenixGame game)
+      /*  private static void ChangeTitleScreen(PhoenixGame game)
         {
             try 
             { 
@@ -79,7 +79,7 @@ namespace TFTV
             {
                 TFTVLogger.Error(e);
             }
-        }
+        }*/
 
         /// <summary>
         /// Callback for when mod is enabled. Called even on game starup.
@@ -102,7 +102,7 @@ namespace TFTV
                 /// PhoenixGame is accessible at any time.
                 PhoenixGame game = GetGame();
 
-                string version = $"TFTV 20240107 release #2 (Hotfix 1 for Update #49) v{MetaData.Version}";
+                string version = $"TFTV 20240114 release #1 (Update #50) v{MetaData.Version}";
 
                 TFTVversion = version;
 
@@ -167,8 +167,6 @@ namespace TFTV
                     homeScreenView.EditionVisualsController.SwitchToVanillaVisuals();
 
                     TFTVNewGameMenu.TitleScreen.SetTFTVLogo(homeScreenView);
-
-
                 }
 
                

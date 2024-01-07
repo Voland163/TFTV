@@ -239,7 +239,7 @@ namespace TFTV
                 TFTVInfestation.HavenPopulation = data.infestedHavenPopulationSaveData;
                 TFTVInfestation.OriginalOwner = data.infestedHavenOriginalOwnerSaveData;
                 TFTVRevenant.revenantID = data.RevenantId;
-                TFTVBaseDefenseTactical.AttackProgress = data.BaseDefenseAttackProgress;
+                TFTVBaseDefenseTactical.TimeLeft = data.BaseDefenseAttackProgress;
                 TFTVBaseDefenseTactical.StratToBeAnnounced = data.BaseDefenseStratToBeAnnounced;
                 TFTVBaseDefenseTactical.StratToBeImplemented = data.BaseDefenseStratToBeImplemented;
                 TFTVBaseDefenseTactical.UsedStrats = data.StratsAlreadyImplementedAtBD;
@@ -299,7 +299,7 @@ namespace TFTV
                 infestedHavenPopulationSaveData = TFTVInfestation.HavenPopulation,
                 infestedHavenOriginalOwnerSaveData = TFTVInfestation.OriginalOwner,
                 RevenantId = TFTVRevenant.revenantID,
-                BaseDefenseAttackProgress = TFTVBaseDefenseTactical.AttackProgress,
+                BaseDefenseAttackProgress = TFTVBaseDefenseTactical.TimeLeft,
                 BaseDefenseStratToBeImplemented = TFTVBaseDefenseTactical.StratToBeImplemented,
                 BaseDefenseStratToBeAnnounced = TFTVBaseDefenseTactical.StratToBeAnnounced,
                 StratsAlreadyImplementedAtBD = TFTVBaseDefenseTactical.UsedStrats,

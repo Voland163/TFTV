@@ -20,6 +20,7 @@ using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.Entities.Items;
 using PhoenixPoint.Common.Entities.RedeemableCodes;
+using PhoenixPoint.Common.Levels.ActorDeployment;
 using PhoenixPoint.Common.Levels.Missions;
 using PhoenixPoint.Common.UI;
 using PhoenixPoint.Geoscape.Entities;
@@ -83,14 +84,22 @@ namespace TFTV
         {
             try
             {
-                ItemClassificationTagDef meleeTagDef = DefCache.GetDef<ItemClassificationTagDef>("MeleeWeapon_TagDef");
-
-                foreach (WeaponDef weaponDef in Repo.GetAllDefs<WeaponDef>().Where(w => w.Tags.Contains(meleeTagDef)))
-                {
-                    TFTVLogger.Always($"{weaponDef.name} has {meleeTagDef.name}");
-
-
+                foreach(CustomMissionTypeDef customMissionTypeDef in 
+                    Repo.GetAllDefs<CustomMissionTypeDef>().
+                    Where(m=>m.ParticipantsData.
+                    Any(pd => pd.FactionDef == DefCache.GetDef<PPFactionDef>("NEU_Bandits_FactionDef"))))
+                    {
+                    TFTVLogger.Always($"{customMissionTypeDef.name} has bandits in it, and they are participant 0? " +
+                        $"{customMissionTypeDef.ParticipantsData[0].FactionDef==DefCache.GetDef<PPFactionDef>("NEU_Bandits_FactionDef")}\n{customMissionTypeDef.Guid}");
+                
                 }
+                
+
+
+              /*  for (int i = 0; i < 18; i++)
+                {
+                    TFTVLogger.Always($"\"{Guid.NewGuid().ToString()}\"");
+                }*/
 
 
                 /*  ResearchDbDef researchDB = DefCache.GetDef<ResearchDbDef>("pp_ResearchDB");
@@ -170,7 +179,7 @@ namespace TFTV
 
                 VariousMinorAdjustments();
 
-             //  TFTVRaiders.Defs.CreateRaiderDefs();
+                TFTVRaiders.Defs.CreateRaiderDefs();
 
               //  Print();
 
@@ -248,7 +257,6 @@ namespace TFTV
             }
         }
 
-
         private static void VariousMinorAdjustments()
         {
             try
@@ -261,8 +269,7 @@ namespace TFTV
                 ModifyCratesToAddArmor();
                 TFTVReverseEngineering.ModifyReverseEngineering();
                 ChangeInfestationDefs();
-                ChangesAmbushMissions();
-                CreateAcidImmunity();
+                ChangesAmbushMissions();     
                 RemoveCensusResearch();
                 AllowMedkitsToTargetMutoidsAndChangesToMutoidSkillSet();
                 MistOnAllMissions();
@@ -290,6 +297,19 @@ namespace TFTV
                 LimitCoDeliriumAttack();
                 AdjustAlienAmbushChance();
                 IncreaseBionicLabCost();
+                ReduceEffectOfMistOnPerception();
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+        private static void ReduceEffectOfMistOnPerception()
+        {
+            try 
+            {
+                DefCache.GetDef<TacticalPerceptionDef>("Soldier_PerceptionDef").MistBlobPerceptionRangeCost = 5;            
             }
             catch (Exception e)
             {
@@ -439,8 +459,6 @@ namespace TFTV
                 string umbraMoveAndStrikeActionName = "Umbra_MoveAndStrike_AIActionDef";
                 AIActionMoveAndAttackDef umbraMoveAndStrikeActionDef = Helper.CreateDefFromClone(moveAndStrikeAIActionDef, "{87D7753B-E778-45D8-82E8-965B3B8D9380}", umbraMoveAndStrikeActionName);
 
-
-                TFTVLogger.Always($"got here");
                 //used by [2], consider removing consideartions [0] and [1]
                 // AIStrategicPositionConsiderationDef aIStrategicPositionConsiderationDef = DefCache.GetDef<AIStrategicPositionConsiderationDef>("StrategicPositionOff_AIConsiderationDef");
                 // AILineOfSightToEnemiesConsiderationDef aILineOfSightToEnemiesConsiderationDef = DefCache.GetDef<AILineOfSightToEnemiesConsiderationDef>("NoLineofSight_AIConsiderationDef");
@@ -1708,10 +1726,12 @@ namespace TFTV
                 TriggerAbilityZoneOfControlStatusDef canBeRecruited3x3 = DefCache.GetDef<TriggerAbilityZoneOfControlStatusDef>("CanBeRecruitedIntoPhoenix_3x3_StatusDef");
 
                 TriggerAbilityZoneOfControlStatusDef canBeRecruited3x3_disabled = DefCache.GetDef<TriggerAbilityZoneOfControlStatusDef>("CanBeRecruitedIntoPhoenix_3x3_Disabled_StatusDef");
+                TriggerAbilityZoneOfControlStatusDef canBeRecruited1x1_disabled = DefCache.GetDef<TriggerAbilityZoneOfControlStatusDef>("CanBeRecruitedIntoPhoenix_1x1_Disabled_StatusDef");
 
                 List<EffectConditionDef> effectConditionDefs1x1 = canBeRecruited1x1.TriggerConditions.ToList();
                 List<EffectConditionDef> effectConditionDefs3x3 = canBeRecruited3x3.TriggerConditions.ToList();
                 List<EffectConditionDef> effectConditionDefs3x3_disabled = canBeRecruited3x3_disabled.TriggerConditions.ToList();
+                List<EffectConditionDef> effectConditionDefs1x1_disabled = canBeRecruited1x1_disabled.TriggerConditions.ToList();
                 ActorHasTagEffectConditionDef source = DefCache.GetDef<ActorHasTagEffectConditionDef>("HasCombatantTag_ApplicationCondition");
                 ActorHasTagEffectConditionDef notDroneCondition = Helper.CreateDefFromClone(source, "{87709AA5-4B10-44A7-9810-1E0502726A48}", "NotADroneEffectConditionDef");
 
@@ -1730,11 +1750,14 @@ namespace TFTV
 
                 effectConditionDefs3x3_disabled.Add(notAlienCondition);
                 effectConditionDefs3x3_disabled.Add(notDroneCondition);
+                
+                effectConditionDefs1x1_disabled.Add(notAlienCondition);
+                effectConditionDefs1x1_disabled.Add(notDroneCondition);
 
                 canBeRecruited1x1.TriggerConditions = effectConditionDefs1x1.ToArray();
                 canBeRecruited3x3.TriggerConditions = effectConditionDefs3x3.ToArray();
                 canBeRecruited3x3_disabled.TriggerConditions = effectConditionDefs3x3_disabled.ToArray();
-
+                canBeRecruited1x1_disabled.TriggerConditions = effectConditionDefs1x1_disabled.ToArray();
             }
             catch (Exception e)
             {
@@ -3970,6 +3993,7 @@ namespace TFTV
         {
             try
             {
+                CreateAcidImmunity();
                 ChangesToAcherons();
                 ModifyPalaceGuardians();
                 ModifyScyllaAIAndHeads();
@@ -6788,6 +6812,33 @@ namespace TFTV
                 TacCharacterDef subject24 = Helper.CreateDefFromClone(DefCache.GetDef<TacCharacterDef>("NJ_Jugg_TacCharacterDef"), "A4F0335E-BF41-4175-8C28-7B0DE5352224", nameDef);
                 subject24.Data.Name = "Subject 24";
 
+
+                  TacticalItemDef juggBionicLeft = DefCache.GetDef<TacticalItemDef>("SY_Shinobi_BIO_LeftArm_BodyPartDef");
+                   TacticalItemDef juggBionicRight = DefCache.GetDef<TacticalItemDef>("SY_Shinobi_BIO_RightArm_BodyPartDef");
+                   TacticalItemDef sourceJacket = DefCache.GetDef<TacticalItemDef>("NEU_Assault_Torso_BodyPartDef");
+
+                TacticalItemDef juggTorso= DefCache.GetDef<TacticalItemDef>("NJ_Jugg_BIO_Torso_BodyPartDef");
+
+                TacticalItemDef subject24jacket = Helper.CreateDefFromClone(sourceJacket, "{1E1723AD-09B0-49FD-8FCF-C338AD22EE4D}", "Subject24_jacket");
+                subject24jacket.ViewElementDef = Helper.CreateDefFromClone(sourceJacket.ViewElementDef, "{18A8F78D-D16A-4B98-A22B-B9C7DAC11A90}", "Subject24_jacket");
+                subject24jacket.ViewElementDef.DisplayName1 = juggTorso.ViewElementDef.DisplayName1;
+                subject24jacket.ViewElementDef.DisplayName2 = juggTorso.ViewElementDef.DisplayName2;
+                subject24jacket.ViewElementDef.Description = juggTorso.ViewElementDef.Description;
+                subject24jacket.ViewElementDef.Category = juggTorso.ViewElementDef.Category;
+                subject24jacket.ViewElementDef.LargeIcon = juggTorso.ViewElementDef.LargeIcon;
+                subject24jacket.ViewElementDef.InventoryIcon = juggTorso.ViewElementDef.InventoryIcon;
+                subject24jacket.ViewElementDef.RosterIcon = juggTorso.ViewElementDef.RosterIcon;
+                subject24jacket.Armor = juggTorso.Armor;
+                subject24jacket.IsPermanentAugment = true;
+
+                subject24jacket.SubAddons[0] = new AddonDef.SubaddonBind() { SubAddon = juggBionicLeft };
+                subject24jacket.SubAddons[1] = new AddonDef.SubaddonBind() { SubAddon = juggBionicRight };
+
+                   subject24.Data.BodypartItems = new ItemDef[] { subject24jacket,
+                       DefCache.GetDef<TacticalItemDef>("NJ_Jugg_BIO_Helmet_BodyPartDef"), DefCache.GetDef<TacticalItemDef>("NJ_Exo_BIO_Legs_ItemDef")
+                   };
+
+
                 // CustomizationColorTagDef_10 green
                 // CustomizationColorTagDef_14 pink
                 // CustomizationColorTagDef_0 grey
@@ -6803,7 +6854,7 @@ namespace TFTV
                 TacMissionTypeParticipantData.UniqueChatarcterBind uniqueChatarcterBind = new TacMissionTypeParticipantData.UniqueChatarcterBind
                 {
                     Character = subject24,
-                    Amount = new Base.Utils.RangeDataInt { Max = 1, Min = 1 },
+                    Amount = new RangeDataInt { Max = 1, Min = 1 },
                 };
                 tacCharacterDefs.Add(uniqueChatarcterBind);
                 DefCache.GetDef<CustomMissionTypeDef>("StoryPU14_CustomMissionTypeDef").ParticipantsData[1].UniqueUnits = tacCharacterDefs.ToArray();

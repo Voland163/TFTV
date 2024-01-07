@@ -285,7 +285,7 @@ namespace TFTV
                 AIActionMoveAndExecuteAbilityDef moveAndStompAIAction = DefCache.GetDef<AIActionMoveAndExecuteAbilityDef>("MoveAndStomp_AIActionDef");
 
                 healAIAction.Weight = 2;
-                dashaAndStikeAIAction.Weight = 350;
+                dashaAndStikeAIAction.Weight = 300;
 
                 List<AIActionDef> soldierAIActionDefs = new List<AIActionDef>(soldierAI.ActionDefs.ToList());
                 soldierAIActionDefs.Remove(moveAndStompAIAction);

@@ -24,6 +24,32 @@ namespace TFTV
         private static readonly GeoFactionDef Synedrion = DefCache.GetDef<GeoFactionDef>("Synedrion_GeoFactionDef");
 
 
+        //PROG_PU5_GeoscapeEventDef sets ambush chance to 100 (for our purposes, what matters is that it's above 0)
+        //it's triggered by NJ completing NJ_Bionics1_ResearchDef
+
+        //PROG_PU6_GeoscapeEventDef sets FO ambush chance to 50
+        //it's triggered by ANU researching Priest
+
+        //PROG_PU7_GeoscapeEventDef sets the mission vs the FO (PROG_PU8_MISS_GeoscapeEventDef)
+        //it's triggered by NJ researching Technician
+
+        //PROG_PU9_GeoscapeEventDef seems to be purely flavor, triggered by NJ researching NJ_Bionics2_ResearchDef
+
+        //PROG_PU10_GeoscapeEventDef offers mission vs Syn + Pure for 250 mats
+        //It's triggered by the variable PU10 reaching 3;
+        //PX researching NJ_Bionics1_ResearchDef gives +1, 
+        // PX researching NJ_Bionics2_ResearchDef gives +1,
+        // SYN researching SYN_InfiltratorTech_ResearchDef gives +2,
+
+        //PROG_PU121_GeoscapeEventDef seems to be purely flavor, triggered by PX researching SYN_Bionics3_ResearchDef
+
+        //PROG_PU13_GeoscapeEventDef sets the Bionic Fortress mission
+        //it's triggered by variable PU13 reaching 3
+        //NJ_Bionics1_ResearchDef_EncounterVarResearchRewardDef_0 +1
+        //NJ_Bionics2_ResearchDef_EncounterVarResearchRewardDef_0 +1
+        //SYN_Bionics3_ResearchDef_EncounterVarResearchRewardDef_0 +1
+
+
         public static void ChangesToDLC1andDLC2Defs()
         {
             try
@@ -47,9 +73,7 @@ namespace TFTV
         {
             try 
             {
-                
-
-                DefCache.GetDef<EncounterVarResearchRewardDef>("SYN_InfiltratorTech_ResearchDef_EncounterVarResearchRewardDef_0").VariableValue=1; 
+                DefCache.GetDef<EncounterVarResearchRewardDef>("SYN_InfiltratorTech_ResearchDef_EncounterVarResearchRewardDef_0").VariableValue=1;
             }
             catch (Exception e)
             {

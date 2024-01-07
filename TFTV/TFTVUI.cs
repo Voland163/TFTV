@@ -5,10 +5,12 @@ using Base.Levels;
 using Base.UI;
 using Base.UI.MessageBox;
 using Base.UI.VideoPlayback;
+using Code.PhoenixPoint.Tactical.Entities.Equipments;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.Characters;
+using PhoenixPoint.Common.Entities.Equipments;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.Entities.Items;
@@ -18,6 +20,7 @@ using PhoenixPoint.Common.View.ViewControllers;
 using PhoenixPoint.Common.View.ViewControllers.Inventory;
 using PhoenixPoint.Common.View.ViewModules;
 using PhoenixPoint.Geoscape.Entities;
+using PhoenixPoint.Geoscape.Entities.Interception.Equipments;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
 using PhoenixPoint.Geoscape.View.DataObjects;
@@ -42,6 +45,7 @@ using System.Linq;
 using System.Reflection;
 using UnityEngine;
 using UnityEngine.UI;
+using static PhoenixPoint.Tactical.View.ViewControllers.SoldierResultElement;
 
 namespace TFTV
 {
@@ -56,6 +60,84 @@ namespace TFTV
         internal static Color dark = new Color(52, 52, 61, 1.0f);
 
         public static bool HelmetsOff;
+
+        [HarmonyPatch(typeof(SoldierResultElement), "SetStatus", new Type[] { typeof(SoldierStatus), typeof(object[]) })]
+        public static class SoldierResultElement_SetStatus_patch
+        {
+
+            public static void Postfix(SoldierResultElement __instance)
+            {
+                try
+                {
+                    if (TFTVStamina.charactersWithDisabledBodyParts.ContainsKey(__instance.Actor.GeoUnitId))
+                    {
+                        string badlyInjuredText = TFTVCommonMethods.ConvertKeyToString("KEY_BADLY_INJURED_OPERATIVE");
+
+                        __instance.Status.text = badlyInjuredText;
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
+
+
+        [HarmonyPatch(typeof(UIItemTooltip), "SetTacItemStats")]
+        public static class UIItemTooltip_SetTacItemStats_patch
+        {
+
+            public static void Postfix(UIItemTooltip __instance, TacticalItemDef tacItemDef, bool secondObject, int subItemIndex = -1)
+            {
+                try
+                {
+                    if (tacItemDef == null)
+                    {
+                        return;
+                    }
+
+                    if (tacItemDef is GroundVehicleModuleDef || tacItemDef is ItemDef itemDef &&
+                        (itemDef is GeoVehicleEquipmentDef || itemDef is VehicleItemDef || itemDef is GroundVehicleWeaponDef))
+                    {
+                        //TFTVLogger.Always($"{tacItemDef.name}");
+                        return;
+
+                    }
+
+                    //  TFTVLogger.Always($"is not GroundVehicleModuleDef or GeoVehicleEquipmentDef");
+
+                    BodyPartAspectDef bodyPartAspectDef = tacItemDef.BodyPartAspectDef;
+                    if (bodyPartAspectDef != null)
+                    {
+                        if (bodyPartAspectDef.Endurance > 0)
+                        {
+                            MethodInfo methodInfo = typeof(UIItemTooltip).GetMethod("SetStat", BindingFlags.NonPublic | BindingFlags.Instance);
+                            object[] parameters = { new LocalizedTextBind("KEY_PROGRESSION_STRENGTH"), secondObject, UIUtil.StatsWithSign(bodyPartAspectDef.Endurance), bodyPartAspectDef.Endurance, null, subItemIndex };
+
+                            methodInfo.Invoke(__instance, parameters);
+                        }
+
+                        if (bodyPartAspectDef.WillPower > 0)
+                        {
+                            MethodInfo methodInfo = typeof(UIItemTooltip).GetMethod("SetStat", BindingFlags.NonPublic | BindingFlags.Instance);
+                            object[] parameters = { new LocalizedTextBind("KEY_PROGRESSION_WILLPOWER"), secondObject, UIUtil.StatsWithSign(bodyPartAspectDef.WillPower), bodyPartAspectDef.WillPower, null, subItemIndex };
+
+                            methodInfo.Invoke(__instance, parameters);
+                        }
+                    }
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
+
+
         internal class EditScreen
         {
             internal class Stats

@@ -1,6 +1,7 @@
 ﻿using Base;
 using Base.Core;
 using Base.Entities;
+using Base.Entities.Effects;
 using Base.Entities.Statuses;
 using Base.Levels;
 using HarmonyLib;
@@ -11,6 +12,7 @@ using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.Entities.Items;
 using PhoenixPoint.Common.Levels.ActorDeployment;
 using PhoenixPoint.Common.Levels.Missions;
+using PhoenixPoint.Tactical;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.ActorsInstance;
@@ -323,7 +325,7 @@ namespace TFTV
                 }
             }
 
-          
+
             [HarmonyPatch(typeof(YuggothShieldsAbility), "IsQueenWallDown")]
 
             public static class TFTV_YuggothShieldsAbility_IsQueenWallDown_patch
@@ -334,9 +336,9 @@ namespace TFTV
                     {
                         TacticalActorYuggoth actor = __instance.Actor as TacticalActorYuggoth;
 
-                        if (actor.QueenWallDownOnTurn > 0) 
+                        if (actor.QueenWallDownOnTurn > 0)
                         {
-                            return true;                    
+                            return true;
                         }
 
                         return false;
@@ -350,7 +352,7 @@ namespace TFTV
                 }
             }
 
-           
+
 
 
             /// <summary>
@@ -483,7 +485,7 @@ namespace TFTV
             {
                 try
                 {
-                    
+
 
                     TFTVLogger.Always($"Player has no units south of the closed gates; setting all Pandorans to not alerted and destroying turrets and spider drones!");
 
@@ -498,7 +500,7 @@ namespace TFTV
                         TacticalFactionVision.ForgetForAll(tacticalActor, true);
                         tacticalActor.SetFaction(controller.GetFactionByCommandName("env"), TacMissionParticipant.Environment);
                     }
-                    List<TacticalActor> playerToys = controller.GetFactionByCommandName("px").TacticalActors.Where(ta => ta.IsAlive && ta.Pos.z > 42 
+                    List<TacticalActor> playerToys = controller.GetFactionByCommandName("px").TacticalActors.Where(ta => ta.IsAlive && ta.Pos.z > 42
                     && ta.HasGameTag(Shared.SharedGameTags.DamageByCaterpillarTracks)).ToList();
 
                     TFTVLogger.Always($"Player toys count: {playerToys.Count}");
@@ -506,7 +508,7 @@ namespace TFTV
                     foreach (TacticalActor tacticalActor in playerToys)
                     {
                         TFTVLogger.Always($"destroying {tacticalActor.name}");
-                        tacticalActor.ApplyDamage(new DamageResult() { HealthDamage=1000});
+                        tacticalActor.ApplyDamage(new DamageResult() { HealthDamage = 1000 });
                     }
                 }
                 catch (Exception e)
@@ -612,7 +614,7 @@ namespace TFTV
                                     yuggoth.QueenWallDownOnTurn = -1; //resetting to -1 before activating to avoid issues
 
                                     TFTVLogger.Always($"All consoles activated! Lowering the gate!");
-                                    
+
                                     lowerShields.LowerQueensWall();
                                     ActivatedObjectives.Clear();
 
@@ -679,7 +681,7 @@ namespace TFTV
                         turnGatesLowered = tacticalActorYuggoth.QueenWallDownOnTurn;
                     }
 
-                
+
                     TFTVLogger.Always($"yuggoth found? {tacticalActorYuggoth != null} gates lowered on turn {turnGatesLowered} (how many yuggoths found? {controller.Map.GetActors<TacticalActorYuggoth>().Count()}");
 
 
@@ -912,8 +914,10 @@ namespace TFTV
             {
                 try
                 {
+                 //   TFTVLogger.Always($"going to count eyes");
                     int disabledEyes = receptacle.BodyState.GetAllBodyparts().Where(x => x.BodyPartAspectDef.name.Contains("Yugothian_Eye") && !x.Enabled).Count();
 
+                  //  TFTVLogger.Always($"There are {disabledEyes}");
                     return disabledEyes;
 
 
@@ -929,11 +933,69 @@ namespace TFTV
             [HarmonyPatch(typeof(RemoveStatusFromOneRandomEnemyEffect), "OnApply")]
             public static class TFTV_RemoveStatusFromOneRandomEnemyEffect_OnApply_patch
             {
+                public static bool Prefix(RemoveStatusFromOneRandomEnemyEffect __instance, EffectTarget target)
+                {
+                    try
+                    {
+                        TFTVLogger.Always($"RemoveStatusFromOneRandomEnemyEffect.OnApply running");
+
+                        Effect effect = new Effect();
+                        MethodInfo onApplyMethod = typeof(Effect).GetMethod("OnApply", BindingFlags.Instance | BindingFlags.NonPublic);
+
+                        // Invoking OnApply method
+                        onApplyMethod.Invoke(effect, new object[] { target });
+
+                        TacticalActorBase tacticalActorBase = TacUtil.GetActorFromTransform<TacticalActorBase>(target.GameObject.transform);
+
+                      //  TFTVLogger.Always($"tacticalActorBase null? {tacticalActorBase==null}");
+                      //  TFTVLogger.Always($"{tacticalActorBase.name}. what faction? {tacticalActorBase.TacticalFaction.Faction.FactionDef.name}");
+
+                      //  List<TacticalActorBase> list0 = TacUtil.GetActorFromTransform<TacticalActorBase>(target.GameObject.transform).TacticalFaction.GetAllAliveEnemyActors<TacticalActorBase>(checkKnowledge: false).ToList();
+
+                       // TFTVLogger.Always($"got the list. what's the count? {list0.Count}");
+
+                      /*  foreach(TacticalActorBase tacticalActorBase1 in list0) 
+                        {
+                            TFTVLogger.Always($"looking at {tacticalActorBase1.name}, of faction {tacticalActorBase1.TacticalFaction.Faction.FactionDef.name}");
+
+                            if (tacticalActorBase1.Status != null)
+                            {
+                                TFTVLogger.Always($"does it have the MoV status? {tacticalActorBase1.Status.GetStatus<Status>(__instance.RemoveStatusFromOneRandomEnemyEffectDef.StatusToRemoveDef) != null}");
+                            }
+                        }*/
+
+                        List <TacticalActorBase> list = (from a in TacUtil.GetActorFromTransform<TacticalActorBase>(target.GameObject.transform).TacticalFaction.GetAllAliveEnemyActors<TacticalActorBase>(checkKnowledge: false)
+                                                        where a.Status!=null && a.Status.GetStatus<Status>(__instance.RemoveStatusFromOneRandomEnemyEffectDef.StatusToRemoveDef) != null
+                                                        select a).ToList();
+
+                        TFTVLogger.Always($"got the list for RemoveStatusFromOneRandomEnemyEffect.OnApply for {__instance.RemoveStatusFromOneRandomEnemyEffectDef.name}! count is {list.Count}");
+
+                        if (list.Count != 0)
+                        {
+                            TacticalActorBase randomElement = list.GetRandomElement(SharedData.GetSharedDataFromGame().Random);
+
+                            TFTVLogger.Always($"found the random element! it's {randomElement.name}");
+                            Status status = randomElement.Status.GetStatus<Status>(__instance.RemoveStatusFromOneRandomEnemyEffectDef.StatusToRemoveDef);
+                         //   TFTVLogger.Always($"status is null? {status==null}");
+                            randomElement.Status.UnapplyStatus(status);
+                          //  TFTVLogger.Always($"status should get unapplied");
+                        }
+
+                        return false;
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                        throw;
+                    }
+                }
                 public static void Postfix(RemoveStatusFromOneRandomEnemyEffect __instance)
                 {
                     try
                     {
                         TacticalLevelController controller = GameUtl.CurrentLevel().GetComponent<TacticalLevelController>();
+
+                        TFTVLogger.Always($"RemoveStatusFromOneRandomEnemyEffect.OnApply Postfix running");
 
                         if (controller.TacMission.IsFinalMission && !controller.IsLoadingSavedGame &&
                             __instance.RemoveStatusFromOneRandomEnemyEffectDef == DefCache.GetDef<RemoveStatusFromOneRandomEnemyEffectDef>("E_RemoveMarkOfTheVoid [RemoveMarkOfTheVoid_EffectEventDef]"))
@@ -945,7 +1007,6 @@ namespace TFTV
 
                             if (receptacleEyesDamaged >= Math.Max(TFTVReleaseOnly.DifficultyOrderConverter(controller.Difficulty.Order), 4))
                             {
-
                                 actor.ApplyDamage(new DamageResult() { HealthDamage = 2000000 });
                                 GiveAllPhoenixOperativesReceptacleDistrupredStatus(controller);
 
@@ -1330,7 +1391,7 @@ namespace TFTV
                             CheckIfShouldSpawnReinforcementsOnConsoleActivation();
                             CheckIfShouldSpawnOrdinaryReinforcements();
                             CheckIfShouldSpawnReinforcementsNorthOfTheGates();
-                            
+
                         }
                     }
                     catch (Exception e)
@@ -1362,12 +1423,12 @@ namespace TFTV
                                 SpawnMyrmidonReinforcements(myrmidonSpawns.GetRandomElement(), controller);
                                 SpawnJumpingArthronsReinforcements(controller);
                             }
-                            else 
+                            else
                             {
-                              Gates.RemoveAlertPandoransSouthOfTheGates(controller);                            
+                                Gates.RemoveAlertPandoransSouthOfTheGates(controller);
                             }
                         }
-                       
+
                     }
 
                     catch (Exception e)
@@ -1430,7 +1491,7 @@ namespace TFTV
                         if (tacticalActorYuggoth != null && tacticalActorYuggoth.QueenWallDownOnTurn == controller.TurnNumber)
                         {
 
-                            SetActivationTurnForReinforcementTacticalZones(controller, controller.TurnNumber + Mathf.Max(4 - controller.Difficulty.Order,0));
+                            SetActivationTurnForReinforcementTacticalZones(controller, controller.TurnNumber + Mathf.Max(4 - controller.Difficulty.Order, 0));
 
                             TFTVLogger.Always($"Reinforcement TDZ set to deploy on turn {controller.TurnNumber + Mathf.Max(4 - controller.Difficulty.Order, 0)}");
 
@@ -2594,7 +2655,7 @@ namespace TFTV
                                 TFTVLogger.Always($"stray {minion.name} heeds the Master's Call!");
 
                                 minion.SetFaction(controller.GetFactionByCommandName("aln"), TacMissionParticipant.Residents);
-                                if (minion.Status.HasStatus<MindControlStatus>()) 
+                                if (minion.Status.HasStatus<MindControlStatus>())
                                 {
                                     minion.Status.UnapplyStatus(minion.Status.GetStatus<MindControlStatus>());
                                     TFTVLogger.Always($"stray {minion.name} has MC status removed!");

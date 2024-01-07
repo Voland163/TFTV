@@ -118,6 +118,7 @@ namespace TFTV
                 TFTVTactical.TurnZeroMethodsExecuted = false;
                 TFTVBaseDefenseGeoscape.PhoenixBasesUnderAttack = new Dictionary<int, Dictionary<string, double>>();
                 TFTVBaseDefenseGeoscape.PhoenixBasesInfested.Clear();
+                TFTVBaseDefenseGeoscape.PhoenixBasesContainmentBreach.Clear();
                 TFTVBaseDefenseTactical.VentingHintShown = false;
                 TFTVBaseDefenseTactical.ConsolePositions = new Dictionary<float, float>();
                 TFTVAncients.CyclopsMolecularDamageBuff.Clear();

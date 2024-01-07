@@ -217,7 +217,7 @@ namespace TFTV
 
                     if(raiderBoost) 
                     {
-                        raiderWeight = 100;                   
+                        raiderWeight = 80;                   
                     }
 
                   

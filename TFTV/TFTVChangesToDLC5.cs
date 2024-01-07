@@ -1297,8 +1297,6 @@ namespace TFTV
             {
                 try
                 {
-
-
                     _obliterator.ManufactureMaterials = 100;
                     _subjector.ManufactureMaterials = 100;
                     _redemptor.ManufactureMaterials = 100;

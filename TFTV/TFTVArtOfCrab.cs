@@ -8,12 +8,14 @@ using Base.Utils.Maths;
 using HarmonyLib;
 using Mono.Cecil;
 using PhoenixPoint.Common.Core;
+using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.Entities.Items;
 using PhoenixPoint.Tactical;
 using PhoenixPoint.Tactical.AI;
 using PhoenixPoint.Tactical.AI.Considerations;
+using PhoenixPoint.Tactical.AI.TargetGenerators;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.DamageKeywords;
@@ -28,6 +30,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
+using static UnityEngine.GraphicsBuffer;
 
 namespace TFTV
 {
@@ -1373,6 +1376,155 @@ namespace TFTV
 
             }
         }
+
+     
+
+        /*
+        [HarmonyPatch(typeof(AIAbilityDisabledStateConsideration), "Evaluate")]
+        public static class AIAbilityDisabledStateConsideration_GetMovementDataInRange_patch
+        {
+            private static void Postfix(AIAbilityDisabledStateConsideration __instance, ref float __result, IAIActor actor, IAITarget target, object context)
+            {
+                try
+                {
+                    if (__instance.Def.name.Equals("CanDash_AIConsiderationDef"))
+                    {
+                        AIAbilityDisabledStateConsiderationDef def = __instance.Def;
+                        TacticalActor tacActor = actor as TacticalActor;
+                        TFTVLogger.Always($"{tacActor.name} {__instance.Def.name} running Evaluate, result is {__result}");
+
+                        TacticalActorBase actor2 = (TacticalActorBase)actor;
+                        TacAITarget target2 = target as TacAITarget;
+                        TacticalAbility ability = def.GetAbility(actor2, target2);
+                        if (ability == null)
+                        {
+                            TFTVLogger.Always($"ability null!");
+                          
+                        }
+                    }
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+
+        }
+
+
+
+        [HarmonyPatch(typeof(AICanUseEquipmentConsideration), "Evaluate")]
+        public static class AICanUseEquipmentConsiderationn_GetMovementDataInRange_patch
+        {
+            private static void Postfix(AICanUseEquipmentConsideration __instance, float __result, IAIActor actor)
+            {
+                try
+                {
+                    if (__instance.Def.name.Equals("CanUseWeapons_AIConsiderationDef"))
+                    {
+                        TacticalActor tacActor = actor as TacticalActor;
+                        TFTVLogger.Always($"{tacActor.name} {__instance.Def.name} running Evaluate, result is {__result}");
+                    }
+                   
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+
+        }
+
+
+        [HarmonyPatch(typeof(AIHasEquipmentConsideration), "Evaluate")]
+        public static class AIHasEquipmentConsideration_GetMovementDataInRange_patch
+        {
+            private static void Postfix(AIHasEquipmentConsideration __instance, float __result, IAIActor actor)
+            {
+                try
+                {
+                    if (__instance.Def.name.Equals("HasMeleeWeapon_AIConsiderationDef"))
+                    {
+                        TacticalActor tacActor = actor as TacticalActor;
+                        TFTVLogger.Always($"{tacActor.name} {__instance.Def.name} running Evaluate, result is {__result}");
+                    }
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+
+        }
+
+
+        [HarmonyPatch(typeof(AIActorRangeZoneTargetGenerator), "GetMovementDataInRange")]
+        public static class AIActorRangeZoneTargetGenerator_GetMovementDataInRange_patch
+        {
+            private static void Prefix(AIActorRangeZoneTargetGenerator __instance, IEnumerable<TacAITarget> __result, IList<AIScoredTarget> prevGenTargets)
+            {
+                try
+                {
+                    if (__instance.BaseDef == DefCache.GetDef<AIActorRangeZoneTargetGeneratorDef>("Dash_StrikeAbilityZone_AITargetGeneratorDef"))
+                    {
+                        TFTVLogger.Always($"Prefix GetMovementDataInRange for Dash_StrikeAbilityZone_AITargetGeneratorDef IList<AIScoredTarget> prevGenTargets count: {prevGenTargets.Count()}");
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+
+            private static void Postfix(AIActorRangeZoneTargetGenerator __instance, IEnumerable<TacAITarget> __result)
+            {
+                try
+                {
+                    TFTVLogger.Always($"{__instance.Def.name} running GetMovementDataInRange");
+
+                    if (__instance.BaseDef == DefCache.GetDef<AIActorRangeZoneTargetGeneratorDef>("Dash_StrikeAbilityZone_AITargetGeneratorDef"))
+                    {
+                            TFTVLogger.Always($"GetMovementDataInRange for Dash_StrikeAbilityZone_AITargetGeneratorDef Result count: {__result.Count()}");
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+
+        }
+
+        
+
+        [HarmonyPatch(typeof(AIActorRangeZoneTargetGenerator), "FillTargets")]
+        public static class AIActorRangeZoneTargetGenerator_FillTargets_patch
+        {
+            private static void Postfix(AIActorRangeZoneTargetGenerator __instance, IList<AIScoredTarget> targets)
+            {
+                try
+                {
+                    TFTVLogger.Always($"{__instance.Def.name} running FillTargets");
+
+                    if (__instance.BaseDef == DefCache.GetDef<AIActorRangeZoneTargetGeneratorDef>("Dash_StrikeAbilityZone_AITargetGeneratorDef"))
+                    {
+                        TFTVLogger.Always($"filltargets Dash_StrikeAbilityZone_AITargetGeneratorDef targets count {targets.Count} ");
+                        foreach (AIScoredTarget aIScoredTarget in targets)
+                        {
+                            TFTVLogger.Always($"{aIScoredTarget?.Actor} {aIScoredTarget?.Target} {aIScoredTarget.Score}");
+                        }
+
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+
+        }*/
 
         public static bool Has1APWeapon(TacCharacterDef tacCharacterDef)
         {

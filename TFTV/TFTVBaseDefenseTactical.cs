@@ -42,7 +42,7 @@ namespace TFTV
     {
 
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
-        public static float AttackProgress = 0;
+        public static float TimeLeft = 0;
 
         public static Dictionary<float, float> ConsolePositions = new Dictionary<float, float>();
 
@@ -304,7 +304,7 @@ namespace TFTV
 
                         }
 
-                        if (AttackProgress >= 0.8)
+                        if (TimeLeft < 6)
                         {
                             if (!listOfFactionObjectives.Contains(killSpawnery))
                             {
@@ -320,7 +320,7 @@ namespace TFTV
                             }
 
                         }
-                        else if (AttackProgress < 0.8 && AttackProgress >= 0.3)
+                        else if (TimeLeft < 12  && TimeLeft >= 6)
                         {
                             if (!listOfFactionObjectives.Contains(killSentinel))
                             {
@@ -385,7 +385,7 @@ namespace TFTV
                             timer = (geoMission.Site.ExpiringTimerAt.DateTime - geoMission.Level.Timing.Now.DateTime).Hours;
                         }
 
-                        float timeToCompleteAttack = 18;
+                       /* float timeToCompleteAttack = 18;
 
                         if (TFTVBaseDefenseGeoscape.PhoenixBasesContainmentBreach.ContainsKey(geoMission.Site.SiteId))
                         {
@@ -397,13 +397,13 @@ namespace TFTV
                         if (timeToCompleteAttack != 18 && progress < 0.3)
                         {
                             progress = 0.3f;
-                        }
+                        }*/
 
-                        TFTVLogger.Always($"When modifying mission data, progress is {progress}");
+                        TFTVLogger.Always($"When modifying mission data, timer is {timer}");
 
                         string spriteFileName = "base_defense_hint.jpg";
 
-                        if (progress >= 0.3)
+                        if (timer < 12)
                         {
                             foreach (TacMissionFactionData tacMissionFactionData in missionData.MissionParticipants)
                             {
@@ -418,14 +418,14 @@ namespace TFTV
                             }
                         }
 
-                        if (progress < 0.3)
+                        if (timer >= 12)
                         {
 
                             hintDef.Title.LocalizationKey = "BASEDEFENSE_TACTICAL_ADVANTAGE_TITLE";
                             hintDef.Text.LocalizationKey = "BASEDEFENSE_TACTICAL_ADVANTAGE_DESCRIPTION";
                             spriteFileName = "base_defense_hint.jpg";
                         }
-                        else if (progress >= 0.3 && progress < 0.8)
+                        else if (timer <12 && timer >= 6)
                         {
 
                             hintDef.Title.LocalizationKey = "BASEDEFENSE_NESTING_TITLE";
@@ -441,7 +441,7 @@ namespace TFTV
                         }
                         TFTVHints._hintDefSpriteFileNameDictionary[hintDef] = spriteFileName;
 
-                        AttackProgress = progress;
+                        TimeLeft = timer;
                     }
 
 
@@ -1362,13 +1362,13 @@ namespace TFTV
             {
                 try
                 {
-                    TFTVLogger.Always($"Attack on base progress is {AttackProgress}");
+                    TFTVLogger.Always($"Attack on base progress is {TimeLeft}");
 
                     TFTVLogger.Always($"Tutorial Base defense? {TutorialPhoenixBase}");
 
                     if (controller.Factions.Any(f => f.Faction.FactionDef.MatchesShortName("aln")))
                     {
-                        if (AttackProgress >= 0.8)
+                        if (TimeLeft < 6)
                         {
                             if (TutorialPhoenixBase)
                             {
@@ -1380,7 +1380,7 @@ namespace TFTV
                             }
                             PandoranDeployment.InfestationDeployment(controller);
                         }
-                        else if (AttackProgress >= 0.3 && AttackProgress < 0.8)
+                        else if (TimeLeft >= 6 && TimeLeft < 12)
                         {
                             if (TutorialPhoenixBase)
                             {
@@ -1913,7 +1913,7 @@ namespace TFTV
                                 else
                                 {
                                     TFTVLogger.Always($"roll was {roll}, which is below 7! phew!");
-                                    if (AttackProgress >= 8)
+                                    if (TimeLeft < 6)
                                     {
                                         StartingDeployment.PandoranDeployment.SpawnAdditionalEggs(controller);
                                         TFTVLogger.Always("But some more eggs should have spawned instead!");

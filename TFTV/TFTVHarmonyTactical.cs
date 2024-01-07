@@ -97,13 +97,17 @@ namespace TFTV
             }
         }
 
+
+
         [HarmonyPatch(typeof(TacticalLevelController), "ActorEnteredPlay")]
         public static class TFTV_TacticalLevelController_ActorEnteredPlay_Patch
         {
+
             public static void Postfix(TacticalActorBase actor, TacticalLevelController __instance)
             {
                 try
                 {
+                    // TFTVLogger.Always($"actor is {actor.name} (postfix)");
 
                     TFTVDeliriumPerks.ImplementDeliriumPerks(actor, __instance);
                     TFTVEconomyExploitsFixes.AddReinforcementTagToImplementNoDropsOption(actor, __instance);
@@ -113,6 +117,7 @@ namespace TFTV
                     TFTVSpecialDifficulties.OnTactical.AddSpecialDifficultiesBuffsAndVulnerabilities(actor, __instance);
                     TFTVPalaceMission.Revenants.TryToTurnIntoRevenant(actor, __instance);
                     TFTVPalaceMission.MissionObjectives.CheckFinalMissionWinConditionWhereDeployingItem(actor, __instance);
+                //    TFTVRaiders.AdjustDeploymentNeutralFaction(actor, __instance.TacMission.MissionData.MissionType);
 
                 }
                 catch (Exception e)
@@ -127,12 +132,12 @@ namespace TFTV
         [HarmonyPatch(typeof(SquadMemberScrollerController), "SetupProperPortrait")]
         public static class TFTV_SquadMemberScrollerController_SetupProperPortrait_Patch
         {
-            public static bool Prefix(TacticalActor actor, Dictionary<TacticalActor, PortraitSprites> ____soldierPortraits, 
+            public static bool Prefix(TacticalActor actor, Dictionary<TacticalActor, PortraitSprites> ____soldierPortraits,
                 SquadMemberScrollerController __instance, bool ____renderingInProgress)
             {
                 try
                 {
-                   return TFTVPalaceMission.MissionObjectives.ForceSpecialCharacterPortraitInSetupProperPortrait(actor, ____soldierPortraits, __instance, ____renderingInProgress);
+                    return TFTVPalaceMission.MissionObjectives.ForceSpecialCharacterPortraitInSetupProperPortrait(actor, ____soldierPortraits, __instance, ____renderingInProgress);
                 }
                 catch (Exception e)
                 {

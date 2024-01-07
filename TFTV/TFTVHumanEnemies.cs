@@ -1037,7 +1037,7 @@ namespace TFTV
                 allAbilities.AddRange(sniperAbilities);
                 allAbilities.AddRange(technicianAbilities);
 
-                List<AbilityDef> discardedAbilities = allAbilities;
+                List<AbilityDef> discardedAbilities = new List<AbilityDef> (allAbilities);
                 discardedAbilities.Remove(quickAim);
                 discardedAbilities.Remove(dash);
                 discardedAbilities.Remove(cqc);
@@ -1061,13 +1061,26 @@ namespace TFTV
                 discardedAbilities.Remove(stability);
                 discardedAbilities.Remove(fieldMedic);
 
-                foreach (AbilityDef ability in discardedAbilities)
+             /*   if (tacticalActor.HasGameTag(TFTVRaiders.Defs._scumTag))
                 {
-                    if (tacticalActor.GetAbilityWithDef<Ability>(ability) != null)
+                    foreach (AbilityDef ability in allAbilities)
                     {
-                        tacticalActor.RemoveAbility(ability);
+                        if (tacticalActor.GetAbilityWithDef<Ability>(ability) != null)
+                        {
+                            tacticalActor.RemoveAbility(ability);
+                        }
                     }
                 }
+                else
+                {*/
+                    foreach (AbilityDef ability in discardedAbilities)
+                    {
+                        if (tacticalActor.GetAbilityWithDef<Ability>(ability) != null)
+                        {
+                            tacticalActor.RemoveAbility(ability);
+                        }
+                    }
+                //}
 
                 int level = GetAdjustedLevel(tacticalActor);
                 GameTagDef classTagDef = GetFactionTierAndClassTags(tacticalActor.GameTags.ToList())[2];
@@ -1290,8 +1303,6 @@ namespace TFTV
             }
             throw new InvalidOperationException();
         }
-
-
 
         public static void GiveRankAndNameToHumaoidEnemy(TacticalActorBase actor, TacticalLevelController __instance)
         {
