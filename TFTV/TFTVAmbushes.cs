@@ -137,13 +137,13 @@ namespace TFTV
 
                     if (forsaken != null && geoMission.GetEnemyFaction().PPFactionDef == forsakenDef.PPFactionDef)
                     {
-                        TFTVLogger.Always($"Forsaken mission registered, setting hotspot");
+                        TFTVLogger.Always($"Forsaken mission {geoMission?.MissionName.LocalizeEnglish()} registered, setting hotspot");
                         SetFallenHotspotVariable(__instance.SiteId);
                     }
 
                     if (pure != null && geoMission.GetEnemyFaction().PPFactionDef == pureDef.PPFactionDef)
                     {
-                        TFTVLogger.Always($"Pure mission registered, setting hotspot");
+                        TFTVLogger.Always($"Pure mission registered {geoMission?.MissionName.LocalizeEnglish()}, setting hotspot");
                         SetPureHotspotVariable(__instance.SiteId);
                     }
                 }

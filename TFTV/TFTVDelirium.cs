@@ -342,6 +342,7 @@ namespace TFTV
             
                     //Check for bionics
                     int numberOfBionics = 0;
+                    float willFromArmor = 0;
 
                     foreach (TacticalItem armourItem in tacticalActor.BodyState.GetArmourItems())
                     {
@@ -349,18 +350,25 @@ namespace TFTV
                         {
                             numberOfBionics++;
                         }
+
+                        if (!armourItem.TacticalItemDef.IsPermanentAugment) 
+                        {
+                            willFromArmor += armourItem.BodyPartAspect.BodyPartAspectDef.WillPower;
+
+                        }
                     }
 
                     // Calculate the percentage of current ODI level, these two variables are globally set by our ODI event patches
                     int odiPerc = TFTVODIandVoidOmenRoll.CurrentODI_Level * 100 / 20; //TFTVSDIandVoidOmenRoll.ODI_EventIDs.Length;
 
-                    int maxCorruption = 0;
+                    int maxCorruption = tacticalActor.CharacterStats.Willpower.IntMax - (int)willFromArmor;
+
                     // Get max corruption dependent on max WP of the selected actor
                     if (!TFTVVoidOmens.VoidOmensCheck[10])
                     {
                         if (odiPerc < 25)
                         {
-                            maxCorruption = tacticalActor.CharacterStats.Willpower.IntMax / 3;
+                            maxCorruption /= 3;
 
                             if (numberOfBionics == 1)
                             {
@@ -377,7 +385,7 @@ namespace TFTV
                         {
                             if (odiPerc < 45)
                             {
-                                maxCorruption = tacticalActor.CharacterStats.Willpower.IntMax * 1 / 2;
+                                maxCorruption /= 2;
 
                                 if (numberOfBionics == 1)
                                 {
@@ -391,7 +399,7 @@ namespace TFTV
                             }
                             else // > 50%
                             {
-                                maxCorruption = tacticalActor.CharacterStats.Willpower.IntMax;
+                               // maxCorruption = tacticalActor.CharacterStats.Willpower.IntMax;
 
                                 if (numberOfBionics == 1)
                                 {
@@ -406,9 +414,10 @@ namespace TFTV
                             }
                         }
                     }
+
                     if (TFTVVoidOmens.VoidOmensCheck[10])
                     {
-                        maxCorruption = tacticalActor.CharacterStats.Willpower.IntMax;
+                       // maxCorruption = tacticalActor.CharacterStats.Willpower.IntMax;
 
                         if (numberOfBionics == 1)
                         {

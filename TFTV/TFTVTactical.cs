@@ -365,12 +365,13 @@ namespace TFTV
                         TurnZeroMethodsExecuted = true;
                     }
 
+                    
+
                     TFTVRevenant.revenantSpecialResistance.Clear();
                     TFTVTouchedByTheVoid.Umbra.UmbraTactical.SpawnUmbra(Controller);
                     TFTVHumanEnemies.ChampRecoverWPAura(Controller);
+                    TFTVHumanEnemies.ApplyTacticStartOfPlayerTurn(Controller);
                     TFTVSpecialDifficulties.CounterSpawned = 0;
-
-
                 }
                 else
                 {

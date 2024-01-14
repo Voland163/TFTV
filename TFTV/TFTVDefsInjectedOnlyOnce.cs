@@ -6,6 +6,7 @@ using Base.Entities.Abilities;
 using Base.Entities.Effects;
 using Base.Entities.Effects.ApplicationConditions;
 using Base.Entities.Statuses;
+using Base.Platforms;
 using Base.UI;
 using Base.Utils;
 using Code.PhoenixPoint.Tactical.Entities.Equipments;
@@ -20,7 +21,6 @@ using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.Entities.Items;
 using PhoenixPoint.Common.Entities.RedeemableCodes;
-using PhoenixPoint.Common.Levels.ActorDeployment;
 using PhoenixPoint.Common.Levels.Missions;
 using PhoenixPoint.Common.UI;
 using PhoenixPoint.Geoscape.Entities;
@@ -57,6 +57,7 @@ using PhoenixPoint.Tactical.Prompts;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using TFTV.PortedAATweaks;
 using UnityEngine;
 using static PhoenixPoint.Tactical.Entities.Abilities.HealAbilityDef;
 using static PhoenixPoint.Tactical.Entities.Statuses.ItemSlotStatsModifyStatusDef;
@@ -84,50 +85,65 @@ namespace TFTV
         {
             try
             {
-                foreach(CustomMissionTypeDef customMissionTypeDef in 
-                    Repo.GetAllDefs<CustomMissionTypeDef>().
-                    Where(m=>m.ParticipantsData.
-                    Any(pd => pd.FactionDef == DefCache.GetDef<PPFactionDef>("NEU_Bandits_FactionDef"))))
-                    {
-                    TFTVLogger.Always($"{customMissionTypeDef.name} has bandits in it, and they are participant 0? " +
-                        $"{customMissionTypeDef.ParticipantsData[0].FactionDef==DefCache.GetDef<PPFactionDef>("NEU_Bandits_FactionDef")}\n{customMissionTypeDef.Guid}");
-                
-                }
-                
 
-
-              /*  for (int i = 0; i < 18; i++)
+                foreach(ResearchDef researchDef in DefCache.GetDef<ResearchDbDef>("syn_ResearchDB").Researches) 
                 {
-                    TFTVLogger.Always($"\"{Guid.NewGuid().ToString()}\"");
-                }*/
+                    TFTVLogger.Always($"{researchDef.Id} research cost: {researchDef.ResearchCost} priority: {researchDef.Priority}");     
+                }
 
 
-                /*  ResearchDbDef researchDB = DefCache.GetDef<ResearchDbDef>("pp_ResearchDB");
+                foreach (ResearchDef researchDef in DefCache.GetDef<ResearchDbDef>("nj_ResearchDB").Researches)
+                {
+                    TFTVLogger.Always($"{researchDef.Id} research cost: {researchDef.ResearchCost} priority: {researchDef.Priority}");
+                }
 
-                  foreach (ResearchDef researchDef in researchDB.Researches)
+                /*  foreach (UnitTemplateResearchRewardDef rewardDef in Repo.GetAllDefs<UnitTemplateResearchRewardDef>().
+                      Where(r => r.Template.name.Contains("FK")))
+
                   {
-                      TFTVLogger.Always($"{researchDef}");
+                      string armor = "";
+                      string equipment = "";
 
-                  }*/
-
-                /*  foreach (GeoscapeEventDef geoscapeEventDef in Repo.GetAllDefs<GeoscapeEventDef>().Where(e => e.GeoscapeEventData.Choices.Any(c => c.Outcome.SubfactionFactionMissionWeight.Count() > 0)))
-                  {
-                      TFTVLogger.Always($"Event {geoscapeEventDef.EventID} alters subfaction mission weight");
-
-                      foreach (GeoEventChoice geoEventChoice in geoscapeEventDef.GeoscapeEventData.Choices)
+                      foreach (ItemDef itemDef in rewardDef.Template.Data.BodypartItems)
                       {
-                          foreach (OutcomeFactionMissionWeightChange outcome in geoEventChoice.Outcome.SubfactionFactionMissionWeight)
-                          {
-                              TFTVLogger.Always($"{outcome.SubFaction} {outcome.Value}");
 
-
-                          }
-
+                          armor += $"\n{itemDef.name}";
 
                       }
 
+                      foreach (ItemDef itemDef in rewardDef.Template.Data.EquipmentItems)
+                      {
+                          equipment += $"\n{itemDef.name}";
+                      }
 
-                  }*/
+                      TFTVLogger.Always($"{rewardDef.name} {rewardDef.Template.name} \n Armor: {armor}, \n Ready: {equipment}");
+
+
+                  }
+
+                  foreach (UnitTemplateResearchRewardDef rewardDef in Repo.GetAllDefs<UnitTemplateResearchRewardDef>().
+                     Where(r => r.Template.name.Contains("PU")))
+
+                  {
+                      string armor = "";
+                      string equipment = "";
+
+                      foreach (ItemDef itemDef in rewardDef.Template.Data.BodypartItems)
+                      {
+
+                          armor += $"\n{itemDef.name}";
+
+                      }
+
+                      foreach (ItemDef itemDef in rewardDef.Template.Data.EquipmentItems)
+                      {
+                          equipment += $"\n{itemDef.name}"; 
+                      }
+
+                      TFTVLogger.Always($"{rewardDef.name} {rewardDef.Template.name} \n Armor: {armor}, \n Ready: {equipment}");
+                  }
+                */
+
             }
             catch (Exception e)
             {
@@ -181,7 +197,122 @@ namespace TFTV
 
                 TFTVRaiders.Defs.CreateRaiderDefs();
 
+                TFTVPureAndForsaken.Defs.InitDefs();
+
               //  Print();
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+
+        private static void RemoveLoSConsiderationDashAI()
+        {
+            try 
+            {
+                // AIClosestEnemyConsiderationDef
+                AIActionMoveAndAttackDef dashAndStrike = DefCache.GetDef<AIActionMoveAndAttackDef>("DashAndStrike_AIActionDef");
+                AIActionMoveAndAttackDef moveAndStrike = DefCache.GetDef<AIActionMoveAndAttackDef>("MoveAndStrike_AIActionDef");
+
+                moveAndStrike.Weight = 350;
+
+                AIActionMoveToPositionDef dashAI = DefCache.GetDef<AIActionMoveToPositionDef>("Dash_AIActionDef");
+
+                dashAI.EarlyExitConsiderations = new AIAdjustedConsideration[] { dashAI.EarlyExitConsiderations[0], dashAI.EarlyExitConsiderations[1], dashAI.EarlyExitConsiderations[2] };
+
+                dashAI.Evaluations[0].Considerations[0].Consideration = DefCache.GetDef<AIStrategicPositionConsiderationDef>("StrategicPositionOff_AIConsiderationDef");
+                dashAI.Evaluations[0].Considerations[2].Consideration = DefCache.GetDef<AILineOfSightToEnemiesConsiderationDef>("LineofSight_AIConsiderationDef");
+                dashAI.Evaluations[0].Considerations[3].Consideration = DefCache.GetDef<AIClosestEnemyConsiderationDef>("Worm_ClosestPathToEnemy_AIConsiderationDef");
+
+
+
+                //  dashAI.Evaluations[0].TargetGeneratorDef = DefCache.GetDef<AIActorMovementZoneTargetGeneratorDef>("DashMovementZoneNoSelfPosition_AITargetGeneratorDef");
+
+                //  dashAI.Weight = 50;
+                //   AIStrategicPositionConsiderationDef offStrat = 
+
+                /*   dashAI.Evaluations[0].Considerations = new AIAdjustedConsideration[] {
+                       dashAI.Evaluations[0].Considerations[0], 
+                       dashAI.Evaluations[0].Considerations[1],
+                    //   dashAI.Evaluations[0].Considerations[3],
+                      dashAI.Evaluations[0].Considerations[4]
+                   };*/
+
+                //  dashAI.Evaluations[0].Considerations[0].Consideration = offStrat;
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+        private static void CreateReturnFireCloneForHumanTactics()
+        {
+            try 
+            {
+                string name = "FireDisciplineAbility";
+                ReturnFireAbilityDef returnFireAbilityDefSource = DefCache.GetDef<ReturnFireAbilityDef>("ReturnFire_AbilityDef");
+                ReturnFireAbilityDef newRF = Helper.CreateDefFromClone(returnFireAbilityDefSource, "{AD13E6CD-9D7E-4A5A-8CC0-6AF71DB83B42}", name);
+                newRF.CharacterProgressionData = Helper.CreateDefFromClone(returnFireAbilityDefSource.CharacterProgressionData, "{AF54FD23-931E-43BC-82AD-4471D1881A8C}", name);
+                newRF.ViewElementDef = Helper.CreateDefFromClone(returnFireAbilityDefSource.ViewElementDef, "{AD23518F-1E14-47E3-BF47-C421F7C95D33}", name);
+            }
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+        private static void CreateStartingVolleyStatus()
+        {
+            try
+            {
+                string name = "StartingVolley";
+
+                AddAttackBoostStatusDef sourceQA = DefCache.GetDef<AddAttackBoostStatusDef>("E_Status [BC_QuickAim_AbilityDef]");
+                AddAttackBoostStatusDef startingVolley = Helper.CreateDefFromClone(sourceQA, "{E1B4C902-5C37-432A-BA4C-E95EDDDAAFC9}", name);
+
+                startingVolley.Visuals = Helper.CreateDefFromClone(sourceQA.Visuals, "{A7049D39-6709-4941-9298-ED50699C836A}", name);
+                //startingVolley.Visuals.DisplayName1.LocalizationKey = "KEY_STARTING_VOLLEY_STATUS_NAME";
+                //startingVolley.Visuals.Description.LocalizationKey = "KEY_STARTING_VOLLEY_STATUS_DESCRIPTION";
+
+                startingVolley.AdditionalStatusesToApply[0] = Helper.CreateDefFromClone(sourceQA.AdditionalStatusesToApply[0], "{98C2606E-AEF4-4A32-9C0A-31600E6F942E}", name);
+                startingVolley.AdditionalStatusesToApply[1] = Helper.CreateDefFromClone(sourceQA.AdditionalStatusesToApply[1], "{2643FFB2-7433-4532-8F01-AF180429B864}", name);
+
+                ChangeAbilitiesCostStatusDef changeAbilitiesCostStatusDef = (ChangeAbilitiesCostStatusDef)startingVolley.AdditionalStatusesToApply[0];
+                changeAbilitiesCostStatusDef.AbilityCostModification.ActionPointMod = -0.5f;
+                
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+
+        private static void CreateOpticalShieldStatus()
+        {
+            try 
+            {
+                string name = "OpticalShield";
+
+                MultiEffectDef sourceMultiEffect = (MultiEffectDef)Repo.GetDef("cb989636-ca35-2fb2-c568-604714f19d95");//("E_MultiEffect [PainChameleon_AbilityDef]");
+                MultiEffectDef newMultiEffect = Helper.CreateDefFromClone(sourceMultiEffect, "{250ACA8F-F137-47F5-9B4F-DCD4741DBA4A}", name);
+                TacStatusEffectDef newStatusEffectHoldingVanishEffect = Helper.CreateDefFromClone((TacStatusEffectDef)sourceMultiEffect.EffectDefs[0], "{8890A518-B196-4CF2-97E0-310D8B074108}", name);// ("E_ApplyVanishStatusEffect [PainChameleon_AbilityDef]");
+
+                StanceStatusDef vanishedStatusSource = (StanceStatusDef)Repo.GetDef("8dbf3262-686d-2fb2-91cc-47014c539d95");
+
+                StanceStatusDef newVanishedStatus = Helper.CreateDefFromClone(vanishedStatusSource, "{AF8D634C-3712-4F17-B256-7B8FB051A43F}", name); // ("E_VanishedStatus [PainChameleon_AbilityDef]");
+
+                newVanishedStatus.Visuals = Helper.CreateDefFromClone(vanishedStatusSource.Visuals, "{3FC367B1-A4FF-43D6-A18D-922DF3EA528D}", name);
+
+                newStatusEffectHoldingVanishEffect.StatusDef = newVanishedStatus;
+                newVanishedStatus.Visuals.DisplayName1.LocalizationKey = "KEY_ACTIVE_CAMO_DISPLAY_NAME"; 
+                newVanishedStatus.Visuals.Description.LocalizationKey = "KEY_ACTIVE_CAMO_DESCRIPTION";
 
             }
             catch (Exception e)
@@ -269,7 +400,7 @@ namespace TFTV
                 ModifyCratesToAddArmor();
                 TFTVReverseEngineering.ModifyReverseEngineering();
                 ChangeInfestationDefs();
-                ChangesAmbushMissions();     
+                ChangesAmbushMissions();
                 RemoveCensusResearch();
                 AllowMedkitsToTargetMutoidsAndChangesToMutoidSkillSet();
                 MistOnAllMissions();
@@ -298,6 +429,9 @@ namespace TFTV
                 AdjustAlienAmbushChance();
                 IncreaseBionicLabCost();
                 ReduceEffectOfMistOnPerception();
+                CreateOpticalShieldStatus();
+                CreateReturnFireCloneForHumanTactics();
+                CreateStartingVolleyStatus();
             }
             catch (Exception e)
             {
@@ -307,9 +441,9 @@ namespace TFTV
 
         private static void ReduceEffectOfMistOnPerception()
         {
-            try 
+            try
             {
-                DefCache.GetDef<TacticalPerceptionDef>("Soldier_PerceptionDef").MistBlobPerceptionRangeCost = 5;            
+                DefCache.GetDef<TacticalPerceptionDef>("Soldier_PerceptionDef").MistBlobPerceptionRangeCost = 5;
             }
             catch (Exception e)
             {
@@ -319,12 +453,12 @@ namespace TFTV
 
         private static void AdjustAlienAmbushChance()
         {
-            try 
+            try
             {
                 GeoAlienFactionDef geoAlienFactionDef = DefCache.GetDef<GeoAlienFactionDef>("Alien_GeoAlienFactionDef");
-                geoAlienFactionDef.ScavengingAmbushBaseWeight=60;
+                geoAlienFactionDef.ScavengingAmbushBaseWeight = 60;
                 geoAlienFactionDef.ScavengingAmbushSitesRange.Value = 2000;
-            
+
             }
             catch (Exception e)
             {
@@ -339,10 +473,10 @@ namespace TFTV
             {
                 ResearchDef siren5 = DefCache.GetDef<ResearchDef>("ALN_Siren5_ResearchDef");
                 siren5.ResearchCost = 200;
-                DefCache.GetDef<ExistingResearchRequirementDef>("ALN_Siren5_ResearchDef_ExistingResearchRequirementDef_1").ResearchID = "ALN_Siren4_ResearchDef";
+                DefCache.GetDef<ExistingResearchRequirementDef>("ALN_Siren5_ResearchDef_ExistingResearchRequirementDef_1").ResearchID = "ALN_Acheron6_ResearchDef";
 
                 ResearchDef chiron13 = DefCache.GetDef<ResearchDef>("ALN_Chiron13_ResearchDef");
-                siren5.ResearchCost = 200;
+                chiron13.ResearchCost = 200;
                 DefCache.GetDef<ExistingResearchRequirementDef>("ALN_Chiron13_ResearchDef_ExistingResearchRequirementDef_1").ResearchID = "ALN_Chiron12_ResearchDef";
 
             }
@@ -355,7 +489,7 @@ namespace TFTV
 
         private static void IncreaseBionicLabCost()
         {
-            try 
+            try
             {
                 DefCache.GetDef<PhoenixFacilityDef>("BionicsLab_PhoenixFacilityDef").ResourceCost = new ResourcePack()
                 {
@@ -395,6 +529,7 @@ namespace TFTV
                 IncreaseRangeClosestEnemyConsideration();
                 ModifyChironWormAndAoETargeting();
                 GiveNewActorAIToUmbra();
+                RemoveLoSConsiderationDashAI();
             }
             catch (Exception e)
             {
@@ -1750,7 +1885,7 @@ namespace TFTV
 
                 effectConditionDefs3x3_disabled.Add(notAlienCondition);
                 effectConditionDefs3x3_disabled.Add(notDroneCondition);
-                
+
                 effectConditionDefs1x1_disabled.Add(notAlienCondition);
                 effectConditionDefs1x1_disabled.Add(notDroneCondition);
 
@@ -4171,6 +4306,21 @@ namespace TFTV
         {
             try
             {
+                //  AIActionMoveAndExecuteAbilityDef queenMoveAndPrepareShooting = DefCache.GetDef<AIActionMoveAndExecuteAbilityDef>("Queen_MoveAndPrepareShooting_AIActionDef");
+                //  queenMoveAndPrepareShooting.EarlyExitConsiderations = new AIAdjustedConsideration[] { };
+
+                DefCache.GetDef<ItemSlotDef>("Queen_Abdomen_SlotDef").DisplayName.LocalizationKey = "KEY_ABDOMEN_NAME";
+
+                AIAbilityDisabledStateConsiderationDef canUsePrepareShootConsideration = DefCache.GetDef<AIAbilityDisabledStateConsiderationDef>("Queen_CanUsePrepareShoot_AIConsiderationDef");
+                canUsePrepareShootConsideration.IgnoredStates = canUsePrepareShootConsideration.IgnoredStates.AddItem("EquipmentNotSelected").ToArray();
+
+                DefCache.GetDef<StartPreparingShootAbilityDef>("Queen_StartPreparing_AbilityDef").UsableOnNonSelectedEquipment = true;
+
+                WeaponDef queenLeftBlastWeapon = DefCache.GetDef<WeaponDef>("Queen_LeftArmGun_WeaponDef");
+                WeaponDef queenRightBlastWeapon = DefCache.GetDef<WeaponDef>("Queen_RightArmGun_WeaponDef");
+
+                queenRightBlastWeapon.DamagePayload.ProjectileVisuals = queenLeftBlastWeapon.DamagePayload.ProjectileVisuals;
+
                 WeaponDef headSpitter = DefCache.GetDef<WeaponDef>("Queen_Head_Spitter_Goo_WeaponDef");
                 // DamageKeywordDef blast = DefCache.GetDef<DamageKeywordDef>("Blast_DamageKeywordDataDef");
                 StandardDamageTypeEffectDef blastDamage = DefCache.GetDef<StandardDamageTypeEffectDef>("Blast_StandardDamageTypeEffectDef");
@@ -4211,11 +4361,11 @@ namespace TFTV
                 //Create new Caterpillar ability to (eventually) show different View elements (for now just hidden) 
                 string abilityName = "ScyllaSquisher";
                 string abilityGUID = "{B7EBE715-69CE-4163-8E7D-88034ED4DE2A}";
-                string viewElementGUID = "{C74C16D0-98DB-4717-B5E8-D04004151A69}";
+               // string viewElementGUID = "{C74C16D0-98DB-4717-B5E8-D04004151A69}";
                 CaterpillarMoveAbilityDef source = DefCache.GetDef<CaterpillarMoveAbilityDef>("CaterpillarMoveAbilityDef");
                 CaterpillarMoveAbilityDef scyllaCaterpillarAbility = Helper.CreateDefFromClone(source, abilityGUID, abilityName);
-                scyllaCaterpillarAbility.ViewElementDef = Helper.CreateDefFromClone(source.ViewElementDef, viewElementGUID, abilityName);
-                scyllaCaterpillarAbility.ViewElementDef.ShowInStatusScreen = false;
+                scyllaCaterpillarAbility.ViewElementDef = (TacticalAbilityViewElementDef)Repo.GetDef("6333fa2e-6e95-8124-48ea-8f7a60a2e22c"); //"Move_AbilityViewDef" //Helper.CreateDefFromClone(source.ViewElementDef, viewElementGUID, abilityName);
+              //  scyllaCaterpillarAbility.ViewElementDef.ShowInStatusScreen = false;
 
                 //Make all small critters and things not an obstacle for Scylla, MedMonster (Chiron, Cyclops), Acheron movement
 
@@ -5901,17 +6051,11 @@ namespace TFTV
 
                 cyclops.Abilities = abilityDefs.ToArray();
 
-
-
-
             }
             catch (Exception e)
             {
                 TFTVLogger.Error(e);
             }
-
-
-
         }
 
 
@@ -6813,11 +6957,11 @@ namespace TFTV
                 subject24.Data.Name = "Subject 24";
 
 
-                  TacticalItemDef juggBionicLeft = DefCache.GetDef<TacticalItemDef>("SY_Shinobi_BIO_LeftArm_BodyPartDef");
-                   TacticalItemDef juggBionicRight = DefCache.GetDef<TacticalItemDef>("SY_Shinobi_BIO_RightArm_BodyPartDef");
-                   TacticalItemDef sourceJacket = DefCache.GetDef<TacticalItemDef>("NEU_Assault_Torso_BodyPartDef");
+                TacticalItemDef juggBionicLeft = DefCache.GetDef<TacticalItemDef>("SY_Shinobi_BIO_LeftArm_BodyPartDef");
+                TacticalItemDef juggBionicRight = DefCache.GetDef<TacticalItemDef>("SY_Shinobi_BIO_RightArm_BodyPartDef");
+                TacticalItemDef sourceJacket = DefCache.GetDef<TacticalItemDef>("NEU_Assault_Torso_BodyPartDef");
 
-                TacticalItemDef juggTorso= DefCache.GetDef<TacticalItemDef>("NJ_Jugg_BIO_Torso_BodyPartDef");
+                TacticalItemDef juggTorso = DefCache.GetDef<TacticalItemDef>("NJ_Jugg_BIO_Torso_BodyPartDef");
 
                 TacticalItemDef subject24jacket = Helper.CreateDefFromClone(sourceJacket, "{1E1723AD-09B0-49FD-8FCF-C338AD22EE4D}", "Subject24_jacket");
                 subject24jacket.ViewElementDef = Helper.CreateDefFromClone(sourceJacket.ViewElementDef, "{18A8F78D-D16A-4B98-A22B-B9C7DAC11A90}", "Subject24_jacket");
@@ -6834,7 +6978,7 @@ namespace TFTV
                 subject24jacket.SubAddons[0] = new AddonDef.SubaddonBind() { SubAddon = juggBionicLeft };
                 subject24jacket.SubAddons[1] = new AddonDef.SubaddonBind() { SubAddon = juggBionicRight };
 
-                   subject24.Data.BodypartItems = new ItemDef[] { subject24jacket,
+                subject24.Data.BodypartItems = new ItemDef[] { subject24jacket,
                        DefCache.GetDef<TacticalItemDef>("NJ_Jugg_BIO_Helmet_BodyPartDef"), DefCache.GetDef<TacticalItemDef>("NJ_Exo_BIO_Legs_ItemDef")
                    };
 
@@ -8528,13 +8672,13 @@ namespace TFTV
         public static void Create_VoidOmen_Events()
 
         {
-            for(int x = 0; x<20 ; x++) 
+            for (int x = 0; x < 20; x++)
             {
                 GeoscapeEventDef geoscapeEventDef = TFTVCommonMethods.CreateNewEvent($"VoidOmen_{x}", "", "", null);
                 geoscapeEventDef.GeoscapeEventData.Flavour = "IntroducingSymes";
             }
 
-            
+
             TFTVCommonMethods.CreateNewEvent("IntroVoidOmen", "", "", null);
 
         }

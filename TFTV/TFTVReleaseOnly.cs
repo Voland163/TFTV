@@ -57,6 +57,7 @@ namespace TFTV
                 {
                     GeoLevelController controller = __instance.Level;
                     controller.CurrentDifficultyLevel = GetDifficultyFromOrder(__state);
+                    TFTVPureAndForsaken.CheckMissionVSPure(__instance);
 
                 }
                 catch (Exception e)

@@ -266,14 +266,8 @@ namespace TFTV
                         doomHelmet.BodyPartAspectDef.Perception = 0.0f;
 
                         doomTorso.BodyPartAspectDef.Accuracy = -0.04f;
-
                         doomLegs.BodyPartAspectDef.Speed = 0.0f;
-                        doomLegs.BodyPartAspectDef.Accuracy = -0.04f;
-
-                        foreach (TacticalItemDef doomArmorPiece in sectarianArmor)
-                        {
-                            doomArmorPiece.DropOnActorDeath = true;
-                        }
+                        doomLegs.BodyPartAspectDef.Accuracy = -0.04f;             
 
                         sectarianHelmet.Armor = 14;
                         sectarianHelmet.Weight = 1;

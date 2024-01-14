@@ -246,7 +246,7 @@ namespace TFTV
             }
         }
 
-        private static void SetArtODIEvent(GeoscapeEvent geoEvent, ref EncounterEventArt art, GeoLevelController controller)
+        private static void SetArtVoidOmenEvent(GeoscapeEvent geoEvent, ref EncounterEventArt art, GeoLevelController controller)
         {
             try
             {
@@ -336,7 +336,7 @@ namespace TFTV
 
                     GeoLevelController controller = geoEvent.Context.Level;
 
-                    SetArtODIEvent(geoEvent, ref __result, controller);
+                    SetArtVoidOmenEvent(geoEvent, ref __result, controller);
 
 
                     if (geoEvent.EventID.Equals("HelenaOnOlena"))
@@ -454,10 +454,10 @@ namespace TFTV
                         __result.EventBackground = Helper.CreateSpriteFromImageFile("BG_HammerFallAlt.jpg");
                     }
 
-                    else if (geoEvent.EventID.Contains("SDI"))
+                  /*  else if (geoEvent.EventID.Contains("SDI"))
                     {
                         __result.EventLeader = GetRightPXCharacterPic(controller, "Alistair");
-                    }
+                    }*/
 
                     else if (geoEvent.EventID.Equals("PROG_FS0"))
                     {

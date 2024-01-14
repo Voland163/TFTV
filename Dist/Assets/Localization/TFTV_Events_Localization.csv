@@ -792,3 +792,17 @@ KEY_OSIRIS_MORE_BIONICS_LAB_MUTATION_BIONICS_RESEARCH,Text,,To enhance Project O
 KEY_OSIRIS_MORE_MUTATION_RESEARCH,Text,,To enhance Project Osiris and increase our options we should acquire new mutation research.,,,,,,,,
 KEY_OSIRIS_MORE_BIONICS_RESEARCH,Text,,To enhance Project Osiris and increase our options we should acquire new bionic research.,,,,,,,,
 KEY_OSIRIS_MORE_MUTATION_BIONICS_RESEARCH,Text,,To enhance Project Osiris and increase our options we should acquire new bionic and mutation research.,,,,,,,,
+TFTV_PROG_PU10_TEXT_GENERAL_0,Text,,"MESSAGE FROM: Barnabas (Synedrion) 
+TO: Phoenix Point 
+Attachments: REC-intercept.625X-AP
+
+Maj. Zachery Richards, also known as Subject-24, has already obtained all the data pertaining to our bionics program. We can expect the Pure to begin fielding our “Shinobi” designs imminently. The purpose of the planned attack is to prevent other actors from completing our research and taking advantage of this technology.
+
+I place the highest value on scientific progress. I believe you and I share this value, do we not?
+",,,,,,,,
+KEY_OLENA_ON_PURE_TITLE,Text,,Triangulating,,,,,,,,
+KEY_OLENA_ON_PURE_DESCRIPTION,Text,,"Director, it is remarkable how difficult it is to locate the headquarters of the Pure. They seem to have access to some very advanced technology that allows them to deploy rapidly and stealthily over long distances, which is why we are encountering them all over the planet.
+
+However, there is some good news.",,,,,,,,
+KEY_OLENA_ON_PURE_OUTCOME,Text,,"We may have a way of figuring out where their main base of operations is. Subject-24’s love for public ramblings and his hands-on tactical management approach may be the key. Every time he makes an announcement and we face the Pure in the field, we get closer to triangulating his position.",,,,,,,,
+KEY_OLENA_ON_PURE_CHOICE_0,Text,,That’s a first!,,,,,,,,

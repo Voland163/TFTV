@@ -5,6 +5,7 @@ using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
+using PhoenixPoint.Common.Game;
 using PhoenixPoint.Common.Levels.Missions;
 using PhoenixPoint.Common.Levels.Params;
 using PhoenixPoint.Common.Utils;
@@ -35,6 +36,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Security.Policy;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -692,22 +694,24 @@ namespace TFTV
 
                         if (PhoenixBasesUnderAttack.ContainsKey(geoMission.Site.SiteId))
                         {
+                            GeoSite phoenixBase = geoMission.Site;
 
-                            float timer = (geoMission.Site.ExpiringTimerAt.DateTime - geoMission.Level.Timing.Now.DateTime).Hours;
-                            /*    float timeToCompleteAttack = 18;
+                            double timeSpanHoursTimer = phoenixBase.ExpiringTimerAt.TimeSpan.TotalHours;
+                            double timeSpanHoursNow = phoenixBase.GeoLevel.Timing.Now.TimeSpan.TotalHours;
 
-                                if (PhoenixBasesContainmentBreach.ContainsKey(geoMission.Site.SiteId))
-                                {
-                                    timeToCompleteAttack = PhoenixBasesContainmentBreach[geoMission.Site.SiteId];
-                                }
+                            TFTVLogger.Always($"timeSpanHoursTimer {timeSpanHoursTimer}");
+                            TFTVLogger.Always($"timeSpanHoursNow {timeSpanHoursNow}");
 
-                                float progress = 1f - timer / timeToCompleteAttack;
+                            double superClockTimer = timeSpanHoursTimer - timeSpanHoursNow;
 
-                                if (timeToCompleteAttack < 18 && progress < 0.3)
-                                {
-                                    progress = 0.3f;
-                                }*/
+                            float totalTimeForAttack = 18;
 
+                            if (PhoenixBasesContainmentBreach.ContainsKey(phoenixBase.SiteId))
+                            {
+                                totalTimeForAttack = PhoenixBasesContainmentBreach[phoenixBase.SiteId];
+                            }
+
+                            float timer = (float)superClockTimer;
                             TFTVLogger.Always($"DontCancelMission: timer is {timer}");
 
                             FactionInfoMapping factionInfo = __instance.Resources.GetFactionInfo(geoMission.GetEnemyFaction());
@@ -1594,9 +1598,14 @@ namespace TFTV
                                 GeoUpdatedableMissionVisualsController missionPrefab = GeoSiteVisualsDefs.Instance.HavenDefenseVisualsPrefab;
                                 missionVisualsController = UnityEngine.Object.Instantiate(missionPrefab, geoSiteVisualsController.VisualsContainer);
                                 missionVisualsController.name = "kludge";
-                               // float timer = ((float)(site.ExpiringTimerAt.TimeSpan.TotalHours - site.GeoLevel.Timing.Now.TimeSpan.TotalHours));
-                                float timer = (site.ExpiringTimerAt.DateTime - site.GeoLevel.Timing.Now.DateTime).Hours;
-                                TFTVLogger.Always($"timer: {timer}");
+
+                                double timeSpanHoursTimer = site.ExpiringTimerAt.TimeSpan.TotalHours;
+                                double timeSpanHoursNow = site.GeoLevel.Timing.Now.TimeSpan.TotalHours;
+
+                                TFTVLogger.Always($"timeSpanHoursTimer {timeSpanHoursTimer}");
+                                TFTVLogger.Always($"timeSpanHoursNow {timeSpanHoursNow}");
+
+                                double superClockTimer = timeSpanHoursTimer - timeSpanHoursNow;
 
                                 float totalTimeForAttack = 18;
 
@@ -1604,7 +1613,16 @@ namespace TFTV
                                 {
                                     totalTimeForAttack = PhoenixBasesContainmentBreach[site.SiteId];
                                 }
-                                //(site.ExpiringTimerAt.TimeSpan - site.GeoLevel.Timing.Now.TimeSpan).Hours
+
+                                float timer = (float)superClockTimer; //(site.ExpiringTimerAt.DateTime - site.GeoLevel.Timing.Now.DateTime).Hours;
+                                TFTVLogger.Always($"timer: {timer}");
+
+                                if (timer > totalTimeForAttack)
+                                {
+                                    TFTVLogger.Always($"timer {timer} is higher than totalTimeForAttack ({totalTimeForAttack}), setting timer to totalTimeForAttack");
+                                    timer = totalTimeForAttack;
+                                }
+
                                 float progress = 1f - timer / totalTimeForAttack;
                                 TFTVLogger.Always($"timeToCompleteAttack is {timer}, total time for attack is {totalTimeForAttack} progress is {progress}");
 
@@ -1645,9 +1663,13 @@ namespace TFTV
 
                                 var accessor = AccessTools.Field(typeof(GeoUpdatedableMissionVisualsController), "_progressRenderer");
                                 MeshRenderer progressRenderer = (MeshRenderer)accessor.GetValue(missionVisualsController);
-                                float timer = (site.ExpiringTimerAt.DateTime - site.GeoLevel.Timing.Now.DateTime).Hours;
-                               // float timer = ((float)(site.ExpiringTimerAt.TimeSpan.TotalHours - site.GeoLevel.Timing.Now.TimeSpan.TotalHours));
-                                TFTVLogger.Always($"timer: {timer}");
+                                double timeSpanHoursTimer = site.ExpiringTimerAt.TimeSpan.TotalHours;
+                                double timeSpanHoursNow = site.GeoLevel.Timing.Now.TimeSpan.TotalHours;
+
+                              //  TFTVLogger.Always($"timeSpanHoursTimer {timeSpanHoursTimer}");
+                              //  TFTVLogger.Always($"timeSpanHoursNow {timeSpanHoursNow}");
+
+                                double superClockTimer = timeSpanHoursTimer - timeSpanHoursNow;
 
                                 float totalTimeForAttack = 18;
 
@@ -1655,13 +1677,22 @@ namespace TFTV
                                 {
                                     totalTimeForAttack = PhoenixBasesContainmentBreach[site.SiteId];
                                 }
-                                //(site.ExpiringTimerAt.TimeSpan - site.GeoLevel.Timing.Now.TimeSpan).Hours
+
+                                float timer = (float)superClockTimer; //(site.ExpiringTimerAt.DateTime - site.GeoLevel.Timing.Now.DateTime).Hours;
+                                TFTVLogger.Always($"timer: {timer}");
+
+                                if (timer > totalTimeForAttack)
+                                {
+                                    TFTVLogger.Always($"timer {timer} is higher than totalTimeForAttack ({totalTimeForAttack}), setting timer to totalTimeForAttack");
+                                    timer = totalTimeForAttack;
+                                }
+
                                 float progress = 1f -  timer/totalTimeForAttack;
                                 TFTVLogger.Always($"timeToCompleteAttack is {timer}, total time for attack is {totalTimeForAttack} progress is {progress}");
 
                                 progressRenderer.material.SetFloat("_Progress", progress);
 
-                                if (progress == 1)
+                                if (progress >= 1)
                                 {
                                     KludgeSite = site;
                                     TFTVLogger.Always("Progress 1 reached!");
@@ -1914,19 +1945,27 @@ namespace TFTV
 
                     if (__instance.MissionDef.MissionTags.Contains(pxBaseDefenseTag))
                     {
-                        GeoSite geoSite = __instance.Site;
+                        GeoSite phoenixBase = __instance.Site;
 
-                        float timer = (__instance.Site.ExpiringTimerAt.DateTime - __instance.Level.Timing.Now.DateTime).Hours;
-                        //((float)(__instance.Site.ExpiringTimerAt.TimeSpan.TotalHours - __instance.Level.Timing.Now.TimeSpan.TotalHours));
+                        double timeSpanHoursTimer = phoenixBase.ExpiringTimerAt.TimeSpan.TotalHours;
+                        double timeSpanHoursNow = phoenixBase.GeoLevel.Timing.Now.TimeSpan.TotalHours;
 
-                        float timeToCompleteAttack = 18;
+                      //  TFTVLogger.Always($"timeSpanHoursTimer {timeSpanHoursTimer}");
+                      //  TFTVLogger.Always($"timeSpanHoursNow {timeSpanHoursNow}");
 
-                        if (PhoenixBasesContainmentBreach.ContainsKey(__instance.Site.SiteId))
+                        double superClockTimer = timeSpanHoursTimer - timeSpanHoursNow;
+
+                        float totalTimeForAttack = 18;
+
+                        if (PhoenixBasesContainmentBreach.ContainsKey(phoenixBase.SiteId))
                         {
-                            timeToCompleteAttack = PhoenixBasesContainmentBreach[__instance.Site.SiteId];
+                            totalTimeForAttack = PhoenixBasesContainmentBreach[phoenixBase.SiteId];
                         }
 
-                        float progress = 1f - timer / timeToCompleteAttack;
+                        float timer = (float)superClockTimer; //(site.ExpiringTimerAt.DateTime - site.GeoLevel.Timing.Now.DateTime).Hours;
+                        TFTVLogger.Always($"timer: {timer}");
+
+                        float progress = 1f - timer / totalTimeForAttack;
 
                         TFTVLogger.Always($"attack progress is {progress}");
 
@@ -1934,7 +1973,7 @@ namespace TFTV
 
                         IEnumerable<GeoCharacter> deployment = characterContainers.SelectMany((IGeoCharacterContainer s) => s.GetAllCharacters());
 
-                        if (deployment.Count() == 0 && progress == 1)
+                        if (deployment.Count() == 0 && progress >= 1)
                         {
                             __instance.Cancel();
                         }
@@ -2024,17 +2063,25 @@ namespace TFTV
 
                     GeoSite phoenixBase = __instance.Site;
 
-                    float timer = (__instance.Site.ExpiringTimerAt.DateTime - __instance.Level.Timing.Now.DateTime).Hours;
-                    float timeToCompleteAttack = 18;
+                    double timeSpanHoursTimer = phoenixBase.ExpiringTimerAt.TimeSpan.TotalHours;
+                    double timeSpanHoursNow = phoenixBase.GeoLevel.Timing.Now.TimeSpan.TotalHours;
+
+                  //  TFTVLogger.Always($"timeSpanHoursTimer {timeSpanHoursTimer}");
+                  //  TFTVLogger.Always($"timeSpanHoursNow {timeSpanHoursNow}");
+
+                    double superClockTimer = timeSpanHoursTimer - timeSpanHoursNow;
+
+                    float totalTimeForAttack = 18;
 
                     if (PhoenixBasesContainmentBreach.ContainsKey(phoenixBase.SiteId))
                     {
-                        timeToCompleteAttack = PhoenixBasesContainmentBreach[phoenixBase.SiteId];
-
+                        totalTimeForAttack = PhoenixBasesContainmentBreach[phoenixBase.SiteId];
                     }
 
+                    float timer = (float)superClockTimer; //(site.ExpiringTimerAt.DateTime - site.GeoLevel.Timing.Now.DateTime).Hours;
+                    TFTVLogger.Always($"timer: {timer}");
 
-                    float progress = 1f - timer / timeToCompleteAttack;
+                    float progress = 1f - timer / totalTimeForAttack;
 
                     TFTVLogger.Always($"GeoPhoenixBaseDefenseMission Cancel method invoked. Progress is {progress}");
 
@@ -2165,16 +2212,26 @@ namespace TFTV
 
                         if (PhoenixBasesUnderAttack.ContainsKey(geoSite.SiteId) && geoSite.CharactersCount == 0)
                         {
-                            float timer = (geoMission.Site.ExpiringTimerAt.DateTime - geoMission.Level.Timing.Now.DateTime).Hours;
-                            float timeToCompleteAttack = 18;
+
+                            double timeSpanHoursTimer = geoSite.ExpiringTimerAt.TimeSpan.TotalHours;
+                            double timeSpanHoursNow = geoSite.GeoLevel.Timing.Now.TimeSpan.TotalHours;
+
+                          //  TFTVLogger.Always($"timeSpanHoursTimer {timeSpanHoursTimer}");
+                          //  TFTVLogger.Always($"timeSpanHoursNow {timeSpanHoursNow}");
+
+                            double superClockTimer = timeSpanHoursTimer - timeSpanHoursNow;
+
+                            float totalTimeForAttack = 18;
 
                             if (PhoenixBasesContainmentBreach.ContainsKey(geoSite.SiteId))
                             {
-                                timeToCompleteAttack = PhoenixBasesContainmentBreach[geoSite.SiteId];
-
+                                totalTimeForAttack = PhoenixBasesContainmentBreach[geoSite.SiteId];
                             }
 
-                            float progress = 1f - timer / timeToCompleteAttack;
+                            float timer = (float)superClockTimer; //(site.ExpiringTimerAt.DateTime - site.GeoLevel.Timing.Now.DateTime).Hours;
+                            TFTVLogger.Always($"timer: {timer}");
+
+                            float progress = 1f - timer / totalTimeForAttack;
 
                             List<IGeoCharacterContainer> characterContainers = geoMission.GetDeploymentSources(geoSite.Owner);
 

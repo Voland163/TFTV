@@ -115,7 +115,7 @@ namespace TFTV
            // TFTVDefsInjectedOnlyOnce.Print();
            // TFTVAmbushes.GetAllPureAndForsakenHotspots(Controller);
            
-         /*   foreach(ResearchElement element in Controller.PhoenixFaction.Research.FactionResearches) 
+       /*  foreach(ResearchElement element in Controller.NewJerichoFaction.Research.Researchable) 
             {
                 TFTVLogger.Always($"{element.ResearchID}");
             }*/

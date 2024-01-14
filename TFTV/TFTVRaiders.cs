@@ -1,4 +1,5 @@
 ﻿using Base.Defs;
+using Base.Entities.Abilities;
 using Base.Utils;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
@@ -10,6 +11,7 @@ using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.Entities.Items;
 using PhoenixPoint.Common.Levels.ActorDeployment;
 using PhoenixPoint.Common.Levels.Missions;
+using PhoenixPoint.Geoscape.Entities.Research.Reward;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
@@ -133,6 +135,41 @@ namespace TFTV
             private static List<TacticalItemDef> _heavyGoldTorsoArmorsMedium = new List<TacticalItemDef>(3);
             private static List<TacticalItemDef> _doomMedium = new List<TacticalItemDef>(3);
 
+            private static Dictionary<UnitTemplateResearchRewardDef, List <TacCharacterDef>> _banditTemplatesTiedToPandoranUnlocks = new Dictionary<UnitTemplateResearchRewardDef, List<TacCharacterDef>>()
+            {
+
+            };
+
+
+            [HarmonyPatch(typeof(UnitTemplateResearchReward), "GiveReward")]
+            public static class UnitTemplateResearchReward_GiveReward_patch
+            {
+                public static void Postfix(UnitTemplateResearchReward __instance, GeoFaction faction)
+                {
+                    try
+                    {
+                        if(_banditTemplatesTiedToPandoranUnlocks.ContainsKey(__instance.RewardDef)) 
+                        {
+                            foreach (TacCharacterDef template in _banditTemplatesTiedToPandoranUnlocks[__instance.RewardDef])
+                            { 
+                                string factionName = template.name.Split('_')[0];
+
+                                GeoFaction geoFaction = faction.GeoLevel.Factions.FirstOrDefault(f => f.PPFactionDef.ShortNames.Contains(factionName)) ?? faction.GeoLevel.NeutralFaction;
+                                if (!geoFaction.UnlockedUnitTemplates.Contains(template))
+                                {
+                                    TFTVLogger.Always($"Adding {template.name} to {geoFaction.PPFactionDef.name} for {__instance.RewardDef.name}");
+                                    geoFaction.UnlockedUnitTemplates.Add(template);
+                                }
+                            }
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                        throw;
+                    }
+                }
+            }
 
 
             private static void CreateNewArmorsAssault(List<List<TacticalItemDef>> armorPiecesToModify, TacticalItemDef original, List<string> gUIDs0, List<string> gUIDs1, List<string> gUIDs2)
@@ -250,6 +287,7 @@ namespace TFTV
                         original.SubAddons = withoutJetpack.ToArray();
                     }
 
+                    original.Abilities = new AbilityDef[] { };
 
 
                     //NEU_Sniper, NEU_Assault, NEU_Heavy too short
@@ -490,22 +528,27 @@ namespace TFTV
                     _heavyNakedArmRight.Armor = 8;
 
                     neuHeavyBandana.Armor = 0;
+                    neuHeavyBandana.ViewElementDef.InventoryIcon = Helper.CreateSpriteFromImageFile("Raider_Icon_Bandana.png");
                     neuSniperBandana.Armor = 0;
                     neuSniperBandana.ViewElementDef.DisplayName2.LocalizationKey = "KEY_TACTICAL_BANDANA_NAME2";
                     neuSniperBandana.ViewElementDef.Description.LocalizationKey = "KEY_WASTELAND_HEADGEAR_DESCRIPTION";
+                    neuSniperBandana.ViewElementDef.InventoryIcon = Helper.CreateSpriteFromImageFile("Raider_Icon_Bandana.png");
 
                     neuHeavyTshirt.Armor = 0;
                     neuHeavyTshirt.ViewElementDef.DisplayName2.LocalizationKey = "KEY_TSHIRT_NAME2";
                     neuHeavyTshirt.ViewElementDef.Description.LocalizationKey = "KEY_WASTELAND_BODY_ARMOR_DESCRIPTION";
+                    neuHeavyTshirt.ViewElementDef.InventoryIcon = Helper.CreateSpriteFromImageFile("Raider_Icon_Tshirt.png");
                     leftArmDirtyTshirt.Armor = 0;
                     rightArmDirtyTshirt.Armor = 0;
 
                     neuAssaultJacket.Armor = 10;
+                    neuAssaultJacket.ViewElementDef.InventoryIcon = Helper.CreateSpriteFromImageFile("Raider_Icon_Jacket.png");
                     leftArmJacket.Armor = 10;
                     rightArmJacket.Armor = 10;
 
                     neuSniperCoat.ViewElementDef.DisplayName2.LocalizationKey = "KEY_COAT_NAME2";
                     neuSniperCoat.ViewElementDef.Description.LocalizationKey = "KEY_WASTELAND_BODY_ARMOR_DESCRIPTION";
+                    neuSniperCoat.ViewElementDef.InventoryIcon = Helper.CreateSpriteFromImageFile("Raider_Icon_Coat.png");
                     neuSniperCoat.Armor = 10;
                     leftArmCoat.Armor = 10;
                     rightArmCoat.Armor = 10;
@@ -513,21 +556,21 @@ namespace TFTV
                     neuHeavyLegs.Armor = 8;
                     neuHeavyLegs.ViewElementDef.DisplayName2.LocalizationKey = "KEY_WASTELAND_LEGS_NAME2";
                     neuHeavyLegs.ViewElementDef.Description.LocalizationKey = "KEY_WASTELAND_LEGS_DESCRIPTION";
+                    neuHeavyLegs.ViewElementDef.InventoryIcon = Helper.CreateSpriteFromImageFile("Raider_Icon_Jeans.png");
                     leftLegHeavyJeans.Armor = 8;
                     rightLegHeavyJeans.Armor = 8;
 
                     neuAssaultLegs.Armor = 8;
+                    neuAssaultLegs.ViewElementDef.InventoryIcon = Helper.CreateSpriteFromImageFile("Raider_Icon_Jeans.png");
                     leftLegAssaultJeans.Armor = 8;
                     righLegAssaultJeans.Armor = 8;
 
                     neuSniperLegs.Armor = 8;
                     neuSniperLegs.ViewElementDef.DisplayName2.LocalizationKey = "KEY_WASTELAND_LEGS_NAME2";
                     neuSniperLegs.ViewElementDef.Description.LocalizationKey = "KEY_WASTELAND_LEGS_DESCRIPTION";
+                    neuSniperLegs.ViewElementDef.InventoryIcon = Helper.CreateSpriteFromImageFile("Raider_Icon_Jeans.png");
                     leftLegSniperJeans.Armor = 8;
                     rightLegSniperJeans.Armor = 8;
-
-                   
-
 
                     CreateMixedTorsoArmsArmors();
 
@@ -774,8 +817,20 @@ namespace TFTV
 
                     };
 
+                    //consider tying something to venomous myrmidons, because known template
+                    List<UnitTemplateResearchRewardDef> researches = new List<UnitTemplateResearchRewardDef>()
+                    {
+                    DefCache.GetDef<UnitTemplateResearchRewardDef>("ALN_FishmanSniper_ResearchDef_UnitTemplateResearchRewardDef_0"),
+                    DefCache.GetDef<UnitTemplateResearchRewardDef>("ALN_BasicSwarmer_ResearchDef_UnitTemplateResearchRewardDef_0"),
+                    DefCache.GetDef<UnitTemplateResearchRewardDef>("ALN_VenomousSwarmer_ResearchDef_UnitTemplateResearchRewardDef_0"),
+                    DefCache.GetDef<UnitTemplateResearchRewardDef>("ALN_VenomousSwarmer_ResearchDef_UnitTemplateResearchRewardDef_0"),
+                    DefCache.GetDef<UnitTemplateResearchRewardDef>("ALN_AcidSwarmer_ResearchDef_UnitTemplateResearchRewardDef_0"),
+                    DefCache.GetDef<UnitTemplateResearchRewardDef>("ALN_FishmanPiercerSniper_ResearchDef_UnitTemplateResearchRewardDef_0"),
 
-                    CreateRaiderTemplateSet(armors, weapons, _sniperRaiderTag, gUIDS);
+                    };
+
+                    CreateRaiderTemplateSet(armors, weapons, _sniperRaiderTag, gUIDS, researches);
+
 
 
                 }
@@ -897,7 +952,7 @@ namespace TFTV
                 }
             }
 
-            private static void CreateRaiderTemplateSet(List<List<List<TacticalItemDef>>> armors, List<List<List<ItemDef>>> weapons, ClassTagDef classTagDef, List<string> gUIDS)
+            private static void CreateRaiderTemplateSet(List<List<List<TacticalItemDef>>> armors, List<List<List<ItemDef>>> weapons, ClassTagDef classTagDef, List<string> gUIDS, List<UnitTemplateResearchRewardDef> researches = null)
             {
                 try
                 {
@@ -905,7 +960,10 @@ namespace TFTV
                     {
                         for (int y = 0; y < armors[x].Count; y++)
                         {
-                            CreateTacCharaterDef(classTagDef, $"BAN_{classTagDef.className}_{x}{y}", gUIDS[0], weapons[x][y], armors[x][y], null, null, x + 1, x);
+                            // Check if researches is not null before accessing researches[x]
+                            UnitTemplateResearchRewardDef research = (researches != null && x < researches.Count) ? researches[x] : null;
+
+                            CreateTacCharaterDef(classTagDef, $"BAN_{classTagDef.className}_{x}{y}", gUIDS[0], weapons[x][y], armors[x][y], null, null, x + 1, x, research);
                             gUIDS.Remove(gUIDS[0]);
                         }
                     }
@@ -915,6 +973,7 @@ namespace TFTV
                     TFTVLogger.Error(e);
                 }
             }
+
 
 
             private static void CreateBerserkerTemplates()
@@ -931,15 +990,15 @@ namespace TFTV
                     WeaponDef acidNade = DefCache.GetDef<WeaponDef>("AN_AcidGrenade_WeaponDef");
                     WeaponDef fireNade = DefCache.GetDef<WeaponDef>("NJ_IncindieryGrenade_WeaponDef");
 
-                    List<ItemDef> bersekerWeapons0 = new List<ItemDef>() { sectarianAxe, nePistol, nePistol.CompatibleAmmunition[0] };
+                    List<ItemDef> berserkerWeapons0 = new List<ItemDef>() { sectarianAxe };//, nePistol, nePistol.CompatibleAmmunition[0] };
 
                     List<TacticalItemDef> berserkerArmor0 = new List<TacticalItemDef>() { inSniperHelmet, neuSniperCoat, neuHeavyLegs };
                     List<TacticalItemDef> berserkerArmor0b = new List<TacticalItemDef>() { sectarianHelmet, neuAssaultJacket, neuSniperLegs };
                     List<TacticalItemDef> berserkerArmor0c = new List<TacticalItemDef>() { spyMasterHelmet, neuAssaultJacket, neuAssaultLegs };
 
-                    CreateTacCharaterDef(_scumTag, "BAN_Berserker_0", "{C5A4C006-3FF9-47A3-B64A-B32A8781F0A7}", bersekerWeapons0, berserkerArmor0, null, null, 1, 0);
-                    CreateTacCharaterDef(_scumTag, "BAN_Berserker_0b", "{8CFD7DDC-EC70-4E9E-90E0-FD27FB156A20}", bersekerWeapons0, berserkerArmor0b, null, null, 1, 0);
-                    CreateTacCharaterDef(_scumTag, "BAN_Berserker_0c", "{66B25F71-0CDD-4466-BD57-85FA9684869C}", bersekerWeapons0, berserkerArmor0c, null, null, 1, 0);
+                    CreateTacCharaterDef(_scumTag, "BAN_Berserker_0", "{C5A4C006-3FF9-47A3-B64A-B32A8781F0A7}", berserkerWeapons0, berserkerArmor0, null, null, 1, 0);
+                    CreateTacCharaterDef(_scumTag, "BAN_Berserker_0b", "{8CFD7DDC-EC70-4E9E-90E0-FD27FB156A20}", berserkerWeapons0, berserkerArmor0b, null, null, 1, 0);
+                    CreateTacCharaterDef(_scumTag, "BAN_Berserker_0c", "{66B25F71-0CDD-4466-BD57-85FA9684869C}", berserkerWeapons0, berserkerArmor0c, null, null, 1, 0);
 
                     List<ItemDef> bersekerWeaponsGrenade1 = new List<ItemDef>() { sectarianAxe, grenade, grenade };
 
@@ -947,7 +1006,7 @@ namespace TFTV
                     List<TacticalItemDef> berserkerArmor1grenade = new List<TacticalItemDef>() { sectarianHelmet, neuHeavyTshirt, inAssaultLegs };
                     List<TacticalItemDef> berserkerArmor1grenadeb = new List<TacticalItemDef>() { inAssaultHelmet, neuHeavyTshirt, inAssaultLegs };
 
-                    CreateTacCharaterDef(_scumTag, "BAN_Berserker_1", "{5C08A5A2-4AA7-4334-A216-1C1A6F85541E}", bersekerWeapons0, berserkerArmor1, null, null, 2, 1);
+                    CreateTacCharaterDef(_scumTag, "BAN_Berserker_1", "{5C08A5A2-4AA7-4334-A216-1C1A6F85541E}", berserkerWeapons0, berserkerArmor1, null, null, 2, 1);
                     CreateTacCharaterDef(_scumTag, "BAN_Berserker_1g", "{89F01E89-D796-4084-884D-75E78F88159B}", bersekerWeaponsGrenade1, berserkerArmor1grenade, null, null, 2, 1);
                     CreateTacCharaterDef(_scumTag, "BAN_Berserker_1gb", "{AD21E7B7-80C1-4B9F-AFF0-104B3ACFF0EE}", bersekerWeaponsGrenade1, berserkerArmor1grenadeb, null, null, 2, 1);
 
@@ -956,7 +1015,7 @@ namespace TFTV
                     List<TacticalItemDef> berserkerArmor2 = new List<TacticalItemDef>() { doomHelmet, _heavyGoldTorsoArmorsLight[2], sectarianLegs };
                     List<TacticalItemDef> berserkerArmor2b = new List<TacticalItemDef>() { inHeavyHelmet, _doomLight[2], neuAssaultLegs };
 
-                    CreateTacCharaterDef(_scumTag, "BAN_Berserker_2", "{2A77F7CB-9F49-44D9-B319-5A04C5FE2E24}", berserkerWeapons2, berserkerArmor2, null, null, 3, 2);
+                    CreateTacCharaterDef(_scumTag, "BAN_Berserker_2", "{2A77F7CB-9F49-44D9-B319-5A04C5FE2E24}", berserkerWeapons0, berserkerArmor2, null, null, 3, 2);
                     CreateTacCharaterDef(_scumTag, "BAN_Berserker_2b", "{5BE72413-B99F-43A8-AFE5-C2CE31B0F17D}", berserkerWeapons2, berserkerArmor2b, null, null, 3, 2);
 
 
@@ -1024,7 +1083,7 @@ namespace TFTV
             }
 
             private static TacCharacterDef CreateTacCharaterDef(ClassTagDef classTagDef, string name, string gUID,
-          List<ItemDef> equipmentSlots, List<TacticalItemDef> armorSlots, List<TacticalItemDef> inventorySlots, List<GameTagDef> tags, int level, int willStat)
+          List<ItemDef> equipmentSlots, List<TacticalItemDef> armorSlots, List<TacticalItemDef> inventorySlots, List<GameTagDef> tags, int level, int willStat, UnitTemplateResearchRewardDef unitTemplateResearchRewardDef = null)
             {
                 try
                 {
@@ -1068,10 +1127,23 @@ namespace TFTV
 
                     newCharacter.DeploymentCost = (int)deploymentCost;
 
-                    GeoFactionDef neutralFaction = DefCache.GetDef<GeoFactionDef>("Neutral_GeoFactionDef");
-                    neutralFaction.StartingUnits = neutralFaction.StartingUnits.AddToArray(newCharacter);
-
-                   // TFTVLogger.Always($"{newCharacter.name} is now in the neutral faction, deployment cost is {newCharacter.DeploymentCost}");
+                    if (unitTemplateResearchRewardDef == null)
+                    {
+                        GeoFactionDef neutralFaction = DefCache.GetDef<GeoFactionDef>("Neutral_GeoFactionDef");
+                        neutralFaction.StartingUnits = neutralFaction.StartingUnits.AddToArray(newCharacter);
+                    }
+                    else 
+                    {
+                        if (_banditTemplatesTiedToPandoranUnlocks.ContainsKey(unitTemplateResearchRewardDef))
+                        {
+                            _banditTemplatesTiedToPandoranUnlocks[unitTemplateResearchRewardDef].Add(newCharacter);
+                        }
+                        else 
+                        {
+                            _banditTemplatesTiedToPandoranUnlocks.Add(unitTemplateResearchRewardDef, new List<TacCharacterDef>() { newCharacter });
+                        }
+                    }
+                    // TFTVLogger.Always($"{newCharacter.name} is now in the neutral faction, deployment cost is {newCharacter.DeploymentCost}");
 
                     return newCharacter;
 
@@ -1111,16 +1183,16 @@ namespace TFTV
                     newSpec.ViewElementDef = Helper.CreateDefFromClone(specializationDefSource.ViewElementDef, "{CDDDC201-F141-4A26-A542-DD7C06507033}", $"{newSpec.name}");
                     newSpec.AbilityTrack = Helper.CreateDefFromClone(specializationDefSource.AbilityTrack, "{0875C025-2FAF-4E1D-B843-AA5A6965226F}", $"{newSpec.name}");
 
-                  /*  for (int x = 1; x < newSpec.AbilityTrack.AbilitiesByLevel.Count(); x++)
-                    {
-                        newSpec.AbilityTrack.AbilitiesByLevel = new PhoenixPoint.Common.Entities.Characters.AbilityTrackSlot[]
-                    {
-                        new PhoenixPoint.Common.Entities.Characters.AbilityTrackSlot()
-                        {Ability = specializationDefSource.AbilityTrack.AbilitiesByLevel[x].Ability, RequiresPrevAbility = false }
+                    /*  for (int x = 1; x < newSpec.AbilityTrack.AbilitiesByLevel.Count(); x++)
+                      {
+                          newSpec.AbilityTrack.AbilitiesByLevel = new PhoenixPoint.Common.Entities.Characters.AbilityTrackSlot[]
+                      {
+                          new PhoenixPoint.Common.Entities.Characters.AbilityTrackSlot()
+                          {Ability = specializationDefSource.AbilityTrack.AbilitiesByLevel[x].Ability, RequiresPrevAbility = false }
 
-                    };
+                      };
 
-                    }*/
+                      }*/
 
 
 
@@ -1202,7 +1274,7 @@ namespace TFTV
 
                     scumProficiency.ClassTags = new GameTagsList() { _scumTag, scumProficiency.ClassTags[1], scumProficiency.ClassTags[2] };
                     scumProficiency.ViewElementDef.SmallIcon = icon;
-                    scumProficiency.ViewElementDef.LargeIcon = icon; 
+                    scumProficiency.ViewElementDef.LargeIcon = icon;
                     scumProficiency.ViewElementDef.DisplayName1.LocalizationKey = "KEY_WASTELAND_SCUM_NAME";
                     scumProficiency.ViewElementDef.DisplayName2.LocalizationKey = "KEY_WASTELAND_SCUM_NAME";
                     scumProficiency.ViewElementDef.Description.LocalizationKey = "KEY_BERSERKER_TRAINING_DESCRIPTION";
@@ -1212,16 +1284,16 @@ namespace TFTV
 
                     newSpec.AbilityTrack.AbilitiesByLevel[0] = scumTrackSlot0;
 
-                 /*   for(int x =1; x< newSpec.AbilityTrack.AbilitiesByLevel.Count(); x++) 
-                    {
-                        newSpec.AbilityTrack.AbilitiesByLevel = new PhoenixPoint.Common.Entities.Characters.AbilityTrackSlot[]
-                    {
-                        new PhoenixPoint.Common.Entities.Characters.AbilityTrackSlot()
-                        {Ability = specializationDefSource.AbilityTrack.AbilitiesByLevel[x].Ability, RequiresPrevAbility = false }
+                    /*   for(int x =1; x< newSpec.AbilityTrack.AbilitiesByLevel.Count(); x++) 
+                       {
+                           newSpec.AbilityTrack.AbilitiesByLevel = new PhoenixPoint.Common.Entities.Characters.AbilityTrackSlot[]
+                       {
+                           new PhoenixPoint.Common.Entities.Characters.AbilityTrackSlot()
+                           {Ability = specializationDefSource.AbilityTrack.AbilitiesByLevel[x].Ability, RequiresPrevAbility = false }
 
-                    };
+                       };
 
-                    }*/
+                       }*/
 
 
                     newSpec.ClassTag = _scumTag;

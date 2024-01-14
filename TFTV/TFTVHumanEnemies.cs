@@ -1,8 +1,10 @@
 ﻿using Base.Core;
 using Base.Defs;
 using Base.Entities.Abilities;
+using Base.Entities.Effects;
 using Base.Entities.Statuses;
 using Base.UI;
+using com.ootii.Collections;
 using HarmonyLib;
 using PhoenixPoint.Common.ContextHelp;
 using PhoenixPoint.Common.Core;
@@ -11,6 +13,7 @@ using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.Levels.Missions;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
+using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.Entities.Statuses;
 using PhoenixPoint.Tactical.Levels;
 using PhoenixPoint.Tactical.View.ViewControllers;
@@ -31,6 +34,7 @@ namespace TFTV
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
         private static readonly SharedData Shared = TFTVMain.Shared;
 
+        private static readonly MultiEffectDef opticalShieldMultiStatusDef = DefCache.GetDef<MultiEffectDef>("E_MultiEffect [OpticalShield]");
 
         private static readonly GameTagDef HumanEnemyTier1GameTag = DefCache.GetDef<GameTagDef>("HumanEnemyTier_1_GameTagDef");
         private static readonly GameTagDef HumanEnemyTier2GameTag = DefCache.GetDef<GameTagDef>("HumanEnemyTier_2_GameTagDef");
@@ -40,9 +44,9 @@ namespace TFTV
 
         private static readonly GameTagDef heavy = DefCache.GetDef<GameTagDef>("Heavy_ClassTagDef");
 
-        private static readonly AbilityDef regeneration = DefCache.GetDef<AbilityDef>("Regeneration_Torso_Passive_AbilityDef");
+        private static readonly ApplyStatusAbilityDef regeneration = DefCache.GetDef<ApplyStatusAbilityDef>("Regeneration_Torso_Passive_AbilityDef");
         private static readonly HealthChangeStatusDef regenerationStatus = DefCache.GetDef<HealthChangeStatusDef>("Regeneration_Torso_Constant_StatusDef");
-        private static readonly AddAttackBoostStatusDef quickAimStatus = DefCache.GetDef<AddAttackBoostStatusDef>("E_Status [QuickAim_AbilityDef]");
+        private static readonly AddAttackBoostStatusDef startingVolleyStatus = DefCache.GetDef<AddAttackBoostStatusDef>("E_Status [StartingVolley]");
         private static readonly PassiveModifierAbilityDef ambush = DefCache.GetDef<PassiveModifierAbilityDef>("HumanEnemiesTacticsAmbush_AbilityDef");
         private static readonly StatusDef frenzy = DefCache.GetDef<StatusDef>("Frenzy_StatusDef");
         private static readonly HitPenaltyStatusDef mFDStatus = DefCache.GetDef<HitPenaltyStatusDef>("E_PureDamageBonusStatus [MarkedForDeath_AbilityDef]");
@@ -299,7 +303,7 @@ namespace TFTV
                 }
 
                 ContextHelpHintDef humanEnemySightedHint = TFTVHints.HintDefs.DynamicallyCreatedHints.CreateNewTacticalHintForHumanEnemies(nameOfGang, HintTrigger.ActorSeen, "HumanEnemyFaction_" + enemyHumanFaction.TacticalFactionDef.ShortName + "_GameTagDef", nameOfGang, descriptionHint, fileNameSquadPic);
-                
+
                 TacticsHint.Add(humanEnemySightedHint);
 
 
@@ -1012,6 +1016,105 @@ namespace TFTV
             throw new InvalidOperationException();
         }
 
+        private static int[] BuffFromClass(GameTagDef classTagDef, int difficulty)
+        {
+            try
+            {
+                ClassTagDef assaultTag = DefCache.GetDef<ClassTagDef>("Assault_ClassTagDef");
+                ClassTagDef berserkerTag = DefCache.GetDef<ClassTagDef>("Berserker_ClassTagDef");
+                ClassTagDef heavyTag = DefCache.GetDef<ClassTagDef>("Heavy_ClassTagDef");
+                ClassTagDef infiltratorTag = DefCache.GetDef<ClassTagDef>("Infiltrator_ClassTagDef");
+
+                ClassTagDef sniperTag = DefCache.GetDef<ClassTagDef>("Sniper_ClassTagDef");
+                ClassTagDef priestTag = DefCache.GetDef<ClassTagDef>("Priest_ClassTagDef");
+                ClassTagDef technicianTag = DefCache.GetDef<ClassTagDef>("Technician_ClassTagDef");
+
+                ClassTagDef assaultRaiderTag = TFTVRaiders._assaultRaiderTag;
+                ClassTagDef heavyRaiderTag = TFTVRaiders._heavyRaiderTag;
+                ClassTagDef sniperRaiderTag = TFTVRaiders._sniperRaiderTag;
+                ClassTagDef scumTag = TFTVRaiders._scumTag;
+
+                int[] stats = new int[3];
+
+                if (classTagDef == assaultTag || classTagDef == assaultRaiderTag)
+                {
+                    stats[0] = 1;
+                    stats[1] = 0;
+                    stats[2] = 2;
+                }
+                else if (classTagDef == berserkerTag || classTagDef == infiltratorTag || classTagDef == scumTag)
+                {
+                    stats[0] = 0;
+                    stats[1] = 0;
+                    stats[2] = difficulty + 1;
+                }
+                else if (classTagDef == priestTag || classTagDef == technicianTag)
+                {
+                    stats[0] = 0;
+                    stats[1] = difficulty;
+                    stats[2] = 0;
+                }
+                else if (classTagDef == heavyTag || classTagDef == heavyRaiderTag)
+                {
+                    stats[0] = difficulty + 2;
+                    stats[1] = 0;
+                    stats[2] = 0;
+                }
+
+                return stats;
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
+        }
+
+
+        private static void AdjustStats(TacticalActor tacticalActor, GameTagDef classTagDef)
+        {
+            int difficultyLevel = TFTVReleaseOnly.DifficultyOrderConverter(tacticalActor.TacticalLevel.Difficulty.Order);
+
+            try
+            {
+                int[] classBuff = BuffFromClass(classTagDef, difficultyLevel);
+
+                int level = tacticalActor.LevelProgression.Level;
+
+                float[] equipmentBuff = new float[3];
+
+                foreach (TacticalItem tacticalItem in tacticalActor.BodyState.GetArmourItems())
+                {
+                    equipmentBuff[0] += tacticalItem.BodyPartAspect.BodyPartAspectDef.Endurance;
+                    equipmentBuff[1] += tacticalItem.BodyPartAspect.BodyPartAspectDef.WillPower;
+                    equipmentBuff[2] += tacticalItem.BodyPartAspect.BodyPartAspectDef.Speed;
+                }
+
+                // TFTVLogger.Always($"{tacticalActor.name} has buffs from equipment {equipmentBuff[0]}, {equipmentBuff[1]}, {equipmentBuff[2]}");
+
+                //11+4+14+6 MAX STR = 35 + armor
+                tacticalActor.CharacterStats.Endurance.SetMax(11 + difficultyLevel + level * 2 + classBuff[0] + equipmentBuff[0]);
+                tacticalActor.CharacterStats.Endurance.Set(11 + difficultyLevel + level * 2 + classBuff[0] + equipmentBuff[0]);
+                tacticalActor.CharacterStats.Health.SetMax(120 + difficultyLevel * 10 + level * 2 * 10 + (classBuff[0] + equipmentBuff[0]) * 10);
+                tacticalActor.CharacterStats.Health.SetToMax();
+
+
+                //5+2+7+6+5 MAX WP = 25 + armor
+                tacticalActor.CharacterStats.Willpower.SetMax(5 + Mathf.FloorToInt(difficultyLevel / 2) + level + GetStatBuffForTier(tacticalActor) / 2 + classBuff[1] + equipmentBuff[1]);
+                tacticalActor.CharacterStats.Willpower.Set(5 + Mathf.FloorToInt(difficultyLevel / 2) + level + GetStatBuffForTier(tacticalActor) / 2 + classBuff[1] + equipmentBuff[1]);
+
+
+                //14+3+4+4 MAX SPD = 25 + armor
+                tacticalActor.CharacterStats.Speed.SetMax(14 + Mathf.CeilToInt(level / 2) + GetStatBuffForTier(tacticalActor) / 3 + classBuff[2] + equipmentBuff[2]);
+                tacticalActor.CharacterStats.Speed.Set(14 + Mathf.CeilToInt(level / 2) + GetStatBuffForTier(tacticalActor) / 3 + classBuff[2] + equipmentBuff[2]);
+            }
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
         public static void AdjustStatsAndSkills(TacticalActor tacticalActor)
         {
             int difficultyLevel = TFTVReleaseOnly.DifficultyOrderConverter(tacticalActor.TacticalLevel.Difficulty.Order);
@@ -1037,8 +1140,8 @@ namespace TFTV
                 allAbilities.AddRange(sniperAbilities);
                 allAbilities.AddRange(technicianAbilities);
 
-                List<AbilityDef> discardedAbilities = new List<AbilityDef> (allAbilities);
-                discardedAbilities.Remove(quickAim);
+                List<AbilityDef> discardedAbilities = new List<AbilityDef>(allAbilities);
+                //   discardedAbilities.Remove(quickAim);
                 discardedAbilities.Remove(dash);
                 discardedAbilities.Remove(cqc);
                 discardedAbilities.Remove(bloodlust);
@@ -1061,7 +1164,7 @@ namespace TFTV
                 discardedAbilities.Remove(stability);
                 discardedAbilities.Remove(fieldMedic);
 
-               if (tacticalActor.HasGameTag(TFTVRaiders._scumTag))
+                if (tacticalActor.HasGameTag(TFTVRaiders._scumTag))
                 {
                     foreach (AbilityDef ability in allAbilities)
                     {
@@ -1085,32 +1188,25 @@ namespace TFTV
                 int level = GetAdjustedLevel(tacticalActor);
                 GameTagDef classTagDef = GetFactionTierAndClassTags(tacticalActor.GameTags.ToList())[2];
 
-                tacticalActor.CharacterStats.Willpower.SetMax(5 + Mathf.FloorToInt(difficultyLevel / 2) + level + GetStatBuffForTier(tacticalActor) / 2);
-                tacticalActor.CharacterStats.Willpower.Set(5 + Mathf.FloorToInt(difficultyLevel / 2) + level + GetStatBuffForTier(tacticalActor) / 2);
-                tacticalActor.CharacterStats.Speed.SetMax(12 + Mathf.CeilToInt(difficultyLevel / 3) + level + GetStatBuffForTier(tacticalActor) / 3);
-                tacticalActor.CharacterStats.Speed.Set(12 + Mathf.CeilToInt(difficultyLevel / 3) + level + GetStatBuffForTier(tacticalActor) / 3);
-                tacticalActor.CharacterStats.Endurance.SetMax(12 + difficultyLevel + level * 2);
-                tacticalActor.CharacterStats.Endurance.Set(12 + difficultyLevel + level * 2);
-                tacticalActor.CharacterStats.Health.SetMax(130 + difficultyLevel * 10 + level * 2 * 10);
-                tacticalActor.CharacterStats.Health.SetToMax();
-                tacticalActor.UpdateStats();
+                AdjustStats(tacticalActor, classTagDef);
 
 
                 if (classTagDef.name.Contains("Assault"))
                 {
-                    if (level >= 2)
-                    {
+                    /*   if (level >= 2)
+                       {
 
-                        tacticalActor.AddAbility(quickAim, tacticalActor);
+                         //  tacticalActor.AddAbility(quickAim, tacticalActor);
+
+                       }
+                       else
+                       {*/
+                    if (tacticalActor.GetAbilityWithDef<Ability>(quickAim) != null)
+                    {
+                        tacticalActor.RemoveAbility(quickAim);
                         tacticalActor.UpdateStats();
                     }
-                    else
-                    {
-                        if (tacticalActor.GetAbilityWithDef<Ability>(quickAim) != null)
-                        {
-                            tacticalActor.RemoveAbility(quickAim);
-                        }
-                    }
+                    // }
                 }
                 if (classTagDef.name.Contains("Berserker"))
                 {
@@ -1202,33 +1298,7 @@ namespace TFTV
                         tacticalActor.AddAbility(mindControl, tacticalActor);
                     }
                 }
-                if (classTagDef.name.Contains("Priest"))
-                {
-                    if (level == 7)
-                    {
-                        tacticalActor.AddAbility(mindCrush, tacticalActor);
-                        tacticalActor.AddAbility(psychicWard, tacticalActor);
-                        tacticalActor.AddAbility(mindSense, tacticalActor);
-                        tacticalActor.AddAbility(mindControl, tacticalActor);
 
-                    }
-                    else if (level == 6)
-                    {
-                        tacticalActor.AddAbility(psychicWard, tacticalActor);
-                        tacticalActor.AddAbility(mindSense, tacticalActor);
-                        tacticalActor.AddAbility(mindControl, tacticalActor);
-
-                    }
-                    else if (level == 5)
-                    {
-                        tacticalActor.AddAbility(mindSense, tacticalActor);
-                        tacticalActor.AddAbility(mindControl, tacticalActor);
-                    }
-                    else if (level >= 2)
-                    {
-                        tacticalActor.AddAbility(mindControl, tacticalActor);
-                    }
-                }
                 if (classTagDef.name.Contains("Sniper"))
                 {
                     if (level >= 6)
@@ -1274,6 +1344,8 @@ namespace TFTV
                     }
                 }
 
+                tacticalActor.UpdateStats();
+
             }
             catch (Exception e)
             {
@@ -1287,7 +1359,6 @@ namespace TFTV
 
             try
             {
-
                 GameTagDef tierTagDef = GetFactionTierAndClassTags(tacticalActor.GameTags.ToList())[1];
                 string rank = tierTagDef.name.Split('_')[1];
                 int rankOrder = int.Parse(rank);
@@ -1416,6 +1487,49 @@ namespace TFTV
             }
         }
 
+        public static void ApplyTacticStartOfPlayerTurn(TacticalLevelController controller)
+        {
+            try
+            {
+                if (controller.CurrentFaction != controller.GetFactionByCommandName("Px"))
+                {
+                    return;
+                }
+
+                foreach (string faction in HumanEnemiesAndTactics.Keys)
+                {
+
+                    if (HumanEnemiesAndTactics.GetValueSafe(faction) == 4)
+                    {
+                        TFTVLogger.Always("Applying tactic Optical Shield");
+                        OpticalShield(controller, faction);
+                    }
+                    else if (HumanEnemiesAndTactics.GetValueSafe(faction) == 3)
+                    {
+                        if (HumanEnemiesAndTactics.ContainsKey("pu") || HumanEnemiesAndTactics.ContainsKey("Purists"))
+                        {
+
+                        }
+                        else
+                        {
+                            TFTVLogger.Always("Applying tactic Experimental Drugs");
+                            ExperimentalDrugs(controller, faction);
+                        }
+                    }
+                    else if (HumanEnemiesAndTactics.GetValueSafe(faction) == 5)
+                    {
+                        TFTVLogger.Always("Applying tactic Fire Discipline");
+                        FireDiscipline(controller, faction);
+                    }
+                }
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
         public static void ApplyTactic(TacticalLevelController controller)
         {
             try
@@ -1439,18 +1553,12 @@ namespace TFTV
                         {
                             TFTVLogger.Always("Applying tactic Pure self-repair");
                             PureSelfRepairAbility();
-
                         }
                         else
                         {
                             TFTVLogger.Always("Applying tactic Experimental Drugs");
                             ExperimentalDrugs(controller, faction);
                         }
-                    }
-                    else if (HumanEnemiesAndTactics.GetValueSafe(faction) == 4)
-                    {
-                        TFTVLogger.Always("Applying tactic Optical Shield");
-                        OpticalShield(controller, faction);
                     }
                     else if (HumanEnemiesAndTactics.GetValueSafe(faction) == 5)
                     {
@@ -1569,7 +1677,7 @@ namespace TFTV
 
                     TacticalLevelController controller = GameUtl.CurrentLevel().GetComponent<TacticalLevelController>();
                     TacticalFaction tacticalFaction = controller.GetFactionByCommandName("pu");
-                    foreach (TacticalActor tacticalActor in tacticalFaction.TacticalActors.Where(ta => ta.IsAlive).Where(ta => ta.GetAbilityWithDef<PassiveModifierAbility>(SelfRepairAbility) == null))
+                    foreach (TacticalActor tacticalActor in tacticalFaction.TacticalActors.Where(ta => ta.IsAlive && ta.HasGameTag(HumanEnemyTier2GameTag)).Where(ta => ta.GetAbilityWithDef<PassiveModifierAbility>(SelfRepairAbility) == null))
                     {
                         tacticalActor.AddAbility(SelfRepairAbility, tacticalActor);
                     }
@@ -1588,35 +1696,27 @@ namespace TFTV
         {
             try
             {
-                List<TacticalFaction> enemyHumanFactions = GetHumanEnemyFactions(controller);
-                TacticalFaction phoenix = controller.GetFactionByCommandName("PX");
-                if (enemyHumanFactions.Count != 0)
+                TacticalActor leader = GetLeader(controller, factionName);
+
+                if (leader == null)
                 {
-                    foreach (TacticalFaction faction in enemyHumanFactions)
+                    TFTVLogger.Always($"no leader for {factionName}! must be dead, Terrifying Aura will not be applied");
+                    return;
+                }
+
+
+                foreach (TacticalActorBase enemy in leader.TacticalFaction.GetAllAliveEnemyActors<TacticalActorBase>(false))
+                {
+                    if (enemy.BaseDef.name == "Soldier_ActorDef" && enemy is TacticalActor actor)
                     {
-                        if (faction.Faction.FactionDef.ShortName == factionName)
+
+                        float magnitude = actor.GetAdjustedPerceptionValue();
+
+                        if ((actor.Pos - leader.Pos).magnitude < magnitude
+                            && TacticalFactionVision.CheckVisibleLineBetweenActors(actor, actor.Pos, leader, true))
                         {
-                            foreach (TacticalActor enemyLeader in faction.TacticalActors)
-                            {
-                                if (enemyLeader.HasGameTag(HumanEnemyTier1GameTag) && enemyLeader.IsAlive)
-                                {
-                                    foreach (TacticalActor phoenixSoldier in phoenix.TacticalActors)
-                                    {
-                                        if (phoenixSoldier.BaseDef.name == "Soldier_ActorDef" && phoenixSoldier.InPlay)
-                                        {
-
-                                            float magnitude = phoenixSoldier.GetAdjustedPerceptionValue();
-
-                                            if ((phoenixSoldier.Pos - enemyLeader.Pos).magnitude < magnitude
-                                                && TacticalFactionVision.CheckVisibleLineBetweenActors(phoenixSoldier, phoenixSoldier.Pos, enemyLeader, true))
-                                            {
-                                                TFTVLogger.Always($"{phoenixSoldier.GetDisplayName()} is within perception range and has LoS on {enemyLeader.name}");
-                                                phoenixSoldier.CharacterStats?.WillPoints.Subtract(2);
-                                            }
-                                        }
-                                    }
-                                }
-                            }
+                            TFTVLogger.Always($"{actor.GetDisplayName()} is within perception range and has LoS on {leader.name}");
+                            actor.CharacterStats?.WillPoints.Subtract(2);
                         }
                     }
                 }
@@ -1638,30 +1738,20 @@ namespace TFTV
                     {
                         if (faction.Faction.FactionDef.ShortName == factionName)
                         {
-                            foreach (TacticalActorBase tacticalActorBase in faction.Actors)
+                            foreach (TacticalActor tacticalActor in faction.TacticalActors)
                             {
-                                TacticalActor tacticalActor = tacticalActorBase as TacticalActor;
-
-                                if (tacticalActorBase.HasGameTag(HumanEnemyTier1GameTag))
+                                if (tacticalActor.HasGameTag(HumanEnemyTier1GameTag))
                                 {
-                                    foreach (TacticalActorBase allyTacticalActorBase in faction.Actors)
+
+                                    if (tacticalActor.GetAbilityWithDef<Ability>(regeneration) == null
+                                        && !tacticalActor.HasStatus(regenerationStatus))
                                     {
-                                        if (allyTacticalActorBase.BaseDef.name == "Soldier_ActorDef" && allyTacticalActorBase.InPlay && allyTacticalActorBase.HasGameTag(DefCache.GetDef<GameTagDef>("HumanEnemyTier_4_GameTagDef")))
-                                        {
-                                            TacticalActor actor = allyTacticalActorBase as TacticalActor;
 
-                                            if (actor.GetAbilityWithDef<Ability>(regeneration) == null
-                                                && !actor.HasStatus(regenerationStatus))
-                                            {
-
-                                                TFTVLogger.Always("Actor is getting the experimental drugs");
-                                                actor.AddAbility(regeneration, actor);
-                                                actor.Status.ApplyStatus(regenerationStatus);
-                                            }
-                                        }
+                                        TFTVLogger.Always($"{tacticalActor.name} is getting the experimental drugs");
+                                        tacticalActor.AddAbility(regeneration, tacticalActor);
+                                        tacticalActor.Status.ApplyStatus(regenerationStatus);
                                     }
                                 }
-
                             }
                         }
                     }
@@ -1677,55 +1767,45 @@ namespace TFTV
         {
             try
             {
-                List<TacticalFaction> enemyHumanFactions = GetHumanEnemyFactions(controller);
-                TacticalFaction phoenix = controller.GetFactionByCommandName("PX");
-                if (enemyHumanFactions.Count != 0)
+                TacticalActor leader = GetLeader(controller, factionName);
+
+                if (leader == null)
                 {
-                    foreach (TacticalFaction faction in enemyHumanFactions)
+                    TFTVLogger.Always($"No leader for {factionName} found! must be dead, Starting Volley will not apply.");
+                    return;
+                }
+
+
+                foreach (TacticalActor tacticalActor in leader.TacticalFaction.TacticalActors)
+                {
+                    if (tacticalActor.BaseDef.name == "Soldier_ActorDef" && tacticalActor.InPlay && tacticalActor.IsAlive)
                     {
-                        if (faction.Faction.FactionDef.ShortName == factionName)
+                        TFTVArtOfCrab.GetBestWeaponForQA(tacticalActor);
+
+                        if (tacticalActor.Equipments.SelectedWeapon == null)
                         {
-                            foreach (TacticalActorBase tacticalActorBase in faction.Actors)
+                            continue;
+                        }
+
+                        float SelectedWeaponRange = tacticalActor.Equipments.SelectedWeapon.WeaponDef.EffectiveRange;
+                        TFTVLogger.Always($"{tacticalActor.name} selected weapon is {tacticalActor.Equipments.SelectedWeapon.DisplayName} and its maximum range is {tacticalActor.Equipments.SelectedWeapon.WeaponDef.EffectiveRange}");
+
+                        foreach (TacticalActorBase enemy in leader.TacticalFaction.GetAllAliveEnemyActors<TacticalActorBase>(false))
+                        {
+                            if ((enemy.Pos - tacticalActor.Pos).magnitude < SelectedWeaponRange / 2
+                            && TacticalFactionVision.CheckVisibleLineBetweenActors(enemy, enemy.Pos, tacticalActor, true)
+                            && !tacticalActor.Status.HasStatus(startingVolleyStatus))
                             {
-                                TacticalActor tacticalActor = tacticalActorBase as TacticalActor;
+                                TFTVLogger.Always($"{tacticalActor.name} is getting quick aim status because close enough to {enemy.name}");
+                                //  actor.AddAbility(DefCache.GetDef<AbilityDef>("Regeneration_Torso_Passive_AbilityDef")), actor);
+                                tacticalActor.Status.ApplyStatus(startingVolleyStatus);
+                                //  actor.AddAbility(DefCache.GetDef<ApplyStatusAbilityDef>("QuickAim_AbilityDef")), actor);
 
-                                if (tacticalActorBase.HasGameTag(HumanEnemyTier1GameTag))
-                                {
-                                    foreach (TacticalActorBase allyTacticalActorBase in faction.Actors)
-                                    {
-                                        if (allyTacticalActorBase.BaseDef.name == "Soldier_ActorDef" && allyTacticalActorBase.InPlay)
-                                        {
-                                            if (tacticalActor.IsAlive)
-                                            {
-                                                TacticalActor actor = allyTacticalActorBase as TacticalActor;
-
-                                                if (actor.Equipments.SelectedWeapon != null)
-                                                {
-                                                    float SelectedWeaponRange = actor.Equipments.SelectedWeapon.WeaponDef.EffectiveRange;
-                                                    TFTVLogger.Always("The selected weapon is " + actor.Equipments.SelectedWeapon.DisplayName + " and its maximum range is " + actor.Equipments.SelectedWeapon.WeaponDef.EffectiveRange);
-
-                                                    foreach (TacticalActorBase phoenixSoldierBase in phoenix.Actors)
-                                                    {
-                                                        if (phoenixSoldierBase.BaseDef.name == "Soldier_ActorDef" && phoenixSoldierBase.InPlay && (phoenixSoldierBase.Pos - allyTacticalActorBase.Pos).magnitude < SelectedWeaponRange / 2
-                                                        && TacticalFactionVision.CheckVisibleLineBetweenActors(phoenixSoldierBase, phoenixSoldierBase.Pos, actor, true)
-                                                        && !actor.Status.HasStatus(quickAimStatus))
-                                                        {
-                                                            TFTVLogger.Always("Actor is getting quick aim status");
-                                                            //  actor.AddAbility(DefCache.GetDef<AbilityDef>("Regeneration_Torso_Passive_AbilityDef")), actor);
-                                                            actor.Status.ApplyStatus(quickAimStatus);
-                                                            //  actor.AddAbility(DefCache.GetDef<ApplyStatusAbilityDef>("QuickAim_AbilityDef")), actor);
-
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
                             }
                         }
                     }
                 }
+
             }
             catch (Exception e)
             {
@@ -1733,64 +1813,51 @@ namespace TFTV
             }
         }
 
+        private static TacticalActor GetLeader(TacticalLevelController controller, string factionName)
+        {
+            try
+            {
+                return controller.Factions.FirstOrDefault(f => f.Faction.FactionDef.ShortNames.Contains(factionName)).TacticalActors.FirstOrDefault(ta => ta.HasGameTag(HumanEnemyTier1GameTag) && ta.IsAlive);
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
+        }
+
+
+
         public static void OpticalShield(TacticalLevelController controller, string factionName)
         {
             try
             {
-                List<TacticalFaction> enemyHumanFactions = GetHumanEnemyFactions(controller);
-                if (enemyHumanFactions.Count != 0)
+                TacticalActor leader = GetLeader(controller, factionName);
+
+                if (leader == null)
                 {
-                    foreach (TacticalFaction faction in enemyHumanFactions)
+                    TFTVLogger.Always($"No leader for {factionName} found! must be dead, Optical Shield will not apply.");
+                    return;
+                }
+
+                foreach (TacticalActor tacticalActor in leader.TacticalFaction.TacticalActors)
+                {
+                    if (tacticalActor.BaseDef.name == "Soldier_ActorDef" && tacticalActor.InPlay && leader != tacticalActor)
                     {
-                        if (faction.Faction.FactionDef.ShortName == factionName)
+                        float magnitude = 16;
+
+                        if ((tacticalActor.Pos - leader.Pos).magnitude < magnitude)
                         {
-                            foreach (TacticalActorBase tacticalActorBase in faction.Actors)
-                            {
-                                TacticalActor leader = tacticalActorBase as TacticalActor;
+                            /* RepositionAbilityDef painC = DefCache.GetDef<RepositionAbilityDef>("PainChameleon_AbilityDef");
 
-                                if (tacticalActorBase.HasGameTag(HumanEnemyTier1GameTag))
-                                {
-                                    StatModification stealthBuff = new StatModification() { Modification = StatModificationType.Add, Value = 1, StatName = "Stealth" };
+                             tacticalActor.AddAbility(painC, tacticalActor);
+                             tacticalActor.GetAbilityWithDef<RepositionAbility>(painC).Activate();
+                             tacticalActor.RemoveAbility(painC);*/
+                            TFTVLogger.Always($"{tacticalActor.name} in range of {leader.name} acquiring optical shield");
+                            tacticalActor.ApplyDamage(new DamageResult { ActorEffects = new List<EffectDef>() { opticalShieldMultiStatusDef } });
 
-                                    foreach (TacticalActorBase allyTacticalActorBase in faction.Actors)
-                                    {
-                                        if (allyTacticalActorBase.BaseDef.name == "Soldier_ActorDef" && allyTacticalActorBase.InPlay)
-                                        {
-                                            TacticalActor actor = allyTacticalActorBase as TacticalActor;
-                                            float magnitude = 12;
-
-                                            if (leader.IsAlive)
-                                            {
-
-                                                if ((allyTacticalActorBase.Pos - tacticalActorBase.Pos).magnitude < magnitude)
-                                                {
-                                                    if (!actor.CharacterStats.Stealth.Modifications.Contains(stealthBuff))
-                                                    {
-                                                        TFTVLogger.Always("Actor in range, has no optical shield, acquiring optical shield");
-                                                        actor.CharacterStats.Stealth.AddStatModification(stealthBuff);
-
-                                                    }
-                                                    else
-                                                    {
-                                                        TFTVLogger.Always("Actor in range, has optical shield and keeps it");
-                                                    }
-
-                                                }
-
-                                                else if ((allyTacticalActorBase.Pos - tacticalActorBase.Pos).magnitude >= magnitude
-                                                    && actor.CharacterStats.Stealth.Modifications.Contains(stealthBuff))
-                                                {
-                                                    actor.CharacterStats.Stealth.RemoveStatModification(stealthBuff);
-                                                }
-                                            }
-                                            else if (!leader.IsAlive && actor.CharacterStats.Stealth.Modifications.Contains(stealthBuff))
-                                            {
-                                                actor.CharacterStats.Stealth.RemoveStatModification(stealthBuff);
-                                            }
-                                        }
-                                    }
-                                }
-                            }
+                            //  tacticalActor.Status.ApplyStatus((StanceStatusDef)Repo.GetDef("8dbf3262-686d-2fb2-91cc-47014c539d95"));
+                            //  TacticalFactionVision.ForgetForAll(tacticalActor, true);
                         }
                     }
                 }
@@ -1805,83 +1872,61 @@ namespace TFTV
         {
             try
             {
-                List<TacticalFaction> enemyHumanFactions = TFTVHumanEnemies.GetHumanEnemyFactions(controller);
-                if (enemyHumanFactions.Count != 0)
+                StatModification accuracyBuff1 = new StatModification() { Modification = StatModificationType.Add, Value = 0.15f, StatName = "Accuracy" };
+                StatModification accuracyBuff2 = new StatModification() { Modification = StatModificationType.Add, Value = 0.3f, StatName = "Accuracy" };
+                StatModification accuracyBuff3 = new StatModification() { Modification = StatModificationType.Add, Value = 0.45f, StatName = "Accuracy" };
+                StatModification accuracyBuff4 = new StatModification() { Modification = StatModificationType.Add, Value = 0.6f, StatName = "Accuracy" };
+
+                List<StatModification> accuracyBuffs = new List<StatModification>()
                 {
-                    foreach (TacticalFaction faction in enemyHumanFactions)
+                accuracyBuff1, accuracyBuff2, accuracyBuff3, accuracyBuff4
+
+                };
+
+                foreach (TacticalActor tacticalActor in controller.Factions.FirstOrDefault(f => f.Faction.FactionDef.ShortNames.Contains(factionName)).TacticalActors)
+                {
+                    if (tacticalActor.BaseDef.name == "Soldier_ActorDef" && tacticalActor.InPlay)
                     {
-                        if (faction.Faction.FactionDef.ShortName == factionName)
+                        foreach (StatModification accuracyBuff in accuracyBuffs)
                         {
-                            foreach (TacticalActorBase tacticalActorBase in faction.Actors)
+                            if (tacticalActor.CharacterStats.Accuracy.Modifications.Contains(accuracyBuff))
                             {
-                                TacticalActor leader = tacticalActorBase as TacticalActor;
-
-                                if (tacticalActorBase.HasGameTag(HumanEnemyTier1GameTag))
-                                {
-                                    foreach (TacticalActorBase allyTacticalActorBase in faction.Actors)
-                                    {
-                                        if (allyTacticalActorBase.BaseDef.name == "Soldier_ActorDef" && allyTacticalActorBase.InPlay)
-                                        {
-                                            StatModification accuracyBuff1 = new StatModification() { Modification = StatModificationType.Add, Value = 0.15f, StatName = "Accuracy" };
-                                            StatModification accuracyBuff2 = new StatModification() { Modification = StatModificationType.Add, Value = 0.3f, StatName = "Accuracy" };
-                                            StatModification accuracyBuff3 = new StatModification() { Modification = StatModificationType.Add, Value = 0.45f, StatName = "Accuracy" };
-                                            StatModification accuracyBuff4 = new StatModification() { Modification = StatModificationType.Add, Value = 0.6f, StatName = "Accuracy" };
-
-                                            TacticalActor actor = allyTacticalActorBase as TacticalActor;
-                                            float magnitude = 12;
-                                            int numberOAssists = 0;
-
-
-                                            if (actor.CharacterStats.Accuracy.Modifications.Contains(accuracyBuff1))
-                                            {
-                                                actor.CharacterStats.Accuracy.RemoveStatModification(accuracyBuff1);
-                                            }
-                                            else if (actor.CharacterStats.Accuracy.Modifications.Contains(accuracyBuff2))
-                                            {
-                                                actor.CharacterStats.Accuracy.RemoveStatModification(accuracyBuff2);
-                                            }
-                                            else if (actor.CharacterStats.Accuracy.Modifications.Contains(accuracyBuff3))
-                                            {
-                                                actor.CharacterStats.Accuracy.RemoveStatModification(accuracyBuff3);
-                                            }
-                                            else if (actor.CharacterStats.Accuracy.Modifications.Contains(accuracyBuff4))
-                                            {
-                                                actor.CharacterStats.Accuracy.RemoveStatModification(accuracyBuff4);
-                                            }
-
-                                            if (leader.IsAlive)
-                                            {
-                                                foreach (TacticalActorBase assist in faction.Actors)
-
-                                                    if ((allyTacticalActorBase.Pos - assist.Pos).magnitude <= magnitude
-                                                        && allyTacticalActorBase != assist)
-                                                    {
-                                                        numberOAssists++;
-                                                    }
-                                                if (numberOAssists >= 4)
-                                                {
-                                                    actor.CharacterStats.Accuracy.AddStatModification(accuracyBuff4);
-                                                }
-                                                if (numberOAssists == 3)
-                                                {
-                                                    actor.CharacterStats.Accuracy.AddStatModification(accuracyBuff3);
-                                                }
-                                                if (numberOAssists == 2)
-                                                {
-                                                    actor.CharacterStats.Accuracy.AddStatModification(accuracyBuff2);
-                                                }
-                                                if (numberOAssists == 1)
-                                                {
-                                                    actor.CharacterStats.Accuracy.AddStatModification(accuracyBuff1);
-                                                }
-
-                                            }
-                                        }
-                                    }
-                                }
+                                tacticalActor.CharacterStats.Accuracy.RemoveStatModification(accuracyBuff);
                             }
                         }
                     }
+                }
+
+                TacticalActor leader = GetLeader(controller, factionName);
+
+                if (leader == null)
+                {
+                    TFTVLogger.Always($"No leader for {factionName} found! must be dead, Assisted Targeting will not apply.");
+                    return;
+                }
+
+                foreach (TacticalActor tacticalActor in leader.TacticalFaction.TacticalActors)
+                {
+                    float magnitude = 12;
+                    int numberOAssists = 0;
+
+                    foreach (TacticalActor assist in leader.TacticalFaction.TacticalActors)
+                    {
+                        if ((tacticalActor.Pos - assist.Pos).magnitude <= magnitude
+                            && tacticalActor != assist)
+                        {
+                            numberOAssists++;
+                        }
+                    }
+
+
+                    if (numberOAssists > 0)
+                    {
+                        int pos = Math.Min(3, numberOAssists - 1);
+                        tacticalActor.CharacterStats.Accuracy.AddStatModification(accuracyBuffs[pos]);
+                        TFTVLogger.Always($"{tacticalActor.name} has {numberOAssists} assists, so adding {accuracyBuffs[pos]} accuracy");
+                    };
+
                 }
             }
             catch (Exception e)
@@ -1894,73 +1939,38 @@ namespace TFTV
         {
             try
             {
-                List<TacticalFaction> enemyHumanFactions = GetHumanEnemyFactions(controller);
-                if (enemyHumanFactions.Count != 0)
+                TacticalActor leader = GetLeader(controller, factionName);
+
+                ReturnFireAbilityDef returnFireFireDiscipline = DefCache.GetDef<ReturnFireAbilityDef>("FireDisciplineAbility");
+
+                foreach (TacticalActor tacticalActor in controller.Factions.FirstOrDefault(f => f.Faction.FactionDef.ShortNames.Contains(factionName)).TacticalActors)
                 {
-                    foreach (TacticalFaction faction in enemyHumanFactions)
+                    if (tacticalActor.BaseDef.name == "Soldier_ActorDef" && tacticalActor.InPlay)
                     {
-                        if (faction.Faction.FactionDef.ShortName == factionName)
+                        if (tacticalActor.GetAbilityWithDef<Ability>(returnFireFireDiscipline) != null)
                         {
+                            TFTVLogger.Always($"Removing Fire Discipline RF from {tacticalActor.name}");
+                        }
+                    }
+                }
 
-                            TacticalActor leader = null;
+                if (leader == null)
+                {
+                    TFTVLogger.Always($"No leader for {factionName} found! must be dead, Fire Discipline will not apply.");
+                    return;
+                }
 
-                            foreach (TacticalActorBase tacticalActorBase in faction.Actors)
-                            {
-                                if (tacticalActorBase.HasGameTag(HumanEnemyTier1GameTag))
-                                {
-                                    if (tacticalActorBase.IsAlive)
-                                    {
-                                        TFTVLogger.Always("Found leader " + tacticalActorBase.name);
-                                        leader = tacticalActorBase as TacticalActor;
-                                    }
-                                }
-                            }
+                foreach (TacticalActor tacticalActor in leader.TacticalFaction.TacticalActors)
+                {
+                    if (tacticalActor.BaseDef.name == "Soldier_ActorDef" && tacticalActor.InPlay
+                        && tacticalActor.GetAbilityWithDef<Ability>(returnFire) == null && tacticalActor.GetAbilityWithDef<Ability>(returnFireFireDiscipline) == null && tacticalActor != leader)
+                    {
+                        float magnitude = 20;
 
-                            foreach (TacticalActorBase allyTacticalActorBase in faction.Actors)
-                            {
-                                if (allyTacticalActorBase.BaseDef.name == "Soldier_ActorDef" && allyTacticalActorBase.InPlay)
-                                {
-                                    TacticalActor actor = allyTacticalActorBase as TacticalActor;
-                                    float magnitude = 20;
-
-                                    if (leader != null)
-                                    {
-                                        TFTVLogger.Always("Leader " + leader.name + " is alive");
-                                        if ((allyTacticalActorBase.Pos - leader.Pos).magnitude < magnitude
-                                            && actor.GetAbilityWithDef<Ability>(returnFire) == null && actor != leader)
-                                        {
-                                            TFTVLogger.Always(allyTacticalActorBase.name + " is in range of " + leader.name + ", adding return fire to " + actor.name);
-                                            actor.AddAbility(returnFire, actor);
-                                        }
-                                        else if (actor.GetAbilityWithDef<Ability>(returnFire) != null)
-                                        {
-                                            if (actor.HasGameTag(heavy) && (actor.LevelProgression.Level > 1 ||
-                                            !actor.HasGameTag(HumanEnemyTier4GameTag)))
-                                            {
-
-                                            }
-                                            else
-                                            {
-                                                TFTVLogger.Always(allyTacticalActorBase.name + " is not in range of " + leader.name + ", removing return fire from " + actor.name);
-                                                actor.RemoveAbility(returnFire);
-
-                                            }
-                                        }
-                                    }
-                                    else if (leader == null && actor.GetAbilityWithDef<Ability>(returnFire) != null)
-                                    {
-                                        if (actor.HasGameTag(heavy) && (actor.LevelProgression.Level > 1 || !actor.HasGameTag(HumanEnemyTier4GameTag)))
-                                        {
-
-                                        }
-                                        else
-                                        {
-                                            TFTVLogger.Always("Leader is dead. Removing return fire from " + actor.name);
-                                            actor.RemoveAbility(returnFire);
-                                        }
-                                    }
-                                }
-                            }
+                        if ((tacticalActor.Pos - leader.Pos).magnitude < magnitude)
+                        {
+                            TFTVLogger.Always($"{tacticalActor.name} is in range of {leader.name}, adding return fire");
+                            tacticalActor.AddAbility(returnFireFireDiscipline, tacticalActor);
                         }
                     }
                 }
@@ -1975,77 +1985,41 @@ namespace TFTV
         {
             try
             {
-                List<TacticalFaction> enemyHumanFactions = GetHumanEnemyFactions(controller);
-                if (enemyHumanFactions.Count != 0)
+                foreach (TacticalActor tacticalActor in controller.Factions.FirstOrDefault(f => f.Faction.FactionDef.ShortNames.Contains(factionName)).TacticalActors)
                 {
-                    foreach (TacticalFaction faction in enemyHumanFactions)
+                    if (tacticalActor.GetAbilityWithDef<Ability>(ambush) != null)
                     {
-                        if (faction.Faction.FactionDef.ShortName == factionName)
-                        {
-                            foreach (TacticalActorBase tacticalActorBase in faction.Actors)
-                            {
-                                TacticalActor leader = tacticalActorBase as TacticalActor;
-
-                                if (tacticalActorBase.HasGameTag(HumanEnemyTier1GameTag))
-                                {
-
-                                    foreach (TacticalActorBase allyTacticalActorBase in faction.Actors)
-                                    {
-                                        if (allyTacticalActorBase.BaseDef.name == "Soldier_ActorDef" && allyTacticalActorBase.InPlay)
-                                        {
-                                            TacticalActor actor = allyTacticalActorBase as TacticalActor;
-                                            float magnitude = 10;
-
-                                            if (leader.IsAlive)
-                                            {
-                                                bool enemiesNear = false;
-                                                foreach (TacticalFaction faction2 in controller.Factions)
-                                                {
-                                                    if (faction2.GetRelationTo(faction) == PhoenixPoint.Common.Core.FactionRelation.Enemy)
-                                                    {
-                                                        foreach (TacticalActorBase enemy in faction2.Actors)
-                                                        {
-                                                            if (enemy.IsAlive && enemy.BaseDef.name == "Soldier_ActorDef" && (allyTacticalActorBase.Pos - enemy.Pos).magnitude < magnitude)
-                                                            {
-                                                                enemiesNear = true;
-                                                            }
-
-                                                        }
-                                                    }
-                                                }
-
-                                                if (!enemiesNear)
-                                                {
-                                                    TFTVLogger.Always("Leader is alive and no enemies in range, " + actor.name + " got the ambush ability");
-                                                    actor.AddAbility(ambush, actor);
-                                                }
-                                                else
-                                                {
-                                                    if (actor.GetAbilityWithDef<Ability>(ambush) != null)
-                                                    {
-                                                        TFTVLogger.Always("Leader is alive, but there are enemies in range, " + actor.name + " lost the ambush ability");
-                                                        actor.RemoveAbility(ambush);
-                                                    }
-
-                                                }
-                                            }
-                                            else
-                                            {
-                                                if (actor.GetAbilityWithDef<Ability>(ambush) != null)
-                                                {
-                                                    TFTVLogger.Always("Leader is dead, " + actor.name + " lost the ambush ability");
-                                                    actor.RemoveAbility(ambush);
-                                                }
-                                            }
-
-                                        }
-
-                                    }
-                                }
-                            }
-                        }
-
+                        TFTVLogger.Always($"Removing Ambush ability from {tacticalActor.name}");
+                        tacticalActor.RemoveAbility(ambush);
                     }
+                }
+
+                TacticalActor leader = GetLeader(controller, factionName);
+
+                if (leader == null)
+                {
+                    TFTVLogger.Always($"No leader for {factionName} found! must be dead, Ambush will not apply.");
+                    return;
+                }
+
+                List<TacticalActorBase> enemies = new List<TacticalActorBase>(leader.TacticalFaction.GetAllAliveEnemyActors<TacticalActorBase>(false).ToList());
+
+                foreach (TacticalActorBase tacticalActor in leader.TacticalFaction.TacticalActors)
+                {
+                    if (tacticalActor.BaseDef.name == "Soldier_ActorDef" && tacticalActor.InPlay)
+                    {
+                        float magnitude = 10;
+
+                        if (enemies.Any(e => (tacticalActor.Pos - e.Pos).magnitude < magnitude))
+                        {
+                        }
+                        else
+                        {
+                            TFTVLogger.Always($"{tacticalActor.name} receiving the ambush ability");
+                            tacticalActor.AddAbility(ambush, tacticalActor);
+                        }
+                    }
+
                 }
 
             }
@@ -2076,10 +2050,54 @@ namespace TFTV
                                 allyTacticalActorBase.Status.ApplyStatus(frenzy);
 
                             }
-
                         }
-
                     }
+
+                }
+                if (HumanEnemiesAndTactics.ContainsKey(deathReport.Actor.TacticalFaction.Faction.FactionDef.ShortName)
+                   && HumanEnemiesAndTactics.GetValueSafe(deathReport.Actor.TacticalFaction.Faction.FactionDef.ShortName) == 4)
+                {
+
+                    if (deathReport.Actor.HasGameTag(HumanEnemyTier1GameTag))
+                    {
+                        TacStatusEffectDef statusEffectDef = (TacStatusEffectDef)opticalShieldMultiStatusDef.EffectDefs[0];
+                        StanceStatusDef opticalShieldStealth = (StanceStatusDef)statusEffectDef.StatusDef;
+                        StanceStatusDef stealthStatus = DefCache.GetDef<StanceStatusDef>("Stealth_StatusDef");
+
+                        foreach (TacticalActorBase allyTacticalActorBase in deathReport.Actor.TacticalFaction.Actors)
+                        {
+                            TacticalActor tacticalActor = allyTacticalActorBase as TacticalActor;
+
+
+                            if (allyTacticalActorBase.BaseDef.name == "Soldier_ActorDef" && allyTacticalActorBase.InPlay
+                                && tacticalActor.HasStatus(opticalShieldStealth))
+                            {
+                                TFTVLogger.Always($"Unapply optical shield status from {allyTacticalActorBase.name} because leader is dead!");
+                                allyTacticalActorBase.Status.UnapplyStatus(allyTacticalActorBase.Status.GetStatusByName(opticalShieldStealth.EffectName));
+
+                                if (tacticalActor.HasStatus(stealthStatus)) 
+                                {
+                                    tacticalActor.Status.UnapplyStatus(allyTacticalActorBase.Status.GetStatusByName(stealthStatus.EffectName));
+                                
+                                }
+
+                              /*  foreach(TacticalActorBase tacticalActorBase in deathReport.Actor.TacticalFaction.GetAllAliveEnemyActors<TacticalActorBase>(false)) 
+                                { 
+                                if(tacticalActorBase is TacticalActor actor) 
+                                    { 
+                                    
+                                    }
+                                
+                                }*/
+                            }
+                        }
+                    }
+
+                }
+                if (HumanEnemiesAndTactics.ContainsKey(deathReport.Actor.TacticalFaction.Faction.FactionDef.ShortName)
+                   && HumanEnemiesAndTactics.GetValueSafe(deathReport.Actor.TacticalFaction.Faction.FactionDef.ShortName) == 5)
+                {
+                    FireDiscipline(deathReport.Actor.TacticalLevel, deathReport.Actor.TacticalFaction.Faction.FactionDef.ShortName);
                 }
 
             }
@@ -2096,7 +2114,7 @@ namespace TFTV
                 try
                 {
 
-                    if (actor.HasGameTag(HumanEnemyTier1GameTag) && damageDealer != null && HumanEnemiesAndTactics.ContainsKey(actor.TacticalFaction.Faction.FactionDef.ShortName)
+                    if ((actor.HasGameTag(HumanEnemyTier1GameTag)|| actor.HasGameTag(HumanEnemyTier2GameTag)) && damageDealer != null && HumanEnemiesAndTactics.ContainsKey(actor.TacticalFaction.Faction.FactionDef.ShortName)
                     && HumanEnemiesAndTactics.GetValueSafe(actor.TacticalFaction.Faction.FactionDef.ShortName) == 7)
                     {
                         TacticalActorBase attackerBase = damageDealer.GetTacticalActorBase();
@@ -2105,29 +2123,19 @@ namespace TFTV
                         if (!attacker.Status.HasStatus(mFDStatus) && actor.TacticalFaction != attacker.TacticalFaction)
                         {
                             attacker.Status.ApplyStatus(mFDStatus);
-
                         }
-
                     }
                 }
                 catch (Exception e)
                 {
                     TFTVLogger.Error(e);
                 }
-
-
-
             }
 
             catch (Exception e)
             {
                 TFTVLogger.Error(e);
             }
-
-
-
-
-
         }
 
         public static void ImplementStartingVolleyHumanEnemiesTactic(TacticalFaction tacticalFaction)
@@ -2136,7 +2144,7 @@ namespace TFTV
             {
                 if (HumanEnemiesAndTactics.ContainsKey(tacticalFaction.Faction.FactionDef.ShortName)
                     && HumanEnemiesAndTactics.GetValueSafe(tacticalFaction.Faction.FactionDef.ShortName) == 2
-                    && tacticalFaction.TacticalLevel.TurnNumber > 0 && tacticalFaction.TacticalLevel.GetFactionByCommandName("PX") == tacticalFaction)
+                    && tacticalFaction.TacticalLevel.TurnNumber > 0)
                 {
                     StartingVolley(tacticalFaction.TacticalLevel, tacticalFaction.Faction.FactionDef.ShortName);
                 }
@@ -2145,8 +2153,6 @@ namespace TFTV
             {
                 TFTVLogger.Error(e);
             }
-
-
         }
 
 

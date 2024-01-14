@@ -160,6 +160,7 @@ namespace TFTV
                     TFTVPalaceMission.PalaceTacticalNewTurn(__instance.Faction);
                     TFTVBaseDefenseTactical.PlayerTurn.PhoenixBaseDefenseVSAliensTurnStart(__instance.Faction.TacticalLevel, __instance.Faction);
                     TFTVTouchedByTheVoid.Umbra.UmbraTactical.CheckVO15(__instance.Faction.TacticalLevel, __instance.Faction);
+                    TFTVHumanEnemies.ImplementStartingVolleyHumanEnemiesTactic(__instance.Faction);
                 }
                 catch (Exception e)
                 {
@@ -340,6 +341,7 @@ namespace TFTV
                     TFTVPalaceMission.MissionObjectives.CheckFinalMissionWinConditionForExalted(ability);
                     TFTVPalaceMission.Gates.CheckIfPlayerCloseToGate(__instance);
                     TFTVChangesToDLC5.TFTVMercenaries.Tactical.SlugHealTraumaEffect(ability, __instance);
+                    TFTVArtOfCrab.GetBestWeaponForOWRF(__instance);
                 }
 
                 catch (Exception e)

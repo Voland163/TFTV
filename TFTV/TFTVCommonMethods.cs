@@ -526,7 +526,7 @@ namespace TFTV
                         TFTVAncientsGeo.DefendCyclopsStoryMission.SetReactivateCyclopsObjective(controller);
                     }
 
-                    else if (research.ResearchID == "NJ_Bionics2_ResearchDef")
+                  /*  else if (research.ResearchID == "NJ_Bionics2_ResearchDef")
                     {
 
                         ResearchElement bionics3 = controller.SynedrionFaction.Research.GetResearchById("SYN_Bionics3_ResearchDef");
@@ -535,7 +535,7 @@ namespace TFTV
                         //controller.SynedrionFaction.Research.FactionResearches.AddItem(research);
                         //controller.SynedrionFaction.Research.AddProgressToResearch(research, 700);
 
-                    }
+                    }*/
 
                     else if (research.ResearchID == "PX_Mutoid_ResearchDef" && !controller.PhoenixFaction.Research.HasCompleted(mutationTech.name) &&
                    !controller.PhoenixFaction.Research.Researchable.Any(re => re.ResearchDef == mutationTech))
@@ -564,11 +564,10 @@ namespace TFTV
 
                     }
 
-
+                   // TFTVChangesToDLC1andDLC2Events.CheckTriggerPU5(controller, research);
 
                     TFTVCapturePandoransGeoscape.RefreshFoodAndMutagenProductionTooltupUI();
                     TFTVAncientsGeo.ImpossibleWeapons.CheckImpossibleWeaponsAdditionalRequirements(controller);
-
 
                 }
                 catch (Exception e)
