@@ -232,10 +232,10 @@ namespace TFTV
 
                     __result = list;
 
-                    foreach (Tuple<IGeoFactionMissionParticipant, int> tuple in __result)
+                 /*   foreach (Tuple<IGeoFactionMissionParticipant, int> tuple in __result)
                     {
-                        TFTVLogger.Always($"{tuple.Item1.ParticipantName.LocalizeEnglish()} scored {tuple.Item2}");
-                    }
+                       // TFTVLogger.Always($"{tuple.Item1.ParticipantName.LocalizeEnglish()} scored {tuple.Item2}");
+                    }*/
 
                     return false;
 
