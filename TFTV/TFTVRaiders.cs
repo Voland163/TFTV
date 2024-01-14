@@ -4,6 +4,7 @@ using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.Addons;
+using PhoenixPoint.Common.Entities.Characters;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.Entities.Items;
@@ -490,8 +491,12 @@ namespace TFTV
 
                     neuHeavyBandana.Armor = 0;
                     neuSniperBandana.Armor = 0;
+                    neuSniperBandana.ViewElementDef.DisplayName2.LocalizationKey = "KEY_TACTICAL_BANDANA_NAME2";
+                    neuSniperBandana.ViewElementDef.Description.LocalizationKey = "KEY_WASTELAND_HEADGEAR_DESCRIPTION";
 
                     neuHeavyTshirt.Armor = 0;
+                    neuHeavyTshirt.ViewElementDef.DisplayName2.LocalizationKey = "KEY_TSHIRT_NAME2";
+                    neuHeavyTshirt.ViewElementDef.Description.LocalizationKey = "KEY_WASTELAND_BODY_ARMOR_DESCRIPTION";
                     leftArmDirtyTshirt.Armor = 0;
                     rightArmDirtyTshirt.Armor = 0;
 
@@ -499,11 +504,15 @@ namespace TFTV
                     leftArmJacket.Armor = 10;
                     rightArmJacket.Armor = 10;
 
+                    neuSniperCoat.ViewElementDef.DisplayName2.LocalizationKey = "KEY_COAT_NAME2";
+                    neuSniperCoat.ViewElementDef.Description.LocalizationKey = "KEY_WASTELAND_BODY_ARMOR_DESCRIPTION";
                     neuSniperCoat.Armor = 10;
                     leftArmCoat.Armor = 10;
                     rightArmCoat.Armor = 10;
 
                     neuHeavyLegs.Armor = 8;
+                    neuHeavyLegs.ViewElementDef.DisplayName2.LocalizationKey = "KEY_WASTELAND_LEGS_NAME2";
+                    neuHeavyLegs.ViewElementDef.Description.LocalizationKey = "KEY_WASTELAND_LEGS_DESCRIPTION";
                     leftLegHeavyJeans.Armor = 8;
                     rightLegHeavyJeans.Armor = 8;
 
@@ -512,8 +521,13 @@ namespace TFTV
                     righLegAssaultJeans.Armor = 8;
 
                     neuSniperLegs.Armor = 8;
+                    neuSniperLegs.ViewElementDef.DisplayName2.LocalizationKey = "KEY_WASTELAND_LEGS_NAME2";
+                    neuSniperLegs.ViewElementDef.Description.LocalizationKey = "KEY_WASTELAND_LEGS_DESCRIPTION";
                     leftLegSniperJeans.Armor = 8;
                     rightLegSniperJeans.Armor = 8;
+
+                   
+
 
                     CreateMixedTorsoArmsArmors();
 
@@ -1096,7 +1110,23 @@ namespace TFTV
                     SpecializationDef newSpec = Helper.CreateDefFromClone(specializationDefSource, "{3C44BE9A-6A22-4651-AD77-C6A1186E4D41}", name);
                     newSpec.ViewElementDef = Helper.CreateDefFromClone(specializationDefSource.ViewElementDef, "{CDDDC201-F141-4A26-A542-DD7C06507033}", $"{newSpec.name}");
                     newSpec.AbilityTrack = Helper.CreateDefFromClone(specializationDefSource.AbilityTrack, "{0875C025-2FAF-4E1D-B843-AA5A6965226F}", $"{newSpec.name}");
+
+                  /*  for (int x = 1; x < newSpec.AbilityTrack.AbilitiesByLevel.Count(); x++)
+                    {
+                        newSpec.AbilityTrack.AbilitiesByLevel = new PhoenixPoint.Common.Entities.Characters.AbilityTrackSlot[]
+                    {
+                        new PhoenixPoint.Common.Entities.Characters.AbilityTrackSlot()
+                        {Ability = specializationDefSource.AbilityTrack.AbilitiesByLevel[x].Ability, RequiresPrevAbility = false }
+
+                    };
+
+                    }*/
+
+
+
                     newSpec.ClassTag = _assaultRaiderTag;
+
+
 
                     _assaultRaiderSpecialization = newSpec;
 
@@ -1172,15 +1202,27 @@ namespace TFTV
 
                     scumProficiency.ClassTags = new GameTagsList() { _scumTag, scumProficiency.ClassTags[1], scumProficiency.ClassTags[2] };
                     scumProficiency.ViewElementDef.SmallIcon = icon;
-                    scumProficiency.ViewElementDef.LargeIcon = icon; scumProficiency.ViewElementDef.DisplayName1 = new Base.UI.LocalizedTextBind("testing displayName1", true);
+                    scumProficiency.ViewElementDef.LargeIcon = icon; 
+                    scumProficiency.ViewElementDef.DisplayName1.LocalizationKey = "KEY_WASTELAND_SCUM_NAME";
                     scumProficiency.ViewElementDef.DisplayName2.LocalizationKey = "KEY_WASTELAND_SCUM_NAME";
                     scumProficiency.ViewElementDef.Description.LocalizationKey = "KEY_BERSERKER_TRAINING_DESCRIPTION";
 
-                    newSpec.AbilityTrack.AbilitiesByLevel = new PhoenixPoint.Common.Entities.Characters.AbilityTrackSlot[]
+                    AbilityTrackSlot scumTrackSlot0 = new AbilityTrackSlot()
+                    { Ability = scumProficiency, RequiresPrevAbility = false };
+
+                    newSpec.AbilityTrack.AbilitiesByLevel[0] = scumTrackSlot0;
+
+                 /*   for(int x =1; x< newSpec.AbilityTrack.AbilitiesByLevel.Count(); x++) 
+                    {
+                        newSpec.AbilityTrack.AbilitiesByLevel = new PhoenixPoint.Common.Entities.Characters.AbilityTrackSlot[]
                     {
                         new PhoenixPoint.Common.Entities.Characters.AbilityTrackSlot()
-                        {Ability = scumProficiency, RequiresPrevAbility = false }
-                        };
+                        {Ability = specializationDefSource.AbilityTrack.AbilitiesByLevel[x].Ability, RequiresPrevAbility = false }
+
+                    };
+
+                    }*/
+
 
                     newSpec.ClassTag = _scumTag;
                     newSpec.IsDominantSpecialization = true;

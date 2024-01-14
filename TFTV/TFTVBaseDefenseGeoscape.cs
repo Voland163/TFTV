@@ -1594,7 +1594,7 @@ namespace TFTV
                                 GeoUpdatedableMissionVisualsController missionPrefab = GeoSiteVisualsDefs.Instance.HavenDefenseVisualsPrefab;
                                 missionVisualsController = UnityEngine.Object.Instantiate(missionPrefab, geoSiteVisualsController.VisualsContainer);
                                 missionVisualsController.name = "kludge";
-
+                               // float timer = ((float)(site.ExpiringTimerAt.TimeSpan.TotalHours - site.GeoLevel.Timing.Now.TimeSpan.TotalHours));
                                 float timer = (site.ExpiringTimerAt.DateTime - site.GeoLevel.Timing.Now.DateTime).Hours;
                                 TFTVLogger.Always($"timer: {timer}");
 
@@ -1646,6 +1646,7 @@ namespace TFTV
                                 var accessor = AccessTools.Field(typeof(GeoUpdatedableMissionVisualsController), "_progressRenderer");
                                 MeshRenderer progressRenderer = (MeshRenderer)accessor.GetValue(missionVisualsController);
                                 float timer = (site.ExpiringTimerAt.DateTime - site.GeoLevel.Timing.Now.DateTime).Hours;
+                               // float timer = ((float)(site.ExpiringTimerAt.TimeSpan.TotalHours - site.GeoLevel.Timing.Now.TimeSpan.TotalHours));
                                 TFTVLogger.Always($"timer: {timer}");
 
                                 float totalTimeForAttack = 18;
@@ -1916,6 +1917,8 @@ namespace TFTV
                         GeoSite geoSite = __instance.Site;
 
                         float timer = (__instance.Site.ExpiringTimerAt.DateTime - __instance.Level.Timing.Now.DateTime).Hours;
+                        //((float)(__instance.Site.ExpiringTimerAt.TimeSpan.TotalHours - __instance.Level.Timing.Now.TimeSpan.TotalHours));
+
                         float timeToCompleteAttack = 18;
 
                         if (PhoenixBasesContainmentBreach.ContainsKey(__instance.Site.SiteId))

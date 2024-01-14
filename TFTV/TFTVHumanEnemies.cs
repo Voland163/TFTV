@@ -1061,7 +1061,7 @@ namespace TFTV
                 discardedAbilities.Remove(stability);
                 discardedAbilities.Remove(fieldMedic);
 
-             /*   if (tacticalActor.HasGameTag(TFTVRaiders.Defs._scumTag))
+               if (tacticalActor.HasGameTag(TFTVRaiders._scumTag))
                 {
                     foreach (AbilityDef ability in allAbilities)
                     {
@@ -1072,7 +1072,7 @@ namespace TFTV
                     }
                 }
                 else
-                {*/
+                {
                     foreach (AbilityDef ability in discardedAbilities)
                     {
                         if (tacticalActor.GetAbilityWithDef<Ability>(ability) != null)
@@ -1080,7 +1080,7 @@ namespace TFTV
                             tacticalActor.RemoveAbility(ability);
                         }
                     }
-                //}
+                }
 
                 int level = GetAdjustedLevel(tacticalActor);
                 GameTagDef classTagDef = GetFactionTierAndClassTags(tacticalActor.GameTags.ToList())[2];
