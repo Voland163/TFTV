@@ -1,20 +1,90 @@
-﻿using Base.Defs;
+﻿using Base.Core;
+using Base.Defs;
 using Base.UI.Tweens;
 using Base.Utils.Maths;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
+using PhoenixPoint.Common.Entities;
+using PhoenixPoint.Common.Entities.Items;
+using PhoenixPoint.Common.View.ViewControllers.Inventory;
+using PhoenixPoint.Common.View.ViewModules;
 using PhoenixPoint.Geoscape.Entities.Research;
+using PhoenixPoint.Geoscape.View.ViewStates;
 using PhoenixPoint.Tactical.Entities;
+using PhoenixPoint.Tactical.Entities.Abilities;
+using PhoenixPoint.Tactical.Entities.ActorsInstance;
 using PhoenixPoint.Tactical.Entities.Statuses;
 using PhoenixPoint.Tactical.View.ViewControllers;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
+using static PhoenixPoint.Common.View.ViewControllers.Inventory.UIInventorySlotSideButton;
 
 namespace TFTV
 {
     internal class TFTVExperimental
     {
+
+        [HarmonyPatch(typeof(UIStateEditSoldier), "SoldierSlotItemChangedHandler")]
+        public static class UIStateEditSoldier_SoldierSlotItemChangedHandler_patch
+        {
+
+            public static bool Prefix(UIStateEditSoldier __instance, UIInventorySlot slot)
+            {
+                try
+                {
+                    if (slot == null) 
+                    {
+                        return false;
+                    
+                    }
+
+                    return true;
+                }
+
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
+
+
+
+       /* [HarmonyPatch(typeof(UIInventorySlotSideButton), "OnSideButtonPressed")]
+        public static class UIInventorySlotSideButton_OnSideButtonPressed_patch
+        {
+
+            public static void Prefix(UIInventorySlotSideButton __instance, GeneralState ____currentState, UIModuleSoldierEquip ____parentModule, ItemDef ____itemToProduce)
+            {
+                try
+                {
+                    ICommonItem commonItem = null;
+                    TFTVLogger.Always($"OnSideButtonPressed, current state {____currentState.State}, action {____currentState.Action}");
+
+                    TFTVLogger.Always($"parent module Storage list is {____parentModule.StorageList} and the count of Unfiltered items is " +
+                        $"{____parentModule.StorageList.UnfilteredItems.Count}");
+
+                    TFTVLogger.Always($"item to produce {____itemToProduce.name}");
+
+                    commonItem = ____parentModule.StorageList.UnfilteredItems.Where((ICommonItem item) => item.ItemDef == ____itemToProduce).FirstOrDefault().GetSingleItem();
+                    TFTVLogger.Always($"common item null? {commonItem==null}");
+
+                   // commonItem = _parentModule.StorageList.UnfilteredItems.Where((ICommonItem item) => item.ItemDef == _itemToProduce).FirstOrDefault().GetSingleItem();
+
+                }
+
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }*/
+
         /*  GeoPhoenixFaction
 
                private void OnMaxDiplomacyStateChanged(GeoFaction faction, GeoFaction towards, PartyDiplomacyState state, PartyDiplomacyState previousState)

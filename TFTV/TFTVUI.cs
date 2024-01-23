@@ -567,6 +567,11 @@ namespace TFTV
 
             }
 
+           // PhoenixPoint.Geoscape.View.ViewStates.UIStateEditSoldier.SoldierSlotItemChangedHandler(PhoenixPoint.Common.View.ViewControllers.Inventory.UIInventorySlot slot)
+
+          //  PhoenixPoint.Common.View.ViewControllers.Inventory.UIInventorySlotSideButton.OnSideButtonPressed
+
+
             internal class LoadoutsAndHelmetToggle
             {
                 /// <summary>

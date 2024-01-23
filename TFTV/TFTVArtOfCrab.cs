@@ -51,7 +51,7 @@ namespace TFTV
         {
             try
             {
-                if (!tacticalActor.IsControlledByAI) 
+                if (!tacticalActor.IsControlledByAI || !tacticalActor.TacticalActorDef.name.Equals("Soldier_ActorDef") || tacticalActor.IsDead || tacticalActor.IsDisabled || tacticalActor.IsEvacuated ) 
                 {
                     return;               
                 }
