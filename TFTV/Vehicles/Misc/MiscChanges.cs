@@ -7,6 +7,8 @@ using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.Statuses;
 using PhoenixPoint.Tactical.Entities;
 using UnityEngine;
+using PhoenixPoint.Common.Entities.Equipments;
+using Code.PhoenixPoint.Tactical.Entities.Equipments;
 
 namespace TFTVVehicleRework.Misc
 {
@@ -19,6 +21,7 @@ namespace TFTVVehicleRework.Misc
             Change_VehicleInventory();
             Give_VehiclesTrample();
             Update_LaunchMissileInfo();
+            Prevent_CrateDrops();
             MarketplaceOptions.Remove_Options();
             RescueMissions.GenerateMissions();
             RescueMissions.Fix_BuggyDeploymentTemplate();
@@ -43,6 +46,20 @@ namespace TFTVVehicleRework.Misc
             // "E_ViewElement [LaunchMissiles_ShootAbilityDef]"
             TacticalAbilityViewElementDef LaunchMissilesVED = (TacticalAbilityViewElementDef)Repo.GetDef("72e07065-825f-b011-db35-30e4ec7e5a31");
             LaunchMissilesVED.Description = new LocalizedTextBind("UI_LAUNCHMISSILES_DESC");
+        }
+
+        private static void Prevent_CrateDrops()
+        {
+            foreach(GroundVehicleModuleDef ModuleDef in Repo.GetAllDefs<GroundVehicleModuleDef>())
+            {
+                ModuleDef.CrateSpawnWeight = 0;
+                ModuleDef.DropOnActorDeath = false;
+            }
+            foreach(GroundVehicleWeaponDef WeaponDef in Repo.GetAllDefs<GroundVehicleWeaponDef>())
+            {
+                WeaponDef.CrateSpawnWeight = 0;
+                WeaponDef.DropOnActorDeath = false;
+            }            
         }
 
         // All Vehicles now have the Caterpillar Tracks Utility
