@@ -77,6 +77,8 @@ namespace TFTVVehicleRework.Mutog
             //"Mutog_Tail_Basher_WeaponDef"
             WeaponDef BasherTail = (WeaponDef)Repo.GetDef("5eb2c4ea-e15e-68e4-2b1f-960fab4d069c");
             BasherTail.DamagePayload.DamageKeywords.Find(dkp => dkp.DamageKeywordDef == keywords.DamageKeyword).Value = 80f;
+            BasherTail.ViewElementDef.DisplayName1 = new Base.UI.LocalizedTextBind("AN_MUTOG_BASHER_NAME");
+            BasherTail.ViewElementDef.Description = new Base.UI.LocalizedTextBind("AN_MUTOG_BASHER_DESC");
         }
 
         private static void RammingHead()
@@ -118,18 +120,17 @@ namespace TFTVVehicleRework.Mutog
 
         private static void AgileLegs()
         {
+            //"CloseQuarters_AbilityDef"
+            ApplyStatusAbilityDef CloseQuartersEvade = (ApplyStatusAbilityDef)Repo.GetDef("c2c5e9ac-45be-ea54-eadc-71c8a0b318e1");
+
             //"Mutog_Legs_Agile_ItemDef"
             TacticalItemDef AgileLegs = (TacticalItemDef)Repo.GetDef("5e192014-b4cd-2d04-c9b9-a5fc51193a48");
             foreach (AddonDef.SubaddonBind addon in AgileLegs.SubAddons)
             {
                 TacticalItemDef Leg = (TacticalItemDef)addon.SubAddon;
                 Leg.BodyPartAspectDef.Speed = 8f;
+                Leg.Abilities = Leg.Abilities.AddToArray(CloseQuartersEvade);
             }
-
-            //"CloseQuarters_AbilityDef"
-            ApplyStatusAbilityDef CloseQuartersEvade = (ApplyStatusAbilityDef)Repo.GetDef("c2c5e9ac-45be-ea54-eadc-71c8a0b318e1");
-            AgileLegs.Abilities = AgileLegs.Abilities.AddToArray(CloseQuartersEvade);
-            CloseQuartersEvade.ViewElementDef.ShowInInventoryItemTooltip = true;
         }
 
         private static void RegenLegs()
