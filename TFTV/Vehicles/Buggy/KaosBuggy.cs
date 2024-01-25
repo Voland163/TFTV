@@ -56,6 +56,7 @@ namespace TFTVVehicleRework.KaosBuggy
             Give_VehicleEntity();
             Adjust_WeaponPrices();
             Fix_WheelSlots();
+            Fix_WeaponSlots();
             Kamikaze.Change();
             Deathproof.Change();
             MannedGunner.Change();
@@ -81,6 +82,7 @@ namespace TFTVVehicleRework.KaosBuggy
                         BuggyGuns[Module].ViewElementDef.Description = new LocalizedTextBind("UI_JUNKER_GOOGUN");
                         WeaponDef GooGun = (WeaponDef)BuggyGuns[Module].SubAddons[1].SubAddon; 
                         GooGun.ChargesMax = 6;
+                        // GooGun.ChargesMax = 8;
                         GooGun.Abilities = new AbilityDef[]
                         {
                             LaunchGrenade
@@ -92,6 +94,7 @@ namespace TFTVVehicleRework.KaosBuggy
                         BuggyGuns[Module].ViewElementDef.Description = new LocalizedTextBind("UI_JUNKER_SCREAMER");
                         WeaponDef Screamer = (WeaponDef)BuggyGuns[Module].SubAddons[1].SubAddon;
                         Screamer.ChargesMax = 6;
+                        // Screamer.ChargesMax = 8;
                         Screamer.DamagePayload.DamageDeliveryType = DamageDeliveryType.Sphere;
                         Screamer.DamagePayload.ParabolaHeightToLengthRatio = 0.00000001f;
                         Screamer.DamagePayload.AoeRadius = 1.5f;
@@ -149,11 +152,13 @@ namespace TFTVVehicleRework.KaosBuggy
                 {
                     BodyPart.HitPoints = 150f;
                     BodyPart.BodyPartAspectDef.Speed = 10f;
+                    BodyPart.ViewElementDef.Description = new LocalizedTextBind("UI_JUNKER_WHEEL");
                 }
                 else //Last case are the remaining two tyres:
                 {
                     BodyPart.HitPoints = 150f;
                     BodyPart.BodyPartAspectDef.Speed = 9f;
+                    BodyPart.ViewElementDef.Description = new LocalizedTextBind("UI_JUNKER_WHEEL");
                 }
             }
         }
@@ -199,13 +204,26 @@ namespace TFTVVehicleRework.KaosBuggy
         {
             //"Kaos_LeftBackWheel_SlotDef"
             ItemSlotDef BW = (ItemSlotDef)Repo.GetDef("00fa8a15-3b55-fc24-3834-3061c6abbd48");
+            BW.DisplayName = new LocalizedTextBind("UI_JUNKER_WHEEL");
             //"Kaos_LeftFrontWheel_SlotDef"
             ItemSlotDef LFW = (ItemSlotDef)Repo.GetDef("f5aa29b3-18fe-1554-9a3c-6b31683b1df4");
+            LFW.DisplayName = new LocalizedTextBind("UI_JUNKER_WHEEL");
             //"Kaos_RightFrontWheel_SlotDef"
             ItemSlotDef RFW = (ItemSlotDef)Repo.GetDef("d674a04a-7aac-d014-ab3f-b48ead1995c5");
+            RFW.DisplayName = new LocalizedTextBind("UI_JUNKER_WHEEL");
             
             //Setting to true means that armour is overridden by higher layers
             BW.DontStackArmorAndHealth = LFW.DontStackArmorAndHealth = RFW.DontStackArmorAndHealth = true;
+        }
+
+        private static void Fix_WeaponSlots()
+        {
+            //"KS_Cannon_SlotDef"
+            ItemSlotDef Cannon = (ItemSlotDef)Repo.GetDef("038c9014-5c6a-d804-9a76-e207e1de9a7b");
+            Cannon.DamageHandler = DamageHandler.AttachedItem;
+            //"KS_Minigun_SlotDef"
+            ItemSlotDef Minigun = (ItemSlotDef)Repo.GetDef("8eae5413-09d9-5e14-6a00-b445cb370e26");          
+            Minigun.DamageHandler = DamageHandler.AttachedItem;
         }
         
         private static void Change_ScreamerSceneView()

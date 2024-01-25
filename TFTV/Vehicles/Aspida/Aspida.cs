@@ -35,6 +35,7 @@ namespace TFTVVehicleRework.Aspida
             Update_ItemInfo();
             Give_LeapByDefault();
             Give_InverseCQE();
+            Fix_ArmSlots();
             StasisChamber.Change();
             PsychicJammer.Change();
             HermesX1.Change();
@@ -109,6 +110,16 @@ namespace TFTVVehicleRework.Aspida
             Aspida_ActorDef.Abilities = Aspida_ActorDef.Abilities.AddToArray(Aspida_Leap);
         }
 
+        private static void Fix_ArmSlots()
+        {
+            //"SY_Aspida_ArmRight_SlotDef"
+            ItemSlotDef RightArm = (ItemSlotDef)Repo.GetDef("38daa093-9dda-bc84-2aa3-8c1f2f6fa4de");
+            RightArm.DamageHandler = DamageHandler.AttachedItem;
+            //"SY_Aspida_ArmLeft_SlotDef"
+            ItemSlotDef LeftArm = (ItemSlotDef)Repo.GetDef("369946eb-fc4a-ec84-28f7-509a4d2213e3");
+            LeftArm.DamageHandler = DamageHandler.AttachedItem;
+        }
+        
         private static void Give_InverseCQE()
         {
             //"CloseQuarters_AbilityDef"

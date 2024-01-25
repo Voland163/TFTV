@@ -34,6 +34,7 @@ namespace TFTVVehicleRework.Scarab
         {
             Apply_GeneralChanges();
             Apply_WeaponChanges();      
+            Fix_TurretSlot();  
             AmmunitionRacks.Change();
             DeploymentBay.Change();
             ReinforcedStabilisers.Change();
@@ -116,6 +117,13 @@ namespace TFTVVehicleRework.Scarab
             //"PX_VirophageWeapons_ResearchDef_ManufactureResearchRewardDef_0"
             ManufactureResearchRewardDef VirophageResearchReward = (ManufactureResearchRewardDef)Repo.GetDef("02502242-0b31-a2b3-6d1b-2e78db0465e4");
             VirophageResearchReward.Items = VirophageResearchReward.Items.AddToArray(Scorpio);
+        }
+
+        private static void Fix_TurretSlot()
+        {
+            //"PX_Scarab_Turret_SlotDef"
+            ItemSlotDef Turret = (ItemSlotDef)Repo.GetDef("46f4bb51-5d1d-63e4-db57-ba14672e2929");
+            Turret.DamageHandler = DamageHandler.AttachedItem;
         }
     }  
 }
