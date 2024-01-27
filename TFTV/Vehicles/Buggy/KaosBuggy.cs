@@ -69,6 +69,7 @@ namespace TFTVVehicleRework.KaosBuggy
             {
                 BuggyGuns[Module].BodyPartAspectDef.Endurance = 0; //Prevents random bonus HP because of weapons
                 WeaponDef Minigun = (WeaponDef)BuggyGuns[Module].SubAddons[0].SubAddon; //Reference to the three miniguns
+                Minigun.ViewElementDef.Description = new LocalizedTextBind("UI_JUNKER_MINIGUN");
                 Minigun.ShootingEvent = ShootShotEvent;
                 Minigun.MainSwitch = Yat.MainSwitch;
                 Minigun.ChargesMax = 80;
@@ -81,6 +82,7 @@ namespace TFTVVehicleRework.KaosBuggy
                     case KSWeapons.Fullstop:
                         BuggyGuns[Module].ViewElementDef.Description = new LocalizedTextBind("UI_JUNKER_GOOGUN");
                         WeaponDef GooGun = (WeaponDef)BuggyGuns[Module].SubAddons[1].SubAddon; 
+                        GooGun.ViewElementDef.Description = new LocalizedTextBind("UI_JUNKER_GOOGUN");
                         GooGun.ChargesMax = 6;
                         // GooGun.ChargesMax = 8;
                         GooGun.Abilities = new AbilityDef[]
@@ -93,6 +95,7 @@ namespace TFTVVehicleRework.KaosBuggy
                     case KSWeapons.Screamer:
                         BuggyGuns[Module].ViewElementDef.Description = new LocalizedTextBind("UI_JUNKER_SCREAMER");
                         WeaponDef Screamer = (WeaponDef)BuggyGuns[Module].SubAddons[1].SubAddon;
+                        Screamer.ViewElementDef.Description = new LocalizedTextBind("UI_JUNKER_SCREAMER");
                         Screamer.ChargesMax = 6;
                         // Screamer.ChargesMax = 8;
                         Screamer.DamagePayload.DamageDeliveryType = DamageDeliveryType.Sphere;
@@ -103,6 +106,7 @@ namespace TFTVVehicleRework.KaosBuggy
                     case KSWeapons.Vishnu:
                         BuggyGuns[Module].ViewElementDef.Description = new LocalizedTextBind("UI_JUNKER_TITAN");
                         WeaponDef TitanGL = (WeaponDef)BuggyGuns[Module].SubAddons[1].SubAddon;
+                        TitanGL.ViewElementDef.Description = new LocalizedTextBind("UI_JUNKER_TITAN");
                         TitanGL.APToUsePerc = 50;
                         TitanGL.Abilities = new AbilityDef[]
                         {
