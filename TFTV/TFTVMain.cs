@@ -2,6 +2,7 @@ using Base.Build;
 using Base.Core;
 using Base.Defs;
 using Base.Levels;
+using Base.Rendering.ObjectRendering;
 using HarmonyLib;
 using Newtonsoft.Json;
 using PhoenixPoint.Common.Core;
@@ -102,7 +103,7 @@ namespace TFTV
                 /// PhoenixGame is accessible at any time.
                 PhoenixGame game = GetGame();
 
-                string version = $"TFTV 20240123 release #1 (Hotfix 1 for Update #51) v{MetaData.Version}";
+                string version = $"TFTV 20240128 release #1 (Update #52) v{MetaData.Version}";
 
                 TFTVversion = version;
 
@@ -169,9 +170,18 @@ namespace TFTV
                     TFTVNewGameMenu.TitleScreen.SetTFTVLogo(homeScreenView);
                 }
 
-               
 
-                
+           /*     Type renderingEnvironmentType = typeof(RenderingEnvironment);
+
+                // Get all public constructors
+                ConstructorInfo[] constructors = renderingEnvironmentType.GetConstructors();
+
+                // Print the names of constructors
+                foreach (ConstructorInfo constructor in constructors)
+                {
+                    TFTVLogger.Always("Constructor Name: " + constructor.FullDescription());
+                }*/
+
 
 
                 /*  if(GetLevel()!=null && GetLevel().name.Contains("HomeScreenLevel")) 

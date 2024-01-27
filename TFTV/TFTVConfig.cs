@@ -46,6 +46,7 @@ namespace TFTV
        // public bool LimitedCapture = true;
       //  public bool LimitedHarvesting = true;
         public bool NoBarks = false;
+        public int Difficulty = 2;
 
 
 
@@ -135,6 +136,31 @@ namespace TFTV
             }
         }
 
+        [HarmonyPatch(typeof(ModSettingController), "Init")]
+        public static class ModSettingController_Init_Patch
+        {
+            private static void Postfix(ModSettingController __instance, string label, Type type)
+            {
+                try
+                {
+
+                    if (type== typeof(int))
+                    {
+                        __instance.TextField.gameObject.SetActive(value: false);
+                        __instance.ToggleField.gameObject.SetActive(value: false);
+                        __instance.ListField.gameObject.SetActive(value: false);
+                        __instance.SliderFormatter.gameObject.SetActive(value: false);
+                        __instance.Label.gameObject.SetActive(false);
+                        __instance.gameObject.SetActive(false);
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
 
         /*  public void RetrieveConfigOptions()
           {

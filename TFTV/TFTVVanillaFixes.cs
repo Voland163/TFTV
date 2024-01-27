@@ -32,6 +32,7 @@ using PhoenixPoint.Geoscape.Core;
 using Base.Utils.Maths;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using Base.Entities;
+using PhoenixPoint.Geoscape.View.ViewStates;
 
 namespace TFTV
 {
@@ -40,6 +41,66 @@ namespace TFTV
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
         private static readonly SharedData Shared = TFTVMain.Shared;
 
+
+        //Madskunky's replacement of a trig function to reduce AI processing time 
+        [HarmonyPatch(typeof(Weapon), "GetDamageModifierForDistance")]
+        public static class Weapon_GetDamageModifierForDistance_patch
+        {
+
+            public static bool Prefix(Weapon __instance, TacticalActorBase targetActor, ref float __result, float distance)
+            {
+                try
+                {
+                    float num = (float)Math.PI / 180f * __instance.WeaponDef.SpreadDegrees;
+                    if (num < Mathf.Epsilon)
+                    {
+                        __result = 1f;
+                        return false;
+                    }
+
+                    TacticalPerceptionBase tacticalPerceptionBase = targetActor.TacticalPerceptionBase;
+                    float num2 = tacticalPerceptionBase.Height / 2f;
+                    float r = tacticalPerceptionBase.GetCapsuleLocal().r;
+                    float time = Mathf.Clamp(((num2 + r) / 2f / distance) / num, 0f, 1f);
+                    __result = time < 0.5 ? 0f : time;
+                    return false;
+                }
+
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
+
+        //Prevents ammo from disappearing on pressing replinish ammo if the class of the soldier is not proficient with the weapon and ALL filter is switched off 
+        [HarmonyPatch(typeof(UIStateEditSoldier), "SoldierSlotItemChangedHandler")]
+        public static class UIStateEditSoldier_SoldierSlotItemChangedHandler_patch
+        {
+
+            public static bool Prefix(UIStateEditSoldier __instance, UIInventorySlot slot)
+            {
+                try
+                {
+                    if (slot == null)
+                    {
+                        return false;
+
+                    }
+
+                    return true;
+                }
+
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
+
+        //Prevents targeting body parts with Destiny and similar of unrevealed characters.
 
         [HarmonyPatch(typeof(ShootAbility), "GetShootTarget")]
         public static class ShootAbility_GetShootTarget_Patch

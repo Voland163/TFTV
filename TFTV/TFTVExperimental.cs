@@ -1,49 +1,148 @@
-﻿using Base.Core;
+﻿using Base;
 using Base.Defs;
-using Base.UI.Tweens;
-using Base.Utils.Maths;
+using Base.Rendering.ObjectRendering;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
-using PhoenixPoint.Common.Entities;
-using PhoenixPoint.Common.Entities.Items;
-using PhoenixPoint.Common.View.ViewControllers.Inventory;
-using PhoenixPoint.Common.View.ViewModules;
 using PhoenixPoint.Geoscape.Entities.Research;
-using PhoenixPoint.Geoscape.View.ViewStates;
 using PhoenixPoint.Tactical.Entities;
-using PhoenixPoint.Tactical.Entities.Abilities;
-using PhoenixPoint.Tactical.Entities.ActorsInstance;
-using PhoenixPoint.Tactical.Entities.Statuses;
-using PhoenixPoint.Tactical.View.ViewControllers;
+using PhoenixPoint.Tactical.UI.SoldierPortraits;
+using SETUtil.Common.Extend;
 using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.Reflection;
 using UnityEngine;
-using UnityEngine.UI;
-using static PhoenixPoint.Common.View.ViewControllers.Inventory.UIInventorySlotSideButton;
+using static PhoenixPoint.Tactical.Entities.SquadPortraitsDef;
 
 namespace TFTV
 {
     internal class TFTVExperimental
     {
+        //.GetDamageModifierForDistance
 
-        [HarmonyPatch(typeof(UIStateEditSoldier), "SoldierSlotItemChangedHandler")]
-        public static class UIStateEditSoldier_SoldierSlotItemChangedHandler_patch
+
+
+        /*     [HarmonyPatch(typeof(OptionsComponent), "StartSaveOptions")]
+             public static class OptionsComponent_StartSaveOptions_patch
+         {
+
+             public static void Prefix(OptionsComponent __instance)
+             {
+                 try
+                 {
+                     TFTVLogger.Always($"looking at template {__instance.name}");
+
+
+                 }
+
+                 catch (Exception e)
+                 {
+                     TFTVLogger.Error(e);
+                     throw;
+                 }
+             }
+         }*/
+
+
+        //Codemite's solution to pink portrait backgrounds on Macs
+        [HarmonyPatch(typeof(RenderingEnvironment), MethodType.Constructor, new Type[]
+{
+    typeof(Vector2Int),
+    typeof(RenderingEnvironmentOption),
+    typeof(Color),
+    typeof(Camera)
+  })]
+        public static class RenderingEnvironmentPatch
         {
 
-            public static bool Prefix(UIStateEditSoldier __instance, UIInventorySlot slot)
+            public static bool Prefix(ref RenderingEnvironment __instance, ref Transform ____origin, ref bool ____isExternalCamera, ref Camera ____camera,
+                Vector2Int resolution, RenderingEnvironmentOption option, Color? backgroundColor, Camera cam)
             {
                 try
                 {
-                    if (slot == null) 
+
+                    ____origin = new GameObject("_RenderingEnvironmentOrigin_").transform;
+                    ____origin.position = new Vector3(0f, 1500f, 0f);
+                    ____origin.gameObject.hideFlags = HideFlags.DontSave | HideFlags.NotEditable;
+
+                    ____isExternalCamera = cam != null;
+
+                    ____camera = cam != null ? cam : new GameObject("_RenderingCamera_").AddComponent<Camera>();
+                    ____camera.gameObject.SetActive(false);
+                    ____camera.clearFlags = option.ContainsFlag(RenderingEnvironmentOption.NoBackground) && backgroundColor == null
+                        ? CameraClearFlags.Depth
+                        : (backgroundColor != null ? CameraClearFlags.SolidColor : CameraClearFlags.Skybox);
+                    ____camera.fieldOfView = 60;
+                    ____camera.orthographicSize = 2;
+                    ____camera.orthographic = option.ContainsFlag(RenderingEnvironmentOption.Orthographic);
+                    ____camera.farClipPlane = 100;
+                    ____camera.renderingPath = RenderingPath.Forward;
+                    ____camera.enabled = false;
+                    ____camera.allowHDR = false;
+                    ____camera.allowDynamicResolution = false;
+                    ____camera.usePhysicalProperties = false;
+
+                    // Use reflection to set the value of RenderTexture
+                    var renderTextureField = typeof(RenderingEnvironment).GetField("RenderTexture", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+                    if (renderTextureField != null)
                     {
-                        return false;
-                    
+                        renderTextureField.SetValue(__instance, RenderTexture.GetTemporary(resolution.x, resolution.y, 1, RenderTextureFormat.ARGB32));
                     }
 
+                    ____camera.targetTexture = (RenderTexture)renderTextureField.GetValue(__instance);
+
+                    if (backgroundColor != null)
+                    {
+                        ____camera.backgroundColor = (Color)backgroundColor;
+                    }
+
+                    return false;
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
+
+
+        [HarmonyPatch(typeof(SoldierPortraitUtil), "RenderSoldierNoCopy")]
+        public static class SoldierPortraitUtil_RenderSoldierNoCopy_patch
+        {
+
+            public static bool Prefix(GameObject soldierToRender, RenderPortraitParams renderParams, Camera usedCamera, ref Texture2D __result)
+            {
+                try
+                {
+
+                    if (Application.platform == RuntimePlatform.OSXPlayer ||
+                 Application.platform == RuntimePlatform.OSXEditor)
+                    {
+
+                        var outputImage = new Texture2D(renderParams.RenderedPortraitsResolution.x, renderParams.RenderedPortraitsResolution.y, TextureFormat.RGBA32, true);
+                        using (var renderingEnvironment = new RenderingEnvironment(renderParams.RenderedPortraitsResolution, RenderingEnvironmentOption.NoBackground, Color.black, usedCamera))
+                        {
+                            Transform headTransform = soldierToRender.transform.FindTransformInChildren(renderParams.TargetBoneName) ?? soldierToRender.transform;
+                            var t = soldierToRender.transform;
+                            var initialPosition = t.position;
+                            var initialRotation = t.rotation;
+                            t.position = renderingEnvironment.OriginPosition;
+                            t.rotation = renderingEnvironment.OriginRotation;
+
+                            SoldierFrame soldierFrame = new SoldierFrame(headTransform,
+                                renderParams.CameraFoV, renderParams.CameraDistance, renderParams.CameraHeight, renderParams.CameraSide);
+                            renderingEnvironment.Render(soldierFrame, false);
+                            renderingEnvironment.WriteResultsToTexture(outputImage);
+
+                            t.position = initialPosition;
+                            t.rotation = initialRotation;
+                        }
+
+                        __result = outputImage;
+
+                        return false;
+                    }
                     return true;
                 }
-
                 catch (Exception e)
                 {
                     TFTVLogger.Error(e);
@@ -54,36 +153,113 @@ namespace TFTV
 
 
 
-       /* [HarmonyPatch(typeof(UIInventorySlotSideButton), "OnSideButtonPressed")]
-        public static class UIInventorySlotSideButton_OnSideButtonPressed_patch
-        {
+        /* [HarmonyPatch(typeof(SquadMemberPortraitController), "SetSoldierPortrait")]
+         public static class SquadMemberPortraitController_SetSoldierPortrait_patch
+         {
 
-            public static void Prefix(UIInventorySlotSideButton __instance, GeneralState ____currentState, UIModuleSoldierEquip ____parentModule, ItemDef ____itemToProduce)
-            {
-                try
-                {
-                    ICommonItem commonItem = null;
-                    TFTVLogger.Always($"OnSideButtonPressed, current state {____currentState.State}, action {____currentState.Action}");
+             public static bool Prefix(SquadMemberPortraitController __instance, SquadMemberScrollerController.PortraitSprites portraitSprites)
+             {
+                 try
+                 {
+                     if (Application.platform == RuntimePlatform.OSXPlayer ||
+                  Application.platform == RuntimePlatform.OSXEditor)
+                     {
+                         //TFTVLogger.Always($"Unholy Mac detected!");
+                         Image[] background = __instance.SoldierPortraitImages.Background;
+                         for (int i = 0; i < background.Length; i++)
+                         {
+                             //  background[i].sprite = portraitSprites.Background;
+                             background[i].material = null;
 
-                    TFTVLogger.Always($"parent module Storage list is {____parentModule.StorageList} and the count of Unfiltered items is " +
-                        $"{____parentModule.StorageList.UnfilteredItems.Count}");
+                         }
 
-                    TFTVLogger.Always($"item to produce {____itemToProduce.name}");
+                         __instance.UpdatePortrait(portraitSprites);
+                         background = __instance.SoldierPortraitImages.Foreground;
+                         foreach (Image image in background)
+                         {
+                             BasicTween component = image.GetComponent<BasicTween>();
+                             image.sprite = null;
+                             image.color = Color.clear;
+                             if (__instance.Actor.IsAlive)
+                             {
+                                 if (!(component == null))
+                                 {
+                                     if (Utl.LesserThan(__instance.Actor.Health.Ratio, __instance.LowHealthRatio))
+                                     {
+                                         image.sprite = __instance.LowHealthSprite;
+                                         component.StartTween();
+                                     }
+                                     else
+                                     {
+                                         component.StopTween();
+                                     }
+                                 }
+                             }
+                             else
+                             {
+                                 if (component != null)
+                                 {
+                                     component.StopTween();
+                                 }
 
-                    commonItem = ____parentModule.StorageList.UnfilteredItems.Where((ICommonItem item) => item.ItemDef == ____itemToProduce).FirstOrDefault().GetSingleItem();
-                    TFTVLogger.Always($"common item null? {commonItem==null}");
+                                 image.sprite = __instance.DeathSprite;
+                                 image.color = __instance.DeathColor;
+                             }
+                         }
 
-                   // commonItem = _parentModule.StorageList.UnfilteredItems.Where((ICommonItem item) => item.ItemDef == _itemToProduce).FirstOrDefault().GetSingleItem();
+                         background = __instance.SoldierPortraitImages.CorruptionEffect;
+                         foreach (Image obj in background)
+                         {
+                             bool active = __instance.Actor.Status.HasStatus<CorruptionStatus>();
+                             obj.gameObject.SetActive(active);
+                         }
 
-                }
+                         return false;
 
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                    throw;
-                }
-            }
-        }*/
+                     }
+                     return true;
+                 }
+                 catch (Exception e)
+                 {
+                     TFTVLogger.Error(e);
+                     throw;
+                 }
+             }
+         }*/
+
+
+
+
+        /* [HarmonyPatch(typeof(UIInventorySlotSideButton), "OnSideButtonPressed")]
+         public static class UIInventorySlotSideButton_OnSideButtonPressed_patch
+         {
+
+             public static void Prefix(UIInventorySlotSideButton __instance, GeneralState ____currentState, UIModuleSoldierEquip ____parentModule, ItemDef ____itemToProduce)
+             {
+                 try
+                 {
+                     ICommonItem commonItem = null;
+                     TFTVLogger.Always($"OnSideButtonPressed, current state {____currentState.State}, action {____currentState.Action}");
+
+                     TFTVLogger.Always($"parent module Storage list is {____parentModule.StorageList} and the count of Unfiltered items is " +
+                         $"{____parentModule.StorageList.UnfilteredItems.Count}");
+
+                     TFTVLogger.Always($"item to produce {____itemToProduce.name}");
+
+                     commonItem = ____parentModule.StorageList.UnfilteredItems.Where((ICommonItem item) => item.ItemDef == ____itemToProduce).FirstOrDefault().GetSingleItem();
+                     TFTVLogger.Always($"common item null? {commonItem==null}");
+
+                    // commonItem = _parentModule.StorageList.UnfilteredItems.Where((ICommonItem item) => item.ItemDef == _itemToProduce).FirstOrDefault().GetSingleItem();
+
+                 }
+
+                 catch (Exception e)
+                 {
+                     TFTVLogger.Error(e);
+                     throw;
+                 }
+             }
+         }*/
 
         /*  GeoPhoenixFaction
 
@@ -257,81 +433,6 @@ namespace TFTV
 
 
 
-        [HarmonyPatch(typeof(SquadMemberPortraitController), "SetSoldierPortrait")]
-        public static class SquadMemberPortraitController_SetSoldierPortrait_patch
-        {
-
-            public static bool Prefix(SquadMemberPortraitController __instance, SquadMemberScrollerController.PortraitSprites portraitSprites)
-            {
-                try
-                {
-                    if (Application.platform == RuntimePlatform.OSXPlayer ||
-                 Application.platform == RuntimePlatform.OSXEditor)
-                    {
-                        //TFTVLogger.Always($"Unholy Mac detected!");
-                        Image[] background = __instance.SoldierPortraitImages.Background;
-                        for (int i = 0; i < background.Length; i++)
-                        {
-                            //  background[i].sprite = portraitSprites.Background;
-                            background[i].material = null;
-                            /*  background[i].enabled = false;
-                                  background[i].sprite = null;
-                              background[i].color = Color.black;*/
-                        }
-
-                        __instance.UpdatePortrait(portraitSprites);
-                        background = __instance.SoldierPortraitImages.Foreground;
-                        foreach (Image image in background)
-                        {
-                            BasicTween component = image.GetComponent<BasicTween>();
-                            image.sprite = null;
-                            image.color = Color.clear;
-                            if (__instance.Actor.IsAlive)
-                            {
-                                if (!(component == null))
-                                {
-                                    if (Utl.LesserThan(__instance.Actor.Health.Ratio, __instance.LowHealthRatio))
-                                    {
-                                        image.sprite = __instance.LowHealthSprite;
-                                        component.StartTween();
-                                    }
-                                    else
-                                    {
-                                        component.StopTween();
-                                    }
-                                }
-                            }
-                            else
-                            {
-                                if (component != null)
-                                {
-                                    component.StopTween();
-                                }
-
-                                image.sprite = __instance.DeathSprite;
-                                image.color = __instance.DeathColor;
-                            }
-                        }
-
-                        background = __instance.SoldierPortraitImages.CorruptionEffect;
-                        foreach (Image obj in background)
-                        {
-                            bool active = __instance.Actor.Status.HasStatus<CorruptionStatus>();
-                            obj.gameObject.SetActive(active);
-                        }
-
-                        return false;
-
-                    }
-                    return true;
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                    throw;
-                }
-            }
-        }
 
 
         /*  [HarmonyPatch(typeof(EncounterVarResearchReward), "GiveReward")]

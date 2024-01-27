@@ -896,7 +896,7 @@ namespace TFTV
                         YuggothShieldsAbility yuggothShieldsAbility = controller.Map.GetActors<TacticalActorYuggoth>().First().GetAbility<YuggothShieldsAbility>();
                         yuggothShieldsAbility?.RestoreShields();
 
-                        TacticalDeployZone tacticalDeployZone = EnemyDeployments.TacticalDeployZones.FindTDZ("Deploy_Yuggothian_Resident_3x3");
+                        TacticalDeployZone tacticalDeployZone = TFTVTacticalUtils.FindTDZ("Deploy_Yuggothian_Resident_3x3");
                         Level level = controller.Level;
                         TacticalVoxelMatrix tacticalVoxelMatrix = level?.GetComponent<TacticalVoxelMatrix>();
                         MethodInfo spawnBlob = AccessTools.Method(typeof(TacticalVoxelMatrix), "SpawnBlob_Internal");
@@ -1077,7 +1077,7 @@ namespace TFTV
 
                         TFTVLogger.Always($"gate recorded as going down on turn {gateWentDownOnTurn}; should apply to new Receptacle");
 
-                        TacticalDeployZone tacticalDeployZone = EnemyDeployments.TacticalDeployZones.FindTDZ("Deploy_Yuggothian_Resident_3x3");
+                        TacticalDeployZone tacticalDeployZone = TFTVTacticalUtils.FindTDZ("Deploy_Yuggothian_Resident_3x3");
                         Level level = controller.Level;
                         TacticalVoxelMatrix tacticalVoxelMatrix = level?.GetComponent<TacticalVoxelMatrix>();
                         MethodInfo spawnBlob = AccessTools.Method(typeof(TacticalVoxelMatrix), "SpawnBlob_Internal");
@@ -1447,8 +1447,8 @@ namespace TFTV
                         TacticalActorYuggoth tacticalActorYuggoth = controller.Map.GetActors<TacticalActorYuggoth>().FirstOrDefault();
                         if (tacticalActorYuggoth != null && tacticalActorYuggoth.QueenWallDownOnTurn == -2)
                         {
-                            TacticalDeployZone queenTDZ1 = TacticalDeployZones.FindTDZ(QueenReinforcementsSpawn1);
-                            TacticalDeployZone queenTDZ2 = TacticalDeployZones.FindTDZ(ChironSpawn1);
+                            TacticalDeployZone queenTDZ1 = TFTVTacticalUtils.FindTDZ(QueenReinforcementsSpawn1);
+                            TacticalDeployZone queenTDZ2 = TFTVTacticalUtils.FindTDZ(ChironSpawn1);
 
                             if (controller.Difficulty.Order >= 4)
                             {
@@ -1513,7 +1513,7 @@ namespace TFTV
                 {
                     try
                     {
-                        return TacticalDeployZones.FindTDZ(QueenReinforcementsSpawn1).FixedDeployment[0].TurnNumber <= controller.TurnNumber;
+                        return TFTVTacticalUtils.FindTDZ(QueenReinforcementsSpawn1).FixedDeployment[0].TurnNumber <= controller.TurnNumber;
                     }
                     catch (Exception e)
                     {
@@ -1671,7 +1671,7 @@ namespace TFTV
 
                             if (roll <= 6)
                             {
-                                TacticalDeployZone tacticalDeployZone = TacticalDeployZones.FindTDZ(LeftBottomSpawn);
+                                TacticalDeployZone tacticalDeployZone = TFTVTacticalUtils.FindTDZ(LeftBottomSpawn);
 
                                 TacCharacterDef crabToSpawn = controller.TacMission.MissionData.UnlockedAlienTacCharacterDefs.Where(tc => tc.ClassTag == crabTag && tc.Data.BodypartItems.Contains(DefCache.GetDef<ItemDef>("Crabman_Legs_EliteAgile_ItemDef"))).ToList().GetRandomElement();
                                 TFTVLogger.Always($"jumping crab to spawn: {crabToSpawn.name}");
@@ -1729,7 +1729,7 @@ namespace TFTV
                             if (roll <= 6)
                             {
 
-                                TacticalDeployZone tacticalDeployZone = TacticalDeployZones.FindTDZ(spawnName);
+                                TacticalDeployZone tacticalDeployZone = TFTVTacticalUtils.FindTDZ(spawnName);
                                 TacCharacterDef enemyToSpawn = GenerateRandomMyrmidonReinforcements(controller);
 
                                 ActorDeployData actorDeployData = enemyToSpawn.GenerateActorDeployData();
@@ -1775,7 +1775,7 @@ namespace TFTV
 
                             if (roll <= 6)
                             {
-                                TacticalDeployZone tacticalDeployZone = TacticalDeployZones.FindTDZ(spawnName);
+                                TacticalDeployZone tacticalDeployZone = TFTVTacticalUtils.FindTDZ(spawnName);
                                 TacCharacterDef enemyToSpawn = GenerateRandomGruntAndSirenReinforcements(controller);
 
                                 ActorDeployData actorDeployData = enemyToSpawn.GenerateActorDeployData();
@@ -1900,7 +1900,7 @@ namespace TFTV
                     {
                         if (controller.TurnNumber < 16 && controller.TurnNumber % 5 == 0)
                         {
-                            TacticalDeployZone tacticalDeployZone = TacticalDeployZones.FindTDZ(spawnName);
+                            TacticalDeployZone tacticalDeployZone = TFTVTacticalUtils.FindTDZ(spawnName);
 
                             foreach (TacCharacterDef tacCharacterDef in GenerateFixedChironReinforcements(controller))
                             {
@@ -2009,7 +2009,7 @@ namespace TFTV
                     {
                         if (controller.TurnNumber < 16 && controller.TurnNumber % 4 == 0)
                         {
-                            TacticalDeployZone tacticalDeployZone = TacticalDeployZones.FindTDZ(spawnName);
+                            TacticalDeployZone tacticalDeployZone = TFTVTacticalUtils.FindTDZ(spawnName);
 
                             foreach (TacCharacterDef tacCharacterDef in GenerateFixedAcheronReinforcements(controller))
                             {
@@ -2043,21 +2043,7 @@ namespace TFTV
 
             internal class TacticalDeployZones
             {
-                internal static TacticalDeployZone FindTDZ(string name)
-                {
-                    try
-                    {
-                        TacticalLevelController controller = GameUtl.CurrentLevel().GetComponent<TacticalLevelController>();
-                        TacticalDeployZone tacticalDeployZone = controller.Map.GetActors<TacticalDeployZone>(null).FirstOrDefault(tdz => tdz.name == name);
-
-                        return tacticalDeployZone;
-                    }
-                    catch (Exception e)
-                    {
-                        TFTVLogger.Error(e);
-                        throw;
-                    }
-                }
+                
 
                 private static void DeployEggsAndSentinels()
                 {
@@ -2107,7 +2093,7 @@ namespace TFTV
                         }
 
 
-                        FindTDZ("Deploy_Resident_1x1_Sentinel_Any").FixedDeployment = new List<FixedDeployConditionData> { (new FixedDeployConditionData
+                        TFTVTacticalUtils.FindTDZ("Deploy_Resident_1x1_Sentinel_Any").FixedDeployment = new List<FixedDeployConditionData> { (new FixedDeployConditionData
                 {
                     TacActorDef = DefCache.GetDef<TacCharacterDef>("SentinelHatching_AlienMutationVariationDef"),
                     TurnNumber = 0
@@ -2149,19 +2135,19 @@ namespace TFTV
 
                             UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
                             int roll1 = UnityEngine.Random.Range(0, 3);
-                            MoveDeploymentZoneAndSpawnEnemy(FindTDZ(SniperSpawn1), SniperPosition1, 0, eliteTritons[roll1]);
+                            MoveDeploymentZoneAndSpawnEnemy(TFTVTacticalUtils.FindTDZ(SniperSpawn1), SniperPosition1, 0, eliteTritons[roll1]);
                             //  TFTVLogger.Always($"roll1 is {roll1}, so the picked Triton is {eliteTritons[roll1].name}");
                             eliteTritons.RemoveAt(roll1);
 
                             UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
                             int roll2 = UnityEngine.Random.Range(0, 2);
-                            MoveDeploymentZoneAndSpawnEnemy(FindTDZ(SniperSpawn2), SniperPosition2, 0, eliteTritons[roll2]);
+                            MoveDeploymentZoneAndSpawnEnemy(TFTVTacticalUtils.FindTDZ(SniperSpawn2), SniperPosition2, 0, eliteTritons[roll2]);
                             //  TFTVLogger.Always($"roll2 is {roll2}, so the picked Truton is {eliteTritons[roll2].name}");
                             eliteTritons.RemoveAt(roll2);
 
-                            MoveDeploymentZoneAndSpawnEnemy(FindTDZ(SniperSpawn3), SniperPosition3, 0, eliteTritons[0]);
+                            MoveDeploymentZoneAndSpawnEnemy(TFTVTacticalUtils.FindTDZ(SniperSpawn3), SniperPosition3, 0, eliteTritons[0]);
 
-                            TacticalDeployZone queenTDZ1 = FindTDZ(QueenReinforcementsSpawn1);
+                            TacticalDeployZone queenTDZ1 = TFTVTacticalUtils.FindTDZ(QueenReinforcementsSpawn1);
                             queenTDZ1.SetPosition(QueenPosition1);
                             queenTDZ1.FixedDeployment[0].TurnNumber = 7;
 
@@ -2169,7 +2155,7 @@ namespace TFTV
                             queenTDZ1.SetRotation(rotation);
 
 
-                            TacticalDeployZone queenTDZ2 = FindTDZ(ChironSpawn1);
+                            TacticalDeployZone queenTDZ2 = TFTVTacticalUtils.FindTDZ(ChironSpawn1);
                             queenTDZ2.SetPosition(ChironPosition1);
                             queenTDZ2.FixedDeployment[0].TurnNumber = 4;
 
@@ -2178,12 +2164,12 @@ namespace TFTV
                             Quaternion rotation2 = Quaternion.Euler(0, 180, 0);
                             queenTDZ2.SetRotation(rotation2);
 
-                            ClearAndMoveReinforcementDeploymentZone(FindTDZ(RightBottomSpawn), RightBottomPosition);
-                            ClearAndMoveReinforcementDeploymentZone(FindTDZ(RightTopSpawn), RightTopPosition);
-                            ClearAndMoveReinforcementDeploymentZone(FindTDZ(LeftBottomSpawn), LeftBottomPosition);
+                            ClearAndMoveReinforcementDeploymentZone(TFTVTacticalUtils.FindTDZ(RightBottomSpawn), RightBottomPosition);
+                            ClearAndMoveReinforcementDeploymentZone(TFTVTacticalUtils.FindTDZ(RightTopSpawn), RightTopPosition);
+                            ClearAndMoveReinforcementDeploymentZone(TFTVTacticalUtils.FindTDZ(LeftBottomSpawn), LeftBottomPosition);
 
-                            FindTDZ("Deploy_Resident_3x3 (2)").FixedDeployment[0].TurnNumber = 2;
-                            FindTDZ("Deploy_Resident_3x3 (3)").FixedDeployment[0].TurnNumber = 2;
+                            TFTVTacticalUtils.FindTDZ("Deploy_Resident_3x3 (2)").FixedDeployment[0].TurnNumber = 2;
+                            TFTVTacticalUtils.FindTDZ("Deploy_Resident_3x3 (3)").FixedDeployment[0].TurnNumber = 2;
 
                             Reinforcements.SetActivationTurnForReinforcementTacticalZones(controller, 100);
 

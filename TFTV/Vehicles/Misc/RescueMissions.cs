@@ -73,6 +73,9 @@ namespace TFTVVehicleRework.Misc
             //"Neutral_GeoFactionDef"
             GeoFactionDef NeutralFaction = (GeoFactionDef)Repo.GetDef("df7a40b4-369b-a054-6af0-31b76dbaf312");
             NeutralFaction.StartingUnits = NeutralFaction.StartingUnits.AddToArray(BuggyCharacterDef);
+
+
+
         }
     }
 }

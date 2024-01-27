@@ -1,4 +1,5 @@
 ﻿using Base;
+using Base.Defs;
 using Base.UI;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
@@ -25,7 +26,7 @@ namespace TFTV
 {
     internal class TFTVPureAndForsaken
     {
-
+        private static readonly DefRepository Repo = TFTVMain.Repo;
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
         private static readonly SharedData Shared = TFTVMain.Shared;
         private static readonly GeoFactionDef PhoenixPoint = DefCache.GetDef<GeoFactionDef>("Phoenix_GeoPhoenixFactionDef");
@@ -752,6 +753,30 @@ namespace TFTV
                             CreateUnitResearchReward(acidTech, guids[x], fkMutogs[x]);
 
                         }
+                     /*   ClassTagDef berserkerTag = DefCache.GetDef<ClassTagDef>("Berserker_ClassTagDef");
+                        ItemClassificationTagDef gunWeaponTag = DefCache.GetDef<ItemClassificationTagDef>("GunWeapon_TagDef");
+                        ItemTypeTagDef ammoTag= DefCache.GetDef<ItemTypeTagDef>("AmmoItem_TagDef");
+
+                        foreach(TacCharacterDef tacCharacterDef in Repo.GetAllDefs<TacCharacterDef>().Where(tc => tc.ClassTag == berserkerTag)) 
+                        {
+                            TFTVLogger.Always($"looking at {tacCharacterDef.name}");
+
+                            List<ItemDef> equipmentList = new List<ItemDef>(tacCharacterDef.Data.EquipmentItems);
+                            List<ItemDef> equipmentToRemove = new List<ItemDef>();
+
+                            foreach(ItemDef itemDef in equipmentList) 
+                            {
+                                if (itemDef.Tags.Contains(gunWeaponTag)|| itemDef.Tags.Contains(ammoTag)) 
+                                {
+                                    TFTVLogger.Always($"{itemDef.name} will be removed from {tacCharacterDef.name} equipment list");
+                                    equipmentToRemove.Add(itemDef);                               
+                                } 
+                            }
+
+                            equipmentList.RemoveRange(equipmentToRemove);
+                            tacCharacterDef.Data.EquipmentItems = equipmentList.ToArray();
+                        
+                        }*/
 
                     }
                     catch (Exception e)
@@ -795,7 +820,7 @@ namespace TFTV
 
                         TFTVLogger.Always($"Completed mission vs the Pure, adding + 1 to {_puAmbushVariable} so it's now {eventSystem.GetVariable(_puAmbushVariable)}");
 
-                        if (eventSystem.GetVariable(_puAmbushVariable) >= 1 && eventSystem.GetEventRecord(_OlenaOnPureEvent.EventID).TriggerCount == 0)
+                        if (eventSystem.GetVariable(_puAmbushVariable) >= 1 && eventSystem.GetEventRecord(_OlenaOnPureEvent.EventID)!= null && eventSystem.GetEventRecord(_OlenaOnPureEvent.EventID).TriggerCount == 0)
                         {
                             GeoPhoenixFaction phoenix = geoMission.Site.GeoLevel.PhoenixFaction;
                             eventSystem.TriggerGeoscapeEvent(_OlenaOnPureEvent.EventID, new GeoscapeEventContext(geoMission.Site, phoenix));

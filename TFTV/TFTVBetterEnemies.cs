@@ -259,7 +259,7 @@ namespace TFTV
                 AIActionsTemplateDef fishmanAI = DefCache.GetDef<AIActionsTemplateDef>("Fishman_AIActionsTemplateDef");
                 fishmanAI.ActionDefs[2] = mAShoot;
                 // fishmanAI.ActionDefs[3] = mAStrike;
-                mAShoot.Weight = 500;
+                mAShoot.Weight = 600;
                 // mAStrike.Weight = 300;
 
                 //Adding Acid Torso attack for Sirens

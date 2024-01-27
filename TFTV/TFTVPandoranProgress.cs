@@ -81,7 +81,7 @@ namespace TFTV
                         if (actor.Status.HasStatus(queenImmunity))
                         {
                             data.DamageResult.ArmorDamage = Mathf.Floor(data.DamageResult.ArmorDamage * 0);
-                            TFTVLogger.Always($"armor damage is {data.DamageResult.ArmorDamage}");
+                          //  TFTVLogger.Always($"armor damage is {data.DamageResult.ArmorDamage}");
                         }
                     }
                 }

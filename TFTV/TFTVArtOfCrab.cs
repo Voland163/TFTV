@@ -13,7 +13,6 @@ using PhoenixPoint.Common.Entities.Items;
 using PhoenixPoint.Tactical;
 using PhoenixPoint.Tactical.AI;
 using PhoenixPoint.Tactical.AI.Considerations;
-using PhoenixPoint.Tactical.AI.TargetGenerators;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.DamageKeywords;
@@ -27,6 +26,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using TFTV.Tactical.Entities.Statuses;
 using UnityEngine;
 
 namespace TFTV
@@ -47,18 +47,102 @@ namespace TFTV
 
         //AIEnemyTargetGeneratorDef
 
+        public static bool Has1APWeapon(TacCharacterDef tacCharacterDef)
+        {
+            try
+            {
+                DelayedEffectStatusDef reinforcementStatusUnder1AP = DefCache.GetDef<DelayedEffectStatusDef>("E_Status [ReinforcementStatusUnder1AP]");
+                DelayedEffectStatusDef reinforcementStatus1AP = DefCache.GetDef<DelayedEffectStatusDef>("E_Status [ReinforcementStatus1AP]");
+                DelayedEffectStatusDef reinforcementStatusUnder2AP = DefCache.GetDef<DelayedEffectStatusDef>("E_Status [ReinforcementStatusUnder2AP]");
+
+
+                foreach (ItemDef itemDef in tacCharacterDef.Data.BodypartItems)
+                {
+                    // TFTVLogger.Always($"{itemDef.name}");
+
+                    if (itemDef.name.Contains("Pincer") || itemDef.name.Contains("Pistol"))
+                    {
+                        TFTVLogger.Always($"reinforcement {tacCharacterDef.name} has {itemDef.name}, so should get {reinforcementStatus1AP.EffectName}");
+                        return true;
+                    }
+                }
+
+                TFTVLogger.Always($"reinforcement {tacCharacterDef.name} has no 1AP weapon, so applying {reinforcementStatusUnder2AP.EffectName}");
+                return false;
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
+        }
+
+        [HarmonyPatch(typeof(AIHasEnemiesInRangeConsideration), "Evaluate")]
+        public static class AIHasEnemiesInRangeConsideration_Evaluate_patch
+        {
+            private static void Postfix(AIHasEnemiesInRangeConsideration __instance, IAIActor actor, IAITarget target, object context, ref float __result)
+            {
+                try
+                {
+                    if (__instance.Def.name.Equals("Dash_RangeClearanceConsiderationDef"))
+                    {
+                        TacticalActor tacticalActor = (TacticalActor)actor;
+
+                        //  TFTVLogger.Always($"{tacticalActor.name} so far has {__result} in Dash_RangeClearanceConsiderationDef");
+
+                        if (tacticalActor.CharacterStats.ActionPoints < tacticalActor.CharacterStats.ActionPoints.Max * 0.75f)
+                        {
+                            //  TFTVLogger.Always($"{tacticalActor.name} has {tacticalActor.CharacterStats.ActionPoints} AP, less than max {tacticalActor.CharacterStats.ActionPoints.Max * 0.75f}, so failing eval for dash");
+                            __result = 1;
+                        }
+
+
+
+                        /*  float actorRange = tacticalActor.CharacterStats.Speed * 1.5f;
+
+                          TFTVLogger.Always($"{tacticalActor.name} speed: {tacticalActor.CharacterStats.Speed} ap: {tacticalActor.CharacterStats.ActionPoints}" +
+                              $"actorRange: {actorRange}");
+
+                          foreach (TacticalActorBase enemy in tacticalActor.TacticalFaction.AIBlackboard.GetEnemies(tacticalActor.AIActor.GetEnemyMask(__instance.Def.EnemyMask)))
+                          {
+                              if ((enemy.Pos - tacticalActor.Pos).magnitude <= actorRange)
+                              {
+                                  __result = 1;
+                               //   TFTVLogger.Always($"found enemy {enemy.DisplayName} within range, but returning 0 to see what happens");
+                                  return false;
+                              }
+                          }
+
+                          __result = 0;
+                          return false;*/
+
+
+                    }
+
+                    // return true;
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+
+        }
+
         public static void GetBestWeaponForOWRF(TacticalActor tacticalActor)
         {
             try
             {
-                if (!tacticalActor.IsControlledByAI || !tacticalActor.TacticalActorDef.name.Equals("Soldier_ActorDef") || tacticalActor.IsDead || tacticalActor.IsDisabled || tacticalActor.IsEvacuated ) 
+                if (!tacticalActor.IsControlledByAI || !tacticalActor.TacticalActorDef.name.Equals("Soldier_ActorDef") || tacticalActor.IsDead || tacticalActor.IsDisabled || tacticalActor.IsEvacuated)
                 {
-                    return;               
+                    return;
                 }
 
-                if(tacticalActor.GetAbility<ReturnFireAbility>()==null && tacticalActor.GetAbility<ApplyStatusAbility>("ExtremeFocus_AbilityDef") == null) 
+                if (tacticalActor.GetAbility<ReturnFireAbility>("ReturnFire_AbilityDef") == null && tacticalActor.GetAbility<ApplyStatusAbility>("ExtremeFocus_AbilityDef") == null)
                 {
-                    return; 
+                    return;
                 }
 
                 List<Weapon> weapons = new List<Weapon>(tacticalActor.Equipments.GetWeapons().Where(
@@ -68,6 +152,7 @@ namespace TFTV
                 {
                     return;
                 }
+
 
                 Weapon bestWeapon = weapons.OrderByDescending(w => w.WeaponDef.EffectiveRange).ToList().First();
 
@@ -110,6 +195,34 @@ namespace TFTV
             }
         }
 
+        [HarmonyPatch(typeof(AIAttackPositionConsideration), "EvaluateWithShootAbility")]
+        internal static class AIAttackPositionConsideration_EvaluateWithShootAbility_patch
+        {
+
+            public static void Postfix(AIAttackPositionConsideration __instance, IAIActor actor, IAITarget target, ref float __result)
+            {
+                try
+                {
+                    FumbleChanceStatusDef jammingField = DefCache.GetDef<FumbleChanceStatusDef>("E_FumbleChanceStatus [JammingFiled_AbilityDef]");
+
+                    if (__result > 0)
+                    {
+                        TacticalActor tacActor = (TacticalActor)actor;
+                        if (tacActor != null && tacActor.Status.HasStatus(jammingField))
+                        {
+
+                            __result *= 0.1f;
+                            //  TFTVLogger.Always($"{tacActor.name} result {__result} because jinxed");
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
 
         internal class TurnOrder
         {
@@ -502,9 +615,144 @@ namespace TFTV
 
 
         }
-
         internal class ScyllaBlasterAttack
         {
+
+            //   AISlowTargetsInConeConsiderationDef
+
+
+            /*  [HarmonyPatch(typeof(AISlowTargetsInConeConsideration), "GetEnemiesInCone")]
+              public static class AISlowTargetsInConeConsideration_GetMovementDataInRange_patch
+              {
+                  private static void Prefix(AISlowTargetsInConeConsideration __instance, Vector3 actorPos, Vector3 actorDir, ref IEnumerable<TacticalActorBase> enemies)
+                  {
+                      try
+                      {
+                          List<TacticalActorBase> enemiesToRemove = new List<TacticalActorBase>();
+
+                          foreach(TacticalActorBase tacticalActorBase in enemies) 
+                          {
+                              if ((tacticalActorBase.Pos - actorPos).magnitude > 25 || TacticalFactionVision.CheckVisibleLine(tacticalActorBase, tacticalActorBase.Pos, actorPos, 25)) 
+                              {
+                                  enemiesToRemove.Add(tacticalActorBase); 
+                              }
+                              else 
+                              {
+                                  TFTVLogger.Always($"Will consider {tacticalActorBase.DisplayName}; queen at {actorPos} and actor at {tacticalActorBase.Pos}");
+
+                              }
+                          }
+
+                          if (enemiesToRemove.Count > 0) 
+                          {
+                              List<TacticalActorBase> newEnemiesList = new List<TacticalActorBase>(enemies);
+                              newEnemiesList.RemoveRange(enemiesToRemove);
+                              enemies = newEnemiesList; 
+                          }
+
+                      }
+                      catch (Exception e)
+                      {
+                          TFTVLogger.Error(e);
+                          throw;
+                      }
+                  }
+              }*/
+
+
+            [HarmonyPatch(typeof(AISlowTargetsInConeConsideration), "Evaluate")]
+            public static class AISlowTargetsInConeConsideration_GetMovementDataInRange_patch
+            {
+                private static bool Prefix(AISlowTargetsInConeConsideration __instance, ref float __result, IAIActor actor, IAITarget target)
+                {
+                    try
+                    {
+
+                        MethodInfo method = typeof(AISlowTargetsInConeConsideration).GetMethod("GetEnemiesInCone", BindingFlags.NonPublic | BindingFlags.Instance);
+
+                        TacticalActor tacticalActor = (TacticalActor)actor;
+                        TacAITarget tacAITarget = (TacAITarget)target;
+                        List<TacticalActorBase> list = tacticalActor.TacticalFaction.AIBlackboard.GetEnemies(tacticalActor.AIActor.GetEnemyMask(__instance.Def.EnemyMask)).ToList();
+                        if (list.Count == 0)
+                        {
+                            __result = 0f;
+                            return false;
+                        }
+
+                        float num = 0f;
+                        foreach (Vector3 allGridDirection in TacticalMap.AllGridDirections)
+                        {
+                            Vector3 zero = Vector3.zero;
+                            float num2 = 0f;
+
+                            Vector3 actorPos = tacAITarget.Pos;
+                            Vector3 actorDir = tacAITarget.Pos;
+
+                            IEnumerable<TacticalActorBase> enemies = list;
+
+                            // Invoke the method on the instance
+                            IEnumerable<TacticalActorBase> enemiesInCone = (IEnumerable<TacticalActorBase>)method.Invoke(__instance, new object[] { actorPos, actorDir, enemies });
+
+                            List<TacticalActorBase> toRemoveBecauseCompletelyBlocked = new List<TacticalActorBase>();
+
+                            foreach (TacticalActorBase tacticalActorBase in list)
+                            {
+                                if (tacticalActorBase is TacticalActor tacticalActor1)
+                                {
+                                    if (!TacticalFactionVision.CheckVisibleLineBetweenActorsInTheory(tacticalActor, actorPos, DefCache.GetDef<ComponentSetDef>("Queen_ComponentSetDef"), tacticalActor1.Pos))
+                                    {
+                                        //  TFTVLogger.Always($"can't see {tacticalActor1.DisplayName} from {actorPos}");
+                                        toRemoveBecauseCompletelyBlocked.Add(tacticalActorBase);
+                                    }
+                                }
+                            }
+
+                            List<TacticalActorBase> culledList = new List<TacticalActorBase>(enemiesInCone);
+
+                            culledList.RemoveRange(toRemoveBecauseCompletelyBlocked);
+
+
+                            foreach (TacticalActorBase item in culledList)
+                            {
+                               // TFTVLogger.Always($"{item.name}");
+
+                                /*  TacticalActor tacticalActor2 = item as TacticalActor;
+                                  int num3 = 0;
+                                  if (tacticalActor2 != null)
+                                  {
+                                      //TFTVLogger.Always($"{tacticalActor2.name}");
+                                      num3 = tacticalActor2.CharacterStats.Speed.IntValue;
+                                  }
+
+                                  float num4 = Mathf.Min(1f - Mathf.Min((float)num3 / 20f, 1f), 1f);
+                                  zero += (item.Pos - tacAITarget.Pos).normalized;
+                                  num2 += num4;*/
+                                zero += (item.Pos - tacAITarget.Pos).normalized;
+                                num2 += 1;
+                            }
+
+                            if (num < num2)
+                            {
+                                num = num2;
+                                tacAITarget.Direction = zero.normalized;
+                                tacAITarget.AngleInRadians = __instance.Def.FieldOfView / 2f * ((float)Math.PI / 180f);
+                                tacAITarget.TacticalAbilityTarget = new TacticalAbilityTarget(tacAITarget.Pos + tacAITarget.Direction * 30f);
+                            }
+                        }
+
+                        __result = Mathf.Min(num / (float)__instance.Def.NumberOfTartgetsToConsider, 1f);
+                       // TFTVLogger.Always($"result is {__result}");
+                        return false;
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                        throw;
+                    }
+                }
+
+            }
+
             public static void ForceScyllaToUseCannonsAfterUsingHeadAttack(TacticalAbility ability, TacticalActor actor, object parameter)
             {
                 try
@@ -665,7 +913,6 @@ namespace TFTV
             }
 
         }
-
         internal class PreventDamageFromSomeExplosions
         {
             [HarmonyPatch(typeof(DieAbility), "SpawnDeathEffect")]
@@ -740,7 +987,6 @@ namespace TFTV
                 }
             }
         }
-
         internal class TargetCulling
         {
             internal class Umbra
@@ -1154,7 +1400,6 @@ namespace TFTV
 
             }
             internal class SmallCritters
-
             {
 
                 //This removes small critters from move related considerations of the Big and Med monsters.
@@ -1252,25 +1497,7 @@ namespace TFTV
                 }
 
 
-                /*  [HarmonyPatch(typeof(AIAttackPositionConsideration), "EvaluateWithShootAbility")]
-                  internal static class AIAttackPositionConsideration_EvaluateWithShootAbility_patch
-                  {
 
-                      public static void Postfix(AIAttackPositionConsideration __instance, IAIActor actor, IAITarget target, ref float __result)
-                      {
-                          try
-                          {
-
-
-
-                          }
-                          catch (Exception e)
-                          {
-                              TFTVLogger.Error(e);
-                              throw;
-                          }
-                      }
-                  }*/
 
 
 
@@ -1462,6 +1689,8 @@ namespace TFTV
 
             }
         }
+
+
 
         /* [HarmonyPatch(typeof(AIAbilityConsiderationDef), "GetAbility")]
        internal static class AIAbilityConsiderationDef_GetAbility_patch
@@ -1692,7 +1921,7 @@ namespace TFTV
         [HarmonyPatch(typeof(AIActorMovementZoneTargetGenerator), "FillTargets")]
             internal static class AIActorMovementZoneTargetGenerator_FillTargets_patch
         {
-            
+
             public static void Prefix(
                 AIActorMovementZoneTargetGenerator __instance, AIFaction faction, IAIActor actor, object context, AITargetGenerator prevGen, IList<AIScoredTarget> prevGenTargets, IList<AIScoredTarget> targets, IEnumerator<NextUpdate> __result, IgnoredAbilityDisabledStatesFilter ____ignoredDisabledStatesFilter)
             {
@@ -2156,23 +2385,27 @@ namespace TFTV
 
 
 
-        /*
-        
+        // AIActorMovementZoneTargetGeneratorDef
+        //AIEnoughActionPointsForAbilityConsiderationDef
 
 
-        [HarmonyPatch(typeof(AIHasEquipmentConsideration), "Evaluate")]
-        public static class AIHasEquipmentConsideration_GetMovementDataInRange_patch
+      /*  [HarmonyPatch(typeof(AIEnoughActionPointsForAbilityConsideration), "Evaluate")]
+        public static class AIEnoughActionPointsForAbilityConsideration_GetMovementDataInRange_patch
         {
-            private static void Postfix(AIHasEquipmentConsideration __instance, float __result, IAIActor actor)
+            private static void Postfix(AIEnoughActionPointsForAbilityConsideration __instance, float __result, IAIActor actor)
             {
                 try
                 {
-                    if (__instance.Def.name.Equals("HasMeleeWeapon_AIConsiderationDef"))
+                    if (__instance.BaseDef.name.Equals("Queen_CanUsePrepareShoot_AIConsiderationDef"))
                     {
-                        TacticalActor tacActor = actor as TacticalActor;
-                        TFTVLogger.Always($"{tacActor.name} {__instance.Def.name} running Evaluate, result is {__result}");
-                    }
 
+
+                        TacticalActor tacActor = actor as TacticalActor;
+
+
+                        TFTVLogger.Always($"{tacActor.name} {__instance.BaseDef.name} running Evaluate, result is {__result}");
+
+                    }
                 }
                 catch (Exception e)
                 {
@@ -2180,55 +2413,14 @@ namespace TFTV
                 }
             }
 
-        }
+        }*/
 
 
-        */
+
 
         //  AILineOfSightToEnemiesConsiderationDef
 
-        [HarmonyPatch(typeof(AIHasEnemiesInRangeConsideration), "Evaluate")]
-        public static class AIHasEnemiesInRangeConsideration_Evaluate_patch
-        {
-            private static bool Prefix(AIHasEnemiesInRangeConsideration __instance, IAIActor actor, IAITarget target, object context, ref float __result)
-            {
-                try
-                {
-                    if (__instance.Def.name.Equals("ClearanceRange_AIConsiderationDef"))
-                    {
-                        TacticalActor tacticalActor = (TacticalActor)actor;
 
-                        float actorRange = tacticalActor.CharacterStats.Speed * 1.5f;
-
-                        TFTVLogger.Always($"{tacticalActor.name} speed: {tacticalActor.CharacterStats.Speed} ap: {tacticalActor.CharacterStats.ActionPoints}" +
-                            $"actorRange: {actorRange}");
-
-                        foreach (TacticalActorBase enemy in tacticalActor.TacticalFaction.AIBlackboard.GetEnemies(tacticalActor.AIActor.GetEnemyMask(__instance.Def.EnemyMask)))
-                        {
-                            if ((enemy.Pos - tacticalActor.Pos).magnitude <= actorRange)
-                            {
-                                __result = 0;//1;
-                                TFTVLogger.Always($"found enemy {enemy.DisplayName} within range, but returning 0 to see what happens");
-                                return false;
-                            }
-                        }
-
-                        __result = 0;
-                        return false;
-
-
-                    }
-
-                    return true;
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                    throw;
-                }
-            }
-
-        }
 
         /*  ("DashMovementZoneNoSelfPosition_AITargetGeneratorDef");
               AIActorMovementZoneTargetGeneratorDef
@@ -2589,137 +2781,135 @@ namespace TFTV
         //NoLineofSight_AIConsiderationDef  AILineOfSightToEnemiesConsiderationDef
         //AIWillpointsLeftAfterAbilityConsiderationDef
 
-       /* [HarmonyPatch(typeof(AIWillpointsLeftAfterAbilityConsideration), "Evaluate")]
-        public static class AIWillpointsLeftAfterAbilityConsideration_Evaluate_patch
-        {
-            private static void Postfix(AIWillpointsLeftAfterAbilityConsideration __instance, IAIActor actor, IAITarget target, object context, ref float __result)
-            {
-                try
-                {
+        /* [HarmonyPatch(typeof(AIWillpointsLeftAfterAbilityConsideration), "Evaluate")]
+         public static class AIWillpointsLeftAfterAbilityConsideration_Evaluate_patch
+         {
+             private static void Postfix(AIWillpointsLeftAfterAbilityConsideration __instance, IAIActor actor, IAITarget target, object context, ref float __result)
+             {
+                 try
+                 {
 
-                    TFTVLogger.Always($"{__instance.BaseDef.name} {__result}");
-                   
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                    throw;
-                }
-            }
+                     TFTVLogger.Always($"{__instance.BaseDef.name} {__result}");
 
-        }
+                 }
+                 catch (Exception e)
+                 {
+                     TFTVLogger.Error(e);
+                     throw;
+                 }
+             }
 
-
-        [HarmonyPatch(typeof(AILineOfSightToEnemiesConsideration), "Evaluate")]
-        public static class AILineOfSightToEnemiesConsideration_Evaluate_patch
-        {
-            private static void Postfix(AILineOfSightToEnemiesConsideration __instance, IAIActor actor, IAITarget target, object context, ref float __result)
-            {
-                try
-                {
-
-                    TFTVLogger.Always($"{__instance.BaseDef.name} {__result}");
-                    
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                    throw;
-                }
-            }
-
-        }
-
-        [HarmonyPatch(typeof(AITravelDistanceConsideration), "Evaluate")]
-        public static class AITravelDistanceConsideration_Evaluate_patch
-        {
-            private static void Postfix(AITravelDistanceConsideration __instance, IAIActor actor, IAITarget target, object context, ref float __result)
-            {
-                try
-                {
-
-                    TFTVLogger.Always($"{__instance.BaseDef.name} {__result}");
-                
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                    throw;
-                }
-            }
-
-        }
+         }
 
 
+         [HarmonyPatch(typeof(AILineOfSightToEnemiesConsideration), "Evaluate")]
+         public static class AILineOfSightToEnemiesConsideration_Evaluate_patch
+         {
+             private static void Postfix(AILineOfSightToEnemiesConsideration __instance, IAIActor actor, IAITarget target, object context, ref float __result)
+             {
+                 try
+                 {
 
+                     TFTVLogger.Always($"{__instance.BaseDef.name} {__result}");
 
+                 }
+                 catch (Exception e)
+                 {
+                     TFTVLogger.Error(e);
+                     throw;
+                 }
+             }
 
-        [HarmonyPatch(typeof(AISpreadConsideration), "Evaluate")]
-        public static class AISpreadConsideration_Evaluate_patch
-        {
-            private static void Postfix(AISpreadConsideration __instance, IAIActor actor, IAITarget target, object context, ref float __result)
-            {
-                try
-                {
+         }
 
-                    TFTVLogger.Always($"{__instance.BaseDef.name} {__result}");
-                   
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                    throw;
-                }
-            }
+         [HarmonyPatch(typeof(AITravelDistanceConsideration), "Evaluate")]
+         public static class AITravelDistanceConsideration_Evaluate_patch
+         {
+             private static void Postfix(AITravelDistanceConsideration __instance, IAIActor actor, IAITarget target, object context, ref float __result)
+             {
+                 try
+                 {
 
-        }
+                     TFTVLogger.Always($"{__instance.BaseDef.name} {__result}");
 
+                 }
+                 catch (Exception e)
+                 {
+                     TFTVLogger.Error(e);
+                     throw;
+                 }
+             }
 
-
-        [HarmonyPatch(typeof(AIClosestEnemyConsideration), "Evaluate")]
-        public static class AIClosestEnemyConsideration_Evaluate_patch
-        {
-            private static void Postfix(AIClosestEnemyConsideration __instance, IAIActor actor, IAITarget target, object context, ref float __result)
-            {
-                try
-                {
-                   
-                    TFTVLogger.Always($"{__instance.BaseDef.name} {__result}");
-                    
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                    throw;
-                }
-            }
-
-        }
+         }
 
 
 
 
 
-        [HarmonyPatch(typeof(AIStrategicPositionConsideration), "Evaluate")]
-        public static class AIStrategicPositionConsideration_Evaluate_patch
-        {
-            private static void Postfix(AIStrategicPositionConsideration __instance, IAIActor actor, IAITarget target, object context, ref float __result)
-            {
-                try
-                {
-                    AIStrategicPositionConsiderationDef def = DefCache.GetDef<AIStrategicPositionConsiderationDef>("StrategicPositionOff_AIConsiderationDef");
-                    TFTVLogger.Always($"{__instance.BaseDef.name} {__result}");
-                   
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                    throw;
-                }
-            }
+         [HarmonyPatch(typeof(AISpreadConsideration), "Evaluate")]
+         public static class AISpreadConsideration_Evaluate_patch
+         {
+             private static void Postfix(AISpreadConsideration __instance, IAIActor actor, IAITarget target, object context, ref float __result)
+             {
+                 try
+                 {
 
-        }
+                     TFTVLogger.Always($"{__instance.BaseDef.name} {__result}");
 
+                 }
+                 catch (Exception e)
+                 {
+                     TFTVLogger.Error(e);
+                     throw;
+                 }
+             }
+
+         }
+
+
+
+         [HarmonyPatch(typeof(AIClosestEnemyConsideration), "Evaluate")]
+         public static class AIClosestEnemyConsideration_Evaluate_patch
+         {
+             private static void Postfix(AIClosestEnemyConsideration __instance, IAIActor actor, IAITarget target, object context, ref float __result)
+             {
+                 try
+                 {
+
+                     TFTVLogger.Always($"{__instance.BaseDef.name} {__result}");
+
+                 }
+                 catch (Exception e)
+                 {
+                     TFTVLogger.Error(e);
+                     throw;
+                 }
+             }
+
+         }
+        */
+
+
+        /*
+     [HarmonyPatch(typeof(AIStrategicPositionConsideration), "Evaluate")]
+     public static class AIStrategicPositionConsideration_Evaluate_patch
+     {
+         private static void Postfix(AIStrategicPositionConsideration __instance, IAIActor actor, IAITarget target, object context, ref float __result)
+         {
+             try
+             {
+                 AIStrategicPositionConsiderationDef def = DefCache.GetDef<AIStrategicPositionConsiderationDef>("StrategicPositionOff_AIConsiderationDef");
+                 TFTVLogger.Always($"{__instance.BaseDef.name} {__result}");
+
+             }
+             catch (Exception e)
+             {
+                 TFTVLogger.Error(e);
+                 throw;
+             }
+         }
+
+     }
 
 
 
@@ -2727,63 +2917,35 @@ namespace TFTV
 
 
 
-        [HarmonyPatch(typeof(AIActorRangeZoneTargetGenerator), "FillTargets")]
-        public static class AIActorRangeZoneTargetGenerator_FillTargets_patch
-        {
-            private static void Postfix(AIActorRangeZoneTargetGenerator __instance, IList<AIScoredTarget> targets)
-            {
-                try
-                {
-                    TFTVLogger.Always($"{__instance.Def.name} running FillTargets");
 
-                    if (__instance.BaseDef == DefCache.GetDef<AIActorRangeZoneTargetGeneratorDef>("Dash_StrikeAbilityZone_AITargetGeneratorDef"))
-                    {
-                        TFTVLogger.Always($"filltargets Dash_StrikeAbilityZone_AITargetGeneratorDef targets count {targets.Count} ");
-                        foreach (AIScoredTarget aIScoredTarget in targets)
-                        {
-                            TFTVLogger.Always($"{aIScoredTarget?.Actor} {aIScoredTarget?.Target} {aIScoredTarget.Score}");
-                        }
+     [HarmonyPatch(typeof(AIActorRangeZoneTargetGenerator), "FillTargets")]
+     public static class AIActorRangeZoneTargetGenerator_FillTargets_patch
+     {
+         private static void Postfix(AIActorRangeZoneTargetGenerator __instance, IList<AIScoredTarget> targets)
+         {
+             try
+             {
+                 TFTVLogger.Always($"{__instance.Def.name} running FillTargets");
 
-                    }
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-            }
+                 if (__instance.BaseDef == DefCache.GetDef<AIActorRangeZoneTargetGeneratorDef>("Dash_StrikeAbilityZone_AITargetGeneratorDef"))
+                 {
+                     TFTVLogger.Always($"filltargets Dash_StrikeAbilityZone_AITargetGeneratorDef targets count {targets.Count} ");
+                     foreach (AIScoredTarget aIScoredTarget in targets)
+                     {
+                         TFTVLogger.Always($"{aIScoredTarget?.Actor} {aIScoredTarget?.Target} {aIScoredTarget.Score}");
+                     }
 
-        }*/
+                 }
+             }
+             catch (Exception e)
+             {
+                 TFTVLogger.Error(e);
+             }
+         }
 
-        public static bool Has1APWeapon(TacCharacterDef tacCharacterDef)
-        {
-            try
-            {
-                DelayedEffectStatusDef reinforcementStatusUnder1AP = DefCache.GetDef<DelayedEffectStatusDef>("E_Status [ReinforcementStatusUnder1AP]");
-                DelayedEffectStatusDef reinforcementStatus1AP = DefCache.GetDef<DelayedEffectStatusDef>("E_Status [ReinforcementStatus1AP]");
-                DelayedEffectStatusDef reinforcementStatusUnder2AP = DefCache.GetDef<DelayedEffectStatusDef>("E_Status [ReinforcementStatusUnder2AP]");
+     }*/
 
 
-                foreach (ItemDef itemDef in tacCharacterDef.Data.BodypartItems)
-                {
-                    // TFTVLogger.Always($"{itemDef.name}");
-
-                    if (itemDef.name.Contains("Pincer") || itemDef.name.Contains("Pistol"))
-                    {
-                        TFTVLogger.Always($"reinforcement {tacCharacterDef.name} has {itemDef.name}, so should get {reinforcementStatus1AP.EffectName}");
-                        return true;
-                    }
-                }
-
-                TFTVLogger.Always($"reinforcement {tacCharacterDef.name} has no 1AP weapon, so applying {reinforcementStatusUnder2AP.EffectName}");
-                return false;
-
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-                throw;
-            }
-        }
 
 
 

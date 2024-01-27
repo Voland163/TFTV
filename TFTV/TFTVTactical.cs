@@ -1,7 +1,9 @@
 using Base.Core;
+using Base.Entities;
 using Base.Serialization.General;
 using PhoenixPoint.Common.Levels.Missions;
 using PhoenixPoint.Modding;
+using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Levels;
 using System;
 using System.Collections.Generic;
@@ -193,6 +195,15 @@ namespace TFTV
             TFTVLogger.Always($"Current ODI level: {TFTVODIandVoidOmenRoll.CurrentODI_Level}");
             TFTVLogger.Always($"Difficulty level is {tacController.Difficulty.name} and treated as {TFTVReleaseOnly.DifficultyOrderConverter(tacController.Difficulty.Order)} after TFTV conversion.");
             TFTVLogger.Always("Tactical start completed");
+
+
+          /*  foreach(ActorComponent actorComponent in Controller.Map.FindAllActors()) 
+            {
+                TFTVLogger.Always($"{actorComponent.name} is TacticalActor? {actorComponent is TacticalActor}");
+            
+            
+            }*/
+
         }
 
         /// <summary>

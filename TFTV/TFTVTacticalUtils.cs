@@ -1,4 +1,5 @@
 ﻿using Base;
+using Base.Core;
 using Base.Entities.Statuses;
 using HarmonyLib;
 using PhoenixPoint.Geoscape.Entities;
@@ -15,10 +16,22 @@ namespace TFTV
 {
     internal class TFTVTacticalUtils
     {
-      
 
+        internal static TacticalDeployZone FindTDZ(string name)
+        {
+            try
+            {
+                TacticalLevelController controller = GameUtl.CurrentLevel().GetComponent<TacticalLevelController>();
+                TacticalDeployZone tacticalDeployZone = controller.Map.GetActors<TacticalDeployZone>(null).FirstOrDefault(tdz => tdz.name == name);
 
-       
+                return tacticalDeployZone;
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
+        }
 
         internal static void RevealAllSpawns(TacticalLevelController controller)
         {
@@ -37,7 +50,7 @@ namespace TFTV
 
                 foreach (TacticalDeployZone tacticalDeployZone in zones)
                 {
-                  //  createVisuals.Invoke(tacticalDeployZone, null);
+                  createVisuals.Invoke(tacticalDeployZone, null);
                   //  TFTVLogger.Always($"{tacticalDeployZone.name} at position {tacticalDeployZone.Pos}, belongs to {tacticalDeployZone.MissionParticipant.GetName()}");
                     
                     foreach(FixedDeployConditionData fixedDeployConditionData in tacticalDeployZone.FixedDeployment) 

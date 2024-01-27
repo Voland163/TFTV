@@ -319,6 +319,7 @@ namespace TFTV
                         UIModuleGameSettings gameSettings = GameUtl.CurrentLevel().GetComponent<HomeScreenView>().HomeScreenModules.GameSettings;
 
                         SelectedDifficulty = int.Parse(__instance.name.Last().ToString()) + 1;
+                        TFTVMain.Main.Config.Difficulty = SelectedDifficulty - 1;
                         TFTVLogger.Always($"Element is: {__instance.name} and the selected difficulty is now {SelectedDifficulty}");
 
                         UpdateOptionsOnSelectingDifficutly();

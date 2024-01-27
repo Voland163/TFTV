@@ -1029,10 +1029,10 @@ namespace TFTV
                 ClassTagDef priestTag = DefCache.GetDef<ClassTagDef>("Priest_ClassTagDef");
                 ClassTagDef technicianTag = DefCache.GetDef<ClassTagDef>("Technician_ClassTagDef");
 
-                ClassTagDef assaultRaiderTag = TFTVRaiders._assaultRaiderTag;
-                ClassTagDef heavyRaiderTag = TFTVRaiders._heavyRaiderTag;
-                ClassTagDef sniperRaiderTag = TFTVRaiders._sniperRaiderTag;
-                ClassTagDef scumTag = TFTVRaiders._scumTag;
+                ClassTagDef assaultRaiderTag = TFTVScavengers._assaultRaiderTag;
+                ClassTagDef heavyRaiderTag = TFTVScavengers._heavyRaiderTag;
+                ClassTagDef sniperRaiderTag = TFTVScavengers._sniperRaiderTag;
+                ClassTagDef scumTag = TFTVScavengers._scumTag;
 
                 int[] stats = new int[3];
 
@@ -1164,7 +1164,7 @@ namespace TFTV
                 discardedAbilities.Remove(stability);
                 discardedAbilities.Remove(fieldMedic);
 
-                if (tacticalActor.HasGameTag(TFTVRaiders._scumTag))
+                if (tacticalActor.HasGameTag(TFTVScavengers._scumTag))
                 {
                     foreach (AbilityDef ability in allAbilities)
                     {

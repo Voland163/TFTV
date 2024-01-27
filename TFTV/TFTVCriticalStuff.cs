@@ -2,6 +2,7 @@
 using Base.Defs;
 using Base.Serialization;
 using Base.UI.MessageBox;
+using Epic.OnlineServices;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Game;
@@ -15,6 +16,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using UnityEngine;
 
 namespace TFTV
 {
@@ -25,6 +27,47 @@ namespace TFTV
         private static readonly DefRepository Repo = TFTVMain.Repo;
         private static readonly SharedData Shared = TFTVMain.Shared;
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
+
+
+        [HarmonyPatch(typeof(NamedValueStore))]
+        internal class NamedValueStore_Fix
+        {
+            // TODO: use TFTV config to save the selected difficulty
+            public static int TFTV_Difficulty = TFTVMain.Main.Config.Difficulty;
+
+            [HarmonyPrefix]
+            [HarmonyPatch(nameof(NamedValueStore.SetValue))]
+            public static void NamedValueStore_SetValue_Prefix(string name, ref object val)
+            {
+                if (name.Equals("Options_NewGameDifficultyOption"))
+                {
+                    TFTVLogger.Always($"NamedValueStore_SetValue_Prefix() called ...");
+                    TFTVLogger.Always($"In: {name} - {val}");
+
+                    // TODO: save the selected difficulty in TFTV config
+                    TFTV_Difficulty = (int)val;
+                    int difficultyToSave = Mathf.Clamp(TFTV_Difficulty - 1, 0, 3);
+                    val = difficultyToSave;
+                    TFTVLogger.Always($"Out: {name} - {val}");
+                }
+            }
+
+            [HarmonyPostfix]
+            [HarmonyPatch(nameof(NamedValueStore.GetValue))]
+            public static void NamedValueStore_GetValue_Postfix(string name, ref object __result)
+            {
+                if (name.Equals("Options_NewGameDifficultyOption"))
+                {
+                    TFTVLogger.Always($"NamedValueStore_GetValue_Postfix() called ...");
+                    TFTVLogger.Always($"In: {name} - {__result}");
+                    // TODO: read the selected difficulty from TFTV config
+                    __result = TFTV_Difficulty;
+                    TFTVLogger.Always($"Out: {name} - {__result}");
+                }
+            }
+        }
+
+
 
 
         /// <summary>

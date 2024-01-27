@@ -195,7 +195,7 @@ namespace TFTV
 
                 VariousMinorAdjustments();
 
-                TFTVRaiders.Defs.CreateRaiderDefs();
+                TFTVScavengers.Defs.CreateRaiderDefs();
 
                 TFTVPureAndForsaken.Defs.InitDefs();
 
@@ -209,25 +209,49 @@ namespace TFTV
         }
 
 
-        private static void RemoveLoSConsiderationDashAI()
+        private static void AdjustDashAI()
         {
             try 
             {
                 // AIClosestEnemyConsiderationDef
                 AIActionMoveAndAttackDef dashAndStrike = DefCache.GetDef<AIActionMoveAndAttackDef>("DashAndStrike_AIActionDef");
                 AIActionMoveAndAttackDef moveAndStrike = DefCache.GetDef<AIActionMoveAndAttackDef>("MoveAndStrike_AIActionDef");
-
-                moveAndStrike.Weight = 350;
-
+                AIActionMoveAndAttackDef dashAndShoot = DefCache.GetDef<AIActionMoveAndAttackDef>("DashAndShoot_AIActionDef");
                 AIActionMoveToPositionDef dashAI = DefCache.GetDef<AIActionMoveToPositionDef>("Dash_AIActionDef");
 
-                dashAI.EarlyExitConsiderations = new AIAdjustedConsideration[] { dashAI.EarlyExitConsiderations[0], dashAI.EarlyExitConsiderations[1], dashAI.EarlyExitConsiderations[2] };
+                AIHasEnemiesInRangeConsiderationDef newClearanceRangeConsideration = Helper.CreateDefFromClone(
+
+                    DefCache.GetDef<AIHasEnemiesInRangeConsiderationDef>("ClearanceRange_AIConsiderationDef"),
+                    "{44AD1B5B-C284-41AB-854B-49356CA7373E}",
+                    "Dash_RangeClearanceConsiderationDef"
+                );
+
+                newClearanceRangeConsideration.Reverse = false;
+                newClearanceRangeConsideration.MaxRange = 5;
+
+                moveAndStrike.Weight = 350;
+                dashAndStrike.Weight = 300;
+                dashAI.Weight = 10;
+                dashAndShoot.Weight = 50;
+                
+                dashAI.EarlyExitConsiderations[3].Consideration = newClearanceRangeConsideration;
+                //dashAI.EarlyExitConsiderations = new AIAdjustedConsideration[] { dashAI.EarlyExitConsiderations[0], dashAI.EarlyExitConsiderations[1], dashAI.EarlyExitConsiderations[2],  };
 
                 dashAI.Evaluations[0].Considerations[0].Consideration = DefCache.GetDef<AIStrategicPositionConsiderationDef>("StrategicPositionOff_AIConsiderationDef");
                 dashAI.Evaluations[0].Considerations[2].Consideration = DefCache.GetDef<AILineOfSightToEnemiesConsiderationDef>("LineofSight_AIConsiderationDef");
                 dashAI.Evaluations[0].Considerations[3].Consideration = DefCache.GetDef<AIClosestEnemyConsiderationDef>("Worm_ClosestPathToEnemy_AIConsiderationDef");
+               
 
+                
+                
+               
 
+              /*  dashAI.Evaluations[0].Considerations = new AIAdjustedConsideration[] {
+                dashAI.Evaluations[0].Considerations[0],
+                dashAI.Evaluations[0].Considerations[3],
+                dashAI.Evaluations[0].Considerations[4]
+                };*/
+            
 
                 //  dashAI.Evaluations[0].TargetGeneratorDef = DefCache.GetDef<AIActorMovementZoneTargetGeneratorDef>("DashMovementZoneNoSelfPosition_AITargetGeneratorDef");
 
@@ -529,7 +553,7 @@ namespace TFTV
                 IncreaseRangeClosestEnemyConsideration();
                 ModifyChironWormAndAoETargeting();
                 GiveNewActorAIToUmbra();
-                RemoveLoSConsiderationDashAI();
+                AdjustDashAI();
             }
             catch (Exception e)
             {
@@ -785,7 +809,7 @@ namespace TFTV
                 List<GameDifficultyLevelDef> difficultyLevelDefs = new List<GameDifficultyLevelDef>(Shared.DifficultyLevels);
                 difficultyLevelDefs.Insert(0, newDifficulty);
 
-                Shared.DifficultyLevels = difficultyLevelDefs.ToArray();
+               Shared.DifficultyLevels = difficultyLevelDefs.ToArray();
             }
 
 
@@ -4298,8 +4322,6 @@ namespace TFTV
             {
                 TFTVLogger.Error(e);
             }
-
-
         }
 
         internal static void ModifyScyllaAIAndHeads()
@@ -4313,11 +4335,14 @@ namespace TFTV
 
                 AIAbilityDisabledStateConsiderationDef canUsePrepareShootConsideration = DefCache.GetDef<AIAbilityDisabledStateConsiderationDef>("Queen_CanUsePrepareShoot_AIConsiderationDef");
                 canUsePrepareShootConsideration.IgnoredStates = canUsePrepareShootConsideration.IgnoredStates.AddItem("EquipmentNotSelected").ToArray();
-
+               // DefCache.GetDef<AdditionalEffectShootAbilityDef>("Queen_GunsFire_ShootAbilityDef").ActionPointCost = 0.0f;
                 DefCache.GetDef<StartPreparingShootAbilityDef>("Queen_StartPreparing_AbilityDef").UsableOnNonSelectedEquipment = true;
 
                 WeaponDef queenLeftBlastWeapon = DefCache.GetDef<WeaponDef>("Queen_LeftArmGun_WeaponDef");
                 WeaponDef queenRightBlastWeapon = DefCache.GetDef<WeaponDef>("Queen_RightArmGun_WeaponDef");
+
+                WeaponDef arms = DefCache.GetDef<WeaponDef>("Queen_Arms_Gun_WeaponDef");
+                arms.DamagePayload.ObjectMultiplier =5;
 
                 queenRightBlastWeapon.DamagePayload.ProjectileVisuals = queenLeftBlastWeapon.DamagePayload.ProjectileVisuals;
 
@@ -4334,9 +4359,9 @@ namespace TFTV
                 headSpitter.DamagePayload.AoeRadius = 2f;
 
                 //Reduce Move and SpitGoo/SonicBlast weight, so she also uses Smashers sometimes
-                // DefCache.GetDef<AIActionDef>("Queen_MoveAndSpitGoo_AIActionDef").Weight = 50.0f;
-                //  DefCache.GetDef<AIActionDef>("Queen_MoveAndSonicBlast_AIActionDef").Weight = 50.0f;
-                DefCache.GetDef<AIActionDef>("Queen_MoveAndPrepareShooting_AIActionDef").Weight = 50.0f;
+                DefCache.GetDef<AIActionDef>("Queen_MoveAndSpitGoo_AIActionDef").Weight = 50.0f;
+                DefCache.GetDef<AIActionDef>("Queen_MoveAndSonicBlast_AIActionDef").Weight = 50.0f;
+                DefCache.GetDef<AIActionDef>("Queen_MoveAndPrepareShooting_AIActionDef").Weight = 10.0f;
 
 
                 //Reduce range of Sonic and Spitter Heads from 20 to 15 so that cannons are more effective
