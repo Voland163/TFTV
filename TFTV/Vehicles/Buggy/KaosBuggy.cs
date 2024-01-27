@@ -1,11 +1,14 @@
 using Assets.Code.PhoenixPoint.Geoscape.Entities.Sites.TheMarketplace;
+using Base.Core;
 using Base.Defs;
 using Base.Entities.Abilities;
 using Base.UI;
 using HarmonyLib;
 using PhoenixPoint.Common.Entities.Addons;
 using PhoenixPoint.Common.Entities.Equipments;
+using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.Items;
+using PhoenixPoint.Tactical.AI;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.DamageKeywords;
@@ -13,6 +16,7 @@ using PhoenixPoint.Tactical.Entities.Effects.DamageTypes;
 using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.Entities.Weapons;
 using PhoenixPoint.Tactical.Eventus;
+using System;
 using System.Collections.Generic;
 
 namespace TFTVVehicleRework.KaosBuggy
@@ -57,6 +61,7 @@ namespace TFTVVehicleRework.KaosBuggy
             Adjust_WeaponPrices();
             Fix_WheelSlots();
             Fix_WeaponSlots();
+            Replace_JunkerAI();
             Kamikaze.Change();
             Deathproof.Change();
             MannedGunner.Change();
@@ -106,6 +111,7 @@ namespace TFTVVehicleRework.KaosBuggy
                     case KSWeapons.Vishnu:
                         BuggyGuns[Module].ViewElementDef.Description = new LocalizedTextBind("UI_JUNKER_TITAN");
                         WeaponDef TitanGL = (WeaponDef)BuggyGuns[Module].SubAddons[1].SubAddon;
+                        TitanGL.Tags.Add((GameTagDef)Repo.GetDef("d947049a-4e90-1804-1bdf-25d9acc7b11a")); //"ExplosiveWeapon_TagDef"
                         TitanGL.ViewElementDef.Description = new LocalizedTextBind("UI_JUNKER_TITAN");
                         TitanGL.APToUsePerc = 50;
                         TitanGL.Abilities = new AbilityDef[]
@@ -236,6 +242,17 @@ namespace TFTVVehicleRework.KaosBuggy
             ShootAbilityDef ScreamerShooting = (ShootAbilityDef)Repo.GetDef("e2dc5d29-f46b-ef62-f6bc-d8c15c42fa28");
             ScreamerShooting.SceneViewElementDef = LaunchGrenade.SceneViewElementDef;
             ScreamerShooting.UpdatePrediction = true;
+        }
+        
+        private static void Replace_JunkerAI()
+        {
+            TacAIActorDef ArmadilloAI = (TacAIActorDef)Repo.GetDef("67f797a7-611b-0df4-9876-9adb3c2d20ec"); //"Armadillo_AIActorDef"
+            TacAIActorDef NewAI = Repo.CreateDef<TacAIActorDef>("3b24e4e5-12da-4b85-8aac-16f6a76aed98", ArmadilloAI);
+            NewAI.name = "Junker_AIActorDef";
+
+            ComponentSetDef Buggy_CSD = (ComponentSetDef)Repo.GetDef("badec04c-b5f5-c834-4a43-f6fdda3e1f09"); //"KS_Kaos_Buggy_ComponentSetDef"
+            TacAIActorDef DefaultAI = (TacAIActorDef)Repo.GetDef("40fa77e4-078c-f224-4a13-961be07c561f"); //"AIActorDef"
+            Buggy_CSD.Components[Array.FindIndex(Buggy_CSD.Components, component => component == DefaultAI)] = NewAI;
         }
     }
 }
