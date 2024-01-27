@@ -12,6 +12,7 @@ using PhoenixPoint.Common.UI;
 using PhoenixPoint.Tactical.Cameras.Filters;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.Statuses;
+using PRMBetterClasses;
 
 namespace TFTVVehicleRework.KaosBuggy
 {
@@ -110,6 +111,7 @@ namespace TFTVVehicleRework.KaosBuggy
                 VED.ShowInInventoryItemTooltip = true;
                 VED.ShowInStatusScreen = true;
                 VED.HideFromPassives = true;
+                VED.SmallIcon = VED.LargeIcon = Helper.CreateSpriteFromImageFile("UI_AbilitiesIcon_KillNRun.png");
             }
             return VED;
         }
@@ -143,6 +145,7 @@ namespace TFTVVehicleRework.KaosBuggy
                 Run.TargetingDataDef = Repo.CreateDef<TacticalTargetingDataDef>("fbc63b02-b59b-4bf4-92c5-30877e48bd59", Dash.TargetingDataDef);
                 Run.TargetingDataDef.name = "E_TargetingData [E_RunAbility]";
                 Run.TargetingDataDef.Origin.Range = 14f;
+                // Run.TargetingDataDef.Origin.Range = 12f;
             }
             return Run;
         }
