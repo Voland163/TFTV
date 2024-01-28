@@ -4,9 +4,7 @@ using Base.Defs;
 using Base.Entities.Effects;
 using Base.Entities.Effects.ApplicationConditions;
 using Base.Entities.Statuses;
-using Base.UI;
 using HarmonyLib;
-using PhoenixPoint.Common.ContextHelp;
 using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.Items;
@@ -33,7 +31,7 @@ namespace TFTV
     {
         private static readonly DefRepository Repo = TFTVMain.Repo;
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
-        public static Sprite VoidIcon = Helper.CreateSpriteFromImageFile("Void-04P.png");
+
 
         public static void InjectDefsInjectedOnlyOnceBatch2()
         {
@@ -41,7 +39,7 @@ namespace TFTV
             {
                 CreateNewDefsForTFTVStart();
                 CreateDeliriumPerks();
-                CreateRevenantDefs();
+                //  CreateRevenantDefs();
                 CreateHumanEnemiesDefs();
                 CreateUmbraDefs();
                 CreateNewFleeConsiderationForAI();
@@ -92,12 +90,12 @@ namespace TFTV
                 newAIStatusConsiderationTBTV.StatusDef = onTurnEndTBTV;
 
                 //counter-productive, if it has no weapons, player won't attack it
-             /*   string nameAIStatusConsiderationTBTV_OnAttack = "AIConsiderationNoFleeOnAttack";
-                string gUIDAIStatusConsiderationTBTV_OnAttack = "{908A99C2-AC90-4BC6-A812-9DC3953DAE00}";
+                /*   string nameAIStatusConsiderationTBTV_OnAttack = "AIConsiderationNoFleeOnAttack";
+                   string gUIDAIStatusConsiderationTBTV_OnAttack = "{908A99C2-AC90-4BC6-A812-9DC3953DAE00}";
 
-                AIStatusConsiderationDef newAIStatusConsiderationTBTVOnAttack = Helper.CreateDefFromClone(sourceStatusConsideration, gUIDAIStatusConsiderationTBTV_OnAttack, nameAIStatusConsiderationTBTV_OnAttack);
+                   AIStatusConsiderationDef newAIStatusConsiderationTBTVOnAttack = Helper.CreateDefFromClone(sourceStatusConsideration, gUIDAIStatusConsiderationTBTV_OnAttack, nameAIStatusConsiderationTBTV_OnAttack);
 
-                newAIStatusConsiderationTBTVOnAttack.StatusDef = onAttackTBTV;*/
+                   newAIStatusConsiderationTBTVOnAttack.StatusDef = onAttackTBTV;*/
 
 
                 string nameAIStatusConsiderationOilCrab = "AIConsiderationNoFleeOilCrab";
@@ -126,7 +124,7 @@ namespace TFTV
 
                 AIAdjustedConsideration aIAdjustedConsiderationSelfRepair = new AIAdjustedConsideration() { Consideration = newAIStatusConsiderationSelfRepair, ScoreCurve = moveToRandomWP.EarlyExitConsiderations[0].ScoreCurve };
                 AIAdjustedConsideration aIAdjustedConsiderationTBTV = new AIAdjustedConsideration() { Consideration = newAIStatusConsiderationTBTV, ScoreCurve = moveToRandomWP.EarlyExitConsiderations[0].ScoreCurve };
-               // AIAdjustedConsideration aIAdjustedConsiderationTBTVonAttack = new AIAdjustedConsideration() { Consideration = newAIStatusConsiderationTBTVOnAttack, ScoreCurve = moveToRandomWP.EarlyExitConsiderations[0].ScoreCurve };
+                // AIAdjustedConsideration aIAdjustedConsiderationTBTVonAttack = new AIAdjustedConsideration() { Consideration = newAIStatusConsiderationTBTVOnAttack, ScoreCurve = moveToRandomWP.EarlyExitConsiderations[0].ScoreCurve };
                 AIAdjustedConsideration aIAdjustedConsiderationOilCrab = new AIAdjustedConsideration() { Consideration = newAIStatusConsiderationOilCrab, ScoreCurve = moveToRandomWP.EarlyExitConsiderations[0].ScoreCurve };
                 AIAdjustedConsideration aIAdjustedConsiderationOilFish = new AIAdjustedConsideration() { Consideration = newAIStatusConsiderationOilFish, ScoreCurve = moveToRandomWP.EarlyExitConsiderations[0].ScoreCurve };
 
@@ -186,7 +184,7 @@ namespace TFTV
             Create_Terror();
             Create_FasterSynapses();
             Create_Anxiety();
-         //   Create_OneOfThem();
+            //   Create_OneOfThem();
             Create_OneOfThemPassive();
             Create_Bloodthirsty();
             //Clone_Inspire();
@@ -236,7 +234,7 @@ namespace TFTV
                     Value = 8
                     },
 
-               
+
                 new ItemStatModification()
                 {
                     TargetStat = StatModificationTarget.Endurance,
@@ -407,7 +405,7 @@ namespace TFTV
                     source.ViewElementDef,
                     "{4D9194A0-EE49-4D5F-8A51-735CC6FD5CC3}",
                     skillName);
-           
+
                 hallucinating.ViewElementDef.DisplayName1.LocalizationKey = "DELIRIUM_PERK_ANXIETY_NAME";
                 hallucinating.ViewElementDef.Description.LocalizationKey = "DELIRIUM_PERK_NEW_ANXIETY_DESCRIPTION";
                 Sprite icon = Helper.CreateSpriteFromImageFile("TFTV_DeliriumPerks_Anxiety.png");
@@ -419,7 +417,7 @@ namespace TFTV
                 TFTVLogger.Error(e);
             }
         }
-       
+
         public static void Create_Bloodthirsty()
         {
             try
@@ -576,7 +574,7 @@ namespace TFTV
                     source,
                     "b3185867-ca87-4e59-af6d-012267a7bd25",
                     skillName);
-               
+
                 wolverinePassiveStatus.Visuals = Helper.CreateDefFromClone(
                     source.Visuals,
                     "3f170800-b819-4237-80a3-c9b9daa9dab4",
@@ -588,7 +586,7 @@ namespace TFTV
                 wolverinePassiveStatus.VisibleOnStatusScreen = TacStatusDef.StatusScreenVisibility.VisibleOnBodyPartStatusList;
                 wolverinePassiveStatus.VisibleOnPassiveBar = false;
 
-                
+
 
             }
             catch (Exception e)
@@ -711,20 +709,20 @@ namespace TFTV
                     skillName);
 
                 oneOfThemPassive.StatModifications = new ItemStatModification[] { };
-               /*   {
-                new ItemStatModification()
-                {
-                    TargetStat = StatModificationTarget.Willpower,
-                    Modification = StatModificationType.Add,
-                    Value = -2
-                },
-                new ItemStatModification()
-                {
-                    TargetStat = StatModificationTarget.Willpower,
-                    Modification = StatModificationType.AddMax,
-                    Value = -2
-                },
-                  };*/
+                /*   {
+                 new ItemStatModification()
+                 {
+                     TargetStat = StatModificationTarget.Willpower,
+                     Modification = StatModificationType.Add,
+                     Value = -2
+                 },
+                 new ItemStatModification()
+                 {
+                     TargetStat = StatModificationTarget.Willpower,
+                     Modification = StatModificationType.AddMax,
+                     Value = -2
+                 },
+                   };*/
 
                 DamageMultiplierStatusDef mistResistance = DefCache.GetDef<DamageMultiplierStatusDef>("MistResistance_StatusDef");
                 mistResistance.Multiplier = 0.0f;
@@ -929,31 +927,12 @@ namespace TFTV
             }
         }
 
-       
 
-        public static void CreateRevenantDefs()
-        {
-            try
-            {
-                CreateRevenantAbility();
-                CreateRevenantStatusEffect();
-                CreateRevenantGameTags();
-                CreateRevenantAbilityForAssault();
-                CreateRevenantAbilityForBerserker();
-                CreateRevenantAbilityForHeavy();
-                CreateRevenantAbilityForInfiltrator();
-                CreateRevenantAbilityForPriest();
-                CreateRevenantAbilityForSniper();
-                CreateRevenantAbilityForTechnician();
-                CreateRevenantResistanceStatus();
-                //  CreateRevenantClassStatusEffects();
 
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-        }
+
+
+
+
 
         public static void CreateUmbraDefs()
         {
@@ -970,7 +949,7 @@ namespace TFTV
         }
 
         //Need the tag for the Hint
-        
+
 
         public static void CreateTBTVStatuses()
         {
@@ -1114,8 +1093,8 @@ namespace TFTV
                 hiddenTBTVAbility.ItemTagStatModifications = new EquipmentItemTagStatModification[0];
                 hiddenTBTVAbility.ViewElementDef.DisplayName1.LocalizationKey = "TBTV_HIDDEN_ABILITY_NAME";
                 hiddenTBTVAbility.ViewElementDef.Description.LocalizationKey = "TBTV_HIDDEN_ABILITY_DESCRIPTION";
-                hiddenTBTVAbility.ViewElementDef.LargeIcon = VoidIcon;
-                hiddenTBTVAbility.ViewElementDef.SmallIcon = VoidIcon;
+                hiddenTBTVAbility.ViewElementDef.LargeIcon = Helper.CreateSpriteFromImageFile("Void-04P.png");
+                hiddenTBTVAbility.ViewElementDef.SmallIcon = hiddenTBTVAbility.ViewElementDef.LargeIcon;
 
                 AddAbilityStatusDef sourceAbilityStatusDef = DefCache.GetDef<AddAbilityStatusDef>("OilCrab_AddAbilityStatusDef");
 
@@ -1132,538 +1111,7 @@ namespace TFTV
 
         }
 
-        public static void CreateRevenantClassStatusEffects()
-        {
-            try
-            {
-                CreateRevenantClassStatusEffectAssault();
-                CreateRevenantClassStatusEffectBerserker();
-                CreateRevenantClassStatusEffectHeavy();
-                CreateRevenantClassStatusEffectInfiltrator();
-                CreateRevenantClassStatusEffectPriest();
-                CreateRevenantClassStatusEffectSniper();
-                CreateRevenantClassStatusEffectTechnician();
 
-
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-
-        }
-        public static void CreateRevenantClassStatusEffectAssault()
-        {
-            try
-            {
-                string name = "RevenantAssaultStatus";
-                string gUID1 = "1c8e77d9-2f5b-487f-92c3-7cd3d04a5a51";
-                string gUID2 = "5d5dc5e5-5f20-4c6f-824b-a3ddd41b5f5c";
-                string title = "REVENANT_STATUS_TITLE_ASSAULT";
-                string description = "REVENANT_STATUS_DESCRIPTION_ASSAULT";
-                string iconFile = "UI_ClassIcon_Assault_noOutlines.png";
-
-                TFTVCommonMethods.CreateNewDescriptiveTacticalStatus(name, gUID1, gUID2, title, description, iconFile);
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-
-        }
-
-        public static void CreateRevenantClassStatusEffectBerserker()
-        {
-            try
-            {
-                string name = "RevenantBerserkerStatus";
-                string gUID1 = "7a28e9c0-6b7a-4686-8f26-cdc37bfe88b0";
-                string gUID2 = "9dc081e6-4f33-4086-a21d-7f6329c08a86";
-                string title = "REVENANT_STATUS_TITLE_BERSERKER";
-                string description = "REVENANT_STATUS_DESCRIPTION_BERSERKER";
-                string iconFile = "UI_ClassIcon_Berserker_noOutlines.png";
-
-                TFTVCommonMethods.CreateNewDescriptiveTacticalStatus(name, gUID1, gUID2, title, description, iconFile);
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-
-        }
-
-        public static void CreateRevenantClassStatusEffectHeavy()
-        {
-            try
-            {
-                string name = "RevenantHeavyStatus";
-                string gUID1 = "a1dfd0b7-69a9-45a7-a89b-52f7d23b1c80";
-                string gUID2 = "b2f70d58-9c3d-4dd7-aabf-a7a62c0e04a3";
-                string title = "REVENANT_STATUS_TITLE_HEAVY";
-                string description = "REVENANT_STATUS_DESCRIPTION_HEAVY";
-                string iconFile = "UI_ClassIcon_Heavy_noOutlines.png";
-
-                TFTVCommonMethods.CreateNewDescriptiveTacticalStatus(name, gUID1, gUID2, title, description, iconFile);
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-
-        }
-
-        public static void CreateRevenantClassStatusEffectInfiltrator()
-        {
-            try
-            {
-                string name = "RevenantInfiltratorStatus";
-                string gUID1 = "c3a74e7c-87f2-4e18-98d6-f91c874087e8";
-                string gUID2 = "d4b95f1d-c87b-4f7d-abf6-12fd6b05a2d4";
-                string title = "REVENANT_STATUS_TITLE_INFILTRATOR";
-                string description = "REVENANT_STATUS_DESCRIPTION_INFILTRATOR";
-                string iconFile = "UI_ClassIcon_Infiltrator_noOutlines.png";
-
-                TFTVCommonMethods.CreateNewDescriptiveTacticalStatus(name, gUID1, gUID2, title, description, iconFile);
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-
-        }
-
-        public static void CreateRevenantClassStatusEffectPriest()
-        {
-            try
-            {
-                string name = "RevenantPriestStatus";
-                string gUID1 = "e5c06eba-05e4-4234-8b3e-5f5b0c5d5f5e";
-                string gUID2 = "f6d17f5b-3e0f-4ddc-b5e5-5f5b5f5b5f5f";
-                string title = "REVENANT_STATUS_TITLE_PRIEST";
-                string description = "REVENANT_STATUS_DESCRIPTION_PRIEST";
-                string iconFile = "UI_ClassIcon_Priest_noOutlines.png";
-
-                TFTVCommonMethods.CreateNewDescriptiveTacticalStatus(name, gUID1, gUID2, title, description, iconFile);
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-
-        }
-
-        public static void CreateRevenantClassStatusEffectSniper()
-        {
-            try
-            {
-                string name = "RevenantSniperStatus";
-                string gUID1 = "076e8e7c-6d0b-4ddb-aabf-a7a6a7a6a7a6";
-                string gUID2 = "186f9f1d-c87b-4f7d-abf6-12fd12fd12fd";
-                string title = "REVENANT_STATUS_TITLE_SNIPER";
-                string description = "REVENANT_STATUS_DESCRIPTION_SNIPER";
-                string iconFile = "UI_ClassIcon_Sniper_noOutlines.png";
-
-                TFTVCommonMethods.CreateNewDescriptiveTacticalStatus(name, gUID1, gUID2, title, description, iconFile);
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-
-        }
-
-        public static void CreateRevenantClassStatusEffectTechnician()
-        {
-            try
-            {
-                string name = "RevenantTechnicianStatus";
-                string gUID1 = "296e0eba-05e4-4234-8b3e-5f5b0c0c0c0c";
-                string gUID2 = "396f1f5b-3e0f-4ddc-b5e5-5f5b5b5b5b5b";
-                string title = "REVENANT_STATUS_TITLE_TECHNICIAN";
-                string description = "REVENANT_STATUS_DESCRIPTION_TECHNICIAN";
-                string iconFile = "UI_ClassIcon_Technician_noOutlines.png";
-
-                TFTVCommonMethods.CreateNewDescriptiveTacticalStatus(name, gUID1, gUID2, title, description, iconFile);
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-
-        }
-
-        public static void CreateRevenantStatusEffect()
-        {
-            try
-            {
-
-
-                AddAbilityStatusDef sourceAbilityStatusDef = DefCache.GetDef<AddAbilityStatusDef>("OilCrab_AddAbilityStatusDef");
-                PassiveModifierAbilityDef Revenant_Ability = DefCache.GetDef<PassiveModifierAbilityDef>("Revenant_AbilityDef");
-
-                AddAbilityStatusDef newAbilityStatusDef = Helper.CreateDefFromClone(sourceAbilityStatusDef, "68EE5958-D977-4BD4-9018-CAE03C5A6579", "Revenant_StatusEffectDef");
-                newAbilityStatusDef.AbilityDef = Revenant_Ability;
-                newAbilityStatusDef.ApplicationConditions = new EffectConditionDef[] { };
-
-
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-        }
-        public static void CreateRevenantAbility()
-        {
-            try
-            {
-
-                string skillName = "Revenant_AbilityDef";
-                PassiveModifierAbilityDef source = DefCache.GetDef<PassiveModifierAbilityDef>("SelfDefenseSpecialist_AbilityDef");
-                PassiveModifierAbilityDef revenantAbility = Helper.CreateDefFromClone(
-                    source,
-                    "8A62302E-9C2D-4AFA-AFF3-2F526BF82252",
-                    skillName);
-                revenantAbility.CharacterProgressionData = Helper.CreateDefFromClone(
-                    source.CharacterProgressionData,
-                    "FECD4DD8-5E1A-4A0F-BC3A-C2F0AA30E41F",
-                    skillName);
-                revenantAbility.ViewElementDef = Helper.CreateDefFromClone(
-                    source.ViewElementDef,
-                    "75B1017A-0455-4B44-91F0-3E1446899B42",
-                    skillName);
-                revenantAbility.StatModifications = new ItemStatModification[0];
-                revenantAbility.ItemTagStatModifications = new EquipmentItemTagStatModification[0];
-                revenantAbility.ViewElementDef.DisplayName1.LocalizationKey = "KEY_ABILITY_REVENANT";
-                revenantAbility.ViewElementDef.Description.LocalizationKey = "KEY_ABILITY_REVENANT_DESCRIPTION";
-                revenantAbility.ViewElementDef.LargeIcon = Helper.CreateSpriteFromImageFile("ODI_Skull.png");
-                revenantAbility.ViewElementDef.SmallIcon = Helper.CreateSpriteFromImageFile("ODI_Skull.png");
-                // revenantAbility.ViewElementDef.ShowInStatusScreen = false;
-
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-        }
-        public static void CreateRevenantAbilityForAssault()
-        {
-            try
-            {
-
-                string skillName = "RevenantAssault_AbilityDef";
-                PassiveModifierAbilityDef source = DefCache.GetDef<PassiveModifierAbilityDef>("SelfDefenseSpecialist_AbilityDef");
-                PassiveModifierAbilityDef revenantAssault = Helper.CreateDefFromClone(
-                    source,
-                    "1045EB8D-1916-428F-92EF-A15FD2807818",
-                    skillName);
-                revenantAssault.CharacterProgressionData = Helper.CreateDefFromClone(
-                    source.CharacterProgressionData,
-                    "7FF5A3CF-6BBD-4E4F-9E80-2DB7BDB29112",
-                    skillName);
-                revenantAssault.ViewElementDef = Helper.CreateDefFromClone(
-                    source.ViewElementDef,
-                    "47BE3577-1D68-4FB2-BFA3-0A158FC710D9",
-                    skillName);
-                revenantAssault.StatModifications = new ItemStatModification[]
-                {
-                    new ItemStatModification {TargetStat = StatModificationTarget.BonusAttackDamage, Modification = StatModificationType.Multiply, Value = 1.05f},
-                    new ItemStatModification {TargetStat = StatModificationTarget.Speed, Modification = StatModificationType.AddMax, Value = 2},
-                    new ItemStatModification {TargetStat = StatModificationTarget.Speed, Modification = StatModificationType.Add, Value = 2},
-                };
-                revenantAssault.ItemTagStatModifications = new EquipmentItemTagStatModification[0];
-                revenantAssault.ViewElementDef.DisplayName1 = new LocalizedTextBind("Assault Revenant", true);
-                revenantAssault.ViewElementDef.Description = new LocalizedTextBind("+5% Damage", true);
-
-                revenantAssault.ViewElementDef.LargeIcon = VoidIcon;
-                revenantAssault.ViewElementDef.SmallIcon = VoidIcon;
-                revenantAssault.ViewElementDef.ShowInStatusScreen = false;
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-        }
-        public static void CreateRevenantAbilityForBerserker()
-        {
-            try
-            {
-
-                string skillName = "RevenantBerserker_AbilityDef";
-                PassiveModifierAbilityDef source = DefCache.GetDef<PassiveModifierAbilityDef>("SelfDefenseSpecialist_AbilityDef");
-                PassiveModifierAbilityDef revenantBerserker = Helper.CreateDefFromClone(
-                    source,
-                    "FD3FE516-25BA-44F2-9770-3AA4AD1DCB91",
-                    skillName);
-                revenantBerserker.CharacterProgressionData = Helper.CreateDefFromClone(
-                    source.CharacterProgressionData,
-                    "E2707CBD-3D99-4EA4-A48D-B8E6E14EFDFD",
-                    skillName);
-                revenantBerserker.ViewElementDef = Helper.CreateDefFromClone(
-                    source.ViewElementDef,
-                    "3F74FAF1-1A87-4E2A-AEC2-CBB0BA5A14E0",
-                    skillName);
-                revenantBerserker.StatModifications = new ItemStatModification[]
-                {
-                new ItemStatModification {TargetStat = StatModificationTarget.Speed, Modification = StatModificationType.AddMax, Value = 4},
-                new ItemStatModification {TargetStat = StatModificationTarget.Speed, Modification = StatModificationType.Add, Value = 4},
-                };
-                revenantBerserker.ItemTagStatModifications = new EquipmentItemTagStatModification[0];
-                revenantBerserker.ViewElementDef.DisplayName1 = new LocalizedTextBind("Berserker Revenant", true);
-                revenantBerserker.ViewElementDef.Description = new LocalizedTextBind("+4 Speed", true);
-
-                revenantBerserker.ViewElementDef.LargeIcon = VoidIcon;
-                revenantBerserker.ViewElementDef.SmallIcon = VoidIcon;
-                revenantBerserker.ViewElementDef.ShowInStatusScreen = false;
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-        }
-        public static void CreateRevenantAbilityForHeavy()
-        {
-            try
-            {
-
-                string skillName = "RevenantHeavy_AbilityDef";
-                PassiveModifierAbilityDef source = DefCache.GetDef<PassiveModifierAbilityDef>("SelfDefenseSpecialist_AbilityDef");
-                PassiveModifierAbilityDef heavy = Helper.CreateDefFromClone(
-                    source,
-                    "A8603522-3472-4A95-9ADF-F27E8B287D15",
-                    skillName);
-                heavy.CharacterProgressionData = Helper.CreateDefFromClone(
-                    source.CharacterProgressionData,
-                    "AA5F572B-D86B-4C00-B8B9-4D86EE5F7F4D",
-                    skillName);
-                heavy.ViewElementDef = Helper.CreateDefFromClone(
-                    source.ViewElementDef,
-                    "F8781E78-D106-44B3-A0E6-855BCAEB0A2F",
-                    skillName);
-                heavy.StatModifications = new ItemStatModification[]
-                { new ItemStatModification {TargetStat = StatModificationTarget.Endurance, Modification = StatModificationType.Add, Value = 10},
-                  new ItemStatModification {TargetStat = StatModificationTarget.Endurance, Modification = StatModificationType.AddMax, Value = 10},
-                  new ItemStatModification {TargetStat = StatModificationTarget.Health, Modification = StatModificationType.Add, Value = 100},
-                };
-                heavy.ItemTagStatModifications = new EquipmentItemTagStatModification[0];
-                heavy.ViewElementDef.DisplayName1 = new LocalizedTextBind("Heavy Revenant", true);
-                heavy.ViewElementDef.Description = new LocalizedTextBind("+5 Strength", true);
-
-                heavy.ViewElementDef.LargeIcon = VoidIcon;
-                heavy.ViewElementDef.SmallIcon = VoidIcon;
-                heavy.ViewElementDef.ShowInStatusScreen = false;
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-        }
-        public static void CreateRevenantAbilityForInfiltrator()
-        {
-            try
-            {
-
-                string skillName = "RevenantInfiltrator_AbilityDef";
-                PassiveModifierAbilityDef source = DefCache.GetDef<PassiveModifierAbilityDef>("SelfDefenseSpecialist_AbilityDef");
-                PassiveModifierAbilityDef infiltrator = Helper.CreateDefFromClone(
-                    source,
-                    "6C56E0F9-56BB-41D2-AFB1-08C8A49F69FA",
-                    skillName);
-                infiltrator.CharacterProgressionData = Helper.CreateDefFromClone(
-                    source.CharacterProgressionData,
-                    "1F8B6D09-A2C5-4B3F-BBED-F59675301ABB",
-                    skillName);
-                infiltrator.ViewElementDef = Helper.CreateDefFromClone(
-                    source.ViewElementDef,
-                    "6CAFD922-60C6-449E-A652-C2BD94386BE5",
-                    skillName);
-                infiltrator.StatModifications = new ItemStatModification[]
-                { new ItemStatModification {TargetStat = StatModificationTarget.Stealth, Modification = StatModificationType.Add, Value = 0.15f},
-                };
-                infiltrator.ItemTagStatModifications = new EquipmentItemTagStatModification[0];
-                infiltrator.ViewElementDef.DisplayName1 = new LocalizedTextBind("Infiltrator Revenant", true);
-                infiltrator.ViewElementDef.Description = new LocalizedTextBind("+15% Stealth", true);
-
-                infiltrator.ViewElementDef.LargeIcon = VoidIcon;
-                infiltrator.ViewElementDef.SmallIcon = VoidIcon;
-
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-        }
-        public static void CreateRevenantAbilityForPriest()
-        {
-            try
-            {
-
-                string skillName = "RevenantPriest_AbilityDef";
-                PassiveModifierAbilityDef source = DefCache.GetDef<PassiveModifierAbilityDef>("SelfDefenseSpecialist_AbilityDef");
-                PassiveModifierAbilityDef priest = Helper.CreateDefFromClone(
-                    source,
-                    "0816E671-D396-4212-910F-87B5DEC6ADE2",
-                    skillName);
-                priest.CharacterProgressionData = Helper.CreateDefFromClone(
-                    source.CharacterProgressionData,
-                    "C1C7FBEA-2C0B-4930-A73C-15BF3A987784",
-                    skillName);
-                priest.ViewElementDef = Helper.CreateDefFromClone(
-                    source.ViewElementDef,
-                    "460AAE12-0541-40AB-A4EE-E3E206A96FB4",
-                    skillName);
-                priest.StatModifications = new ItemStatModification[]
-                { new ItemStatModification {TargetStat = StatModificationTarget.Willpower, Modification = StatModificationType.Add, Value = 10},
-                new ItemStatModification {TargetStat = StatModificationTarget.Willpower, Modification = StatModificationType.AddMax, Value = 10},
-                };
-                priest.ItemTagStatModifications = new EquipmentItemTagStatModification[0];
-                priest.ViewElementDef.DisplayName1 = new LocalizedTextBind("Priest Revenant", true);
-                priest.ViewElementDef.Description = new LocalizedTextBind("+10 Willpower", true);
-
-                priest.ViewElementDef.LargeIcon = VoidIcon;
-                priest.ViewElementDef.SmallIcon = VoidIcon;
-                priest.ViewElementDef.ShowInStatusScreen = false;
-
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-        }
-        public static void CreateRevenantAbilityForSniper()
-        {
-            try
-            {
-
-                string skillName = "RevenantSniper_AbilityDef";
-                PassiveModifierAbilityDef source = DefCache.GetDef<PassiveModifierAbilityDef>("SelfDefenseSpecialist_AbilityDef");
-                PassiveModifierAbilityDef sniper = Helper.CreateDefFromClone(
-                    source,
-                    "4A2C53A3-D9DB-456A-8B88-AB2D90BE1DB5",
-                    skillName);
-                sniper.CharacterProgressionData = Helper.CreateDefFromClone(
-                    source.CharacterProgressionData,
-                    "0D811905-8C70-4D46-9CF2-1A31C5E98ED1",
-                    skillName);
-                sniper.ViewElementDef = Helper.CreateDefFromClone(
-                    source.ViewElementDef,
-                    "7DCCCAAA-7245-4245-9033-F6320CCDA2AB",
-                    skillName);
-                sniper.ViewElementDef.ShowInStatusScreen = false;
-                sniper.StatModifications = new ItemStatModification[]
-                { new ItemStatModification {TargetStat = StatModificationTarget.Perception, Modification = StatModificationType.Add, Value = 10},
-                };
-                sniper.ItemTagStatModifications = new EquipmentItemTagStatModification[0];
-                sniper.ViewElementDef.DisplayName1 = new LocalizedTextBind("Sniper Revenant", true);
-                sniper.ViewElementDef.Description = new LocalizedTextBind("+10 Perception", true);
-
-                sniper.ViewElementDef.LargeIcon = VoidIcon;
-                sniper.ViewElementDef.SmallIcon = VoidIcon;
-
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-        }
-        public static void CreateRevenantAbilityForTechnician()
-        {
-            try
-            {
-
-                string skillName = "RevenantTechnician_AbilityDef";
-                PassiveModifierAbilityDef source = DefCache.GetDef<PassiveModifierAbilityDef>("SelfDefenseSpecialist_AbilityDef");
-                PassiveModifierAbilityDef technician = Helper.CreateDefFromClone(
-                    source,
-                    "04A284AC-545A-455F-8843-54056D68022E",
-                    skillName);
-                technician.CharacterProgressionData = Helper.CreateDefFromClone(
-                    source.CharacterProgressionData,
-                    "1A995634-EE80-4E72-A10F-F8389E8AEB50",
-                    skillName);
-                technician.ViewElementDef = Helper.CreateDefFromClone(
-                    source.ViewElementDef,
-                    "19B35512-5C23-4046-B10D-2052CDEFB769",
-                    skillName);
-                technician.StatModifications = new ItemStatModification[]
-                { new ItemStatModification {TargetStat = StatModificationTarget.Endurance, Modification = StatModificationType.Add, Value = 5},
-                new ItemStatModification {TargetStat = StatModificationTarget.Endurance,Modification = StatModificationType.AddMax, Value = 5},
-                new ItemStatModification {TargetStat = StatModificationTarget.Willpower, Modification = StatModificationType.Add, Value = 5},
-                 new ItemStatModification {TargetStat = StatModificationTarget.Willpower, Modification = StatModificationType.AddMax, Value = 5}
-                };
-                technician.ItemTagStatModifications = new EquipmentItemTagStatModification[0];
-                technician.ViewElementDef.DisplayName1 = new LocalizedTextBind("Technician Revenant", true);
-                technician.ViewElementDef.Description = new LocalizedTextBind("+5 Strength, +5 Willpower", true);
-
-                technician.ViewElementDef.LargeIcon = VoidIcon;
-                technician.ViewElementDef.SmallIcon = VoidIcon;
-                technician.ViewElementDef.ShowInStatusScreen = false;
-
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-        }
-        public static void CreateRevenantResistanceStatus()
-        {
-            try
-            {
-                string skillName = "RevenantResistance_StatusDef";
-                DamageMultiplierStatusDef source = DefCache.GetDef<DamageMultiplierStatusDef>("BionicResistances_StatusDef");
-                DamageMultiplierStatusDef revenantResistance = Helper.CreateDefFromClone(
-                    source,
-                    "A7F8113B-B281-4ECD-99FE-3125FCE029C4",
-                    skillName);
-                revenantResistance.EffectName = "RevenantResistance";
-                revenantResistance.VisibleOnHealthbar = TacStatusDef.HealthBarVisibility.AlwaysVisible;
-                revenantResistance.VisibleOnPassiveBar = true;
-                revenantResistance.VisibleOnStatusScreen = TacStatusDef.StatusScreenVisibility.VisibleOnStatusesList;
-
-                //  revenantResistance.CharacterProgressionData = Helper.CreateDefFromClone(
-                //      source.CharacterProgressionData,
-                //      "C298F900-A7D5-4EEC-96E1-50D017614396",
-                //     skillName);
-                revenantResistance.Visuals = Helper.CreateDefFromClone(
-                    source.Visuals,
-                    "B737C223-52D0-413B-B48F-978AD5D5BB33",
-                    skillName);
-                revenantResistance.DamageTypeDefs = new DamageTypeBaseEffectDef[1];
-
-                revenantResistance.Visuals.LargeIcon = Helper.CreateSpriteFromImageFile("TFTV_RevenantResistance.png");
-                revenantResistance.Visuals.SmallIcon = Helper.CreateSpriteFromImageFile("TFTV_RevenantResistance.png");
-
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-        }
-        public static void CreateRevenantGameTags()
-        {
-            string skillName = "RevenantTier";
-            GameTagDef source = DefCache.GetDef<GameTagDef>("Takeshi_Tutorial3_GameTagDef");
-            Helper.CreateDefFromClone(
-                source,
-                "1677F9F4-5B45-47FA-A119-83A76EF0EC70",
-                skillName + "_1_" + "GameTagDef");
-            Helper.CreateDefFromClone(
-                source,
-                "9A807A62-D51D-404E-ADCF-ABB4A888202E",
-                skillName + "_2_" + "GameTagDef");
-            Helper.CreateDefFromClone(
-                source,
-                "B4BD3091-8522-4F3C-8A0F-9EE522E0E6B4",
-                skillName + "_3_" + "GameTagDef");
-            Helper.CreateDefFromClone(
-                source,
-                "D2904A22-FE23-45B3-8879-9236E389C9E4",
-                "Any_Revenant_TagDef");
-            string tagName = "RevenantResistance";
-            Helper.CreateDefFromClone(
-                source,
-                "D424B077-6731-40AD-BFA8-7020BD3A9F9A",
-                tagName + "_GameTagDef");
-        }
         public static void CreateNewDefsForTFTVStart()
         {
             try
@@ -1938,12 +1386,12 @@ namespace TFTV
                 ambushAbility.ItemTagStatModifications = new EquipmentItemTagStatModification[0];
                 ambushAbility.ViewElementDef.DisplayName1.LocalizationKey = "HUMAN_ENEMIES_KEY_AMBUSH";
                 ambushAbility.ViewElementDef.Description.LocalizationKey = "HUMAN_ENEMIES_KEY_AMBUSH_DESCRIPTION";
-                   
+
                 Sprite icon = Helper.CreateSpriteFromImageFile("UI_AbilitiesIcon_PersonalTrack_TacticalAnalyst.png");
                 ambushAbility.ViewElementDef.LargeIcon = icon;
                 ambushAbility.ViewElementDef.SmallIcon = icon;
 
-                
+
             }
             catch (Exception e)
             {

@@ -305,7 +305,7 @@ namespace TFTV
                             IGeoFactionMissionParticipant attacker = DefenseMission.GetEnemyFaction();
                             if (roll == 0)
                             {
-                                roll = UnityEngine.Random.Range(1, 7 + TFTVReleaseOnly.DifficultyOrderConverter(__instance.GeoLevel.CurrentDifficultyLevel.Order));
+                                roll = UnityEngine.Random.Range(1, 7 + TFTVSpecialDifficulties.DifficultyOrderConverter(__instance.GeoLevel.CurrentDifficultyLevel.Order));
                                 TFTVLogger.Always("Infestation roll is " + roll);
                             }
 

@@ -437,7 +437,7 @@ namespace TFTV
                         __instance.PopulationBarRoot.gameObject.SetActive(true);
                         populationBar.gameObject.SetActive(true);
                         deliriumIconHolder.gameObject.SetActive(true);
-                        deliriumIcon.sprite = TFTVDefsRequiringReinjection.VoidIcon;
+                        deliriumIcon.sprite = Helper.CreateSpriteFromImageFile("Void-04P.png");
                         deliriumToolTipText = $"<color=#ec9006><b>{TFTVCommonMethods.ConvertKeyToString("KEY_DELIRIUM_UI_MAX_TIP")}</b></color>";
                         separator.gameObject.SetActive(true);
                         separator2.gameObject.SetActive(true);

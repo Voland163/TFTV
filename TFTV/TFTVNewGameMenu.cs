@@ -244,6 +244,11 @@ namespace TFTV
                 int limitedCapture = 1;
                 int noSecondChances = 1;
 
+                if (SelectedDifficulty > 5) 
+                {
+                    noSecondChances = 0;
+                }
+
                 if (SelectedDifficulty > 4)
                 {
                     diploPenalty = 0;
@@ -253,7 +258,7 @@ namespace TFTV
                     impossibleWeapons = 0;
                     limitedCapture = 0;
                     limitedHarvesting = 0;
-                    noSecondChances = 0;
+                  
                 }
                 else if (SelectedDifficulty > 2)
                 {

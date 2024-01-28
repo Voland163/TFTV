@@ -3,10 +3,13 @@ using Base.Entities.Statuses;
 using HarmonyLib;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
+using PhoenixPoint.Common.Levels.ActorDeployment;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.DamageKeywords;
 using PhoenixPoint.Tactical.Levels;
+using PhoenixPoint.Tactical.Levels.ActorDeployment;
+using PhoenixPoint.Tactical.Levels.Destruction;
 using PhoenixPoint.Tactical.Levels.Missions;
 using PhoenixPoint.Tactical.View.ViewControllers;
 using System;
@@ -61,10 +64,6 @@ namespace TFTV
                     }
 
                     TFTVBaseDefenseTactical.PandoranTurn.ImplementBaseDefenseVsAliensPostAISortingOut(__instance);
-                    //  TFTVPalaceMission.PalaceReinforcements(__instance);
-
-                    //   TFTVPalaceMission.PalaceTacticalNewTurn(__instance);
-
                 }
                 catch (Exception e)
                 {
@@ -168,6 +167,26 @@ namespace TFTV
                 }
             }
         }
+
+
+        
+
+        [HarmonyPatch(typeof(TacticalActorBase), "ApplyDamage")]
+        public static class TFTV_TacticalActorBase_ApplyDamage_Patch
+        {
+            public static void Postfix(TacticalActorBase __instance)
+            {
+                try
+                {        
+                    TFTVBaseDefenseTactical.Map.Containment.CheckDamageContainment(__instance);
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+        }
+
 
 
 
@@ -306,8 +325,24 @@ namespace TFTV
         }
 
 
-        [HarmonyPatch(typeof(TacMission), "InitDeployZones")]
+        [HarmonyPatch(typeof(TacParticipantSpawn), "GetEligibleDeployZones")]
+        public static class TFTV_TacParticipantSpawn_GetEligibleDeployZones_patch
+        {
+            public static IEnumerable<TacticalDeployZone> Postfix(IEnumerable<TacticalDeployZone> results, TacParticipantSpawn __instance, IEnumerable<TacticalDeployZone> zones, ActorDeployData deployData, int turnNumber, bool includeFutureTurns)
+            {
+               
+                results = TFTVBaseDefenseTactical.StartingDeployment.PlayerDeployment.CullPlayerDeployZonesBaseDefense(results, deployData, turnNumber, __instance.TacMission.MissionData.MissionType);
+                results = TFTVBehemothAndRaids.Behemoth.BehemothMission.CullPlayerDeployZonesBehemoth(results, deployData, turnNumber, __instance.TacMission.MissionData.MissionType);
 
+                foreach (TacticalDeployZone zone in results)
+                {
+                    yield return zone;
+                }
+            }
+        }
+
+
+        [HarmonyPatch(typeof(TacMission), "InitDeployZones")]
         public static class TFTV_TacMission_InitDeployZones_patch
         {
             public static void Postfix(TacMission __instance)
@@ -390,7 +425,34 @@ namespace TFTV
             }
         }
 
+        [HarmonyPatch(typeof(TacticalActorBase), "get_DisplayName")]
+        public static class TacticalActorBase_GetDisplayName_RevenantGenerator_Patch
+        {
+            public static void Postfix(TacticalActorBase __instance, ref string __result)
+            {
+                try
+                {
+                    string revenantName = TFTVRevenant.UIandFX.DisplayRevenantName(__instance);
 
+                    if (revenantName != "")
+                    {
+                        __result = revenantName;
+                    }
+
+                    string escapedPandoranName = TFTVBaseDefenseTactical.DisplayEscapedPandoranName(__instance);
+
+                    if (escapedPandoranName != "")
+                    {
+                        __result += escapedPandoranName;
+                    }
+                }
+
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+        }
 
     }
 }

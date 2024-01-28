@@ -420,6 +420,12 @@ CONTAINMENTBREACH_EVENT_TITLE,Text,,CONTAINMENT BREACH!,,,,,,,,
 CONTAINMENTBREACH_EVENT_TEXT,Text,,"We are not sure how it happened, but everything that was <i>in</i>, got <i>out</i>.
 
 Director, this base is already almost taken over by the Pandorans!",,,,,,,,
+BASEDEFENSE_PURGE_TITLE,Text,,Purge containment?,,,,,,,,
+BASEDEFENSE_PURGE_TEXT,Text,,"Director, what shall do we with the captured Pandorans held at the base? They might break free during the attack! Do you authorize the purge? Here is the manifest:",,,,,,,,
+BASEDEFENSE_PURGE_CHOICE_O,Text,,Purge them!,,,,,,,,
+BASEDEFENSE_PURGE_CHOICE_1,Text,,"No, they are too valuable. We will risk it.",,,,,,,,
+LOOSE_SCYLLA_EVENT_TITLE,Text,,SCYLLA ON THE LOOSE!,,,,,,,,
+LOOSE_SCYLLA_EVENT_TEXT,Text,,"Director, the Scylla escaped! It is taking over our base! If we don't act fast, it might turn it into a Pandoran colony.",,,,,,,,
 PROG_FS9_CHOICE_0_TEXT,Text,,OK.,,OK.,,,,,,
 PROG_FS9_OUTCOME,Text,,"Anu havens join in a ritual to welcome the prophesized Trials and Tribulations, their incomprehensible chant reverberating across the airwaves.
 

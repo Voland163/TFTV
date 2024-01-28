@@ -1353,7 +1353,7 @@ namespace TFTV
                     DefCache.GetDef<GeoMarketplaceOptionDef>("TheFullstop_MarketplaceItemOptionDef").Availability = 5;
                     DefCache.GetDef<GeoMarketplaceOptionDef>("TheScreamer_MarketplaceItemOptionDef").Availability = 3;
                     DefCache.GetDef<GeoMarketplaceOptionDef>("AdvancedEngineMappingModule_MarketplaceItemOptionDef").Availability = 0;
-                    DefCache.GetDef<GeoMarketplaceOptionDef>("SpikedArmorPlating_MarketplaceItemOptionDef").Availability = 2;
+                    DefCache.GetDef<GeoMarketplaceOptionDef>("RevisedArmorPlating_MarketplaceItemOptionDef").Availability = 2;
                     DefCache.GetDef<GeoMarketplaceOptionDef>("ReinforcedCargoRacks_MarketplaceItemOptionDef").Availability = 3;
 
                 }
@@ -2759,6 +2759,13 @@ namespace TFTV
                         ____level.EventSystem.SetVariable(____settings.DLC5IntroCompletedVariable, 1);
                         ____level.EventSystem.SetVariable(____settings.DLC5FinalMovieCompletedVariable, 1);
                         ForceMarketPlaceUpdate();
+
+                        GeoscapeTutorialStepType stepType = GeoscapeTutorialStepType.AlienInfestHavenRaid;
+
+                        GeoscapeTutorial geoscapeTutorial = ____level.Tutorial;
+
+                        geoscapeTutorial.ShowTutorialStep(stepType);
+
                     }
 
                 }
@@ -2768,11 +2775,6 @@ namespace TFTV
                 }
             }
         }
-
-
-
-
-
     }
 }
 

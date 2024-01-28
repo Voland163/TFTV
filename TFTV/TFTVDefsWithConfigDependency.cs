@@ -10,8 +10,10 @@ using PhoenixPoint.Geoscape.Entities.PhoenixBases;
 using PhoenixPoint.Geoscape.Entities.Research;
 using PhoenixPoint.Geoscape.Entities.Research.Reward;
 using PhoenixPoint.Geoscape.Entities.Sites;
+using PhoenixPoint.Geoscape.Events.Eventus;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
+using PhoenixPoint.Geoscape.View.ViewControllers;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.Animations;
@@ -35,6 +37,7 @@ namespace TFTV
 
         public static bool ChangesToCapturingPandoransImplemented = false;
         public static bool ChangesToFoodAndMutagenGenerationImplemented = false;
+        public static bool NoSecondChancesImplemented = false;
 
 
         public static void ImplementConfigChoices()
@@ -45,6 +48,8 @@ namespace TFTV
                 FoodAndMutagenGeneration.ChangesToFoodAndMutagenGeneration();
                 PandoranCapture.ChangesToPandoranCapture();
                 StrongerPandorans.ImplementStrongerPandorans();
+                NoSecondChances.ImplementNoSecondChances();
+             
             }
             catch (Exception e)
             {
@@ -1179,7 +1184,77 @@ namespace TFTV
             }
         }
 
+        internal class NoSecondChances 
+        {
 
+            private static readonly List<string> _eventsNoSecondChances = new List<string>()
+        {
+"PROG_AN2_MISS_GeoscapeEventDef","PROG_AN4_MISS_GeoscapeEventDef","PROG_AN6_MISS1_GeoscapeEventDef","PROG_AN6_MISS2_GeoscapeEventDef","PROG_LE0_MISS_GeoscapeEventDef","PROG_KE2_GeoscapeEventDef","PROG_NJ1_MISS_GeoscapeEventDef",
+"PROG_NJ2_MISS_GeoscapeEventDef","PROG_PU12_MISS_GeoscapeEventDef","PROG_PU14_MISS_GeoscapeEventDef","PROG_PU8_MISS_GeoscapeEventDef","PROG_PX1_MISS_GeoscapeEventDef", "PROG_PX10_MISS_GeoscapeEventDef" ,"PROG_PX13_MISS_GeoscapeEventDef","PROG_PX14_MISS_GeoscapeEventDef","PROG_PX15_MISS_GeoscapeEventDef",
+"PROG_SY1_MISS1_GeoscapeEventDef","PROG_SY1_MISS2_GeoscapeEventDef", "PROG_SY2_MISS_GeoscapeEventDef", "PROG_SY3_MISS_GeoscapeEventDef","PROG_SY4_MISS1_GeoscapeEventDef","PROG_SY4_MISS2_GeoscapeEventDef"
+
+        };
+
+            internal static void ImplementNoSecondChances()
+            {
+                try 
+                {
+                    if (TFTVNewGameOptions.NoSecondChances && !NoSecondChancesImplemented)
+                    {
+                        TFTVLogger.Always($"Implementing No Second Chances");
+
+                        for (int x = 0; x < _eventsNoSecondChances.Count(); x++)
+                        {
+
+                            GeoscapeEventDef eventMissionDef = DefCache.GetDef<GeoscapeEventDef>(_eventsNoSecondChances[x]);
+
+                            string failEventID = eventMissionDef.GeoscapeEventData.Choices[0].Outcome.StartMission.LostEventID;
+
+                            GeoscapeEventDef failEventDef = DefCache.GetDef<GeoscapeEventDef>(failEventID + "_GeoscapeEventDef");
+
+                         //   TFTVLogger.Always($"check fail event ID {failEventDef.EventID}");
+
+                            failEventDef.GeoscapeEventData.Choices[0].Outcome.ReactiveEncounters = new List<string>();
+
+                            foreach (string eventId in failEventDef.GeoscapeEventData.Choices[0].Outcome.ReactiveEncounters)
+                            {                              
+                                TFTVLogger.Always($"{failEventDef.EventID} reactivates {eventId}", false);
+                            }
+                        }
+
+                        NoSecondChancesImplemented = true;
+                    }
+                    else if(!TFTVNewGameOptions.NoSecondChances && NoSecondChancesImplemented) 
+                    {
+                        TFTVLogger.Always($"Reverting No Second Chances");
+
+                        for (int x = 0; x < _eventsNoSecondChances.Count(); x++)
+                        {
+                            GeoscapeEventDef eventMissionDef = DefCache.GetDef<GeoscapeEventDef>(_eventsNoSecondChances[x]);
+
+                            string failEventID = eventMissionDef.GeoscapeEventData.Choices[0].Outcome.StartMission.LostEventID;
+
+                            GeoscapeEventDef failEventDef = DefCache.GetDef<GeoscapeEventDef>(failEventID + "_GeoscapeEventDef");
+
+                            //   TFTVLogger.Always($"check fail event ID {failEventDef.EventID}");
+
+                            failEventDef.GeoscapeEventData.Choices[0].Outcome.ReactiveEncounters = new List<string>() {eventMissionDef.EventID};
+
+                            foreach (string eventId in failEventDef.GeoscapeEventData.Choices[0].Outcome.ReactiveEncounters)
+                            {
+                                TFTVLogger.Always($"{failEventDef.EventID} reactivates {eventId}", false);
+                            }
+                        }
+                        NoSecondChancesImplemented = false;
+                    }
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+        }
 
 
 

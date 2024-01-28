@@ -56,6 +56,10 @@ namespace TFTV
         public bool NerfAncientsWeaponsTactical;
         public int ODILevel;
         public int internalDifficultyCheck;
+        public Dictionary<string, bool> PandoransInContainment;
+        public bool ScyllaLoose;
+        public bool Breach;
+        public List<float> SecondaryStrikeForceCoordinates;
 
     }
 
@@ -173,7 +177,8 @@ namespace TFTV
             ImplementConfigOptions(tacController);
             RunChecksForAllMissions(tacController);
             RunBetaTestChecks();
-          //  TFTVTacticalUtils.RevealAllSpawns(tacController);
+         //   TFTVTacticalUtils.RevealAllSpawns(tacController);
+            //TFTVExperimental.FindBreachEntrances(tacController);
 
             TFTVLogger.Always("The count of Human tactics in play is " + TFTVHumanEnemies.HumanEnemiesAndTactics.Count);
             TFTVLogger.Always("VO3 Active " + TFTVVoidOmens.VoidOmensCheck[3]);
@@ -193,17 +198,8 @@ namespace TFTV
             TFTVLogger.Always($"Nerf ancients weapons {TFTVNewGameOptions.ImpossibleWeaponsAdjustmentsSetting}");
             TFTVLogger.Always($"Mission: {Controller.TacMission.MissionData.MissionType.name}");
             TFTVLogger.Always($"Current ODI level: {TFTVODIandVoidOmenRoll.CurrentODI_Level}");
-            TFTVLogger.Always($"Difficulty level is {tacController.Difficulty.name} and treated as {TFTVReleaseOnly.DifficultyOrderConverter(tacController.Difficulty.Order)} after TFTV conversion.");
+            TFTVLogger.Always($"Difficulty level is {tacController.Difficulty.name} and treated as {TFTVSpecialDifficulties.DifficultyOrderConverter(tacController.Difficulty.Order)} after TFTV conversion.");
             TFTVLogger.Always("Tactical start completed");
-
-
-          /*  foreach(ActorComponent actorComponent in Controller.Map.FindAllActors()) 
-            {
-                TFTVLogger.Always($"{actorComponent.name} is TacticalActor? {actorComponent is TacticalActor}");
-            
-            
-            }*/
-
         }
 
         /// <summary>
@@ -272,6 +268,14 @@ namespace TFTV
                 TFTVNewGameOptions.StrongerPandoransSetting = data.StrongerPandoransTactical;
                 TFTVNewGameOptions.ImpossibleWeaponsAdjustmentsSetting = data.NerfAncientsWeaponsTactical;
                 TFTVNewGameOptions.InternalDifficultyCheckTactical = data.internalDifficultyCheck;
+                TFTVBaseDefenseTactical.Map.DeploymentZones.SecondaryStrikeForceVector = data.SecondaryStrikeForceCoordinates;
+
+                if (data.PandoransInContainment != null) 
+                {
+                    TFTVBaseDefenseTactical.PandoransInContainment = data.PandoransInContainment; 
+                }
+                TFTVBaseDefenseTactical.Breach = data.Breach;
+                TFTVBaseDefenseTactical.ScyllaLoose = data.ScyllaLoose;
 
                 TFTVLogger.Always($"Config settings:" +                  
                     $"\nStrongerPandoransSetting {TFTVNewGameOptions.StrongerPandoransSetting}\nImpossibleWeaponsAdjustmentsSetting: {TFTVNewGameOptions.ImpossibleWeaponsAdjustmentsSetting}");
@@ -325,7 +329,12 @@ namespace TFTV
                 Update35TacticalCheck = TFTVNewGameOptions.Update35Check,
                 NerfAncientsWeaponsTactical = TFTVNewGameOptions.ImpossibleWeaponsAdjustmentsSetting,
                 StrongerPandoransTactical = TFTVNewGameOptions.StrongerPandoransSetting,
-                ODILevel = TFTVODIandVoidOmenRoll.CurrentODI_Level,    
+                ODILevel = TFTVODIandVoidOmenRoll.CurrentODI_Level,
+                PandoransInContainment = TFTVBaseDefenseTactical.PandoransInContainment,
+                Breach = TFTVBaseDefenseTactical.Breach,
+                ScyllaLoose = TFTVBaseDefenseTactical.ScyllaLoose,
+                SecondaryStrikeForceCoordinates = TFTVBaseDefenseTactical.Map.DeploymentZones.SecondaryStrikeForceVector,
+
                 internalDifficultyCheck = Controller.Difficulty.Order,
 
                 TurnZeroMethodsExecuted = TurnZeroMethodsExecuted
@@ -376,8 +385,6 @@ namespace TFTV
                         TurnZeroMethodsExecuted = true;
                     }
 
-                    
-
                     TFTVRevenant.revenantSpecialResistance.Clear();
                     TFTVTouchedByTheVoid.Umbra.UmbraTactical.SpawnUmbra(Controller);
                     TFTVHumanEnemies.ChampRecoverWPAura(Controller);
@@ -387,8 +394,6 @@ namespace TFTV
                 else
                 {
                     TFTVLogger.Always($"Playing tutorial mission");
-
-
                 }
 
             }

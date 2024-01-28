@@ -820,7 +820,7 @@ namespace TFTV
 
                         TFTVLogger.Always($"Completed mission vs the Pure, adding + 1 to {_puAmbushVariable} so it's now {eventSystem.GetVariable(_puAmbushVariable)}");
 
-                        if (eventSystem.GetVariable(_puAmbushVariable) >= 1 && eventSystem.GetEventRecord(_OlenaOnPureEvent.EventID)!= null && eventSystem.GetEventRecord(_OlenaOnPureEvent.EventID).TriggerCount == 0)
+                        if (eventSystem.GetVariable(_puAmbushVariable) > 1 && (eventSystem.GetEventRecord(_OlenaOnPureEvent.EventID)== null || eventSystem.GetEventRecord(_OlenaOnPureEvent.EventID) != null && eventSystem.GetEventRecord(_OlenaOnPureEvent.EventID).TriggerCount == 0))
                         {
                             GeoPhoenixFaction phoenix = geoMission.Site.GeoLevel.PhoenixFaction;
                             eventSystem.TriggerGeoscapeEvent(_OlenaOnPureEvent.EventID, new GeoscapeEventContext(geoMission.Site, phoenix));

@@ -55,7 +55,7 @@ namespace TFTV
         private static readonly DeathBelcherAbilityDef oilcrabDeathBelcherAbility = DefCache.GetDef<DeathBelcherAbilityDef>("Oilcrab_Die_DeathBelcher_AbilityDef");
         private static readonly DeathBelcherAbilityDef oilfishDeathBelcherAbility = DefCache.GetDef<DeathBelcherAbilityDef>("Oilfish_Die_DeathBelcher_AbilityDef");
 
-        private static readonly GameTagDef anyRevenantGameTag = DefCache.GetDef<GameTagDef>("Any_Revenant_TagDef");
+        private static readonly GameTagDef anyRevenantGameTag = TFTVRevenant.AnyRevenantGameTag; //DefCache.GetDef<GameTagDef>("Any_Revenant_TagDef");
 
 
 
@@ -417,11 +417,11 @@ namespace TFTV
                     {
                         if (level.EventSystem.GetVariable(TBTVVariableName) == 3 || level.EventSystem.GetVariable(TBTVVariableName) == 4)
                         {
-                            ImplementUmbraEvolution(125 * TFTVReleaseOnly.DifficultyOrderConverter(level.CurrentDifficultyLevel.Order), 20 * TFTVReleaseOnly.DifficultyOrderConverter(level.CurrentDifficultyLevel.Order), 20);
+                            ImplementUmbraEvolution(125 * TFTVSpecialDifficulties.DifficultyOrderConverter(level.CurrentDifficultyLevel.Order), 20 * TFTVSpecialDifficulties.DifficultyOrderConverter(level.CurrentDifficultyLevel.Order), 20);
                         }
                         else if (level.EventSystem.GetVariable(TBTVVariableName) == 1 || level.EventSystem.GetVariable(TBTVVariableName) == 2)
                         {
-                            ImplementUmbraEvolution(80 * TFTVReleaseOnly.DifficultyOrderConverter(level.CurrentDifficultyLevel.Order), 20 * TFTVReleaseOnly.DifficultyOrderConverter(level.CurrentDifficultyLevel.Order), 0);
+                            ImplementUmbraEvolution(80 * TFTVSpecialDifficulties.DifficultyOrderConverter(level.CurrentDifficultyLevel.Order), 20 * TFTVSpecialDifficulties.DifficultyOrderConverter(level.CurrentDifficultyLevel.Order), 0);
                         }
                     }
                     catch (Exception e)
@@ -726,7 +726,7 @@ namespace TFTV
                     List<ClassTagDef> eligibleClassTagDefs = new List<ClassTagDef>();
 
 
-                    int difficulty = TFTVReleaseOnly.DifficultyOrderConverter(controller.Difficulty.Order);
+                    int difficulty = TFTVSpecialDifficulties.DifficultyOrderConverter(controller.Difficulty.Order);
 
                     foreach (TacCharacterDef tacCharacterDef in controller.TacMission.MissionData.UnlockedAlienTacCharacterDefs)
                     {

@@ -8,18 +8,24 @@ using PhoenixPoint.Common.ContextHelp.HintConditions;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.View.ViewModules;
+using PhoenixPoint.Geoscape.Entities;
+using PhoenixPoint.Geoscape.Entities.Abilities;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.ContextHelp.HintConditions;
+using PhoenixPoint.Geoscape.View;
+using PhoenixPoint.Geoscape.View.ViewStates;
 using PhoenixPoint.Tactical.ContextHelp;
 using PhoenixPoint.Tactical.ContextHelp.HintConditions;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Statuses;
 using PhoenixPoint.Tactical.Levels;
 using PhoenixPoint.Tactical.View.ViewModules;
+using PhoenixPoint.Tactical.View.ViewStates;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Security.Permissions;
 using UnityEngine;
 
 namespace TFTV
@@ -398,7 +404,7 @@ namespace TFTV
                     CreateNewTacticalHint("AcheronAsclepiusChampion", HintTrigger.ActorSeen, "AcheronAsclepiusChampion_TacCharacterDef", "HINT_ACHERON_ASCLEPIUS_CHAMPION_TITLE", "HINT_ACHERON_ASCLEPIUS_CHAMPION_DESCRIPTION", 0, true, "2FA6F938-0928-4C3A-A514-91F3BD90E048", "AcheronAsclepiusChampion.jpg");
                     CreateNewTacticalHint("AcheronAchlys", HintTrigger.ActorSeen, "AcheronAchlys_TacCharacterDef", "HINT_ACHERON_ACHLYS_TITLE", "HINT_ACHERON_ACHLYS_DESCRIPTION", 0, true, "06EEEA6B-1264-4616-AC78-1A2A56911E72", "AcheronAchlys.jpg");
                     CreateNewTacticalHint("AcheronAchlysChampion", HintTrigger.ActorSeen, "AcheronAchlysChampion_TacCharacterDef", "HINT_ACHERON_ACHLYS_CHAMPION_TITLE", "HINT_ACHERON_ACHLYS_CHAMPION_DESCRIPTION", 0, true, "760FDBB6-1556-4B1D-AFE0-59C906672A5D", "AcheronAchlysChampion.jpg");
-                    CreateNewTacticalHint("RevenantSighted", HintTrigger.ActorSeen, "Any_Revenant_TagDef", "REVENANT_SIGHTED_TITLE", "REVENANT_SIGHTED_TEXT", 1, true, "194317EC-67DF-4775-BAFD-98499F82C2D7", "RevenantSighted.jpg");
+                    CreateNewTacticalHint("RevenantSighted", HintTrigger.ActorSeen, TFTVRevenant.AnyRevenantGameTag.name, "REVENANT_SIGHTED_TITLE", "REVENANT_SIGHTED_TEXT", 1, true, "194317EC-67DF-4775-BAFD-98499F82C2D7", "Hint_Revenant.jpg");
 
                     _hintDefSpriteFileNameDictionary.Add(DefCache.GetDef<ContextHelpHintDef>("TUT_DLC4_Acheron_HintDef"), "Acheron.jpg");
 
@@ -427,6 +433,15 @@ namespace TFTV
 
                     ContextHelpHintDef hostileDefenders = CreateNewTacticalHint("HostileDefenders", HintTrigger.MissionStart, "MissionTypeHavenDefense_MissionTagDef", "HINT_HOSTILE_DEFENDERS_TITLE", "HINT_HOSTILE_DEFENDERS_TEXT", 3, true, "F2F5E5B1-5B9B-4F5B-8F5C-9B5E5B5F5B5F", "TFTV_Hint_HostileDefenders.jpg");
                     alwaysDisplayedTacticalHintsDbDef.Hints.Remove(hostileDefenders);
+
+                    ContextHelpHintDef hatchingHint1 = DefCache.GetDef<ContextHelpHintDef>("TUT_DLC3_MissionStartStory_HintDef"); //KEY_DLC3_TAC_HINT_MANTICORE_RUN_STORY_NAME CHANGE OF PLANS
+                    ContextHelpHintDef hatchingHint2 = DefCache.GetDef<ContextHelpHintDef>("TUT_DLC3_MissionStart_HintDef"); //KEY_DLC3_TAC_HINT_MANTICORE_RUN_START_NAME  AURORA
+
+                    //For some reason the hint is played anyway, but without breaking the chain, it is played in the wrong order.
+                    hatchingHint1.NextHint = null;
+                    
+              
+                   
 
                 }
                 catch (Exception e)
@@ -525,10 +540,21 @@ namespace TFTV
                     CreateNewManualTacticalHint("BaseDefenseUmbraStrat", "{B6B31D16-82B6-462D-A220-388447F2C9D8}", "BASEDEFENSE_UMBRASTRAT_TITLE", "BASEDEFENSE_UMBRASTRAT_TEXT", "Olena_static.jpg");
                     CreateNewManualTacticalHint("BaseDefenseWormsStrat", "{1CA6F9FB-BD41-430B-A4BF-04867245BEBF}", "BASEDEFENSE_WORMSSTRAT_TITLE", "BASEDEFENSE_WORMSSTRAT_TEXT", "Olena_static.jpg");
                     CreateNewManualTacticalHint("BaseDefenseForce2Strat", "{22DF1F91-2D1A-4F34-AD9A-E9881E60CCD5}", "BASEDEFENSE_FORCE2STRAT_TITLE", "BASEDEFENSE_FORCE2STRAT_TEXT", "Olena_static.jpg");
-                    CreateNewTacticalHint("TFTVBaseDefense", HintTrigger.MissionStart, baseDefenseMissionTag.name, "BASEDEFENSE_TACTICAL_ADVANTAGE_TITLE", "BASEDEFENSE_TACTICAL_ADVANTAGE_DESCRIPTION", 3, false, "{DB7CF4DE-D59F-4990-90AE-4C0B43550468}", "base_defense_hint.jpg");
 
-                    ContextHelpHintDef baseDefenseStartHint = DefCache.GetDef<ContextHelpHintDef>("TFTVBaseDefense");
-                    baseDefenseStartHint.AnyCondition = true;
+                    ContextHelpHintDef sourceBaseDefenseHint = DefCache.GetDef<ContextHelpHintDef>("TUT_BaseDefense_HintDef");
+                   // ContextHelpHintDef sourceBaseDefenseHint2 = DefCache.GetDef<ContextHelpHintDef>("TUT_DLC3_MissionStartStory_HintDef");
+                    string name = "TFTVBaseDefense";
+                    ContextHelpHintDef newBaseDefenseHint = Helper.CreateDefFromClone(sourceBaseDefenseHint, "{61AA33F7-0B37-48C9-9C57-4B38AF024CCF}", name);
+                    alwaysDisplayedTacticalHintsDbDef.Hints.Add(newBaseDefenseHint);
+
+                 //   CreateNewTacticalHint("TFTVBaseDefense", HintTrigger.MissionStart, baseDefenseMissionTag.name, "BASEDEFENSE_TACTICAL_ADVANTAGE_TITLE", "BASEDEFENSE_TACTICAL_ADVANTAGE_DESCRIPTION", 3, false, "{DB7CF4DE-D59F-4990-90AE-4C0B43550468}", "base_defense_hint.jpg");
+
+
+
+                  //  ContextHelpHintDef baseDefenseStartHint = DefCache.GetDef<ContextHelpHintDef>("TFTVBaseDefense");
+                  //  baseDefenseStartHint.AnyCondition = true;
+
+                 //   DefCache.GetDef<ContextHelpHintDbDef>("TacticalHintsDbDef").Hints.Add(baseDefenseStartHint);
 
                     CreateNewManualTacticalHint("BaseDefenseVenting", "{AE6CE201-816F-4363-A80E-5CD07D8263CF}", "BASEDEFENSE_VENTING_TITLE", "BASEDEFENSE_VENTING_TEXT", "Olena_static.jpg");
                 }
@@ -720,6 +746,123 @@ namespace TFTV
 
         internal class GeoscapeHints
         {
+            internal static Sprite CustomGeoHintImage;
+
+            public static void TriggerBaseDefenseHint(GeoLevelController controller) 
+            {
+                try
+                {               
+                    CreateCustomGeoHint("KEY_HINT_BASE_MISSION_TITLE", "KEY_HINT_BASE_MISSION_DESCRIPTION", "base_defense_geo_hint.JPG");
+                    PlayCustomGeoHint(controller);
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+
+            public static void TriggerBehemothDeployHint(GeoLevelController controller)
+            {
+                try 
+                {
+                    CreateCustomGeoHint("KEY_HINT_BEHEMOTH_DEPLOY_TITLE", "KEY_HINT_BEHEMOTH_DEPLOY_DESCRIPTION", "HINT_GEO_BEHEMOTH_DEPLOY.JPG");
+                    PlayCustomGeoHint(controller);
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+
+            public static void TriggerBehemothMissionHint(GeoLevelController controller)
+            {
+                try
+                {
+                    CreateCustomGeoHint("KEY_HINT_BEHEMOTH_MISSION_TITLE", "KEY_HINT_BEHEMOTH_MISSION_DESCRIPTION", "HINT_GEO_BEHEMOTH_MISSION.JPG");
+                    PlayCustomGeoHint(controller);
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+
+            private static void CreateCustomGeoHint(string title, string description, string imageFile) 
+            {
+                try 
+                {
+                    GeoscapeTutorialStepsDef geoscapeTutorialStepsDef = DefCache.GetDef<GeoscapeTutorialStepsDef>("GeoscapeTutorialStepsDef");
+
+                    geoscapeTutorialStepsDef.Hints[27].Title.LocalizationKey = title; //27
+                    geoscapeTutorialStepsDef.Hints[27].Description.LocalizationKey = description; //27
+
+                    CustomGeoHintImage = Helper.CreateSpriteFromImageFile(imageFile);
+                
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+
+            private static void PlayCustomGeoHint(GeoLevelController controller) 
+            {
+                try
+                {
+                    GeoscapeTutorialStepType stepType = GeoscapeTutorialStepType.AlienReconRaid;
+
+                    GeoscapeTutorial geoscapeTutorial = controller.Tutorial;
+
+                    FieldInfo _shownStepsFieldInfo = typeof(GeoscapeTutorial).GetField("_shownSteps", BindingFlags.NonPublic | BindingFlags.Instance);
+                    FieldInfo _completedStepsFieldInfo = typeof(GeoscapeTutorial).GetField("_completedSteps", BindingFlags.NonPublic | BindingFlags.Instance);
+
+                    HashSet<GeoscapeTutorialStepType> shownSteps = (HashSet<GeoscapeTutorialStepType>)_shownStepsFieldInfo.GetValue(geoscapeTutorial);
+                    HashSet<GeoscapeTutorialStepType> completedSteps = (HashSet<GeoscapeTutorialStepType>)_completedStepsFieldInfo.GetValue(geoscapeTutorial);
+
+                    if(shownSteps.Contains(stepType)) 
+                    {
+                        shownSteps.Remove(stepType);
+                        _shownStepsFieldInfo.SetValue(geoscapeTutorial, shownSteps);                
+                    }
+
+                    if (completedSteps.Contains(stepType))
+                    {
+                        completedSteps.Remove(stepType);
+                        _completedStepsFieldInfo.SetValue(geoscapeTutorial, completedSteps);
+                    }
+
+                    geoscapeTutorial.ShowTutorialStep(stepType);
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+
+            
+
+
+          /*  [HarmonyPatch(typeof(GeoscapeTutorial), "ShowTutorialStep", typeof(GeoscapeTutorialStepType), typeof(int))]
+            public static class TFTV_GeoscapeTutorial_ShowTutorialStep_Hints_Patch
+            {
+                public static void Postfix(GeoscapeTutorial __instance, GeoscapeTutorialStepType stepType, bool __result)
+                {
+                    try
+                    {
+                        TFTVLogger.Always($"setting geo tutorial step {stepType}, result is {__result}");
+
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                    }
+                }
+            }*/
+
+
+
+
             [HarmonyPatch(typeof(UIModuleTutorialModal), "SetTutorialStep")]
             public static class UIModuleTutorialModal_SetTutorialStep_Hints_Patch
             {
@@ -727,6 +870,8 @@ namespace TFTV
                 {
                     try
                     {
+                       // TFTVLogger.Always($"setting geo tutorial step {step.StepType}");
+
                         if (step.StepType == GeoscapeTutorialStepType.CorruptionActivated && step.Title.LocalizationKey == "KEY_GEO_HINT_ENEMY_SPECIAL_CORRUPTION_NAME")
                         {
                             __instance.Image.sprite = Helper.CreateSpriteFromImageFile("BG_Hint_Delirium.jpg");
@@ -742,6 +887,14 @@ namespace TFTV
                         else if (step.StepType == GeoscapeTutorialStepType.HarvestingSiteCaptured || step.StepType == GeoscapeTutorialStepType.RefineryCaptured)
                         {
                             __instance.Image.sprite = Helper.CreateSpriteFromImageFile("background_ancients_hint.jpg");
+                        }
+                        else if (step.StepType == GeoscapeTutorialStepType.AlienInfestHavenRaid) 
+                        {  
+                        __instance.Image.sprite = Helper.CreateSpriteFromImageFile("MP_Choices_All.jpg");
+                        }
+                        else if (step.StepType == GeoscapeTutorialStepType.AlienReconRaid) 
+                        {
+                            __instance.Image.sprite = CustomGeoHintImage;
                         }
                     }
                     catch (Exception e)

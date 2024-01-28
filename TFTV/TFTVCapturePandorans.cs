@@ -219,7 +219,6 @@ namespace TFTV
                                     pxBase.Layout.Facilities.
                                     Where(f => f.Def.Equals(containmentFacility)).
                                     Any(f => f.State == GeoPhoenixFacility.FacilityState.Functioning && f.State != GeoPhoenixFacility.FacilityState.Damaged))
-
                                 {
 
                                     TFTVLogger.Always($"This is a Phoenix base mission, and there is a functioning Containment Facility, so capture capacity is not limited");

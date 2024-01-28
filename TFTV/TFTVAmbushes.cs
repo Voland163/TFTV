@@ -2,11 +2,13 @@
 using Base.Core;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
+using PhoenixPoint.Common.View.ViewControllers;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.Missions;
 using PhoenixPoint.Geoscape.Events;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
+using PhoenixPoint.Geoscape.View.ViewControllers.Modal;
 using PhoenixPoint.Geoscape.View.ViewModules;
 using System;
 using System.Collections.Generic;
@@ -23,6 +25,42 @@ namespace TFTV
         public static List<int> NJ_Purists_Hotspots = new List<int>();
         public static List<int> AN_FallenOnes_Hotspots = new List<int>();
 
+
+
+        [HarmonyPatch(typeof(AmbushOutcomeDataBind), "ModalShowHandler")]
+        public static class TFTV_AmbushOutcomeDataBind_ModalShowHandler_patch
+        {
+
+            public static void Postfix(AmbushOutcomeDataBind __instance, UIModal modal, bool ____shown, UIModal ____modal)
+            {
+                try
+                {
+
+
+                    __instance.Rewards.transform.gameObject.SetActive(true);
+
+                    Transform rewardContainer = __instance.Rewards.GetComponentInChildren<Transform>().Find("Rewards");
+
+                    rewardContainer.gameObject.SetActive(true);
+
+                    /*   foreach (Transform t in __instance.Rewards.GetComponentInChildren<Transform>()) 
+                       {
+                           TFTVLogger.Always($"{t.name} {t.childCount} {t.gameObject.activeSelf}");
+                           if (t.name.Equals("Rewards"))
+                           {
+                               t.gameObject.SetActive(true);
+
+                           }
+                       }*/
+                }
+
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
 
         [HarmonyPatch(typeof(GeoscapeEventSystem), "SetEventForSite")]
         public static class GeoscapeEventSystem_SetEventForSite_patch

@@ -1,15 +1,18 @@
 ﻿using Base;
 using Base.Core;
-using Base.Entities.Statuses;
 using Base.UI;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
+using PhoenixPoint.Common.Entities.GameTagsTypes;
+using PhoenixPoint.Common.Levels.ActorDeployment;
+using PhoenixPoint.Common.Levels.Missions;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Events;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
 using PhoenixPoint.Geoscape.Levels.Factions.FesteringSkies;
-using PhoenixPoint.Tactical.View.ViewStates;
+using PhoenixPoint.Tactical.Entities;
+using PhoenixPoint.Tactical.Levels.ActorDeployment;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -26,6 +29,8 @@ namespace TFTV
         // private static readonly DefRepository Repo = TFTVMain.Repo;
         public static Dictionary<int, List<int>> flyersAndHavens = new Dictionary<int, List<int>>();
         public static List<int> targetsForBehemoth = new List<int>();
+        private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
+        private static readonly SharedData Shared = TFTVMain.Shared;
         //  public static List<int> targetsVisitedByBehemoth = new List<int>();
 
         public static List<int> behemothScenicRoute = new List<int>();
@@ -163,22 +168,22 @@ namespace TFTV
             }
 
 
-       /*  [HarmonyPatch(typeof(AlienRaidManager), "UpdateHourly")]
-            public static class AlienRaidManager_UpdateHourly_patch
-            {
-                public static void Postfix(AlienRaidManager __instance)
-                {
-                    try
-                    {
-                        TFTVLogger.Always($"Running AlienRaidManager.UpdateHourly, NextUpdateCountdownHrs is {__instance.NextUpdateCountdownHrs} ");
+            /*  [HarmonyPatch(typeof(AlienRaidManager), "UpdateHourly")]
+                 public static class AlienRaidManager_UpdateHourly_patch
+                 {
+                     public static void Postfix(AlienRaidManager __instance)
+                     {
+                         try
+                         {
+                             TFTVLogger.Always($"Running AlienRaidManager.UpdateHourly, NextUpdateCountdownHrs is {__instance.NextUpdateCountdownHrs} ");
 
-                    }
-                    catch (Exception e)
-                    {
-                        TFTVLogger.Error(e);
-                    }
-                }
-            }*/
+                         }
+                         catch (Exception e)
+                         {
+                             TFTVLogger.Error(e);
+                         }
+                     }
+                 }*/
 
             [HarmonyPatch(typeof(AlienRaidManager), "RollForRaid")]
             public static class AlienRaidManager_RollForRaid_patch
@@ -191,7 +196,7 @@ namespace TFTV
                         // 
                         if (__instance.AlienFaction.Behemoth == null || __instance.AlienFaction.Behemoth.CurrentBehemothStatus == BehemothStatus.Dormant || __instance.AlienFaction.Behemoth.IsSubmerging)//__instance.AlienFaction!=null && __instance.AlienFaction.Behemoth!=null && )
                         {
-                           // TFTVLogger.Always($"AlienRaidManager.RollForRaid running, Behemoth not dormant");
+                            // TFTVLogger.Always($"AlienRaidManager.RollForRaid running, Behemoth not dormant");
                             return false;
                         }
 
@@ -208,7 +213,7 @@ namespace TFTV
                         int behemothRoamings = controller.EventSystem.GetVariable(BehemothRoamings);
                         int flyers = Math.Min(behemothRoamings, 2);
 
-                        for (int x = 0; x < flyers+1; x++)
+                        for (int x = 0; x < flyers + 1; x++)
                         {
                             AlienRaidBand raidBand = AlienRaidBandGenerator(__instance.AlienFaction.GeoLevel);
                             TFTVLogger.Always($"generated raidband for {raidBand.AircraftTypesAllowed}");
@@ -321,24 +326,24 @@ namespace TFTV
                         {
                             TFTVLogger.Always("Flyer returning to B passed first check");
 
-                            if (targetsForBehemoth.Count > 1000) 
+                            if (targetsForBehemoth.Count > 1000)
                             {
-                                targetsForBehemoth.Clear();                            
+                                targetsForBehemoth.Clear();
                             }
 
                             foreach (int haven in flyersAndHavens[__instance.GeoVehicle.VehicleID])
-                            {  
+                            {
                                 GeoSite geoSite = Behemoth.ConvertIntIDToGeosite(behemoth.GeoLevel, haven);
 
                                 TFTVLogger.Always($"Checking {geoSite?.LocalizedSiteName} visited by the flyer. Is it now destroyed? {geoSite?.State == GeoSiteState.Destroyed} Does it have an Active Mission? {geoSite.HasActiveMission}");
 
-                                if (!targetsForBehemoth.Contains(haven) && geoSite!=null && geoSite.State!=GeoSiteState.Destroyed && !geoSite.HasActiveMission) //&& !targetsVisitedByBehemoth.Contains(haven)) //&& (behemoth != null && !behemoth.IsSubmerging && behemoth.CurrentBehemothStatus != GeoBehemothActor.BehemothStatus.Dormant))
+                                if (!targetsForBehemoth.Contains(haven) && geoSite != null && geoSite.State != GeoSiteState.Destroyed && !geoSite.HasActiveMission) //&& !targetsVisitedByBehemoth.Contains(haven)) //&& (behemoth != null && !behemoth.IsSubmerging && behemoth.CurrentBehemothStatus != GeoBehemothActor.BehemothStatus.Dormant))
                                 {
                                     targetsForBehemoth.Add(haven);
 
                                     TFTVLogger.Always($"{geoSite?.LocalizedSiteName} added to the list of targets");
                                 }
-                            }              
+                            }
 
                             flyersAndHavens.Remove(__instance.GeoVehicle.VehicleID);
                         }
@@ -355,6 +360,117 @@ namespace TFTV
 
         internal class Behemoth
         {
+
+            internal class BehemothMission
+            {
+                private static bool CheckTdzTeam(TacticalDeployZone zone, int geoId)
+                {
+                    try
+                    {
+
+                        if (geoId > 0)
+                        {
+                            if (zone.Pos.x > 0 && TFTVUI.MissionDeployment.Behemoth.listTeamB.Contains(geoId))
+                            {
+                                TFTVLogger.Always($"{geoId} is in TeamB! Can only deploy on the other side");
+
+                                return false;
+
+                            }
+
+                        }
+
+                        return true;
+
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                        throw;
+                    }
+                }
+
+                public static IEnumerable<TacticalDeployZone> CullPlayerDeployZonesBehemoth(IEnumerable<TacticalDeployZone> results, ActorDeployData deployData, int turnNumber, TacMissionTypeDef missionTypeDef)
+                {
+                    try
+                    {
+                        if (turnNumber != 0 || !missionTypeDef.Tags.Contains(DefCache.GetDef<MissionTagDef>("Behemoth_MissionTagDef")))
+                        {
+                            return results;
+
+                        }
+                        List<TacticalDeployZone> culledList = new List<TacticalDeployZone>();
+
+                        TacActorBaseInstanceData tacActorBaseInstanceData = (TacActorBaseInstanceData)deployData.InstanceData;
+
+                        if (tacActorBaseInstanceData != null && tacActorBaseInstanceData.GeoUnitId != 0)
+                        {
+                            int actorId = tacActorBaseInstanceData.GeoUnitId;
+
+                            foreach (TacticalDeployZone zone in results)
+                            {
+                                if (CheckTdzTeam(zone, actorId))
+                                {
+                                    culledList.Add(zone);
+                                }
+                            }
+
+
+                            return culledList;
+                        }
+                        else
+                        {
+                            return results;
+                        }
+
+                    }
+
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                        throw;
+                    }
+
+                }
+
+
+
+
+                /*     [HarmonyPatch(typeof(TacParticipantSpawn), "GetEligibleDeployZones")]
+                     public static class TFTV_TacParticipantSpawn_GetEligibleDeployZones_patch
+                     {
+                         public static IEnumerable<TacticalDeployZone> Postfix(IEnumerable<TacticalDeployZone> results, TacParticipantSpawn __instance, IEnumerable<TacticalDeployZone> zones, ActorDeployData deployData, int turnNumber, bool includeFutureTurns)
+                         {
+                             if (turnNumber == 0 && __instance.TacMission.MissionData.MissionType.Tags.Contains(DefCache.GetDef<MissionTagDef>("Behemoth_MissionTagDef")))
+                             {
+                                 TacActorBaseInstanceData tacActorBaseInstanceData = (TacActorBaseInstanceData)deployData.InstanceData;
+
+                                 if (tacActorBaseInstanceData != null)
+                                 {
+                                     int actorId = tacActorBaseInstanceData.GeoUnitId;
+
+                                     foreach (TacticalDeployZone zone in results)
+                                     {
+                                         if (CheckTdzTeam(zone, actorId))
+                                         {
+                                             yield return zone;
+                                         }
+                                     }
+
+                                 }
+                             }
+                             else
+                             {
+                                 foreach (TacticalDeployZone zone in results)
+                                 {
+                                     yield return zone;
+                                 }
+
+                             }
+
+                         }
+                     }*/
+            }
 
             [HarmonyPatch(typeof(GeoBehemothActor), "UpdateHourly")]
             public static class GeoBehemothActor_UpdateHourly_Patch
@@ -377,17 +493,17 @@ namespace TFTV
                             return true;
                         }
 
-                        if (behemothTarget <0) 
+                        if (behemothTarget < 0)
                         {
                             TFTVLogger.Always($"Somehow Behemoth Target was -1, so setting it to 0");
                             behemothTarget = 0;
                         }
 
-                      /*  foreach(int targetId in targetsForBehemoth) 
-                        {
-                            TFTVLogger.Always($"{targetId}");
-                        
-                        }*/
+                        /*  foreach(int targetId in targetsForBehemoth) 
+                          {
+                              TFTVLogger.Always($"{targetId}");
+
+                          }*/
 
                         if (targetsForBehemoth.Count > 1000)
                         {
@@ -410,10 +526,10 @@ namespace TFTV
                         //   {
                         MethodInfo CalculateDisruptionThreshholdMethod = AccessTools.Method(typeof(GeoBehemothActor), "CalculateDisruptionThreshhold");
 
-                            ____disruptionThreshhold = (int)CalculateDisruptionThreshholdMethod.Invoke(__instance, null);
+                        ____disruptionThreshhold = (int)CalculateDisruptionThreshholdMethod.Invoke(__instance, null);
 
-                            TFTVLogger.Always($"Behemoth hourly update, disruption threshold set to {____disruptionThreshhold}, disruption points are {____disruptionPoints}");
-                      //  }
+                        TFTVLogger.Always($"Behemoth hourly update, disruption threshold set to {____disruptionThreshhold}, disruption points are {____disruptionPoints}");
+                        //  }
 
                         if (!__instance.IsSubmerging && ____disruptionPoints >= ____disruptionThreshhold)
                         {
@@ -450,7 +566,7 @@ namespace TFTV
                         GeoSite targetHaven = ConvertIntIDToGeosite(__instance.GeoLevel, behemothTarget);
 
 
-                        if (behemothTarget != 0 && targetHaven != null && (targetHaven.State == GeoSiteState.Destroyed || targetHaven.ActiveMission!=null))
+                        if (behemothTarget != 0 && targetHaven != null && (targetHaven.State == GeoSiteState.Destroyed || targetHaven.ActiveMission != null))
                         {
                             behemothTarget = 0;
                         }
@@ -594,7 +710,7 @@ namespace TFTV
                         int[] voidOmensInEffect = TFTVVoidOmens.CheckFordVoidOmensInPlay(__instance.GeoLevel);
                         if (voidOmensInEffect.Contains(11))
                         {
-                            num += 3 * TFTVReleaseOnly.DifficultyOrderConverter(currentDifficultyLevel.Order);
+                            num += 3 * TFTVSpecialDifficulties.DifficultyOrderConverter(currentDifficultyLevel.Order);
                             TFTVLogger.Always($"And with VO# 11 in effect, total is now {num}");
                         }
 
@@ -732,8 +848,6 @@ namespace TFTV
             [HarmonyPatch(typeof(GeoBehemothActor), "ChooseNextHavenTarget")]
             public static class GeoBehemothActor_ChooseNextHavenTarget_Patch
             {
-
-
                 public static bool Prefix(GeoBehemothActor __instance)
                 {
                     try
@@ -760,28 +874,28 @@ namespace TFTV
 
             private static void CullTargetList(GeoLevelController controller)
             {
-                try 
+                try
                 {
                     List<int> targetsToBeCulled = new List<int>();
-                    
-                    foreach(int siteId in targetsForBehemoth) 
+
+                    foreach (int siteId in targetsForBehemoth)
                     {
                         GeoSite targetHaven = ConvertIntIDToGeosite(controller, siteId);
-                        
-                        if(targetHaven.State == GeoSiteState.Destroyed || targetHaven.ActiveMission != null) 
+
+                        if (targetHaven.State == GeoSiteState.Destroyed || targetHaven.ActiveMission != null)
                         {
                             targetsToBeCulled.Add(targetHaven.SiteId);
                         }
-                    
+
                     }
 
-                    if (targetsToBeCulled.Count > 0) 
+                    if (targetsToBeCulled.Count > 0)
                     {
                         targetsForBehemoth.RemoveRange(targetsToBeCulled);
-                    
+
                     }
-                   
-                
+
+
                 }
                 catch (Exception e)
                 {

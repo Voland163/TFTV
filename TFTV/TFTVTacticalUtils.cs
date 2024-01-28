@@ -55,19 +55,19 @@ namespace TFTV
                     
                     foreach(FixedDeployConditionData fixedDeployConditionData in tacticalDeployZone.FixedDeployment) 
                     {
-                        TFTVLogger.Always($"{tacticalDeployZone.name} will spawn {fixedDeployConditionData.TacActorDef.name}");
+                        TFTVLogger.Always($"FixedDeployConditionData: {tacticalDeployZone.name} at {tacticalDeployZone.Pos} will spawn {fixedDeployConditionData.TacActorDef.name}");
                     
                     }
 
 
                     foreach (MissionDeployConditionData fixedDeployConditionData in tacticalDeployZone.MissionDeployment)
                     {
-                        TFTVLogger.Always($"{tacticalDeployZone.name} at {tacticalDeployZone.Pos} activates on turn {fixedDeployConditionData.ActivateOnTurn}, tag: {fixedDeployConditionData.ActorTagDef}, " +
-                            $"deactivate after turn: {fixedDeployConditionData.DeactivateAfterTurn}");
+                        TFTVLogger.Always($"{tacticalDeployZone.name} at {tacticalDeployZone.Pos} activates on turn {fixedDeployConditionData.ActivateOnTurn}, tag: {fixedDeployConditionData?.ActorTagDef?.name}, " +
+                            $"deactivate after turn: {fixedDeployConditionData.DeactivateAfterTurn}", false);
 
                     }
 
-                    TFTVLogger.Always($"{tacticalDeployZone.DeployConditions}");
+                //    TFTVLogger.Always($"{tacticalDeployZone.DeployConditions}");
                     
 
                 }

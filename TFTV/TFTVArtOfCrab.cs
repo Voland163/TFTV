@@ -172,6 +172,11 @@ namespace TFTV
         {
             try
             {
+                if (!tacticalActor.IsControlledByAI || !tacticalActor.TacticalActorDef.name.Equals("Soldier_ActorDef") || tacticalActor.IsDead || tacticalActor.IsDisabled || tacticalActor.IsEvacuated)
+                {
+                    return;
+                }
+
                 List<Weapon> weapons = new List<Weapon>(tacticalActor.Equipments.GetWeapons().Where(
                     w => w.IsUsable && w.HasCharges));
 

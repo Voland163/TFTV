@@ -56,7 +56,7 @@ TFTV_TIP_TACTICAL_5,Text,,"The bigger Pandorans will ignore smaller critters, dr
 TFTV_TIP_TACTICAL_6,Text,,Decoys and imaginary (or are they?) monsters don't stop bullets.,,,,,,,,
 TFTV_TIP_TACTICAL_7,Text,,"If you are looking for a challenge, check the Make Pandorans Stronger option at the start of the game. If you are still finding everything too easy, try the ETERMES difficulty. Report if you survive, would you kindly. ",,,,,,,,
 TFTV_TIP_TACTICAL_8,Text,,"If you are finding the game too hard, try playing on Story Mode or Rookie. You can also choose a different difficulty setting for the Tactical portion of the game. You can do so either on starting a new game or in the mod config.",,,,,,,,
-TFTV_TIP_TACTICAL_9,Text,,"If you run into any Error Messages or other bugs, please report them in our #bug-reporting channel at the Phoenix Rising Discord server.",,,,,,,,
+TFTV_TIP_TACTICAL_9,Text,,"If you run into any Error Messages or other bugs, please report them in our #bug-reporting channel at the Terror from the Void Discord server.",,,,,,,,
 TFTV_TIP_TACTICAL_10,Text,,Smart adversaries will realize fast that they are attacking a decoy.,,,,,,,,
 TFTV_TIP_GEOSCAPE_20,Text,,The volume of Pandorans that a craft is able to extract is equal to its carrying capacity when equipped with a passenger module.,,,,,,,,
 TFTV_TIP_GEOSCAPE_21,Text,,Only one aircraft can be used for extracting paralyzed Pandorans for capture. The game will automatically pick the one with the largest capture capacity.,,,,,,,,

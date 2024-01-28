@@ -97,28 +97,32 @@ BASEDEFENSE_INFESTATION_DESCRIPTION,Text,,"<i>""They're coming out of the walls!
 
 Security footage shows the Pandorans taking over the base. 
 
-Director, they are colonizing it.
-
-We will deploy through maintenance access in the tunnels under the base facilities.",,,,,,,,
+Director, they are colonizing it.",,,,,,,,
 BASEDEFENSE_NESTING_TITLE ,Text,,Infestation in progress...,,,,,,,,
 BASEDEFENSE_NESTING_DESCRIPTION,Text,,"<i>""Busy little creatures.""</i>
 
-The enemy has breached our defenses and has spread throughout the base. We will deploy through maintenance access in the tunnels under the base facilities. ",,,,,,,,
+The enemy has breached our defenses and has spread throughout the base.",,,,,,,,
 BASEDEFENSE_TACTICAL_ADVANTAGE_TITLE ,Text,,Tactical Advantage!,,,,,,,,
 BASEDEFENSE_TACTICAL_ADVANTAGE_DESCRIPTION,Text,,"<i>""You're down there, we're up here! You walked into the wrong goddamn room...""</i>
 
-We have taken defensive positions around the main entrance. As long as we hold this choke point we should be fine. ",,,,,,,,
-BASEDEFENSE_UMBRASTRAT_TEXT,Text,,"Director, we are detecting something in the air vents. It's the Mist. Could be a Triton infiltration team. Could be something worse... ",,,,,,,,
+As long as we can hold them off at the entrance, we should be fine. ",,,,,,,,
+BASEDEFENSE_SCYLLA_LOOSE_TITLE,Text,,Scylla on the loose!,,,,,,,,
+BASEDEFENSE_SCYLLA_LOOSE_DESCRIPTION,Text,,"<i> ""Game over, man! Game over!"" </i>
+
+The Scylla has broken out of Containment!",,,,,,,,
+BASEDEFENSE_DYNAMIC_BREACH_TITLE,Text,,Containment breach!,,,,,,,,
+BASEDEFENSE_DYNAMIC_BREACH_DESCRIPTION,Text,,Due to the damage sustained by the Containment chamber the Pandorans held inside have managed to break free!,,,,,,,,
+BASEDEFENSE_UMBRASTRAT_TEXT,Text,,"Director, we are detecting something in the air vents. It’s the Mist. It could be a Triton infiltration team. If so, they will have to egress at the Access Lift shaft. However, it could also be something worse… Stay away from the Mist if you can.",,,,,,,,
 BASEDEFENSE_UMBRASTRAT_TITLE,Text,,Umbra or Tritons,,,,,,,,
 BASEDEFENSE_WORMSSTRAT_TEXT,Text,,"Director, there is something burrowing down towards your team. Small, multiple targets bearing on the hangar.",,,,,,,,
 BASEDEFENSE_WORMSSTRAT_TITLE,Text,,Worms or Myrmidons,,,,,,,,
-BASEDEFENSE_FORCE2STRAT_TEXT,Text,,"Director, be advised, we have detected a secondary strike force digging their way in. They can appear behind our backs any minute!",,,,,,,,
+BASEDEFENSE_FORCE2STRAT_TEXT,Text,,"Director, be advised: we have detected a secondary strike force digging their way in. We have triangulated the emergence vector to this location. They could appear behind us at any moment!",,,,,,,,
 BASEDEFENSE_FORCE2STRAT_TITLE,Text,,Secondary Strike Force,,,,,,,,
 BASEDEFENSE_VENTING_PROMPT,Text,,"Activate Emergency Venting? This will stop the incoming wave of Pandoran reinforcements, but it will damage your power generator and cause random fires and explosions around the base!",,,,,,,,
 BASEDEFENSE_VENTING_TITLE,Text,,Emergency venting,,,,,,,,
 BASEDEFENSE_VENTING_TEXT,Text,,"<i>“Between a rock and a hard place, be water.”</i> 
 
-The geothermal plant that powers the base has an emergency steam vent that can scald the Pandorans that are trying to get into the base, removing the currently incoming wave of reinforcements. However, this will likely damage the generator and will cause the base systems to malfunction, resulting in fires and explosions. 
+The geothermal plant that powers the base has an emergency steam vent that can scald the Pandorans that are trying to get into the base, <b>removing the currently incoming wave of reinforcements</b>. However, this will likely damage the generator and will cause the base systems to malfunction, resulting in fires and explosions. 
 
 There are several consoles around the base that can be activated; inbuilt safety measures prevent repeating the operation at the same console.",,,,,,,,
 HINT_DECOYPLACED_TITLE,Text,,D-Coy,,,,,,,,

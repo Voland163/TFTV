@@ -131,7 +131,7 @@ namespace TFTV
                 List<int> VoidOmensInPLay = new List<int>();
                 List<int> AlreadyRolledVoidOmens = new List<int>();
 
-                int difficulty = TFTVReleaseOnly.DifficultyOrderConverter(level.CurrentDifficultyLevel.Order);
+                int difficulty = TFTVSpecialDifficulties.DifficultyOrderConverter(level.CurrentDifficultyLevel.Order);
                 string voidOmen = "VoidOmen_";
 
                 for (int i = 0; i < CheckFordVoidOmensInPlay(level).Count(); i++)
@@ -650,7 +650,7 @@ namespace TFTV
                 List<int> VoidOmensInPLay = new List<int>();
                 List<int> AlreadyRolledVoidOmens = new List<int>();
 
-                int difficulty = TFTVReleaseOnly.DifficultyOrderConverter(controller.CurrentDifficultyLevel.Order);
+                int difficulty = TFTVSpecialDifficulties.DifficultyOrderConverter(controller.CurrentDifficultyLevel.Order);
 
                 for (int i = 0; i < CheckFordVoidOmensInPlay(controller).Count(); i++)
                 {
@@ -837,7 +837,7 @@ namespace TFTV
         {
             try
             {
-                int difficulty = TFTVReleaseOnly.DifficultyOrderConverter(geoLevelController.CurrentDifficultyLevel.Order);
+                int difficulty = TFTVSpecialDifficulties.DifficultyOrderConverter(geoLevelController.CurrentDifficultyLevel.Order);
                 string voidOmen = "VoidOmen_";
 
                 // An array to record which variables hold which Void Omens
@@ -878,7 +878,7 @@ namespace TFTV
                     string triggeredVoidOmensString = "TriggeredVoidOmen_";
                     string voidOmenTitleString = "VOID_OMEN_TITLE_";
                     string voidOmenString = "VoidOmen_";
-                    int difficulty = TFTVReleaseOnly.DifficultyOrderConverter(geoLevelController.CurrentDifficultyLevel.Order);
+                    int difficulty = TFTVSpecialDifficulties.DifficultyOrderConverter(geoLevelController.CurrentDifficultyLevel.Order);
 
                     GeoFactionObjective earliestVO = geoLevelController.PhoenixFaction.Objectives?.FirstOrDefault(o => o.Title.LocalizationKey.Contains(voidOmenTitleString));
 
@@ -963,7 +963,7 @@ namespace TFTV
                 string voidOmenTitleString = "VOID_OMEN_TITLE_";
                 string voidOmenString = "VoidOmen_";
                 int[] voidOmensinPlay = CheckFordVoidOmensInPlay(geoLevelController);
-                int difficulty = TFTVReleaseOnly.DifficultyOrderConverter(geoLevelController.CurrentDifficultyLevel.Order);
+                int difficulty = TFTVSpecialDifficulties.DifficultyOrderConverter(geoLevelController.CurrentDifficultyLevel.Order);
 
                 List<GeoFactionObjective> allVoidOmenObjectives = FindVoidOmenObjectives(geoLevelController);
 
@@ -1327,7 +1327,7 @@ namespace TFTV
 
                     if (VoidOmensCheck[7] && config.MoreMistVO)
                     {
-                        int difficultyLevel = TFTVReleaseOnly.DifficultyOrderConverter(__instance.TacticalLevel.Difficulty.Order);
+                        int difficultyLevel = TFTVSpecialDifficulties.DifficultyOrderConverter(__instance.TacticalLevel.Difficulty.Order);
 
                         MissionTagDef nestAssaultTag = DefCache.GetDef<MissionTagDef>("MissionTypeAlienNestAssault_MissionTagDef");
                         MissionTagDef lairAssaultTag = DefCache.GetDef<MissionTagDef>("MissionTypeAlienLairAssault_MissionTagDef");
@@ -1499,7 +1499,7 @@ namespace TFTV
                 {
                     TFTVLogger.Always("Lair or Citadal destroyed");
                     if (alienBase.AlienBaseTypeDef.Keyword == "lair" || alienBase.AlienBaseTypeDef.Keyword == "citadel"
-                        || (alienBase.AlienBaseTypeDef.Keyword == "nest" && TFTVReleaseOnly.DifficultyOrderConverter(__instance.GeoLevel.CurrentDifficultyLevel.Order) == 1))
+                        || (alienBase.AlienBaseTypeDef.Keyword == "nest" && TFTVSpecialDifficulties.DifficultyOrderConverter(__instance.GeoLevel.CurrentDifficultyLevel.Order) == 1))
                     {
                         TFTVLogger.Always("Lair or Citadal destroyed, Void Omen should be removed and Void Omen event triggered");
 

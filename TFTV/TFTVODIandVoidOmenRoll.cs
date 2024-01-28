@@ -412,7 +412,7 @@ namespace TFTV
                     int voidOmenRoll = 0;
                     // Create variable reflecting difficulty level, 1 being the easiest, and 4 the hardest
                     // This will determine amount of possible simultaneous Void Omens
-                    int difficulty = TFTVReleaseOnly.DifficultyOrderConverter(geoLevelController.CurrentDifficultyLevel.Order);
+                    int difficulty = TFTVSpecialDifficulties.DifficultyOrderConverter(geoLevelController.CurrentDifficultyLevel.Order);
                     string triggeredVoidOmens = "TriggeredVoidOmen_";
                     string voidOmen = "VoidOmen_";
                     string voidOmenTitleFormat = "VOID_OMEN_TITLE_";

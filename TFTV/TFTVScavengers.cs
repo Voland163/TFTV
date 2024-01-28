@@ -1109,7 +1109,7 @@ namespace TFTV
                         }
                         else if (classTagDef == _scumTag)
                         {
-                            deploymentCost += 50;
+                            deploymentCost += 70;
                         }
                         else if (classTagDef == _heavyRaiderTag)
                         {

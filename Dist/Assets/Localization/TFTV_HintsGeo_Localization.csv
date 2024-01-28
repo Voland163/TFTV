@@ -207,3 +207,28 @@ If an operative starts a mission with 10 STAMINA OR LESS, they will only have 3 
 Your soldiers will slowly recover STAMINA in the aircraft if it has a FAR-M passenger module, and much faster at base, as long as it has a functioning Living Quarters. They can also recover HITPOINTS at the base if it has a functioning Medical Facility.
 
 RETURN TO YOUR BASE SO YOUR SOLDIERS CAN RECOVER",,,,,,,,
+KEY_DLC3_TUT_INFESTATION_DESCRIPTION,Text,,"Scum, villany, unbeatable prices!
+
+The Marketplace offers:
+
+-Cheap soldiers of fortune with mediocre equipment that <b>cannot receive mutations or bionics </b>. 
+-Hand-crafted weapons, known as Kaos Guns, with good performance but small magazines and expensive ammo that can only be bought in the Bazaar.
+-Junker, the post-Collapse ground vehicle of choice, and modules for it and other vehicles.
+-Access to faction technologies.
+
+The stock rotates approximately every 3 days and more options will become gradually available.   
+You can access and make purchases in the Bazaar remotely, without a vehicle at the site.
+",,,,,,,,
+KEY_DLC3_TUT_INFESTATION_NAME,Text,,BAZAAR - MARKETPLACE,,,,,,,,
+KEY_HINT_BEHEMOTH_MISSION_TITLE,Text,,Attack the Behemoth,,,,,,,,
+KEY_HINT_BEHEMOTH_MISSION_DESCRIPTION,Text,,"You can now land a squad on the Behemoth to destroy it once and for all! Load a team on the Masked Manticore and click on this icon when the Behemoth emerges to trigger the mission.",,,,,,,,
+KEY_HINT_BEHEMOTH_DEPLOY_TITLE,Text,,Deploying on the Behemoth,,,,,,,,
+KEY_HINT_BEHEMOTH_DEPLOY_DESCRIPTION,Text,,"Your squad will have to separate into 2 teams to complete the objective. Because of the high winds it will be very difficult, if not impossible for the 2 teams to rendezvous, so you should assume that each will have to act fully independently. Assign your operatives to A and B teams accordingly.",,,,,,,,
+KEY_HINT_BASE_MISSION_TITLE,Text,,Base defense deployment,,,,,,,,
+KEY_HINT_BASE_MISSION_DESCRIPTION,Text,,"You have some options when deploying for the base defense, depending on the stage of the attack and whether you have an operational Access Lift.
+
+During the initial state (more than 12 hours left on the timer) you can deploy at the Hangar or at a choke point in the Entrance to the base.
+
+If the Pandorans have already penetrated the first line of defense (less than 12 hours left on the timer), you will have to deploy at the Entrance to the base.  
+
+If the base has an operational Access Lift you can also deploy your operatives there.",,,,,,,,

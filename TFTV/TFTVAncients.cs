@@ -1277,12 +1277,12 @@ namespace TFTV
                     if (controller.Factions.Any(f => f.Faction.FactionDef.MatchesShortName("anc")))
                     {
                         faction = controller.GetFactionByCommandName("anc");
-                        countUndamagedGuardians = AncientsEncounterCounter + TFTVReleaseOnly.DifficultyOrderConverter(controller.Difficulty.Order);
+                        countUndamagedGuardians = AncientsEncounterCounter + TFTVSpecialDifficulties.DifficultyOrderConverter(controller.Difficulty.Order);
                     }
                     else
                     {
                         faction = controller.GetFactionByCommandName("px");
-                        countUndamagedGuardians = 8 - TFTVReleaseOnly.DifficultyOrderConverter(controller.Difficulty.Order);
+                        countUndamagedGuardians = 8 - TFTVSpecialDifficulties.DifficultyOrderConverter(controller.Difficulty.Order);
                     }
 
                     CyclopsAbilities.CyclopsResistance.CheckCyclopsDefense();

@@ -132,7 +132,7 @@ namespace TFTV
                             palace++;
                         }
                     }
-                    int difficulty = TFTVReleaseOnly.DifficultyOrderConverter(__instance.GeoLevel.CurrentDifficultyLevel.Order);
+                   // int difficulty = TFTVSpecialDifficulties.DifficultyOrderConverter(__instance.GeoLevel.CurrentDifficultyLevel.Order);
                     if (__instance.GeoLevel.EventSystem.GetVariable("Pandorans_Researched_Citadel") == 1)
                     {
                         __instance.AddEvolutionProgress(nests * 5 + lairs * 10 + citadels * 15);

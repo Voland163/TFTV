@@ -1,25 +1,336 @@
 ﻿using Base;
+using Base.Core;
 using Base.Defs;
-using Base.Rendering.ObjectRendering;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
+using PhoenixPoint.Common.Entities;
+using PhoenixPoint.Common.Entities.Items;
+using PhoenixPoint.Common.Levels.MapGeneration;
+using PhoenixPoint.Geoscape.Entities;
+using PhoenixPoint.Geoscape.Entities.Abilities;
+using PhoenixPoint.Geoscape.Entities.PhoenixBases;
 using PhoenixPoint.Geoscape.Entities.Research;
+using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Tactical.Entities;
-using PhoenixPoint.Tactical.UI.SoldierPortraits;
-using SETUtil.Common.Extend;
+using PhoenixPoint.Tactical.Levels;
+using PhoenixPoint.Tactical.Levels.Destruction;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using UnityEngine;
-using static PhoenixPoint.Tactical.Entities.SquadPortraitsDef;
+using static PhoenixPoint.Common.Entities.Items.ItemManufacturing;
+using static PhoenixPoint.Geoscape.Entities.PhoenixBases.GeoPhoenixBaseTemplate;
 
 namespace TFTV
 {
     internal class TFTVExperimental
     {
+        private static readonly DefRepository Repo = TFTVMain.Repo;
+        private static readonly SharedData Shared = TFTVMain.Shared;
+        private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
+        // UIStateGeoscapeTutorial
+
+        // ResearchRequirement
+
+
+
+        /* CaptureActorResearchRequirement
+             public void WireResearchEvents()
+         {
+             GameUtl.GameComponent<DefRepository>().GetAllDefs<ResearchDbDef>();
+             IEnumerable<ResearchElement> completed = this.Completed;
+             foreach (ResearchElement researchElement in this.AllResearchesArray.GetEnumerator<ResearchElement>())
+             {
+                 bool flag = true;
+                 string[] invalidatedBy = researchElement.ResearchDef.InvalidatedBy;
+                 for (int i = 0; i < invalidatedBy.Length; i++)
+                 {
+                     string invalidateID = invalidatedBy[i];
+                     if (completed.Any((ResearchElement r) => string.Equals(r.ResearchID, invalidateID, StringComparison.OrdinalIgnoreCase)))
+                     {
+                         flag = false;
+                         researchElement.State = ResearchState.Hidden;
+                         break;
+                     }
+                 }
+                 if (flag)
+                 {
+                     researchElement.InitializeRequirements(researchElement.ResearchDef.RequirementsDefs);
+                 }
+             }
+         }*/
+
+        [HarmonyPatch(typeof(GeoAbilityView), "GetDisabledStateText", typeof(GeoAbilityTarget))]
+        public static class TFTV_GeoAbilityView_GetDisabledStateText
+        {
+            public static void Postfix(GeoAbilityView __instance, ref string __result)
+            {
+                try
+                {
+                    if (__instance.GeoAbility is LaunchBehemothMissionAbility)
+                    {
+                        __result = "Behemoth is submerged!";
+                    }
+                }
+
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
+
+        [HarmonyPatch(typeof(ItemManufacturing), "FinishManufactureItem")]
+        public static class TFTV_ItemManufacturing_FinishManufactureItem
+        {
+            public static void Postfix(ItemManufacturing __instance, ManufactureQueueItem element)
+            {
+                try
+                {
+                    TFTVLogger.Always($"{element.ManufacturableItem.Name}, {element.ManufacturableItem.RelatedItemDef.name}");
+
+
+                    if (element.ManufacturableItem.RelatedItemDef.name.Equals("PP_MaskedManticore_VehicleItemDef"))
+                    {
+                        TFTVHints.GeoscapeHints.TriggerBehemothMissionHint(GameUtl.CurrentLevel().GetComponent<GeoLevelController>());
+
+                    }
+
+                }
+
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
+
+
+
+
+
+
+        [HarmonyPatch(typeof(LaunchBehemothMissionAbility), "GetDisabledStateInternal")]
+        public static class TFTV_LaunchBehemothMissionAbility_GetDisabledStateInternal_patch
+        {
+
+            public static void Postfix(LaunchBehemothMissionAbility __instance, ref GeoAbilityDisabledState __result)
+            {
+                try
+                {
+                    if (__instance.GeoLevel.AlienFaction.Behemoth == null || __instance.GeoLevel.AlienFaction.Behemoth != null &&
+                        (__instance.GeoLevel.AlienFaction.Behemoth.CurrentBehemothStatus == GeoBehemothActor.BehemothStatus.Dormant))
+                    {
+                        __result = GeoAbilityDisabledState.RequirementsNotMet;
+                    }
+                }
+
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
+
+       
+
+
+     /*   [HarmonyPatch(typeof(BreachEntrance), "OnAllPlotParcelsLoaded")]
+        public static class TFTV_BreachEntrance_OnAllPlotParcelsLoaded_patch
+        {
+
+            public static void Prefix(BreachEntrance __instance, List<Transform> parcels, Transform myParcel, ref MapPlot plot)
+            {
+                try
+                {                 
+                    plot.RemainingBreachPoints = 1;
+                }
+
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }*/
+
+
+        [HarmonyPatch(typeof(LaunchBehemothMissionAbility), "ActivateInternal")]
+        public static class TFTV_LaunchBehemothMissionAbility_ActivateInternal_patch
+        {
+
+            public static void Prefix(LaunchBehemothMissionAbility __instance)
+            {
+                try
+                {
+                    TFTVHints.GeoscapeHints.TriggerBehemothDeployHint(__instance.GeoLevel);
+                }
+
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
+
+
+
+        [HarmonyPatch(typeof(GeoPhoenixBaseTemplate), "CreateBaseLayout")]
+        public static class TFTV_GeoPhoenixBaseTemplate_CreateBaseLayout_patch
+        {
+
+            public static bool Prefix(GeoPhoenixBaseTemplate __instance, ref GeoPhoenixBaseLayout __result, GeoPhoenixBaseLayoutDef layoutDef, int randomSeed)
+            {
+                try
+                {
+                    PhoenixFacilityDef accessLift = DefCache.GetDef<PhoenixFacilityDef>("AccessLift_PhoenixFacilityDef");
+
+
+                    UnityEngine.Random.InitState(randomSeed);
+                    PhoenixBaseLayoutEdge entrance = PhoenixBaseLayoutEdge.Bottom;
+                    GeoPhoenixBaseLayout geoPhoenixBaseLayout = new GeoPhoenixBaseLayout(layoutDef, entrance);
+                    Vector2Int randomElement = geoPhoenixBaseLayout.GetBuildableTiles().GetRandomElement();
+                    geoPhoenixBaseLayout.PlaceBaseEntrance(randomElement);
+                    IList<PhoenixFacilityData> list = __instance.FacilityData.ToList().Shuffle();
+                    List<Vector2Int> list2 = new List<Vector2Int>();
+
+                    int facilitiesCount = list.Count;
+
+
+                    while (list.Count > 0)
+                    {
+                        PhoenixFacilityData phoenixFacilityData = null;
+
+                        if (list.Count == 1) //place hangar last
+                        {
+                            IEnumerable<PhoenixFacilityData> source = list.Where((PhoenixFacilityData f) => f.FacilityDef.Size == 2);
+                            phoenixFacilityData = ((!source.Any()) ? list.Last() : source.First());
+
+                        }
+                        else if (list.Count == 3) //place access lift with at least one space to hangar
+                        {
+                            IEnumerable<PhoenixFacilityData> source = list.Where((PhoenixFacilityData f) => f.FacilityDef.Size == 1 && f.FacilityDef == accessLift);
+                            phoenixFacilityData = ((!source.Any()) ? list.Last() : source.First());
+
+                        }
+                        else //place anything except access lift or hangar in between
+                        {
+                            IEnumerable<PhoenixFacilityData> source = list.Where((PhoenixFacilityData f) => f.FacilityDef.Size == 1 && f.FacilityDef != accessLift);
+                            phoenixFacilityData = ((!source.Any()) ? list.Last() : source.First());
+                        }
+
+                        list2.Clear();
+                        geoPhoenixBaseLayout.GetBuildableTilesForFacility(phoenixFacilityData.FacilityDef, list2);
+                        if (list2.Count == 0)
+                        {
+                            Debug.LogError("No tiles available for placing facility " + phoenixFacilityData.FacilityDef.name + "!");
+                        }
+                        else
+                        {
+                            GeoPhoenixFacility geoPhoenixFacility = geoPhoenixBaseLayout.PlaceFacility(position: list2.GetRandomElement(), facilityDef: phoenixFacilityData.FacilityDef, dontPlaceCorridors: false);
+                            if (__instance.ApplyFullDamageOnFacilities)
+                            {
+                                geoPhoenixFacility.ApplyFullDamageOnFacility();
+                            }
+                            else if (phoenixFacilityData.StartingHealth < 100)
+                            {
+                                geoPhoenixFacility.DamageFacility(100 - phoenixFacilityData.StartingHealth);
+                            }
+                        }
+
+                        if (0 == 0)
+                        {
+                            list.Remove(phoenixFacilityData);
+                        }
+                    }
+
+                    int num = __instance.BlockedTiles.RandomValue();
+                    for (int i = 0; i < num; i++)
+                    {
+                        ICollection<Vector2Int> rockPlacableTiles = geoPhoenixBaseLayout.GetRockPlacableTiles();
+                        if (rockPlacableTiles.Count() == 0)
+                        {
+                            Debug.LogWarning("No place left to place rock in phoenix base!");
+                            break;
+                        }
+
+                        Vector2Int randomElement3 = rockPlacableTiles.GetRandomElement();
+                        geoPhoenixBaseLayout.PlaceRock(randomElement3);
+                    }
+
+                    __result = geoPhoenixBaseLayout;
+
+                    return false;
+                }
+
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
+
         //.GetDamageModifierForDistance
 
+        // AmbushOutcomeDataBind
+
+        //GeoMission
 
 
+
+        /*   [HarmonyPatch(typeof(GeoscapeTutorial), "Map_SiteInspectedChanged")]
+           public static class TFTV_GeoscapeTutorial_Map_SiteInspectedChanged_patch
+           {
+
+               public static void Postfix(GeoscapeTutorial __instance, GeoSite inspectedSite, GeoFaction inspector)
+               {
+                   try
+                   {
+                      // if(inspectedSite.) { }
+
+
+                   }
+
+                   catch (Exception e)
+                   {
+                       TFTVLogger.Error(e);
+                       throw;
+                   }
+               }
+           }
+
+
+           public static void GeoTutorialStepTest(GeoLevelController controller)
+           {
+               try 
+               {
+                   UIModuleTutorialModal uIModuleTutorial = controller.View.GeoscapeModules.TutorialModule;
+
+                   controller.View.MainUILayer.SetActiveState("");
+
+                  uIModuleTutorial.
+
+
+
+               }
+               catch (Exception e)
+               {
+                   TFTVLogger.Error(e);
+                   throw;
+               }
+           }*/
+
+
+
+
+
+        //EffectDef.ConditionsMet
         /*     [HarmonyPatch(typeof(OptionsComponent), "StartSaveOptions")]
              public static class OptionsComponent_StartSaveOptions_patch
          {
@@ -41,115 +352,6 @@ namespace TFTV
              }
          }*/
 
-
-        //Codemite's solution to pink portrait backgrounds on Macs
-        [HarmonyPatch(typeof(RenderingEnvironment), MethodType.Constructor, new Type[]
-{
-    typeof(Vector2Int),
-    typeof(RenderingEnvironmentOption),
-    typeof(Color),
-    typeof(Camera)
-  })]
-        public static class RenderingEnvironmentPatch
-        {
-
-            public static bool Prefix(ref RenderingEnvironment __instance, ref Transform ____origin, ref bool ____isExternalCamera, ref Camera ____camera,
-                Vector2Int resolution, RenderingEnvironmentOption option, Color? backgroundColor, Camera cam)
-            {
-                try
-                {
-
-                    ____origin = new GameObject("_RenderingEnvironmentOrigin_").transform;
-                    ____origin.position = new Vector3(0f, 1500f, 0f);
-                    ____origin.gameObject.hideFlags = HideFlags.DontSave | HideFlags.NotEditable;
-
-                    ____isExternalCamera = cam != null;
-
-                    ____camera = cam != null ? cam : new GameObject("_RenderingCamera_").AddComponent<Camera>();
-                    ____camera.gameObject.SetActive(false);
-                    ____camera.clearFlags = option.ContainsFlag(RenderingEnvironmentOption.NoBackground) && backgroundColor == null
-                        ? CameraClearFlags.Depth
-                        : (backgroundColor != null ? CameraClearFlags.SolidColor : CameraClearFlags.Skybox);
-                    ____camera.fieldOfView = 60;
-                    ____camera.orthographicSize = 2;
-                    ____camera.orthographic = option.ContainsFlag(RenderingEnvironmentOption.Orthographic);
-                    ____camera.farClipPlane = 100;
-                    ____camera.renderingPath = RenderingPath.Forward;
-                    ____camera.enabled = false;
-                    ____camera.allowHDR = false;
-                    ____camera.allowDynamicResolution = false;
-                    ____camera.usePhysicalProperties = false;
-
-                    // Use reflection to set the value of RenderTexture
-                    var renderTextureField = typeof(RenderingEnvironment).GetField("RenderTexture", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-                    if (renderTextureField != null)
-                    {
-                        renderTextureField.SetValue(__instance, RenderTexture.GetTemporary(resolution.x, resolution.y, 1, RenderTextureFormat.ARGB32));
-                    }
-
-                    ____camera.targetTexture = (RenderTexture)renderTextureField.GetValue(__instance);
-
-                    if (backgroundColor != null)
-                    {
-                        ____camera.backgroundColor = (Color)backgroundColor;
-                    }
-
-                    return false;
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                    throw;
-                }
-            }
-        }
-
-
-        [HarmonyPatch(typeof(SoldierPortraitUtil), "RenderSoldierNoCopy")]
-        public static class SoldierPortraitUtil_RenderSoldierNoCopy_patch
-        {
-
-            public static bool Prefix(GameObject soldierToRender, RenderPortraitParams renderParams, Camera usedCamera, ref Texture2D __result)
-            {
-                try
-                {
-
-                    if (Application.platform == RuntimePlatform.OSXPlayer ||
-                 Application.platform == RuntimePlatform.OSXEditor)
-                    {
-
-                        var outputImage = new Texture2D(renderParams.RenderedPortraitsResolution.x, renderParams.RenderedPortraitsResolution.y, TextureFormat.RGBA32, true);
-                        using (var renderingEnvironment = new RenderingEnvironment(renderParams.RenderedPortraitsResolution, RenderingEnvironmentOption.NoBackground, Color.black, usedCamera))
-                        {
-                            Transform headTransform = soldierToRender.transform.FindTransformInChildren(renderParams.TargetBoneName) ?? soldierToRender.transform;
-                            var t = soldierToRender.transform;
-                            var initialPosition = t.position;
-                            var initialRotation = t.rotation;
-                            t.position = renderingEnvironment.OriginPosition;
-                            t.rotation = renderingEnvironment.OriginRotation;
-
-                            SoldierFrame soldierFrame = new SoldierFrame(headTransform,
-                                renderParams.CameraFoV, renderParams.CameraDistance, renderParams.CameraHeight, renderParams.CameraSide);
-                            renderingEnvironment.Render(soldierFrame, false);
-                            renderingEnvironment.WriteResultsToTexture(outputImage);
-
-                            t.position = initialPosition;
-                            t.rotation = initialRotation;
-                        }
-
-                        __result = outputImage;
-
-                        return false;
-                    }
-                    return true;
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                    throw;
-                }
-            }
-        }
 
 
 
@@ -300,9 +502,7 @@ namespace TFTV
           */
 
         //  internal static Color purple = new Color32(149, 23, 151, 255);
-        private static readonly DefRepository Repo = TFTVMain.Repo;
-        private static readonly SharedData Shared = TFTVMain.Shared;
-        private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
+
 
 
 

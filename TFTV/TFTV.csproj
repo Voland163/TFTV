@@ -158,6 +158,7 @@
     <Compile Include="TFTVDeliriumPerks.cs" />
     <Compile Include="TFTVDiplomacyPenalties.cs" />
     <Compile Include="TFTVPureAndForsaken.cs" />
+    <Compile Include="TFTVResearch.cs" />
     <Compile Include="TFTVScavengers.cs" />
     <Compile Include="TFTVVoxels.cs" />
     <Compile Include="TFTVHarmonyGeoscape.cs" />
@@ -167,7 +168,6 @@
     <Compile Include="TFTVEconomyExploitsFixes.cs" />
     <Compile Include="TFTVNewGameOptions.cs" />
     <Compile Include="TFTVPalaceMission.cs" />
-    <Compile Include="TFTVReleaseOnly.cs" />
     <Compile Include="TFTVRescueVIPMissions.cs" />
     <Compile Include="TFTVSpecialDifficulties.cs" />
     <Compile Include="TFTVExperimental.cs" />

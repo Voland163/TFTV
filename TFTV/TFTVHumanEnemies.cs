@@ -342,7 +342,7 @@ namespace TFTV
 
             {
                 TacticalFaction phoenix = controller.GetFactionByCommandName("PX");
-                int difficultyLevel = TFTVReleaseOnly.DifficultyOrderConverter(controller.Difficulty.Order);
+                int difficultyLevel = TFTVSpecialDifficulties.DifficultyOrderConverter(controller.Difficulty.Order);
 
                 foreach (TacticalFaction faction in GetHumanEnemyFactions(controller))
                 {
@@ -491,7 +491,7 @@ namespace TFTV
             try
             {
                 TacticalFaction phoenix = controller.GetFactionByCommandName("PX");
-                int difficultyLevel = TFTVReleaseOnly.DifficultyOrderConverter(controller.Difficulty.Order);
+                int difficultyLevel = TFTVSpecialDifficulties.DifficultyOrderConverter(controller.Difficulty.Order);
 
                 foreach (TacticalFaction faction in GetHumanEnemyFactions(controller))
                 {
@@ -1073,7 +1073,7 @@ namespace TFTV
 
         private static void AdjustStats(TacticalActor tacticalActor, GameTagDef classTagDef)
         {
-            int difficultyLevel = TFTVReleaseOnly.DifficultyOrderConverter(tacticalActor.TacticalLevel.Difficulty.Order);
+            int difficultyLevel = TFTVSpecialDifficulties.DifficultyOrderConverter(tacticalActor.TacticalLevel.Difficulty.Order);
 
             try
             {
@@ -1117,7 +1117,7 @@ namespace TFTV
 
         public static void AdjustStatsAndSkills(TacticalActor tacticalActor)
         {
-            int difficultyLevel = TFTVReleaseOnly.DifficultyOrderConverter(tacticalActor.TacticalLevel.Difficulty.Order);
+            int difficultyLevel = TFTVSpecialDifficulties.DifficultyOrderConverter(tacticalActor.TacticalLevel.Difficulty.Order);
 
             try
             {
@@ -1355,7 +1355,7 @@ namespace TFTV
 
         public static int GetStatBuffForTier(TacticalActor tacticalActor)
         {
-            int difficultyLevel = TFTVReleaseOnly.DifficultyOrderConverter(tacticalActor.TacticalLevel.Difficulty.Order);
+            int difficultyLevel = TFTVSpecialDifficulties.DifficultyOrderConverter(tacticalActor.TacticalLevel.Difficulty.Order);
 
             try
             {

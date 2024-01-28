@@ -2,7 +2,6 @@ using Base.Build;
 using Base.Core;
 using Base.Defs;
 using Base.Levels;
-using Base.Rendering.ObjectRendering;
 using HarmonyLib;
 using Newtonsoft.Json;
 using PhoenixPoint.Common.Core;
@@ -66,21 +65,21 @@ namespace TFTV
         public override bool CanSafelyDisable => false;
 
 
-      /*  private static void ChangeTitleScreen(PhoenixGame game)
-        {
-            try 
-            { 
-            
-                
-            
-            
-            
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-        }*/
+        /*  private static void ChangeTitleScreen(PhoenixGame game)
+          {
+              try 
+              { 
+
+
+
+
+
+              }
+              catch (Exception e)
+              {
+                  TFTVLogger.Error(e);
+              }
+          }*/
 
         /// <summary>
         /// Callback for when mod is enabled. Called even on game starup.
@@ -103,7 +102,7 @@ namespace TFTV
                 /// PhoenixGame is accessible at any time.
                 PhoenixGame game = GetGame();
 
-                string version = $"TFTV 20240128 release #1 (Update #52) v{MetaData.Version}";
+                string version = $"TFTV 20240225 release #1 (Update #53) v{MetaData.Version}";
 
                 TFTVversion = version;
 
@@ -153,14 +152,14 @@ namespace TFTV
 
                 TFTVRevenantResearch.CreateRevenantRewardsDefs();
                 TFTVProjectOsiris.Defs.CreateProjectOsirisDefs();
-
+                //  NoSecondChances.ImplementNoSecondChances();
                 //  TFTVAncients.CheckResearchesRequiringThings();
 
                 Config.PopulateConfigFields();
                 //  Config.RetrieveConfigOptions();
                 harmony.PatchAll();
 
-                if(GameUtl.CurrentLevel()!=null && GameUtl.CurrentLevel().GetComponent<HomeScreenView>() != null) 
+                if (GameUtl.CurrentLevel() != null && GameUtl.CurrentLevel().GetComponent<HomeScreenView>() != null)
                 {
                     TFTVLogger.Always($"enabling TFTV for the first time!");
                     HomeScreenView homeScreenView = GameUtl.CurrentLevel().GetComponent<HomeScreenView>();
@@ -171,16 +170,16 @@ namespace TFTV
                 }
 
 
-           /*     Type renderingEnvironmentType = typeof(RenderingEnvironment);
+                /*     Type renderingEnvironmentType = typeof(RenderingEnvironment);
 
-                // Get all public constructors
-                ConstructorInfo[] constructors = renderingEnvironmentType.GetConstructors();
+                     // Get all public constructors
+                     ConstructorInfo[] constructors = renderingEnvironmentType.GetConstructors();
 
-                // Print the names of constructors
-                foreach (ConstructorInfo constructor in constructors)
-                {
-                    TFTVLogger.Always("Constructor Name: " + constructor.FullDescription());
-                }*/
+                     // Print the names of constructors
+                     foreach (ConstructorInfo constructor in constructors)
+                     {
+                         TFTVLogger.Always("Constructor Name: " + constructor.FullDescription());
+                     }*/
 
 
 
@@ -227,7 +226,7 @@ namespace TFTV
         /// </summary>
         public override void OnConfigChanged()
         {
-           
+
 
             // Config.RetrieveConfigOptions();
             //  TFTVLogger.Always($"Config changed. Skip movies is now {Config.SkipMovies}");

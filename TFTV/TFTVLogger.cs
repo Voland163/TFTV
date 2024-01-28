@@ -67,7 +67,8 @@ namespace TFTV
                     writer.WriteLine("Message: " + ex.Message + "<br/>" + Environment.NewLine + "StackTrace: " + ex.StackTrace);
                     writer.WriteLine("----------------------------------------------------------------------------------------------------", false);
                 }
-                GameUtl.GetMessageBox().ShowSimplePrompt($"<b>An error has occurred in the Terror from the Void mod!</b>\nPlease check {TFTVMain.LogPath} for further information.\n\n<b>CAUTION:</b>\nContinuing this run may result in unstable behavior or even cause the game to crash.", MessageBoxIcon.Warning, MessageBoxButtons.OK, null);
+                GameUtl.GetMessageBox().ShowSimplePrompt($"<b>An error has occurred in the Terror from the Void mod!</b>\nPlease report it in our #bug-reporting channel at the Terror from the Void Discord server by posting the log you can find at {TFTVMain.LogPath}." +
+                    $"\n\n<b>CAUTION:</b>\nContinuing this run may result in unstable behavior or even cause the game to crash", MessageBoxIcon.Warning, MessageBoxButtons.OK, null);
             }
         }
 

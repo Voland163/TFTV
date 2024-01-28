@@ -25,14 +25,12 @@ namespace TFTV
                     PartyDiplomacy.Relation relation = (PartyDiplomacy.Relation)getRelationMethod.Invoke(__instance, new object[] { faction });
 
                     __result = relation.Diplomacy > -50;
-
                 }
 
                 catch (Exception e)
                 {
                     TFTVLogger.Error(e);
                 }
-
             }
         }
 

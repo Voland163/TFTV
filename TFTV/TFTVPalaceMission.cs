@@ -1005,7 +1005,7 @@ namespace TFTV
                             int receptacleEyesDamaged = CountReceptacleEyes(actor);
                             TFTVLogger.Always($"Receptacle eye disabled! Eyes disabled count: {receptacleEyesDamaged}");
 
-                            if (receptacleEyesDamaged >= Math.Max(TFTVReleaseOnly.DifficultyOrderConverter(controller.Difficulty.Order), 4))
+                            if (receptacleEyesDamaged >= Math.Max(TFTVSpecialDifficulties.DifficultyOrderConverter(controller.Difficulty.Order), 4))
                             {
                                 actor.ApplyDamage(new DamageResult() { HealthDamage = 2000000 });
                                 GiveAllPhoenixOperativesReceptacleDistrupredStatus(controller);
@@ -2416,7 +2416,7 @@ namespace TFTV
             // private static readonly GameTagDef revenantTier1GameTag = DefCache.GetDef<GameTagDef>("RevenantTier_1_GameTagDef");
             private static readonly GameTagDef revenantTier2GameTag = DefCache.GetDef<GameTagDef>("RevenantTier_2_GameTagDef");
             private static readonly GameTagDef revenantTier3GameTag = DefCache.GetDef<GameTagDef>("RevenantTier_3_GameTagDef");
-            private static readonly GameTagDef anyRevenantGameTag = DefCache.GetDef<GameTagDef>("Any_Revenant_TagDef");
+            private static readonly GameTagDef anyRevenantGameTag = TFTVRevenant.AnyRevenantGameTag; //DefCache.GetDef<GameTagDef>("Any_Revenant_TagDef");
             private static void PermaKillRevenant(int id)
             {
                 try

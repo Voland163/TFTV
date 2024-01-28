@@ -40,7 +40,7 @@ namespace TFTV
         {
             try
             {
-                return UnityEngine.Random.Range(1, 13 - TFTVReleaseOnly.DifficultyOrderConverter(unModifiedDifficultyOrder));
+                return UnityEngine.Random.Range(1, 13 - TFTVSpecialDifficulties.DifficultyOrderConverter(unModifiedDifficultyOrder));
 
             }
             catch (Exception e)
@@ -118,7 +118,7 @@ namespace TFTV
                 TFTVTactical.TurnZeroMethodsExecuted = false;
                 TFTVBaseDefenseGeoscape.PhoenixBasesUnderAttack = new Dictionary<int, Dictionary<string, double>>();
                 TFTVBaseDefenseGeoscape.PhoenixBasesInfested.Clear();
-                TFTVBaseDefenseGeoscape.PhoenixBasesContainmentBreach.Clear();
+                TFTVBaseDefenseGeoscape.PhoenixBasesUnderAttackSchedule.Clear();
                 TFTVBaseDefenseTactical.VentingHintShown = false;
                 TFTVBaseDefenseTactical.ConsolePositions = new Dictionary<float, float>();
                 TFTVAncients.CyclopsMolecularDamageBuff.Clear();
@@ -135,6 +135,10 @@ namespace TFTV
                 TFTVNewGameMenu.EnterStateRun = false;
                 TFTVAmbushes.AN_FallenOnes_Hotspots = new List<int>();
                 TFTVAmbushes.NJ_Purists_Hotspots = new List<int>();
+                TFTVDelirium.CharactersDeliriumPerksAndMissions.Clear();
+                TFTVBaseDefenseGeoscape.ContainmentBreachSchedule.Clear();
+                TFTVBaseDefenseGeoscape.PandoransThatCanEscape.Clear();
+                
 
                 /*  TFTVNewGameOptions.AmountOfExoticResourcesSetting;
                   TFTVNewGameOptions.ResourceMultiplierSetting;
@@ -155,52 +159,6 @@ namespace TFTV
                 TFTVLogger.Error(e);
             }
         }
-
-
-
-
-        /*   public static void ModifyGeoCharacterDef(GeoCharacter character, string name, List<TacticalAbilityDef> abilities,
-               List<ItemDef> readySlots, List<ItemDef> armorSlots, List<ItemDef> inventorySlots, List<GameTagDef> customizationTags, int level, int[] stats) 
-           {
-               try
-               {
-                   character.Rename(name);
-
-                   foreach(TacticalAbilityDef ab in abilities) 
-                   {
-                       character.Progression.AddAbility(ab); 
-                   }
-
-                   character.Progression.LevelProgression.SetLevel(level);
-
-
-
-                   newCharacter.Data.GameTags = new List<GameTagDef>(customizationTags) { classTagDef }.ToArray();
-                   newCharacter.Data.Abilites = new List<TacticalAbilityDef>(abilities).ToArray();
-                   newCharacter.Data.EquipmentItems = new List<ItemDef>(readySlots).ToArray();
-                   newCharacter.Data.InventoryItems = new List<ItemDef>(inventorySlots).ToArray();
-                   newCharacter.Data.BodypartItems = new List<ItemDef>(armorSlots).ToArray();
-                   newCharacter.Data.LevelProgression.SetLevel(level);
-                   newCharacter.Data.Strength = stats[0];
-                   newCharacter.Data.Will = stats[1];
-                   newCharacter.Data.Speed = stats[2];
-
-
-               }
-               catch (Exception e)
-               {
-                   TFTVLogger.Error(e);
-                   throw;
-               }
-
-
-
-
-
-
-
-           }*/
-
 
 
 
@@ -251,6 +209,9 @@ namespace TFTV
                 TFTVEconomyExploitsFixes.AttackedLairSites = new Dictionary<int, int>();
                 //   TFTVAncients.AlertedHoplites.Clear();
                 TFTVCapturePandorans.AircraftCaptureCapacity = 0;
+                TFTVBaseDefenseTactical.Breach = false;
+                TFTVBaseDefenseTactical.ScyllaLoose = false;
+                TFTVBaseDefenseTactical.PandoransInContainment.Clear();
                 //  TFTVBaseDefenseTactical.VentingHintShown = false;
             }
             catch (Exception e)
@@ -279,6 +240,9 @@ namespace TFTV
                 TFTVBaseDefenseTactical.StratToBeAnnounced = 0;
                 TFTVBaseDefenseTactical.StratToBeImplemented = 0;
                 TFTVBaseDefenseTactical.VentingHintShown = false;
+                //   TFTVBaseDefenseTactical.Breach = false;
+                //    TFTVBaseDefenseTactical.ScyllaLoose = false;
+                TFTVBaseDefenseTactical.ResetPandoransInContainment();
                 TFTVAncients.AlertedHoplites.Clear();
 
             }

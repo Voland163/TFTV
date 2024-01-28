@@ -33,6 +33,10 @@ using Base.Utils.Maths;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using Base.Entities;
 using PhoenixPoint.Geoscape.View.ViewStates;
+using Base.Rendering.ObjectRendering;
+using PhoenixPoint.Tactical.UI.SoldierPortraits;
+using static PhoenixPoint.Tactical.Entities.SquadPortraitsDef;
+using SETUtil.Common.Extend;
 
 namespace TFTV
 {
@@ -40,6 +44,118 @@ namespace TFTV
     {
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
         private static readonly SharedData Shared = TFTVMain.Shared;
+
+
+        //Codemite's solution to pink portrait backgrounds on Macs
+        [HarmonyPatch(typeof(RenderingEnvironment), MethodType.Constructor, new Type[]
+{
+    typeof(Vector2Int),
+    typeof(RenderingEnvironmentOption),
+    typeof(Color),
+    typeof(Camera)
+  })]
+        public static class RenderingEnvironmentPatch
+        {
+
+            public static bool Prefix(ref RenderingEnvironment __instance, ref Transform ____origin, ref bool ____isExternalCamera, ref Camera ____camera,
+                Vector2Int resolution, RenderingEnvironmentOption option, Color? backgroundColor, Camera cam)
+            {
+                try
+                {
+
+                    ____origin = new GameObject("_RenderingEnvironmentOrigin_").transform;
+                    ____origin.position = new Vector3(0f, 1500f, 0f);
+                    ____origin.gameObject.hideFlags = HideFlags.DontSave | HideFlags.NotEditable;
+
+                    ____isExternalCamera = cam != null;
+
+                    ____camera = cam != null ? cam : new GameObject("_RenderingCamera_").AddComponent<Camera>();
+                    ____camera.gameObject.SetActive(false);
+                    ____camera.clearFlags = option.ContainsFlag(RenderingEnvironmentOption.NoBackground) && backgroundColor == null
+                        ? CameraClearFlags.Depth
+                        : (backgroundColor != null ? CameraClearFlags.SolidColor : CameraClearFlags.Skybox);
+                    ____camera.fieldOfView = 60;
+                    ____camera.orthographicSize = 2;
+                    ____camera.orthographic = option.ContainsFlag(RenderingEnvironmentOption.Orthographic);
+                    ____camera.farClipPlane = 100;
+                    ____camera.renderingPath = RenderingPath.Forward;
+                    ____camera.enabled = false;
+                    ____camera.allowHDR = false;
+                    ____camera.allowDynamicResolution = false;
+                    ____camera.usePhysicalProperties = false;
+
+                    // Use reflection to set the value of RenderTexture
+                    var renderTextureField = typeof(RenderingEnvironment).GetField("RenderTexture", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+                    if (renderTextureField != null)
+                    {
+                        renderTextureField.SetValue(__instance, RenderTexture.GetTemporary(resolution.x, resolution.y, 1, RenderTextureFormat.ARGB32));
+                    }
+
+                    ____camera.targetTexture = (RenderTexture)renderTextureField.GetValue(__instance);
+
+                    if (backgroundColor != null)
+                    {
+                        ____camera.backgroundColor = (Color)backgroundColor;
+                    }
+
+                    return false;
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
+
+
+        [HarmonyPatch(typeof(SoldierPortraitUtil), "RenderSoldierNoCopy")]
+        public static class SoldierPortraitUtil_RenderSoldierNoCopy_patch
+        {
+
+            public static bool Prefix(GameObject soldierToRender, RenderPortraitParams renderParams, Camera usedCamera, ref Texture2D __result)
+            {
+                try
+                {
+
+                    if (Application.platform == RuntimePlatform.OSXPlayer ||
+                 Application.platform == RuntimePlatform.OSXEditor)
+                    {
+
+                        var outputImage = new Texture2D(renderParams.RenderedPortraitsResolution.x, renderParams.RenderedPortraitsResolution.y, TextureFormat.RGBA32, true);
+                        using (var renderingEnvironment = new RenderingEnvironment(renderParams.RenderedPortraitsResolution, RenderingEnvironmentOption.NoBackground, Color.black, usedCamera))
+                        {
+                            Transform headTransform = soldierToRender.transform.FindTransformInChildren(renderParams.TargetBoneName) ?? soldierToRender.transform;
+                            var t = soldierToRender.transform;
+                            var initialPosition = t.position;
+                            var initialRotation = t.rotation;
+                            t.position = renderingEnvironment.OriginPosition;
+                            t.rotation = renderingEnvironment.OriginRotation;
+
+                            SoldierFrame soldierFrame = new SoldierFrame(headTransform,
+                                renderParams.CameraFoV, renderParams.CameraDistance, renderParams.CameraHeight, renderParams.CameraSide);
+                            renderingEnvironment.Render(soldierFrame, false);
+                            renderingEnvironment.WriteResultsToTexture(outputImage);
+
+                            t.position = initialPosition;
+                            t.rotation = initialRotation;
+                        }
+
+                        __result = outputImage;
+
+                        return false;
+                    }
+                    return true;
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
+
+
 
 
         //Madskunky's replacement of a trig function to reduce AI processing time 
@@ -740,7 +856,7 @@ namespace TFTV
 
                     if (baseFacility.IsPowered)
                     {
-                        baseFacility.SetPowered(false);
+                      //  baseFacility.SetPowered(false);
                         baseFacility.SetPowered(true);
                     }
                     // TFTVLogger.Always($"{baseFacility.ViewElementDef.name} at {phoenixBase.name} is working? {baseFacility.IsWorking}. is it powered? {baseFacility.IsPowered} ");
