@@ -88,8 +88,8 @@ namespace TFTVVehicleRework.KaosBuggy
                         BuggyGuns[Module].ViewElementDef.Description = new LocalizedTextBind("UI_JUNKER_GOOGUN");
                         WeaponDef GooGun = (WeaponDef)BuggyGuns[Module].SubAddons[1].SubAddon; 
                         GooGun.ViewElementDef.Description = new LocalizedTextBind("UI_JUNKER_GOOGUN");
-                        GooGun.ChargesMax = 6;
-                        // GooGun.ChargesMax = 8;
+                        // GooGun.ChargesMax = 6;
+                        GooGun.ChargesMax = 8;
                         GooGun.Abilities = new AbilityDef[]
                         {
                             LaunchGrenade
@@ -101,8 +101,8 @@ namespace TFTVVehicleRework.KaosBuggy
                         BuggyGuns[Module].ViewElementDef.Description = new LocalizedTextBind("UI_JUNKER_SCREAMER");
                         WeaponDef Screamer = (WeaponDef)BuggyGuns[Module].SubAddons[1].SubAddon;
                         Screamer.ViewElementDef.Description = new LocalizedTextBind("UI_JUNKER_SCREAMER");
-                        Screamer.ChargesMax = 6;
-                        // Screamer.ChargesMax = 8;
+                        // Screamer.ChargesMax = 6;
+                        Screamer.ChargesMax = 8;
                         Screamer.DamagePayload.DamageDeliveryType = DamageDeliveryType.Sphere;
                         Screamer.DamagePayload.ParabolaHeightToLengthRatio = 0.00000001f;
                         Screamer.DamagePayload.AoeRadius = 1.5f;
