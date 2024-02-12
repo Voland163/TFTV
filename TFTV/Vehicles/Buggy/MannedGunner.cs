@@ -142,7 +142,7 @@ namespace TFTVVehicleRework.KaosBuggy
             //"RevisedArmorPlating_MarketplaceItemOptionDef"
             GeoMarketplaceItemOptionDef MarketOption = (GeoMarketplaceItemOptionDef)Repo.GetDef("d1a7a199-6cbc-0534-592c-66076d905d37");
             MarketOption.MinPrice = 350f;
-            MarketOption.MaxPrice = 550f;
+            MarketOption.MaxPrice = 500f;
         }
     }
 }
