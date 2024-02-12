@@ -29,7 +29,8 @@ namespace TFTVVehicleRework.KaosBuggy
             Exhaust.ManufactureMaterials = 250f;
             Exhaust.ViewElementDef.DisplayName1 = new LocalizedTextBind("KB_DEATHPROOF_NAME");
             Exhaust.ViewElementDef.Description = new LocalizedTextBind("UI_JUNKER_ENGINE");
-            Exhaust.BodyPartAspectDef.Speed = -4f;
+            Exhaust.BodyPartAspectDef.Speed = 0f;
+            // Exhaust.BodyPartAspectDef.Speed = -4f;
             Exhaust.Abilities = new AbilityDef[]
             {
                 KillNRun(),
@@ -144,8 +145,8 @@ namespace TFTVVehicleRework.KaosBuggy
 
                 Run.TargetingDataDef = Repo.CreateDef<TacticalTargetingDataDef>("fbc63b02-b59b-4bf4-92c5-30877e48bd59", Dash.TargetingDataDef);
                 Run.TargetingDataDef.name = "E_TargetingData [E_RunAbility]";
-                Run.TargetingDataDef.Origin.Range = 14f;
-                // Run.TargetingDataDef.Origin.Range = 12f;
+                // Run.TargetingDataDef.Origin.Range = 14f;
+                Run.TargetingDataDef.Origin.Range = 12f;
             }
             return Run;
         }
