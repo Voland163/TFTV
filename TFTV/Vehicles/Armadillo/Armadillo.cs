@@ -41,7 +41,7 @@ namespace TFTVVehicleRework.Armadillo
                 TacticalItemDef BodyPart = (TacticalItemDef)addon.SubAddon;
                 if(BodyPart.name.Contains("FrontTyre"))
                 {
-                    BodyPart.BodyPartAspectDef.Speed = 6f;
+                    BodyPart.BodyPartAspectDef.Speed = 5f;
                 }
                 else if(BodyPart.name.Contains("BackTyre"))
                 {
