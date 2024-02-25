@@ -35,7 +35,7 @@ namespace TFTVVehicleRework.Scarab
             Update_ManufactureRequirements();
         }
 
-        internal static SwitchStanceAbilityDef EnterStabilityStance() 
+        private static SwitchStanceAbilityDef EnterStabilityStance() 
         {
             SwitchStanceAbilityDef Scarab_EnterStabilityStance = (SwitchStanceAbilityDef)Repo.GetDef("44e2d750-09d1-4b51-96dc-c98d45451b1d");
             if (Scarab_EnterStabilityStance == null)
@@ -56,7 +56,7 @@ namespace TFTVVehicleRework.Scarab
             return Scarab_EnterStabilityStance;
         }
 
-        internal static SwitchStanceAbilityDef ExitStabilityStance()
+        private static SwitchStanceAbilityDef ExitStabilityStance()
         {
             SwitchStanceAbilityDef Scarab_ExitStabilityStance = (SwitchStanceAbilityDef)Repo.GetDef("370a68dc-5154-46f8-a7f6-2ece41ef4c36");
             if (Scarab_ExitStabilityStance == null)
@@ -88,20 +88,21 @@ namespace TFTVVehicleRework.Scarab
                 StabilityStanceStatusDef.name = "E_Status [Scarab_StabilityStance_AbilityDef]";
                 StabilityStanceStatusDef.StanceAnimations = null;
                 //Since we clone the Chiron's version that basically grants the same thing, all we need to do is change the number of bonus projectiles:
-                StabilityStanceStatusDef.EquipmentsStatModifications[0].EquipmentStatModification.Value = 1;
+                // StabilityStanceStatusDef.EquipmentsStatModifications[0].EquipmentStatModification.Value = 1;
+                StabilityStanceStatusDef.EquipmentsStatModifications[0].EquipmentStatModification.Value = 0;
             }
 
             return StabilityStanceStatusDef;
         }
 
-        internal static void Update_TrampleAbility()
+        private static void Update_TrampleAbility()
         {
             //"CaterpillarMoveAbilityDef"
             CaterpillarMoveAbilityDef TrampleAbility = (CaterpillarMoveAbilityDef)Repo.GetDef("943eb31e-aae8-f134-cbd3-8b49a4fc896c");
 			TrampleAbility.DisablingStatuses = TrampleAbility.DisablingStatuses.AddToArray(StabilityStanceStatus());
         }
 
-        internal static void Update_ManufactureRequirements()
+        private static void Update_ManufactureRequirements()
         {
             //"PX_HelCannon_ResearchDef_ManufactureResearchRewardDef_0"
             ManufactureResearchRewardDef HelCannonReward = (ManufactureResearchRewardDef)Repo.GetDef("80d2b708-8ee3-228b-278e-acfa09815d64");
