@@ -119,6 +119,7 @@ namespace TFTV
             TFTVPassengerModules.ImplementFarMConfig(Controller);
             //  TFTVNewGameOptions.Change_Crossbows();
             TFTVBetaSaveGamesFixes.RemoveBadSlug(Controller);
+        //    TFTVBetaSaveGamesFixes.SpecialFixForCatGuy(Controller);
             //TESTING
           //  Controller.PhoenixFaction.CaptureUnit(new GeoUnitDescriptor(Controller.AlienFaction, DefCache.GetDef<TacCharacterDef>("Scylla5_SonicMistGunAgileBelch_AlienMutationVariationDef")));
             // TFTVDefsInjectedOnlyOnce.Print();

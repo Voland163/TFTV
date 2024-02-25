@@ -37,6 +37,90 @@ namespace TFTV
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
         private static readonly DefRepository Repo = TFTVMain.Repo;
 
+      
+
+        [HarmonyPatch(typeof(TacticalFactionVision), "ReUpdateVisibilityTowardsActorImpl")]
+        public static class TFTV_TacticalFactionVision_ReUpdateVisibilityTowardsActorImpl_patch
+        {
+            private static bool Prefix(TacticalActorBase fromActor, TacticalActorBase targetActor, float basePerceptionRange, ref bool __result)
+            {
+                try
+                {
+                    if (fromActor is TacticalActor tacticalActor && tacticalActor.IsEvacuated)
+                    {
+                        __result = false;
+                        return false;
+                    }
+
+                    return true;
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
+
+
+        private static bool CheckVisibility(TacticalActorBase tacticalActorBase, TacticalActor tacticalActor, DamagePayload damagePayload)
+        {
+            try
+            {
+                if (damagePayload.DamageDeliveryType == DamageDeliveryType.Sphere || damagePayload.DamageDeliveryType == DamageDeliveryType.Cone)
+                {
+                    if (tacticalActor.TacticalFaction == tacticalActorBase.TacticalFaction)
+                    {
+                        return true;
+                    }
+
+                    if (tacticalActor.TacticalFaction.GetAllAliveFriendlyActors<TacticalActorBase>(tacticalActor).Contains(tacticalActorBase))
+                    {
+                        return true;
+                    }
+
+                    if (tacticalActor.TacticalFaction.AIBlackboard.GetEnemies(ActorType.All, true).Contains(tacticalActorBase))
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+
+                return true;
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
+        }
+
+
+        [HarmonyPatch(typeof(AIUtil), "GetAffectedTargetsByShooting")]
+        public static class TFTV_AIUtil_GetAffectedTargetsByShooting_patch
+        {
+            private static IEnumerable<TacticalActorBase> Postfix(IEnumerable<TacticalActorBase> results, Vector3 shootPos, TacticalActor sourceActor, Weapon sourceWeapon, TacticalAbilityTarget target, ShootAbilityDef shootAbility = null)
+            {
+
+                DamagePayload damagePayload = sourceWeapon.GetDamagePayload();
+
+                foreach (TacticalActorBase actorBase in results)
+                {
+                    if (CheckVisibility(actorBase, sourceActor, damagePayload))
+                    {
+                        yield return actorBase;
+                    }
+
+                }
+            }
+
+        }
+
+
+
         // TacticalActorBase
 
         // Def
@@ -49,6 +133,8 @@ namespace TFTV
 
         public static bool Has1APWeapon(TacCharacterDef tacCharacterDef)
         {
+            AIVisibleEnemiesConsiderationDef aIVisibleEnemiesConsiderationDef;
+
             try
             {
                 DelayedEffectStatusDef reinforcementStatusUnder1AP = DefCache.GetDef<DelayedEffectStatusDef>("E_Status [ReinforcementStatusUnder1AP]");
@@ -135,7 +221,8 @@ namespace TFTV
         {
             try
             {
-                if (!tacticalActor.IsControlledByAI || !tacticalActor.TacticalActorDef.name.Equals("Soldier_ActorDef") || tacticalActor.IsDead || tacticalActor.IsDisabled || tacticalActor.IsEvacuated)
+                if (!tacticalActor.IsControlledByAI || !tacticalActor.TacticalActorDef.name.Equals("Soldier_ActorDef") || tacticalActor.IsDead || tacticalActor.IsDisabled || tacticalActor.IsEvacuated
+                    || tacticalActor.Equipments == null || tacticalActor.Equipments.GetWeapons() == null)
                 {
                     return;
                 }
@@ -172,7 +259,8 @@ namespace TFTV
         {
             try
             {
-                if (!tacticalActor.IsControlledByAI || !tacticalActor.TacticalActorDef.name.Equals("Soldier_ActorDef") || tacticalActor.IsDead || tacticalActor.IsDisabled || tacticalActor.IsEvacuated)
+                if (!tacticalActor.IsControlledByAI || !tacticalActor.TacticalActorDef.name.Equals("Soldier_ActorDef") || tacticalActor.IsDead || tacticalActor.IsDisabled
+                    || tacticalActor.IsEvacuated || tacticalActor.Equipments == null || tacticalActor.Equipments.GetWeapons() == null)
                 {
                     return;
                 }
@@ -183,7 +271,6 @@ namespace TFTV
                 if (weapons.Count == 0)
                 {
                     return;
-
                 }
 
                 Weapon bestWeapon = weapons.OrderByDescending(w => w.WeaponDef.EffectiveRange).ToList().First();
@@ -719,7 +806,7 @@ namespace TFTV
 
                             foreach (TacticalActorBase item in culledList)
                             {
-                               // TFTVLogger.Always($"{item.name}");
+                                // TFTVLogger.Always($"{item.name}");
 
                                 /*  TacticalActor tacticalActor2 = item as TacticalActor;
                                   int num3 = 0;
@@ -746,7 +833,7 @@ namespace TFTV
                         }
 
                         __result = Mathf.Min(num / (float)__instance.Def.NumberOfTartgetsToConsider, 1f);
-                       // TFTVLogger.Always($"result is {__result}");
+                        // TFTVLogger.Always($"result is {__result}");
                         return false;
                     }
                     catch (Exception e)
@@ -2394,31 +2481,31 @@ namespace TFTV
         //AIEnoughActionPointsForAbilityConsiderationDef
 
 
-      /*  [HarmonyPatch(typeof(AIEnoughActionPointsForAbilityConsideration), "Evaluate")]
-        public static class AIEnoughActionPointsForAbilityConsideration_GetMovementDataInRange_patch
-        {
-            private static void Postfix(AIEnoughActionPointsForAbilityConsideration __instance, float __result, IAIActor actor)
-            {
-                try
-                {
-                    if (__instance.BaseDef.name.Equals("Queen_CanUsePrepareShoot_AIConsiderationDef"))
-                    {
+        /*  [HarmonyPatch(typeof(AIEnoughActionPointsForAbilityConsideration), "Evaluate")]
+          public static class AIEnoughActionPointsForAbilityConsideration_GetMovementDataInRange_patch
+          {
+              private static void Postfix(AIEnoughActionPointsForAbilityConsideration __instance, float __result, IAIActor actor)
+              {
+                  try
+                  {
+                      if (__instance.BaseDef.name.Equals("Queen_CanUsePrepareShoot_AIConsiderationDef"))
+                      {
 
 
-                        TacticalActor tacActor = actor as TacticalActor;
+                          TacticalActor tacActor = actor as TacticalActor;
 
 
-                        TFTVLogger.Always($"{tacActor.name} {__instance.BaseDef.name} running Evaluate, result is {__result}");
+                          TFTVLogger.Always($"{tacActor.name} {__instance.BaseDef.name} running Evaluate, result is {__result}");
 
-                    }
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-            }
+                      }
+                  }
+                  catch (Exception e)
+                  {
+                      TFTVLogger.Error(e);
+                  }
+              }
 
-        }*/
+          }*/
 
 
 

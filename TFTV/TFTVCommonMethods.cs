@@ -177,7 +177,9 @@ namespace TFTV
                     }
 
                 }
+
                 TFTVHumanEnemies.TacticsHint.Clear();
+
                 if (TFTVRevenant.revenantResistanceHintCreated)
                 {
                     ContextHelpHintDef revenantResistanceHint = DefCache.GetDef<ContextHelpHintDef>("RevenantResistanceSighted");
@@ -212,6 +214,7 @@ namespace TFTV
                 TFTVBaseDefenseTactical.Breach = false;
                 TFTVBaseDefenseTactical.ScyllaLoose = false;
                 TFTVBaseDefenseTactical.PandoransInContainment.Clear();
+                
                 //  TFTVBaseDefenseTactical.VentingHintShown = false;
             }
             catch (Exception e)

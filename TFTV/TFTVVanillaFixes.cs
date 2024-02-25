@@ -156,8 +156,6 @@ namespace TFTV
         }
 
 
-
-
         //Madskunky's replacement of a trig function to reduce AI processing time 
         [HarmonyPatch(typeof(Weapon), "GetDamageModifierForDistance")]
         public static class Weapon_GetDamageModifierForDistance_patch
@@ -849,24 +847,16 @@ namespace TFTV
         {
             try
             {
-
-
                 foreach (GeoPhoenixFacility baseFacility in phoenixBase.Layout.Facilities)
                 {
 
-                    if (baseFacility.IsPowered)
+                    if (baseFacility.IsPowered && baseFacility.GetComponent<PrisonFacilityComponent>()==null)
                     {
-                      //  baseFacility.SetPowered(false);
+                        baseFacility.SetPowered(false);
                         baseFacility.SetPowered(true);
                     }
                     // TFTVLogger.Always($"{baseFacility.ViewElementDef.name} at {phoenixBase.name} is working? {baseFacility.IsWorking}. is it powered? {baseFacility.IsPowered} ");
-
-
-
                 }
-
-
-
             }
             catch (Exception e)
             {

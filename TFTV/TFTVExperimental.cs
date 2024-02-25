@@ -2,16 +2,20 @@
 using Base.Core;
 using Base.Defs;
 using HarmonyLib;
+using Newtonsoft.Json.Bson;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities;
+using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.Items;
 using PhoenixPoint.Common.Levels.MapGeneration;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.Abilities;
 using PhoenixPoint.Geoscape.Entities.PhoenixBases;
 using PhoenixPoint.Geoscape.Entities.Research;
+using PhoenixPoint.Geoscape.Entities.Research.Requirement;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Tactical.Entities;
+using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.Levels;
 using PhoenixPoint.Tactical.Levels.Destruction;
 using System;
@@ -21,6 +25,8 @@ using System.Reflection;
 using UnityEngine;
 using static PhoenixPoint.Common.Entities.Items.ItemManufacturing;
 using static PhoenixPoint.Geoscape.Entities.PhoenixBases.GeoPhoenixBaseTemplate;
+using static UnityEngine.UI.CanvasScaler;
+using static UnityStandardAssets.Utility.TimedObjectActivator;
 
 namespace TFTV
 {
@@ -33,33 +39,85 @@ namespace TFTV
 
         // ResearchRequirement
 
+        public static void CheckActorReserchRequirement()
+        {
+            try 
+            {
+                TacticalActorDef actorDef = DefCache.GetDef<TacticalActorDef>("Crabman_ActorDef");
+                TacticalActorDef actorDef2 = DefCache.GetDef<TacticalActorDef>("Siren_ActorDef");
+                TacticalActorDef actorRequirement = null;
+                GameTagDef tagRequirement = DefCache.GetDef<GameTagDef>("ViralBodypart_TagDef");
+                TacCharacterDef tacCharacterDef = DefCache.GetDef<TacCharacterDef>("Crabman39_EliteViralCommando_AlienMutationVariationDef");
+                TacCharacterDef tacCharacterDef2 = DefCache.GetDef<TacCharacterDef>("Siren3_InjectorBuffer_AlienMutationVariationDef");
+                IEnumerable<TacticalItemDef> bodyparts = tacCharacterDef.GetTemplateBodyparts();
+                IEnumerable<TacticalItemDef> bodyparts2 = tacCharacterDef2.GetTemplateBodyparts();
+
+                bool valid = ActorResearchRequirementDef.IsValidActorForTag(actorDef, bodyparts, null, tagRequirement);
+                bool valid2 = ActorResearchRequirementDef.IsValidActorForTag(actorDef2, bodyparts2, null, tagRequirement);
+
+                TFTVLogger.Always($"is {actorDef.name} valid for {tagRequirement.name}? {valid}");
+                TFTVLogger.Always($"is {actorDef2.name} valid for {tagRequirement.name}? {valid2}");
 
 
-        /* CaptureActorResearchRequirement
-             public void WireResearchEvents()
-         {
-             GameUtl.GameComponent<DefRepository>().GetAllDefs<ResearchDbDef>();
-             IEnumerable<ResearchElement> completed = this.Completed;
-             foreach (ResearchElement researchElement in this.AllResearchesArray.GetEnumerator<ResearchElement>())
-             {
-                 bool flag = true;
-                 string[] invalidatedBy = researchElement.ResearchDef.InvalidatedBy;
-                 for (int i = 0; i < invalidatedBy.Length; i++)
-                 {
-                     string invalidateID = invalidatedBy[i];
-                     if (completed.Any((ResearchElement r) => string.Equals(r.ResearchID, invalidateID, StringComparison.OrdinalIgnoreCase)))
-                     {
-                         flag = false;
-                         researchElement.State = ResearchState.Hidden;
-                         break;
-                     }
-                 }
-                 if (flag)
-                 {
-                     researchElement.InitializeRequirements(researchElement.ResearchDef.RequirementsDefs);
-                 }
-             }
-         }*/
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
+        }
+
+
+     /*   bool IsValidActorForTag(TacticalActorDef actorDef, IEnumerable<TacticalItemDef> bodyparts, TacticalActorDef actorRequirement, GameTagDef tagRequirement)
+
+       // CaptureActorResearchRequirement
+
+              [HarmonyPatch(typeof(ActorResearchRequirementDef), "GetDisabledStateText", typeof(GeoAbilityTarget))]
+        public static class TFTV_ActorResearchRequirementDef_GetDisabledStateText
+        {
+            public static void Postfix(ActorResearchRequirementDef __instance, ref string __result)
+            {
+                try
+                {
+                    if (__instance.GeoAbility is LaunchBehemothMissionAbility)
+                    {
+                        __result = "Behemoth is submerged!";
+                    }
+                }
+
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }*/
+
+
+        /*    public void WireResearchEvents()
+        {
+            GameUtl.GameComponent<DefRepository>().GetAllDefs<ResearchDbDef>();
+            IEnumerable<ResearchElement> completed = this.Completed;
+            foreach (ResearchElement researchElement in this.AllResearchesArray.GetEnumerator<ResearchElement>())
+            {
+                bool flag = true;
+                string[] invalidatedBy = researchElement.ResearchDef.InvalidatedBy;
+                for (int i = 0; i < invalidatedBy.Length; i++)
+                {
+                    string invalidateID = invalidatedBy[i];
+                    if (completed.Any((ResearchElement r) => string.Equals(r.ResearchID, invalidateID, StringComparison.OrdinalIgnoreCase)))
+                    {
+                        flag = false;
+                        researchElement.State = ResearchState.Hidden;
+                        break;
+                    }
+                }
+                if (flag)
+                {
+                    researchElement.InitializeRequirements(researchElement.ResearchDef.RequirementsDefs);
+                }
+            }
+        }*/
 
         [HarmonyPatch(typeof(GeoAbilityView), "GetDisabledStateText", typeof(GeoAbilityTarget))]
         public static class TFTV_GeoAbilityView_GetDisabledStateText

@@ -56,7 +56,8 @@ namespace TFTV
         public bool NerfAncientsWeaponsTactical;
         public int ODILevel;
         public int internalDifficultyCheck;
-        public Dictionary<string, bool> PandoransInContainment;
+        public Dictionary<string, int> PandoransInContainment;
+        public Dictionary<string, int> PandoransInContainmentEscaped;
         public bool ScyllaLoose;
         public bool Breach;
         public List<float> SecondaryStrikeForceCoordinates;
@@ -274,6 +275,12 @@ namespace TFTV
                 {
                     TFTVBaseDefenseTactical.PandoransInContainment = data.PandoransInContainment; 
                 }
+
+                if(data.PandoransInContainmentEscaped != null) 
+                {
+                    TFTVBaseDefenseTactical.PandoransInContainmentThatEscaoed = data.PandoransInContainmentEscaped;     
+                }
+
                 TFTVBaseDefenseTactical.Breach = data.Breach;
                 TFTVBaseDefenseTactical.ScyllaLoose = data.ScyllaLoose;
 
@@ -331,6 +338,7 @@ namespace TFTV
                 StrongerPandoransTactical = TFTVNewGameOptions.StrongerPandoransSetting,
                 ODILevel = TFTVODIandVoidOmenRoll.CurrentODI_Level,
                 PandoransInContainment = TFTVBaseDefenseTactical.PandoransInContainment,
+                PandoransInContainmentEscaped = TFTVBaseDefenseTactical.PandoransInContainmentThatEscaoed,
                 Breach = TFTVBaseDefenseTactical.Breach,
                 ScyllaLoose = TFTVBaseDefenseTactical.ScyllaLoose,
                 SecondaryStrikeForceCoordinates = TFTVBaseDefenseTactical.Map.DeploymentZones.SecondaryStrikeForceVector,

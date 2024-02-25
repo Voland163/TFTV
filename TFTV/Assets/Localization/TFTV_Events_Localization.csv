@@ -78,7 +78,8 @@ PROG_KE1_TEXT_OUTCOME_0,Text,,"As you step inside the crypt, alien thoughts are 
 
 <i>""Soon you will be contacted by string Subject integer twenty four. Accept proposal. Share data. Satisfactory outcome will lead to much preferred customer status. Beware of your Amygdala, it reeks of betrayal.""</i>
 
-There is no Drop-Ka stone to be found, but you suspect that's not why you were sent here anyway.",,"Lorsque vous entrez dans la crypte, des pensées extraterrestres sont projetées dans votre esprit. Vous *écoutez* une *voix* que vous ne pouvez pas *entendre*.
+There is no Drop-Ka stone to be found, but you suspect that's not why you were sent here anyway.
+",,"Lorsque vous entrez dans la crypte, des pensées extraterrestres sont projetées dans votre esprit. Vous *écoutez* une *voix* que vous ne pouvez pas *entendre*.
 
 <i>""Bientôt, vous serez contacté par Sujet numéro vingt-quatre. Accepter la proposition. Partager les données. Un résultat satisfaisant mènera à un statut de client privilégié. Méfiez-vous de votre Amygdale, elle sent la trahison.""</i>
 
@@ -158,7 +159,8 @@ West est naturellement bouleversé, mais nous avons obtenu un certain succès au
 PROG_PU4_WIN_CHOICE_1_TEXT,Text,,"An exercise in civic duty, with some unfortunate casualties",,"Un exercice de devoir civique, avec quelques malheureuses victimes",,,,,,
 PROG_PU4_WIN_CHOICE_2_OUTCOME_GENERAL,Text,,"We are not entirely in the clear, but New Jericho doesn't want to draw attention to its secret research and therefore avoids making an issue of the raid.
 
-At the same time, our strenuous denials result in West suspecting the involvement of other factions.",,"Nous ne sommes pas tout à fait dans la transparence, mais la Nouvelle Jericho ne veut pas attirer l’attention sur sa recherche secrète et évite donc de faire un problème de la descente.
+At the same time, our strenuous denials result in West suspecting the involvement of other factions.
+",,"Nous ne sommes pas tout à fait dans la transparence, mais la Nouvelle Jericho ne veut pas attirer l’attention sur sa recherche secrète et évite donc de faire un problème de la descente.
 
 En même temps, nos dénégations acharnées font que West soupçonne l’implication d’autres factions.
 ",,,,,,
@@ -369,7 +371,8 @@ SHOOTER_MUTANT_DELIVERY_CHOICE,Text,,"""Predator""",,"""Predator""",,,,,,
 REVENANT_RESISTANCE_TITLE,Text,,Revenant resistance,,,,,,,,
 TFTV_LOTA_START_EVENT_TITLE,Text,,An Unexpected Find,,,,,,,,
 TFTV_LOTA_START_EVENT_DESCRIPTION,Text,,"Director, I've come across something interesting in the archives of the recently activated base. Something called Project Glory... Perhaps we should get Bennu to analyze it.",,,,,,,,
-HELENA_ECHOES_TITLE,Text,,"The Echoes of the Ancients",,,,,,,,
+HELENA_ECHOES_TITLE,Text,,"The Echoes of the Ancients
+",,,,,,,,
 HELENA_ECHOES_TEXT,Text,,"This is something neither West nor Symes understood, or wanted to understand, although I tried explaining it to them many times. History is about making sense of the present by understanding the past. Cause and effect, reverberation and resonance. But when it comes to the Ancients, their echoes are getting stronger, and they started getting stronger with the First Mist. 
 
 Perhaps it's because both were hidden below the same melting permafrost. Even that 'coincidence' is not insignificant.
@@ -388,7 +391,8 @@ OLENA_ONEIROMANCY_TEXT,Text,,"Yes, the Living Crystal must be the “memory modu
 Data never really disappears unless the storage medium is destroyed or it is overwritten. In this case, the medium is beyond our understanding. I can’t explain how something like the Oneiric Delirium exists, or what the Living Crystals are, but they are related; our dreams can’t be a coincidence. I think they are part of, or use the same pathways, or “network”... What we need is a more direct interface, and one that we can use while awake.",,,,,,,,
 OLENA_ONEIROMANCY_CHOICE,Text,,So you want to repair and reactivate an ancient killer robot so that you can poke about in its memory banks? What could possibly go wrong.,,,,,,,,
 OLENA_ONEIROMANCY_OUTCOME,Text,,It's going to be OK.,,,,,,,,
-CYCLOP_DREAMS_TITLE,Text,,"Digitize my Dreams, the Cyclops Said",,,,,,,,
+CYCLOP_DREAMS_TITLE,Text,,"Digitize my Dreams, the Cyclops Said
+",,,,,,,,
 CYCLOP_DREAMS_TEXT,Text,,"The plan worked, but we can only understand a tiny fraction of the information contained in the data dump. It is enough. Enough to overturn much of what we thought we knew and, critical to our current existential threat, of what we thought we knew about the Pandoravirus. 
 
 It is ancient, yes; we suspected as much since the infection of our ecosystem began with the melting of the permafrost. But, thanks to the meticulous charts of our Solar system drawn up by the Ancients, we now know that the Pandoravirus didn’t originate on our planet: it arrived 1.8 million years ago on an asteroid that intersected the orbit of a “ninth planet” before it crashed into Earth.",,,,,,,,
@@ -566,7 +570,8 @@ Akari Ito, excerpt from ""Interviews with survivors of Incident #ZGB12/68""
 
 <i>""It's a fragging gargantuan biomass harvester, what's so hard to understand about it?! How should I know why it destroyed only half of the frigging haven!""</i>
 
-Dr. Philemon Stavropoulos, Non-Executive Chairman of the Extraordinary Advisory Committee on Suspected Pandoravirus Related Aerial Phenomena Commonly Known as Festering Skies",,"<i>""Il était difficile de distinguer le Kaiju des créatures ailées qui l’entouraient… Ensemble, ils étaient un, et l’horreur qu’ils produisaient était complète. Une machine alimentée par la vie. Elle dévore sans pitié ni plaisir.""</i>
+Dr. Philemon Stavropoulos, Non-Executive Chairman of the Extraordinary Advisory Committee on Suspected Pandoravirus Related Aerial Phenomena Commonly Known as Festering Skies
+",,"<i>""Il était difficile de distinguer le Kaiju des créatures ailées qui l’entouraient… Ensemble, ils étaient un, et l’horreur qu’ils produisaient était complète. Une machine alimentée par la vie. Elle dévore sans pitié ni plaisir.""</i>
 
 Akari Ito, extrait de ""Entretiens avec les survivants de l’incident #ZGB12/68""
 
@@ -797,7 +802,7 @@ KEY_OSIRIS_MORE_BIONICS_LAB_MUTATION_RESEARCH,Text,,To enhance Project Osiris an
 KEY_OSIRIS_MORE_BIONICS_LAB_MUTATION_BIONICS_RESEARCH,Text,,To enhance Project Osiris and increase our options we should build a bionics lab and acquire new mutation and bionic research.,,,,,,,,
 KEY_OSIRIS_MORE_MUTATION_RESEARCH,Text,,To enhance Project Osiris and increase our options we should acquire new mutation research.,,,,,,,,
 KEY_OSIRIS_MORE_BIONICS_RESEARCH,Text,,To enhance Project Osiris and increase our options we should acquire new bionic research.,,,,,,,,
-KEY_OSIRIS_MORE_MUTATION_BIONICS_RESEARCH,Text,,To enhance Project Osiris and increase our options we should acquire new bionic and mutation research.,,,,,,,,
+KEY_OSIRIS_MORE_MUTATION_RESEARCH_BIONICS_RESEARCH,Text,,To enhance Project Osiris and increase our options we should acquire new bionic and mutation research.,,,,,,,,
 TFTV_PROG_PU10_TEXT_GENERAL_0,Text,,"MESSAGE FROM: Barnabas (Synedrion) 
 TO: Phoenix Point 
 Attachments: REC-intercept.625X-AP

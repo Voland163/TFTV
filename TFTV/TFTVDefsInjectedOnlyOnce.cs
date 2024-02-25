@@ -74,8 +74,7 @@ namespace TFTV
 
         public static readonly ResearchTagDef CriticalResearchTag = DefCache.GetDef<ResearchTagDef>("CriticalPath_ResearchTagDef");
 
-        public static Sprite UmbraIcon = Helper.CreateSpriteFromImageFile("Void-03P.png");
-
+      
         // ResurrectAbilityRulesDef to mess with later
 
         internal static void Print()
@@ -197,6 +196,8 @@ namespace TFTV
                 TFTVScavengers.Defs.CreateRaiderDefs();
 
                 TFTVPureAndForsaken.Defs.InitDefs();
+
+              //  TFTVExperimental.CheckActorReserchRequirement();
 
                 //  Print();
 
@@ -488,10 +489,10 @@ namespace TFTV
 
         private static void RemoveTerrorSentinelCitadel()
         {
-            try 
+            try
             {
-               CustomMissionTypeDef citadelMission = DefCache.GetDef<CustomMissionTypeDef>("CitadelAlien_CustomMissionTypeDef");
-               citadelMission.ParticipantsData[0].ActorDeployParams.RemoveAt(1);            
+                CustomMissionTypeDef citadelMission = DefCache.GetDef<CustomMissionTypeDef>("CitadelAlien_CustomMissionTypeDef");
+                citadelMission.ParticipantsData[0].ActorDeployParams.RemoveAt(1);
             }
             catch (Exception e)
             {
@@ -574,6 +575,8 @@ namespace TFTV
                 SyphonAttackFix();
                 FixMyrmidonFlee();
                 FixBionic3ResearchNotGivingAccessToFacility();
+                FixNoXPCaptureAcheron();
+                FixSpikeShootingArmShootingWhenDisabled();
             }
             catch (Exception e)
             {
@@ -935,6 +938,11 @@ namespace TFTV
                 captureModule.ManufactureMaterials = 600;
                 captureModule.ManufactureTech = 75;
                 captureModule.ManufacturePointsCost = 505;
+
+                //Needs to be removed because it's a config option
+                ResearchDbDef ppResearchDB = DefCache.GetDef<ResearchDbDef>("pp_ResearchDB");
+                ppResearchDB.Researches.Remove(scyllaCaptureModule);
+
 
             }
             catch (Exception e)
@@ -4730,15 +4738,40 @@ namespace TFTV
             {
                 TFTVLogger.Error(e);
             }
+        }
 
+        private static void FixSpikeShootingArmShootingWhenDisabled()
+        {
+            try
+            {
+                WeaponDef spikeShooter = DefCache.GetDef<WeaponDef>("AN_Berserker_Shooter_LeftArm_WeaponDef");
 
+                spikeShooter.BehaviorOnDisable = EDisableBehavior.Disable;
+                spikeShooter.HandsToUse = 1;
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
         }
 
 
+        private static void FixNoXPCaptureAcheron()
+        {
+            try
+            {
+                ActorHasStatusFactionObjectiveDef captureAcheronObjective = (ActorHasStatusFactionObjectiveDef)Repo.GetDef("2f3ea3b1-49b1-7cbe-ef82-07a75d820259");
+                captureAcheronObjective.MissionObjectiveData.ExperienceReward = 150;
 
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
 
-
-        public static void FixUnarmedAspida()
+        private static void FixUnarmedAspida()
         {
             try
             {
@@ -4750,13 +4783,10 @@ namespace TFTV
             {
                 TFTVLogger.Error(e);
             }
-
-
-
         }
 
 
-        public static void RemoveScyllaAndNodeResearches()
+        private static void RemoveScyllaAndNodeResearches()
         {
             try
             {
@@ -7445,21 +7475,16 @@ DefCache.GetDef<CustomMissionTypeDef>("AmbushSY_CustomMissionTypeDef")
                 hibernationModuleResearch.Faction = PhoenixPoint;
                 hibernationModuleResearch.RevealRequirements = sourcePX_SDI_ResearchDef.RevealRequirements;
                 hibernationModuleResearch.ResearchCost = 100;
-
-
             }
             catch (Exception e)
             {
                 TFTVLogger.Error(e);
             }
-
         }
         public static void ModifyPandoranProgress()
         {
-
             try
             {
-
                 // All sources of evolution due to scaling removed, leaving only evolution per day
                 // Additional source of evolution will be number of surviving Pandoran colonies, modulated by difficulty level
                 GameDifficultyLevelDef veryhard = DefCache.GetDef<GameDifficultyLevelDef>("VeryHard_GameDifficultyLevelDef");
@@ -7500,8 +7525,6 @@ DefCache.GetDef<CustomMissionTypeDef>("AmbushSY_CustomMissionTypeDef")
 
                 //reducing evolution per day because there other sources of evolution points now
                 veryhard.EvolutionProgressPerDay = 70; //vanilla 100
-
-
 
                 hard.NestLimitations.MaxNumber = 3; //vanilla 5
                 hard.NestLimitations.HoursBuildTime = 90; //vanilla 50
@@ -8269,7 +8292,9 @@ DefCache.GetDef<CustomMissionTypeDef>("AmbushSY_CustomMissionTypeDef")
         {
             try
             {
-                RandomValueEffectConditionDef randomValueFishUmbra = DefCache.GetDef<RandomValueEffectConditionDef>("E_RandomValue [UmbralFishmen_FactionEffectDef]");
+                Sprite umbraIcon = Helper.CreateSpriteFromImageFile("Void-03P.png");
+
+        RandomValueEffectConditionDef randomValueFishUmbra = DefCache.GetDef<RandomValueEffectConditionDef>("E_RandomValue [UmbralFishmen_FactionEffectDef]");
                 RandomValueEffectConditionDef randomValueCrabUmbra = DefCache.GetDef<RandomValueEffectConditionDef>("E_RandomValue [UmbralCrabmen_FactionEffectDef]");
                 randomValueCrabUmbra.ThresholdValue = 0;
                 randomValueFishUmbra.ThresholdValue = 0;
@@ -8298,16 +8323,16 @@ DefCache.GetDef<CustomMissionTypeDef>("AmbushSY_CustomMissionTypeDef")
                 ViewElementDef oilCrabViewElementDef = DefCache.GetDef<ViewElementDef>("E_View [Oilcrab_Torso_BodyPartDef]");
                 oilCrabViewElementDef.DisplayName1.LocalizationKey = "TFTV_KEY_UMBRA_TARGET_DISPLAY_NAME";
                 oilCrabViewElementDef.Description.LocalizationKey = "TFTV_KEY_UMBRA_TARGET_DISPLAY_DESCRIPTION";
-                oilCrabViewElementDef.SmallIcon = UmbraIcon;
-                oilCrabViewElementDef.LargeIcon = UmbraIcon;
-                oilCrabViewElementDef.InventoryIcon = UmbraIcon;
+                oilCrabViewElementDef.SmallIcon = umbraIcon;
+                oilCrabViewElementDef.LargeIcon = umbraIcon;
+                oilCrabViewElementDef.InventoryIcon = umbraIcon;
 
                 ViewElementDef oilFishViewElementDef = DefCache.GetDef<ViewElementDef>("E_View [Oilfish_Torso_BodyPartDef]");
                 oilFishViewElementDef.DisplayName1.LocalizationKey = "TFTV_KEY_UMBRA_TARGET_DISPLAY_NAME";
                 oilFishViewElementDef.Description.LocalizationKey = "TFTV_KEY_UMBRA_TARGET_DISPLAY_DESCRIPTION";
-                oilFishViewElementDef.SmallIcon = UmbraIcon;
-                oilFishViewElementDef.LargeIcon = UmbraIcon;
-                oilFishViewElementDef.InventoryIcon = UmbraIcon;
+                oilFishViewElementDef.SmallIcon = umbraIcon;
+                oilFishViewElementDef.LargeIcon = umbraIcon;
+                oilFishViewElementDef.InventoryIcon = umbraIcon;
 
                 TacticalPerceptionDef oilCrabPerceptionDef = DefCache.GetDef<TacticalPerceptionDef>("Oilcrab_PerceptionDef");
                 TacticalPerceptionDef oilFishPerceptionDef = DefCache.GetDef<TacticalPerceptionDef>("Oilfish_PerceptionDef");

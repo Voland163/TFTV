@@ -1374,7 +1374,7 @@ namespace TFTV
                     {
                         try
                         {
-                            if (!TFTVBaseDefenseGeoscape.PhoenixBasesUnderAttack.ContainsKey(__instance.Mission.Site.SiteId))
+                            if (!TFTVBaseDefenseGeoscape.PhoenixBasesUnderAttack.ContainsKey(__instance.Mission.Site.SiteId) && !TFTVBaseDefenseGeoscape.PhoenixBasesInfested.Contains(__instance.Mission.Site.SiteId))
                             {
                                 return;
                             }

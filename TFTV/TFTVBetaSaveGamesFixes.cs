@@ -22,6 +22,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using UnityEngine.Android;
 
 
 
@@ -34,6 +35,27 @@ namespace TFTV
         // public static bool LOTAReworkGlobalCheck = false;
 
      //   private static readonly SharedData Shared = TFTVMain.Shared;
+
+        public static void SpecialFixForCatGuy(GeoLevelController controller)
+        {
+            try
+            {
+                {
+                    controller.EventSystem.SetVariable(TFTVAncientsGeo.CyclopsBuiltVariable, 0);
+                    TFTVLogger.Always($"Player failed the Cyclops mission, need to clean up");
+                    controller.Map.AllSites.FirstOrDefault(s => (s.Type == GeoSiteType.AncientHarvest || s.Type == GeoSiteType.AncientRefinery) && s.Owner == controller.AlienFaction).Owner = controller.PhoenixFaction;
+                }
+
+                TFTVCommonMethods.RemoveManuallySetObjective(controller, "PROTECT_THE_CYCLOPS_OBJECTIVE_GEO_TITLE");
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
+
+        }
+        
 
         public static void SpecialFixForNarvi() 
         {

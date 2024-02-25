@@ -797,7 +797,7 @@ KEY_OSIRIS_MORE_BIONICS_LAB_MUTATION_RESEARCH,Text,,To enhance Project Osiris an
 KEY_OSIRIS_MORE_BIONICS_LAB_MUTATION_BIONICS_RESEARCH,Text,,To enhance Project Osiris and increase our options we should build a bionics lab and acquire new mutation and bionic research.,,,,,,,,
 KEY_OSIRIS_MORE_MUTATION_RESEARCH,Text,,To enhance Project Osiris and increase our options we should acquire new mutation research.,,,,,,,,
 KEY_OSIRIS_MORE_BIONICS_RESEARCH,Text,,To enhance Project Osiris and increase our options we should acquire new bionic research.,,,,,,,,
-KEY_OSIRIS_MORE_MUTATION_BIONICS_RESEARCH,Text,,To enhance Project Osiris and increase our options we should acquire new bionic and mutation research.,,,,,,,,
+KEY_OSIRIS_MORE_MUTATION_RESEARCH_BIONICS_RESEARCH,Text,,To enhance Project Osiris and increase our options we should acquire new bionic and mutation research.,,,,,,,,
 TFTV_PROG_PU10_TEXT_GENERAL_0,Text,,"MESSAGE FROM: Barnabas (Synedrion) 
 TO: Phoenix Point 
 Attachments: REC-intercept.625X-AP

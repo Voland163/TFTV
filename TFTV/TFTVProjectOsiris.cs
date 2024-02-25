@@ -238,7 +238,7 @@ KEY_GRAMMAR_SINGLE_SUFFIX*/
                     //buildAdditionalLab = $" {TFTVCommonMethods.ConvertKeyToString("KEY_OSIRIS_BUILD_BIO_LAB")}"; //" build a bionics lab ";
                     increaseOptionsKeyString += "_BIONICS_LAB";
                 }
-              
+
                 /*
                  * 
                  * KEY_OSIRIS_MORE_MUTATION_LAB
@@ -252,6 +252,7 @@ KEY_OSIRIS_MORE_BIONICS_LAB_MUTATION_BIONICS_RESEARCH
 KEY_OSIRIS_MORE_MUTATION_RESEARCH
 KEY_OSIRIS_MORE_BIONICS_RESEARCH
 KEY_OSIRIS_MORE_MUTATION_BIONICS_RESEARCH
+                KEY_OSIRIS_MORE_MUTATION_RESEARCH_BIONICS_RESEARCH
                  * 
                  * 
                  */

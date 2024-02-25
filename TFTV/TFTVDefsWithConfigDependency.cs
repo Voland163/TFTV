@@ -406,7 +406,6 @@ namespace TFTV
                             ppResearchDB.Researches.Add(scyllaCaptureModule);
                         }
                     }
-
                     else
                     {
                         if (ppResearchDB.Researches.Contains(scyllaCaptureModule))

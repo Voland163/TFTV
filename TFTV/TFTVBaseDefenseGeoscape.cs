@@ -1428,7 +1428,7 @@ namespace TFTV
                         GeoMission geoMission = (GeoMission)modal.Data;
                         GeoLevelController controller = geoMission.Level;
 
-                        if (PhoenixBasesUnderAttack.ContainsKey(geoMission.Site.SiteId))
+                        if (PhoenixBasesUnderAttack.ContainsKey(geoMission.Site.SiteId) || PhoenixBasesInfested.Contains(geoMission.Site.SiteId))
                         {
                             GeoSite phoenixBase = geoMission.Site;
 
@@ -2097,6 +2097,7 @@ namespace TFTV
                     {
                         if (PhoenixBasesInfested.Contains(__instance.SiteId))
                         {
+                            TFTVLogger.Always($"GeoSite.CreatePhoenixBaseInfestationMission");
 
                             GeoMissionGenerator.ParticipantFilter participantFilter = new GeoMissionGenerator.ParticipantFilter { Faction = __instance.GeoLevel.SharedData.AlienFactionDef, ParticipantType = TacMissionParticipant.Intruder };
                             TacMissionTypeDef mission = __instance.GeoLevel.MissionGenerator.GetRandomMission(__instance.GeoLevel.SharedData.SharedGameTags.BaseDefenseMissionTag, participantFilter);

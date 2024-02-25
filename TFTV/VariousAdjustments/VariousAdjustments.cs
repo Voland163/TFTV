@@ -89,7 +89,7 @@ namespace PRMBetterClasses.VariousAdjustments
         {
             PhoenixFacilityDef accessLifts = DefCache.GetDef<PhoenixFacilityDef>("AccessLift_PhoenixFacilityDef");
 
-            accessLifts.CannotDemolish = false;
+            accessLifts.CannotDemolish = true;
             accessLifts.FacilityLimitPerBase = 1;
         }
 

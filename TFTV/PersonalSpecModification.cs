@@ -36,6 +36,8 @@ namespace PRMBetterClasses
             {
                 try
                 {
+                    PRMLogger.Debug($"FactionCharacterGenerator.Generate Unit, template: {template.name}");
+                    
                     // Save ShouldGeneratePersonalAbilities for postfix call, necessary? 
                     ShouldGeneratePersonalAbilities = template.Data.LevelProgression.ShouldGeneratePersonalAbilities;
                     PRMLogger.Debug("----------------------------------------------------", false);

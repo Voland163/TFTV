@@ -78,8 +78,7 @@ HINT_ANCIENTS_HOPLITS_TITLE,Text,,"<i>“Frag me, what is that thing? Is that a�
 HINT_ANCIENTS_HOPLITS_TEXT,Text,,"This Ancient Automata is reactivating! While we have no intel on their capabilities, it seems like they are dormant while buried in the ground, but once they emerge they become alerted and gradually reactivate their systems, becoming stronger. The Automata also seem to be in varying states of disrepair.",,,,,,,,
 HINT_ANCIENTS_HOPLITSREPAIR_TITLE,Text,,<i>”The broken remains floated towards the damaged Automata.”</i>,,,,,,,,
 HINT_ANCIENTS_HOPLITSREPAIR_TEXT,Text,,This Ancient Automata is trying to repair itself using the remains of the destroyed robot in its vicinity! It has also drained some of its power.,,,,,,,,
-HINT_ANCIENTS_HOPLITSMAXPOWER_TITLE,Text,,"<i>”Whirl whirl whirl Vroom!”</i>
-",,,,,,,,
+HINT_ANCIENTS_HOPLITSMAXPOWER_TITLE,Text,,"<i>”Whirl whirl whirl Vroom!”</i>",,,,,,,,
 HINT_ANCIENTS_HOPLITSMAXPOWER_TEXT,Text,,The Ancient Automata is now fully charged; damage increased significantly and damage resistance gained.,,,,,,,,
 HINT_HOSTILE_DEFENDERS_TITLE,Text,,Hostile haven defenders,,,,,,,,
 HINT_HOSTILE_DEFENDERS_TEXT,Text,,"<i>""Come to rescue us, have they? They are the ones who brought the damn critters on us in the first place! Fragging nerds…""</i>
@@ -96,21 +95,23 @@ Some Arthrons have evolved the ability to instantly quench the fire they come in
 BASEDEFENSE_INFESTATION_TITLE ,Text,,Infested.,,,,,,,,
 BASEDEFENSE_INFESTATION_DESCRIPTION,Text,,"<i>""They're coming out of the walls! They're coming out of the goddamn walls!""</i>
 
-Security footage shows the Pandorans taking over the base. 
+Security footage shows the Pandorans taking over the base. Director, they are colonizing it. 
 
-Director, they are colonizing it.",,,,,,,,
+We must destroy the Pandoran structures as soon as possible. As long as any of them remain the Pandorans will continue to receive reinforcements.",,,,,,,,
 BASEDEFENSE_NESTING_TITLE ,Text,,Infestation in progress...,,,,,,,,
 BASEDEFENSE_NESTING_DESCRIPTION,Text,,"<i>""Busy little creatures.""</i>
 
-The enemy has breached our defenses and has spread throughout the base.",,,,,,,,
+The enemy has breached our defenses and has spread throughout the base.
+
+We suspect that there is already a Sentinel in the hangar; we must destroy it as soon as possible. As long as it remains the Pandorans will continue to receive reinforcements.",,,,,,,,
 BASEDEFENSE_TACTICAL_ADVANTAGE_TITLE ,Text,,Tactical Advantage!,,,,,,,,
 BASEDEFENSE_TACTICAL_ADVANTAGE_DESCRIPTION,Text,,"<i>""You're down there, we're up here! You walked into the wrong goddamn room...""</i>
 
-As long as we can hold them off at the entrance, we should be fine. ",,,,,,,,
+We can try holding the Pandorans off at the entrance, or set up killing fields deep inside our base and draw them in. The attack will run out of steam eventually; we have to survive the initial onslaught and then mop up.",,,,,,,,
 BASEDEFENSE_SCYLLA_LOOSE_TITLE,Text,,Scylla on the loose!,,,,,,,,
 BASEDEFENSE_SCYLLA_LOOSE_DESCRIPTION,Text,,"<i> ""Game over, man! Game over!"" </i>
 
-The Scylla has broken out of Containment!",,,,,,,,
+The Scylla has broken out of Containment! We have to neutralize it as soon as possible; while it remains active, Pandorans will receive reinforcements.",,,,,,,,
 BASEDEFENSE_DYNAMIC_BREACH_TITLE,Text,,Containment breach!,,,,,,,,
 BASEDEFENSE_DYNAMIC_BREACH_DESCRIPTION,Text,,Due to the damage sustained by the Containment chamber the Pandorans held inside have managed to break free!,,,,,,,,
 BASEDEFENSE_UMBRASTRAT_TEXT,Text,,"Director, we are detecting something in the air vents. It’s the Mist. It could be a Triton infiltration team. If so, they will have to egress at the Access Lift shaft. However, it could also be something worse… Stay away from the Mist if you can.",,,,,,,,

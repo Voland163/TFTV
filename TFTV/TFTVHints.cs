@@ -1196,6 +1196,17 @@ namespace TFTV
                                 }
                             }
 
+                            if (TFTVRevenant.revenantResistanceHintCreated)
+                            {
+                                ContextHelpHintDef revenantResistanceHint = DefCache.GetDef<ContextHelpHintDef>("RevenantResistanceSighted");
+                                if (hintDef == revenantResistanceHint && alwaysDisplayedTacticalHintsDbDef.Hints.Contains(revenantResistanceHint))
+                                {
+                                    alwaysDisplayedTacticalHintsDbDef.Hints.Remove(revenantResistanceHint);
+                                    TFTVLogger.Always("Revenant resistance hint removed");
+                                }
+                            }
+
+
                             //  InfestationStoryTest(hintDef, __instance);
                         }
                     }
