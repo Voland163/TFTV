@@ -32,6 +32,7 @@ namespace PRMBetterClasses.VariousAdjustments
             Change_NergalsWrath();
           //  Change_Crossbows();
             Change_PriestWeapons();
+            Change_Flamethrower();
         }
 
         /// <summary>
@@ -330,6 +331,13 @@ namespace PRMBetterClasses.VariousAdjustments
 
             redeemer.DamagePayload.DamageKeywords[2].Value = redeemerViral;
             subjector.DamagePayload.DamageKeywords[2].Value = subjectorViral;
+        }
+
+        private static void Change_Flamethrower()
+        {
+            //"NJ_Flamethrower_WeaponDef"
+            WeaponDef Flamethrower = (WeaponDef)Repo.GetDef("b62efc91-6997-3064-7848-14299c6ddbc0");
+            Flamethrower.DamagePayload.ConeRadius = 2.5f;
         }
     }
 }

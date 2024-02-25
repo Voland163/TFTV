@@ -3,6 +3,7 @@ using Base.Entities.Statuses;
 using Base.UI;
 using HarmonyLib;
 using PhoenixPoint.Common.Entities;
+using PhoenixPoint.Common.Entities.Addons;
 using PhoenixPoint.Common.Entities.Equipments;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.UI;
@@ -23,6 +24,12 @@ namespace TFTVVehicleRework.Armadillo
             GroundVehicleModuleDef LightweightAlloy = (GroundVehicleModuleDef)Repo.GetDef("32c107bb-d282-d2c4-fbae-9830a46a2e14");
             LightweightAlloy.BodyPartAspectDef.StatModifications = new ItemStatModification[]{};
             LightweightAlloy.Abilities = LightweightAlloy.Abilities.AddToArray(EnterVehicle());
+			LightweightAlloy.Armor = 0f;
+			foreach (AddonDef.SubaddonBind addon in LightweightAlloy.SubAddons)
+            {
+                TacticalItemDef BodyPart = (TacticalItemDef)addon.SubAddon;
+				BodyPart.Armor += 10;
+			}
         }
 
         private static ApplyStatusAbilityDef EnterVehicle()

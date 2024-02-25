@@ -6,7 +6,6 @@ using Base.Entities.Abilities;
 using Base.Entities.Effects;
 using Base.Entities.Effects.ApplicationConditions;
 using Base.Entities.Statuses;
-using Base.Platforms;
 using Base.UI;
 using Base.Utils;
 using Code.PhoenixPoint.Tactical.Entities.Equipments;
@@ -53,12 +52,9 @@ using PhoenixPoint.Tactical.Entities.Weapons;
 using PhoenixPoint.Tactical.Eventus;
 using PhoenixPoint.Tactical.Levels;
 using PhoenixPoint.Tactical.Levels.FactionObjectives;
-using PhoenixPoint.Tactical.Prompts;
-using PhoenixPoint.Tactical.View.ViewStates;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using TFTV.PortedAATweaks;
 using UnityEngine;
 using static PhoenixPoint.Tactical.Entities.Abilities.HealAbilityDef;
 using static PhoenixPoint.Tactical.Entities.Statuses.ItemSlotStatsModifyStatusDef;
@@ -87,9 +83,9 @@ namespace TFTV
             try
             {
 
-                foreach(ResearchDef researchDef in DefCache.GetDef<ResearchDbDef>("syn_ResearchDB").Researches) 
+                foreach (ResearchDef researchDef in DefCache.GetDef<ResearchDbDef>("syn_ResearchDB").Researches)
                 {
-                    TFTVLogger.Always($"{researchDef.Id} research cost: {researchDef.ResearchCost} priority: {researchDef.Priority}");     
+                    TFTVLogger.Always($"{researchDef.Id} research cost: {researchDef.ResearchCost} priority: {researchDef.Priority}");
                 }
 
 
@@ -202,7 +198,7 @@ namespace TFTV
 
                 TFTVPureAndForsaken.Defs.InitDefs();
 
-              //  Print();
+                //  Print();
 
             }
             catch (Exception e)
@@ -215,7 +211,7 @@ namespace TFTV
         {
             try
             {
-               
+
                 DamagePayloadEffectDef damagePayloadEffectDef = DefCache.GetDef<DamagePayloadEffectDef>("BehemothMassStomp_Electroshock_DamagePayloadEffectDef");
 
                 StatusEffectDef newStatusEffectDef = Helper.CreateDefFromClone(DefCache.GetDef<StatusEffectDef>("Stun_StatusEffectDef"),
@@ -239,7 +235,7 @@ namespace TFTV
 
         private static void AdjustDashAI()
         {
-            try 
+            try
             {
                 // AIClosestEnemyConsiderationDef
                 AIActionMoveAndAttackDef dashAndStrike = DefCache.GetDef<AIActionMoveAndAttackDef>("DashAndStrike_AIActionDef");
@@ -261,7 +257,7 @@ namespace TFTV
                 dashAndStrike.Weight = 300;
                 dashAI.Weight = 10;
                 dashAndShoot.Weight = 50;
-                
+
                 dashAI.EarlyExitConsiderations[3].Consideration = newClearanceRangeConsideration;
                 //dashAI.EarlyExitConsiderations = new AIAdjustedConsideration[] { dashAI.EarlyExitConsiderations[0], dashAI.EarlyExitConsiderations[1], dashAI.EarlyExitConsiderations[2],  };
 
@@ -269,12 +265,12 @@ namespace TFTV
                 dashAI.Evaluations[0].Considerations[2].Consideration = DefCache.GetDef<AILineOfSightToEnemiesConsiderationDef>("LineofSight_AIConsiderationDef");
                 dashAI.Evaluations[0].Considerations[3].Consideration = DefCache.GetDef<AIClosestEnemyConsiderationDef>("Worm_ClosestPathToEnemy_AIConsiderationDef");
 
-              /*  dashAI.Evaluations[0].Considerations = new AIAdjustedConsideration[] {
-                dashAI.Evaluations[0].Considerations[0],
-                dashAI.Evaluations[0].Considerations[3],
-                dashAI.Evaluations[0].Considerations[4]
-                };*/
-            
+                /*  dashAI.Evaluations[0].Considerations = new AIAdjustedConsideration[] {
+                  dashAI.Evaluations[0].Considerations[0],
+                  dashAI.Evaluations[0].Considerations[3],
+                  dashAI.Evaluations[0].Considerations[4]
+                  };*/
+
 
                 //  dashAI.Evaluations[0].TargetGeneratorDef = DefCache.GetDef<AIActorMovementZoneTargetGeneratorDef>("DashMovementZoneNoSelfPosition_AITargetGeneratorDef");
 
@@ -299,7 +295,7 @@ namespace TFTV
 
         private static void CreateReturnFireCloneForHumanTactics()
         {
-            try 
+            try
             {
                 string name = "FireDisciplineAbility";
                 ReturnFireAbilityDef returnFireAbilityDefSource = DefCache.GetDef<ReturnFireAbilityDef>("ReturnFire_AbilityDef");
@@ -332,7 +328,7 @@ namespace TFTV
 
                 ChangeAbilitiesCostStatusDef changeAbilitiesCostStatusDef = (ChangeAbilitiesCostStatusDef)startingVolley.AdditionalStatusesToApply[0];
                 changeAbilitiesCostStatusDef.AbilityCostModification.ActionPointMod = -0.5f;
-                
+
             }
             catch (Exception e)
             {
@@ -343,7 +339,7 @@ namespace TFTV
 
         private static void CreateOpticalShieldStatus()
         {
-            try 
+            try
             {
                 string name = "OpticalShield";
 
@@ -358,7 +354,7 @@ namespace TFTV
                 newVanishedStatus.Visuals = Helper.CreateDefFromClone(vanishedStatusSource.Visuals, "{3FC367B1-A4FF-43D6-A18D-922DF3EA528D}", name);
 
                 newStatusEffectHoldingVanishEffect.StatusDef = newVanishedStatus;
-                newVanishedStatus.Visuals.DisplayName1.LocalizationKey = "KEY_ACTIVE_CAMO_DISPLAY_NAME"; 
+                newVanishedStatus.Visuals.DisplayName1.LocalizationKey = "KEY_ACTIVE_CAMO_DISPLAY_NAME";
                 newVanishedStatus.Visuals.Description.LocalizationKey = "KEY_ACTIVE_CAMO_DESCRIPTION";
 
             }
@@ -441,7 +437,7 @@ namespace TFTV
             try
             {
                 // LimitCoDeliriumAttack();
-                
+
                 ModifyDecoyAbility();
                 CreateSubject24();
                 RemoveCorruptionDamageBuff();
@@ -482,6 +478,7 @@ namespace TFTV
                 CreateStartingVolleyStatus();
                 ChangeBehemothStomp();
                 TFTVBaseDefenseTactical.Defs.CreateDefsForBaseDefenseTactical();
+                RemoveTerrorSentinelCitadel();
             }
             catch (Exception e)
             {
@@ -489,7 +486,19 @@ namespace TFTV
             }
         }
 
-       
+        private static void RemoveTerrorSentinelCitadel()
+        {
+            try 
+            {
+               CustomMissionTypeDef citadelMission = DefCache.GetDef<CustomMissionTypeDef>("CitadelAlien_CustomMissionTypeDef");
+               citadelMission.ParticipantsData[0].ActorDeployParams.RemoveAt(1);            
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
 
         private static void ReduceEffectOfMistOnPerception()
         {
@@ -837,7 +846,7 @@ namespace TFTV
                 List<GameDifficultyLevelDef> difficultyLevelDefs = new List<GameDifficultyLevelDef>(Shared.DifficultyLevels);
                 difficultyLevelDefs.Insert(0, newDifficulty);
 
-               Shared.DifficultyLevels = difficultyLevelDefs.ToArray();
+                Shared.DifficultyLevels = difficultyLevelDefs.ToArray();
             }
 
 
@@ -1585,7 +1594,7 @@ namespace TFTV
 
 
 
-       
+
 
 
         private static void FixBionic3ResearchNotGivingAccessToFacility()
@@ -4125,7 +4134,7 @@ namespace TFTV
             }
         }
 
-        
+
 
 
         internal static void ScyllaAcheronsChironsAndCyclops()
@@ -4315,14 +4324,14 @@ namespace TFTV
 
                 AIAbilityDisabledStateConsiderationDef canUsePrepareShootConsideration = DefCache.GetDef<AIAbilityDisabledStateConsiderationDef>("Queen_CanUsePrepareShoot_AIConsiderationDef");
                 canUsePrepareShootConsideration.IgnoredStates = canUsePrepareShootConsideration.IgnoredStates.AddItem("EquipmentNotSelected").ToArray();
-               // DefCache.GetDef<AdditionalEffectShootAbilityDef>("Queen_GunsFire_ShootAbilityDef").ActionPointCost = 0.0f;
+                // DefCache.GetDef<AdditionalEffectShootAbilityDef>("Queen_GunsFire_ShootAbilityDef").ActionPointCost = 0.0f;
                 DefCache.GetDef<StartPreparingShootAbilityDef>("Queen_StartPreparing_AbilityDef").UsableOnNonSelectedEquipment = true;
 
                 WeaponDef queenLeftBlastWeapon = DefCache.GetDef<WeaponDef>("Queen_LeftArmGun_WeaponDef");
                 WeaponDef queenRightBlastWeapon = DefCache.GetDef<WeaponDef>("Queen_RightArmGun_WeaponDef");
 
                 WeaponDef arms = DefCache.GetDef<WeaponDef>("Queen_Arms_Gun_WeaponDef");
-                arms.DamagePayload.ObjectMultiplier =5;
+                arms.DamagePayload.ObjectMultiplier = 5;
 
                 queenRightBlastWeapon.DamagePayload.ProjectileVisuals = queenLeftBlastWeapon.DamagePayload.ProjectileVisuals;
 
@@ -4366,11 +4375,11 @@ namespace TFTV
                 //Create new Caterpillar ability to (eventually) show different View elements (for now just hidden) 
                 string abilityName = "ScyllaSquisher";
                 string abilityGUID = "{B7EBE715-69CE-4163-8E7D-88034ED4DE2A}";
-               // string viewElementGUID = "{C74C16D0-98DB-4717-B5E8-D04004151A69}";
+                // string viewElementGUID = "{C74C16D0-98DB-4717-B5E8-D04004151A69}";
                 CaterpillarMoveAbilityDef source = DefCache.GetDef<CaterpillarMoveAbilityDef>("CaterpillarMoveAbilityDef");
                 CaterpillarMoveAbilityDef scyllaCaterpillarAbility = Helper.CreateDefFromClone(source, abilityGUID, abilityName);
                 scyllaCaterpillarAbility.ViewElementDef = (TacticalAbilityViewElementDef)Repo.GetDef("6333fa2e-6e95-8124-48ea-8f7a60a2e22c"); //"Move_AbilityViewDef" //Helper.CreateDefFromClone(source.ViewElementDef, viewElementGUID, abilityName);
-              //  scyllaCaterpillarAbility.ViewElementDef.ShowInStatusScreen = false;
+                                                                                                                                              //  scyllaCaterpillarAbility.ViewElementDef.ShowInStatusScreen = false;
 
                 //Make all small critters and things not an obstacle for Scylla, MedMonster (Chiron, Cyclops), Acheron movement
 
@@ -4513,11 +4522,11 @@ namespace TFTV
 
 
 
-      
-        
 
 
-       
+
+
+
 
 
         public static void ModifyCratesToAddArmor()
@@ -7315,9 +7324,9 @@ namespace TFTV
                 CustomMissionTypeDef AmbushALN = DefCache.GetDef<CustomMissionTypeDef>("AmbushAlien_CustomMissionTypeDef");
                 CustomMissionTypeDef sourceScavCratesALN = DefCache.GetDef<CustomMissionTypeDef>("ScavCratesALN_CustomMissionTypeDef");
 
-               
 
-               // FactionObjectiveDef pickResourceCratesObjective = DefCache.GetDef<FactionObjectiveDef>("PickResourceItems_CustomMissionObjective");
+
+                // FactionObjectiveDef pickResourceCratesObjective = DefCache.GetDef<FactionObjectiveDef>("PickResourceItems_CustomMissionObjective");
 
                 List<CustomMissionTypeDef> ambushMissions = new List<CustomMissionTypeDef>()
                 {
@@ -7331,7 +7340,7 @@ DefCache.GetDef<CustomMissionTypeDef>("AmbushPure_CustomMissionTypeDef"),
 DefCache.GetDef<CustomMissionTypeDef>("AmbushSY_CustomMissionTypeDef")
             };
 
-                foreach(CustomMissionTypeDef ambush in ambushMissions) 
+                foreach (CustomMissionTypeDef ambush in ambushMissions)
                 {
                     ambush.ParticipantsData[0].ReinforcementsTurns.Max = 2;
                     ambush.ParticipantsData[0].ReinforcementsTurns.Min = 2;

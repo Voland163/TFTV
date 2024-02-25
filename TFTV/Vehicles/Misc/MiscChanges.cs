@@ -20,7 +20,7 @@ namespace TFTVVehicleRework.Misc
             Change_Goo();
             Change_VehicleInventory();
             Give_VehiclesTrample();
-            Update_LaunchMissileInfo();
+            // Update_LaunchMissileInfo();
             Prevent_CrateDrops();
             MarketplaceOptions.Remove_Options();
             RescueMissions.GenerateMissions();

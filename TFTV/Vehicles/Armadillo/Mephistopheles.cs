@@ -28,13 +28,10 @@ namespace TFTVVehicleRework.Armadillo
         }
 
         private static void Rebalance()
-        {
-            Meph.ChargesMax = 8;
-            Meph.DamagePayload.ConeRadius = 2f;
-            
+        {           
             //"NJ_Flamethrower_WeaponDef"
-            WeaponDef Flamethrower = (WeaponDef)Repo.GetDef("b62efc91-6997-3064-7848-14299c6ddbc0");
-            Meph.MainSwitch = Flamethrower.MainSwitch;
+            // WeaponDef Flamethrower = (WeaponDef)Repo.GetDef("b62efc91-6997-3064-7848-14299c6ddbc0");
+            // Meph.MainSwitch = Flamethrower.MainSwitch;
             //"FlameThrower_ShootAbilityDef"
             ShootAbilityDef FlamethrowerShoot = (ShootAbilityDef)Repo.GetDef("9cb530ee-14ad-11d4-2a31-312a93f799e9");
             Meph.Abilities = new AbilityDef[]
@@ -42,6 +39,9 @@ namespace TFTVVehicleRework.Armadillo
                 FlamethrowerShoot,
                 AdaptiveWeapon()
             };
+            Meph.ChargesMax = 10;
+            Meph.DamagePayload.ConeRadius = 3.5f;
+            Meph.APToUsePerc = 25;
         }
 
         private static ApplyStatusAbilityDef AdaptiveWeapon()
@@ -57,6 +57,7 @@ namespace TFTVVehicleRework.Armadillo
             CarrierAbility.name = "Obliterator_AdaptiveWeaponDef";
             CarrierAbility.ViewElementDef = ObliteratorVED(BloodLust.ViewElementDef);
             CarrierAbility.StatusDef = MephStatus;
+            CarrierAbility.RemoveStatusOnAbilityRemoving = true;
 
             ShootingAnims(Obliterator());
             return CarrierAbility;
@@ -68,31 +69,28 @@ namespace TFTVVehicleRework.Armadillo
             {                               
                 MephClone = (GroundVehicleWeaponDef)Repo.CreateDef("ffb34012-b1fd-4b24-8236-ba2eb23db0b7", Meph);
                 
+                MephClone.APToUsePerc = 75;
                 MephClone.ChargesMax = 15;
                 MephClone.DamagePayload.ObjectMultiplier = 2f;
-                MephClone.DamagePayload.Speed = 30f;
+                MephClone.DamagePayload.Speed = 20f;
                 MephClone.DamagePayload.AutoFireShotCount = 1;
                 MephClone.DamagePayload.ProjectilesPerShot = 5;
                 // MephClone.DamagePayload.ProjectilesPerShot = 3;
                 MephClone.DamagePayload.Range = 20f;
                 MephClone.DamagePayload.DamageDeliveryType = DamageDeliveryType.Sphere;
                 MephClone.DamagePayload.ParabolaHeightToLengthRatio = 0.000001f;
-                MephClone.DamagePayload.AoeRadius = 1.5f;
-                MephClone.SpreadRadius = 5f;
+                MephClone.DamagePayload.AoeRadius = 2f;
+                MephClone.SpreadRadius = 2.5f;
                 MephClone.SpreadRadiusDistanceModifier = ((GroundVehicleWeaponDef)Repo.GetDef("3986d735-5c23-ef24-6983-7d0132068f1b")).SpreadRadiusDistanceModifier; //Purgatory
 
-                //"PX_ShotgunRifle_WeaponDef"
-                // WeaponDef PXShotgun = (WeaponDef)Repo.GetDef("f7e8e44c-bfc4-4364-ca81-7b4b1cf57c15");
                 //"PX_HeavyCannon_WeaponDef"
                 WeaponDef Hell2 = (WeaponDef)Repo.GetDef("112a754d-413f-27f4-180c-b052cab71d70");
-
-                // MephClone.MainSwitch = PXShotgun.MainSwitch; 
                 MephClone.MainSwitch = Hell2.MainSwitch; 
-                // MephClone.DamagePayload.ProjectileVisuals = PXShotgun.DamagePayload.ProjectileVisuals;
                 MephClone.DamagePayload.ProjectileVisuals = Hell2.DamagePayload.ProjectileVisuals;
-                // MephClone.VisualEffects = PXShotgun.VisualEffects;
                 MephClone.VisualEffects = Hell2.VisualEffects;
-                // MephClone.SpreadDegrees = 5f;
+
+                WeaponDef Goliath = (WeaponDef)Repo.GetDef("4d5a34b8-48db-f014-1a0f-90ec7eaf881a"); //"PX_GrenadeLauncher_WeaponDef"
+                MephClone.DamagePayload.ObjectToSpawnOnExplosion = Goliath.DamagePayload.ObjectToSpawnOnExplosion;
                 
                 MephClone.DamagePayload.DamageKeywords = new List<DamageKeywordPair>
                 {
@@ -104,7 +102,7 @@ namespace TFTVVehicleRework.Armadillo
                     new DamageKeywordPair
                     {
                         DamageKeywordDef = keywords.ShreddingKeyword,
-                        Value = 10f
+                        Value = 8f
                     },
                 };
 
@@ -143,6 +141,7 @@ namespace TFTVVehicleRework.Armadillo
                 Shoot = Repo.CreateDef<ShootAbilityDef>("eb9d9c3d-77cd-4723-84ed-0284140f5eb3", LaunchGrenade);
                 Shoot.name = "Obliterate_ShootAbilityDef";
                 Shoot.CanShootOnEnemyBodyParts = true;
+                Shoot.UsesPerTurn = 1;
                 Shoot.TargetingDataDef = LaunchGrenade.TargetingDataDef;
                 Shoot.ViewElementDef = (TacticalAbilityViewElementDef)Repo.GetDef("50c4bdf1-effe-0553-f2c4-d7a32d9d6a36"); //"E_View [Weapon_ShootAbilityDef]"
                 Shoot.SceneViewElementDef = LaunchGrenade.SceneViewElementDef;

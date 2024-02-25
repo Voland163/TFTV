@@ -3534,6 +3534,19 @@ namespace TFTV
                     ClassTagDef myrmidonTag = DefCache.GetDef<ClassTagDef>("Swarmer_ClassTagDef");
                     List<TacticalDeployZone> tacticalDeployZones = Map.DeploymentZones.FindHangarTopsideDeployZones(controller);
 
+                    if (tacticalDeployZones.Count < 4)
+                    {
+                        for (int x = 0; x < 4 - tacticalDeployZones.Count; x++)
+                        {
+                            if (Map.DeploymentZones.VehicleBayCentralDeployZones[x] == null) 
+                            {
+                                break;
+                            }
+                            
+                            tacticalDeployZones.Add(Map.DeploymentZones.VehicleBayCentralDeployZones[x]);
+                        }
+                    }
+
                     List<TacCharacterDef> myrmidons =
                         new List<TacCharacterDef>(controller.TacMission.MissionData.UnlockedAlienTacCharacterDefs.Where(ua => ua.ClassTags.Contains(myrmidonTag)));
 

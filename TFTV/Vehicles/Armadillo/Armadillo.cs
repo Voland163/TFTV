@@ -20,7 +20,7 @@ namespace TFTVVehicleRework.Armadillo
         public static void Change()
         {
             Adjust_Speed();
-            Adjust_Capacity();
+            // Adjust_Capacity();
             Update_ItemStats();
             GasTanks.Change();
             GaussTurret.Change();
@@ -41,7 +41,7 @@ namespace TFTVVehicleRework.Armadillo
                 TacticalItemDef BodyPart = (TacticalItemDef)addon.SubAddon;
                 if(BodyPart.name.Contains("FrontTyre"))
                 {
-                    BodyPart.BodyPartAspectDef.Speed = 6f;
+                    BodyPart.BodyPartAspectDef.Speed = 5f;
                 }
                 else if(BodyPart.name.Contains("BackTyre"))
                 {
@@ -61,7 +61,7 @@ namespace TFTVVehicleRework.Armadillo
         {
             //"NJ_Armadillo_ItemDef"
             GroundVehicleItemDef Armadillo = (GroundVehicleItemDef)Repo.GetDef("60f74fee-278b-8204-e8eb-3721c301292a");
-            Armadillo.DataDef.Capacity = 3f;
+            // Armadillo.DataDef.Capacity = 3f;
             Armadillo.DataDef.Speed = 22f;
         }
 
