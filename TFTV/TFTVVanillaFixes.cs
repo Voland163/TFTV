@@ -1,23 +1,35 @@
-﻿using Base;
+﻿using Assets.Code.PhoenixPoint.Geoscape.Entities.Sites.TheMarketplace;
+using Base;
 using Base.Core;
+using Base.Entities;
+using Base.Rendering.ObjectRendering;
+using Base.Utils.Maths;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
-using PhoenixPoint.Common.Entities.Items;
 using PhoenixPoint.Common.Entities;
+using PhoenixPoint.Common.Entities.Items;
 using PhoenixPoint.Common.Levels.Missions;
 using PhoenixPoint.Common.View.ViewControllers.Inventory;
+using PhoenixPoint.Geoscape.Core;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.PhoenixBases;
 using PhoenixPoint.Geoscape.Entities.PhoenixBases.FacilityComponents;
+using PhoenixPoint.Geoscape.Entities.Research.Requirement;
 using PhoenixPoint.Geoscape.Entities.Sites;
 using PhoenixPoint.Geoscape.Events;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.View.ViewControllers.HavenDetails;
+using PhoenixPoint.Geoscape.View.ViewControllers.SiteEncounters;
+using PhoenixPoint.Geoscape.View.ViewModules;
+using PhoenixPoint.Geoscape.View.ViewStates;
 using PhoenixPoint.Tactical.Entities;
+using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.Entities.Weapons;
 using PhoenixPoint.Tactical.Levels.Missions;
+using PhoenixPoint.Tactical.UI.SoldierPortraits;
 using PhoenixPoint.Tactical.View;
+using SETUtil.Common.Extend;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -25,18 +37,7 @@ using System.Reflection;
 using System.Reflection.Emit;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using Assets.Code.PhoenixPoint.Geoscape.Entities.Sites.TheMarketplace;
-using PhoenixPoint.Geoscape.View.ViewControllers.SiteEncounters;
-using PhoenixPoint.Geoscape.View.ViewModules;
-using PhoenixPoint.Geoscape.Core;
-using Base.Utils.Maths;
-using PhoenixPoint.Tactical.Entities.Abilities;
-using Base.Entities;
-using PhoenixPoint.Geoscape.View.ViewStates;
-using Base.Rendering.ObjectRendering;
-using PhoenixPoint.Tactical.UI.SoldierPortraits;
 using static PhoenixPoint.Tactical.Entities.SquadPortraitsDef;
-using SETUtil.Common.Extend;
 
 namespace TFTV
 {
@@ -44,6 +45,106 @@ namespace TFTV
     {
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
         private static readonly SharedData Shared = TFTVMain.Shared;
+
+        //fixes requiring killing actor required for research even when it is already captured
+
+        [HarmonyPatch(typeof(ActorResearchRequirement), "OnMissionEnd")]
+        public static class TFTV_ActorResearchRequirement_OnMissionEnd
+        {
+            public static bool Prefix(ActorResearchRequirement __instance, GeoFaction faction, GeoMission mission, GeoSite site, GeoFaction ____faction)
+            {
+                try
+                {
+                    _ = site.GeoLevel;
+                    ActorResearchRequirementDef actorResearchRequirementDef = __instance.ActorResearchRequirementDef;
+                    foreach (FactionResult factionResult in mission.Result.FactionResults)
+                    {
+                        if (factionResult.FactionDef == ____faction.Def.PPFactionDef || (__instance.ActorResearchRequirementDef.Faction != null && factionResult.FactionDef != actorResearchRequirementDef.Faction))
+                        {
+                            continue;
+                        }
+
+                        foreach (TacActorUnitResult item in from t in factionResult.UnitResults.Select((UnitResult s) => s.Data).OfType<TacActorUnitResult>()
+                                                            where !t.IsAlive || t.Statuses.Any(s => s.Def.EffectName == "Paralysed")
+                                                            select t)
+                        {
+                            // TFTVLogger.Always($"considering {item.SourceTemplate.name}");
+
+                            if (__instance.IsValidUnit(item))
+                            {
+                                MethodInfo updateProgressMethod = typeof(ResearchRequirement).GetMethod("UpdateProgress", BindingFlags.Instance | BindingFlags.NonPublic);
+
+                                updateProgressMethod.Invoke(__instance, new object[] { 1 });
+
+                                if (__instance.IsCompleted)
+                                {
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
+                    return false;
+                }
+
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
+
+
+        //fixes events reducing health to 0 and killing soldiers
+        [HarmonyPatch(typeof(GeoFactionReward), "AddInjuriesToAllSoldiers")]
+        public static class TFTV_GeoFactionReward_AddInjuriesToAllSoldiers
+        {
+            public static bool Prefix(GeoFactionReward __instance, GeoFaction faction)
+            {
+                try
+                {
+                    if (__instance.AddAllSoldiersTiredness != 0)
+                    {
+                        foreach (GeoCharacter character in faction.Characters)
+                        {
+                            if (character.Fatigue != null)
+                            {
+                                character.Fatigue.Stamina.AddRestrictedToMax(-__instance.AddAllSoldiersTiredness);
+                            }
+                        }
+
+                        __instance.ApplyResult.AllSoldiersTiredness += __instance.AddAllSoldiersTiredness;
+                    }
+
+                    if (__instance.AddAllSoldiersDamage == 0)
+                    {
+                        return false;
+                    }
+
+                    foreach (GeoCharacter character2 in faction.Characters)
+                    {
+                        if ((float)character2.Health > 1f && character2.TemplateDef.IsHuman)
+                        {
+                            int addAllSoldiersDamage = Math.Min(__instance.AddAllSoldiersDamage, (int)character2.Health - 1);
+                            character2.Health.AddRestrictedToMax(-addAllSoldiersDamage);
+                            TFTVLogger.Always($"applied {addAllSoldiersDamage} damage to {character2.DisplayName}");
+                        }
+                    }
+
+                    __instance.ApplyResult.AllSoldiersDamage += __instance.AddAllSoldiersDamage;
+
+                    return false;
+                }
+
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
+
 
 
         //Codemite's solution to pink portrait backgrounds on Macs
@@ -219,7 +320,7 @@ namespace TFTV
         [HarmonyPatch(typeof(ShootAbility), "GetShootTarget")]
         public static class ShootAbility_GetShootTarget_Patch
         {
-            public static void Postfix(ShootAbility __instance, 
+            public static void Postfix(ShootAbility __instance,
                 TacticalAbilityTarget target, ref TacticalAbilityTarget __result)// Vector3? sourcePosition = null, TacticalTargetData targetData = null, )
             {
                 try
@@ -230,7 +331,7 @@ namespace TFTV
                         if (tacticalActor != null && !tacticalActor.IsRevealedToViewer)
                         {
                             __result = null;
-                            
+
                         }
                     }
                 }
@@ -242,7 +343,7 @@ namespace TFTV
             }
         }
 
-       
+
         //MadSkunky's OW, fumble and Throwing range fix copied over from BC
 
         /// <summary> 
@@ -431,44 +532,44 @@ namespace TFTV
             public static bool Prefix(UIModuleTheMarketplace __instance, GeoscapeEvent geoEvent, bool ____isInit,
                 List<TheMarketplaceChoiceButton> ____marketplaceChoiceButtons, GeoMarketplace ____geoMarketplace)
             {
-              //  try
-              //  {
-                    MethodInfo setChoiceMethod = typeof(TheMarketplaceChoicesController).GetMethod("SetChoice", BindingFlags.NonPublic | BindingFlags.Instance);
+                //  try
+                //  {
+                MethodInfo setChoiceMethod = typeof(TheMarketplaceChoicesController).GetMethod("SetChoice", BindingFlags.NonPublic | BindingFlags.Instance);
 
-                    if (____isInit)
-                    {
-                        __instance.ListScrollRect.Scroll.verticalNormalizedPosition = 1f;
-                    }
+                if (____isInit)
+                {
+                    __instance.ListScrollRect.Scroll.verticalNormalizedPosition = 1f;
+                }
 
-                    ____marketplaceChoiceButtons.Clear();
+                ____marketplaceChoiceButtons.Clear();
 
                 //    TFTVLogger.Always($"____geoMarketplace.MarketplaceChoices.Count {____geoMarketplace.MarketplaceChoices.Count}");
 
-                    int count = ____geoMarketplace.MarketplaceChoices.Count;
+                int count = ____geoMarketplace.MarketplaceChoices.Count;
 
-                    if (____geoMarketplace.MarketplaceChoices.Count > 7) //&& !TFTVChangesToDLC5.TFTVMarketPlaceUI.MarketplaceOfferListAdjustedOnce)
-                    {
-                        count = ____geoMarketplace.MarketplaceChoices.Count + 1;
-                    }
-
-
-
-                    __instance.ListScrollRect.InitVertical(__instance.MarketplaceChoiceButtonPrefab.GetComponent<TheMarketplaceChoiceButton>(), count, delegate (int index, Component element)
-                    {
-                        TheMarketplaceChoiceButton component = element.GetComponent<TheMarketplaceChoiceButton>();
-                        setChoiceMethod.Invoke(__instance.TheMarketplaceChoicesController, new object[] { __instance.Context.ViewerFaction, ____geoMarketplace.MarketplaceChoices[index], component, geoEvent.Context });
-                        ____marketplaceChoiceButtons.Add(component);
-                    });
-
-                   // TFTVLogger.Always($"____marketplaceChoiceButtons.Count {____marketplaceChoiceButtons.Count}");
-
-                    return false;
-              //  }
-              /*  catch (Exception e)
+                if (____geoMarketplace.MarketplaceChoices.Count > 7) //&& !TFTVChangesToDLC5.TFTVMarketPlaceUI.MarketplaceOfferListAdjustedOnce)
                 {
-                    TFTVLogger.Error(e);
-                    throw;
-                }*/
+                    count = ____geoMarketplace.MarketplaceChoices.Count + 1;
+                }
+
+
+
+                __instance.ListScrollRect.InitVertical(__instance.MarketplaceChoiceButtonPrefab.GetComponent<TheMarketplaceChoiceButton>(), count, delegate (int index, Component element)
+                {
+                    TheMarketplaceChoiceButton component = element.GetComponent<TheMarketplaceChoiceButton>();
+                    setChoiceMethod.Invoke(__instance.TheMarketplaceChoicesController, new object[] { __instance.Context.ViewerFaction, ____geoMarketplace.MarketplaceChoices[index], component, geoEvent.Context });
+                    ____marketplaceChoiceButtons.Add(component);
+                });
+
+                // TFTVLogger.Always($"____marketplaceChoiceButtons.Count {____marketplaceChoiceButtons.Count}");
+
+                return false;
+                //  }
+                /*  catch (Exception e)
+                  {
+                      TFTVLogger.Error(e);
+                      throw;
+                  }*/
             }
         }
 
@@ -492,11 +593,11 @@ namespace TFTV
 
                         WeaponDef weaponDef = (WeaponDef)AmmoWeaponDatabase.AmmoToWeaponDictionary[tacticalItemDef][0];
 
-                        float costMultiplier = Math.Max(__instance.ChargesMax/Math.Max(weaponDef.DamagePayload.AutoFireShotCount, weaponDef.DamagePayload.ProjectilesPerShot), 2);
-                        
-                        
+                        float costMultiplier = Math.Max(__instance.ChargesMax / Math.Max(weaponDef.DamagePayload.AutoFireShotCount, weaponDef.DamagePayload.ProjectilesPerShot), 2);
 
-                        
+
+
+
                         __result = new ResourcePack(new ResourceUnit[]
                              {
                         new ResourceUnit(ResourceType.Tech, Mathf.Max(Mathf.FloorToInt(__instance.ManufactureTech / costMultiplier), Mathf.FloorToInt(__instance.ManufactureTech/10))),
@@ -594,7 +695,7 @@ namespace TFTV
             {
                 try
                 {
-                   // TFTVLogger.Always($"CompleteMarketplaceEvent triggered for choice {choice.Outcome.Items[0].ItemDef?.name}");
+                    // TFTVLogger.Always($"CompleteMarketplaceEvent triggered for choice {choice.Outcome.Items[0].ItemDef?.name}");
 
                     if (__instance.Context.Site.Vehicles.Count() > 1)
                     {
@@ -850,7 +951,7 @@ namespace TFTV
                 foreach (GeoPhoenixFacility baseFacility in phoenixBase.Layout.Facilities)
                 {
 
-                    if (baseFacility.IsPowered && baseFacility.GetComponent<PrisonFacilityComponent>()==null)
+                    if (baseFacility.IsPowered && baseFacility.GetComponent<PrisonFacilityComponent>() == null)
                     {
                         baseFacility.SetPowered(false);
                         baseFacility.SetPowered(true);

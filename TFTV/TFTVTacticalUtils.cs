@@ -1,22 +1,23 @@
 ﻿using Base;
+using Base.Cameras;
 using Base.Core;
-using Base.Entities.Statuses;
+using Epic.OnlineServices;
 using HarmonyLib;
-using PhoenixPoint.Geoscape.Entities;
-using PhoenixPoint.Geoscape.Levels;
-using PhoenixPoint.Tactical.Entities;
+using PhoenixPoint.Common.Entities.GameTagsTypes;
+using PhoenixPoint.Modding;
 using PhoenixPoint.Tactical.Levels;
 using PhoenixPoint.Tactical.Levels.ActorDeployment;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using UnityEngine;
 
 namespace TFTV
 {
     internal class TFTVTacticalUtils
     {
-
+        private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
         internal static TacticalDeployZone FindTDZ(string name)
         {
             try
@@ -32,6 +33,58 @@ namespace TFTV
                 throw;
             }
         }
+
+        internal static void RevealExfilPoint(TacticalLevelController controller, int turnNumber)
+        {
+            try
+            {
+                TFTVConfig config = TFTVMain.Main.Config;
+
+                if (!config.ShowExfilAmbush) 
+                {
+                    return;
+                }
+
+                if (!controller.TacMission.MissionData.MissionType.MissionTags.Contains(DefCache.GetDef<MissionTypeTagDef>("MissionTypeAmbush_MissionTagDef")))
+                {
+                    return;
+                }
+
+                if (turnNumber != 1 || !controller.CurrentFaction.IsControlledByPlayer)
+                {
+                    return;
+                }
+
+                TacticalExitZone tacticalExitZone = controller.Map.GetActors<TacticalExitZone>().FirstOrDefault(a => a.TacticalFaction == controller.GetFactionByCommandName("px"));
+                TFTVLogger.Always($"found tez? {tacticalExitZone != null}");
+
+                MethodInfo createVisuals = AccessTools.Method(typeof(TacticalExitZone), "CreateVisuals");
+
+                if (tacticalExitZone != null)
+                {
+                    createVisuals.Invoke(tacticalExitZone, null);
+
+                    tacticalExitZone.CameraDirector.Hint(CameraHint.ChaseTarget, new CameraChaseParams
+                    {
+                        ChaseVector = tacticalExitZone.Pos,
+                        ChaseTransform = null,
+                        ChaseCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f),
+                        LockCameraMovement = false,
+                        Instant = true,
+                        ChaseOnlyOutsideFrame = false,
+                        SnapToFloorHeight = true
+
+                    });
+
+                }
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
+        }
+
 
         internal static void RevealAllSpawns(TacticalLevelController controller)
         {
@@ -50,13 +103,13 @@ namespace TFTV
 
                 foreach (TacticalDeployZone tacticalDeployZone in zones)
                 {
-                  createVisuals.Invoke(tacticalDeployZone, null);
-                  //  TFTVLogger.Always($"{tacticalDeployZone.name} at position {tacticalDeployZone.Pos}, belongs to {tacticalDeployZone.MissionParticipant.GetName()}");
-                    
-                    foreach(FixedDeployConditionData fixedDeployConditionData in tacticalDeployZone.FixedDeployment) 
+                    createVisuals.Invoke(tacticalDeployZone, null);
+                    //  TFTVLogger.Always($"{tacticalDeployZone.name} at position {tacticalDeployZone.Pos}, belongs to {tacticalDeployZone.MissionParticipant.GetName()}");
+
+                    foreach (FixedDeployConditionData fixedDeployConditionData in tacticalDeployZone.FixedDeployment)
                     {
                         TFTVLogger.Always($"FixedDeployConditionData: {tacticalDeployZone.name} at {tacticalDeployZone.Pos} will spawn {fixedDeployConditionData.TacActorDef.name}");
-                    
+
                     }
 
 
@@ -67,8 +120,8 @@ namespace TFTV
 
                     }
 
-                //    TFTVLogger.Always($"{tacticalDeployZone.DeployConditions}");
-                    
+                    //    TFTVLogger.Always($"{tacticalDeployZone.DeployConditions}");
+
 
                 }
 

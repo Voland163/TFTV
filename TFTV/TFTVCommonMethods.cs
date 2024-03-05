@@ -138,7 +138,8 @@ namespace TFTV
                 TFTVDelirium.CharactersDeliriumPerksAndMissions.Clear();
                 TFTVBaseDefenseGeoscape.ContainmentBreachSchedule.Clear();
                 TFTVBaseDefenseGeoscape.PandoransThatCanEscape.Clear();
-                
+                TFTVRevenantResearch.RevenantPoints = 0;
+                TFTVNewGameOptions.EtermesResistanceAndVulnerability = 0;
 
                 /*  TFTVNewGameOptions.AmountOfExoticResourcesSetting;
                   TFTVNewGameOptions.ResourceMultiplierSetting;
@@ -214,7 +215,8 @@ namespace TFTV
                 TFTVBaseDefenseTactical.Breach = false;
                 TFTVBaseDefenseTactical.ScyllaLoose = false;
                 TFTVBaseDefenseTactical.PandoransInContainment.Clear();
-                
+               
+
                 //  TFTVBaseDefenseTactical.VentingHintShown = false;
             }
             catch (Exception e)

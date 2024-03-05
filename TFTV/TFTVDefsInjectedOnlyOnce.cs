@@ -74,7 +74,7 @@ namespace TFTV
 
         public static readonly ResearchTagDef CriticalResearchTag = DefCache.GetDef<ResearchTagDef>("CriticalPath_ResearchTagDef");
 
-      
+
         // ResurrectAbilityRulesDef to mess with later
 
         internal static void Print()
@@ -197,7 +197,9 @@ namespace TFTV
 
                 TFTVPureAndForsaken.Defs.InitDefs();
 
-              //  TFTVExperimental.CheckActorReserchRequirement();
+                DefCache.GetDef<GeoscapeEventDef>("SDI_16_GeoscapeEventDef").GeoscapeEventData.Choices[0].Outcome.DamageAllSoldiers = 200;
+
+                //  TFTVExperimental.CheckActorReserchRequirement();
 
                 //  Print();
 
@@ -4721,6 +4723,7 @@ namespace TFTV
                 loadingTipsRepositoryDef.GeoscapeLoadingTips.Add(new LocalizedTextBind() { LocalizationKey = "TFTV_TIP_GEOSCAPE_31" });
                 loadingTipsRepositoryDef.GeoscapeLoadingTips.Add(new LocalizedTextBind() { LocalizationKey = "TFTV_TIP_GEOSCAPE_32" });
                 loadingTipsRepositoryDef.GeoscapeLoadingTips.Add(new LocalizedTextBind() { LocalizationKey = "TFTV_TIP_GEOSCAPE_33" });
+                loadingTipsRepositoryDef.GeoscapeLoadingTips.Add(new LocalizedTextBind() { LocalizationKey = "TFTV_TIP_GEOSCAPE_34" });
 
                 loadingTipsRepositoryDef.TacticalLoadingTips.Add(new LocalizedTextBind() { LocalizationKey = "TFTV_TIP_TACTICAL_1" });
                 loadingTipsRepositoryDef.TacticalLoadingTips.Add(new LocalizedTextBind() { LocalizationKey = "TFTV_TIP_TACTICAL_2" });
@@ -4732,6 +4735,7 @@ namespace TFTV
                 loadingTipsRepositoryDef.TacticalLoadingTips.Add(new LocalizedTextBind() { LocalizationKey = "TFTV_TIP_TACTICAL_8" });
                 loadingTipsRepositoryDef.TacticalLoadingTips.Add(new LocalizedTextBind() { LocalizationKey = "TFTV_TIP_TACTICAL_9" });
                 loadingTipsRepositoryDef.TacticalLoadingTips.Add(new LocalizedTextBind() { LocalizationKey = "TFTV_TIP_TACTICAL_10" });
+                loadingTipsRepositoryDef.TacticalLoadingTips.Add(new LocalizedTextBind() { LocalizationKey = "TFTV_TIP_TACTICAL_11" });
 
             }
             catch (Exception e)
@@ -4744,10 +4748,65 @@ namespace TFTV
         {
             try
             {
-                WeaponDef spikeShooter = DefCache.GetDef<WeaponDef>("AN_Berserker_Shooter_LeftArm_WeaponDef");
 
-                spikeShooter.BehaviorOnDisable = EDisableBehavior.Disable;
-                spikeShooter.HandsToUse = 1;
+                UnusableHandStatusDef unUsableLeftHandStatus = DefCache.GetDef<UnusableHandStatusDef>("UnusableLeftHand_StatusDef");
+
+                string statusName = "BrokenSpikeShooterStatus";
+
+                DamageMultiplierStatusDef sourceStatus = DefCache.GetDef<DamageMultiplierStatusDef>("BionicResistances_StatusDef");
+
+                DamageMultiplierStatusDef newBrokenSpikeShooterStatus = Helper.CreateDefFromClone(sourceStatus
+                    ,
+                    "D3B1B274-C7D0-4655-BC38-3B1747C15888",
+                    statusName);
+
+                newBrokenSpikeShooterStatus.EffectName = "BrokenSpikeShooter";
+                newBrokenSpikeShooterStatus.DamageTypeDefs = new DamageTypeBaseEffectDef[] { };
+                newBrokenSpikeShooterStatus.Visuals = Helper.CreateDefFromClone(sourceStatus.Visuals, "{F6D6A97E-B658-4B6B-AAAF-C517CAB3AB9C}", statusName);
+
+
+                string statusApplicationConditionName = "NoBrokenSpikeShooterStatusCondition";
+
+                ActorHasStatusEffectConditionDef sourceApplicationCondition =
+                    DefCache.GetDef<ActorHasStatusEffectConditionDef>("HasBleedStatus_ApplicationCondition");
+
+                ActorHasStatusEffectConditionDef newApplicationCondition = Helper.CreateDefFromClone(
+                    sourceApplicationCondition,
+                    "{C54C98C2-4987-4B2C-B983-6E64C1E9E457}",
+                    statusApplicationConditionName);
+
+                newApplicationCondition.StatusDef = newBrokenSpikeShooterStatus;
+                newApplicationCondition.HasStatus = false;
+
+                unUsableLeftHandStatus.ApplicationConditions = new EffectConditionDef[] { newApplicationCondition };
+
+                DefCache.GetDef<ShootAbilityDef>("ShootPoisonSpike_ShootAbilityDef").DisablingStatuses = new StatusDef[]
+               {
+                newBrokenSpikeShooterStatus
+               };
+
+
+            /*    ApplyStatusAbilityDef unusableLeftHandAbility = DefCache.GetDef<ApplyStatusAbilityDef>("UnusableLeftHand_AbilityDef");
+                unusableLeftHandAbility.DisablingStatuses = new StatusDef[]
+               {
+                newBrokenSpikeShooterStatus
+               };*/
+
+                TFTVStamina.BrokenSpikeShooterStatus = newBrokenSpikeShooterStatus;
+
+                /*  WeaponDef spikeShooter = DefCache.GetDef<WeaponDef>("AN_Berserker_Shooter_LeftArm_WeaponDef");
+
+                  // ApplyStatusAbilityDef unusableRightHandAbility = DefCache.GetDef<ApplyStatusAbilityDef>("UnusableRightHand_AbilityDef");
+
+                  // spikeShooter.Abilities[1] = unusableRightHandAbility;
+
+
+                  //UnusableLeftHand_StatusDef
+                  //   spikeShooter.Abilities[0].
+
+                  //  spikeShooter.BreakParentOnDisable = true;
+                  spikeShooter.BehaviorOnDisable = EDisableBehavior.Disable;
+                  spikeShooter.HandsToUse = 1;*/
 
             }
             catch (Exception e)
@@ -8294,7 +8353,7 @@ DefCache.GetDef<CustomMissionTypeDef>("AmbushSY_CustomMissionTypeDef")
             {
                 Sprite umbraIcon = Helper.CreateSpriteFromImageFile("Void-03P.png");
 
-        RandomValueEffectConditionDef randomValueFishUmbra = DefCache.GetDef<RandomValueEffectConditionDef>("E_RandomValue [UmbralFishmen_FactionEffectDef]");
+                RandomValueEffectConditionDef randomValueFishUmbra = DefCache.GetDef<RandomValueEffectConditionDef>("E_RandomValue [UmbralFishmen_FactionEffectDef]");
                 RandomValueEffectConditionDef randomValueCrabUmbra = DefCache.GetDef<RandomValueEffectConditionDef>("E_RandomValue [UmbralCrabmen_FactionEffectDef]");
                 randomValueCrabUmbra.ThresholdValue = 0;
                 randomValueFishUmbra.ThresholdValue = 0;

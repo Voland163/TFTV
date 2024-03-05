@@ -254,8 +254,7 @@ namespace TFTV
             public static void CreateObjectivesBaseDefense()
             {
                 try
-                {
-                   
+                {        
                     KillActorFactionObjectiveDef killActorFactionObjectiveSource = DefCache.GetDef<KillActorFactionObjectiveDef>("E_KillSentinels [Nest_AlienBase_CustomMissionTypeDef]");
 
                     string nameObjectiveDestroySpawnery = "PhoenixBaseInfestation";

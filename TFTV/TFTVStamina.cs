@@ -7,7 +7,11 @@ using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.View.ViewControllers.AugmentationScreen;
 using PhoenixPoint.Geoscape.View.ViewModules;
+using PhoenixPoint.Tactical.Entities;
+using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.Equipments;
+using PhoenixPoint.Tactical.Entities.Statuses;
+using PhoenixPoint.Tactical.Entities.Weapons;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,12 +21,53 @@ namespace TFTV
 {
     internal class TFTVStamina
     {
+        private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
         // Setting Stamina to zero if character suffered a disabled limb during tactical
+
+        public static DamageMultiplierStatusDef BrokenSpikeShooterStatus;
 
         //A list of operatives that get disabled limbs. This list is cleared when the game is exited, so saving a game in tactical, exiting the game and reloading will probably make the game "forget" the character was ever injured.
         //public static List<int> charactersWithBrokenLimbs = new List<int>();
         private static readonly SharedData Shared = TFTVMain.Shared;
         public static Dictionary<int, List<string>> charactersWithDisabledBodyParts = new Dictionary<int, List<string>>();
+
+        [HarmonyPatch(typeof(BodyPartAspect), "OnSetToEnable")]
+        internal static class BodyPartAspect_OnSetToEnable_patch
+        {
+            private static void Postfix(BodyPartAspect __instance)
+            {
+                try
+                {
+                    if (__instance.BodyPartAspectDef.name.Equals("E_BodyPartAspect [AN_Berserker_Shooter_LeftArm_WeaponDef]"))
+                    {
+                        TacticalItem base_OwnerItem = (TacticalItem)AccessTools.Property(typeof(TacticalItemAspectBase), "OwnerItem").GetValue(__instance, null);
+                        TacticalActor tacticalActor = base_OwnerItem.TacticalActor;
+
+                        UnusableHandStatusDef unUsableLeftHandStatus = DefCache.GetDef<UnusableHandStatusDef>("UnusableLeftHand_StatusDef");
+
+                        if (tacticalActor.HasStatus(BrokenSpikeShooterStatus))
+                        {
+                            TFTVLogger.Always($"removing {BrokenSpikeShooterStatus.name} from {tacticalActor.name}, because {__instance.BodyPartAspectDef.name} is reenabled");
+                            tacticalActor.Status.UnapplyStatus(tacticalActor.Status.GetStatusByName(BrokenSpikeShooterStatus.EffectName));
+                        }
+
+                        if (!tacticalActor.HasStatus(unUsableLeftHandStatus))
+                        {
+                            TFTVLogger.Always($"adding {unUsableLeftHandStatus.name}");
+                            tacticalActor.Status.ApplyStatus(unUsableLeftHandStatus);
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+        }
+
+    
+            
+
 
         // This first patch is to "register" the injury in the above list
         [HarmonyPatch(typeof(BodyPartAspect), "OnSetToDisabled")]
@@ -55,10 +100,34 @@ namespace TFTV
                         }
                         else if (charactersWithDisabledBodyParts.ContainsKey(unitId) && !charactersWithDisabledBodyParts[unitId].Contains(bodyPart) && bodyPart != null)
                         {
-
                             charactersWithDisabledBodyParts[unitId].Add(bodyPart);
                             TFTVLogger.Always(base_OwnerItem.TacticalActor.GetDisplayName() + " has a disabled " + bodyPart);
                         }
+                    }
+                }
+
+                if(__instance.BodyPartAspectDef.name.Equals("E_BodyPartAspect [AN_Berserker_Shooter_LeftArm_WeaponDef]")) 
+                {                      
+                    TacticalItem base_OwnerItem = (TacticalItem)AccessTools.Property(typeof(TacticalItemAspectBase), "OwnerItem").GetValue(__instance, null);
+                    TacticalActor tacticalActor = base_OwnerItem.TacticalActor;
+
+                    if (tacticalActor.HasStatus(DefCache.GetDef<FreezeAspectStatsStatusDef>("IgnorePain_StatusDef"))) 
+                    {
+                        return;
+                    }
+
+                    UnusableHandStatusDef unUsableLeftHandStatus = DefCache.GetDef<UnusableHandStatusDef>("UnusableLeftHand_StatusDef");
+
+                    if (!tacticalActor.HasStatus(BrokenSpikeShooterStatus))
+                    {
+                        TFTVLogger.Always($"adding {BrokenSpikeShooterStatus.name} to {tacticalActor.name}, because {__instance.BodyPartAspectDef.name} is disabled");
+                        tacticalActor.Status.ApplyStatus(BrokenSpikeShooterStatus);
+                    }
+
+                    if (tacticalActor.HasStatus(unUsableLeftHandStatus)) 
+                    {
+                        TFTVLogger.Always($"Removing {unUsableLeftHandStatus.name}");
+                        tacticalActor.Status.UnapplyStatus(tacticalActor.Status.GetStatusByName(unUsableLeftHandStatus.EffectName));                  
                     }
                 }
             }
@@ -67,10 +136,8 @@ namespace TFTV
         public static void CheckBrokenLimbs(List<GeoCharacter> geoCharacters, GeoLevelController controller)
         {
             try
-            {
-            
+            {            
                 GameTagDef bionicalTag = GameUtl.GameComponent<SharedData>().SharedGameTags.BionicalTag;
-
 
                 foreach (GeoCharacter geoCharacter in geoCharacters)
                 {                

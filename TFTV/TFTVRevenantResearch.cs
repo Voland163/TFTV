@@ -31,15 +31,10 @@ namespace TFTV
         public static bool ProjectOsiris = false;
         public static Dictionary<int, int[]> ProjectOsirisStats = new Dictionary<int, int[]>();
 
-
-
-
-
         public static void CreateRevenantRewardsDefs()
         {
             CreateProjectOsirisResearch();
             CreateRevenantLiveResearch();
-
         }
 
         public static void RecordStatsOfDeadSoldier(TacticalActorBase deadSoldier)
@@ -47,8 +42,6 @@ namespace TFTV
 
             try
             {
-
-
                 TacticalActor actor = deadSoldier as TacticalActor;
                 int endurance = actor.CharacterStats.Endurance.Value.BaseValueInt;
                 int willpower = actor.CharacterStats.Willpower.Value.BaseValueInt;
@@ -70,15 +63,12 @@ namespace TFTV
                 if (controller.PhoenixFaction.Research.HasCompleted("PX_Project_Osiris_Research"))
                 {
                     ProjectOsiris = true;
-
                 }
             }
             catch (Exception e)
             {
                 TFTVLogger.Error(e);
             }
-
-
         }
 
 
@@ -96,8 +86,6 @@ namespace TFTV
                 string gUID = "B94BF4EC-4227-4D87-900D-48AB3B970DC1";
                 string gUID2 = "B5CC42DE-016F-4151-ACFA-8604C9C4CCCF";
                 int cost = 200;
-
-
 
                 ResearchDef revenantCaptureResearch =
                     TFTVCommonMethods.CreateNewPXResearch(defName, cost, gUID, gUID2, title, reveal, unlock, complete, benefits, null);
@@ -139,8 +127,6 @@ namespace TFTV
                 string gUID2 = "040593DB-C61F-4C2A-A908-1B84C62424AF";
                 int cost = 400;
 
-
-
                 ResearchDef enoughRevenantsKilledResearch =
                     TFTVCommonMethods.CreateNewPXResearch(defName, cost, gUID, gUID2, title, reveal, unlock, complete, benefits, null);
 
@@ -169,10 +155,8 @@ namespace TFTV
         {
             try
             {
-
                 if (RevenantCaptured && controller.EventSystem.GetVariable(RevenantCapturedVariable) == 0)
                 {
-
                     controller.EventSystem.SetVariable(RevenantCapturedVariable, 1);
                     RevenantCaptured = false;
                     TFTVLogger.Always("Id of captured revenant " + TFTVRevenant.revenantID);
@@ -202,6 +186,7 @@ namespace TFTV
                 }
                 else if (controller.PhoenixFaction.Research.HasCompleted("PX_Revenant_Live_Research") && RevenantPoints > 0)
                 {
+                    TFTVLogger.Always($"Adding {RevenantPoints} to {RevenantsDestroyed}");
                     RevenantCaptured = false;
                     controller.EventSystem.SetVariable(RevenantsDestroyed, controller.EventSystem.GetVariable(RevenantsDestroyed) + RevenantPoints);
 
@@ -217,6 +202,7 @@ namespace TFTV
                     controller.EventSystem.SetVariable(RevenantsDestroyed, 10);
                 }
 
+                RevenantPoints = 0;
             }
 
             catch (Exception e)
@@ -269,12 +255,5 @@ namespace TFTV
                 TFTVLogger.Error(e);
             }
         }
-
-
-
-
-
     }
-
-
 }

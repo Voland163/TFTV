@@ -1046,7 +1046,7 @@ namespace TFTV
                 {
                     stats[0] = 0;
                     stats[1] = 0;
-                    stats[2] = difficulty + 1;
+                    stats[2] = Mathf.FloorToInt(difficulty / 2);
                 }
                 else if (classTagDef == priestTag || classTagDef == technicianTag)
                 {
@@ -1104,9 +1104,16 @@ namespace TFTV
                 tacticalActor.CharacterStats.Willpower.Set(5 + Mathf.FloorToInt(difficultyLevel / 2) + level + GetStatBuffForTier(tacticalActor) / 2 + classBuff[1] + equipmentBuff[1]);
 
 
-                //14+3+4+4 MAX SPD = 25 + armor
-                tacticalActor.CharacterStats.Speed.SetMax(14 + Mathf.CeilToInt(level / 2) + GetStatBuffForTier(tacticalActor) / 3 + classBuff[2] + equipmentBuff[2]);
-                tacticalActor.CharacterStats.Speed.Set(14 + Mathf.CeilToInt(level / 2) + GetStatBuffForTier(tacticalActor) / 3 + classBuff[2] + equipmentBuff[2]);
+                //14+3+4+4 MAX SPD = 25 + armor OLD
+                //NEW
+
+                //Rookie/Story Mode: 14 + 1 = 15 + armor
+                //Veteran: 14 + 2 + 1 = 17 + armor
+                //Hero: 14 + 3 + 1 = 18 + armor
+                //Legend: 14 + 4 + 2 = 20 + arnor
+                //ETERMES: 14 + 5 + 2 = 21 + armor
+                tacticalActor.CharacterStats.Speed.SetMax(14 + GetStatBuffForTier(tacticalActor) / 3 + classBuff[2] + equipmentBuff[2]);
+                tacticalActor.CharacterStats.Speed.Set(14 + GetStatBuffForTier(tacticalActor) / 3 + classBuff[2] + equipmentBuff[2]);
             }
 
             catch (Exception e)
@@ -1817,7 +1824,7 @@ namespace TFTV
         {
             try
             {
-                return controller.Factions.FirstOrDefault(f => f.Faction.FactionDef.ShortNames.Contains(factionName)).TacticalActors.FirstOrDefault(ta => ta.HasGameTag(HumanEnemyTier1GameTag) && ta.IsAlive);
+                return controller.Factions.FirstOrDefault(f => f.Faction.FactionDef.ShortNames.Contains(factionName)).TacticalActors.FirstOrDefault(ta => ta.HasGameTag(HumanEnemyTier1GameTag) && ta.IsAlive && !ta.IsEvacuated);
             }
             catch (Exception e)
             {

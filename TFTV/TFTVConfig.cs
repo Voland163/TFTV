@@ -43,12 +43,9 @@ namespace TFTV
         public bool LearnFirstPersonalSkill = true;
         public bool DeactivateTacticalAutoStandby = true;
         public bool Debug = true;
-       // public bool LimitedCapture = true;
-      //  public bool LimitedHarvesting = true;
         public bool NoBarks = false;
+        public bool ShowExfilAmbush = false;
         public int Difficulty = 2;
-
-
 
         internal List<ModConfigField> modConfigFields = new List<ModConfigField>();
         public void PopulateConfigFields()

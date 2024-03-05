@@ -37,19 +37,59 @@ namespace TFTV
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
         private static readonly DefRepository Repo = TFTVMain.Repo;
 
-      
+        
 
-        [HarmonyPatch(typeof(TacticalFactionVision), "ReUpdateVisibilityTowardsActorImpl")]
-        public static class TFTV_TacticalFactionVision_ReUpdateVisibilityTowardsActorImpl_patch
+        internal class StealthBehavior
         {
-            private static bool Prefix(TacticalActorBase fromActor, TacticalActorBase targetActor, float basePerceptionRange, ref bool __result)
+
+            [HarmonyPatch(typeof(TacticalFactionVision), "ReUpdateVisibilityTowardsActorImpl")]
+            public static class TFTV_TacticalFactionVision_ReUpdateVisibilityTowardsActorImpl_patch
+            {
+                private static bool Prefix(TacticalActorBase fromActor, TacticalActorBase targetActor, float basePerceptionRange, ref bool __result)
+                {
+                    try
+                    {
+                        if (fromActor is TacticalActor tacticalActor && tacticalActor.IsEvacuated)
+                        {
+                            __result = false;
+                            return false;
+                        }
+
+                        return true;
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                        throw;
+                    }
+                }
+            }
+
+
+            private static bool CheckVisibility(TacticalActorBase tacticalActorBase, TacticalActor tacticalActor, DamagePayload damagePayload)
             {
                 try
                 {
-                    if (fromActor is TacticalActor tacticalActor && tacticalActor.IsEvacuated)
+                    if (damagePayload.DamageDeliveryType == DamageDeliveryType.Sphere || damagePayload.DamageDeliveryType == DamageDeliveryType.Cone)
                     {
-                        __result = false;
-                        return false;
+                        if (tacticalActor.TacticalFaction == tacticalActorBase.TacticalFaction)
+                        {
+                            return true;
+                        }
+
+                        if (tacticalActor.TacticalFaction.GetAllAliveFriendlyActors<TacticalActorBase>(tacticalActor).Contains(tacticalActorBase))
+                        {
+                            return true;
+                        }
+
+                        if (tacticalActor.TacticalFaction.AIBlackboard.GetEnemies(ActorType.All, true).Contains(tacticalActorBase))
+                        {
+                            return true;
+                        }
+                        else
+                        {
+                            return false;
+                        }
                     }
 
                     return true;
@@ -60,66 +100,29 @@ namespace TFTV
                     throw;
                 }
             }
-        }
 
 
-        private static bool CheckVisibility(TacticalActorBase tacticalActorBase, TacticalActor tacticalActor, DamagePayload damagePayload)
-        {
-            try
+            [HarmonyPatch(typeof(AIUtil), "GetAffectedTargetsByShooting")]
+            public static class TFTV_AIUtil_GetAffectedTargetsByShooting_patch
             {
-                if (damagePayload.DamageDeliveryType == DamageDeliveryType.Sphere || damagePayload.DamageDeliveryType == DamageDeliveryType.Cone)
+                private static IEnumerable<TacticalActorBase> Postfix(IEnumerable<TacticalActorBase> results, Vector3 shootPos, TacticalActor sourceActor, Weapon sourceWeapon, TacticalAbilityTarget target, ShootAbilityDef shootAbility = null)
                 {
-                    if (tacticalActor.TacticalFaction == tacticalActorBase.TacticalFaction)
-                    {
-                        return true;
-                    }
 
-                    if (tacticalActor.TacticalFaction.GetAllAliveFriendlyActors<TacticalActorBase>(tacticalActor).Contains(tacticalActorBase))
-                    {
-                        return true;
-                    }
+                    DamagePayload damagePayload = sourceWeapon.GetDamagePayload();
 
-                    if (tacticalActor.TacticalFaction.AIBlackboard.GetEnemies(ActorType.All, true).Contains(tacticalActorBase))
+                    foreach (TacticalActorBase actorBase in results)
                     {
-                        return true;
-                    }
-                    else
-                    {
-                        return false;
+                        if (CheckVisibility(actorBase, sourceActor, damagePayload))
+                        {
+                            yield return actorBase;
+                        }
+
                     }
                 }
 
-                return true;
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-                throw;
-            }
-        }
-
-
-        [HarmonyPatch(typeof(AIUtil), "GetAffectedTargetsByShooting")]
-        public static class TFTV_AIUtil_GetAffectedTargetsByShooting_patch
-        {
-            private static IEnumerable<TacticalActorBase> Postfix(IEnumerable<TacticalActorBase> results, Vector3 shootPos, TacticalActor sourceActor, Weapon sourceWeapon, TacticalAbilityTarget target, ShootAbilityDef shootAbility = null)
-            {
-
-                DamagePayload damagePayload = sourceWeapon.GetDamagePayload();
-
-                foreach (TacticalActorBase actorBase in results)
-                {
-                    if (CheckVisibility(actorBase, sourceActor, damagePayload))
-                    {
-                        yield return actorBase;
-                    }
-
-                }
             }
 
         }
-
-
 
         // TacticalActorBase
 
@@ -133,7 +136,7 @@ namespace TFTV
 
         public static bool Has1APWeapon(TacCharacterDef tacCharacterDef)
         {
-            AIVisibleEnemiesConsiderationDef aIVisibleEnemiesConsiderationDef;
+       
 
             try
             {
@@ -163,6 +166,8 @@ namespace TFTV
                 throw;
             }
         }
+
+        //Culls dash evaluation so that it is only considered when character has at least 3 AP
 
         [HarmonyPatch(typeof(AIHasEnemiesInRangeConsideration), "Evaluate")]
         public static class AIHasEnemiesInRangeConsideration_Evaluate_patch

@@ -65,6 +65,7 @@ namespace TFTV
         public static bool StrongerPandoransSetting;
         public static bool ImpossibleWeaponsAdjustmentsSetting;
         public static bool NoSecondChances;
+        public static int EtermesResistanceAndVulnerability;
 
         public static int initialScavSites = 8; // 16 on Vanilla
 
@@ -122,8 +123,7 @@ namespace TFTV
                         break;
                 }
 
-
-                if (difficulty > 4)
+                if (difficulty > 5)
                 {
                     DiplomaticPenaltiesSetting = true;
                     StaminaPenaltyFromInjurySetting = true;
@@ -133,6 +133,17 @@ namespace TFTV
                     LimitedCaptureSetting = true;
                     LimitedHarvestingSetting = true;
                     NoSecondChances = true;
+                    EtermesResistanceAndVulnerability = 0;
+                }
+                else if (difficulty > 4)
+                {
+                    DiplomaticPenaltiesSetting = true;
+                    StaminaPenaltyFromInjurySetting = true;
+                    MoreAmbushesSetting = true;
+                    StrongerPandoransSetting = true;
+                    ImpossibleWeaponsAdjustmentsSetting = true;
+                    LimitedCaptureSetting = true;
+                    LimitedHarvestingSetting = true;             
                 }
                 else if(difficulty > 2) 
                 {

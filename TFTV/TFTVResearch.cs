@@ -26,9 +26,7 @@ namespace TFTV
     {
         private static readonly DefRepository Repo = TFTVMain.Repo;
         private static readonly SharedData Shared = TFTVMain.Shared;
-        private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
-
-        
+        private static readonly DefCache DefCache = TFTVMain.Main.DefCache;     
 
         internal class Vivisections
         {

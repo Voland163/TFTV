@@ -243,10 +243,12 @@ namespace TFTV
                 int limitedHarvesting = 1;
                 int limitedCapture = 1;
                 int noSecondChances = 1;
+                int etermesVulnerability = 1;
 
                 if (SelectedDifficulty > 5) 
                 {
                     noSecondChances = 0;
+                    etermesVulnerability = 0;
                 }
 
                 if (SelectedDifficulty > 4)
@@ -282,7 +284,7 @@ namespace TFTV
                 MethodInfo limitedHarvestingValueChangedCallback = typeof(UIStateNewGeoscapeGameSettings_InitFullContent_patch).GetMethod("OnLimitedHarvestingValueChangedCallback", BindingFlags.NonPublic | BindingFlags.Static);
                 MethodInfo limitedCaptureValueChangedCallback = typeof(UIStateNewGeoscapeGameSettings_InitFullContent_patch).GetMethod("OnLimitedCaptureValueChangedCallback", BindingFlags.NonPublic | BindingFlags.Static);
                 MethodInfo noSecondChancesValueChangedCallback = typeof(UIStateNewGeoscapeGameSettings_InitFullContent_patch).GetMethod("OnNoSecondChancesValueChangedCallback", BindingFlags.NonPublic | BindingFlags.Static);
-
+                MethodInfo etermesVulnerabilityResistanceValueChangedCallback = typeof(UIStateNewGeoscapeGameSettings_InitFullContent_patch).GetMethod("OnEtermesVulnerabilityResistanceValueChangedCallback", BindingFlags.NonPublic | BindingFlags.Static);
 
                 staminaDrainValueChangedCallback.Invoke(gameSettings, new object[] { staminaDrain });
                 harderAmbushValueChangedCallback.Invoke(gameSettings, new object[] { harderAmnbush });
@@ -291,6 +293,7 @@ namespace TFTV
                 limitedHarvestingValueChangedCallback.Invoke(gameSettings, new object[] { limitedHarvesting });
                 limitedCaptureValueChangedCallback.Invoke(gameSettings, new object[] { limitedCapture });
                 noSecondChancesValueChangedCallback.Invoke(gameSettings, new object[] { noSecondChances });
+                etermesVulnerabilityResistanceValueChangedCallback.Invoke(gameSettings, new object[] { etermesVulnerability });
 
                 MethodInfo exoticResourcesChangedCallback = typeof(UIStateNewGeoscapeGameSettings_InitFullContent_patch).GetMethod("OnExoticResourcesValueChangedCallback", BindingFlags.NonPublic | BindingFlags.Static);
                 exoticResourcesChangedCallback.Invoke(gameSettings, new object[] { ConvertDifficultyToIndexExoticResources() });
@@ -404,8 +407,17 @@ namespace TFTV
             private static ModSettingController _tradingModSettings = null;
             private static ArrowPickerController _trading = null;
 
+            private static ModSettingController _etermesVulnerabilityResistanceModSettings = null;
+            private static ArrowPickerController _etermesVulnerabilityResistance = null;
 
+            private static ModSettingController _showAmbushExfilModSettings = null;
+            private static ArrowPickerController _showAmbushExfil = null;
 
+            private static readonly string _titleEtermesVulnerability = "KEY_EtermesResistanceAndVulnerability";
+            private static readonly string _descriptionEtermesVulnerabilityResistance = "KEY_EtermesResistanceAndVulnerability_DESCRIPTION";
+
+            private static readonly string _titleShowAmbushExfil = "KEY_ShowExfilAmbush";
+            private static readonly string _descriptionShowAmbushExfil = "KEY_ShowExfilAmbush_DESCRIPTION";
 
             private static readonly string _titleTrading = "KEY_EqualizeTrade"; //"NO PROFIT FROM TRADING";
             private static readonly string _descriptionTrading = "KEY_EqualizeTrade_DESCRIPTION"; //"Trade is always 1 tech for 5 food or 5 materials, so no profit can be made from trading.";
@@ -628,12 +640,12 @@ namespace TFTV
 
                     LocalizedTextBind description = new LocalizedTextBind
                     {
-                        LocalizationKey = descriptionKey // Replace with the actual localization key
+                        LocalizationKey = descriptionKey 
                     };
 
                     LocalizedTextBind text = new LocalizedTextBind
                     {
-                        LocalizationKey = titleKey // Replace with the actual localization key
+                        LocalizationKey = titleKey 
                     };
 
                     gameOptionViewController.Set(text, null);
@@ -759,6 +771,8 @@ namespace TFTV
                     _impossibleWeapons.gameObject.SetActive(show);
                     _noSecondChances.gameObject.SetActive(show);
                     _noSecondChancesModSettings.gameObject.SetActive(show);
+                    _etermesVulnerabilityResistance.gameObject.SetActive(show);
+                    _etermesVulnerabilityResistanceModSettings.gameObject.SetActive(show);
 
                 }
                 catch (Exception e)
@@ -796,6 +810,9 @@ namespace TFTV
                     _flinchingModSettings.gameObject.SetActive(show);
                     _tradingModSettings.gameObject.SetActive(show);
                     _limitedRaidingModSettings.gameObject.SetActive(show);
+                    _showAmbushExfil.gameObject.SetActive(show);
+                    _showAmbushExfilModSettings.gameObject.SetActive(show);
+
                     //  _staminaDrain.gameObject.SetActive(show);
 
                 }
@@ -976,6 +993,7 @@ namespace TFTV
                     _harderAmbushModSettings = UnityEngine.Object.Instantiate(ModSettingControllerHook, rectTransform);
                     _impossibleWeaponsModSettings = UnityEngine.Object.Instantiate(ModSettingControllerHook, rectTransform);
                     _noSecondChancesModSettings = UnityEngine.Object.Instantiate(ModSettingControllerHook, rectTransform);
+                    _etermesVulnerabilityResistanceModSettings = UnityEngine.Object.Instantiate(ModSettingControllerHook, rectTransform);
                     //    _reverseEngineeringModSettings = UnityEngine.Object.Instantiate(ModSettingControllerHook, rectTransform);
                     _resourcesEventsModSettings = UnityEngine.Object.Instantiate(ModSettingControllerHook, rectTransform);
 
@@ -997,11 +1015,12 @@ namespace TFTV
                     _staminaRecuperationModSettings = UnityEngine.Object.Instantiate(ModSettingControllerHook, rectTransform);
                     _learnFirstSkillModSettings = UnityEngine.Object.Instantiate(ModSettingControllerHook, rectTransform);
                     _moreMistVOModSettings = UnityEngine.Object.Instantiate(ModSettingControllerHook, rectTransform);
+                    _showAmbushExfilModSettings = UnityEngine.Object.Instantiate(ModSettingControllerHook, rectTransform);
                     _tradingModSettings = UnityEngine.Object.Instantiate(ModSettingControllerHook, rectTransform);
                     _limitedDeploymentVOModSettings = UnityEngine.Object.Instantiate(ModSettingControllerHook, rectTransform);
                     _limitedRaidingModSettings = UnityEngine.Object.Instantiate(ModSettingControllerHook, rectTransform);
                     _noBarksModSettings = UnityEngine.Object.Instantiate(ModSettingControllerHook, rectTransform);
-
+                  
 
                     _startingFaction = _startingFactionModSettings.ListField;
                     _startingBase = _startingBaseModSettings.ListField;
@@ -1026,6 +1045,7 @@ namespace TFTV
                     _learnFirstSkill = _learnFirstSkillModSettings.ListField;
                     _moreMistVO = _moreMistVOModSettings.ListField;
                     _limitedDeploymentVO = _limitedDeploymentVOModSettings.ListField;
+                    _showAmbushExfil = _showAmbushExfilModSettings.ListField;
                     //   _reverseEngineering = _reverseEngineeringModSettings.ListField;
                     _skipMovies = _skipMoviesModSettings.ListField;
                     _resourcesEvents = _resourcesEventsModSettings.ListField;
@@ -1035,7 +1055,7 @@ namespace TFTV
                     _staminaRecuperation = _staminaRecuperationModSettings.ListField;
                     _strongerPandorans = _strongerPandoransModSettings.ListField;
                     _noBarks = _noBarksModSettings.ListField;
-
+                    _etermesVulnerabilityResistance = _etermesVulnerabilityResistanceModSettings.ListField;
 
                     InstantiateArrowPickerController(_startingFactionModSettings, _startingFaction, _titleStartingFaction, _descriptionStartingFaction, _optionsStartingFaction, (int)(TFTVNewGameOptions.startingSquad), OnStartingFactionValueChangedCallback, 1f);
                     InstantiateArrowPickerController(_startingBaseModSettings, _startingBase, _titleStartingBase, _descriptionStartingBase, _optionsStartingBase, (int)(TFTVNewGameOptions.startingBaseLocation), OnStartingBaseValueChangedCallback, 1f);
@@ -1052,6 +1072,7 @@ namespace TFTV
                     InstantiateArrowPickerController(_noDropReinforcementsModSettings, _noDropReinforcements, _titleNoDropReinforcements, _descriptionNoDropReinforcements, _optionsBool, ConvertBoolToInt(config.ReinforcementsNoDrops), OnNoDropValueChangedCallback, 0.5f);
 
                     InstantiateArrowPickerController(_strongerPandoransModSettings, _strongerPandorans, _titleStrongerPandorans, _descriptionStrongerPandorans, _optionsBool, ConvertBoolToInt(TFTVNewGameOptions.StrongerPandoransSetting), OnStrongerPandoransValueChangedCallback, 0.5f);
+                    InstantiateArrowPickerController(_etermesVulnerabilityResistanceModSettings, _etermesVulnerabilityResistance, _titleEtermesVulnerability, _descriptionEtermesVulnerabilityResistance, _optionsBool, Math.Max(TFTVNewGameOptions.EtermesResistanceAndVulnerability-1,0), OnEtermesVulnerabilityResistanceValueChangedCallback, 0.5f);
 
                     InstantiateArrowPickerController(_staminaRecuperationModSettings, _staminaRecuperation, _titleStaminaRecuperation, _descriptionStaminaRecuperation, _optionsBool, ConvertBoolToInt(config.ActivateStaminaRecuperatonModule), OnStaminaRecuperationValueChangedCallback, 0.5f);
                     InstantiateArrowPickerController(_staminaDrainModSettings, _staminaDrain, _titleStaminaDrain, _descriptionStaminaDrain, _optionsBool, ConvertBoolToInt(TFTVNewGameOptions.StaminaPenaltyFromInjurySetting), OnStaminaDrainValueChangedCallback, 0.5f);
@@ -1065,7 +1086,7 @@ namespace TFTV
                     InstantiateArrowPickerController(_learnFirstSkillModSettings, _learnFirstSkill, _titleLearnFirstSkill, _descriptionLearnFirstSkill, _optionsBool, ConvertBoolToInt(config.LearnFirstPersonalSkill), OnLearnFirstSchoolValueChangedCallback, 0.5f);
                     InstantiateArrowPickerController(_moreMistVOModSettings, _moreMistVO, _titleMoreMistVO, _descriptionMoreMistVO, _optionsBool, ConvertBoolToInt(config.MoreMistVO), OnMoreMistValueChangedCallback, 0.5f);
                     InstantiateArrowPickerController(_limitedDeploymentVOModSettings, _limitedDeploymentVO, _titlelimitedDeploymentVO, _descriptionlimitedDeploymentVO, _optionsBool, ConvertBoolToInt(config.LimitedDeploymentVO), OnLimitedDeploymentValueChangedCallback, 0.5f);
-
+                    InstantiateArrowPickerController(_showAmbushExfilModSettings, _showAmbushExfil, _titleShowAmbushExfil, _descriptionShowAmbushExfil, _optionsBool, ConvertBoolToInt(config.ShowExfilAmbush), OnShowAmbushExfilValueChangedCallback, 0.5f);
                     //     InstantiateArrowPickerController(_reverseEngineeringModSettings, _reverseEngineering, _titleReverseEngineering, _descriptionReverseEngineering, _optionsBool, ConvertBoolToInt(config.ActivateReverseEngineeringResearch), OnReverseEngineeringValueChangedCallback, 0.5f);
 
                     InstantiateArrowPickerController(_disableTacSavesModSettings, _disableTacSaves, _titleDisableTacSaves, _descriptionDisableTacSaves, _optionsBool, ConvertBoolToInt(config.disableSavingOnTactical), OnDisableTacSavesValueChangedCallback, 0.5f);
@@ -1275,6 +1296,24 @@ namespace TFTV
                 }
             }
 
+            private static void OnEtermesVulnerabilityResistanceValueChangedCallback(int newValue)
+            {
+                try
+                {                   
+                    
+                    string[] options = {new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
+                    _etermesVulnerabilityResistance.CurrentItemText.text = options[newValue];
+                    TFTVNewGameOptions.EtermesResistanceAndVulnerability = newValue + 1;
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+
+
+
+
             private static void OnImpossibleWeaponsValueChangedCallback(int newValue)
             {
                 try
@@ -1391,6 +1430,21 @@ namespace TFTV
                 }
             }
 
+            private static void OnShowAmbushExfilValueChangedCallback(int newValue)
+            {
+                try
+                {
+                    bool option = newValue == 0;
+                    string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
+                    _showAmbushExfil.CurrentItemText.text = options[newValue];
+                    config.ShowExfilAmbush = option;
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
 
 
             private static void OnTradingValueChangedCallback(int newValue)

@@ -1922,7 +1922,7 @@ namespace TFTV
 
                     foreach (Breakable breakable in security)
                     {
-                        if (TimeLeft > 12)
+                        if (TimeLeft >= 12)
                         {
                             TFTVLogger.Always($"spawning guards at security station");
 
@@ -2093,7 +2093,7 @@ namespace TFTV
                         {
                             PandoranDeployment.InfestationDeployment(controller);
                         }
-                        else if (TimeLeft >= 6 && TimeLeft <= 12)
+                        else if (TimeLeft >= 6 && TimeLeft <12)
                         {
                             PandoranDeployment.NestingDeployment(controller);
                         }
@@ -2179,6 +2179,7 @@ namespace TFTV
                         List<TacCharacterDef> sentinels = new List<TacCharacterDef>() { sentinelMist, sentinelHatching, sentinelTerror };
 
                         TacticalDeployZone centralZone = Map.DeploymentZones.VehicleBayCentralDeployZone;
+                        centralZone.SetFaction(controller.GetFactionByCommandName("aln"), TacMissionParticipant.Intruder);
                         //  TFTVLogger.Always($"central zone is at position{centralZone.Pos}");
 
                         ActorDeployData spawneryDeployData = sentinels.GetRandomElement(new System.Random((int)Stopwatch.GetTimestamp())).GenerateActorDeployData();
@@ -2207,6 +2208,8 @@ namespace TFTV
 
                         foreach (TacticalDeployZone tacticalDeployZone in otherCentralZones)
                         {
+                            tacticalDeployZone.SetFaction(controller.GetFactionByCommandName("aln"), TacMissionParticipant.Intruder);
+
                             UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
 
                             int roll = UnityEngine.Random.Range(1, TFTVSpecialDifficulties.DifficultyOrderConverter(controller.Difficulty.Order));
@@ -2660,7 +2663,6 @@ namespace TFTV
                             }
 
                             return culledList;
-
                         }
                         else
                         {
@@ -2673,7 +2675,6 @@ namespace TFTV
                         TFTVLogger.Error(e);
                         throw;
                     }
-
                 }
 
 
@@ -2681,13 +2682,11 @@ namespace TFTV
                 {
                     try
                     {
-
-
-                        if (_listEntrance.Count > 0 && TimeLeft > 12)
+                        if (_listEntrance.Count > 0 && TimeLeft >= 12)
                         {
                             SetPlayerSpawnEntrancePhaseI(controller);
                         }
-                        else if (_listEntrance.Count > 0 && TimeLeft <= 12)
+                        else if (_listEntrance.Count > 0 && TimeLeft < 12)
                         {
                             SetPlayerSpawnEntrancePhaseIIandPhaseIII(controller);
                         }
@@ -2709,7 +2708,7 @@ namespace TFTV
                             return;
                         }
 
-                        int requiredTdz = _listEntrance.Count / 3;
+                        int requiredTdz = _listEntrance.Count / 3 + 1;
 
                         if (_listEntrance.Count % 3 > 0)
                         {
@@ -3437,9 +3436,6 @@ namespace TFTV
 
         internal class ReinforcementStrats
         {
-
-
-
             internal static bool CheckAttackVectorForUmbra(TacticalActor tacticalActor, TacticalDeployZone tacticalDeployZone)
             {
                 try
@@ -3860,7 +3856,7 @@ namespace TFTV
 
                     TacticalDeployZone zoneToDeployAt = controller.Map.GetActors<TacticalDeployZone>().FirstOrDefault(tdz => tdz.Pos.y > 4 && (tdz.Pos - Map.AccessLiftDeployPos).magnitude < 5);
 
-                    if (TimeLeft <= 12 && UnityEngine.Random.Range(0, 2) > 0)
+                    if (TimeLeft < 12 && UnityEngine.Random.Range(0, 2) > 0)
                     {
                         List<TacticalDeployZone> tacticalDeploys = controller.Map.GetActors<TacticalDeployZone>().Where(tdz => tdz.Pos.z < 5).ToList();
                         zoneToDeployAt = tacticalDeploys.GetRandomElement();

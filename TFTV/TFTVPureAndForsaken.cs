@@ -671,9 +671,7 @@ namespace TFTV
                         //add to pierce
                         List<ResearchRewardDef> pierceRewards = new List<ResearchRewardDef>(piercingTech.Unlocks);
                         pierceRewards.AddRange(piercingUnitRewards);
-                        piercingTech.Unlocks = pierceRewards.ToArray();
-
-                       
+                        piercingTech.Unlocks = pierceRewards.ToArray();                 
                     }
                     catch (Exception e)
                     {
@@ -702,8 +700,11 @@ namespace TFTV
 
                         WeaponDef bulldog = DefCache.GetDef<WeaponDef>("NJ_Gauss_AssaultRifle_WeaponDef");
                         ItemDef medkit = DefCache.GetDef<TacticalItemDef>("Medkit_EquipmentDef");
+                        WeaponDef hammer = DefCache.GetDef<WeaponDef>("AN_Hammer_WeaponDef");
 
                         List<ItemDef> assaultRifleSet = new List<ItemDef>() { bulldog, bulldog.CompatibleAmmunition[0], medkit };
+                        List<ItemDef> spikeBerserkerEquipmentSet = new List<ItemDef>() { hammer, medkit };
+
                         List<ItemDef> watcherArmorSet = new List<ItemDef>() { watcherHead, watcherTorso, watcherLegs }; //tentacle torso
                         List<ItemDef> shooterArmorSet = new List<ItemDef>() { shooterHead, shooterTorso, shooterLegs }; //shoots spikes
 
@@ -716,11 +717,12 @@ namespace TFTV
 
 
                         //Replace first berserkers armor with lighter one
-                        TacCharacterDef berserker1 = DefCache.GetDef<TacCharacterDef>("FK_Berserker2_CharacterTemplateDef");
-                        berserker1.Data.BodypartItems = shooterArmorSet.ToArray();
+                        TacCharacterDef berserker1 = DefCache.GetDef<TacCharacterDef>("FK_Berserker1_CharacterTemplateDef");
+                        berserker1.Data.BodypartItems = watcherArmorSet.ToArray();
 
-                        TacCharacterDef berserker2 = DefCache.GetDef<TacCharacterDef>("FK_Berserker1_CharacterTemplateDef");
-                        berserker2.Data.BodypartItems = watcherArmorSet.ToArray();
+                        TacCharacterDef berserker2 = DefCache.GetDef<TacCharacterDef>("FK_Berserker2_CharacterTemplateDef");
+                        berserker2.Data.BodypartItems = shooterArmorSet.ToArray();
+                        berserker2.Data.EquipmentItems = spikeBerserkerEquipmentSet.ToArray();
 
                         ResearchDef acidTech = DefCache.GetDef<ResearchDef>("ANU_AcidTech_ResearchDef");
 

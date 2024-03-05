@@ -2,12 +2,11 @@
 using Base.Core;
 using Base.Defs;
 using HarmonyLib;
-using Newtonsoft.Json.Bson;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.Items;
-using PhoenixPoint.Common.Levels.MapGeneration;
+using PhoenixPoint.Geoscape.Core;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.Abilities;
 using PhoenixPoint.Geoscape.Entities.PhoenixBases;
@@ -16,8 +15,7 @@ using PhoenixPoint.Geoscape.Entities.Research.Requirement;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Equipments;
-using PhoenixPoint.Tactical.Levels;
-using PhoenixPoint.Tactical.Levels.Destruction;
+using PhoenixPoint.Tactical.Entities.Statuses;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -26,7 +24,6 @@ using UnityEngine;
 using static PhoenixPoint.Common.Entities.Items.ItemManufacturing;
 using static PhoenixPoint.Geoscape.Entities.PhoenixBases.GeoPhoenixBaseTemplate;
 using static UnityEngine.UI.CanvasScaler;
-using static UnityStandardAssets.Utility.TimedObjectActivator;
 
 namespace TFTV
 {
@@ -39,18 +36,45 @@ namespace TFTV
 
         // ResearchRequirement
 
+        
+
+
+           /* [HarmonyPatch(typeof(CaptureActorResearchRequirement), "IsValidUnit", typeof(GeoUnitDescriptor))]
+            public static class TFTV_CaptureActorResearchRequirement_IsValidUnit
+            {
+                public static void Postfix(CaptureActorResearchRequirement __instance, GeoUnitDescriptor unit, bool __result)
+                {
+                    try
+                    {
+                        TFTVLogger.Always($"{__instance.CaptureRequirementDef.name} for {unit.GetName()}, valid? {__result}");
+
+
+                    }
+
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                        throw;
+                    }
+                }
+            }*/
+
+
+
+
         public static void CheckActorReserchRequirement()
         {
-            try 
+            try
             {
                 TacticalActorDef actorDef = DefCache.GetDef<TacticalActorDef>("Crabman_ActorDef");
                 TacticalActorDef actorDef2 = DefCache.GetDef<TacticalActorDef>("Siren_ActorDef");
-                TacticalActorDef actorRequirement = null;
                 GameTagDef tagRequirement = DefCache.GetDef<GameTagDef>("ViralBodypart_TagDef");
                 TacCharacterDef tacCharacterDef = DefCache.GetDef<TacCharacterDef>("Crabman39_EliteViralCommando_AlienMutationVariationDef");
                 TacCharacterDef tacCharacterDef2 = DefCache.GetDef<TacCharacterDef>("Siren3_InjectorBuffer_AlienMutationVariationDef");
                 IEnumerable<TacticalItemDef> bodyparts = tacCharacterDef.GetTemplateBodyparts();
                 IEnumerable<TacticalItemDef> bodyparts2 = tacCharacterDef2.GetTemplateBodyparts();
+
+               
 
                 bool valid = ActorResearchRequirementDef.IsValidActorForTag(actorDef, bodyparts, null, tagRequirement);
                 bool valid2 = ActorResearchRequirementDef.IsValidActorForTag(actorDef2, bodyparts2, null, tagRequirement);
@@ -68,30 +92,30 @@ namespace TFTV
         }
 
 
-     /*   bool IsValidActorForTag(TacticalActorDef actorDef, IEnumerable<TacticalItemDef> bodyparts, TacticalActorDef actorRequirement, GameTagDef tagRequirement)
+        /*   bool IsValidActorForTag(TacticalActorDef actorDef, IEnumerable<TacticalItemDef> bodyparts, TacticalActorDef actorRequirement, GameTagDef tagRequirement)
 
-       // CaptureActorResearchRequirement
+          // CaptureActorResearchRequirement
 
-              [HarmonyPatch(typeof(ActorResearchRequirementDef), "GetDisabledStateText", typeof(GeoAbilityTarget))]
-        public static class TFTV_ActorResearchRequirementDef_GetDisabledStateText
-        {
-            public static void Postfix(ActorResearchRequirementDef __instance, ref string __result)
-            {
-                try
-                {
-                    if (__instance.GeoAbility is LaunchBehemothMissionAbility)
-                    {
-                        __result = "Behemoth is submerged!";
-                    }
-                }
+                 [HarmonyPatch(typeof(ActorResearchRequirementDef), "GetDisabledStateText", typeof(GeoAbilityTarget))]
+           public static class TFTV_ActorResearchRequirementDef_GetDisabledStateText
+           {
+               public static void Postfix(ActorResearchRequirementDef __instance, ref string __result)
+               {
+                   try
+                   {
+                       if (__instance.GeoAbility is LaunchBehemothMissionAbility)
+                       {
+                           __result = "Behemoth is submerged!";
+                       }
+                   }
 
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                    throw;
-                }
-            }
-        }*/
+                   catch (Exception e)
+                   {
+                       TFTVLogger.Error(e);
+                       throw;
+                   }
+               }
+           }*/
 
 
         /*    public void WireResearchEvents()
@@ -194,27 +218,27 @@ namespace TFTV
             }
         }
 
-       
 
 
-     /*   [HarmonyPatch(typeof(BreachEntrance), "OnAllPlotParcelsLoaded")]
-        public static class TFTV_BreachEntrance_OnAllPlotParcelsLoaded_patch
-        {
 
-            public static void Prefix(BreachEntrance __instance, List<Transform> parcels, Transform myParcel, ref MapPlot plot)
-            {
-                try
-                {                 
-                    plot.RemainingBreachPoints = 1;
-                }
+        /*   [HarmonyPatch(typeof(BreachEntrance), "OnAllPlotParcelsLoaded")]
+           public static class TFTV_BreachEntrance_OnAllPlotParcelsLoaded_patch
+           {
 
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                    throw;
-                }
-            }
-        }*/
+               public static void Prefix(BreachEntrance __instance, List<Transform> parcels, Transform myParcel, ref MapPlot plot)
+               {
+                   try
+                   {                 
+                       plot.RemainingBreachPoints = 1;
+                   }
+
+                   catch (Exception e)
+                   {
+                       TFTVLogger.Error(e);
+                       throw;
+                   }
+               }
+           }*/
 
 
         [HarmonyPatch(typeof(LaunchBehemothMissionAbility), "ActivateInternal")]

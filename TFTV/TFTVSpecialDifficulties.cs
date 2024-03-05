@@ -1132,7 +1132,7 @@ namespace TFTV
                             }
                         }
 
-                        if (CheckTacticalSpecialDifficultySettings(__instance) == 2)
+                        if (TFTVNewGameOptions.EtermesResistanceAndVulnerability==1)
                         {
                             if (__instance.GetFactionByCommandName("PX") != null)
                             {

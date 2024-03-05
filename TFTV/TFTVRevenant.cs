@@ -895,7 +895,7 @@ namespace TFTV
                     if (data.Target.GetActor() != null && _revenantResistanceStatus.DamageTypeDefs[0] == null
                         && data.Target.GetActor().Status != null && data.Target.GetActor().Status.HasStatus(_revenantResistanceStatus))
                     {
-                        float multiplier = 0.25f;
+                        float multiplier = 0.5f;
 
                         if (!revenantSpecialResistance.Contains(data.Target.GetActor().name))
                         {
