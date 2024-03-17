@@ -6,7 +6,6 @@ using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.Items;
-using PhoenixPoint.Geoscape.Core;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.Abilities;
 using PhoenixPoint.Geoscape.Entities.PhoenixBases;
@@ -14,16 +13,17 @@ using PhoenixPoint.Geoscape.Entities.Research;
 using PhoenixPoint.Geoscape.Entities.Research.Requirement;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Tactical.Entities;
+using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.Equipments;
-using PhoenixPoint.Tactical.Entities.Statuses;
+using PhoenixPoint.Tactical.Entities.Weapons;
+using PhoenixPoint.Tactical.Levels;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using UnityEngine;
 using static PhoenixPoint.Common.Entities.Items.ItemManufacturing;
 using static PhoenixPoint.Geoscape.Entities.PhoenixBases.GeoPhoenixBaseTemplate;
-using static UnityEngine.UI.CanvasScaler;
+using static RootMotion.FinalIK.GrounderQuadruped;
 
 namespace TFTV
 {
@@ -36,36 +36,131 @@ namespace TFTV
 
         // ResearchRequirement
 
-        
+        // TacticalNavigationComponent
 
 
-           /* [HarmonyPatch(typeof(CaptureActorResearchRequirement), "IsValidUnit", typeof(GeoUnitDescriptor))]
-            public static class TFTV_CaptureActorResearchRequirement_IsValidUnit
+
+
+
+       /* [HarmonyPatch(typeof(ShootAbility), "Activate")]
+        public static class TFTV_ShootAbility_Activate
+        {
+            public static void Postfix(ShootAbility __instance)
             {
-                public static void Postfix(CaptureActorResearchRequirement __instance, GeoUnitDescriptor unit, bool __result)
+                try
                 {
-                    try
+                    TFTVLogger.Always($"{__instance.TacticalActor.DisplayName} activated for weapon {__instance.Weapon.DisplayName}, attack silent? {__instance.Weapon.IsAttackSilent(__instance.TacticalActor)}");
+
+
+                    GameTagDef[] silentTags = Shared.SharedGameTags.SilentTags;
+
+                    foreach(GameTagDef gameTagDef in silentTags) 
                     {
-                        TFTVLogger.Always($"{__instance.CaptureRequirementDef.name} for {unit.GetName()}, valid? {__result}");
-
-
+                        TFTVLogger.Always($"silentTag: {gameTagDef.name}");               
                     }
 
-                    catch (Exception e)
+
+                    foreach(GameTagDef gameTagDef in __instance.Weapon.WeaponDef.Tags) 
                     {
-                        TFTVLogger.Error(e);
-                        throw;
+                        TFTVLogger.Always($"tag in {__instance.Weapon.WeaponDef} {gameTagDef}");     
                     }
+
+                    foreach (GameTagDef gameTagDef in __instance.TacticalActorBase.GameTags) 
+                    {
+                        TFTVLogger.Always($"tag in {__instance.TacticalActorBase.DisplayName} {gameTagDef}");
+
+                    }
+                   
+
+                    if (!__instance.Weapon.IsAttackSilent(__instance.TacticalActor))
+                    {
+                        TFTVLogger.Always($"weapon for {__instance.TacticalActor.DisplayName} not silent, so routine should have been run");
+
+                       
+                    }
+
+                   
                 }
-            }*/
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
+
+        [HarmonyPatch(typeof(TacticalFactionVision), "IncrementKnownCounterToAll")]
+        public static class TFTV_TacticalFactionVision_IncrementKnownCounterToAll
+        {
+            public static void Prefix(TacticalFactionVision __instance, TacticalActorBase actor, KnownState type, int counterValue, bool notifyChange)
+            {
+                try
+                {
+                    TFTVLogger.Always($"IncrementKnownCounterToAll run {actor.DisplayName}, {type}, {counterValue}, {notifyChange}");
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
+*/
+
+        /* [HarmonyPatch(typeof(CaptureActorResearchRequirement), "IsValidUnit", typeof(GeoUnitDescriptor))]
+         public static class TFTV_CaptureActorResearchRequirement_IsValidUnit
+         {
+             public static void Postfix(CaptureActorResearchRequirement __instance, GeoUnitDescriptor unit, bool __result)
+             {
+                 try
+                 {
+                     TFTVLogger.Always($"{__instance.CaptureRequirementDef.name} for {unit.GetName()}, valid? {__result}");
 
 
+                 }
+
+                 catch (Exception e)
+                 {
+                     TFTVLogger.Error(e);
+                     throw;
+                 }
+             }
+         }*/
+
+
+        /* [HarmonyPatch(typeof(MoveAbility), "GetTargetDataFor")]
+         public static class TFTV_MoveAbility_GetTargetDataFor
+         {
+             public static void Prefix(MoveAbility __instance, TacticalPathRequest pathRequest)
+             {
+                 try
+                 {
+                     TFTVLogger.Always($"MoveAbility.GetTargetDataFor {__instance.TacticalActor.DisplayName}, pathRequest null? {pathRequest==null}. " +
+                         $"Controlled by player? {__instance.TacticalActor.IsControlledByPlayer}. Is vehicle? {__instance.TacticalActor.HasGameTag(Shared.SharedGameTags.VehicleTag)}");
+
+                     if (pathRequest != null && __instance.TacticalActor.IsControlledByPlayer && __instance.TacticalActor.HasGameTag(Shared.SharedGameTags.VehicleTag))
+                     {
+                         TacticalNavigationComponent component = __instance.TacticalActor.TacticalNav;
+                         component.CurrentPath = component.CreatePathRequest();
+
+                         TFTVLogger.Always($"Creating path request for {__instance.TacticalActor.DisplayName}");
+                     }
+                 }
+                 catch (Exception e)
+                 {
+                     TFTVLogger.Error(e);
+                     throw;
+                 }
+             }
+         }*/
 
 
         public static void CheckActorReserchRequirement()
         {
             try
             {
+
                 TacticalActorDef actorDef = DefCache.GetDef<TacticalActorDef>("Crabman_ActorDef");
                 TacticalActorDef actorDef2 = DefCache.GetDef<TacticalActorDef>("Siren_ActorDef");
                 GameTagDef tagRequirement = DefCache.GetDef<GameTagDef>("ViralBodypart_TagDef");
@@ -74,7 +169,7 @@ namespace TFTV
                 IEnumerable<TacticalItemDef> bodyparts = tacCharacterDef.GetTemplateBodyparts();
                 IEnumerable<TacticalItemDef> bodyparts2 = tacCharacterDef2.GetTemplateBodyparts();
 
-               
+
 
                 bool valid = ActorResearchRequirementDef.IsValidActorForTag(actorDef, bodyparts, null, tagRequirement);
                 bool valid2 = ActorResearchRequirementDef.IsValidActorForTag(actorDef2, bodyparts2, null, tagRequirement);
@@ -171,7 +266,7 @@ namespace TFTV
             {
                 try
                 {
-                    TFTVLogger.Always($"{element.ManufacturableItem.Name}, {element.ManufacturableItem.RelatedItemDef.name}");
+                  //  TFTVLogger.Always($"{element.ManufacturableItem.Name}, {element.ManufacturableItem.RelatedItemDef.name}");
 
 
                     if (element.ManufacturableItem.RelatedItemDef.name.Equals("PP_MaskedManticore_VehicleItemDef"))

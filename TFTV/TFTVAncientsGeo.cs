@@ -135,8 +135,6 @@ namespace TFTV
                     TFTVConfig config = TFTVMain.Main.Config;
                     if (TFTVNewGameOptions.ImpossibleWeaponsAdjustmentsSetting)
                     {
-
-
                         if (controller.PhoenixFaction.Research.HasCompleted("PX_Scorpion_ResearchDef"))
                         {
                             DefCache.GetDef<ResearchViewElementDef>("NJ_VehicleTech_ViewElementDef").BenefitsText.LocalizationKey = "TFTV_NJ_VEHICLETECH_RESEARCHDEF_BENEFITS";
@@ -161,7 +159,6 @@ namespace TFTV
                         {
                             DefCache.GetDef<ResearchViewElementDef>("SYN_Bionics3_ViewElementDef").BenefitsText.LocalizationKey = "SYN_BIONICS3_RESEARCHDEF_BENEFITS";
                         }
-
                     }
 
                 }
@@ -210,8 +207,7 @@ namespace TFTV
 
                         //Nerfed Shardgun in TFTV requires Advanced Infection Tech
                         if (item.Name.LocalizationKey == "TFTV_KEY_AC_SHOTGUN_NAME" &&
-                            (!____faction.Research.HasCompleted("PX_ProteanMutaneResearchDef") || !____faction.Research.HasCompleted("PX_LivingCrystalResearchDef")
-                            || !____faction.Research.HasCompleted("ANU_AdvancedInfectionTech_ResearchDef")))
+                            (!____faction.Research.HasCompleted("PX_ProteanMutaneResearchDef") || !____faction.Research.HasCompleted("PX_LivingCrystalResearchDef")))
                         {
                             //   TFTVLogger.Always("Shardgun TFTV is not unlocked " + item.Name.LocalizationKey);
                             __result = ManufactureFailureReason.NotUnlocked;
@@ -229,8 +225,7 @@ namespace TFTV
 
                         //Nerfed Scorpion in TFTV requires Armadillo tech
                         if (item.Name.LocalizationKey == "TFTV_KEY_AC_SNIPER_NAME" &&
-                           (!____faction.Research.HasCompleted("PX_ProteanMutaneResearchDef") || !____faction.Research.HasCompleted("PX_LivingCrystalResearchDef")
-                           || !____faction.Research.HasCompleted("NJ_VehicleTech_ResearchDef")))
+                           (!____faction.Research.HasCompleted("PX_ProteanMutaneResearchDef") || !____faction.Research.HasCompleted("PX_LivingCrystalResearchDef")))
                         {
                             //  TFTVLogger.Always("Scorpion TFTV is not unlocked " + item.Name.LocalizationKey);
                             __result = ManufactureFailureReason.NotUnlocked;
@@ -246,8 +241,7 @@ namespace TFTV
 
                         //Nerfed Scythe in TFTV requires Bionics 3
                         if (item.Name.LocalizationKey == "TFTV_KEY_AC_SCYTHE_NAME" &&
-                          (!____faction.Research.HasCompleted("PX_LivingCrystalResearchDef")
-                          || !____faction.Research.HasCompleted("SYN_Bionics3_ResearchDef")))
+                          (!____faction.Research.HasCompleted("PX_LivingCrystalResearchDef")))
                         {
                             //  TFTVLogger.Always("Scythe TFTV is not unlocked " + item.Name.LocalizationKey);
                             __result = ManufactureFailureReason.NotUnlocked;

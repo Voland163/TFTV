@@ -52,7 +52,7 @@ namespace TFTV
         public bool StrongerPandoransSettingInstance;
         public bool ImpossibleWeaponsAdjustmentsSettingInstance;
         public bool NoSecondChances;
-        public int EtermesVulnerabilityProtection;
+        public int EtermesVulnerabilityProtection = TFTVNewGameOptions.EtermesResistanceAndVulnerability;
 
         // public bool Update35GeoscapeCheck;
 
@@ -109,7 +109,7 @@ namespace TFTV
             Main.Logger.LogInfo("UmbraEvolution variable is " + Controller.EventSystem.GetVariable(TFTVTouchedByTheVoid.TBTVVariableName));
             TFTVLogger.Always("UmbraEvolution variable is " + Controller.EventSystem.GetVariable(TFTVTouchedByTheVoid.TBTVVariableName));
             TFTVAncientsGeo.AncientsResearch.AncientsCheckResearchState(gsController);
-            TFTVAncientsGeo.ImpossibleWeapons.CheckImpossibleWeaponsAdditionalRequirements(gsController);
+           // TFTVAncientsGeo.ImpossibleWeapons.CheckImpossibleWeaponsAdditionalRequirements(gsController);
             TFTVAncientsGeo.ExoticResources.EnsureNoHarvesting(gsController);
             TFTVVoxels.TFTVFire.CheckForFireQuenchers(gsController);
             TFTVSpecialDifficulties.DefModifying.CheckForSpecialDifficulties();
@@ -256,7 +256,7 @@ namespace TFTV
                 TFTVLogger.Always($"ConfigImplemented? {TFTVNewGameOptions.ConfigImplemented}");
 
                 //  TFTVLogger.Always($"{data.EtermesVulnerabilityProtection==null}");
-                TFTVLogger.Always($"data.EtermesVulnerabilityProtection: {data.EtermesVulnerabilityProtection}");
+                TFTVLogger.Always($"data.EtermesVulnerabilityProtection: {data.EtermesVulnerabilityProtection}; TFTVNewGameOptions.EtermesResistanceAndVulnerability {TFTVNewGameOptions.EtermesResistanceAndVulnerability}");
 
                 if (data.EtermesVulnerabilityProtection == 0 && data.DifficultySetting == 6)
                 {
@@ -270,6 +270,7 @@ namespace TFTV
                     TFTVNewGameOptions.EtermesResistanceAndVulnerability = 2;
                     data.EtermesVulnerabilityProtection = 2;
                 }
+
 
                 if (TFTVNewGameOptions.ConfigImplemented)
                 {
@@ -291,6 +292,9 @@ namespace TFTV
                     TFTVNewGameOptions.SetInternalConfigOptions(Controller);
                 }
 
+               
+
+
                 TFTVLogger.Always($"Config settings:" +
                     $"\nAmountOfExoticResourcesSetting: {TFTVNewGameOptions.AmountOfExoticResourcesSetting}\nResourceMultiplierSetting: {TFTVNewGameOptions.ResourceMultiplierSetting}" +
                     $"\nDiplomaticPenaltiesSetting: {TFTVNewGameOptions.DiplomaticPenaltiesSetting}\nStaminaPenaltyFromInjurySetting: {TFTVNewGameOptions.StaminaPenaltyFromInjurySetting}" +
@@ -299,6 +303,8 @@ namespace TFTV
                     $"\nNoSecondChances: {TFTVNewGameOptions.NoSecondChances}");
 
                 TFTVDefsWithConfigDependency.ImplementConfigChoices();
+
+            //   TFTVBetaSaveGamesFixes.Fix(Controller);
 
                 // TFTVNewGameOptions.Update35Check = data.Update35GeoscapeCheck;
 

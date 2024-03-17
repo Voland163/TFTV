@@ -44,7 +44,8 @@ namespace TFTV
                         GameTagDef humanTag = DefCache.GetDef<GameTagDef>("Human_TagDef");
                         TFTVConfig config = TFTVMain.Main.Config;
 
-                        if (tacActorEventContext.Actor.HasGameTag(humanTag) && config.NoBarks || _palaceMissionGameTagsToCheck.Any(gt => tacActorEventContext.Actor.GameTags.Contains(gt)))
+                        if (tacActorEventContext.Actor.Health.Value>0 && (tacActorEventContext.Actor.HasGameTag(humanTag) && config.NoBarks || 
+                            _palaceMissionGameTagsToCheck.Any(gt => tacActorEventContext.Actor.GameTags.Contains(gt))))
                         {
                             //  TFTVLogger.Always($"stopping bark from {tacActorEventContext.Actor.name}");
                             __result = false;

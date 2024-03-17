@@ -816,7 +816,6 @@ namespace TFTV
                 {
                     if (tacMissionTypeParticipantData.FactionDef == DefCache.GetDef<PPFactionDef>("NJ_Purists_FactionDef"))
                     {
-
                         GeoscapeEventSystem eventSystem = geoMission.Site.GeoLevel.EventSystem;
                         eventSystem.SetVariable(_puAmbushVariable, eventSystem.GetVariable(_puAmbushVariable) + 1);
 

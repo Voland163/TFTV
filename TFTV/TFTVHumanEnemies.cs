@@ -22,6 +22,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.Remoting.Messaging;
 using UnityEngine;
 using static PhoenixPoint.Tactical.View.ViewModules.UIModuleCharacterStatus;
 using static PhoenixPoint.Tactical.View.ViewModules.UIModuleCharacterStatus.CharacterData;
@@ -1461,24 +1462,22 @@ namespace TFTV
                 {
                     foreach (TacticalFaction faction in enemyHumanFactions)
                     {
-                        foreach (TacticalActorBase tacticalActorBase in faction.Actors)
-                        {
-                            TacticalActor tacticalActor = tacticalActorBase as TacticalActor;
-
-                            if (tacticalActorBase.HasGameTag(HumanEnemyTier2GameTag))
+                        foreach (TacticalActor tacticalActor in faction.TacticalActors)
+                        { 
+                        
+                            if (tacticalActor.HasGameTag(HumanEnemyTier2GameTag) && tacticalActor.IsAlive && !tacticalActor.IsEvacuated)
                             {
-                                foreach (TacticalActorBase allyTacticalActorBase in faction.Actors)
+                                foreach (TacticalActor allyTacticalActor in faction.TacticalActors)
                                 {
-                                    if (allyTacticalActorBase.BaseDef.name == "Soldier_ActorDef" && allyTacticalActorBase.InPlay)
-                                    {
-                                        TacticalActor actor = allyTacticalActorBase as TacticalActor;
-                                        float magnitude = actor.GetAdjustedPerceptionValue();
+                                    if (allyTacticalActor.BaseDef.name == "Soldier_ActorDef" && allyTacticalActor.InPlay)
+                                    {                                    
+                                        float magnitude = allyTacticalActor.GetAdjustedPerceptionValue();
 
-                                        if ((allyTacticalActorBase.Pos - tacticalActorBase.Pos).magnitude < magnitude
-                                            && TacticalFactionVision.CheckVisibleLineBetweenActors(allyTacticalActorBase, allyTacticalActorBase.Pos, tacticalActor, true))
+                                        if ((allyTacticalActor.Pos - tacticalActor.Pos).magnitude < magnitude
+                                            && TacticalFactionVision.CheckVisibleLineBetweenActors(allyTacticalActor, allyTacticalActor.Pos, tacticalActor, true))
                                         {
                                             // TFTVLogger.Always("Actor in range and has LoS");
-                                            actor.CharacterStats.WillPoints.AddRestrictedToMax(1);
+                                            allyTacticalActor.CharacterStats.WillPoints.AddRestrictedToMax(1);
                                         }
                                     }
                                 }
@@ -1543,7 +1542,6 @@ namespace TFTV
             {
                 foreach (string faction in HumanEnemiesAndTactics.Keys)
                 {
-
                     if (HumanEnemiesAndTactics.GetValueSafe(faction) == 1)
                     {
                         TFTVLogger.Always("Applying tactic Terrifying Aura");
@@ -1825,6 +1823,19 @@ namespace TFTV
             try
             {
                 return controller.Factions.FirstOrDefault(f => f.Faction.FactionDef.ShortNames.Contains(factionName)).TacticalActors.FirstOrDefault(ta => ta.HasGameTag(HumanEnemyTier1GameTag) && ta.IsAlive && !ta.IsEvacuated);
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
+        }
+
+        private static TacticalActor GetChampion(TacticalLevelController controller, string factionName)
+        {
+            try
+            {
+                return controller.Factions.FirstOrDefault(f => f.Faction.FactionDef.ShortNames.Contains(factionName)).TacticalActors.FirstOrDefault(ta => ta.HasGameTag(HumanEnemyTier2GameTag) && ta.IsAlive && !ta.IsEvacuated);
             }
             catch (Exception e)
             {

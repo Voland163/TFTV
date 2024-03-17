@@ -72,6 +72,8 @@ namespace TFTV
         {
             try
             {
+                TFTVLogger.Always($"ModifyVoidOmenTacticalObjectives invoked");
+
                 List<int> voidOmens = new List<int> { 3, 5, 7, 10, 14, 15, 16, 19 };
 
                 List<FactionObjectiveDef> listOfFactionObjectives = missionType.CustomObjectives.ToList();
@@ -85,12 +87,12 @@ namespace TFTV
                     if (objective.name.StartsWith("VOID_OMEN_TITLE_"))
                     {
                         int vo = int.Parse(objective.name.Substring("VOID_OMEN_TITLE_".Length));
-                        if (!TFTVVoidOmens.VoidOmensCheck[i])
+                        if (!VoidOmensCheck[i])
                         {
                             TFTVLogger.Always("Removing VO " + vo + " from faction objectives");
                             listOfFactionObjectives.RemoveAt(i);
                         }
-                        if (i == 5 && TFTVVoidOmens.VoidOmensCheck[i] && !missionType.Tags.Contains(havenDefense))
+                        if (i == 5 && VoidOmensCheck[i] && !missionType.Tags.Contains(havenDefense))
                         {
                             TFTVLogger.Always("Removing VO " + vo + " (hostile defenders) from faction objectives because not a haven defense mission");
                             listOfFactionObjectives.RemoveAt(i);
@@ -101,20 +103,20 @@ namespace TFTV
                 // Add faction objectives for void omens that are in play
                 foreach (int vo in voidOmens)
                 {
-                    if (TFTVVoidOmens.VoidOmensCheck[vo])
+                    if (VoidOmensCheck[vo])
                     {
                         if (vo != 5 || vo == 5 && missionType.Tags.Contains(havenDefense))
                         {
-
                             if (!listOfFactionObjectives.Any(o => o.name == "VOID_OMEN_TITLE_" + vo))
                             {
                                 TFTVLogger.Always("Adding VO " + vo + " to faction objectives");
                                 listOfFactionObjectives.Add(DefCache.GetDef<FactionObjectiveDef>("VOID_OMEN_TITLE_" + vo));
                             }
-
                         }
                     }
                 }
+
+                missionType.CustomObjectives = listOfFactionObjectives.ToArray();
 
             }
             catch (Exception e)
@@ -630,7 +632,7 @@ namespace TFTV
                     /*   GeoMarketplaceResearchOptionDef randomMarketResearch = DefCache.GetDef<GeoMarketplaceResearchOptionDef>("Random_MarketplaceResearchOptionDef");
                        randomMarketResearch.MaxPrice = 1200;
                        randomMarketResearch.MinPrice = 960;*/
-                    TFTVChangesToDLC5.ForceMarketPlaceUpdate();
+                  //  TFTVChangesToDLC5.ForceMarketPlaceUpdate();
                     // Logger.Always(voidOmen + j + " is now in effect, held in variable " + voidOmen + i);
                     VoidOmensCheck[19] = true;
                 }
@@ -641,7 +643,7 @@ namespace TFTV
                         randomMarketResearch.MinPrice = 1200;*/
 
                     VoidOmensCheck[19] = false;
-                    TFTVChangesToDLC5.ForceMarketPlaceUpdate();
+                  //  TFTVChangesToDLC5.ForceMarketPlaceUpdate();
                     TFTVLogger.Always("The check for VO#19 went ok");
 
 
@@ -1687,10 +1689,7 @@ namespace TFTV
                             // TFTVLogger.Always("FactionObjective check passed");
                             __result = FactionObjectiveState.InProgress;
                         }
-
                     }
-
-
                 }
                 catch (Exception e)
                 {

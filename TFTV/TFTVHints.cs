@@ -238,6 +238,8 @@ namespace TFTV
                             _hintDefSpriteFileNameDictionary.Add(newContextHelpHintDef, "Hint_Revenant.jpg");
                         }
 
+                        TFTVRevenant.revenantResistanceHintGUID = gUID;
+
                     }
                     catch (Exception e)
                     {
@@ -1196,13 +1198,16 @@ namespace TFTV
                                 }
                             }
 
-                            if (TFTVRevenant.revenantResistanceHintCreated)
+                            if (TFTVRevenant.revenantResistanceHintGUID != null)
                             {
-                                ContextHelpHintDef revenantResistanceHint = DefCache.GetDef<ContextHelpHintDef>("RevenantResistanceSighted");
-                                if (hintDef == revenantResistanceHint && alwaysDisplayedTacticalHintsDbDef.Hints.Contains(revenantResistanceHint))
+                                ContextHelpHintDef revenantResistanceHint = (ContextHelpHintDef)Repo.GetDef(TFTVRevenant.revenantResistanceHintGUID);
+
+                                // DefCache.GetDef<ContextHelpHintDef>("RevenantResistanceSighted");
+                                if (revenantResistanceHint != null && alwaysDisplayedTacticalHintsDbDef.Hints.Contains(revenantResistanceHint))
                                 {
                                     alwaysDisplayedTacticalHintsDbDef.Hints.Remove(revenantResistanceHint);
                                     TFTVLogger.Always("Revenant resistance hint removed");
+                                    TFTVRevenant.revenantResistanceHintGUID = null;
                                 }
                             }
 

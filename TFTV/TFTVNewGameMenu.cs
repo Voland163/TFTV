@@ -1304,6 +1304,7 @@ namespace TFTV
                     string[] options = {new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
                     _etermesVulnerabilityResistance.CurrentItemText.text = options[newValue];
                     TFTVNewGameOptions.EtermesResistanceAndVulnerability = newValue + 1;
+                    TFTVLogger.Always($"TFTVNewGameOptions.EtermesResistanceAndVulnerability: {TFTVNewGameOptions.EtermesResistanceAndVulnerability}");
                 }
                 catch (Exception e)
                 {

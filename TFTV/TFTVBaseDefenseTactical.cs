@@ -99,11 +99,11 @@ namespace TFTV
                 {
                     foreach (string key in PandoransInContainmentThatEscaoed.Keys)
                     {
-                        if (PandoransInContainment.ContainsKey(key)) 
+                        if (PandoransInContainment.ContainsKey(key))
                         {
                             PandoransInContainment[key] += 1;
                         }
-                        else 
+                        else
                         {
                             PandoransInContainment.Add(key, 1);
                         }
@@ -111,7 +111,7 @@ namespace TFTV
                 }
 
                 PandoransInContainmentThatEscaoed.Clear();
-              
+
             }
             catch (Exception e)
             {
@@ -355,7 +355,8 @@ namespace TFTV
         {
             try
             {
-                if (controller.TacMission.MissionData.MissionType.MissionTypeTag == DefCache.GetDef<MissionTagDef>("MissionTypePhoenixBaseDefence_MissionTagDef"))
+                if (controller.TacMission.MissionData.MissionType.MissionTypeTag == DefCache.GetDef<MissionTagDef>("MissionTypePhoenixBaseDefence_MissionTagDef")
+                    && controller.Factions.Any(f => f.Faction.FactionDef.MatchesShortName("aln")))
                 {
                     return true;
                 }
@@ -497,20 +498,15 @@ namespace TFTV
                     // TFTVLogger.Always("ActorEnteredPlay invoked");
                     if (CheckIfBaseDefense(__instance))
                     {
-
-                        if (__instance.Factions.Any(f => f.Faction.FactionDef.MatchesShortName("aln")))
+                        if (actor.TacticalFaction.Faction.FactionDef.MatchesShortName("aln")
+                            && actor is TacticalActor tacticalActor
+                            && (actor.GameTags.Contains(crabTag) || actor.GameTags.Contains(fishmanTag) || actor.GameTags.Contains(sirenTag) || actor.GameTags.Contains(AcheronTag))
+                            && !actor.GameTags.Contains(ScatterEnemiesObjectiveTag)
+                            )
                         {
-                            //   TFTVLogger.Always("found aln faction and checked that VO is in place");
-
-                            if (actor.TacticalFaction.Faction.FactionDef.MatchesShortName("aln")
-                                && actor is TacticalActor tacticalActor
-                                && (actor.GameTags.Contains(crabTag) || actor.GameTags.Contains(fishmanTag) || actor.GameTags.Contains(sirenTag) || actor.GameTags.Contains(AcheronTag))
-                                && !actor.GameTags.Contains(ScatterEnemiesObjectiveTag)
-                                )
-                            {
-                                actor.GameTags.Add(ScatterEnemiesObjectiveTag);
-                            }
+                            actor.GameTags.Add(ScatterEnemiesObjectiveTag);
                         }
+
                     }
                 }
                 catch (Exception e)
@@ -720,14 +716,14 @@ namespace TFTV
                         {
                             foreach (string item in TFTVBaseDefenseGeoscape.PandoransThatCanEscape[geoMission.Site.SiteId])
                             {
-                                if (PandoransInContainment.ContainsKey(item)) 
+                                if (PandoransInContainment.ContainsKey(item))
                                 {
                                     PandoransInContainment[item] += 1;
                                 }
-                                else 
+                                else
                                 {
-                                    PandoransInContainment.Add(item, 1);               
-                                } 
+                                    PandoransInContainment.Add(item, 1);
+                                }
                             };
                         }
 
@@ -824,57 +820,57 @@ namespace TFTV
 
 
 
-            public static void AuxiliaryCheckForMissionAccomplished(TacticalLevelController controller)
-            {
-                try
-                {
+            /*  public static void AuxiliaryCheckForMissionAccomplished(TacticalLevelController controller)
+              {
+                  try
+                  {
 
-                    if (CheckIfBaseDefense(controller))
-                    {
-                        //need to check for completion of objectives...
+                      if (CheckIfBaseDefense(controller))
+                      {
+                          //need to check for completion of objectives...
 
-                        ObjectivesManager phoenixObjectives = controller.GetFactionByCommandName("Px").Objectives;
-                        // int difficulty = controller.Difficulty.Order;
+                          ObjectivesManager phoenixObjectives = controller.GetFactionByCommandName("Px").Objectives;
+                          // int difficulty = controller.Difficulty.Order;
 
-                        // bool otherObjectivesCompleted = false;
+                          // bool otherObjectivesCompleted = false;
 
-                        foreach (FactionObjective objective in phoenixObjectives)
-                        {
-                            if (objective.Description.LocalizationKey != "BASEDEFENSE_SECOND_OBJECTIVE" && objective.GetCompletion() == 0)
-                            {
+                          foreach (FactionObjective objective in phoenixObjectives)
+                          {
+                              if (objective.Description.LocalizationKey != "BASEDEFENSE_SECOND_OBJECTIVE" && objective.GetCompletion() == 0)
+                              {
 
-                                TFTVLogger.Always($"the Phoenix objective is {objective.GetDescription()}; completion is at {objective.GetCompletion()}");
+                                  TFTVLogger.Always($"the Phoenix objective is {objective.GetDescription()}; completion is at {objective.GetCompletion()}");
 
-                                IEnumerable<TacticalActorBase> allPandorans = from x in controller.Map.GetActors<TacticalActorBase>()
-                                                                              where x.HasGameTag(ScatterEnemiesObjectiveTag)
-                                                                              select x;
+                                  IEnumerable<TacticalActorBase> allPandorans = from x in controller.Map.GetActors<TacticalActorBase>()
+                                                                                where x.HasGameTag(ScatterEnemiesObjectiveTag)
+                                                                                select x;
 
-                                if (allPandorans.Count() > 0)
-                                {
-                                    foreach (TacticalActorBase tacticalActor in allPandorans)
-                                    {
-                                        if (!tacticalActor.Status.HasStatus<ParalysedStatus>() && tacticalActor.IsAlive)
-                                        {
-                                            return;
-                                        }
-                                    }
-                                }
-                                else
-                                {
+                                  if (allPandorans.Count() > 0)
+                                  {
+                                      foreach (TacticalActorBase tacticalActor in allPandorans)
+                                      {
+                                          if (!tacticalActor.Status.HasStatus<ParalysedStatus>() && tacticalActor.IsAlive)
+                                          {
+                                              return;
+                                          }
+                                      }
+                                  }
+                                  else
+                                  {
 
 
-                                }
-                            }
-                        }
+                                  }
+                              }
+                          }
 
-                    }
-                }
+                      }
+                  }
 
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-            }
+                  catch (Exception e)
+                  {
+                      TFTVLogger.Error(e);
+                  }
+              }*/
         }
 
         internal class Map
@@ -1426,7 +1422,7 @@ namespace TFTV
                 {
                     try
                     {
-                        if (CheckIfBaseDefense(controller))
+                       if (CheckIfBaseDefense(controller))
                         {
                             TFTVLogger.Always($"Initializing Deploy Zones for BD vs Aliens");
 
@@ -2093,7 +2089,7 @@ namespace TFTV
                         {
                             PandoranDeployment.InfestationDeployment(controller);
                         }
-                        else if (TimeLeft >= 6 && TimeLeft <12)
+                        else if (TimeLeft >= 6 && TimeLeft < 12)
                         {
                             PandoranDeployment.NestingDeployment(controller);
                         }
@@ -3009,20 +3005,17 @@ namespace TFTV
             {
                 try
                 {
-                    if (tacticalFaction.TacticalLevel.Factions.Any(f => f.Faction.FactionDef.MatchesShortName("aln")))
+                    if (CheckIfBaseDefense(tacticalFaction.TacticalLevel))
                     {
-                        if (CheckIfBaseDefense(tacticalFaction.TacticalLevel) && tacticalFaction.Equals(tacticalFaction.TacticalLevel.GetFactionByCommandName("px")))
+                        // StratPicker(tacticalFaction.TacticalLevel);
+
+                        //These strats get implemented before alien turn starts: triton infiltration team and secondary force
+
+                        if (StratToBeImplemented >= 4)
                         {
-                            // StratPicker(tacticalFaction.TacticalLevel);
-
-                            //These strats get implemented before alien turn starts: triton infiltration team and secondary force
-
-                            if (StratToBeImplemented >= 4)
-                            {
-                                StratImplementer(tacticalFaction.TacticalLevel);
-                            }
-
+                            StratImplementer(tacticalFaction.TacticalLevel);
                         }
+
                     }
 
                 }
@@ -3035,20 +3028,19 @@ namespace TFTV
             {
                 try
                 {
-                    if (tacticalFaction.TacticalLevel.Factions.Any(f => f.Faction.FactionDef.MatchesShortName("aln")))
+
+                    if (CheckIfBaseDefense(tacticalFaction.TacticalLevel))
                     {
-                        if (CheckIfBaseDefense(tacticalFaction.TacticalLevel) && tacticalFaction.Equals(tacticalFaction.TacticalLevel.GetFactionByCommandName("aln")))
+                        StratPicker(tacticalFaction.TacticalLevel);
+
+                        //These strats get implemented before alien turn starts: triton infiltration team and secondary force
+
+                        if (StratToBeImplemented < 4)
                         {
-                            StratPicker(tacticalFaction.TacticalLevel);
-
-                            //These strats get implemented before alien turn starts: triton infiltration team and secondary force
-
-                            if (StratToBeImplemented < 4)
-                            {
-                                StratImplementer(tacticalFaction.TacticalLevel);
-                            }
+                            StratImplementer(tacticalFaction.TacticalLevel);
                         }
                     }
+
                 }
                 catch (Exception e)
                 {
@@ -3415,7 +3407,7 @@ namespace TFTV
                 {
                     if (!controller.IsLoadingSavedGame)
                     {
-                        if (CheckIfBaseDefense(controller) && controller.Factions.Any(f => f.Faction.FactionDef.MatchesShortName("aln")))
+                        if (CheckIfBaseDefense(controller))
                         {
                             TacticalFaction phoenix = controller.GetFactionByCommandName("px");
                             Objectives.OjectivesDebbuger(controller);

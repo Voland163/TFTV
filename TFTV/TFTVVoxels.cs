@@ -57,6 +57,7 @@ namespace TFTV
                             }
                         }
                     }
+
                     if (!FireVoxelSpawnAlreadyChecked && voxel.GetVoxelType() == TacticalVoxelType.Fire
                        && __instance.TacticalLevel.Factions.Any(f => f.Faction.FactionDef.MatchesShortName("aln")))
                     {
@@ -284,12 +285,16 @@ namespace TFTV
                     try
                     {
                         TacStatsModifyStatusDef slowedStatus = DefCache.GetDef<TacStatsModifyStatusDef>("Slowed_StatusDef");
+                       
 
                         TacticalVoxel voxel = ____actor.TacticalLevel.VoxelMatrix.GetVoxel(dstPos);
 
                         float actorRadius = ____actor.NavigationComponent.AgentNavSettings.AgentRadius;
 
-                        if (voxel != null && voxel.GetVoxelType() == TacticalVoxelType.Goo && !____actor.HasStatus(slowedStatus) && actorRadius <= TacticalMap.HalfTileSize && ____actor.GetAbility<GooDamageMultiplierAbility>() == null)
+                        if (voxel != null && voxel.GetVoxelType() == TacticalVoxelType.Goo && 
+                            !____actor.HasStatus(slowedStatus) && 
+                           // actorRadius <= TacticalMap.HalfTileSize && 
+                            ____actor.GetAbility<GooDamageMultiplierAbility>() == null)
                         {
                             __result = 2f;
                         }
@@ -363,14 +368,15 @@ namespace TFTV
                 {
                     if (actor.Status == null || actor.TacticalPerceptionBase == null)
                     {
+                       
                         return;
 
                     }
                     TacStatsModifyStatusDef slowedStatus = DefCache.GetDef<TacStatsModifyStatusDef>("Slowed_StatusDef");
                     TacStatsModifyStatus status = actor.Status.GetStatus<TacStatsModifyStatus>(slowedStatus);
-                    GooDamageMultiplierAbilityDef gooImmunity = DefCache.GetDef<GooDamageMultiplierAbilityDef>("GooImmunity_AbilityDef");
+                   // GooDamageMultiplierAbilityDef gooImmunity = DefCache.GetDef<GooDamageMultiplierAbilityDef>("GooImmunity_AbilityDef");
 
-                    if (actor.GetAbilityWithDef<GooDamageMultiplierAbility>(gooImmunity) == null && actor.TacticalPerceptionBase.IsTouchingVoxel(TacticalVoxelType.Goo, pos))
+                    if (actor.GetAbility<GooDamageMultiplierAbility>() == null && actor.TacticalPerceptionBase.IsTouchingVoxel(TacticalVoxelType.Goo, pos))
                     {
                         if (status == null)
                         {

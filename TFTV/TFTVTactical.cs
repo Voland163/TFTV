@@ -61,7 +61,7 @@ namespace TFTV
         public bool ScyllaLoose;
         public bool Breach;
         public List<float> SecondaryStrikeForceCoordinates;
-        public int EtermesVulnerabilityResistanceTactical;
+        public int EtermesVulnerabilityResistanceTactical = TFTVNewGameOptions.EtermesResistanceAndVulnerability;
     }
 
     /// <summary>
@@ -78,7 +78,7 @@ namespace TFTV
                 TFTVBaseDefenseTactical.Map.Consoles.SpawnConsoles.PlaceObjectives(controller);
                 TFTVRescueVIPMissions.CheckAndImplementVIPRescueMIssions(controller);
                 TFTVPalaceMission.CheckPalaceMission();
-                TFTVAncients.CyclopsAbilities.CyclopsResistance.CheckCyclopsDefense();
+                TFTVAncients.CyclopsAbilities.CyclopsResistance.ResetCyclopsDefense();
                 TFTVAncientsGeo.AncientsResearch.CheckResearchStateOnGeoscapeEndAndOnTacticalStart(null);
             }
             catch (Exception e)

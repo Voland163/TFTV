@@ -72,7 +72,7 @@ namespace TFTV
                 KeepSoldiersAliveFactionObjectiveDef containmentPresent = DefCache.GetDef<KeepSoldiersAliveFactionObjectiveDef>("CAPTURE_CAPACITY_BASE");
                 KeepSoldiersAliveFactionObjectiveDef aircraftCapture = DefCache.GetDef<KeepSoldiersAliveFactionObjectiveDef>("CAPTURE_CAPACITY_AIRCRAFT");
 
-                if (TFTVCapturePandorans.ContainmentFacilityPresent)
+                if (ContainmentFacilityPresent)
                 {
                     if (!listOfFactionObjectives.Contains(containmentPresent))
                     {
@@ -86,9 +86,9 @@ namespace TFTV
                         listOfFactionObjectives.Remove(containmentPresent);
                     }
                 }
-                if (TFTVCapturePandorans.AircraftCaptureCapacity < 0)
+                if (AircraftCaptureCapacity < 0)
                 {
-                    TFTVLogger.Always($"AircraftCaptureCapacity is {TFTVCapturePandorans.AircraftCaptureCapacity}");
+                    TFTVLogger.Always($"AircraftCaptureCapacity is {AircraftCaptureCapacity}");
 
                     if (listOfFactionObjectives.Contains(aircraftCapture))
                     {

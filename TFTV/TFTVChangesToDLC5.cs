@@ -2765,9 +2765,7 @@ namespace TFTV
                         GeoscapeTutorial geoscapeTutorial = ____level.Tutorial;
 
                         geoscapeTutorial.ShowTutorialStep(stepType);
-
                     }
-
                 }
                 catch (Exception e)
                 {

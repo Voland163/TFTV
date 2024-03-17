@@ -197,7 +197,6 @@ namespace TFTV
 
                 TFTVPureAndForsaken.Defs.InitDefs();
 
-                DefCache.GetDef<GeoscapeEventDef>("SDI_16_GeoscapeEventDef").GeoscapeEventData.Choices[0].Outcome.DamageAllSoldiers = 200;
 
                 //  TFTVExperimental.CheckActorReserchRequirement();
 
@@ -482,11 +481,27 @@ namespace TFTV
                 ChangeBehemothStomp();
                 TFTVBaseDefenseTactical.Defs.CreateDefsForBaseDefenseTactical();
                 RemoveTerrorSentinelCitadel();
+                RemoveOrganicConditionForSlowedStatus();
             }
             catch (Exception e)
             {
                 TFTVLogger.Error(e);
             }
+        }
+
+        private static void RemoveOrganicConditionForSlowedStatus()
+        {
+            try
+            {
+                DefCache.GetDef<TacStatsModifyStatusDef>("Slowed_StatusDef").ApplicationConditions = new EffectConditionDef[] { };
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+
         }
 
         private static void RemoveTerrorSentinelCitadel()
@@ -579,6 +594,39 @@ namespace TFTV
                 FixBionic3ResearchNotGivingAccessToFacility();
                 FixNoXPCaptureAcheron();
                 FixSpikeShootingArmShootingWhenDisabled();
+                FixSilentInfiltrators();
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+        private static void FixSilentInfiltrators()
+        {
+            try
+            {
+                
+                GameTagDef silentWeaponTag = DefCache.GetDef<GameTagDef>("SilencedWeapon_TagDef");
+                GameTagDef silentSkillTag = DefCache.GetDef<GameTagDef>("Silent_SkillTagDef");
+
+               WeaponDef crystalCrossbow = DefCache.GetDef<WeaponDef>("AC_CrystalCrossbow_WeaponDef");
+                WeaponDef bonusCrossbow = DefCache.GetDef<WeaponDef>("SY_Crossbow_Bonus_WeaponDef");
+                WeaponDef basicCrossbow = DefCache.GetDef<WeaponDef>("SY_Crossbow_WeaponDef");
+                WeaponDef venomCrossbow = DefCache.GetDef<WeaponDef>("SY_Venombolt_WeaponDef");
+
+                List<WeaponDef> crossbowWeapons = new List<WeaponDef>() { crystalCrossbow, basicCrossbow, bonusCrossbow, venomCrossbow };
+
+                foreach (WeaponDef weaponDef in crossbowWeapons)
+                {
+                    if (!weaponDef.Tags.Contains(silentWeaponTag))
+                    {
+                        weaponDef.Tags.Add(silentWeaponTag);
+                    }
+                }
+
+                Shared.SharedGameTags.SilentTags = new GameTagDef[] { silentWeaponTag, silentSkillTag };
+
             }
             catch (Exception e)
             {
@@ -4786,11 +4834,11 @@ namespace TFTV
                };
 
 
-            /*    ApplyStatusAbilityDef unusableLeftHandAbility = DefCache.GetDef<ApplyStatusAbilityDef>("UnusableLeftHand_AbilityDef");
-                unusableLeftHandAbility.DisablingStatuses = new StatusDef[]
-               {
-                newBrokenSpikeShooterStatus
-               };*/
+                /*    ApplyStatusAbilityDef unusableLeftHandAbility = DefCache.GetDef<ApplyStatusAbilityDef>("UnusableLeftHand_AbilityDef");
+                    unusableLeftHandAbility.DisablingStatuses = new StatusDef[]
+                   {
+                    newBrokenSpikeShooterStatus
+                   };*/
 
                 TFTVStamina.BrokenSpikeShooterStatus = newBrokenSpikeShooterStatus;
 

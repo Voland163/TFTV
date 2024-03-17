@@ -372,7 +372,7 @@ namespace TFTV
 
             internal class CyclopsResistance
             {
-                public static void CheckCyclopsDefense()
+                public static void ResetCyclopsDefense()
                 {
                     try
                     {
@@ -382,10 +382,10 @@ namespace TFTV
                         {
                             float baseMultiplier = 0.5f;
 
-                            if (TFTVSpecialDifficulties.CheckTacticalSpecialDifficultySettings(controller) == 2)
+                          /*  if (TFTVSpecialDifficulties.CheckTacticalSpecialDifficultySettings(controller) == 2)
                             {
                                 baseMultiplier = 0.25f; //adjusted on 22/12 from 0.0f
-                            }
+                            }*/
 
                             IEnumerable<TacticalActor> allHoplites = from x in controller.Map.GetActors<TacticalActor>()
                                                                      where x.HasGameTag(hopliteTag)
@@ -412,10 +412,10 @@ namespace TFTV
                         {
                             float baseMultiplier = 0.5f;
 
-                            if (TFTVSpecialDifficulties.CheckTacticalSpecialDifficultySettings(controller) == 2)
+                          /*  if (TFTVSpecialDifficulties.CheckTacticalSpecialDifficultySettings(controller) == 2)
                             {
-                                baseMultiplier = 0.0f;
-                            }
+                                baseMultiplier = 0.25f;
+                            }*/
 
                             List<TacticalActor> allHoplites = actor.TacticalFaction.TacticalActors.Where(ta => ta.HasGameTag(hopliteTag)).ToList();
                             int deadHoplites = allHoplites.Where(h => h.IsDead).Count();
@@ -1285,7 +1285,7 @@ namespace TFTV
                         countUndamagedGuardians = 8 - TFTVSpecialDifficulties.DifficultyOrderConverter(controller.Difficulty.Order);
                     }
 
-                    CyclopsAbilities.CyclopsResistance.CheckCyclopsDefense();
+                    CyclopsAbilities.CyclopsResistance.ResetCyclopsDefense();
                     //CyclopsDefenseStatus.Multiplier = 0.5f;
 
                     List<TacticalActor> damagedGuardians = new List<TacticalActor>();

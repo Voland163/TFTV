@@ -46,7 +46,7 @@ namespace TFTV
         public static bool revenantSpawned = false;
         public static List<string> revenantSpecialResistance = new List<string>();
         public static int revenantID = 0;
-        public static bool revenantResistanceHintCreated = false;
+        public static string revenantResistanceHintGUID;
 
         //  private static bool revenantPresent = false;
 
@@ -1270,8 +1270,7 @@ namespace TFTV
                         // TFTVLogger.Always("Got to before hint");
 
                         TFTVHints.HintDefs.DynamicallyCreatedHints.CreateNewTacticalHintForRevenantResistance("RevenantResistanceSighted", HintTrigger.ActorSeen, "RevenantResistance_GameTagDef", hintTitle, hintDescription);
-                        revenantResistanceHintCreated = true;
-
+                      
                     }
                 }
                 catch (Exception e)
@@ -1460,7 +1459,7 @@ namespace TFTV
                         // TFTVLogger.Always("Got to before hint");
 
                         TFTVHints.HintDefs.DynamicallyCreatedHints.CreateNewTacticalHintForRevenantResistance("RevenantResistanceSighted", HintTrigger.ActorSeen, "RevenantResistance_GameTagDef", hintTitle, hintDescription);
-                        revenantResistanceHintCreated = true;
+                        
                     }
                 }
 

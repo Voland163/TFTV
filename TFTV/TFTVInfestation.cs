@@ -127,7 +127,7 @@ namespace TFTV
                                 string infestationStory0 = TFTVCommonMethods.ConvertKeyToString("KEY_INFESTATION_STORY0");
                                 string infestationStory1 = TFTVCommonMethods.ConvertKeyToString("KEY_INFESTATION_STORY1");
 
-                                string text = $"{director} {characterName} {infestationStory0} {__instance.Site.LocalizedSiteName}{infestationStory1}";
+                                string text = $"{director}, {characterName} {infestationStory0} {__instance.Site.LocalizedSiteName}{infestationStory1}";
 
                                // _nameOfTopCharacter = characterName;
 

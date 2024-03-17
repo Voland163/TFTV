@@ -1526,6 +1526,8 @@ namespace TFTV
 
                 if (GetTacticalDifficulty() != null)
                 {
+                   // TFTVLogger.Always($"tactical difficulty not null; {GetTacticalDifficulty().Order}");
+
                     if (GetTacticalDifficulty().Order == 1)
                     {
                         return 1;
@@ -1538,12 +1540,14 @@ namespace TFTV
                 }
                 else
                 {
-                    if (controller.Difficulty.Order == 1)
+                   // TFTVLogger.Always($"tactical difficulty is null; {controller.Difficulty.Order}");
+
+                    if (TFTVNewGameOptions.InternalDifficultyCheckTactical == 1)
                     {
                         return 1;
 
                     }
-                    else if (controller.Difficulty.Order == 6)
+                    else if (TFTVNewGameOptions.InternalDifficultyCheckTactical == 6)
                     {
                         return 2;
 

@@ -1,4 +1,5 @@
 ﻿using Base.Core;
+using Base.Defs;
 using Base.Entities.Statuses;
 using Base.UI;
 using HarmonyLib;
@@ -33,7 +34,7 @@ namespace TFTV
     internal class TFTVCommonMethods
     {
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
-        //  private static readonly DefRepository Repo = TFTVMain.Repo;
+        private static readonly DefRepository Repo = TFTVMain.Repo;
 
 
         public static int D12DifficultyModifiedRoll(int unModifiedDifficultyOrder)
@@ -139,7 +140,7 @@ namespace TFTV
                 TFTVBaseDefenseGeoscape.ContainmentBreachSchedule.Clear();
                 TFTVBaseDefenseGeoscape.PandoransThatCanEscape.Clear();
                 TFTVRevenantResearch.RevenantPoints = 0;
-                TFTVNewGameOptions.EtermesResistanceAndVulnerability = 0;
+                
 
                 /*  TFTVNewGameOptions.AmountOfExoticResourcesSetting;
                   TFTVNewGameOptions.ResourceMultiplierSetting;
@@ -181,13 +182,16 @@ namespace TFTV
 
                 TFTVHumanEnemies.TacticsHint.Clear();
 
-                if (TFTVRevenant.revenantResistanceHintCreated)
+                if (TFTVRevenant.revenantResistanceHintGUID!=null)
                 {
-                    ContextHelpHintDef revenantResistanceHint = DefCache.GetDef<ContextHelpHintDef>("RevenantResistanceSighted");
-                    if (alwaysDisplayedTacticalHintsDbDef.Hints.Contains(revenantResistanceHint))
+                    ContextHelpHintDef revenantResistanceHint = (ContextHelpHintDef)Repo.GetDef(TFTVRevenant.revenantResistanceHintGUID);
+                        
+                       // DefCache.GetDef<ContextHelpHintDef>("RevenantResistanceSighted");
+                    if (revenantResistanceHint!=null && alwaysDisplayedTacticalHintsDbDef.Hints.Contains(revenantResistanceHint))
                     {
                         alwaysDisplayedTacticalHintsDbDef.Hints.Remove(revenantResistanceHint);
                         TFTVLogger.Always("Revenant resistance hint removed");
+                        TFTVRevenant.revenantResistanceHintGUID = null;
                     }
                 }
             }
@@ -215,7 +219,7 @@ namespace TFTV
                 TFTVBaseDefenseTactical.Breach = false;
                 TFTVBaseDefenseTactical.ScyllaLoose = false;
                 TFTVBaseDefenseTactical.PandoransInContainment.Clear();
-               
+                TFTVNewGameOptions.EtermesResistanceAndVulnerability = 0;
 
                 //  TFTVBaseDefenseTactical.VentingHintShown = false;
             }
@@ -372,179 +376,6 @@ namespace TFTV
 
 
 
-        [HarmonyPatch(typeof(Research), "CompleteResearch")]
-        public static class Research_CompleteResearch_TFTV_Patch
-        {
-            public static void Postfix(ResearchElement research)
-            {
-
-                try
-                {
-                    TFTVLogger.Always($"{research.ResearchID} completed by {research.Faction}");
-
-                    GeoLevelController controller = research.Faction.GeoLevel;
-                    GeoPhoenixFaction phoenixFaction = controller.PhoenixFaction;
-                    ResearchDef mutationTech = DefCache.GetDef<ResearchDef>("ANU_MutationTech_ResearchDef");
-                    ResearchElement mutationTechResearchElement = controller.PhoenixFaction.Research.GetResearchById(mutationTech.name);
-
-                    if (research.ResearchID == "ALN_CrabmanUmbra_ResearchDef")
-                    {
-                        research.Faction.GeoLevel.EventSystem.SetVariable("UmbraResearched", 1);
-                        TFTVLogger.Always("Umbra Researched variable is set to " + research.Faction.GeoLevel.EventSystem.GetVariable("UmbraResearched"));
-                    }
-                    else if (research.Faction != research.Faction.GeoLevel.PhoenixFaction && research.ResearchID == "ANU_AnuPriest_ResearchDef" && research.Faction.GeoLevel.EventSystem.GetVariable("BG_Start_Faction") == 1)
-                    {
-
-                        TFTVLogger.Always("Research completed " + research.ResearchID + " and corresponding flag triggered");
-
-                        research.Faction.GeoLevel.PhoenixFaction.Research.GiveResearch(research, true);
-
-                        ResearchElement phoenixResearch = controller.PhoenixFaction.Research.GetResearchById(research.ResearchID);
-                        phoenixFaction.Research.CompleteResearch(phoenixResearch);
-                    }
-
-                    else if (research.Faction != phoenixFaction && research.ResearchID == "NJ_Technician_ResearchDef" && research.Faction.GeoLevel.EventSystem.GetVariable("BG_Start_Faction") == 2)
-                    {
-                        TFTVLogger.Always("Research completed " + research.ResearchID + " and corresponding flag triggered");
-
-                        research.Faction.GeoLevel.PhoenixFaction.Research.GiveResearch(research, true);
-
-                        ResearchElement phoenixResearch = controller.PhoenixFaction.Research.GetResearchById(research.ResearchID);
-                        controller.PhoenixFaction.Research.CompleteResearch(phoenixResearch);
-                    }
-                    else if (research.Faction != phoenixFaction && research.ResearchID == "SYN_InfiltratorTech_ResearchDef" && controller.EventSystem.GetVariable("BG_Start_Faction") == 3)
-                    {
-
-                        TFTVLogger.Always("Research completed " + research.ResearchID + " and corresponding flag triggered");
-
-                        research.Faction.GeoLevel.PhoenixFaction.Research.GiveResearch(research, true);
-
-                        ResearchElement phoenixResearch = controller.PhoenixFaction.Research.GetResearchById(research.ResearchID);
-                        phoenixFaction.Research.CompleteResearch(phoenixResearch);
-
-
-                    }
-                    //To trigger change of rate in Pandoran Evolution
-                    else if (research.ResearchID == "ALN_Citadel_ResearchDef")
-                    {
-                        research.Faction.GeoLevel.EventSystem.SetVariable("Pandorans_Researched_Citadel", 1);
-                        research.Faction.GeoLevel.AlienFaction.SpawnNewAlienBase();
-                        GeoAlienBase citadel = research.Faction.GeoLevel.AlienFaction.Bases.FirstOrDefault(ab => ab.AlienBaseTypeDef.name == "Citadel_GeoAlienBaseTypeDef");
-                        ClassTagDef queenTag = DefCache.GetDef<ClassTagDef>("Queen_ClassTagDef");
-                        TacCharacterDef startingScylla = DefCache.GetDef<TacCharacterDef>("Scylla1_FrenzyMistSmasherAgileSpawner_AlienMutationVariationDef");
-
-                        citadel.SpawnMonster(queenTag, startingScylla);
-
-                    }
-                    else if (research.ResearchID == "PX_VirophageWeapons_ResearchDef")
-                    {
-                        if (controller.EventSystem.GetVariable("SymesAlternativeCompleted") == 1)
-                        {
-                            GeoscapeEventContext context = new GeoscapeEventContext(research.Faction.GeoLevel.AlienFaction, research.Faction.GeoLevel.PhoenixFaction);
-                            research.Faction.GeoLevel.EventSystem.TriggerGeoscapeEvent("Helena_Virophage", context);
-
-                        }
-                    }
-
-
-                    else if (research.ResearchID == "PX_YuggothianEntity_ResearchDef")
-                    {
-
-                        GeoscapeEventContext context = new GeoscapeEventContext(research.Faction.GeoLevel.AlienFaction, research.Faction.GeoLevel.PhoenixFaction);
-                        research.Faction.GeoLevel.EventSystem.TriggerGeoscapeEvent("AlistairOnMessagesFromTheVoid", context);
-
-                    }
-                    else if (research.ResearchID == "PX_AntediluvianArchaeology_ResearchDef")
-                    {
-                        GeoscapeEventContext context = new GeoscapeEventContext(research.Faction.GeoLevel.AlienFaction, research.Faction.GeoLevel.PhoenixFaction);
-                        research.Faction.GeoLevel.EventSystem.TriggerGeoscapeEvent("Helena_Echoes", context);
-                    }
-                    else if (research.ResearchID == "AncientAutomataResearch")
-                    {
-                        GeoscapeEventContext context = new GeoscapeEventContext(research.Faction.GeoLevel.AlienFaction, research.Faction.GeoLevel.PhoenixFaction);
-                        research.Faction.GeoLevel.EventSystem.TriggerGeoscapeEvent("Olena_Styx", context);
-
-                        //  ResearchElement exoticMaterialsResearch = research.Faction.GeoLevel.PhoenixFaction.Research.GetResearchById("ExoticMaterialsResearch");
-                        //  research.Faction.GeoLevel.FactionObjectiveSystem.CreateResearchObjective(research.Faction.GeoLevel.PhoenixFaction, exoticMaterialsResearch);
-                    }
-
-                    else if (research.ResearchID == "PX_LivingCrystalResearchDef")
-                    {
-                        GeoscapeEventContext context = new GeoscapeEventContext(research.Faction.GeoLevel.AlienFaction, research.Faction.GeoLevel.PhoenixFaction);
-                        research.Faction.GeoLevel.EventSystem.TriggerGeoscapeEvent("Helena_Oneiromancy", context);
-                        // GeoscapeEventSystem eventSystem = research.Faction.GeoLevel.EventSystem;
-                        // eventSystem.SetVariable("ProteanMutaneResearched", eventSystem.GetVariable("ProteanMutaneResearched") + 1);
-                        TFTVAncientsGeo.DefendCyclopsStoryMission.SetReactivateCyclopsObjective(controller);
-                    }
-                    else if (research.ResearchID == "ExoticMaterialsResearch")
-                    {
-                        TFTVAncientsGeo.AncientsResearch.AncientsCheckResearchState(research.Faction.GeoLevel);
-                        TFTVAncientsGeo.AncientsResearch.SetObtainLCandPMSamplesObjective(controller);
-
-                        //   ResearchElement livingCrystalsResearch = research.Faction.GeoLevel.PhoenixFaction.Research.GetResearchById("PX_LivingCrystalResearchDef");
-                        //   GeoFactionObjective researchLC = research.Faction.GeoLevel.FactionObjectiveSystem.CreateResearchObjective(research.Faction.GeoLevel.PhoenixFaction, livingCrystalsResearch);
-                        //  controller.PhoenixFaction.AddObjective(researchLC);
-                        //  ResearchElement proteanMutaneResearch = research.Faction.GeoLevel.PhoenixFaction.Research.GetResearchById("PX_ProteanMutaneResearchDef");
-                        //  GeoFactionObjective researchPM = research.Faction.GeoLevel.FactionObjectiveSystem.CreateResearchObjective(research.Faction.GeoLevel.PhoenixFaction, proteanMutaneResearch);
-                        //  controller.PhoenixFaction.AddObjective(researchPM);
-                    }
-                    else if (research.ResearchID == "PX_ProteanMutaneResearchDef")
-                    {
-                        GeoscapeEventSystem eventSystem = controller.EventSystem;
-                        //  eventSystem.SetVariable("ProteanMutaneResearched", eventSystem.GetVariable("ProteanMutaneResearched") + 1);
-                        TFTVAncientsGeo.DefendCyclopsStoryMission.SetReactivateCyclopsObjective(controller);
-                    }
-
-                  /*  else if (research.ResearchID == "NJ_Bionics2_ResearchDef")
-                    {
-
-                        ResearchElement bionics3 = controller.SynedrionFaction.Research.GetResearchById("SYN_Bionics3_ResearchDef");
-                        controller.SynedrionFaction.Research.GiveResearch(bionics3);
-                        controller.SynedrionFaction.Research.CompleteResearch(bionics3);
-                        //controller.SynedrionFaction.Research.FactionResearches.AddItem(research);
-                        //controller.SynedrionFaction.Research.AddProgressToResearch(research, 700);
-
-                    }*/
-
-                    else if (research.ResearchID == "PX_Mutoid_ResearchDef" && !controller.PhoenixFaction.Research.HasCompleted(mutationTech.name) &&
-                   !controller.PhoenixFaction.Research.Researchable.Any(re => re.ResearchDef == mutationTech))
-                    {
-
-                        mutationTechResearchElement.State = ResearchState.Unlocked;
-                        TFTVLogger.Always($"{mutationTech.name} available to PX? {mutationTechResearchElement.IsAvailableToFaction(controller.PhoenixFaction)}");
-
-                    }
-
-
-                    FactionFunctionalityTagDef alienContainmentFunctionality = DefCache.GetDef<FactionFunctionalityTagDef>("AlienContainment_FactionFunctionalityTagDef");
-
-                    if (research.ResearchID == "PX_Alien_Acheron_ResearchDef" && controller.PhoenixFaction.GameTags.Contains(alienContainmentFunctionality)
-                        && controller.EventSystem.GetEventRecord("PROG_CH0") == null)
-                    {
-
-
-                        TFTVLogger.Always($"Built containment facility and has completed PX_Alien_Acheron_ResearchDef, triggering CH0");
-
-                        //     controller.EventSystem.SetVariable("FavorForAFriend", 1);
-
-
-                        GeoscapeEventContext context = new GeoscapeEventContext(controller.PhoenixFaction.Bases.First().Site, controller.AlienFaction);
-                        controller.EventSystem.TriggerGeoscapeEvent("PROG_CH0", context);
-
-                    }
-
-                   // TFTVChangesToDLC1andDLC2Events.CheckTriggerPU5(controller, research);
-
-                    TFTVCapturePandoransGeoscape.RefreshFoodAndMutagenProductionTooltupUI();
-                    TFTVAncientsGeo.ImpossibleWeapons.CheckImpossibleWeaponsAdditionalRequirements(controller);
-
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-            }
-        }
 
 
         public static void SetStaminaToZero(GeoCharacter __instance)

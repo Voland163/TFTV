@@ -1070,7 +1070,6 @@ namespace TFTV
                     }
                 }
 
-
             }
 
         }
