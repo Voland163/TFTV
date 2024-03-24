@@ -85,6 +85,7 @@ namespace TFTVVehicleRework.Misc
             DummyTrample.ViewElementDef.DisplayName1 = new LocalizedTextBind("UI_TRAMPLE_NAME");
             DummyTrample.ViewElementDef.Description = new LocalizedTextBind("UI_TRAMPLE_DESC");
 
+           
             //Change Trample's ViewElementDef to the same as regular moving abilities.
             TrampleAbility.ViewElementDef = (TacticalAbilityViewElementDef)Repo.GetDef("6333fa2e-6e95-8124-48ea-8f7a60a2e22c"); //"Move_AbilityViewDef"
 
@@ -100,30 +101,55 @@ namespace TFTVVehicleRework.Misc
             {
                 x = 2.0f, //x=2.5f,
                 y = 2.6f, //y=2f
-                z = 2.5f, //z=2.8
+                z = 1.9f//2.5f, //z=2.8
             };
 
             //"PX_Scarab_DemolitionComponentDef"
             TacticalDemolitionComponentDef ScarabDemoComponentDef = (TacticalDemolitionComponentDef)Repo.GetDef("93e5171b-8c61-c734-baa5-b534310c569c");
             ScarabDemoComponentDef.RectangleSize = new Vector3
             {
-                x = 2.0f, //x=2.2
-                y = 2.6f, //y=3.0
-                z = 2.5f, //z=2.8
+                x = 2.0f,//2.0f, //x=2.2
+                y = 2.6f,//2.6f, //y=3.0
+                z = 1.9f//2.5f, //z=2.8
             };
 
+            
             //"KS_Kaos_Buggy_DemolitionComponentDef"
             TacticalDemolitionComponentDef JunkerDemoComponentDef = (TacticalDemolitionComponentDef)Repo.GetDef("79e29d11-331b-9b34-0ab7-1ad8de2cba26");
             JunkerDemoComponentDef.RectangleSize = new Vector3
             {
                 x = 2.0f, //x=2.5,
                 y = 1.5f, 
-                z = 2.5f, //x=2.8
+                z = 1.9f//2.5f, //x=2.8
             };
 
             //"SY_Aspida_DemolitionComponentDef"
             TacticalDemolitionComponentDef AspidaDemoComponentDef = (TacticalDemolitionComponentDef)Repo.GetDef("19e54d43-7eb6-ebf4-da14-abe67676b845");
             AspidaDemoComponentDef.CapsuleRadius = 0.95f;
+
+            
+
+          //  TacticalDemolitionComponent
+            //TESTING VOLAND
+          /*  ScarabDemoComponentDef.DemolitionBodyShape = AspidaDemoComponentDef.DemolitionBodyShape;
+            ScarabDemoComponentDef.CapsuleStart = AspidaDemoComponentDef.CapsuleStart;
+            ScarabDemoComponentDef.CapsuleEnd = AspidaDemoComponentDef.CapsuleEnd;
+            ScarabDemoComponentDef.SphereCenter = AspidaDemoComponentDef.SphereCenter;
+            ScarabDemoComponentDef.CapsuleRadius = AspidaDemoComponentDef.CapsuleRadius;
+
+            ArmadilloDemoComponentDef.DemolitionBodyShape = AspidaDemoComponentDef.DemolitionBodyShape;
+            ArmadilloDemoComponentDef.CapsuleStart = AspidaDemoComponentDef.CapsuleStart;
+            ArmadilloDemoComponentDef.CapsuleEnd = AspidaDemoComponentDef.CapsuleEnd;
+            ArmadilloDemoComponentDef.SphereCenter = AspidaDemoComponentDef.SphereCenter;
+            ArmadilloDemoComponentDef.CapsuleRadius = AspidaDemoComponentDef.CapsuleRadius;
+
+            JunkerDemoComponentDef.DemolitionBodyShape = AspidaDemoComponentDef.DemolitionBodyShape;
+            JunkerDemoComponentDef.CapsuleStart = AspidaDemoComponentDef.CapsuleStart;
+            JunkerDemoComponentDef.CapsuleEnd = AspidaDemoComponentDef.CapsuleEnd;
+            JunkerDemoComponentDef.SphereCenter = AspidaDemoComponentDef.SphereCenter;
+            JunkerDemoComponentDef.CapsuleRadius = AspidaDemoComponentDef.CapsuleRadius;*/
+
+            
         }
     }
 }

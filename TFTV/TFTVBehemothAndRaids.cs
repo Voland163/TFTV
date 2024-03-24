@@ -528,7 +528,7 @@ namespace TFTV
 
                         ____disruptionThreshhold = (int)CalculateDisruptionThreshholdMethod.Invoke(__instance, null);
 
-                        TFTVLogger.Always($"Behemoth hourly update, disruption threshold set to {____disruptionThreshhold}, disruption points are {____disruptionPoints}");
+                       // TFTVLogger.Always($"Behemoth hourly update, disruption threshold set to {____disruptionThreshhold}, disruption points are {____disruptionPoints}");
                         //  }
 
                         if (!__instance.IsSubmerging && ____disruptionPoints >= ____disruptionThreshhold)
@@ -538,7 +538,7 @@ namespace TFTV
                                 MethodInfo method_GenerateTargetData = AccessTools.Method(typeof(GeoBehemothActor), "PickSubmergeLocation");
 
                                 method_GenerateTargetData.Invoke(__instance, null);
-                                TFTVLogger.Always($"Behemoth hourly update, disruption points at {____disruptionPoints}, while threshold set to {____disruptionThreshhold}. Behemoth should submerge");
+                              //  TFTVLogger.Always($"Behemoth hourly update, disruption points at {____disruptionPoints}, while threshold set to {____disruptionThreshhold}. Behemoth should submerge");
                                 return false;
                             }
                         }
@@ -856,13 +856,10 @@ namespace TFTV
                         {
                             GeoSite site = GetSiteForBehemothToMoveTo(__instance);
                             typeof(GeoBehemothActor).GetMethod("TargetHaven", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(__instance, new object[] { site });
+                        }
 
-                            return false;
-                        }
-                        else
-                        {
-                            return false;
-                        }
+                        return false;
+
                     }
                     catch (Exception e)
                     {

@@ -377,6 +377,7 @@ namespace TFTV
                     TFTVPalaceMission.Gates.CheckIfPlayerCloseToGate(__instance);
                     TFTVChangesToDLC5.TFTVMercenaries.Tactical.SlugHealTraumaEffect(ability, __instance);
                     TFTVArtOfCrab.GetBestWeaponForOWRF(__instance);
+                    TFTVExperimental.CheckSquashing(ability, __instance);
                 }
 
                 catch (Exception e)

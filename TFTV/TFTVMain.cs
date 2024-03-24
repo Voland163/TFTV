@@ -3,6 +3,7 @@ using Base.Core;
 using Base.Defs;
 using Base.Levels;
 using HarmonyLib;
+using Microsoft.CSharp;
 using Newtonsoft.Json;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Game;
@@ -63,6 +64,40 @@ namespace TFTV
         /// Safely sisabled mods can be reenabled again. Unsafely disabled mods will need game restart ot take effect.
         /// Unsafely disabled mods usually cannot revert thier changes in OnModDisabled
         public override bool CanSafelyDisable => false;
+
+        public void PatchMethod()
+        {
+            // Get the assembly where the internal class is defined
+            Assembly assembly = Assembly.GetAssembly(typeof(CSharpCodeProvider));
+
+            // Get the internal class type
+            Type internalType = assembly.GetType("PhoenixPoint.Tactical.View.ViewStatese.UIStateCharacterSelected");
+
+            if (internalType != null)
+            {
+                // Find the method you want to patch
+                MethodInfo methodToPatch = internalType.GetMethod("ZoneOfControlMarkerCreator", BindingFlags.NonPublic | BindingFlags.Instance);
+
+                if (methodToPatch != null)
+                {
+                    // Now you can patch the method using your Harmony patching logic
+                    // For example:
+
+
+
+
+                    // Harmony.Patch(methodToPatch, new HarmonyMethod(typeof(YourModClass), nameof(YourModClass.YourPatchMethod)));
+                }
+                else
+                {
+                    // Method not found, handle error
+                }
+            }
+            else
+            {
+                // Class not found, handle error
+            }
+        }
 
 
         /*  private static void ChangeTitleScreen(PhoenixGame game)
@@ -158,6 +193,8 @@ namespace TFTV
                 Config.PopulateConfigFields();
                 //  Config.RetrieveConfigOptions();
                 harmony.PatchAll();
+                TFTVExperimental.FixSurveillanceAbilityGroundMarker(harmony);
+                
 
                 if (GameUtl.CurrentLevel() != null && GameUtl.CurrentLevel().GetComponent<HomeScreenView>() != null)
                 {
@@ -170,35 +207,37 @@ namespace TFTV
                 }
 
 
-                /*     Type renderingEnvironmentType = typeof(RenderingEnvironment);
+              
 
-                     // Get all public constructors
-                     ConstructorInfo[] constructors = renderingEnvironmentType.GetConstructors();
+                    /*     Type renderingEnvironmentType = typeof(RenderingEnvironment);
 
-                     // Print the names of constructors
-                     foreach (ConstructorInfo constructor in constructors)
-                     {
-                         TFTVLogger.Always("Constructor Name: " + constructor.FullDescription());
-                     }*/
+                         // Get all public constructors
+                         ConstructorInfo[] constructors = renderingEnvironmentType.GetConstructors();
 
-
-
-                /*  if(GetLevel()!=null && GetLevel().name.Contains("HomeScreenLevel")) 
-                  {
-                      TFTVLogger.Always($"TFTV is enabled!");
-                      string warning = $"Terror from the Void is now enabled! PLEASE QUIT TO DESKTOP BEFORE STARTING OR LOADING A GAME";
-
-                      GameUtl.GetMessageBox().ShowSimplePrompt(warning, MessageBoxIcon.Warning, MessageBoxButtons.OK, null);
+                         // Print the names of constructors
+                         foreach (ConstructorInfo constructor in constructors)
+                         {
+                             TFTVLogger.Always("Constructor Name: " + constructor.FullDescription());
+                         }*/
 
 
-                  }*/
-                // if (!injectionComplete)
-                // {
+
+                    /*  if(GetLevel()!=null && GetLevel().name.Contains("HomeScreenLevel")) 
+                      {
+                          TFTVLogger.Always($"TFTV is enabled!");
+                          string warning = $"Terror from the Void is now enabled! PLEASE QUIT TO DESKTOP BEFORE STARTING OR LOADING A GAME";
+
+                          GameUtl.GetMessageBox().ShowSimplePrompt(warning, MessageBoxIcon.Warning, MessageBoxButtons.OK, null);
 
 
-                //       injectionComplete = true;
-                //  }
-            }
+                      }*/
+                    // if (!injectionComplete)
+                    // {
+
+
+                    //       injectionComplete = true;
+                    //  }
+                }
             catch (Exception e)
             {
                 TFTVLogger.Error(e);
@@ -374,7 +413,7 @@ namespace TFTV
                 Harmony harmony = (Harmony)HarmonyInstance;
                 harmony.UnpatchAll();
                 harmony.PatchAll();
-
+                TFTVExperimental.FixSurveillanceAbilityGroundMarker(harmony);
             }
         }
 

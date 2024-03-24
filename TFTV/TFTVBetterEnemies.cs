@@ -265,8 +265,12 @@ namespace TFTV
                 //Adding Acid Torso attack for Sirens
                 AIActionsTemplateDef SirenAITemplate = DefCache.GetDef<AIActionsTemplateDef>("Siren_AIActionsTemplateDef");
                 WeaponDef sirenArmisAcidTorso = DefCache.GetDef<WeaponDef>("Siren_Torso_Orichalcum_WeaponDef");
+                WeaponDef sirenAcidTorso = DefCache.GetDef<WeaponDef>("Siren_Torso_AcidSpitter_WeaponDef");
+                ItemClassificationTagDef gunTag = DefCache.GetDef<ItemClassificationTagDef>("GunWeapon_TagDef");
 
-                sirenArmisAcidTorso.Tags.Add(DefCache.GetDef<ItemClassificationTagDef>("GunWeapon_TagDef"));
+                sirenArmisAcidTorso.Tags.Add(gunTag);
+                sirenAcidTorso.Tags.Add(gunTag);
+
                 List<AIActionDef> sirenAIActions = new List<AIActionDef>(SirenAITemplate.ActionDefs.ToList())
                 {
                     mAShoot

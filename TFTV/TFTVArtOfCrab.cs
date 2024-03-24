@@ -5,6 +5,7 @@ using Base.Defs;
 using Base.Entities.Effects;
 using Base.Entities.Statuses;
 using Base.Utils.Maths;
+using Epic.OnlineServices;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities.GameTags;
@@ -12,6 +13,7 @@ using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.Entities.Items;
 using PhoenixPoint.Tactical;
 using PhoenixPoint.Tactical.AI;
+using PhoenixPoint.Tactical.AI.Actions;
 using PhoenixPoint.Tactical.AI.Considerations;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
@@ -37,7 +39,67 @@ namespace TFTV
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
         private static readonly DefRepository Repo = TFTVMain.Repo;
 
-        
+        private static bool Cover(TacticalActor tacticalActor, TacAITarget tacAITarget)
+        {
+            try 
+            {
+                float adjustedPerception = tacticalActor.GetAdjustedPerceptionValue();
+                float perceptionRange = adjustedPerception * adjustedPerception;
+
+                Dictionary<TacticalActorBase, Vector3> relevantEnemies = new Dictionary<TacticalActorBase, Vector3>();
+            
+                foreach (TacticalActorBase enemy in tacticalActor.TacticalFaction.AIBlackboard.GetEnemies(tacticalActor.AIActor.GetEnemyMask(ActorType.Combatant)))
+                {
+                 
+                    if (!((tacAITarget.Pos - enemy.Pos).sqrMagnitude < adjustedPerception 
+                        || !TacticalFactionVision.CheckVisibleLineBetweenActors(enemy, enemy.Pos, tacticalActor, checkAllPoints: true, tacAITarget.Pos)))
+                    {
+                        continue;
+                    }
+
+                    Vector3 vector = enemy.Pos - tacAITarget.Pos;
+                    if (Utl.Equals(vector.x, 0f) && Utl.Equals(vector.z, 0f))
+                    {
+                        
+                        continue;
+                    }
+
+                    relevantEnemies.Add(enemy, vector); 
+                }
+
+                if (relevantEnemies.Count == 0) 
+                {
+
+                    return false;
+                }
+
+                relevantEnemies.OrderBy(kvp => kvp.Value);
+
+                TacticalActorBase closestRelevantEnemy = relevantEnemies.Keys.FirstOrDefault();
+
+                Vector3 coverDirection = tacticalActor.TacticalPerception.GetCoverDirection(tacAITarget.Pos, relevantEnemies[closestRelevantEnemy]);
+               
+                CoverInfo coverInfoInDirection = tacticalActor.Map.GetCoverInfoInDirection(tacAITarget.Pos, coverDirection, tacticalActor.TacticalPerception.Height);
+                   
+                if(coverInfoInDirection.CoverType >= CoverType.Low) 
+                {
+                    return true;               
+                }
+                else 
+                {
+                    return false;            
+                }
+                
+            }
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
+        }
+
+
 
         internal class StealthBehavior
         {
@@ -123,6 +185,64 @@ namespace TFTV
             }
 
         }
+
+
+
+
+        [HarmonyPatch(typeof(AIActionMoveToPosition), "Execute")]
+        public static class AIActionMoveToPosition_Execute_patch
+        {
+            private static void Prefix(AIActionMoveToPosition __instance, ref AIScoredTarget aiTarget)
+            {
+                try
+                {
+                    TacticalActor actor = (TacticalActor)aiTarget.Actor;
+                    TacAITarget target = (TacAITarget)aiTarget.Target;
+
+                    if (actor.NavigationComponent.AgentNavSettings.AgentRadius >= TacticalMap.HalfTileSize) 
+                    {
+                        return;    
+                    }
+
+                    List<Weapon> weapons = new List<Weapon>(actor.Equipments.GetWeapons().Where(
+                    w => w.IsUsable 
+                    && w.WeaponDef.Tags.Contains(DefCache.GetDef<GameTagDef>("GunWeapon_TagDef")) 
+                    && !w.WeaponDef.Tags.Contains(DefCache.GetDef<GameTagDef>("SpitterWeapon_TagDef"))
+                    ));
+
+                    if (weapons.Count == 0)
+                    {
+                      return;   
+                    }
+                    else 
+                    { 
+                    weapons = weapons.OrderBy(w=>w.ApToUse).ToList(); 
+                    }
+
+                    Weapon weapon = weapons.First();
+
+                    TFTVLogger.Always($"lowest AP ranged weapon is {weapon.DisplayName}, with {weapon.ApToUse}");
+                   
+                    if (actor.CharacterStats.ActionPoints <= weapon.ApToUse)
+                    {
+                        TFTVLogger.Always($"{actor.name} has {actor.CharacterStats.ActionPoints} AP is at POS {actor.Pos}, current target POS {target.Pos}");
+
+                        if(!Cover(actor, target)) 
+                        {
+                            TFTVLogger.Always($"Position has no cover!");
+                            target.Pos = actor.Pos;
+                        }            
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+
+        }
+
 
         // TacticalActorBase
 
@@ -238,7 +358,9 @@ namespace TFTV
                 }
 
                 List<Weapon> weapons = new List<Weapon>(tacticalActor.Equipments.GetWeapons().Where(
-                    w => w.IsUsable && w.HasCharges && w.TacticalItemDef.Tags.Contains(DefCache.GetDef<ItemClassificationTagDef>("GunWeapon_TagDef"))));
+                    w => w.IsUsable && w.HasCharges && w.TacticalItemDef.Tags.Contains(DefCache.GetDef<ItemClassificationTagDef>("GunWeapon_TagDef"))
+                    && !w.WeaponDef.Tags.Contains(DefCache.GetDef<GameTagDef>("SpitterWeapon_TagDef"))
+                    ));
 
                 if (weapons.Count == 0)
                 {
@@ -265,13 +387,15 @@ namespace TFTV
             try
             {
                 if (!tacticalActor.IsControlledByAI || !tacticalActor.TacticalActorDef.name.Equals("Soldier_ActorDef") || tacticalActor.IsDead || tacticalActor.IsDisabled
-                    || tacticalActor.IsEvacuated || tacticalActor.Equipments == null || tacticalActor.Equipments.GetWeapons() == null)
+                    || tacticalActor.IsEvacuated || tacticalActor.Equipments == null || tacticalActor.Equipments.GetWeapons() == null ||  !tacticalActor.Equipments.GetWeapons().Any(w=>w.IsUsable && w.HasCharges))
                 {
                     return;
                 }
 
                 List<Weapon> weapons = new List<Weapon>(tacticalActor.Equipments.GetWeapons().Where(
-                    w => w.IsUsable && w.HasCharges));
+                    w => w.IsUsable && w.HasCharges && w.TacticalItemDef.Tags.Contains(DefCache.GetDef<ItemClassificationTagDef>("GunWeapon_TagDef"))
+                    && !w.WeaponDef.Tags.Contains(DefCache.GetDef<GameTagDef>("SpitterWeapon_TagDef"))
+                    ));
 
                 if (weapons.Count == 0)
                 {

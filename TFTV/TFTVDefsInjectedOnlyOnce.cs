@@ -81,17 +81,39 @@ namespace TFTV
         {
             try
             {
-
-                foreach (ResearchDef researchDef in DefCache.GetDef<ResearchDbDef>("syn_ResearchDB").Researches)
+                foreach (TriggerAbilityZoneOfControlStatusDef triggerAbilityZoneOfControlStatus in Repo.GetAllDefs<TriggerAbilityZoneOfControlStatusDef>()) 
                 {
-                    TFTVLogger.Always($"{researchDef.Id} research cost: {researchDef.ResearchCost} priority: {researchDef.Priority}");
+                    TFTVLogger.Always($"{triggerAbilityZoneOfControlStatus.name}");
+                
                 }
 
 
-                foreach (ResearchDef researchDef in DefCache.GetDef<ResearchDbDef>("nj_ResearchDB").Researches)
+                foreach (SurveillanceAbilityDef triggerAbilityZoneOfControlStatus in Repo.GetAllDefs<SurveillanceAbilityDef>())
                 {
-                    TFTVLogger.Always($"{researchDef.Id} research cost: {researchDef.ResearchCost} priority: {researchDef.Priority}");
+                    TFTVLogger.Always($"{triggerAbilityZoneOfControlStatus.name}");
+
                 }
+
+                /*
+                foreach(AIActionDef aIActionDef in Repo.GetAllDefs<AIActionDef>()) 
+                {
+                    TFTVLogger.Always($"{aIActionDef.name}");
+
+                    foreach(AIAdjustedConsideration aIAdjustedConsideration in aIActionDef.EarlyExitConsiderations) 
+                    {
+                        TFTVLogger.Always($"{aIAdjustedConsideration.Consideration.name}", false);
+
+
+
+                    } 
+                  
+                     
+                
+                }*/
+
+
+
+
 
                 /*  foreach (UnitTemplateResearchRewardDef rewardDef in Repo.GetAllDefs<UnitTemplateResearchRewardDef>().
                       Where(r => r.Template.name.Contains("FK")))
@@ -197,16 +219,34 @@ namespace TFTV
 
                 TFTVPureAndForsaken.Defs.InitDefs();
 
-
+               
                 //  TFTVExperimental.CheckActorReserchRequirement();
 
-                //  Print();
+              // Print();
 
             }
             catch (Exception e)
             {
                 TFTVLogger.Error(e);
             }
+        }
+
+        private static void AdjustMistSentinelDetection()
+        {
+            try 
+            {
+                DefCache.GetDef<TacticalTargetingDataDef>("E_TargetingData [SentinelMist_Surveillance_AbilityDef]").Origin.Range=15;
+
+               // DefCache.GetDef<TriggerAbilityZoneOfControlStatusDef>("TriggerSurveillance_ZoneOfControlStatusDef").Range = 15;
+
+            
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+
         }
 
         private static void ChangeBehemothStomp()
@@ -482,6 +522,7 @@ namespace TFTV
                 TFTVBaseDefenseTactical.Defs.CreateDefsForBaseDefenseTactical();
                 RemoveTerrorSentinelCitadel();
                 RemoveOrganicConditionForSlowedStatus();
+                AdjustMistSentinelDetection();
             }
             catch (Exception e)
             {
@@ -610,12 +651,13 @@ namespace TFTV
                 GameTagDef silentWeaponTag = DefCache.GetDef<GameTagDef>("SilencedWeapon_TagDef");
                 GameTagDef silentSkillTag = DefCache.GetDef<GameTagDef>("Silent_SkillTagDef");
 
-               WeaponDef crystalCrossbow = DefCache.GetDef<WeaponDef>("AC_CrystalCrossbow_WeaponDef");
+                WeaponDef crystalCrossbow = DefCache.GetDef<WeaponDef>("AC_CrystalCrossbow_WeaponDef");
                 WeaponDef bonusCrossbow = DefCache.GetDef<WeaponDef>("SY_Crossbow_Bonus_WeaponDef");
                 WeaponDef basicCrossbow = DefCache.GetDef<WeaponDef>("SY_Crossbow_WeaponDef");
                 WeaponDef venomCrossbow = DefCache.GetDef<WeaponDef>("SY_Venombolt_WeaponDef");
+                WeaponDef spiderDroneLauncher = DefCache.GetDef<WeaponDef>("SY_SpiderDroneLauncher_WeaponDef");
 
-                List<WeaponDef> crossbowWeapons = new List<WeaponDef>() { crystalCrossbow, basicCrossbow, bonusCrossbow, venomCrossbow };
+                List<WeaponDef> crossbowWeapons = new List<WeaponDef>() { crystalCrossbow, basicCrossbow, bonusCrossbow, venomCrossbow, spiderDroneLauncher };
 
                 foreach (WeaponDef weaponDef in crossbowWeapons)
                 {

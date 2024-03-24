@@ -1,4 +1,5 @@
-﻿using Base;
+﻿using AK.Wwise;
+using Base;
 using Base.Core;
 using Base.Defs;
 using Base.UI;
@@ -25,7 +26,7 @@ namespace TFTV
 {
     internal class TFTVScrapAircraft
     {
-
+        
 
         //taken & slightly adjusted from Mad's Assorted Adjustments. All hail Mad! https://github.com/Mad-Mods-Phoenix-Point/AssortedAdjustments/blob/main/Source/AssortedAdjustments/Patches/EnableScrapAircraft.cs
 
@@ -73,7 +74,7 @@ namespace TFTV
 
 
 
-        [HarmonyPatch(typeof(GeoRosterContainterItem), "Refresh")]
+      /*  [HarmonyPatch(typeof(GeoRosterContainterItem), "Refresh")]
         public static class GeoRosterContainterItem_Refresh_Patch
         {
 
@@ -92,23 +93,7 @@ namespace TFTV
                         // Aircraft 
                         if (__instance.Container.MaxCharacterSpace != 2147483647)
                         {
-                            Text oldEmptySlotText = __instance.EmptySlot.GetComponentInChildren<Text>(true);
-
-                            if (oldEmptySlotText.text != emptySlotScrapText)
-                            {
-                                TFTVLogger.Always($"Going to destroy text component because it says {oldEmptySlotText.text}");
-                                Canvas.Destroy(oldEmptySlotText.gameObject);
-
-                                // Add a new Text component
-                                emptySlotText = __instance.EmptySlot.AddComponent<Text>();
-                                emptySlotText.text = emptySlotScrapText;
-
-                                // Copy properties from the old Text component
-                                CopyTextProperties(oldEmptySlotText, emptySlotText);
-
-                                // Store empty slot color and text to reset on mouse exit/refresh list
-                                emptySlotDefaultColor = emptySlotText.color;
-                            }
+                          
 
 
                             // 
@@ -128,33 +113,35 @@ namespace TFTV
                 }
             }
 
-            private static void CopyTextProperties(Text source, Text destination)
-            {
-                // Copy font and font size
-                destination.font = source.font;
-                destination.fontSize = source.fontSize;
+            
 
-                // Copy color
-                destination.color = source.color;
+        }*/
 
-                // Set alignment to center
-                destination.alignment = source.alignment;
+        private static void CopyTextProperties(Text source, Text destination)
+        {
+            // Copy font and font size
+            destination.font = source.font;
+            destination.fontSize = source.fontSize;
+
+            // Copy color
+            destination.color = source.color;
+
+            // Set alignment to center
+            destination.alignment = source.alignment;
 
 
 
-                // Copy RectTransform properties
-                RectTransform sourceRectTransform = source.rectTransform;
-                RectTransform destinationRectTransform = destination.rectTransform;
+            // Copy RectTransform properties
+            RectTransform sourceRectTransform = source.rectTransform;
+            RectTransform destinationRectTransform = destination.rectTransform;
 
-                destinationRectTransform.localPosition = sourceRectTransform.localPosition;
-                destinationRectTransform.sizeDelta = sourceRectTransform.sizeDelta;
-                destinationRectTransform.anchorMin = sourceRectTransform.anchorMin;
-                destinationRectTransform.anchorMax = sourceRectTransform.anchorMax;
+            destinationRectTransform.localPosition = sourceRectTransform.localPosition;
+            destinationRectTransform.sizeDelta = sourceRectTransform.sizeDelta;
+            destinationRectTransform.anchorMin = sourceRectTransform.anchorMin;
+            destinationRectTransform.anchorMax = sourceRectTransform.anchorMax;
 
-                // Set pivot to center
-                destinationRectTransform.pivot = new Vector2(0.5f, 0.5f); // Center pivot
-            }
-
+            // Set pivot to center
+            destinationRectTransform.pivot = new Vector2(0.5f, 0.5f); // Center pivot
         }
 
         private static void RemoveEquipmentFromScrappedVehicle(GeoVehicle aircraftToScrap)
@@ -209,9 +196,9 @@ namespace TFTV
                     {
                         for (int i = 0; i < ____geoRosterModule.Groups.Count; i++)
                         {
-                            GeoRosterContainterItem c = ____geoRosterModule.Groups[i];
+                           GeoRosterContainterItem c = ____geoRosterModule.Groups[i];
 
-                            if (!c.EmptySlot.GetComponent<EventTrigger>())
+                           /* if (!c.EmptySlot.GetComponent<EventTrigger>())
                             {
                                 TFTVLogger.Info($"[UIStateGeoRoster_EnterState_POSTFIX] {c.Container.Name} had no event trigger. Adding...");
                                 c.EmptySlot.AddComponent<EventTrigger>();
@@ -222,13 +209,49 @@ namespace TFTV
                             eventTrigger.triggers.Clear();
 
                             TFTVLogger.Info($"[UIStateGeoRoster_EnterState_POSTFIX] {c.Container.Name} Refreshing/Resetting text for empty slot. This IS needed.");
-                            c.Refresh();
+                            c.Refresh();*/
 
                             if (c.Container.MaxCharacterSpace != 2147483647) // !Bases
                             {
+
+
+                                if (!c.EmptySlot.GetComponent<EventTrigger>())
+                                {
+                                    TFTVLogger.Info($"[UIStateGeoRoster_EnterState_POSTFIX] {c.Container.Name} had no event trigger. Adding...");
+                                    c.EmptySlot.AddComponent<EventTrigger>();
+                                }
+
+                                TFTVLogger.Info($"[UIStateGeoRoster_EnterState_POSTFIX] {c.Container.Name} Clearing all mouse events from empty slot.");
+                                EventTrigger eventTrigger = c.EmptySlot.GetComponent<EventTrigger>();
+
+                                eventTrigger.triggers.Clear();
+
+                                TFTVLogger.Info($"[UIStateGeoRoster_EnterState_POSTFIX] {c.Container.Name} Refreshing/Resetting text for empty slot. This IS needed.");
+                                c.Refresh();
+
                                 TFTVLogger.Info($"[UIStateGeoRoster_EnterState_POSTFIX] {c.Container.Name} is NOT a base. Adding mouse events to empty slot. ");
 
-                                Text emptySlotText = c.EmptySlot.GetComponentInChildren<Text>(true);
+                                Text oldEmptySlotText = c.EmptySlot.GetComponentInChildren<Text>(true);
+                                Text emptySlotText = oldEmptySlotText;
+
+                                if (oldEmptySlotText.text != emptySlotScrapText)
+                                {
+                                    TFTVLogger.Always($"Going to destroy text component because it says {oldEmptySlotText.text}");
+                                    Canvas.Destroy(oldEmptySlotText.gameObject);
+
+                                    // Add a new Text component
+                                    emptySlotText = c.EmptySlot.AddComponent<Text>();
+                                    emptySlotText.text = emptySlotScrapText;
+
+                                    // Copy properties from the old Text component
+                                    CopyTextProperties(oldEmptySlotText, emptySlotText);
+
+                                    // Store empty slot color and text to reset on mouse exit/refresh list
+                                    emptySlotDefaultColor = emptySlotText.color;
+                                }
+
+
+                            //    Text emptySlotText = c.EmptySlot.GetComponentInChildren<Text>(true);
                               
 
                                 ContainerInfo containerInfo = new ContainerInfo(c.Container.Name, i);
@@ -249,6 +272,9 @@ namespace TFTV
                                 click.callback.AddListener((eventData) => { OnScrapAircraftClick(containerInfo); });
                                 eventTrigger.triggers.Add(click);
 
+                              
+
+
                             }
 
                         }
@@ -265,6 +291,8 @@ namespace TFTV
                         TFTVLogger.Info($"[UIStateGeoRoster_EnterState_POSTFIX] OnScrapAircraftMouseExit({t})");
                         t.color = emptySlotDefaultColor;
                     }
+
+                 
 
                     void OnScrapAircraftClick(ContainerInfo containerInfo)
                     {
