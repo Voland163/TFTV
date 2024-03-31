@@ -68,7 +68,7 @@ namespace TFTVVehicleRework.Armadillo
             if (MephClone == null)
             {                               
                 MephClone = (GroundVehicleWeaponDef)Repo.CreateDef("ffb34012-b1fd-4b24-8236-ba2eb23db0b7", Meph);
-                
+
                 MephClone.APToUsePerc = 75;
                 MephClone.ChargesMax = 15;
                 MephClone.DamagePayload.ObjectMultiplier = 2f;

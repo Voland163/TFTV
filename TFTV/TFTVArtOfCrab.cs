@@ -100,94 +100,7 @@ namespace TFTV
         }
 
 
-
-        internal class StealthBehavior
-        {
-
-            [HarmonyPatch(typeof(TacticalFactionVision), "ReUpdateVisibilityTowardsActorImpl")]
-            public static class TFTV_TacticalFactionVision_ReUpdateVisibilityTowardsActorImpl_patch
-            {
-                private static bool Prefix(TacticalActorBase fromActor, TacticalActorBase targetActor, float basePerceptionRange, ref bool __result)
-                {
-                    try
-                    {
-                        if (fromActor is TacticalActor tacticalActor && tacticalActor.IsEvacuated)
-                        {
-                            __result = false;
-                            return false;
-                        }
-
-                        return true;
-                    }
-                    catch (Exception e)
-                    {
-                        TFTVLogger.Error(e);
-                        throw;
-                    }
-                }
-            }
-
-
-            private static bool CheckVisibility(TacticalActorBase tacticalActorBase, TacticalActor tacticalActor, DamagePayload damagePayload)
-            {
-                try
-                {
-                    if (damagePayload.DamageDeliveryType == DamageDeliveryType.Sphere || damagePayload.DamageDeliveryType == DamageDeliveryType.Cone)
-                    {
-                        if (tacticalActor.TacticalFaction == tacticalActorBase.TacticalFaction)
-                        {
-                            return true;
-                        }
-
-                        if (tacticalActor.TacticalFaction.GetAllAliveFriendlyActors<TacticalActorBase>(tacticalActor).Contains(tacticalActorBase))
-                        {
-                            return true;
-                        }
-
-                        if (tacticalActor.TacticalFaction.AIBlackboard.GetEnemies(ActorType.All, true).Contains(tacticalActorBase))
-                        {
-                            return true;
-                        }
-                        else
-                        {
-                            return false;
-                        }
-                    }
-
-                    return true;
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                    throw;
-                }
-            }
-
-
-            [HarmonyPatch(typeof(AIUtil), "GetAffectedTargetsByShooting")]
-            public static class TFTV_AIUtil_GetAffectedTargetsByShooting_patch
-            {
-                private static IEnumerable<TacticalActorBase> Postfix(IEnumerable<TacticalActorBase> results, Vector3 shootPos, TacticalActor sourceActor, Weapon sourceWeapon, TacticalAbilityTarget target, ShootAbilityDef shootAbility = null)
-                {
-
-                    DamagePayload damagePayload = sourceWeapon.GetDamagePayload();
-
-                    foreach (TacticalActorBase actorBase in results)
-                    {
-                        if (CheckVisibility(actorBase, sourceActor, damagePayload))
-                        {
-                            yield return actorBase;
-                        }
-
-                    }
-                }
-
-            }
-
-        }
-
-
-
+        //Prevents step out
 
         [HarmonyPatch(typeof(AIActionMoveToPosition), "Execute")]
         public static class AIActionMoveToPosition_Execute_patch
@@ -199,7 +112,7 @@ namespace TFTV
                     TacticalActor actor = (TacticalActor)aiTarget.Actor;
                     TacAITarget target = (TacAITarget)aiTarget.Target;
 
-                    if (actor.NavigationComponent.AgentNavSettings.AgentRadius >= TacticalMap.HalfTileSize) 
+                    if (actor.NavigationComponent.AgentNavSettings.AgentRadius >= TacticalMap.HalfTileSize || actor.Status!=null && actor.Status.HasStatus<PanicStatus>()) 
                     {
                         return;    
                     }
@@ -256,8 +169,6 @@ namespace TFTV
 
         public static bool Has1APWeapon(TacCharacterDef tacCharacterDef)
         {
-       
-
             try
             {
                 DelayedEffectStatusDef reinforcementStatusUnder1AP = DefCache.GetDef<DelayedEffectStatusDef>("E_Status [ReinforcementStatusUnder1AP]");

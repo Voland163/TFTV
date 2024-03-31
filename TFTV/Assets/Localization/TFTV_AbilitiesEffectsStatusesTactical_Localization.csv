@@ -264,3 +264,5 @@ KEY_GOOED_STATUS_DESCRIPTION,Text,,"Moving through a tile covered in Goo costs m
 KEY_ACTIVE_CAMO_DISPLAY_NAME,Text,,Active Camo,,,,,,,,
 KEY_ACTIVE_CAMO_DESCRIPTION,Text,,Character was hidden from view because within 16 tiles of Leader with Activo Camo Tactic.,,,,,,,,
 KEY_REGENERATION_TORSO_DESCRIPTION,Text,,"Restore 10 Hit Points to arms, torso and General Hit Points each turn",,,,,,,,
+KEY_BIONIC_SILENTECHO_ABILITY_DESCRIPTION,Text,,Make a silent attack with the selected weapon. Limited to one use per turn.,,,,,,,,
+KEY_BIONIC_SILENTECHO_ABILITY_NAME,Text,,SILENT ECHO,,,,,,,,

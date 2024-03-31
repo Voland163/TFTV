@@ -236,7 +236,7 @@ namespace TFTV
 
                                 if (oldEmptySlotText.text != emptySlotScrapText)
                                 {
-                                    TFTVLogger.Always($"Going to destroy text component because it says {oldEmptySlotText.text}");
+                                   // TFTVLogger.Always($"Going to destroy text component because it says {oldEmptySlotText.text}");
                                     Canvas.Destroy(oldEmptySlotText.gameObject);
 
                                     // Add a new Text component

@@ -137,7 +137,7 @@ namespace TFTV
                 /// PhoenixGame is accessible at any time.
                 PhoenixGame game = GetGame();
 
-                string version = $"TFTV 20240324 release #1 (Update #56) v{MetaData.Version}";
+                string version = $"TFTV 20240402 release #1 (Update #57) v{MetaData.Version}";
 
                 TFTVversion = version;
 
@@ -193,7 +193,7 @@ namespace TFTV
                 Config.PopulateConfigFields();
                 //  Config.RetrieveConfigOptions();
                 harmony.PatchAll();
-                TFTVExperimental.FixSurveillanceAbilityGroundMarker(harmony);
+                TFTVVanillaFixes.FixSurveillanceAbilityGroundMarker(harmony);
                 
 
                 if (GameUtl.CurrentLevel() != null && GameUtl.CurrentLevel().GetComponent<HomeScreenView>() != null)
@@ -413,7 +413,7 @@ namespace TFTV
                 Harmony harmony = (Harmony)HarmonyInstance;
                 harmony.UnpatchAll();
                 harmony.PatchAll();
-                TFTVExperimental.FixSurveillanceAbilityGroundMarker(harmony);
+                TFTVVanillaFixes.FixSurveillanceAbilityGroundMarker(harmony);
             }
         }
 

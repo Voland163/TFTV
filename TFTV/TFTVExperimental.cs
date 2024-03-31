@@ -1,11 +1,11 @@
 ﻿using Base;
 using Base.Core;
 using Base.Defs;
+using Code.PhoenixPoint.Tactical.Entities.Equipments;
 using HarmonyLib;
-using Microsoft.CSharp;
-using MonoMod.Utils;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities;
+using PhoenixPoint.Common.Entities.Addons;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.Items;
 using PhoenixPoint.Geoscape.Entities;
@@ -18,10 +18,8 @@ using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.Entities.Statuses;
+using PhoenixPoint.Tactical.Entities.Weapons;
 using PhoenixPoint.Tactical.Levels;
-using PhoenixPoint.Tactical.View;
-using PhoenixPoint.Tactical.View.ViewModules;
-using PhoenixPoint.Tactical.View.ViewStates;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -37,73 +35,179 @@ namespace TFTV
         private static readonly DefRepository Repo = TFTVMain.Repo;
         private static readonly SharedData Shared = TFTVMain.Shared;
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
-        public static void FixSurveillanceAbilityGroundMarker(Harmony harmony)
-        {
-            try
-            {
-               Assembly [] assemblies = AppDomain.CurrentDomain.GetAssemblies();
-                Assembly assembly = null;
-                foreach (Assembly a in assemblies) 
-                {
-                    if (a.GetName().Name.Contains("Assembly-CSharp")) 
-                    {
-                        assembly = a;
-                    } 
-                }
-                Type internalType = assembly.GetType("PhoenixPoint.Tactical.View.ViewStates.UIStateCharacterSelected");
 
-                if (internalType != null)
-                {                 
-                    MethodInfo methodToPatch = internalType.GetMethod("ZoneOfControlMarkerCreator", BindingFlags.NonPublic | BindingFlags.Instance);
-                   
-                    if (methodToPatch != null)
+        private static bool _usingEchoHead = false;
+
+      
+
+    
+
+
+
+        [HarmonyPatch(typeof(TacticalItem), "SetToDisabled")]
+        public static class TFTV_TacticalItem_SetToDisabled
+        {      
+            public static void Prefix(TacticalItem __instance)
+            {
+                try
+                {
+                    TacticalActor tacActor = __instance.TacticalActor;
+
+                    GroundVehicleWeaponDef meph = (GroundVehicleWeaponDef)Repo.GetDef("49723d28-b373-3bc4-7918-21e87a72c585");
+                    GroundVehicleWeaponDef obliterator = (GroundVehicleWeaponDef)Repo.GetDef("ffb34012-b1fd-4b24-8236-ba2eb23db0b7");
+
+                    if (__instance.ItemDef == obliterator && tacActor != null)
                     {
-                        harmony.Patch(methodToPatch, postfix: new HarmonyMethod(typeof(TFTVExperimental), nameof(PatchResizeGroundMarker)));
-                    }
-                    else
-                    {
-                   
+                        TFTVLogger.Always($"it's the obliterator");
+
+                        if (tacActor.Equipments.Equipments.Any(e => e.ItemDef == meph && e.Enabled))
+                        {
+                            TFTVLogger.Always($"Obliterator destroyed, removing meph");
+                            tacActor.Equipments.RemoveItem(meph).Destroy();
+                            TFTVLogger.Always($"should be destroyed");
+                        }
                     }
                 }
-                else
+                catch (Exception e)
                 {
-                   
+                    TFTVLogger.Error(e);
+                    throw;
                 }
             }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-                throw;
-            }
-
         }
 
-        public static void PatchResizeGroundMarker(MethodBase __originalMethod, object context, ref GroundMarker __result)
+
+
+        [HarmonyPatch(typeof(Addon), "Destroy")]
+        public static class TFTV_Addon_RemoveItem
         {
-            try
+            public static bool Prefix(Addon __instance, ref List<Addon> __result)
             {
-                __result.StartScale /= 2.05f;
-                __result.StartScale *= 1.6f;
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-                throw;
+                try
+                {
+                    if (__instance == null)
+                    {
+                        __result = new List<Addon>();
+
+                        return false;
+                    }
+                    return true;
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
             }
         }
+
+
+        [HarmonyPatch(typeof(InventoryComponent), "RemoveItem", new Type[] { typeof(ItemDef) })]
+        public static class TFTV_InventoryComponent_RemoveItem
+        {
+            public static bool Prefix(InventoryComponent __instance, ItemDef itemDef, ref Item __result)
+            {
+                try
+                {
+                    Item item = __instance.GetItem(itemDef);
+
+                    TFTVLogger.Always($"item null? {item == null} {item?.ItemDef?.name}");
+
+                    if (item != null)
+                    {
+                        __instance.RemoveItem(item);
+                    }
+
+                    __result = item;
+
+                    return false;
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
+
+
+        [HarmonyPatch(typeof(TacticalAbility), "get_EquipmentWithTags")]
+        public static class TFTV_TacticalAbility_get_EquipmentWithTags
+        {
+            public static void Postfix(TacticalAbility __instance, ref Equipment __result)
+            {
+                try
+                {
+                    if (__instance.TacticalAbilityDef == DefCache.GetDef<ShootAbilityDef>("EchoHead_ShootAbilityDef"))
+                    {
+                        if (__instance.SelectedEquipment.GameTags.Contains(DefCache.GetDef<GameTagDef>("SilencedWeapon_TagDef")))
+                        {
+                            __result = null;
+
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
+
+
+        [HarmonyPatch(typeof(ShootAbility), "Activate")]
+        public static class TFTV_ShootAbility_Activate
+        {
+            public static void Prefix(ShootAbility __instance)
+            {
+                try
+                {
+                    if (__instance.TacticalAbilityDef == DefCache.GetDef<ShootAbilityDef>("EchoHead_ShootAbilityDef"))
+                    {
+                        _usingEchoHead = true;
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
+
+        [HarmonyPatch(typeof(Weapon), "IsAttackSilent")]
+        public static class TFTV_Weapon_IsAttackSilent
+        {
+            public static void Postfix(Weapon __instance, ref bool __result)
+            {
+                try
+                {
+                    if (_usingEchoHead)
+                    {
+                        __result = true;
+                        _usingEchoHead = false;
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
+
 
         [HarmonyPatch(typeof(TacticalFactionVision), "LocateRandomEnemyIfNeeded")]
         public static class TFTV_TacticalFactionVision_LocateRandomEnemyIfNeeded
         {
             public static bool Prefix(TacticalFactionVision __instance)
             {
-
-
                 try
                 {
-
                     return false;
-
                 }
                 catch (Exception e)
                 {
@@ -118,7 +222,14 @@ namespace TFTV
             try
             {
 
-                if (ability is CaterpillarMoveAbility caterpillarMoveAbility && caterpillarMoveAbility.TacticalDemolition.TacticalDemolitionComponentDef.DemolitionBodyShape == TacticalDemolitionComponentDef.DemolitionShape.Rectangle)
+                if(ability==null || tacticalActor == null) 
+                {
+                    return;
+                }
+
+            
+                if (ability is CaterpillarMoveAbility caterpillarMoveAbility 
+                    && caterpillarMoveAbility.TacticalDemolition != null && caterpillarMoveAbility.TacticalDemolition.TacticalDemolitionComponentDef.DemolitionBodyShape == TacticalDemolitionComponentDef.DemolitionShape.Rectangle)
                 {
 
                 }
@@ -127,10 +238,10 @@ namespace TFTV
                     return;
                 }
 
+             
                 Vector3 direction = tacticalActor.NavigationComponent.Direction;
-                Vector3 right = Vector3.Cross(Vector3.up, direction).normalized;
-                Vector3 frontcentre = tacticalActor.transform.position + direction;
 
+                Vector3 frontcentre = tacticalActor.transform.position + direction;
 
                 Type type = typeof(CaterpillarMoveAbility);
 
@@ -140,16 +251,6 @@ namespace TFTV
                 // Get the value of _actorBases
                 HashSet<TacticalActorBase> actorBases = (HashSet<TacticalActorBase>)fieldInfo.GetValue(caterpillarMoveAbility);
 
-
-                // Modify the HashSet<TacticalActorBase> as needed
-                // For example, add a new TacticalActorBase instance
-                actorBases.Add(new TacticalActorBase());
-
-                // Set the modified value back to _actorBases
-
-
-                //   List<TacticalActorBase> tacticalActorBases = ____actorBases.ToList();
-
                 List<TacticalActor> nearbyActors = tacticalActor.TacticalLevel.Map.GetActors<TacticalActor>().
                     Where(a => a.IsAlive && a.HasGameTag(DefCache.GetDef<GameTagDef>("DamageByCaterpillarTracks_TagDef"))
                     && (a.Pos - frontcentre).sqrMagnitude < 1)
@@ -157,7 +258,6 @@ namespace TFTV
 
                 foreach (TacticalActor actor in nearbyActors)
                 {
-
                     if (actorBases.Contains(actor))
                     {
                         continue;
@@ -282,52 +382,7 @@ namespace TFTV
 
 
 
-        /* [HarmonyPatch(typeof(ShootAbility), "Activate")]
-         public static class TFTV_ShootAbility_Activate
-         {
-             public static void Postfix(ShootAbility __instance)
-             {
-                 try
-                 {
-                     TFTVLogger.Always($"{__instance.TacticalActor.DisplayName} activated for weapon {__instance.Weapon.DisplayName}, attack silent? {__instance.Weapon.IsAttackSilent(__instance.TacticalActor)}");
-
-
-                     GameTagDef[] silentTags = Shared.SharedGameTags.SilentTags;
-
-                     foreach(GameTagDef gameTagDef in silentTags) 
-                     {
-                         TFTVLogger.Always($"silentTag: {gameTagDef.name}");               
-                     }
-
-
-                     foreach(GameTagDef gameTagDef in __instance.Weapon.WeaponDef.Tags) 
-                     {
-                         TFTVLogger.Always($"tag in {__instance.Weapon.WeaponDef} {gameTagDef}");     
-                     }
-
-                     foreach (GameTagDef gameTagDef in __instance.TacticalActorBase.GameTags) 
-                     {
-                         TFTVLogger.Always($"tag in {__instance.TacticalActorBase.DisplayName} {gameTagDef}");
-
-                     }
-
-
-                     if (!__instance.Weapon.IsAttackSilent(__instance.TacticalActor))
-                     {
-                         TFTVLogger.Always($"weapon for {__instance.TacticalActor.DisplayName} not silent, so routine should have been run");
-
-
-                     }
-
-
-                 }
-                 catch (Exception e)
-                 {
-                     TFTVLogger.Error(e);
-                     throw;
-                 }
-             }
-         }
+        /* 
 
          [HarmonyPatch(typeof(TacticalFactionVision), "IncrementKnownCounterToAll")]
          public static class TFTV_TacticalFactionVision_IncrementKnownCounterToAll
@@ -408,7 +463,6 @@ namespace TFTV
                 TacCharacterDef tacCharacterDef2 = DefCache.GetDef<TacCharacterDef>("Siren3_InjectorBuffer_AlienMutationVariationDef");
                 IEnumerable<TacticalItemDef> bodyparts = tacCharacterDef.GetTemplateBodyparts();
                 IEnumerable<TacticalItemDef> bodyparts2 = tacCharacterDef2.GetTemplateBodyparts();
-
 
 
                 bool valid = ActorResearchRequirementDef.IsValidActorForTag(actorDef, bodyparts, null, tagRequirement);

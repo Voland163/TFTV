@@ -22,10 +22,12 @@ using PhoenixPoint.Geoscape.View.ViewControllers.HavenDetails;
 using PhoenixPoint.Geoscape.View.ViewControllers.SiteEncounters;
 using PhoenixPoint.Geoscape.View.ViewModules;
 using PhoenixPoint.Geoscape.View.ViewStates;
+using PhoenixPoint.Tactical.AI;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.Entities.Weapons;
+using PhoenixPoint.Tactical.Levels;
 using PhoenixPoint.Tactical.Levels.Missions;
 using PhoenixPoint.Tactical.UI.SoldierPortraits;
 using PhoenixPoint.Tactical.View;
@@ -45,6 +47,150 @@ namespace TFTV
     {
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
         private static readonly SharedData Shared = TFTVMain.Shared;
+
+        //Fixes size of ground marker for eggs/sentinels etc.
+        public static void FixSurveillanceAbilityGroundMarker(Harmony harmony)
+        {
+            try
+            {
+                Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
+                Assembly assembly = null;
+                foreach (Assembly a in assemblies)
+                {
+                    if (a.GetName().Name.Contains("Assembly-CSharp"))
+                    {
+                        assembly = a;
+                    }
+                }
+                Type internalType = assembly.GetType("PhoenixPoint.Tactical.View.ViewStates.UIStateCharacterSelected");
+
+                if (internalType != null)
+                {
+                    MethodInfo methodToPatch = internalType.GetMethod("ZoneOfControlMarkerCreator", BindingFlags.NonPublic | BindingFlags.Instance);
+
+                    if (methodToPatch != null)
+                    {
+                        harmony.Patch(methodToPatch, postfix: new HarmonyMethod(typeof(TFTVVanillaFixes), nameof(PatchResizeGroundMarker)));
+                    }
+                    else
+                    {
+
+                    }
+                }
+                else
+                {
+
+                }
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
+
+        }
+
+        public static void PatchResizeGroundMarker(MethodBase __originalMethod, object context, ref GroundMarker __result)
+        {
+            try
+            {
+                if (__result != null)
+                {
+                    __result.StartScale /= 2.05f;
+                    __result.StartScale *= 1.6f;
+                }
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
+        }
+
+
+        //Prevents AI from consindering unseen enemies when evaluating attacks with explosives/cone weapons
+        private static bool CheckVisibility(TacticalActorBase tacticalActorBase, TacticalActor tacticalActor, DamagePayload damagePayload)
+        {
+            try
+            {
+                if (damagePayload.DamageDeliveryType == DamageDeliveryType.Sphere || damagePayload.DamageDeliveryType == DamageDeliveryType.Cone)
+                {
+                    if (tacticalActor.TacticalFaction == tacticalActorBase.TacticalFaction)
+                    {
+                        return true;
+                    }
+
+                    if (tacticalActor.TacticalFaction.GetAllAliveFriendlyActors<TacticalActorBase>(tacticalActor).Contains(tacticalActorBase))
+                    {
+                        return true;
+                    }
+
+                    if (tacticalActor.TacticalFaction.AIBlackboard.GetEnemies(ActorType.All, true).Contains(tacticalActorBase))
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+
+                return true;
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
+        }
+
+
+        [HarmonyPatch(typeof(AIUtil), "GetAffectedTargetsByShooting")]
+        public static class TFTV_AIUtil_GetAffectedTargetsByShooting_patch
+        {
+            private static IEnumerable<TacticalActorBase> Postfix(IEnumerable<TacticalActorBase> results, Vector3 shootPos, TacticalActor sourceActor, Weapon sourceWeapon, TacticalAbilityTarget target, ShootAbilityDef shootAbility = null)
+            {
+
+                DamagePayload damagePayload = sourceWeapon.GetDamagePayload();
+
+                foreach (TacticalActorBase actorBase in results)
+                {
+                    if (CheckVisibility(actorBase, sourceActor, damagePayload))
+                    {
+                        yield return actorBase;
+                    }
+
+                }
+            }
+
+        }
+
+
+
+        //Prevents evacuated characters from spotting enemies
+
+        [HarmonyPatch(typeof(TacticalFactionVision), "ReUpdateVisibilityTowardsActorImpl")]
+        public static class TFTV_TacticalFactionVision_ReUpdateVisibilityTowardsActorImpl_patch
+        {
+            private static bool Prefix(TacticalActorBase fromActor, TacticalActorBase targetActor, float basePerceptionRange, ref bool __result)
+            {
+                try
+                {
+                    if (fromActor is TacticalActor tacticalActor && tacticalActor.IsEvacuated)
+                    {
+                        __result = false;
+                        return false;
+                    }
+
+                    return true;
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
 
         //fixes requiring killing actor required for research even when it is already captured
 

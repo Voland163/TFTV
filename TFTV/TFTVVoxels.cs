@@ -91,8 +91,11 @@ namespace TFTV
                     int difficulty = controller.CurrentDifficultyLevel.Order;
                     int fireUsedInMissions = controller.EventSystem.GetVariable("FireQuenchersAdded");
 
+                    TFTVLogger.Always($"fire used in missions: {fireUsedInMissions}");
+
                     if (FireVoxelSpawnAlreadyChecked)
                     {
+                        FireVoxelSpawnAlreadyChecked = false;
 
                         if (fireUsedInMissions > 10 - difficulty)
                         {
