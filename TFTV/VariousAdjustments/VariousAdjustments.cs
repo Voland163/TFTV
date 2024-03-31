@@ -593,9 +593,14 @@ namespace PRMBetterClasses.VariousAdjustments
             SkillTagDef SilentSkill = (SkillTagDef)Repo.GetDef("c4920fc7-2ae1-e894-78b5-707e846cad60"); //"Silent_SkillTagDef"
             EchoHeadShoot.SkillTags = EchoHeadShoot.SkillTags.AddToArray(SilentSkill);
 
+            GameTagDef WeaponTagDef = (GameTagDef)Repo.GetDef("251a376f-e4e1-04c4-f9ec-10ba205b1ebe"); //"GunWeapon_TagDef"
+            EchoHeadShoot.EquipmentTags = new GameTagDef[] { WeaponTagDef };
+
             TacticalAbilityViewElementDef SilentEchoVED = (TacticalAbilityViewElementDef)Repo.GetDef("e182bac0-686a-1311-0c81-eb4b8ff9c694"); //"E_ViewElement [SilentEcho_AbilityDef]
-            //WILL NEED TO CHANGE SILENT ECHO DESCRIPTION;
-            EchoHeadShoot.ViewElementDef = SilentEchoVED;
+            TacticalAbilityViewElementDef EchoHeadShootVED = Helper.CreateDefFromClone(SilentEchoVED, "ab8cf6c5-6aa4-4542-9238-6fdd5fa18cf6", "E_ViewElement [" + abilityName + "]");
+            EchoHeadShootVED.DisplayWithEquipmentMismatch = false;
+            //WILL NEED TO CHANGE EchoHeadShootVED DESCRIPTION;
+            EchoHeadShoot.ViewElementDef = EchoHeadShootVED;
 
             EchoHead.Abilities[1] = EchoHeadShoot;
         }
