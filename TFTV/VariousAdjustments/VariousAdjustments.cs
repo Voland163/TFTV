@@ -6,6 +6,7 @@ using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.GameTags;
+using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.Entities.Items;
 using PhoenixPoint.Common.Levels.Missions;
 using PhoenixPoint.Common.UI;
@@ -77,6 +78,8 @@ namespace PRMBetterClasses.VariousAdjustments
             Change_HavenRecruits();
             // Mech Arms: 200 emp damage
             Change_MechArms(shared);
+            // Echo Head: Swap passive silencing effect for active shoot ability
+            Change_EchoHead();
             // Shadow Legs: Electric Kick replace shock damage with Sonic damage (value 20)
             Change_ShadowLegs(shared);
             // Vidar GL - Increase Shred to 20 (from 10), Add Acid 10. Increase AP cost to 2 (from 1)
@@ -573,6 +576,30 @@ namespace PRMBetterClasses.VariousAdjustments
             mechArmsAmmo.ManufactureMaterials = 55;
             mechArmsAmmo.ManufactureTech = 15;
         }
+
+        public static void Change_EchoHead()
+        {
+            TacticalItemDef EchoHead = (TacticalItemDef)Repo.GetDef("bacfc1a6-f043-ff64-8bee-5bbdea13970f"); //"SY_Shinobi_BIO_Helmet_BodyPartDef"
+
+            ShootAbilityDef Weapon_Shoot = (ShootAbilityDef)Repo.GetDef("d3e8b389-069f-04c4-8aca-fb204c74fd37"); //"Weapon_ShootAbilityDef"
+            string abilityName = "EchoHead_ShootAbilityDef";
+            
+            ShootAbilityDef EchoHeadShoot = Helper.CreateDefFromClone(Weapon_Shoot, "e216c327-5e98-43ce-8fcd-e41cae4f0c57", abilityName);
+            EchoHeadShoot.UsesPerTurn = 1;
+            EchoHeadShoot.InputAction = "";
+            EchoHeadShoot.IsDefault = false;
+            EchoHeadShoot.WillPointCost = 3f;
+
+            SkillTagDef SilentSkill = (SkillTagDef)Repo.GetDef("c4920fc7-2ae1-e894-78b5-707e846cad60"); //"Silent_SkillTagDef"
+            EchoHeadShoot.SkillTags = EchoHeadShoot.SkillTags.AddToArray(SilentSkill);
+
+            TacticalAbilityViewElementDef SilentEchoVED = (TacticalAbilityViewElementDef)Repo.GetDef("e182bac0-686a-1311-0c81-eb4b8ff9c694"); //"E_ViewElement [SilentEcho_AbilityDef]
+            //WILL NEED TO CHANGE SILENT ECHO DESCRIPTION;
+            EchoHeadShoot.ViewElementDef = SilentEchoVED;
+
+            EchoHead.Abilities[1] = EchoHeadShoot;
+        }
+
         public static void Change_ShadowLegs(SharedData shared)
         {
             int shadowLegsSonicDamage = 20;
