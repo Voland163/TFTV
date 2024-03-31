@@ -6,6 +6,7 @@ using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.GameTags;
+using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.Entities.Items;
 using PhoenixPoint.Common.Levels.Missions;
 using PhoenixPoint.Common.UI;
@@ -77,6 +78,8 @@ namespace PRMBetterClasses.VariousAdjustments
             Change_HavenRecruits();
             // Mech Arms: 200 emp damage
             Change_MechArms(shared);
+            // Echo Head: Swap passive silencing effect for active shoot ability
+            Change_EchoHead();
             // Shadow Legs: Electric Kick replace shock damage with Sonic damage (value 20)
             Change_ShadowLegs(shared);
             // Vidar GL - Increase Shred to 20 (from 10), Add Acid 10. Increase AP cost to 2 (from 1)
@@ -573,6 +576,35 @@ namespace PRMBetterClasses.VariousAdjustments
             mechArmsAmmo.ManufactureMaterials = 55;
             mechArmsAmmo.ManufactureTech = 15;
         }
+
+        public static void Change_EchoHead()
+        {
+            TacticalItemDef EchoHead = (TacticalItemDef)Repo.GetDef("bacfc1a6-f043-ff64-8bee-5bbdea13970f"); //"SY_Shinobi_BIO_Helmet_BodyPartDef"
+
+            ShootAbilityDef Weapon_Shoot = (ShootAbilityDef)Repo.GetDef("d3e8b389-069f-04c4-8aca-fb204c74fd37"); //"Weapon_ShootAbilityDef"
+            string abilityName = "EchoHead_ShootAbilityDef";
+            
+            ShootAbilityDef EchoHeadShoot = Helper.CreateDefFromClone(Weapon_Shoot, "e216c327-5e98-43ce-8fcd-e41cae4f0c57", abilityName);
+            EchoHeadShoot.UsesPerTurn = 1;
+            EchoHeadShoot.InputAction = "";
+            EchoHeadShoot.IsDefault = false;
+            EchoHeadShoot.WillPointCost = 3f;
+
+            SkillTagDef SilentSkill = (SkillTagDef)Repo.GetDef("c4920fc7-2ae1-e894-78b5-707e846cad60"); //"Silent_SkillTagDef"
+            EchoHeadShoot.SkillTags = EchoHeadShoot.SkillTags.AddToArray(SilentSkill);
+
+            GameTagDef WeaponTagDef = (GameTagDef)Repo.GetDef("251a376f-e4e1-04c4-f9ec-10ba205b1ebe"); //"GunWeapon_TagDef"
+            EchoHeadShoot.EquipmentTags = new GameTagDef[] { WeaponTagDef };
+
+            TacticalAbilityViewElementDef SilentEchoVED = (TacticalAbilityViewElementDef)Repo.GetDef("e182bac0-686a-1311-0c81-eb4b8ff9c694"); //"E_ViewElement [SilentEcho_AbilityDef]
+            TacticalAbilityViewElementDef EchoHeadShootVED = Helper.CreateDefFromClone(SilentEchoVED, "ab8cf6c5-6aa4-4542-9238-6fdd5fa18cf6", "E_ViewElement [" + abilityName + "]");
+            EchoHeadShootVED.DisplayWithEquipmentMismatch = false;
+            //WILL NEED TO CHANGE EchoHeadShootVED DESCRIPTION;
+            EchoHeadShoot.ViewElementDef = EchoHeadShootVED;
+
+            EchoHead.Abilities[1] = EchoHeadShoot;
+        }
+
         public static void Change_ShadowLegs(SharedData shared)
         {
             int shadowLegsSonicDamage = 20;
