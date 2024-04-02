@@ -2233,26 +2233,85 @@ namespace TFTV
                     try
                     {
 
-                        //  TFTVLogger.Always($"Running OnChoiceSelected");
-                        if (MPGeoEventChoices != null && MPGeoEventChoices.Contains(choice))
-                        {
-                            //    TFTVLogger.Always($"Removing choice from internally saved list");
-
-                            MPGeoEventChoices.Remove(choice);
-
-                        }
-
+                       // TFTVLogger.Always($"Running OnChoiceSelected");
+                        
                         if (choice.Outcome.Units.Count > 0 && choice.Outcome.Units[0] is TacCharacterDef tacCharacterDef && tacCharacterDef.Data.GameTags.Contains(MercenaryTag))
                         {
-
-
-                            //  TFTVLogger.Always($"got to this if here");
-
                             __instance.Loca_AllMissionsFinishedDesc.LocalizationKey = tacCharacterDef.Data.ViewElementDef.Category.LocalizationKey;
                             __instance.UpdateVisuals();
                         }
 
+                      
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                        throw;
+                    }
+                }
+            }
+
+            /// <summary>
+            /// Internal stock record keeping
+            /// Fixes money spent no purchase made at Marketplace if 2 or more aircraft at Marketplace
+            /// </summary>
+            [HarmonyPatch(typeof(GeoscapeEvent), "CompleteMarketplaceEvent")]
+            public static class GeoscapeEvent_CompleteMarketplaceEvent_patch
+            {
+
+                public static bool Prefix(GeoscapeEvent __instance, GeoEventChoice choice, GeoFaction faction)
+                {
+                    try
+                    {
                         CheckSecretMPCounter();
+
+                        if (MPGeoEventChoices != null && MPGeoEventChoices.Contains(choice))
+                        {
+                            //    TFTVLogger.Always($"Removing choice from internally saved list");
+                            MPGeoEventChoices.Remove(choice);
+
+                        }
+
+
+                        if (choice.Outcome != null && choice.Outcome.Items != null && choice.Outcome.Items.Count > 0)
+                        {
+
+                            TFTVLogger.Always($"CompleteMarketplaceEvent choice: {choice.Outcome?.Items[0].ItemDef.name}");
+                        }
+
+                        // TFTVLogger.Always($"CompleteMarketplaceEvent triggered for choice {choice.Outcome.Items[0].ItemDef?.name}");
+
+                        if (__instance.Context.Site.Vehicles.Count() > 1)
+                        {
+                            TFTVLogger.Always($"There is a more than one vehicle at {__instance.Context.Site.LocalizedSiteName}! Need to execute alternative code");
+
+                            PropertyInfo propertyInfo = typeof(GeoscapeEvent).GetProperty("ChoiceReward", BindingFlags.Instance | BindingFlags.Public);
+
+
+
+
+                            GeoLevelController component = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
+                            GeoscapeEventContext geoscapeEventContext = new GeoscapeEventContext(component.PhoenixFaction.StartingBase, component.PhoenixFaction, __instance.Context.Site.Vehicles.First());
+                            // TFTVLogger.Always($"geoscapeEventContext is null? {geoscapeEventContext==null} is faction null? {faction==null}");
+
+                            propertyInfo?.SetValue(__instance, choice.Outcome.GenerateFactionReward(faction, geoscapeEventContext, __instance.EventID));
+
+                            // TFTVLogger.Always($". is propertyInfo null? {propertyInfo==null} is choiceReward null? {__instance.ChoiceReward==null}");
+
+                            // __instance.ChoiceReward = choice.Outcome.GenerateFactionReward(faction, geoscapeEventContext, __instance.EventID);
+                            __instance.ChoiceReward.Apply(faction, geoscapeEventContext.Site, geoscapeEventContext.Vehicle);
+                            // TFTVLogger.Always($"2");
+
+                            if (choice.Outcome.ReEneableEvent)
+                            {
+                                //   TFTVLogger.Always($"");
+                                GameUtl.CurrentLevel().GetComponent<GeoscapeEventSystem>().EnableGeoscapeEvent(__instance.EventID);
+                            }
+
+
+                            return false;
+                        }
+                        return true;
 
                     }
                     catch (Exception e)
@@ -2277,6 +2336,13 @@ namespace TFTV
                         GeoMarketplace geoMarketplace = GameUtl.CurrentLevel().GetComponent<GeoLevelController>().Marketplace;
                         if (MPGeoEventChoices != null && MPGeoEventChoices.Count > 0)
                         {
+                            foreach(GeoEventChoice geoEventChoice in MPGeoEventChoices) 
+                            {
+                                if(geoEventChoice.Outcome!=null && geoEventChoice.Outcome.Items!=null && geoEventChoice.Outcome.Items.Count>0)
+
+                                TFTVLogger.Always($"geoeventChoice: {geoEventChoice.Outcome?.Items[0].ItemDef.name}");          
+                            }
+
                             PropertyInfo propertyInfo = typeof(GeoMarketplace).GetProperty("MarketplaceChoices", BindingFlags.Instance | BindingFlags.Public);
 
                             // TFTVLogger.Always($"before manually transferring the MarketChoices {propertyInfo.GetValue(geoMarketplace)}");                

@@ -1,7 +1,7 @@
 Key,Type,Desc,English,Chinese (Simplified),French,German,Italian,Polish,Russian,,UI_Tester
 PR_BC_MOUNTED_ITEMS_PROF,Text,,MOUNTED ITEM PROFICIENCY,,MAÎTRISE DES OBJETS MONTÉS,,,,ОБРАЩЕНИЕ С НЕЙРО-ИНТЕРФЕЙСОМ,,
 PR_BC_MOUNTED_ITEMS_PROF_DESC,Text,,Proficiency with Robotic Arms and Mounted Weapons.,,Compétence avec les bras robotiques et les armes montées.,,,,Умение пользоваться механизированными манипуляторами техника и пусковыми установками,,
-PR_BC_STIMPACK_ITEM_DESC,Text,,A potent stimulant that regnerate body parts and instils Frenzy.,,Un stimulant puissant qui régénère les parties du corps et instille la frénésie.,,,,"Мощный стимулятор, который залечивает травмы и вводит цель в Буйство",,
+PR_BC_STIMPACK_ITEM_DESC,Text,,A potent stimulant that regenerates body parts and instils Frenzy.,,Un stimulant puissant qui régénère les parties du corps et instille la frénésie.,,,,"Мощный стимулятор, который залечивает травмы и вводит цель в Буйство",,
 PR_BC_STIMPACK_ABILITY_DESC,Text,,"Re-enables and restores 20 Hit Points on Body Parts, also instills Frenzy on target, increasing movement by 33% for 2 turns, with panic immunity.",,"Réactive et restaure 20 points de vie sur les parties du corps, instille également la frénésie sur la cible, augmentant le mouvement de 33% pendant 2 tours, avec une immunité à la panique.",,,,"Лечит 20 ОЗ поврежденным конечностям и восстанавливает их, также внушает Буйство, увеличивая скорость на 33% и дает иммунитет к панике на 2 хода",,
 PR_BC_PSYCHIC_WARD_DESC,Text,,Allies within 10 tiles are immune to panic and psychic scream damage.,,Les alliés situés dans un rayon de 10 cases sont immunisés contre la panique et les dégâts des cris psychiques.,,,,Союзники в радиусе 10 клеток иммунны к панике и психическому урону,,
 PR_BC_POISON_STATUS_DESC,Text,,"At start of turn poison is subtracted from Hit Points and Willpoints reduced by 3, then poison value is reduced by 10. Poison causes trembling (-50% Accuracy).",,"Au début du tour, le poison est soustrait des points de vie et les points de volonté sont réduits de 3, puis la puissance du poison est réduite de 10. Le poison provoque des tremblements (-50% de précision).",,,,"В начале хода значение яда вычитается из ОЗ а воля уменьшается на 3, затем значение яда снижается на 10. Яд вызывает Трепет (-50% точности)",,
@@ -186,7 +186,7 @@ PR_BC_DAMAGED_AMYGDALA_DESC,Text,,"<b>Gain 'Psychic Scream Immunity'</b>
 <i>Все мозги устроены по разному и ваши просто не справились с видом родных вернувшихся с того света в виде монстров</i>",,
 PR_BC_SANITATION_EXPERT,Text,,SANITATION EXPERT,,EXPERT EN ASSAINISSEMENT,,,,ДЕЗИНФЕКТОР,,
 PR_BC_SANITATION_EXPERT_DESC,Text,,"<b>Immune to goo</b>
-<i>Robots can't do everything. Grime, dirt, slime, ooze, yuck, sludge: you have been through it all and come on the other side</i>",,"<b>Immunisé contre le goo</b>
+<i>Robots can't do everything. Grime, dirt, slime, ooze, yuck, sludge: you have been through it all and come out on the other side</i>",,"<b>Immunisé contre le goo</b>
 <i>Les robots ne peuvent pas tout faire. La crasse, la saleté, la bave, le suintement, le dégoût, la boue : vous avez tout traversé et vous êtes revenu de l'autre côté.</i>",,,,"<b>Иммунитет к слизи</b>
 <i>Роботы не могут делать все. Грязь, слизь, сажа: вы знаете как удалить любой засор!</i>",,
 PR_BC_LAB_ASSISTANT,Text,,LAB ASSISTANT,,LABORANTIN,,,,ЛАБОРАНТ,,

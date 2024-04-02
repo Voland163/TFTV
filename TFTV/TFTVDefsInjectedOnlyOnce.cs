@@ -636,11 +636,28 @@ namespace TFTV
                 FixNoXPCaptureAcheron();
                 FixSpikeShootingArmShootingWhenDisabled();
                 FixSilentInfiltrators();
+                FixResearchRequirements();
             }
             catch (Exception e)
             {
                 TFTVLogger.Error(e);
             }
+        }
+
+        private static void FixResearchRequirements()
+        {
+            try 
+            {
+                DefCache.GetDef<CaptureActorResearchRequirementDef>("PX_GooRepeller_ResearchDef_CaptureActorResearchRequirementDef_0").IsRetroactive=true;
+                DefCache.GetDef<CaptureActorResearchRequirementDef>("PX_AlienVirusInfection_ResearchDef_CaptureActorResearchRequirementDef_0").IsRetroactive = true;
+                DefCache.GetDef<CaptureActorResearchRequirementDef>("PX_PyschicAttack_ResearchDef_CaptureActorResearchRequirementDef_0").IsRetroactive = true;
+            }
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
         }
 
         private static void FixSilentInfiltrators()

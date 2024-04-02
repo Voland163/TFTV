@@ -6,6 +6,7 @@ using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.Addons;
+using PhoenixPoint.Common.Entities.Characters;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.Items;
 using PhoenixPoint.Geoscape.Entities;
@@ -38,15 +39,57 @@ namespace TFTV
 
         private static bool _usingEchoHead = false;
 
-      
 
-    
 
+
+        [HarmonyPatch(typeof(TacticalContribution), "AddContribution")]
+        public static class TFTV_TacticalContribution_AddContribution
+        {
+            public static void Postfix(TacticalContribution __instance, int cp, TacticalActorBase ____actor)
+            {
+                try
+                {
+
+                    if (cp <= 0)
+                    {
+                        return;
+                    }
+
+                    if (!____actor.Status.HasStatus<MindControlStatus>() || ____actor.Status.GetStatus<MindControlStatus>().ControllerActor==null) 
+                    {
+                        return;                    
+                    }
+
+                    TacticalActor controllingActor = ____actor.Status.GetStatus<MindControlStatus>().ControllerActor;
+                  
+                  // TFTVLogger.Always($"{controllingActor.name} has {controllingActor.Contribution.Contribution} CP");
+
+                    FieldInfo contributionFieldInfo = typeof(TacticalContribution).GetField("_contribution", BindingFlags.NonPublic | BindingFlags.Instance);
+
+                    TacticalContribution controllingActorContribution = controllingActor.Contribution;
+
+                    int controllingActorContributionValue = controllingActorContribution.Contribution + cp / 2;
+
+                    contributionFieldInfo.SetValue(controllingActorContribution, controllingActorContributionValue);
+
+                   // TFTVLogger.Always($"{controllingActor.name} now has {controllingActor.Contribution.Contribution} CP");
+
+                    Debug.Log($"+{cp} cp for {controllingActor.name} (through Mind Controlled Unit).");
+
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
 
 
         [HarmonyPatch(typeof(TacticalItem), "SetToDisabled")]
         public static class TFTV_TacticalItem_SetToDisabled
-        {      
+        {
             public static void Prefix(TacticalItem __instance)
             {
                 try
@@ -222,13 +265,13 @@ namespace TFTV
             try
             {
 
-                if(ability==null || tacticalActor == null) 
+                if (ability == null || tacticalActor == null)
                 {
                     return;
                 }
 
-            
-                if (ability is CaterpillarMoveAbility caterpillarMoveAbility 
+
+                if (ability is CaterpillarMoveAbility caterpillarMoveAbility
                     && caterpillarMoveAbility.TacticalDemolition != null && caterpillarMoveAbility.TacticalDemolition.TacticalDemolitionComponentDef.DemolitionBodyShape == TacticalDemolitionComponentDef.DemolitionShape.Rectangle)
                 {
 
@@ -238,7 +281,7 @@ namespace TFTV
                     return;
                 }
 
-             
+
                 Vector3 direction = tacticalActor.NavigationComponent.Direction;
 
                 Vector3 frontcentre = tacticalActor.transform.position + direction;
@@ -290,93 +333,7 @@ namespace TFTV
         }
 
 
-        /*   [HarmonyPatch(typeof(CaterpillarMoveAbility), "DamageableDemolition")]
-           public static class TFTV_CaterpillarMoveAbility_DamageableDemolition
-           {
-               public static void Postfix(CaterpillarMoveAbility __instance, IEnumerable<IDamageable> damageables, ref HashSet<TacticalActorBase> ____actorBases)
-               {
-                   try
-                   {
-                       TacticalActor tacticalActor = __instance.TacticalActor;
 
-                       if (__instance.TacticalDemolition.TacticalDemolitionComponentDef.DemolitionBodyShape != TacticalDemolitionComponentDef.DemolitionShape.Rectangle)
-                       {
-                           return;
-                       }*/
-
-
-        /*Vector3 adjustedRectangleSize = new Vector3
-        {
-            x = __instance.TacticalDemolition.TacticalDemolitionComponentDef.RectangleSize.x,
-            y = __instance.TacticalDemolition.TacticalDemolitionComponentDef.RectangleSize.y,
-            z = 2.5f,
-        }; 
-
-        Box adjustedDemoBox = 
-            Box.FromCenterExtents(
-                tacticalActor.transform.position, //+ __instance.TacticalDemolition.TacticalDemolitionComponentDef.RectangleCenter, 
-                adjustedRectangleSize / 2f, 
-                __instance.TacticalDemolition.transform.rotation);*/
-
-
-        /*  Vector3 direction = tacticalActor.NavigationComponent.Direction;
-
-
-          Vector3 right = Vector3.Cross(Vector3.up, direction).normalized;
-          Vector3 left = -right;
-
-          Vector3 frontcentre = tacticalActor.transform.position + direction;
-          Vector3 frontright = frontcentre + right;
-          Vector3 frontleft = frontcentre + left; //or you can skip defining the left vector at all and use frontcentre - right;
-
-          List<Vector3> vector3s = new List<Vector3>()
-          {
-              frontcentre, frontright, frontleft
-          };
-
-
-
-
-          List<TacticalActorBase> tacticalActorBases = ____actorBases.ToList();
-
-          List<TacticalActor> nearbyActors = tacticalActor.TacticalLevel.Map.GetActors<TacticalActor>().
-              Where(a => !tacticalActorBases.Contains(a) && a.IsAlive && a.HasGameTag(DefCache.GetDef<GameTagDef>("DamageByCaterpillarTracks_TagDef"))
-              && (a.Pos - frontcentre).sqrMagnitude < 1)
-              .ToList();
-
-          foreach (TacticalActor tacticalActor1 in tacticalActor.TacticalLevel.Map.GetActors<TacticalActor>().
-              Where(a => !tacticalActorBases.Contains(a) && a.IsAlive && a.HasGameTag(DefCache.GetDef<GameTagDef>("DamageByCaterpillarTracks_TagDef"))))
-          {
-              TFTVLogger.Always($"vehicle at: {tacticalActor.Pos} {tacticalActor1.DisplayName} at: {tacticalActor1.Pos}, front tile of vehicle at {frontcentre}"); //adjusted demo box center: {adjustedDemoBox.Center}, max size {adjustedDemoBox.Max}, min size {adjustedDemoBox.Min}");
-
-          }
-
-
-          foreach (TacticalActor actor in nearbyActors)
-          {
-              TFTVLogger.Always($"squashing {actor.name}");
-
-              ApplyDamageEffectAbility ability = actor.GetAbility<ApplyDamageEffectAbility>();
-
-              if (ability != null)
-              {
-                  ability.Activate();
-                  ____actorBases.Add(actor);
-              }
-              else
-              {
-                  actor.Health.SetToMin();
-                  ____actorBases.Add(actor);
-              }
-          }
-      }
-      catch (Exception e)
-      {
-          TFTVLogger.Error(e);
-          throw;
-      }
-  }
-}*/
 
 
 
@@ -677,13 +634,13 @@ namespace TFTV
                     {
                         PhoenixFacilityData phoenixFacilityData = null;
 
-                        if (list.Count == 1) //place hangar last
+                        if (list.Count == list.Count - 2) //place hangar 3rd
                         {
                             IEnumerable<PhoenixFacilityData> source = list.Where((PhoenixFacilityData f) => f.FacilityDef.Size == 2);
                             phoenixFacilityData = ((!source.Any()) ? list.Last() : source.First());
 
                         }
-                        else if (list.Count == 3) //place access lift with at least one space to hangar
+                        else if (list.Count == list.Count - 4) //place access lift with at least one space to hangar
                         {
                             IEnumerable<PhoenixFacilityData> source = list.Where((PhoenixFacilityData f) => f.FacilityDef.Size == 1 && f.FacilityDef == accessLift);
                             phoenixFacilityData = ((!source.Any()) ? list.Last() : source.First());
@@ -1159,32 +1116,6 @@ namespace TFTV
            }*/
 
 
-
-
-
-
-
-
-        public static void CheckAutomataResearch()
-        {
-            try
-            {
-                ResearchDbDef researchDB = DefCache.GetDef<ResearchDbDef>("pp_ResearchDB");
-
-                foreach (ResearchDef researchDef in researchDB.Researches)
-                {
-                    TFTVLogger.Always($"{researchDef.name}");
-
-                }
-
-
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-
-            }
-        }
 
 
 

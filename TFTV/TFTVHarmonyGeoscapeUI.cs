@@ -5,8 +5,11 @@ using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.View;
 using PhoenixPoint.Geoscape.View.ViewControllers;
+using PhoenixPoint.Geoscape.View.ViewControllers.Roster;
 using PhoenixPoint.Geoscape.View.ViewModules;
+using PhoenixPoint.Geoscape.View.ViewStates;
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace TFTV
@@ -112,6 +115,23 @@ namespace TFTV
             }
         }
 
+        [HarmonyPatch(typeof(UIStateRosterDeployment), "SetUpInitialDeployment")]
+        public static class TFTV_UIStateRosterDeployment_SetUpInitialDeployment0_patch
+        {
+            public static void Postfix(UIStateRosterDeployment __instance, List<GeoRosterDeploymentItem> ____deploymentItems)
+            {
+                try
+                {
+                    TFTVBaseDefenseGeoscape.Deployment.UI.ModifyForBaseDefense(__instance, ____deploymentItems);
+                    TFTVBehemothAndRaids.Behemoth.BehemothMission.ModifyForBehemothMission(__instance, ____deploymentItems);
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+        }
 
 
 

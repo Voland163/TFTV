@@ -179,8 +179,7 @@ namespace TFTV
             RunChecksForAllMissions(tacController);
             RunBetaTestChecks();
            
-         //   TFTVTacticalUtils.RevealAllSpawns(tacController);
-            //TFTVExperimental.FindBreachEntrances(tacController);
+           // TFTVTacticalUtils.RevealAllSpawns(tacController);
 
             TFTVLogger.Always("The count of Human tactics in play is " + TFTVHumanEnemies.HumanEnemiesAndTactics.Count);
             TFTVLogger.Always("VO3 Active " + TFTVVoidOmens.VoidOmensCheck[3]);

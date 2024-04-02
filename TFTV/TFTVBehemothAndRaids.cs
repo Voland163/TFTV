@@ -6,11 +6,14 @@ using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.Levels.ActorDeployment;
 using PhoenixPoint.Common.Levels.Missions;
+using PhoenixPoint.Common.View.ViewControllers;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Events;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
 using PhoenixPoint.Geoscape.Levels.Factions.FesteringSkies;
+using PhoenixPoint.Geoscape.View.ViewControllers.Roster;
+using PhoenixPoint.Geoscape.View.ViewStates;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Levels.ActorDeployment;
 using System;
@@ -363,6 +366,165 @@ namespace TFTV
 
             internal class BehemothMission
             {
+
+
+                    private static readonly Sprite iconTeamA = Helper.CreateSpriteFromImageFile("TFTV_TeamA.png");
+                    private static readonly Sprite iconTeamB = Helper.CreateSpriteFromImageFile("TFTV_TeamB.png");
+
+                    internal static List<int> listTeamA = new List<int>();
+                    internal static List<int> listTeamB = new List<int>();
+
+                    internal static void CreateCheckButton(GeoRosterDeploymentItem geoRosterDeploymentItem)
+                    {
+                        try
+                        {
+
+                            Resolution resolution = Screen.currentResolution;
+
+                            // TFTVLogger.Always("Resolution is " + Screen.currentResolution.width);
+                            float resolutionFactorWidth = (float)resolution.width / 1920f;
+                            //   TFTVLogger.Always("ResolutionFactorWidth is " + resolutionFactorWidth);
+                            float resolutionFactorHeight = (float)resolution.height / 1080f;
+                            //   TFTVLogger.Always("ResolutionFactorHeight is " + resolutionFactorHeight);
+
+                            // TFTVLogger.Always($"checking");
+
+                            PhoenixGeneralButton checkButton = UnityEngine.Object.Instantiate(geoRosterDeploymentItem.CheckButton, geoRosterDeploymentItem.transform);
+                            checkButton.gameObject.AddComponent<UITooltipText>().TipText = TFTVCommonMethods.ConvertKeyToString("KEY_DEPLOYMENT_ZONE_TIP");// "Toggles helmet visibility on/off.";
+
+                            if (listTeamA.Count >= 4)
+                            {
+                                checkButton.GetComponent<UIButtonIconController>().Icon.sprite = iconTeamB;
+                            }
+                            else
+                            {
+                                checkButton.GetComponent<UIButtonIconController>().Icon.sprite = iconTeamA;
+                            }
+
+                            //   checkButton.transform.GetChildren().First().GetChildren().Where(t => t.name.Equals("UI_Icon")).FirstOrDefault().GetComponent<Image>().sprite = Helper.CreateSpriteFromImageFile("TFTV_helmet_off_icon.png");
+                            // TFTVLogger.Always($"original icon position {newPhoenixGeneralButton.transform.position}, edit button position {__instance.EditButton.transform.position}");
+                            checkButton.transform.position += new Vector3(-100 * resolutionFactorWidth, 0);
+                            checkButton.PointerClicked += () => ToggleButtonClicked(checkButton, geoRosterDeploymentItem);
+                            AssignTeam(checkButton, geoRosterDeploymentItem);
+                        }
+                        catch (Exception e)
+                        {
+                            TFTVLogger.Error(e);
+                        }
+                    }
+
+                    private static void AssignTeam(PhoenixGeneralButton checkButton, GeoRosterDeploymentItem geoRosterDeploymentItem)
+                    {
+                        try
+                        {
+                            GeoCharacter geoCharacter = geoRosterDeploymentItem.Character;
+
+
+                            if (checkButton.GetComponent<UIButtonIconController>().Icon.sprite == iconTeamB)
+                            {
+                                if (!listTeamB.Contains(geoCharacter.Id))
+                                {
+                                    listTeamB.Add(geoCharacter.Id);
+                                }
+
+                                if (listTeamA.Contains(geoCharacter.Id))
+                                {
+                                    listTeamA.Remove(geoCharacter.Id);
+                                }
+                            }
+                            else if (checkButton.GetComponent<UIButtonIconController>().Icon.sprite == iconTeamA)
+                            {
+                                if (!listTeamA.Contains(geoCharacter.Id))
+                                {
+                                    listTeamA.Add(geoCharacter.Id);
+                                }
+
+                                if (listTeamB.Contains(geoCharacter.Id))
+                                {
+                                    listTeamB.Remove(geoCharacter.Id);
+                                }
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            TFTVLogger.Error(e);
+                        }
+                    }
+
+                    private static void ToggleButtonClicked(PhoenixGeneralButton checkButton, GeoRosterDeploymentItem geoRosterDeploymentItem)
+                    {
+                        try
+                        {
+                            //using int because forseeing more than 2 teams
+
+                            int stateTeam = 0;
+
+                            if (checkButton.GetComponent<UIButtonIconController>().Icon.sprite == iconTeamB)
+                            {
+                                stateTeam = 1;
+                            }
+
+                            // Flip the toggle state
+
+                            if (stateTeam == 0)
+                            {
+                                stateTeam += 1;
+
+                            }
+                            else if (stateTeam == 1)
+                            {
+                                stateTeam -= 1;
+                            }
+
+                            // Perform any actions based on the toggle state
+                            if (stateTeam == 0)
+                            {
+                                checkButton.GetComponent<UIButtonIconController>().Icon.sprite = iconTeamA;
+                            }
+                            else
+                            {
+                                checkButton.GetComponent<UIButtonIconController>().Icon.sprite = iconTeamB;
+                            }
+
+                            AssignTeam(checkButton, geoRosterDeploymentItem);
+
+                        }
+                        catch (Exception e)
+                        {
+                            TFTVLogger.Error(e);
+                        }
+                    }
+
+                    public static void ModifyForBehemothMission(UIStateRosterDeployment uIStateRosterDeployment, List<GeoRosterDeploymentItem> deploymentItems) 
+                {
+                    try
+                    {
+                        if (!uIStateRosterDeployment.Mission.MissionDef.Tags.Contains(DefCache.GetDef<MissionTagDef>("Behemoth_MissionTagDef")))
+                        {
+                            return;
+                        }
+
+
+                        listTeamA.Clear();
+                        listTeamB.Clear();
+
+                        foreach (GeoRosterDeploymentItem geoRosterDeploymentItem in deploymentItems)
+                        {
+                            CreateCheckButton(geoRosterDeploymentItem);
+                        }
+
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                    }
+                }
+
+
+
+                
+
+
                 private static bool CheckTdzTeam(TacticalDeployZone zone, int geoId)
                 {
                     try
@@ -370,7 +532,7 @@ namespace TFTV
 
                         if (geoId > 0)
                         {
-                            if (zone.Pos.x > 0 && TFTVUI.MissionDeployment.Behemoth.listTeamB.Contains(geoId))
+                            if (zone.Pos.x > 0 && listTeamB.Contains(geoId))
                             {
                                 TFTVLogger.Always($"{geoId} is in TeamB! Can only deploy on the other side");
 
@@ -579,6 +741,13 @@ namespace TFTV
                                 __instance.GeoLevel.EventSystem.TriggerGeoscapeEvent("OlenaOnFirstHavenTarget", geoscapeEventContext);
                                 __instance.GeoLevel.EventSystem.SetVariable("BehemothTargettedFirstHaven", 1);
                                 TFTVLogger.Always("OlenaOnFirstHavenTarget event triggered");
+                            }
+
+                            if(__instance.CurrentSite!=null && __instance.CurrentSite.SiteId==behemothTarget) 
+                            {
+                                TFTVLogger.Always($"appears that Behemoth is stuck at target haven! Forcing damage haven outcome");
+                                MethodInfo methodDestroyHavenOutcome = typeof(GeoBehemothActor).GetMethod("DamageHavenOutcome", BindingFlags.NonPublic | BindingFlags.Instance);
+                                methodDestroyHavenOutcome.Invoke(controller.AlienFaction.Behemoth, new object[] { controller.AlienFaction.Behemoth.CurrentSite });
                             }
                         }
 

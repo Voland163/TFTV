@@ -3,8 +3,10 @@ using Base.Cameras;
 using Base.Core;
 using Epic.OnlineServices;
 using HarmonyLib;
+using PhoenixPoint.Common.ContextHelp;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Modding;
+using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Levels;
 using PhoenixPoint.Tactical.Levels.ActorDeployment;
 using System;
@@ -90,21 +92,30 @@ namespace TFTV
         {
             try
             {
-                List<TacticalDeployZone> zones = new List<TacticalDeployZone>(controller.Map.GetActors<TacticalDeployZone>(null));
-
+                List<TacticalDeployZone> zones = new List<TacticalDeployZone>(controller.Map.GetActors<TacticalDeployZone>());
+                List<TacticalExitZone> exitZone = new List<TacticalExitZone>(controller.Map.GetActors<TacticalExitZone>());
                 //  TacCharacterDef mindFragger = DefCache.GetDef<TacCharacterDef>("Facehugger_AlienMutationVariationDef");
 
                 /*  TacticalDeployZone tacticalDeployZone1 = new TacticalDeployZone() { };
                   tacticalDeployZone1 = zones.First();
                   tacticalDeployZone1.SetPosition(zones.First().Pos + new Vector3(3, 0, 3));*/
 
+                foreach(TacticalActorBase tacticalActorBase in controller.Map.GetActors<TacticalActorBase>().Where(tab=>tab.TacticalFaction==controller.GetFactionByCommandName("aln"))) 
+                {
+                    TFTVLogger.Always($"{tacticalActorBase.name} has TacticalPerceptionBase? {tacticalActorBase.TacticalPerceptionBase!=null}");
+                
+                }
+                
 
-                MethodInfo createVisuals = AccessTools.Method(typeof(TacticalDeployZone), "CreateVisuals");
+
+             /*   MethodInfo createVisuals = AccessTools.Method(typeof(TacticalDeployZone), "CreateVisuals");
 
                 foreach (TacticalDeployZone tacticalDeployZone in zones)
                 {
                     createVisuals.Invoke(tacticalDeployZone, null);
                     //  TFTVLogger.Always($"{tacticalDeployZone.name} at position {tacticalDeployZone.Pos}, belongs to {tacticalDeployZone.MissionParticipant.GetName()}");
+
+                    TFTVLogger.Always($"{tacticalDeployZone.name} has perception base? {tacticalDeployZone.TacticalPerceptionBase!=null}");
 
                     foreach (FixedDeployConditionData fixedDeployConditionData in tacticalDeployZone.FixedDeployment)
                     {
@@ -121,8 +132,13 @@ namespace TFTV
                     }
 
                     //    TFTVLogger.Always($"{tacticalDeployZone.DeployConditions}");
+                }
 
+                foreach(TacticalExitZone tacticalExitZone in exitZone) 
+                {
 
+                    TFTVLogger.Always($"{tacticalExitZone.name} has tac perc base? {tacticalExitZone.TacticalPerceptionBase!=null}");
+                
                 }
 
                 //   createVisuals.Invoke(tacticalDeployZone1, null);
@@ -131,7 +147,7 @@ namespace TFTV
 
                 //  GetCenterSpaceDeployZones(controller);
                 //  GetTunnelDeployZones(controller);
-
+             */
             }
 
             catch (Exception e)

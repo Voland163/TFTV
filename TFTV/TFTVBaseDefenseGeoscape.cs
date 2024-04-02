@@ -5,6 +5,7 @@ using Base.Entities.Effects.ApplicationConditions;
 using Base.UI;
 using Base.Utils;
 using HarmonyLib;
+using PhoenixPoint.Common.ContextHelp;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.GameTags;
@@ -32,6 +33,7 @@ using PhoenixPoint.Geoscape.View.ViewControllers;
 using PhoenixPoint.Geoscape.View.ViewControllers.BaseRecruits;
 using PhoenixPoint.Geoscape.View.ViewControllers.Modal;
 using PhoenixPoint.Geoscape.View.ViewControllers.PhoenixBase;
+using PhoenixPoint.Geoscape.View.ViewControllers.Roster;
 using PhoenixPoint.Geoscape.View.ViewModules;
 using PhoenixPoint.Geoscape.View.ViewStates;
 using PhoenixPoint.Tactical.Entities;
@@ -45,6 +47,7 @@ using System.Linq;
 using System.Reflection;
 using UnityEngine;
 using UnityEngine.UI;
+using static TFTV.TFTVRevenant.UIandFX;
 
 namespace TFTV
 {
@@ -410,6 +413,10 @@ namespace TFTV
                 throw;
             }
         }
+
+
+
+
 
         [HarmonyPatch(typeof(GeoAlienFaction), "PhoenixBaseAttackCheck")]
         public static class GeoAlienFaction_PhoenixBaseAttackCheck_patch
@@ -1492,6 +1499,347 @@ namespace TFTV
             }
 
         }
+
+        internal class Deployment
+        {
+            private static readonly Sprite iconEntrance = Helper.CreateSpriteFromImageFile("BD_EntranceIcon.png");
+            private static readonly Sprite iconHangar = Helper.CreateSpriteFromImageFile("BD_HangarIcon.png");
+            private static readonly Sprite iconLift = Helper.CreateSpriteFromImageFile("BD_LiftIcon.png");
+
+            internal static List<int> listEntrance = new List<int>();
+            internal static List<int> listHangar = new List<int>();
+            internal static List<int> listLift = new List<int>();
+
+            private static float _timer = 0f;
+            private static bool _accessLift = false;
+
+            internal class UI 
+            {
+                internal static void CreateCheckButton(GeoRosterDeploymentItem geoRosterDeploymentItem)
+                {
+                    try
+                    {
+                        float timer = _timer;
+                        TFTVLogger.Always($"BaseDefense timer: {_timer}");
+
+                        bool accessLift = _accessLift;
+                        bool isVehicle = geoRosterDeploymentItem.Character.GameTags.Contains(Shared.SharedGameTags.VehicleClassTag)
+                            || geoRosterDeploymentItem.Character.GameTags.Contains(Shared.SharedGameTags.MutogTag);
+
+                        //  TFTVLogger.Always($"{geoRosterDeploymentItem.Character.DisplayName} vehicle? {isVehicle}");
+
+                        Resolution resolution = Screen.currentResolution;
+
+                        // TFTVLogger.Always("Resolution is " + Screen.currentResolution.width);
+                        float resolutionFactorWidth = (float)resolution.width / 1920f;
+                        //   TFTVLogger.Always("ResolutionFactorWidth is " + resolutionFactorWidth);
+                        float resolutionFactorHeight = (float)resolution.height / 1080f;
+                        //   TFTVLogger.Always("ResolutionFactorHeight is " + resolutionFactorHeight);
+
+                        // TFTVLogger.Always($"checking");
+
+                        PhoenixGeneralButton checkButton = UnityEngine.Object.Instantiate(geoRosterDeploymentItem.CheckButton, geoRosterDeploymentItem.transform);
+                        checkButton.gameObject.AddComponent<UITooltipText>().TipText = TFTVCommonMethods.ConvertKeyToString("KEY_DEPLOYMENT_ZONE_TIP");// "Toggles helmet visibility on/off.";
+
+                        UIButtonIconController uIButtonIconController = checkButton.GetComponent<UIButtonIconController>();
+
+                        uIButtonIconController.Icon.gameObject.SetActive(true);
+
+                        uIButtonIconController.Icon.sprite = iconEntrance;
+
+                        checkButton.transform.position += new Vector3(-100 * resolutionFactorWidth, 0);
+                        checkButton.PointerClicked += () => ToggleButtonClicked(checkButton, geoRosterDeploymentItem);
+                        AssignTeam(checkButton, geoRosterDeploymentItem);
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                    }
+                }
+
+                private static void AssignTeam(PhoenixGeneralButton checkButton, GeoRosterDeploymentItem geoRosterDeploymentItem)
+                {
+                    try
+                    {
+                        GeoCharacter geoCharacter = geoRosterDeploymentItem.Character;
+
+
+                        if (checkButton.GetComponent<UIButtonIconController>().Icon.sprite == iconHangar)
+                        {
+                            if (!listHangar.Contains(geoCharacter.Id))
+                            {
+                                listHangar.Add(geoCharacter.Id);
+                            }
+
+                            if (listEntrance.Contains(geoCharacter.Id))
+                            {
+                                listEntrance.Remove(geoCharacter.Id);
+                            }
+
+                            if (listLift.Contains(geoCharacter.Id))
+                            {
+                                listLift.Remove(geoCharacter.Id);
+                            }
+                        }
+                        else if (checkButton.GetComponent<UIButtonIconController>().Icon.sprite == iconEntrance)
+                        {
+                            if (!listEntrance.Contains(geoCharacter.Id))
+                            {
+                                listEntrance.Add(geoCharacter.Id);
+                            }
+
+                            if (listHangar.Contains(geoCharacter.Id))
+                            {
+                                listHangar.Remove(geoCharacter.Id);
+                            }
+
+                            if (listLift.Contains(geoCharacter.Id))
+                            {
+                                listLift.Remove(geoCharacter.Id);
+                            }
+                        }
+                        else if (checkButton.GetComponent<UIButtonIconController>().Icon.sprite == iconLift)
+                        {
+                            if (!listLift.Contains(geoCharacter.Id))
+                            {
+                                listLift.Add(geoCharacter.Id);
+                            }
+
+                            if (listEntrance.Contains(geoCharacter.Id))
+                            {
+                                listEntrance.Remove(geoCharacter.Id);
+                            }
+
+                            if (listHangar.Contains(geoCharacter.Id))
+                            {
+                                listHangar.Remove(geoCharacter.Id);
+                            }
+                        }
+
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                    }
+                }
+
+                private static void ToggleButtonClicked(PhoenixGeneralButton checkButton, GeoRosterDeploymentItem geoRosterDeploymentItem)
+                {
+                    try
+                    {
+                        bool accessLift = _accessLift;
+                        bool isVehicle = geoRosterDeploymentItem.Character.GameTags.Contains(Shared.SharedGameTags.VehicleClassTag)
+                            || geoRosterDeploymentItem.Character.GameTags.Contains(Shared.SharedGameTags.MutogTag);
+
+                        List<int> possibleLocations = new List<int> { 0 };
+
+                        if (_timer > 12)
+                        {
+                            possibleLocations.Add(1);
+                        }
+
+                        if (accessLift && !isVehicle)
+                        {
+                            possibleLocations.Add(2);
+                        }
+
+                        int currentLocation = 0;
+
+                        if (checkButton.GetComponent<UIButtonIconController>().Icon.sprite == iconEntrance)
+                        {
+                            currentLocation = 0;
+                        }
+                        else if (checkButton.GetComponent<UIButtonIconController>().Icon.sprite == iconHangar)
+                        {
+                            currentLocation = 1;
+                        }
+                        else if (checkButton.GetComponent<UIButtonIconController>().Icon.sprite == iconLift)
+                        {
+                            currentLocation = 2;
+                        }
+
+                        // Increment currentLocation within the bounds of possibleLocations
+                        //   currentLocation = (currentLocation + 1) % possibleLocations.Count;
+
+                        if (possibleLocations.Contains(currentLocation + 1))
+                        {
+                            currentLocation++;
+                        }
+                        else if (possibleLocations.Contains(currentLocation + 2))
+                        {
+                            currentLocation += 2;
+                        }
+                        else
+                        {
+                            currentLocation = 0;
+                        }
+
+                        switch (currentLocation)
+                        {
+                            case 0:
+                                checkButton.GetComponent<UIButtonIconController>().Icon.sprite = iconEntrance;
+                                break;
+                            case 1:
+                                checkButton.GetComponent<UIButtonIconController>().Icon.sprite = iconHangar;
+                                break;
+                            case 2:
+                                checkButton.GetComponent<UIButtonIconController>().Icon.sprite = iconLift;
+                                break;
+                        }
+
+                        AssignTeam(checkButton, geoRosterDeploymentItem);
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                    }
+                }
+
+
+                public static void ModifyForBaseDefense(UIStateRosterDeployment uIStateRosterDeployment, List<GeoRosterDeploymentItem> deploymentItems) 
+                {
+                    try
+                    {
+                        if (!PhoenixBasesUnderAttack.ContainsKey(uIStateRosterDeployment.Mission.Site.SiteId) && !PhoenixBasesInfested.Contains(uIStateRosterDeployment.Mission.Site.SiteId))
+                        {
+                            return;
+                        }
+
+                        SetBaseDefenseSitrep(uIStateRosterDeployment.Mission);
+
+                        foreach (GeoRosterDeploymentItem geoRosterDeploymentItem in deploymentItems)
+                        {
+                            CreateCheckButton(geoRosterDeploymentItem);
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                    }
+                }
+
+               
+
+            }
+
+            private static void SetBaseDefenseSitrep(GeoMission mission)
+            {
+                try
+                {
+                    _timer = CalculateBaseAttackProgress(mission);
+                    _accessLift = mission.Site.GetComponent<GeoPhoenixBase>().Layout.Facilities.Any(
+                        f => f.Def.name.Equals("AccessLift_PhoenixFacilityDef") && !f.IsDamaged);
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+            public static void ModifyMissionDataBaseDefense(GeoMission geoMission, TacMissionData missionData)
+            {
+                try
+                {
+                    if (PhoenixBasesUnderAttack.ContainsKey(geoMission.Site.SiteId) || PhoenixBasesInfested.Contains(geoMission.Site.SiteId))
+                    {
+
+                        PPFactionDef alienFaction = DefCache.GetDef<PPFactionDef>("Alien_FactionDef");
+                        int difficulty = TFTVSpecialDifficulties.DifficultyOrderConverter(geoMission.GameController.CurrentDifficulty.Order);
+
+                        ContextHelpHintDef hintDef = DefCache.GetDef<ContextHelpHintDef>("TFTVBaseDefense");
+
+                        int timer = (int)_timer;
+                        
+
+                        if (PandoransThatCanEscape.ContainsKey(geoMission.Site.SiteId))
+                        {
+                            foreach (string item in PandoransThatCanEscape[geoMission.Site.SiteId])
+                            {
+                                if (TFTVBaseDefenseTactical.PandoransInContainment.ContainsKey(item))
+                                {
+                                    TFTVBaseDefenseTactical.PandoransInContainment[item] += 1;
+                                }
+                                else
+                                {
+                                    TFTVBaseDefenseTactical.PandoransInContainment.Add(item, 1);
+                                }
+                            };
+                        }
+
+                        if (ContainmentBreachSchedule != null
+                            && ContainmentBreachSchedule.ContainsKey(geoMission.Site.SiteId))
+                        {
+                            TFTVBaseDefenseTactical.Breach = true;
+
+                            /*   var keysToModify = new List<string>(PandoransInContainment.Keys);
+                               foreach (string key in keysToModify)
+                               {
+                                   PandoransInContainment[key] = true;
+                               }*/
+
+                            if (ContainmentBreachSchedule[geoMission.Site.SiteId])
+                            {
+                                TFTVBaseDefenseTactical.ScyllaLoose = true;
+                            }
+                        }
+
+                        TFTVLogger.Always($"When modifying mission data, timer is {timer}");
+
+                        string spriteFileName = "base_defense_hint.jpg";
+
+                        if (timer < 12)
+                        {
+                            foreach (TacMissionFactionData tacMissionFactionData in missionData.MissionParticipants)
+                            {
+                                TFTVLogger.Always($"{tacMissionFactionData.FactionDef} {tacMissionFactionData.InitialDeploymentPoints}");
+
+                                if (tacMissionFactionData.FactionDef == alienFaction)
+                                {
+                                    tacMissionFactionData.InitialDeploymentPoints *= 0.6f + (0.05f * difficulty);
+
+                                    TFTVLogger.Always($"Deployment points changed to {tacMissionFactionData.InitialDeploymentPoints}");
+                                }
+                            }
+                        }
+
+                        if (TFTVBaseDefenseTactical.ScyllaLoose)
+                        {
+                            hintDef.Title.LocalizationKey = "BASEDEFENSE_SCYLLA_LOOSE_TITLE";
+                            hintDef.Text.LocalizationKey = "BASEDEFENSE_SCYLLA_LOOSE_DESCRIPTION";
+                            spriteFileName = "BD_LooseScylla_hint.jpg";
+                            //Add text + pic for Scylla Loose
+                        }
+                        else if (timer >= 12)
+                        {
+
+                            hintDef.Title.LocalizationKey = "BASEDEFENSE_TACTICAL_ADVANTAGE_TITLE";
+                            hintDef.Text.LocalizationKey = "BASEDEFENSE_TACTICAL_ADVANTAGE_DESCRIPTION";
+                            spriteFileName = "base_defense_hint_small.jpg";
+                        }
+                        else if (timer < 12 && timer >= 6)
+                        {
+
+                            hintDef.Title.LocalizationKey = "BASEDEFENSE_NESTING_TITLE";
+                            hintDef.Text.LocalizationKey = "BASEDEFENSE_NESTING_DESCRIPTION";
+                            spriteFileName = "base_defense_hint_nesting.jpg";
+                        }
+                        else
+                        {
+                            hintDef.Title.LocalizationKey = "BASEDEFENSE_INFESTATION_TITLE";
+                            hintDef.Text.LocalizationKey = "BASEDEFENSE_INFESTATION_DESCRIPTION";
+                            spriteFileName = "base_defense_hint_infestation.jpg";
+                        }
+                        TFTVHints._hintDefSpriteFileNameDictionary[hintDef] = spriteFileName;
+
+                        TFTVBaseDefenseTactical.TimeLeft = timer;
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+        }
+
 
         internal class BaseFacilities
         {

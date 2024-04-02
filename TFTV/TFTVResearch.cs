@@ -200,7 +200,7 @@ namespace TFTV
                             && actorResearchRequirementDef.Actor == geoUnitDescriptor.UnitType.TemplateDef.ComponentSetDef.Components.FirstOrDefault
                             (c => c is TacticalActorDef)));
 
-                    TFTVLogger.Always($"{researchElement.ResearchID} {researchElement.State}");
+                    TFTVLogger.Always($"Killing {geoUnitDescriptor.UnitType.TemplateDef.name}, relevant for {researchElement.ResearchID} {researchElement.State}");
 
                     if (phoenixFaction.Research.InProgress.Contains(researchElement))
                     {
@@ -214,20 +214,18 @@ namespace TFTV
                         TFTVLogger.Always($"unlocked {researchElement.GetLocalizedName()} will get locked because the last Pandoran of the required type has been killed");
                         researchElement.State = ResearchState.Revealed;
                     }
-                    else if(researchElement.State == ResearchState.Hidden)
+
+                    TFTVLogger.Always($"{researchElement.State} {researchElement.GetLocalizedName()} research will get requirement reset because the last Pandoran of the required type has been killed");
+                    foreach (ResearchRequirement item in researchElement.GetUnlockRequirements())
                     {
-                        TFTVLogger.Always($"hidden {researchElement.GetLocalizedName()} research will get requirement reset because the last Pandoran of the required type has been killed");
-                        foreach (ResearchRequirement item in researchElement.GetUnlockRequirements())
-                        {
-                            TFTVLogger.Always($"{item.RequirementDef.name} item.Progress: {item.Progress}");
-                             PropertyInfo fieldInfo = typeof(ResearchRequirement).GetProperty("IsCompleted", BindingFlags.Public | BindingFlags.Instance);
-                            MethodInfo methodInfo = typeof(ResearchRequirement).GetMethod("UpdateProgress", BindingFlags.NonPublic | BindingFlags.Instance);
-                            // fieldInfo.SetValue(item, 0);
-                            fieldInfo.SetValue(item, false);
-                            methodInfo.Invoke(item, new object[] {-1});
-                            TFTVLogger.Always($"new value: {item.RequirementDef.name} item.Progress: {item.Progress}");
-                            
-                        }                       
+                        TFTVLogger.Always($"{item.RequirementDef.name} item.Progress: {item.Progress}");
+                        PropertyInfo fieldInfo = typeof(ResearchRequirement).GetProperty("IsCompleted", BindingFlags.Public | BindingFlags.Instance);
+                        MethodInfo methodInfo = typeof(ResearchRequirement).GetMethod("UpdateProgress", BindingFlags.NonPublic | BindingFlags.Instance);
+                        // fieldInfo.SetValue(item, 0);
+                        fieldInfo.SetValue(item, false);
+                        methodInfo.Invoke(item, new object[] { -1 });
+                        TFTVLogger.Always($"new value: {item.RequirementDef.name} item.Progress: {item.Progress}");
+
                     }
                   
                 }

@@ -98,7 +98,9 @@ namespace TFTV
                    newAIStatusConsiderationTBTVOnAttack.StatusDef = onAttackTBTV;*/
 
 
-                string nameAIStatusConsiderationOilCrab = "AIConsiderationNoFleeOilCrab";
+                //also counterproductive: enemies with no attack capability will stay still.
+
+               /* string nameAIStatusConsiderationOilCrab = "AIConsiderationNoFleeOilCrab";
                 string gUIDAIStatusConsiderationOilCrab = "{7CE39E7C-C691-4CC1-93EA-EB36EEAF1985}";
 
                 AIStatusConsiderationDef newAIStatusConsiderationOilCrab = Helper.CreateDefFromClone(sourceStatusConsideration, gUIDAIStatusConsiderationOilCrab, nameAIStatusConsiderationOilCrab);
@@ -111,7 +113,7 @@ namespace TFTV
 
                 AIStatusConsiderationDef newAIStatusConsiderationOilFish = Helper.CreateDefFromClone(sourceStatusConsideration, gUIDAIStatusConsiderationOilFish, nameAIStatusConsiderationOilFish);
 
-                newAIStatusConsiderationOilFish.StatusDef = oilFishStatusDef;
+                newAIStatusConsiderationOilFish.StatusDef = oilFishStatusDef;*/
 
 
 
@@ -125,14 +127,14 @@ namespace TFTV
                 AIAdjustedConsideration aIAdjustedConsiderationSelfRepair = new AIAdjustedConsideration() { Consideration = newAIStatusConsiderationSelfRepair, ScoreCurve = moveToRandomWP.EarlyExitConsiderations[0].ScoreCurve };
                 AIAdjustedConsideration aIAdjustedConsiderationTBTV = new AIAdjustedConsideration() { Consideration = newAIStatusConsiderationTBTV, ScoreCurve = moveToRandomWP.EarlyExitConsiderations[0].ScoreCurve };
                 // AIAdjustedConsideration aIAdjustedConsiderationTBTVonAttack = new AIAdjustedConsideration() { Consideration = newAIStatusConsiderationTBTVOnAttack, ScoreCurve = moveToRandomWP.EarlyExitConsiderations[0].ScoreCurve };
-                AIAdjustedConsideration aIAdjustedConsiderationOilCrab = new AIAdjustedConsideration() { Consideration = newAIStatusConsiderationOilCrab, ScoreCurve = moveToRandomWP.EarlyExitConsiderations[0].ScoreCurve };
-                AIAdjustedConsideration aIAdjustedConsiderationOilFish = new AIAdjustedConsideration() { Consideration = newAIStatusConsiderationOilFish, ScoreCurve = moveToRandomWP.EarlyExitConsiderations[0].ScoreCurve };
+             //   AIAdjustedConsideration aIAdjustedConsiderationOilCrab = new AIAdjustedConsideration() { Consideration = newAIStatusConsiderationOilCrab, ScoreCurve = moveToRandomWP.EarlyExitConsiderations[0].ScoreCurve };
+              //  AIAdjustedConsideration aIAdjustedConsiderationOilFish = new AIAdjustedConsideration() { Consideration = newAIStatusConsiderationOilFish, ScoreCurve = moveToRandomWP.EarlyExitConsiderations[0].ScoreCurve };
 
 
 
                 List<AIAdjustedConsideration> aIAdjustedConsiderationsHumanoidsFlee = new List<AIAdjustedConsideration>()
                 {
-                  aIAdjustedConsiderationSelfRepair, aIAdjustedConsiderationTBTV, aIAdjustedConsiderationTBTV, aIAdjustedConsiderationOilCrab, aIAdjustedConsiderationOilFish
+                  aIAdjustedConsiderationSelfRepair, aIAdjustedConsiderationTBTV, //aIAdjustedConsiderationTBTV, aIAdjustedConsiderationOilCrab, aIAdjustedConsiderationOilFish
                 };
 
                 /*   List<AIAdjustedConsideration> aIAdjustedConsiderationsCrabmenFlee = new List<AIAdjustedConsideration>()
@@ -153,11 +155,11 @@ namespace TFTV
                 fleeCrabmenAIAction.EarlyExitConsiderations = aIAdjustedConsiderationsHumanoidsFlee.ToArray(); //aIAdjustedConsiderationsCrabmenFlee.ToArray();
                 fleeFishmenAIAction.EarlyExitConsiderations = aIAdjustedConsiderationsHumanoidsFlee.ToArray(); //aIAdjustedConsiderationsFishmenFlee.ToArray();
 
-                ApplyStatusAbilityDef quickaim = DefCache.GetDef<ApplyStatusAbilityDef>("BC_QuickAim_AbilityDef");
+             /*   ApplyStatusAbilityDef quickaim = DefCache.GetDef<ApplyStatusAbilityDef>("BC_QuickAim_AbilityDef");
                 DefCache.GetDef<AIAbilityDisabledStateConsiderationDef>("QuickAimAbilityEnabled_AIConsiderationDef").Ability = quickaim;
 
                 AIActionMoveAndExecuteAbilityDef moveAndQA = DefCache.GetDef<AIActionMoveAndExecuteAbilityDef>("MoveAndQuickAim_AIActionDef");
-                moveAndQA.AbilityToExecute = quickaim;
+                moveAndQA.AbilityToExecute = quickaim;*/
 
 
             }

@@ -32,7 +32,7 @@ namespace TFTV
                     TFTVLogger.Always($"GeoMission.ModifyMissionData invoked.");
 
                     TFTVCapturePandorans.CheckCaptureCapability(__instance);
-                    TFTVBaseDefenseTactical.Objectives.ModifyMissionDataBaseDefense(__instance, missionData);
+                    TFTVBaseDefenseGeoscape.Deployment.ModifyMissionDataBaseDefense(__instance, missionData);
                     TFTVVoidOmens.ModifyVoidOmenTacticalObjectives(missionData.MissionType);
                     TFTVCapturePandorans.ModifyCapturePandoransTacticalObjectives(missionData.MissionType);
                     TFTVBaseDefenseTactical.Objectives.ModifyBaseDefenseTacticalObjectives(missionData.MissionType);

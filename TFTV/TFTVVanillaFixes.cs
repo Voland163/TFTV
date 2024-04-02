@@ -48,6 +48,31 @@ namespace TFTV
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
         private static readonly SharedData Shared = TFTVMain.Shared;
 
+        //Prevents items with 0HP from manifesting themselves in tactical
+
+        [HarmonyPatch(typeof(TacticalItem), "get_IsHealthAboveMinThreshold")]
+        public static class TFTV_TacticalItem_get_IsHealthAboveMinThreshold
+        {
+            public static void Postfix(TacticalItem __instance, ref bool __result)
+            {
+                try
+                {
+                    if (!((float)__instance.GetHealth() >= 1))
+                    {
+                        __result = (float)__instance.GetHealth().Max < 1E-05f;
+                    }
+
+                    __result = true;
+                }
+
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
+
         //Fixes size of ground marker for eggs/sentinels etc.
         public static void FixSurveillanceAbilityGroundMarker(Harmony harmony)
         {
@@ -214,6 +239,9 @@ namespace TFTV
                                                             where !t.IsAlive || t.Statuses.Any(s => s.Def.EffectName == "Paralysed")
                                                             select t)
                         {
+
+                          //  if(item.Statuses.Any(s => s.Def.EffectName == "Paralysed") && )
+
                             // TFTVLogger.Always($"considering {item.SourceTemplate.name}");
 
                             if (__instance.IsValidUnit(item))
@@ -830,59 +858,7 @@ namespace TFTV
 
 
 
-        /// <summary>
-        /// Fixes money spent no purchase made at Marketplace if 2 or more aircraft at Marketplace
-        /// </summary>
-        [HarmonyPatch(typeof(GeoscapeEvent), "CompleteMarketplaceEvent")]
-        public static class GeoscapeEvent_CompleteMarketplaceEvent_patch
-        {
-
-            public static bool Prefix(GeoscapeEvent __instance, GeoEventChoice choice, GeoFaction faction)
-            {
-                try
-                {
-                    // TFTVLogger.Always($"CompleteMarketplaceEvent triggered for choice {choice.Outcome.Items[0].ItemDef?.name}");
-
-                    if (__instance.Context.Site.Vehicles.Count() > 1)
-                    {
-                        TFTVLogger.Always($"There is a more than one vehicle at {__instance.Context.Site.LocalizedSiteName}! Need to execute alternative code");
-
-                        PropertyInfo propertyInfo = typeof(GeoscapeEvent).GetProperty("ChoiceReward", BindingFlags.Instance | BindingFlags.Public);
-
-
-
-
-                        GeoLevelController component = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
-                        GeoscapeEventContext geoscapeEventContext = new GeoscapeEventContext(component.PhoenixFaction.StartingBase, component.PhoenixFaction, __instance.Context.Site.Vehicles.First());
-                        // TFTVLogger.Always($"geoscapeEventContext is null? {geoscapeEventContext==null} is faction null? {faction==null}");
-
-                        propertyInfo?.SetValue(__instance, choice.Outcome.GenerateFactionReward(faction, geoscapeEventContext, __instance.EventID));
-
-                        // TFTVLogger.Always($". is propertyInfo null? {propertyInfo==null} is choiceReward null? {__instance.ChoiceReward==null}");
-
-                        // __instance.ChoiceReward = choice.Outcome.GenerateFactionReward(faction, geoscapeEventContext, __instance.EventID);
-                        __instance.ChoiceReward.Apply(faction, geoscapeEventContext.Site, geoscapeEventContext.Vehicle);
-                        // TFTVLogger.Always($"2");
-
-                        if (choice.Outcome.ReEneableEvent)
-                        {
-                            //   TFTVLogger.Always($"");
-                            GameUtl.CurrentLevel().GetComponent<GeoscapeEventSystem>().EnableGeoscapeEvent(__instance.EventID);
-                        }
-
-
-                        return false;
-                    }
-                    return true;
-
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                    throw;
-                }
-            }
-        }
+       
 
 
 

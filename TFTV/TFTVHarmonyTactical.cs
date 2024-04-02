@@ -7,6 +7,7 @@ using PhoenixPoint.Common.Levels.ActorDeployment;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.DamageKeywords;
+using PhoenixPoint.Tactical.Entities.Statuses;
 using PhoenixPoint.Tactical.Levels;
 using PhoenixPoint.Tactical.Levels.ActorDeployment;
 using PhoenixPoint.Tactical.Levels.Destruction;
@@ -278,7 +279,7 @@ namespace TFTV
                 //Postfix checks for relevant GameTags then saves and zeroes the WPWorth of the dying actor before main method is executed.
 
                 GameTagsList<GameTagDef> RelevantTags = new GameTagsList<GameTagDef> { cyclopsTag, hopliteTag, HumanEnemyTier4GameTag, HumanEnemyTier2GameTag, HumanEnemyTier1GameTag };
-                if (__instance.TacticalFaction == death.Actor.TacticalFaction && death.Actor.HasGameTags(RelevantTags, false))
+                if (__instance.TacticalFaction == death.Actor.TacticalFaction && (death.Actor.HasGameTags(RelevantTags, false)||death.Actor.Status.HasStatus<MindControlStatus>()))
                 {
                     __state = death.Actor.TacticalActorBaseDef.WillPointWorth;
                     death.Actor.TacticalActorBaseDef.WillPointWorth = 0;
@@ -294,16 +295,11 @@ namespace TFTV
                 {
                     foreach (GameTagDef Tag in death.Actor.GameTags)
                     {
-                        if (Tag == cyclopsTag || Tag == hopliteTag)
+                        if (Tag == cyclopsTag || Tag == hopliteTag || Tag == HumanEnemyTier4GameTag || death.Actor.Status.HasStatus<MindControlStatus>())
                         {
                             //Death has no effect on allies
                             death.Actor.TacticalActorBaseDef.WillPointWorth = __state;
-                        }
-                        else if (Tag == HumanEnemyTier4GameTag)
-                        {
-                            //Death has no effect on allies
-                            death.Actor.TacticalActorBaseDef.WillPointWorth = __state;
-                        }
+                        }       
                         else if (Tag == HumanEnemyTier2GameTag)
                         {
                             //Allies lose 3WP
@@ -319,8 +315,6 @@ namespace TFTV
 
                     }
                 }
-
-
             }
         }
 

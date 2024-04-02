@@ -34,35 +34,6 @@ namespace TFTV
 
         //   private static readonly SharedData Shared = TFTVMain.Shared;
 
-        public static void BehemothFix(GeoLevelController controller)
-        {
-            try 
-            {
-                TFTVLogger.Always($"Behemoth is at a site? {controller.AlienFaction.Behemoth.CurrentSite!=null}");
-
-
-                if (controller.AlienFaction.Behemoth.CurrentSite.Type == GeoSiteType.Haven)
-                {
-                   
-
-                    
-                    MethodInfo methodDestroyHavenOutcome = typeof(GeoBehemothActor).GetMethod("DestroyHavenOutcome", BindingFlags.NonPublic | BindingFlags.Instance);
-
-                    methodDestroyHavenOutcome.Invoke(controller.AlienFaction.Behemoth, new object[] { controller.AlienFaction.Behemoth.CurrentSite });
-
-                }
-            
-            }
-
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-                throw;
-            }
-
-        }
-
-
         public static void Fix(GeoLevelController controller)
         {
             try
