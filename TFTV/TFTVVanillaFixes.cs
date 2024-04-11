@@ -50,7 +50,7 @@ namespace TFTV
 
         //Prevents items with 0HP from manifesting themselves in tactical
 
-        [HarmonyPatch(typeof(TacticalItem), "get_IsHealthAboveMinThreshold")]
+      /*  [HarmonyPatch(typeof(TacticalItem), "get_IsHealthAboveMinThreshold")]
         public static class TFTV_TacticalItem_get_IsHealthAboveMinThreshold
         {
             public static void Postfix(TacticalItem __instance, ref bool __result)
@@ -71,7 +71,7 @@ namespace TFTV
                     throw;
                 }
             }
-        }
+        }*/
 
         //Fixes size of ground marker for eggs/sentinels etc.
         public static void FixSurveillanceAbilityGroundMarker(Harmony harmony)

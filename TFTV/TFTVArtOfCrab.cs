@@ -15,6 +15,7 @@ using PhoenixPoint.Tactical;
 using PhoenixPoint.Tactical.AI;
 using PhoenixPoint.Tactical.AI.Actions;
 using PhoenixPoint.Tactical.AI.Considerations;
+using PhoenixPoint.Tactical.AI.TargetGenerators;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.DamageKeywords;
@@ -100,6 +101,8 @@ namespace TFTV
         }
 
 
+       // AIActorMovementZoneTargetGenerator
+
         //Prevents step out
 
         [HarmonyPatch(typeof(AIActionMoveToPosition), "Execute")]
@@ -166,7 +169,7 @@ namespace TFTV
         //AILineOfSightToEnemiesConsiderationDef
 
         //AIEnemyTargetGeneratorDef
-
+        
         public static bool Has1APWeapon(TacCharacterDef tacCharacterDef)
         {
             try
@@ -750,46 +753,6 @@ namespace TFTV
         internal class ScyllaBlasterAttack
         {
 
-            //   AISlowTargetsInConeConsiderationDef
-
-
-            /*  [HarmonyPatch(typeof(AISlowTargetsInConeConsideration), "GetEnemiesInCone")]
-              public static class AISlowTargetsInConeConsideration_GetMovementDataInRange_patch
-              {
-                  private static void Prefix(AISlowTargetsInConeConsideration __instance, Vector3 actorPos, Vector3 actorDir, ref IEnumerable<TacticalActorBase> enemies)
-                  {
-                      try
-                      {
-                          List<TacticalActorBase> enemiesToRemove = new List<TacticalActorBase>();
-
-                          foreach(TacticalActorBase tacticalActorBase in enemies) 
-                          {
-                              if ((tacticalActorBase.Pos - actorPos).magnitude > 25 || TacticalFactionVision.CheckVisibleLine(tacticalActorBase, tacticalActorBase.Pos, actorPos, 25)) 
-                              {
-                                  enemiesToRemove.Add(tacticalActorBase); 
-                              }
-                              else 
-                              {
-                                  TFTVLogger.Always($"Will consider {tacticalActorBase.DisplayName}; queen at {actorPos} and actor at {tacticalActorBase.Pos}");
-
-                              }
-                          }
-
-                          if (enemiesToRemove.Count > 0) 
-                          {
-                              List<TacticalActorBase> newEnemiesList = new List<TacticalActorBase>(enemies);
-                              newEnemiesList.RemoveRange(enemiesToRemove);
-                              enemies = newEnemiesList; 
-                          }
-
-                      }
-                      catch (Exception e)
-                      {
-                          TFTVLogger.Error(e);
-                          throw;
-                      }
-                  }
-              }*/
 
 
             [HarmonyPatch(typeof(AISlowTargetsInConeConsideration), "Evaluate")]
@@ -1871,7 +1834,7 @@ namespace TFTV
            }
        }*/
 
-
+        
 
 
         /*  [HarmonyPatch(typeof(TacticalAbility), "GetDisabledStateDefaults")]
