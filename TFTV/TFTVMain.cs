@@ -65,56 +65,7 @@ namespace TFTV
         /// Unsafely disabled mods usually cannot revert thier changes in OnModDisabled
         public override bool CanSafelyDisable => false;
 
-        public void PatchMethod()
-        {
-            // Get the assembly where the internal class is defined
-            Assembly assembly = Assembly.GetAssembly(typeof(CSharpCodeProvider));
-
-            // Get the internal class type
-            Type internalType = assembly.GetType("PhoenixPoint.Tactical.View.ViewStatese.UIStateCharacterSelected");
-
-            if (internalType != null)
-            {
-                // Find the method you want to patch
-                MethodInfo methodToPatch = internalType.GetMethod("ZoneOfControlMarkerCreator", BindingFlags.NonPublic | BindingFlags.Instance);
-
-                if (methodToPatch != null)
-                {
-                    // Now you can patch the method using your Harmony patching logic
-                    // For example:
-
-
-
-
-                    // Harmony.Patch(methodToPatch, new HarmonyMethod(typeof(YourModClass), nameof(YourModClass.YourPatchMethod)));
-                }
-                else
-                {
-                    // Method not found, handle error
-                }
-            }
-            else
-            {
-                // Class not found, handle error
-            }
-        }
-
-
-        /*  private static void ChangeTitleScreen(PhoenixGame game)
-          {
-              try 
-              { 
-
-
-
-
-
-              }
-              catch (Exception e)
-              {
-                  TFTVLogger.Error(e);
-              }
-          }*/
+       
 
         /// <summary>
         /// Callback for when mod is enabled. Called even on game starup.
