@@ -31,6 +31,7 @@ using PhoenixPoint.Tactical.Levels;
 using PhoenixPoint.Tactical.Levels.Missions;
 using PhoenixPoint.Tactical.UI.SoldierPortraits;
 using PhoenixPoint.Tactical.View;
+using PhoenixPoint.Tactical.View.ViewModules;
 using SETUtil.Common.Extend;
 using System;
 using System.Collections.Generic;
@@ -50,28 +51,29 @@ namespace TFTV
 
         //Prevents items with 0HP from manifesting themselves in tactical
 
-      /*  [HarmonyPatch(typeof(TacticalItem), "get_IsHealthAboveMinThreshold")]
-        public static class TFTV_TacticalItem_get_IsHealthAboveMinThreshold
-        {
-            public static void Postfix(TacticalItem __instance, ref bool __result)
-            {
-                try
-                {
-                    if (!((float)__instance.GetHealth() >= 1))
-                    {
-                        __result = (float)__instance.GetHealth().Max < 1E-05f;
-                    }
+        /*  [HarmonyPatch(typeof(TacticalItem), "get_IsHealthAboveMinThreshold")]
+          public static class TFTV_TacticalItem_get_IsHealthAboveMinThreshold
+          {
+              public static void Postfix(TacticalItem __instance, ref bool __result)
+              {
+                  try
+                  {
+                      if (!((float)__instance.GetHealth() >= 1))
+                      {
+                          __result = (float)__instance.GetHealth().Max < 1E-05f;
+                      }
 
-                    __result = true;
-                }
+                      __result = true;
+                  }
 
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                    throw;
-                }
-            }
-        }*/
+                  catch (Exception e)
+                  {
+                      TFTVLogger.Error(e);
+                      throw;
+                  }
+              }
+          }*/
+
 
         //Fixes size of ground marker for eggs/sentinels etc.
         public static void FixSurveillanceAbilityGroundMarker(Harmony harmony)
@@ -91,15 +93,17 @@ namespace TFTV
 
                 if (internalType != null)
                 {
-                    MethodInfo methodToPatch = internalType.GetMethod("ZoneOfControlMarkerCreator", BindingFlags.NonPublic | BindingFlags.Instance);
+                    MethodInfo zoneOfControlMarkerCreatorMethod = internalType.GetMethod("ZoneOfControlMarkerCreator", BindingFlags.NonPublic | BindingFlags.Instance);
+                    MethodInfo prepareShortActorInfoMethod = internalType.GetMethod("PrepareShortActorInfo", BindingFlags.NonPublic | BindingFlags.Instance);
 
-                    if (methodToPatch != null)
+                    if (zoneOfControlMarkerCreatorMethod != null)
                     {
-                        harmony.Patch(methodToPatch, postfix: new HarmonyMethod(typeof(TFTVVanillaFixes), nameof(PatchResizeGroundMarker)));
+                        harmony.Patch(zoneOfControlMarkerCreatorMethod, postfix: new HarmonyMethod(typeof(TFTVVanillaFixes), nameof(PatchResizeGroundMarker)));
                     }
-                    else
+                    if (prepareShortActorInfoMethod != null)
                     {
-
+                       // TFTVLogger.Always($"patch should be running");
+                        harmony.Patch(prepareShortActorInfoMethod, postfix: new HarmonyMethod(typeof(TFTVVanillaFixes), nameof(PrepareShortActorInfo)));
                     }
                 }
                 else
@@ -124,6 +128,35 @@ namespace TFTV
                     __result.StartScale /= 2.05f;
                     __result.StartScale *= 1.6f;
                 }
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
+        }
+
+        public static void PrepareShortActorInfo(MethodBase __originalMethod, TacticalActor actor, ref ShortActorInfoTooltipData __result)
+        {
+            try
+            {        
+                string movement = TFTVCommonMethods.ConvertKeyToString("KEY_MOVEMENT");
+
+                string value = string.Format("{0}/{1}", actor.CharacterStats.ActionPoints.IntMax, actor.CharacterStats.ActionPoints.IntMax);
+
+                if(actor.TacticalLevel.CurrentFaction == actor.TacticalFaction) 
+                {
+                    value = string.Format("{0}/{1}", actor.CharacterStats.ActionPoints.IntValue, actor.CharacterStats.ActionPoints.IntMax);
+                }
+
+                ShortActorInfoTooltipDataEntry newMovement = new ShortActorInfoTooltipDataEntry()
+                {
+                    TextContent = movement,
+                    ValueContent = value
+                };
+
+                __result.Entries[3] = newMovement;
+
             }
             catch (Exception e)
             {
@@ -240,7 +273,7 @@ namespace TFTV
                                                             select t)
                         {
 
-                          //  if(item.Statuses.Any(s => s.Def.EffectName == "Paralysed") && )
+                            //  if(item.Statuses.Any(s => s.Def.EffectName == "Paralysed") && )
 
                             // TFTVLogger.Always($"considering {item.SourceTemplate.name}");
 
@@ -858,7 +891,7 @@ namespace TFTV
 
 
 
-       
+
 
 
 

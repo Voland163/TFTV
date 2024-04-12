@@ -100,15 +100,10 @@ namespace TFTV
                   tacticalDeployZone1 = zones.First();
                   tacticalDeployZone1.SetPosition(zones.First().Pos + new Vector3(3, 0, 3));*/
 
-                foreach(TacticalActorBase tacticalActorBase in controller.Map.GetActors<TacticalActorBase>().Where(tab=>tab.TacticalFaction==controller.GetFactionByCommandName("aln"))) 
-                {
-                    TFTVLogger.Always($"{tacticalActorBase.name} has TacticalPerceptionBase? {tacticalActorBase.TacticalPerceptionBase!=null}");
-                
-                }
-                
+              
 
 
-             /*   MethodInfo createVisuals = AccessTools.Method(typeof(TacticalDeployZone), "CreateVisuals");
+                MethodInfo createVisuals = AccessTools.Method(typeof(TacticalDeployZone), "CreateVisuals");
 
                 foreach (TacticalDeployZone tacticalDeployZone in zones)
                 {
@@ -134,12 +129,7 @@ namespace TFTV
                     //    TFTVLogger.Always($"{tacticalDeployZone.DeployConditions}");
                 }
 
-                foreach(TacticalExitZone tacticalExitZone in exitZone) 
-                {
-
-                    TFTVLogger.Always($"{tacticalExitZone.name} has tac perc base? {tacticalExitZone.TacticalPerceptionBase!=null}");
-                
-                }
+              
 
                 //   createVisuals.Invoke(tacticalDeployZone1, null);
 
@@ -147,7 +137,7 @@ namespace TFTV
 
                 //  GetCenterSpaceDeployZones(controller);
                 //  GetTunnelDeployZones(controller);
-             */
+             
             }
 
             catch (Exception e)

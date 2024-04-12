@@ -10,6 +10,7 @@ using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
+using PhoenixPoint.Common.Game;
 using PhoenixPoint.Common.Levels.Missions;
 using PhoenixPoint.Common.Levels.Params;
 using PhoenixPoint.Common.Utils;
@@ -43,6 +44,7 @@ using PhoenixPoint.Tactical.Levels.FactionObjectives;
 using PhoenixPoint.Tactical.Prompts;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
@@ -529,15 +531,6 @@ namespace TFTV
                 internal static bool sirenPresent = false;
                 internal static bool wallsOfJericho = false;
 
-                /*
-                 * List<ClassTagDef> relevantAlienClasses = new List<ClassTagDef>()
- {
- DefCache.GetDef<ClassTagDef>("Acheron_ClassTagDef"),DefCache.GetDef<ClassTagDef>("Chiron_ClassTagDef"),
-     DefCache.GetDef<ClassTagDef>("Crabman_ClassTagDef"),DefCache.GetDef<ClassTagDef>("Queen_ClassTagDef"),
-     DefCache.GetDef<ClassTagDef>("Siren_ClassTagDef"),DefCache.GetDef<ClassTagDef>("Fishman_ClassTagDef"),
- };
-                 */
-
                 internal static void CheckOnCaptiveDestroyed(GeoUnitDescriptor geoUnitDescriptor)
                 {
                     try
@@ -931,18 +924,24 @@ namespace TFTV
 
                         string text = TFTVCommonMethods.ConvertKeyToString(Defs.Key_UnderAttackBaseText);
 
-                        if (sirenPresent)
-                        {
-                            text += $"\n{TFTVCommonMethods.ConvertKeyToString("BASEDEFENSE_CAPTIVE_SIREN_TEXT")}\n";
-                        }
+
                         if (scyllaPresent)
                         {
                             text += $"\n{TFTVCommonMethods.ConvertKeyToString("BASEDEFENSE_CAPTIVE_SCYLLA_TEXT")}\n";
                         }
+                        else if (sirenPresent)
+                        {
+                            text += $"\n{TFTVCommonMethods.ConvertKeyToString("BASEDEFENSE_CAPTIVE_SIREN_TEXT")}\n";
+                        }
+                        
                         if (wallsOfJericho)
                         {
                             text += $"\n{TFTVCommonMethods.ConvertKeyToString("BASEDEFENSE_NJWALLS_TEXT")}";
                         }
+
+                        scyllaPresent = false;
+                        sirenPresent = false;
+                        wallsOfJericho = false;
 
                         _underAttackEventDef.GeoscapeEventData.Description[0].General = new LocalizedTextBind(text, true);
 
@@ -1090,6 +1089,8 @@ namespace TFTV
                         ContainmentBreach.BaseCanHaveContainmentBreach(phoenixBase);
                         ContainmentBreach.AdjustUnderAttackEvent();
                         controller.EventSystem.TriggerGeoscapeEvent(_underAttackEventDef.EventID, context);
+
+                        
 
                         if (PandoransThatCanEscape.Count > 0)
                         {
@@ -1419,6 +1420,8 @@ namespace TFTV
         internal class Briefing
         {
 
+            internal static Sprite _defaultPicForBaseDefense = null;
+
             //Patch to change briefing depending on attack progress
             [HarmonyPatch(typeof(PhoenixBaseDefenseDataBind), "ModalShowHandler")]
             public static class PhoenixBaseDefenseDataBind_ModalShowHandler_DontCancelMission_patch
@@ -1430,6 +1433,11 @@ namespace TFTV
 
                         GeoMission geoMission = (GeoMission)modal.Data;
                         GeoLevelController controller = geoMission.Level;
+
+                        if (_defaultPicForBaseDefense == null) 
+                        {
+                            _defaultPicForBaseDefense = __instance.Background.sprite;             
+                        }
 
                         if (PhoenixBasesUnderAttack.ContainsKey(geoMission.Site.SiteId) || PhoenixBasesInfested.Contains(geoMission.Site.SiteId))
                         {
@@ -1489,6 +1497,14 @@ namespace TFTV
                             Text description = __instance.GetComponentInChildren<ObjectivesController>().Objectives;
                             description.GetComponent<I2.Loc.Localize>().enabled = false;
                             description.text = objectivesText.Localize();
+                        }
+                        else 
+                        {
+                            __instance.Background.sprite = _defaultPicForBaseDefense;
+                            Text description = __instance.GetComponentInChildren<ObjectivesController>().Objectives;
+                            description.GetComponent<I2.Loc.Localize>().enabled = true;
+                            description.text = TFTVCommonMethods.ConvertKeyToString("KEY_MISSION_PX_BASE_DEFENCE_DESCRIPTION");
+
                         }
                     }
                     catch (Exception e)
@@ -1695,7 +1711,6 @@ namespace TFTV
                     }
                 }
 
-
                 public static void ModifyForBaseDefense(UIStateRosterDeployment uIStateRosterDeployment, List<GeoRosterDeploymentItem> deploymentItems) 
                 {
                     try
@@ -1717,9 +1732,6 @@ namespace TFTV
                         TFTVLogger.Error(e);
                     }
                 }
-
-               
-
             }
 
             private static void SetBaseDefenseSitrep(GeoMission mission)
@@ -3074,10 +3086,17 @@ namespace TFTV
                 try
                 {
                     MissionTagDef pxBaseDefenseTag = DefCache.GetDef<MissionTagDef>("MissionTypePhoenixBaseDefence_MissionTagDef");
+                    
 
                     if (__instance.MissionDef.MissionTags.Contains(pxBaseDefenseTag))
                     {
                         GeoSite phoenixBase = __instance.Site;
+
+                        if (!PhoenixBasesUnderAttackSchedule.ContainsKey(phoenixBase.SiteId)) 
+                        {
+                            return;
+                        
+                        }
 
                         double timeSpanHoursTimer = phoenixBase.ExpiringTimerAt.TimeSpan.TotalHours;
                         double timeSpanHoursNow = phoenixBase.GeoLevel.Timing.Now.TimeSpan.TotalHours;

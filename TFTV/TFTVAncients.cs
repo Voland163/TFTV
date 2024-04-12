@@ -392,8 +392,16 @@ namespace TFTV
                                                                      where x.IsAlive
                                                                      select x;
 
+
+
                             int deadHoplites = allHoplites.Where(h => h.IsDead).Count();
                             float proportion = ((float)deadHoplites / (float)(allHoplites.Count()));
+
+                            if (allHoplites.Count() == 0) 
+                            {
+                                proportion = 1;                           
+                            }
+
                             CyclopsDefenseStatus.Multiplier = baseMultiplier + proportion * 0.5f; //+ HoplitesKilled * 0.1f;
                             TFTVLogger.Always($"There are {allHoplites.Count()} hoplites in total, {deadHoplites} are dead. Proportion is {proportion} and base multiplier is {baseMultiplier}. Cyclops Defense level is {CyclopsDefenseStatus.Multiplier}");
                         }

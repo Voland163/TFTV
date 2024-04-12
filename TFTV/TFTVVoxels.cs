@@ -1,4 +1,5 @@
-﻿using Base.Defs;
+﻿using Base.Core;
+using Base.Defs;
 using Base.Levels.Nav;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
@@ -271,7 +272,6 @@ namespace TFTV
         internal class TFTVGoo
         {
 
-
             /// <summary>
             /// Code to change goo navigation behaviour, implementation idea from Codemite (all hail Codemite!)
             /// </summary>
@@ -288,20 +288,17 @@ namespace TFTV
                     try
                     {
                         TacStatsModifyStatusDef slowedStatus = DefCache.GetDef<TacStatsModifyStatusDef>("Slowed_StatusDef");
-                       
 
                         TacticalVoxel voxel = ____actor.TacticalLevel.VoxelMatrix.GetVoxel(dstPos);
 
                         float actorRadius = ____actor.NavigationComponent.AgentNavSettings.AgentRadius;
 
-                        if (voxel != null && voxel.GetVoxelType() == TacticalVoxelType.Goo && 
-                            !____actor.HasStatus(slowedStatus) && 
-                           // actorRadius <= TacticalMap.HalfTileSize && 
+                        if (voxel != null && voxel.GetVoxelType() == TacticalVoxelType.Goo &&
+                            !____actor.HasStatus(slowedStatus) &&
                             ____actor.GetAbility<GooDamageMultiplierAbility>() == null)
                         {
-                            __result = 2f;
+                            __result = 20f;//2f;
                         }
-
                     }
                     catch (Exception e)
                     {
@@ -371,13 +368,13 @@ namespace TFTV
                 {
                     if (actor.Status == null || actor.TacticalPerceptionBase == null)
                     {
-                       
+
                         return;
 
                     }
                     TacStatsModifyStatusDef slowedStatus = DefCache.GetDef<TacStatsModifyStatusDef>("Slowed_StatusDef");
                     TacStatsModifyStatus status = actor.Status.GetStatus<TacStatsModifyStatus>(slowedStatus);
-                   // GooDamageMultiplierAbilityDef gooImmunity = DefCache.GetDef<GooDamageMultiplierAbilityDef>("GooImmunity_AbilityDef");
+                    // GooDamageMultiplierAbilityDef gooImmunity = DefCache.GetDef<GooDamageMultiplierAbilityDef>("GooImmunity_AbilityDef");
 
                     if (actor.GetAbility<GooDamageMultiplierAbility>() == null && actor.TacticalPerceptionBase.IsTouchingVoxel(TacticalVoxelType.Goo, pos))
                     {
@@ -393,6 +390,46 @@ namespace TFTV
                     throw;
                 }
             }
+
+            public static void CheckActorTouchingGoo(TacticalPerceptionBase tacticalPerceptionBase)
+            {
+                try
+                {
+                    TacticalActorBase tacticalActorBase = tacticalPerceptionBase.TacActorBase;
+                    TacticalActor tacticalActor = tacticalActorBase as TacticalActor;
+                    TacStatsModifyStatusDef slowedStatus = DefCache.GetDef<TacStatsModifyStatusDef>("Slowed_StatusDef");
+
+                    TacticalLevelController controller = GameUtl.CurrentLevel().GetComponent<TacticalLevelController>();           
+
+                    if (tacticalActor == null
+                        || controller.CurrentFaction != tacticalActor.TacticalFaction
+                        || tacticalActor.GetAbility<GooDamageMultiplierAbility>() != null
+                        || tacticalActor.Status.HasStatus(slowedStatus))
+                    {
+                        return;
+                    }
+
+                    foreach (TacticalVoxel voxel in tacticalActorBase.TacticalLevel.VoxelMatrix.GetVoxels(tacticalPerceptionBase.GetBounds()))
+                    {
+                        if (voxel.GetVoxelType() == TacticalVoxelType.Goo)
+                        {
+                            TacticalNavigationComponent navComponent = tacticalActor.TacticalNav;
+                            float apToSubtract = 1 / navComponent.DistanceToAPFactor;
+
+                            tacticalActor.CharacterStats.ActionPoints.Subtract(apToSubtract);
+
+                            TFTVLogger.Always($"subtracting {apToSubtract} from {tacticalActor.DisplayName} because traversing Goo");
+                        }
+                    }     
+                }
+
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+
+            }
+
 
 
             [HarmonyPatch(typeof(TacticalVoxelMatrix), "UpdateGooedStatus")]

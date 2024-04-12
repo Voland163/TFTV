@@ -12,6 +12,7 @@ using PhoenixPoint.Tactical.Levels;
 using PhoenixPoint.Tactical.Levels.ActorDeployment;
 using PhoenixPoint.Tactical.Levels.Destruction;
 using PhoenixPoint.Tactical.Levels.Missions;
+using PhoenixPoint.Tactical.Levels.Mist;
 using PhoenixPoint.Tactical.View.ViewControllers;
 using System;
 using System.Collections.Generic;
@@ -325,7 +326,7 @@ namespace TFTV
             public static IEnumerable<TacticalDeployZone> Postfix(IEnumerable<TacticalDeployZone> results, TacParticipantSpawn __instance, IEnumerable<TacticalDeployZone> zones, ActorDeployData deployData, int turnNumber, bool includeFutureTurns)
             {
                
-                results = TFTVBaseDefenseTactical.StartingDeployment.PlayerDeployment.CullPlayerDeployZonesBaseDefense(results, deployData, turnNumber, __instance.TacMission.MissionData.MissionType);
+                results = TFTVBaseDefenseTactical.StartingDeployment.PlayerDeployment.CullPlayerDeployZonesBaseDefense(results, deployData, turnNumber, __instance.TacMission.MissionData.MissionType, __instance.TacticalFaction.TacticalLevel);
                 results = TFTVBehemothAndRaids.Behemoth.BehemothMission.CullPlayerDeployZonesBehemoth(results, deployData, turnNumber, __instance.TacMission.MissionData.MissionType);
 
                 foreach (TacticalDeployZone zone in results)
@@ -392,6 +393,7 @@ namespace TFTV
                 try
                 {
                     TFTVVoxels.TFTVFire.CheckFireQuencherTouchingFire(__instance);
+                    TFTVVoxels.TFTVGoo.CheckActorTouchingGoo(__instance);
                 }
 
                 catch (Exception e)

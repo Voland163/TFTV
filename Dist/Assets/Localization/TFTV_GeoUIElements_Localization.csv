@@ -182,3 +182,4 @@ KEY_DEPLOYMENT_ZONE_TIP,Text,,Choose where or with which group to deploy the uni
 KEY_VIVISECTION_WARNING,Text,,Are you sure? You have not vivisected this Pandoran yet.,,,,,,,,
 KEY_CANT_DEMOLISH,Text,,"<b>Can't demolish this facility, as otherwise other facilities will be cut off from the base entrance!</b>",,,,,,,,
 KEY_MESSAGE_HAVEN_LEADER_DOESNT_TRADE,Text,,Diplomatic relations with the Haven are too low. The Haven leader refuses to trade with you.,,,,,,,,
+KEY_BASE_PANDORAN_BASE_REVEALED_FAILED_DESCRIPTION,Text,,"Analysis of the Pandoran’s movement patterns have failed to identify their origin. The exact location of the Pandoran Colony responsible for the attack remains unknown. If a colony attacks from within Phoenix Base scanning range, there is a higher chance that it will be detected.",,,,,,,,

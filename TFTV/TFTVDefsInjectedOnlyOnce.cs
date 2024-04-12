@@ -3642,9 +3642,7 @@ namespace TFTV
 
                 newNanoVest.ManufactureTech = 20;
                 newNanoVest.ManufactureMaterials = 30;
-
             }
-
 
             catch (Exception e)
             {
@@ -3662,10 +3660,7 @@ namespace TFTV
                 fireVest.Abilities = new AbilityDef[] { DefCache.GetDef<DamageMultiplierAbilityDef>("AcidResistant_DamageMultiplierAbilityDef") };
                 fireVest.ViewElementDef.LargeIcon = Helper.CreateSpriteFromImageFile("modules_fireresvest.png");
                 fireVest.ViewElementDef.InventoryIcon = fireVest.ViewElementDef.LargeIcon;
-
-
             }
-
 
             catch (Exception e)
             {
@@ -3945,8 +3940,6 @@ namespace TFTV
                 DefCache.GetDef<ExistingResearchRequirementDef>("PX_BlastResistanceVest_ResearchDef_ExistingResearchRequirementDef_0").ResearchID = "PX_Alien_Acidworm_ResearchDef";
 
                 DefCache.GetDef<ResearchDef>("PX_Alien_Acidworm_ResearchDef").ViewElementDef.BenefitsText.LocalizationKey = "PX_ALIEN_ACIDWORM_RESEARCHDEF_BENEFITS";
-
-
 
             }
 

@@ -1,6 +1,7 @@
 ﻿using Base;
 using Base.Core;
 using Base.Defs;
+using Base.Utils.Maths;
 using Code.PhoenixPoint.Tactical.Entities.Equipments;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
@@ -11,6 +12,7 @@ using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.Items;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.Abilities;
+using PhoenixPoint.Geoscape.Entities.Missions;
 using PhoenixPoint.Geoscape.Entities.PhoenixBases;
 using PhoenixPoint.Geoscape.Entities.Research;
 using PhoenixPoint.Geoscape.Entities.Research.Requirement;
@@ -21,6 +23,7 @@ using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.Entities.Statuses;
 using PhoenixPoint.Tactical.Entities.Weapons;
 using PhoenixPoint.Tactical.Levels;
+using PhoenixPoint.Tactical.View.ViewModules;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -39,8 +42,7 @@ namespace TFTV
 
         private static bool _usingEchoHead = false;
 
-
-
+ 
 
         [HarmonyPatch(typeof(TacticalContribution), "AddContribution")]
         public static class TFTV_TacticalContribution_AddContribution

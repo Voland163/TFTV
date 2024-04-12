@@ -1540,7 +1540,7 @@ namespace TFTV
                 }
                 else
                 {
-                   // TFTVLogger.Always($"tactical difficulty is null; {controller.Difficulty.Order}");
+                   TFTVLogger.Always($"tactical difficulty is {TFTVNewGameOptions.InternalDifficultyCheckTactical}");
 
                     if (TFTVNewGameOptions.InternalDifficultyCheckTactical == 1)
                     {
