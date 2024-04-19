@@ -1,9 +1,10 @@
 ﻿using Base;
 using Base.Core;
 using Base.Defs;
-using Base.Utils.Maths;
+using Base.Entities.Statuses;
 using Code.PhoenixPoint.Tactical.Entities.Equipments;
 using HarmonyLib;
+using PhoenixPoint.Common.ContextHelp;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.Addons;
@@ -12,18 +13,17 @@ using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.Items;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.Abilities;
-using PhoenixPoint.Geoscape.Entities.Missions;
 using PhoenixPoint.Geoscape.Entities.PhoenixBases;
-using PhoenixPoint.Geoscape.Entities.Research;
 using PhoenixPoint.Geoscape.Entities.Research.Requirement;
 using PhoenixPoint.Geoscape.Levels;
+using PhoenixPoint.Tactical;
+using PhoenixPoint.Tactical.ContextHelp;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.Entities.Statuses;
 using PhoenixPoint.Tactical.Entities.Weapons;
 using PhoenixPoint.Tactical.Levels;
-using PhoenixPoint.Tactical.View.ViewModules;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -42,7 +42,94 @@ namespace TFTV
 
         private static bool _usingEchoHead = false;
 
- 
+        [HarmonyPatch(typeof(TacticalActor), "GetDefaultShootAbility")]
+        public static class TFTV_TacticalActor_GetDefaultShootAbility
+        {
+            public static void Postfix(TacticalActor __instance, ref ShootAbility __result)
+            {
+                try
+                {
+                    ShootAbilityDef stabilityTaurusShootAbilityDef = (ShootAbilityDef)Repo.GetDef("76ae9352-1343-4b95-964c-036341b6a0eb");
+                    ShootAbilityDef stabilityMissileShootAbilityDef = (ShootAbilityDef)Repo.GetDef("df2e83d1-8688-4e47-8559-cc6a9f9906d1");
+
+                    if (__instance.GetAbilityWithDef<ShootAbility>(stabilityTaurusShootAbilityDef) != null) 
+                    {
+                        __result = __instance.GetAbilityWithDef<ShootAbility>(stabilityTaurusShootAbilityDef);
+                    }
+                    else if (__instance.GetAbilityWithDef<ShootAbility>(stabilityMissileShootAbilityDef) != null)
+                    {
+                        __result = __instance.GetAbilityWithDef<ShootAbility>(stabilityMissileShootAbilityDef);
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
+
+
+
+        [HarmonyPatch(typeof(TacContextHelpManager), "OnStatusApplied")]
+        public static class TFTV_TacContextHelpManager_OnApply
+        {
+            public static bool Prefix(TacContextHelpManager __instance, Status status)
+            {
+                try
+                {               
+                    if (!(status is TacStatus tacStatus) || tacStatus.StatusComponent == null)
+                    {
+                        TFTVLogger.Always($"status null! returning to avoid softlock");
+                        return false;
+                    }
+
+                    return true;
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
+
+
+        [HarmonyPatch(typeof(SlotStateStatus), "OnApply")]
+        public static class TFTV_SlotStateStatus_OnApply
+        {
+            public static bool Prefix(SlotStateStatus __instance, StatusComponent statusComponent)
+            {
+                try
+                {
+               
+                    if (__instance.Applied)
+                    {
+                        return true;
+                    }
+
+                    string targetSlotName = TacUtil.GetStatusTargetSlotName(__instance);
+
+                    if (targetSlotName.IsNullOrEmpty())
+                    {
+                        TFTVLogger.Always($"{__instance.SlotStateStatusDef.name} status failed to apply to! Target slot not supplied! TFTV Kludge to prevent Softlock");
+                        return false;
+                    }
+
+                    return true;
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
+
+
+
 
         [HarmonyPatch(typeof(TacticalContribution), "AddContribution")]
         public static class TFTV_TacticalContribution_AddContribution
@@ -57,14 +144,14 @@ namespace TFTV
                         return;
                     }
 
-                    if (!____actor.Status.HasStatus<MindControlStatus>() || ____actor.Status.GetStatus<MindControlStatus>().ControllerActor==null) 
+                    if (!____actor.Status.HasStatus<MindControlStatus>() || ____actor.Status.GetStatus<MindControlStatus>().ControllerActor == null)
                     {
-                        return;                    
+                        return;
                     }
 
                     TacticalActor controllingActor = ____actor.Status.GetStatus<MindControlStatus>().ControllerActor;
-                  
-                  // TFTVLogger.Always($"{controllingActor.name} has {controllingActor.Contribution.Contribution} CP");
+
+                    // TFTVLogger.Always($"{controllingActor.name} has {controllingActor.Contribution.Contribution} CP");
 
                     FieldInfo contributionFieldInfo = typeof(TacticalContribution).GetField("_contribution", BindingFlags.NonPublic | BindingFlags.Instance);
 
@@ -74,7 +161,7 @@ namespace TFTV
 
                     contributionFieldInfo.SetValue(controllingActorContribution, controllingActorContributionValue);
 
-                   // TFTVLogger.Always($"{controllingActor.name} now has {controllingActor.Contribution.Contribution} CP");
+                    // TFTVLogger.Always($"{controllingActor.name} now has {controllingActor.Contribution.Contribution} CP");
 
                     Debug.Log($"+{cp} cp for {controllingActor.name} (through Mind Controlled Unit).");
 
@@ -187,10 +274,9 @@ namespace TFTV
                 {
                     if (__instance.TacticalAbilityDef == DefCache.GetDef<ShootAbilityDef>("EchoHead_ShootAbilityDef"))
                     {
-                        if (__instance.SelectedEquipment.GameTags.Contains(DefCache.GetDef<GameTagDef>("SilencedWeapon_TagDef")))
+                        if (__instance.SelectedEquipment!=null && __instance.SelectedEquipment.GameTags.Contains(DefCache.GetDef<GameTagDef>("SilencedWeapon_TagDef")))
                         {
                             __result = null;
-
                         }
                     }
                 }

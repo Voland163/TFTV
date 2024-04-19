@@ -74,19 +74,8 @@ namespace TFTV
             {
                 try
                 {
-                    /*   TFTVLogger.Always($"trying to load event");
-                       TFTVLogger.Always($"event is {__instance.EventID} ");
-
-                       if (__instance.EventID.Contains("VoidOmen")) 
-                       {
-                           GeoLevelController component = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
-
-                           TFTVODIandVoidOmenRoll.GenerateVoidOmenEvent(component, TFTVODIandVoidOmenRoll.GenerateReportData(component), true, "", 15);   
-                       }*/
-
+                  
                     TFTVDiplomacyPenalties.ImplementDiplomaticPenalties(null, __instance);
-
-
                 }
 
                 catch (Exception e)
@@ -97,66 +86,16 @@ namespace TFTV
             }
         }
 
-        private static readonly List<string> failEventsNoSecondChances = new List<string>()
-        {
-"PROG_AN0_FAIL","PROG_AN2_FAIL","PROG_AN4_FAIL","PROG_AN6_FAIL1","PROG_AN6_FAIL2","PROG_LE0_FAIL","PROG_KE2_FAIL","PROG_NJ0_FAIL","PROG_NJ1_FAIL1",
-"PROG_NJ2_FAIL","PROG_PU12_FAIL","PROG_PU14_FAIL","PROG_PU8_FAIL","PROG_PX1_FAIL","PROG_PX13_FAIL","PROG_PX14_FAIL","PROG_PX15_FAIL","PROG_SY0_FAIL",
-"PROG_SY1_FAIL1","PROG_SY1_FAIL2", "PROG_SY2_FAIL", "PROG_SY3_FAIL","PROG_SY4_FAIL1","PROG_SY4_FAIL2"
-        };
 
         [HarmonyPatch(typeof(GeoscapeEventSystem), "OnEventTriggered")]
         public static class GeoscapeEventSystem_OnGeoscapeEvent_patch
         {
-            public static bool Prefix(GeoscapeEventData @event, GeoscapeEventSystem __instance)// @event)
+            public static void Prefix(GeoscapeEventData @event, GeoscapeEventSystem __instance)// @event)
             {
                 try
                 {
-                    //PROG_AN0_FAIL_GeoscapeEventDef
-                    //PROG_AN2_FAIL_GeoscapeEventDef
-                    //PROG_AN4_FAIL_GeoscapeEventDef
-                    //PROG_AN6_FAIL1_GeoscapeEventDef
-                    //PROG_AN6_FAIL2_GeoscapeEventDef
-
-                    //PROG_LE0_FAIL_GeoscapeEventDef
-                    //PROG_KE2_FAIL_GeoscapeEventDef
-                    //PROG_NJ0_FAIL_GeoscapeEventDef
-                    //PROG_NJ1_FAIL_GeoscapeEventDef
-                    //PROG_NJ2_FAIL_GeoscapeEventDef
-
-                    //PROG_PU12_FAIL_GeoscapeEventDef //has a timer
-                    //PROG_PU14_FAIL_GeoscapeEventDef
-
-                    //PROG_PU8_FAIL_GeoscapeEventDef //has a timer
-
-                    //PROG_PX1_FAIL_GeoscapeEventDef
-                    //PROG_PU14_FAIL_GeoscapeEventDef
-                    //PROG_PX13_FAIL_GeoscapeEventDef
-                    //PROG_PX14_FAIL_GeoscapeEventDef
-                    //PROG_PX15_FAIL_GeoscapeEventDef
-
-                    //PROG_SY0_FAIL_GeoscapeEventDef
-                    //PROG_SY1_FAIL1_GeoscapeEventDef
-                    //PROG_SY1_FAIL2_GeoscapeEventDef
-                    //PROG_SY2_FAIL_GeoscapeEventDef
-                    //PROG_SY3_FAIL_GeoscapeEventDef
-                    //PROG_SY4_FAIL1_GeoscapeEventDef
-                    //PROG_SY4_FAIL2_GeoscapeEventDef
-
-
-
-
-                    /*  if (TFTVNewGameOptions.NoSecondChances && failEventsNoSecondChances.Contains(@event.EventID))
-                      {
-                          TFTVLogger.Always($"Canceling event {@event.EventID} because No Second Chances is in effect!");
-
-                          return false;
-                      }*/
-
+                   
                     TFTVDiplomacyPenalties.ImplementDiplomaticPenalties(@event, null);
-
-
-                    return true; //TFTVInfestation.ScienceOfMadness.CancelProgFS3IfTrappedInMistAlreadyTriggered(@event, __instance);
-
                 }
 
 
@@ -283,7 +222,7 @@ namespace TFTV
         }
 
         [HarmonyPatch(typeof(GeoFaction), "OnDiplomacyChanged")]
-        public static class GeoBehemothActor_OnDiplomacyChanged_patch
+        public static class GeoFaction_OnDiplomacyChanged_patch
         {
 
             public static void Postfix(GeoFaction __instance, PartyDiplomacy.Relation relation, int newValue)

@@ -2841,8 +2841,13 @@ namespace TFTV
                                     KludgeSite = site;
                                     TFTVLogger.Always("Progress 1 reached!");
                                     MethodInfo registerMission = typeof(GeoSite).GetMethod("RegisterMission", BindingFlags.NonPublic | BindingFlags.Instance);
-                                    registerMission.Invoke(site, new object[] { site.ActiveMission });
 
+                                    TFTVLogger.Always($"registerMission null?? {registerMission==null} site has no active mission?? {site.ActiveMission==null}");
+
+                                    if (registerMission != null && site.ActiveMission != null)
+                                    {
+                                        registerMission.Invoke(site, new object[] { site.ActiveMission });
+                                    }
 
                                     geoSiteVisualsController.TimerController.gameObject.SetChildrenVisibility(false);
                                     geoSiteVisualsController.BaseIDText.gameObject.SetActive(true);

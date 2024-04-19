@@ -149,7 +149,6 @@ namespace TFTV
                         ProgAnuSupportive.GeoscapeEventData.Choices[1].Outcome.Diplomacy.Add(TFTVCommonMethods.GenerateDiplomacyOutcome(Synedrion, PhoenixPoint, -10));
                         TFTVLogger.Always("Harder diplomacy is on, changing event " + @event.EventID);
                     }
-
                     else if (eventID == ProgAnuPact.EventID)
                     {
                         ProgAnuPact.GeoscapeEventData.Choices[0].Outcome.Diplomacy.Add(TFTVCommonMethods.GenerateDiplomacyOutcome(Synedrion, PhoenixPoint, -15));
@@ -378,18 +377,6 @@ namespace TFTV
             {
                 TFTVLogger.Error(e);
             }
-
-
-
-
-
-
-
-
         }
-
-
-
-
     }
 }

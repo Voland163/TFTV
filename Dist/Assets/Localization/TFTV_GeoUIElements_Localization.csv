@@ -183,3 +183,27 @@ KEY_VIVISECTION_WARNING,Text,,Are you sure? You have not vivisected this Pandora
 KEY_CANT_DEMOLISH,Text,,"<b>Can't demolish this facility, as otherwise other facilities will be cut off from the base entrance!</b>",,,,,,,,
 KEY_MESSAGE_HAVEN_LEADER_DOESNT_TRADE,Text,,Diplomatic relations with the Haven are too low. The Haven leader refuses to trade with you.,,,,,,,,
 KEY_BASE_PANDORAN_BASE_REVEALED_FAILED_DESCRIPTION,Text,,"Analysis of the Pandoran’s movement patterns have failed to identify their origin. The exact location of the Pandoran Colony responsible for the attack remains unknown. If a colony attacks from within Phoenix Base scanning range, there is a higher chance that it will be detected.",,,,,,,,
+KEY_DLC3_INT_S1_P1,Text,,<color=#13c233>Eileen:</color> What the hell? This thing is huge!,,,,,,,,
+KEY_DLC3_INT_S1_P2,Text,,<color=#ec7762>Aurora:</color> HOSTILE DETECTED. COMBAT SOFTWARE SUITE MISSING.,,,,,,,,
+KEY_DLC3_INT_S2_P1,Text,,"<color=#13c233>Eileen:</color> We are under fire! Sartorius, do something!",,,,,,,,
+KEY_DLC3_INT_S2_P2,Text,,"<color=#ECBA62>Sartorius:</color> Eileen, my knowledge is not readily transferable. I need full system integration.
+
+<color=#ec7762> Aurora:</color> MERGE WITH ME.
+
+<color=#ECBA62>Sartorius:</color> It is the only way…",,,,,,,,
+KEY_DLC3_INT_S2_P3,Text,,An aircraft is destroyed when its Hull Points drop to 0.,,,,,,,,
+KEY_DLC3_INT_S2_P4,Text,,Make sure to Disengage before that happens!,,,,,,,,
+KEY_DLC3_INT_S3_P1,Text,,"<color=#ec7762>Aurora:</color> YOU
+<color=#ECBA62>Sartorius:</color> I
+<color=#607c7d>Aurora Sartorius:</color> WE... ARE... ONE...
+WEAPON systems READY. Nomad LAUNCHER operational.",,,,,,,,
+KEY_DLC3_INT_S3_P2,Text,,<color=#607c7d>Aurora Sartorius:</color> FEEL OUR WRATH!,,,,,,,,
+KEY_DLC3_INT_S3_P3_C,Text,,"To aim a weapon system, select your Weapon, then select the target icon.",,,,,,,,
+KEY_DLC3_INT_S3_P3_K,Text,,"To aim a weapon system left click your Weapon, then left-click the target icon.",,,,,,,,
+KEY_DLC3_INT_S4_P1,Text,,"Our aircraft has a defensive Module. The Afterburner makes us dodge any visually guided projectile, including the acid spit used by this Pandoran flyer.",,,,,,,,
+KEY_DLC3_INT_S4_P2,Text,,<color=#607c7d>Aurora Sartorius:</color> WE have INCOMING… engaging AFTERBURNER,,,,,,,,
+KEY_DLC3_INT_S5_P1,Text,,Damage done to disabled Modules is transferred directly to the Hull.,,,,,,,,
+KEY_DLC3_INT_S5_P2,Text,,<color=#ECBA62>Eileen:</color> Finish it! Blow this fragging monster out of the sky!,,,,,,,,
+KEY_DLC3_INT_S5_P3,Text,,<color=#607c7d> Aurora Sartorius:</color> Splash ONE!,,,,,,,,
+KEY_DLC3_INT_S6_P1,Text,,<color=#607c7d> Aurora Sartorius:</color> CODE RED! EMERGENCY DISENGAGE PROTOCOL ACTIVATED.,,,,,,,,
+KEY_DLC3_INT_S6_P2,Text,,"<color=#ECBA62>Eileen:</color> Thanks for sharing! Now go, go, go!",,,,,,,,

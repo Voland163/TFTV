@@ -12,6 +12,7 @@ using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.Levels.Missions;
 using PhoenixPoint.Geoscape.Core;
 using PhoenixPoint.Geoscape.Entities;
+using PhoenixPoint.Geoscape.Entities.Missions;
 using PhoenixPoint.Geoscape.Entities.Research;
 using PhoenixPoint.Geoscape.Entities.Sites;
 using PhoenixPoint.Geoscape.Levels;
@@ -45,6 +46,13 @@ namespace TFTV
         private static readonly TacCrateDataDef cratesNotResources = DefCache.GetDef<TacCrateDataDef>("Default_TacCrateDataDef");
         private static readonly TacticalFactionEffectDef defendersCanBeRecruited = DefCache.GetDef<TacticalFactionEffectDef>("CanBeRecruitedByPhoenix_FactionEffectDef");
         private static readonly GeoHavenZoneDef havenLab = DefCache.GetDef<GeoHavenZoneDef>("Research_GeoHavenZoneDef");
+
+
+        private static readonly GeoFactionDef nJFactionDef = DefCache.GetDef<GeoFactionDef>("NewJericho_GeoFactionDef");
+        private static readonly GeoFactionDef sYNFactionDef = DefCache.GetDef<GeoFactionDef>("Synedrion_GeoFactionDef");
+        private static readonly GeoFactionDef anuFactionDef = DefCache.GetDef<GeoFactionDef>("Anu_GeoFactionDef");
+
+        private static readonly PartyDiplomacySettingsDef partyDiplomacySettingsDef = DefCache.GetDef<PartyDiplomacySettingsDef>("PartyDiplomacySettingsDef");
 
         public static bool[] VoidOmensCheck = new bool[20];
 
@@ -304,16 +312,18 @@ namespace TFTV
                 }
                 if (CheckFordVoidOmensInPlay(controller).Contains(2))
                 {
-                    PartyDiplomacySettingsDef partyDiplomacySettingsDef = DefCache.GetDef<PartyDiplomacySettingsDef>("PartyDiplomacySettingsDef");
                     partyDiplomacySettingsDef.InfiltrationFactionMultiplier = 0.5f;
                     partyDiplomacySettingsDef.InfiltrationLeaderMultiplier = 0.75f;
+
+
                     VoidOmensCheck[2] = true;
                 }
                 else if (!CheckFordVoidOmensInPlay(controller).Contains(2) && VoidOmensCheck[2])
                 {
-                    PartyDiplomacySettingsDef partyDiplomacySettingsDef = DefCache.GetDef<PartyDiplomacySettingsDef>("PartyDiplomacySettingsDef");
+
                     partyDiplomacySettingsDef.InfiltrationFactionMultiplier = 1f;
                     partyDiplomacySettingsDef.InfiltrationLeaderMultiplier = 1.5f;
+
                     VoidOmensCheck[2] = false;
                     TFTVLogger.Always("The check for VO#2 went ok");
                 }
@@ -1519,6 +1529,32 @@ namespace TFTV
                 }
             }
         }
+
+        //VO2 apply penalty to diplo reward from sabotage missions
+        [HarmonyPatch(typeof(GeoSabotageZoneMission), "AddFactionRequestReward")]
+        public static class TFTV_GeoSabotageZoneMission_AddFactionRequestReward
+        {
+            public static void Postfix(GeoSabotageZoneMission __instance, ref MissionRewardDescription reward)
+            {
+                try
+                {
+                    if (TFTVVoidOmens.CheckFordVoidOmensInPlay(__instance.Level).Contains(2))
+                    {
+                        foreach (FactionAggressionRequest factionRequest in __instance.FactionRequests)
+                        {
+                            reward.SetDiplomacyChange(__instance.Site.GeoLevel.GetFaction(factionRequest.FromFaction), __instance.Site.GeoLevel.ViewerFaction, (int)(factionRequest.FactionDiplomacyReward * 0.5f));
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
+
+
 
         //VO5 increase chance to spawn weapons in crates
         [HarmonyPatch(typeof(GeoMission), "PrepareTacticalGame")]

@@ -38,17 +38,7 @@ namespace TFTV
         {
             try
             {
-                GeoSite geoPhoenixBase = controller.Map.AllSites.FirstOrDefault(b => b.GetComponent<GeoPhoenixBase>() != null && b.ActiveMission != null);
-                TFTVLogger.Always($"found base {geoPhoenixBase.name}");
-                geoPhoenixBase.ActiveMission = null;
-                GeoMissionGenerator.ParticipantFilter participantFilter = new GeoMissionGenerator.ParticipantFilter { Faction = controller.SharedData.AlienFactionDef, ParticipantType = TacMissionParticipant.Residents };
-                TacMissionTypeDef mission = controller.MissionGenerator.GetRandomMission(controller.SharedData.SharedGameTags.BaseInfestationMissionTag, participantFilter);
-
-                GeoPhoenixBaseInfestationMission activeMission = new GeoPhoenixBaseInfestationMission(mission, geoPhoenixBase);
-               // geoPhoenixBase.SetActiveMission(activeMission);
-
-                geoPhoenixBase.RefreshVisuals();
-
+                TFTVBehemothAndRaids.behemothScenicRoute.Clear();
 
                 /*   FieldInfo basesField = AccessTools.Field(typeof(GeoPhoenixFaction), "_bases");
                    List<GeoPhoenixBase> bases = (List<GeoPhoenixBase>)basesField.GetValue(controller.PhoenixFaction);

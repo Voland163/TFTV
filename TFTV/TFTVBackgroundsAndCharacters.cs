@@ -206,6 +206,9 @@ namespace TFTV
                         TFTVVoidOmens.RemoveAllVoidOmens(context.Level);
                         __instance.TriggerGeoscapeEvent("AlistairRoads", context);
                         TFTVDelirium.RemoveDeliriumFromAllCharactersWithoutMutations(context.Level);
+                        TFTVBehemothAndRaids.behemothScenicRoute.Clear();
+                        TFTVBehemothAndRaids.targetsForBehemoth.Clear();
+                        TFTVBehemothAndRaids.flyersAndHavens.Clear();
                     }
                     else if (eventId == "Helena_Oneiromancy")
                     {

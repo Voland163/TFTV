@@ -56,6 +56,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using static PhoenixPoint.Common.Entities.Addons.AddonDef;
 using static PhoenixPoint.Tactical.Entities.Abilities.HealAbilityDef;
 using static PhoenixPoint.Tactical.Entities.Statuses.ItemSlotStatsModifyStatusDef;
 using static TFTV.TFTVCapturePandorans;
@@ -81,87 +82,17 @@ namespace TFTV
         {
             try
             {
-                foreach (TriggerAbilityZoneOfControlStatusDef triggerAbilityZoneOfControlStatus in Repo.GetAllDefs<TriggerAbilityZoneOfControlStatusDef>()) 
-                {
-                    TFTVLogger.Always($"{triggerAbilityZoneOfControlStatus.name}");
-                
-                }
+               foreach(WeaponDef weaponDef in Repo.GetAllDefs<WeaponDef>().Where(w=>w.RequiredSlotBinds.Any(b=>b.GameTagFilter==DefCache.GetDef<GameTagDef>("Heavy_ClassTagDef")))) 
+               {
+                    TFTVLogger.Always($"{weaponDef.name}", false);
 
-
-                foreach (SurveillanceAbilityDef triggerAbilityZoneOfControlStatus in Repo.GetAllDefs<SurveillanceAbilityDef>())
-                {
-                    TFTVLogger.Always($"{triggerAbilityZoneOfControlStatus.name}");
-
-                }
-
-                /*
-                foreach(AIActionDef aIActionDef in Repo.GetAllDefs<AIActionDef>()) 
-                {
-                    TFTVLogger.Always($"{aIActionDef.name}");
-
-                    foreach(AIAdjustedConsideration aIAdjustedConsideration in aIActionDef.EarlyExitConsiderations) 
+                    foreach(RequiredSlotBind requiredSlotBind in weaponDef.RequiredSlotBinds) 
                     {
-                        TFTVLogger.Always($"{aIAdjustedConsideration.Consideration.name}", false);
-
-
-
-                    } 
-                  
-                     
+                        TFTVLogger.Always($"{requiredSlotBind.RequiredSlot}, {requiredSlotBind.GameTagFilter}");
+                    
+                    }
                 
-                }*/
-
-
-
-
-
-                /*  foreach (UnitTemplateResearchRewardDef rewardDef in Repo.GetAllDefs<UnitTemplateResearchRewardDef>().
-                      Where(r => r.Template.name.Contains("FK")))
-
-                  {
-                      string armor = "";
-                      string equipment = "";
-
-                      foreach (ItemDef itemDef in rewardDef.Template.Data.BodypartItems)
-                      {
-
-                          armor += $"\n{itemDef.name}";
-
-                      }
-
-                      foreach (ItemDef itemDef in rewardDef.Template.Data.EquipmentItems)
-                      {
-                          equipment += $"\n{itemDef.name}";
-                      }
-
-                      TFTVLogger.Always($"{rewardDef.name} {rewardDef.Template.name} \n Armor: {armor}, \n Ready: {equipment}");
-
-
-                  }
-
-                  foreach (UnitTemplateResearchRewardDef rewardDef in Repo.GetAllDefs<UnitTemplateResearchRewardDef>().
-                     Where(r => r.Template.name.Contains("PU")))
-
-                  {
-                      string armor = "";
-                      string equipment = "";
-
-                      foreach (ItemDef itemDef in rewardDef.Template.Data.BodypartItems)
-                      {
-
-                          armor += $"\n{itemDef.name}";
-
-                      }
-
-                      foreach (ItemDef itemDef in rewardDef.Template.Data.EquipmentItems)
-                      {
-                          equipment += $"\n{itemDef.name}"; 
-                      }
-
-                      TFTVLogger.Always($"{rewardDef.name} {rewardDef.Template.name} \n Armor: {armor}, \n Ready: {equipment}");
-                  }
-                */
-
+                }
             }
             catch (Exception e)
             {
@@ -173,6 +104,7 @@ namespace TFTV
         {
             try
             {
+              
                 VanillaFixes();
 
                 GeoscapeEvents();
@@ -219,10 +151,7 @@ namespace TFTV
 
                 TFTVPureAndForsaken.Defs.InitDefs();
 
-               
-                //  TFTVExperimental.CheckActorReserchRequirement();
-
-              // Print();
+              //  Print();
 
             }
             catch (Exception e)
@@ -2312,7 +2241,7 @@ namespace TFTV
 
 
                 harlson.Data.EquipmentItems = new ItemDef[] { archangel, fireNade, medkit };
-                harlson.Data.InventoryItems = new ItemDef[] { gmAmmo, gmAmmo, hrAmmo, hrAmmo, hrAmmo, hrAmmo };
+                harlson.Data.InventoryItems = new ItemDef[] { gmAmmo, gmAmmo, hrAmmo, hrAmmo, hrAmmo, medkit };
 
                 harlson.Data.LevelProgression.SetLevel(7);
                 harlson.Data.Strength = 20;
@@ -2391,12 +2320,7 @@ namespace TFTV
             {
                 TFTVLogger.Error(e);
             }
-
-
-
-
         }
-
         private static void CreateRichter()
         {
             try
@@ -2405,6 +2329,10 @@ namespace TFTV
                 PassiveModifierAbilityDef quarterback = DefCache.GetDef<PassiveModifierAbilityDef>("Pitcher_AbilityDef");
                 ApplyStatusAbilityDef takedown = DefCache.GetDef<ApplyStatusAbilityDef>("BC_Takedown_AbilityDef");
                 PassiveModifierAbilityDef punisher = DefCache.GetDef<PassiveModifierAbilityDef>("Punisher_AbilityDef");
+
+                EquipmentDef medkit = DefCache.GetDef<EquipmentDef>("Medkit_EquipmentDef");
+
+                TacticalItemDef apARAmmo = DefCache.GetDef<TacticalItemDef>("NJ_PRCR_AssaultRifle_AmmoClip_ItemDef");
 
                 string nameDef = "Richter_TacCharacterDef";
 
@@ -2418,16 +2346,6 @@ namespace TFTV
                 };
 
                 richter.Data.Abilites = abilities.ToArray();
-
-                EquipmentDef medkit = DefCache.GetDef<EquipmentDef>("Medkit_EquipmentDef");
-                WeaponDef deimosWhite = DefCache.GetDef<WeaponDef>("SY_LaserAssaultRifle_WhiteNeon_WeaponDef");
-                WeaponDef poisonGrenade = DefCache.GetDef<WeaponDef>("SY_PoisonGrenade_WeaponDef");
-                WeaponDef sonicGrenade = DefCache.GetDef<WeaponDef>("SY_SonicGrenade_WeaponDef");
-
-                TacticalItemDef laserAmmo = DefCache.GetDef<TacticalItemDef>("SY_LaserAssaultRifle_AmmoClip_ItemDef");
-
-                //  sofia.Data.EquipmentItems = new ItemDef[] { deimosWhite, poisonGrenade, sonicGrenade };
-                //  sofia.Data.InventoryItems = new ItemDef[] { laserAmmo, laserAmmo, laserAmmo, medkit, medkit };
 
                 richter.Data.LevelProgression.SetLevel(7);
                 richter.Data.Strength = 16;
@@ -2493,7 +2411,7 @@ namespace TFTV
                 TacticalItemDef torso = DefCache.GetDef<TacticalItemDef>("NJ_Assault_Torso_BodyPartDef");
 
                 richter.Data.BodypartItems = new ItemDef[] { newHead, legs, torso };
-
+                richter.Data.InventoryItems = new ItemDef[] {medkit, medkit, apARAmmo, apARAmmo, apARAmmo };
 
                 squadPortraits.ManualPortraits.Add(new SquadPortraitsDef.ManualPortrait { HeadPart = newHead, Portrait = Helper.CreateSpriteFromImageFile("PM_Richter.jpg") });
 
@@ -2554,7 +2472,7 @@ namespace TFTV
                 TacticalItemDef laserTurret = DefCache.GetDef<TacticalItemDef>("PX_LaserTechTurretItem_ItemDef");
 
                 sofia.Data.EquipmentItems = new ItemDef[] { scorcher, laserTurret, laserTurret };
-                sofia.Data.InventoryItems = new ItemDef[] { laserAmmo, mechArmsAmmo, mechArmsAmmo, laserAmmo };
+                sofia.Data.InventoryItems = new ItemDef[] { laserAmmo, mechArmsAmmo, mechArmsAmmo, laserAmmo, medkit, medkit };
 
                 sofia.Data.LevelProgression.SetLevel(7);
                 sofia.Data.Strength = 16;
@@ -2624,7 +2542,6 @@ namespace TFTV
             }
 
         }
-
         private static void CreateStas()
         {
             try
@@ -2664,7 +2581,7 @@ namespace TFTV
 
 
                 stas.Data.EquipmentItems = new ItemDef[] { venomBolt, arachlauncher, sonicGrenade };
-                stas.Data.InventoryItems = new ItemDef[] { venomBoltAmmo, venomBoltAmmo, arachAmmo, venomBoltAmmo, venomBoltAmmo, medkit };
+                stas.Data.InventoryItems = new ItemDef[] { venomBoltAmmo, venomBoltAmmo, arachAmmo, venomBoltAmmo, medkit, medkit };
 
                 stas.Data.LevelProgression.SetLevel(7);
                 stas.Data.Strength = 16;
@@ -2742,8 +2659,6 @@ namespace TFTV
             }
 
         }
-
-
         private static void CreateNikolai()
         {
             try
@@ -2859,9 +2774,6 @@ namespace TFTV
             }
 
         }
-
-
-
         private static void CreateZhara()
         {
             try
@@ -2960,10 +2872,6 @@ namespace TFTV
             }
 
         }
-
-
-
-
         private static void CreateTaxiarchNergal()
         {
             try
@@ -2998,7 +2906,7 @@ namespace TFTV
                 EquipmentDef medkit = DefCache.GetDef<EquipmentDef>("Medkit_EquipmentDef");
 
                 taxiarchNergal.Data.EquipmentItems = new ItemDef[] { shreddingShotgun, acidGrenade, medkit };
-                taxiarchNergal.Data.InventoryItems = new ItemDef[] { shreddingAmmo, shreddingAmmo, shreddingAmmo };
+                taxiarchNergal.Data.InventoryItems = new ItemDef[] { shreddingAmmo, shreddingAmmo, shreddingAmmo, shreddingAmmo, medkit, acidGrenade };
 
                 taxiarchNergal.Data.LevelProgression.SetLevel(7);
                 taxiarchNergal.Data.Strength = 16;
@@ -3070,7 +2978,6 @@ namespace TFTV
 
 
         }
-
         private static void ChangePalaceMissionDefs()
         {
             try
@@ -3330,22 +3237,44 @@ namespace TFTV
         {
             try
             {
+               
+
                 GameTagDef organicMeatbagTorsoTag = TFTVCommonMethods.CreateNewTag("MeatBagTorso", "{8D13AAD6-BA65-4907-B3C8-C977B819BF48}");
+
+                GameTagDef rocketMountTorsoTag = TFTVCommonMethods.CreateNewTag("RocketMountTorso", "{04ABD5E5-6666-4E8E-AF19-EF958315CDE1}");
 
                 foreach (TacticalItemDef item in Repo.GetAllDefs<TacticalItemDef>()
 
-                    .Where(ti => ti.name.Contains("Torso")).Where(ti => !ti.name.Contains("BIO"))
+                    .Where(ti => ti.name.Contains("Torso"))
 
                     .Where(ti => ti.name.StartsWith("AN_") || ti.name.StartsWith("SY_") || ti.name.StartsWith("NJ_")
                     || ti.name.StartsWith("NEU") || ti.name.StartsWith("PX_") || ti.name.StartsWith("IN_")))
 
                 {
-                    if (!item.Tags.Contains(organicMeatbagTorsoTag))
+                    if (!item.Tags.Contains(organicMeatbagTorsoTag) && !item.name.Contains("BIO"))
                     {
                         item.Tags.Add(organicMeatbagTorsoTag);
+                        TFTVLogger.Always($"adding organicMeatbagTorsoTag to {item.name}");
+                    }
+
+                    if(!item.Tags.Contains(rocketMountTorsoTag) && 
+                        item.Tags.Contains(DefCache.GetDef<GameTagDef>("Heavy_ClassTagDef"))
+                        && !item.name.StartsWith("IN_")) 
+                    {
+                        item.Tags.Add(rocketMountTorsoTag);
+                        TFTVLogger.Always($"adding rocketMountTorsoTag to {item.name}");
                     }
                 }
 
+                WeaponDef fury = DefCache.GetDef<WeaponDef>("NJ_RocketLauncherPack_WeaponDef");
+                WeaponDef thor = DefCache.GetDef<WeaponDef>("NJ_GuidedMissileLauncherPack_WeaponDef");
+                WeaponDef destiny = DefCache.GetDef<WeaponDef>("PX_LaserArrayPack_WeaponDef");
+                WeaponDef ragnarok = DefCache.GetDef<WeaponDef>("PX_ShredingMissileLauncherPack_WeaponDef");
+
+                fury.RequiredSlotBinds[0].GameTagFilter = rocketMountTorsoTag;
+                thor.RequiredSlotBinds[0].GameTagFilter = rocketMountTorsoTag;
+                destiny.RequiredSlotBinds[0].GameTagFilter = rocketMountTorsoTag;
+                ragnarok.RequiredSlotBinds[0].GameTagFilter = rocketMountTorsoTag;
 
                 TacticalItemDef fireVest = DefCache.GetDef<TacticalItemDef>("NJ_FireResistanceVest_Attachment_ItemDef");
                 TacticalItemDef poisonVest = DefCache.GetDef<TacticalItemDef>("SY_PoisonResistanceVest_Attachment_ItemDef");
@@ -3359,7 +3288,10 @@ namespace TFTV
 
                 TacticalItemDef indepHeavyArmor = DefCache.GetDef<TacticalItemDef>("IN_Heavy_Torso_BodyPartDef");
                 TacticalItemDef njHeavyArmor = DefCache.GetDef<TacticalItemDef>("NJ_Heavy_Torso_BodyPartDef");
-                indepHeavyArmor.ProvidedSlots = new AddonDef.ProvidedSlotBind[] { indepHeavyArmor.ProvidedSlots[0], njHeavyArmor.ProvidedSlots[1] };
+                indepHeavyArmor.ProvidedSlots = new ProvidedSlotBind[] { indepHeavyArmor.ProvidedSlots[0], njHeavyArmor.ProvidedSlots[0] };
+          
+                TFTVLogger.Always($"nanoVest.RequiredSlotBinds[0].RequiredSlot: {nanoVest.RequiredSlotBinds[0].RequiredSlot}, " +
+                    $"indepHeavyArmor.ProvidedSlots: {indepHeavyArmor.ProvidedSlots[0].ProvidedSlot} {indepHeavyArmor.ProvidedSlots[1].ProvidedSlot} ");
             }
 
             catch (Exception e)
@@ -3374,6 +3306,8 @@ namespace TFTV
         {
             try
             {
+               
+
                 ChangeModulePictures();
                 RemoveAcidAsVulnerability();
                 CreateNanoVestAbilityAndStatus();

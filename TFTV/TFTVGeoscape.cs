@@ -118,7 +118,7 @@ namespace TFTV
             TFTVBetaSaveGamesFixes.CheckResearches(Controller);
             TFTVPassengerModules.ImplementFarMConfig(Controller);
             TFTVBetaSaveGamesFixes.RemoveBadSlug(Controller);
-        //    TFTVBetaSaveGamesFixes.BehemothFix(Controller);
+            // TFTVBetaSaveGamesFixes.Fix(Controller);
         }
         /// <summary>
         /// Called when Geoscape ends.

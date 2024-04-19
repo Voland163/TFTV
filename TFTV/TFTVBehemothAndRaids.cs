@@ -1157,7 +1157,6 @@ namespace TFTV
 
                     if (behemothScenicRoute.Count == 0)
                     {
-
                         //Get all sites connected to it, excluding the BehemothSite, ordered by distance from it
                         IOrderedEnumerable<GeoSite> sitesBehemothCanVisit = from s in controller.Map.GetConnectedSitesOfType_Land(behemothSite, GeoSiteType.Exploration).Where(gs => gs != behemothSite && gs.SiteTags.Count == 0)
                                                                             orderby GeoMap.Distance(behemothSite, s)
@@ -1166,12 +1165,17 @@ namespace TFTV
                         {
                             foreach (GeoSite target in sitesBehemothCanVisit)
                             {
+                                if (behemothScenicRoute.Count > 100) 
+                                {
+                                    break;
+                                }
+
                                 if (!behemothScenicRoute.Contains(target.SiteId))
                                 {
                                     behemothScenicRoute.Add(target.SiteId);
                                 }
                             }
-                        }
+                        }    
                     }
 
                     if (behemothScenicRoute.Count > 0)

@@ -1072,31 +1072,50 @@ namespace TFTV
 
                             TFTVLogger.Always($"{actor.name} has spare parts, making repairs");
 
-                            actor.Status.Statuses.Remove(actor.Status.GetStatusByName(AddAutoRepairStatusAbility.EffectName));
+                            actor.Status.Statuses.Remove(actor.Status.GetStatusByName(AddAutoRepairStatusAbility.EffectName));                       
 
                             if (Bodyparts[0] == null)
                             {
                                 actor.Equipments.AddItem(BeamHead);
+                                TFTVLogger.Always($"adding head to {actor.name}");
                             }
                             else if (Bodyparts[1] == null && Bodyparts[2] != null && Bodyparts[2].TacticalItemDef == LeftCrystalShield)
                             {
                                 actor.Equipments.AddItem(RightDrill);
+                                TFTVLogger.Always($"adding drill to {actor.name}");
                             }
                             else if (Bodyparts[1] == null && Bodyparts[2] != null && Bodyparts[2].TacticalItemDef == LeftShield)
                             {
                                 actor.Equipments.AddItem(RightShield);
+                                TFTVLogger.Always($"adding right shield to {actor.name}");
                             }
                             else if (Bodyparts[2] == null && Bodyparts[1] != null && Bodyparts[1].TacticalItemDef == RightDrill)
                             {
                                 actor.Equipments.AddItem(LeftCrystalShield);
+                                TFTVLogger.Always($"adding crystal shield to {actor.name}");
                             }
                             else if (Bodyparts[2] == null && Bodyparts[1] != null && Bodyparts[1].TacticalItemDef == RightShield)
                             {
+                                TFTVLogger.Always($"adding left shield to {actor.name}");
                                 actor.Equipments.AddItem(LeftShield);
                             }
+                            else if(Bodyparts[1] == null && Bodyparts[2] == null)
+                            {
+                                UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
+                                int num = UnityEngine.Random.Range(0, 2);
 
+                                if (num == 0) 
+                                {
+                                    actor.Equipments.AddItem(LeftCrystalShield);
+                                    TFTVLogger.Always($"adding left crystal shield to {actor.name}");
+                                }
+                                else 
+                                {
+                                    actor.Equipments.AddItem(LeftShield);
+                                    TFTVLogger.Always($"adding left shield to {actor.name}");
+                                }                           
+                            }
                         }
-
                     }
 
                 }
