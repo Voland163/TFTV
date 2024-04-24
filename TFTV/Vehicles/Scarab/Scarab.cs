@@ -119,7 +119,7 @@ namespace TFTVVehicleRework.Scarab
             Taurus.DamagePayload.ProjectileVisuals = Hell2.DamagePayload.ProjectileVisuals;
             Taurus.DamagePayload.DamageKeywords = new List<DamageKeywordPair>
             {
-                new DamageKeywordPair{DamageKeywordDef = keywords.BlastKeyword, Value = 200},
+                new DamageKeywordPair{DamageKeywordDef = keywords.DamageKeyword, Value = 200},
                 new DamageKeywordPair{DamageKeywordDef = keywords.ShreddingKeyword, Value = 20},
                 new DamageKeywordPair{DamageKeywordDef = keywords.ShockKeyword, Value = 280},
             };
