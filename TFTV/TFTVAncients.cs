@@ -55,8 +55,7 @@ namespace TFTV
         public static bool AutomataResearched = false;
 
         //This is the number of previous encounters with Ancients. It is added to the Difficulty to determine the number of fully repaired MediumGuardians in battle
-        public static int AncientsEncounterCounter = 0;
-        public static string AncientsEncounterVariableName = "Ancients_Encounter_Global_Variable";
+        private static int AncientsEncounterCounter = TFTVAncientsGeo.AncientsEncounterCounter;
         private static readonly AlertedStatusDef AlertedStatus = DefCache.GetDef<AlertedStatusDef>("Alerted_StatusDef");
         private static readonly DamageMultiplierStatusDef CyclopsDefenseStatus = DefCache.GetDef<DamageMultiplierStatusDef>("CyclopsDefense_StatusDef");
         private static readonly StanceStatusDef AncientGuardianStealthStatus = DefCache.GetDef<StanceStatusDef>("AncientGuardianStealth_StatusDef");
@@ -86,8 +85,6 @@ namespace TFTV
                 return false;
             }
         }
-
-
         internal class CyclopsAbilities
         {
             public static void AddMindCrushEffectToCyclposScream(TacticalAbility ability, TacticalActor actor, object parameter)

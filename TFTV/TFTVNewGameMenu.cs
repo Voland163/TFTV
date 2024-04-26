@@ -2,10 +2,12 @@
 using Base.Core;
 using Base.Defs;
 using Base.Platforms;
+using Base.Serialization.General;
 using Base.UI;
 using Base.UI.MessageBox;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
+using PhoenixPoint.Common.Saves;
 using PhoenixPoint.Common.View.ViewControllers;
 using PhoenixPoint.Geoscape.View.ViewControllers;
 using PhoenixPoint.Home;
@@ -14,6 +16,8 @@ using PhoenixPoint.Home.View.ViewControllers;
 using PhoenixPoint.Home.View.ViewModules;
 using PhoenixPoint.Home.View.ViewStates;
 using PhoenixPoint.Modding;
+using PhoenixPoint.Tactical.AI.Considerations;
+using RootMotion;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -30,7 +34,7 @@ namespace TFTV
         private static readonly TFTVConfig config = TFTVMain.Main.Config;
         private static readonly SharedData Shared = TFTVMain.Shared;
 
-        public static bool NewGameOptionsSetUp = false;
+        public static bool ShowedTacticalSavesWarning = false;
 
         private static int SelectedDifficulty = 0;
 
@@ -39,7 +43,7 @@ namespace TFTV
 
             internal static void SetTFTVLogo(HomeScreenView homeScreenView)
             {
-                try 
+                try
                 {
                     Resolution resolution = Screen.currentResolution;
                     float resolutionFactorWidth = (float)resolution.width / 1920f;
@@ -122,7 +126,7 @@ namespace TFTV
                         }
 
                         SetTFTVLogo(__instance);
-                     
+
                     }
                     catch (Exception e)
                     {
@@ -245,7 +249,7 @@ namespace TFTV
                 int noSecondChances = 1;
                 int etermesVulnerability = 1;
 
-                if (SelectedDifficulty > 5) 
+                if (SelectedDifficulty > 5)
                 {
                     noSecondChances = 0;
                     etermesVulnerability = 0;
@@ -260,7 +264,7 @@ namespace TFTV
                     impossibleWeapons = 0;
                     limitedCapture = 0;
                     limitedHarvesting = 0;
-                  
+
                 }
                 else if (SelectedDifficulty > 2)
                 {
@@ -623,7 +627,7 @@ namespace TFTV
             private static readonly string _titleNoBarks = "KEY_NoBarks";
             private static readonly string _descriptionNoBarks = "KEY_NoBarks_DESCRIPTION";
 
-   
+
 
             private static GameOptionViewController InstantiateGameOptionViewController(RectTransform rectTransform, UIModuleGameSettings uIModuleGameSettings, string titleKey, string descriptionKey, string onToggleMethod)
             {
@@ -640,12 +644,12 @@ namespace TFTV
 
                     LocalizedTextBind description = new LocalizedTextBind
                     {
-                        LocalizationKey = descriptionKey 
+                        LocalizationKey = descriptionKey
                     };
 
                     LocalizedTextBind text = new LocalizedTextBind
                     {
-                        LocalizationKey = titleKey 
+                        LocalizationKey = titleKey
                     };
 
                     gameOptionViewController.Set(text, null);
@@ -955,7 +959,7 @@ namespace TFTV
                     ModSettingController ModSettingControllerHook = GameUtl.CurrentLevel().GetComponent<HomeScreenView>().HomeScreenModules.ModManagerModule.SettingsModSettingPrefab;
                     RectTransform rectTransform = __instance.GameAddiotionalContentGroup.GetComponentInChildren<RectTransform>();
 
-                   
+
 
                     rectTransform.DestroyChildren();
 
@@ -1020,7 +1024,7 @@ namespace TFTV
                     _limitedDeploymentVOModSettings = UnityEngine.Object.Instantiate(ModSettingControllerHook, rectTransform);
                     _limitedRaidingModSettings = UnityEngine.Object.Instantiate(ModSettingControllerHook, rectTransform);
                     _noBarksModSettings = UnityEngine.Object.Instantiate(ModSettingControllerHook, rectTransform);
-                  
+
 
                     _startingFaction = _startingFactionModSettings.ListField;
                     _startingBase = _startingBaseModSettings.ListField;
@@ -1072,7 +1076,7 @@ namespace TFTV
                     InstantiateArrowPickerController(_noDropReinforcementsModSettings, _noDropReinforcements, _titleNoDropReinforcements, _descriptionNoDropReinforcements, _optionsBool, ConvertBoolToInt(config.ReinforcementsNoDrops), OnNoDropValueChangedCallback, 0.5f);
 
                     InstantiateArrowPickerController(_strongerPandoransModSettings, _strongerPandorans, _titleStrongerPandorans, _descriptionStrongerPandorans, _optionsBool, ConvertBoolToInt(TFTVNewGameOptions.StrongerPandoransSetting), OnStrongerPandoransValueChangedCallback, 0.5f);
-                    InstantiateArrowPickerController(_etermesVulnerabilityResistanceModSettings, _etermesVulnerabilityResistance, _titleEtermesVulnerability, _descriptionEtermesVulnerabilityResistance, _optionsBool, Math.Max(TFTVNewGameOptions.EtermesResistanceAndVulnerability-1,0), OnEtermesVulnerabilityResistanceValueChangedCallback, 0.5f);
+                    InstantiateArrowPickerController(_etermesVulnerabilityResistanceModSettings, _etermesVulnerabilityResistance, _titleEtermesVulnerability, _descriptionEtermesVulnerabilityResistance, _optionsBool, Math.Max(TFTVNewGameOptions.EtermesResistanceAndVulnerability - 1, 0), OnEtermesVulnerabilityResistanceValueChangedCallback, 0.5f);
 
                     InstantiateArrowPickerController(_staminaRecuperationModSettings, _staminaRecuperation, _titleStaminaRecuperation, _descriptionStaminaRecuperation, _optionsBool, ConvertBoolToInt(config.ActivateStaminaRecuperatonModule), OnStaminaRecuperationValueChangedCallback, 0.5f);
                     InstantiateArrowPickerController(_staminaDrainModSettings, _staminaDrain, _titleStaminaDrain, _descriptionStaminaDrain, _optionsBool, ConvertBoolToInt(TFTVNewGameOptions.StaminaPenaltyFromInjurySetting), OnStaminaDrainValueChangedCallback, 0.5f);
@@ -1099,9 +1103,6 @@ namespace TFTV
 
                     SetAllVisibility(false);
                     UpdateOptionsOnSelectingDifficutly();
-
-                    NewGameOptionsSetUp = true;
-
                 }
                 catch (Exception e)
                 {
@@ -1159,13 +1160,15 @@ namespace TFTV
             {
                 try
                 {
-                    if (newValue == 1 && NewGameOptionsSetUp)
+                    if (newValue == 1 && !ShowedTacticalSavesWarning)
                     {
                         TFTVLogger.Always($"disable tactical saving warning called now");
 
                         string warning = TFTVCommonMethods.ConvertKeyToString("KEY_OPTIONS_TACTICAL_SAVING_WARNING");// $"Saving and loading on Tactical can result in odd behavior and bugs (Vanilla issues). It is recommended to save only on Geoscape (and use several saves, in case one of them gets corrupted). And, you know what... losing soldiers in TFTV is fun :)";
 
                         GameUtl.GetMessageBox().ShowSimplePrompt(warning, MessageBoxIcon.Warning, MessageBoxButtons.OK, null);
+
+                        ShowedTacticalSavesWarning = true;
                     }
 
                     bool option = newValue == 0;
@@ -1174,7 +1177,7 @@ namespace TFTV
                     string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
                     _disableTacSaves.CurrentItemText.text = options[newValue];
                     config.disableSavingOnTactical = option;
-                    
+
                 }
                 catch (Exception e)
                 {
@@ -1235,7 +1238,7 @@ namespace TFTV
                     string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
                     _staminaRecuperation.CurrentItemText.text = options[newValue];
                     config.ActivateStaminaRecuperatonModule = option;
-                  
+
                 }
                 catch (Exception e)
                 {
@@ -1251,7 +1254,7 @@ namespace TFTV
                     string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
                     _havenSOS.CurrentItemText.text = options[newValue];
                     config.HavenSOS = option;
-                   
+
                 }
                 catch (Exception e)
                 {
@@ -1267,7 +1270,7 @@ namespace TFTV
                     string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
                     _learnFirstSkill.CurrentItemText.text = options[newValue];
                     config.LearnFirstPersonalSkill = option;
-                    
+
                 }
                 catch (Exception e)
                 {
@@ -1299,9 +1302,9 @@ namespace TFTV
             private static void OnEtermesVulnerabilityResistanceValueChangedCallback(int newValue)
             {
                 try
-                {                   
-                    
-                    string[] options = {new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
+                {
+
+                    string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
                     _etermesVulnerabilityResistance.CurrentItemText.text = options[newValue];
                     TFTVNewGameOptions.EtermesResistanceAndVulnerability = newValue + 1;
                     TFTVLogger.Always($"TFTVNewGameOptions.EtermesResistanceAndVulnerability: {TFTVNewGameOptions.EtermesResistanceAndVulnerability}");
@@ -1356,7 +1359,7 @@ namespace TFTV
                     string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
                     _skipMovies.CurrentItemText.text = options[newValue];
                     config.SkipMovies = option;
-                   
+
                 }
                 catch (Exception e)
                 {
@@ -1372,7 +1375,7 @@ namespace TFTV
                     string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
                     _noBarks.CurrentItemText.text = options[newValue];
                     config.NoBarks = option;
-                 
+
                 }
                 catch (Exception e)
                 {
@@ -1390,7 +1393,7 @@ namespace TFTV
                     string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
                     _flinching.CurrentItemText.text = options[newValue];
                     config.AnimateWhileShooting = option;
-                  
+
                 }
                 catch (Exception e)
                 {
@@ -1406,7 +1409,7 @@ namespace TFTV
                     string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
                     _moreMistVO.CurrentItemText.text = options[newValue];
                     config.MoreMistVO = option;
-                   
+
                 }
 
                 catch (Exception e)
@@ -1423,7 +1426,7 @@ namespace TFTV
                     string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
                     _limitedDeploymentVO.CurrentItemText.text = options[newValue];
                     config.LimitedDeploymentVO = option;
-                   
+
                 }
                 catch (Exception e)
                 {
@@ -1456,7 +1459,7 @@ namespace TFTV
                     string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
                     _trading.CurrentItemText.text = options[newValue];
                     config.EqualizeTrade = option;
-                  
+
 
                 }
                 catch (Exception e)
@@ -1474,7 +1477,7 @@ namespace TFTV
                     string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
                     _limitedRaiding.CurrentItemText.text = options[newValue];
                     config.LimitedRaiding = option;
-                   
+
                 }
                 catch (Exception e)
                 {
@@ -1491,7 +1494,7 @@ namespace TFTV
                     string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
                     _noDropReinforcements.CurrentItemText.text = options[newValue];
                     config.ReinforcementsNoDrops = option;
-                  
+
                 }
                 catch (Exception e)
                 {
@@ -1518,7 +1521,7 @@ namespace TFTV
                     //TFTVLogger.Always($"new difficulty on tactical showing in config: {config.difficultyOnTactical}");
 
                     TFTVConfig.DifficultyOnTactical difficulty = (TFTVConfig.DifficultyOnTactical)newValue;
-                  
+
 
                 }
                 catch (Exception e)
@@ -1733,31 +1736,31 @@ namespace TFTV
 
 
 
-    /*    [HarmonyPatch(typeof(UIStateHomeLoadGame), "EnterState")]
-        public static class UIStateHomeLoadGame_EnterState_Patch
-        {
-            private static void Postfix(UIStateHomeLoadGame __instance)
+        /*    [HarmonyPatch(typeof(UIStateHomeLoadGame), "EnterState")]
+            public static class UIStateHomeLoadGame_EnterState_Patch
             {
-                try
+                private static void Postfix(UIStateHomeLoadGame __instance)
                 {
-                    TFTVLogger.Always($"UIStateHomeLoadGame.EnterState PostFix running");
+                    try
+                    {
+                        TFTVLogger.Always($"UIStateHomeLoadGame.EnterState PostFix running");
 
-                    TFTVLogger.Always($"Config settings:" +
-                    $"\nAmountOfExoticResourcesSetting: {TFTVNewGameOptions.AmountOfExoticResourcesSetting}\nResourceMultiplierSetting: {TFTVNewGameOptions.ResourceMultiplierSetting}" +
-                    $"\nDiplomaticPenaltiesSetting: {TFTVNewGameOptions.DiplomaticPenaltiesSetting}\nStaminaPenaltyFromInjurySetting: {TFTVNewGameOptions.StaminaPenaltyFromInjurySetting}" +
-                    $"\nMoreAmbushesSetting: {TFTVNewGameOptions.MoreAmbushesSetting}\nLimitedCaptureSetting: {TFTVNewGameOptions.LimitedCaptureSetting}\nLimitedHarvestingSetting: {TFTVNewGameOptions.LimitedHarvestingSetting}" +
-                    $"\nStrongerPandoransSetting {TFTVNewGameOptions.StrongerPandoransSetting}\nImpossibleWeaponsAdjustmentsSetting: {TFTVNewGameOptions.ImpossibleWeaponsAdjustmentsSetting}" +
-                    $"\nNoSecondChances: {TFTVNewGameOptions.NoSecondChances}");
+                        TFTVLogger.Always($"Config settings:" +
+                        $"\nAmountOfExoticResourcesSetting: {TFTVNewGameOptions.AmountOfExoticResourcesSetting}\nResourceMultiplierSetting: {TFTVNewGameOptions.ResourceMultiplierSetting}" +
+                        $"\nDiplomaticPenaltiesSetting: {TFTVNewGameOptions.DiplomaticPenaltiesSetting}\nStaminaPenaltyFromInjurySetting: {TFTVNewGameOptions.StaminaPenaltyFromInjurySetting}" +
+                        $"\nMoreAmbushesSetting: {TFTVNewGameOptions.MoreAmbushesSetting}\nLimitedCaptureSetting: {TFTVNewGameOptions.LimitedCaptureSetting}\nLimitedHarvestingSetting: {TFTVNewGameOptions.LimitedHarvestingSetting}" +
+                        $"\nStrongerPandoransSetting {TFTVNewGameOptions.StrongerPandoransSetting}\nImpossibleWeaponsAdjustmentsSetting: {TFTVNewGameOptions.ImpossibleWeaponsAdjustmentsSetting}" +
+                        $"\nNoSecondChances: {TFTVNewGameOptions.NoSecondChances}");
 
-                    TFTVDefsWithConfigDependency.ImplementConfigChoices();
+                        TFTVDefsWithConfigDependency.ImplementConfigChoices();
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                        throw;
+                    }
                 }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                    throw;
-                }
-            }
-        }*/
+            }*/
 
         [HarmonyPatch(typeof(UIStateNewGeoscapeGameSettings), "EnterState")]
         public static class UIStateNewGeoscapeGameSettings_EnterState_Patch
@@ -1883,27 +1886,64 @@ namespace TFTV
             {
                 try
                 {
-
                     // TFTVLogger.Always("Patch running");
 
-                    DefCache.GetDef<EntitlementDef>("BloodAndTitaniumEntitlementDef");
-                    DefCache.GetDef<EntitlementDef>("CorruptedHorizonsEntitlementDef");
-                    DefCache.GetDef<EntitlementDef>("FesteringSkiesEntitlementDef");
-                    DefCache.GetDef<EntitlementDef>("KaosEnginesEntitlementDef");
-                    DefCache.GetDef<EntitlementDef>("LegacyOfTheAncientsEntitlementDef");
-                    DefCache.GetDef<EntitlementDef>("LivingWeaponsEntitlementDef");
-                    //  DefCache.GetDef<EntitlementDef>("YOE_YearOneEditionEntitlementDef");
+                    List<EntitlementDef> allEntitlmentDefs = new List<EntitlementDef>()
+                    {
+                    DefCache.GetDef<EntitlementDef>("BloodAndTitaniumEntitlementDef"),
+                    DefCache.GetDef<EntitlementDef>("CorruptedHorizonsEntitlementDef"),
+                    DefCache.GetDef<EntitlementDef>("FesteringSkiesEntitlementDef"),
+                    DefCache.GetDef<EntitlementDef>("KaosEnginesEntitlementDef"),
+                    DefCache.GetDef<EntitlementDef>("LegacyOfTheAncientsEntitlementDef"),
+                    DefCache.GetDef<EntitlementDef>("LivingWeaponsEntitlementDef"),
+                 //   DefCache.GetDef<EntitlementDef>("YOE_YearOneEditionEntitlementDef")
+                    };
+
+                    PlatformEntitlement platformEntitlements = TFTVMain.Main.GetGame().Platform.GetPlatformEntitlement();
 
 
-                    __result = new List<EntitlementDef>() {
-                        DefCache.GetDef<EntitlementDef>("BloodAndTitaniumEntitlementDef"), DefCache.GetDef<EntitlementDef>("CorruptedHorizonsEntitlementDef"), DefCache.GetDef<EntitlementDef>("FesteringSkiesEntitlementDef"),
-                   DefCache.GetDef<EntitlementDef>("KaosEnginesEntitlementDef"), DefCache.GetDef<EntitlementDef>("LegacyOfTheAncientsEntitlementDef"), DefCache.GetDef<EntitlementDef>("LivingWeaponsEntitlementDef")};
+                    List<EntitlementDef> entitlementsUserHas = new List<EntitlementDef>();
+                    List<EntitlementDef> dlcsMissing = new List<EntitlementDef>();
 
+                    foreach(EntitlementDef entitlementDef in allEntitlmentDefs) 
+                    {
+                        if (platformEntitlements.IsUserEntitledFor(entitlementDef)) 
+                        {
+                            entitlementsUserHas.Add(entitlementDef);
+                        }
+                        else 
+                        {
+                            TFTVLogger.Always($"user not entitled to {entitlementDef.name}");
+                            if(entitlementDef!= DefCache.GetDef<EntitlementDef>("LivingWeaponsEntitlementDef")) 
+                            {
+                                dlcsMissing.Add(entitlementDef);
+                            }
+                        }
+                    }
+
+                    if (dlcsMissing.Count > 0)
+                    {
+                        IEnumerable<string> values = dlcsMissing.Select((EntitlementDef d) => d.Name.Localize());
+                        string content = string.Format(TFTVCommonMethods.ConvertKeyToString("KEY_MISSING_DLC_TFTV"), string.Join(", ", values));
+
+                        GameUtl.GetMessageBox().ShowSimplePrompt(content, MessageBoxIcon.Error, MessageBoxButtons.OK, OnDLCRequiredResult);
+
+                        void OnDLCRequiredResult(MessageBoxCallbackResult res)
+                        {
+                           /* if (res.DialogResult == MessageBoxResult.OK || res.DialogResult == MessageBoxResult.Yes)
+                            {
+                                platformEntitlements.OpenEntitlementInfo(dlcsMissing[0]);
+                            }*/
+                        }
+
+                        return false;
+                    }
+                    
+                    __result = entitlementsUserHas;
 
                     TFTVCommonMethods.ClearInternalVariables();
                     TFTVNewGameOptions.ConfigImplemented = true;
-                   // TFTVNewGameOptions.Update35Check = true;
-                    NewGameOptionsSetUp = false;
+                    ShowedTacticalSavesWarning = false;
 
                     return false;
 

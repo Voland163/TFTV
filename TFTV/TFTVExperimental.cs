@@ -4,18 +4,20 @@ using Base.Defs;
 using Base.Entities.Statuses;
 using Code.PhoenixPoint.Tactical.Entities.Equipments;
 using HarmonyLib;
-using PhoenixPoint.Common.ContextHelp;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.Addons;
 using PhoenixPoint.Common.Entities.Characters;
 using PhoenixPoint.Common.Entities.GameTags;
+using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.Entities.Items;
+using PhoenixPoint.Common.View.ViewControllers;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.Abilities;
 using PhoenixPoint.Geoscape.Entities.PhoenixBases;
 using PhoenixPoint.Geoscape.Entities.Research.Requirement;
 using PhoenixPoint.Geoscape.Levels;
+using PhoenixPoint.Geoscape.View.ViewControllers.Modal;
 using PhoenixPoint.Tactical;
 using PhoenixPoint.Tactical.ContextHelp;
 using PhoenixPoint.Tactical.Entities;
@@ -36,11 +38,108 @@ namespace TFTV
 {
     internal class TFTVExperimental
     {
+
+
         private static readonly DefRepository Repo = TFTVMain.Repo;
         private static readonly SharedData Shared = TFTVMain.Shared;
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
 
         private static bool _usingEchoHead = false;
+
+
+
+        [HarmonyPatch(typeof(GeoMissionOutcomeVariant), "ModalShowHandler", new Type[] { typeof(UIModal) })]
+        public static class TFTV_GeoMissionOutcomeVariant_ModalShowHandler
+        {
+            public static void Postfix(GeoMissionOutcomeVariant __instance, UIModal modal)
+            {
+                try
+                {
+                    if (modal == null || modal.Data == null) 
+                    {
+                        return; 
+                    }
+
+                    if (!(modal.Data is GeoMission geoMission))
+                    {
+                        return;
+                    }
+
+                    GeoSite geoSite = geoMission.Site;
+
+                    if (geoSite == null) 
+                    {
+                        return;             
+                    }
+
+                    TacFactionState outcome = geoMission.GetMissionOutcomeState();
+                    MissionTypeTagDef ancientSiteDefense = DefCache.GetDef<MissionTypeTagDef>("MissionTypeAncientSiteDefense_MissionTagDef");
+
+                    GeoLevelController controller = geoSite.GeoLevel;
+
+                    //TFTVLogger.Always($"GeoMissionOutcomeVariant.ModalShowHandler {modal.name}. State: {outcome}");
+
+                    if (outcome == TacFactionState.Defeated && geoSite.ActiveMission == null && (geoSite.Type == GeoSiteType.AncientHarvest || geoSite.Type == GeoSiteType.AncientRefinery) && geoMission.MissionDef.MissionTags.Contains(ancientSiteDefense))
+                    {
+                        controller.EventSystem.SetVariable(TFTVAncientsGeo.CyclopsBuiltVariable, 0);
+                        TFTVLogger.Always($"Player failed or canceled the Cyclops mission, need to clean up");
+                        geoSite.Owner = controller.PhoenixFaction;
+                        TFTVCommonMethods.RemoveManuallySetObjective(controller, "PROTECT_THE_CYCLOPS_OBJECTIVE_GEO_TITLE");
+                    }
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
+
+
+        /*  [HarmonyPatch(typeof(TacticalNavigationComponent), "WaitForAnimation")]
+          public static class TFTV_TacticalNavigationComponent_WaitForAnimation
+          {
+              public static void Prefix(TacticalNavigationComponent __instance, AnimationClip animation)
+              {
+                  try
+                  {
+                      TFTVLogger.Always($"{__instance?.TacticalActor?.name}: {animation?.name} current anim? {Utils.GetCurrentAnim(__instance.Animator).name}");
+
+                      if(Utils.GetCurrentAnim(__instance.Animator).name== "FF_ShotLoopNoRecoil_SN") 
+                      {
+                          TFTVLogger.Always($"{__instance?.TacticalActor?.name} passed the if");
+
+                          __instance.Animator.Play("High Idle");
+
+                      }
+
+                  }
+                  catch (Exception e)
+                  {
+                      TFTVLogger.Error(e);
+                      throw;
+                  }
+              }
+          }*/
+
+
+
+
+
+        /* [HarmonyPatch(typeof(TacticalNavigationComponent), "WaitForAnimation")]
+         public static class TFTV_TacticalNavigationComponent_WaitForAnimation
+         {
+             public static IEnumerable<NextUpdate> Postfix (TacticalNavigationComponent __instance, AnimationClip animation, IEnumerable<NextUpdate> results)
+             {
+
+                 foreach (NextUpdate nextUpdate in results)
+                 {
+                     TFTVLogger.Always($"{__instance.TacticalActor.name}: {animation.name}");
+                     yield return nextUpdate;
+                 }
+             }
+         }*/
 
         [HarmonyPatch(typeof(TacticalActor), "GetDefaultShootAbility")]
         public static class TFTV_TacticalActor_GetDefaultShootAbility
@@ -52,7 +151,7 @@ namespace TFTV
                     ShootAbilityDef stabilityTaurusShootAbilityDef = (ShootAbilityDef)Repo.GetDef("76ae9352-1343-4b95-964c-036341b6a0eb");
                     ShootAbilityDef stabilityMissileShootAbilityDef = (ShootAbilityDef)Repo.GetDef("df2e83d1-8688-4e47-8559-cc6a9f9906d1");
 
-                    if (__instance.GetAbilityWithDef<ShootAbility>(stabilityTaurusShootAbilityDef) != null) 
+                    if (__instance.GetAbilityWithDef<ShootAbility>(stabilityTaurusShootAbilityDef) != null)
                     {
                         __result = __instance.GetAbilityWithDef<ShootAbility>(stabilityTaurusShootAbilityDef);
                     }
@@ -77,10 +176,10 @@ namespace TFTV
             public static bool Prefix(TacContextHelpManager __instance, Status status)
             {
                 try
-                {               
+                {
                     if (!(status is TacStatus tacStatus) || tacStatus.StatusComponent == null)
                     {
-                        TFTVLogger.Always($"status null! returning to avoid softlock");
+                        // TFTVLogger.Always($"TacContextHelpManager.OnStatusApplied status null! returning to avoid softlock");
                         return false;
                     }
 
@@ -103,7 +202,7 @@ namespace TFTV
             {
                 try
                 {
-               
+
                     if (__instance.Applied)
                     {
                         return true;
@@ -274,7 +373,7 @@ namespace TFTV
                 {
                     if (__instance.TacticalAbilityDef == DefCache.GetDef<ShootAbilityDef>("EchoHead_ShootAbilityDef"))
                     {
-                        if (__instance.SelectedEquipment!=null && __instance.SelectedEquipment.GameTags.Contains(DefCache.GetDef<GameTagDef>("SilencedWeapon_TagDef")))
+                        if (__instance.SelectedEquipment != null && __instance.SelectedEquipment.GameTags.Contains(DefCache.GetDef<GameTagDef>("SilencedWeapon_TagDef")))
                         {
                             __result = null;
                         }
@@ -730,7 +829,7 @@ namespace TFTV
                         }
                         else if (list.Count == list.Count - 4) //place access lift with at least one space to hangar
                         {
-                            IEnumerable<PhoenixFacilityData> source = list.Where((PhoenixFacilityData f) => f.FacilityDef.Size == 1 && f.FacilityDef == accessLift);
+                            IEnumerable<PhoenixFacilityData> source = list.Where((PhoenixFacilityData f) => f.FacilityDef == accessLift);
                             phoenixFacilityData = ((!source.Any()) ? list.Last() : source.First());
 
                         }

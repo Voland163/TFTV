@@ -149,7 +149,7 @@ namespace TFTV
 
                 TFTVScavengers.Defs.CreateRaiderDefs();
 
-                TFTVPureAndForsaken.Defs.InitDefs();
+                TFTVPureAndForsaken.Defs.InitDefs(); 
 
               //  Print();
 
@@ -159,6 +159,8 @@ namespace TFTV
                 TFTVLogger.Error(e);
             }
         }
+
+
 
         private static void AdjustMistSentinelDetection()
         {
@@ -1255,6 +1257,8 @@ namespace TFTV
                 ApplyEffectAbilityDef cancelHackingDef = DefCache.GetDef<ApplyEffectAbilityDef>("Hacking_Cancel_AbilityDef");
                 InteractWithObjectAbilityDef finishHackingDef = DefCache.GetDef<InteractWithObjectAbilityDef>("Hacking_Finish_AbilityDef");
 
+                startHackingDef.EndsTurn = true;
+
                 //new abilities
                 string convinceCivilianAbilityName = "ConvinceCivilianToJoinAbility";
                 string cancelConvinceCivilianAbilityName = "CancelConvinceCivilianToJoinAbility";
@@ -1771,6 +1775,8 @@ namespace TFTV
                 InteractWithObjectAbilityDef startHackingDef = DefCache.GetDef<InteractWithObjectAbilityDef>("Hacking_Start_AbilityDef");
                 ApplyEffectAbilityDef cancelHackingDef = DefCache.GetDef<ApplyEffectAbilityDef>("Hacking_Cancel_AbilityDef");
                 InteractWithObjectAbilityDef finishHackingDef = DefCache.GetDef<InteractWithObjectAbilityDef>("Hacking_Finish_AbilityDef");
+
+                startHackingDef.EndsTurn = true;
 
                 //new abilities
                 string forceGateAbilityName = "ForceYuggothianGateAbility";
@@ -3254,7 +3260,7 @@ namespace TFTV
                     if (!item.Tags.Contains(organicMeatbagTorsoTag) && !item.name.Contains("BIO"))
                     {
                         item.Tags.Add(organicMeatbagTorsoTag);
-                        TFTVLogger.Always($"adding organicMeatbagTorsoTag to {item.name}");
+                      //  TFTVLogger.Always($"adding organicMeatbagTorsoTag to {item.name}");
                     }
 
                     if(!item.Tags.Contains(rocketMountTorsoTag) && 
@@ -3262,7 +3268,7 @@ namespace TFTV
                         && !item.name.StartsWith("IN_")) 
                     {
                         item.Tags.Add(rocketMountTorsoTag);
-                        TFTVLogger.Always($"adding rocketMountTorsoTag to {item.name}");
+                      //  TFTVLogger.Always($"adding rocketMountTorsoTag to {item.name}");
                     }
                 }
 
@@ -3290,8 +3296,7 @@ namespace TFTV
                 TacticalItemDef njHeavyArmor = DefCache.GetDef<TacticalItemDef>("NJ_Heavy_Torso_BodyPartDef");
                 indepHeavyArmor.ProvidedSlots = new ProvidedSlotBind[] { indepHeavyArmor.ProvidedSlots[0], njHeavyArmor.ProvidedSlots[0] };
           
-                TFTVLogger.Always($"nanoVest.RequiredSlotBinds[0].RequiredSlot: {nanoVest.RequiredSlotBinds[0].RequiredSlot}, " +
-                    $"indepHeavyArmor.ProvidedSlots: {indepHeavyArmor.ProvidedSlots[0].ProvidedSlot} {indepHeavyArmor.ProvidedSlots[1].ProvidedSlot} ");
+             
             }
 
             catch (Exception e)
@@ -4771,6 +4776,8 @@ namespace TFTV
                 loadingTipsRepositoryDef.TacticalLoadingTips.Add(new LocalizedTextBind() { LocalizationKey = "TFTV_TIP_TACTICAL_10" });
                 loadingTipsRepositoryDef.TacticalLoadingTips.Add(new LocalizedTextBind() { LocalizationKey = "TFTV_TIP_TACTICAL_11" });
 
+                loadingTipsRepositoryDef.TacticalLoadingTips[3].LocalizationKey = "KEY_TACTICAL_LOADING_TIP_4_TFTV";
+
             }
             catch (Exception e)
             {
@@ -5601,6 +5608,7 @@ namespace TFTV
                 string pic = "lore_alistair.jpg";
                 GeoPhoenixpediaEntryDef alistairEntry = CreateLoreEntry(name, gUID, title, description, pic);
                 DefCache.GetDef<GeoscapeEventDef>("IntroBetterGeo_0").GeoscapeEventData.Choices[0].Outcome.GivePhoenixpediaEntries = new List<GeoPhoenixpediaEntryDef>() { alistairEntry };
+                
             }
             catch (Exception e)
             {
@@ -6087,7 +6095,6 @@ namespace TFTV
                     customMissionType.ParticipantsData.Add(participantData);
 
                     customMissionType.CustomObjectives = objectives.ToArray();
-                    // customMissionType.MandatoryMission = true; //to prevent being able to cancel it
                     customMissionType.ClearMissionOnCancel = true; //first try this
                     customMissionType.MandatoryMission = true;
                     customMissionType.SkipDeploymentSelection = true;

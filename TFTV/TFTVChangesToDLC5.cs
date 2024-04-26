@@ -2095,9 +2095,6 @@ namespace TFTV
 
         internal class TFTVMarketPlaceUI
         {
-
-
-
             private static void FakeResearchOptionToSetupCharacterSale(UIModuleTheMarketplace uIModuleTheMarketplace)
             {
                 try

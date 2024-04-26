@@ -41,7 +41,7 @@ namespace TFTV
         public bool ActivateStaminaRecuperatonModule = true;
         public bool HavenSOS = true;
         public bool LearnFirstPersonalSkill = true;
-        public bool DeactivateTacticalAutoStandby = true;
+        public bool DeactivateTacticalAutoStandby = false;
         public bool Debug = true;
         public bool NoBarks = false;
         public bool ShowExfilAmbush = false;
@@ -133,15 +133,14 @@ namespace TFTV
             }
         }
 
-        [HarmonyPatch(typeof(ModSettingController), "Init")]
+       [HarmonyPatch(typeof(ModSettingController), "Init")]
         public static class ModSettingController_Init_Patch
         {
             private static void Postfix(ModSettingController __instance, string label, Type type)
             {
                 try
                 {
-
-                    if (type== typeof(int))
+                    if (label== "TFTV_HIDDEN_DIFFICULTY")
                     {
                         __instance.TextField.gameObject.SetActive(value: false);
                         __instance.ToggleField.gameObject.SetActive(value: false);

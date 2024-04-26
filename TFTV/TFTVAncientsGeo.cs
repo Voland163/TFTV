@@ -420,6 +420,11 @@ namespace TFTV
                     List<AbilityDef> abilitiesToRemove = new List<AbilityDef>() { poisonResistance };
                     List<AbilityDef> abilitiesToAdd = new List<AbilityDef>() { poisonImmunity, paralysisImmunity, fireImmunity };
 
+                    if(controller != null) 
+                    {
+                        AncientsEncounterCounter = controller.EventSystem.GetVariable(AncientsEncounterVariableName);       
+                    }
+
                     if (controller != null && controller.PhoenixFaction.Research.HasCompleted("AncientAutomataResearch"))
                     {
                         AutomataResearched = true;
@@ -785,7 +790,8 @@ namespace TFTV
                         {
                             controller.EventSystem.SetVariable(CyclopsBuiltVariable, 0);
                             TFTVLogger.Always($"Player failed the Cyclops mission, need to clean up");
-                            controller.Map.AllSites.FirstOrDefault(s => (s.Type == GeoSiteType.AncientHarvest || s.Type == GeoSiteType.AncientRefinery) && s.Owner == controller.AlienFaction).Owner = controller.PhoenixFaction;
+                            geoSite.Owner = controller.PhoenixFaction;
+                            geoSite.ActiveMission = null;
                         }
 
                         TFTVCommonMethods.RemoveManuallySetObjective(controller, "PROTECT_THE_CYCLOPS_OBJECTIVE_GEO_TITLE");

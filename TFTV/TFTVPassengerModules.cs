@@ -456,7 +456,7 @@ namespace TFTV
                             componentName = "SYN_Helios";
                         }
                         ComponentSetDef sourceAircraftComponentDef = DefCache.GetDef<ComponentSetDef>(componentName);
-                        clonedAircraft = __instance.PhoenixFaction.CreateVehicle(geoVehicle.CurrentSite, sourceAircraftComponentDef);
+                        clonedAircraft = __instance.PhoenixFaction.CreateVehicle(geoVehicle.CurrentSite, sourceAircraftComponentDef); 
                         clonedAircraft.RenameVehicle(geoVehicle.Name);
                         foreach (GeoVehicleEquipment equipment in geoVehicle.Equipments)
                         {

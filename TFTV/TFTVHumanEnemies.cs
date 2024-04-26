@@ -115,7 +115,7 @@ namespace TFTV
             try
             {
                 UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
-                int roll = UnityEngine.Random.Range(1, 10);
+                int roll = UnityEngine.Random.Range(1, 10); 
 
                 TFTVLogger.Always("The tactics roll is " + roll);
 
@@ -1745,7 +1745,7 @@ namespace TFTV
                         {
                             foreach (TacticalActor tacticalActor in faction.TacticalActors)
                             {
-                                if (tacticalActor.HasGameTag(HumanEnemyTier1GameTag))
+                                if (tacticalActor.HasGameTag(HumanEnemyTier4GameTag))
                                 {
 
                                     if (tacticalActor.GetAbilityWithDef<Ability>(regeneration) == null
@@ -1795,19 +1795,19 @@ namespace TFTV
                         float SelectedWeaponRange = tacticalActor.Equipments.SelectedWeapon.WeaponDef.EffectiveRange;
                         TFTVLogger.Always($"{tacticalActor.name} selected weapon is {tacticalActor.Equipments.SelectedWeapon.DisplayName} and its maximum range is {tacticalActor.Equipments.SelectedWeapon.WeaponDef.EffectiveRange}");
 
-                        foreach (TacticalActorBase enemy in leader.TacticalFaction.GetAllAliveEnemyActors<TacticalActorBase>(false))
+                      /*  foreach (TacticalActorBase enemy in leader.TacticalFaction.GetAllAliveEnemyActors<TacticalActorBase>(false))
                         {
                             if ((enemy.Pos - tacticalActor.Pos).magnitude < SelectedWeaponRange / 2
                             && TacticalFactionVision.CheckVisibleLineBetweenActors(enemy, enemy.Pos, tacticalActor, true)
                             && !tacticalActor.Status.HasStatus(startingVolleyStatus))
                             {
-                                TFTVLogger.Always($"{tacticalActor.name} is getting quick aim status because close enough to {enemy.name}");
-                                //  actor.AddAbility(DefCache.GetDef<AbilityDef>("Regeneration_Torso_Passive_AbilityDef")), actor);
+                               */ //TFTVLogger.Always($"{tacticalActor.name} is getting quick aim status because close enough to {enemy.name}");
+                              
                                 tacticalActor.Status.ApplyStatus(startingVolleyStatus);
-                                //  actor.AddAbility(DefCache.GetDef<ApplyStatusAbilityDef>("QuickAim_AbilityDef")), actor);
+                               
 
-                            }
-                        }
+                        //    }
+                      //  }
                     }
                 }
 

@@ -1,4 +1,5 @@
 ﻿using Base.Cameras.ExecutionNodes;
+using Base.Cameras.Filters;
 using Base.Defs;
 using Base.Entities.Abilities;
 using Base.Entities.Statuses;
@@ -418,6 +419,8 @@ namespace PRMBetterClasses.SkillModifications
                 "5fa204df-5048-428f-b701-722ea9e15cc7",
                 "E_JetpackControl_CameraAbilityFilter2 [NoDieCamerasTacticalCameraDirectorDef]");
             (cameraAbility2.FilterDef as TacCameraAbilityFilterDef).TacticalAbilityDef = jetpackControl;
+
+            DefCache.GetDef<CameraAnyFilterDef>("E_AnyJetJumpAbilityFilter [NoDieCamerasTacticalCameraDirectorDef]").Conditions.Add(cameraAbility2.FilterDef);
 
             foreach (TacActorSimpleAbilityAnimActionDef animActionDef in Repo.GetAllDefs<TacActorSimpleAbilityAnimActionDef>().Where(aad => aad.name.Contains("Soldier_Utka_AnimActionsDef")))
             {

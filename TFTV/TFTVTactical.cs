@@ -1,12 +1,15 @@
 using Base.Core;
 using Base.Entities;
 using Base.Serialization.General;
+using PhoenixPoint.Common.Levels.MapGeneration;
 using PhoenixPoint.Common.Levels.Missions;
 using PhoenixPoint.Modding;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Levels;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
 
 namespace TFTV
 {
@@ -178,8 +181,18 @@ namespace TFTV
             ImplementConfigOptions(tacController);
             RunChecksForAllMissions(tacController);
             RunBetaTestChecks();
-           
-           // TFTVTacticalUtils.RevealAllSpawns(tacController);
+
+            
+       /*             List<BreachEntrance> breachEntrances = tacController.Map.GetActors<BreachEntrance>().ToList();
+                    
+                    foreach(BreachEntrance breachEntrance in breachEntrances) 
+            {
+                TFTVLogger.Always($"{breachEntrance.Pos}");
+            
+            }*/
+
+
+            // TFTVTacticalUtils.RevealAllSpawns(tacController);
 
             TFTVLogger.Always("The count of Human tactics in play is " + TFTVHumanEnemies.HumanEnemiesAndTactics.Count);
             TFTVLogger.Always("VO3 Active " + TFTVVoidOmens.VoidOmensCheck[3]);

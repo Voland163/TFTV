@@ -5,7 +5,6 @@ using Base.Defs;
 using Base.Entities.Effects;
 using Base.Entities.Statuses;
 using Base.Utils.Maths;
-using Epic.OnlineServices;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities.GameTags;
@@ -15,7 +14,6 @@ using PhoenixPoint.Tactical;
 using PhoenixPoint.Tactical.AI;
 using PhoenixPoint.Tactical.AI.Actions;
 using PhoenixPoint.Tactical.AI.Considerations;
-using PhoenixPoint.Tactical.AI.TargetGenerators;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.DamageKeywords;
@@ -42,17 +40,17 @@ namespace TFTV
 
         private static bool Cover(TacticalActor tacticalActor, TacAITarget tacAITarget)
         {
-            try 
+            try
             {
                 float adjustedPerception = tacticalActor.GetAdjustedPerceptionValue();
                 float perceptionRange = adjustedPerception * adjustedPerception;
 
                 Dictionary<TacticalActorBase, Vector3> relevantEnemies = new Dictionary<TacticalActorBase, Vector3>();
-            
+
                 foreach (TacticalActorBase enemy in tacticalActor.TacticalFaction.AIBlackboard.GetEnemies(tacticalActor.AIActor.GetEnemyMask(ActorType.Combatant)))
                 {
-                 
-                    if (!((tacAITarget.Pos - enemy.Pos).sqrMagnitude < adjustedPerception 
+
+                    if (!((tacAITarget.Pos - enemy.Pos).sqrMagnitude < adjustedPerception
                         || !TacticalFactionVision.CheckVisibleLineBetweenActors(enemy, enemy.Pos, tacticalActor, checkAllPoints: true, tacAITarget.Pos)))
                     {
                         continue;
@@ -61,14 +59,14 @@ namespace TFTV
                     Vector3 vector = enemy.Pos - tacAITarget.Pos;
                     if (Utl.Equals(vector.x, 0f) && Utl.Equals(vector.z, 0f))
                     {
-                        
+
                         continue;
                     }
 
-                    relevantEnemies.Add(enemy, vector); 
+                    relevantEnemies.Add(enemy, vector);
                 }
 
-                if (relevantEnemies.Count == 0) 
+                if (relevantEnemies.Count == 0)
                 {
 
                     return false;
@@ -79,18 +77,18 @@ namespace TFTV
                 TacticalActorBase closestRelevantEnemy = relevantEnemies.Keys.FirstOrDefault();
 
                 Vector3 coverDirection = tacticalActor.TacticalPerception.GetCoverDirection(tacAITarget.Pos, relevantEnemies[closestRelevantEnemy]);
-               
+
                 CoverInfo coverInfoInDirection = tacticalActor.Map.GetCoverInfoInDirection(tacAITarget.Pos, coverDirection, tacticalActor.TacticalPerception.Height);
-                   
-                if(coverInfoInDirection.CoverType >= CoverType.Low) 
+
+                if (coverInfoInDirection.CoverType >= CoverType.Low)
                 {
-                    return true;               
+                    return true;
                 }
-                else 
+                else
                 {
-                    return false;            
+                    return false;
                 }
-                
+
             }
 
             catch (Exception e)
@@ -101,7 +99,7 @@ namespace TFTV
         }
 
 
-       // AIActorMovementZoneTargetGenerator
+        // AIActorMovementZoneTargetGenerator
 
         //Prevents step out
 
@@ -115,39 +113,39 @@ namespace TFTV
                     TacticalActor actor = (TacticalActor)aiTarget.Actor;
                     TacAITarget target = (TacAITarget)aiTarget.Target;
 
-                    if (actor.NavigationComponent.AgentNavSettings.AgentRadius >= TacticalMap.HalfTileSize || actor.Status!=null && actor.Status.HasStatus<PanicStatus>()) 
+                    if (actor.NavigationComponent.AgentNavSettings.AgentRadius >= TacticalMap.HalfTileSize || actor.Status != null && actor.Status.HasStatus<PanicStatus>())
                     {
-                        return;    
+                        return;
                     }
 
                     List<Weapon> weapons = new List<Weapon>(actor.Equipments.GetWeapons().Where(
-                    w => w.IsUsable 
-                    && w.WeaponDef.Tags.Contains(DefCache.GetDef<GameTagDef>("GunWeapon_TagDef")) 
+                    w => w.IsUsable
+                    && w.WeaponDef.Tags.Contains(DefCache.GetDef<GameTagDef>("GunWeapon_TagDef"))
                     && !w.WeaponDef.Tags.Contains(DefCache.GetDef<GameTagDef>("SpitterWeapon_TagDef"))
                     ));
 
                     if (weapons.Count == 0)
                     {
-                      return;   
+                        return;
                     }
-                    else 
-                    { 
-                    weapons = weapons.OrderBy(w=>w.ApToUse).ToList(); 
+                    else
+                    {
+                        weapons = weapons.OrderBy(w => w.ApToUse).ToList();
                     }
 
                     Weapon weapon = weapons.First();
 
                     TFTVLogger.Always($"lowest AP ranged weapon is {weapon.DisplayName}, with {weapon.ApToUse}");
-                   
+
                     if (actor.CharacterStats.ActionPoints <= weapon.ApToUse)
                     {
                         TFTVLogger.Always($"{actor.name} has {actor.CharacterStats.ActionPoints} AP is at POS {actor.Pos}, current target POS {target.Pos}");
 
-                        if(!Cover(actor, target)) 
+                        if (!Cover(actor, target))
                         {
                             TFTVLogger.Always($"Position has no cover!");
                             target.Pos = actor.Pos;
-                        }            
+                        }
                     }
                 }
                 catch (Exception e)
@@ -169,7 +167,7 @@ namespace TFTV
         //AILineOfSightToEnemiesConsiderationDef
 
         //AIEnemyTargetGeneratorDef
-        
+
         public static bool Has1APWeapon(TacCharacterDef tacCharacterDef)
         {
             try
@@ -300,8 +298,9 @@ namespace TFTV
         {
             try
             {
+
                 if (!tacticalActor.IsControlledByAI || !tacticalActor.TacticalActorDef.name.Equals("Soldier_ActorDef") || tacticalActor.IsDead || tacticalActor.IsDisabled
-                    || tacticalActor.IsEvacuated || tacticalActor.Equipments == null || tacticalActor.Equipments.GetWeapons() == null ||  !tacticalActor.Equipments.GetWeapons().Any(w=>w.IsUsable && w.HasCharges))
+                    || tacticalActor.IsEvacuated || tacticalActor.Equipments == null || tacticalActor.Equipments.GetWeapons() == null || !tacticalActor.Equipments.GetWeapons().Any(w => w.IsUsable && w.HasCharges))
                 {
                     return;
                 }
@@ -311,6 +310,8 @@ namespace TFTV
                     && !w.WeaponDef.Tags.Contains(DefCache.GetDef<GameTagDef>("SpitterWeapon_TagDef"))
                     ));
 
+              //  TFTVLogger.Always($"got here for {tacticalActor.name}, weapons count: {weapons.Count}");
+
                 if (weapons.Count == 0)
                 {
                     return;
@@ -318,9 +319,11 @@ namespace TFTV
 
                 Weapon bestWeapon = weapons.OrderByDescending(w => w.WeaponDef.EffectiveRange).ToList().First();
 
-                if (tacticalActor.Equipments.SelectedWeapon != bestWeapon)
+             //   TFTVLogger.Always($"best weapon for {tacticalActor.name} is {bestWeapon}. currently selectedWeapon null? {tacticalActor.Equipments.SelectedWeapon==null} currently selected equipment null? {tacticalActor.Equipments.SelectedEquipment==null}");
+
+                if (tacticalActor.Equipments.SelectedWeapon == null || tacticalActor.Equipments.SelectedWeapon != bestWeapon)
                 {
-                    TFTVLogger.Always($"Applying GetBestWeaponForQA {tacticalActor.name} was holding {tacticalActor.Equipments.SelectedWeapon.DisplayName}, switching to {bestWeapon.DisplayName}");
+                   // TFTVLogger.Always($"Applying GetBestWeaponForQA {tacticalActor.name} was holding {tacticalActor.Equipments.SelectedWeapon?.DisplayName}, switching to {bestWeapon.DisplayName}");
                     tacticalActor.Equipments.SetSelectedEquipment(bestWeapon);
                 };
             }
@@ -328,6 +331,7 @@ namespace TFTV
             {
                 TFTVLogger.Error(e);
             }
+
         }
 
         [HarmonyPatch(typeof(AIAttackPositionConsideration), "EvaluateWithShootAbility")]
@@ -1834,7 +1838,7 @@ namespace TFTV
            }
        }*/
 
-        
+
 
 
         /*  [HarmonyPatch(typeof(TacticalAbility), "GetDisabledStateDefaults")]

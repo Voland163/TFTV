@@ -898,6 +898,15 @@ namespace TFTV
                         {
                             __instance.Image.sprite = CustomGeoHintImage;
                         }
+                        else if (step.StepType == GeoscapeTutorialStepType.Geoscape) 
+                        {
+                            TFTVLogger.Always($"Geoscape tutorial step triggered adding Alistair and Olena lore entries");
+                            GeoLevelController geoLevelController = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
+                            geoLevelController.Phoenixpedia.AddEntryFromDef(Repo.GetDef("B955090F-62E0-41F2-9036-3548A1DC5F46"));
+                            geoLevelController.Phoenixpedia.AddEntryFromDef(Repo.GetDef("38ACBF41-7D2D-479F-981E-10FED4FC6800"));
+
+                        }
+
                     }
                     catch (Exception e)
                     {

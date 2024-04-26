@@ -48,6 +48,7 @@ using System.Configuration;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
+using UnityEngine.Android;
 using UnityEngine.UI;
 using static TFTV.TFTVRevenant.UIandFX;
 
@@ -1852,7 +1853,6 @@ namespace TFTV
             }
         }
 
-
         internal class BaseFacilities
         {
 
@@ -3058,11 +3058,51 @@ namespace TFTV
         [HarmonyPatch(typeof(UIStateRosterDeployment), "EnterState")]
         public static class TFTV_UIStateRosterDeployment_EnterState_BaseDefenseGeo_patch
         {
+            public static bool Prefix(UIStateRosterDeployment __instance)
+            {
+                try 
+                {
+                    GeoLevelController controller = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
+
+                    MissionTypeTagDef ancientSiteDefense = DefCache.GetDef<MissionTypeTagDef>("MissionTypeAncientSiteDefense_MissionTagDef");
+
+                    if (__instance.Mission != null)
+                    {
+                        GeoMission geoMission = __instance.Mission;
+                        GeoSite geoSite = __instance.Mission.Site;
+
+                        if ((geoSite.Type == GeoSiteType.AncientHarvest || geoSite.Type == GeoSiteType.AncientRefinery) && geoMission.MissionDef.MissionTags.Contains(ancientSiteDefense))
+                        {
+                            if (geoSite.ActiveMission != null)
+                            {
+                                geoSite.ActiveMission.Launch(new GeoSquad() { });
+                                return false;
+                            }    
+                        }
+                    }
+
+                    return true;
+
+                }
+
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                    
+                }
+            }
+
+
             public static void Postfix(UIStateRosterDeployment __instance)
             {
                 try
                 {
+                    
+
                     GeoLevelController controller = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
+
+                  
 
                     UIModuleActorCycle uIModuleActorCycle = controller.View.GeoscapeModules.ActorCycleModule;
                     UIModuleDeploymentMissionBriefing uIModuleDeploymentMissionBriefing = controller.View.GeoscapeModules.DeploymentMissionBriefingModule;
@@ -3401,17 +3441,24 @@ namespace TFTV
                                 TFTVLogger.Always("Closing modal because no troops to deploy in mission.");
                             }
                         }
-
-                        MissionTypeTagDef ancientSiteDefense = DefCache.GetDef<MissionTypeTagDef>("MissionTypeAncientSiteDefense_MissionTagDef");
-                        if (geoSite.ActiveMission != null && (geoSite.Type == GeoSiteType.AncientHarvest || geoSite.Type == GeoSiteType.AncientRefinery) && geoSite.ActiveMission.MissionDef.MissionTags.Contains(ancientSiteDefense))
+                      
+                      /*  MissionTypeTagDef ancientSiteDefense = DefCache.GetDef<MissionTypeTagDef>("MissionTypeAncientSiteDefense_MissionTagDef");
+                        if ((geoSite.Type == GeoSiteType.AncientHarvest || geoSite.Type == GeoSiteType.AncientRefinery) && geoMission.MissionDef.MissionTags.Contains(ancientSiteDefense))
                         {
-                            geoSite.ActiveMission.Launch(new GeoSquad() { });
-                        }
-
-
+                            if (geoSite.ActiveMission != null)
+                            {
+                                geoSite.ActiveMission.Launch(new GeoSquad() { });
+                            }
+                            else 
+                            {
+                                geoMission.Cancel();
+                                geoSite.Owner = geoSite.GeoLevel.PhoenixFaction;
+                                __instance.Close();
+                                TFTVLogger.Always("Closing modal because no Active Mission on Site.");
+                            }
+                        }*/
+                        
                     }
-
-
                 }
                 catch (Exception e)
                 {

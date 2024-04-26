@@ -33,7 +33,7 @@ namespace TFTV
             {
                 try
                 {
-                    TFTVHumanEnemies.ImplementStartingVolleyHumanEnemiesTactic(__instance);
+                   // TFTVHumanEnemies.ImplementStartingVolleyHumanEnemiesTactic(__instance);
                     TFTVTouchedByTheVoid.TBTVCallReinforcements.ImplementCallReinforcementsTBTV(__instance);
                     TFTVPalaceMission.EnemyDeployments.Reinforcements.PalaceReinforcements(__instance);
                     TFTVPalaceMission.YuggothDefeat.SpawnMistToHideReceptacleBody(__instance);
