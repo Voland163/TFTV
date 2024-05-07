@@ -82,29 +82,7 @@ namespace TFTV
         }
 
 
-        /*   private static void TestingInventory()
-           {
-               try 
-               { 
-               TacticalLevelController controller = GameUtl.CurrentLevel().GetComponent<TacticalLevelController>();
-
-                   controller.View.TacticalModules.TacticalSoldierEquipModule.StorageList.Deinit();
-
-
-               }
-
-               catch (Exception e)
-               {
-                   TFTVLogger.Error(e);
-                   throw;
-               }
-
-
-
-           }*/
-     
-
-         [HarmonyPatch(typeof(UIStateInventory), "EnterState")]
+        [HarmonyPatch(typeof(UIStateInventory), "EnterState")]
         public static class UIStateInventory_EnterState_patch
         {
             public static void Postfix(UIStateInventory __instance, ref InventoryComponent ____groundInventory)

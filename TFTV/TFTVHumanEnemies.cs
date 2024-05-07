@@ -402,7 +402,7 @@ namespace TFTV
                     string nameOfFaction = faction.Faction.FactionDef.ShortName;
 
                     GameTagDef gameTagDef = DefCache.GetDef<GameTagDef>("HumanEnemyFaction_" + nameOfFaction + "_GameTagDef");
-                    TFTVLogger.Always("gameTagDef found");
+                   // TFTVLogger.Always("gameTagDef found");
                     List<string> factionNames = TFTVHumanEnemiesNames.names.GetValueSafe(nameOfFaction);
 
                     if (!leaderBase.GameTags.Contains(HumanEnemyTier1GameTag))
@@ -547,7 +547,7 @@ namespace TFTV
 
                     TFTVLogger.Always("The short name of the faction is " + nameOfFaction);
                     GameTagDef gameTagDef = DefCache.GetDef<GameTagDef>("HumanEnemyFaction_" + nameOfFaction + "_GameTagDef");
-                    TFTVLogger.Always("gameTagDef found");
+                   // TFTVLogger.Always("gameTagDef found");
                     List<string> factionNames = TFTVHumanEnemiesNames.names.GetValueSafe(nameOfFaction);
 
                     if (!leaderBase.GameTags.Contains(HumanEnemyTier1GameTag))

@@ -65,6 +65,7 @@ namespace TFTV
         public bool Breach;
         public List<float> SecondaryStrikeForceCoordinates;
         public int EtermesVulnerabilityResistanceTactical = TFTVNewGameOptions.EtermesResistanceAndVulnerability;
+        public int RevenantPoints;
     }
 
     /// <summary>
@@ -215,6 +216,7 @@ namespace TFTV
             TFTVLogger.Always($"Difficulty level is {tacController.Difficulty.name} and treated as {TFTVSpecialDifficulties.DifficultyOrderConverter(tacController.Difficulty.Order)} after TFTV conversion.");
             TFTVLogger.Always($"Etermes vulnerability/resistance: {TFTVNewGameOptions.EtermesResistanceAndVulnerability}");
             TFTVLogger.Always("Tactical start completed");
+
         }
 
         /// <summary>
@@ -284,6 +286,8 @@ namespace TFTV
                 TFTVNewGameOptions.ImpossibleWeaponsAdjustmentsSetting = data.NerfAncientsWeaponsTactical;
                 TFTVNewGameOptions.InternalDifficultyCheckTactical = data.internalDifficultyCheck;
                 TFTVBaseDefenseTactical.Map.DeploymentZones.SecondaryStrikeForceVector = data.SecondaryStrikeForceCoordinates;
+                TFTVRevenantResearch.RevenantPoints = data.RevenantPoints;
+
 
                 if (TFTVNewGameOptions.EtermesResistanceAndVulnerability == 0 && data.EtermesVulnerabilityResistanceTactical == 0 && TFTVNewGameOptions.InternalDifficultyCheckTactical == 6)
                 {
@@ -373,6 +377,7 @@ namespace TFTV
                 Breach = TFTVBaseDefenseTactical.Breach,
                 ScyllaLoose = TFTVBaseDefenseTactical.ScyllaLoose,
                 SecondaryStrikeForceCoordinates = TFTVBaseDefenseTactical.Map.DeploymentZones.SecondaryStrikeForceVector,
+                RevenantPoints = TFTVRevenantResearch.RevenantPoints,
                 EtermesVulnerabilityResistanceTactical = TFTVNewGameOptions.EtermesResistanceAndVulnerability,
 
                 internalDifficultyCheck = Controller.Difficulty.Order,

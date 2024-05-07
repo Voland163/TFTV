@@ -133,9 +133,7 @@ Over the past decades, the melting permafrost and the ecological changes wrought
 ",,,,,,,,
 PX_ANTEDILUVIANARCHAEOLOGY_RESEARCHDEF_UNLOCK,Text,,"Pre-Collapse there had been many attempts to find evidence of advanced precursor civilizations on Earth. Could those out-of-place artifacts have been real? What was behind the myths of Atlantis and of the Great Flood? If we want to learn the truth, we must pursue a more scientific approach.",,,,,,,,
 AUTOMATA_RESEARCH_TITLE,Text,,Ancient Automata,,,,,,,,
-AUTOMATA_RESEARCH_REVEAL,Text,,"
-
-We have retrieved the remains of the automata that we encountered at the site. We should analyze them immediately.",,,,,,,,
+AUTOMATA_RESEARCH_REVEAL,Text,,We have retrieved the remains of the automata that we encountered at the site. We should analyze them immediately.,,,,,,,,
 AUTOMATA_RESEARCH_COMPLETE,Text,,"<i>""What do their Automata tell us about the Ancients? Yes, they were far more technologically advanced than us, that's a given. But how different was their society from ours? These weaponized Automata tell us there was violence, there was fear. But what were they fighting, what did they fear?""</i> - Alistair Ashby 
 
 We encountered these entities during our exploration of the ancient site. This is the single most important archaeological discovery ever made! 

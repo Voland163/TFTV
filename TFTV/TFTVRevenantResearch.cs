@@ -155,6 +155,8 @@ namespace TFTV
         {
             try
             {
+                TFTVLogger.Always($"Passing Revenant Points to Geoscape variable {RevenantPoints}");
+
                 if (RevenantCaptured && controller.EventSystem.GetVariable(RevenantCapturedVariable) == 0)
                 {
                     controller.EventSystem.SetVariable(RevenantCapturedVariable, 1);
@@ -203,6 +205,7 @@ namespace TFTV
                 }
 
                 RevenantPoints = 0;
+                TFTVRevenant.RecordUpkeep.SkillPointsForRevenantKillAwarded = false;
             }
 
             catch (Exception e)
@@ -221,7 +224,6 @@ namespace TFTV
 
                     if (TFTVRevenant.revenantID != 0 && controller.GetFactionByCommandName("PX").State == TacFactionState.Won)
                     {
-
                         foreach (TacticalActorBase pandoranActorBase in controller.GetFactionByCommandName("ALN").Actors)
                         {
                             TacticalActor pandoranActor = pandoranActorBase as TacticalActor;

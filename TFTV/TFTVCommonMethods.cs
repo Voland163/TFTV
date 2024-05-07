@@ -138,7 +138,7 @@ namespace TFTV
                 TFTVDelirium.CharactersDeliriumPerksAndMissions.Clear();
                 TFTVBaseDefenseGeoscape.ContainmentBreachSchedule.Clear();
                 TFTVBaseDefenseGeoscape.PandoransThatCanEscape.Clear();
-                TFTVRevenantResearch.RevenantPoints = 0;
+                
                 
 
                 /*  TFTVNewGameOptions.AmountOfExoticResourcesSetting;
@@ -207,6 +207,7 @@ namespace TFTV
             {
                 TFTVRevenant.revenantSpawned = false;
                 TFTVRevenant.revenantID = 0;
+                TFTVRevenantResearch.RevenantPoints = 0;
                 TFTVTactical.TurnZeroMethodsExecuted = false;
                 TFTVBaseDefenseTactical.ConsolePositions = new Dictionary<float, float>();
                 TFTVBaseDefenseTactical.StratToBeAnnounced = 0;
@@ -219,6 +220,8 @@ namespace TFTV
                 TFTVBaseDefenseTactical.ScyllaLoose = false;
                 TFTVBaseDefenseTactical.PandoransInContainment.Clear();
                 TFTVNewGameOptions.EtermesResistanceAndVulnerability = 0;
+
+                TFTVLogger.Always($"Variables cleared on load");
 
                 //  TFTVBaseDefenseTactical.VentingHintShown = false;
             }

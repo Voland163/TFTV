@@ -109,7 +109,7 @@ namespace TFTV
             Main.Logger.LogInfo("UmbraEvolution variable is " + Controller.EventSystem.GetVariable(TFTVTouchedByTheVoid.TBTVVariableName));
             TFTVLogger.Always("UmbraEvolution variable is " + Controller.EventSystem.GetVariable(TFTVTouchedByTheVoid.TBTVVariableName));
             TFTVAncientsGeo.AncientsResearch.AncientsCheckResearchState(gsController);
-           // TFTVAncientsGeo.ImpossibleWeapons.CheckImpossibleWeaponsAdditionalRequirements(gsController);
+            // TFTVAncientsGeo.ImpossibleWeapons.CheckImpossibleWeaponsAdditionalRequirements(gsController);
             TFTVAncientsGeo.ExoticResources.EnsureNoHarvesting(gsController);
             TFTVVoxels.TFTVFire.CheckForFireQuenchers(gsController);
             TFTVSpecialDifficulties.DefModifying.CheckForSpecialDifficulties();
@@ -118,6 +118,25 @@ namespace TFTV
             TFTVBetaSaveGamesFixes.CheckResearches(Controller);
             TFTVPassengerModules.ImplementFarMConfig(Controller);
             TFTVBetaSaveGamesFixes.RemoveBadSlug(Controller);
+            
+        
+
+            /* GeoSite geoSite = Controller.Map.AllSites.FirstOrDefault(s=>s.GetComponent<GeoPhoenixBase>()!=null && s.ActiveMission!=null);
+
+             geoSite.ActiveMission = null;
+             geoSite.ActivateSite();
+             TFTVBaseDefenseGeoscape.PhoenixBasesInfested.Remove(geoSite.SiteId);
+             GeoObjective.RemoveBaseDefenseObjective(geoSite.LocalizedSiteName);
+             //  geoMission.Level.PhoenixFaction.ActivatePhoenixBase(geoMission.Site, true);
+
+
+
+             FieldInfo basesField = AccessTools.Field(typeof(GeoPhoenixFaction), "_bases");
+             List<GeoPhoenixBase> bases = (List<GeoPhoenixBase>)basesField.GetValue(Controller.PhoenixFaction);
+             bases.Add(geoSite.GetComponent<GeoPhoenixBase>());
+             geoSite.RefreshVisuals();*/
+
+
             // TFTVBetaSaveGamesFixes.Fix(Controller);
         }
         /// <summary>
@@ -242,7 +261,6 @@ namespace TFTV
                 TFTVNewGameOptions.ConfigImplemented = data.NewConfigUsedInstance;
                 TFTVAmbushes.AN_FallenOnes_Hotspots = data.FO_Hotspots;
                 TFTVAmbushes.NJ_Purists_Hotspots = data.PU_Hotspots;
-                TFTVRevenantResearch.RevenantPoints = data.RevenantPoints;
 
                 if (data.PandoransContainmentBaseAttack != null)
                 {
@@ -293,7 +311,7 @@ namespace TFTV
                     TFTVNewGameOptions.SetInternalConfigOptions(Controller);
                 }
 
-               
+
 
 
                 TFTVLogger.Always($"Config settings:" +
@@ -305,7 +323,7 @@ namespace TFTV
 
                 TFTVDefsWithConfigDependency.ImplementConfigChoices();
 
-            //   TFTVBetaSaveGamesFixes.Fix(Controller);
+                //   TFTVBetaSaveGamesFixes.Fix(Controller);
 
                 // TFTVNewGameOptions.Update35Check = data.Update35GeoscapeCheck;
 
@@ -353,6 +371,7 @@ namespace TFTV
                 TFTVLogger.Always($"Scylla count {TFTVPandoranProgress.ScyllaCount}");
                 TFTVLogger.Always($"Internal difficulty check {TFTVNewGameOptions.InternalDifficultyCheck}");
                 TFTVLogger.Always($"Pandorans in containment during base attack? {TFTVBaseDefenseGeoscape.PandoransThatCanEscape.Count > 0}");
+                TFTVLogger.Always($"Revenant points: {Controller.EventSystem.GetVariable("RevenantsDestroyed")}");
 
                 //  TFTVLogger.Always($"Pure hotspots count {TFTVAmbushes.NJ_Purists_Hotspots.Count()>0}");
                 //  TFTVLogger.Always($"Forsaken hotspots count {TFTVAmbushes.AN_FallenOnes_Hotspots.Count()>0}");

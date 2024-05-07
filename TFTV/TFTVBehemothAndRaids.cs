@@ -870,17 +870,17 @@ namespace TFTV
 
                         //  TFTVLogger.Always("The num is " + num);
 
-                        TFTVLogger.Always($"Calculating Disruption Threshold for Big B. " +
+                      /*  TFTVLogger.Always($"Calculating Disruption Threshold for Big B. " +
                             $"Base value: {festeringSkiesSettings.DisruptionThreshholdBaseValue} " +
                             $"From Difficulty: {currentDifficultyLevel.DisruptionDueToDifficulty}  " +
                             $"Roaming: {__instance.GeoLevel.EventSystem.GetVariable(BehemothRoamings)} " +
-                            $"Total: {num}");
+                            $"Total: {num}");*/
 
                         int[] voidOmensInEffect = TFTVVoidOmens.CheckFordVoidOmensInPlay(__instance.GeoLevel);
                         if (voidOmensInEffect.Contains(11))
                         {
                             num += 3 * TFTVSpecialDifficulties.DifficultyOrderConverter(currentDifficultyLevel.Order);
-                            TFTVLogger.Always($"And with VO# 11 in effect, total is now {num}");
+                            //TFTVLogger.Always($"And with VO# 11 in effect, total is now {num}");
                         }
 
                         __result = num;

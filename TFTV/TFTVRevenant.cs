@@ -1696,6 +1696,8 @@ namespace TFTV
                             // TFTVLogger.Always("StartingSkill points " + __instance.GetFactionByCommandName("PX").StartingSkillpoints);
                             // __instance.GetFactionByCommandName("PX").SetStartingSkillPoints(6);
                         }
+
+                        TFTVLogger.Always($"Revenant Points now {TFTVRevenantResearch.RevenantPoints}");
                     }
                 }
                 catch (Exception e)
