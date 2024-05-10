@@ -2,6 +2,7 @@
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Geoscape.Entities.Research;
 using PhoenixPoint.Geoscape.Entities.Research.Requirement;
+using PhoenixPoint.Geoscape.Entities.Sites;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Statuses;
@@ -171,7 +172,6 @@ namespace TFTV
                         }
                     }
                     TFTVLogger.Always("Name of captured revenant " + NameOfCapturedRevenant);
-
 
                     /* string viewElementName = "Captured Revenant";
                      string revenantVariable = RevenantCapturedVariable;

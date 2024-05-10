@@ -66,6 +66,7 @@ namespace TFTV
         public List<float> SecondaryStrikeForceCoordinates;
         public int EtermesVulnerabilityResistanceTactical = TFTVNewGameOptions.EtermesResistanceAndVulnerability;
         public int RevenantPoints;
+        public Dictionary<string, int> UnDesirablesActorsSpawned;
     }
 
     /// <summary>
@@ -216,6 +217,7 @@ namespace TFTV
             TFTVLogger.Always($"Difficulty level is {tacController.Difficulty.name} and treated as {TFTVSpecialDifficulties.DifficultyOrderConverter(tacController.Difficulty.Order)} after TFTV conversion.");
             TFTVLogger.Always($"Etermes vulnerability/resistance: {TFTVNewGameOptions.EtermesResistanceAndVulnerability}");
             TFTVLogger.Always("Tactical start completed");
+            
 
         }
 
@@ -287,6 +289,10 @@ namespace TFTV
                 TFTVNewGameOptions.InternalDifficultyCheckTactical = data.internalDifficultyCheck;
                 TFTVBaseDefenseTactical.Map.DeploymentZones.SecondaryStrikeForceVector = data.SecondaryStrikeForceCoordinates;
                 TFTVRevenantResearch.RevenantPoints = data.RevenantPoints;
+                if (data.UnDesirablesActorsSpawned != null) 
+                {
+                    TFTVTacticalDeploymentEnemies.UndesirablesSpawned = data.UnDesirablesActorsSpawned;
+                }
 
 
                 if (TFTVNewGameOptions.EtermesResistanceAndVulnerability == 0 && data.EtermesVulnerabilityResistanceTactical == 0 && TFTVNewGameOptions.InternalDifficultyCheckTactical == 6)
@@ -379,6 +385,7 @@ namespace TFTV
                 SecondaryStrikeForceCoordinates = TFTVBaseDefenseTactical.Map.DeploymentZones.SecondaryStrikeForceVector,
                 RevenantPoints = TFTVRevenantResearch.RevenantPoints,
                 EtermesVulnerabilityResistanceTactical = TFTVNewGameOptions.EtermesResistanceAndVulnerability,
+                UnDesirablesActorsSpawned = TFTVTacticalDeploymentEnemies.UndesirablesSpawned,
 
                 internalDifficultyCheck = Controller.Difficulty.Order,
 
@@ -424,7 +431,7 @@ namespace TFTV
                         TFTVRevenant.Spawning.RevenantCheckAndSpawn(Controller);
                         TFTVRevenant.Resistance.ImplementVO19(Controller);
                         TFTVVoidOmens.VO5TurnHostileCivviesFriendly(Controller);
-                        TFTVBaseDefenseTactical.Map.Consoles.GetConsoles();
+                        TFTVBaseDefenseTactical.Map.FirstTurnBaseDefenseDeployment(Controller);
 
                         //  TFTVBaseDefenseTactical.ModifyObjectives(Controller.TacMission.MissionData.MissionType);
                         TurnZeroMethodsExecuted = true;

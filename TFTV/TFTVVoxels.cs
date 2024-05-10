@@ -418,7 +418,7 @@ namespace TFTV
 
                             tacticalActor.CharacterStats.ActionPoints.Subtract(apToSubtract);
 
-                            TFTVLogger.Always($"subtracting {apToSubtract} from {tacticalActor.DisplayName} because traversing Goo");
+                           // TFTVLogger.Always($"subtracting {apToSubtract} from {tacticalActor.DisplayName} because traversing Goo");
                         }
                     }     
                 }

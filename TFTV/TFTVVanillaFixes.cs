@@ -3,6 +3,7 @@ using Base;
 using Base.Core;
 using Base.Entities;
 using Base.Rendering.ObjectRendering;
+using Base.UI;
 using Base.Utils.Maths;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
@@ -26,11 +27,13 @@ using PhoenixPoint.Tactical.AI;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.Equipments;
+using PhoenixPoint.Tactical.Entities.Statuses;
 using PhoenixPoint.Tactical.Entities.Weapons;
 using PhoenixPoint.Tactical.Levels;
 using PhoenixPoint.Tactical.Levels.Missions;
 using PhoenixPoint.Tactical.UI.SoldierPortraits;
 using PhoenixPoint.Tactical.View;
+using PhoenixPoint.Tactical.View.ViewControllers;
 using PhoenixPoint.Tactical.View.ViewModules;
 using SETUtil.Common.Extend;
 using System;
@@ -95,6 +98,8 @@ namespace TFTV
                 {
                     MethodInfo zoneOfControlMarkerCreatorMethod = internalType.GetMethod("ZoneOfControlMarkerCreator", BindingFlags.NonPublic | BindingFlags.Instance);
                     MethodInfo prepareShortActorInfoMethod = internalType.GetMethod("PrepareShortActorInfo", BindingFlags.NonPublic | BindingFlags.Instance);
+                //    MethodInfo updateStateInfoMethod = internalType.GetMethod("UpdateState", BindingFlags.NonPublic | BindingFlags.Instance);
+                    // MethodInfo selectCharacterInfoMethod = internalType.GetMethod("SelectCharacter", BindingFlags.NonPublic | BindingFlags.Instance);
 
                     if (zoneOfControlMarkerCreatorMethod != null)
                     {
@@ -102,9 +107,19 @@ namespace TFTV
                     }
                     if (prepareShortActorInfoMethod != null)
                     {
-                       // TFTVLogger.Always($"patch should be running");
+                        // TFTVLogger.Always($"patch should be running");
                         harmony.Patch(prepareShortActorInfoMethod, postfix: new HarmonyMethod(typeof(TFTVVanillaFixes), nameof(PrepareShortActorInfo)));
                     }
+                  /*  if (updateStateInfoMethod != null)
+                    {
+                        // TFTVLogger.Always($"patch should be running");
+                      //  harmony.Patch(updateStateInfoMethod, postfix: new HarmonyMethod(typeof(TFTVVanillaFixes), nameof(UpdateState)));
+                    }*/
+                    /*   if (selectCharacterInfoMethod != null)
+                       {
+                           // TFTVLogger.Always($"patch should be running");
+                           harmony.Patch(selectCharacterInfoMethod, postfix: new HarmonyMethod(typeof(TFTVVanillaFixes), nameof(SelectCharacter)));
+                       }*/
                 }
                 else
                 {
@@ -118,6 +133,259 @@ namespace TFTV
             }
 
         }
+
+
+
+
+        private static ShortActorInfoTooltipData GenerateData(TacticalActor actor, UIModuleShortActorInfoTooltip uIModuleShortActorInfoTooltip)
+        {
+            try
+            {
+                ShortActorInfoTooltipData shortActorInfoTooltipData = default;
+
+                shortActorInfoTooltipData.Entries = new List<ShortActorInfoTooltipDataEntry>();
+                shortActorInfoTooltipData.TrackRoot = actor.gameObject;
+
+                shortActorInfoTooltipData.Entries.Add(new ShortActorInfoTooltipDataEntry
+                {
+                    TextContent = actor.DisplayName.ToUpper(),
+                    ValueContent = string.Empty
+                });
+                shortActorInfoTooltipData.Entries.Add(new ShortActorInfoTooltipDataEntry
+                {
+                    TextContent = uIModuleShortActorInfoTooltip.HealthTextKey.Localize(null),
+                    ValueContent = string.Format("{0}/{1}", actor.CharacterStats.Health.IntValue, actor.CharacterStats.Health.IntMax)
+                });
+                shortActorInfoTooltipData.Entries.Add(new ShortActorInfoTooltipDataEntry
+                {
+                    TextContent = uIModuleShortActorInfoTooltip.WillpointsTextKey.Localize(null),
+                    ValueContent = string.Format("{0}/{1}", actor.CharacterStats.WillPoints.IntValue, actor.CharacterStats.WillPoints.IntMax)
+                });
+                string value = string.Format("{0}/{1}", actor.CharacterStats.ActionPoints.IntMax, actor.CharacterStats.ActionPoints.IntMax);
+                if (actor.TacticalLevel.CurrentFaction == actor.TacticalFaction)
+                {
+                    value = string.Format("{0}/{1}", actor.CharacterStats.ActionPoints.IntValue, actor.CharacterStats.ActionPoints.IntMax);
+                }
+
+                shortActorInfoTooltipData.Entries.Add(new ShortActorInfoTooltipDataEntry
+                {
+                    TextContent = TFTVCommonMethods.ConvertKeyToString("KEY_MOVEMENT"),
+                    ValueContent = value
+                });
+
+                string perceptionDescription = TFTVCommonMethods.ConvertKeyToString("KEY_PROGRESSION_PERCEPTION");
+                string perceptionValue = actor.CharacterStats.Perception.IntValue.ToString();
+
+                ShortActorInfoTooltipDataEntry perception = new ShortActorInfoTooltipDataEntry()
+                {
+                    TextContent = perceptionDescription,
+                    ValueContent = perceptionValue
+                };
+
+                string stealthDescription = TFTVCommonMethods.ConvertKeyToString("KEY_ROSTER_STAT_STEALTH");
+                string stealthValue = $"{actor.CharacterStats.Stealth.Value.EndValue * 100}%";
+
+                ShortActorInfoTooltipDataEntry stealth = new ShortActorInfoTooltipDataEntry()
+                {
+                    TextContent = stealthDescription,
+                    ValueContent = stealthValue
+                };
+
+                string accuracyDescription = TFTVCommonMethods.ConvertKeyToString("KEY_PROGRESSION_ACCURACY");
+                string accuracyValue = $"{actor.CharacterStats.Accuracy.Value.EndValue * 100}%";
+
+                ShortActorInfoTooltipDataEntry accuracy = new ShortActorInfoTooltipDataEntry()
+                {
+                    TextContent = accuracyDescription,
+                    ValueContent = accuracyValue
+                };
+
+                shortActorInfoTooltipData.Entries.Add(perception);
+                shortActorInfoTooltipData.Entries.Add(stealth);
+                shortActorInfoTooltipData.Entries.Add(accuracy);
+
+                foreach (TacticalActorViewBase.StatusInfo statusInfo in actor.TacticalActorView.GetCharacterStatusActorStatuses())
+                {
+                    if (statusInfo.Def.VisibleOnHealthbar != TacStatusDef.HealthBarVisibility.Hidden)
+                    {
+                        ShortActorInfoTooltipDataEntry item = new ShortActorInfoTooltipDataEntry
+                        {
+                            Icon = statusInfo.Def.Visuals.SmallIcon,
+                            IconColor = statusInfo.Def.Visuals.Color,
+                            TextContent = statusInfo.Def.Visuals.DisplayName1.Localize(null),
+                            ValueContent = string.Format("{0}/{1}", statusInfo.Value, statusInfo.Limit)
+                        };
+                        if (float.IsNaN(statusInfo.Value) && float.IsNaN(statusInfo.Limit))
+                        {
+                            item.ValueContent = string.Empty;
+                        }
+                        else if (float.IsNaN(statusInfo.Limit))
+                        {
+                            item.ValueContent = string.Format("{0}", statusInfo.Value);
+                        }
+                        shortActorInfoTooltipData.Entries.Add(item);
+                    }
+                }
+
+                return shortActorInfoTooltipData;
+            }
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
+        }
+
+        /*  public static void SelectCharacter(ref TacticalActor ____currentlyDisplayedActor, TacticalActor character)
+          {
+              try
+              {
+
+
+                  TacticalLevelController controller = GameUtl.CurrentLevel().GetComponent<TacticalLevelController>();
+
+
+                  if (controller.GetComponent<UIObjectTrackersController>() == null)
+                  {
+                      return;
+                  }
+                  UIModuleShortActorInfoTooltip uIModuleShortActorInfoTooltip = controller.View.TacticalModules.ShortActorTooltipModule;
+
+                  TFTVLogger.Always($"selectedActor: {character.DisplayName}");
+
+                 // controller.View.CurrentState.Update();
+
+                //  if ((____currentlyDisplayedActor != null && ____currentlyDisplayedActor!=character) || ____currentlyDisplayedActor == null)
+                //  {
+                      TFTVLogger.Always($"displayed character: {____currentlyDisplayedActor?.DisplayName}");
+
+                      ____currentlyDisplayedActor = character;
+                      uIModuleShortActorInfoTooltip.InitTooltip(controller.GetComponent<UIObjectTrackersController>());
+                      uIModuleShortActorInfoTooltip.SetData(GenerateData(character, uIModuleShortActorInfoTooltip));
+                      uIModuleShortActorInfoTooltip.Hide();
+                //  }
+                  if (!uIModuleShortActorInfoTooltip.IsShown)
+                  {
+                      TFTVLogger.Always($"should showing tooltip now");
+                      uIModuleShortActorInfoTooltip.Show();
+                  }
+
+
+              }
+
+              catch (Exception e)
+              {
+                  TFTVLogger.Error(e);
+                  throw;
+              }
+          }*/
+
+
+        [HarmonyPatch(typeof(UIModuleTacticalContextualMenu), "OnAbilityHover")]
+        public static class UIModuleTacticalContextualMenu_OnAbilityHover_patch
+        {
+
+            public static void Postfix(bool isHovered, TacticalContextualMenuItem menuItem, UIModuleTacticalContextualMenu __instance)
+            {
+                try
+                {
+                    if (menuItem.InfoButton && __instance.SelectionInfo.Actor is TacticalActor tacticalActor && tacticalActor.IsControlledByPlayer)
+                    {
+                        TacticalLevelController controller = GameUtl.CurrentLevel().GetComponent<TacticalLevelController>();
+                        TacticalActor selectedActor = controller.View.SelectedActor;
+
+                        if (selectedActor != null && selectedActor.TacticalFaction==controller.View.ViewerFaction)
+                        {
+                            ShowShortInfoTooltipSelectedActor(selectedActor, controller);
+                        }
+                        
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
+
+        private static void ShowShortInfoTooltipSelectedActor(TacticalActor actor, TacticalLevelController controller)
+        {
+            try
+            {
+
+                UIModuleShortActorInfoTooltip uIModuleShortActorInfoTooltip = controller.View.TacticalModules.ShortActorTooltipModule;
+
+               // uIModuleShortActorInfoTooltip.InitTooltip(controller.GetComponent<UIObjectTrackersController>());
+
+                uIModuleShortActorInfoTooltip.SetData(GenerateData(actor, uIModuleShortActorInfoTooltip));
+
+                if (!uIModuleShortActorInfoTooltip.IsShown)
+                {
+                    uIModuleShortActorInfoTooltip.Show();
+                }
+              
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
+
+        }
+
+
+        public static void UpdateState(MethodBase __originalMethod, ref TacticalActor ____currentlyDisplayedActor)
+        {
+            try
+            {
+
+                TacticalLevelController controller = GameUtl.CurrentLevel().GetComponent<TacticalLevelController>();
+                UIModuleShortActorInfoTooltip uIModuleShortActorInfoTooltip = controller.View.TacticalModules.ShortActorTooltipModule;
+
+
+                //   FieldInfo fieldInfo = typeof(UIModuleShortActorInfoTooltip).GetField("_objectTracker", BindingFlags.NonPublic | BindingFlags.Instance);
+
+                TacticalActor selectedActor = controller.View.SelectedActor;
+
+
+
+                //  TFTVLogger.Always($"selectedActor: {selectedActor.DisplayName} ____currentlyDisplayedActor: {____currentlyDisplayedActor.DisplayName}");
+
+                if (____currentlyDisplayedActor == null)
+                {
+                    ____currentlyDisplayedActor = selectedActor;
+
+                    // fieldInfo.SetValue(uIModuleShortActorInfoTooltip, selectedActor.GetComponent<UIObjectTracker>());
+                    uIModuleShortActorInfoTooltip.InitTooltip(controller.GetComponent<UIObjectTrackersController>());
+                    //UIObjectTracker uIObjectTracker = (UIObjectTracker)fieldInfo.GetValue(uIModuleShortActorInfoTooltip);
+                    uIModuleShortActorInfoTooltip.SetData(GenerateData(selectedActor, uIModuleShortActorInfoTooltip));
+                    // controller.View.Markers.AddGroundMarker(GroundMarkerGroup.Selection, new GroundMarker(GroundMarkerType.FriendlySelection));
+                    //  TFTVLogger.Always($"{GenerateData(selectedActor, uIModuleShortActorInfoTooltip).TrackRoot.name}");
+
+
+                }
+                if (!uIModuleShortActorInfoTooltip.IsShown && controller.View.SelectActorAtCursor<TacticalActor>() != null && controller.View.SelectActorAtCursor<TacticalActor>() == selectedActor)
+                {
+                    //  TFTVLogger.Always($"should showing tooltip now");
+                    uIModuleShortActorInfoTooltip.Show();
+                }
+                //   ____currentlyDisplayedActor = null;
+
+
+
+            }
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
+        }
+
+
+
 
         public static void PatchResizeGroundMarker(MethodBase __originalMethod, object context, ref GroundMarker __result)
         {
@@ -136,26 +404,16 @@ namespace TFTV
             }
         }
 
-        public static void PrepareShortActorInfo(MethodBase __originalMethod, TacticalActor actor, ref ShortActorInfoTooltipData __result)
+
+        public static void PrepareShortActorInfo(TacticalActor actor, ref ShortActorInfoTooltipData __result)
         {
             try
-            {        
-                string movement = TFTVCommonMethods.ConvertKeyToString("KEY_MOVEMENT");
+            {
+                TacticalLevelController controller = GameUtl.CurrentLevel().GetComponent<TacticalLevelController>();
+                UIModuleShortActorInfoTooltip uIModuleShortActorInfoTooltip = controller.View.TacticalModules.ShortActorTooltipModule;
 
-                string value = string.Format("{0}/{1}", actor.CharacterStats.ActionPoints.IntMax, actor.CharacterStats.ActionPoints.IntMax);
-
-                if(actor.TacticalLevel.CurrentFaction == actor.TacticalFaction) 
-                {
-                    value = string.Format("{0}/{1}", actor.CharacterStats.ActionPoints.IntValue, actor.CharacterStats.ActionPoints.IntMax);
-                }
-
-                ShortActorInfoTooltipDataEntry newMovement = new ShortActorInfoTooltipDataEntry()
-                {
-                    TextContent = movement,
-                    ValueContent = value
-                };
-
-                __result.Entries[3] = newMovement;
+                __result = GenerateData(actor, uIModuleShortActorInfoTooltip);
+                // TFTVLogger.Always($"{GenerateData(actor, uIModuleShortActorInfoTooltip).TrackRoot.name}");
 
             }
             catch (Exception e)
@@ -164,6 +422,9 @@ namespace TFTV
                 throw;
             }
         }
+
+
+
 
 
         //Prevents AI from consindering unseen enemies when evaluating attacks with explosives/cone weapons
@@ -201,6 +462,9 @@ namespace TFTV
                 throw;
             }
         }
+
+
+
 
 
         [HarmonyPatch(typeof(AIUtil), "GetAffectedTargetsByShooting")]

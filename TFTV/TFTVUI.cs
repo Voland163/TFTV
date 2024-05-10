@@ -1024,22 +1024,32 @@ namespace TFTV
 
                                 equipmentItems.AddRange(character.EquipmentItems);
                                 inventoryItems.AddRange(character.InventoryItems);
-
                                 armorItems.AddRange(attachments);
+
+                                List<GeoItem> allItems = new List<GeoItem>();
+                                allItems.AddRange(equipmentItems);
+                                allItems.AddRange(armorItems);
+                                allItems.AddRange(inventoryItems);                        
 
                                 GeoPhoenixFaction phoenixFaction = GameUtl.CurrentLevel().GetComponent<GeoLevelController>().PhoenixFaction;
 
                                 int storageCapacity = phoenixFaction.GetTotalAvailableStorage();
                                 int storageUsed = phoenixFaction.ItemStorage.GetStorageUsed();
 
-                                if (equipmentItems.Count + inventoryItems.Count + armorItems.Count + storageUsed > storageCapacity)
+                                int totalWeight = 0;
+                              
+                                foreach (GeoItem geoItem1 in allItems)
+                                {
+                                    totalWeight += geoItem1.ItemDef.Weight;
+                                }
+
+                                if (totalWeight + storageUsed > storageCapacity)
                                 {
                                     string warning = TFTVCommonMethods.ConvertKeyToString("KEY_WARNING_STORAGE_EXCEEDED");
 
                                     GameUtl.GetMessageBox().ShowSimplePrompt(warning, MessageBoxIcon.Stop, MessageBoxButtons.OK, null);
                                     return;
                                 }
-
 
                                 foreach (GeoItem item in inventoryItems)
                                 {

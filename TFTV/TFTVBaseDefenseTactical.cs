@@ -1,4 +1,5 @@
 ﻿using Base;
+using Base.Assets;
 using Base.Cameras;
 using Base.Core;
 using Base.Defs;
@@ -42,6 +43,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
+using static TFTV.TFTVBaseDefenseTactical.StartingDeployment;
 
 namespace TFTV
 {
@@ -49,21 +51,27 @@ namespace TFTV
     {
 
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
-        public static float TimeLeft = 0;
-
-        public static Dictionary<float, float> ConsolePositions = new Dictionary<float, float>();
-
-
-        public static int StratToBeAnnounced = 0;
-        public static int StratToBeImplemented = 0;
-
-        private static readonly string ConsoleName = "BaseDefenseConsole";
-
         private static readonly DefRepository Repo = TFTVMain.Repo;
         private static readonly SharedData Shared = TFTVMain.Shared;
 
-        private static readonly GameTagDef ScatterEnemiesObjectiveTag = TFTVBaseDefenseGeoscape.ScatterEnemiesTag;
-        private static readonly GameTagDef KillMainObjectiveTag = TFTVBaseDefenseGeoscape.KillInfestationTag;
+        //Serialized variables
+        public static Dictionary<float, float> ConsolePositions = new Dictionary<float, float>();
+        public static int StratToBeAnnounced = 0;
+        public static int StratToBeImplemented = 0;
+        public static float TimeLeft = 0;
+        public static bool[] UsedStrats = new bool[5];
+        internal static Dictionary<string, int> PandoransInContainment = new Dictionary<string, int>();
+        internal static Dictionary<string, int> PandoransInContainmentThatEscaoed = new Dictionary<string, int>();
+        internal static bool ScyllaLoose = false;
+        internal static bool Breach = false;
+
+        //Non-serialized variables
+        public static bool VentingHintShown = false;
+
+        //Common References
+        private static readonly string ConsoleName = "BaseDefenseConsole";
+
+        
 
         private static readonly ClassTagDef crabTag = DefCache.GetDef<ClassTagDef>("Crabman_ClassTagDef");
         private static readonly ClassTagDef fishmanTag = DefCache.GetDef<ClassTagDef>("Fishman_ClassTagDef");
@@ -73,23 +81,9 @@ namespace TFTV
         private static readonly DelayedEffectStatusDef reinforcementStatusUnder1AP = DefCache.GetDef<DelayedEffectStatusDef>("E_Status [ReinforcementStatusUnder1AP]");
         private static readonly DelayedEffectStatusDef reinforcementStatus1AP = DefCache.GetDef<DelayedEffectStatusDef>("E_Status [ReinforcementStatus1AP]");
         private static readonly DelayedEffectStatusDef reinforcementStatusUnder2AP = DefCache.GetDef<DelayedEffectStatusDef>("E_Status [ReinforcementStatusUnder2AP]");
+        private static readonly MissionTagDef baseDefenseTag = DefCache.GetDef<MissionTagDef>("MissionTypePhoenixBaseDefence_MissionTagDef");
 
-        // public static bool TutorialPhoenixBase = false;
-
-        //Method to set situation at start of base defense; currently only for alien assault
-
-        public static bool VentingHintShown = false;
-
-        //Patch that invokes StratPicker method, and therefore sets the chain that will lead to announcement of strat, showing hint, spawning interaction points, etc
-        //also invokes strat implementer, which will actually materialize the reinforcements
-
-        public static bool[] UsedStrats = new bool[5];
-
-        internal static Dictionary<string, int> PandoransInContainment = new Dictionary<string, int>();
-        internal static Dictionary<string, int> PandoransInContainmentThatEscaoed = new Dictionary<string, int>();
-        internal static bool ScyllaLoose = false;
-        internal static bool Breach = false;
-
+        //Run on Mission restart
         public static void ResetPandoransInContainment()
         {
             try
@@ -119,6 +113,7 @@ namespace TFTV
             }
         }
 
+        //Displayed (Escaped) after escaped Pandoran name (run from [HarmonyPatch(typeof(TacticalActorBase), "get_DisplayName")])
         public static string DisplayEscapedPandoranName(TacticalActorBase tacticalActorBase)
         {
             try
@@ -139,14 +134,55 @@ namespace TFTV
             }
         }
 
+        internal static bool CheckIfBaseDefenseVsAliens(TacticalLevelController controller)
+        {
+            try
+            {
+                if (controller.TacMission.MissionData.MissionType.MissionTypeTag == baseDefenseTag
+                    && controller.Factions.Any(f => f.Faction.FactionDef.MatchesShortName("aln")))
+                {
+                    return true;
+                }
+
+                return false;
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
+        }
+
+
         internal class Defs
         {
-
+            internal static GameTagDef SecurityGuardTag;
             internal static TacCharacterDef SecurityGuard;
             internal static TacCharacterDef MFedSecurityGuard;
             private static ItemDef SecurityTorso;
             internal static TacCharacterDef ChironDigger;
             internal static GameTagDef EscapedPandoran;
+
+
+            private static void CreateSecurityGuardTag()
+            {
+                try
+                {
+                    string name = "SecurityGuard";
+                    GameTagDef source = DefCache.GetDef<GameTagDef>("Takeshi_Tutorial3_GameTagDef");
+                    SecurityGuardTag = Helper.CreateDefFromClone(
+                         source,
+                         "{A3F75FC4-EBDE-4A79-9829-748CC54B7255}",
+                         name + "_" + "GameTagDef");
+                }
+
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+
 
             private static void CreateEscapedPandoranTag()
             {
@@ -165,6 +201,8 @@ namespace TFTV
                     TFTVLogger.Error(e);
                 }
             }
+
+            //Not used atmo
             private static void CreateMeleeChiron()
             {
                 try
@@ -257,6 +295,8 @@ namespace TFTV
                     string name = "Phoenix_Guard";
                     string gUID = "{AA2A57B0-C707-4BB0-AD13-8484F4349514}";
 
+
+
                     TacCharacterDef characterSource = DefCache.GetDef<TacCharacterDef>($"PX_Assault1_CharacterTemplateDef");
                     TacCharacterDef newCharacter = Helper.CreateDefFromClone(characterSource, gUID, name);
 
@@ -342,6 +382,7 @@ namespace TFTV
                     ReinstateSecurityStation();
                     CreateMeleeChiron();
                     CreateEscapedPandoranTag();
+                    CreateSecurityGuardTag();
                 }
                 catch (Exception e)
                 {
@@ -350,36 +391,17 @@ namespace TFTV
             }
         }
 
-        internal static bool CheckIfBaseDefenseVsAliens(TacticalLevelController controller)
-        {
-            try
-            {
-                if (controller.TacMission.MissionData.MissionType.MissionTypeTag == DefCache.GetDef<MissionTagDef>("MissionTypePhoenixBaseDefence_MissionTagDef")
-                    && controller.Factions.Any(f => f.Faction.FactionDef.MatchesShortName("aln")))
-                {
-                    return true;
-                }
-
-                return false;
-
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-                throw;
-            }
-        }
-
-
-
         internal class Objectives
         {
+            internal static readonly GameTagDef _scatterEnemiesObjectiveTag = TFTVBaseDefenseGeoscape.ScatterEnemiesTag;
+            internal static readonly GameTagDef _killMainObjectiveTag = TFTVBaseDefenseGeoscape.KillInfestationTag;
+
             public static void OjectivesDebbuger(TacticalLevelController controller)
             {
                 try
                 {
                     IEnumerable<TacticalActorBase> allPandorans = from x in controller.Map.GetActors<TacticalActorBase>()
-                                                                  where x.HasGameTag(ScatterEnemiesObjectiveTag)
+                                                                  where x.HasGameTag(_scatterEnemiesObjectiveTag)
                                                                   select x;
                     if (allPandorans.Count() > 0)
                     {
@@ -388,7 +410,7 @@ namespace TFTV
                             if (tacticalActor.IsOffMap || tacticalActor.TacticalFaction == controller.GetTacticalFaction(controller.TacticalLevelControllerDef.WildBeastFaction))
                             {
                                 TFTVLogger.Always($"this Pandoran {tacticalActor.name} is OffMap or is wild. Removing KillObjective tag.");
-                                tacticalActor.GameTags.Remove(ScatterEnemiesObjectiveTag);
+                                tacticalActor.GameTags.Remove(_scatterEnemiesObjectiveTag);
                             }
                         }
                     }
@@ -446,10 +468,10 @@ namespace TFTV
                     ApplyEffectAbilityDef parasychosis = DefCache.GetDef<ApplyEffectAbilityDef>("Parasychosis_AbilityDef");
 
                     if (ability.TacticalAbilityDef == parasychosis && parameter is TacticalAbilityTarget target
-                        && target.GetTargetActor() != null && target.GetTargetActor() is TacticalActor tacticalActor && tacticalActor.HasGameTag(ScatterEnemiesObjectiveTag))
+                        && target.GetTargetActor() != null && target.GetTargetActor() is TacticalActor tacticalActor && tacticalActor.HasGameTag(_scatterEnemiesObjectiveTag))
                     {
                         //  TFTVLogger.Always($", target is {tacticalActor.name}");
-                        tacticalActor.GameTags.Remove(ScatterEnemiesObjectiveTag);
+                        tacticalActor.GameTags.Remove(_scatterEnemiesObjectiveTag);
                     }
                 }
 
@@ -502,10 +524,10 @@ namespace TFTV
                         if (actor.TacticalFaction.Faction.FactionDef.MatchesShortName("aln")
                             && actor is TacticalActor tacticalActor
                             && (actor.GameTags.Contains(crabTag) || actor.GameTags.Contains(fishmanTag) || actor.GameTags.Contains(sirenTag) || actor.GameTags.Contains(AcheronTag))
-                            && !actor.GameTags.Contains(ScatterEnemiesObjectiveTag)
+                            && !actor.GameTags.Contains(_scatterEnemiesObjectiveTag)
                             )
                         {
-                            actor.GameTags.Add(ScatterEnemiesObjectiveTag);
+                            actor.GameTags.Add(_scatterEnemiesObjectiveTag);
                         }
 
                     }
@@ -546,8 +568,7 @@ namespace TFTV
                 try
                 {
                     GameTagDef baseDefense = DefCache.GetDef<GameTagDef>("MissionTypePhoenixBaseDefence_MissionTagDef");
-                    GameTagDef havenDefense = DefCache.GetDef<GameTagDef>("MissionTypeHavenDefense_MissionTagDef");
-
+                  
                     if (missionType.Tags.Contains(baseDefense) && missionType.ParticipantsData[0].FactionDef == DefCache.GetDef<PPFactionDef>("Alien_FactionDef"))
                     {
 
@@ -610,6 +631,10 @@ namespace TFTV
                             if (listOfFactionObjectives.Contains(survive3turns))
                             {
                                 listOfFactionObjectives.Remove(survive3turns);
+                            }
+                            if (listOfFactionObjectives.Contains(survive5turns))
+                            {
+                                listOfFactionObjectives.Remove(survive5turns);
                             }
 
                         }
@@ -678,15 +703,14 @@ namespace TFTV
                 {
                     try
                     {
-                        
 
-                        if (tacticalActorBase!=null && CheckIfBaseDefenseVsAliens(tacticalActorBase.TacticalLevel) && tacticalActorBase.name != null && tacticalActorBase.name.Contains("StructuralTarget"))
+                        if (tacticalActorBase != null && CheckIfBaseDefenseVsAliens(tacticalActorBase.TacticalLevel) && tacticalActorBase.name != null && tacticalActorBase.name.Contains("StructuralTarget"))
                         {
-                            
+
                         }
-                        else 
+                        else
                         {
-                            return;       
+                            return;
                         }
 
                         if (PandoransInContainment != null && PandoransInContainment.Count > 0)
@@ -695,7 +719,7 @@ namespace TFTV
                             {
                                 TacticalLevelController controller = GameUtl.CurrentLevel().GetComponent<TacticalLevelController>();
                                 Vector3 vector3 = ContainmentBreachSpawn.FirstOrDefault(p => (p - tacticalActorBase.Pos).magnitude < 4);
-                                StartingDeployment.PandoranDeployment.SetContainmentDynamicBreachSpawns(controller, vector3);
+                                PandoranDeployment.SetContainmentDynamicBreachSpawns(controller, vector3);
                             }
                         }
                     }
@@ -704,6 +728,33 @@ namespace TFTV
                         TFTVLogger.Error(e);
 
                     }
+                }
+            }
+
+            public static void FirstTurnBaseDefenseDeployment(TacticalLevelController controller)
+            {
+                try
+                {
+                    if (controller.TacMission.MissionData.MissionType.MissionTypeTag != baseDefenseTag)
+                    {
+                        return;
+                    }
+
+                    Consoles.GetConsoles();
+                    GoldShiftSetup();
+                 
+                    if (Breach)
+                    {
+                        PandoranDeployment.SpawnEscapedPandoransInitialDeployment();
+                    }
+
+                }
+
+
+                catch (Exception e)  
+                {
+                    TFTVLogger.Error(e);
+
                 }
             }
 
@@ -1741,47 +1792,67 @@ namespace TFTV
                     }
                     else
                     {
-                        TFTVLogger.Always($"Spawning {_numGuardsUnderPXControl} PX Guards under PX control for Phase II/III");
+
+
+                        bool complete = false;
+
+                        TFTVLogger.Always($"Going to spawn {_numGuardsUnderPXControl} PX Guards under PX control for Phase II/III, complete? {complete}");
 
                         void onLoadingCompletedForRegularSecurityGuardPhaseIIorIII()
                         {
-                            List<TacticalDeployZone> elegibleZones = controller.Map.GetActors<TacticalDeployZone>().Where(tdz =>
-                           // tdz.TacticalFaction.TacticalFactionDef != phoenixFactionDef
-                           (tdz.Pos - Map.DeploymentZones.VehicleBayCentralDeployZone.Pos).magnitude > 8 &&
-                           (tdz.Pos - Map.AccessLiftDeployPos).magnitude > 5 &&
-                           (tdz.Pos - Map.EntranceExitCentralPos).magnitude > 20 &&
-                          !controller.Map.GetActors<TacticalActorBase>().Any(tab => tab != tdz && tab.Pos == tdz.Pos)
-                          ).ToList();
-
-                            ActorDeployData actorDeployData = Defs.SecurityGuard.GenerateActorDeployData();
-
-                            actorDeployData.InitializeInstanceData();
-
-                            for (int x = 0; x < _numGuardsUnderPXControl; x++)
+                         
+                            if (!complete)
                             {
+                            
+                                List<TacticalDeployZone> elegibleZones = controller.Map.GetActors<TacticalDeployZone>().Where(tdz =>
+                               // tdz.TacticalFaction.TacticalFactionDef != phoenixFactionDef
+                               (tdz.Pos - Map.DeploymentZones.VehicleBayCentralDeployZone.Pos).magnitude > 8 &&
+                               (tdz.Pos - Map.AccessLiftDeployPos).magnitude > 5 &&
+                               (tdz.Pos - Map.EntranceExitCentralPos).magnitude > 20 &&
+                              !controller.Map.GetActors<TacticalActorBase>().Any(tab => tab != tdz && tab.Pos == tdz.Pos)
+                              ).ToList();
 
-                                TacticalDeployZone randomlyChosenTDZ = elegibleZones.GetRandomElement(new System.Random((int)Stopwatch.GetTimestamp()));
+                                ActorDeployData actorDeployData = Defs.SecurityGuard.GenerateActorDeployData();
 
-                                TFTVLogger.Always($"randomlyChosenTDZ.Pos for PX Controlled Guard: {randomlyChosenTDZ.Pos}");
+                                actorDeployData.InitializeInstanceData();
 
-                                elegibleZones.Remove(randomlyChosenTDZ);
-                                
-                                _alreadyUsedTDZForPXGuards.Add(randomlyChosenTDZ);
+                                TFTVLogger.Always($"There are {elegibleZones.Count} eligible zones");
 
-                                randomlyChosenTDZ.SetFaction(controller.GetFactionByCommandName("aln"), TacMissionParticipant.Intruder);
+                                if (elegibleZones.Count == 0)
+                                {
+                                    TFTVLogger.Always($"There are no eligible zones!");
+                                }
 
-                                TacticalActorBase tacticalActorBase = randomlyChosenTDZ.SpawnActor(actorDeployData.ComponentSetDef, actorDeployData.InstanceData, actorDeployData.DeploymentTags, null, true, randomlyChosenTDZ);
-                                tacticalActorBase.Source = tacticalActorBase;
+                                for (int x = 0; x < _numGuardsUnderPXControl; x++)
+                                {
 
-                                TacticalActor tacticalActor = tacticalActorBase as TacticalActor;
-                                tacticalActor.Status.ApplyStatus(DefCache.GetDef<MindControlStatusDef>("UnderPhoenixControl_StatusDef"));
-                                tacticalActor.ForceRestartTurn();
+                                    TacticalDeployZone randomlyChosenTDZ = elegibleZones.GetRandomElement(new System.Random((int)Stopwatch.GetTimestamp()));
 
+                                    TFTVLogger.Always($"randomlyChosenTDZ.Pos for PX Controlled Guard: {randomlyChosenTDZ.Pos}");
+
+                                    elegibleZones.Remove(randomlyChosenTDZ);
+
+                                    _alreadyUsedTDZForPXGuards.Add(randomlyChosenTDZ);
+
+                                    randomlyChosenTDZ.SetFaction(controller.GetFactionByCommandName("aln"), TacMissionParticipant.Intruder);
+
+                                    TacticalActorBase tacticalActorBase = randomlyChosenTDZ.SpawnActor(actorDeployData.ComponentSetDef, actorDeployData.InstanceData, actorDeployData.DeploymentTags, null, true, randomlyChosenTDZ);
+                                    tacticalActorBase.Source = tacticalActorBase;
+
+                                    TacticalActor tacticalActor = tacticalActorBase as TacticalActor;
+                                    tacticalActor.Status.ApplyStatus(DefCache.GetDef<MindControlStatusDef>("UnderPhoenixControl_StatusDef"));
+                                    tacticalActor.ForceRestartTurn();
+
+                                }
+
+                                complete = true;
                             }
                         }
 
-                        controller.AssetsLoader.StartLoadingRoots(Defs.SecurityGuard.AsEnumerable(), null, onLoadingCompletedForRegularSecurityGuardPhaseIIorIII);
-
+                        AssetsReferencesLoader assetsLoader = controller.AssetsLoader;
+                       
+                        assetsLoader.StartLoadingRoots(Defs.SecurityGuard.AsEnumerable(), null, onLoadingCompletedForRegularSecurityGuardPhaseIIorIII);
+  
                     }
                 }
                 catch (Exception e)
@@ -1795,11 +1866,17 @@ namespace TFTV
             {
                 try
                 {
-                    TFTVLogger.Always($"Spawning {_numGuardsUnderALNControl} PX Guards under ALN control for Phase II/III");
+                    TFTVLogger.Always($"Going to spawn {_numGuardsUnderALNControl} PX Guards under ALN control for Phase II/III");
+
+                    bool complete = false;
 
                     void onLoadingCompletedForMFedSecurityGuard()
                     {
-                        List<TacticalDeployZone> elegibleZones = controller.Map.GetActors<TacticalDeployZone>().Where(tdz =>
+                        if (!complete)
+                        {
+                           // TFTVLogger.Always($"Loading assets complete; spawing");
+
+                            List<TacticalDeployZone> elegibleZones = controller.Map.GetActors<TacticalDeployZone>().Where(tdz =>
                             // tdz.TacticalFaction.TacticalFactionDef != phoenixFactionDef
                             !_alreadyUsedTDZForPXGuards.Contains(tdz) &&
                             (tdz.Pos - Map.DeploymentZones.VehicleBayCentralDeployZone.Pos).magnitude > 8 &&
@@ -1808,25 +1885,34 @@ namespace TFTV
                            !controller.Map.GetActors<TacticalActorBase>().Any(tab => tab != tdz && tab.Pos == tdz.Pos)
                            ).ToList();
 
-                        ActorDeployData actorDeployData = Defs.MFedSecurityGuard.GenerateActorDeployData();
+                            TFTVLogger.Always($"There are {elegibleZones.Count} eligible zones");
 
-                        actorDeployData.InitializeInstanceData();
+                            if (elegibleZones.Count == 0)
+                            {
+                                TFTVLogger.Always($"There are no eligible zones!");
+                            }
 
-                        for (int x = 0; x < _numGuardsUnderALNControl; x++)
-                        {
-                            
-                            TacticalDeployZone randomlyChosenTDZ = elegibleZones.GetRandomElement(new System.Random((int)Stopwatch.GetTimestamp()));
+                            ActorDeployData actorDeployData = Defs.MFedSecurityGuard.GenerateActorDeployData();
 
-                            TFTVLogger.Always($"randomlyChosenTDZ.Pos for ALN controlled Guard: {randomlyChosenTDZ.Pos}");
+                            actorDeployData.InitializeInstanceData();
 
-                            elegibleZones.Remove(randomlyChosenTDZ);
+                            for (int x = 0; x < _numGuardsUnderALNControl; x++)
+                            {
+                                TacticalDeployZone randomlyChosenTDZ = elegibleZones.GetRandomElement(new System.Random((int)Stopwatch.GetTimestamp()));
 
-                            randomlyChosenTDZ.SetFaction(controller.GetFactionByCommandName("aln"), TacMissionParticipant.Intruder);
+                                TFTVLogger.Always($"randomlyChosenTDZ.Pos for ALN controlled Guard: {randomlyChosenTDZ.Pos}");
 
-                            TacticalActorBase tacticalActorBase = randomlyChosenTDZ.SpawnActor(actorDeployData.ComponentSetDef, actorDeployData.InstanceData, actorDeployData.DeploymentTags, null, true, randomlyChosenTDZ);
-                            tacticalActorBase.Source = tacticalActorBase;
+                                elegibleZones.Remove(randomlyChosenTDZ);
+
+                                randomlyChosenTDZ.SetFaction(controller.GetFactionByCommandName("aln"), TacMissionParticipant.Intruder);
+
+                                TacticalActorBase tacticalActorBase = randomlyChosenTDZ.SpawnActor(actorDeployData.ComponentSetDef, actorDeployData.InstanceData, actorDeployData.DeploymentTags, null, true, randomlyChosenTDZ);
+                                tacticalActorBase.Source = tacticalActorBase;
+                            }
+
+                            complete = true;
+
                         }
-
                     }
 
                     controller.AssetsLoader.StartLoadingRoots(Defs.MFedSecurityGuard.AsEnumerable(), null, onLoadingCompletedForMFedSecurityGuard);
@@ -1844,10 +1930,45 @@ namespace TFTV
             private static List<Vector3> _securityStationSpawnPositions = new List<Vector3>();
             private static List<TacticalDeployZone> _alreadyUsedTDZForPXGuards = new List<TacticalDeployZone>();
 
-            private static void GoldShiftSetup(TacticalLevelController controller)
+
+            private static List<Vector3> GetSecurityStationSpawns(TacticalLevelController controller)
             {
                 try
                 {
+                    List<Breakable> security = UnityEngine.Object.FindObjectsOfType<Breakable>().Where(b => b.name.StartsWith("PP_LoCov_SecurityRoom_Projector_3x3_A_StructuralTarget")).ToList();
+
+                    TFTVLogger.Always($"Security Stations # {security.Count()}");
+
+                    List<Vector3> spawnPositions = new List<Vector3>();
+
+                    foreach (Breakable station in security)
+                    {
+
+                        List<Vector3> stationSpawnPositions = new List<Vector3>()
+                              {
+                            station.transform.position + new Vector3(-3, 0, 0),
+                            station.transform.position + new Vector3(0, 0, -3),
+                            station.transform.position + new Vector3(0, 0, 3)
+                              };
+
+                        spawnPositions.AddRange(stationSpawnPositions);
+                    }
+
+                    return spawnPositions;
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+
+            internal static void GoldShiftSetup()
+            {
+                try
+                {
+                    TacticalLevelController controller = GameUtl.CurrentLevel().GetComponent<TacticalLevelController>();
+
                     _numGuardsUnderPXControl = 0;
                     _numGuardsUnderALNControl = 0;
                     _alreadyUsedTDZForPXGuards.Clear();
@@ -1866,7 +1987,7 @@ namespace TFTV
                     TacticalFactionDef alienFactionDef = DefCache.GetDef<TacticalFactionDef>("Alien_TacticalFactionDef");
 
 
-                    if (TimeLeft >= 12)
+                    if (TimeLeft >= 12 || !controller.Factions.Any(f => f.Faction.FactionDef==alienFactionDef))
                     {
                         foreach (Breakable station in security)
                         {
@@ -1893,13 +2014,8 @@ namespace TFTV
                         TFTVLogger.Always($"Phase II / III Gold Shift Setup; PX: {_numGuardsUnderPXControl} ALN: {_numGuardsUnderALNControl}");
                     }
 
-
-
-
                     SpawnPXSecurityGuards(security.First(), controller);
                     SpawnALNSecurityGuards(controller);
-
-                    
 
                 }
 
@@ -1913,7 +2029,7 @@ namespace TFTV
             {
                 try
                 {
-                    if (controller.TacMission.MissionData.MissionType.MissionTypeTag != DefCache.GetDef<MissionTagDef>("MissionTypePhoenixBaseDefence_MissionTagDef"))
+                    if (controller.TacMission.MissionData.MissionType.MissionTypeTag != baseDefenseTag)
                     {
                         return;
                     }
@@ -1940,14 +2056,7 @@ namespace TFTV
                         {
                             PandoranDeployment.NestingDeployment(controller);
                         }
-
-                        if (Breach)
-                        {
-                            PandoranDeployment.SpawnEscapedPandoransInitialDeployment(controller);
-                        }
                     }
-
-                    GoldShiftSetup(controller);
                 }
                 catch (Exception e)
                 {
@@ -2029,7 +2138,7 @@ namespace TFTV
                         spawneryDeployData.InitializeInstanceData();
                         TacticalActorBase sentinel = centralZone.SpawnActor(spawneryDeployData.ComponentSetDef, spawneryDeployData.InstanceData, spawneryDeployData.DeploymentTags, centralZone.transform, true, centralZone);
 
-                        sentinel.GameTags.Add(KillMainObjectiveTag);
+                        sentinel.GameTags.Add(Objectives._killMainObjectiveTag);
 
                         List<TacticalDeployZone> otherCentralZones = Map.DeploymentZones.VehicleBayCentralDeployZones;
                         otherCentralZones.Remove(centralZone);
@@ -2136,10 +2245,17 @@ namespace TFTV
                         throw;
                     }
                 }
-                internal static void SpawnEscapedPandoransInitialDeployment(TacticalLevelController controller)
+                internal static void SpawnEscapedPandoransInitialDeployment()
                 {
                     try
                     {
+                        TacticalLevelController controller = GameUtl.CurrentLevel().GetComponent<TacticalLevelController>();
+
+                        if (controller.TacMission.MissionData.MissionType.MissionTypeTag != baseDefenseTag)
+                        {
+                            return;
+                        }
+
                         List<TacCharacterDef> escapedPandorans = GetEscapedPandoransSelection(10);
 
                         List<Vector3> containmentSpawnPos = Map.ContainmentBreachSpawn;
@@ -2164,7 +2280,7 @@ namespace TFTV
                                 TacticalActorBase tacticalActorBase = TacticalDeployZone.SpawnActor(actorDeployData.ComponentSetDef, actorDeployData.InstanceData, alienFactionDef, TacMissionParticipant.Intruder, vector3, new Quaternion(), null);
                                 tacticalActorBase.Source = tacticalActorBase;
                                 tacticalActorBase.GameTags.Add(Defs.EscapedPandoran);
-                                controller.SituationCache.Invalidate();
+                                //controller.SituationCache.Invalidate();
                                 //  controller.View.ResetCharacterSelectedState();            
                             }
                             controller.AssetsLoader.StartLoadingRoots(pandoran.AsEnumerable(), null, onLoadingCompleted);
@@ -2187,11 +2303,12 @@ namespace TFTV
                                     TacticalActorBase tacticalActorBase = tdz.SpawnActor(actorDeployData.ComponentSetDef, actorDeployData.InstanceData, actorDeployData.DeploymentTags, null, true, tdz);
                                     tacticalActorBase.Source = tacticalActorBase;
                                     tacticalActorBase.GameTags.Add(Defs.EscapedPandoran);
-                                    controller.SituationCache.Invalidate();
+                                  //  controller.SituationCache.Invalidate();
                                     //  controller.View.ResetCharacterSelectedState();            
                                 }
                                 controller.AssetsLoader.StartLoadingRoots(pandoran.AsEnumerable(), null, onLoadingCompleted);
-                                TFTVLogger.Always($"deploying {pandoran.name}");
+                                TFTVLogger.Always($"deploying {pandoran?.name}");
+
                             }
                         }
                     }
@@ -2266,7 +2383,7 @@ namespace TFTV
                                 if (chosenDummy == null)
                                 {
                                     chosenDummy = egg;
-                                    egg.GameTags.Add(KillMainObjectiveTag);
+                                    egg.GameTags.Add(Objectives._killMainObjectiveTag);
                                 }
                             }
                         }
@@ -2281,10 +2398,10 @@ namespace TFTV
 
                             TacticalActorBase scylla = centralZone.SpawnActor(scyllaDeployData.ComponentSetDef, scyllaDeployData.InstanceData, scyllaDeployData.DeploymentTags, centralZone.transform, true, centralZone);
                             scylla.Source = scylla;
-                            scylla.GameTags.Add(KillMainObjectiveTag);
+                            scylla.GameTags.Add(Objectives._killMainObjectiveTag);
                             scylla.GameTags.Add(Defs.EscapedPandoran);
                             controller.SituationCache.Invalidate();
-                            chosenDummy.GameTags.Remove(KillMainObjectiveTag);
+                            chosenDummy.GameTags.Remove(Objectives._killMainObjectiveTag);
                             //  controller.View.ResetCharacterSelectedState();            
                         }
                         controller.AssetsLoader.StartLoadingRoots(scyllaDef.AsEnumerable(), null, onLoadingCompleted);
@@ -2312,7 +2429,7 @@ namespace TFTV
                         ActorDeployData spawneryDeployData = spawneryDef.GenerateActorDeployData();
                         spawneryDeployData.InitializeInstanceData();
                         TacticalActorBase spawnery = centralZone.SpawnActor(spawneryDeployData.ComponentSetDef, spawneryDeployData.InstanceData, spawneryDeployData.DeploymentTags, centralZone.transform, true, centralZone);
-                        spawnery.GameTags.Add(KillMainObjectiveTag);
+                        spawnery.GameTags.Add(Objectives._killMainObjectiveTag);
 
                         List<TacticalDeployZone> otherCentralZones = Map.DeploymentZones.VehicleBayCentralDeployZones;
 
@@ -2327,7 +2444,7 @@ namespace TFTV
                             ActorDeployData actorDeployData = sentinels[i].GenerateActorDeployData();
                             actorDeployData.InitializeInstanceData();
                             TacticalActorBase sentinel = otherCentralZones[i].SpawnActor(actorDeployData.ComponentSetDef, actorDeployData.InstanceData, actorDeployData.DeploymentTags, otherCentralZones[i].transform, true, otherCentralZones[i]);
-                            sentinel.GameTags.Add(KillMainObjectiveTag);
+                            sentinel.GameTags.Add(Objectives._killMainObjectiveTag);
                         }
 
                         List<TacCharacterDef> availableTemplatesOrdered =
@@ -2445,7 +2562,7 @@ namespace TFTV
                         {
                             if (_listEntrance.Contains(geoId) && ((zone.Pos - Map.EntrancePhaseIPlayerSpawn).magnitude < 10 || (zone.Pos - Map.EntranceExitCentralPos).magnitude < 20))
                             {
-                                TFTVLogger.Always($"{geoId} can deploy at {zone.name} {zone.Pos}");
+                                // TFTVLogger.Always($"{geoId} can deploy at {zone.name} {zone.Pos}");
 
                                 return true;
 
@@ -2454,14 +2571,14 @@ namespace TFTV
                                 || Map.DeploymentZones.VehicleBayCentralDeployZones.Contains(zone)))
 
                             {
-                                TFTVLogger.Always($"{geoId} can deploy in Hangar");
+                                //  TFTVLogger.Always($"{geoId} can deploy in Hangar");
 
                                 return true;
 
                             }
                             else if (_listLift.Contains(geoId) && (zone.Pos.y > 4 && (zone.Pos - Map.AccessLiftDeployPos).magnitude < 4))
                             {
-                                TFTVLogger.Always($"{geoId} can deploy in AccessLift");
+                                // TFTVLogger.Always($"{geoId} can deploy in AccessLift");
 
                                 return true;
 
@@ -2483,7 +2600,7 @@ namespace TFTV
                 {
                     try
                     {
-                        if (turnNumber != 0 || !missionTypeDef.Tags.Contains(DefCache.GetDef<MissionTagDef>("MissionTypePhoenixBaseDefence_MissionTagDef")) || !controller.Factions.Any(f => f.TacticalFactionDef.MatchesShortName("aln")))
+                        if (turnNumber != 0 || !missionTypeDef.Tags.Contains(baseDefenseTag) || !controller.Factions.Any(f => f.TacticalFactionDef.MatchesShortName("aln")))
                         {
                             return results;
 
@@ -3736,8 +3853,7 @@ namespace TFTV
                 try
                 {
                     TFTVLogger.Always("Spawning Triton Infiltration team");
-                    bool etermesDifficulty = TFTVSpecialDifficulties.CheckTacticalSpecialDifficultySettings(controller) == 2;
-
+                  
                     TacticalDeployZone zoneToDeployAt = controller.Map.GetActors<TacticalDeployZone>().FirstOrDefault(tdz => tdz.Pos.y > 4 && (tdz.Pos - Map.AccessLiftDeployPos).magnitude < 5);
 
                     if (TimeLeft < 12 && UnityEngine.Random.Range(0, 2) > 0)

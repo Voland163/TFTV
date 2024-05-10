@@ -21,6 +21,32 @@ namespace TFTV
 {
     internal class TFTVHarmonyGeoscape
     {
+
+        [HarmonyPatch(typeof(GeoAlienFaction), "UpdateFactionHourly")]
+        public static class GeoAlienFaction_UpdateFactionHourly_CapturePandorans_Patch
+        {
+
+            public static void Postfix(GeoAlienFaction __instance)
+            {
+                try
+                {
+                    TFTVLogger.Always($"running UpdateFactionHourly {__instance.GeoLevel.Timing.Now}");
+
+                    TFTVCapturePandoransGeoscape.LimitedHarvestingHourlyActions(__instance.GeoLevel);
+                    TFTVBaseDefenseGeoscape.InitAttack.ContainmentBreach.HourlyCheckContainmentBreachDuringBaseDefense(__instance.GeoLevel);
+
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+
+            }
+        }
+
+
+
         //Invokes changes to MissionObjectives always, and if base defense vs aliens changes deployment and hint
         [HarmonyPatch(typeof(GeoMission), "ModifyMissionData")]
         public static class GeoMission_ModifyMissionData_patch

@@ -520,11 +520,6 @@ namespace TFTV
                     }
                 }
 
-
-
-                
-
-
                 private static bool CheckTdzTeam(TacticalDeployZone zone, int geoId)
                 {
                     try
@@ -532,14 +527,23 @@ namespace TFTV
 
                         if (geoId > 0)
                         {
+
+                          //  TFTVLogger.Always($"zone at pos {zone.Pos}");
+
                             if (zone.Pos.x > 0 && listTeamB.Contains(geoId))
                             {
-                                TFTVLogger.Always($"{geoId} is in TeamB! Can only deploy on the other side");
+                                TFTVLogger.Always($"{geoId} is in TeamB! Can only deploy on the other side, where x<0, here x {zone.Pos.x}");
 
                                 return false;
 
                             }
+                            if(zone.Pos.x<0 && listTeamA.Contains(geoId)) 
+                            {
+                                TFTVLogger.Always($"{geoId} is in TeamA! Can only deploy on the other side, where x>0, here x {zone.Pos.x}");
 
+                                return false;
+
+                            }
                         }
 
                         return true;

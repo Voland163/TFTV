@@ -168,10 +168,6 @@ namespace TFTV
                         TFTVLogger.Error(e);
                     }
                 }
-
-
-
-
                 private static void AddOptionsUndefendable()
                 {
                     try
@@ -273,8 +269,6 @@ namespace TFTV
 
 
                 }
-
-
                 private static void PU5TriggerOnNJBionics2()
                 {
                     try
@@ -286,7 +280,6 @@ namespace TFTV
                         TFTVLogger.Error(e);
                     }
                 }
-
                 private static void PU9TriggerOnPXNJBionics2()
                 {
                     try
@@ -299,7 +292,6 @@ namespace TFTV
                         TFTVLogger.Error(e);
                     }
                 }
-
                 private static void RemovePU10FromInfiltratorResearchAndGiveToNanoHealing()
                 {
                     try
@@ -318,21 +310,19 @@ namespace TFTV
                         TFTVLogger.Error(e);
                     }
                 }
-
                 private static void PU13IncreaseRequiredVariable()
                 {
                     try
                     {
                         GeoLevelConditionDef varConditonPU13 = DefCache.GetDef<GeoLevelConditionDef>("[PROG_PU13] Condition 1");
                         varConditonPU13.VariableCompareOperator = GeoEventVariationConditionDef.ComparisonOperator.GreaterOrEqual;
-                        varConditonPU13.VariableCompareToNumber = 9;
+                        varConditonPU13.VariableCompareToNumber = 6;
                     }
                     catch (Exception e)
                     {
                         TFTVLogger.Error(e);
                     }
                 }
-
                 private static void CreateTriangulationEvent()
                 {
                     try
@@ -346,7 +336,6 @@ namespace TFTV
                         TFTVLogger.Error(e);
                     }
                 }
-
                 private static void GuidedByWhispersLoss()
                 {
                     try
@@ -374,7 +363,6 @@ namespace TFTV
 
 
                 }
-
                 private static void AddPeacefulOptions()
 
                 {
@@ -455,7 +443,6 @@ namespace TFTV
                         TFTVLogger.Error(e);
                     }
                 }
-
                 private static void AddNewWinEvent()
                 {
                     try
@@ -481,7 +468,6 @@ namespace TFTV
                         TFTVLogger.Error(e);
                     }
                 }
-
                 private static void CreateNewNJOutcomePanel()
                 {
                     try
@@ -541,7 +527,6 @@ namespace TFTV
                         TFTVLogger.Error(e);
                     }
                 }
-
                 private static void ChangeGuidedByWhispers()
                 {
                     try

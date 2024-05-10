@@ -16,6 +16,7 @@ using PhoenixPoint.Tactical.Levels.Mist;
 using PhoenixPoint.Tactical.View.ViewControllers;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using static PhoenixPoint.Tactical.View.ViewControllers.SquadMemberScrollerController;
 
 namespace TFTV
@@ -276,11 +277,37 @@ namespace TFTV
             public static void Prefix(TacticalActor __instance, DeathReport death, out int __state)
             {
                 __state = 0; //Set this to zero so that the method still works for other actors.
+                /*
+                 * 
+                 * public void KillJumpingFacehugger(DeathReport deathReport)
+{
+    if (deathReport.Actor.HasGameTag(FacehuggerClassTagDef) && deathReport.Actor.ExecutingAbilities.OfType<MindControlAbility>().Any() && !(deathReport.Killer == null) && deathReport.Killer.ExecutingAbilities.Count != 0 
+                && deathReport.Killer.ExecutingAbilities[0].LastAbilityTarget.AttackType == AttackType.Overwatch && deathReport.Killer.TacticalFaction == GetPlayerFaction())
+    {
+        BooleanAchievement achievement = _tracker.GetAchievement<BooleanAchievement>("KillFacehuggerOW");
+        if (ShouldUpdateAchievement(achievement))
+        {
+            achievement.Progress = true;
+            _tracker.StoreAchievementProgress(achievement);
+        }
+    }
+}
+                 * 
+                 * [TFTV @ 5/12/2024 10:49:42 PM] Facehugger_5, False False
+[TFTV @ 5/12/2024 10:49:42 PM] True False False
+                 * 
+                 */
+
+                // PhoenixPoint.Tactical.Achievements.TacAchievementTracker.KillJumpingFacehugger
+              /*  TFTVLogger.Always($"{death.Actor.name}, {death.Actor.ExecutingAbilities.OfType<MindControlAbility>().Any()} {death.Killer == null}");
+                TFTVLogger.Always($"{death.Killer.ExecutingAbilities.Count != 0} {death.Killer.ExecutingAbilities[0].LastAbilityTarget.AttackType == AttackType.Overwatch} {death.Killer.TacticalFaction == death.Actor.TacticalLevel.View.ViewerFaction}");
+                TFTVLogger.Always($"{death.Killer.name}");*/
+               
 
                 //Postfix checks for relevant GameTags then saves and zeroes the WPWorth of the dying actor before main method is executed.
 
                 GameTagsList<GameTagDef> RelevantTags = new GameTagsList<GameTagDef> { cyclopsTag, hopliteTag, HumanEnemyTier4GameTag, HumanEnemyTier2GameTag, HumanEnemyTier1GameTag };
-                if (__instance.TacticalFaction == death.Actor.TacticalFaction && (death.Actor.HasGameTags(RelevantTags, false)||death.Actor.Status.HasStatus<MindControlStatus>()))
+                if (__instance.TacticalFaction == death.Actor.TacticalFaction && (death.Actor.HasGameTags(RelevantTags, false)||death.Actor.Status !=null && death.Actor.Status.HasStatus<MindControlStatus>()))
                 {
                     __state = death.Actor.TacticalActorBaseDef.WillPointWorth;
                     death.Actor.TacticalActorBaseDef.WillPointWorth = 0;
@@ -296,7 +323,7 @@ namespace TFTV
                 {
                     foreach (GameTagDef Tag in death.Actor.GameTags)
                     {
-                        if (Tag == cyclopsTag || Tag == hopliteTag || Tag == HumanEnemyTier4GameTag || death.Actor.Status.HasStatus<MindControlStatus>())
+                        if (Tag == cyclopsTag || Tag == hopliteTag || Tag == HumanEnemyTier4GameTag || death.Actor.Status != null && death.Actor.Status.HasStatus<MindControlStatus>())
                         {
                             //Death has no effect on allies
                             death.Actor.TacticalActorBaseDef.WillPointWorth = __state;

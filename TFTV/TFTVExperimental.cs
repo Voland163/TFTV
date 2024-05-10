@@ -11,7 +11,6 @@ using PhoenixPoint.Common.Entities.Characters;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.Entities.Items;
-using PhoenixPoint.Common.Utils;
 using PhoenixPoint.Common.View.ViewControllers;
 using PhoenixPoint.Common.View.ViewModules;
 using PhoenixPoint.Geoscape.Entities;
@@ -20,6 +19,7 @@ using PhoenixPoint.Geoscape.Entities.PhoenixBases;
 using PhoenixPoint.Geoscape.Entities.Research.Requirement;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
+using PhoenixPoint.Geoscape.View.ViewControllers;
 using PhoenixPoint.Geoscape.View.ViewControllers.Modal;
 using PhoenixPoint.Geoscape.View.ViewModules;
 using PhoenixPoint.Geoscape.View.ViewStates;
@@ -35,6 +35,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Reflection.Emit;
 using UnityEngine;
 using UnityEngine.UI;
 using static PhoenixPoint.Common.Entities.Items.ItemManufacturing;
@@ -52,7 +53,114 @@ namespace TFTV
 
         private static bool _usingEchoHead = false;
 
+
+
+      /*  [HarmonyPatch(typeof(UIModuleGeoAssetDeployment), "ShowDeployDialog")]
+        public static class UIModuleGeoAssetDeployment_ShowDeployDialog_patch
+        {
+            public static void Postfix(UIModuleGeoAssetDeployment __instance, GeoDeployAssetFactionCharacterBind bind)
+            {
+                try
+                {
+
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }*/
+
+
+        [HarmonyPatch(typeof(GeoPhoenixFaction), "AddRecruit")]
+        public static class GeoPhoenixFaction_AddRecruit_patch
+        {
+            public static bool Prefix(GeoPhoenixFaction __instance, GeoCharacter recruit, IGeoCharacterContainer toContainer, IGeoCharacterContainer __result)
+            {
+                try
+                {
+                    //  TFTVLogger.Always($"{recruit.DisplayName} {toContainer?.Name} toContainer geosite? {toContainer is GeoSite} toContainer is PhoenixBase? {toContainer is GeoPhoenixBase}");
+
+                    if ((recruit.GameTags.Contains(TFTVChangesToDLC5.MercenaryTag)
+                        || recruit.GameTags.Contains(DefCache.GetDef<GameTagDef>("KaosBuggy_ClassTagDef"))
+                        || recruit.GameTags.Contains(TFTVProjectOsiris.OCPProductTag)) && toContainer != null && toContainer is GeoSite)
+                    {
+                        __instance.GeoLevel.View.PrepareDeployAsset(__instance, recruit, null, null, manufactured: false, spaceFull: false);
+                        __result = null;
+                        return false;
+                    }
+
+                    return true;
+
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
+
+
+
+
+
         //Patch necesarry to remove Slug filter from UI to avoid duplicate tech filters
+        //Transpiler magic from LucusTheDestroyer (all hail Lucus!)
+
+
+
+        [HarmonyPatch(typeof(UIStateEditSoldier), "OnSelectSecondaryClass")]
+        public static class UIStateEditSoldier_OnSelectSecondaryClass_patch
+        {
+            static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
+            {
+                List<CodeInstruction> listInstructions = new List<CodeInstruction>(instructions);
+                IEnumerable<CodeInstruction> insert = new List<CodeInstruction>
+        {
+            new CodeInstruction(OpCodes.Ldarg_0), //this (__instance in normal patch terms)
+            new CodeInstruction(OpCodes.Ldloc_1), //Storage index of the list of SpecializationDefs
+            new CodeInstruction(OpCodes.Call, typeof(UIStateEditSoldier_OnSelectSecondaryClass_patch).GetMethod("RemoveTech"))
+
+        };
+                for (int i = 0; i < instructions.Count(); i++)
+                {
+                    if (listInstructions[i].opcode == OpCodes.Stloc_1 && listInstructions[i + 1].opcode == OpCodes.Ldloc_0 && listInstructions[i + 2].opcode == OpCodes.Newobj)
+                    {
+                        listInstructions.InsertRange(i + 1, insert);
+                        return listInstructions;
+                    }
+                }
+                return instructions;
+            }
+            public static void RemoveTech(UIStateEditSoldier state, List<SpecializationDef> list)
+            {
+                try
+                {
+                    FieldInfo fieldInfo = state.GetType().GetField("_currentCharacter", BindingFlags.NonPublic | BindingFlags.Instance);
+                    GeoCharacter character = fieldInfo.GetValue(state) as GeoCharacter;
+                    if (character.Progression.MainSpecDef != TFTVChangesToDLC5.TFTVMercenaries.SlugSpecialization)
+                    {
+                        return;
+                    }
+                    SpecializationDef techSpec = DefCache.GetDef<SpecializationDef>("TechnicianSpecializationDef");
+                    if (list.Contains(techSpec))
+                    {
+                        list.Remove(techSpec);
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
+
+
 
         [HarmonyPatch(typeof(UIStateEditSoldier), "InitFilters")]
         public static class UIStateEditSoldier_InitFilters_patch
@@ -95,58 +203,58 @@ namespace TFTV
 
 
 
-        [HarmonyPatch(typeof(UIStateEditSoldier), "OnSelectSecondaryClass")]
-        public static class UIStateEditSoldier_OnSelectSecondaryClass_patch
-        {
-            public static bool Prefix(UIStateEditSoldier __instance, ref bool ____confirmationDialogRequest, GeoCharacter ____currentCharacter)
-            {
-                try
-                {
+        /* [HarmonyPatch(typeof(UIStateEditSoldier), "OnSelectSecondaryClass")]
+         public static class UIStateEditSoldier_OnSelectSecondaryClass_patch
+         {
+             public static bool Prefix(UIStateEditSoldier __instance, ref bool ____confirmationDialogRequest, GeoCharacter ____currentCharacter)
+             {
+                 try
+                 {
 
-                    if (____currentCharacter.Progression.MainSpecDef != TFTVChangesToDLC5.TFTVMercenaries.SlugSpecialization)
-                    {
-                        return true;
-                    }
+                     if (____currentCharacter.Progression.MainSpecDef != TFTVChangesToDLC5.TFTVMercenaries.SlugSpecialization)
+                     {
+                         return true;
+                     }
 
-                    GeoLevelController controller = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
+                     GeoLevelController controller = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
 
-                    SpecializationDef techSpec = DefCache.GetDef<SpecializationDef>("TechnicianSpecializationDef");
+                     SpecializationDef techSpec = DefCache.GetDef<SpecializationDef>("TechnicianSpecializationDef");
 
-                    ____confirmationDialogRequest = true;
-                    List<SpecializationDef> availableSpecs = controller.ViewerFaction.AvailableCharacterSpecializations.Where((SpecializationDef p) => p != ____currentCharacter.Progression.MainSpecDef && !p.NotSecondClassSpecialization).ToList();
+                     ____confirmationDialogRequest = true;
+                     List<SpecializationDef> availableSpecs = controller.ViewerFaction.AvailableCharacterSpecializations.Where((SpecializationDef p) => p != ____currentCharacter.Progression.MainSpecDef && !p.NotSecondClassSpecialization).ToList();
 
-                    if (availableSpecs.Contains(techSpec))
-                    {
-                        availableSpecs.Remove(techSpec);
-                    }
+                     if (availableSpecs.Contains(techSpec))
+                     {
+                         availableSpecs.Remove(techSpec);
+                     }
 
-                    SelectSpecializationDataBind.Data modalData = new SelectSpecializationDataBind.Data
-                    {
-                        AvailableSpecs = availableSpecs,
-                        SelectedSpec = null
-                    };
+                     SelectSpecializationDataBind.Data modalData = new SelectSpecializationDataBind.Data
+                     {
+                         AvailableSpecs = availableSpecs,
+                         SelectedSpec = null
+                     };
 
-                    // Get the MethodInfo object for the private method
-                    MethodInfo methodInfo = typeof(UIStateEditSoldier).GetMethod("OnDualClassPickerClosed", BindingFlags.NonPublic | BindingFlags.Instance);
+                     // Get the MethodInfo object for the private method
+                     MethodInfo methodInfo = typeof(UIStateEditSoldier).GetMethod("OnDualClassPickerClosed", BindingFlags.NonPublic | BindingFlags.Instance);
 
-                    // Create a delegate to invoke the private method
-                    Action<ModalResult, SelectSpecializationDataBind.Data> onDualClassPickerClosed = (Action<ModalResult, SelectSpecializationDataBind.Data>)Delegate.CreateDelegate(typeof(Action<ModalResult, SelectSpecializationDataBind.Data>), __instance, methodInfo);
+                     // Create a delegate to invoke the private method
+                     Action<ModalResult, SelectSpecializationDataBind.Data> onDualClassPickerClosed = (Action<ModalResult, SelectSpecializationDataBind.Data>)Delegate.CreateDelegate(typeof(Action<ModalResult, SelectSpecializationDataBind.Data>), __instance, methodInfo);
 
-                    controller.View.OpenModal(ModalType.DualClassPicker, delegate (ModalResult res)
-                    {
-                        onDualClassPickerClosed.Invoke(ModalResult.Confirm, modalData);
-                    }, modalData, 100, forceOnTop: true);
+                     controller.View.OpenModal(ModalType.DualClassPicker, delegate (ModalResult res)
+                     {
+                         onDualClassPickerClosed.Invoke(res, modalData);
+                     }, modalData, 100, forceOnTop: true);
 
-                    return false;
+                     return false;
 
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                    throw;
-                }
-            }
-        }
+                 }
+                 catch (Exception e)
+                 {
+                     TFTVLogger.Error(e);
+                     throw;
+                 }
+             }
+         }*/
 
 
 
@@ -678,7 +786,7 @@ namespace TFTV
                  }
              }
          }
- */
+        */
 
         /* [HarmonyPatch(typeof(CaptureActorResearchRequirement), "IsValidUnit", typeof(GeoUnitDescriptor))]
          public static class TFTV_CaptureActorResearchRequirement_IsValidUnit

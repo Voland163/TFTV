@@ -68,6 +68,8 @@ namespace TFTV
         public static TacCharacterData SaveTemplateData = new TacCharacterData();
         public static GeoTacUnitId IdProjectOsirisCandidate = new GeoTacUnitId();
 
+        public static GameTagDef OCPProductTag;
+
         internal class Defs
         {
 
@@ -75,8 +77,23 @@ namespace TFTV
             public static void CreateProjectOsirisDefs()
             {
                 CreateProjectOsirisEvents();
+                CreateOsirisTag();
+               
             }
 
+            private static void CreateOsirisTag()
+            {
+                try 
+                {
+                    GameTagDef ocpTag = TFTVCommonMethods.CreateNewTag("OCPProduct", "{{2727C5A3-EB61-4DEB-BD2C-275E67D8B10F}}");
+                    OCPProductTag = ocpTag;
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+
+            }
 
             public static void CreateProjectOsirisEvents()
             {
@@ -324,6 +341,7 @@ KEY_OSIRIS_MORE_MUTATION_BIONICS_RESEARCH
                 List<ClassTagDef> deadSoldierClassTags = new List<ClassTagDef>();
 
                 deadSoldiersTags.AddRange(deadSoldierDescriptor.GetGameTags());
+                deadSoldiersTags.Add(OCPProductTag);
                 GameTagDef[] gameTagDefs = deadSoldiersTags.ToArray();
                 deadTemplateDef.Data.GameTags = gameTagDefs;
 

@@ -118,8 +118,7 @@ DELIRIUM_PERK_HYPERALGESIA_DESCRIPTION,Text,,"Lose 1 WP when taking damage, no W
 <i>Subject has extreme sensitivity to pain and exhibits symptoms of empathy fatigue</i>",,"Perte de 1 Point de Volonté en cas de dégâts, pas de perte de Point de Volonté en cas de mort d'alliés.
 <i>Le sujet est extrêmement sensible à la douleur et présente des symptômes de fatigue empathique.</i>",,,,,,
 "DELIRIUM_PERK_FERAL_NAME
-",Text,,"FERAL
-",,"SAUVAGE
+",Text,,"FERAL",,"SAUVAGE
 ",,,,,,
 "DELIRIUM_PERK_FERAL_DESCRIPTION
 ",Text,,"All actions have 10% chance to fumble, recover 1 AP from killing enemies
@@ -258,7 +257,7 @@ KEY_ABILITY_REVENANT_DESCRIPTION,Text,,Used to be one of us.,,,,,,,,
 SLUG_KEY_TECHNICIAN_FIELD_MEDIC_DESCRIPTION,Text,,Restore 10 Hit Points and 10 Armor to all body parts of the selected target. Disabled body parts are restored. <b>COSTS 15% OF MAX STRENGTH/HP</b>,,,,,,,,
 SLUG_KEY_TECHNICIAN_REPAIR_DESCRIPTION,Text,,Restore {GeneralHealAmount} Hit Points to mechanical devices. <b>COSTS 15% OF MAX STRENGTH/HP</b>,,,,,,,,
 SLUG_KEY_TECHNICIAN_RESTORE_DESCRIPTION,Text,,Restore {GeneralHealAmount} to the general Hit Points and remove 50% paralysis of an allied unit. <b>COSTS 15% OF MAX STRENGTH/HP</b>,,,,,,,,
-SLUG_KEY_ELECTRIC_STRIKE_DESCRIPTION,Text,,Target is paralyzed if shock value is greater than target's current Hit Points. <b>COSTS 15% OF MAX STRENGTH/HP</b>,,,,,,,,
+SLUG_KEY_ELECTRIC_STRIKE_DESCRIPTION,Text,,Target is DAZED if shock value is greater than target's current Hit Points. <b>COSTS 15% OF MAX STRENGTH/HP</b>,,,,,,,,
 SLUG_KEY_REMOVE_LARVA_DESCRIPTION,Text,,Remove Mindfragger from ally. <b>COSTS 15% OF MAX STRENGTH/HP</b>,,,,,,,,
 KEY_GOOED_STATUS_DESCRIPTION,Text,,"Moving through a tile covered in Goo costs more movement points and starting the turn it applies Slow status on the character, unless they are Immune to Goo.",,,,,,,,
 KEY_ACTIVE_CAMO_DISPLAY_NAME,Text,,Active Camo,,,,,,,,

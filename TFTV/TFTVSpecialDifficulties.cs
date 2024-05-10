@@ -50,8 +50,9 @@ namespace TFTV
 
                     if (config.difficultyOnTactical != TFTVConfig.DifficultyOnTactical.GEOSCAPE)
                     {
-                        TFTVLogger.Always($"difficulty order level: {__state}");
+                        TFTVLogger.Always($"Geoscape difficulty: {controller.CurrentDifficultyLevel.Name.Localize()}, Tactical Difficulty: {GetTacticalDifficulty().Name.Localize()}");
                         controller.CurrentDifficultyLevel = GetTacticalDifficulty();
+                        
                         //  TFTVLogger.Always($"Checking that difficulty order level did not change: {__state}");
                     }
 
@@ -102,7 +103,7 @@ namespace TFTV
 
                     if (config.difficultyOnTactical != TFTVConfig.DifficultyOnTactical.GEOSCAPE)
                     {
-                        TFTVLogger.Always($"difficulty order level: {__state}");
+                        TFTVLogger.Always($"Geoscape difficulty: {controller.CurrentDifficultyLevel.Name.Localize()}, Tactical Difficulty: {GetTacticalDifficulty().Name.Localize()}");
                         controller.CurrentDifficultyLevel = GetTacticalDifficulty();
                         //  TFTVLogger.Always($"Checking that difficulty order level did not change: {__state}");
                     }
@@ -220,11 +221,16 @@ namespace TFTV
                 TFTVLogger.Error(e);
                 throw;
             }
-
-
-
         }
 
+
+        /// <summary>
+        /// This function is typically used for difficulty scaling and I reduced to 5 factors from 6 to avoid having something doubled from Story to Rookie,
+        /// and because 5 is already a very big number, especially when something is multiplied by it.
+        /// [and on this I take off this Math professor hat that I found somewhere]
+        /// </summary>
+        /// <param name="order"></param>
+        /// <returns></returns>
 
         public static int DifficultyOrderConverter(int order)
         {
@@ -256,7 +262,6 @@ namespace TFTV
 
                         case TFTVConfig.DifficultyOnTactical.ETERMES:
                             return 5;
-
                     }
                 }
 
@@ -274,7 +279,6 @@ namespace TFTV
                 throw;
             }
         }
-
 
         internal class OnGeoscape
         {
@@ -527,7 +531,6 @@ namespace TFTV
                             rewardDescription.Resources.Clear();
                             rewardDescription.Resources.AddRange(resources);
                             TFTVLogger.Always($"Resource reward from mission {mission.MissionName.LocalizeEnglish()} modified to {resources[0].Value}");
-
                         }
 
 
@@ -913,11 +916,11 @@ namespace TFTV
             //Doesn't apply during Tutorial
 
 
-            public static void AddSpecialDifficultiesBuffsAndVulnerabilities(TacticalActorBase actor, TacticalLevelController __instance)
+            public static void AddSpecialDifficultiesBuffsAndVulnerabilities(TacticalActorBase actor, TacticalLevelController controller)
             {
                 try
                 {
-                    if (!__instance.TacMission.MissionData.MissionType.name.Contains("Tutorial"))
+                    if (!controller.TacMission.MissionData.MissionType.name.Contains("Tutorial"))
                     {
 
                         TFTVConfig config = TFTVMain.Main.Config;
@@ -928,11 +931,11 @@ namespace TFTV
                         DamageMultiplierStatusDef scyllaDamageResistance = DefCache.GetDef<DamageMultiplierStatusDef>("ScyllaDamageResistance");
                         ClassTagDef cyclopsTag = DefCache.GetDef<ClassTagDef>("MediumGuardian_ClassTagDef");
 
-                        if (CheckTacticalSpecialDifficultySettings(__instance) == 1)
+                        if (CheckTacticalSpecialDifficultySettings(controller) == 1)
                         {
-                            if (__instance.GetFactionByCommandName("PX") != null)
+                            if (controller.GetFactionByCommandName("PX") != null)
                             {
-                                TacticalFaction phoenixFaction = __instance.GetFactionByCommandName("PX");
+                                TacticalFaction phoenixFaction = controller.GetFactionByCommandName("PX");
 
                                 if (actor is TacticalActor tacticalActor && tacticalActor.TacticalFaction.GetRelationTo(phoenixFaction) == FactionRelation.Enemy)
                                 {
@@ -955,13 +958,14 @@ namespace TFTV
 
                         if (TFTVNewGameOptions.EtermesResistanceAndVulnerability==1)
                         {
-                            if (__instance.GetFactionByCommandName("PX") != null)
+                            if (controller.GetFactionByCommandName("PX") != null)
                             {
-                                TacticalFaction phoenixFaction = __instance.GetFactionByCommandName("PX");
+                                TacticalFaction phoenixFaction = controller.GetFactionByCommandName("PX");
 
                                 if (actor is TacticalActor tacticalActor && tacticalActor.TacticalFaction.GetRelationTo(phoenixFaction) == FactionRelation.Enemy)
                                 {
-                                    if (tacticalActor.IsActive && !tacticalActor.HasStatus(protectionEtermesStatus) && !tacticalActor.HasGameTag(cyclopsTag))
+                                    if (tacticalActor.IsActive && !tacticalActor.HasStatus(protectionEtermesStatus) && !tacticalActor.HasGameTag(cyclopsTag) 
+                                        && !tacticalActor.HasGameTag(TFTVBaseDefenseTactical.Defs.SecurityGuardTag))
                                     {
                                         tacticalActor.Status.ApplyStatus(protectionEtermesStatus);
                                     }
@@ -969,7 +973,7 @@ namespace TFTV
 
                                 if (actor is TacticalActor phoenixActor && phoenixActor.TacticalFaction == phoenixFaction)
                                 {
-                                    if (phoenixActor.IsActive && !phoenixActor.HasStatus(vulnerabilityEtermesStatus))
+                                    if (phoenixActor.IsActive && !phoenixActor.HasStatus(vulnerabilityEtermesStatus) && !phoenixActor.HasGameTag(TFTVBaseDefenseTactical.Defs.SecurityGuardTag))
                                     {
                                         phoenixActor.Status.ApplyStatus(vulnerabilityEtermesStatus);
                                     }
@@ -1016,7 +1020,7 @@ namespace TFTV
             //This is needed in case player starts a new gamel/loads a game with a different difficulty setting
             public static void SaveData()
             {
-                try
+                try 
                 {
                     TFTVConfig config = TFTVMain.Main.Config;
 
@@ -1122,7 +1126,6 @@ namespace TFTV
             private static bool ImpossibleWeaponsAdjusted = false;
             public static void NerfImpossibleWeapons()
             {
-
                 try
                 {
                     TFTVConfig config = TFTVMain.Main.Config;
@@ -1136,11 +1139,8 @@ namespace TFTV
 
                     if ((controllerGeo != null && ApplyImpossibleWeaponsAdjustmentsOnGeoscape(controllerGeo) || controllerTactical != null && ApplyImpossibleWeaponsAdjustmentsOnTactical(controllerTactical)) && !ImpossibleWeaponsAdjusted)
                     {
-
-
                         foreach (WeaponDef weaponDef in Repo.GetAllDefs<WeaponDef>())
                         {
-
                             switch (weaponDef.Guid)
                             {
                                 case "831be08f-d0d7-2764-4833-02ce83ff7277": // AC_Rebuke_WeaponDef
@@ -1269,7 +1269,35 @@ namespace TFTV
             }
         }
 
-
+        /// <summary>
+        /// So, I'm not sure why I made such a mess of difficulties, but here it goes:
+        /// 
+        /// 1) there are 2 new difficulties, created in TFTVDefsInjectedOnlyOnce.SpecialDifficulties,
+        ///
+        /// StoryMode_DifficultyLevelDef.Order = 1;
+        /// Etermes_DifficultyLevelDef.Order = 6;
+        /// 
+        /// 2) Each of Vanilla difficulty's Order field is changed (in the same method) so that:
+        /// 
+        /// DefCache.GetDef<GameDifficultyLevelDef>("Easy_GameDifficultyLevelDef").Order = 2;
+        /// DefCache.GetDef<GameDifficultyLevelDef>("Standard_GameDifficultyLevelDef").Order = 3;           
+        /// DefCache.GetDef<GameDifficultyLevelDef>("Hard_GameDifficultyLevelDef").Order = 4;
+        /// DefCache.GetDef<GameDifficultyLevelDef>("VeryHard_GameDifficultyLevelDef").Order = 5;
+        /// 
+        /// 3) There is an internal variable to save difficulty. 
+        /// 
+        /// This is necessary for "fixing" Story Mode and Etermes saves as they are loaded;
+        /// because the saves are accessed before the Mod is loaded, when the new difficulties don't "exist" yet,
+        /// these saves have no difficulties when they are loaded just after launching the game. 
+        /// The intenal variable is used to determine whether the save is Story Mode or Etermes.
+        /// This is invoked for both Geoscape and Tactical saves.
+        /// 
+        /// 4) Tactical difficulty can be changed at any time in Settings. 
+        /// 
+        ///
+        /// </summary>
+        /// <param name="controller"></param>
+        /// <returns></returns>
 
         public static int CheckGeoscapeSpecialDifficultySettings(GeoLevelController controller)
         {
@@ -1284,12 +1312,10 @@ namespace TFTV
                 else if (controller.CurrentDifficultyLevel.Order == 6)//(config.EtermesMode)
                 {
                     return 2;
-
                 }
                 else
                 {
                     return 0;
-
                 }
             }
             catch (Exception e)
@@ -1316,21 +1342,15 @@ namespace TFTV
                 {
                     // TFTVLogger.Always($"Geoscape check re Tactical returns that it's Rookie!");
                     return 1;
-
                 }
                 else if (controller.CurrentDifficultyLevel.Order == 6)//(config.EtermesMode)
                 {
                     return 2;
-
                 }
                 else
                 {
                     return 0;
-
                 }
-
-
-
             }
             catch (Exception e)
             {
@@ -1339,7 +1359,7 @@ namespace TFTV
             }
         }
 
-        public static int CheckTacticalSpecialDifficultySettings(TacticalLevelController controller)
+        public static int CheckTacticalSpecialDifficultySettings(TacticalLevelController controller = null)
         {
             try
             {
@@ -1356,22 +1376,34 @@ namespace TFTV
                     else if (GetTacticalDifficulty().Order == 6)
                     {
                         return 2;
-
                     }
                 }
                 else
                 {
-                  // TFTVLogger.Always($"tactical difficulty is {TFTVNewGameOptions.InternalDifficultyCheckTactical}");
-
-                    if (TFTVNewGameOptions.InternalDifficultyCheckTactical == 1)
+                    if (TFTVNewGameOptions.InternalDifficultyCheckTactical != 0)
                     {
-                        return 1;
+                        // TFTVLogger.Always($"tactical difficulty is {TFTVNewGameOptions.InternalDifficultyCheckTactical}");
 
+                        if (TFTVNewGameOptions.InternalDifficultyCheckTactical == 1)
+                        {
+                            return 1;
+                        }
+                        else if (TFTVNewGameOptions.InternalDifficultyCheckTactical == 6)
+                        {
+                            return 2;
+                        }
                     }
-                    else if (TFTVNewGameOptions.InternalDifficultyCheckTactical == 6)
+                    else if(controller!=null)
                     {
-                        return 2;
+                        if (controller.Difficulty.Order == 1)
+                        {
+                            return 1;
 
+                        }
+                        else if (controller.Difficulty.Order == 6)
+                        {
+                            return 2;
+                        }
                     }
                 }
 

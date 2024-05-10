@@ -642,7 +642,7 @@ namespace TFTV
                     /*   GeoMarketplaceResearchOptionDef randomMarketResearch = DefCache.GetDef<GeoMarketplaceResearchOptionDef>("Random_MarketplaceResearchOptionDef");
                        randomMarketResearch.MaxPrice = 1200;
                        randomMarketResearch.MinPrice = 960;*/
-                  //  TFTVChangesToDLC5.ForceMarketPlaceUpdate();
+                    //  TFTVChangesToDLC5.ForceMarketPlaceUpdate();
                     // Logger.Always(voidOmen + j + " is now in effect, held in variable " + voidOmen + i);
                     VoidOmensCheck[19] = true;
                 }
@@ -653,7 +653,7 @@ namespace TFTV
                         randomMarketResearch.MinPrice = 1200;*/
 
                     VoidOmensCheck[19] = false;
-                  //  TFTVChangesToDLC5.ForceMarketPlaceUpdate();
+                    //  TFTVChangesToDLC5.ForceMarketPlaceUpdate();
                     TFTVLogger.Always("The check for VO#19 went ok");
 
 
@@ -931,7 +931,7 @@ namespace TFTV
 
                             }
                         }
-
+                        ImplementVoidOmens(geoLevelController);
                         /*   string explanation =
                                $"{TFTVCommonMethods.ConvertKeyToString("KEY_VOID_OMEN_REMOVED"+reason)}" +
                                $"{TFTVCommonMethods.ConvertKeyToString("KEY_VOID_OMEN_REMOVED_TEXT0")} " +
@@ -1502,6 +1502,9 @@ namespace TFTV
 
         }
 
+
+        private static LocalizedTextBind _destroyedAlienBase = new LocalizedTextBind();
+
         [HarmonyPatch(typeof(GeoAlienFaction), "AlienBaseDestroyed")]
         public static class GeoAlienFaction_AlienBaseDestroyed_RemoveVoidOmenDestroyedPC_patch
         {
@@ -1509,7 +1512,10 @@ namespace TFTV
             {
                 try
                 {
-                    TFTVLogger.Always("Lair or Citadal destroyed");
+                    TFTVLogger.Always($"{alienBase.AlienBaseTypeDef.Name} destroyed");
+
+                    _destroyedAlienBase = alienBase.AlienBaseTypeDef.Name;
+
                     if (alienBase.AlienBaseTypeDef.Keyword == "lair" || alienBase.AlienBaseTypeDef.Keyword == "citadel"
                         || (alienBase.AlienBaseTypeDef.Keyword == "nest" && TFTVSpecialDifficulties.DifficultyOrderConverter(__instance.GeoLevel.CurrentDifficultyLevel.Order) == 1))
                     {
@@ -1529,6 +1535,27 @@ namespace TFTV
                 }
             }
         }
+
+        [HarmonyPatch(typeof(GeoscapeLog), "AddEntry")]
+        public static void Prefix(ref GeoscapeLogEntry entry, GeoActor actor, GeoscapeLogMessagesDef ____messagesDef)
+        {
+            try
+            {
+                if (entry.Text == ____messagesDef.AlienBaseDestroyedMessage && actor is GeoSite geoSite)
+                {
+                    if (entry.Parameters[0] == geoSite.SiteName)
+                    {
+                        entry.Parameters[0] = _destroyedAlienBase;
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
+        }
+
 
         //VO2 apply penalty to diplo reward from sabotage missions
         [HarmonyPatch(typeof(GeoSabotageZoneMission), "AddFactionRequestReward")]

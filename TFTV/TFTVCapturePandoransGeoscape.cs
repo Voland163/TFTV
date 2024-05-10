@@ -302,31 +302,31 @@ namespace TFTV
 
         public static float PandasForFoodProcessing = 0;
 
-        [HarmonyPatch(typeof(GeoAlienFaction), "UpdateFactionHourly")]
-        public static class GeoAlienFaction_UpdateFactionHourly_CapturePandorans_Patch
+        public static void LimitedHarvestingHourlyActions(GeoLevelController controller)
         {
-
-            public static void Postfix(GeoAlienFaction __instance)
+            try 
             {
-                try
-                {
-                    TFTVConfig config = TFTVMain.Main.Config;
+                TFTVConfig config = TFTVMain.Main.Config;
 
-                    if (TFTVNewGameOptions.LimitedHarvestingSetting)
-                    {
-
-                        GiveFood();
-                        TriggerFoodPoisoning(__instance.GeoLevel);
-                        GiveMutagens();
-                    }
-                }
-                catch (Exception e)
+                if (TFTVNewGameOptions.LimitedHarvestingSetting)
                 {
-                    TFTVLogger.Error(e);
+
+                    GiveFood();
+                    TriggerFoodPoisoning(controller);
+                    GiveMutagens();
                 }
+
 
             }
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
         }
+
+       
 
         private static void GiveMutagens()
         {

@@ -774,21 +774,15 @@ namespace TFTV
                                 __instance.CharacterLevel.text = "6";
                             }
 
-                            foreach (GameTagDef gameTagDef in factionAndTier)
-                            {
-                                TFTVLogger.Always($"{gameTagDef.name}");
-
-                            }
-
-
                             string factionName = factionAndTier[0].name.Split('_')[1];
-                            TFTVLogger.Always($"factionName is {factionName} coming from {factionAndTier[0]?.name}, " +
-                                $"count in human enemies and tactics {HumanEnemiesAndTactics.Count}, {HumanEnemiesAndTactics?.First().Value}");
-                            int roll = HumanEnemiesAndTactics[factionName];
-                            TFTVLogger.Always("factionName is " + factionName + " and the roll is " + roll);
-                            ____abilitiesList.AddRow<CharacterStatusAbilityRowController>
-                               (__instance.AbilitiesListAbilityPrototype).SetData(AddTacticsDescription(roll));
 
+                            if (HumanEnemiesAndTactics.Count > 0)
+                            {
+                                int roll = HumanEnemiesAndTactics[factionName];
+                                TFTVLogger.Always("factionName is " + factionName + " and the roll is " + roll);
+                                ____abilitiesList.AddRow<CharacterStatusAbilityRowController>
+                                   (__instance.AbilitiesListAbilityPrototype).SetData(AddTacticsDescription(roll));
+                            }
                         }
                         else if (factionAndTier[1] == HumanEnemyTier2GameTag)
                         {

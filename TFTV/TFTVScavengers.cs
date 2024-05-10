@@ -89,60 +89,7 @@ namespace TFTV
             }
         }
 
-       /* public static void ImplementScavengerSpecialMissions(TacticalLevelController controller)
-        {
-            try 
-            {
-                if (controller.TacMission.MissionData.MissionType.name.Equals("StoryPX13_CustomMissionTypeDef")) 
-                {
-                    TacticalDeployZone deployZone = TFTVTacticalUtils.FindTDZ("Deploy_Player_3x3_Vehicle");
-
-                    TacticalDeployZoneDef deployZoneDef = DefCache.GetDef<TacticalDeployZoneDef>("Neutral_Bandits_DeployZoneDef");
-                    TacticalDeployZone newDeployZone = ActorSpawner.SpawnActor<TacticalDeployZone>(deployZoneDef);
-
-
-                   
-
-                    TacActorData tacActorData = new TacActorData
-                    {
-                        ComponentSetTemplate = deployZoneDef.ComponentSet
-                    };
-
-
-                    StructuralTargetInstanceData structuralTargetInstanceData = tacActorData.GenerateInstanceData() as StructuralTargetInstanceData;
-                    //  structuralTargetInstanceData.FacilityID = facilityID;
-                    structuralTargetInstanceData.SourceTemplate = stdDef;
-                    structuralTargetInstanceData.Source = tacActorData;
-
-
-                    StructuralTarget structuralTarget = ActorSpawner.SpawnActor<StructuralTarget>(tacActorData.GenerateInstanceComponentSetDef(), structuralTargetInstanceData, callEnterPlayOnActor: false);
-                    GameObject obj = structuralTarget.gameObject;
-                    structuralTarget.name = name;
-                    structuralTarget.Source = obj;
-
-                    var ipCols = new GameObject("InteractionPointColliders");
-                    ipCols.transform.SetParent(obj.transform);
-                    ipCols.tag = InteractWithObjectAbilityDef.ColliderTag;
-
-                    ipCols.transform.SetPositionAndRotation(position, Quaternion.identity);
-                    var collider = ipCols.AddComponent<BoxCollider>();
-
-
-                    structuralTarget.Initialize();
-                    //TFTVLogger.Always($"Spawning interaction point with name {name} at position {position}");
-                    structuralTarget.DoEnterPlay();
-
-
-                }
-           
-            }
-            catch (Exception e) 
-            {
-                TFTVLogger.Error(e); 
-            }    
-        }*/
-        
-
+      
         internal class Defs
         {
             //weak armors

@@ -267,7 +267,7 @@ namespace TFTV
 
                         doomTorso.BodyPartAspectDef.Accuracy = -0.04f;
                         doomLegs.BodyPartAspectDef.Speed = 0.0f;
-                        doomLegs.BodyPartAspectDef.Accuracy = -0.04f;             
+                        doomLegs.BodyPartAspectDef.Accuracy = -0.04f;
 
                         sectarianHelmet.Armor = 14;
                         sectarianHelmet.Weight = 1;
@@ -2230,15 +2230,15 @@ namespace TFTV
                     try
                     {
 
-                       // TFTVLogger.Always($"Running OnChoiceSelected");
-                        
+                        // TFTVLogger.Always($"Running OnChoiceSelected");
+
                         if (choice.Outcome.Units.Count > 0 && choice.Outcome.Units[0] is TacCharacterDef tacCharacterDef && tacCharacterDef.Data.GameTags.Contains(MercenaryTag))
                         {
                             __instance.Loca_AllMissionsFinishedDesc.LocalizationKey = tacCharacterDef.Data.ViewElementDef.Category.LocalizationKey;
                             __instance.UpdateVisuals();
                         }
 
-                      
+
                     }
                     catch (Exception e)
                     {
@@ -2284,9 +2284,6 @@ namespace TFTV
 
                             PropertyInfo propertyInfo = typeof(GeoscapeEvent).GetProperty("ChoiceReward", BindingFlags.Instance | BindingFlags.Public);
 
-
-
-
                             GeoLevelController component = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
                             GeoscapeEventContext geoscapeEventContext = new GeoscapeEventContext(component.PhoenixFaction.StartingBase, component.PhoenixFaction, __instance.Context.Site.Vehicles.First());
                             // TFTVLogger.Always($"geoscapeEventContext is null? {geoscapeEventContext==null} is faction null? {faction==null}");
@@ -2319,6 +2316,26 @@ namespace TFTV
                 }
             }
 
+            /* public static void Postfix(GeoscapeEvent __instance, GeoEventChoice choice, GeoFaction faction)
+             {
+                 try
+                 {
+                     if (__instance.Context.Site.Vehicles.Count() == 0 && choice != null && choice.Outcome != null && choice.Outcome.Units != null && choice.Outcome.Units.Count > 0
+                     && choice.Outcome.Units[0] is TacCharacterDef tacCharacterDef) 
+                     { 
+                     faction.GeoLevel.PhoenixFaction.AddRecruit()
+
+                     }
+
+
+
+                 }
+                 catch (Exception e)
+                 {
+                     TFTVLogger.Error(e);
+                     throw;
+                 }
+             }*/
 
 
             [HarmonyPatch(typeof(UIStateMarketplaceGeoscapeEvent), "ExitState")]
@@ -2333,12 +2350,12 @@ namespace TFTV
                         GeoMarketplace geoMarketplace = GameUtl.CurrentLevel().GetComponent<GeoLevelController>().Marketplace;
                         if (MPGeoEventChoices != null && MPGeoEventChoices.Count > 0)
                         {
-                            foreach(GeoEventChoice geoEventChoice in MPGeoEventChoices) 
-                            {
-                                if(geoEventChoice.Outcome!=null && geoEventChoice.Outcome.Items!=null && geoEventChoice.Outcome.Items.Count>0)
+                            /* foreach(GeoEventChoice geoEventChoice in MPGeoEventChoices) 
+                             {
+                                 if(geoEventChoice.Outcome!=null && geoEventChoice.Outcome.Items!=null && geoEventChoice.Outcome.Items.Count>0)
 
-                                TFTVLogger.Always($"geoeventChoice: {geoEventChoice.Outcome?.Items[0].ItemDef.name}");          
-                            }
+                               //  TFTVLogger.Always($"geoeventChoice: {geoEventChoice.Outcome?.Items[0].ItemDef.name}");          
+                             }*/
 
                             PropertyInfo propertyInfo = typeof(GeoMarketplace).GetProperty("MarketplaceChoices", BindingFlags.Instance | BindingFlags.Public);
 

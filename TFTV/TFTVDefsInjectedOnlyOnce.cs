@@ -149,7 +149,9 @@ namespace TFTV
 
                 TFTVScavengers.Defs.CreateRaiderDefs();
 
-                TFTVPureAndForsaken.Defs.InitDefs(); 
+                TFTVPureAndForsaken.Defs.InitDefs();
+
+                TFTVTacticalDeploymentEnemies.PopulateLimitsForUndesirables();
 
               //  Print();
 

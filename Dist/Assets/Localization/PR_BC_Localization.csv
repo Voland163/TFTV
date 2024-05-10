@@ -98,8 +98,8 @@ PR_BC_PUNISHER,Text,,PUNISHER,,PUNISHER,,,,КАРАТЕЛЬ,,
 PR_BC_PUNISHER_DESC,Text,,"When you kill an enemy, his allies lose 2 additional Will Points",,"Lorsque vous tuez un ennemi, ses alliés perdent 2 points de volonté supplémentaires.",,,,"Когда вы убиваете врага, все враги теряют 2 ОВ дополнительно.",,
 PR_BC_PEPPER_CLOUD,Text,,PEPPER CLOUD,,NUAGE DE POIVRE,,,,,,
 PR_BC_PEPPER_CLOUD_DESC,Text,,Enemies in 8 tile radius suffer -50% accuracy,,Les ennemis dans un rayon de 8 cases subissent une perte de précision de 50 %.,,,,,,
-PR_BC_AR_TARGETTING,Text,,AR TARGETTING,,CIBLAGE ALLIE,,,,ВИРТУАЛЬНЫЙ ПРИЦЕЛ,,
-PR_BC_AR_TARGETTING_DESC,Text,,Target ally within 10 tiles gains +20% accuracy,,L'allié cible dans un rayon de 10 cases gagne +20% de précision.,,,,Союзная цель в радиусе 10 клеток получает +30% точности,,
+PR_BC_AR_TARGETTING,Text,,AR TARGETING,,CIBLAGE ALLIE,,,,ВИРТУАЛЬНЫЙ ПРИЦЕЛ,,
+PR_BC_AR_TARGETTING_DESC,Text,,Target ally within 10 tiles gains +30% accuracy,,L'allié cible dans un rayon de 10 cases gagne +20% de précision.,,,,Союзная цель в радиусе 10 клеток получает +30% точности,,
 PR_BC_PHANTOM_PROTOCOL,Text,,PHANTOM PROTOCOL,,PROTOCOLE FANTOME,,,,ФАНТОМ,,
 PR_BC_PHANTOM_PROTOCOL_DESC,Text,,"Gain +15% stealth and accuracy, provides immunity to Sentinels surveillance ability",,"Gagne +15% de furtivité et de précision, procure une immunité à la capacité de surveillance des Sentinelles.",,,,Получите +15% точности и скрытности. Также Стражи не реагируют при вашем приближении.,,
 PR_BC_SOWER_OF_CHANGE,Text,,SOWER OF CHANGE,,SEMEUR DE CHANGEMENT,,,,СЕЯТЕЛЬ ПЕРЕМЕН,,
@@ -155,7 +155,7 @@ PR_BC_HUNTER_DESC,Text,,"<b>Accuracy +10%</b>
 <i>Il y avait autrefois du gibier et de la nourriture par ici.</i>",,,,"<b>Точность +10%</b>
 <i>Когда-то в этих краях не люди были добычей</i>",,
 PR_BC_TROUBLEMAKER,Text,,TROUBLEMAKER,,PERTURBATEUR,,,,БЕДОКУР,,
-PR_BC_TROUBLEMAKER_DESC,Text,,"<b>Grenades deal +10% damage</b>
+PR_BC_TROUBLEMAKER_DESC,Text,,"<b>Hand grenades +10% damage</b>
 <i>You have a knack for irritating the authorities. Maybe that's why you are here? Think about it</i>",,"<b>Les grenades infligent +10% de dégâts</b>
 <i>Vous avez le don d'irriter les autorités. C'est peut-être pour cela que vous êtes ici ? Pensez-y</i>",,,,"<b>Гранаты наносят +10% урона</b>
 <i>У вас талант раздражать власть имущих. Может поэтому вы оказались здесь? Подумайте об этом</i>",,
@@ -207,3 +207,4 @@ PR_BC_PRIVILEGED_DESC,Text,,"<b>Speed +2, Perception +4, Carry Weight -25%</b>
 PR_BC_FRENZY,Text,,FRENZY,,FRENESIE,,,,БУЙСТВО,,
 PR_BC_FRENZY_DESC,Text,,"Instils Frenzy in friendly characters within 20 tiles for two turns, increasing their Speed by 33% and making them immune to panic",,"Instille la frénésie aux personnages alliés situés dans un rayon de 20 cases pendant deux tours, augmentant leur vitesse de 33% et les rendant immunisés contre la panique.",,,,"Союзники в радиусе 20 клеток впадают в Буйство на 2 хода, их скорость увеличивается на 33% и они получают иммунитет к панике",,
 PR_BC_FRENZY_STATUS_DESC,Text,,Speed increased by 33% and immune to panic,,Vitesse augmentée de 33% et immunisée contre la panique,,,,Скорость увеличена на 33% и иммунитет к панике,,
+KEY_RETURNFIRE_DESCRIPTION,Text,,"Shoot back at an enemy when it attacks, provided the soldier is using a direct-fire projectile weapon with proficiency, and the enemy is within half perception range. Once per turn.",,,,,,,,

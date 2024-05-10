@@ -138,6 +138,7 @@ namespace TFTV
                 TFTVDelirium.CharactersDeliriumPerksAndMissions.Clear();
                 TFTVBaseDefenseGeoscape.ContainmentBreachSchedule.Clear();
                 TFTVBaseDefenseGeoscape.PandoransThatCanEscape.Clear();
+                TFTVTacticalDeploymentEnemies.UndesirablesSpawned.Clear();
                 
                 
 
@@ -176,7 +177,6 @@ namespace TFTV
                         alwaysDisplayedTacticalHintsDbDef.Hints.Remove(contextHelpHintDef);
                         TFTVLogger.Always("Squad hint " + contextHelpHintDef.name + " removed");
                     }
-
                 }
 
                 TFTVHumanEnemies.TacticsHint.Clear();

@@ -176,13 +176,7 @@ namespace TFTV
                         TFTVLogger.Always($"internalDifficultyCheck is {internalDifficultyCheck}");
                         if (internalDifficultyCheck != 0)
                         {
-                            // TFTVLogger.Always($"so got here internalDifficultyCheck is {internalDifficultyCheck}");
-
-                            DefCache.GetDef<GameDifficultyLevelDef>("Easy_GameDifficultyLevelDef").Order = 2;
-                            DefCache.GetDef<GameDifficultyLevelDef>("Standard_GameDifficultyLevelDef").Order = 3;
-                            DefCache.GetDef<GameDifficultyLevelDef>("Hard_GameDifficultyLevelDef").Order = 4;
-                            DefCache.GetDef<GameDifficultyLevelDef>("VeryHard_GameDifficultyLevelDef").Order = 5;
-
+             
                             switch (internalDifficultyCheck)
                             {
                                 case 1:
