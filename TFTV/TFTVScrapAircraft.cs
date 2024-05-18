@@ -2,11 +2,13 @@
 using Base;
 using Base.Core;
 using Base.Defs;
+using Base.Input;
 using Base.UI;
 using Base.UI.MessageBox;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities.Items;
+using PhoenixPoint.Common.View.ViewControllers;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.Interception.Equipments;
 using PhoenixPoint.Geoscape.Levels;
@@ -21,6 +23,7 @@ using System.Reflection;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using static UnityEngine.EventSystems.EventTrigger;
 
 namespace TFTV
 {
@@ -188,8 +191,8 @@ namespace TFTV
                 {
                     GeoscapeViewContext ___Context = (GeoscapeViewContext)AccessTools.Property(typeof(GeoscapeViewState), "Context").GetValue(__instance, null);
                     UIModuleGeneralPersonelRoster ____geoRosterModule = (UIModuleGeneralPersonelRoster)AccessTools.Property(typeof(UIStateGeoRoster), "_geoRosterModule").GetValue(__instance, null);
-
-                    RefreshScrapTriggers();
+                
+                    RefreshScrapTriggers();                  
 
                     // Scoped functions
                     void RefreshScrapTriggers()
@@ -198,6 +201,7 @@ namespace TFTV
                         {
                            GeoRosterContainterItem c = ____geoRosterModule.Groups[i];
 
+                          
                            /* if (!c.EmptySlot.GetComponent<EventTrigger>())
                             {
                                 TFTVLogger.Info($"[UIStateGeoRoster_EnterState_POSTFIX] {c.Container.Name} had no event trigger. Adding...");
@@ -213,23 +217,21 @@ namespace TFTV
 
                             if (c.Container.MaxCharacterSpace != 2147483647) // !Bases
                             {
-
-
                                 if (!c.EmptySlot.GetComponent<EventTrigger>())
                                 {
-                                    TFTVLogger.Info($"[UIStateGeoRoster_EnterState_POSTFIX] {c.Container.Name} had no event trigger. Adding...");
+                                  //  TFTVLogger.Info($"[UIStateGeoRoster_EnterState_POSTFIX] {c.Container.Name} had no event trigger. Adding...");
                                     c.EmptySlot.AddComponent<EventTrigger>();
                                 }
 
-                                TFTVLogger.Info($"[UIStateGeoRoster_EnterState_POSTFIX] {c.Container.Name} Clearing all mouse events from empty slot.");
-                                EventTrigger eventTrigger = c.EmptySlot.GetComponent<EventTrigger>();
+                               // TFTVLogger.Info($"[UIStateGeoRoster_EnterState_POSTFIX] {c.Container.Name} Clearing all mouse events from empty slot.");
+                               EventTrigger eventTrigger = c.EmptySlot.GetComponent<EventTrigger>();
 
-                                eventTrigger.triggers.Clear();
+                               eventTrigger.triggers.Clear();
 
-                                TFTVLogger.Info($"[UIStateGeoRoster_EnterState_POSTFIX] {c.Container.Name} Refreshing/Resetting text for empty slot. This IS needed.");
+                               // TFTVLogger.Info($"[UIStateGeoRoster_EnterState_POSTFIX] {c.Container.Name} Refreshing/Resetting text for empty slot. This IS needed.");
                                 c.Refresh();
 
-                                TFTVLogger.Info($"[UIStateGeoRoster_EnterState_POSTFIX] {c.Container.Name} is NOT a base. Adding mouse events to empty slot. ");
+                                // TFTVLogger.Info($"[UIStateGeoRoster_EnterState_POSTFIX] {c.Container.Name} is NOT a base. Adding mouse events to empty slot. ");
 
                                 Text oldEmptySlotText = c.EmptySlot.GetComponentInChildren<Text>(true);
                                 Text emptySlotText = oldEmptySlotText;
@@ -253,7 +255,6 @@ namespace TFTV
 
                             //    Text emptySlotText = c.EmptySlot.GetComponentInChildren<Text>(true);
                               
-
                                 ContainerInfo containerInfo = new ContainerInfo(c.Container.Name, i);
                                 TFTVLogger.Info($"[UIStateGeoRoster_EnterState_POSTFIX] containerInfo: {containerInfo.Name}, {containerInfo.Index}");
 
@@ -273,12 +274,11 @@ namespace TFTV
                                 eventTrigger.triggers.Add(click);
 
                               
-
-
                             }
 
                         }
                     }
+               
 
                     void OnScrapAircraftMouseEnter(Text t)
                     {
@@ -291,8 +291,6 @@ namespace TFTV
                         TFTVLogger.Info($"[UIStateGeoRoster_EnterState_POSTFIX] OnScrapAircraftMouseExit({t})");
                         t.color = emptySlotDefaultColor;
                     }
-
-                 
 
                     void OnScrapAircraftClick(ContainerInfo containerInfo)
                     {

@@ -1,7 +1,7 @@
 ﻿using Base;
 using Base.Core;
-using Base.Levels;
 using Base.UI;
+using Epic.OnlineServices;
 using HarmonyLib;
 using PhoenixPoint.Common.ContextHelp;
 using PhoenixPoint.Common.Core;
@@ -40,22 +40,73 @@ namespace TFTV
         public static string LivingWeaponsAcquired = "Living_Weapons_Acquired";
         public static int roll = 0;
 
-        private static readonly string TrappedInTheMistVariable = "TrappedInTheMistTriggered";
+        private static readonly string _trappedInTheMistVariable = "TrappedInTheMistTriggered";
+        private static readonly string _investigateInfestedHavenObjective = "KEY_INFESTED_HAVEN_OBJECTIVE";
         public static bool InfestationMissionWon = false;
 
         public static int HavenPopulation = 0;
         public static string OriginalOwner = "";
 
+
+       public static void ImplementLocateInfestedHavenOnObjectiveClick(DiplomaticGeoFactionObjective objective, ref IEnumerable<GeoActor> __result, ref List<GeoSite> ____assignedSites)
+        {
+            try 
+            {
+                GeoLevelController geoLevelController = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
+
+                if (objective.GetTitle().Contains(TFTVCommonMethods.ConvertKeyToString(_investigateInfestedHavenObjective))) 
+                {
+                   GeoSite geoSite = geoLevelController.Map.AllSites.FirstOrDefault(gs => gs.Type == GeoSiteType.Haven && gs.Owner == geoLevelController.AlienFaction);
+
+                    if (geoSite != null) 
+                    {
+                        ____assignedSites.Add(geoSite);
+
+                        __result = ____assignedSites;
+                    }
+                }
+
+            }
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+
+        private static void AddInvestigateInfestedHavenObjective(GeoLevelController controller)
+        {
+            try
+            {
+                GeoscapeEventSystem eventSystem = controller.EventSystem;
+
+                DiplomaticGeoFactionObjective cyclopsObjective = new DiplomaticGeoFactionObjective(controller.PhoenixFaction, controller.PhoenixFaction)
+                {
+                    Title = new LocalizedTextBind(_investigateInfestedHavenObjective),
+                    Description = new LocalizedTextBind(_investigateInfestedHavenObjective),
+                    IsCriticalPath = true
+
+                };
+                controller.PhoenixFaction.AddObjective(cyclopsObjective);
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
         internal class StoryFirstInfestedHaven
         {
-        
+
             private static readonly GameTagDef mutoidTag = DefCache.GetDef<GameTagDef>("Mutoid_TagDef");
             private static readonly GameTagDef nodeTag = DefCache.GetDef<GameTagDef>("CorruptionNode_ClassTagDef");
 
             private static readonly MissionTypeTagDef infestationMissionTagDef = DefCache.GetDef<MissionTypeTagDef>("HavenInfestation_MissionTypeTagDef");
 
-          // internal static string _nameOfTopCharacter = "";
-         //   private static string _nameOfSecondCharacter = "";
+            // internal static string _nameOfTopCharacter = "";
+            //   private static string _nameOfSecondCharacter = "";
 
 
             [HarmonyPatch(typeof(GeoMission), "Launch")]
@@ -129,7 +180,7 @@ namespace TFTV
 
                                 string text = $"{director}, {characterName} {infestationStory0} {__instance.Site.LocalizedSiteName}{infestationStory1}";
 
-                               // _nameOfTopCharacter = characterName;
+                                // _nameOfTopCharacter = characterName;
 
                                 string infestationStory2 = TFTVCommonMethods.ConvertKeyToString("KEY_INFESTATION_STORY2");
                                 string infestationStory3 = TFTVCommonMethods.ConvertKeyToString("KEY_INFESTATION_STORY3");
@@ -253,7 +304,7 @@ namespace TFTV
 
         }
 
-        internal class InfestingHaven 
+        internal class InfestingHaven
         {
             // Copied and adapted from Mad´s Assorted Adjustments
             // Store mission for other patches
@@ -327,6 +378,7 @@ namespace TFTV
                                     GeoscapeEventContext geoscapeEventContext = new GeoscapeEventContext(__instance.GeoLevel.AlienFaction, __instance.GeoLevel.PhoenixFaction);
                                     __instance.GeoLevel.EventSystem.SetVariable("TrappedInTheMistTriggered", 1);
                                     __instance.GeoLevel.EventSystem.TriggerGeoscapeEvent("OlenaOnHavenInfested", geoscapeEventContext);
+                                    AddInvestigateInfestedHavenObjective(__instance.GeoLevel);
                                 }
 
 
@@ -423,29 +475,29 @@ namespace TFTV
 
 
         }
-        
-        internal class ScienceOfMadness 
+
+        internal class ScienceOfMadness
         {
-           /* public static bool CancelProgFS3IfTrappedInMistAlreadyTriggered(GeoscapeEventData eventData, GeoscapeEventSystem eventSystem)
-            {
-                try
-                {
-                    if (eventData.EventID == "PROG_FS3" && eventSystem.GetVariable(TrappedInTheMistVariable) == 1)
-                    {
+            /* public static bool CancelProgFS3IfTrappedInMistAlreadyTriggered(GeoscapeEventData eventData, GeoscapeEventSystem eventSystem)
+             {
+                 try
+                 {
+                     if (eventData.EventID == "PROG_FS3" && eventSystem.GetVariable(TrappedInTheMistVariable) == 1)
+                     {
 
-                        TFTVLogger.Always($"Cancelling Science of Madness because a haven has already been infested");
-                        return false;
-                    }
+                         TFTVLogger.Always($"Cancelling Science of Madness because a haven has already been infested");
+                         return false;
+                     }
 
-                    return true;
-                }
+                     return true;
+                 }
 
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                    throw;
-                }
-            }*/
+                 catch (Exception e)
+                 {
+                     TFTVLogger.Error(e);
+                     throw;
+                 }
+             }*/
 
             //force Corruption of the Mind to spawn in a haven covered in Mist
 
@@ -459,13 +511,15 @@ namespace TFTV
                     {
                         if (encounterID == "PROG_FS3_MISS")
                         {
-                            GeoSite anuHaven = __result;
+                            GeoSite targetHaven = __result;
                             __result = null;
 
-                            if (!anuHaven.IsInMist)
+                            if (!targetHaven.IsInMist || targetHaven.ActiveMission != null)
                             {
+                                TFTVLogger.Always($"triggered Science of Madness, but initial haven is not suitable");
 
-                                List<GeoSite> list = level.EventSystem.GetValidSitesForEvent(encounterID).Where(gs => gs.IsInMist).ToList();
+                                List<GeoSite> list = level.Map.AllSites.Where(
+                                    gs => gs.Type == GeoSiteType.Haven && gs.State == GeoSiteState.Functioning && gs.IsInMist && gs.ActiveMission == null && gs.IsFreeForEncounter).ToList();
                                 if (removeCurrent)
                                 {
                                     list.Remove(contextSite);
@@ -473,15 +527,28 @@ namespace TFTV
 
                                 if (list.Count > 0)
                                 {
-                                    anuHaven = list.GetRandomElement();
+                                    targetHaven = list.GetRandomElement();
                                 }
                             }
 
-                            level.EventSystem.SetVariable(TrappedInTheMistVariable, 1);
-                            level.EventSystem.SetVariable(InfestedHavensVariable, level.EventSystem.GetVariable(InfestedHavensVariable) + 1);
-                            level.AlienFaction.InfestHaven(anuHaven);
-                            anuHaven.RevealSite(level.PhoenixFaction);
-                            anuHaven.RefreshVisuals();
+                            if (targetHaven != null)
+                            {
+                                TFTVLogger.Always($"Science of Madness, suitable haven is {targetHaven?.LocalizedSiteName}");
+
+                                level.EventSystem.SetVariable(_trappedInTheMistVariable, 1);
+                                level.EventSystem.SetVariable(InfestedHavensVariable, level.EventSystem.GetVariable(InfestedHavensVariable) + 1);
+                                level.AlienFaction.InfestHaven(targetHaven);
+                                targetHaven.RevealSite(level.PhoenixFaction);
+                                targetHaven.RefreshVisuals();
+                                level.View.ChaseTarget(targetHaven, true);
+                                AddInvestigateInfestedHavenObjective(level);
+                            }
+                            else
+                            {
+
+                                TFTVLogger.Always($"No suitable haven found for Science of Madness!!!");
+
+                            }
                         }
                     }
                     catch (Exception e)
@@ -499,7 +566,7 @@ namespace TFTV
 
         }
 
-        internal class Outcome 
+        internal class Outcome
         {
 
             [HarmonyPatch(typeof(InfestedHavenOutcomeDataBind), "ModalShowHandler")]
@@ -517,6 +584,8 @@ namespace TFTV
                         TFTVLogger.Always("InfestationMissionWon is " + InfestationMissionWon);
                         if (InfestationMissionWon)
                         {
+                            TFTVCommonMethods.RemoveManuallySetObjective(controller, _investigateInfestedHavenObjective);
+
                             if (!____shown)
                             {
                                 ____shown = true;
@@ -797,7 +866,7 @@ namespace TFTV
                 }
                 throw new InvalidOperationException();
             }
-        }       
+        }
     }
 }
 

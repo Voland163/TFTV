@@ -7,6 +7,7 @@ using PhoenixPoint.Common.Entities.Equipments;
 using PhoenixPoint.Common.UI;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.Effects.ApplicationConditions;
+using PhoenixPoint.Tactical.Entities.Statuses;
 using PhoenixPoint.Tactical.Eventus;
 using PRMBetterClasses;
 using TFTVVehicleRework.Effects;
@@ -17,6 +18,7 @@ namespace TFTVVehicleRework.Aspida
     public static class HermesX1
     {
         private static readonly DefRepository Repo = AspidaMain.Repo;
+        private static readonly ApplyStatusAbilityDef DetAdv = (ApplyStatusAbilityDef)Repo.GetDef("175744da-5e1d-d1d4-58fb-b08d226b58f6"); // "DeterminedAdvance_AbilityDef"
         public static void Change()
         {
             // "SY_Aspida_Hybrid_Engine_Technology_GroundVehicleModuleDef"
@@ -32,49 +34,56 @@ namespace TFTVVehicleRework.Aspida
 
         public static ApplyEffectAbilityDef StimSprayCloud()
         {
-            // "DeterminedAdvance_AbilityDef"
-            ApplyStatusAbilityDef DetAdv = (ApplyStatusAbilityDef)Repo.GetDef("175744da-5e1d-d1d4-58fb-b08d226b58f6");
-
-            // ApplyStatusAbilityDef StimSpray = Repo.CreateDef<ApplyStatusAbilityDef>("316b7244-69ab-46fa-a435-0861c7446bae", DetAdv);
-            ApplyEffectAbilityDef StimSpray = Repo.CreateDef<ApplyEffectAbilityDef>("316b7244-69ab-46fa-a435-0861c7446bae");
-            Helper.CopyFieldsByReflection(DetAdv, StimSpray);
-            // StimSpray.ApplyStatusToAllTargets = true;
-            // StimSpray.ShowNotificationOnUse = true;
-            StimSpray.AnimType = -1;
-            StimSpray.WillPointCost = 0f;
-            StimSpray.ActionPointCost = 0.75f;
-
-            StatusEffectDef StimSprayStatusEffect = Repo.CreateDef<StatusEffectDef>("4cd27b0c-af38-44e9-adfc-fe425efd9491");
-            StimSprayStatusEffect.ApplicationConditions = new EffectConditionDef[]
+            ApplyEffectAbilityDef StimSpray = (ApplyEffectAbilityDef)Repo.GetDef("316b7244-69ab-46fa-a435-0861c7446bae");
+            if (StimSpray == null)
             {
-                StimSprayConditions(),
-            };
-            StimSprayStatusEffect.StatusDef = DetAdv.StatusDef;
-            
-            //"E_Effect [DeterminedAdvance_AbilityDef]"
-            // StimSpray.EffectDef = (ModifyStatusStatRatioEffectDef)Repo.GetDef("58b5a010-67ea-d04c-921f-52c2d552c0f7");
-            StimSpray.EffectDef = StimSprayStatusEffect;
+                StimSpray = Repo.CreateDef<ApplyEffectAbilityDef>("316b7244-69ab-46fa-a435-0861c7446bae");
+                Helper.CopyFieldsByReflection(DetAdv, StimSpray);
+                StimSpray.name = "StimSpray_AbilityDef";
+                StimSpray.TargetingDataDef =  StimSprayTargeting();
+                StimSpray.ViewElementDef = VED(DetAdv);
+                StimSpray.SceneViewElementDef = AspidaMain.AspidaSceneView();
+                StimSpray.ActionPointCost = 0.75f;
+                StimSpray.WillPointCost = 0f;
+                StimSpray.AnimType = -1;
+                StimSpray.EventOnActivate = StimParticleEffects();
 
-            StimSpray.ApplyOnStartTurn = false;
-            StimSpray.ApplyToAllTargets = true;
-            StimSpray.ApplyOnMove = false;
-            StimSpray.CheckApplicationConditions = true;
-            StimSpray.SimulatesDamage = false;
-            StimSpray.MultipleTargetSimulation = false;
-
-            // "Acheron_CureCloud_ApplyEffectAbilityDef"
-            ApplyEffectAbilityDef CureCloud = (ApplyEffectAbilityDef)Repo.GetDef("dba1a2a5-39de-2294-6877-1f4296038057");
-            TacticalTargetingDataDef StimSprayTargeting = Repo.CreateDef<TacticalTargetingDataDef>("e41969a2-7b86-4466-b83d-fb33e5a35ef3", CureCloud.TargetingDataDef);
-            StimSprayTargeting.Origin.Range = 5f;
-            StimSprayTargeting.Origin.LineOfSight = LineOfSightType.Ignore; 
-            StimSprayTargeting.Target.Range = 6.5f;       
-
-            StimSpray.TargetingDataDef = StimSprayTargeting;
-            StimSpray.ViewElementDef = VED(DetAdv);
-            StimSpray.SceneViewElementDef = AspidaMain.AspidaSceneView();
-            StimSpray.EventOnActivate = StimParticleEffects();
-
+                StimSpray.EffectDef = StimSprayEffectDef();
+                StimSpray.ApplyOnStartTurn = false;
+                StimSpray.ApplyToAllTargets = true;
+                StimSpray.ApplyOnMove = false;
+                StimSpray.CheckApplicationConditions = true;
+                StimSpray.SimulatesDamage = false;
+                StimSpray.MultipleTargetSimulation = false;     
+            }
             return StimSpray;
+        }
+
+        private static StatusEffectDef StimSprayEffectDef()
+        {
+            StatusEffectDef StatusEffect = (StatusEffectDef)Repo.GetDef("4cd27b0c-af38-44e9-adfc-fe425efd9491");
+            if(StatusEffect == null)
+            {
+                StatusEffect = Repo.CreateDef<StatusEffectDef>("4cd27b0c-af38-44e9-adfc-fe425efd9491");
+                StatusEffect.name = "E_StatusEffect [StimSpray_AbilityDef]";
+                StatusEffect.ApplicationConditions = new EffectConditionDef[]
+                {
+                    StimSprayConditions(),
+                };
+                StatusEffect.StatusDef = OnslaughtStatus();
+            }
+            return StatusEffect;
+        }
+
+        private static TacEffectStatusDef OnslaughtStatus()
+        {
+            TacEffectStatusDef EffectStatus = (TacEffectStatusDef)Repo.GetDef("82fd2118-3d80-45a2-8bc2-ad0ac90f90ea");
+            if (EffectStatus == null)
+            {
+                EffectStatus = Repo.CreateDef<TacEffectStatusDef>("82fd2118-3d80-45a2-8bc2-ad0ac90f90ea", (TacEffectStatusDef)DetAdv.StatusDef);
+                EffectStatus.name = "E_EffectStatus [StimSpray_AbilityDef]";
+            }
+            return EffectStatus;
         }
 
         private static TacticalEventDef StimParticleEffects()
@@ -139,6 +148,20 @@ namespace TFTVVehicleRework.Aspida
                 Condition.ValueAsFractionOfMax = true;
             }
             return Condition;
+        }
+
+        private static TacticalTargetingDataDef StimSprayTargeting()
+        {
+            TacticalTargetingDataDef StimSprayTargeting = (TacticalTargetingDataDef)Repo.GetDef("e41969a2-7b86-4466-b83d-fb33e5a35ef3");
+            if (StimSprayTargeting == null)
+            {
+                ApplyEffectAbilityDef CureCloud = (ApplyEffectAbilityDef)Repo.GetDef("dba1a2a5-39de-2294-6877-1f4296038057");
+                StimSprayTargeting = Repo.CreateDef<TacticalTargetingDataDef>("e41969a2-7b86-4466-b83d-fb33e5a35ef3", CureCloud.TargetingDataDef);
+                StimSprayTargeting.Origin.Range = 5f;
+                StimSprayTargeting.Origin.LineOfSight = LineOfSightType.Ignore; 
+                StimSprayTargeting.Target.Range = 6.5f;   
+            }
+            return StimSprayTargeting;
         }
 
         private static TacticalAbilityViewElementDef VED(ApplyStatusAbilityDef Template)

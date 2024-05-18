@@ -8,6 +8,7 @@ using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.Entities.Items;
 using PhoenixPoint.Common.UI;
+using PhoenixPoint.Common.View.ViewControllers;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.Abilities;
 using PhoenixPoint.Geoscape.Events;
@@ -46,6 +47,86 @@ namespace TFTV
         public static Dictionary<int, int> CyclopsMolecularDamageBuff = new Dictionary<int, int> { }; //turn number + 0 = none, 1 = mutation, 2 = bionic
 
         public static List<string> AlertedHoplites = new List<string>();
+
+
+
+        [HarmonyPatch(typeof(AncientSiteBriefDataBind), "ModalShowHandler")]
+        public static class AncientSiteBriefDataBind_ModalShowHandler_DontCancelMission_patch
+        {
+            public static void Postfix(AncientSiteBriefDataBind __instance, UIModal ____modal)
+            {
+                try
+                {
+
+                    MissionTypeTagDef ancientSiteDefense = DefCache.GetDef<MissionTypeTagDef>("MissionTypeAncientSiteDefense_MissionTagDef");
+
+                    if (____modal.Data is GeoMission geoMission)
+                    {
+                        if (geoMission.MissionDef.MissionTags.Contains(ancientSiteDefense))
+                        {
+
+                            Sprite sprite = Helper.CreateSpriteFromImageFile("cyclopsmission.jpg");
+                            __instance.transform.GetComponentInChildren<Image>().sprite = sprite;
+                            Text description = __instance.GetComponentInChildren<ObjectivesController>().Objectives;
+                            description.GetComponent<I2.Loc.Localize>().enabled = true;
+                            description.text = TFTVCommonMethods.ConvertKeyToString("PROTECT_THE_CYCLOPS");
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+        }
+
+        [HarmonyPatch(typeof(GeoMissionOutcomeVariant), "ModalShowHandler", new Type[] { typeof(UIModal) })]
+        public static class TFTV_GeoMissionOutcomeVariant_ModalShowHandler
+        {
+            public static void Postfix(GeoMissionOutcomeVariant __instance, UIModal modal)
+            {
+                try
+                {
+                    if (modal == null || modal.Data == null)
+                    {
+                        return;
+                    }
+
+                    if (!(modal.Data is GeoMission geoMission))
+                    {
+                        return;
+                    }
+
+                    GeoSite geoSite = geoMission.Site;
+
+                    if (geoSite == null)
+                    {
+                        return;
+                    }
+
+                    TacFactionState outcome = geoMission.GetMissionOutcomeState();
+                    MissionTypeTagDef ancientSiteDefense = DefCache.GetDef<MissionTypeTagDef>("MissionTypeAncientSiteDefense_MissionTagDef");
+
+                    GeoLevelController controller = geoSite.GeoLevel;
+
+                    //TFTVLogger.Always($"GeoMissionOutcomeVariant.ModalShowHandler {modal.name}. State: {outcome}");
+
+                    if (outcome == TacFactionState.Defeated && geoSite.ActiveMission == null && (geoSite.Type == GeoSiteType.AncientHarvest || geoSite.Type == GeoSiteType.AncientRefinery) && geoMission.MissionDef.MissionTags.Contains(ancientSiteDefense))
+                    {
+                        controller.EventSystem.SetVariable(TFTVAncientsGeo.CyclopsBuiltVariable, 0);
+                        TFTVLogger.Always($"Player failed or canceled the Cyclops mission, need to clean up");
+                        geoSite.Owner = controller.PhoenixFaction;
+                        TFTVCommonMethods.RemoveManuallySetObjective(controller, "PROTECT_THE_CYCLOPS_OBJECTIVE_GEO_TITLE");
+                    }
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
 
 
         //Patch giving access to Project Glory research when Player activates 3rd base

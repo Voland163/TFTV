@@ -1,6 +1,7 @@
 ﻿using Base;
 using Base.Core;
 using Base.Defs;
+using Epic.OnlineServices;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities.GameTags;
@@ -922,7 +923,6 @@ namespace TFTV
                 {
                     if (!controller.TacMission.MissionData.MissionType.name.Contains("Tutorial"))
                     {
-
                         TFTVConfig config = TFTVMain.Main.Config;
                         DamageMultiplierStatusDef protectionStatus = DefCache.GetDef<DamageMultiplierStatusDef>("RookieProtectionStatus");
                         DamageMultiplierStatusDef vulnerabilityStatus = DefCache.GetDef<DamageMultiplierStatusDef>("RookieVulnerabilityStatus");

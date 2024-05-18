@@ -1258,35 +1258,33 @@ namespace TFTV
                 }
             }
 
-            [HarmonyPatch(typeof(DiplomaticGeoFactionObjective), "GetRelatedActors")]
-            internal static class TFTV_DiplomaticGeoFactionObjective_GetRelatedActors_ExperimentPatch
+            public static void AddUnderAttackBaseToObjective(DiplomaticGeoFactionObjective objective, ref IEnumerable<GeoActor> __result, ref List<GeoSite> ____assignedSites) 
             {
-                public static void Postfix(DiplomaticGeoFactionObjective __instance, ref IEnumerable<GeoActor> __result, ref List<GeoSite> ____assignedSites)
+
+                try
                 {
-                    try
+                    //  TFTVLogger.Always($"GetRelatedActorsInvoked objective {__instance.GetTitle()}");
+
+                    GeoLevelController geoLevelController = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
+
+                    foreach (GeoSite geoSite in geoLevelController.PhoenixFaction.Sites)
                     {
-                        //  TFTVLogger.Always($"GetRelatedActorsInvoked objective {__instance.GetTitle()}");
-
-                        GeoLevelController geoLevelController = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
-
-                        foreach (GeoSite geoSite in geoLevelController.PhoenixFaction.Sites)
+                        if (objective.GetTitle().Contains(geoSite.LocalizedSiteName))
                         {
+                            ____assignedSites.Add(geoSite);
 
-                            if (__instance.GetTitle().Contains(geoSite.LocalizedSiteName))
-                            {
-                                ____assignedSites.Add(geoSite);
-
-                                __result = ____assignedSites;
-                            }
+                            __result = ____assignedSites;
                         }
                     }
-                    catch (Exception e)
-                    {
-                        TFTVLogger.Error(e);
-                        throw;
-                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
                 }
             }
+
+        
 
             [HarmonyPatch(typeof(GeoFaction), "get_Objectives")]
             internal static class TFTV_GeoFaction_get_Objectives_ExperimentPatch
@@ -2816,7 +2814,7 @@ namespace TFTV
                                 }
 
                                 float timer = (float)superClockTimer; //(site.ExpiringTimerAt.DateTime - site.GeoLevel.Timing.Now.DateTime).Hours;
-                                TFTVLogger.Always($"timer: {timer}");
+                             //   TFTVLogger.Always($"timer: {timer}");
 
                                 if (timer > totalTimeForAttack)
                                 {
@@ -2825,7 +2823,7 @@ namespace TFTV
                                 }
 
                                 float progress = 1f - timer / totalTimeForAttack;
-                                TFTVLogger.Always($"timeToCompleteAttack is {timer}, total time for attack is {totalTimeForAttack} progress is {progress}");
+                             //   TFTVLogger.Always($"timeToCompleteAttack is {timer}, total time for attack is {totalTimeForAttack} progress is {progress}");
 
                                 var accessor = AccessTools.Field(typeof(GeoUpdatedableMissionVisualsController), "_progressRenderer");
                                 MeshRenderer progressRenderer = (MeshRenderer)accessor.GetValue(missionVisualsController);
@@ -2880,7 +2878,7 @@ namespace TFTV
                                 }
 
                                 float timer = (float)superClockTimer; //(site.ExpiringTimerAt.DateTime - site.GeoLevel.Timing.Now.DateTime).Hours;
-                                TFTVLogger.Always($"timer: {timer}");
+                             //   TFTVLogger.Always($"timer: {timer}");
 
                                 if (timer > totalTimeForAttack)
                                 {

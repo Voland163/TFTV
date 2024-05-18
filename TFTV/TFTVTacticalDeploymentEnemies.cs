@@ -355,13 +355,14 @@ namespace TFTV
         [HarmonyPatch(typeof(TacParticipantSpawn), "DoSpawnActor")]
         public static class TFTV_TacParticipantSpawn_DoSpawnActor
         {
-            public static void Postfix(TacParticipantSpawn __instance, int turnNumber, ActorDeployData deploymentData)
+            public static void Postfix(TacParticipantSpawn __instance, int turnNumber, ActorDeployData deploymentData, TacticalActorBase __result)
             {
                 try
                 {
                     if (deploymentData.InstanceDef != null && deploymentData.InstanceDef is TacCharacterDef tacCharacterDef)
                     {
                         TFTVLogger.Always($"DoSpawnActor: {deploymentData?.InstanceDef?.name}, Turn number:{turnNumber} Faction: {__instance?.TacticalFaction}");
+
                         UnDesirableActorCheck(tacCharacterDef, __instance.TacticalFaction, turnNumber, true);
                     }
                 }

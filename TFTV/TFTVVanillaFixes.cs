@@ -53,6 +53,7 @@ namespace TFTV
         private static readonly SharedData Shared = TFTVMain.Shared;
 
         //Prevents items with 0HP from manifesting themselves in tactical
+        //And causes AI to lockup.
 
         /*  [HarmonyPatch(typeof(TacticalItem), "get_IsHealthAboveMinThreshold")]
           public static class TFTV_TacticalItem_get_IsHealthAboveMinThreshold
@@ -134,9 +135,6 @@ namespace TFTV
 
         }
 
-
-
-
         private static ShortActorInfoTooltipData GenerateData(TacticalActor actor, UIModuleShortActorInfoTooltip uIModuleShortActorInfoTooltip)
         {
             try
@@ -183,7 +181,8 @@ namespace TFTV
                 };
 
                 string stealthDescription = TFTVCommonMethods.ConvertKeyToString("KEY_ROSTER_STAT_STEALTH");
-                string stealthValue = $"{actor.CharacterStats.Stealth.Value.EndValue * 100}%";
+                float stealthFloatValue = actor.CharacterStats.Stealth.Value.EndValue * 100;
+                string stealthValue = $"{(stealthFloatValue > 0 ? "+" : string.Empty)}{Mathf.Round(stealthFloatValue)}%";
 
                 ShortActorInfoTooltipDataEntry stealth = new ShortActorInfoTooltipDataEntry()
                 {
@@ -192,7 +191,8 @@ namespace TFTV
                 };
 
                 string accuracyDescription = TFTVCommonMethods.ConvertKeyToString("KEY_PROGRESSION_ACCURACY");
-                string accuracyValue = $"{actor.CharacterStats.Accuracy.Value.EndValue * 100}%";
+                float accuracyFloatValue = actor.CharacterStats.Accuracy.Value.EndValue * 100;
+                string accuracyValue = $"{(accuracyFloatValue > 0 ? "+" : string.Empty)}{Mathf.Round(accuracyFloatValue)}%";
 
                 ShortActorInfoTooltipDataEntry accuracy = new ShortActorInfoTooltipDataEntry()
                 {
@@ -229,13 +229,14 @@ namespace TFTV
 
                 return shortActorInfoTooltipData;
             }
-
             catch (Exception e)
             {
                 TFTVLogger.Error(e);
                 throw;
             }
         }
+
+
 
         /*  public static void SelectCharacter(ref TacticalActor ____currentlyDisplayedActor, TacticalActor character)
           {

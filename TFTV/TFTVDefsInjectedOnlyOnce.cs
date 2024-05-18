@@ -82,17 +82,13 @@ namespace TFTV
         {
             try
             {
-               foreach(WeaponDef weaponDef in Repo.GetAllDefs<WeaponDef>().Where(w=>w.RequiredSlotBinds.Any(b=>b.GameTagFilter==DefCache.GetDef<GameTagDef>("Heavy_ClassTagDef")))) 
-               {
-                    TFTVLogger.Always($"{weaponDef.name}", false);
-
-                    foreach(RequiredSlotBind requiredSlotBind in weaponDef.RequiredSlotBinds) 
-                    {
-                        TFTVLogger.Always($"{requiredSlotBind.RequiredSlot}, {requiredSlotBind.GameTagFilter}");
-                    
-                    }
+              foreach(TacCharacterDef tacCharacterDef in Repo.GetAllDefs<TacCharacterDef>().Where(tcd=>tcd.Data.BodypartItems.Any(b=>b.Tags.Contains(Shared.SharedGameTags.BionicalTag)))) 
+              {
+                    TFTVLogger.Always($"{tacCharacterDef.name}");
                 
-                }
+                
+              }
+
             }
             catch (Exception e)
             {
@@ -153,7 +149,7 @@ namespace TFTV
 
                 TFTVTacticalDeploymentEnemies.PopulateLimitsForUndesirables();
 
-              //  Print();
+             //   Print();
 
             }
             catch (Exception e)
@@ -7255,16 +7251,16 @@ namespace TFTV
                 spitArmsAcheronAchlysChampion.DamagePayload.DamageType = blastDamage;
                 spitArmsAcheronAchlysChampion.DamagePayload.AoeRadius = 2f;
                 spitArmsAcheronAchlysChampion.DamagePayload.DamageDeliveryType = DamageDeliveryType.Cone;
-                spitArmsAcheronAchlysChampion.HandsToUse = 1;
+                spitArmsAcheronAchlysChampion.HandsToUse = 2;
 
 
                 WeaponDef spitArmsAcheronAsclepiusChampion = DefCache.GetDef<WeaponDef>("AcheronAsclepiusChampion_Arms_WeaponDef");
 
-                spitArmsAcheronAsclepiusChampion.HandsToUse = 1;
+                spitArmsAcheronAsclepiusChampion.HandsToUse = 2;
 
                 WeaponDef achlysArms = DefCache.GetDef<WeaponDef>("AcheronAchlys_Arms_WeaponDef");
 
-                achlysArms.HandsToUse = 1;
+                achlysArms.HandsToUse = 2;
 
                 //   string guid = "2B294E66-1BE9-425B-B088-F5A9075167A6";
                 WeaponDef neuroArmsCopy = new WeaponDef();//Repo.CreateDef<WeaponDef>(guid);
@@ -7294,7 +7290,7 @@ namespace TFTV
                 acheronArms.DamagePayload.AoeRadius = 5;
                 acheronArms.DamagePayload.Range = 30;
                 acheronArms.DamagePayload.DamageDeliveryType = DamageDeliveryType.Cone;
-                acheronArms.HandsToUse = 1;
+                acheronArms.HandsToUse = 2;
                 //   acheronArms.Abilities[0] = DefCache.GetDef<ShootAbilityDef>("MistLaunch_ShootAbilityDef"); 
 
 
@@ -7315,12 +7311,17 @@ namespace TFTV
                 acheronPrimeArms.DamagePayload.AoeRadius = 5;
                 acheronPrimeArms.DamagePayload.Range = 30;
                 acheronPrimeArms.DamagePayload.DamageDeliveryType = DamageDeliveryType.Cone;
-                acheronPrimeArms.HandsToUse = 1;
+                acheronPrimeArms.HandsToUse = 2;
 
                 DefCache.GetDef<ShootAbilityDef>("Acheron_GooSpray_ShootAbilityDef").UsesPerTurn = 2;
                 DefCache.GetDef<ShootAbilityDef>("Acheron_CorruptiveSpray_AbilityDef").UsesPerTurn = 2;
                 DefCache.GetDef<ShootAbilityDef>("Acheron_ParalyticSpray_AbilityDef").UsesPerTurn = 2;
 
+                ItemSlotDef frontLeftLegSlot = (ItemSlotDef)Repo.GetDef("fdbaba54-5dd8-69f4-d85a-02cb6e17d1ea"); //Acheron_FrontLeftLeg_SlotDef
+                ItemSlotDef frontRightLegSlot = (ItemSlotDef)Repo.GetDef("2f4339a5-b4e3-c184-f841-efe653dac7b2"); //Acheron_FrontRightLeg_SlotDef
+
+                frontLeftLegSlot.ProvidesHand = false;
+                frontRightLegSlot.ProvidesHand = false;
 
             }
             catch (Exception e)

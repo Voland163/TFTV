@@ -11,6 +11,7 @@ using PhoenixPoint.Geoscape.Events;
 using PhoenixPoint.Geoscape.Events.Eventus;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
+using PhoenixPoint.Geoscape.Levels.Objectives;
 using PhoenixPoint.Geoscape.View.ViewModules;
 using PhoenixPoint.Geoscape.View.ViewStates;
 using System;
@@ -22,6 +23,27 @@ namespace TFTV
     internal class TFTVHarmonyGeoscape
     {
 
+        [HarmonyPatch(typeof(DiplomaticGeoFactionObjective), "GetRelatedActors")]
+        internal static class TFTV_DiplomaticGeoFactionObjective_GetRelatedActors_ExperimentPatch
+        {
+            public static void Postfix(DiplomaticGeoFactionObjective __instance, ref IEnumerable<GeoActor> __result, ref List<GeoSite> ____assignedSites)
+            {
+                try
+                {
+                    TFTVBaseDefenseGeoscape.GeoObjective.AddUnderAttackBaseToObjective(__instance, ref __result, ref ____assignedSites);
+                    TFTVInfestation.ImplementLocateInfestedHavenOnObjectiveClick(__instance, ref __result, ref ____assignedSites);
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
+
+
+
         [HarmonyPatch(typeof(GeoAlienFaction), "UpdateFactionHourly")]
         public static class GeoAlienFaction_UpdateFactionHourly_CapturePandorans_Patch
         {
@@ -30,7 +52,7 @@ namespace TFTV
             {
                 try
                 {
-                    TFTVLogger.Always($"running UpdateFactionHourly {__instance.GeoLevel.Timing.Now}");
+                  //  TFTVLogger.Always($"running UpdateFactionHourly {__instance.GeoLevel.Timing.Now}");
 
                     TFTVCapturePandoransGeoscape.LimitedHarvestingHourlyActions(__instance.GeoLevel);
                     TFTVBaseDefenseGeoscape.InitAttack.ContainmentBreach.HourlyCheckContainmentBreachDuringBaseDefense(__instance.GeoLevel);

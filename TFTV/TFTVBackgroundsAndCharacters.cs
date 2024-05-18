@@ -564,6 +564,7 @@ namespace TFTV
                     else if (geoEvent.EventID.Equals("PROG_FS3"))
                     {
                         __result.EventLeader = GetRightPXCharacterPic(controller, "Olena");
+                        __result.EventBackground = Helper.CreateSpriteFromImageFile("insidebase.jpg");
                     }
                     else if (geoEvent.EventID.Contains("FoodPoisoning"))
                     {

@@ -12,6 +12,7 @@ using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Events;
 using PhoenixPoint.Geoscape.Events.Eventus;
 using PhoenixPoint.Geoscape.Levels;
+using PhoenixPoint.Geoscape.Levels.Factions;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.ActorsInstance;
@@ -631,86 +632,8 @@ KEY_OSIRIS_MORE_MUTATION_BIONICS_RESEARCH
                             return;
                         }
 
-                      //  PhoenixStatisticsManager statisticsManager = (PhoenixStatisticsManager)UnityEngine.Object.FindObjectOfType(typeof(PhoenixStatisticsManager));
-                        GeoCharacter geoCharacterCloneFromDead = controller.DeadSoldiers[IdProjectOsirisCandidate].SpawnAsCharacter();
-                        TacCharacterDef deadTemplateDef = geoCharacterCloneFromDead.TemplateDef;
-
-
-                        GeoTacUnitId geoTacUnitNewCharacter = NewBodyGeoID;
-                        TFTVLogger.Always($"geoCharacterCloneFromDead.Id is {geoCharacterCloneFromDead.Id}, compared to last living soldier id: {phoenixStatisticsManager.CurrentGameStats.LivingSoldiers.Last().Key}");
-                        // statisticsManager.CurrentGameStats.LivingSoldiers.Last().Key;
-
-
-                        if (phoenixStatisticsManager.CurrentGameStats.LivingSoldiers.ContainsKey(geoTacUnitNewCharacter))
-                        {
-                          //  TFTVLogger.Always("tis true");
-                            phoenixStatisticsManager.CurrentGameStats.LivingSoldiers[geoTacUnitNewCharacter] = phoenixStatisticsManager.CurrentGameStats.DeadSoldiers[IdProjectOsirisCandidate];
-                        }
-                        else
-                        {
-                            phoenixStatisticsManager.CurrentGameStats.LivingSoldiers.Add(geoTacUnitNewCharacter, phoenixStatisticsManager.CurrentGameStats.DeadSoldiers[IdProjectOsirisCandidate]);
-                        }
-
-                        if (controller.DeadSoldiers.ContainsKey(IdProjectOsirisCandidate))
-                        {
-                            controller.DeadSoldiers.Remove(IdProjectOsirisCandidate);
-
-                            phoenixStatisticsManager.CurrentGameStats.DeadSoldiers.Remove(IdProjectOsirisCandidate);
-                        }
-
-
-                        if (TFTVRevenant.DeadSoldiersDelirium.Keys.Contains(IdProjectOsirisCandidate))
-                        {
-                            TFTVRevenant.DeadSoldiersDelirium.Remove(IdProjectOsirisCandidate);
-                        }
-
-
-
-
-                        int level = (int)(geoCharacterCloneFromDead.Progression?.LevelProgression?.Level);
-
-
-                        GeoCharacter returned = controller.PhoenixFaction.Soldiers.FirstOrDefault(s => s.Id.Equals(NewBodyGeoID));
-
-                        TFTVLogger.Always($"The returned is {returned.DisplayName}");
-
-                        returned.Identity.CopyFrom(geoCharacterCloneFromDead.Identity, PhoenixPoint.Common.Entities.Characters.CharacterIdentity.EmptyReplaceOperation.Default);
-                        returned.LevelProgression.SetLevel(level);
-                        returned.Progression.SkillPoints = 0;
-                        returned.Fatigue.Stamina.SetToMin();
-
-                        TFTVLogger.Always($"The clone is level {geoCharacterCloneFromDead.LevelProgression.Level}");
-                      //  geoCharacterCloneFromDead.LevelProgression.SetLevel(geoCharacterCloneFromDead.LevelProgression.Level);
-                        // TFTVLogger.Always("The clone has a secondary class " + geoCharacterCloneFromDead.Progression.SecondarySpecDef.name);
-
-                        if (geoCharacterCloneFromDead.Progression.SecondarySpecDef != null)
-                        {
-                            returned.Progression.AddSecondaryClass(geoCharacterCloneFromDead.Progression.SecondarySpecDef);
-                        }
-
-                        deadTemplateDef.Data = SaveTemplateData;
-                        bCSettings.SpecialCharacterPersonalSkills.Clear();
-                        IdProjectOsirisCandidate = new GeoTacUnitId();
-                        SaveTemplateData = new TacCharacterData();
-                        TFTVRevenantResearch.ProjectOsirisStats.Clear();
-                        NewBodyGeoID = new GeoTacUnitId();
-
-                        GeoscapeEventDef deliveryEvent = controller.EventSystem.GetEventByID(RoboCopDeliveryEvent);
-                        GeoscapeEventDef scoutDeliveryEvent = controller.EventSystem.GetEventByID(ScoutDeliveryEvent);
-                        GeoscapeEventDef shinobiDeliveryEvent = controller.EventSystem.GetEventByID(ShinobiDeliveryEvent);
-                        GeoscapeEventDef heavyMutantDeliveryEvent = controller.EventSystem.GetEventByID(HeavyMutantDeliveryEvent);
-                        GeoscapeEventDef watcherMutantDeliveryEvent = controller.EventSystem.GetEventByID(WatcherMutantDeliveryEvent);
-                        GeoscapeEventDef shooterMutantDeliveryEvent = controller.EventSystem.GetEventByID(ShooterMutantDeliveryEvent);
-
-                        List<GeoscapeEventDef> allDeliveryEvents = new List<GeoscapeEventDef> {deliveryEvent, scoutDeliveryEvent, shinobiDeliveryEvent,
-                    heavyMutantDeliveryEvent, watcherMutantDeliveryEvent, shooterMutantDeliveryEvent };
-
-                        foreach (GeoscapeEventDef eventDef in allDeliveryEvents)
-                        {
-                            eventDef.GeoscapeEventData.Choices[0].Outcome.CustomCharacters.Remove(deadTemplateDef);
-
-                        }
-
+                        CreateClone(controller);
+                        ProjectOsirisStatistics(controller, phoenixStatisticsManager);
                     }
                 }
                 catch (Exception e)
@@ -719,6 +642,167 @@ KEY_OSIRIS_MORE_MUTATION_BIONICS_RESEARCH
                 }
             }
         }
+
+        private static GeoCharacter _geoCharacterCloneFromDead;
+
+        private static void ProjectOsirisStatistics(GeoLevelController controller, PhoenixStatisticsManager phoenixStatisticsManager)
+        {
+            try
+            {
+
+                GeoTacUnitId geoTacUnitNewCharacter = NewBodyGeoID;
+                TFTVLogger.Always($"geoCharacterCloneFromDead.Id is {_geoCharacterCloneFromDead.Id}, " +
+                    $"compared to last living soldier id: {phoenixStatisticsManager.CurrentGameStats.LivingSoldiers.Last().Key}," +
+                    $"newBodyGeoID is {NewBodyGeoID}");
+
+                if (phoenixStatisticsManager.CurrentGameStats.LivingSoldiers.ContainsKey(geoTacUnitNewCharacter))
+                {
+                    TFTVLogger.Always($"tis true, living soldiers contains {geoTacUnitNewCharacter}. " +
+                        $"Does phoenixStatisticsManager.CurrentGameStats.DeadSoldiers[IdProjectOsirisCandidate]?" +
+                        $"{phoenixStatisticsManager.CurrentGameStats.DeadSoldiers[IdProjectOsirisCandidate] != null}");
+                    phoenixStatisticsManager.CurrentGameStats.LivingSoldiers[geoTacUnitNewCharacter] = phoenixStatisticsManager.CurrentGameStats.DeadSoldiers[IdProjectOsirisCandidate];
+                }
+                else
+                {
+                    TFTVLogger.Always($"tis false, living soldiers does not contain {geoTacUnitNewCharacter}. " +
+                        $"Does phoenixStatisticsManager.CurrentGameStats.DeadSoldiers[IdProjectOsirisCandidate]?" +
+                        $"{phoenixStatisticsManager.CurrentGameStats.DeadSoldiers[IdProjectOsirisCandidate] != null}");
+                    phoenixStatisticsManager.CurrentGameStats.LivingSoldiers.Add(geoTacUnitNewCharacter, phoenixStatisticsManager.CurrentGameStats.DeadSoldiers[IdProjectOsirisCandidate]);
+
+                }
+
+                if (controller.DeadSoldiers.ContainsKey(IdProjectOsirisCandidate))
+                {
+                    controller.DeadSoldiers.Remove(IdProjectOsirisCandidate);
+
+                    if (phoenixStatisticsManager.CurrentGameStats.DeadSoldiers.ContainsKey(IdProjectOsirisCandidate))
+                    {
+                        phoenixStatisticsManager.CurrentGameStats.DeadSoldiers.Remove(IdProjectOsirisCandidate);
+                    }
+                }
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+
+        private static void CreateClone(GeoLevelController controller)
+        {
+            try
+            {
+                _geoCharacterCloneFromDead = controller.DeadSoldiers[IdProjectOsirisCandidate].SpawnAsCharacter();
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+        [HarmonyPatch(typeof(GeoPhoenixFaction), "AddRecruitToContainerFinal")]
+        public static class GeoPhoenixFaction_AddRecruitToContainerFinalt_patch
+        {
+            public static void Postfix(GeoPhoenixFaction __instance, GeoCharacter recruit)
+            {
+                try
+                {
+                   
+
+                    if (recruit.GameTags.Contains(OCPProductTag))
+                    {
+                        TFTVLogger.Always($"{recruit.DisplayName} from Project Osiris is being recruited. Will adjust stats and cleanup");
+                        ProjectOsirisStats(__instance.GeoLevel);
+                    }
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
+
+
+        private static void ProjectOsirisStats(GeoLevelController controller)
+        {
+            try 
+            {
+                
+                int level = (int)(_geoCharacterCloneFromDead.Progression?.LevelProgression?.Level);
+
+                TFTVLogger.Always($"controller.PhoenixFaction.Soldiers.FirstOrDefault(s => s.Id.Equals(NewBodyGeoID)) null? {controller.PhoenixFaction.Soldiers.FirstOrDefault(s => s.Id.Equals(NewBodyGeoID)) == null}");
+
+                GeoCharacter returned = controller.PhoenixFaction.Soldiers.FirstOrDefault(s => s.Id.Equals(NewBodyGeoID));
+
+                TFTVLogger.Always($"The returned is {returned?.DisplayName}");
+
+                returned.Identity.CopyFrom(_geoCharacterCloneFromDead.Identity, PhoenixPoint.Common.Entities.Characters.CharacterIdentity.EmptyReplaceOperation.Default);
+                returned.LevelProgression.SetLevel(level);
+                returned.Progression.SkillPoints = 0;
+                returned.Fatigue.Stamina.SetToMin();
+
+                TFTVLogger.Always($"The clone is level {_geoCharacterCloneFromDead.LevelProgression.Level}");
+                //  geoCharacterCloneFromDead.LevelProgression.SetLevel(geoCharacterCloneFromDead.LevelProgression.Level);
+                // TFTVLogger.Always("The clone has a secondary class " + geoCharacterCloneFromDead.Progression.SecondarySpecDef.name);
+
+                if (_geoCharacterCloneFromDead.Progression.SecondarySpecDef != null)
+                {
+                    returned.Progression.AddSecondaryClass(_geoCharacterCloneFromDead.Progression.SecondarySpecDef);
+                }
+
+                ProjectOsirisCleanUp(controller);
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+       
+        private static void ProjectOsirisCleanUp(GeoLevelController controller)
+        {
+            try 
+            {
+                TacCharacterDef deadTemplateDef = _geoCharacterCloneFromDead.TemplateDef;
+                deadTemplateDef.Data = SaveTemplateData;
+                bCSettings.SpecialCharacterPersonalSkills.Clear();
+                IdProjectOsirisCandidate = new GeoTacUnitId();
+                SaveTemplateData = new TacCharacterData();
+                TFTVRevenantResearch.ProjectOsirisStats.Clear();
+                NewBodyGeoID = new GeoTacUnitId();
+
+                GeoscapeEventDef deliveryEvent = controller.EventSystem.GetEventByID(RoboCopDeliveryEvent);
+                GeoscapeEventDef scoutDeliveryEvent = controller.EventSystem.GetEventByID(ScoutDeliveryEvent);
+                GeoscapeEventDef shinobiDeliveryEvent = controller.EventSystem.GetEventByID(ShinobiDeliveryEvent);
+                GeoscapeEventDef heavyMutantDeliveryEvent = controller.EventSystem.GetEventByID(HeavyMutantDeliveryEvent);
+                GeoscapeEventDef watcherMutantDeliveryEvent = controller.EventSystem.GetEventByID(WatcherMutantDeliveryEvent);
+                GeoscapeEventDef shooterMutantDeliveryEvent = controller.EventSystem.GetEventByID(ShooterMutantDeliveryEvent);
+
+                List<GeoscapeEventDef> allDeliveryEvents = new List<GeoscapeEventDef> {deliveryEvent, scoutDeliveryEvent, shinobiDeliveryEvent,
+                    heavyMutantDeliveryEvent, watcherMutantDeliveryEvent, shooterMutantDeliveryEvent };
+
+                foreach (GeoscapeEventDef eventDef in allDeliveryEvents)
+                {
+                    eventDef.GeoscapeEventData.Choices[0].Outcome.CustomCharacters.Remove(deadTemplateDef);
+                }
+
+                if (TFTVRevenant.DeadSoldiersDelirium.Keys.Contains(IdProjectOsirisCandidate))
+                {
+                    TFTVRevenant.DeadSoldiersDelirium.Remove(IdProjectOsirisCandidate);
+                }
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+       
+
 
         public static GeoTacUnitId NewBodyGeoID = new GeoTacUnitId();
 
