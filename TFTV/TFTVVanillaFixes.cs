@@ -1132,6 +1132,10 @@ namespace TFTV
                                     textToShow = $"{greyColor} {ammoCount}</color>";
                                 }
                             }
+                            else if(____item.ItemDef is WeaponDef weaponDef) 
+                            {
+                                textToShow = ____item.CommonItemData.Count.ToString();                            
+                            }
                             else
                             {
 

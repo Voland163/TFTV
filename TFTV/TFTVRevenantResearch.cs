@@ -196,7 +196,6 @@ namespace TFTV
                 else
                 {
                     RevenantCaptured = false;
-
                 }
 
                 if (controller.EventSystem.GetVariable(RevenantsDestroyed) > 10)

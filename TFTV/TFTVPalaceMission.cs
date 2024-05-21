@@ -487,7 +487,7 @@ namespace TFTV
                 {
 
 
-                    TFTVLogger.Always($"Player has no units south of the closed gates; setting all Pandorans to not alerted and destroying turrets and spider drones!");
+                    TFTVLogger.Always($"Player has no units south of the closed gates; setting all Pandorans to not alerted and destroying turrets, spider drones and aliens under player control!");
 
                     List<TacticalActor> pandorans = controller.GetFactionByCommandName("aln").TacticalActors.Where(ta => ta.IsAlive && ta.Pos.z >= 42.5).ToList();
 
@@ -501,12 +501,16 @@ namespace TFTV
                         tacticalActor.SetFaction(controller.GetFactionByCommandName("env"), TacMissionParticipant.Environment);
                     }
                     List<TacticalActor> playerToys = controller.GetFactionByCommandName("px").TacticalActors.Where(ta => ta.IsAlive && ta.Pos.z > 42
-                    && ta.HasGameTag(Shared.SharedGameTags.DamageByCaterpillarTracks)).ToList();
+                    && ta.HasGameTag(Shared.SharedGameTags.DamageByCaterpillarTracks) || ta.HasGameTag(Shared.SharedGameTags.AlienTag)).ToList();
 
                     TFTVLogger.Always($"Player toys count: {playerToys.Count}");
 
                     foreach (TacticalActor tacticalActor in playerToys)
                     {
+                        tacticalActor.Status.UnapplyAllStatuses();
+                        tacticalActor.CharacterStats.Stealth.Set(1000);
+                        TacticalFactionVision.ForgetForAll(tacticalActor, true);
+                        tacticalActor.SetFaction(controller.GetFactionByCommandName("env"), TacMissionParticipant.Environment);
                         TFTVLogger.Always($"destroying {tacticalActor.name}");
                         tacticalActor.ApplyDamage(new DamageResult() { HealthDamage = 1000 });
                     }
@@ -2411,7 +2415,7 @@ namespace TFTV
 
         internal class Revenants
         {
-            private static readonly List<ClassTagDef> RevenantEligibleClasses = new List<ClassTagDef>() { crabTag, fishmanTag, sirenTag, chironTag, acheronTag, queenTag };
+            private static readonly List<ClassTagDef> RevenantEligibleClasses = new List<ClassTagDef>() { crabTag, fishmanTag, sirenTag, chironTag, queenTag};
 
             // private static readonly GameTagDef revenantTier1GameTag = DefCache.GetDef<GameTagDef>("RevenantTier_1_GameTagDef");
             private static readonly GameTagDef revenantTier2GameTag = DefCache.GetDef<GameTagDef>("RevenantTier_2_GameTagDef");

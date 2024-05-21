@@ -52,26 +52,24 @@ namespace TFTV
 
         private static bool _usingEchoHead = false;
 
-        
+     
+        /*  [HarmonyPatch(typeof(UnusableHandStatus), "AfterApply")]
+          public static class UnusableHandStatus_AfterApply_patch
+          {
+              public static void Postfix(UnusableHandStatus __instance)
+              {
+                  try
+                  {
+                      TFTVLogger.Always($"{__instance.TacticalActor.name}, usable hands: {__instance.TacticalActor.GetUsableHands()}");
 
-
-      /*  [HarmonyPatch(typeof(UnusableHandStatus), "AfterApply")]
-        public static class UnusableHandStatus_AfterApply_patch
-        {
-            public static void Postfix(UnusableHandStatus __instance)
-            {
-                try
-                {
-                    TFTVLogger.Always($"{__instance.TacticalActor.name}, usable hands: {__instance.TacticalActor.GetUsableHands()}");
-
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                    throw;
-                }
-            }
-        }*/
+                  }
+                  catch (Exception e)
+                  {
+                      TFTVLogger.Error(e);
+                      throw;
+                  }
+              }
+          }*/
 
 
 
@@ -1111,6 +1109,7 @@ namespace TFTV
             }
         }
 
+
         //.GetDamageModifierForDistance
 
         // AmbushOutcomeDataBind
@@ -1119,150 +1118,13 @@ namespace TFTV
 
 
 
-        /*   [HarmonyPatch(typeof(GeoscapeTutorial), "Map_SiteInspectedChanged")]
-           public static class TFTV_GeoscapeTutorial_Map_SiteInspectedChanged_patch
-           {
-
-               public static void Postfix(GeoscapeTutorial __instance, GeoSite inspectedSite, GeoFaction inspector)
-               {
-                   try
-                   {
-                      // if(inspectedSite.) { }
-
-
-                   }
-
-                   catch (Exception e)
-                   {
-                       TFTVLogger.Error(e);
-                       throw;
-                   }
-               }
-           }
-
-
-           public static void GeoTutorialStepTest(GeoLevelController controller)
-           {
-               try 
-               {
-                   UIModuleTutorialModal uIModuleTutorial = controller.View.GeoscapeModules.TutorialModule;
-
-                   controller.View.MainUILayer.SetActiveState("");
-
-                  uIModuleTutorial.
-
-
-
-               }
-               catch (Exception e)
-               {
-                   TFTVLogger.Error(e);
-                   throw;
-               }
-           }*/
 
 
 
 
 
-        //EffectDef.ConditionsMet
-        /*     [HarmonyPatch(typeof(OptionsComponent), "StartSaveOptions")]
-             public static class OptionsComponent_StartSaveOptions_patch
-         {
-
-             public static void Prefix(OptionsComponent __instance)
-             {
-                 try
-                 {
-                     TFTVLogger.Always($"looking at template {__instance.name}");
 
 
-                 }
-
-                 catch (Exception e)
-                 {
-                     TFTVLogger.Error(e);
-                     throw;
-                 }
-             }
-         }*/
-
-
-
-
-        /* [HarmonyPatch(typeof(SquadMemberPortraitController), "SetSoldierPortrait")]
-         public static class SquadMemberPortraitController_SetSoldierPortrait_patch
-         {
-
-             public static bool Prefix(SquadMemberPortraitController __instance, SquadMemberScrollerController.PortraitSprites portraitSprites)
-             {
-                 try
-                 {
-                     if (Application.platform == RuntimePlatform.OSXPlayer ||
-                  Application.platform == RuntimePlatform.OSXEditor)
-                     {
-                         //TFTVLogger.Always($"Unholy Mac detected!");
-                         Image[] background = __instance.SoldierPortraitImages.Background;
-                         for (int i = 0; i < background.Length; i++)
-                         {
-                             //  background[i].sprite = portraitSprites.Background;
-                             background[i].material = null;
-
-                         }
-
-                         __instance.UpdatePortrait(portraitSprites);
-                         background = __instance.SoldierPortraitImages.Foreground;
-                         foreach (Image image in background)
-                         {
-                             BasicTween component = image.GetComponent<BasicTween>();
-                             image.sprite = null;
-                             image.color = Color.clear;
-                             if (__instance.Actor.IsAlive)
-                             {
-                                 if (!(component == null))
-                                 {
-                                     if (Utl.LesserThan(__instance.Actor.Health.Ratio, __instance.LowHealthRatio))
-                                     {
-                                         image.sprite = __instance.LowHealthSprite;
-                                         component.StartTween();
-                                     }
-                                     else
-                                     {
-                                         component.StopTween();
-                                     }
-                                 }
-                             }
-                             else
-                             {
-                                 if (component != null)
-                                 {
-                                     component.StopTween();
-                                 }
-
-                                 image.sprite = __instance.DeathSprite;
-                                 image.color = __instance.DeathColor;
-                             }
-                         }
-
-                         background = __instance.SoldierPortraitImages.CorruptionEffect;
-                         foreach (Image obj in background)
-                         {
-                             bool active = __instance.Actor.Status.HasStatus<CorruptionStatus>();
-                             obj.gameObject.SetActive(active);
-                         }
-
-                         return false;
-
-                     }
-                     return true;
-                 }
-                 catch (Exception e)
-                 {
-                     TFTVLogger.Error(e);
-                     throw;
-                 }
-             }
-         }*/
 
 
 
@@ -2721,357 +2583,18 @@ namespace TFTV
 
 
         */
-
-
-
-
-
-
-
-
-
-        /*  [HarmonyPatch(typeof(AIFaction), "GetActionScore")]
-
-           public static class TFTV_Experimental_AIActionMoveAndEscape_GetModuleBonusByType_AdjustFARMRecuperationModule_patch
-           {
-               public static void Prefix(AIFaction __instance, AIAction action, IAIActor actor, object context, LazyCache<AIConsiderationDef, AIConsideration> ____considerationsCache)
-               {
-                   try
-                   {
-                       if (action.ActionDef.name == "Flee_AIActionDef")
-                       {
-                           StatusDef autoRepairStatusDef = DefCache.GetDef<StatusDef>("RoboticSelfRepair_AddAbilityStatusDef");
-                           TacticalLevelController tacticalLevelController = GameUtl.CurrentLevel().GetComponent<TacticalLevelController>();
-
-                           foreach (TacticalActor tacticalActor in tacticalLevelController.GetFactionByCommandName("pu").TacticalActors)
-                           {
-                               if (tacticalActor.HasStatus(autoRepairStatusDef))
-                               {
-                                   TFTVLogger.Always($"{tacticalActor.name} has autorepair status");
-                               }
-
-
-                           }
-
-
-                           float num = action.ActionDef.Weight;
-                           TFTVLogger.Always($"get action score for action {action.ActionDef.name} with a weight of {num}");
-                           AIAdjustedConsideration[] earlyExitConsiderations = action.ActionDef.EarlyExitConsiderations;
-
-                           foreach (AIAdjustedConsideration aIAdjustedConsideration in earlyExitConsiderations)
-                           {
-
-                               if (aIAdjustedConsideration.Consideration == null)
-                               {
-                                   throw new InvalidOperationException($"Missing consideration for {actor} at {action.ActionDef.name}");
-                               }
-
-                               float time = ____considerationsCache.Get(aIAdjustedConsideration.Consideration).Evaluate(actor, null, context);
-                               float num2 = aIAdjustedConsideration.ScoreCurve.Evaluate(time);
-
-                               num *= num2;
-
-                               TFTVLogger.Always($"early consideration is {aIAdjustedConsideration.Consideration.name} and num2 is {num2}, so score is now {num}");
-                               if (num < 0.0001f)
-                               {
-                                   TFTVLogger.Always($"aIAdjustedConsideration {aIAdjustedConsideration.Consideration.name} reduced score to nearly 0");
-                                   break;
-
-                               }
-                           }
-
-                       }
-
-
-
-                     /*  if (action.ActionDef.name == "MoveAndQuickAim_AIActionDef")
-                       {
-                           StatusDef autoRepairStatusDef = DefCache.GetDef<StatusDef>("RoboticSelfRepair_AddAbilityStatusDef");
-                           TacticalLevelController tacticalLevelController = GameUtl.CurrentLevel().GetComponent<TacticalLevelController>();
-
-                           ApplyStatusAbilityDef quickaim = DefCache.GetDef<ApplyStatusAbilityDef>("BC_QuickAim_AbilityDef");
-
-                           foreach (TacticalActor tacticalActor in tacticalLevelController.GetFactionByCommandName("pu").TacticalActors) 
-                           {
-                               if (tacticalActor.GetAbilityWithDef <ApplyStatusAbility> (quickaim)!=null) 
-                               {
-                                   TFTVLogger.Always($"{tacticalActor.name} has quickaim ability");
-                               }
-
-
-                           }
-
-
-                           float num = action.ActionDef.Weight;
-                           TFTVLogger.Always($"get action score for action {action.ActionDef.name} with a weight of {num}");
-                           AIAdjustedConsideration[] earlyExitConsiderations = action.ActionDef.EarlyExitConsiderations;
-
-                           foreach (AIAdjustedConsideration aIAdjustedConsideration in earlyExitConsiderations)
-                           {
-
-                               if (aIAdjustedConsideration.Consideration == null)
-                               {
-                                   throw new InvalidOperationException($"Missing consideration for {actor} at {action.ActionDef.name}");
-                               }
-
-                               float time = ____considerationsCache.Get(aIAdjustedConsideration.Consideration).Evaluate(actor, null, context);
-                               float num2 = aIAdjustedConsideration.ScoreCurve.Evaluate(time);
-
-                               num *= num2;
-
-                               TFTVLogger.Always($"early consideration is {aIAdjustedConsideration.Consideration.name} and num2 is {num2}, so score is now {num}");
-                               if (num < 0.0001f)
-                               {
-                                   TFTVLogger.Always($"aIAdjustedConsideration {aIAdjustedConsideration.Consideration.name} reduced score to nearly 0");
-                                   break;
-
-                               }
-                           }
-
-                       }
-                   }
-
-                   catch (Exception e)
-                   {
-                       TFTVLogger.Error(e);
-                   }
-
-               }
-           }*/
-
-
-
-
-
-
-
-
-
-        /* [HarmonyPatch(typeof(GeoHavenLeader), "CanTradeWithFaction")]
-
-         public static class TFTV_Experimental_GeoHavenLeader_CanTradeWithFaction_EnableTradingWhenNotAtWar_patch
-         {
-             public static void Postfix(GeoHavenLeader __instance, IDiplomaticParty faction, ref bool __result)
-             {
-                 try
-                 {
-                     MethodInfo getRelationMethod = AccessTools.Method(typeof(GeoHavenLeader), "GetRelationWith");
-                     PartyDiplomacy.Relation relation = (PartyDiplomacy.Relation)getRelationMethod.Invoke(__instance, new object[] { faction });
-
-                     __result = relation.Diplomacy > -50;
-
-                 }
-
-                 catch (Exception e)
-                 {
-                     TFTVLogger.Error(e);
-                 }
-
-             }
-         }*/
-
-
-
-
-
-
-
-
-        /*  [HarmonyPatch(typeof(GeoHaven), "GetResourceTrading")]
-          public static class TFTV_Experimental_GeoHaven_GetResourceTrading_IncreaseCostDiplomacy_patch
-          {
-              public static void Postfix(GeoHaven __instance, ref List<HavenTradingEntry> __result)
-              {
-                  try
-                  {
-                      GeoFaction phoenixFaction = __instance.Site.GeoLevel.PhoenixFaction;
-                      PartyDiplomacy.Relation relation = __instance.Leader.Diplomacy.GetRelation(phoenixFaction);
-                      float multiplier = 1f;
-                      List<HavenTradingEntry> offeredTrade = new List<HavenTradingEntry>(__result);
-
-                      if (relation.Diplomacy > -50 && relation.Diplomacy <= -25)
-                      {
-                          multiplier = 0.5f;
-                      }
-                      else if (relation.Diplomacy > -25 && relation.Diplomacy <= 0)
-                      {
-                          multiplier = 0.75f;
-                          TFTVLogger.Always("GetResourceTrading");
-                      }
-
-                      for (int i = 0; i < offeredTrade.Count; i++)
-                      {
-                         HavenTradingEntry havenTradingEntry = offeredTrade[i];
-                          offeredTrade[i] = new HavenTradingEntry
-                          {
-                              HavenOfferQuantity = (int)(havenTradingEntry.HavenOfferQuantity*multiplier),
-                              HavenOffers = havenTradingEntry.HavenOffers,
-                              HavenWants = havenTradingEntry.HavenWants,
-                              ResourceStock = havenTradingEntry.ResourceStock,
-                              HavenReceiveQuantity = havenTradingEntry.HavenReceiveQuantity,
-                          };
-                          TFTVLogger.Always("New value is " + offeredTrade[i].HavenOfferQuantity);
-                      }
-
-                      __result = offeredTrade;
-
-                  }
-
-                  catch (Exception e)
-                  {
-                      TFTVLogger.Error(e);
-                  }
-
-              }
-          }*/
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        //  public static float Score = 0;
-        //  public static List<float> ScoresBeforeCulling = new List<float>();
-        //  public static int CounterAIActionsInfluencedBySafetyConsideration = 0;
-
-
-
-
-
-
-
-
-
-        /* [HarmonyPatch(typeof(GeoMission), "PrepareLevel")]
-         public static class GeoMission_PrepareLevel_VOObjectives_Patch
-         {
-             public static void Postfix(TacMissionData missionData, GeoMission __instance)
-             {
-                 try
-                 {
-                    // TFTVLogger.Always("PrepareLevel invoked");
-                     GeoLevelController controller = __instance.Level;
-                     List<int> voidOmens = new List<int> { 3, 5, 7, 10, 15, 16, 19 };
-
-                     List<FactionObjectiveDef> listOfFactionObjectives = missionData.MissionType.CustomObjectives.ToList();
-
-                     // Remove faction objectives that correspond to void omens that are not in play
-                     for (int i = listOfFactionObjectives.Count - 1; i >= 0; i--)
-                     {
-                         FactionObjectiveDef objective = listOfFactionObjectives[i];
-                         if (objective.name.StartsWith("VOID_OMEN_TITLE_"))
-                         {
-                             int vo = int.Parse(objective.name.Substring("VOID_OMEN_TITLE_".Length));
-                             if (!TFTVVoidOmens.CheckFordVoidOmensInPlay(controller).Contains(vo))
-                             {
-                                 TFTVLogger.Always("Removing VO " + vo + " from faction objectives");
-                                 listOfFactionObjectives.RemoveAt(i);
-                             }
-                         }
-                     }
-
-                     // Add faction objectives for void omens that are in play
-                     foreach (int vo in voidOmens)
-                     {
-                         if (TFTVVoidOmens.CheckFordVoidOmensInPlay(controller).Contains(vo))
-                         {
-                             if (!listOfFactionObjectives.Any(o => o.name == "VOID_OMEN_TITLE_" + vo))
-                             {
-                                 TFTVLogger.Always("Adding VO " + vo + " to faction objectives");
-                                 listOfFactionObjectives.Add(DefCache.GetDef<FactionObjectiveDef>("VOID_OMEN_TITLE_" + vo));
-                             }
-                         }
-                     }
-
-                     missionData.MissionType.CustomObjectives = listOfFactionObjectives.ToArray();
-                 }
-                 catch (Exception e)
-                 {
-                     TFTVLogger.Error(e);
-                 }
-             }
-         }*/
-
-
-
-
-        /* [HarmonyPatch(typeof(GeoMission), "PrepareLevel")]
-         public static class GeoMission_ModifyMissionData_AddVOObjectives_Patch
-         {
-             public static void Postfix(TacMissionData missionData, GeoMission __instance)
-             {
-                 try
-                 {
-                     TFTVLogger.Always("ModifyMissionData invoked");
-                     GeoLevelController controller = __instance.Level;
-                     List<int> voidOmens = new List<int> { 3, 5, 7, 10, 15, 16, 19 };
-
-                     foreach (int vo in voidOmens)
-                     {
-                         if (TFTVVoidOmens.CheckFordVoidOmensInPlay(controller).Contains(vo))
-                         {
-                             TFTVLogger.Always("VO " + vo + " found");
-                             List<FactionObjectiveDef> listOfFactionObjectives = missionData.MissionType.CustomObjectives.ToList();
-
-                             if (!listOfFactionObjectives.Contains(DefCache.GetDef<FactionObjectiveDef>("VOID_OMEN_TITLE_" + vo)))
-                             {
-                                 listOfFactionObjectives.Add(DefCache.GetDef<FactionObjectiveDef>("VOID_OMEN_TITLE_" + vo));
-                                 missionData.MissionType.CustomObjectives = listOfFactionObjectives.ToArray();
-                             }
-                         }
-                     }
-
-                 }
-                 catch (Exception e)
-                 {
-                     TFTVLogger.Error(e);
-                 }
-             }
-         }*/
-
-
-
-
-
-
-
-
-
-
-
     }
-    /* [HarmonyPatch(typeof(AIStrategicPositionConsideration), "Evaluate")]
-
-        public static class AIStrategicPositionConsideration_Evaluate_Experiment_patch
-        {
-            public static void Postfix(AIStrategicPositionConsideration __instance, float __result)
-            {
-                try
-                {
-                    if (__instance.BaseDef.name == "StrategicPosition_AIConsiderationDef" && __result != 1)
-                    {
-
-                        TFTVLogger.Always("StrategicPosition_AIConsiderationDef " + __result);
-                        Score = __result;
-                    }
-                }
-
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-
-            }
-        }*/
-
 }
+
+
+
+
+
+
+
+
+
+
+
 
 

@@ -16,6 +16,7 @@ using PhoenixPoint.Geoscape.Events.Eventus.Filters;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
 using PhoenixPoint.Tactical.Entities;
+using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.Entities.Weapons;
 using System;
@@ -566,6 +567,18 @@ namespace TFTV
                 {
                     try
                     {
+
+                        //give immunity to Delirium to all Pure
+
+                        StatusImmunityAbilityDef deliriumImmunity = (StatusImmunityAbilityDef)Repo.GetDef("8c2bb045-0c0a-e6d4-5998-3df8b7e1309f"); //CorruptionStatusImmunity_AbilityDef
+
+                        foreach (TacCharacterDef tacCharacterDef in Repo.GetAllDefs<TacCharacterDef>().Where(tcd => tcd.Data.BodypartItems.Count()>0 && tcd.Data.BodypartItems.All(bp => bp.Tags.Contains(Shared.SharedGameTags.BionicalTag)) 
+                        && !tcd.Data.GameTags.Contains(TFTVChangesToDLC5.MercenaryTag))) 
+                        {
+                            tacCharacterDef.Data.Abilites = tacCharacterDef.Data.Abilites.AddToArray(deliriumImmunity);
+                           // TFTVLogger.Always($"{tacCharacterDef.name} getting deliriumImmunity");
+                        }
+
                         // NJ_Jugg_BIO_Helmet_BodyPartDef
 
                         TacticalItemDef[] exoSet = new TacticalItemDef[] { exoHead, exoTorso, exoLegs };
@@ -588,10 +601,7 @@ namespace TFTV
                             {
                                 templateReward.Template.Data.BodypartItems = exoSet;
                             }
-
                         }
-
-
 
                         //giving one of the first technician an exo suit 
                         TacCharacterDef technician2 = DefCache.GetDef<TacCharacterDef>("PU_Technician2_CharacterTemplateDef");
@@ -657,6 +667,8 @@ namespace TFTV
                         List<ResearchRewardDef> pierceRewards = new List<ResearchRewardDef>(piercingTech.Unlocks);
                         pierceRewards.AddRange(piercingUnitRewards);
                         piercingTech.Unlocks = pierceRewards.ToArray();                 
+
+
                     }
                     catch (Exception e)
                     {

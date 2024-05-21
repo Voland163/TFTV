@@ -2719,7 +2719,6 @@ namespace TFTV
 
                         for (int x = 0; x < requiredTdz; x++)
                         {
-
                             int xVariation = 0;
                             float yVariation = 0;
                             int zVariation = 0;
@@ -2728,7 +2727,7 @@ namespace TFTV
 
                             if (x == 0)
                             {
-
+                                
                             }
                             else if (x == 1)
                             {
@@ -2760,7 +2759,7 @@ namespace TFTV
                             tacticalDeployZones[x].SetPosition(newPosition);
 
                             boxCollider.center = Vector3.zero;
-                            boxCollider.size = Vector3.one;
+                            boxCollider.size = new Vector3(1.5f,1.5f,1.5f);
 
                             Vector3 newColliderCenter = tacticalDeployZones[x].transform.InverseTransformPoint(newPosition);
                             boxCollider.center = newColliderCenter;

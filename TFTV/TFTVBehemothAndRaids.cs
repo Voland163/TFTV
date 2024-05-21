@@ -22,6 +22,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
+using UnityEngine.UI;
 using static PhoenixPoint.Geoscape.Entities.GeoBehemothActor;
 
 namespace TFTV
@@ -368,134 +369,134 @@ namespace TFTV
             {
 
 
-                    private static readonly Sprite iconTeamA = Helper.CreateSpriteFromImageFile("TFTV_TeamA.png");
-                    private static readonly Sprite iconTeamB = Helper.CreateSpriteFromImageFile("TFTV_TeamB.png");
+                private static readonly Sprite iconTeamA = Helper.CreateSpriteFromImageFile("TFTV_TeamA.png");
+                private static readonly Sprite iconTeamB = Helper.CreateSpriteFromImageFile("TFTV_TeamB.png");
 
-                    internal static List<int> listTeamA = new List<int>();
-                    internal static List<int> listTeamB = new List<int>();
+                internal static List<int> listTeamA = new List<int>();
+                internal static List<int> listTeamB = new List<int>();
 
-                    internal static void CreateCheckButton(GeoRosterDeploymentItem geoRosterDeploymentItem)
+                internal static void CreateCheckButton(GeoRosterDeploymentItem geoRosterDeploymentItem)
+                {
+                    try
                     {
-                        try
+
+                        Resolution resolution = Screen.currentResolution;
+
+                        // TFTVLogger.Always("Resolution is " + Screen.currentResolution.width);
+                        float resolutionFactorWidth = (float)resolution.width / 1920f;
+                        //   TFTVLogger.Always("ResolutionFactorWidth is " + resolutionFactorWidth);
+                        float resolutionFactorHeight = (float)resolution.height / 1080f;
+                        //   TFTVLogger.Always("ResolutionFactorHeight is " + resolutionFactorHeight);
+
+                        // TFTVLogger.Always($"checking");
+
+                        PhoenixGeneralButton checkButton = UnityEngine.Object.Instantiate(geoRosterDeploymentItem.CheckButton, geoRosterDeploymentItem.transform);
+                        checkButton.gameObject.AddComponent<UITooltipText>().TipText = TFTVCommonMethods.ConvertKeyToString("KEY_DEPLOYMENT_ZONE_TIP");// "Toggles helmet visibility on/off.";
+
+                        if (listTeamA.Count >= 4)
                         {
-
-                            Resolution resolution = Screen.currentResolution;
-
-                            // TFTVLogger.Always("Resolution is " + Screen.currentResolution.width);
-                            float resolutionFactorWidth = (float)resolution.width / 1920f;
-                            //   TFTVLogger.Always("ResolutionFactorWidth is " + resolutionFactorWidth);
-                            float resolutionFactorHeight = (float)resolution.height / 1080f;
-                            //   TFTVLogger.Always("ResolutionFactorHeight is " + resolutionFactorHeight);
-
-                            // TFTVLogger.Always($"checking");
-
-                            PhoenixGeneralButton checkButton = UnityEngine.Object.Instantiate(geoRosterDeploymentItem.CheckButton, geoRosterDeploymentItem.transform);
-                            checkButton.gameObject.AddComponent<UITooltipText>().TipText = TFTVCommonMethods.ConvertKeyToString("KEY_DEPLOYMENT_ZONE_TIP");// "Toggles helmet visibility on/off.";
-
-                            if (listTeamA.Count >= 4)
-                            {
-                                checkButton.GetComponent<UIButtonIconController>().Icon.sprite = iconTeamB;
-                            }
-                            else
-                            {
-                                checkButton.GetComponent<UIButtonIconController>().Icon.sprite = iconTeamA;
-                            }
-
-                            //   checkButton.transform.GetChildren().First().GetChildren().Where(t => t.name.Equals("UI_Icon")).FirstOrDefault().GetComponent<Image>().sprite = Helper.CreateSpriteFromImageFile("TFTV_helmet_off_icon.png");
-                            // TFTVLogger.Always($"original icon position {newPhoenixGeneralButton.transform.position}, edit button position {__instance.EditButton.transform.position}");
-                            checkButton.transform.position += new Vector3(-100 * resolutionFactorWidth, 0);
-                            checkButton.PointerClicked += () => ToggleButtonClicked(checkButton, geoRosterDeploymentItem);
-                            AssignTeam(checkButton, geoRosterDeploymentItem);
+                            checkButton.GetComponent<UIButtonIconController>().Icon.sprite = iconTeamB;
                         }
-                        catch (Exception e)
+                        else
                         {
-                            TFTVLogger.Error(e);
+                            checkButton.GetComponent<UIButtonIconController>().Icon.sprite = iconTeamA;
+                        }
+
+                        //   checkButton.transform.GetChildren().First().GetChildren().Where(t => t.name.Equals("UI_Icon")).FirstOrDefault().GetComponent<Image>().sprite = Helper.CreateSpriteFromImageFile("TFTV_helmet_off_icon.png");
+                        // TFTVLogger.Always($"original icon position {newPhoenixGeneralButton.transform.position}, edit button position {__instance.EditButton.transform.position}");
+                        checkButton.transform.position += new Vector3(-100 * resolutionFactorWidth, 0);
+                        checkButton.PointerClicked += () => ToggleButtonClicked(checkButton, geoRosterDeploymentItem);
+                        AssignTeam(checkButton, geoRosterDeploymentItem);
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                    }
+                }
+
+                private static void AssignTeam(PhoenixGeneralButton checkButton, GeoRosterDeploymentItem geoRosterDeploymentItem)
+                {
+                    try
+                    {
+                        GeoCharacter geoCharacter = geoRosterDeploymentItem.Character;
+
+
+                        if (checkButton.GetComponent<UIButtonIconController>().Icon.sprite == iconTeamB)
+                        {
+                            if (!listTeamB.Contains(geoCharacter.Id))
+                            {
+                                listTeamB.Add(geoCharacter.Id);
+                            }
+
+                            if (listTeamA.Contains(geoCharacter.Id))
+                            {
+                                listTeamA.Remove(geoCharacter.Id);
+                            }
+                        }
+                        else if (checkButton.GetComponent<UIButtonIconController>().Icon.sprite == iconTeamA)
+                        {
+                            if (!listTeamA.Contains(geoCharacter.Id))
+                            {
+                                listTeamA.Add(geoCharacter.Id);
+                            }
+
+                            if (listTeamB.Contains(geoCharacter.Id))
+                            {
+                                listTeamB.Remove(geoCharacter.Id);
+                            }
                         }
                     }
-
-                    private static void AssignTeam(PhoenixGeneralButton checkButton, GeoRosterDeploymentItem geoRosterDeploymentItem)
+                    catch (Exception e)
                     {
-                        try
-                        {
-                            GeoCharacter geoCharacter = geoRosterDeploymentItem.Character;
-
-
-                            if (checkButton.GetComponent<UIButtonIconController>().Icon.sprite == iconTeamB)
-                            {
-                                if (!listTeamB.Contains(geoCharacter.Id))
-                                {
-                                    listTeamB.Add(geoCharacter.Id);
-                                }
-
-                                if (listTeamA.Contains(geoCharacter.Id))
-                                {
-                                    listTeamA.Remove(geoCharacter.Id);
-                                }
-                            }
-                            else if (checkButton.GetComponent<UIButtonIconController>().Icon.sprite == iconTeamA)
-                            {
-                                if (!listTeamA.Contains(geoCharacter.Id))
-                                {
-                                    listTeamA.Add(geoCharacter.Id);
-                                }
-
-                                if (listTeamB.Contains(geoCharacter.Id))
-                                {
-                                    listTeamB.Remove(geoCharacter.Id);
-                                }
-                            }
-                        }
-                        catch (Exception e)
-                        {
-                            TFTVLogger.Error(e);
-                        }
+                        TFTVLogger.Error(e);
                     }
+                }
 
-                    private static void ToggleButtonClicked(PhoenixGeneralButton checkButton, GeoRosterDeploymentItem geoRosterDeploymentItem)
+                private static void ToggleButtonClicked(PhoenixGeneralButton checkButton, GeoRosterDeploymentItem geoRosterDeploymentItem)
+                {
+                    try
                     {
-                        try
+                        //using int because forseeing more than 2 teams
+
+                        int stateTeam = 0;
+
+                        if (checkButton.GetComponent<UIButtonIconController>().Icon.sprite == iconTeamB)
                         {
-                            //using int because forseeing more than 2 teams
+                            stateTeam = 1;
+                        }
 
-                            int stateTeam = 0;
+                        // Flip the toggle state
 
-                            if (checkButton.GetComponent<UIButtonIconController>().Icon.sprite == iconTeamB)
-                            {
-                                stateTeam = 1;
-                            }
-
-                            // Flip the toggle state
-
-                            if (stateTeam == 0)
-                            {
-                                stateTeam += 1;
-
-                            }
-                            else if (stateTeam == 1)
-                            {
-                                stateTeam -= 1;
-                            }
-
-                            // Perform any actions based on the toggle state
-                            if (stateTeam == 0)
-                            {
-                                checkButton.GetComponent<UIButtonIconController>().Icon.sprite = iconTeamA;
-                            }
-                            else
-                            {
-                                checkButton.GetComponent<UIButtonIconController>().Icon.sprite = iconTeamB;
-                            }
-
-                            AssignTeam(checkButton, geoRosterDeploymentItem);
+                        if (stateTeam == 0)
+                        {
+                            stateTeam += 1;
 
                         }
-                        catch (Exception e)
+                        else if (stateTeam == 1)
                         {
-                            TFTVLogger.Error(e);
+                            stateTeam -= 1;
                         }
+
+                        // Perform any actions based on the toggle state
+                        if (stateTeam == 0)
+                        {
+                            checkButton.GetComponent<UIButtonIconController>().Icon.sprite = iconTeamA;
+                        }
+                        else
+                        {
+                            checkButton.GetComponent<UIButtonIconController>().Icon.sprite = iconTeamB;
+                        }
+
+                        AssignTeam(checkButton, geoRosterDeploymentItem);
+
                     }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                    }
+                }
 
-                    public static void ModifyForBehemothMission(UIStateRosterDeployment uIStateRosterDeployment, List<GeoRosterDeploymentItem> deploymentItems) 
+                public static void ModifyForBehemothMission(UIStateRosterDeployment uIStateRosterDeployment, List<GeoRosterDeploymentItem> deploymentItems)
                 {
                     try
                     {
@@ -528,7 +529,7 @@ namespace TFTV
                         if (geoId > 0)
                         {
 
-                          //  TFTVLogger.Always($"zone at pos {zone.Pos}");
+                            //  TFTVLogger.Always($"zone at pos {zone.Pos}");
 
                             if (zone.Pos.x > 0 && listTeamB.Contains(geoId))
                             {
@@ -537,7 +538,7 @@ namespace TFTV
                                 return false;
 
                             }
-                            if(zone.Pos.x<0 && listTeamA.Contains(geoId)) 
+                            if (zone.Pos.x < 0 && listTeamA.Contains(geoId))
                             {
                                 TFTVLogger.Always($"{geoId} is in TeamA! Can only deploy on the other side, where x>0, here x {zone.Pos.x}");
 
@@ -638,6 +639,66 @@ namespace TFTV
                      }*/
             }
 
+
+
+            [HarmonyPatch(typeof(GeoBehemothActor), "TravelTo")]
+            public static class GeoBehemothActor_TravelTo_Patch
+            {
+                public static void Postfix(GeoBehemothActor __instance, GeoSite site, ref bool __result, ref List<GeoSite> ____destinationSites)
+                {
+                    try
+                    {
+                        if (!__result) 
+                        {
+                            TFTVLogger.Always($"Behemoth fails to travel somewhere, let's see if it can be fixed");
+
+                            __instance.Navigation.Init(__instance);
+
+                            if (__instance.Travelling)
+                            {
+                                Vector3 src = ((__instance.CurrentSite == null) ? __instance.WorldPosition : __instance.CurrentSite.WorldPosition);
+                                ____destinationSites.Clear();
+                                bool foundPath;
+                                IList<SitePathNode> source = __instance.Navigation.FindPath(src, site.WorldPosition, out foundPath);
+                                if (foundPath)
+                                {
+                                    __instance.StartTravel(from pn in source
+                                                where pn.Site != null && pn.Site != __instance.CurrentSite
+                                                select pn.Site);
+                                }
+                                else
+                                {
+                                    TFTVLogger.Always("Path between sites " + __instance.CurrentSite.name + " and " + site.name + " still not found with TFTV failsafe!");
+                                }
+
+                                __result = foundPath;
+                            }
+
+                            Vector3 src2 = ((__instance.CurrentSite != null) ? __instance.CurrentSite.WorldPosition : __instance.WorldPosition);
+                            bool foundPath2;
+                            IList<SitePathNode> source2 = __instance.Navigation.FindPath(src2, site.WorldPosition, out foundPath2);
+                            if (foundPath2)
+                            {
+                                __instance.StartTravel(from pn in source2
+                                            where pn.Site != null && pn.Site != __instance.CurrentSite
+                                            select pn.Site);
+                            }
+                            else
+                            {
+                                TFTVLogger.Always("Path between sites " + __instance.CurrentSite.name + " and " + site.name + " still not found with TFTV failsafe!");
+                            }
+
+                        }
+
+
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                    }
+                }
+            }
+
             [HarmonyPatch(typeof(GeoBehemothActor), "UpdateHourly")]
             public static class GeoBehemothActor_UpdateHourly_Patch
             {
@@ -694,7 +755,7 @@ namespace TFTV
 
                         ____disruptionThreshhold = (int)CalculateDisruptionThreshholdMethod.Invoke(__instance, null);
 
-                       // TFTVLogger.Always($"Behemoth hourly update, disruption threshold set to {____disruptionThreshhold}, disruption points are {____disruptionPoints}");
+                        // TFTVLogger.Always($"Behemoth hourly update, disruption threshold set to {____disruptionThreshhold}, disruption points are {____disruptionPoints}");
                         //  }
 
                         if (!__instance.IsSubmerging && ____disruptionPoints >= ____disruptionThreshhold)
@@ -704,7 +765,7 @@ namespace TFTV
                                 MethodInfo method_GenerateTargetData = AccessTools.Method(typeof(GeoBehemothActor), "PickSubmergeLocation");
 
                                 method_GenerateTargetData.Invoke(__instance, null);
-                              //  TFTVLogger.Always($"Behemoth hourly update, disruption points at {____disruptionPoints}, while threshold set to {____disruptionThreshhold}. Behemoth should submerge");
+                                //  TFTVLogger.Always($"Behemoth hourly update, disruption points at {____disruptionPoints}, while threshold set to {____disruptionThreshhold}. Behemoth should submerge");
                                 return false;
                             }
                         }
@@ -747,11 +808,21 @@ namespace TFTV
                                 TFTVLogger.Always("OlenaOnFirstHavenTarget event triggered");
                             }
 
-                            if(__instance.CurrentSite!=null && __instance.CurrentSite.SiteId==behemothTarget) 
+                            TFTVLogger.Always($"current site: {__instance.CurrentSite?.SiteId} target site? {behemothTarget}");
+
+                            if (__instance.CurrentSite != null && __instance.CurrentSite.SiteId == behemothTarget)
                             {
                                 TFTVLogger.Always($"appears that Behemoth is stuck at target haven! Forcing damage haven outcome");
                                 MethodInfo methodDestroyHavenOutcome = typeof(GeoBehemothActor).GetMethod("DamageHavenOutcome", BindingFlags.NonPublic | BindingFlags.Instance);
                                 methodDestroyHavenOutcome.Invoke(controller.AlienFaction.Behemoth, new object[] { controller.AlienFaction.Behemoth.CurrentSite });
+                            }
+                            else if (__instance.CurrentSite != null && __instance.CurrentSite.SiteId != behemothTarget)
+                            {
+                              //  __instance.Navigation.Init(__instance);
+                                TFTVLogger.Always("Behemoth is at a haven, but the target is not the haven: has to move to the target");
+                                typeof(GeoBehemothActor).GetMethod("TargetHaven", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(__instance, new object[] { ConvertIntIDToGeosite(controller, behemothTarget) });
+                                return false;
+
                             }
                         }
 
@@ -766,14 +837,13 @@ namespace TFTV
                             behemothTarget = chosenHaven.SiteId;
                             if (__instance.CurrentSite != null && __instance.CurrentSite == chosenHaven && targetsForBehemoth.Count > 0)
                             {
-
                                 chosenHaven = GetTargetHaven(__instance.GeoLevel);
                                 targetsForBehemoth.Remove(chosenHaven.SiteId);
                                 behemothTarget = chosenHaven.SiteId;
-
                             }
                             else if (__instance.CurrentSite != null && __instance.CurrentSite == chosenHaven && targetsForBehemoth.Count == 0)
                             {
+                                // __instance.Navigation.Init(__instance);
                                 TFTVLogger.Always("Behemoth is at a haven, the target is the haven and has no other targets: has to move somewhere");
                                 typeof(GeoBehemothActor).GetMethod("TargetHaven", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(__instance, new object[] { GetSiteForBehemothToMoveTo(__instance) });
                                 return false;
@@ -874,11 +944,11 @@ namespace TFTV
 
                         //  TFTVLogger.Always("The num is " + num);
 
-                      /*  TFTVLogger.Always($"Calculating Disruption Threshold for Big B. " +
-                            $"Base value: {festeringSkiesSettings.DisruptionThreshholdBaseValue} " +
-                            $"From Difficulty: {currentDifficultyLevel.DisruptionDueToDifficulty}  " +
-                            $"Roaming: {__instance.GeoLevel.EventSystem.GetVariable(BehemothRoamings)} " +
-                            $"Total: {num}");*/
+                        /*  TFTVLogger.Always($"Calculating Disruption Threshold for Big B. " +
+                              $"Base value: {festeringSkiesSettings.DisruptionThreshholdBaseValue} " +
+                              $"From Difficulty: {currentDifficultyLevel.DisruptionDueToDifficulty}  " +
+                              $"Roaming: {__instance.GeoLevel.EventSystem.GetVariable(BehemothRoamings)} " +
+                              $"Total: {num}");*/
 
                         int[] voidOmensInEffect = TFTVVoidOmens.CheckFordVoidOmensInPlay(__instance.GeoLevel);
                         if (voidOmensInEffect.Contains(11))
@@ -1056,7 +1126,6 @@ namespace TFTV
                         {
                             targetsToBeCulled.Add(targetHaven.SiteId);
                         }
-
                     }
 
                     if (targetsToBeCulled.Count > 0)
@@ -1064,8 +1133,6 @@ namespace TFTV
                         targetsForBehemoth.RemoveRange(targetsToBeCulled);
 
                     }
-
-
                 }
                 catch (Exception e)
                 {
@@ -1169,7 +1236,7 @@ namespace TFTV
                         {
                             foreach (GeoSite target in sitesBehemothCanVisit)
                             {
-                                if (behemothScenicRoute.Count > 100) 
+                                if (behemothScenicRoute.Count > 100)
                                 {
                                     break;
                                 }
@@ -1179,7 +1246,7 @@ namespace TFTV
                                     behemothScenicRoute.Add(target.SiteId);
                                 }
                             }
-                        }    
+                        }
                     }
 
                     if (behemothScenicRoute.Count > 0)

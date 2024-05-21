@@ -82,12 +82,12 @@ namespace TFTV
         {
             try
             {
-              foreach(TacCharacterDef tacCharacterDef in Repo.GetAllDefs<TacCharacterDef>().Where(tcd=>tcd.Data.BodypartItems.Any(b=>b.Tags.Contains(Shared.SharedGameTags.BionicalTag)))) 
-              {
+                foreach (TacCharacterDef tacCharacterDef in Repo.GetAllDefs<TacCharacterDef>().Where(tcd => tcd.Data.BodypartItems.Any(b => b.Tags.Contains(Shared.SharedGameTags.BionicalTag))))
+                {
                     TFTVLogger.Always($"{tacCharacterDef.name}");
-                
-                
-              }
+
+
+                }
 
             }
             catch (Exception e)
@@ -100,7 +100,7 @@ namespace TFTV
         {
             try
             {
-              
+
                 VanillaFixes();
 
                 GeoscapeEvents();
@@ -149,7 +149,7 @@ namespace TFTV
 
                 TFTVTacticalDeploymentEnemies.PopulateLimitsForUndesirables();
 
-             //   Print();
+                //   Print();
 
             }
             catch (Exception e)
@@ -162,13 +162,13 @@ namespace TFTV
 
         private static void AdjustMistSentinelDetection()
         {
-            try 
+            try
             {
-                DefCache.GetDef<TacticalTargetingDataDef>("E_TargetingData [SentinelMist_Surveillance_AbilityDef]").Origin.Range=15;
+                DefCache.GetDef<TacticalTargetingDataDef>("E_TargetingData [SentinelMist_Surveillance_AbilityDef]").Origin.Range = 15;
 
-               // DefCache.GetDef<TriggerAbilityZoneOfControlStatusDef>("TriggerSurveillance_ZoneOfControlStatusDef").Range = 15;
+                // DefCache.GetDef<TriggerAbilityZoneOfControlStatusDef>("TriggerSurveillance_ZoneOfControlStatusDef").Range = 15;
 
-            
+
             }
             catch (Exception e)
             {
@@ -459,6 +459,8 @@ namespace TFTV
             }
         }
 
+        
+
         private static void RemoveOrganicConditionForSlowedStatus()
         {
             try
@@ -575,9 +577,9 @@ namespace TFTV
 
         private static void FixResearchRequirements()
         {
-            try 
+            try
             {
-                DefCache.GetDef<CaptureActorResearchRequirementDef>("PX_GooRepeller_ResearchDef_CaptureActorResearchRequirementDef_0").IsRetroactive=true;
+                DefCache.GetDef<CaptureActorResearchRequirementDef>("PX_GooRepeller_ResearchDef_CaptureActorResearchRequirementDef_0").IsRetroactive = true;
                 DefCache.GetDef<CaptureActorResearchRequirementDef>("PX_AlienVirusInfection_ResearchDef_CaptureActorResearchRequirementDef_0").IsRetroactive = true;
                 DefCache.GetDef<CaptureActorResearchRequirementDef>("PX_PyschicAttack_ResearchDef_CaptureActorResearchRequirementDef_0").IsRetroactive = true;
             }
@@ -593,7 +595,7 @@ namespace TFTV
         {
             try
             {
-                
+
                 GameTagDef silentWeaponTag = DefCache.GetDef<GameTagDef>("SilencedWeapon_TagDef");
                 GameTagDef silentSkillTag = DefCache.GetDef<GameTagDef>("Silent_SkillTagDef");
 
@@ -1563,7 +1565,7 @@ namespace TFTV
                 newObjective.ObjectiveData.InteractablesToActivate = -1;
                 newObjective.ObjectiveData.InteractableTagDef = interactableConsoleTag;
 
-                newObjective.IsDefeatObjective = false;
+                newObjective.IsDefeatObjective = true;//false; TESTING
                 newObjective.MissionObjectiveData.Summary.LocalizationKey = key;
                 newObjective.MissionObjectiveData.Description.LocalizationKey = key;
 
@@ -2415,7 +2417,7 @@ namespace TFTV
                 TacticalItemDef torso = DefCache.GetDef<TacticalItemDef>("NJ_Assault_Torso_BodyPartDef");
 
                 richter.Data.BodypartItems = new ItemDef[] { newHead, legs, torso };
-                richter.Data.InventoryItems = new ItemDef[] {medkit, medkit, apARAmmo, apARAmmo, apARAmmo };
+                richter.Data.InventoryItems = new ItemDef[] { medkit, medkit, apARAmmo, apARAmmo, apARAmmo };
 
                 squadPortraits.ManualPortraits.Add(new SquadPortraitsDef.ManualPortrait { HeadPart = newHead, Portrait = Helper.CreateSpriteFromImageFile("PM_Richter.jpg") });
 
@@ -3241,7 +3243,7 @@ namespace TFTV
         {
             try
             {
-               
+
 
                 GameTagDef organicMeatbagTorsoTag = TFTVCommonMethods.CreateNewTag("MeatBagTorso", "{8D13AAD6-BA65-4907-B3C8-C977B819BF48}");
 
@@ -3258,15 +3260,15 @@ namespace TFTV
                     if (!item.Tags.Contains(organicMeatbagTorsoTag) && !item.name.Contains("BIO"))
                     {
                         item.Tags.Add(organicMeatbagTorsoTag);
-                      //  TFTVLogger.Always($"adding organicMeatbagTorsoTag to {item.name}");
+                        //  TFTVLogger.Always($"adding organicMeatbagTorsoTag to {item.name}");
                     }
 
-                    if(!item.Tags.Contains(rocketMountTorsoTag) && 
+                    if (!item.Tags.Contains(rocketMountTorsoTag) &&
                         item.Tags.Contains(DefCache.GetDef<GameTagDef>("Heavy_ClassTagDef"))
-                        && !item.name.StartsWith("IN_")) 
+                        && !item.name.StartsWith("IN_"))
                     {
                         item.Tags.Add(rocketMountTorsoTag);
-                      //  TFTVLogger.Always($"adding rocketMountTorsoTag to {item.name}");
+                        //  TFTVLogger.Always($"adding rocketMountTorsoTag to {item.name}");
                     }
                 }
 
@@ -3293,8 +3295,8 @@ namespace TFTV
                 TacticalItemDef indepHeavyArmor = DefCache.GetDef<TacticalItemDef>("IN_Heavy_Torso_BodyPartDef");
                 TacticalItemDef njHeavyArmor = DefCache.GetDef<TacticalItemDef>("NJ_Heavy_Torso_BodyPartDef");
                 indepHeavyArmor.ProvidedSlots = new ProvidedSlotBind[] { indepHeavyArmor.ProvidedSlots[0], njHeavyArmor.ProvidedSlots[0] };
-          
-             
+
+
             }
 
             catch (Exception e)
@@ -3309,7 +3311,7 @@ namespace TFTV
         {
             try
             {
-               
+
 
                 ChangeModulePictures();
                 RemoveAcidAsVulnerability();
@@ -4127,11 +4129,17 @@ namespace TFTV
                 ClassTagDef assaultClassTag = DefCache.GetDef<ClassTagDef>("Assault_ClassTagDef");
                 ActorDeploymentTagDef deploymentTagDef = DefCache.GetDef<ActorDeploymentTagDef>("1x1_Grunt_DeploymentTagDef");
 
-                WeaponDef ares = DefCache.GetDef<WeaponDef>("PX_AssaultRifle_WeaponDef");
-                dcoyTacCharacter.Data.EquipmentItems = new ItemDef[] { ares };
 
                 GameTagDef decoyTag = TFTVCommonMethods.CreateNewTag("DecoyTag", "{55D78B77-AE12-452B-B3FB-BB559DDBF8AE}");
 
+                WeaponDef ares = DefCache.GetDef<WeaponDef>("PX_AssaultRifle_WeaponDef");
+                /*   string aresDummyName = "AresForDecoy";
+                   WeaponDef aresDummy = Helper.CreateDefFromClone(ares, "{EF6669E4-4BFB-4A39-98DE-F6D6FB366BE9}", aresDummyName);
+                   aresDummy.ViewElementDef = Helper.CreateDefFromClone(ares.ViewElementDef, "{B246C149-6D59-4EC8-A3E6-008A919AD2F6}", aresDummyName);
+                   aresDummy.CrateSpawnWeight = 0;                
+                   aresDummy.Tags.Add(decoyTag);
+                */
+                dcoyTacCharacter.Data.EquipmentItems = new ItemDef[] { ares };
                 TacticalActorDef dcoy = DefCache.GetDef<TacticalActorDef>("Decoy_ActorDef");
                 dcoy.EnduranceToHealthMultiplier = 20;
 
@@ -5606,7 +5614,7 @@ namespace TFTV
                 string pic = "lore_alistair.jpg";
                 GeoPhoenixpediaEntryDef alistairEntry = CreateLoreEntry(name, gUID, title, description, pic);
                 DefCache.GetDef<GeoscapeEventDef>("IntroBetterGeo_0").GeoscapeEventData.Choices[0].Outcome.GivePhoenixpediaEntries = new List<GeoPhoenixpediaEntryDef>() { alistairEntry };
-                
+
             }
             catch (Exception e)
             {

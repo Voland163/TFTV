@@ -116,7 +116,9 @@ namespace TFTV
                         receiver = __instance.Predictor.GetPredictingReceiver(receiver);
                     }
 
-                    TacticalActor hitActor = receiver?.GetActor() as TacticalActor;
+                    //TFTVLogger.Always($"receiver: {receiver?.GetDisplayName()} parent tacticalActor? {receiver?.GetParent() is TacticalActor}");
+
+                    TacticalActor hitActor = receiver?.GetActor() as TacticalActor ?? receiver?.GetParent() as TacticalActor;
                     string slotName = receiver?.GetSlotName();
 
                     if (hitActor != null && __instance.Projectile != null)

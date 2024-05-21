@@ -157,6 +157,7 @@
     <Compile Include="TFTVDelirium.cs" />
     <Compile Include="TFTVDeliriumPerks.cs" />
     <Compile Include="TFTVDiplomacyPenalties.cs" />
+    <Compile Include="TFTVExperimentalNext.cs" />
     <Compile Include="TFTVPureAndForsaken.cs" />
     <Compile Include="TFTVResearch.cs" />
     <Compile Include="TFTVScavengers.cs" />

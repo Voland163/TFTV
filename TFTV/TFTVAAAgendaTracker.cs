@@ -412,6 +412,8 @@ namespace TFTV
                 }
             }
 
+
+            //NOTE TO SELF: maybe not necessary?
             public static void RecolorTimerBaseAndAncientSiteAttacks(GeoSiteVisualsController geoSiteVisualsController, GeoSite site)
             {
 
@@ -486,7 +488,7 @@ namespace TFTV
             }
 
            
-            // Displays expected durations of Move and Explore abilities to the contect menu
+            // Displays expected durations of Move and Explore abilities to the context menu
             [HarmonyPatch(typeof(UIModuleSiteContextualMenu), "SetMenuItems")]
             public static class UIModuleSiteContextualMenu_SetMenuItems_Patch
             {
@@ -567,7 +569,7 @@ namespace TFTV
                         // Add
                         TFTVLogger.Debug($"[GeoscapeLog_PhoenixFaction_OnExcavationStarted_POSTFIX] {geoSite.Name} currently not tracked. Adding to tracker.");
 
-                        ViewElementDef borrowedViewElementDef = GameUtl.GameComponent<DefRepository>().DefRepositoryDef.AllDefs.OfType<ViewElementDef>().Where(def => def.name.Contains("ArcheologyLab_PhoenixFacilityDef")).FirstOrDefault();
+                        ViewElementDef borrowedViewElementDef = (ViewElementDef)GameUtl.GameComponent<DefRepository>().GetDef("0481b9e2-947c-fbb2-3d96-8f769e1e05cd");
                         UIFactionDataTrackerElement freeElement = (UIFactionDataTrackerElement)___GetFreeElement.Invoke(___factionTracker, null);
                         freeElement.Init(geoSite, siteInfo, borrowedViewElementDef, false);
 
@@ -631,11 +633,11 @@ namespace TFTV
                         ViewElementDef borrowedViewElementDef;
                         if (geoSite.IsArcheologySite)
                         {
-                            borrowedViewElementDef = GameUtl.GameComponent<DefRepository>().DefRepositoryDef.AllDefs.OfType<ViewElementDef>().Where(def => def.name.Contains("ArcheologyLab_PhoenixFacilityDef")).FirstOrDefault();
+                            borrowedViewElementDef = (ViewElementDef)GameUtl.GameComponent<DefRepository>().GetDef("e0148714-8520-fa24-cba8-1a92c20f93cc");//.DefRepositoryDef.AllDefs.OfType<ViewElementDef>().Where(def => def.name.Contains("ArcheologyLab_PhoenixFacilityDef")).FirstOrDefault();
                         }
                         else
                         {
-                            borrowedViewElementDef = GameUtl.GameComponent<DefRepository>().DefRepositoryDef.AllDefs.OfType<ViewElementDef>().Where(def => def.name.Contains("Crabman_ActorViewDef")).FirstOrDefault();
+                            borrowedViewElementDef = (ViewElementDef)GameUtl.GameComponent<DefRepository>().GetDef("8188f3a3-befd-e463-f345-4af1815cd848");// DefRepositoryDef.AllDefs.OfType<ViewElementDef>().Where(def => def.name.Contains("Crabman_ActorViewDef")).FirstOrDefault();
                         }
 
 
@@ -1206,7 +1208,7 @@ namespace TFTV
                             {
                                 UIFactionDataTrackerElement freeElement = (UIFactionDataTrackerElement)___GetFreeElement.Invoke(__instance, null);
 
-                                string facilityName = I2.Loc.LocalizationManager.GetTranslation(facility.Def.ViewElementDef.DisplayName1.LocalizationKey);
+                                string facilityName = facility.Def.ViewElementDef.DisplayName1.Localize();
                                 string facilityInfo = $"{actionRepairing} {facilityName}";
                                 freeElement.Init(facility, facilityInfo, facility.Def.ViewElementDef, false);
 
@@ -1224,7 +1226,7 @@ namespace TFTV
                                 string excavationInfo = $"{actionExcavating} {siteName}";
 
                                 // Without a viewdef there are... problems. Therefore we borrow one with the correct icon
-                                ViewElementDef borrowedViewElementDef = GameUtl.GameComponent<DefRepository>().DefRepositoryDef.AllDefs.OfType<ViewElementDef>().Where(def => def.name.Contains("ArcheologyLab_PhoenixFacilityDef")).FirstOrDefault();
+                                ViewElementDef borrowedViewElementDef = (ViewElementDef)GameUtl.GameComponent<DefRepository>().GetDef("0481b9e2-947c-fbb2-3d96-8f769e1e05cd");
                                 freeElement.Init(excavatingSite.Site, excavationInfo, borrowedViewElementDef, false);
 
                                 ___OnAddedElement.Invoke(__instance, new object[] { freeElement });
@@ -1270,7 +1272,7 @@ namespace TFTV
                                                 //string attackInfo = string.Format(actionAttack, siteName, geoFaction.Name.Localize(null));
 
                                                 // Without a viewdef there are... problems. Therefore we borrow one with the correct icon
-                                                ViewElementDef borrowedViewElementDef = GameUtl.GameComponent<DefRepository>().DefRepositoryDef.AllDefs.OfType<ViewElementDef>().Where(def => def.name.Contains("Crabman_ActorViewDef")).FirstOrDefault();
+                                                ViewElementDef borrowedViewElementDef = (ViewElementDef)GameUtl.GameComponent<DefRepository>().GetDef("8188f3a3-befd-e463-f345-4af1815cd848"); // DefRepositoryDef.AllDefs.OfType<ViewElementDef>().Where(def => def.name.Contains("Crabman_ActorViewDef")).FirstOrDefault();
                                                 freeElement.Init(phoenixBase, attackInfo, borrowedViewElementDef, false);
 
                                                 ___OnAddedElement.Invoke(__instance, new object[] { freeElement });
@@ -1294,7 +1296,7 @@ namespace TFTV
                                         //string attackInfo = string.Format(actionAttack, siteName, geoFaction.Name.Localize(null));
 
                                         // Without a viewdef there are... problems. Therefore we borrow one with the correct icon
-                                        ViewElementDef borrowedViewElementDef = GameUtl.GameComponent<DefRepository>().DefRepositoryDef.AllDefs.OfType<ViewElementDef>().Where(def => def.name.Contains("ArcheologyLab_PhoenixFacilityDef")).FirstOrDefault();
+                                        ViewElementDef borrowedViewElementDef = (ViewElementDef)GameUtl.GameComponent<DefRepository>().GetDef("0481b9e2-947c-fbb2-3d96-8f769e1e05cd");//.DefRepositoryDef.AllDefs.OfType<ViewElementDef>().Where(def => def.name.Contains("ArcheologyLab_PhoenixFacilityDef")).FirstOrDefault();
                                         freeElement.Init(ancientSiteAttackSchedule.Site, attackInfo, borrowedViewElementDef, false);
 
                                         ___OnAddedElement.Invoke(__instance, new object[] { freeElement });

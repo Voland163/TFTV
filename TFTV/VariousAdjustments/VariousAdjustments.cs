@@ -630,7 +630,16 @@ namespace PRMBetterClasses.VariousAdjustments
 
             WeaponDef vGL = DefCache.GetDef<WeaponDef>("FS_AssaultGrenadeLauncher_WeaponDef");
 
-           
+            // Remove Assault Rifle tag to prevent the usage of Aimed Burst
+            // Proficiency for Assault clases is given by the Assault Class tag
+            // The random AR proficiency will not longer grant Vidar proficiency
+            // The Vidar has the Grenade Launcher tag to use with Boom Blast (see HeavySkills/Change_BoomBlast())
+            GameTagDef ARTag = DefCache.GetDef<GameTagDef>("AssaultRifleItem_TagDef");
+            if (vGL.Tags.Contains(ARTag))
+            {
+                _ = vGL.Tags.Remove(ARTag);
+            }
+
             //vGL.DamagePayload.DamageKeywords = new List<DamageKeywordPair>
             //{
             //    new DamageKeywordPair{DamageKeywordDef = shared.SharedDamageKeywords.BlastKeyword, Value = vGLNormal },

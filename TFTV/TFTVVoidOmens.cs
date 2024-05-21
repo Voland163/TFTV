@@ -1512,7 +1512,7 @@ namespace TFTV
             {
                 try
                 {
-                    TFTVLogger.Always($"{alienBase.AlienBaseTypeDef.Name} destroyed");
+                    TFTVLogger.Always($"{alienBase.AlienBaseTypeDef.Name.Localize()} destroyed");
 
                     _destroyedAlienBase = alienBase.AlienBaseTypeDef.Name;
 

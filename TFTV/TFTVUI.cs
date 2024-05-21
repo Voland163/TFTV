@@ -811,6 +811,8 @@ namespace TFTV
                         }
                     }
 
+                    private static Predicate<TacticalItemDef> savedFilter;
+
                     private static void LoadLoadoutButtonClicked()
                     {
                         try
@@ -827,9 +829,11 @@ namespace TFTV
                             UnequipButtonClicked();
                             UIInventoryList storage = uIModuleSoldierEquip.StorageList;
 
-                            Predicate<TacticalItemDef> filter = null;
+                          //  storage.SetFilter
 
-                            storage.SetFilter(filter);
+                          //  Predicate<TacticalItemDef> filter = null;
+
+                           // storage.SetFilter(filter);
 
                             foreach (string armorPiece in CharacterLoadouts[character.Id][armourItems])
                             {

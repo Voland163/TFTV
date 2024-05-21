@@ -1,5 +1,6 @@
 ﻿using Base;
 using Base.Core;
+using Base.Defs;
 using Base.UI;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
@@ -31,6 +32,7 @@ namespace TFTV
         //private static readonly DefRepository Repo = TFTVMain.Repo;
         private static readonly BCSettings bCSettings = TFTVMain.Main.Settings;
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
+        private static readonly DefRepository Repo = TFTVMain.Repo;
 
         public static readonly string RobocopEvent = "RoboCopDeliveryEvent";
         public static readonly string ProjectOsirisEvent = "ProjectOsirisEvent";
@@ -350,20 +352,24 @@ KEY_OSIRIS_MORE_MUTATION_BIONICS_RESEARCH
                 TacticalAbilityDef[] tacticalAbilities = abilityDefs.ToArray();
                 deadTemplateDef.Data.Abilites = tacticalAbilities;
 
+                StatusImmunityAbilityDef deliriumImmunity = (StatusImmunityAbilityDef)Repo.GetDef("8c2bb045-0c0a-e6d4-5998-3df8b7e1309f");
 
                 //  deadTemplateDef.Data.LevelProgression.SetLevel(level);
 
                 if (geoscapeEventDef == controller.EventSystem.GetEventByID(ScoutDeliveryEvent))
                 {
                     deadTemplateDef.Data.BodypartItems = new ItemDef[] { exoHead, exoTorso, exoLegs };
+                    deadTemplateDef.Data.Abilites = deadTemplateDef.Data.Abilites.AddToArray(deliriumImmunity);
                 }
                 else if (geoscapeEventDef == controller.EventSystem.GetEventByID(ShinobiDeliveryEvent))
                 {
                     deadTemplateDef.Data.BodypartItems = new ItemDef[] { shinobiHead, shinobiTorso, shinobiLegs };
+                    deadTemplateDef.Data.Abilites = deadTemplateDef.Data.Abilites.AddToArray(deliriumImmunity);
                 }
                 else if (geoscapeEventDef == controller.EventSystem.GetEventByID(RoboCopDeliveryEvent))
                 {
                     deadTemplateDef.Data.BodypartItems = new ItemDef[] { juggHead, juggTorso, juggLegs };
+                    deadTemplateDef.Data.Abilites = deadTemplateDef.Data.Abilites.AddToArray(deliriumImmunity);
                 }
                 else if (geoscapeEventDef == controller.EventSystem.GetEventByID(HeavyMutantDeliveryEvent))
                 {

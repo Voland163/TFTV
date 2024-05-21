@@ -7,6 +7,7 @@ using Microsoft.CSharp;
 using Newtonsoft.Json;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Game;
+using PhoenixPoint.Common.View.ViewModules;
 using PhoenixPoint.Home.View;
 using PhoenixPoint.Home.View.ViewModules;
 using PhoenixPoint.Modding;
@@ -88,7 +89,7 @@ namespace TFTV
                 /// PhoenixGame is accessible at any time.
                 PhoenixGame game = GetGame();
 
-                string version = $"TFTV 1.0, patch 4 20240521 release #1 v{MetaData.Version}";
+                string version = $"TFTV 1.0, patch 5 20240528 release #1 v{MetaData.Version}";
 
                 TFTVversion = version;
 
@@ -153,7 +154,18 @@ namespace TFTV
                     HomeScreenView homeScreenView = GameUtl.CurrentLevel().GetComponent<HomeScreenView>();
 
                     homeScreenView.EditionVisualsController.SwitchToVanillaVisuals();
+                    UIModuleGameplayOptionsPanel uIModuleGameplayOptionsPanel = homeScreenView.CommonModules.PauseScreenModule.OptionsSubmenuModule.GameplayOptionsPanel;
+                    OptionsManager optionsManager = uIModuleGameplayOptionsPanel.OptionsManager;
 
+                    if (!optionsManager.CurrentGameplayOptions.EnableContextHelpHints)
+                    {
+                        TFTVLogger.Always($"Context hints were off! Setting context hints on!");
+                        FieldInfo enableContextHelpHints = typeof(UIModuleGameplayOptionsPanel).GetField("_currentOptions", BindingFlags.NonPublic | BindingFlags.Instance);
+                        optionsManager.OptionsComponent.Options.Set(optionsManager.OptionsManagerDef.EnableContextHelpHintsKey, true);
+                        OptionsManager.GameplayOptions gameplayOptions = (OptionsManager.GameplayOptions)enableContextHelpHints.GetValue(uIModuleGameplayOptionsPanel);
+                        gameplayOptions.EnableContextHelpHints = true;
+                        enableContextHelpHints.SetValue(uIModuleGameplayOptionsPanel, gameplayOptions);
+                    }
                     TFTVNewGameMenu.TitleScreen.SetTFTVLogo(homeScreenView);
                 }
 
@@ -362,7 +374,7 @@ namespace TFTV
                 Logger.LogInfo($"{MethodBase.GetCurrentMethod().Name} called for level '{level}'; harmony re-patching everything in case config changed");
 
                 Harmony harmony = (Harmony)HarmonyInstance;
-                harmony.UnpatchAll();
+                harmony.UnpatchAll(harmony.Id);
                 harmony.PatchAll();
                 TFTVVanillaFixes.FixSurveillanceAbilityGroundMarker(harmony);
             }

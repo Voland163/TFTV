@@ -1642,7 +1642,7 @@ namespace TFTV
                         GeoCharacter geoCharacter = geoRosterDeploymentItem.Character;
 
 
-                        if (checkButton.GetComponent<UIButtonIconController>().Icon.sprite == iconHangar)
+                        if (checkButton.GetComponent<UIButtonIconController>().Icon.sprite == iconHangar && geoRosterDeploymentItem.EnrollForDeployment)
                         {
                             if (!listHangar.Contains(geoCharacter.Id))
                             {
@@ -1659,7 +1659,7 @@ namespace TFTV
                                 listLift.Remove(geoCharacter.Id);
                             }
                         }
-                        else if (checkButton.GetComponent<UIButtonIconController>().Icon.sprite == iconEntrance)
+                        else if (checkButton.GetComponent<UIButtonIconController>().Icon.sprite == iconEntrance && geoRosterDeploymentItem.EnrollForDeployment)
                         {
                             if (!listEntrance.Contains(geoCharacter.Id))
                             {
@@ -1676,7 +1676,7 @@ namespace TFTV
                                 listLift.Remove(geoCharacter.Id);
                             }
                         }
-                        else if (checkButton.GetComponent<UIButtonIconController>().Icon.sprite == iconLift)
+                        else if (checkButton.GetComponent<UIButtonIconController>().Icon.sprite == iconLift && geoRosterDeploymentItem.EnrollForDeployment)
                         {
                             if (!listLift.Contains(geoCharacter.Id))
                             {
