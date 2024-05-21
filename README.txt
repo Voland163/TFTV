@@ -14,7 +14,7 @@ Step 1: Get mod enabler https://github.com/SnapshotGames/PPModEnabler (Direct do
 
 Extract this PPModEnabler.zip file into the root folder of your Phoenix Point Installation. 
 
-Step 2: Get TFTV https://github.com/Voland163/TFTV/releases Get the latest release and extract TFTV.zip into the Mods folder in your Phoenix Point installation. 
+Step 2: Get TFTV https://github.com/Voland163/TFTV/releases Get the latest release and extract TFTV.zip into a folder named "TFTV" in the Mods folder in your Phoenix Point installation. 
 
 Step 3: Launch the game Launch Phoenix Point. There will be Mods option in the main menu. From there you can activate and customise TFTV. Then launch campaign in a usual way (New game from in-game main menu). 
 
