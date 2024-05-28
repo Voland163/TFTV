@@ -17,6 +17,7 @@ using PhoenixPoint.Tactical.View.ViewControllers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 using static PhoenixPoint.Tactical.View.ViewControllers.SquadMemberScrollerController;
 
 namespace TFTV
@@ -26,6 +27,27 @@ namespace TFTV
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
         //   private static readonly DefRepository Repo = TFTVMain.Repo;
         //   private static readonly SharedData Shared = TFTVMain.Shared;
+
+
+
+        [HarmonyPatch(typeof(TacticalAbility), "GetTargetActors", new Type[] { typeof(TacticalTargetData), typeof(TacticalActorBase), typeof(Vector3) })]
+        public static class TacticalAbility_GetTargetActors_Patch
+        {
+            public static void Postfix(TacticalAbility __instance, ref IEnumerable<TacticalAbilityTarget> __result, TacticalActorBase sourceActor,
+                TacticalTargetData targetData, Vector3 sourcePosition)
+            {
+                try
+                {
+                    TFTVTouchedByTheVoid.Umbra.UmbraTactical.ImplementUmbraTargeting(ref __result, sourceActor);
+                    TFTVVanillaFixes.FixMeleeTooHighAttack(__instance, ref __result, sourceActor, targetData, sourcePosition);
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+        }
+
 
         [HarmonyPatch(typeof(TacticalFaction), "RequestEndTurn")]
         public static class TFTV_TacticalFactionn_RequestEndTurn_patch
@@ -163,6 +185,7 @@ namespace TFTV
                     TFTVBaseDefenseTactical.PlayerTurn.PhoenixBaseDefenseVSAliensTurnStart(__instance.Faction.TacticalLevel, __instance.Faction);
                     TFTVTouchedByTheVoid.Umbra.UmbraTactical.CheckVO15(__instance.Faction.TacticalLevel, __instance.Faction);
                     TFTVHumanEnemies.ImplementStartingVolleyHumanEnemiesTactic(__instance.Faction);
+                    TFTVRevenant.Resistance.ApplySpecialRevenantResistanceArmorStack(__instance.Faction.TacticalLevel, __instance.Faction);
                 }
                 catch (Exception e)
                 {
@@ -277,31 +300,7 @@ namespace TFTV
             public static void Prefix(TacticalActor __instance, DeathReport death, out int __state)
             {
                 __state = 0; //Set this to zero so that the method still works for other actors.
-                /*
-                 * 
-                 * public void KillJumpingFacehugger(DeathReport deathReport)
-{
-    if (deathReport.Actor.HasGameTag(FacehuggerClassTagDef) && deathReport.Actor.ExecutingAbilities.OfType<MindControlAbility>().Any() && !(deathReport.Killer == null) && deathReport.Killer.ExecutingAbilities.Count != 0 
-                && deathReport.Killer.ExecutingAbilities[0].LastAbilityTarget.AttackType == AttackType.Overwatch && deathReport.Killer.TacticalFaction == GetPlayerFaction())
-    {
-        BooleanAchievement achievement = _tracker.GetAchievement<BooleanAchievement>("KillFacehuggerOW");
-        if (ShouldUpdateAchievement(achievement))
-        {
-            achievement.Progress = true;
-            _tracker.StoreAchievementProgress(achievement);
-        }
-    }
-}
-                 * 
-                 * [TFTV @ 5/12/2024 10:49:42 PM] Facehugger_5, False False
-[TFTV @ 5/12/2024 10:49:42 PM] True False False
-                 * 
-                 */
-
-                // PhoenixPoint.Tactical.Achievements.TacAchievementTracker.KillJumpingFacehugger
-              /*  TFTVLogger.Always($"{death.Actor.name}, {death.Actor.ExecutingAbilities.OfType<MindControlAbility>().Any()} {death.Killer == null}");
-                TFTVLogger.Always($"{death.Killer.ExecutingAbilities.Count != 0} {death.Killer.ExecutingAbilities[0].LastAbilityTarget.AttackType == AttackType.Overwatch} {death.Killer.TacticalFaction == death.Actor.TacticalLevel.View.ViewerFaction}");
-                TFTVLogger.Always($"{death.Killer.name}");*/
+              
                
 
                 //Postfix checks for relevant GameTags then saves and zeroes the WPWorth of the dying actor before main method is executed.
@@ -399,7 +398,7 @@ namespace TFTV
                     TFTVPalaceMission.Gates.CheckIfPlayerCloseToGate(__instance);
                     TFTVChangesToDLC5.TFTVMercenaries.Tactical.SlugHealTraumaEffect(ability, __instance);
                     TFTVArtOfCrab.GetBestWeaponForOWRF(__instance);
-                    TFTVExperimental.CheckSquashing(ability, __instance);
+                    TFTVVehicleFixes.CheckSquashing(ability, __instance);
                 }
 
                 catch (Exception e)
@@ -440,7 +439,7 @@ namespace TFTV
                 try
                 {
                     TFTVAncients.HoplitesAbilities.ApplyDamageResistanceToHopliteInHiding(ref data);
-                    TFTVRevenant.Resistance.ApplyRevenantSpecialResistance(ref data);
+                   // TFTVRevenant.Resistance.ApplyRevenantSpecialResistance(ref data);
                 }
                 catch (Exception e)
                 {

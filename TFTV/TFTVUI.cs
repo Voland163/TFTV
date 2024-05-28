@@ -811,8 +811,6 @@ namespace TFTV
                         }
                     }
 
-                    private static Predicate<TacticalItemDef> savedFilter;
-
                     private static void LoadLoadoutButtonClicked()
                     {
                         try

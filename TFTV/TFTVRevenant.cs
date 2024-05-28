@@ -5,7 +5,6 @@ using Base.Entities.Effects.ApplicationConditions;
 using Base.Entities.Statuses;
 using Base.ParticleSystems;
 using Base.UI;
-using Epic.OnlineServices;
 using HarmonyLib;
 using PhoenixPoint.Common.ContextHelp;
 using PhoenixPoint.Common.Core;
@@ -86,7 +85,7 @@ namespace TFTV
 
         private static readonly DamageOverTimeDamageTypeEffectDef virusDamage = DefCache.GetDef<DamageOverTimeDamageTypeEffectDef>("Virus_DamageOverTimeDamageTypeEffectDef");
         private static readonly DamageOverTimeDamageTypeEffectDef acidDamage = DefCache.GetDef<DamageOverTimeDamageTypeEffectDef>("Acid_DamageOverTimeDamageTypeEffectDef");
-       // private static readonly AttenuatingDamageTypeEffectDef paralysisDamageWeaponDescription = DefCache.GetDef<AttenuatingDamageTypeEffectDef>("Electroshock_AttenuatingDamageTypeEffectDef");
+        // private static readonly AttenuatingDamageTypeEffectDef paralysisDamageWeaponDescription = DefCache.GetDef<AttenuatingDamageTypeEffectDef>("Electroshock_AttenuatingDamageTypeEffectDef");
         private static readonly DamageOverTimeDamageTypeEffectDef paralysisDamage = DefCache.GetDef<DamageOverTimeDamageTypeEffectDef>("Paralysis_DamageOverTimeDamageTypeEffectDef");
         // private static readonly DamageOverTimeDamageTypeEffectDef poisonDamage =DefCache.GetDef<DamageOverTimeDamageTypeEffectDef>("Poison_DamageOverTimeDamageTypeEffectDef"));
         private static readonly StandardDamageTypeEffectDef fireDamage = DefCache.GetDef<StandardDamageTypeEffectDef>("Fire_StandardDamageTypeEffectDef");
@@ -94,10 +93,12 @@ namespace TFTV
         private static readonly StandardDamageTypeEffectDef shredDamage = DefCache.GetDef<StandardDamageTypeEffectDef>("Shred_StandardDamageTypeEffectDef");
         private static readonly StandardDamageTypeEffectDef blastDamage = DefCache.GetDef<StandardDamageTypeEffectDef>("Blast_StandardDamageTypeEffectDef");
         // private static readonly StandardDamageTypeEffectDef bashDamage =DefCache.GetDef<StandardDamageTypeEffectDef>("Bash_StandardDamageTypeEffectDef"));
+        // private static AddArmorStackEffectDef _addArmorStackEffectDef;
+        private static ArmorStackStatusDef _armorStackStatusDef;
 
         //private static readonly DamageKeywordDef paralisingDamageKeywordDef =DefCache.GetDef<DamageKeywordDef>("Paralysing_DamageKeywordDataDef"));
 
-        internal class RevenantDefs 
+        internal class RevenantDefs
         {
             private static Sprite VoidIcon = Helper.CreateSpriteFromImageFile("Void-04P.png");
 
@@ -116,6 +117,7 @@ namespace TFTV
                     CreateRevenantAbilityForSniper();
                     CreateRevenantAbilityForTechnician();
                     CreateRevenantResistanceStatus();
+                    CreateSpecialResistanceArmorStack();
                     //  CreateRevenantClassStatusEffects();
 
                 }
@@ -126,7 +128,39 @@ namespace TFTV
             }
 
 
+            private static void CreateSpecialResistanceArmorStack()
+            {
+                try
+                {
+                    /*  string nameEffectDef = "RevenantAddArmorStack_EffectDef";
+                      _addArmorStackEffectDef 
+                          = Helper.CreateDefFromClone(
+                              DefCache.GetDef<AddArmorStackEffectDef>("AddArmorStack_EffectDef"), 
+                          "{07787E76-D564-4B82-A328-1297CFCC4C9E}", 
+                          nameEffectDef);
 
+                      _addArmorStackEffectDef.ApplicationConditions = new EffectConditionDef[] { };
+                      _addArmorStackEffectDef.ArmorStackPointsToAdd = 1;*/
+
+                    string nameStatusDef = "Revenant_ArmorStackStatusDef";
+                    ArmorStackStatusDef source = DefCache.GetDef<ArmorStackStatusDef>("ArmorStack_StatusDef");
+
+                    _armorStackStatusDef = Helper.CreateDefFromClone(source, "{37F2B658-CDAB-4C46-A454-6FC34D3E621A}", nameStatusDef);
+                    _armorStackStatusDef.Visuals = Helper.CreateDefFromClone(source.Visuals, "{EE2703E5-50F3-4BB4-ABEA-698918746C95}", nameStatusDef);
+                    _armorStackStatusDef.Visuals.DisplayName1.LocalizationKey = "KEY_TFTV_REVENANT_ARMOR_STACK_NAME";
+                    _armorStackStatusDef.Visuals.Description.LocalizationKey = "KEY_TFTV_REVENANT_ARMOR_STACK_DESCRIPTION";
+                    _armorStackStatusDef.EffectName = "RevenantSpecialResistanceArmorStack";
+                    _armorStackStatusDef.SingleInstance = true;
+                    _armorStackStatusDef.StackMultipleStatusesAsSingleIcon = true;
+
+                    _armorStackStatusDef.ArmorStackDamageMultiplier = 0.5f;
+                    _armorStackStatusDef.ArmorStackCap = 1;
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
 
             public static void CreateRevenantStatusEffect()
             {
@@ -175,7 +209,7 @@ namespace TFTV
                     revenantAbility.ViewElementDef.LargeIcon = Helper.CreateSpriteFromImageFile("ODI_Skull.png");
                     revenantAbility.ViewElementDef.SmallIcon = Helper.CreateSpriteFromImageFile("ODI_Skull.png");
                     _revenantAbility = revenantAbility;
-                    
+
                     // revenantAbility.ViewElementDef.ShowInStatusScreen = false;
 
                 }
@@ -477,7 +511,7 @@ namespace TFTV
                     revenantResistance.Visuals.LargeIcon = Helper.CreateSpriteFromImageFile("TFTV_RevenantResistance.png");
                     revenantResistance.Visuals.SmallIcon = Helper.CreateSpriteFromImageFile("TFTV_RevenantResistance.png");
                     _revenantResistanceStatus = revenantResistance;
-                   
+
                 }
                 catch (Exception e)
                 {
@@ -488,10 +522,10 @@ namespace TFTV
             {
                 string skillName = "RevenantTier";
                 GameTagDef source = DefCache.GetDef<GameTagDef>("Takeshi_Tutorial3_GameTagDef");
-               RevenantTier1GameTag =  Helper.CreateDefFromClone(
-                    source,
-                    "1677F9F4-5B45-47FA-A119-83A76EF0EC70",
-                    skillName + "_1_" + "GameTagDef");
+                RevenantTier1GameTag = Helper.CreateDefFromClone(
+                     source,
+                     "1677F9F4-5B45-47FA-A119-83A76EF0EC70",
+                     skillName + "_1_" + "GameTagDef");
                 RevenantTier2GameTag = Helper.CreateDefFromClone(
                     source,
                     "9A807A62-D51D-404E-ADCF-ABB4A888202E",
@@ -505,10 +539,10 @@ namespace TFTV
                        "D2904A22-FE23-45B3-8879-9236E389C9E4",
                        "Any_Revenant_TagDef");
                 string tagName = "RevenantResistance";
-               RevenantResistanceGameTag = Helper.CreateDefFromClone(
-                    source,
-                    "D424B077-6731-40AD-BFA8-7020BD3A9F9A",
-                    tagName + "_GameTagDef");
+                RevenantResistanceGameTag = Helper.CreateDefFromClone(
+                     source,
+                     "D424B077-6731-40AD-BFA8-7020BD3A9F9A",
+                     tagName + "_GameTagDef");
             }
 
 
@@ -578,7 +612,7 @@ namespace TFTV
             }
         }
 
-        internal class StatsAndClasses 
+        internal class StatsAndClasses
         {
 
             public static void SetRevenantClassAbility(GeoTacUnitId deadSoldier, TacticalLevelController level, TacticalActor tacticalActor)
@@ -887,7 +921,7 @@ namespace TFTV
                 }
             }
 
-            public static void ApplyRevenantSpecialResistance(ref DamageAccumulation.TargetData data)
+           /* private static void ApplyRevenantSpecialResistance(ref DamageAccumulation.TargetData data)
             {
                 try
                 {
@@ -913,7 +947,7 @@ namespace TFTV
                 {
                     TFTVLogger.Error(e);
                 }
-            }
+            }*/
 
             // Adopted from MadSkunky BetterClasses. Harmony Patch to calculate shred resistance, vanilla has no implementation for this
             [HarmonyPatch(typeof(ShreddingDamageKeywordData), "ProcessKeywordDataInternal")]
@@ -942,34 +976,40 @@ namespace TFTV
                 }
             }
 
-            [HarmonyPatch(typeof(TacticalActorBase), "ApplyDamageInternal")]
-            internal static class TacticalActorBase_ApplyDamage_DamageResistant_patch
-            {
-                public static void Postfix(TacticalActorBase __instance)
-                {
-                    try
-                    {
-                        //  TFTVLogger.Always("Actor who has received damage is " + __instance.name);
+            // ArmorStackStatus
 
-                        if (_revenantResistanceStatus != null
-                            && _revenantResistanceStatus.DamageTypeDefs != null
-                            && _revenantResistanceStatus.DamageTypeDefs.Count() > 0
-                            && _revenantResistanceStatus.DamageTypeDefs[0] == null
-                            && __instance.Status != null
-                            && __instance.Status.HasStatus(_revenantResistanceStatus)
-                            && revenantSpecialResistance != null
-                            && !revenantSpecialResistance.Contains(__instance.name))
-                        {
-                            //  TFTVLogger.Always(__instance.name + " has the Revenant Resistance ability and it's the first time it is triggered");
-                            revenantSpecialResistance.Add(__instance.name);
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        TFTVLogger.Error(e);
-                    }
-                }
-            }
+
+
+
+            /*  [HarmonyPatch(typeof(TacticalActorBase), "ApplyDamageInternal")]
+              internal static class TacticalActorBase_ApplyDamage_DamageResistant_patch
+              {
+                  public static void Postfix(TacticalActorBase __instance)
+                  {
+                      try
+                      {
+                          //  TFTVLogger.Always("Actor who has received damage is " + __instance.name);
+
+                          if (_revenantResistanceStatus != null
+                              && _revenantResistanceStatus.DamageTypeDefs != null
+                              && _revenantResistanceStatus.DamageTypeDefs.Count() > 0
+                              && _revenantResistanceStatus.DamageTypeDefs[0] == null
+                              && __instance.Status != null
+                              && __instance.Status.HasStatus(_revenantResistanceStatus)
+                              && revenantSpecialResistance != null
+                              && !revenantSpecialResistance.Contains(__instance.name))
+                          {
+                              //  TFTVLogger.Always(__instance.name + " has the Revenant Resistance ability and it's the first time it is triggered");
+                              revenantSpecialResistance.Add(__instance.name);
+
+                          }
+                      }
+                      catch (Exception e)
+                      {
+                          TFTVLogger.Error(e);
+                      }
+                  }
+              }*/
 
             public static DamageTypeBaseEffectDef GetPreferredDamageType(TacticalLevelController controller)
             {
@@ -1225,18 +1265,75 @@ namespace TFTV
                     TFTVLogger.Error(e);
                 }
             }
+
+            public static void ApplySpecialRevenantResistanceArmorStack(TacticalLevelController controller, TacticalFaction faction)
+            {
+                try
+                {
+                    if (controller.Factions.Any(f => f.Faction.FactionDef.MatchesShortName("aln")) &&
+                             controller.GetFactionByCommandName("Px") == faction && !controller.IsLoadingSavedGame)
+                    {
+
+                    }
+                    else
+                    {
+                        return;
+                    }
+
+                    if (_revenantResistanceStatus != null && _revenantResistanceStatus.DamageTypeDefs[0] == null)
+                    {
+                        TFTVLogger.Always($"Apply special resistance armor stack, if applicable");
+                        foreach (TacticalActor tacticalActor in controller.GetFactionByCommandName("aln").TacticalActors.Where(ta => ta.IsAlive && ta.Status.HasStatus(_revenantResistanceStatus)))
+                        {
+                            if (!tacticalActor.Status.HasStatus<ArmorStackStatus>())
+                            {
+                                tacticalActor.Status.ApplyStatus<ArmorStackStatus>(_armorStackStatusDef);
+                            }
+
+                            ArmorStackStatus armorStackStatus = tacticalActor.Status.GetStatus<ArmorStackStatus>();
+
+                            if (armorStackStatus != null && armorStackStatus.BlockedAttacks != 1)
+                            {
+                                armorStackStatus.BlockedAttacks = 1;
+                            }
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+
             public static void AddRevenantResistanceStatus(TacticalActorBase tacticalActorBase)
             {
-                TacticalActor tacticalActor = tacticalActorBase as TacticalActor;
-
-                if (!tacticalActor.Status.HasStatus(_revenantResistanceStatus) && !tacticalActor.GameTags.Last().name.Contains("Mindfragged"))
+                try
                 {
-                    tacticalActor.Status.ApplyStatus<DamageMultiplierStatus>(_revenantResistanceStatus);
+                    TacticalActor tacticalActor = tacticalActorBase as TacticalActor;
+
+                    if (!tacticalActor.Status.HasStatus(_revenantResistanceStatus) && !tacticalActor.GameTags.Last().name.Contains("Mindfragged"))
+                    {
+                        tacticalActor.Status.ApplyStatus<DamageMultiplierStatus>(_revenantResistanceStatus);
+
+                        if (_revenantResistanceStatus.DamageTypeDefs[0] == null)
+                        {
+                            // TFTVLogger.Always($"Special resistance; applying armor stack to {tacticalActorBase.name}");
+                            tacticalActor.Status.ApplyStatus<ArmorStackStatus>(_armorStackStatusDef);
+                            ArmorStackStatus armorStackStatus = tacticalActor.Status.GetStatus<ArmorStackStatus>();
+                            armorStackStatus.BlockedAttacks = 1;
+                            // Effect.Apply(Repo, _addArmorStackEffectDef, TacUtil.GetActorEffectTarget(tacticalActor), null);            
+                        }
+
+                    }
+
+                    if (!tacticalActorBase.HasGameTag(RevenantResistanceGameTag) && !tacticalActor.GameTags.Last().name.Contains("Mindfragged"))
+                    {
+                        tacticalActorBase.GameTags.Add(RevenantResistanceGameTag);
+                    }
                 }
-
-                if (!tacticalActorBase.HasGameTag(RevenantResistanceGameTag) && !tacticalActor.GameTags.Last().name.Contains("Mindfragged"))
+                catch (Exception e)
                 {
-                    tacticalActorBase.GameTags.Add(RevenantResistanceGameTag);
+                    TFTVLogger.Error(e);
                 }
             }
 
@@ -1270,7 +1367,7 @@ namespace TFTV
                         // TFTVLogger.Always("Got to before hint");
 
                         TFTVHints.HintDefs.DynamicallyCreatedHints.CreateNewTacticalHintForRevenantResistance("RevenantResistanceSighted", HintTrigger.ActorSeen, "RevenantResistance_GameTagDef", hintTitle, hintDescription);
-                      
+
                     }
                 }
                 catch (Exception e)
@@ -1459,7 +1556,7 @@ namespace TFTV
                         // TFTVLogger.Always("Got to before hint");
 
                         TFTVHints.HintDefs.DynamicallyCreatedHints.CreateNewTacticalHintForRevenantResistance("RevenantResistanceSighted", HintTrigger.ActorSeen, "RevenantResistance_GameTagDef", hintTitle, hintDescription);
-                        
+
                     }
                 }
 
@@ -1570,26 +1667,26 @@ namespace TFTV
 
         internal class RecordUpkeep
         {
-           
-                public static void UpdateRevenantTimer(GeoLevelController controller)
-                {
-                    try
-                    {
-                        if (revenantSpawned)
-                        {
-                            daysRevenantLastSeen = controller.Timing.Now.TimeSpan.Days;
-                            controller.EventSystem.SetVariable("Revenant_Spotted", controller.EventSystem.GetVariable("Revenant_Spotted") + 1);
-                            revenantSpawned = false;
-                            TFTVLogger.Always("Last time a Revenant was seen was on day " + daysRevenantLastSeen + ", and now it is day " + controller.Timing.Now.TimeSpan.Days);
-                            TFTVLogger.Always("# Revenants spotted " + controller.EventSystem.GetVariable("Revenant_Spotted"));
-                        }
-                    }
 
-                    catch (Exception e)
+            public static void UpdateRevenantTimer(GeoLevelController controller)
+            {
+                try
+                {
+                    if (revenantSpawned)
                     {
-                        TFTVLogger.Error(e);
+                        daysRevenantLastSeen = controller.Timing.Now.TimeSpan.Days;
+                        controller.EventSystem.SetVariable("Revenant_Spotted", controller.EventSystem.GetVariable("Revenant_Spotted") + 1);
+                        revenantSpawned = false;
+                        TFTVLogger.Always("Last time a Revenant was seen was on day " + daysRevenantLastSeen + ", and now it is day " + controller.Timing.Now.TimeSpan.Days);
+                        TFTVLogger.Always("# Revenants spotted " + controller.EventSystem.GetVariable("Revenant_Spotted"));
                     }
                 }
+
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
             public static void RecordPhoenixDeadForRevenantsAndOsiris(DeathReport deathReport, TacticalLevelController controller)
             {
                 try
@@ -1756,9 +1853,9 @@ namespace TFTV
 
         }
 
-        internal class UIandFX 
+        internal class UIandFX
         {
-            internal class Breath 
+            internal class Breath
             {
                 public static void AddRevenantStatusEffect(TacticalActorBase actor)
                 {
@@ -1958,7 +2055,7 @@ namespace TFTV
 
             public static string DisplayRevenantName(TacticalActorBase tacticalActorBase)
             {
-                try 
+                try
                 {
                     string result = "";
 
@@ -1989,7 +2086,7 @@ namespace TFTV
 
             }
 
-           
+
 
         }
 

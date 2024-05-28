@@ -1,20 +1,16 @@
-﻿using PhoenixPoint.Tactical.Entities.Weapons;
+﻿using Base.Levels;
+using HarmonyLib;
+using PhoenixPoint.Common.Core;
+using PhoenixPoint.Common.Entities.GameTags;
+using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Tactical.Entities;
+using PhoenixPoint.Tactical.Entities.Abilities;
+using PhoenixPoint.Tactical.Entities.Weapons;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using UnityEngine;
-using Base.Levels;
-using HarmonyLib;
-using PhoenixPoint.Common.Entities.GameTags;
-using PhoenixPoint.Common.Entities.GameTagsTypes;
-using PhoenixPoint.Tactical.Entities.Abilities;
-using PhoenixPoint.Tactical.Levels;
 using System.Reflection;
-using PhoenixPoint.Common.Core;
-using PhoenixPoint.Geoscape.View.ViewControllers;
+using UnityEngine;
 
 namespace TFTV
 {
@@ -46,7 +42,7 @@ namespace TFTV
 
         //Also clear projectiles Dictionary, used to make bullets go through Umbra/Decoy
 
-        public static void ClearBallisticInfoOnAbilityExecuteFinished() 
+        public static void ClearBallisticInfoOnAbilityExecuteFinished()
         {
             try
             {
@@ -90,7 +86,7 @@ namespace TFTV
             }
         }
 
-        
+
 
 
         [HarmonyPatch(typeof(ProjectileLogic), "OnProjectileHit")]
@@ -250,7 +246,7 @@ namespace TFTV
         }
 
         //D-Coy patch to remove if attacked by "smart" enemy
-        public static void RemoveDCoy(TacticalActor actor, IDamageDealer damageDealer) 
+        public static void RemoveDCoy(TacticalActor actor, IDamageDealer damageDealer)
         {
 
             try

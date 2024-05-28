@@ -98,7 +98,32 @@ namespace TFTV
             }
         }
 
+        
+        //OverwatchAbility
 
+        //This was to verify that it is not used
+       /* [HarmonyPatch(typeof(AISafePathConsideration), "Evaluate")]
+        public static class AISafePathConsideration_Evaluate_patch
+        {
+            private static void Postfix(AISafePathConsideration __instance)
+            {
+                try
+                {
+                    TFTVLogger.Always($"evaluating {__instance.Def.name}, checks for OW? {__instance.Def.CheckOverwatch}");
+
+
+                    // return true;
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+
+        }*/
+
+       
         // AIActorMovementZoneTargetGenerator
 
         //Prevents step out
@@ -310,7 +335,7 @@ namespace TFTV
                     && !w.WeaponDef.Tags.Contains(DefCache.GetDef<GameTagDef>("SpitterWeapon_TagDef"))
                     ));
 
-              //  TFTVLogger.Always($"got here for {tacticalActor.name}, weapons count: {weapons.Count}");
+                //  TFTVLogger.Always($"got here for {tacticalActor.name}, weapons count: {weapons.Count}");
 
                 if (weapons.Count == 0)
                 {
@@ -319,11 +344,11 @@ namespace TFTV
 
                 Weapon bestWeapon = weapons.OrderByDescending(w => w.WeaponDef.EffectiveRange).ToList().First();
 
-             //   TFTVLogger.Always($"best weapon for {tacticalActor.name} is {bestWeapon}. currently selectedWeapon null? {tacticalActor.Equipments.SelectedWeapon==null} currently selected equipment null? {tacticalActor.Equipments.SelectedEquipment==null}");
+                //   TFTVLogger.Always($"best weapon for {tacticalActor.name} is {bestWeapon}. currently selectedWeapon null? {tacticalActor.Equipments.SelectedWeapon==null} currently selected equipment null? {tacticalActor.Equipments.SelectedEquipment==null}");
 
                 if (tacticalActor.Equipments.SelectedWeapon == null || tacticalActor.Equipments.SelectedWeapon != bestWeapon)
                 {
-                   // TFTVLogger.Always($"Applying GetBestWeaponForQA {tacticalActor.name} was holding {tacticalActor.Equipments.SelectedWeapon?.DisplayName}, switching to {bestWeapon.DisplayName}");
+                    // TFTVLogger.Always($"Applying GetBestWeaponForQA {tacticalActor.name} was holding {tacticalActor.Equipments.SelectedWeapon?.DisplayName}, switching to {bestWeapon.DisplayName}");
                     tacticalActor.Equipments.SetSelectedEquipment(bestWeapon);
                 };
             }
@@ -1649,11 +1674,22 @@ namespace TFTV
                           }
                       }
                   }*/
+
+               
+
                 public static bool IsValidTarget(TacticalActor actor, TacticalAbilityTarget target, Weapon weapon)
                 {
                     try
                     {
                         // bool isValid = true;
+
+                        TacticalActor targetActor = target.GetTargetActor() as TacticalActor;
+
+                        if(targetActor == null) 
+                        {
+                            return true;
+                        }
+
 
 
                         ClassTagDef swarmerTag = DefCache.GetDef<ClassTagDef>("Swarmer_ClassTagDef");
@@ -1671,14 +1707,14 @@ namespace TFTV
 
                         if (actor.GameTags.Contains(queenTag) || actor.GameTags.Contains(acheronTag) || actor.GameTags.Contains(chironTag) || actor.GameTags.Contains(cyclopsTag))
                         {
-                            if (target.GetTargetActor() is TacticalActor targetActor && targetActor.GameTags.Contains(caterpillarDamage) && targetActor.TacticalFaction != actor.TacticalFaction)
+                            if (targetActor.GameTags.Contains(caterpillarDamage) && targetActor.TacticalFaction != actor.TacticalFaction)
                             {
                                 return false;
                             }
                         }
                         else
                         {
-                            if (target.GetTargetActor() is TacticalActor targetActor && targetActor.GameTags.Contains(caterpillarDamage) && (targetActor.Pos - target.Actor.Pos).magnitude > 8)
+                            if (targetActor.GameTags.Contains(caterpillarDamage) && (targetActor.Pos - target.Actor.Pos).magnitude > 8)
                             {
                                 return false;
                             }
@@ -1693,12 +1729,18 @@ namespace TFTV
 
                         if (weapon.GetDamagePayload().DamageKeywords.Any(damageKeyordPair => excludeDamageDefs.Contains(damageKeyordPair.DamageKeywordDef)))
                         {
-                            if (target.GetTargetActor() is TacticalActor targetActor && (targetActor.ActorDef.name.Equals("SpiderDrone_ActorDef") ||
-                                    targetActor.ActorDef.name.Contains("Turret_ActorDef")))
+                            if (targetActor.ActorDef.name.Equals("SpiderDrone_ActorDef") ||
+                                    targetActor.ActorDef.name.Contains("Turret_ActorDef"))
                             {
                                 return false;
                             }
                         }
+
+                       /* if(IsMeleeAttackingDifferentHeight(actor, targetActor, weapon)) 
+                        {
+                            return false;      
+                        }*/
+
 
                         return true;
 
@@ -1717,8 +1759,12 @@ namespace TFTV
                 {
                     public static IEnumerable<TacticalAbilityTarget> Postfix(IEnumerable<TacticalAbilityTarget> results, Weapon __instance)
                     {
+                      //  TFTVLogger.Always($"Weapon.GetShootTargets {__instance.WeaponDef.name}");
+
                         foreach (TacticalAbilityTarget target in results)
                         {
+                        //    TFTVLogger.Always($"target {target?.Actor?.name}");
+
                             if (IsValidTarget(__instance.TacticalActor, target, __instance)) // <- create a method to check the target
                             {
                                 yield return target;

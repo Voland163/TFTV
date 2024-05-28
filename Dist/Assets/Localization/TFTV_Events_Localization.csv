@@ -764,6 +764,9 @@ When",,,,,,,,
 KEY_INFESTATION_THIRD_HAVEN8,Text,,"does, Malachi erupts in boundless joy “They chose me to give it to you! Somebody up there really likes me!”
  
 Unfortunately, this exertion was too much for him. He collapses, dead, but with a smile of bliss on his face.",,,,,,,,
+KEY_INFESTATION_REPEAT_OUTCOME,Text,,We have recovered the artifact.,,,,,,,,
+KEY_INFESTATION_REPEAT_LW_TITLE,Text,,Someone somewhere must really like you.,,,,,,,,
+KEY_INFESTATION_REPEAT_LW,Text,,"Following an exhaustive search of [HavenName], your operatives have discovered yet another peculiar artifact.",,,,,,,,
 KEY_INFESTATION_MISSION_FAILED_TEXT,Text,,We failed to destroy the monstrosity that has taken over the inhabitants of the haven.,,,,,,,,
 KEY_OSIRIS_TITANIUM_OR_MUTAGEN,Text,,made of titanium or of mutagen flesh,,,,,,,,
 KEY_OSIRIS_ONLY_TITANIUM,Text,,made of titanium,,,,,,,,

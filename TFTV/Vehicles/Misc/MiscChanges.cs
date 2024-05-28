@@ -125,31 +125,40 @@ namespace TFTVVehicleRework.Misc
 
             //"SY_Aspida_DemolitionComponentDef"
             TacticalDemolitionComponentDef AspidaDemoComponentDef = (TacticalDemolitionComponentDef)Repo.GetDef("19e54d43-7eb6-ebf4-da14-abe67676b845");
-            AspidaDemoComponentDef.CapsuleRadius = 0.95f;
+            AspidaDemoComponentDef.DemolitionBodyShape = TacticalDemolitionComponentDef.DemolitionShape.Rectangle;
+            AspidaDemoComponentDef.RectangleSize = new Vector3
+            {
+                x = 2.0f, 
+                y = 1.6f,
+                z = 1.9f
+            };
 
-            
 
-          //  TacticalDemolitionComponent
+            //AspidaDemoComponentDef.CapsuleRadius = 0.95f;
+
+
+
+            //  TacticalDemolitionComponent
             //TESTING VOLAND
-          /*  ScarabDemoComponentDef.DemolitionBodyShape = AspidaDemoComponentDef.DemolitionBodyShape;
-            ScarabDemoComponentDef.CapsuleStart = AspidaDemoComponentDef.CapsuleStart;
-            ScarabDemoComponentDef.CapsuleEnd = AspidaDemoComponentDef.CapsuleEnd;
-            ScarabDemoComponentDef.SphereCenter = AspidaDemoComponentDef.SphereCenter;
-            ScarabDemoComponentDef.CapsuleRadius = AspidaDemoComponentDef.CapsuleRadius;
+            /*  ScarabDemoComponentDef.DemolitionBodyShape = AspidaDemoComponentDef.DemolitionBodyShape;
+              ScarabDemoComponentDef.CapsuleStart = AspidaDemoComponentDef.CapsuleStart;
+              ScarabDemoComponentDef.CapsuleEnd = AspidaDemoComponentDef.CapsuleEnd;
+              ScarabDemoComponentDef.SphereCenter = AspidaDemoComponentDef.SphereCenter;
+              ScarabDemoComponentDef.CapsuleRadius = AspidaDemoComponentDef.CapsuleRadius;
 
-            ArmadilloDemoComponentDef.DemolitionBodyShape = AspidaDemoComponentDef.DemolitionBodyShape;
-            ArmadilloDemoComponentDef.CapsuleStart = AspidaDemoComponentDef.CapsuleStart;
-            ArmadilloDemoComponentDef.CapsuleEnd = AspidaDemoComponentDef.CapsuleEnd;
-            ArmadilloDemoComponentDef.SphereCenter = AspidaDemoComponentDef.SphereCenter;
-            ArmadilloDemoComponentDef.CapsuleRadius = AspidaDemoComponentDef.CapsuleRadius;
+              ArmadilloDemoComponentDef.DemolitionBodyShape = AspidaDemoComponentDef.DemolitionBodyShape;
+              ArmadilloDemoComponentDef.CapsuleStart = AspidaDemoComponentDef.CapsuleStart;
+              ArmadilloDemoComponentDef.CapsuleEnd = AspidaDemoComponentDef.CapsuleEnd;
+              ArmadilloDemoComponentDef.SphereCenter = AspidaDemoComponentDef.SphereCenter;
+              ArmadilloDemoComponentDef.CapsuleRadius = AspidaDemoComponentDef.CapsuleRadius;
 
-            JunkerDemoComponentDef.DemolitionBodyShape = AspidaDemoComponentDef.DemolitionBodyShape;
-            JunkerDemoComponentDef.CapsuleStart = AspidaDemoComponentDef.CapsuleStart;
-            JunkerDemoComponentDef.CapsuleEnd = AspidaDemoComponentDef.CapsuleEnd;
-            JunkerDemoComponentDef.SphereCenter = AspidaDemoComponentDef.SphereCenter;
-            JunkerDemoComponentDef.CapsuleRadius = AspidaDemoComponentDef.CapsuleRadius;*/
+              JunkerDemoComponentDef.DemolitionBodyShape = AspidaDemoComponentDef.DemolitionBodyShape;
+              JunkerDemoComponentDef.CapsuleStart = AspidaDemoComponentDef.CapsuleStart;
+              JunkerDemoComponentDef.CapsuleEnd = AspidaDemoComponentDef.CapsuleEnd;
+              JunkerDemoComponentDef.SphereCenter = AspidaDemoComponentDef.SphereCenter;
+              JunkerDemoComponentDef.CapsuleRadius = AspidaDemoComponentDef.CapsuleRadius;*/
 
-            
+
         }
     }
 }

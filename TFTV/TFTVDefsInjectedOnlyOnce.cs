@@ -82,12 +82,12 @@ namespace TFTV
         {
             try
             {
-                foreach (TacCharacterDef tacCharacterDef in Repo.GetAllDefs<TacCharacterDef>().Where(tcd => tcd.Data.BodypartItems.Any(b => b.Tags.Contains(Shared.SharedGameTags.BionicalTag))))
-                {
-                    TFTVLogger.Always($"{tacCharacterDef.name}");
+                //DefCache.GetDef<TacCharacterDef>("AN_ScreamingPriest7_CharacterTemplateDef").SpawnCommandId = "ScreamingPriest7";
 
 
-                }
+
+
+
 
             }
             catch (Exception e)
@@ -149,7 +149,7 @@ namespace TFTV
 
                 TFTVTacticalDeploymentEnemies.PopulateLimitsForUndesirables();
 
-                //   Print();
+                //Print();
 
             }
             catch (Exception e)
@@ -414,7 +414,7 @@ namespace TFTV
                 RemoveCorruptionDamageBuff();
                 ModifyCratesToAddArmor();
                 TFTVReverseEngineering.ModifyReverseEngineering();
-                ChangeInfestationDefs();
+                TFTVInfestation.Defs.ImplementInfestationDefs();
                 ChangesAmbushMissions();
                 RemoveCensusResearch();
                 AllowMedkitsToTargetMutoidsAndChangesToMutoidSkillSet();
@@ -459,7 +459,7 @@ namespace TFTV
             }
         }
 
-        
+
 
         private static void RemoveOrganicConditionForSlowedStatus()
         {
@@ -568,11 +568,28 @@ namespace TFTV
                 FixSpikeShootingArmShootingWhenDisabled();
                 FixSilentInfiltrators();
                 FixResearchRequirements();
+                FixMindControlImmunityNotRestoredWhenHeadReenabled();
             }
             catch (Exception e)
             {
                 TFTVLogger.Error(e);
             }
+        }
+
+        private static void FixMindControlImmunityNotRestoredWhenHeadReenabled()
+        {
+            try
+            {
+                DefCache.GetDef<ApplyStatusAbilityDef>("MindControlImmunity_AbilityDef").StatusApplicationTrigger = StatusApplicationTrigger.AbilityAdded;
+
+
+            }
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
         }
 
         private static void FixResearchRequirements()
@@ -1822,9 +1839,11 @@ namespace TFTV
 
                 TacStatusDef newStatusOnObjective = Helper.CreateDefFromClone(activateHackableChannelingStatus, "{6A31787B-14AD-4143-AD57-C3AF04AF1E2B}", statusOnObjectiveName);
                 ActorBridgeStatusDef newActorToObjectiveStatus = Helper.CreateDefFromClone(actorToConsoleBridgingStatusDef, "{D288280F-603D-4556-804A-9B8B63646C96}", actorToObjectiveBridgeStatusName);
+                newActorToObjectiveStatus.SingleInstance = true;
 
                 AddAbilityStatusDef newStatusOnActor = Helper.CreateDefFromClone(hackingStatusDef, "{23143337-5CF8-4AE8-8B7D-B5D0650CD629}", statusOnActorName);
                 ActorBridgeStatusDef newObjectiveToActorStatus = Helper.CreateDefFromClone(consoleToActorBridgingStatusDef, "{897F88CC-2BB0-4E04-A0CD-AFF62463C199}", objectiveToActorBridgeStatusName);
+                newObjectiveToActorStatus.SingleInstance = true;
 
                 //need to create visuals for the new statuses
 
@@ -1832,6 +1851,7 @@ namespace TFTV
                 newActorToObjectiveStatus.Visuals = Helper.CreateDefFromClone(actorToConsoleBridgingStatusDef.Visuals, "{6B002C8D-F28D-4A61-83BB-81E06BFF51FE}", actorToObjectiveBridgeStatusName);
                 newObjectiveToActorStatus.Visuals = Helper.CreateDefFromClone(consoleToActorBridgingStatusDef.Visuals, "{75E47B2A-6598-4635-882C-C763681E2C6D}", objectiveToActorBridgeStatusName);
                 newStatusOnActor.Visuals = Helper.CreateDefFromClone(hackingStatusDef.Visuals, "{A315B3DF-7F7C-4887-B875-007EB58DB61F}", statusOnActorName);
+                newStatusOnActor.SingleInstance = true;
                 //   TFTVLogger.Always($"2");
 
                 newActorToObjectiveStatus.Visuals.DisplayName1.LocalizationKey = "FORCE_GATE_STATUS";
@@ -6853,7 +6873,6 @@ namespace TFTV
                 //Allow medkits to target Mutoids
                 DefCache.GetDef<TacticalTargetingDataDef>("E_TargetingData [Medkit_AbilityDef]").Origin.CullTargetTags.Clear();
 
-
                 //Skill toss per Belial's suggestions
 
                 //need to change/clone CharacterProgressionData 
@@ -7340,7 +7359,7 @@ namespace TFTV
 
         }
 
-        public static void ChangeInfestationDefs()
+     /*   public static void ChangeInfestationDefs()
         {
             try
             {
@@ -7351,57 +7370,13 @@ namespace TFTV
                 raidsSetup.RaidBands[3].RollResultMax = 130;
                 raidsSetup.RaidBands[4].RollResultMax = 9999;
                 raidsSetup.RaidBands[4].AircraftTypesAllowed = 0;
-
-                CustomMissionTypeDef Anu_Infestation = DefCache.GetDef<CustomMissionTypeDef>("HavenInfestationAN_CustomMissionTypeDef");
-                CustomMissionTypeDef NewJericho_Infestation = DefCache.GetDef<CustomMissionTypeDef>("HavenInfestationSY_CustomMissionTypeDef");
-                CustomMissionTypeDef Synderion_Infestation = DefCache.GetDef<CustomMissionTypeDef>("HavenInfestationNJ_CustomMissionTypeDef");
-
-                ResourceMissionOutcomeDef sourceMissonResourceReward = DefCache.GetDef<ResourceMissionOutcomeDef>("HavenDefAN_ResourceMissionOutcomeDef");
-                ResourceMissionOutcomeDef mutagenRewardInfestation = Helper.CreateDefFromClone(sourceMissonResourceReward, "2E579AB8-3744-4994-8036-B5018B5E2E15", "InfestationReward");
-                mutagenRewardInfestation.Resources.Values.Clear();
-                mutagenRewardInfestation.Resources.Values.Add(new ResourceUnit { Type = PhoenixPoint.Common.Core.ResourceType.Mutagen, Value = 800 });
-
-                foreach (CustomMissionTypeDef missionTypeDef in Repo.GetAllDefs<CustomMissionTypeDef>())
-                {
-                    if (missionTypeDef.name.Contains("Haven") && missionTypeDef.name.Contains("Infestation"))
-                    {
-                        missionTypeDef.Outcomes[0].DestroySite = true;
-                        missionTypeDef.Outcomes[0].Outcomes[2] = mutagenRewardInfestation;
-                        missionTypeDef.Outcomes[0].BriefingModalBind.Title.LocalizationKey = "KEY_MISSION_HAVEN_INFESTED_VICTORY_NAME";
-                        missionTypeDef.Outcomes[0].BriefingModalBind.Description.LocalizationKey = "KEY_MISSION_HAVEN_INFESTED_VICTORY_DESCRIPTION";
-                        missionTypeDef.BriefingModalBind.Title.LocalizationKey = "KEY_MISSION_HAVEN_INFESTED_NAME";
-                        missionTypeDef.BriefingModalBind.Description.LocalizationKey = "KEY_MISSION_HAVEN_INFESTED_DESCRIPTION";
-                    }
-                }
-
-                //  GeoscapeEventDef rewardEvent = TFTVCommonMethods.CreateNewEvent("InfestationReward", "KEY_INFESTATION_REWARD_TITLE", "KEY_INFESTATION_REWARD_DESCRIPTION", null);
-                GeoscapeEventDef lW1MissWin = DefCache.GetDef<GeoscapeEventDef>("PROG_LW1_WIN_GeoscapeEventDef");
-                lW1MissWin.GeoscapeEventData.Choices[0].Outcome.SetEvents.Clear();
-                lW1MissWin.GeoscapeEventData.Choices[0].Outcome.TrackEncounters.Clear();
-                lW1MissWin.GeoscapeEventData.Choices[0].Outcome.UntrackEncounters.Clear();
-                GeoscapeEventDef lW2MissWin = DefCache.GetDef<GeoscapeEventDef>("PROG_LW2_WIN_GeoscapeEventDef");
-                lW2MissWin.GeoscapeEventData.Choices[0].Outcome.SetEvents.Clear();
-                lW2MissWin.GeoscapeEventData.Choices[0].Outcome.TrackEncounters.Clear();
-                lW2MissWin.GeoscapeEventData.Choices[0].Outcome.UntrackEncounters.Clear();
-                GeoscapeEventDef lW3MissWin = DefCache.GetDef<GeoscapeEventDef>("PROG_LW3_WIN_GeoscapeEventDef");
-                lW2MissWin.GeoscapeEventData.Choices[0].Outcome.SetEvents.Clear();
-                lW2MissWin.GeoscapeEventData.Choices[0].Outcome.TrackEncounters.Clear();
-                lW2MissWin.GeoscapeEventData.Choices[0].Outcome.UntrackEncounters.Clear();
-                //Muting Living Weapons
-                GeoscapeEventDef lwstartingEvent = DefCache.GetDef<GeoscapeEventDef>("PROG_LW1_GeoscapeEventDef");
-                lwstartingEvent.GeoscapeEventData.Mute = true;
-                DefCache.GetDef<KillActorFactionObjectiveDef>("KillCorruptionNode_CustomMissionObjective").MissionObjectiveData.ExperienceReward = 1000;
-
-
-                //
-
             }
             catch (Exception e)
             {
                 TFTVLogger.Error(e);
 
             }
-        }
+        }*/
         public static void ModifyMissionDefsToReplaceNeutralWithBandit()
         {
             try

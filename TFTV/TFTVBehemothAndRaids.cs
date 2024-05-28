@@ -4,10 +4,12 @@ using Base.UI;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
+using PhoenixPoint.Common.Entities.Items;
 using PhoenixPoint.Common.Levels.ActorDeployment;
 using PhoenixPoint.Common.Levels.Missions;
 using PhoenixPoint.Common.View.ViewControllers;
 using PhoenixPoint.Geoscape.Entities;
+using PhoenixPoint.Geoscape.Entities.Abilities;
 using PhoenixPoint.Geoscape.Events;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
@@ -23,6 +25,7 @@ using System.Linq;
 using System.Reflection;
 using UnityEngine;
 using UnityEngine.UI;
+using static PhoenixPoint.Common.Entities.Items.ItemManufacturing;
 using static PhoenixPoint.Geoscape.Entities.GeoBehemothActor;
 
 namespace TFTV
@@ -144,7 +147,7 @@ namespace TFTV
 
                         int roll = UnityEngine.Random.Range(0, 1 + difficulty);
 
-                        if (roll > 0)
+                        if (roll > 1)
                         {
                             alienRaidBand.AircraftTypesAllowed = AircraftType.Medium;
 
@@ -154,7 +157,7 @@ namespace TFTV
 
                                 int roll2 = UnityEngine.Random.Range(0, 1 + difficulty);
 
-                                if (roll > 1)
+                                if (roll2 > 1)
                                 {
                                     alienRaidBand.AircraftTypesAllowed = AircraftType.Large;
                                 }
@@ -374,6 +377,99 @@ namespace TFTV
 
                 internal static List<int> listTeamA = new List<int>();
                 internal static List<int> listTeamB = new List<int>();
+
+                [HarmonyPatch(typeof(LaunchBehemothMissionAbility), "ActivateInternal")]
+                public static class TFTV_LaunchBehemothMissionAbility_ActivateInternal_patch
+                {
+
+                    public static void Prefix(LaunchBehemothMissionAbility __instance)
+                    {
+                        try
+                        {
+                            TFTVHints.GeoscapeHints.TriggerBehemothDeployHint(__instance.GeoLevel);
+                        }
+
+                        catch (Exception e)
+                        {
+                            TFTVLogger.Error(e);
+                            throw;
+                        }
+                    }
+                }
+
+
+                [HarmonyPatch(typeof(ItemManufacturing), "FinishManufactureItem")]
+                public static class TFTV_ItemManufacturing_FinishManufactureItem
+                {
+                    public static void Postfix(ItemManufacturing __instance, ManufactureQueueItem element)
+                    {
+                        try
+                        {
+                            //  TFTVLogger.Always($"{element.ManufacturableItem.Name}, {element.ManufacturableItem.RelatedItemDef.name}");
+
+
+                            if (element.ManufacturableItem.RelatedItemDef.name.Equals("PP_MaskedManticore_VehicleItemDef"))
+                            {
+                                TFTVHints.GeoscapeHints.TriggerBehemothMissionHint(GameUtl.CurrentLevel().GetComponent<GeoLevelController>());
+
+                            }
+
+                        }
+
+                        catch (Exception e)
+                        {
+                            TFTVLogger.Error(e);
+                            throw;
+                        }
+                    }
+                }
+
+                [HarmonyPatch(typeof(LaunchBehemothMissionAbility), "GetDisabledStateInternal")]
+                public static class TFTV_LaunchBehemothMissionAbility_GetDisabledStateInternal_patch
+                {
+
+                    public static void Postfix(LaunchBehemothMissionAbility __instance, ref GeoAbilityDisabledState __result)
+                    {
+                        try
+                        {
+                            if (__instance.GeoLevel.AlienFaction.Behemoth == null || __instance.GeoLevel.AlienFaction.Behemoth != null &&
+                                (__instance.GeoLevel.AlienFaction.Behemoth.CurrentBehemothStatus == GeoBehemothActor.BehemothStatus.Dormant))
+                            {
+                                __result = GeoAbilityDisabledState.RequirementsNotMet;
+                            }
+                        }
+
+                        catch (Exception e)
+                        {
+                            TFTVLogger.Error(e);
+                            throw;
+                        }
+                    }
+                }
+
+
+
+                [HarmonyPatch(typeof(GeoAbilityView), "GetDisabledStateText", typeof(GeoAbilityTarget))]
+                public static class TFTV_GeoAbilityView_GetDisabledStateText
+                {
+                    public static void Postfix(GeoAbilityView __instance, ref string __result)
+                    {
+                        try
+                        {
+                            if (__instance.GeoAbility is LaunchBehemothMissionAbility)
+                            {
+                                __result = "Behemoth is submerged!";
+                            }
+                        }
+
+                        catch (Exception e)
+                        {
+                            TFTVLogger.Error(e);
+                            throw;
+                        }
+                    }
+                }
+
 
                 internal static void CreateCheckButton(GeoRosterDeploymentItem geoRosterDeploymentItem)
                 {

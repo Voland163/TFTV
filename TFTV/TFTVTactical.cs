@@ -439,9 +439,9 @@ namespace TFTV
 
                     
                         TFTVTacticalUtils.RevealExfilPoint(Controller, turnNumber);
-                    
 
-                    TFTVRevenant.revenantSpecialResistance.Clear();
+                   // TFTVRevenant.Resistance.ApplySpecialRevenantResistanceArmorStack(Controller);
+                   // TFTVRevenant.revenantSpecialResistance.Clear();
                     TFTVTouchedByTheVoid.Umbra.UmbraTactical.SpawnUmbra(Controller);
                     TFTVHumanEnemies.ChampRecoverWPAura(Controller);
                     TFTVHumanEnemies.ApplyTacticStartOfPlayerTurn(Controller);

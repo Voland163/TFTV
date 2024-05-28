@@ -78,8 +78,7 @@ HINT_ANCIENTS_HOPLITS_TITLE,Text,,"<i>“Frag me, what is that thing? Is that a�
 HINT_ANCIENTS_HOPLITS_TEXT,Text,,"This Ancient Automata is reactivating! While we have no intel on their capabilities, it seems like they are dormant while buried in the ground, but once they emerge they become alerted and gradually reactivate their systems, becoming stronger. The Automata also seem to be in varying states of disrepair.",,,,,,,,
 HINT_ANCIENTS_HOPLITSREPAIR_TITLE,Text,,<i>”The broken remains floated towards the damaged Automata.”</i>,,,,,,,,
 HINT_ANCIENTS_HOPLITSREPAIR_TEXT,Text,,This Ancient Automata is trying to repair itself using the remains of the destroyed robot in its vicinity! It has also drained some of its power.,,,,,,,,
-HINT_ANCIENTS_HOPLITSMAXPOWER_TITLE,Text,,"<i>”Whirl whirl whirl Vroom!”</i>
-",,,,,,,,
+HINT_ANCIENTS_HOPLITSMAXPOWER_TITLE,Text,,"<i>”Whirl whirl whirl Vroom!”</i>",,,,,,,,
 HINT_ANCIENTS_HOPLITSMAXPOWER_TEXT,Text,,The Ancient Automata is now fully charged; damage increased significantly and damage resistance gained.,,,,,,,,
 HINT_HOSTILE_DEFENDERS_TITLE,Text,,Hostile haven defenders,,,,,,,,
 HINT_HOSTILE_DEFENDERS_TEXT,Text,,"<i>""Come to rescue us, have they? They are the ones who brought the damn critters on us in the first place! Fragging nerds…""</i>
@@ -197,6 +196,8 @@ VICTORY_MISSION_FOR_THE_EYES_TITLE,Text,,Go for the eyes!,,,,,,,,
 VICTORY_MISSION_FOR_THE_EYES_TEXT,Text,,"<i>""This fragging thing won't die!""</i>
 
 Attack the Receptacle's eyes to stun it, so that your operatives can then complete the objective.",,,,,,,,
+VICTORY_MISSION_SACRIFICE_TITLE,Text,,Sacrifice,,,,,,,,
+VICTORY_MISSION_SACRIFICE_TEXT,Text,,"The sounds of gunfire slow, then cease. You don't hear the screams, or the tearing of flesh. They died as they lived, with the dignity of a higher purpose.",,,,,,,,
 KEY_INFESTATION_STORY_OUTRO_TITLE,Text,,Awakening,,,,,,,,
 KEY_INFESTATION_STORY_INTRO_TITLE,Text,,Search and Rescue,,,,,,,,
 KEY_INFESTATION_STORY0,Text,,reporting. We are at,,,,,,,,

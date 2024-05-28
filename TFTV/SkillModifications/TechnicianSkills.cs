@@ -53,12 +53,29 @@ namespace PRMBetterClasses.SkillModifications
 
         private static void Change_RemoteDeployment()
         {
-            TacticalAbilityDef throwTurret = DefCache.GetDef<TacticalAbilityDef>("ThrowTurret_AbilityDef");
-            TacticalAbilityDef throwPRCRTurret = DefCache.GetDef<TacticalAbilityDef>("ThrowPRCRTurret_AbilityDef");
-            TacticalAbilityDef throwLaserTurret = DefCache.GetDef<TacticalAbilityDef>("ThrowLaserTurret_AbilityDef");
-            throwTurret.WillPointCost = 2;
-            throwPRCRTurret.WillPointCost = 2;
-            throwLaserTurret.WillPointCost = 2;
+            // Collecting all turret deploy and throw abilities
+            TacticalAbilityDef[] turretPlacementAbilities =
+            {
+                DefCache.GetDef<TacticalAbilityDef>("DeployTurret_AbilityDef"),
+                DefCache.GetDef<TacticalAbilityDef>("DeployPRCRTurret_AbilityDef"),
+                DefCache.GetDef<TacticalAbilityDef>("DeployLaserTurret_AbilityDef"),
+                DefCache.GetDef<TacticalAbilityDef>("ThrowTurret_AbilityDef"),
+                DefCache.GetDef<TacticalAbilityDef>("ThrowPRCRTurret_AbilityDef"),
+                DefCache.GetDef<TacticalAbilityDef>("ThrowLaserTurret_AbilityDef")
+            };
+            foreach (TacticalAbilityDef turretPlacementAbility in turretPlacementAbilities)
+            {
+                // Delete the Category so the throw ability will not longer replace the deploy ability
+                // i.e. both are usable even with Remote Deployment learned
+                turretPlacementAbility.ViewElementDef.Category.LocalizationKey = "";
+                // All of them used for 1 AP cost (reducing deploy from 2 to 1 AP)
+                turretPlacementAbility.ActionPointCost = 0.25f;
+                // Add WP cost for throw abilities
+                if (turretPlacementAbility.name.StartsWith("Throw"))
+                {
+                    turretPlacementAbility.WillPointCost = 2;
+                }
+            }
         }
 
         private static void Change_ElectricReinforcements()

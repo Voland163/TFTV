@@ -196,6 +196,8 @@ VICTORY_MISSION_FOR_THE_EYES_TITLE,Text,,Go for the eyes!,,,,,,,,
 VICTORY_MISSION_FOR_THE_EYES_TEXT,Text,,"<i>""This fragging thing won't die!""</i>
 
 Attack the Receptacle's eyes to stun it, so that your operatives can then complete the objective.",,,,,,,,
+VICTORY_MISSION_SACRIFICE_TITLE,Text,,Sacrifice,,,,,,,,
+VICTORY_MISSION_SACRIFICE_TEXT,Text,,"The sounds of gunfire slow, then cease. You don't hear the screams, or the tearing of flesh. They died as they lived, with the dignity of a higher purpose.",,,,,,,,
 KEY_INFESTATION_STORY_OUTRO_TITLE,Text,,Awakening,,,,,,,,
 KEY_INFESTATION_STORY_INTRO_TITLE,Text,,Search and Rescue,,,,,,,,
 KEY_INFESTATION_STORY0,Text,,reporting. We are at,,,,,,,,

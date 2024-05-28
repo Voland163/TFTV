@@ -676,13 +676,13 @@ namespace TFTV
                             string afflictedWithConnector = new LocalizedTextBind() { LocalizationKey = "KEY_DELIRIUM_PERK_PROMPT_CONNECTOR" }.Localize();
                             string afflictionRules = new LocalizedTextBind() { LocalizationKey = "KEY_DELIRIUM_PERK_PROMPT_RULES" }.Localize();
 
-                            string messagePrompt = $"{__instance.GetName()} {afflictedWithConnector} <b>{abilityToAdd.ViewElementDef.DisplayName1.LocalizeEnglish()}</b> {afflictionRules}"
-                                + $"\n\n <i>{abilityToAdd.ViewElementDef.Description.LocalizeEnglish()}</i>";
+                            string messagePrompt = $"{__instance.GetName()} {afflictedWithConnector} <b>{abilityToAdd.ViewElementDef.DisplayName1.Localize()}</b> {afflictionRules}"
+                                + $"\n\n <i>{abilityToAdd.ViewElementDef.Description.Localize()}</i>";
 
 
                             GameUtl.GetMessageBox().ShowSimplePrompt(messagePrompt, MessageBoxIcon.None, MessageBoxButtons.OK, null);
 
-                            TFTVLogger.Always("Added ability " + abilityToAdd.ViewElementDef.DisplayName1.LocalizeEnglish());
+                            TFTVLogger.Always("Added ability " + abilityToAdd.ViewElementDef.DisplayName1.Localize());
 
                             if (CharactersDeliriumPerksAndMissions == null)
                             {

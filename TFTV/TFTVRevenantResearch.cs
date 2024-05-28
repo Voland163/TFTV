@@ -135,7 +135,7 @@ namespace TFTV
 
                 EncounterVariableResearchRequirementDef revenantEncounterVariableResearch =
                     TFTVCommonMethods.CreateNewEncounterVariableResearchRequirementDef(defName + "EncounterVariableResearchReq", "009E4EC9-94ED-488A-A00D-536BFA750CEB",
-                    revenantVariable, 10);
+                    revenantVariable, 15);
 
                 ReseachRequirementDefOpContainer[] revenantReseachRevealRequirementContainer = new ReseachRequirementDefOpContainer[1];
                 ResearchRequirementDef[] revenantRevealResearchRequirementDefs = new ResearchRequirementDef[1];
@@ -198,10 +198,10 @@ namespace TFTV
                     RevenantCaptured = false;
                 }
 
-                if (controller.EventSystem.GetVariable(RevenantsDestroyed) > 10)
+              /*  if (controller.EventSystem.GetVariable(RevenantsDestroyed) > 10)
                 {
                     controller.EventSystem.SetVariable(RevenantsDestroyed, 10);
-                }
+                }*/
 
                 RevenantPoints = 0;
                 TFTVRevenant.RecordUpkeep.SkillPointsForRevenantKillAwarded = false;

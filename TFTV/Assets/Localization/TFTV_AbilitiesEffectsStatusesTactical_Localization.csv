@@ -266,3 +266,6 @@ KEY_ACTIVE_CAMO_DESCRIPTION,Text,,Character was hidden from view because within 
 KEY_REGENERATION_TORSO_DESCRIPTION,Text,,"Restore 10 Hit Points to arms, torso and General Hit Points each turn",,,,,,,,
 KEY_BIONIC_SILENTECHO_ABILITY_DESCRIPTION,Text,,Make a silent attack with the selected weapon. Limited to one use per turn.,,,,,,,,
 KEY_BIONIC_SILENTECHO_ABILITY_NAME,Text,,SILENT ECHO,,,,,,,,
+KEY_TACTIC,Text,,Tactic,,,,,,,,
+KEY_TFTV_REVENANT_ARMOR_STACK_NAME,Text,,RESISTANCE ACTIVE,,,,,,,,
+KEY_TFTV_REVENANT_ARMOR_STACK_DESCRIPTION,Text,,Reduce next damage instance by 50%,,,,,,,,

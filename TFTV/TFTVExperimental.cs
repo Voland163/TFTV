@@ -1,44 +1,18 @@
-﻿using Base;
-using Base.Core;
-using Base.Defs;
-using Base.Entities.Statuses;
-using Code.PhoenixPoint.Tactical.Entities.Equipments;
+﻿using Base.Defs;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
-using PhoenixPoint.Common.Entities;
-using PhoenixPoint.Common.Entities.Addons;
-using PhoenixPoint.Common.Entities.Characters;
 using PhoenixPoint.Common.Entities.GameTags;
-using PhoenixPoint.Common.Entities.GameTagsTypes;
-using PhoenixPoint.Common.Entities.Items;
-using PhoenixPoint.Common.View.ViewControllers;
-using PhoenixPoint.Common.View.ViewModules;
-using PhoenixPoint.Geoscape.Entities;
-using PhoenixPoint.Geoscape.Entities.Abilities;
-using PhoenixPoint.Geoscape.Entities.Missions;
-using PhoenixPoint.Geoscape.Entities.PhoenixBases;
 using PhoenixPoint.Geoscape.Entities.Research.Requirement;
-using PhoenixPoint.Geoscape.Levels;
-using PhoenixPoint.Geoscape.Levels.Factions;
-using PhoenixPoint.Geoscape.View.ViewControllers.Modal;
-using PhoenixPoint.Geoscape.View.ViewStates;
-using PhoenixPoint.Tactical;
-using PhoenixPoint.Tactical.ContextHelp;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.Equipments;
-using PhoenixPoint.Tactical.Entities.Statuses;
 using PhoenixPoint.Tactical.Entities.Weapons;
 using PhoenixPoint.Tactical.Levels;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Reflection.Emit;
 using UnityEngine;
-using UnityEngine.UI;
-using static PhoenixPoint.Common.Entities.Items.ItemManufacturing;
-using static PhoenixPoint.Geoscape.Entities.PhoenixBases.GeoPhoenixBaseTemplate;
 
 namespace TFTV
 {
@@ -50,9 +24,110 @@ namespace TFTV
         private static readonly SharedData Shared = TFTVMain.Shared;
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
 
-        private static bool _usingEchoHead = false;
+        
 
-     
+
+
+
+
+
+
+
+
+        // Research
+
+        // GeoPhoenixFaction
+        //Wallet
+
+        // ResearchBonusResearchReward
+
+        //AlienBaseDataBind
+
+
+
+
+        /* [HarmonyPatch(typeof(Weapon), "GetTargetBodyParts")]
+         public static class Weapon_GetTargetBodyParts_patch
+         {
+             public static void Postfix(Weapon __instance, TacticalActorBase targetActor)
+             {
+                 try
+                 {
+                     CharacterBodyState component = targetActor.GetComponent<CharacterBodyState>();
+                     if (component != null)
+                     {
+                         foreach (BodyPartAspect bodyPartAspect in component.GetAllBodyparts())
+                         {
+                             TFTVLogger.Always($"Component: {bodyPartAspect.BodyPartAspectDef.name}");
+                         }
+
+                         IEnumerable<BodyPartAspect> enumerable = component.GetVisibleBodyparts();
+
+                         foreach(BodyPartAspect bodyPartAspect in enumerable) 
+                         {
+                             TFTVLogger.Always($"Visible Bodyparts: {bodyPartAspect.BodyPartAspectDef.name}, {bodyPartAspect.OwnerItem?.DisplayName}");                   
+                         } 
+                     }
+                 }
+                 catch (Exception e)
+                 {
+                     TFTVLogger.Error(e);
+                     throw;
+                 }
+             }
+         }*/
+
+
+
+
+
+
+        /*  [HarmonyPatch(typeof(UIStateEditSoldier), "ExitState")]
+          public static class UIStateEditSoldier_ExitState_patch
+          {
+              public static void Postfix(UIStateEditSoldier __instance)
+              {
+                  try
+                  {
+
+
+
+                  }
+                  catch (Exception e)
+                  {
+                      TFTVLogger.Error(e);
+                      throw;
+                  }
+              }
+          }*/
+
+
+        /*  [HarmonyPatch(typeof(GeoscapeView), "OpenModal")]
+          public static class GeoscapeView_OpenModal_patch
+          {
+              public static void Postfix(GeoscapeView __instance, ModalType modalType, DialogCallback callback, object modalData, int priority, ref bool forceOnTop, ref bool replaceTop)
+              {
+                  try
+                  {
+                      TFTVLogger.Always($"GeoscapeView.OpenModal: {modalType.GetName()}");
+
+                      if (modalType == ModalType.CharacterProgressionConfirmCharacter || modalType == ModalType.DualClassPicker)
+                      {
+
+
+
+                      }
+                  }
+                  catch (Exception e)
+                  {
+                      TFTVLogger.Error(e);
+                      throw;
+                  }
+              }
+          }*/
+
+
+
         /*  [HarmonyPatch(typeof(UnusableHandStatus), "AfterApply")]
           public static class UnusableHandStatus_AfterApply_patch
           {
@@ -74,131 +149,7 @@ namespace TFTV
 
 
 
-        [HarmonyPatch(typeof(GeoPhoenixFaction), "AddRecruit")]
-        public static class GeoPhoenixFaction_AddRecruit_patch
-        {
-            public static bool Prefix(GeoPhoenixFaction __instance, GeoCharacter recruit, IGeoCharacterContainer toContainer, IGeoCharacterContainer __result)
-            {
-                try
-                {
-                    //  TFTVLogger.Always($"{recruit.DisplayName} {toContainer?.Name} toContainer geosite? {toContainer is GeoSite} toContainer is PhoenixBase? {toContainer is GeoPhoenixBase}");
 
-                    if ((recruit.GameTags.Contains(TFTVChangesToDLC5.MercenaryTag)
-                        || recruit.GameTags.Contains(DefCache.GetDef<GameTagDef>("KaosBuggy_ClassTagDef"))
-                        || recruit.GameTags.Contains(TFTVProjectOsiris.OCPProductTag)) && toContainer != null && toContainer is GeoSite)
-                    {
-                        __instance.GeoLevel.View.PrepareDeployAsset(__instance, recruit, null, null, manufactured: false, spaceFull: false);
-                        __result = null;
-                        return false;
-                    }
-
-                    return true;
-
-
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                    throw;
-                }
-            }
-        }
-
-
-
-
-        //Patch necesarry to remove Slug filter from UI to avoid duplicate tech filters
-        //Transpiler magic from LucusTheDestroyer (all hail Lucus!)
-
-
-
-        [HarmonyPatch(typeof(UIStateEditSoldier), "OnSelectSecondaryClass")]
-        public static class UIStateEditSoldier_OnSelectSecondaryClass_patch
-        {
-            static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
-            {
-                List<CodeInstruction> listInstructions = new List<CodeInstruction>(instructions);
-                IEnumerable<CodeInstruction> insert = new List<CodeInstruction>
-        {
-            new CodeInstruction(OpCodes.Ldarg_0), //this (__instance in normal patch terms)
-            new CodeInstruction(OpCodes.Ldloc_1), //Storage index of the list of SpecializationDefs
-            new CodeInstruction(OpCodes.Call, typeof(UIStateEditSoldier_OnSelectSecondaryClass_patch).GetMethod("RemoveTech"))
-
-        };
-                for (int i = 0; i < instructions.Count(); i++)
-                {
-                    if (listInstructions[i].opcode == OpCodes.Stloc_1 && listInstructions[i + 1].opcode == OpCodes.Ldloc_0 && listInstructions[i + 2].opcode == OpCodes.Newobj)
-                    {
-                        listInstructions.InsertRange(i + 1, insert);
-                        return listInstructions;
-                    }
-                }
-                return instructions;
-            }
-            public static void RemoveTech(UIStateEditSoldier state, List<SpecializationDef> list)
-            {
-                try
-                {
-                    FieldInfo fieldInfo = state.GetType().GetField("_currentCharacter", BindingFlags.NonPublic | BindingFlags.Instance);
-                    GeoCharacter character = fieldInfo.GetValue(state) as GeoCharacter;
-                    if (character.Progression.MainSpecDef != TFTVChangesToDLC5.TFTVMercenaries.SlugSpecialization)
-                    {
-                        return;
-                    }
-                    SpecializationDef techSpec = DefCache.GetDef<SpecializationDef>("TechnicianSpecializationDef");
-                    if (list.Contains(techSpec))
-                    {
-                        list.Remove(techSpec);
-                    }
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                    throw;
-                }
-            }
-        }
-
-
-
-        [HarmonyPatch(typeof(UIStateEditSoldier), "InitFilters")]
-        public static class UIStateEditSoldier_InitFilters_patch
-        {
-            public static bool Prefix(UIStateEditSoldier __instance, GeoCharacter ____initCharacter)
-            {
-                try
-                {
-                    GeoPhoenixFaction faction = GameUtl.CurrentLevel().GetComponent<GeoLevelController>().PhoenixFaction;
-                    UIModuleActorCycle actorCycleModule = GameUtl.CurrentLevel().GetComponent<GeoLevelController>().View.GeoscapeModules.ActorCycleModule;
-                    UIModuleSoldierEquip soldierEquipModule = GameUtl.CurrentLevel().GetComponent<GeoLevelController>().View.GeoscapeModules.SoldierEquipModule;
-
-                    IReadOnlyList<SpecializationDef> availableCharacterSpecializations = faction.AvailableCharacterSpecializations;
-                    List<SpecializationDef> list = new List<SpecializationDef>();
-                    foreach (GeoCharacter geoCharacter in actorCycleModule.Characters)
-                    {
-                        if (geoCharacter.Progression != null)
-                        {
-                            foreach (SpecializationDef item in geoCharacter.Progression.GetSpecializations())
-                            {
-                                if (!list.Contains(item) && item != TFTVChangesToDLC5.TFTVMercenaries.SlugSpecialization)
-                                {
-                                    list.Add(item);
-                                }
-                            }
-                        }
-                    }
-                    soldierEquipModule.SetupClassFilters(availableCharacterSpecializations, list, ____initCharacter);
-
-                    return false;
-
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                    throw;
-                }
-            }
-        }
 
 
 
@@ -304,383 +255,18 @@ namespace TFTV
              }
          }*/
 
-        [HarmonyPatch(typeof(TacticalActor), "GetDefaultShootAbility")]
-        public static class TFTV_TacticalActor_GetDefaultShootAbility
-        {
-            public static void Postfix(TacticalActor __instance, ref ShootAbility __result)
-            {
-                try
-                {
-                    ShootAbilityDef stabilityTaurusShootAbilityDef = (ShootAbilityDef)Repo.GetDef("76ae9352-1343-4b95-964c-036341b6a0eb");
-                    ShootAbilityDef stabilityMissileShootAbilityDef = (ShootAbilityDef)Repo.GetDef("df2e83d1-8688-4e47-8559-cc6a9f9906d1");
 
-                    if (__instance.GetAbilityWithDef<ShootAbility>(stabilityTaurusShootAbilityDef) != null)
-                    {
-                        __result = __instance.GetAbilityWithDef<ShootAbility>(stabilityTaurusShootAbilityDef);
-                    }
-                    else if (__instance.GetAbilityWithDef<ShootAbility>(stabilityMissileShootAbilityDef) != null)
-                    {
-                        __result = __instance.GetAbilityWithDef<ShootAbility>(stabilityMissileShootAbilityDef);
-                    }
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                    throw;
-                }
-            }
-        }
 
 
 
-        [HarmonyPatch(typeof(TacContextHelpManager), "OnStatusApplied")]
-        public static class TFTV_TacContextHelpManager_OnApply
-        {
-            public static bool Prefix(TacContextHelpManager __instance, Status status)
-            {
-                try
-                {
-                    if (!(status is TacStatus tacStatus) || tacStatus.StatusComponent == null)
-                    {
-                        // TFTVLogger.Always($"TacContextHelpManager.OnStatusApplied status null! returning to avoid softlock");
-                        return false;
-                    }
 
-                    return true;
 
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                    throw;
-                }
-            }
-        }
 
 
-        [HarmonyPatch(typeof(SlotStateStatus), "OnApply")]
-        public static class TFTV_SlotStateStatus_OnApply
-        {
-            public static bool Prefix(SlotStateStatus __instance, StatusComponent statusComponent)
-            {
-                try
-                {
 
-                    if (__instance.Applied)
-                    {
-                        return true;
-                    }
+     
 
-                    string targetSlotName = TacUtil.GetStatusTargetSlotName(__instance);
-
-                    if (targetSlotName.IsNullOrEmpty())
-                    {
-                        TFTVLogger.Always($"{__instance.SlotStateStatusDef.name} status failed to apply to! Target slot not supplied! TFTV Kludge to prevent Softlock");
-                        return false;
-                    }
-
-                    return true;
-
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                    throw;
-                }
-            }
-        }
-
-
-
-
-        [HarmonyPatch(typeof(TacticalContribution), "AddContribution")]
-        public static class TFTV_TacticalContribution_AddContribution
-        {
-            public static void Postfix(TacticalContribution __instance, int cp, TacticalActorBase ____actor)
-            {
-                try
-                {
-
-                    if (cp <= 0)
-                    {
-                        return;
-                    }
-
-                    if (!____actor.Status.HasStatus<MindControlStatus>() || ____actor.Status.GetStatus<MindControlStatus>().ControllerActor == null)
-                    {
-                        return;
-                    }
-
-                    TacticalActor controllingActor = ____actor.Status.GetStatus<MindControlStatus>().ControllerActor;
-
-                    // TFTVLogger.Always($"{controllingActor.name} has {controllingActor.Contribution.Contribution} CP");
-
-                    FieldInfo contributionFieldInfo = typeof(TacticalContribution).GetField("_contribution", BindingFlags.NonPublic | BindingFlags.Instance);
-
-                    TacticalContribution controllingActorContribution = controllingActor.Contribution;
-
-                    int controllingActorContributionValue = controllingActorContribution.Contribution + cp / 2;
-
-                    contributionFieldInfo.SetValue(controllingActorContribution, controllingActorContributionValue);
-
-                    // TFTVLogger.Always($"{controllingActor.name} now has {controllingActor.Contribution.Contribution} CP");
-
-                    Debug.Log($"+{cp} cp for {controllingActor.name} (through Mind Controlled Unit).");
-
-
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                    throw;
-                }
-            }
-        }
-
-
-        [HarmonyPatch(typeof(TacticalItem), "SetToDisabled")]
-        public static class TFTV_TacticalItem_SetToDisabled
-        {
-            public static void Prefix(TacticalItem __instance)
-            {
-                try
-                {
-                    TacticalActor tacActor = __instance.TacticalActor;
-
-                    GroundVehicleWeaponDef meph = (GroundVehicleWeaponDef)Repo.GetDef("49723d28-b373-3bc4-7918-21e87a72c585");
-                    GroundVehicleWeaponDef obliterator = (GroundVehicleWeaponDef)Repo.GetDef("ffb34012-b1fd-4b24-8236-ba2eb23db0b7");
-
-                    if (__instance.ItemDef == obliterator && tacActor != null)
-                    {
-                        TFTVLogger.Always($"it's the obliterator");
-
-                        if (tacActor.Equipments.Equipments.Any(e => e.ItemDef == meph && e.Enabled))
-                        {
-                            TFTVLogger.Always($"Obliterator destroyed, removing meph");
-                            tacActor.Equipments.RemoveItem(meph).Destroy();
-                            TFTVLogger.Always($"should be destroyed");
-                        }
-                    }
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                    throw;
-                }
-            }
-        }
-
-
-
-        [HarmonyPatch(typeof(Addon), "Destroy")]
-        public static class TFTV_Addon_RemoveItem
-        {
-            public static bool Prefix(Addon __instance, ref List<Addon> __result)
-            {
-                try
-                {
-                    if (__instance == null)
-                    {
-                        __result = new List<Addon>();
-
-                        return false;
-                    }
-                    return true;
-
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                    throw;
-                }
-            }
-        }
-
-
-        [HarmonyPatch(typeof(InventoryComponent), "RemoveItem", new Type[] { typeof(ItemDef) })]
-        public static class TFTV_InventoryComponent_RemoveItem
-        {
-            public static bool Prefix(InventoryComponent __instance, ItemDef itemDef, ref Item __result)
-            {
-                try
-                {
-                    Item item = __instance.GetItem(itemDef);
-
-                    TFTVLogger.Always($"item null? {item == null} {item?.ItemDef?.name}");
-
-                    if (item != null)
-                    {
-                        __instance.RemoveItem(item);
-                    }
-
-                    __result = item;
-
-                    return false;
-
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                    throw;
-                }
-            }
-        }
-
-
-        [HarmonyPatch(typeof(TacticalAbility), "get_EquipmentWithTags")]
-        public static class TFTV_TacticalAbility_get_EquipmentWithTags
-        {
-            public static void Postfix(TacticalAbility __instance, ref Equipment __result)
-            {
-                try
-                {
-                    if (__instance.TacticalAbilityDef == DefCache.GetDef<ShootAbilityDef>("EchoHead_ShootAbilityDef"))
-                    {
-                        if (__instance.SelectedEquipment != null && __instance.SelectedEquipment.GameTags.Contains(DefCache.GetDef<GameTagDef>("SilencedWeapon_TagDef")))
-                        {
-                            __result = null;
-                        }
-                    }
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                    throw;
-                }
-            }
-        }
-
-
-        [HarmonyPatch(typeof(ShootAbility), "Activate")]
-        public static class TFTV_ShootAbility_Activate
-        {
-            public static void Prefix(ShootAbility __instance)
-            {
-                try
-                {
-                    if (__instance.TacticalAbilityDef == DefCache.GetDef<ShootAbilityDef>("EchoHead_ShootAbilityDef"))
-                    {
-                        _usingEchoHead = true;
-                    }
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                    throw;
-                }
-            }
-        }
-
-        [HarmonyPatch(typeof(Weapon), "IsAttackSilent")]
-        public static class TFTV_Weapon_IsAttackSilent
-        {
-            public static void Postfix(Weapon __instance, ref bool __result)
-            {
-                try
-                {
-                    if (_usingEchoHead)
-                    {
-                        __result = true;
-                        _usingEchoHead = false;
-                    }
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                    throw;
-                }
-            }
-        }
-
-
-        [HarmonyPatch(typeof(TacticalFactionVision), "LocateRandomEnemyIfNeeded")]
-        public static class TFTV_TacticalFactionVision_LocateRandomEnemyIfNeeded
-        {
-            public static bool Prefix(TacticalFactionVision __instance)
-            {
-                try
-                {
-                    return false;
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                    throw;
-                }
-            }
-        }
-
-        public static void CheckSquashing(TacticalAbility ability, TacticalActor tacticalActor)
-        {
-            try
-            {
-
-                if (ability == null || tacticalActor == null)
-                {
-                    return;
-                }
-
-
-                if (ability is CaterpillarMoveAbility caterpillarMoveAbility
-                    && caterpillarMoveAbility.TacticalDemolition != null && caterpillarMoveAbility.TacticalDemolition.TacticalDemolitionComponentDef.DemolitionBodyShape == TacticalDemolitionComponentDef.DemolitionShape.Rectangle)
-                {
-
-                }
-                else
-                {
-                    return;
-                }
-
-
-                Vector3 direction = tacticalActor.NavigationComponent.Direction;
-
-                Vector3 frontcentre = tacticalActor.transform.position + direction;
-
-                Type type = typeof(CaterpillarMoveAbility);
-
-                // Get the field info for _actorBases
-                FieldInfo fieldInfo = type.GetField("_actorBases", BindingFlags.NonPublic | BindingFlags.Instance);
-
-                // Get the value of _actorBases
-                HashSet<TacticalActorBase> actorBases = (HashSet<TacticalActorBase>)fieldInfo.GetValue(caterpillarMoveAbility);
-
-                List<TacticalActor> nearbyActors = tacticalActor.TacticalLevel.Map.GetActors<TacticalActor>().
-                    Where(a => a.IsAlive && a.HasGameTag(DefCache.GetDef<GameTagDef>("DamageByCaterpillarTracks_TagDef"))
-                    && (a.Pos - frontcentre).sqrMagnitude < 1)
-                    .ToList();
-
-                foreach (TacticalActor actor in nearbyActors)
-                {
-                    if (actorBases.Contains(actor))
-                    {
-                        continue;
-                    }
-
-                    TFTVLogger.Always($"squashing {actor.name}");
-
-                    ApplyDamageEffectAbility ability1 = actor.GetAbility<ApplyDamageEffectAbility>();
-
-                    if (ability1 != null)
-                    {
-                        ability1.Activate();
-                        actorBases.Add(actor);
-                        fieldInfo.SetValue(caterpillarMoveAbility, actorBases);
-                    }
-                    else
-                    {
-                        actor.Health.SetToMin();
-                        actorBases.Add(actor);
-                        fieldInfo.SetValue(caterpillarMoveAbility, actorBases);
-                    }
-                }
-            }
-
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-                throw;
-            }
-        }
+        
 
 
 
@@ -839,80 +425,14 @@ namespace TFTV
             }
         }*/
 
-        [HarmonyPatch(typeof(GeoAbilityView), "GetDisabledStateText", typeof(GeoAbilityTarget))]
-        public static class TFTV_GeoAbilityView_GetDisabledStateText
-        {
-            public static void Postfix(GeoAbilityView __instance, ref string __result)
-            {
-                try
-                {
-                    if (__instance.GeoAbility is LaunchBehemothMissionAbility)
-                    {
-                        __result = "Behemoth is submerged!";
-                    }
-                }
-
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                    throw;
-                }
-            }
-        }
-
-        [HarmonyPatch(typeof(ItemManufacturing), "FinishManufactureItem")]
-        public static class TFTV_ItemManufacturing_FinishManufactureItem
-        {
-            public static void Postfix(ItemManufacturing __instance, ManufactureQueueItem element)
-            {
-                try
-                {
-                    //  TFTVLogger.Always($"{element.ManufacturableItem.Name}, {element.ManufacturableItem.RelatedItemDef.name}");
-
-
-                    if (element.ManufacturableItem.RelatedItemDef.name.Equals("PP_MaskedManticore_VehicleItemDef"))
-                    {
-                        TFTVHints.GeoscapeHints.TriggerBehemothMissionHint(GameUtl.CurrentLevel().GetComponent<GeoLevelController>());
-
-                    }
-
-                }
-
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                    throw;
-                }
-            }
-        }
 
 
 
 
 
 
-        [HarmonyPatch(typeof(LaunchBehemothMissionAbility), "GetDisabledStateInternal")]
-        public static class TFTV_LaunchBehemothMissionAbility_GetDisabledStateInternal_patch
-        {
 
-            public static void Postfix(LaunchBehemothMissionAbility __instance, ref GeoAbilityDisabledState __result)
-            {
-                try
-                {
-                    if (__instance.GeoLevel.AlienFaction.Behemoth == null || __instance.GeoLevel.AlienFaction.Behemoth != null &&
-                        (__instance.GeoLevel.AlienFaction.Behemoth.CurrentBehemothStatus == GeoBehemothActor.BehemothStatus.Dormant))
-                    {
-                        __result = GeoAbilityDisabledState.RequirementsNotMet;
-                    }
-                }
 
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                    throw;
-                }
-            }
-        }
 
 
 
@@ -937,177 +457,9 @@ namespace TFTV
            }*/
 
 
-        [HarmonyPatch(typeof(LaunchBehemothMissionAbility), "ActivateInternal")]
-        public static class TFTV_LaunchBehemothMissionAbility_ActivateInternal_patch
-        {
-
-            public static void Prefix(LaunchBehemothMissionAbility __instance)
-            {
-                try
-                {
-                    TFTVHints.GeoscapeHints.TriggerBehemothDeployHint(__instance.GeoLevel);
-                }
-
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                    throw;
-                }
-            }
-        }
-
-
-        private static bool CheckLayout(GeoPhoenixBaseLayout layout)
-        {
-            try
-            {
-                if (layout.Facilities.Any(f => f.Def.Size == 2))
-                {
-                    return true;
-                }
-
-                return false;
-
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-                throw;
-            }
-        }
-
-        private static GeoPhoenixBaseLayout GenerateBaseLayout(GeoPhoenixBaseTemplate template, GeoPhoenixBaseLayoutDef layoutDef, int randomSeed)
-        {
-            try
-            {
-                PhoenixFacilityDef accessLift = DefCache.GetDef<PhoenixFacilityDef>("AccessLift_PhoenixFacilityDef");
-
-                UnityEngine.Random.InitState(randomSeed);
-                PhoenixBaseLayoutEdge entrance = PhoenixBaseLayoutEdge.Bottom;
-                GeoPhoenixBaseLayout geoPhoenixBaseLayout = new GeoPhoenixBaseLayout(layoutDef, entrance);
-                Vector2Int randomElement = geoPhoenixBaseLayout.GetBuildableTiles().GetRandomElement();
-                geoPhoenixBaseLayout.PlaceBaseEntrance(randomElement);
-                IList<PhoenixFacilityData> list = template.FacilityData.ToList().Shuffle();
-                List<Vector2Int> list2 = new List<Vector2Int>();
-
-                int facilitiesCount = list.Count;
-
-                //  TFTVLogger.Always($"Checking facilities in list for base {template.Name.Localize()}");
-
-                foreach (PhoenixFacilityData facilityData in list)
-                {
-                    TFTVLogger.Always($"{facilityData.FacilityDef.name}", false);
-                }
-
-                while (list.Count > 0)
-                {
-                    PhoenixFacilityData phoenixFacilityData = null;
-
-                    if (list.Count == list.Count - 2) //place hangar 3rd
-                    {
-                        IEnumerable<PhoenixFacilityData> source = list.Where((PhoenixFacilityData f) => f.FacilityDef.Size == 2);
-                        phoenixFacilityData = ((!source.Any()) ? list.Last() : source.First());
-                        //   TFTVLogger.Always($"Facility to be placed: {phoenixFacilityData?.FacilityDef?.name}");
-
-                    }
-                    else if (list.Count == list.Count - 4) //place access lift with at least one space to hangar
-                    {
-                        IEnumerable<PhoenixFacilityData> source = list.Where((PhoenixFacilityData f) => f.FacilityDef == accessLift);
-                        phoenixFacilityData = ((!source.Any()) ? list.Last() : source.First());
-                        //   TFTVLogger.Always($"Facility to be placed: {phoenixFacilityData?.FacilityDef?.name}");
-                    }
-                    else //place anything except access lift or hangar in between
-                    {
-                        IEnumerable<PhoenixFacilityData> source = list.Where((PhoenixFacilityData f) => f.FacilityDef.Size == 1 && f.FacilityDef != accessLift);
-                        phoenixFacilityData = ((!source.Any()) ? list.Last() : source.First());
-                        //  TFTVLogger.Always($"Facility to be placed: {phoenixFacilityData?.FacilityDef?.name}");
-                    }
-
-                    list2.Clear();
-                    geoPhoenixBaseLayout.GetBuildableTilesForFacility(phoenixFacilityData.FacilityDef, list2);
-                    if (list2.Count == 0)
-                    {
-                        Debug.LogError("No tiles available for placing facility " + phoenixFacilityData.FacilityDef.name + "!");
-                    }
-                    else
-                    {
-                        GeoPhoenixFacility geoPhoenixFacility = geoPhoenixBaseLayout.PlaceFacility(position: list2.GetRandomElement(), facilityDef: phoenixFacilityData.FacilityDef, dontPlaceCorridors: false);
-                        if (template.ApplyFullDamageOnFacilities)
-                        {
-                            geoPhoenixFacility.ApplyFullDamageOnFacility();
-                        }
-                        else if (phoenixFacilityData.StartingHealth < 100)
-                        {
-                            geoPhoenixFacility.DamageFacility(100 - phoenixFacilityData.StartingHealth);
-                        }
-
-                        TFTVLogger.Always($"Facility placed: {geoPhoenixFacility.Def.name}");
-                    }
-
-                    if (0 == 0)
-                    {
-                        list.Remove(phoenixFacilityData);
-                    }
-                }
-
-                int num = template.BlockedTiles.RandomValue();
-                for (int i = 0; i < num; i++)
-                {
-                    ICollection<Vector2Int> rockPlacableTiles = geoPhoenixBaseLayout.GetRockPlacableTiles();
-                    if (rockPlacableTiles.Count() == 0)
-                    {
-                        Debug.LogWarning("No place left to place rock in phoenix base!");
-                        break;
-                    }
-
-                    Vector2Int randomElement3 = rockPlacableTiles.GetRandomElement();
-                    geoPhoenixBaseLayout.PlaceRock(randomElement3);
-                }
-
-                return geoPhoenixBaseLayout;
-            }
-
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-                throw;
-            }
 
 
 
-        }
-
-
-        [HarmonyPatch(typeof(GeoPhoenixBaseTemplate), "CreateBaseLayout")]
-        public static class TFTV_GeoPhoenixBaseTemplate_CreateBaseLayout_patch
-        {
-
-            public static bool Prefix(GeoPhoenixBaseTemplate __instance, ref GeoPhoenixBaseLayout __result, GeoPhoenixBaseLayoutDef layoutDef, int randomSeed)
-            {
-                try
-                {
-
-
-                    GeoPhoenixBaseLayout layout = GenerateBaseLayout(__instance, layoutDef, randomSeed);
-
-                    if (CheckLayout(layout))
-                    {
-                        __result = layout;
-                        return false;
-                    }
-
-                    TFTVLogger.Always($"Failed to generate TFTV layout! Allowing to generate regular layout");
-
-                    return true;
-                }
-
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                    throw;
-                }
-            }
-        }
 
 
         //.GetDamageModifierForDistance

@@ -1,18 +1,13 @@
 ﻿using Base.Defs;
-using PhoenixPoint.Common.Core;
-using PhoenixPoint.Tactical.Entities.Abilities;
-using PhoenixPoint.Tactical.Entities.Equipments;
-using PhoenixPoint.Tactical.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Base.Entities;
 using HarmonyLib;
+using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities.GameTags;
-using System.Reflection;
+using PhoenixPoint.Tactical.Entities;
+using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.View.ViewModules;
+using System;
+using System.Reflection;
 
 namespace TFTV
 {
@@ -59,6 +54,8 @@ namespace TFTV
                 try
                 {
 
+                    
+
                     if (mutoidReceivingHealing != null)
                     {
                         __result = 0;
@@ -82,7 +79,7 @@ namespace TFTV
             {
                 try
                 {
-                   // TFTVLogger.Always($"HealAbility {__instance.HealAbilityDef.name}");
+                    // TFTVLogger.Always($"HealAbility {__instance.HealAbilityDef.name}");
 
                     if (__instance.HealAbilityDef.name.Equals("DoTMedkit"))
                     {
@@ -98,7 +95,7 @@ namespace TFTV
                             {
                                 __result = true;
                             }
-                        }                       
+                        }
                     }
                 }
                 catch (Exception e)

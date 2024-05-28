@@ -373,8 +373,8 @@ namespace PRMBetterClasses.SkillModifications
                 }
 
                 // Change description text, not localized (currently), old one mentions fixed buffs that are taken away or set differently by this mod
-                string newText = Helper.NotLocalizedTextMap[pmad.ViewElementDef.name][ViewElement.Description];
-                pmad.ViewElementDef.Description = new LocalizedTextBind(newText, Config.DoNotLocalizeChangedTexts);
+              //  string newText = Helper.NotLocalizedTextMap[pmad.ViewElementDef.name][ViewElement.Description];
+             //   pmad.ViewElementDef.Description = new LocalizedTextBind(newText, Config.DoNotLocalizeChangedTexts);
 
                 PRMLogger.Debug("Proficiency def name: " + pmad.name);
                 PRMLogger.Debug("Viewelement name:     " + pmad.ViewElementDef.name);

@@ -16,6 +16,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using static RootMotion.FinalIK.IKSolverVR;
 
 namespace TFTV
 {
@@ -38,11 +39,11 @@ namespace TFTV
             {
                 try
                 {
+                    TacticalItem base_OwnerItem = (TacticalItem)AccessTools.Property(typeof(TacticalItemAspectBase), "OwnerItem").GetValue(__instance, null);
+                    TacticalActor tacticalActor = base_OwnerItem.TacticalActor;
+
                     if (__instance.BodyPartAspectDef.name.Equals("E_BodyPartAspect [AN_Berserker_Shooter_LeftArm_WeaponDef]"))
                     {
-                        TacticalItem base_OwnerItem = (TacticalItem)AccessTools.Property(typeof(TacticalItemAspectBase), "OwnerItem").GetValue(__instance, null);
-                        TacticalActor tacticalActor = base_OwnerItem.TacticalActor;
-
                         UnusableHandStatusDef unUsableLeftHandStatus = DefCache.GetDef<UnusableHandStatusDef>("UnusableLeftHand_StatusDef");
 
                         if (tacticalActor.HasStatus(BrokenSpikeShooterStatus))
@@ -57,6 +58,7 @@ namespace TFTV
                             tacticalActor.Status.ApplyStatus(unUsableLeftHandStatus);
                         }
                     }
+
                 }
                 catch (Exception e)
                 {
@@ -82,54 +84,63 @@ namespace TFTV
             [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051")]
             private static void Postfix(BodyPartAspect __instance)
             {
-                if (TFTVNewGameOptions.StaminaPenaltyFromInjurySetting)
-                {                 
-                    TacticalItem base_OwnerItem = (TacticalItem)AccessTools.Property(typeof(TacticalItemAspectBase), "OwnerItem").GetValue(__instance, null);
-                    int unitId = base_OwnerItem.TacticalActorBase.GeoUnitId;
-              
-                    ItemSlotDef itemSlotDef = base_OwnerItem.ItemDef.RequiredSlotBinds[0].RequiredSlot as ItemSlotDef;
+                try
+                {
 
-                    string bodyPart = itemSlotDef.SlotName;
-
-                    if (base_OwnerItem.TacticalActor.IsAlive && !base_OwnerItem.TacticalActor.HasGameTag(Shared.SharedGameTags.VehicleTag))
+                    if (TFTVNewGameOptions.StaminaPenaltyFromInjurySetting)
                     {
-                        if (!charactersWithDisabledBodyParts.ContainsKey(unitId))
+                        TacticalItem base_OwnerItem = (TacticalItem)AccessTools.Property(typeof(TacticalItemAspectBase), "OwnerItem").GetValue(__instance, null);
+                        int unitId = base_OwnerItem.TacticalActorBase.GeoUnitId;
+
+                        ItemSlotDef itemSlotDef = base_OwnerItem.ItemDef.RequiredSlotBinds[0].RequiredSlot as ItemSlotDef;
+
+                        string bodyPart = itemSlotDef.SlotName;
+
+                        if (base_OwnerItem.TacticalActor.IsAlive && !base_OwnerItem.TacticalActor.HasGameTag(Shared.SharedGameTags.VehicleTag))
                         {
-                            charactersWithDisabledBodyParts.Add(unitId, new List<string> { bodyPart });
-                            TFTVLogger.Always(base_OwnerItem.TacticalActor.GetDisplayName() + " has a disabled " + bodyPart);
+                            if (!charactersWithDisabledBodyParts.ContainsKey(unitId))
+                            {
+                                charactersWithDisabledBodyParts.Add(unitId, new List<string> { bodyPart });
+                                TFTVLogger.Always($"{base_OwnerItem.TacticalActor.DisplayName} has a disabled {bodyPart}");
+                            }
+                            else if (charactersWithDisabledBodyParts.ContainsKey(unitId) && !charactersWithDisabledBodyParts[unitId].Contains(bodyPart) && bodyPart != null)
+                            {
+                                charactersWithDisabledBodyParts[unitId].Add(bodyPart);
+                                TFTVLogger.Always($"{base_OwnerItem.TacticalActor.DisplayName} has a disabled {bodyPart}");
+                            }
                         }
-                        else if (charactersWithDisabledBodyParts.ContainsKey(unitId) && !charactersWithDisabledBodyParts[unitId].Contains(bodyPart) && bodyPart != null)
+                    }
+
+                    if (__instance.BodyPartAspectDef.name.Equals("E_BodyPartAspect [AN_Berserker_Shooter_LeftArm_WeaponDef]"))
+                    {
+                        TacticalItem base_OwnerItem = (TacticalItem)AccessTools.Property(typeof(TacticalItemAspectBase), "OwnerItem").GetValue(__instance, null);
+                        TacticalActor tacticalActor = base_OwnerItem.TacticalActor;
+
+                        if (tacticalActor.HasStatus(DefCache.GetDef<FreezeAspectStatsStatusDef>("IgnorePain_StatusDef")))
                         {
-                            charactersWithDisabledBodyParts[unitId].Add(bodyPart);
-                            TFTVLogger.Always(base_OwnerItem.TacticalActor.GetDisplayName() + " has a disabled " + bodyPart);
+                            return;
+                        }
+
+                        UnusableHandStatusDef unUsableLeftHandStatus = DefCache.GetDef<UnusableHandStatusDef>("UnusableLeftHand_StatusDef");
+
+                        if (!tacticalActor.HasStatus(BrokenSpikeShooterStatus))
+                        {
+                            TFTVLogger.Always($"adding {BrokenSpikeShooterStatus.name} to {tacticalActor.name}, because {__instance.BodyPartAspectDef.name} is disabled");
+                            tacticalActor.Status.ApplyStatus(BrokenSpikeShooterStatus);
+                        }
+
+                        if (tacticalActor.HasStatus(unUsableLeftHandStatus))
+                        {
+                            TFTVLogger.Always($"Removing {unUsableLeftHandStatus.name}");
+                            tacticalActor.Status.UnapplyStatus(tacticalActor.Status.GetStatusByName(unUsableLeftHandStatus.EffectName));
                         }
                     }
                 }
-
-                if(__instance.BodyPartAspectDef.name.Equals("E_BodyPartAspect [AN_Berserker_Shooter_LeftArm_WeaponDef]")) 
-                {                      
-                    TacticalItem base_OwnerItem = (TacticalItem)AccessTools.Property(typeof(TacticalItemAspectBase), "OwnerItem").GetValue(__instance, null);
-                    TacticalActor tacticalActor = base_OwnerItem.TacticalActor;
-
-                    if (tacticalActor.HasStatus(DefCache.GetDef<FreezeAspectStatsStatusDef>("IgnorePain_StatusDef"))) 
-                    {
-                        return;
-                    }
-
-                    UnusableHandStatusDef unUsableLeftHandStatus = DefCache.GetDef<UnusableHandStatusDef>("UnusableLeftHand_StatusDef");
-
-                    if (!tacticalActor.HasStatus(BrokenSpikeShooterStatus))
-                    {
-                        TFTVLogger.Always($"adding {BrokenSpikeShooterStatus.name} to {tacticalActor.name}, because {__instance.BodyPartAspectDef.name} is disabled");
-                        tacticalActor.Status.ApplyStatus(BrokenSpikeShooterStatus);
-                    }
-
-                    if (tacticalActor.HasStatus(unUsableLeftHandStatus)) 
-                    {
-                        TFTVLogger.Always($"Removing {unUsableLeftHandStatus.name}");
-                        tacticalActor.Status.UnapplyStatus(tacticalActor.Status.GetStatusByName(unUsableLeftHandStatus.EffectName));                  
-                    }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
                 }
+
             }
         }
 

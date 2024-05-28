@@ -661,6 +661,7 @@ namespace TFTV
                       DefCache.GetDef<EncounterVariableResearchRequirementDef>("NJ_Bionics1_ResearchDef_EncounterVariableResearchRequirementDef_0");
 
                 EncounterVariableResearchRequirementDef newResReq = Helper.CreateDefFromClone(sourceVarResReq, gUID, nameDef);
+                newResReq.Operation = EncounterVariableResearchRequirementDef.EncounterVariableRequirementOperation.GreaterOrEqual;
                 newResReq.VariableName = variable;
                 newResReq.Value = value;
                 return newResReq;

@@ -428,7 +428,7 @@ namespace TFTV
                 {
                     try
                     {
-                        if (__instance.Description.LocalizationKey == "BASEDEFENSE_INFESTATION_OBJECTIVE" && __result.Count() > 0)
+                        if (__instance.Description.LocalizationKey == "BASEDEFENSE_SECOND_OBJECTIVE" && __result.Count() > 0)
                         {
                             //  TFTVLogger.Always("Got passed if check");
 
@@ -1975,19 +1975,17 @@ namespace TFTV
                     _securityStationSpawnPositions.Clear();
 
                     List<Breakable> security = UnityEngine.Object.FindObjectsOfType<Breakable>().Where(b => b.name.StartsWith("PP_LoCov_SecurityRoom_Projector_3x3_A_StructuralTarget")).ToList();
-
-                    TFTVLogger.Always($"Security Stations # {security.Count()}");
+                    TacticalFactionDef phoenixFactionDef = DefCache.GetDef<TacticalFactionDef>("Phoenix_TacticalFactionDef");
+                    TacticalFactionDef alienFactionDef = DefCache.GetDef<TacticalFactionDef>("Alien_TacticalFactionDef");
+                    
+                    TFTVLogger.Always($"Security Stations # {security.Count()}, alien faction present?: {controller.Factions.Any(f=>f.TacticalFactionDef.ShortName.Equals("aln"))}");
 
                     if (security.Count == 0)
                     {
                         return;
                     }
 
-                    TacticalFactionDef phoenixFactionDef = DefCache.GetDef<TacticalFactionDef>("Phoenix_TacticalFactionDef");
-                    TacticalFactionDef alienFactionDef = DefCache.GetDef<TacticalFactionDef>("Alien_TacticalFactionDef");
-
-
-                    if (TimeLeft >= 12 || !controller.Factions.Any(f => f.Faction.FactionDef==alienFactionDef))
+                    if (TimeLeft >= 12 || !controller.Factions.Any(f => f.TacticalFactionDef.ShortName.Equals("aln")))
                     {
                         foreach (Breakable station in security)
                         {

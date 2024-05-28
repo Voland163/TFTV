@@ -7,10 +7,12 @@ using PhoenixPoint.Common.ContextHelp;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
+using PhoenixPoint.Common.Levels.Missions;
 using PhoenixPoint.Common.View.ViewControllers;
 using PhoenixPoint.Geoscape.Core;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.Missions;
+using PhoenixPoint.Geoscape.Entities.Missions.Outcomes;
 using PhoenixPoint.Geoscape.Events;
 using PhoenixPoint.Geoscape.Events.Eventus;
 using PhoenixPoint.Geoscape.Levels;
@@ -18,6 +20,7 @@ using PhoenixPoint.Geoscape.Levels.Objectives;
 using PhoenixPoint.Geoscape.View.ViewControllers.Modal;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Levels;
+using PhoenixPoint.Tactical.Levels.FactionObjectives;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -46,6 +49,112 @@ namespace TFTV
 
         public static int HavenPopulation = 0;
         public static string OriginalOwner = "";
+
+        
+        private static GeoscapeEventDef _lW1MissWin;
+        private static GeoscapeEventDef _lW2MissWin;
+        private static GeoscapeEventDef _lW3MissWin;
+        private static GeoscapeEventDef _lwExtra0;
+      
+
+        internal class Defs 
+        { 
+           
+
+            public static void ImplementInfestationDefs()
+            {
+                try 
+                {
+                    Events();
+                    Missions();
+                
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+
+            }
+
+            private static void Events()
+            {
+                try
+                {
+                    //  GeoscapeEventDef rewardEvent = TFTVCommonMethods.CreateNewEvent("InfestationReward", "KEY_INFESTATION_REWARD_TITLE", "KEY_INFESTATION_REWARD_DESCRIPTION", null);
+                    _lW1MissWin = DefCache.GetDef<GeoscapeEventDef>("PROG_LW1_WIN_GeoscapeEventDef");
+                    _lW1MissWin.GeoscapeEventData.Choices[0].Outcome.SetEvents.Clear();
+                    _lW1MissWin.GeoscapeEventData.Choices[0].Outcome.TrackEncounters.Clear();
+                    _lW1MissWin.GeoscapeEventData.Choices[0].Outcome.UntrackEncounters.Clear();
+                    _lW2MissWin = DefCache.GetDef<GeoscapeEventDef>("PROG_LW2_WIN_GeoscapeEventDef");
+                    _lW2MissWin.GeoscapeEventData.Choices[0].Outcome.SetEvents.Clear();
+                    _lW2MissWin.GeoscapeEventData.Choices[0].Outcome.TrackEncounters.Clear();
+                    _lW2MissWin.GeoscapeEventData.Choices[0].Outcome.UntrackEncounters.Clear();
+                    _lW3MissWin = DefCache.GetDef<GeoscapeEventDef>("PROG_LW3_WIN_GeoscapeEventDef");
+                    _lW3MissWin.GeoscapeEventData.Choices[0].Outcome.SetEvents.Clear();
+                    _lW3MissWin.GeoscapeEventData.Choices[0].Outcome.TrackEncounters.Clear();
+                    _lW3MissWin.GeoscapeEventData.Choices[0].Outcome.UntrackEncounters.Clear();
+
+                    _lwExtra0 = Helper.CreateDefFromClone(_lW1MissWin, "{2522E86A-91B5-4FAB-86C1-51EE5F30EBF7}", "LW_EXTRA0_GeoscapeEventDef");
+                    _lwExtra0.GeoscapeEventData.Description[0].General.LocalizationKey = "KEY_INFESTATION_REPEAT_LW";
+                    _lwExtra0.GeoscapeEventData.EventID = "LW_EXTRA0";
+                    _lwExtra0.GeoscapeEventData.Title.LocalizationKey = "KEY_INFESTATION_REPEAT_LW_TITLE";
+                    _lwExtra0.GeoscapeEventData.Choices[0].Outcome.OutcomeText.General.LocalizationKey = "KEY_INFESTATION_REPEAT_OUTCOME";
+
+                    
+
+
+                    //Muting Living Weapons
+                    GeoscapeEventDef lwstartingEvent = DefCache.GetDef<GeoscapeEventDef>("PROG_LW1_GeoscapeEventDef");
+                    lwstartingEvent.GeoscapeEventData.Mute = true;
+                    DefCache.GetDef<KillActorFactionObjectiveDef>("KillCorruptionNode_CustomMissionObjective").MissionObjectiveData.ExperienceReward = 1000;
+
+                    
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+
+            }
+
+            private static void Missions()
+            {
+                try
+                {
+                    CustomMissionTypeDef Anu_Infestation = DefCache.GetDef<CustomMissionTypeDef>("HavenInfestationAN_CustomMissionTypeDef");
+                    CustomMissionTypeDef NewJericho_Infestation = DefCache.GetDef<CustomMissionTypeDef>("HavenInfestationSY_CustomMissionTypeDef");
+                    CustomMissionTypeDef Synderion_Infestation = DefCache.GetDef<CustomMissionTypeDef>("HavenInfestationNJ_CustomMissionTypeDef");
+
+                    List<CustomMissionTypeDef> infestationMissions = new List<CustomMissionTypeDef>() { Anu_Infestation, NewJericho_Infestation, Synderion_Infestation };
+
+                    ResourceMissionOutcomeDef sourceMissonResourceReward = DefCache.GetDef<ResourceMissionOutcomeDef>("HavenDefAN_ResourceMissionOutcomeDef");
+                    ResourceMissionOutcomeDef mutagenRewardInfestation = Helper.CreateDefFromClone(sourceMissonResourceReward, "2E579AB8-3744-4994-8036-B5018B5E2E15", "InfestationReward");
+                    mutagenRewardInfestation.Resources.Values.Clear();
+                    mutagenRewardInfestation.Resources.Values.Add(new ResourceUnit { Type = PhoenixPoint.Common.Core.ResourceType.Mutagen, Value = 800 });
+
+                    foreach (CustomMissionTypeDef missionTypeDef in infestationMissions)
+                    {
+
+                        missionTypeDef.Outcomes[0].DestroySite = true;
+                        missionTypeDef.Outcomes[0].Outcomes[2] = mutagenRewardInfestation;
+                        missionTypeDef.Outcomes[0].BriefingModalBind.Title.LocalizationKey = "KEY_MISSION_HAVEN_INFESTED_VICTORY_NAME";
+                        missionTypeDef.Outcomes[0].BriefingModalBind.Description.LocalizationKey = "KEY_MISSION_HAVEN_INFESTED_VICTORY_DESCRIPTION";
+                        missionTypeDef.BriefingModalBind.Title.LocalizationKey = "KEY_MISSION_HAVEN_INFESTED_NAME";
+                        missionTypeDef.BriefingModalBind.Description.LocalizationKey = "KEY_MISSION_HAVEN_INFESTED_DESCRIPTION";
+
+                    }
+
+
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+
+            }
+
+        }
 
 
        public static void ImplementLocateInfestedHavenOnObjectiveClick(DiplomaticGeoFactionObjective objective, ref IEnumerable<GeoActor> __result, ref List<GeoSite> ____assignedSites)
@@ -559,11 +668,6 @@ namespace TFTV
                 }
 
             }
-
-
-
-
-
         }
 
         internal class Outcome
@@ -724,9 +828,7 @@ namespace TFTV
                                 }
 
 
-                                GeoscapeEventDef LW1Miss = DefCache.GetDef<GeoscapeEventDef>("PROG_LW1_WIN_GeoscapeEventDef");
-                                GeoscapeEventDef LW2Miss = DefCache.GetDef<GeoscapeEventDef>("PROG_LW2_WIN_GeoscapeEventDef");
-                                GeoscapeEventDef LW3Miss = DefCache.GetDef<GeoscapeEventDef>("PROG_LW3_WIN_GeoscapeEventDef");
+                               
 
                                 string firstHavenDescription0 = TFTVCommonMethods.ConvertKeyToString("KEY_INFESTATION_FIRST_HAVEN0");
                                 string firstHavenDescription1 = TFTVCommonMethods.ConvertKeyToString("KEY_INFESTATION_FIRST_HAVEN1");
@@ -760,28 +862,51 @@ namespace TFTV
 
                                 if (site.GeoLevel.EventSystem.GetVariable(LivingWeaponsAcquired) == 0)
                                 {
-                                    LW1Miss.GeoscapeEventData.Description[0].General = lWDescription1;
+                                    _lW1MissWin.GeoscapeEventData.Description[0].General = lWDescription1;
                                     GeoscapeEventContext context = new GeoscapeEventContext(site, site.GeoLevel.PhoenixFaction);
-                                    site.GeoLevel.EventSystem.TriggerGeoscapeEvent("PROG_LW1_WIN", context);
+                                    site.GeoLevel.EventSystem.TriggerGeoscapeEvent(_lW1MissWin.EventID, context);
                                     site.GeoLevel.EventSystem.SetVariable(LivingWeaponsAcquired, 1);
                                 }
                                 else if (site.GeoLevel.EventSystem.GetVariable(LivingWeaponsAcquired) == 1)
                                 {
-                                    LW2Miss.GeoscapeEventData.Description[0].General = lWDescription2;
+                                    _lW2MissWin.GeoscapeEventData.Description[0].General = lWDescription2;
                                     GeoscapeEventContext context = new GeoscapeEventContext(site, site.GeoLevel.PhoenixFaction);
-                                    site.GeoLevel.EventSystem.TriggerGeoscapeEvent("PROG_LW2_WIN", context);
+                                    site.GeoLevel.EventSystem.TriggerGeoscapeEvent(_lW2MissWin.EventID, context);
                                     site.GeoLevel.EventSystem.SetVariable(LivingWeaponsAcquired, 2);
-
                                 }
                                 else if (site.GeoLevel.EventSystem.GetVariable(LivingWeaponsAcquired) == 2)
                                 {
-                                    LW3Miss.GeoscapeEventData.Description[0].General = lWDescription3text;
-                                    LW3Miss.GeoscapeEventData.Choices[0].Outcome.OutcomeText.General = lWDescription3outcome;
+                                    _lW3MissWin.GeoscapeEventData.Description[0].General = lWDescription3text;
+                                    _lW3MissWin.GeoscapeEventData.Choices[0].Outcome.OutcomeText.General = lWDescription3outcome;
                                     GeoscapeEventContext context = new GeoscapeEventContext(site, site.GeoLevel.PhoenixFaction);
-                                    site.GeoLevel.EventSystem.TriggerGeoscapeEvent("PROG_LW3_WIN", context);
+                                    site.GeoLevel.EventSystem.TriggerGeoscapeEvent(_lW3MissWin.EventID, context);
                                     site.GeoLevel.EventSystem.SetVariable(LivingWeaponsAcquired, 3);
                                 }
+                                else if(site.GeoLevel.EventSystem.GetVariable(LivingWeaponsAcquired) == 3) 
+                                {
+                                    int linvingWeaponsRoll = UnityEngine.Random.Range(0, 4);
+
+                                    if(linvingWeaponsRoll == 0) 
+                                    {
+                                        _lwExtra0.GeoscapeEventData.Choices[0].Outcome.Items = _lW1MissWin.GeoscapeEventData.Choices[0].Outcome.Items;
+                                    }
+                                    else if (linvingWeaponsRoll == 1)
+                                    {
+                                        _lwExtra0.GeoscapeEventData.Choices[0].Outcome.Items = _lW2MissWin.GeoscapeEventData.Choices[0].Outcome.Items;
+                                    }
+                                    else if (linvingWeaponsRoll == 2)
+                                    {
+                                        _lwExtra0.GeoscapeEventData.Choices[0].Outcome.Items = _lW3MissWin.GeoscapeEventData.Choices[0].Outcome.Items;
+                                    }
+                                    GeoscapeEventContext context = new GeoscapeEventContext(site, site.GeoLevel.PhoenixFaction);
+
+                                    TFTVLogger.Always($"{_lwExtra0.GeoscapeEventData.Description[0].General.LocalizationKey}");
+                                    
+                                    site.GeoLevel.EventSystem.TriggerGeoscapeEvent(_lwExtra0.EventID, context);
+                                   
+                                }
                             }
+
                             InfestationMissionWon = false;
 
 
@@ -800,8 +925,6 @@ namespace TFTV
 
 
                             __instance.Background.sprite = Helper.CreateSpriteFromImageFile("Node.jpg");
-
-
 
                             return true;
 

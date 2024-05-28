@@ -1,4 +1,5 @@
-﻿using HarmonyLib;
+﻿using Epic.OnlineServices;
+using HarmonyLib;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Geoscape.Levels;
@@ -10,6 +11,7 @@ using PhoenixPoint.Tactical.Entities.Weapons;
 using PhoenixPoint.Tactical.Levels;
 using PhoenixPoint.Tactical.Levels.Missions;
 using PhoenixPoint.Tactical.Levels.Mist;
+using PhoenixPoint.Tactical.View.ViewStates;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -441,8 +443,8 @@ namespace TFTV
                 {
                     try
                     {
-                        if (TFTVVoidOmens.VoidOmensCheck[15] && 
-                            controller.Factions.Any(f => f.Faction.FactionDef.MatchesShortName("aln")) && 
+                        if (TFTVVoidOmens.VoidOmensCheck[15] &&
+                            controller.Factions.Any(f => f.Faction.FactionDef.MatchesShortName("aln")) &&
                             controller.GetFactionByCommandName("Px") == faction && !controller.IsLoadingSavedGame)
                         {
                             TFTVLogger.Always($"More Umbras VO in effect; killing Umbra at start of player's turn");
@@ -586,42 +588,42 @@ namespace TFTV
 
                 }
 
-                //Patch to prevent Umbras from attacking characters without Delirium
-                [HarmonyPatch(typeof(TacticalAbility), "GetTargetActors", new Type[] { typeof(TacticalTargetData), typeof(TacticalActorBase), typeof(Vector3) })]
-                public static class TacticalAbility_GetTargetActors_Patch
+
+                //To prevent Umbras from attacking characters without Delirium
+                public static void ImplementUmbraTargeting(ref IEnumerable<TacticalAbilityTarget> __result, TacticalActorBase sourceActor)
                 {
-                    public static void Postfix(ref IEnumerable<TacticalAbilityTarget> __result, TacticalActorBase sourceActor)
+                    try 
                     {
-                        try
-                        {
-                            //Design choice to allow decoys to be targeted by Umbra if decoy is in mist 
-                            //  SpawnedActorTagDef decoyTag = DefCache.GetDef<SpawnedActorTagDef>("Decoy_SpawnedActorTagDef");
+                        //Design choice to allow decoys to be targeted by Umbra if decoy is in mist 
+                        //  SpawnedActorTagDef decoyTag = DefCache.GetDef<SpawnedActorTagDef>("Decoy_SpawnedActorTagDef");
 
-                            if (!TFTVVoidOmens.VoidOmensCheck[16])
+                        if (!TFTVVoidOmens.VoidOmensCheck[16])
+                        {
+                            if (sourceActor.ActorDef.name.Equals("Oilcrab_ActorDef") || sourceActor.ActorDef.name.Equals("Oilfish_ActorDef"))
                             {
-                                if (sourceActor.ActorDef.name.Equals("Oilcrab_ActorDef") || sourceActor.ActorDef.name.Equals("Oilfish_ActorDef"))
+                                List<TacticalAbilityTarget> list = new List<TacticalAbilityTarget>(); // = __result.ToList();
+                                                                                                      //list.RemoveWhere(adilityTarget => (adilityTarget.Actor as TacticalActor)?.CharacterStats.Corruption <= 0);
+                                foreach (TacticalAbilityTarget target in __result)
                                 {
-                                    List<TacticalAbilityTarget> list = new List<TacticalAbilityTarget>(); // = __result.ToList();
-                                                                                                          //list.RemoveWhere(adilityTarget => (adilityTarget.Actor as TacticalActor)?.CharacterStats.Corruption <= 0);
-                                    foreach (TacticalAbilityTarget source in __result)
+                                    if (target.Actor is TacticalActor && ((target.Actor as TacticalActor).CharacterStats.Corruption > 0 || (target.Actor.TacticalPerceptionBase.IsTouchingVoxel(TacticalVoxelType.Mist)))) //&& !source.Actor.HasGameTag(decoyTag))))
                                     {
-                                        if (source.Actor is TacticalActor && ((source.Actor as TacticalActor).CharacterStats.Corruption > 0 || (source.Actor.TacticalPerceptionBase.IsTouchingVoxel(TacticalVoxelType.Mist)))) //&& !source.Actor.HasGameTag(decoyTag))))
-                                        {
-                                            list.Add(source);
-                                        }
+                                        list.Add(target);
                                     }
-                                    __result = list;
                                 }
+                                __result = list;
                             }
+                        }
 
-                        }
-                        catch (Exception e)
-                        {
-                            TFTVLogger.Error(e);
-                        }
+
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                     
                     }
                 }
 
+             
                 public static void UmbraEverywhereVoidOmenImplementation(TacticalActorBase actor, TacticalLevelController controller)
                 {
 

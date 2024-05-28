@@ -1,11 +1,9 @@
 ﻿using Base.Core;
-using Base.Defs;
 using Base.Entities.Effects;
 using Base.Entities.Statuses;
 using HarmonyLib;
 using PhoenixPoint.Common.ContextHelp;
 using PhoenixPoint.Common.Core;
-using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Tactical;
 using PhoenixPoint.Tactical.ContextHelp;
@@ -251,9 +249,9 @@ namespace TFTV
                                             foreach (Equipment equipment in hoplite.Equipments.Equipments)
                                             {
                                                 if (equipment.TacticalItemDef.Equals(BeamHead) && equipment.IsUsable)
-                                                {   
+                                                {
                                                     selectedWeapon = equipment as Weapon;
-                                                    TFTVLogger.Always($"{hoplite.name} has a beam weapon, check is null by any chance {selectedWeapon==null}");
+                                                    TFTVLogger.Always($"{hoplite.name} has a beam weapon, check is null by any chance {selectedWeapon == null}");
                                                 }
                                             }
 
@@ -283,9 +281,9 @@ namespace TFTV
                                                     }
                                                 }
                                             }
-                                            else 
+                                            else
                                             {
-                                                TFTVLogger.Always($"{hoplite.name} can't shoot because selectedWeapon null? {selectedWeapon==null}");                                         
+                                                TFTVLogger.Always($"{hoplite.name} can't shoot because selectedWeapon null? {selectedWeapon == null}");
                                             }
                                         }
                                     }
@@ -379,10 +377,10 @@ namespace TFTV
                         {
                             float baseMultiplier = 0.5f;
 
-                          /*  if (TFTVSpecialDifficulties.CheckTacticalSpecialDifficultySettings(controller) == 2)
-                            {
-                                baseMultiplier = 0.25f; //adjusted on 22/12 from 0.0f
-                            }*/
+                            /*  if (TFTVSpecialDifficulties.CheckTacticalSpecialDifficultySettings(controller) == 2)
+                              {
+                                  baseMultiplier = 0.25f; //adjusted on 22/12 from 0.0f
+                              }*/
 
                             IEnumerable<TacticalActor> allHoplites = from x in controller.Map.GetActors<TacticalActor>()
                                                                      where x.HasGameTag(hopliteTag)
@@ -394,9 +392,9 @@ namespace TFTV
                             int deadHoplites = allHoplites.Where(h => h.IsDead).Count();
                             float proportion = ((float)deadHoplites / (float)(allHoplites.Count()));
 
-                            if (allHoplites.Count() == 0) 
+                            if (allHoplites.Count() == 0)
                             {
-                                proportion = 1;                           
+                                proportion = 1;
                             }
 
                             CyclopsDefenseStatus.Multiplier = baseMultiplier + proportion * 0.5f; //+ HoplitesKilled * 0.1f;
@@ -417,10 +415,10 @@ namespace TFTV
                         {
                             float baseMultiplier = 0.5f;
 
-                          /*  if (TFTVSpecialDifficulties.CheckTacticalSpecialDifficultySettings(controller) == 2)
-                            {
-                                baseMultiplier = 0.25f;
-                            }*/
+                            /*  if (TFTVSpecialDifficulties.CheckTacticalSpecialDifficultySettings(controller) == 2)
+                              {
+                                  baseMultiplier = 0.25f;
+                              }*/
 
                             List<TacticalActor> allHoplites = actor.TacticalFaction.TacticalActors.Where(ta => ta.HasGameTag(hopliteTag)).ToList();
                             int deadHoplites = allHoplites.Where(h => h.IsDead).Count();
@@ -857,49 +855,37 @@ namespace TFTV
 
         internal class StuckHopliteVanillaFix
         {
-            public static void CheckHopliteKillList()
+            public static void CheckHopliteKillList(TacticalFaction tacticalFaction)
             {
                 try
                 {
-                    if (AlertedHoplites.Count > 0)
+
+                    if (!tacticalFaction.TacticalFactionDef.ShortNames.Contains("anc")) 
                     {
-                        TacticalLevelController controller = GameUtl.CurrentLevel().GetComponent<TacticalLevelController>();
+                        return;
+                    }
 
-                        IEnumerable<TacticalActor> aliveHoplites = from x in controller.Map.GetActors<TacticalActor>()
-                                                                   where x.HasGameTag(hopliteTag)
-                                                                   where x.IsAlive
-                                                                   where x.HasStatus(AlertedStatus)
-                                                                   select x;
-                        List<TacticalActor> killList = new List<TacticalActor>();
+                    TacticalLevelController controller = tacticalFaction.TacticalLevel;
 
+                    if (controller.Map.GetActors<TacticalActor>().Any(ta => ta.HasGameTag(cyclopsTag) && ta.IsAlive))
+                    {
+                        return;
 
-                        foreach (TacticalActor tacticalActor in aliveHoplites)
-                        {
-                            if (AlertedHoplites.Contains(tacticalActor.name))
-                            {
-                                if (CheckLoSToHoplite(tacticalActor))
-                                {
-                                    TFTVLogger.Always($"False alarm! Someone got LoS on {tacticalActor.name}. Removing it from Hoplite Kill List.");
-                                    AlertedHoplites.Remove(tacticalActor.name);
-                                }
-                                else if (tacticalActor.HasStatus(ancientsPowerUpStatus))
-                                {
-                                    TFTVLogger.Always($"Nobody had LoS on {tacticalActor.name} before it Powered Up, so we are killing it.");
-                                    killList.Add(tacticalActor);
-                                }
-                            }
-                        }
+                    }
 
-                        if (killList.Count > 0)
-                        {
-                            foreach (TacticalActor tacticalActor in killList)
-                            {
+                    List<TacticalActor> aliveHoplites = new List<TacticalActor>(controller.Map.GetActors<TacticalActor>().Where(
+                                                                ta => ta.HasGameTag(hopliteTag) && ta.IsAlive).ToList());
+                    
+                    if (aliveHoplites.Count() > 3)
+                    {
+                        return;
+                    }
 
-                                tacticalActor.ApplyDamage(new DamageResult { HealthDamage = 500, Source = tacticalActor });
-                            }
+                    TFTVLogger.Always($"Cyclops is dead and no more than 3 hoplites alive. Destroying them.");
 
-                        }
-
+                    foreach (TacticalActor tacticalActor in aliveHoplites)
+                    {
+                        tacticalActor.ApplyDamage(new DamageResult { HealthDamage = 500, Source = tacticalActor });
                     }
 
                 }
@@ -910,67 +896,6 @@ namespace TFTV
 
             }
 
-            [HarmonyPatch(typeof(AlertedStatus), "OnApply")]
-
-            public static class AlertedStatus_OnApply_Hoplite_Experiment_patch
-            {
-                public static void Postfix(StatusComponent statusComponent, AlertedStatus __instance)
-                {
-                    try
-                    {
-                        if (__instance.TacticalActor.HasGameTag(hopliteTag))
-                        {
-
-
-                            if (CheckLoSToHoplite(__instance.TacticalActor))
-                            {
-                                TFTVLogger.Always($"{__instance.TacticalActor.name} is alerted and nobody has LoS on it; adding to kill list.");
-                                AlertedHoplites.Add(__instance.TacticalActor.name);
-
-                            }
-
-
-                        }
-                    }
-
-                    catch (Exception e)
-                    {
-                        TFTVLogger.Error(e);
-                    }
-
-                }
-            }
-
-            public static bool CheckLoSToHoplite(TacticalActor tacticalActor)
-            {
-                try
-                {
-
-                    TacticalLevelController controller = tacticalActor.TacticalLevel;
-
-                    List<TacticalActor> allActors = controller.Map.GetActors<TacticalActor>().Where(a => a.IsAlive).ToList();
-
-                    foreach (TacticalActor otherActor in allActors.Where(a => a != tacticalActor))
-                    {
-                        //   TFTVLogger.Always($"otherActor is {otherActor.name}");
-
-                        if (TacticalFactionVision.CheckVisibleLineBetweenActors(otherActor, otherActor.Pos, tacticalActor, true, null, 100f))
-                        {
-                            //  TFTVLogger.Always($"{otherActor.name} at position {otherActor.Pos} has los on hoplite {tacticalActor.name} at position {tacticalActor.Pos}");
-                            return true;
-
-                        }
-                    }
-
-                    return false;
-
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                    throw;
-                }
-            }
         }
 
         internal class AncientsNewTurn
@@ -980,20 +905,18 @@ namespace TFTV
 
                 try
                 {
-                    if (!tacticalFaction.TacticalLevel.IsLoadingSavedGame)
+                    if (!tacticalFaction.TacticalLevel.IsLoadingSavedGame && 
+                        tacticalFaction.TacticalLevel.TacMission.MissionData.MissionType.MissionTags.Any(t=>t.name.Contains("MissionTypeAncientSite")))
                     {
-
-
-                        TFTVLogger.Always($"starting turn {tacticalFaction.TurnNumber} for faction {tacticalFaction.Faction.FactionDef.name}");
+                        TFTVLogger.Always($"starting turn {tacticalFaction.TurnNumber} for faction {tacticalFaction.Faction.FactionDef.name} in an Ancient Site map");
                         CheckRoboticSelfRepairStatus(tacticalFaction);
                         ApplyRoboticSelfHealingStatus(tacticalFaction);
-                        StuckHopliteVanillaFix.CheckHopliteKillList();
+                        StuckHopliteVanillaFix.CheckHopliteKillList(tacticalFaction);
 
                         if (tacticalFaction.TurnNumber > 0)
                         {
                             CheckForAutoRepairAbility(tacticalFaction);
                             AdjustAutomataStats(tacticalFaction);
-
                         }
                     }
 
@@ -1038,7 +961,7 @@ namespace TFTV
             {
                 try
                 {
-                    foreach (TacticalActor tacticalActor in tacticalFaction.TacticalActors.Where(ta => ta.GetAbilityWithDef<PassiveModifierAbility>(SelfRepairAbility) != null))
+                    foreach (TacticalActor tacticalActor in tacticalFaction.TacticalActors.Where(ta => ta.GetAbilityWithDef<PassiveModifierAbility>(SelfRepairAbility) != null && !ta.IsDead))
                     {
                         List<ItemSlot> bodyPartAspects = tacticalActor.BodyState.GetHealthSlots().Where(hs => !hs.Enabled).ToList();
 
@@ -1069,7 +992,7 @@ namespace TFTV
 
                             TFTVLogger.Always($"{actor.name} has spare parts, making repairs");
 
-                            actor.Status.Statuses.Remove(actor.Status.GetStatusByName(AddAutoRepairStatusAbility.EffectName));                       
+                            actor.Status.Statuses.Remove(actor.Status.GetStatusByName(AddAutoRepairStatusAbility.EffectName));
 
                             if (Bodyparts[0] == null)
                             {
@@ -1096,21 +1019,21 @@ namespace TFTV
                                 TFTVLogger.Always($"adding left shield to {actor.name}");
                                 actor.Equipments.AddItem(LeftShield);
                             }
-                            else if(Bodyparts[1] == null && Bodyparts[2] == null)
+                            else if (Bodyparts[1] == null && Bodyparts[2] == null)
                             {
                                 UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
                                 int num = UnityEngine.Random.Range(0, 2);
 
-                                if (num == 0) 
+                                if (num == 0)
                                 {
                                     actor.Equipments.AddItem(LeftCrystalShield);
                                     TFTVLogger.Always($"adding left crystal shield to {actor.name}");
                                 }
-                                else 
+                                else
                                 {
                                     actor.Equipments.AddItem(LeftShield);
                                     TFTVLogger.Always($"adding left shield to {actor.name}");
-                                }                           
+                                }
                             }
                         }
                     }
@@ -1121,6 +1044,68 @@ namespace TFTV
                     TFTVLogger.Error(e);
                 }
             }
+
+            private static int DetermineHopliteSpeed(TacticalActor tacticalActor, int currentWP)
+            {
+                try 
+                {
+                    int divisor = 1;
+
+                    if(tacticalActor.BodyState.GetSlot("RightLeg") != null && tacticalActor.BodyState.GetSlot("RightLeg").GetHealth() <1) 
+                    {
+                        divisor++;
+                    
+                    }
+                    if (tacticalActor.BodyState.GetSlot("LeftLeg") != null && tacticalActor.BodyState.GetSlot("LeftLeg").GetHealth() < 1)
+                    {
+                        divisor++;
+                    }
+
+                    return currentWP / divisor;
+                }
+
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+
+            }
+
+            private static int DetermineCyclopsSpeed(TacticalActor tacticalActor, int currentWP)
+            {
+                try
+                {
+                    int divisor = 1;
+
+                    if (tacticalActor.BodyState.GetSlot("FrontRightLeg") != null && tacticalActor.BodyState.GetSlot("FrontRightLeg").GetHealth() < 1)
+                    {
+                        divisor++;
+                    }
+                    if (tacticalActor.BodyState.GetSlot("FrontLeftLeg") != null && tacticalActor.BodyState.GetSlot("FrontLeftLeg").GetHealth() < 1)
+                    {
+                        divisor++;
+                    }
+                    if (tacticalActor.BodyState.GetSlot("RearRightLeg") != null && tacticalActor.BodyState.GetSlot("RearRightLeg").GetHealth() < 1)
+                    {
+                        divisor++;
+                    }
+                    if (tacticalActor.BodyState.GetSlot("RearLeftLeg") != null && tacticalActor.BodyState.GetSlot("RearLeftLeg").GetHealth() < 1)
+                    {
+                        divisor++;
+                    }
+
+                    return currentWP / divisor;
+                }
+
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+
+            }
+
 
             public static void AdjustAutomataStats(TacticalFaction faction)
             {
@@ -1165,8 +1150,11 @@ namespace TFTV
                                 }
 
                             }
-                            guardian.CharacterStats.Speed.SetMax(guardian.CharacterStats.WillPoints.IntValue);
-                            guardian.CharacterStats.Speed.Set(guardian.CharacterStats.WillPoints.IntValue);
+
+                            int hopliteSpeed = DetermineHopliteSpeed(tacticalActor, guardian.CharacterStats.WillPoints.IntValue);
+
+                            guardian.CharacterStats.Speed.SetMax(hopliteSpeed);
+                            guardian.CharacterStats.Speed.Set(hopliteSpeed);
                         }
                         else if (tacticalActor is TacticalActor cyclops && tacticalActor.HasGameTag(cyclopsTag))
                         {
@@ -1207,8 +1195,10 @@ namespace TFTV
                                 }
                             }
 
-                            cyclops.CharacterStats.Speed.SetMax(cyclops.CharacterStats.WillPoints.IntValue);
-                            cyclops.CharacterStats.Speed.Set(cyclops.CharacterStats.WillPoints.IntValue);
+                            int cyclopsSpeed = DetermineCyclopsSpeed(cyclops, cyclops.CharacterStats.WillPoints.IntValue);
+
+                            cyclops.CharacterStats.Speed.SetMax(cyclopsSpeed);
+                            cyclops.CharacterStats.Speed.Set(cyclopsSpeed);
                         }
 
                     }
@@ -1225,8 +1215,6 @@ namespace TFTV
             {
                 try
                 {
-
-
                     TacticalLevelController controller = GameUtl.CurrentLevel().GetComponent<TacticalLevelController>();
 
                     // TFTVLogger.Always($"AdjustingHopliteAndCyclopsBeams.CyclopsMolecularDamageBuff count {CyclopsMolecularDamageBuff.Count()}. Turn number is {controller.TurnNumber} ");

@@ -488,6 +488,10 @@ namespace TFTV
                     {
                         __result.EventBackground = Helper.CreateSpriteFromImageFile("makeshift_lab.jpg");
                     }
+                    else if (geoEvent.EventID == "LW_EXTRA0")
+                    {
+                        __result.EventBackground = Helper.CreateSpriteFromImageFile("NodeAlt.jpg");
+                    }
                     else if (TFTVProjectOsiris.ProjectOsirisDeliveryEvents.Contains(geoEvent.EventID))
                     {
                         __result.EventBackground = Helper.CreateSpriteFromImageFile("project_Osiris.jpg");

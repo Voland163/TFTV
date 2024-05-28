@@ -525,6 +525,11 @@ namespace TFTV
                     string nameTag = "Yuggothian_ClassTagDef";
 
                     CreateNewTacticalHint(nameEyesHint, HintTrigger.ActorSeen, nameTag, "VICTORY_MISSION_FOR_THE_EYES_TITLE", "VICTORY_MISSION_FOR_THE_EYES_TEXT", 1, true, "{FF77A9F0-EB84-4CBE-AD78-298399B33956}", "VICTORY_EYES.jpg");
+
+                    string nameSacrificeHint = "SacrificeHint";
+                    ContextHelpHintDef sacrificeHint = CreateNewManualTacticalHint(nameSacrificeHint, "{B99AAD83-9D04-4B65-9E12-AB9423713973}", "VICTORY_MISSION_SACRIFICE_TITLE", "VICTORY_MISSION_SACRIFICE_TEXT", "VICTORY_GATE_SACRIFICE.jpg");
+
+                   
                 }
 
                 catch (Exception e)

@@ -8,6 +8,7 @@ using Base.Utils.Maths;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities;
+using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.Items;
 using PhoenixPoint.Common.Levels.Missions;
 using PhoenixPoint.Common.View.ViewControllers.Inventory;
@@ -52,6 +53,8 @@ namespace TFTV
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
         private static readonly SharedData Shared = TFTVMain.Shared;
 
+        private static bool _usingEchoHead = false;
+
         //Prevents items with 0HP from manifesting themselves in tactical
         //And causes AI to lockup.
 
@@ -77,6 +80,157 @@ namespace TFTV
                   }
               }
           }*/
+
+        [HarmonyPatch(typeof(TacticalAbility), "get_EquipmentWithTags")]
+        public static class TFTV_TacticalAbility_get_EquipmentWithTags
+        {
+            public static void Postfix(TacticalAbility __instance, ref Equipment __result)
+            {
+                try
+                {
+                    if (__instance.TacticalAbilityDef == DefCache.GetDef<ShootAbilityDef>("EchoHead_ShootAbilityDef"))
+                    {
+                        if (__instance.SelectedEquipment != null && __instance.SelectedEquipment.GameTags.Contains(DefCache.GetDef<GameTagDef>("SilencedWeapon_TagDef")))
+                        {
+                            __result = null;
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
+
+
+        [HarmonyPatch(typeof(ShootAbility), "Activate")]
+        public static class TFTV_ShootAbility_Activate
+        {
+            public static void Prefix(ShootAbility __instance)
+            {
+                try
+                {
+                    if (__instance.TacticalAbilityDef == DefCache.GetDef<ShootAbilityDef>("EchoHead_ShootAbilityDef"))
+                    {
+                        _usingEchoHead = true;
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
+
+        [HarmonyPatch(typeof(Weapon), "IsAttackSilent")]
+        public static class TFTV_Weapon_IsAttackSilent
+        {
+            public static void Postfix(Weapon __instance, ref bool __result)
+            {
+                try
+                {
+                    if (_usingEchoHead)
+                    {
+                        __result = true;
+                        _usingEchoHead = false;
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
+
+
+        [HarmonyPatch(typeof(TacticalFactionVision), "LocateRandomEnemyIfNeeded")]
+        public static class TFTV_TacticalFactionVision_LocateRandomEnemyIfNeeded
+        {
+            public static bool Prefix(TacticalFactionVision __instance)
+            {
+                try
+                {
+                    return false;
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
+
+
+
+        //Prevents multiple instancing of mission briefings when several aircraft arrive simultaneously at the mission site
+        private static TimeUnit _arrivalTime;
+
+        [HarmonyPatch(typeof(UIStateVehicleSelected), "OnVehicleSiteVisited")]
+        public static class UIStateVehicleSelected_OnVehicleSiteVisitedt_patch
+        {
+            public static bool Prefix(UIStateVehicleSelected __instance, GeoVehicle vehicle)
+            {
+                try
+                {
+                    TimeUnit currentTime = vehicle.GeoLevel.Timing.Now;
+
+                    if (_arrivalTime != null && _arrivalTime == currentTime && vehicle?.CurrentSite.Vehicles.Count() > 1)
+                    {
+                        TFTVLogger.Always($"more than 1 vehicle arriving at {vehicle?.CurrentSite?.LocalizedSiteName} simultaneously; cancelling stuff for all vehicles except the first");
+                        return false;
+                    }
+
+                    _arrivalTime = currentTime;
+
+                    return true;
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
+
+
+        //Prevent melee attacks at targets at high elevation
+        public static void FixMeleeTooHighAttack(TacticalAbility __instance, ref IEnumerable<TacticalAbilityTarget> __result, TacticalActorBase sourceActor,
+                       TacticalTargetData targetData, Vector3 sourcePosition)
+        {
+            try
+            {
+                    
+                if ((__instance is ShootAbility || __instance is BashAbility) && targetData.Range < 4f)
+                {
+                    List<TacticalAbilityTarget> list = new List<TacticalAbilityTarget>();
+
+                    foreach (TacticalAbilityTarget target in __result)
+                    {
+                        if (target.Actor is TacticalActor targetActor && sourceActor is TacticalActor actingActor)
+                        {
+                            if ((targetActor.Pos.y > sourcePosition.y && targetActor.Pos.y - sourcePosition.y < targetData.Range)
+                                || (targetActor.Pos.y < sourcePosition.y && sourcePosition.y - targetActor.Pos.y < targetData.Range))
+                            {
+                               // TFTVLogger.Always($"sourcePos: {sourcePosition} for {actingActor.name} at pos {actingActor.Pos}, targetActor.Pos.y {targetActor.Pos.y}, targetData.Range / 2 {targetData.Range}");
+                                list.Add(target);
+
+                            }
+                        }
+                    }
+                    __result = list;
+                }
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+
+            }
+        }
+
 
 
         //Fixes size of ground marker for eggs/sentinels etc.
@@ -215,7 +369,7 @@ namespace TFTV
                             TextContent = statusInfo.Def.Visuals.DisplayName1.Localize(null),
                             ValueContent = string.Format("{0}/{1}", statusInfo.Value, statusInfo.Limit)
                         };
-                        if (float.IsNaN(statusInfo.Value) && float.IsNaN(statusInfo.Limit))
+                        if (float.IsNaN(statusInfo.Value) && float.IsNaN(statusInfo.Limit) || statusInfo.Def is ArmorStackStatusDef)
                         {
                             item.ValueContent = string.Empty;
                         }

@@ -130,6 +130,8 @@
     <Compile Include="Tactical\Entities\Statuses\OnActorDazedEffectStatusDef.cs" />
     <Compile Include="TFTVAAAgendaTracker.cs" />
     <Compile Include="TFTVAcid.cs" />
+    <Compile Include="TFTVExperienceDistribution.cs" />
+    <Compile Include="TFTVVehicleFixes.cs" />
     <Compile Include="TFTVBehemothAndRaids.cs" />
     <Compile Include="TFTVAmbushes.cs" />
     <Compile Include="TFTVAncients.cs" />
@@ -158,6 +160,7 @@
     <Compile Include="TFTVDeliriumPerks.cs" />
     <Compile Include="TFTVDiplomacyPenalties.cs" />
     <Compile Include="TFTVExperimentalNext.cs" />
+    <Compile Include="TFTVPhoenixBaseLayout.cs" />
     <Compile Include="TFTVPureAndForsaken.cs" />
     <Compile Include="TFTVResearch.cs" />
     <Compile Include="TFTVScavengers.cs" />
