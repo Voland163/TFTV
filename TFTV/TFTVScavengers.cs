@@ -206,7 +206,11 @@ namespace TFTV
                         TacticalItemDef sourceNakedHeavyArmRight = DefCache.GetDef<TacticalItemDef>("NJ_TobiasWest_RightArm_BodyPartDef");
 
                         _heavyNakedArmLeft = Helper.CreateDefFromClone(sourceNakedHeavyArmLeft, "{D9D4FC78-B5F5-4D85-B3F2-3E16A0F1028A}", "HeavyNakedArmLeft");
+                        _heavyNakedArmLeft.BodyPartAspectDef = Helper.CreateDefFromClone(sourceNakedHeavyArmLeft.BodyPartAspectDef, "{E4DED29A-1EB4-4A50-8C1E-331DF68F2387}", "HeavyNakedArmLeft");
+                        _heavyNakedArmLeft.BodyPartAspectDef.BleedValue = 0;
                         _heavyNakedArmRight = Helper.CreateDefFromClone(sourceNakedHeavyArmRight, "{CC284239-492C-4EB7-9EAA-061268547F08}", "HeavyNakedArmRight");
+                        _heavyNakedArmRight.BodyPartAspectDef = Helper.CreateDefFromClone(sourceNakedHeavyArmRight.BodyPartAspectDef, "{37E48783-FE6B-4459-8CA3-8AD45D28C418}", "HeavyNakedArmRight");
+                        _heavyNakedArmRight.BodyPartAspectDef.BleedValue = 0;
 
                         TacticalItemDef leftArmJacket = DefCache.GetDef<TacticalItemDef>("NEU_Assault_LeftArm_BodyPartDef");
                         TacticalItemDef rightArmJacket = DefCache.GetDef<TacticalItemDef>("NEU_Assault_RightArm_BodyPartDef");
@@ -390,7 +394,9 @@ namespace TFTV
                         //AN_Assault_RightArm_BodyPartDef pretty good for assault
 
                         TacticalItemDef leftArmNakedAssault = DefCache.GetDef<TacticalItemDef>("SY_Leader_LeftArm_BodyPartDef");
+                        leftArmNakedAssault.BodyPartAspectDef.BleedValue = 0;
                         TacticalItemDef rightArmNakedAssault = DefCache.GetDef<TacticalItemDef>("SY_Leader_RightArm_BodyPartDef");
+                        rightArmNakedAssault.BodyPartAspectDef.BleedValue = 0;
 
                         List<TacticalItemDef> nakedArmsAssault = new List<TacticalItemDef>() { leftArmNakedAssault, rightArmNakedAssault };
                         List<TacticalItemDef> nakedArmsHeavy = new List<TacticalItemDef>() { _heavyNakedArmLeft, _heavyNakedArmRight };

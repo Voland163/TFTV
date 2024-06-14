@@ -914,6 +914,7 @@ namespace PRMBetterClasses.SkillModifications
             arTargeting.ActionPointCost = 0;
             arTargeting.WillPointCost = 2;
             arTargeting.UsesPerTurn = 8;
+            arTargeting.TargetApplicationConditions = new EffectConditionDef[] { };
 
             arTargeting.CharacterProgressionData.RequiredSpeed = 0;
             arTargeting.CharacterProgressionData.RequiredStrength = 0;
@@ -973,15 +974,12 @@ namespace PRMBetterClasses.SkillModifications
         }
         // Endurance: Patching GetWillpowerRecover from active actor when he uses Recover to check if Endurance ability is active and return 75% WP to recover
         [HarmonyPatch(typeof(RecoverWillAbility), "GetWillpowerRecover")]
-        internal static class RecoverWillAbility_GetWillpowerRecover_Patch
+        public static class RecoverWillAbility_GetWillpowerRecover_Patch
         {
-            [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051")]
-            private static void Postfix(ref float __result, RecoverWillAbility __instance)
+            public static void Postfix(ref float __result, RecoverWillAbility __instance)
             {
-                //TacticalActor ___TacticalActor = (TacticalActor)AccessTools.Property(typeof(TacticalAbility), "TacticalActor").GetValue(__instance, null);
                 TacticalActor tacticalActor = __instance.TacticalActor;
-                TacticalAbility endurance = tacticalActor.GetAbilities<TacticalAbility>().FirstOrDefault(s => s.AbilityDef.name.Equals("Endurance_AbilityDef"));
-                if (endurance != null)
+                if (__instance.Actor.GetAbilities<TacticalAbility>().Any(ab => ab.AbilityDef.name == "Endurance_AbilityDef"))
                 {
                     // Set amount of WP recovered to 75% of max WP
                     __result = Mathf.Ceil(tacticalActor.CharacterStats.WillPoints.Max * 75 / 100f);
@@ -993,17 +991,37 @@ namespace PRMBetterClasses.SkillModifications
             }
         }
         [HarmonyPatch(typeof(RecoverWillAbility), "Activate")]
-        internal static class RecoverWillAbility_Activate_Patch
+        public static class RecoverWillAbility_Activate_Patch
         {
             public static void Postfix(RecoverWillAbility __instance)
             {
-                TacticalActor tacticalActor = __instance.TacticalActor;
-                TacticalAbility endurance = tacticalActor.GetAbilities<TacticalAbility>().FirstOrDefault(s => s.AbilityDef.name.Equals("Endurance_AbilityDef"));
-                if (endurance != null)
+                if (__instance.Actor.GetAbilities<TacticalAbility>().Any(ab => ab.AbilityDef.name == "Endurance_AbilityDef"))
                 {
                     // Reduce Bleed and Poison by half and remove acid if existent on actor
                     List<string> effectNames = new List<string>() { "Acid", "Bleed", "Poison" };
-                    tacticalActor.Status.UnapplyAllStatusesFiltered(s => s is TacStatus && effectNames.Contains((s as TacStatus).TacStatusDef.EffectName));
+                    __instance.TacticalActor.Status.UnapplyAllStatusesFiltered(s => s is TacStatus && effectNames.Contains((s as TacStatus).TacStatusDef.EffectName));
+                }
+            }
+        }
+        [HarmonyPatch(typeof(RecoverWillAbility), "GetDisabledStateInternal", new Type[] { typeof(IgnoredAbilityDisabledStatesFilter) })]
+        public static class DisabledState_Patch
+        {
+            public static void Postfix(RecoverWillAbility __instance, IgnoredAbilityDisabledStatesFilter filter, ref AbilityDisabledState __result)
+            {
+                MethodInfo baseMethod = typeof(TacticalAbility).GetMethod("GetDisabledStateDefaults", BindingFlags.NonPublic | BindingFlags.Instance);
+                if (baseMethod != null)
+                {
+                    if (__result == AbilityDisabledState.NoWillpowerRecover)
+                    {
+                        if (__instance.Actor.GetAbilities<TacticalAbility>().Any(ab => ab.AbilityDef.name == "Endurance_AbilityDef"))
+                        {
+                            IgnoredAbilityDisabledStatesFilter filter2 = new IgnoredAbilityDisabledStatesFilter(filter, new AbilityDisabledState[]
+                            {
+                                AbilityDisabledState.OffMap,
+                            });
+                            __result = (AbilityDisabledState)baseMethod.Invoke(__instance as TacticalAbility, new object[] { filter2 });
+                        }
+                    }
                 }
             }
         }

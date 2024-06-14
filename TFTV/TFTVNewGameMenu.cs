@@ -623,10 +623,22 @@ namespace TFTV
             private static ModSettingController _noBarksModSettings = null;
             private static ArrowPickerController _noBarks = null;
 
-
             private static readonly string _titleNoBarks = "KEY_NoBarks";
             private static readonly string _descriptionNoBarks = "KEY_NoBarks_DESCRIPTION";
 
+            private static ModSettingController _skipFSTutorialModSettings = null;
+            private static ArrowPickerController _skipFSTutorial = null;
+
+            private static readonly string _titleSkipFSTutorial = "KEY_SkipFSTutorial";
+            private static readonly string _descriptionSkipFSTutorial = "KEY_SkipFSTutorial_DESCRIPTION";
+
+            private static ModSettingController _customPortraitsModSettings = null;
+            private static ArrowPickerController _customPortraits = null;
+
+            private static readonly string _titleCustomPortraits = "KEY_CustomPortraits";
+            private static readonly string _descriptionCustomPortraits = "KEY_CustomPortraits_DESCRIPTION";
+            //
+            //  
 
 
             private static GameOptionViewController InstantiateGameOptionViewController(RectTransform rectTransform, UIModuleGameSettings uIModuleGameSettings, string titleKey, string descriptionKey, string onToggleMethod)
@@ -816,7 +828,10 @@ namespace TFTV
                     _limitedRaidingModSettings.gameObject.SetActive(show);
                     _showAmbushExfil.gameObject.SetActive(show);
                     _showAmbushExfilModSettings.gameObject.SetActive(show);
-
+                    _skipFSTutorial.gameObject.SetActive(show);
+                    _skipFSTutorialModSettings.gameObject.SetActive(show);
+                    _customPortraits.gameObject.SetActive(show);
+                    _customPortraitsModSettings.gameObject.SetActive(show);
                     //  _staminaDrain.gameObject.SetActive(show);
 
                 }
@@ -1024,7 +1039,9 @@ namespace TFTV
                     _limitedDeploymentVOModSettings = UnityEngine.Object.Instantiate(ModSettingControllerHook, rectTransform);
                     _limitedRaidingModSettings = UnityEngine.Object.Instantiate(ModSettingControllerHook, rectTransform);
                     _noBarksModSettings = UnityEngine.Object.Instantiate(ModSettingControllerHook, rectTransform);
-
+                    _skipFSTutorialModSettings = UnityEngine.Object.Instantiate(ModSettingControllerHook, rectTransform);
+                    _customPortraitsModSettings = UnityEngine.Object.Instantiate(ModSettingControllerHook, rectTransform);
+                 
 
                     _startingFaction = _startingFactionModSettings.ListField;
                     _startingBase = _startingBaseModSettings.ListField;
@@ -1050,6 +1067,8 @@ namespace TFTV
                     _moreMistVO = _moreMistVOModSettings.ListField;
                     _limitedDeploymentVO = _limitedDeploymentVOModSettings.ListField;
                     _showAmbushExfil = _showAmbushExfilModSettings.ListField;
+                    _skipFSTutorial = _skipFSTutorialModSettings.ListField;
+                    _customPortraits = _customPortraitsModSettings.ListField;
                     //   _reverseEngineering = _reverseEngineeringModSettings.ListField;
                     _skipMovies = _skipMoviesModSettings.ListField;
                     _resourcesEvents = _resourcesEventsModSettings.ListField;
@@ -1091,7 +1110,8 @@ namespace TFTV
                     InstantiateArrowPickerController(_moreMistVOModSettings, _moreMistVO, _titleMoreMistVO, _descriptionMoreMistVO, _optionsBool, ConvertBoolToInt(config.MoreMistVO), OnMoreMistValueChangedCallback, 0.5f);
                     InstantiateArrowPickerController(_limitedDeploymentVOModSettings, _limitedDeploymentVO, _titlelimitedDeploymentVO, _descriptionlimitedDeploymentVO, _optionsBool, ConvertBoolToInt(config.LimitedDeploymentVO), OnLimitedDeploymentValueChangedCallback, 0.5f);
                     InstantiateArrowPickerController(_showAmbushExfilModSettings, _showAmbushExfil, _titleShowAmbushExfil, _descriptionShowAmbushExfil, _optionsBool, ConvertBoolToInt(config.ShowExfilAmbush), OnShowAmbushExfilValueChangedCallback, 0.5f);
-                    //     InstantiateArrowPickerController(_reverseEngineeringModSettings, _reverseEngineering, _titleReverseEngineering, _descriptionReverseEngineering, _optionsBool, ConvertBoolToInt(config.ActivateReverseEngineeringResearch), OnReverseEngineeringValueChangedCallback, 0.5f);
+                    InstantiateArrowPickerController(_skipFSTutorialModSettings, _skipFSTutorial, _titleSkipFSTutorial, _descriptionSkipFSTutorial, _optionsBool, ConvertBoolToInt(config.SkipFSTutorial), OnSkipFSTutorialValueChangedCallback, 0.5f);
+                    InstantiateArrowPickerController(_customPortraitsModSettings, _customPortraits, _titleCustomPortraits, _descriptionCustomPortraits, _optionsBool, ConvertBoolToInt(config.CustomPortraits), OnCustomPortraitsValueChangedCallback, 0.5f);
 
                     InstantiateArrowPickerController(_disableTacSavesModSettings, _disableTacSaves, _titleDisableTacSaves, _descriptionDisableTacSaves, _optionsBool, ConvertBoolToInt(config.disableSavingOnTactical), OnDisableTacSavesValueChangedCallback, 0.5f);
                     InstantiateArrowPickerController(_skipMoviesModSettings, _skipMovies, _titleSkipMovies, _descriptionSkipMovies, _optionsBool, ConvertBoolToInt(config.SkipMovies), OnSkipMoviesValueChangedCallback, 0.5f);
@@ -1442,6 +1462,38 @@ namespace TFTV
                     string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
                     _showAmbushExfil.CurrentItemText.text = options[newValue];
                     config.ShowExfilAmbush = option;
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+
+            private static void OnSkipFSTutorialValueChangedCallback(int newValue)
+            {
+                try
+                {
+                    bool option = newValue == 0;
+                    string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
+                    _skipFSTutorial.CurrentItemText.text = options[newValue];
+                    config.SkipFSTutorial = option;
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+
+            private static void OnCustomPortraitsValueChangedCallback(int newValue)
+            {
+                try
+                {
+                    bool option = newValue == 0;
+                    string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
+                    _customPortraits.CurrentItemText.text = options[newValue];
+                    config.CustomPortraits = option;
 
                 }
                 catch (Exception e)
@@ -1941,7 +1993,7 @@ namespace TFTV
                     
                     __result = entitlementsUserHas;
 
-                    TFTVCommonMethods.ClearInternalVariables();
+                    TFTVCommonMethods.ClearInternalVariablesOnStateChangeAndLoad();
                     TFTVNewGameOptions.ConfigImplemented = true;
                     ShowedTacticalSavesWarning = false;
 

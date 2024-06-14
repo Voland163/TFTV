@@ -204,7 +204,7 @@ namespace TFTV
             TFTVLogger.Always("VO15 Active " + TFTVVoidOmens.VoidOmensCheck[15]);
             TFTVLogger.Always("VO16 Active " + TFTVVoidOmens.VoidOmensCheck[16]);
             TFTVLogger.Always("VO19 Active " + TFTVVoidOmens.VoidOmensCheck[19]);
-            TFTVLogger.Always("Project Osiris researched " + TFTVRevenantResearch.ProjectOsiris);
+            TFTVLogger.Always("Project Osiris researched " + TFTVRevenant.TFTVRevenantResearch.ProjectOsiris);
 
             TFTVLogger.Always($"Deployed Aircraft capture capacity is {TFTVCapturePandorans.AircraftCaptureCapacity}");
             TFTVLogger.Always($"Available containment is {TFTVCapturePandorans.ContainmentSpaceAvailable}");
@@ -229,7 +229,7 @@ namespace TFTV
 
             TFTVLogger.Always("OnTacticalEnd check");
             TFTVRevenant.revenantCanSpawn = false;
-            TFTVRevenantResearch.CheckRevenantCapturedOrKilled(Controller);
+            TFTVRevenant.TFTVRevenantResearch.CheckRevenantCapturedOrKilled(Controller);
 
             base.OnTacticalEnd();
 
@@ -246,7 +246,7 @@ namespace TFTV
 
                 TFTVLogger.Always("Tactical save is being processed");
 
-                TFTVCommonMethods.ClearInternalVariables();
+                TFTVCommonMethods.ClearInternalVariablesOnStateChangeAndLoad();
                 TFTVDefsWithConfigDependency.StrongerPandorans.ImplementStrongerPandorans();
                 TFTVTacInstanceData data = (TFTVTacInstanceData)instanceData;
                 TFTVStamina.charactersWithDisabledBodyParts = data.charactersWithBrokenLimbs;
@@ -258,8 +258,8 @@ namespace TFTV
                 TFTVRevenant.revenantSpawned = data.revenantSpawned;
                 TFTVRevenant.revenantSpecialResistance = data.revenantSpecialResistance;
                 TFTVRevenant.revenantCanSpawn = data.revenantCanSpawnSaveDate;
-                TFTVRevenantResearch.ProjectOsirisStats = data.ProjectOsirisStatsTacticalSaveData;
-                TFTVRevenantResearch.ProjectOsiris = data.ProjectOrisisCompletedSaveData;
+                TFTVRevenant.TFTVRevenantResearch.ProjectOsirisStats = data.ProjectOsirisStatsTacticalSaveData;
+                TFTVRevenant.TFTVRevenantResearch.ProjectOsiris = data.ProjectOrisisCompletedSaveData;
 
                 TFTVHumanEnemies.HumanEnemiesAndTactics = data.humanEnemiesLeaderTacticsSaveData;
                 TFTVInfestation.HavenPopulation = data.infestedHavenPopulationSaveData;
@@ -288,7 +288,7 @@ namespace TFTV
                 TFTVNewGameOptions.ImpossibleWeaponsAdjustmentsSetting = data.NerfAncientsWeaponsTactical;
                 TFTVNewGameOptions.InternalDifficultyCheckTactical = data.internalDifficultyCheck;
                 TFTVBaseDefenseTactical.Map.DeploymentZones.SecondaryStrikeForceVector = data.SecondaryStrikeForceCoordinates;
-                TFTVRevenantResearch.RevenantPoints = data.RevenantPoints;
+                TFTVRevenant.TFTVRevenantResearch.RevenantPoints = data.RevenantPoints;
                 if (data.UnDesirablesActorsSpawned != null) 
                 {
                     TFTVTacticalDeploymentEnemies.UndesirablesSpawned = data.UnDesirablesActorsSpawned;
@@ -356,8 +356,8 @@ namespace TFTV
                 revenantSpawned = TFTVRevenant.revenantSpawned,
                 revenantSpecialResistance = TFTVRevenant.revenantSpecialResistance,
                 revenantCanSpawnSaveDate = TFTVRevenant.revenantCanSpawn,
-                ProjectOsirisStatsTacticalSaveData = TFTVRevenantResearch.ProjectOsirisStats,
-                ProjectOrisisCompletedSaveData = TFTVRevenantResearch.ProjectOsiris,
+                ProjectOsirisStatsTacticalSaveData = TFTVRevenant.TFTVRevenantResearch.ProjectOsirisStats,
+                ProjectOrisisCompletedSaveData = TFTVRevenant.TFTVRevenantResearch.ProjectOsiris,
                 humanEnemiesLeaderTacticsSaveData = TFTVHumanEnemies.HumanEnemiesAndTactics,
                 infestedHavenPopulationSaveData = TFTVInfestation.HavenPopulation,
                 infestedHavenOriginalOwnerSaveData = TFTVInfestation.OriginalOwner,
@@ -383,7 +383,7 @@ namespace TFTV
                 Breach = TFTVBaseDefenseTactical.Breach,
                 ScyllaLoose = TFTVBaseDefenseTactical.ScyllaLoose,
                 SecondaryStrikeForceCoordinates = TFTVBaseDefenseTactical.Map.DeploymentZones.SecondaryStrikeForceVector,
-                RevenantPoints = TFTVRevenantResearch.RevenantPoints,
+                RevenantPoints = TFTVRevenant.TFTVRevenantResearch.RevenantPoints,
                 EtermesVulnerabilityResistanceTactical = TFTVNewGameOptions.EtermesResistanceAndVulnerability,
                 UnDesirablesActorsSpawned = TFTVTacticalDeploymentEnemies.UndesirablesSpawned,
 

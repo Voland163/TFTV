@@ -16,6 +16,7 @@ using PhoenixPoint.Common.View.ViewModules;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.Abilities;
 using PhoenixPoint.Geoscape.Entities.Research;
+using PhoenixPoint.Geoscape.Entities.Sites;
 using PhoenixPoint.Geoscape.Events;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
@@ -86,7 +87,7 @@ namespace TFTV
             {
                 try
                 {
-                    //  TFTVLogger.Always($"{recruit.DisplayName} {toContainer?.Name} toContainer geosite? {toContainer is GeoSite} toContainer is PhoenixBase? {toContainer is GeoPhoenixBase}");
+                    TFTVLogger.Always($"{recruit.DisplayName} {toContainer?.Name} toContainer geosite? {toContainer is GeoSite} toContainer is PhoenixBase? {toContainer is GeoPhoenixBase}");
 
                     if ((recruit.GameTags.Contains(TFTVChangesToDLC5.MercenaryTag)
                         || recruit.GameTags.Contains(DefCache.GetDef<GameTagDef>("KaosBuggy_ClassTagDef"))
@@ -287,6 +288,12 @@ namespace TFTV
             internal static HealAbilityDef SlugFieldMedic;
             internal static RemoveFacehuggerAbilityDef SlugRemoveFaceHugger;
             internal static BashAbilityDef SlugTechnicianZap;
+
+            internal static List <TacticalAbilityDef> SlugTacticalAbilities = new List<TacticalAbilityDef>() 
+            { 
+            SlugTechnicianRepair, SlugTechnicianHeal, SlugTechnicianRestore, SlugFieldMedic, SlugRemoveFaceHugger         
+            };
+
 
             internal static SpecializationDef SlugSpecialization;
             internal static ClassTagDef SlugClassTagDef;
@@ -945,7 +952,7 @@ namespace TFTV
                                 geoUnitDescriptor.Progression.PersonalAbilities[5] = DefCache.GetDef<ApplyStatusAbilityDef>("BC_ARTargeting_AbilityDef");
                                 geoUnitDescriptor.Progression.PersonalAbilities[6] = DefCache.GetDef<PassiveModifierAbilityDef>("Endurance_AbilityDef");
 
-                                TFTVLogger.Always($"{geoUnitDescriptor.ClassTag}");
+                                
                             }
                             else if (geoUnitDescriptor.ClassTag == technicianTag)
                             {
@@ -965,7 +972,7 @@ namespace TFTV
 
                                 mainSpecDefField.SetValue(geoUnitDescriptor.Progression, SlugSpecialization);
 
-                                TFTVLogger.Always($"{geoUnitDescriptor.ClassTag}");
+                      
                             }
                             else if (geoUnitDescriptor.ClassTag == infiltratorTag)
                             {
@@ -973,28 +980,29 @@ namespace TFTV
                                 geoUnitDescriptor.Progression.PersonalAbilities[2] = DefCache.GetDef<ApplyStatusAbilityDef>("BC_Biochemist_AbilityDef");
                                 geoUnitDescriptor.Progression.PersonalAbilities[6] = DefCache.GetDef<ApplyStatusAbilityDef>("Saboteur_AbilityDef");
 
-                                TFTVLogger.Always($"{geoUnitDescriptor.ClassTag}");
+                         
                             }
                             else if (geoUnitDescriptor.ClassTag == berserkerTag)
                             {
                                 geoUnitDescriptor.Progression.PersonalAbilities[1] = DefCache.GetDef<PassiveModifierAbilityDef>("DieHard_AbilityDef");
                                 geoUnitDescriptor.Progression.PersonalAbilities[6] = DefCache.GetDef<PassiveModifierAbilityDef>("Punisher_AbilityDef");
 
-                                TFTVLogger.Always($"{geoUnitDescriptor.ClassTag}");
+                      
                             }
                             else if (geoUnitDescriptor.ClassTag == heavyTag)
                             {
                                 geoUnitDescriptor.Progression.PersonalAbilities[1] = DefCache.GetDef<ApplyStatusAbilityDef>("BC_Takedown_AbilityDef");
                                 geoUnitDescriptor.Progression.PersonalAbilities[6] = DefCache.GetDef<PassiveModifierAbilityDef>("BattleHardened_AbilityDef");
 
-                                TFTVLogger.Always($"{geoUnitDescriptor.ClassTag}");
+                            
                             }
                             else if (geoUnitDescriptor.ClassTag == assaultTag)
                             {
                                 geoUnitDescriptor.Progression.PersonalAbilities[1] = DefCache.GetDef<PassiveModifierAbilityDef>("DieHard_AbilityDef");
                                 geoUnitDescriptor.Progression.PersonalAbilities[6] = DefCache.GetDef<PassiveModifierAbilityDef>("Endurance_AbilityDef");
-                                TFTVLogger.Always($"{geoUnitDescriptor.ClassTag}");
+                               
                             }
+                            TFTVLogger.Always($"Mercenary: {geoUnitDescriptor.ClassTag}");
                         }
                     }
                     catch (Exception e)

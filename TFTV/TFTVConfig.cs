@@ -45,7 +45,10 @@ namespace TFTV
         public bool Debug = true;
         public bool NoBarks = false;
         public bool ShowExfilAmbush = false;
+        public bool SkipFSTutorial = false;
+        public bool CustomPortraits = true;
         public int Difficulty = 2;
+        
 
         internal List<ModConfigField> modConfigFields = new List<ModConfigField>();
         public void PopulateConfigFields()

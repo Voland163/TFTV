@@ -585,7 +585,6 @@ namespace TFTV
                         TFTVLogger.Error(e);
                         return 0;
                     }
-
                 }
 
 

@@ -26,7 +26,6 @@ using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.Abilities;
 using PhoenixPoint.Geoscape.Entities.Interception;
 using PhoenixPoint.Geoscape.Entities.Interception.Equipments;
-using PhoenixPoint.Geoscape.Entities.Missions.Outcomes;
 using PhoenixPoint.Geoscape.Entities.PhoenixBases.FacilityComponents;
 using PhoenixPoint.Geoscape.Entities.Research;
 using PhoenixPoint.Geoscape.Entities.Research.Requirement;
@@ -72,6 +71,8 @@ namespace TFTV
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
         private static readonly DefRepository Repo = TFTVMain.Repo;
         private static readonly SharedData Shared = TFTVMain.Shared;
+        private static GameTagDef _alwaysDeployTag;
+
 
         public static readonly ResearchTagDef CriticalResearchTag = DefCache.GetDef<ResearchTagDef>("CriticalPath_ResearchTagDef");
 
@@ -82,6 +83,20 @@ namespace TFTV
         {
             try
             {
+                SquadPortraitsDef squadPortraitsDef = DefCache.GetDef<SquadPortraitsDef>("SquadPortraitsDef");
+
+
+
+                foreach (SquadPortraitsDef.RenderPortraitParams renderPortraitParams in squadPortraitsDef.RenderParamsList)
+                {
+                    //  renderPortraitParams.RenderedPortraitsResolution = new Vector2Int(300, 100);
+                    //  renderPortraitParams.CameraDistance = 0.5f;
+                    // renderPortraitParams.CameraHeight = 0.5f;
+                    renderPortraitParams.CameraFoV = 30;
+                    renderPortraitParams.CameraSide = 0.5f;
+                }
+
+
                 //DefCache.GetDef<TacCharacterDef>("AN_ScreamingPriest7_CharacterTemplateDef").SpawnCommandId = "ScreamingPriest7";
 
 
@@ -100,6 +115,7 @@ namespace TFTV
         {
             try
             {
+                CreateAlwaysDeployTag();
 
                 VanillaFixes();
 
@@ -149,7 +165,9 @@ namespace TFTV
 
                 TFTVTacticalDeploymentEnemies.PopulateLimitsForUndesirables();
 
-                //Print();
+                AddAlwaysDeployTagToUniqueDeployments();
+
+                // Print();
 
             }
             catch (Exception e)
@@ -158,7 +176,58 @@ namespace TFTV
             }
         }
 
+        private static void AddAlwaysDeployTagToUniqueDeployments()
+        {
+            try
+            {
 
+                List<TacCharacterDef> specialTemplates = new List<TacCharacterDef>()
+{
+    DefCache.GetDef<TacCharacterDef>("S_NEU_Sniper_TacCharacterDef"),
+    DefCache.GetDef<TacCharacterDef>("S_NEU_Heavy_TacCharacterDef"),
+    DefCache.GetDef<TacCharacterDef>("S_IN_Assault_TacCharacterDef"),
+    DefCache.GetDef<TacCharacterDef>("S_NJ_Heavy_TacCharacterDef"),
+    DefCache.GetDef<TacCharacterDef>("S_NJ_Sniper_TacCharacterDef"),
+    DefCache.GetDef<TacCharacterDef>("S_SY_Infiltrator_TacCharacterDef"),
+    DefCache.GetDef<TacCharacterDef>("S_AN_BerserkerHeavy_TacCharacterDef"),
+    DefCache.GetDef<TacCharacterDef>("S_AN_Priest_TacCharacterDef"),
+    DefCache.GetDef<TacCharacterDef>("S_AN_BerserkerWatcher_TacCharacterDef"),
+    DefCache.GetDef<TacCharacterDef>("S_SirenSuper_TacCharacterDef"),
+    DefCache.GetDef<TacCharacterDef>("S_IN_Madman_TacCharacterDef"),
+    DefCache.GetDef<TacCharacterDef>("S_AN_Puppeteer_TacCharacterDef"),
+    DefCache.GetDef<TacCharacterDef>("S_AN_Berserker_TacCharacterDef"),
+    DefCache.GetDef<TacCharacterDef>("S_IN_SuperThief_TacCharacterDef"),
+    DefCache.GetDef<TacCharacterDef>("S_Chiron_Mortar_TacCharacterDef"),
+    DefCache.GetDef<TacCharacterDef>("S_Chiron_FireWorm_TacCharacterDef")
+};
+
+                foreach (TacCharacterDef characterDef in specialTemplates)
+                {
+                    if (characterDef.Data.GameTags.Contains(_alwaysDeployTag))
+                    {
+                        characterDef.Data.GameTags = characterDef.Data.GameTags.AddToArray(_alwaysDeployTag);
+                    }
+                }
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+        private static void CreateAlwaysDeployTag()
+        {
+            try
+            {
+                _alwaysDeployTag = TFTVCommonMethods.CreateNewTag("AlwaysDeployTag", "{34603F61-05E3-424C-ABDB-99B9D63BDAD5}");
+                TFTVTacticalDeploymentEnemies.AlwaysDeployTag = _alwaysDeployTag;
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
 
         private static void AdjustMistSentinelDetection()
         {
@@ -6846,6 +6915,7 @@ namespace TFTV
                 CustomizationPrimaryColorTagDef blackColor = DefCache.GetDef<CustomizationPrimaryColorTagDef>("CustomizationColorTagDef_9");
                 List<GameTagDef> gameTags = subject24.Data.GameTags.ToList();
                 gameTags.Add(blackColor);
+                gameTags.Add(_alwaysDeployTag);
                 subject24.SpawnCommandId = "Subject24TFTV";
                 subject24.Data.GameTags = gameTags.ToArray();
 
@@ -7359,24 +7429,24 @@ namespace TFTV
 
         }
 
-     /*   public static void ChangeInfestationDefs()
-        {
-            try
-            {
-                AlienRaidsSetupDef raidsSetup = DefCache.GetDef<AlienRaidsSetupDef>("_AlienRaidsSetupDef");
-                raidsSetup.RaidBands[0].RollResultMax = 60;
-                raidsSetup.RaidBands[1].RollResultMax = 80;
-                raidsSetup.RaidBands[2].RollResultMax = 100;
-                raidsSetup.RaidBands[3].RollResultMax = 130;
-                raidsSetup.RaidBands[4].RollResultMax = 9999;
-                raidsSetup.RaidBands[4].AircraftTypesAllowed = 0;
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
+        /*   public static void ChangeInfestationDefs()
+           {
+               try
+               {
+                   AlienRaidsSetupDef raidsSetup = DefCache.GetDef<AlienRaidsSetupDef>("_AlienRaidsSetupDef");
+                   raidsSetup.RaidBands[0].RollResultMax = 60;
+                   raidsSetup.RaidBands[1].RollResultMax = 80;
+                   raidsSetup.RaidBands[2].RollResultMax = 100;
+                   raidsSetup.RaidBands[3].RollResultMax = 130;
+                   raidsSetup.RaidBands[4].RollResultMax = 9999;
+                   raidsSetup.RaidBands[4].AircraftTypesAllowed = 0;
+               }
+               catch (Exception e)
+               {
+                   TFTVLogger.Error(e);
 
-            }
-        }*/
+               }
+           }*/
         public static void ModifyMissionDefsToReplaceNeutralWithBandit()
         {
             try

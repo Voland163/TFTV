@@ -1,19 +1,24 @@
-﻿using Base.Defs;
+﻿using Base;
+using Base.Core;
+using Base.Defs;
 using Base.Rendering.ObjectRendering;
-using HarmonyLib;
 using PhoenixPoint.Common.Core;
-using PhoenixPoint.Common.Entities.Addons;
-using PhoenixPoint.Common.View.ViewModules;
+using PhoenixPoint.Common.Entities;
+using PhoenixPoint.Common.Entities.GameTags;
+using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Geoscape.Entities;
-using PhoenixPoint.Geoscape.View;
-using PhoenixPoint.Geoscape.View.ViewModules;
+using PhoenixPoint.Geoscape.Levels;
+using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.UI.SoldierPortraits;
+using PhoenixPoint.Tactical.View.ViewControllers;
 using System;
-using System.Collections;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Reflection;
 using UnityEngine;
-using UnityEngine.UI;
+using static PhoenixPoint.Tactical.View.ViewControllers.SquadMemberScrollerController;
 
 namespace TFTV
 {
@@ -23,6 +28,285 @@ namespace TFTV
         private static readonly DefRepository Repo = TFTVMain.Repo;
         private static readonly SharedData Shared = TFTVMain.Shared;
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
+        private static readonly TFTVConfig config = TFTVMain.Main.Config;
+        public class CharacterPortrait
+        {
+
+            public static Dictionary<int, string> characterPics = new Dictionary<int, string>();
+
+
+            private static List<string> _portraitFileList = new List<string>();
+
+            public static void PopulateCharacterPics(GeoLevelController controller)
+            {
+                try
+                {
+                    if (!config.CustomPortraits)
+                    {
+                        return;
+                    }
+
+                    characterPics.Clear();
+
+                    foreach (GeoCharacter geoCharacter in controller.PhoenixFaction.HumanSoldiers.Where(gc => CheckCharacterHumanHead(gc) && !characterPics.ContainsKey(gc.Id)))
+                    {
+                        if (characterPics.Count() == _portraitFileList.Count())
+                        {
+                            return;
+                        }
+
+                        if (geoCharacter.Identity.FaceTag == DefCache.GetDef<FaceTagDef>("Sophia_FaceTagDef"))
+                        {
+                            characterPics.Add(geoCharacter.Id, "Sophia_Brown.jpg");
+                            continue;
+                        }
+                        else if (geoCharacter.Identity.FaceTag == DefCache.GetDef<FaceTagDef>("Jacob_FaceTagDef"))
+                        {
+                            characterPics.Add(geoCharacter.Id, "Jacob_Eber.jpg");
+                            continue;
+                        }
+
+                        string portraitFilename = FindBestMatchingPortrait(geoCharacter.GameTags.ToList(), ExtractGenderFromCharater(geoCharacter.Identity.SexTag));
+                        if (portraitFilename != null)
+                        {
+                            characterPics.Add(geoCharacter.Id, portraitFilename);
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+
+
+            public static void PopulatePortraitFileList()
+            {
+                try
+                {
+                    if (!config.CustomPortraits)
+                    {
+                        return;
+                    }
+
+                    string folderPath = Path.Combine(TFTVMain.ModDirectory, "Assets", "Textures", "Portraits");
+
+                    // Get all .jpg files in the specified folder
+                    string[] files = Directory.GetFiles(folderPath, "*.jpg");
+
+                    // Clear the list before adding new filenames
+                    _portraitFileList.Clear();
+
+                    // Add each filename to the _portraitFileList
+                    foreach (string file in files)
+                    {
+                        _portraitFileList.Add(Path.GetFileName(file));
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+
+
+            public static int[] ExtractPortraitDataFromTags(List<GameTagDef> tags)
+            {
+                try
+                {
+                    HumanCustomizationDef humanCustomizationDef = DefCache.GetDef<HumanCustomizationDef>("HumanCustomizationDef");
+                    int[] portraitData = new int[5];
+
+                    foreach (GameTagDef tagDef in tags)
+                    {
+                        if (humanCustomizationDef.RaceTags.Contains(tagDef))
+                        {
+                            portraitData[0] = humanCustomizationDef.RaceTags.IndexOf(tagDef) + 1;
+                        }
+                        else if (humanCustomizationDef.FaceTags.Contains(tagDef))
+                        {
+                            portraitData[1] = humanCustomizationDef.FaceTags.IndexOf(tagDef) + 1;
+                        }
+                        else if (humanCustomizationDef.HairTags.Contains(tagDef))
+                        {
+                            portraitData[2] = humanCustomizationDef.HairTags.IndexOf(tagDef) + 1;
+                        }
+                        else if (humanCustomizationDef.FacialHairTags.Contains(tagDef))
+                        {
+                            portraitData[3] = humanCustomizationDef.FacialHairTags.IndexOf(tagDef) + 1;
+                        }
+                        else if (humanCustomizationDef.HairColorTags.Contains(tagDef))
+                        {
+                            portraitData[4] = humanCustomizationDef.HairColorTags.IndexOf(tagDef) + 1;
+                        }
+                    }
+
+                    return portraitData;
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+
+            private static bool CheckCharacterHumanHead(GeoCharacter geoCharacter)
+            {
+                try
+                {
+                    if (geoCharacter == null)
+                    {
+                        return false;
+                    }
+
+                    if (!geoCharacter.TemplateDef.IsHuman)
+                    {
+                        return false;
+                    }
+
+
+                    GameTagDef bionicalTag = GameUtl.GameComponent<SharedData>().SharedGameTags.BionicalTag;
+                    GameTagDef mutationTag = GameUtl.GameComponent<SharedData>().SharedGameTags.AnuMutationTag;
+                    ItemSlotDef headSlot = DefCache.GetDef<ItemSlotDef>("Human_Head_SlotDef");
+
+                    if (geoCharacter.ArmourItems.Any(item => item.CommonItemData.ItemDef.RequiredSlotBinds[0].RequiredSlot == headSlot
+                    && (item.CommonItemData.ItemDef.Tags.Contains(bionicalTag) || item.CommonItemData.ItemDef.Tags.Contains(mutationTag))))
+                    {
+                        return false;
+                    }
+
+                    return true;
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+
+
+            }
+
+            public static string ExtractGenderFromCharater(GameTagDef tag)
+            {
+                try
+                {
+
+
+                    if (tag.name.Equals("Female_GenderTagDef"))
+                    {
+                        return "f";
+                    }
+                    else
+                    {
+                        return "m";
+                    }
+
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+
+            public static string FindBestMatchingPortrait(List<GameTagDef> tags, string gender)
+            {
+                try
+                {
+                    HumanCustomizationDef humanCustomizationDef = DefCache.GetDef<HumanCustomizationDef>("HumanCustomizationDef");
+                    int[] providedTags = ExtractPortraitDataFromTags(tags);
+
+                    string bestMatch = null;
+                    int bestMatchScore = int.MaxValue;
+
+                    foreach (string filename in _portraitFileList.Where(fn => fn.StartsWith(gender) && !characterPics.ContainsValue(fn)))
+                    {
+                        string[] parts = Path.GetFileNameWithoutExtension(filename).Split('_');
+                        if (parts.Length != 6) continue;
+
+                        int[] fileTags = parts.Skip(1).Take(5).Select(int.Parse).ToArray();
+                        int currentScore = CalculateTagScore(providedTags, fileTags);
+
+                        if (currentScore < bestMatchScore)
+                        {
+                            bestMatchScore = currentScore;
+                            bestMatch = filename;
+                        }
+                    }
+
+                    return bestMatch;
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+
+            private static int CalculateTagScore(int[] providedTags, int[] fileTags)
+            {
+                try
+                {
+                    // Define weights for each tag type
+                    int[] weights = { 5, 4, 3, 2, 1 };
+                    int score = 0;
+
+                    for (int i = 0; i < providedTags.Length; i++)
+                    {
+                        score += weights[i] * Math.Abs(providedTags[i] - fileTags[i]);
+                    }
+
+                    return score;
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+
+        }
+
+
+
+
+        public static bool NewCharacterPortraitInSetupProperPortrait(TacticalActor actor,
+                Dictionary<TacticalActor, PortraitSprites> _soldierPortraits, SquadMemberScrollerController squadMemberScrollerController)
+        {
+            try
+            {
+
+                if (config.CustomPortraits)
+                {
+                    MethodInfo tryFindFakePortraitMethod = typeof(SquadMemberScrollerController).GetMethod("TryFindFakePortrait", BindingFlags.NonPublic | BindingFlags.Instance);
+                    MethodInfo updatePortraitForSoldierMethod = typeof(SquadMemberScrollerController).GetMethod("UpdatePortraitForSoldier", BindingFlags.NonPublic | BindingFlags.Instance);
+
+                    if (CharacterPortrait.characterPics.ContainsKey(actor.GeoUnitId))
+                    {
+                        PortraitSprites portraitSprites = _soldierPortraits[actor];
+                        TFTVLogger.Always($"ForceSpecialCharacterPortraitInSetupProperPortrait actor is {actor.name}");
+
+                        Sprite sprite = Helper.CreatePortraitFromImageFile(CharacterPortrait.characterPics[actor.GeoUnitId]);
+
+                        portraitSprites.Portrait = sprite;
+                        updatePortraitForSoldierMethod.Invoke(squadMemberScrollerController, new object[] { actor });
+
+                        return false;
+
+                    }
+                }
+                return TFTVPalaceMission.MissionObjectives.ForceSpecialCharacterPortraitInSetupProperPortrait(actor, _soldierPortraits, squadMemberScrollerController);
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
+        }
 
 
         /*   public class SpriteCombiner : MonoBehaviour
@@ -71,8 +355,9 @@ namespace TFTV
 
         public static Texture2D RenderSoldier(GameObject soldierToRender, Vector2Int dimensions)
         {
-            try { 
-            
+            try
+            {
+
 
 
 

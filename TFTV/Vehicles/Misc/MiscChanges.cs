@@ -69,6 +69,7 @@ namespace TFTVVehicleRework.Misc
             TacticalActorBaseDef[] VehicleActorDefs = new TacticalActorBaseDef[]
             {
                 (TacticalActorBaseDef)Repo.GetDef("aaac8f86-772c-cf44-e8cd-0f07a8b6bf83"), // Armadillo
+                (TacticalActorBaseDef)Repo.GetDef("692bc525-7611-4d59-03c6-ad417dd6cebb"), // Armadillo Unrecruitable character
                 (TacticalActorBaseDef)Repo.GetDef("16cd2345-36a9-a6c4-1afa-104e9c72833b"), // Aspida
                 (TacticalActorBaseDef)Repo.GetDef("fc5539b5-5390-8324-5bf6-9d53a7ec092c"), // Buggy
                 (TacticalActorBaseDef)Repo.GetDef("42a5c739-fa43-cf94-ea55-7c5d2e09527f")  // Scarab

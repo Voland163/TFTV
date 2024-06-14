@@ -22,7 +22,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Runtime.Remoting.Messaging;
 using UnityEngine;
 using static PhoenixPoint.Tactical.View.ViewModules.UIModuleCharacterStatus;
 using static PhoenixPoint.Tactical.View.ViewModules.UIModuleCharacterStatus.CharacterData;
@@ -115,7 +114,7 @@ namespace TFTV
             try
             {
                 UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
-                int roll = UnityEngine.Random.Range(1, 10); 
+                int roll = UnityEngine.Random.Range(1, 10);
 
                 TFTVLogger.Always("The tactics roll is " + roll);
 
@@ -249,19 +248,19 @@ namespace TFTV
                     string factionName = "";
                     if (enemyHumanFaction.TacticalFactionDef.ShortName.Equals("nj"))
                     {
-                        factionName = TFTVCommonMethods.ConvertKeyToString("TFTV_HUMAN_ENEMIES_NJ");
+                        factionName = TFTVCommonMethods.ConvertKeyToString("KEY_FACTION_NAME_NEW_JERICHO");
                         //  factionTag = "NewJericho_TacticalFactionDef";
                         fileNameSquadPic = "nj_squad.jpg";
                     }
                     else if (enemyHumanFaction.TacticalFactionDef.ShortName.Equals("anu"))
                     {
-                        factionName = TFTVCommonMethods.ConvertKeyToString("TFTV_HUMAN_ENEMIES_ANU");
+                        factionName = TFTVCommonMethods.ConvertKeyToString("KEY_FACTION_NAME_ANU");
                         //  factionTag = "Anu_TacticalFactionDef";
                         fileNameSquadPic = "anu_squad.jpg";
                     }
                     else
                     {
-                        factionName = Shared.SynedrionFactionDef.GetName();
+                        factionName = TFTVCommonMethods.ConvertKeyToString("KEY_FACTION_NAME_SYNEDRION");
                         //  factionTag = "Synedrion_TacticalFactionDef";                        
                         fileNameSquadPic = "syn_squad.jpg";
                     }
@@ -353,8 +352,6 @@ namespace TFTV
 
                     foreach (TacticalActorBase tacticalActorBase in faction.Actors)
                     {
-
-
                         if (tacticalActorBase.BaseDef.name == "Soldier_ActorDef" && tacticalActorBase.InPlay)
                         {
                             TacticalActor tacticalActor = tacticalActorBase as TacticalActor;
@@ -402,7 +399,7 @@ namespace TFTV
                     string nameOfFaction = faction.Faction.FactionDef.ShortName;
 
                     GameTagDef gameTagDef = DefCache.GetDef<GameTagDef>("HumanEnemyFaction_" + nameOfFaction + "_GameTagDef");
-                   // TFTVLogger.Always("gameTagDef found");
+                    // TFTVLogger.Always("gameTagDef found");
                     List<string> factionNames = TFTVHumanEnemiesNames.names.GetValueSafe(nameOfFaction);
 
                     if (!leaderBase.GameTags.Contains(HumanEnemyTier1GameTag))
@@ -547,7 +544,7 @@ namespace TFTV
 
                     TFTVLogger.Always("The short name of the faction is " + nameOfFaction);
                     GameTagDef gameTagDef = DefCache.GetDef<GameTagDef>("HumanEnemyFaction_" + nameOfFaction + "_GameTagDef");
-                   // TFTVLogger.Always("gameTagDef found");
+                    // TFTVLogger.Always("gameTagDef found");
                     List<string> factionNames = TFTVHumanEnemiesNames.names.GetValueSafe(nameOfFaction);
 
                     if (!leaderBase.GameTags.Contains(HumanEnemyTier1GameTag))
@@ -1168,6 +1165,14 @@ namespace TFTV
 
                 if (tacticalActor.HasGameTag(TFTVScavengers._scumTag))
                 {
+                    FreezeAspectStatsStatus ignorePain = tacticalActor.Status.GetStatus<FreezeAspectStatsStatus>();
+
+                    if (ignorePain != null)
+                    {
+                        TFTVLogger.Always($"{tacticalActor.name} has {ignorePain.Def.EffectName} status; removing it");
+                        tacticalActor.Status.Statuses.Remove(ignorePain);                   
+                    }
+
                     foreach (AbilityDef ability in allAbilities)
                     {
                         if (tacticalActor.GetAbilityWithDef<Ability>(ability) != null)
@@ -1457,14 +1462,14 @@ namespace TFTV
                     foreach (TacticalFaction faction in enemyHumanFactions)
                     {
                         foreach (TacticalActor tacticalActor in faction.TacticalActors)
-                        { 
-                        
+                        {
+
                             if (tacticalActor.HasGameTag(HumanEnemyTier2GameTag) && tacticalActor.IsAlive && !tacticalActor.IsEvacuated)
                             {
                                 foreach (TacticalActor allyTacticalActor in faction.TacticalActors)
                                 {
                                     if (allyTacticalActor.BaseDef.name == "Soldier_ActorDef" && allyTacticalActor.InPlay)
-                                    {                                    
+                                    {
                                         float magnitude = allyTacticalActor.GetAdjustedPerceptionValue();
 
                                         if ((allyTacticalActor.Pos - tacticalActor.Pos).magnitude < magnitude
@@ -1789,19 +1794,19 @@ namespace TFTV
                         float SelectedWeaponRange = tacticalActor.Equipments.SelectedWeapon.WeaponDef.EffectiveRange;
                         TFTVLogger.Always($"{tacticalActor.name} selected weapon is {tacticalActor.Equipments.SelectedWeapon.DisplayName} and its maximum range is {tacticalActor.Equipments.SelectedWeapon.WeaponDef.EffectiveRange}");
 
-                      /*  foreach (TacticalActorBase enemy in leader.TacticalFaction.GetAllAliveEnemyActors<TacticalActorBase>(false))
-                        {
-                            if ((enemy.Pos - tacticalActor.Pos).magnitude < SelectedWeaponRange / 2
-                            && TacticalFactionVision.CheckVisibleLineBetweenActors(enemy, enemy.Pos, tacticalActor, true)
-                            && !tacticalActor.Status.HasStatus(startingVolleyStatus))
-                            {
-                               */ //TFTVLogger.Always($"{tacticalActor.name} is getting quick aim status because close enough to {enemy.name}");
-                              
-                                tacticalActor.Status.ApplyStatus(startingVolleyStatus);
-                               
+                        /*  foreach (TacticalActorBase enemy in leader.TacticalFaction.GetAllAliveEnemyActors<TacticalActorBase>(false))
+                          {
+                              if ((enemy.Pos - tacticalActor.Pos).magnitude < SelectedWeaponRange / 2
+                              && TacticalFactionVision.CheckVisibleLineBetweenActors(enemy, enemy.Pos, tacticalActor, true)
+                              && !tacticalActor.Status.HasStatus(startingVolleyStatus))
+                              {
+                                 */ //TFTVLogger.Always($"{tacticalActor.name} is getting quick aim status because close enough to {enemy.name}");
+
+                        tacticalActor.Status.ApplyStatus(startingVolleyStatus);
+
 
                         //    }
-                      //  }
+                        //  }
                     }
                 }
 
@@ -1961,6 +1966,7 @@ namespace TFTV
                     {
                         if (tacticalActor.GetAbilityWithDef<Ability>(returnFireFireDiscipline) != null)
                         {
+                            tacticalActor.RemoveAbility(returnFireFireDiscipline);
                             TFTVLogger.Always($"Removing Fire Discipline RF from {tacticalActor.name}");
                         }
                     }
@@ -2041,7 +2047,7 @@ namespace TFTV
             }
         }
 
-        public static void HumanEnemiesBloodRushTactic(DeathReport deathReport)
+        public static void HumanEnemiesTacticsOnDeath(DeathReport deathReport)
         {
             try
             {
@@ -2087,20 +2093,20 @@ namespace TFTV
                                 TFTVLogger.Always($"Unapply optical shield status from {allyTacticalActorBase.name} because leader is dead!");
                                 allyTacticalActorBase.Status.UnapplyStatus(allyTacticalActorBase.Status.GetStatusByName(opticalShieldStealth.EffectName));
 
-                                if (tacticalActor.HasStatus(stealthStatus)) 
+                                if (tacticalActor.HasStatus(stealthStatus))
                                 {
                                     tacticalActor.Status.UnapplyStatus(allyTacticalActorBase.Status.GetStatusByName(stealthStatus.EffectName));
-                                
+
                                 }
 
-                              /*  foreach(TacticalActorBase tacticalActorBase in deathReport.Actor.TacticalFaction.GetAllAliveEnemyActors<TacticalActorBase>(false)) 
-                                { 
-                                if(tacticalActorBase is TacticalActor actor) 
-                                    { 
-                                    
-                                    }
-                                
-                                }*/
+                                /*  foreach(TacticalActorBase tacticalActorBase in deathReport.Actor.TacticalFaction.GetAllAliveEnemyActors<TacticalActorBase>(false)) 
+                                  { 
+                                  if(tacticalActorBase is TacticalActor actor) 
+                                      { 
+
+                                      }
+
+                                  }*/
                             }
                         }
                     }
@@ -2126,7 +2132,7 @@ namespace TFTV
                 try
                 {
 
-                    if ((actor.HasGameTag(HumanEnemyTier1GameTag)|| actor.HasGameTag(HumanEnemyTier2GameTag)) && damageDealer != null && HumanEnemiesAndTactics.ContainsKey(actor.TacticalFaction.Faction.FactionDef.ShortName)
+                    if ((actor.HasGameTag(HumanEnemyTier1GameTag) || actor.HasGameTag(HumanEnemyTier2GameTag)) && damageDealer != null && HumanEnemiesAndTactics.ContainsKey(actor.TacticalFaction.Faction.FactionDef.ShortName)
                     && HumanEnemiesAndTactics.GetValueSafe(actor.TacticalFaction.Faction.FactionDef.ShortName) == 7)
                     {
                         TacticalActorBase attackerBase = damageDealer.GetTacticalActorBase();

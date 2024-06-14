@@ -24,10 +24,6 @@ namespace TFTV
         private static readonly SharedData Shared = TFTVMain.Shared;
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
 
-        
-
-
-
 
 
 
@@ -264,9 +260,9 @@ namespace TFTV
 
 
 
-     
 
-        
+
+
 
 
 

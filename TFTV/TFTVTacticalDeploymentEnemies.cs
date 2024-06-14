@@ -19,14 +19,20 @@ namespace TFTV
         private static readonly SharedData Shared = TFTVMain.Shared;
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
 
+        public static GameTagDef AlwaysDeployTag;
+
         private static Dictionary<string, EnemyLimit> _undesirablesLimits = new Dictionary<string, EnemyLimit>();
         public static Dictionary<string, int> UndesirablesSpawned = new Dictionary<string, int>();
+
+        /// <summary>
+        /// Difficulty level considers scaling, so Story Mode and Rookie ==1, Etermes == 5
+        /// </summary>
 
         public class EnemyLimit
         {
             public int InitialMax { get; set; }
             public int SimultaneousMax { get; set; }
-            public int DifficultyLevel { get; set; }
+            public int DifficultyLevel { get; set; } 
 
             public EnemyLimit(int initialMax, int simultaneousMax, int difficultyLevel)
             {
@@ -43,9 +49,9 @@ namespace TFTV
                 _undesirablesLimits.Add("0b8be047-fa18-3ec4-3be6-7dc3462fb07d", new EnemyLimit(1, -1, -1)); //AN_Berserker_Shooter_Torso_BodyPartDef
                 _undesirablesLimits.Add("9ac7ada0-bdec-a9b4-d982-1debc04d8fff", new EnemyLimit(3, -1, -1)); //Acheron_ClassTagDef
                 _undesirablesLimits.Add("4eab7f81-c27d-eef4-6a80-300960fb5160", new EnemyLimit(3, -1, -1)); //Chiron_ClassTagDef
-                _undesirablesLimits.Add("9ed5b03f-120b-d0c4-0ac4-4b30b5312af8", new EnemyLimit(2, 2, 3)); //NEU_Heavy_Torso_BodyPartDef raiders with grenades
-                _undesirablesLimits.Add("5ea5ff74-8494-4554-6a31-73bc06dc8fab", new EnemyLimit(2, 2, 3)); //Sniper_ClassTagDef
-                _undesirablesLimits.Add("c8629efc-4f67-b664-eaf7-d338a5b5b3a3", new EnemyLimit(2, 2, 3)); //Heavy_ClassTagDef
+                _undesirablesLimits.Add("9ed5b03f-120b-d0c4-0ac4-4b30b5312af8", new EnemyLimit(2, 2, 2)); //NEU_Heavy_Torso_BodyPartDef raiders with grenades
+                _undesirablesLimits.Add("5ea5ff74-8494-4554-6a31-73bc06dc8fab", new EnemyLimit(2, 2, 2)); //Sniper_ClassTagDef
+                _undesirablesLimits.Add("c8629efc-4f67-b664-eaf7-d338a5b5b3a3", new EnemyLimit(2, 2, 2)); //Heavy_ClassTagDef
             }
             catch (Exception e)
             {
@@ -139,7 +145,7 @@ namespace TFTV
         {
             try
             {
-                if (tacticalFaction.IsControlledByPlayer)
+                if (tacticalFaction.IsControlledByPlayer || tacCharacterDef.Data.GameTags.Contains(AlwaysDeployTag))
                 {
                     return false;
                 }
@@ -147,8 +153,12 @@ namespace TFTV
                 string undesirableObjectGuid = "";
                 bool undesirableActor = false;
 
-                foreach (string objectGuid in _undesirablesLimits.Keys.Where(k => _undesirablesLimits[k].DifficultyLevel<=tacticalFaction.TacticalLevel.Difficulty.Order))
+                foreach (string objectGuid in _undesirablesLimits.Keys.Where
+                    (k => _undesirablesLimits[k].DifficultyLevel ==-1 
+                    || _undesirablesLimits[k].DifficultyLevel>=TFTVSpecialDifficulties.DifficultyOrderConverter(tacticalFaction.TacticalLevel.Difficulty.Order)))
                 {
+
+
                     var def = Repo.GetDef(objectGuid);
 
                     if (def is ItemDef itemDef)

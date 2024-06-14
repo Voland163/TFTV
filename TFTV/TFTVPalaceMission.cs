@@ -31,7 +31,6 @@ using System.Linq;
 using System.Reflection;
 using UnityEngine;
 using static PhoenixPoint.Tactical.View.ViewControllers.SquadMemberScrollerController;
-using static TFTV.TFTVPalaceMission;
 
 namespace TFTV
 {
@@ -91,7 +90,7 @@ namespace TFTV
 
                 if (controller.TacMission.IsFinalMission && tacticalFaction.Faction.FactionDef.Equals(Shared.AlienFactionDef) && !tacticalFaction.TacticalLevel.IsLoadingSavedGame)
                 {
-                  
+
 
                     Gates.SetScyllasAlert(controller);
                     //MoveScyllas(controller);
@@ -435,12 +434,17 @@ namespace TFTV
                         List<TacticalActor> tacticalActors = controller.GetFactionByCommandName("px").TacticalActors.
                             Where(a => a.IsAlive && a.Pos.z >= 41.5).ToList();
 
-                        if (tacticalActors.Where(ta => ta.HasGameTag(Shared.SharedGameTags.HumanTag)).Count() < 3)
-                        {
-                            TFTVLogger.Always($"There are less than 3 operatives on the South Side");
+                        int southSideOperativesCount = tacticalActors.Where(ta => ta.HasGameTag(Shared.SharedGameTags.HumanTag)).Count();
 
-                            tacticalActors[0].TacticalActorView.DoCameraChase();
-                            TFTVHints.TacticalHints.ShowStoryPanel(controller, "SacrificeHint");
+                        if (tacticalActors.Count>0 && southSideOperativesCount < 3)
+                        {
+                            TFTVLogger.Always($"There are {southSideOperativesCount} operatives on the South Side");
+
+                            if (southSideOperativesCount > 0)
+                            {
+                                tacticalActors[0].TacticalActorView.DoCameraChase();
+                                TFTVHints.TacticalHints.ShowStoryPanel(controller, "SacrificeHint");
+                            }
 
                             foreach (TacticalActor actor in tacticalActors)
                             {
@@ -455,7 +459,7 @@ namespace TFTV
                         }
                     }
                     return false;
-                    
+
                 }
                 catch (Exception e)
                 {
@@ -745,7 +749,7 @@ namespace TFTV
                     TFTVLogger.Always($"yuggoth found? {tacticalActorYuggoth != null} gates lowered on turn {turnGatesLowered} (how many yuggoths found? {controller.Map.GetActors<TacticalActorYuggoth>().Count()}");
 
 
-                    if (turnGatesLowered<0)//turnGatesLowered == -1 || turnGatesLowered == -4)
+                    if (turnGatesLowered < 0)//turnGatesLowered == -1 || turnGatesLowered == -4)
                     {
                         Dictionary<string, Vector3> objectives = new Dictionary<string, Vector3>
                 {
@@ -861,8 +865,8 @@ namespace TFTV
                             //  TFTVLogger.Always($"{actorToConsoleBridgingStatusDef.EffectName} unapplied");
                             structuralTarget.Status.ApplyStatus(activeHackableChannelingStatusDef);
                             tacticalActor.GetAbilityWithDef<InteractWithObjectAbility>(DefCache.GetDef<InteractWithObjectAbilityDef>("ForceYuggothianGateAbility")).Activate();
-                         //   structuralTarget.Status.UnapplyStatus((TacStatus)structuralTarget.Status.GetStatusByName(activeHackableChannelingStatusDef.EffectName));
-                         //   TacStatus newTargetBridge = (TacStatus)structuralTarget.Status.ApplyStatus(consoleToActorBridgingStatusDef, tacticalActor.GetActor());
+                            //   structuralTarget.Status.UnapplyStatus((TacStatus)structuralTarget.Status.GetStatusByName(activeHackableChannelingStatusDef.EffectName));
+                            //   TacStatus newTargetBridge = (TacStatus)structuralTarget.Status.ApplyStatus(consoleToActorBridgingStatusDef, tacticalActor.GetActor());
                             TacStatus newTargetBridge = (TacStatus)structuralTarget.Status.GetStatusByName(consoleToActorBridgingStatusDef.EffectName);
                             TacStatus newActorBridge = (TacStatus)tacticalActor.Status.GetStatusByName(actorToConsoleBridgingStatusDef.EffectName);
 
@@ -871,7 +875,7 @@ namespace TFTV
 
                             reflectionSet(newTargetBridge, turnApplied);
                             reflectionSet(newActorBridge, turnApplied);
-                           
+
                         }
                         else
                         {
@@ -1073,7 +1077,7 @@ namespace TFTV
                             int receptacleEyesDamaged = CountReceptacleEyes(actor);
                             TFTVLogger.Always($"Receptacle eye disabled! Eyes disabled count: {receptacleEyesDamaged}");
 
-                            if (receptacleEyesDamaged >= Math.Max(TFTVSpecialDifficulties.DifficultyOrderConverter(1+ TFTVSpecialDifficulties.DifficultyOrderConverter(controller.Difficulty.Order)), 4))
+                            if (receptacleEyesDamaged >= Math.Max(TFTVSpecialDifficulties.DifficultyOrderConverter(1 + TFTVSpecialDifficulties.DifficultyOrderConverter(controller.Difficulty.Order)), 4))
                             {
                                 actor.ApplyDamage(new DamageResult() { HealthDamage = 2000000 });
                                 GiveAllPhoenixOperativesReceptacleDistrupredStatus(controller);
@@ -1180,8 +1184,7 @@ namespace TFTV
         internal class MissionObjectives
         {
             public static bool ForceSpecialCharacterPortraitInSetupProperPortrait(TacticalActor actor,
-                Dictionary<TacticalActor, PortraitSprites> _soldierPortraits, SquadMemberScrollerController squadMemberScrollerController,
-                bool _renderingInProgress)
+                Dictionary<TacticalActor, PortraitSprites> _soldierPortraits, SquadMemberScrollerController squadMemberScrollerController)
             {
                 try
                 {
@@ -1221,41 +1224,7 @@ namespace TFTV
 
                             return false;
                             //   actor.TacticalActorView.TacticalActorViewDef.PortraitSource = TacticalActorViewDef.PortraitMode.ManualPortrait;
-                        }
-                        /*   else
-                           {
-
-
-                               PortraitSprites portraitSprites = _soldierPortraits[actor];
-                               switch (actor.TacticalActorView.TacticalActorViewDef.PortraitSource)
-                               {
-                                   case TacticalActorViewDef.PortraitMode.ManualPortrait:
-                                       {
-                                           Sprite sprite = (Sprite)tryFindFakePortraitMethod.Invoke(squadMemberScrollerController, new object[] { actor }); // squadMemberScrollerController.TryFindFakePortrait(actor);
-                                           if (sprite == null)
-                                           {
-                                               TFTVLogger.Always($"Manual portrait needed for {actor}, none is found!");
-                                           }
-
-                                           portraitSprites.Portrait = sprite;
-                                           updatePortraitForSoldierMethod.Invoke(squadMemberScrollerController, new object[] { actor });
-                                         //  squadMemberScrollerController.UpdatePortraitForSoldier(actor);
-                                           break;
-                                       }
-                                   case TacticalActorViewDef.PortraitMode.RenderedPortrait:
-                                       if (!_renderingInProgress)
-                                       {
-                                           renderPortraitMethod.Invoke(squadMemberScrollerController, new object[] { actor });
-                                          // squadMemberScrollerController.RenderPortrait(actor);
-                                       }
-
-                                       break;
-                                   case TacticalActorViewDef.PortraitMode.NoPortrait:
-                                       TFTVLogger.Always($"Portrait needed for {actor}, but he is set up as PortraitMode.NoPortrait! Are you using cheats?");
-                                       break;
-                               }
-                           }*/
-
+                        }                 
                     }
 
                     return true;
@@ -1614,7 +1583,7 @@ namespace TFTV
                         ActorDeploymentTagDef eliteTag = DefCache.GetDef<ActorDeploymentTagDef>("1x1_Elite_DeploymentTagDef");
 
 
-                        int difficulty = Mathf.Min(TFTVSpecialDifficulties.DifficultyOrderConverter(controller.Difficulty.Order)+1, 4);
+                        int difficulty = Mathf.Min(TFTVSpecialDifficulties.DifficultyOrderConverter(controller.Difficulty.Order) + 1, 4);
 
                         List<MissionDeployConditionData> gruntDeployments = new List<MissionDeployConditionData>();
                         List<MissionDeployConditionData> eliteDeployments = new List<MissionDeployConditionData>();
@@ -1912,7 +1881,7 @@ namespace TFTV
 
                         List<TacCharacterDef> chironTemporaryList = new List<TacCharacterDef>();
                         List<TacCharacterDef> chironReinforcements = new List<TacCharacterDef>();
-                        int difficulty = 1+TFTVSpecialDifficulties.DifficultyOrderConverter(controller.Difficulty.Order);
+                        int difficulty = 1 + TFTVSpecialDifficulties.DifficultyOrderConverter(controller.Difficulty.Order);
 
                         if (difficulty == 6) //Etermes
                         {
@@ -2479,7 +2448,7 @@ namespace TFTV
 
         internal class Revenants
         {
-            private static readonly List<ClassTagDef> RevenantEligibleClasses = new List<ClassTagDef>() { crabTag, fishmanTag, sirenTag, chironTag, queenTag };
+            private static readonly List<ClassTagDef> RevenantEligibleClasses = new List<ClassTagDef>() { crabTag, fishmanTag, sirenTag };
 
             // private static readonly GameTagDef revenantTier1GameTag = DefCache.GetDef<GameTagDef>("RevenantTier_1_GameTagDef");
             private static readonly GameTagDef revenantTier2GameTag = DefCache.GetDef<GameTagDef>("RevenantTier_2_GameTagDef");

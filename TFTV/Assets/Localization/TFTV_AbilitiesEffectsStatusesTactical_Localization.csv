@@ -70,7 +70,7 @@ CAPTURE_CAPACITY_TOTAL,Text,,TOTAL AVAILABLE CONTAINMENT:,,,,,,,,
 KEY_BASE_FACILITY_CONTAINMENT_DESCRIPTION,Text,,"Live Pandorans can be contained here and kept alive. Large creatures will take more space, and space is shared across all facilities. The facility has 25 containment space.",,,,,,,,
 TFTV_HUMAN_ENEMIES_FEARSOME_TEXT,Text,,Enemies who can see the character lose 2 WP,,,,,,,,
 TFTV_HUMAN_ENEMIES_FEARSOME_TITLE,Text,,Fearsome,,,,,,,,
-TFTV_HUMAN_ENEMIES_VOLLEY_TEXT,Text,,Allies first attack with firearms costs 1 AP less,,,,,,,,
+TFTV_HUMAN_ENEMIES_VOLLEY_TEXT,Text,,Allies first attack with firearms costs 2 AP less,,,,,,,,
 TFTV_HUMAN_ENEMIES_VOLLEY_TITLE,Text,,Starting volley,,,,,,,,
 TFTV_HUMAN_ENEMIES_SELFREPAIR_TEXT,Text,,Metalhearts gain self-repair ability that restores disabled limbs,,,,,,,,
 TFTV_HUMAN_ENEMIES_SELFREPAIR_TITLE,Text,,Self-repair protocol,,,,,,,,
@@ -118,8 +118,7 @@ DELIRIUM_PERK_HYPERALGESIA_DESCRIPTION,Text,,"Lose 1 WP when taking damage, no W
 <i>Subject has extreme sensitivity to pain and exhibits symptoms of empathy fatigue</i>",,"Perte de 1 Point de Volonté en cas de dégâts, pas de perte de Point de Volonté en cas de mort d'alliés.
 <i>Le sujet est extrêmement sensible à la douleur et présente des symptômes de fatigue empathique.</i>",,,,,,
 "DELIRIUM_PERK_FERAL_NAME
-",Text,,"FERAL
-",,"SAUVAGE
+",Text,,"FERAL",,"SAUVAGE
 ",,,,,,
 "DELIRIUM_PERK_FERAL_DESCRIPTION
 ",Text,,"All actions have 10% chance to fumble, recover 1 AP from killing enemies

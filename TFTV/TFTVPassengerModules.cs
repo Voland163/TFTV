@@ -1,9 +1,9 @@
-﻿using Base.Core;
-using HarmonyLib;
+﻿using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities.Items;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.Interception.Equipments;
+using PhoenixPoint.Geoscape.Events;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
 using PhoenixPoint.Tactical.Entities;
@@ -11,7 +11,6 @@ using PhoenixPoint.Tactical.Entities.Equipments;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using static TFTV.TFTVNewGameMenu;
 using System.Reflection;
 
 namespace TFTV
@@ -71,15 +70,15 @@ namespace TFTV
 
         public static void ImplementFarMConfig(GeoLevelController controller)
         {
-            try 
+            try
             {
-               
 
-                foreach (GeoVehicle geoVehicle in controller.PhoenixFaction.Vehicles) 
+
+                foreach (GeoVehicle geoVehicle in controller.PhoenixFaction.Vehicles)
                 {
                     MethodInfo methodInfo = typeof(GeoVehicle).GetMethod("UpdateVehicleBonusCache", BindingFlags.NonPublic | BindingFlags.Instance);
 
-                //    TFTVLogger.Always($"method is null? {methodInfo==null}");
+                    //    TFTVLogger.Always($"method is null? {methodInfo==null}");
                     methodInfo.Invoke(geoVehicle, null);
 
 
@@ -110,7 +109,7 @@ namespace TFTV
 
                         if (config.ActivateStaminaRecuperatonModule)
                         {
-                           // TFTVLogger.Always($"geovehicle is {__instance.name}");
+                            // TFTVLogger.Always($"geovehicle is {__instance.name}");
                             __result = 0.35f;
 
                         }
@@ -218,7 +217,7 @@ namespace TFTV
                     {
                         TFTVStarts.ModifyIntroForSpecialStart(__instance.GeoLevel.SynedrionFaction, site);
                     }
-                  
+
 
                     List<ItemUnit> startingStorage = currentDifficultyLevel.StartingStorage.ToList();
 
@@ -307,20 +306,20 @@ namespace TFTV
             {
                 try
                 {
-                 /*   TFTVLogger.Always($"{__instance.VehicleDef.ViewElement.Name}");
+                    /*   TFTVLogger.Always($"{__instance.VehicleDef.ViewElement.Name}");
 
-                    TFTVLogger.Always($"Modules present {__instance?.Modules?.Count()}");
+                       TFTVLogger.Always($"Modules present {__instance?.Modules?.Count()}");
 
-                    foreach(GeoVehicleEquipment geoVehicleEquipment in __instance.Modules) 
-                    {
-                        TFTVLogger.Always($"{geoVehicleEquipment?.ModuleDef?.name}");
-                    
-                    
-                    }*/
+                       foreach(GeoVehicleEquipment geoVehicleEquipment in __instance.Modules) 
+                       {
+                           TFTVLogger.Always($"{geoVehicleEquipment?.ModuleDef?.name}");
 
 
-                    bool passengerModulePresent = __instance.Modules != null && __instance.Modules.Count()>0 && __instance.Modules.Any(m =>
-                       m!=null && m.ModuleDef != null && (
+                       }*/
+
+
+                    bool passengerModulePresent = __instance.Modules != null && __instance.Modules.Count() > 0 && __instance.Modules.Any(m =>
+                       m != null && m.ModuleDef != null && (
                             m.ModuleDef.BonusType == GeoVehicleModuleDef.GeoVehicleModuleBonusType.Speed ||
                             m.ModuleDef.BonusType == GeoVehicleModuleDef.GeoVehicleModuleBonusType.SurvivalOdds ||
                             m.ModuleDef.BonusType == GeoVehicleModuleDef.GeoVehicleModuleBonusType.Range ||
@@ -330,7 +329,7 @@ namespace TFTV
 
                     string geoVehicle = __instance.VehicleDef.ViewElement.Name;
 
-                  //  TFTVLogger.Always($"{__instance.VehicleDef.ViewElement.Name} {passengerModulePresent}");
+                    //  TFTVLogger.Always($"{__instance.VehicleDef.ViewElement.Name} {passengerModulePresent}");
 
                     switch (geoVehicle)
                     {
@@ -429,61 +428,41 @@ namespace TFTV
         [HarmonyPatch(typeof(GeoLevelController), "RunInterceptionTutorial")]
         public static class GeoLevelController_DontDestroyAircraft_Gift
         {
-            private static GeoVehicle clonedAircraft;
 
-            public static void Prefix(GeoLevelController __instance)
+
+            public static bool Prefix(GeoLevelController __instance, GeoscapeEventContext context, ref GeoVehicle ____theGiftAircraft)
             {
                 try
                 {
+                    TFTVConfig config = TFTVMain.Main.Config;
+
 
                     GeoVehicle geoVehicle = __instance.View.SelectedActor as GeoVehicle;
-                    //      
-                    //  TFTVLogger.Always($"Phoenix characters on site: {geoVehicle.CurrentSite.GetAllCharacters().Where(c => c.Faction == geoVehicle.Owner).Count()}");
+                    GeoSite currentSite = geoVehicle.CurrentSite;
+                    ____theGiftAircraft = __instance.PhoenixFaction.CreateVehicle(geoVehicle.CurrentSite, __instance.PhoenixFaction.FactionDef.StartingVehicle);
+                    ____theGiftAircraft.RenameVehicle(__instance.FesteringSkiesSettings.ManticoreName.Localize());
+                    ____theGiftAircraft.UseLoadout(__instance.FesteringSkiesSettings.GiftLoadout);
+                    FesteringSkiesSettingsDef festeringSkiesSettings = __instance.FesteringSkiesSettings;
+                    GeoAlienFaction alienFaction = __instance.AlienFaction;
+                    __instance.PhoenixFaction.InterceptionUnlocked = false;
 
-                    //  if (__instance.EventSystem.IsEventTriggered("PROG_FS1_FAIL"))//geoVehicle.CurrentSite.GetAllCharacters().Any(c=>c.Faction==geoVehicle.Owner))//)
-                    //  {
-                    string componentName = "PP_Manticore";
-                        if (geoVehicle.VehicleDef.name.Contains("ANU_Blimp"))
-                        {
-                            componentName = "ANU_Blimp";
-                        }
-                        else if (geoVehicle.VehicleDef.name.Contains("NJ_Thunderbird"))
-                        {
-                            componentName = "NJ_Thunderbird";
-                        }
-                        else if (geoVehicle.VehicleDef.name.Contains("SYN_Helios"))
-                        {
-                            componentName = "SYN_Helios";
-                        }
-                        ComponentSetDef sourceAircraftComponentDef = DefCache.GetDef<ComponentSetDef>(componentName);
-                        clonedAircraft = __instance.PhoenixFaction.CreateVehicle(geoVehicle.CurrentSite, sourceAircraftComponentDef); 
-                        clonedAircraft.RenameVehicle(geoVehicle.Name);
-                        foreach (GeoVehicleEquipment equipment in geoVehicle.Equipments)
-                        {
-                            clonedAircraft.AddEquipment(equipment);
-                        }
-
-                        GeoSite geoSite = (from p in __instance.Map.SitesByType[GeoSiteType.PhoenixBase]
-                                           where p.Owner == __instance.PhoenixFaction && p.State == GeoSiteState.Functioning
-                                           select p into d
-                                           orderby GeoMap.Distance(d, clonedAircraft.CurrentSite)
-                                           select d).FirstOrDefault();
-                        clonedAircraft.TeleportToSite(geoSite);
-                        clonedAircraft.ReloadAllEquipments();
-
-                 /*   }
-                    else 
+                    __instance.PhoenixFaction.InterceptionUnlocked = true;
+                  
+                    if (!config.SkipFSTutorial)
                     {
+                        GeoVehicle geoVehicle2 = alienFaction.CreateVehicle(currentSite, festeringSkiesSettings.AlienAircraft);
+                        geoVehicle2.UseLoadout(festeringSkiesSettings.AlienAircraftLoadout);
+                        __instance.LaunchInterceptionGame(____theGiftAircraft, geoVehicle2, isAutoBattle: false, tutorialIncluded: true);
+                    }
+                    __instance.View.ResetViewState();
 
-                        TFTVLogger.Always($"Failed the Hatching, so not getting your original craft back!");
-                    
-                    }*/
-
+                    return false;
 
                 }
                 catch (Exception e)
                 {
                     TFTVLogger.Error(e);
+                    throw;
                 }
             }
         }

@@ -47,7 +47,6 @@ using System.Linq;
 using System.Reflection;
 using UnityEngine;
 using UnityEngine.UI;
-using static PhoenixPoint.Common.View.ViewModules.UIModuleModal;
 
 namespace TFTV
 {
@@ -278,7 +277,9 @@ namespace TFTV
                     KillActorFactionObjectiveDef killScylla = Helper.CreateDefFromClone(killInfestation, "{6B331F65-7F9B-454E-B67B-A313F065615F}", nameObjectiveKillScylla);
                     killScylla.MissionObjectiveData.Description.LocalizationKey = "KEY_OBJECTIVE_KILL_QUEEN";
                     killScylla.MissionObjectiveData.Summary.LocalizationKey = "KEY_OBJECTIVE_KILL_QUEEN";
+                    killScylla.ParalysedCounts = true;
                     KillScylla = killScylla;
+
 
                     string nameObjectiveDestroySentinel = "PhoenixBaseDestroySentinel";
 
@@ -537,7 +538,7 @@ namespace TFTV
 
                         foreach (GeoPhoenixBase phoenixBase in phoenixBasesUnderAttack)
                         {
-                            
+
 
                             float timer = CalculateBaseAttackProgress(phoenixBase.Site);
                             int siteID = phoenixBase.Site.SiteId;
@@ -1854,6 +1855,14 @@ namespace TFTV
                             {
                                 TFTVBaseDefenseTactical.ScyllaLoose = true;
                             }
+                            else 
+                            {
+                                TFTVBaseDefenseTactical.ScyllaLoose = false;
+                            }
+                        }
+                        else 
+                        {
+                            TFTVBaseDefenseTactical.Breach = false;
                         }
 
                         TFTVLogger.Always($"When modifying mission data, timer is {timer}");
@@ -3439,30 +3448,27 @@ namespace TFTV
         }
 
 
-        private static bool AbilityBought = false;
+        /* [HarmonyPatch(typeof(UIModuleCharacterProgression), "BuyAbility")]
+         public static class UIModuleCharacterProgression_BuyAbility_patch
+         {
+             public static void Postfix(UIStateEditSoldier __instance)
+             {
+                 try
+                 {
+                         AbilityBought = true;
+                     TFTVLogger.Always($"UIModuleCharacterProgression.BuyAbility; ability bought: {AbilityBought}");
+
+                 }
+                 catch (Exception e)
+                 {
+                     TFTVLogger.Error(e);
+                     throw;
+                 }
+             }
+         }*/
 
 
-       /* [HarmonyPatch(typeof(UIModuleCharacterProgression), "BuyAbility")]
-        public static class UIModuleCharacterProgression_BuyAbility_patch
-        {
-            public static void Postfix(UIStateEditSoldier __instance)
-            {
-                try
-                {
-                        AbilityBought = true;
-                    TFTVLogger.Always($"UIModuleCharacterProgression.BuyAbility; ability bought: {AbilityBought}");
 
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                    throw;
-                }
-            }
-        }*/
-
-
-       
 
         //Patch to close mission briefings for missions not in play (the Vanilla double mission bug)
         //and also to close Deploy screen if there are no characters to deploy to mission
@@ -3479,18 +3485,6 @@ namespace TFTV
                     UIModuleModal uIModuleModal = geoscapeView.GeoscapeModules.ModalModule;
 
 
-                    TFTVLogger.Always($"Showing modal {__instance.name}, " +
-                        $"{__instance.GetComponent<ModalType>().GetName()}, ability bought:{AbilityBought}, {geoscapeView.MainUILayer.ActiveState.Name}");
-
-
-
-                    if (__instance.name.Contains("Confirm_CharacterProgression") && __instance.GetComponent<ModalType>() == ModalType.GeoHavenAttackBrief)
-                    {
-                       
-                     //  AbilityBought = true;
-                      TFTVLogger.Always($"Character Progression in GeoHavenAttack; ability bought: {AbilityBought}, {data?.GetType()?.Name}");
-                    }
-
 
                     if (data is GeoMission geoMission && __instance.name.Contains("Brief"))
                     {
@@ -3503,15 +3497,7 @@ namespace TFTV
                             TFTVLogger.Always("Closing modal because mission is not in play");
                         }
 
-                        if (AbilityBought && __instance.GetComponent<HavenDefenceBriefDataBind>() != null)
-                        {
-
-                            TFTVLogger.Always($"must be coming from character progression");
-                            __instance.Cancel();
-                            AbilityBought = false;
-                        }
-
-                        AbilityBought = false;
+                      
 
                         if (PhoenixBasesUnderAttack.ContainsKey(geoSite.SiteId) && geoSite.CharactersCount == 0)
                         {

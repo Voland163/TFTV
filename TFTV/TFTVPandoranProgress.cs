@@ -7,6 +7,7 @@ using PhoenixPoint.Geoscape.Entities.Sites;
 using PhoenixPoint.Geoscape.Events;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
+using PhoenixPoint.Geoscape.View.ViewModules;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.DamageKeywords;
 using PhoenixPoint.Tactical.Entities.Statuses;
@@ -288,8 +289,9 @@ namespace TFTV
             }
         }
 
-
-
+        
+        
+       
 
         // Harmony patch to change the reveal of alien bases when in scanner range, so increases the reveal chance instead of revealing it right away
         [HarmonyPatch(typeof(GeoAlienFaction), "TryRevealAlienBase")]
@@ -300,6 +302,7 @@ namespace TFTV
             {
                 try
                 {
+
                     if (!site.GetVisible(revealToFaction))
                     {
                         GeoAlienBase component = site.GetComponent<GeoAlienBase>();

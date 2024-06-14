@@ -14,6 +14,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices.WindowsRuntime;
 using UnityEngine;
 
 namespace TFTV
@@ -391,6 +392,23 @@ namespace TFTV
                 }
             }
 
+            private static Dictionary<TacticalActor, List <Vector3>> _actorGooPositions = new Dictionary<TacticalActor, List <Vector3>>();
+
+            public static void ClearActorGooPositions()
+            {
+                try 
+                {
+                    _actorGooPositions.Clear();
+                   // TFTVLogger.Always($"clearing _actorGooPositions");
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+
+            }
+
             public static void CheckActorTouchingGoo(TacticalPerceptionBase tacticalPerceptionBase)
             {
                 try
@@ -409,25 +427,40 @@ namespace TFTV
                         return;
                     }
 
-                    foreach (TacticalVoxel voxel in tacticalActorBase.TacticalLevel.VoxelMatrix.GetVoxels(tacticalPerceptionBase.GetBounds()))
+                   // TFTVLogger.Always($"CheckActorTouchingGoo for {tacticalActor.DisplayName} at pos {tacticalActor.Pos}");
+
+                    if (!_actorGooPositions.ContainsKey(tacticalActor) || !_actorGooPositions[tacticalActor].Any(v=>(tacticalActor.Pos-v).magnitude<1))
                     {
-                        if (voxel.GetVoxelType() == TacticalVoxelType.Goo)
+
+                        foreach (TacticalVoxel voxel in tacticalActorBase.TacticalLevel.VoxelMatrix.GetVoxels(tacticalPerceptionBase.GetBounds()))
                         {
-                            TacticalNavigationComponent navComponent = tacticalActor.TacticalNav;
-                            float apToSubtract = 1 / navComponent.DistanceToAPFactor;
+                            if (voxel.GetVoxelType() == TacticalVoxelType.Goo)
+                            {
+                                TacticalNavigationComponent navComponent = tacticalActor.TacticalNav;
+                                float apToSubtract = navComponent.DistanceToAPFactor;
 
-                            tacticalActor.CharacterStats.ActionPoints.Subtract(apToSubtract);
+                                tacticalActor.CharacterStats.ActionPoints.Subtract(apToSubtract);
 
-                           // TFTVLogger.Always($"subtracting {apToSubtract} from {tacticalActor.DisplayName} because traversing Goo");
+                                if (_actorGooPositions.ContainsKey(tacticalActor))
+                                {
+                                    _actorGooPositions[tacticalActor].Add(tacticalActor.Pos);
+                                }
+                                else
+                                {
+                                    _actorGooPositions.Add(tacticalActor, new List<Vector3>() { tacticalActor.Pos });
+                                }
+
+                                TFTVLogger.Always($"subtracting {apToSubtract} from {tacticalActor.DisplayName} because traversing Goo (navComponent.DistanceToAPFactor: {navComponent.DistanceToAPFactor})");
+                                return;
+                            }
                         }
-                    }     
+                    }
                 }
 
                 catch (Exception e)
                 {
                     TFTVLogger.Error(e);
                 }
-
             }
 
 

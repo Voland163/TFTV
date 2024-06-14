@@ -16,9 +16,7 @@ using PhoenixPoint.Geoscape.Entities.Sites;
 using PhoenixPoint.Geoscape.Events;
 using PhoenixPoint.Geoscape.Events.Eventus;
 using PhoenixPoint.Geoscape.Levels;
-using PhoenixPoint.Geoscape.Levels.Factions;
 using PhoenixPoint.Geoscape.Levels.Objectives;
-using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Effects.ApplicationConditions;
 using PhoenixPoint.Tactical.Entities.Effects.DamageTypes;
 using PhoenixPoint.Tactical.Entities.Statuses;
@@ -90,71 +88,66 @@ namespace TFTV
 
         }
 
-        public static void ClearInternalVariables()
+        public static void ClearInternalVariablesOnStateChangeAndLoad()
         {
             try
             {
-                TFTVBehemothAndRaids.targetsForBehemoth = new List<int>();
-                TFTVBehemothAndRaids.flyersAndHavens = new Dictionary<int, List<int>>();
-                TFTVBehemothAndRaids.checkHammerfall = false;
-                TFTVRevenant.DeadSoldiersDelirium = new Dictionary<int, int>();
-                TFTVTouchedByTheVoid.TBTVVariable = 0;
-                TFTVRevenant.daysRevenantLastSeen = 0;
-                TFTVStamina.charactersWithDisabledBodyParts = new Dictionary<int, List<string>>();
-                TFTVBehemothAndRaids.behemothScenicRoute = new List<int>();
-                TFTVBehemothAndRaids.behemothTarget = 0;
-                TFTVBehemothAndRaids.behemothWaitHours = 12;
-                TFTVRevenant.revenantSpecialResistance = new List<string>();
-                TFTVRevenant.revenantCanSpawn = false;
-                TFTVHumanEnemies.HumanEnemiesAndTactics = new Dictionary<string, int>();
-                TFTVRevenantResearch.ProjectOsirisStats = new Dictionary<int, int[]>();
-                TFTVRevenantResearch.ProjectOsiris = false;
-                TFTVDiplomacyPenalties.VoidOmensImplemented = false;
-                TFTVTouchedByTheVoid.UmbraResearched = false;
-                TFTVHumanEnemiesNames.names.Clear();
-                TFTVHumanEnemiesNames.CreateNamesDictionary();
-                TFTVInfestation.InfestationMissionWon = false;
-                ClearHints();
-                TFTVUI.ShowWithoutHelmet.uIModuleSoldierCustomization = null;
-                TFTVTactical.TurnZeroMethodsExecuted = false;
+                TFTVBehemothAndRaids.InternalData.BehemothDataToClearOnStateChangeAndLoad();
+                
+                TFTVBaseDefenseTactical.InternalData.BaseDefenseDataToClearOnStateChangeAndLoad();
+               
+                TFTVRevenant.InternalData.RevenantDataToClearOnStateChangeAndLoad();
+
+
                 TFTVBaseDefenseGeoscape.PhoenixBasesUnderAttack = new Dictionary<int, Dictionary<string, double>>();
                 TFTVBaseDefenseGeoscape.PhoenixBasesInfested.Clear();
                 TFTVBaseDefenseGeoscape.PhoenixBasesUnderAttackSchedule.Clear();
-                TFTVBaseDefenseTactical.VentingHintShown = false;
-                TFTVBaseDefenseTactical.ConsolePositions = new Dictionary<float, float>();
-                TFTVAncients.CyclopsMolecularDamageBuff.Clear();
-                TFTVPandoranProgress.ScyllaCount = 0;
-                TFTVAncients.AutomataResearched = false;
-                TFTVAncients.AlertedHoplites.Clear();
-                TFTVUI.EditScreen.LoadoutsAndHelmetToggle.CharacterLoadouts?.Clear();
-                TFTVCapturePandoransGeoscape.PandasForFoodProcessing = 0;
-                TFTVCapturePandorans.ContainmentFacilityPresent = false;
-                TFTVNewGameOptions.ConfigImplemented = false;
-                TFTVNewGameOptions.InternalDifficultyCheck = 0;
-                TFTVCapturePandoransGeoscape.ToxinsInCirculation = 0;
-                TFTVNewGameMenu.EnterStateRun = false;
-                TFTVAmbushes.AN_FallenOnes_Hotspots = new List<int>();
-                TFTVAmbushes.NJ_Purists_Hotspots = new List<int>();
-                TFTVDelirium.CharactersDeliriumPerksAndMissions.Clear();
                 TFTVBaseDefenseGeoscape.ContainmentBreachSchedule.Clear();
                 TFTVBaseDefenseGeoscape.PandoransThatCanEscape.Clear();
+
+                TFTVTouchedByTheVoid.TBTVVariable = 0;
+                TFTVTouchedByTheVoid.UmbraResearched = false;
+
+                TFTVStamina.charactersWithDisabledBodyParts = new Dictionary<int, List<string>>();
+
+                TFTVHumanEnemies.HumanEnemiesAndTactics = new Dictionary<string, int>();
+                TFTVHumanEnemiesNames.names.Clear();
+                TFTVHumanEnemiesNames.CreateNamesDictionary();
+
+                TFTVDiplomacyPenalties.VoidOmensImplemented = false;
+                
+                TFTVInfestation.InfestationMissionWon = false;
+
+                TFTVUI.ShowWithoutHelmet.uIModuleSoldierCustomization = null;
+                TFTVTactical.TurnZeroMethodsExecuted = false;
+
+                TFTVAncients.CyclopsMolecularDamageBuff.Clear();
+                TFTVAncients.AutomataResearched = false;
+                TFTVAncients.AlertedHoplites.Clear();
+
+                TFTVUI.EditScreen.LoadoutsAndHelmetToggle.CharacterLoadouts?.Clear();
+             
+                TFTVCapturePandoransGeoscape.ToxinsInCirculation = 0;
+                TFTVCapturePandoransGeoscape.PandasForFoodProcessing = 0;
+                TFTVCapturePandorans.ContainmentFacilityPresent = false;
+                
+                TFTVNewGameOptions.ConfigImplemented = false;
+                TFTVNewGameOptions.InternalDifficultyCheck = 0;
+
+                TFTVNewGameMenu.EnterStateRun = false;
+              
+                TFTVAmbushes.AN_FallenOnes_Hotspots = new List<int>();
+                TFTVAmbushes.NJ_Purists_Hotspots = new List<int>();
+              
+                TFTVDelirium.CharactersDeliriumPerksAndMissions.Clear();
+
+                TFTVPandoranProgress.ScyllaCount = 0;
+
                 TFTVTacticalDeploymentEnemies.UndesirablesSpawned.Clear();
-                
-                
 
-                /*  TFTVNewGameOptions.AmountOfExoticResourcesSetting;
-                  TFTVNewGameOptions.ResourceMultiplierSetting;
-                  TFTVNewGameOptions.DiplomaticPenaltiesSetting;
-                  TFTVNewGameOptions.StaminaPenaltyFromInjurySetting;
-                  TFTVNewGameOptions.MoreAmbushesSetting;
-                  TFTVNewGameOptions.LimitedCaptureSetting;
-                  TFTVNewGameOptions.LimitedHarvestingSetting;
-                  TFTVNewGameOptions.StrongerPandoransSetting;
-                  TFTVNewGameOptions.ImpossibleWeaponsAdjustmentsSetting;*/
+                ClearHints();
 
-                //  TFTVUI.CurrentlyAvailableInv.Clear();
-                //  TFTVUI.CurrentlyHiddenInv.Clear();
-                TFTVLogger.Always($"Internal variables cleared");
+                TFTVLogger.Always($"Internal variables cleared on State change or Load");
             }
             catch (Exception e)
             {
@@ -181,12 +174,12 @@ namespace TFTV
 
                 TFTVHumanEnemies.TacticsHint.Clear();
 
-                if (TFTVRevenant.revenantResistanceHintGUID!=null)
+                if (TFTVRevenant.revenantResistanceHintGUID != null)
                 {
                     ContextHelpHintDef revenantResistanceHint = (ContextHelpHintDef)Repo.GetDef(TFTVRevenant.revenantResistanceHintGUID);
-                        
-                       // DefCache.GetDef<ContextHelpHintDef>("RevenantResistanceSighted");
-                    if (revenantResistanceHint!=null && alwaysDisplayedTacticalHintsDbDef.Hints.Contains(revenantResistanceHint))
+
+                    // DefCache.GetDef<ContextHelpHintDef>("RevenantResistanceSighted");
+                    if (revenantResistanceHint != null && alwaysDisplayedTacticalHintsDbDef.Hints.Contains(revenantResistanceHint))
                     {
                         alwaysDisplayedTacticalHintsDbDef.Hints.Remove(revenantResistanceHint);
                         TFTVLogger.Always("Revenant resistance hint removed");
@@ -205,25 +198,24 @@ namespace TFTV
         {
             try
             {
-                TFTVRevenant.revenantSpawned = false;
-                TFTVRevenant.revenantID = 0;
-                TFTVRevenantResearch.RevenantPoints = 0;
+
+                TFTVRevenant.InternalData.RevenantDataToClearOnLoadOnly();
+
+
                 TFTVTactical.TurnZeroMethodsExecuted = false;
-                TFTVBaseDefenseTactical.ConsolePositions = new Dictionary<float, float>();
-                TFTVBaseDefenseTactical.StratToBeAnnounced = 0;
-                TFTVBaseDefenseTactical.StratToBeImplemented = 0;
+
                 TFTVAncients.CyclopsMolecularDamageBuff.Clear();
                 TFTVEconomyExploitsFixes.AttackedLairSites = new Dictionary<int, int>();
-                //   TFTVAncients.AlertedHoplites.Clear();
+
                 TFTVCapturePandorans.AircraftCaptureCapacity = 0;
-                TFTVBaseDefenseTactical.Breach = false;
-                TFTVBaseDefenseTactical.ScyllaLoose = false;
-                TFTVBaseDefenseTactical.PandoransInContainment.Clear();
+
                 TFTVNewGameOptions.EtermesResistanceAndVulnerability = 0;
+
+                TFTVBaseDefenseTactical.InternalData.BaseDefenseDataToClearOnLoadOnly();
+
 
                 TFTVLogger.Always($"Variables cleared on load");
 
-                //  TFTVBaseDefenseTactical.VentingHintShown = false;
             }
             catch (Exception e)
             {
@@ -236,25 +228,23 @@ namespace TFTV
         {
             try
             {
-                // TFTVAncients.HoplitesKilled = 0;
-                TFTVRevenant.revenantSpawned = false;
-                TFTVRevenant.revenantID = 0;
+                TFTVRevenant.InternalData.RevenantDataToClearOnMissionRestartOnly();
+                TFTVBaseDefenseTactical.InternalData.BaseDefenseDataToClearOnMissionRestartOnly();
+
+
                 TFTVHumanEnemies.HumanEnemiesAndTactics = new Dictionary<string, int>();
-                TFTVRevenantResearch.ProjectOsirisStats = new Dictionary<int, int[]>();
-                TFTVStamina.charactersWithDisabledBodyParts = new Dictionary<int, List<string>>();
                 TFTVHumanEnemiesNames.names.Clear();
                 TFTVHumanEnemiesNames.CreateNamesDictionary();
+
+                TFTVStamina.charactersWithDisabledBodyParts = new Dictionary<int, List<string>>();
+
                 ClearHints();
                 TFTVTactical.TurnZeroMethodsExecuted = false;
+
                 TFTVAncients.CyclopsMolecularDamageBuff.Clear();
-                TFTVBaseDefenseTactical.ConsolePositions = new Dictionary<float, float>();
-                TFTVBaseDefenseTactical.StratToBeAnnounced = 0;
-                TFTVBaseDefenseTactical.StratToBeImplemented = 0;
-                TFTVBaseDefenseTactical.VentingHintShown = false;
-                //   TFTVBaseDefenseTactical.Breach = false;
-                //    TFTVBaseDefenseTactical.ScyllaLoose = false;
-                TFTVBaseDefenseTactical.ResetPandoransInContainment();
                 TFTVAncients.AlertedHoplites.Clear();
+
+                TFTVLogger.Always($"Internal variables cleared on Mission Restart");
 
             }
             catch (Exception e)
@@ -295,7 +285,7 @@ namespace TFTV
                 try
                 {
                     TFTVLogger.Always("LoadGame method invoked");
-                    ClearInternalVariables();
+                    ClearInternalVariablesOnStateChangeAndLoad();
                     VariablesClearedOnlyOnLoad();
                 }
                 catch (Exception e)

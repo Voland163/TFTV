@@ -98,36 +98,6 @@ namespace TFTV
             }
         }
 
-        
-        //OverwatchAbility
-
-        //This was to verify that it is not used
-       /* [HarmonyPatch(typeof(AISafePathConsideration), "Evaluate")]
-        public static class AISafePathConsideration_Evaluate_patch
-        {
-            private static void Postfix(AISafePathConsideration __instance)
-            {
-                try
-                {
-                    TFTVLogger.Always($"evaluating {__instance.Def.name}, checks for OW? {__instance.Def.CheckOverwatch}");
-
-
-                    // return true;
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                    throw;
-                }
-            }
-
-        }*/
-
-       
-        // AIActorMovementZoneTargetGenerator
-
-        //Prevents step out
-
         [HarmonyPatch(typeof(AIActionMoveToPosition), "Execute")]
         public static class AIActionMoveToPosition_Execute_patch
         {
@@ -391,8 +361,6 @@ namespace TFTV
         internal class TurnOrder
         {
 
-
-
             public static void SortOutAITurnOrder(List<TacticalActor> tacticalActors)
             {
                 try
@@ -533,7 +501,6 @@ namespace TFTV
                 }
             }
 
-
             public static bool CheckForShred(TacticalActor tacticalActor)
             {
                 try
@@ -559,7 +526,6 @@ namespace TFTV
                     throw;
                 }
             }
-
 
             public static bool CheckScouts(TacticalActor tacticalActor, List<TacticalActor> friendlies)
             {
@@ -601,7 +567,6 @@ namespace TFTV
                     throw;
                 }
             }
-
 
             public static bool CheckUmbra(TacticalActor tacticalActor)
             {
@@ -684,8 +649,6 @@ namespace TFTV
                     throw;
                 }
             }
-
-
 
 
             public static bool CheckForMeleeTargets(TacticalActor actor, List<TacticalActor> enemies)
@@ -1302,7 +1265,14 @@ namespace TFTV
                         try
                         {
                             //if target or actor is MCed, don't heal
-                            if (targetActor.Status.HasStatus<MindControlStatus>() || actor.Status.HasStatus<MindControlStatus>())
+                            if (targetActor.Status.HasStatus<MindControlStatus>() || actor.Status.HasStatus<MindControlStatus>() || 
+                                (
+                                targetActor.HasGameTag(Shared.SharedGameTags.MutoidTag) 
+                                && !targetActor.Status.HasStatus<BleedStatus>() 
+                                && !targetActor.HasStatus(DefCache.GetDef<DamageOverTimeStatusDef>("Poison_DamageOverTimeStatusDef"))
+                                && !targetActor.HasStatus(DefCache.GetDef<ParalysisDamageOverTimeStatusDef>("Paralysis_DamageOverTimeStatusDef")
+                                )
+                                ))
                             {
                                 return false;
                             }

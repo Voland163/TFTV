@@ -190,14 +190,14 @@ namespace TFTV
             {
                 GeoscapeEventSystem eventSystem = controller.EventSystem;
 
-                DiplomaticGeoFactionObjective cyclopsObjective = new DiplomaticGeoFactionObjective(controller.PhoenixFaction, controller.PhoenixFaction)
+                DiplomaticGeoFactionObjective infestedHavenObjective = new DiplomaticGeoFactionObjective(controller.PhoenixFaction, controller.PhoenixFaction)
                 {
                     Title = new LocalizedTextBind(_investigateInfestedHavenObjective),
                     Description = new LocalizedTextBind(_investigateInfestedHavenObjective),
                     IsCriticalPath = true
 
                 };
-                controller.PhoenixFaction.AddObjective(cyclopsObjective);
+                controller.PhoenixFaction.AddObjective(infestedHavenObjective);
 
             }
             catch (Exception e)
@@ -621,19 +621,14 @@ namespace TFTV
                         if (encounterID == "PROG_FS3_MISS")
                         {
                             GeoSite targetHaven = __result;
-                            __result = null;
-
+                            
                             if (!targetHaven.IsInMist || targetHaven.ActiveMission != null)
                             {
                                 TFTVLogger.Always($"triggered Science of Madness, but initial haven is not suitable");
 
                                 List<GeoSite> list = level.Map.AllSites.Where(
                                     gs => gs.Type == GeoSiteType.Haven && gs.State == GeoSiteState.Functioning && gs.IsInMist && gs.ActiveMission == null && gs.IsFreeForEncounter).ToList();
-                                if (removeCurrent)
-                                {
-                                    list.Remove(contextSite);
-                                }
-
+                             
                                 if (list.Count > 0)
                                 {
                                     targetHaven = list.GetRandomElement();
@@ -658,6 +653,8 @@ namespace TFTV
                                 TFTVLogger.Always($"No suitable haven found for Science of Madness!!!");
 
                             }
+
+                            __result = null;
                         }
                     }
                     catch (Exception e)

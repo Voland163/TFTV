@@ -191,7 +191,6 @@
     <Compile Include="TFTVPassengerModules.cs" />
     <Compile Include="TFTVProjectOsiris.cs" />
     <Compile Include="TFTVRevenant.cs" />
-    <Compile Include="TFTVRevenantResearch.cs" />
     <Compile Include="TFTVReverseEngineering.cs" />
     <Compile Include="TFTVODIandVoidOmenRoll.cs" />
     <Compile Include="TFTVStamina.cs" />

@@ -49,6 +49,30 @@ namespace TFTV
         public static bool checkHammerfall = false;
         private static readonly string BehemothRoamings = "BehemothRoamings";
 
+
+        internal class InternalData 
+        { 
+            public static void BehemothDataToClearOnStateChangeAndLoad()
+            {
+                try 
+                {
+                    targetsForBehemoth = new List<int>();
+                    flyersAndHavens = new Dictionary<int, List<int>>();
+                    checkHammerfall = false;
+                    behemothScenicRoute = new List<int>();
+                    behemothTarget = 0;
+                    behemothWaitHours = 12;
+
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
+
         internal class Hammerfall
         {
             //Hammerfall

@@ -22,10 +22,9 @@ namespace TFTV
             {
                 try
                 {
-                    if (__result.Any(si => si.Def is ArmorStackStatusDef))
+                    if (__result!=null && __result.Count>0 && __result.Any(si => si.Def !=null && si.Def is ArmorStackStatusDef))
                     {
                         __result.FirstOrDefault(si => si.Def is ArmorStackStatusDef).Value = float.NaN;
-
                     }
 
                 }

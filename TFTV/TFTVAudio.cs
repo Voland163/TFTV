@@ -47,7 +47,7 @@ namespace TFTV
                         if (tacActorEventContext.Actor.Health.Value>0 && (tacActorEventContext.Actor.HasGameTag(humanTag) && config.NoBarks || 
                             _palaceMissionGameTagsToCheck.Any(gt => tacActorEventContext.Actor.GameTags.Contains(gt))))
                         {
-                            //  TFTVLogger.Always($"stopping bark from {tacActorEventContext.Actor.name}");
+                           // TFTVLogger.Always($"stopping bark from {tacActorEventContext.Actor.name}");
                             __result = false;
                         }
                     }

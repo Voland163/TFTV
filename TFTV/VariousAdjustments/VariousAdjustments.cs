@@ -207,25 +207,25 @@ namespace PRMBetterClasses.VariousAdjustments
             {
                 if (__instance.DamageOverTimeStatusDef.name.Equals("Poison_DamageOverTimeStatusDef"))
                 {
-                    TacticalActor base_TacticalActor = (TacticalActor)AccessTools.Property(typeof(TacStatus), "TacticalActor").GetValue(__instance, null);
+                    //TacticalActor base_TacticalActor = (TacticalActor)AccessTools.Property(typeof(TacStatus), "TacticalActor").GetValue(__instance, null);
                     //StatusComponent statusComponent = (StatusComponent)AccessTools.Property(typeof(TacStatus), "StatusComponent").GetValue(__instance, null);
                     //StatMultiplierStatusDef trembling = Repo.GetAllDefs<StatMultiplierStatusDef>().FirstOrDefault(sms => sms.name.Equals("Trembling_StatusDef"));
 
-                    if (__instance.IntValue <= 0 && base_TacticalActor.Status.HasStatus(trembling))
+                    if (__instance.IntValue <= 0 && __instance.TacticalActor != null && __instance.TacticalActor.Status.HasStatus(trembling))
                     {
-                        StatMultiplierStatus status = base_TacticalActor.Status.GetStatus<StatMultiplierStatus>(trembling);
+                        StatMultiplierStatus status = __instance.TacticalActor.Status.GetStatus<StatMultiplierStatus>(trembling);
                         status.RequestUnapply(status.StatusComponent);
                         return;
                     }
 
-                    if (__instance.IntValue > 0)
+                    if (__instance.IntValue > 0 && __instance.TacticalActor != null && __instance.TacticalActor.CharacterStats != null)
                     {
-                        if (!base_TacticalActor.Status.HasStatus(trembling))
+                        if (!__instance.TacticalActor.Status.HasStatus(trembling))
                         {
-                            _ = base_TacticalActor.Status.ApplyStatus(trembling);
+                            _ = __instance.TacticalActor.Status.ApplyStatus(trembling);
                         }
-                        float newWP = Mathf.Max(base_TacticalActor.CharacterStats.WillPoints.Min, base_TacticalActor.CharacterStats.WillPoints - 3.0f);
-                        base_TacticalActor.CharacterStats.WillPoints.Set(newWP);
+                        float newWP = Mathf.Max(__instance.TacticalActor.CharacterStats.WillPoints.Min, __instance.TacticalActor.CharacterStats.WillPoints - 3.0f);
+                        __instance.TacticalActor.CharacterStats.WillPoints.Set(newWP);
                     }
                 }
             }

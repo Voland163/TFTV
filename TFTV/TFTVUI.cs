@@ -21,7 +21,6 @@ using PhoenixPoint.Common.View.ViewControllers.Inventory;
 using PhoenixPoint.Common.View.ViewModules;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.Interception.Equipments;
-using PhoenixPoint.Geoscape.Entities.Sites;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
 using PhoenixPoint.Geoscape.View.DataObjects;
@@ -37,6 +36,7 @@ using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.DamageKeywords;
 using PhoenixPoint.Tactical.Entities.Effects.DamageTypes;
 using PhoenixPoint.Tactical.Entities.Equipments;
+using PhoenixPoint.Tactical.View;
 using PhoenixPoint.Tactical.View.ViewControllers;
 using PhoenixPoint.Tactical.View.ViewStates;
 using System;
@@ -827,11 +827,11 @@ namespace TFTV
                             UnequipButtonClicked();
                             UIInventoryList storage = uIModuleSoldierEquip.StorageList;
 
-                          //  storage.SetFilter
+                            //  storage.SetFilter
 
-                          //  Predicate<TacticalItemDef> filter = null;
+                            //  Predicate<TacticalItemDef> filter = null;
 
-                           // storage.SetFilter(filter);
+                            // storage.SetFilter(filter);
 
                             foreach (string armorPiece in CharacterLoadouts[character.Id][armourItems])
                             {
@@ -1031,7 +1031,7 @@ namespace TFTV
                                 List<GeoItem> allItems = new List<GeoItem>();
                                 allItems.AddRange(equipmentItems);
                                 allItems.AddRange(armorItems);
-                                allItems.AddRange(inventoryItems);                        
+                                allItems.AddRange(inventoryItems);
 
                                 GeoPhoenixFaction phoenixFaction = GameUtl.CurrentLevel().GetComponent<GeoLevelController>().PhoenixFaction;
 
@@ -1039,7 +1039,7 @@ namespace TFTV
                                 int storageUsed = phoenixFaction.ItemStorage.GetStorageUsed();
 
                                 int totalWeight = 0;
-                              
+
                                 foreach (GeoItem geoItem1 in allItems)
                                 {
                                     totalWeight += geoItem1.ItemDef.Weight;
@@ -1069,7 +1069,12 @@ namespace TFTV
 
                                 foreach (GeoItem item in armorItems)
                                 {
-                                    //  TFTVLogger.Always($"{item.ItemDef.name} in Armor. {item.ItemDef?.RequiredSlotBinds[0].RequiredSlot?.name}");
+                                    if (item.ItemDef.RequiredSlotBinds[0].RequiredSlot.name.Contains("MechArm"))
+                                    {
+                                        continue;
+                                    }
+
+                                    TFTVLogger.Always($"{item.ItemDef.name} in Armor. {item.ItemDef?.RequiredSlotBinds[0].RequiredSlot?.name}");
                                     uIModuleSoldierEquip.StorageList.AddItem(item);
                                     uIModuleSoldierEquip.ArmorList.RemoveItem(item, null);
                                 }
@@ -1144,7 +1149,7 @@ namespace TFTV
                             }
                         }
 
-                       
+
                     }
                     catch (Exception e)
                     {
@@ -1993,7 +1998,6 @@ namespace TFTV
                     {
                         if (config.SkipMovies)
                         {
-
                             if (levelSceneBinding == __instance.Def.IntroLevelSceneDef.Binding)
                             {
                                 __result = Enumerable.Empty<NextUpdate>().GetEnumerator();
@@ -2017,10 +2021,11 @@ namespace TFTV
             {
                 public static void Postfix(UIStateHomeScreenCutscene __instance, VideoPlaybackSourceDef ____sourcePlaybackDef)
                 {
-                    TFTVConfig config = TFTVMain.Main.Config;
-                    if (config.SkipMovies)
+
+                    try
                     {
-                        try
+                        TFTVConfig config = TFTVMain.Main.Config;
+                        if (config.SkipMovies)
                         {
                             if (____sourcePlaybackDef == null)
                             {
@@ -2032,11 +2037,12 @@ namespace TFTV
                                 typeof(UIStateHomeScreenCutscene).GetMethod("OnCancel", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(__instance, null);
                             }
                         }
-                        catch (Exception e)
-                        {
-                            TFTVLogger.Error(e);
-                        }
                     }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                    }
+
                 }
             }
 
@@ -2045,14 +2051,14 @@ namespace TFTV
             {
                 public static void Postfix(UIStateTacticalCutscene __instance, VideoPlaybackSourceDef ____sourcePlaybackDef)
                 {
-                    TFTVLogger.Always($"EnterState called");
-
-                    TFTVConfig config = TFTVMain.Main.Config;
-                    if (config.SkipMovies)
+                    try
                     {
-
-                        try
+                        TFTVConfig config = TFTVMain.Main.Config;
+                        TFTVLogger.Always($"UIStateTacticalCutscene EnterState called");
+                        
+                        if (config.SkipMovies)
                         {
+
                             //  TFTVLogger.Always($"Skip Movies check passed");
 
                             if (____sourcePlaybackDef == null)
@@ -2065,13 +2071,16 @@ namespace TFTV
                                 typeof(UIStateTacticalCutscene).GetMethod("OnCancel", BindingFlags.NonPublic | BindingFlags.Instance)?.Invoke(__instance, null);
                             }
                         }
-                        catch (Exception e)
-                        {
-                            TFTVLogger.Error(e);
-                        }
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
                     }
                 }
             }
+
+
+            
         }
     }
 }

@@ -334,20 +334,17 @@ namespace TFTV
         [HarmonyPatch(typeof(TacticalActor), "TriggerHurt")]
         public static class TacticalActor_TriggerHurt_Patch
         {
-            public static void Postfix(TacticalActor __instance)
+            public static void Postfix(TacticalActor __instance, DamageResult damageResult)
             {
-
 
                 try
                 {
-                    bool receivedDamage = false;
-
+                  
                     TacticalAbility hyperalgesia = __instance.GetAbilityWithDef<TacticalAbility>(hyperalgesiaAbilityDef);
-                    //  TacticalAbility derealization = __instance.GetAbilityWithDef<TacticalAbility>(derealizationDef);
-                    if (__instance.IsAlive && hyperalgesia != null && !receivedDamage)
+                   
+                    if (__instance.IsAlive && hyperalgesia != null && damageResult.HealthDamage>=1)
                     {
-                        __instance.CharacterStats.WillPoints.Subtract(1);
-                        receivedDamage = true;
+                        __instance.CharacterStats.WillPoints.Subtract(1);                      
                     }
 
                 }

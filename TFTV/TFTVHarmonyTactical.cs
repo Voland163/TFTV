@@ -161,7 +161,8 @@ namespace TFTV
             {
                 try
                 {
-                    return TFTVPalaceMission.MissionObjectives.ForceSpecialCharacterPortraitInSetupProperPortrait(actor, ____soldierPortraits, __instance, ____renderingInProgress);
+                   return TFTVExperimentalNext.NewCharacterPortraitInSetupProperPortrait(actor, ____soldierPortraits, __instance);
+                  // return TFTVPalaceMission.MissionObjectives.ForceSpecialCharacterPortraitInSetupProperPortrait(actor, ____soldierPortraits, __instance, ____renderingInProgress);
                 }
                 catch (Exception e)
                 {
@@ -274,7 +275,7 @@ namespace TFTV
                     TFTVRevenant.RecordUpkeep.RecordPhoenixDeadForRevenantsAndOsiris(deathReport, __instance);
                     TFTVRevenant.RecordUpkeep.RevenantKilled(deathReport, __instance);
                     TFTVAncients.CyclopsAbilities.CyclopsResistance.AncientKilled(__instance, deathReport);
-                    TFTVHumanEnemies.HumanEnemiesBloodRushTactic(deathReport);
+                    TFTVHumanEnemies.HumanEnemiesTacticsOnDeath(deathReport);
                 }
                 catch (Exception e)
                 {
@@ -399,6 +400,7 @@ namespace TFTV
                     TFTVChangesToDLC5.TFTVMercenaries.Tactical.SlugHealTraumaEffect(ability, __instance);
                     TFTVArtOfCrab.GetBestWeaponForOWRF(__instance);
                     TFTVVehicleFixes.CheckSquashing(ability, __instance);
+                    TFTVVoxels.TFTVGoo.ClearActorGooPositions();
                 }
 
                 catch (Exception e)
