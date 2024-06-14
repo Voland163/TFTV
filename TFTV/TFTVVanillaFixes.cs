@@ -210,9 +210,9 @@ namespace TFTV
 
                     foreach (TacticalAbilityTarget target in __result)
                     {
-                        if (target.Actor is TacticalActor targetActor && sourceActor is TacticalActor actingActor)
+                        if (target.Actor is TacticalActor targetActor) //&& sourceActor is TacticalActor actingActor)
                         {
-                            if ((targetActor.Pos.y > sourcePosition.y && targetActor.Pos.y - sourcePosition.y < targetData.Range)
+                            if (targetActor.Pos.y == sourcePosition.y || (targetActor.Pos.y > sourcePosition.y && targetActor.Pos.y - sourcePosition.y < targetData.Range)
                                 || (targetActor.Pos.y < sourcePosition.y && sourcePosition.y - targetActor.Pos.y < targetData.Range))
                             {
                                // TFTVLogger.Always($"sourcePos: {sourcePosition} for {actingActor.name} at pos {actingActor.Pos}, targetActor.Pos.y {targetActor.Pos.y}, targetData.Range / 2 {targetData.Range}");
