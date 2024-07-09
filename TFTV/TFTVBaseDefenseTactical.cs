@@ -96,6 +96,7 @@ namespace TFTV
                     UsedStrats = new bool[5];
                     StratToBeAnnounced = 0;
                     StratToBeImplemented = 0;
+
                     Map.DeploymentZones.SecondaryStrikeForceSpawn = null;
                     Map.DeploymentZones.SecondaryStrikeForceVector.Clear();
 
@@ -111,13 +112,7 @@ namespace TFTV
             {
                 try
                 {
-
-                    ConsolePositions = new Dictionary<float, float>();
-                    StratToBeAnnounced = 0;
-                    StratToBeImplemented = 0;
-                    VentingHintShown = false;
-                    Map.DeploymentZones.SecondaryStrikeForceSpawn = null;
-                    Map.DeploymentZones.SecondaryStrikeForceVector.Clear();
+                    BaseDefenseDataToClearOnStateChangeAndLoad();
                     ResetPandoransInContainment();
                 }
                 catch (Exception e)
@@ -1630,7 +1625,9 @@ namespace TFTV
                 {
                     try
                     {
-                        if (SecondaryStrikeForceSpawn == null && SecondaryStrikeForceVector == null)
+                       // TFTVLogger.Always($"SecondaryStrikeForceSpawn {SecondaryStrikeForceSpawn==null}? SecondaryStrikeForceVector.Count() {SecondaryStrikeForceVector.Count()}");
+
+                        if (SecondaryStrikeForceSpawn == null && SecondaryStrikeForceVector.Count()==0)
                         {
                             BreachEntrance breach = GetBreachEntrance(controller);
 
@@ -1668,7 +1665,7 @@ namespace TFTV
                             SecondaryStrikeForceVector = new List<float>() { deployZone.Pos.x, deployZone.Pos.y, deployZone.Pos.z };
                             TFTVLogger.Always($"secondary strike force position: {deployZone.name} {deployZone.Pos}");// bounds center: {boxCollider.center}");
                         }
-                        else if (SecondaryStrikeForceVector != null)
+                        else if (SecondaryStrikeForceVector.Count > 0)
                         {
                             TacticalDeployZone deployZone = controller.Map.GetActors<TacticalDeployZone>().FirstOrDefault(tdz => tdz.name.Contains("Deploy_Player_3x3_Vehicle"));
 
