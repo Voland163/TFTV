@@ -442,21 +442,21 @@ namespace TFTV
                     ____theGiftAircraft = __instance.PhoenixFaction.CreateVehicle(geoVehicle.CurrentSite, __instance.PhoenixFaction.FactionDef.StartingVehicle);
                     ____theGiftAircraft.RenameVehicle(__instance.FesteringSkiesSettings.ManticoreName.Localize());
                     ____theGiftAircraft.UseLoadout(__instance.FesteringSkiesSettings.GiftLoadout);
-                    FesteringSkiesSettingsDef festeringSkiesSettings = __instance.FesteringSkiesSettings;
-                    GeoAlienFaction alienFaction = __instance.AlienFaction;
-                    __instance.PhoenixFaction.InterceptionUnlocked = false;
-
-                    __instance.PhoenixFaction.InterceptionUnlocked = true;
-                  
+                                
                     if (!config.SkipFSTutorial)
                     {
+                        FesteringSkiesSettingsDef festeringSkiesSettings = __instance.FesteringSkiesSettings;
+                        GeoAlienFaction alienFaction = __instance.AlienFaction;
+                        __instance.PhoenixFaction.InterceptionUnlocked = false;
                         GeoVehicle geoVehicle2 = alienFaction.CreateVehicle(currentSite, festeringSkiesSettings.AlienAircraft);
                         geoVehicle2.UseLoadout(festeringSkiesSettings.AlienAircraftLoadout);
                         __instance.LaunchInterceptionGame(____theGiftAircraft, geoVehicle2, isAutoBattle: false, tutorialIncluded: true);
                     }
+                    __instance.PhoenixFaction.InterceptionUnlocked = true;
                     __instance.View.ResetViewState();
 
                     return false;
+
 
                 }
                 catch (Exception e)
