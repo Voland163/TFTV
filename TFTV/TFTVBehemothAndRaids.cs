@@ -24,7 +24,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
-using UnityEngine.UI;
 using static PhoenixPoint.Common.Entities.Items.ItemManufacturing;
 using static PhoenixPoint.Geoscape.Entities.GeoBehemothActor;
 
@@ -50,11 +49,11 @@ namespace TFTV
         private static readonly string BehemothRoamings = "BehemothRoamings";
 
 
-        internal class InternalData 
-        { 
+        internal class InternalData
+        {
             public static void BehemothDataToClearOnStateChangeAndLoad()
             {
-                try 
+                try
                 {
                     targetsForBehemoth = new List<int>();
                     flyersAndHavens = new Dictionary<int, List<int>>();
@@ -768,7 +767,7 @@ namespace TFTV
                 {
                     try
                     {
-                        if (!__result) 
+                        if (!__result)
                         {
                             TFTVLogger.Always($"Behemoth fails to travel somewhere, let's see if it can be fixed");
 
@@ -783,8 +782,8 @@ namespace TFTV
                                 if (foundPath)
                                 {
                                     __instance.StartTravel(from pn in source
-                                                where pn.Site != null && pn.Site != __instance.CurrentSite
-                                                select pn.Site);
+                                                           where pn.Site != null && pn.Site != __instance.CurrentSite
+                                                           select pn.Site);
                                 }
                                 else
                                 {
@@ -800,8 +799,8 @@ namespace TFTV
                             if (foundPath2)
                             {
                                 __instance.StartTravel(from pn in source2
-                                            where pn.Site != null && pn.Site != __instance.CurrentSite
-                                            select pn.Site);
+                                                       where pn.Site != null && pn.Site != __instance.CurrentSite
+                                                       select pn.Site);
                             }
                             else
                             {
@@ -938,7 +937,7 @@ namespace TFTV
                             }
                             else if (__instance.CurrentSite != null && __instance.CurrentSite.SiteId != behemothTarget)
                             {
-                              //  __instance.Navigation.Init(__instance);
+                                //  __instance.Navigation.Init(__instance);
                                 TFTVLogger.Always("Behemoth is at a haven, but the target is not the haven: has to move to the target");
                                 typeof(GeoBehemothActor).GetMethod("TargetHaven", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(__instance, new object[] { ConvertIntIDToGeosite(controller, behemothTarget) });
                                 return false;
@@ -1029,10 +1028,10 @@ namespace TFTV
                             __instance.GeoLevel.EventSystem.SetVariable("AbbadonResearchVariable", 1);
                             TFTVLogger.Always("Aliens should now have Abbadons");
                         }
-                        else if (__instance.GeoLevel.EventSystem.GetVariable(BehemothRoamings) == 3)//4 - __instance.GeoLevel.CurrentDifficultyLevel.Order <= roaming) 
+                        else if (__instance.GeoLevel.EventSystem.GetVariable(BehemothRoamings) >= 3)//4 - __instance.GeoLevel.CurrentDifficultyLevel.Order <= roaming) 
                         {
 
-                            if (__instance.GeoLevel.EventSystem.GetVariable("BehemothPatternEventTriggered") == 0)
+                            if (__instance.GeoLevel.EventSystem.GetVariable("BehemothPatternEventTriggered") == 0 && __instance.GeoLevel.PhoenixFaction.Research.HasCompleted("PX_YuggothianEntity_ResearchDef"))
                             {
                                 GeoscapeEventContext context = new GeoscapeEventContext(__instance.GeoLevel.AlienFaction, __instance.GeoLevel.PhoenixFaction);
                                 __instance.GeoLevel.EventSystem.TriggerGeoscapeEvent("OlenaOnBehemothPattern", context);

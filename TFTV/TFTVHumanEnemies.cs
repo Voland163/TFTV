@@ -245,22 +245,23 @@ namespace TFTV
                 }
                 else if (enemyHumanFaction.TacticalFactionDef.ShortName.Equals("nj") || enemyHumanFaction.Faction.FactionDef.ShortName.Equals("anu") || enemyHumanFaction.Faction.FactionDef.ShortName.Equals("syn"))
                 {
+                   
                     string factionName = "";
                     if (enemyHumanFaction.TacticalFactionDef.ShortName.Equals("nj"))
                     {
-                        factionName = TFTVCommonMethods.ConvertKeyToString("KEY_FACTION_NAME_NEW_JERICHO");
+                        factionName = TFTVCommonMethods.ConvertKeyToString("TFTV_HUMAN_ENEMIES_NJ");
                         //  factionTag = "NewJericho_TacticalFactionDef";
                         fileNameSquadPic = "nj_squad.jpg";
                     }
                     else if (enemyHumanFaction.TacticalFactionDef.ShortName.Equals("anu"))
                     {
-                        factionName = TFTVCommonMethods.ConvertKeyToString("KEY_FACTION_NAME_ANU");
+                        factionName = TFTVCommonMethods.ConvertKeyToString("TFTV_HUMAN_ENEMIES_ANU");
                         //  factionTag = "Anu_TacticalFactionDef";
                         fileNameSquadPic = "anu_squad.jpg";
                     }
                     else
                     {
-                        factionName = TFTVCommonMethods.ConvertKeyToString("KEY_FACTION_NAME_SYNEDRION");
+                        factionName = TFTVCommonMethods.ConvertKeyToString("TFTV_HUMAN_ENEMIES_SYN");
                         //  factionTag = "Synedrion_TacticalFactionDef";                        
                         fileNameSquadPic = "syn_squad.jpg";
                     }

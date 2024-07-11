@@ -2186,14 +2186,16 @@ namespace TFTV
             {
                 try
                 {
-
+                   // TFTVLogger.Always($"controller.Timing.Now {controller.Timing.Now}");
 
                     string textToDisplay = $"{TFTVCommonMethods.ConvertKeyToString("KEY_MARKETPLACE_NEW_STOCK")} {TFTVCommonMethods.ConvertKeyToString(_currentMarketPlaceSpecial)} ";
 
                     GeoscapeLogEntry entry = new GeoscapeLogEntry
                     {
-                        Text = new LocalizedTextBind(textToDisplay, true)
+                        Text = new LocalizedTextBind(textToDisplay, true),
+                        EventDate = controller.Timing.Now,
                     };
+
                     typeof(GeoscapeLog).GetMethod("AddEntry", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(controller.Log, new object[] { entry, null });
                     controller.View.SetGamePauseState(true);
 

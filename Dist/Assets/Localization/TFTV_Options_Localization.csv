@@ -16,7 +16,10 @@ TFTV_ANYTIME_OPTIONS_DESCRIPTION,Text,,Show options that can also be changed any
 TFTV_DIFFICULTY_ROOKIE_TITLE,Text,,STORY MODE,,,,,,,,
 TFTV_DIFFICULTY_ROOKIE_DESCRIPTION,Text,,Life is hard enough already; games don't have to be. ,,,,,,,,
 TFTV_DIFFICULTY_ETERMES_TITLE,Text,,ETERMES,,,,,,,,
-TFTV_DIFFICULTY_ETERMES_DESCRIPTION,Text,,The pain! The horror! Open the floodgates of despair!,,,,,,,,
+TFTV_DIFFICULTY_ETERMES_DESCRIPTION,Text,,"The pain! The horror! Open the floodgates of despair! 
+
+UNFAIR difficulty. Don't complain about BALANCE, there is NONE. We only accept complaints if you are not SUFFERING enough.",,,,,,,,
+TFTV_PROMO_SKINS,Text,,"Adds a bunch of differently-skinned free armors and guns at the start of the game, making it considerably easier.",,,,,,,,
 Opening Screen/KEY_DLC_ACTIVATE,Text,,ADDITIONAL OPTIONS ON NEW GAME START,,,,,,,,
 UNBUFFED,Text,,UNBUFFED,,,,,,,,
 BUFFED,Text,,BUFFED,,,,,,,,

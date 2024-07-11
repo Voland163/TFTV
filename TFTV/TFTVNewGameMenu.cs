@@ -24,6 +24,7 @@ using System.Linq;
 using System.Reflection;
 using UnityEngine;
 using UnityEngine.UI;
+using static UnityTools.UI.SnapshotText.Lib.LineGroup;
 
 namespace TFTV
 {
@@ -1844,6 +1845,15 @@ namespace TFTV
                             Transform newController = UnityEngine.Object.Instantiate(transformForCloning);
                             newController.name = "TFTVDifficulty_RadioButton" + x;
                             newController.SetParent(container, false);
+
+                          /*  UITooltipText uITooltipText = newController.gameObject.GetComponent<UITooltipText>();
+
+                            if (uITooltipText == null)
+                            {
+                                uITooltipText = newController.gameObject.AddComponent<UITooltipText>();
+                            }
+
+                            uITooltipText.TipKey = new LocalizedTextBind($"Testing for {x+1} difficulty", true);*/
                         }
 
 
@@ -1913,6 +1923,14 @@ namespace TFTV
 
                         element.CheckedToggle.isOn = false;
 
+                        UITooltipText uITooltipText = element.CheckedToggle.gameObject.GetComponent<UITooltipText>();
+
+                        if (uITooltipText == null)
+                        {
+                           uITooltipText = element.CheckedToggle.gameObject.AddComponent<UITooltipText>();
+                        }
+
+                        uITooltipText.TipKey = new LocalizedTextBind(TFTVCommonMethods.ConvertKeyToString("TFTV_PROMO_SKINS"), true);
                     }
 
                     /* if (!BindSecondaryOptionRun)

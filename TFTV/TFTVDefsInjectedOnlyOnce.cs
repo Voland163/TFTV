@@ -83,27 +83,14 @@ namespace TFTV
         {
             try
             {
-                SquadPortraitsDef squadPortraitsDef = DefCache.GetDef<SquadPortraitsDef>("SquadPortraitsDef");
+                TFTVLogger.Always($"TFTVStamina.BrokenSpikeShooterStatus");
 
-
-
-                foreach (SquadPortraitsDef.RenderPortraitParams renderPortraitParams in squadPortraitsDef.RenderParamsList)
+                foreach(DamageTypeBaseEffectDef damageTypeBaseEffectDef in TFTVStamina.BrokenSpikeShooterStatus.DamageTypeDefs) 
                 {
-                    //  renderPortraitParams.RenderedPortraitsResolution = new Vector2Int(300, 100);
-                    //  renderPortraitParams.CameraDistance = 0.5f;
-                    // renderPortraitParams.CameraHeight = 0.5f;
-                    renderPortraitParams.CameraFoV = 30;
-                    renderPortraitParams.CameraSide = 0.5f;
+
+                    TFTVLogger.Always($"{damageTypeBaseEffectDef.name}");
+                
                 }
-
-
-                //DefCache.GetDef<TacCharacterDef>("AN_ScreamingPriest7_CharacterTemplateDef").SpawnCommandId = "ScreamingPriest7";
-
-
-
-
-
-
             }
             catch (Exception e)
             {
@@ -167,7 +154,7 @@ namespace TFTV
 
                 AddAlwaysDeployTagToUniqueDeployments();
 
-                // Print();
+                //Print();
 
             }
             catch (Exception e)
@@ -4884,6 +4871,7 @@ namespace TFTV
         {
             try
             {
+                
 
                 UnusableHandStatusDef unUsableLeftHandStatus = DefCache.GetDef<UnusableHandStatusDef>("UnusableLeftHand_StatusDef");
 
@@ -4899,7 +4887,7 @@ namespace TFTV
                 newBrokenSpikeShooterStatus.EffectName = "BrokenSpikeShooter";
                 newBrokenSpikeShooterStatus.DamageTypeDefs = new DamageTypeBaseEffectDef[] { };
                 newBrokenSpikeShooterStatus.Visuals = Helper.CreateDefFromClone(sourceStatus.Visuals, "{F6D6A97E-B658-4B6B-AAAF-C517CAB3AB9C}", statusName);
-
+                newBrokenSpikeShooterStatus.Multiplier = 1.0f;
 
                 string statusApplicationConditionName = "NoBrokenSpikeShooterStatusCondition";
 

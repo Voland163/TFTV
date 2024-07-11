@@ -90,6 +90,7 @@ TFTV_HUMAN_ENEMIES_TARGETING_TEXT,Text,,"While leader is alive each ally gains +
 TFTV_HUMAN_ENEMIES_TARGETING_TITLE,Text,,Assisted targeting,,,,,,,,
 TFTV_HUMAN_ENEMIES_NJ,Text,,New Jericho,,,,,,,,
 TFTV_HUMAN_ENEMIES_ANU,Text,,Disciples of Anu,,,,,,,,
+TFTV_HUMAN_ENEMIES_SYN,Text,,Synedrion,,,,,,,,
 TFTV_HUMAN_ENEMIES_UNIT_TYPE_GANG,Text,,a gang,,,,,,,,
 TFTV_HUMAN_ENEMIES_UNIT_TYPE_SQUAD,Text,,squad,,,,,,,,
 TFTV_HUMAN_ENEMIES_UNIT_TYPE_PACK,Text,,a pack of Forsaken,,,,,,,,
@@ -118,7 +119,8 @@ DELIRIUM_PERK_HYPERALGESIA_DESCRIPTION,Text,,"Lose 1 WP when taking damage, no W
 <i>Subject has extreme sensitivity to pain and exhibits symptoms of empathy fatigue</i>",,"Perte de 1 Point de Volonté en cas de dégâts, pas de perte de Point de Volonté en cas de mort d'alliés.
 <i>Le sujet est extrêmement sensible à la douleur et présente des symptômes de fatigue empathique.</i>",,,,,,
 "DELIRIUM_PERK_FERAL_NAME
-",Text,,"FERAL",,"SAUVAGE
+",Text,,"FERAL
+",,"SAUVAGE
 ",,,,,,
 "DELIRIUM_PERK_FERAL_DESCRIPTION
 ",Text,,"All actions have 10% chance to fumble, recover 1 AP from killing enemies
@@ -244,9 +246,9 @@ KEY_SURPRISE_ATTACK_DESCRIPTION,Text,,Attacks from behind gain shock value equal
 KEY_JET_JUMP_DESCRIPTION,Text,,Jet jump to a location within 20 tiles. Limited to one use per turn,,,,,,,,
 KEY_SHINOBI_LEAP_DESCRIPTION,Text,,Leap to target location. Limited to 2 uses per turn,,,,,,,,
 KEY_CONVINCE_ABILITY,Text,,Convince civilian to join,,,,,,,,
-KEY_CONVINCE_ABILITY_DESCRIPTION,Text,,Come with me if you want to live.,,,,,,,,
+KEY_CONVINCE_ABILITY_DESCRIPTION,Text,,Come with me if you want to live. Takes 2 turns.,,,,,,,,
 KEY_CANCEL_CONVINCE_ABILITY,Text,,Give up.,,,,,,,,
-KEY_CANCEL_CONVINCE_ABILITY_DESCRIPTION,Text,,You don't have time for this!,,,,,,,,
+KEY_CANCEL_CONVINCE_ABILITY_DESCRIPTION,Text,,You don't have time for this! Cancels attempt to convince civilian. Interrupted attempts will need to be restarted.,,,,,,,,
 KEY_CONVINCE_STATUS,Text,,Talking.,,,,,,,,
 KEY_CONVINCE_STATUS_DESCRIPTION,Text,,In the middle of a conversation here!,,,,,,,,
 KEY_ABILITY_NOAUGMENTATONS,Text,,Mercenaries refuse to be augmented or mutated; not in their job description.,,,,,,,,

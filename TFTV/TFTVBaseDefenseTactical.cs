@@ -98,7 +98,7 @@ namespace TFTV
                     StratToBeImplemented = 0;
 
                     Map.DeploymentZones.SecondaryStrikeForceSpawn = null;
-                    Map.DeploymentZones.SecondaryStrikeForceVector.Clear();
+                    Map.DeploymentZones.SecondaryStrikeForceVector = new List<float>();
 
                 }
                 catch (Exception e)

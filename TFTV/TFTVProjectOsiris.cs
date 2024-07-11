@@ -314,6 +314,7 @@ KEY_OSIRIS_MORE_MUTATION_BIONICS_RESEARCH
         {
             try
             {
+               
                 GeoUnitDescriptor deadSoldierDescriptor = controller.DeadSoldiers[idProjectOsirisCandidate];
                 string name = deadSoldierDescriptor.Identity.Name;
                 GeoCharacter geoCharacterCloneFromDead = controller.DeadSoldiers[idProjectOsirisCandidate].SpawnAsCharacter();
