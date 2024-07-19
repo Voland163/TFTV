@@ -53,7 +53,7 @@ namespace TFTV
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
         private static readonly SharedData Shared = TFTVMain.Shared;
 
-
+        
 
         internal class Stealth
         {
@@ -397,7 +397,7 @@ namespace TFTV
                     });
 
                     string perceptionDescription = TFTVCommonMethods.ConvertKeyToString("KEY_PROGRESSION_PERCEPTION");
-                    string perceptionValue = actor.CharacterStats.Perception.IntValue.ToString();
+                    string perceptionValue = Mathf.CeilToInt(actor.GetAdjustedPerceptionValue()).ToString(); //Perception.IntValue.ToString();
 
                     ShortActorInfoTooltipDataEntry perception = new ShortActorInfoTooltipDataEntry()
                     {

@@ -62,7 +62,7 @@ namespace TFTV
         public Dictionary<int, List<string>> PandoransContainmentBaseAttack;
         public Dictionary<int, bool> BaseDefensePandoranBreach;
         public int RevenantPoints;
-
+        public Dictionary<int, string> CharacterPortraits;
     }
 
 
@@ -217,7 +217,8 @@ namespace TFTV
                 FO_Hotspots = TFTVAmbushes.AN_FallenOnes_Hotspots,
                 PandoransContainmentBaseAttack = TFTVBaseDefenseGeoscape.PandoransThatCanEscape,
                 BaseDefensePandoranBreach = TFTVBaseDefenseGeoscape.ContainmentBreachSchedule,
-                RevenantPoints = TFTVRevenant.TFTVRevenantResearch.RevenantPoints
+                RevenantPoints = TFTVRevenant.TFTVRevenantResearch.RevenantPoints,
+                CharacterPortraits = TFTVExperimentalNext.CharacterPortrait.characterPics
 
                 //   Update35GeoscapeCheck = TFTVNewGameOptions.Update35Check,
 
@@ -312,6 +313,7 @@ namespace TFTV
                     TFTVNewGameOptions.SetInternalConfigOptions(Controller);
                 }
 
+                TFTVExperimentalNext.CharacterPortrait.characterPics = data.CharacterPortraits;
 
 
 

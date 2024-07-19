@@ -1,5 +1,6 @@
 ﻿using Base.Core;
 using HarmonyLib;
+using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.View.ViewControllers.Inventory;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Levels;
@@ -8,6 +9,7 @@ using PhoenixPoint.Geoscape.View.ViewControllers;
 using PhoenixPoint.Geoscape.View.ViewControllers.Roster;
 using PhoenixPoint.Geoscape.View.ViewModules;
 using PhoenixPoint.Geoscape.View.ViewStates;
+using PhoenixPoint.Tactical.View.ViewStates;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -16,7 +18,7 @@ namespace TFTV
 {
     internal class TFTVHarmonyGeoscapeUI
     {
-
+        private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
 
         [HarmonyPatch(typeof(UIModuleInfoBar), "Init")]
         public static class TFTV_UIModuleInfoBar_Init_GeoscapeUI_Patch
@@ -116,7 +118,7 @@ namespace TFTV
         }
 
         [HarmonyPatch(typeof(UIStateRosterDeployment), "SetUpInitialDeployment")]
-        public static class TFTV_UIStateRosterDeployment_SetUpInitialDeployment0_patch
+        public static class TFTV_UIStateRosterDeployment_SetUpInitialDeployment_patch
         {
             public static void Postfix(UIStateRosterDeployment __instance, List<GeoRosterDeploymentItem> ____deploymentItems)
             {
@@ -133,9 +135,28 @@ namespace TFTV
             }
         }
 
+        [HarmonyPatch(typeof(UIStateRosterDeployment), "OnDeploySquad")]
+        public static class TFTV_UIStateRosterDeployment_OnDeploySquad_patch
+        {
+            public static void Postfix(UIStateRosterDeployment __instance, List<GeoRosterDeploymentItem> ____deploymentItems)
+            {
+                try
+                {
+                    TFTVBaseDefenseGeoscape.Deployment.UI.CheckBeforeDeployment(__instance);
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+        }
+
+        
 
 
-        [HarmonyPatch(typeof(UIInventoryList), "SetItems")]
+
+          [HarmonyPatch(typeof(UIInventoryList), "SetItems")]
         public static class UIInventoryList_SetItems_patch
         {
             public static void Prefix(UIInventoryList __instance)

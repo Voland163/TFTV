@@ -87,11 +87,17 @@ namespace TFTV
             {
                 try
                 {
-                    TFTVLogger.Always($"{recruit.DisplayName} {toContainer?.Name} toContainer geosite? {toContainer is GeoSite} toContainer is PhoenixBase? {toContainer is GeoPhoenixBase}");
+                    TFTVLogger.Always($"{recruit.DisplayName} {toContainer?.Name} toContainer geosite? {toContainer is GeoSite} toContainer is PhoenixBase? {toContainer is GeoPhoenixBase}.");
 
-                    if ((recruit.GameTags.Contains(TFTVChangesToDLC5.MercenaryTag)
+                   /* foreach(GameTagDef gameTagDef in recruit.TemplateDef.GetGameTags()) 
+                    {
+                        TFTVLogger.Always($"{gameTagDef.name}");
+                    }*/
+
+                    if ((recruit.TemplateDef != null && recruit.TemplateDef.GetGameTags().Contains(MercenaryTag)
                         || recruit.GameTags.Contains(DefCache.GetDef<GameTagDef>("KaosBuggy_ClassTagDef"))
-                        || recruit.GameTags.Contains(TFTVProjectOsiris.OCPProductTag)) && toContainer != null && toContainer is GeoSite)
+                        || recruit.GameTags.Contains(TFTVProjectOsiris.OCPProductTag)) 
+                        && toContainer != null && toContainer is GeoSite)
                     {
                         __instance.GeoLevel.View.PrepareDeployAsset(__instance, recruit, null, null, manufactured: false, spaceFull: false);
                         __result = null;
@@ -395,7 +401,13 @@ namespace TFTV
 
                         doomHelmet.Armor = 23;
                         doomTorso.Armor = 24;
+                        DefCache.GetDef<TacticalItemDef>("PX_Heavy_LeftArm_Headhunter_BodyPartDef").Armor = 24;
+                        DefCache.GetDef<TacticalItemDef>("PX_Heavy_RightArm_Headhunter_BodyPartDef").Armor = 24;
+                    
+
                         doomLegs.Armor = 22;
+                        DefCache.GetDef<TacticalItemDef>("PX_Heavy_LeftLeg_Headhunter_BodyPartDef").Armor=22;
+                        DefCache.GetDef<TacticalItemDef>("PX_Heavy_RightLeg_Headhunter_BodyPartDef").Armor=22;
 
                         doomHelmet.BodyPartAspectDef.Accuracy = -0.06f;
                         doomHelmet.BodyPartAspectDef.Perception = 0.0f;
@@ -423,6 +435,9 @@ namespace TFTV
                         sectarianLegs.ViewElementDef.DisplayName2.LocalizationKey = $"SECTARIAN_LEGS_DESCRIPTION";
 
                         sectarianTorso.Armor = 18;
+                        DefCache.GetDef<TacticalItemDef>("AN_Berserker_LeftArm_Viking_BodyPartDef").Armor = 18;
+                        DefCache.GetDef<TacticalItemDef>("AN_Berserker_RightArm_Viking_BodyPartDef").Armor = 18;
+
                         sectarianTorso.Weight = 3;
                         sectarianTorso.BodyPartAspectDef.Endurance = 2;
                         sectarianTorso.BodyPartAspectDef.Speed = 0f;
@@ -430,6 +445,8 @@ namespace TFTV
                         sectarianTorso.BodyPartAspectDef.Accuracy = -0.05f;
 
                         sectarianLegs.Armor = 14;
+                        DefCache.GetDef<TacticalItemDef>("AN_Berserker_LeftLeg_Viking_BodyPartDef").Armor = 14;
+                        DefCache.GetDef<TacticalItemDef>("AN_Berserker_RightLeg_Viking_BodyPartDef").Armor = 14;
                         sectarianLegs.Weight = 2;
                         sectarianLegs.BodyPartAspectDef.Endurance = 1;
                         sectarianLegs.BodyPartAspectDef.Speed = 1;
@@ -452,9 +469,13 @@ namespace TFTV
                         ghostHelmet.BodyPartAspectDef.Stealth = 0.05f;
 
                         ghostTorso.Armor = 16;
+                        DefCache.GetDef<TacticalItemDef>("SY_Assault_LeftArm_Neon_BodyPartDef").Armor = 16;
+                        DefCache.GetDef<TacticalItemDef>("SY_Assault_RightArm_Neon_BodyPartDef").Armor = 16;
                         ghostTorso.BodyPartAspectDef.Stealth = 0.1f;
 
                         ghostLegs.Armor = 14;
+                        DefCache.GetDef<TacticalItemDef>("SY_Assault_LeftLeg_Neon_BodyPartDef").Armor = 14;
+                        DefCache.GetDef<TacticalItemDef>("SY_Assault_RightLeg_Neon_BodyPartDef").Armor = 14;
                         ghostLegs.BodyPartAspectDef.Stealth = 0.05f;
 
                         spyMasterHelmet.ViewElementDef = Helper.CreateDefFromClone(spyMasterHelmet.ViewElementDef, "{8CFFE705-55CA-4370-BDD7-7132423C9F4F}", spyMasterHelmet.name);
@@ -512,6 +533,8 @@ namespace TFTV
                         slugTorso.Tags.Add(Shared.SharedGameTags.BionicalTag);
 
                         slugTorso.Armor = 20;
+                        DefCache.GetDef<TacticalItemDef>("NJ_Technician_LeftArm_ALN_BodyPartDef").Armor = 20;
+                        DefCache.GetDef<TacticalItemDef>("NJ_Technician_RightArm_ALN_BodyPartDef").Armor = 20;
                         slugTorso.Weight = 0;
                         slugTorso.BodyPartAspectDef.Endurance = 1;
                         slugTorso.BodyPartAspectDef.Speed = 0;
@@ -522,6 +545,8 @@ namespace TFTV
                         slugLegs.Tags.Add(Shared.SharedGameTags.BionicalTag);
 
                         slugLegs.Armor = 20;
+                        DefCache.GetDef<TacticalItemDef>("NJ_Technician_LeftLeg_ALN_BodyPartDef").Armor = 20;
+                        DefCache.GetDef<TacticalItemDef>("NJ_Technician_RightLeg_ALN_BodyPartDef").Armor = 20;
                         slugLegs.Weight = 0;
                         slugLegs.BodyPartAspectDef.Endurance = 1;
                         slugLegs.BodyPartAspectDef.Speed = 0;
@@ -941,6 +966,7 @@ namespace TFTV
                         {
                             if (geoUnitDescriptor.ClassTag == priestTag)
                             {
+                               // TFTVLogger.Always($"mercenary priest check");
 
                                 if (geoUnitDescriptor.Progression.PersonalAbilities[3] == sniperProf)
                                 {
@@ -1548,7 +1574,7 @@ namespace TFTV
                         eventChoice.Text == faction.Research.GetResearchById(eventChoice.Outcome.GiveResearches[0]).ResearchDef.ViewElementDef.ResearchName &&
                         faction.Research.HasCompleted(eventChoice.Outcome.GiveResearches[0]))
                     {
-                        TFTVLogger.Always($"Phoenix Porject has already completed {eventChoice.Text}");
+                        TFTVLogger.Always($"PX has already completed {eventChoice.Text.Localize()}");
 
                         result = false;
 

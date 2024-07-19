@@ -36,15 +36,16 @@ using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.DamageKeywords;
 using PhoenixPoint.Tactical.Entities.Effects.DamageTypes;
 using PhoenixPoint.Tactical.Entities.Equipments;
-using PhoenixPoint.Tactical.View;
 using PhoenixPoint.Tactical.View.ViewControllers;
 using PhoenixPoint.Tactical.View.ViewStates;
+using SoftMasking.Samples;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
 using UnityEngine.UI;
+using static Base.Audio.WwiseIDs.SWITCHES;
 using static PhoenixPoint.Tactical.View.ViewControllers.SoldierResultElement;
 
 namespace TFTV
@@ -587,9 +588,9 @@ namespace TFTV
                 public static Dictionary<int, Dictionary<string, List<string>>> CharacterLoadouts = new Dictionary<int, Dictionary<string, List<string>>>();
 
                 private static bool toggleState = false;  // Initial toggle state
-                private static readonly string armourItems = "ArmourItems";
-                private static readonly string equipmentItems = "EquipmentItems";
-                private static readonly string inventoryItems = "InventoryItems";
+                private static readonly string armourItemsString = "ArmourItems";
+                private static readonly string equipmentItemsString = "EquipmentItems";
+                private static readonly string inventoryItemsString = "InventoryItems";
 
 
                 [HarmonyPatch(typeof(EditUnitButtonsController), "SetEditUnitButtonsBasedOnType")]
@@ -815,66 +816,120 @@ namespace TFTV
                     {
                         try
                         {
+                            UIModuleSoldierEquip uIModuleSoldierEquip = GameUtl.CurrentLevel().GetComponent<GeoLevelController>().View.GeoscapeModules.SoldierEquipModule;
+
                             GeoCharacter character = GameUtl.CurrentLevel().GetComponent<GeoLevelController>().View.GeoscapeModules.ActorCycleModule.CurrentCharacter;// hookToCharacter;
 
-                            if (!CharacterLoadouts.ContainsKey(character.Id))
+                            Dictionary<string, List<string>> itemsForCharacter = TryGetMissingLoadout(character, uIModuleSoldierEquip);
+
+                            if (!CharacterLoadouts.ContainsKey(character.Id) || itemsForCharacter == null)
                             {
                                 return;
                             }
 
-                            UIModuleSoldierEquip uIModuleSoldierEquip = GameUtl.CurrentLevel().GetComponent<GeoLevelController>().View.GeoscapeModules.SoldierEquipModule;
-
-                            UnequipButtonClicked();
                             UIInventoryList storage = uIModuleSoldierEquip.StorageList;
 
-                            //  storage.SetFilter
+                          //  TFTVLogger.Always($"Missing Loadout", false);
 
-                            //  Predicate<TacticalItemDef> filter = null;
+                            /*foreach (string list1 in itemsForCharacter.Keys) 
+                            { 
+                            
+                            foreach(string item1 in itemsForCharacter[list1]) 
+                                {
+                                    TFTVLogger.Always($"{item1}, for {list1}");
+                                
+                                }       
+                            }
 
-                            // storage.SetFilter(filter);
+                            TFTVLogger.Always($"Armor", false);*/
 
-                            foreach (string armorPiece in CharacterLoadouts[character.Id][armourItems])
+                            foreach (string armorPiece in itemsForCharacter[armourItemsString])
                             {
+
+
                                 ICommonItem item = storage.UnfilteredItems.Where((ICommonItem ufi) => ufi.ItemDef.Guid == armorPiece).FirstOrDefault() ?? storage.FilteredItems.Where((ICommonItem ufi) => ufi.ItemDef.Guid == armorPiece).FirstOrDefault();
+
+                                //TFTVLogger.Always($"guid {armorPiece} for {item}");
 
                                 for (int x = 0; x < uIModuleSoldierEquip.ArmorList.Slots.Count(); x++)
                                 {
+                                    if (uIModuleSoldierEquip.ArmorList.Slots[x].Item != null)
+                                    {
+                                        continue;
+                                    }
+
                                     //   TFTVLogger.Always($"looking at slot{uIModuleSoldierEquip.ArmorList.Slots[x].name} for {item}");
 
                                     if (item != null && uIModuleSoldierEquip.ArmorList.CanAddItem(item, uIModuleSoldierEquip.ArmorList.Slots[x]))
                                     {
                                         //  TFTVLogger.Always($"found slot {uIModuleSoldierEquip.ArmorList.Slots[x].name} for armor item {item}");
                                         uIModuleSoldierEquip.ArmorList.AddItem(item.GetSingleItem(), uIModuleSoldierEquip.ArmorList.Slots[x], storage);
-
                                         storage.RemoveItem(item.GetSingleItem(), null);
+                                        break;
                                     }
                                 }
                             }
 
-                            for (int x = 0; x < CharacterLoadouts[character.Id][equipmentItems].Count(); x++)
-                            {
-                                string equipment = CharacterLoadouts[character.Id][equipmentItems][x];
-                                ICommonItem item = storage.UnfilteredItems.Where((ICommonItem ufi) => ufi.ItemDef.Guid == equipment).FirstOrDefault() ?? storage.FilteredItems.Where((ICommonItem ufi) => ufi.ItemDef.Guid == equipment).FirstOrDefault();
-                                //  TFTVLogger.Always($"equipment item is {item}");
+                           // TFTVLogger.Always($"Equipment", false);
 
-                                if (item != null && uIModuleSoldierEquip.ReadyList.CanAddItem(item))
+                            foreach (string equipment in itemsForCharacter[equipmentItemsString])
+                            {
+                              
+                                ICommonItem item = storage.UnfilteredItems.Where((ICommonItem ufi) => ufi.ItemDef.Guid == equipment).FirstOrDefault() ?? storage.FilteredItems.Where((ICommonItem ufi) => ufi.ItemDef.Guid == equipment).FirstOrDefault();
+
+                             //   TFTVLogger.Always($"guid {equipment} for {item}");
+
+                                for (int x = 0; x < uIModuleSoldierEquip.ReadyList.Slots.Count(); x++)
                                 {
-                                    //  TFTVLogger.Always($"equipment item is {item}");
-                                    uIModuleSoldierEquip.ReadyList.AddItem(item.GetSingleItem(), uIModuleSoldierEquip.ReadyList.Slots[x], storage);
-                                    storage.RemoveItem(item.GetSingleItem(), null);
+                                    //string equipment = CharacterLoadouts[character.Id][equipmentItemsString][x];
+
+                                    if (uIModuleSoldierEquip.ReadyList.Slots[x].Item != null) 
+                                    {
+                                        continue;
+                                    }
+
+                                  //  TFTVLogger.Always($"equipment item is {item}, current slot {x}");
+
+                                    if (item != null && uIModuleSoldierEquip.ReadyList.CanAddItem(item))
+                                    {
+                                    //    TFTVLogger.Always($"{item} should be added");
+                                        uIModuleSoldierEquip.ReadyList.AddItem(item.GetSingleItem(), uIModuleSoldierEquip.ReadyList.Slots[x], storage);
+                                        storage.RemoveItem(item.GetSingleItem(), null);
+                                        break;
+                                    }
                                 }
                             }
 
-                            for (int x = 0; x < CharacterLoadouts[character.Id][inventoryItems].Count(); x++)
-                            {
-                                string inventory = CharacterLoadouts[character.Id][inventoryItems][x];
-                                ICommonItem item = storage.UnfilteredItems.Where(
-                                    (ICommonItem ufi) => ufi.ItemDef.Guid == inventory).FirstOrDefault() ?? storage.FilteredItems.Where((ICommonItem ufi) => ufi.ItemDef.Guid == inventory).FirstOrDefault();
 
-                                if (item != null && uIModuleSoldierEquip.InventoryList.CanAddItem(item))
+                          //  TFTVLogger.Always($"Inventory", false);
+
+                            foreach (string inventory in itemsForCharacter[inventoryItemsString])
+                            {
+                           
+                                ICommonItem item = storage.UnfilteredItems.Where(
+                                      (ICommonItem ufi) => ufi.ItemDef.Guid == inventory).FirstOrDefault() ?? storage.FilteredItems.Where((ICommonItem ufi) => ufi.ItemDef.Guid == inventory).FirstOrDefault();
+
+                              //  TFTVLogger.Always($"guid {inventory} for {item}");
+
+                                for (int x = 0; x < uIModuleSoldierEquip.InventoryList.Slots.Count(); x++)
                                 {
-                                    uIModuleSoldierEquip.InventoryList.AddItem(item.GetSingleItem(), uIModuleSoldierEquip.InventoryList.Slots[x], storage);
-                                    storage.RemoveItem(item.GetSingleItem(), null);
+                                    if (uIModuleSoldierEquip.InventoryList.Slots[x].Item != null)
+                                    {
+                                        continue;
+                                    }
+
+                                   // TFTVLogger.Always($"inventory item is {inventory}, current slot {x}");
+
+                                    // string inventory = CharacterLoadouts[character.Id][inventoryItemsString][x];
+                                  
+
+                                    if (item != null && uIModuleSoldierEquip.InventoryList.CanAddItem(item))
+                                    {
+                                       // TFTVLogger.Always($"{item} should be added");
+                                        uIModuleSoldierEquip.InventoryList.AddItem(item.GetSingleItem(), uIModuleSoldierEquip.InventoryList.Slots[x], storage);
+                                        storage.RemoveItem(item.GetSingleItem(), null);
+                                        break;
+                                    }
                                 }
                             }
                         }
@@ -884,36 +939,226 @@ namespace TFTV
                         }
                     }
 
+                    private static bool TransferItemsToStore(Dictionary<string, List<GeoItem>> items, UIModuleSoldierEquip uIModuleSoldierEquip)
+                    {
+                        try
+                        {
+                            if (items.Count == 0)
+                            {
+                                return true;
+                            }
+
+                            GeoPhoenixFaction phoenixFaction = GameUtl.CurrentLevel().GetComponent<GeoLevelController>().PhoenixFaction;
+
+                            int storageCapacity = phoenixFaction.GetTotalAvailableStorage();
+                            int storageUsed = phoenixFaction.ItemStorage.GetStorageUsed();
+
+                            int totalWeight = 0;
+
+                            foreach (string list in items.Keys)
+                            {
+                                foreach (GeoItem geoItem in items[list])
+                                {
+                                    totalWeight += geoItem.ItemDef.Weight;
+                                }
+                            }
+
+                            if (totalWeight + storageUsed > storageCapacity)
+                            {
+                                string warning = TFTVCommonMethods.ConvertKeyToString("KEY_WARNING_STORAGE_EXCEEDED");
+
+                                GameUtl.GetMessageBox().ShowSimplePrompt(warning, MessageBoxIcon.Stop, MessageBoxButtons.OK, null);
+                                return false;
+                            }
+
+                            foreach (string list in items.Keys)
+                            {
+                                foreach (GeoItem item in items[list])
+                                {
+                                    if (item.ItemDef.RequiredSlotBinds[0].RequiredSlot.name.Contains("MechArm"))
+                                    {
+                                        continue;
+                                    }
+                                   // TFTVLogger.Always($"transferring {item.ItemDef.name}");
+                                    uIModuleSoldierEquip.StorageList.AddItem(item);
+
+                                    if (list == inventoryItemsString)
+                                    {
+                                        uIModuleSoldierEquip.InventoryList.RemoveItem(item, null);
+                                    }
+                                    else if (list == equipmentItemsString)
+                                    {
+                                        uIModuleSoldierEquip.ReadyList.RemoveItem(item, null);
+                                    }
+                                    else
+                                    {
+                                        uIModuleSoldierEquip.ArmorList.RemoveItem(item, null);
+                                    }
+                                }
+
+                            }
+
+                            return true;
+
+                        }
+
+                        catch (Exception e)
+                        {
+                            TFTVLogger.Error(e);
+                            throw;
+                        }
+                    }
+
+                    private static Dictionary<string, List<string>> TryGetMissingLoadout(GeoCharacter geoCharacter, UIModuleSoldierEquip uIModuleSoldierEquip)
+                    {
+                        try
+                        {
+                            if (CharacterLoadouts == null || !CharacterLoadouts.ContainsKey(geoCharacter.Id))
+                            {
+                                return null;
+
+                            }
+
+                            Dictionary<string, List<string>> currentItems = GetCharacterItems(geoCharacter);
+
+                            Dictionary<string, List<string>> characterLoadout = CharacterLoadouts[geoCharacter.Id];
+
+                            Dictionary<string, List<string>> missingLoadout = new Dictionary<string, List<string>>
+                    {
+                        { armourItemsString, new List<string>() },
+                        { equipmentItemsString, new List<string>() },
+                        { inventoryItemsString, new List<string>() }
+                            };
+
+                            Dictionary<string, List<GeoItem>> characterItems = GetCharacterGeoItemList(geoCharacter);
+
+                            List<string> itemTypes = new List<string>() { armourItemsString, equipmentItemsString, inventoryItemsString };
+
+                            Dictionary<string, List<GeoItem>> itemsToDrop = new Dictionary<string, List<GeoItem>>
+                            {
+                                { armourItemsString, new List<GeoItem>() },
+                                { equipmentItemsString, new List<GeoItem>() },
+                                { inventoryItemsString, new List<GeoItem>() }
+                            };
+
+                            foreach (string list in itemTypes)
+                            {
+                                if (currentItems.ContainsKey(list))
+                                {
+                                    foreach (string item in currentItems[list])
+                                    {
+                                        if (!characterLoadout[list].Contains(item))
+                                        {
+                                            itemsToDrop[list].Add(characterItems[list].FirstOrDefault(i => i.ItemDef.Guid == item));
+                                        }
+                                    }
+                                }
+                                if (characterLoadout.ContainsKey(list))
+                                {
+                                    foreach (string item in characterLoadout[list])
+                                    {
+                                        if (currentItems.ContainsKey(list) && currentItems[list].Contains(item))
+                                        {
+                                            continue;
+                                        }
+
+                                        missingLoadout[list].Add(item);
+                                    }
+                                }
+                            }
+
+                            if (TransferItemsToStore(itemsToDrop, uIModuleSoldierEquip))
+                            {
+                                return missingLoadout;
+                            }
+
+                            return null;
+                        }
+                        catch (Exception e)
+                        {
+                            TFTVLogger.Error(e);
+                            throw;
+                        }
+                    }
+
+                    private static Dictionary<string, List<string>> GetCharacterItems(GeoCharacter character)
+                    {
+                        try
+                        {
+                            Dictionary<string, List<string>> characterItems = new Dictionary<string, List<string>>
+                    {
+                        { armourItemsString, new List<string>() },
+                        { equipmentItemsString, new List<string>() },
+                        { inventoryItemsString, new List<string>() }
+                            };
+
+                            foreach (GeoItem armourPiece in character.ArmourItems.Where(a => !a.ItemDef.Tags.Contains(Shared.SharedGameTags.AnuMutationTag)).
+                                    Where(a => !a.ItemDef.Tags.Contains(Shared.SharedGameTags.BionicalTag)))
+                            {
+                                characterItems[armourItemsString].Add(armourPiece.ItemDef.Guid);
+                            }
+                            foreach (GeoItem equipmentPiece in character.EquipmentItems)
+                            {
+                                characterItems[equipmentItemsString].Add(equipmentPiece.ItemDef.Guid);
+                            }
+                            foreach (GeoItem inventoryPiece in character.InventoryItems)
+                            {
+                                characterItems[inventoryItemsString].Add(inventoryPiece.ItemDef.Guid);
+                            }
+
+                            return characterItems;
+
+                        }
+                        catch (Exception e)
+                        {
+                            TFTVLogger.Error(e);
+                            throw;
+                        }
+                    }
+
+                    private static Dictionary<string, List<GeoItem>> GetCharacterGeoItemList(GeoCharacter character)
+                    {
+                        try
+                        {
+                            Dictionary<string, List<GeoItem>> characterItems = new Dictionary<string, List<GeoItem>>
+                    {
+                        { armourItemsString, new List<GeoItem>() },
+                        { equipmentItemsString, new List<GeoItem>() },
+                        { inventoryItemsString, new List<GeoItem>() }
+                            };
+
+                            foreach (GeoItem armourPiece in character.ArmourItems.Where(a => !a.ItemDef.Tags.Contains(Shared.SharedGameTags.AnuMutationTag)).
+                                    Where(a => !a.ItemDef.Tags.Contains(Shared.SharedGameTags.BionicalTag)))
+                            {
+                                characterItems[armourItemsString].Add(armourPiece);
+                            }
+                            foreach (GeoItem equipmentPiece in character.EquipmentItems)
+                            {
+                                characterItems[equipmentItemsString].Add(equipmentPiece);
+                            }
+                            foreach (GeoItem inventoryPiece in character.InventoryItems)
+                            {
+                                characterItems[inventoryItemsString].Add(inventoryPiece);
+                            }
+
+                            return characterItems;
+
+                        }
+                        catch (Exception e)
+                        {
+                            TFTVLogger.Error(e);
+                            throw;
+                        }
+                    }
+
+
                     private static void SaveLoadoutButtonClicked()
                     {
                         try
                         {
                             GeoCharacter character = GameUtl.CurrentLevel().GetComponent<GeoLevelController>().View.GeoscapeModules.ActorCycleModule.CurrentCharacter;//hookToCharacter;
 
-                            Dictionary<string, List<string>> characterItems = new Dictionary<string, List<string>>
-                    {
-                        { armourItems, new List<string>() },
-                        { equipmentItems, new List<string>() },
-                        { inventoryItems, new List<string>() }
-                    };
-
-                            foreach (GeoItem armourPiece in character.ArmourItems.Where(a => !a.ItemDef.Tags.Contains(Shared.SharedGameTags.AnuMutationTag)).
-                                    Where(a => !a.ItemDef.Tags.Contains(Shared.SharedGameTags.BionicalTag)))
-                            {
-
-                                characterItems[armourItems].Add(armourPiece.ItemDef.Guid);
-
-                            }
-                            foreach (GeoItem equipmentPiece in character.EquipmentItems)
-                            {
-                                characterItems[equipmentItems].Add(equipmentPiece.ItemDef.Guid);
-
-                            }
-                            foreach (GeoItem inventoryPiece in character.InventoryItems)
-                            {
-                                characterItems[inventoryItems].Add(inventoryPiece.ItemDef.Guid);
-
-                            }
+                            Dictionary<string, List<string>> characterItems = GetCharacterItems(character);
 
                             if (CharacterLoadouts == null)
                             {
@@ -934,6 +1179,72 @@ namespace TFTV
                             LoadLoadout.ResetButtonAnimations();
                         }
 
+                        catch (Exception e)
+                        {
+                            TFTVLogger.Error(e);
+                        }
+                    }
+
+
+
+                    private static void UnequipButtonClicked()
+                    {
+                        try
+                        {
+                            GeoCharacter geoCharacter = GameUtl.CurrentLevel().GetComponent<GeoLevelController>().View.GeoscapeModules.ActorCycleModule.CurrentCharacter;
+                            UIModuleSoldierEquip uIModuleSoldierEquip = GameUtl.CurrentLevel().GetComponent<GeoLevelController>().View.GeoscapeModules.SoldierEquipModule;
+
+                            if (uIModuleSoldierEquip != null && geoCharacter != null)
+                            {
+                                GeoCharacter character = geoCharacter;
+
+                                List<GeoItem> armorItems = new List<GeoItem>();
+                                List<GeoItem> inventoryItems = new List<GeoItem>();
+                                List<GeoItem> equipmentItems = new List<GeoItem>();
+
+                                List<GeoItem> attachments = new List<GeoItem>();
+
+                                if (character.ArmourItems.Any(a => a.ItemDef.Tags.Contains(Shared.SharedGameTags.BionicalTag)))
+                                {
+                                    foreach (GeoItem bionic in character.ArmourItems.
+                                     Where(a => a.ItemDef.Tags.Contains(Shared.SharedGameTags.BionicalTag)))
+                                    {
+                                        foreach (GeoItem geoItem in character.ArmourItems.
+                                     Where(a => !a.ItemDef.Tags.Contains(Shared.SharedGameTags.BionicalTag)))
+                                        {
+                                            if (geoItem.ItemDef.RequiredSlotBinds[0].IsCompatibleWith(bionic.ItemDef))
+                                            {
+                                                //  TFTVLogger.Always($"{geoItem.ItemDef} can go on {bionic.ItemDef}");
+                                                attachments.Add(geoItem);
+
+                                            }
+                                        }
+                                    }
+                                }
+
+                                armorItems.AddRange(character.ArmourItems.
+                                    Where(a => !a.ItemDef.Tags.Contains(Shared.SharedGameTags.AnuMutationTag)).
+                                    Where(a => !a.ItemDef.Tags.Contains(Shared.SharedGameTags.BionicalTag)).
+                                    Where(a => !a.ItemDef.RequiredSlotBinds[0].RequiredSlot.name.Contains("Attachment")).
+                                    Where(a => !a.ItemDef.RequiredSlotBinds[0].RequiredSlot.name.Contains("BackPack"))//.
+                                                                                                                      // Where(a => !a.ItemDef.RequiredSlotBinds[0].RequiredSlot.name.Contains("LegsAttachment"))
+                                                                                                                      //  Where(a => !a.ItemDef.RequiredSlotBinds[0].RequiredSlot.name.Contains("MechArm"))
+                                    );
+
+                                equipmentItems.AddRange(character.EquipmentItems);
+                                inventoryItems.AddRange(character.InventoryItems);
+                                armorItems.AddRange(attachments);
+
+                                Dictionary<string, List<GeoItem>> allItems = new Dictionary<string, List<GeoItem>>
+                                {
+                                    { armourItemsString, armorItems },
+                                    { inventoryItemsString, inventoryItems },
+                                    { equipmentItemsString, equipmentItems }
+                                };
+
+                                TransferItemsToStore(allItems, uIModuleSoldierEquip);
+                            }
+                        }
                         catch (Exception e)
                         {
                             TFTVLogger.Error(e);
@@ -973,112 +1284,6 @@ namespace TFTV
 
                             }
                             TFTVLogger.Always($"HelmetsOff is {HelmetsOff}");
-                        }
-                        catch (Exception e)
-                        {
-                            TFTVLogger.Error(e);
-                        }
-                    }
-
-                    private static void UnequipButtonClicked()
-                    {
-                        try
-                        {
-                            GeoCharacter geoCharacter = GameUtl.CurrentLevel().GetComponent<GeoLevelController>().View.GeoscapeModules.ActorCycleModule.CurrentCharacter;
-                            UIModuleSoldierEquip uIModuleSoldierEquip = GameUtl.CurrentLevel().GetComponent<GeoLevelController>().View.GeoscapeModules.SoldierEquipModule;
-
-                            if (uIModuleSoldierEquip != null && geoCharacter != null)
-                            {
-                                GeoCharacter character = geoCharacter;
-
-                                List<GeoItem> armorItems = new List<GeoItem>();
-                                List<GeoItem> inventoryItems = new List<GeoItem>();
-                                List<GeoItem> equipmentItems = new List<GeoItem>();
-
-                                List<GeoItem> attachments = new List<GeoItem>();
-
-                                if (character.ArmourItems.Any(a => a.ItemDef.Tags.Contains(Shared.SharedGameTags.BionicalTag)))
-                                {
-                                    foreach (GeoItem bionic in character.ArmourItems.
-                                     Where(a => a.ItemDef.Tags.Contains(Shared.SharedGameTags.BionicalTag)))
-                                    {
-                                        foreach (GeoItem geoItem in character.ArmourItems.
-                                     Where(a => !a.ItemDef.Tags.Contains(Shared.SharedGameTags.BionicalTag)))
-                                        {
-                                            if (geoItem.ItemDef.RequiredSlotBinds[0].IsCompatibleWith(bionic.ItemDef))
-                                            {
-                                                // TFTVLogger.Always($"{geoItem.ItemDef} can go on {bionic.ItemDef}");
-                                                attachments.Add(geoItem);
-
-                                            }
-                                        }
-                                    }
-                                }
-
-                                armorItems.AddRange(character.ArmourItems.
-                                    Where(a => !a.ItemDef.Tags.Contains(Shared.SharedGameTags.AnuMutationTag)).
-                                    Where(a => !a.ItemDef.Tags.Contains(Shared.SharedGameTags.BionicalTag)).
-                                    Where(a => !a.ItemDef.RequiredSlotBinds[0].RequiredSlot.name.Contains("Attachment")).
-                                    Where(a => !a.ItemDef.RequiredSlotBinds[0].RequiredSlot.name.Contains("BackPack"))//.
-                                                                                                                      // Where(a => !a.ItemDef.RequiredSlotBinds[0].RequiredSlot.name.Contains("LegsAttachment"))
-                                                                                                                      //  Where(a => !a.ItemDef.RequiredSlotBinds[0].RequiredSlot.name.Contains("MechArm"))
-                                    );
-
-                                equipmentItems.AddRange(character.EquipmentItems);
-                                inventoryItems.AddRange(character.InventoryItems);
-                                armorItems.AddRange(attachments);
-
-                                List<GeoItem> allItems = new List<GeoItem>();
-                                allItems.AddRange(equipmentItems);
-                                allItems.AddRange(armorItems);
-                                allItems.AddRange(inventoryItems);
-
-                                GeoPhoenixFaction phoenixFaction = GameUtl.CurrentLevel().GetComponent<GeoLevelController>().PhoenixFaction;
-
-                                int storageCapacity = phoenixFaction.GetTotalAvailableStorage();
-                                int storageUsed = phoenixFaction.ItemStorage.GetStorageUsed();
-
-                                int totalWeight = 0;
-
-                                foreach (GeoItem geoItem1 in allItems)
-                                {
-                                    totalWeight += geoItem1.ItemDef.Weight;
-                                }
-
-                                if (totalWeight + storageUsed > storageCapacity)
-                                {
-                                    string warning = TFTVCommonMethods.ConvertKeyToString("KEY_WARNING_STORAGE_EXCEEDED");
-
-                                    GameUtl.GetMessageBox().ShowSimplePrompt(warning, MessageBoxIcon.Stop, MessageBoxButtons.OK, null);
-                                    return;
-                                }
-
-                                foreach (GeoItem item in inventoryItems)
-                                {
-                                    // TFTVLogger.Always($"{item.ItemDef.name} in Inventory");
-                                    uIModuleSoldierEquip.StorageList.AddItem(item);
-                                    uIModuleSoldierEquip.InventoryList.RemoveItem(item, null);
-                                }
-
-                                foreach (GeoItem item in equipmentItems)
-                                {
-                                    // TFTVLogger.Always($"{item.ItemDef.name} in Equipment");
-                                    uIModuleSoldierEquip.StorageList.AddItem(item);
-                                    uIModuleSoldierEquip.ReadyList.RemoveItem(item, null);
-                                }
-
-                                foreach (GeoItem item in armorItems)
-                                {
-                                    if (item.ItemDef.RequiredSlotBinds[0].RequiredSlot.name.Contains("MechArm"))
-                                    {
-                                        continue;
-                                    }
-
-                                    TFTVLogger.Always($"{item.ItemDef.name} in Armor. {item.ItemDef?.RequiredSlotBinds[0].RequiredSlot?.name}");
-                                    uIModuleSoldierEquip.StorageList.AddItem(item);
-                                    uIModuleSoldierEquip.ArmorList.RemoveItem(item, null);
-                                }
-                            }
                         }
                         catch (Exception e)
                         {
@@ -2055,7 +2260,7 @@ namespace TFTV
                     {
                         TFTVConfig config = TFTVMain.Main.Config;
                         TFTVLogger.Always($"UIStateTacticalCutscene EnterState called");
-                        
+
                         if (config.SkipMovies)
                         {
 
@@ -2080,7 +2285,7 @@ namespace TFTV
             }
 
 
-            
+
         }
     }
 }

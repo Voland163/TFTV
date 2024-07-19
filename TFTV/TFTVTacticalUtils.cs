@@ -110,7 +110,7 @@ namespace TFTV
                     createVisuals.Invoke(tacticalDeployZone, null);
                     //  TFTVLogger.Always($"{tacticalDeployZone.name} at position {tacticalDeployZone.Pos}, belongs to {tacticalDeployZone.MissionParticipant.GetName()}");
 
-                    TFTVLogger.Always($"{tacticalDeployZone.name} has perception base? {tacticalDeployZone.TacticalPerceptionBase!=null}");
+                 //   TFTVLogger.Always($"{tacticalDeployZone.name} has perception base? {tacticalDeployZone.TacticalPerceptionBase!=null}");
 
                     foreach (FixedDeployConditionData fixedDeployConditionData in tacticalDeployZone.FixedDeployment)
                     {

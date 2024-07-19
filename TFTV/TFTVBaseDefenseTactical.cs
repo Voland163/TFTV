@@ -1344,7 +1344,7 @@ namespace TFTV
                         }
 
 
-                        StartingDeployment.Init(controller);
+                        Init(controller);
                         //   FindHangarTopsideDeployZones(controller);
 
                     }
@@ -2612,12 +2612,13 @@ namespace TFTV
                              return true;
                          }*/
 
+                    //   TFTVLogger.Always($"{geoId} looking at {zone.name} at {zone.Pos}. Contained in _listEntrance? {_listEntrance.Contains(geoId)} zone.Pos - Map.EntrancePhaseIPlayerSpawn).magnitude < 10 {(zone.Pos - Map.EntrancePhaseIPlayerSpawn).magnitude < 10} ", false);
 
                         if (geoId > 0)
                         {
                             if (_listEntrance.Contains(geoId) && ((zone.Pos - Map.EntrancePhaseIPlayerSpawn).magnitude < 10 || (zone.Pos - Map.EntranceExitCentralPos).magnitude < 20))
                             {
-                                // TFTVLogger.Always($"{geoId} can deploy at {zone.name} {zone.Pos}");
+                              //  TFTVLogger.Always($"{geoId} can deploy at {zone.name} {zone.Pos}");
 
                                 return true;
 
@@ -2782,7 +2783,9 @@ namespace TFTV
 
                             if (x == 0)
                             {
-
+                                //TFTVLogger.Always($"tacticalDeployZones[x].MissionParticipant: {tacticalDeployZones[x].MissionParticipant}");
+                                // TFTVLogger.Always($"tacticalDeployZones[x].TacticalFaction.TacticalFactionDef.name {tacticalDeployZones[x].TacticalFaction.TacticalFactionDef.name}");
+                               // zVariation = 5;
                             }
                             else if (x == 1)
                             {
@@ -2813,13 +2816,24 @@ namespace TFTV
 
                             tacticalDeployZones[x].SetPosition(newPosition);
 
-                            boxCollider.center = Vector3.zero;
-                            boxCollider.size = new Vector3(1.5f, 1.5f, 1.5f);
+
+                            if (x > 0)
+                            {
+                                boxCollider.center = Vector3.zero;
+                                boxCollider.size = new Vector3(1.5f, 1.5f, 1.5f);
+                            }
+                            else 
+                            {
+                                boxCollider.center = Vector3.zero;
+                                boxCollider.size = new Vector3(3f, 3f, 3f);
+
+                            }
 
                             Vector3 newColliderCenter = tacticalDeployZones[x].transform.InverseTransformPoint(newPosition);
                             boxCollider.center = newColliderCenter;
 
-                            TFTVLogger.Always($"phase1 entrance: {tacticalDeployZones[x].name} {tacticalDeployZones[x].Pos}, box collider extents: {boxCollider.bounds.extents}"); //bounds center: {boxCollider.center}");
+                            TFTVLogger.Always($"phase1 entrance: {tacticalDeployZones[x].name} {tacticalDeployZones[x].Pos}, box collider extents: {boxCollider.bounds.extents}," +
+                                $"{tacticalDeployZones[x].MissionDeployment[0]?.ActorTagDef?.name}"); //bounds center: {boxCollider.center}");
                                                                                                                                                                                    //   TFTVLogger.Always($"{tacticalDeployZones[x].name} isMissionZone? {tacticalDeployZones[x].IsMissionZone} {tacticalDeployZones[x].MissionDeployment[0].ActorTagDef.name}");
                         }
                     }

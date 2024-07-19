@@ -1072,7 +1072,7 @@ namespace TFTV
                         int[] voidOmensInEffect = TFTVVoidOmens.CheckFordVoidOmensInPlay(__instance.GeoLevel);
                         if (voidOmensInEffect.Contains(11))
                         {
-                            num += 3 * TFTVSpecialDifficulties.DifficultyOrderConverter(currentDifficultyLevel.Order);
+                            num += 3 * Math.Max(currentDifficultyLevel.Order-1,1);
                             //TFTVLogger.Always($"And with VO# 11 in effect, total is now {num}");
                         }
 

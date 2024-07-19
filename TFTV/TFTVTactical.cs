@@ -1,15 +1,10 @@
 using Base.Core;
-using Base.Entities;
 using Base.Serialization.General;
-using PhoenixPoint.Common.Levels.MapGeneration;
 using PhoenixPoint.Common.Levels.Missions;
 using PhoenixPoint.Modding;
-using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Levels;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
 
 namespace TFTV
 {
@@ -67,6 +62,7 @@ namespace TFTV
         public int EtermesVulnerabilityResistanceTactical = TFTVNewGameOptions.EtermesResistanceAndVulnerability;
         public int RevenantPoints;
         public Dictionary<string, int> UnDesirablesActorsSpawned;
+        public Dictionary<int, string> OperativesPortraits;
     }
 
     /// <summary>
@@ -75,7 +71,7 @@ namespace TFTV
     /// </summary>
     public class TFTVTactical : ModTactical
     {
-       // private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
+        // private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
         private static void ImplementSpecialMissions(TacticalLevelController controller)
         {
             try
@@ -153,7 +149,7 @@ namespace TFTV
             try
             {
                 TFTVBetaSaveGamesFixes.CorrrectPhoenixSaveManagerDifficulty();
-               // TFTVNewGameOptions.Change_Crossbows();
+                // TFTVNewGameOptions.Change_Crossbows();
             }
 
             catch (Exception e)
@@ -184,14 +180,14 @@ namespace TFTV
             RunChecksForAllMissions(tacController);
             RunBetaTestChecks();
 
-            
-       /*             List<BreachEntrance> breachEntrances = tacController.Map.GetActors<BreachEntrance>().ToList();
-                    
-                    foreach(BreachEntrance breachEntrance in breachEntrances) 
-            {
-                TFTVLogger.Always($"{breachEntrance.Pos}");
-            
-            }*/
+
+            /*             List<BreachEntrance> breachEntrances = tacController.Map.GetActors<BreachEntrance>().ToList();
+
+                         foreach(BreachEntrance breachEntrance in breachEntrances) 
+                 {
+                     TFTVLogger.Always($"{breachEntrance.Pos}");
+
+                 }*/
 
 
             // TFTVTacticalUtils.RevealAllSpawns(tacController);
@@ -217,7 +213,7 @@ namespace TFTV
             TFTVLogger.Always($"Difficulty level is {tacController.Difficulty.name} and treated as {TFTVSpecialDifficulties.DifficultyOrderConverter(tacController.Difficulty.Order)} after TFTV conversion.");
             TFTVLogger.Always($"Etermes vulnerability/resistance: {TFTVNewGameOptions.EtermesResistanceAndVulnerability}");
             TFTVLogger.Always("Tactical start completed");
-            
+
 
         }
 
@@ -289,7 +285,7 @@ namespace TFTV
                 TFTVNewGameOptions.InternalDifficultyCheckTactical = data.internalDifficultyCheck;
                 TFTVBaseDefenseTactical.Map.DeploymentZones.SecondaryStrikeForceVector = data.SecondaryStrikeForceCoordinates;
                 TFTVRevenant.TFTVRevenantResearch.RevenantPoints = data.RevenantPoints;
-                if (data.UnDesirablesActorsSpawned != null) 
+                if (data.UnDesirablesActorsSpawned != null)
                 {
                     TFTVTacticalDeploymentEnemies.UndesirablesSpawned = data.UnDesirablesActorsSpawned;
                 }
@@ -312,23 +308,27 @@ namespace TFTV
                     TFTVNewGameOptions.EtermesResistanceAndVulnerability = data.EtermesVulnerabilityResistanceTactical;
                 }
 
-                if (data.PandoransInContainment != null) 
+                if (data.PandoransInContainment != null)
                 {
-                    TFTVBaseDefenseTactical.PandoransInContainment = data.PandoransInContainment; 
+                    TFTVBaseDefenseTactical.PandoransInContainment = data.PandoransInContainment;
                 }
 
-                if(data.PandoransInContainmentEscaped != null) 
+                if (data.PandoransInContainmentEscaped != null)
                 {
-                    TFTVBaseDefenseTactical.PandoransInContainmentThatEscaoed = data.PandoransInContainmentEscaped;     
+                    TFTVBaseDefenseTactical.PandoransInContainmentThatEscaoed = data.PandoransInContainmentEscaped;
                 }
 
                 TFTVBaseDefenseTactical.Breach = data.Breach;
                 TFTVBaseDefenseTactical.ScyllaLoose = data.ScyllaLoose;
 
-                TFTVLogger.Always($"Config settings:" +                  
+                TFTVLogger.Always($"Config settings:" +
                     $"\nStrongerPandoransSetting {TFTVNewGameOptions.StrongerPandoransSetting}\nImpossibleWeaponsAdjustmentsSetting: {TFTVNewGameOptions.ImpossibleWeaponsAdjustmentsSetting}");
 
-            //    TFTVDefsWithConfigDependency.ImplementConfigChoices();
+                if (data.OperativesPortraits != null)
+                {
+                    TFTVExperimentalNext.CharacterPortrait.characterPics = data.OperativesPortraits;
+                }
+                //    TFTVDefsWithConfigDependency.ImplementConfigChoices();
 
                 TurnZeroMethodsExecuted = data.TurnZeroMethodsExecuted;
 
@@ -386,6 +386,7 @@ namespace TFTV
                 RevenantPoints = TFTVRevenant.TFTVRevenantResearch.RevenantPoints,
                 EtermesVulnerabilityResistanceTactical = TFTVNewGameOptions.EtermesResistanceAndVulnerability,
                 UnDesirablesActorsSpawned = TFTVTacticalDeploymentEnemies.UndesirablesSpawned,
+                OperativesPortraits = TFTVExperimentalNext.CharacterPortrait.characterPics,
 
                 internalDifficultyCheck = Controller.Difficulty.Order,
 
@@ -437,11 +438,11 @@ namespace TFTV
                         TurnZeroMethodsExecuted = true;
                     }
 
-                    
-                        TFTVTacticalUtils.RevealExfilPoint(Controller, turnNumber);
 
-                   // TFTVRevenant.Resistance.ApplySpecialRevenantResistanceArmorStack(Controller);
-                   // TFTVRevenant.revenantSpecialResistance.Clear();
+                    TFTVTacticalUtils.RevealExfilPoint(Controller, turnNumber);
+
+                    // TFTVRevenant.Resistance.ApplySpecialRevenantResistanceArmorStack(Controller);
+                    // TFTVRevenant.revenantSpecialResistance.Clear();
                     TFTVTouchedByTheVoid.Umbra.UmbraTactical.SpawnUmbra(Controller);
                     TFTVHumanEnemies.ChampRecoverWPAura(Controller);
                     TFTVHumanEnemies.ApplyTacticStartOfPlayerTurn(Controller);

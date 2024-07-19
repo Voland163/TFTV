@@ -5,7 +5,6 @@ using Base.Entities.Abilities;
 using Base.Entities.Effects;
 using Base.Entities.Effects.ApplicationConditions;
 using Base.Entities.Statuses;
-using Base.UI;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities;
@@ -123,7 +122,7 @@ namespace PRMBetterClasses.SkillModifications
                 "B10CF045-D686-4A8D-A359-9636CA6EA8BA",
                 $"DieHard_KeepAliveStatus");
             dieHardKeepAliveStatus.EffectName = "DieHard_KeepAliveStatus";
-            dieHardKeepAliveStatus.DurationTurns = 0; // should only be active in the enemy turn when Die Hard triggered
+            dieHardKeepAliveStatus.DurationTurns = 1; // should only be active in the enemy turn when Die Hard triggered VOLAND TESTING
             dieHardKeepAliveStatus.ExpireOnEndOfTurn = true; // ^^
             dieHardKeepAliveStatus.Visuals = Helper.CreateDefFromClone(
                 dieHardTriggeredStatus.Visuals,
@@ -147,10 +146,10 @@ namespace PRMBetterClasses.SkillModifications
             internal static TacStatusDef DieHardTriggeredStatus { get; set; }
             internal static TacStatusDef DieHardKeepAliveStatus { get; set; }
             internal static Shader Shader { get; } = DefCache.GetDef<StanceStatusDef>("E_VanishedStatus [Vanish_AbilityDef]").StanceShader;
-            internal static List<TacticalActorBase> DieHardActorsToKeepAlive { get; } = new List<TacticalActorBase>();
-            internal static bool OnFactionStartTurnSubscribed { get; set; } = false;
+            //internal static List<TacticalActorBase> DieHardActorsToKeepAlive { get; } = new List<TacticalActorBase>();
+            //internal static bool OnFactionStartTurnSubscribed { get; set; } = false;
             internal static GameTagDef ExcludeFromAiBlackboard { get; } = DefCache.GetDef<GameTagDef>("ExcludeFromAiBlackboard_TagDef");
-            internal static StatusDef[] StatusesToRemove = new StatusDef[]
+            internal static StatusDef[] StatusesToRemove { get; } = new StatusDef[]
             {
                         DieHardKeepAliveStatus,
                         DefCache.GetDef<StatusDef>("Bleed_StatusDef"),
@@ -196,12 +195,14 @@ namespace PRMBetterClasses.SkillModifications
                         _ = __instance.Status.ApplyStatus(DieHardKeepAliveStatus);
                         _ = __instance.AddGameTags(new GameTagsList() { ExcludeFromAiBlackboard });
                         __instance.SetSpecialShader(Shader);
-                        DieHardActorsToKeepAlive.Add(__instance);
-                        if (!OnFactionStartTurnSubscribed)
-                        {
-                            __instance.TacticalFaction.StartTurnEvent += OnFactionStartTurn;
-                            OnFactionStartTurnSubscribed = true;
-                        }
+
+                        // BUGFIX/UNUSED, SEE BELOW DieHardOnFactionStartTurn(..)
+                        //DieHardActorsToKeepAlive.Add(__instance);
+                        //if (!OnFactionStartTurnSubscribed)
+                        //{
+                        //    __instance.TacticalFaction.StartTurnEvent += OnFactionStartTurn;
+                        //    OnFactionStartTurnSubscribed = true;
+                        //}
                     }
 
                     PRMLogger.Always($"Die Hard for {__instance}: Original damage value = {damageResult.HealthDamage}, actor health = {__instance.Health.IntValue} ...");
@@ -224,35 +225,64 @@ namespace PRMBetterClasses.SkillModifications
                 }
             }
 
-            private static void OnFactionStartTurn()
+            // BUGFIX/UNUSED, SEE BELOW DieHardOnFactionStartTurn(..)
+            //private static void OnFactionStartTurn()
+            //{
+            //    try
+            //    {
+            //        PRMLogger.Always($"Die Hard OnFactionStartTurn() event handler called ...");
+            //        if (DieHardActorsToKeepAlive.IsEmpty())
+            //        {
+            //            PRMLogger.Always($"  ... no actors triggered Die Hard, early exit!");
+            //            return;
+            //        }
+            //        // Unapply any existent DoT on the actor
+            //        foreach (TacticalActorBase actor in DieHardActorsToKeepAlive)
+            //        {
+            //            PRMLogger.Always($"  ... cleaning DoTs and keep alive stuff from actor {actor}.");
+            //            actor.Status.UnapplyAllStatusesFiltered(status => StatusesToRemove.Contains(status.BaseDef));
+            //            (actor as TacticalActor)?.SetSpecialShader(null);
+            //            _ = actor.RemoveGameTags(new GameTagsList() { ExcludeFromAiBlackboard });
+            //            if (OnFactionStartTurnSubscribed)
+            //            {
+            //                actor.TacticalFaction.StartTurnEvent -= OnFactionStartTurn;
+            //                OnFactionStartTurnSubscribed = false;
+            //            }
+            //        }
+            //        DieHardActorsToKeepAlive.Clear();
+            //    }
+            //    catch (Exception e) 
+            //    {
+            //        PRMLogger.Error(e);
+            //    }
+            //}
+        }
+        internal static void DieHardOnFactionStartTurn(TacticalFaction faction)
+        {
+            try
             {
-                try
+              //  TFTVLogger.Always($"running DieHardOnFactionStartTurn ");
+
+                if (faction.IsControlledByPlayer)
                 {
-                    PRMLogger.Always($"Die Hard OnFactionStartTurn() event handler called ...");
-                    if (DieHardActorsToKeepAlive.IsEmpty())
+                //    TFTVLogger.Always($"passed faction controlled by player");
+
+                    foreach (TacticalActor actor in faction.TacticalActors)
                     {
-                        PRMLogger.Always($"  ... no actors triggered Die Hard, early exit!");
-                        return;
-                    }
-                    // Unapply any existent DoT on the actor
-                    foreach (TacticalActorBase actor in DieHardActorsToKeepAlive)
-                    {
-                        PRMLogger.Always($"  ... cleaning DoTs and keep alive stuff from actor {actor}.");
-                        actor.Status.UnapplyAllStatusesFiltered(status => StatusesToRemove.Contains(status.BaseDef));
-                        (actor as TacticalActor)?.SetSpecialShader(null);
-                        _ = actor.RemoveGameTags(new GameTagsList() { ExcludeFromAiBlackboard });
-                        if (OnFactionStartTurnSubscribed)
+                       
+                        if (actor.HasStatus(TacticalActor_ApplyDamageInternal_Patch.DieHardKeepAliveStatus))
                         {
-                            actor.TacticalFaction.StartTurnEvent -= OnFactionStartTurn;
-                            OnFactionStartTurnSubscribed = false;
+                            PRMLogger.Always($"DieHardOnFactionStartTurn(): cleaning DoTs and keep alive stuff from actor {actor}.");
+                            actor.Status.UnapplyAllStatusesFiltered(status => TacticalActor_ApplyDamageInternal_Patch.StatusesToRemove.Contains(status.BaseDef));
+                            actor.SetSpecialShader(null);
+                            _ = actor.RemoveGameTags(new GameTagsList() { TacticalActor_ApplyDamageInternal_Patch.ExcludeFromAiBlackboard });
                         }
                     }
-                    DieHardActorsToKeepAlive.Clear();
                 }
-                catch (Exception e) 
-                {
-                    PRMLogger.Error(e);
-                }
+            }
+            catch (Exception e)
+            {
+                PRMLogger.Error(e);
             }
         }
 
@@ -284,7 +314,7 @@ namespace PRMBetterClasses.SkillModifications
                 $"E_Status [{skillName}]");
 
             ChangeAbilitiesCostStatusDef changeAbilitiesCostSource = DefCache.GetDef<ChangeAbilitiesCostStatusDef>("E_MedkitAbilitiesCostChange [FastUse_AbilityDef]");
-            
+
             ChangeAbilitiesCostStatusDef deployDroneChangeAbilitiesCostStatus = Helper.CreateDefFromClone(
                 changeAbilitiesCostSource,
                 "CA10F1C4-3138-4C13-95E0-07EA92CD199C",
@@ -304,7 +334,7 @@ namespace PRMBetterClasses.SkillModifications
             //TacticalAbilityDef deployDrone = Repo.GetAllDefs<TacticalAbilityDef>().FirstOrDefault(tad => tad.name.Equals("DeployDrone_ShootAbilityDef"));
             //deployDrone.SkillTags = deployDrone.SkillTags.AddToArray(dronePackTag);
             deployDronePack.SkillTags = deployDronePack.SkillTags.AddToArray(dronePackTag);
-            
+
             ChangeAbilitiesCostStatusDef deployDronePackChangeAbilitiesCostStatus = Helper.CreateDefFromClone(
                 changeAbilitiesCostSource,
                 "CAE456B2-F1EB-460E-B412-EFF745CA3071",
@@ -419,7 +449,7 @@ namespace PRMBetterClasses.SkillModifications
                             //TFTVLogger.Always($"Punisher -2 WP triggered for actor {__instance} from faction {__instance.TacticalFaction} because {death.Actor} from faction {death.Actor.TacticalFaction} got killed by {death.Killer}");
                             __instance.CharacterStats.WillPoints.Subtract(2);
                         }
-                       
+
                     }
                 }
                 catch (Exception e)
@@ -900,7 +930,7 @@ namespace PRMBetterClasses.SkillModifications
             artStatus.SingleInstance = true;
             artStatus.Visuals = arTargeting.ViewElementDef;
             artStatus.StatModifications = new ItemStatModification[]
-            { 
+            {
                 new ItemStatModification()
                 {
                     TargetStat = StatModificationTarget.Accuracy,
@@ -972,6 +1002,7 @@ namespace PRMBetterClasses.SkillModifications
             endurance.ViewElementDef.LargeIcon = enduranceIcon;
             endurance.ViewElementDef.SmallIcon = enduranceIcon;
         }
+
         // Endurance: Patching GetWillpowerRecover from active actor when he uses Recover to check if Endurance ability is active and return 75% WP to recover
         [HarmonyPatch(typeof(RecoverWillAbility), "GetWillpowerRecover")]
         public static class RecoverWillAbility_GetWillpowerRecover_Patch

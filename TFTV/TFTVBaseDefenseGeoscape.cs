@@ -41,6 +41,7 @@ using PhoenixPoint.Tactical.Entities.Effects;
 using PhoenixPoint.Tactical.Levels;
 using PhoenixPoint.Tactical.Levels.FactionObjectives;
 using PhoenixPoint.Tactical.Prompts;
+using PhoenixPoint.Tactical.View.ViewStates;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -1302,7 +1303,7 @@ namespace TFTV
                         {
                             foreach (GeoFactionObjective objective in __result)
                             {
-                                if (objective.GetTitle() != null && objective.GetTitle().Contains("Phoenix base") && objective.GetTitle().Contains("is under attack!"))
+                                if (objective.Title != null && objective.Title.LocalizeEnglish().Contains("Phoenix base") && objective.Title.LocalizeEnglish().Contains("is under attack!"))
                                 {
                                     //  TFTVLogger.Always($"Found base under attack objective");
                                     reOrderedObjectiveList.Add(objective);
@@ -1357,7 +1358,7 @@ namespace TFTV
                     {
 
 
-                        string warningMessage = "<color=#FF0000> !!! WARNING !!! A PHOENIX BASE IS UNDER ATTACK</color>";
+                        string warningMessage = $"<color=#FF0000>{TFTVCommonMethods.ConvertKeyToString("KEY_BASE_UNDER_ATTACK_RED")} </color>";
                         Text objectivesHeaderText = __instance.ObjectivesHeader.transform.Find("ObjectivesLabel").GetComponent<Text>();
                         string objectivesRegularHeader = new LocalizedTextBind() { LocalizationKey = "KEY_OBJECTIVES" }.Localize();
 
@@ -1376,7 +1377,7 @@ namespace TFTV
                             }
                         }
 
-                        if (objective.GetTitle().Contains("Phoenix base") && objective.GetTitle().Contains("is under attack!"))
+                        if (objective.Title!=null && objective.Title.LocalizeEnglish().Contains("Phoenix base") && objective.Title.LocalizeEnglish().Contains("is under attack!"))
                         {
 
                             //   MethodInfo getObjectiveTooltipMethod = __instance.GetType().GetMethod("GetObjectiveTooltip", BindingFlags.NonPublic | BindingFlags.Instance);
@@ -1594,6 +1595,8 @@ namespace TFTV
 
             internal class UI
             {
+                private static Dictionary<GeoRosterDeploymentItem, PhoenixGeneralButton> keyValuePairs = new Dictionary<GeoRosterDeploymentItem, PhoenixGeneralButton>();
+
                 internal static void CreateCheckButton(GeoRosterDeploymentItem geoRosterDeploymentItem)
                 {
                     try
@@ -1629,6 +1632,7 @@ namespace TFTV
                         checkButton.transform.position += new Vector3(-100 * resolutionFactorWidth, 0);
                         checkButton.PointerClicked += () => ToggleButtonClicked(checkButton, geoRosterDeploymentItem);
                         AssignTeam(checkButton, geoRosterDeploymentItem);
+                        keyValuePairs.Add(geoRosterDeploymentItem, checkButton);
                     }
                     catch (Exception e)
                     {
@@ -1641,7 +1645,6 @@ namespace TFTV
                     try
                     {
                         GeoCharacter geoCharacter = geoRosterDeploymentItem.Character;
-
 
                         if (checkButton.GetComponent<UIButtonIconController>().Icon.sprite == iconHangar && geoRosterDeploymentItem.EnrollForDeployment)
                         {
@@ -1664,6 +1667,7 @@ namespace TFTV
                         {
                             if (!listEntrance.Contains(geoCharacter.Id))
                             {
+                               // TFTVLogger.Always($"adding {geoCharacter.Id} to Entrance List");
                                 listEntrance.Add(geoCharacter.Id);
                             }
 
@@ -1695,6 +1699,16 @@ namespace TFTV
                             }
                         }
 
+                      
+                      /*      TFTVLogger.Always($"{geoCharacter.DisplayName}, geoId? {geoCharacter.Id} is in entrance list? {listEntrance.Contains(geoCharacter.Id)}" +
+                                $"is in hangar list? {listHangar.Contains(geoCharacter.Id)}"+
+                                $"is in lift list? {listLift.Contains(geoCharacter.Id)}" +
+                                $"iconEntrance {checkButton.GetComponent<UIButtonIconController>().Icon.sprite == iconEntrance}" +
+                                $"\nEnrollForDeployment " +
+                                $"{geoRosterDeploymentItem.EnrollForDeployment}");
+                      */
+                      
+                       
                     }
                     catch (Exception e)
                     {
@@ -1774,6 +1788,28 @@ namespace TFTV
                     }
                 }
 
+                public static void CheckBeforeDeployment(UIStateRosterDeployment uIStateRosterDeployment)
+                {
+                    try 
+                    {
+                        if (!PhoenixBasesUnderAttack.ContainsKey(uIStateRosterDeployment.Mission.Site.SiteId) && !PhoenixBasesInfested.Contains(uIStateRosterDeployment.Mission.Site.SiteId))
+                        {
+                            return;
+                        }
+
+                        foreach (GeoRosterDeploymentItem geoRosterDeploymentItem in keyValuePairs.Keys) 
+                        { 
+                                AssignTeam(keyValuePairs[geoRosterDeploymentItem], geoRosterDeploymentItem);
+                        }
+
+                        keyValuePairs.Clear();
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                    }
+                }
+
                 public static void ModifyForBaseDefense(UIStateRosterDeployment uIStateRosterDeployment, List<GeoRosterDeploymentItem> deploymentItems)
                 {
                     try
@@ -1782,6 +1818,8 @@ namespace TFTV
                         {
                             return;
                         }
+                      
+                        keyValuePairs.Clear();
 
                         SetBaseDefenseSitrep(uIStateRosterDeployment.Mission);
 
@@ -1814,11 +1852,28 @@ namespace TFTV
             {
                 try
                 {
+                    int difficulty = TFTVSpecialDifficulties.DifficultyOrderConverter(geoMission.GameController.CurrentDifficulty.Order);
+
+                    TFTVLogger.Always($"Checking deployment points for each faction, difficulty: {difficulty}");
+
+                    foreach (TacMissionFactionData tacMissionFactionData in missionData.MissionParticipants)
+                    {
+                        TFTVLogger.Always($"{tacMissionFactionData.FactionDef} {tacMissionFactionData.InitialDeploymentPoints}");
+
+                        if (tacMissionFactionData.FactionDef == Shared.NewJerichoFactionDef && difficulty <= 2 
+                            && geoMission.MissionDef == DefCache.GetDef<CustomMissionTypeDef>("StoryLE0_CustomMissionTypeDef"))
+                        {
+                            tacMissionFactionData.InitialDeploymentPoints *= 0.75f;
+                            TFTVLogger.Always($"After adjustment, {geoMission.MissionDef.name} {tacMissionFactionData.FactionDef} {tacMissionFactionData.InitialDeploymentPoints}");
+                        } 
+                    }
+
+
                     if (PhoenixBasesUnderAttack.ContainsKey(geoMission.Site.SiteId) || PhoenixBasesInfested.Contains(geoMission.Site.SiteId))
                     {
 
                         PPFactionDef alienFaction = DefCache.GetDef<PPFactionDef>("Alien_FactionDef");
-                        int difficulty = TFTVSpecialDifficulties.DifficultyOrderConverter(geoMission.GameController.CurrentDifficulty.Order);
+                     //   int difficulty = TFTVSpecialDifficulties.DifficultyOrderConverter(geoMission.GameController.CurrentDifficulty.Order);
 
                         ContextHelpHintDef hintDef = DefCache.GetDef<ContextHelpHintDef>("TFTVBaseDefense");
 

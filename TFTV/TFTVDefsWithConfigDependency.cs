@@ -198,7 +198,7 @@ namespace TFTV
                         ChangesToFoodAndMutagenGenerationImplemented = false;
                         TFTVLogger.Always($"Limited Harvesting Setting reverted");
                     }
-                    TFTVLogger.Always($"Limited Harvesting Setting is off");
+                    //TFTVLogger.Always($"Limited Harvesting Setting is off");
                 }
                 catch (Exception e)
                 {
@@ -383,7 +383,7 @@ namespace TFTV
                         TFTVLogger.Always($"Limited Capture reverted");
                     }
 
-                    TFTVLogger.Always($"Limited Capture is off");
+                 //   TFTVLogger.Always($"Limited Capture is off");
 
                 }
                 catch (Exception e)
@@ -454,7 +454,7 @@ namespace TFTV
                         TFTVLogger.Always("Stronger Pandorans reverted");
                     }
 
-                    TFTVLogger.Always("Stronger Pandorans is off");
+                   // TFTVLogger.Always("Stronger Pandorans is off");
                 }
                 catch (Exception e)
                 {

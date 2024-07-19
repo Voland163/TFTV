@@ -41,18 +41,18 @@ namespace TFTV
         [HarmonyPatch(typeof(GeoMission), "ApplyTacticalMissionResult")]
         public class ApplyTacticalMissionResult
         {
-            static bool Prefix(GeoMission __instance, out int __state)
+            static bool Prefix(GeoMission __instance, out GameDifficultyLevelDef __state)
             {
                 try
                 {
                     TFTVConfig config = TFTVMain.Main.Config;
                     GeoLevelController controller = __instance.Level;
-                    __state = controller.CurrentDifficultyLevel.Order;
+                    __state = controller.CurrentDifficultyLevel;
 
                     if (config.difficultyOnTactical != TFTVConfig.DifficultyOnTactical.GEOSCAPE)
                     {
-                        TFTVLogger.Always($"Geoscape difficulty: {controller.CurrentDifficultyLevel.Name.Localize()}, Tactical Difficulty: {GetTacticalDifficulty().Name.Localize()}");
-                        controller.CurrentDifficultyLevel = GetTacticalDifficulty();
+                        TFTVLogger.Always($"Geoscape difficulty: {controller.CurrentDifficultyLevel.Name.Localize()}, Tactical Difficulty: {GetTacticalDifficultyIfDifferentFromGeoscapeDifficulty().Name.Localize()}");
+                        controller.CurrentDifficultyLevel = GetTacticalDifficultyIfDifferentFromGeoscapeDifficulty();
                         
                         //  TFTVLogger.Always($"Checking that difficulty order level did not change: {__state}");
                     }
@@ -68,13 +68,13 @@ namespace TFTV
 
             }
 
-            static void Postfix(GeoMission __instance, int __state)
+            static void Postfix(GeoMission __instance, GameDifficultyLevelDef __state)
 
             {
                 try
                 {
                     GeoLevelController controller = __instance.Level;
-                    controller.CurrentDifficultyLevel = GetDifficultyFromOrder(__state);
+                    controller.CurrentDifficultyLevel = __state;
                     TFTVPureAndForsaken.CheckMissionVSPure(__instance);
 
                 }
@@ -93,19 +93,19 @@ namespace TFTV
         [HarmonyPatch(typeof(GeoMission), "PrepareTacticalGame")]
         public class PrepareTacticalGame
         {
-            static bool Prefix(GeoMission __instance, out int __state)
+            static bool Prefix(GeoMission __instance, out GameDifficultyLevelDef __state)
             {
 
                 try
                 {
                     TFTVConfig config = TFTVMain.Main.Config;
                     GeoLevelController controller = __instance.Level;
-                    __state = controller.CurrentDifficultyLevel.Order;
+                    __state = controller.CurrentDifficultyLevel;
 
                     if (config.difficultyOnTactical != TFTVConfig.DifficultyOnTactical.GEOSCAPE)
                     {
-                        TFTVLogger.Always($"Geoscape difficulty: {controller.CurrentDifficultyLevel.Name.Localize()}, Tactical Difficulty: {GetTacticalDifficulty().Name.Localize()}");
-                        controller.CurrentDifficultyLevel = GetTacticalDifficulty();
+                        TFTVLogger.Always($"Geoscape difficulty: {controller.CurrentDifficultyLevel.Name.Localize()}, Tactical Difficulty: {GetTacticalDifficultyIfDifferentFromGeoscapeDifficulty().Name.Localize()}");
+                        controller.CurrentDifficultyLevel = GetTacticalDifficultyIfDifferentFromGeoscapeDifficulty();
                         //  TFTVLogger.Always($"Checking that difficulty order level did not change: {__state}");
                     }
 
@@ -122,12 +122,12 @@ namespace TFTV
 
             }
 
-            static void Postfix(GeoMission __instance, int __state)
+            static void Postfix(GeoMission __instance, GameDifficultyLevelDef __state)
             {
                 try
                 {
                     GeoLevelController controller = __instance.Level;
-                    controller.CurrentDifficultyLevel = GetDifficultyFromOrder(__state);
+                    controller.CurrentDifficultyLevel = __state;
 
                   // TFTVBaseDefenseGeoscape.CleanUpSecurityStation(__instance.Site);
                 }
@@ -182,7 +182,7 @@ namespace TFTV
         }
 
 
-        public static GameDifficultyLevelDef GetTacticalDifficulty()
+        public static GameDifficultyLevelDef GetTacticalDifficultyIfDifferentFromGeoscapeDifficulty()
         {
             try
             {
@@ -239,10 +239,11 @@ namespace TFTV
             {
 
                 TFTVConfig config = TFTVMain.Main.Config;
+                
+                //Changed because for Tactical Combat purposes was using deployment for Geoscape.
+            //    TacticalLevelController tacticalLevelController = GameUtl.CurrentLevel()?.GetComponent<TacticalLevelController>();
 
-                TacticalLevelController tacticalLevelController = GameUtl.CurrentLevel()?.GetComponent<TacticalLevelController>();
-
-                if (tacticalLevelController != null && config.difficultyOnTactical != TFTVConfig.DifficultyOnTactical.GEOSCAPE)
+                if (config.difficultyOnTactical != TFTVConfig.DifficultyOnTactical.GEOSCAPE)
                 {
                     switch (config.difficultyOnTactical)
                     {
@@ -1338,7 +1339,7 @@ namespace TFTV
 
                 //   TFTVLogger.Always($"controller.CurrentDifficultyLevel.Order {controller?.CurrentDifficultyLevel?.Order}");
 
-                if (controller.CurrentDifficultyLevel.Order == 1 || GetTacticalDifficulty() != null && GetTacticalDifficulty().Order == 1)
+                if (controller.CurrentDifficultyLevel.Order == 1 || GetTacticalDifficultyIfDifferentFromGeoscapeDifficulty() != null && GetTacticalDifficultyIfDifferentFromGeoscapeDifficulty().Order == 1)
                 {
                     // TFTVLogger.Always($"Geoscape check re Tactical returns that it's Rookie!");
                     return 1;
@@ -1365,15 +1366,15 @@ namespace TFTV
             {
                 TFTVConfig config = TFTVMain.Main.Config;
 
-                if (GetTacticalDifficulty() != null)
+                if (GetTacticalDifficultyIfDifferentFromGeoscapeDifficulty() != null)
                 {
                    // TFTVLogger.Always($"tactical difficulty not null; {GetTacticalDifficulty().Order}");
 
-                    if (GetTacticalDifficulty().Order == 1)
+                    if (GetTacticalDifficultyIfDifferentFromGeoscapeDifficulty().Order == 1)
                     {
                         return 1;
                     }
-                    else if (GetTacticalDifficulty().Order == 6)
+                    else if (GetTacticalDifficultyIfDifferentFromGeoscapeDifficulty().Order == 6)
                     {
                         return 2;
                     }

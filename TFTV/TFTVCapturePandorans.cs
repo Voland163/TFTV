@@ -60,6 +60,25 @@ namespace TFTV
         public static int ContainmentSpaceAvailable = 0;
         //   public static int CachedACC = 0;
 
+        internal class InternalData
+        {
+            public static void ClearInternalCaptureData()
+            {
+                try
+                {
+                    AircraftCaptureCapacity = -1;
+                    ContainmentFacilityPresent = false;
+                    ScyllaCaptureModulePresent = false;
+                    ContainmentSpaceAvailable = 0;
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+
+            }
+
+        }
 
         public static void ModifyCapturePandoransTacticalObjectives(TacMissionTypeDef missionType)
         {
@@ -131,7 +150,7 @@ namespace TFTV
 
                         KeepSoldiersAliveFactionObjectiveDef aircraftCapture = DefCache.GetDef<KeepSoldiersAliveFactionObjectiveDef>("CAPTURE_CAPACITY_AIRCRAFT");
 
-                      //  TFTVLogger.Always($"FactionObjective Invoked, {objective.Summary.LocalizationKey}");
+                        //  TFTVLogger.Always($"FactionObjective Invoked, {objective.Summary.LocalizationKey}");
                         if (objective.Summary.LocalizationKey.Contains("CAPACITY_AIRCRAFT"))
                         {
                             LocalizedTextBind aircraftCapacityText = new LocalizedTextBind("CAPTURE_CAPACITY_AIRCRAFT");
@@ -636,18 +655,18 @@ namespace TFTV
         internal static List<TacActorUnitResult> GetCaptureList(IEnumerable<TacActorUnitResult> tacActorUnitResults)
         {
             try
-            {  
-                
+            {
+
                 if (!ContainmentFacilityPresent)
                 {
                     int availableCaptureslotsCounter = AircraftCaptureCapacity;//CachedACC;
 
                     List<TacActorUnitResult> paralyzedList = tacActorUnitResults.ToList();
                     List<TacActorUnitResult> captureList = new List<TacActorUnitResult>(tacActorUnitResults.Where(taur => taur.HasStatus<ReadyForCapturesStatusDef>()));
-                    
-                    foreach(TacActorUnitResult tacActorUnitResult in captureList) 
+
+                    foreach (TacActorUnitResult tacActorUnitResult in captureList)
                     {
-                        availableCaptureslotsCounter -= CalculateCaptureSlotCost(tacActorUnitResult.GameTags);  
+                        availableCaptureslotsCounter -= CalculateCaptureSlotCost(tacActorUnitResult.GameTags);
                     }
 
                     paralyzedList = paralyzedList.OrderByDescending(taur => CalculateCaptureSlotCost(taur.GameTags)).ToList();
@@ -693,12 +712,11 @@ namespace TFTV
             {
                 try
                 {
-                    TFTVConfig config = TFTVMain.Main.Config;
-
-                    CheckCaptureCapability(__instance);
-
+                  
                     if (TFTVNewGameOptions.LimitedCaptureSetting)
                     {
+                        CheckCaptureCapability(__instance);
+
                         TFTVLogger.Always($"CaptureLiveAlienRunning");
 
                         GeoLevelController geoLevel = __instance.Site.GeoLevel;
@@ -768,6 +786,9 @@ namespace TFTV
                         }
 
                         __instance.Reward.CapturedAliens = list.ToList();
+
+                        //Necessary because some internal variables are populated after the mission and will be used for the next mission.
+                        InternalData.ClearInternalCaptureData();
 
                         return false;
 

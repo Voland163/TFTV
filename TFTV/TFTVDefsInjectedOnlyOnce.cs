@@ -1621,8 +1621,6 @@ namespace TFTV
         {
             try
             {
-
-
                 StructuralTargetTypeTagDef interactableConsoleTag = DefCache.GetDef<StructuralTargetTypeTagDef>("TalkingPointConsoleTag");
 
                 WipeEnemyFactionObjectiveDef sourceWipeEnemyFactionObjective = DefCache.GetDef<WipeEnemyFactionObjectiveDef>("WipeEnemy_CustomMissionObjective");
@@ -2380,7 +2378,7 @@ namespace TFTV
                 harlson.Data.BodypartItems = new ItemDef[] { newHead, legs, torso, guidedMissileLauncher };
 
 
-                squadPortraits.ManualPortraits.Add(new SquadPortraitsDef.ManualPortrait { HeadPart = newHead, Portrait = Helper.CreateSpriteFromImageFile("PM_Jack.jpg") });
+                squadPortraits.ManualPortraits.Add(new SquadPortraitsDef.ManualPortrait { HeadPart = newHead, Portrait = Helper.CreateSpriteFromImageFile("PM_Jack.png") });
 
 
 
@@ -2495,7 +2493,7 @@ namespace TFTV
                 richter.Data.BodypartItems = new ItemDef[] { newHead, legs, torso };
                 richter.Data.InventoryItems = new ItemDef[] { medkit, medkit, apARAmmo, apARAmmo, apARAmmo };
 
-                squadPortraits.ManualPortraits.Add(new SquadPortraitsDef.ManualPortrait { HeadPart = newHead, Portrait = Helper.CreateSpriteFromImageFile("PM_Richter.jpg") });
+                squadPortraits.ManualPortraits.Add(new SquadPortraitsDef.ManualPortrait { HeadPart = newHead, Portrait = Helper.CreateSpriteFromImageFile("PM_Richter.png") });
 
 
 
@@ -2606,7 +2604,7 @@ namespace TFTV
 
                 sofia.Data.BodypartItems = new ItemDef[] { newHead, legs, torso, mechArms };
 
-                squadPortraits.ManualPortraits.Add(new SquadPortraitsDef.ManualPortrait { HeadPart = newHead, Portrait = Helper.CreateSpriteFromImageFile("PM_Sofia.jpg") });
+                squadPortraits.ManualPortraits.Add(new SquadPortraitsDef.ManualPortrait { HeadPart = newHead, Portrait = Helper.CreateSpriteFromImageFile("PM_Sofia.png") });
 
                 List<TacMissionTypeParticipantData.UniqueChatarcterBind> tacCharacterDefs = DefCache.GetDef<CustomMissionTypeDef>("NJVictory_CustomMissionTypeDef").ParticipantsData[0].UniqueUnits.ToList();
                 TacMissionTypeParticipantData.UniqueChatarcterBind uniqueChatarcterBind = new TacMissionTypeParticipantData.UniqueChatarcterBind
@@ -2710,7 +2708,7 @@ namespace TFTV
                 stas.Data.BodypartItems = new ItemDef[] { newHead, legs, torso };
 
 
-                squadPortraits.ManualPortraits.Add(new SquadPortraitsDef.ManualPortrait { HeadPart = newHead, Portrait = Helper.CreateSpriteFromImageFile("PM_Stas.jpg") });
+                squadPortraits.ManualPortraits.Add(new SquadPortraitsDef.ManualPortrait { HeadPart = newHead, Portrait = Helper.CreateSpriteFromImageFile("PM_Stas.png") });
 
 
 
@@ -2829,7 +2827,7 @@ namespace TFTV
                 nikolai.Data.BodypartItems = new ItemDef[] { newHead, legs, torso };
 
 
-                squadPortraits.ManualPortraits.Add(new SquadPortraitsDef.ManualPortrait { HeadPart = newHead, Portrait = Helper.CreateSpriteFromImageFile("PM_Nikolai.jpg") });
+                squadPortraits.ManualPortraits.Add(new SquadPortraitsDef.ManualPortrait { HeadPart = newHead, Portrait = Helper.CreateSpriteFromImageFile("PM_Nikolai.png") });
 
 
 
@@ -2932,7 +2930,7 @@ namespace TFTV
                 zhara.Data.BodypartItems = new ItemDef[] { zharaHead, assaultLegs, assaultTorso };
 
 
-                squadPortraits.ManualPortraits.Add(new SquadPortraitsDef.ManualPortrait { HeadPart = zharaHead, Portrait = Helper.CreateSpriteFromImageFile("PM_Zhara.jpg") });
+                squadPortraits.ManualPortraits.Add(new SquadPortraitsDef.ManualPortrait { HeadPart = zharaHead, Portrait = Helper.CreateSpriteFromImageFile("PM_Zhara.png") });
 
 
 
@@ -3033,7 +3031,7 @@ namespace TFTV
                 taxiarchNergal.Data.BodypartItems = new ItemDef[] { taxiarchNergalHead, assaultLegs, assaultTorso };
 
 
-                squadPortraits.ManualPortraits.Add(new SquadPortraitsDef.ManualPortrait { HeadPart = taxiarchNergalHead, Portrait = Helper.CreateSpriteFromImageFile("PM_Taxiarch_Nergal.jpg") });
+                squadPortraits.ManualPortraits.Add(new SquadPortraitsDef.ManualPortrait { HeadPart = taxiarchNergalHead, Portrait = Helper.CreateSpriteFromImageFile("PM_Taxiarch_Nergal.png") });
 
 
 

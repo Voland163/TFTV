@@ -168,7 +168,7 @@ KEY_MARKETPLACE_SPECIAL_VEHICLES,Text,,Great prices on vehicles and equipment fo
 KEY_MARKETPLACE_SPECIAL_WEAPONS,Text,,Personnel weapons special!,,,,,,,,
 KEY_MARKETPLACE_SPECIAL_MERCENARY,Text,,A lot of mercs looking for work!,,,,,,,,
 KEY_MARKETPLACE_SPECIAL_RESEARCH,Text,,Look at all the tech our spymasters brought!,,,,,,,,
-KEY_FACTION_SOLDIER_JOIN_CONFIRMATION,Text,,DO YOU WANT TO ALLOW THE SOLDIER TO JOIN US?,,,,,,,,
+DLC4 Hypnos/KEY_FACTION_SOLDIER_JOIN_CONFIRMATION,Text,,DO YOU WANT TO ALLOW THE SOLDIER TO JOIN US?,,,,,,,,
 DLC5/KEY_MARKETPLACE_UPDATE_DESCRIPTION,Text,,STOCK WILL ROTATE IN APPROXIMATELY ,,,,,,,,
 KEY_DEPLOY_BASE_DEFENSE_TEXT,Text,,DEPLOY TO DEFEND BASE,,,,,,,,
 KEY_DEPLOY_BASE_DEFENSE_TIP,Text,,Deploy the operatives at the base under attack to defend it.,,,,,,,,
@@ -209,3 +209,4 @@ KEY_DLC3_INT_S6_P1,Text,,<color=#607c7d> Aurora Sartorius:</color> CODE RED! EME
 KEY_DLC3_INT_S6_P2,Text,,"<color=#ECBA62>Eileen:</color> Thanks for sharing! Now go, go, go!",,,,,,,,
 KEY_INFESTED_HAVEN_OBJECTIVE,Text,,Deploy a search and rescue team to the infested haven,,,,,,,,
 KEY_SCRAP_AIRCRAFT,Text,,SCRAP AIRCRAFT,,,,,,,,
+KEY_BASE_UNDER_ATTACK_RED,Text,,!!! WARNING !!! A PHOENIX BASE IS UNDER ATTACK,,,,,,,,

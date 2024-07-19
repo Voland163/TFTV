@@ -1,6 +1,7 @@
 ﻿using Base;
 using Base.Defs;
 using Base.Entities.Effects;
+using Base.Levels;
 using Base.UI;
 using com.ootii.Helpers;
 using HarmonyLib;
@@ -141,7 +142,7 @@ namespace TFTV
                 List<int> VoidOmensInPLay = new List<int>();
                 List<int> AlreadyRolledVoidOmens = new List<int>();
 
-                int difficulty = TFTVSpecialDifficulties.DifficultyOrderConverter(level.CurrentDifficultyLevel.Order);
+                int difficulty = Math.Max(level.CurrentDifficultyLevel.Order - 1, 1);
                 string voidOmen = "VoidOmen_";
 
                 for (int i = 0; i < CheckFordVoidOmensInPlay(level).Count(); i++)
@@ -662,7 +663,7 @@ namespace TFTV
                 List<int> VoidOmensInPLay = new List<int>();
                 List<int> AlreadyRolledVoidOmens = new List<int>();
 
-                int difficulty = TFTVSpecialDifficulties.DifficultyOrderConverter(controller.CurrentDifficultyLevel.Order);
+                int difficulty = Math.Max(controller.CurrentDifficultyLevel.Order - 1, 1);
 
                 for (int i = 0; i < CheckFordVoidOmensInPlay(controller).Count(); i++)
                 {
@@ -849,7 +850,7 @@ namespace TFTV
         {
             try
             {
-                int difficulty = TFTVSpecialDifficulties.DifficultyOrderConverter(geoLevelController.CurrentDifficultyLevel.Order);
+                int difficulty = Math.Max(geoLevelController.CurrentDifficultyLevel.Order - 1, 1);
                 string voidOmen = "VoidOmen_";
 
                 // An array to record which variables hold which Void Omens
@@ -890,7 +891,7 @@ namespace TFTV
                     string triggeredVoidOmensString = "TriggeredVoidOmen_";
                     string voidOmenTitleString = "VOID_OMEN_TITLE_";
                     string voidOmenString = "VoidOmen_";
-                    int difficulty = TFTVSpecialDifficulties.DifficultyOrderConverter(geoLevelController.CurrentDifficultyLevel.Order);
+                    int difficulty = Math.Max(geoLevelController.CurrentDifficultyLevel.Order - 1, 1);
 
                     GeoFactionObjective earliestVO = geoLevelController.PhoenixFaction.Objectives?.FirstOrDefault(o => o.Title.LocalizationKey.Contains(voidOmenTitleString));
 
@@ -975,7 +976,7 @@ namespace TFTV
                 string voidOmenTitleString = "VOID_OMEN_TITLE_";
                 string voidOmenString = "VoidOmen_";
                 int[] voidOmensinPlay = CheckFordVoidOmensInPlay(geoLevelController);
-                int difficulty = TFTVSpecialDifficulties.DifficultyOrderConverter(geoLevelController.CurrentDifficultyLevel.Order);
+                int difficulty = Math.Max(geoLevelController.CurrentDifficultyLevel.Order - 1, 1);
 
                 List<GeoFactionObjective> allVoidOmenObjectives = FindVoidOmenObjectives(geoLevelController);
 
@@ -1517,7 +1518,7 @@ namespace TFTV
                     _destroyedAlienBase = alienBase.AlienBaseTypeDef.Name;
 
                     if (alienBase.AlienBaseTypeDef.Keyword == "lair" || alienBase.AlienBaseTypeDef.Keyword == "citadel"
-                        || (alienBase.AlienBaseTypeDef.Keyword == "nest" && TFTVSpecialDifficulties.DifficultyOrderConverter(__instance.GeoLevel.CurrentDifficultyLevel.Order) == 1))
+                        || (alienBase.AlienBaseTypeDef.Keyword == "nest" && Math.Max(__instance.GeoLevel.CurrentDifficultyLevel.Order - 1, 1) == 1))
                     {
                         TFTVLogger.Always("Lair or Citadal destroyed, Void Omen should be removed and Void Omen event triggered");
 

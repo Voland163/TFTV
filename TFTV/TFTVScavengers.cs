@@ -395,8 +395,10 @@ namespace TFTV
 
                         TacticalItemDef leftArmNakedAssault = DefCache.GetDef<TacticalItemDef>("SY_Leader_LeftArm_BodyPartDef");
                         leftArmNakedAssault.BodyPartAspectDef.BleedValue = 0;
+                        leftArmNakedAssault.Armor = 0;
                         TacticalItemDef rightArmNakedAssault = DefCache.GetDef<TacticalItemDef>("SY_Leader_RightArm_BodyPartDef");
                         rightArmNakedAssault.BodyPartAspectDef.BleedValue = 0;
+                        rightArmNakedAssault.Armor = 0;
 
                         List<TacticalItemDef> nakedArmsAssault = new List<TacticalItemDef>() { leftArmNakedAssault, rightArmNakedAssault };
                         List<TacticalItemDef> nakedArmsHeavy = new List<TacticalItemDef>() { _heavyNakedArmLeft, _heavyNakedArmRight };

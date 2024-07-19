@@ -116,20 +116,20 @@ namespace TFTV
                     newJacob
                 };
 
-                if (TFTVSpecialDifficulties.DifficultyOrderConverter(level.CurrentDifficultyLevel.Order) == 2 && TFTVNewGameOptions.startingSquad == TFTVNewGameOptions.StartingSquadFaction.PHOENIX)
+                if (Math.Max(level.CurrentDifficultyLevel.Order - 1, 1) == 2 && TFTVNewGameOptions.startingSquad == TFTVNewGameOptions.StartingSquadFaction.PHOENIX)
                 {
                     startingTemplates.Add(assault);
                 }
-                else if (TFTVSpecialDifficulties.DifficultyOrderConverter(level.CurrentDifficultyLevel.Order) == 2 && TFTVNewGameOptions.startingSquad != TFTVNewGameOptions.StartingSquadFaction.PHOENIX)
+                else if (Math.Max(level.CurrentDifficultyLevel.Order - 1, 1) == 2 && TFTVNewGameOptions.startingSquad != TFTVNewGameOptions.StartingSquadFaction.PHOENIX)
                 {
                     startingTemplates.Add(heavy);
                 }
-                else if (TFTVSpecialDifficulties.DifficultyOrderConverter(level.CurrentDifficultyLevel.Order) == 1 && TFTVNewGameOptions.startingSquad == TFTVNewGameOptions.StartingSquadFaction.PHOENIX)
+                else if (Math.Max(level.CurrentDifficultyLevel.Order - 1, 1) == 1 && TFTVNewGameOptions.startingSquad == TFTVNewGameOptions.StartingSquadFaction.PHOENIX)
                 {
                     startingTemplates.Add(assault);
                     startingTemplates.Add(sniper);
                 }
-                else if (TFTVSpecialDifficulties.DifficultyOrderConverter(level.CurrentDifficultyLevel.Order) == 1 && TFTVNewGameOptions.startingSquad != TFTVNewGameOptions.StartingSquadFaction.PHOENIX)
+                else if (Math.Max(level.CurrentDifficultyLevel.Order - 1, 1) == 1 && TFTVNewGameOptions.startingSquad != TFTVNewGameOptions.StartingSquadFaction.PHOENIX)
                 {
                     startingTemplates.Add(heavy);
                     startingTemplates.Add(assault);
@@ -161,17 +161,17 @@ namespace TFTV
                 int strengthBonus = 0;
                 int willBonus = 0;
 
-                if (TFTVSpecialDifficulties.DifficultyOrderConverter(level.CurrentDifficultyLevel.Order) == 3)
+                if (Math.Max(level.CurrentDifficultyLevel.Order - 1, 1) == 3)
                 {
                     strengthBonus = 4;
                     willBonus = 1;
                 }
-                else if (TFTVSpecialDifficulties.DifficultyOrderConverter(level.CurrentDifficultyLevel.Order) == 2)
+                else if (Math.Max(level.CurrentDifficultyLevel.Order - 1, 1) == 2)
                 {
                     strengthBonus = 6;
                     willBonus = 2;
                 }
-                else if (TFTVSpecialDifficulties.DifficultyOrderConverter(level.CurrentDifficultyLevel.Order) == 1)
+                else if (Math.Max(level.CurrentDifficultyLevel.Order - 1, 1) == 1)
                 {
                     strengthBonus = 8;
                     willBonus = 3;
@@ -234,7 +234,7 @@ namespace TFTV
 
                 List<TacCharacterDef> startingTemplates = new List<TacCharacterDef> { Jacob2buffed, Sophia2buffed, Omar3buffed, Takeshi3buffed, Irina3buffed };
 
-                if (TFTVSpecialDifficulties.DifficultyOrderConverter(difficultyLevel.Order) == 1)
+                if (Math.Max(difficultyLevel.Order - 1, 1) == 1)
                 {
                     startingTemplates.Add(sniper);
                 }
@@ -289,20 +289,20 @@ namespace TFTV
                 };
 
 
-                if (TFTVSpecialDifficulties.DifficultyOrderConverter(level.CurrentDifficultyLevel.Order) == 2 && TFTVNewGameOptions.startingSquad == TFTVNewGameOptions.StartingSquadFaction.PHOENIX)
+                if (Math.Max(level.CurrentDifficultyLevel.Order - 1, 1) == 2 && TFTVNewGameOptions.startingSquad == TFTVNewGameOptions.StartingSquadFaction.PHOENIX)
                 {
                     startingTemplates.Add(assault);
                 }
-                else if (TFTVSpecialDifficulties.DifficultyOrderConverter(level.CurrentDifficultyLevel.Order) == 2 && TFTVNewGameOptions.startingSquad != TFTVNewGameOptions.StartingSquadFaction.PHOENIX)
+                else if (Math.Max(level.CurrentDifficultyLevel.Order - 1, 1) == 2 && TFTVNewGameOptions.startingSquad != TFTVNewGameOptions.StartingSquadFaction.PHOENIX)
                 {
                     startingTemplates.Add(heavy);
                 }
-                else if (TFTVSpecialDifficulties.DifficultyOrderConverter(level.CurrentDifficultyLevel.Order) == 1 && TFTVNewGameOptions.startingSquad == TFTVNewGameOptions.StartingSquadFaction.PHOENIX)
+                else if (Math.Max(level.CurrentDifficultyLevel.Order - 1, 1) == 1 && TFTVNewGameOptions.startingSquad == TFTVNewGameOptions.StartingSquadFaction.PHOENIX)
                 {
                     startingTemplates.Add(assault);
                     startingTemplates.Add(sniper);
                 }
-                else if (TFTVSpecialDifficulties.DifficultyOrderConverter(level.CurrentDifficultyLevel.Order) == 1 && TFTVNewGameOptions.startingSquad != TFTVNewGameOptions.StartingSquadFaction.PHOENIX)
+                else if (Math.Max(level.CurrentDifficultyLevel.Order - 1, 1) == 1 && TFTVNewGameOptions.startingSquad != TFTVNewGameOptions.StartingSquadFaction.PHOENIX)
                 {
                     startingTemplates.Add(heavy);
                     startingTemplates.Add(assault);
