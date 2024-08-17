@@ -47,6 +47,7 @@ namespace TFTV
         public bool ShowExfilAmbush = false;
         public bool SkipFSTutorial = false;
         public bool CustomPortraits = true;
+        public bool HandGrenadeScatter = false;
         public int Difficulty = 2;
         
 

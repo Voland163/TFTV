@@ -2,8 +2,12 @@
 using Base.Defs;
 using Base.Entities.Abilities;
 using Base.Entities.Effects;
+using Epic.OnlineServices;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities;
+using PhoenixPoint.Common.Entities.GameTags;
+using PhoenixPoint.Common.Entities.GameTagsTypes;
+using PhoenixPoint.Common.Entities.Items;
 using PhoenixPoint.Common.UI;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.PhoenixBases;
@@ -13,7 +17,6 @@ using PhoenixPoint.Geoscape.Entities.Sites;
 using PhoenixPoint.Geoscape.Events.Eventus;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
-using PhoenixPoint.Geoscape.View.ViewControllers;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.Animations;
@@ -49,13 +52,85 @@ namespace TFTV
                 PandoranCapture.ChangesToPandoranCapture();
                 StrongerPandorans.ImplementStrongerPandorans();
                 NoSecondChances.ImplementNoSecondChances();
-             
+                HandGrenadeScatter.ImplementHandGrenadeScatterConfig();
+
             }
             catch (Exception e)
             {
                 TFTVLogger.Error(e);
             }
         }
+
+        internal class HandGrenadeScatter
+        {
+
+            internal static void ImplementHandGrenadeScatterConfig()
+            {
+                try
+                {
+
+                    GameTagDef grenadeTag = (GameTagDef)Repo.GetDef("318dd3ff-28f0-1bb4-98bc-39164b7292b6"); // GrenadeItem_TagDef
+
+                    WeaponDef grenadeLauncher = (WeaponDef)Repo.GetDef("4d5a34b8-48db-f014-1a0f-90ec7eaf881a");
+
+                    TFTVConfig config = TFTVMain.Main.Config;
+                    // loop over all weapon defs in the repo
+                    foreach (WeaponDef weaponDef in Repo.GetAllDefs<WeaponDef>())
+                    {
+                        // All hand thrown grenades (only these weapon defs ends with "Grenade_WeaponDef" <- checked by tag)
+                        if (weaponDef.Tags.Contains(grenadeTag)) // weaponDef.name.EndsWith("Grenade_WeaponDef") && 
+                        {
+                            if (config.HandGrenadeScatter)
+                            {
+                                weaponDef.SpreadRadius = 2f;
+                                weaponDef.SpreadRadiusDistanceModifier = grenadeLauncher.SpreadRadiusDistanceModifier;
+                            }
+                            else
+                            {
+                                weaponDef.SpreadRadius = 0.0f;
+                            }
+                        }
+                    }
+
+                    if (config.HandGrenadeScatter) 
+                    {
+                        TFTVLogger.Always($"Hand Grenade Scatter option is ON!");
+                    }
+
+                    
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+
+            }
+
+            private static void ModifyDefs()
+            {
+                try 
+                {
+                    ItemTypeTagDef grenadeTag = DefCache.GetDef<ItemTypeTagDef>("GrenadeItem_TagDef");
+
+                    foreach (ItemDef itemDef in Repo.GetAllDefs<ItemDef>().Where(i => i.Tags.Contains(grenadeTag))) 
+                    {
+                        TFTVLogger.Always($"{itemDef.name}");
+                    
+                    }
+
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+
+            }
+            
+
+        }
+
+
 
         internal class TradeAndRaiding
         {
@@ -327,7 +402,7 @@ namespace TFTV
 
                     mutationTech.Unlocks = mutationUnlocks.ToArray();
 
-                  //  TFTVLogger.Always($"PX_MutagenHarvesting_ResearchDef should have been removed; functionality added to MutationTech");
+                    //  TFTVLogger.Always($"PX_MutagenHarvesting_ResearchDef should have been removed; functionality added to MutationTech");
                 }
                 catch (Exception e)
                 {
@@ -346,7 +421,7 @@ namespace TFTV
 
                     if (mutationTech.Unlocks.Contains(mutagenHarvestingResearchReward))
                     {
-                      //  TFTVLogger.Always($"mutation tech contains {mutagenHarvestingResearchReward.name}");
+                        //  TFTVLogger.Always($"mutation tech contains {mutagenHarvestingResearchReward.name}");
 
                         List<ResearchRewardDef> mutationUnlocks = new List<ResearchRewardDef>(mutationTech.Unlocks);
                         mutationUnlocks.Remove(mutagenHarvestingResearchReward);
@@ -383,7 +458,7 @@ namespace TFTV
                         TFTVLogger.Always($"Limited Capture reverted");
                     }
 
-                 //   TFTVLogger.Always($"Limited Capture is off");
+                    //   TFTVLogger.Always($"Limited Capture is off");
 
                 }
                 catch (Exception e)
@@ -454,7 +529,7 @@ namespace TFTV
                         TFTVLogger.Always("Stronger Pandorans reverted");
                     }
 
-                   // TFTVLogger.Always("Stronger Pandorans is off");
+                    // TFTVLogger.Always("Stronger Pandorans is off");
                 }
                 catch (Exception e)
                 {
@@ -1183,7 +1258,7 @@ namespace TFTV
             }
         }
 
-        internal class NoSecondChances 
+        internal class NoSecondChances
         {
 
             private static readonly List<string> _eventsNoSecondChances = new List<string>()
@@ -1196,7 +1271,7 @@ namespace TFTV
 
             internal static void ImplementNoSecondChances()
             {
-                try 
+                try
                 {
                     if (TFTVNewGameOptions.NoSecondChances && !NoSecondChancesImplemented)
                     {
@@ -1211,19 +1286,19 @@ namespace TFTV
 
                             GeoscapeEventDef failEventDef = DefCache.GetDef<GeoscapeEventDef>(failEventID + "_GeoscapeEventDef");
 
-                         //   TFTVLogger.Always($"check fail event ID {failEventDef.EventID}");
+                            //   TFTVLogger.Always($"check fail event ID {failEventDef.EventID}");
 
                             failEventDef.GeoscapeEventData.Choices[0].Outcome.ReactiveEncounters = new List<string>();
 
                             foreach (string eventId in failEventDef.GeoscapeEventData.Choices[0].Outcome.ReactiveEncounters)
-                            {                              
+                            {
                                 TFTVLogger.Always($"{failEventDef.EventID} reactivates {eventId}", false);
                             }
                         }
 
                         NoSecondChancesImplemented = true;
                     }
-                    else if(!TFTVNewGameOptions.NoSecondChances && NoSecondChancesImplemented) 
+                    else if (!TFTVNewGameOptions.NoSecondChances && NoSecondChancesImplemented)
                     {
                         TFTVLogger.Always($"Reverting No Second Chances");
 
@@ -1237,7 +1312,7 @@ namespace TFTV
 
                             //   TFTVLogger.Always($"check fail event ID {failEventDef.EventID}");
 
-                            failEventDef.GeoscapeEventData.Choices[0].Outcome.ReactiveEncounters = new List<string>() {eventMissionDef.EventID};
+                            failEventDef.GeoscapeEventData.Choices[0].Outcome.ReactiveEncounters = new List<string>() { eventMissionDef.EventID };
 
                             foreach (string eventId in failEventDef.GeoscapeEventData.Choices[0].Outcome.ReactiveEncounters)
                             {
@@ -1254,22 +1329,5 @@ namespace TFTV
                 }
             }
         }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     }
 }

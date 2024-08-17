@@ -638,6 +638,13 @@ namespace TFTV
 
             private static readonly string _titleCustomPortraits = "KEY_CustomPortraits";
             private static readonly string _descriptionCustomPortraits = "KEY_CustomPortraits_DESCRIPTION";
+
+            private static ModSettingController _handGrenadeScatterModSettings = null;
+            private static ArrowPickerController _handGrenadeScatter = null;
+
+            private static readonly string _titleHandGrenadeScatter = "KEY_HandGrenadeScatter";
+            private static readonly string _descriptionHandGrenadeScatter = "KEY_HandGrenadeScatter_DESCRIPTION";
+
             //
             //  
 
@@ -833,6 +840,8 @@ namespace TFTV
                     _skipFSTutorialModSettings.gameObject.SetActive(show);
                     _customPortraits.gameObject.SetActive(show);
                     _customPortraitsModSettings.gameObject.SetActive(show);
+                    _handGrenadeScatter.gameObject.SetActive(show);
+                    _handGrenadeScatterModSettings.gameObject.SetActive(show);
                     //  _staminaDrain.gameObject.SetActive(show);
 
                 }
@@ -1042,7 +1051,7 @@ namespace TFTV
                     _noBarksModSettings = UnityEngine.Object.Instantiate(ModSettingControllerHook, rectTransform);
                     _skipFSTutorialModSettings = UnityEngine.Object.Instantiate(ModSettingControllerHook, rectTransform);
                     _customPortraitsModSettings = UnityEngine.Object.Instantiate(ModSettingControllerHook, rectTransform);
-                 
+                    _handGrenadeScatterModSettings = UnityEngine.Object.Instantiate(ModSettingControllerHook, rectTransform);
 
                     _startingFaction = _startingFactionModSettings.ListField;
                     _startingBase = _startingBaseModSettings.ListField;
@@ -1070,6 +1079,7 @@ namespace TFTV
                     _showAmbushExfil = _showAmbushExfilModSettings.ListField;
                     _skipFSTutorial = _skipFSTutorialModSettings.ListField;
                     _customPortraits = _customPortraitsModSettings.ListField;
+                    _handGrenadeScatter = _handGrenadeScatterModSettings.ListField;
                     //   _reverseEngineering = _reverseEngineeringModSettings.ListField;
                     _skipMovies = _skipMoviesModSettings.ListField;
                     _resourcesEvents = _resourcesEventsModSettings.ListField;
@@ -1113,6 +1123,7 @@ namespace TFTV
                     InstantiateArrowPickerController(_showAmbushExfilModSettings, _showAmbushExfil, _titleShowAmbushExfil, _descriptionShowAmbushExfil, _optionsBool, ConvertBoolToInt(config.ShowExfilAmbush), OnShowAmbushExfilValueChangedCallback, 0.5f);
                     InstantiateArrowPickerController(_skipFSTutorialModSettings, _skipFSTutorial, _titleSkipFSTutorial, _descriptionSkipFSTutorial, _optionsBool, ConvertBoolToInt(config.SkipFSTutorial), OnSkipFSTutorialValueChangedCallback, 0.5f);
                     InstantiateArrowPickerController(_customPortraitsModSettings, _customPortraits, _titleCustomPortraits, _descriptionCustomPortraits, _optionsBool, ConvertBoolToInt(config.CustomPortraits), OnCustomPortraitsValueChangedCallback, 0.5f);
+                    InstantiateArrowPickerController(_handGrenadeScatterModSettings, _handGrenadeScatter, _titleHandGrenadeScatter, _descriptionHandGrenadeScatter, _optionsBool, ConvertBoolToInt(config.HandGrenadeScatter), OnHandGrenadeScatterValueChangedCallback, 0.5f);
 
                     InstantiateArrowPickerController(_disableTacSavesModSettings, _disableTacSaves, _titleDisableTacSaves, _descriptionDisableTacSaves, _optionsBool, ConvertBoolToInt(config.disableSavingOnTactical), OnDisableTacSavesValueChangedCallback, 0.5f);
                     InstantiateArrowPickerController(_skipMoviesModSettings, _skipMovies, _titleSkipMovies, _descriptionSkipMovies, _optionsBool, ConvertBoolToInt(config.SkipMovies), OnSkipMoviesValueChangedCallback, 0.5f);
@@ -1495,6 +1506,22 @@ namespace TFTV
                     string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
                     _customPortraits.CurrentItemText.text = options[newValue];
                     config.CustomPortraits = option;
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+
+            private static void OnHandGrenadeScatterValueChangedCallback(int newValue)
+            {
+                try
+                {
+                    bool option = newValue == 0;
+                    string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
+                    _handGrenadeScatter.CurrentItemText.text = options[newValue];
+                    config.HandGrenadeScatter = option;
 
                 }
                 catch (Exception e)

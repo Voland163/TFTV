@@ -399,6 +399,17 @@ namespace PRMBetterClasses.VariousAdjustments
                 {
                     // Manufature intantly
                     weaponDef.ManufacturePointsCost = 0;
+
+                    if (config.HandGrenadeScatter) 
+                    {
+
+                        weaponDef.SpreadRadius = 0.5f;
+                    }
+                    else 
+                    {
+                        weaponDef.SpreadRadius = 0.0f;
+                    }
+
                 }
                 // Mutoids gain Pistol and Assault Rifle proficiency -> adding Mutoid_ClassTagDef ("cd38a996-0565-1694-bb91-b4479a65950e") to their weapon tags
                 if ((weaponDef.Tags.Contains(pistolTag) || weaponDef.Tags.Contains(assaultRifleTag)) && !weaponDef.Tags.Contains(mutoidClassTag))

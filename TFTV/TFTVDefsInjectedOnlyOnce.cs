@@ -83,14 +83,14 @@ namespace TFTV
         {
             try
             {
-                TFTVLogger.Always($"TFTVStamina.BrokenSpikeShooterStatus");
+                ItemTypeTagDef grenadeTag = DefCache.GetDef<ItemTypeTagDef>("GrenadeItem_TagDef");
 
-                foreach(DamageTypeBaseEffectDef damageTypeBaseEffectDef in TFTVStamina.BrokenSpikeShooterStatus.DamageTypeDefs) 
+                foreach (ItemDef itemDef in Repo.GetAllDefs<ItemDef>().Where(i => i.Tags.Contains(grenadeTag)))
                 {
+                    TFTVLogger.Always($"{itemDef.name} {itemDef.Guid}", false);
 
-                    TFTVLogger.Always($"{damageTypeBaseEffectDef.name}");
-                
                 }
+
             }
             catch (Exception e)
             {
@@ -154,7 +154,7 @@ namespace TFTV
 
                 AddAlwaysDeployTagToUniqueDeployments();
 
-                //Print();
+              //  Print();
 
             }
             catch (Exception e)

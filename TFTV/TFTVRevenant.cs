@@ -1119,6 +1119,7 @@ namespace TFTV
                                     if (damageKeywordPair.DamageKeywordDef == Shared.SharedDamageKeywords.AcidKeyword)
                                     {
                                         scoreAcidDamage += stat.UsedCount;
+                                       // TFTVLogger.Always($"this is an acid weapon: {weaponDef.name}, used {stat.UsedCount}");
                                     }
                                     if (damageKeywordPair.DamageKeywordDef == Shared.SharedDamageKeywords.ParalysingKeyword)
                                     {

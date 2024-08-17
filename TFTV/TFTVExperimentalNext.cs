@@ -46,6 +46,11 @@ namespace TFTV
                 {
                     try
                     {
+                        if (!config.CustomPortraits) 
+                        {
+                            return;                       
+                        }
+
                         UIModuleActorCycle uIModuleActorCycle = GameUtl.CurrentLevel().GetComponent<GeoLevelController>().View.GeoscapeModules.ActorCycleModule;
                         GeoCharacter geoCharacter = uIModuleActorCycle.CurrentCharacter;
 
@@ -346,12 +351,6 @@ namespace TFTV
                     // Define weights for each tag type
                     int[] weights = { 5, 4, 3, 2, 1 };
                     int score = 0;
-
-                    //black and asian female face type seem to be same age, so difference is smaller than for hair
-                    if (providedTags[1] <= 6 && gender.StartsWith("f"))
-                    {
-                        weights[1] = 1;
-                    }
 
                     //if character is female, facial hair tag doesn't matter
                     if (gender.StartsWith("f"))

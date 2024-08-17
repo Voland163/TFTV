@@ -1827,7 +1827,7 @@ namespace TFTV
                         TacticalFaction phoenix = actor.TacticalLevel.GetFactionByCommandName("px");
 
 
-                        if (phoenix == null)
+                        if (phoenix == null || actor.TacticalFaction!=null && (actor.TacticalFaction == phoenix || target.TacticalFaction == phoenix))
                         {
                             return true;
                         }

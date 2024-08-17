@@ -25,7 +25,7 @@ namespace TFTV
         public static List<int> NJ_Purists_Hotspots = new List<int>();
         public static List<int> AN_FallenOnes_Hotspots = new List<int>();
 
-
+        
 
         [HarmonyPatch(typeof(AmbushOutcomeDataBind), "ModalShowHandler")]
         public static class TFTV_AmbushOutcomeDataBind_ModalShowHandler_patch

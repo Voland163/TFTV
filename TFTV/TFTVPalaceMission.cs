@@ -2634,6 +2634,7 @@ namespace TFTV
                                 }
                                 else
                                 {
+                                    ReleaseFromMindControl(controller.GetFactionByCommandName("aln"), revenant);
                                     revenant.SetFaction(controller.GetFactionByCommandName("aln"), TacMissionParticipant.Residents);
 
                                     if (revenant.GameTags.Contains(anyRevenantGameTag))
@@ -2731,7 +2732,8 @@ namespace TFTV
 
                                     if (roll <= chance)
                                     {
-                                        revenant.SetFaction(controller.GetFactionByCommandName("px"), TacMissionParticipant.Player);
+                                        ReleaseFromMindControl(controller.GetFactionByCommandName("px"), revenant);
+                                        revenant.SetFaction(controller.GetFactionByCommandName("px"), TacMissionParticipant.Player);          
                                         revenant.CharacterStats.WillPoints.SetToMax();
                                         revenant.UpdateStats();
                                         TFTVLogger.Always($"{revenant.name} has {revenant.CharacterStats.WillPoints} willpoints, should be max");
@@ -2748,6 +2750,30 @@ namespace TFTV
                     TFTVLogger.Error(e);
 
                 }
+            }
+
+            private static void ReleaseFromMindControl(TacticalFaction tacticalFaction, TacticalActor mindController)
+            {
+                try 
+                { 
+                    foreach(TacticalActor tacticalActor in tacticalFaction.TacticalActors) 
+                    { 
+                    if(tacticalActor.Status.HasStatus<MindControlStatus>() && tacticalActor.Status.GetStatus<MindControlStatus>().ControllerActor == mindController) 
+                        {
+                            tacticalActor.Status.UnapplyStatus(tacticalActor.Status.GetStatus<MindControlStatus>());
+                        
+                        }
+                           
+                    }
+                
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+
+                }
+
+
             }
         }
 

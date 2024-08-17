@@ -1,17 +1,23 @@
 ﻿using Base.Defs;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
+using PhoenixPoint.Common.Entities.Characters;
 using PhoenixPoint.Common.Entities.GameTags;
+using PhoenixPoint.Common.View.ViewControllers;
 using PhoenixPoint.Geoscape.Entities.Research.Requirement;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
+using PhoenixPoint.Geoscape.View.ViewControllers.Modal;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.Entities.Weapons;
 using PhoenixPoint.Tactical.Levels;
+using PhoenixPoint.Tactical.UI;
+using PhoenixPoint.Tactical.View;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
@@ -26,7 +32,85 @@ namespace TFTV
         private static readonly SharedData Shared = TFTVMain.Shared;
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
 
+        [HarmonyPatch(typeof(AlienBaseOutcomeDataBind), "ModalShowHandler")]
+        public static class TFTV_AlienBaseOutcomeDataBind_ModalShowHandler_patch
+        {
 
+            public static void Postfix(AlienBaseOutcomeDataBind __instance, UIModal modal, bool ____shown, UIModal ____modal)
+            {
+                try
+                {
+
+
+                    __instance.Rewards.transform.gameObject.SetActive(true);
+
+                    Transform rewardContainer = __instance.Rewards.GetComponentInChildren<Transform>().Find("Rewards");
+
+                    rewardContainer.gameObject.SetActive(true);
+                }
+
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
+
+
+        [HarmonyPatch(typeof(ShootAbilitySceneViewElement), "DrawHoverMarker")]
+        private static class WeaponSpreadPatch_DrawHoverMarker_Scatter
+        {
+            static GroundMarker scatterMarker = null;
+           // static string filePath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "debug_output.txt");
+
+            [HarmonyPostfix]
+            static void Postfix(
+                ShootAbilitySceneViewElement __instance,
+                bool __result,
+                TacticalViewContext context,
+                Vector3 to,
+                Vector3 from,
+                TacticalAbilityTarget target)
+            {
+                try
+                {
+                   
+
+                    Weapon weapon = (Weapon)__instance.Ability.EquipmentSource;
+                   // TFTVLogger.Always($"ShootAbilitySceneViewElement.DrawHoverMarker running; result: {__result}, weapon null? {weapon==null}");
+                    if (__result && weapon != null)
+                    {
+                        float spread = Mathf.Abs(weapon.GetWeaponSpread(AttackType.Regular, weapon.GetAllSpreadMultipliers(__instance.Ability.TacticalActor), (float)__instance.Ability.TacticalActor.CharacterStats.GetAccuracy(), (from - to).magnitude));
+                     //   TFTVLogger.Always($"{__result} {weapon.DisplayName} {spread}");
+                     
+                        if (spread > float.Epsilon)
+                        {
+                            GroundMarkerType scatterType = GroundMarkerType.AreaOfEffectAura;//AttackRadiusInvalid;
+
+                            if (scatterMarker == null || scatterMarker.Type != scatterType)
+                            {
+                                scatterMarker = new GroundMarker(scatterType, to, 0f);
+                                scatterMarker.Areas = __instance.Ability.TacticalActor.TacticalNav.NavAreas;
+                            }
+
+                            context.View.Markers.AddGroundMarker(GroundMarkerGroup.HoverSelection, scatterMarker);
+                            Utils.TiltForTerrain(context, scatterMarker, __instance.Ability.TacticalActor.TacticalNav.FloorLayers);
+
+                            scatterMarker.VisualObject.transform.position = to;
+                            
+                            scatterMarker.VisualObject.transform.localScale = spread * Vector3.one * 2;
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+
+            }
+        }
 
         // Research
 
