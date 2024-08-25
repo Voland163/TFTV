@@ -130,6 +130,8 @@
     <Compile Include="Tactical\Entities\Statuses\OnActorDazedEffectStatusDef.cs" />
     <Compile Include="TFTVAAAgendaTracker.cs" />
     <Compile Include="TFTVAcid.cs" />
+    <Compile Include="TFTVBackgrounds.cs" />
+    <Compile Include="TFTVCustomPortraits.cs" />
     <Compile Include="TFTVExperienceDistribution.cs" />
     <Compile Include="TFTVVehicleFixes.cs" />
     <Compile Include="TFTVBehemothAndRaids.cs" />

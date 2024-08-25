@@ -2,6 +2,7 @@
 using Base;
 using Base.Core;
 using Base.Entities;
+using Base.Levels;
 using Base.Rendering.ObjectRendering;
 using Base.UI;
 using Base.Utils.Maths;
@@ -27,6 +28,7 @@ using PhoenixPoint.Geoscape.View.ViewStates;
 using PhoenixPoint.Tactical.AI;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
+using PhoenixPoint.Tactical.Entities.DamageKeywords;
 using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.Entities.Statuses;
 using PhoenixPoint.Tactical.Entities.Weapons;
@@ -1296,12 +1298,6 @@ namespace TFTV
         }
 
 
-
-
-
-
-
-
         //Factions attacking Phoenix bases fix
         //Method by Dimitar "Codemite" Evtimov from Snapshot Games
         public static void PatchInAllBaseDefenseDefs()
@@ -1366,43 +1362,181 @@ namespace TFTV
 
         }
 
-
-        //Strates fix for bloodlust
+        /// <summary>
+        /// This replaces the original Vanilla method, which contained several bugs. 
+        /// The bugs resulted from not considering how damage multipliers / armor stack multipliers (in TFTV, the special revenant resistance, in Vanilla, the Orichalcum shielding)
+        /// reduced incoming damage to limbs.
+        /// </summary>
         [HarmonyPatch(typeof(DamageAccumulation), "GenerateStandardDamageTargetData")]
-        class DamageAccumulation_GenerateStandardDamageTargetData_VanillaBugFix
+        public static class TFTV_DamageAccumulation_GenerateStandardDamageTargetData
         {
-            static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
-            {
-                List<CodeInstruction> listInstructions = new List<CodeInstruction>(instructions);
-                IEnumerable<CodeInstruction> insert = new List<CodeInstruction>
-            {
-                new CodeInstruction(OpCodes.Ldloc_3),
-                new CodeInstruction(OpCodes.Div)
-            };
 
-                // insert after each of the first 3 divide opcodes
-                int divs = 0;
-                for (int index = 0; index < instructions.Count(); index++)
+            public static bool Prefix(DamageAccumulation __instance, ref DamageAccumulation.TargetData __result,
+                IDamageReceiver target, Vector3 damageOrigin, Vector3 impactForce, CastHit impactHit, out float damageAmountLeft)
+            {
+                try
                 {
-                    if (listInstructions[index].opcode == OpCodes.Div)
+
+                    MethodInfo GetPureDamageBonusForMethod = typeof(DamageAccumulation).GetMethod("GetPureDamageBonusFor", BindingFlags.NonPublic | BindingFlags.Instance);
+                    MethodInfo GetSourceDamageMultiplierMethod = typeof(DamageAccumulation).GetMethod("GetSourceDamageMultiplier", BindingFlags.NonPublic | BindingFlags.Instance);
+                    MethodInfo GetEffectiveArmorMethod = typeof(DamageAccumulation).GetMethod("GetEffectiveArmor", BindingFlags.NonPublic | BindingFlags.Instance);
+                    MethodInfo GetArmorStackMultiplierMethod = typeof(DamageAccumulation).GetMethod("GetArmorStackMultiplier", BindingFlags.NonPublic | BindingFlags.Instance);
+
+                    float armorStackMultiplier = (float)GetArmorStackMultiplierMethod.Invoke(__instance, new object[] { target as IDamageBlocker, __instance.Source });
+
+                    float amount = __instance.Amount;
+                    damageAmountLeft = __instance.Amount;
+                    float num = amount + (float)GetPureDamageBonusForMethod.Invoke(__instance, new object[] { target });
+                    float num2 = __instance.Amount * (float)GetSourceDamageMultiplierMethod.Invoke(__instance, new object[] { __instance.DamageTypeDef, target }) - __instance.Amount;//12
+                    float damageMultiplierFor = target.GetDamageMultiplierFor(__instance.DamageTypeDef, __instance.Source);
+                    float damageMultiplier = __instance.GetDamageMultiplier(target.GetApplicationType());
+                    float effectiveArmor = (float)GetEffectiveArmorMethod.Invoke(__instance, new object[] { target });
+
+                    float totalDamageMultiplier = damageMultiplier * damageMultiplierFor * armorStackMultiplier;
+
+                    float num3 = effectiveArmor / totalDamageMultiplier;
+
+                    float num4 = Mathf.Max(0f, num - num3) + num2; //max amount of damage that can be dealt by the attack. missing damageMultiplierFor?
+                    float num5 = target.GetHealth() / totalDamageMultiplier; //max amount of damage target can take
+                    float num6 = Mathf.Min(num4, num5); //choosing lower of the two
+                    if (!__instance.IsFireDamageType)
                     {
-                        listInstructions.InsertRange(index + 1, insert);
-                        index += 2;
-                        divs++;
-                        if (divs == 3)
-                        {
-                            break;
-                        }
+                        float num7 = Mathf.Min(b: ((float)target.GetHealth().Max + effectiveArmor) / totalDamageMultiplier, a: damageAmountLeft);//50
+                        damageAmountLeft -= num7;
+
                     }
+
+                    if (num5 < 1E-05f && target.IsAccessoryBodyPart())
+                    {
+                        num4 = 0f;
+                    }
+
+                    float num8 = num6 * totalDamageMultiplier;
+
+                    __result = new DamageAccumulation.TargetData
+                    {
+                        Target = target,
+                        AmountApplied = num4,
+                        DamageResult = new DamageResult
+                        {
+                            Source = __instance.Source,
+                            ArmorDamage = __instance.ArmorShred,
+                            ArmorMitigatedDamage = Mathf.Min(amount, num3),
+                            HealthDamage = num8,
+                            ImpactForce = impactForce,
+                            ImpactHit = impactHit,
+                            DamageOrigin = damageOrigin,
+                            DamageTypeDef = __instance.DamageTypeDef,
+                            RelatedDamageTypeDefs = ((__instance.DamageKeywords != null) ? __instance.DamageKeywords.Select((DamageKeywordPair x) => x.DamageKeywordDef.DamageTypeDef).ToList() : null)
+                        }
+                    };
+
+
+                    return false;
                 }
 
-                if (divs != 3)
+                catch (Exception e)
                 {
-                    return instructions; // didn't find three, function signature changed, abort
+                    TFTVLogger.Error(e);
+                    throw;
                 }
-                return listInstructions;
             }
+        }
 
+
+        //REPLACED ABOVE
+        //Strates fix for bloodlust
+        /*   [HarmonyPatch(typeof(DamageAccumulation), "GenerateStandardDamageTargetData")]
+           class DamageAccumulation_GenerateStandardDamageTargetData_VanillaBugFix
+           {
+               static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
+               {
+                   List<CodeInstruction> listInstructions = new List<CodeInstruction>(instructions);
+                   IEnumerable<CodeInstruction> insert = new List<CodeInstruction>
+               {
+                   new CodeInstruction(OpCodes.Ldloc_3),
+                   new CodeInstruction(OpCodes.Div)
+               };
+
+                   // insert after each of the first 3 divide opcodes
+                   int divs = 0;
+                   for (int index = 0; index < instructions.Count(); index++)
+                   {
+                       if (listInstructions[index].opcode == OpCodes.Div)
+                       {
+                           listInstructions.InsertRange(index + 1, insert);
+                           index += 2;
+                           divs++;
+                           if (divs == 3)
+                           {
+                               break;
+                           }
+                       }
+                   }
+
+                   if (divs != 3)
+                   {
+                       return instructions; // didn't find three, function signature changed, abort
+                   }
+                   return listInstructions;
+               }
+
+           }*/
+
+
+        /// <summary>
+        /// Need to ensure that if ammo is less than full, it gets reloaded even if the difference is rounded down to 0
+        /// </summary>
+        [HarmonyPatch(typeof(GeoItem), "ReloadForFree")]
+        public static class TFTV_CharacterFatigue_ReloadForFree_patch
+        {
+
+            public static bool Prefix(GeoItem __instance)
+            {
+                try
+                {
+                    ItemDef _def = __instance.ItemDef;
+
+
+                    if (_def.ChargesMax <= 0)
+                    {
+                        return false;
+                    }
+
+                    TacticalItemDef tacticalItemDef = _def as TacticalItemDef;
+
+                    if (__instance.CommonItemData.Ammo == null || tacticalItemDef == null || !tacticalItemDef.CompatibleAmmunition.Any())
+                    {
+                        __instance.CommonItemData.SetChargesToMax();
+                        return false;
+                    }
+
+                    TacticalItemDef tacticalItemDef2 = tacticalItemDef.CompatibleAmmunition[0];
+                    int num = (_def.ChargesMax - __instance.CommonItemData.Ammo.CurrentCharges) / tacticalItemDef2.ChargesMax;
+
+                    //Added to make sure that if ammo is less than full, it gets reloaded even if rounded to 0
+                    if (_def.ChargesMax - __instance.CommonItemData.Ammo.CurrentCharges > 0 && num == 0)
+                    {
+                        num = 1;
+                    }
+
+                    for (int i = 0; i < num; i++)
+                    {
+
+                        __instance.CommonItemData.Ammo.LoadMagazine(new GeoItem(tacticalItemDef2));
+
+                    }
+
+                    return false;
+
+                }
+
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
         }
 
 
@@ -1490,7 +1624,7 @@ namespace TFTV
 
                     if (__instance.GetComponent<PowerFacilityComponent>() != null)
                     {
-                        CheckFacilitesNotWorking(__instance.PxBase);
+                        CheckFacilitesNotWorking(__instance.PxBase); 
                         //  __instance.PxBase.RoutePower();
                     }
 
@@ -1505,21 +1639,40 @@ namespace TFTV
             }
         }
 
+        //Ensure facilities are working after repairing Power Generator
+        [HarmonyPatch(typeof(GeoPhoenixBase), "RoutePower")]
+        public static class GeoPhoenixFacility_RoutePower_ForceStatsUpdate_Patch
+        {
+            public static void Postfix(GeoPhoenixBase __instance)
+            {
+                try
+                {
+                    __instance.UpdateStats();
+                   
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
 
         public static void CheckFacilitesNotWorking(GeoPhoenixBase phoenixBase)
         {
             try
             {
-                foreach (GeoPhoenixFacility baseFacility in phoenixBase.Layout.Facilities)
+                phoenixBase.RoutePower();
+             /*   foreach (GeoPhoenixFacility baseFacility in phoenixBase.Layout.Facilities)
                 {
-
+                    
                     if (baseFacility.IsPowered && baseFacility.GetComponent<PrisonFacilityComponent>() == null)
                     {
                         baseFacility.SetPowered(false);
                         baseFacility.SetPowered(true);
                     }
                     // TFTVLogger.Always($"{baseFacility.ViewElementDef.name} at {phoenixBase.name} is working? {baseFacility.IsWorking}. is it powered? {baseFacility.IsPowered} ");
-                }
+                }*/
             }
             catch (Exception e)
             {
@@ -1527,6 +1680,9 @@ namespace TFTV
                 throw;
             }
         }
+
+
+
 
 
     }

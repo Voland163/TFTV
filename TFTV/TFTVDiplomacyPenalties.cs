@@ -147,7 +147,7 @@ namespace TFTV
                         ProgAnuSupportive.GeoscapeEventData.Choices[0].Outcome.Diplomacy.Add(TFTVCommonMethods.GenerateDiplomacyOutcome(Anu, PhoenixPoint, -4));
                         ProgAnuSupportive.GeoscapeEventData.Choices[1].Outcome.Diplomacy.Add(TFTVCommonMethods.GenerateDiplomacyOutcome(NewJericho, PhoenixPoint, -10));
                         ProgAnuSupportive.GeoscapeEventData.Choices[1].Outcome.Diplomacy.Add(TFTVCommonMethods.GenerateDiplomacyOutcome(Synedrion, PhoenixPoint, -10));
-                        TFTVLogger.Always("Harder diplomacy is on, changing event " + @event.EventID);
+                        TFTVLogger.Always($"Harder diplomacy is on, changing event {eventID}");
                     }
                     else if (eventID == ProgAnuPact.EventID)
                     {
@@ -155,7 +155,7 @@ namespace TFTV
                         ProgAnuPact.GeoscapeEventData.Choices[0].Outcome.Diplomacy.Add(TFTVCommonMethods.GenerateDiplomacyOutcome(NewJericho, PhoenixPoint, -15));
                         TFTVCommonMethods.GenerateGeoEventChoice(ProgAnuPact, "PROG_AN4_CHOICE_1_TEXT", "PROG_AN4_CHOICE_1_OUTCOME_GENERAL");
                         ProgAnuPact.GeoscapeEventData.Choices[1].Outcome.Diplomacy.Add(TFTVCommonMethods.GenerateDiplomacyOutcome(Anu, PhoenixPoint, -6));
-                        TFTVLogger.Always("Harder diplomacy is on, changing event " + @event.EventID);
+                        TFTVLogger.Always($"Harder diplomacy is on, changing event {eventID}");
                     }
                     else if (eventID == ProgAnuAlliance.EventID)
                     {
@@ -164,13 +164,13 @@ namespace TFTV
                         ProgAnuAlliance.GeoscapeEventData.Choices[1].Outcome.Diplomacy.Add(TFTVCommonMethods.GenerateDiplomacyOutcome(Synedrion, PhoenixPoint, -15));
                         TFTVCommonMethods.GenerateGeoEventChoice(ProgAnuAlliance, "PROG_AN4_CHOICE_1_TEXT", "PROG_AN4_CHOICE_1_OUTCOME_GENERAL");
                         ProgAnuAlliance.GeoscapeEventData.Choices[2].Outcome.Diplomacy.Add(TFTVCommonMethods.GenerateDiplomacyOutcome(Anu, PhoenixPoint, -8));
-                        TFTVLogger.Always("Harder diplomacy is on, changing event " + @event.EventID);
+                        TFTVLogger.Always($"Harder diplomacy is on, changing event {eventID}");
                     }
                     else if (eventID == ProgAnuAllianceNoSynod.EventID)
                     {
                         TFTVCommonMethods.GenerateGeoEventChoice(ProgAnuAllianceNoSynod, "PROG_AN4_CHOICE_1_TEXT", "PROG_AN4_CHOICE_1_OUTCOME_GENERAL");
                         ProgAnuAllianceNoSynod.GeoscapeEventData.Choices[1].Outcome.Diplomacy.Add(TFTVCommonMethods.GenerateDiplomacyOutcome(Anu, PhoenixPoint, -8));
-                        TFTVLogger.Always("Harder diplomacy is on, changing event " + @event.EventID);
+                        TFTVLogger.Always($"Harder diplomacy is on, changing event {eventID}");
                     }
 
                     else if (eventID == ProgSynSupportive.EventID)
@@ -187,7 +187,7 @@ namespace TFTV
                         //Postpone
                         TFTVCommonMethods.GenerateGeoEventChoice(ProgSynSupportive, "PROG_SY_POSTPONE_CHOICE", "PROG_SY_POSTPONE_TEXT");
                         ProgSynSupportive.GeoscapeEventData.Choices[2].Outcome.Diplomacy.Add(TFTVCommonMethods.GenerateDiplomacyOutcome(Synedrion, PhoenixPoint, -4));
-                        TFTVLogger.Always("Harder diplomacy is on, changing event " + @event.EventID);
+                        TFTVLogger.Always($"Harder diplomacy is on, changing event {eventID}");
                     }
                     else if (eventID == ProgSynPact.EventID)
                     {
@@ -197,7 +197,7 @@ namespace TFTV
                         ProgSynPact.GeoscapeEventData.Choices[1].Outcome.Diplomacy.Add(TFTVCommonMethods.GenerateDiplomacyOutcome(NewJericho, PhoenixPoint, -18));
                         ProgSynPact.GeoscapeEventData.Choices[2].Outcome.Diplomacy.Add(TFTVCommonMethods.GenerateDiplomacyOutcome(Anu, PhoenixPoint, -15));
                         ProgSynPact.GeoscapeEventData.Choices[2].Outcome.Diplomacy.Add(TFTVCommonMethods.GenerateDiplomacyOutcome(NewJericho, PhoenixPoint, -15));
-                        TFTVLogger.Always("Harder diplomacy is on, changing event " + @event.EventID);
+                        TFTVLogger.Always($"Harder diplomacy is on, changing event {eventID}");
                     }
                     else if (eventID == ProgSynAlliancePoly.EventID)
                     {
@@ -205,7 +205,7 @@ namespace TFTV
                         ProgSynAlliancePoly.GeoscapeEventData.Choices[0].Outcome.Diplomacy.Add(TFTVCommonMethods.GenerateDiplomacyOutcome(NewJericho, PhoenixPoint, -8));
                         TFTVCommonMethods.GenerateGeoEventChoice(ProgSynAlliancePoly, "PROG_SY_POSTPONE_CHOICE", "PROG_SY_POSTPONE_TEXT");
                         ProgSynAlliancePoly.GeoscapeEventData.Choices[1].Outcome.Diplomacy.Add(TFTVCommonMethods.GenerateDiplomacyOutcome(Synedrion, PhoenixPoint, -8));
-                        TFTVLogger.Always("Harder diplomacy is on, changing event " + @event.EventID);
+                        TFTVLogger.Always($"Harder diplomacy is on, changing event {eventID}");
                     }
 
                     else if (eventID == ProgSynAllianceTerra.EventID)
@@ -214,7 +214,7 @@ namespace TFTV
                         ProgSynAllianceTerra.GeoscapeEventData.Choices[0].Outcome.Diplomacy.Add(TFTVCommonMethods.GenerateDiplomacyOutcome(Anu, PhoenixPoint, -20));
                         TFTVCommonMethods.GenerateGeoEventChoice(ProgSynAllianceTerra, "PROG_SY_POSTPONE_CHOICE", "PROG_SY_POSTPONE_TEXT");
                         ProgSynAllianceTerra.GeoscapeEventData.Choices[1].Outcome.Diplomacy.Add(TFTVCommonMethods.GenerateDiplomacyOutcome(Synedrion, PhoenixPoint, -8));
-                        TFTVLogger.Always("Harder diplomacy is on, changing event " + @event.EventID);
+                        TFTVLogger.Always($"Harder diplomacy is on, changing event {eventID}");
                     }
                     else if (eventID == ProgNJSupportive.EventID)
                     {
@@ -222,7 +222,7 @@ namespace TFTV
                         ProgNJSupportive.GeoscapeEventData.Choices[0].Outcome.Diplomacy.Add(TFTVCommonMethods.GenerateDiplomacyOutcome(Synedrion, PhoenixPoint, -10));
                         TFTVCommonMethods.GenerateGeoEventChoice(ProgNJSupportive, "PROG_NJ_POSTPONE_CHOICE", "PROG_NJ_POSTPONE_TEXT");
                         ProgNJSupportive.GeoscapeEventData.Choices[1].Outcome.Diplomacy.Add(TFTVCommonMethods.GenerateDiplomacyOutcome(NewJericho, PhoenixPoint, -4));
-                        TFTVLogger.Always("Harder diplomacy is on, changing event " + @event.EventID);
+                        TFTVLogger.Always($"Harder diplomacy is on, changing event {eventID}");
                     }
                     else if (eventID == ProgNJPact.EventID)
                     {
@@ -230,7 +230,7 @@ namespace TFTV
                         ProgNJPact.GeoscapeEventData.Choices[0].Outcome.Diplomacy.Add(TFTVCommonMethods.GenerateDiplomacyOutcome(Synedrion, PhoenixPoint, -15));
                         TFTVCommonMethods.GenerateGeoEventChoice(ProgNJPact, "PROG_NJ_POSTPONE_CHOICE", "PROG_NJ_POSTPONE_TEXT");
                         ProgNJPact.GeoscapeEventData.Choices[1].Outcome.Diplomacy.Add(TFTVCommonMethods.GenerateDiplomacyOutcome(NewJericho, PhoenixPoint, -6));
-                        TFTVLogger.Always("Harder diplomacy is on, changing event " + @event.EventID);
+                        TFTVLogger.Always($"Harder diplomacy is on, changing event {eventID}");
                     }
 
                     else if (eventID == ProgNJAlliance.EventID)
@@ -239,7 +239,7 @@ namespace TFTV
                         ProgNJAlliance.GeoscapeEventData.Choices[0].Outcome.Diplomacy.Add(TFTVCommonMethods.GenerateDiplomacyOutcome(Synedrion, PhoenixPoint, -20));
                         TFTVCommonMethods.GenerateGeoEventChoice(ProgNJAlliance, "PROG_NJ_POSTPONE_CHOICE", "PROG_NJ_POSTPONE_TEXT");
                         ProgNJAlliance.GeoscapeEventData.Choices[1].Outcome.Diplomacy.Add(TFTVCommonMethods.GenerateDiplomacyOutcome(NewJericho, PhoenixPoint, -8));
-                        TFTVLogger.Always("Harder diplomacy is on, changing event " + @event.EventID);
+                        TFTVLogger.Always($"Harder diplomacy is on, changing event {eventID}");
                     }
                 }
             }

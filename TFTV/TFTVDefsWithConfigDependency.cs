@@ -2,12 +2,10 @@
 using Base.Defs;
 using Base.Entities.Abilities;
 using Base.Entities.Effects;
-using Epic.OnlineServices;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.GameTags;
-using PhoenixPoint.Common.Entities.GameTagsTypes;
-using PhoenixPoint.Common.Entities.Items;
+using PhoenixPoint.Common.Levels.Missions;
 using PhoenixPoint.Common.UI;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.PhoenixBases;
@@ -38,9 +36,11 @@ namespace TFTV
 
         public static readonly ResearchTagDef CriticalResearchTag = DefCache.GetDef<ResearchTagDef>("CriticalPath_ResearchTagDef");
 
-        public static bool ChangesToCapturingPandoransImplemented = false;
-        public static bool ChangesToFoodAndMutagenGenerationImplemented = false;
-        public static bool NoSecondChancesImplemented = false;
+        private static bool _changesToCapturingPandoransImplemented = false;
+        private static bool _changesToFoodAndMutagenGenerationImplemented = false;
+        private static bool _noSecondChancesImplemented = false;
+        private static bool _handGrenadeScatterImplemented = false;
+        private static bool _equipBeforeAmbushImplemented = false;
 
 
         public static void ImplementConfigChoices()
@@ -53,12 +53,103 @@ namespace TFTV
                 StrongerPandorans.ImplementStrongerPandorans();
                 NoSecondChances.ImplementNoSecondChances();
                 HandGrenadeScatter.ImplementHandGrenadeScatterConfig();
+                EquipBeforeAmbush.ImplementEquipBeforeAmbush();
 
             }
             catch (Exception e)
             {
                 TFTVLogger.Error(e);
             }
+        }
+
+        public static void ImplementConfigChoicesForTactical()
+        {
+            try
+            {
+
+                StrongerPandorans.ImplementStrongerPandorans();
+                HandGrenadeScatter.ImplementHandGrenadeScatterConfig();
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+        }
+
+        internal class EquipBeforeAmbush
+        {
+            internal static void ImplementEquipBeforeAmbush()
+            {
+                try
+                {
+                    TFTVConfig config = TFTVMain.Main.Config;
+
+                    if (!_equipBeforeAmbushImplemented && config.EquipBeforeAmbush)
+                    {
+                        ModifyDefs();
+                        _equipBeforeAmbushImplemented = true;
+                        TFTVLogger.Always($"Equip before ambush is ON!");
+                        return;
+                    }
+                    else if (_equipBeforeAmbushImplemented && !config.EquipBeforeAmbush)
+                    {
+                        ModifyDefs(true);
+                        _equipBeforeAmbushImplemented = false;
+                        TFTVLogger.Always($"Equip before ambush option is reverted, now OFF");
+                    }
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+
+
+            }
+
+            private static void ModifyDefs(bool revert = false)
+            {
+                try
+                {
+
+                    List<CustomMissionTypeDef> ambushMissions = new List<CustomMissionTypeDef>()
+                {
+                    DefCache.GetDef<CustomMissionTypeDef>("AmbushAlien_CustomMissionTypeDef"),
+                    DefCache.GetDef<CustomMissionTypeDef>("AmbushAN_CustomMissionTypeDef"),
+                    DefCache.GetDef<CustomMissionTypeDef>("AmbushBandits_CustomMissionTypeDef"),
+DefCache.GetDef<CustomMissionTypeDef>("AmbushFallen_CustomMissionTypeDef"),
+DefCache.GetDef<CustomMissionTypeDef>("AmbushNJ_CustomMissionTypeDef"),
+DefCache.GetDef<CustomMissionTypeDef>("AmbushPure_CustomMissionTypeDef"),
+DefCache.GetDef<CustomMissionTypeDef>("AmbushPure_CustomMissionTypeDef"),
+DefCache.GetDef<CustomMissionTypeDef>("AmbushSY_CustomMissionTypeDef")
+            };
+
+                    if (!revert)
+                    {
+                        foreach (CustomMissionTypeDef ambush in ambushMissions)
+                        {
+                            ambush.SkipDeploymentSelection = false;
+                        }
+
+                    }
+                    else
+                    {
+                        foreach (CustomMissionTypeDef ambush in ambushMissions)
+                        {
+                            ambush.SkipDeploymentSelection = true;
+                        }
+                    }
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+
+            }
+
         }
 
         internal class HandGrenadeScatter
@@ -68,19 +159,43 @@ namespace TFTV
             {
                 try
                 {
+                    TFTVConfig config = TFTVMain.Main.Config;
 
+                    if (!_handGrenadeScatterImplemented && config.HandGrenadeScatter)
+                    {
+                        ModifyDefs();
+                        _handGrenadeScatterImplemented = true;
+                        TFTVLogger.Always($"Hand Grenade Scatter option is ON!");
+                        return;
+                    }
+                    else if (_handGrenadeScatterImplemented && !config.HandGrenadeScatter)
+                    {
+                        ModifyDefs(true);
+                        _handGrenadeScatterImplemented= false;
+                        TFTVLogger.Always($"Hand Grenade Scatter option is reverted, now OFF");
+                    }
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+
+            }
+
+            private static void ModifyDefs(bool revert = false)
+            {
+                try
+                {
                     GameTagDef grenadeTag = (GameTagDef)Repo.GetDef("318dd3ff-28f0-1bb4-98bc-39164b7292b6"); // GrenadeItem_TagDef
-
                     WeaponDef grenadeLauncher = (WeaponDef)Repo.GetDef("4d5a34b8-48db-f014-1a0f-90ec7eaf881a");
 
-                    TFTVConfig config = TFTVMain.Main.Config;
-                    // loop over all weapon defs in the repo
                     foreach (WeaponDef weaponDef in Repo.GetAllDefs<WeaponDef>())
                     {
                         // All hand thrown grenades (only these weapon defs ends with "Grenade_WeaponDef" <- checked by tag)
                         if (weaponDef.Tags.Contains(grenadeTag)) // weaponDef.name.EndsWith("Grenade_WeaponDef") && 
                         {
-                            if (config.HandGrenadeScatter)
+                            if (!revert)
                             {
                                 weaponDef.SpreadRadius = 2f;
                                 weaponDef.SpreadRadiusDistanceModifier = grenadeLauncher.SpreadRadiusDistanceModifier;
@@ -91,13 +206,6 @@ namespace TFTV
                             }
                         }
                     }
-
-                    if (config.HandGrenadeScatter) 
-                    {
-                        TFTVLogger.Always($"Hand Grenade Scatter option is ON!");
-                    }
-
-                    
                 }
                 catch (Exception e)
                 {
@@ -106,27 +214,6 @@ namespace TFTV
 
             }
 
-            private static void ModifyDefs()
-            {
-                try 
-                {
-                    ItemTypeTagDef grenadeTag = DefCache.GetDef<ItemTypeTagDef>("GrenadeItem_TagDef");
-
-                    foreach (ItemDef itemDef in Repo.GetAllDefs<ItemDef>().Where(i => i.Tags.Contains(grenadeTag))) 
-                    {
-                        TFTVLogger.Always($"{itemDef.name}");
-                    
-                    }
-
-
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-
-            }
-            
 
         }
 
@@ -256,21 +343,21 @@ namespace TFTV
                 {
                     TFTVConfig config = TFTVMain.Main.Config;
 
-                    if (!ChangesToFoodAndMutagenGenerationImplemented && TFTVNewGameOptions.LimitedHarvestingSetting)
+                    if (!_changesToFoodAndMutagenGenerationImplemented && TFTVNewGameOptions.LimitedHarvestingSetting)
                     {
                         ModifyHarvestingLocalizationKeys();
                         RemoveMutagenHarvestingResearch();
                         MoveFoodProductionFacilityToImmediatelyAvailable();
-                        ChangesToFoodAndMutagenGenerationImplemented = true;
+                        _changesToFoodAndMutagenGenerationImplemented = true;
                         TFTVLogger.Always($"Limited Harvesting is on");
                         return;
                     }
-                    else if (ChangesToFoodAndMutagenGenerationImplemented && !TFTVNewGameOptions.LimitedHarvestingSetting)
+                    else if (_changesToFoodAndMutagenGenerationImplemented && !TFTVNewGameOptions.LimitedHarvestingSetting)
                     {
                         RestoreHarvestingLocalizationKeys();
                         RestoreMutagenHarvestingResearch();
                         RemoveFoodProductionFacilityToImmediatelyAvailable();
-                        ChangesToFoodAndMutagenGenerationImplemented = false;
+                        _changesToFoodAndMutagenGenerationImplemented = false;
                         TFTVLogger.Always($"Limited Harvesting Setting reverted");
                     }
                     //TFTVLogger.Always($"Limited Harvesting Setting is off");
@@ -444,17 +531,17 @@ namespace TFTV
                 {
                     TFTVConfig config = TFTVMain.Main.Config;
 
-                    if (!ChangesToCapturingPandoransImplemented && TFTVNewGameOptions.LimitedCaptureSetting)
+                    if (!_changesToCapturingPandoransImplemented && TFTVNewGameOptions.LimitedCaptureSetting)
                     {
                         MakeCaptureModuleResearchAvailable(TFTVNewGameOptions.LimitedCaptureSetting);
-                        ChangesToCapturingPandoransImplemented = true;
+                        _changesToCapturingPandoransImplemented = true;
                         TFTVLogger.Always($"Limited Capture is on");
                         return;
                     }
-                    else if (ChangesToCapturingPandoransImplemented && !TFTVNewGameOptions.LimitedCaptureSetting)
+                    else if (_changesToCapturingPandoransImplemented && !TFTVNewGameOptions.LimitedCaptureSetting)
                     {
                         MakeCaptureModuleResearchAvailable(TFTVNewGameOptions.LimitedCaptureSetting);
-                        ChangesToCapturingPandoransImplemented = false;
+                        _changesToCapturingPandoransImplemented = false;
                         TFTVLogger.Always($"Limited Capture reverted");
                     }
 
@@ -1273,7 +1360,7 @@ namespace TFTV
             {
                 try
                 {
-                    if (TFTVNewGameOptions.NoSecondChances && !NoSecondChancesImplemented)
+                    if (TFTVNewGameOptions.NoSecondChances && !_noSecondChancesImplemented)
                     {
                         TFTVLogger.Always($"Implementing No Second Chances");
 
@@ -1296,9 +1383,9 @@ namespace TFTV
                             }
                         }
 
-                        NoSecondChancesImplemented = true;
+                        _noSecondChancesImplemented = true;
                     }
-                    else if (!TFTVNewGameOptions.NoSecondChances && NoSecondChancesImplemented)
+                    else if (!TFTVNewGameOptions.NoSecondChances && _noSecondChancesImplemented)
                     {
                         TFTVLogger.Always($"Reverting No Second Chances");
 
@@ -1319,7 +1406,7 @@ namespace TFTV
                                 TFTVLogger.Always($"{failEventDef.EventID} reactivates {eventId}", false);
                             }
                         }
-                        NoSecondChancesImplemented = false;
+                        _noSecondChancesImplemented = false;
                     }
 
                 }

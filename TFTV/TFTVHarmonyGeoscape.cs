@@ -4,6 +4,7 @@ using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Levels.Missions;
+using PhoenixPoint.Common.View.ViewControllers;
 using PhoenixPoint.Common.View.ViewModules;
 using PhoenixPoint.Geoscape.Core;
 using PhoenixPoint.Geoscape.Entities;
@@ -12,11 +13,15 @@ using PhoenixPoint.Geoscape.Events.Eventus;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
 using PhoenixPoint.Geoscape.Levels.Objectives;
+using PhoenixPoint.Geoscape.View.ViewControllers.Modal;
 using PhoenixPoint.Geoscape.View.ViewModules;
 using PhoenixPoint.Geoscape.View.ViewStates;
+using PhoenixPoint.Tactical.Entities.Abilities;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
+using UnityEngine;
 
 namespace TFTV
 {
@@ -291,6 +296,79 @@ namespace TFTV
 
         }
 
+
+        public static TacticalAbilityDef StarvedAbility;
+        /// <summary>
+        /// Adds/removes starved ability, to let player know when soldiers are starving.
+        /// </summary>
+        [HarmonyPatch(typeof(GeoPhoenixFaction), "FeedSoldiers")]
+        public static class TFTV_GeoPhoenixFactione_AddHunger_patch
+        {
+
+            public static void Postfix(GeoPhoenixFaction __instance)
+            {
+                try
+                {
+                    bool starvingCharacter = false;
+
+                    foreach (GeoCharacter geoCharacter in __instance.Characters.Where(c => c.Fatigue != null))
+                    {
+                        if (geoCharacter.Fatigue.Hunger > 0 && !geoCharacter.GetTacticalAbilities().Contains(StarvedAbility))
+                        {
+                            TFTVLogger.Always($"Adding {StarvedAbility.name} to {geoCharacter.DisplayName}");
+                            geoCharacter.Progression.AddAbility(StarvedAbility);
+                            starvingCharacter = true;
+                        }
+                        if (geoCharacter.Fatigue.Hunger <= 0 && geoCharacter.GetTacticalAbilities().Contains(StarvedAbility))
+                        {
+                            List<TacticalAbilityDef> abilities = Traverse.Create(geoCharacter.Progression).Field("_abilities").GetValue<List<TacticalAbilityDef>>();
+                            TFTVLogger.Always($"Removing {StarvedAbility.name} from {geoCharacter.DisplayName}");
+                            abilities.Remove(StarvedAbility);
+                        }
+                    }
+
+                    if (starvingCharacter)
+                    {
+                        __instance.GeoLevel.View.RequestGamePause();
+                        string messageText = TFTVCommonMethods.ConvertKeyToString("TFTV_STARVATION_MECHANIC_DESCRIPTION");
+                        // $"One or more of your operatives is now STARVING. This happens when your food stocks are insufficient to feed your operatives. A STARVING operative has reduced STRENGTH and WILLPOWER in Tactical Missions. Each day the character spends without eating will worsen the condition, eventually resulting in DEATH. The condition will improve until it disappears every day the character is fed.";
+
+                        GameUtl.GetMessageBox().ShowSimplePrompt(messageText, MessageBoxIcon.Warning, MessageBoxButtons.OK, null);
+                    }
+                }
+
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
+
+        [HarmonyPatch(typeof(AlienBaseOutcomeDataBind), "ModalShowHandler")]
+        public static class TFTV_AlienBaseOutcomeDataBind_ModalShowHandler_patch
+        {
+
+            public static void Postfix(AlienBaseOutcomeDataBind __instance, UIModal modal, bool ____shown, UIModal ____modal)
+            {
+                try
+                {
+
+
+                    __instance.Rewards.transform.gameObject.SetActive(true);
+
+                    Transform rewardContainer = __instance.Rewards.GetComponentInChildren<Transform>().Find("Rewards");
+
+                    rewardContainer.gameObject.SetActive(true);
+                }
+
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
 
     }
 }

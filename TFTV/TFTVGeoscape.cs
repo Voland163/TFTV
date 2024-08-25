@@ -118,8 +118,8 @@ namespace TFTV
             TFTVBetaSaveGamesFixes.CheckResearches(Controller);
             TFTVPassengerModules.ImplementFarMConfig(Controller);
             TFTVBetaSaveGamesFixes.RemoveBadSlug(Controller);
-            TFTVExperimentalNext.CharacterPortrait.PopulatePortraitFileList();
-            TFTVExperimentalNext.CharacterPortrait.PopulateCharacterPics(Controller);
+            TFTVCustomPortraits.CharacterPortrait.PopulatePortraitFileList();
+            TFTVCustomPortraits.CharacterPortrait.PopulateCharacterPics(Controller);
         
 
             /* GeoSite geoSite = Controller.Map.AllSites.FirstOrDefault(s=>s.GetComponent<GeoPhoenixBase>()!=null && s.ActiveMission!=null);
@@ -156,7 +156,7 @@ namespace TFTV
             TFTVRevenant.TFTVRevenantResearch.CheckProjectOsiris(gsController);
             TFTVDiplomacyPenalties.VoidOmensImplemented = false;
             TFTVAncientsGeo.AncientsResearch.CheckResearchStateOnGeoscapeEndAndOnTacticalStart(gsController);
-            TFTVExperimentalNext.CharacterPortrait.PopulateCharacterPics(Controller);
+            TFTVCustomPortraits.CharacterPortrait.PopulateCharacterPics(Controller);
         }
 
         /// <summary>
@@ -218,7 +218,7 @@ namespace TFTV
                 PandoransContainmentBaseAttack = TFTVBaseDefenseGeoscape.PandoransThatCanEscape,
                 BaseDefensePandoranBreach = TFTVBaseDefenseGeoscape.ContainmentBreachSchedule,
                 RevenantPoints = TFTVRevenant.TFTVRevenantResearch.RevenantPoints,
-                CharacterPortraits = TFTVExperimentalNext.CharacterPortrait.characterPics
+                CharacterPortraits = TFTVCustomPortraits.CharacterPortrait.characterPics
 
                 //   Update35GeoscapeCheck = TFTVNewGameOptions.Update35Check,
 
@@ -313,7 +313,7 @@ namespace TFTV
                     TFTVNewGameOptions.SetInternalConfigOptions(Controller);
                 }
 
-                TFTVExperimentalNext.CharacterPortrait.characterPics = data.CharacterPortraits;
+                TFTVCustomPortraits.CharacterPortrait.characterPics = data.CharacterPortraits;
 
 
 

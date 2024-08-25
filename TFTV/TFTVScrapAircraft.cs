@@ -100,16 +100,24 @@ namespace TFTV
 
                 GeoFaction geoFaction = controller.PhoenixFaction;
 
+                List< GeoVehicleEquipment> vehicleEquipmentToRemove = new List< GeoVehicleEquipment >();
+
                 foreach (GeoVehicleEquipment geoVehicleEquipment in aircraftToScrap.Equipments)
                 {
-
                     if (geoVehicleEquipment != null)
                     {
                         // TFTVLogger.Always($"{geoVehicleEquipment} being added ");
                         // GeoVehicleEquipmentUIData geoVehicleEquipmentUIData = geoVehicleEquipment.CreateUIData();
                         geoFaction.AircraftItemStorage.AddItem(geoVehicleEquipment);
+                        vehicleEquipmentToRemove.Add(geoVehicleEquipment);
                         // vehicleEquipModule.StorageList.AddItem(geoVehicleEquipmentUIData);
                     }
+                }
+
+                foreach (GeoVehicleEquipment vehicleEquipment in vehicleEquipmentToRemove)
+                {
+                    aircraftToScrap.RemoveEquipment(vehicleEquipment);
+                    TFTVLogger.Always($"removing {vehicleEquipment.EquipmentDef.name} from scrapped vehicle");
                 }
             }
             catch (Exception e)
@@ -266,8 +274,9 @@ namespace TFTV
 
                             // Add resources
                             VehicleItemDef aircraftItemDef = _vehicleDefs.Where(viDef => viDef.ComponentSetDef.Components.Contains(aircraftToScrap.VehicleDef)).FirstOrDefault();
+                           
                             if (aircraftItemDef != null && !aircraftItemDef.ScrapPrice.IsEmpty)
-                            {
+                            {                               
                                 context.Level.PhoenixFaction.Wallet.Give(aircraftItemDef.ScrapPrice, OperationReason.Scrap);
 
                                 GeoscapeModulesData ____geoscapeModules = (GeoscapeModulesData)AccessTools.Property(typeof(GeoscapeViewState), "_geoscapeModules").GetValue(uIStateGeoRoster, null);

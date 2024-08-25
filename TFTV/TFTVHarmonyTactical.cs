@@ -8,11 +8,14 @@ using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.DamageKeywords;
 using PhoenixPoint.Tactical.Entities.Statuses;
+using PhoenixPoint.Tactical.Entities.Weapons;
 using PhoenixPoint.Tactical.Levels;
 using PhoenixPoint.Tactical.Levels.ActorDeployment;
 using PhoenixPoint.Tactical.Levels.Destruction;
 using PhoenixPoint.Tactical.Levels.Missions;
 using PhoenixPoint.Tactical.Levels.Mist;
+using PhoenixPoint.Tactical.UI;
+using PhoenixPoint.Tactical.View;
 using PhoenixPoint.Tactical.View.ViewControllers;
 using System;
 using System.Collections.Generic;
@@ -161,7 +164,7 @@ namespace TFTV
             {
                 try
                 {
-                   return TFTVExperimentalNext.NewCharacterPortraitInSetupProperPortrait(actor, ____soldierPortraits, __instance);
+                   return TFTVCustomPortraits.NewCharacterPortraitInSetupProperPortrait(actor, ____soldierPortraits, __instance);
                   // return TFTVPalaceMission.MissionObjectives.ForceSpecialCharacterPortraitInSetupProperPortrait(actor, ____soldierPortraits, __instance, ____renderingInProgress);
                 }
                 catch (Exception e)
@@ -477,6 +480,62 @@ namespace TFTV
                 {
                     TFTVLogger.Error(e);
                 }
+            }
+        }
+
+        /// <summary>
+        /// Adapted from cfehunter old Modnix Mod. All hail cfehunter!
+        /// </summary>
+        [HarmonyPatch(typeof(ShootAbilitySceneViewElement), "DrawHoverMarker")]
+        private static class WeaponSpreadPatch_DrawHoverMarker_Scatter
+        {
+            static GroundMarker scatterMarker = null;
+
+            [HarmonyPostfix]
+            static void Postfix(
+                ShootAbilitySceneViewElement __instance,
+                bool __result,
+                TacticalViewContext context,
+                Vector3 to,
+                Vector3 from,
+                TacticalAbilityTarget target)
+            {
+                try
+                {
+
+
+                    Weapon weapon = (Weapon)__instance.Ability.EquipmentSource;
+                    //  TFTVLogger.Always($"ShootAbilitySceneViewElement.DrawHoverMarker running; result: {__result}, weapon null? {weapon==null}");
+                    if (__result && weapon != null)
+                    {
+                        float spread = Mathf.Abs(weapon.GetWeaponSpread(AttackType.Regular, weapon.GetAllSpreadMultipliers(__instance.Ability.TacticalActor), (float)__instance.Ability.TacticalActor.CharacterStats.GetAccuracy(), (from - to).magnitude));
+                        //  TFTVLogger.Always($"{__result} {weapon.DisplayName} {spread}, {weapon.WeaponDef.SpreadRadius}, {weapon.GetAllSpreadMultipliers(__instance.Ability.TacticalActor)} {(float)__instance.Ability.TacticalActor.CharacterStats.GetAccuracy()} {(from - to).magnitude}");
+
+                        if (spread > float.Epsilon)
+                        {
+                            GroundMarkerType scatterType = GroundMarkerType.AreaOfEffectAura;//AttackRadiusInvalid;
+
+                            if (scatterMarker == null || scatterMarker.Type != scatterType)
+                            {
+                                scatterMarker = new GroundMarker(scatterType, to, 0f);
+                                scatterMarker.Areas = __instance.Ability.TacticalActor.TacticalNav.NavAreas;
+                            }
+
+                            context.View.Markers.AddGroundMarker(GroundMarkerGroup.HoverSelection, scatterMarker);
+                            Utils.TiltForTerrain(context, scatterMarker, __instance.Ability.TacticalActor.TacticalNav.FloorLayers);
+
+                            scatterMarker.VisualObject.transform.position = to;
+
+                            scatterMarker.VisualObject.transform.localScale = spread * Vector3.one * 2;
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+
             }
         }
 

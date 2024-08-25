@@ -89,7 +89,7 @@ namespace TFTV
                 /// PhoenixGame is accessible at any time.
                 PhoenixGame game = GetGame();
 
-                string version = $"TFTV 1.0, patch 10 20240825 release #1 v{MetaData.Version}";
+                string version = $"TFTV 1.0, patch 11 20240926 release #1 v{MetaData.Version}";
 
                 TFTVversion = version;
 
@@ -330,7 +330,7 @@ namespace TFTV
         {
 
 
-            // TFTVLogger.Always($"level {level.name} loading");
+          //  TFTVLogger.Always($"level {level.name} loading from {prevState} to {state}");
 
 
             // Logger.LogInfo($"{MethodBase.GetCurrentMethod().Name} called for level '{level}' with old state '{prevState}' and new state '{state}'");

@@ -144,8 +144,10 @@ namespace TFTV
                 TFTVPandoranProgress.ScyllaCount = 0;
 
                 TFTVTacticalDeploymentEnemies.UndesirablesSpawned.Clear();
-
+             
                 ClearHints();
+                TFTVCustomPortraits.CharacterPortrait.ClearPortraitData();
+               
 
                 TFTVLogger.Always($"Internal variables cleared on State change or Load");
             }
@@ -212,7 +214,7 @@ namespace TFTV
                 TFTVNewGameOptions.EtermesResistanceAndVulnerability = 0;
 
                 TFTVBaseDefenseTactical.InternalData.BaseDefenseDataToClearOnLoadOnly();
-
+                
 
                 TFTVLogger.Always($"Variables cleared on load");
 

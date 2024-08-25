@@ -24,6 +24,7 @@ using System.Linq;
 using System.Reflection;
 using UnityEngine;
 using UnityEngine.UI;
+using static TFTV.TFTVDefsWithConfigDependency;
 using static UnityTools.UI.SnapshotText.Lib.LineGroup;
 
 namespace TFTV
@@ -645,8 +646,11 @@ namespace TFTV
             private static readonly string _titleHandGrenadeScatter = "KEY_HandGrenadeScatter";
             private static readonly string _descriptionHandGrenadeScatter = "KEY_HandGrenadeScatter_DESCRIPTION";
 
-            //
-            //  
+            private static ModSettingController _equipBeforeAmbushModSettings = null;
+            private static ArrowPickerController _equipBeforeAmbush = null;
+
+            private static readonly string _titleEquipBeforeAmbush = "KEY_EquipBeforeAmbush";
+            private static readonly string _descriptionEquipBeforeAmbush = "KEY_EquipBeforeAmbush_DESCRIPTION";
 
 
             private static GameOptionViewController InstantiateGameOptionViewController(RectTransform rectTransform, UIModuleGameSettings uIModuleGameSettings, string titleKey, string descriptionKey, string onToggleMethod)
@@ -797,8 +801,8 @@ namespace TFTV
                     _noSecondChancesModSettings.gameObject.SetActive(show);
                     _etermesVulnerabilityResistance.gameObject.SetActive(show);
                     _etermesVulnerabilityResistanceModSettings.gameObject.SetActive(show);
-
-                }
+                   
+        }
                 catch (Exception e)
                 {
                     TFTVLogger.Error(e);
@@ -842,9 +846,10 @@ namespace TFTV
                     _customPortraitsModSettings.gameObject.SetActive(show);
                     _handGrenadeScatter.gameObject.SetActive(show);
                     _handGrenadeScatterModSettings.gameObject.SetActive(show);
-                    //  _staminaDrain.gameObject.SetActive(show);
+                    _equipBeforeAmbushModSettings.gameObject.SetActive(show);
+                    _equipBeforeAmbush.gameObject.SetActive(show);
 
-                }
+        }
                 catch (Exception e)
                 {
                     TFTVLogger.Error(e);
@@ -1052,7 +1057,8 @@ namespace TFTV
                     _skipFSTutorialModSettings = UnityEngine.Object.Instantiate(ModSettingControllerHook, rectTransform);
                     _customPortraitsModSettings = UnityEngine.Object.Instantiate(ModSettingControllerHook, rectTransform);
                     _handGrenadeScatterModSettings = UnityEngine.Object.Instantiate(ModSettingControllerHook, rectTransform);
-
+                    _equipBeforeAmbushModSettings = UnityEngine.Object.Instantiate(ModSettingControllerHook, rectTransform);
+                   
                     _startingFaction = _startingFactionModSettings.ListField;
                     _startingBase = _startingBaseModSettings.ListField;
                     _startingSquad = _startingSquadModSettings.ListField;
@@ -1080,6 +1086,7 @@ namespace TFTV
                     _skipFSTutorial = _skipFSTutorialModSettings.ListField;
                     _customPortraits = _customPortraitsModSettings.ListField;
                     _handGrenadeScatter = _handGrenadeScatterModSettings.ListField;
+                    _equipBeforeAmbush = _equipBeforeAmbushModSettings.ListField;
                     //   _reverseEngineering = _reverseEngineeringModSettings.ListField;
                     _skipMovies = _skipMoviesModSettings.ListField;
                     _resourcesEvents = _resourcesEventsModSettings.ListField;
@@ -1124,6 +1131,7 @@ namespace TFTV
                     InstantiateArrowPickerController(_skipFSTutorialModSettings, _skipFSTutorial, _titleSkipFSTutorial, _descriptionSkipFSTutorial, _optionsBool, ConvertBoolToInt(config.SkipFSTutorial), OnSkipFSTutorialValueChangedCallback, 0.5f);
                     InstantiateArrowPickerController(_customPortraitsModSettings, _customPortraits, _titleCustomPortraits, _descriptionCustomPortraits, _optionsBool, ConvertBoolToInt(config.CustomPortraits), OnCustomPortraitsValueChangedCallback, 0.5f);
                     InstantiateArrowPickerController(_handGrenadeScatterModSettings, _handGrenadeScatter, _titleHandGrenadeScatter, _descriptionHandGrenadeScatter, _optionsBool, ConvertBoolToInt(config.HandGrenadeScatter), OnHandGrenadeScatterValueChangedCallback, 0.5f);
+                    InstantiateArrowPickerController(_equipBeforeAmbushModSettings, _equipBeforeAmbush, _titleEquipBeforeAmbush, _descriptionEquipBeforeAmbush, _optionsBool, ConvertBoolToInt(config.EquipBeforeAmbush), OnEquipBeforeAmbushValueChangedCallback, 0.5f);
 
                     InstantiateArrowPickerController(_disableTacSavesModSettings, _disableTacSaves, _titleDisableTacSaves, _descriptionDisableTacSaves, _optionsBool, ConvertBoolToInt(config.disableSavingOnTactical), OnDisableTacSavesValueChangedCallback, 0.5f);
                     InstantiateArrowPickerController(_skipMoviesModSettings, _skipMovies, _titleSkipMovies, _descriptionSkipMovies, _optionsBool, ConvertBoolToInt(config.SkipMovies), OnSkipMoviesValueChangedCallback, 0.5f);
@@ -1529,6 +1537,23 @@ namespace TFTV
                     TFTVLogger.Error(e);
                 }
             }
+
+            private static void OnEquipBeforeAmbushValueChangedCallback(int newValue)
+            {
+                try
+                {
+                    bool option = newValue == 0;
+                    string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
+                    _equipBeforeAmbush.CurrentItemText.text = options[newValue];
+                    config.EquipBeforeAmbush = option;
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+
 
 
             private static void OnTradingValueChangedCallback(int newValue)

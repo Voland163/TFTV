@@ -243,7 +243,7 @@ namespace TFTV
                 TFTVLogger.Always("Tactical save is being processed");
 
                 TFTVCommonMethods.ClearInternalVariablesOnStateChangeAndLoad();
-                TFTVDefsWithConfigDependency.StrongerPandorans.ImplementStrongerPandorans();
+                TFTVDefsWithConfigDependency.ImplementConfigChoicesForTactical();
                 TFTVTacInstanceData data = (TFTVTacInstanceData)instanceData;
                 TFTVStamina.charactersWithDisabledBodyParts = data.charactersWithBrokenLimbs;
                 TFTVVoidOmens.VoidOmensCheck = data.VoidOmensCheck;
@@ -326,7 +326,7 @@ namespace TFTV
 
                 if (data.OperativesPortraits != null)
                 {
-                    TFTVExperimentalNext.CharacterPortrait.characterPics = data.OperativesPortraits;
+                    TFTVCustomPortraits.CharacterPortrait.characterPics = data.OperativesPortraits;
                 }
                 //    TFTVDefsWithConfigDependency.ImplementConfigChoices();
 
@@ -386,7 +386,7 @@ namespace TFTV
                 RevenantPoints = TFTVRevenant.TFTVRevenantResearch.RevenantPoints,
                 EtermesVulnerabilityResistanceTactical = TFTVNewGameOptions.EtermesResistanceAndVulnerability,
                 UnDesirablesActorsSpawned = TFTVTacticalDeploymentEnemies.UndesirablesSpawned,
-                OperativesPortraits = TFTVExperimentalNext.CharacterPortrait.characterPics,
+                OperativesPortraits = TFTVCustomPortraits.CharacterPortrait.characterPics,
 
                 internalDifficultyCheck = Controller.Difficulty.Order,
 

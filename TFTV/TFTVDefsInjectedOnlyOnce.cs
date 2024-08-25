@@ -1,11 +1,13 @@
 ﻿using Base;
 using Base.AI.Defs;
+using Base.Cameras.CameraNodes;
 using Base.Core;
 using Base.Defs;
 using Base.Entities.Abilities;
 using Base.Entities.Effects;
 using Base.Entities.Effects.ApplicationConditions;
 using Base.Entities.Statuses;
+using Base.Lighting;
 using Base.UI;
 using Base.Utils;
 using Code.PhoenixPoint.Tactical.Entities.Equipments;
@@ -22,6 +24,7 @@ using PhoenixPoint.Common.Entities.Items;
 using PhoenixPoint.Common.Entities.RedeemableCodes;
 using PhoenixPoint.Common.Levels.Missions;
 using PhoenixPoint.Common.UI;
+using PhoenixPoint.Common.View.ViewModules;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.Abilities;
 using PhoenixPoint.Geoscape.Entities.Interception;
@@ -154,6 +157,11 @@ namespace TFTV
 
                 AddAlwaysDeployTagToUniqueDeployments();
 
+               // CreateBackgrounds();
+
+              //  TFTVBackgrounds.LoadTFTVBackgrounds();
+
+                
               //  Print();
 
             }
@@ -162,6 +170,43 @@ namespace TFTV
                 TFTVLogger.Error(e);
             }
         }
+
+        private static void CreateBackgrounds()
+        {
+            try 
+            {
+                //TFTVBackgrounds.LoadTFTVBackgrounds();
+               
+                ChangeBuilderViewParams();
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+
+        }
+
+        private static void ChangeBuilderViewParams()
+        {
+            try
+            {
+                CharacterBuilderViewParametersDef smallCharacters = DefCache.GetDef<CharacterBuilderViewParametersDef>("SmallCharBuilderViewParametersDef");
+                CharacterBuilderViewParametersDef bigCharacters = DefCache.GetDef<CharacterBuilderViewParametersDef>("3x3CharBuilderViewParametersDef");
+
+                smallCharacters.ObjectWorldPosition.y -= 0.3f;
+                bigCharacters.ObjectWorldPosition.y -= 0.5f;
+                bigCharacters.ObjectScale = new Vector3(0.6f, 0.6f, 0.6f);
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+        }
+
+        
 
         private static void AddAlwaysDeployTagToUniqueDeployments()
         {
@@ -508,6 +553,8 @@ namespace TFTV
                 RemoveTerrorSentinelCitadel();
                 RemoveOrganicConditionForSlowedStatus();
                 AdjustMistSentinelDetection();
+                Create_StarvedAbility();
+              //  ChangeBuilderViewParams();
             }
             catch (Exception e)
             {
@@ -515,6 +562,40 @@ namespace TFTV
             }
         }
 
+        
+
+        private static void Create_StarvedAbility()
+        {
+            try
+            {
+                string skillName = "StarvedAbilityDef";
+                PassiveModifierAbilityDef source = DefCache.GetDef<PassiveModifierAbilityDef>("SelfDefenseSpecialist_AbilityDef");
+                PassiveModifierAbilityDef starved = Helper.CreateDefFromClone(
+                    source,
+                    "{1BAF6AB9-DC78-4267-BF26-65C9AC9C1BE2}",
+                    skillName);
+                starved.CharacterProgressionData = Helper.CreateDefFromClone(
+                    source.CharacterProgressionData,
+                    "{1D4C2FC3-DEDD-4A40-AA8F-067CD02FA858}",
+                    skillName);
+                starved.ViewElementDef = Helper.CreateDefFromClone(
+                    source.ViewElementDef,
+                    "{89E99192-8363-4E3D-A699-75702EDEE674}",
+                    skillName);
+                starved.StatModifications = new ItemStatModification[0];
+                starved.ItemTagStatModifications = new EquipmentItemTagStatModification[0];
+                starved.ViewElementDef.DisplayName1.LocalizationKey = "TFTV_STARVED_NAME";
+                starved.ViewElementDef.Description.LocalizationKey = "TFTV_STARVED_DESCRIPTION";
+                Sprite icon = Helper.CreateSpriteFromImageFile("TFTV_Starved.png");
+                starved.ViewElementDef.LargeIcon = icon;
+                starved.ViewElementDef.SmallIcon = icon;
+                TFTVHarmonyGeoscape.StarvedAbility = starved;
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
 
 
         private static void RemoveOrganicConditionForSlowedStatus()
@@ -7524,6 +7605,9 @@ DefCache.GetDef<CustomMissionTypeDef>("AmbushSY_CustomMissionTypeDef")
                     ambush.CustomObjectives[2] = sourceScavCratesALN.CustomObjectives[2];
                     //ambush.Tags.Add(DefCache.GetDef<MissionTagDef>("Contains_ResourceItems_MissionTagDef"));
                     ambush.Outcomes = sourceScavCratesALN.Outcomes;
+                    //VOLAND TESTING
+                    ambush.ClearMissionOnCancel = true;
+                    ambush.MandatoryMission = true;
                 }
 
                 //Reduce XP for Ambush mission

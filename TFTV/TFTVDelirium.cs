@@ -779,14 +779,12 @@ namespace TFTV
                                     List<TacticalAbilityDef> abilities = Traverse.Create(geoCharacter.Progression).Field("_abilities").GetValue<List<TacticalAbilityDef>>();
                                     TFTVLogger.Always($"removing {tacticalAbilityDef.name} from {geoCharacter.DisplayName}");
 
-                                    abilities.Remove(tacticalAbilityDef); // Example modification
+                                    abilities.Remove(tacticalAbilityDef); 
 
                                     if (tacticalAbilityDef == wolverineDef)
                                     {
                                         TFTVLogger.Always($"Adding cured wolverine ability");
                                         abilities.Add(wolverineCuredDef);
-
-
                                     }
                                 }
 
