@@ -27,6 +27,7 @@ using System.Reflection;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using static UnityEngine.UI.GridLayoutGroup;
 
 namespace TFTV
 {
@@ -105,6 +106,28 @@ namespace TFTV
             internal static UIModuleFactionAgendaTracker ___factionTracker = null;
 
 
+         /*   [HarmonyPatch(typeof(GeoVehicle), "StartTravel", new Type[] { typeof(List<GeoSite>)
+        })]
+            public static class GeoVehicle_StartTravel_Patch
+            {
+
+                public static void Prefix(GeoVehicle __instance)
+                {
+                    try
+                    {
+                        if (_updateCounterDictionary.ContainsKey(__instance.VehicleID))
+                        {
+                            _updateCounterDictionary.Remove(__instance.VehicleID);
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                    }
+                }
+            }*/
+
+
 
 
             /*
@@ -118,8 +141,30 @@ namespace TFTV
 
                 if (target == null && vehicle.FinalDestination == null)
                 {
+                    /*if (_updateCounterDictionary.ContainsKey(vehicle.VehicleID)) 
+                    {
+                        _updateCounterDictionary.Remove(vehicle.VehicleID);
+                    }*/
+
                     return false;
                 }
+
+             /*   if (_updateCounterDictionary.ContainsKey(vehicle.VehicleID) && _updateCounterDictionary[vehicle.VehicleID] < 10)
+                {
+                    _updateCounterDictionary[vehicle.VehicleID] += 1;
+                    return false;
+                }
+                else
+                {
+                    if (!_updateCounterDictionary.ContainsKey(vehicle.VehicleID))
+                    {
+                        _updateCounterDictionary.Add(vehicle.VehicleID, 10);
+                    }
+                    else
+                    {
+                        _updateCounterDictionary[vehicle.VehicleID] = 0;
+                    }
+                }*/
 
                 var currentPosition = vehicle.CurrentSite?.WorldPosition ?? vehicle.WorldPosition;
                 var targetPosition = target == null ? vehicle.FinalDestination.WorldPosition : target.WorldPosition;
@@ -939,6 +984,8 @@ namespace TFTV
              ** 
             */
 
+          //  private static Dictionary<int, int> _updateCounterDictionary = new Dictionary<int, int>();
+
             // Updates time left of the various tracker item types and adds mouse events.
             // NOTE that the tracker items get reused multiple times for different tracked objects and we NEED to reinitialize EVERYTHING ALWAYS
             [HarmonyPatch(typeof(UIModuleFactionAgendaTracker), "UpdateData", new Type[] { typeof(UIFactionDataTrackerElement) })]
@@ -948,6 +995,7 @@ namespace TFTV
                 {
                     try
                     {
+                      
                         if (element.TrackedObject is ResearchElement)
                         {
                             // Add click event to the item that focuses camera on the tracked object
@@ -994,6 +1042,7 @@ namespace TFTV
 
                         else if (element.TrackedObject is GeoVehicle vehicle)
                         {
+
                             // Add click event to the item that focuses camera on the tracked object
                             GameObject go = element.gameObject;
                             if (!go.GetComponent<EventTrigger>())
@@ -1009,8 +1058,11 @@ namespace TFTV
                             click.callback.AddListener((eventData) => { ____context.View.ChaseTarget(vehicle, false); });
                             eventTrigger.triggers.Add(click);
 
+                           
                             if (vehicle.Travelling && GetTravelTime(vehicle, out float travelTime))
                             {
+                               // TFTVLogger.Always($"updating time for {vehicle.Name}, at {vehicle.GeoLevel.Timing.FixedNow}");
+
                                 TimeUnit arrivalTime = TimeUnit.FromHours(travelTime);
                                 //TFTVLogger.Debug($"[UIModuleFactionAgendaTracker_UpdateData_PREFIX] element.TrackedObject: {element.TrackedObject}, arrivalTime: {arrivalTime}");
 

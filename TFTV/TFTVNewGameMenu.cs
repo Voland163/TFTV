@@ -1966,7 +1966,7 @@ namespace TFTV
                     //  TFTVLogger.Always($"Element is {element.OptionText.text}");
                     //   GameOptionViewController viewController = new GameOptionViewController() { };
 
-                    if (element.OptionText.text == "PLAY PROLOGUE AND TUTORIAL")
+                    if (element.OptionText.text == TFTVCommonMethods.ConvertKeyToString("KEY_SELECT_TUTORIAL"))//"PLAY PROLOGUE AND TUTORIAL")
                     {
                         //  element.OptionText.text = "START WITH VANILLA TUTORIAL SQUAD";                      
                     }

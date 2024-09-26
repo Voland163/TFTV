@@ -350,13 +350,11 @@ namespace TFTV
                     string name = "Phoenix_Guard";
                     string gUID = "{AA2A57B0-C707-4BB0-AD13-8484F4349514}";
 
-
-
                     TacCharacterDef characterSource = DefCache.GetDef<TacCharacterDef>($"PX_Assault1_CharacterTemplateDef");
                     TacCharacterDef newCharacter = Helper.CreateDefFromClone(characterSource, gUID, name);
 
                     newCharacter.SpawnCommandId = name;
-                    newCharacter.Data.Name = "Phoenix Guard";
+                    newCharacter.Data.Name = TFTVCommonMethods.ConvertKeyToString("KEY_TFTV_PX_SECURITY");
 
                     TacticalItemDef sourceTorso = DefCache.GetDef<TacticalItemDef>("PX_Assault_Torso_Gold_BodyPartDef");
                     WeaponDef assaultRifle = DefCache.GetDef<WeaponDef>("PX_AssaultRifle_Gold_WeaponDef");
@@ -1986,7 +1984,7 @@ namespace TFTV
             private static int _numGuardsUnderALNControl = 0;
             private static List<Vector3> _securityStationSpawnPositions = new List<Vector3>();
             private static List<TacticalDeployZone> _alreadyUsedTDZForPXGuards = new List<TacticalDeployZone>();
-
+            public static int SecurityStationsUnderConstruction = 0;
 
             private static List<Vector3> GetSecurityStationSpawns(TacticalLevelController controller)
             {
@@ -2032,10 +2030,24 @@ namespace TFTV
                     _securityStationSpawnPositions.Clear();
 
                     List<Breakable> security = UnityEngine.Object.FindObjectsOfType<Breakable>().Where(b => b.name.StartsWith("PP_LoCov_SecurityRoom_Projector_3x3_A_StructuralTarget")).ToList();
+                    
+                    
                     TacticalFactionDef phoenixFactionDef = DefCache.GetDef<TacticalFactionDef>("Phoenix_TacticalFactionDef");
                     TacticalFactionDef alienFactionDef = DefCache.GetDef<TacticalFactionDef>("Alien_TacticalFactionDef");
 
                     TFTVLogger.Always($"Security Stations # {security.Count()}, alien faction present?: {controller.Factions.Any(f => f.TacticalFactionDef.ShortName.Equals("aln"))}");
+
+                    if (SecurityStationsUnderConstruction > 0) 
+                    {
+                        for (int x = 0; x < SecurityStationsUnderConstruction; x++)
+                        {
+                            if (security.Count() - 1 >= 0)
+                            {
+                                security.RemoveAt(security.Count() - 1);
+                                TFTVLogger.Always($"removing a security station from the lsit, because it's under construction");
+                            }
+                        }                   
+                    }
 
                     if (security.Count == 0)
                     {

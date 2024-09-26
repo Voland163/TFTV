@@ -2575,10 +2575,13 @@ namespace TFTV
                         PhoenixGeneralButton equipmentToggle = UnityEngine.Object.Instantiate(marketplaceUI.LocateMissionButton, marketplaceUI.MissionRewardDescriptionText.transform);
                         PhoenixGeneralButton otherToggle = UnityEngine.Object.Instantiate(marketplaceUI.LocateMissionButton, marketplaceUI.MissionRewardDescriptionText.transform);
 
-                        allToggle.gameObject.AddComponent<UITooltipText>().TipText = "ALL";
+
+                        string allText = TFTVCommonMethods.ConvertKeyToString("KEY_GEOSCAPE_ALL");
+
+                        allToggle.gameObject.AddComponent<UITooltipText>().TipText = allText;
                         allToggle.gameObject.SetActive(true);
                         allToggle.PointerClicked += () => ToggleButtonClicked(0);
-                        allToggle.transform.GetComponentInChildren<Text>().text = "ALL";
+                        allToggle.transform.GetComponentInChildren<Text>().text = allText;
                         //  allToggle.transform.localScale *= 0.6f;
 
                         if (!ultrawideresolution)
@@ -2589,11 +2592,12 @@ namespace TFTV
 
                         allToggle.GetComponent<RectTransform>().sizeDelta = new Vector2(allToggle.GetComponent<RectTransform>().sizeDelta.x * 0.65f, allToggle.GetComponent<RectTransform>().sizeDelta.y);
 
+                        string vehiclesText = TFTVCommonMethods.ConvertKeyToString("KEY_GAME_SUMMARY_PROD_VEHICLES");
 
-                        vehicleToggle.gameObject.AddComponent<UITooltipText>().TipText = "VEHICLES";
+                        vehicleToggle.gameObject.AddComponent<UITooltipText>().TipText = vehiclesText;
                         vehicleToggle.gameObject.SetActive(true);
                         vehicleToggle.PointerClicked += () => ToggleButtonClicked(1);
-                        vehicleToggle.transform.GetComponentInChildren<Text>().text = "VEHICLES";
+                        vehicleToggle.transform.GetComponentInChildren<Text>().text = vehiclesText;
                         vehicleToggle.transform.GetComponentsInChildren<Image>().FirstOrDefault(c => c.name == "Icon").sprite = Helper.CreateSpriteFromImageFile("UI_Vehicle_FilterIcon.png");
 
                         if (!ultrawideresolution)
@@ -2603,11 +2607,11 @@ namespace TFTV
 
                         vehicleToggle.GetComponent<RectTransform>().sizeDelta = new Vector2(allToggle.GetComponent<RectTransform>().sizeDelta.x, allToggle.GetComponent<RectTransform>().sizeDelta.y);
 
-
-                        equipmentToggle.gameObject.AddComponent<UITooltipText>().TipText = "EQUIPMENT";
+                        string equipmentText = TFTVCommonMethods.ConvertKeyToString("KEY_GAME_SUMMARY_PROD_EQUIPMENT");
+                        equipmentToggle.gameObject.AddComponent<UITooltipText>().TipText = equipmentText;
                         equipmentToggle.gameObject.SetActive(true);
                         equipmentToggle.PointerClicked += () => ToggleButtonClicked(2);
-                        equipmentToggle.transform.GetComponentInChildren<Text>().text = "EQUIPMENT";
+                        equipmentToggle.transform.GetComponentInChildren<Text>().text = equipmentText;
                         //    equipmentToggle.transform.localScale *= 0.5f;
 
                         if (!ultrawideresolution)
@@ -2617,10 +2621,13 @@ namespace TFTV
                         equipmentToggle.GetComponent<RectTransform>().sizeDelta = new Vector2(allToggle.GetComponent<RectTransform>().sizeDelta.x, allToggle.GetComponent<RectTransform>().sizeDelta.y);
                         equipmentToggle.transform.GetComponentsInChildren<Image>().FirstOrDefault(c => c.name == "Icon").sprite = Helper.CreateSpriteFromImageFile("MP_UI_Choices_Equipment.png");
 
-                        otherToggle.gameObject.AddComponent<UITooltipText>().TipText = "OTHER";
+
+                        string otherText = TFTVCommonMethods.ConvertKeyToString("KEY_TFTV_OTHER");
+
+                        otherToggle.gameObject.AddComponent<UITooltipText>().TipText = otherText;
                         otherToggle.gameObject.SetActive(true);
                         otherToggle.PointerClicked += () => ToggleButtonClicked(3);
-                        otherToggle.transform.GetComponentInChildren<Text>().text = "OTHER";
+                        otherToggle.transform.GetComponentInChildren<Text>().text = otherText;
                         //   otherToggle.transform.localScale *= 0.5f;
                         if (!ultrawideresolution)
                         {

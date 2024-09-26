@@ -59,6 +59,7 @@ namespace TFTV
         public static Dictionary<int, int> PhoenixBasesUnderAttackSchedule = new Dictionary<int, int>(); //actually not only breaches, but any time other than 18 hours
         public static Dictionary<int, bool> ContainmentBreachSchedule = new Dictionary<int, bool>();
         public static Dictionary<int, List<string>> PandoransThatCanEscape = new Dictionary<int, List<string>>();
+        
 
         private static readonly SharedData Shared = TFTVMain.Shared;
         public static List<int> PhoenixBasesInfested = new List<int>();
@@ -1115,10 +1116,12 @@ namespace TFTV
                         PhoenixBasesUnderAttackSchedule.Add(phoenixBase.SiteId, hours);
                     }
 
+                    string geoObjective = TFTVCommonMethods.ConvertKeyToString("KEY_TFTV_BASE_UNDERATTACK_GEOOBJECTIVE").Replace("{0}", $"{phoenixBase.LocalizedSiteName}");
+
                     //For implementing base defense as proper objective:
                     DiplomaticGeoFactionObjective protectBase = new DiplomaticGeoFactionObjective(controller.PhoenixFaction, controller.PhoenixFaction)
                     {
-                        Title = new LocalizedTextBind($"<color=#FF0000>Phoenix base {phoenixBase.LocalizedSiteName} is under attack!</color>", true)
+                        Title = new LocalizedTextBind($"<color=#FF0000>{geoObjective}</color>", true)
                     };
 
                     controller.PhoenixFaction.AddObjective(protectBase);
@@ -2360,7 +2363,6 @@ namespace TFTV
 
                         PropertyInfo stateProperty = typeof(GeoPhoenixFacility).GetProperty("State", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
 
-
                         if (geoPhoenixFacilities.Count > 0)
                         {
                             TFTVLogger.Always($"Facilities under construction at base under attack detected; setting to damaged");
@@ -2368,9 +2370,12 @@ namespace TFTV
                             foreach (GeoPhoenixFacility facility in geoPhoenixFacilities)
                             {
                                 stateProperty.SetValue(facility, GeoPhoenixFacility.FacilityState.Damaged);
+                                if(facility.Def == DefCache.GetDef<PhoenixFacilityDef>("SecurityStation_PhoenixFacilityDef")) 
+                                {   
+                                    TFTVBaseDefenseTactical.StartingDeployment.SecurityStationsUnderConstruction+=1;
+                                    TFTVLogger.Always($"Security station under construction, increasing counter, now at {TFTVBaseDefenseTactical.StartingDeployment.SecurityStationsUnderConstruction}");
+                                }
                             }
-
-
                         }
 
                         return geoPhoenixFacilities;
@@ -2408,6 +2413,8 @@ namespace TFTV
                     }
                 }
 
+
+
                 [HarmonyPatch(typeof(GeoPhoenixBaseLayout), "ModifyMissionData")]
                 public static class TFTV_GeoPhoenixBaseLayout_ModifyMissionData_patch
                 {
@@ -2419,7 +2426,7 @@ namespace TFTV
                             //this is still necessary
 
                             __state = SetFacilitiesUnderConstructionToCompleted(__instance);
-
+                            
 
                             //This should not be necessary anymore
 

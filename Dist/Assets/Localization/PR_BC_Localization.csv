@@ -99,8 +99,8 @@ PR_BC_SABOTEUR_DESC,Text,,When you are hidden AP cost of non-weapon skills and s
 PR_BC_DIE_HARD,Text,,DIE HARD,,,,,,КРЕПКИЙ ОРЕШЕК,,
 PR_BC_DIE_HARD_DESC,Text,,When you take lethal damage there is a chance to survive with 1HP and have all negative effects cleared. Can only trigger once per mission.,,,,,,"В момент смерти получить шанс выжить в 1 хите (все негативные эффекты снимутся).
 1 раз за миссию",,
-PR_BC_DIE_HARD_TRIGGERED,Text,,КРЕПКИЙ ОРЕШЕК,,,,,,КРЕПКИЙ ОРЕШЕК: ПРОНЕСЛО!,,
-PR_BC_DIE_HARD_TRIGGERED_DESC,Text,,"Способность Крепкий Орешек"" спасла Вашу жизнь","так что в этой миссии второго шанса не будет!""",,,,,Вас уже пронесло один раз в этой миссии. Второй раз чуда не ждите...,,
+PR_BC_DIE_HARD_TRIGGERED,Text,,DIE HARD,,,,,,КРЕПКИЙ ОРЕШЕК: ПРОНЕСЛО!,,
+PR_BC_DIE_HARD_TRIGGERED_DESC,Text,,"Die Hard has saved your life once already, so there is no more chance for this mission!",,,,,,Вас уже пронесло один раз в этой миссии. Второй раз чуда не ждите...,,
 PR_BC_DIE_HARD_KEEPALIVE,Text,,DIE HARDER,,,,,,КРЕПКИЙ ОРЕШЕК: ЧУДО!,,
 PR_BC_DIE_HARD_KEEPALIVE_DESC,Text,,You took lethal damage this turn and Die Hard saved your life. You are invulnerable until the end of this turn.,,,,,,"Вы не погибли только чудом! До конца хода вы - полностью неуязвимый Крепчайший из Орешков, муахахахаха!",,
 PR_BC_BATTLEHARDENED,Text,,BATTLE HARDENED,,ENDURCI AU COMBAT,,,,ВЕТЕРАН,,

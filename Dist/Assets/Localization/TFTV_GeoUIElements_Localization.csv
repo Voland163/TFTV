@@ -224,3 +224,5 @@ KEY_UI_LOADUP_TIP,Text,,"Loads previously saved loadouts for all the operatives 
 KEY_UI_LOADUP_TEXT,Text,,equip all,,,,,,,,
 KEY_UI_REPLENISH_CONSUMABLES_TFTV,Text,,Instantly manufacture and equip {0} for {1}?,,,,,,,,
 KEY_UI_MISSING_LOADOUT_ITEMS_TFTV,Text,,Insufficient stocks to equip {0} with:,,,,,,,,
+KEY_TFTV_BASE_UNDERATTACK_GEOOBJECTIVE,Text,,Phoenix base {0} is under attack!,,,,,,,,
+KEY_TFTV_OTHER,Text,,OTHER,,,,,,,,
